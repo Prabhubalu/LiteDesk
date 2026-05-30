@@ -6,6 +6,7 @@
       app-key="HELPDESK"
       :view-mode="currentView"
       @row-click="handleRowClick"
+      @edit="editCaseFromList"
       @bulk-action="handleBulkAction"
       @filters-changed="handleFiltersChanged"
       @search-changed="handleSearchChanged"
@@ -151,6 +152,14 @@
       @close="closeCreateDrawer"
       @saved="handleSaved"
     />
+
+    <CreateRecordDrawer
+      :isOpen="showEditDrawer"
+      moduleKey="cases"
+      :record="editingCase"
+      @close="closeEditDrawer"
+      @saved="handleEditSaved"
+    />
   </div>
 </template>
 
@@ -292,6 +301,8 @@ const currentSearchQuery = ref('');
 // Create drawer
 const showCreateDrawer = ref(false);
 const createInitialData = ref({});
+const showEditDrawer = ref(false);
+const editingCase = ref(null);
 
 function hexToRgba(hex, alpha) {
   if (!hex) return null;
@@ -389,6 +400,23 @@ function closeCreateDrawer() {
 
 function handleSaved() {
   showCreateDrawer.value = false;
+  refreshList();
+  if (currentView.value === 'kanban') fetchKanbanCases();
+}
+
+function editCaseFromList(row) {
+  if (!row) return;
+  editingCase.value = row;
+  showEditDrawer.value = true;
+}
+
+function closeEditDrawer() {
+  showEditDrawer.value = false;
+  editingCase.value = null;
+}
+
+function handleEditSaved() {
+  closeEditDrawer();
   refreshList();
   if (currentView.value === 'kanban') fetchKanbanCases();
 }

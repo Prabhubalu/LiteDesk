@@ -97,6 +97,23 @@ export function syncPeopleVirtualFieldKeys(formData: Record<string, unknown>): v
   }
 }
 
+/** Map quick-create participationType to classifier fields for dependency evaluation. */
+export function syncParticipationClassifierFields(
+  formData: Record<string, unknown>,
+  appKey?: string | null
+): void {
+  const pt = formData.participationType;
+  if (pt == null || pt === '') return;
+  const upper = String(appKey || '').trim().toUpperCase();
+  if (upper === 'SALES' || !upper) {
+    formData.sales_type = pt;
+  }
+  if (upper === 'HELPDESK' || !upper) {
+    formData.helpdesk_role = pt;
+  }
+  syncPeopleVirtualFieldKeys(formData);
+}
+
 export function applyVirtualFieldDefault(
   formData: Record<string, unknown>,
   field: Pick<PeopleFieldLike, 'key' | 'isVirtual'>,

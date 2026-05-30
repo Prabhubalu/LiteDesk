@@ -135,49 +135,21 @@
             </ListboxOptions>
           </Transition>
         </Listbox>
-        <!-- Date range (entire container opens picker) -->
+        <!-- Date range -->
         <div class="flex items-center gap-1">
-          <div
-            class="relative min-w-[120px] cursor-pointer rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500"
-            role="button"
-            tabindex="0"
-            @click="openDatePicker('from')"
-            @keydown.enter="openDatePicker('from')"
-            @keydown.space.prevent="openDatePicker('from')"
-          >
-            <input
-              ref="fromDateRef"
-              v-model="filterDeletedFrom"
-              type="date"
-              :max="filterDeletedTo || undefined"
-              class="sr-only"
-              :aria-label="t('common.trashDeletedFrom')"
-            />
-            <span class="block text-sm text-gray-700 dark:text-gray-300">
-              {{ formatDateDisplay(filterDeletedFrom) || 'From' }}
-            </span>
-          </div>
+          <DatePicker
+            v-model="filterDeletedFrom"
+            :max="filterDeletedTo || undefined"
+            :placeholder="t('common.filterFrom')"
+            input-class="min-w-[120px] rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+          />
           <span class="text-gray-400">–</span>
-          <div
-            class="relative min-w-[120px] cursor-pointer rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500"
-            role="button"
-            tabindex="0"
-            @click="openDatePicker('to')"
-            @keydown.enter="openDatePicker('to')"
-            @keydown.space.prevent="openDatePicker('to')"
-          >
-            <input
-              ref="toDateRef"
-              v-model="filterDeletedTo"
-              type="date"
-              :min="filterDeletedFrom || undefined"
-              class="sr-only"
-              :aria-label="t('common.trashDeletedTo')"
-            />
-            <span class="block text-sm text-gray-700 dark:text-gray-300">
-              {{ formatDateDisplay(filterDeletedTo) || 'To' }}
-            </span>
-          </div>
+          <DatePicker
+            v-model="filterDeletedTo"
+            :min="filterDeletedFrom || undefined"
+            :placeholder="t('common.filterTo')"
+            input-class="min-w-[120px] rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+          />
         </div>
         <button
           v-if="hasFiltersApplied"
@@ -409,6 +381,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { TrashIcon, ArrowPathIcon, MagnifyingGlassIcon, ExclamationTriangleIcon, ChevronUpDownIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import apiClient from '@/utils/apiClient';
+import DatePicker from '@/components/common/DatePicker.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
@@ -433,8 +406,6 @@ const filterDeletedBy = ref('');
 const filterDeletedFrom = ref('');
 const filterDeletedTo = ref('');
 const sortValue = ref('deletedAt:desc');
-const fromDateRef = ref(null);
-const toDateRef = ref(null);
 
 let searchTimeout = null;
 
@@ -495,23 +466,6 @@ function clearFilters() {
   filterDeletedFrom.value = '';
   filterDeletedTo.value = '';
   loadItems(1);
-}
-
-function formatDateDisplay(iso) {
-  if (!iso) return '';
-  const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function openDatePicker(which) {
-  const input = which === 'from' ? fromDateRef.value : toDateRef.value;
-  if (!input) return;
-  input.focus();
-  if (typeof input.showPicker === 'function') {
-    input.showPicker();
-  } else {
-    input.click();
-  }
 }
 
 function formatDeletedBy(by) {

@@ -17,6 +17,7 @@ const {
     isInitialQuoteRequiredField,
 } = require('../constants/quoteModuleDefaults');
 const { cloneQuoteDefaultRelationships } = require('../constants/defaultQuoteRelationships');
+const { filterFieldsByContext } = require('../utils/fieldContextFilter');
 
 const MODULE_APP_KEY_BY_KEY = Object.freeze({
     people: 'sales',
@@ -682,6 +683,10 @@ function getFieldDataType(key, fieldName, path) {
     return inferDataType(path);
 }
 
+const {
+    getPeopleParticipationStatusModuleFields,
+} = require('../utils/peopleModuleFieldDefaults');
+
 /** People virtual fields: participation roles exposed as configurable fields (no extra DB columns). */
 function getPeopleVirtualBaseFields() {
     return [
@@ -695,7 +700,7 @@ function getPeopleVirtualBaseFields() {
             defaultValue: null,
             visibility: { list: true, detail: true },
             owner: 'platform',
-            context: 'app',
+            context: 'sales',
             isVirtual: true,
             appKey: 'SALES',
             filterable: true,
@@ -718,7 +723,7 @@ function getPeopleVirtualBaseFields() {
             defaultValue: null,
             visibility: { list: true, detail: true },
             owner: 'platform',
-            context: 'app',
+            context: 'helpdesk',
             isVirtual: true,
             appKey: 'HELPDESK',
             filterable: true,
@@ -1388,9 +1393,12 @@ function getBaseFieldsForKey(key) {
             });
 
         if (key === 'people') {
-            const virtualPeople = getPeopleVirtualBaseFields();
+            const extraPeopleFields = [
+                ...getPeopleVirtualBaseFields(),
+                ...getPeopleParticipationStatusModuleFields(),
+            ];
             const have = new Set(baseFields.map((f) => String(f.key || '').toLowerCase()));
-            for (const v of virtualPeople) {
+            for (const v of extraPeopleFields) {
                 if (!have.has(String(v.key || '').toLowerCase())) {
                     baseFields.push(v);
                     have.add(String(v.key || '').toLowerCase());
@@ -2005,44 +2013,6 @@ function normalizePipelineSettings(pipelines = []) {
             stages
         };
     });
-}
-
-/**
- * Filter fields by context
- * 
- * For complete context rules, see: /docs/field-governance.md
- * 
- * @param {Array} fields - Array of field definitions
- * @param {string} currentContext - Current app context ('sales', 'support', 'platform', etc.)
- * @returns {Array} - Filtered fields
- */
-function filterFieldsByContext(fields, currentContext) {
-  if (!Array.isArray(fields)) return [];
-  if (!currentContext) currentContext = 'platform'; // Safe default
-  
-  return fields.filter(field => {
-    if (!field || !field.context) {
-      // If context is missing, default to 'global' for backward compatibility
-      // But only show in platform context as a safe default
-      return currentContext === 'platform';
-    }
-    
-    const fieldContext = field.context.toLowerCase();
-    
-    // Global fields are visible everywhere
-    if (fieldContext === 'global') {
-      return true;
-    }
-    
-    // App-specific fields are visible only in their app context
-    if (currentContext === 'platform') {
-      // Platform context shows ONLY global fields
-      return false;
-    }
-    
-    // In app context, show fields for that app OR global fields
-    return fieldContext === currentContext.toLowerCase();
-  });
 }
 
 const DEAL_DEFAULT_RELATIONSHIPS = Object.freeze([
@@ -4029,7 +3999,8 @@ exports.getPeopleQuickCreate = async (req, res) => {
                 return merged;
             });
         }
-        const filtered = filterFieldsByContext(fields, 'platform');
+        const quickCreateContext = String(req.query.context || 'all').toLowerCase();
+        const filtered = filterFieldsByContext(fields, quickCreateContext);
         const normalizedFields = normalizePeopleModuleFields(filtered);
         const { getPeopleTypesConfig } = require('../utils/tenantMetadata');
         const peopleCfg = await getPeopleTypesConfig(orgId, 'SALES');

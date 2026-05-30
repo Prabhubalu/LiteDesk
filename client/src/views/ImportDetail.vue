@@ -16,7 +16,7 @@
         </svg>
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ t('import.importDetailErrorLoadingImport') }}</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ error }}</p>
-        <button @click="$router.push('/imports')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">{{ t('import.importDetailBackToImports') }}</button>
+        <button @click="navigateToImportsList" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium">{{ t('import.importDetailBackToImports') }}</button>
       </div>
     </div>
 
@@ -24,7 +24,7 @@
     <div v-else-if="importRecord" class="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6">
       <!-- Header Actions -->
       <div class="flex items-center justify-between mb-4">
-        <button @click="$router.push('/imports')" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+        <button @click="navigateToImportsList" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
@@ -33,7 +33,7 @@
 
         <div class="flex items-center gap-2">
           <button @click="navigateToModule" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-all">
-            <span>Go to {{ formatModule(importRecord.module) }}</span>
+            <span>{{ t('import.importDetailGoToModule', { module: formatModule(importRecord.module) }) }}</span>
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
@@ -53,7 +53,7 @@
             <div>
               <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ importRecord.fileName }}</h3>
               <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                {{ formatDate(importRecord.createdAt) }} at {{ formatTime(importRecord.createdAt) }}
+                {{ formatDate(importRecord.createdAt) }} {{ t('import.importDetailAtTime') }} {{ formatTime(importRecord.createdAt) }}
               </p>
               <div class="flex items-center gap-2 mt-2">
                 <span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
@@ -126,7 +126,7 @@
         <!-- Created/Updated Records -->
         <div v-if="selectedRecordType === 'created' || selectedRecordType === 'updated'" class="space-y-3">
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            {{ importRecord.stats[selectedRecordType] }} record(s) were {{ selectedRecordType }} during this import.
+            {{ t('import.importDetailRecordsWereDuring', { count: importRecord.stats[selectedRecordType], action: selectedRecordType }) }}
           </p>
           
           <!-- Loading -->
@@ -161,7 +161,7 @@
         <!-- Skipped Records -->
         <div v-if="selectedRecordType === 'skipped'" class="space-y-3">
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            {{ importRecord.stats.skipped }} record(s) were skipped during this import.
+            {{ t('import.importDetailRecordsWereDuring', { count: importRecord.stats.skipped, action: t('process.execSkipped').toLowerCase() }) }}
           </p>
           <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
             <div class="flex items-start gap-2">
@@ -170,7 +170,7 @@
               </svg>
               <div class="flex-1">
                 <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">{{ t('import.importDetailRecordsSkipped') }}</p>
-                <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">{{ t('import.importDetailTheseRecordsWereSkippedBecauseThey') }}<span v-if="importRecord.duplicateCheckEnabled">{{ t('import.importDetailCheckedOn') }}<strong>{{ importRecord.duplicateCheckFields?.join(', ') || 'default fields' }}</strong>.
+                <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">{{ t('import.importDetailTheseRecordsWereSkippedBecauseThey') }}<span v-if="importRecord.duplicateCheckEnabled">{{ t('import.importDetailCheckedOn') }}<strong>{{ importRecord.duplicateCheckFields?.join(', ') || t('import.importDetailDefaultFields') }}</strong>.
                   </span>
                 </p>
               </div>
@@ -181,11 +181,11 @@
         <!-- Failed Records -->
         <div v-if="selectedRecordType === 'failed'" class="space-y-3">
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            {{ importRecord.stats.failed }} record(s) failed during this import:
+            {{ t('import.importDetailRecordsFailedDuring', { count: importRecord.stats.failed }) }}
           </p>
-          <div v-if="importRecord.errors && importRecord.errors.length > 0" class="space-y-2 max-h-80 overflow-y-auto">
+          <div v-if="importErrors.length > 0" class="space-y-2 max-h-80 overflow-y-auto">
             <div 
-              v-for="(error, index) in importRecord.errors"
+              v-for="(error, index) in importErrors"
               :key="index"
               class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3"
             >
@@ -194,7 +194,7 @@
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                 </svg>
                 <div class="flex-1">
-                  <div class="text-xs font-medium text-red-800 dark:text-red-200">Row {{ error.row }}</div>
+                  <div class="text-xs font-medium text-red-800 dark:text-red-200">{{ t('import.importDetailRowLabel', { row: error.row }) }}</div>
                   <div class="text-xs text-red-700 dark:text-red-300 mt-0.5">{{ error.error }}</div>
                 </div>
               </div>
@@ -257,7 +257,7 @@
             <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
               <span class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('import.importDetailDuplicateCheck') }}</span>
               <span class="text-sm font-medium text-gray-900 dark:text-white">
-                {{ importRecord.duplicateCheckEnabled ? 'Enabled' : 'Disabled' }}
+                {{ importRecord.duplicateCheckEnabled ? t('import.importDetailDuplicateEnabled') : t('import.importDetailDuplicateDisabled') }}
                 <span v-if="importRecord.duplicateCheckEnabled" class="text-xs text-gray-500 dark:text-gray-400 ml-1">
                   ({{ importRecord.duplicateAction }})
                 </span>
@@ -300,7 +300,7 @@
 
           <!-- Errors Tab -->
           <div v-if="activeTab === 'errors'">
-            <div v-if="!importRecord.errors || importRecord.errors.length === 0" class="text-center py-8">
+            <div v-if="importErrors.length === 0" class="text-center py-8">
               <svg class="mx-auto h-12 w-12 text-green-500 dark:text-green-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -308,7 +308,7 @@
             </div>
             <div v-else class="space-y-2">
               <div 
-                v-for="(error, index) in importRecord.errors"
+                v-for="(error, index) in importErrors"
                 :key="index"
                 class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3"
               >
@@ -317,7 +317,7 @@
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                   </svg>
                   <div class="flex-1">
-                    <div class="text-xs font-medium text-red-800 dark:text-red-200">Row {{ error.row }}</div>
+                    <div class="text-xs font-medium text-red-800 dark:text-red-200">{{ t('import.importDetailRowLabel', { row: error.row }) }}</div>
                     <div class="text-xs text-red-700 dark:text-red-300 mt-0.5">{{ error.error }}</div>
                   </div>
                 </div>
@@ -335,11 +335,30 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
+import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 
 const route = useRoute();
-const router = useRouter();
+const { openTab, findTabByPath, switchToTab, activeTabId, findTabById, closeTab } = useTabs();
+
+const IMPORTS_LIST_PATH = '/imports';
+
+const MODULE_LABEL_KEYS = {
+  contacts: 'navigation.modulePeople',
+  people: 'navigation.modulePeople',
+  deals: 'navigation.moduleDeals',
+  tasks: 'navigation.moduleTasks',
+  organizations: 'navigation.moduleOrganizations'
+};
+
+const MODULE_ROUTES = {
+  contacts: '/people',
+  people: '/people',
+  deals: '/deals',
+  tasks: '/tasks',
+  organizations: '/organizations'
+};
 
 const importRecord = ref(null);
 const loading = ref(true);
@@ -350,10 +369,16 @@ const selectedRecordType = ref(null);
 const loadingRecords = ref(false);
 const displayRecords = ref([]);
 
+const importErrors = computed(() => {
+  const record = importRecord.value;
+  if (!record) return [];
+  return record.importErrors || record.errors || [];
+});
+
 const tabs = computed(() => [
-  { id: 'overview', name: 'Overview' },
-  { id: 'mapping', name: 'Field Mapping', count: Object.keys(importRecord.value?.metadata?.fieldMapping || {}).length },
-  { id: 'errors', name: 'Errors', count: importRecord.value?.errors?.length || 0 }
+  { id: 'overview', name: t('import.importDetailTabOverview') },
+  { id: 'mapping', name: t('import.importDetailTabFieldMapping'), count: Object.keys(importRecord.value?.metadata?.fieldMapping || {}).length },
+  { id: 'errors', name: t('import.importDetailTabErrors'), count: importErrors.value.length }
 ]);
 
 const successRate = computed(() => {
@@ -368,7 +393,8 @@ const recordsViewTitle = computed(() => {
   if (!selectedRecordType.value) return '';
   const type = selectedRecordType.value;
   const count = importRecord.value?.stats?.[type] || 0;
-  return `${type.charAt(0).toUpperCase() + type.slice(1)} Records (${count})`;
+  const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+  return t('import.importDetailRecordsViewTitle', { type: typeLabel, count });
 });
 
 const tableHeaders = computed(() => {
@@ -401,8 +427,21 @@ const fetchImportDetails = async () => {
   }
 };
 
-const formatModule = (module) => module.charAt(0).toUpperCase() + module.slice(1);
-const formatStatus = (status) => status.charAt(0).toUpperCase() + status.slice(1);
+const formatModule = (module) => {
+  const key = MODULE_LABEL_KEYS[module];
+  return key ? t(key) : module.charAt(0).toUpperCase() + module.slice(1);
+};
+
+const formatStatus = (status) => {
+  const statusKeys = {
+    completed: 'import.importsStatusCompleted',
+    partial: 'import.importsStatusPartial',
+    failed: 'import.importsStatusFailed',
+    processing: 'import.importsStatusProcessing'
+  };
+  const key = statusKeys[status];
+  return key ? t(key) : status.charAt(0).toUpperCase() + status.slice(1);
+};
 
 const formatDate = (date) => {
   if (!date) return 'N/A';
@@ -454,7 +493,7 @@ const getRecordValue = (record, header) => {
   
   const fieldMap = {
     contacts: {
-      'Name': r => `${r.firstName || ''} ${r.lastName || ''}`.trim() || 'N/A',
+      'Name': r => `${r.first_name || r.firstName || ''} ${r.last_name || r.lastName || ''}`.trim() || 'N/A',
       'Email': r => r.email || 'N/A',
       'Phone': r => r.phone || 'N/A',
       'Company': r => r.company || 'N/A',
@@ -516,18 +555,37 @@ const closeRecordsView = () => {
   displayRecords.value = [];
 };
 
-const navigateToModule = () => {
-  const moduleRoutes = {
-    contacts: '/people',
-    deals: '/deals',
-    tasks: '/tasks',
-    organizations: '/organizations'
-  };
-  
-  const route = moduleRoutes[importRecord.value.module];
-  if (route) {
-    router.push(route);
+const navigateToImportsList = () => {
+  const listTab = findTabByPath(IMPORTS_LIST_PATH);
+  const currentTabId = activeTabId.value;
+  const currentTab = currentTabId ? findTabById(currentTabId) : null;
+
+  if (listTab) {
+    switchToTab(listTab.id);
+    if (currentTab && String(currentTab.path || '').startsWith(`${IMPORTS_LIST_PATH}/`)) {
+      closeTab(currentTab.id);
+    }
+    return;
   }
+
+  openTab(IMPORTS_LIST_PATH, {
+    title: t('import.importsImportHistory'),
+    icon: 'download'
+  });
+
+  if (currentTab && String(currentTab.path || '').startsWith(`${IMPORTS_LIST_PATH}/`)) {
+    closeTab(currentTab.id);
+  }
+};
+
+const navigateToModule = () => {
+  const path = MODULE_ROUTES[importRecord.value?.module];
+  if (!path) return;
+
+  openTab(path, {
+    title: formatModule(importRecord.value.module),
+    icon: 'building'
+  });
 };
 
 onMounted(() => {

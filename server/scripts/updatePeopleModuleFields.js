@@ -1,10 +1,46 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 const ModuleDefinition = require('../models/ModuleDefinition');
 const People = require('../models/People');
 const Organization = require('../models/Organization');
 const { getDefaultEmailValidations } = require('../utils/defaultFieldValidations');
+const { normalizePeopleModuleFields } = require('../utils/normalizePeopleModuleConfig');
+const {
+  getPeopleParticipationStatusModuleFields,
+  DEFAULT_LEAD_STATUS_VALUES,
+  DEFAULT_CONTACT_STATUS_VALUES,
+} = require('../utils/peopleModuleFieldDefaults');
+const { applyDefaultColorsToPicklistOptions } = require('../utils/peopleParticipationPicklistColors');
+
+function resolveMasterUri() {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const mongoUri =
+    process.env.MONGODB_URI ||
+    process.env.MONGO_URI ||
+    (isProduction ? process.env.MONGO_URI_PRODUCTION : process.env.MONGO_URI_LOCAL) ||
+    process.env.MONGO_URI_ATLAS ||
+    'mongodb://localhost:27017/arivu';
+
+  const [mongoUriWithoutQuery, mongoUriQueryPart] = mongoUri.split('?');
+  const mongoQueryString = mongoUriQueryPart ? `?${mongoUriQueryPart}` : '';
+  const baseUri = mongoUriWithoutQuery.split('/').slice(0, -1).join('/');
+  const masterDbName = 'arivu_master';
+  return `${baseUri}/${masterDbName}${mongoQueryString}`;
+}
+
+function formatOptionsForLog(options) {
+  if (!Array.isArray(options) || options.length === 0) return '';
+  return options
+    .map((option) => {
+      if (typeof option === 'string') return option;
+      if (option && typeof option === 'object') return option.value || option.label || '?';
+      return String(option);
+    })
+    .join(', ');
+}
 
 // Field-specific data type mappings for People module
 const peopleFieldMappings = {
@@ -34,11 +70,11 @@ const peopleFieldMappings = {
   'organizationId': 'Lookup (Relationship)'
 };
 
-// Enum values from People schema
+// Enum values from People schema and participation defaults
 const enumMappings = {
   'sales_type': ['Lead', 'Contact'],
-  'lead_status': ['New', 'Contacted', 'Qualified', 'Disqualified', 'Nurturing', 'Re-Engage'],
-  'contact_status': ['Active', 'Inactive', 'DoNotContact'],
+  'lead_status': [...DEFAULT_LEAD_STATUS_VALUES],
+  'contact_status': [...DEFAULT_CONTACT_STATUS_VALUES],
   'role': ['Decision Maker', 'Influencer', 'Support', 'Other'],
   'preferred_contact_method': ['Email', 'Phone', 'WhatsApp', 'SMS', 'None']
 };
@@ -157,9 +193,14 @@ function extractEnumValues(fieldName, path, schemaTree) {
 }
 
 // Normalize options to the correct format (objects with value and color, or keep as strings)
-function normalizeOptions(options) {
+function normalizeOptions(options, fieldKey = null) {
   if (!Array.isArray(options) || options.length === 0) {
     return [];
+  }
+
+  const key = String(fieldKey || '').toLowerCase();
+  if (key === 'lead_status' || key === 'contact_status') {
+    return applyDefaultColorsToPicklistOptions(key, options);
   }
   
   // If options are already objects, return as is
@@ -185,8 +226,8 @@ async function updatePeopleModuleFields(organizationId = null) {
   try {
     // Connect to MongoDB if not already connected
     if (mongoose.connection.readyState === 0) {
-      const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/arivu';
-      await mongoose.connect(mongoUri);
+      const masterUri = resolveMasterUri();
+      await mongoose.connect(masterUri);
       console.log(`[updatePeopleModuleFields] Connected to MongoDB: ${mongoose.connection.name}`);
     } else {
       console.log(`[updatePeopleModuleFields] Using existing MongoDB connection: ${mongoose.connection.name}`);
@@ -215,8 +256,8 @@ async function updatePeopleModuleFields(organizationId = null) {
       console.log(`[updatePeopleModuleFields] Found ${organizations.length} organization(s) (filtered by ID: ${organizationId})`);
       console.log(`[updatePeopleModuleFields] Organization name: ${organizations[0]?.name || 'N/A'}`);
     } else {
-      organizations = await Organization.find({});
-      console.log(`[updatePeopleModuleFields] Found ${organizations.length} organizations`);
+      organizations = await Organization.find({ isTenant: true });
+      console.log(`[updatePeopleModuleFields] Found ${organizations.length} tenant organization(s)`);
     }
 
     // Get People model schema
@@ -228,7 +269,14 @@ async function updatePeopleModuleFields(organizationId = null) {
       'activityLogs', // System field - activity logs are managed internally
       'legacyContactId', // Legacy migration field
       'account_id', // Legacy field - use 'organization' instead
-      'owner_id' // Legacy field - use 'assignedTo' instead
+      'owner_id', // Legacy field - use 'assignedTo' instead
+      'derivedStatus',
+      'deletedAt',
+      'deletedBy',
+      'deletionReason',
+      'descriptionVersions',
+      'customFields',
+      'participations',
     ]);
 
     // Build field definitions
@@ -286,7 +334,7 @@ async function updatePeopleModuleFields(organizationId = null) {
         label: label,
         dataType: dataType,
         required: !!path.isRequired,
-        options: normalizeOptions(options),
+        options: normalizeOptions(options, fieldName),
         defaultValue: path.defaultValue ?? null,
         index: !!path._index || false,
         visibility: { 
@@ -396,6 +444,17 @@ async function updatePeopleModuleFields(organizationId = null) {
       });
     }
 
+    for (const participationField of getPeopleParticipationStatusModuleFields()) {
+      const key = String(participationField.key || '').toLowerCase();
+      if (!fields.some((f) => String(f.key || '').toLowerCase() === key)) {
+        fields.push({
+          ...participationField,
+          options: normalizeOptions(participationField.options, participationField.key),
+          order: fields.length,
+        });
+      }
+    }
+
     // Sort fields by a logical order (system fields first, then core, then lead/contact specific)
     const fieldOrder = [
       'organizationId',
@@ -442,7 +501,7 @@ async function updatePeopleModuleFields(organizationId = null) {
     fields.forEach(f => {
       let info = `  - ${f.key} (${f.dataType})`;
       if (f.options.length > 0) {
-        info += ` [${f.options.join(', ')}]`;
+        info += ` [${formatOptionsForLog(f.options)}]`;
       }
       if (f.lookupSettings && f.lookupSettings.targetModule) {
         info += ` [lookup: ${f.lookupSettings.targetModule}]`;
@@ -458,8 +517,15 @@ async function updatePeopleModuleFields(organizationId = null) {
     let created = 0;
 
     if (organizations.length === 0) {
-      throw new Error('No organizations found to process');
+      throw new Error(
+        'No tenant organizations found in arivu_master. ' +
+          'Ensure MONGODB_URI / MONGO_URI_LOCAL in server/.env points at your Mongo host ' +
+          '(tenants live in the arivu_master database, not the default arivu DB). ' +
+          'You can also pass an organization id: node scripts/updatePeopleModuleFields.js <orgId>'
+      );
     }
+
+    const normalizedFields = normalizePeopleModuleFields(fields);
 
     for (const org of organizations) {
       const existing = await ModuleDefinition.findOne({
@@ -483,7 +549,7 @@ async function updatePeopleModuleFields(organizationId = null) {
 
         // Create a map of new fields by key
         const newFieldMap = new Map();
-        fields.forEach(newField => {
+        normalizedFields.forEach(newField => {
           const key = newField.key?.toLowerCase();
           if (key) {
             newFieldMap.set(key, newField);
@@ -511,6 +577,11 @@ async function updatePeopleModuleFields(organizationId = null) {
             const mergedField = {
               ...newField,
               order: existingField.order ?? newField.order, // Preserve existing order
+              // Preserve tenant-configured picklist options
+              options:
+                Array.isArray(existingField.options) && existingField.options.length > 0
+                  ? existingField.options
+                  : newField.options,
               // Ensure organization is always visible, otherwise preserve existing visibility
               visibility: (key === 'organization' || key === 'organizationid') 
                 ? { list: true, detail: true } 
@@ -547,7 +618,7 @@ async function updatePeopleModuleFields(organizationId = null) {
         // Then, add any new fields that weren't in existing (at end, maintaining default order)
         const existingOrders = mergedFields.map(f => f.order ?? 0);
         let maxOrder = existingOrders.length > 0 ? Math.max(...existingOrders) : -1;
-        fields.forEach(newField => {
+        normalizedFields.forEach(newField => {
           const key = newField.key?.toLowerCase();
           if (!key || processedKeys.has(key)) return;
           
@@ -561,7 +632,7 @@ async function updatePeopleModuleFields(organizationId = null) {
         // Sort by order to ensure consistency
         mergedFields.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-        existing.fields = mergedFields;
+        existing.fields = normalizePeopleModuleFields(mergedFields);
         existing.label = existing.label || 'Person';
         existing.pluralLabel = existing.pluralLabel || 'People';
         existing.moduleKey = existing.moduleKey || existing.key || 'people';
@@ -592,7 +663,7 @@ async function updatePeopleModuleFields(organizationId = null) {
           entityType: 'CORE',
           type: 'system',
           enabled: true,
-          fields: fields,
+          fields: normalizedFields,
           relationships: cloneDefaultPeopleRelationships(),
           quickCreate: [],
           quickCreateLayout: { version: 1, rows: [] }
@@ -618,7 +689,8 @@ async function updatePeopleModuleFields(organizationId = null) {
 
 // Run the script
 if (require.main === module) {
-  updatePeopleModuleFields()
+  const orgIdArg = process.argv[2] && !process.argv[2].startsWith('-') ? process.argv[2] : null;
+  updatePeopleModuleFields(orgIdArg)
     .then(() => {
       console.log('Script completed successfully');
       process.exit(0);

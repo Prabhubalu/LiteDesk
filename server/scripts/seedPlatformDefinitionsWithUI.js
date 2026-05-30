@@ -501,7 +501,7 @@ const MODULE_DEFINITIONS = [
   },
   {
     moduleKey: 'imports',
-    appKey: 'sales',
+    appKey: 'platform', // Cross-functional capability — shared across apps
     label: 'Import',
     pluralLabel: 'Imports',
     entityType: 'CORE',
@@ -535,9 +535,12 @@ const MODULE_DEFINITIONS = [
       routeBase: '/imports',
       icon: '📥',
       showInSidebar: true,
-      sidebarOrder: 8,
+      sidebarOrder: 9,
       createLabel: 'New Import',
-      listLabel: 'Import History'
+      listLabel: 'Import History',
+      // Navigation intent: Core Modules section (cross-functional, not Sales-specific)
+      navigationEntity: true,
+      excludeFromApps: true
     }
   },
   {

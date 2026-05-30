@@ -82,8 +82,9 @@
               v-if="participation.primaryState"
               :class="[
                 'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium',
-                getStateBadgeClass(participation.primaryState.type)
+                participation.primaryState.color ? '' : getStateBadgeClass(participation.primaryState.type)
               ]"
+              :style="participation.primaryState.color ? picklistBadgeStyle(participation.primaryState.color) : undefined"
             >
               {{ participation.primaryState.label }}
             </span>
@@ -91,8 +92,9 @@
               v-if="participation.secondaryState"
               :class="[
                 'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium',
-                getStateBadgeClass(participation.secondaryState.type)
+                participation.secondaryState.color ? '' : getStateBadgeClass(participation.secondaryState.type)
               ]"
+              :style="participation.secondaryState.color ? picklistBadgeStyle(participation.secondaryState.color) : undefined"
             >
               {{ participation.secondaryState.label }}
             </span>
@@ -142,6 +144,9 @@ import clickOutside from '@/directives/clickOutside';
 import { PEOPLE_PERMISSIONS } from '@/platform/permissions/peoplePermissions';
 import { hasPeoplePermission } from '@/platform/permissions/peoplePermissionHelper';
 import { isPeopleSalesRoleFieldKey } from '@/utils/peopleParticipationUi';
+import { usePeopleModuleFields } from '@/composables/usePeopleModuleFields';
+import { getPeoplePicklistColor } from '@/utils/peopleModuleFieldUtils';
+import { picklistBadgeStyle } from '@/utils/peopleParticipationPicklistColors';
 
 const props = defineProps({
   person: {
@@ -155,6 +160,7 @@ const { t } = useI18n();
 const emit = defineEmits(['edit', 'convert', 'detach', 'attach']);
 
 const authStore = useAuthStore();
+const { fields: peopleModuleFields } = usePeopleModuleFields();
 
 // Actions menu state
 const openActionsMenu = ref(null);
@@ -287,7 +293,11 @@ const participatingApps = computed(() => {
         const label = formatStateLabel(fieldKey, value);
         const state = {
           type: getStateType(appKey, fieldKey, value),
-          label
+          label,
+          color:
+            fieldKey === 'lead_status' || fieldKey === 'contact_status'
+              ? getPeoplePicklistColor(peopleModuleFields.value, fieldKey, value)
+              : null,
         };
         
         if (!primaryState) {

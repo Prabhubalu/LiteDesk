@@ -268,7 +268,9 @@ import { getGlobalSystemFieldKeys } from '@/platform/fields/fieldCapabilityEngin
 import { getAppLabel } from '@/utils/getRoleDisplay';
 import { usePeopleTypes } from '@/composables/usePeopleTypes';
 import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
-import { getFormFieldValue } from '@/utils/getFieldValue';
+import { getFormFieldValue, syncParticipationClassifierFields } from '@/utils/getFieldValue';
+import { normalizeModuleFieldsFromMetadata } from '@/platform/fields/fieldMerge';
+import { mergePeopleVirtualFieldDefinitions } from '@/platform/fields/peopleFieldRegistry';
 
 const props = defineProps({
   isOpen: {
@@ -347,7 +349,7 @@ const quickCreateExcludeFields = computed(() => getGlobalSystemFieldKeys());
 // App form state (participation type + dependent fields) — used by AppSection
 const appForm = ref<Record<string, any>>({ participationType: null });
 
-// People module fetched with context=platform when drawer opens (ensures Settings Quick Create always used)
+// People module fetched when drawer opens (Settings → People → Quick Create + app participation fields).
 const peopleModuleOverride = ref<any>(null);
 const peopleModuleLoading = ref(false);
 
@@ -363,11 +365,13 @@ watch(() => props.isOpen, async (open) => {
   peopleModuleLoading.value = true;
   peopleModuleOverride.value = null;
   try {
-    const res = await apiClient.get('/modules/people/quick-create');
+    const res = await apiClient.get('/modules/people/quick-create', { params: { context: 'all' } });
     if (res?.success && res?.data) {
       const mod = res.data;
       if (!mod.quickCreate) mod.quickCreate = [];
       if (!mod.quickCreateLayout) mod.quickCreateLayout = { version: 1, rows: [] };
+      mod.fields = normalizeModuleFieldsFromMetadata('people', mod.fields || []);
+      mod.fields = mergePeopleVirtualFieldDefinitions(mod.fields);
       peopleModuleOverride.value = mod;
     }
   } catch (e) {
@@ -454,6 +458,12 @@ const drawerPanelClass = 'pointer-events-auto w-screen max-w-2xl h-full';
 /**
  * Validate quick create + app fields (required in form from module)
  */
+function appFormDataForDependencies() {
+  const base = { ...(appForm.value || {}) } as Record<string, unknown>;
+  syncParticipationClassifierFields(base, effectiveAppKey.value);
+  return base;
+}
+
 function validateForm() {
   errors.value = {};
   if (!moduleDefinition.value?.fields) return;
@@ -461,6 +471,7 @@ function validateForm() {
   const moduleFields = moduleDefinition.value.fields as any[];
   const qcFields = quickCreateFieldsOverride.value;
   const appFields = appDependentFields.value;
+  const appDepForm = appFormDataForDependencies();
 
   for (const field of moduleFields) {
     if (!field.key) continue;
@@ -469,9 +480,12 @@ function validateForm() {
     if (!isQcField && !isAppField) continue;
 
     // Apply dependency-driven effective state (required/visibility), not static `field.required` only.
-    const depState = getFieldDependencyState(field, formData.value, moduleFields, {
-      moduleKey: 'people'
-    });
+    const depState = getFieldDependencyState(
+      field,
+      isAppField ? appDepForm : formData.value,
+      moduleFields,
+      { moduleKey: 'people' }
+    );
     if (depState.visible === false) continue;
     if (depState.required !== true) continue;
 

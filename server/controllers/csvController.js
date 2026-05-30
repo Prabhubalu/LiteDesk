@@ -3,8 +3,12 @@ const Deal = require('../models/Deal');
 const Task = require('../models/Task');
 const Organization = require('../models/Organization');
 const ImportHistory = require('../models/ImportHistory');
-const { getSalesParticipationFields } = require('./peopleController');
-const { stripClientSource, assignResolvedSource } = require('../services/sourceResolver');
+const { assignResolvedSource } = require('../services/sourceResolver');
+const {
+  mapRowToPeopleImportPayload,
+  buildPeopleCreatePayload,
+  buildPeopleUpdateSet,
+} = require('../utils/peopleImportMapper');
 
 // NOTE: Install these packages: npm install csv-parse csv-stringify multer
 // For now, using basic CSV parsing
@@ -43,6 +47,54 @@ const parseCSV = (csvText) => {
   
   return { headers, rows };
 };
+
+function resolveImportStatus({ total = 0, created = 0, updated = 0, skipped = 0, failed = 0 }) {
+  if (total > 0 && failed === total) return 'failed';
+  if (failed > 0) return 'partial';
+  return 'completed';
+}
+
+async function finalizeImportHistory(importHistoryId, results, processingTime) {
+  const skipped = results.skipped ?? 0;
+  const failed = results.failed ?? 0;
+  const total = results.total ?? 0;
+
+  await ImportHistory.findByIdAndUpdate(importHistoryId, {
+    status: resolveImportStatus({ total, created: results.created, updated: results.updated, skipped, failed }),
+    'stats.created': results.created,
+    'stats.updated': results.updated,
+    'stats.skipped': skipped,
+    'stats.failed': failed,
+    'stats.total': total,
+    'recordIds.created': results.createdIds || [],
+    'recordIds.updated': results.updatedIds || [],
+    importErrors: results.errors || [],
+    processingTime
+  });
+}
+
+async function markImportHistoryFailed(importHistoryId, errorMessage, processingTime) {
+  await ImportHistory.findByIdAndUpdate(importHistoryId, {
+    status: 'failed',
+    importErrors: [{ row: 0, error: errorMessage }],
+    processingTime
+  });
+}
+
+async function getTenantUserIds(organizationId) {
+  const User = require('../models/User');
+  const users = await User.find({ organizationId }).select('_id').lean();
+  return users.map((user) => user._id);
+}
+
+async function buildCrmOrganizationQuery(organizationId) {
+  const tenantUserIds = await getTenantUserIds(organizationId);
+  return {
+    isTenant: false,
+    deletedAt: null,
+    createdBy: { $in: tenantUserIds }
+  };
+}
 
 // Simple CSV stringifier
 const stringifyCSV = (data, headers) => {
@@ -447,6 +499,7 @@ const importContacts = async (req, res) => {
       total: rows.length,
       created: 0,
       updated: 0,
+      skipped: 0,
       failed: 0,
       errors: [],
       createdIds: [],
@@ -455,36 +508,11 @@ const importContacts = async (req, res) => {
 
     for (const [index, row] of rows.entries()) {
       try {
-        // Map CSV fields to People fields
-        const contactData = {
-          organizationId: req.user.organizationId
-        };
-
-        // Get Sales participation fields that should be stripped
-        const participationFields = getSalesParticipationFields();
-
-        Object.keys(fieldMapping).forEach(csvField => {
-          const contactField = fieldMapping[csvField];
-          if (contactField && row[csvField]) {
-            // ⚠️ GUARDRAIL: Strip participation fields from CSV import
-            // Person creation is identity-only. Participation fields must be set via Attach-to-App.
-            if (participationFields.includes(contactField)) {
-              console.warn(`[CSVImport] ⚠️ Participation field "${contactField}" detected in CSV import and stripped. Use Attach-to-App to set participation fields.`);
-              return; // Skip this field
-            }
-            
-            // Handle nested fields (e.g., 'address.street')
-            if (contactField.includes('.')) {
-              const [parent, child] = contactField.split('.');
-              if (!contactData[parent]) contactData[parent] = {};
-              contactData[parent][child] = row[csvField];
-            } else {
-              contactData[contactField] = row[csvField];
-            }
-          }
+        const rawPayload = mapRowToPeopleImportPayload(row, fieldMapping);
+        const contactData = buildPeopleCreatePayload(rawPayload, {
+          organizationId: req.user.organizationId,
+          userId: req.user._id,
         });
-
-        stripClientSource(contactData);
 
         // Check duplicates only if enabled
         if (shouldCheckDuplicates && contactData.email) {
@@ -495,19 +523,15 @@ const importContacts = async (req, res) => {
 
           if (existing) {
             if (updateExisting) {
-              await People.updateOne({ _id: existing._id }, contactData);
+              const $set = buildPeopleUpdateSet(rawPayload, existing);
+              await People.updateOne({ _id: existing._id }, { $set });
               results.updated++;
               results.updatedIds.push(existing._id);
             } else {
-              results.failed++;
-              results.errors.push({
-                row: index + 2,
-                error: 'Contact with this email already exists'
-              });
+              results.skipped++;
             }
           } else {
             assignResolvedSource(contactData, 'import');
-            if (!contactData.createdBy) contactData.createdBy = req.user._id;
             const newContact = await People.create(contactData);
             results.created++;
             results.createdIds.push(newContact._id);
@@ -515,7 +539,6 @@ const importContacts = async (req, res) => {
         } else {
           // No duplicate check or no email - always create
           assignResolvedSource(contactData, 'import');
-          if (!contactData.createdBy) contactData.createdBy = req.user._id;
           const newContact = await People.create(contactData);
           results.created++;
           results.createdIds.push(newContact._id);
@@ -529,22 +552,8 @@ const importContacts = async (req, res) => {
       }
     }
 
-    // Update import history with final results
     const processingTime = Date.now() - startTime;
-    const finalStatus = results.failed === results.total ? 'failed' : 
-                       results.failed > 0 ? 'partial' : 'completed';
-    
-    await ImportHistory.findByIdAndUpdate(importHistory._id, {
-      status: finalStatus,
-      'stats.created': results.created,
-      'stats.updated': results.updated,
-      'stats.skipped': results.failed,
-      'stats.failed': results.failed,
-      'recordIds.created': results.createdIds,
-      'recordIds.updated': results.updatedIds,
-      errors: results.errors,
-      processingTime
-    });
+    await finalizeImportHistory(importHistory._id, results, processingTime);
 
     res.status(200).json({
       success: true,
@@ -556,13 +565,8 @@ const importContacts = async (req, res) => {
   } catch (error) {
     console.error('Import contacts error:', error);
     
-    // Update import history with failure
     if (importHistory) {
-      await ImportHistory.findByIdAndUpdate(importHistory._id, {
-        status: 'failed',
-        errors: [{ row: 0, error: error.message }],
-        processingTime: Date.now() - startTime
-      });
+      await markImportHistoryFailed(importHistory._id, error.message, Date.now() - startTime);
     }
     
     res.status(500).json({
@@ -616,6 +620,7 @@ const importDeals = async (req, res) => {
       total: rows.length,
       created: 0,
       updated: 0,
+      skipped: 0,
       failed: 0,
       errors: [],
       createdIds: [],
@@ -668,11 +673,7 @@ const importDeals = async (req, res) => {
               results.updated++;
               results.updatedIds.push(existing._id);
             } else {
-              results.failed++;
-              results.errors.push({
-                row: index + 2,
-                error: 'Deal with this name already exists'
-              });
+              results.skipped++;
             }
           } else {
             assignResolvedSource(dealData, 'import');
@@ -696,22 +697,8 @@ const importDeals = async (req, res) => {
       }
     }
 
-    // Update import history with final results
     const processingTime = Date.now() - startTime;
-    const finalStatus = results.failed === results.total ? 'failed' : 
-                       results.failed > 0 ? 'partial' : 'completed';
-    
-    await ImportHistory.findByIdAndUpdate(importHistory._id, {
-      status: finalStatus,
-      'stats.created': results.created,
-      'stats.updated': results.updated,
-      'stats.skipped': results.failed - results.errors.length,
-      'stats.failed': results.failed,
-      'recordIds.created': results.createdIds,
-      'recordIds.updated': results.updatedIds,
-      errors: results.errors,
-      processingTime
-    });
+    await finalizeImportHistory(importHistory._id, results, processingTime);
 
     res.status(200).json({
       success: true,
@@ -723,13 +710,8 @@ const importDeals = async (req, res) => {
   } catch (error) {
     console.error('Import deals error:', error);
     
-    // Update import history with failure
     if (importHistory) {
-      await ImportHistory.findByIdAndUpdate(importHistory._id, {
-        status: 'failed',
-        errors: [{ row: 0, error: error.message }],
-        processingTime: Date.now() - startTime
-      });
+      await markImportHistoryFailed(importHistory._id, error.message, Date.now() - startTime);
     }
     
     res.status(500).json({
@@ -853,30 +835,27 @@ const exportDeals = async (req, res) => {
 
 // @desc    Export organizations to CSV
 // @route   GET /api/csv/export/organizations
-// @access  Private (Admin only)
+// @access  Private
 const exportOrganizations = async (req, res) => {
   try {
-    const organizations = await Organization.find().lean();
+    const baseQuery = await buildCrmOrganizationQuery(req.user.organizationId);
+    const organizations = await Organization.find(baseQuery).lean();
 
     const headers = [
       'name',
       'industry',
-      'is_active',
-      'subscription_tier',
-      'subscription_status',
-      'trial_start_date',
-      'trial_end_date',
+      'website',
+      'phone',
+      'address',
       'created_at'
     ];
 
     const data = organizations.map(org => ({
       name: org.name || '',
       industry: org.industry || '',
-      is_active: org.isActive ? 'Yes' : 'No',
-      subscription_tier: org.subscription?.tier || '',
-      subscription_status: org.subscription?.status || '',
-      trial_start_date: org.subscription?.trialStartDate ? new Date(org.subscription.trialStartDate).toISOString().split('T')[0] : '',
-      trial_end_date: org.subscription?.trialEndDate ? new Date(org.subscription.trialEndDate).toISOString().split('T')[0] : '',
+      website: org.website || '',
+      phone: org.phone || '',
+      address: org.address || '',
       created_at: org.createdAt ? new Date(org.createdAt).toISOString() : ''
     }));
 
@@ -890,6 +869,260 @@ const exportOrganizations = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error exporting organizations',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Check for duplicate organizations before import
+// @route   POST /api/csv/check-duplicates/organizations
+// @access  Private
+const checkOrganizationDuplicates = async (req, res) => {
+  try {
+    const { csvData, fieldMapping, checkFields = ['name'] } = req.body;
+
+    if (!csvData || !fieldMapping) {
+      return res.status(400).json({
+        success: false,
+        message: 'CSV data and field mapping are required'
+      });
+    }
+
+    const { rows } = parseCSV(csvData);
+    const duplicates = [];
+    const unique = [];
+    const crmBaseQuery = await buildCrmOrganizationQuery(req.user.organizationId);
+
+    for (const [index, row] of rows.entries()) {
+      const rowNumber = index + 2;
+      const query = { ...crmBaseQuery };
+      const matchedFields = [];
+      let canCheck = true;
+
+      for (const checkField of checkFields) {
+        if (checkField === 'name') {
+          let orgName = null;
+          for (const [csvField, orgField] of Object.entries(fieldMapping)) {
+            if (orgField === 'name' && row[csvField]) {
+              orgName = row[csvField].trim();
+              break;
+            }
+          }
+          if (orgName) {
+            query.name = orgName;
+            matchedFields.push({ field: 'name', value: orgName });
+          } else {
+            canCheck = false;
+          }
+        }
+      }
+
+      if (!canCheck || Object.keys(query).length <= Object.keys(crmBaseQuery).length) {
+        unique.push({
+          rowNumber,
+          data: row,
+          reason: 'Missing required fields to check'
+        });
+        continue;
+      }
+
+      const existing = await Organization.findOne(query).lean();
+
+      if (existing) {
+        duplicates.push({
+          rowNumber,
+          data: row,
+          matchedField: matchedFields.map(f => f.field).join(' AND '),
+          matchedValue: matchedFields.map(f => f.value).join(', '),
+          existingRecord: {
+            _id: existing._id,
+            name: existing.name,
+            industry: existing.industry,
+            createdAt: existing.createdAt
+          }
+        });
+      } else {
+        unique.push({ rowNumber, data: row });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        total: rows.length,
+        duplicates: duplicates.length,
+        unique: unique.length,
+        duplicateRecords: duplicates,
+        uniqueRecords: unique,
+        checkedFields: checkFields
+      }
+    });
+  } catch (error) {
+    console.error('Check organization duplicates error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error checking for duplicates',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Import organizations from CSV
+// @route   POST /api/csv/import/organizations
+// @access  Private
+const importOrganizations = async (req, res) => {
+  const startTime = Date.now();
+  let importHistory = null;
+
+  try {
+    const {
+      csvData,
+      fieldMapping,
+      updateExisting = false,
+      fileName = 'import.csv',
+      shouldCheckDuplicates = false,
+      duplicateCheckFields = []
+    } = req.body;
+
+    if (!csvData || !fieldMapping) {
+      return res.status(400).json({
+        success: false,
+        message: 'CSV data and field mapping are required'
+      });
+    }
+
+    const User = require('../models/User');
+    const user = await User.findById(req.user._id).select('firstName lastName username');
+    const userName = user
+      ? ((user.firstName || user.lastName)
+        ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+        : user.username) || 'User'
+      : 'User';
+
+    const { headers, rows } = parseCSV(csvData);
+    const crmBaseQuery = await buildCrmOrganizationQuery(req.user.organizationId);
+
+    importHistory = await ImportHistory.create({
+      organizationId: req.user.organizationId,
+      module: 'organizations',
+      fileName,
+      importedBy: req.user._id,
+      status: 'processing',
+      duplicateCheckEnabled: shouldCheckDuplicates !== false,
+      duplicateCheckFields: duplicateCheckFields || [],
+      duplicateAction: updateExisting ? 'update' : 'skip',
+      metadata: {
+        csvHeaders: headers,
+        fieldMapping,
+        totalRows: rows.length
+      },
+      stats: {
+        total: rows.length
+      }
+    });
+
+    const results = {
+      total: rows.length,
+      created: 0,
+      updated: 0,
+      skipped: 0,
+      failed: 0,
+      errors: [],
+      createdIds: [],
+      updatedIds: []
+    };
+
+    const allowedOrgFields = new Set(['name', 'industry', 'website', 'phone', 'address']);
+
+    for (const [index, row] of rows.entries()) {
+      try {
+        const orgData = {
+          isTenant: false,
+          createdBy: req.user._id,
+          assignedTo: req.user._id,
+          activityLogs: [{
+            user: userName,
+            userId: req.user._id,
+            action: 'created this record',
+            details: { type: 'create', source: 'import' },
+            timestamp: new Date()
+          }]
+        };
+
+        Object.keys(fieldMapping).forEach((csvField) => {
+          const orgField = fieldMapping[csvField];
+          if (orgField && allowedOrgFields.has(orgField) && row[csvField]) {
+            orgData[orgField] = row[csvField].trim();
+          }
+        });
+
+        stripClientSource(orgData);
+
+        if (!orgData.name) {
+          results.failed++;
+          results.errors.push({
+            row: index + 2,
+            error: 'Organization name is required'
+          });
+          continue;
+        }
+
+        if (shouldCheckDuplicates) {
+          const existing = await Organization.findOne({
+            ...crmBaseQuery,
+            name: orgData.name
+          });
+
+          if (existing) {
+            if (updateExisting) {
+              const { activityLogs, createdBy, isTenant, ...updates } = orgData;
+              await Organization.updateOne({ _id: existing._id }, updates);
+              results.updated++;
+              results.updatedIds.push(existing._id);
+            } else {
+              results.skipped++;
+            }
+          } else {
+            assignResolvedSource(orgData, 'import');
+            const newOrg = await Organization.create(orgData);
+            results.created++;
+            results.createdIds.push(newOrg._id);
+          }
+        } else {
+          assignResolvedSource(orgData, 'import');
+          const newOrg = await Organization.create(orgData);
+          results.created++;
+          results.createdIds.push(newOrg._id);
+        }
+      } catch (error) {
+        results.failed++;
+        results.errors.push({
+          row: index + 2,
+          error: error.message
+        });
+      }
+    }
+
+    const processingTime = Date.now() - startTime;
+    await finalizeImportHistory(importHistory._id, results, processingTime);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        ...results,
+        importId: importHistory._id
+      }
+    });
+  } catch (error) {
+    console.error('Import organizations error:', error);
+
+    if (importHistory) {
+      await markImportHistoryFailed(importHistory._id, error.message, Date.now() - startTime);
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Error importing organizations',
       error: error.message
     });
   }
@@ -936,9 +1169,11 @@ const importTasks = async (req, res) => {
     });
     
     const results = { 
+      total: rows.length,
       created: 0, 
       updated: 0, 
-      skipped: 0, 
+      skipped: 0,
+      failed: 0,
       errors: [],
       createdIds: [],
       updatedIds: []
@@ -966,7 +1201,7 @@ const importTasks = async (req, res) => {
         // Set defaults if not provided
         if (!taskData.title) {
           results.errors.push({ row: index + 2, error: 'Title is required' });
-          results.skipped++;
+          results.failed++;
           continue;
         }
         if (!taskData.assignedTo) taskData.assignedTo = userId;
@@ -1002,47 +1237,26 @@ const importTasks = async (req, res) => {
           results.createdIds.push(newTask._id);
         }
       } catch (error) {
+        results.failed++;
         results.errors.push({ row: index + 2, error: error.message });
       }
     }
 
-    // Update import history with final results
     const processingTime = Date.now() - startTime;
-    const totalRecords = results.created + results.updated + results.skipped;
-    const finalStatus = totalRecords === 0 && results.errors.length > 0 ? 'failed' : 
-                       results.errors.length > 0 ? 'partial' : 'completed';
-    
-    await ImportHistory.findByIdAndUpdate(importHistory._id, {
-      status: finalStatus,
-      'stats.created': results.created,
-      'stats.updated': results.updated,
-      'stats.skipped': results.skipped,
-      'stats.failed': results.errors.length,
-      'recordIds.created': results.createdIds,
-      'recordIds.updated': results.updatedIds,
-      importErrors: results.errors, // Renamed from 'errors' to avoid reserved pathname warning
-      processingTime
-    });
+    await finalizeImportHistory(importHistory._id, results, processingTime);
 
     res.status(200).json({
       success: true,
       data: {
         ...results,
-        total: rows.length,
-        failed: results.errors.length,
         importId: importHistory._id
       }
     });
   } catch (error) {
     console.error('Import tasks error:', error);
     
-    // Update import history with failure
     if (importHistory) {
-      await ImportHistory.findByIdAndUpdate(importHistory._id, {
-        status: 'failed',
-        errors: [{ row: 0, error: error.message }],
-        processingTime: Date.now() - startTime
-      });
+      await markImportHistoryFailed(importHistory._id, error.message, Date.now() - startTime);
     }
     
     res.status(500).json({
@@ -1204,9 +1418,11 @@ module.exports = {
   checkContactDuplicates,
   checkDealDuplicates,
   checkTaskDuplicates,
+  checkOrganizationDuplicates,
   importContacts,
   importDeals,
   importTasks,
+  importOrganizations,
   exportContacts,
   exportDeals,
   exportTasks,

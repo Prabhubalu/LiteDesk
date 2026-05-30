@@ -308,14 +308,11 @@
                       </div>
                       
                       <!-- Date -->
-                      <input
+                      <DatePicker
                         v-else-if="question.type === 'Date'"
                         v-model="formData[question.questionId]"
-                        @click="openDatePicker"
-                        @change="handleInputChange"
-                        type="date"
-                        :required="question.mandatory"
-                        class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base cursor-pointer"
+                        input-class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base cursor-pointer"
+                        @blur="handleInputChange"
                       />
                       
                       <!-- File Upload -->
@@ -507,14 +504,11 @@
                       </div>
                       
                       <!-- Date -->
-                      <input
+                      <DatePicker
                         v-else-if="question.type === 'Date'"
                         v-model="formData[question.questionId]"
-                        @click="openDatePicker"
-                        @change="handleInputChange"
-                        type="date"
-                        :required="question.mandatory"
-                        class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base cursor-pointer"
+                        input-class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base cursor-pointer"
+                        @blur="handleInputChange"
                       />
                       
                       <!-- File Upload -->
@@ -622,7 +616,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
-import { openDatePicker } from '@/utils/dateUtils';
+import DatePicker from '@/components/common/DatePicker.vue';
 
 const { t } = useI18n();
 const route = useRoute();

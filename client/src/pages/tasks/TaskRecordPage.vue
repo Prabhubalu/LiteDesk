@@ -396,17 +396,15 @@
         <!-- Editable Start Date slot -->
         <template #startDate>
           <div v-if="canEditTask" class="flex-1 min-w-0 w-full min-h-8 flex items-center" @click="onStartDateCellClick">
-            <input
+            <DatePicker
               v-show="isEditingStartDate"
               ref="startDateInputRef"
               v-model="localStartDate"
-              type="date"
-              @click.stop="openDatePicker"
-              @blur="handleStartDateBlur"
-              @keydown.enter="handleStartDateBlur"
-              @keydown.esc="handleStartDateCancel"
-              class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full cursor-pointer"
               :placeholder="keySectionFields.find((f) => f.key === 'startDate')?.label"
+              input-class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full cursor-pointer"
+              @blur="handleStartDateBlur"
+              @enter="handleStartDateBlur"
+              @escape="handleStartDateCancel"
             />
             <span
               v-show="!isEditingStartDate"
@@ -430,17 +428,15 @@
         <!-- Editable Due Date slot -->
         <template #dueDate>
           <div v-if="canEditTask" class="flex-1 min-w-0 w-full min-h-8 flex items-center" @click="onDueDateCellClick">
-            <input
+            <DatePicker
               v-show="isEditingDueDate"
               ref="dueDateInputRef"
               v-model="localDueDate"
-              type="date"
-              @click.stop="openDatePicker"
-              @blur="handleDueDateBlur"
-              @keydown.enter="handleDueDateBlur"
-              @keydown.esc="handleDueDateCancel"
-              class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full cursor-pointer"
               :placeholder="keySectionFields.find((f) => f.key === 'dueDate')?.label"
+              input-class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full cursor-pointer"
+              @blur="handleDueDateBlur"
+              @enter="handleDueDateBlur"
+              @escape="handleDueDateCancel"
             />
             <span
               v-show="!isEditingDueDate"
@@ -1682,7 +1678,7 @@ import DateCell from '@/components/common/table/DateCell.vue';
 import { getKeyFields } from '@/utils/fieldDisplay';
 import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
 import apiClient from '@/utils/apiClient';
-import { openDatePicker } from '@/utils/dateUtils';
+import DatePicker from '@/components/common/DatePicker.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import { useNotifications } from '@/composables/useNotifications';
@@ -4996,18 +4992,16 @@ const handleTimeEstimateCancel = () => {
 watch(isEditingStartDate, async (isEditing) => {
   if (isEditing) {
     await nextTick();
-    if (startDateInputRef.value) {
-      startDateInputRef.value.focus();
-    }
+    startDateInputRef.value?.focus?.();
+    startDateInputRef.value?.open?.();
   }
 });
 
 watch(isEditingDueDate, async (isEditing) => {
   if (isEditing) {
     await nextTick();
-    if (dueDateInputRef.value) {
-      dueDateInputRef.value.focus();
-    }
+    dueDateInputRef.value?.focus?.();
+    dueDateInputRef.value?.open?.();
   }
 });
 

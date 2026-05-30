@@ -9,6 +9,7 @@
       @import="showImportModal = true"
       @export="exportOrganizations"
       @row-click="handleRowClick"
+      @edit="editOrganizationFromList"
       @delete="handleInlineDelete"
       @bulk-action="handleBulkAction"
     >
@@ -197,6 +198,13 @@
       </template>
     </ModuleList>
 
+    <OrganizationQuickCreateDrawer
+      :isOpen="showEditDrawer"
+      :organization-id="editingOrganizationId"
+      @close="closeEditDrawer"
+      @saved="handleOrganizationEditSaved"
+    />
+
     <!-- CSV Import Modal -->
     <CSVImportModal 
       v-if="showImportModal"
@@ -221,6 +229,7 @@ import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import Avatar from '@/components/common/Avatar.vue';
+import OrganizationQuickCreateDrawer from '@/components/organizations/OrganizationQuickCreateDrawer.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -229,6 +238,8 @@ const { openTab } = useTabs();
 // State
 const moduleListRef = ref(null);
 const showImportModal = ref(false);
+const showEditDrawer = ref(false);
+const editingOrganizationId = ref(null);
 const deleting = ref(false);
 
 // User management (for display names)
@@ -321,6 +332,25 @@ const openCreateModal = () => {
   // Open drawer in same tab, not navigating to new route
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('arivu:open-organization-quick-create'));
+  }
+};
+
+const editOrganizationFromList = (row) => {
+  const id = row?._id || row?.id;
+  if (!id) return;
+  editingOrganizationId.value = id;
+  showEditDrawer.value = true;
+};
+
+const closeEditDrawer = () => {
+  showEditDrawer.value = false;
+  editingOrganizationId.value = null;
+};
+
+const handleOrganizationEditSaved = () => {
+  closeEditDrawer();
+  if (moduleListRef.value?.refresh) {
+    moduleListRef.value.refresh();
   }
 };
 

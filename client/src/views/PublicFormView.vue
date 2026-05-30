@@ -119,13 +119,10 @@
                   ></textarea>
                   
                   <!-- Date -->
-                  <input
+                  <DatePicker
                     v-else-if="question.type === 'Date'"
                     v-model="formData[question.questionId]"
-                    type="date"
-                    :required="question.mandatory"
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
-                    @click="openDatePicker"
+                    input-class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
                   />
                   
                   <!-- File Upload -->
@@ -180,7 +177,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import SignaturePad from '@/components/forms/SignaturePad.vue';
-import { openDatePicker } from '@/utils/dateUtils';
+import DatePicker from '@/components/common/DatePicker.vue';
 
 const { t } = useI18n();
 const route = useRoute();

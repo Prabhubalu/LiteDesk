@@ -12,6 +12,7 @@ const MODULE_I18N_NS = {
   tasks: 'tasks',
   events: 'events',
   deals: 'deals',
+  quotes: 'quotes',
   items: 'platform',
 };
 
@@ -47,6 +48,16 @@ const SYSTEM_VIEW_KEYS = {
     open: 'deals.listViewOpen',
     won: 'deals.listViewWon',
     lost: 'deals.listViewLost',
+  },
+  quotes: {
+    all: 'quotes.listViewAll',
+    'my-quotes': 'quotes.listViewMy',
+    draft: 'quotes.listViewDraft',
+    'pending-approval': 'quotes.listViewPendingApproval',
+    approved: 'quotes.listViewApproved',
+    sent: 'quotes.listViewSent',
+    accepted: 'quotes.listViewAccepted',
+    converted: 'quotes.listViewConverted',
   },
   items: {
     all: 'platform.listViewAllItems',
@@ -95,6 +106,12 @@ const MODULE_STAT_KEYS = {
     wonValue: 'deals.listStatWonThisMonth',
     winRate: 'deals.listStatWinRate',
   },
+  quotes: {
+    openValue: 'quotes.listStatOpenValue',
+    openQuotes: 'quotes.listStatOpenQuotes',
+    acceptedValue: 'quotes.listStatAcceptedValue',
+    myQuotes: 'quotes.listStatMyQuotes',
+  },
   items: {
     totalItems: 'platform.listStatTotalItems',
     activeItems: 'platform.listStatActiveItems',
@@ -112,6 +129,7 @@ const CREATE_LABEL_KEYS = {
   tasks: 'tasks.listCreate',
   events: 'events.listCreate',
   deals: 'deals.listCreate',
+  quotes: 'quotes.listCreate',
   items: 'platform.listCreateItem',
 };
 

@@ -19,8 +19,8 @@
       row-key="_id"
       :empty-title="t('forms.hubEmptyTitle')"
       :empty-message="t('forms.hubEmptyMessage')"
+      :show-import="false"
       @create="openCreateForm"
-      @import="showImportModal = true"
       @export="exportForms"
       @update:searchQuery="handleSearchQueryUpdate"
       @update:filters="(newFilters) => { Object.assign(filters, newFilters); fetchForms(); }"
@@ -134,15 +134,6 @@
         </div>
       </template>
     </ListView>
-
-    <!-- Import Modal -->
-    <UniversalImportModal
-      v-if="showImportModal"
-      :show="showImportModal"
-      module="forms"
-      @close="showImportModal = false"
-      @imported="handleImportSuccess"
-    />
   </div>
 
   <!-- Type Picker Modal -->
@@ -217,7 +208,6 @@ import apiClient from '@/utils/apiClient';
 import ListView from '@/components/common/ListView.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import Avatar from '@/components/common/Avatar.vue';
-import UniversalImportModal from '@/components/import/UniversalImportModal.vue';
 import { XMarkIcon, ClipboardDocumentCheckIcon, ChatBubbleLeftRightIcon, HandThumbUpIcon } from '@heroicons/vue/24/outline';
 import { useProjectionCreate } from '@/composables/useProjectionCreate';
 
@@ -294,7 +284,6 @@ function formVisibilityVariant(value) {
 // State
 const forms = ref([]);
 const loading = ref(false);
-const showImportModal = ref(false);
 const showTypePicker = ref(false);
 
 const {
@@ -627,11 +616,6 @@ const exportForms = async () => {
   } catch (error) {
     console.error('Error exporting forms:', error);
   }
-};
-
-const handleImportSuccess = () => {
-  showImportModal.value = false;
-  fetchForms();
 };
 
 onBeforeMount(() => {

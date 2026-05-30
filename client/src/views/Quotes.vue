@@ -6,6 +6,7 @@
       app-key="PLATFORM"
       @create="openCreateDrawer"
       @row-click="handleRowClick"
+      @edit="editQuoteFromList"
     >
       <template #cell-quoteNumber="{ value, row }">
         <div class="min-w-0">
@@ -29,6 +30,14 @@
       @close="closeCreateDrawer"
       @saved="handleQuoteCreated"
     />
+
+    <CreateRecordDrawer
+      :is-open="showEditDrawer"
+      module-key="quotes"
+      :record="editingQuote"
+      @close="closeEditDrawer"
+      @saved="handleQuoteEditSaved"
+    />
   </div>
 </template>
 
@@ -43,6 +52,8 @@ const route = useRoute();
 const router = useRouter();
 const moduleListRef = ref(null);
 const showCreateDrawer = ref(false);
+const showEditDrawer = ref(false);
+const editingQuote = ref(null);
 
 function openCreateDrawer() {
   showCreateDrawer.value = true;
@@ -77,6 +88,22 @@ function handleRowClick(row) {
   const id = row?._id || row?.id;
   if (!id) return;
   router.push({ name: 'quote-detail', params: { id } });
+}
+
+function editQuoteFromList(row) {
+  if (!row) return;
+  editingQuote.value = row;
+  showEditDrawer.value = true;
+}
+
+function closeEditDrawer() {
+  showEditDrawer.value = false;
+  editingQuote.value = null;
+}
+
+function handleQuoteEditSaved() {
+  closeEditDrawer();
+  moduleListRef.value?.refresh?.();
 }
 </script>
 

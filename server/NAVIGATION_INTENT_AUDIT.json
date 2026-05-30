@@ -182,16 +182,16 @@
     },
     {
       "moduleKey": "imports",
-      "appKey": "sales",
+      "appKey": "platform",
       "label": "Import",
       "route": "/imports",
-      "classification": "APP_OWNED",
+      "classification": "ENTITY",
       "navVisible": true,
-      "rationale": "App-owned module. Appears in Apps section under its app.",
+      "rationale": "Cross-functional capability. Appears in Core Modules section, not under Sales.",
       "flags": {
         "navigationCore": false,
-        "navigationEntity": false,
-        "excludeFromApps": false,
+        "navigationEntity": true,
+        "excludeFromApps": true,
         "showInSidebar": true
       },
       "errors": [],

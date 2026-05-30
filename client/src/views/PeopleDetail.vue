@@ -491,12 +491,10 @@
                   <option value="Contact">{{ t('forms.hubLinkedContact') }}</option>
                 </select>
                 <!-- Date Input -->
-                <input
+                <DatePicker
                   v-else-if="fieldKey === 'birthday' || fieldKey === 'qualification_date'"
                   v-model="appEditForms[appKey][fieldKey]"
-                  type="date"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
-                  @click="openDatePicker"
+                  input-class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
                 />
                 <!-- Textarea for notes -->
                 <textarea
@@ -900,7 +898,7 @@ import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInp
 import { getDefaultEmailValidations } from '@/utils/defaultFieldValidations';
 import { validateField } from '@/utils/fieldValidation';
 import { toAttachRole } from '@/utils/getParticipation';
-import { openDatePicker } from '@/utils/dateUtils';
+import DatePicker from '@/components/common/DatePicker.vue';
 import { formatRawValueForDisplay } from '@/utils/fieldDisplay';
 import { useRecordPageLifecycle } from '@/components/record-page/composables/useRecordPageLifecycle';
 import ActivityTimeline from '@/components/ActivityTimeline.vue';

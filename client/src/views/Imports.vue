@@ -2,47 +2,21 @@
   <div class="mx-auto w-full">
     <ListView
       :title="t('import.importsImportHistory')"
-      description="View and manage all data imports"
+      :description="t('import.importsDescription')"
       module-key="imports"
-      create-:label="t('import.importsNewImport2')"
-      search-:placeholder="t('import.importsSearchByFilename')"
+      :create-label="t('import.importsNewImport2')"
+      :search-placeholder="t('import.importsSearchByFilename')"
       :data="filteredImports"
       :columns="columns"
       :loading="loading"
       :statistics="stats"
-      :stats-config="[
-        { name: 'Total Imports', key: 'totalImports', formatter: 'number' },
-        { name: 'Records Created', key: 'totalRecordsCreated', formatter: 'number' },
-        { name: 'Records Updated', key: 'totalRecordsUpdated', formatter: 'number' },
-        { name: 'Total Errors', key: 'totalErrors', formatter: 'number' }
-      ]"
+      :stats-config="statsConfig"
       :pagination="{ currentPage: pagination.currentPage, totalPages: pagination.totalPages, totalRecords: pagination.total, limit: pagination.limit }"
-      :filter-config="[
-        {
-          key: 'module',
-          label: 'All Modules',
-          options: [
-            { value: 'contacts', label: 'Contacts' },
-            { value: 'deals', label: 'Deals' },
-            { value: 'tasks', label: 'Tasks' },
-            { value: 'organizations', label: 'Organizations' }
-          ]
-        },
-        {
-          key: 'status',
-          label: 'All Statuses',
-          options: [
-            { value: 'completed', label: 'Completed' },
-            { value: 'partial', label: 'Partial' },
-            { value: 'failed', label: 'Failed' },
-            { value: 'processing', label: 'Processing' }
-          ]
-        }
-      ]"
+      :filter-config="filterConfig"
       table-id="imports-table"
       row-key="_id"
-      empty-:title="t('import.importsNoImportsYet')"
-      empty-message="Start importing data to see history here"
+      :empty-title="t('import.importsNoImportsYet')"
+      :empty-message="t('import.importsEmptyMessage')"
       :show-import="false"
       :show-export="false"
       @create="showImportModal = true"
@@ -113,16 +87,16 @@
       <template #cell-stats="{ row }">
         <div class="text-sm space-y-0.5">
           <div v-if="row.stats.created > 0" class="text-green-600 dark:text-green-400">
-            ✓ {{ row.stats.created }} created
+            ✓ {{ t('import.importsCellCreated', { count: row.stats.created }) }}
           </div>
           <div v-if="row.stats.updated > 0" class="text-blue-600 dark:text-blue-400">
-            ↻ {{ row.stats.updated }} updated
+            ↻ {{ t('import.importsCellUpdated', { count: row.stats.updated }) }}
           </div>
           <div v-if="row.stats.skipped > 0" class="text-gray-600 dark:text-gray-400">
-            ⊘ {{ row.stats.skipped }} skipped
+            ⊘ {{ t('import.importsCellSkipped', { count: row.stats.skipped }) }}
           </div>
           <div v-if="row.stats.failed > 0" class="text-red-600 dark:text-red-400">
-            ✕ {{ row.stats.failed }} failed
+            ✕ {{ t('import.importsCellFailed', { count: row.stats.failed }) }}
           </div>
         </div>
       </template>
@@ -181,15 +155,53 @@ const filters = reactive({
   status: ''
 });
 
+const MODULE_LABEL_KEYS = {
+  contacts: 'navigation.modulePeople',
+  people: 'navigation.modulePeople',
+  deals: 'navigation.moduleDeals',
+  tasks: 'navigation.moduleTasks',
+  organizations: 'navigation.moduleOrganizations'
+};
+
+const statsConfig = computed(() => [
+  { name: t('import.importsStatTotalImports'), key: 'totalImports', formatter: 'number' },
+  { name: t('import.importsStatRecordsCreated'), key: 'totalRecordsCreated', formatter: 'number' },
+  { name: t('import.importsStatRecordsUpdated'), key: 'totalRecordsUpdated', formatter: 'number' },
+  { name: t('import.importsStatTotalErrors'), key: 'totalErrors', formatter: 'number' }
+]);
+
+const filterConfig = computed(() => [
+  {
+    key: 'module',
+    label: t('import.importsFilterAllModules'),
+    options: [
+      { value: 'contacts', label: t('navigation.modulePeople') },
+      { value: 'deals', label: t('navigation.moduleDeals') },
+      { value: 'tasks', label: t('navigation.moduleTasks') },
+      { value: 'organizations', label: t('navigation.moduleOrganizations') }
+    ]
+  },
+  {
+    key: 'status',
+    label: t('import.importsFilterAllStatuses'),
+    options: [
+      { value: 'completed', label: t('import.importsStatusCompleted') },
+      { value: 'partial', label: t('import.importsStatusPartial') },
+      { value: 'failed', label: t('import.importsStatusFailed') },
+      { value: 'processing', label: t('import.importsStatusProcessing') }
+    ]
+  }
+]);
+
 // Column definitions
 const columns = computed(() => {
   return [
-    { key: 'fileName', label: 'File Name', sortable: true },
-    { key: 'module', label: 'Module', sortable: true },
-    { key: 'importedBy', label: 'Imported By', sortable: true },
-    { key: 'createdAt', label: 'Date', sortable: true },
-    { key: 'status', label: 'Status', sortable: true },
-    { key: 'stats', label: 'Records', sortable: false }
+    { key: 'fileName', label: t('import.importsColFileName'), sortable: true },
+    { key: 'module', label: t('import.importsColModule'), sortable: true },
+    { key: 'importedBy', label: t('import.importsColImportedBy'), sortable: true },
+    { key: 'createdAt', label: t('import.importsColDate'), sortable: true },
+    { key: 'status', label: t('import.importsColStatus'), sortable: true },
+    { key: 'stats', label: t('import.importsColRecords'), sortable: false }
   ];
 });
 
@@ -290,11 +302,19 @@ const handleImportComplete = () => {
 
 // Format helpers
 const formatModule = (module) => {
-  return module.charAt(0).toUpperCase() + module.slice(1);
+  const key = MODULE_LABEL_KEYS[module];
+  return key ? t(key) : module.charAt(0).toUpperCase() + module.slice(1);
 };
 
 const formatStatus = (status) => {
-  return status.charAt(0).toUpperCase() + status.slice(1);
+  const statusKeys = {
+    completed: 'import.importsStatusCompleted',
+    partial: 'import.importsStatusPartial',
+    failed: 'import.importsStatusFailed',
+    processing: 'import.importsStatusProcessing'
+  };
+  const key = statusKeys[status];
+  return key ? t(key) : status.charAt(0).toUpperCase() + status.slice(1);
 };
 
 const formatDate = (date) => {

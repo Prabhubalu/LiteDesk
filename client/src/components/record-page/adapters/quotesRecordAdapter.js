@@ -4,7 +4,6 @@
 import { createGenericRecordAdapter } from './genericRecordAdapter';
 import QuoteLinesRecordSection from '@/components/record-page/sections/QuoteLinesRecordSection.vue';
 import QuoteLinesHeaderMeta from '@/components/record-page/sections/QuoteLinesHeaderMeta.vue';
-import QuoteLinesHeaderActions from '@/components/record-page/sections/QuoteLinesHeaderActions.vue';
 import QuoteConversionRecordSection from '@/components/record-page/sections/QuoteConversionRecordSection.vue';
 import QuoteConversionHeaderActions from '@/components/record-page/sections/QuoteConversionHeaderActions.vue';
 import QuoteRevisionsRecordSection from '@/components/record-page/sections/QuoteRevisionsRecordSection.vue';
@@ -62,10 +61,8 @@ export function createQuotesRecordAdapter(opts = {}) {
         key: 'lines',
         title: linesTitle,
         titleSuffixComponent: QuoteLinesHeaderMeta,
-        headerActionsComponent: QuoteLinesHeaderActions,
         component: QuoteLinesRecordSection,
-        className: 'pt-2 pb-2',
-        alwaysShowActions: true,
+        className: 'pt-0 pb-0',
         actions: !isExpanded && openLeftSection
           ? [{ key: 'expand-lines', type: 'expand', label: L.expand || 'Expand', alwaysVisible: true, handler: () => openLeftSection('lines') }]
           : []

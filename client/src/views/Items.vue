@@ -6,9 +6,9 @@
       module-key="items"
       app-key="PLATFORM"
       @create="openCreateModal"
-      @import="showImportModal = true"
       @export="exportItems"
       @row-click="handleRowClick"
+      @edit="editItemFromList"
       @delete="handleInlineDelete"
       @bulk-action="handleBulkAction"
     >
@@ -120,13 +120,6 @@
       @saved="handleItemSave"
     />
 
-    <!-- CSV Import Modal -->
-    <CSVImportModal 
-      v-if="showImportModal"
-      entity-type="Items"
-      @close="showImportModal = false"
-      @import-complete="handleImportComplete"
-    />
   </div>
 </template>
 
@@ -143,7 +136,6 @@ import ModuleList from '@/components/module-list/ModuleList.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
-import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
 import {
   CATALOG_LIFECYCLE_LABEL_KEYS,
@@ -157,7 +149,6 @@ const { openTab } = useTabs();
 // State
 const moduleListRef = ref(null);
 const showFormModal = ref(false);
-const showImportModal = ref(false);
 const editingItem = ref(null);
 
 const refreshList = () => {
@@ -171,6 +162,12 @@ onActivated(() => {
 // Modal handlers
 const openCreateModal = () => {
   editingItem.value = null;
+  showFormModal.value = true;
+};
+
+const editItemFromList = (row) => {
+  if (!row) return;
+  editingItem.value = row;
   showFormModal.value = true;
 };
 
@@ -255,11 +252,6 @@ const exportItemsToCSV = (itemsToExport) => {
   a.download = `items-export-${new Date().toISOString().split('T')[0]}.csv`;
   a.click();
   window.URL.revokeObjectURL(url);
-};
-
-const handleImportComplete = () => {
-  showImportModal.value = false;
-  refreshList();
 };
 
 const handleItemSave = () => {

@@ -63,6 +63,7 @@
       @import="showImportModal = true"
       @export="exportDeals"
       @row-click="handleRowClick"
+      @edit="editDealFromList"
       @delete="handleDelete"
       @bulk-action="handleBulkAction"
       @filters-changed="handleFiltersChanged"
@@ -910,6 +911,13 @@ const handleBulkAction = async (action, rows) => {
 const openCreateModal = () => {
   createInitialData.value = {};
   editingDeal.value = null;
+  showFormModal.value = true;
+};
+
+const editDealFromList = (row) => {
+  if (!row) return;
+  createInitialData.value = {};
+  editingDeal.value = row;
   showFormModal.value = true;
 };
 

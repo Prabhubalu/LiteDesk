@@ -169,15 +169,12 @@
                       :options-class="participationListboxOptionsClass"
                       @update:model-value="(v) => { formData[fieldName] = v; }"
                     />
-                    <input
+                    <DatePicker
                       v-else-if="getInputType(fieldName) === 'date'"
                       :id="fieldName"
-                      :name="fieldName"
-                      type="date"
                       v-model="formData[fieldName]"
-                      :required="isFieldRequired(fieldName)"
-                      :class="fieldInputClass(fieldName, true)"
-                      @click="openDatePicker"
+                      :invalid="!!validationErrors[fieldName]"
+                      :input-class="fieldInputClass(fieldName, true)"
                     />
                     <input
                       v-else-if="getInputType(fieldName) === 'number'"
@@ -271,10 +268,16 @@ import {
 } from '@/platform/fields/peopleFieldModel';
 import apiClient from '@/utils/apiClient';
 import { usePeopleTypes } from '@/composables/usePeopleTypes';
-import { openDatePicker } from '@/utils/dateUtils';
+import { usePeopleModuleFields } from '@/composables/usePeopleModuleFields';
+import DatePicker from '@/components/common/DatePicker.vue';
 import { assertEditParticipationPermission } from '@/platform/permissions/peopleGuards';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
+import {
+  defaultPicklistFallback,
+  getPeoplePicklistValues,
+  isPeoplePicklistModuleField,
+} from '@/utils/peopleModuleFieldUtils';
 
 const props = defineProps({
   isOpen: {
@@ -301,6 +304,7 @@ const { t, te } = useI18n();
 const emit = defineEmits(['close', 'updated']);
 
 const { types: peopleTypes, loading: peopleTypesLoading } = usePeopleTypes(toRef(props, 'appKey'));
+const { fields: peopleModuleFields } = usePeopleModuleFields();
 
 const helpdeskRoleOptions = computed(() =>
   peopleTypes.value?.length ? peopleTypes.value : ['Customer', 'Agent']
@@ -484,20 +488,12 @@ const isFieldRequired = (fieldName) => {
 
 // Get field component type
 const getFieldComponent = (fieldName) => {
-  // For now, use simple heuristics
-  // In future, this could come from field metadata
-  const metadata = getFieldMetadata(fieldName);
-  
-  // Check field name patterns
   if (fieldName.includes('notes') || fieldName.includes('description')) {
     return 'textarea';
   }
-  
-  // Check for picklist-like fields (could be enhanced with metadata)
-  if (fieldName === 'role' || fieldName === 'preferred_contact_method') {
+  if (isPeoplePicklistModuleField(peopleModuleFields.value, fieldName)) {
     return 'select';
   }
-  
   return 'input';
 };
 
@@ -512,15 +508,13 @@ const getInputType = (fieldName) => {
   return 'text';
 };
 
-// Get field options (for select fields)
-// These match the schema definitions in People.js
+// Get field options (for select fields) from People module definition
 const getFieldOptions = (fieldName) => {
-  const optionsMap = {
-    'role': ['Decision Maker', 'Influencer', 'Support', 'Other'],
-    'preferred_contact_method': ['Email', 'Phone', 'WhatsApp', 'SMS', 'None']
-  };
-  
-  return optionsMap[fieldName] || [];
+  return getPeoplePicklistValues(
+    peopleModuleFields.value,
+    fieldName,
+    defaultPicklistFallback(fieldName)
+  );
 };
 
 /** Normalize API / ISO dates for <input type="date"> */

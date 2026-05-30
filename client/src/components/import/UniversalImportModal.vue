@@ -1,7 +1,7 @@
 <template>
   <!-- Module Selection Modal -->
   <Teleport to="body" v-if="!selectedModule">
-    <div class="fixed inset-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" @click.self="$emit('close')">
+    <div class="fixed inset-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
       <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('import.universalImportModalImportData') }}</h2>
@@ -123,6 +123,8 @@
     v-if="selectedModule"
     :entity-type="selectedModule"
     :file-name="fileName"
+    allow-module-change
+    @change-module="selectedModule = null"
     @close="handleClose"
     @import-complete="handleImportComplete"
   />

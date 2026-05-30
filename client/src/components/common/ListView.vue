@@ -29,7 +29,7 @@
                     v-slot="{ active, close }"
                   >
                     <div
-                      class="group flex items-center justify-between pr-2"
+                      class="group flex items-center w-full pr-2"
                       :class="[
                         active ? 'bg-gray-100 dark:bg-gray-700' : '',
                         activeSavedViewId === view.id ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''
@@ -39,51 +39,56 @@
                         @click="() => { handleSavedViewClick(view); close(); }"
                         :class="[
                           activeSavedViewId === view.id ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100',
-                          'flex-1 block w-full text-left px-4 py-2 text-sm'
+                          'flex-1 min-w-0 text-left px-4 py-2 text-sm'
                         ]"
                       >
                         {{ view.label }}
                       </button>
-                      <!-- Set as default (all views) -->
-                      <HoverTooltip
-                        :content="defaultViewId === view.id ? t('common.listDefaultViewTooltip') : t('common.listSetDefaultViewTooltip')"
-                        anchor-selector="button"
-                        :show-delay="50"
-                        :hide-delay="80"
-                        :gap="4"
-                        class="flex items-center p-1 -m-1 rounded"
-                      >
-                        <button
-                          @click.stop="() => { handleSetDefaultView(view); close(); }"
+                      <div class="ml-auto flex shrink-0 items-center gap-1">
+                        <!-- Edit/Delete actions for custom views only -->
+                        <div v-if="!isSystemView(view.id)" class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            @click.stop="handleEditView(view)"
+                            class="p-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                            :title="t('common.listEditView')"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                            </svg>
+                          </button>
+                          <button
+                            @click.stop="handleDeleteView(view)"
+                            class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                            :title="t('common.listDeleteViewAction')"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                            </svg>
+                          </button>
+                        </div>
+                        <!-- Set as default (all views) -->
+                        <HoverTooltip
+                          :content="isEffectiveDefaultView(view.id) ? t('common.listDefaultViewTooltip') : t('common.listSetDefaultViewTooltip')"
+                          anchor-selector="button"
+                          :show-delay="50"
+                          :hide-delay="80"
+                          :gap="4"
                           :class="[
-                            defaultViewId === view.id ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 hover:text-amber-500 dark:hover:text-amber-400',
-                            'p-0.5 transition-colors'
+                            'flex items-center p-1 -m-1 rounded transition-opacity',
+                            isEffectiveDefaultView(view.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                           ]"
                         >
-                          <StarIcon v-if="defaultViewId !== view.id" class="w-4 h-4" />
-                          <StarIconSolid v-else class="w-4 h-4" />
-                        </button>
-                      </HoverTooltip>
-                      <!-- Edit/Delete actions for custom views only -->
-                      <div v-if="!isSystemView(view.id)" class="flex items-center gap-1 pr-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          @click.stop="handleEditView(view)"
-                          class="p-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                          :title="t('common.listEditView')"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                          </svg>
-                        </button>
-                        <button
-                          @click.stop="handleDeleteView(view)"
-                          class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                          :title="t('common.listDeleteViewAction')"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                          </svg>
-                        </button>
+                          <button
+                            @click.stop="() => { handleSetDefaultView(view); close(); }"
+                            :class="[
+                              isEffectiveDefaultView(view.id) ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 hover:text-amber-500 dark:hover:text-amber-400',
+                              'p-0.5 transition-colors'
+                            ]"
+                          >
+                            <StarIcon v-if="!isEffectiveDefaultView(view.id)" class="w-4 h-4" />
+                            <StarIconSolid v-else class="w-4 h-4" />
+                          </button>
+                        </HoverTooltip>
                       </div>
                     </div>
                   </MenuItem>
@@ -2984,6 +2989,20 @@ watch(() => props.data, (newVal) => {
 }, { immediate: true });
 
 const resourceName = computed(() => (typeof props.title === 'string' ? props.title.toLowerCase() : 'records'));
+
+/** User-picked default, or the system default view (e.g. All Quotes) when none is set. */
+const effectiveDefaultViewId = computed(() => {
+  if (props.defaultViewId) return props.defaultViewId;
+  const views = props.savedViews;
+  if (!views?.length) return null;
+  const flagged = views.find((v) => v.isDefault);
+  if (flagged) return flagged.id;
+  return views[0]?.id ?? null;
+});
+
+function isEffectiveDefaultView(viewId) {
+  return viewId === effectiveDefaultViewId.value;
+}
 
 // Active People view title - source of truth for page title
 // When a saved view is active, title reflects the view name

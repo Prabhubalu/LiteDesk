@@ -39,7 +39,7 @@ const {
 // Sales-specific modules that should only be accessible from Sales app
 const SALES_MODULES = [
     'contacts', 'people', 'deals', 'tasks', 'events', 'forms', 'items',
-    'organizations', 'projects', 'reports', 'imports', 'settings'
+    'organizations', 'projects', 'reports', 'settings'
 ];
 
 /**

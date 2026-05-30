@@ -3,6 +3,11 @@
  * Legacy saved configs used field key `type` for the same semantics.
  */
 
+const {
+  ensurePeopleParticipationStatusFields,
+  normalizeParticipationFieldContext,
+} = require('./peopleModuleFieldDefaults');
+
 /** Canonical key for field dedup: matches moduleController.fieldKeyCanonical */
 function fieldKeyCanonical(k) {
   return String(k || '')
@@ -38,7 +43,7 @@ function getDefaultSalesTypeModuleField() {
     defaultValue: null,
     visibility: { list: true, detail: true },
     owner: 'platform',
-    context: 'app',
+    context: 'sales',
     isVirtual: true,
     appKey: 'SALES',
     filterable: true,
@@ -61,29 +66,32 @@ function normalizePeopleModuleFields(fields) {
   if (!Array.isArray(fields)) return fields;
   const keyNorm = (f) => fieldKeyCanonical(f?.key);
   const typeIdx = fields.findIndex((f) => keyNorm(f) === 'type');
+  let out;
   if (typeIdx === -1) {
-    return dedupeFieldsByKey(fields);
-  }
-  const hasSalesType = fields.some((f, i) => i !== typeIdx && keyNorm(f) === 'salestype');
-  const out = fields.map((f) => ({ ...f }));
-  if (hasSalesType) {
-    out.splice(typeIdx, 1);
+    out = dedupeFieldsByKey(fields);
   } else {
-    const baseVirtual = getDefaultSalesTypeModuleField();
-    const typeField = { ...out[typeIdx] };
-    out[typeIdx] = {
-      ...baseVirtual,
-      ...typeField,
-      key: 'sales_type',
-      label: typeField.label || baseVirtual.label,
-      isVirtual: true,
-      appKey: 'SALES',
-      context: typeField.context || baseVirtual.context,
-      owner: typeField.owner || baseVirtual.owner,
-      dataType: typeField.dataType || baseVirtual.dataType,
-    };
+    const hasSalesType = fields.some((f, i) => i !== typeIdx && keyNorm(f) === 'salestype');
+    out = fields.map((f) => ({ ...f }));
+    if (hasSalesType) {
+      out.splice(typeIdx, 1);
+    } else {
+      const baseVirtual = getDefaultSalesTypeModuleField();
+      const typeField = { ...out[typeIdx] };
+      out[typeIdx] = {
+        ...baseVirtual,
+        ...typeField,
+        key: 'sales_type',
+        label: typeField.label || baseVirtual.label,
+        isVirtual: true,
+        appKey: 'SALES',
+        context: normalizeParticipationFieldContext(typeField).context || baseVirtual.context,
+        owner: typeField.owner || baseVirtual.owner,
+        dataType: typeField.dataType || baseVirtual.dataType,
+      };
+    }
+    out = dedupeFieldsByKey(out);
   }
-  return dedupeFieldsByKey(out);
+  return ensurePeopleParticipationStatusFields(out);
 }
 
 function migratePeopleQuickCreateKeys(quickCreate) {

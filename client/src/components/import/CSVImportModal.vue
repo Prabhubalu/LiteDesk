@@ -1,10 +1,21 @@
 <template>
-  <div class="fixed inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click="$emit('close')">
+  <div class="fixed inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
     <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden flex flex-col animate-slide-up border border-gray-200 dark:border-gray-700" @click.stop>
       <!-- Header with Gradient -->
       <div class="relative bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-700 dark:to-indigo-800 px-8 py-6">
-        <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
+            <button
+              v-if="allowModuleChange"
+              type="button"
+              @click="requestChangeModule"
+              class="p-2.5 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all duration-200"
+              :title="t('performance.back')"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
             <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-7 h-7 text-white">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -12,12 +23,12 @@
             </div>
             <div>
               <h2 class="text-2xl font-bold text-white">
-                Import {{ entityType }}
+                {{ t('import.cSVImportModalImportEntity', { entityType }) }}
               </h2>
               <p class="text-indigo-100 text-sm mt-0.5">{{ t('import.cSVImportModalUploadAndMapYourCsvData') }}</p>
             </div>
           </div>
-          <button @click="$emit('close')" class="p-2.5 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all duration-200">
+          <button @click="requestClose" class="p-2.5 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all duration-200">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -120,9 +131,9 @@
                 </div>
                 <div class="flex-1">
                   <p class="text-white text-sm font-medium">
-                    <span class="font-bold text-lg">{{ totalRows }} rows</span>{{ t('import.cSVImportModalDetectedInYourCsvFile') }}</p>
+                    <span class="font-bold text-lg">{{ t('import.cSVImportModalRowCount', { count: totalRows }) }}</span>{{ t('import.cSVImportModalDetectedInYourCsvFile') }}</p>
                   <p class="text-blue-100 text-sm mt-1">
-                    Map your CSV columns to {{ entityType }} fields below. You can skip fields you don't need.
+                    {{ t('import.cSVImportModalMapColumnsHint', { entityType }) }}
                   </p>
                 </div>
               </div>
@@ -130,6 +141,9 @@
             </div>
 
             <!-- Field Mapping Cards -->
+            <div v-if="fieldsLoading" class="mb-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+              {{ t('import.importFieldsLoading') }}
+            </div>
             <div class="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
               <div v-for="header in csvHeaders" :key="header" class="group bg-white dark:bg-gray-900 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-600 transition-all duration-200 shadow-sm hover:shadow-md">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
@@ -153,15 +167,17 @@
 
                   <!-- Target Field -->
                   <div>
-                    <select 
-                      v-model="fieldMapping[header]" 
-                      class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
-                    >
-                      <option value="" class="text-gray-500">⊘ Skip this field</option>
-                      <option v-for="field in availableFields" :key="field.value" :value="field.value" class="text-gray-900 dark:text-white">
-                        {{ field.label }}
-                      </option>
-                    </select>
+                    <HeadlessSelect
+                      v-model="fieldMapping[header]"
+                      :option-groups="fieldOptionGroups.length ? fieldOptionGroups : undefined"
+                      :options="fieldOptionGroups.length ? [] : availableFields"
+                      allow-empty
+                      :empty-label="`⊘ ${t('import.cSVImportModalSkipField')}`"
+                      teleport
+                      :disabled="fieldsLoading"
+                      button-class="!px-4 !py-2.5 !bg-gray-50 dark:!bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium !shadow-none focus:!outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
+                      options-class="z-[250]"
+                    />
                   </div>
                 </div>
               </div>
@@ -288,8 +304,8 @@
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                       </svg>
                       <span>
-                        <strong>{{ t('import.cSVImportModalAndLogic') }}</strong>{{ t('import.cSVImportModalARecordIsOnlyConsideredA') }}<strong>{{ t('import.cSVImportModalAll') }}</strong> selected fields.
-                        For example, selecting "Email + Company" means both the email AND company must match.
+                        <strong>{{ t('import.cSVImportModalAndLogic') }}</strong>{{ t('import.cSVImportModalARecordIsOnlyConsideredA') }}                        <strong>{{ t('import.cSVImportModalAll') }}</strong> {{ t('import.cSVImportModalSelectedFieldsWillBeConsideredDuplicates') }}
+                        {{ t('import.cSVImportModalAndLogicExample') }}
                       </span>
                     </div>
                   </div>
@@ -301,7 +317,7 @@
           <div v-if="checkingDuplicates" class="text-center py-12">
             <div class="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mb-4"></div>
             <p class="text-lg font-medium text-gray-900 dark:text-white">{{ t('import.cSVImportModalCheckingForDuplicates') }}</p>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Comparing {{ totalRows }} records</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ t('import.cSVImportModalComparingRecords', { count: totalRows }) }}</p>
           </div>
 
           <div v-else-if="duplicateData" class="space-y-6">
@@ -347,7 +363,7 @@
             <!-- Duplicate Handling Options -->
             <div class="p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
               <h4 class="text-sm font-semibold text-yellow-900 dark:text-yellow-100 mb-4">
-                How should we handle duplicates?
+                {{ t('import.cSVImportModalHowHandleDuplicates') }}
               </h4>
               <div class="space-y-3">
                 <label class="flex items-start gap-3 p-3 border-2 rounded-lg cursor-pointer transition-all"
@@ -355,7 +371,7 @@
                   <input type="radio" value="skip" v-model="duplicateAction" class="mt-1 w-4 h-4 text-indigo-600" />
                   <div>
                     <p class="font-medium text-gray-900 dark:text-white">{{ t('import.cSVImportModalSkipDuplicates') }}</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Only import new records ({{ duplicateData.unique }} records)</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('import.cSVImportModalOnlyImportNew', { count: duplicateData.unique }) }}</p>
                   </div>
                 </label>
                 
@@ -364,7 +380,7 @@
                   <input type="radio" value="update" v-model="duplicateAction" class="mt-1 w-4 h-4 text-indigo-600" />
                   <div>
                     <p class="font-medium text-gray-900 dark:text-white">{{ t('import.cSVImportModalUpdateExistingRecords') }}</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Update {{ duplicateData.duplicates }} duplicates with new data</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('import.cSVImportModalUpdateDuplicatesCount', { count: duplicateData.duplicates }) }}</p>
                   </div>
                 </label>
                 
@@ -373,7 +389,7 @@
                   <input type="radio" value="import-all" v-model="duplicateAction" class="mt-1 w-4 h-4 text-indigo-600" />
                   <div>
                     <p class="font-medium text-gray-900 dark:text-white">{{ t('import.cSVImportModalImportAllCreateDuplicates') }}</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Import all {{ duplicateData.total }} records, even duplicates</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('import.cSVImportModalImportAllCount', { count: duplicateData.total }) }}</p>
                   </div>
                 </label>
               </div>
@@ -382,7 +398,7 @@
             <!-- Duplicate Records List -->
             <div v-if="duplicateData.duplicates > 0" class="max-h-64 overflow-y-auto">
               <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 sticky top-0 bg-white dark:bg-gray-900 py-2">
-                Duplicate Records ({{ duplicateData.duplicates }}):
+                {{ t('import.cSVImportModalDuplicateRecordsTitle', { count: duplicateData.duplicates }) }}
               </h4>
               <div class="space-y-2">
                 <div v-for="(dup, index) in duplicateData.duplicateRecords.slice(0, 10)" :key="index" 
@@ -403,7 +419,7 @@
                   </div>
                 </div>
                 <p v-if="duplicateData.duplicateRecords.length > 10" class="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
-                  ... and {{ duplicateData.duplicateRecords.length - 10 }} more duplicates
+                  {{ t('import.cSVImportModalDuplicateRecordsMore', { count: duplicateData.duplicateRecords.length - 10 }) }}
                 </p>
               </div>
             </div>
@@ -464,7 +480,7 @@
               <div class="space-y-2">
                 <div v-for="(error, index) in importResults.errors" :key="index" class="p-3 bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-800 rounded-lg">
                   <p class="text-sm text-danger-800 dark:text-danger-200">
-                    <strong>Row {{ error.row }}:</strong> {{ error.error }}
+                    <strong>{{ t('import.cSVImportModalImportRowError', { row: error.row }) }}</strong> {{ error.error }}
                   </p>
                 </div>
               </div>
@@ -492,10 +508,10 @@
 
             <div class="flex gap-3">
               <button 
-                @click="$emit('close')" 
+                @click="requestClose" 
                 class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl transition-colors"
               >
-                {{ importResults ? 'Close' : 'Cancel' }}
+                {{ importResults ? t('import.cSVImportModalClose') : t('import.cSVImportModalCancel') }}
               </button>
               
               <!-- Check Duplicates button (Step 2, when checking is selected, before checking) -->
@@ -509,7 +525,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
                 <div v-else class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                {{ checkingDuplicates ? 'Checking...' : 'Check Duplicates' }}
+                {{ checkingDuplicates ? t('import.cSVImportModalChecking') : t('import.cSVImportModalCheckDuplicates') }}
               </button>
               
               <!-- Import Now button (Step 2, when NOT checking duplicates) -->
@@ -529,7 +545,7 @@
                 :disabled="!canProceed"
                 class="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {{ step === 0 ? 'Next' : step === 1 ? 'Next' : 'Import Now' }}
+                {{ step === 0 ? t('import.cSVImportModalNext') : step === 1 ? t('import.cSVImportModalNext') : t('import.cSVImportModalImportNow') }}
                 <svg v-if="step < 2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
@@ -557,7 +573,9 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
-import { ref, reactive, computed, watch } from 'vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import { useImportModuleFields } from '@/composables/useImportModuleFields';
+import { ref, reactive, computed, watch, toRef } from 'vue';
 import apiClient from '@/utils/apiClient';
 
 /** Collapse labels and keys for header ↔ field matching (e.g. First Name, first_name, firstname). */
@@ -567,52 +585,6 @@ function normalizeImportFieldToken(s) {
     .trim()
     .replace(/[\s._-]+/g, '')
     .replace(/[^a-z0-9]/g, '');
-}
-
-function getImportFieldsForEntityType(entityType) {
-  if (entityType === 'Contacts') {
-    return [
-      { label: 'First Name', value: 'first_name' },
-      { label: 'Last Name', value: 'last_name' },
-      { label: 'Email', value: 'email' },
-      { label: 'Phone', value: 'phone' },
-      { label: 'Job Title', value: 'job_title' },
-      { label: 'Company', value: 'company' },
-      { label: 'Lifecycle Stage', value: 'lifecycle_stage' },
-      { label: 'Lead Source', value: 'lead_source' },
-      { label: 'Status', value: 'status' },
-      { label: 'Lead Score', value: 'lead_score' }
-    ];
-  }
-  if (entityType === 'Deals') {
-    return [
-      { label: 'Name', value: 'name' },
-      { label: 'Amount', value: 'amount' },
-      { label: 'Stage', value: 'stage' },
-      { label: 'Status', value: 'status' },
-      { label: 'Priority', value: 'priority' },
-      { label: 'Expected Close Date', value: 'expectedCloseDate' }
-    ];
-  }
-  if (entityType === 'Tasks') {
-    return [
-      { label: 'Title', value: 'title' },
-      { label: 'Description', value: 'description' },
-      { label: 'Status', value: 'status' },
-      { label: 'Priority', value: 'priority' },
-      { label: 'Due Date', value: 'dueDate' },
-      { label: 'Tags', value: 'tags' },
-      { label: 'Time Estimate (minutes)', value: 'timeEstimate' }
-    ];
-  }
-  return [
-    { label: 'Name', value: 'name' },
-    { label: 'Industry', value: 'industry' },
-    { label: 'Website', value: 'website' },
-    { label: 'Phone', value: 'phone' },
-    { label: 'Email', value: 'email' },
-    { label: 'Address', value: 'address' }
-  ];
 }
 
 /**
@@ -651,12 +623,22 @@ const props = defineProps({
   fileName: {
     type: String,
     default: ''
+  },
+  allowModuleChange: {
+    type: Boolean,
+    default: false
   }
 });
 
 const { t } = useI18n();
 
-const emit = defineEmits(['close', 'import-complete']);
+const {
+  availableFields,
+  fieldOptionGroups,
+  loading: fieldsLoading,
+} = useImportModuleFields(toRef(props, 'entityType'));
+
+const emit = defineEmits(['close', 'import-complete', 'change-module']);
 
 const step = ref(0);
 const fileName = ref(props.fileName || '');
@@ -675,14 +657,12 @@ const duplicateCheckFields = ref([]); // Fields to check for duplicates
 const showFieldDropdown = ref(false); // Control dropdown visibility
 const shouldCheckDuplicates = ref(true); // Whether to check duplicates or not
 
-const steps = [
-  { title: 'Upload CSV File', shortTitle: 'Upload', description: 'Select your CSV file to import' },
-  { title: 'Map Fields', shortTitle: 'Map Fields', description: 'Match CSV columns to fields' },
-  { title: 'Check Duplicates', shortTitle: 'Duplicates', description: 'Review potential duplicates' },
-  { title: 'Import Results', shortTitle: 'Results', description: 'Review import results' }
-];
-
-const availableFields = computed(() => getImportFieldsForEntityType(props.entityType));
+const steps = computed(() => [
+  { title: t('import.cSVImportModalStepUploadTitle'), shortTitle: t('import.cSVImportModalStepUploadShort'), description: t('import.cSVImportModalStepUploadDesc') },
+  { title: t('import.cSVImportModalStepMapTitle'), shortTitle: t('import.cSVImportModalStepMapShort'), description: t('import.cSVImportModalStepMapDesc') },
+  { title: t('import.cSVImportModalStepDuplicatesTitle'), shortTitle: t('import.cSVImportModalStepDuplicatesShort'), description: t('import.cSVImportModalStepDuplicatesDesc') },
+  { title: t('import.cSVImportModalStepResultsTitle'), shortTitle: t('import.cSVImportModalStepResultsShort'), description: t('import.cSVImportModalStepResultsDesc') }
+]);
 
 const duplicateCheckableFields = computed(() => {
   // Get only the fields that are actually mapped
@@ -728,12 +708,10 @@ const duplicateCheckableFields = computed(() => {
   } else {
     // Organizations
     const fields = [
-      { label: 'Name', value: 'name', description: 'recommended', recommended: true },
-      { label: 'Email', value: 'email', description: 'alternative' }
+      { label: 'Name', value: 'name', description: 'recommended', recommended: true }
     ];
     return fields.filter(field => {
       if (field.value === 'name') return mappedFields.includes('name');
-      if (field.value === 'email') return mappedFields.includes('email');
       return false;
     });
   }
@@ -752,6 +730,23 @@ const canProceed = computed(() => {
   }
   return false;
 });
+
+const hasProgress = computed(() => {
+  if (importResults.value) return false;
+  return !!(csvData.value || step.value > 0);
+});
+
+const requestClose = () => {
+  if (importing.value || checkingDuplicates.value) return;
+  if (hasProgress.value && !window.confirm(t('import.cSVImportModalConfirmDiscard'))) return;
+  emit('close');
+};
+
+const requestChangeModule = () => {
+  if (importing.value || checkingDuplicates.value) return;
+  if (hasProgress.value && !window.confirm(t('import.cSVImportModalConfirmDiscard'))) return;
+  emit('change-module');
+};
 
 const handleFileSelect = (event) => {
   const file = event.target.files[0];
@@ -787,6 +782,22 @@ const handleFileDrop = (event) => {
   
   reader.readAsText(file);
 };
+
+function applyAutoFieldMapping() {
+  Object.keys(fieldMapping).forEach((k) => delete fieldMapping[k]);
+  const fields = availableFields.value;
+  if (!csvHeaders.value.length || !fields.length) return;
+  const autoMap = buildAutoImportFieldMapping(csvHeaders.value, fields);
+  for (const header of csvHeaders.value) {
+    fieldMapping[header] = autoMap[header] ?? '';
+  }
+}
+
+watch(availableFields, () => {
+  if (csvHeaders.value.length > 0) {
+    applyAutoFieldMapping();
+  }
+});
 
 const clearFile = () => {
   fileName.value = '';
@@ -838,12 +849,7 @@ const parseCSV = () => {
     // Parse headers
     csvHeaders.value = parseCSVLine(lines[0]);
 
-    Object.keys(fieldMapping).forEach((k) => delete fieldMapping[k]);
-    const fields = getImportFieldsForEntityType(props.entityType);
-    const autoMap = buildAutoImportFieldMapping(csvHeaders.value, fields);
-    for (const header of csvHeaders.value) {
-      fieldMapping[header] = autoMap[header] ?? '';
-    }
+    applyAutoFieldMapping();
 
     // Parse preview (first 5 rows)
     preview.value = lines.slice(1, 6).map(line => {

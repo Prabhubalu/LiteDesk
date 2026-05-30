@@ -174,18 +174,17 @@
           :max="max"
           :step="step"
         />
-        <input
+        <DatePicker
           v-else-if="type === 'date'"
           ref="inputRef"
           v-model="localValue"
-          @click="openDatePicker"
-          @blur="handleBlur"
-          @keydown.esc="handleCancel"
-          :class="[
+          :invalid="Boolean(saveHttpError)"
+          :input-class="[
             'w-full h-8 px-2 py-1 text-sm border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer',
             saveHttpError ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
-          ]"
-          type="date"
+          ].join(' ')"
+          @blur="handleBlur"
+          @escape="handleCancel"
         />
         <p
           v-if="saveHttpError && type !== 'phone'"
@@ -389,15 +388,14 @@
         />
         
         <!-- Date input -->
-        <input
+        <DatePicker
           v-else-if="type === 'date'"
           ref="inputRef"
           v-model="localValue"
-          @click="openDatePicker"
+          :invalid="Boolean(saveHttpError)"
+          :input-class="[stackSingleLineEditInputClass, 'cursor-pointer'].join(' ')"
           @blur="handleBlur"
-          @keydown.esc="handleCancel"
-          :class="[stackSingleLineEditInputClass, 'cursor-pointer']"
-          type="date"
+          @escape="handleCancel"
         />
         <p
           v-if="saveHttpError && type !== 'phone'"
@@ -468,8 +466,8 @@ import {
   UserIcon
 } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
-import { openDatePicker } from '@/utils/dateUtils';
 import PhoneInput from '@/components/common/PhoneInput.vue';
+import DatePicker from '@/components/common/DatePicker.vue';
 import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInput';
 import { getApiErrorMessage } from '@/utils/httpErrors';
 
@@ -921,10 +919,8 @@ const handleClick = (event) => {
       inputRef.value.focus({ preventScroll: true });
       if (props.type === 'text' || props.type === 'url' || props.type === 'number' || props.type === 'phone') {
         inputRef.value.select();
-      } else if (props.type === 'date' && typeof inputRef.value.showPicker === 'function') {
-        try {
-          inputRef.value.showPicker();
-        } catch (_) {}
+      } else if (props.type === 'date') {
+        inputRef.value?.open?.();
       }
     }
   });

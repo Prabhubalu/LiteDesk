@@ -167,6 +167,18 @@
     "message": "Add a line",
     "description": "Heading for add-line mini form"
   },
+  "linesAddBarLabel": {
+    "message": "Add line to quote",
+    "description": "Accessible label for compact add-line toolbar in quote lines footer"
+  },
+  "linesAddToSection": {
+    "message": "+ Add line",
+    "description": "Action in quote section header to add a line to that section"
+  },
+  "linesAddBundleShort": {
+    "message": "Bundle",
+    "description": "Short label for add bundle button on narrow viewports"
+  },
   "linesVariantIdPlaceholder": {
     "message": "Variant ID",
     "description": "Placeholder for variant id input when adding a quote line"
@@ -242,6 +254,18 @@
   "linesDragHandleAria": {
     "message": "Drag to reorder line",
     "description": "Aria label for quote line drag handle"
+  },
+  "linesDragHandleMoveAria": {
+    "message": "Drag to reorder or move line to another section",
+    "description": "Aria label for quote line drag handle when cross-section drag is enabled"
+  },
+  "linesDragAcrossSectionsHint": {
+    "message": "Drag lines into another section to move them.",
+    "description": "Banner shown while dragging quote lines across sections"
+  },
+  "linesEmptyDropHint": {
+    "message": "No lines yet — drag items here from another section.",
+    "description": "Empty section hint when cross-section drag is enabled"
   },
   "linesReorderFailed": {
     "message": "Failed to reorder lines",

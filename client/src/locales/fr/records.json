@@ -2046,5 +2046,29 @@
   "quoteSectionDiscountUpdateFailed": {
     "message": "Could not update section discount.",
     "description": "Error when PATCH section discount fails"
+  },
+  "linesDragHandleMoveAria": {
+    "message": "Drag to reorder or move line to another section",
+    "description": "Aria label for quote line drag handle when cross-section drag is enabled"
+  },
+  "linesDragAcrossSectionsHint": {
+    "message": "Drag lines into another section to move them.",
+    "description": "Banner shown while dragging quote lines across sections"
+  },
+  "linesEmptyDropHint": {
+    "message": "No lines yet — drag items here from another section.",
+    "description": "Empty section hint when cross-section drag is enabled"
+  },
+  "linesAddBarLabel": {
+    "message": "Add line to quote",
+    "description": "Accessible label for compact add-line toolbar in quote lines footer"
+  },
+  "linesAddToSection": {
+    "message": "+ Add line",
+    "description": "Action in quote section header to add a line to that section"
+  },
+  "linesAddBundleShort": {
+    "message": "Bundle",
+    "description": "Short label for add bundle button on narrow viewports"
   }
 }

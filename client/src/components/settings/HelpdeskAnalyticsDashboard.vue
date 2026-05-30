@@ -9,11 +9,17 @@
         <div class="flex items-end gap-3 md:ml-auto">
           <div>
             <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.helpdeskAnalyticsFrom') }}</label>
-            <input v-model="filters.from" type="date" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white" />
+            <DatePicker
+              v-model="filters.from"
+              input-class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
           </div>
           <div>
             <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.helpdeskAnalyticsTo') }}</label>
-            <input v-model="filters.to" type="date" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white" />
+            <DatePicker
+              v-model="filters.to"
+              input-class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
           </div>
           <button
             type="button"
@@ -144,6 +150,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import DatePicker from '@/components/common/DatePicker.vue';
 import apiClient from '@/utils/apiClient';
 
 const { t } = useI18n();

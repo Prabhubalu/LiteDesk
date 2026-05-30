@@ -455,16 +455,15 @@
 
               <template #expectedCloseDate>
                 <div v-if="canEditDealKeyFields" class="w-full min-h-8 px-2 py-1 -mx-2 -my-1 flex items-center">
-                  <input
+                  <DatePicker
                     v-show="isEditingExpectedCloseDate"
                     ref="expectedCloseDateInputRef"
                     v-model="localExpectedCloseDate"
-                    type="date"
-                    @blur="handleExpectedCloseDateBlur"
-                    @keydown.enter="handleExpectedCloseDateBlur"
-                    @keydown.esc="handleExpectedCloseDateCancel"
-                    class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full min-w-0 flex-1 cursor-pointer"
                     :placeholder="t('records.dealCloseDatePh')"
+                    input-class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full min-w-0 flex-1 cursor-pointer"
+                    @blur="handleExpectedCloseDateBlur"
+                    @enter="handleExpectedCloseDateBlur"
+                    @escape="handleExpectedCloseDateCancel"
                   />
                   <span
                     v-show="!isEditingExpectedCloseDate"
@@ -1165,6 +1164,7 @@ import {
   RecordTagPopover
 } from '@/components/record-page';
 import ActivitySection from '@/components/activity/ActivitySection.vue';
+import DatePicker from '@/components/common/DatePicker.vue';
 import 'emoji-picker-element';
 import { useCommentReactionPicker } from '@/components/activity/composables/useCommentReactionPicker';
 import { useCommentReactionTooltip } from '@/components/activity/composables/useCommentReactionTooltip';
@@ -2240,6 +2240,7 @@ const startExpectedCloseDateEdit = async () => {
     : '';
   await nextTick();
   expectedCloseDateInputRef.value?.focus?.();
+  expectedCloseDateInputRef.value?.open?.();
 };
 
 const handleExpectedCloseDateCancel = () => {

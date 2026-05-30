@@ -166,7 +166,7 @@ export function usePersonRecordDetailFields({ personRecord, personId, canEdit, o
 
   async function loadModuleDefinition() {
     try {
-      const modulesRes = await apiClient.get('/modules');
+      const modulesRes = await apiClient.get('/modules', { params: { context: 'all' } });
       const modules = Array.isArray(modulesRes)
         ? modulesRes
         : modulesRes?.data ?? modulesRes?.data?.data ?? modulesRes?.modules ?? [];

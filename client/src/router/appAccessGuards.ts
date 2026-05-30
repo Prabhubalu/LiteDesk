@@ -15,7 +15,6 @@ const SALES_MODULES = new Set([
   'forms',
   'items',
   'organizations',
-  'imports',
 ]);
 
 export function buildAppAccessProfile(getAccess: (appKey: string) => boolean): AppAccessProfile {

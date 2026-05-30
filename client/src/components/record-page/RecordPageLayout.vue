@@ -1,20 +1,26 @@
 <template>
-  <div ref="layoutRootRef" class="record-page-layout flex flex-col h-full w-full bg-white dark:bg-gray-900 overflow-hidden absolute inset-0">
+  <div
+    ref="layoutRootRef"
+    :class="[
+      'record-page-layout flex flex-col h-full w-full bg-white dark:bg-gray-900 overflow-hidden absolute inset-0',
+      { 'record-page-layout--left-expanded': leftExpanded, 'record-page-layout--lines-expanded': isLinesExpanded }
+    ]"
+  >
     <!-- Fixed header - positioned below TabBar -->
     <header v-if="$slots.header" :class="['record-page-layout__header', 'fixed', 'z-20', 'flex-shrink-0', 'bg-white', 'dark:bg-gray-900', 'border-b', 'border-gray-200', 'dark:border-gray-700', 'record-page-layout__header--positioned', { 'transition-all duration-300 ease-in-out': allowTransition }]">
       <slot name="header" />
     </header>
     <!-- Body container - no scroll, only columns scroll -->
-    <div :class="['record-page-layout__body', 'flex', 'flex-1', 'min-h-0', 'gap-0', isMobile ? 'px-0' : 'px-6', 'pr-0', forceMobile ? 'pt-0' : 'pt-6', 'overflow-hidden', 'record-page-layout__body--responsive', !forceMobile && 'record-page-layout__body--with-header', !forceMobile && 'record-page-layout__body--positioned', { 'transition-all duration-300 ease-in-out': allowTransition }]">
+    <div :class="['record-page-layout__body', 'flex', 'flex-1', 'min-h-0', 'gap-0', bodyPaddingClass, 'pr-0', bodyTopPaddingClass, 'overflow-hidden', 'record-page-layout__body--responsive', !forceMobile && 'record-page-layout__body--with-header', !forceMobile && 'record-page-layout__body--positioned', { 'transition-all duration-300 ease-in-out': allowTransition }]">
       <!-- Left column: Main content (2/3 width) - scrollable; on mobile/tablet hidden unless leftExpanded (e.g. version history) -->
       <div
         v-show="!isMobile || leftExpanded"
         ref="leftEl"
-        :class="['record-page-layout__left', 'flex', 'flex-col', 'min-w-0', 'flex-1', 'py-6', 'pr-10', 'lg:flex-[2]', 'overflow-y-auto', 'overflow-x-hidden', { 'is-scrolling': leftScrolling }]"
+        :class="leftColumnClass"
         @scroll="onLeftScroll"
         @wheel="onLeftWheel"
       >
-        <div class="record-page-layout__left-content max-w-4xl mx-auto w-full px-6">
+        <div :class="leftContentClass">
           <slot name="left" :is-mobile="isMobile" />
         </div>
       </div>
@@ -47,6 +53,7 @@ import { onMounted, onUpdated, onUnmounted, nextTick, ref, provide, computed } f
 
 const props = defineProps({
   leftExpanded: { type: Boolean, default: false },
+  expandedSectionKey: { type: String, default: '' },
   forceMobile: { type: Boolean, default: false }
 });
 
@@ -66,6 +73,47 @@ const SCROLL_HIDE_DELAY = 800;
 const windowIsMobile = ref(typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT);
 const isMobile = computed(() => props.forceMobile || windowIsMobile.value);
 const summaryTeleportReady = ref(false);
+
+const isLinesExpanded = computed(() => props.leftExpanded && props.expandedSectionKey === 'lines');
+
+const bodyPaddingClass = computed(() => {
+  if (isMobile.value) return 'px-0';
+  if (isLinesExpanded.value) return 'px-2 lg:px-4';
+  if (props.leftExpanded) return 'px-4';
+  return 'px-6';
+});
+
+const bodyTopPaddingClass = computed(() => {
+  if (props.forceMobile) return 'pt-0';
+  if (isLinesExpanded.value) return 'pt-0';
+  return 'pt-6';
+});
+
+const leftColumnClass = computed(() => [
+  'record-page-layout__left',
+  'flex',
+  'flex-col',
+  'min-w-0',
+  'flex-1',
+  'lg:flex-[2]',
+  'overflow-x-hidden',
+  { 'is-scrolling': leftScrolling.value },
+  isLinesExpanded.value
+    ? ['flex-[1_1_100%]', 'max-w-full', 'pr-0', 'min-h-0', 'overflow-hidden', 'py-0']
+    : props.leftExpanded
+      ? ['flex-[1_1_100%]', 'max-w-full', 'pr-0', 'min-h-0', 'overflow-y-auto', 'py-6']
+      : ['py-6', 'pr-10', 'overflow-y-auto']
+]);
+
+const leftContentClass = computed(() => {
+  if (isLinesExpanded.value) {
+    return 'record-page-layout__left-content w-[90%] max-w-[90%] mx-auto px-3 sm:px-4 lg:px-6 flex flex-col flex-1 min-h-0 h-full overflow-hidden';
+  }
+  if (props.leftExpanded) {
+    return 'record-page-layout__left-content max-w-4xl mx-auto w-full px-6 flex flex-col flex-1 min-h-0';
+  }
+  return 'record-page-layout__left-content max-w-4xl mx-auto w-full px-6';
+});
 
 provide('recordLayoutIsMobile', computed(() => isMobile.value));
 provide('recordLayoutSummaryTeleportReady', summaryTeleportReady);
@@ -267,6 +315,14 @@ onUnmounted(() => {
 /* Section spacing in left column (scoped CSS so it always applies) */
 .record-page-layout__left-content > * + * {
   margin-top: 0.75rem; /* 12px */
+}
+
+.record-page-layout--lines-expanded .record-page-layout__left-content > * + * {
+  margin-top: 0;
+}
+
+.record-page-layout--lines-expanded .record-page-layout__left-content {
+  height: 100%;
 }
 
 /* Smooth scrolling for left column; scrollbar hidden by default, shown when scrolling */

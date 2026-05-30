@@ -1,8 +1,15 @@
 <template>
-  <section v-if="record?._id" class="space-y-3">
+  <section
+    v-if="record?._id"
+    :class="[
+      'quote-lines-workspace',
+      { 'quote-lines-workspace--expanded': isLinesExpanded },
+      isLinesExpanded ? 'flex flex-col flex-1 min-h-0 h-full overflow-hidden' : ''
+    ]"
+  >
     <p
       v-if="totalsStaleHint"
-      class="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-2"
+      class="mb-2 text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-2"
     >
       {{ t('records.linesTotalsStaleHint') }}
       <button type="button" class="ml-1 underline font-medium" :disabled="busy" @click="recalculate">
@@ -10,41 +17,64 @@
       </button>
     </p>
 
-    <!-- Lines grouped by section -->
-    <div class="relative rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <!-- Lines workspace -->
+    <div
+      ref="workspacePanelRef"
+      :class="[
+        'quote-lines-workspace__panel relative flex flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10',
+        isLinesExpanded ? 'flex-1 min-h-0 h-full overflow-hidden' : 'max-h-[min(75vh,820px)] min-h-[16rem]'
+      ]"
+    >
       <div
         v-if="busy"
         class="absolute inset-0 z-10 flex items-center justify-center bg-white/60 dark:bg-gray-900/60 backdrop-blur-[1px]"
       >
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
       </div>
-      <div class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/40">
-        <button
-          v-if="linesEditable && hasSections"
-          type="button"
-          class="inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-900 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20 disabled:opacity-50"
-          :disabled="busy"
-          @click="openCreateSection"
-        >
-          {{ t('records.quoteSectionAdd') }}
-        </button>
-        <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 select-none ml-auto">
-          <input v-model="showPricingColumns" type="checkbox" class="rounded" />
-          {{ t('records.linesShowPricingDetails') }}
-        </label>
+      <div class="quote-lines-workspace__toolbar flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-800/50">
+        <div class="flex flex-wrap items-center gap-2 min-w-0">
+          <button
+            v-if="linesEditable && hasSections"
+            type="button"
+            class="inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-2 py-1 text-xs font-medium hover:bg-gray-50 dark:hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="busy"
+            @click="openCreateSection"
+          >
+            {{ t('records.quoteSectionAdd') }}
+          </button>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 shrink-0 ml-auto">
+          <label class="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 select-none">
+            <input v-model="showPricingColumns" type="checkbox" class="rounded" />
+            {{ t('records.linesShowPricingDetails') }}
+          </label>
+          <QuoteLinesHeaderActions :record="record" :context="context" />
+        </div>
       </div>
-      <div class="space-y-0 divide-y divide-gray-200 dark:divide-gray-700">
+      <div
+        v-if="isReorderDragging && canCrossSectionDrag"
+        class="px-3 py-1.5 text-xs text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-100 dark:border-indigo-800/40"
+      >
+        {{ t('records.linesDragAcrossSectionsHint') }}
+      </div>
+      <div class="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
         <div
           v-for="block in sectionBlocks"
           :key="block.key"
-          class="bg-white dark:bg-gray-900"
+          :class="[
+            'quote-section-block rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden shadow-sm ring-1 ring-gray-950/[0.04] dark:ring-white/[0.06] transition-colors',
+            sectionBlockDropClass(block)
+          ]"
         >
           <div
             v-if="block.section"
-            class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-gray-50/90 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700"
+            :class="[
+              'quote-section-header sticky top-0 z-[5] flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 border-b-2 border-gray-200 dark:border-gray-600 bg-gray-100/95 dark:bg-gray-800/95 backdrop-blur-sm transition-colors',
+              sectionHeaderDropClass(block)
+            ]"
           >
             <div class="flex items-center gap-2 min-w-0">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+              <h4 class="text-xs font-bold uppercase tracking-wide text-gray-800 dark:text-gray-100 truncate">
                 {{ block.section.sectionTitle }}
               </h4>
               <span
@@ -61,9 +91,18 @@
               </span>
             </div>
             <div class="flex items-center gap-2 shrink-0">
+              <button
+                v-if="linesEditable && !block.isOrphan"
+                type="button"
+                class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline disabled:opacity-50"
+                :disabled="busy"
+                @click="beginAddLineToSection(block)"
+              >
+                {{ t('records.linesAddToSection') }}
+              </button>
               <span
                 v-if="block.section.showSectionTotal !== false"
-                class="text-sm font-medium tabular-nums text-gray-900 dark:text-gray-100"
+                class="text-sm font-semibold tabular-nums text-gray-900 dark:text-gray-100"
               >
                 {{ formatMoney(block.section.sectionTotal) }}
               </span>
@@ -90,7 +129,7 @@
 
           <div
             v-if="block.section?.sectionType === 'optional' && linesEditable && !block.isOrphan"
-            class="px-3 py-1.5 border-b border-gray-100 dark:border-gray-800"
+            class="sticky top-[2.625rem] z-[4] px-3 py-1.5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/95 dark:bg-gray-900/95 backdrop-blur-sm"
           >
             <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
               <input
@@ -105,37 +144,44 @@
           </div>
 
           <div
-            class="overflow-x-auto"
-            :class="{ 'quote-lines-table--dragging': isReorderDragging }"
+            class="quote-lines-table-scroll"
+            :class="[
+              stickyColumnsActive ? 'overflow-x-auto' : 'overflow-x-hidden',
+              { 'quote-lines-table--dragging': isReorderDragging }
+            ]"
+            @scroll="onQuoteLinesTableScroll"
           >
-        <table class="min-w-full text-sm quote-lines-table">
-          <thead class="bg-gray-50 dark:bg-gray-800/60 text-gray-600 dark:text-gray-300">
+        <table
+          class="min-w-full text-sm quote-lines-table"
+          :class="{
+            'quote-lines-table--sticky': stickyColumnsActive,
+            'quote-lines-table--sticky-editable': stickyColumnsActive && linesEditable,
+            'quote-lines-table--sticky-pricing': stickyColumnsActive && showPricingColumns
+          }"
+        >
+          <thead class="bg-gray-50 dark:bg-gray-800/60">
             <tr>
-              <th v-if="linesEditable" class="px-2 py-2 w-9" :aria-label="t('records.linesReorderColumn')">
-                <span class="sr-only">{{ t('records.linesReorderColumn') }}</span>
+              <th :class="[lineTableHeadClass, stickyColClass('name'), stickyColumnsActive && showPricingColumns && 'quote-lines-col-name']">{{ t('records.linesName') }}</th>
+              <th :class="[lineTableHeadClass, stickyColumnsActive && showPricingColumns && 'quote-lines-col-sku']">{{ t('records.linesSku') }}</th>
+              <th v-if="showPricingColumns" :class="[lineTableHeadClass, 'quote-lines-col-scroll']">{{ t('records.linesPriceBook') }}</th>
+              <th v-if="showPricingColumns" :class="[lineTableHeadClass, 'quote-lines-col-scroll']">{{ t('records.linesPriceSource') }}</th>
+              <th :class="[lineTableHeadClass, 'text-right']">{{ t('records.linesQty') }}</th>
+              <th :class="[lineTableHeadClass, 'text-right']">{{ t('records.linesUnitPrice') }}</th>
+              <th v-if="linesEditable" :class="[lineTableHeadClass, 'text-right']">{{ t('records.linesDiscount') }}</th>
+              <th :class="[lineTableHeadClass, stickyColClass('total'), 'text-right', stickyColumnsActive && showPricingColumns && 'quote-lines-col-total']">{{ t('records.linesTotal') }}</th>
+              <th v-if="linesEditable" :class="[stickyColClass('actions'), 'px-3 py-2.5 text-right w-12']">
+                <span class="sr-only">{{ t('records.linesMoreActions') }}</span>
               </th>
-              <th class="px-3 py-2 text-left font-normal">{{ t('records.linesSku') }}</th>
-              <th class="px-3 py-2 text-left font-normal">{{ t('records.linesName') }}</th>
-              <th v-if="showPricingColumns" class="px-3 py-2 text-left font-normal">{{ t('records.linesPriceBook') }}</th>
-              <th v-if="showPricingColumns" class="px-3 py-2 text-left font-normal">{{ t('records.linesPriceSource') }}</th>
-              <th class="px-3 py-2 text-right font-normal">{{ t('records.linesQty') }}</th>
-              <th class="px-3 py-2 text-right font-normal">{{ t('records.linesUnitPrice') }}</th>
-              <th v-if="linesEditable" class="px-3 py-2 text-right font-normal">{{ t('records.linesDiscount') }}</th>
-              <th class="px-3 py-2 text-right font-normal">{{ t('records.linesTotal') }}</th>
-              <th class="px-3 py-2 text-right font-normal w-16"></th>
             </tr>
           </thead>
-          <tbody v-if="!getSectionRows(block.key).length" class="divide-y divide-gray-200 dark:divide-gray-700">
-            <tr class="text-gray-500 dark:text-gray-400">
-              <td class="px-3 py-3" :colspan="tableColspan">{{ t('records.linesEmpty') }}</td>
-            </tr>
-          </tbody>
           <draggable
-            v-else
+            v-if="linesEditable"
             :model-value="getSectionRows(block.key)"
             tag="tbody"
             item-key="uid"
             handle=".quote-line-drag-handle"
+            :group="dragGroupForBlock(block)"
+            :empty-insert-threshold="canCrossSectionDrag ? 56 : 0"
             :animation="200"
             :easing="'cubic-bezier(0.2, 0, 0, 1)'"
             :force-fallback="true"
@@ -146,31 +192,30 @@
             drag-class="quote-line-sortable-drag"
             :disabled="!linesEditable || busy"
             class="divide-y divide-gray-200 dark:divide-gray-700"
+            :class="{ 'quote-lines-tbody--empty': !getSectionRows(block.key).length }"
             @update:model-value="setSectionRows(block.key, $event)"
             @start="onLineOrderDragStart"
             @end="onLineOrderDragEnd"
+            @change="(evt) => onLineOrderChange(block.key, evt)"
           >
             <template #item="{ element: { line, indent, isBundleParent, isOptional } }">
               <tr
-                class="text-gray-900 dark:text-gray-100"
-                :class="isBundleParent ? 'bg-indigo-50/40 dark:bg-indigo-900/10' : ''"
+                class="group/quote-line quote-line-row text-gray-900 dark:text-gray-100 transition-colors hover:bg-gray-50/80 dark:hover:bg-gray-800/40"
+                :class="isBundleParent ? 'quote-line-row--bundle bg-indigo-50/40 dark:bg-indigo-900/10 hover:bg-indigo-50/70 dark:hover:bg-indigo-900/20' : ''"
               >
-              <td v-if="linesEditable" class="px-2 py-2 w-9 align-middle">
-                <button
-                  type="button"
-                  class="quote-line-drag-handle inline-flex items-center justify-center p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing disabled:opacity-40"
-                  :aria-label="t('records.linesDragHandleAria')"
-                  :title="t('records.linesDragHandleAria')"
-                  :disabled="busy"
-                >
-                  <Bars3Icon class="h-4 w-4" />
-                </button>
-              </td>
-              <td class="px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-300">
-                {{ line.skuSnapshot || '—' }}
-              </td>
-              <td class="px-3 py-2">
-                <div class="min-w-0 flex items-start gap-1" :class="indent ? 'pl-4' : ''">
+              <td :class="[stickyColClass('name'), 'px-3 py-2.5 align-middle', stickyColumnsActive && showPricingColumns && 'quote-lines-col-name']">
+                <div class="flex items-start gap-1.5 min-w-0">
+                  <button
+                    v-if="!isLineDragDisabled(line)"
+                    type="button"
+                    class="quote-line-drag-handle inline-flex shrink-0 items-center justify-center p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing disabled:opacity-40"
+                    :aria-label="canCrossSectionDrag ? t('records.linesDragHandleMoveAria') : t('records.linesDragHandleAria')"
+                    :title="canCrossSectionDrag ? t('records.linesDragHandleMoveAria') : t('records.linesDragHandleAria')"
+                    :disabled="busy"
+                  >
+                    <Bars3Icon class="h-4 w-4" />
+                  </button>
+                  <div class="min-w-0 flex items-start gap-1 flex-1" :class="indent ? 'pl-2' : ''">
                   <span v-if="indent" class="text-gray-400 shrink-0" aria-hidden="true">↳</span>
                   <div class="min-w-0">
                     <div class="truncate" :class="{ 'font-semibold': isBundleParent }">
@@ -187,73 +232,72 @@
                       {{ t('records.linesBundleOptionalConfigure') }}
                     </button>
                   </div>
+                  </div>
                 </div>
               </td>
-              <td v-if="showPricingColumns" class="px-3 py-2 text-xs text-gray-700 dark:text-gray-200">
+              <td class="px-3 py-2.5 align-middle font-mono text-xs text-gray-600 dark:text-gray-300">
+                {{ line.skuSnapshot || '—' }}
+              </td>
+              <td v-if="showPricingColumns" class="px-3 py-2.5 align-middle text-xs text-gray-700 dark:text-gray-200">
                 <span :title="priceProvenanceTitle(line)">
                   {{ line.priceBookNameSnapshot || '—' }}
                 </span>
               </td>
-              <td v-if="showPricingColumns" class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+              <td v-if="showPricingColumns" class="px-3 py-2.5 align-middle text-xs text-gray-500 dark:text-gray-400">
                 {{ pricingSourceLabel(line.pricingSourceSnapshot) }}
               </td>
-              <td class="px-3 py-2 text-right">
+              <td class="px-3 py-2.5 align-middle text-right">
                 <input
                   v-if="linesEditable"
-                  class="w-20 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-1 text-right"
+                  :class="lineQtyInputClass"
                   type="number"
                   min="0"
                   step="1"
+                  :aria-label="t('records.linesQty')"
                   :value="line.quantity"
                   :disabled="busy"
                   @change="(e) => patchQty(line, e?.target?.value)"
                 />
                 <span v-else class="tabular-nums">{{ line.quantity }}</span>
               </td>
-              <td class="px-3 py-2 text-right tabular-nums">
+              <td class="px-3 py-2.5 align-middle text-right tabular-nums text-gray-700 dark:text-gray-200">
                 {{ formatMoney(line.unitPriceSnapshot) }}
               </td>
-              <td v-if="linesEditable" class="px-3 py-2 text-right">
-                <div class="inline-flex items-center justify-end gap-1">
-                  <select
-                    class="w-14 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1 py-1 text-xs"
-                    :value="lineDiscountType(line)"
+              <td v-if="linesEditable" class="px-3 py-2.5 align-middle text-right">
+                <div class="inline-flex items-center justify-end gap-1.5">
+                  <HeadlessSelect
+                    :model-value="lineDiscountType(line)"
+                    :options="discountTypeOptions"
+                    allow-empty
+                    :empty-label="t('records.linesDiscountNone')"
+                    empty-value=""
                     :disabled="busy"
-                    @change="(e) => patchLineDiscount(line, { type: e.target.value })"
-                  >
-                    <option value="">{{ t('records.linesDiscountNone') }}</option>
-                    <option value="percent">{{ t('records.linesDiscountPercent') }}</option>
-                    <option value="amount">{{ t('records.linesDiscountAmount') }}</option>
-                  </select>
+                    :button-class="lineSelectButtonClass"
+                    wrapper-class="inline-block min-w-[4.5rem]"
+                    teleport
+                    @update:model-value="(v) => patchLineDiscount(line, { type: v })"
+                  />
                   <input
                     v-if="lineDiscountType(line)"
-                    class="w-16 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1.5 py-1 text-xs text-right tabular-nums"
+                    :class="lineCompactInputClass"
                     type="number"
                     min="0"
                     step="any"
+                    :aria-label="t('records.linesDiscount')"
                     :value="lineDiscountValue(line)"
                     :disabled="busy"
                     @change="(e) => patchLineDiscount(line, { value: e.target.value })"
                   />
                 </div>
               </td>
-              <td class="px-3 py-2 text-right font-medium tabular-nums">
+              <td :class="[stickyColClass('total'), 'px-3 py-2.5 align-middle text-right font-medium tabular-nums']">
                 {{ formatMoney(line.lineTotal) }}
               </td>
-              <td class="px-3 py-2 text-right">
-                <div v-if="linesEditable" class="inline-flex items-center gap-1">
-                  <select
-                    v-if="hasSections && movableSections.length > 1"
-                    class="max-w-[88px] rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1 py-1 text-[10px]"
-                    :value="lineSectionRef(line)"
-                    :disabled="busy"
-                    :title="t('records.quoteSectionMoveLine')"
-                    @change="(e) => moveLineToSection(line, e.target.value)"
-                  >
-                    <option v-for="s in movableSections" :key="sectionRef(s)" :value="sectionRef(s)">
-                      {{ s.sectionTitle }}
-                    </option>
-                  </select>
+              <td :class="[stickyColClass('actions'), 'px-3 py-2.5 align-middle text-right']">
+                <div
+                  v-if="linesEditable"
+                  class="inline-flex items-center justify-end opacity-100 lg:opacity-0 lg:group-hover/quote-line:opacity-100 transition-opacity"
+                >
                   <button
                     type="button"
                     class="inline-flex items-center justify-center p-1.5 rounded text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
@@ -269,118 +313,183 @@
               </tr>
             </template>
           </draggable>
-        </table>
-          </div>
-
-          <div
+          <tbody v-else-if="!getSectionRows(block.key).length" class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tr>
+              <td class="px-3 py-6 text-center text-sm text-gray-500 dark:text-gray-400" :colspan="tableColspan">
+                {{ t('records.linesEmpty') }}
+              </td>
+            </tr>
+          </tbody>
+          <tbody v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tr
+              v-for="{ line, indent, isBundleParent, isOptional } in getSectionRows(block.key)"
+              :key="lineRowKey(line)"
+              class="text-gray-900 dark:text-gray-100"
+              :class="isBundleParent ? 'quote-line-row--bundle bg-indigo-50/40 dark:bg-indigo-900/10' : ''"
+            >
+              <td :class="[stickyColClass('name'), 'px-3 py-2.5 align-middle', stickyColumnsActive && showPricingColumns && 'quote-lines-col-name']">
+                <div class="min-w-0 flex items-start gap-1" :class="indent ? 'pl-4' : ''">
+                  <span v-if="indent" class="text-gray-400 shrink-0" aria-hidden="true">↳</span>
+                  <div class="min-w-0">
+                    <div class="truncate" :class="{ 'font-semibold': isBundleParent }">
+                      <span v-if="isOptional" class="text-xs text-gray-500 mr-1">[{{ t('records.linesOptional') }}]</span>
+                      {{ line.itemNameSnapshot || '—' }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-3 py-2.5 align-middle font-mono text-xs text-gray-600 dark:text-gray-300">
+                {{ line.skuSnapshot || '—' }}
+              </td>
+              <td v-if="showPricingColumns" class="px-3 py-2.5 align-middle text-xs text-gray-700 dark:text-gray-200">
+                {{ line.priceBookNameSnapshot || '—' }}
+              </td>
+              <td v-if="showPricingColumns" class="px-3 py-2.5 align-middle text-xs text-gray-500 dark:text-gray-400">
+                {{ pricingSourceLabel(line.pricingSourceSnapshot) }}
+              </td>
+              <td class="px-3 py-2.5 align-middle text-right tabular-nums">{{ line.quantity }}</td>
+              <td class="px-3 py-2.5 align-middle text-right tabular-nums text-gray-700 dark:text-gray-200">
+                {{ formatMoney(line.unitPriceSnapshot) }}
+              </td>
+              <td :class="[stickyColClass('total'), 'px-3 py-2.5 align-middle text-right font-medium tabular-nums']">
+                {{ formatMoney(line.lineTotal) }}
+              </td>
+            </tr>
+          </tbody>
+          <tfoot v-if="linesEditable && !getSectionRows(block.key).length && !isReorderDragging">
+            <tr>
+              <td class="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400" :colspan="tableColspan">
+                {{ canCrossSectionDrag ? t('records.linesEmptyDropHint') : t('records.linesEmpty') }}
+              </td>
+            </tr>
+          </tfoot>
+          <tfoot
             v-if="block.section && !block.isOrphan && block.section.showSectionTotal !== false"
-            class="flex flex-wrap items-center justify-end gap-3 px-3 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 text-sm"
+            class="quote-lines-section-foot"
           >
-            <div v-if="linesEditable" class="inline-flex items-center gap-1">
-              <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('records.quoteSectionDiscount') }}</span>
-              <select
-                class="w-14 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1 py-1 text-xs"
-                :value="sectionDiscountType(block.section)"
-                :disabled="busy"
-                @change="(e) => saveSectionDiscount(block.section, { type: e.target.value })"
-              >
-                <option value="">{{ t('records.linesDiscountNone') }}</option>
-                <option value="percent">{{ t('records.linesDiscountPercent') }}</option>
-                <option value="amount">{{ t('records.linesDiscountAmount') }}</option>
-              </select>
-              <input
-                v-if="sectionDiscountType(block.section)"
-                class="w-16 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1.5 py-1 text-xs text-right tabular-nums"
-                type="number"
-                min="0"
-                step="any"
-                :value="sectionDiscountValue(block.section)"
-                :disabled="busy"
-                @change="(e) => saveSectionDiscount(block.section, { value: e.target.value })"
-              />
-            </div>
-            <div class="text-gray-600 dark:text-gray-400">
-              {{ t('records.quoteSectionSubtotal') }}:
-              <span class="font-medium text-gray-900 dark:text-gray-100 tabular-nums ml-1">
+            <tr class="text-sm">
+              <td :class="[lineTableFootCellClass, stickyColClass('name')]" />
+              <td :colspan="sectionFooterBeforeUnitPriceColspan" :class="lineTableFootCellClass" />
+              <td :class="[lineTableFootCellClass, 'text-right text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap']">
+                {{ t('records.quoteSectionSubtotal') }}:
+              </td>
+              <td v-if="linesEditable" :class="[lineTableFootCellClass, 'text-right overflow-visible']">
+                <div class="inline-flex items-center justify-end gap-1.5 overflow-visible">
+                  <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('records.quoteSectionDiscount') }}</span>
+                  <HeadlessSelect
+                    :model-value="sectionDiscountType(block.section)"
+                    :options="discountTypeOptions"
+                    allow-empty
+                    :empty-label="t('records.linesDiscountNone')"
+                    empty-value=""
+                    :disabled="busy"
+                    :button-class="lineSelectButtonClass"
+                    wrapper-class="inline-block min-w-[4.5rem] overflow-visible"
+                    teleport
+                    @update:model-value="(v) => saveSectionDiscount(block.section, { type: v })"
+                  />
+                  <input
+                    v-if="sectionDiscountType(block.section)"
+                    :class="lineCompactInputClass"
+                    type="number"
+                    min="0"
+                    step="any"
+                    :aria-label="t('records.quoteSectionDiscount')"
+                    :value="sectionDiscountValue(block.section)"
+                    :disabled="busy"
+                    @change="(e) => saveSectionDiscount(block.section, { value: e.target.value })"
+                  />
+                </div>
+              </td>
+              <td :class="[lineTableFootCellClass, stickyColClass('total'), 'text-right font-medium tabular-nums text-gray-900 dark:text-gray-100']">
                 {{ formatMoney(block.section.sectionTotal) }}
-              </span>
-            </div>
+              </td>
+              <td v-if="linesEditable" :class="[lineTableFootCellClass, stickyColClass('actions')]" />
+            </tr>
+          </tfoot>
+        </table>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Add line (before totals) -->
-    <div
-      v-if="linesEditable"
-      class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 space-y-2"
-    >
-      <div class="text-sm font-medium text-gray-700 dark:text-gray-200">
-        {{ t('records.linesAddOne') }}
-      </div>
-      <div class="flex flex-col md:flex-row gap-2 flex-wrap">
-        <select
-          v-if="hasSections && addTargetSections.length"
-          v-model="addTargetSectionId"
-          class="w-full md:w-48 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm"
-          :disabled="busy"
-        >
-          <option v-for="s in addTargetSections" :key="sectionRef(s)" :value="sectionRef(s)">
-            {{ s.sectionTitle }}
-          </option>
-        </select>
-        <button
-          type="button"
-          class="flex-1 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800/60"
-          :disabled="busy"
-          @click="openVariantPicker"
-        >
-          <span v-if="variantLabel" class="text-gray-900 dark:text-gray-100">{{ variantLabel }}</span>
-          <span v-else class="text-gray-500 dark:text-gray-400">{{ t('records.linesPickVariant') }}</span>
-        </button>
-        <select
-          v-model="selectedPriceBookId"
-          class="w-full md:w-56 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm"
-          :disabled="busy || priceBooksLoading"
-        >
-          <option value="">{{ t('records.linesDefaultPriceBook') }}</option>
-          <option v-for="b in priceBooks" :key="b._id" :value="String(b._id)">
-            {{ b.name }}
-          </option>
-        </select>
-        <input
-          v-model.number="quantity"
-          class="w-28 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm"
-          type="number"
-          min="1"
-          step="1"
-          :disabled="busy"
-        />
-        <button
-          type="button"
-          class="inline-flex items-center justify-center rounded-md bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm"
-          :disabled="busy || !variantId"
-          @click="addLine"
-        >
-          {{ t('records.linesAdd') }}
-        </button>
-        <button
-          type="button"
-          class="inline-flex items-center justify-center rounded-md border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-900 text-indigo-700 dark:text-indigo-300 px-4 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
-          :disabled="busy"
-          @click="openBundlePicker"
-        >
-          {{ t('records.linesAddBundle') }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Totals -->
-    <div class="flex justify-end">
       <div
-        class="w-full max-w-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 p-4 space-y-2"
-        data-testid="quote-lines-totals"
+        class="shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm"
       >
+        <div
+          v-if="linesEditable"
+          class="px-3 py-2 border-b border-gray-100 dark:border-gray-800"
+          role="group"
+          :aria-label="t('records.linesAddBarLabel')"
+        >
+          <div class="flex flex-wrap items-center gap-2">
+            <HeadlessSelect
+              v-if="hasSections && addTargetSections.length"
+              v-model="addTargetSectionId"
+              :options="addTargetSectionOptions"
+              :placeholder="t('records.quoteSectionAddTarget')"
+              :disabled="busy"
+              :button-class="lineAddBarSelectClass"
+              wrapper-class="w-[8.5rem] shrink-0"
+              teleport
+            />
+            <button
+              type="button"
+              :class="[lineAddBarControlClass, 'flex-1 min-w-[10rem] text-left hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors']"
+              :disabled="busy"
+              @click="openVariantPicker"
+            >
+              <span v-if="variantLabel" class="block truncate text-gray-900 dark:text-gray-100">{{ variantLabel }}</span>
+              <span v-else class="text-gray-500 dark:text-gray-400">{{ t('records.linesPickVariant') }}</span>
+            </button>
+            <HeadlessSelect
+              v-model="selectedPriceBookId"
+              :options="priceBookOptions"
+              allow-empty
+              :empty-label="t('records.linesDefaultPriceBook')"
+              empty-value=""
+              :placeholder="t('records.linesPriceBook')"
+              :disabled="busy || priceBooksLoading"
+              :button-class="lineAddBarSelectClass"
+              wrapper-class="w-[9rem] shrink-0 hidden sm:block"
+              teleport
+            />
+            <input
+              v-model.number="quantity"
+              :class="lineAddBarQtyClass"
+              type="number"
+              min="1"
+              step="1"
+              :aria-label="t('records.linesQty')"
+              :disabled="busy"
+            />
+            <div class="flex items-center gap-1.5 shrink-0 ml-auto">
+              <button
+                type="button"
+                class="inline-flex h-8 items-center justify-center rounded-md bg-indigo-600 hover:bg-indigo-700 text-white px-3 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="busy || !variantId"
+                @click="addLine"
+              >
+                <PlusIcon class="h-4 w-4 sm:mr-1 shrink-0" aria-hidden="true" />
+                <span class="hidden sm:inline">{{ t('records.linesAdd') }}</span>
+              </button>
+              <button
+                type="button"
+                class="inline-flex h-8 items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="busy"
+                @click="openBundlePicker"
+              >
+                <span class="hidden md:inline">{{ t('records.linesAddBundle') }}</span>
+                <span class="md:hidden">{{ t('records.linesAddBundleShort') }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 p-3">
+          <div
+            class="w-full max-w-md space-y-1.5 text-sm"
+            data-testid="quote-lines-totals"
+          >
         <div class="flex items-center justify-between text-sm">
           <span class="text-gray-600 dark:text-gray-400">{{ t('records.linesTotalsSubtotal') }}</span>
           <span class="font-medium text-gray-900 dark:text-gray-100 tabular-nums">{{ formatMoney(totals.subtotal) }}</span>
@@ -392,24 +501,27 @@
         <div class="flex items-center justify-between gap-2 text-sm">
           <span class="text-gray-600 dark:text-gray-400 shrink-0">{{ t('records.linesTotalsGlobalDiscount') }}</span>
           <div class="inline-flex items-center gap-2 ml-auto">
-            <div v-if="linesEditable" class="inline-flex items-center gap-1">
-              <select
-                v-model="globalDiscountType"
-                class="w-14 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1 py-1 text-xs"
+            <div v-if="linesEditable" class="inline-flex items-center gap-1.5">
+              <HeadlessSelect
+                :model-value="globalDiscountType"
+                :options="discountTypeOptions"
+                allow-empty
+                :empty-label="t('records.linesDiscountNone')"
+                empty-value=""
                 :disabled="busy"
-                @change="saveGlobalDiscount"
-              >
-                <option value="">{{ t('records.linesDiscountNone') }}</option>
-                <option value="percent">{{ t('records.linesDiscountPercent') }}</option>
-                <option value="amount">{{ t('records.linesDiscountAmount') }}</option>
-              </select>
+                :button-class="lineSelectButtonClass"
+                wrapper-class="inline-block min-w-[4.5rem]"
+                teleport
+                @update:model-value="onGlobalDiscountTypeChange"
+              />
               <input
                 v-if="globalDiscountType"
                 v-model.number="globalDiscountValue"
-                class="w-20 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1.5 py-1 text-xs text-right tabular-nums"
+                :class="lineCompactInputClass"
                 type="number"
                 min="0"
                 step="any"
+                :aria-label="t('records.linesTotalsGlobalDiscount')"
                 :disabled="busy"
                 @change="saveGlobalDiscount"
               />
@@ -430,12 +542,20 @@
           <span class="text-gray-600 dark:text-gray-400">{{ t('records.linesTotalsAdjustment') }}</span>
           <span class="font-medium text-gray-900 dark:text-gray-100 tabular-nums">{{ formatMoney(totals.adjustmentTotal) }}</span>
         </div>
-        <div class="flex items-center justify-between text-base border-t border-gray-200 dark:border-gray-600 pt-2">
-          <span class="font-semibold text-gray-900 dark:text-white">{{ t('records.linesTotalsGrandTotal') }}</span>
-          <span class="font-semibold text-gray-900 dark:text-white tabular-nums">{{ formatMoney(totals.grandTotal) }}</span>
-        </div>
-        <div v-if="currencyCode" class="text-xs text-gray-500 dark:text-gray-400 text-right">
-          {{ t('records.linesTotalsCurrency', { currency: currencyCode }) }}
+          </div>
+          <div
+            class="quote-lines-grand-total shrink-0 min-w-[11rem] rounded-lg border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50 dark:bg-indigo-950/40 px-4 py-3 text-right shadow-sm"
+          >
+            <div class="text-[11px] font-semibold uppercase tracking-wide text-indigo-800/80 dark:text-indigo-200/80">
+              {{ t('records.linesTotalsGrandTotal') }}
+            </div>
+            <div class="mt-0.5 text-2xl font-bold tabular-nums text-indigo-950 dark:text-white">
+              {{ formatMoney(totals.grandTotal) }}
+            </div>
+            <div v-if="currencyCode" class="mt-1 text-[11px] text-indigo-700/70 dark:text-indigo-300/70">
+              {{ t('records.linesTotalsCurrency', { currency: currencyCode }) }}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -447,7 +567,7 @@
         <input
           v-model="bundleSearchQuery"
           type="search"
-          class="w-full px-3 py-2 rounded-lg border dark:bg-gray-900 dark:border-gray-600 text-sm"
+          :class="lineFormControlClass"
           :placeholder="t('records.linesBundleSearchPlaceholder')"
           @input="debouncedBundleSearch"
         />
@@ -525,7 +645,7 @@
         <input
           v-model="variantSearchQuery"
           type="search"
-          class="w-full px-3 py-2 rounded-lg border dark:bg-gray-900 dark:border-gray-600 text-sm"
+          :class="lineFormControlClass"
           :placeholder="t('records.linesVariantSearchPlaceholder')"
           @input="debouncedVariantSearch"
         />
@@ -571,13 +691,15 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Bars3Icon, TrashIcon } from '@heroicons/vue/24/outline';
+import { Bars3Icon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import draggable from 'vuedraggable';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 import { unwrapCatalogApiData, unwrapCatalogApiList } from '@/utils/catalogApi';
 import { useAuthStore } from '@/stores/authRegistry';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import QuoteLinesHeaderActions from '@/components/record-page/sections/QuoteLinesHeaderActions.vue';
 import QuoteSectionFormModal from '@/components/record-page/sections/QuoteSectionFormModal.vue';
 import { isCommerciallyLockedStatus } from '@/constants/quoteLifecycle';
 import { formatQuoteMoney } from '@/utils/quoteMoney';
@@ -588,6 +710,7 @@ import {
   sortQuoteSections
 } from '@/utils/quoteSectionDisplay';
 import { useQuoteLinesSession, clearQuoteLinesSession } from '@/composables/useQuoteLinesSession';
+import { useQuoteLinesStickyColumns, updateQuoteLinesTableScrollHints } from '@/composables/useQuoteLinesStickyColumns';
 
 const props = defineProps({
   record: { type: Object, default: null },
@@ -597,9 +720,36 @@ const props = defineProps({
 
 const emit = defineEmits(['updated']);
 
+const isLinesExpanded = computed(() => props.context?.expandedLeftSection === 'lines');
+
 const { t } = useI18n();
 const notifications = useNotifications();
 const authStore = useAuthStore();
+
+const lineTableHeadClass =
+  'px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400';
+const lineTableFootCellClass =
+  'px-3 py-2.5 align-middle border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30';
+const lineFormControlClass =
+  'w-full h-9 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed';
+const lineInputClass =
+  'h-8 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed';
+const lineQtyInputClass = `${lineInputClass} w-[4.5rem] text-right tabular-nums ml-auto block`;
+const lineCompactInputClass = `${lineInputClass} w-16 text-xs text-right tabular-nums`;
+const lineSelectButtonClass =
+  '!h-8 !min-w-[4.5rem] !px-2 !py-1 !text-xs !rounded !bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-white !outline-none ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:!ring-2 focus:!ring-indigo-500 disabled:!opacity-50 disabled:!cursor-not-allowed';
+const lineFormSelectButtonClass =
+  '!h-9 !px-3 !py-2 !text-sm !rounded-md !bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-white !outline-none ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:!ring-2 focus:!ring-indigo-500 disabled:!opacity-50 disabled:!cursor-not-allowed';
+const lineAddBarControlClass =
+  '!h-8 !px-2.5 !py-1.5 !text-sm !rounded-md !bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-white !outline-none ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:!ring-2 focus:!ring-indigo-500 disabled:!opacity-50 disabled:!cursor-not-allowed';
+const lineAddBarSelectClass =
+  '!h-8 !px-2 !py-1 !text-xs !rounded-md !bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-white !outline-none ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:!ring-2 focus:!ring-indigo-500 disabled:!opacity-50 disabled:!cursor-not-allowed';
+const lineAddBarQtyClass = `${lineAddBarControlClass} w-14 text-right tabular-nums shrink-0`;
+
+const discountTypeOptions = computed(() => [
+  { value: 'percent', label: t('records.linesDiscountPercent') },
+  { value: 'amount', label: t('records.linesDiscountAmount') }
+]);
 
 const quoteId = computed(() => props.record?._id);
 const { busy, overrideLock } = useQuoteLinesSession(quoteId);
@@ -610,6 +760,7 @@ const quantity = ref(1);
 const showPricingColumns = ref(false);
 const showDeleteLineModal = ref(false);
 const linePendingDelete = ref(null);
+const workspacePanelRef = ref(null);
 
 const lines = computed(() => (Array.isArray(props.record?.lines) ? props.record.lines : []));
 const quoteSections = computed(() => sortQuoteSections(props.record?.sections));
@@ -622,6 +773,15 @@ const sectionBlocks = computed(() =>
     uncategorizedTitle: t('records.quoteSectionUncategorized')
   })
 );
+
+const { stickyColumnsActive } = useQuoteLinesStickyColumns(
+  () => workspacePanelRef.value,
+  [showPricingColumns, sectionBlocks, isLinesExpanded]
+);
+
+function onQuoteLinesTableScroll(event) {
+  updateQuoteLinesTableScrollHints(event.currentTarget);
+}
 
 const movableSections = computed(() => quoteSections.value.filter((s) => s?._id));
 const addTargetSections = computed(() => movableSections.value);
@@ -648,6 +808,13 @@ function sectionRef(section) {
   return quoteSectionRef(section);
 }
 
+const addTargetSectionOptions = computed(() =>
+  addTargetSections.value.map((s) => ({
+    value: sectionRef(s),
+    label: s.sectionTitle
+  }))
+);
+
 function lineSectionRef(line) {
   const sid = line?.quoteSectionId;
   if (!sid) return addTargetSectionId.value || '';
@@ -657,6 +824,85 @@ function lineSectionRef(line) {
 
 const sectionRowsMap = ref({});
 const isReorderDragging = ref(false);
+const dragStartSectionByLineId = ref({});
+const activeDropSectionKey = ref(null);
+
+const canCrossSectionDrag = computed(
+  () => linesEditable.value && hasSections.value && movableSections.value.length > 1
+);
+
+function dragGroupForBlock(block) {
+  if (!canCrossSectionDrag.value) return undefined;
+  return {
+    name: 'quote-lines',
+    pull: true,
+    put: !block?.isOrphan
+  };
+}
+
+function isLineDragDisabled(line) {
+  return String(line?.lineType || '') === 'bundle_component';
+}
+
+function isDroppableSectionBlock(block) {
+  return canCrossSectionDrag.value && Boolean(block?.section) && !block?.isOrphan;
+}
+
+function sectionBlockDropClass(block) {
+  if (!isReorderDragging.value || !isDroppableSectionBlock(block)) return '';
+  if (activeDropSectionKey.value === block.key) {
+    return 'quote-section-block--drop-active';
+  }
+  return 'quote-section-block--drop-highlight';
+}
+
+function sectionHeaderDropClass(block) {
+  if (!isReorderDragging.value || !isDroppableSectionBlock(block)) return '';
+  if (activeDropSectionKey.value === block.key) {
+    return 'quote-section-header--drop-active';
+  }
+  return 'quote-section-header--drop-highlight';
+}
+
+function blockSectionRef(block) {
+  if (!block?.section || block.isOrphan) return null;
+  return sectionRef(block.section);
+}
+
+function snapshotLineSectionKeys() {
+  const snapshot = {};
+  for (const block of sectionBlocks.value) {
+    for (const row of getSectionRows(block.key) || []) {
+      const id = lineRowKey(row.line);
+      if (id) snapshot[id] = block.key;
+    }
+  }
+  return snapshot;
+}
+
+function collectSectionMoves() {
+  if (!canCrossSectionDrag.value) return [];
+  const moves = [];
+  for (const block of sectionBlocks.value) {
+    const targetSectionRef = blockSectionRef(block);
+    if (!targetSectionRef) continue;
+
+    for (const row of getSectionRows(block.key) || []) {
+      if (isLineDragDisabled(row.line)) continue;
+      const id = lineRowKey(row.line);
+      const fromKey = dragStartSectionByLineId.value[id];
+      if (!fromKey || fromKey === block.key) continue;
+      moves.push({ line: row.line, targetSectionRef });
+    }
+  }
+  return moves;
+}
+
+function onLineOrderChange(blockKey, evt) {
+  if (evt?.added) {
+    activeDropSectionKey.value = blockKey;
+  }
+}
 
 function getSectionRows(key) {
   return sectionRowsMap.value[key] || [];
@@ -829,26 +1075,29 @@ async function saveSectionDiscount(section, patch = {}) {
   }
 }
 
+async function patchLineSection(line, targetSectionRef) {
+  const res = await apiClient.patch(`/quotes/${props.record._id}/lines/${line.quoteLineId}`, {
+    quoteSectionId: targetSectionRef,
+    overridePricing: overrideLock.value === true
+  });
+  if (!res?.success || !res?.data?.line) {
+    throw new Error(res?.message || t('records.linesUpdateFailed'));
+  }
+  return res.data;
+}
+
 async function moveLineToSection(line, targetSectionRef) {
   if (!linesEditable.value || !props.record?._id || !line?.quoteLineId || !targetSectionRef) return;
   if (lineSectionRef(line) === targetSectionRef) return;
 
   busy.value = true;
   try {
-    const res = await apiClient.patch(`/quotes/${props.record._id}/lines/${line.quoteLineId}`, {
-      quoteSectionId: targetSectionRef,
-      overridePricing: overrideLock.value === true
+    const data = await patchLineSection(line, targetSectionRef);
+    emit('updated', {
+      type: 'line-updated',
+      line: data.line,
+      ...mutationPayload(data)
     });
-    if (res?.success && res?.data?.line) {
-      emit('updated', {
-        type: 'line-updated',
-        line: res.data.line,
-        totals: res?.data?.totals ?? null,
-        sections: res?.data?.sections ?? null
-      });
-    } else {
-      notifications.error(res?.message || t('records.linesUpdateFailed'));
-    }
   } catch (e) {
     notifications.error(e?.message || t('records.linesUpdateFailed'));
   } finally {
@@ -870,9 +1119,18 @@ function lineRowKey(line) {
 }
 
 const tableColspan = computed(() => {
-  let base = showPricingColumns.value ? 8 : 6;
-  if (linesEditable.value) base += 2; // drag + discount
-  return base;
+  let n = 2; // name, sku
+  if (showPricingColumns.value) n += 2;
+  n += 3; // qty, unit, total
+  if (linesEditable.value) n += 2; // discount, actions
+  return n;
+});
+
+/** Columns from SKU through QTY — footer label sits in the unit-price column. */
+const sectionFooterBeforeUnitPriceColspan = computed(() => {
+  let n = 2; // sku, qty
+  if (showPricingColumns.value) n += 2;
+  return n;
 });
 
 const globalDiscountType = ref('');
@@ -968,6 +1226,11 @@ async function saveGlobalDiscount() {
   }
 }
 
+function onGlobalDiscountTypeChange(value) {
+  globalDiscountType.value = value || '';
+  saveGlobalDiscount();
+}
+
 function sortedAllLines() {
   return [...lines.value].sort(
     (a, b) => (Number(a?.lineOrder) || 0) - (Number(b?.lineOrder) || 0)
@@ -1027,41 +1290,57 @@ function buildOrdersFromVisibleSequence(visibleIds) {
 
 function onLineOrderDragStart() {
   isReorderDragging.value = true;
+  dragStartSectionByLineId.value = snapshotLineSectionKeys();
+  activeDropSectionKey.value = null;
   document.body.classList.add('quote-lines-reorder-active');
+}
+
+async function persistDragChanges() {
+  if (!linesEditable.value || !props.record?._id) return;
+
+  const moves = collectSectionMoves();
+  const visibleIds = sectionBlocks.value.flatMap((block) =>
+    (getSectionRows(block.key) || []).map((row) => String(row.line?.quoteLineId || '')).filter(Boolean)
+  );
+  const orders = buildOrdersFromVisibleSequence(visibleIds);
+  if (!moves.length && !orders.length) return;
+
+  busy.value = true;
+  try {
+    for (const move of moves) {
+      await patchLineSection(move.line, move.targetSectionRef);
+    }
+
+    const res = await apiClient.patch(`/quotes/${props.record._id}/lines/reorder`, {
+      orders,
+      overridePricing: overrideLock.value === true
+    });
+    if (!res?.success || !Array.isArray(res?.data?.lines)) {
+      throw new Error(res?.message || t('records.linesReorderFailed'));
+    }
+    emit('updated', {
+      type: 'lines-recalculated',
+      lines: res.data.lines,
+      ...mutationPayload(res.data)
+    });
+  } catch (e) {
+    notifications.error(
+      e?.message || (moves.length ? t('records.linesUpdateFailed') : t('records.linesReorderFailed'))
+    );
+    syncSectionRowsFromBlocks();
+  } finally {
+    busy.value = false;
+  }
 }
 
 async function onLineOrderDragEnd() {
   isReorderDragging.value = false;
   document.body.classList.remove('quote-lines-reorder-active');
-  if (!linesEditable.value || !props.record?._id) return;
-
-  const visibleIds = sectionBlocks.value.flatMap((block) =>
-    (getSectionRows(block.key) || []).map((row) => String(row.line?.quoteLineId || '')).filter(Boolean)
-  );
-  const orders = buildOrdersFromVisibleSequence(visibleIds);
-  if (!orders.length) return;
-
-  busy.value = true;
   try {
-    const res = await apiClient.patch(`/quotes/${props.record._id}/lines/reorder`, {
-      orders,
-      overridePricing: overrideLock.value === true
-    });
-    if (res?.success && Array.isArray(res?.data?.lines)) {
-      emit('updated', {
-        type: 'lines-recalculated',
-        lines: res.data.lines,
-        ...mutationPayload(res.data)
-      });
-      return;
-    }
-    notifications.error(res?.message || t('records.linesReorderFailed'));
-    syncSectionRowsFromBlocks();
-  } catch (e) {
-    notifications.error(e?.message || t('records.linesReorderFailed'));
-    syncSectionRowsFromBlocks();
+    await persistDragChanges();
   } finally {
-    busy.value = false;
+    dragStartSectionByLineId.value = {};
+    activeDropSectionKey.value = null;
   }
 }
 
@@ -1107,6 +1386,13 @@ const totalsStaleHint = computed(() => {
 
 const priceBooksLoading = ref(false);
 const priceBooks = ref([]);
+
+const priceBookOptions = computed(() =>
+  priceBooks.value.map((b) => ({
+    value: String(b._id),
+    label: b.name
+  }))
+);
 const selectedPriceBookId = ref('');
 
 const showVariantPicker = ref(false);
@@ -1141,6 +1427,24 @@ const linesEditable = computed(() => {
   return overrideLock.value && canOverrideLock.value;
 });
 
+/** Sticky anchor columns — name (left), total + actions (right). */
+function stickyColClass(column) {
+  if (!stickyColumnsActive.value) return '';
+
+  if (column === 'name') {
+    return 'quote-lines-sticky quote-lines-sticky-left quote-lines-sticky-left-name';
+  }
+  if (column === 'total') {
+    return linesEditable.value
+      ? 'quote-lines-sticky quote-lines-sticky-right quote-lines-sticky-right-total'
+      : 'quote-lines-sticky quote-lines-sticky-right quote-lines-sticky-right-edge';
+  }
+  if (column === 'actions') {
+    return linesEditable.value ? 'quote-lines-sticky quote-lines-sticky-right quote-lines-sticky-right-edge' : '';
+  }
+  return '';
+}
+
 function formatMoney(value) {
   return formatQuoteMoney(value, currencyCode.value);
 }
@@ -1150,6 +1454,12 @@ function variantHitLabel(hit) {
     return hit.variant_code ? `${hit.item_name} (${hit.variant_code})` : hit.item_name;
   }
   return hit.variant_code || String(hit._id);
+}
+
+function beginAddLineToSection(block) {
+  if (!linesEditable.value || !block?.section || block.isOrphan) return;
+  addTargetSectionId.value = sectionRef(block.section);
+  openVariantPicker();
 }
 
 function openVariantPicker() {
@@ -1578,8 +1888,214 @@ function priceProvenanceTitle(line) {
 </script>
 
 <style scoped>
+.quote-lines-workspace {
+  margin-top: 0.25rem;
+}
+
+.quote-lines-workspace--expanded {
+  width: 100%;
+  margin-top: 0;
+}
+
+.quote-lines-workspace--expanded .quote-lines-workspace__panel {
+  width: 100%;
+  border-radius: 0.75rem;
+}
+
+.quote-lines-workspace__panel {
+  isolation: isolate;
+}
+
 .quote-lines-table--dragging {
   user-select: none;
+}
+
+/* Horizontal scroll anchors: name (left), total + actions (right). */
+.quote-lines-table--sticky {
+  --ql-name-min-w: 11rem;
+  --ql-actions-w: 3rem;
+}
+
+.quote-lines-table--sticky-pricing .quote-lines-col-name {
+  min-width: var(--ql-name-min-w);
+  max-width: 16rem;
+}
+
+.quote-lines-table--sticky-pricing .quote-lines-col-sku {
+  min-width: 6.75rem;
+}
+
+.quote-lines-table--sticky-pricing .quote-lines-col-total {
+  min-width: 6.5rem;
+}
+
+.quote-lines-col-scroll {
+  min-width: 8.5rem;
+}
+
+.quote-lines-table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.quote-lines-table-scroll.overflow-x-auto:hover,
+.quote-lines-table-scroll.overflow-x-auto:focus-within {
+  scrollbar-color: rgb(203 213 225) transparent;
+}
+
+:global(.dark) .quote-lines-table-scroll.overflow-x-auto:hover,
+:global(.dark) .quote-lines-table-scroll.overflow-x-auto:focus-within {
+  scrollbar-color: rgb(75 85 99) transparent;
+}
+
+.quote-lines-table--sticky th.quote-lines-sticky,
+.quote-lines-table--sticky td.quote-lines-sticky {
+  position: sticky;
+  z-index: 2;
+  background-color: rgb(255 255 255);
+  background-clip: padding-box;
+  isolation: isolate;
+}
+
+:global(.dark) .quote-lines-table--sticky th.quote-lines-sticky,
+:global(.dark) .quote-lines-table--sticky td.quote-lines-sticky {
+  background-color: rgb(17 24 39);
+}
+
+.quote-lines-table--sticky thead th.quote-lines-sticky {
+  z-index: 4;
+  background-color: rgb(249 250 251);
+}
+
+:global(.dark) .quote-lines-table--sticky thead th.quote-lines-sticky {
+  background-color: rgb(31 41 55 / 0.6);
+}
+
+.quote-lines-table--sticky tfoot td.quote-lines-sticky {
+  z-index: 3;
+  background-color: rgb(249 250 251 / 0.95);
+}
+
+:global(.dark) .quote-lines-table--sticky tfoot td.quote-lines-sticky {
+  background-color: rgb(31 41 55 / 0.85);
+}
+
+.quote-lines-table--sticky tbody tr:hover td.quote-lines-sticky {
+  background-color: rgb(249 250 251);
+}
+
+:global(.dark) .quote-lines-table--sticky tbody tr:hover td.quote-lines-sticky {
+  background-color: rgb(31 41 55);
+}
+
+.quote-lines-table--sticky tbody tr.quote-line-row--bundle td.quote-lines-sticky {
+  background-color: rgb(238 242 255 / 0.4);
+}
+
+:global(.dark) .quote-lines-table--sticky tbody tr.quote-line-row--bundle td.quote-lines-sticky {
+  background-color: rgb(30 27 75 / 0.1);
+}
+
+.quote-lines-table--sticky tbody tr.quote-line-row--bundle:hover td.quote-lines-sticky {
+  background-color: rgb(224 231 255 / 0.7);
+}
+
+:global(.dark) .quote-lines-table--sticky tbody tr.quote-line-row--bundle:hover td.quote-lines-sticky {
+  background-color: rgb(30 27 75 / 0.2);
+}
+
+.quote-lines-table--sticky .quote-lines-sticky-left-name {
+  left: 0;
+}
+
+.quote-lines-table--sticky-editable .quote-lines-sticky-right-total {
+  right: var(--ql-actions-w);
+}
+
+.quote-lines-table--sticky-editable .quote-lines-sticky-right-edge {
+  right: 0;
+  width: var(--ql-actions-w);
+  min-width: var(--ql-actions-w);
+  max-width: var(--ql-actions-w);
+}
+
+.quote-lines-table--sticky:not(.quote-lines-table--sticky-editable) .quote-lines-sticky-right-edge {
+  right: 0;
+}
+
+/* Freeze seam: inset hairline when scrolled. */
+.quote-lines-table--sticky .quote-lines-sticky-left-name,
+.quote-lines-table--sticky-editable .quote-lines-sticky-right-total,
+.quote-lines-table--sticky:not(.quote-lines-table--sticky-editable) .quote-lines-sticky-right-edge {
+  transition: box-shadow 150ms ease;
+}
+
+.quote-lines-table-scroll--reveals-left .quote-lines-table--sticky .quote-lines-sticky-left-name {
+  box-shadow: inset -1px 0 0 rgb(229 231 235);
+}
+
+.quote-lines-table-scroll--reveals-right .quote-lines-table--sticky-editable .quote-lines-sticky-right-total,
+.quote-lines-table-scroll--reveals-right .quote-lines-table--sticky:not(.quote-lines-table--sticky-editable) .quote-lines-sticky-right-edge {
+  box-shadow: inset 1px 0 0 rgb(229 231 235);
+}
+
+:global(.dark) .quote-lines-table-scroll--reveals-left .quote-lines-table--sticky .quote-lines-sticky-left-name {
+  box-shadow: inset -1px 0 0 rgb(55 65 81);
+}
+
+:global(.dark) .quote-lines-table-scroll--reveals-right .quote-lines-table--sticky-editable .quote-lines-sticky-right-total,
+:global(.dark) .quote-lines-table-scroll--reveals-right .quote-lines-table--sticky:not(.quote-lines-table--sticky-editable) .quote-lines-sticky-right-edge {
+  box-shadow: inset 1px 0 0 rgb(55 65 81);
+}
+
+.quote-line-row :deep(input[type='number']) {
+  -moz-appearance: textfield;
+}
+
+.quote-line-row :deep(input[type='number']::-webkit-outer-spin-button),
+.quote-line-row :deep(input[type='number']::-webkit-inner-spin-button) {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.quote-lines-tbody--empty {
+  min-height: 3.5rem;
+}
+
+.quote-section-block--drop-highlight {
+  background-color: rgb(238 242 255 / 0.35);
+}
+
+.quote-section-block--drop-active {
+  background-color: rgb(224 231 255 / 0.55);
+  box-shadow: inset 0 0 0 2px rgb(129 140 248);
+}
+
+.quote-section-header--drop-highlight {
+  background-color: rgb(238 242 255 / 0.8);
+}
+
+.quote-section-header--drop-active {
+  background-color: rgb(224 231 255);
+  box-shadow: inset 0 0 0 2px rgb(129 140 248);
+}
+
+:global(.dark) .quote-section-block--drop-highlight {
+  background-color: rgb(30 27 75 / 0.25);
+}
+
+:global(.dark) .quote-section-block--drop-active {
+  background-color: rgb(30 27 75 / 0.45);
+  box-shadow: inset 0 0 0 2px rgb(129 140 248);
+}
+
+:global(.dark) .quote-section-header--drop-highlight {
+  background-color: rgb(30 27 75 / 0.35);
+}
+
+:global(.dark) .quote-section-header--drop-active {
+  background-color: rgb(30 27 75 / 0.5);
+  box-shadow: inset 0 0 0 2px rgb(129 140 248);
 }
 
 :deep(.quote-line-sortable-chosen) {

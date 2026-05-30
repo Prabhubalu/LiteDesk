@@ -165,11 +165,17 @@
           <div v-else class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-medium text-gray-500 mb-1">{{ t('performance.periodStartLabel') }}</label>
-              <input v-model="form.periodStart" type="date" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm" />
+              <DatePicker
+                v-model="form.periodStart"
+                input-class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-500 mb-1">{{ t('performance.periodEndLabel') }}</label>
-              <input v-model="form.periodEnd" type="date" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm" />
+              <DatePicker
+                v-model="form.periodEnd"
+                input-class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
           </div>
 
@@ -398,6 +404,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
+import DatePicker from '@/components/common/DatePicker.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
 import {

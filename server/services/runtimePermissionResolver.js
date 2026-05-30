@@ -34,8 +34,10 @@ function viewAllForModule(mod, rolePlain) {
   return m.scope === 'all' || m.viewAll === true;
 }
 
-const SALES_NATIVE_MODULES = new Set(['deals', 'responses', 'imports', 'projects']);
+const SALES_NATIVE_MODULES = new Set(['deals', 'responses', 'projects']);
 const PLATFORM_ADMIN_MODULES = new Set(PLATFORM_ADMIN_KEYS);
+/** Cross-app capabilities that are not owned by a single business app. */
+const CROSS_FUNCTIONAL_MODULES = new Set(['imports']);
 
 /** In-memory org context cache for a single request materialization burst */
 const orgContextCache = new Map();
@@ -250,7 +252,7 @@ function buildFlatPermissionIndex(envelope, modulesByApp) {
  */
 function resolveEffectiveAppKey(storageModuleKey, requestAppKey) {
   const mod = storageModuleKey;
-  if (PLATFORM_ADMIN_MODULES.has(mod)) return null;
+  if (PLATFORM_ADMIN_MODULES.has(mod) || CROSS_FUNCTIONAL_MODULES.has(mod)) return null;
 
   if (SALES_NATIVE_MODULES.has(mod)) return APP_KEYS.SALES;
   if (mod === 'cases') return APP_KEYS.HELPDESK;
