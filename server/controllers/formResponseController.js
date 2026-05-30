@@ -1135,8 +1135,14 @@ exports.addCorrectiveAction = async (req, res) => {
         // Handle file uploads
         const proofUrls = [];
         if (req.files && req.files.length > 0) {
-            const { getFileUrl } = require('../middleware/uploadMiddleware');
-            proofUrls.push(...req.files.map(file => getFileUrl(req, file.filename)));
+            const fileStorage = require('../services/fileStorageService');
+            for (const file of req.files) {
+                const uploadResult = await fileStorage.uploadMulterFile(file, {
+                    organizationId: req.user.organizationId,
+                    category: 'forms'
+                });
+                proofUrls.push(uploadResult.url);
+            }
         } else if (req.body.proof && Array.isArray(req.body.proof)) {
             // If proof URLs are already provided (from existing files)
             proofUrls.push(...req.body.proof);
@@ -1481,8 +1487,14 @@ exports.updateCorrectiveActionStatus = async (req, res) => {
         // Handle file uploads for proof
         let proofUrls = [];
         if (req.files && req.files.length > 0) {
-            const { getFileUrl } = require('../middleware/uploadMiddleware');
-            proofUrls.push(...req.files.map(file => getFileUrl(req, file.filename)));
+            const fileStorage = require('../services/fileStorageService');
+            for (const file of req.files) {
+                const uploadResult = await fileStorage.uploadMulterFile(file, {
+                    organizationId: req.user.organizationId,
+                    category: 'forms'
+                });
+                proofUrls.push(uploadResult.url);
+            }
         } else if (proof && Array.isArray(proof)) {
             proofUrls = proof;
         }

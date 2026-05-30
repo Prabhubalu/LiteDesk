@@ -702,9 +702,9 @@ exports.uploadEvidence = async (req, res) => {
         // Upload file
         let uploadResult;
         try {
-            uploadResult = await fileStorage.uploadFile(req.file, {
+            uploadResult = await fileStorage.uploadMulterFile(req.file, {
                 organizationId: organizationId.toString(),
-                userId: userId.toString()
+                category: 'evidence'
             });
         } catch (uploadError) {
             if (uploadError.message.includes('File size')) {
@@ -727,7 +727,7 @@ exports.uploadEvidence = async (req, res) => {
             organizationId: organizationId,
             correctiveActionId: actionId, // Using questionId as identifier
             uploadedBy: userId,
-            fileUrl: uploadResult.fileUrl,
+            fileUrl: uploadResult.url,
             fileName: uploadResult.fileName,
             fileSize: uploadResult.fileSize,
             mimeType: uploadResult.mimeType
@@ -742,7 +742,7 @@ exports.uploadEvidence = async (req, res) => {
             },
             {
                 $push: {
-                    'correctiveActions.$.managerAction.proof': uploadResult.fileUrl
+                    'correctiveActions.$.managerAction.proof': uploadResult.url
                 }
             }
         );

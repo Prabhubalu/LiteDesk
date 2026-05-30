@@ -5,7 +5,7 @@ const People = require('../models/People');
 const Deal = require('../models/Deal');
 const Organization = require('../models/Organization');
 const mongoose = require('mongoose');
-const { getFileUrl } = require('../middleware/uploadMiddleware');
+const { persistMulterUpload } = require('../middleware/uploadMiddleware');
 const { emitNotification } = require('../services/notificationEngine');
 const { processCommentMentions } = require('../services/commentMentionNotifications');
 const domainEvents = require('../constants/domainEvents');
@@ -1653,11 +1653,12 @@ const uploadTaskCommentAttachment = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
-    const fileUrl = getFileUrl(req, req.file.filename);
+    const uploadResult = await persistMulterUpload(req, 'comments');
     res.json({
       success: true,
-      url: fileUrl,
-      filename: req.file.filename,
+      url: uploadResult.url,
+      storagePath: uploadResult.storagePath,
+      filename: uploadResult.storedFileName,
       originalname: req.file.originalname,
       size: req.file.size,
       mimetype: req.file.mimetype

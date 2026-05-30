@@ -1510,13 +1510,6 @@ exports.uploadOrganizationLogo = async (req, res) => {
             'image/svg+xml'
         ];
         if (!allowedImageMimes.includes(req.file.mimetype)) {
-            // Best-effort cleanup of the rejected file
-            try {
-                const fs = require('fs');
-                fs.unlink(req.file.path, () => {});
-            } catch (_) {
-                // ignore
-            }
             return res.status(400).json({
                 success: false,
                 message: 'Invalid file type. Please upload an image (PNG, JPG, GIF, WEBP, or SVG).'
@@ -1531,21 +1524,21 @@ exports.uploadOrganizationLogo = async (req, res) => {
             });
         }
 
-        const { getFileUrl } = require('../middleware/uploadMiddleware');
-        const fileUrl = getFileUrl(req, req.file.filename);
+        const { persistMulterUpload } = require('../middleware/uploadMiddleware');
+        const uploadResult = await persistMulterUpload(req, 'logos');
 
         if (!organization.settings) {
             organization.settings = {};
         }
-        organization.settings.logoUrl = fileUrl;
+        organization.settings.logoUrl = uploadResult.url;
         await organization.save();
 
         return res.json({
             success: true,
             message: 'Logo uploaded successfully',
             data: {
-                logoUrl: fileUrl,
-                filename: req.file.filename,
+                logoUrl: uploadResult.url,
+                filename: uploadResult.storedFileName,
                 originalname: req.file.originalname,
                 size: req.file.size,
                 mimetype: req.file.mimetype

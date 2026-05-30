@@ -159,24 +159,18 @@ exports.buildCorrectiveActionsSection = (correctiveActions) => {
  */
 exports.exportToPDF = async (reportData, organizationId) => {
     try {
-        const PDFDocument = require('pdfkit');
-        const fs = require('fs');
-        const path = require('path');
+const PDFDocument = require('pdfkit');
+const { PassThrough } = require('stream');
+const fileStorage = require('./fileStorageService');
         
         // Create PDF document
         const doc = new PDFDocument({ margin: 50 });
         
         // Generate filename
         const filename = `report-${reportData.responseId}-${Date.now()}.pdf`;
-        const reportsDir = path.join(__dirname, '../uploads', organizationId.toString(), 'reports');
-        
-        // Ensure reports directory exists
-        if (!fs.existsSync(reportsDir)) {
-            fs.mkdirSync(reportsDir, { recursive: true });
-        }
-        
-        const filePath = path.join(reportsDir, filename);
-        const stream = fs.createWriteStream(filePath);
+        const chunks = [];
+        const stream = new PassThrough();
+        stream.on('data', (chunk) => chunks.push(chunk));
         doc.pipe(stream);
         
         // Add content to PDF
@@ -232,9 +226,16 @@ exports.exportToPDF = async (reportData, organizationId) => {
             stream.on('finish', resolve);
             stream.on('error', reject);
         });
-        
-        // Return URL
-        return `/api/uploads/${organizationId}/reports/${filename}`;
+
+        const uploadResult = await fileStorage.uploadBuffer({
+            buffer: Buffer.concat(chunks),
+            originalName: filename,
+            mimeType: 'application/pdf',
+            organizationId,
+            category: 'reports'
+        });
+
+        return uploadResult.url;
     } catch (error) {
         console.error('Export to PDF error:', error);
         throw error;
@@ -250,8 +251,7 @@ exports.exportToPDF = async (reportData, organizationId) => {
 exports.exportToExcel = async (reportData, organizationId) => {
     try {
         const ExcelJS = require('exceljs');
-        const fs = require('fs');
-        const path = require('path');
+        const fileStorage = require('./fileStorageService');
         
         // Create workbook and worksheet
         const workbook = new ExcelJS.Workbook();
@@ -368,20 +368,17 @@ exports.exportToExcel = async (reportData, organizationId) => {
         
         // Generate filename
         const filename = `report-${reportData.responseId}-${Date.now()}.xlsx`;
-        const reportsDir = path.join(__dirname, '../uploads', organizationId.toString(), 'reports');
-        
-        // Ensure reports directory exists
-        if (!fs.existsSync(reportsDir)) {
-            fs.mkdirSync(reportsDir, { recursive: true });
-        }
-        
-        const filePath = path.join(reportsDir, filename);
-        
-        // Write file
-        await workbook.xlsx.writeFile(filePath);
-        
-        // Return URL
-        return `/api/uploads/${organizationId}/reports/${filename}`;
+        const buffer = await workbook.xlsx.writeBuffer();
+
+        const uploadResult = await fileStorage.uploadBuffer({
+            buffer: Buffer.from(buffer),
+            originalName: filename,
+            mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            organizationId,
+            category: 'reports'
+        });
+
+        return uploadResult.url;
     } catch (error) {
         console.error('Export to Excel error:', error);
         throw error;

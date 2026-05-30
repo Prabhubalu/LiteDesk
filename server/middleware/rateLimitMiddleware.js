@@ -25,11 +25,15 @@ const parsePositiveInteger = (value, fallback) => {
 
 const RATE_LIMIT_WINDOW_MS = parsePositiveInteger(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000);
 const GENERAL_API_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
-    process.env.GENERAL_API_RATE_LIMIT_MAX_REQUESTS,
+    process.env.GENERAL_API_RATE_LIMIT_MAX_REQUESTS ?? process.env.RATE_LIMIT_MAX_REQUESTS,
     300
 );
 const ORGANIZATION_SETTINGS_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
     process.env.ORGANIZATION_SETTINGS_RATE_LIMIT_MAX_REQUESTS,
+    600
+);
+const SESSION_BOOTSTRAP_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
+    process.env.SESSION_BOOTSTRAP_RATE_LIMIT_MAX_REQUESTS,
     600
 );
 const AUTH_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
@@ -83,6 +87,32 @@ const isNotificationReadPath = (req) => {
     if (req.method === 'GET' && pathOnly === '/api/notifications') {
         return true;
     }
+    return false;
+};
+
+/**
+ * Read-heavy session bootstrap endpoints (profile, UI shell, core module settings).
+ * Excluded from the general API bucket and tracked on a relaxed per-user limiter.
+ */
+const isSessionBootstrapReadPath = (req) => {
+    if (req.method !== 'GET') {
+        return false;
+    }
+
+    const pathOnly = (req.originalUrl || req.path || '').split('?')[0];
+    if (pathOnly === '/api/users/profile') {
+        return true;
+    }
+    if (pathOnly.startsWith('/api/ui/')) {
+        return true;
+    }
+    if (
+        pathOnly === '/api/settings/core-modules' ||
+        pathOnly.startsWith('/api/settings/core-modules/')
+    ) {
+        return true;
+    }
+
     return false;
 };
 
@@ -188,7 +218,8 @@ const apiLimiter = rateLimit({
             isHealthCheckPath(req) ||
             isAuthPath(req) ||
             isOrganizationSettingsReadPath(req) ||
-            isNotificationReadPath(req)
+            isNotificationReadPath(req) ||
+            isSessionBootstrapReadPath(req)
         );
     }
 });
@@ -291,6 +322,34 @@ const sensitiveOperationLimiter = rateLimit({
     // Skip rate limiting in development mode
     skip: (req) => {
         return process.env.NODE_ENV !== 'production';
+    }
+});
+
+// Relaxed limiter for session bootstrap reads (UI shell, profile, core modules).
+// Mounted after auth on dedicated routes so page loads do not exhaust the general API bucket.
+const sessionBootstrapLimiter = rateLimit({
+    windowMs: RATE_LIMIT_WINDOW_MS,
+    max: SESSION_BOOTSTRAP_RATE_LIMIT_MAX_REQUESTS,
+    ...rateLimitHeadersAndStore('session-bootstrap', RATE_LIMIT_WINDOW_MS, ROUTE_RATE_LIMIT_REDIS_FAILURE_MODE),
+    message: {
+        error: 'Too many session bootstrap requests, please try again later.',
+        code: 'SESSION_BOOTSTRAP_RATE_LIMIT_EXCEEDED'
+    },
+    keyGenerator: (req) => {
+        if (req.user?._id) {
+            return `session-bootstrap:user:${req.user._id}`;
+        }
+        return getRateLimitKey(req, 'session-bootstrap');
+    },
+    handler: makeRateLimitHandler('session-bootstrap', {
+        error: 'Too many session bootstrap requests, please try again later.',
+        code: 'SESSION_BOOTSTRAP_RATE_LIMIT_EXCEEDED'
+    }),
+    skip: (req) => {
+        if (SECURITY_DISABLED) {
+            return true;
+        }
+        return shouldBypassRateLimit(req);
     }
 });
 
@@ -427,6 +486,7 @@ module.exports = {
     passwordResetLimiter,
     registrationLimiter,
     sensitiveOperationLimiter,
+    sessionBootstrapLimiter,
     organizationSettingsLimiter,
     mailroomPublicIngestLimiter,
     mailroomPortalIngestLimiter,

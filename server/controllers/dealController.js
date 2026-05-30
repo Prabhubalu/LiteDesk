@@ -6,7 +6,7 @@ const ImportHistory = require('../models/ImportHistory');
 const FormResponse = require('../models/FormResponse');
 const User = require('../models/User');
 const mongoose = require('mongoose');
-const { getFileUrl } = require('../middleware/uploadMiddleware');
+const { persistMulterUpload } = require('../middleware/uploadMiddleware');
 const { processCommentMentions } = require('../services/commentMentionNotifications');
 const {
   computeAndSetDerivedStatus,
@@ -2505,11 +2505,12 @@ exports.uploadDealCommentAttachment = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
-    const fileUrl = getFileUrl(req, req.file.filename);
+    const uploadResult = await persistMulterUpload(req, 'comments');
     res.json({
       success: true,
-      url: fileUrl,
-      filename: req.file.filename,
+      url: uploadResult.url,
+      storagePath: uploadResult.storagePath,
+      filename: uploadResult.storedFileName,
       originalname: req.file.originalname,
       size: req.file.size,
       mimetype: req.file.mimetype

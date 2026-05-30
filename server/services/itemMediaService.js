@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Item = require('../models/Item');
-const { getFileUrl } = require('../middleware/uploadMiddleware');
+const { persistMulterUpload } = require('../middleware/uploadMiddleware');
 const { isCatalogMediaKind } = require('../constants/catalogBarcode');
 
 function sortMediaEntries(media = []) {
@@ -47,7 +47,8 @@ async function addItemMediaFromUpload({ itemId, organizationId, userId, file, re
   if (!item) return null;
 
   const mediaKind = isCatalogMediaKind(kind) ? kind : (file.mimetype?.startsWith('image/') ? 'image' : 'document');
-  const url = getFileUrl(req, file.filename);
+  const uploadResult = await persistMulterUpload(req, 'items');
+  const url = uploadResult.url;
   const nextOrder = (item.media || []).length;
 
   const entry = {

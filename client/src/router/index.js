@@ -994,6 +994,13 @@ export async function initializeDynamicRoutes() {
   const authStore = useAuthStore();
   if (authStore.isAuthenticated) {
     try {
+      const { useAppShellStore } = await import('@/stores/appShell');
+      const appShellStore = useAppShellStore();
+      if (Array.isArray(appShellStore.routes) && appShellStore.routes.length > 0) {
+        await loadAndRegisterRoutes(router, null, appShellStore.routes);
+        return;
+      }
+
       const { default: apiClient } = await import('@/utils/apiClient')
       await loadAndRegisterRoutes(router, apiClient);
     } catch (error) {

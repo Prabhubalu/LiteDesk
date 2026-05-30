@@ -4,6 +4,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation, checkTrialStatus } = require('../middleware/organizationMiddleware');
 const { canManageUsers } = require('../middleware/permissionMiddleware');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
+const { sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
 const {
     getUsers,
     getUsersForAssignment,
@@ -28,7 +29,7 @@ router.use(checkTrialStatus);
 // --- Profile Routes (any authenticated user, app-agnostic) ---
 // Profile routes should be accessible to all authenticated users regardless of app
 // These routes do NOT require app context or app entitlement
-router.get('/profile', getProfile);
+router.get('/profile', sessionBootstrapLimiter, getProfile);
 router.put('/profile', updateProfile);
 router.put('/profile/password', changePassword);
 router.post('/profile/avatar', uploadSingle('avatar'), uploadAvatar);
