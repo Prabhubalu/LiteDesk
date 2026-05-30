@@ -109,7 +109,7 @@
       :showAllFields="false"
       :fieldsOverride="dependentFields"
       :moduleOverride="moduleOverride"
-      context="platform"
+      :context="formFieldContext"
       @update:formData="onFieldsUpdate"
     />
   </div>
@@ -120,6 +120,8 @@ import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, toRef, Transition, type PropType } from 'vue';
 import { Listbox, ListboxLabel, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import { ChevronUpDownIcon, CheckIcon } from '@heroicons/vue/24/outline';
+import { appKeyToFieldContextToken } from '@/utils/fieldContextFilter';
+import { syncParticipationClassifierFields } from '@/utils/getFieldValue';
 import DynamicForm from '@/components/common/DynamicForm.vue';
 import { getAppLabel } from '@/utils/getRoleDisplay';
 import { usePeopleTypes } from '@/composables/usePeopleTypes';
@@ -183,6 +185,8 @@ const appSectionTitle = computed(() =>
   `${getAppLabel(props.appKey)} Information`
 );
 
+const formFieldContext = computed(() => appKeyToFieldContextToken(props.appKey) || 'platform');
+
 const dependentFields = computed(() => {
   const pt = props.modelValue?.participationType;
   if (!pt) return [];
@@ -202,6 +206,10 @@ watch(
     for (const key of f) {
       next[key] = m[key] ?? '';
     }
+    if (m.participationType) {
+      next.participationType = m.participationType;
+    }
+    syncParticipationClassifierFields(next, props.appKey);
     localFormData.value = next;
   },
   { immediate: true }

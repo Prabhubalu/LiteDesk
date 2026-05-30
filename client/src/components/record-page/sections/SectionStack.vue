@@ -1,11 +1,11 @@
 <template>
-  <div class="space-y-10">
+  <div :class="rootClass">
     <section
       v-for="(section, index) in visibleSections"
       :key="getSectionKey(section, index)"
       :class="getSectionClass(section)"
     >
-      <div class="pb-2 flex items-center justify-between gap-3">
+      <div v-if="!section.suppressTitleRow" class="pb-2 flex-shrink-0 flex items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-2 min-w-0">
           <h3 :class="getSectionTitleClass()">{{ section.title }}</h3>
           <component
@@ -49,6 +49,7 @@
 
       <component
         :is="section.component"
+        :class="getSectionBodyClass(section)"
         :record="record"
         :adapter="adapter"
         :context="getSectionContext(section)"
@@ -77,6 +78,14 @@ const props = defineProps({
 
 const isExpandedMode = computed(() => Boolean(props.context?.expandedLeftSection));
 
+const isLinesExpandedMode = computed(() => props.context?.expandedLeftSection === 'lines');
+
+const rootClass = computed(() => (
+  isLinesExpandedMode.value
+    ? 'flex flex-col flex-1 min-h-0 h-full overflow-hidden'
+    : 'space-y-10'
+));
+
 const ACTION_ICON_MAP = {
   plus: PlusIcon,
   add: PlusIcon,
@@ -97,6 +106,7 @@ const normalizeSection = (section, index) => {
       titleSuffixComponent: section.titleSuffixComponent || null,
       headerActionsComponent: section.headerActionsComponent || null,
       alwaysShowActions: section.alwaysShowActions === true,
+      suppressTitleRow: section.suppressTitleRow === true,
       component: section.component,
       className: section.className || '',
       actions: Array.isArray(section.actions) ? section.actions : []
@@ -127,7 +137,18 @@ const getSectionKey = (section, index) => {
 };
 
 const getSectionClass = (section) => {
-  return ['group/section-stack', section?.className || ''];
+  const classes = ['group/section-stack', section?.className || ''];
+  if (isLinesExpandedMode.value && section?.key === 'lines') {
+    classes.push('flex', 'flex-col', 'flex-1', 'min-h-0', 'overflow-hidden');
+  }
+  return classes;
+};
+
+const getSectionBodyClass = (section) => {
+  if (isLinesExpandedMode.value && section?.key === 'lines') {
+    return 'flex flex-col flex-1 min-h-0 overflow-hidden';
+  }
+  return '';
 };
 
 const resolveActionIcon = (action) => {

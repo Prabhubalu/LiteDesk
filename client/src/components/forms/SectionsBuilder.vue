@@ -920,14 +920,11 @@
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                     />
                     <!-- Date question - show date input -->
-                    <input
+                    <DatePicker
                       v-else-if="getConditionalQuestion()?.type === 'Date'"
                       v-model="currentQuestion.conditionalLogic.showIf.value"
-                      type="date"
-                      @click="openDatePicker"
-                      @focus="handleQuestionSettingsFocus"
+                      input-class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
                       @blur="handleQuestionSettingsBlur"
-                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
                     />
                     <!-- Text, Textarea, Email - show text input -->
                     <input
@@ -1564,7 +1561,7 @@
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { openDatePicker } from '@/utils/dateUtils';
+import DatePicker from '@/components/common/DatePicker.vue';
 import FormPreviewDrawer from './FormPreviewDrawer.vue';
 import DuplicateFormDialog from './DuplicateFormDialog.vue';
 import {

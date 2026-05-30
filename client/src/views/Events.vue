@@ -6,9 +6,9 @@
       module-key="events"
       app-key="PLATFORM"
       @create="openEventModal"
-      @import="showImportModal = true"
       @export="exportEvents"
       @row-click="handleRowClick"
+      @edit="editEventFromList"
       @delete="handleInlineDelete"
       @bulk-action="handleBulkAction"
       @filters-changed="handleFiltersChanged"
@@ -56,9 +56,9 @@
           </div>
           <ModuleActions
             module="events"
-            create-:label="t('events.eventsNewEvent')"
+            :create-label="t('events.eventsNewEvent')"
+            :show-import="false"
             @create="openEventModal"
-            @import="showImportModal = true"
             @export="exportEvents"
           />
         </div>
@@ -190,13 +190,14 @@
       @saved="handleEventQuickCreateSaved"
     />
 
-    <!-- CSV Import Modal -->
-    <CSVImportModal 
-      v-if="showImportModal"
-      entity-type="Events"
-      @close="showImportModal = false"
-      @import-complete="handleImportComplete"
+    <CreateRecordDrawer
+      :isOpen="showEditDrawer"
+      module-key="events"
+      :record="editingEvent"
+      @close="closeEditDrawer"
+      @saved="handleEditDrawerSaved"
     />
+
   </div>
 </template>
 
@@ -216,9 +217,9 @@ import ModuleList from '@/components/module-list/ModuleList.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
 import Avatar from '@/components/common/Avatar.vue';
-import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import ModuleActions from '@/components/common/ModuleActions.vue';
 import EventQuickCreateDrawer from '@/components/events/EventQuickCreateDrawer.vue';
+import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import AppointmentsStatsBar from '@/components/appointments/AppointmentsStatsBar.vue';
 import { getModuleListConfig } from '@/platform/modules/moduleListRegistry';
 import { CalendarIcon, CalendarDaysIcon, ListBulletIcon } from '@heroicons/vue/24/outline';
@@ -257,7 +258,8 @@ const calendarLoading = ref(false);
 // Event creation modal state
 const showEventQuickCreate = ref(false);
 const eventQuickCreateInitialData = ref({});
-const showImportModal = ref(false);
+const showEditDrawer = ref(false);
+const editingEvent = ref(null);
 const isDarkMode = ref(false);
 
 function isListView(view) {
@@ -734,11 +736,21 @@ const handleEventQuickCreateSaved = async () => {
   }
 };
 
-const handleImportComplete = () => {
-  showImportModal.value = false;
-  // Refresh both views
-  fetchCalendarEvents();
-  if (moduleListRef.value && moduleListRef.value.refresh) {
+const editEventFromList = (row) => {
+  if (!row) return;
+  editingEvent.value = row;
+  showEditDrawer.value = true;
+};
+
+const closeEditDrawer = () => {
+  showEditDrawer.value = false;
+  editingEvent.value = null;
+};
+
+const handleEditDrawerSaved = async () => {
+  closeEditDrawer();
+  await fetchCalendarEvents();
+  if (moduleListRef.value?.refresh) {
     moduleListRef.value.refresh();
   }
 };

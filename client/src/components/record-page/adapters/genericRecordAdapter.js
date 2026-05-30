@@ -22,6 +22,7 @@ import { getDefaultTagChipClass } from '@/components/record-page/composables/use
 import { shouldHideDetailField, shouldHideRecordPaneDetailField } from '@/components/record-page/fieldVisibilityGuards';
 import { canEditField } from '@/platform/fields/fieldCapabilityEngine';
 import { isFieldVisibleInContext } from '@/utils/fieldContextFilter';
+import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import { normalizeModuleKeyForRegistry, classifyFieldForModule } from '@/platform/fields/FieldRegistry';
 import { getAllowedNextQuoteStatuses } from '@/constants/quoteLifecycle';
 
@@ -155,6 +156,17 @@ function filterFieldsForRecordSurface(fields, fieldContext) {
   return fields.filter((f) => isFieldVisibleInContext(f, ctx));
 }
 
+function filterFieldKeysByDependencies(keys, fields, record, moduleKey) {
+  if (!Array.isArray(keys) || !record || !Array.isArray(fields)) return keys;
+  const mk = String(moduleKey || '').toLowerCase();
+  return keys.filter((key) => {
+    const field = fields.find((f) => normKey(f?.key) === normKey(key));
+    if (!field?.dependencies?.length) return true;
+    const depState = getFieldDependencyState(field, record, fields, { moduleKey: mk });
+    return depState.visible !== false;
+  });
+}
+
 function iconForKey(key, field) {
   const k = String(key || '').toLowerCase();
   const dt = String(field?.dataType || '').toLowerCase();
@@ -163,6 +175,8 @@ function iconForKey(key, field) {
   if (['amount', 'currency', 'number'].some((x) => k.includes(x)) || dt.includes('currency')) return CurrencyDollarIcon;
   const isSelectLikeTypeKey =
     k === 'sales_type' ||
+    k === 'lead_status' ||
+    k === 'contact_status' ||
     k === 'item_type' ||
     k === 'types' ||
     k === 'helpdesk_role';
@@ -675,7 +689,11 @@ export function createGenericRecordAdapter(opts = {}) {
         context?.fieldContext != null && String(context.fieldContext).trim() !== ''
           ? String(context.fieldContext).toLowerCase()
           : 'platform';
-      const detailKeys = getDetailFieldKeys(def, moduleKey, fieldCtx);
+      const allFields = Array.isArray(def?.fields) ? def.fields : [];
+      let detailKeys = getDetailFieldKeys(def, moduleKey, fieldCtx);
+      if (moduleKey === 'people') {
+        detailKeys = filterFieldKeysByDependencies(detailKeys, allFields, record, moduleKey);
+      }
       const rows = buildDetailRowsForKeys(record, context, detailKeys);
       rows.forEach((r) => {
         delete r._rowIndex;
@@ -693,6 +711,9 @@ export function createGenericRecordAdapter(opts = {}) {
           ? String(context.fieldContext).toLowerCase()
           : 'platform';
       let keys = getRecordPaneAllModuleFieldKeys(def, moduleKey, fieldCtx);
+      if (moduleKey === 'people') {
+        keys = filterFieldKeysByDependencies(keys, Array.isArray(def?.fields) ? def.fields : [], record, moduleKey);
+      }
       const seen = new Set(keys.map((k) => normKey(k)));
       const extraKeys = ['createdAt', 'updatedAt', 'createdBy', 'modifiedBy', 'updatedBy', '_id'];
       for (const ek of extraKeys) {

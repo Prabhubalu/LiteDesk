@@ -203,7 +203,7 @@ const detectActiveAppFromRoute = (path) => {
     const appKey = String(path.split('/')[2] || '').toUpperCase();
     if (appKey) return appKey;
   }
-  if (path.startsWith('/dashboard') || path.startsWith('/people') || path.startsWith('/organizations') || path.startsWith('/deals') || path.startsWith('/tasks') || path.startsWith('/events') || path.startsWith('/items') || path.startsWith('/forms') || path.startsWith('/imports')) return 'SALES';
+  if (path.startsWith('/dashboard') || path.startsWith('/people') || path.startsWith('/organizations') || path.startsWith('/deals') || path.startsWith('/tasks') || path.startsWith('/events') || path.startsWith('/items') || path.startsWith('/forms')) return 'SALES';
   return 'SALES'; // Default to Sales
 };
 

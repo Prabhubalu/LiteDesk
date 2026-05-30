@@ -330,5 +330,212 @@
   "cSVImportModalToastErrorImportingDataPleaseTry": {
     "message": "डेटा आयात करने में त्रुटि. कृपया पुन: प्रयास करें।",
     "description": "Toast from CSVImportModal.vue"
+  },
+  "importsDescription": {
+    "message": "View and manage all data imports"
+  },
+  "importsEmptyMessage": {
+    "message": "Start importing data to see history here"
+  },
+  "importsStatTotalImports": {
+    "message": "Total Imports"
+  },
+  "importsStatRecordsCreated": {
+    "message": "Records Created"
+  },
+  "importsStatRecordsUpdated": {
+    "message": "Records Updated"
+  },
+  "importsStatTotalErrors": {
+    "message": "Total Errors"
+  },
+  "importsFilterAllModules": {
+    "message": "All Modules"
+  },
+  "importsFilterAllStatuses": {
+    "message": "All Statuses"
+  },
+  "importsStatusCompleted": {
+    "message": "Completed"
+  },
+  "importsStatusPartial": {
+    "message": "Partial"
+  },
+  "importsStatusFailed": {
+    "message": "Failed"
+  },
+  "importsStatusProcessing": {
+    "message": "Processing"
+  },
+  "importsColFileName": {
+    "message": "File Name"
+  },
+  "importsColModule": {
+    "message": "Module"
+  },
+  "importsColImportedBy": {
+    "message": "Imported By"
+  },
+  "importsColDate": {
+    "message": "Date"
+  },
+  "importsColStatus": {
+    "message": "Status"
+  },
+  "importsColRecords": {
+    "message": "Records"
+  },
+  "importsCellCreated": {
+    "message": "{count} created"
+  },
+  "importsCellUpdated": {
+    "message": "{count} updated"
+  },
+  "importsCellSkipped": {
+    "message": "{count} skipped"
+  },
+  "importsCellFailed": {
+    "message": "{count} failed"
+  },
+  "importDetailTabOverview": {
+    "message": "Overview"
+  },
+  "importDetailTabFieldMapping": {
+    "message": "Field Mapping"
+  },
+  "importDetailTabErrors": {
+    "message": "Errors"
+  },
+  "importDetailGoToModule": {
+    "message": "Go to {module}"
+  },
+  "importDetailDuplicateEnabled": {
+    "message": "Enabled"
+  },
+  "importDetailDuplicateDisabled": {
+    "message": "Disabled"
+  },
+  "importDetailAtTime": {
+    "message": "at"
+  },
+  "importDetailRecordsFailedDuring": {
+    "message": "{count} record(s) failed during this import:"
+  },
+  "importDetailRecordsWereDuring": {
+    "message": "{count} record(s) were {action} during this import."
+  },
+  "importDetailDefaultFields": {
+    "message": "default fields"
+  },
+  "importDetailRowLabel": {
+    "message": "Row {row}"
+  },
+  "cSVImportModalImportEntity": {
+    "message": "Import {entityType}"
+  },
+  "cSVImportModalSkipField": {
+    "message": "Skip this field"
+  },
+  "cSVImportModalMapColumnsHint": {
+    "message": "Map your CSV columns to {entityType} fields below. You can skip fields you don't need."
+  },
+  "cSVImportModalRowCount": {
+    "message": "{count} rows"
+  },
+  "cSVImportModalComparingRecords": {
+    "message": "Comparing {count} records"
+  },
+  "cSVImportModalHowHandleDuplicates": {
+    "message": "How should we handle duplicates?"
+  },
+  "cSVImportModalOnlyImportNew": {
+    "message": "Only import new records ({count} records)"
+  },
+  "cSVImportModalUpdateDuplicatesCount": {
+    "message": "Update {count} duplicates with new data"
+  },
+  "cSVImportModalImportAllCount": {
+    "message": "Import all {count} records, even duplicates"
+  },
+  "cSVImportModalDuplicateRecordsTitle": {
+    "message": "Duplicate Records ({count}):"
+  },
+  "cSVImportModalDuplicateRecordsMore": {
+    "message": "... and {count} more duplicates"
+  },
+  "cSVImportModalAndLogicExample": {
+    "message": "For example, selecting \"Email + Company\" means both the email AND company must match."
+  },
+  "cSVImportModalStepUploadTitle": {
+    "message": "Upload CSV File"
+  },
+  "cSVImportModalStepUploadShort": {
+    "message": "Upload"
+  },
+  "cSVImportModalStepUploadDesc": {
+    "message": "Select your CSV file to import"
+  },
+  "cSVImportModalStepMapTitle": {
+    "message": "Map Fields"
+  },
+  "cSVImportModalStepMapShort": {
+    "message": "Map Fields"
+  },
+  "cSVImportModalStepMapDesc": {
+    "message": "Match CSV columns to fields"
+  },
+  "cSVImportModalStepDuplicatesTitle": {
+    "message": "Check Duplicates"
+  },
+  "cSVImportModalStepDuplicatesShort": {
+    "message": "Duplicates"
+  },
+  "cSVImportModalStepDuplicatesDesc": {
+    "message": "Review potential duplicates"
+  },
+  "cSVImportModalStepResultsTitle": {
+    "message": "Import Results"
+  },
+  "cSVImportModalStepResultsShort": {
+    "message": "Results"
+  },
+  "cSVImportModalStepResultsDesc": {
+    "message": "Review import results"
+  },
+  "cSVImportModalNext": {
+    "message": "Next"
+  },
+  "cSVImportModalCancel": {
+    "message": "Cancel"
+  },
+  "cSVImportModalClose": {
+    "message": "Close"
+  },
+  "cSVImportModalImportNow": {
+    "message": "Import Now"
+  },
+  "cSVImportModalCheckDuplicates": {
+    "message": "Check Duplicates"
+  },
+  "cSVImportModalChecking": {
+    "message": "Checking..."
+  },
+  "cSVImportModalImportRowError": {
+    "message": "Row {row}:"
+  },
+  "importDetailRecordsViewTitle": {
+    "message": "{type} Records ({count})"
+  },
+  "cSVImportModalConfirmDiscard": {
+    "message": "You have an import in progress. Close and discard your progress?"
+  },
+  "importFieldGroupGeneral": {
+    "message": "General"
+  },
+  "importFieldGroupCustom": {
+    "message": "Custom Fields"
+  },
+  "importFieldsLoading": {
+    "message": "Loading available fields…"
   }
 }

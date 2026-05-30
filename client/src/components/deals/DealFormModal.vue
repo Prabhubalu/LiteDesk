@@ -46,12 +46,9 @@
             <div class="flex flex-col">
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('deals.dealFormModalExpectedCloseDate') }}<span class="text-red-600">*</span>
               </label>
-              <input 
-                v-model="form.expectedCloseDate" 
-                type="date" 
-                required
-                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
-                @click="openDatePicker"
+              <DatePicker
+                v-model="form.expectedCloseDate"
+                input-class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer w-full"
               />
             </div>
           </div>
@@ -236,11 +233,9 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="flex flex-col">
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('deals.dealFormModalNextFollowUpDate') }}</label>
-              <input 
-                v-model="form.nextFollowUpDate" 
-                type="date"
-                class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
-                @click="openDatePicker"
+              <DatePicker
+                v-model="form.nextFollowUpDate"
+                input-class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer w-full"
               />
             </div>
           </div>
@@ -270,7 +265,7 @@
 import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, onMounted } from 'vue';
 import apiClient from '@/utils/apiClient';
-import { openDatePicker } from '@/utils/dateUtils';
+import DatePicker from '@/components/common/DatePicker.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 
 const props = defineProps({

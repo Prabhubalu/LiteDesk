@@ -111,6 +111,7 @@ function buildActionsFromDefinition(moduleDefPermissions = {}, moduleKey, kind) 
   if (kind === 'settings') return ['read', 'update', 'manageRoles', 'manageBilling'];
   if (kind === 'performance') return ['view', 'create', 'edit', 'activate', 'manageTypes', 'manageOrgSettings'];
   if (kind === 'reports') return [...DEFAULT_ACTIONS_BY_KIND.reports];
+  if (moduleKey === 'imports') return ['read', 'create', 'delete'];
 
   const actions = [];
   const p = moduleDefPermissions || {};
@@ -179,6 +180,18 @@ async function resolveAppDisplayName(appKey) {
 
 function buildPlatformAdminCatalogEntries() {
   const entries = [
+    {
+      key: 'imports',
+      moduleKey: 'imports',
+      label: 'Import',
+      description: 'Import data across modules and applications',
+      kind: 'crud',
+      scope: 'platform',
+      appKey: null,
+      order: 199,
+      hasScope: false,
+      supportsViewAll: false
+    },
     {
       key: 'reports',
       moduleKey: 'reports',

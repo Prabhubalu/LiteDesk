@@ -28,7 +28,12 @@ const salesTypeField: PeopleFieldRegistryItem = {
   defaultPicklistOptions: ['Lead', 'Contact'],
   getValue: (p) => {
     const participations = p.participations as ParticipationsShape | undefined;
-    return participations?.SALES?.role ?? null;
+    const fromPart = participations?.SALES?.role ?? null;
+    if (fromPart != null && fromPart !== '') return fromPart;
+    if (p.sales_type != null && p.sales_type !== '') return p.sales_type;
+    // Quick create / attach surfaces use participationType before participations exist
+    if (p.participationType != null && p.participationType !== '') return p.participationType;
+    return null;
   },
   setValue: (p, v) => {
     const prev = (p.participations as ParticipationsShape) || {};
@@ -61,7 +66,11 @@ const registry: Record<string, PeopleFieldRegistryItem> = {
     defaultPicklistOptions: ['Customer', 'Agent'],
     getValue: (p) => {
       const participations = p.participations as ParticipationsShape | undefined;
-      return participations?.HELPDESK?.role ?? null;
+      const fromPart = participations?.HELPDESK?.role ?? null;
+      if (fromPart != null && fromPart !== '') return fromPart;
+      if (p.helpdesk_role != null && p.helpdesk_role !== '') return p.helpdesk_role;
+      if (p.participationType != null && p.participationType !== '') return p.participationType;
+      return null;
     },
     setValue: (p, v) => {
       const prev = (p.participations as ParticipationsShape) || {};

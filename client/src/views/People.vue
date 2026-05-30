@@ -36,6 +36,7 @@
       @import="showImportModal = true"
       @export="exportContacts"
       @row-click="handleRowClick"
+      @edit="editContact"
       @delete="handleInlineDelete"
       @bulk-action="handleBulkAction"
     >
@@ -51,22 +52,8 @@
             size="md"
           />
           <div class="min-w-0 flex-1">
-            <div class="flex min-w-0 items-center gap-2">
-              <span
-                class="min-w-0 flex-1 font-semibold text-gray-900 dark:text-white truncate"
-              >
-                {{ row.first_name }} {{ row.last_name }}
-              </span>
-              <span
-                v-if="nameCellParticipationIndicator(row).show"
-                class="inline-flex items-center shrink-0"
-                :title="nameCellParticipationIndicator(row).title"
-              >
-                <span
-                  class="h-2 w-2 rounded-full bg-blue-500 dark:bg-blue-400"
-                  aria-hidden="true"
-                />
-              </span>
+            <div class="font-semibold text-gray-900 dark:text-white truncate">
+              {{ row.first_name }} {{ row.last_name }}
             </div>
             <div
               v-if="row.email"
@@ -186,13 +173,13 @@
       <!-- Lead Status (SALES participation field) -->
       <template #cell-lead_status="{ row, value }">
         <span v-if="getParticipationAwareCellValue('lead_status', row, value) === '-'" class="text-gray-400 dark:text-gray-500">-</span>
-        <span v-else class="text-gray-900 dark:text-white">{{ value || '-' }}</span>
+        <BadgeCell v-else :value="value" :options="leadStatusPicklistOptions" />
       </template>
 
       <!-- Contact Status (SALES participation field) -->
       <template #cell-contact_status="{ row, value }">
         <span v-if="getParticipationAwareCellValue('contact_status', row, value) === '-'" class="text-gray-400 dark:text-gray-500">-</span>
-        <span v-else class="text-gray-900 dark:text-white">{{ value || '-' }}</span>
+        <BadgeCell v-else :value="value" :options="contactStatusPicklistOptions" />
       </template>
 
       <!-- Lead Owner (SALES participation field) -->
@@ -263,6 +250,15 @@
       @saved="handlePersonCreated"
     />
 
+    <!-- Edit drawer (list row actions) -->
+    <CreateRecordDrawer
+      :isOpen="showEditDrawer"
+      module-key="people"
+      :record="editingContact"
+      @close="closeEditDrawer"
+      @saved="handleContactSaved"
+    />
+
     <!-- CSV Import Modal -->
     <CSVImportModal 
       v-if="showImportModal"
@@ -285,17 +281,19 @@ import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import PeopleQuickCreateDrawer from '@/components/people/PeopleQuickCreateDrawer.vue';
+import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import { getFieldMetadata } from '@/platform/fields/peopleFieldModel';
 import { getParticipation } from '@/utils/getParticipation';
-import { getRoleDisplay, getAppLabel } from '@/utils/getRoleDisplay';
+import { getAppLabel } from '@/utils/getRoleDisplay';
 import PeopleListParticipationTypeCell from '@/components/people/PeopleListParticipationTypeCell.vue';
-import {
-  getPeopleParticipationEntries,
-  isPeopleListAppContext
-} from '@/utils/peopleParticipationUi';
 import { usePeopleTypes } from '@/composables/usePeopleTypes';
+import { usePeopleModuleFields } from '@/composables/usePeopleModuleFields';
 import { typeDefsToBadgeOptions } from '@/utils/peopleTypeColors';
+import {
+  findPeopleModuleField,
+  getPeopleModuleFieldOptionsWithDefaults,
+} from '@/utils/peopleModuleFieldUtils';
 import { APP_NAME_KEYS } from '@/utils/navigationLabels';
 
 const router = useRouter();
@@ -320,6 +318,14 @@ const contextOptions = computed(() => [
 
 const { typeDefs: salesPeopleTypeDefs } = usePeopleTypes('SALES');
 const { typeDefs: helpdeskPeopleTypeDefs } = usePeopleTypes('HELPDESK');
+const { fields: peopleModuleFields } = usePeopleModuleFields();
+
+const leadStatusPicklistOptions = computed(() =>
+  getPeopleModuleFieldOptionsWithDefaults(findPeopleModuleField(peopleModuleFields.value, 'lead_status'))
+);
+const contactStatusPicklistOptions = computed(() =>
+  getPeopleModuleFieldOptionsWithDefaults(findPeopleModuleField(peopleModuleFields.value, 'contact_status'))
+);
 
 const participationBadgeOptionsByApp = computed(() => ({
   SALES: typeDefsToBadgeOptions(salesPeopleTypeDefs.value),
@@ -335,6 +341,7 @@ watch(peopleContext, () => {
 // State
 const moduleListRef = ref(null);
 const showQuickCreate = ref(false);
+const showEditDrawer = ref(false);
 const showImportModal = ref(false);
 const editingContact = ref(null);
 const deleting = ref(false);
@@ -419,23 +426,6 @@ const handleRowClick = (row, event = null) => {
   // Navigate to PeopleSurface only (no edit/delete from list)
   viewContact(row._id, event, row);
 };
-
-// Participation visibility helpers - use getParticipation / getRoleDisplay, never person.type directly
-function nameCellParticipationIndicator(row) {
-  const ctx = peopleContext.value;
-  if (ctx === 'ALL') {
-    const entries = getPeopleParticipationEntries(row);
-    if (!entries.length) return { show: false, title: '' };
-    return {
-      show: true,
-      title: entries.map((e) => `${e.appLabel} — ${e.role}`).join('; ')
-    };
-  }
-  if (!isPeopleListAppContext(ctx)) return { show: false, title: '' };
-  const d = getRoleDisplay(row, ctx);
-  if (!d) return { show: false, title: '' };
-  return { show: true, title: `In ${d.appLabel} as ${d.role}` };
-}
 
 const roleBadgeVariantMap = {
   Lead: 'warning',
@@ -560,6 +550,24 @@ const viewContact = (contactId, event = null, row = null) => {
 const openCreateModal = () => {
   // Open local drawer with current context (AppSection when peopleContext is an app)
   showQuickCreate.value = true;
+};
+
+const editContact = (contact) => {
+  if (!contact) return;
+  editingContact.value = contact;
+  showEditDrawer.value = true;
+};
+
+const closeEditDrawer = () => {
+  showEditDrawer.value = false;
+  editingContact.value = null;
+};
+
+const handleContactSaved = () => {
+  closeEditDrawer();
+  if (moduleListRef.value?.refresh) {
+    moduleListRef.value.refresh();
+  }
 };
 
 const handlePeopleDrawerClose = () => {

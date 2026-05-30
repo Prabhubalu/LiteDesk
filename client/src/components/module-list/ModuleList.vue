@@ -489,7 +489,8 @@ const buildList = async () => {
       const systemViewsFormatted = systemViews.map(view => ({
         id: view.id,
         label: view.name,
-        filters: view.filters
+        filters: view.filters,
+        isDefault: view.isDefault === true
       }));
       
       // Load custom saved views from localStorage
@@ -646,7 +647,13 @@ const boostVisibleColumnKeys = computed(() => {
 // Fetch module field definitions for schema-driven filters
 const fetchModuleFieldDefinitions = async () => {
   try {
-    const response = await apiClient.get(`/modules?key=${props.moduleKey}`);
+    const params = { key: props.moduleKey };
+    if (props.moduleKey === 'people') {
+      if (props.peopleContext === 'SALES') params.context = 'sales';
+      else if (props.peopleContext === 'HELPDESK') params.context = 'helpdesk';
+      else params.context = 'all';
+    }
+    const response = await apiClient.get('/modules', { params });
     if (response.success && Array.isArray(response.data) && response.data.length > 0) {
       const module = response.data[0];
       let fields = module.fields || [];
@@ -1947,6 +1954,21 @@ const handleStatClick = (statItem) => {
         newFilters.endDateTime = endOfWeek.toISOString();
         break;
     }
+  } else if (props.moduleKey === 'quotes') {
+    switch (statItem.key) {
+      case 'openValue':
+      case 'openQuotes':
+        // Open spans multiple statuses; clear filters (same pattern as deals pipeline stat)
+        break;
+
+      case 'acceptedValue':
+        newFilters.status = 'Accepted';
+        break;
+
+      case 'myQuotes':
+        newFilters.ownerId = 'me';
+        break;
+    }
   }
   
   // Use handleFiltersUpdate to properly sync filters with ListView
@@ -1964,7 +1986,8 @@ const handleSavedViewsUpdated = (customViews) => {
   const systemViews = moduleConfig.systemViews.map(view => ({
     id: view.id,
     label: view.name,
-    filters: view.filters
+    filters: view.filters,
+    isDefault: view.isDefault === true
   }));
   
   savedViews.value = [...systemViews, ...customViews];

@@ -143,11 +143,13 @@
       </template>
 
       <template v-if="record" #left>
+        <div :class="expandedLeftSection === 'lines' ? 'flex flex-col flex-1 min-h-0 h-full overflow-hidden' : ''">
         <div
           v-if="expandedLeftSection"
           :class="[
-            'flex-shrink-0 mb-4 sticky z-20 bg-white/95 dark:bg-gray-900/95 supports-[backdrop-filter]:bg-white/90 supports-[backdrop-filter]:dark:bg-gray-900/90 backdrop-blur',
-            embed ? 'top-0' : 'top-0 lg:-top-6'
+            'flex-shrink-0 z-20 bg-white/95 dark:bg-gray-900/95 supports-[backdrop-filter]:bg-white/90 supports-[backdrop-filter]:dark:bg-gray-900/90 backdrop-blur',
+            expandedLeftSection === 'lines' ? 'mb-2' : 'mb-4 sticky',
+            embed ? 'top-0' : expandedLeftSection === 'lines' ? '' : 'top-0 lg:-top-6'
           ]"
         >
           <div class="flex items-center justify-between gap-2 py-2">
@@ -442,7 +444,13 @@
         <!-- Section stack: show when collapsed, or when expanded to details/related (adapter returns only that section) -->
         <section
           v-if="record && genericSections.length && (!expandedLeftSection || ['description', 'catalog', 'details', 'related', 'lines', 'revisions', 'conversion'].includes(expandedLeftSection))"
-          :class="[expandedLeftSection ? 'mt-8' : 'mt-4']"
+          :class="[
+            expandedLeftSection === 'lines'
+              ? 'flex-1 min-h-0 flex flex-col overflow-hidden mt-2'
+              : expandedLeftSection
+                ? 'mt-8'
+                : 'mt-4'
+          ]"
         >
           <SectionStack
             :sections="genericSections"
@@ -451,6 +459,7 @@
             :context="sectionContext"
           />
         </section>
+        </div>
       </template>
 
       <template v-if="record" #right>
@@ -1635,14 +1644,11 @@ const getPeopleTagChipClass = computed(() => (supportsTags.value ? getTagChipCla
 
 const layoutProps = computed(() => ({
   leftExpanded: !!expandedLeftSection.value,
+  expandedSectionKey: expandedLeftSection.value,
   forceMobile: props.embed,
   class: [
     props.embed ? 'flex-1 min-h-0 overflow-hidden flex flex-col' : '',
-    { 'record-page-layout--left-expanded': !!expandedLeftSection.value },
-    '[&.record-page-layout--left-expanded_.record-page-layout__right]:hidden',
-    '[&.record-page-layout--left-expanded_.record-page-layout__left]:flex-[1_1_100%] [&.record-page-layout--left-expanded_.record-page-layout__left]:max-w-full [&.record-page-layout--left-expanded_.record-page-layout__left]:pr-0 [&.record-page-layout--left-expanded_.record-page-layout__left]:min-h-0 [&.record-page-layout--left-expanded_.record-page-layout__left]:overflow-hidden',
-    '[&.record-page-layout--left-expanded_.record-page-layout__left-content]:max-w-full [&.record-page-layout--left-expanded_.record-page-layout__left-content]:pl-0 [&.record-page-layout--left-expanded_.record-page-layout__left-content]:pr-0 [&.record-page-layout--left-expanded_.record-page-layout__left-content]:flex [&.record-page-layout--left-expanded_.record-page-layout__left-content]:flex-col [&.record-page-layout--left-expanded_.record-page-layout__left-content]:flex-1 [&.record-page-layout--left-expanded_.record-page-layout__left-content]:min-h-0',
-    '[&.record-page-layout--left-expanded_.record-page-layout__body]:px-4'
+    '[&.record-page-layout--left-expanded_.record-page-layout__right]:hidden'
   ]
 }));
 
@@ -2062,13 +2068,40 @@ const genericAdapter = computed(() => {
 
 const recordFieldContext = computed(() => resolveFieldContext(route.path, route.query));
 
+/** People records: infer sales/helpdesk context when route is platform-wide so status fields appear. */
+const effectiveRecordFieldContext = computed(() => {
+  if (!isPeopleModule.value) return recordFieldContext.value;
+
+  const routeCtx = recordFieldContext.value;
+  if (routeCtx !== 'platform') return routeCtx;
+
+  const partCtx = routeParticipationContext.value;
+  if (partCtx === 'SALES') return 'sales';
+  if (partCtx === 'HELPDESK') return 'helpdesk';
+
+  const r = record.value;
+  if (r) {
+    if (getParticipation(r, 'SALES')) return 'sales';
+    if (getParticipation(r, 'HELPDESK')) return 'helpdesk';
+  }
+
+  return 'all';
+});
+
+function moduleFetchContextForRecord() {
+  if (isPeopleModule.value) return 'all';
+  const ctx = recordFieldContext.value;
+  return ctx && ctx !== 'platform' ? ctx : undefined;
+}
+
 const sectionContext = computed(() => {
   const base = {
     expandedLeftSection: expandedLeftSection.value,
+    openLeftSection: (key) => { expandedLeftSection.value = key; },
     module: 'generic',
     moduleKey: props.moduleKey,
     openTab,
-    fieldContext: recordFieldContext.value,
+    fieldContext: effectiveRecordFieldContext.value,
     onSectionUpdated: handleSectionUpdated
   };
   if (supportsTags.value) {
@@ -2805,9 +2838,10 @@ async function fetchRecord(options = {}) {
     neighbors.value = { previousId: null, nextId: null };
   }
   try {
+    const moduleContext = moduleFetchContextForRecord();
     const [recordRes, modulesRes] = await Promise.all([
       apiClient.get(`${recordCrudPathBase.value}/${props.recordId}`),
-      apiClient.get('/modules')
+      apiClient.get('/modules', moduleContext ? { params: { context: moduleContext } } : undefined)
     ]);
 
     if (runId !== fetchRecordRunId) return;

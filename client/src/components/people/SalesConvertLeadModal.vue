@@ -197,18 +197,12 @@
                                 {{ option }}
                               </option>
                             </select>
-                            <input
+                            <DatePicker
                               v-else-if="getInputType(fieldName) === 'date'"
                               :id="fieldName"
                               v-model="formData[fieldName]"
-                              :name="fieldName"
-                              type="date"
-                              :required="isFieldRequired(fieldName)"
-                              :class="[
-                                'w-full cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:ring-indigo-500',
-                                validationErrors[fieldName] ? 'border-red-500 dark:border-red-500' : ''
-                              ]"
-                              @click="openDatePicker"
+                              :invalid="!!validationErrors[fieldName]"
+                              input-class="w-full cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:ring-indigo-500"
                             />
                             <input
                               v-else-if="getInputType(fieldName) === 'number'"
@@ -323,9 +317,15 @@ import {
 } from '@/platform/fields/peopleFieldModel';
 import apiClient from '@/utils/apiClient';
 import { usePeopleTypes } from '@/composables/usePeopleTypes';
-import { openDatePicker } from '@/utils/dateUtils';
+import { usePeopleModuleFields } from '@/composables/usePeopleModuleFields';
+import DatePicker from '@/components/common/DatePicker.vue';
 import { assertLifecyclePermission } from '@/platform/permissions/peopleGuards';
 import { isPeopleSalesRoleFieldKey } from '@/utils/peopleParticipationUi';
+import {
+  defaultPicklistFallback,
+  getPeoplePicklistValues,
+  isPeoplePicklistModuleField,
+} from '@/utils/peopleModuleFieldUtils';
 
 const props = defineProps({
   isOpen: {
@@ -352,6 +352,7 @@ const appKey = 'SALES';
 const classifierValue = 'Contact';
 
 const { typeDefs: peopleTypeDefs } = usePeopleTypes(appKey);
+const { fields: peopleModuleFields } = usePeopleModuleFields();
 
 const contactParticipationKeys = computed(() => {
   const keys = getAppFields(appKey, classifierValue, peopleTypeDefs.value);
@@ -414,10 +415,8 @@ const isFieldRequired = (fieldName) => {
 };
 
 const getFieldComponent = (fieldName) => {
-  const enumFields = ['lead_status', 'contact_status', 'role', 'preferred_contact_method'];
-  if (isPeopleSalesRoleFieldKey(fieldName) || enumFields.includes(fieldName)) {
-    return 'select';
-  }
+  if (isPeopleSalesRoleFieldKey(fieldName)) return 'select';
+  if (isPeoplePicklistModuleField(peopleModuleFields.value, fieldName)) return 'select';
   const textFields = ['qualification_notes'];
   if (textFields.includes(fieldName)) {
     return 'textarea';
@@ -429,13 +428,11 @@ const getFieldOptions = (fieldName) => {
   if (isPeopleSalesRoleFieldKey(fieldName)) {
     return ['Lead', 'Contact'];
   }
-  const optionsMap = {
-    lead_status: ['New', 'Contacted', 'Qualified', 'Disqualified', 'Nurturing', 'Re-Engage'],
-    contact_status: ['Active', 'Inactive', 'DoNotContact'],
-    role: ['Decision Maker', 'Influencer', 'Support', 'Other'],
-    preferred_contact_method: ['Email', 'Phone', 'WhatsApp', 'SMS', 'None']
-  };
-  return optionsMap[fieldName] || [];
+  return getPeoplePicklistValues(
+    peopleModuleFields.value,
+    fieldName,
+    defaultPicklistFallback(fieldName)
+  );
 };
 
 const getInputType = (fieldName) => {

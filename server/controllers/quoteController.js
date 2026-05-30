@@ -132,12 +132,37 @@ async function getQuotes(req, res) {
     }
     if (ownerId) q.ownerId = ownerId;
 
+    const searchTerm = req.query?.search != null ? String(req.query.search).trim() : '';
+    if (searchTerm) {
+      const searchRegex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      q.$or = [
+        { quoteNumber: searchRegex },
+        { quoteTitle: searchRegex },
+        { status: searchRegex }
+      ];
+    }
+
     const limit = Math.min(200, Math.max(1, Number(req.query?.limit) || 50));
     const page = Math.max(1, Number(req.query?.page) || 1);
     const skip = (page - 1) * limit;
 
+    const allowedSortFields = new Set([
+      'quoteNumber',
+      'quoteTitle',
+      'status',
+      'grandTotal',
+      'updatedAt',
+      'createdAt',
+      'quoteDate',
+      'validUntil'
+    ]);
+    const sortBy = allowedSortFields.has(String(req.query?.sortBy || ''))
+      ? String(req.query.sortBy)
+      : 'updatedAt';
+    const sortOrder = req.query?.sortOrder === 'asc' ? 1 : -1;
+
     const [rows, total] = await Promise.all([
-      Quote.find(q).sort({ updatedAt: -1 }).skip(skip).limit(limit).lean(),
+      Quote.find(q).sort({ [sortBy]: sortOrder }).skip(skip).limit(limit).lean(),
       Quote.countDocuments(q)
     ]);
 

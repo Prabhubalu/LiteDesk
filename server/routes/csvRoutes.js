@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation, checkTrialStatus } = require('../middleware/organizationMiddleware');
-const { checkPermission, requireAdmin } = require('../middleware/permissionMiddleware');
+const { checkPermission } = require('../middleware/permissionMiddleware');
 const { resolveAppContext } = require('../middleware/resolveAppContextMiddleware');
 const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMiddleware');
 const { lazySalesInitialization } = require('../middleware/lazySalesInitializationMiddleware');
@@ -12,9 +12,11 @@ const {
   checkContactDuplicates,
   checkDealDuplicates,
   checkTaskDuplicates,
+  checkOrganizationDuplicates,
   importContacts,
   importDeals,
   importTasks,
+  importOrganizations,
   exportContacts,
   exportDeals,
   exportTasks,
@@ -60,6 +62,13 @@ router.post('/check-duplicates/tasks',
   checkTaskDuplicates
 );
 
+router.post('/check-duplicates/organizations',
+  organizationIsolation,
+  checkTrialStatus,
+  checkPermission('organizations', 'view'),
+  checkOrganizationDuplicates
+);
+
 // Import routes (require organization isolation and permissions)
 router.post('/import/contacts', 
   organizationIsolation,
@@ -93,6 +102,14 @@ router.post('/import/tasks',
   importTasks
 );
 
+router.post('/import/organizations',
+  organizationIsolation,
+  checkTrialStatus,
+  checkPermission('imports', 'create'),
+  checkPermission('organizations', 'create'),
+  importOrganizations
+);
+
 // Export routes
 router.get('/export/contacts',
   organizationIsolation,
@@ -118,9 +135,10 @@ router.get('/export/tasks',
   exportTasks
 );
 
-// Admin-only export
+// Export routes
 router.get('/export/organizations',
-  requireAdmin(),
+  organizationIsolation,
+  checkPermission('organizations', 'view'),
   exportOrganizations
 );
 

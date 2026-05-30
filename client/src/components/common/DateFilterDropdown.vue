@@ -92,33 +92,30 @@
             </div>
             <div v-if="showSingleDateInput">
               <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('common.filterDate') }}</label>
-              <input
+              <DatePicker
                 v-model="singleDateInput"
-                type="date"
-                class="block w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white cursor-pointer"
-                @click="openDatePicker"
-                @change="applySingleDateInput"
+                panel-class="z-[10001]"
+                input-class="block w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                @blur="applySingleDateInput"
               />
             </div>
             <div v-if="showBetweenInputs" class="space-y-2">
               <div>
                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('common.filterFrom') }}</label>
-                <input
+                <DatePicker
                   v-model="fromDateInput"
-                  type="date"
-                  class="block w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white cursor-pointer"
-                  @click="openDatePicker"
-                  @change="applyBetweenInput"
+                  panel-class="z-[10001]"
+                  input-class="block w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  @blur="applyBetweenInput"
                 />
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('common.filterTo') }}</label>
-                <input
+                <DatePicker
                   v-model="toDateInput"
-                  type="date"
-                  class="block w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white cursor-pointer"
-                  @click="openDatePicker"
-                  @change="applyBetweenInput"
+                  panel-class="z-[10001]"
+                  input-class="block w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  @blur="applyBetweenInput"
                 />
               </div>
             </div>
@@ -141,7 +138,7 @@ import {
   parseDateFilterValue,
   getDateFilterLabel
 } from '@/utils/dateFilterOptions';
-import { openDatePicker } from '@/utils/dateUtils';
+import DatePicker from '@/components/common/DatePicker.vue';
 
 const props = defineProps({
   modelValue: {

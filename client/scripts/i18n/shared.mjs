@@ -25,6 +25,7 @@ export const SHARED_NAMESPACES = [
   'tasks',
   'events',
   'deals',
+  'quotes',
   'people',
   'organizations',
   'inbox',

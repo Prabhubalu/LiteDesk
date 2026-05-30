@@ -160,15 +160,12 @@
                       :options-class="attachModalListboxOptionsClass"
                       @update:model-value="bindStateListboxValue(fieldName)"
                     />
-                    <input
+                    <DatePicker
                       v-else-if="getInputType(fieldName) === 'date'"
                       :id="fieldName"
-                      :name="fieldName"
-                      type="date"
                       v-model="formData[fieldName]"
-                      :required="isFieldRequired(fieldName)"
-                      :class="attachFieldInputClass(fieldName, true)"
-                      @click="openDatePicker"
+                      :invalid="!!validationErrors[fieldName]"
+                      :input-class="attachFieldInputClass(fieldName, true)"
                     />
                     <input
                       v-else-if="getInputType(fieldName) === 'number'"
@@ -229,16 +226,13 @@
                       :options-class="attachModalListboxOptionsClass"
                       @update:model-value="bindDetailListboxValue(fieldName)"
                     />
-                    <input
+                    <DatePicker
                       v-else-if="getInputType(fieldName) === 'date'"
                       :id="fieldName"
-                      :name="fieldName"
-                      type="date"
                       v-model="formData[fieldName]"
-                      @input="clearDefaultTracking(fieldName)"
-                      @click="openDatePicker"
-                      :required="isFieldRequired(fieldName)"
-                      :class="attachFieldInputClass(fieldName, true)"
+                      :invalid="!!validationErrors[fieldName]"
+                      :input-class="attachFieldInputClass(fieldName, true)"
+                      @update:model-value="clearDefaultTracking(fieldName)"
                     />
                     <input
                       v-else-if="getInputType(fieldName) === 'number'"
@@ -347,9 +341,15 @@ import {
 import apiClient from '@/utils/apiClient';
 import { toAttachRole } from '@/utils/getParticipation';
 import { usePeopleTypes } from '@/composables/usePeopleTypes';
-import { openDatePicker } from '@/utils/dateUtils';
+import { usePeopleModuleFields } from '@/composables/usePeopleModuleFields';
+import DatePicker from '@/components/common/DatePicker.vue';
 import { assertAttachPermission } from '@/platform/permissions/peopleGuards';
 import { isPeopleSalesRoleFieldKey } from '@/utils/peopleParticipationUi';
+import {
+  defaultPicklistFallback,
+  getPeoplePicklistValues,
+  isPeoplePicklistModuleField,
+} from '@/utils/peopleModuleFieldUtils';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 
 const props = withDefaults(
@@ -388,6 +388,7 @@ const defaultPrefilledFields = ref(new Set<string>());
 // People types from tenant config (SALES: Lead/Contact; HELPDESK: Customer/Agent)
 const { types: peopleTypes, typeDefs: peopleTypeDefs, defaultRole: peopleDefaultRole, loading: peopleTypesLoading } =
   usePeopleTypes(toRef(props, 'appKey'));
+const { fields: peopleModuleFields } = usePeopleModuleFields();
 
 const usesStandaloneRolePicker = computed(() => props.appKey === 'HELPDESK');
 
@@ -704,25 +705,14 @@ const participationTypeDisplay = computed(() => {
 
 // Get field component type
 const getFieldComponent = (fieldName: string): 'select' | 'textarea' | 'input' => {
-  // Determine component type based on field name and metadata
-  // Most participation fields are enums (selects) or simple types
-  
-  // Enum fields (selects)
-  const enumFields = ['lead_status', 'contact_status', 'role', 'preferred_contact_method'];
-  if (isPeopleSalesRoleFieldKey(fieldName) || enumFields.includes(fieldName)) {
-    return 'select';
-  }
-  
-  // Text fields (textarea)
+  if (isPeopleSalesRoleFieldKey(fieldName)) return 'select';
+  if (isPeoplePicklistModuleField(peopleModuleFields.value, fieldName)) return 'select';
+
   const textFields = ['qualification_notes'];
   if (textFields.includes(fieldName)) {
     return 'textarea';
   }
-  
-  // Array fields (interest_products) - handle as text input for now
-  // Can be enhanced later to support multi-select
-  
-  // Default to input
+
   return 'input';
 };
 
@@ -753,18 +743,14 @@ function attachFieldInputClass(fieldName: string, isDate: boolean) {
 
 // Get field options for select fields
 const getFieldOptions = (fieldName: string): string[] => {
-  // Type field: fetch dynamically from tenant config
   if (isPeopleSalesRoleFieldKey(fieldName)) {
     return peopleTypes.value?.length ? peopleTypes.value : ['Lead', 'Contact'];
   }
-  // Static enum options for other fields
-  const optionsMap: Record<string, string[]> = {
-    lead_status: ['New', 'Contacted', 'Qualified', 'Disqualified', 'Nurturing', 'Re-Engage'],
-    contact_status: ['Active', 'Inactive', 'DoNotContact'],
-    role: ['Decision Maker', 'Influencer', 'Support', 'Other'],
-    preferred_contact_method: ['Email', 'Phone', 'WhatsApp', 'SMS', 'None']
-  };
-  return optionsMap[fieldName] || [];
+  return getPeoplePicklistValues(
+    peopleModuleFields.value,
+    fieldName,
+    defaultPicklistFallback(fieldName)
+  );
 };
 
 // Get input type for input fields

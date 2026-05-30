@@ -12,6 +12,7 @@
       view-mode="list"
       @create="handleCreate"
       @row-click="handleRowClick"
+      @edit="handleEditFromList"
       @bulk-action="handleBulkAction"
     />
     <CreateRecordDrawer
@@ -20,6 +21,14 @@
       :module-key="moduleKey"
       @close="handleInlineCreateClose"
       @saved="handleInlineCreateSaved"
+    />
+    <CreateRecordDrawer
+      v-if="routeType === 'list' && moduleKey"
+      :is-open="showEditDrawer"
+      :module-key="moduleKey"
+      :record="editingRecord"
+      @close="handleEditDrawerClose"
+      @saved="handleEditDrawerSaved"
     />
     <!-- Detail: use standard ModuleRecordPage (same UI as deals/tasks) -->
     <ModuleRecordPage
@@ -52,6 +61,8 @@ import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 const route = useRoute();
 const router = useRouter();
 const inlineCreateOpen = ref(false);
+const showEditDrawer = ref(false);
+const editingRecord = ref(null);
 const moduleListRef = ref(null);
 
 const moduleKey = computed(() => (route.meta?.moduleKey || '').toLowerCase());
@@ -103,6 +114,22 @@ function handleRowClick(row) {
   if (id && moduleRouteBase.value) {
     router.push(`${moduleRouteBase.value}/${id}`);
   }
+}
+
+function handleEditFromList(row) {
+  if (!row) return;
+  editingRecord.value = row;
+  showEditDrawer.value = true;
+}
+
+function handleEditDrawerClose() {
+  showEditDrawer.value = false;
+  editingRecord.value = null;
+}
+
+async function handleEditDrawerSaved() {
+  handleEditDrawerClose();
+  await refreshListAfterCreate();
 }
 
 function handleRecordUpdated() {

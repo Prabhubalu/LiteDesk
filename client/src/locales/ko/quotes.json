@@ -1,0 +1,58 @@
+{
+  "listViewAll": {
+    "message": "All Quotes",
+    "description": "Quotes list default view title"
+  },
+  "listViewMy": {
+    "message": "My Quotes",
+    "description": "Quotes list assigned-to-me view title"
+  },
+  "listViewDraft": {
+    "message": "Draft",
+    "description": "Quotes list draft view title"
+  },
+  "listViewPendingApproval": {
+    "message": "Pending Approval",
+    "description": "Quotes list pending approval view title"
+  },
+  "listViewApproved": {
+    "message": "Approved",
+    "description": "Quotes list approved view title"
+  },
+  "listViewSent": {
+    "message": "Sent",
+    "description": "Quotes list sent view title"
+  },
+  "listViewAccepted": {
+    "message": "Accepted",
+    "description": "Quotes list accepted view title"
+  },
+  "listViewConverted": {
+    "message": "Converted",
+    "description": "Quotes list converted view title"
+  },
+  "listCreate": {
+    "message": "New Quote",
+    "description": "Quotes list create button"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search quotes...",
+    "description": "Quotes list search placeholder"
+  },
+  "listStatOpenValue": {
+    "message": "Open Value",
+    "description": "Quotes list statistics card for open pipeline value"
+  },
+  "listStatOpenQuotes": {
+    "message": "Open Quotes",
+    "description": "Quotes list statistics card for open quote count"
+  },
+  "listStatAcceptedValue": {
+    "message": "Accepted Value",
+    "description": "Quotes list statistics card for accepted quote value"
+  },
+  "listStatMyQuotes": {
+    "message": "My Quotes",
+    "description": "Quotes list statistics card for quotes owned by current user"
+  }
+}

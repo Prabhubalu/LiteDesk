@@ -1321,20 +1321,16 @@
                       class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
                     />
                     <!-- Date: date input -->
-                    <input
+                    <DatePicker
                       v-else-if="currentField.dataType === 'Date'"
                       v-model="currentField.defaultValue"
-                      type="date"
-                      class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 cursor-pointer"
-                      @click="openDatePicker"
+                      input-class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                     <!-- Date-Time: datetime-local input -->
-                    <input
+                    <DateTimePicker
                       v-else-if="currentField.dataType === 'Date-Time'"
                       v-model="currentField.defaultValue"
-                      type="datetime-local"
-                      class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 cursor-pointer"
-                      @click="openDatePicker"
+                      input-class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                     <!-- Text, Text-Area, Email, Phone, URL, Rich Text: text input -->
                     <input
@@ -2153,9 +2149,9 @@
                                 <option value="false">false</option>
                               </select>
                               <!-- Date -->
-                              <input v-else-if="getDependencyFieldType(c.fieldKey) === 'Date'" type="date" v-model="c.value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm cursor-pointer" @click="openDatePicker" />
+                              <DatePicker v-else-if="getDependencyFieldType(c.fieldKey) === 'Date'" v-model="c.value" input-class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                               <!-- Date-Time -->
-                              <input v-else-if="getDependencyFieldType(c.fieldKey) === 'Date-Time'" type="datetime-local" v-model="c.value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm cursor-pointer" @click="openDatePicker" />
+                              <DateTimePicker v-else-if="getDependencyFieldType(c.fieldKey) === 'Date-Time'" v-model="c.value" input-class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                               <!-- Number fields -->
                               <input v-else-if="['Integer', 'Decimal', 'Currency'].includes(getDependencyFieldType(c.fieldKey))" type="number" v-model.number="c.value" :placeholder="t('settings.modFieldsNumberPh')" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm" />
                               <!-- Text input for 'in' or 'not_in' operators (for non-picklist fields) -->
@@ -5233,7 +5229,8 @@ import {
   isPeopleSalesRoleFieldKey,
   PEOPLE_SALES_ROLE_FIELD_KEYS_NORMALIZED
 } from '@/utils/peopleParticipationUi';
-import { openDatePicker } from '@/utils/dateUtils';
+import DatePicker from '@/components/common/DatePicker.vue';
+import DateTimePicker from '@/components/common/DateTimePicker.vue';
 import ModuleFormModal from './ModuleFormModal.vue';
 import PeopleTypesSettings from './PeopleTypesSettings.vue';
 import AddCustomFieldDrawer from './AddCustomFieldDrawer.vue';
@@ -8307,6 +8304,22 @@ const TASK_PRIORITY_OPTION_DEFAULT_COLORS = Object.freeze({
   urgent: '#DC2626'
 });
 
+const PEOPLE_LEAD_STATUS_OPTION_DEFAULT_COLORS = Object.freeze({
+  new: '#2563EB',
+  contacted: '#6366F1',
+  qualified: '#16A34A',
+  disqualified: '#DC2626',
+  nurturing: '#D97706',
+  're-engage': '#9333EA',
+  re_engage: '#9333EA',
+});
+
+const PEOPLE_CONTACT_STATUS_OPTION_DEFAULT_COLORS = Object.freeze({
+  active: '#16A34A',
+  inactive: '#6B7280',
+  donotcontact: '#DC2626',
+});
+
 function normalizePicklistColorKey(value) {
   return String(value || '').trim().toLowerCase().replace(/\s+/g, '_');
 }
@@ -8317,6 +8330,14 @@ function isTaskStatusField(field = currentField.value) {
 
 function isTaskPriorityField(field = currentField.value) {
   return isTasksModule.value && String(field?.key || '').toLowerCase() === 'priority';
+}
+
+function isPeopleLeadStatusField(field = currentField.value) {
+  return isPeopleModule.value && String(field?.key || '').toLowerCase() === 'lead_status';
+}
+
+function isPeopleContactStatusField(field = currentField.value) {
+  return isPeopleModule.value && String(field?.key || '').toLowerCase() === 'contact_status';
 }
 
 function isTaskLifecycleField(field = currentField.value) {
@@ -8380,6 +8401,12 @@ function getDefaultOptionColor(optionValue, field = currentField.value) {
   }
   if (isTaskPriorityField(field)) {
     return TASK_PRIORITY_OPTION_DEFAULT_COLORS[normalizePicklistColorKey(optionValue)] || '#6B7280';
+  }
+  if (isPeopleLeadStatusField(field)) {
+    return PEOPLE_LEAD_STATUS_OPTION_DEFAULT_COLORS[normalizePicklistColorKey(optionValue)] || '#3B82F6';
+  }
+  if (isPeopleContactStatusField(field)) {
+    return PEOPLE_CONTACT_STATUS_OPTION_DEFAULT_COLORS[normalizePicklistColorKey(optionValue)] || '#6B7280';
   }
   return '#3B82F6';
 }

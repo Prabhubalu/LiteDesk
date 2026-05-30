@@ -65,36 +65,34 @@ export function resolveFieldContext(path, query = {}) {
 }
 
 /**
+ * Resolve a field's visibility context token from context + appKey.
+ * Legacy People fields used context: 'app' with appKey: 'SALES' — routes use 'sales'.
+ */
+export function resolveFieldContextToken(field) {
+  if (!field) return 'global';
+  const raw =
+    field.context != null && String(field.context).trim() !== ''
+      ? String(field.context).trim().toLowerCase()
+      : 'global';
+
+  if (raw === 'global') return 'global';
+  if (raw === 'app') {
+    const fromAppKey = appKeyToFieldContextToken(field.appKey);
+    return fromAppKey || 'app';
+  }
+  return raw;
+}
+
+/**
  * Filter fields by context
  * 
  * @param {Array} fields - Array of field definitions
- * @param {string} currentContext - Current app context ('sales', 'support', 'platform', etc.)
+ * @param {string} currentContext - Current app context ('sales', 'support', 'platform', 'all', etc.)
  * @returns {Array} - Filtered fields
  */
 export function filterFieldsByContext(fields, currentContext) {
   if (!Array.isArray(fields)) return [];
-  if (!currentContext) currentContext = 'platform'; // Safe default
-  
-  return fields.filter((field) => {
-    if (!field) return false;
-    // Missing context: treat like global (visible in every surface), aligned with isFieldVisibleInContext
-    const fieldContext = field.context != null && String(field.context).trim() !== ''
-      ? String(field.context).toLowerCase()
-      : 'global';
-
-    if (fieldContext === 'global') {
-      return true;
-    }
-    
-    // App-specific fields are visible only in their app context
-    if (currentContext === 'platform') {
-      // Platform context shows ONLY global fields
-      return false;
-    }
-    
-    // In app context, show fields for that app OR global fields
-    return fieldContext === currentContext.toLowerCase();
-  });
+  return fields.filter((field) => isFieldVisibleInContext(field, currentContext));
 }
 
 /**
@@ -106,21 +104,16 @@ export function filterFieldsByContext(fields, currentContext) {
  */
 export function isFieldVisibleInContext(field, currentContext) {
   if (!field) return false;
-  if (!currentContext) currentContext = 'platform';
-  
-  const fieldContext = field.context?.toLowerCase() || 'global';
-  
-  // Global fields are visible everywhere
-  if (fieldContext === 'global') {
-    return true;
-  }
-  
-  // Platform context shows ONLY global fields
-  if (currentContext === 'platform') {
-    return false;
-  }
-  
-  // App context shows fields for that app OR global
-  return fieldContext === currentContext.toLowerCase();
+  const ctx =
+    currentContext != null && String(currentContext).trim() !== ''
+      ? String(currentContext).trim().toLowerCase()
+      : 'platform';
+
+  if (ctx === 'all') return true;
+
+  const fieldToken = resolveFieldContextToken(field);
+  if (fieldToken === 'global') return true;
+  if (ctx === 'platform') return false;
+  return fieldToken === ctx;
 }
 

@@ -13,7 +13,8 @@
       @click="toggleDropdown"
       :id="statusBadgeId"
       class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity"
-      :class="flagClasses"
+      :class="badgeStyle ? '' : flagClasses"
+      :style="badgeStyle || undefined"
     >
       <svg v-if="icon" class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
         <path :d="iconPath" fill-rule="evenodd" clip-rule="evenodd" />
@@ -29,7 +30,8 @@
       v-else
       :id="statusBadgeId"
       class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium"
-      :class="flagClasses"
+      :class="badgeStyle ? '' : flagClasses"
+      :style="badgeStyle || undefined"
     >
       <svg v-if="icon" class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
         <path :d="iconPath" fill-rule="evenodd" clip-rule="evenodd" />
@@ -56,9 +58,16 @@
           :key="statusOption.value"
           @click="handleStatusSelect(statusOption.value)"
           :disabled="updating || statusOption.value === currentValue"
-          class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between"
+          class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between gap-2"
         >
-          <span>{{ statusOption.label }}</span>
+          <span class="inline-flex items-center gap-2 min-w-0">
+            <span
+              v-if="statusOption.color"
+              class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              :style="{ backgroundColor: statusOption.color }"
+            />
+            <span class="truncate">{{ statusOption.label }}</span>
+          </span>
           <svg
             v-if="statusOption.value === currentValue"
             class="w-4 h-4 text-indigo-600 dark:text-indigo-400"
@@ -79,6 +88,12 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 import { ref, computed, watch, onUnmounted } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { usePeopleModuleFields } from '@/composables/usePeopleModuleFields';
+import {
+  defaultPicklistFallback,
+  getPeoplePicklistOptions,
+} from '@/utils/peopleModuleFieldUtils';
+import { picklistBadgeStyle } from '@/utils/peopleParticipationPicklistColors';
 
 const props = defineProps({
   type: {
@@ -125,6 +140,7 @@ const emit = defineEmits(['status-updated']);
 const showDropdown = ref(false);
 const updating = ref(false);
 const dropdownRef = ref(null);
+const { fields: peopleModuleFields } = usePeopleModuleFields();
 
 // Determine if status is editable
 // Status is read-only when derivedStatus exists (system-owned)
@@ -142,24 +158,21 @@ const isEditable = computed(() => {
          (props.participationType === 'Lead' || props.participationType === 'Contact');
 });
 
-// Valid status options based on participation type
+// Valid status options from People module definition (Settings → Modules & Fields)
 const statusOptions = computed(() => {
-  if (props.participationType === 'Lead') {
-    return [
-      { value: 'New', label: 'New' },
-      { value: 'Contacted', label: 'Contacted' },
-      { value: 'Qualified', label: 'Qualified' },
-      { value: 'Unqualified', label: 'Unqualified' }
-    ];
-  } else if (props.participationType === 'Contact') {
-    return [
-      { value: 'Active', label: 'Active' },
-      { value: 'Inactive', label: 'Inactive' },
-      { value: 'Dormant', label: 'Dormant' },
-      { value: 'DoNotContact', label: 'Do Not Contact' }
-    ];
-  }
-  return [];
+  const fieldKey = props.participationType === 'Lead' ? 'lead_status' : 'contact_status';
+  return getPeoplePicklistOptions(
+    peopleModuleFields.value,
+    fieldKey,
+    defaultPicklistFallback(fieldKey)
+  );
+});
+
+const badgeStyle = computed(() => {
+  const value = currentValue.value;
+  if (!value) return null;
+  const option = statusOptions.value.find((opt) => opt.value === value);
+  return picklistBadgeStyle(option?.color);
 });
 
 // Current status value (extract from label if needed)

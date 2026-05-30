@@ -677,6 +677,86 @@ function normalizeDealsViewFilters(filters: Record<string, any>, currentUserId?:
   return normalized;
 }
 
+const CLOSED_QUOTE_STATUSES = new Set(['Converted', 'Cancelled', 'Rejected', 'Expired']);
+const ACCEPTED_QUOTE_STATUSES = new Set(['Accepted', 'Partially Accepted']);
+
+/**
+ * Compute Quotes statistics (from list data; uses totalRecords for headline count when paged)
+ */
+function computeQuotesStatistics(
+  data: any[],
+  currentUserId?: string,
+  context?: ModuleListStatisticsContext
+): Record<string, number> {
+  const stats = {
+    totalQuotes: context?.totalRecords ?? data.length,
+    myQuotes: 0,
+    openValue: 0,
+    openQuotes: 0,
+    acceptedValue: 0,
+  };
+
+  data.forEach((quote) => {
+    const ownerId =
+      typeof quote.ownerId === 'object' && quote.ownerId?._id ? quote.ownerId._id : quote.ownerId;
+    if (ownerId === currentUserId) {
+      stats.myQuotes++;
+    }
+
+    const status = quote.status;
+    const total = Number(quote.grandTotal) || 0;
+
+    if (!CLOSED_QUOTE_STATUSES.has(status)) {
+      stats.openQuotes++;
+      stats.openValue += total;
+    }
+
+    if (ACCEPTED_QUOTE_STATUSES.has(status)) {
+      stats.acceptedValue += total;
+    }
+  });
+
+  return stats;
+}
+
+/**
+ * Normalize Quotes filters
+ */
+function normalizeQuotesFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
+  const normalized = { ...filters };
+
+  if ('ownerId' in normalized) {
+    if (normalized.ownerId === 'me' && currentUserId) {
+      normalized.ownerId = currentUserId;
+    } else if (normalized.ownerId === 'unassigned') {
+      normalized.ownerId = null;
+    }
+  }
+
+  if ('status' in normalized && normalized.status === '') {
+    delete normalized.status;
+  }
+
+  return normalized;
+}
+
+/**
+ * Normalize Quotes view filters (from saved views)
+ */
+function normalizeQuotesViewFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
+  const normalized = { ...filters };
+
+  if ('ownerId' in normalized) {
+    if (normalized.ownerId === currentUserId) {
+      normalized.ownerId = 'me';
+    } else if (normalized.ownerId === null) {
+      normalized.ownerId = 'unassigned';
+    }
+  }
+
+  return normalized;
+}
+
 /**
  * Compute Items statistics
  */
@@ -767,7 +847,7 @@ function normalizeItemsViewFilters(filters: Record<string, any>, currentUserId?:
 export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
   people: {
     defaultColumns: {
-      defaultVisibleColumns: ['name', 'organization', 'sales_type', 'email', 'phone', 'assignedTo'],
+      defaultVisibleColumns: ['name', 'organization', 'sales_type', 'lead_status', 'contact_status', 'email', 'phone', 'assignedTo'],
       lockedColumn: 'name',
       excludedFromDefault: []
     },
@@ -996,8 +1076,18 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       lockedColumn: 'quoteNumber',
       excludedFromDefault: ['customFields', 'sourceRef']
     },
+    statistics: {
+      stats: [
+        { name: 'Open Value', key: 'openValue', formatter: 'currency' },
+        { name: 'Open Quotes', key: 'openQuotes', formatter: 'number' },
+        { name: 'Accepted Value', key: 'acceptedValue', formatter: 'currency' },
+        { name: 'My Quotes', key: 'myQuotes', formatter: 'number' }
+      ],
+      computeFunction: computeQuotesStatistics
+    },
     systemViews: [
       { id: 'all', name: 'All Quotes', filters: {}, isDefault: true },
+      { id: 'my-quotes', name: 'My Quotes', filters: { ownerId: 'me' } },
       { id: 'draft', name: 'Draft', filters: { status: 'Draft' } },
       { id: 'pending-approval', name: 'Pending Approval', filters: { status: 'Pending Approval' } },
       { id: 'approved', name: 'Approved', filters: { status: 'Approved' } },
@@ -1005,7 +1095,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       { id: 'accepted', name: 'Accepted', filters: { status: 'Accepted' } },
       { id: 'converted', name: 'Converted', filters: { status: 'Converted' } }
     ],
-    apiEndpoint: '/quotes'
+    apiEndpoint: '/quotes',
+    normalizeFilters: normalizeQuotesFilters,
+    normalizeViewFilters: normalizeQuotesViewFilters
   },
 
   cases: {

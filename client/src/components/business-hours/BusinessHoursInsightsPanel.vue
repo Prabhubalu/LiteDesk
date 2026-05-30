@@ -10,18 +10,16 @@
       <div class="flex flex-wrap items-end gap-3">
         <div>
           <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('common.filterFrom') }}</label>
-          <input
+          <DatePicker
             v-model="filters.from"
-            type="date"
-            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm"
+            input-class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
         <div>
           <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('common.filterTo') }}</label>
-          <input
+          <DatePicker
             v-model="filters.to"
-            type="date"
-            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm"
+            input-class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
         <button
@@ -93,6 +91,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import DatePicker from '@/components/common/DatePicker.vue';
 import { useNotifications } from '@/composables/useNotifications';
 
 const { t } = useI18n();

@@ -102,14 +102,16 @@ function getFallbackActions(moduleKey: string, appKey?: string): Array<{
       variant: 'primary',
       order: 1,
     },
-    {
-      key: 'import',
-      label: 'Import',
-      type: 'import',
-      permission: `${moduleKey}.import`,
-      variant: 'secondary',
-      order: 2,
-    },
+    ...(CSV_IMPORT_MODULE_KEYS.has(moduleKey)
+      ? [{
+          key: 'import',
+          label: 'Import',
+          type: 'import' as ActionType,
+          permission: `${moduleKey}.import`,
+          variant: 'secondary' as const,
+          order: 2,
+        }]
+      : []),
     {
       key: 'export',
       label: 'Export',
@@ -129,6 +131,8 @@ function getCreateRoute(moduleKey: string, appKey?: string): string {
   }
   return `/${key}/new`;
 }
+
+const CSV_IMPORT_MODULE_KEYS = new Set(['people', 'contacts', 'deals', 'tasks', 'organizations']);
 
 /**
  * Check if user has a specific permission (using snapshot)
@@ -301,7 +305,12 @@ function buildPrimaryActions(
         bulk: false,
       };
     })
-    .filter((action) => action.visibility !== PermissionOutcome.HIDDEN)
+    .filter((action) => {
+      if (action.type === 'import' && moduleKey && !CSV_IMPORT_MODULE_KEYS.has(moduleKey)) {
+        return false;
+      }
+      return action.visibility !== PermissionOutcome.HIDDEN;
+    })
     .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 }
 

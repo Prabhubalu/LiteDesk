@@ -101,4 +101,7 @@ export function invalidateTenantSchemaCaches() {
   modulesCache.clear();
   modulesInflight.clear();
   apiClient.clearMetadataResponseCache?.();
+  import('@/composables/usePeopleModuleFields')
+    .then(({ invalidatePeopleModuleFieldsCache }) => invalidatePeopleModuleFieldsCache())
+    .catch(() => {});
 }

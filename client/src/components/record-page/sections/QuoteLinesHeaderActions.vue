@@ -1,9 +1,9 @@
 <template>
-  <div class="flex flex-wrap items-center justify-end gap-2">
+  <div class="flex flex-wrap items-center justify-end gap-1.5">
     <button
       v-if="canSubmitForApproval"
       type="button"
-      class="inline-flex items-center rounded-md bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 text-sm"
+      :class="secondaryActionClass('amber')"
       :disabled="busy"
       @click="submitForApproval"
     >
@@ -12,7 +12,7 @@
     <button
       v-if="canApproveOrReject"
       type="button"
-      class="inline-flex items-center rounded-md bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-sm"
+      :class="secondaryActionClass('green')"
       :disabled="busy"
       @click="approve"
     >
@@ -21,7 +21,7 @@
     <button
       v-if="canApproveOrReject"
       type="button"
-      class="inline-flex items-center rounded-md bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-sm"
+      :class="secondaryActionClass('red')"
       :disabled="busy"
       @click="reject"
     >
@@ -30,7 +30,7 @@
     <button
       v-if="canRevise"
       type="button"
-      class="inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-900 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+      :class="secondaryActionClass('neutral')"
       :disabled="busy"
       @click="revise"
     >
@@ -39,7 +39,7 @@
     <button
       v-if="showSendEmailButton"
       type="button"
-      class="inline-flex items-center rounded-md bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-sm disabled:opacity-50"
+      :class="primaryActionClass"
       :disabled="busy"
       @click="showSendEmail = true"
     >
@@ -56,11 +56,11 @@
 
     <Menu as="div" class="relative">
       <MenuButton
-        class="inline-flex items-center gap-1 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+        :class="menuTriggerClass"
         :disabled="busy"
       >
         {{ t('records.linesMoreActions') }}
-        <ChevronDownIcon class="h-4 w-4 text-gray-400" />
+        <ChevronDownIcon class="h-3.5 w-3.5 text-gray-400" />
       </MenuButton>
       <transition
         enter-active-class="transition ease-out duration-100"
@@ -211,6 +211,27 @@ const showSendEmailButton = computed(() => canSendQuoteToCustomer(props.record, 
 const sendEmailMode = computed(() => resolveCustomerSendMode(props.record, orgQuoteSettings.value));
 
 const sendEmailLabel = computed(() => t(getSendQuoteButtonLabelKey(props.record)));
+
+const primaryActionClass =
+  'inline-flex h-7 items-center rounded-md bg-indigo-600 px-2.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50';
+
+const menuTriggerClass =
+  'inline-flex h-7 items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700/60 disabled:opacity-50';
+
+function secondaryActionClass(variant) {
+  const base =
+    'inline-flex h-7 items-center rounded-md border px-2.5 text-xs font-medium disabled:opacity-50';
+  if (variant === 'amber') {
+    return `${base} border-amber-200 bg-amber-50/80 text-amber-800 hover:bg-amber-100 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200 dark:hover:bg-amber-950/50`;
+  }
+  if (variant === 'green') {
+    return `${base} border-green-200 bg-green-50/80 text-green-800 hover:bg-green-100 dark:border-green-800/60 dark:bg-green-950/30 dark:text-green-200 dark:hover:bg-green-950/50`;
+  }
+  if (variant === 'red') {
+    return `${base} border-red-200 bg-red-50/80 text-red-800 hover:bg-red-100 dark:border-red-800/60 dark:bg-red-950/30 dark:text-red-200 dark:hover:bg-red-950/50`;
+  }
+  return `${base} border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700/60`;
+}
 
 async function onQuoteEmailSent(data) {
   const toastKey =

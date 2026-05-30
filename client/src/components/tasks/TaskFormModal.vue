@@ -64,11 +64,9 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="label">{{ t('forms.correctiveDueDate') }}</label>
-            <input 
-              v-model="formData.dueDate" 
-              type="date"
-              class="input cursor-pointer"
-              @click="openDatePicker"
+            <DatePicker
+              v-model="formData.dueDate"
+              input-class="input cursor-pointer"
             />
           </div>
 
@@ -156,7 +154,7 @@ import { useI18n } from 'vue-i18n';
 import { ref, reactive, watch, computed } from 'vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '../../utils/apiClient';
-import { openDatePicker } from '@/utils/dateUtils';
+import DatePicker from '@/components/common/DatePicker.vue';
 
 const props = defineProps({
   task: {

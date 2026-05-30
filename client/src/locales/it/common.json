@@ -2394,5 +2394,41 @@
   "notificationPreferencesToastPushPermissionRequired": {
     "message": "Push notification permission is \"{permission}\". Enable push notifications first.",
     "description": "Toast from NotificationPreferences.vue when testing push without granted permission"
+  },
+  "datePickerToday": {
+    "message": "Today",
+    "description": "Date picker footer: jump to today"
+  },
+  "datePickerPlaceholder": {
+    "message": "Select date",
+    "description": "Date picker empty state placeholder"
+  },
+  "datePickerSelectDate": {
+    "message": "Select date",
+    "description": "Date picker trigger aria-label"
+  },
+  "datePickerPrevMonth": {
+    "message": "Previous month",
+    "description": "Date picker previous month button"
+  },
+  "datePickerNextMonth": {
+    "message": "Next month",
+    "description": "Date picker next month button"
+  },
+  "dateTimePickerPlaceholder": {
+    "message": "Select date & time",
+    "description": "Date-time picker empty state placeholder"
+  },
+  "dateTimePickerSelectDateTime": {
+    "message": "Select date and time",
+    "description": "Date-time picker trigger aria-label"
+  },
+  "dateTimePickerTime": {
+    "message": "Time",
+    "description": "Date-time picker time row label"
+  },
+  "dateTimePickerNow": {
+    "message": "Now",
+    "description": "Date-time picker footer: set to current date and time"
   }
 }
