@@ -1,151 +1,234 @@
 /**
- * ============================================================================
- * File Storage Service (Abstraction Layer)
- * ============================================================================
- * 
- * Provides a unified interface for file storage operations.
- * Currently supports local storage (dev), with future support for S3/GCS.
- * 
- * Usage:
- *   const fileStorage = require('./services/fileStorageService');
- *   const result = await fileStorage.uploadFile(file, { organizationId, userId });
- * 
- * ============================================================================
+ * Unified file storage — all product uploads go to OCI Object Storage (S3-compatible API).
  */
 
 const path = require('path');
-const fs = require('fs').promises;
+const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const objectStorage = require('./objectStorageService');
 
-// Configuration
-const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, '../uploads/evidence');
-const MAX_FILE_SIZE = parseInt(process.env.MAX_EVIDENCE_FILE_SIZE || '10485760'); // 10MB default
+const uploadsDir = path.join(__dirname, '../uploads');
+
+const OCI_PREFIX = 'oci:';
+const UPLOADS_KEY_PREFIX = 'uploads/';
+
+const MAX_FILE_SIZE = parseInt(process.env.MAX_EVIDENCE_FILE_SIZE || '10485760', 10);
 const ALLOWED_MIME_TYPES = [
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-    'text/plain',
-    'text/csv'
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
+  'application/pdf',
+  'application/x-pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'text/csv',
+  'application/octet-stream'
 ];
 
-/**
- * Ensure upload directory exists
- */
-async function ensureUploadDir() {
-    try {
-        await fs.mkdir(UPLOAD_DIR, { recursive: true });
-    } catch (error) {
-        if (error.code !== 'EEXIST') {
-            throw error;
-        }
-    }
+function isOciStoragePath(storagePath) {
+  return String(storagePath || '').startsWith(OCI_PREFIX);
 }
 
-/**
- * Validate file before upload
- */
+function safeOrgId(orgId) {
+  return String(orgId || 'public').replace(/[^a-zA-Z0-9_-]/g, '_');
+}
+
+function safeFileName(name) {
+  return String(name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120);
+}
+
+function safeCategory(category) {
+  return String(category || 'general').replace(/[^a-zA-Z0-9_-]/g, '_');
+}
+
+function buildObjectKey({ organizationId, category, fileName }) {
+  const base = safeFileName(fileName);
+  return `${UPLOADS_KEY_PREFIX}${safeOrgId(organizationId)}/${safeCategory(category)}/${Date.now()}-${uuidv4()}-${base}`;
+}
+
+function buildDownloadUrl(storagePath, { disposition = 'inline', fileName, contentType } = {}) {
+  const q = new URLSearchParams({
+    storagePath: String(storagePath),
+    disposition: disposition === 'attachment' ? 'attachment' : 'inline'
+  });
+  if (fileName) q.set('fileName', String(fileName));
+  if (contentType) q.set('contentType', String(contentType));
+  return `/api/files/download?${q.toString()}`;
+}
+
+function parseStoragePath(storagePath) {
+  const raw = String(storagePath || '').trim();
+  if (!raw) return null;
+  if (isOciStoragePath(raw)) {
+    return { driver: 'oci', key: raw.slice(OCI_PREFIX.length) };
+  }
+  if (raw.startsWith('/api/files/download')) {
+    try {
+      const url = new URL(raw, 'http://local');
+      const nested = url.searchParams.get('storagePath');
+      if (nested) return parseStoragePath(nested);
+    } catch {
+      return null;
+    }
+  }
+  if (raw.startsWith('/api/uploads/')) {
+    const rel = raw.slice('/api/uploads/'.length);
+    return { driver: 'local', relativePath: rel };
+  }
+  if (!raw.includes('://') && !raw.startsWith('/')) {
+    return { driver: 'local', relativePath: raw };
+  }
+  return null;
+}
+
+function assertOrgAccessToKey(key, organizationId) {
+  if (!organizationId) {
+    const err = new Error('Organization context missing');
+    err.statusCode = 403;
+    throw err;
+  }
+  const safeOrg = safeOrgId(organizationId);
+  const rawOrg = String(organizationId);
+  const allowedPrefixes = [
+    `${UPLOADS_KEY_PREFIX}${safeOrg}/`,
+    `attachments/${safeOrg}/`,
+    `${String(process.env.MAILROOM_ATTACHMENTS_PREFIX || 'mailroom').trim() || 'mailroom'}/${rawOrg}/`,
+    `${String(process.env.MAILROOM_ATTACHMENTS_PREFIX || 'mailroom').trim() || 'mailroom'}/${safeOrg}/`
+  ];
+  if (!allowedPrefixes.some((prefix) => key.startsWith(prefix))) {
+    const err = new Error('Forbidden');
+    err.statusCode = 403;
+    throw err;
+  }
+}
+
+function resolveLegacyLocalPath(storagePath) {
+  const parsed = parseStoragePath(storagePath);
+  if (!parsed || parsed.driver !== 'local' || !parsed.relativePath) return null;
+  const rel = parsed.relativePath.replace(/\\/g, '/');
+  if (!rel || rel.includes('..')) return null;
+  const filePath = path.join(uploadsDir, rel);
+  const normalizedUploads = path.resolve(uploadsDir);
+  const normalizedFile = path.resolve(filePath);
+  if (!normalizedFile.startsWith(normalizedUploads + path.sep) && normalizedFile !== normalizedUploads) {
+    return null;
+  }
+  if (!fs.existsSync(normalizedFile)) return null;
+  return normalizedFile;
+}
+
 function validateFile(file) {
-    if (!file) {
-        throw new Error('File is required');
-    }
-    
-    if (file.size > MAX_FILE_SIZE) {
-        throw new Error(`File size exceeds maximum allowed size of ${MAX_FILE_SIZE} bytes`);
-    }
-    
-    if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-        throw new Error(`File type ${file.mimetype} is not allowed`);
-    }
+  if (!file) {
+    throw new Error('File is required');
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`File size exceeds maximum allowed size of ${MAX_FILE_SIZE} bytes`);
+  }
+  if (file.mimetype && !ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+    throw new Error(`File type ${file.mimetype} is not allowed`);
+  }
 }
 
-/**
- * Generate unique filename
- */
-function generateFileName(originalName, mimeType) {
-    const ext = path.extname(originalName);
-    const baseName = path.basename(originalName, ext);
-    const sanitizedBaseName = baseName.replace(/[^a-zA-Z0-9-_]/g, '_');
-    const uniqueId = uuidv4();
-    const timestamp = Date.now();
-    return `${sanitizedBaseName}_${timestamp}_${uniqueId}${ext}`;
-}
-
-/**
- * Upload file to storage
- * 
- * @param {Object} file - Multer file object
- * @param {Object} context - Context information (organizationId, userId, etc.)
- * @returns {Promise<Object>} - { fileUrl, fileName, fileSize, mimeType }
- */
-async function uploadFile(file, context = {}) {
-    try {
-        // Validate file
-        validateFile(file);
-        
-        // Ensure upload directory exists
-        await ensureUploadDir();
-        
-        // Generate unique filename
-        const fileName = generateFileName(file.originalname, file.mimetype);
-        
-        // Create organization-specific subdirectory
-        const orgDir = context.organizationId 
-            ? path.join(UPLOAD_DIR, context.organizationId.toString())
-            : UPLOAD_DIR;
-        await fs.mkdir(orgDir, { recursive: true });
-        
-        // Full file path
-        const filePath = path.join(orgDir, fileName);
-        
-        // Write file to disk
-        await fs.writeFile(filePath, file.buffer);
-        
-        // Generate file URL (relative to uploads directory)
-        const relativePath = context.organizationId
-            ? `evidence/${context.organizationId}/${fileName}`
-            : `evidence/${fileName}`;
-        const fileUrl = `/api/uploads/${relativePath}`;
-        
-        return {
-            fileUrl,
-            fileName: file.originalname, // Keep original name for display
-            storedFileName: fileName, // Actual stored filename
-            fileSize: file.size,
-            mimeType: file.mimetype
-        };
-    } catch (error) {
-        console.error('File upload error:', error);
-        throw error;
+async function uploadBuffer({
+  buffer,
+  originalName,
+  mimeType,
+  organizationId,
+  category = 'general',
+  metadata = {}
+}) {
+  if (!buffer || !Buffer.isBuffer(buffer)) {
+    throw new Error('File buffer is required');
+  }
+  const key = buildObjectKey({ organizationId, category, fileName: originalName });
+  await objectStorage.putBuffer({
+    key,
+    buffer,
+    contentType: mimeType || 'application/octet-stream',
+    metadata: {
+      originalname: safeFileName(originalName),
+      ...metadata
     }
+  });
+  const storagePath = `${OCI_PREFIX}${key}`;
+  return {
+    storagePath,
+    url: buildDownloadUrl(storagePath, {
+      disposition: 'inline',
+      fileName: originalName,
+      contentType: mimeType
+    }),
+    downloadUrl: buildDownloadUrl(storagePath, {
+      disposition: 'attachment',
+      fileName: originalName,
+      contentType: mimeType
+    }),
+    fileName: originalName,
+    storedFileName: path.basename(key),
+    fileSize: buffer.length,
+    mimeType: mimeType || 'application/octet-stream',
+    objectKey: key
+  };
 }
 
-/**
- * Future: Upload to S3
- * TODO: Implement when S3 support is needed
- */
-async function uploadToS3(file, context) {
-    // Placeholder for future S3 implementation
-    throw new Error('S3 upload not yet implemented');
+async function uploadMulterFile(file, context = {}) {
+  if (!file?.buffer) {
+    throw new Error('File buffer is required (use multer memory storage)');
+  }
+  validateFile(file);
+  return uploadBuffer({
+    buffer: file.buffer,
+    originalName: file.originalname,
+    mimeType: file.mimetype,
+    organizationId: context.organizationId,
+    category: context.category || 'general',
+    metadata: context.metadata
+  });
 }
 
-/**
- * Future: Upload to GCS
- * TODO: Implement when GCS support is needed
- */
-async function uploadToGCS(file, context) {
-    // Placeholder for future GCS implementation
-    throw new Error('GCS upload not yet implemented');
+async function persistMulterUpload(req, category = 'general') {
+  if (!req.file) {
+    throw new Error('No file uploaded');
+  }
+  return uploadMulterFile(req.file, {
+    organizationId: req.user?.organizationId,
+    category
+  });
+}
+
+async function getObjectBuffer(storagePath) {
+  const parsed = parseStoragePath(storagePath);
+  if (!parsed) return null;
+  if (parsed.driver === 'oci') {
+    return objectStorage.getBuffer({ key: parsed.key });
+  }
+  const localPath = resolveLegacyLocalPath(storagePath);
+  if (!localPath) return null;
+  return fs.promises.readFile(localPath);
 }
 
 module.exports = {
-    uploadFile,
-    validateFile,
-    MAX_FILE_SIZE,
-    ALLOWED_MIME_TYPES
+  OCI_PREFIX,
+  UPLOADS_KEY_PREFIX,
+  MAX_FILE_SIZE,
+  ALLOWED_MIME_TYPES,
+  isOciStoragePath,
+  safeOrgId,
+  safeFileName,
+  buildObjectKey,
+  buildDownloadUrl,
+  parseStoragePath,
+  assertOrgAccessToKey,
+  resolveLegacyLocalPath,
+  validateFile,
+  uploadBuffer,
+  uploadMulterFile,
+  persistMulterUpload,
+  getObjectBuffer
 };
-

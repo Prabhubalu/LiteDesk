@@ -1420,12 +1420,6 @@ exports.uploadAvatar = async (req, res) => {
             'image/svg+xml'
         ];
         if (!allowedImageMimes.includes(req.file.mimetype)) {
-            try {
-                const fs = require('fs');
-                fs.unlink(req.file.path, () => {});
-            } catch (_) {
-                // ignore cleanup failures
-            }
             return res.status(400).json({
                 success: false,
                 message: 'Invalid file type. Please upload an image (PNG, JPG, GIF, WEBP, or SVG).'
@@ -1449,15 +1443,15 @@ exports.uploadAvatar = async (req, res) => {
             });
         }
 
-        const { getFileUrl } = require('../middleware/uploadMiddleware');
-        const fileUrl = getFileUrl(req, req.file.filename);
-        user.avatar = fileUrl;
+        const { persistMulterUpload } = require('../middleware/uploadMiddleware');
+        const uploadResult = await persistMulterUpload(req, 'avatars');
+        user.avatar = uploadResult.url;
         await user.save();
 
         return res.json({
             success: true,
             message: 'Avatar updated',
-            data: { avatar: fileUrl }
+            data: { avatar: uploadResult.url }
         });
     } catch (error) {
         console.error('Upload avatar error:', error);

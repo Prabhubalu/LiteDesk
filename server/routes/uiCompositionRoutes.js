@@ -21,6 +21,7 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation } = require('../middleware/organizationMiddleware');
+const { sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
 const {
   getApps,
   getRegistry,
@@ -35,6 +36,7 @@ const {
 // Apply auth and organization middleware to all routes
 router.use(protect);
 router.use(organizationIsolation);
+router.use(sessionBootstrapLimiter);
 
 // UI Composition Routes
 router.get('/registry', getRegistry);

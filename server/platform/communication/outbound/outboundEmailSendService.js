@@ -23,6 +23,7 @@ const { getCommunicationConfigForOrganization } = require('../config/communicati
 const { isGmailIntegrationEnabled } = require('../../../config/emailFeatureFlags');
 const emailProviderGateway = require('../providers/emailProviderGateway');
 const gmailSendProvider = require('../providers/gmailSendProvider');
+const fileStorage = require('../../../services/fileStorageService');
 const { uploadsDir } = require('../../../middleware/uploadMiddleware');
 const objectStorage = require('../../../services/objectStorageService');
 
@@ -63,6 +64,8 @@ async function loadAttachmentsFromDoc(doc) {
       if (String(storagePath).startsWith('oci:')) {
         const key = String(storagePath).slice(4);
         content = await objectStorage.getBuffer({ key });
+      } else if (String(storagePath).startsWith('/api/files/download')) {
+        content = await fileStorage.getObjectBuffer(storagePath);
       } else {
         const fullPath = path.join(uploadsDir, storagePath);
         content = fs.readFileSync(fullPath);

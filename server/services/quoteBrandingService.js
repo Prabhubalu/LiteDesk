@@ -5,7 +5,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const Organization = require('../models/Organization');
-const { uploadsDir } = require('../middleware/uploadMiddleware');
+const fileStorage = require('./fileStorageService');
 const {
   normalizeQuoteOrgSettings,
   sanitizeBrandColor
@@ -13,6 +13,8 @@ const {
 
 const DEFAULT_BRAND_COLOR = '#4f46e5';
 const PDF_LOGO_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp']);
+
+const uploadsDir = path.join(__dirname, '../uploads');
 
 /**
  * Resolve tenant upload logo URL to a local file path for PDF embedding.
@@ -33,6 +35,36 @@ function resolveUploadLogoPath(logoUrl, organizationId) {
   const filePath = path.join(uploadsDir, orgId, filename);
   if (!fs.existsSync(filePath)) return null;
   return filePath;
+}
+
+/**
+ * Resolve logo from OCI storage or legacy local upload for PDF embedding.
+ * @returns {Promise<string|Buffer|null>}
+ */
+async function resolveUploadLogoSource(logoUrl, organizationId) {
+  if (!logoUrl || !organizationId) return null;
+
+  const localPath = resolveUploadLogoPath(logoUrl, organizationId);
+  if (localPath) return localPath;
+
+  const parsed = fileStorage.parseStoragePath(logoUrl);
+  if (!parsed) return null;
+
+  if (parsed.driver === 'oci') {
+    const ext = path.extname(parsed.key).toLowerCase();
+    if (!PDF_LOGO_EXTENSIONS.has(ext)) return null;
+    try {
+      return await fileStorage.getObjectBuffer(`${fileStorage.OCI_PREFIX}${parsed.key}`);
+    } catch {
+      return null;
+    }
+  }
+
+  const legacyPath = fileStorage.resolveLegacyLocalPath(logoUrl);
+  if (!legacyPath) return null;
+  const ext = path.extname(legacyPath).toLowerCase();
+  if (!PDF_LOGO_EXTENSIONS.has(ext)) return null;
+  return legacyPath;
 }
 
 /**
@@ -64,7 +96,7 @@ async function getQuoteBranding(organizationId) {
   const documentTitle = String(quotes.documentTitle || '').trim() || 'Quote';
 
   const logoUrl = org?.settings?.logoUrl || null;
-  const logoPath = resolveUploadLogoPath(logoUrl, organizationId);
+  const logoPath = await resolveUploadLogoSource(logoUrl, organizationId);
 
   return {
     companyName: String(org?.name || '').trim() || 'Company',
@@ -80,5 +112,6 @@ async function getQuoteBranding(organizationId) {
 module.exports = {
   DEFAULT_BRAND_COLOR,
   resolveUploadLogoPath,
+  resolveUploadLogoSource,
   getQuoteBranding
 };

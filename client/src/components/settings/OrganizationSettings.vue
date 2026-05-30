@@ -996,7 +996,10 @@ const removeLogo = async () => {
   if (logoUploading.value) return;
   // If the current URL is server-managed, call DELETE to remove the file reference.
   // Otherwise just clear locally (it'll persist via the main Save action).
-  const isServerManaged = form.value.logoUrl && form.value.logoUrl.startsWith('/api/uploads/');
+  const isServerManaged = form.value.logoUrl && (
+    form.value.logoUrl.startsWith('/api/uploads/') ||
+    form.value.logoUrl.startsWith('/api/files/download')
+  );
   if (isServerManaged) {
     logoUploading.value = true;
     try {

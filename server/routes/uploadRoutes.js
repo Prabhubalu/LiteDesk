@@ -1,6 +1,6 @@
 const express = require('express');
 const { protect } = require('../middleware/authMiddleware');
-const { uploadSingle, getFileUrl } = require('../middleware/uploadMiddleware');
+const { uploadSingle, persistMulterUpload } = require('../middleware/uploadMiddleware');
 const { resolveAppContext } = require('../middleware/resolveAppContextMiddleware');
 const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMiddleware');
 const { lazySalesInitialization } = require('../middleware/lazySalesInitializationMiddleware');
@@ -18,7 +18,7 @@ router.use(requireSalesApp); // Enforce CRM-only access
 // @desc    Upload a file (image, document, etc.)
 // @route   POST /api/upload
 // @access  Private
-router.post('/', uploadSingle('file'), (req, res) => {
+router.post('/', uploadSingle('file'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({
@@ -27,12 +27,13 @@ router.post('/', uploadSingle('file'), (req, res) => {
             });
         }
 
-        const fileUrl = getFileUrl(req, req.file.filename);
+        const uploadResult = await persistMulterUpload(req, 'general');
 
         res.json({
             success: true,
-            url: fileUrl,
-            filename: req.file.filename,
+            url: uploadResult.url,
+            storagePath: uploadResult.storagePath,
+            filename: uploadResult.storedFileName,
             originalname: req.file.originalname,
             size: req.file.size,
             mimetype: req.file.mimetype
@@ -48,4 +49,3 @@ router.post('/', uploadSingle('file'), (req, res) => {
 });
 
 module.exports = router;
-

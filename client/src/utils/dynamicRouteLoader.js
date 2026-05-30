@@ -178,19 +178,29 @@ export function registerDynamicRoutes(router, routeDefinitions) {
 /**
  * Load routes from /api/ui/routes and register them
  * @param {Router} router - Vue Router instance
- * @param {Function} apiClient - API client function
+ * @param {Function|null} apiClient - API client function
+ * @param {Array|null} preloadedRoutes - Optional routes already fetched during UI bootstrap
  */
-export async function loadAndRegisterRoutes(router, apiClient) {
+export async function loadAndRegisterRoutes(router, apiClient, preloadedRoutes = null) {
   try {
-    const response = await apiClient('/ui/routes');
-    
-    if (response.success && response.data) {
-      registerDynamicRoutes(router, response.data);
-      return true;
-    } else {
-      console.warn('[DynamicRouteLoader] Failed to load routes:', response);
-      return false;
+    let routePayload = preloadedRoutes;
+    if (!routePayload) {
+      const response = await apiClient('/ui/routes');
+      if (response.success && response.data) {
+        routePayload = response.data;
+      } else {
+        console.warn('[DynamicRouteLoader] Failed to load routes:', response);
+        return false;
+      }
     }
+
+    if (routePayload?.length) {
+      registerDynamicRoutes(router, routePayload);
+      return true;
+    }
+
+    console.warn('[DynamicRouteLoader] No routes available to register');
+    return false;
   } catch (error) {
     console.error('[DynamicRouteLoader] Error loading routes:', error);
     return false;

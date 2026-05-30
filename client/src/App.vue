@@ -228,7 +228,8 @@ onMounted(async () => {
     // Always force a profile re-fetch on mount. The 5-min freshness throttle
     // hides legitimate entitlement changes (app enable/disable, role edits)
     // when the user lands on the page right after the change.
-    appShellStore.invalidateAppRegistryCache();
+    // Registry/UI caches are invalidated only from explicit settings events
+    // (see Nav.vue onCoreModulesUpdated) to avoid a startup request storm.
     await Promise.all([
       authStore.refreshUser({ force: true }),
       neededMetadata ? appShellStore.loadUIMetadata() : Promise.resolve()

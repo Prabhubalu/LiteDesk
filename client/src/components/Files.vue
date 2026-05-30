@@ -120,7 +120,7 @@
             <!-- File Info -->
             <div class="flex-1 min-w-0">
               <a
-                :href="file.storagePath"
+                :href="resolveFileUrl(file)"
                 target="_blank"
                 class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline truncate block"
               >
@@ -143,7 +143,7 @@
           <!-- Download Button -->
           <div class="flex-shrink-0">
             <a
-              :href="file.storagePath"
+              :href="resolveFileUrl(file)"
               :download="file.fileName"
               class="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
               :title="t('records.filesDownload')"
@@ -171,6 +171,7 @@ import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
+import { getApiUrlForFetch } from '@/config/apiBase';
 
 const props = defineProps({
   entityType: {
@@ -210,6 +211,15 @@ const uploadError = ref(null);
 const fileInput = ref(null);
 
 // Methods
+const resolveFileUrl = (file) => {
+  const raw = file?.url || file?.storagePath || '';
+  if (!raw) return '#';
+  if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('data:')) {
+    return raw;
+  }
+  return getApiUrlForFetch(raw);
+};
+
 const loadFiles = async () => {
   try {
     loading.value = true;

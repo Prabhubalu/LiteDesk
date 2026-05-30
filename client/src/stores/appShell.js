@@ -18,6 +18,7 @@
 import { defineStore } from 'pinia';
 import { useAuthStore } from './authRegistry';
 import { fetchAppRegistryFromNetwork } from '@/utils/appRegistryNetwork';
+import apiClient from '@/utils/apiClient';
 
 export const useAppShellStore = defineStore('appShell', {
   state: () => ({
@@ -91,14 +92,9 @@ export const useAppShellStore = defineStore('appShell', {
       this.error = null;
 
       try {
-        const token = authStore.user.token;
-        const headers = {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        };
-
         const cacheKey = `ui-metadata:${authStore.user?._id || ''}`;
         const cachedData = sessionStorage.getItem(cacheKey);
+        const noStore = { cache: 'no-store' };
         
         if (cachedData) {
           try {
@@ -132,16 +128,14 @@ export const useAppShellStore = defineStore('appShell', {
           }
         }
 
-        const [sidebarResponse, routesResponse] = await Promise.all([
-          fetch('/api/ui/sidebar', { headers, cache: 'no-store' }),
-          fetch('/api/ui/routes', { headers, cache: 'no-store' })
+        const [sidebarData, routesData] = await Promise.all([
+          apiClient('/ui/sidebar', noStore),
+          apiClient('/ui/routes', noStore)
         ]);
 
-        if (!sidebarResponse.ok) {
-          throw new Error(`Failed to load sidebar: ${sidebarResponse.statusText}`);
+        if (!sidebarData?.success) {
+          throw new Error(sidebarData?.message || 'Failed to load sidebar');
         }
-
-        const sidebarData = await sidebarResponse.json();
 
         console.log('[AppShell] Sidebar API response:', {
           success: sidebarData.success,
@@ -150,32 +144,24 @@ export const useAppShellStore = defineStore('appShell', {
           dataStructure: sidebarData.data ? Object.keys(sidebarData.data) : []
         });
 
-        if (sidebarData.success) {
-          const apps = sidebarData.data?.apps || [];
-          this.availableApps = apps.filter(app => {
-            const appKeyUpper = app.appKey?.toUpperCase();
-            return appKeyUpper !== 'CONTROL_PLANE' && appKeyUpper !== 'CONTROL PLANE';
-          });
+        const apps = sidebarData.data?.apps || [];
+        this.availableApps = apps.filter(app => {
+          const appKeyUpper = app.appKey?.toUpperCase();
+          return appKeyUpper !== 'CONTROL_PLANE' && appKeyUpper !== 'CONTROL PLANE';
+        });
 
-          console.log('[AppShell] Available apps after assignment:', this.availableApps.length);
+        console.log('[AppShell] Available apps after assignment:', this.availableApps.length);
 
-          if (!this.activeApp && this.availableApps.length > 0) {
-            this.activeApp = this.availableApps[0].appKey;
-            console.log('[AppShell] Set active app:', this.activeApp);
-          }
-
-          this.updateSidebarModules();
-          console.log('[AppShell] Sidebar modules updated:', this.sidebarModules.length);
-        } else {
-          throw new Error(sidebarData.message || 'Failed to load sidebar');
+        if (!this.activeApp && this.availableApps.length > 0) {
+          this.activeApp = this.availableApps[0].appKey;
+          console.log('[AppShell] Set active app:', this.activeApp);
         }
 
-        let routesData = null;
-        if (routesResponse.ok) {
-          routesData = await routesResponse.json();
-          if (routesData.success) {
-            this.routes = routesData.data || [];
-          }
+        this.updateSidebarModules();
+        console.log('[AppShell] Sidebar modules updated:', this.sidebarModules.length);
+
+        if (routesData?.success) {
+          this.routes = routesData.data || [];
         }
 
         // Cache the response for future page loads within the session

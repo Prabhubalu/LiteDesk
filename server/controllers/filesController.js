@@ -15,7 +15,7 @@ const People = require('../models/People');
 const PersonFileAttachment = require('../models/PersonFileAttachment');
 const Organization = require('../models/Organization');
 const User = require('../models/User');
-const { getFileUrl } = require('../middleware/uploadMiddleware');
+const { persistMulterUpload } = require('../middleware/uploadMiddleware');
 
 /**
  * Get files for a specific entity (e.g., Person).
@@ -245,8 +245,7 @@ exports.uploadFile = async (req, res) => {
     const user = await User.findById(req.user._id).select('firstName lastName username');
     const userName = user ? (user.firstName || user.lastName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : user.username) || 'User' : 'System';
 
-    // Get file URL
-    const fileUrl = getFileUrl(req, req.file.filename);
+    const uploadResult = await persistMulterUpload(req, 'files');
 
     const doc = await PersonFileAttachment.create({
       organizationId: req.user.organizationId,
@@ -254,7 +253,7 @@ exports.uploadFile = async (req, res) => {
       fileName: req.file.originalname,
       fileType: req.file.mimetype,
       fileSize: req.file.size,
-      storagePath: fileUrl,
+      storagePath: uploadResult.storagePath,
       uploaded_by: req.user._id,
       created_at: new Date(),
       appContext: appContextResult.appKey

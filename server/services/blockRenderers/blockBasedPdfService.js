@@ -8,8 +8,8 @@
  */
 
 const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
+const { PassThrough } = require('stream');
+const fileStorage = require('../fileStorageService');
 const FormResponse = require('../../models/FormResponse');
 const Form = require('../../models/Form');
 const { getBlockRenderer, hasBlockRenderer } = require('./blockRendererRegistry');
@@ -161,17 +161,10 @@ async function generatePDFFromBlocks(blocks, responseData, branding, context, or
             const auditId = responseData.responseId || responseData._id.toString();
             const sanitizedAuditId = auditId.toString().replace(/[^a-zA-Z0-9-_]/g, '-');
             const filename = `block-based-report-${sanitizedAuditId}-${Date.now()}.pdf`;
-            
-            // Construct reports directory path
-            const reportsDir = path.join(__dirname, '../../uploads', organizationId.toString(), 'reports');
-            
-            // Ensure reports directory exists
-            if (!fs.existsSync(reportsDir)) {
-                fs.mkdirSync(reportsDir, { recursive: true });
-            }
-            
-            const filePath = path.join(reportsDir, filename);
-            const stream = fs.createWriteStream(filePath);
+
+            const chunks = [];
+            const stream = new PassThrough();
+            stream.on('data', (chunk) => chunks.push(chunk));
             doc.pipe(stream);
             
             // Render blocks in order (fully driven by template block order)
@@ -246,9 +239,16 @@ async function generatePDFFromBlocks(blocks, responseData, branding, context, or
                 stream.on('finish', resolve);
                 stream.on('error', reject);
             });
-            
-            // Return URL
-            resolve(`/api/uploads/${organizationId}/reports/${filename}`);
+
+            const uploadResult = await fileStorage.uploadBuffer({
+                buffer: Buffer.concat(chunks),
+                originalName: filename,
+                mimeType: 'application/pdf',
+                organizationId,
+                category: 'reports'
+            });
+
+            resolve(uploadResult.url);
         } catch (error) {
             reject(error);
         }

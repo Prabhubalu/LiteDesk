@@ -121,6 +121,11 @@ function normalizeFile(file) {
     return null;
   }
 
+  const fileStorage = require('../services/fileStorageService');
+  const storagePath = file.storagePath || file.fileUrl || file.url || null;
+  const fileName = file.fileName || file.originalname || file.filename || '';
+  const fileType = file.fileType || file.mimetype || file.mimeType || '';
+
   return {
     // Uploader information
     uploader: file.uploader || file.uploaded_by || null,
@@ -134,10 +139,17 @@ function normalizeFile(file) {
     entityId: file.entityId || null,
     
     // File information
-    fileName: file.fileName || file.originalname || file.filename || '',
-    fileType: file.fileType || file.mimetype || file.mimeType || '',
+    fileName,
+    fileType,
     fileSize: file.fileSize || file.size || 0,
-    storagePath: file.storagePath || file.fileUrl || file.url || null,
+    storagePath,
+    url: file.url || (storagePath
+      ? fileStorage.buildDownloadUrl(storagePath, {
+          disposition: 'attachment',
+          fileName,
+          contentType: fileType
+        })
+      : null),
     
     // Timestamps
     createdAt: file.created_at || file.createdAt || new Date(),

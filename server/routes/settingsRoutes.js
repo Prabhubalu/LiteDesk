@@ -7,7 +7,7 @@ const helpdeskSettingsController = require('../controllers/helpdeskSettingsContr
 const assignmentRulesController = require('../controllers/assignmentRulesController');
 const mailroomSettingsController = require('../controllers/mailroomSettingsController');
 const quoteSettingsController = require('../controllers/quoteSettingsController');
-const { organizationSettingsLimiter } = require('../middleware/rateLimitMiddleware');
+const { organizationSettingsLimiter, sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
 const {
     cacheJsonResponse,
@@ -19,17 +19,17 @@ router.use(protect);
 router.use(organizationIsolation);
 
 // Core Modules endpoints
-router.get('/core-modules', controller.getCoreModules);
-router.get('/core-modules/:moduleKey', controller.getCoreModule);
+router.get('/core-modules', sessionBootstrapLimiter, controller.getCoreModules);
+router.get('/core-modules/:moduleKey', sessionBootstrapLimiter, controller.getCoreModule);
 router.patch('/core-modules/:moduleKey/applications/:appKey', controller.toggleAppParticipation);
 
 // Organization Status-Types endpoints (specific to organizations module)
-router.get('/core-modules/organizations/status-types', controller.getOrganizationStatusTypes);
+router.get('/core-modules/organizations/status-types', sessionBootstrapLimiter, controller.getOrganizationStatusTypes);
 router.patch('/core-modules/organizations/status-types', controller.updateOrganizationStatusTypes);
 
 // People types endpoint (tenant-configurable, e.g. Lead, Contact)
-router.get('/core-modules/people/people-types/usage', controller.getPeopleTypesUsage);
-router.get('/core-modules/people/people-types', controller.getPeopleTypes);
+router.get('/core-modules/people/people-types/usage', sessionBootstrapLimiter, controller.getPeopleTypesUsage);
+router.get('/core-modules/people/people-types', sessionBootstrapLimiter, controller.getPeopleTypes);
 router.put('/core-modules/people/people-types', controller.updatePeopleTypes);
 
 // Applications endpoints
