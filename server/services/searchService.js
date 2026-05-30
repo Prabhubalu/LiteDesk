@@ -126,7 +126,9 @@ class SearchService {
         type: 'people',
         title: `${person.first_name || ''} ${person.last_name || ''}`.trim() || person.email,
         subtitle: person.company || person.email,
-        icon: '👤',
+        first_name: person.first_name,
+        last_name: person.last_name,
+        avatar: person.avatar || null,
         route: `/people/${person._id}`
       }));
     } catch (error) {
@@ -169,7 +171,7 @@ class SearchService {
       };
 
       const results = await Organization.find(query)
-        .select('name email website industry')
+        .select('name email website industry avatar logo image')
         .limit(limit)
         .lean();
 
@@ -180,7 +182,7 @@ class SearchService {
         type: 'organizations',
         title: org.name,
         subtitle: org.industry || org.email,
-        icon: '🏢',
+        avatar: org.avatar || org.logo || org.image || null,
         route: `/organizations/${org._id}`
       }));
     } catch (error) {
@@ -211,7 +213,6 @@ class SearchService {
         type: 'deals',
         title: deal.name,
         subtitle: `${deal.stage} • ${deal.currency || '$'}${deal.value || 0}`,
-        icon: '💼',
         route: `/deals/${deal._id}`
       }));
     } catch (error) {
@@ -241,7 +242,6 @@ class SearchService {
         type: 'tasks',
         title: task.title,
         subtitle: `${task.status} • ${task.priority || 'medium'}`,
-        icon: '✅',
         route: `/tasks/${task._id}`
       }));
     } catch (error) {
@@ -275,7 +275,6 @@ class SearchService {
         type: 'events',
         title: event.eventName, // Map eventName to title for display
         subtitle: event.eventType || 'Event',
-        icon: '📅',
         route: `/events/${event._id}`
       }));
     } catch (error) {
@@ -309,7 +308,6 @@ class SearchService {
         type: 'forms',
         title: form.name || 'Form',
         subtitle: form.description || 'Form',
-        icon: '📝',
         route: `/forms/${form._id}`
       }));
     } catch (error) {
@@ -344,7 +342,6 @@ class SearchService {
         type: 'items',
         title: item.item_name || 'Item',
         subtitle: item.description || item.item_code || 'Item',
-        icon: '📦',
         route: `/items/${item._id}`
       }));
     } catch (error) {

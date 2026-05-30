@@ -103,7 +103,9 @@ client/.vite/
 client/.cache/
 
 # Backend specific
+// Import staging artifacts (CSV files awaiting/at processing)
 server/uploads/
+server/data/
 server/logs/
 server/tmp/
 

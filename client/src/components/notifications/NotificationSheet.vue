@@ -187,7 +187,7 @@
                 <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ t('notifications.caughtUp') }}</p>
                 <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{{ t('notifications.emptyList') }}</p>
                 <router-link
-                  to="/settings?tab=notifications&notificationPage=overview"
+                  to="/settings?tab=notifications&notificationPage=preferences"
                   class="mt-3 inline-block text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline"
                   @click="$emit('close')"
                 >

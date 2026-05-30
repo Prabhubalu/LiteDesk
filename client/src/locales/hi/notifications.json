@@ -426,5 +426,9 @@
   "toastCategoryReopened": {
     "message": "Case reopened",
     "description": "Toast category for case reopened"
+  },
+  "manageEventType": {
+    "message": "Manage this notification type",
+    "description": "Deep link to preference for a specific notification event type"
   }
 }

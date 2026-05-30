@@ -256,12 +256,15 @@ interface CommandPaletteItemBase {
   context?: CommandContext;
 
   /**
-   * Command icon
-   * 
-   * Icon representation for visual identification.
-   * Currently supports emoji strings (e.g., '📥', '➕', '🏢').
+   * Module key for resolving the standard module icon (sidebar / list views).
+   * Preferred over emoji `icon` in the command palette UI.
    */
-  icon: CommandIcon;
+  moduleKey?: string;
+
+  /**
+   * Command icon (legacy emoji or icon id fallback).
+   */
+  icon?: CommandIcon;
 
   /**
    * Keyboard shortcut hint

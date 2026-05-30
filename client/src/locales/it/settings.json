@@ -10262,5 +10262,169 @@
   "helpdeskExecCannedIncomplete": {
     "message": "Each macro needs a name and body before saving.",
     "description": "Validation when a macro row is incomplete"
+  },
+  "notificationsNavPreferences": {
+    "message": "Preferences",
+    "description": "Notification settings sub-nav: event preferences"
+  },
+  "notificationsNavChannels": {
+    "message": "Channels",
+    "description": "Notification settings sub-nav: delivery channels"
+  },
+  "notificationsNavDigests": {
+    "message": "Digests",
+    "description": "Notification settings sub-nav: digest summaries"
+  },
+  "notificationsNavRules": {
+    "message": "Rules",
+    "description": "Notification settings sub-nav: custom rules"
+  },
+  "notificationsNavLearn": {
+    "message": "Learn more",
+    "description": "Notification settings sub-nav: help documentation"
+  },
+  "notificationsNavHealth": {
+    "message": "Health",
+    "description": "Notification settings sub-nav: admin health dashboard"
+  },
+  "notificationsNavAdminBadge": {
+    "message": "Admin",
+    "description": "Badge on admin-only notification settings tab"
+  },
+  "notificationsPagePreferencesDesc": {
+    "message": "Choose which events notify you and on which channels.",
+    "description": "Notification preferences page subtitle"
+  },
+  "notificationsPageChannelsDesc": {
+    "message": "Set up push, email, WhatsApp, and SMS delivery.",
+    "description": "Notification channels page subtitle"
+  },
+  "notificationsPageDigestsDesc": {
+    "message": "Get daily or weekly summaries instead of real-time alerts.",
+    "description": "Notification digests page subtitle"
+  },
+  "notificationsPageRulesDesc": {
+    "message": "Create custom triggers when records in your modules change.",
+    "description": "Notification rules page subtitle"
+  },
+  "notificationsPageLearnDesc": {
+    "message": "Understand how notifications are organized and delivered.",
+    "description": "Notification learn more page subtitle"
+  },
+  "notificationsPageHealthDesc": {
+    "message": "Monitor delivery statistics and channel health.",
+    "description": "Notification health page subtitle"
+  },
+  "notificationsSearchPlaceholder": {
+    "message": "Search notification types…",
+    "description": "Search input placeholder on notification preferences"
+  },
+  "notificationsFilterAllChannels": {
+    "message": "All channels",
+    "description": "Channel filter option showing all events"
+  },
+  "notificationsExpandAll": {
+    "message": "Expand all",
+    "description": "Expand all notification preference groups"
+  },
+  "notificationsCollapseAll": {
+    "message": "Collapse all",
+    "description": "Collapse all notification preference groups"
+  },
+  "notificationsMuteAllEmail": {
+    "message": "Mute all email",
+    "description": "Quick action to disable all email notifications"
+  },
+  "notificationsEnableAllEmail": {
+    "message": "Enable all email",
+    "description": "Quick action to enable all email notifications"
+  },
+  "notificationsManageChannels": {
+    "message": "Manage channels",
+    "description": "Link from preferences to channels page"
+  },
+  "notificationsCustomizePerEvent": {
+    "message": "Customize per event",
+    "description": "Link from channels to preferences page"
+  },
+  "notificationsGroupEnabledCount": {
+    "message": "{enabled} of {total} on",
+    "description": "Enabled notification count in a preference group header"
+  },
+  "notificationsNoSearchResults": {
+    "message": "No notification types match your search.",
+    "description": "Empty state when search returns no notification events"
+  },
+  "notificationsChannelOn": {
+    "message": "On",
+    "description": "Channel status when enabled"
+  },
+  "notificationsChannelOff": {
+    "message": "Off",
+    "description": "Channel status when disabled"
+  },
+  "notificationsChannelEventCount": {
+    "message": "{enabled} of {total} event types enabled",
+    "description": "Channel summary count on channels page"
+  },
+  "notificationsInAppCardDesc": {
+    "message": "Alerts inside the app. Always available.",
+    "description": "In-app channel card description"
+  },
+  "notificationsEmailCardDesc": {
+    "message": "Messages sent to your email address.",
+    "description": "Email channel card description"
+  },
+  "notificationsPushCardDesc": {
+    "message": "Browser alerts when the app is closed.",
+    "description": "Push channel card description"
+  },
+  "notificationsWhatsappCardDesc": {
+    "message": "Critical lifecycle alerts via WhatsApp.",
+    "description": "WhatsApp channel card description"
+  },
+  "notificationsSmsCardDesc": {
+    "message": "Emergency fallback when other channels fail.",
+    "description": "SMS channel card description"
+  },
+  "notificationsPushDescription": {
+    "message": "Receive notifications even when the app is closed",
+    "description": "Push channel section description"
+  },
+  "notificationsPushHelper": {
+    "message": "Used for critical alerts only. Requires browser permission.",
+    "description": "Push channel section helper text"
+  },
+  "notificationsWhatsappDescription": {
+    "message": "Receive critical alerts via WhatsApp",
+    "description": "WhatsApp channel section description"
+  },
+  "notificationsWhatsappHelper": {
+    "message": "Used for critical lifecycle events only. One message per event.",
+    "description": "WhatsApp channel section helper text"
+  },
+  "notificationsSmsDescription": {
+    "message": "Emergency fallback for critical alerts",
+    "description": "SMS channel section description"
+  },
+  "notificationsSmsHelper": {
+    "message": "Used only when push and email are both unavailable.",
+    "description": "SMS channel section helper text"
+  },
+  "notificationsSmsEmergencyOnly": {
+    "message": "Emergency only",
+    "description": "SMS channel status label"
+  },
+  "notificationsSmsWarning": {
+    "message": "Use sparingly — SMS is for emergencies only.",
+    "description": "SMS channel warning text"
+  },
+  "notificationsInAppEmailTitle": {
+    "message": "In-app & email",
+    "description": "Section title for standard channel bulk actions"
+  },
+  "notificationsInAppEmailDesc": {
+    "message": "Bulk actions apply to all event types. Fine-tune individual events in Preferences.",
+    "description": "Section description for standard channel bulk actions"
   }
 }

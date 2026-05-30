@@ -18,7 +18,7 @@ import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 // Cache for record data (key: appKey.moduleKey.recordId)
 const recordCache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-const BATCH_FETCH_MODULES = new Set(['deals', 'events', 'forms', 'people', 'cases']);
+const BATCH_FETCH_MODULES = new Set(['deals', 'events', 'forms', 'people', 'cases', 'quotes']);
 const unsupportedBatchModules = new Set();
 
 /**
@@ -43,7 +43,9 @@ function getRecordEndpoint(appKey, moduleKey) {
     organizations: '/v2/organization',
     organization: '/v2/organization',
     items: '/items',
-    item: '/items'
+    item: '/items',
+    quotes: '/quotes',
+    quote: '/quotes'
   };
   const path = moduleToPath[normalizedModule];
   if (path) return path;
@@ -114,6 +116,8 @@ export function getRecordLabel(record) {
 
   // Try common fields
   if (record.name) return record.name;
+  if (record.quoteTitle) return record.quoteTitle;
+  if (record.quoteNumber) return record.quoteNumber;
   if (record.title) return record.title;
   if (record.eventName) return record.eventName;
   if (record.primaryField) return record.primaryField;

@@ -1297,7 +1297,7 @@ exports.restoreDescriptionVersion = async (req, res) => {
 };
 
 /** Modules that support batch fetch for related-record enrichment. */
-const BATCH_MODULES = new Set(['deals', 'events', 'forms', 'people', 'cases']);
+const BATCH_MODULES = new Set(['deals', 'events', 'forms', 'people', 'cases', 'quotes']);
 
 /**
  * POST /api/modules/:moduleKey/records/batch
@@ -1338,6 +1338,9 @@ exports.getRecordsBatch = async (req, res) => {
       query.deletedAt = null;
     } else if (moduleKey === 'cases') {
       Model = require('../models/Case');
+      query.deletedAt = null;
+    } else if (moduleKey === 'quotes') {
+      Model = require('../models/Quote');
       query.deletedAt = null;
     } else {
       return res.json({ success: true, data: [] });

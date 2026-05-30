@@ -454,5 +454,73 @@
   "helpdesk": {
     "message": "Helpdesk",
     "description": "Fallback browser tab label on helpdesk routes"
+  },
+  "globalSearchRecentSearches": {
+    "message": "Recent searches",
+    "description": "Recent searches section header in command palette"
+  },
+  "globalSearchClearRecent": {
+    "message": "Clear",
+    "description": "Clear recent searches button"
+  },
+  "globalSearchGroupContextual": {
+    "message": "On this page",
+    "description": "Contextual commands group header"
+  },
+  "globalSearchGroupNavigation": {
+    "message": "Navigation",
+    "description": "Navigation commands group header"
+  },
+  "globalSearchGroupCreate": {
+    "message": "Create",
+    "description": "Create commands group header"
+  },
+  "globalSearchGroupActions": {
+    "message": "Actions",
+    "description": "Action commands group header"
+  },
+  "globalSearchFooterNavigate": {
+    "message": "Navigate",
+    "description": "Footer keyboard hint for arrow keys"
+  },
+  "globalSearchFooterSelect": {
+    "message": "Select",
+    "description": "Footer keyboard hint for enter key"
+  },
+  "globalSearchFooterClose": {
+    "message": "Close",
+    "description": "Footer keyboard hint for escape key"
+  },
+  "globalSearchFooterCommands": {
+    "message": "Commands",
+    "description": "Footer keyboard hint for slash command mode"
+  },
+  "globalSearchOpenRecord": {
+    "message": "Open record",
+    "description": "Recent search entry subtitle for saved records"
+  },
+  "globalSearchJumpTo": {
+    "message": "Jump to…",
+    "description": "Active row hint in command palette list"
+  },
+  "globalSearchQuickActions": {
+    "message": "Quick actions",
+    "description": "Screen-reader label for suggested commands section"
+  },
+  "globalSearchGroupCoreModules": {
+    "message": "Core modules",
+    "description": "Command palette group for platform core modules"
+  },
+  "globalSearchGroupAppModules": {
+    "message": "Modules",
+    "description": "Command palette group for app-scoped modules"
+  },
+  "globalSearchGroupApps": {
+    "message": "Apps",
+    "description": "Command palette group for app switcher"
+  },
+  "globalSearchGroupPlatform": {
+    "message": "Platform",
+    "description": "Command palette group for settings and platform items"
   }
 }

@@ -687,6 +687,10 @@ const displayRows = computed(() => providedRows.value)
 
 /** Full skeleton body: awaiting columns while parent loading, or parent loading with no rows yet. */
 const isLoading = computed(() => {
+  // Rows arrived before columns (reload race) — skeleton instead of row numbers in a full-width gutter.
+  if (displayColumns.value.length === 0 && displayRows.value.length > 0) {
+    return true
+  }
   const awaitingColumns =
     Boolean(props.tableId) &&
     displayColumns.value.length === 0 &&
@@ -697,7 +701,12 @@ const isLoading = computed(() => {
   return Boolean(props.loading)
 })
 
-const showDataRows = computed(() => displayRows.value.length > 0 && !isLoading.value)
+const showDataRows = computed(
+  () =>
+    displayRows.value.length > 0 &&
+    displayColumns.value.length > 0 &&
+    !isLoading.value
+)
 
 /** Fixed row heights (px) for virtual scroll — matches py-* + single-line cell */
 const ROW_HEIGHT_PX = {

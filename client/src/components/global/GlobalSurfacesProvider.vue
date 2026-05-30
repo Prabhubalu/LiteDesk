@@ -26,6 +26,7 @@
   <!-- Global Search -->
   <GlobalSearch
     :is-open="showGlobalSearch"
+    :initial-mode="globalSearchInitialMode"
     @close="closeGlobalSearch"
     @open="openGlobalSearch"
   />
@@ -91,9 +92,11 @@ function onMailboxConnected() {
 // Visibility state for global surfaces
 const showGlobalSearch = ref(false);
 const showCommandPalette = ref(false);
+const globalSearchInitialMode = ref('search');
 
 // Open/close handlers for GlobalSearch
 const openGlobalSearch = () => {
+  globalSearchInitialMode.value = 'search';
   showGlobalSearch.value = true;
 };
 
@@ -103,12 +106,9 @@ const closeGlobalSearch = () => {
 
 // Open/close handlers for CommandPalette
 const openCommandPalette = () => {
-  // ARCHITECTURE NOTE: For now, CommandPalette functionality is handled by GlobalSearch
-  // When user types '/' in GlobalSearch, it switches to command mode
-  // If a separate CommandPalette component is created, open it here
   showCommandPalette.value = true;
-  // For now, also open GlobalSearch (which handles commands)
-  openGlobalSearch();
+  globalSearchInitialMode.value = 'command';
+  showGlobalSearch.value = true;
 };
 
 const closeCommandPalette = () => {

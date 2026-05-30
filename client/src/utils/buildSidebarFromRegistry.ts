@@ -360,6 +360,15 @@ function resolveRegistryApp(appRegistry: AppRegistry, activeAppId: string) {
   );
 }
 
+/** Build app-scoped module nav for any entitled app (used by command palette across all apps). */
+export function buildAppNavForRegistry(
+  appRegistry: AppRegistry,
+  appId: string,
+  snapshot: PermissionSnapshot
+): SidebarStructure['appNav'] {
+  return buildAppNav(appRegistry, appId, snapshot);
+}
+
 function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: PermissionSnapshot): SidebarStructure['appNav'] {
   const app = resolveRegistryApp(appRegistry, activeAppId);
   if (!app) return { appId: activeAppId, modules: [] };

@@ -1,277 +1,248 @@
 <template>
-  <Transition
-    enter-active-class="transition ease-out duration-200"
-    enter-from-class="opacity-0"
-    enter-to-class="opacity-100"
-    leave-active-class="transition ease-in duration-150"
-    leave-from-class="opacity-100"
-    leave-to-class="opacity-0"
-  >
-    <div
-      v-if="isOpen"
-      class="fixed inset-0 z-50 overflow-y-auto"
-      @click.self="close"
-    >
-      <!-- Backdrop -->
-      <div class="fixed inset-0 bg-black/50" @click="close"></div>
+  <TransitionRoot :show="isOpen" as="template" appear @after-leave="onPaletteAfterLeave">
+    <Dialog class="relative z-50" :initial-focus="searchInputRef" @close="close">
+      <TransitionChild
+        as="template"
+        enter="ease-out duration-300"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="ease-in duration-200"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-gray-500/25 transition-opacity dark:bg-gray-900/50" aria-hidden="true" />
+      </TransitionChild>
 
-      <!-- Search Modal -->
-      <div class="flex min-h-full items-center justify-center p-4">
-        <div
-          class="relative w-full max-w-2xl transform overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-2xl transition-all"
-          @click.stop
+      <div class="fixed inset-0 z-10 w-screen overflow-y-auto p-4 sm:p-6 md:p-20">
+        <TransitionChild
+          as="template"
+          enter="ease-out duration-300"
+          enter-from="opacity-0 scale-95"
+          enter-to="opacity-100 scale-100"
+          leave="ease-in duration-200"
+          leave-from="opacity-100 scale-100"
+          leave-to="opacity-0 scale-95"
         >
-          <!-- Search Input -->
-          <div class="relative border-b border-gray-200 dark:border-gray-700">
-            <div class="flex items-center px-4 py-3">
-              <MagnifyingGlassIcon class="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3 flex-shrink-0" />
-              <input
-                ref="searchInputRef"
-                v-model="searchQuery"
-                type="text"
-                :placeholder="t('navigation.globalSearchPlaceholder')"
-                class="flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none text-lg"
-                @keydown.esc="handleEscape"
-                @keydown.down.prevent="navigateResults(1)"
-                @keydown.up.prevent="navigateResults(-1)"
-                @keydown.enter.prevent="selectResult"
-              />
-              <kbd
-                v-if="!searchQuery"
-                class="hidden sm:inline-flex items-center px-2 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded"
-              >
-                ESC
-              </kbd>
-            </div>
-          </div>
-
-          <!-- Results -->
-          <div class="max-h-96 overflow-y-auto">
-            <!-- Loading -->
-            <div v-if="loading" class="px-4 py-8 text-center">
-              <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-              <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ t('navigation.globalSearchSearching') }}</p>
-            </div>
-
-            <!-- No Results -->
-            <div
-              v-else-if="!loading && (
-                (mode === 'command' && searchQuery && filteredCommands.length === 0) ||
-                (mode === 'search' && searchQuery && searchQuery.length >= 2 && totalResults === 0)
-              )"
-              class="px-4 py-8 text-center"
+          <DialogPanel
+            class="mx-auto max-w-2xl transform divide-y divide-gray-500/10 overflow-hidden rounded-xl bg-white/80 shadow-2xl outline outline-1 -outline-offset-1 outline-black/5 backdrop-blur-sm transition-all dark:divide-white/10 dark:bg-gray-900/80 dark:outline-white/10"
+          >
+            <Combobox
+              nullable
+              :model-value="null"
+              @update:model-value="onComboboxPaletteSelect"
             >
-              <p class="text-sm font-medium text-gray-900 dark:text-white">
-                {{ mode === 'command' ? t('navigation.globalSearchNoCommands') : t('navigation.globalSearchNoResults') }}
-              </p>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {{ mode === 'command' ? t('navigation.globalSearchNoCommandsHint') : t('navigation.globalSearchNoResultsHint') }}
-              </p>
-            </div>
+              <div class="grid grid-cols-1">
+                <ComboboxInput
+                  :ref="bindSearchInputRef"
+                  data-global-search-input
+                  class="col-start-1 row-start-1 h-12 w-full border-0 bg-transparent pr-4 pl-11 text-base text-gray-900 outline-none placeholder:text-gray-500 focus:ring-0 dark:text-white dark:placeholder:text-gray-400 sm:text-sm"
+                  :placeholder="t('navigation.globalSearchPlaceholder')"
+                  :display-value="() => searchQuery"
+                  autocomplete="off"
+                  autocorrect="off"
+                  spellcheck="false"
+                  @change="onSearchInputChange"
+                  @keydown.esc.stop="handleEscape"
+                  @keydown.down.prevent="movePaletteHighlight(1)"
+                  @keydown.up.prevent="movePaletteHighlight(-1)"
+                  @keydown.enter="onComboboxEnter"
+                />
+                <MagnifyingGlassIcon
+                  v-if="mode === 'search'"
+                  class="pointer-events-none col-start-1 row-start-1 ml-4 size-5 self-center text-gray-900/40 dark:text-gray-400"
+                  aria-hidden="true"
+                />
+                <CommandLineIcon
+                  v-else
+                  class="pointer-events-none col-start-1 row-start-1 ml-4 size-5 self-center text-gray-900/40 dark:text-gray-400"
+                  aria-hidden="true"
+                />
+              </div>
 
-            <!-- Confirmation Step (for destructive commands) -->
-            <!-- 
-              Inline confirmation for destructive commands.
-              Shown when user presses Enter on a destructive command.
-              Escape cancels, Enter confirms.
-              
-              WHY INLINE:
-              - Keeps user in flow (no modal interruption)
-              - Maintains keyboard-first interaction
-              - Clear, calm language: "Are you sure?"
-              - No browser confirm() dialogs (better UX)
-            -->
-            <div v-if="!loading && pendingDestructiveCommand" class="px-4 py-8">
-              <div class="text-center">
-                <p class="text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <!-- Loading -->
+              <div v-if="loading" class="px-6 py-14 text-center">
+                <div class="mx-auto size-6 animate-spin rounded-full border-2 border-gray-200 border-t-gray-900 dark:border-gray-700 dark:border-t-white" />
+                <p class="mt-4 text-sm text-gray-900 dark:text-gray-200">{{ t('navigation.globalSearchSearching') }}</p>
+              </div>
+
+              <!-- Destructive confirmation -->
+              <div v-else-if="pendingDestructiveCommand" class="px-6 py-14 text-center">
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">
                   {{ t('navigation.globalSearchConfirmTitle') }}
                 </p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
                   {{ pendingDestructiveCommand.label }}
                 </p>
-                <div class="flex items-center justify-center gap-2 text-xs text-gray-400 dark:text-gray-500">
-                  <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded">ESC</kbd>
-                  <span>{{ t('navigation.globalSearchToCancel') }}</span>
-                  <span class="mx-2">•</span>
-                  <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded">Enter</kbd>
-                  <span>{{ t('navigation.globalSearchToConfirm') }}</span>
-                </div>
+                <p class="mt-6 text-xs text-gray-500 dark:text-gray-400">
+                  <kbd class="rounded border border-gray-300 bg-white px-1.5 py-0.5 font-sans dark:border-gray-600 dark:bg-gray-800">esc</kbd>
+                  {{ ' ' }}{{ t('navigation.globalSearchToCancel') }}{{ ' · ' }}
+                  <kbd class="rounded border border-gray-300 bg-white px-1.5 py-0.5 font-sans dark:border-gray-600 dark:bg-gray-800">↵</kbd>
+                  {{ ' ' }}{{ t('navigation.globalSearchToConfirm') }}
+                </p>
               </div>
-            </div>
 
-            <!-- Results List -->
-            <!-- Command mode: Show commands instead of search results -->
-            <!-- Search mode: Show entity search results -->
-            <div v-else-if="!loading && !pendingDestructiveCommand && (mode === 'command' ? filteredCommands.length > 0 : totalResults > 0)" class="py-2">
-              <!-- Command Mode Results -->
-              <!-- 
-                UX PRINCIPLES:
-                - One-column list: Simple, scannable, no visual clutter
-                - Label primary: Clear action intent, easy to scan
-                - Description secondary/muted: Context without distraction
-                - Keyboard-only navigation: Fast, power-user friendly, no mouse dependency
-                - No mouse-only affordances: Everything accessible via keyboard
-                - Commands feel intentional and decisive (no entity grouping)
-                
-                WHY SIMPLICITY BEATS DISCOVERABILITY:
-                - Command Palette is for explicit user intent, not exploration
-                - Users who use commands know what they want to do
-                - Simplicity = faster execution = better UX for power users
-                - Discoverability belongs in Search mode (entity browsing)
-                - Complex UI would violate "scannable in under 2 seconds" principle
-                
-                See: docs/architecture/command-palette-invariants.md
-              -->
-              <template v-if="mode === 'command'">
-                <!-- Commands Header -->
-                <div class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-900/50">
-                  {{ t('navigation.globalSearchCommandsHeader') }}
-                </div>
-                
-                <!-- Commands List (flat, no grouping) -->
-                <div
-                  v-for="(command, index) in filteredCommands"
-                  :key="command.id"
-                  :ref="el => setCommandRef(el, index)"
-                  :class="[
-                    'w-full px-4 py-3 text-left transition-colors cursor-pointer',
-                    selectedIndex === index ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                  ]"
-                  @mouseenter="handleCommandHover(index)"
-                  @mousedown.prevent
-                  @click="handleCommandClick(command, index)"
-                  role="option"
-                  :aria-selected="selectedIndex === index"
-                >
-                  <!-- One-column layout: Label primary, description secondary -->
-                  <div class="flex flex-col">
-                    <!-- Primary: Label -->
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">
-                      {{ command.label }}
-                    </div>
-                    <!-- Secondary: Description (muted) -->
-                    <div v-if="command.description" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      {{ command.description }}
-                    </div>
-                  </div>
-                </div>
-              </template>
+              <!-- No matches -->
+              <div v-else-if="showNoMatches" class="px-6 py-14 text-center sm:px-14">
+                <MagnifyingGlassIcon class="mx-auto size-6 text-gray-900/40 dark:text-gray-500" aria-hidden="true" />
+                <p class="mt-4 text-sm text-gray-900 dark:text-gray-200">
+                  {{ mode === 'command' ? t('navigation.globalSearchNoCommands') : t('navigation.globalSearchNoResults') }}
+                </p>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {{ mode === 'command' ? t('navigation.globalSearchNoCommandsHint') : t('navigation.globalSearchNoResultsHint') }}
+                </p>
+              </div>
 
-              <!-- Search Mode Results -->
-              <template v-else>
-                <div
-                  v-for="groupKey in prioritizedGroups"
-                  :key="groupKey"
-                  class="mb-2"
-                >
-                  <!-- Group Header -->
-                  <div class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-900/50">
-                    {{ getGroupLabel(groupKey) }}
-                  </div>
-
-                  <!-- Group Results -->
-                  <button
-                    v-for="(result, index) in groupedResults[groupKey]"
-                    :key="`${result.type}-${result.id}`"
-                    :ref="el => setResultRef(el, groupKey, index)"
-                    :class="[
-                      'w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors',
-                      isSelected(groupKey, index) ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                    ]"
-                    @click="navigateToResult(result)"
-                  >
-                    <div class="flex items-center gap-3">
-                      <span class="text-xl flex-shrink-0">{{ result.icon }}</span>
-                      <div class="flex-1 min-w-0">
-                        <div class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                          {{ result.title }}
-                        </div>
-                        <div v-if="result.subtitle" class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                          {{ result.subtitle }}
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              </template>
-
-              <!-- Discoverability hint (subtle, non-intrusive) -->
-              <!-- 
-                Show hint only when:
-                - Search is focused (modal is open)
-                - User hasn't used "/" in this session
-                - In search mode (not command mode)
-                - Not showing confirmation
-                
-                This is discoverability, not onboarding - disappears once user discovers the feature.
-              -->
-              <div 
-                v-if="mode === 'search' && !hasUsedCommandTrigger && !pendingDestructiveCommand"
-                class="px-4 py-2 border-t border-gray-200 dark:border-gray-700"
+              <ComboboxOptions
+                v-else-if="showComboboxOptions"
+                static
+                as="ul"
+                class="max-h-80 scroll-py-2 overflow-y-auto p-2 text-sm text-gray-700 dark:text-gray-300"
               >
-                <p class="text-xs text-gray-400 dark:text-gray-500 text-center">
-                  {{ t('navigation.globalSearchSlashHint') }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Empty State -->
-            <!-- 
-              Command mode empty state shows when:
-              - No query entered (just '/' or empty) → Show examples
-              - Query entered but no matches → Show "No matching commands"
-              
-              Search mode empty state shows when query is too short (< 2 chars).
-            -->
-            <div
-              v-else-if="!loading && (
-                mode === 'command' 
-                  ? (isCommandQueryEmpty || filteredCommands.length === 0)
-                  : (!searchQuery || searchQuery.length < 2)
-              )"
-              class="px-4 py-8"
-            >
-              <!-- Command Mode Empty State -->
-              <template v-if="mode === 'command'">
-                <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">
-                  {{ isCommandQueryEmpty ? t('navigation.globalSearchTypeToFind') : t('navigation.globalSearchNoCommands') }}
-                </p>
-                <!-- Example commands as hints (non-clickable) -->
-                <!-- 
-                  Show examples only when query is empty.
-                  Examples help users understand what commands are available
-                  without cluttering the interface with all commands.
-                -->
-                <div v-if="isCommandQueryEmpty && exampleCommands.length > 0" class="space-y-2">
-                  <div
-                    v-for="example in exampleCommands"
-                    :key="example.id"
-                    class="px-4 py-2 text-sm text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-700 rounded"
+                <template v-for="row in paletteRows" :key="row.key">
+                  <li
+                    v-if="row.kind === 'header-recent'"
+                    :class="[
+                      'mb-2 flex items-center justify-between px-3',
+                      row.gapBefore ? 'mt-2.5 border-t border-gray-500/10 pt-2.5 dark:border-white/10' : ''
+                    ]"
+                    role="presentation"
                   >
-                    <div class="font-medium">{{ example.label }}</div>
-                    <div v-if="example.description" class="text-xs mt-0.5">{{ example.description }}</div>
-                  </div>
-                </div>
-              </template>
-              <!-- Search Mode Empty State -->
-              <template v-else>
-                <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-2">
-                  {{ t('navigation.globalSearchStartTyping') }}
+                    <h2 class="text-xs font-semibold text-gray-900 dark:text-gray-200">
+                      {{ t('navigation.globalSearchRecentSearches') }}
+                    </h2>
+                    <button
+                      type="button"
+                      class="text-xs font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      @mousedown.prevent
+                      @click="clearRecentSearches"
+                    >
+                      {{ t('navigation.globalSearchClearRecent') }}
+                    </button>
+                  </li>
+                  <li
+                    v-else-if="row.kind === 'header'"
+                    role="presentation"
+                    :class="
+                      row.srOnly
+                        ? 'sr-only'
+                        : [
+                            'px-3 py-1.5 text-xs font-semibold text-gray-900 dark:text-gray-200',
+                            row.gapBefore ? 'mt-2.5 border-t border-gray-500/10 pt-2.5 dark:border-white/10' : ''
+                          ]
+                    "
+                  >
+                    {{ row.label }}
+                  </li>
+                  <ComboboxOption
+                    v-else
+                    :value="row.value"
+                    as="template"
+                    v-slot="{ active: _comboboxActive }"
+                  >
+                    <li
+                      :class="comboboxRowClass(isPaletteRowActive(row.index))"
+                      :data-palette-option-index="row.index"
+                      :aria-selected="isPaletteRowActive(row.index)"
+                      @pointerdown="palettePointerSelect = true"
+                      @mouseenter="highlightedIndex = row.index"
+                    >
+                      <template v-if="row.variant === 'recent' && row.entry">
+                        <Avatar
+                          v-bind="getRecentSearchAvatarProps(row.entry)"
+                          size="sm"
+                          class="shrink-0"
+                        />
+                        <span class="ml-3 flex-auto truncate">{{ row.entry.label }}</span>
+                      </template>
+                      <template v-else-if="row.variant === 'command' && row.command">
+                        <component
+                          :is="getCommandIconComponent(row.command)"
+                          :class="comboboxIconClass(isPaletteRowActive(row.index))"
+                          aria-hidden="true"
+                        />
+                        <span class="ml-3 min-w-0 flex-auto">
+                          <span class="block truncate">{{ row.command.label }}</span>
+                          <span
+                            v-if="row.command.description"
+                            class="block truncate text-xs text-gray-500 dark:text-gray-400"
+                          >
+                            {{ row.command.description }}
+                          </span>
+                        </span>
+                      </template>
+                      <template v-else-if="row.variant === 'search' && row.result">
+                        <Avatar
+                          v-bind="getSearchResultAvatarProps(row.result)"
+                          size="sm"
+                          class="shrink-0"
+                        />
+                        <span class="ml-3 min-w-0 flex-auto">
+                          <span class="block truncate">{{ row.result.title }}</span>
+                          <span
+                            v-if="row.result.subtitle"
+                            class="block truncate text-xs text-gray-500 dark:text-gray-400"
+                          >
+                            {{ row.result.subtitle }}
+                          </span>
+                        </span>
+                      </template>
+                      <span
+                        v-if="isPaletteRowActive(row.index)"
+                        class="ml-3 flex-none text-gray-500 dark:text-gray-400"
+                      >
+                        {{ t('navigation.globalSearchJumpTo') }}
+                      </span>
+                    </li>
+                  </ComboboxOption>
+                </template>
+              </ComboboxOptions>
+
+              <!-- Empty hint -->
+              <div v-else-if="showEmptyHint" class="px-6 py-14 text-center sm:px-14">
+                <CommandLineIcon class="mx-auto size-6 text-gray-900/40 dark:text-gray-500" aria-hidden="true" />
+                <p class="mt-4 text-sm text-gray-900 dark:text-gray-200">
+                  {{ mode === 'command' ? t('navigation.globalSearchTypeToFind') : t('navigation.globalSearchStartTyping') }}
                 </p>
-                <!-- Discoverability hint in empty state -->
-                <p 
-                  v-if="!hasUsedCommandTrigger"
-                  class="text-xs text-gray-400 dark:text-gray-500 text-center"
+                <p
+                  v-if="mode === 'search' && !hasUsedCommandTrigger"
+                  class="mt-2 text-sm text-gray-500 dark:text-gray-400"
                 >
                   {{ t('navigation.globalSearchSlashHint') }}
                 </p>
-              </template>
+              </div>
+            </Combobox>
+
+            <!-- Footer: keyboard shortcuts -->
+            <div
+              v-if="!pendingDestructiveCommand"
+              class="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400"
+            >
+              <span class="inline-flex items-center gap-1.5">
+                <kbd class="rounded border border-gray-200 bg-white px-1.5 py-0.5 font-sans dark:border-gray-600 dark:bg-gray-900">↑</kbd>
+                <kbd class="rounded border border-gray-200 bg-white px-1.5 py-0.5 font-sans dark:border-gray-600 dark:bg-gray-900">↓</kbd>
+                <span>{{ t('navigation.globalSearchFooterNavigate') }}</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5">
+                <kbd class="rounded border border-gray-200 bg-white px-1.5 py-0.5 font-sans dark:border-gray-600 dark:bg-gray-900">↵</kbd>
+                <span>{{ t('navigation.globalSearchFooterSelect') }}</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5">
+                <kbd class="rounded border border-gray-200 bg-white px-1.5 py-0.5 font-sans dark:border-gray-600 dark:bg-gray-900">esc</kbd>
+                <span>{{ t('navigation.globalSearchFooterClose') }}</span>
+              </span>
+              <span
+                v-if="mode === 'search' && !hasUsedCommandTrigger"
+                class="inline-flex items-center gap-1.5"
+              >
+                <kbd class="rounded border border-gray-200 bg-white px-1.5 py-0.5 font-sans dark:border-gray-600 dark:bg-gray-900">/</kbd>
+                <span>{{ t('navigation.globalSearchFooterCommands') }}</span>
+              </span>
             </div>
-          </div>
-          </div>
-        </div>
+          </DialogPanel>
+        </TransitionChild>
       </div>
-    </Transition>
+    </Dialog>
+  </TransitionRoot>
 
     <!-- Link Records Drawer (for action commands) -->
     <LinkRecordsDrawer
@@ -333,13 +304,33 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter, useRoute } from 'vue-router';
-import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
+import { useRouter } from 'vue-router';
+import { MagnifyingGlassIcon } from '@heroicons/vue/20/solid';
+import { CommandLineIcon } from '@heroicons/vue/24/outline';
+import Avatar from '@/components/common/Avatar.vue';
+import {
+  getCommandIconComponent,
+  getRecentSearchAvatarProps,
+  getSearchResultAvatarProps,
+  searchResultModuleKey
+} from '@/utils/commandPalettePresentation';
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxOptions,
+  ComboboxOption,
+  Dialog,
+  DialogPanel,
+  TransitionChild,
+  TransitionRoot
+} from '@headlessui/vue';
+import { useRecentSearches, type RecentSearchEntry } from '@/composables/useRecentSearches';
+import { useFrequentModules } from '@/composables/useFrequentModules';
 import { useTabs } from '@/composables/useTabs';
 import { useActiveSurface } from '@/composables/useActiveSurface';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
-import { getAvailableCommands } from '@/commands/commandRegistry';
+import { useCommandPaletteCommands } from '@/composables/useCommandPaletteCommands';
 import type { CommandPaletteItem, CommandContext, NavigationUtilities } from '@/types/commandPalette.types';
 import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
@@ -355,7 +346,9 @@ type SearchResultItem = {
   route?: string;
   title?: string;
   subtitle?: string;
-  icon?: string;
+  avatar?: string | null;
+  first_name?: string;
+  last_name?: string;
   [key: string]: any;
 };
 
@@ -379,6 +372,10 @@ const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false
+  },
+  initialMode: {
+    type: String as () => 'search' | 'command',
+    default: 'search'
   }
 });
 
@@ -386,24 +383,67 @@ const emit = defineEmits(['close', 'open']);
 
 const { t } = useI18n();
 const router = useRouter();
-const route = useRoute();
 const { openTab } = useTabs();
+const { allCommands: platformCommands, reloadCommands: reloadPaletteCommands } = useCommandPaletteCommands();
 const { activeSurface } = useActiveSurface();
 const authStore = useAuthStore();
 
 const searchInputRef = ref<HTMLInputElement | null>(null);
+
+function resolveSearchInputElement(el: unknown): HTMLInputElement | null {
+  if (!el) return null;
+  if (el instanceof HTMLInputElement) return el;
+  const root = (el as { $el?: unknown }).$el ?? el;
+  if (root instanceof HTMLInputElement) return root;
+  if (root instanceof HTMLElement) {
+    const input = root.querySelector('input');
+    if (input instanceof HTMLInputElement) return input;
+  }
+  return null;
+}
+
+const bindSearchInputRef = (el: unknown) => {
+  searchInputRef.value = resolveSearchInputElement(el);
+};
+
+const focusSearchInput = () => {
+  nextTick(() => {
+    if (typeof searchInputRef.value?.focus === 'function') {
+      searchInputRef.value.focus();
+      return;
+    }
+    const fallback = document.querySelector<HTMLInputElement>('[data-global-search-input]');
+    fallback?.focus();
+  });
+};
 const searchQuery = ref('');
 const loading = ref(false);
 const searchResults = ref<SearchResponseData | null>(null);
-const selectedGroup = ref<GroupKey | null>(null);
-const selectedIndex = ref(-1);
-const resultRefs = ref<Record<GroupKey, Record<number, HTMLElement>>>({
-  people: {},
-  organizations: {},
-  work: {},
-  configuration: {}
-});
-const commandRefs = ref<HTMLElement[]>([]);
+const highlightedIndex = ref(-1);
+/** True only for explicit pointer clicks — blocks Headless UI stale Enter selections. */
+const palettePointerSelect = ref(false);
+
+type PaletteItem = {
+  key: string;
+  kind: 'recent' | 'command' | 'search';
+  recent?: RecentSearchEntry;
+  command?: CommandPaletteItem;
+  search?: SearchResultItem;
+};
+
+const {
+  recentSearches,
+  addRecentSearch,
+  removeRecentSearch,
+  clearRecentSearches,
+  reloadRecentSearches
+} = useRecentSearches();
+
+const {
+  frequentModuleIds,
+  recordFrequentModule,
+  reloadFrequentModules
+} = useFrequentModules();
 
 // Track if user has used "/" in this session (for discoverability hint)
 const hasUsedCommandTrigger = ref(false);
@@ -521,57 +561,38 @@ const prioritizedGroups = computed(() => {
 // Mode switching: If input starts with '/', switch to command mode
 // Strip '/' prefix from query when processing commands
 watch(searchQuery, (newQuery) => {
-  console.log('[GlobalSearch] Search query changed:', newQuery);
-  
-  // Detect mode switch: '/' as first non-whitespace character enters command mode
   const trimmed = newQuery?.trim();
   const wasInCommandMode = mode.value === 'command';
-  
+
   if (trimmed && trimmed.startsWith('/')) {
-    hasUsedCommandTrigger.value = true; // Mark that user has discovered the command trigger
+    hasUsedCommandTrigger.value = true;
     if (mode.value !== 'command') {
-      console.log('[GlobalSearch] Switching to command mode');
       mode.value = 'command';
     }
-  } else {
-    // Exiting command mode: restore normal search immediately
-    if (mode.value !== 'search') {
-      console.log('[GlobalSearch] Switching to search mode');
-      mode.value = 'search';
-    }
+  } else if (mode.value !== 'search') {
+    mode.value = 'search';
   }
 
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }
 
-  // In command mode, filter commands immediately (no debounce needed)
   if (mode.value === 'command') {
-    selectedIndex.value = -1;
-    commandRefs.value = []; // Reset refs when query changes
-    pendingDestructiveCommand.value = null; // Clear any pending confirmation when query changes
+    pendingDestructiveCommand.value = null;
     return;
   }
 
-  // In search mode, perform debounced search
-  // If we just exited command mode and have a query, trigger search immediately
   if (wasInCommandMode && trimmed && trimmed.length >= 2) {
-    // Exiting command mode with a query: restore normal search immediately
-    console.log('[GlobalSearch] Exiting command mode, triggering search immediately');
     performSearch(trimmed);
     return;
   }
 
   if (!newQuery || newQuery.trim().length < 2) {
-    console.log('[GlobalSearch] Query too short, clearing results');
     searchResults.value = null;
-    selectedGroup.value = null;
-    selectedIndex.value = -1;
-    pendingDestructiveCommand.value = null; // Clear any pending confirmation
+    pendingDestructiveCommand.value = null;
     return;
   }
 
-  console.log('[GlobalSearch] Scheduling search in 300ms');
   searchTimeout = setTimeout(() => {
     performSearch(newQuery.trim());
   }, 300);
@@ -579,21 +600,269 @@ watch(searchQuery, (newQuery) => {
 
 // Watch isOpen to focus input and reset mode
 watch(() => props.isOpen, (isOpen) => {
-  console.log('[GlobalSearch] isOpen changed:', isOpen);
   if (isOpen) {
+    reloadRecentSearches();
+    void pruneStaleRecentSearches();
+    reloadFrequentModules();
+    void reloadPaletteCommands();
     nextTick(() => {
-      console.log('[GlobalSearch] Modal opened, focusing input');
-      searchInputRef.value?.focus();
-      searchQuery.value = '';
-      mode.value = 'search'; // Reset to default mode
+      focusSearchInput();
+      if (props.initialMode === 'command') {
+        mode.value = 'command';
+        searchQuery.value = '/';
+        hasUsedCommandTrigger.value = true;
+      } else {
+        mode.value = 'search';
+        searchQuery.value = '';
+      }
       searchResults.value = null;
-      selectedGroup.value = null;
-      selectedIndex.value = -1;
     });
-  } else {
-    console.log('[GlobalSearch] Modal closed');
   }
 });
+
+const onPaletteAfterLeave = () => {
+  searchQuery.value = '';
+  mode.value = 'search';
+  searchResults.value = null;
+  pendingDestructiveCommand.value = null;
+  highlightedIndex.value = -1;
+};
+
+const onSearchInputChange = (event: Event) => {
+  const target = event.target as HTMLInputElement | null;
+  if (target) searchQuery.value = target.value;
+};
+
+type PaletteHeaderRow = {
+  kind: 'header';
+  key: string;
+  label: string;
+  srOnly?: boolean;
+  gapBefore?: boolean;
+};
+
+type PaletteHeaderRecentRow = {
+  kind: 'header-recent';
+  key: string;
+  gapBefore?: boolean;
+};
+
+type PaletteOptionRow = {
+  kind: 'option';
+  key: string;
+  index: number;
+  variant: 'recent' | 'command' | 'search';
+  value: PaletteItem;
+  entry?: RecentSearchEntry;
+  command?: CommandPaletteItem;
+  result?: SearchResultItem;
+};
+
+type PaletteRow = PaletteHeaderRow | PaletteHeaderRecentRow | PaletteOptionRow;
+
+/** Single highlight source — Headless UI `active` can desync from our ↑/↓ handler. */
+const isPaletteRowActive = (index: number) => highlightedIndex.value === index;
+
+const scrollHighlightedIntoView = () => {
+  nextTick(() => {
+    const el = document.querySelector(
+      `[data-palette-option-index="${highlightedIndex.value}"]`
+    );
+    el?.scrollIntoView({ block: 'nearest' });
+  });
+};
+
+const movePaletteHighlight = (delta: number) => {
+  const count = selectablePaletteRows.value.length;
+  if (!count) return;
+  if (highlightedIndex.value === -1) {
+    highlightedIndex.value = delta > 0 ? 0 : count - 1;
+  } else {
+    highlightedIndex.value = (highlightedIndex.value + delta + count) % count;
+  }
+  scrollHighlightedIntoView();
+};
+
+const comboboxRowClass = (active: boolean) => [
+  'flex cursor-default select-none items-center rounded-md px-3 py-2',
+  active
+    ? 'bg-gray-900/5 text-gray-900 outline-none dark:bg-white/10 dark:text-white'
+    : 'text-gray-700 dark:text-gray-300'
+];
+
+const comboboxIconClass = (active: boolean) => [
+  'size-6 flex-none',
+  active ? 'text-gray-900 dark:text-white' : 'text-gray-900/40 dark:text-gray-500'
+];
+
+const paletteItemFromRecent = (entry: RecentSearchEntry): PaletteItem => ({
+  key: `recent:${entry.id}`,
+  kind: 'recent',
+  recent: entry
+});
+
+const paletteItemFromCommand = (command: CommandPaletteItem): PaletteItem => ({
+  key: `command:${command.id}`,
+  kind: 'command',
+  command
+});
+
+const paletteItemFromSearch = (result: SearchResultItem, _groupKey: GroupKey): PaletteItem => ({
+  key: `search:${result.type}:${result.id}`,
+  kind: 'search',
+  search: result
+});
+
+const showPaletteBrowse = computed(
+  () =>
+    mode.value === 'search' &&
+    !loading.value &&
+    !pendingDestructiveCommand.value &&
+    !searchQuery.value.trim()
+);
+
+const coreModuleCommands = computed(() =>
+  availableCommands.value.filter(
+    (c) =>
+      c.scope === 'global' &&
+      c.kind === 'navigate' &&
+      c.id.startsWith('core-module-')
+  )
+);
+
+const frequentModuleCommands = computed(() => {
+  const navigateCommands = availableCommands.value.filter(
+    (c) => c.scope === 'global' && c.kind === 'navigate'
+  );
+  const byId = new Map(navigateCommands.map((c) => [c.id, c]));
+
+  let ids = [...frequentModuleIds.value];
+  if (!ids.length) {
+    const inferred = new Set<string>();
+    for (const entry of recentSearches.value) {
+      const mk = entry.moduleKey?.toLowerCase();
+      if (!mk) continue;
+      const match = navigateCommands.find(
+        (c) =>
+          c.id === `core-module-${mk}` ||
+          c.moduleKey?.toLowerCase() === mk ||
+          c.id.endsWith(`-${mk}`)
+      );
+      if (match) inferred.add(match.id);
+    }
+    ids = [...inferred];
+  }
+
+  return ids
+    .map((id) => byId.get(id))
+    .filter((c): c is CommandPaletteItem => !!c);
+});
+
+const frequentModuleIdSet = computed(
+  () => new Set(frequentModuleCommands.value.map((c) => c.id))
+);
+
+const coreModuleBrowseCommands = computed(() =>
+  coreModuleCommands.value.filter((c) => !frequentModuleIdSet.value.has(c.id))
+);
+
+const showFrequentModules = computed(
+  () => showPaletteBrowse.value && frequentModuleCommands.value.length > 0
+);
+
+const showCoreModulesBrowse = computed(
+  () => showPaletteBrowse.value && coreModuleBrowseCommands.value.length > 0
+);
+
+function resolveEnterPaletteRow(): PaletteOptionRow | undefined {
+  const rows = selectablePaletteRows.value;
+  if (!rows.length) return undefined;
+
+  if (mode.value === 'command') {
+    const commandRows = rows.filter(
+      (r): r is PaletteOptionRow => r.variant === 'command' && Boolean(r.command)
+    );
+    if (!commandRows.length) return undefined;
+
+    if (highlightedIndex.value >= 0) {
+      const byIndex = rows[highlightedIndex.value];
+      if (byIndex?.variant === 'command' && byIndex.command) return byIndex;
+    }
+
+    const query = commandFilterQuery.value;
+    if (query) {
+      let best: PaletteOptionRow | undefined;
+      let bestScore = 0;
+      for (const row of commandRows) {
+        const score = commandMatchScore(row.command!, query);
+        if (score > bestScore) {
+          bestScore = score;
+          best = row;
+        }
+      }
+      if (best) return best;
+    }
+    return commandRows[0];
+  }
+
+  if (highlightedIndex.value >= 0) return rows[highlightedIndex.value];
+  return rows[0];
+}
+
+const onComboboxEnter = (event: KeyboardEvent) => {
+  if (pendingDestructiveCommand.value) {
+    event.preventDefault();
+    confirmDestructiveCommand();
+    return;
+  }
+  const row = resolveEnterPaletteRow();
+  if (row) {
+    event.preventDefault();
+    event.stopPropagation();
+    handlePaletteSelect(row.value);
+  }
+};
+
+/** Headless Combobox fires this on Enter with a stale option — only honor pointer picks. */
+const onComboboxPaletteSelect = (item: PaletteItem | null) => {
+  if (!item || !palettePointerSelect.value) return;
+  palettePointerSelect.value = false;
+  handlePaletteSelect(item);
+};
+
+const handlePaletteSelect = (item: PaletteItem | null) => {
+  if (!item || pendingDestructiveCommand.value) return;
+
+  if (mode.value === 'command') {
+    if (item.kind !== 'command' || !item.command) return;
+    if (item.command.destructive) {
+      pendingDestructiveCommand.value = item.command;
+      focusSearchInput();
+      return;
+    }
+    executeCommand(item.command);
+    return;
+  }
+
+  if (item.kind === 'recent' && item.recent) {
+    openRecentSearch(item.recent);
+    return;
+  }
+
+  if (item.kind === 'command' && item.command) {
+    if (item.command.destructive) {
+      pendingDestructiveCommand.value = item.command;
+      focusSearchInput();
+      return;
+    }
+    executeCommand(item.command);
+    return;
+  }
+
+  if (item.kind === 'search' && item.search) {
+    navigateToResult(item.search);
+  }
+};
 
 // Listen for link drawer open events (from action commands)
 const handleLinkDrawerOpen = (event: CustomEvent) => {
@@ -749,8 +1018,6 @@ const performSearch = async (query: string) => {
     
     if (response && response.success) {
       searchResults.value = response.data;
-      selectedGroup.value = null;
-      selectedIndex.value = -1;
       console.log('[GlobalSearch] Search results set:', {
         total: searchResults.value?.total,
         people: searchResults.value?.results?.people?.length || 0,
@@ -788,117 +1055,6 @@ const getGroupLabel = (groupKey: GroupKey) => {
   return labels[groupKey] || String(groupKey);
 };
 
-// Check if result is selected
-const isSelected = (groupKey: GroupKey, index: number) => {
-  return selectedGroup.value === groupKey && selectedIndex.value === index;
-};
-
-// Set result ref
-const setResultRef = (el: any, groupKey: GroupKey, index: number) => {
-  if (el) {
-    resultRefs.value[groupKey][index] = el as HTMLElement;
-  }
-};
-
-// Navigate results with arrow keys
-// Handles both command mode (flat list) and search mode (grouped results)
-const navigateResults = (direction: number) => {
-  // Clear pending confirmation when navigating (user changed selection)
-  if (pendingDestructiveCommand.value) {
-    pendingDestructiveCommand.value = null;
-  }
-
-  // Command mode navigation (flat list)
-  if (mode.value === 'command') {
-    const commands = filteredCommands.value;
-    if (commands.length === 0) return;
-
-    if (selectedIndex.value === -1) {
-      selectedIndex.value = 0;
-      scrollToSelected();
-      return;
-    }
-
-    if (direction > 0) {
-      if (selectedIndex.value < commands.length - 1) {
-        selectedIndex.value++;
-      }
-    } else {
-      if (selectedIndex.value > 0) {
-        selectedIndex.value--;
-      }
-    }
-
-    scrollToSelected();
-    return;
-  }
-
-  // Search mode navigation (grouped results)
-  if (!searchResults.value || totalResults.value === 0) return;
-
-  // Use prioritized groups for navigation
-  const groups = prioritizedGroups.value;
-
-  if (groups.length === 0) return;
-
-  // Initialize selection
-  if (selectedGroup.value === null) {
-    const firstGroup = groups[0];
-    if (!firstGroup) return;
-    selectedGroup.value = firstGroup;
-    selectedIndex.value = 0;
-    scrollToSelected();
-    return;
-  }
-
-  const currentGroupIndex = groups.indexOf(selectedGroup.value);
-  const currentGroup = groupedResults.value[selectedGroup.value];
-  const currentGroupLength = currentGroup.length;
-
-  // Move within current group
-  if (direction > 0) {
-    if (selectedIndex.value < currentGroupLength - 1) {
-      selectedIndex.value++;
-    } else if (currentGroupIndex < groups.length - 1) {
-      // Move to next group
-      const nextGroup = groups[currentGroupIndex + 1];
-      if (!nextGroup) return;
-      selectedGroup.value = nextGroup;
-      selectedIndex.value = 0;
-    }
-  } else {
-    if (selectedIndex.value > 0) {
-      selectedIndex.value--;
-    } else if (currentGroupIndex > 0) {
-      // Move to previous group
-      const previousGroup = groups[currentGroupIndex - 1];
-      if (!previousGroup) return;
-      selectedGroup.value = previousGroup;
-      selectedIndex.value = groupedResults.value[previousGroup].length - 1;
-    }
-  }
-
-  scrollToSelected();
-};
-
-// Scroll to selected result (works for both command and search modes)
-const scrollToSelected = () => {
-  nextTick(() => {
-    if (mode.value === 'command') {
-      const ref = commandRefs.value[selectedIndex.value];
-      if (ref) {
-        ref.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      }
-    } else {
-      if (!selectedGroup.value) return;
-      const ref = resultRefs.value[selectedGroup.value]?.[selectedIndex.value];
-      if (ref) {
-        ref.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      }
-    }
-  });
-};
-
 // Handle Escape key (cancel confirmation, exit command mode, or close)
 const handleEscape = () => {
   if (pendingDestructiveCommand.value) {
@@ -924,38 +1080,6 @@ const handleEscape = () => {
   }
 };
 
-// Select result (Enter key) - handles both command and search modes
-const selectResult = () => {
-  // If confirmation is pending, confirm the destructive command
-  if (pendingDestructiveCommand.value) {
-    confirmDestructiveCommand();
-    return;
-  }
-
-  if (mode.value === 'command') {
-    if (selectedIndex.value >= 0) {
-      const command = filteredCommands.value[selectedIndex.value];
-      if (command) {
-        // Check if command is destructive
-        if (command.destructive) {
-          // Show confirmation instead of executing immediately
-          pendingDestructiveCommand.value = command;
-        } else {
-          // Execute non-destructive command immediately
-          executeCommand(command);
-        }
-      }
-    }
-  } else {
-    if (selectedGroup.value !== null && selectedIndex.value >= 0) {
-      const result = groupedResults.value[selectedGroup.value][selectedIndex.value];
-      if (result) {
-        navigateToResult(result);
-      }
-    }
-  }
-};
-
 // Confirm destructive command execution
 const confirmDestructiveCommand = () => {
   if (pendingDestructiveCommand.value) {
@@ -964,9 +1088,102 @@ const confirmDestructiveCommand = () => {
   }
 };
 
+const RECORD_DETAIL_ROUTE =
+  /^\/(quotes|people|organizations|deals|tasks|events|forms|items)\/([a-f0-9]{24})$/i;
+const HELPDESK_CASE_DETAIL_ROUTE = /^\/helpdesk\/cases\/([a-f0-9]{24})$/i;
+
+const RECORD_DETAIL_API_BASE: Record<string, string> = {
+  quotes: '/quotes',
+  people: '/people',
+  organizations: '/v2/organization',
+  deals: '/deals',
+  tasks: '/tasks',
+  events: '/events',
+  forms: '/forms',
+  items: '/items'
+};
+
+async function isRecordDetailRouteReachable(pathOnly: string): Promise<boolean> {
+  const helpdeskCase = pathOnly.match(HELPDESK_CASE_DETAIL_ROUTE);
+  if (helpdeskCase?.[1]) {
+    const res = await apiClient.getOptional(`/helpdesk/cases/${helpdeskCase[1]}`);
+    return Boolean(res?.success && res.data);
+  }
+
+  const detailMatch = pathOnly.match(RECORD_DETAIL_ROUTE);
+  if (detailMatch?.[1] && detailMatch[2]) {
+    const moduleKey = detailMatch[1].toLowerCase();
+    const recordId = detailMatch[2];
+    const apiBase = RECORD_DETAIL_API_BASE[moduleKey];
+    if (apiBase) {
+      const res = await apiClient.getOptional(`${apiBase}/${recordId}`);
+      return Boolean(res?.success && res.data);
+    }
+  }
+  return true;
+}
+
+async function pruneStaleRecentSearches() {
+  const entries = [...recentSearches.value];
+  await Promise.all(
+    entries.map(async (entry) => {
+      const pathOnly = (entry.route || '').split('?')[0] ?? '';
+      const isDetail =
+        HELPDESK_CASE_DETAIL_ROUTE.test(pathOnly) || RECORD_DETAIL_ROUTE.test(pathOnly);
+      if (!isDetail) return;
+      const ok = await isRecordDetailRouteReachable(pathOnly);
+      if (!ok) removeRecentSearch(entry.id);
+    })
+  );
+}
+
+const openRecentSearch = async (entry: RecentSearchEntry) => {
+  const pathOnly = (entry.route || '').split('?')[0] ?? '';
+  const isDetail =
+    HELPDESK_CASE_DETAIL_ROUTE.test(pathOnly) || RECORD_DETAIL_ROUTE.test(pathOnly);
+  if (isDetail) {
+    const ok = await isRecordDetailRouteReachable(pathOnly);
+    if (!ok) {
+      removeRecentSearch(entry.id);
+      close();
+      return;
+    }
+  }
+
+  openTab(entry.route, {
+    title: entry.label,
+    background: false,
+    insertAdjacent: true
+  });
+  addRecentSearch({
+    kind: 'record',
+    label: entry.label,
+    subtitle: entry.subtitle,
+    route: entry.route,
+    type: entry.type,
+    moduleKey: entry.moduleKey || (entry.type ? searchResultModuleKey(entry.type) : undefined),
+    avatar: entry.avatar,
+    first_name: entry.first_name,
+    last_name: entry.last_name
+  });
+  close();
+};
+
 // Navigate to result
 const navigateToResult = (result: SearchResultItem) => {
   if (!result || !result.route) return;
+
+  addRecentSearch({
+    kind: 'record',
+    label: result.title || '',
+    subtitle: result.subtitle,
+    route: result.route,
+    type: result.type,
+    moduleKey: searchResultModuleKey(result.type),
+    avatar: result.avatar ?? undefined,
+    first_name: result.first_name,
+    last_name: result.last_name
+  });
 
   openTab(result.route, {
     title: result.title,
@@ -1026,8 +1243,8 @@ function getCommandContextFromSurface(): CommandContext | undefined {
  */
 const availableCommands = computed<CommandPaletteItem[]>(() => {
   const activeContext = getCommandContextFromSurface();
-  const allCommands = getAvailableCommands(activeContext || 'global', router);
-  
+  const allCommands = platformCommands.value;
+
   // Filter by scope
   const filtered = allCommands.filter(cmd => {
     if (cmd.scope === 'global') {
@@ -1062,12 +1279,33 @@ const availableCommands = computed<CommandPaletteItem[]>(() => {
  * 
  * Used to determine when to show example commands in empty state.
  */
-const isCommandQueryEmpty = computed(() => {
-  if (mode.value !== 'command') return false;
+const commandFilterQuery = computed(() => {
+  if (mode.value !== 'command') return '';
   const query = searchQuery.value.trim();
-  const commandQuery = query.startsWith('/') ? query.slice(1).trim() : query;
-  return !commandQuery;
+  return query.startsWith('/') ? query.slice(1).trim().toLowerCase() : query.trim().toLowerCase();
 });
+
+const isCommandQueryEmpty = computed(() => mode.value === 'command' && !commandFilterQuery.value);
+
+function commandMatchScore(cmd: CommandPaletteItem, query: string): number {
+  if (!query) return 0;
+  const label = cmd.label.toLowerCase();
+  const mk = (cmd.moduleKey || '').toLowerCase();
+  const id = cmd.id.toLowerCase();
+  const desc = (cmd.description || '').toLowerCase();
+
+  if (label === query) return 100;
+  if (mk === query) return 95;
+  if (id === `core-module-${query}` || id.endsWith(`-${query}`) || id.includes(`-${query}`)) {
+    return 90;
+  }
+  if (label.startsWith(query)) return 80;
+  if (mk.startsWith(query)) return 75;
+  if (label.includes(query)) return 50;
+  if (desc.includes(query)) return 30;
+  if (id.includes(query)) return 20;
+  return 0;
+}
 
 /**
  * Filter commands based on query (strip '/' prefix)
@@ -1080,41 +1318,254 @@ const isCommandQueryEmpty = computed(() => {
  */
 const filteredCommands = computed<CommandPaletteItem[]>(() => {
   if (mode.value !== 'command') return [];
-  
-  const query = searchQuery.value.trim();
-  const commandQuery = query.startsWith('/') ? query.slice(1).trim() : query;
-  
-  if (!commandQuery) {
-    // Return all commands (already sorted: contextual first, then global, alphabetical)
+
+  const lowerQuery = commandFilterQuery.value;
+  if (!lowerQuery) {
     return availableCommands.value;
   }
-  
-  // Filter uniformly across all commands (preserves ordering from availableCommands)
-  const lowerQuery = commandQuery.toLowerCase();
-  return availableCommands.value.filter(cmd => 
-    cmd.label.toLowerCase().includes(lowerQuery) ||
-    cmd.description?.toLowerCase().includes(lowerQuery)
-  );
+
+  return availableCommands.value
+    .map((cmd) => ({ cmd, score: commandMatchScore(cmd, lowerQuery) }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(({ cmd }) => cmd);
 });
 
-/**
- * Example commands for empty state hints
- * 
- * Shows 3 example commands when no query is entered.
- * These are non-clickable hints to help users understand what commands are available.
- */
-const exampleCommands = computed<CommandPaletteItem[]>(() => {
-  // Show first 3 global commands as examples
-  const globalCommands = availableCommands.value.filter(cmd => cmd.scope === 'global');
-  return globalCommands.slice(0, 3);
-});
-
-// Set command ref for scrolling
-const setCommandRef = (el: any, index: number) => {
-  if (el) {
-    commandRefs.value[index] = el as HTMLElement;
-  }
+type CommandSection = {
+  id: string;
+  labelKey: string;
+  commands: CommandPaletteItem[];
 };
+
+const groupedCommandSections = computed<CommandSection[]>(() => {
+  const cmds = filteredCommands.value;
+  if (!cmds.length) return [];
+
+  const sections: CommandSection[] = [];
+  const contextual = cmds.filter((c) => c.scope === 'contextual');
+  if (contextual.length) {
+    sections.push({ id: 'contextual', labelKey: 'globalSearchGroupContextual', commands: contextual });
+  }
+
+  const globalNav = cmds.filter((c) => c.scope === 'global' && c.category === 'navigation');
+  const coreModules = globalNav.filter((c) => c.id.startsWith('core-module-'));
+  const appModules = globalNav.filter((c) => c.id.startsWith('module-'));
+  const appLens = globalNav.filter((c) => c.id.startsWith('app-') && !c.id.startsWith('app-dashboard-'));
+  const shellNav = globalNav.filter((c) => c.id.startsWith('shell-'));
+  const platformNav = globalNav.filter((c) => c.id.startsWith('platform-'));
+  const otherNav = globalNav.filter(
+    (c) =>
+      !coreModules.includes(c) &&
+      !appModules.includes(c) &&
+      !appLens.includes(c) &&
+      !shellNav.includes(c) &&
+      !platformNav.includes(c)
+  );
+
+  const pushNavSection = (id: string, labelKey: string, commands: CommandPaletteItem[]) => {
+    if (commands.length) sections.push({ id, labelKey, commands });
+  };
+
+  pushNavSection('core-modules', 'globalSearchGroupCoreModules', coreModules);
+  pushNavSection('shell', 'globalSearchGroupNavigation', shellNav);
+  pushNavSection('app-modules', 'globalSearchGroupAppModules', appModules);
+  pushNavSection('apps', 'globalSearchGroupApps', appLens);
+  pushNavSection('platform', 'globalSearchGroupPlatform', platformNav);
+  pushNavSection('navigation', 'globalSearchGroupNavigation', otherNav);
+
+  const globalCreate = cmds.filter((c) => c.scope === 'global' && c.category === 'create');
+  const globalAction = cmds.filter((c) => c.scope === 'global' && c.category === 'action');
+  if (globalCreate.length) {
+    sections.push({ id: 'create', labelKey: 'globalSearchGroupCreate', commands: globalCreate });
+  }
+  if (globalAction.length) {
+    sections.push({ id: 'actions', labelKey: 'globalSearchGroupActions', commands: globalAction });
+  }
+
+  const categorized = new Set([...contextual, ...globalNav, ...globalCreate, ...globalAction]);
+  const uncategorized = cmds.filter((c) => !categorized.has(c));
+  if (uncategorized.length) {
+    sections.push({ id: 'other', labelKey: 'globalSearchCommandsHeader', commands: uncategorized });
+  }
+
+  return sections;
+});
+
+const flatFilteredCommands = computed(() =>
+  groupedCommandSections.value.flatMap((section) => section.commands)
+);
+
+const showRecentSearches = computed(
+  () =>
+    mode.value === 'search' &&
+    !loading.value &&
+    !pendingDestructiveCommand.value &&
+    !searchQuery.value.trim() &&
+    recentSearches.value.length > 0
+);
+
+const showNoMatches = computed(() => {
+  if (loading.value || pendingDestructiveCommand.value) return false;
+  if (mode.value === 'command') {
+    const hasQuery = !isCommandQueryEmpty.value;
+    return hasQuery && flatFilteredCommands.value.length === 0;
+  }
+  const q = searchQuery.value.trim();
+  return q.length >= 2 && totalResults.value === 0;
+});
+
+const showComboboxOptions = computed(
+  () =>
+    !loading.value &&
+    !pendingDestructiveCommand.value &&
+    !showNoMatches.value &&
+    (showRecentSearches.value ||
+      showFrequentModules.value ||
+      showCoreModulesBrowse.value ||
+      (mode.value === 'command' && flatFilteredCommands.value.length > 0) ||
+      (mode.value === 'search' && totalResults.value > 0))
+);
+
+const showEmptyHint = computed(() => {
+  if (loading.value || pendingDestructiveCommand.value || showNoMatches.value) return false;
+  if (showRecentSearches.value || showFrequentModules.value || showCoreModulesBrowse.value) {
+    return false;
+  }
+  if (mode.value === 'command') {
+    return flatFilteredCommands.value.length === 0 && isCommandQueryEmpty.value;
+  }
+  if (mode.value === 'search' && totalResults.value > 0) return false;
+  return !searchQuery.value.trim() || searchQuery.value.trim().length < 2;
+});
+
+const paletteRows = computed<PaletteRow[]>(() => {
+  const rows: PaletteRow[] = [];
+  let optionIndex = 0;
+  let sectionStarted = false;
+
+  const pushSectionHeader = (header: PaletteHeaderRow | PaletteHeaderRecentRow) => {
+    rows.push({ ...header, gapBefore: sectionStarted });
+    sectionStarted = true;
+  };
+
+  if (showRecentSearches.value) {
+    pushSectionHeader({ kind: 'header-recent', key: 'header-recent' });
+    for (const entry of recentSearches.value) {
+      rows.push({
+        kind: 'option',
+        key: `recent:${entry.id}`,
+        index: optionIndex++,
+        variant: 'recent',
+        value: paletteItemFromRecent(entry),
+        entry
+      });
+    }
+  }
+
+  if (showFrequentModules.value) {
+    pushSectionHeader({
+      kind: 'header',
+      key: 'header-frequent-modules',
+      label: t('navigation.globalSearchFrequentModules')
+    });
+    for (const command of frequentModuleCommands.value) {
+      rows.push({
+        kind: 'option',
+        key: command.id,
+        index: optionIndex++,
+        variant: 'command',
+        value: paletteItemFromCommand(command),
+        command
+      });
+    }
+  }
+
+  if (showCoreModulesBrowse.value) {
+    pushSectionHeader({
+      kind: 'header',
+      key: 'header-core-modules',
+      label: t('navigation.globalSearchGroupCoreModules')
+    });
+    for (const command of coreModuleBrowseCommands.value) {
+      rows.push({
+        kind: 'option',
+        key: command.id,
+        index: optionIndex++,
+        variant: 'command',
+        value: paletteItemFromCommand(command),
+        command
+      });
+    }
+  }
+
+  if (mode.value === 'command' && flatFilteredCommands.value.length > 0) {
+    for (const section of groupedCommandSections.value) {
+      pushSectionHeader({
+        kind: 'header',
+        key: `header-${section.id}`,
+        label: t(`navigation.${section.labelKey}`)
+      });
+      for (const command of section.commands) {
+        rows.push({
+          kind: 'option',
+          key: command.id,
+          index: optionIndex++,
+          variant: 'command',
+          value: paletteItemFromCommand(command),
+          command
+        });
+      }
+    }
+  }
+
+  if (mode.value === 'search' && totalResults.value > 0) {
+    for (const groupKey of prioritizedGroups.value) {
+      pushSectionHeader({
+        kind: 'header',
+        key: `header-search-${groupKey}`,
+        label: getGroupLabel(groupKey)
+      });
+      for (const result of groupedResults.value[groupKey]) {
+        rows.push({
+          kind: 'option',
+          key: `search:${result.type}:${result.id}`,
+          index: optionIndex++,
+          variant: 'search',
+          value: paletteItemFromSearch(result, groupKey),
+          result
+        });
+      }
+    }
+  }
+
+  return rows;
+});
+
+const selectablePaletteRows = computed(() =>
+  paletteRows.value.filter((row): row is PaletteOptionRow => row.kind === 'option')
+);
+
+watch([mode, () => props.isOpen], () => {
+  highlightedIndex.value = -1;
+});
+
+watch(commandFilterQuery, (query) => {
+  if (mode.value !== 'command') return;
+  const count = selectablePaletteRows.value.length;
+  highlightedIndex.value = query && count > 0 ? 0 : -1;
+});
+
+watch(searchQuery, () => {
+  if (mode.value === 'search') {
+    highlightedIndex.value = -1;
+  }
+});
+
+watch(selectablePaletteRows, (rows) => {
+  if (highlightedIndex.value >= rows.length) {
+    highlightedIndex.value = rows.length > 0 ? Math.max(0, rows.length - 1) : -1;
+  }
+});
 
 /**
  * Create navigation utilities from Vue Router
@@ -1168,7 +1619,7 @@ const executeCommand = (command: CommandPaletteItem) => {
   if (!command) return;
   
   if (command.kind === 'navigate') {
-    // Navigation command: pass NavigationUtilities to run()
+    recordFrequentModule(command.id);
     const nav = createNavigationUtilities();
     command.run(nav);
     close();
@@ -1185,44 +1636,6 @@ const executeCommand = (command: CommandPaletteItem) => {
     // Note: Action commands may not close the modal (e.g., if they open a drawer)
     // The handler should decide whether to close or not
   }
-};
-
-/**
- * Keep focus on the search input so keyboard navigation (arrows/Enter/Esc)
- * continues to work even after mouse interaction.
- */
-const focusSearchInput = () => {
-  nextTick(() => {
-    (searchInputRef.value as HTMLInputElement | null)?.focus?.();
-  });
-};
-
-/**
- * Mouse hover: update selected index for visual feedback + Enter parity.
- */
-const handleCommandHover = (index: number) => {
-  selectedIndex.value = index;
-  scrollToSelected();
-};
-
-/**
- * Mouse click: execute the same logic as Enter key.
- */
-const handleCommandClick = (command: CommandPaletteItem, index: number) => {
-  selectedIndex.value = index;
-
-  if (pendingDestructiveCommand.value && pendingDestructiveCommand.value.id !== command.id) {
-    pendingDestructiveCommand.value = null;
-  }
-
-  if (command.destructive) {
-    pendingDestructiveCommand.value = command;
-    focusSearchInput();
-    return;
-  }
-
-  executeCommand(command);
-  focusSearchInput();
 };
 
 /**
@@ -1616,9 +2029,7 @@ const close = () => {
   searchQuery.value = '';
   mode.value = 'search'; // Reset to default mode
   searchResults.value = null;
-  selectedGroup.value = null;
-  selectedIndex.value = -1;
-  pendingDestructiveCommand.value = null; // Clear any pending confirmation
+  pendingDestructiveCommand.value = null;
   // Note: hasUsedCommandTrigger persists across modal opens/closes in the same session
 };
 

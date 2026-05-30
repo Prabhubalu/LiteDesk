@@ -1,4 +1,5 @@
 const ImportHistory = require('../models/ImportHistory');
+const { getImportedRecordsPaginated } = require('../services/import/importRecordsService');
 
 // @desc    Get all import history for an organization
 // @route   GET /api/imports
@@ -185,64 +186,10 @@ const deleteImportHistory = async (req, res) => {
   }
 };
 
-// @desc    Get imported records by import ID and type (created/updated)
-// @route   GET /api/imports/:id/records/:type
+// @desc    Get imported records by import ID and type (created/updated), paginated
+// @route   GET /api/imports/:id/records/:type?page=1&limit=50
 // @access  Private
-const getImportedRecords = async (req, res) => {
-  try {
-    const { organizationId } = req.user;
-    const { id, type } = req.params; // type: 'created' or 'updated'
-    
-    // Validate type
-    if (!['created', 'updated'].includes(type)) {
-      return res.status(400).json({ success: false, message: 'Invalid record type. Must be "created" or "updated"' });
-    }
-    
-    // Get the import history record
-    const importRecord = await ImportHistory.findOne({ _id: id, organizationId });
-    
-    if (!importRecord) {
-      return res.status(404).json({ success: false, message: 'Import record not found' });
-    }
-    
-    const recordIds = importRecord.recordIds?.[type] || [];
-    
-    if (recordIds.length === 0) {
-      return res.status(200).json({ success: true, data: [] });
-    }
-    
-    // Fetch actual records based on module type
-    let records = [];
-    const People = require('../models/People');
-    const Deal = require('../models/Deal');
-    const Task = require('../models/Task');
-    const Organization = require('../models/Organization');
-    
-    switch (importRecord.module) {
-      case 'contacts':
-        records = await People.find({ _id: { $in: recordIds }, organizationId }).lean();
-        break;
-      case 'deals':
-        records = await Deal.find({ _id: { $in: recordIds}, organizationId }).lean();
-        break;
-      case 'tasks':
-        records = await Task.find({ _id: { $in: recordIds }, organizationId })
-          .populate('assignedTo', 'firstName lastName')
-          .lean();
-        break;
-      case 'organizations':
-        records = await Organization.find({ _id: { $in: recordIds } }).lean();
-        break;
-      default:
-        return res.status(400).json({ success: false, message: 'Invalid module type' });
-    }
-    
-    res.status(200).json({ success: true, data: records });
-  } catch (error) {
-    console.error('Get imported records error:', error);
-    res.status(500).json({ success: false, message: 'Error fetching imported records', error: error.message });
-  }
-};
+const getImportedRecords = getImportedRecordsPaginated;
 
 module.exports = {
   getImportHistory,

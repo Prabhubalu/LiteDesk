@@ -1,23 +1,5 @@
 <template>
-  <div class="w-full max-w-4xl mx-auto">
-    <!-- Header -->
-    <header class="mb-6">
-      <!-- Breadcrumb -->
-      <nav class="mb-4 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-        <router-link to="/settings" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">{{ t('settings.modFieldsSourceSettings') }}</router-link>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-        <router-link to="/settings?tab=notifications&notificationPage=overview" class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">{{ t('settings.helpdeskExecNotifications') }}</router-link>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-        <span class="text-gray-900 dark:text-white">{{ t('settings.roleDrawerTabOverview') }}</span>
-      </nav>
-      <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{{ t('common.notificationOverviewNotificationOverview') }}</h1>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('common.notificationOverviewLearnHowNotificationsWorkAndWhat') }}</p>
-    </header>
-
+  <div class="w-full max-w-4xl">
     <!-- Section 1: What you're notified about -->
     <section class="mb-8">
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('common.notificationOverviewWhatYoureNotifiedAbout') }}</h2>
@@ -221,7 +203,7 @@
               <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ t('common.notificationOverviewDigests') }}</h3>
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ t('common.notificationOverviewReceiveDailyOrWeeklySummariesOf') }}</p>
               <router-link
-                to="/settings?tab=notifications&notificationPage=preferences#digests"
+                to="/settings?tab=notifications&notificationPage=digests"
                 class="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
               >{{ t('common.notificationOverviewManageDigests') }}<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

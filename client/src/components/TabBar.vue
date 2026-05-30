@@ -11,6 +11,12 @@ import { useUserStatus } from '@/composables/useUserStatus';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
 import { resolveTabTitleWithHelpdeskAlerts } from '@/utils/helpdeskTabAlerts';
 import { useHelpdeskBrowserTitle } from '@/composables/useHelpdeskBrowserTitle';
+import TabHoverPreview from '@/components/TabHoverPreview.vue';
+import {
+  getTabPreviewContext,
+  isTabTitleTruncated,
+  shouldShowTabPreview,
+} from '@/utils/tabPreviewContext';
 
 const { t, te } = useI18n();
 useHelpdeskBrowserTitle();
@@ -146,6 +152,45 @@ const showContextMenu = ref(false);
 const contextMenuTab = ref(null);
 const contextMenuPosition = ref({ x: 0, y: 0 });
 
+const hoveredPreviewTab = ref(null);
+const hoveredPreviewAnchor = ref(null);
+const previewEnabled = computed(
+  () => !draggedTabId.value && !showContextMenu.value
+);
+
+function tryShowTabPreview(tab, tabEl) {
+  if (!(tabEl instanceof HTMLElement) || !tab) return;
+  const titleEl = tabEl.querySelector('[data-tab-title]');
+  const { secondary } = getTabPreviewContext(tab, t, te);
+  if (!shouldShowTabPreview(tab, {
+    isTruncated: isTabTitleTruncated(titleEl),
+    secondary,
+  })) {
+    return;
+  }
+  hoveredPreviewTab.value = tab;
+  hoveredPreviewAnchor.value = tabEl;
+}
+
+function clearTabPreview() {
+  hoveredPreviewTab.value = null;
+  hoveredPreviewAnchor.value = null;
+}
+
+function handleTabsContainerMouseOver(event) {
+  if (draggedTabId.value) return;
+  const tabEl = event.target.closest('[data-tab-item]');
+  if (!(tabEl instanceof HTMLElement)) return;
+  const tabId = tabEl.dataset.tabId;
+  const tab = tabsArray.value.find((item) => item.id === tabId);
+  if (tab) tryShowTabPreview(tab, tabEl);
+}
+
+function handleTabsContainerMouseLeave() {
+  releaseFrozenTabWidth();
+  clearTabPreview();
+}
+
 // Chrome-style tab width freeze:
 // While the cursor is over the tab strip and the user closes a tab via the X,
 // the remaining tabs hold their current pixel width so the next X stays under
@@ -203,6 +248,7 @@ const handleCloseTab = (event, tabId) => {
 
 // Drag and drop handlers
 const handleDragStart = (event, tabId) => {
+  clearTabPreview();
   draggedTabId.value = tabId;
   event.dataTransfer.effectAllowed = 'move';
   event.dataTransfer.setData('text/plain', tabId);
@@ -251,6 +297,7 @@ const handleDrop = (event, targetTabId) => {
 // Context menu handlers
 const handleContextMenu = (event, tab) => {
   event.preventDefault();
+  clearTabPreview();
   contextMenuTab.value = tab;
   contextMenuPosition.value = {
     x: event.clientX,
@@ -369,7 +416,8 @@ onUnmounted(() => {
       <div
         ref="tabsContainerRef"
         class="flex flex-1 min-w-0 items-center h-full overflow-x-hidden"
-        @mouseleave="releaseFrozenTabWidth"
+        @mouseleave="handleTabsContainerMouseLeave"
+        @mouseover="handleTabsContainerMouseOver"
       >
       <!-- Tabs - Chrome style: widths shrink to fit, and stay frozen on close
            until the cursor leaves the strip. -->
@@ -378,6 +426,7 @@ onUnmounted(() => {
           v-for="tab in tabsArray"
           :key="tab.id"
         data-tab-item
+        :data-tab-id="tab.id"
         draggable="true"
         @dragstart="handleDragStart($event, tab.id)"
         @dragend="handleDragEnd"
@@ -419,6 +468,7 @@ onUnmounted(() => {
         
         <!-- Title -->
         <span
+          data-tab-title
           :class="[
             'text-sm overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0',
             activeTabId === tab.id
@@ -542,6 +592,12 @@ onUnmounted(() => {
         </button>
       </div>
     </transition>
+
+    <TabHoverPreview
+      :tab="hoveredPreviewTab"
+      :anchor-el="hoveredPreviewAnchor"
+      :enabled="previewEnabled"
+    />
   </div>
 </template>
 

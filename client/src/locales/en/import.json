@@ -433,6 +433,12 @@
   "importDetailRowLabel": {
     "message": "Row {row}"
   },
+  "importDetailRecordsPagination": {
+    "message": "Showing {from}–{to} of {total} records"
+  },
+  "importDetailRecordIdsTruncated": {
+    "message": "Only a subset of record IDs was stored for this import. Totals reflect the full import."
+  },
   "cSVImportModalImportEntity": {
     "message": "Import {entityType}"
   },
@@ -465,6 +471,9 @@
   },
   "cSVImportModalDuplicateRecordsMore": {
     "message": "... and {count} more duplicates"
+  },
+  "cSVImportModalDuplicateSamplesTruncated": {
+    "message": "Showing a sample of duplicate matches. All rows were scanned."
   },
   "cSVImportModalAndLogicExample": {
     "message": "For example, selecting \"Email + Company\" means both the email AND company must match."
@@ -537,5 +546,155 @@
   },
   "importFieldsLoading": {
     "message": "Loading available fields…"
+  },
+  "importWizardProgressStep": {
+    "message": "Step {current} of {total}"
+  },
+  "importMappingProgress": {
+    "message": "{mapped} of {total} columns mapped"
+  },
+  "importRecordsProgress": {
+    "message": "{processed} of {total} records processed"
+  },
+  "importBackgroundHint": {
+    "message": "This import continues in the background. You can navigate away safely."
+  },
+  "importBackgroundConfirmTitle": {
+    "message": "Continue import in background?"
+  },
+  "importBackgroundConfirmMessage": {
+    "message": "Your import will keep running. Track progress from Import History or the banner at the bottom of the screen."
+  },
+  "importKeepWatching": {
+    "message": "Keep watching"
+  },
+  "importRunInBackground": {
+    "message": "Run in background"
+  },
+  "importBackgroundCompleteTitle": {
+    "message": "Import complete"
+  },
+  "importBackgroundCompleteMessage": {
+    "message": "{fileName} finished importing."
+  },
+  "importBackgroundFailedTitle": {
+    "message": "Import failed"
+  },
+  "importBackgroundFailedMessage": {
+    "message": "{fileName} could not be imported."
+  },
+  "importBackgroundTabTitle": {
+    "message": "Import progress"
+  },
+  "importRowLimitExceeded": {
+    "message": "This file has {count} rows, which exceeds the limit of {max} rows per import. Split the file into smaller batches and import them separately."
+  },
+  "importInlineLimitExceeded": {
+    "message": "This import is too large to send inline. Re-upload the file so it can be processed from staging storage."
+  },
+  "importStagingFailed": {
+    "message": "Could not upload the CSV for processing. Check your connection and try again."
+  },
+  "importStagingUploading": {
+    "message": "Uploading file for server-side processing…"
+  },
+  "importDownloadTemplate": {
+    "message": "Download CSV template"
+  },
+  "importAutoMappedCount": {
+    "message": "{count} columns auto-mapped"
+  },
+  "importDataPreview": {
+    "message": "Preview"
+  },
+  "importDuplicateRow": {
+    "message": "Row {row}: {preview}"
+  },
+  "importDuplicateMatchesBy": {
+    "message": "Matches existing record by {field}: {value}"
+  },
+  "importDuplicateExistingRecord": {
+    "message": "Existing: {name} ({date})"
+  },
+  "importDragActive": {
+    "message": "Drop your CSV file here"
+  },
+  "importFileMeta": {
+    "message": "{rows} rows · {size}"
+  },
+  "importDiscardTitle": {
+    "message": "Discard import?"
+  },
+  "importDiscardMessage": {
+    "message": "Your file upload and field mappings will be lost."
+  },
+  "importKeepWorking": {
+    "message": "Keep working"
+  },
+  "importDiscardProgress": {
+    "message": "Discard"
+  },
+  "importMappedColumn": {
+    "message": "Mapped"
+  },
+  "importSkippedColumn": {
+    "message": "Skipped"
+  },
+  "importUnmappedColumn": {
+    "message": "Not mapped"
+  },
+  "importRecheckDuplicates": {
+    "message": "Scan again"
+  },
+  "importRequiredMappingHint": {
+    "message": "Map at least one column to continue."
+  },
+  "universalImportModalStepHint": {
+    "message": "Choose where your data should go. You can upload your CSV file in the next step."
+  },
+  "importResultsSkipped": {
+    "message": "Skipped"
+  },
+  "importResultsTotalProcessed": {
+    "message": "{count} rows processed"
+  },
+  "importResultsAllSkippedTitle": {
+    "message": "No records were added"
+  },
+  "importResultsAllSkippedMessage": {
+    "message": "All {count} rows matched existing records and were skipped based on your duplicate settings. Your data was not changed."
+  },
+  "importResultsSuccessTitle": {
+    "message": "Import complete"
+  },
+  "importResultsSuccessCreated": {
+    "message": "{count} new records were created."
+  },
+  "importResultsSuccessUpdated": {
+    "message": "{count} existing records were updated."
+  },
+  "importResultsSuccessMixed": {
+    "message": "{created} created, {updated} updated{skippedPart}."
+  },
+  "importResultsSuccessMixedSkipped": {
+    "message": ", {count} skipped as duplicates"
+  },
+  "importResultsPartialErrorsTitle": {
+    "message": "Import completed with errors"
+  },
+  "importResultsPartialErrorsMessage": {
+    "message": "{succeeded} rows succeeded, {failed} failed. Review the errors below."
+  },
+  "importResultsFailedTitle": {
+    "message": "Import failed"
+  },
+  "importResultsFailedMessage": {
+    "message": "No records were imported. {failed} rows failed — review the errors below."
+  },
+  "importResultsSkippedHint": {
+    "message": "Skipped rows matched existing records based on your duplicate check."
+  },
+  "importResultsViewImportHistory": {
+    "message": "View in import history"
   }
 }
