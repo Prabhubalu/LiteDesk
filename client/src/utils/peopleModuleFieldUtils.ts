@@ -57,7 +57,7 @@ function normalizePicklistOption(opt: unknown): PeoplePicklistOption | null {
       value,
       label: String(row.label ?? value),
       color: row.color,
-      enabled: row.enabled !== false,
+      enabled: true,
     };
   }
   return null;
