@@ -949,6 +949,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
+import { fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
 import { getProcessActivityMessage } from '@/utils/processActivityMessages';
 import { getQuoteActivityMessage, getQuoteActivityActorLabel } from '@/components/activity/adapters/quoteActivityUiAdapter';
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
@@ -2839,9 +2840,10 @@ async function fetchRecord(options = {}) {
   }
   try {
     const moduleContext = moduleFetchContextForRecord();
+    const modulesParams = moduleContext ? { context: moduleContext } : {};
     const [recordRes, modulesRes] = await Promise.all([
       apiClient.get(`${recordCrudPathBase.value}/${props.recordId}`),
-      apiClient.get('/modules', moduleContext ? { params: { context: moduleContext } } : undefined)
+      fetchModulesListCached(modulesParams)
     ]);
 
     if (runId !== fetchRecordRunId) return;

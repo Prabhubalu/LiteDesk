@@ -15,6 +15,7 @@ const { checkPermissionFromParam } = require('../middleware/permissionMiddleware
 const { resolveAppContext } = require('../middleware/resolveAppContextMiddleware');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
 const controller = require('../controllers/moduleRecordController');
+const { sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
 
 const router = express.Router();
 
@@ -31,11 +32,13 @@ router.post(
 
 router.get(
   '/:moduleKey/records/:recordId/activity',
+  sessionBootstrapLimiter,
   checkPermissionFromParam('moduleKey', 'view'),
   controller.getActivity
 );
 router.get(
   '/:moduleKey/records/:recordId/comments',
+  sessionBootstrapLimiter,
   checkPermissionFromParam('moduleKey', 'view'),
   controller.getComments
 );
@@ -67,11 +70,13 @@ router.post(
 );
 router.get(
   '/:moduleKey/records/:recordId/neighbors',
+  sessionBootstrapLimiter,
   checkPermissionFromParam('moduleKey', 'view'),
   controller.getNeighbors
 );
 router.get(
   '/:moduleKey/records/:recordId/description-versions',
+  sessionBootstrapLimiter,
   checkPermissionFromParam('moduleKey', 'view'),
   controller.getDescriptionVersions
 );

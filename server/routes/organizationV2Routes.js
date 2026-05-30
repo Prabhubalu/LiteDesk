@@ -6,6 +6,7 @@ const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMi
 const { lazySalesInitialization } = require('../middleware/lazySalesInitializationMiddleware');
 const { requireSalesApp } = require('../middleware/requireSalesAppMiddleware');
 const controller = require('../controllers/organizationV2Controller');
+const { sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
 
 router.use(protect);
 router.use(resolveAppContext); // After auth, resolve appKey from URL
@@ -14,7 +15,7 @@ router.use(lazySalesInitialization); // Lazy initialize CRM if needed
 router.use(requireSalesApp); // Enforce CRM-only access
 
 router.post('/', controller.create);
-router.get('/', controller.list);
+router.get('/', sessionBootstrapLimiter, controller.list);
 
 // OrganizationSurface endpoint (must be before /:id route)
 router.get('/:id/surface', controller.getSurface);
