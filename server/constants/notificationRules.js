@@ -294,6 +294,20 @@ module.exports = {
     defaultChannels: ['IN_APP', 'EMAIL'],
     channels: { inApp: true, email: true, push: true, whatsapp: true, sms: false }
   },
+  [domainEvents.CASE_SLA_ESCALATION]: {
+    appKey: 'HELPDESK',
+    recipients: ['CASE_OWNER'],
+    priority: 'HIGH',
+    defaultChannels: ['IN_APP', 'EMAIL'],
+    channels: { inApp: true, email: true, push: true, whatsapp: false, sms: false }
+  },
+  [domainEvents.CASE_SLA_LEADERSHIP_ESCALATION]: {
+    appKey: 'HELPDESK',
+    recipients: ['CRM_ADMIN'],
+    priority: 'HIGH',
+    defaultChannels: ['IN_APP', 'EMAIL'],
+    channels: { inApp: true, email: true, push: true, whatsapp: false, sms: false }
+  },
   [domainEvents.USER_ADDED_TO_APP]: {
     appKey: 'SALES',
     recipients: ['USER_SELF'],

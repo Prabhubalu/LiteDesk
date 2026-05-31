@@ -4,7 +4,7 @@ const MailroomConversation = require('../../../models/MailroomConversation');
 const MailroomMessage = require('../../../models/MailroomMessage');
 const { getFromAddress, normalizeSubject } = require('../services/conversationPersistenceService');
 
-const OPEN_CASE_STATUSES = ['New', 'Assigned', 'In Progress', 'On Hold'];
+const OPEN_CASE_STATUSES = ['New', 'Assigned', 'In Progress', 'On Hold', 'Waiting for Customer'];
 
 function emptyCandidates() {
   return {

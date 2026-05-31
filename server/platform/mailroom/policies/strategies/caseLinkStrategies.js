@@ -2,7 +2,7 @@
  * Case link policy — decides create / append / reopen / flag from candidates + policy only.
  */
 
-const OPEN_STATUSES = new Set(['New', 'Assigned', 'In Progress', 'On Hold']);
+const OPEN_STATUSES = new Set(['New', 'Assigned', 'In Progress', 'On Hold', 'Waiting for Customer']);
 
 function isOpenCase(caseRecord) {
   return caseRecord && OPEN_STATUSES.has(String(caseRecord.status || ''));

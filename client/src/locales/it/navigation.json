@@ -522,5 +522,9 @@
   "globalSearchGroupPlatform": {
     "message": "Platform",
     "description": "Command palette group for settings and platform items"
+  },
+  "globalSearchFrequentModules": {
+    "message": "Frequently used",
+    "description": "Frequently opened modules section header in command palette"
   }
 }

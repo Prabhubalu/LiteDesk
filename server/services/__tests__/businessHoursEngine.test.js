@@ -7,6 +7,7 @@ const {
   normalizeSchedule,
   isOpen,
   addBusinessMinutes,
+  elapsedBusinessMinutes,
   nextOpenInstant,
   simulate,
   generateBookingSlots,
@@ -69,6 +70,20 @@ test('isOpen respects lunch break', () => {
   );
   assert.equal(isOpen(open.toJSDate(), schedule), true);
   assert.equal(isOpen(lunch.toJSDate(), schedule), false);
+});
+
+test('elapsedBusinessMinutes counts only open minutes', () => {
+  const schedule = baseSchedule();
+  const start = DateTime.fromObject(
+    { year: 2026, month: 5, day: 15, hour: 17, minute: 0 },
+    { zone: 'America/New_York' }
+  );
+  const end = DateTime.fromObject(
+    { year: 2026, month: 5, day: 18, hour: 10, minute: 0 },
+    { zone: 'America/New_York' }
+  );
+  const elapsed = elapsedBusinessMinutes(start.toJSDate(), end.toJSDate(), schedule);
+  assert.equal(elapsed, 120);
 });
 
 test('addBusinessMinutes skips weekend', () => {

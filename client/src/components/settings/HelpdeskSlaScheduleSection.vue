@@ -144,7 +144,11 @@ const weekDays = computed(() => [
 const enabled = computed({
   get: () => Boolean(businessHours.value?.enabled),
   set: (v) => {
-    businessHours.value = { ...businessHours.value, enabled: v };
+    const next = { ...businessHours.value, enabled: v };
+    if (v && !businessHours.value?.enabled && (!next.scheduleSource || next.scheduleSource === 'legacy')) {
+      next.scheduleSource = 'inherit';
+    }
+    businessHours.value = next;
   }
 });
 

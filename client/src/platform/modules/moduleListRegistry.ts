@@ -1103,7 +1103,7 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
   cases: {
     defaultColumns: {
       // Case ID, Subject, Status, Priority, Channel, Owner
-      defaultVisibleColumns: ['caseId', 'title', 'status', 'priority', 'channel', 'caseOwnerId'],
+      defaultVisibleColumns: ['caseId', 'title', 'status', 'priority', 'responseMetAt', 'channel', 'caseOwnerId'],
       lockedColumn: 'title',
       excludedFromDefault: [
         // Hide internal/system and high-noise fields from default list view
@@ -1123,9 +1123,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       { id: 'all', name: 'All Cases', filters: {}, isDefault: true },
       { id: 'my-cases', name: 'My Cases', filters: { caseOwnerId: 'me' } },
       { id: 'unassigned', name: 'Unassigned', filters: { caseOwnerId: null } },
-      { id: 'open', name: 'Open', filters: { status: ['New', 'Assigned', 'In Progress', 'On Hold'] } },
-      { id: 'team', name: 'Team', filters: { status: ['Assigned', 'In Progress', 'On Hold'] } },
-      { id: 'sla-at-risk', name: 'SLA at risk', filters: { slaBreached: true, status: ['New', 'Assigned', 'In Progress', 'On Hold'] } },
+      { id: 'open', name: 'Open', filters: { status: ['New', 'Assigned', 'In Progress', 'On Hold', 'Waiting for Customer'] } },
+      { id: 'team', name: 'Team', filters: { status: ['Assigned', 'In Progress', 'On Hold', 'Waiting for Customer'] } },
+      { id: 'sla-at-risk', name: 'SLA at risk', filters: { slaBreached: true, status: ['New', 'Assigned', 'In Progress', 'On Hold', 'Waiting for Customer'] } },
       { id: 'recently-updated', name: 'Recently updated', filters: { updatedWithinDays: 7 } },
       { id: 'resolved', name: 'Resolved', filters: { status: 'Resolved' } },
       { id: 'closed', name: 'Closed', filters: { status: 'Closed' } }

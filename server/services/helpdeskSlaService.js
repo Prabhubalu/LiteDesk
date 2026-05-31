@@ -63,7 +63,8 @@ async function loadHelpdeskSlaConfig(organizationId) {
       priorities: settings.slaPriorityTargets || DEFAULT_PRIORITY_TARGETS_MINUTES,
       businessHours: normalizeBusinessHours(settings.businessHours || null),
       defaultPolicyKey: settings.defaultSlaPolicyKey || null,
-      policies: Array.isArray(settings.slaPolicies) ? settings.slaPolicies : []
+      policies: Array.isArray(settings.slaPolicies) ? settings.slaPolicies : [],
+      escalationRules: Array.isArray(settings.escalationRules) ? settings.escalationRules : []
     };
   } catch (error) {
     console.warn('[helpdeskSlaService] Failed to load tenant SLA config. Falling back to defaults:', error.message);
@@ -71,7 +72,8 @@ async function loadHelpdeskSlaConfig(organizationId) {
       priorities: DEFAULT_PRIORITY_TARGETS_MINUTES,
       businessHours: normalizeBusinessHours(null),
       defaultPolicyKey: null,
-      policies: []
+      policies: [],
+      escalationRules: []
     };
   }
 }
@@ -82,6 +84,7 @@ function resolvePolicyForCase(config, { caseType, priority, channel }) {
 
   const matched = policies.find((policy) => {
     if (!policy || typeof policy !== 'object') return false;
+    if (policy.enabled === false) return false;
     if (Array.isArray(policy.caseTypes) && policy.caseTypes.length > 0 && !policy.caseTypes.includes(caseType)) {
       return false;
     }

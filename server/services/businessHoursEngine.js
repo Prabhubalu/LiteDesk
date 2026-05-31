@@ -282,6 +282,91 @@ function addBusinessMinutes(startAt, minutesToAdd, schedule) {
   return toJsDate(cursor);
 }
 
+/**
+ * Count open schedule minutes between two instants (exclusive of end).
+ */
+function elapsedBusinessMinutes(startAt, endAt, schedule) {
+  const normalized = normalizeSchedule(schedule);
+  const start = toDateTime(startAt, normalized.timezone);
+  const end = toDateTime(endAt, normalized.timezone);
+  if (!start.isValid || !end.isValid || end <= start) return 0;
+
+  let total = 0;
+  let cursor = start;
+  let guard = 0;
+
+  while (cursor < end && guard < MAX_BUSINESS_MINUTE_ITERATIONS) {
+    guard += 1;
+
+    if (!isScheduleEffective(normalized, toJsDate(cursor))) {
+      const next = nextOpenInstant(toJsDate(cursor), normalized, { inclusive: true });
+      if (!next) break;
+      const nextDt = toDateTime(next, normalized.timezone);
+      if (nextDt >= end) break;
+      cursor = nextDt;
+      continue;
+    }
+
+    if (isHolidayDate(cursor, normalized)) {
+      const nextDay = cursor.plus({ days: 1 }).startOf('day');
+      cursor = nextDay >= end ? end : nextDay;
+      continue;
+    }
+
+    const day = luxonDayToSchemaDay(cursor);
+    const dayConfig = normalized.weekByDay[day];
+
+    if (!dayConfig.enabled || !dayConfig.windows.length) {
+      const nextDay = cursor.plus({ days: 1 }).startOf('day');
+      cursor = nextDay >= end ? end : nextDay;
+      continue;
+    }
+
+    if (!isMinuteOpen(minutesInDay(cursor), dayConfig)) {
+      const next = nextOpenInstant(toJsDate(cursor), normalized, { inclusive: true });
+      if (!next) break;
+      const nextDt = toDateTime(next, normalized.timezone);
+      if (nextDt >= end) break;
+      cursor = nextDt;
+      continue;
+    }
+
+    const minute = minutesInDay(cursor);
+    let advanced = false;
+
+    for (const window of dayConfig.windows) {
+      if (minute >= window.endMinutes) continue;
+      const windowStart = Math.max(minute, window.startMinutes);
+      if (windowStart >= window.endMinutes) continue;
+
+      let chunkEnd = window.endMinutes;
+      for (const br of dayConfig.breaks) {
+        if (br.startMinutes > windowStart && br.startMinutes < chunkEnd) {
+          chunkEnd = br.startMinutes;
+        }
+      }
+
+      const chunkStartDt = dayStartWithMinutes(cursor, windowStart);
+      const chunkEndDt = dayStartWithMinutes(cursor, chunkEnd);
+      const effectiveEnd = end < chunkEndDt ? end : chunkEndDt;
+
+      if (effectiveEnd > chunkStartDt) {
+        total += effectiveEnd.diff(chunkStartDt, 'minutes').minutes;
+        cursor = effectiveEnd;
+        advanced = true;
+      }
+      break;
+    }
+
+    if (!advanced) {
+      const nextMinute = startOfNextMinute(cursor);
+      cursor = nextMinute >= end ? end : nextMinute;
+    }
+  }
+
+  return Math.max(0, Math.round(total));
+}
+
 function formatScheduleSummary(schedule) {
   const normalized = normalizeSchedule(schedule);
   const enabledDays = [];
@@ -462,6 +547,7 @@ module.exports = {
   isOpen,
   nextOpenInstant,
   addBusinessMinutes,
+  elapsedBusinessMinutes,
   formatScheduleSummary,
   formatPauseReason,
   simulate,

@@ -240,6 +240,7 @@ export function getCaseSystemActivityHeadline(activity, t) {
   }
   if (type === 'case_created') return t('cases.recordEventCreated');
   if (type === 'case_reopened') return t('cases.recordEventReopened');
+  if (type === 'sla_response_met') return t('cases.recordEventResponseSlaMet');
   if (type.startsWith('assignment_')) return t('cases.recordEventAssignment');
   if (type.startsWith('sla_')) return t('cases.recordEventSla');
   const message = String(activity?.message || '').trim();
@@ -272,7 +273,7 @@ export function getCaseSystemActivitySupplement(activity, headline) {
     const suffix = message.slice(headline.length).replace(/^[\s.:·—-]+/, '').trim();
     return suffix || '';
   }
-  if (type === 'status_changed') return '';
+  if (type === 'status_changed' || type === 'sla_response_met') return '';
   return message;
 }
 
@@ -280,9 +281,18 @@ export function getCaseSystemActivitySupplement(activity, headline) {
 export function formatCaseSystemActivityLine(activity, { t, formatTime }) {
   const headline = getCaseSystemActivityHeadline(activity, t);
   const supplement = getCaseSystemActivitySupplement(activity, headline);
-  const time = formatTime(activity?.createdAt) || '';
+  const type = String(activity?.activityType || '');
+  const eventTime =
+    type === 'sla_response_met'
+      ? activity?.metadata?.responseMetAt || activity?.createdAt
+      : activity?.createdAt;
+  const time = formatTime(eventTime) || '';
   const label = supplement ? `${headline} ${supplement}` : headline;
-  return time ? `${label} ${time}` : label;
+  return time ? `${label} · ${time}` : label;
+}
+
+export function isCaseResponseSlaMetActivity(activity) {
+  return String(activity?.activityType || '').trim() === 'sla_response_met';
 }
 
 export function sortCaseActivitiesChronologically(activities) {

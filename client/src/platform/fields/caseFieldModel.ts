@@ -100,6 +100,15 @@ export const CASE_FIELD_METADATA: Record<string, CaseFieldMetadata> = {
     filterable: true,
     filterType: 'text',
   },
+  responseMetAt: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: true,
+    filterable: false,
+  },
 };
 
 function validateAllCaseMetadata(): void {
@@ -189,6 +198,7 @@ export const CASE_READONLY_RECORD_KEYS = [
   'caseId',
   'resolvedBy',
   'resolvedAt',
+  'responseMetAt',
   'firstResponseDueAt',
   'resolutionDueAt',
   'slaStatus',

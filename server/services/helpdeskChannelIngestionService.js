@@ -9,6 +9,7 @@ const {
 } = require('./caseLifecycleService');
 const { applySlaTargetsToCycle } = require('./helpdeskSlaService');
 const caseExecutionService = require('./caseExecutionService');
+const { applyCaseActivitySideEffects } = require('./caseAutoStatusService');
 
 function toIdString(value) {
   if (value == null) return null;
@@ -249,7 +250,22 @@ async function appendInboundEmailActivity({
     actorName: fromAddress || 'External Sender',
     createdAt: new Date()
   });
+  const { statusResult } = applyCaseActivitySideEffects(caseRecord, {
+    activityType: 'email_received',
+    internal: false,
+    actorId: null,
+    actorName: fromAddress || 'External Sender',
+    channel: caseRecord.channel
+  });
   await caseRecord.save();
+  if (statusResult?.changed) {
+    await caseExecutionService.onCaseStatusChanged({
+      caseRecord,
+      actorId: null,
+      fromStatus: statusResult.fromStatus,
+      toStatus: statusResult.toStatus
+    });
+  }
   await caseExecutionService.onCaseActivityLogged({
     caseRecord,
     actorId: null,
@@ -287,8 +303,23 @@ async function appendChannelActivity({
     actorName: channel,
     createdAt: new Date()
   });
+  const { statusResult } = applyCaseActivitySideEffects(caseRecord, {
+    activityType: 'channel_message_received',
+    internal: false,
+    actorId: actorId || null,
+    actorName: channel,
+    channel: channel || caseRecord.channel
+  });
   caseRecord.updatedBy = actorId || caseRecord.updatedBy || null;
   await caseRecord.save();
+  if (statusResult?.changed) {
+    await caseExecutionService.onCaseStatusChanged({
+      caseRecord,
+      actorId: actorId || null,
+      fromStatus: statusResult.fromStatus,
+      toStatus: statusResult.toStatus
+    });
+  }
   await caseExecutionService.onCaseActivityLogged({
     caseRecord,
     actorId,

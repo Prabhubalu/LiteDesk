@@ -13,6 +13,10 @@
       @kanban-settings-changed="refreshKanbanSettings"
       @stats-visibility-changed="(val) => (statsOpen = val)"
     >
+      <template #cell-responseMetAt="{ row }">
+        <CaseResponseSlaListCell :row="row" />
+      </template>
+
       <template #header-actions>
         <div class="flex gap-3 items-center">
           <div class="relative flex h-10 items-stretch rounded-xl bg-gray-100 dark:bg-gray-700/90 p-[0.1rem] border border-gray-200/80 dark:border-gray-600 shadow-inner min-w-[200px]">
@@ -112,6 +116,9 @@
                   <UserIcon class="w-3.5 h-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" />
                   <span class="truncate">{{ getUserDisplayName(row.caseOwnerId) }}</span>
                 </div>
+                <div v-else-if="key === 'responseMetAt'" class="flex items-center gap-1.5 min-w-0">
+                  <CaseResponseSlaListCell :row="row" />
+                </div>
                 <div v-else-if="key === 'status'" class="flex items-center gap-1.5 min-w-0">
                   <span class="truncate">{{ row.status || '—' }}</span>
                 </div>
@@ -172,6 +179,7 @@ import ModuleList from '@/components/module-list/ModuleList.vue';
 import ModuleActions from '@/components/common/ModuleActions.vue';
 import KanbanBoard from '@/components/common/KanbanBoard.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
+import CaseResponseSlaListCell from '@/components/cases/CaseResponseSlaListCell.vue';
 import { useTabs } from '@/composables/useTabs';
 import { ListBulletIcon, ViewColumnsIcon, PlusIcon, HashtagIcon, FlagIcon, UserIcon } from '@heroicons/vue/24/outline';
 
@@ -285,6 +293,7 @@ const DEFAULT_CASE_STATUS_COLORS = {
   Assigned: '#6366F1', // indigo-500
   'In Progress': '#F59E0B', // amber-500
   'On Hold': '#6B7280', // gray-500
+  'Waiting for Customer': '#8B5CF6', // violet-500
   Resolved: '#10B981', // emerald-500
   Closed: '#111827', // gray-900
 };
@@ -294,7 +303,7 @@ function getStatusColor(status) {
   return DEFAULT_CASE_STATUS_COLORS[status] || null;
 }
 
-const caseStages = ['New', 'Assigned', 'In Progress', 'On Hold', 'Resolved', 'Closed'];
+const caseStages = ['New', 'Assigned', 'In Progress', 'On Hold', 'Waiting for Customer', 'Resolved', 'Closed'];
 
 const currentSearchQuery = ref('');
 
@@ -471,7 +480,7 @@ const fetchKanbanCases = async () => {
   }
 };
 
-const bulkStatusOptions = ['New', 'Assigned', 'In Progress', 'On Hold', 'Resolved', 'Closed'];
+const bulkStatusOptions = ['New', 'Assigned', 'In Progress', 'On Hold', 'Waiting for Customer', 'Resolved', 'Closed'];
 const bulkPriorityOptions = ['Low', 'Medium', 'High', 'Critical'];
 
 async function handleBulkAction(action, rows) {

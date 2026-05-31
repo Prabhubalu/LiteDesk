@@ -417,7 +417,13 @@ const focus = () => {
   editor.value?.commands.focus();
 };
 
-defineExpose({ focus });
+const insertText = (text) => {
+  const value = String(text || '');
+  if (!value || !editor.value) return;
+  editor.value.chain().focus().insertContent(value).run();
+};
+
+defineExpose({ focus, insertText });
 
 onBeforeUnmount(() => {
   editor.value?.destroy();

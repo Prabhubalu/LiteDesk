@@ -166,6 +166,8 @@ async function processSendJobInner(communicationId) {
   const User = require('../models/User');
   const outboundEmailSendService = require('../platform/communication/outbound/outboundEmailSendService');
   const { appendCommunicationEvent } = require('./communicationEventWriter');
+  const caseExecutionService = require('./caseExecutionService');
+  const { applyCaseActivitySideEffects } = require('./caseAutoStatusService');
 
   const doc = await Communication.findById(communicationId).lean();
   if (!doc || doc.status !== 'sending') {
@@ -239,24 +241,51 @@ async function processSendJobInner(communicationId) {
   } else if (moduleKey === 'organizations') {
     await pushActivityLog(Organization, { _id: recordId, organizationId, isTenant: false, deletedAt: null });
   } else if (moduleKey === 'cases') {
-    const caseActivity = {
-      activityType: 'email_sent',
-      message: `Email sent: ${(subject || '').trim()}`,
-      internal: true,
-      metadata: {
-        communicationId: String(doc._id),
-        to: toAddresses?.[0],
-        status: finalStatus
-      },
-      actorId: doc.sentByUserId,
-      actorName: userName,
-      createdAt: new Date()
-    };
-    await Case.findOneAndUpdate(
-      { _id: recordId, organizationId, deletedAt: null },
-      { $push: { activities: caseActivity } },
-      { runValidators: false }
-    );
+    const caseRow = await Case.findOne({ _id: recordId, organizationId, deletedAt: null });
+    if (caseRow) {
+      caseRow.activities = Array.isArray(caseRow.activities) ? caseRow.activities : [];
+      caseRow.activities.push({
+        activityType: 'email_sent',
+        message: `Email sent: ${(subject || '').trim()}`,
+        internal: true,
+        metadata: {
+          communicationId: String(doc._id),
+          to: toAddresses?.[0],
+          status: finalStatus
+        },
+        actorId: doc.sentByUserId,
+        actorName: userName,
+        createdAt: new Date()
+      });
+      const { slaMarked, statusResult } = applyCaseActivitySideEffects(caseRow, {
+        activityType: 'email_sent',
+        internal: true,
+        actorId: doc.sentByUserId,
+        actorName: userName,
+        channel: caseRow.channel
+      });
+      if (slaMarked) {
+        caseRow.activities.push({
+          activityType: 'sla_response_met',
+          message: 'First response SLA met',
+          internal: true,
+          metadata: { responseMetAt: caseRow.currentSlaCycle.responseMetAt },
+          actorId: doc.sentByUserId,
+          actorName: userName,
+          createdAt: new Date()
+        });
+      }
+      caseRow.updatedBy = doc.sentByUserId;
+      await caseRow.save();
+      if (statusResult?.changed) {
+        await caseExecutionService.onCaseStatusChanged({
+          caseRecord: caseRow,
+          actorId: doc.sentByUserId,
+          fromStatus: statusResult.fromStatus,
+          toStatus: statusResult.toStatus
+        });
+      }
+    }
   }
 }
 

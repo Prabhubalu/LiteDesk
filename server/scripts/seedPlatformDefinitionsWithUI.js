@@ -559,7 +559,7 @@ const MODULE_DEFINITIONS = [
     },
     lifecycle: {
       statusField: 'status',
-      allowedStatuses: ['New', 'Assigned', 'In Progress', 'On Hold', 'Resolved', 'Closed']
+      allowedStatuses: ['New', 'Assigned', 'In Progress', 'On Hold', 'Waiting for Customer', 'Resolved', 'Closed']
     },
     supports: {
       ownership: true,

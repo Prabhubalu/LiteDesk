@@ -81,7 +81,7 @@
           </span>
         </div>
 
-        <CaseSlaBadge compact class="hidden sm:inline-flex" :cycle="caseRecord.currentSlaCycle" />
+        <CaseSlaBadge compact class="hidden sm:inline-flex" :cycle="caseRecord.currentSlaCycle" :sla-progress="caseRecord.slaProgress" />
 
         <select
           :value="caseRecord.status"
@@ -188,7 +188,7 @@
           {{ assigneeName }}
         </span>
       </div>
-      <CaseSlaBadge compact class="w-full sm:hidden" :cycle="caseRecord.currentSlaCycle" />
+      <CaseSlaBadge compact class="w-full sm:hidden" :cycle="caseRecord.currentSlaCycle" :sla-progress="caseRecord.slaProgress" />
       <span v-if="metaLine" class="w-full truncate text-gray-500 dark:text-gray-400">{{ metaLine }}</span>
       <span
         v-if="slaAlertText"

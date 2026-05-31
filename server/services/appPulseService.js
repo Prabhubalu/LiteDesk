@@ -25,7 +25,7 @@ const APP_DASHBOARD_ROUTES = {
   PROJECTS: '/projects/projects'
 };
 
-const OPEN_CASE_STATUSES = ['New', 'Assigned', 'In Progress', 'On Hold'];
+const OPEN_CASE_STATUSES = ['New', 'Assigned', 'In Progress', 'On Hold', 'Waiting for Customer'];
 const CLOSED_TASK_STATUSES = ['completed', 'cancelled'];
 
 const MANAGER_ROLE_KEYS = new Set(['ADMIN', 'MANAGER', 'OWNER']);
