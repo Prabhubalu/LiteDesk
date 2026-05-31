@@ -1,8 +1,8 @@
 <template>
-    <div class="min-h-screen  dark:bg-gray-900">
-      <div class="mx-auto sm:px-6 lg:px-4 h-screen box-border flex flex-col overflow-hidden">
+    <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+      <div class="mx-auto flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden sm:px-6 lg:px-4">
       <!-- Header -->
-      <div class="mb-6 flex items-center justify-between">
+      <div v-if="!isDeepSettingsView" class="mb-6 flex shrink-0 items-center justify-between">
         <div class="flex items-center gap-4">
           <div>
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ t('navigation.settings') }}</h1>
@@ -51,15 +51,15 @@
       </div>
 
       <!-- Vertical Tabs Layout with collapsible left rail -->
-      <div class="flex-1 overflow-hidden flex flex-col lg:flex-row gap-6">
+      <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden lg:flex-row lg:items-stretch">
         <!-- Left: Vertical Nav (collapsible like main nav) -->
         <aside
           @mouseenter="handleMouseEnter"
           @mouseleave="handleMouseLeave"
           :class="[
-            'bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex-none transition-all duration-300',
+            'shrink-0 self-stretch bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex-none transition-all duration-300',
             shouldShowExpanded ? 'lg:w-64' : 'lg:w-20',
-            'w-full h-full overflow-y-auto'
+            'w-full min-h-0 overflow-y-auto'
           ]"
         >
           <!-- Header with collapse/expand button -->
@@ -171,15 +171,28 @@
         </aside>
 
         <!-- Right: Content -->
-        <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 flex-1 min-w-0 h-full overflow-y-auto">
-          <SettingsLandingPage v-if="!activeTab || activeTab === 'landing'" />
-          <CoreModuleDetail v-else-if="activeTab === 'core-modules' && route.query.moduleKey" />
-          <ApplicationDetail v-else-if="activeTab === 'applications' && route.query.appKey && !route.query.app" />
-          <AppsSettings v-else-if="activeTab === 'applications' && route.query.app" />
-          <AppManagement v-else-if="activeTab === 'applications' && route.query.view === 'management'" />
-          <SubscriptionDetail v-else-if="activeTab === 'subscriptions' && route.query.appKey" />
-          <component v-else-if="activeTab === 'notifications' || route.path.includes('/notifications')" :is="currentTabComponent" />
-          <component v-else :is="currentTabComponent" />
+        <section
+          :class="[
+            'flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800',
+            isDeepSettingsView ? 'p-3' : 'p-4'
+          ]"
+        >
+          <AppsSettings
+            v-if="activeTab === 'applications' && route.query.app"
+            class="flex min-h-0 flex-1 flex-col overflow-hidden"
+          />
+          <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <SettingsLandingPage v-if="!activeTab || activeTab === 'landing'" />
+            <CoreModuleDetail v-else-if="activeTab === 'core-modules' && route.query.moduleKey" />
+            <ApplicationDetail v-else-if="activeTab === 'applications' && route.query.appKey && !route.query.app" />
+            <AppManagement v-else-if="activeTab === 'applications' && route.query.view === 'management'" />
+            <SubscriptionDetail v-else-if="activeTab === 'subscriptions' && route.query.appKey" />
+            <component
+              v-else-if="activeTab === 'notifications' || route.path.includes('/notifications')"
+              :is="currentTabComponent"
+            />
+            <component v-else :is="currentTabComponent" class="min-h-0 flex-1" />
+          </div>
         </section>
       </div>
     </div>
@@ -225,6 +238,24 @@ const SETTINGS_TAB_KEY = 'arivu-settings-active-tab';
 const route = useRoute();
 const router = useRouter();
 const activeTab = ref(route.query.tab || null);
+
+const isDeepAppConfig = computed(() =>
+  activeTab.value === 'applications'
+  && typeof route.query.app === 'string'
+  && route.query.app.length > 0
+);
+
+const isDeepAutomationConfig = computed(() =>
+  activeTab.value === 'automation'
+  && (
+    typeof route.query.automationView === 'string'
+    || typeof route.query.assignmentApp === 'string'
+  )
+);
+
+const isDeepSettingsView = computed(() =>
+  isDeepAppConfig.value || isDeepAutomationConfig.value
+);
 
 // Navigate back function
 const goBack = () => {

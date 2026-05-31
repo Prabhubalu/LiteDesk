@@ -3379,12 +3379,336 @@
     "message": "Configure SLA commitments, business hours, channel defaults, assignment, escalations, and notifications for Helpdesk cases.",
     "description": "Helpdesk execution info banner body"
   },
+  "helpdeskExecPageSubtitle": {
+    "message": "Set case types, response targets, alerts, and schedules. Routing and channel intake live under Automation.",
+    "description": "Helpdesk execution settings page subtitle"
+  },
+  "helpdeskExecPageSubtitleV2": {
+    "message": "Configure how cases are timed, alerted, and replied to. Everything saves together.",
+    "description": "Helpdesk execution settings page subtitle v2"
+  },
+  "helpdeskExecSlaHubIntro": {
+    "message": "Targets, working hours, alerts, and case types — everything that drives SLA timing lives here.",
+    "description": "SLA hub section intro"
+  },
+  "helpdeskExecCaseTypesSlaHint": {
+    "message": "Only enabled case types participate in helpdesk SLA tracking.",
+    "description": "Case types hint inside SLA hub"
+  },
+  "helpdeskExecCaseNotificationsHint": {
+    "message": "Case lifecycle alerts. SLA warning and breach alerts are configured under Service levels.",
+    "description": "Case notifications section hint"
+  },
+  "helpdeskExecSlaPolicyEnabled": {
+    "message": "Rule enabled",
+    "description": "SLA policy enabled toggle label"
+  },
+  "helpdeskExecSlaPolicyEnabledHint": {
+    "message": "Turn off to keep the rule without applying it to new cases.",
+    "description": "SLA policy enabled toggle hint"
+  },
+  "helpdeskExecSlaPolicyEnable": {
+    "message": "Enable rule",
+    "description": "Enable SLA policy tooltip"
+  },
+  "helpdeskExecSlaPolicyDisable": {
+    "message": "Disable rule",
+    "description": "Disable SLA policy tooltip"
+  },
+  "helpdeskExecSlaPolicyOffBadge": {
+    "message": "Off",
+    "description": "Disabled SLA policy badge"
+  },
+  "helpdeskExecNavSla": {
+    "message": "Service levels",
+    "description": "Sidebar nav SLA section"
+  },
+  "helpdeskExecNavCaseTypes": {
+    "message": "Case types",
+    "description": "Sidebar nav case types"
+  },
+  "helpdeskExecNavAlerts": {
+    "message": "Alerts",
+    "description": "Sidebar nav alerts"
+  },
+  "helpdeskExecNavSchedule": {
+    "message": "Working hours",
+    "description": "Sidebar nav schedule"
+  },
+  "helpdeskExecNavReplies": {
+    "message": "Quick replies",
+    "description": "Sidebar nav replies"
+  },
+  "helpdeskExecNavDeveloper": {
+    "message": "Developer",
+    "description": "Sidebar nav developer"
+  },
+  "helpdeskExecRelatedTitle": {
+    "message": "Related",
+    "description": "Sidebar related settings title"
+  },
+  "helpdeskExecStandardSlaTitle": {
+    "message": "Standard SLA",
+    "description": "Standard SLA card title"
+  },
+  "helpdeskExecStandardSlaHint": {
+    "message": "Default targets for every case. Custom rules below override these when they match.",
+    "description": "Standard SLA card hint"
+  },
+  "helpdeskExecCustomSlaTitle": {
+    "message": "Custom rules",
+    "description": "Custom SLA rules section title"
+  },
+  "helpdeskExecCustomSlaHint": {
+    "message": "Add rules for specific channels, priorities, or case types.",
+    "description": "Custom SLA rules hint"
+  },
+  "helpdeskExecHoursShort": {
+    "message": "h",
+    "description": "Short hours unit"
+  },
+  "helpdeskExecSlaDrawerNewTitle": {
+    "message": "New SLA rule",
+    "description": "SLA drawer new title"
+  },
+  "helpdeskExecSlaDrawerEditTitle": {
+    "message": "Edit SLA rule",
+    "description": "SLA drawer edit title"
+  },
+  "helpdeskExecSlaDrawerSubtitle": {
+    "message": "Pick when this rule applies and set response targets.",
+    "description": "SLA drawer subtitle"
+  },
+  "helpdeskExecSlaDrawerNamePh": {
+    "message": "e.g. VIP email support",
+    "description": "SLA drawer name placeholder"
+  },
+  "helpdeskExecSlaDrawerScope": {
+    "message": "When does this apply?",
+    "description": "SLA drawer scope heading"
+  },
+  "helpdeskExecSlaDrawerScopeHint": {
+    "message": "Leave a group empty to match anything in that group.",
+    "description": "SLA drawer scope hint"
+  },
+  "helpdeskExecSlaDrawerSave": {
+    "message": "Save rule",
+    "description": "SLA drawer save button"
+  },
+  "helpdeskExecSlaDrawerCreateFirst": {
+    "message": "Create your first custom rule",
+    "description": "Create first SLA rule CTA"
+  },
+  "helpdeskExecSlaPolicyAppliesAll": {
+    "message": "Applies to all matching cases",
+    "description": "SLA policy applies to all"
+  },
+  "helpdeskExecSlaPolicyAppliesWhenNamed": {
+    "message": "When: {scope}",
+    "description": "SLA policy scope summary"
+  },
+  "helpdeskExecSlaPolicyPreview": {
+    "message": "Example: {response}h first response · {resolution}h resolution (Critical/High)",
+    "description": "SLA policy target preview"
+  },
+  "helpdeskExecDeveloperTitle": {
+    "message": "Developer options",
+    "description": "Developer options disclosure title"
+  },
+  "helpdeskExecNotifyOnCreatedDesc": {
+    "message": "Notify the owner when a new case is created.",
+    "description": "Notify on created description"
+  },
+  "helpdeskExecNotifyOnAssignedDesc": {
+    "message": "Notify when a case is assigned or reassigned.",
+    "description": "Notify on assigned description"
+  },
+  "helpdeskExecNotifyOnSlaWarningDesc": {
+    "message": "Warn before an SLA target is about to breach.",
+    "description": "Notify on SLA warning description"
+  },
+  "helpdeskExecNotifyOnSlaBreachDesc": {
+    "message": "Alert when an SLA target has been missed.",
+    "description": "Notify on SLA breach description"
+  },
+  "helpdeskExecTabBasics": {
+    "message": "Basics",
+    "description": "Helpdesk execution basics tab"
+  },
+  "helpdeskExecTabSchedule": {
+    "message": "Schedule",
+    "description": "Helpdesk execution schedule tab"
+  },
+  "helpdeskExecTabReplies": {
+    "message": "Quick replies",
+    "description": "Helpdesk execution canned responses tab"
+  },
+  "helpdeskExecTabAdvanced": {
+    "message": "Advanced",
+    "description": "Helpdesk execution advanced tab"
+  },
+  "helpdeskExecLinkAssignment": {
+    "message": "Assignment rules",
+    "description": "Quick link to assignment rules"
+  },
+  "helpdeskExecLinkBusinessHours": {
+    "message": "Company schedules",
+    "description": "Quick link to business hours settings"
+  },
+  "helpdeskExecLinkMailroom": {
+    "message": "Mailroom & channels",
+    "description": "Quick link to mailroom automation"
+  },
+  "helpdeskExecCaseTypesHint": {
+    "message": "Only selected types appear when agents create cases.",
+    "description": "Case types section hint"
+  },
+  "helpdeskExecSelectAllCaseTypes": {
+    "message": "Select all",
+    "description": "Select all case types"
+  },
+  "helpdeskExecClearCaseTypes": {
+    "message": "Clear all",
+    "description": "Clear all case types"
+  },
+  "helpdeskExecCaseTypesRequired": {
+    "message": "Enable at least one case type.",
+    "description": "Validation when no case types selected"
+  },
+  "helpdeskExecDefaultSlaTitle": {
+    "message": "Default SLA targets",
+    "description": "Fallback SLA targets section title"
+  },
+  "helpdeskExecDefaultSlaHint": {
+    "message": "Used when no named SLA policy matches a case. Targets are in hours.",
+    "description": "Fallback SLA targets hint"
+  },
+  "helpdeskExecSlaPoliciesTitle": {
+    "message": "Named SLA policies",
+    "description": "SLA policies list section title"
+  },
+  "helpdeskExecSlaPoliciesHint": {
+    "message": "Create additional SLAs for specific channels, case types, or priorities. The most specific matching policy wins; otherwise the default targets above apply.",
+    "description": "SLA policies list hint"
+  },
+  "helpdeskExecSlaPoliciesEmpty": {
+    "message": "No named policies yet. All cases use the default SLA targets above.",
+    "description": "Empty SLA policies list"
+  },
+  "helpdeskExecSlaPolicyAdd": {
+    "message": "Add SLA policy",
+    "description": "Add SLA policy button"
+  },
+  "helpdeskExecSlaPolicyUntitled": {
+    "message": "Untitled policy",
+    "description": "Fallback SLA policy name"
+  },
+  "helpdeskExecSlaPolicyDefaultBadge": {
+    "message": "Default",
+    "description": "Default SLA policy badge"
+  },
+  "helpdeskExecSlaPolicyDefaultAuto": {
+    "message": "Auto (best match)",
+    "description": "Auto default SLA policy option"
+  },
+  "helpdeskExecSlaPolicyDefaultHint": {
+    "message": "Used when no policy filters match. Leave on auto unless you need a explicit fallback policy.",
+    "description": "Default SLA policy dropdown hint"
+  },
+  "helpdeskExecSlaPolicyCollapse": {
+    "message": "Collapse",
+    "description": "Collapse SLA policy editor"
+  },
+  "helpdeskExecSlaPolicyName": {
+    "message": "Policy name",
+    "description": "SLA policy name field"
+  },
+  "helpdeskExecSlaPolicyKeyLabel": {
+    "message": "Policy key",
+    "description": "SLA policy key field"
+  },
+  "helpdeskExecSlaPolicyAppliesWhen": {
+    "message": "Applies when",
+    "description": "SLA policy filters heading"
+  },
+  "helpdeskExecSlaPolicyChannels": {
+    "message": "Channels",
+    "description": "SLA policy channels filter"
+  },
+  "helpdeskExecSlaPolicyFilterEmpty": {
+    "message": "Leave all unchecked to match any channel.",
+    "description": "Empty filter hint for SLA policy"
+  },
+  "helpdeskExecSlaPolicyAnyChannel": {
+    "message": "Any channel",
+    "description": "SLA policy summary any channel"
+  },
+  "helpdeskExecSlaPolicyTargets": {
+    "message": "Targets for this policy",
+    "description": "SLA policy targets table heading"
+  },
+  "helpdeskExecSlaPolicyCopyDefault": {
+    "message": "Copy from default targets",
+    "description": "Copy default SLA targets into policy"
+  },
+  "helpdeskExecSlaPolicyMakeDefault": {
+    "message": "Set as default policy",
+    "description": "Make SLA policy the default"
+  },
+  "helpdeskExecSlaPolicyNameRequired": {
+    "message": "Each SLA policy needs a name.",
+    "description": "Validation: policy name required"
+  },
+  "helpdeskExecSlaPolicyKeyRequired": {
+    "message": "Each SLA policy needs a unique key.",
+    "description": "Validation: policy key required"
+  },
+  "helpdeskExecSlaPolicyDuplicateKey": {
+    "message": "Duplicate SLA policy key: {key}",
+    "description": "Validation: duplicate policy key"
+  },
+  "helpdeskExecSlaPolicyInvalidDefault": {
+    "message": "Default SLA policy must match one of your named policies.",
+    "description": "Validation: invalid default policy key"
+  },
+  "helpdeskExecSlaPriorityColumn": {
+    "message": "Priority",
+    "description": "SLA table priority column"
+  },
+  "helpdeskExecHoursUnit": {
+    "message": "hrs",
+    "description": "Hours unit label for SLA inputs"
+  },
+  "helpdeskExecResolutionDaysHint": {
+    "message": "≈ {days} days",
+    "description": "Resolution SLA days equivalent"
+  },
+  "helpdeskExecNotificationsHint": {
+    "message": "Choose which events notify case owners and watchers.",
+    "description": "Notifications section hint"
+  },
+  "helpdeskExecBusinessHoursHint": {
+    "message": "When enabled, SLA clocks count only during your chosen schedule.",
+    "description": "Business hours section hint"
+  },
+  "helpdeskExecCannedEmpty": {
+    "message": "No quick replies yet. Add templates agents can insert when replying to customers.",
+    "description": "Empty canned responses state"
+  },
+  "helpdeskExecAssignmentOutroShort": {
+    "message": " for group routing and schedules.",
+    "description": "Short assignment rules outro"
+  },
+  "helpdeskExecUnsavedChanges": {
+    "message": "You have unsaved changes",
+    "description": "Sticky save bar message"
+  },
   "helpdeskExecEnabledCaseTypes": {
     "message": "Enabled Case Types",
     "description": "Enabled case types section title"
   },
   "helpdeskExecPrioritySlaTargets": {
-    "message": "Priority SLA Targets (Minutes)",
+    "message": "SLA targets by priority",
     "description": "Priority SLA targets section title"
   },
   "helpdeskExecFirstResponse": {
@@ -3412,11 +3736,11 @@
     "description": "Notifications section title"
   },
   "helpdeskExecAdvancedRules": {
-    "message": "Advanced Rules (JSON)",
+    "message": "Advanced configuration",
     "description": "Advanced rules JSON section title"
   },
   "helpdeskExecAdvancedRulesDesc": {
-    "message": "Use JSON for advanced routing, escalation, and channel defaults. This maps directly to the Helpdesk execution engine.",
+    "message": "JSON overrides for power users. Most teams can leave these empty and use the Basics and Schedule tabs.",
     "description": "Advanced rules JSON section description"
   },
   "helpdeskExecAssignmentIntro": {
@@ -3455,13 +3779,177 @@
     "message": "Helpdesk execution settings saved.",
     "description": "Save success message"
   },
-  "helpdeskExecCannedResponsesTitle": {
-    "message": "Canned responses & macros",
-    "description": "Helpdesk settings section for case email/internal macros"
-  },
   "helpdeskExecCannedResponsesHint": {
-    "message": "Agents insert these from the bolt icon in the case composer. In macro bodies, wrap placeholders in double braces — e.g. case.caseId, case.title, contact.firstName, contact.name, agent.name.",
-    "description": "Hint for canned response token placeholders (no literal braces; vue-i18n reserves curly braces)"
+    "message": "Templates agents insert from the bolt icon in the case composer.",
+    "description": "Hint for canned responses list section"
+  },
+  "helpdeskExecCannedDrawerNewTitle": {
+    "message": "New quick reply",
+    "description": "Canned response drawer new title"
+  },
+  "helpdeskExecCannedDrawerEditTitle": {
+    "message": "Edit quick reply",
+    "description": "Canned response drawer edit title"
+  },
+  "helpdeskExecCannedDrawerSubtitle": {
+    "message": "Set a name, where it appears, and the message template.",
+    "description": "Canned response drawer subtitle"
+  },
+  "helpdeskExecCannedDrawerNamePh": {
+    "message": "e.g. Acknowledge receipt",
+    "description": "Canned response name placeholder"
+  },
+  "helpdeskExecCannedDrawerSave": {
+    "message": "Save quick reply",
+    "description": "Canned response drawer save button"
+  },
+  "helpdeskExecCannedCreateFirst": {
+    "message": "Create your first quick reply",
+    "description": "Empty state CTA for canned responses"
+  },
+  "helpdeskExecCannedUntitled": {
+    "message": "Untitled",
+    "description": "Fallback label for unnamed canned response"
+  },
+  "helpdeskExecCannedPreview": {
+    "message": "Preview",
+    "description": "Canned responses list preview column"
+  },
+  "helpdeskExecCannedSubjectPh": {
+    "message": "Re: case.title (wrap token in double braces)",
+    "description": "Canned response subject placeholder hint; literal template shown in UI via component constant"
+  },
+  "helpdeskExecCannedBodyPh": {
+    "message": "Hi contact.firstName (wrap token in double braces)",
+    "description": "Canned response body placeholder hint; literal template shown in UI via component constant"
+  },
+  "helpdeskExecCannedTokensHint": {
+    "message": "Click a merge field below to insert it at your cursor. Fields are filled in automatically when an agent uses the quick reply on a case.",
+    "description": "Token hint in canned response drawer"
+  },
+  "helpdeskExecMergeTagInsert": {
+    "message": "Insert field",
+    "description": "Button to open merge tag menu in quick reply drawer"
+  },
+  "helpdeskExecMergeTagTitle": {
+    "message": "Available merge fields",
+    "description": "Heading for merge tag picker panel"
+  },
+  "helpdeskExecMergeTagSubtitle": {
+    "message": "Click a field to insert it into the focused subject or body.",
+    "description": "Subtitle for merge tag picker panel"
+  },
+  "helpdeskExecMergeTagSearchPh": {
+    "message": "Search fields…",
+    "description": "Search placeholder in merge tag picker"
+  },
+  "helpdeskExecMergeTagNoResults": {
+    "message": "No fields match your search.",
+    "description": "Empty state for merge tag search"
+  },
+  "helpdeskExecMergeTagGroupCase": {
+    "message": "Case",
+    "description": "Merge tag group label"
+  },
+  "helpdeskExecMergeTagGroupContact": {
+    "message": "Contact",
+    "description": "Merge tag group label"
+  },
+  "helpdeskExecMergeTagGroupAgent": {
+    "message": "Agent",
+    "description": "Merge tag group label"
+  },
+  "helpdeskExecMergeTagCaseId": {
+    "message": "Case number",
+    "description": "Merge tag label"
+  },
+  "helpdeskExecMergeTagCaseIdDesc": {
+    "message": "Public case ID shown to customers (e.g. CS-1042).",
+    "description": "Merge tag description"
+  },
+  "helpdeskExecMergeTagCaseTitle": {
+    "message": "Case title",
+    "description": "Merge tag label"
+  },
+  "helpdeskExecMergeTagCaseTitleDesc": {
+    "message": "Subject line of the case.",
+    "description": "Merge tag description"
+  },
+  "helpdeskExecMergeTagCaseStatus": {
+    "message": "Case status",
+    "description": "Merge tag label"
+  },
+  "helpdeskExecMergeTagCaseStatusDesc": {
+    "message": "Current workflow status (Open, Pending, etc.).",
+    "description": "Merge tag description"
+  },
+  "helpdeskExecMergeTagCasePriority": {
+    "message": "Priority",
+    "description": "Merge tag label"
+  },
+  "helpdeskExecMergeTagCasePriorityDesc": {
+    "message": "Case priority level.",
+    "description": "Merge tag description"
+  },
+  "helpdeskExecMergeTagCaseChannel": {
+    "message": "Channel",
+    "description": "Merge tag label"
+  },
+  "helpdeskExecMergeTagCaseChannelDesc": {
+    "message": "How the case was opened (Email, Live Chat, etc.).",
+    "description": "Merge tag description"
+  },
+  "helpdeskExecMergeTagContactFirstName": {
+    "message": "Contact first name",
+    "description": "Merge tag label"
+  },
+  "helpdeskExecMergeTagContactFirstNameDesc": {
+    "message": "First name of the customer or requester.",
+    "description": "Merge tag description"
+  },
+  "helpdeskExecMergeTagContactName": {
+    "message": "Contact full name",
+    "description": "Merge tag label"
+  },
+  "helpdeskExecMergeTagContactNameDesc": {
+    "message": "Full display name of the customer.",
+    "description": "Merge tag description"
+  },
+  "helpdeskExecMergeTagContactEmail": {
+    "message": "Contact email",
+    "description": "Merge tag label"
+  },
+  "helpdeskExecMergeTagContactEmailDesc": {
+    "message": "Email address of the customer on the case.",
+    "description": "Merge tag description"
+  },
+  "helpdeskExecMergeTagAgentName": {
+    "message": "Agent name",
+    "description": "Merge tag label"
+  },
+  "helpdeskExecMergeTagAgentNameDesc": {
+    "message": "Name of the agent sending the reply.",
+    "description": "Merge tag description"
+  },
+  "helpdeskExecMergeTagAgentEmail": {
+    "message": "Agent email",
+    "description": "Merge tag label"
+  },
+  "helpdeskExecMergeTagAgentEmailDesc": {
+    "message": "Email address of the agent sending the reply.",
+    "description": "Merge tag description"
+  },
+  "helpdeskExecCannedNameRequired": {
+    "message": "Each quick reply needs a name.",
+    "description": "Validation when canned response name missing"
+  },
+  "helpdeskExecCannedBodyRequired": {
+    "message": "Each quick reply needs a body.",
+    "description": "Validation when canned response body missing"
+  },
+  "helpdeskExecCannedResponsesTitle": {
+    "message": "Quick replies",
+    "description": "Helpdesk settings section for case email/internal macros"
   },
   "helpdeskExecCannedName": {
     "message": "Name",
@@ -3491,8 +3979,16 @@
     "message": "Body",
     "description": "Canned response body template"
   },
+  "helpdeskExecCannedBodyEmailHint": {
+    "message": "Rich email preview — matches what customers receive.",
+    "description": "Hint above email body editor in quick reply drawer"
+  },
+  "helpdeskExecCannedBodyInternalHint": {
+    "message": "Internal comment preview — plain text as agents see it.",
+    "description": "Hint above internal body editor in quick reply drawer"
+  },
   "helpdeskExecCannedAdd": {
-    "message": "Add macro",
+    "message": "Add quick reply",
     "description": "Add canned response button"
   },
   "helpdeskExecCannedIncomplete": {
@@ -3602,6 +4098,18 @@
   "assignRulesBackTitle": {
     "message": "Back to Automation",
     "description": "Back button title"
+  },
+  "assignRulesNavScope": {
+    "message": "Scope & policy",
+    "description": "Assignment rules section tab for scope and rule set settings"
+  },
+  "assignRulesNavRules": {
+    "message": "Rules",
+    "description": "Assignment rules section tab for rule list"
+  },
+  "assignRulesNavSimulate": {
+    "message": "Simulation",
+    "description": "Assignment rules section tab for simulation"
   },
   "assignRulesTitle": {
     "message": "Assignment Rules",
@@ -4552,7 +5060,7 @@
     "description": "Helpdesk option"
   },
   "appsHelpdeskExecutionDesc": {
-    "message": "Configure case types, SLA policies, business hours, and escalation rules",
+    "message": "SLA targets, notifications, business hours, and quick replies",
     "description": "Helpdesk option desc"
   },
   "appsHelpdeskAnalytics": {

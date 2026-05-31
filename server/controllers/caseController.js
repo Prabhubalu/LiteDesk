@@ -31,7 +31,9 @@ const {
   createReopenedSlaState
 } = require('../services/caseLifecycleService');
 const { applySlaTargetsToCycle } = require('../services/helpdeskSlaService');
-const { getSlaScheduleContext } = require('../services/helpdeskBusinessHoursService');
+const { getSlaScheduleContext, resolveSlaScheduleForOrganization } = require('../services/helpdeskBusinessHoursService');
+const { computeCycleSlaProgress } = require('../services/helpdeskSlaClockService');
+const { applyCaseActivitySideEffects } = require('../services/caseAutoStatusService');
 const caseExecutionService = require('../services/caseExecutionService');
 
 function getActorDisplayName(user) {
@@ -39,6 +41,17 @@ function getActorDisplayName(user) {
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
   return fullName || user.username || user.email || 'System';
 }
+
+function enrichCaseListSlaFields(row) {
+  const cycle = row?.currentSlaCycle;
+  if (!cycle) return row;
+  return {
+    ...row,
+    responseMetAt: cycle.responseMetAt || null,
+    firstResponseDueAt: row.firstResponseDueAt || cycle.responseTargetAt || null
+  };
+}
+
 
 /**
  * "Contact Id" / "contactid" / "ContactId" → `contactid` (matches ModuleDefinition label-style keys).
@@ -480,7 +493,8 @@ exports.getCases = async (req, res) => {
     return res.json({
       success: true,
       data: rows.map((row) => {
-        const flat = flattenCustomFieldsForResponse(row, row.customFields);
+        const enriched = enrichCaseListSlaFields(row);
+        const flat = flattenCustomFieldsForResponse(enriched, enriched.customFields);
         patchCaseFlattenedAliases(flat);
         return flat;
       }),
@@ -559,8 +573,16 @@ exports.getCaseById = async (req, res) => {
     patchCaseFlattenedAliases(flat);
 
     let slaContext = null;
+    let slaProgress = null;
     try {
       slaContext = await getSlaScheduleContext(req.user.organizationId);
+      const scheduleResolution = await resolveSlaScheduleForOrganization(req.user.organizationId);
+      if (row.currentSlaCycle) {
+        slaProgress = computeCycleSlaProgress(
+          row.currentSlaCycle?.toObject?.() || row.currentSlaCycle,
+          scheduleResolution
+        );
+      }
     } catch (slaCtxErr) {
       console.warn('[caseController] slaContext:', slaCtxErr.message);
     }
@@ -569,13 +591,15 @@ exports.getCaseById = async (req, res) => {
       success: true,
       data: {
         ...flat,
-        slaContext
+        slaContext,
+        slaProgress
       },
       meta: {
         totalActivities: allActivities.length,
         returnedActivities: trimmedActivities.length,
         activityLimit,
-        slaContext
+        slaContext,
+        slaProgress
       }
     });
   } catch (error) {
@@ -1190,8 +1214,38 @@ exports.addCaseActivity = async (req, res) => {
       createdAt: new Date()
     });
 
+    const { slaMarked: responseMarked, statusResult } = applyCaseActivitySideEffects(row, {
+      activityType: String(activityType).trim(),
+      internal: Boolean(internal),
+      actorId: req.user._id,
+      actorName: getActorDisplayName(req.user),
+      channel: channel || row.channel
+    });
+
+    if (responseMarked) {
+      row.activities.push({
+        activityType: 'sla_response_met',
+        message: 'First response SLA met',
+        internal: true,
+        metadata: { responseMetAt: row.currentSlaCycle.responseMetAt },
+        actorId: req.user._id,
+        actorName: getActorDisplayName(req.user),
+        createdAt: new Date()
+      });
+    }
+
     row.updatedBy = req.user._id;
     await row.save();
+
+    if (statusResult?.changed) {
+      await caseExecutionService.onCaseStatusChanged({
+        caseRecord: row,
+        actorId: req.user._id,
+        fromStatus: statusResult.fromStatus,
+        toStatus: statusResult.toStatus
+      });
+    }
+
     await caseExecutionService.onCaseActivityLogged({
       caseRecord: row,
       actorId: req.user._id,
@@ -1260,7 +1314,7 @@ exports.getCaseAnalyticsSummary = async (req, res) => {
     const statusMap = Object.fromEntries(statusCounts.map((row) => [row._id, row.count]));
     const totals = {
       totalCases: cases.length,
-      openCases: (statusMap.New || 0) + (statusMap.Assigned || 0) + (statusMap['In Progress'] || 0) + (statusMap['On Hold'] || 0),
+      openCases: (statusMap.New || 0) + (statusMap.Assigned || 0) + (statusMap['In Progress'] || 0) + (statusMap['On Hold'] || 0) + (statusMap['Waiting for Customer'] || 0),
       closedCases: (statusMap.Resolved || 0) + (statusMap.Closed || 0),
       reopenCount: cases.filter((row) => Array.isArray(row.slaCycles) && row.slaCycles.length > 0).length
     };

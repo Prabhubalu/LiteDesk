@@ -1,16 +1,30 @@
 <template>
-  <div class="space-y-6">
+  <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
     <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
+    <div
+      class="flex shrink-0 items-center justify-between"
+      :class="showOptionsGrid ? 'pb-6' : 'pb-3'"
+    >
+      <div class="flex min-w-0 items-center gap-3">
         <button @click="goBack" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
         </button>
-        <div>
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ salesPageHeading }}</h2>
-          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ salesPageSubheading }}</p>
+        <div class="min-w-0">
+          <h2
+            class="truncate font-bold text-gray-900 dark:text-white"
+            :class="showOptionsGrid ? 'text-2xl' : 'text-lg'"
+          >
+            {{ salesPageHeading }}
+          </h2>
+          <p
+            v-if="showOptionsGrid || salesPageSubheading"
+            class="mt-0.5 truncate text-sm text-gray-600 dark:text-gray-400"
+            :class="showOptionsGrid ? 'mt-1' : ''"
+          >
+            {{ salesPageSubheading }}
+          </p>
         </div>
       </div>
       <button
@@ -25,21 +39,59 @@
       </button>
     </div>
 
-    <!-- Sales App Section (only if Sales is installed and selected) -->
-    <div v-if="hasSalesAccess && isSalesApp" class="space-y-4">
-      <!-- Settings Options Grid -->
-      <div v-if="!activeSalesTab || activeSalesTab === 'options'" class="space-y-6">
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.appsConfigOptions') }}</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ t('settings.appsChooseCategory') }}</p>
+    <div v-if="showOptionsGrid" class="min-h-0 flex-1 overflow-y-auto">
+      <!-- Sales App Section (only if Sales is installed and selected) -->
+      <div v-if="hasSalesAccess && isSalesApp">
+        <!-- Settings Options Grid -->
+        <div v-if="!activeSalesTab || activeSalesTab === 'options'" class="space-y-6">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.appsConfigOptions') }}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ t('settings.appsChooseCategory') }}</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              v-for="option in salesOptions"
+              :key="option.id"
+              @click="navigateToOption(option.id)"
+              class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md hover:border-indigo-500 dark:hover:border-indigo-400 transition-all cursor-pointer group"
+            >
+              <div class="flex items-start gap-4">
+                <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors flex-shrink-0">
+                  <component :is="option.icon" class="w-6 h-6" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mb-1">
+                    {{ optionLabel(option) }}
+                  </h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                    {{ optionDesc(option) }}
+                  </p>
+                </div>
+              </div>
+              <div class="mt-4 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>{{ t('settings.appsConfigure') }}</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- Other Apps Options (when app is selected but not Sales) -->
+      <div v-else-if="selectedApp && !isSalesApp">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.appsConfigOptions') }}</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ t('settings.appsAvailableFor', { app: appDisplayName }) }}</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div
-            v-for="option in salesOptions"
+            v-for="option in getAppOptions(selectedApp)"
             :key="option.id"
-            @click="navigateToOption(option.id)"
             class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md hover:border-indigo-500 dark:hover:border-indigo-400 transition-all cursor-pointer group"
+            :class="{ 'opacity-50 cursor-not-allowed': !option.available }"
+            @click="openAppOption(option)"
           >
             <div class="flex items-start gap-4">
               <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors flex-shrink-0">
@@ -48,95 +100,52 @@
               <div class="flex-1 min-w-0">
                 <h4 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mb-1">
                   {{ optionLabel(option) }}
+                  <span v-if="!option.available" class="ml-2 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.appsComingSoon') }}</span>
                 </h4>
                 <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                   {{ optionDesc(option) }}
                 </p>
               </div>
             </div>
-            <div class="mt-4 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span>{{ t('settings.appsConfigure') }}</span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
           </div>
         </div>
       </div>
 
-      <!-- Sales option content (when a card is selected) -->
-      <div v-else class="space-y-4">
-        <!-- Sales Tab Content -->
-        <div>
-          <component
-            :is="currentSalesTabComponent"
-            ref="salesTabContentRef"
-            @selected-module-change="salesSelectedModule = $event"
-            :on-navigate-to-pipelines="() => { activeSalesTab = 'pipelines'; }"
-          />
+      <!-- Empty State (app not found or not supported) -->
+      <div v-else class="text-center py-12">
+        <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
         </div>
-      </div>
-    </div>
-
-    <!-- Other Apps Options (when app is selected but not Sales) -->
-    <div v-else-if="selectedApp && !isSalesApp" class="space-y-6">
-      <div v-if="activeAppTab === 'options'">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.appsConfigOptions') }}</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ t('settings.appsAvailableFor', { app: appDisplayName }) }}</p>
-      </div>
-
-      <div v-if="activeAppTab === 'options'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div
-          v-for="option in getAppOptions(selectedApp)"
-          :key="option.id"
-          class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md hover:border-indigo-500 dark:hover:border-indigo-400 transition-all cursor-pointer group"
-          :class="{ 'opacity-50 cursor-not-allowed': !option.available }"
-          @click="openAppOption(option)"
-        >
-          <div class="flex items-start gap-4">
-            <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors flex-shrink-0">
-              <component :is="option.icon" class="w-6 h-6" />
-            </div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mb-1">
-                {{ optionLabel(option) }}
-                <span v-if="!option.available" class="ml-2 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.appsComingSoon') }}</span>
-              </h4>
-              <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                {{ optionDesc(option) }}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <component :is="currentAppTabComponent" v-else-if="currentAppTabComponent" />
-
-      <div v-else class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-        <p class="text-sm text-yellow-800 dark:text-yellow-300">
-          {{ t('settings.appsPanelUnavailable') }}
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          {{ selectedApp ? t('settings.appsSettingsTitleNamed', { app: appDisplayName }) : t('settings.appsSettingsTitle') }}
+        </h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          <span v-if="selectedApp && !hasSalesAccess">
+            {{ t('settings.appsNotEnabled', { app: appDisplayName }) }}
+          </span>
+          <span v-else>
+            {{ t('settings.appsNoAppSelected') }}
+          </span>
         </p>
       </div>
     </div>
 
-    <!-- Empty State (app not found or not supported) -->
-    <div v-else class="text-center py-12">
-      <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-        <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-        {{ selectedApp ? t('settings.appsSettingsTitleNamed', { app: appDisplayName }) : t('settings.appsSettingsTitle') }}
-      </h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400">
-        <span v-if="selectedApp && !hasSalesAccess">
-          {{ t('settings.appsNotEnabled', { app: appDisplayName }) }}
-        </span>
-        <span v-else>
-          {{ t('settings.appsNoAppSelected') }}
-        </span>
-      </p>
+    <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <component
+        v-if="hasSalesAccess && isSalesApp && currentSalesTabComponent"
+        :is="currentSalesTabComponent"
+        ref="salesTabContentRef"
+        class="min-h-0 flex-1"
+        @selected-module-change="salesSelectedModule = $event"
+        :on-navigate-to-pipelines="() => { activeSalesTab = 'pipelines'; }"
+      />
+      <component
+        v-else-if="selectedApp && !isSalesApp && currentAppTabComponent"
+        :is="currentAppTabComponent"
+        class="min-h-0 flex-1"
+      />
     </div>
   </div>
 </template>
@@ -157,12 +166,9 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const activeSalesTab = ref('options'); // Start with options view
+const activeSalesTab = ref('options');
 const activeAppTab = ref('options');
-
-// Ref to current Sales tab content (SalesSchema when on schema tab) so we can call openCreateModal
 const salesTabContentRef = ref(null);
-// Selected module inside Sales Modules (e.g. Deals) – kept in sync via event from SalesSchema for reactive header
 const salesSelectedModule = ref(null);
 
 const APP_NAME_KEYS = {
@@ -230,6 +236,16 @@ const hasSalesAccess = computed(() => {
 // Check if the selected app matches the current app
 const isSalesApp = computed(() => {
   return selectedApp.value.toLowerCase() === 'sales';
+});
+
+const showOptionsGrid = computed(() => {
+  if (hasSalesAccess.value && isSalesApp.value) {
+    return !activeSalesTab.value || activeSalesTab.value === 'options';
+  }
+  if (selectedApp.value && !isSalesApp.value) {
+    return activeAppTab.value === 'options';
+  }
+  return true;
 });
 
 const appDisplayName = computed(() => {

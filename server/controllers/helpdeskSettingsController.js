@@ -200,6 +200,9 @@ function validateSlaPolicies(settings) {
     if (keys.has(policy.key)) return `Duplicate slaPolicy key: ${policy.key}`;
     keys.add(policy.key);
     if (typeof policy.name !== 'string' || !policy.name.trim()) return `slaPolicy ${policy.key} requires a name`;
+    if ('enabled' in policy && typeof policy.enabled !== 'boolean') {
+      return `slaPolicy ${policy.key} enabled must be a boolean`;
+    }
     if (policy.priorities && (!Array.isArray(policy.priorities) || policy.priorities.some((p) => !ALLOWED_PRIORITIES.has(p)))) {
       return `slaPolicy ${policy.key} has invalid priorities`;
     }

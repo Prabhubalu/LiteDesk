@@ -162,6 +162,8 @@ function caseNotificationCopy(eventType, caseLabel, entity = {}) {
     [domainEvents.CASE_ESCALATED]: 'Case escalated',
     [domainEvents.CASE_SLA_WARNING]: 'SLA warning',
     [domainEvents.CASE_SLA_BREACHED]: 'SLA breached',
+    [domainEvents.CASE_SLA_ESCALATION]: 'SLA escalation',
+    [domainEvents.CASE_SLA_LEADERSHIP_ESCALATION]: 'SLA leadership escalation',
     [domainEvents.CASE_EMAIL_RECEIVED]: 'Customer email',
     [domainEvents.CASE_CHAT_MESSAGE_RECEIVED]: 'Live chat message'
   };
@@ -179,6 +181,8 @@ function caseNotificationCopy(eventType, caseLabel, entity = {}) {
     [domainEvents.CASE_ESCALATED]: `${caseLabel} was escalated.`,
     [domainEvents.CASE_SLA_WARNING]: `${caseLabel} is nearing SLA breach.`,
     [domainEvents.CASE_SLA_BREACHED]: `${caseLabel} has breached SLA.`,
+    [domainEvents.CASE_SLA_ESCALATION]: `${caseLabel} triggered an SLA escalation rule.`,
+    [domainEvents.CASE_SLA_LEADERSHIP_ESCALATION]: `${caseLabel} requires leadership attention for SLA.`,
     [domainEvents.CASE_EMAIL_RECEIVED]: from
       ? `New email on ${caseLabel} from ${from}${subject ? `: ${subject}` : ''}${preview ? ` — ${preview}` : ''}`
       : `New email on ${caseLabel}${preview ? ` — ${preview}` : ''}`,

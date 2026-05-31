@@ -83,6 +83,8 @@ function buildDefaultMap(appKey) {
       domainEvents.CASE_ESCALATED,
       domainEvents.CASE_SLA_WARNING,
       domainEvents.CASE_SLA_BREACHED,
+      domainEvents.CASE_SLA_ESCALATION,
+      domainEvents.CASE_SLA_LEADERSHIP_ESCALATION,
       domainEvents.CASE_EMAIL_RECEIVED,
       domainEvents.CASE_CHAT_MESSAGE_RECEIVED
     ];

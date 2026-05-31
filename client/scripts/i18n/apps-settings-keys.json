@@ -38,7 +38,7 @@
   "appsHelpdeskModules": { "message": "Helpdesk Modules", "description": "Helpdesk schema ModulesAndFields title" },
   "appsHelpdeskCasesDesc": { "message": "Configure Helpdesk case fields, relationships, and quick create", "description": "Helpdesk option desc" },
   "appsHelpdeskExecution": { "message": "Execution Settings", "description": "Helpdesk option" },
-  "appsHelpdeskExecutionDesc": { "message": "Configure case types, SLA policies, business hours, and escalation rules", "description": "Helpdesk option desc" },
+  "appsHelpdeskExecutionDesc": { "message": "SLA targets, notifications, business hours, and quick replies", "description": "Helpdesk option desc" },
   "appsHelpdeskAnalytics": { "message": "Analytics Dashboard", "description": "Helpdesk option" },
   "appsHelpdeskAnalyticsDesc": { "message": "Review SLA compliance, owner performance, and distribution trends", "description": "Helpdesk option desc" },
   "appsHelpdeskAssignment": { "message": "Assignment rules", "description": "Helpdesk option" },

@@ -7,6 +7,7 @@ const {
 } = require('../services/caseLifecycleService');
 const { applySlaTargetsToCycle } = require('../services/helpdeskSlaService');
 const caseExecutionService = require('../services/caseExecutionService');
+const { applyCaseActivitySideEffects } = require('../services/caseAutoStatusService');
 const { assertPortalUserCanAccessCase } = require('../platform/mailroom/connectors/portal/portalSafety');
 const { buildCaseTimelineActivities } = require('../platform/mailroom/services/caseTimelineAdapter');
 const {
@@ -228,7 +229,22 @@ async function createPortalCase(req, res) {
         actorName: displayName,
         createdAt: now
       });
+      const { statusResult } = applyCaseActivitySideEffects(created, {
+        activityType: 'channel_message_received',
+        internal: false,
+        actorId: req.user._id,
+        actorName: displayName,
+        channel: portalChannel
+      });
       await created.save();
+      if (statusResult?.changed) {
+        await caseExecutionService.onCaseStatusChanged({
+          caseRecord: created,
+          actorId: req.user._id,
+          fromStatus: statusResult.fromStatus,
+          toStatus: statusResult.toStatus
+        });
+      }
     }
 
     return res.status(201).json({

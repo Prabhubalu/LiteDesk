@@ -2,7 +2,7 @@
   <div
     :class="[
       'flex overflow-x-hidden bg-gray-100/70 dark:bg-gray-900',
-      isInboxRoute ? 'h-dvh max-h-dvh overflow-hidden' : 'min-h-screen'
+      useViewportLock ? 'h-dvh max-h-dvh overflow-hidden' : 'min-h-screen'
     ]"
   >
     <!-- Sidebar Navigation -->
@@ -14,7 +14,7 @@
     <main
       :class="[
         'flex flex-1 flex-col overflow-x-hidden transition-all duration-300',
-        isInboxRoute ? 'h-dvh max-h-dvh min-h-0 overflow-hidden' : 'min-h-screen',
+        useViewportLock ? 'h-dvh max-h-dvh min-h-0 overflow-hidden' : 'min-h-screen',
         sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
       ]"
     >
@@ -26,7 +26,7 @@
         ref="contentWrapperRef"
         :class="[
           'box-border flex min-h-0 flex-1 flex-col overflow-x-hidden',
-          isInboxRoute
+          useViewportLock
             ? 'min-h-0 overflow-hidden px-4 pb-4 pt-16 md:pt-[7.5rem] lg:px-6 lg:pb-6 lg:pt-14'
             : 'mt-16 overflow-y-auto p-4 md:mt-30 lg:mt-14 lg:p-6'
         ]"
@@ -36,7 +36,7 @@
         <div
           :class="[
             'flex min-h-0 flex-1 flex-col',
-            isInboxRoute ? 'h-full overflow-hidden' : ''
+            useViewportLock ? 'h-full overflow-hidden' : ''
           ]"
         >
           <RouterView v-slot="{ Component }">
@@ -45,7 +45,7 @@
               <component
                 :is="Component"
                 :key="routerViewKey"
-                :class="isInboxRoute ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : ''"
+                :class="routerViewClass"
               />
             </keep-alive>
           </RouterView>
@@ -96,6 +96,15 @@ const routerViewKey = computed(() => {
 });
 
 const isInboxRoute = computed(() => route.name === 'inbox');
+const isSettingsRoute = computed(() => route.path.startsWith('/settings'));
+const useViewportLock = computed(() => isInboxRoute.value || isSettingsRoute.value);
+
+const routerViewClass = computed(() => {
+  if (useViewportLock.value) {
+    return 'flex min-h-0 flex-1 flex-col overflow-hidden h-full';
+  }
+  return '';
+});
 
 // Sidebar state (locked doctrine): collapsed + lastActiveAppId only.
 const { collapsed: sidebarCollapsed } = useSidebarState();
@@ -184,7 +193,7 @@ function setInboxViewportLock(active) {
 }
 
 watch(
-  isInboxRoute,
+  useViewportLock,
   (active) => {
     setInboxViewportLock(active);
   },

@@ -253,9 +253,9 @@ function startScheduledJobs() {
     helpdeskSlaJob = cron.schedule('* * * * *', async () => {
       try {
         const result = await tickHelpdeskSlaNotifications();
-        if (result.warningSent > 0 || result.breachSent > 0 || NOTIFICATION_DEBUG) {
+        if (result.warningSent > 0 || result.breachSent > 0 || result.escalationsSent > 0 || NOTIFICATION_DEBUG) {
           console.log(
-            `[scheduledJobs] Helpdesk SLA tick: processed=${result.processed} warningSent=${result.warningSent} breachSent=${result.breachSent}`
+            `[scheduledJobs] Helpdesk SLA tick: processed=${result.processed} warningSent=${result.warningSent} breachSent=${result.breachSent} escalationsSent=${result.escalationsSent || 0}`
           );
         }
       } catch (err) {

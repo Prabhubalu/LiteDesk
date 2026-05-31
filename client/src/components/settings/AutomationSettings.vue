@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full">
+  <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
     <div v-if="currentView === 'overview'" class="space-y-6">
       <div>
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabAutomation') }}</h2>
@@ -42,7 +42,10 @@
       </div>
     </div>
 
-    <AssignmentRulesSettings v-else-if="currentView === 'assignment-rules'" />
+    <AssignmentRulesSettings
+      v-else-if="currentView === 'assignment-rules'"
+      class="flex min-h-0 flex-1 flex-col overflow-hidden"
+    />
     <MailroomSettings v-else-if="currentView === 'mailroom'" />
     <CatalogSettingsHub v-else-if="currentView === 'catalog'" @back="navigateToOverview" />
     <QuotesSettings v-else-if="currentView === 'quotes'" @back="navigateToOverview" />

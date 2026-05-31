@@ -511,6 +511,38 @@
     "message": "{metric} breached {time} ago",
     "description": "SLA breached"
   },
+  "recordSlaWarning": {
+    "message": "{metric} due in {time}",
+    "description": "SLA warning nearing breach"
+  },
+  "recordSlaMet": {
+    "message": "{metric} met",
+    "description": "SLA target met"
+  },
+  "recordSlaMetWithTime": {
+    "message": "{metric} met · {time}",
+    "description": "SLA target met with relative timestamp"
+  },
+  "listColumnResponseSla": {
+    "message": "First response",
+    "description": "Case list column for response SLA status"
+  },
+  "listResponseSlaMet": {
+    "message": "Met",
+    "description": "Response SLA met badge in case list"
+  },
+  "listResponseSlaAwaiting": {
+    "message": "Awaiting",
+    "description": "Response SLA not yet met in case list"
+  },
+  "listResponseSlaDue": {
+    "message": "Due in {time}",
+    "description": "Response SLA due soon in case list"
+  },
+  "listResponseSlaOverdue": {
+    "message": "Overdue {time}",
+    "description": "Response SLA breached in case list"
+  },
   "recordSlaPaused": {
     "message": "SLA paused",
     "description": "SLA paused badge"
@@ -534,6 +566,10 @@
   "recordEventSla": {
     "message": "SLA updated",
     "description": "Timeline SLA event"
+  },
+  "recordEventResponseSlaMet": {
+    "message": "First response SLA met",
+    "description": "Timeline event when first response SLA is satisfied"
   },
   "recordSideConversations": {
     "message": "Side conversations",
@@ -616,12 +652,20 @@
     "description": "Case header priority select label"
   },
   "recordSlaAlertPaused": {
-    "message": "SLA paused",
+    "message": "SLA paused — case is on hold",
     "description": "Compact SLA alert when on hold"
+  },
+  "recordSlaAlertWaitingCustomer": {
+    "message": "SLA paused — waiting for customer",
+    "description": "Compact SLA alert when waiting for customer"
   },
   "recordSlaAlertOutsideHours": {
     "message": "Outside business hours",
     "description": "Compact SLA alert when clock stopped"
+  },
+  "recordSlaAlertSchedule": {
+    "message": "Schedule: {name}",
+    "description": "SLA schedule name in alert banner"
   },
   "recordHeaderEmail": {
     "message": "Send email",

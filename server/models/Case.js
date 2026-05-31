@@ -54,6 +54,13 @@ const SlaCycleSchema = new Schema(
     cycleNo: { type: Number, required: true, min: 1 },
     startedAt: { type: Date, required: true },
     pausedAt: { type: Date, default: null },
+    pauseSegments: {
+      type: [{
+        from: { type: Date, required: true },
+        to: { type: Date, required: true }
+      }],
+      default: []
+    },
     stoppedAt: { type: Date, default: null },
     status: {
       type: String,
@@ -61,6 +68,7 @@ const SlaCycleSchema = new Schema(
       default: 'running'
     },
     responseTargetAt: { type: Date, default: null },
+    responseMetAt: { type: Date, default: null },
     resolutionTargetAt: { type: Date, default: null },
     policySnapshot: { type: Schema.Types.Mixed, default: {} }
   },

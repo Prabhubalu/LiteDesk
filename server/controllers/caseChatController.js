@@ -3,6 +3,7 @@ const Case = require('../models/Case');
 const ChatSession = require('../models/ChatSession');
 const ChatMessage = require('../models/ChatMessage');
 const caseExecutionService = require('../services/caseExecutionService');
+const { applyCaseActivitySideEffects } = require('../services/caseAutoStatusService');
 const { setTyping, getTypingState } = require('../services/chatTypingService');
 const {
   markAllInboundReadForAgent,
@@ -116,8 +117,34 @@ exports.sendCaseChatMessage = async (req, res) => {
         actorName: authorName,
         createdAt: new Date()
       });
+      const { slaMarked, statusResult } = applyCaseActivitySideEffects(row, {
+        activityType: 'agent_message',
+        internal: false,
+        actorId: req.user._id,
+        actorName: authorName,
+        channel: 'Live Chat'
+      });
+      if (slaMarked) {
+        row.activities.push({
+          activityType: 'sla_response_met',
+          message: 'First response SLA met',
+          internal: true,
+          metadata: { responseMetAt: row.currentSlaCycle.responseMetAt },
+          actorId: req.user._id,
+          actorName: authorName,
+          createdAt: new Date()
+        });
+      }
       row.updatedBy = req.user._id;
       await row.save();
+      if (statusResult?.changed) {
+        await caseExecutionService.onCaseStatusChanged({
+          caseRecord: row,
+          actorId: req.user._id,
+          fromStatus: statusResult.fromStatus,
+          toStatus: statusResult.toStatus
+        });
+      }
       await caseExecutionService.onCaseActivityLogged({
         caseRecord: row,
         actorId: req.user._id,

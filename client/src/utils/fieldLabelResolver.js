@@ -89,6 +89,10 @@ const SYSTEM_FIELD_LABEL_KEYS = {
     appointmenttype: 'events.sysFieldAppointmentType',
     appointmentmeetinglink: 'events.sysFieldAppointmentMeetingLink',
   },
+  cases: {
+    responsemetat: 'cases.listColumnResponseSla',
+    firstresponsedueat: 'cases.recordSlaResponse',
+  },
 };
 
 function normalizeFieldKey(fieldKey) {

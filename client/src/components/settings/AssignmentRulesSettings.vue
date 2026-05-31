@@ -1,9 +1,9 @@
 <template>
-  <div class="space-y-6 pb-24">
-    <div class="flex items-start gap-3">
+  <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div class="flex shrink-0 items-start gap-3 pb-3">
       <button
         type="button"
-        class="mt-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+        class="mt-0.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
         :title="t('settings.assignRulesBackTitle')"
         @click="goBackToAutomation"
       >
@@ -11,74 +11,142 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
       </button>
-      <div>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.automationAssignmentRules') }}</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+      <div class="min-w-0">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ t('settings.automationAssignmentRules') }}</h2>
+        <p class="mt-0.5 line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
           {{ t('settings.assignRulesSubtitle') }}
         </p>
       </div>
     </div>
 
-    <div class="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 rounded-xl p-4">
-      <div class="flex gap-3">
-        <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div class="text-sm text-indigo-900 dark:text-indigo-100 space-y-2">
-          <p class="font-medium">{{ t('settings.assignRulesInfoTitle') }}</p>
-          <p class="text-indigo-800/90 dark:text-indigo-200/90">
-            {{ t('settings.assignRulesInfoBody1') }}
-          </p>
-          <p class="text-indigo-800/90 dark:text-indigo-200/90">
-            {{ t('settings.assignRulesInfoBody2Before') }}<span class="font-mono text-xs">{{ assignmentSchedulerEnvVar }}</span>{{ t('settings.assignRulesInfoBody2After') }}
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Scope -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col lg:flex-row lg:items-end gap-4">
-      <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesLabelApplication') }}</label>
-          <select
-            v-model="scopeApp"
-            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          >
-            <option v-for="app in appOptions" :key="app.key" :value="app.key">{{ app.label }}</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.assignRulesLabelModule') }}</label>
-          <select
-            v-model="scopeModule"
-            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          >
-            <option v-for="mod in moduleOptionsForApp" :key="mod.key" :value="mod.key">{{ mod.label }}</option>
-          </select>
-        </div>
-      </div>
-      <button
-        type="button"
-        class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50"
-        :disabled="loading"
-        @click="loadRuleSet"
-      >
-        {{ t('actions.refresh') }}
-      </button>
-    </div>
-
-    <div v-if="loadError" class="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+    <div v-if="loadError" class="shrink-0 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
       {{ loadError }}
     </div>
 
-    <div v-else-if="loading" class="flex justify-center py-16">
-      <div class="animate-spin rounded-full h-10 w-10 border-2 border-indigo-600 border-t-transparent" />
+    <div v-else-if="loading" class="flex flex-1 justify-center py-16">
+      <div class="h-10 w-10 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
     </div>
 
-    <template v-else>
-      <!-- Rule set controls -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+    <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div
+        class="sticky top-0 z-10 -mx-1 mb-4 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-white/95 px-1 pb-3 pt-1 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95"
+      >
+        <nav class="flex min-w-0 flex-1 flex-wrap gap-1">
+          <button
+            v-for="item in navItems"
+            :key="item.id"
+            type="button"
+            class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+            :class="activeSection === item.id
+              ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300'
+              : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'"
+            @click="scrollToSection(item.id)"
+          >
+            <component :is="item.icon" class="h-4 w-4 shrink-0 opacity-70" />
+            {{ item.label }}
+          </button>
+        </nav>
+
+        <Menu as="div" class="relative shrink-0">
+          <MenuButton
+            type="button"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+          >
+            {{ t('settings.helpdeskExecRelatedTitle') }}
+            <ChevronDownIcon class="h-4 w-4 opacity-60" />
+          </MenuButton>
+          <transition
+            enter-active-class="transition duration-100 ease-out"
+            enter-from-class="transform scale-95 opacity-0"
+            enter-to-class="transform scale-100 opacity-100"
+            leave-active-class="transition duration-75 ease-in"
+            leave-from-class="transform scale-100 opacity-100"
+            leave-to-class="transform scale-95 opacity-0"
+          >
+            <MenuItems
+              class="absolute right-0 z-20 mt-1 w-56 origin-top-right rounded-xl border border-gray-200 bg-white py-1 shadow-lg focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+            >
+              <MenuItem v-if="scopeApp === 'HELPDESK'" v-slot="{ active }">
+                <RouterLink
+                  :to="{ path: '/settings', query: { tab: 'applications', app: 'helpdesk', config: 'execution-settings' } }"
+                  :class="['block px-3 py-2 text-sm', active ? 'bg-gray-100 dark:bg-gray-800' : 'text-gray-700 dark:text-gray-300']"
+                >
+                  {{ t('settings.appsHelpdeskExecution') }}
+                </RouterLink>
+              </MenuItem>
+              <MenuItem v-slot="{ active }">
+                <RouterLink
+                  :to="{ path: '/settings', query: { tab: 'business-hours' } }"
+                  :class="['block px-3 py-2 text-sm', active ? 'bg-gray-100 dark:bg-gray-800' : 'text-gray-700 dark:text-gray-300']"
+                >
+                  {{ t('settings.helpdeskExecLinkBusinessHours') }}
+                </RouterLink>
+              </MenuItem>
+              <MenuItem v-slot="{ active }">
+                <RouterLink
+                  :to="{ path: '/settings', query: { tab: 'automation', automationView: 'mailroom' } }"
+                  :class="['block px-3 py-2 text-sm', active ? 'bg-gray-100 dark:bg-gray-800' : 'text-gray-700 dark:text-gray-300']"
+                >
+                  {{ t('settings.helpdeskExecLinkMailroom') }}
+                </RouterLink>
+              </MenuItem>
+            </MenuItems>
+          </transition>
+        </Menu>
+      </div>
+
+      <div
+        ref="contentRef"
+        class="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain"
+        :class="isDirty ? 'pb-16' : ''"
+      >
+        <section :id="SECTION.scope" class="scroll-mt-6 space-y-4">
+          <details class="rounded-xl border border-indigo-200 bg-indigo-50/80 dark:border-indigo-900 dark:bg-indigo-950/30">
+            <summary class="cursor-pointer list-none px-4 py-3 text-sm font-medium text-indigo-900 dark:text-indigo-100">
+              {{ t('settings.assignRulesInfoTitle') }}
+            </summary>
+            <div class="space-y-2 border-t border-indigo-200 px-4 py-3 text-sm text-indigo-800/90 dark:border-indigo-900 dark:text-indigo-200/90">
+              <p>{{ t('settings.assignRulesInfoBody1') }}</p>
+              <p>
+                {{ t('settings.assignRulesInfoBody2Before') }}<span class="font-mono text-xs">{{ assignmentSchedulerEnvVar }}</span>{{ t('settings.assignRulesInfoBody2After') }}
+              </p>
+            </div>
+          </details>
+
+          <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
+              <div class="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('settings.assignRulesLabelApplication') }}</label>
+                  <select
+                    v-model="scopeApp"
+                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option v-for="app in appOptions" :key="app.key" :value="app.key">{{ app.label }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('settings.assignRulesLabelModule') }}</label>
+                  <select
+                    v-model="scopeModule"
+                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option v-for="mod in moduleOptionsForApp" :key="mod.key" :value="mod.key">{{ mod.label }}</option>
+                  </select>
+                </div>
+              </div>
+              <button
+                type="button"
+                class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700/50"
+                :disabled="loading"
+                @click="loadRuleSet"
+              >
+                {{ t('actions.refresh') }}
+              </button>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.assignRulesRuleSetTitle') }}</h3>
           <div class="flex flex-wrap items-center gap-3">
@@ -110,10 +178,11 @@
             <option v-for="opt in applyStrategyOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
           </select>
         </div>
-      </div>
+          </div>
+        </section>
 
       <!-- Rules -->
-      <div class="space-y-3">
+      <section :id="SECTION.rules" class="scroll-mt-6 space-y-3">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.assignRulesRulesTitle') }}</h3>
           <button
@@ -394,10 +463,11 @@
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- Simulation -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+      <section :id="SECTION.simulate" class="scroll-mt-6">
+      <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800 space-y-4">
         <div class="flex items-center justify-between gap-3">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.assignRulesSimulationTitle2') }}</h3>
           <button
@@ -418,39 +488,48 @@
           <textarea v-model="simulateContextJson" rows="3" class="w-full px-3 py-2 font-mono text-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
         </div>
         <div v-if="simulateError" class="text-sm text-red-600 dark:text-red-400">{{ simulateError }}</div>
-        <pre v-if="simulateResult" class="text-xs overflow-x-auto p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200">{{ formattedSimulation }}</pre>
+        <pre v-if="simulateResult" class="overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200">{{ formattedSimulation }}</pre>
       </div>
-    </template>
+      </section>
+      </div>
 
-    <!-- Sticky save -->
-    <div
-      class="fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur px-4 py-3 flex flex-wrap items-center justify-end gap-3"
-    >
-      <span v-if="saveError" class="text-sm text-red-600 dark:text-red-400 mr-auto">{{ saveError }}</span>
-      <button
-        type="button"
-        class="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
-        :disabled="saving || loading"
-        @click="loadRuleSet"
+      <div
+        v-if="isDirty"
+        class="fixed inset-x-0 bottom-0 z-30 flex flex-wrap items-center justify-end gap-3 border-t border-gray-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-gray-700 dark:bg-gray-900/95"
       >
-        {{ t('settings.assignRulesReset') }}
-      </button>
-      <button
-        type="button"
-        class="px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-        :disabled="saving || loading || !isDirty"
-        @click="save"
-      >
-        {{ saving ? t('states.saving') : t('settings.saveChanges') }}
-      </button>
+        <span v-if="saveError" class="mr-auto text-sm text-red-600 dark:text-red-400">{{ saveError }}</span>
+        <button
+          type="button"
+          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+          :disabled="saving || loading"
+          @click="loadRuleSet"
+        >
+          {{ t('settings.assignRulesReset') }}
+        </button>
+        <button
+          type="button"
+          class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          :disabled="saving || loading"
+          @click="save"
+        >
+          {{ saving ? t('states.saving') : t('settings.saveChanges') }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { useRoute, useRouter } from 'vue-router';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
+import {
+  BeakerIcon,
+  ChevronDownIcon,
+  Cog6ToothIcon,
+  QueueListIcon
+} from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
 import { usePeopleTypes } from '@/composables/usePeopleTypes';
 import { useNotifications } from '@/composables/useNotifications';
@@ -459,6 +538,19 @@ const { t } = useI18n();
 /** Technical literals (not translated). */
 const assignmentSchedulerEnvVar = 'ENABLE_ASSIGNMENT_SCHEDULER';
 const customFieldsPathExample = 'customFields.myKey';
+
+const SECTION = {
+  scope: 'assign-rules-scope',
+  rules: 'assign-rules-rules',
+  simulate: 'assign-rules-simulate'
+};
+
+const navItems = computed(() => [
+  { id: SECTION.scope, label: t('settings.assignRulesNavScope'), icon: Cog6ToothIcon },
+  { id: SECTION.rules, label: t('settings.assignRulesNavRules'), icon: QueueListIcon },
+  { id: SECTION.simulate, label: t('settings.assignRulesNavSimulate'), icon: BeakerIcon }
+]);
+
 const route = useRoute();
 const router = useRouter();
 const { success: notifySuccess } = useNotifications();
@@ -570,7 +662,7 @@ function getConditionFieldOptions(appKey, moduleKey) {
 /** Mirrors `server/constants/caseLifecycle.js` — keep in sync for condition matching. */
 const CASE_TYPE_VALUES = ['Support Ticket', 'Complaint', 'Service Request', 'Warranty Claim', 'Internal Case'];
 const CASE_PRIORITY_VALUES = ['Low', 'Medium', 'High', 'Critical'];
-const CASE_STATUS_VALUES = ['New', 'Assigned', 'In Progress', 'On Hold', 'Resolved', 'Closed'];
+const CASE_STATUS_VALUES = ['New', 'Assigned', 'In Progress', 'On Hold', 'Waiting for Customer', 'Resolved', 'Closed'];
 const CASE_CHANNEL_VALUES = ['Email', 'Live Chat', 'Phone', 'Customer Portal', 'Partner Portal', 'Internal'];
 
 /**
@@ -834,7 +926,52 @@ const simulateResult = ref(null);
 const simulateRecordJson = ref('{\n  "priority": "High",\n  "status": "New"\n}');
 const simulateContextJson = ref('{}');
 
+const activeSection = ref(SECTION.scope);
+const contentRef = ref(null);
+let sectionObserver = null;
+
 const formattedSimulation = computed(() => (simulateResult.value ? JSON.stringify(simulateResult.value, null, 2) : ''));
+
+function scrollToSection(id) {
+  activeSection.value = id;
+  const target = document.getElementById(id);
+  const container = contentRef.value;
+  if (target && container) {
+    const top = target.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
+    container.scrollTo({ top: Math.max(0, top - 8), behavior: 'smooth' });
+    return;
+  }
+  target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function setupSectionObserver() {
+  sectionObserver?.disconnect();
+  sectionObserver = null;
+  if (!contentRef.value) return;
+
+  const sectionIds = Object.values(SECTION);
+  sectionObserver = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      const nextId = visible[0]?.target?.id;
+      if (nextId && sectionIds.includes(nextId)) {
+        activeSection.value = nextId;
+      }
+    },
+    {
+      root: contentRef.value,
+      rootMargin: '-12% 0px -55% 0px',
+      threshold: [0.1, 0.35, 0.6]
+    }
+  );
+
+  sectionIds.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) sectionObserver.observe(el);
+  });
+}
 
 function triggerLabel(triggerType) {
   if (triggerType === 'delayed') return t('settings.assignRulesTriggerDelayed');
@@ -1083,6 +1220,7 @@ async function loadRuleSet() {
     lastSavedFingerprint.value = null;
   } finally {
     loading.value = false;
+    nextTick(setupSectionObserver);
   }
 }
 
@@ -1197,4 +1335,14 @@ onMounted(() => {
     loadRuleSet();
   });
 });
+
+onUnmounted(() => {
+  sectionObserver?.disconnect();
+});
 </script>
+
+<style scoped>
+details summary::-webkit-details-marker {
+  display: none;
+}
+</style>

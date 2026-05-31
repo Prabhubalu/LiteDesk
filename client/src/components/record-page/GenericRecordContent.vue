@@ -288,6 +288,7 @@
               v-if="moduleKeyLower === 'cases' && record?.slaContext"
               :sla-context="record.slaContext"
               :cycle-status="record.currentSlaCycle?.status"
+              :case-status="record.status"
             />
             <!-- People: participation badges under name (Sales, Lead) -->
             <div

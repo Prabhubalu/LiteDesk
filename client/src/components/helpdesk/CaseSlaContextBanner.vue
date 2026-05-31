@@ -19,31 +19,35 @@ import { computed } from 'vue';
 
 const props = defineProps({
   slaContext: { type: Object, default: null },
-  cycleStatus: { type: String, default: null }
+  cycleStatus: { type: String, default: null },
+  caseStatus: { type: String, default: null }
 });
 
 const { t } = useI18n();
 
 const showBanner = computed(() => {
-  if (!props.slaContext?.useBusinessHours) return false;
   if (props.cycleStatus === 'paused') return true;
+  if (!props.slaContext?.useBusinessHours) return false;
   return props.slaContext.isOpen === false;
 });
 
 const headline = computed(() => {
   if (props.cycleStatus === 'paused') {
-    return 'SLA paused — case is on hold';
+    if (props.caseStatus === 'Waiting for Customer') {
+      return t('cases.recordSlaAlertWaitingCustomer');
+    }
+    return t('cases.recordSlaAlertPaused');
   }
   if (props.slaContext?.pauseReason) {
     return props.slaContext.pauseReason;
   }
-  return 'Outside business hours';
+  return t('cases.recordSlaAlertOutsideHours');
 });
 
 const detail = computed(() => {
   const parts = [];
   if (props.slaContext?.scheduleName) {
-    parts.push(`Schedule: ${props.slaContext.scheduleName}`);
+    parts.push(t('cases.recordSlaAlertSchedule', { name: props.slaContext.scheduleName }));
   } else if (props.slaContext?.summary) {
     parts.push(props.slaContext.summary);
   }

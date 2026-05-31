@@ -9,7 +9,12 @@
     <template v-for="(activity, index) in activities" :key="activity._id || activity.id || `act-${index}`">
       <!-- System event -->
       <div v-if="isSystem(activity)" class="flex justify-center py-0.5">
-        <p class="max-w-full truncate px-2 text-center text-[11px] leading-tight text-gray-500 dark:text-gray-500">
+        <p
+          class="max-w-full truncate px-2 text-center text-[11px] leading-tight"
+          :class="isResponseSlaMet(activity)
+            ? 'font-medium text-emerald-600 dark:text-emerald-400'
+            : 'text-gray-500 dark:text-gray-500'"
+        >
           {{ formatSystemEventLine(activity) }}
         </p>
       </div>
@@ -96,7 +101,8 @@ import {
   getCaseActivityDisplayName,
   getCaseActivityAvatarUser,
   formatCaseChannelLabel,
-  formatCaseSystemActivityLine
+  formatCaseSystemActivityLine,
+  isCaseResponseSlaMetActivity
 } from '@/utils/caseTimeline';
 
 const props = defineProps({
@@ -150,6 +156,10 @@ function formatSystemEventLine(activity) {
     t,
     formatTime: (date) => formatRelativeTime(date, t) || ''
   });
+}
+
+function isResponseSlaMet(activity) {
+  return isCaseResponseSlaMetActivity(activity);
 }
 
 watch(

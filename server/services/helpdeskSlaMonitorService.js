@@ -1,34 +1,20 @@
+'use strict';
+
 const Case = require('../models/Case');
 const TenantAppConfiguration = require('../models/TenantAppConfiguration');
 const notificationDomainEvents = require('../constants/domainEvents');
 const { emitNotification } = require('./notificationEngine');
-
-const WARNING_THRESHOLD_PERCENT = 80;
+const { resolveSlaScheduleForOrganization } = require('./helpdeskBusinessHoursService');
+const {
+  WARNING_THRESHOLD_PERCENT,
+  computeMetricProgress,
+  normalizeAlertState
+} = require('./helpdeskSlaClockService');
+const { processEscalationRules } = require('./helpdeskSlaEscalationService');
 
 function toIdString(value) {
   if (value == null) return null;
   return value.toString ? value.toString() : String(value);
-}
-
-function getSlaElapsedPercent(caseRecord) {
-  const cycle = caseRecord?.currentSlaCycle;
-  const startedAt = cycle?.startedAt ? new Date(cycle.startedAt) : null;
-  const resolutionTargetAt = cycle?.resolutionTargetAt ? new Date(cycle.resolutionTargetAt) : null;
-  if (!startedAt || !resolutionTargetAt) return null;
-  if (Number.isNaN(startedAt.getTime()) || Number.isNaN(resolutionTargetAt.getTime())) return null;
-  const total = resolutionTargetAt.getTime() - startedAt.getTime();
-  if (total <= 0) return null;
-  const elapsed = Date.now() - startedAt.getTime();
-  return Math.max(0, Math.round((elapsed / total) * 100));
-}
-
-function getAlertState(caseRecord) {
-  const existing = caseRecord.currentSlaCycle?.policySnapshot?.alerts;
-  if (existing && typeof existing === 'object') return existing;
-  return {
-    warningNotifiedAt: null,
-    breachNotifiedAt: null
-  };
 }
 
 async function getOrganizationNotificationPrefs(organizationId, cache) {
@@ -52,7 +38,7 @@ async function getOrganizationNotificationPrefs(organizationId, cache) {
   return prefs;
 }
 
-async function emitCaseSlaNotification(caseRecord, eventType, elapsedPercent) {
+async function emitCaseSlaNotification(caseRecord, eventType, metric, elapsedPercent) {
   await emitNotification({
     eventType,
     entity: {
@@ -61,6 +47,7 @@ async function emitCaseSlaNotification(caseRecord, eventType, elapsedPercent) {
       title: caseRecord?.title || '',
       status: caseRecord?.status || '',
       priority: caseRecord?.priority || '',
+      slaMetric: metric,
       elapsedPercent
     },
     organizationId: caseRecord?.organizationId || null,
@@ -69,52 +56,126 @@ async function emitCaseSlaNotification(caseRecord, eventType, elapsedPercent) {
   });
 }
 
+async function processMetricAlerts({
+  caseRecord,
+  metric,
+  progress,
+  prefs,
+  alerts,
+  scheduleResolution,
+  rulesCache
+}) {
+  let changed = false;
+  const warningKey = metric === 'response' ? 'responseWarningNotifiedAt' : 'resolutionWarningNotifiedAt';
+  const breachKey = metric === 'response' ? 'responseBreachNotifiedAt' : 'resolutionBreachNotifiedAt';
+  const counts = { warningSent: 0, breachSent: 0, escalationsSent: 0 };
+
+  if (progress.met || progress.elapsedPercent == null) {
+    return { changed, ...counts };
+  }
+
+  if (
+    prefs.notifyOnSlaWarning &&
+    progress.elapsedPercent >= WARNING_THRESHOLD_PERCENT &&
+    progress.elapsedPercent < 100 &&
+    !alerts[warningKey]
+  ) {
+    await emitCaseSlaNotification(
+      caseRecord,
+      notificationDomainEvents.CASE_SLA_WARNING,
+      metric,
+      progress.elapsedPercent
+    );
+    alerts[warningKey] = new Date();
+    counts.warningSent += 1;
+    changed = true;
+  }
+
+  if (
+    prefs.notifyOnSlaBreach &&
+    progress.elapsedPercent >= 100 &&
+    !alerts[breachKey]
+  ) {
+    await emitCaseSlaNotification(
+      caseRecord,
+      notificationDomainEvents.CASE_SLA_BREACHED,
+      metric,
+      progress.elapsedPercent
+    );
+    alerts[breachKey] = new Date();
+    counts.breachSent += 1;
+    changed = true;
+  }
+
+  const escalationResult = await processEscalationRules({
+    caseRecord,
+    metric,
+    elapsedPercent: progress.elapsedPercent,
+    alerts,
+    organizationId: caseRecord.organizationId,
+    rulesCache
+  });
+  if (escalationResult.executed > 0) {
+    counts.escalationsSent += escalationResult.executed;
+    changed = true;
+  }
+
+  return { changed, ...counts };
+}
+
 async function tickHelpdeskSlaNotifications() {
   const rows = await Case.find({
     deletedAt: null,
     status: { $nin: ['Resolved', 'Closed'] },
-    'currentSlaCycle.status': { $in: ['running', 'paused'] },
-    'currentSlaCycle.resolutionTargetAt': { $ne: null }
+    'currentSlaCycle.status': { $in: ['running', 'paused'] }
   })
     .select('_id organizationId title status priority currentSlaCycle')
     .limit(500);
 
   const orgPrefCache = new Map();
+  const scheduleCache = new Map();
+  const rulesCache = new Map();
   let processed = 0;
   let warningSent = 0;
   let breachSent = 0;
+  let escalationsSent = 0;
 
   for (const row of rows) {
     try {
       processed += 1;
-      const elapsedPercent = getSlaElapsedPercent(row);
-      if (elapsedPercent == null) continue;
+      const cycle = row.currentSlaCycle;
+      if (!cycle) continue;
+
+      const orgKey = toIdString(row.organizationId);
+      if (!scheduleCache.has(orgKey)) {
+        scheduleCache.set(orgKey, await resolveSlaScheduleForOrganization(row.organizationId));
+      }
+      const scheduleResolution = scheduleCache.get(orgKey);
+
+      const responseProgress = computeMetricProgress(cycle, 'response', scheduleResolution);
+      const resolutionProgress = computeMetricProgress(cycle, 'resolution', scheduleResolution);
 
       const prefs = await getOrganizationNotificationPrefs(row.organizationId, orgPrefCache);
-      const alerts = getAlertState(row);
+      const alerts = normalizeAlertState(cycle.policySnapshot?.alerts);
       let changed = false;
 
-      if (
-        prefs.notifyOnSlaWarning &&
-        elapsedPercent >= WARNING_THRESHOLD_PERCENT &&
-        elapsedPercent < 100 &&
-        !alerts.warningNotifiedAt
-      ) {
-        await emitCaseSlaNotification(row, notificationDomainEvents.CASE_SLA_WARNING, elapsedPercent);
-        alerts.warningNotifiedAt = new Date();
-        warningSent += 1;
-        changed = true;
-      }
-
-      if (
-        prefs.notifyOnSlaBreach &&
-        elapsedPercent >= 100 &&
-        !alerts.breachNotifiedAt
-      ) {
-        await emitCaseSlaNotification(row, notificationDomainEvents.CASE_SLA_BREACHED, elapsedPercent);
-        alerts.breachNotifiedAt = new Date();
-        breachSent += 1;
-        changed = true;
+      for (const [metric, progress] of [
+        ['response', responseProgress],
+        ['resolution', resolutionProgress]
+      ]) {
+        const result = await processMetricAlerts({
+          caseRecord: row,
+          metric,
+          progress,
+          prefs,
+          alerts,
+          scheduleResolution,
+          rulesCache
+        });
+        warningSent += result.warningSent;
+        breachSent += result.breachSent;
+        escalationsSent += result.escalationsSent;
+        if (result.changed) changed = true;
       }
 
       if (changed) {
@@ -129,7 +190,7 @@ async function tickHelpdeskSlaNotifications() {
     }
   }
 
-  return { processed, warningSent, breachSent };
+  return { processed, warningSent, breachSent, escalationsSent };
 }
 
 module.exports = {

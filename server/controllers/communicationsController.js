@@ -36,6 +36,7 @@ const { MAX_ATTACHMENT_SIZE_BYTES, MAX_TOTAL_ATTACHMENTS_BYTES } = require('../m
 const { createInitialSlaCycle } = require('../services/caseLifecycleService');
 const { applySlaTargetsToCycle } = require('../services/helpdeskSlaService');
 const caseExecutionService = require('../services/caseExecutionService');
+const { applyCaseActivitySideEffects } = require('../services/caseAutoStatusService');
 const communicationPlatformService = require('../platform/communication/api/communicationPlatformService');
 const outboundEmailSendService = require('../platform/communication/outbound/outboundEmailSendService');
 const { resolveDefaultGmailMailboxForUser } = require('../services/mailboxGmailInboxSyncService');
@@ -559,24 +560,51 @@ exports.sendEmail = async (req, res) => {
     } else if (moduleKey === 'tasks') {
       await pushActivityLog(Task, { _id: recordId, organizationId: orgId });
     } else if (moduleKey === 'cases') {
-      const caseActivity = {
-        activityType: 'email_sent',
-        message: `Email sent: ${subject.trim()}`,
-        internal: true,
-        metadata: {
-          communicationId: doc._id,
-          to: toList[0],
-          status: finalStatus
-        },
-        actorId: req.user._id,
-        actorName: userName,
-        createdAt: new Date()
-      };
-      await Case.findOneAndUpdate(
-        { _id: recordId, organizationId: orgId, deletedAt: null },
-        { $push: { activities: caseActivity } },
-        { runValidators: false }
-      );
+      const caseRow = await Case.findOne({ _id: recordId, organizationId: orgId, deletedAt: null });
+      if (caseRow) {
+        caseRow.activities = Array.isArray(caseRow.activities) ? caseRow.activities : [];
+        caseRow.activities.push({
+          activityType: 'email_sent',
+          message: `Email sent: ${subject.trim()}`,
+          internal: true,
+          metadata: {
+            communicationId: doc._id,
+            to: toList[0],
+            status: finalStatus
+          },
+          actorId: req.user._id,
+          actorName: userName,
+          createdAt: new Date()
+        });
+        const { slaMarked, statusResult } = applyCaseActivitySideEffects(caseRow, {
+          activityType: 'email_sent',
+          internal: true,
+          actorId: req.user._id,
+          actorName: userName,
+          channel: caseRow.channel
+        });
+        if (slaMarked) {
+          caseRow.activities.push({
+            activityType: 'sla_response_met',
+            message: 'First response SLA met',
+            internal: true,
+            metadata: { responseMetAt: caseRow.currentSlaCycle.responseMetAt },
+            actorId: req.user._id,
+            actorName: userName,
+            createdAt: new Date()
+          });
+        }
+        caseRow.updatedBy = req.user._id;
+        await caseRow.save();
+        if (statusResult?.changed) {
+          await caseExecutionService.onCaseStatusChanged({
+            caseRecord: caseRow,
+            actorId: req.user._id,
+            fromStatus: statusResult.fromStatus,
+            toStatus: statusResult.toStatus
+          });
+        }
+      }
     }
 
     const updated = await Communication.findById(doc._id).lean();
