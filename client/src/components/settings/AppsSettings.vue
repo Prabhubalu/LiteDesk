@@ -3,7 +3,6 @@
     <!-- Header -->
     <div
       class="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-gray-200 bg-white/95 pb-3 pt-1 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95 -mx-1 px-1"
-      :class="showOptionsGrid ? 'mb-0' : 'mb-0'"
     >
       <div class="flex min-w-0 items-center gap-3">
         <button @click="goBack" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
@@ -39,7 +38,7 @@
       </button>
     </div>
 
-    <div v-if="showOptionsGrid" class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+    <div v-if="showOptionsGrid" :class="['min-h-0 flex-1 overflow-y-auto overscroll-contain', SETTINGS_HEADER_CONTENT_GAP_CLASS]">
       <!-- Sales App Section (only if Sales is installed and selected) -->
       <div v-if="hasSalesAccess && isSalesApp">
         <!-- Settings Options Grid -->
@@ -68,12 +67,6 @@
                     {{ optionDesc(option) }}
                   </p>
                 </div>
-              </div>
-              <div class="mt-4 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                <span>{{ t('settings.appsConfigure') }}</span>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
               </div>
             </div>
           </div>
@@ -155,6 +148,7 @@ import { ref, computed, watch, h, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
+import { SETTINGS_HEADER_CONTENT_GAP_CLASS } from '@/components/settings/settingsSaveBar';
 import SalesSchema from './SalesSchema.vue';
 import SalesPipelines from './SalesPipelines.vue';
 import SalesPlaybooks from './SalesPlaybooks.vue';

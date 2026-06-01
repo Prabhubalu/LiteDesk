@@ -18,6 +18,7 @@
         embed
           ? 'flex flex-col overflow-hidden'
           : 'overflow-y-auto overscroll-contain',
+        $slots.header || $slots.tabs ? SETTINGS_HEADER_CONTENT_GAP_CLASS : '',
         contentClass,
         saveBarVisible ? SETTINGS_SAVE_BAR_CONTENT_CLASS : ''
       ]"
@@ -29,7 +30,10 @@
 
 <script setup>
 import { ref } from 'vue';
-import { SETTINGS_SAVE_BAR_CONTENT_CLASS } from '@/components/settings/settingsSaveBar';
+import {
+  SETTINGS_HEADER_CONTENT_GAP_CLASS,
+  SETTINGS_SAVE_BAR_CONTENT_CLASS
+} from '@/components/settings/settingsSaveBar';
 
 defineProps({
   contentClass: {

@@ -10,7 +10,7 @@
 
     <form v-else class="flex min-h-0 flex-1 flex-col overflow-hidden" @submit.prevent="saveSettings">
       <div
-        class="sticky top-0 z-10 -mx-1 mb-4 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-white/95 px-1 pb-3 pt-1 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95"
+        class="sticky top-0 z-10 -mx-1 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-white/95 px-1 pb-3 pt-1 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95"
       >
         <nav class="flex min-w-0 flex-1 flex-wrap gap-1">
           <button
@@ -80,7 +80,10 @@
       <div
         ref="contentRef"
         class="min-h-0 min-w-0 flex-1 space-y-6 overflow-y-auto overscroll-contain"
-        :class="hasChanges ? SETTINGS_SAVE_BAR_CONTENT_CLASS : ''"
+        :class="[
+          SETTINGS_HEADER_CONTENT_GAP_CLASS,
+          hasChanges ? SETTINGS_SAVE_BAR_CONTENT_CLASS : ''
+        ]"
       >
           <section :id="SECTION.sla" class="scroll-mt-6">
             <HelpdeskSlaHub
@@ -185,7 +188,10 @@ import apiClient from '@/utils/apiClient';
 import HelpdeskSlaHub from '@/components/settings/helpdesk/HelpdeskSlaHub.vue';
 import HelpdeskCannedResponsesSection from '@/components/settings/helpdesk/HelpdeskCannedResponsesSection.vue';
 import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
-import { SETTINGS_SAVE_BAR_CONTENT_CLASS } from '@/components/settings/settingsSaveBar';
+import {
+  SETTINGS_HEADER_CONTENT_GAP_CLASS,
+  SETTINGS_SAVE_BAR_CONTENT_CLASS
+} from '@/components/settings/settingsSaveBar';
 
 const { t } = useI18n();
 const router = useRouter();
