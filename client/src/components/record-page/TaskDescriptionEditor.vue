@@ -139,42 +139,15 @@
       class="[&_.tiptap]:min-h-[120px] [&_.tiptap]:text-md [&_.tiptap]:leading-[1.75] [&_.tiptap_p]:mb-2 [&_.tiptap_p:last-child]:mb-0 [&_.tiptap_p]:leading-[1.75] [&_.tiptap_h1]:text-2xl [&_.tiptap_h1]:font-bold [&_.tiptap_h1]:my-4 [&_.tiptap_h1]:mb-2 [&_.tiptap_h2]:text-xl [&_.tiptap_h2]:font-semibold [&_.tiptap_h2]:my-4 [&_.tiptap_h2]:mb-2 [&_.tiptap_h3]:text-lg [&_.tiptap_h3]:font-semibold [&_.tiptap_h3]:my-4 [&_.tiptap_h3]:mb-2 [&_.tiptap_ul]:pl-6 [&_.tiptap_ol]:pl-6 [&_.tiptap_ul]:list-disc [&_.tiptap_ol]:list-decimal [&_.tiptap_a]:text-indigo-600 [&_.tiptap_a]:underline dark:[&_.tiptap_a]:text-indigo-400 [&_.tiptap_blockquote]:border-l-4 [&_.tiptap_blockquote]:border-gray-300 [&_.tiptap_blockquote]:bg-gray-50 [&_.tiptap_blockquote]:px-3 [&_.tiptap_blockquote]:py-2 [&_.tiptap_blockquote]:my-2 dark:[&_.tiptap_blockquote]:border-gray-600 dark:[&_.tiptap_blockquote]:bg-gray-800/60"
     />
     <!-- Cmd/Ctrl+K: BubbleMenu/Tippy prevents reliable programmatic Popover open; use a body Teleport -->
-    <Teleport to="body">
-      <div
-        v-if="shortcutLinkPanelOpen"
-        class="task-description-link-shortcut w-72 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg p-3 z-[12000]"
-        :style="shortcutLinkPanelStyle"
-        role="dialog"
-        :aria-label="t('records.taskDescriptionEditorInsertLink')"
-        @mousedown.prevent
-      >
-        <div class="space-y-2">
-          <label class="block text-xs font-medium text-gray-600 dark:text-gray-400">URL</label>
-          <input
-            ref="shortcutLinkInputRef"
-            v-model="linkUrl"
-            type="url"
-            placeholder="https://"
-            class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
-            @keydown.enter.prevent="applyShortcutLink"
-            @keydown.escape.prevent="closeShortcutLinkPanel"
-          />
-          <div class="flex gap-2 justify-end">
-            <button
-              type="button"
-              class="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-              @click="closeShortcutLinkPanel"
-            >{{ t('performance.cancelWizard') }}</button>
-            <button
-              type="button"
-              :disabled="!canApplyLink"
-              class="px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-              @click="applyShortcutLink"
-            >{{ t('actions.apply') }}</button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <TaskDescriptionLinkShortcutPanel
+      :open="shortcutLinkPanelOpen"
+      :panel-style="shortcutLinkPanelStyle"
+      :link-url="linkUrl"
+      :can-apply="canApplyLink"
+      @update:link-url="linkUrl = $event"
+      @apply="applyShortcutLink"
+      @close="closeShortcutLinkPanel"
+    />
   </div>
 </template>
 
@@ -188,7 +161,8 @@ import Heading from '@tiptap/extension-heading';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { SlashCommands } from './slashCommands.js';
-import { ref, computed, watch, onBeforeUnmount, nextTick } from 'vue';
+import TaskDescriptionLinkShortcutPanel from './TaskDescriptionLinkShortcutPanel.vue';
+import { ref, computed, watch, nextTick } from 'vue';
 
 const props = defineProps({
   modelValue: {
@@ -219,7 +193,9 @@ const canApplyLink = computed(() => {
 const linkInputRef = ref(null);
 const shortcutLinkPanelOpen = ref(false);
 const shortcutLinkPanelStyle = ref({});
-const shortcutLinkInputRef = ref(null);
+
+/** Populated once TipTap mounts; avoids TDZ when useEditor callbacks run. */
+const editorInstance = { current: null };
 
 function closeShortcutLinkPanel() {
   shortcutLinkPanelOpen.value = false;
@@ -244,6 +220,25 @@ function computeShortcutPanelPosition(ed) {
     top: `${bottomEdge + 4}px`,
     zIndex: 12000
   };
+}
+
+function syncLinkUrlFromSelection() {
+  linkUrl.value = editorInstance.current?.getAttributes('link')?.href || 'https://';
+}
+
+function openLinkEditorFromShortcut() {
+  const ed = editorInstance.current;
+  if (!ed || ed.state.selection.empty) return;
+  syncLinkUrlFromSelection();
+  shortcutLinkPanelStyle.value = computeShortcutPanelPosition(ed);
+  shortcutLinkPanelOpen.value = true;
+}
+
+function applyShortcutLink() {
+  if (!canApplyLink.value) return;
+  const url = linkUrl.value.trim();
+  editorInstance.current?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+  closeShortcutLinkPanel();
 }
 
 const ReplyQuoteBlockquote = Blockquote.extend({
@@ -352,6 +347,12 @@ const editor = useEditor({
       }
     }, 0);
   },
+  onCreate: ({ editor: ed }) => {
+    editorInstance.current = ed;
+  },
+  onDestroy: () => {
+    editorInstance.current = null;
+  },
   onUpdate: ({ editor: e }) => {
     emit('update:modelValue', e.getHTML());
   }
@@ -370,10 +371,6 @@ watch(
   { immediate: false }
 );
 
-const syncLinkUrlFromSelection = () => {
-  linkUrl.value = editor.value?.getAttributes('link')?.href || 'https://';
-};
-
 const focusLinkInput = () => {
   window.setTimeout(() => {
     linkInputRef.value?.focus();
@@ -386,25 +383,6 @@ const handleLinkButtonClick = () => {
   syncLinkUrlFromSelection();
   nextTick(() => focusLinkInput());
 };
-
-function openLinkEditorFromShortcut() {
-  const ed = editor.value;
-  if (!ed || ed.state.selection.empty) return;
-  syncLinkUrlFromSelection();
-  shortcutLinkPanelStyle.value = computeShortcutPanelPosition(ed);
-  shortcutLinkPanelOpen.value = true;
-  nextTick(() => {
-    shortcutLinkInputRef.value?.focus();
-    shortcutLinkInputRef.value?.select();
-  });
-}
-
-function applyShortcutLink() {
-  if (!canApplyLink.value) return;
-  const url = linkUrl.value.trim();
-  editor.value?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-  closeShortcutLinkPanel();
-}
 
 const applyLink = (close) => {
   if (!canApplyLink.value) return;
@@ -424,10 +402,6 @@ const insertText = (text) => {
 };
 
 defineExpose({ focus, insertText });
-
-onBeforeUnmount(() => {
-  editor.value?.destroy();
-});
 </script>
 
 <style scoped>
