@@ -9499,6 +9499,34 @@
     "message": "Connect external tools to enhance your workspace. All integrations are optional and can be turned off at any time.",
     "description": "Page subtitle"
   },
+  "integrationsConfigure": {
+    "message": "Configure",
+    "description": "Integrations hub card hover action"
+  },
+  "integrationsBackTitle": {
+    "message": "Back to integrations",
+    "description": "Integrations detail back button title"
+  },
+  "integrationsTabSetup": {
+    "message": "Setup",
+    "description": "Email integration detail tab"
+  },
+  "integrationsTabPolicy": {
+    "message": "Send policy",
+    "description": "Email integration send policy tab"
+  },
+  "integrationsTabDomain": {
+    "message": "Domain",
+    "description": "Email integration sender domain tab"
+  },
+  "integrationsTabDiagnostics": {
+    "message": "Diagnostics",
+    "description": "Email integration diagnostics tab"
+  },
+  "integrationsTabGeneral": {
+    "message": "General",
+    "description": "Non-email integration detail tab"
+  },
   "integrationsBannerTitle": {
     "message": "Optional, Safe Integrations",
     "description": "Info banner title"

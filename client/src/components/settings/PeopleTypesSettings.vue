@@ -1,7 +1,7 @@
 <template>
-  <div class="p-6">
-    <div class="mb-6">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.peopleTypesTitle') }}</h3>
+  <div :class="embedded ? 'px-6 pb-6' : 'p-6'">
+    <div :class="embedded ? 'mb-4' : 'mb-6'">
+      <h3 v-if="!embedded" class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.peopleTypesTitle') }}</h3>
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
         {{ t('settings.peopleTypesIntro') }}
       </p>
@@ -242,25 +242,15 @@
         </div>
       </div>
 
-      <div class="flex justify-end gap-3 pt-2">
-        <button
-          type="button"
-          class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-          :disabled="saving || loading || !isDirty"
-          @click="resetLocal"
-        >
-          {{ t('settings.peopleTypesReset') }}
-        </button>
-        <button
-          type="button"
-          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-          :disabled="saving || loading || !canSave"
-          @click="save"
-        >
-          <span v-if="saving" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-          {{ saving ? t('states.saving') : t('settings.saveChanges') }}
-        </button>
-      </div>
+      <SettingsSaveBar
+        :visible="isDirty"
+        :saving="saving"
+        :reset-label="t('settings.peopleTypesReset')"
+        :reset-disabled="loading || !isDirty"
+        :save-disabled="loading || !canSave"
+        @reset="resetLocal"
+        @save="save"
+      />
     </div>
 
     <!-- Add Option modal (same pattern as picklist in ModulesAndFields) -->
@@ -380,8 +370,16 @@
 </template>
 
 <script setup lang="ts">
+defineProps({
+  embedded: {
+    type: Boolean,
+    default: false
+  }
+});
+
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
 import { useRoute } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import { invalidatePeopleTypesCache } from '@/utils/peopleTypesInvalidate';

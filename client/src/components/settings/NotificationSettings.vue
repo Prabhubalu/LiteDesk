@@ -1,72 +1,76 @@
 <template>
-  <div class="w-full h-full">
-    <header class="mb-5">
-      <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-        {{ t('settings.tabNotifications') }}
-      </h1>
-      <div class="mt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <p class="text-sm text-gray-600 dark:text-gray-400">
-          {{ pageDescription }}
-        </p>
-        <div class="flex items-center gap-3 text-xs sm:text-sm shrink-0">
-          <span
-            v-if="saving"
-            class="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400"
-          >
+  <SettingsScrollPanel>
+    <template #header>
+      <div>
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+          {{ t('settings.tabNotifications') }}
+        </h1>
+        <div class="mt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            {{ pageDescription }}
+          </p>
+          <div class="flex items-center gap-3 text-xs sm:text-sm shrink-0">
             <span
-              class="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"
-              aria-hidden="true"
-            ></span>
-            {{ t('settings.integrationsSavingGmailOAuth') }}
-          </span>
-          <span
-            v-else-if="lastSavedAt && !error"
-            class="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400"
-          >
-            <svg class="w-4 h-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <path
-                d="M16.704 5.29a1 1 0 0 0-1.408-1.42L8 11.293 4.707 8a1 1 0 0 0-1.414 1.414l4 4a1 1 0 0 0 1.414 0l8-8.125Z"
-                fill="currentColor"
-              />
-            </svg>
-            {{ t('states.saved') }}
-          </span>
-          <span
-            v-if="error"
-            class="inline-flex items-center gap-1 text-red-600 dark:text-red-400"
-          >
-            {{ t('common.notificationPreferencesCouldntSaveChangesPleaseTryAgain') }}
-          </span>
+              v-if="saving"
+              class="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400"
+            >
+              <span
+                class="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"
+                aria-hidden="true"
+              ></span>
+              {{ t('settings.integrationsSavingGmailOAuth') }}
+            </span>
+            <span
+              v-else-if="lastSavedAt && !error"
+              class="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path
+                  d="M16.704 5.29a1 1 0 0 0-1.408-1.42L8 11.293 4.707 8a1 1 0 0 0-1.414 1.414l4 4a1 1 0 0 0 1.414 0l8-8.125Z"
+                  fill="currentColor"
+                />
+              </svg>
+              {{ t('states.saved') }}
+            </span>
+            <span
+              v-if="error"
+              class="inline-flex items-center gap-1 text-red-600 dark:text-red-400"
+            >
+              {{ t('common.notificationPreferencesCouldntSaveChangesPleaseTryAgain') }}
+            </span>
+          </div>
         </div>
       </div>
-    </header>
+    </template>
 
-    <nav
-      class="mb-6 flex gap-1 overflow-x-auto border-b border-gray-200 dark:border-gray-700 pb-px -mx-1 px-1"
-      aria-label="Notification settings sections"
-    >
-      <button
-        v-for="item in visibleNavItems"
-        :key="item.id"
-        type="button"
-        :class="[
-          'shrink-0 px-3 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors whitespace-nowrap',
-          currentPage === item.id
-            ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-            : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600'
-        ]"
-        :aria-current="currentPage === item.id ? 'page' : undefined"
-        @click="navigateTo(item.id)"
+    <template #tabs>
+      <nav
+        class="flex gap-1 overflow-x-auto -mx-1 px-1"
+        aria-label="Notification settings sections"
       >
-        {{ t(item.labelKey) }}
-        <span
-          v-if="item.adminOnly"
-          class="ml-1.5 text-[10px] uppercase tracking-wide font-semibold text-amber-600 dark:text-amber-400"
+        <button
+          v-for="item in visibleNavItems"
+          :key="item.id"
+          type="button"
+          :class="[
+            'shrink-0 px-3 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors whitespace-nowrap',
+            currentPage === item.id
+              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+              : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600'
+          ]"
+          :aria-current="currentPage === item.id ? 'page' : undefined"
+          @click="navigateTo(item.id)"
         >
-          {{ t('settings.notificationsNavAdminBadge') }}
-        </span>
-      </button>
-    </nav>
+          {{ t(item.labelKey) }}
+          <span
+            v-if="item.adminOnly"
+            class="ml-1.5 text-[10px] uppercase tracking-wide font-semibold text-amber-600 dark:text-amber-400"
+          >
+            {{ t('settings.notificationsNavAdminBadge') }}
+          </span>
+        </button>
+      </nav>
+    </template>
 
     <NotificationPreferences v-if="currentPage === 'preferences'" />
     <NotificationChannels v-else-if="currentPage === 'channels'" />
@@ -75,7 +79,7 @@
     <NotificationOverview v-else-if="currentPage === 'learn'" />
     <NotificationHealth v-else-if="currentPage === 'health'" />
     <NotificationPreferences v-else />
-  </div>
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
@@ -83,6 +87,7 @@ import { computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotificationPreferencesStore } from '@/stores/notificationPreferences';
 import { useNotificationPreferencesPage } from '@/composables/useNotificationPreferencesPage';

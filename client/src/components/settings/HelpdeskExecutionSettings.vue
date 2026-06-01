@@ -80,7 +80,7 @@
       <div
         ref="contentRef"
         class="min-h-0 min-w-0 flex-1 space-y-6 overflow-y-auto overscroll-contain"
-        :class="hasChanges ? 'pb-16' : ''"
+        :class="hasChanges ? SETTINGS_SAVE_BAR_CONTENT_CLASS : ''"
       >
           <section :id="SECTION.sla" class="scroll-mt-6">
             <HelpdeskSlaHub
@@ -156,20 +156,15 @@
         <p class="text-sm text-emerald-700 dark:text-emerald-300">{{ t('settings.helpdeskExecSaveSuccess') }}</p>
       </div>
 
-      <div
-        v-if="hasChanges"
-        class="fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95"
-      >
-        <div class="mx-auto flex max-w-5xl items-center justify-between gap-3">
-          <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.helpdeskExecUnsavedChanges') }}</p>
-          <div class="flex gap-2">
-            <button type="button" class="rounded-xl border border-gray-300 px-4 py-2 text-sm dark:border-gray-600" @click="resetForm">{{ t('settings.helpdeskExecReset') }}</button>
-            <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white" :disabled="saving">
-              {{ saving ? t('settings.helpdeskExecSaving') : t('settings.helpdeskExecSaveChanges') }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <SettingsSaveBar
+        :visible="hasChanges"
+        :saving="saving"
+        :reset-label="t('settings.helpdeskExecReset')"
+        :save-label="t('settings.helpdeskExecSaveChanges')"
+        :saving-label="t('settings.helpdeskExecSaving')"
+        @reset="resetForm"
+        @save="saveSettings"
+      />
     </form>
   </div>
 </template>
@@ -189,6 +184,8 @@ import {
 import apiClient from '@/utils/apiClient';
 import HelpdeskSlaHub from '@/components/settings/helpdesk/HelpdeskSlaHub.vue';
 import HelpdeskCannedResponsesSection from '@/components/settings/helpdesk/HelpdeskCannedResponsesSection.vue';
+import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
+import { SETTINGS_SAVE_BAR_CONTENT_CLASS } from '@/components/settings/settingsSaveBar';
 
 const { t } = useI18n();
 const router = useRouter();

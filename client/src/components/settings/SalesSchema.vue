@@ -1,5 +1,6 @@
 <template>
   <ModulesAndFields
+    class="flex min-h-0 flex-1 flex-col overflow-hidden"
     ref="modulesAndFieldsRef"
     :module-filter="salesSchemaFilter"
     :excluded-tabs="['pipeline', 'playbooks']"

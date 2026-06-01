@@ -1,60 +1,59 @@
 <template>
-  <div class="space-y-6">
-    <!-- Back Button -->
-    <button
-      @click="goBack"
-      class="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors mb-4"
-    >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-      </svg>
-      <span>{{ t('settings.settingsAppMgmtBack') }}</span>
-    </button>
-
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <!-- Application Icon -->
-        <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
+  <SettingsScrollPanel>
+    <template #header>
+      <button
+        @click="goBack"
+        class="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors mb-2"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>{{ t('settings.settingsAppMgmtBack') }}</span>
+      </button>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <!-- Application Icon -->
+          <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ application?.name || t('settings.settingsAppDetailTitleFallback') }}</h2>
+            <p v-if="application?.description" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ application.description }}</p>
+          </div>
         </div>
-        <div>
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ application?.name || t('settings.settingsAppDetailTitleFallback') }}</h2>
-          <p v-if="application?.description" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ application.description }}</p>
+        <!-- Status Badge -->
+        <div v-if="application" class="flex items-center gap-2">
+          <span
+            :class="[
+              'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium',
+              getStatusBadgeClass(application.status)
+            ]"
+          >
+            <svg
+              v-if="application.status === 'ENABLED'"
+              class="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <svg
+              v-else-if="application.status === 'TRIAL'"
+              class="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {{ getStatusLabel(application.status) }}
+          </span>
         </div>
       </div>
-      <!-- Status Badge -->
-      <div v-if="application" class="flex items-center gap-2">
-        <span
-          :class="[
-            'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium',
-            getStatusBadgeClass(application.status)
-          ]"
-        >
-          <svg
-            v-if="application.status === 'ENABLED'"
-            class="w-3 h-3"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-          </svg>
-          <svg
-            v-else-if="application.status === 'TRIAL'"
-            class="w-3 h-3"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          {{ getStatusLabel(application.status) }}
-        </span>
-      </div>
-    </div>
+    </template>
 
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-12">
@@ -316,10 +315,11 @@
         </div>
       </div>
     </div>
-  </div>
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import { ref, computed, onMounted, h } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';

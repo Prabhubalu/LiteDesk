@@ -1,30 +1,33 @@
 <template>
-  <div class="space-y-6 pb-24">
-    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-      <div class="flex items-start gap-3 min-w-0">
+  <SettingsScrollPanel content-class="pb-24">
+    <template #header>
+      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div class="flex items-start gap-3 min-w-0">
+          <button
+            type="button"
+            class="mt-1 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5 dark:hover:text-gray-200 transition-colors"
+            :aria-label="t('performance.back')"
+            @click="goBack"
+          >
+            <ArrowLeftIcon class="w-5 h-5" />
+          </button>
+          <div class="min-w-0">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('performance.targetsQuotasTitle') }}</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('performance.targetsQuotasDescription') }}</p>
+          </div>
+        </div>
         <button
           type="button"
-          class="mt-1 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5 dark:hover:text-gray-200 transition-colors"
-          :aria-label="t('performance.back')"
-          @click="goBack"
+          class="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-500 shrink-0"
+          @click="router.push('/targets/new')"
         >
-          <ArrowLeftIcon class="w-5 h-5" />
+          <PlusIcon class="w-4 h-4" />
+          {{ t('performance.newTarget') }}
         </button>
-        <div class="min-w-0">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('performance.targetsQuotasTitle') }}</h2>
-          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('performance.targetsQuotasDescription') }}</p>
-        </div>
       </div>
-      <button
-        type="button"
-        class="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-500 shrink-0"
-        @click="router.push('/targets/new')"
-      >
-        <PlusIcon class="w-4 h-4" />
-        {{ t('performance.newTarget') }}
-      </button>
-    </div>
+    </template>
 
+    <div class="space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center gap-3">
       <div class="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 p-0.5 bg-gray-50 dark:bg-gray-900/50">
         <button
@@ -99,10 +102,12 @@
         <TargetProgressBar class="mt-4" :target="target" :show-labels="false" size="md" />
       </button>
     </div>
-  </div>
+    </div>
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';

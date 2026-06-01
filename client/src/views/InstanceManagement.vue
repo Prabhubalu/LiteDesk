@@ -1,12 +1,11 @@
 <template>
-  <div class="mx-auto">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
+  <SettingsScrollPanel>
+    <template #header>
       <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ t('platform.instanceManagementInstanceManagement') }}</h1>
         <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">{{ t('platform.instanceManagementMonitorAndManageAllCustomerInstances') }}</p>
       </div>
-    </div>
+    </template>
 
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -350,10 +349,11 @@
         </div>
       </div>
     </div>
-  </div>
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();

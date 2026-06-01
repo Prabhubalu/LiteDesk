@@ -1,39 +1,36 @@
 <template>
-  <div class="space-y-6">
-    <!-- Back Button -->
-    <button
-      @click="goBack"
-      class="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors mb-4"
-    >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-      </svg>
-      <span>{{ t('settings.settingsSubDetailBack') }}</span>
-    </button>
-
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <!-- App Icon -->
-        <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
+  <SettingsScrollPanel>
+    <template #header>
+      <button
+        @click="goBack"
+        class="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors mb-2"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>{{ t('settings.settingsSubDetailBack') }}</span>
+      </button>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ subscription?.appName || t('settings.settingsSubDetailTitleFallback') }}</h2>
         </div>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ subscription?.appName || t('settings.settingsSubDetailTitleFallback') }}</h2>
+        <div v-if="subscription" class="flex items-center gap-2">
+          <span
+            :class="[
+              'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium',
+              getPlanBadgeClass(subscription.plan)
+            ]"
+          >
+            {{ planLabel(subscription.plan) }}
+          </span>
+        </div>
       </div>
-      <!-- Plan Badge -->
-      <div v-if="subscription" class="flex items-center gap-2">
-        <span
-          :class="[
-            'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium',
-            getPlanBadgeClass(subscription.plan)
-          ]"
-        >
-          {{ planLabel(subscription.plan) }}
-        </span>
-      </div>
-    </div>
+    </template>
 
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-12">
@@ -230,10 +227,11 @@
         </div>
       </div>
     </div>
-  </div>
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';

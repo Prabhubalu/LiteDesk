@@ -1,8 +1,7 @@
 <template>
-  <div class="flex flex-col min-h-0 pb-28">
-    <!-- Header -->
-    <div class="sticky top-0 z-20 -mx-1 px-1 pt-1 bg-gray-50/95 dark:bg-gray-900/95 backdrop-blur supports-[backdrop-filter]:bg-gray-50/80 dark:supports-[backdrop-filter]:bg-gray-900/80">
-      <div class="flex items-start gap-3 pb-4">
+  <SettingsScrollPanel :save-bar-visible="!loading && !loadError && isDirty">
+    <template #header>
+      <div class="flex items-start gap-3">
         <button
           type="button"
           class="mt-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
@@ -30,8 +29,10 @@
           </p>
         </div>
       </div>
+    </template>
 
-      <nav class="border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+    <template #tabs>
+      <nav class="overflow-x-auto">
         <div class="flex gap-1 min-w-max -mb-px">
           <button
             v-for="tab in tabs"
@@ -56,9 +57,9 @@
           </button>
         </div>
       </nav>
-    </div>
+    </template>
 
-    <div v-if="loadError" class="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+    <div v-if="loadError" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
       {{ loadError }}
     </div>
 
@@ -66,7 +67,7 @@
       <div class="h-10 w-10 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
     </div>
 
-    <div v-else class="mt-6 space-y-6">
+    <div v-else class="space-y-6">
       <!-- Overview -->
       <template v-if="activeTab === 'overview'">
         <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800 space-y-6">
@@ -942,30 +943,20 @@
     </div>
 
     <!-- Sticky save bar -->
-    <div
-      v-if="!loading && !loadError"
-      class="fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 dark:border-gray-700 dark:bg-gray-900/95"
-    >
-      <div class="mx-auto max-w-5xl flex flex-wrap items-center justify-between gap-3">
-        <p class="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
-          {{ t('settings.mailroomSaveBarHint') }}
-        </p>
-        <div class="flex gap-2 ml-auto">
-          <button
-            type="button"
-            class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700/50"
-            :disabled="saving"
-            @click="save"
-          >
-            {{ saving ? t('states.saving') : t('actions.save') }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+    <SettingsSaveBar
+      :visible="!loading && !loadError && isDirty"
+      :saving="saving"
+      :message="t('settings.mailroomSaveBarHint')"
+      :show-reset="false"
+      :save-label="t('actions.save')"
+      @save="save"
+    />
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
+import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
 import { computed, defineComponent, h, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
@@ -1031,6 +1022,8 @@ const notifications = useNotifications();
 
 const loading = ref(true);
 const saving = ref(false);
+const isDirty = ref(false);
+const trackChanges = ref(false);
 const evaluating = ref(false);
 const loadError = ref('');
 const templates = ref([]);
@@ -1614,6 +1607,8 @@ async function load() {
     loadError.value = e.message || t('settings.mailroomLoadFailed');
   } finally {
     loading.value = false;
+    isDirty.value = false;
+    trackChanges.value = true;
   }
 }
 
@@ -1682,6 +1677,7 @@ async function save() {
       loadMailroomMetrics()
     ]);
     notifications.success(t('settings.mailroomSaved'));
+    isDirty.value = false;
   } catch (e) {
     notifications.error(e.message || t('settings.mailroomSaveFailed'));
   } finally {
@@ -1719,4 +1715,14 @@ onMounted(() => {
   if (route.query.tab !== 'automation') return;
   load();
 });
+
+watch(
+  [form, selectedTemplateId, embedChatConfig, threadingStrategies, dedupForm, classificationForm, classificationRules, caseLinkForm, ingestRules, ingestDefaultAction],
+  () => {
+    if (trackChanges.value && !loading.value) {
+      isDirty.value = true;
+    }
+  },
+  { deep: true }
+);
 </script>

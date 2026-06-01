@@ -1,12 +1,15 @@
 <template>
-  <div class="space-y-6">
-    <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabSecurity') }}</h2>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        {{ t('settings.secPageSubtitle') }}
-      </p>
-    </div>
+  <SettingsScrollPanel :save-bar-visible="!loading && !error && hasChanges">
+    <template #header>
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabSecurity') }}</h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          {{ t('settings.secPageSubtitle') }}
+        </p>
+      </div>
+    </template>
 
+    <div class="space-y-6">
     <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
       <div class="flex items-start gap-3">
         <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -334,29 +337,16 @@
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <button
-          type="button"
-          @click="resetForm"
-          :disabled="saving"
-          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {{ t('settings.secReset') }}
-        </button>
-        <button
-          type="submit"
-          :disabled="saving || !hasChanges"
-          class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
-        >
-          <span v-if="saving">{{ t('states.saving') }}</span>
-          <span v-else>{{ t('settings.secSave') }}</span>
-          <svg v-if="saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        </button>
-      </div>
     </form>
+
+    <SettingsSaveBar
+      :visible="!loading && !error && hasChanges"
+      :saving="saving"
+      :reset-label="t('settings.secReset')"
+      :save-label="t('settings.secSave')"
+      @reset="resetForm"
+      @save="handleSubmit"
+    />
 
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
       <div class="flex items-center justify-between mb-4">
@@ -412,10 +402,13 @@
         </div>
       </div>
     </div>
-  </div>
+    </div>
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
+import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';

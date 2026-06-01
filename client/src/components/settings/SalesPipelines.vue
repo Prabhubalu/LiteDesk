@@ -1,10 +1,5 @@
 <template>
-  <div class="space-y-6">
-    <div>
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.salesPipeTitle') }}</h3>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.salesPipeSubtitle') }}</p>
-    </div>
-
+  <div class="space-y-6" :class="isDirty ? SETTINGS_SAVE_BAR_CONTENT_CLASS : ''">
     <div v-if="loading" class="flex items-center justify-center py-12">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
     </div>
@@ -100,32 +95,6 @@
               {{ stageCountLabel(currentPipeline.stages?.length || 0) }}
               <template v-if="pipelineSettings.length > 1"> · {{ currentPipeline.isDefault ? t('settings.salesPipeDefaultPipelineLabel') : t('settings.salesPipeCustomPipelineLabel') }}</template>
             </p>
-          </div>
-          <div v-if="isDirty" class="flex items-center gap-2">
-            <button
-              type="button"
-              @click="discardChanges"
-              class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-colors bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              {{ t('actions.cancel') }}
-            </button>
-            <button
-              type="button"
-              @click="savePipelines"
-              :disabled="isSaving"
-              class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-              :class="[
-                isSaving
-                  ? 'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed'
-                  : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow'
-              ]"
-            >
-              <svg v-if="isSaving" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span>{{ isSaving ? t('states.saving') : t('settings.salesPipeSavePipeline') }}</span>
-            </button>
           </div>
         </div>
         <div v-if="currentPipeline" class="p-4 space-y-6">
@@ -246,6 +215,13 @@
         </div>
       </section>
     </div>
+
+    <SettingsSaveBar
+      :visible="isDirty"
+      :saving="isSaving"
+      @reset="discardChanges"
+      @save="savePipelines"
+    />
   </div>
 </template>
 
@@ -255,6 +231,8 @@ import { useI18n } from 'vue-i18n';
 import { TrashIcon } from '@heroicons/vue/24/outline';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
+import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
+import { SETTINGS_SAVE_BAR_CONTENT_CLASS } from '@/components/settings/settingsSaveBar';
 
 const { t } = useI18n();
 

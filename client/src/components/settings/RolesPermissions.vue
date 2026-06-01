@@ -1,14 +1,16 @@
 <template>
-  <div class="p-6">
+  <div :class="embedded ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : 'p-6'">
     <!-- Header with Tabs -->
-    <div class="mb-6">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.usersTabRoles') }}</h2>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        {{ t('settings.rolesPageSubtitle') }}
-      </p>
-      
+    <div class="mb-6 shrink-0">
+      <template v-if="!embedded">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.usersTabRoles') }}</h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          {{ t('settings.rolesPageSubtitle') }}
+        </p>
+      </template>
+
       <!-- Sub-tabs -->
-      <div class="mt-4 border-b border-gray-200 dark:border-gray-700">
+      <div class="border-b border-gray-200 dark:border-gray-700" :class="embedded ? '' : 'mt-4'">
         <nav class="-mb-px flex space-x-8">
           <button
             v-for="tab in tabs"
@@ -28,7 +30,7 @@
     </div>
 
     <!-- Tab Content -->
-    <div>
+    <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain pt-4">
       <!-- Roles List Tab -->
       <div v-if="activeTab === 'roles'">
         <div class="flex items-center justify-between mb-4">
@@ -198,6 +200,13 @@
 </template>
 
 <script setup>
+defineProps({
+  embedded: {
+    type: Boolean,
+    default: false
+  }
+});
+
 import { ref, onMounted, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';

@@ -1,8 +1,11 @@
 <template>
-  <div class="p-6">
+  <div :class="embedded ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : 'p-6'">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <div>
+    <div
+      class="mb-6 flex shrink-0 items-center justify-between"
+      :class="embedded ? 'justify-end' : ''"
+    >
+      <div v-if="!embedded">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.usersTabManagement') }}</h2>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
           {{ t('settings.usersPageSubtitle') }}
@@ -19,6 +22,7 @@
       </button>
     </div>
 
+    <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain">
     <!-- Stats Row -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
@@ -143,6 +147,7 @@
         </span>
       </template>
     </DataTable>
+    </div>
 
     <!-- Invite User Modal -->
     <InviteUserModal
@@ -162,6 +167,13 @@
 </template>
 
 <script setup>
+defineProps({
+  embedded: {
+    type: Boolean,
+    default: false
+  }
+});
+
 import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';

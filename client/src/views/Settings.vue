@@ -1,55 +1,6 @@
 <template>
     <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
       <div class="mx-auto flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden sm:px-6 lg:px-4">
-      <!-- Header -->
-      <div v-if="!isDeepSettingsView" class="mb-6 flex shrink-0 items-center justify-between">
-        <div class="flex items-center gap-4">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ t('navigation.settings') }}</h1>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.pageSubtitle') }}</p>
-          </div>
-        </div>
-        <!-- User Menu (mode + sign out) -->
-        <!-- <Menu as="div" class="relative">
-          <MenuButton class="flex items-center gap-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
-            <img 
-              class="w-8 h-8 rounded-full ring-2 ring-white/10 dark:ring-white/10"
-              :src="authStore.user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'"
-              alt="User avatar"
-            />
-            <span class="hidden sm:block text-sm font-medium text-gray-900 dark:text-white">{{ authStore.user?.username || 'User' }}</span>
-          </MenuButton>
-          <transition
-            enter-active-class="transition ease-out duration-100"
-            enter-from-class="transform opacity-0 scale-95"
-            enter-to-class="transform opacity-100 scale-100"
-            leave-active-class="transition ease-in duration-75"
-            leave-from-class="transform opacity-100 scale-100"
-            leave-to-class="transform opacity-0 scale-95"
-          >
-            <MenuItems
-              class="absolute right-0 top-full mt-2 w-56 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10"
-            >
-              <template v-for="(item, index) in userMenuItems" :key="index">
-                <hr v-if="item.divider" class="my-1 border-gray-200 dark:border-gray-700" />
-                <MenuItem v-slot="{ active }">
-                  <button
-                    @click="item.action()"
-                    :class="[
-                      'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
-                      active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                      item.isLogout ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-200'
-                    ]"
-                  >
-                    {{ item.name }}
-                  </button>
-                </MenuItem>
-              </template>
-            </MenuItems>
-          </transition>
-        </Menu> -->
-      </div>
-
       <!-- Vertical Tabs Layout with collapsible left rail -->
       <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden lg:flex-row lg:items-stretch">
         <!-- Left: Vertical Nav (collapsible like main nav) -->
@@ -181,18 +132,36 @@
             v-if="activeTab === 'applications' && route.query.app"
             class="flex min-h-0 flex-1 flex-col overflow-hidden"
           />
-          <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <SettingsLandingPage v-if="!activeTab || activeTab === 'landing'" />
-            <CoreModuleDetail v-else-if="activeTab === 'core-modules' && route.query.moduleKey" />
-            <ApplicationDetail v-else-if="activeTab === 'applications' && route.query.appKey && !route.query.app" />
-            <AppManagement v-else-if="activeTab === 'applications' && route.query.view === 'management'" />
-            <SubscriptionDetail v-else-if="activeTab === 'subscriptions' && route.query.appKey" />
-            <component
-              v-else-if="activeTab === 'notifications' || route.path.includes('/notifications')"
-              :is="currentTabComponent"
-            />
-            <component v-else :is="currentTabComponent" class="min-h-0 flex-1" />
-          </div>
+          <SettingsLandingPage
+            v-else-if="!activeTab || activeTab === 'landing'"
+            class="flex min-h-0 flex-1 flex-col overflow-hidden"
+          />
+          <CoreModuleDetail
+            v-else-if="activeTab === 'core-modules' && route.query.moduleKey"
+            class="flex min-h-0 flex-1 flex-col overflow-hidden"
+          />
+          <ApplicationDetail
+            v-else-if="activeTab === 'applications' && route.query.appKey && !route.query.app"
+            class="flex min-h-0 flex-1 flex-col overflow-hidden"
+          />
+          <AppManagement
+            v-else-if="activeTab === 'applications' && route.query.view === 'management'"
+            class="flex min-h-0 flex-1 flex-col overflow-hidden"
+          />
+          <SubscriptionDetail
+            v-else-if="activeTab === 'subscriptions' && route.query.appKey"
+            class="flex min-h-0 flex-1 flex-col overflow-hidden"
+          />
+          <component
+            v-else-if="activeTab === 'notifications' || route.path.includes('/notifications')"
+            :is="currentTabComponent"
+            class="flex min-h-0 flex-1 flex-col overflow-hidden"
+          />
+          <component
+            v-else
+            :is="currentTabComponent"
+            class="flex min-h-0 flex-1 flex-col overflow-hidden"
+          />
         </section>
       </div>
     </div>

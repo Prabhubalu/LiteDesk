@@ -1,12 +1,13 @@
 <template>
-  <div class="relative pb-28">
-    <!-- Header -->
-    <div class="mb-6">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.profileHeading') }}</h2>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        {{ t('settings.profileSubtitle') }}
-      </p>
-    </div>
+  <SettingsScrollPanel :save-bar-visible="!loading && !error && hasProfileChanges">
+    <template #header>
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.profileHeading') }}</h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          {{ t('settings.profileSubtitle') }}
+        </p>
+      </div>
+    </template>
 
     <!-- Loading state -->
     <div v-if="loading" class="flex items-center justify-center py-24">
@@ -620,60 +621,18 @@
 
     <I18nDeveloperSettings class="mt-6" />
 
-    <!-- Sticky Save Bar (for editable profile fields) -->
-    <transition
-      enter-active-class="transition duration-200 ease-out"
-      enter-from-class="opacity-0 translate-y-3"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition duration-150 ease-in"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 translate-y-3"
-    >
-      <div
-        v-if="!loading && !error && hasProfileChanges"
-        class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[min(95vw,720px)]"
-      >
-        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 border border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300 flex-shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </span>
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ t('settings.unsavedTitle') }}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ t('settings.unsavedHintProfile') }}</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-2 flex-shrink-0">
-            <button
-              type="button"
-              @click="resetProfileForm"
-              :disabled="saving"
-              class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {{ t('settings.discardChanges') }}
-            </button>
-            <button
-              type="button"
-              @click="saveProfile"
-              :disabled="saving"
-              class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
-            >
-              <svg v-if="saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {{ saving ? t('states.saving') : t('settings.saveChanges') }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </transition>
-  </div>
+    <SettingsSaveBar
+      :visible="!loading && !error && hasProfileChanges"
+      :saving="saving"
+      @reset="resetProfileForm"
+      @save="saveProfile"
+    />
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
+import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
 import { ref, computed, onMounted, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';

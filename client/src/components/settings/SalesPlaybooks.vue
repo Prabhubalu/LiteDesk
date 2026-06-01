@@ -1,10 +1,5 @@
 <template>
-  <div class="space-y-6">
-    <div>
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.salesPlayTitle') }}</h3>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.salesPlaySubtitle') }}</p>
-    </div>
-
+  <div class="space-y-6" :class="isDirty ? SETTINGS_SAVE_BAR_CONTENT_CLASS : ''">
     <div v-if="loading" class="flex items-center justify-center py-12">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
     </div>
@@ -57,23 +52,6 @@
               {{ currentPipeline.isDefault ? t('settings.salesPlayDefaultPipeline') : t('settings.salesPlayCustomPipeline') }}
             </p>
           </div>
-          <button
-            v-if="isDirty"
-            @click="savePlaybooks"
-            :disabled="isSaving"
-            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-            :class="[
-              isSaving
-                ? 'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed'
-                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow'
-            ]"
-          >
-            <svg v-if="isSaving" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>{{ isSaving ? t('settings.salesPlaySaving') : t('settings.salesPlaySavePlaybooks') }}</span>
-          </button>
         </div>
         <div v-if="currentPipeline" class="flex-1 flex flex-col gap-6 p-4 overflow-hidden">
           <div>
@@ -245,6 +223,13 @@
         </div>
       </section>
     </div>
+
+    <SettingsSaveBar
+      :visible="isDirty"
+      :saving="isSaving"
+      @reset="discardChanges"
+      @save="savePlaybooks"
+    />
   </div>
 </template>
 
@@ -254,6 +239,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
+import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
+import { SETTINGS_SAVE_BAR_CONTENT_CLASS } from '@/components/settings/settingsSaveBar';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -381,6 +368,19 @@ async function fetchDealsModule() {
     error.value = err.message || t('settings.salesPlayLoadFailed');
   } finally {
     loading.value = false;
+  }
+}
+
+function discardChanges() {
+  if (!originalSnapshot.value) return;
+  try {
+    const restored = JSON.parse(originalSnapshot.value);
+    pipelineSettings.value = normalizePipelineSettings(Array.isArray(restored) ? restored : []);
+    if (pipelineSettings.value.length && !pipelineSettings.value.some(p => p.key === selectedPipelineKey.value)) {
+      selectedPipelineKey.value = pipelineSettings.value[0].key;
+    }
+  } catch (e) {
+    console.error('Discard playbook changes failed', e);
   }
 }
 

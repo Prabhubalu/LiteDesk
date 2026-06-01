@@ -1,16 +1,18 @@
 <template>
-  <div class="space-y-6 max-w-2xl">
-    <div>
-      <button
-        type="button"
-        class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-2"
-        @click="$emit('back')"
-      >
-        {{ t('actions.back') }}
-      </button>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.quotesSettingsTitle') }}</h2>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('settings.quotesSettingsDesc') }}</p>
-    </div>
+  <SettingsScrollPanel content-class="max-w-2xl" :save-bar-visible="!loading && !loadError && hasChanges">
+    <template #header>
+      <div>
+        <button
+          type="button"
+          class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-2"
+          @click="$emit('back')"
+        >
+          {{ t('actions.back') }}
+        </button>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.quotesSettingsTitle') }}</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('settings.quotesSettingsDesc') }}</p>
+      </div>
+    </template>
 
     <div v-if="loadError" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
       {{ loadError }}
@@ -145,22 +147,21 @@
           />
         </div>
       </section>
-
-      <div class="flex justify-end">
-        <button
-          type="submit"
-          class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-          :disabled="saving"
-        >
-          {{ saving ? t('settings.editUserSaving') : t('settings.saveChanges') }}
-        </button>
-      </div>
     </form>
-  </div>
+
+    <SettingsSaveBar
+      :visible="!loading && !loadError && hasChanges"
+      :saving="saving"
+      @reset="resetForm"
+      @save="save"
+    />
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
+import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
@@ -175,6 +176,7 @@ const authStore = useAuthStore();
 const loading = ref(true);
 const saving = ref(false);
 const loadError = ref(null);
+const savedSnapshot = ref('');
 const form = ref({
   requireApprovalBeforeSend: false,
   requireCustomerAgreement: false,
@@ -185,6 +187,12 @@ const form = ref({
   pdfFooterText: '',
   emailSignature: ''
 });
+
+function serializeForm() {
+  return JSON.stringify(form.value);
+}
+
+const hasChanges = computed(() => savedSnapshot.value !== '' && serializeForm() !== savedSnapshot.value);
 
 async function load() {
   loading.value = true;
@@ -204,7 +212,13 @@ async function load() {
     loadError.value = e?.message || t('settings.quotesSettingsLoadFailed');
   } finally {
     loading.value = false;
+    savedSnapshot.value = serializeForm();
   }
+}
+
+function resetForm() {
+  if (!savedSnapshot.value) return;
+  form.value = JSON.parse(savedSnapshot.value);
 }
 
 function syncAuthOrgSettings(settings) {
@@ -230,6 +244,7 @@ async function save() {
     });
     if (res?.success) {
       syncAuthOrgSettings(res.settings || form.value);
+      savedSnapshot.value = serializeForm();
       notifications.success(t('settings.quotesSettingsSaved'));
       return;
     }
