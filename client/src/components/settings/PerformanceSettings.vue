@@ -33,10 +33,6 @@
               </p>
             </div>
           </div>
-          <div class="mt-4 flex items-center gap-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
-            <span>{{ t('performance.configure') }}</span>
-            <ArrowRightIcon class="w-4 h-4" aria-hidden="true" />
-          </div>
         </button>
       </div>
   </SettingsScrollPanel>
@@ -49,7 +45,6 @@
 import { computed, h } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { ArrowRightIcon } from '@heroicons/vue/24/outline';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import TargetsQuotasSettings from '@/components/settings/TargetsQuotasSettings.vue';
 import PerformanceDashboards from '@/components/settings/PerformanceDashboards.vue';

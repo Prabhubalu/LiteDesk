@@ -863,6 +863,14 @@
     "message": "Contact context",
     "description": "CRM context panel aria label"
   },
+  "inboxContextPanelExpand": {
+    "message": "Show related record",
+    "description": "Expand context panel"
+  },
+  "inboxContextPanelCollapse": {
+    "message": "Hide related record",
+    "description": "Collapse context panel"
+  },
   "inboxContextPanelOpenRecord": {
     "message": "Open record",
     "description": "Open linked CRM record"
@@ -970,5 +978,89 @@
   "inboxContextPanelKindCase": {
     "message": "Case",
     "description": "Record kind label"
+  },
+  "inboxSidebarSearchPlaceholder": {
+    "message": "Search",
+    "description": "Inbox sidebar search placeholder"
+  },
+  "inboxSidebarViews": {
+    "message": "Views",
+    "description": "Inbox sidebar views section"
+  },
+  "inboxSidebarSettings": {
+    "message": "Settings",
+    "description": "Inbox sidebar settings link"
+  },
+  "inboxSidebarEmailSetup": {
+    "message": "Email setup",
+    "description": "Inbox sidebar email setup link"
+  },
+  "inboxSidebarViewInbox": {
+    "message": "Inbox",
+    "description": "Gmail inbox view label"
+  },
+  "inboxSidebarViewSocial": {
+    "message": "Social",
+    "description": "Gmail social category view"
+  },
+  "inboxSidebarViewPromotions": {
+    "message": "Promotions",
+    "description": "Gmail promotions category view"
+  },
+  "inboxSidebarFolderDrafts": {
+    "message": "Drafts",
+    "description": "Mail drafts folder"
+  },
+  "inboxSidebarFolderSpam": {
+    "message": "Spam",
+    "description": "Mail spam folder"
+  },
+  "inboxSidebarFolderTrash": {
+    "message": "Trash",
+    "description": "Mail trash folder"
+  },
+  "inboxSidebarLast7Days": {
+    "message": "Last 7 days",
+    "description": "Thread list date group"
+  },
+  "inboxSidebarFilterUnread": {
+    "message": "Is unread",
+    "description": "Filter chip for unread threads"
+  },
+  "inboxSidebarFilterArchived": {
+    "message": "Show archived",
+    "description": "Filter chip for done/archived threads"
+  },
+  "inboxSidebarSelected": {
+    "message": "selected",
+    "description": "Bulk selection count suffix"
+  },
+  "inboxSidebarDelete": {
+    "message": "Archive",
+    "description": "Row hover archive action"
+  },
+  "inboxSidebarMarkRead": {
+    "message": "Mark as read",
+    "description": "Row hover mark read action"
+  },
+  "inboxSidebarMarkUnread": {
+    "message": "Mark as unread",
+    "description": "Row hover mark unread action"
+  },
+  "inboxSidebarLoadMore": {
+    "message": "Load more",
+    "description": "Thread list pagination"
+  },
+  "inboxReaderToMe": {
+    "message": "To me",
+    "description": "Email reader recipient line"
+  },
+  "inboxReaderResizePanel": {
+    "message": "Resize reading panel",
+    "description": "Aria label for inbox reader resize handle"
+  },
+  "inboxReaderResizePanelHint": {
+    "message": "Drag to resize. Double-click to reset to 60%.",
+    "description": "Tooltip for inbox reader resize handle"
   }
 }

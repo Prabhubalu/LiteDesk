@@ -3,261 +3,198 @@
   Supports split-pane (list stays visible) and full-width mobile layouts.
 -->
 <template>
-  <div class="flex h-full min-h-0 max-h-full flex-col overflow-hidden bg-white dark:bg-gray-900">
-    <!-- Top toolbar -->
-    <div
-      class="flex flex-wrap items-center gap-1 border-b border-neutral-200/90 bg-neutral-50/50 px-2 py-1.5 dark:border-gray-700 dark:bg-gray-800/40"
-    >
+  <div class="flex h-full min-h-0 max-h-full flex-col overflow-hidden bg-white dark:bg-gray-950">
+    <!-- Toolbar -->
+    <div class="flex shrink-0 items-center gap-1 border-b border-[#EBEBEB] px-3 py-2 dark:border-gray-800">
       <button
         v-if="!splitView"
         type="button"
-        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-gray-300 dark:hover:bg-gray-800"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#787774] hover:bg-black/[0.04] dark:text-gray-400 dark:hover:bg-white/5"
         :title="t('inbox.emailThreadReaderBackToInbox2')"
-        :aria-label="t('inbox.emailThreadReaderBackToInbox')"
         @click="emit('close')"
       >
-        <ArrowLeftIcon class="h-5 w-5" />
-      </button>
-      <div
-        v-if="!splitView"
-        class="mx-1 h-6 w-px bg-neutral-200 dark:bg-gray-700"
-        aria-hidden="true"
-      />
-      <button
-        type="button"
-        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-800"
-        :title="threadRow?.done ? t('inbox.inboxSurfaceReopen') : t('inbox.inboxSurfaceMarkDone')"
-        :aria-label="threadRow?.done ? t('inbox.inboxSurfaceReopen') : t('inbox.inboxSurfaceMarkDone')"
-        :disabled="actionLoading"
-        @click="emit('toggle-done', threadRow)"
-      >
-        <ArchiveBoxIcon class="h-5 w-5" />
+        <ArrowLeftIcon class="h-4 w-4" />
       </button>
       <button
+        v-else-if="showClose"
         type="button"
-        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-800"
-        :title="t('inbox.emailThreadReaderSnoozeToTomorrow2')"
-        :aria-label="t('inbox.emailThreadReaderSnoozeToTomorrow')"
-        :disabled="actionLoading"
-        @click="emit('snooze', threadRow)"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#787774] hover:bg-black/[0.04] dark:text-gray-400 dark:hover:bg-white/5"
+        :title="t('settings.roleDrawerCloseSr')"
+        @click="emit('close')"
       >
-        <ClockIcon class="h-5 w-5" />
+        <XMarkIcon class="h-4 w-4" />
       </button>
-      <button
-        type="button"
-        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-800"
-        :title="t('common.formAssignToMe')"
-        :aria-label="t('common.formAssignToMe')"
-        :disabled="actionLoading"
-        @click="emit('assign-to-me', threadRow)"
-      >
-        <UserPlusIcon class="h-5 w-5" />
-      </button>
-
-      <button
-        v-if="recordPath"
-        type="button"
-        class="ml-1 hidden items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 sm:inline-flex"
-        @click="emit('open-record', threadRow)"
-      >
-        <ArrowTopRightOnSquareIcon class="h-4 w-4" />
-        {{ t('inbox.inboxContextPanelOpenRecord') }}
-      </button>
-
-      <div class="ml-auto flex items-center gap-1 text-xs text-neutral-500 dark:text-gray-400">
-        <span v-if="!loading && thread">
-          {{ thread.messageCount }}
-          {{ thread.messageCount === 1 ? t('inbox.inboxProMessage') : t('inbox.inboxProMessages') }}
-        </span>
+      <div class="flex items-center gap-0.5">
         <button
           type="button"
-          class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-800"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#787774] hover:bg-black/[0.04] disabled:opacity-30 dark:text-gray-400 dark:hover:bg-white/5"
+          :disabled="!canNavigatePrev"
+          @click="emit('navigate-prev')"
+        >
+          <ChevronUpIcon class="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#787774] hover:bg-black/[0.04] disabled:opacity-30 dark:text-gray-400 dark:hover:bg-white/5"
+          :disabled="!canNavigateNext"
+          @click="emit('navigate-next')"
+        >
+          <ChevronDownIcon class="h-4 w-4" />
+        </button>
+      </div>
+
+      <div class="ml-auto flex items-center gap-0.5">
+        <button
+          type="button"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#787774] hover:bg-black/[0.04] disabled:opacity-50 dark:text-gray-400 dark:hover:bg-white/5"
+          :title="threadRow?.done ? t('inbox.inboxSurfaceReopen') : t('inbox.inboxSurfaceMarkDone')"
+          :disabled="actionLoading"
+          @click="emit('toggle-done', threadRow)"
+        >
+          <ArchiveBoxIcon class="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#787774] hover:bg-black/[0.04] disabled:opacity-50 dark:text-gray-400 dark:hover:bg-white/5"
+          :title="t('inbox.inboxSidebarMarkUnread')"
+          @click="emit('toggle-read', threadRow)"
+        >
+          <EnvelopeOpenIcon class="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#787774] hover:bg-black/[0.04] disabled:opacity-50 dark:text-gray-400 dark:hover:bg-white/5"
+          :title="t('inbox.inboxSidebarDelete')"
+          @click="emit('toggle-done', threadRow)"
+        >
+          <TrashIcon class="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#787774] hover:bg-black/[0.04] disabled:opacity-50 dark:text-gray-400 dark:hover:bg-white/5"
           :title="t('inbox.emailThreadReaderReloadThread2')"
-          :aria-label="t('inbox.emailThreadReaderReloadThread')"
           :disabled="loading"
           @click="loadThread"
         >
-          <ArrowPathIcon class="h-5 w-5" :class="{ 'animate-spin': loading }" />
+          <ArrowPathIcon class="h-4 w-4" :class="{ 'animate-spin': loading }" />
+        </button>
+        <button
+          v-if="recordPath"
+          type="button"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#787774] hover:bg-black/[0.04] dark:text-gray-400 dark:hover:bg-white/5"
+          :title="t('inbox.inboxContextPanelOpenRecord')"
+          @click="emit('open-record', threadRow)"
+        >
+          <ArrowTopRightOnSquareIcon class="h-4 w-4" />
         </button>
       </div>
     </div>
 
-    <!-- Subject + participants -->
-    <div class="border-b border-neutral-100 px-5 py-4 dark:border-gray-800 sm:px-6">
-      <div class="flex flex-wrap items-start justify-between gap-3">
-        <div class="min-w-0 flex-1">
-          <h2 class="break-words text-xl font-semibold tracking-tight text-neutral-900 dark:text-white sm:text-2xl">
-            {{ subject }}
-          </h2>
-          <div class="mt-2 flex flex-wrap items-center gap-2">
-            <div class="flex -space-x-2">
-              <span
-                v-for="(p, i) in participantAvatars"
-                :key="i"
-                class="inline-flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-semibold uppercase ring-2 ring-white dark:ring-gray-900"
-                :class="p.colorClass"
-              >
-                {{ p.initial }}
-              </span>
-            </div>
-            <span class="text-sm text-neutral-600 dark:text-gray-400">
-              {{ participantLine }}
-            </span>
-          </div>
-          <div v-if="threadRow?.tags?.length" class="mt-2 flex flex-wrap gap-1.5">
-            <span
-              v-for="tag in threadRow.tags"
-              :key="tag"
-              class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
-              :class="tagPillClass(tag)"
-            >
-              {{ tag }}
-            </span>
-          </div>
-        </div>
-        <div class="flex shrink-0 flex-wrap items-center gap-2">
-          <button
-            type="button"
-            class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 dark:bg-primary-600 dark:hover:bg-primary-500"
-            @click="openDockedReply"
-          >
-            <ArrowUturnLeftIcon class="h-4 w-4" />
-            {{ t('records.activityReply') }}
-          </button>
-          <button
-            type="button"
-            class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-            :title="t('inbox.emailThreadReaderSnoozeToTomorrow2')"
-            @click="emit('snooze', threadRow)"
-          >
-            <ClockIcon class="h-4 w-4" />
-          </button>
-        </div>
+    <!-- Subject + tags -->
+    <div class="shrink-0 border-b border-[#EBEBEB] px-6 py-4 dark:border-gray-800">
+      <h2 class="break-words text-[22px] font-semibold leading-tight tracking-tight text-[#37352F] dark:text-white">
+        {{ subject }}
+      </h2>
+      <div v-if="threadRow?.tags?.length" class="mt-3 flex flex-wrap items-center gap-2">
+        <span
+          v-for="tag in threadRow.tags"
+          :key="tag"
+          class="inline-flex items-center gap-1 rounded-md bg-[#F1F1EF] px-2 py-0.5 text-[12px] text-[#37352F] dark:bg-gray-800 dark:text-gray-200"
+        >
+          {{ tag }}
+        </span>
       </div>
     </div>
 
-    <!-- Scrollable thread body -->
-    <div class="arivu-scrollbar flex-1 overflow-y-auto">
-      <div
-        v-if="loading"
-        class="flex items-center justify-center py-16"
-      >
-        <div class="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-primary-600 dark:border-gray-700 dark:border-t-primary-400" />
+    <!-- Thread body -->
+    <div class="arivu-scrollbar min-h-0 flex-1 overflow-y-auto px-6 py-4">
+      <div v-if="loading" class="flex items-center justify-center py-16">
+        <div class="h-7 w-7 animate-spin rounded-full border-2 border-[#EBEBEB] border-t-[#2383E2] dark:border-gray-700 dark:border-t-blue-400" />
       </div>
 
       <div
         v-else-if="errorMessage"
-        class="mx-4 mt-6 max-w-2xl rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-900 dark:border-warning-900/30 dark:bg-warning-950/30 dark:text-warning-200 sm:mx-6"
+        class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
       >
         {{ errorMessage }}
       </div>
 
-      <div v-else-if="thread" class="px-4 py-4 sm:px-6 sm:py-5">
-        <!-- AI Summary -->
-        <div
-          class="mb-5 rounded-xl border border-primary-200/80 bg-gradient-to-br from-primary-50 to-white p-4 dark:border-primary-900/50 dark:from-primary-950/40 dark:to-gray-900"
-        >
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <SparklesIcon class="h-4 w-4 text-primary-600 dark:text-primary-400" />
-              <span class="text-sm font-semibold text-primary-900 dark:text-primary-100">
-                {{ t('inbox.inboxProAiSummary') }}
-              </span>
-              <span class="rounded-md bg-primary-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-700 dark:bg-primary-900/60 dark:text-primary-300">
-                {{ t('inbox.inboxContextPanelBeta') }}
-              </span>
-            </div>
-            <button
-              type="button"
-              class="rounded-lg border border-primary-200 bg-white px-3 py-1 text-xs font-medium text-primary-700 hover:bg-primary-50 dark:border-primary-800 dark:bg-gray-900 dark:text-primary-300 dark:hover:bg-primary-950/50"
-              @click="onGenerateBrief"
-            >
-              {{ t('inbox.inboxProGenerateBrief') }}
-            </button>
-          </div>
-          <p class="mt-2 text-sm leading-relaxed text-neutral-700 dark:text-gray-300">
-            {{ aiSummaryText }}
-          </p>
-        </div>
-
-        <!-- Messages -->
-        <div class="space-y-4">
-          <article
-            v-for="(msg, idx) in thread.messages"
-            :key="String(msg._id)"
-            class="overflow-hidden rounded-xl border border-neutral-200/90 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+      <div v-else-if="thread" class="mx-auto max-w-3xl space-y-2">
+        <template v-for="(msg, idx) in thread.messages" :key="String(msg._id)">
+          <!-- Collapsed earlier messages -->
+          <button
+            v-if="isMessageCollapsed(idx, thread.messages.length)"
+            type="button"
+            class="flex w-full items-center gap-3 rounded-lg border border-[#EBEBEB] bg-[#FAFAF8] px-4 py-2.5 text-left transition hover:bg-[#F1F1EF] dark:border-gray-800 dark:bg-gray-900/60 dark:hover:bg-gray-800"
+            @click="expandedIndex = idx"
           >
-            <header class="flex items-start gap-3 border-b border-neutral-100 px-4 py-3 dark:border-gray-800 sm:px-5">
-              <span
-                class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold uppercase ring-1 ring-neutral-200/80 dark:ring-gray-600"
-                :class="avatarColorClass(msg)"
-              >
-                {{ avatarInitial(msg) }}
-              </span>
+            <span class="min-w-0 flex-1 truncate text-[12px] text-[#787774] dark:text-gray-400">
+              {{ senderEmail(msg) }}
+            </span>
+            <span class="min-w-0 flex-[2] truncate text-[12px] text-[#9B9A97] dark:text-gray-500">
+              {{ messagePreview(msg) }}
+            </span>
+            <time class="shrink-0 text-[11px] tabular-nums text-[#9B9A97] dark:text-gray-500">
+              {{ formatReaderDate(messageDate(msg)) }}
+            </time>
+          </button>
+
+          <!-- Expanded message -->
+          <article
+            v-else
+            class="overflow-hidden rounded-xl border border-[#EBEBEB] bg-white dark:border-gray-800 dark:bg-gray-900"
+          >
+            <header class="flex items-start justify-between gap-3 border-b border-[#F1F1EF] px-5 py-4 dark:border-gray-800">
               <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-baseline gap-x-2">
-                  <span class="truncate text-sm font-semibold text-neutral-900 dark:text-white">
-                    {{ senderName(msg) }}
-                  </span>
-                  <span class="truncate text-xs text-neutral-500 dark:text-gray-400">
-                    &lt;{{ senderEmail(msg) }}&gt;
-                  </span>
-                </div>
-                <p class="mt-0.5 text-xs text-neutral-500 dark:text-gray-400">
-                  {{ recipientsDisplay(msg) }}
+                <p class="truncate text-[13px] font-medium text-[#37352F] dark:text-white">
+                  {{ senderEmail(msg) }}
+                </p>
+                <p class="mt-0.5 text-[12px] text-[#9B9A97] dark:text-gray-500">
+                  {{ recipientsDisplay(msg) || t('inbox.inboxReaderToMe') }}
                 </p>
               </div>
-              <div class="flex shrink-0 flex-col items-end gap-1">
-                <time
-                  class="whitespace-nowrap text-xs text-neutral-500 dark:text-gray-400"
-                  :title="formatFullDate(messageDate(msg))"
+              <div class="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  class="rounded-md p-1 text-[#787774] hover:bg-black/[0.04] dark:text-gray-400 dark:hover:bg-white/5"
+                  @click="openDockedReply"
                 >
-                  {{ formatRelative(messageDate(msg)) }}
+                  <ArrowUturnLeftIcon class="h-4 w-4" />
+                </button>
+                <time class="text-[11px] tabular-nums text-[#9B9A97] dark:text-gray-500">
+                  {{ formatReaderDate(messageDate(msg)) }}
                 </time>
-                <span
-                  v-if="msg.direction === 'outbound'"
-                  class="rounded-full bg-primary-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-800 dark:bg-primary-900/40 dark:text-primary-200"
-                >
-                  {{ t('inbox.emailThreadReaderSent') }}
-                </span>
               </div>
             </header>
 
             <div
-              class="email-body px-4 py-4 text-sm leading-relaxed text-neutral-800 dark:text-gray-200 sm:px-5 sm:text-[15px]"
+              class="email-body px-5 py-5 text-[14px] leading-relaxed text-[#37352F] dark:text-gray-200"
               v-html="renderEmailMessageBody(msg.body)"
             />
 
             <div
               v-if="msg.attachments && msg.attachments.length > 0"
-              class="border-t border-neutral-100 px-4 py-3 dark:border-gray-800 sm:px-5"
+              class="border-t border-[#F1F1EF] px-5 py-3 dark:border-gray-800"
             >
-              <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-gray-400">
-                {{ msg.attachments.length }}
-                {{ msg.attachments.length === 1 ? t('inbox.inboxProAttachment') : t('inbox.inboxProAttachments') }}
-              </p>
               <ul class="flex flex-wrap gap-2">
                 <li
                   v-for="att in msg.attachments"
                   :key="att.storagePath"
-                  class="flex max-w-xs items-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-xs dark:border-gray-700 dark:bg-gray-800"
+                  class="flex max-w-xs items-center gap-2 rounded-lg border border-[#EBEBEB] bg-[#FAFAF8] px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-800"
                 >
-                  <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white text-[10px] font-bold uppercase text-neutral-600 ring-1 ring-neutral-200 dark:bg-gray-900 dark:text-gray-300 dark:ring-gray-600">
-                    {{ fileExt(att.fileName) }}
-                  </span>
                   <span class="min-w-0 flex-1 truncate font-medium" :title="att.fileName">{{ att.fileName }}</span>
-                  <span class="shrink-0 text-neutral-400">{{ formatFileSize(att.fileSize) }}</span>
+                  <span class="shrink-0 text-[#9B9A97]">{{ formatFileSize(att.fileSize) }}</span>
                 </li>
               </ul>
             </div>
 
             <footer
               v-if="idx === thread.messages.length - 1"
-              class="flex flex-wrap items-center gap-2 border-t border-neutral-100 bg-neutral-50/50 px-4 py-3 dark:border-gray-800 dark:bg-gray-800/30 sm:px-5"
+              class="flex flex-wrap items-center gap-2 border-t border-[#F1F1EF] px-5 py-4 dark:border-gray-800"
             >
               <button
                 type="button"
-                class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-800 hover:bg-neutral-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+                class="inline-flex items-center gap-2 rounded-lg border border-[#EBEBEB] bg-white px-4 py-2 text-[13px] font-medium text-[#37352F] transition hover:bg-[#FAFAF8] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
                 @click="openDockedReply"
               >
                 <ArrowUturnLeftIcon class="h-4 w-4" />
@@ -265,7 +202,7 @@
               </button>
               <button
                 type="button"
-                class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-800 hover:bg-neutral-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+                class="inline-flex items-center gap-2 rounded-lg border border-[#EBEBEB] bg-white px-4 py-2 text-[13px] font-medium text-[#37352F] transition hover:bg-[#FAFAF8] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
                 @click="emit('forward', { row: threadRow, message: msg })"
               >
                 <ArrowUturnRightIcon class="h-4 w-4" />
@@ -273,14 +210,9 @@
               </button>
             </footer>
           </article>
-        </div>
+        </template>
 
-        <!-- Gmail-style docked reply (inline below thread) -->
-        <div
-          v-if="dockedReplyOpen"
-          ref="dockedReplyRef"
-          class="mt-4 scroll-mt-4"
-        >
+        <div v-if="dockedReplyOpen" ref="dockedReplyRef" class="mt-4 scroll-mt-4">
           <EmailDockedReply
             :is-open="dockedReplyOpen"
             :standalone-mode="composeStandaloneMode"
@@ -296,20 +228,6 @@
           />
         </div>
       </div>
-    </div>
-
-    <!-- Quick reply bar (collapsed until opened) -->
-    <div
-      v-if="thread && !loading && !dockedReplyOpen"
-      class="border-t border-neutral-200 bg-neutral-50/80 px-4 py-3 dark:border-gray-700 dark:bg-gray-800/50 sm:px-6"
-    >
-      <button
-        type="button"
-        class="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-left text-sm text-neutral-500 shadow-sm hover:border-primary-300 hover:ring-1 hover:ring-primary-200 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-primary-700"
-        @click="openDockedReply"
-      >
-        {{ t('inbox.inboxProClickToReply') }}
-      </button>
     </div>
   </div>
 </template>
@@ -327,9 +245,11 @@ import {
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   ArrowTopRightOnSquareIcon,
-  ClockIcon,
-  SparklesIcon,
-  UserPlusIcon
+  ChevronDownIcon,
+  ChevronUpIcon,
+  EnvelopeOpenIcon,
+  TrashIcon,
+  XMarkIcon
 } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
@@ -338,6 +258,8 @@ const props = defineProps({
   recordPath: { type: String, default: '' },
   /** When true, hides back button (list remains visible beside reader). */
   splitView: { type: Boolean, default: false },
+  /** Close control when splitView (panel docked beside list). */
+  showClose: { type: Boolean, default: false },
   composeStandaloneMode: { type: Boolean, default: true },
   composeRelatedTo: { type: Object, default: null },
   composeSendingMailbox: { type: Object, default: null },
@@ -349,7 +271,9 @@ const props = defineProps({
   /** Increment to reload thread messages after send. */
   threadReloadPulse: { type: Number, default: 0 },
   /** Async send handler from inbox parent. */
-  onSubmitCompose: { type: Function, default: null }
+  onSubmitCompose: { type: Function, default: null },
+  canNavigatePrev: { type: Boolean, default: false },
+  canNavigateNext: { type: Boolean, default: false }
 });
 
 const { t } = useI18n();
@@ -359,19 +283,22 @@ const emit = defineEmits([
   'reply',
   'forward',
   'toggle-done',
+  'toggle-read',
   'snooze',
   'assign-to-me',
   'open-record',
   'loaded',
   'submit-compose',
-  'pop-out-compose'
+  'pop-out-compose',
+  'navigate-prev',
+  'navigate-next'
 ]);
 
 const thread = ref(null);
 const loading = ref(true);
 const errorMessage = ref('');
 const actionLoading = ref(false);
-const briefGenerated = ref(false);
+const expandedIndex = ref(-1);
 const dockedReplyOpen = ref(false);
 const dockedReplySending = ref(false);
 const dockedReplyRef = ref(null);
@@ -456,8 +383,12 @@ watch(() => props.threadReloadPulse, (n, prev) => {
   if (n > 0 && n !== prev) void loadThread();
 });
 
-watch(() => props.threadId, () => {
+watch(() => props.threadId, (next, prev) => {
   closeDockedReply();
+  expandedIndex.value = -1;
+  if (next && next !== prev) {
+    loadThread();
+  }
 });
 
 const subject = computed(() => {
@@ -466,53 +397,28 @@ const subject = computed(() => {
   return '(no subject)';
 });
 
-const participantLine = computed(() => {
-  const p = String(props.threadRow?.participantDisplay || '').trim();
-  if (p) return p;
-  if (thread.value?.messages?.length) {
-    const names = [...new Set(thread.value.messages.map((m) => senderName(m)))].slice(0, 3);
-    return names.join(', ');
-  }
-  return '';
-});
+function isMessageCollapsed(idx, total) {
+  if (total <= 1) return false;
+  if (expandedIndex.value >= 0) return idx !== expandedIndex.value;
+  return idx !== total - 1;
+}
 
-const participantAvatars = computed(() => {
-  const names = [];
-  const p = String(props.threadRow?.participantDisplay || '').trim();
-  if (p) {
-    p.split(/\s*↔\s*/).forEach((part) => {
-      const n = part.trim();
-      if (n && !/^you$/i.test(n)) names.push(n);
-    });
-  }
-  if (!names.length && thread.value?.messages) {
-    thread.value.messages.forEach((m) => {
-      const n = senderName(m);
-      if (n && !names.includes(n)) names.push(n);
-    });
-  }
-  return names.slice(0, 4).map((name, i) => ({
-    initial: (name.charAt(0) || '?').toUpperCase(),
-    colorClass: [
-      'bg-primary-100 text-primary-800',
-      'bg-violet-100 text-violet-800',
-      'bg-emerald-100 text-emerald-800',
-      'bg-amber-100 text-amber-800'
-    ][i % 4]
-  }));
-});
+function messagePreview(msg) {
+  const text = String(msg?.body || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return text.slice(0, 80) + (text.length > 80 ? '…' : '');
+}
 
-const aiSummaryText = computed(() => {
-  if (briefGenerated.value && thread.value?.messages?.length) {
-    const count = thread.value.messageCount;
-    const last = thread.value.messages[thread.value.messages.length - 1];
-    const preview = String(last?.body || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
-    return preview
-      ? t('inbox.inboxProAiSummaryGenerated', { count, preview })
-      : t('inbox.inboxProAiSummaryGeneratedShort', { count });
-  }
-  return t('inbox.inboxProAiSummaryPlaceholder');
-});
+function formatReaderDate(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+}
 
 async function loadThread() {
   loading.value = true;
@@ -534,40 +440,15 @@ async function loadThread() {
   }
 }
 
-function onGenerateBrief() {
-  briefGenerated.value = true;
-}
-
 async function markViewed() {
   try {
     await apiClient.patch(`/communications/threads/${encodeURIComponent(props.threadId)}/view`, {});
   } catch { /* ignore */ }
 }
 
-watch(() => props.threadId, (next, prev) => {
-  if (next && next !== prev) {
-    briefGenerated.value = false;
-    loadThread();
-  }
-});
-
 onMounted(() => {
   loadThread();
 });
-
-function tagPillClass(tag) {
-  const t = String(tag || '').toLowerCase();
-  if (t.includes('todo') || t.includes('to-do')) {
-    return 'bg-primary-100 text-primary-800 dark:bg-primary-900/50 dark:text-primary-200';
-  }
-  if (t.includes('newsletter')) {
-    return 'bg-success-100 text-success-800 dark:bg-success-900/50 dark:text-success-200';
-  }
-  if (t.includes('reminder')) {
-    return 'bg-warning-100 text-warning-800 dark:bg-warning-900/50 dark:text-warning-200';
-  }
-  return 'bg-neutral-100 text-neutral-700 dark:bg-gray-800 dark:text-gray-300';
-}
 
 function senderName(msg) {
   const from = String(msg?.fromAddress || '').trim();

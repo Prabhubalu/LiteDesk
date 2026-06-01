@@ -22,706 +22,159 @@
       v-else
       class="inbox-workspace flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row"
     >
-    <!-- Mail folders rail -->
-    <aside
-      class="flex w-full shrink-0 flex-col overflow-hidden border-b border-neutral-200/90 bg-neutral-50/80 dark:border-gray-700 dark:bg-gray-900/95 max-lg:max-h-[32vh] lg:min-h-0 lg:w-56 lg:self-stretch lg:border-b-0 lg:border-r xl:w-60"
-      :class="openThreadRow ? 'max-lg:hidden' : ''"
-      :aria-label="t('inbox.inboxSurfaceMailFoldersAndMailboxes')"
-    >
-      <div class="flex items-center justify-between gap-2 border-b border-gray-200/80 px-3 py-2.5 dark:border-gray-700/80">
-        <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceMail') }}</span>
-        <div class="flex items-center gap-0.5">
-          <button
-            type="button"
-            class="rounded-md p-1.5 text-gray-600 hover:bg-gray-200/80 dark:text-gray-400 dark:hover:bg-gray-800"
-            :title="t('inbox.inboxSurfaceComposeWorkspaceEmail')"
-            @click="openNewCompose"
-          >
-            <PencilSquareIcon class="h-4 w-4" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            class="rounded-md p-1.5 text-gray-600 hover:bg-gray-200/80 dark:text-gray-400 dark:hover:bg-gray-800"
-            :title="t('inbox.inboxSurfaceRefreshMailboxes')"
-            :disabled="mailboxesLoading"
-            @click="fetchMailboxes"
-          >
-            <ArrowPathIcon class="h-4 w-4" :class="{ 'animate-spin': mailboxesLoading }" />
-          </button>
-        </div>
-      </div>
+    <InboxSidebar
+      :search-query="emailSearchInput"
+      :view-items="inboxSidebarViewItems"
+      :mail-items="inboxSidebarMailItems"
+      :mailbox-items="inboxSidebarMailboxItems"
+      :gmail-folder-items="inboxSidebarGmailFolderItems"
+      @compose="openNewCompose"
+      @update:search-query="onInboxSearchInput"
+      @select-view="onSidebarSelectView"
+      @select-mail="onSidebarSelectMail"
+      @select-mailbox="selectMailboxFilter"
+      @select-gmail-folder="selectGmailLabel"
+    />
 
-      <nav class="arivu-scrollbar flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-1.5 pb-2 pt-1" :aria-label="t('inbox.inboxSurfaceMailNavigation')">
-        <button
-          type="button"
-          class="flex w-full items-center gap-3 rounded-e-full py-2 pl-3 pr-2 text-left text-sm transition-colors"
-          :class="sidebarScopeActive(null)"
-          @click="selectMailboxFilter(null)"
-        >
-          <InboxIcon class="h-5 w-5 shrink-0 opacity-90" aria-hidden="true" />
-          <span class="min-w-0 flex-1 truncate font-medium">{{ t('inbox.inboxSurfaceAllMail') }}</span>
-          <span
-            v-if="selectedMailboxFilter === null && threadCounts.unread > 0"
-            class="shrink-0 rounded-full bg-primary-600 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white dark:bg-primary-500"
-          >{{ threadCounts.unread }}</span>
-        </button>
-
-        <div class="mt-3 px-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceMailboxes') }}</div>
-        <div v-if="mailboxesLoading" class="px-2 py-2 text-xs text-gray-500 dark:text-gray-400">{{ t('states.loading') }}</div>
-        <p v-else-if="mailboxesError" class="px-2 py-1 text-xs text-amber-700 dark:text-amber-300">
-          {{ mailboxesError }}
-        </p>
-        <template v-else-if="mailboxes.length">
-          <button
-            v-for="mb in mailboxes"
-            :key="mb.id"
-            type="button"
-            class="flex w-full items-start gap-2 rounded-e-full py-2 pl-3 pr-2 text-left text-sm transition-colors"
-            :class="sidebarScopeActive(mb.id)"
-            @click="selectMailboxFilter(mb.id)"
-          >
-            <EnvelopeIcon
-              v-if="mb.kind === 'personal'"
-              class="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400"
-              aria-hidden="true"
-            />
-            <UserGroupIcon
-              v-else
-              class="mt-0.5 h-5 w-5 shrink-0 text-violet-600 dark:text-violet-400"
-              aria-hidden="true"
-            />
-            <span class="min-w-0 flex-1">
-              <span class="block truncate font-medium leading-snug text-gray-900 dark:text-white">{{ mb.label }}</span>
-              <span
-                v-if="mb.emailAddress"
-                class="mt-0.5 block truncate text-[11px] text-gray-500 dark:text-gray-400"
-              >{{ mb.emailAddress }}</span>
-              <span class="mt-0.5 block text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">{{ formatMailboxSyncStatus(mb) }}</span>
-            </span>
-            <span
-              v-if="Number(mb.threadUnreadCount) > 0"
-              class="mt-0.5 shrink-0 self-start rounded-full bg-primary-600 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white dark:bg-primary-500"
-            >{{ mb.threadUnreadCount }}</span>
-            <button
-              v-if="mailboxFlags.gmailIntegrationEnabled && mb.kind === 'group' && mailboxFlags.canCreateGroup && !mb.gmailInboxSync?.connected"
-              type="button"
-              class="mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase text-violet-700 hover:bg-violet-100 dark:text-violet-300 dark:hover:bg-violet-900/50"
-              :title="t('inbox.inboxSurfaceConnectGmailForThisSharedInbox')"
-              @click.stop="openConnectGroupGmail(mb)"
-            >{{ t('inbox.inboxSurfaceConnect') }}</button>
-            <button
-              v-else-if="!mailboxFlags.gmailIntegrationEnabled && !mb.inboundParser?.routingAddress && (mb.kind === 'personal' || (mb.kind === 'group' && mailboxFlags.canCreateGroup))"
-              type="button"
-              class="mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
-              title="Get your unique forwarding address"
-              @click.stop="openMailboxForwardingSetup(mb)"
-            >
-              Connect
-            </button>
-            <button
-              v-else-if="mb.kind === 'group' && mailboxFlags.canCreateGroup"
-              type="button"
-              class="mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase text-violet-700 hover:bg-violet-100 dark:text-violet-300 dark:hover:bg-violet-900/50"
-              @click.stop="openMembersModal(mb)"
-            >{{ t('settings.groupsLabelMembers') }}</button>
-          </button>
+    <!-- Thread list + optional reader panel (non-blocking, resizable) -->
+    <div ref="readerSplitRef" class="relative flex min-h-0 min-w-0 flex-1 overflow-hidden">
+      <InboxThreadList
+        pane-class="flex h-full min-h-0 min-w-0 flex-1 flex-col"
+        :title="inboxListTitle"
+        :loading="emailLoading"
+        :loading-more="emailLoadingMore"
+        :error="emailError"
+        :groups="inboxThreadListGroups"
+        :filter-chips="inboxFilterChips"
+        :selected-count="selectedThreadIds.length"
+        :selected-thread-ids="selectedThreadIds"
+        :all-visible-selected="allVisibleSelected"
+        :some-visible-selected="someVisibleSelected"
+        :has-more="Boolean(emailNextCursor)"
+        :active-thread-id="openThreadRow ? String(openThreadRow.threadId) : null"
+        @refresh="refreshInboxThreadsAndCounts"
+        @filter-chip="onInboxFilterChip"
+        @open-thread="openEmailThreadRecord"
+        @row-archive="toggleRowDone"
+        @row-delete="toggleRowDone"
+        @row-toggle-read="markThreadRead"
+        @toggle-row-select="toggleThreadSelected"
+        @toggle-select-all="toggleSelectAllVisible"
+        @bulk-done="bulkMarkDone"
+        @clear-selection="clearThreadSelection"
+        @load-more="loadMoreEmailThreads"
+      >
+        <template #banners>
+          <!-- INBOX_BANNERS -->
         </template>
-        <p v-else class="px-2 py-1 text-xs leading-relaxed text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceNoMailboxesYetAddOneBelow') }}</p>
+      </InboxThreadList>
 
-        <div class="mt-4 flex items-center justify-between gap-1 px-1.5">
-          <div class="px-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">{{ t('forms.rtColorPrimary') }}</div>
-          <button
-            type="button"
-            class="rounded-md p-1 text-gray-500 hover:bg-gray-200/80 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-            :title="t('inbox.inboxSurfaceRefreshFolderCountsOnlyDoesNot')"
-            :aria-label="t('inbox.inboxSurfaceRefreshFolderCounts')"
-            :disabled="threadCountsRefreshing"
-            @click="fetchWorkspaceThreadCountsOnly({ silent: false })"
-          >
-            <ArrowPathIcon class="h-3.5 w-3.5" :class="{ 'animate-spin': threadCountsRefreshing }" />
-          </button>
-        </div>
-        <button
-          v-for="opt in emailFilterOptions"
-          :key="'folder-' + opt.value"
-          type="button"
-          class="flex w-full items-center gap-3 rounded-e-full py-2 pl-3 pr-2 text-left text-sm transition-colors"
-          :class="sidebarFolderActive(opt.value)"
-          @click="setEmailFilter(opt.value)"
+      <div
+        v-show="readerPanelMounted"
+        class="inbox-reader-shell h-full shrink-0 overflow-hidden"
+        :class="{
+          'inbox-reader-shell--open': readerPanelExpanded,
+          'inbox-reader-shell--no-transition': readerResizeActive
+        }"
+        :style="readerShellStyle"
+        @transitionend="onReaderShellTransitionEnd"
+      >
+        <aside
+          v-if="openThreadRow"
+          class="inbox-reader-panel relative flex h-full min-w-0 flex-row border-l border-[#EBEBEB] bg-white shadow-[-6px_0_24px_-12px_rgba(0,0,0,0.12)] dark:border-gray-800 dark:bg-gray-950 dark:shadow-[-6px_0_24px_-12px_rgba(0,0,0,0.45)]"
+          :style="readerPanelInnerStyle"
+          :aria-label="openThreadRow.subject || t('inbox.inboxProSelectConversation')"
         >
-          <span class="min-w-0 flex-1 truncate font-medium">{{ opt.label }}</span>
-          <span
-            v-if="folderCountBadge(opt.value) > 0"
-            class="shrink-0 rounded-full bg-primary-600 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white dark:bg-primary-500"
-          >{{ folderCountBadge(opt.value) }}</span>
-        </button>
-
-        <template v-if="mailboxFlags.gmailIntegrationEnabled && gmailSidebarFolders.length">
-          <div class="mt-4 px-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceGmailFolders') }}</div>
-          <p v-if="gmailLabelsLoading" class="px-3 py-1 text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceLoadingFolders') }}</p>
-          <button
-            v-for="folder in gmailSidebarFolders"
-            :key="'gmail-folder-' + folder.id"
-            type="button"
-            class="flex w-full items-center gap-2 rounded-e-full py-2 pl-3 pr-2 text-left text-sm transition-colors"
-            :class="sidebarGmailLabelActive(folder.id)"
-            @click="selectGmailLabel(folder.id)"
-          >
-            <FolderIcon class="h-4 w-4 shrink-0 opacity-75" aria-hidden="true" />
-            <span class="min-w-0 flex-1 truncate font-medium">{{ folder.label }}</span>
-          </button>
-        </template>
-
-        <div class="mt-auto border-t border-gray-200/80 pt-3 dark:border-gray-700/80">
-          <div class="flex flex-col gap-2 px-1.5">
-            <button
-              v-if="mailboxFlags.canCreatePersonal"
-              type="button"
-              class="w-full rounded-lg border border-gray-300/80 bg-white py-2 text-center text-xs font-medium text-gray-800 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-950 dark:text-gray-100 dark:hover:bg-gray-800"
-              :disabled="mailboxActionLoading"
-              @click="createPersonalMailbox"
-            >
-              + Personal mailbox
-            </button>
-            <button
-              v-else-if="mailboxFlags.canDeletePersonal && ownedPersonalMailbox"
-              type="button"
-              class="w-full rounded-lg border border-red-200/90 bg-white py-2 text-center text-xs font-medium text-red-800 hover:bg-red-50 disabled:opacity-50 dark:border-red-900/50 dark:bg-gray-950 dark:text-red-200 dark:hover:bg-red-950/40"
-              :disabled="mailboxActionLoading"
-              @click="deletePersonalMailbox"
-            >
-              Remove personal mailbox
-            </button>
-            <button
-              v-if="mailboxFlags.canCreateGroup"
-              type="button"
-              class="w-full rounded-lg border border-violet-200 bg-violet-50 py-2 text-center text-xs font-medium text-violet-900 hover:bg-violet-100 disabled:opacity-50 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-100 dark:hover:bg-violet-900/30"
-              :disabled="mailboxActionLoading"
-              @click="showGroupMailboxForm = !showGroupMailboxForm"
-            >
-              {{ showGroupMailboxForm ? 'Cancel new group' : '+ Group mailbox' }}
-            </button>
-          </div>
           <div
-            v-if="showGroupMailboxForm && mailboxFlags.canCreateGroup"
-            class="mt-3 space-y-2 border-t border-gray-200/60 px-2 pt-3 dark:border-gray-700/60"
+            role="separator"
+            aria-orientation="vertical"
+            :aria-valuemin="READER_PANEL_MIN_PCT"
+            :aria-valuemax="READER_PANEL_MAX_PCT"
+            :aria-valuenow="Math.round(effectiveReaderPanelWidthPct)"
+            :aria-label="t('inbox.inboxReaderResizePanel')"
+            :title="t('inbox.inboxReaderResizePanelHint')"
+            class="inbox-reader-resize-handle group absolute left-0 top-0 z-30 flex h-full w-5 -translate-x-1/2 touch-none select-none items-center justify-center"
+            :class="{ 'inbox-reader-resize-handle--active': readerResizeActive }"
+            @pointerdown.prevent="startReaderPanelResize"
+            @dblclick.prevent="resetReaderPanelWidth"
           >
-            <label class="block text-[11px] font-medium text-gray-600 dark:text-gray-300">{{ t('settings.settingsBhFieldName') }}<input
-                v-model="newGroupMailboxLabel"
-                type="text"
-                class="mt-1 w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-950 dark:text-white"
-                :placeholder="t('inbox.inboxSurfaceEGSupport')"
-                autocomplete="off"
-              >
-            </label>
-            <label class="block text-[11px] font-medium text-gray-600 dark:text-gray-300">{{ t('inbox.inboxSurfaceAddressOptional') }}<input
-                v-model="newGroupMailboxEmail"
-                type="email"
-                class="mt-1 w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-950 dark:text-white"
-                :placeholder="t('inbox.inboxSurfaceContactUs')"
-                autocomplete="off"
-              >
-            </label>
-            <button
-              type="button"
-              class="w-full rounded-lg bg-violet-600 py-2 text-xs font-medium text-white hover:bg-violet-700 disabled:opacity-50"
-              :disabled="mailboxActionLoading || !newGroupMailboxLabel.trim()"
-              @click="createGroupMailbox"
-            >{{ t('settings.roleDrawerPermCreate') }}</button>
-          </div>
-          <div class="mt-3 space-y-1.5 border-t border-gray-200/60 px-2 py-3 dark:border-gray-700/60">
-            <RouterLink
-              :to="{ path: '/settings', query: { tab: 'integrations' } }"
-              class="block text-xs font-medium text-blue-700 hover:underline dark:text-blue-400"
-            >
-              Email &amp; inbound settings
-            </RouterLink>
-            <p class="text-[10px] leading-relaxed text-gray-500 dark:text-gray-500">
-              Shared mailboxes: admins connect Gmail for support@ addresses. Personal mailboxes sync your own inbox.
-            </p>
-          </div>
-        </div>
-      </nav>
-    </aside>
-
-    <!-- Split pane: thread list · conversation · CRM context -->
-    <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden lg:min-h-0 lg:flex-row">
-      <div
-        class="flex min-h-0 min-w-0 flex-col overflow-hidden bg-white dark:bg-gray-900"
-        :class="listPaneClasses"
-      >
-      <!-- List toolbar -->
-      <div class="flex shrink-0 flex-wrap items-center gap-2 border-b border-neutral-200/90 bg-white px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900">
-        <div class="flex min-w-0 items-center gap-2">
-          <span class="text-sm font-semibold text-neutral-900 dark:text-white">
-            {{ threadListScopeLabel }}
-          </span>
-          <span
-            v-if="threadCounts.all > 0"
-            class="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium tabular-nums text-neutral-600 dark:bg-gray-800 dark:text-gray-300"
-          >
-            {{ threadCounts.all }}
-          </span>
-        </div>
-        <button
-          type="button"
-          class="ml-auto inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-gray-300 dark:hover:bg-gray-800"
-          :title="t('inbox.inboxSurfaceReloadThreadList2')"
-          :aria-label="t('inbox.inboxSurfaceReloadThreadList')"
-          :disabled="emailLoading"
-          @click="refreshInboxThreadsAndCounts"
-        >
-          <ArrowPathIcon class="h-4 w-4" :class="{ 'animate-spin': emailLoading }" />
-        </button>
-        <button
-          type="button"
-          class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-gray-300 dark:hover:bg-gray-800"
-          :title="t('inbox.inboxSurfaceComposeWorkspaceEmail')"
-          @click="openNewCompose"
-        >
-          <PencilSquareIcon class="h-4 w-4" />
-        </button>
-        <div
-          class="relative flex min-w-0 flex-1 basis-full items-center sm:basis-auto sm:max-w-xs"
-          role="search"
-        >
-          <MagnifyingGlassIcon
-            class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500"
-            aria-hidden="true"
-          />
-          <input
-            v-model="emailSearchInput"
-            type="search"
-            enterkeyhint="search"
-            class="w-full rounded-lg border border-neutral-200 bg-neutral-50 py-2 pl-9 pr-9 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-primary-400 dark:focus:ring-primary-400"
-            :placeholder="t('inbox.inboxSurfaceSearchSubjectBodyPeopleLabels')"
-            autocomplete="off"
-            :aria-label="t('inbox.inboxSurfaceSearchMail')"
-            @input="scheduleEmailSearch"
-          />
-          <button
-            v-if="emailSearchInput.trim()"
-            type="button"
-            class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-            :title="t('records.activityClearSearchAria')"
-            :aria-label="t('records.activityClearSearchAria')"
-            @click="clearEmailSearch"
-          >
-            <XMarkIcon class="h-4 w-4" aria-hidden="true" />
-          </button>
-        </div>
-        <div class="ml-auto flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
-          <RouterLink
-            :to="{ path: '/settings', query: { tab: 'integrations' } }"
-            class="inline-flex items-center rounded-lg px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-200/80 dark:text-gray-300 dark:hover:bg-gray-700"
-          >{{ t('inbox.inboxSurfaceEmailSetup') }}</RouterLink>
-          <label class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap px-2 text-xs text-gray-600 dark:text-gray-400">
-            <input
-              v-model="emailIncludeDone"
-              type="checkbox"
-              class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900"
-              @change="onEmailIncludeDoneChange"
-            />{{ t('inbox.inboxSurfaceDone3') }}</label>
-        </div>
-      </div>
-
-      <div class="arivu-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
-      <div
-        v-if="mailboxFlags.gmailIntegrationEnabled && selectedMailbox && selectedMailbox.gmailSmtpOutbound?.connected && !selectedMailbox.gmailInboxSync?.connected"
-        class="border-b border-emerald-200 bg-emerald-50/90 px-3 py-2.5 text-xs text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100"
-      >
-        <div class="font-semibold text-emerald-900 dark:text-emerald-100">
-          Gmail SMTP send — {{ selectedMailbox.kind === 'group' ? 'Shared' : 'Personal' }}
-        </div>
-        <p class="mt-1 text-[11px] leading-snug text-emerald-800/90 dark:text-emerald-200/90">{{ t('inbox.inboxSurfaceOutboundEmailUsesYourGoogleApp') }}<strong>{{ t('inbox.inboxSurfaceGmailOauth') }}</strong>{{ t('inbox.inboxSurfaceToImportAndReadMailIn') }}</p>
-        <div class="mt-1 text-[11px] text-emerald-800 dark:text-emerald-200">{{ t('inbox.inboxSurfaceSendingAs') }}<span class="font-mono">{{ selectedMailbox.emailAddress || '—' }}</span>
-        </div>
-      </div>
-
-      <div
-        v-if="!mailboxFlags.gmailIntegrationEnabled && selectedMailbox?.inboundParser?.routingAddress"
-        class="border-b border-emerald-200 bg-emerald-50/90 px-4 py-3 text-xs text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100"
-      >
-        <div class="font-semibold">Forward mail to this address</div>
-        <p class="mt-1 font-mono text-[11px] break-all select-all">
-          {{ selectedMailbox.inboundParser.routingAddress }}
-        </p>
-        <p v-if="selectedMailbox.inboundParser.forwardingHint" class="mt-1 leading-snug opacity-90">
-          {{ selectedMailbox.inboundParser.forwardingHint }}
-        </p>
-        <p class="mt-1 leading-snug opacity-80">
-          Set up forwarding in Gmail or Microsoft 365 for
-          <span class="font-medium">{{ selectedMailbox.emailAddress || selectedMailbox.label }}</span>.
-          Replies from the CRM use your organization’s outbound email settings.
-        </p>
-        <button
-          v-if="selectedMailbox.kind === 'personal' && mailboxFlags.canDeletePersonal"
-          type="button"
-          class="mt-2 text-[11px] font-medium text-red-800 underline hover:no-underline dark:text-red-200"
-          :disabled="mailboxActionLoading"
-          @click="deletePersonalMailbox"
-        >
-          Remove personal mailbox
-        </button>
-      </div>
-
-      <div
-        v-else-if="!mailboxFlags.gmailIntegrationEnabled && selectedMailbox"
-        class="border-b border-blue-200 bg-blue-50/90 px-4 py-3 text-xs text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/25 dark:text-blue-100"
-      >
-        <div class="font-semibold">Inbound via Arivu Inbound Parser</div>
-        <p v-if="selectedMailbox.inboundParser?.provisioningError" class="mt-1 leading-snug text-amber-900 dark:text-amber-100">
-          Routing address is not ready yet: {{ selectedMailbox.inboundParser.provisioningError }}
-        </p>
-        <p v-else class="mt-1 leading-snug">
-          Create or select a mailbox to get a forwarding address. Your administrator configures the parser connection in Control Plane.
-        </p>
-      </div>
-
-      <div
-        v-else-if="mailboxFlags.gmailIntegrationEnabled && selectedMailbox && !selectedMailbox.gmailInboxSync?.connected && !selectedMailbox.gmailSmtpOutbound?.connected"
-        class="border-b border-gray-200 bg-gradient-to-b from-slate-50 to-white px-4 py-6 dark:border-gray-700 dark:from-gray-900 dark:to-gray-900/95 sm:px-6"
-      >
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">{{ t('inbox.inboxSurfaceConnectYourInboxToLitedesk') }}</h2>
-        <p class="mt-1 max-w-2xl text-sm text-gray-600 dark:text-gray-400">
-          Link your work email provider to sync mail into Arivu and send from the CRM. Gmail is available today; Outlook, Yahoo, and IMAP are on the roadmap.
-        </p>
-        <p class="mt-4 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceSelectYourEmailProvider') }}</p>
-        <div class="mt-3 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
-          <button
-            type="button"
-            class="group flex flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 text-center shadow-sm transition hover:border-emerald-300 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-55 dark:border-gray-700 dark:bg-gray-950 dark:hover:border-emerald-800"
-            :disabled="gmailSyncLoading"
-            :title="!gmailOAuthReady ? 'Open setup: add GOOGLE_GMAIL_* on the API, then connect' : 'Connect Gmail'"
-            @click="onGmailProviderClick"
-          >
-            <span
-              class="flex h-14 w-14 items-center justify-center rounded-xl bg-white text-2xl font-bold leading-none text-white shadow-inner ring-1 ring-gray-100 dark:ring-gray-800"
-              style="background: conic-gradient(from -45deg, #ea4335, #fbbc05, #34a853, #4285f4, #ea4335)"
-              aria-hidden="true"
-            >
-              <span class="drop-shadow-sm">G</span>
+            <span class="inbox-reader-resize-line" aria-hidden="true" />
+            <span class="inbox-reader-resize-grip" aria-hidden="true">
+              <span />
+              <span />
+              <span />
             </span>
-            <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('inbox.inboxSurfaceGmail') }}</span>
-          </button>
-          <div
-            class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 p-4 text-center dark:border-gray-700 dark:bg-gray-900/40"
-          >
-            <span class="flex h-14 w-14 items-center justify-center rounded-xl bg-[#0078d4] text-lg font-bold text-white">
-              O
-            </span>
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceOutlook') }}</span>
-            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-600">{{ t('inbox.inboxSurfaceSoon3') }}</span>
           </div>
-          <div
-            class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 p-4 text-center dark:border-gray-700 dark:bg-gray-900/40"
-          >
-            <span class="flex h-14 w-14 items-center justify-center rounded-xl bg-[#6001d2] text-lg font-bold text-white">
-              Y
-            </span>
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceYahoo') }}</span>
-            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-600">{{ t('inbox.inboxSurfaceSoon2') }}</span>
+
+          <div class="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+            <EmailThreadReader
+              :key="String(openThreadRow.threadId)"
+              :thread-id="String(openThreadRow.threadId)"
+              :thread-row="openThreadRow"
+              :record-path="openThreadRecordPath"
+              :split-view="true"
+              :show-close="true"
+              :can-navigate-prev="canNavigateThreadPrev"
+              :can-navigate-next="canNavigateThreadNext"
+              :compose-standalone-mode="openThreadComposeStandalone"
+              :compose-related-to="openThreadComposeRelatedTo"
+              :compose-sending-mailbox="openThreadComposeSendingMailbox"
+              :compose-sending-mailbox-hint="openThreadComposeSendingMailboxHint"
+              :docked-reply-pulse="dockedReplyPulse"
+              :docked-reply-close-pulse="dockedReplyClosePulse"
+              :thread-reload-pulse="threadReloadPulse"
+              :on-submit-compose="submitDockedCompose"
+              class="h-full min-h-0"
+              @close="closeThreadReader"
+              @forward="openFloatingCompose($event.row)"
+              @pop-out-compose="openFloatingCompose"
+              @toggle-done="toggleRowDone($event)"
+              @toggle-read="markThreadRead"
+              @snooze="snoozeRowTomorrow($event)"
+              @assign-to-me="assignRowToMe($event)"
+              @open-record="onReaderOpenRecord($event)"
+              @navigate-prev="navigateThreadPrev"
+              @navigate-next="navigateThreadNext"
+            />
           </div>
+
           <div
-            class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 bg-gray-50/80 p-4 text-center dark:border-gray-700 dark:bg-gray-900/40"
+            class="inbox-context-rail shrink-0 border-l border-[#EBEBEB] bg-[#FAFAF8] dark:border-gray-800 dark:bg-gray-900"
+            :class="{ 'inbox-context-rail--open': contextPanelOpen }"
+            :style="{ '--inbox-context-rail-width': `${CONTEXT_PANEL_WIDTH_PX}px` }"
           >
-            <EnvelopeIcon class="h-10 w-10 text-gray-400 dark:text-gray-600" aria-hidden="true" />
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-500">{{ t('inbox.inboxSurfaceImap') }}</span>
-            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-600">{{ t('inbox.inboxSurfaceSoon') }}</span>
-          </div>
-        </div>
-        <p
-          v-if="!gmailOAuthReady"
-          class="mt-4 max-w-2xl rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
-        >
-          Gmail isn’t enabled on this API yet (missing <code class="rounded bg-amber-100 px-1 font-mono text-[10px] dark:bg-amber-950/80">GOOGLE_GMAIL_*</code>{{ t('inbox.inboxSurfaceOnTheServer') }}<span class="mt-1 block font-medium text-amber-950 dark:text-amber-50">{{ t('inbox.inboxSurfaceClickTheGmailTileAbove') }}</span>{{ t('inbox.inboxSurfaceForCopyPasteStepsOrAsk') }}</p>
-      </div>
+            <button
+              v-show="!contextPanelOpen"
+              type="button"
+              class="flex h-full w-8 flex-col items-center justify-center gap-1 text-[#787774] hover:bg-[#F1F1EF] hover:text-[#37352F] dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+              :title="t('inbox.inboxContextPanelExpand')"
+              :aria-label="t('inbox.inboxContextPanelExpand')"
+              @click="contextPanelOpen = true"
+            >
+              <ChevronLeftIcon class="h-4 w-4" aria-hidden="true" />
+              <span class="text-[10px] font-medium uppercase tracking-wide [writing-mode:vertical-rl]">
+                {{ t('inbox.inboxContextPanelTitle') }}
+              </span>
+            </button>
 
-      <div
-        v-else-if="mailboxFlags.gmailIntegrationEnabled && selectedMailbox && selectedMailbox.gmailInboxSync?.connected"
-        class="border-b border-violet-200 bg-violet-50/90 px-3 py-2.5 text-xs text-violet-950 dark:border-violet-900/60 dark:bg-violet-950/25 dark:text-violet-100"
-      >
-        <div class="font-semibold text-violet-900 dark:text-violet-100">
-          Gmail inbox sync — {{ selectedMailbox.kind === 'group' ? 'Shared' : 'Personal' }}
-        </div>
-        <p class="mt-1 text-[11px] leading-snug text-violet-800/90 dark:text-violet-200/90">
-          <template v-if="selectedMailbox.kind === 'group'">
-            Shared mailbox linked to Google. Mail syncs on a schedule; use Sync now for an immediate pull.
-          </template>
-          <template v-else>{{ t('inbox.inboxSurfacePersonalMailboxLinkedToGoogleGmail') }}</template>{{ t('inbox.inboxSurfaceBackgroundSyncRunsAutomatically') }}</p>
-        <div class="mt-1 text-[11px] text-violet-800 dark:text-violet-200">{{ t('inbox.inboxSurfaceConnectedAs') }}<span class="font-mono">{{ selectedMailbox.gmailInboxSync.accountEmail || '—' }}</span>
-          <span v-if="selectedMailbox.gmailInboxSync.lastSyncAt" class="ml-2 text-violet-700 dark:text-violet-300">
-            · Last sync {{ formatShortSyncTime(selectedMailbox.gmailInboxSync.lastSyncAt) }}
-          </span>
-        </div>
-        <p v-if="selectedMailbox.gmailInboxSync?.lastError" class="mt-1 text-[11px] text-amber-800 dark:text-amber-200">
-          {{ selectedMailbox.gmailInboxSync.lastError }}
-        </p>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <button
-            type="button"
-            class="rounded-lg border border-violet-300 bg-white px-3 py-1.5 text-xs font-medium text-violet-900 hover:bg-violet-100 dark:border-violet-700 dark:bg-violet-950 dark:text-violet-100 dark:hover:bg-violet-900/40"
-            :disabled="gmailSyncLoading"
-            @click="gmailFolderModalOpen = true"
-          >{{ t('inbox.inboxSurfaceSelectFoldersToSync') }}</button>
-          <button
-            type="button"
-            class="rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-700 disabled:opacity-50"
-            :disabled="gmailSyncLoading"
-            @click="runGmailInboxSync"
-          >
-            {{ gmailSyncLoading ? 'Syncing…' : 'Sync now' }}
-          </button>
-          <button
-            type="button"
-            class="rounded-lg border border-violet-300 bg-white px-3 py-1.5 text-xs font-medium text-violet-900 hover:bg-violet-100 dark:border-violet-700 dark:bg-violet-950 dark:text-violet-100 dark:hover:bg-violet-900/40"
-            :disabled="gmailSyncLoading"
-            @click="disconnectGmail"
-          >{{ t('appointments.disconnect') }}</button>
-        </div>
-      </div>
-
-      <div
-        v-if="selectedThreadIds.length > 0"
-        class="flex flex-wrap items-center gap-2 border-b border-blue-200 bg-blue-50/90 px-2 py-2 dark:border-blue-900/50 dark:bg-blue-950/30"
-      >
-        <span class="text-xs font-medium text-blue-900 dark:text-blue-100">{{ selectedThreadIds.length }} selected</span>
-        <button
-          type="button"
-          class="rounded-lg bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
-          @click="bulkMarkDone(true)"
-        >{{ t('inbox.inboxSurfaceMarkDone') }}</button>
-        <button
-          type="button"
-          class="rounded-lg border border-blue-300 bg-white px-2.5 py-1.5 text-xs font-medium text-blue-900 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-100 dark:hover:bg-blue-900"
-          @click="bulkMarkDone(false)"
-        >{{ t('inbox.inboxSurfaceReopen') }}</button>
-        <button
-          type="button"
-          class="rounded-lg border border-blue-300 bg-white px-2.5 py-1.5 text-xs font-medium text-blue-900 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-100 dark:hover:bg-blue-900"
-          @click="bulkAssignToMe"
-        >{{ t('common.formAssignToMe') }}</button>
-        <button
-          type="button"
-          class="rounded-lg border border-blue-300 bg-white px-2.5 py-1.5 text-xs font-medium text-blue-900 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-100 dark:hover:bg-blue-900"
-          @click="bulkPromptAddTag"
-        >{{ t('forms.fieldAddTagPh') }}</button>
-        <button
-          type="button"
-          class="rounded-lg border border-blue-300 bg-white px-2.5 py-1.5 text-xs font-medium text-blue-900 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-100 dark:hover:bg-blue-900"
-          @click="bulkPromptRemoveTag"
-        >{{ t('inbox.inboxSurfaceRemoveTag') }}</button>
-        <button
-          type="button"
-          class="rounded-lg border border-blue-300 bg-white px-2.5 py-1.5 text-xs font-medium text-blue-900 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-100 dark:hover:bg-blue-900"
-          @click="bulkSnoozeTomorrow"
-        >{{ t('inbox.inboxSurfaceSnoozeToTomorrow') }}</button>
-        <button
-          type="button"
-          class="ml-auto text-xs font-medium text-blue-800 underline dark:text-blue-300"
-          @click="clearThreadSelection"
-        >{{ t('settings.modFieldsClear') }}</button>
-      </div>
-
-      <div
-        class="hidden grid-cols-[40px_40px_1fr] items-center gap-0 border-b border-gray-100 bg-gray-50/50 px-1 py-1.5 text-xs font-medium text-gray-500 dark:border-gray-800 dark:bg-gray-800/40 dark:text-gray-400 sm:grid sm:pl-2"
-      >
-        <span class="flex justify-center">
-          <input
-            type="checkbox"
-            class="rounded border-gray-300 text-blue-600 dark:border-gray-600"
-            :checked="allVisibleSelected"
-            :title="t('inbox.inboxSurfaceSelectAllInView')"
-            :aria-label="t('inbox.inboxSurfaceSelectAllConversationsInThisView')"
-            @change="toggleSelectAllVisible($event.target.checked)"
-          />
-        </span>
-        <span />
-        <span class="flex min-w-0 items-center gap-2 pl-1">
-          <span class="truncate">{{ t('forms.rtColorPrimary') }}</span>
-          <button
-            type="button"
-            class="shrink-0 rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
-            :title="t('inbox.inboxSurfaceSelectUpTo500ThreadsMatching')"
-            @click="selectAllInFolder"
-          >{{ t('inbox.inboxSurfaceSelectAllInFolder') }}</button>
-        </span>
-      </div>
-
-      <div v-if="emailLoading" class="flex items-center justify-center py-16">
-        <div class="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-600 dark:border-gray-700 dark:border-t-blue-400" />
-      </div>
-      <div v-else-if="emailError" class="border-b border-amber-100 bg-amber-50 px-4 py-3 dark:border-amber-900/30 dark:bg-amber-950/30">
-        <p class="text-sm text-amber-900 dark:text-amber-200">{{ emailError }}</p>
-      </div>
-      <div
-        v-else-if="emailThreads.length === 0"
-        class="px-4 py-16 text-center sm:px-8"
-      >
-        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('inbox.inboxSurfaceNoConversationsInThisView') }}</p>
-        <p class="mx-auto mt-2 max-w-md text-sm text-gray-500 dark:text-gray-400">{{ t('inbox.inboxSurfaceWhenMailIsLinkedToRecords') }}<RouterLink
-            :to="{ path: '/settings', query: { tab: 'integrations' } }"
-            class="font-medium text-blue-600 hover:underline dark:text-blue-400"
-          >{{ t('settings.integrationsTitle') }}</RouterLink>
-          .
-        </p>
-      </div>
-      <div v-else role="list">
-        <template v-for="group in groupedEmailThreads" :key="group.key">
-          <div
-            class="sticky top-0 z-10 border-b border-neutral-100 bg-neutral-50/95 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/95 dark:text-gray-500"
-          >
-            {{ group.label }}
-          </div>
-          <div
-            v-for="row in group.rows"
-            :key="row.threadId"
-            role="button"
-            tabindex="0"
-            class="flex w-full min-h-[72px] cursor-pointer items-stretch border-b border-neutral-100/80 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500 dark:border-gray-800/80"
-            :class="emailRowClasses(row)"
-            @click="openEmailThreadRecord(row)"
-            @keydown.enter="openEmailThreadRecord(row)"
-            @keydown.space.prevent="openEmailThreadRecord(row)"
-          >
-            <div class="flex w-10 shrink-0 items-center justify-center pl-2">
-              <input
-                type="checkbox"
-                class="rounded border-neutral-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-900"
-                :aria-label="`Select ${row.subject}`"
-                tabindex="-1"
-                :checked="selectedThreadIds.includes(String(row.threadId))"
-                @click.stop
-                @change="toggleThreadSelected(String(row.threadId), $event.target.checked)"
+            <div
+              v-show="contextPanelOpen"
+              class="inbox-context-rail-panel h-full w-full min-w-0"
+            >
+              <InboxContextPanel
+                :thread-row="openThreadRow"
+                :record-path="openThreadRecordPath"
+                embedded
+                class="h-full"
+                @close="contextPanelOpen = false"
+                @open-record="onReaderOpenRecord(openThreadRow)"
+                @reply="requestDockedReply"
+                @suggest-reply="requestDockedReply"
               />
             </div>
-            <div class="flex w-11 shrink-0 items-center justify-center py-3">
-              <span
-                class="flex h-10 w-10 items-center justify-center rounded-full text-xs font-semibold uppercase shadow-sm ring-1 ring-neutral-200/80 dark:ring-gray-600"
-                :class="emailAvatarClass(row)"
-              >
-                {{ emailAvatarLetter(row) }}
-              </span>
-            </div>
-            <div class="flex min-w-0 flex-1 flex-col justify-center py-2.5 pr-3">
-              <div class="flex min-w-0 items-center gap-2">
-                <span
-                  class="min-w-0 flex-1 truncate text-sm"
-                  :class="row.unread
-                    ? 'font-semibold text-neutral-900 dark:text-white'
-                    : 'font-medium text-neutral-700 dark:text-gray-300'"
-                >
-                  {{ emailSenderLine(row) }}
-                  <span
-                    v-if="row.messageCount > 1"
-                    class="font-normal text-neutral-500 dark:text-gray-500"
-                  > ({{ row.messageCount }})</span>
-                </span>
-                <time
-                  class="shrink-0 text-xs tabular-nums text-neutral-500 dark:text-gray-400"
-                  :datetime="row.lastActivityAt || row.firstActivityAt"
-                >
-                  {{ formatGmailStyleDate(row.lastActivityAt || row.firstActivityAt) }}
-                </time>
-              </div>
-              <p
-                class="mt-0.5 truncate text-sm"
-                :class="row.unread
-                  ? 'font-semibold text-neutral-900 dark:text-white'
-                  : 'text-neutral-800 dark:text-gray-200'"
-              >
-                {{ row.subject || '(no subject)' }}
-              </p>
-              <p class="mt-0.5 line-clamp-1 text-xs text-neutral-500 dark:text-gray-400">
-                {{ emailSnippetLine(row) }}
-              </p>
-              <div v-if="row.tags?.length || row.done" class="mt-1.5 flex flex-wrap gap-1">
-                <span
-                  v-for="tag in (row.tags || []).slice(0, 2)"
-                  :key="tag"
-                  class="inline-flex rounded-md px-1.5 py-0.5 text-[10px] font-medium"
-                  :class="inboxTagPillClass(tag)"
-                >
-                  {{ tag }}
-                </span>
-                <span
-                  v-if="row.done"
-                  class="inline-flex rounded-md bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-600 dark:bg-gray-800 dark:text-gray-400"
-                >
-                  {{ t('inbox.inboxSurfaceDone2') }}
-                </span>
-              </div>
-            </div>
           </div>
-        </template>
+        </aside>
       </div>
-      <div
-        v-if="emailNextCursor && emailThreads.length > 0 && !emailLoading"
-        class="border-t border-gray-100 px-3 py-3 text-center dark:border-gray-800"
-      >
-        <button
-          type="button"
-          class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
-          :disabled="emailLoadingMore"
-          @click="loadMoreEmailThreads"
-        >
-          {{ emailLoadingMore ? 'Loading…' : 'Load more' }}
-        </button>
-      </div>
-      </div>
-      </div>
-
-      <!-- Conversation pane -->
-      <div
-        v-if="openThreadRow"
-        class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-neutral-200/90 bg-white dark:border-gray-700 dark:bg-gray-900 lg:border-l"
-      >
-        <EmailThreadReader
-          :key="String(openThreadRow.threadId)"
-          :thread-id="String(openThreadRow.threadId)"
-          :thread-row="openThreadRow"
-          :record-path="openThreadRecordPath"
-          :split-view="readerSplitView"
-          :compose-standalone-mode="openThreadComposeStandalone"
-          :compose-related-to="openThreadComposeRelatedTo"
-          :compose-sending-mailbox="openThreadComposeSendingMailbox"
-          :compose-sending-mailbox-hint="openThreadComposeSendingMailboxHint"
-          :docked-reply-pulse="dockedReplyPulse"
-          :docked-reply-close-pulse="dockedReplyClosePulse"
-          :thread-reload-pulse="threadReloadPulse"
-          :on-submit-compose="submitDockedCompose"
-          class="h-full min-h-0"
-          @close="closeThreadReader"
-          @forward="openFloatingCompose($event.row)"
-          @pop-out-compose="openFloatingCompose"
-          @toggle-done="toggleRowDone($event)"
-          @snooze="snoozeRowTomorrow($event)"
-          @assign-to-me="assignRowToMe($event)"
-          @open-record="onReaderOpenRecord($event)"
-        />
-      </div>
-      <div
-        v-else
-        class="hidden min-h-0 flex-1 flex-col items-center justify-center border-l border-neutral-200/90 bg-neutral-50/30 px-8 text-center dark:border-gray-700 dark:bg-gray-900/50 lg:flex"
-      >
-        <InboxIcon class="h-12 w-12 text-neutral-300 dark:text-gray-600" />
-        <p class="mt-4 text-sm font-medium text-neutral-800 dark:text-gray-200">
-          {{ t('inbox.inboxProSelectConversation') }}
-        </p>
-        <p class="mt-1 max-w-xs text-xs text-neutral-500 dark:text-gray-400">
-          {{ t('inbox.inboxSurfaceOpenAThreadOnItsRecord') }}
-        </p>
-      </div>
-
-      <InboxContextPanel
-        v-if="openThreadRow && contextPanelOpen"
-        :thread-row="openThreadRow"
-        :record-path="openThreadRecordPath"
-        @close="contextPanelOpen = false"
-        @open-record="onReaderOpenRecord(openThreadRow)"
-        @reply="requestDockedReply"
-        @suggest-reply="requestDockedReply"
-      />
     </div>
     </div>
 
@@ -942,21 +395,19 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute, useRouter, RouterLink } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import { getApiOrigin } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
 import {
-  ArrowPathIcon,
-  EnvelopeIcon,
-  FolderIcon,
+  ChevronLeftIcon,
   HashtagIcon,
   InboxIcon,
-  MagnifyingGlassIcon,
+  PaperAirplaneIcon,
   PencilSquareIcon,
-  UserGroupIcon,
+  TrashIcon,
   XMarkIcon
 } from '@heroicons/vue/24/outline';
 import EmailComposeWindow from '@/components/communications/EmailComposeWindow.vue';
@@ -965,6 +416,8 @@ import InboxGetStarted from '@/components/inbox/InboxGetStarted.vue';
 import GmailMailboxFolderModal from '@/components/inbox/GmailMailboxFolderModal.vue';
 import EmailThreadReader from '@/components/inbox/EmailThreadReader.vue';
 import InboxContextPanel from '@/components/inbox/InboxContextPanel.vue';
+import InboxSidebar from '@/components/inbox/InboxSidebar.vue';
+import InboxThreadList from '@/components/inbox/InboxThreadList.vue';
 import { useConnectMailboxPrompt } from '@/composables/useConnectMailboxPrompt';
 import { isMailboxConnectedForProvider } from '@/constants/inboxProviders';
 import { isInboxShellUnblocked, formatMailboxInboundStatus } from '@/utils/mailboxInboundStatus';
@@ -1186,18 +639,211 @@ const workspacePreviewThread = ref(null);
 // stays visible. URL is kept in sync via ?thread=<id> so back-button works
 // and refresh re-opens the same thread.
 const openThreadRow = ref(null);
-const contextPanelOpen = ref(true);
-const readerSplitView = ref(false);
+const readerPanelMounted = ref(false);
+const readerPanelExpanded = ref(false);
+
+const CONTEXT_PANEL_OPEN_KEY = 'arivu:inbox-context-panel-open';
+const CONTEXT_PANEL_WIDTH_PX = 300;
+const READER_BODY_MIN_PX = 380;
+
+function loadContextPanelOpenPref() {
+  if (typeof window === 'undefined') return true;
+  return window.localStorage.getItem(CONTEXT_PANEL_OPEN_KEY) !== 'false';
+}
+
+const contextPanelOpen = ref(loadContextPanelOpenPref());
+
+watch(contextPanelOpen, (open) => {
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(CONTEXT_PANEL_OPEN_KEY, open ? 'true' : 'false');
+  }
+});
+
+const READER_PANEL_WIDTH_PCT_KEY = 'arivu:inbox-reader-panel-width-pct';
+const READER_PANEL_RESIZED_KEY = 'arivu:inbox-reader-panel-user-resized';
+const READER_PANEL_MIN_PCT = 32;
+const READER_PANEL_MAX_PCT = 82;
+const READER_PANEL_DEFAULT_PCT = 60;
+const READER_LIST_MIN_PX = 280;
+
+function clampReaderPanelPct(value) {
+  return Math.min(READER_PANEL_MAX_PCT, Math.max(READER_PANEL_MIN_PCT, value));
+}
+
+function loadReaderPanelUserResized() {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem(READER_PANEL_RESIZED_KEY) === 'true';
+}
+
+function loadReaderPanelWidthPct() {
+  if (typeof window === 'undefined') return READER_PANEL_DEFAULT_PCT;
+  if (!loadReaderPanelUserResized()) return READER_PANEL_DEFAULT_PCT;
+  const stored = Number(window.localStorage.getItem(READER_PANEL_WIDTH_PCT_KEY));
+  if (Number.isFinite(stored)) return clampReaderPanelPct(stored);
+  return READER_PANEL_DEFAULT_PCT;
+}
+
+const readerSplitRef = ref(null);
+const readerPanelUserResized = ref(loadReaderPanelUserResized());
+const readerPanelWidthPct = ref(loadReaderPanelWidthPct());
+const readerResizeActive = ref(false);
+let readerResizeHandleEl = null;
+let readerResizePointerId = null;
+
+const effectiveReaderPanelWidthPct = computed(() => {
+  if (!readerPanelUserResized.value) return READER_PANEL_DEFAULT_PCT;
+  return readerPanelWidthPct.value;
+});
+
+const readerTargetWidthPct = computed(() => {
+  const basePct = effectiveReaderPanelWidthPct.value;
+  return contextPanelOpen.value && openThreadRow.value
+    ? clampReaderPanelPct(basePct + 14)
+    : basePct;
+});
+
+const readerShellMinWidthPx = computed(() =>
+  contextPanelOpen.value
+    ? READER_BODY_MIN_PX + CONTEXT_PANEL_WIDTH_PX
+    : READER_BODY_MIN_PX
+);
+
+const readerShellStyle = computed(() => {
+  if (!readerPanelExpanded.value) {
+    return { width: '0px', maxWidth: '0px' };
+  }
+
+  return {
+    width: `${readerTargetWidthPct.value}%`,
+    maxWidth: `calc(100% - ${READER_LIST_MIN_PX}px)`,
+    minWidth: `${readerShellMinWidthPx.value}px`
+  };
+});
+
+const readerPanelInnerStyle = computed(() => ({
+  width: '100%',
+  minWidth: `${readerShellMinWidthPx.value}px`
+}));
+
+function expandReaderPanel() {
+  if (readerPanelExpanded.value && readerPanelMounted.value) return;
+  readerPanelMounted.value = true;
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      readerPanelExpanded.value = true;
+    });
+  });
+}
+
+function collapseReaderPanel() {
+  if (!readerPanelMounted.value && !readerPanelExpanded.value) return;
+  readerPanelExpanded.value = false;
+}
+
+function onReaderShellTransitionEnd(event) {
+  if (event.target !== event.currentTarget) return;
+  if (event.propertyName !== 'width') return;
+  if (readerPanelExpanded.value) return;
+  openThreadRow.value = null;
+  readerPanelMounted.value = false;
+}
+
+let readerResizeStartX = 0;
+let readerResizeStartPct = 0;
+let readerResizeDidDrag = false;
+const READER_RESIZE_DRAG_THRESHOLD_PX = 4;
+
+function persistReaderPanelWidthPct() {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(READER_PANEL_WIDTH_PCT_KEY, String(readerPanelWidthPct.value.toFixed(1)));
+  window.localStorage.setItem(READER_PANEL_RESIZED_KEY, 'true');
+}
+
+function endReaderPanelResize({ persist = false } = {}) {
+  if (!readerResizeActive.value) return;
+  readerResizeActive.value = false;
+
+  if (readerResizeHandleEl && readerResizePointerId != null) {
+    try {
+      readerResizeHandleEl.releasePointerCapture(readerResizePointerId);
+    } catch { /* ignore */ }
+  }
+
+  readerResizeHandleEl = null;
+  readerResizePointerId = null;
+  readerResizeDidDrag = false;
+  document.body.classList.remove('inbox-reader-resizing');
+  document.removeEventListener('pointermove', onReaderPanelResize);
+  document.removeEventListener('pointerup', stopReaderPanelResize);
+  document.removeEventListener('pointercancel', stopReaderPanelResize);
+  window.removeEventListener('blur', onReaderPanelResizeAbort);
+
+  if (persist) {
+    persistReaderPanelWidthPct();
+  }
+}
+
+function onReaderPanelResizeAbort() {
+  endReaderPanelResize({ persist: false });
+}
+
+function startReaderPanelResize(event) {
+  if (!(event instanceof PointerEvent) || event.button !== 0) return;
+
+  endReaderPanelResize({ persist: false });
+
+  readerResizeHandleEl = event.currentTarget;
+  readerResizePointerId = event.pointerId;
+  readerResizeStartX = event.clientX;
+  readerResizeStartPct = effectiveReaderPanelWidthPct.value;
+  readerResizeDidDrag = false;
+  readerResizeActive.value = true;
+
+  try {
+    readerResizeHandleEl.setPointerCapture(event.pointerId);
+  } catch { /* ignore */ }
+
+  document.addEventListener('pointermove', onReaderPanelResize);
+  document.addEventListener('pointerup', stopReaderPanelResize);
+  document.addEventListener('pointercancel', stopReaderPanelResize);
+  window.addEventListener('blur', onReaderPanelResizeAbort);
+}
+
+function onReaderPanelResize(event) {
+  if (!readerResizeActive.value || !(event instanceof PointerEvent)) return;
+
+  const deltaX = readerResizeStartX - event.clientX;
+  if (!readerResizeDidDrag && Math.abs(deltaX) < READER_RESIZE_DRAG_THRESHOLD_PX) return;
+
+  if (!readerResizeDidDrag) {
+    readerResizeDidDrag = true;
+    document.body.classList.add('inbox-reader-resizing');
+  }
+
+  const container = readerSplitRef.value;
+  if (!container) return;
+  const rect = container.getBoundingClientRect();
+  if (rect.width <= 0) return;
+
+  const deltaPct = (deltaX / rect.width) * 100;
+  readerPanelUserResized.value = true;
+  readerPanelWidthPct.value = clampReaderPanelPct(readerResizeStartPct + deltaPct);
+}
+
+function stopReaderPanelResize() {
+  endReaderPanelResize({ persist: readerResizeDidDrag });
+}
+
+function resetReaderPanelWidth() {
+  readerPanelUserResized.value = false;
+  readerPanelWidthPct.value = READER_PANEL_DEFAULT_PCT;
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem(READER_PANEL_WIDTH_PCT_KEY);
+    window.localStorage.removeItem(READER_PANEL_RESIZED_KEY);
+  }
+}
 
 const openThreadRecordPath = computed(() => recordPathForEmailThread(openThreadRow.value) || '');
-
-const listPaneClasses = computed(() => {
-  const base = 'h-full min-h-0 border-neutral-200/90 dark:border-gray-700';
-  if (openThreadRow.value) {
-    return `${base} hidden w-full flex-col lg:flex lg:w-[min(100%,380px)] lg:shrink-0 lg:border-r`;
-  }
-  return `${base} flex w-full flex-1 flex-col lg:w-[min(100%,380px)] lg:shrink-0 lg:border-r`;
-});
 
 const threadListScopeLabel = computed(() => {
   const opt = emailFilterOptions.value.find((o) => o.value === emailFilter.value);
@@ -1220,21 +866,182 @@ const groupedEmailThreads = computed(() => {
   }
   const out = [];
   if (groups.today.length) {
-    out.push({ key: 'today', label: t('inbox.inboxProToday'), rows: groups.today });
+    out.push({ key: 'today', label: '', rows: groups.today });
   }
   if (groups.yesterday.length) {
     out.push({ key: 'yesterday', label: t('inbox.inboxProYesterday'), rows: groups.yesterday });
   }
   if (groups.earlier.length) {
-    out.push({ key: 'earlier', label: t('inbox.inboxProEarlier'), rows: groups.earlier });
+    out.push({ key: 'earlier', label: t('inbox.inboxSidebarLast7Days'), rows: groups.earlier });
   }
   return out;
+});
+
+const GMAIL_VIEW_DEFS = [
+  { id: 'INBOX', labelKey: 'inbox.inboxSidebarViewInbox', icon: InboxIcon, iconClass: 'text-red-500', countKey: 'unread' },
+  { id: 'CATEGORY_SOCIAL', labelKey: 'inbox.inboxSidebarViewSocial', icon: HashtagIcon, iconClass: 'text-[#2383E2]' },
+  { id: 'CATEGORY_PROMOTIONS', labelKey: 'inbox.inboxSidebarViewPromotions', icon: HashtagIcon, iconClass: 'text-violet-500' }
+];
+
+const GMAIL_MAIL_DEFS = [
+  { id: 'all', labelKey: 'inbox.inboxSurfaceAllMail', icon: InboxIcon, countKey: 'all' },
+  { id: 'sent', labelKey: 'inbox.inboxSurfaceFolderSent', icon: PaperAirplaneIcon, countKey: 'sent' },
+  { id: 'DRAFT', labelKey: 'inbox.inboxSidebarFolderDrafts', icon: PencilSquareIcon, gmailLabel: true },
+  { id: 'SPAM', labelKey: 'inbox.inboxSidebarFolderSpam', icon: HashtagIcon, gmailLabel: true },
+  { id: 'TRASH', labelKey: 'inbox.inboxSidebarFolderTrash', icon: TrashIcon, gmailLabel: true }
+];
+
+const inboxSidebarViewItems = computed(() => {
+  if (!mailboxFlags.value.gmailIntegrationEnabled || !gmailSidebarMailbox.value?.gmailInboxSync?.connected) {
+    return [
+      {
+        id: 'unread',
+        label: t('inbox.inboxSurfaceFolderUnread'),
+        active: emailFilter.value === 'unread' && !selectedGmailLabelId.value,
+        count: threadCounts.value.unread,
+        icon: InboxIcon,
+        iconClass: 'text-red-500'
+      }
+    ];
+  }
+  const syncIds = new Set(
+    (gmailSidebarMailbox.value.gmailInboxSync.syncLabelIds || []).map((id) => String(id).toUpperCase())
+  );
+  return GMAIL_VIEW_DEFS.filter((v) => syncIds.has(v.id)).map((v) => ({
+    id: v.id,
+    label: t(v.labelKey),
+    active: selectedGmailLabelId.value === v.id && !selectedMailboxFilter.value,
+    count: v.countKey ? threadCounts.value[v.countKey] : null,
+    icon: v.icon,
+    iconClass: v.iconClass
+  }));
+});
+
+const inboxSidebarMailItems = computed(() => {
+  const gmailOn =
+    mailboxFlags.value.gmailIntegrationEnabled && gmailSidebarMailbox.value?.gmailInboxSync?.connected;
+  const syncIds = gmailOn
+    ? new Set((gmailSidebarMailbox.value.gmailInboxSync.syncLabelIds || []).map((id) => String(id).toUpperCase()))
+    : new Set();
+
+  return GMAIL_MAIL_DEFS.filter((item) => {
+    if (item.gmailLabel && gmailOn) return syncIds.has(item.id);
+    if (item.gmailLabel && !gmailOn) return false;
+    return true;
+  }).map((item) => {
+    let active = false;
+    if (item.gmailLabel) {
+      active = selectedGmailLabelId.value === item.id;
+    } else if (item.id === 'all') {
+      active = selectedMailboxFilter.value === null && emailFilter.value === 'all' && !selectedGmailLabelId.value;
+    } else if (item.id === 'sent') {
+      active = emailFilter.value === 'sent' && !selectedGmailLabelId.value;
+    }
+    return {
+      id: item.id,
+      label: t(item.labelKey),
+      active,
+      count: item.countKey ? threadCounts.value[item.countKey] : null,
+      icon: item.icon
+    };
+  });
+});
+
+const inboxSidebarMailboxItems = computed(() =>
+  mailboxes.value.map((mb) => ({
+    id: String(mb.id),
+    label: mb.label,
+    kind: mb.kind,
+    active: selectedMailboxFilter.value === mb.id && !selectedGmailLabelId.value,
+    unreadCount: Number(mb.threadUnreadCount) || 0
+  }))
+);
+
+const SYSTEM_GMAIL_LABELS = new Set(['INBOX', 'SENT', 'DRAFT', 'SPAM', 'TRASH', 'STARRED', 'IMPORTANT', 'UNREAD', 'CATEGORY_PERSONAL', 'CATEGORY_SOCIAL', 'CATEGORY_PROMOTIONS', 'CATEGORY_UPDATES', 'CATEGORY_FORUMS']);
+
+const inboxSidebarGmailFolderItems = computed(() => {
+  if (!mailboxFlags.value.gmailIntegrationEnabled) return [];
+  return gmailSidebarFolders.value
+    .filter((f) => !SYSTEM_GMAIL_LABELS.has(String(f.id).toUpperCase()))
+    .map((f) => ({
+      id: f.id,
+      label: f.label,
+      active: selectedGmailLabelId.value === f.id
+    }));
+});
+
+const inboxThreadListGroups = computed(() =>
+  groupedEmailThreads.value.map((group) => ({
+    key: group.key,
+    label: group.label,
+    rows: group.rows.map((row) => ({
+      threadId: String(row.threadId),
+      sender: emailSenderLine(row),
+      subject: row.subject || '',
+      snippet: emailSnippetLine(row),
+      unread: Boolean(row.unread),
+      done: Boolean(row.done),
+      lastActivityAt: row.lastActivityAt || row.firstActivityAt,
+      formattedDate: formatGmailStyleDate(row.lastActivityAt || row.firstActivityAt),
+      raw: row
+    }))
+  }))
+);
+
+const inboxFilterChips = computed(() => [
+  {
+    id: 'unread',
+    label: t('inbox.inboxSidebarFilterUnread'),
+    active: emailFilter.value === 'unread',
+    dot: true
+  },
+  {
+    id: 'archived',
+    label: t('inbox.inboxSidebarFilterArchived'),
+    active: emailIncludeDone.value
+  },
+  {
+    id: 'sent',
+    label: t('inbox.inboxSurfaceFolderSent'),
+    active: emailFilter.value === 'sent'
+  },
+  {
+    id: 'assigned',
+    label: t('inbox.inboxSurfaceFolderAssignedToMe'),
+    active: emailFilter.value === 'assigned_to_me'
+  }
+]);
+
+const inboxListTitle = computed(() => {
+  if (selectedGmailLabelId.value) {
+    const folder = gmailSidebarFolders.value.find((f) => f.id === selectedGmailLabelId.value);
+    if (folder?.label) return folder.label;
+    return displayNameForGmailLabelId(selectedGmailLabelId.value);
+  }
+  return threadListScopeLabel.value;
+});
+
+const openThreadIndex = computed(() => {
+  if (!openThreadRow.value) return -1;
+  const id = String(openThreadRow.value.threadId);
+  return emailThreads.value.findIndex((r) => String(r.threadId) === id);
+});
+
+const canNavigateThreadPrev = computed(() => openThreadIndex.value > 0);
+const canNavigateThreadNext = computed(() => {
+  const idx = openThreadIndex.value;
+  return idx >= 0 && idx < emailThreads.value.length - 1;
 });
 
 const allVisibleSelected = computed(() => {
   const rows = emailThreads.value;
   if (!rows.length) return false;
   return rows.every((r) => selectedThreadIds.value.includes(String(r.threadId)));
+});
+
+const someVisibleSelected = computed(() => {
+  if (!selectedThreadIds.value.length) return false;
+  return !allVisibleSelected.value;
 });
 
 const selectedPersonalMailbox = computed(() => {
@@ -1354,6 +1161,89 @@ const emailFilterOptions = computed(() => [
   { value: 'assigned_to_me', label: t('inbox.inboxSurfaceFolderAssignedToMe') },
   { value: 'snoozed', label: t('inbox.inboxSurfaceFolderSnoozed') }
 ]);
+
+function onSidebarSelectView(viewId) {
+  if (viewId === 'unread') {
+    selectedMailboxFilter.value = null;
+    selectedGmailLabelId.value = null;
+    emailFilter.value = 'unread';
+  } else {
+    selectGmailLabel(viewId);
+  }
+  selectedThreadIds.value = [];
+  refreshInboxThreadsAndCounts();
+}
+
+function onSidebarSelectMail(mailId) {
+  selectedThreadIds.value = [];
+  if (mailId === 'all') {
+    selectedMailboxFilter.value = null;
+    selectedGmailLabelId.value = null;
+    emailFilter.value = 'all';
+    refreshInboxThreadsAndCounts();
+    return;
+  }
+  if (mailId === 'sent') {
+    selectedMailboxFilter.value = null;
+    selectedGmailLabelId.value = null;
+    emailFilter.value = 'sent';
+    refreshInboxThreadsAndCounts();
+    return;
+  }
+  selectGmailLabel(mailId);
+}
+
+function onInboxFilterChip(chipId) {
+  if (chipId === 'unread') {
+    emailFilter.value = emailFilter.value === 'unread' ? 'all' : 'unread';
+    selectedGmailLabelId.value = null;
+    refreshInboxThreadsAndCounts();
+    return;
+  }
+  if (chipId === 'archived') {
+    emailIncludeDone.value = !emailIncludeDone.value;
+    onEmailIncludeDoneChange();
+    return;
+  }
+  if (chipId === 'sent') {
+    emailFilter.value = emailFilter.value === 'sent' ? 'all' : 'sent';
+    selectedGmailLabelId.value = null;
+    refreshInboxThreadsAndCounts();
+    return;
+  }
+  if (chipId === 'assigned') {
+    emailFilter.value = emailFilter.value === 'assigned_to_me' ? 'all' : 'assigned_to_me';
+    selectedGmailLabelId.value = null;
+    refreshInboxThreadsAndCounts();
+  }
+}
+
+function onInboxSearchInput(value) {
+  emailSearchInput.value = value;
+  scheduleEmailSearch();
+}
+
+async function markThreadRead(row) {
+  if (!row?.threadId || !row.unread) return;
+  try {
+    await apiClient.patch(`/communications/threads/${encodeURIComponent(String(row.threadId))}/view`, {});
+    await refreshInboxThreadsAndCounts();
+  } catch {
+    notifications.error('Could not mark as read');
+  }
+}
+
+function navigateThreadPrev() {
+  const idx = openThreadIndex.value;
+  if (idx <= 0) return;
+  openEmailThreadRecord(emailThreads.value[idx - 1]);
+}
+
+function navigateThreadNext() {
+  const idx = openThreadIndex.value;
+  if (idx < 0 || idx >= emailThreads.value.length - 1) return;
+  openEmailThreadRecord(emailThreads.value[idx + 1]);
+}
 
 function setEmailFilter(value) {
   emailFilter.value = value;
@@ -2277,28 +2167,31 @@ function openEmailThreadRecord(row) {
   const alreadyOpen =
     openThreadRow.value && String(openThreadRow.value.threadId) === threadId;
   openThreadRow.value = row;
-  contextPanelOpen.value = true;
   if (!alreadyOpen) {
     setRouteThreadId(threadId);
+    expandReaderPanel();
   }
 }
 
 function syncOpenThreadFromRoute() {
   const threadId = String(route.query.thread || '').trim();
   if (!threadId) {
-    openThreadRow.value = null;
+    if (readerPanelMounted.value || openThreadRow.value) {
+      collapseReaderPanel();
+    }
     return;
   }
   if (openThreadRow.value && String(openThreadRow.value.threadId) === threadId) {
+    if (!readerPanelExpanded.value) expandReaderPanel();
     return;
   }
   const match = emailThreads.value.find((r) => String(r.threadId) === threadId);
   openThreadRow.value = match || { threadId };
-  contextPanelOpen.value = true;
+  expandReaderPanel();
 }
 
 function closeThreadReader() {
-  openThreadRow.value = null;
+  collapseReaderPanel();
   setRouteThreadId(null);
 }
 
@@ -2400,19 +2293,15 @@ function emailSenderLine(row) {
 }
 
 function emailSnippetLine(row) {
-  const bits = [];
-  const mk = String(row?.relatedTo?.moduleKey || '').toLowerCase();
-  const senderUsesRecord =
-    row?.recordLabel &&
-    row.recordLabel !== '—' &&
-    (mk === 'people' || mk === 'organizations');
-  if (row?.recordLabel && !senderUsesRecord) bits.push(String(row.recordLabel));
-  if (mk) {
-    bits.push(mk === 'workspace' ? 'Workspace mail' : String(row.relatedTo.moduleKey));
+  const blob = String(row?.searchBlob || '').trim();
+  if (blob) {
+    const preview = blob.slice(0, 140);
+    return preview + (blob.length > 140 ? '…' : '');
   }
-  if (row?.messageCount != null) bits.push(`${row.messageCount} in thread`);
+  const bits = [];
+  if (row?.recordLabel && row.recordLabel !== '—') bits.push(String(row.recordLabel));
   if (row?.assignedToDisplay) bits.push(`→ ${row.assignedToDisplay}`);
-  return bits.join(' · ') || 'Open to view in activity';
+  return bits.join(' · ') || '';
 }
 
 function emailRowClasses(row) {
@@ -2482,11 +2371,6 @@ function onDocumentVisibilityChange() {
   }, 400);
 }
 
-let readerSplitMq = null;
-function updateReaderSplitView() {
-  readerSplitView.value = typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
-}
-
 watch(
   () => route.query.thread,
   () => {
@@ -2495,10 +2379,6 @@ watch(
 );
 
 onMounted(async () => {
-  updateReaderSplitView();
-  readerSplitMq = window.matchMedia('(min-width: 1024px)');
-  readerSplitMq.addEventListener('change', updateReaderSplitView);
-
   syncOpenThreadFromRoute();
 
   const tab = String(route.query.tab || '').toLowerCase();
@@ -2523,7 +2403,10 @@ function onMailboxConnectedEvent() {
 }
 
 onUnmounted(() => {
-  if (readerSplitMq) readerSplitMq.removeEventListener('change', updateReaderSplitView);
+  endReaderPanelResize({ persist: false });
+  readerPanelExpanded.value = false;
+  readerPanelMounted.value = false;
+  openThreadRow.value = null;
   inboxStream.disconnect();
   document.removeEventListener('visibilitychange', onDocumentVisibilityChange);
   window.removeEventListener('litedesk:mailbox-connected', onMailboxConnectedEvent);
@@ -2533,3 +2416,110 @@ onUnmounted(() => {
   cleanupGmailOAuthPopup();
 });
 </script>
+
+<style scoped>
+.inbox-reader-shell {
+  width: 0;
+  max-width: 0;
+  transition: width 0.3s cubic-bezier(0.32, 0.72, 0, 1), max-width 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.inbox-reader-shell--no-transition {
+  transition: none;
+}
+
+.inbox-reader-panel {
+  opacity: 0;
+  transition: opacity 0.22s ease 0.06s;
+}
+
+.inbox-reader-shell--open .inbox-reader-panel {
+  opacity: 1;
+}
+
+.inbox-reader-shell--no-transition .inbox-reader-panel {
+  transition: none;
+}
+
+.inbox-reader-resize-handle {
+  cursor: col-resize;
+}
+
+.inbox-reader-resize-line {
+  position: absolute;
+  inset: 0 auto 0 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: transparent;
+  transition: background-color 0.15s ease, width 0.15s ease;
+}
+
+.inbox-reader-resize-grip {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 2.75rem;
+  width: 0.55rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background: transparent;
+  opacity: 0;
+  transition: opacity 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.inbox-reader-resize-grip span {
+  display: block;
+  height: 1rem;
+  width: 2px;
+  border-radius: 9999px;
+  background: #9b9a97;
+}
+
+.inbox-reader-resize-handle:hover .inbox-reader-resize-line,
+.inbox-reader-resize-handle--active .inbox-reader-resize-line {
+  width: 2px;
+  background: rgb(35 131 226 / 0.45);
+}
+
+.inbox-reader-resize-handle:hover .inbox-reader-resize-grip,
+.inbox-reader-resize-handle--active .inbox-reader-resize-grip {
+  opacity: 1;
+  border-color: #ebebeb;
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.08);
+}
+
+.inbox-reader-resize-handle--active .inbox-reader-resize-line {
+  background: rgb(35 131 226 / 0.75);
+}
+
+.inbox-reader-resize-handle--active .inbox-reader-resize-grip span {
+  background: #2383e2;
+}
+
+.inbox-context-rail {
+  width: 2rem;
+  flex-shrink: 0;
+  transition: width 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.inbox-context-rail--open {
+  width: var(--inbox-context-rail-width, 300px);
+  min-width: var(--inbox-context-rail-width, 300px);
+}
+</style>
+
+<style>
+body.inbox-reader-resizing {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+body.inbox-reader-resizing * {
+  cursor: col-resize !important;
+}
+</style>
