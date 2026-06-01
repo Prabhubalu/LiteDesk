@@ -1,21 +1,23 @@
 <template>
-  <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabApplications') }}</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          {{ t('settings.settingsAppsListSubtitle') }}
-        </p>
+  <SettingsScrollPanel>
+    <template #header>
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabApplications') }}</h2>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            {{ t('settings.settingsAppsListSubtitle') }}
+          </p>
+        </div>
+        <button
+          @click="viewAppManagement"
+          class="shrink-0 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors border border-indigo-200 dark:border-indigo-800"
+        >
+          {{ t('settings.settingsAppsToggleManagement') }}
+        </button>
       </div>
-      <button
-        @click="viewAppManagement"
-        class="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors border border-indigo-200 dark:border-indigo-800"
-      >
-        {{ t('settings.settingsAppsToggleManagement') }}
-      </button>
-    </div>
+    </template>
 
+    <div class="space-y-6">
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-12">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -109,10 +111,12 @@
         </div>
       </div>
     </div>
-  </div>
+    </div>
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';

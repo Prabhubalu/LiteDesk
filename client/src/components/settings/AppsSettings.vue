@@ -2,8 +2,8 @@
   <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
     <!-- Header -->
     <div
-      class="flex shrink-0 items-center justify-between"
-      :class="showOptionsGrid ? 'pb-6' : 'pb-3'"
+      class="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-gray-200 bg-white/95 pb-3 pt-1 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95 -mx-1 px-1"
+      :class="showOptionsGrid ? 'mb-0' : 'mb-0'"
     >
       <div class="flex min-w-0 items-center gap-3">
         <button @click="goBack" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
@@ -39,7 +39,7 @@
       </button>
     </div>
 
-    <div v-if="showOptionsGrid" class="min-h-0 flex-1 overflow-y-auto">
+    <div v-if="showOptionsGrid" class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
       <!-- Sales App Section (only if Sales is installed and selected) -->
       <div v-if="hasSalesAccess && isSalesApp">
         <!-- Settings Options Grid -->

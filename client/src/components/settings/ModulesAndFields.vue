@@ -1,6 +1,9 @@
 <template>
-  <div class="p-6 flex flex-col" style="height: 100%; overflow: hidden;">
-    <div v-if="!props.hideHeader" class="mb-4 flex items-center justify-between gap-3">
+  <div
+    class="flex min-h-0 flex-1 flex-col overflow-hidden"
+    :class="[props.hideHeader ? '' : 'p-6', modulePageDirty ? SETTINGS_SAVE_BAR_CONTENT_CLASS : '']"
+  >
+    <div v-if="!props.hideHeader" class="mb-4 flex shrink-0 items-center justify-between gap-3">
       <template v-if="selectedModuleId">
         <div class="flex items-center gap-3">
           <button @click="clearSelection" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5" :title="t('settings.modFieldsBackTitle')">
@@ -110,7 +113,7 @@
     <!-- If module selected: configuration area with top tabs -->
     <div v-else class="flex-1 overflow-hidden flex flex-col gap-4 min-h-0">
       <!-- Top tabs: Module details, Field Configurations, Relationship, Quick Create -->
-      <div class="px-2">
+      <div class="shrink-0 px-2">
         <div class="border-b border-gray-200 dark:border-gray-700">
           <nav class="-mb-px flex space-x-6">
             <button
@@ -129,7 +132,7 @@
             </button>
           </nav>
         </div>
-        <div class="flex items-center justify-between py-3">
+        <div v-if="activeTopTab === 'pipeline' || activeTopTab === 'playbooks'" class="flex items-center justify-between py-3">
           <div class="text-sm text-gray-500 dark:text-gray-400">
             <span v-if="activeTopTab === 'pipeline'">{{ t('settings.modFieldsPipelineHint') }}</span>
             <span v-else-if="activeTopTab === 'playbooks'">{{ t('settings.modFieldsPlaybooksHint') }}</span>
@@ -932,7 +935,6 @@
                 <span v-else-if="isCoreField(currentField, selectedModule?.key)" class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
               </template>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsModuleKeyLine', { moduleName: selectedModule?.name, moduleKey: selectedModule?.key }) }}</p>
             <!-- People module: Metadata-based messages -->
             <template v-if="isPeopleModule && currentField?.key">
               <p v-if="getPeopleFieldMetadata(currentField.key)?.owner === 'system'" class="mt-1 text-xs text-amber-600 dark:text-amber-400">{{ t('settings.modFieldsMsgSystemField') }}</p>
@@ -952,7 +954,6 @@
             </template>
           </div>
           <div class="flex items-center gap-2">
-            <button v-if="selectedModule && isDirty" @click="saveModule" :disabled="isSaving" class="px-3 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors shadow-md">{{ t('settings.saveChanges') }}</button>
             <button v-if="currentField && canDeleteField && !props.hideFieldCreation" @click="openDeleteFieldConfirm" class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white dark:bg-red-600 dark:hover:bg-red-700 rounded-lg text-sm font-medium transition-colors shadow-sm">{{ t('settings.modFieldsDeleteField') }}</button>
           </div>
         </div>
@@ -2448,48 +2449,7 @@
 
       <!-- Other tabs: Module details, Relationship, Quick Create -->
       <section v-else class="flex-1 min-w-0 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
-        <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between flex-shrink-0">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ topTabs.find(tab => tab.id === activeTopTab)?.name ?? t('settings.modFieldsTabDetails') }}
-            </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsModuleKeyLine', { moduleName: selectedModule?.name, moduleKey: selectedModule?.key }) }}</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <button 
-              v-if="activeTopTab === 'quick' && quickDirty"
-              @click="saveQuickCreate" 
-              :disabled="isSavingQuickCreate"
-              class="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-md"
-            >
-              <svg v-if="!isSavingQuickCreate" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              <svg v-else class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {{ isSavingQuickCreate ? t('states.saving') : t('settings.saveChanges') }}
-            </button>
-            <button 
-              v-if="['details', 'relationships', 'pipeline'].includes(activeTopTab) && isDirty"
-              @click="saveModule" 
-              :disabled="isSaving"
-              class="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-md"
-            >
-              <svg v-if="!isSaving" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              <svg v-else class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {{ isSaving ? t('states.saving') : t('settings.saveChanges') }}
-            </button>
-          </div>
-        </div>
-
-        <div class="p-4 overflow-y-auto" v-if="activeTopTab === 'details'">
+        <div class="flex-1 min-h-0 overflow-y-auto p-4" v-if="activeTopTab === 'details'">
           <!-- Platform Ownership Info Box (for platform-owned modules) -->
           <div v-if="selectedModule?.platformOwned || selectedModule?.type === 'system'" class="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div class="flex items-start gap-3">
@@ -2618,7 +2578,6 @@
           <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabStatusTypes') }}</h3>
               <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsOrgsStatusTypesDesc') }}</p>
               <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p class="text-xs text-blue-800 dark:text-blue-400">
@@ -2745,30 +2704,18 @@
               </div>
             </div>
 
-            <!-- Save Button -->
-            <div v-if="statusTypesDirty" class="mt-8 flex justify-end">
-              <button
-                @click="saveStatusTypes"
-                :disabled="savingStatusTypes"
-                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-              >
-                <div v-if="savingStatusTypes" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>{{ savingStatusTypes ? t('states.saving') : t('settings.saveChanges') }}</span>
-              </button>
-            </div>
           </div>
         </div>
 
         <!-- Types Tab (People module): per-app participation roles -->
         <div class="flex-1 overflow-y-auto" v-else-if="activeTopTab === 'people-types' && isPeopleModule">
-          <PeopleTypesSettings />
+          <PeopleTypesSettings embedded />
         </div>
 
         <!-- Status & Priority Tab (Tasks module only) - Summary view, edit in Field Configurations -->
         <div class="flex-1 overflow-y-auto" v-else-if="activeTopTab === 'status-priority' && isTasksModule">
           <div class="p-6">
             <div class="mb-6">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabStatusPriority') }}</h3>
               <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsTasksStatusPriorityDesc') }}</p>
               <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p class="text-xs text-blue-800 dark:text-blue-400">
@@ -2809,7 +2756,6 @@
           <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabStatusTypes') }}</h3>
               <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsItemsStatusTypesDesc') }}</p>
             </div>
 
@@ -2950,17 +2896,6 @@
               </div>
             </div>
 
-            <!-- Save Button -->
-            <div v-if="itemStatusTypesDirty" class="mt-8 flex justify-end">
-              <button
-                @click="saveItemStatusTypes"
-                :disabled="savingItemStatusTypes"
-                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-              >
-                <div v-if="savingItemStatusTypes" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>{{ savingItemStatusTypes ? t('states.saving') : t('settings.saveChanges') }}</span>
-              </button>
-            </div>
           </div>
         </div>
 
@@ -2976,7 +2911,6 @@
           <div class="p-6 lg:p-8 max-w-4xl mx-auto space-y-8">
             <!-- Header -->
             <div class="space-y-2">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsEventStatusTitle') }}</h3>
               <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsEventStatusDesc') }}</p>
               <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p class="text-xs text-blue-800 dark:text-blue-400">
@@ -3040,7 +2974,6 @@
           <div class="p-6 lg:p-8 max-w-4xl mx-auto space-y-10">
             <!-- Header -->
             <div class="space-y-2">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabRolesRules') }}</h3>
               <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsRolesRulesDesc') }}</p>
               <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p class="text-xs text-blue-800 dark:text-blue-400">
@@ -3394,17 +3327,6 @@
               </div>
             </div>
 
-            <!-- Save Button -->
-            <div v-if="eventRolesRulesDirty" class="mt-8 flex justify-end">
-              <button
-                @click="saveEventRolesRules"
-                :disabled="savingEventRolesRules"
-                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-              >
-                <div v-if="savingEventRolesRules" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>{{ savingEventRolesRules ? t('states.saving') : t('settings.saveChanges') }}</span>
-              </button>
-            </div>
           </div>
         </div>
 
@@ -3425,7 +3347,6 @@
           <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabLogic') }}</h3>
               <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsLogicRulesDesc') }}</p>
               
               <!-- Capability Indicators -->
@@ -3511,7 +3432,6 @@
           <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabOutcomes') }}</h3>
               <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsOutcomesDesc') }}</p>
               
               <!-- Capability Indicators -->
@@ -3596,7 +3516,6 @@
           <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.modFieldsTabAccess') }}</h3>
               <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsAccessDesc') }}</p>
               
               <!-- Capability Indicators -->
@@ -3888,23 +3807,6 @@
                     {{ currentPipeline.isDefault ? t('settings.modFieldsDefaultPipeline') : t('settings.modFieldsCustomPipeline') }}
                   </p>
                 </div>
-                <button
-                  v-if="isDirty"
-                  @click="saveModule"
-                  :disabled="isSaving"
-                  class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-                  :class="[
-                    isSaving
-                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed'
-                      : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow'
-                  ]"
-                >
-                  <svg v-if="isSaving" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>{{ isSaving ? t('states.saving') : t('settings.modFieldsSavePipelines') }}</span>
-                </button>
               </div>
               <div v-if="currentPipeline" class="p-4 space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -5202,6 +5104,13 @@
         </div>
       </Dialog>
     </TransitionRoot>
+
+    <SettingsSaveBar
+      :visible="modulePageDirty"
+      :saving="modulePageSaving"
+      @reset="resetModulePageChanges"
+      @save="saveModulePageChanges"
+    />
   </div>
 </template>
 
@@ -5236,6 +5145,8 @@ import PeopleTypesSettings from './PeopleTypesSettings.vue';
 import AddCustomFieldDrawer from './AddCustomFieldDrawer.vue';
 import RelationshipFormDrawer from './RelationshipFormDrawer.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
+import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
+import { SETTINGS_SAVE_BAR_CONTENT_CLASS } from '@/components/settings/settingsSaveBar';
 import {
   ArrowsUpDownIcon,
   ExclamationTriangleIcon,
@@ -12325,6 +12236,101 @@ const eventRolesRulesDirty = computed(() => {
   
   return current !== eventRolesRulesOriginalSnapshot.value;
 });
+
+const modulePageDirty = computed(() => {
+  const tab = activeTopTab.value;
+  if (tab === 'quick') return quickDirty.value;
+  if (tab === 'status-types') {
+    if (isOrganizationsModule.value) return statusTypesDirty.value;
+    if (isItemsModule.value) return itemStatusTypesDirty.value;
+  }
+  if (tab === 'roles-rules' && isEventsModule.value) return eventRolesRulesDirty.value;
+  if (['details', 'relationships', 'pipeline', 'fields', 'playbooks'].includes(tab)) return isDirty.value;
+  return false;
+});
+
+const modulePageSaving = computed(() => {
+  const tab = activeTopTab.value;
+  if (tab === 'quick') return isSavingQuickCreate.value;
+  if (tab === 'status-types') {
+    if (isOrganizationsModule.value) return savingStatusTypes.value;
+    if (isItemsModule.value) return savingItemStatusTypes.value;
+  }
+  if (tab === 'roles-rules' && isEventsModule.value) return savingEventRolesRules.value;
+  return isSaving.value;
+});
+
+async function saveModulePageChanges() {
+  const tab = activeTopTab.value;
+  if (tab === 'quick') {
+    await saveQuickCreate();
+    return;
+  }
+  if (tab === 'status-types') {
+    if (isOrganizationsModule.value) {
+      await saveStatusTypes();
+      return;
+    }
+    if (isItemsModule.value) {
+      await saveItemStatusTypes();
+      return;
+    }
+  }
+  if (tab === 'roles-rules' && isEventsModule.value) {
+    await saveEventRolesRules();
+    return;
+  }
+  await saveModule();
+}
+
+function restoreItemStatusTypesFromSnapshot() {
+  if (!itemStatusTypesOriginalSnapshot.value) return;
+  try {
+    const data = JSON.parse(itemStatusTypesOriginalSnapshot.value);
+    itemTypes.value = (data.itemTypes || []).map((entry) => ({ ...entry }));
+    itemStatusPicklist.value = (data.status || []).map((entry) => ({ ...entry }));
+  } catch (err) {
+    console.error('Failed to restore item status types:', err);
+  }
+}
+
+function restoreEventRolesRulesFromSnapshot() {
+  if (!eventRolesRulesOriginalSnapshot.value) return;
+  try {
+    const data = JSON.parse(eventRolesRulesOriginalSnapshot.value);
+    eventRoleRules.value = JSON.parse(JSON.stringify(data.roleRules || {}));
+    eventGeoRules.value = JSON.parse(JSON.stringify(data.geoRules || {}));
+    eventFormRules.value = JSON.parse(JSON.stringify(data.formRules || {}));
+  } catch (err) {
+    console.error('Failed to restore event roles & rules:', err);
+  }
+}
+
+function resetModulePageChanges() {
+  const tab = activeTopTab.value;
+  if (tab === 'quick') {
+    if (!quickOriginalSnapshot.value || !selectedModule.value) return;
+    selectModule(selectedModule.value, currentField.value?.key || null);
+    return;
+  }
+  if (tab === 'status-types') {
+    if (isOrganizationsModule.value) {
+      fetchStatusTypes();
+      return;
+    }
+    if (isItemsModule.value) {
+      restoreItemStatusTypesFromSnapshot();
+      return;
+    }
+  }
+  if (tab === 'roles-rules' && isEventsModule.value) {
+    restoreEventRolesRulesFromSnapshot();
+    return;
+  }
+  if (selectedModule.value) {
+    selectModule(selectedModule.value, currentField.value?.key || null);
+  }
+}
 
 // Update event role rule
 function updateEventRoleRule(eventType, roleType, value) {

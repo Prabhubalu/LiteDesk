@@ -1,7 +1,7 @@
 <template>
-  <div class="p-6 h-full flex flex-col overflow-hidden">
+  <div :class="embedded ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : 'p-6 h-full flex flex-col overflow-hidden'">
     <!-- Header with back button when group is selected -->
-    <div class="mb-4 flex items-center justify-between gap-3">
+    <div class="mb-4 flex shrink-0 items-center justify-between gap-3">
       <template v-if="selectedGroupId">
         <div class="flex items-center gap-3">
           <button @click="clearSelection" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5" :title="t('settings.groupsBackTitle')">
@@ -13,11 +13,20 @@
           </div>
         </div>
       </template>
-      <template v-else>
+      <template v-else-if="!embedded">
         <div>
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.groupsPageTitle') }}</h2>
           <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.groupsPageSubtitle') }}</p>
         </div>
+        <button @click="openCreateModal" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          {{ t('settings.groupsCreate') }}
+        </button>
+      </template>
+      <template v-else>
+        <div></div>
         <button @click="openCreateModal" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -332,6 +341,13 @@
 </template>
 
 <script setup>
+defineProps({
+  embedded: {
+    type: Boolean,
+    default: false
+  }
+});
+
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';

@@ -1,34 +1,18 @@
 <template>
-  <div class="space-y-6">
-    <!-- Header -->
-    <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.integrationsTitle') }}</h2>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        {{ t('settings.integrationsSubtitle') }}
-      </p>
-    </div>
-
-    <!-- Info Banner -->
-    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-      <div class="flex items-start gap-3">
-        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div>
-          <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300">{{ t('settings.integrationsBannerTitle') }}</h3>
-          <p class="text-sm text-blue-700 dark:text-blue-400 mt-1">
-            {{ t('settings.integrationsBannerBody') }}
-          </p>
-        </div>
+  <SettingsScrollPanel v-if="currentView === 'overview'">
+    <template #header>
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.integrationsTitle') }}</h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          {{ t('settings.integrationsSubtitle') }}
+        </p>
       </div>
-    </div>
+    </template>
 
-    <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-12">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
     </div>
 
-    <!-- Error State -->
     <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
       <div class="flex items-center gap-2">
         <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -40,221 +24,174 @@
       </div>
     </div>
 
-    <!-- Content -->
-    <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Catalog / List -->
-      <div class="lg:col-span-1 space-y-4">
-        <div class="flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsAvailableTitle') }}</h3>
-          <span class="text-xs text-gray-500 dark:text-gray-400">{{ integrationsCountLabel(integrations.length) }}</span>
-        </div>
-        <div class="space-y-3">
-          <button
-            v-for="integration in integrations"
-            :key="integration.key"
-            @click="selectIntegration(integration)"
-            :class="[
-              'w-full text-left p-4 rounded-lg border transition-all flex items-start gap-3',
-              selectedIntegration && selectedIntegration.key === integration.key
-                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-400 hover:shadow-sm'
-            ]"
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <button
+        v-for="integration in integrations"
+        :key="integration.key"
+        type="button"
+        class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md hover:border-indigo-500 dark:hover:border-indigo-400 transition-all cursor-pointer group text-left"
+        @click="navigateToIntegration(integration)"
+      >
+        <div class="flex items-start gap-4">
+          <div
+            class="flex items-center justify-center w-12 h-12 rounded-lg flex-shrink-0 group-hover:scale-105 transition-transform"
+            :class="getIntegrationIconMeta(integration.key).iconBg"
           >
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1">
-                <h4 class="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                  {{ integration.name }}
-                </h4>
-                <span
-                  :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium',
-                    integration.scope === 'platform'
-                      ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
-                      : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
-                  ]"
-                >
-                  {{ scopeBadgeLabel(integration.scope) }}
-                </span>
-              </div>
-              <p class="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                {{ integration.description }}
-              </p>
-              <div class="mt-2 flex items-center gap-2">
-                <span
-                  :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium',
-                    integration.enabled
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-                  ]"
-                >
-                  {{ integrationStatusLabel(integration.enabled) }}
-                </span>
-                <span
-                  v-if="integration.recommended"
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300"
-                >
-                  {{ t('settings.integrationsRecommended') }}
-                </span>
-              </div>
+            <component :is="getIntegrationIconMeta(integration.key).icon" class="w-6 h-6 text-white" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <h4 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
+                {{ integration.name }}
+              </h4>
+              <span
+                class="h-2 w-2 shrink-0 rounded-full"
+                :class="integration.enabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'"
+                :title="integrationStatusLabel(integration.enabled)"
+              />
             </div>
-          </button>
-        </div>
-      </div>
-
-      <!-- Detail View -->
-      <div class="lg:col-span-2">
-        <div v-if="!selectedIntegration" class="h-full flex items-center justify-center border border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 bg-gray-50 dark:bg-gray-800/40">
-          <div class="text-center">
-            <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ t('settings.integrationsSelectTitle') }}</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.integrationsSelectHint') }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
+              {{ integration.description }}
+            </p>
+            <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <span>{{ scopeBadgeLabel(integration.scope) }}</span>
+              <span v-if="integration.recommended">{{ t('settings.integrationsRecommended') }}</span>
+            </div>
           </div>
         </div>
-        <div v-else class="space-y-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <div class="flex items-center gap-2 mb-1">
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ selectedIntegration.name }}</h3>
-                <span
-                  :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium',
-                    selectedIntegration.scope === 'platform'
-                      ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
-                      : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
-                  ]"
-                >
-                  {{ scopeBadgeLabel(selectedIntegration.scope) }}
-                </span>
-              </div>
-              <p class="text-sm text-gray-600 dark:text-gray-400 max-w-2xl">
-                {{ selectedIntegration.description }}
-              </p>
-            </div>
-            <div class="flex flex-col items-end gap-2">
+        <div class="mt-4 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span>{{ t('settings.integrationsConfigure') }}</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </button>
+    </div>
+  </SettingsScrollPanel>
+
+  <SettingsScrollPanel v-else class="flex min-h-0 flex-1 flex-col overflow-hidden" :save-bar-visible="emailSettingsDirty">
+    <template #header>
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="flex min-w-0 flex-1 items-start gap-3">
+          <button
+            type="button"
+            class="mt-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            :title="t('settings.integrationsBackTitle')"
+            @click="navigateToOverview"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+          <div v-if="selectedIntegration" class="min-w-0 flex-1">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ selectedIntegration.name }}</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              {{ selectedIntegration.description }}
+            </p>
+            <div class="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <span
                 :class="[
-                  'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
+                  'inline-flex items-center rounded-full px-2 py-0.5 font-medium',
                   selectedIntegration.enabled
-                    ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                 ]"
               >
                 {{ integrationStatusLabel(selectedIntegration.enabled) }}
               </span>
-              <button
-                v-if="selectedIntegration.enabled"
-                type="button"
-                @click="confirmDisable"
-                :disabled="actionLoading"
-                class="px-4 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ t('settings.integrationsDisableButton') }}
-              </button>
-              <button
-                v-else
-                type="button"
-                @click="confirmEnable"
-                :disabled="actionLoading"
-                class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ t('settings.integrationsEnableButton') }}
-              </button>
+              <span>{{ scopeBadgeLabel(selectedIntegration.scope) }}</span>
+              <span v-if="selectedIntegration.recommended">{{ t('settings.integrationsRecommended') }}</span>
+              <span v-if="selectedIntegration.key === 'email-provider' && selectedIntegration.configStatus">
+                · {{ selectedIntegration.configStatus === 'configured'
+                  ? t('settings.integrationsConfigConfigured')
+                  : t('settings.integrationsConfigNotConfigured') }}
+              </span>
             </div>
           </div>
-
-          <!-- Scope & Apps -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-gray-50 dark:bg-gray-800/60 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.integrationsScopeHeading') }}</h4>
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                <span v-if="selectedIntegration.scope === 'platform'">
-                  {{ t('settings.integrationsScopePlatformDesc') }}
-                </span>
-                <span v-else>
-                  {{ t('settings.integrationsScopeAppDesc') }}
-                </span>
-              </p>
-              <div v-if="selectedIntegration.apps && selectedIntegration.apps.length" class="mt-3 flex flex-wrap gap-2">
-                <span
-                  v-for="appKey in selectedIntegration.apps"
-                  :key="appKey"
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200"
-                >
-                  {{ appKey }}
-                </span>
-              </div>
-            </div>
-            <div class="bg-gray-50 dark:bg-gray-800/60 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.integrationsConnectionStatusHeading') }}</h4>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                {{ connectionStatusMessage(selectedIntegration.enabled) }}
-              </p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                {{ t('settings.integrationsConnectionNote') }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Email Provider: Configuration Status -->
-          <div
-            v-if="selectedIntegration.key === 'email-provider' && selectedIntegration.configStatus !== undefined"
-            class="rounded-lg p-4 border"
-            :class="selectedIntegration.configStatus === 'configured'
-              ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-              : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'"
+        </div>
+        <div v-if="selectedIntegration && !detailLoading" class="flex shrink-0 flex-wrap items-center gap-2">
+          <button
+            v-if="selectedIntegration.key === 'email-provider' && selectedIntegration.enabled && selectedIntegration.configStatus === 'configured'"
+            type="button"
+            @click="sendTestEmail"
+            :disabled="testEmailLoading"
+            class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           >
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.integrationsConfigurationHeading') }}</h4>
-            <p v-if="selectedIntegration.configStatus === 'configured'" class="text-sm text-green-800 dark:text-green-300">
-              {{ t('settings.integrationsConfigConfigured') }}
-            </p>
-            <p v-else class="text-sm text-amber-800 dark:text-amber-300">
-              {{ t('settings.integrationsConfigNotConfigured') }}
-            </p>
-            <p
-              v-if="selectedIntegration.emailPlatformDefaults?.notificationChannelNote"
-              class="mt-2 text-xs text-gray-600 dark:text-gray-400"
-            >
-              {{ selectedIntegration.emailPlatformDefaults.notificationChannelNote }}
-            </p>
-            <button
-              v-if="selectedIntegration.configStatus === 'configured'"
-              type="button"
-              @click="sendTestEmail"
-              :disabled="testEmailLoading"
-              class="mt-3 px-4 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {{ testEmailLoading ? t('settings.integrationsSendingTestEmail') : t('settings.integrationsSendTestEmail') }}
-            </button>
-          </div>
-
-          <div
-            v-if="selectedIntegration.key === 'email-provider'"
-            class="rounded-lg p-4 border border-indigo-200 dark:border-indigo-800 bg-indigo-50/80 dark:bg-indigo-950/25"
+            {{ testEmailLoading ? t('settings.integrationsSendingTestEmail') : t('settings.integrationsSendTestEmail') }}
+          </button>
+          <button
+            v-if="selectedIntegration.enabled"
+            type="button"
+            @click="confirmDisable"
+            :disabled="actionLoading"
+            class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
           >
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsEmailOverviewTitle') }}</h4>
-            <ul class="mt-2 space-y-1.5 text-xs text-gray-700 dark:text-gray-300 list-disc pl-4">
-              <li>{{ t('settings.integrationsEmailOverviewCrmOutbound') }}</li>
-              <li>{{ t('settings.integrationsEmailOverviewSendPolicy') }}</li>
-              <li>{{ t('settings.integrationsEmailOverviewGmail') }}</li>
-              <li>{{ t('settings.integrationsEmailOverviewInbound') }}</li>
-            </ul>
-            <p class="mt-2 text-[11px] text-indigo-900/80 dark:text-indigo-200/90">
-              {{ t('settings.integrationsEmailNotificationPlatform', { provider: selectedIntegration.emailPlatformDefaults?.notificationProvider || 'oci-email-delivery' }) }}
-            </p>
-          </div>
-
-          <div
-            v-if="selectedIntegration.key === 'email-provider'"
-            class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
+            {{ t('settings.integrationsDisableButton') }}
+          </button>
+          <button
+            v-else
+            type="button"
+            @click="confirmEnable"
+            :disabled="actionLoading"
+            class="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.integrationsCrmOutboundTitle') }}</h4>
-            <p
-              v-if="emailCriticalFieldsLocked"
-              class="mb-3 text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2"
-            >
-              {{ t('settings.integrationsCrmOutboundOwnerOnlyHint') }}
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {{ t('settings.integrationsEnableButton') }}
+          </button>
+        </div>
+      </div>
+    </template>
+
+    <template #tabs>
+      <nav v-if="selectedIntegration && detailTabs.length > 1" class="-mb-px flex gap-1 overflow-x-auto">
+        <button
+          v-for="tab in detailTabs"
+          :key="tab.id"
+          type="button"
+          class="inline-flex shrink-0 items-center whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors"
+          :class="activeDetailTab === tab.id
+            ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'"
+          @click="activeDetailTab = tab.id"
+        >
+          {{ t(tab.labelKey) }}
+        </button>
+      </nav>
+    </template>
+
+    <div v-if="detailLoading || !selectedIntegration" class="flex items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+    </div>
+
+    <div v-else class="space-y-5">
+      <!-- Non-email integrations -->
+      <div v-if="selectedIntegration.key !== 'email-provider' && activeDetailTab === 'general'" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+        <details v-if="selectedIntegration.dataSharedSummary" class="group">
+          <summary class="cursor-pointer text-sm font-medium text-gray-900 dark:text-white">
+            {{ t('settings.integrationsDataSharedTitle') }}
+          </summary>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            {{ selectedIntegration.dataSharedSummary }}
+          </p>
+          <p v-if="selectedIntegration.dataSharedDetails" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {{ selectedIntegration.dataSharedDetails }}
+          </p>
+        </details>
+        <p v-else class="text-sm text-gray-500 dark:text-gray-400">
+          {{ connectionStatusMessage(selectedIntegration.enabled) }}
+        </p>
+      </div>
+
+      <!-- Email provider -->
+      <template v-else-if="selectedIntegration.key === 'email-provider'">
+        <div v-if="activeDetailTab === 'setup'" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsCrmOutboundTitle') }}</h3>
+          <p
+            v-if="emailCriticalFieldsLocked"
+            class="mt-3 text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2"
+          >
+            {{ t('settings.integrationsCrmOutboundOwnerOnlyHint') }}
+          </p>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
               <label class="text-sm">
                 <span class="block mb-1 text-gray-700 dark:text-gray-300">
                   {{ t('settings.integrationsProviderLabel') }}
@@ -444,69 +381,9 @@
                 class="text-xs text-gray-500 dark:text-gray-400"
               >{{ t('settings.integrationsOciSecureRequired') }}</span>
             </label>
+        </div>
 
-            <div class="mt-4">
-              <button
-                type="button"
-                @click="saveEmailConfig(false)"
-                :disabled="savingConfig || savingGmailOAuthConfig"
-                class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ savingConfig ? t('settings.integrationsSavingEmailSettings') : t('settings.integrationsSaveEmailSettings') }}
-              </button>
-            </div>
-          </div>
-
-          <div
-            v-if="selectedIntegration.key === 'email-provider'"
-            class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
-          >
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.integrationsWebhookSimulatorTitle') }}</h4>
-            <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-              {{ t('settings.integrationsWebhookSimulatorDesc') }}
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <label class="text-sm">
-                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsEventType') }}</span>
-                <select
-                  v-model="webhookSim.eventType"
-                  class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2"
-                >
-                  <option v-for="evt in webhookTemplates.supportedEventTypes" :key="`sim-${evt}`" :value="evt">{{ evt }}</option>
-                </select>
-              </label>
-              <label class="text-sm">
-                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsProviderLabelSim') }}</span>
-                <input
-                  v-model="webhookSim.provider"
-                  type="text"
-                  class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2"
-                  :placeholder="t('settings.integrationsPlaceholderWebhookProvider')"
-                />
-              </label>
-              <div class="text-sm">
-                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsTargetMessage') }}</span>
-                <p class="text-xs text-gray-600 dark:text-gray-400 break-all">
-                  {{ webhookTemplates.latestExternalMessageId || t('settings.integrationsNoSentMessageYet') }}
-                </p>
-              </div>
-            </div>
-            <div class="mt-3">
-              <button
-                type="button"
-                @click="runWebhookSimulation"
-                :disabled="simulatingWebhook || (!webhookTemplates.latestCommunicationId && !webhookTemplates.latestExternalMessageId)"
-                class="px-4 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ simulatingWebhook ? t('settings.integrationsSimulatingWebhook') : t('settings.integrationsSimulateWebhook') }}
-              </button>
-            </div>
-          </div>
-
-          <div
-            v-if="selectedIntegration.key === 'email-provider'"
-            class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
-          >
+        <div v-else-if="activeDetailTab === 'policy'" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
             <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.integrationsOutboundPolicyTitle') }}</h4>
             <p
               v-if="communicationPolicyLocked"
@@ -699,25 +576,21 @@
                       class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-mono text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                     >
                   </label>
-                  <button
-                    type="button"
-                    class="rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-900 hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-100 dark:hover:bg-indigo-900/40"
-                    :disabled="savingGmailOAuthConfig"
-                    @click="saveEmailConfig(true)"
-                  >
-                    {{ savingGmailOAuthConfig ? t('settings.integrationsSavingGmailOAuth') : t('settings.integrationsSaveGmailOAuthOnly') }}
-                  </button>
                 </div>
               </details>
             </div>
-          </div>
+        </div>
 
-          <div
-            v-if="selectedIntegration.key === 'email-provider' && selectedIntegration.emailDomainVerification"
-            class="rounded-lg p-4 border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20"
-          >
-            <div class="flex items-center justify-between gap-3 mb-1">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsSenderDomainTitle') }}</h4>
+        <div
+          v-else-if="activeDetailTab === 'domain' && selectedIntegration.emailDomainVerification"
+          class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800"
+        >
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.integrationsSenderDomainTitle') }}</h3>
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <p class="text-xs text-gray-600 dark:text-gray-300">
+                {{ t('settings.integrationsDomainLabel') }}
+                <span class="font-medium">{{ selectedIntegration.emailDomainVerification.domain || t('settings.integrationsDomainNotSet') }}</span>
+              </p>
               <button
                 type="button"
                 @click="checkEmailDomainStatus"
@@ -727,10 +600,7 @@
                 {{ checkingDomainStatus ? t('settings.integrationsCheckingStatus') : t('settings.integrationsCheckStatus') }}
               </button>
             </div>
-            <p class="text-xs text-blue-800 dark:text-blue-300 mb-3">{{ t('settings.integrationsSenderDomainDnsHint') }}</p>
-            <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
-              {{ t('settings.integrationsDomainLabel') }} <span class="font-medium">{{ selectedIntegration.emailDomainVerification.domain || t('settings.integrationsDomainNotSet') }}</span>
-            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.integrationsSenderDomainDnsHint') }}</p>
             <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-3" v-if="selectedIntegration.emailDomainVerification.checkedAt">
               {{ t('settings.integrationsLastChecked') }} {{ formatCheckedAt(selectedIntegration.emailDomainVerification.checkedAt) }}
             </p>
@@ -772,14 +642,12 @@
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{{ selectedIntegration.emailDomainVerification.dmarc?.note }}</p>
               </div>
             </div>
-          </div>
+        </div>
 
-          <div
-            v-if="selectedIntegration.key === 'email-provider'"
-            class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
-          >
+        <div v-else-if="activeDetailTab === 'diagnostics'" class="space-y-4">
+          <div class="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <div class="flex items-center justify-between gap-3 mb-3">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsDeliveryDiagnosticsTitle') }}</h4>
+              <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.integrationsDeliveryDiagnosticsTitle') }}</h4>
               <button
                 type="button"
                 @click="loadPipelineDiagnostics"
@@ -829,8 +697,7 @@
           </div>
 
           <div
-            v-if="selectedIntegration.key === 'email-provider'"
-            class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
+            class="rounded-lg border border-gray-200 p-4 dark:border-gray-700"
           >
             <div class="flex flex-wrap items-start justify-between gap-3 mb-2">
               <div>
@@ -868,8 +735,7 @@
           </div>
 
           <div
-            v-if="selectedIntegration.key === 'email-provider'"
-            class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
+            class="rounded-lg border border-gray-200 p-4 dark:border-gray-700"
           >
             <div class="flex items-center justify-between gap-3 mb-3">
               <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsInboundDiagnosticsTitle') }}</h4>
@@ -979,10 +845,9 @@
           </div>
 
           <div
-            v-if="selectedIntegration.key === 'email-provider'"
             id="inbound-dead-letter-inspector"
             ref="deadLetterInspectorRef"
-            class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 scroll-mt-4"
+            class="rounded-lg border border-gray-200 p-4 dark:border-gray-700 scroll-mt-4"
           >
             <div class="flex items-center justify-between gap-3 mb-3">
               <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsDeadLetterInspectorTitle') }}</h4>
@@ -1075,8 +940,7 @@
           </div>
 
           <div
-            v-if="selectedIntegration.key === 'email-provider'"
-            class="rounded-lg p-4 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
+            class="rounded-lg border border-gray-200 p-4 dark:border-gray-700"
           >
             <div class="flex items-center justify-between gap-3 mb-3">
               <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsSuppressedRecipientsTitle') }}</h4>
@@ -1163,32 +1027,180 @@
             </p>
           </div>
 
-          <!-- Data Sharing -->
-          <div class="bg-white dark:bg-gray-900/40 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.integrationsDataSharedTitle') }}</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-              {{ selectedIntegration.dataSharedSummary }}
+          <div class="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">{{ t('settings.integrationsWebhookSimulatorTitle') }}</h4>
+            <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              {{ t('settings.integrationsWebhookSimulatorDesc') }}
             </p>
-            <p v-if="selectedIntegration.dataSharedDetails" class="text-xs text-gray-500 dark:text-gray-400">
-              {{ selectedIntegration.dataSharedDetails }}
-            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label class="text-sm">
+                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsEventType') }}</span>
+                <select
+                  v-model="webhookSim.eventType"
+                  class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2"
+                >
+                  <option v-for="evt in webhookTemplates.supportedEventTypes" :key="`sim-${evt}`" :value="evt">{{ evt }}</option>
+                </select>
+              </label>
+              <label class="text-sm">
+                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsProviderLabelSim') }}</span>
+                <input
+                  v-model="webhookSim.provider"
+                  type="text"
+                  class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2"
+                  :placeholder="t('settings.integrationsPlaceholderWebhookProvider')"
+                />
+              </label>
+              <div class="text-sm">
+                <span class="block mb-1 text-gray-700 dark:text-gray-300">{{ t('settings.integrationsTargetMessage') }}</span>
+                <p class="text-xs text-gray-600 dark:text-gray-400 break-all">
+                  {{ webhookTemplates.latestExternalMessageId || t('settings.integrationsNoSentMessageYet') }}
+                </p>
+              </div>
+            </div>
+            <div class="mt-3">
+              <button
+                type="button"
+                @click="runWebhookSimulation"
+                :disabled="simulatingWebhook || (!webhookTemplates.latestCommunicationId && !webhookTemplates.latestExternalMessageId)"
+                class="px-4 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ simulatingWebhook ? t('settings.integrationsSimulatingWebhook') : t('settings.integrationsSimulateWebhook') }}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </template>
     </div>
-  </div>
+
+    <SettingsSaveBar
+      :visible="emailSettingsDirty"
+      :saving="savingConfig || savingGmailOAuthConfig"
+      @reset="resetEmailSettings"
+      @save="handleEmailSettingsSave"
+    />
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
+import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
+import { computed, ref, onBeforeUnmount, watch, nextTick, h } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/auth';
 import { useNotifications } from '@/composables/useNotifications';
 
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 const notifications = useNotifications();
+
+const INTEGRATION_KEYS = ['email-provider', 'calendar-sync', 'chat-notifications', 'webhooks'];
+
+const EmailProviderIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg',
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+  }),
+]);
+
+const CalendarSyncIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg',
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+  }),
+]);
+
+const ChatNotificationsIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg',
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z',
+  }),
+]);
+
+const WebhooksIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg',
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1',
+  }),
+]);
+
+const DefaultIntegrationIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg',
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z',
+  }),
+]);
+
+const integrationIconMap = {
+  'email-provider': { icon: EmailProviderIcon, iconBg: 'bg-gradient-to-br from-sky-500 to-sky-600' },
+  'calendar-sync': { icon: CalendarSyncIcon, iconBg: 'bg-gradient-to-br from-blue-500 to-blue-600' },
+  'chat-notifications': { icon: ChatNotificationsIcon, iconBg: 'bg-gradient-to-br from-violet-500 to-violet-600' },
+  webhooks: { icon: WebhooksIcon, iconBg: 'bg-gradient-to-br from-amber-500 to-amber-600' },
+};
+
+function getIntegrationIconMeta(key) {
+  return integrationIconMap[key] || { icon: DefaultIntegrationIcon, iconBg: 'bg-gradient-to-br from-gray-500 to-gray-600' };
+}
+
+const currentView = computed(() => {
+  const view = route.query.integrationView;
+  if (typeof view === 'string' && INTEGRATION_KEYS.includes(view)) {
+    return view;
+  }
+  return 'overview';
+});
+
+function navigateToOverview() {
+  const query = { ...route.query, tab: 'integrations' };
+  delete query.integrationView;
+  router.push({ path: '/settings', query });
+}
+
+function navigateToIntegration(integration) {
+  router.push({
+    path: '/settings',
+    query: { ...route.query, tab: 'integrations', integrationView: integration.key },
+  });
+}
 
 function integrationStatusLabel(enabled) {
   return enabled ? t('settings.settingsAppsStatusEnabled') : t('settings.settingsAppsStatusDisabled');
@@ -1196,12 +1208,6 @@ function integrationStatusLabel(enabled) {
 
 function scopeBadgeLabel(scope) {
   return scope === 'platform' ? t('settings.integrationsScopePlatform') : t('settings.integrationsScopeApp');
-}
-
-function integrationsCountLabel(count) {
-  return count === 1
-    ? t('settings.integrationsCountOne', { count })
-    : t('settings.integrationsCountOther', { count });
 }
 
 function connectionStatusMessage(enabled) {
@@ -1241,12 +1247,48 @@ const canManageGmailOAuthApp = computed(() => authStore.isOwner === true || auth
 
 const integrations = ref([]);
 const selectedIntegration = ref(null);
+const activeDetailTab = ref('setup');
+
+const EMAIL_DETAIL_TABS = [
+  { id: 'setup', labelKey: 'settings.integrationsTabSetup' },
+  { id: 'policy', labelKey: 'settings.integrationsTabPolicy' },
+  { id: 'domain', labelKey: 'settings.integrationsTabDomain', requiresDomain: true },
+  { id: 'diagnostics', labelKey: 'settings.integrationsTabDiagnostics' },
+];
+
+const detailTabs = computed(() => {
+  const integration = selectedIntegration.value;
+  if (!integration) return [];
+  if (integration.key === 'email-provider') {
+    return EMAIL_DETAIL_TABS.filter((tab) => {
+      if (tab.requiresDomain) return !!integration.emailDomainVerification;
+      return true;
+    });
+  }
+  return [{ id: 'general', labelKey: 'settings.integrationsTabGeneral' }];
+});
+
+watch(
+  () => selectedIntegration.value?.key,
+  (key) => {
+    activeDetailTab.value = key === 'email-provider' ? 'setup' : 'general';
+  },
+);
+
+watch(detailTabs, (tabs) => {
+  if (!tabs.some((tab) => tab.id === activeDetailTab.value)) {
+    activeDetailTab.value = tabs[0]?.id || 'setup';
+  }
+});
+
 const loading = ref(true);
+const detailLoading = ref(false);
 const error = ref(null);
 const actionLoading = ref(false);
 const testEmailLoading = ref(false);
 const savingConfig = ref(false);
 const savingGmailOAuthConfig = ref(false);
+const emailSettingsSnapshot = ref('');
 const checkingDomainStatus = ref(false);
 const loadingDiagnostics = ref(false);
 const diagnostics = ref({
@@ -1623,6 +1665,7 @@ const loadInboundDeadLetters = async () => {
 };
 
 async function scrollToDeadLetterInspector(focusRawId = null) {
+  activeDetailTab.value = 'diagnostics';
   if (deadLetterHighlightClearTimer) {
     clearTimeout(deadLetterHighlightClearTimer);
     deadLetterHighlightClearTimer = null;
@@ -1804,9 +1847,10 @@ const fetchIntegrations = async () => {
     const data = await apiClient('/settings/integrations', { method: 'GET' });
     if (data && data.success && data.integrations) {
       integrations.value = data.integrations;
-      if (!selectedIntegration.value && integrations.value.length > 0) {
-        selectedIntegration.value = integrations.value[0];
-        await fetchIntegrationDetail(selectedIntegration.value.key);
+      if (currentView.value !== 'overview') {
+        await fetchIntegrationDetail(currentView.value);
+      } else {
+        selectedIntegration.value = null;
       }
     } else {
       integrations.value = [];
@@ -1820,6 +1864,7 @@ const fetchIntegrations = async () => {
 };
 
 const fetchIntegrationDetail = async (key, options = {}) => {
+  detailLoading.value = true;
   try {
     const forceRefresh = options.forceRefresh === true;
     const data = await apiClient(`/settings/integrations/${key}`, {
@@ -1886,6 +1931,7 @@ const fetchIntegrationDetail = async (key, options = {}) => {
         await loadInboundDiagnostics();
         await loadInboundDeadLetters();
         await loadSuppressions();
+        captureEmailSettingsSnapshot();
       }
       // Update list entry to keep states in sync
       const idx = integrations.value.findIndex((i) => i.key === key);
@@ -1899,8 +1945,86 @@ const fetchIntegrationDetail = async (key, options = {}) => {
     }
   } catch (err) {
     console.error('Failed to fetch integration detail:', err);
+  } finally {
+    detailLoading.value = false;
   }
 };
+
+function buildEmailSettingsSnapshot() {
+  return JSON.stringify({
+    email: {
+      provider: emailConfig.value.provider,
+      fromEmail: emailConfig.value.fromEmail,
+      fromName: emailConfig.value.fromName,
+      replyTo: emailConfig.value.replyTo,
+      ociRegion: emailConfig.value.ociRegion,
+      smtpHost: emailConfig.value.smtpHost,
+      smtpPort: Number(emailConfig.value.smtpPort) || 587,
+      smtpUser: emailConfig.value.smtpUser,
+      smtpSecure: emailConfig.value.smtpSecure === true,
+      awsRegion: emailConfig.value.awsRegion,
+      awsAccessKeyId: emailConfig.value.awsAccessKeyId,
+    },
+    policy: {
+      outboundEmail: {
+        enabled: communicationPolicy.value.outboundEmail.enabled !== false,
+        maxRecipientsPerMessage: Number(communicationPolicy.value.outboundEmail.maxRecipientsPerMessage) || 50,
+        allowWorkspaceEmail: communicationPolicy.value.outboundEmail.allowWorkspaceEmail !== false,
+        disallowPlatformSmtpForWorkspace:
+          communicationPolicy.value.outboundEmail.disallowPlatformSmtpForWorkspace === true,
+        requireMailboxProviderForAgentSend:
+          communicationPolicy.value.outboundEmail.requireMailboxProviderForAgentSend === true,
+        requireIdempotencyKey: communicationPolicy.value.outboundEmail.requireIdempotencyKey === true,
+        allowedModuleKeys: [...(communicationPolicy.value.outboundEmail.allowedModuleKeys || [])],
+        suppression: {
+          autoSuppressOnBounce: communicationPolicy.value.outboundEmail.suppression?.autoSuppressOnBounce !== false,
+          autoSuppressOnComplaint: communicationPolicy.value.outboundEmail.suppression?.autoSuppressOnComplaint !== false,
+        },
+      },
+      gmailInboxSync: {
+        clientId: communicationPolicy.value.gmailInboxSync.clientId,
+        redirectUri: communicationPolicy.value.gmailInboxSync.redirectUri,
+      },
+    },
+  });
+}
+
+function captureEmailSettingsSnapshot() {
+  emailSettingsSnapshot.value = buildEmailSettingsSnapshot();
+}
+
+const emailSettingsDirty = computed(() => {
+  if (selectedIntegration.value?.key !== 'email-provider') return false;
+  if (!emailSettingsSnapshot.value) return false;
+  if (buildEmailSettingsSnapshot() !== emailSettingsSnapshot.value) return true;
+  return !!(
+    emailConfig.value.smtpPass
+    || emailConfig.value.awsSecretAccessKey
+    || communicationPolicy.value.gmailInboxSync.clientSecret
+  );
+});
+
+function shouldIncludeGmailOAuthOnSave() {
+  if (!canManageGmailOAuthApp.value) return false;
+  if (communicationPolicy.value.gmailInboxSync.clientSecret) return true;
+  try {
+    const snap = JSON.parse(emailSettingsSnapshot.value || '{}');
+    const saved = snap.policy?.gmailInboxSync || {};
+    const current = communicationPolicy.value.gmailInboxSync;
+    return current.clientId !== (saved.clientId || '') || current.redirectUri !== (saved.redirectUri || '');
+  } catch {
+    return false;
+  }
+}
+
+async function resetEmailSettings() {
+  if (selectedIntegration.value?.key !== 'email-provider') return;
+  await fetchIntegrationDetail('email-provider');
+}
+
+async function handleEmailSettingsSave() {
+  await saveEmailConfig(shouldIncludeGmailOAuthOnSave());
+}
 
 const saveEmailConfig = async (includeGmailOAuthApp = false) => {
   if (!selectedIntegration.value || selectedIntegration.value.key !== 'email-provider') return;
@@ -1981,11 +2105,6 @@ const saveEmailConfig = async (includeGmailOAuthApp = false) => {
   }
 };
 
-const selectIntegration = async (integration) => {
-  selectedIntegration.value = integration;
-  await fetchIntegrationDetail(integration.key);
-};
-
 const confirmEnable = async () => {
   if (!selectedIntegration.value) return;
   const ok = confirm(t('settings.integrationsConfirmEnable'));
@@ -2054,9 +2173,24 @@ const sendTestEmail = async () => {
   }
 };
 
-onMounted(() => {
-  fetchIntegrations();
-});
+watch(
+  () => [route.query.tab, route.query.integrationView],
+  async () => {
+    if (route.query.tab !== 'integrations') return;
+    if (integrations.value.length === 0) {
+      await fetchIntegrations();
+      return;
+    }
+    if (currentView.value === 'overview') {
+      selectedIntegration.value = null;
+      return;
+    }
+    if (selectedIntegration.value?.key !== currentView.value) {
+      await fetchIntegrationDetail(currentView.value);
+    }
+  },
+  { immediate: true },
+);
 
 onBeforeUnmount(() => {
   if (deadLetterHighlightClearTimer) clearTimeout(deadLetterHighlightClearTimer);

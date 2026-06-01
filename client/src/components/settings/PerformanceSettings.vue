@@ -1,14 +1,15 @@
 <template>
-  <div class="w-full h-full">
-    <div v-if="currentView === 'overview'" class="space-y-6">
+  <SettingsScrollPanel v-if="currentView === 'overview'">
+    <template #header>
       <div>
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('performance.settingsTitle') }}</h2>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400 max-w-2xl">
           {{ t('performance.settingsDescription') }}
         </p>
       </div>
+    </template>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button
           v-for="option in performanceOptions"
           :key="option.id"
@@ -38,11 +39,10 @@
           </div>
         </button>
       </div>
-    </div>
+  </SettingsScrollPanel>
 
-    <TargetsQuotasSettings v-else-if="currentView === 'targets'" />
-    <PerformanceDashboards v-else-if="currentView === 'dashboards'" />
-  </div>
+  <TargetsQuotasSettings v-else-if="currentView === 'targets'" class="flex min-h-0 flex-1 flex-col overflow-hidden" />
+  <PerformanceDashboards v-else-if="currentView === 'dashboards'" class="flex min-h-0 flex-1 flex-col overflow-hidden" />
 </template>
 
 <script setup>
@@ -50,6 +50,7 @@ import { computed, h } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ArrowRightIcon } from '@heroicons/vue/24/outline';
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import TargetsQuotasSettings from '@/components/settings/TargetsQuotasSettings.vue';
 import PerformanceDashboards from '@/components/settings/PerformanceDashboards.vue';
 

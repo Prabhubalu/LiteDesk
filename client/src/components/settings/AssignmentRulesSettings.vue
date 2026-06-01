@@ -1,24 +1,5 @@
 <template>
   <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
-    <div class="flex shrink-0 items-start gap-3 pb-3">
-      <button
-        type="button"
-        class="mt-0.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-        :title="t('settings.assignRulesBackTitle')"
-        @click="goBackToAutomation"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-      </button>
-      <div class="min-w-0">
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ t('settings.automationAssignmentRules') }}</h2>
-        <p class="mt-0.5 line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
-          {{ t('settings.assignRulesSubtitle') }}
-        </p>
-      </div>
-    </div>
-
     <div v-if="loadError" class="shrink-0 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
       {{ loadError }}
     </div>
@@ -29,8 +10,28 @@
 
     <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div
-        class="sticky top-0 z-10 -mx-1 mb-4 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-white/95 px-1 pb-3 pt-1 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95"
+        class="sticky top-0 z-10 -mx-1 mb-4 flex shrink-0 flex-col gap-3 border-b border-gray-200 bg-white/95 px-1 pb-3 pt-1 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95"
       >
+        <div class="flex items-start gap-3">
+          <button
+            type="button"
+            class="mt-0.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            :title="t('settings.assignRulesBackTitle')"
+            @click="goBackToAutomation"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+          <div class="min-w-0">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ t('settings.automationAssignmentRules') }}</h2>
+            <p class="mt-0.5 line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
+              {{ t('settings.assignRulesSubtitle') }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3">
         <nav class="flex min-w-0 flex-1 flex-wrap gap-1">
           <button
             v-for="item in navItems"
@@ -93,12 +94,13 @@
             </MenuItems>
           </transition>
         </Menu>
+        </div>
       </div>
 
       <div
         ref="contentRef"
         class="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain"
-        :class="isDirty ? 'pb-16' : ''"
+        :class="isDirty ? SETTINGS_SAVE_BAR_CONTENT_CLASS : ''"
       >
         <section :id="SECTION.scope" class="scroll-mt-6 space-y-4">
           <details class="rounded-xl border border-indigo-200 bg-indigo-50/80 dark:border-indigo-900 dark:bg-indigo-950/30">
@@ -493,33 +495,23 @@
       </section>
       </div>
 
-      <div
-        v-if="isDirty"
-        class="fixed inset-x-0 bottom-0 z-30 flex flex-wrap items-center justify-end gap-3 border-t border-gray-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-gray-700 dark:bg-gray-900/95"
-      >
-        <span v-if="saveError" class="mr-auto text-sm text-red-600 dark:text-red-400">{{ saveError }}</span>
-        <button
-          type="button"
-          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
-          :disabled="saving || loading"
-          @click="loadRuleSet"
-        >
-          {{ t('settings.assignRulesReset') }}
-        </button>
-        <button
-          type="button"
-          class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-          :disabled="saving || loading"
-          @click="save"
-        >
-          {{ saving ? t('states.saving') : t('settings.saveChanges') }}
-        </button>
-      </div>
+      <SettingsSaveBar
+        :visible="isDirty"
+        :saving="saving"
+        :error="saveError"
+        :reset-label="t('settings.assignRulesReset')"
+        :reset-disabled="loading"
+        :save-disabled="loading"
+        @reset="loadRuleSet"
+        @save="save"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
+import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
+import { SETTINGS_SAVE_BAR_CONTENT_CLASS } from '@/components/settings/settingsSaveBar';
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';

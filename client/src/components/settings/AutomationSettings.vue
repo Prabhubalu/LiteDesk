@@ -1,14 +1,15 @@
 <template>
-  <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
-    <div v-if="currentView === 'overview'" class="space-y-6">
+  <SettingsScrollPanel v-if="currentView === 'overview'">
+    <template #header>
       <div>
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabAutomation') }}</h2>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
           {{ t('settings.automationHubDesc') }}
         </p>
       </div>
+    </template>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <button
           v-for="option in automationOptions"
           :key="option.id"
@@ -40,25 +41,25 @@
           </div>
         </button>
       </div>
-    </div>
+  </SettingsScrollPanel>
 
-    <AssignmentRulesSettings
-      v-else-if="currentView === 'assignment-rules'"
-      class="flex min-h-0 flex-1 flex-col overflow-hidden"
-    />
-    <MailroomSettings v-else-if="currentView === 'mailroom'" />
-    <CatalogSettingsHub v-else-if="currentView === 'catalog'" @back="navigateToOverview" />
-    <QuotesSettings v-else-if="currentView === 'quotes'" @back="navigateToOverview" />
-  </div>
+  <AssignmentRulesSettings
+    v-else-if="currentView === 'assignment-rules'"
+    class="flex min-h-0 flex-1 flex-col overflow-hidden"
+  />
+  <MailroomSettings v-else-if="currentView === 'mailroom'" class="flex min-h-0 flex-1 flex-col overflow-hidden" />
+  <CatalogSettingsHub v-else-if="currentView === 'catalog'" class="flex min-h-0 flex-1 flex-col overflow-hidden" @back="navigateToOverview" />
+  <QuotesSettings v-else-if="currentView === 'quotes'" class="flex min-h-0 flex-1 flex-col overflow-hidden" @back="navigateToOverview" />
 </template>
 
 <script setup>
 import { computed, watch, h } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
+import AssignmentRulesSettings from '@/components/settings/AssignmentRulesSettings.vue';
 
 const { t } = useI18n();
-import AssignmentRulesSettings from '@/components/settings/AssignmentRulesSettings.vue';
 import MailroomSettings from '@/components/settings/MailroomSettings.vue';
 import CatalogSettingsHub from '@/components/settings/CatalogSettingsHub.vue';
 import QuotesSettings from '@/components/settings/QuotesSettings.vue';

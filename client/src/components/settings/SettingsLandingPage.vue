@@ -1,14 +1,14 @@
 <template>
-  <div class="space-y-6">
-    <!-- Header -->
-    <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('navigation.settings') }}</h2>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        {{ t('settings.landingSubtitle') }}
-      </p>
-    </div>
+  <SettingsScrollPanel>
+    <template #header>
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('navigation.settings') }}</h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          {{ t('settings.landingSubtitle') }}
+        </p>
+      </div>
+    </template>
 
-    <!-- Sections Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div
         v-for="section in sections"
@@ -32,10 +32,11 @@
         </p>
       </div>
     </div>
-  </div>
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import { computed, h } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';

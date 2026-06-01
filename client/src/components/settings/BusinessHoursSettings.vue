@@ -1,29 +1,34 @@
 <template>
-  <div class="space-y-6 max-w-5xl">
-    <div>
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabBusinessHoursFull') }}</h2>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        {{ t('settings.tabBusinessHoursDesc') }}
-      </p>
-    </div>
+  <SettingsScrollPanel content-class="max-w-5xl">
+    <template #header>
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tabBusinessHoursFull') }}</h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          {{ t('settings.tabBusinessHoursDesc') }}
+        </p>
+      </div>
+    </template>
 
-    <div class="flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700 pb-1">
-      <button
-        v-for="tab in visibleTabs"
-        :key="tab.id"
-        type="button"
-        :class="[
-          'px-3 py-2 text-sm font-medium rounded-t-lg transition-colors',
-          activeTab === tab.id
-            ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-        ]"
-        @click="activeTab = tab.id"
-      >
-        {{ tab.label }}
-      </button>
-    </div>
+    <template #tabs>
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="tab in visibleTabs"
+          :key="tab.id"
+          type="button"
+          :class="[
+            'px-3 py-2 text-sm font-medium rounded-t-lg transition-colors',
+            activeTab === tab.id
+              ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          ]"
+          @click="activeTab = tab.id"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+    </template>
 
+    <div class="space-y-6">
     <section v-if="activeTab === 'mine'" class="space-y-4">
       <AvailabilitySourceCard :label="t('settings.settingsBhScheduleCardLabel')" :show-settings-link="false" />
       <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -99,10 +104,12 @@
       @saved="loadList"
       @deleted="loadList"
     />
-  </div>
+    </div>
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';

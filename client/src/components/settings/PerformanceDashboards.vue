@@ -1,19 +1,22 @@
 <template>
-  <div class="space-y-6 pb-24">
-    <div class="flex items-start gap-3">
-      <button
-        type="button"
-        class="mt-1 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5"
-        @click="goBack"
-      >
-        <ArrowLeftIcon class="w-5 h-5" />
-      </button>
-      <div>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('performance.dashboardsTitle') }}</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('performance.dashboardsDescription') }}</p>
+  <SettingsScrollPanel content-class="pb-24">
+    <template #header>
+      <div class="flex items-start gap-3">
+        <button
+          type="button"
+          class="mt-1 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5"
+          @click="goBack"
+        >
+          <ArrowLeftIcon class="w-5 h-5" />
+        </button>
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('performance.dashboardsTitle') }}</h2>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('performance.dashboardsDescription') }}</p>
+        </div>
       </div>
-    </div>
+    </template>
 
+    <div class="space-y-6">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <TargetProgressWidget app-key="SALES" module-key="deals" />
       <TargetProgressWidget app-key="HELPDESK" module-key="cases" />
@@ -50,10 +53,12 @@
         </li>
       </ul>
     </div>
-  </div>
+    </div>
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';

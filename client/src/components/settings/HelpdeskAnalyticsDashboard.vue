@@ -2,11 +2,7 @@
   <div class="space-y-6">
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
       <div class="flex flex-col md:flex-row md:items-end gap-4">
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.helpdeskAnalyticsTitle') }}</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ t('settings.helpdeskAnalyticsSubtitle') }}</p>
-        </div>
-        <div class="flex items-end gap-3 md:ml-auto">
+        <div class="flex items-end gap-3 md:ml-auto w-full md:w-auto">
           <div>
             <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.helpdeskAnalyticsFrom') }}</label>
             <DatePicker

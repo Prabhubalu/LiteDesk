@@ -1,15 +1,51 @@
 <template>
-  <div class="space-y-6">
-    <!-- Back Button -->
-    <button
-      @click="goBack"
-      class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-4"
-    >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-      </svg>
-      {{ t('settings.coreModDetailBack') }}
-    </button>
+  <SettingsScrollPanel :embed="usesModulesAndFields && !!module && !loading && !error">
+    <template #header>
+      <button
+        @click="goBack"
+        class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        {{ t('settings.coreModDetailBack') }}
+      </button>
+
+      <div v-if="module && !loading && !error && usesModulesAndFields" class="mt-3">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white truncate">
+              {{ module.name }}
+            </h2>
+            <div class="flex flex-wrap items-center gap-2 mt-2">
+              <span
+                v-if="module.platformOwned"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
+              >
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                {{ t('settings.coreModDetailPlatformOwnedBadge') }}
+              </span>
+              <span
+                v-if="module.applications && module.applications.length > 1"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
+              >
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                {{ sharedByLabel(module.applications.length) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
 
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-12">
@@ -29,53 +65,12 @@
     </div>
 
     <!-- Module Detail -->
-    <div v-else-if="module" class="space-y-6">
+    <div v-else-if="module" :class="usesModulesAndFields ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : 'space-y-6'">
       <!-- People Tabbed Interface (always show for People module) -->
-      <div v-if="isPeopleModule" class="space-y-6">
-        <!-- Header with Badges and Description -->
-        <div>
-          <div class="flex items-center gap-3 mb-2">
-            <!-- Module Icon -->
-            <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-              </svg>
-            </div>
-
-            <!-- Module Name and Badges -->
-            <div class="flex-1">
-              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                {{ module.name }}
-              </h2>
-              <div class="flex items-center gap-2 mt-2">
-                <!-- Ownership Badge -->
-                <span
-                  v-if="module.platformOwned"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  {{ t('settings.coreModDetailPlatformOwnedBadge') }}
-                </span>
-
-                <!-- Shared Badge -->
-                <span
-                  v-if="module.applications && module.applications.length > 1"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  {{ sharedByLabel(module.applications.length) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div v-if="isPeopleModule" class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Relationships, Quick Create) -->
-        <ModulesAndFields 
+        <ModulesAndFields
+          class="flex min-h-0 flex-1 flex-col overflow-hidden"
           :module-filter="peopleModuleFilter" 
           :title="t('settings.coreModDetailModulePeople')"
           :hide-field-creation="false"
@@ -240,51 +235,10 @@
       </div>
 
       <!-- Organizations Tabbed Interface (always show for Organizations module) -->
-      <div v-else-if="isOrganizationsModule" class="space-y-6">
-        <!-- Header with Badges and Description -->
-        <div>
-          <div class="flex items-center gap-3 mb-2">
-            <!-- Module Icon -->
-            <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-
-            <!-- Module Name and Badges -->
-            <div class="flex-1">
-              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                {{ module.name }}
-              </h2>
-              <div class="flex items-center gap-2 mt-2">
-                <!-- Ownership Badge -->
-                <span
-                  v-if="module.platformOwned"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  {{ t('settings.coreModDetailPlatformOwnedBadge') }}
-                </span>
-
-                <!-- Shared Badge -->
-                <span
-                  v-if="module.applications && module.applications.length > 1"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  {{ sharedByLabel(module.applications.length) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div v-else-if="isOrganizationsModule" class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Status & Types, Relationships, Quick Create) -->
-        <ModulesAndFields 
+        <ModulesAndFields
+          class="flex min-h-0 flex-1 flex-col overflow-hidden"
           :module-filter="organizationsModuleFilter" 
           :title="t('settings.coreModDetailModuleOrganizations')"
           :hide-field-creation="false"
@@ -428,49 +382,7 @@
       </div>
 
       <!-- Tasks Tabbed Interface (always show for Tasks module) -->
-      <div v-else-if="isTasksModule" class="space-y-6">
-        <!-- Header with Badges and Description -->
-        <div>
-          <div class="flex items-center gap-3 mb-2">
-            <!-- Module Icon -->
-            <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-              </svg>
-            </div>
-
-            <!-- Module Name and Badges -->
-            <div class="flex-1">
-              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                {{ module.name }}
-              </h2>
-              <div class="flex items-center gap-2 mt-2">
-                <!-- Ownership Badge -->
-                <span
-                  v-if="module.platformOwned"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  {{ t('settings.coreModDetailPlatformOwnedBadge') }}
-                </span>
-
-                <!-- Shared Badge -->
-                <span
-                  v-if="module.applications && module.applications.length > 1"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  {{ sharedByLabel(module.applications.length) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div v-else-if="isTasksModule" class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Status & Priority, Relationships, Quick Create) -->
         <!-- 
           ARCHITECTURE NOTE: Tasks Settings configure structure only, never work.
@@ -482,7 +394,8 @@
           - No bulk actions (belongs in Surfaces)
           See: docs/architecture/task-settings.md
         -->
-        <ModulesAndFields 
+        <ModulesAndFields
+          class="flex min-h-0 flex-1 flex-col overflow-hidden"
           :module-filter="tasksModuleFilter" 
           :title="t('settings.coreModDetailModuleTasks')"
           :hide-field-creation="false"
@@ -636,53 +549,7 @@
         - No SLA/KPI monitoring (belongs in Dashboard and Reporting)
         See: docs/architecture/event-settings.md
       -->
-      <div v-else-if="isEventsModule" class="space-y-6">
-        <!-- Header with Badges and Description -->
-        <div>
-          <div class="flex items-center gap-3 mb-2">
-            <!-- Module Icon -->
-            <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-
-            <!-- Module Name and Badges -->
-            <div class="flex-1">
-              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                {{ module.name }}
-              </h2>
-              <div class="flex items-center gap-2 mt-2">
-                <!-- Ownership Badge -->
-                <span
-                  v-if="module.platformOwned"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  {{ t('settings.coreModDetailPlatformOwnedBadge') }}
-                </span>
-
-                <!-- Shared Badge -->
-                <span
-                  v-if="module.applications && module.applications.length > 1"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  {{ sharedByLabel(module.applications.length) }}
-                </span>
-              </div>
-            </div>
-          </div>
-          <!-- Helper Text -->
-          <p class="text-sm text-gray-600 dark:text-gray-400 ml-16 mt-2">
-            {{ t('settings.coreModDetailEventsIntro') }}
-          </p>
-        </div>
-
+      <div v-else-if="isEventsModule" class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Roles & Rules, Quick Create) -->
         <!-- 
           ============================================================================
@@ -721,7 +588,8 @@
           See: docs/architecture/event-settings.md Section 4
           ============================================================================
         -->
-        <ModulesAndFields 
+        <ModulesAndFields
+          class="flex min-h-0 flex-1 flex-col overflow-hidden"
           :module-filter="eventsModuleFilter" 
           :title="t('settings.coreModDetailModuleEvents')"
           :hide-field-creation="false"
@@ -873,55 +741,10 @@
         - No scoring execution (belongs in Scoring engine)
         See: client/src/platform/modules/forms/formsModule.definition.ts
       -->
-      <div v-else-if="isFormsModule" class="space-y-6">
-        <!-- Header with Badges and Description -->
-        <div>
-          <div class="flex items-center gap-3 mb-2">
-            <!-- Module Icon -->
-            <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-
-            <!-- Module Name and Badges -->
-            <div class="flex-1">
-              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                {{ module.name }}
-              </h2>
-              <div class="flex items-center gap-2 mt-2">
-                <!-- Ownership Badge -->
-                <span
-                  v-if="module.platformOwned"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  {{ t('settings.coreModDetailPlatformOwnedBadge') }}
-                </span>
-
-                <!-- Shared Badge -->
-                <span
-                  v-if="module.applications && module.applications.length > 1"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  {{ sharedByLabel(module.applications.length) }}
-                </span>
-              </div>
-            </div>
-          </div>
-          <!-- Helper Text -->
-          <p class="text-sm text-gray-600 dark:text-gray-400 ml-16 mt-2">
-            {{ t('settings.coreModDetailFormsIntro') }}
-          </p>
-        </div>
-
+      <div v-else-if="isFormsModule" class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Logic & Rules, Outcomes, Access) -->
-        <ModulesAndFields 
+        <ModulesAndFields
+          class="flex min-h-0 flex-1 flex-col overflow-hidden"
           :module-filter="formsModuleFilter" 
           :title="t('settings.coreModDetailModuleForms')"
           :hide-field-creation="false"
@@ -1083,51 +906,10 @@
       </div>
 
       <!-- Items / Quotes: field configuration via ModulesAndFields -->
-      <div v-else-if="isItemsModule || isQuotesModule" class="space-y-6">
-        <!-- Header with Badges and Description -->
-        <div>
-          <div class="flex items-center gap-3 mb-2">
-            <!-- Module Icon -->
-            <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-            </div>
-
-            <!-- Module Name and Badges -->
-            <div class="flex-1">
-              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                {{ module.name }}
-              </h2>
-              <div class="flex items-center gap-2 mt-2">
-                <!-- Ownership Badge -->
-                <span
-                  v-if="module.platformOwned"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  {{ t('settings.coreModDetailPlatformOwnedBadge') }}
-                </span>
-
-                <!-- Shared Badge -->
-                <span
-                  v-if="module.applications && module.applications.length > 1"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
-                >
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  {{ sharedByLabel(module.applications.length) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div v-else-if="isItemsModule || isQuotesModule" class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Status & Types, Relationships, Quick Create) -->
-        <ModulesAndFields 
+        <ModulesAndFields
+          class="flex min-h-0 flex-1 flex-col overflow-hidden"
           :module-filter="catalogEntityModuleFilter" 
           :title="catalogEntityModuleTitle"
           :hide-field-creation="false"
@@ -1601,13 +1383,14 @@
         </div>
       </div>
     </Teleport>
-  </div>
+  </SettingsScrollPanel>
 </template>
 
 <script setup>
 // See docs/architecture/form-settings-doctrine.md
 // Form Settings are configuration-only and must respect domain boundaries
 
+import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import { ref, computed, onMounted, Teleport, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
@@ -1788,6 +1571,16 @@ const isQuotesModule = computed(() => {
   }
   return false;
 });
+
+const usesModulesAndFields = computed(() =>
+  isPeopleModule.value
+  || isOrganizationsModule.value
+  || isTasksModule.value
+  || isEventsModule.value
+  || isFormsModule.value
+  || isItemsModule.value
+  || isQuotesModule.value
+);
 
 const catalogEntityModuleFilter = (module) => {
   if (isItemsModule.value) return itemsModuleFilter(module);
