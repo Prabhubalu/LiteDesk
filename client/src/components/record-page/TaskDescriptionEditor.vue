@@ -209,9 +209,9 @@ const linkUrl = ref('https://');
 
 /** True once the field has real URL content (not empty / not only scheme prefix). */
 const canApplyLink = computed(() => {
-  const t = (linkUrl.value || '').trim();
-  if (!t) return false;
-  const lower = t.toLowerCase();
+  const trimmed = (linkUrl.value || '').trim();
+  if (!trimmed) return false;
+  const lower = trimmed.toLowerCase();
   if (lower === 'https://' || lower === 'http://') return false;
   return true;
 });
@@ -339,10 +339,10 @@ const editor = useEditor({
       return false;
     }
   },
-  onBlur: ({ event }) => {
+  onBlur: ({ event, editor: ed }) => {
     // Defer to avoid blur when clicking BubbleMenu (tippy-box) or slash command menu
     setTimeout(() => {
-      if (!editor.value?.isFocused) {
+      if (!ed.isFocused) {
         const target = event?.relatedTarget;
         const isInteractiveMenu = target && typeof target.closest === 'function' &&
           (target.closest('.slash-command-list') || target.closest('.tippy-box') || target.closest('.task-description-link-shortcut'));
