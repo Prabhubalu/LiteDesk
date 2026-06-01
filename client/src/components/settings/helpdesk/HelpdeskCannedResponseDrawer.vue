@@ -172,12 +172,15 @@
 </template>
 
 <script setup>
-import { computed, nextTick, reactive, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, nextTick, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CaseCannedResponseMergeTagMenu from '@/components/cases/CaseCannedResponseMergeTagMenu.vue';
 import CaseCannedResponseMergeTagPicker from '@/components/cases/CaseCannedResponseMergeTagPicker.vue';
-import CommentInput from '@/components/record-page/CommentInput.vue';
-import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
+
+// Lazy-load record-page editors to avoid a circular chunk dependency between
+// chunk-settings and record-activity (production TDZ on _export_sfc / "ua").
+const CommentInput = defineAsyncComponent(() => import('@/components/record-page/CommentInput.vue'));
+const TaskDescriptionEditor = defineAsyncComponent(() => import('@/components/record-page/TaskDescriptionEditor.vue'));
 import { formatCaseCannedResponseMergeTag } from '@/constants/caseCannedResponseMergeTags';
 import { focusInputAtCursor, insertTextAtCursor } from '@/utils/insertAtCursor';
 
