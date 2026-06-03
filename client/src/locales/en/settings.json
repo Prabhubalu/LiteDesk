@@ -9439,9 +9439,25 @@
     "message": "Quotes",
     "description": "Quotes module title in core module settings"
   },
+  "coreModDetailModuleSalesOrders": {
+    "message": "Sales Orders",
+    "description": "Sales Orders module title in core module settings"
+  },
+  "coreModDetailModuleInvoices": {
+    "message": "Invoices",
+    "description": "Invoices module title in core module settings"
+  },
   "modFieldsGroupCoreQuote": {
     "message": "Core Quote Fields",
     "description": "Field group heading for quote core fields in module settings"
+  },
+  "modFieldsGroupCoreSalesOrder": {
+    "message": "Core Sales Order Fields",
+    "description": "Field group heading for sales order core fields in module settings"
+  },
+  "modFieldsGroupCoreInvoice": {
+    "message": "Core Invoice Fields",
+    "description": "Field group heading for invoice core fields in module settings"
   },
   "coreModDetailNoteOrganizations": {
     "message": "Organizations are shared business entities (Customer, Partner, Vendor, etc.) used across applications. App participation is controlled at the application level, not here. This view is read-only for transparency.",

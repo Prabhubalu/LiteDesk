@@ -10,6 +10,7 @@ const {
   buildPeopleUpdateSet,
 } = require('../../utils/peopleImportMapper');
 const { IMPORT_MAX_STORED_ERRORS, IMPORT_MAX_STORED_RECORD_IDS } = require('./importConstants');
+const { findImportDuplicate } = require('./importDuplicateQuery');
 
 function createResultsAccumulator(total = 0) {
   return {
@@ -74,27 +75,33 @@ async function buildOrganizationImportContext(userId) {
 async function processContactsRow(ctx) {
   const {
     row,
-    rowNumber,
     fieldMapping,
     organizationId,
     userId,
     importHistoryId,
     updateExisting,
     shouldCheckDuplicates,
+    duplicateCheckFields,
     results,
   } = ctx;
 
   const rawPayload = mapRowToPeopleImportPayload(row, fieldMapping);
   const contactData = buildPeopleCreatePayload(rawPayload, { organizationId, userId });
 
-  if (shouldCheckDuplicates && contactData.email) {
-    const existing = await People.findOne({ organizationId, email: contactData.email });
-    if (existing) {
+  if (shouldCheckDuplicates) {
+    const match = await findImportDuplicate({
+      module: 'contacts',
+      row,
+      fieldMapping,
+      checkFields: duplicateCheckFields,
+      organizationId,
+    });
+    if (match) {
       if (updateExisting) {
-        const $set = buildPeopleUpdateSet(rawPayload, existing);
-        await People.updateOne({ _id: existing._id }, { $set });
+        const $set = buildPeopleUpdateSet(rawPayload, match.existing);
+        await People.updateOne({ _id: match.existing._id }, { $set });
         results.updated += 1;
-        pushUpdatedId(results, existing._id);
+        pushUpdatedId(results, match.existing._id);
       } else {
         results.skipped += 1;
       }
@@ -119,6 +126,7 @@ async function processDealsRow(ctx) {
     importHistoryId,
     updateExisting,
     shouldCheckDuplicates,
+    duplicateCheckFields,
     results,
   } = ctx;
 
@@ -146,12 +154,18 @@ async function processDealsRow(ctx) {
   }
 
   if (shouldCheckDuplicates) {
-    const existing = await Deal.findOne({ organizationId, name: dealData.name });
-    if (existing) {
+    const match = await findImportDuplicate({
+      module: 'deals',
+      row,
+      fieldMapping,
+      checkFields: duplicateCheckFields,
+      organizationId,
+    });
+    if (match) {
       if (updateExisting) {
-        await Deal.updateOne({ _id: existing._id }, dealData);
+        await Deal.updateOne({ _id: match.existing._id }, dealData);
         results.updated += 1;
-        pushUpdatedId(results, existing._id);
+        pushUpdatedId(results, match.existing._id);
       } else {
         results.skipped += 1;
       }
@@ -176,6 +190,7 @@ async function processTasksRow(ctx) {
     importHistoryId,
     updateExisting,
     shouldCheckDuplicates,
+    duplicateCheckFields,
     results,
   } = ctx;
 
@@ -206,26 +221,28 @@ async function processTasksRow(ctx) {
   stripClientSource(taskData);
 
   if (shouldCheckDuplicates) {
-    const existing = await Task.findOne({ organizationId, title: taskData.title });
-    if (existing && updateExisting) {
-      await Task.findByIdAndUpdate(existing._id, taskData);
-      results.updated += 1;
-      pushUpdatedId(results, existing._id);
-    } else if (!existing) {
-    assignResolvedSource(taskData, 'import');
-    if (importHistoryId) taskData.importHistoryId = importHistoryId;
-    const newTask = await Task.create(taskData);
-      results.created += 1;
-      pushCreatedId(results, newTask._id);
-    } else {
-      results.skipped += 1;
+    const match = await findImportDuplicate({
+      module: 'tasks',
+      row,
+      fieldMapping,
+      checkFields: duplicateCheckFields,
+      organizationId,
+    });
+    if (match) {
+      if (updateExisting) {
+        await Task.findByIdAndUpdate(match.existing._id, taskData);
+        results.updated += 1;
+        pushUpdatedId(results, match.existing._id);
+      } else {
+        results.skipped += 1;
+      }
+      return;
     }
-    return;
   }
 
-    assignResolvedSource(taskData, 'import');
-    if (importHistoryId) taskData.importHistoryId = importHistoryId;
-    const newTask = await Task.create(taskData);
+  assignResolvedSource(taskData, 'import');
+  if (importHistoryId) taskData.importHistoryId = importHistoryId;
+  const newTask = await Task.create(taskData);
   results.created += 1;
   pushCreatedId(results, newTask._id);
 }
@@ -235,10 +252,12 @@ async function processOrganizationsRow(ctx) {
     row,
     rowNumber,
     fieldMapping,
+    organizationId,
     userId,
     importHistoryId,
     updateExisting,
     shouldCheckDuplicates,
+    duplicateCheckFields,
     results,
     orgContext,
   } = ctx;
@@ -273,16 +292,20 @@ async function processOrganizationsRow(ctx) {
   }
 
   if (shouldCheckDuplicates) {
-    const existing = await Organization.findOne({
-      ...orgContext.crmBaseQuery,
-      name: orgData.name,
+    const match = await findImportDuplicate({
+      module: 'organizations',
+      row,
+      fieldMapping,
+      checkFields: duplicateCheckFields,
+      organizationId,
+      crmBaseQuery: orgContext.crmBaseQuery,
     });
-    if (existing) {
+    if (match) {
       if (updateExisting) {
         const { activityLogs, createdBy, isTenant, ...updates } = orgData;
-        await Organization.updateOne({ _id: existing._id }, updates);
+        await Organization.updateOne({ _id: match.existing._id }, updates);
         results.updated += 1;
-        pushUpdatedId(results, existing._id);
+        pushUpdatedId(results, match.existing._id);
       } else {
         results.skipped += 1;
       }

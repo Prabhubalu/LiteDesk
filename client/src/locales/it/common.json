@@ -2430,5 +2430,49 @@
   "dateTimePickerNow": {
     "message": "Now",
     "description": "Date-time picker footer: set to current date and time"
+  },
+  "listBulkDeleteNoSelection": {
+    "message": "No records could be resolved for deletion. Try selecting rows again.",
+    "description": "Bulk delete when list selection resolves to zero record IDs"
+  },
+  "bulkDeleteBannerTitle": {
+    "message": "Deleting records",
+    "description": "Bulk delete progress banner title"
+  },
+  "bulkDeleteProgressResolving": {
+    "message": "Preparing… {processed} of {total}",
+    "description": "Bulk delete progress while resolving selection"
+  },
+  "bulkDeleteProgressDeleting": {
+    "message": "Deleted {processed} of {total}",
+    "description": "Bulk delete progress while deleting"
+  },
+  "bulkDeleteLeaveConfirm": {
+    "message": "A bulk delete is in progress. Leaving or refreshing now may leave some records. Stop the delete and leave anyway?",
+    "description": "Confirm when navigating away during bulk delete"
+  },
+  "bulkDeleteCancel": {
+    "message": "Stop",
+    "description": "Cancel in-progress bulk delete"
+  },
+  "bulkDeleteBackgroundHint": {
+    "message": "Do not close this tab until deletion finishes.",
+    "description": "Bulk delete progress hint"
+  },
+  "bulkDeleteModalBackgroundHint": {
+    "message": "You can close this dialog and deletion will continue in the background.",
+    "description": "Bulk delete progress hint inside confirmation modal"
+  },
+  "bulkDeleteContinueInBackground": {
+    "message": "Continue in background",
+    "description": "Close delete modal while bulk delete keeps running"
+  },
+  "listBulkDeleteIncomplete": {
+    "message": "Deleted {deleted} of {total} selected records. Some could not be removed — refresh and retry if needed.",
+    "description": "Bulk delete completed partially"
+  },
+  "listBulkDeleteNoMatches": {
+    "message": "No records matched your selection for deletion. Refresh the list and try again.",
+    "description": "Bulk delete when select-all resolved to zero matching records on the server"
   }
 }

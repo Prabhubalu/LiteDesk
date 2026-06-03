@@ -1262,18 +1262,15 @@ exports.bulkDeleteEvents = async (req, res) => {
         
         const events = await Event.find(query).select('_id').lean();
         const deletionService = require('../services/deletionService');
-        let movedCount = 0;
-        for (const ev of events) {
-            const result = await deletionService.moveToTrash({
-                moduleKey: 'events',
-                recordId: ev._id,
-                organizationId: req.user.organizationId,
-                userId: req.user._id,
-                appKey: 'platform'
-            });
-            if (result.ok) movedCount++;
-        }
-        
+        const result = await deletionService.bulkMoveToTrash({
+            moduleKey: 'events',
+            recordIds: events.map((ev) => ev._id),
+            organizationId: req.user.organizationId,
+            userId: req.user._id,
+            appKey: 'platform'
+        });
+        const movedCount = result.movedCount || 0;
+
         res.status(200).json({
             success: true,
             message: `Moved ${movedCount} event(s) to trash.`,

@@ -1,10 +1,10 @@
 <template>
   <div
-    v-if="activeImportsStore.hasProcessing"
+    v-if="activeImportsStore.hasBannerImports"
     class="fixed bottom-4 right-4 z-[9000] flex w-full max-w-md flex-col gap-2 pointer-events-none"
   >
     <div
-      v-for="item in activeImportsStore.processingImports"
+      v-for="item in activeImportsStore.processingImportsForBanner"
       :key="item.importId"
       class="pointer-events-auto overflow-hidden rounded-xl border border-indigo-200 bg-white shadow-lg dark:border-indigo-800 dark:bg-gray-900"
     >

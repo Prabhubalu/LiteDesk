@@ -23,6 +23,24 @@ const routes = [
     name: 'login',
     component: () => import('@/views/Login.vue')
   },
+  {
+    path: '/pay/checkout/razorpay',
+    name: 'public-razorpay-checkout',
+    component: () => import('@/views/payments/PublicRazorpayCheckoutPage.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/pay/:publicToken',
+    name: 'public-payment-link',
+    component: () => import('@/views/payments/PublicPaymentLinkPage.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/pay/:publicToken/return',
+    name: 'public-payment-link-return',
+    component: () => import('@/views/payments/PublicPaymentLinkReturnPage.vue'),
+    meta: { requiresAuth: false }
+  },
   // Phase 1G: Platform Landing (Tenant Home)
   {
     path: '/platform',
@@ -413,6 +431,18 @@ const routes = [
     }
   },
   {
+    path: '/quotes/:id/compare',
+    name: 'quote-revision-compare',
+    component: () => import('@/views/QuoteRevisionCompareView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'quotes', action: 'view' },
+      moduleKey: 'quotes',
+      appKey: 'PLATFORM',
+      routeType: 'detail'
+    }
+  },
+  {
     path: '/quotes/:id',
     name: 'quote-detail',
     component: () => import('@/pages/ModuleRecordPage.vue'),
@@ -420,6 +450,78 @@ const routes = [
       requiresAuth: true,
       requiresPermission: { module: 'quotes', action: 'view' },
       moduleKey: 'quotes',
+      appKey: 'PLATFORM',
+      routeType: 'detail'
+    }
+  },
+  {
+    path: '/sales-orders',
+    name: 'sales-orders',
+    component: () => import('@/views/GenericModule.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'sales_orders', action: 'view' },
+      moduleKey: 'sales_orders',
+      appKey: 'PLATFORM',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/sales-orders/:id',
+    name: 'sales-order-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'sales_orders', action: 'view' },
+      moduleKey: 'sales_orders',
+      appKey: 'PLATFORM',
+      routeType: 'detail'
+    }
+  },
+  {
+    path: '/invoices',
+    name: 'invoices',
+    component: () => import('@/views/GenericModule.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'invoices', action: 'view' },
+      moduleKey: 'invoices',
+      appKey: 'PLATFORM',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/invoices/:id',
+    name: 'invoice-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'invoices', action: 'view' },
+      moduleKey: 'invoices',
+      appKey: 'PLATFORM',
+      routeType: 'detail'
+    }
+  },
+  {
+    path: '/payments',
+    name: 'payments',
+    component: () => import('@/views/GenericModule.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'payments', action: 'view' },
+      moduleKey: 'payments',
+      appKey: 'PLATFORM',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/payments/:id',
+    name: 'payment-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'payments', action: 'view' },
+      moduleKey: 'payments',
       appKey: 'PLATFORM',
       routeType: 'detail'
     }

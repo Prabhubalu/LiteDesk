@@ -226,6 +226,7 @@ import { CalendarIcon, CalendarDaysIcon, ListBulletIcon } from '@heroicons/vue/2
 import { appointmentSourceLabel, appointmentTypeLabel } from '@/utils/appointmentFormatters';
 
 import { APP_NAME_KEYS } from '@/utils/navigationLabels';
+import { startBulkDelete } from '@/utils/runBulkDelete';
 
 const router = useRouter();
 const route = useRoute();
@@ -663,13 +664,9 @@ const handleBulkAction = async (action, rows) => {
   
   try {
     if (action === 'delete' || action === 'bulk-delete') {
-      await Promise.all(eventIds.map(id => apiClient.delete(`/events/${id}`)));
-      // Refresh both calendar and list views
-      await fetchCalendarEvents();
-      if (moduleListRef.value?.refresh) {
-        moduleListRef.value.refresh();
-      }
-    } else if (action === 'export') {
+      return;
+    }
+    if (action === 'export') {
       // Export functionality handled by ModuleList
     }
   } catch (error) {
@@ -680,7 +677,33 @@ const handleBulkAction = async (action, rows) => {
 
 const handleInlineDelete = async (row) => {
   if (!row) return;
-  await handleBulkAction('delete', [row]);
+  const id = row._id || row.eventId;
+  if (!id) return;
+  startBulkDelete({
+    moduleKey: 'events',
+    ids: [String(id)],
+    onComplete: (outcome) => {
+      void (async () => {
+        if (outcome.cancelled) {
+          if (outcome.deletedCount > 0) {
+            await fetchCalendarEvents();
+            moduleListRef.value?.refresh?.();
+          }
+          return;
+        }
+        if (outcome.failedCount > 0) {
+          alert(t('common.eventsToastErrorPerformingBulkActionPlease'));
+          return;
+        }
+        await fetchCalendarEvents();
+        moduleListRef.value?.refresh?.();
+      })();
+    },
+    onError: (error) => {
+      console.error('Error deleting event:', error);
+      alert(t('common.eventsToastErrorPerformingBulkActionPlease'));
+    },
+  });
 };
 
 const exportEvents = async () => {
@@ -833,8 +856,6 @@ onActivated(() => {
   initializeView();
   if (currentView.value === 'calendar') {
     fetchCalendarEvents();
-  } else {
-    moduleListRef.value?.reactivate?.();
   }
   nextTick(() => {
     setTimeout(() => {

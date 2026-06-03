@@ -97,11 +97,17 @@ import {
   computed,
   watch,
   nextTick,
-  useAttrs,
+  getCurrentInstance,
+  onMounted,
+  onBeforeUnmount,
   onActivated,
   onDeactivated,
   provide
 } from 'vue';
+import {
+  consumeImportListRefreshPending,
+  importModuleMatchesListModule,
+} from '@/utils/importListModuleMatch';
 import { useI18n } from 'vue-i18n';
 import {
   resolveListColumnLabel,
@@ -131,6 +137,10 @@ import { getModuleListConfig, hasModuleListConfig, getSystemViews } from '@/plat
 import { getFiltersForModule } from '@/platform/filters/filterResolver';
 import { buildListColumnsFromModuleFields } from '@/utils/buildListColumnsFromModuleFields';
 import { normalizeListPagination } from '@/utils/normalizeListPagination';
+import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
+import { allSettledWithConcurrency } from '@/utils/allSettledWithConcurrency';
+import { startBulkDelete } from '@/utils/runBulkDelete';
+import { yieldToUi } from '@/utils/uiYield';
 import {
   clearListSession,
   getListSession,
@@ -187,6 +197,11 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['create', 'import', 'export', 'row-click', 'edit', 'delete', 'bulk-action', 'filters-changed', 'search-changed', 'kanban-settings-changed', 'stats-visibility-changed']);
+
+/** Capture at setup — getCurrentInstance() is null inside async event handlers */
+const setupInstance = getCurrentInstance();
+const parentHandlesBulkAction = typeof setupInstance?.vnode?.props?.onBulkAction === 'function';
+const parentHandlesDelete = typeof setupInstance?.vnode?.props?.onDelete === 'function';
 
 const route = useRoute();
 const router = useRouter();
@@ -262,6 +277,35 @@ async function applyListSessionOnActivate() {
   await restoreListSessionPages();
 }
 
+async function refreshListAfterImport() {
+  pagination.value.currentPage = 1;
+  clearListSessionState();
+  await fetchData();
+  consumeImportListRefreshPending(props.moduleKey);
+}
+
+function onImportCompleteForList(event) {
+  const detail = event?.detail || {};
+  if (!importModuleMatchesListModule(detail.module, props.moduleKey)) return;
+  void refreshListAfterImport();
+}
+
+function onBulkDeleteCompleteForList(event) {
+  const mk = String(event?.detail?.moduleKey || '').toLowerCase();
+  if (!mk || mk !== String(props.moduleKey || '').toLowerCase()) return;
+  void fetchData();
+}
+
+onMounted(() => {
+  window.addEventListener('litedesk:import-complete', onImportCompleteForList);
+  window.addEventListener('litedesk:bulk-delete-complete', onBulkDeleteCompleteForList);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('litedesk:import-complete', onImportCompleteForList);
+  window.removeEventListener('litedesk:bulk-delete-complete', onBulkDeleteCompleteForList);
+});
+
 onDeactivated(() => {
   patchListSession(listSessionKey.value, {
     currentPage: normalizeListPagination(pagination.value).currentPage
@@ -303,6 +347,11 @@ onActivated(async () => {
     dataLoading.value = false;
   }
 
+  if (consumeImportListRefreshPending(props.moduleKey)) {
+    await refreshListAfterImport();
+    return;
+  }
+
   if (data.value.length > 0 && listDefinition.value) {
     await applyListSessionOnActivate();
     bumpSessionRestoreTick();
@@ -325,7 +374,6 @@ onActivated(async () => {
     await initialListFetch();
   }
 });
-const attrs = useAttrs();
 const authStore = useAuthStore();
 const { openTab } = useTabs();
 const { t, te } = useI18n();
@@ -1415,7 +1463,8 @@ async function fetchListReplace(opts = {}) {
         if (response.listStatistics && typeof response.listStatistics === 'object') {
           statistics.value = {
             ...response.listStatistics,
-            totalPeople: response.listStatistics.totalPeople ?? totalRecords
+            totalPeople: response.listStatistics.totalPeople ?? totalRecords,
+            totalOrganizations: response.listStatistics.totalOrganizations ?? totalRecords
           };
         } else if (ctx.moduleConfig?.statistics?.computeFunction) {
           statistics.value = ctx.moduleConfig.statistics.computeFunction(data.value, authStore.user?._id, {
@@ -1472,45 +1521,16 @@ async function fetchListReplace(opts = {}) {
   }
 }
 
-async function fetchAllMatchingIds(excludedIds = []) {
-  const excluded = new Set((excludedIds || []).map(String));
-  const ids = [];
-  const norm = normalizeListPagination(pagination.value);
-  const total = norm.totalRecords;
-  if (total <= 0) return ids;
-
-  const pageSize = Math.min(100, Math.max(norm.limit, 25));
-  let page = 1;
-  const maxPages = Math.min(500, Math.ceil(total / pageSize) + 2);
-
-  while (ids.length < total && page <= maxPages) {
-    const ctx = buildListFetchContext(page);
-    const response = await apiClient.get(ctx.endpoint, {
-      params: { ...ctx.params, limit: pageSize }
-    });
-    if (!response?.success) break;
-
-    const rows = applyClientSideListTransforms(response.data || [], ctx);
-    for (const row of rows) {
-      const id = row?._id ?? row?.id;
-      if (id == null) continue;
-      const sid = String(id);
-      if (!excluded.has(sid)) ids.push(sid);
-    }
-
-    if (rows.length < pageSize) break;
-    page += 1;
+/** List GET params for server-side bulk delete (select all matching). */
+function buildListQueryForBulkDelete() {
+  const ctx = buildListFetchContext(1);
+  const params = { ...ctx.params };
+  delete params.page;
+  delete params.limit;
+  if (props.moduleKey === 'people' && props.peopleContext && props.peopleContext !== 'ALL') {
+    params.peopleContext = props.peopleContext;
   }
-
-  return ids;
-}
-
-function resolveBulkSelectionIds(payload) {
-  if (!payload || typeof payload !== 'object') return [];
-  if (payload.mode === 'all') {
-    return fetchAllMatchingIds(payload.excludedIds);
-  }
-  return Promise.resolve(payload.selectedIds || []);
+  return params;
 }
 
 async function fetchListAppend() {
@@ -2119,8 +2139,23 @@ const handleEdit = (row) => {
   }
 };
 
+function listDeleteApiBase() {
+  return getModuleRecordCrudPathBase(props.moduleKey, {
+    appKey: props.appKey,
+    routePath: String(route.path || '')
+  });
+}
+
+function isBulkSelectionPayload(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) && 'mode' in value;
+}
+
+function rowsFromIds(ids) {
+  return ids.map((id) => ({ _id: id }));
+}
+
 const handleDelete = async (row) => {
-  if (attrs.onDelete) {
+  if (parentHandlesDelete) {
     emit('delete', row);
     return;
   }
@@ -2129,11 +2164,7 @@ const handleDelete = async (row) => {
   if (!rowId || !props.moduleKey) return;
 
   try {
-    const isHelpdeskCasesModule =
-      String(props.moduleKey || '').toLowerCase() === 'cases' &&
-      String(props.appKey || '').toUpperCase() === 'HELPDESK';
-    const deleteBase = isHelpdeskCasesModule ? '/helpdesk/cases' : `/${props.moduleKey}`;
-    await apiClient.delete(`${deleteBase}/${rowId}`);
+    await apiClient.delete(`${listDeleteApiBase()}/${rowId}`);
     await fetchData();
   } catch (error) {
     console.error(`[ModuleList] Failed to delete ${props.moduleKey} record:`, error);
@@ -2143,41 +2174,72 @@ const handleDelete = async (row) => {
 };
 
 const handleBulkAction = async (action, payloadOrRows) => {
-  if (attrs.onBulkAction) {
-    if (payloadOrRows && typeof payloadOrRows === 'object' && 'mode' in payloadOrRows) {
-      const ids = await resolveBulkSelectionIds(payloadOrRows);
-      emit(
-        'bulk-action',
-        action,
-        ids.map((id) => ({ _id: id }))
-      );
-    } else {
-      emit('bulk-action', action, payloadOrRows);
-    }
+  const isDeleteAction = action === 'bulk-delete' || action === 'delete';
+
+  if (isDeleteAction) {
+    startBulkDelete({
+      moduleKey: props.moduleKey,
+      selection: isBulkSelectionPayload(payloadOrRows) ? payloadOrRows : null,
+      pageIds: Array.isArray(payloadOrRows)
+        ? payloadOrRows.map((r) => String(r?._id || r?.id || r?.eventId || r)).filter(Boolean)
+        : null,
+      listQuery: buildListQueryForBulkDelete(),
+      options: { appKey: props.appKey, routePath: String(route.path || '') },
+      onComplete: (outcome) => {
+        void (async () => {
+          if (outcome.cancelled) {
+            if (outcome.deletedCount > 0) await fetchData();
+            return;
+          }
+          const { deletedCount, failedCount, firstError, requestedCount } = outcome;
+          const totalAttempted = deletedCount + failedCount;
+          const hadSelection = Number(requestedCount || 0) > 0;
+          if (!props.moduleKey || (totalAttempted === 0 && !hadSelection)) {
+            alert(t('common.listBulkDeleteNoSelection'));
+            return;
+          }
+          if (totalAttempted === 0 && hadSelection) {
+            alert(
+              t('common.listBulkDeleteNoMatches') ||
+              'No records matched your selection for deletion. Refresh the list and try again.'
+            );
+            return;
+          }
+          if (requestedCount > 0 && deletedCount + failedCount < requestedCount) {
+            alert(
+              t('common.listBulkDeleteIncomplete', {
+                deleted: deletedCount,
+                total: requestedCount
+              }) ||
+              `Deleted ${deletedCount} of ${requestedCount} selected records. Refresh the list or retry.`
+            );
+          }
+          if (failedCount > 0) {
+            const errorMessage =
+              firstError?.response?.data?.message ||
+              firstError?.message ||
+              'Bulk delete failed';
+            console.error(`[ModuleList] Failed bulk delete for ${props.moduleKey}:`, firstError);
+            alert(
+              failedCount === totalAttempted
+                ? errorMessage
+                : `Failed to delete ${failedCount} of ${totalAttempted} records. ${errorMessage}`
+            );
+            if (deletedCount > 0) await fetchData();
+            return;
+          }
+          await fetchData();
+        })();
+      },
+    });
     return;
   }
 
-  if (action === 'bulk-delete') {
-    let ids = [];
-    if (payloadOrRows && typeof payloadOrRows === 'object' && 'mode' in payloadOrRows) {
-      ids = await resolveBulkSelectionIds(payloadOrRows);
-    } else if (Array.isArray(payloadOrRows)) {
-      ids = payloadOrRows.map((r) => r?._id || r?.id || r).filter(Boolean);
-    }
-    if (ids.length === 0 || !props.moduleKey) return;
-
-    const isHelpdeskCasesModule =
-      String(props.moduleKey || '').toLowerCase() === 'cases' &&
-      String(props.appKey || '').toUpperCase() === 'HELPDESK';
-    const deleteBase = isHelpdeskCasesModule ? '/helpdesk/cases' : `/${props.moduleKey}`;
-
-    try {
-      await Promise.all(ids.map((id) => apiClient.delete(`${deleteBase}/${id}`)));
-      await fetchData();
-    } catch (error) {
-      console.error(`[ModuleList] Failed bulk delete for ${props.moduleKey}:`, error);
-      const errorMessage = error?.response?.data?.message || error?.message || 'Bulk delete failed';
-      alert(errorMessage);
+  if (parentHandlesBulkAction) {
+    if (isBulkSelectionPayload(payloadOrRows) && payloadOrRows.mode === 'page') {
+      emit('bulk-action', action, rowsFromIds(payloadOrRows.selectedIds || []));
+    } else {
+      emit('bulk-action', action, payloadOrRows);
     }
     return;
   }
@@ -2220,6 +2282,7 @@ watch(() => activeSavedViewId.value, (newValue) => {
 // Expose methods and data for parent components
 defineExpose({
   refresh: fetchData,
+  refreshAfterImport: refreshListAfterImport,
   /** Tab return via keep-alive: restore lazy-loaded pages + scroll without refetching page 1 */
   reactivate: () => fetchData({ reactivate: true }),
   filters: filters,

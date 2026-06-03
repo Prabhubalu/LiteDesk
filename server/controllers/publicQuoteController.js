@@ -28,6 +28,7 @@ const {
   isQuoteValidityExpired
 } = require('../services/quoteExpiryService');
 const { getQuoteBranding } = require('../services/quoteBrandingService');
+const { guardQuoteAcceptance } = require('../services/inventoryAtpGuardService');
 
 async function resolveQuoteByToken(token) {
   const t = String(token || '').trim();
@@ -247,7 +248,16 @@ exports.accept = async (req, res) => {
       null;
 
     const lineIds = Array.isArray(req.body?.lineIds) ? req.body.lineIds : null;
-    const resolution = resolveCustomerAcceptance(lines, lineIds);
+    const sections = await listQuoteSections({
+      organizationId: quote.organizationId,
+      quoteId: quote._id
+    });
+    const resolution = resolveCustomerAcceptance(lines, lineIds, sections);
+
+    const inventoryAtp = await guardQuoteAcceptance({
+      organizationId: quote.organizationId,
+      acceptedLines: resolution.acceptedLines
+    });
 
     applyCustomerAcceptanceToQuote(quote, resolution, {
       comment: req.body?.comment ?? null,
@@ -284,26 +294,31 @@ exports.accept = async (req, res) => {
         quoteId: quote._id,
         status: quote.status,
         responseType: resolution.responseType,
-        customerResponse: quote.customerResponse
+        customerResponse: quote.customerResponse,
+        inventoryAtp: inventoryAtp.acceptanceWarning ? inventoryAtp : undefined
       }
     });
   } catch (e) {
     const code = e?.code;
     const status =
-      code === 'INVALID_TRANSITION' ||
-      code === 'VALIDATION' ||
-      code === 'INVALID_LINE_SELECTION' ||
-      code === 'EMPTY_LINE_SELECTION' ||
-      code === 'NO_SELECTABLE_LINES' ||
-      code === 'TERMS_REQUIRED' ||
-      code === 'QUOTE_EXPIRED' ||
-      code === 'SIGNATURE_REQUIRED'
-        ? 400
-        : 500;
+      code === 'INSUFFICIENT_ATP'
+        ? 409
+        : code === 'INVALID_TRANSITION' ||
+            code === 'VALIDATION' ||
+            code === 'INVALID_LINE_SELECTION' ||
+            code === 'EMPTY_LINE_SELECTION' ||
+            code === 'NO_SELECTABLE_LINES' ||
+            code === 'TERMS_REQUIRED' ||
+            code === 'QUOTE_EXPIRED' ||
+            code === 'SIGNATURE_REQUIRED'
+          ? 400
+          : 500;
     return res.status(status).json({
       success: false,
       message: e.message || 'Failed to accept quote',
       code: code || 'UNKNOWN',
+      canProceed: e.canProceed === true,
+      policy: e.policy || e.details?.policy || null,
       details: e.details || null
     });
   }

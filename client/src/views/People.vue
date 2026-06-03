@@ -270,7 +270,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, onActivated, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -295,6 +295,7 @@ import {
   getPeopleModuleFieldOptionsWithDefaults,
 } from '@/utils/peopleModuleFieldUtils';
 import { APP_NAME_KEYS } from '@/utils/navigationLabels';
+import { startBulkDelete } from '@/utils/runBulkDelete';
 
 const router = useRouter();
 const { t, te } = useI18n();
@@ -584,9 +585,10 @@ const handlePersonCreated = () => {
 
 const handleImportComplete = () => {
   showImportModal.value = false;
-  // Refresh ModuleList
-  if (moduleListRef.value && moduleListRef.value.refresh) {
-    moduleListRef.value.refresh();
+  if (moduleListRef.value?.refreshAfterImport) {
+    void moduleListRef.value.refreshAfterImport();
+  } else {
+    moduleListRef.value?.refresh?.();
   }
 };
 
@@ -604,9 +606,7 @@ const handleRecordCreated = (event) => {
 
 // Bulk action handler
 const handleBulkAction = async (actionId, selectedRows) => {
-  if (actionId === 'delete' || actionId === 'bulk-delete') {
-    await bulkDeletePeople(selectedRows);
-  } else if (actionId === 'export' || actionId === 'bulk-export') {
+  if (actionId === 'export' || actionId === 'bulk-export') {
     await bulkExportPeople(selectedRows);
   }
 };
@@ -619,49 +619,47 @@ const handleInlineDelete = async (row) => {
 // Bulk delete - identity-level only
 const bulkDeletePeople = async (selectedRows) => {
   if (!selectedRows || selectedRows.length === 0) return;
-  
-  const idsToDelete = selectedRows.map(row => row._id || row).filter(Boolean);
+
+  const idsToDelete = selectedRows.map((row) => row._id || row).filter(Boolean);
   if (idsToDelete.length === 0) return;
-  
-  try {
-    deleting.value = true;
-    
-    // Delete all in parallel, fail fast on permission errors
-    const deletePromises = idsToDelete.map(id => 
-      apiClient.delete(`/people/${id}`)
-    );
-    
-    const results = await Promise.allSettled(deletePromises);
-    
-    // Check for failures
-    const failures = results.filter(r => r.status === 'rejected');
-    if (failures.length > 0) {
-      const firstFailure = failures[0].reason;
-      const errorMessage = firstFailure?.response?.data?.message || 
-                          firstFailure?.message || 
-                          'Failed to delete some people';
-      
-      // If permission error, show specific message
-      if (firstFailure?.response?.status === 403) {
-        alert(`Permission denied: ${errorMessage}`);
-      } else {
-        alert(`Failed to delete ${failures.length} of ${idsToDelete.length} people. ${errorMessage}`);
-      }
-      
-      // Don't reload if some failed - let user see what succeeded
-      return;
-    }
-    
-    // All succeeded - refresh list
-    if (moduleListRef.value?.refresh) {
-      moduleListRef.value.refresh();
-    }
-  } catch (error) {
-    console.error('Error bulk deleting people:', error);
-    alert(`Error deleting people: ${error.message || t('common.peopleToastUnknownError')}`);
-  } finally {
-    deleting.value = false;
-  }
+
+  startBulkDelete({
+    moduleKey: 'people',
+    ids: idsToDelete,
+    onComplete: (outcome) => {
+      void (async () => {
+        if (outcome.cancelled) {
+          if (outcome.deletedCount > 0 && moduleListRef.value?.refresh) {
+            moduleListRef.value.refresh();
+          }
+          return;
+        }
+        const { deletedCount, failedCount, firstError } = outcome;
+        if (failedCount > 0) {
+          const errorMessage =
+            firstError?.response?.data?.message ||
+            firstError?.message ||
+            'Failed to delete some people';
+          if (firstError?.response?.status === 403) {
+            alert(`Permission denied: ${errorMessage}`);
+          } else {
+            alert(`Failed to delete ${failedCount} of ${idsToDelete.length} people. ${errorMessage}`);
+          }
+          if (deletedCount > 0 && moduleListRef.value?.refresh) {
+            moduleListRef.value.refresh();
+          }
+          return;
+        }
+        if (moduleListRef.value?.refresh) {
+          moduleListRef.value.refresh();
+        }
+      })();
+    },
+    onError: (error) => {
+      console.error('Error bulk deleting people:', error);
+      alert(`Error deleting people: ${error.message || t('common.peopleToastUnknownError')}`);
+    },
+  });
 };
 
 // Bulk export - identity fields only
@@ -767,13 +765,6 @@ onMounted(async () => {
   if (typeof window !== 'undefined') {
     window.addEventListener('arivu:record-created', handleRecordCreated);
   }
-});
-
-// Keep-alive tab return: restore scroll + lazy-loaded pages (no full refetch)
-onActivated(() => {
-  nextTick(() => {
-    moduleListRef.value?.reactivate?.();
-  });
 });
 
 onUnmounted(() => {

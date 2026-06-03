@@ -330,6 +330,57 @@ const MODULE_DEFINITIONS = [
     }
   },
   {
+    moduleKey: 'sales_orders',
+    appKey: 'platform',
+    label: 'Sales Order',
+    pluralLabel: 'Sales Orders',
+    entityType: 'TRANSACTION',
+    primaryField: 'orderTitle',
+    peopleConstraints: {
+      allowedTypes: ['Contact'],
+      required: false
+    },
+    organizationConstraints: {
+      required: false
+    },
+    lifecycle: {
+      statusField: 'status',
+      allowedStatuses: [
+        'Draft',
+        'Confirmed',
+        'On Hold',
+        'In Fulfillment',
+        'Partially Fulfilled',
+        'Fulfilled',
+        'Cancelled',
+        'Closed'
+      ]
+    },
+    supports: {
+      ownership: true,
+      assignment: true,
+      comments: true,
+      attachments: true,
+      automation: true
+    },
+    permissions: {
+      create: true,
+      edit: true,
+      delete: false,
+      view: true
+    },
+    ui: {
+      routeBase: '/sales-orders',
+      icon: '📦',
+      showInSidebar: true,
+      sidebarOrder: 9,
+      createLabel: 'Create Sales Order',
+      listLabel: 'All Sales Orders',
+      navigationEntity: true,
+      excludeFromApps: true
+    }
+  },
+  {
     moduleKey: 'tasks',
     appKey: 'platform', // Core entity - shared across apps
     label: 'Task',

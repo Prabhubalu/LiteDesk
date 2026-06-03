@@ -793,11 +793,11 @@
             </div>
           </template>
 
-          <!-- Items / Quotes: grouped by field model ownership -->
-          <template v-else-if="isItemsModule || isQuotesModule">
+          <!-- Items / Quotes / Sales Orders: grouped by field model ownership -->
+          <template v-else-if="isItemsModule || isQuotesModule || isSalesOrdersModule || isInvoicesModule">
             <!-- Core catalog fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ isQuotesModule ? t('settings.modFieldsGroupCoreQuote') : t('settings.modFieldsGroupCoreItem') }}</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ isQuotesModule ? t('settings.modFieldsGroupCoreQuote') : isSalesOrdersModule ? t('settings.modFieldsGroupCoreSalesOrder') : isInvoicesModule ? t('settings.modFieldsGroupCoreInvoice') : t('settings.modFieldsGroupCoreItem') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="(fieldKey, idx) in groupedFields.coreIdentity"
@@ -5156,6 +5156,8 @@ import {
   CalendarDaysIcon,
   FolderIcon,
   ClipboardDocumentListIcon,
+  DocumentTextIcon,
+  ShoppingCartIcon,
   BanknotesIcon,
   LifebuoyIcon,
   TicketIcon,
@@ -5273,6 +5275,16 @@ import {
   isQuoteProtectedField,
   isExcludedFromQuoteQuickCreate
 } from '@/platform/fields/quoteFieldModel';
+import {
+  classifySalesOrderField,
+  isSalesOrderProtectedField,
+  isExcludedFromSalesOrderQuickCreate
+} from '@/platform/fields/salesOrderFieldModel';
+import {
+  classifyInvoiceField,
+  isInvoiceProtectedField,
+  isExcludedFromInvoiceQuickCreate
+} from '@/platform/fields/invoiceFieldModel';
 import {
   CATALOG_LIFECYCLE_STATES,
   CATALOG_LIFECYCLE_LABEL_KEYS
@@ -5428,6 +5440,9 @@ const moduleCardIconMap = {
   events: CalendarDaysIcon,
   items: FolderIcon,
   forms: ClipboardDocumentListIcon,
+  quotes: DocumentTextIcon,
+  sales_orders: ShoppingCartIcon,
+  invoices: DocumentTextIcon,
   deals: BanknotesIcon,
   cases: TicketIcon
 };
@@ -6868,6 +6883,14 @@ const isQuotesModule = computed(() => {
   return selectedModule.value?.key?.toLowerCase() === 'quotes';
 });
 
+const isSalesOrdersModule = computed(() => {
+  return selectedModule.value?.key?.toLowerCase() === 'sales_orders';
+});
+
+const isInvoicesModule = computed(() => {
+  return selectedModule.value?.key?.toLowerCase() === 'invoices';
+});
+
 // Check if current module is Forms
 // ARCHITECTURE NOTE: Forms Settings configure structure & behavior ONLY.
 // MUST NOT: Edit sections/questions, Edit responses, Execute workflows, Run scoring
@@ -7104,6 +7127,23 @@ const quickCreateAvailableFields = computed(() => {
     });
   }
 
+  // Sales Orders: same eligibility pattern as Quotes
+  if (isSalesOrdersModule.value) {
+    return editFields.value.filter((field) => {
+      if (!field?.key) return false;
+      if (isSystemField(field)) return false;
+      return !isExcludedFromSalesOrderQuickCreate(field.key);
+    });
+  }
+
+  if (isInvoicesModule.value) {
+    return editFields.value.filter((field) => {
+      if (!field?.key) return false;
+      if (isSystemField(field)) return false;
+      return !isExcludedFromInvoiceQuickCreate(field.key);
+    });
+  }
+
   // For other modules (Deals, Items, etc.): only non-system fields
   return editFields.value.filter(f => f.key && !isSystemField(f));
 });
@@ -7155,7 +7195,7 @@ const quickCreateEventParticipationEntries = computed(() => {
 // See: docs/architecture/event-settings.md Section 6
 // See: client/src/platform/modules/forms/formsModule.definition.ts
 const groupedFields = computed(() => {
-  if (!isPeopleModule.value && !isOrganizationsModule.value && !isTasksModule.value && !isEventsModule.value && !isFormsModule.value && !isItemsModule.value && !isQuotesModule.value && !isDealsModule.value && !isCasesModule.value) {
+  if (!isPeopleModule.value && !isOrganizationsModule.value && !isTasksModule.value && !isEventsModule.value && !isFormsModule.value && !isItemsModule.value && !isQuotesModule.value && !isSalesOrdersModule.value && !isInvoicesModule.value && !isDealsModule.value && !isCasesModule.value) {
     return { coreIdentity: [], participation: {}, system: [] };
   }
 
@@ -7255,6 +7295,50 @@ const groupedFields = computed(() => {
 
       if (isQuotesModule.value) {
         const classification = classifyQuoteField(fieldKey);
+
+        if (classification === 'core') {
+          coreIdentity.push(fieldKey);
+          continue;
+        }
+
+        if (classification === 'system') {
+          system.push(fieldKey);
+          continue;
+        }
+
+        if (!classification) {
+          system.push(fieldKey);
+          continue;
+        }
+
+        system.push(fieldKey);
+        continue;
+      }
+
+      if (isSalesOrdersModule.value) {
+        const classification = classifySalesOrderField(fieldKey);
+
+        if (classification === 'core') {
+          coreIdentity.push(fieldKey);
+          continue;
+        }
+
+        if (classification === 'system') {
+          system.push(fieldKey);
+          continue;
+        }
+
+        if (!classification) {
+          system.push(fieldKey);
+          continue;
+        }
+
+        system.push(fieldKey);
+        continue;
+      }
+
+      if (isInvoicesModule.value) {
+        const classification = classifyInvoiceField(fieldKey);
 
         if (classification === 'core') {
           coreIdentity.push(fieldKey);
@@ -7992,6 +8076,14 @@ function isCoreField(field, moduleKey) {
   if (moduleKey.toLowerCase() === 'quotes') {
     return isQuoteProtectedField(field.key);
   }
+
+  if (moduleKey.toLowerCase() === 'sales_orders') {
+    return isSalesOrderProtectedField(field.key);
+  }
+
+  if (moduleKey.toLowerCase() === 'invoices') {
+    return isInvoiceProtectedField(field.key);
+  }
   
   // For Forms module, check formSettingsMap for system/fixed field markers
   if (moduleKey.toLowerCase() === 'forms') {
@@ -8511,13 +8603,25 @@ const fetchModules = async (apiGetOptions = {}) => {
     if (data.success) {
       modules.value = normalizeModulesForSettingsDefaults(data.data);
       // Initialize from URL first (unless startWithModuleList: show cards first)
-      const moduleKey = !props.startWithModuleList && typeof route.query.module === 'string' ? route.query.module : null;
+      const moduleKeyFromRoute = !props.startWithModuleList
+        ? (typeof route.query.module === 'string'
+          ? route.query.module
+          : typeof route.query.moduleKey === 'string'
+            ? route.query.moduleKey
+            : null)
+        : null;
       const fieldKey = typeof route.query.field === 'string' ? route.query.field : null;
       const modeKey = typeof route.query.mode === 'string' ? route.query.mode : null;
       const subKey = typeof route.query.subtab === 'string' ? route.query.subtab : null;
       let initialMod = null;
-      if (moduleKey) {
-        initialMod = modules.value.find(m => m.key === moduleKey) || null;
+      if (moduleKeyFromRoute) {
+        initialMod = modules.value.find(m => m.key === moduleKeyFromRoute) || null;
+      }
+      if (!initialMod && props.moduleFilter) {
+        const filtered = modules.value.filter((m) => m.key !== 'users' && props.moduleFilter(m));
+        if (filtered.length === 1) {
+          initialMod = filtered[0];
+        }
       }
       if (initialMod) {
         selectedModuleId.value = initialMod._id;

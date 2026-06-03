@@ -1,6 +1,6 @@
 import { isQuoteValidityExpired } from '@/utils/quoteValidity';
 
-const CONVERT_ELIGIBLE_STATUSES = ['Accepted', 'Partially Accepted'];
+const CONVERT_ELIGIBLE_STATUSES = ['Accepted', 'Partially Accepted', 'Partially Converted'];
 
 function hasCustomerAcceptance(record) {
   const rt = String(record?.customerResponse?.responseType || '').toLowerCase();
@@ -11,7 +11,7 @@ function hasCustomerAcceptance(record) {
 
 export function resolveConversionTypeForQuote(record) {
   const status = String(record?.status || '').trim();
-  if (status === 'Partially Accepted') return 'partial';
+  if (status === 'Partially Accepted' || status === 'Partially Converted') return 'partial';
   if (String(record?.customerResponse?.responseType || '').toLowerCase() === 'partial') {
     return 'partial';
   }

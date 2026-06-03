@@ -626,41 +626,67 @@ function purge(item) {
   showPurgeModal.value = true;
 }
 
+function trashFilterPayload() {
+  const payload = {};
+  if (filterModule.value) payload.moduleKey = filterModule.value;
+  if (filterDeletedBy.value) payload.deletedBy = filterDeletedBy.value;
+  let from = filterDeletedFrom.value;
+  let to = filterDeletedTo.value;
+  if (from && to && to < from) to = from;
+  if (from) payload.deletedFrom = from;
+  if (to) payload.deletedTo = to;
+  if (searchQuery.value?.trim()) payload.search = searchQuery.value.trim();
+  return payload;
+}
+
+async function purgeTrashBulk({ items, purgeAll = false, filters = null }) {
+  const body = { purgeAll };
+  if (purgeAll) {
+    body.filters = filters ?? trashFilterPayload();
+  } else {
+    body.items = items;
+  }
+  return apiClient.post('/trash/bulk-purge', body);
+}
+
 async function confirmPurge() {
-  if (purgeTarget.value) {
-    purging.value = true;
-    try {
+  purging.value = true;
+  try {
+    let res;
+    if (purgeTarget.value) {
       const item = purgeTarget.value;
-      const res = await apiClient(`/trash/${item.moduleKey}/${item.recordId}`, { method: 'DELETE' });
-      if (res?.success) {
-        showPurgeModal.value = false;
-        purgeTarget.value = null;
-        await Promise.all([loadItems(pagination.value?.page || 1), loadStats()]);
-      } else {
-        alert(res?.message || t('common.trashToastFailedToDelete'));
-      }
-    } catch (e) {
-      alert(e.message || t('common.trashToastFailedToDelete2'));
-    } finally {
-      purging.value = false;
+      res = await purgeTrashBulk({
+        items: [{ moduleKey: item.moduleKey, recordId: item.recordId }]
+      });
+    } else if (selectedIds.value.size > 0) {
+      const toPurge = items.value.filter((i) => selectedIds.value.has(itemKey(i)) && !i.isLegalHold);
+      res = await purgeTrashBulk({
+        items: toPurge.map((i) => ({ moduleKey: i.moduleKey, recordId: i.recordId }))
+      });
+    } else {
+      return;
     }
-  } else if (selectedIds.value.size > 0) {
-    purging.value = true;
-    const toPurge = items.value.filter((i) => selectedIds.value.has(itemKey(i)) && !i.isLegalHold);
-    let failed = 0;
-    for (const item of toPurge) {
-      try {
-        const res = await apiClient(`/trash/${item.moduleKey}/${item.recordId}`, { method: 'DELETE' });
-        if (!res?.success) failed++;
-      } catch {
-        failed++;
+
+    if (res?.success) {
+      showPurgeModal.value = false;
+      purgeTarget.value = null;
+      selectedIds.value = new Set();
+      const failed = Number(res.failed || 0);
+      const skipped = Number(res.skipped || 0);
+      await Promise.all([loadItems(pagination.value?.page || 1), loadStats()]);
+      if (failed > 0 || skipped > 0) {
+        const parts = [];
+        if (failed > 0) parts.push(`${failed} failed`);
+        if (skipped > 0) parts.push(`${skipped} skipped (legal hold)`);
+        alert(parts.join(', '));
       }
+    } else {
+      alert(res?.message || t('common.trashToastFailedToDelete'));
     }
+  } catch (e) {
+    alert(e.message || t('common.trashToastFailedToDelete2'));
+  } finally {
     purging.value = false;
-    showPurgeModal.value = false;
-    selectedIds.value = new Set();
-    await Promise.all([loadItems(pagination.value?.page || 1), loadStats()]);
-    if (failed > 0) alert(`${failed} item(s) could not be deleted.`);
   }
 }
 
@@ -685,28 +711,19 @@ function bulkPurge() {
 async function confirmEmptyTrash() {
   emptying.value = true;
   try {
-    const allItems = [];
-    let page = 1;
-    let hasMore = true;
-    while (hasMore) {
-      const res = await apiClient('/trash', {
-        method: 'GET',
-        params: { page, limit: 100, sort: 'deletedAt', order: 'desc' }
-      });
-      const data = res?.data || [];
-      allItems.push(...data);
-      hasMore = data.length === 100;
-      page++;
-    }
-    for (const item of allItems.filter((i) => !i.isLegalHold)) {
-      try {
-        await apiClient(`/trash/${item.moduleKey}/${item.recordId}`, { method: 'DELETE' });
-      } catch {
-        // continue
-      }
-    }
+    const res = await purgeTrashBulk({ purgeAll: true, filters: {} });
     showEmptyTrashModal.value = false;
-    await Promise.all([loadItems(1), loadStats()]);
+    if (res?.success) {
+      await Promise.all([loadItems(1), loadStats()]);
+      const skipped = Number(res.skipped || 0);
+      if (skipped > 0) {
+        alert(`${skipped} item(s) on legal hold were not deleted.`);
+      }
+    } else {
+      alert(res?.message || t('common.trashToastFailedToDelete'));
+    }
+  } catch (e) {
+    alert(e.message || t('common.trashToastFailedToDelete2'));
   } finally {
     emptying.value = false;
   }

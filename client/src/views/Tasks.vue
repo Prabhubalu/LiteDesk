@@ -429,7 +429,11 @@ const showEditDrawer = ref(false);
 const currentSearchQuery = ref('');
 
 const refreshList = () => {
-  moduleListRef.value?.refresh?.();
+  if (moduleListRef.value?.refreshAfterImport) {
+    void moduleListRef.value.refreshAfterImport();
+  } else {
+    moduleListRef.value?.refresh?.();
+  }
 };
 
 // Header navigation context (prev/next on task record page)
@@ -654,7 +658,6 @@ onActivated(() => {
     router.replace({ query: { ...route.query, [VIEW_QUERY_KEY]: view } });
   }
   if (view === 'kanban') fetchKanbanTasks();
-  if (view === 'list') moduleListRef.value?.reactivate?.();
   nextTick(() => setTimeout(() => toggleTableView(view === 'list'), 80));
 });
 
@@ -767,10 +770,9 @@ const handleBulkAction = async (action, rows) => {
   
   try {
     if (action === 'delete' || action === 'bulk-delete') {
-      await Promise.all(taskIds.map(id => apiClient.delete(`/tasks/${id}`)));
-      if (currentView.value === 'kanban') fetchKanbanTasks();
-      refreshList();
-    } else if (action === 'export') {
+      return;
+    }
+    if (action === 'export') {
       // Export functionality handled by ModuleList
     }
   } catch (error) {

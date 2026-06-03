@@ -32,7 +32,11 @@ const QuoteConversionLinkSchema = new Schema(
   { timestamps: true }
 );
 
-QuoteConversionLinkSchema.index({ organizationId: 1, quoteId: 1, revisionNumber: 1 }, { unique: true });
+QuoteConversionLinkSchema.index({ organizationId: 1, quoteId: 1, revisionNumber: 1 });
+QuoteConversionLinkSchema.index(
+  { organizationId: 1, quoteId: 1, revisionNumber: 1, targetRecordId: 1 },
+  { unique: true, partialFilterExpression: { targetRecordId: { $type: 'string' } } }
+);
 
 module.exports = wrapTenantModel(mongoose.model('QuoteConversionLink', QuoteConversionLinkSchema));
 

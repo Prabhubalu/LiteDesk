@@ -51,6 +51,24 @@
         <a v-if="event.showMore" href="#" @click.prevent="ui.handleShowMore(event)" class="ml-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline">{{ t('records.activitySystemRowShowMore') }}</a>
       </p>
       <div
+        v-if="compareLink || revisionNumber || riskLevel"
+        class="flex flex-wrap items-center gap-2 text-[12px]"
+      >
+        <span v-if="revisionNumber" class="rounded bg-gray-100 px-1.5 py-0.5 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+          Rev {{ revisionNumber }}
+        </span>
+        <span v-if="riskLevel" :class="riskClass">
+          {{ riskLabel }}
+        </span>
+        <a
+          v-if="compareLink"
+          :href="compareLink"
+          class="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+        >
+          Review changes
+        </a>
+      </div>
+      <div
         v-if="event.descriptionDiffHtml"
         class="rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/50 px-3 py-2 text-[12px] leading-[1.5] text-gray-700 dark:text-gray-300 [&_del]:bg-red-100 [&_del]:dark:bg-red-900/40 [&_del]:text-red-800 [&_del]:dark:text-red-200 [&_del]:line-through [&_ins]:bg-green-100 [&_ins]:dark:bg-green-900/40 [&_ins]:text-green-800 [&_ins]:dark:text-green-200 [&_ins]:no-underline"
         v-html="event.descriptionDiffHtml"
@@ -80,6 +98,23 @@ const { t } = useI18n();
 
 const details = computed(() => props.event?.payload?.details || props.event?.details || {});
 const isTagsFieldChange = computed(() => String(details.value?.field || '').toLowerCase() === 'tags');
+const compareLink = computed(() => details.value?.compareLink || '');
+const revisionNumber = computed(() => details.value?.revisionNumber || details.value?.toRevision || null);
+const riskLevel = computed(() => details.value?.riskLevel || '');
+const riskLabel = computed(() => {
+  const value = String(riskLevel.value || '').toLowerCase();
+  if (value === 'high') return 'High risk';
+  if (value === 'medium') return 'Medium risk';
+  if (value === 'low') return 'Low risk';
+  return '';
+});
+const riskClass = computed(() => {
+  const value = String(riskLevel.value || '').toLowerCase();
+  const base = 'rounded px-1.5 py-0.5';
+  if (value === 'high') return `${base} bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-200`;
+  if (value === 'medium') return `${base} bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200`;
+  return `${base} bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200`;
+});
 
 function parseTagsFromValue(value) {
   if (value == null || value === '' || value === 'Empty') return [];

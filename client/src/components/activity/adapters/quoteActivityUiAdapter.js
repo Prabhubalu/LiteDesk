@@ -21,10 +21,17 @@ const QUOTE_ACTIVITY_MESSAGES = {
   quote_public_comment: 'Customer posted a comment',
   quote_line_added: 'Added a line',
   quote_line_updated: 'Updated a line',
+  quote_line_section_moved: 'Moved a line to another section',
   quote_line_deleted: 'Removed a line',
+  quote_section_created: 'Added a quote section',
+  quote_section_updated: 'Updated a quote section',
+  quote_section_deleted: 'Removed a quote section',
+  quote_section_discount_updated: 'Updated section discount',
+  quote_section_reordered: 'Reordered quote sections',
   quote_recalculated: 'Recalculated totals',
   quote_revision_created: 'Created a new revision',
-  quote_converted: 'Marked quote as converted',
+  quote_converted: 'Converted quote to sales order',
+  quote_partially_converted: 'Partially converted quote to sales order',
   quote_document_generated: 'Generated quote PDF'
 };
 
@@ -43,6 +50,26 @@ export function getQuoteActivityMessage(event) {
     const from = d.fromStatus ?? d.from;
     const to = d.toStatus ?? d.to;
     if (from != null && to != null) return `Status: ${from} → ${to}`;
+  }
+  if (action === 'quote_line_section_moved') {
+    const d = event?.details || event?.payload?.details || {};
+    const fromTitle = d.fromSectionTitle || d.fromSectionId;
+    const toTitle = d.toSectionTitle || d.toSectionId;
+    if (fromTitle && toTitle) return `Moved line to section: ${toTitle}`;
+    if (toTitle) return `Moved line to section: ${toTitle}`;
+  }
+  if (action === 'quote_section_created' || action === 'quote_section_updated' || action === 'quote_section_deleted') {
+    const d = event?.details || event?.payload?.details || {};
+    const title = d.sectionTitle;
+    if (title) {
+      if (action === 'quote_section_created') return `Added section: ${title}`;
+      if (action === 'quote_section_updated') return `Updated section: ${title}`;
+      if (action === 'quote_section_deleted') return `Removed section: ${title}`;
+    }
+  }
+  if (action === 'quote_section_discount_updated') {
+    const d = event?.details || event?.payload?.details || {};
+    if (d.sectionTitle) return `Updated section discount: ${d.sectionTitle}`;
   }
   if (action.startsWith('quote_public_')) {
     return QUOTE_ACTIVITY_MESSAGES[action] || 'Customer portal activity';

@@ -18,7 +18,7 @@ import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 // Cache for record data (key: appKey.moduleKey.recordId)
 const recordCache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-const BATCH_FETCH_MODULES = new Set(['deals', 'events', 'forms', 'people', 'cases', 'quotes']);
+const BATCH_FETCH_MODULES = new Set(['deals', 'events', 'forms', 'people', 'cases', 'quotes', 'sales_orders', 'invoices']);
 const unsupportedBatchModules = new Set();
 
 /**
@@ -45,7 +45,11 @@ function getRecordEndpoint(appKey, moduleKey) {
     items: '/items',
     item: '/items',
     quotes: '/quotes',
-    quote: '/quotes'
+    quote: '/quotes',
+    sales_orders: '/sales-orders',
+    salesorders: '/sales-orders',
+    invoices: '/invoices',
+    invoice: '/invoices'
   };
   const path = moduleToPath[normalizedModule];
   if (path) return path;
@@ -118,6 +122,7 @@ export function getRecordLabel(record) {
   if (record.name) return record.name;
   if (record.quoteTitle) return record.quoteTitle;
   if (record.quoteNumber) return record.quoteNumber;
+  if (record.invoiceNumber) return record.invoiceNumber;
   if (record.title) return record.title;
   if (record.eventName) return record.eventName;
   if (record.primaryField) return record.primaryField;

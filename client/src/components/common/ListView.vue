@@ -673,7 +673,7 @@
       :show="showDeleteModal"
       :record-name="deleteRecordName"
       :record-type="moduleKey"
-      :deleting="deleting"
+      :deleting="deleteModalBusy"
       :is-bulk="isBulkDelete"
       :bulk-count="bulkDeleteCount"
       @close="handleDeleteModalClose"
@@ -1475,6 +1475,7 @@ import { isSystemField as isSystemFieldFromEngine } from '@/platform/fields/fiel
 import { getQuoteFieldMetadata } from '@/platform/fields/quoteFieldModel';
 import { useDefaultListFilters } from '@/composables/useDefaultListFilters';
 import { useListSelection } from '@/composables/useListSelection';
+import { useBulkDeleteProgressStore } from '@/stores/bulkDeleteProgress';
 import { normalizeListPagination } from '@/utils/normalizeListPagination';
 import DateFilterDropdown from '@/components/common/DateFilterDropdown.vue';
 import { parseDateFilterValue, getDateFilterLabel } from '@/utils/dateFilterOptions';
@@ -1709,6 +1710,24 @@ const resetWidthsTrigger = ref(0); // Trigger to reset column widths in TableVie
 const showDeleteModal = ref(false);
 const rowToDelete = ref(null);
 const deleting = ref(false);
+const bulkDeleteStore = useBulkDeleteProgressStore();
+const deleteModalBusy = computed(() =>
+  deleting.value || (isBulkDelete.value && bulkDeleteStore.isActive)
+);
+
+function resetBulkDeleteModalState() {
+  showDeleteModal.value = false;
+  rowToDelete.value = null;
+  isBulkDelete.value = false;
+  bulkDeleteRows.value = [];
+  bulkDeletePayload.value = null;
+}
+
+watch(() => bulkDeleteStore.isActive, (active) => {
+  if (!active && showDeleteModal.value && isBulkDelete.value) {
+    resetBulkDeleteModalState();
+  }
+});
 const isBulkDelete = ref(false);
 const bulkDeleteRows = ref([]);
 const bulkDeletePayload = ref(null);
@@ -3753,7 +3772,7 @@ const autosizeAllColumns = () => {
 const router = useRouter();
 
 // Core modules are configured in Settings > Core Modules; app modules (e.g. Deals) in Settings > Applications
-const CORE_MODULE_KEYS = ['people', 'organizations', 'tasks', 'events', 'forms', 'items', 'quotes'];
+const CORE_MODULE_KEYS = ['people', 'organizations', 'tasks', 'events', 'forms', 'items', 'quotes', 'sales_orders', 'invoices'];
 const APP_MODULE_CONFIG = {
   deals: { appKey: 'SALES', app: 'sales', config: 'schema' }
 };
@@ -3926,39 +3945,53 @@ const handleDeleteClick = (row) => {
 };
 
 const handleDeleteModalClose = () => {
-  showDeleteModal.value = false;
-  rowToDelete.value = null;
-  isBulkDelete.value = false;
-  bulkDeleteRows.value = [];
-  bulkDeletePayload.value = null;
+  if (bulkDeleteStore.isActive) {
+    bulkDeleteStore.releaseToBanner();
+    resetBulkDeleteModalState();
+    return;
+  }
+  resetBulkDeleteModalState();
 };
 
+function bulkDeleteInitialTotal(payload) {
+  if (!payload) return bulkDeleteRows.value.length;
+  if (payload.mode === 'all') {
+    return Number(payload.selectionCount || payload.totalMatching || 0);
+  }
+  return (payload.selectedIds || []).length || bulkDeleteRows.value.length;
+}
+
 const confirmDelete = async () => {
+  if (isBulkDelete.value) {
+    if (bulkDeleteStore.isActive) return;
+    const payload = bulkDeletePayload.value ?? {
+      mode: 'page',
+      selectedIds: bulkDeleteRows.value.map((r) => r?._id || r?.id || r?.eventId).filter(Boolean),
+      excludedIds: [],
+      totalMatching: bulkDeleteRows.value.length,
+      selectionCount: bulkDeleteRows.value.length
+    };
+    bulkDeleteStore.start({
+      moduleKey: props.moduleKey,
+      phase: 'deleting',
+      total: bulkDeleteInitialTotal(payload)
+    });
+    bulkDeleteStore.pinToModal();
+    await nextTick();
+    emit('bulk-action', 'bulk-delete', payload);
+    clearSelection();
+    return;
+  }
+
   deleting.value = true;
   try {
-    if (isBulkDelete.value) {
-      emit('bulk-action', 'bulk-delete', bulkDeletePayload.value ?? {
-        mode: 'page',
-        selectedIds: bulkDeleteRows.value.map((r) => r?._id || r?.id).filter(Boolean),
-        excludedIds: [],
-        totalMatching: bulkDeleteRows.value.length,
-        selectionCount: bulkDeleteRows.value.length
-      });
-      clearSelection();
-    } else {
-      // Handle single delete
-      if (!rowToDelete.value) return;
-      emit('delete', rowToDelete.value);
-    }
-    // Wait a bit for the delete to process (parent component will handle the actual deletion)
-    await new Promise(resolve => setTimeout(resolve, 300));
+    if (!rowToDelete.value) return;
+    emit('delete', rowToDelete.value);
+    await new Promise((resolve) => setTimeout(resolve, 300));
   } finally {
     deleting.value = false;
     showDeleteModal.value = false;
     rowToDelete.value = null;
-    isBulkDelete.value = false;
-    bulkDeleteRows.value = [];
-    bulkDeletePayload.value = null;
   }
 };
 

@@ -3,10 +3,11 @@ import { ref, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
 import { pushToast } from '@/composables/useNotifications';
 import { buildToastPresentation } from '@/utils/toastPresentation';
+import { dispatchImportListRefresh } from '@/utils/importListModuleMatch';
 import { i18n } from '@/i18n';
 
 const STORAGE_KEY = 'litedesk:activeImports';
-const POLL_INTERVAL_MS = 1500;
+const POLL_INTERVAL_MS = 800;
 
 const t = i18n.global.t.bind(i18n.global);
 
@@ -31,6 +32,8 @@ function writeStorage(items) {
 
 export const useActiveImportsStore = defineStore('activeImports', () => {
   const imports = ref([]);
+  /** Import IDs currently shown in CSVImportModal (hidden from floating banner). */
+  const modalPinnedImportIds = ref(new Set());
   let pollTimer = null;
   const waiters = new Map();
 
@@ -38,7 +41,37 @@ export const useActiveImportsStore = defineStore('activeImports', () => {
     imports.value.filter((item) => item.status === 'processing')
   );
 
+  const processingImportsForBanner = computed(() =>
+    processingImports.value.filter((item) => !modalPinnedImportIds.value.has(item.importId))
+  );
+
   const hasProcessing = computed(() => processingImports.value.length > 0);
+
+  const hasBannerImports = computed(() => processingImportsForBanner.value.length > 0);
+
+  function pinImportToModal(importId) {
+    const id = String(importId);
+    const next = new Set(modalPinnedImportIds.value);
+    next.add(id);
+    modalPinnedImportIds.value = next;
+  }
+
+  function releaseImportToBanner(importId) {
+    const id = String(importId);
+    if (!modalPinnedImportIds.value.has(id)) return;
+    const next = new Set(modalPinnedImportIds.value);
+    next.delete(id);
+    modalPinnedImportIds.value = next;
+  }
+
+  function isImportPinnedToModal(importId) {
+    return modalPinnedImportIds.value.has(String(importId));
+  }
+
+  function shouldNotifyImportComplete(importId, hasWaiter) {
+    if (!hasWaiter) return true;
+    return !isImportPinnedToModal(importId);
+  }
 
   function getImport(importId) {
     return imports.value.find((item) => item.importId === importId) || null;
@@ -134,13 +167,24 @@ export const useActiveImportsStore = defineStore('activeImports', () => {
 
         if (record.status !== 'processing') {
           const hasWaiter = waiters.has(item.importId);
+          releaseImportToBanner(item.importId);
           imports.value = imports.value.filter((entry) => entry.importId !== item.importId);
           persistProcessingImports();
           resolveWaiters(item.importId, record);
-          if (!hasWaiter) notifyImportComplete(record);
+          dispatchImportListRefresh(record);
+          if (shouldNotifyImportComplete(item.importId, hasWaiter)) {
+            notifyImportComplete(record);
+          }
         }
       } catch (error) {
         console.error('[activeImports] poll error:', error);
+        const status = error?.response?.status;
+        if (status === 404 || status === 403) {
+          imports.value = imports.value.filter((entry) => entry.importId !== item.importId);
+          persistProcessingImports();
+          resolveWaiters(item.importId, { status: 'failed', fileName: item.fileName });
+          return;
+        }
         rejectWaiters(item.importId, error);
       }
     }));
@@ -160,7 +204,7 @@ export const useActiveImportsStore = defineStore('activeImports', () => {
     pollTimer = null;
   }
 
-  function init() {
+  async function init() {
     imports.value = readStorage().map((item) => ({
       importId: String(item.importId),
       fileName: item.fileName || 'import.csv',
@@ -169,12 +213,16 @@ export const useActiveImportsStore = defineStore('activeImports', () => {
       processed: item.processed ?? 0,
       status: 'processing',
     }));
-    if (hasProcessing.value) ensurePolling();
+    if (hasProcessing.value) {
+      await pollOnce();
+      if (hasProcessing.value) ensurePolling();
+    }
   }
 
   function reset() {
     stopPolling();
     imports.value = [];
+    modalPinnedImportIds.value = new Set();
     writeStorage([]);
     waiters.clear();
   }
@@ -197,10 +245,14 @@ export const useActiveImportsStore = defineStore('activeImports', () => {
         updateImportFromRecord(record);
         if (record.status !== 'processing') {
           const hasWaiter = waiters.has(id);
+          releaseImportToBanner(id);
           imports.value = imports.value.filter((entry) => entry.importId !== id);
           persistProcessingImports();
           resolveWaiters(id, record);
-          if (!hasWaiter) notifyImportComplete(record);
+          dispatchImportListRefresh(record);
+          if (shouldNotifyImportComplete(id, hasWaiter)) {
+            notifyImportComplete(record);
+          }
         }
       }).catch(reject);
     });
@@ -209,9 +261,14 @@ export const useActiveImportsStore = defineStore('activeImports', () => {
   return {
     imports,
     processingImports,
+    processingImportsForBanner,
     hasProcessing,
+    hasBannerImports,
     trackImport,
     getImport,
+    pinImportToModal,
+    releaseImportToBanner,
+    isImportPinnedToModal,
     init,
     reset,
     stopPolling,

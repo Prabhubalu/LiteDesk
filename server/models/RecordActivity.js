@@ -21,8 +21,9 @@ const RecordActivitySchema = new Schema({
     index: true
   },
   recordId: {
-    type: Schema.Types.ObjectId,
+    type: String,
     required: true,
+    trim: true,
     index: true
   },
   /** 'activity' | 'comment' */

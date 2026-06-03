@@ -383,6 +383,18 @@
     "message": "Could not update section discount.",
     "description": "Error when PATCH section discount fails"
   },
+  "quoteSectionMoveUp": {
+    "message": "Move section up",
+    "description": "Reorder quote section earlier in the proposal"
+  },
+  "quoteSectionMoveDown": {
+    "message": "Move section down",
+    "description": "Reorder quote section later in the proposal"
+  },
+  "quoteSectionReorderFailed": {
+    "message": "Could not reorder sections.",
+    "description": "Error when PATCH quote sections reorder fails"
+  },
   "linesBundleOptionalTitle": {
     "message": "Optional bundle components",
     "description": "Modal title when choosing optional bundle components"
@@ -820,12 +832,12 @@
     "description": "Primary conversion stub action button"
   },
   "conversionStubTitle": {
-    "message": "Conversion traceability (stub)",
+    "message": "Sales order conversion",
     "description": "Info banner in conversion section"
   },
   "conversionStubDetail": {
-    "message": "Records a conversion link for audit. Sales Orders and Invoices are not created yet — use an external reference if you fulfilled this quote elsewhere.",
-    "description": "Stub conversion section explanation"
+    "message": "Accepted quote lines convert to a confirmed sales order. Partial conversions remain eligible until all accepted lines are mapped.",
+    "description": "Conversion section explanation"
   },
   "conversionExternalRef": {
     "message": "External reference",
@@ -836,8 +848,8 @@
     "description": "Placeholder for external reference input"
   },
   "conversionConfirm": {
-    "message": "Record a {type} conversion for this quote? No sales order will be created yet.",
-    "description": "Confirm dialog before stub convert"
+    "message": "Convert this quote to a {type} sales order?",
+    "description": "Confirm dialog before convert"
   },
   "conversionTypeFull": {
     "message": "full",
@@ -848,12 +860,16 @@
     "description": "Conversion type label partial"
   },
   "conversionTargetSalesOrder": {
-    "message": "Sales order (future)",
+    "message": "Sales order",
     "description": "Display label for sales_orders target module"
   },
   "conversionTargetPending": {
-    "message": "Pending — link when Sales Orders module ships",
+    "message": "Pending sales order link",
     "description": "Placeholder when no target record id"
+  },
+  "conversionRemainingLines": {
+    "message": "{count} accepted line(s) can still be converted to another sales order.",
+    "description": "Hint when quote is partially converted"
   },
   "conversionPartialSummary": {
     "message": "Customer partially accepted {count} line(s) · {total}",
@@ -868,7 +884,7 @@
     "description": "Conversion hint when expired but override is available"
   },
   "conversionConfirmOverride": {
-    "message": "Record a {type} conversion for this expired quote? This uses admin override and does not create a sales order.",
+    "message": "Convert this expired quote to a {type} sales order? This uses admin override.",
     "description": "Confirm dialog before convert with expired override"
   },
   "conversionHintAlreadyConverted": {
@@ -911,9 +927,733 @@
     "message": "Failed to load conversion details",
     "description": "Error when conversion API fails"
   },
+  "salesOrderSourceTitle": {
+    "message": "Source",
+    "description": "Sales order source quote section title"
+  },
   "conversionSuccess": {
-    "message": "Conversion recorded",
-    "description": "Toast after successful conversion stub"
+    "message": "Sales order created",
+    "description": "Toast after successful conversion"
+  },
+  "conversionSuccessWithOrder": {
+    "message": "Sales order {number} created",
+    "description": "Toast after successful conversion with order number"
+  },
+  "salesOrderSourceQuote": {
+    "message": "Source quote",
+    "description": "Label for quote lineage on sales order record"
+  },
+  "salesOrderViewQuote": {
+    "message": "View quote",
+    "description": "Open source quote from sales order"
+  },
+  "salesOrderPartialSection": {
+    "message": "Partial section — section discount not applied",
+    "description": "Badge on partially converted sales order section"
+  },
+  "salesOrderFulfillmentTitle": {
+    "message": "Fulfillment",
+    "description": "Sales order fulfillment section title"
+  },
+  "salesOrderPostFulfillment": {
+    "message": "Post fulfillment",
+    "description": "Fulfillment form heading"
+  },
+  "salesOrderPostFulfillmentAction": {
+    "message": "Post",
+    "description": "Submit fulfillment event"
+  },
+  "salesOrderFulfillmentLine": {
+    "message": "Line",
+    "description": "Line picker for fulfillment"
+  },
+  "salesOrderFulfillmentType": {
+    "message": "Type",
+    "description": "Fulfillment event type"
+  },
+  "salesOrderFulfillmentHistory": {
+    "message": "Fulfillment history",
+    "description": "Posted fulfillment events list"
+  },
+  "salesOrderFulfillmentLineCount": {
+    "message": "{count} line(s)",
+    "description": "Line count on fulfillment event"
+  },
+  "salesOrderFulfillmentSuccess": {
+    "message": "Fulfillment posted",
+    "description": "Toast after fulfillment post"
+  },
+  "salesOrderFulfillmentFailed": {
+    "message": "Fulfillment failed",
+    "description": "Toast when fulfillment post fails"
+  },
+  "salesOrderFulfillmentDraftHint": {
+    "message": "Confirm this sales order before posting fulfillment.",
+    "description": "Hint when SO is Draft"
+  },
+  "salesOrderFulfillmentOnHoldHint": {
+    "message": "Sales order is on hold — fulfillment is blocked.",
+    "description": "Hint when SO is On Hold"
+  },
+  "salesOrderFulfillmentBlockedHint": {
+    "message": "Fulfillment is not available for this sales order status.",
+    "description": "Generic fulfillment blocked hint"
+  },
+  "salesOrderFulfillmentReverse": {
+    "message": "Reverse",
+    "description": "Reverse a posted fulfillment event"
+  },
+  "salesOrderFulfillmentReverseConfirm": {
+    "message": "Reverse this fulfillment event? Quantities will be rolled back.",
+    "description": "Confirm fulfillment reversal"
+  },
+  "salesOrderFulfillmentReverseSuccess": {
+    "message": "Fulfillment reversed",
+    "description": "Toast after reversal"
+  },
+  "salesOrderFulfillmentReverseFailed": {
+    "message": "Failed to reverse fulfillment",
+    "description": "Reversal error toast"
+  },
+  "salesOrderFulfillmentReversed": {
+    "message": "Reversed",
+    "description": "Badge on reversed fulfillment event"
+  },
+  "salesOrderFulfillmentReversal": {
+    "message": "Reversal",
+    "description": "Badge on compensating reversal event"
+  },
+  "salesOrderBundleParent": {
+    "message": "Bundle",
+    "description": "Badge on bundle parent line"
+  },
+  "salesOrderBundleComponentHint": {
+    "message": "Edit parent",
+    "description": "Hint on bundle component row in draft editor"
+  },
+  "salesOrderLineUpdated": {
+    "message": "Line updated",
+    "description": "Toast after SO line qty edit"
+  },
+  "salesOrderLineUpdateFailed": {
+    "message": "Failed to update line",
+    "description": "SO line edit error"
+  },
+  "salesOrderLineMoved": {
+    "message": "Line moved",
+    "description": "Toast after section move"
+  },
+  "salesOrderLineMoveFailed": {
+    "message": "Failed to move line",
+    "description": "SO line move error"
+  },
+  "salesOrderLineDeleted": {
+    "message": "Line removed",
+    "description": "Toast after line delete"
+  },
+  "salesOrderLineDeleteFailed": {
+    "message": "Failed to remove line",
+    "description": "SO line delete error"
+  },
+  "linesActions": {
+    "message": "Actions",
+    "description": "Line table actions column"
+  },
+  "linesRemove": {
+    "message": "Remove",
+    "description": "Remove line action"
+  },
+  "linesRemoveConfirm": {
+    "message": "Remove this line?",
+    "description": "Confirm line removal"
+  },
+  "salesOrderLineageTitle": {
+    "message": "Lineage",
+    "description": "Sales order split/merge lineage section"
+  },
+  "salesOrderLineageType": {
+    "message": "Lineage type",
+    "description": "Lineage type label"
+  },
+  "salesOrderLineageParent": {
+    "message": "Split from",
+    "description": "Parent sales order link"
+  },
+  "salesOrderLineageChild": {
+    "message": "Split child",
+    "description": "Child sales order link"
+  },
+  "salesOrderLineageMergedInto": {
+    "message": "Merged into",
+    "description": "Target merge order"
+  },
+  "salesOrderLineageMergedFrom": {
+    "message": "Merged from",
+    "description": "Source merge order"
+  },
+  "salesOrderSplitTitle": {
+    "message": "Split order",
+    "description": "Split form heading"
+  },
+  "salesOrderSplitHint": {
+    "message": "Move open quantity to a new child sales order.",
+    "description": "Split helper text"
+  },
+  "salesOrderSplitAction": {
+    "message": "Create split",
+    "description": "Submit split"
+  },
+  "salesOrderSplitSuccess": {
+    "message": "Sales order split created",
+    "description": "Split success toast"
+  },
+  "salesOrderSplitFailed": {
+    "message": "Failed to split sales order",
+    "description": "Split error toast"
+  },
+  "salesOrderSectionAdd": {
+    "message": "Add section",
+    "description": "Add sales order section button"
+  },
+  "salesOrderSectionCreated": {
+    "message": "Section added",
+    "description": "Section create success"
+  },
+  "salesOrderSectionUpdated": {
+    "message": "Section updated",
+    "description": "Section update success"
+  },
+  "salesOrderSectionDeleted": {
+    "message": "Section removed",
+    "description": "Section delete success"
+  },
+  "salesOrderSectionSaveFailed": {
+    "message": "Failed to save section",
+    "description": "Section save error"
+  },
+  "salesOrderSectionDeleteFailed": {
+    "message": "Failed to remove section",
+    "description": "Section delete error"
+  },
+  "salesOrderSectionDeleteConfirm": {
+    "message": "Remove this empty section?",
+    "description": "Section delete confirm"
+  },
+  "salesOrderMergeTitle": {
+    "message": "Merge sales orders",
+    "description": "Merge modal title"
+  },
+  "salesOrderMergeHint": {
+    "message": "Selected orders must share the same customer and contact, be Draft or Confirmed, and have no fulfillment posted.",
+    "description": "Merge modal hint"
+  },
+  "salesOrderMergeTitleLabel": {
+    "message": "Merged order title",
+    "description": "Merge title field label"
+  },
+  "salesOrderMergeAction": {
+    "message": "Merge orders",
+    "description": "Merge submit button"
+  },
+  "salesOrderMergeSuccess": {
+    "message": "Sales orders merged",
+    "description": "Merge success toast"
+  },
+  "salesOrderMergeFailed": {
+    "message": "Failed to merge sales orders",
+    "description": "Merge error toast"
+  },
+  "salesOrderMergeMinSelection": {
+    "message": "Select at least two sales orders to merge",
+    "description": "Merge min selection error"
+  },
+  "salesOrderInvoiceTitle": {
+    "message": "Invoicing readiness",
+    "description": "Invoice readiness section title"
+  },
+  "salesOrderInvoiceStatus": {
+    "message": "Invoice status",
+    "description": "Header invoice status"
+  },
+  "salesOrderInvoicedAmount": {
+    "message": "Invoiced amount",
+    "description": "Invoiced rollup"
+  },
+  "salesOrderRemainingBillable": {
+    "message": "Remaining billable",
+    "description": "Remaining billable amount"
+  },
+  "salesOrderInvoiceReadinessHint": {
+    "message": "Invoice module not connected yet. Quantities show bill-on-fulfill readiness.",
+    "description": "Invoice stub hint"
+  },
+  "salesOrderInvoiceReadinessHintLive": {
+    "message": "Line quantities use bill-on-fulfill policy. Remaining qty is available to invoice.",
+    "description": "Invoice readiness live hint"
+  },
+  "salesOrderBillingCoverageTitle": {
+    "message": "Billing coverage",
+    "description": "Billing coverage section title"
+  },
+  "salesOrderTotalBilled": {
+    "message": "Total billed",
+    "description": "Total billed amount on sales order"
+  },
+  "salesOrderRemainingToBill": {
+    "message": "Remaining to bill",
+    "description": "Remaining billable amount on sales order"
+  },
+  "salesOrderLinkedInvoicesCount": {
+    "message": "Linked invoices",
+    "description": "Count of linked invoices"
+  },
+  "salesOrderLinkedInvoiceNumber": {
+    "message": "Invoice",
+    "description": "Linked invoice number column"
+  },
+  "salesOrderLinkedInvoiceStatus": {
+    "message": "Status",
+    "description": "Linked invoice status column"
+  },
+  "salesOrderLinkedInvoiceTotal": {
+    "message": "Total",
+    "description": "Linked invoice total column"
+  },
+  "salesOrderLinkedInvoiceDue": {
+    "message": "Due",
+    "description": "Linked invoice amount due column"
+  },
+  "salesOrderNoLinkedInvoices": {
+    "message": "No invoices linked to this sales order yet.",
+    "description": "Empty linked invoices state"
+  },
+  "salesOrderCreateInvoiceAction": {
+    "message": "Create invoice",
+    "description": "Create invoice button on sales order"
+  },
+  "salesOrderCreateInvoiceTitle": {
+    "message": "Create invoice from sales order",
+    "description": "Create invoice modal title"
+  },
+  "salesOrderCreateInvoiceHint": {
+    "message": "Adjust quantities to invoice. Defaults use remaining billable qty per line.",
+    "description": "Create invoice modal hint"
+  },
+  "salesOrderCreateInvoiceQty": {
+    "message": "Qty to invoice",
+    "description": "Qty to invoice column"
+  },
+  "salesOrderCreateInvoicePostNow": {
+    "message": "Post invoice immediately after create",
+    "description": "Post after create checkbox"
+  },
+  "salesOrderCreateInvoiceDraft": {
+    "message": "Create draft",
+    "description": "Create draft invoice button"
+  },
+  "salesOrderCreateInvoiceAndPost": {
+    "message": "Create & post",
+    "description": "Create and post invoice button"
+  },
+  "salesOrderCreateInvoiceSuccess": {
+    "message": "Invoice {number} created",
+    "description": "Create invoice success toast"
+  },
+  "salesOrderCreateInvoiceFailed": {
+    "message": "Failed to create invoice",
+    "description": "Create invoice failure toast"
+  },
+  "salesOrderNoBillableLines": {
+    "message": "No billable lines remain on this sales order.",
+    "description": "No billable lines message"
+  },
+  "cancelAction": {
+    "message": "Cancel",
+    "description": "Cancel button label"
+  },
+  "invoiceSectionAdd": {
+    "message": "Add section",
+    "description": "Add invoice section button"
+  },
+  "invoicePartialSection": {
+    "message": "Partial section",
+    "description": "Partial invoice section badge"
+  },
+  "invoiceBundleParent": {
+    "message": "Bundle",
+    "description": "Bundle parent line badge"
+  },
+  "invoiceBundleComponentHint": {
+    "message": "Edit bundle via parent line",
+    "description": "Bundle component hint on invoice lines"
+  },
+  "invoiceLineUpdateFailed": {
+    "message": "Failed to update invoice line",
+    "description": "Invoice line update error"
+  },
+  "invoiceLineUpdated": {
+    "message": "Line updated",
+    "description": "Invoice line update success"
+  },
+  "invoiceLineMoveFailed": {
+    "message": "Failed to move line",
+    "description": "Invoice line move error"
+  },
+  "invoiceLineMoved": {
+    "message": "Line moved",
+    "description": "Invoice line move success"
+  },
+  "invoiceLineDeleteFailed": {
+    "message": "Failed to remove line",
+    "description": "Invoice line delete error"
+  },
+  "invoiceLineDeleted": {
+    "message": "Line removed",
+    "description": "Invoice line delete success"
+  },
+  "invoiceSectionSaveFailed": {
+    "message": "Failed to save section",
+    "description": "Invoice section save error"
+  },
+  "invoiceSectionUpdated": {
+    "message": "Section updated",
+    "description": "Invoice section update success"
+  },
+  "invoiceSectionCreated": {
+    "message": "Section added",
+    "description": "Invoice section create success"
+  },
+  "invoiceSectionDeleteConfirm": {
+    "message": "Delete this section?",
+    "description": "Invoice section delete confirm"
+  },
+  "invoiceSectionDeleteFailed": {
+    "message": "Failed to delete section",
+    "description": "Invoice section delete error"
+  },
+  "invoiceSectionDeleted": {
+    "message": "Section removed",
+    "description": "Invoice section delete success"
+  },
+  "invoiceSubmitApproval": {
+    "message": "Submit for approval",
+    "description": "Submit invoice for approval"
+  },
+  "invoiceApprove": {
+    "message": "Approve",
+    "description": "Approve invoice"
+  },
+  "invoiceReject": {
+    "message": "Reject",
+    "description": "Reject invoice"
+  },
+  "invoicePost": {
+    "message": "Post",
+    "description": "Post invoice"
+  },
+  "invoiceVoid": {
+    "message": "Void",
+    "description": "Void invoice"
+  },
+  "invoicePostConfirm": {
+    "message": "Post this invoice? Commercial fields will be locked and allocations written.",
+    "description": "Post invoice confirm"
+  },
+  "invoiceRejectReasonPrompt": {
+    "message": "Rejection reason (optional)",
+    "description": "Reject invoice reason prompt"
+  },
+  "invoiceVoidReasonPrompt": {
+    "message": "Void reason (required)",
+    "description": "Void invoice reason prompt"
+  },
+  "invoiceSubmitSuccess": {
+    "message": "Invoice submitted for approval",
+    "description": "Submit success toast"
+  },
+  "invoiceApproveSuccess": {
+    "message": "Invoice approved",
+    "description": "Approve success toast"
+  },
+  "invoiceRejectSuccess": {
+    "message": "Invoice rejected",
+    "description": "Reject success toast"
+  },
+  "invoicePostSuccess": {
+    "message": "Invoice posted",
+    "description": "Post success toast"
+  },
+  "invoiceVoidSuccess": {
+    "message": "Invoice voided",
+    "description": "Void success toast"
+  },
+  "invoiceActionFailed": {
+    "message": "Invoice action failed",
+    "description": "Generic invoice action error"
+  },
+  "invoiceCreditNotesTitle": {
+    "message": "Credit notes",
+    "description": "Credit notes section title on invoice record"
+  },
+  "invoiceCreditNotesHint": {
+    "message": "Corrections against this posted invoice. Posted invoices remain immutable.",
+    "description": "Credit notes section hint"
+  },
+  "invoiceCreditNotesEmpty": {
+    "message": "No credit notes linked to this invoice yet.",
+    "description": "Empty credit notes state"
+  },
+  "invoiceCreateCreditNote": {
+    "message": "Create credit note",
+    "description": "Create credit note button"
+  },
+  "invoiceCreateCreditNoteTitle": {
+    "message": "Create credit note",
+    "description": "Create credit note modal title"
+  },
+  "invoiceCreateCreditNoteDraft": {
+    "message": "Create draft credit note",
+    "description": "Create draft credit note button"
+  },
+  "invoiceCreateCreditNoteAndPost": {
+    "message": "Create & post credit note",
+    "description": "Create and post credit note button"
+  },
+  "invoiceCreateCreditNoteSuccess": {
+    "message": "Credit note {number} created",
+    "description": "Credit note create success toast"
+  },
+  "invoiceCreateCreditNoteFailed": {
+    "message": "Failed to create credit note",
+    "description": "Credit note create error toast"
+  },
+  "invoiceCreditPostNow": {
+    "message": "Post credit note immediately (reverses allocations)",
+    "description": "Post credit note on create checkbox"
+  },
+  "invoiceCreditModeFull": {
+    "message": "Full credit (all remaining lines)",
+    "description": "Full credit mode button"
+  },
+  "invoiceCreditNoteNumber": {
+    "message": "Credit note",
+    "description": "Credit note number column"
+  },
+  "invoiceCreditReason": {
+    "message": "Reason",
+    "description": "Credit reason label"
+  },
+  "invoiceCreditReasonSelect": {
+    "message": "Select reason (optional)",
+    "description": "Credit reason placeholder"
+  },
+  "invoiceCreditReasonNote": {
+    "message": "Notes",
+    "description": "Credit reason note label"
+  },
+  "invoiceCreditReason_duplicate": {
+    "message": "Duplicate billing",
+    "description": "Credit reason duplicate"
+  },
+  "invoiceCreditReason_return": {
+    "message": "Return",
+    "description": "Credit reason return"
+  },
+  "invoiceCreditReason_pricing_error": {
+    "message": "Pricing error",
+    "description": "Credit reason pricing error"
+  },
+  "invoiceCreditReason_goodwill": {
+    "message": "Goodwill",
+    "description": "Credit reason goodwill"
+  },
+  "invoiceCreditReason_other": {
+    "message": "Other",
+    "description": "Credit reason other"
+  },
+  "invoiceCreditAmount": {
+    "message": "Credit amount",
+    "description": "Credit amount column"
+  },
+  "invoiceTotalCredited": {
+    "message": "Total credited (posted)",
+    "description": "Total credited summary"
+  },
+  "invoiceAmountDue": {
+    "message": "Amount due",
+    "description": "Amount due summary"
+  },
+  "invoiceQtyRemainingCredit": {
+    "message": "Remaining to credit",
+    "description": "Remaining creditable qty column"
+  },
+  "invoiceCreditQty": {
+    "message": "Credit qty",
+    "description": "Credit qty input column"
+  },
+  "invoiceCreditNoteSourceLabel": {
+    "message": "Credit against invoice",
+    "description": "Credit note source invoice label"
+  },
+  "invoiceMoreActions": {
+    "message": "More",
+    "description": "Invoice document actions menu"
+  },
+  "invoiceGeneratePdf": {
+    "message": "Generate invoice PDF",
+    "description": "Generate invoice PDF action"
+  },
+  "invoiceGenerateCreditNotePdf": {
+    "message": "Generate credit note PDF",
+    "description": "Generate credit note PDF action"
+  },
+  "invoicePdfGenerated": {
+    "message": "Invoice PDF generated",
+    "description": "Invoice PDF success toast"
+  },
+  "invoiceCreditNotePdfGenerated": {
+    "message": "Credit note PDF generated",
+    "description": "Credit note PDF success toast"
+  },
+  "invoicePdfFailed": {
+    "message": "Failed to generate PDF",
+    "description": "Invoice PDF error toast"
+  },
+  "invoiceSendEmail": {
+    "message": "Send invoice",
+    "description": "Send invoice email button"
+  },
+  "invoiceSendCreditNoteEmail": {
+    "message": "Send credit note",
+    "description": "Send credit note email button"
+  },
+  "invoiceResendEmail": {
+    "message": "Resend email",
+    "description": "Resend invoice email menu action"
+  },
+  "invoiceSendEmailTitle": {
+    "message": "Send invoice",
+    "description": "Send invoice email drawer title"
+  },
+  "invoiceSendCreditNoteEmailTitle": {
+    "message": "Send credit note",
+    "description": "Send credit note email drawer title"
+  },
+  "invoiceSendEmailSubtitle": {
+    "message": "Email the invoice PDF to your customer.",
+    "description": "Send invoice email drawer subtitle"
+  },
+  "invoiceSendCreditNoteEmailSubtitle": {
+    "message": "Email the credit note PDF to your customer.",
+    "description": "Send credit note email drawer subtitle"
+  },
+  "invoiceSendEmailTo": {
+    "message": "To",
+    "description": "Invoice email recipient label"
+  },
+  "invoiceSendEmailSubject": {
+    "message": "Subject",
+    "description": "Invoice email subject label"
+  },
+  "invoiceSendEmailMessage": {
+    "message": "Message",
+    "description": "Invoice email message label"
+  },
+  "invoiceSendEmailAttachPdf": {
+    "message": "Attach invoice PDF",
+    "description": "Attach invoice PDF checkbox"
+  },
+  "invoiceSendCreditNoteAttachPdf": {
+    "message": "Attach credit note PDF",
+    "description": "Attach credit note PDF checkbox"
+  },
+  "invoiceSendEmailSubmit": {
+    "message": "Send invoice",
+    "description": "Send invoice email submit"
+  },
+  "invoiceSendCreditNoteEmailSubmit": {
+    "message": "Send credit note",
+    "description": "Send credit note email submit"
+  },
+  "invoiceResendEmailSubmit": {
+    "message": "Resend",
+    "description": "Resend invoice email submit"
+  },
+  "invoiceSendEmailSending": {
+    "message": "Sending…",
+    "description": "Invoice email sending state"
+  },
+  "invoiceSendEmailFailed": {
+    "message": "Failed to send email",
+    "description": "Invoice email error toast"
+  },
+  "invoiceEmailSuccess": {
+    "message": "Invoice emailed",
+    "description": "Invoice email success toast"
+  },
+  "invoiceCreditNoteEmailSuccess": {
+    "message": "Credit note emailed",
+    "description": "Credit note email success toast"
+  },
+  "invoiceSendEmailDefaultSubject": {
+    "message": "Invoice {number}{title}",
+    "description": "Default invoice email subject"
+  },
+  "invoiceSendCreditNoteDefaultSubject": {
+    "message": "Credit note {number}{title}",
+    "description": "Default credit note email subject"
+  },
+  "invoiceSendEmailDefaultMessage": {
+    "message": "Please find your invoice attached.",
+    "description": "Default invoice email message"
+  },
+  "invoiceSendCreditNoteDefaultMessage": {
+    "message": "Please find your credit note attached.",
+    "description": "Default credit note email message"
+  },
+  "invoiceMultiSoTitle": {
+    "message": "Combined invoice from sales orders",
+    "description": "Multi-SO invoice wizard title"
+  },
+  "invoiceMultiSoHint": {
+    "message": "Bill compatible sales orders on one invoice. Allocations are written per source SO line on post.",
+    "description": "Multi-SO invoice wizard hint"
+  },
+  "invoiceMultiSoMinSelection": {
+    "message": "Select at least two sales orders with the same account, contact, and currency.",
+    "description": "Multi-SO minimum selection error"
+  },
+  "invoiceMultiSoLoadFailed": {
+    "message": "Failed to load combined billing readiness",
+    "description": "Multi-SO readiness load error"
+  },
+  "invoiceMultiSoCreateDraft": {
+    "message": "Create draft invoice",
+    "description": "Multi-SO create draft button"
+  },
+  "invoiceMultiSoCreateAndPost": {
+    "message": "Create & post invoice",
+    "description": "Multi-SO create and post button"
+  },
+  "invoiceMultiSoSuccess": {
+    "message": "Invoice {number} created from sales orders",
+    "description": "Multi-SO create success toast"
+  },
+  "invoiceMultiSoFailed": {
+    "message": "Failed to create combined invoice",
+    "description": "Multi-SO create error toast"
+  },
+  "salesOrderQtyFulfilled": {
+    "message": "Fulfilled",
+    "description": "Invoice readiness fulfilled qty"
+  },
+  "salesOrderQtyInvoiced": {
+    "message": "Invoiced",
+    "description": "Invoice readiness invoiced qty"
+  },
+  "salesOrderQtyRemainingInvoice": {
+    "message": "Remaining",
+    "description": "Invoice readiness remaining qty"
   },
   "conversionFailed": {
     "message": "Conversion failed",
@@ -2070,5 +2810,152 @@
   "sectionGroupRecord": {
     "message": "Record",
     "description": "Record metadata group label"
-  }
+  },
+  "paymentAllocationsTitle": { "message": "Payment allocations", "description": "Payment allocations section title" },
+  "paymentAllocationsHint": { "message": "Cash applied to invoices — billing allocations are unchanged.", "description": "Payment allocations hint" },
+  "paymentAllocationsEmpty": { "message": "No allocations yet.", "description": "Empty payment allocations" },
+  "paymentAllocationInvoice": { "message": "Invoice", "description": "Allocation invoice column" },
+  "paymentAllocationAmount": { "message": "Amount", "description": "Allocation amount column" },
+  "paymentAllocationAppliedAt": { "message": "Applied", "description": "Allocation date column" },
+  "paymentAmount": { "message": "Amount", "description": "Payment amount label" },
+  "paymentAmountAllocated": { "message": "Allocated", "description": "Payment allocated label" },
+  "paymentAmountUnallocated": { "message": "Unallocated", "description": "Payment unallocated label" },
+  "paymentAmountRefunded": { "message": "Refunded", "description": "Payment refunded label" },
+  "paymentNumber": { "message": "Payment #", "description": "Payment number label" },
+  "paymentIssueRefund": { "message": "Issue refund", "description": "Issue refund button" },
+  "paymentRefundsTitle": { "message": "Refunds", "description": "Payment refunds section title" },
+  "paymentRefundsHint": { "message": "Outbound cash linked to this payment.", "description": "Payment refunds hint" },
+  "paymentRefundsEmpty": { "message": "No refunds recorded.", "description": "Empty refunds list" },
+  "paymentRefundWizardTitle": { "message": "Issue refund", "description": "Refund wizard title" },
+  "paymentMaxRefundable": { "message": "Max refundable", "description": "Max refundable label" },
+  "paymentRefundAmount": { "message": "Refund amount", "description": "Refund amount label" },
+  "paymentRefundReason": { "message": "Reason", "description": "Refund reason label" },
+  "paymentRefundReasonSelect": { "message": "Select reason", "description": "Refund reason placeholder" },
+  "paymentRefundReasonNote": { "message": "Notes", "description": "Refund reason note label" },
+  "paymentRefundUnallocatedPortion": { "message": "Unallocated portion", "description": "Refund unallocated portion" },
+  "paymentRefundAmountMismatch": { "message": "Refund amount must equal unallocated portion plus selected allocations.", "description": "Refund amount mismatch" },
+  "paymentRefundSubmit": { "message": "Complete refund", "description": "Refund submit button" },
+  "paymentRefundSuccess": { "message": "Refund completed", "description": "Refund success toast" },
+  "paymentRefundFailed": { "message": "Refund failed", "description": "Refund failure toast" },
+  "paymentRefundNumber": { "message": "Refund #", "description": "Refund number column" },
+  "paymentRefundDate": { "message": "Refund date", "description": "Refund date column" },
+  "paymentRefundReason_customer_request": { "message": "Customer request", "description": "Refund reason" },
+  "paymentRefundReason_duplicate_payment": { "message": "Duplicate payment", "description": "Refund reason" },
+  "paymentRefundReason_overpayment": { "message": "Overpayment", "description": "Refund reason" },
+  "paymentRefundReason_credit_note_settlement": { "message": "Credit note settlement", "description": "Refund reason" },
+  "paymentRefundReason_billing_error": { "message": "Billing error", "description": "Refund reason" },
+  "paymentRefundReason_service_cancellation": { "message": "Service cancellation", "description": "Refund reason" },
+  "paymentRefundReason_chargeback_resolution": { "message": "Chargeback resolution", "description": "Refund reason" },
+  "paymentRefundReason_other": { "message": "Other", "description": "Refund reason" },
+  "paymentRecordTitle": { "message": "Record payment", "description": "Record payment modal title" },
+  "paymentRecordSubmit": { "message": "Record payment", "description": "Record payment submit" },
+  "paymentRecordSuccess": { "message": "Payment recorded", "description": "Record payment success" },
+  "paymentRecordFailed": { "message": "Failed to record payment", "description": "Record payment failure" },
+  "paymentRecordAccountRequired": { "message": "Account is required", "description": "Payment account required" },
+  "paymentRecordAmountRequired": { "message": "Amount is required", "description": "Payment amount required" },
+  "paymentCurrency": { "message": "Currency", "description": "Payment currency" },
+  "paymentDate": { "message": "Payment date", "description": "Payment date" },
+  "paymentPurpose": { "message": "Purpose", "description": "Payment purpose" },
+  "paymentPurpose_invoice_payment": { "message": "Invoice payment", "description": "Payment purpose" },
+  "paymentPurpose_deposit": { "message": "Deposit", "description": "Payment purpose" },
+  "paymentPurpose_retainer": { "message": "Retainer", "description": "Payment purpose" },
+  "paymentPurpose_on_account": { "message": "On account", "description": "Payment purpose" },
+  "paymentMethod": { "message": "Method", "description": "Payment method" },
+  "paymentReferenceNumber": { "message": "Reference #", "description": "Payment reference" },
+  "paymentAutoApply": { "message": "Auto-apply to open invoices (oldest due first)", "description": "Payment auto apply" },
+  "invoicePaymentsTitle": { "message": "Payments & refunds", "description": "Invoice payments section" },
+  "invoicePaymentsHint": { "message": "Cash applied to this invoice and related refunds.", "description": "Invoice payments hint" },
+  "invoicePaymentsEmpty": { "message": "No payments applied yet.", "description": "Invoice payments empty" },
+  "invoiceAmountPaid": { "message": "Amount paid", "description": "Invoice amount paid" },
+  "invoiceTotalRefunded": { "message": "Total refunded", "description": "Invoice total refunded" },
+  "invoicePaymentRefundsTitle": { "message": "Refunds", "description": "Invoice payment refunds subsection" },
+  "customerCreditApplied": { "message": "Credit applied", "description": "Invoice credit applied total" },
+  "customerCreditApplicationsTitle": { "message": "Credit applications", "description": "Credit applications subsection" },
+  "customerCreditApplicationId": { "message": "Application", "description": "Credit application id column" },
+  "customerCreditApplyTitle": { "message": "Apply customer credit", "description": "Apply credit modal title" },
+  "customerCreditApplyAmount": { "message": "Amount to apply", "description": "Credit apply amount label" },
+  "customerCreditApplySubmit": { "message": "Apply credit", "description": "Apply credit submit button" },
+  "customerCreditApplySuccess": { "message": "Credit applied", "description": "Credit apply success toast" },
+  "customerCreditApplyFailed": { "message": "Failed to apply credit", "description": "Credit apply failure toast" },
+  "customerCreditAvailable": { "message": "Available credit", "description": "Available customer credit label" },
+  "customerCreditAutoApply": { "message": "Auto-apply across balances (oldest first)", "description": "Credit auto apply checkbox" },
+  "customerStatement": { "message": "Customer statement", "description": "Statement section title on payment record" },
+  "customerStatementTitle": { "message": "Customer statement", "description": "Statement panel title" },
+  "customerStatementHint": { "message": "Open items, payments, and credit activity for this account.", "description": "Statement panel hint" },
+  "customerStatementFrom": { "message": "From", "description": "Statement date range from" },
+  "customerStatementTo": { "message": "To", "description": "Statement date range to" },
+  "customerStatementPreview": { "message": "Preview", "description": "Statement preview button" },
+  "customerStatementExportCsv": { "message": "Export CSV", "description": "Statement CSV export button" },
+  "customerStatementExportPdf": { "message": "Export PDF", "description": "Statement PDF export button" },
+  "customerStatementBalance": { "message": "Balance", "description": "Statement running balance column" },
+  "customerStatementClosing": { "message": "Closing balance", "description": "Statement closing balance label" },
+  "customerStatementPreviewFailed": { "message": "Failed to load statement", "description": "Statement preview failure" },
+  "customerStatementExportSuccess": { "message": "Statement exported", "description": "Statement export success" },
+  "customerStatementExportFailed": { "message": "Statement export failed", "description": "Statement export failure" },
+  "paymentLink": { "message": "Payment link", "description": "Payment link section title" },
+  "paymentLinkSectionTitle": { "message": "Online payment link", "description": "Payment link panel title" },
+  "paymentLinkSectionHint": { "message": "Share a hosted checkout link for this invoice.", "description": "Payment link panel hint" },
+  "paymentLinkCreate": { "message": "Create link", "description": "Create payment link button" },
+  "paymentLinkCreateSuccess": { "message": "Payment link created", "description": "Create link success" },
+  "paymentLinkCreateFailed": { "message": "Failed to create payment link", "description": "Create link failure" },
+  "paymentLinkRevoke": { "message": "Revoke link", "description": "Revoke payment link" },
+  "paymentLinkRevokeSuccess": { "message": "Payment link revoked", "description": "Revoke success" },
+  "paymentLinkRevokeFailed": { "message": "Failed to revoke link", "description": "Revoke failure" },
+  "paymentLinkNumber": { "message": "Link #", "description": "Payment link number" },
+  "paymentLinkPublicUrl": { "message": "Public URL", "description": "Public payment URL label" },
+  "paymentLinkCopy": { "message": "Copy", "description": "Copy link button" },
+  "paymentLinkCopySuccess": { "message": "Link copied", "description": "Copy success" },
+  "paymentLinkEmpty": { "message": "No active payment link.", "description": "Empty payment link state" },
+  "paymentLinkTitle": { "message": "Pay invoice", "description": "Public pay page title" },
+  "paymentLinkPayPrompt": { "message": "Complete your payment securely.", "description": "Public pay prompt" },
+  "paymentLinkAmount": { "message": "Amount due", "description": "Public pay amount" },
+  "paymentLinkPayNow": { "message": "Pay now", "description": "Public pay button" },
+  "paymentLinkRedirecting": { "message": "Redirecting…", "description": "Checkout redirect" },
+  "paymentLinkLoading": { "message": "Loading…", "description": "Public pay loading" },
+  "paymentLinkUnavailable": { "message": "This payment link is not available.", "description": "Public pay unavailable" },
+  "paymentLinkReturnTitle": { "message": "Payment submitted", "description": "Return page title" },
+  "paymentLinkReturnSuccess": { "message": "Your payment is being processed. You will receive confirmation once it completes.", "description": "Return success hint" },
+  "paymentLinkReturnFailed": { "message": "Payment could not be completed.", "description": "Return failure" },
+  "paymentLinkStatusPending": { "message": "Processing — confirmation arrives via email when complete.", "description": "Pending status" },
+  "paymentLinkStatusSucceeded": { "message": "Payment received.", "description": "Succeeded status" },
+  "paymentLinkStatusFailed": { "message": "Payment failed.", "description": "Failed status" },
+  "gatewayEvents": { "message": "Gateway events", "description": "Gateway events section" },
+  "gatewayEventsTitle": { "message": "Gateway webhook events", "description": "Gateway events panel title" },
+  "gatewayEventsHint": { "message": "Append-only audit log. Replay failed events after fixing the root cause.", "description": "Gateway events hint" },
+  "gatewayEventsEmpty": { "message": "No gateway events yet.", "description": "Empty gateway events" },
+  "gatewayEventType": { "message": "Event", "description": "Event type column" },
+  "gatewayEventActions": { "message": "Actions", "description": "Event actions column" },
+  "gatewayEventReplay": { "message": "Replay", "description": "Replay event button" },
+  "gatewayEventReplaySuccess": { "message": "Event replayed", "description": "Replay success" },
+  "gatewayEventReplayFailed": { "message": "Replay failed", "description": "Replay failure" },
+  "portalInvoicesTitle": { "message": "Invoices", "description": "Portal invoices title" },
+  "portalInvoicesHint": { "message": "Pay open invoices online.", "description": "Portal invoices hint" },
+  "portalInvoicesLoading": { "message": "Loading invoices…", "description": "Portal invoices loading" },
+  "portalInvoicesEmpty": { "message": "No open invoices.", "description": "Portal invoices empty" },
+  "portalInvoicesLoadFailed": { "message": "Failed to load invoices", "description": "Portal invoices load error" },
+  "portalInvoiceNumber": { "message": "Invoice #", "description": "Portal invoice number" },
+  "portalInvoiceDue": { "message": "Due date", "description": "Portal invoice due date" },
+  "portalPayNow": { "message": "Pay now", "description": "Portal pay button" },
+  "portalPayFailed": { "message": "Could not start payment", "description": "Portal pay failure" },
+  "portalPayReturnTitle": { "message": "Thank you", "description": "Portal pay return title" },
+  "portalPayReturnHint": { "message": "Your payment is being processed. Invoice balance updates when our system receives confirmation from the payment provider.", "description": "Portal pay return hint" },
+  "bankTransferSectionTitle": { "message": "Bank transfer instructions", "description": "Invoice bank transfer panel title" },
+  "bankTransferSectionHint": { "message": "Pending manual transfers — record payment with the reference code.", "description": "Bank transfer panel hint" },
+  "bankTransferLoading": { "message": "Loading…", "description": "Bank transfer loading" },
+  "bankTransferEmpty": { "message": "No bank transfer instructions.", "description": "Empty bank transfer state" },
+  "bankTransferReference": { "message": "Reference", "description": "Bank transfer reference code" },
+  "bankTransferRecordHint": { "message": "Record payment via Payments with method Bank transfer and this reference.", "description": "Agent bank transfer hint" },
+  "bankTransferTitle": { "message": "Bank transfer", "description": "Public bank transfer title" },
+  "bankTransferPayPrompt": { "message": "Transfer the exact amount and include the reference code.", "description": "Public bank transfer prompt" },
+  "bankTransferPayButton": { "message": "Pay by bank transfer", "description": "Public bank transfer button" },
+  "bankTransferBeneficiary": { "message": "Beneficiary", "description": "Bank transfer beneficiary" },
+  "bankTransferBank": { "message": "Bank", "description": "Bank name label" },
+  "bankTransferAccount": { "message": "Account", "description": "Masked account label" },
+  "bankTransferRouting": { "message": "Routing / IFSC", "description": "Routing or IFSC label" },
+  "bankTransferCustomerHint": { "message": "After you transfer, our team will match your payment. Your invoice balance updates once the payment is recorded.", "description": "Customer bank transfer hint" },
+  "bankTransferBackToMethods": { "message": "Choose another payment method", "description": "Back to pay methods" },
+  "razorpayCheckoutOpening": { "message": "Opening secure checkout…", "description": "Razorpay checkout loading" },
+  "razorpayCheckoutMissingParams": { "message": "Checkout session is invalid.", "description": "Razorpay missing params" },
+  "razorpayCheckoutFailed": { "message": "Could not open checkout.", "description": "Razorpay checkout failure" },
+  "portalInvoicesBack": { "message": "Back to invoices", "description": "Portal back link" }
 }

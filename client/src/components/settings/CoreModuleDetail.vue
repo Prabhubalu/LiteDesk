@@ -906,7 +906,7 @@
       </div>
 
       <!-- Items / Quotes: field configuration via ModulesAndFields -->
-      <div v-else-if="isItemsModule || isQuotesModule" class="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div v-else-if="isItemsModule || isQuotesModule || isSalesOrdersModule" class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Status & Types, Relationships, Quick Create) -->
         <ModulesAndFields
           class="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -1572,6 +1572,30 @@ const isQuotesModule = computed(() => {
   return false;
 });
 
+const isSalesOrdersModule = computed(() => {
+  if (moduleKey.value) {
+    const key = String(moduleKey.value).toUpperCase();
+    if (key === 'SALES_ORDERS') return true;
+  }
+  if (module.value) {
+    const key = (module.value.moduleKey || module.value.key || '').toUpperCase();
+    if (key === 'SALES_ORDERS') return true;
+  }
+  return false;
+});
+
+const isInvoicesModule = computed(() => {
+  if (moduleKey.value) {
+    const key = String(moduleKey.value).toUpperCase();
+    if (key === 'INVOICES') return true;
+  }
+  if (module.value) {
+    const key = (module.value.moduleKey || module.value.key || '').toUpperCase();
+    if (key === 'INVOICES') return true;
+  }
+  return false;
+});
+
 const usesModulesAndFields = computed(() =>
   isPeopleModule.value
   || isOrganizationsModule.value
@@ -1580,17 +1604,23 @@ const usesModulesAndFields = computed(() =>
   || isFormsModule.value
   || isItemsModule.value
   || isQuotesModule.value
+  || isSalesOrdersModule.value
+  || isInvoicesModule.value
 );
 
 const catalogEntityModuleFilter = (module) => {
   if (isItemsModule.value) return itemsModuleFilter(module);
   if (isQuotesModule.value) return quotesModuleFilter(module);
+  if (isSalesOrdersModule.value) return salesOrdersModuleFilter(module);
+  if (isInvoicesModule.value) return invoicesModuleFilter(module);
   return false;
 };
 
 const catalogEntityModuleTitle = computed(() => {
   if (isItemsModule.value) return t('settings.coreModDetailModuleItems');
   if (isQuotesModule.value) return t('settings.coreModDetailModuleQuotes');
+  if (isSalesOrdersModule.value) return t('settings.coreModDetailModuleSalesOrders');
+  if (isInvoicesModule.value) return t('settings.coreModDetailModuleInvoices');
   return '';
 });
 
@@ -1676,10 +1706,18 @@ const quotesModuleFilter = (module) => {
   return module.key?.toLowerCase() === 'quotes';
 };
 
+const salesOrdersModuleFilter = (module) => {
+  return module.key?.toLowerCase() === 'sales_orders';
+};
+
+const invoicesModuleFilter = (module) => {
+  return module.key?.toLowerCase() === 'invoices';
+};
+
 // Ensure module query param is set for ModulesAndFields to auto-select core catalog modules
 watch(() => moduleKey.value, (newKey) => {
   const upperKey = newKey?.toUpperCase();
-  if ((upperKey === 'PEOPLE' || upperKey === 'ORGANIZATIONS' || upperKey === 'TASKS' || upperKey === 'EVENTS' || upperKey === 'FORMS' || upperKey === 'ITEMS' || upperKey === 'QUOTES') && !route.query.module) {
+  if ((upperKey === 'PEOPLE' || upperKey === 'ORGANIZATIONS' || upperKey === 'TASKS' || upperKey === 'EVENTS' || upperKey === 'FORMS' || upperKey === 'ITEMS' || upperKey === 'QUOTES' || upperKey === 'SALES_ORDERS' || upperKey === 'INVOICES') && !route.query.module) {
     // Set module query param so ModulesAndFields auto-selects the module
     router.replace({ 
       query: { 

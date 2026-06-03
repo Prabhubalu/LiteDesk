@@ -54,6 +54,12 @@
               >
                 {{ approval.status === 'pending' ? 'Pending' : 'Escalated' }}
               </span>
+              <span
+                v-if="approval.quoteCompareSummary"
+                :class="riskBadgeClass(approval.quoteCompareSummary.riskLevel)"
+              >
+                {{ riskLabel(approval.quoteCompareSummary.riskLevel) }}
+              </span>
             </div>
 
             <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1 mb-3">
@@ -74,6 +80,10 @@
                 <span :class="approval.dueIn < 24 ? 'text-red-600 dark:text-red-400 font-medium' : ''">
                   {{ formatDueTime(approval.dueIn) }}
                 </span>
+              </div>
+              <div v-if="approval.quoteCompareSummary">
+                <span class="font-medium">Changes</span>
+                {{ quoteChangeSummary(approval.quoteCompareSummary.changeCounts) }}
               </div>
             </div>
 
@@ -188,6 +198,27 @@ const getEntityDisplay = (approval) => {
     }
   }
   return `${approval.entityType || 'Record'} (${approval.entityId || 'Unknown'})`;
+};
+
+const riskLabel = (level) => {
+  const value = String(level || 'low').toLowerCase();
+  if (value === 'high') return 'High risk';
+  if (value === 'medium') return 'Medium risk';
+  return 'Low risk';
+};
+
+const riskBadgeClass = (level) => {
+  const value = String(level || 'low').toLowerCase();
+  const base = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
+  if (value === 'high') return `${base} bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300`;
+  if (value === 'medium') return `${base} bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300`;
+  return `${base} bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300`;
+};
+
+const quoteChangeSummary = (counts = {}) => {
+  const sections = (counts.sectionsAdded || 0) + (counts.sectionsRemoved || 0) + (counts.sectionsChanged || 0);
+  const lines = (counts.linesAdded || 0) + (counts.linesRemoved || 0) + (counts.linesChanged || 0);
+  return `${counts.header || 0} header, ${sections} section, ${lines} line`;
 };
 
 const formatCurrency = (value, currency) => {

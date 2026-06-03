@@ -6,6 +6,7 @@ export const QUOTE_STATUSES = [
   'Viewed',
   'Accepted',
   'Partially Accepted',
+  'Partially Converted',
   'Rejected',
   'Expired',
   'Cancelled',
@@ -18,8 +19,9 @@ export const QUOTE_ALLOWED_TRANSITIONS = {
   Approved: ['Sent', 'Cancelled'],
   Sent: ['Viewed', 'Accepted', 'Partially Accepted', 'Rejected', 'Expired'],
   Viewed: ['Accepted', 'Partially Accepted', 'Rejected', 'Expired'],
-  Accepted: ['Converted'],
-  'Partially Accepted': ['Converted'],
+  Accepted: ['Partially Converted', 'Converted'],
+  'Partially Accepted': ['Partially Converted', 'Converted'],
+  'Partially Converted': ['Converted'],
   Rejected: [],
   Expired: [],
   Cancelled: [],
@@ -33,7 +35,7 @@ export function getAllowedNextQuoteStatuses(fromStatus) {
 
 /** After Sent, line edits are commercially locked unless admin override + audit. */
 export function isCommerciallyLockedStatus(status) {
-  return ['Sent', 'Viewed', 'Accepted', 'Partially Accepted', 'Converted'].includes(
+  return ['Sent', 'Viewed', 'Accepted', 'Partially Accepted', 'Partially Converted', 'Converted'].includes(
     String(status || '').trim()
   );
 }
@@ -53,7 +55,7 @@ export function quoteRequiresApprovalBeforeSend(record, orgSettings = null) {
  */
 export function getFormalShareQuoteEligibility(record, orgSettings = null) {
   const status = String(record?.status || '').trim();
-  const sent = ['Sent', 'Viewed', 'Accepted', 'Partially Accepted', 'Converted'];
+  const sent = ['Sent', 'Viewed', 'Accepted', 'Partially Accepted', 'Partially Converted', 'Converted'];
   if (sent.includes(status)) return { allowed: true, reason: null };
   if (status === 'Approved') return { allowed: true, reason: null };
   if (status === 'Pending Approval') return { allowed: false, reason: 'pending_approval' };

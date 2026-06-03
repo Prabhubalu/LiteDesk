@@ -1,6 +1,15 @@
 <template>
   <div class="flex flex-wrap items-center justify-end gap-1.5">
     <button
+      v-if="canReviewChanges"
+      type="button"
+      :class="secondaryActionClass('neutral')"
+      :disabled="busy"
+      @click="reviewChanges"
+    >
+      Review changes
+    </button>
+    <button
       v-if="canSubmitForApproval"
       type="button"
       :class="secondaryActionClass('amber')"
@@ -205,6 +214,10 @@ const canRevise = computed(() => {
   const s = quoteStatus.value;
   return ['Sent', 'Viewed', 'Accepted', 'Partially Accepted', 'Converted', 'Expired', 'Rejected', 'Cancelled'].includes(s);
 });
+const canReviewChanges = computed(() => {
+  const rev = Number(props.record?.revisionNumber) || 1;
+  return rev > 1 && ['Draft', 'Pending Approval', 'Approved', 'Sent'].includes(quoteStatus.value);
+});
 
 const showSendEmailButton = computed(() => canSendQuoteToCustomer(props.record, orgQuoteSettings.value));
 
@@ -338,9 +351,11 @@ async function approve() {
 
 async function reject() {
   if (!props.record?._id) return;
+  const reason = window.prompt('Enter rejection reason');
+  if (!reason?.trim()) return;
   busy.value = true;
   try {
-    const res = await apiClient.post(`/quotes/${props.record._id}/reject`, {});
+    const res = await apiClient.post(`/quotes/${props.record._id}/reject`, { reason: reason.trim() });
     if (res?.success) {
       notifications.success(t('records.quoteRejected'));
       await refresh(
@@ -354,6 +369,19 @@ async function reject() {
   } finally {
     busy.value = false;
   }
+}
+
+function reviewChanges() {
+  if (!props.record?._id) return;
+  const toRevision = Number(props.record?.revisionNumber) || 1;
+  router.push({
+    name: 'quote-revision-compare',
+    params: { id: String(props.record._id) },
+    query: {
+      fromRevision: Math.max(1, toRevision - 1),
+      toRevision
+    }
+  });
 }
 
 async function generatePdf() {

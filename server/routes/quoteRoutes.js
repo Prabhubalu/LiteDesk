@@ -24,6 +24,9 @@ const {
   recalculateQuote,
   reviseQuote,
   getQuoteRevisions,
+  getQuoteRevisionCompare,
+  getQuoteApprovalWorkspaceHandler,
+  getQuoteApprovalHistoryHandler,
   getQuoteProcessApprovals,
   sendQuoteEmail,
   patchQuoteDiscounts
@@ -67,6 +70,9 @@ router.route('/')
 
 router.get('/:id', checkPermission('quotes', 'view'), getQuoteById);
 router.get('/:id/revisions', checkPermission('quotes', 'view'), getQuoteRevisions);
+router.get('/:id/revisions/compare', checkPermission('quotes', 'view'), getQuoteRevisionCompare);
+router.get('/:id/approval-workspace', checkPermission('quotes', 'view'), getQuoteApprovalWorkspaceHandler);
+router.get('/:id/approval-history', checkPermission('quotes', 'view'), getQuoteApprovalHistoryHandler);
 router.get('/:id/process-approvals', checkPermission('quotes', 'view'), getQuoteProcessApprovals);
 router.get('/:id/conversion', checkPermission('quotes', 'view'), getQuoteConversion);
 router.put('/:id', checkPermission('quotes', 'edit'), updateQuote);
@@ -96,7 +102,7 @@ router.patch('/:id/lines/:lineId', checkPermission('quotes', 'edit'), patchQuote
 router.delete('/:id/lines/:lineId', checkPermission('quotes', 'edit'), deleteQuoteLine);
 
 router.get('/:id/documents', checkPermission('quotes', 'view'), quoteDocumentController.listDocuments);
+router.post('/:id/documents/preview', checkPermission('quotes', 'view'), quoteDocumentController.generateDocument);
 router.post('/:id/documents/generate', checkPermission('quotes', 'edit'), quoteDocumentController.generateDocument);
 
 module.exports = router;
-

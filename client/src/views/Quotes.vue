@@ -10,8 +10,16 @@
     >
       <template #cell-quoteNumber="{ value, row }">
         <div class="min-w-0">
-          <div class="font-semibold text-gray-900 dark:text-white truncate">
-            {{ value || row.quoteNumber }}
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="font-semibold text-gray-900 dark:text-white truncate">
+              {{ value || row.quoteNumber }}
+            </span>
+            <span
+              v-if="showRevisionBadge(row)"
+              class="shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+            >
+              {{ t('records.quoteRevisionLabel', { n: revisionNumber(row) }) }}
+            </span>
           </div>
           <div v-if="row.quoteTitle" class="text-xs text-gray-500 dark:text-gray-400 truncate">
             {{ row.quoteTitle }}
@@ -44,16 +52,26 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import ModuleList from '@/components/module-list/ModuleList.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const moduleListRef = ref(null);
 const showCreateDrawer = ref(false);
 const showEditDrawer = ref(false);
 const editingQuote = ref(null);
+
+function revisionNumber(row) {
+  return Math.max(1, Number(row?.revisionNumber) || 1);
+}
+
+function showRevisionBadge(row) {
+  return revisionNumber(row) > 1;
+}
 
 function openCreateDrawer() {
   showCreateDrawer.value = true;

@@ -740,6 +740,117 @@ function normalizeQuotesFilters(filters: Record<string, any>, currentUserId?: st
   return normalized;
 }
 
+function normalizeSalesOrdersFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
+  const normalized = { ...filters };
+  if ('ownerId' in normalized) {
+    if (normalized.ownerId === 'me' && currentUserId) {
+      normalized.ownerId = currentUserId;
+    } else if (normalized.ownerId === 'unassigned') {
+      normalized.ownerId = null;
+    }
+  }
+  if ('status' in normalized && normalized.status === '') {
+    delete normalized.status;
+  }
+  return normalized;
+}
+
+function normalizeSalesOrdersViewFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
+  const normalized = { ...filters };
+  if ('ownerId' in normalized) {
+    if (normalized.ownerId === currentUserId) {
+      normalized.ownerId = 'me';
+    } else if (normalized.ownerId === null) {
+      normalized.ownerId = 'unassigned';
+    }
+  }
+  return normalized;
+}
+
+/**
+ * Sales order list statistics — prefer server listStatistics; fallback from page data.
+ */
+function computeSalesOrdersStatistics(
+  data: any[],
+  currentUserId?: string,
+  context?: ModuleListStatisticsContext
+): Record<string, number> {
+  const stats = {
+    totalSalesOrders: context?.totalRecords ?? data.length,
+    draft: 0,
+    confirmed: 0,
+    inFulfillment: 0,
+    partiallyFulfilled: 0,
+    completed: 0,
+    cancelled: 0
+  };
+
+  data.forEach((order: any) => {
+    const status = String(order.status || '');
+    if (status === 'Draft') stats.draft++;
+    else if (status === 'Confirmed') stats.confirmed++;
+    else if (status === 'In Fulfillment') stats.inFulfillment++;
+    else if (status === 'Partially Fulfilled') stats.partiallyFulfilled++;
+    else if (status === 'Fulfilled') stats.completed++;
+    else if (status === 'Cancelled') stats.cancelled++;
+  });
+
+  return stats;
+}
+
+function normalizeInvoicesFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
+  const normalized = { ...filters };
+  if ('ownerId' in normalized) {
+    if (normalized.ownerId === 'me' && currentUserId) {
+      normalized.ownerId = currentUserId;
+    } else if (normalized.ownerId === 'unassigned') {
+      normalized.ownerId = null;
+    }
+  }
+  if ('status' in normalized && normalized.status === '') {
+    delete normalized.status;
+  }
+  return normalized;
+}
+
+function normalizeInvoicesViewFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
+  const normalized = { ...filters };
+  if ('ownerId' in normalized) {
+    if (normalized.ownerId === currentUserId) {
+      normalized.ownerId = 'me';
+    } else if (normalized.ownerId === null) {
+      normalized.ownerId = 'unassigned';
+    }
+  }
+  return normalized;
+}
+
+function computeInvoicesStatistics(
+  data: any[],
+  currentUserId?: string,
+  context?: ModuleListStatisticsContext
+): Record<string, number> {
+  const stats = {
+    totalInvoices: context?.totalRecords ?? data.length,
+    draft: 0,
+    pendingApproval: 0,
+    approved: 0,
+    posted: 0,
+    void: 0
+  };
+
+  data.forEach((invoice: any) => {
+    const status = String(invoice.status || '');
+    if (status === 'Draft') stats.draft++;
+    else if (status === 'Pending Approval') stats.pendingApproval++;
+    else if (status === 'Approved') stats.approved++;
+    else if (status === 'Posted') stats.posted++;
+    else if (status === 'Void') stats.void++;
+  });
+
+  return stats;
+}
+
 /**
  * Normalize Quotes view filters (from saved views)
  */
@@ -1098,6 +1209,85 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
     apiEndpoint: '/quotes',
     normalizeFilters: normalizeQuotesFilters,
     normalizeViewFilters: normalizeQuotesViewFilters
+  },
+
+  sales_orders: {
+    defaultColumns: {
+      defaultVisibleColumns: [
+        'salesOrderNumber',
+        'orderTitle',
+        'status',
+        'fulfillmentStatus',
+        'grandTotal',
+        'updatedAt'
+      ],
+      lockedColumn: 'salesOrderNumber',
+      excludedFromDefault: ['customFields']
+    },
+    statistics: {
+      stats: [
+        { name: 'Draft', key: 'draft', formatter: 'number' },
+        { name: 'Confirmed', key: 'confirmed', formatter: 'number' },
+        { name: 'In Fulfillment', key: 'inFulfillment', formatter: 'number' },
+        { name: 'Partially Fulfilled', key: 'partiallyFulfilled', formatter: 'number' },
+        { name: 'Completed', key: 'completed', formatter: 'number' },
+        { name: 'Cancelled', key: 'cancelled', formatter: 'number' }
+      ],
+      computeFunction: computeSalesOrdersStatistics
+    },
+    systemViews: [
+      { id: 'all', name: 'All Sales Orders', filters: {}, isDefault: true },
+      { id: 'my-orders', name: 'My Orders', filters: { ownerId: 'me' } },
+      { id: 'draft', name: 'Draft', filters: { status: 'Draft' } },
+      { id: 'confirmed', name: 'Confirmed', filters: { status: 'Confirmed' } },
+      { id: 'in-fulfillment', name: 'In Fulfillment', filters: { status: 'In Fulfillment' } },
+      { id: 'partially-fulfilled', name: 'Partially Fulfilled', filters: { status: 'Partially Fulfilled' } },
+      { id: 'completed', name: 'Completed', filters: { status: 'Fulfilled' } },
+      { id: 'cancelled', name: 'Cancelled', filters: { status: 'Cancelled' } },
+      { id: 'from-quote', name: 'From Quote', filters: { sourceType: 'quote' } }
+    ],
+    apiEndpoint: '/sales-orders',
+    normalizeFilters: normalizeSalesOrdersFilters,
+    normalizeViewFilters: normalizeSalesOrdersViewFilters
+  },
+
+  invoices: {
+    defaultColumns: {
+      defaultVisibleColumns: [
+        'invoiceNumber',
+        'invoiceTitle',
+        'status',
+        'grandTotal',
+        'amountDue',
+        'invoiceDate',
+        'updatedAt'
+      ],
+      lockedColumn: 'invoiceNumber',
+      excludedFromDefault: ['customFields']
+    },
+    statistics: {
+      stats: [
+        { name: 'Draft', key: 'draft', formatter: 'number' },
+        { name: 'Pending Approval', key: 'pendingApproval', formatter: 'number' },
+        { name: 'Approved', key: 'approved', formatter: 'number' },
+        { name: 'Posted', key: 'posted', formatter: 'number' },
+        { name: 'Void', key: 'void', formatter: 'number' }
+      ],
+      computeFunction: computeInvoicesStatistics
+    },
+    systemViews: [
+      { id: 'all', name: 'All Invoices', filters: {}, isDefault: true },
+      { id: 'my-invoices', name: 'My Invoices', filters: { ownerId: 'me' } },
+      { id: 'draft', name: 'Draft', filters: { status: 'Draft' } },
+      { id: 'pending-approval', name: 'Pending Approval', filters: { status: 'Pending Approval' } },
+      { id: 'approved', name: 'Approved', filters: { status: 'Approved' } },
+      { id: 'posted', name: 'Posted', filters: { status: 'Posted' } },
+      { id: 'void', name: 'Void', filters: { status: 'Void' } },
+      { id: 'from-sales-order', name: 'From Sales Order', filters: { sourceType: 'sales_order' } }
+    ],
+    apiEndpoint: '/invoices',
+    normalizeFilters: normalizeInvoicesFilters,
+    normalizeViewFilters: normalizeInvoicesViewFilters
   },
 
   cases: {

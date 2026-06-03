@@ -59,7 +59,7 @@
       </div>
       <div class="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
         <div
-          v-for="block in sectionBlocks"
+          v-for="block in displaySectionBlocks"
           :key="block.key"
           :class="[
             'quote-section-block rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden shadow-sm ring-1 ring-gray-950/[0.04] dark:ring-white/[0.06] transition-colors',
@@ -74,6 +74,31 @@
             ]"
           >
             <div class="flex items-center gap-2 min-w-0">
+              <div
+                v-if="canReorderSections && !block.isOrphan"
+                class="inline-flex flex-col shrink-0"
+              >
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center p-0.5 rounded text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700/80 disabled:opacity-30"
+                  :disabled="busy || isFirstMovableSection(block)"
+                  :title="t('records.quoteSectionMoveUp')"
+                  :aria-label="t('records.quoteSectionMoveUp')"
+                  @click="moveSectionByDelta(block, -1)"
+                >
+                  <ChevronUpIcon class="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center p-0.5 rounded text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700/80 disabled:opacity-30"
+                  :disabled="busy || isLastMovableSection(block)"
+                  :title="t('records.quoteSectionMoveDown')"
+                  :aria-label="t('records.quoteSectionMoveDown')"
+                  @click="moveSectionByDelta(block, 1)"
+                >
+                  <ChevronDownIcon class="h-3.5 w-3.5" />
+                </button>
+              </div>
               <h4 class="text-xs font-bold uppercase tracking-wide text-gray-800 dark:text-gray-100 truncate">
                 {{ block.section.sectionTitle }}
               </h4>
@@ -691,7 +716,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Bars3Icon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { Bars3Icon, ChevronDownIcon, ChevronUpIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import draggable from 'vuedraggable';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
@@ -772,6 +797,39 @@ const sectionBlocks = computed(() =>
     sections: quoteSections.value,
     uncategorizedTitle: t('records.quoteSectionUncategorized')
   })
+);
+
+const movableSectionKeys = ref([]);
+
+watch(
+  () => sectionBlocks.value.filter((b) => !b.isOrphan && b.section).map((b) => b.key),
+  (keys) => {
+    if (!keys.length) {
+      movableSectionKeys.value = [];
+      return;
+    }
+    if (!movableSectionKeys.value.length || keys.length !== movableSectionKeys.value.length) {
+      movableSectionKeys.value = keys;
+      return;
+    }
+    const keySet = new Set(keys);
+    movableSectionKeys.value = [
+      ...movableSectionKeys.value.filter((k) => keySet.has(k)),
+      ...keys.filter((k) => !movableSectionKeys.value.includes(k))
+    ];
+  },
+  { immediate: true }
+);
+
+const displaySectionBlocks = computed(() => {
+  const byKey = new Map(sectionBlocks.value.map((b) => [b.key, b]));
+  const ordered = movableSectionKeys.value.map((k) => byKey.get(k)).filter(Boolean);
+  const orphan = sectionBlocks.value.find((b) => b.isOrphan);
+  return orphan ? [...ordered, orphan] : ordered.length ? ordered : sectionBlocks.value;
+});
+
+const canReorderSections = computed(
+  () => linesEditable.value && movableSectionKeys.value.length > 1
 );
 
 const { stickyColumnsActive } = useQuoteLinesStickyColumns(
@@ -960,6 +1018,55 @@ function emitSectionsUpdated(payload) {
     totals: payload?.totals ?? null,
     lines: payload?.lines ?? null
   });
+}
+
+function isFirstMovableSection(block) {
+  return movableSectionKeys.value[0] === block?.key;
+}
+
+function isLastMovableSection(block) {
+  return movableSectionKeys.value[movableSectionKeys.value.length - 1] === block?.key;
+}
+
+async function persistSectionOrder() {
+  if (!canReorderSections.value || !props.record?._id) return;
+  busy.value = true;
+  try {
+    const byKey = new Map(sectionBlocks.value.map((b) => [b.key, b]));
+    const orders = movableSectionKeys.value.map((key, idx) => {
+      const block = byKey.get(key);
+      return {
+        quoteSectionId: quoteSectionRef(block.section),
+        sectionOrder: idx
+      };
+    });
+    const res = await apiClient.patch(`/quotes/${props.record._id}/sections/reorder`, {
+      orders,
+      overridePricing: overrideLock.value === true
+    });
+    if (!res?.success) throw new Error(res?.message || t('records.quoteSectionReorderFailed'));
+    emitSectionsUpdated({ sections: res?.data?.sections ?? null });
+  } catch (e) {
+    notifications.error(e?.message || t('records.quoteSectionReorderFailed'));
+    movableSectionKeys.value = sectionBlocks.value
+      .filter((b) => !b.isOrphan && b.section)
+      .map((b) => b.key);
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function moveSectionByDelta(block, delta) {
+  if (!canReorderSections.value || block?.isOrphan) return;
+  const keys = [...movableSectionKeys.value];
+  const idx = keys.indexOf(block.key);
+  if (idx < 0) return;
+  const nextIdx = idx + delta;
+  if (nextIdx < 0 || nextIdx >= keys.length) return;
+  keys.splice(idx, 1);
+  keys.splice(nextIdx, 0, block.key);
+  movableSectionKeys.value = keys;
+  await persistSectionOrder();
 }
 
 async function submitSectionModal(form) {

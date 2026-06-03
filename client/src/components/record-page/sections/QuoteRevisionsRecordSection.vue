@@ -45,14 +45,23 @@
           </div>
         </div>
 
-        <button
-          v-if="!isCurrentRevision(rev)"
-          type="button"
-          class="shrink-0 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
-          @click="openRevision(rev)"
-        >
-          {{ t('records.revisionsOpen') }}
-        </button>
+        <div class="shrink-0 flex items-center gap-2">
+          <button
+            type="button"
+            class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+            @click="compareRevision(rev)"
+          >
+            Compare
+          </button>
+          <button
+            v-if="!isCurrentRevision(rev)"
+            type="button"
+            class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+            @click="openRevision(rev)"
+          >
+            {{ t('records.revisionsOpen') }}
+          </button>
+        </div>
       </li>
     </ul>
   </section>
@@ -143,6 +152,29 @@ async function loadRevisions() {
 function openRevision(rev) {
   if (!rev?._id || isCurrentRevision(rev)) return;
   router.push({ name: 'quote-detail', params: { id: String(rev._id) } });
+}
+
+function previousRevisionNumber(rev) {
+  const sorted = [...revisions.value].sort((a, b) => Number(a.revisionNumber || 1) - Number(b.revisionNumber || 1));
+  const idx = sorted.findIndex((row) => String(row._id) === String(rev?._id));
+  if (idx > 0) return Number(sorted[idx - 1].revisionNumber) || 1;
+  return null;
+}
+
+function compareRevision(rev) {
+  const target = rev || props.record;
+  const targetId = target?._id || props.record?._id;
+  if (!targetId) return;
+  const toRevision = Number(target.revisionNumber || props.record?.revisionNumber || 1);
+  const fromRevision = previousRevisionNumber(target);
+  router.push({
+    name: 'quote-revision-compare',
+    params: { id: String(targetId) },
+    query: {
+      ...(fromRevision ? { fromRevision } : {}),
+      toRevision
+    }
+  });
 }
 
 watch(() => props.record?._id, loadRevisions);

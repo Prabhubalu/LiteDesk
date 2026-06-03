@@ -26,6 +26,8 @@ export const MODULE_LABEL_KEYS = {
   items: 'navigation.moduleItems',
   deals: 'navigation.moduleDeals',
   quotes: 'navigation.moduleQuotes',
+  sales_orders: 'navigation.moduleSalesOrders',
+  invoices: 'navigation.moduleInvoices',
   responses: 'navigation.moduleResponses',
   imports: 'navigation.moduleImports',
   import: 'navigation.moduleImports',
@@ -58,6 +60,8 @@ export const ROUTE_TITLE_KEYS = {
   '/organizations': 'navigation.moduleOrganizations',
   '/deals': 'navigation.moduleDeals',
   '/quotes': 'navigation.moduleQuotes',
+  '/sales-orders': 'navigation.moduleSalesOrders',
+  '/invoices': 'navigation.moduleInvoices',
   '/tasks': 'navigation.moduleTasks',
   '/events': 'navigation.moduleEvents',
   '/forms': 'navigation.moduleForms',
@@ -88,7 +92,9 @@ export const ROUTE_TITLE_KEYS = {
  * @returns {string|undefined}
  */
 export function getModuleLabelKey(moduleKey) {
-  const k = String(moduleKey || '').toLowerCase();
+  const k = String(moduleKey || '')
+    .toLowerCase()
+    .replace(/-/g, '_');
   return MODULE_LABEL_KEYS[k];
 }
 

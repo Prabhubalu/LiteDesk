@@ -20,6 +20,24 @@ export function useBulkActions(module) {
       );
     }
     
+    if (module === 'sales_orders' && authStore.can(module, 'merge')) {
+      actions.push({
+        label: 'Merge orders',
+        icon: 'merge',
+        action: 'merge',
+        variant: 'secondary'
+      });
+    }
+
+    if (module === 'sales_orders' && authStore.can('invoices', 'create')) {
+      actions.push({
+        label: 'Combined invoice',
+        icon: 'invoice',
+        action: 'combined-invoice',
+        variant: 'secondary'
+      });
+    }
+    
     // Delete action - requires delete permission
     if (authStore.can(module, 'delete')) {
       actions.push({ 

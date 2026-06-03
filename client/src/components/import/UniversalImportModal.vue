@@ -1,93 +1,72 @@
 <template>
   <Teleport to="body">
-    <!-- Module Selection -->
     <div
       v-if="!selectedModule"
-      class="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-black/60 via-black/50 to-black/60 p-4 backdrop-blur-sm"
+      class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="import-module-title"
       @keydown.escape="$emit('close')"
     >
       <div
-        class="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl animate-slide-up dark:border-gray-700 dark:bg-gray-900"
+        class="flex max-h-[min(92vh,640px)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900"
         @click.stop
       >
-        <!-- Header -->
-        <div class="relative bg-gradient-to-r from-indigo-600 to-indigo-700 px-8 py-6 dark:from-indigo-700 dark:to-indigo-800">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-7 w-7 text-white">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-              </div>
-              <div>
-                <p class="text-xs font-medium uppercase tracking-wide text-indigo-200">
-                  {{ t('import.importWizardProgressStep', { current: 1, total: 5 }) }}
-                </p>
-                <h2 id="import-module-title" class="text-2xl font-bold text-white">
-                  {{ t('import.universalImportModalImportData') }}
-                </h2>
-                <p class="mt-0.5 text-sm text-indigo-100">
-                  {{ t('import.universalImportModalStepHint') }}
-                </p>
-              </div>
+        <div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800 sm:px-6">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                {{ t('import.importWizardProgressStep', { current: 1, total: 5 }) }}
+              </p>
+              <h2 id="import-module-title" class="text-lg font-semibold text-gray-900 dark:text-white">
+                {{ t('import.universalImportModalImportData') }}
+              </h2>
+              <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                {{ t('import.universalImportModalStepHint') }}
+              </p>
             </div>
             <button
               type="button"
-              class="rounded-xl p-2.5 text-white/80 transition-all duration-200 hover:bg-white/20 hover:text-white"
+              class="shrink-0 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
               :aria-label="t('actions.close')"
               @click="$emit('close')"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <XMarkIcon class="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
-
-          <!-- Step dots -->
-          <div class="mt-5 flex items-center gap-2">
+          <div class="mt-4 flex gap-1">
             <span
               v-for="n in 5"
               :key="n"
-              class="h-1.5 flex-1 rounded-full transition-colors"
-              :class="n === 1 ? 'bg-white' : 'bg-white/25'"
+              class="h-1 flex-1 rounded-full"
+              :class="n === 1 ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'"
             />
           </div>
         </div>
 
-        <!-- Content -->
-        <div class="flex-1 overflow-y-auto bg-gray-50 px-8 py-6 dark:bg-gray-800/50">
-          <p class="mb-5 text-center text-sm text-gray-600 dark:text-gray-400">
+        <div class="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+          <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
             {{ t('import.universalImportModalChooseWhichModuleYouWantTo') }}
           </p>
-
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div class="space-y-2">
             <button
               v-for="module in modules"
               :key="module.key"
               type="button"
-              class="group w-full rounded-xl border-2 border-gray-200 bg-white p-5 text-left transition-all hover:border-indigo-500 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-indigo-400"
+              class="flex w-full items-center gap-3 rounded-lg border border-gray-200 px-4 py-3 text-left transition-colors hover:border-indigo-400 hover:bg-gray-50 dark:border-gray-700 dark:hover:border-indigo-500 dark:hover:bg-gray-800/50"
               @click="selectModule(module.key)"
             >
-              <div class="flex items-center gap-4">
-                <div
-                  class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-white"
-                  :class="module.gradient"
-                >
-                  <component :is="module.icon" class="h-6 w-6" aria-hidden="true" />
-                </div>
-                <div class="min-w-0 flex-1">
-                  <h4 class="font-semibold text-gray-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
-                    {{ module.label }}
-                  </h4>
-                  <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{{ module.description }}</p>
-                </div>
-                <svg class="h-5 w-5 flex-shrink-0 text-gray-300 transition-colors group-hover:text-indigo-500 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
+              <div
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white"
+                :class="module.gradient"
+              >
+                <component :is="module.icon" class="h-5 w-5" aria-hidden="true" />
               </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ module.label }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ module.description }}</p>
+              </div>
+              <ChevronRightIcon class="h-5 w-5 shrink-0 text-gray-400" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -95,7 +74,6 @@
     </div>
   </Teleport>
 
-  <!-- CSV Import Modal (once module selected) -->
   <CSVImportModal
     v-if="selectedModule"
     :entity-type="selectedModule"
@@ -111,6 +89,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { ref, computed, h } from 'vue';
+import { ChevronRightIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import CSVImportModal from './CSVImportModal.vue';
 
 const emit = defineEmits(['close', 'import-complete']);
@@ -125,7 +104,7 @@ const modules = computed(() => [
     key: 'Contacts',
     label: t('settings.settingsSubDetailUsageContacts'),
     description: t('import.universalImportModalImportCustomerContactsLeadsAndProspects'),
-    gradient: 'from-blue-500 to-blue-600',
+    gradient: 'bg-blue-600',
     icon: {
       render() {
         return h('svg', { xmlns: 'http://www.w3.org/2000/svg', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' }, [
@@ -138,7 +117,7 @@ const modules = computed(() => [
     key: 'Deals',
     label: t('settings.settingsSubDetailUsageDeals'),
     description: t('import.universalImportModalImportSalesOpportunitiesAndDeals'),
-    gradient: 'from-green-500 to-green-600',
+    gradient: 'bg-emerald-600',
     icon: {
       render() {
         return h('svg', { xmlns: 'http://www.w3.org/2000/svg', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' }, [
@@ -151,7 +130,7 @@ const modules = computed(() => [
     key: 'Tasks',
     label: t('settings.coreModDetailModuleTasks'),
     description: t('import.universalImportModalImportTasksAndToDoItems'),
-    gradient: 'from-purple-500 to-purple-600',
+    gradient: 'bg-violet-600',
     icon: {
       render() {
         return h('svg', { xmlns: 'http://www.w3.org/2000/svg', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' }, [
@@ -164,7 +143,7 @@ const modules = computed(() => [
     key: 'Organizations',
     label: t('settings.coreModDetailModuleOrganizations'),
     description: t('import.universalImportModalImportCompaniesAndOrganizations'),
-    gradient: 'from-orange-500 to-orange-600',
+    gradient: 'bg-orange-600',
     icon: {
       render() {
         return h('svg', { xmlns: 'http://www.w3.org/2000/svg', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' }, [
@@ -190,20 +169,3 @@ const handleImportComplete = (data) => {
   handleClose();
 };
 </script>
-
-<style scoped>
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
-}
-</style>

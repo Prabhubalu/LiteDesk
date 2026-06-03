@@ -1,6 +1,6 @@
 <template>
   <TransitionRoot as="template" :show="show">
-    <Dialog class="relative z-[10000]" @close="handleClose">
+    <Dialog class="relative z-[10000]" @close="onDialogClose">
       <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
         leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
         <div class="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/75 transition-opacity" />
@@ -20,18 +20,46 @@
                   class="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-500/10 sm:mx-0 sm:size-10">
                   <ExclamationTriangleIcon class="size-6 text-red-600 dark:text-red-400" aria-hidden="true" />
                 </div>
-                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
                   <DialogTitle as="h3" class="text-base font-semibold text-gray-900 dark:text-white">
-                    {{ deleteDialogTitle }}
+                    {{ showBulkProgress ? t('common.bulkDeleteBannerTitle') : deleteDialogTitle }}
                   </DialogTitle>
-                  <div class="mt-2">
+                  <div v-if="showBulkProgress" class="mt-4 space-y-3">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                      {{ bulkProgressLabel }}
+                    </p>
+                    <div class="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                      <div
+                        class="h-full rounded-full bg-red-600 transition-all duration-300 ease-out"
+                        :class="{ 'animate-pulse': bulkDeleteStore.progressIndeterminate }"
+                        :style="{
+                          width: bulkDeleteStore.progressIndeterminate
+                            ? '35%'
+                            : `${bulkDeleteStore.progressPercent}%`
+                        }"
+                      />
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                      {{ t('common.bulkDeleteModalBackgroundHint') }}
+                    </p>
+                  </div>
+                  <div v-else class="mt-2">
                     <p class="text-sm text-gray-500 dark:text-gray-400">
                       {{ deleteDialogMessage }}
                     </p>
                   </div>
                 </div>
               </div>
-              <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-0">
+              <div v-if="showBulkProgress" class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  class="inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 sm:w-auto"
+                  @click="handleClose"
+                >
+                  {{ t('common.bulkDeleteContinueInBackground') }}
+                </button>
+              </div>
+              <div v-else class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-0">
                 <button type="button"
                   class="inline-flex w-full justify-center rounded-md bg-red-600 dark:bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 dark:hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:focus-visible:outline-red-500 sm:ml-3 sm:w-auto"
                   :disabled="deleting"
@@ -59,8 +87,10 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
+import { useBulkDeleteProgressStore } from '@/stores/bulkDeleteProgress';
 
 const { t } = useI18n();
+const bulkDeleteStore = useBulkDeleteProgressStore();
 
 const props = defineProps({
   show: {
@@ -90,6 +120,14 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'confirm']);
+
+const showBulkProgress = computed(() => props.isBulk && bulkDeleteStore.isActive);
+
+const bulkProgressLabel = computed(() => {
+  const processed = Number(bulkDeleteStore.processed || 0).toLocaleString();
+  const total = Number(bulkDeleteStore.total || 0).toLocaleString();
+  return t('common.bulkDeleteProgressDeleting', { processed, total });
+});
 
 const recordTypeLabel = computed(() => {
   // Capitalize first letter and handle common module names
@@ -154,16 +192,18 @@ const recordTypeLabelPlural = computed(() => {
   return labels[type] || (recordTypeLabel.value + 's');
 });
 
+const onDialogClose = () => {
+  handleClose();
+};
+
 const handleClose = () => {
-  if (!props.deleting) {
-    emit('close');
-  }
+  if (props.deleting && !showBulkProgress.value) return;
+  emit('close');
 };
 
 const handleConfirm = () => {
-  if (!props.deleting) {
-    emit('confirm');
-  }
+  if (props.deleting || showBulkProgress.value) return;
+  emit('confirm');
 };
 </script>
 

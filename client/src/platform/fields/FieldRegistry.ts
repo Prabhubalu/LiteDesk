@@ -83,6 +83,12 @@ import type { CaseFieldMetadata } from './caseFieldModel';
 import { QUOTE_FIELD_METADATA } from './quoteFieldModel';
 import type { QuoteFieldMetadata } from './quoteFieldModel';
 
+import { SALES_ORDER_FIELD_METADATA } from './salesOrderFieldModel';
+import type { SalesOrderFieldMetadata } from './salesOrderFieldModel';
+
+import { INVOICE_FIELD_METADATA } from './invoiceFieldModel';
+import type { InvoiceFieldMetadata } from './invoiceFieldModel';
+
 // =============================================================================
 // MODULE KEY TYPE
 // =============================================================================
@@ -91,13 +97,13 @@ import type { QuoteFieldMetadata } from './quoteFieldModel';
  * Stable module key type.
  * Add new modules here as they are created.
  */
-export type ModuleKey = 'people' | 'tasks' | 'organization' | 'deal' | 'event' | 'item' | 'case' | 'quote';
+export type ModuleKey = 'people' | 'tasks' | 'organization' | 'deal' | 'event' | 'item' | 'case' | 'quote' | 'salesOrder' | 'invoice';
 
 /**
  * All registered module keys.
  * Used for iteration and validation.
  */
-export const MODULE_KEYS: readonly ModuleKey[] = ['people', 'tasks', 'organization', 'deal', 'event', 'item', 'case', 'quote'] as const;
+export const MODULE_KEYS: readonly ModuleKey[] = ['people', 'tasks', 'organization', 'deal', 'event', 'item', 'case', 'quote', 'salesOrder', 'invoice'] as const;
 
 /**
  * Map UI module keys (plural) to registry keys (singular).
@@ -110,6 +116,8 @@ const MODULE_KEY_ALIASES: Record<string, ModuleKey> = {
   events: 'event',
   items: 'item',
   quotes: 'quote',
+  sales_orders: 'salesOrder',
+  invoices: 'invoice',
 };
 
 /**
@@ -130,7 +138,7 @@ export function normalizeModuleKeyForRegistry(moduleKey: string): ModuleKey | un
  * Union type for all module field metadata types.
  * Extends BaseFieldMetadata to ensure compatibility.
  */
-export type AnyFieldMetadata = PeopleFieldMetadata | TaskFieldMetadata | OrganizationFieldMetadata | DealFieldMetadata | EventFieldMetadata | ItemFieldMetadata | CaseFieldMetadata | QuoteFieldMetadata;
+export type AnyFieldMetadata = PeopleFieldMetadata | TaskFieldMetadata | OrganizationFieldMetadata | DealFieldMetadata | EventFieldMetadata | ItemFieldMetadata | CaseFieldMetadata | QuoteFieldMetadata | SalesOrderFieldMetadata | InvoiceFieldMetadata;
 
 /**
  * Type for the field registry map.
@@ -144,6 +152,8 @@ type FieldRegistryMap = {
   readonly item: Record<string, ItemFieldMetadata>;
   readonly case: Record<string, CaseFieldMetadata>;
   readonly quote: Record<string, QuoteFieldMetadata>;
+  readonly salesOrder: Record<string, SalesOrderFieldMetadata>;
+  readonly invoice: Record<string, InvoiceFieldMetadata>;
 };
 
 /**
@@ -161,6 +171,8 @@ const FIELD_REGISTRY: FieldRegistryMap = {
   item: ITEM_FIELD_METADATA,
   case: CASE_FIELD_METADATA,
   quote: QUOTE_FIELD_METADATA,
+  salesOrder: SALES_ORDER_FIELD_METADATA,
+  invoice: INVOICE_FIELD_METADATA,
 } as const;
 
 // =============================================================================

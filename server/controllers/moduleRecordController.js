@@ -53,7 +53,9 @@ const MODEL_BY_KEY = {
   organizations: () => require('../models/Organization'),
   events: () => require('../models/Event'),
   items: () => require('../models/Item'),
-  responses: () => require('../models/FormResponse')
+  responses: () => require('../models/FormResponse'),
+  quotes: () => require('../models/Quote'),
+  sales_orders: () => require('../models/SalesOrder')
 };
 
 /** Optional base query per module (e.g. Organization uses isTenant: false). */
@@ -72,7 +74,9 @@ const LIST_HANDLERS = {
   events: (organizationId) => getRecordIdsFromModel(require('../models/Event'), organizationId),
   items: (organizationId) => getRecordIdsFromModel(require('../models/Item'), organizationId),
   responses: (organizationId) =>
-    getRecordIdsFromModel(require('../models/FormResponse'), organizationId)
+    getRecordIdsFromModel(require('../models/FormResponse'), organizationId),
+  quotes: (organizationId) => getRecordIdsFromModel(require('../models/Quote'), organizationId),
+  sales_orders: (organizationId) => getRecordIdsFromModel(require('../models/SalesOrder'), organizationId)
 };
 
 /**
@@ -1297,7 +1301,7 @@ exports.restoreDescriptionVersion = async (req, res) => {
 };
 
 /** Modules that support batch fetch for related-record enrichment. */
-const BATCH_MODULES = new Set(['deals', 'events', 'forms', 'people', 'cases', 'quotes']);
+const BATCH_MODULES = new Set(['deals', 'events', 'forms', 'people', 'cases', 'quotes', 'sales_orders']);
 
 /**
  * POST /api/modules/:moduleKey/records/batch
@@ -1342,6 +1346,9 @@ exports.getRecordsBatch = async (req, res) => {
     } else if (moduleKey === 'quotes') {
       Model = require('../models/Quote');
       query.deletedAt = null;
+    } else if (moduleKey === 'sales_orders') {
+      Model = require('../models/SalesOrder');
+      query.deletedAt = null;
     } else {
       return res.json({ success: true, data: [] });
     }
@@ -1369,6 +1376,114 @@ exports.getRecordsBatch = async (req, res) => {
  * Body: { tagName: string }
  * Removes the tag from all records in the module for the current organization.
  */
+const DELETION_SERVICE_MODULES = new Set([
+  'people',
+  'organizations',
+  'deals',
+  'tasks',
+  'events',
+  'items',
+  'cases',
+  'quotes'
+]);
+
+/**
+ * POST /api/modules/:moduleKey/records/bulk-delete
+ * Body: { ids: string[] }
+ */
+exports.bulkDeleteRecords = async (req, res) => {
+  try {
+    const moduleKey = getModuleKey(req);
+
+    if (!DELETION_SERVICE_MODULES.has(moduleKey)) {
+      return res.status(400).json({
+        success: false,
+        code: 'MODULE_BULK_DELETE_UNSUPPORTED',
+        message: `Bulk delete is not supported for module: ${moduleKey}`
+      });
+    }
+
+    const deletionService = require('../services/deletionService');
+    let ids = [];
+
+    const batchSizeRaw = Number(req.body?.batchSize);
+    const batchSize = Number.isFinite(batchSizeRaw) && batchSizeRaw > 0
+      ? Math.min(Math.floor(batchSizeRaw), 5000)
+      : 0;
+
+    if (req.body?.deleteMatching) {
+      const { resolveMatchingRecordIds } = require('../services/bulkDeleteMatchingResolver');
+      ids = await resolveMatchingRecordIds({
+        moduleKey,
+        organizationId: req.user.organizationId,
+        listQuery: req.body.listQuery || {},
+        excludedIds: req.body.excludedIds || [],
+        user: req.user,
+        appKey: req.body?.appKey || req.appKey,
+        limit: batchSize || undefined,
+        afterId: req.body?.afterId || null
+      });
+    } else {
+      const rawIds = req.body?.ids;
+      if (!Array.isArray(rawIds) || rawIds.length === 0) {
+        return res.status(400).json({ success: false, message: 'ids array is required' });
+      }
+      ids = [...new Set(rawIds.map((id) => String(id).trim()).filter(Boolean))];
+    }
+
+    if (ids.length === 0) {
+      return res.json({
+        success: true,
+        message: 'No records to delete',
+        data: {
+          deletedCount: 0,
+          failedCount: 0,
+          failures: [],
+          requestedCount: 0
+        }
+      });
+    }
+
+    const result = await deletionService.bulkMoveToTrash({
+      moduleKey,
+      recordIds: ids,
+      organizationId: req.user.organizationId,
+      userId: req.user._id,
+      user: req.user,
+      appKey: req.body?.appKey,
+      reason: req.body?.reason,
+      cascadeConfirmed: !!req.body?.cascadeConfirmed
+    });
+
+    if (!result.ok) {
+      return res.status(400).json({ success: false, message: result.message });
+    }
+
+    const hasMore = batchSize > 0 && ids.length === batchSize;
+    const lastId = ids.length > 0 ? ids[ids.length - 1] : null;
+
+    return res.json({
+      success: true,
+      message: `Moved ${result.movedCount} record(s) to trash`,
+      data: {
+        deletedCount: result.movedCount,
+        failedCount: result.failedCount,
+        failures: result.failures,
+        requestedCount: result.requestedCount ?? ids.length,
+        hasMore,
+        lastId
+      }
+    });
+  } catch (err) {
+    console.error('bulkDeleteRecords error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Error bulk deleting records',
+      error: err.message
+    });
+  }
+};
+
 exports.deleteTagFromModule = async (req, res) => {
   try {
     const moduleKey = getModuleKey(req);

@@ -14,6 +14,7 @@ const QUOTE_STATUSES = [
   'Viewed',
   'Accepted',
   'Partially Accepted',
+  'Partially Converted',
   'Rejected',
   'Expired',
   'Cancelled',
@@ -29,8 +30,9 @@ const QUOTE_ALLOWED_TRANSITIONS = {
   Approved: ['Sent', 'Cancelled'],
   Sent: ['Viewed', 'Accepted', 'Partially Accepted', 'Rejected', 'Expired'],
   Viewed: ['Accepted', 'Partially Accepted', 'Rejected', 'Expired'],
-  Accepted: ['Converted'],
-  'Partially Accepted': ['Converted'],
+  Accepted: ['Partially Converted', 'Converted'],
+  'Partially Accepted': ['Partially Converted', 'Converted'],
+  'Partially Converted': ['Converted'],
   Rejected: [],
   Expired: [],
   Cancelled: [],
@@ -73,10 +75,17 @@ function assertCanTransitionQuoteStatus(fromStatus, toStatus) {
  * Override requires explicit permission + audit; revisions are the preferred mechanism.
  */
 function isCommerciallyLockedStatus(status) {
-  return ['Sent', 'Viewed', 'Accepted', 'Partially Accepted', 'Converted'].includes(status);
+  return ['Sent', 'Viewed', 'Accepted', 'Partially Accepted', 'Partially Converted', 'Converted'].includes(status);
 }
 
-const QUOTE_CUSTOMER_SENT_STATUSES = ['Sent', 'Viewed', 'Accepted', 'Partially Accepted', 'Converted'];
+const QUOTE_CUSTOMER_SENT_STATUSES = [
+  'Sent',
+  'Viewed',
+  'Accepted',
+  'Partially Accepted',
+  'Partially Converted',
+  'Converted'
+];
 
 const { quoteRequiresApprovalBeforeSend } = require('../services/quoteOrgSettingsService');
 
@@ -166,7 +175,13 @@ function isFormalCustomerShare(quote) {
 }
 
 /** Header/line edits blocked; use revise flow or dedicated status endpoints. */
-const QUOTE_RECORD_READ_ONLY_STATUSES = ['Expired', 'Cancelled', 'Converted', 'Rejected'];
+const QUOTE_RECORD_READ_ONLY_STATUSES = [
+  'Expired',
+  'Cancelled',
+  'Partially Converted',
+  'Converted',
+  'Rejected'
+];
 
 function isQuoteRecordReadOnly(status) {
   return QUOTE_RECORD_READ_ONLY_STATUSES.includes(String(status || '').trim());

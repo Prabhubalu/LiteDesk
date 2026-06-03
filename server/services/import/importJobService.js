@@ -16,6 +16,7 @@ const {
   IMPORT_BATCH_SIZE,
   SUPPORTED_MODULES,
 } = require('./importConstants');
+const { validateFieldMappingForImport } = require('./importMappingTemplateService');
 
 function assertSupportedModule(module) {
   if (!SUPPORTED_MODULES.includes(module)) {
@@ -58,9 +59,13 @@ function parseImportConfig(body = {}) {
     throw error;
   }
 
+  const duplicateAction = ['skip', 'update', 'import-all'].includes(body.duplicateAction)
+    ? body.duplicateAction
+    : (body.updateExisting ? 'update' : 'skip');
+
   return {
     fieldMapping,
-    updateExisting: Boolean(body.updateExisting),
+    duplicateAction,
     fileName: body.fileName || 'import.csv',
     shouldCheckDuplicates: body.shouldCheckDuplicates !== false,
     duplicateCheckFields: Array.isArray(body.duplicateCheckFields) ? body.duplicateCheckFields : [],
@@ -83,8 +88,11 @@ async function stageCsvUpload({ organizationId, importedBy, file }) {
     originalName: file.originalname,
   });
 
-  const totalRows = await countDataRows(stagingPath);
-  const { headers, preview } = await readCsvPreview(stagingPath, 5);
+  const [totalRows, previewResult] = await Promise.all([
+    countDataRows(stagingPath),
+    readCsvPreview(stagingPath, 5),
+  ]);
+  const { headers, preview } = previewResult;
 
   return {
     stagingId,
@@ -181,6 +189,21 @@ async function submitImportJob({ req, res, module }) {
     const organizationId = req.user.organizationId;
     const userId = req.user._id;
 
+    const mappingValidation = await validateFieldMappingForImport(
+      organizationId,
+      module,
+      config.fieldMapping
+    );
+    if (!mappingValidation.valid) {
+      res.status(400).json({
+        success: false,
+        code: 'IMPORT_FIELD_MAPPING_INVALID',
+        message: mappingValidation.errors[0] || 'Invalid field mapping',
+        errors: mappingValidation.errors,
+      });
+      return;
+    }
+
     importHistory = await ImportHistory.create({
       organizationId,
       module,
@@ -189,7 +212,7 @@ async function submitImportJob({ req, res, module }) {
       status: 'processing',
       duplicateCheckEnabled: config.shouldCheckDuplicates,
       duplicateCheckFields: config.duplicateCheckFields,
-      duplicateAction: config.updateExisting ? 'update' : 'skip',
+      duplicateAction: config.duplicateAction,
       stats: { total: 0, processed: 0 },
       jobState: {
         batchSize: IMPORT_BATCH_SIZE,

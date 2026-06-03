@@ -3,6 +3,7 @@
  */
 
 const { assertCanTransitionQuoteStatus } = require('../constants/quoteLifecycle');
+const { computeAcceptedSectionIds } = require('./quoteConversionService');
 
 function isSelectableLine(line) {
   if (!line || line.hiddenLine === true) return false;
@@ -61,8 +62,9 @@ function sumAcceptedTotals(acceptedLines) {
 /**
  * @param {Array} lines - QuoteLine docs
  * @param {string[]|null} requestedLineIds - quoteLineId values; null/omit = all selectable
+ * @param {Array} [sections] - QuoteSection docs for acceptedSectionIds
  */
-function resolveCustomerAcceptance(lines, requestedLineIds = null) {
+function resolveCustomerAcceptance(lines, requestedLineIds = null, sections = []) {
   const selectable = getSelectableLines(lines);
   if (!selectable.length) {
     const err = new Error('This quote has no lines available for acceptance.');
@@ -98,11 +100,13 @@ function resolveCustomerAcceptance(lines, requestedLineIds = null) {
   const acceptedLines = linesForSelection(lines, selectedIds);
   const totals = sumAcceptedTotals(acceptedLines);
   const isFull = selectedIds.length === selectableIds.length;
+  const acceptedSectionIds = computeAcceptedSectionIds(sections, lines, selectedIds);
 
   return {
     selectableIds,
     selectedIds,
     acceptedLines,
+    acceptedSectionIds,
     isFull,
     toStatus: isFull ? 'Accepted' : 'Partially Accepted',
     responseType: isFull ? 'full' : 'partial',
@@ -130,6 +134,7 @@ function applyCustomerAcceptanceToQuote(
   quote.customerResponse = {
     responseType: resolution.responseType,
     acceptedLineIds: resolution.selectedIds,
+    acceptedSectionIds: resolution.acceptedSectionIds || [],
     acceptedSubtotal: resolution.acceptedSubtotal,
     acceptedTaxTotal: resolution.acceptedTaxTotal,
     acceptedGrandTotal: resolution.acceptedGrandTotal,
@@ -151,6 +156,7 @@ function applyCustomerRejectionToQuote(quote, { comment = null, signerName = nul
   quote.customerResponse = {
     responseType: 'rejected',
     acceptedLineIds: [],
+    acceptedSectionIds: [],
     acceptedSubtotal: 0,
     acceptedTaxTotal: 0,
     acceptedGrandTotal: 0,
@@ -163,6 +169,7 @@ function applyCustomerRejectionToQuote(quote, { comment = null, signerName = nul
 module.exports = {
   isSelectableLine,
   getSelectableLines,
+  linesForSelection,
   resolveCustomerAcceptance,
   applyCustomerAcceptanceToQuote,
   applyCustomerRejectionToQuote

@@ -179,17 +179,8 @@ async function countLinesInSection({ organizationId, quoteId, sectionId }) {
 /**
  * Clone sections for a new revision; returns oldMongoId → newMongoId map.
  */
-async function cloneSectionsForRevision({ organizationId, sourceQuoteId, targetQuoteId }) {
-  const sourceSections = await QuoteSection.find({ organizationId, quoteId: sourceQuoteId })
-    .sort({ sectionOrder: 1, createdAt: 1 })
-    .lean();
-
-  if (!sourceSections.length) {
-    return { oldToNewSectionId: new Map(), sections: [] };
-  }
-
-  const oldToNewSectionId = new Map();
-  const payloads = sourceSections.map((section) => {
+function buildSectionClonePayloads(sourceSections, targetQuoteId) {
+  return sourceSections.map((section) => {
     const payload = { ...section };
     delete payload._id;
     delete payload.quoteSectionId;
@@ -199,11 +190,28 @@ async function cloneSectionsForRevision({ organizationId, sourceQuoteId, targetQ
     payload.lockedSnapshot = false;
     return payload;
   });
+}
 
-  const created = await QuoteSection.insertMany(payloads, { ordered: true });
+function mapClonedSectionIds(sourceSections, createdSections) {
+  const oldToNewSectionId = new Map();
   for (let i = 0; i < sourceSections.length; i++) {
-    oldToNewSectionId.set(String(sourceSections[i]._id), created[i]._id);
+    oldToNewSectionId.set(String(sourceSections[i]._id), createdSections[i]._id);
   }
+  return oldToNewSectionId;
+}
+
+async function cloneSectionsForRevision({ organizationId, sourceQuoteId, targetQuoteId }) {
+  const sourceSections = await QuoteSection.find({ organizationId, quoteId: sourceQuoteId })
+    .sort({ sectionOrder: 1, createdAt: 1 })
+    .lean();
+
+  if (!sourceSections.length) {
+    return { oldToNewSectionId: new Map(), sections: [] };
+  }
+
+  const payloads = buildSectionClonePayloads(sourceSections, targetQuoteId);
+  const created = await QuoteSection.insertMany(payloads, { ordered: true });
+  const oldToNewSectionId = mapClonedSectionIds(sourceSections, created);
 
   return { oldToNewSectionId, sections: created };
 }
@@ -220,5 +228,7 @@ module.exports = {
   moveBundleGroupToSection,
   countLinesInSection,
   cloneSectionsForRevision,
+  buildSectionClonePayloads,
+  mapClonedSectionIds,
   findOrCreateSectionByTitle
 };

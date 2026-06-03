@@ -1,19 +1,52 @@
 const mongoose = require('mongoose');
 const Organization = require('../models/Organization');
-const { applyProjectionFilter } = require('../utils/appProjectionQuery');
-const { getProjection } = require('../utils/moduleProjectionResolver');
+const { buildOrganizationListMongoQuery } = require('../utils/organizationsListQuery');
 const { mapOrganizationToSurface } = require('../utils/mappers/mapOrganizationToSurface');
 
 const websiteHostnamePattern = /^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
 
-function isMasterLikeRequest(req, currentTenantOrg) {
-  const orgName = String(currentTenantOrg?.name || '').trim().toLowerCase();
-  const userEmail = String(req?.user?.email || '').trim().toLowerCase();
-  const isInternalEmail =
-    userEmail.endsWith('@arivusystems.com')
-    || userEmail.endsWith('@arivu.com')
-    || userEmail.endsWith('@arivu.io');
-  return orgName === 'arivu master' || orgName.includes('arivu master') || isInternalEmail;
+const { isMasterLikeRequest } = require('../utils/organizationsListQuery');
+
+function organizationQueryAnd(baseQuery, clause) {
+  if (!baseQuery || Object.keys(baseQuery).length === 0) {
+    return clause;
+  }
+  return { $and: [baseQuery, clause] };
+}
+
+/**
+ * Full-result stats for list UI cards (same Mongo filter as the list query).
+ * Matches client registry keys: totalOrganizations, assignedToMe, unassigned,
+ * activeOrganizations, trialOrganizations.
+ */
+async function computeOrganizationsListStatistics(query, userId) {
+  const uid =
+    mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : userId;
+
+  const [assignedToMe, unassigned, activeOrganizations, trialOrganizations] = await Promise.all([
+    Organization.countDocuments(organizationQueryAnd(query, { assignedTo: uid })),
+    Organization.countDocuments(
+      organizationQueryAnd(query, {
+        $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }]
+      })
+    ),
+    Organization.countDocuments(organizationQueryAnd(query, { isActive: true })),
+    Organization.countDocuments(
+      organizationQueryAnd(query, {
+        $or: [
+          { 'subscription.tier': 'trial' },
+          { 'subscription.status': 'trial' }
+        ]
+      })
+    )
+  ]);
+
+  return {
+    assignedToMe,
+    unassigned,
+    activeOrganizations,
+    trialOrganizations
+  };
 }
 
 function isValidWebsite(rawValue) {
@@ -134,7 +167,6 @@ exports.create = async (req, res) => {
 // Sales organizations created by users from tenant org A should only be visible to users from tenant org A
 exports.list = async (req, res) => {
   try {
-    const User = require('../models/User');
     const tenantOrganizationId = req.user?.organizationId;
     
     if (!tenantOrganizationId) {
@@ -144,169 +176,13 @@ exports.list = async (req, res) => {
       });
     }
 
-    // Get all users from this tenant organization
-    const tenantUserIds = await User.find({ organizationId: tenantOrganizationId })
-      .select('_id')
-      .lean();
-    const userIds = tenantUserIds.map(u => u._id);
-
-    const currentTenantOrg = await Organization.findById(tenantOrganizationId)
-      .select('name')
-      .lean();
-    const isMasterOrganization = isMasterLikeRequest(req, currentTenantOrg);
-
-    // Build query:
-    // - Organizations module is business-record scope only.
-    // - Always exclude tenant/platform organizations from this module list.
-    // - Regular tenants: business orgs created by their users only.
-    // - Master-like users: all business orgs, regardless of createdBy.
-    let query = { deletedAt: null };
-    if (isMasterOrganization) {
-      query.isTenant = false;
-    } else {
-      query.createdBy = { $in: userIds };
-      query.isTenant = false;
-    }
-
-    // Restrict list to specific id(s), e.g. paired contact→org UI (lookup combobox shows one org)
-    if (req.query.ids) {
-      const parts = String(req.query.ids)
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-      const valid = parts.filter((id) => mongoose.Types.ObjectId.isValid(id));
-      if (valid.length === 1) {
-        query._id = valid[0];
-      } else if (valid.length > 1) {
-        query._id = { $in: valid };
-      }
-    }
-    
-    // Note: Organizations use 'types' array field, not 'type'
-    // For query params, we'll filter on the types array
-    if (req.query.type) {
-      // Convert single type to array format for types field
-      query.types = req.query.type;
-    }
-    // Handle search/name filter (supports both 'search' and 'name' query params)
-    // Store search term to apply after projection filter to avoid conflicts
-    let searchFilter = null;
-    const searchTerm = req.query.search || req.query.name;
-    if (searchTerm && searchTerm.trim()) {
-      const trimmedSearch = searchTerm.trim();
-      searchFilter = { name: new RegExp(trimmedSearch, 'i') };
-      console.log('[organizationV2Controller] Search term received:', trimmedSearch);
-    }
-    
-    // Handle assignedTo filter (identity-based filter for saved views)
-    // NOTE: This must be applied AFTER projection filter to avoid conflicts
-    // We'll store it separately and apply it after projection
-    let assignedToFilter = null;
-    if (req.query.assignedTo !== undefined) {
-      if (req.query.assignedTo === 'null' || req.query.assignedTo === null || req.query.assignedTo === '') {
-        // Filter for unassigned (null or missing)
-        assignedToFilter = {
-          $or: [
-            { assignedTo: null },
-            { assignedTo: { $exists: false } }
-          ]
-        };
-      } else {
-        // Filter for specific user
-        assignedToFilter = { assignedTo: req.query.assignedTo };
-      }
-    }
-    
-    // Handle isActive filter (boolean)
-    if (req.query.isActive !== undefined) {
-      if (req.query.isActive === 'true' || req.query.isActive === true) {
-        query.isActive = true;
-      } else if (req.query.isActive === 'false' || req.query.isActive === false) {
-        query.isActive = false;
-      }
-    }
-    
-    // Handle other filters
-    if (req.query.industry) query.industry = req.query.industry;
-    if (req.query.tier) {
-      // Handle subscription tier filter
-      query['subscription.tier'] = req.query.tier;
-    }
-    if (req.query.status) {
-      // Handle subscription status filter
-      query['subscription.status'] = req.query.status;
-    }
-
-    // Phase 2A.2: Apply projection filter (read-time filtering only)
-    // SAFETY: Projection filtering is read-only.
-    // SAFETY: No record ownership or permissions are enforced here.
-    const appKey = req.appKey || 'SALES'; // From resolveAppContext middleware
-    const moduleKey = 'organizations';
-    const projectionMeta = getProjection(appKey, moduleKey);
-    
-    // Debug logging
-    console.log('[organizationV2Controller] Before projection filter:', {
-      appKey,
-      moduleKey,
-      hasProjection: !!projectionMeta,
-      queryBefore: JSON.stringify(query, null, 2),
-      assignedToFilter: req.query.assignedTo,
-      userIds: userIds.length
+    const appKey = req.appKey || 'SALES';
+    const query = await buildOrganizationListMongoQuery({
+      tenantOrganizationId,
+      params: req.query,
+      user: req.user,
+      appKey
     });
-    
-    query = applyProjectionFilter({
-      appKey,
-      moduleKey,
-      baseQuery: query,
-      projectionMeta
-    });
-    
-    // Apply search filter AFTER projection filter to avoid conflicts
-    // Combine with assignedTo filter if both exist
-    if (searchFilter || assignedToFilter) {
-      // If query already has $or (from projection), we need to combine with $and
-      if (query.$or) {
-        const conditionsToAdd = [];
-        if (searchFilter) conditionsToAdd.push(searchFilter);
-        if (assignedToFilter) conditionsToAdd.push(assignedToFilter);
-        
-        // Combine existing $or with search and assignedTo filters using $and
-        query.$and = [
-          { $or: query.$or },
-          ...conditionsToAdd
-        ];
-        delete query.$or; // Remove the old $or since we've moved it to $and
-        console.log('[organizationV2Controller] Combined $or with search/assignedTo using $and');
-      } else if (query.$and) {
-        // If $and already exists, add to it
-        if (searchFilter) query.$and.push(searchFilter);
-        if (assignedToFilter) query.$and.push(assignedToFilter);
-        console.log('[organizationV2Controller] Added search/assignedTo to existing $and');
-      } else {
-        // No existing $or or $and, just add the filters directly
-        if (searchFilter) {
-          Object.assign(query, searchFilter);
-          console.log('[organizationV2Controller] Search filter applied directly');
-        }
-        if (assignedToFilter) {
-          // If assignedToFilter has $or, we need to merge it properly
-          if (assignedToFilter.$or) {
-            query.$or = assignedToFilter.$or;
-          } else {
-            Object.assign(query, assignedToFilter);
-          }
-          console.log('[organizationV2Controller] AssignedTo filter applied directly');
-        }
-      }
-    }
-    
-    // Debug: Log final query
-    if (searchFilter || assignedToFilter) {
-      console.log('[organizationV2Controller] Final query after all filters:', JSON.stringify(query, null, 2));
-      if (searchFilter) {
-        console.log('[organizationV2Controller] Search filter:', JSON.stringify(searchFilter, null, 2));
-      }
-    }
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -317,13 +193,20 @@ exports.list = async (req, res) => {
     const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
     const sort = { [sortBy]: sortOrder };
 
-    const data = await Organization.find(query)
+    const dataQuery = Organization.find(query)
       .populate('createdBy', 'firstName lastName email avatar username')
       .populate('assignedTo', 'firstName lastName email avatar username')
       .sort(sort)
       .limit(limit)
       .skip(skip);
-    const total = await Organization.countDocuments(query);
+
+    const listStatisticsPromise = computeOrganizationsListStatistics(query, req.user._id);
+
+    const [data, total, listCardBreakdown] = await Promise.all([
+      dataQuery,
+      Organization.countDocuments(query),
+      listStatisticsPromise
+    ]);
     
     // Debug logging
     const orgIds = data.map(org => ({
@@ -354,7 +237,11 @@ exports.list = async (req, res) => {
         totalRecords: total,
         limit: limit
       },
-      meta: { page, limit, total } // Keep for backward compatibility
+      meta: { page, limit, total }, // Keep for backward compatibility
+      listStatistics: {
+        totalOrganizations: total,
+        ...listCardBreakdown
+      }
     };
     
     // Debug logging - log the actual response object structure
@@ -517,6 +404,10 @@ exports.remove = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Organization context required' });
     }
 
+    const User = require('../models/User');
+    const currentTenantOrg = await Organization.findById(tenantOrganizationId).select('name').lean();
+    const relaxOrganizationsCreatedBy = isMasterLikeRequest(req, currentTenantOrg);
+
     const deletionService = require('../services/deletionService');
     const result = await deletionService.moveToTrash({
       moduleKey: 'organizations',
@@ -525,7 +416,8 @@ exports.remove = async (req, res) => {
       userId: req.user._id,
       appKey: req.body?.appKey || 'SALES',
       reason: req.body?.reason,
-      cascadeConfirmed: !!req.body?.cascadeConfirmed
+      cascadeConfirmed: !!req.body?.cascadeConfirmed,
+      relaxOrganizationsCreatedBy
     });
 
     if (!result.ok) {

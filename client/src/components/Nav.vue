@@ -6,9 +6,10 @@ import NotificationBell from '@/components/notifications/NotificationBell.vue';
 import NotificationDrawer from '@/components/notifications/NotificationDrawer.vue';
 import { computed, inject, ref, watch, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-
-const { t } = useI18n();
+import { getTabTitleMetaForPath, resolveTabTitle } from '@/utils/navigationLabels';
 import { buildSidebarStructureForSession } from '@/utils/buildSidebarForSession';
+
+const { t, te } = useI18n();
 import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
 import { createPermissionSnapshot, hasPermission as hasSnapshotPermission } from '@/types/permission-snapshot.types';
 import { useColorMode } from '@/composables/useColorMode';
@@ -331,41 +332,20 @@ const mobileHeaderTitle = computed(() => {
     path === '/dashboard' ||
     path.startsWith('/dashboard/')
   ) {
-    return 'Home';
+    return te('navigation.home') ? t('navigation.home') : 'Home';
   }
 
-  const titleByPrefix = [
-    ['/inbox', 'Inbox'],
-    ['/approvals', 'Approvals'],
-    ['/settings', 'Settings'],
-    ['/people', 'People'],
-    ['/deals', 'Deals'],
-    ['/tasks', 'Tasks'],
-    ['/events', 'Events'],
-    ['/forms', 'Forms'],
-    ['/responses', 'Responses'],
-    ['/organizations', 'Organizations'],
-    ['/items', 'Items'],
-    ['/imports', 'Imports'],
-    ['/control', 'Control Panel'],
-    ['/platform/home', 'Home'],
-    ['/platform/apps', 'Apps'],
-    ['/profile', 'Profile'],
-    ['/trash', 'Trash'],
-  ];
-
-  const matchedTitle = titleByPrefix.find(([prefix]) => path.startsWith(prefix))?.[1];
-  if (matchedTitle) return matchedTitle;
-
-  const name = typeof route.name === 'string' ? route.name : '';
-  if (name) {
-    return name
-      .split('-')
-      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-      .join(' ');
-  }
-
-  return 'Home';
+  const meta = getTabTitleMetaForPath(path, route.params || {});
+  return resolveTabTitle(
+    {
+      path,
+      params: route.params || {},
+      titleKey: meta.titleKey,
+      titleParams: meta.titleParams,
+    },
+    t,
+    te
+  );
 });
 
 const logoSrc = computed(() => {

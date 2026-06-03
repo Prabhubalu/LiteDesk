@@ -297,7 +297,7 @@ async function patchSectionDiscounts(req, res) {
       userId: req.user._id,
       action: 'quote_section_discount_updated',
       message: `Section discount updated: ${section.sectionTitle}`,
-      details: { quoteSectionId: section.quoteSectionId, totals }
+      details: { quoteSectionId: section.quoteSectionId, sectionTitle: section.sectionTitle, totals }
     });
 
     return res.json({ success: true, data: { section, sections, totals } });
@@ -369,6 +369,21 @@ async function reorderSections(req, res) {
 
     await QuoteSection.bulkWrite(bulkOps, { ordered: false });
     const sections = await listQuoteSections({ organizationId, quoteId });
+
+    await writeQuoteActivity({
+      organizationId,
+      quoteId: quote._id,
+      userId: req.user._id,
+      action: 'quote_section_reordered',
+      message: 'Reordered quote sections',
+      details: {
+        sectionCount: sections.length,
+        orders: orders.map((row) => ({
+          quoteSectionId: row?.quoteSectionId,
+          sectionOrder: row?.sectionOrder
+        }))
+      }
+    });
 
     return res.json({ success: true, data: { sections } });
   } catch (err) {

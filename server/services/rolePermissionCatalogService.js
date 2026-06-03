@@ -19,7 +19,7 @@ const AppDefinition = require('../models/AppDefinition');
 const uiCompositionService = require('./uiCompositionService');
 const { APP_KEYS, VALID_APP_KEYS } = require('../constants/appKeys');
 
-const CORE_MODULE_ORDER = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes'];
+const CORE_MODULE_ORDER = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices'];
 const CORE_ENTITY_KEYS = new Set(CORE_MODULE_ORDER);
 const PLATFORM_ADMIN_KEYS = ['reports', 'users', 'settings', 'performance'];
 
@@ -121,7 +121,7 @@ function buildActionsFromDefinition(moduleDefPermissions = {}, moduleKey, kind) 
   if (p.edit !== false) actions.push('update');
   if (p.delete === true) actions.push('delete');
 
-  if (['people', 'organizations', 'deals', 'quotes', 'tasks', 'forms', 'items'].includes(moduleKey)) {
+  if (['people', 'organizations', 'deals', 'quotes', 'sales_orders', 'invoices', 'tasks', 'forms', 'items'].includes(moduleKey)) {
     actions.push('export', 'import');
   } else if (moduleKey === 'events') {
     // events: no import in legacy schema
