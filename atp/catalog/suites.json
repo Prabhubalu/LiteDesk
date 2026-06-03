@@ -1,0 +1,377 @@
+{
+  "smoke": {
+    "name": "Smoke",
+    "description": "Health, auth, UI bootstrap. Target < 5 min. PR gate.",
+    "tags": ["gate", "pr"],
+    "caseIds": [
+      "TC-API-HEALTH-001",
+      "TC-API-HEALTH-002",
+      "TC-API-HEALTH-003",
+      "TC-API-AUTH-008",
+      "TC-API-AUTH-002",
+      "TC-API-AUTH-007",
+      "TC-API-UI-001",
+      "TC-API-UI-003"
+    ]
+  },
+  "platform-gates": {
+    "name": "Platform Gates",
+    "description": "Auth, RBAC, security API checks (Section 1)",
+    "tags": ["security"],
+    "caseIds": [
+      "TC-API-AUTH-001",
+      "TC-API-AUTH-002",
+      "TC-API-AUTH-004",
+      "TC-API-AUTH-005",
+      "TC-API-AUTH-006",
+      "TC-API-AUTH-007",
+      "TC-API-AUTH-008",
+      "TC-API-HEALTH-001",
+      "TC-API-HEALTH-002",
+      "TC-API-HEALTH-003",
+      "TC-SEC-CSRF-002",
+      "TC-SEC-RBAC-005",
+      "TC-SEC-MT-009",
+      "TC-SEC-MT-010",
+      "TC-API-UI-001",
+      "TC-API-UI-002",
+      "TC-API-UI-003",
+      "TC-API-UI-004"
+    ]
+  },
+  "sales-api-core": {
+    "name": "Sales API Core",
+    "description": "Users, people, deals, tasks — sequential shared state",
+    "tags": ["sales", "api"],
+    "caseIds": [
+      "TC-API-USER-001",
+      "TC-API-USER-002",
+      "TC-API-USER-007",
+      "TC-API-USER-008",
+      "TC-API-USER-009",
+      "TC-API-ROLE-001",
+      "TC-API-ROLE-002",
+      "TC-API-ROLE-003",
+      "TC-API-GRP-001",
+      "TC-API-GRP-002",
+      "TC-API-GRP-003",
+      "TC-API-PEO-001",
+      "TC-API-PEO-002",
+      "TC-API-PEO-003",
+      "TC-API-PEO-004",
+      "TC-API-PEO-012",
+      "TC-API-PEO-014",
+      "TC-API-PEO-015",
+      "TC-API-PEO-009",
+      "TC-API-PEO-010",
+      "TC-API-PEO-017",
+      "TC-API-DEAL-001",
+      "TC-API-DEAL-002",
+      "TC-API-DEAL-003",
+      "TC-API-DEAL-004",
+      "TC-API-DEAL-005",
+      "TC-API-DEAL-006",
+      "TC-API-DEAL-012",
+      "TC-API-TASK-001",
+      "TC-API-TASK-002",
+      "TC-API-TASK-003",
+      "TC-API-TASK-004",
+      "TC-API-TASK-005",
+      "TC-API-TASK-013"
+    ]
+  },
+  "org-api-core": {
+    "name": "Org API Core",
+    "description": "Tenant org, company accounts, config registry, trash, search",
+    "tags": ["org", "api"],
+    "caseIds": [
+      "TC-API-ORG-001",
+      "TC-API-ORG-003",
+      "TC-API-ORG-004",
+      "TC-API-ORGV2-001",
+      "TC-API-ORGV2-002",
+      "TC-API-ORGV2-003",
+      "TC-API-ORGV2-004",
+      "TC-API-ORGV2-006",
+      "TC-API-ORGV2-007",
+      "TC-API-ORGV2-008",
+      "TC-API-ORGS-002",
+      "TC-API-ORGS-005",
+      "TC-API-ORG-002",
+      "TC-API-CFG-001",
+      "TC-API-CFG-004",
+      "TC-API-CFG-007",
+      "TC-API-CFG-008",
+      "TC-API-TRSH-001",
+      "TC-API-TRSH-002",
+      "TC-API-SRCH-001"
+    ]
+  },
+  "ui-platform": {
+    "name": "UI Platform",
+    "description": "Platform home, trash, sidebar, tabs, theme",
+    "tags": ["ui", "platform"],
+    "caseIds": [
+      "TC-UI-PLT-001",
+      "TC-UI-PLT-002",
+      "TC-UI-PLT-004",
+      "TC-UI-PLT-005",
+      "TC-UI-PLT-007",
+      "TC-UI-PLT-008",
+      "TC-UI-PLT-009",
+      "TC-UI-PLT-013"
+    ]
+  },
+  "ui-sales": {
+    "name": "UI Sales",
+    "description": "SALES module lists, records, deals kanban",
+    "tags": ["ui", "sales"],
+    "caseIds": [
+      "TC-UI-SLS-001",
+      "TC-UI-SLS-002",
+      "TC-UI-SLS-003",
+      "TC-UI-SLS-004",
+      "TC-UI-SLS-005",
+      "TC-UI-SLS-006",
+      "TC-UI-SLS-007",
+      "TC-UI-SLS-009",
+      "TC-UI-SLS-010",
+      "TC-UI-SLS-011",
+      "TC-UI-SLS-012",
+      "TC-UI-SLS-032",
+      "TC-UI-SLS-033"
+    ]
+  },
+  "sales-core": {
+    "name": "Sales Core (API + UI)",
+    "description": "Nightly gate — key sales API flows + UI surfaces",
+    "tags": ["sales", "nightly"],
+    "caseIds": [
+      "TC-API-PEO-004",
+      "TC-API-DEAL-004",
+      "TC-API-TASK-003",
+      "TC-UI-AUTH-001",
+      "TC-UI-SLS-001",
+      "TC-UI-SLS-002",
+      "TC-UI-SLS-009",
+      "TC-UI-SLS-011",
+      "TC-UI-PLT-001",
+      "TC-UI-PLT-007"
+    ]
+  },
+  "ui-smoke": {
+    "name": "UI Smoke",
+    "description": "Login, session, and platform shell (Playwright)",
+    "tags": ["ui", "gate"],
+    "caseIds": [
+      "TC-UI-AUTH-001",
+      "TC-UI-AUTH-002",
+      "TC-UI-AUTH-003",
+      "TC-UI-AUTH-004",
+      "TC-UI-AUTH-005"
+    ]
+  },
+  "e2e-critical": {
+    "name": "E2E Critical",
+    "description": "Boot + lead→deal orchestrated flows (sequential shared state)",
+    "tags": ["e2e", "prerelease"],
+    "caseIds": [
+      "TC-E2E-BOOT-001",
+      "TC-E2E-SLS-001",
+      "TC-E2E-SLS-002",
+      "TC-E2E-SLS-003",
+      "TC-E2E-SLS-004",
+      "TC-E2E-SLS-005",
+      "TC-E2E-SLS-006",
+      "TC-E2E-SLS-008"
+    ]
+  },
+  "public-smoke": {
+    "name": "Public & Webhooks",
+    "description": "Unauthenticated forms, quotes, webhooks, embed chat",
+    "tags": ["public", "nightly"],
+    "caseIds": [
+      "TC-PUB-FRM-003",
+      "TC-PUB-BOOK-002",
+      "TC-PUB-WH-001",
+      "TC-PUB-WH-002",
+      "TC-PUB-CHAT-007",
+      "TC-PUB-QTE-006",
+      "TC-PUB-APT-005",
+      "TC-PUB-QTE-001",
+      "TC-PUB-CHAT-001"
+    ]
+  },
+  "helpdesk-core": {
+    "name": "Helpdesk Core",
+    "description": "Helpdesk analytics smoke + mailroom policy evaluate",
+    "tags": ["helpdesk", "nightly"],
+    "caseIds": [
+      "TC-E2E-HD-011",
+      "TC-E2E-MRM-003"
+    ]
+  },
+  "quotes-core": {
+    "name": "Quotes Core",
+    "description": "Authenticated quotes API + optional public share token",
+    "tags": ["quotes", "nightly"],
+    "caseIds": [
+      "TC-E2E-QTE-001",
+      "TC-E2E-QTE-005"
+    ]
+  },
+  "security": {
+    "name": "Security Matrix",
+    "description": "RBAC, multi-tenant, CSRF, app entitlements",
+    "tags": ["security", "nightly"],
+    "caseIds": [
+      "TC-SEC-CSRF-002",
+      "TC-SEC-CSRF-001",
+      "TC-SEC-RBAC-001",
+      "TC-SEC-RBAC-002",
+      "TC-SEC-RBAC-004",
+      "TC-SEC-RBAC-005",
+      "TC-SEC-APP-008",
+      "TC-SEC-MT-001",
+      "TC-SEC-MT-002",
+      "TC-SEC-MT-009",
+      "TC-SEC-MT-010",
+      "TC-API-HEALTH-004"
+    ]
+  },
+  "async-import": {
+    "name": "Async Import",
+    "description": "CSV import job + poll until complete (sequential)",
+    "tags": ["async", "import"],
+    "caseIds": [
+      "TC-API-IMP-001",
+      "TC-API-IMP-002",
+      "TC-ASYNC-004",
+      "TC-E2E-IMP-001",
+      "TC-API-IMP-003",
+      "TC-API-IMP-004",
+      "TC-API-CSV-005"
+    ]
+  },
+  "async-cron": {
+    "name": "Async Cron Hooks",
+    "description": "Manual digest triggers (UAT cron verification)",
+    "tags": ["async", "cron"],
+    "caseIds": [
+      "TC-ASYNC-010",
+      "TC-ASYNC-011"
+    ]
+  },
+  "api-breadth": {
+    "name": "API Breadth",
+    "description": "Parallel GET smoke across modules (events, quotes, cases, comms)",
+    "tags": ["api", "nightly"],
+    "caseIds": [
+      "TC-API-EVT-001",
+      "TC-API-EVT-002",
+      "TC-API-EVT-003",
+      "TC-API-QTE-001",
+      "TC-API-QTE-002",
+      "TC-API-QTE-003",
+      "TC-API-COM-005",
+      "TC-API-COM-006",
+      "TC-API-COM-010",
+      "TC-API-COM-013",
+      "TC-API-NOT-001",
+      "TC-API-NOT-002",
+      "TC-API-CASE-001",
+      "TC-API-CASE-009",
+      "TC-API-CASE-010",
+      "TC-API-ADM-007",
+      "TC-API-ITEM-004",
+      "TC-API-CAT-001",
+      "TC-API-RPT-001",
+      "TC-API-FRM-001",
+      "TC-API-INBOX-001",
+      "TC-API-BOX-001",
+      "TC-API-BH-001",
+      "TC-API-SCH-001",
+      "TC-API-APT-001",
+      "TC-API-SET-001"
+    ]
+  },
+  "nightly": {
+    "name": "Nightly Gate",
+    "description": "sales-core + security + public + helpdesk",
+    "tags": ["nightly"],
+    "caseIds": [
+      "TC-API-PEO-004",
+      "TC-API-DEAL-004",
+      "TC-UI-AUTH-001",
+      "TC-UI-SLS-001",
+      "TC-UI-SLS-009",
+      "TC-SEC-RBAC-005",
+      "TC-SEC-MT-010",
+      "TC-E2E-HD-011",
+      "TC-PUB-WH-001"
+    ]
+  },
+  "coverage-api": {
+    "name": "API Coverage Push",
+    "description": "Sample of generated API routes (prefix filter)",
+    "tags": ["coverage", "api"],
+    "caseIdPrefixes": ["TC-API-SET-", "TC-API-TGT-", "TC-API-CFG-0", "TC-API-BH-0", "TC-API-UI-0"]
+  },
+  "load-smoke": {
+    "name": "Load Smoke (core)",
+    "description": "15 core load paths — quick gate",
+    "tags": ["load", "performance"],
+    "caseIds": [
+      "TC-LOAD-001", "TC-LOAD-002", "TC-LOAD-003", "TC-LOAD-004", "TC-LOAD-005",
+      "TC-LOAD-006", "TC-LOAD-007", "TC-LOAD-008", "TC-LOAD-009", "TC-LOAD-010",
+      "TC-LOAD-011", "TC-LOAD-012", "TC-LOAD-013", "TC-LOAD-014", "TC-LOAD-015"
+    ]
+  },
+  "load-full": {
+    "name": "Load Full",
+    "description": "All GET routes from API catalog (~250+) — long; use ATP_LOAD_DURATION_LIGHT_SEC",
+    "tags": ["load", "nightly"],
+    "caseIdPrefixes": ["TC-LOAD-"]
+  },
+  "perf-api": {
+    "name": "Performance API (core)",
+    "description": "15 core latency SLAs",
+    "tags": ["perf", "performance"],
+    "caseIds": [
+      "TC-PERF-001", "TC-PERF-002", "TC-PERF-003", "TC-PERF-004", "TC-PERF-005",
+      "TC-PERF-006", "TC-PERF-007", "TC-PERF-008", "TC-PERF-009", "TC-PERF-010",
+      "TC-PERF-011", "TC-PERF-012", "TC-PERF-013", "TC-PERF-014", "TC-PERF-015"
+    ]
+  },
+  "perf-full": {
+    "name": "Performance Full",
+    "description": "Latency SLA for every load route mirror",
+    "tags": ["perf", "nightly"],
+    "caseIdPrefixes": ["TC-PERF-"]
+  },
+  "load-perf": {
+    "name": "Load + Performance Full",
+    "description": "All load + perf cases — sequential, hours; nightly only",
+    "tags": ["load", "perf", "nightly"],
+    "caseIdPrefixes": ["TC-LOAD-", "TC-PERF-"]
+  },
+  "full": {
+    "name": "Full Functional (Weekly)",
+    "description": "All automated cases except load/perf — weekly gate without hours of concurrency tests",
+    "tags": ["full", "weekly"],
+    "allAutomated": true,
+    "excludeLayers": ["load", "perf"]
+  },
+  "full-all": {
+    "name": "Full + Load/Perf",
+    "description": "Every automated case including load and perf mirrors",
+    "tags": ["full", "nightly"],
+    "allAutomated": true
+  },
+  "full-catalog": {
+    "name": "Full Catalog",
+    "description": "Alias for full-all",
+    "tags": ["full"],
+    "allAutomated": true
+  }
+}

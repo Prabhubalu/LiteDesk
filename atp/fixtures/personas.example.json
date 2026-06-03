@@ -1,0 +1,12 @@
+{
+  "owner": {
+    "email": "",
+    "password": "",
+    "description": "Org owner — full access. Override via ATP_PERSONA_OWNER_EMAIL/PASSWORD or fill here."
+  },
+  "viewer": {
+    "email": "",
+    "password": "",
+    "description": "Optional read-only user for RBAC negative tests (TC-SEC-RBAC-001)."
+  }
+}

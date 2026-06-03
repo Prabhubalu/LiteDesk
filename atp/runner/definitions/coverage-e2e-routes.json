@@ -1,0 +1,1038 @@
+{
+  "TC-E2E-APT-001": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/appointments/config/me"
+      }
+    ]
+  },
+  "TC-E2E-APT-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/public/book/atp-invalid-booking-slug/slots"
+      }
+    ]
+  },
+  "TC-E2E-APT-003": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/appointments/config/pages"
+      }
+    ]
+  },
+  "TC-E2E-APT-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/appointments/config/teams"
+      }
+    ]
+  },
+  "TC-E2E-APT-005": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/appointments/stats"
+      }
+    ]
+  },
+  "TC-E2E-APT-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-APT-007": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-APT-008": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-AUD-001": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/events/?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-AUD-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/events/summary"
+      }
+    ]
+  },
+  "TC-E2E-AUD-003": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/events/?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-AUD-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/events/?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-AUD-005": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/events/?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-AUD-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/events/?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-AUD-007": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/events/?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-AUD-008": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/events/?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-AUD-009": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/events/?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-AUD-010": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/events/?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-AUTO-001": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-AUTO-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-AUTO-003": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-AUTO-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-AUTO-005": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-AUTO-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-AUTO-007": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-AUTO-008": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-AUTO-009": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-AUTO-010": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-BOOT-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/apps"
+      },
+      {
+        "m": "GET",
+        "p": "/api/ui/sidebar"
+      }
+    ]
+  },
+  "TC-E2E-BOOT-003": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/organization/"
+      }
+    ]
+  },
+  "TC-E2E-BOOT-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-CAT-001": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/items?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-CAT-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/catalog/price-books"
+      }
+    ]
+  },
+  "TC-E2E-CAT-003": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/catalog/categories"
+      }
+    ]
+  },
+  "TC-E2E-CAT-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/items?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-CAT-005": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/items/low-stock"
+      }
+    ]
+  },
+  "TC-E2E-CAT-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/deals/?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-COM-001": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/mailboxes?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-COM-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/communications/pipeline-metrics"
+      }
+    ]
+  },
+  "TC-E2E-COM-003": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/communications/templates"
+      }
+    ]
+  },
+  "TC-E2E-COM-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/communications/inbound/diagnostics"
+      }
+    ]
+  },
+  "TC-E2E-COM-005": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/tasks/?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-COM-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-COM-007": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/inbox?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-COM-008": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/communications/suppressions/stats"
+      }
+    ]
+  },
+  "TC-E2E-COM-009": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/communications/inbound/dead-letter"
+      }
+    ]
+  },
+  "TC-E2E-CP-001": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-CP-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-CP-003": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-CP-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-CP-005": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-CP-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-FRM-001": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/forms?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-FRM-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/public/forms/atp-nonexistent-slug-404"
+      }
+    ]
+  },
+  "TC-E2E-FRM-003": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/forms?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-FRM-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/forms?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-FRM-005": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/forms?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-FRM-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/forms?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-FRM-007": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/forms?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-FRM-008": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/forms?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-FRM-009": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/forms?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-HD-001": {
+    "steps": [
+      {
+        "m": "POST",
+        "p": "/api/helpdesk/cases"
+      }
+    ]
+  },
+  "TC-E2E-HD-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases/canned-responses"
+      }
+    ]
+  },
+  "TC-E2E-HD-003": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-HD-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-HD-005": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-HD-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/settings/applications/helpdesk/execution-settings"
+      }
+    ]
+  },
+  "TC-E2E-HD-007": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases/analytics/summary"
+      }
+    ]
+  },
+  "TC-E2E-HD-008": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases/analytics/summary"
+      }
+    ]
+  },
+  "TC-E2E-HD-009": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases/analytics/summary"
+      }
+    ]
+  },
+  "TC-E2E-HD-010": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases/analytics/summary"
+      }
+    ]
+  },
+  "TC-E2E-HD-012": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-HD-013": {
+    "steps": [
+      {
+        "m": "POST",
+        "p": "/api/helpdesk/cases/ingest/channel"
+      }
+    ]
+  },
+  "TC-E2E-IMP-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/imports?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-IMP-003": {
+    "steps": [
+      {
+        "m": "POST",
+        "p": "/api/csv/check-duplicates/contacts"
+      }
+    ]
+  },
+  "TC-E2E-IMP-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/imports/stats/summary"
+      }
+    ]
+  },
+  "TC-E2E-IMP-005": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/csv/export/contacts"
+      }
+    ]
+  },
+  "TC-E2E-IMP-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/imports?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-IMP-007": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/imports?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-MRM-001": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/webhooks/arivu/inbound-email/health"
+      }
+    ]
+  },
+  "TC-E2E-MRM-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/settings/automation/mailroom"
+      }
+    ]
+  },
+  "TC-E2E-MRM-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/settings/automation/mailroom/failures?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-MRM-005": {
+    "steps": [
+      {
+        "m": "POST",
+        "p": "/api/public/mailroom/ingest"
+      }
+    ]
+  },
+  "TC-E2E-MRM-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/settings/automation/mailroom"
+      }
+    ]
+  },
+  "TC-E2E-PRT-001": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-PRT-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-PRT-003": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-PRT-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-PRT-005": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-PRT-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-PRT-007": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/helpdesk/cases?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-QTE-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/quotes?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-QTE-003": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/quotes?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-QTE-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/quotes?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-QTE-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/public/quotes/atp-revoked/view"
+      }
+    ]
+  },
+  "TC-E2E-QTE-007": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/quotes?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-QTE-008": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/quotes?limit=1"
+      }
+    ]
+  },
+  "TC-E2E-QTE-009": {
+    "steps": [
+      {
+        "m": "POST",
+        "p": "/api/digest/trigger/daily"
+      }
+    ]
+  },
+  "TC-E2E-QTE-010": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/approvals?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-RPT-001": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-SLS-007": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/deals/?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-SLS-009": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/events/?limit=5"
+      }
+    ]
+  },
+  "TC-E2E-SLS-010": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/settings/automation/assignment-rules"
+      }
+    ]
+  },
+  "TC-E2E-SLS-011": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/admin/business-flow-templates"
+      }
+    ]
+  },
+  "TC-E2E-SRCH-001": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-SRCH-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/ui/registry"
+      },
+      {
+        "m": "GET",
+        "p": "/api/users/profile"
+      }
+    ]
+  },
+  "TC-E2E-TGT-001": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/targets/summary"
+      }
+    ]
+  },
+  "TC-E2E-TGT-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/targets/summary"
+      }
+    ]
+  },
+  "TC-E2E-TGT-003": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/targets/summary"
+      }
+    ]
+  },
+  "TC-E2E-TGT-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/targets/summary"
+      }
+    ]
+  },
+  "TC-E2E-TGT-005": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/targets/summary"
+      }
+    ]
+  },
+  "TC-E2E-TGT-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/targets/summary"
+      }
+    ]
+  },
+  "TC-E2E-TRSH-001": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/trash/"
+      }
+    ]
+  },
+  "TC-E2E-TRSH-002": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/trash/"
+      }
+    ]
+  },
+  "TC-E2E-TRSH-003": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/trash/"
+      }
+    ]
+  },
+  "TC-E2E-TRSH-004": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/trash/"
+      }
+    ]
+  },
+  "TC-E2E-TRSH-005": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/trash/"
+      }
+    ]
+  },
+  "TC-E2E-TRSH-006": {
+    "steps": [
+      {
+        "m": "GET",
+        "p": "/api/trash/"
+      }
+    ]
+  }
+}

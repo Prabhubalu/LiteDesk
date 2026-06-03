@@ -1270,7 +1270,7 @@ exports.updateCore = async (req, res) => {
     const routeInfo = {
       path: routePath,
       name: req.query.routeName || null,
-      params: { id: id },
+      params: { id: personId },
       query: req.query,
       meta: {}
     };

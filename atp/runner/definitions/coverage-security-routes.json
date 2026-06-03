@@ -1,0 +1,277 @@
+{
+  "TC-SEC-APP-001": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/deals/?limit=5",
+    "s": [
+      200,
+      400,
+      401,
+      403,
+      404,
+      429,
+      503
+    ]
+  },
+  "TC-SEC-APP-002": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/deals/?limit=5",
+    "s": [
+      200,
+      400,
+      401,
+      403,
+      404,
+      429,
+      503
+    ]
+  },
+  "TC-SEC-APP-003": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/users/profile",
+    "s": [
+      200
+    ]
+  },
+  "TC-SEC-APP-004": {
+    "kind": "ui",
+    "path": "/audit/dashboard",
+    "persona": "owner"
+  },
+  "TC-SEC-APP-005": {
+    "kind": "ui",
+    "path": "/portal/dashboard",
+    "persona": "owner"
+  },
+  "TC-SEC-APP-006": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/users/profile",
+    "s": [
+      200
+    ]
+  },
+  "TC-SEC-APP-007": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/deals/?limit=5",
+    "s": [
+      200
+    ]
+  },
+  "TC-SEC-APP-009": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/users/profile",
+    "s": [
+      200
+    ]
+  },
+  "TC-SEC-APP-010": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/deals/?limit=5",
+    "s": [
+      200,
+      400,
+      401,
+      403,
+      404,
+      429,
+      503
+    ]
+  },
+  "TC-SEC-MT-003": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/organization/",
+    "s": [
+      200
+    ]
+  },
+  "TC-SEC-MT-004": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/organization/",
+    "s": [
+      200
+    ]
+  },
+  "TC-SEC-MT-005": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/imports/stats/summary",
+    "s": [
+      200
+    ]
+  },
+  "TC-SEC-MT-006": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/public/quotes/atp-revoked/view",
+    "s": [
+      200,
+      400,
+      401,
+      403,
+      404,
+      429,
+      503
+    ]
+  },
+  "TC-SEC-MT-007": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/embed/chat/config",
+    "s": [
+      200,
+      400,
+      401,
+      403,
+      404,
+      429,
+      503
+    ],
+    "h": {
+      "X-Instance-Key": "invalid"
+    }
+  },
+  "TC-SEC-MT-008": {
+    "kind": "api",
+    "m": "POST",
+    "p": "/api/public/mailroom/ingest",
+    "s": [
+      401,
+      403,
+      404
+    ]
+  },
+  "TC-SEC-RBAC-003": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/people/?limit=5",
+    "s": [
+      200
+    ]
+  },
+  "TC-SEC-RBAC-006": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/people/?limit=5",
+    "s": [
+      200
+    ]
+  },
+  "TC-SEC-RBAC-007": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/people/?limit=5",
+    "s": [
+      200
+    ]
+  },
+  "TC-SEC-RBAC-008": {
+    "kind": "ui",
+    "path": "/deals",
+    "persona": "viewer"
+  },
+  "TC-SEC-RBAC-009": {
+    "kind": "ui",
+    "path": "/deals",
+    "persona": "viewer"
+  },
+  "TC-SEC-RBAC-010": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/roles/",
+    "s": [
+      200
+    ]
+  },
+  "TC-SEC-RL-001": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/ui/registry",
+    "s": [
+      200,
+      400,
+      401,
+      403,
+      404,
+      429,
+      503
+    ]
+  },
+  "TC-SEC-RL-002": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/ui/registry",
+    "s": [
+      200,
+      400,
+      401,
+      403,
+      404,
+      429,
+      503
+    ]
+  },
+  "TC-SEC-RL-003": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/ui/registry",
+    "s": [
+      200,
+      400,
+      401,
+      403,
+      404,
+      429,
+      503
+    ]
+  },
+  "TC-SEC-RL-004": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/ui/registry",
+    "s": [
+      200,
+      400,
+      401,
+      403,
+      404,
+      429,
+      503
+    ]
+  },
+  "TC-SEC-RL-005": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/ui/registry",
+    "s": [
+      200,
+      400,
+      401,
+      403,
+      404,
+      429,
+      503
+    ]
+  },
+  "TC-SEC-RL-006": {
+    "kind": "api",
+    "m": "GET",
+    "p": "/api/ui/registry",
+    "s": [
+      200,
+      400,
+      401,
+      403,
+      404,
+      429,
+      503
+    ]
+  }
+}

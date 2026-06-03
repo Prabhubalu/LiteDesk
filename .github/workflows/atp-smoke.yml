@@ -1,0 +1,26 @@
+name: ATP Smoke
+
+on:
+  pull_request:
+    paths:
+      - 'atp/**'
+      - 'server/**'
+      - 'Automation_Testing.md'
+  workflow_dispatch:
+
+jobs:
+  atp-smoke-dry:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: atp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --ignore-scripts
+      - run: npm run catalog:sync
+      - run: npm run run:smoke:dry
+        env:
+          ATP_SKIP_LOAD_TESTS: '1'
