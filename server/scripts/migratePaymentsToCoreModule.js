@@ -69,7 +69,10 @@ async function migratePaymentsToCoreModule() {
   };
 
   if (platformModule) {
-    await ModuleDefinition.updateOne({ _id: platformModule._id }, { $set: basePayload });
+    await ModuleDefinition.updateOne(
+      { _id: platformModule._id },
+      { $set: basePayload, $unset: { organizationId: '', key: '' } }
+    );
     console.log('✅ Updated existing platform.payments module\n');
   } else {
     platformModule = await ModuleDefinition.create(basePayload);
