@@ -52,14 +52,12 @@ async function migrateQuotesToCoreModule() {
 
     let platformQuotes = await ModuleDefinition.findOne({
       appKey: 'platform',
-      moduleKey: 'quotes',
-      organizationId: null
+      moduleKey: 'quotes'
     });
 
     const basePayload = {
       appKey: 'platform',
       moduleKey: 'quotes',
-      organizationId: null,
       label: 'Quote',
       pluralLabel: 'Quotes',
       entityType: 'TRANSACTION',
@@ -99,7 +97,10 @@ async function migrateQuotesToCoreModule() {
           update.quickCreateLayout = salesQuotes.quickCreateLayout;
         }
       }
-      await ModuleDefinition.updateOne({ _id: platformQuotes._id }, { $set: update });
+      await ModuleDefinition.updateOne(
+        { _id: platformQuotes._id },
+        { $set: update, $unset: { organizationId: '', key: '' } }
+      );
       console.log('  ✅ Updated platform.quotes');
     } else {
       const createPayload = {
