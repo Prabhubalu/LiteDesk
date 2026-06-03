@@ -66,8 +66,10 @@ export function resolveStoredModuleIconId(icon?: string, moduleKey?: string): st
   if (MODULE_ICON_IDS[lower]) {
     return MODULE_ICON_IDS[lower];
   }
-  if (MODULE_ICON_IDS[normalizeModuleKey(lower)]) {
-    return MODULE_ICON_IDS[normalizeModuleKey(lower)];
+  const normalizedLower = normalizeModuleKey(lower);
+  const iconIdFromLower = MODULE_ICON_IDS[normalizedLower];
+  if (iconIdFromLower) {
+    return iconIdFromLower;
   }
   return getModuleIconId(moduleKey);
 }

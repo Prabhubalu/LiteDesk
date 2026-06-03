@@ -37,7 +37,7 @@ export const PAYMENT_FIELD_METADATA: Record<string, PaymentFieldMetadata> = {
     isProtected: true,
     allowOnCreate: true,
     filterable: true,
-    filterType: 'currency',
+    filterType: 'number',
     filterPriority: 1
   },
   paymentCurrency: {

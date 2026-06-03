@@ -66,7 +66,8 @@ function applyCoreModuleEntitlementFilters(
   );
 
   structure.coreModules = structure.coreModules.filter((item) => {
-    const moduleKey = item.moduleKey?.toLowerCase();
+    if (item.kind !== 'coreModule') return false;
+    const moduleKey = item.moduleKey.toLowerCase();
     if (!moduleKey) return false;
     if (isCommercialPlatformModuleKey(moduleKey)) {
       return hasCommercial;
