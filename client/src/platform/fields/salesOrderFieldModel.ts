@@ -139,7 +139,7 @@ export const SALES_ORDER_FIELD_METADATA: Record<string, SalesOrderFieldMetadata>
     editable: true,
     allowOnCreate: true,
     filterable: true,
-    filterType: 'lookup',
+    filterType: 'entity',
   },
   organizationRefId: {
     owner: 'core',
@@ -148,7 +148,7 @@ export const SALES_ORDER_FIELD_METADATA: Record<string, SalesOrderFieldMetadata>
     editable: true,
     allowOnCreate: true,
     filterable: true,
-    filterType: 'lookup',
+    filterType: 'entity',
   },
   dealId: {
     owner: 'core',
@@ -157,7 +157,7 @@ export const SALES_ORDER_FIELD_METADATA: Record<string, SalesOrderFieldMetadata>
     editable: true,
     allowOnCreate: true,
     filterable: true,
-    filterType: 'lookup',
+    filterType: 'entity',
   },
   ownerId: {
     owner: 'core',
@@ -166,7 +166,7 @@ export const SALES_ORDER_FIELD_METADATA: Record<string, SalesOrderFieldMetadata>
     editable: true,
     allowOnCreate: true,
     filterable: true,
-    filterType: 'lookup',
+    filterType: 'user',
   },
   sourceQuoteNumber: {
     owner: 'system',

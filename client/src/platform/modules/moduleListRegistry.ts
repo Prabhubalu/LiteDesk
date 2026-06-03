@@ -740,7 +740,7 @@ function normalizeQuotesFilters(filters: Record<string, any>, currentUserId?: st
   return normalized;
 }
 
-function normalizeSalesOrdersFilters(filters, currentUserId) {
+function normalizeSalesOrdersFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
   if ('ownerId' in normalized) {
     if (normalized.ownerId === 'me' && currentUserId) {
@@ -755,7 +755,7 @@ function normalizeSalesOrdersFilters(filters, currentUserId) {
   return normalized;
 }
 
-function normalizeSalesOrdersViewFilters(filters, currentUserId) {
+function normalizeSalesOrdersViewFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
   if ('ownerId' in normalized) {
     if (normalized.ownerId === currentUserId) {
@@ -770,7 +770,11 @@ function normalizeSalesOrdersViewFilters(filters, currentUserId) {
 /**
  * Sales order list statistics — prefer server listStatistics; fallback from page data.
  */
-function computeSalesOrdersStatistics(data, currentUserId, context) {
+function computeSalesOrdersStatistics(
+  data: any[],
+  currentUserId?: string,
+  context?: ModuleListStatisticsContext
+): Record<string, number> {
   const stats = {
     totalSalesOrders: context?.totalRecords ?? data.length,
     draft: 0,
@@ -781,7 +785,7 @@ function computeSalesOrdersStatistics(data, currentUserId, context) {
     cancelled: 0
   };
 
-  data.forEach((order) => {
+  data.forEach((order: any) => {
     const status = String(order.status || '');
     if (status === 'Draft') stats.draft++;
     else if (status === 'Confirmed') stats.confirmed++;
@@ -794,7 +798,7 @@ function computeSalesOrdersStatistics(data, currentUserId, context) {
   return stats;
 }
 
-function normalizeInvoicesFilters(filters, currentUserId) {
+function normalizeInvoicesFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
   if ('ownerId' in normalized) {
     if (normalized.ownerId === 'me' && currentUserId) {
@@ -809,7 +813,7 @@ function normalizeInvoicesFilters(filters, currentUserId) {
   return normalized;
 }
 
-function normalizeInvoicesViewFilters(filters, currentUserId) {
+function normalizeInvoicesViewFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
   if ('ownerId' in normalized) {
     if (normalized.ownerId === currentUserId) {
@@ -821,7 +825,11 @@ function normalizeInvoicesViewFilters(filters, currentUserId) {
   return normalized;
 }
 
-function computeInvoicesStatistics(data, currentUserId, context) {
+function computeInvoicesStatistics(
+  data: any[],
+  currentUserId?: string,
+  context?: ModuleListStatisticsContext
+): Record<string, number> {
   const stats = {
     totalInvoices: context?.totalRecords ?? data.length,
     draft: 0,
@@ -831,7 +839,7 @@ function computeInvoicesStatistics(data, currentUserId, context) {
     void: 0
   };
 
-  data.forEach((invoice) => {
+  data.forEach((invoice: any) => {
     const status = String(invoice.status || '');
     if (status === 'Draft') stats.draft++;
     else if (status === 'Pending Approval') stats.pendingApproval++;

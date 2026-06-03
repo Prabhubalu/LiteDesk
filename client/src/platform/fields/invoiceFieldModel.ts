@@ -89,7 +89,7 @@ export const INVOICE_FIELD_METADATA: Record<string, InvoiceFieldMetadata> = {
     editable: true,
     allowOnCreate: true,
     filterable: true,
-    filterType: 'lookup',
+    filterType: 'user',
     filterPriority: 3
   },
   contactId: {
@@ -99,7 +99,7 @@ export const INVOICE_FIELD_METADATA: Record<string, InvoiceFieldMetadata> = {
     editable: true,
     allowOnCreate: true,
     filterable: true,
-    filterType: 'lookup'
+    filterType: 'entity'
   },
   organizationRefId: {
     owner: 'core',
@@ -108,7 +108,7 @@ export const INVOICE_FIELD_METADATA: Record<string, InvoiceFieldMetadata> = {
     editable: true,
     allowOnCreate: true,
     filterable: true,
-    filterType: 'lookup'
+    filterType: 'entity'
   },
   dealId: {
     owner: 'core',
@@ -117,7 +117,7 @@ export const INVOICE_FIELD_METADATA: Record<string, InvoiceFieldMetadata> = {
     editable: true,
     allowOnCreate: true,
     filterable: true,
-    filterType: 'lookup'
+    filterType: 'entity'
   },
   postedAt: {
     owner: 'system',
