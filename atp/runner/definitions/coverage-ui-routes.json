@@ -1,0 +1,426 @@
+{
+  "TC-UI-APT-001": {
+    "path": "/appointments/pages",
+    "mode": "goto"
+  },
+  "TC-UI-APT-002": {
+    "path": "/appointments/configure",
+    "mode": "goto"
+  },
+  "TC-UI-APT-003": {
+    "path": "/appointments/configure/user/000000000000000000000002",
+    "mode": "goto"
+  },
+  "TC-UI-APT-004": {
+    "path": "/appointments/team/configure",
+    "mode": "goto"
+  },
+  "TC-UI-APT-005": {
+    "path": "/appointments/team/configure/000000000000000000000001",
+    "mode": "goto"
+  },
+  "TC-UI-APT-006": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-AUD-001": {
+    "path": "/audit/dashboard",
+    "mode": "goto"
+  },
+  "TC-UI-AUD-002": {
+    "path": "/audit/schedule",
+    "mode": "goto"
+  },
+  "TC-UI-AUD-003": {
+    "path": "/audit/audits",
+    "mode": "goto"
+  },
+  "TC-UI-AUD-004": {
+    "path": "/audit/audits/:eventId",
+    "mode": "goto"
+  },
+  "TC-UI-AUD-005": {
+    "path": "/audit/findings",
+    "mode": "goto"
+  },
+  "TC-UI-AUD-006": {
+    "path": "/audit/responses",
+    "mode": "goto"
+  },
+  "TC-UI-AUD-007": {
+    "path": "/audit/forms/000000000000000000000001/responses/:responseId",
+    "mode": "goto"
+  },
+  "TC-UI-AUD-008": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-AUD-009": {
+    "path": "/deals",
+    "mode": "sidebar"
+  },
+  "TC-UI-CP-001": {
+    "path": "/control",
+    "mode": "goto"
+  },
+  "TC-UI-CP-002": {
+    "path": "/control/demo-requests",
+    "mode": "goto"
+  },
+  "TC-UI-CP-003": {
+    "path": "/control/instances",
+    "mode": "goto"
+  },
+  "TC-UI-CP-004": {
+    "path": "/control/inbound-parser",
+    "mode": "goto"
+  },
+  "TC-UI-DYN-001": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-DYN-002": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-DYN-003": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-DYN-004": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-DYN-005": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-DYN-006": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-HD-001": {
+    "path": "/helpdesk/cases",
+    "mode": "goto"
+  },
+  "TC-UI-HD-002": {
+    "path": "/helpdesk/cases/new",
+    "mode": "goto"
+  },
+  "TC-UI-HD-003": {
+    "path": "/helpdesk/cases/000000000000000000000001",
+    "mode": "goto"
+  },
+  "TC-UI-HD-004": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-HD-005": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-HD-006": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-HD-007": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-OBS-001": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-OBS-002": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-PLT-003": {
+    "path": "/platform/attention",
+    "mode": "goto"
+  },
+  "TC-UI-PLT-006": {
+    "path": "/approvals/000000000000000000000001",
+    "mode": "goto"
+  },
+  "TC-UI-PLT-010": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-PLT-011": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-PLT-012": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-PRT-001": {
+    "path": "/portal/dashboard",
+    "mode": "goto"
+  },
+  "TC-UI-PRT-002": {
+    "path": "/portal/audits",
+    "mode": "goto"
+  },
+  "TC-UI-PRT-003": {
+    "path": "/portal/audits/:eventId",
+    "mode": "goto"
+  },
+  "TC-UI-PRT-004": {
+    "path": "/portal/actions",
+    "mode": "goto"
+  },
+  "TC-UI-PRT-005": {
+    "path": "/portal/cases",
+    "mode": "goto"
+  },
+  "TC-UI-PRT-006": {
+    "path": "/portal/cases/000000000000000000000001",
+    "mode": "goto"
+  },
+  "TC-UI-PRT-007": {
+    "path": "/portal/profile",
+    "mode": "goto"
+  },
+  "TC-UI-PRT-008": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-PUB-003": {
+    "path": "/forms/public/atp-slug",
+    "mode": "goto"
+  },
+  "TC-UI-PUB-004": {
+    "path": "/public/quotes/atp-token",
+    "mode": "goto"
+  },
+  "TC-UI-PUB-005": {
+    "path": "/book/atp-slug",
+    "mode": "goto"
+  },
+  "TC-UI-PUB-006": {
+    "path": "/book/atp-slug/embed",
+    "mode": "goto"
+  },
+  "TC-UI-PUB-007": {
+    "path": "/appointments/manage/atp-token",
+    "mode": "goto"
+  },
+  "TC-UI-PUB-008": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-SET-001": {
+    "path": "/settings?tab=profile",
+    "mode": "settings"
+  },
+  "TC-UI-SET-002": {
+    "path": "/settings?tab=organization",
+    "mode": "settings"
+  },
+  "TC-UI-SET-003": {
+    "path": "/settings?tab=business-hours",
+    "mode": "settings"
+  },
+  "TC-UI-SET-004": {
+    "path": "/settings?tab=users-access",
+    "mode": "settings"
+  },
+  "TC-UI-SET-005": {
+    "path": "/settings?tab=core-modules&moduleKey=*",
+    "mode": "settings"
+  },
+  "TC-UI-SET-006": {
+    "path": "/settings?tab=applications&app=sales",
+    "mode": "settings"
+  },
+  "TC-UI-SET-007": {
+    "path": "/settings?tab=applications&app=helpdesk",
+    "mode": "settings"
+  },
+  "TC-UI-SET-008": {
+    "path": "/settings?tab=applications&view=management",
+    "mode": "settings"
+  },
+  "TC-UI-SET-009": {
+    "path": "/settings?tab=automation&automationView=assignment-rules",
+    "mode": "settings"
+  },
+  "TC-UI-SET-010": {
+    "path": "/settings?tab=automation&automationView=mailroom",
+    "mode": "settings"
+  },
+  "TC-UI-SET-011": {
+    "path": "/settings?tab=automation&automationView=catalog",
+    "mode": "settings"
+  },
+  "TC-UI-SET-012": {
+    "path": "/settings?tab=automation&automationView=quotes",
+    "mode": "settings"
+  },
+  "TC-UI-SET-013": {
+    "path": "/settings/automation/automation-rules",
+    "mode": "settings"
+  },
+  "TC-UI-SET-014": {
+    "path": "/settings/automation/processes",
+    "mode": "settings"
+  },
+  "TC-UI-SET-015": {
+    "path": "/settings/automation/processes/new",
+    "mode": "settings"
+  },
+  "TC-UI-SET-016": {
+    "path": "/settings/automation/processes/000000000000000000000001/design",
+    "mode": "settings"
+  },
+  "TC-UI-SET-017": {
+    "path": "/settings/automation/flows",
+    "mode": "settings"
+  },
+  "TC-UI-SET-018": {
+    "path": "/settings/automation/flows/create",
+    "mode": "settings"
+  },
+  "TC-UI-SET-019": {
+    "path": "/settings/automation/flows/000000000000000000000001/health",
+    "mode": "settings"
+  },
+  "TC-UI-SET-020": {
+    "path": "/settings?tab=performance&view=targets",
+    "mode": "settings"
+  },
+  "TC-UI-SET-021": {
+    "path": "/settings?tab=performance&view=dashboards",
+    "mode": "settings"
+  },
+  "TC-UI-SET-022": {
+    "path": "/settings?tab=subscriptions",
+    "mode": "settings"
+  },
+  "TC-UI-SET-023": {
+    "path": "/settings?tab=notifications&notificationPage=*",
+    "mode": "settings"
+  },
+  "TC-UI-SET-024": {
+    "path": "/settings?tab=security",
+    "mode": "settings"
+  },
+  "TC-UI-SET-025": {
+    "path": "/settings?tab=integrations&integrationView=*",
+    "mode": "settings"
+  },
+  "TC-UI-SET-026": {
+    "path": "/settings?tab=demo-requests",
+    "mode": "settings"
+  },
+  "TC-UI-SET-027": {
+    "path": "/settings?tab=instances",
+    "mode": "settings"
+  },
+  "TC-UI-SET-028": {
+    "path": null,
+    "mode": "skip"
+  },
+  "TC-UI-SET-029": {
+    "path": "/settings/notifications/overview",
+    "mode": "settings"
+  },
+  "TC-UI-SET-030": {
+    "path": "/settings/notifications/rules",
+    "mode": "settings"
+  },
+  "TC-UI-SET-031": {
+    "path": "/settings/notifications/health",
+    "mode": "settings"
+  },
+  "TC-UI-SLS-008": {
+    "path": "/organizations/000000000000000000000001/edit",
+    "mode": "sidebar"
+  },
+  "TC-UI-SLS-013": {
+    "path": "/events",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-014": {
+    "path": "/events/create",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-015": {
+    "path": "/events/000000000000000000000001",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-016": {
+    "path": "/events/000000000000000000000001/execute",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-017": {
+    "path": "/items",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-018": {
+    "path": "/items/000000000000000000000001",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-019": {
+    "path": "/quotes",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-020": {
+    "path": "/quotes/new",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-021": {
+    "path": "/quotes/000000000000000000000001",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-022": {
+    "path": "/forms",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-023": {
+    "path": "/forms/create",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-024": {
+    "path": "/forms/builder/000000000000000000000001",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-025": {
+    "path": "/forms/000000000000000000000001/detail",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-026": {
+    "path": "/forms/000000000000000000000001/responses",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-027": {
+    "path": "/forms/000000000000000000000001/responses/:responseId",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-028": {
+    "path": "/forms/000000000000000000000001/fill",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-029": {
+    "path": "/responses",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-030": {
+    "path": "/imports",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-031": {
+    "path": "/imports/000000000000000000000001",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-034": {
+    "path": "/targets/new",
+    "mode": "goto"
+  },
+  "TC-UI-SLS-035": {
+    "path": "/targets/000000000000000000000001",
+    "mode": "goto"
+  }
+}

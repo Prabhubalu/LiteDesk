@@ -1,0 +1,25 @@
+{
+  "TC-API-AUTH-001": {
+    "summary": "Owner login returns a valid JWT and user profile",
+    "howToRun": [
+      "POST /api/auth/login with owner email/password from fixtures/personas.json.",
+      "Assert HTTP 200 and a token in the response body.",
+      "Token is cached for subsequent cases in the same run."
+    ],
+    "request": {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "auth": "None",
+      "body": { "email": "<owner>", "password": "<password>" }
+    },
+    "expected": {
+      "status": 200,
+      "behavior": "JWT issued; user can call authenticated APIs."
+    },
+    "onFailure": {
+      "typicalError": "401 Invalid credentials",
+      "likelyCauses": ["Wrong password", "User disabled", "SUT auth misconfigured"],
+      "remediation": ["Set ATP_PERSONA_OWNER_EMAIL/PASSWORD in atp/.env", "Confirm user exists in LiteDesk tenant"]
+    }
+  }
+}

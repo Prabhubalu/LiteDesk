@@ -1,0 +1,3448 @@
+{
+  "entries": [
+    {
+      "id": "TC-LOAD-001",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Health ready — `/health/ready` —",
+      "rawCells": [
+        "TC-LOAD-001",
+        "/health/ready",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-002",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Health live — `/health/live` —",
+      "rawCells": [
+        "TC-LOAD-002",
+        "/health/live",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-003",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Health status — `/health/status` —",
+      "rawCells": [
+        "TC-LOAD-003",
+        "/health/status",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-004",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — People list — `/api/people/?limit=20` —",
+      "rawCells": [
+        "TC-LOAD-004",
+        "/api/people/?limit=20",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-005",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Deals list — `/api/deals/?limit=20` —",
+      "rawCells": [
+        "TC-LOAD-005",
+        "/api/deals/?limit=20",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-006",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Organization (tenant) — `/api/organization/?limit=20` —",
+      "rawCells": [
+        "TC-LOAD-006",
+        "/api/organization/?limit=20",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-007",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Tasks list — `/api/tasks/?limit=20` —",
+      "rawCells": [
+        "TC-LOAD-007",
+        "/api/tasks/?limit=20",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-008",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — UI registry — `/api/ui/registry` —",
+      "rawCells": [
+        "TC-LOAD-008",
+        "/api/ui/registry",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-009",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — UI sidebar — `/api/ui/sidebar` —",
+      "rawCells": [
+        "TC-LOAD-009",
+        "/api/ui/sidebar",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-010",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — User profile — `/api/users/profile` —",
+      "rawCells": [
+        "TC-LOAD-010",
+        "/api/users/profile",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-011",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Global search — `/api/search/?q=test&limit=10` —",
+      "rawCells": [
+        "TC-LOAD-011",
+        "/api/search/?q=test&limit=10",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-012",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Helpdesk cases — `/api/helpdesk/cases?limit=20` —",
+      "rawCells": [
+        "TC-LOAD-012",
+        "/api/helpdesk/cases?limit=20",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-013",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Events list — `/api/events/?limit=20` —",
+      "rawCells": [
+        "TC-LOAD-013",
+        "/api/events/?limit=20",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-014",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Notifications — `/api/notifications?appKey=SALES&limit=20` —",
+      "rawCells": [
+        "TC-LOAD-014",
+        "/api/notifications?appKey=SALES&limit=20",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-015",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — UI apps — `/api/ui/apps` —",
+      "rawCells": [
+        "TC-LOAD-015",
+        "/api/ui/apps",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-016",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — admin automation-rules — `/api/admin/automation-rules?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-016",
+        "/api/admin/automation-rules?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-017",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — admin business-flow-templates — `/api/admin/business-flow-templates` —",
+      "rawCells": [
+        "TC-LOAD-017",
+        "/api/admin/business-flow-templates",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-018",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — admin business-flows — `/api/admin/business-flows?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-018",
+        "/api/admin/business-flows?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-019",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — admin processes — `/api/admin/processes?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-019",
+        "/api/admin/processes?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-020",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — appointments config — `/api/appointments/config` —",
+      "rawCells": [
+        "TC-LOAD-020",
+        "/api/appointments/config",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-021",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — config me — `/api/appointments/config/me` —",
+      "rawCells": [
+        "TC-LOAD-021",
+        "/api/appointments/config/me",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-022",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — config pages — `/api/appointments/config/pages` —",
+      "rawCells": [
+        "TC-LOAD-022",
+        "/api/appointments/config/pages",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-023",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — config slug-available — `/api/appointments/config/slug-available?slug=atp-test` —",
+      "rawCells": [
+        "TC-LOAD-023",
+        "/api/appointments/config/slug-available?slug=atp-test",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-024",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — appointments stats — `/api/appointments/stats` —",
+      "rawCells": [
+        "TC-LOAD-024",
+        "/api/appointments/stats",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-025",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — audit assignments — `/api/audit/assignments?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-025",
+        "/api/audit/assignments?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-026",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — business-hours holiday-calendars — `/api/business-hours/holiday-calendars` —",
+      "rawCells": [
+        "TC-LOAD-026",
+        "/api/business-hours/holiday-calendars",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-027",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — business-hours kpis — `/api/business-hours/kpis` —",
+      "rawCells": [
+        "TC-LOAD-027",
+        "/api/business-hours/kpis",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-028",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — business-hours sets — `/api/business-hours/sets` —",
+      "rawCells": [
+        "TC-LOAD-028",
+        "/api/business-hours/sets",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-029",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — catalog categories — `/api/catalog/categories` —",
+      "rawCells": [
+        "TC-LOAD-029",
+        "/api/catalog/categories",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-030",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — catalog price-books — `/api/catalog/price-books` —",
+      "rawCells": [
+        "TC-LOAD-030",
+        "/api/catalog/price-books",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-031",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — inbound dead-letter — `/api/communications/inbound/dead-letter` —",
+      "rawCells": [
+        "TC-LOAD-031",
+        "/api/communications/inbound/dead-letter",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-032",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — inbound diagnostics — `/api/communications/inbound/diagnostics` —",
+      "rawCells": [
+        "TC-LOAD-032",
+        "/api/communications/inbound/diagnostics",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-033",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — communications templates — `/api/communications/templates` —",
+      "rawCells": [
+        "TC-LOAD-033",
+        "/api/communications/templates",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-034",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — webhook-test events — `/api/communications/webhook-test/events` —",
+      "rawCells": [
+        "TC-LOAD-034",
+        "/api/communications/webhook-test/events",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-035",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — communications workspace-thread-counts — `/api/communications/workspace-thread-counts` —",
+      "rawCells": [
+        "TC-LOAD-035",
+        "/api/communications/workspace-thread-counts",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-036",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — communications workspace-thread-ids — `/api/communications/workspace-thread-ids` —",
+      "rawCells": [
+        "TC-LOAD-036",
+        "/api/communications/workspace-thread-ids",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-037",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — communications workspace-threads — `/api/communications/workspace-threads` —",
+      "rawCells": [
+        "TC-LOAD-037",
+        "/api/communications/workspace-threads",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-038",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — lifecycle-status-mappings people_lifecycle — `/api/config-registry/lifecycle-status-mappings/people_lifecycle` —",
+      "rawCells": [
+        "TC-LOAD-038",
+        "/api/config-registry/lifecycle-status-mappings/people_lifecycle",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-039",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — lifecycles people — `/api/config-registry/lifecycles/people` —",
+      "rawCells": [
+        "TC-LOAD-039",
+        "/api/config-registry/lifecycles/people",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-040",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — deals stages — `/api/config-registry/pipelines/deals/stages` —",
+      "rawCells": [
+        "TC-LOAD-040",
+        "/api/config-registry/pipelines/deals/stages",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-041",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — api deals — `/api/deals/?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-041",
+        "/api/deals/?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-042",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — events export — `/api/events/export` —",
+      "rawCells": [
+        "TC-LOAD-042",
+        "/api/events/export",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-043",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — responses all — `/api/forms/responses/all?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-043",
+        "/api/forms/responses/all?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-044",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — health live — `/api/health/live` —",
+      "rawCells": [
+        "TC-LOAD-044",
+        "/api/health/live",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-045",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — analytics audit-export — `/api/helpdesk/cases/analytics/audit-export` —",
+      "rawCells": [
+        "TC-LOAD-045",
+        "/api/helpdesk/cases/analytics/audit-export",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-046",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — analytics distribution — `/api/helpdesk/cases/analytics/distribution` —",
+      "rawCells": [
+        "TC-LOAD-046",
+        "/api/helpdesk/cases/analytics/distribution",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-047",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — analytics owners — `/api/helpdesk/cases/analytics/owners` —",
+      "rawCells": [
+        "TC-LOAD-047",
+        "/api/helpdesk/cases/analytics/owners",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-048",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — cases canned-responses — `/api/helpdesk/cases/canned-responses` —",
+      "rawCells": [
+        "TC-LOAD-048",
+        "/api/helpdesk/cases/canned-responses",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-049",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — items low-stock — `/api/items/low-stock` —",
+      "rawCells": [
+        "TC-LOAD-049",
+        "/api/items/low-stock",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-050",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — items statistics — `/api/items/statistics` —",
+      "rawCells": [
+        "TC-LOAD-050",
+        "/api/items/statistics",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-051",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — type product — `/api/items/type/product` —",
+      "rawCells": [
+        "TC-LOAD-051",
+        "/api/items/type/product",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-052",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — api mailboxes — `/api/mailboxes?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-052",
+        "/api/mailboxes?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-053",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — api modules — `/api/modules/` —",
+      "rawCells": [
+        "TC-LOAD-053",
+        "/api/modules/",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-054",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — people quick-create — `/api/modules/people/quick-create` —",
+      "rawCells": [
+        "TC-LOAD-054",
+        "/api/modules/people/quick-create",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-055",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — api notifications — `/api/notifications?appKey=SALES&limit=10` —",
+      "rawCells": [
+        "TC-LOAD-055",
+        "/api/notifications?appKey=SALES&limit=10",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-056",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — api people — `/api/people/?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-056",
+        "/api/people/?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-057",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — portal cases — `/api/portal/cases?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-057",
+        "/api/portal/cases?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-058",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — push subscriptions — `/api/push/subscriptions` —",
+      "rawCells": [
+        "TC-LOAD-058",
+        "/api/push/subscriptions",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-059",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — api reports — `/api/reports?limit=1` —",
+      "rawCells": [
+        "TC-LOAD-059",
+        "/api/reports?limit=1",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-060",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — api reports — `/api/reports?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-060",
+        "/api/reports?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-061",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — settings applications — `/api/settings/applications` —",
+      "rawCells": [
+        "TC-LOAD-061",
+        "/api/settings/applications",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-062",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — helpdesk execution-settings — `/api/settings/applications/helpdesk/execution-settings` —",
+      "rawCells": [
+        "TC-LOAD-062",
+        "/api/settings/applications/helpdesk/execution-settings",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-063",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — automation assignment-rules — `/api/settings/automation/assignment-rules` —",
+      "rawCells": [
+        "TC-LOAD-063",
+        "/api/settings/automation/assignment-rules",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-064",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — automation mailroom — `/api/settings/automation/mailroom` —",
+      "rawCells": [
+        "TC-LOAD-064",
+        "/api/settings/automation/mailroom",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-065",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — mailroom metrics — `/api/settings/automation/mailroom/metrics` —",
+      "rawCells": [
+        "TC-LOAD-065",
+        "/api/settings/automation/mailroom/metrics",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-066",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — mailroom search — `/api/settings/automation/mailroom/search?q=test` —",
+      "rawCells": [
+        "TC-LOAD-066",
+        "/api/settings/automation/mailroom/search?q=test",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-067",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — organizations status-types — `/api/settings/core-modules/organizations/status-types` —",
+      "rawCells": [
+        "TC-LOAD-067",
+        "/api/settings/core-modules/organizations/status-types",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-068",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — people people-types — `/api/settings/core-modules/people/people-types` —",
+      "rawCells": [
+        "TC-LOAD-068",
+        "/api/settings/core-modules/people/people-types",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-069",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — settings integrations — `/api/settings/integrations` —",
+      "rawCells": [
+        "TC-LOAD-069",
+        "/api/settings/integrations",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-070",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — settings organization — `/api/settings/organization` —",
+      "rawCells": [
+        "TC-LOAD-070",
+        "/api/settings/organization",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-071",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — settings quotes — `/api/settings/quotes` —",
+      "rawCells": [
+        "TC-LOAD-071",
+        "/api/settings/quotes",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-072",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — settings security — `/api/settings/security` —",
+      "rawCells": [
+        "TC-LOAD-072",
+        "/api/settings/security",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-073",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — settings subscriptions — `/api/settings/subscriptions` —",
+      "rawCells": [
+        "TC-LOAD-073",
+        "/api/settings/subscriptions",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-074",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — api targets — `/api/targets/?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-074",
+        "/api/targets/?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-075",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — targets leaderboard — `/api/targets/leaderboard` —",
+      "rawCells": [
+        "TC-LOAD-075",
+        "/api/targets/leaderboard",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-076",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — targets lifecycle-options — `/api/targets/lifecycle-options` —",
+      "rawCells": [
+        "TC-LOAD-076",
+        "/api/targets/lifecycle-options",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-077",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — targets platform-settings — `/api/targets/platform-settings` —",
+      "rawCells": [
+        "TC-LOAD-077",
+        "/api/targets/platform-settings",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-078",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — targets summary — `/api/targets/summary` —",
+      "rawCells": [
+        "TC-LOAD-078",
+        "/api/targets/summary",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-079",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — targets types — `/api/targets/types` —",
+      "rawCells": [
+        "TC-LOAD-079",
+        "/api/targets/types",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-080",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — api tasks — `/api/tasks/?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-080",
+        "/api/tasks/?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-081",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — ui app-definitions — `/api/ui/app-definitions` —",
+      "rawCells": [
+        "TC-LOAD-081",
+        "/api/ui/app-definitions",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-082",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — SALES modules — `/api/ui/apps/SALES/modules` —",
+      "rawCells": [
+        "TC-LOAD-082",
+        "/api/ui/apps/SALES/modules",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-083",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — ui entities — `/api/ui/entities` —",
+      "rawCells": [
+        "TC-LOAD-083",
+        "/api/ui/entities",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-084",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — SALES people — `/api/ui/projection/SALES/people` —",
+      "rawCells": [
+        "TC-LOAD-084",
+        "/api/ui/projection/SALES/people",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-085",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — users list — `/api/users/list` —",
+      "rawCells": [
+        "TC-LOAD-085",
+        "/api/users/list",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-086",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — v2 organization — `/api/v2/organization/?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-086",
+        "/api/v2/organization/?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-M001",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — POST business-hours simulate — `/api/business-hours/simulate` —",
+      "rawCells": [
+        "TC-LOAD-M001",
+        "/api/business-hours/simulate",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-M002",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — POST ingest channel — `/api/helpdesk/cases/ingest/channel` —",
+      "rawCells": [
+        "TC-LOAD-M002",
+        "/api/helpdesk/cases/ingest/channel",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-M003",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — POST price-books resolve — `/api/catalog/price-books/resolve` —",
+      "rawCells": [
+        "TC-LOAD-M003",
+        "/api/catalog/price-books/resolve",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-M004",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — POST config-registry compute-derived-status — `/api/config-registry/compute-derived-status` —",
+      "rawCells": [
+        "TC-LOAD-M004",
+        "/api/config-registry/compute-derived-status",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-M005",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — POST check-duplicates contacts — `/api/csv/check-duplicates/contacts` —",
+      "rawCells": [
+        "TC-LOAD-M005",
+        "/api/csv/check-duplicates/contacts",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-M006",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — POST api events — `/api/events/` —",
+      "rawCells": [
+        "TC-LOAD-M006",
+        "/api/events/",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-M007",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — POST events bulk-delete — `/api/events/bulk-delete` —",
+      "rawCells": [
+        "TC-LOAD-M007",
+        "/api/events/bulk-delete",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-M008",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — POST records batch — `/api/modules/people/records/batch` —",
+      "rawCells": [
+        "TC-LOAD-M008",
+        "/api/modules/people/records/batch",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-M009",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — POST helpdesk recalculate-slas — `/api/settings/applications/helpdesk/recalculate-slas` —",
+      "rawCells": [
+        "TC-LOAD-M009",
+        "/api/settings/applications/helpdesk/recalculate-slas",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-M010",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — POST types seed — `/api/targets/types/seed` —",
+      "rawCells": [
+        "TC-LOAD-M010",
+        "/api/targets/types/seed",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-M011",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — POST conflicts check — `/api/targets/conflicts/check` —",
+      "rawCells": [
+        "TC-LOAD-M011",
+        "/api/targets/conflicts/check",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P001",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder cases __CASE__ — `/api/helpdesk/cases/__CASE__` —",
+      "rawCells": [
+        "TC-LOAD-P001",
+        "/api/helpdesk/cases/__CASE__",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P002",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder chat session — `/api/helpdesk/cases/__CASE__/chat/session` —",
+      "rawCells": [
+        "TC-LOAD-P002",
+        "/api/helpdesk/cases/__CASE__/chat/session",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P003",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder chat messages — `/api/helpdesk/cases/__CASE__/chat/messages` —",
+      "rawCells": [
+        "TC-LOAD-P003",
+        "/api/helpdesk/cases/__CASE__/chat/messages",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P004",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder chat stream — `/api/helpdesk/cases/__CASE__/chat/stream` —",
+      "rawCells": [
+        "TC-LOAD-P004",
+        "/api/helpdesk/cases/__CASE__/chat/stream",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P005",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder email compose-preview — `/api/communications/email/compose-preview?moduleKey=people&recordId=__RECORD__` —",
+      "rawCells": [
+        "TC-LOAD-P005",
+        "/api/communications/email/compose-preview?moduleKey=people&recordId=__RECORD__",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P006",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder email reply-to-preview — `/api/communications/email/reply-to-preview?moduleKey=people&recordId=__RECORD__` —",
+      "rawCells": [
+        "TC-LOAD-P006",
+        "/api/communications/email/reply-to-preview?moduleKey=people&recordId=__RECORD__",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P007",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder events __EVENT__ — `/api/events/__EVENT__` —",
+      "rawCells": [
+        "TC-LOAD-P007",
+        "/api/events/__EVENT__",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P008",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder forms __FORM__ — `/api/forms/__FORM__` —",
+      "rawCells": [
+        "TC-LOAD-P008",
+        "/api/forms/__FORM__",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P009",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder __FORM__ analytics — `/api/forms/__FORM__/analytics` —",
+      "rawCells": [
+        "TC-LOAD-P009",
+        "/api/forms/__FORM__/analytics",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P010",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder __FORM__ kpis — `/api/forms/__FORM__/kpis` —",
+      "rawCells": [
+        "TC-LOAD-P010",
+        "/api/forms/__FORM__/kpis",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P011",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder __FORM__ responses — `/api/forms/__FORM__/responses?limit=5` —",
+      "rawCells": [
+        "TC-LOAD-P011",
+        "/api/forms/__FORM__/responses?limit=5",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P012",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder __RECORD__ activity — `/api/modules/people/records/__RECORD__/activity` —",
+      "rawCells": [
+        "TC-LOAD-P012",
+        "/api/modules/people/records/__RECORD__/activity",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P013",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder __RECORD__ comments — `/api/modules/people/records/__RECORD__/comments` —",
+      "rawCells": [
+        "TC-LOAD-P013",
+        "/api/modules/people/records/__RECORD__/comments",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P014",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder __RECORD__ neighbors — `/api/modules/people/records/__RECORD__/neighbors` —",
+      "rawCells": [
+        "TC-LOAD-P014",
+        "/api/modules/people/records/__RECORD__/neighbors",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P015",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder __RECORD__ description-versions — `/api/modules/people/records/__RECORD__/description-versions` —",
+      "rawCells": [
+        "TC-LOAD-P015",
+        "/api/modules/people/records/__RECORD__/description-versions",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P016",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder __QUOTE__ process-approvals — `/api/quotes/__QUOTE__/process-approvals` —",
+      "rawCells": [
+        "TC-LOAD-P016",
+        "/api/quotes/__QUOTE__/process-approvals",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P017",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder __QUOTE__ conversion — `/api/quotes/__QUOTE__/conversion` —",
+      "rawCells": [
+        "TC-LOAD-P017",
+        "/api/quotes/__QUOTE__/conversion",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P018",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder __QUOTE__ sections — `/api/quotes/__QUOTE__/sections` —",
+      "rawCells": [
+        "TC-LOAD-P018",
+        "/api/quotes/__QUOTE__/sections",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P019",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder __QUOTE__ lines — `/api/quotes/__QUOTE__/lines` —",
+      "rawCells": [
+        "TC-LOAD-P019",
+        "/api/quotes/__QUOTE__/lines",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P020",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder __QUOTE__ documents — `/api/quotes/__QUOTE__/documents` —",
+      "rawCells": [
+        "TC-LOAD-P020",
+        "/api/quotes/__QUOTE__/documents",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P021",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder relationships links — `/api/relationships/links?moduleKey=people&recordId=__RECORD__` —",
+      "rawCells": [
+        "TC-LOAD-P021",
+        "/api/relationships/links?moduleKey=people&recordId=__RECORD__",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P022",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder relationships linkable-targets — `/api/relationships/linkable-targets?moduleKey=deals&recordId=__RECORD__` —",
+      "rawCells": [
+        "TC-LOAD-P022",
+        "/api/relationships/linkable-targets?moduleKey=deals&recordId=__RECORD__",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P023",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder relationships record-context — `/api/relationships/record-context?moduleKey=people&recordId=__RECORD__` —",
+      "rawCells": [
+        "TC-LOAD-P023",
+        "/api/relationships/record-context?moduleKey=people&recordId=__RECORD__",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P024",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder deals __DEAL__ — `/api/scheduling/deals/__DEAL__` —",
+      "rawCells": [
+        "TC-LOAD-P024",
+        "/api/scheduling/deals/__DEAL__",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-P025",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Placeholder scheduling __SCH__ — `/api/scheduling/__SCH__` —",
+      "rawCells": [
+        "TC-LOAD-P025",
+        "/api/scheduling/__SCH__",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-LOAD-U003",
+      "layer": "load",
+      "domain": "LOAD",
+      "title": "Load — Auth test version — `/api/auth/test-version` —",
+      "rawCells": [
+        "TC-LOAD-U003",
+        "/api/auth/test-version",
+        "Concurrent load",
+        "RPS, p95, error rate"
+      ],
+      "section": "Load Testing (public)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-001",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Health ready — `/health/ready` —",
+      "rawCells": [
+        "TC-PERF-001",
+        "/health/ready",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-002",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Health live — `/health/live` —",
+      "rawCells": [
+        "TC-PERF-002",
+        "/health/live",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-003",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Health status — `/health/status` —",
+      "rawCells": [
+        "TC-PERF-003",
+        "/health/status",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-004",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — People list — `/api/people/?limit=20` —",
+      "rawCells": [
+        "TC-PERF-004",
+        "/api/people/?limit=20",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-005",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Deals list — `/api/deals/?limit=20` —",
+      "rawCells": [
+        "TC-PERF-005",
+        "/api/deals/?limit=20",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-006",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Organization (tenant) — `/api/organization/?limit=20` —",
+      "rawCells": [
+        "TC-PERF-006",
+        "/api/organization/?limit=20",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-007",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Tasks list — `/api/tasks/?limit=20` —",
+      "rawCells": [
+        "TC-PERF-007",
+        "/api/tasks/?limit=20",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-008",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — UI registry — `/api/ui/registry` —",
+      "rawCells": [
+        "TC-PERF-008",
+        "/api/ui/registry",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-009",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — UI sidebar — `/api/ui/sidebar` —",
+      "rawCells": [
+        "TC-PERF-009",
+        "/api/ui/sidebar",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-010",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — User profile — `/api/users/profile` —",
+      "rawCells": [
+        "TC-PERF-010",
+        "/api/users/profile",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-011",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Global search — `/api/search/?q=test&limit=10` —",
+      "rawCells": [
+        "TC-PERF-011",
+        "/api/search/?q=test&limit=10",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-012",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Helpdesk cases — `/api/helpdesk/cases?limit=20` —",
+      "rawCells": [
+        "TC-PERF-012",
+        "/api/helpdesk/cases?limit=20",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-013",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Events list — `/api/events/?limit=20` —",
+      "rawCells": [
+        "TC-PERF-013",
+        "/api/events/?limit=20",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-014",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Notifications — `/api/notifications?appKey=SALES&limit=20` —",
+      "rawCells": [
+        "TC-PERF-014",
+        "/api/notifications?appKey=SALES&limit=20",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-015",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — UI apps — `/api/ui/apps` —",
+      "rawCells": [
+        "TC-PERF-015",
+        "/api/ui/apps",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-016",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — admin automation-rules — `/api/admin/automation-rules?limit=5` —",
+      "rawCells": [
+        "TC-PERF-016",
+        "/api/admin/automation-rules?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-017",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — admin business-flow-templates — `/api/admin/business-flow-templates` —",
+      "rawCells": [
+        "TC-PERF-017",
+        "/api/admin/business-flow-templates",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-018",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — admin business-flows — `/api/admin/business-flows?limit=5` —",
+      "rawCells": [
+        "TC-PERF-018",
+        "/api/admin/business-flows?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-019",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — admin processes — `/api/admin/processes?limit=5` —",
+      "rawCells": [
+        "TC-PERF-019",
+        "/api/admin/processes?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-020",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — appointments config — `/api/appointments/config` —",
+      "rawCells": [
+        "TC-PERF-020",
+        "/api/appointments/config",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-021",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — config me — `/api/appointments/config/me` —",
+      "rawCells": [
+        "TC-PERF-021",
+        "/api/appointments/config/me",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-022",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — config pages — `/api/appointments/config/pages` —",
+      "rawCells": [
+        "TC-PERF-022",
+        "/api/appointments/config/pages",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-023",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — config slug-available — `/api/appointments/config/slug-available?slug=atp-test` —",
+      "rawCells": [
+        "TC-PERF-023",
+        "/api/appointments/config/slug-available?slug=atp-test",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-024",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — appointments stats — `/api/appointments/stats` —",
+      "rawCells": [
+        "TC-PERF-024",
+        "/api/appointments/stats",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-025",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — audit assignments — `/api/audit/assignments?limit=5` —",
+      "rawCells": [
+        "TC-PERF-025",
+        "/api/audit/assignments?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-026",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — business-hours holiday-calendars — `/api/business-hours/holiday-calendars` —",
+      "rawCells": [
+        "TC-PERF-026",
+        "/api/business-hours/holiday-calendars",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-027",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — business-hours kpis — `/api/business-hours/kpis` —",
+      "rawCells": [
+        "TC-PERF-027",
+        "/api/business-hours/kpis",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-028",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — business-hours sets — `/api/business-hours/sets` —",
+      "rawCells": [
+        "TC-PERF-028",
+        "/api/business-hours/sets",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-029",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — catalog categories — `/api/catalog/categories` —",
+      "rawCells": [
+        "TC-PERF-029",
+        "/api/catalog/categories",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-030",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — catalog price-books — `/api/catalog/price-books` —",
+      "rawCells": [
+        "TC-PERF-030",
+        "/api/catalog/price-books",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-031",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — inbound dead-letter — `/api/communications/inbound/dead-letter` —",
+      "rawCells": [
+        "TC-PERF-031",
+        "/api/communications/inbound/dead-letter",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-032",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — inbound diagnostics — `/api/communications/inbound/diagnostics` —",
+      "rawCells": [
+        "TC-PERF-032",
+        "/api/communications/inbound/diagnostics",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-033",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — communications templates — `/api/communications/templates` —",
+      "rawCells": [
+        "TC-PERF-033",
+        "/api/communications/templates",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-034",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — webhook-test events — `/api/communications/webhook-test/events` —",
+      "rawCells": [
+        "TC-PERF-034",
+        "/api/communications/webhook-test/events",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-035",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — communications workspace-thread-counts — `/api/communications/workspace-thread-counts` —",
+      "rawCells": [
+        "TC-PERF-035",
+        "/api/communications/workspace-thread-counts",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-036",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — communications workspace-thread-ids — `/api/communications/workspace-thread-ids` —",
+      "rawCells": [
+        "TC-PERF-036",
+        "/api/communications/workspace-thread-ids",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-037",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — communications workspace-threads — `/api/communications/workspace-threads` —",
+      "rawCells": [
+        "TC-PERF-037",
+        "/api/communications/workspace-threads",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-038",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — lifecycle-status-mappings people_lifecycle — `/api/config-registry/lifecycle-status-mappings/people_lifecycle` —",
+      "rawCells": [
+        "TC-PERF-038",
+        "/api/config-registry/lifecycle-status-mappings/people_lifecycle",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-039",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — lifecycles people — `/api/config-registry/lifecycles/people` —",
+      "rawCells": [
+        "TC-PERF-039",
+        "/api/config-registry/lifecycles/people",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-040",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — deals stages — `/api/config-registry/pipelines/deals/stages` —",
+      "rawCells": [
+        "TC-PERF-040",
+        "/api/config-registry/pipelines/deals/stages",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-041",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — api deals — `/api/deals/?limit=5` —",
+      "rawCells": [
+        "TC-PERF-041",
+        "/api/deals/?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-042",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — events export — `/api/events/export` —",
+      "rawCells": [
+        "TC-PERF-042",
+        "/api/events/export",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-043",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — responses all — `/api/forms/responses/all?limit=5` —",
+      "rawCells": [
+        "TC-PERF-043",
+        "/api/forms/responses/all?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-044",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — health live — `/api/health/live` —",
+      "rawCells": [
+        "TC-PERF-044",
+        "/api/health/live",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-045",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — analytics audit-export — `/api/helpdesk/cases/analytics/audit-export` —",
+      "rawCells": [
+        "TC-PERF-045",
+        "/api/helpdesk/cases/analytics/audit-export",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-046",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — analytics distribution — `/api/helpdesk/cases/analytics/distribution` —",
+      "rawCells": [
+        "TC-PERF-046",
+        "/api/helpdesk/cases/analytics/distribution",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-047",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — analytics owners — `/api/helpdesk/cases/analytics/owners` —",
+      "rawCells": [
+        "TC-PERF-047",
+        "/api/helpdesk/cases/analytics/owners",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-048",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — cases canned-responses — `/api/helpdesk/cases/canned-responses` —",
+      "rawCells": [
+        "TC-PERF-048",
+        "/api/helpdesk/cases/canned-responses",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-049",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — items low-stock — `/api/items/low-stock` —",
+      "rawCells": [
+        "TC-PERF-049",
+        "/api/items/low-stock",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-050",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — items statistics — `/api/items/statistics` —",
+      "rawCells": [
+        "TC-PERF-050",
+        "/api/items/statistics",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-051",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — type product — `/api/items/type/product` —",
+      "rawCells": [
+        "TC-PERF-051",
+        "/api/items/type/product",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-052",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — api mailboxes — `/api/mailboxes?limit=5` —",
+      "rawCells": [
+        "TC-PERF-052",
+        "/api/mailboxes?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-053",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — api modules — `/api/modules/` —",
+      "rawCells": [
+        "TC-PERF-053",
+        "/api/modules/",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-054",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — people quick-create — `/api/modules/people/quick-create` —",
+      "rawCells": [
+        "TC-PERF-054",
+        "/api/modules/people/quick-create",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-055",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — api notifications — `/api/notifications?appKey=SALES&limit=10` —",
+      "rawCells": [
+        "TC-PERF-055",
+        "/api/notifications?appKey=SALES&limit=10",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-056",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — api people — `/api/people/?limit=5` —",
+      "rawCells": [
+        "TC-PERF-056",
+        "/api/people/?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-057",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — portal cases — `/api/portal/cases?limit=5` —",
+      "rawCells": [
+        "TC-PERF-057",
+        "/api/portal/cases?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-058",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — push subscriptions — `/api/push/subscriptions` —",
+      "rawCells": [
+        "TC-PERF-058",
+        "/api/push/subscriptions",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-059",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — api reports — `/api/reports?limit=1` —",
+      "rawCells": [
+        "TC-PERF-059",
+        "/api/reports?limit=1",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-060",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — api reports — `/api/reports?limit=5` —",
+      "rawCells": [
+        "TC-PERF-060",
+        "/api/reports?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-061",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — settings applications — `/api/settings/applications` —",
+      "rawCells": [
+        "TC-PERF-061",
+        "/api/settings/applications",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-062",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — helpdesk execution-settings — `/api/settings/applications/helpdesk/execution-settings` —",
+      "rawCells": [
+        "TC-PERF-062",
+        "/api/settings/applications/helpdesk/execution-settings",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-063",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — automation assignment-rules — `/api/settings/automation/assignment-rules` —",
+      "rawCells": [
+        "TC-PERF-063",
+        "/api/settings/automation/assignment-rules",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-064",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — automation mailroom — `/api/settings/automation/mailroom` —",
+      "rawCells": [
+        "TC-PERF-064",
+        "/api/settings/automation/mailroom",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-065",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — mailroom metrics — `/api/settings/automation/mailroom/metrics` —",
+      "rawCells": [
+        "TC-PERF-065",
+        "/api/settings/automation/mailroom/metrics",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-066",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — mailroom search — `/api/settings/automation/mailroom/search?q=test` —",
+      "rawCells": [
+        "TC-PERF-066",
+        "/api/settings/automation/mailroom/search?q=test",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-067",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — organizations status-types — `/api/settings/core-modules/organizations/status-types` —",
+      "rawCells": [
+        "TC-PERF-067",
+        "/api/settings/core-modules/organizations/status-types",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-068",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — people people-types — `/api/settings/core-modules/people/people-types` —",
+      "rawCells": [
+        "TC-PERF-068",
+        "/api/settings/core-modules/people/people-types",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-069",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — settings integrations — `/api/settings/integrations` —",
+      "rawCells": [
+        "TC-PERF-069",
+        "/api/settings/integrations",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-070",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — settings organization — `/api/settings/organization` —",
+      "rawCells": [
+        "TC-PERF-070",
+        "/api/settings/organization",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-071",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — settings quotes — `/api/settings/quotes` —",
+      "rawCells": [
+        "TC-PERF-071",
+        "/api/settings/quotes",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-072",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — settings security — `/api/settings/security` —",
+      "rawCells": [
+        "TC-PERF-072",
+        "/api/settings/security",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-073",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — settings subscriptions — `/api/settings/subscriptions` —",
+      "rawCells": [
+        "TC-PERF-073",
+        "/api/settings/subscriptions",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-074",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — api targets — `/api/targets/?limit=5` —",
+      "rawCells": [
+        "TC-PERF-074",
+        "/api/targets/?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-075",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — targets leaderboard — `/api/targets/leaderboard` —",
+      "rawCells": [
+        "TC-PERF-075",
+        "/api/targets/leaderboard",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-076",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — targets lifecycle-options — `/api/targets/lifecycle-options` —",
+      "rawCells": [
+        "TC-PERF-076",
+        "/api/targets/lifecycle-options",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-077",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — targets platform-settings — `/api/targets/platform-settings` —",
+      "rawCells": [
+        "TC-PERF-077",
+        "/api/targets/platform-settings",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-078",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — targets summary — `/api/targets/summary` —",
+      "rawCells": [
+        "TC-PERF-078",
+        "/api/targets/summary",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-079",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — targets types — `/api/targets/types` —",
+      "rawCells": [
+        "TC-PERF-079",
+        "/api/targets/types",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-080",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — api tasks — `/api/tasks/?limit=5` —",
+      "rawCells": [
+        "TC-PERF-080",
+        "/api/tasks/?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-081",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — ui app-definitions — `/api/ui/app-definitions` —",
+      "rawCells": [
+        "TC-PERF-081",
+        "/api/ui/app-definitions",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-082",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — SALES modules — `/api/ui/apps/SALES/modules` —",
+      "rawCells": [
+        "TC-PERF-082",
+        "/api/ui/apps/SALES/modules",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-083",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — ui entities — `/api/ui/entities` —",
+      "rawCells": [
+        "TC-PERF-083",
+        "/api/ui/entities",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-084",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — SALES people — `/api/ui/projection/SALES/people` —",
+      "rawCells": [
+        "TC-PERF-084",
+        "/api/ui/projection/SALES/people",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-085",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — users list — `/api/users/list` —",
+      "rawCells": [
+        "TC-PERF-085",
+        "/api/users/list",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-086",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — v2 organization — `/api/v2/organization/?limit=5` —",
+      "rawCells": [
+        "TC-PERF-086",
+        "/api/v2/organization/?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (generated)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-M001",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — POST business-hours simulate — `/api/business-hours/simulate` —",
+      "rawCells": [
+        "TC-PERF-M001",
+        "/api/business-hours/simulate",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-M002",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — POST ingest channel — `/api/helpdesk/cases/ingest/channel` —",
+      "rawCells": [
+        "TC-PERF-M002",
+        "/api/helpdesk/cases/ingest/channel",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-M003",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — POST price-books resolve — `/api/catalog/price-books/resolve` —",
+      "rawCells": [
+        "TC-PERF-M003",
+        "/api/catalog/price-books/resolve",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-M004",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — POST config-registry compute-derived-status — `/api/config-registry/compute-derived-status` —",
+      "rawCells": [
+        "TC-PERF-M004",
+        "/api/config-registry/compute-derived-status",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-M005",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — POST check-duplicates contacts — `/api/csv/check-duplicates/contacts` —",
+      "rawCells": [
+        "TC-PERF-M005",
+        "/api/csv/check-duplicates/contacts",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-M006",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — POST api events — `/api/events/` —",
+      "rawCells": [
+        "TC-PERF-M006",
+        "/api/events/",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-M007",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — POST events bulk-delete — `/api/events/bulk-delete` —",
+      "rawCells": [
+        "TC-PERF-M007",
+        "/api/events/bulk-delete",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-M008",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — POST records batch — `/api/modules/people/records/batch` —",
+      "rawCells": [
+        "TC-PERF-M008",
+        "/api/modules/people/records/batch",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-M009",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — POST helpdesk recalculate-slas — `/api/settings/applications/helpdesk/recalculate-slas` —",
+      "rawCells": [
+        "TC-PERF-M009",
+        "/api/settings/applications/helpdesk/recalculate-slas",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-M010",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — POST types seed — `/api/targets/types/seed` —",
+      "rawCells": [
+        "TC-PERF-M010",
+        "/api/targets/types/seed",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-M011",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — POST conflicts check — `/api/targets/conflicts/check` —",
+      "rawCells": [
+        "TC-PERF-M011",
+        "/api/targets/conflicts/check",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (POST)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P001",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder cases __CASE__ — `/api/helpdesk/cases/__CASE__` —",
+      "rawCells": [
+        "TC-PERF-P001",
+        "/api/helpdesk/cases/__CASE__",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P002",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder chat session — `/api/helpdesk/cases/__CASE__/chat/session` —",
+      "rawCells": [
+        "TC-PERF-P002",
+        "/api/helpdesk/cases/__CASE__/chat/session",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P003",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder chat messages — `/api/helpdesk/cases/__CASE__/chat/messages` —",
+      "rawCells": [
+        "TC-PERF-P003",
+        "/api/helpdesk/cases/__CASE__/chat/messages",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P004",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder chat stream — `/api/helpdesk/cases/__CASE__/chat/stream` —",
+      "rawCells": [
+        "TC-PERF-P004",
+        "/api/helpdesk/cases/__CASE__/chat/stream",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P005",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder email compose-preview — `/api/communications/email/compose-preview?moduleKey=people&recordId=__RECORD__` —",
+      "rawCells": [
+        "TC-PERF-P005",
+        "/api/communications/email/compose-preview?moduleKey=people&recordId=__RECORD__",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P006",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder email reply-to-preview — `/api/communications/email/reply-to-preview?moduleKey=people&recordId=__RECORD__` —",
+      "rawCells": [
+        "TC-PERF-P006",
+        "/api/communications/email/reply-to-preview?moduleKey=people&recordId=__RECORD__",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P007",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder events __EVENT__ — `/api/events/__EVENT__` —",
+      "rawCells": [
+        "TC-PERF-P007",
+        "/api/events/__EVENT__",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P008",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder forms __FORM__ — `/api/forms/__FORM__` —",
+      "rawCells": [
+        "TC-PERF-P008",
+        "/api/forms/__FORM__",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P009",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder __FORM__ analytics — `/api/forms/__FORM__/analytics` —",
+      "rawCells": [
+        "TC-PERF-P009",
+        "/api/forms/__FORM__/analytics",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P010",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder __FORM__ kpis — `/api/forms/__FORM__/kpis` —",
+      "rawCells": [
+        "TC-PERF-P010",
+        "/api/forms/__FORM__/kpis",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P011",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder __FORM__ responses — `/api/forms/__FORM__/responses?limit=5` —",
+      "rawCells": [
+        "TC-PERF-P011",
+        "/api/forms/__FORM__/responses?limit=5",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P012",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder __RECORD__ activity — `/api/modules/people/records/__RECORD__/activity` —",
+      "rawCells": [
+        "TC-PERF-P012",
+        "/api/modules/people/records/__RECORD__/activity",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P013",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder __RECORD__ comments — `/api/modules/people/records/__RECORD__/comments` —",
+      "rawCells": [
+        "TC-PERF-P013",
+        "/api/modules/people/records/__RECORD__/comments",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P014",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder __RECORD__ neighbors — `/api/modules/people/records/__RECORD__/neighbors` —",
+      "rawCells": [
+        "TC-PERF-P014",
+        "/api/modules/people/records/__RECORD__/neighbors",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P015",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder __RECORD__ description-versions — `/api/modules/people/records/__RECORD__/description-versions` —",
+      "rawCells": [
+        "TC-PERF-P015",
+        "/api/modules/people/records/__RECORD__/description-versions",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P016",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder __QUOTE__ process-approvals — `/api/quotes/__QUOTE__/process-approvals` —",
+      "rawCells": [
+        "TC-PERF-P016",
+        "/api/quotes/__QUOTE__/process-approvals",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P017",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder __QUOTE__ conversion — `/api/quotes/__QUOTE__/conversion` —",
+      "rawCells": [
+        "TC-PERF-P017",
+        "/api/quotes/__QUOTE__/conversion",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P018",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder __QUOTE__ sections — `/api/quotes/__QUOTE__/sections` —",
+      "rawCells": [
+        "TC-PERF-P018",
+        "/api/quotes/__QUOTE__/sections",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P019",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder __QUOTE__ lines — `/api/quotes/__QUOTE__/lines` —",
+      "rawCells": [
+        "TC-PERF-P019",
+        "/api/quotes/__QUOTE__/lines",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P020",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder __QUOTE__ documents — `/api/quotes/__QUOTE__/documents` —",
+      "rawCells": [
+        "TC-PERF-P020",
+        "/api/quotes/__QUOTE__/documents",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P021",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder relationships links — `/api/relationships/links?moduleKey=people&recordId=__RECORD__` —",
+      "rawCells": [
+        "TC-PERF-P021",
+        "/api/relationships/links?moduleKey=people&recordId=__RECORD__",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P022",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder relationships linkable-targets — `/api/relationships/linkable-targets?moduleKey=deals&recordId=__RECORD__` —",
+      "rawCells": [
+        "TC-PERF-P022",
+        "/api/relationships/linkable-targets?moduleKey=deals&recordId=__RECORD__",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P023",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder relationships record-context — `/api/relationships/record-context?moduleKey=people&recordId=__RECORD__` —",
+      "rawCells": [
+        "TC-PERF-P023",
+        "/api/relationships/record-context?moduleKey=people&recordId=__RECORD__",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P024",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder deals __DEAL__ — `/api/scheduling/deals/__DEAL__` —",
+      "rawCells": [
+        "TC-PERF-P024",
+        "/api/scheduling/deals/__DEAL__",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-P025",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Placeholder scheduling __SCH__ — `/api/scheduling/__SCH__` —",
+      "rawCells": [
+        "TC-PERF-P025",
+        "/api/scheduling/__SCH__",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (placeholder paths)",
+      "automated": true
+    },
+    {
+      "id": "TC-PERF-U003",
+      "layer": "perf",
+      "domain": "PERF",
+      "title": "Perf — Auth test version — `/api/auth/test-version` —",
+      "rawCells": [
+        "TC-PERF-U003",
+        "/api/auth/test-version",
+        "Sequential latency",
+        "p50, p95, p99"
+      ],
+      "section": "Performance Testing (public)",
+      "automated": true
+    }
+  ]
+}

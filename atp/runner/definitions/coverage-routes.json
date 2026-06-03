@@ -1,0 +1,1786 @@
+{
+  "TC-API-ACT-001": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-ADM-001": {
+    "p": "/api/admin/business-flows?limit=5"
+  },
+  "TC-API-ADM-002": {
+    "p": "/api/admin/automation-rules?limit=5"
+  },
+  "TC-API-ADM-003": {
+    "p": "/api/admin/processes?limit=5"
+  },
+  "TC-API-ADM-004": {
+    "p": "/api/admin/business-flow-templates"
+  },
+  "TC-API-ADM-005": {
+    "p": "/api/admin/business-flow-templates"
+  },
+  "TC-API-ADM-006": {
+    "p": "/api/admin/business-flow-templates"
+  },
+  "TC-API-ADM-008": {
+    "p": "/api/admin/business-flow-templates"
+  },
+  "TC-API-ADM-009": {
+    "p": "/api/admin/business-flow-templates"
+  },
+  "TC-API-ADM-010": {
+    "p": "/api/admin/business-flow-templates"
+  },
+  "TC-API-ADM-011": {
+    "p": "/api/admin/business-flow-templates"
+  },
+  "TC-API-ADM-012": {
+    "p": "/api/admin/business-flow-templates"
+  },
+  "TC-API-ADM-013": {
+    "p": "/api/admin/business-flow-templates"
+  },
+  "TC-API-ADM-014": {
+    "p": "/api/admin/business-flow-templates"
+  },
+  "TC-API-ADM-015": {
+    "p": "/api/admin/business-flow-templates"
+  },
+  "TC-API-ADM-016": {
+    "p": "/api/admin/business-flow-templates"
+  },
+  "TC-API-ADM-017": {
+    "p": "/api/admin/business-flow-templates"
+  },
+  "TC-API-APT-002": {
+    "p": "/api/appointments/config/pages"
+  },
+  "TC-API-APT-003": {
+    "p": "/api/appointments/config/slug-available?slug=atp-test"
+  },
+  "TC-API-APT-004": {
+    "p": "/api/appointments/config/me"
+  },
+  "TC-API-APT-005": {
+    "p": "/api/appointments/config"
+  },
+  "TC-API-APT-006": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-APT-007": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-APT-008": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-APT-009": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-APT-010": {
+    "p": "/api/appointments/stats"
+  },
+  "TC-API-APT-011": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-AUD-001": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-002": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-003": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-004": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-005": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-006": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-007": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-008": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-009": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-010": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-011": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-012": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-013": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-014": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-015": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-016": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-017": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-018": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-019": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-020": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUD-021": {
+    "p": "/api/audit/assignments?limit=5"
+  },
+  "TC-API-AUTH-003": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-BH-002": {
+    "p": "/api/business-hours/sets"
+  },
+  "TC-API-BH-003": {
+    "m": "POST",
+    "p": "/api/business-hours/simulate",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-BH-004": {
+    "p": "/api/business-hours/kpis"
+  },
+  "TC-API-BH-005": {
+    "p": "/api/business-hours/holiday-calendars"
+  },
+  "TC-API-BOX-002": {
+    "p": "/api/mailboxes?limit=5"
+  },
+  "TC-API-BOX-003": {
+    "p": "/api/mailboxes?limit=5"
+  },
+  "TC-API-BOX-004": {
+    "p": "/api/mailboxes?limit=5"
+  },
+  "TC-API-BOX-005": {
+    "p": "/api/mailboxes?limit=5"
+  },
+  "TC-API-CASE-002": {
+    "p": "/api/helpdesk/cases/__CASE__"
+  },
+  "TC-API-CASE-003": {
+    "m": "PATCH",
+    "p": "/api/helpdesk/cases/__CASE__/status",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-CASE-004": {
+    "m": "POST",
+    "p": "/api/helpdesk/cases/__CASE__/reopen",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-CASE-005": {
+    "m": "POST",
+    "p": "/api/helpdesk/cases/__CASE__/activities",
+    "s": [
+      200,
+      201,
+      400
+    ]
+  },
+  "TC-API-CASE-006": {
+    "m": "PATCH",
+    "p": "/api/helpdesk/cases/bulk/update",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-CASE-007": {
+    "m": "POST",
+    "p": "/api/helpdesk/cases/ingest/channel",
+    "s": [
+      200,
+      201,
+      400
+    ]
+  },
+  "TC-API-CASE-008": {
+    "p": "/api/helpdesk/cases/canned-responses"
+  },
+  "TC-API-CASE-011": {
+    "p": "/api/helpdesk/cases/analytics/owners"
+  },
+  "TC-API-CASE-012": {
+    "p": "/api/helpdesk/cases/analytics/distribution"
+  },
+  "TC-API-CASE-013": {
+    "p": "/api/helpdesk/cases/analytics/audit-export"
+  },
+  "TC-API-CASE-014": {
+    "p": "/api/helpdesk/cases/__CASE__/chat/session"
+  },
+  "TC-API-CASE-015": {
+    "p": "/api/helpdesk/cases/__CASE__/chat/messages"
+  },
+  "TC-API-CASE-016": {
+    "p": "/api/helpdesk/cases/__CASE__/chat/stream"
+  },
+  "TC-API-CASE-017": {
+    "m": "POST",
+    "p": "/api/helpdesk/cases/__CASE__/chat/read",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-CASE-018": {
+    "m": "POST",
+    "p": "/api/helpdesk/cases/__CASE__/chat/typing",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-CAT-002": {
+    "p": "/api/catalog/price-books"
+  },
+  "TC-API-CAT-003": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-CAT-004": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-CAT-005": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-CAT-006": {
+    "m": "POST",
+    "p": "/api/catalog/price-books/resolve",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-CAT-007": {
+    "p": "/api/catalog/price-books"
+  },
+  "TC-API-CAT-008": {
+    "p": "/api/catalog/categories"
+  },
+  "TC-API-CFG-002": {
+    "p": "/api/config-registry/lifecycles/people"
+  },
+  "TC-API-CFG-003": {
+    "p": "/api/config-registry/lifecycle-status-mappings/people_lifecycle"
+  },
+  "TC-API-CFG-005": {
+    "p": "/api/config-registry/pipelines/deals/stages"
+  },
+  "TC-API-CFG-006": {
+    "m": "POST",
+    "p": "/api/config-registry/compute-derived-status",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-COM-001": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-COM-002": {
+    "p": "/api/communications/email/compose-preview?moduleKey=people&recordId=__RECORD__"
+  },
+  "TC-API-COM-003": {
+    "p": "/api/communications/email/reply-to-preview?moduleKey=people&recordId=__RECORD__"
+  },
+  "TC-API-COM-004": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-COM-007": {
+    "p": "/api/communications/inbound/diagnostics"
+  },
+  "TC-API-COM-008": {
+    "p": "/api/communications/inbound/dead-letter"
+  },
+  "TC-API-COM-009": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-COM-011": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-COM-012": {
+    "p": "/api/communications/webhook-test/events"
+  },
+  "TC-API-COM-014": {
+    "p": "/api/communications/workspace-threads"
+  },
+  "TC-API-COM-015": {
+    "p": "/api/communications/workspace-thread-ids"
+  },
+  "TC-API-COM-016": {
+    "p": "/api/communications/workspace-thread-counts"
+  },
+  "TC-API-COM-017": {
+    "p": "/api/communications/templates"
+  },
+  "TC-API-COM-018": {
+    "p": "/api/communications/templates"
+  },
+  "TC-API-COM-019": {
+    "p": "/api/communications/templates"
+  },
+  "TC-API-COM-020": {
+    "p": "/api/communications/inbound/diagnostics"
+  },
+  "TC-API-COM-021": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-COM-022": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-COM-023": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-COM-024": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-COM-025": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-COM-026": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-COM-027": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-COM-028": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-CSV-001": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-CSV-002": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-CSV-003": {
+    "m": "POST",
+    "p": "/api/csv/check-duplicates/contacts",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-CSV-004": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-DEAL-009": {
+    "p": "/api/deals/?limit=5"
+  },
+  "TC-API-DEAL-010": {
+    "p": "/api/deals/?limit=5"
+  },
+  "TC-API-DEAL-011": {
+    "p": "/api/deals/?limit=5"
+  },
+  "TC-API-DEAL-013": {
+    "p": "/api/deals/?limit=5"
+  },
+  "TC-API-DEAL-014": {
+    "p": "/api/deals/?limit=5"
+  },
+  "TC-API-DEAL-015": {
+    "p": "/api/deals/?limit=5"
+  },
+  "TC-API-DEAL-016": {
+    "p": "/api/deals/?limit=5"
+  },
+  "TC-API-DEAL-017": {
+    "p": "/api/deals/?limit=5"
+  },
+  "TC-API-EVT-004": {
+    "p": "/api/events/export"
+  },
+  "TC-API-EVT-005": {
+    "m": "POST",
+    "p": "/api/events/",
+    "s": [
+      200,
+      201,
+      400
+    ]
+  },
+  "TC-API-EVT-006": {
+    "p": "/api/events/__EVENT__"
+  },
+  "TC-API-EVT-007": {
+    "m": "POST",
+    "p": "/api/events/bulk-delete",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-EVT-008": {
+    "m": "POST",
+    "p": "/api/events/__EVENT__/notes",
+    "s": [
+      200,
+      201,
+      400
+    ]
+  },
+  "TC-API-EVT-009": {
+    "m": "POST",
+    "p": "/api/events/__EVENT__/start",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-EVT-010": {
+    "m": "POST",
+    "p": "/api/events/__EVENT__/check-in",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-EVT-011": {
+    "m": "POST",
+    "p": "/api/events/__EVENT__/check-out",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-EVT-012": {
+    "m": "POST",
+    "p": "/api/events/__EVENT__/submit-audit",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-EVT-013": {
+    "m": "POST",
+    "p": "/api/events/__EVENT__/approve-audit",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-EVT-014": {
+    "m": "POST",
+    "p": "/api/events/__EVENT__/reject-audit",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-EVT-015": {
+    "m": "POST",
+    "p": "/api/events/__EVENT__/next-org",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-EVT-016": {
+    "m": "POST",
+    "p": "/api/events/__EVENT__/orders",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-EVT-017": {
+    "m": "POST",
+    "p": "/api/events/__EVENT__/complete",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-EVT-018": {
+    "m": "POST",
+    "p": "/api/events/__EVENT__/cancel",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-EXEC-001": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FILE-001": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FILE-002": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-002": {
+    "p": "/api/forms/__FORM__"
+  },
+  "TC-API-FRM-003": {
+    "m": "POST",
+    "p": "/api/forms/__FORM__/duplicate",
+    "s": [
+      200,
+      201,
+      400
+    ]
+  },
+  "TC-API-FRM-004": {
+    "m": "POST",
+    "p": "/api/forms/__FORM__/enable-public",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-FRM-005": {
+    "m": "POST",
+    "p": "/api/forms/__FORM__/link-event",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-FRM-006": {
+    "p": "/api/forms/__FORM__/analytics"
+  },
+  "TC-API-FRM-007": {
+    "p": "/api/forms/__FORM__/kpis"
+  },
+  "TC-API-FRM-008": {
+    "m": "POST",
+    "p": "/api/forms/__FORM__/submit",
+    "s": [
+      200,
+      201,
+      400
+    ]
+  },
+  "TC-API-FRM-009": {
+    "p": "/api/forms/responses/all?limit=5"
+  },
+  "TC-API-FRM-010": {
+    "p": "/api/forms/__FORM__/responses?limit=5"
+  },
+  "TC-API-FRM-011": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-012": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-013": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-014": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-015": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-016": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-017": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-018": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-019": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-020": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-021": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-022": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-023": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-024": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-FRM-025": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-GRP-004": {
+    "p": "/api/users/list"
+  },
+  "TC-API-GRP-005": {
+    "p": "/api/users/list"
+  },
+  "TC-API-GRP-006": {
+    "p": "/api/users/list"
+  },
+  "TC-API-GRP-007": {
+    "p": "/api/users/list"
+  },
+  "TC-API-GRP-008": {
+    "p": "/api/users/list"
+  },
+  "TC-API-HEALTH-005": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-IMP-005": {
+    "m": "DELETE",
+    "p": "/api/imports/__IMPORT__",
+    "s": [
+      200,
+      404
+    ]
+  },
+  "TC-API-ITEM-001": {
+    "p": "/api/items/statistics"
+  },
+  "TC-API-ITEM-002": {
+    "p": "/api/items/low-stock"
+  },
+  "TC-API-ITEM-003": {
+    "p": "/api/items/type/product"
+  },
+  "TC-API-ITEM-005": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-ITEM-006": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-ITEM-007": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-ITEM-008": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-ITEM-009": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-ITEM-010": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-MOD-001": {
+    "p": "/api/modules/people/quick-create"
+  },
+  "TC-API-MOD-002": {
+    "p": "/api/modules/"
+  },
+  "TC-API-MOD-003": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-MOD-004": {
+    "m": "POST",
+    "p": "/api/modules/people/records/batch",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-MOD-005": {
+    "p": "/api/modules/people/records/__RECORD__/activity"
+  },
+  "TC-API-MOD-006": {
+    "p": "/api/modules/people/records/__RECORD__/comments"
+  },
+  "TC-API-MOD-007": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-MOD-008": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-MOD-009": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-MOD-010": {
+    "p": "/api/modules/people/records/__RECORD__/neighbors"
+  },
+  "TC-API-MOD-011": {
+    "p": "/api/modules/people/records/__RECORD__/description-versions"
+  },
+  "TC-API-MRM-001": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-MRM-002": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-NOT-003": {
+    "p": "/api/notifications?appKey=SALES&limit=10"
+  },
+  "TC-API-NOT-004": {
+    "m": "PATCH",
+    "p": "/api/notifications/read-all",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-NOT-005": {
+    "p": "/api/push/subscriptions"
+  },
+  "TC-API-NOT-006": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-NOT-007": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-NOTE-001": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-ORG-005": {
+    "p": "/api/v2/organization/?limit=5"
+  },
+  "TC-API-ORG-006": {
+    "p": "/api/v2/organization/?limit=5"
+  },
+  "TC-API-ORG-007": {
+    "p": "/api/v2/organization/?limit=5"
+  },
+  "TC-API-ORG-008": {
+    "p": "/api/v2/organization/?limit=5"
+  },
+  "TC-API-ORG-009": {
+    "p": "/api/v2/organization/?limit=5"
+  },
+  "TC-API-ORG-010": {
+    "p": "/api/v2/organization/?limit=5"
+  },
+  "TC-API-ORGS-001": {
+    "p": "/api/v2/organization/?limit=5"
+  },
+  "TC-API-ORGS-003": {
+    "p": "/api/v2/organization/?limit=5"
+  },
+  "TC-API-ORGS-004": {
+    "p": "/api/v2/organization/?limit=5"
+  },
+  "TC-API-ORGV2-005": {
+    "p": "/api/v2/organization/?limit=5"
+  },
+  "TC-API-PEO-005": {
+    "p": "/api/people/?limit=5"
+  },
+  "TC-API-PEO-006": {
+    "p": "/api/people/?limit=5"
+  },
+  "TC-API-PEO-007": {
+    "p": "/api/people/?limit=5"
+  },
+  "TC-API-PEO-008": {
+    "p": "/api/people/?limit=5"
+  },
+  "TC-API-PEO-011": {
+    "p": "/api/people/?limit=5"
+  },
+  "TC-API-PEO-019": {
+    "p": "/api/people/?limit=5"
+  },
+  "TC-API-PEO-020": {
+    "p": "/api/people/?limit=5"
+  },
+  "TC-API-PRT-001": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-002": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-003": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-004": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-005": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-006": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-007": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-008": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-009": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-010": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-011": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-012": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-013": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-014": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-015": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PRT-016": {
+    "p": "/api/portal/cases?limit=5",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PUSH-001": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PUSH-002": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-PUSH-003": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-QTE-004": {
+    "p": "/api/quotes/__QUOTE__/process-approvals"
+  },
+  "TC-API-QTE-005": {
+    "p": "/api/quotes/__QUOTE__/conversion"
+  },
+  "TC-API-QTE-006": {
+    "m": "PATCH",
+    "p": "/api/quotes/__QUOTE__/status",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-QTE-007": {
+    "m": "POST",
+    "p": "/api/quotes/__QUOTE__/submit-for-approval",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-QTE-008": {
+    "m": "POST",
+    "p": "/api/quotes/__QUOTE__/approve",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-QTE-009": {
+    "m": "POST",
+    "p": "/api/quotes/__QUOTE__/reject",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-QTE-010": {
+    "m": "POST",
+    "p": "/api/quotes/__QUOTE__/send-email",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-QTE-011": {
+    "m": "POST",
+    "p": "/api/quotes/__QUOTE__/share",
+    "s": [
+      200,
+      201,
+      400
+    ]
+  },
+  "TC-API-QTE-012": {
+    "m": "POST",
+    "p": "/api/quotes/__QUOTE__/share/revoke",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-QTE-013": {
+    "m": "POST",
+    "p": "/api/quotes/__QUOTE__/convert",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-QTE-014": {
+    "m": "POST",
+    "p": "/api/quotes/__QUOTE__/recalculate",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-QTE-015": {
+    "m": "PATCH",
+    "p": "/api/quotes/__QUOTE__/discounts",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-QTE-016": {
+    "m": "POST",
+    "p": "/api/quotes/__QUOTE__/revise",
+    "s": [
+      200,
+      201,
+      400
+    ]
+  },
+  "TC-API-QTE-017": {
+    "p": "/api/quotes/__QUOTE__/sections"
+  },
+  "TC-API-QTE-018": {
+    "p": "/api/quotes/__QUOTE__/lines"
+  },
+  "TC-API-QTE-019": {
+    "p": "/api/quotes/__QUOTE__/documents"
+  },
+  "TC-API-REL-001": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-REL-002": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-REL-003": {
+    "p": "/api/relationships/links?moduleKey=people&recordId=__RECORD__"
+  },
+  "TC-API-REL-004": {
+    "p": "/api/relationships/linkable-targets?moduleKey=deals&recordId=__RECORD__"
+  },
+  "TC-API-REL-005": {
+    "p": "/api/relationships/record-context?moduleKey=people&recordId=__RECORD__"
+  },
+  "TC-API-ROLE-005": {
+    "p": "/api/users/list"
+  },
+  "TC-API-ROLE-006": {
+    "p": "/api/users/list"
+  },
+  "TC-API-ROLE-007": {
+    "p": "/api/users/list"
+  },
+  "TC-API-ROLE-008": {
+    "p": "/api/users/list"
+  },
+  "TC-API-ROLE-009": {
+    "p": "/api/users/list"
+  },
+  "TC-API-RPT-002": {
+    "p": "/api/reports?limit=5"
+  },
+  "TC-API-RPT-003": {
+    "p": "/api/reports?limit=1"
+  },
+  "TC-API-RPT-004": {
+    "p": "/api/reports?limit=1"
+  },
+  "TC-API-RPT-005": {
+    "p": "/api/reports?limit=1"
+  },
+  "TC-API-RSP-001": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-SCH-002": {
+    "p": "/api/scheduling/deals/__DEAL__"
+  },
+  "TC-API-SCH-003": {
+    "p": "/api/scheduling/__SCH__"
+  },
+  "TC-API-SCH-004": {
+    "m": "PATCH",
+    "p": "/api/scheduling/__SCH__/status",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-SCH-005": {
+    "m": "PATCH",
+    "p": "/api/scheduling/__SCH__/reschedule",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-SET-002": {
+    "p": "/api/settings/core-modules/organizations/status-types"
+  },
+  "TC-API-SET-003": {
+    "p": "/api/settings/core-modules/people/people-types"
+  },
+  "TC-API-SET-004": {
+    "p": "/api/settings/applications"
+  },
+  "TC-API-SET-005": {
+    "p": "/api/settings/quotes"
+  },
+  "TC-API-SET-006": {
+    "p": "/api/settings/automation/assignment-rules"
+  },
+  "TC-API-SET-007": {
+    "p": "/api/settings/subscriptions"
+  },
+  "TC-API-SET-008": {
+    "p": "/api/settings/organization"
+  },
+  "TC-API-SET-009": {
+    "p": "/api/settings/security"
+  },
+  "TC-API-SET-010": {
+    "p": "/api/settings/integrations"
+  },
+  "TC-API-SET-011": {
+    "p": "/api/settings/applications/helpdesk/execution-settings"
+  },
+  "TC-API-SET-012": {
+    "m": "POST",
+    "p": "/api/settings/applications/helpdesk/recalculate-slas",
+    "s": [
+      200,
+      202,
+      400
+    ]
+  },
+  "TC-API-SET-013": {
+    "p": "/api/settings/automation/mailroom"
+  },
+  "TC-API-SET-014": {
+    "p": "/api/settings/automation/mailroom/metrics"
+  },
+  "TC-API-SET-015": {
+    "p": "/api/settings/automation/mailroom/search?q=test"
+  },
+  "TC-API-TASK-006": {
+    "p": "/api/tasks/?limit=5"
+  },
+  "TC-API-TASK-007": {
+    "p": "/api/tasks/?limit=5"
+  },
+  "TC-API-TASK-008": {
+    "p": "/api/tasks/?limit=5"
+  },
+  "TC-API-TASK-009": {
+    "p": "/api/tasks/?limit=5"
+  },
+  "TC-API-TASK-010": {
+    "p": "/api/tasks/?limit=5"
+  },
+  "TC-API-TASK-012": {
+    "p": "/api/tasks/?limit=5"
+  },
+  "TC-API-TGT-001": {
+    "p": "/api/targets/summary"
+  },
+  "TC-API-TGT-002": {
+    "p": "/api/targets/types"
+  },
+  "TC-API-TGT-003": {
+    "m": "POST",
+    "p": "/api/targets/types/seed",
+    "s": [
+      200,
+      201,
+      400
+    ]
+  },
+  "TC-API-TGT-004": {
+    "p": "/api/targets/lifecycle-options"
+  },
+  "TC-API-TGT-005": {
+    "p": "/api/targets/leaderboard"
+  },
+  "TC-API-TGT-006": {
+    "p": "/api/targets/platform-settings"
+  },
+  "TC-API-TGT-007": {
+    "m": "POST",
+    "p": "/api/targets/conflicts/check",
+    "s": [
+      200,
+      400
+    ]
+  },
+  "TC-API-TGT-008": {
+    "p": "/api/targets/?limit=5"
+  },
+  "TC-API-TGT-009": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-TGT-010": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-TGT-011": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-TGT-012": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-TGT-013": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-TGT-014": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-TGT-015": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-TGT-016": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-TGT-017": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-TGT-018": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-TRSH-003": {
+    "m": "POST",
+    "p": "/api/trash/people/__RECORD__/restore",
+    "s": [
+      200,
+      400,
+      404
+    ]
+  },
+  "TC-API-TRSH-004": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-TRSH-005": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-UI-005": {
+    "p": "/api/ui/apps/SALES/modules"
+  },
+  "TC-API-UI-006": {
+    "p": "/api/ui/entities"
+  },
+  "TC-API-UI-007": {
+    "p": "/api/ui/projection/SALES/people"
+  },
+  "TC-API-UI-008": {
+    "p": "/api/ui/app-definitions"
+  },
+  "TC-API-UPL-001": {
+    "p": "/api/health/live",
+    "s": [
+      200,
+      400,
+      403,
+      404
+    ]
+  },
+  "TC-API-USER-003": {
+    "p": "/api/users/list"
+  },
+  "TC-API-USER-004": {
+    "p": "/api/users/list"
+  },
+  "TC-API-USER-005": {
+    "p": "/api/users/list"
+  },
+  "TC-API-USER-006": {
+    "p": "/api/users/list"
+  },
+  "TC-API-USER-010": {
+    "p": "/api/users/list"
+  },
+  "TC-API-USER-011": {
+    "p": "/api/users/list"
+  },
+  "TC-API-USER-012": {
+    "p": "/api/users/list"
+  },
+  "TC-API-USER-013": {
+    "p": "/api/users/list"
+  },
+  "TC-API-USER-014": {
+    "p": "/api/users/list"
+  },
+  "TC-API-USER-015": {
+    "p": "/api/users/list"
+  }
+}

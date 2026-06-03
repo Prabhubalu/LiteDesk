@@ -1,0 +1,48 @@
+# One-command local ATP stack (Mongo + control plane + dashboard)
+# Usage: cd atp && cp .env.example .env && npm run stack:up
+# SUT (Arivu API :3000, client :5173) must run separately on the host.
+
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - '27017:27017'
+    volumes:
+      - atp_mongo_data:/data/db
+
+  control-plane:
+    image: node:22-bookworm
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: sh -c "npm install && npm run control-plane"
+    env_file:
+      - .env
+    environment:
+      ATP_MONGO_URI: mongodb://mongo:27017/arivu_atp
+      ATP_SUT_API_URL: ${ATP_SUT_API_URL:-http://host.docker.internal:3000}
+      ATP_SUT_CLIENT_URL: ${ATP_SUT_CLIENT_URL:-http://host.docker.internal:5173}
+    ports:
+      - '3099:3099'
+    depends_on:
+      - mongo
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+
+  dashboard:
+    image: node:22-bookworm
+    working_dir: /app/dashboard
+    volumes:
+      - ./dashboard:/app/dashboard
+      - ./catalog:/app/catalog:ro
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      VITE_ATP_API_URL: http://control-plane:3099
+      VITE_ATP_API_KEY: ${ATP_API_KEY:-dev-atp-key-change-me}
+    ports:
+      - '3100:3100'
+    depends_on:
+      - control-plane
+
+volumes:
+  atp_mongo_data:

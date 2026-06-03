@@ -1,0 +1,7 @@
+.env
+dashboard/node_modules/
+node_modules/
+artifacts/
+fixtures/public.json
+fixtures/quarantine.json
+*.log

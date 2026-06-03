@@ -1,0 +1,4 @@
+{
+  "caseIds": [],
+  "_comment": "Copy to quarantine.json to exclude flaky cases from gate suites"
+}
