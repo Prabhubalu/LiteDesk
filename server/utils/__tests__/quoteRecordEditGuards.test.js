@@ -8,6 +8,7 @@ const {
 
 test('isQuoteRecordReadOnly', () => {
   assert.equal(isQuoteRecordReadOnly('Expired'), true);
+  assert.equal(isQuoteRecordReadOnly('Partially Converted'), true);
   assert.equal(isQuoteRecordReadOnly('Converted'), true);
   assert.equal(isQuoteRecordReadOnly('Draft'), false);
   assert.equal(isQuoteRecordReadOnly('Sent'), false);

@@ -1,0 +1,13 @@
+const {
+  QUOTE_SECTION_TYPES,
+  QUOTE_SECTION_TYPE_DEFAULT,
+  DEFAULT_SECTION_TITLE,
+  assertValidSectionType
+} = require('./quoteSection');
+
+module.exports = {
+  INVOICE_SECTION_TYPES: QUOTE_SECTION_TYPES,
+  INVOICE_SECTION_TYPE_DEFAULT: QUOTE_SECTION_TYPE_DEFAULT,
+  DEFAULT_INVOICE_SECTION_TITLE: DEFAULT_SECTION_TITLE,
+  assertValidInvoiceSectionType: assertValidSectionType
+};

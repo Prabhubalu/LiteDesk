@@ -16,6 +16,8 @@ const { resumeProcess } = require('../services/processInvocation');
 const { createLogger } = require('../services/automationLogger');
 const { emit: emitDomainEvent } = require('../services/domainEvents');
 const { applyProcessDecisionToQuote } = require('../services/quoteApprovalProcessService');
+const { compareQuoteRevisions } = require('../services/quoteRevisionCompareService');
+const { getQuoteApprovalWorkspace } = require('../services/quoteApprovalWorkspaceService');
 
 const log = createLogger('approvalController');
 const Process = require('../models/Process');
@@ -68,9 +70,22 @@ exports.getMyApprovals = async (req, res) => {
 
     const enriched = await Promise.all(approvals.map(async (a) => {
       const entity = a.entityType && a.entityId ? await getEntitySnapshot(a.entityType, a.entityId) : null;
+      let quoteCompareSummary = null;
+      if (a.entityType === 'quote' && a.entityId) {
+        try {
+          const compare = await compareQuoteRevisions({
+            organizationId: req.user.organizationId,
+            quoteId: a.entityId
+          });
+          quoteCompareSummary = compare?.summary || null;
+        } catch {
+          quoteCompareSummary = null;
+        }
+      }
       return {
         ...a,
         entitySnapshot: entity,
+        quoteCompareSummary,
         dueIn: a.timeoutAt ? Math.max(0, Math.floor((a.timeoutAt - new Date()) / (1000 * 60 * 60))) : null
       };
     }));
@@ -134,6 +149,42 @@ exports.getApprovalById = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching approval',
+      error: error.message
+    });
+  }
+};
+
+exports.getQuoteWorkspaceForApproval = async (req, res) => {
+  try {
+    const approvalId = req.params.id;
+    const approval = await ApprovalInstance.findById(approvalId).lean();
+    if (!approval) {
+      return res.status(404).json({ success: false, message: 'Approval not found' });
+    }
+    if (approval.organizationId && String(approval.organizationId) !== String(req.user.organizationId)) {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+    if (approval.entityType !== 'quote' || !approval.entityId) {
+      return res.status(400).json({ success: false, message: 'Approval is not linked to a quote' });
+    }
+
+    const auth = assertAuthorizedApprover(approval, req.user?._id);
+    const isAdmin = req.user?.isOwner || ['owner', 'admin'].includes(String(req.user?.role || '').toLowerCase());
+    if (!auth.authorized && !isAdmin) {
+      return res.status(403).json({ success: false, message: auth.error || 'Access denied' });
+    }
+
+    const data = await getQuoteApprovalWorkspace({
+      organizationId: req.user.organizationId,
+      quoteId: approval.entityId,
+      approvalId: approval._id
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    log.error('get_quote_workspace_for_approval_error', { error: error.message });
+    return res.status(500).json({
+      success: false,
+      message: 'Error fetching quote approval workspace',
       error: error.message
     });
   }
@@ -251,6 +302,7 @@ exports.approve = async (req, res) => {
   try {
     const approvalId = req.params.id;
     const userId = req.user?._id;
+    const { comment } = req.body || {};
 
     const approval = await ApprovalInstance.findById(approvalId).lean();
     if (!approval) {
@@ -274,7 +326,7 @@ exports.approve = async (req, res) => {
         status: 'approved',
         decidedBy: new mongoose.Types.ObjectId(userId),
         decidedAt: new Date(),
-        reason: null
+        reason: comment || null
       }
     );
 
@@ -309,7 +361,8 @@ exports.approve = async (req, res) => {
         quoteSync = await applyProcessDecisionToQuote({
           approval,
           decision: 'approved',
-          userId
+          userId,
+          comment: comment || null
         });
       } catch (syncErr) {
         log.error('quote_approval_sync_error', { approvalId: approval.approvalId, error: syncErr.message });

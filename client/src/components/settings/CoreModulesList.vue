@@ -128,6 +128,7 @@ import {
   FolderIcon,
   ClipboardDocumentListIcon,
   DocumentTextIcon,
+  ShoppingCartIcon,
   CubeIcon,
 } from '@heroicons/vue/24/outline';
 
@@ -143,6 +144,8 @@ const moduleIconMap = {
   items: FolderIcon,
   forms: ClipboardDocumentListIcon,
   quotes: DocumentTextIcon,
+  sales_orders: ShoppingCartIcon,
+  invoices: DocumentTextIcon,
 };
 
 function getModuleIcon(moduleKey) {

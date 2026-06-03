@@ -3,33 +3,47 @@
     class="mx-auto w-full"
     :class="isAuditFindingsSurface ? 'px-4 sm:px-6 lg:px-8 py-4' : ''"
   >
-    <!-- List: use ModuleList with moduleKey from route -->
-    <ModuleList
-      v-if="routeType === 'list' && moduleKey"
-      ref="moduleListRef"
-      :module-key="moduleKey"
-      :app-key="resolvedAppKey"
-      view-mode="list"
-      @create="handleCreate"
-      @row-click="handleRowClick"
-      @edit="handleEditFromList"
-      @bulk-action="handleBulkAction"
-    />
-    <CreateRecordDrawer
-      v-if="routeType === 'list' && moduleKey"
-      :is-open="inlineCreateOpen"
-      :module-key="moduleKey"
-      @close="handleInlineCreateClose"
-      @saved="handleInlineCreateSaved"
-    />
-    <CreateRecordDrawer
-      v-if="routeType === 'list' && moduleKey"
-      :is-open="showEditDrawer"
-      :module-key="moduleKey"
-      :record="editingRecord"
-      @close="handleEditDrawerClose"
-      @saved="handleEditDrawerSaved"
-    />
+    <!-- List branch: single v-if so detail/create fallbacks are not chained to SO modals -->
+    <template v-if="routeType === 'list' && moduleKey">
+      <ModuleList
+        ref="moduleListRef"
+        :module-key="moduleKey"
+        :app-key="resolvedAppKey"
+        view-mode="list"
+        @create="handleCreate"
+        @row-click="handleRowClick"
+        @edit="handleEditFromList"
+        @bulk-action="handleBulkAction"
+      />
+      <CreateRecordDrawer
+        :is-open="inlineCreateOpen"
+        :module-key="moduleKey"
+        @close="handleInlineCreateClose"
+        @saved="handleInlineCreateSaved"
+      />
+      <CreateRecordDrawer
+        :is-open="showEditDrawer"
+        :module-key="moduleKey"
+        :record="editingRecord"
+        @close="handleEditDrawerClose"
+        @saved="handleEditDrawerSaved"
+      />
+      <SalesOrderMergeModal
+        v-if="moduleKey === 'sales_orders'"
+        :show="mergeModalOpen"
+        :orders="mergeSelectedRows"
+        :saving="mergeBusy"
+        @close="closeMergeModal"
+        @submit="submitMerge"
+      />
+      <InvoiceMultiSoWizardModal
+        v-if="moduleKey === 'sales_orders'"
+        :open="multiSoModalOpen"
+        :sales-orders="multiSoSelectedRows"
+        @close="closeMultiSoModal"
+        @created="onMultiSoInvoiceCreated"
+      />
+    </template>
     <!-- Detail: use standard ModuleRecordPage (same UI as deals/tasks) -->
     <ModuleRecordPage
       v-else-if="routeType === 'detail' && moduleKey"
@@ -55,8 +69,10 @@ import { useRoute, useRouter } from 'vue-router';
 import ModuleList from '@/components/module-list/ModuleList.vue';
 import ModuleRecordPage from '@/pages/ModuleRecordPage.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
+import SalesOrderMergeModal from '@/components/sales-orders/SalesOrderMergeModal.vue';
+import InvoiceMultiSoWizardModal from '@/components/invoices/InvoiceMultiSoWizardModal.vue';
 import apiClient from '@/utils/apiClient';
-import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
+import { useNotifications } from '@/composables/useNotifications';
 
 const route = useRoute();
 const router = useRouter();
@@ -64,6 +80,12 @@ const inlineCreateOpen = ref(false);
 const showEditDrawer = ref(false);
 const editingRecord = ref(null);
 const moduleListRef = ref(null);
+const mergeModalOpen = ref(false);
+const mergeSelectedRows = ref([]);
+const mergeBusy = ref(false);
+const multiSoModalOpen = ref(false);
+const multiSoSelectedRows = ref([]);
+const notifications = useNotifications();
 
 const moduleKey = computed(() => (route.meta?.moduleKey || '').toLowerCase());
 const routeType = computed(() => route.meta?.routeType || 'list');
@@ -95,6 +117,9 @@ const resolvedAppKey = computed(() => {
   if (currentPath.startsWith('/portal/')) return 'PORTAL';
   if (currentPath.startsWith('/projects/')) return 'PROJECTS';
   if (currentPath.startsWith('/quotes')) return 'PLATFORM';
+  if (currentPath.startsWith('/sales-orders')) return 'PLATFORM';
+  if (currentPath.startsWith('/invoices')) return 'PLATFORM';
+  if (currentPath.startsWith('/payments')) return 'PLATFORM';
 
   return 'SALES';
 });
@@ -147,34 +172,34 @@ async function refreshListAfterCreate() {
 }
 
 /**
- * ListView emits bulk delete as `bulk-delete`; other surfaces may use `delete`.
- * ModuleList forwards @bulk-action here — without this handler, mass delete is a no-op.
+ * Bulk delete is handled inside ModuleList (progress + leave guards).
+ * This handler covers module-specific bulk actions (merge, combined invoice, etc.).
  */
 async function handleBulkAction(actionId, selectedRows) {
-  if (actionId !== 'delete' && actionId !== 'bulk-delete') {
+  if (actionId === 'merge' && moduleKey.value === 'sales_orders') {
+    const rows = Array.isArray(selectedRows) ? selectedRows : [];
+    if (rows.length < 2) {
+      notifications.error(t('records.salesOrderMergeMinSelection'));
+      return;
+    }
+    mergeSelectedRows.value = rows;
+    mergeModalOpen.value = true;
     return;
   }
-  const rows = Array.isArray(selectedRows) ? selectedRows : [];
-  if (rows.length === 0) {
+
+  if (actionId === 'combined-invoice' && moduleKey.value === 'sales_orders') {
+    const rows = Array.isArray(selectedRows) ? selectedRows : [];
+    if (rows.length < 2) {
+      notifications.error(t('records.invoiceMultiSoMinSelection'));
+      return;
+    }
+    multiSoSelectedRows.value = rows;
+    multiSoModalOpen.value = true;
     return;
   }
-  const ids = rows
-    .map((row) => row?._id || row?.id)
-    .filter((id) => id != null && id !== '');
-  if (ids.length === 0) {
+
+  if (actionId === 'delete' || actionId === 'bulk-delete') {
     return;
-  }
-  const base = getModuleRecordCrudPathBase(moduleKey.value, {
-    appKey: resolvedAppKey.value,
-    routePath: String(route.path || '')
-  });
-  try {
-    await Promise.all(ids.map((id) => apiClient.delete(`${base}/${id}`)));
-    await refreshListAfterCreate();
-  } catch (error) {
-    console.error('[GenericModule] Bulk delete failed:', error);
-    const msg = error?.response?.data?.message || error?.message || 'Delete failed';
-    alert(msg);
   }
 }
 
@@ -199,6 +224,54 @@ function handleCreateSaved(savedRecord) {
 function goToList() {
   if (moduleRouteBase.value || moduleKey.value) {
     router.push(moduleRouteBase.value || `/${moduleKey.value}`);
+  }
+}
+
+function closeMergeModal() {
+  mergeModalOpen.value = false;
+  mergeSelectedRows.value = [];
+}
+
+function closeMultiSoModal() {
+  multiSoModalOpen.value = false;
+  multiSoSelectedRows.value = [];
+}
+
+async function onMultiSoInvoiceCreated(payload) {
+  closeMultiSoModal();
+  await refreshListAfterCreate();
+  const invoiceMongoId = payload?.invoiceMongoId;
+  if (invoiceMongoId) {
+    router.push(`/invoices/${invoiceMongoId}`);
+  }
+}
+
+async function submitMerge({ orderTitle } = {}) {
+  if (mergeSelectedRows.value.length < 2) return;
+  mergeBusy.value = true;
+  try {
+    const salesOrderIds = mergeSelectedRows.value.map(
+      (row) => row.salesOrderId || row._id || row.id
+    ).filter(Boolean);
+    const res = await apiClient.post('/sales-orders/merge', {
+      salesOrderIds,
+      orderTitle
+    });
+    if (!res?.success) {
+      notifications.error(res?.message || t('records.salesOrderMergeFailed'));
+      return;
+    }
+    notifications.success(t('records.salesOrderMergeSuccess'));
+    closeMergeModal();
+    await refreshListAfterCreate();
+    const mergedId = res.data?.mergedOrder?._id;
+    if (mergedId) {
+      router.push(`${moduleRouteBase.value}/${mergedId}`);
+    }
+  } catch (error) {
+    notifications.error(error?.message || t('records.salesOrderMergeFailed'));
+  } finally {
+    mergeBusy.value = false;
   }
 }
 </script>

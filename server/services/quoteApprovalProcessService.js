@@ -9,6 +9,7 @@ const QuoteApproval = require('../models/QuoteApproval');
 const ApprovalInstance = require('../models/ApprovalInstance');
 const { assertCanTransitionQuoteStatus } = require('../constants/quoteLifecycle');
 const { writeQuoteActivity } = require('./quoteActivityService');
+const { compareQuoteRevisions } = require('./quoteRevisionCompareService');
 
 async function appendQuoteApprovalEvent({ organizationId, quote, userId, action, fromStatus, toStatus, comment = null, metadata = {} }) {
   try {
@@ -78,13 +79,35 @@ async function applyProcessDecisionToQuote({ approval, decision, userId, comment
     }
   });
 
+  let compareDetails = {
+    revisionNumber: Number(quote.revisionNumber) || 1,
+    approvalId: approval.approvalId,
+    compareLink: `/quotes/${quote._id}/compare?toRevision=${Number(quote.revisionNumber) || 1}`
+  };
+  try {
+    const compare = await compareQuoteRevisions({ organizationId, quoteId: quote._id });
+    compareDetails = {
+      ...compareDetails,
+      compareBaselineRevision: compare?.from?.revisionNumber || null,
+      compareLink: compare?.from?.revisionNumber
+        ? `/quotes/${quote._id}/compare?fromRevision=${compare.from.revisionNumber}&toRevision=${Number(quote.revisionNumber) || 1}`
+        : compareDetails.compareLink,
+      changeCounts: compare?.summary?.changeCounts || null,
+      riskLevel: compare?.summary?.riskLevel || 'low',
+      riskIndicators: compare?.summary?.riskIndicators || [],
+      executiveSummary: compare?.summary?.executiveSummary || []
+    };
+  } catch (err) {
+    compareDetails.compareError = err?.message || 'Compare unavailable';
+  }
+
   await writeQuoteActivity({
     organizationId,
     quoteId: quote._id,
     userId,
     action: decision === 'approved' ? 'quote_approved' : 'quote_rejected',
     message: decision === 'approved' ? 'Quote approved (process)' : 'Quote rejected (process)',
-    details: { fromStatus, toStatus, approvalId: approval.approvalId }
+    details: { fromStatus, toStatus, comment, ...compareDetails }
   });
 
   return { applied: true, quote };

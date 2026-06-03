@@ -40,6 +40,16 @@ const {
     applyQuoteModuleFieldDefaults
 } = require('../constants/quoteModuleDefaults');
 const {
+    INITIAL_SALES_ORDER_QUICK_CREATE,
+    applySalesOrderModuleFieldDefaults
+} = require('../constants/salesOrderModuleDefaults');
+const { SALES_ORDER_STATUSES } = require('../constants/salesOrderLifecycle');
+const {
+    INITIAL_INVOICE_QUICK_CREATE,
+    applyInvoiceModuleFieldDefaults
+} = require('../constants/invoiceModuleDefaults');
+const { INVOICE_STATUSES } = require('../constants/invoiceLifecycle');
+const {
     cloneQuoteDefaultRelationships,
     ensureQuoteRelationshipDefinitions
 } = require('../constants/defaultQuoteRelationships');
@@ -213,6 +223,8 @@ async function writeIntegrationAuditLog(organization, req, event, details) {
 exports.getCoreModules = async (req, res) => {
     try {
         await ensurePlatformQuotesModuleDefinition();
+        await ensurePlatformSalesOrdersModuleDefinition();
+        await ensurePlatformInvoicesModuleDefinition();
 
         const organization = await Organization.findById(req.user.organizationId);
         if (!organization) {
@@ -234,7 +246,7 @@ exports.getCoreModules = async (req, res) => {
 
         // Core platform modules with explicit ordering
         // Order: People, Organization, Task, Event, Item, Form (new modules added at the bottom)
-        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes'];
+        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices'];
         const coreModuleKeys = [...coreModuleOrder, 'reports']; // reports and any future modules go at the end
 
         // Get all platform-owned modules (appKey: 'platform')
@@ -369,6 +381,12 @@ exports.getCoreModule = async (req, res) => {
         if (String(moduleKey || '').toLowerCase() === 'quotes') {
             await ensurePlatformQuotesModuleDefinition();
         }
+        if (String(moduleKey || '').toLowerCase() === 'sales_orders') {
+            await ensurePlatformSalesOrdersModuleDefinition();
+        }
+        if (String(moduleKey || '').toLowerCase() === 'invoices') {
+            await ensurePlatformInvoicesModuleDefinition();
+        }
 
         const organization = await Organization.findById(req.user.organizationId);
         
@@ -441,7 +459,7 @@ exports.getCoreModule = async (req, res) => {
         }
 
         // Core module order: People, Organization, Task, Event, Item, Form (new modules at the end)
-        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes'];
+        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices'];
         const orderIndex = coreModuleOrder.indexOf(module.moduleKey);
         const order = orderIndex === -1 ? 999 : orderIndex;
 
@@ -554,6 +572,164 @@ async function ensurePlatformQuotesModuleDefinition() {
     });
 }
 
+const INITIAL_SALES_ORDER_MODULE_FIELDS = [
+    { key: 'orderTitle', label: 'Order Title', type: 'text', required: true },
+    { key: 'salesOrderNumber', label: 'Order Number', type: 'text', system: true },
+    { key: 'status', label: 'Status', type: 'select', options: SALES_ORDER_STATUSES },
+    { key: 'fulfillmentMode', label: 'Fulfillment Mode', type: 'select', options: ['product', 'service', 'hybrid'] },
+    { key: 'fulfillmentStatus', label: 'Fulfillment Status', type: 'text', system: true },
+    { key: 'orderDate', label: 'Order Date', type: 'date' },
+    { key: 'requestedDeliveryDate', label: 'Requested Delivery', type: 'date' },
+    { key: 'currency', label: 'Currency', type: 'text' },
+    { key: 'grandTotal', label: 'Grand Total', type: 'currency', system: true },
+    { key: 'contactId', label: 'Contact', type: 'lookup', lookupModule: 'people' },
+    { key: 'organizationRefId', label: 'Account', type: 'lookup', lookupModule: 'organizations' },
+    { key: 'dealId', label: 'Deal', type: 'lookup', lookupModule: 'deals' },
+    { key: 'ownerId', label: 'Owner', type: 'lookup', lookupModule: 'users' },
+    { key: 'sourceQuoteNumber', label: 'Source Quote', type: 'text', system: true }
+];
+
+/** Ensures platform.sales_orders exists as a core module (mirrors Quotes bootstrap). */
+async function ensurePlatformSalesOrdersModuleDefinition() {
+    const existing = await ModuleDefinition.findOne({
+        appKey: 'platform',
+        moduleKey: 'sales_orders',
+        organizationId: null
+    })
+        .select('fields quickCreate lifecycle')
+        .lean();
+
+    if (existing) {
+        const patch = {};
+        if (!Array.isArray(existing.fields) || existing.fields.length === 0) {
+            patch.fields = applySalesOrderModuleFieldDefaults(INITIAL_SALES_ORDER_MODULE_FIELDS);
+        }
+        if (!Array.isArray(existing.quickCreate) || existing.quickCreate.length === 0) {
+            patch.quickCreate = [...INITIAL_SALES_ORDER_QUICK_CREATE];
+            patch.quickCreateLayout = { version: 1, rows: [] };
+        }
+        if (!existing.lifecycle?.allowedStatuses?.length) {
+            patch.lifecycle = {
+                statusField: 'status',
+                allowedStatuses: [...SALES_ORDER_STATUSES]
+            };
+        }
+        if (Object.keys(patch).length) {
+            await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
+        }
+        return;
+    }
+
+    await ModuleDefinition.create({
+        appKey: 'platform',
+        moduleKey: 'sales_orders',
+        organizationId: null,
+        label: 'Sales Order',
+        pluralLabel: 'Sales Orders',
+        entityType: 'TRANSACTION',
+        primaryField: 'orderTitle',
+        type: 'system',
+        enabled: true,
+        quickCreate: [...INITIAL_SALES_ORDER_QUICK_CREATE],
+        quickCreateLayout: { version: 1, rows: [] },
+        fields: applySalesOrderModuleFieldDefaults(INITIAL_SALES_ORDER_MODULE_FIELDS),
+        relationships: [],
+        lifecycle: {
+            statusField: 'status',
+            allowedStatuses: [...SALES_ORDER_STATUSES]
+        },
+        ui: {
+            routeBase: '/sales-orders',
+            icon: '📦',
+            showInSidebar: true,
+            sidebarOrder: 9,
+            createLabel: 'Create Sales Order',
+            listLabel: 'All Sales Orders',
+            navigationEntity: true,
+            excludeFromApps: true
+        }
+    });
+}
+
+const INITIAL_INVOICE_MODULE_FIELDS = [
+    { key: 'invoiceTitle', label: 'Invoice Title', type: 'text', required: true },
+    { key: 'invoiceNumber', label: 'Invoice Number', type: 'text', system: true },
+    { key: 'status', label: 'Status', type: 'select', options: INVOICE_STATUSES },
+    { key: 'invoiceType', label: 'Invoice Type', type: 'select', options: ['standard', 'credit_note', 'debit_note', 'proforma'] },
+    { key: 'invoiceDate', label: 'Invoice Date', type: 'date' },
+    { key: 'dueDate', label: 'Due Date', type: 'date' },
+    { key: 'currency', label: 'Currency', type: 'text' },
+    { key: 'grandTotal', label: 'Grand Total', type: 'currency', system: true },
+    { key: 'amountDue', label: 'Amount Due', type: 'currency', system: true },
+    { key: 'contactId', label: 'Contact', type: 'lookup', lookupModule: 'people' },
+    { key: 'organizationRefId', label: 'Account', type: 'lookup', lookupModule: 'organizations' },
+    { key: 'dealId', label: 'Deal', type: 'lookup', lookupModule: 'deals' },
+    { key: 'ownerId', label: 'Owner', type: 'lookup', lookupModule: 'users' },
+    { key: 'sourceContext', label: 'Source Context', type: 'text', system: true }
+];
+
+/** Ensures platform.invoices exists as a core module (mirrors Sales Orders bootstrap). */
+async function ensurePlatformInvoicesModuleDefinition() {
+    const existing = await ModuleDefinition.findOne({
+        appKey: 'platform',
+        moduleKey: 'invoices',
+        organizationId: null
+    })
+        .select('fields quickCreate lifecycle')
+        .lean();
+
+    if (existing) {
+        const patch = {};
+        if (!Array.isArray(existing.fields) || existing.fields.length === 0) {
+            patch.fields = applyInvoiceModuleFieldDefaults(INITIAL_INVOICE_MODULE_FIELDS);
+        }
+        if (!Array.isArray(existing.quickCreate) || existing.quickCreate.length === 0) {
+            patch.quickCreate = [...INITIAL_INVOICE_QUICK_CREATE];
+            patch.quickCreateLayout = { version: 1, rows: [] };
+        }
+        if (!existing.lifecycle?.allowedStatuses?.length) {
+            patch.lifecycle = {
+                statusField: 'status',
+                allowedStatuses: [...INVOICE_STATUSES]
+            };
+        }
+        if (Object.keys(patch).length) {
+            await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
+        }
+        return;
+    }
+
+    await ModuleDefinition.create({
+        appKey: 'platform',
+        moduleKey: 'invoices',
+        organizationId: null,
+        label: 'Invoice',
+        pluralLabel: 'Invoices',
+        entityType: 'TRANSACTION',
+        primaryField: 'invoiceTitle',
+        type: 'system',
+        enabled: true,
+        quickCreate: [...INITIAL_INVOICE_QUICK_CREATE],
+        quickCreateLayout: { version: 1, rows: [] },
+        fields: applyInvoiceModuleFieldDefaults(INITIAL_INVOICE_MODULE_FIELDS),
+        relationships: [],
+        lifecycle: {
+            statusField: 'status',
+            allowedStatuses: [...INVOICE_STATUSES]
+        },
+        ui: {
+            routeBase: '/invoices',
+            icon: '🧾',
+            showInSidebar: true,
+            sidebarOrder: 10,
+            createLabel: 'Create Invoice',
+            listLabel: 'All Invoices',
+            navigationEntity: true,
+            excludeFromApps: true
+        }
+    });
+}
+
 // Helper function to get module usage description
 function getModuleUsage(moduleKey, appKey) {
     const usageMap = {
@@ -593,6 +769,18 @@ function getModuleUsage(moduleKey, appKey) {
             'helpdesk': 'Used for service quotes',
             'projects': 'Used for project estimates',
             'portal': 'Used for customer-facing quotes'
+        },
+        'sales_orders': {
+            'sales': 'Used for order execution and fulfillment',
+            'helpdesk': 'Used for service order fulfillment',
+            'projects': 'Used for project delivery tracking',
+            'portal': 'Used for customer order visibility'
+        },
+        'invoices': {
+            'sales': 'Used for billing and receivables',
+            'helpdesk': 'Used for service billing',
+            'projects': 'Used for project invoicing',
+            'portal': 'Used for customer invoice visibility'
         },
         'reports': {
             'sales': 'Used for sales analytics',
@@ -812,6 +1000,9 @@ exports.getApplications = async (req, res) => {
                     'tasks': 'Tasks',
                     'forms': 'Forms',
                     'items': 'Items',
+                    'quotes': 'Quotes',
+                    'sales_orders': 'Sales Orders',
+                    'invoices': 'Invoices',
                     'reports': 'Reports'
                 };
                 return {
@@ -932,6 +1123,9 @@ exports.getApplication = async (req, res) => {
                 'tasks': 'Tasks',
                 'forms': 'Forms',
                 'items': 'Items',
+                'quotes': 'Quotes',
+                'sales_orders': 'Sales Orders',
+                'invoices': 'Invoices',
                 'reports': 'Reports'
             };
             return {
@@ -943,7 +1137,7 @@ exports.getApplication = async (req, res) => {
         });
 
         // Get optional modules (modules that this app can use but doesn't require)
-        const allCoreModules = ['people', 'organizations', 'events', 'tasks', 'forms', 'items', 'quotes', 'reports'];
+        const allCoreModules = ['people', 'organizations', 'events', 'tasks', 'forms', 'items', 'quotes', 'sales_orders', 'invoices', 'reports'];
         const optionalModules = allCoreModules
             .filter(moduleKey => !requiredModules.includes(moduleKey))
             .map(moduleKey => {
@@ -957,6 +1151,9 @@ exports.getApplication = async (req, res) => {
                     'tasks': 'Tasks',
                     'forms': 'Forms',
                     'items': 'Items',
+                    'quotes': 'Quotes',
+                    'sales_orders': 'Sales Orders',
+                    'invoices': 'Invoices',
                     'reports': 'Reports'
                 };
                 return {

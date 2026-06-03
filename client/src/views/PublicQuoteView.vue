@@ -231,7 +231,16 @@
               <template v-for="block in sectionBlocks" v-else :key="block.key">
                 <tbody v-if="block.section" class="border-t border-gray-200">
                   <tr class="bg-gray-50/90">
-                    <td :colspan="lineTableColspan" class="px-4 py-2.5">
+                    <td v-if="canCustomerAct && allowPartialAccept" class="px-3 py-2 text-center align-middle">
+                      <input
+                        v-if="sectionSelectableLines(block).length"
+                        type="checkbox"
+                        class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                        :checked="isSectionSelected(block)"
+                        @change="toggleSection(block)"
+                      />
+                    </td>
+                    <td :colspan="sectionHeaderColspan" class="px-4 py-2.5">
                       <span class="font-semibold text-gray-900">{{ block.section.sectionTitle }}</span>
                       <span
                         v-if="sectionBadgeLabel(block.section)"
@@ -524,6 +533,10 @@ const allowPartialAccept = computed(() => portal.value?.allowPartialAccept === t
 
 const lineTableColspan = computed(() => (canCustomerAct.value && allowPartialAccept.value ? 6 : 5));
 
+const sectionHeaderColspan = computed(() =>
+  canCustomerAct.value && allowPartialAccept.value ? lineTableColspan.value - 1 : lineTableColspan.value
+);
+
 const requireCustomerAgreement = computed(() => portal.value?.requireCustomerAgreement === true);
 
 const requireTypedSignature = computed(() => portal.value?.requireTypedSignature === true);
@@ -703,6 +716,28 @@ function toggleLine(l) {
   const next = new Set(selectedLineIds.value);
   if (next.has(l.quoteLineId)) next.delete(l.quoteLineId);
   else next.add(l.quoteLineId);
+  selectedLineIds.value = next;
+}
+
+function sectionSelectableLines(block) {
+  return (block?.lines || []).filter((l) => l?.selectable);
+}
+
+function isSectionSelected(block) {
+  const selectable = sectionSelectableLines(block);
+  if (!selectable.length) return false;
+  return selectable.every((l) => selectedLineIds.value.has(l.quoteLineId));
+}
+
+function toggleSection(block) {
+  const selectable = sectionSelectableLines(block);
+  if (!selectable.length) return;
+  const next = new Set(selectedLineIds.value);
+  const allSelected = selectable.every((l) => next.has(l.quoteLineId));
+  for (const l of selectable) {
+    if (allSelected) next.delete(l.quoteLineId);
+    else next.add(l.quoteLineId);
+  }
   selectedLineIds.value = next;
 }
 

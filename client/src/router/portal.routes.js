@@ -41,6 +41,18 @@ const portalRoutes = [
         meta: { requiresAuth: true, requiresPortalApp: true }
       },
       {
+        path: 'invoices',
+        name: 'portal-invoices',
+        component: () => import('@/views/portal/PortalInvoices.vue'),
+        meta: { requiresAuth: true, requiresPortalApp: true }
+      },
+      {
+        path: 'invoices/return',
+        name: 'portal-invoice-pay-return',
+        component: () => import('@/views/portal/PortalInvoicePayReturn.vue'),
+        meta: { requiresAuth: true, requiresPortalApp: true }
+      },
+      {
         path: 'profile',
         name: 'portal-profile',
         component: () => import('@/views/portal/PortalProfile.vue'),

@@ -219,11 +219,12 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { ref, onMounted, onUnmounted, onActivated } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
+import { startBulkDelete } from '@/utils/runBulkDelete';
 import ModuleList from '@/components/module-list/ModuleList.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
@@ -356,9 +357,10 @@ const handleOrganizationEditSaved = () => {
 
 const handleImportComplete = () => {
   showImportModal.value = false;
-  // Refresh ModuleList
-  if (moduleListRef.value && moduleListRef.value.refresh) {
-    moduleListRef.value.refresh();
+  if (moduleListRef.value?.refreshAfterImport) {
+    void moduleListRef.value.refreshAfterImport();
+  } else {
+    moduleListRef.value?.refresh?.();
   }
 };
 
@@ -376,9 +378,7 @@ const handleRecordCreated = (event) => {
 
 // Bulk action handler
 const handleBulkAction = async (actionId, selectedRows) => {
-  if (actionId === 'delete' || actionId === 'bulk-delete') {
-    await bulkDeleteOrganizations(selectedRows);
-  } else if (actionId === 'export' || actionId === 'bulk-export') {
+  if (actionId === 'export' || actionId === 'bulk-export') {
     await bulkExportOrganizations(selectedRows);
   }
 };
@@ -390,50 +390,55 @@ const handleInlineDelete = async (row) => {
 
 // Bulk delete
 const bulkDeleteOrganizations = async (selectedRows) => {
-  if (!selectedRows || selectedRows.length === 0) return;
-  
-  const idsToDelete = selectedRows.map(row => row._id || row).filter(Boolean);
-  if (idsToDelete.length === 0) return;
-  
-  try {
-    deleting.value = true;
-    
-    // Delete all in parallel, fail fast on permission errors
-    const deletePromises = idsToDelete.map(id => 
-      apiClient.delete(`/v2/organization/${id}`)
-    );
-    
-    const results = await Promise.allSettled(deletePromises);
-    
-    // Check for failures
-    const failures = results.filter(r => r.status === 'rejected');
-    if (failures.length > 0) {
-      const firstFailure = failures[0].reason;
-      const errorMessage = firstFailure?.response?.data?.message || 
-                          firstFailure?.message || 
-                          'Failed to delete some organizations';
-      
-      // If permission error, show specific message
-      if (firstFailure?.response?.status === 403) {
-        alert(`Permission denied: ${errorMessage}`);
-      } else {
-        alert(`Failed to delete ${failures.length} of ${idsToDelete.length} organizations. ${errorMessage}`);
-      }
-      
-      // Don't reload if some failed - let user see what succeeded
-      return;
-    }
-    
-    // All succeeded - refresh list
-    if (moduleListRef.value?.refresh) {
-      moduleListRef.value.refresh();
-    }
-  } catch (error) {
-    console.error('Error bulk deleting organizations:', error);
-    alert(`Error deleting organizations: ${error.message || t('common.organizationsToastUnknownError')}`);
-  } finally {
-    deleting.value = false;
+  if (!selectedRows || selectedRows.length === 0) {
+    alert(t('common.listBulkDeleteNoSelection'));
+    return;
   }
+
+  const idsToDelete = selectedRows.map((row) => row?._id || row?.id || row).filter(Boolean);
+  if (idsToDelete.length === 0) {
+    alert(t('common.listBulkDeleteNoSelection'));
+    return;
+  }
+
+  startBulkDelete({
+    moduleKey: 'organizations',
+    ids: idsToDelete,
+    options: { appKey: 'PLATFORM', routePath: '/organizations' },
+    onComplete: (outcome) => {
+      void (async () => {
+        if (outcome.cancelled) {
+          if (outcome.deletedCount > 0 && moduleListRef.value?.refresh) {
+            moduleListRef.value.refresh();
+          }
+          return;
+        }
+        const { deletedCount, failedCount, firstError } = outcome;
+        if (failedCount > 0) {
+          const errorMessage =
+            firstError?.response?.data?.message ||
+            firstError?.message ||
+            'Failed to delete some organizations';
+          if (firstError?.response?.status === 403) {
+            alert(`Permission denied: ${errorMessage}`);
+          } else {
+            alert(`Failed to delete ${failedCount} of ${idsToDelete.length} organizations. ${errorMessage}`);
+          }
+          if (deletedCount > 0 && moduleListRef.value?.refresh) {
+            moduleListRef.value.refresh();
+          }
+          return;
+        }
+        if (moduleListRef.value?.refresh) {
+          moduleListRef.value.refresh();
+        }
+      })();
+    },
+    onError: (error) => {
+      console.error('Error bulk deleting organizations:', error);
+      alert(`Error deleting organizations: ${error.message || t('common.organizationsToastUnknownError')}`);
+    },
+  });
 };
 
 // Bulk export - identity fields only
@@ -567,11 +572,6 @@ onMounted(async () => {
   if (typeof window !== 'undefined') {
     window.addEventListener('arivu:record-created', handleRecordCreated);
   }
-});
-
-// When switching back to this tab (keep-alive), refetch list so data is current
-onActivated(() => {
-  moduleListRef.value?.reactivate?.();
 });
 
 onUnmounted(() => {

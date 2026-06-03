@@ -14,6 +14,14 @@ const {
   deleteImportHistory,
   getImportedRecords
 } = require('../controllers/importHistoryController');
+const {
+  listImportMappingTemplates,
+  getImportMappingTemplate,
+  createImportMappingTemplate,
+  updateImportMappingTemplate,
+  deleteImportMappingTemplate,
+  applyImportMappingTemplate,
+} = require('../controllers/importMappingTemplateController');
 
 // Apply middleware to all routes
 router.use(protect);
@@ -23,6 +31,14 @@ router.use(lazySalesInitialization); // Lazy initialize CRM if needed
 router.use(requireSalesApp); // Enforce CRM-only access
 router.use(organizationIsolation);
 router.use(checkTrialStatus);
+
+// Import mapping templates (must be registered before /:id)
+router.get('/mapping-templates', checkPermission('imports', 'view'), listImportMappingTemplates);
+router.get('/mapping-templates/:id', checkPermission('imports', 'view'), getImportMappingTemplate);
+router.post('/mapping-templates', checkPermission('imports', 'create'), createImportMappingTemplate);
+router.patch('/mapping-templates/:id', checkPermission('imports', 'create'), updateImportMappingTemplate);
+router.delete('/mapping-templates/:id', checkPermission('imports', 'delete'), deleteImportMappingTemplate);
+router.post('/mapping-templates/:id/apply', checkPermission('imports', 'view'), applyImportMappingTemplate);
 
 // Import history routes
 router.get('/', checkPermission('imports', 'view'), getImportHistory);

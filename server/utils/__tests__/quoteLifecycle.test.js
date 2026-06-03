@@ -12,6 +12,7 @@ const {
 test('quote lifecycle has expected defaults', () => {
   assert.equal(QUOTE_STATUS_DEFAULT, 'Draft');
   assert.ok(QUOTE_STATUSES.includes('Draft'));
+  assert.ok(QUOTE_STATUSES.includes('Partially Converted'));
   assert.ok(QUOTE_STATUSES.includes('Converted'));
 });
 
@@ -33,8 +34,11 @@ test('quote lifecycle transition matrix: allowed transitions pass', () => {
     ['Viewed', 'Partially Accepted'],
     ['Viewed', 'Rejected'],
     ['Viewed', 'Expired'],
+    ['Accepted', 'Partially Converted'],
     ['Accepted', 'Converted'],
-    ['Partially Accepted', 'Converted']
+    ['Partially Accepted', 'Partially Converted'],
+    ['Partially Accepted', 'Converted'],
+    ['Partially Converted', 'Converted']
   ];
 
   for (const [from, to] of allowed) {

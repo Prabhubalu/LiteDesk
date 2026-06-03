@@ -460,7 +460,10 @@ exports.generateDocument = async (req, res) => {
     const lines = await QuoteLine.find({ organizationId, quoteId }).sort({ lineOrder: 1, createdAt: 1 }).lean();
     const sections = await listQuoteSections({ organizationId, quoteId });
     const watermark =
-      String(quote.customerShareMode || '').toLowerCase() === 'draft' ? 'DRAFT' : null;
+      String(quote.customerShareMode || '').toLowerCase() === 'draft' ||
+      ['Draft', 'Pending Approval'].includes(String(quote.status || ''))
+        ? 'DRAFT'
+        : null;
     const branding = await getQuoteBranding(organizationId);
     const pdf = await renderQuotePdf({ quote, lines, sections, watermark, branding });
     const checksum = computeChecksum(pdf);
@@ -516,4 +519,3 @@ exports.generateDocument = async (req, res) => {
     return res.status(500).json({ success: false, message: e.message || 'Failed to generate document', code: 'UNKNOWN' });
   }
 };
-

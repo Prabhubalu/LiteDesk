@@ -123,6 +123,7 @@ const QuoteSchema = new Schema(
     customerResponse: {
       responseType: { type: String, trim: true, default: null },
       acceptedLineIds: { type: [String], default: [] },
+      acceptedSectionIds: { type: [String], default: [] },
       acceptedSubtotal: { type: Number, default: null },
       acceptedTaxTotal: { type: Number, default: null },
       acceptedGrandTotal: { type: Number, default: null },

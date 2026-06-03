@@ -69,12 +69,17 @@ async function convert() {
     };
     const res = await apiClient.post(`/quotes/${props.record._id}/convert`, body);
     if (res?.success) {
-      notifications.success(t('records.conversionSuccess'));
+      const soNumber = res?.data?.salesOrderNumber;
+      notifications.success(
+        soNumber
+          ? t('records.conversionSuccessWithOrder', { number: soNumber })
+          : t('records.conversionSuccess')
+      );
       const quotePatch = res?.data
         ? {
-          status: res.data.status ?? 'Converted',
-          converted: true,
-          conversionStatus: 'Converted'
+          status: res.data.status ?? props.record?.status,
+          converted: res.data.converted === true,
+          conversionStatus: res.data.conversionStatus ?? res.data.status
         }
         : null;
       const payload = quotePatch

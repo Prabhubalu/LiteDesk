@@ -127,7 +127,7 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { ref, onActivated } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
@@ -152,12 +152,12 @@ const showFormModal = ref(false);
 const editingItem = ref(null);
 
 const refreshList = () => {
-  moduleListRef.value?.refresh?.();
+  if (moduleListRef.value?.refreshAfterImport) {
+    void moduleListRef.value.refreshAfterImport();
+  } else {
+    moduleListRef.value?.refresh?.();
+  }
 };
-
-onActivated(() => {
-  moduleListRef.value?.reactivate?.();
-});
 
 // Modal handlers
 const openCreateModal = () => {

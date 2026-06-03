@@ -56,8 +56,6 @@ async function flushImportCheckpoint(importHistoryId, results, lastProcessedRow)
     'stats.failed': results.failed,
     'stats.processed': lastProcessedRow,
     'jobState.lastProcessedRow': lastProcessedRow,
-    'recordIds.created': results.createdIds || [],
-    'recordIds.updated': results.updatedIds || [],
     importErrors: (results.errors || []).slice(0, IMPORT_MAX_STORED_ERRORS),
     'metadata.recordIdsTruncated': Boolean(results.recordIdsTruncated),
   };

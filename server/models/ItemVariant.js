@@ -2,10 +2,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const { CATALOG_LIFECYCLE_STATES, CATALOG_LIFECYCLE_DEFAULT } = require('../constants/catalogLifecycle');
 const { CATALOG_BARCODE_TYPES } = require('../constants/catalogBarcode');
-const {
-  CATALOG_BUNDLE_PRICING_MODES,
-  CATALOG_BUNDLE_PRICING_DEFAULT
-} = require('../constants/catalogBundle');
+const { CATALOG_BUNDLE_PRICING_MODES, CATALOG_BUNDLE_PRICING_DEFAULT } = require('../constants/catalogBundle');
+const { INVENTORY_TRACKING_MODES } = require('../constants/inventoryLifecycle');
 const { wrapTenantModel } = require('../utils/tenantModelProxy');
 
 const ItemVariantSchema = new Schema({
@@ -91,6 +89,12 @@ const ItemVariantSchema = new Schema({
     type: String,
     enum: CATALOG_BUNDLE_PRICING_MODES,
     default: CATALOG_BUNDLE_PRICING_DEFAULT
+  },
+  /** INV4 — null inherits org defaultTrackingMode */
+  inventoryTrackingMode: {
+    type: String,
+    enum: [...INVENTORY_TRACKING_MODES, null],
+    default: null
   },
   createdBy: {
     type: Schema.Types.ObjectId,

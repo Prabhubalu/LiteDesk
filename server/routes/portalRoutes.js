@@ -54,6 +54,12 @@ const {
   createPortalCase,
   replyPortalCase
 } = require('../controllers/portalCaseController');
+const {
+  listPortalInvoicesHandler,
+  getPortalPayEligibilityHandler,
+  startPortalPayHandler,
+  getPortalPaymentSessionStatusHandler
+} = require('../controllers/portalPaymentController');
 const { mailroomPortalIngestLimiter } = require('../middleware/rateLimitMiddleware');
 
 // Apply middleware to all Portal routes
@@ -82,6 +88,12 @@ router.get('/cases', listPortalCases);
 router.post('/cases', createPortalCase);
 router.get('/cases/:id', getPortalCase);
 router.post('/cases/:id/reply', mailroomPortalIngestLimiter, replyPortalCase);
+
+// Online payments (PAY3.1) — reuses PaymentGatewaySession
+router.get('/invoices', listPortalInvoicesHandler);
+router.get('/invoices/:id/pay-eligibility', getPortalPayEligibilityHandler);
+router.post('/invoices/:id/pay', startPortalPayHandler);
+router.get('/payment-sessions/:id/status', getPortalPaymentSessionStatusHandler);
 
 // Mailroom connector (M5) — portal-originated messages into the Mailroom pipeline
 router.use('/mailroom', mailroomPortalIngestLimiter);

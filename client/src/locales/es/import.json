@@ -696,5 +696,269 @@
   },
   "cSVImportModalDuplicateSamplesTruncated": {
     "message": "Showing a sample of duplicate matches. All rows were scanned."
+  },
+  "cSVImportModalNoMappedFieldsForDuplicateCheck": {
+    "message": "Map at least one CSV column on the previous step before choosing duplicate check fields.",
+    "description": "Shown when no mapped fields are available for duplicate detection"
+  },
+  "importCsvColumnHeader": {
+    "message": "CSV column",
+    "description": "Import mapping table header"
+  },
+  "importModuleFieldHeader": {
+    "message": "Module field",
+    "description": "Import mapping table header"
+  },
+  "importDuplicateFieldsHint": {
+    "message": "Select one or more fields. A row is a duplicate only when all selected fields match an existing record.",
+    "description": "Hint below duplicate field checklist"
+  },
+  "importDuplicateCheckedFields": {
+    "message": "Checked using: {fields}",
+    "description": "Summary of fields used in the last duplicate scan"
+  },
+  "importDupPresetEmail": {
+    "message": "Email",
+    "description": "Duplicate check preset label"
+  },
+  "importDupPresetPhone": {
+    "message": "Phone",
+    "description": "Duplicate check preset label"
+  },
+  "importDupPresetFullName": {
+    "message": "First name + Last name",
+    "description": "Duplicate check preset label"
+  },
+  "importDupPresetEmailCompany": {
+    "message": "Email + Company",
+    "description": "Duplicate check preset label"
+  },
+  "importDupPresetPhoneCompany": {
+    "message": "Phone + Company",
+    "description": "Duplicate check preset label"
+  },
+  "importDupPresetDealName": {
+    "message": "Deal name",
+    "description": "Duplicate check preset label"
+  },
+  "importDupPresetNameAmount": {
+    "message": "Name + Amount",
+    "description": "Duplicate check preset label"
+  },
+  "importDupPresetNameStage": {
+    "message": "Name + Stage",
+    "description": "Duplicate check preset label"
+  },
+  "importDupPresetTitle": {
+    "message": "Title",
+    "description": "Duplicate check preset label"
+  },
+  "importDupPresetOrgName": {
+    "message": "Name",
+    "description": "Duplicate check preset label"
+  },
+  "importDupDescRecommended": {
+    "message": "Recommended",
+    "description": "Duplicate preset description"
+  },
+  "importDupDescAlternative": {
+    "message": "Alternative",
+    "description": "Duplicate preset description"
+  },
+  "importDupDescNameMatch": {
+    "message": "Name match",
+    "description": "Duplicate preset description"
+  },
+  "importDupDescStrictMatch": {
+    "message": "Strict match",
+    "description": "Duplicate preset description"
+  },
+  "importDupDescMappedField": {
+    "message": "Mapped field",
+    "description": "Duplicate preset description for extra mapped columns"
+  },
+  "savedMappingTemplateLabel": {
+    "message": "Saved mapping",
+    "description": "Import map step template selector label"
+  },
+  "savedMappingTemplateNone": {
+    "message": "None",
+    "description": "No saved mapping template selected"
+  },
+  "savedMappingTemplateDefaultSuffix": {
+    "message": "Default",
+    "description": "Badge suffix for default import mapping template"
+  },
+  "savedMappingSaveAction": {
+    "message": "Save mapping…",
+    "description": "Save current import field mapping as template"
+  },
+  "savedMappingResetAutoMap": {
+    "message": "Auto-map columns",
+    "description": "Reset import mapping to automatic column matching"
+  },
+  "savedMappingSaveTitle": {
+    "message": "Save mapping template",
+    "description": "Modal title for saving import mapping template"
+  },
+  "savedMappingSaveNameLabel": {
+    "message": "Template name",
+    "description": "Name field label for import mapping template"
+  },
+  "savedMappingSaveNamePlaceholder": {
+    "message": "e.g. HubSpot contacts export",
+    "description": "Placeholder for import mapping template name"
+  },
+  "savedMappingIncludeDuplicate": {
+    "message": "Include duplicate detection settings",
+    "description": "Checkbox to save duplicate policy with mapping template"
+  },
+  "savedMappingSetDefault": {
+    "message": "Set as default for this module",
+    "description": "Checkbox to mark import mapping template as default"
+  },
+  "savedMappingSaveSubmit": {
+    "message": "Save template",
+    "description": "Submit button to save import mapping template"
+  },
+  "savedMappingSaveSuccess": {
+    "message": "Mapping template saved",
+    "description": "Toast after saving import mapping template"
+  },
+  "savedMappingSaveFailed": {
+    "message": "Could not save mapping template",
+    "description": "Error saving import mapping template"
+  },
+  "savedMappingApplyFailed": {
+    "message": "Could not apply mapping template",
+    "description": "Error applying import mapping template"
+  },
+  "savedMappingReportTitle": {
+    "message": "Template apply summary",
+    "description": "Heading for import template apply results"
+  },
+  "savedMappingReportMatched": {
+    "message": "Matched columns",
+    "description": "Section title for columns matched by template"
+  },
+  "savedMappingReportUnmatched": {
+    "message": "Unmapped CSV columns",
+    "description": "Section title for CSV columns not matched by template"
+  },
+  "savedMappingReportStale": {
+    "message": "Unused template rules",
+    "description": "Section title for template rules with no matching CSV column"
+  },
+  "savedMappingReportInvalid": {
+    "message": "Invalid target fields",
+    "description": "Section title for template rules pointing to removed fields"
+  },
+  "savedMappingReportMatchedRow": {
+    "message": "{csvColumn} → {field}",
+    "description": "Single matched column line in template apply report"
+  },
+  "savedMappingReportStaleRow": {
+    "message": "{field} (aliases: {aliases})",
+    "description": "Stale template rule line in apply report"
+  },
+  "savedMappingReportInvalidRow": {
+    "message": "{field} (no longer importable)",
+    "description": "Invalid template target field line in apply report"
+  },
+  "savedMappingNoMappedFields": {
+    "message": "Map at least one column before saving a template.",
+    "description": "Validation when saving template with empty mapping"
+  },
+  "savedMappingNameRequired": {
+    "message": "Enter a template name.",
+    "description": "Validation when template name is empty"
+  },
+  "savedMappingDefaultApplied": {
+    "message": "Applied default mapping template “{name}”. Review the summary below.",
+    "description": "Notice when default import mapping template is auto-applied"
+  },
+  "savedMappingManualApplied": {
+    "message": "Applied mapping template “{name}”.",
+    "description": "Notice when user selects an import mapping template"
+  },
+  "savedMappingReportAliasCollisions": {
+    "message": "Conflicting aliases in template",
+    "description": "Template apply report section for cross-rule alias collisions"
+  },
+  "savedMappingReportAliasCollisionRow": {
+    "message": "“{alias}” maps to {fields} (first rule wins per column)",
+    "description": "Single alias collision row in template apply report"
+  },
+  "savedMappingReportAmbiguous": {
+    "message": "Ambiguous CSV columns",
+    "description": "Template apply report section when a column matches multiple rules"
+  },
+  "savedMappingReportAmbiguousRow": {
+    "message": "{csvColumn} matches {fields} — mapped to the first field",
+    "description": "Single ambiguous column row in template apply report"
+  },
+  "savedMappingTemplateModifiedSuffix": {
+    "message": "Modified",
+    "description": "Suffix when applied import mapping template differs from saved template"
+  },
+  "savedMappingUpdateTemplate": {
+    "message": "Update template",
+    "description": "Overwrite selected import mapping template with current mapping"
+  },
+  "savedMappingSaveAsNewTemplate": {
+    "message": "Save as new template",
+    "description": "Save current mapping as a new import template"
+  },
+  "savedMappingSaveAsNewTitle": {
+    "message": "Save as new mapping template",
+    "description": "Modal title when saving modified mapping as new template"
+  },
+  "savedMappingUpdateSuccess": {
+    "message": "Mapping template updated",
+    "description": "Toast after updating import mapping template"
+  },
+  "savedMappingUpdateFailed": {
+    "message": "Could not update mapping template",
+    "description": "Error updating import mapping template"
+  },
+  "savedMappingModifiedHint": {
+    "message": "Mappings differ from the saved template. Update the template or save as a new one.",
+    "description": "Hint when import mapping template has unsaved changes"
+  },
+  "savedMappingReportCompact": {
+    "message": "“{name}” — {matched} of {total} columns mapped",
+    "description": "One-line import template apply summary"
+  },
+  "savedMappingReportCompactDefault": {
+    "message": "Default “{name}” — {matched} of {total} columns mapped",
+    "description": "One-line summary when default template was applied"
+  },
+  "savedMappingReportCompactNoName": {
+    "message": "{matched} of {total} columns mapped from template",
+    "description": "One-line template apply summary without template name"
+  },
+  "savedMappingReportShowDetails": {
+    "message": "Details",
+    "description": "Expand import template apply summary"
+  },
+  "savedMappingReportHideDetails": {
+    "message": "Hide",
+    "description": "Collapse import template apply summary"
+  },
+  "savedMappingReportIssuesBadge": {
+    "message": "{count} to review",
+    "description": "Badge count of template apply issues"
+  },
+  "savedMappingReportAndMore": {
+    "message": "+{count} more",
+    "description": "Truncated template matched columns preview"
+  },
+  "importWizardHeaderStep": {
+    "message": "{current}/{total}",
+    "description": "Compact step counter in import modal header"
+  },
+  "importWizardProgressAria": {
+    "message": "Import step {current} of {total}: {step}",
+    "description": "Accessible label for import wizard progress bar"
   }
 }

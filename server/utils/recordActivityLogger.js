@@ -255,11 +255,10 @@ function formatCaseContactRefForLog(value, nameMap) {
  * @returns {Promise<import('../models/RecordActivity')>}
  */
 async function appendRecordActivityLog({ organizationId, moduleKey, recordId, authorId, action, message = '', details = {} }) {
-  const recordIdObj = mongoose.Types.ObjectId.isValid(recordId) ? new mongoose.Types.ObjectId(recordId) : recordId;
   const doc = await RecordActivity.create({
     organizationId,
     moduleKey: String(moduleKey).trim().toLowerCase(),
-    recordId: recordIdObj,
+    recordId: String(recordId),
     type: 'activity',
     action: String(action || 'updated').trim(),
     message: String(message).trim(),

@@ -144,6 +144,8 @@ app.use((req, res, next) => {
 
 // Arivu Inbound Parser webhook (raw body for HMAC — must be before express.json)
 app.use('/api/webhooks/arivu', require('./routes/arivuInboundWebhookRoutes'));
+app.use('/api/payment-gateways/webhooks', require('./routes/paymentGatewayWebhookRoutes'));
+app.use('/api/public/pay', require('./routes/publicPaymentLinkRoutes'));
 
 // Body Parsing
 app.use(express.json({ limit: '10mb' })); // Limit request size
@@ -238,6 +240,13 @@ const trashRoutes = require('./routes/trashRoutes');
 const moduleRecordRoutes = require('./routes/moduleRecordRoutes');
 const caseRoutes = require('./routes/caseRoutes');
 const quoteRoutes = require('./routes/quoteRoutes');
+const salesOrderRoutes = require('./routes/salesOrderRoutes');
+const invoiceRoutes = require('./routes/invoiceRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const refundRoutes = require('./routes/refundRoutes');
+const customerStatementRoutes = require('./routes/customerStatementRoutes');
+const paymentLinkRoutes = require('./routes/paymentLinkRoutes');
+const paymentGatewayRoutes = require('./routes/paymentGatewayRoutes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
@@ -270,6 +279,15 @@ app.use('/api/notification-rules', notificationRuleRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/helpdesk/cases', caseRoutes);
 app.use('/api/quotes', quoteRoutes);
+app.use('/api/sales-orders', salesOrderRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/refunds', refundRoutes);
+app.use('/api/customer-statements', customerStatementRoutes);
+app.use('/api/payment-links', paymentLinkRoutes);
+app.use('/api/bank-transfer-instructions', require('./routes/bankTransferInstructionRoutes'));
+app.use('/api/inventory', require('./routes/inventoryRoutes'));
+app.use('/api/payment-gateways', paymentGatewayRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/internal/notifications', notificationHealthRoutes); // Internal notification health endpoint
 app.use('/health', healthRoutes); // Public health check endpoint

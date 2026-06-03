@@ -13,6 +13,68 @@ const TrashSnapshot = require('../models/TrashSnapshot');
 const User = require('../models/User');
 
 /**
+ * Build TrashSnapshot list/purge filter from query or body filters.
+ * @param {string|import('mongoose').Types.ObjectId} organizationId
+ * @param {Object} source
+ * @param {{ purgeableOnly?: boolean, retentionExpiringSoon?: boolean }} [options]
+ */
+function buildTrashSnapshotFilter(organizationId, source = {}, options = {}) {
+  const {
+    moduleKey,
+    deletedBy,
+    search,
+    deletedFrom,
+    deletedTo
+  } = source;
+
+  const clauses = [{ organizationId }];
+
+  if (moduleKey) clauses.push({ moduleKey });
+  if (deletedBy) clauses.push({ deletedBy });
+
+  if (deletedFrom || deletedTo) {
+    const deletedAt = {};
+    if (deletedFrom) deletedAt.$gte = new Date(deletedFrom);
+    if (deletedTo) {
+      const to = new Date(deletedTo);
+      to.setHours(23, 59, 59, 999);
+      deletedAt.$lte = to;
+    }
+    clauses.push({ deletedAt });
+  }
+
+  if (search && typeof search === 'string' && search.trim().length > 0) {
+    const term = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(term, 'i');
+    clauses.push({
+      $or: [
+        { displayName: regex },
+        { 'snapshot.name': regex },
+        { 'snapshot.title': regex },
+        { 'snapshot.eventName': regex },
+        { 'snapshot.first_name': regex },
+        { 'snapshot.last_name': regex },
+        { 'snapshot.email': regex },
+        { 'snapshot.item_name': regex }
+      ]
+    });
+  }
+
+  if (options.retentionExpiringSoon) {
+    const now = new Date();
+    const sevenDaysFromNow = new Date(now);
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+    clauses.push({ retentionExpiresAt: { $gte: now, $lte: sevenDaysFromNow } });
+  }
+
+  if (options.purgeableOnly) {
+    clauses.push({ $or: [{ isLegalHold: { $ne: true } }, { isLegalHold: null }] });
+  }
+
+  return clauses.length === 1 ? clauses[0] : { $and: clauses };
+}
+
+/**
  * Move record to trash
  * POST /api/trash/:moduleKey/:recordId
  */
@@ -103,6 +165,41 @@ exports.restore = async (req, res) => {
  * Purge record permanently (only from trash)
  * DELETE /api/trash/:moduleKey/:recordId
  */
+/**
+ * Bulk purge trash items or empty entire recycle bin.
+ * POST /api/trash/bulk-purge
+ * Body: { items?: [{ moduleKey, recordId }], purgeAll?: boolean, filters?: object }
+ */
+exports.bulkPurge = async (req, res) => {
+  try {
+    const organizationId = req.user.organizationId;
+    const { items, purgeAll, filters } = req.body || {};
+
+    let result;
+    if (purgeAll) {
+      const snapshotQuery = buildTrashSnapshotFilter(organizationId, filters || {}, {
+        purgeableOnly: true
+      });
+      result = await deletionService.purgeAll({ organizationId, snapshotQuery });
+    } else if (Array.isArray(items) && items.length > 0) {
+      result = await deletionService.purgeBulk({ organizationId, items });
+    } else {
+      return res.status(400).json({ success: false, message: 'No items to purge' });
+    }
+
+    res.json({
+      success: true,
+      purged: result.purged,
+      skipped: result.skipped,
+      failed: result.failed,
+      message: `Permanently deleted ${result.purged} item(s)`
+    });
+  } catch (error) {
+    console.error('[trashController] bulkPurge error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.purge = async (req, res) => {
   try {
     const { moduleKey, recordId } = req.params;
@@ -139,45 +236,12 @@ exports.purge = async (req, res) => {
  */
 exports.list = async (req, res) => {
   try {
-    const { moduleKey, deletedBy, search, deletedFrom, deletedTo, page = 1, limit = 20, sort = 'deletedAt', order = 'desc' } = req.query;
+    const { page = 1, limit = 20, sort = 'deletedAt', order = 'desc' } = req.query;
     const organizationId = req.user.organizationId;
 
-    const query = { organizationId };
-    if (moduleKey) query.moduleKey = moduleKey;
-    if (deletedBy) query.deletedBy = deletedBy;
-
-    if (deletedFrom || deletedTo) {
-      query.deletedAt = {};
-      if (deletedFrom) query.deletedAt.$gte = new Date(deletedFrom);
-      if (deletedTo) {
-        const to = new Date(deletedTo);
-        to.setHours(23, 59, 59, 999);
-        query.deletedAt.$lte = to;
-      }
-    }
-
-    if (search && typeof search === 'string' && search.trim().length > 0) {
-      const term = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(term, 'i');
-      query.$or = [
-        { displayName: regex },
-        { 'snapshot.name': regex },
-        { 'snapshot.title': regex },
-        { 'snapshot.eventName': regex },
-        { 'snapshot.first_name': regex },
-        { 'snapshot.last_name': regex },
-        { 'snapshot.email': regex },
-        { 'snapshot.item_name': regex }
-      ];
-    }
-
-    // When "Expiring soon" sort: show only items expiring within 7 days (not yet expired)
-    if (sort === 'retentionExpiresAt' && order === 'asc') {
-      const now = new Date();
-      const sevenDaysFromNow = new Date(now);
-      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-      query.retentionExpiresAt = { $gte: now, $lte: sevenDaysFromNow };
-    }
+    const query = buildTrashSnapshotFilter(organizationId, req.query, {
+      retentionExpiringSoon: sort === 'retentionExpiresAt' && order === 'asc'
+    });
 
     const sortField = ['deletedAt', 'retentionExpiresAt', 'displayName'].includes(sort) ? sort : 'deletedAt';
     const skip = (Math.max(1, parseInt(page, 10)) - 1) * Math.min(100, Math.max(1, parseInt(limit, 10)));

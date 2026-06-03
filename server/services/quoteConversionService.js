@@ -2,10 +2,9 @@
  * Q8 — Quote conversion contract (stub; no Sales Order / Invoice writes).
  */
 
-const { assertCanTransitionQuoteStatus, assertValidStatus } = require('../constants/quoteLifecycle');
 const { isQuoteValidityExpired } = require('./quoteExpiryService');
 
-const CONVERT_ELIGIBLE_STATUSES = ['Accepted', 'Partially Accepted'];
+const CONVERT_ELIGIBLE_STATUSES = ['Accepted', 'Partially Accepted', 'Partially Converted'];
 
 /**
  * Owner/admin (or explicit role flag when added) may convert past validUntil / Expired status.
@@ -34,7 +33,7 @@ function hasCustomerAcceptance(quote) {
  */
 function resolveConversionTypeForQuote(quote) {
   const status = String(quote?.status || '').trim();
-  if (status === 'Partially Accepted') return 'partial';
+  if (status === 'Partially Accepted' || status === 'Partially Converted') return 'partial';
   const responseType = String(quote?.customerResponse?.responseType || '').toLowerCase();
   if (responseType === 'partial') return 'partial';
   return 'full';
@@ -47,7 +46,6 @@ function resolveConversionTypeForQuote(quote) {
  *   allowed: boolean,
  *   reason: string|null,
  *   suggestedConversionType: 'full'|'partial'|null,
- *   isStub: true,
  *   expiredOverrideAvailable?: boolean,
  *   usedExpiredOverride?: boolean
  * }}
@@ -55,10 +53,9 @@ function resolveConversionTypeForQuote(quote) {
 function getQuoteConversionEligibility(quote, { overrideExpired = false } = {}) {
   const status = String(quote?.status || '').trim();
   const suggestedConversionType = resolveConversionTypeForQuote(quote);
-  const stub = { isStub: true };
 
-  if (quote?.converted === true || status === 'Converted') {
-    return { allowed: false, reason: 'already_converted', suggestedConversionType: null, ...stub };
+  if (status === 'Converted' || quote?.converted === true) {
+    return { allowed: false, reason: 'already_converted', suggestedConversionType: null };
   }
 
   const validityExpired = isQuoteValidityExpired(quote);
@@ -73,34 +70,31 @@ function getQuoteConversionEligibility(quote, { overrideExpired = false } = {}) 
       allowed: false,
       reason: 'expired',
       suggestedConversionType: null,
-      expiredOverrideAvailable: true,
-      ...stub
+      expiredOverrideAvailable: true
     };
   }
 
   if (statusExpired && overrideExpired) {
     if (!acceptedEligible && !hasCustomerAcceptance(quote)) {
-      return { allowed: false, reason: 'accept_first', suggestedConversionType: null, ...stub };
+      return { allowed: false, reason: 'accept_first', suggestedConversionType: null };
     }
     return {
       allowed: true,
       reason: null,
       suggestedConversionType,
-      usedExpiredOverride: true,
-      ...stub
+      usedExpiredOverride: true
     };
   }
 
   if (!acceptedEligible) {
-    return { allowed: false, reason: 'accept_first', suggestedConversionType: null, ...stub };
+    return { allowed: false, reason: 'accept_first', suggestedConversionType: null };
   }
 
   return {
     allowed: true,
     reason: null,
     suggestedConversionType,
-    usedExpiredOverride: validityExpired && overrideExpired,
-    ...stub
+    usedExpiredOverride: validityExpired && overrideExpired
   };
 }
 
@@ -129,16 +123,93 @@ function assertCanConvertQuote(quote, opts = {}) {
 }
 
 /**
+ * Derive stable section IDs fully covered by selected line IDs.
+ * @param {Array} sections
+ * @param {Array} lines
+ * @param {string[]} selectedLineIds
+ * @returns {string[]}
+ */
+function computeAcceptedSectionIds(sections, lines, selectedLineIds) {
+  const selected = new Set((selectedLineIds || []).map((id) => String(id)));
+  const sectionList = Array.isArray(sections) ? sections : [];
+  const lineList = Array.isArray(lines) ? lines : [];
+  const accepted = [];
+
+  for (const section of sectionList) {
+    const sid = String(section?._id || '');
+    const publicId = String(section?.quoteSectionId || sid);
+    if (!sid) continue;
+
+    const sectionLines = lineList.filter(
+      (l) =>
+        l &&
+        l.hiddenLine !== true &&
+        String(l.quoteSectionId || '') === sid &&
+        (String(l.lineType || 'standard') === 'standard' || String(l.lineType || '') === 'bundle_parent')
+    );
+    if (!sectionLines.length) continue;
+    if (sectionLines.every((l) => selected.has(String(l.quoteLineId)))) {
+      accepted.push(publicId);
+    }
+  }
+
+  return accepted;
+}
+
+/**
+ * Snapshot stored on conversion link for downstream modules.
+ * @param {object} quote
+ * @param {object} [body]
+ * @param {{ sections?: Array, lines?: Array }} [ctx]
+ */
+function buildConversionSectionBreakdown(sections, lines, acceptedLineIds = []) {
+  const acceptedSet = new Set((acceptedLineIds || []).map((id) => String(id)));
+  const sectionList = Array.isArray(sections) ? sections : [];
+  const lineList = Array.isArray(lines) ? lines : [];
+
+  return sectionList
+    .filter((s) => s && s.hiddenSection !== true)
+    .sort((a, b) => (Number(a.sectionOrder) || 0) - (Number(b.sectionOrder) || 0))
+    .map((section) => {
+      const sid = String(section._id || '');
+      const sectionLines = lineList.filter(
+        (l) =>
+          l &&
+          l.hiddenLine !== true &&
+          String(l.quoteSectionId || '') === sid &&
+          (String(l.lineType || 'standard') === 'standard' || String(l.lineType || '') === 'bundle_parent')
+      );
+      const acceptedLines = sectionLines.filter((l) => acceptedSet.has(String(l.quoteLineId)));
+      return {
+        quoteSectionId: section.quoteSectionId || sid,
+        sectionTitle: section.sectionTitle || null,
+        sectionType: section.sectionType || 'standard',
+        sectionTotal: Number(section.sectionTotal) || 0,
+        lineCount: sectionLines.length,
+        acceptedLineCount: acceptedLines.length,
+        accepted: sectionLines.length > 0 && acceptedLines.length === sectionLines.length
+      };
+    });
+}
+
+/**
  * Snapshot stored on conversion link for downstream modules.
  * @param {object} quote
  */
-function buildConversionMetadata(quote, body = {}) {
+function buildConversionMetadata(quote, body = {}, ctx = {}) {
   const cr = quote?.customerResponse || {};
+  const acceptedLineIds = Array.isArray(cr.acceptedLineIds) ? cr.acceptedLineIds : [];
+  const acceptedSectionIds = Array.isArray(cr.acceptedSectionIds)
+    ? cr.acceptedSectionIds
+    : computeAcceptedSectionIds(ctx.sections, ctx.lines, acceptedLineIds);
+
   return {
     quoteStatus: quote?.status || null,
     quoteGrandTotal: Number(quote?.grandTotal) || 0,
     quoteCurrency: quote?.currency || null,
-    acceptedLineIds: Array.isArray(cr.acceptedLineIds) ? cr.acceptedLineIds : [],
+    acceptedLineIds,
+    acceptedSectionIds,
+    sectionBreakdown: buildConversionSectionBreakdown(ctx.sections, ctx.lines, acceptedLineIds),
     acceptedGrandTotal: cr.acceptedGrandTotal ?? null,
     customerResponseType: cr.responseType || null,
     note: body?.note ? String(body.note).trim().slice(0, 500) : null
@@ -156,13 +227,6 @@ function assertConvertStatusTransition(quote, fromStatus, opts = {}) {
   if (!eligibility.allowed) {
     assertCanConvertQuote(quote, { overrideExpired });
   }
-
-  if (overrideExpired && fromStatus === 'Expired') {
-    assertValidStatus('Converted');
-    return eligibility;
-  }
-
-  assertCanTransitionQuoteStatus(fromStatus, 'Converted');
   return eligibility;
 }
 
@@ -173,6 +237,8 @@ module.exports = {
   resolveConversionTypeForQuote,
   getQuoteConversionEligibility,
   assertCanConvertQuote,
+  computeAcceptedSectionIds,
+  buildConversionSectionBreakdown,
   buildConversionMetadata,
   assertConvertStatusTransition
 };

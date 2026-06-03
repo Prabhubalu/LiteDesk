@@ -1,5 +1,6 @@
 const Quote = require('../models/Quote');
 const QuoteLine = require('../models/QuoteLine');
+const QuoteSection = require('../models/QuoteSection');
 const ItemVariant = require('../models/ItemVariant');
 const Item = require('../models/Item');
 const { resolve: resolveCatalogPrice } = require('../services/catalogPriceResolver');
@@ -15,10 +16,23 @@ const {
 const { writeQuoteActivity } = require('../services/quoteActivityService');
 const { isCatalogItemSellable } = require('../constants/catalogLifecycle');
 const { isCommerciallyLockedStatus, assertQuoteRecordEditable } = require('../constants/quoteLifecycle');
+const { guardQuoteLineQuantity } = require('../services/inventoryAtpGuardService');
 
 function asNumber(value, { defaultValue = NaN } = {}) {
   const n = Number(value);
   return Number.isFinite(n) ? n : defaultValue;
+}
+
+async function sectionSnapshotForActivity({ organizationId, quoteId, sectionId }) {
+  if (!sectionId) return { id: null, title: null };
+  const section = await QuoteSection.findOne({ organizationId, quoteId, _id: sectionId })
+    .select('sectionTitle quoteSectionId')
+    .lean();
+  if (!section) return { id: String(sectionId), title: null };
+  return {
+    id: section.quoteSectionId || String(section._id),
+    title: section.sectionTitle || null
+  };
 }
 
 function userCanOverridePricing(req) {
@@ -169,6 +183,15 @@ async function addQuoteLine(req, res) {
       discountAmount: 0
     });
 
+    const inventoryAtp = await guardQuoteLineQuantity({
+      organizationId,
+      quoteId: quote._id,
+      variantId: variant._id,
+      quantity,
+      userId: req.user._id,
+      forceProceed: req.body?.forceAtpProceed === true
+    });
+
     const targetSection = await resolveSectionForQuote({
       organizationId,
       quoteId: quote._id,
@@ -240,15 +263,23 @@ async function addQuoteLine(req, res) {
       data: {
         line,
         totals,
-        sections
+        sections,
+        inventoryAtp: inventoryAtp.warnings?.length ? inventoryAtp : undefined
       }
     });
   } catch (err) {
-    const status = err?.code === 'VALIDATION' || err?.code === 'SECTION_NOT_FOUND' ? 400 : 500;
+    const status =
+      err?.code === 'INSUFFICIENT_ATP'
+        ? 409
+        : err?.code === 'VALIDATION' || err?.code === 'SECTION_NOT_FOUND' || err?.code === 'QUOTE_COMMERCIALLY_LOCKED'
+          ? 400
+          : 500;
     return res.status(status).json({
       success: false,
       message: err.message || 'Failed to add quote line',
       code: err?.code || 'UNKNOWN',
+      canProceed: err.canProceed === true,
+      policy: err.policy || err.details?.policy || null,
       details: err?.details || null
     });
   }
@@ -656,11 +687,27 @@ async function patchQuoteLine(req, res) {
       return res.status(404).json({ success: false, message: 'Quote line not found', code: 'NOT_FOUND' });
     }
 
+    const previousSectionId = line.quoteSectionId ? String(line.quoteSectionId) : null;
+    let sectionAssignmentRequested = false;
+
     if (req.body?.quantity !== undefined) {
       const quantity = asNumber(req.body?.quantity, { defaultValue: NaN });
       if (!Number.isFinite(quantity) || quantity <= 0) {
         return res.status(400).json({ success: false, code: 'VALIDATION', message: 'quantity must be > 0' });
       }
+
+      if (String(line.lineType || 'standard') !== 'bundle_parent') {
+        await guardQuoteLineQuantity({
+          organizationId,
+          quoteId: quote._id,
+          variantId: line.variantId,
+          quantity,
+          userId: req.user._id,
+          forceProceed: req.body?.forceAtpProceed === true,
+          excludeQuoteLineId: line.quoteLineId
+        });
+      }
+
       line.quantity = quantity;
     }
 
@@ -702,6 +749,7 @@ async function patchQuoteLine(req, res) {
     }
 
     if (req.body?.quoteSectionId !== undefined) {
+      sectionAssignmentRequested = true;
       const lineType = String(line.lineType || 'standard');
       if (lineType === 'bundle_component') {
         return res.status(400).json({
@@ -731,6 +779,7 @@ async function patchQuoteLine(req, res) {
     if (req.body?.lineGroupKey !== undefined) {
       const key = req.body.lineGroupKey ? String(req.body.lineGroupKey).trim() : null;
       if (key) {
+        sectionAssignmentRequested = true;
         const section = await findOrCreateSectionByTitle({
           organizationId,
           quoteId,
@@ -739,8 +788,15 @@ async function patchQuoteLine(req, res) {
         });
         line.quoteSectionId = section._id;
       }
-      line.lineGroupKey = key;
     }
+
+    const commercialFieldsChanged =
+      req.body?.quantity !== undefined ||
+      req.body?.discountType !== undefined ||
+      req.body?.discountValue !== undefined ||
+      req.body?.discountAmount !== undefined ||
+      req.body?.hiddenLine !== undefined ||
+      req.body?.optionalLine !== undefined;
 
     // Recompute totals (MVP placeholder). No tax engine yet.
     const computed = quoteTotalsService.computeLineTotals(line);
@@ -755,22 +811,58 @@ async function patchQuoteLine(req, res) {
 
     const { totals, sections } = await afterLinesChanged({ organizationId, quoteId: quoteId });
 
-    await writeQuoteActivity({
-      organizationId,
-      quoteId,
-      userId: req.user._id,
-      action: 'quote_line_updated',
-      message: 'Line updated',
-      details: { quoteLineId: line.quoteLineId, totals }
-    });
+    const newSectionId = line.quoteSectionId ? String(line.quoteSectionId) : null;
+    const sectionChanged = sectionAssignmentRequested && previousSectionId !== newSectionId;
+
+    if (sectionChanged) {
+      const [fromSection, toSection] = await Promise.all([
+        sectionSnapshotForActivity({ organizationId, quoteId, sectionId: previousSectionId }),
+        sectionSnapshotForActivity({ organizationId, quoteId, sectionId: newSectionId })
+      ]);
+      await writeQuoteActivity({
+        organizationId,
+        quoteId,
+        userId: req.user._id,
+        action: 'quote_line_section_moved',
+        message: toSection.title
+          ? `Moved line to section: ${toSection.title}`
+          : 'Moved line to another section',
+        details: {
+          quoteLineId: line.quoteLineId,
+          fromSectionId: fromSection.id,
+          fromSectionTitle: fromSection.title,
+          toSectionId: toSection.id,
+          toSectionTitle: toSection.title,
+          totals
+        }
+      });
+    }
+
+    if (commercialFieldsChanged || !sectionChanged) {
+      await writeQuoteActivity({
+        organizationId,
+        quoteId,
+        userId: req.user._id,
+        action: 'quote_line_updated',
+        message: 'Line updated',
+        details: { quoteLineId: line.quoteLineId, totals }
+      });
+    }
 
     return res.json({ success: true, data: { line, totals, sections } });
   } catch (err) {
-    const status = err?.code === 'VALIDATION' || err?.code === 'QUOTE_COMMERCIALLY_LOCKED' ? 400 : 500;
+    const status =
+      err?.code === 'INSUFFICIENT_ATP'
+        ? 409
+        : err?.code === 'VALIDATION' || err?.code === 'QUOTE_COMMERCIALLY_LOCKED'
+          ? 400
+          : 500;
     return res.status(status).json({
       success: false,
       message: err.message || 'Failed to update quote line',
       code: err?.code || 'UNKNOWN',
+      canProceed: err.canProceed === true,
+      policy: err.policy || err.details?.policy || null,
       details: err?.details || null
     });
   }

@@ -526,5 +526,17 @@
   "globalSearchFrequentModules": {
     "message": "Frequently used",
     "description": "Frequently opened modules section header in command palette"
+  },
+  "portalInvoices": {
+    "message": "Invoices",
+    "description": "Portal bottom nav invoices tab"
+  },
+  "moduleSalesOrders": {
+    "message": "Sales Orders",
+    "description": "Sales Orders module navigation label"
+  },
+  "moduleInvoices": {
+    "message": "Invoices",
+    "description": "Invoices module navigation label"
   }
 }

@@ -953,6 +953,9 @@ import apiClient from '@/utils/apiClient';
 import { fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
 import { getProcessActivityMessage } from '@/utils/processActivityMessages';
 import { getQuoteActivityMessage, getQuoteActivityActorLabel } from '@/components/activity/adapters/quoteActivityUiAdapter';
+import { getSalesOrderActivityMessage } from '@/components/activity/adapters/salesOrderActivityUiAdapter';
+import { getInvoiceActivityMessage } from '@/components/activity/adapters/invoiceActivityUiAdapter';
+import { getPaymentActivityMessage } from '@/components/activity/adapters/paymentActivityUiAdapter';
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import {
@@ -993,6 +996,9 @@ import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import { createGenericRecordAdapter } from '@/components/record-page/adapters/genericRecordAdapter';
 import { createItemsRecordAdapter } from '@/components/record-page/adapters/itemsRecordAdapter';
 import { createQuotesRecordAdapter } from '@/components/record-page/adapters/quotesRecordAdapter';
+import { createSalesOrdersRecordAdapter } from '@/components/record-page/adapters/salesOrdersRecordAdapter';
+import { createInvoicesRecordAdapter } from '@/components/record-page/adapters/invoicesRecordAdapter';
+import { createPaymentsRecordAdapter } from '@/components/record-page/adapters/paymentsRecordAdapter';
 import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
 import {
   applyQuoteLineDeleteToRecord,
@@ -1592,7 +1598,9 @@ const recordTitle = computed(() => {
   const primaryByModule = {
     events: r.eventName,
     items: r.item_name,
-    quotes: r.quoteNumber || r.quoteTitle
+    quotes: r.quoteNumber || r.quoteTitle,
+    sales_orders: r.salesOrderNumber || r.orderTitle,
+    invoices: r.invoiceNumber || r.invoiceTitle
   };
   return (
     primaryByModule[moduleKey] ??
@@ -1896,7 +1904,13 @@ const genericAdapter = computed(() => {
     ? createItemsRecordAdapter
     : moduleKeyLower.value === 'quotes'
       ? createQuotesRecordAdapter
-      : createGenericRecordAdapter;
+      : moduleKeyLower.value === 'sales_orders'
+        ? createSalesOrdersRecordAdapter
+        : moduleKeyLower.value === 'invoices'
+          ? createInvoicesRecordAdapter
+          : moduleKeyLower.value === 'payments'
+            ? createPaymentsRecordAdapter
+            : createGenericRecordAdapter;
   return adapterFactory({
     sectionLabels: createRecordSectionLabels(t),
     formatDate: (d) => (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
@@ -2361,6 +2375,18 @@ const activityUi = computed(() => {
         const quoteMsg = getQuoteActivityMessage(event);
         if (quoteMsg) return quoteMsg;
       }
+      if (moduleKeyLower.value === 'sales_orders') {
+        const soMsg = getSalesOrderActivityMessage(event);
+        if (soMsg) return soMsg;
+      }
+      if (moduleKeyLower.value === 'invoices') {
+        const invMsg = getInvoiceActivityMessage(event);
+        if (invMsg) return invMsg;
+      }
+      if (moduleKeyLower.value === 'payments') {
+        const payMsg = getPaymentActivityMessage(event);
+        if (payMsg) return payMsg;
+      }
       const mod = (props.moduleKey || '').toLowerCase();
       if (action === 'record_created') {
         return mod === 'people' ? 'Created this person' : 'Created this record';
@@ -2726,6 +2752,89 @@ function getRecordLeftPaneScrollEl() {
 
 function handleSectionUpdated(event) {
   const payload = event?.payload;
+
+  if (moduleKeyLower.value === 'sales_orders' && record.value) {
+    if (payload?.type === 'soft-refresh') {
+      if (payload.salesOrder) Object.assign(record.value, payload.salesOrder);
+      if (payload.totals) Object.assign(record.value, payload.totals);
+      if (Array.isArray(payload.lines)) record.value.lines = payload.lines;
+      if (Array.isArray(payload.sections)) record.value.sections = payload.sections;
+      return;
+    }
+    if (payload?.type === 'line-deleted') {
+      if (payload.totals) Object.assign(record.value, payload.totals);
+      if (Array.isArray(payload.sections)) record.value.sections = payload.sections;
+      if (payload.deleted && Array.isArray(record.value.lines)) {
+        const parentId = payload.deleted._id ? String(payload.deleted._id) : null;
+        record.value.lines = record.value.lines.filter((row) => {
+          if (String(row.salesOrderLineId) === String(payload.deleted.salesOrderLineId)) return false;
+          if (parentId && String(row.parentBundleLineId || '') === parentId) return false;
+          return true;
+        });
+      }
+      return;
+    }
+    if (payload?.type === 'line-updated') {
+      if (payload.totals) Object.assign(record.value, payload.totals);
+      if (Array.isArray(payload.sections)) record.value.sections = payload.sections;
+      if (payload.line && Array.isArray(record.value.lines)) {
+        const idx = record.value.lines.findIndex(
+          (row) => String(row.salesOrderLineId) === String(payload.line.salesOrderLineId)
+        );
+        if (idx >= 0) record.value.lines[idx] = payload.line;
+      }
+      return;
+    }
+    if (payload?.type === 'sections-updated') {
+      if (payload.totals) Object.assign(record.value, payload.totals);
+      if (Array.isArray(payload.sections)) record.value.sections = payload.sections;
+      return;
+    }
+    fetchRecord({ preserveScroll: true, soft: true });
+    return;
+  }
+
+  if (moduleKeyLower.value === 'invoices' && record.value) {
+    if (payload?.type === 'soft-refresh') {
+      if (payload.invoice) Object.assign(record.value, payload.invoice);
+      if (payload.totals) Object.assign(record.value, payload.totals);
+      if (Array.isArray(payload.lines)) record.value.lines = payload.lines;
+      if (Array.isArray(payload.sections)) record.value.sections = payload.sections;
+      return;
+    }
+    if (payload?.type === 'line-deleted') {
+      if (payload.totals) Object.assign(record.value, payload.totals);
+      if (Array.isArray(payload.sections)) record.value.sections = payload.sections;
+      if (payload.deleted && Array.isArray(record.value.lines)) {
+        const parentId = payload.deleted._id ? String(payload.deleted._id) : null;
+        record.value.lines = record.value.lines.filter((row) => {
+          if (String(row.invoiceLineId) === String(payload.deleted.invoiceLineId)) return false;
+          if (parentId && String(row.parentBundleLineId || '') === parentId) return false;
+          return true;
+        });
+      }
+      return;
+    }
+    if (payload?.type === 'line-updated') {
+      if (payload.totals) Object.assign(record.value, payload.totals);
+      if (Array.isArray(payload.sections)) record.value.sections = payload.sections;
+      if (payload.line && Array.isArray(record.value.lines)) {
+        const idx = record.value.lines.findIndex(
+          (row) => String(row.invoiceLineId) === String(payload.line.invoiceLineId)
+        );
+        if (idx >= 0) record.value.lines[idx] = payload.line;
+      }
+      return;
+    }
+    if (payload?.type === 'sections-updated') {
+      if (payload.totals) Object.assign(record.value, payload.totals);
+      if (Array.isArray(payload.sections)) record.value.sections = payload.sections;
+      return;
+    }
+    fetchRecord({ preserveScroll: true, soft: true });
+    return;
+  }
+
   if (moduleKeyLower.value !== 'quotes' || !record.value) {
     fetchRecord();
     return;

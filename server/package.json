@@ -11,6 +11,11 @@
     "test:email-providers": "node --test services/emailProviders/__tests__/ociEmailDelivery.test.js",
     "test:helpdesk": "node --test utils/__tests__/caseApiValidators.test.js utils/__tests__/caseListQuery.test.js utils/__tests__/caseAnalytics.test.js",
     "test:quotes": "node --test utils/__tests__/quote*.test.js",
+    "test:sales-orders": "node --test utils/__tests__/salesOrder*.test.js utils/__tests__/quoteConversionCoverage.test.js",
+    "test:invoices": "node --test utils/__tests__/invoice*.test.js",
+    "test:payments": "node --test utils/__tests__/paymentAllocationPolicy.test.js utils/__tests__/paymentCredit.test.js utils/__tests__/paymentLifecycle.test.js utils/__tests__/paymentRecord.test.js utils/__tests__/paymentRefund.test.js utils/__tests__/paymentStatement.test.js",
+    "test:payment-gateways": "node --test utils/__tests__/paymentGateways.test.js",
+    "test:inventory": "node --test utils/__tests__/inventory.test.js",
     "smoke:quotes": "node scripts/quotesSmokeChecks.js",
     "test:mailroom": "node --test --test-force-exit utils/__tests__/mailroomPolicyEngine.test.js utils/__tests__/mailroomEmailPipeline.test.js utils/__tests__/mailroomConversationThreading.test.js utils/__tests__/mailroomCasesAdapter.test.js utils/__tests__/mailroomEventsPublisher.test.js utils/__tests__/mailroomChannelRulesMapper.test.js utils/__tests__/mailroomGenericPipeline.test.js utils/__tests__/mailroomPortalSafety.test.js utils/__tests__/mailroomCaseTimelineAdapter.test.js utils/__tests__/mailroomEmailAuthValidator.test.js utils/__tests__/mailroomMetrics.test.js utils/__tests__/mailroomClassification.test.js",
     "test:catalog": "node --test utils/__tests__/catalogLifecycle.test.js utils/__tests__/itemCatalog.test.js utils/__tests__/catalogCategory.test.js utils/__tests__/catalogFieldOwnership.test.js utils/__tests__/catalogPriceBook.test.js utils/__tests__/catalogBundle.test.js",
@@ -84,8 +89,13 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.8",
     "pdfkit": "^0.15.0",
+    "razorpay": "^2.9.6",
     "redis": "^4.6.12",
+    "stripe": "^22.2.0",
     "web-push": "^3.6.7",
     "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.2.0"
   }
 }

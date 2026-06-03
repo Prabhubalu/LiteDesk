@@ -64,6 +64,9 @@ function mapRawModulesToRegistryModules(app: { appKey: string }, modulesData: an
       if (normalizedModuleKey === 'portal_actions') {
         route = '/portal/actions';
       }
+      if (normalizedModuleKey === 'portal_invoices' || normalizedModuleKey === 'invoices') {
+        route = '/portal/invoices';
+      }
     }
 
     return {
@@ -156,6 +159,37 @@ function injectPortalCustomerSupportModule(registry: AppRegistry): void {
     system: false,
     coreEntity: false
   });
+}
+
+/** PAY3.1 — Portal invoice pay surface at /portal/invoices */
+function injectPortalInvoicesModule(registry: AppRegistry): void {
+  const portalKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'PORTAL');
+  if (!portalKey) return;
+  const app = registry[portalKey];
+  if (!app) return;
+
+  const hasInvoices = (app.modules || []).some((m) => {
+    const key = String(m.moduleKey || '').toLowerCase();
+    return key === 'portal_invoices' || key === 'invoices' || m.route === '/portal/invoices';
+  });
+  if (hasInvoices) return;
+
+  app.modules = app.modules || [];
+  app.modules.push({
+    moduleKey: 'portal_invoices',
+    label: 'Invoices',
+    route: '/portal/invoices',
+    permission: undefined,
+    icon: 'banknotes',
+    order: 2,
+    appKey: portalKey,
+    navigationCore: false,
+    navigationEntity: false,
+    excludeFromApps: false,
+    system: false,
+    coreEntity: false
+  });
+  app.modules.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 }
 
 function addPlatformModulesToRegistry(registry: AppRegistry, entityModules: any[] | undefined): void {
@@ -268,6 +302,7 @@ function buildRegistryFromPayload(payload: {
   addPlatformModulesToRegistry(registry, payload.entityModules);
   ensureAuditAppNavigationModules(registry);
   injectPortalCustomerSupportModule(registry);
+  injectPortalInvoicesModule(registry);
   return registry;
 }
 

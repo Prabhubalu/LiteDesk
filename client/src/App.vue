@@ -21,6 +21,9 @@ const GlobalSurfacesProvider = defineAsyncComponent(() =>
 const ImportProgressBanner = defineAsyncComponent(() =>
   import('@/components/import/ImportProgressBanner.vue')
 );
+const BulkDeleteProgressBanner = defineAsyncComponent(() =>
+  import('@/components/common/BulkDeleteProgressBanner.vue')
+);
 const HelpdeskNotificationDevPanel = defineAsyncComponent(() =>
   import('@/components/dev/HelpdeskNotificationDevPanel.vue')
 );
@@ -456,6 +459,7 @@ watch(
   <NotificationContainer />
 
   <ImportProgressBanner v-if="isAuthenticated" />
+  <BulkDeleteProgressBanner v-if="isAuthenticated" />
 
   <!-- Sales Notification Sheet (mobile) -->
   <NotificationSheet

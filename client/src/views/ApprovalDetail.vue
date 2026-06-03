@@ -41,6 +41,15 @@
         </span>
       </div>
 
+      <QuoteApprovalWorkspace
+        v-if="isQuoteApproval"
+        :approval="approval"
+        :workspace="quoteWorkspace"
+        :can-decide="canDecide"
+        @refresh="loadApproval"
+      />
+
+      <template v-else>
       <!-- Context Summary -->
       <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('common.approvalDetailContext') }}</h2>
@@ -175,6 +184,7 @@
       <div v-else-if="!canDecide" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
         <p class="text-sm text-yellow-800 dark:text-yellow-200">{{ t('common.approvalDetailYouAreNotAuthorizedToApprove') }}</p>
       </div>
+      </template>
     </div>
 
     <!-- Reject Modal -->
@@ -223,6 +233,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
+import QuoteApprovalWorkspace from '@/components/quotes/QuoteApprovalWorkspace.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -235,6 +246,9 @@ const error = ref(null);
 const showRejectModal = ref(false);
 const rejectReason = ref('');
 const processing = ref(false);
+const quoteWorkspace = ref(null);
+
+const isQuoteApproval = computed(() => String(approval.value?.entityType || approval.value?.entitySnapshot?.type || '') === 'quote');
 
 const canDecide = computed(() => {
   if (!approval.value || !authStore.user) return false;
@@ -253,6 +267,12 @@ const loadApproval = async () => {
   try {
     const response = await apiClient.get(`/approvals/${route.params.id}`);
     approval.value = response.data;
+    if (String(approval.value?.entityType || approval.value?.entitySnapshot?.type || '') === 'quote' && approval.value?._id) {
+      const workspaceRes = await apiClient.get(`/approvals/${approval.value._id}/quote-workspace`);
+      quoteWorkspace.value = workspaceRes?.success ? workspaceRes.data : null;
+    } else {
+      quoteWorkspace.value = null;
+    }
   } catch (err) {
     error.value = err.message || 'Failed to load approval';
     console.error('Error loading approval:', err);

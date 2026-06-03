@@ -18,10 +18,14 @@ const { IMPORT_BATCH_SIZE } = require('./importConstants');
 async function buildProcessorContext(importRecord) {
   const organizationId = importRecord.organizationId;
   const userId = importRecord.importedBy;
-  const updateExisting = importRecord.duplicateAction === 'update'
-    || importRecord.duplicateAction === 'import-all';
-  const shouldCheckDuplicates = importRecord.duplicateCheckEnabled !== false;
+  const duplicateAction = importRecord.duplicateAction || 'skip';
+  const updateExisting = duplicateAction === 'update';
+  const shouldCheckDuplicates = importRecord.duplicateCheckEnabled !== false
+    && duplicateAction !== 'import-all';
   const fieldMapping = importRecord.metadata?.fieldMapping || {};
+  const duplicateCheckFields = importRecord.duplicateCheckFields?.length
+    ? importRecord.duplicateCheckFields
+    : null;
 
   const base = {
     organizationId,
@@ -30,6 +34,7 @@ async function buildProcessorContext(importRecord) {
     updateExisting,
     shouldCheckDuplicates,
     fieldMapping,
+    duplicateCheckFields,
   };
 
   if (importRecord.module === 'organizations') {

@@ -45,7 +45,7 @@
           @vue:before-unmount="clearSearch"
           :class="[
             teleport
-              ? 'fixed z-[250] mt-0 rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm'
+              ? 'fixed z-[10050] mt-0 rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm'
               : 'absolute z-10 mt-1 w-full rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm',
             showSearch ? 'max-h-72 flex flex-col overflow-hidden' : 'max-h-60 overflow-auto py-1',
             optionsClass
@@ -181,7 +181,9 @@ const buttonRef = ref(null);
 const searchInputRef = ref(null);
 const searchQuery = ref('');
 const teleportMenuStyle = ref({});
+const listboxOpen = ref(false);
 let listboxWasOpen = false;
+let viewportListenersBound = false;
 
 function getButtonElement() {
   const raw = buttonRef.value;
@@ -213,6 +215,7 @@ function syncListboxOpenState(open) {
     nextTick(() => searchInputRef.value?.focus());
   }
   listboxWasOpen = open;
+  listboxOpen.value = open;
   return '';
 }
 
@@ -232,24 +235,41 @@ function optionMatchesSearch(option, query) {
 }
 
 function onViewportChange() {
-  if (props.teleport) syncTeleportPosition();
+  if (props.teleport && listboxOpen.value) syncTeleportPosition();
+}
+
+function bindViewportListeners() {
+  if (viewportListenersBound) return;
+  viewportListenersBound = true;
+  window.addEventListener('scroll', onViewportChange, true);
+  window.addEventListener('resize', onViewportChange);
+}
+
+function unbindViewportListeners() {
+  if (!viewportListenersBound) return;
+  viewportListenersBound = false;
+  window.removeEventListener('scroll', onViewportChange, true);
+  window.removeEventListener('resize', onViewportChange);
 }
 
 watch(
   () => props.teleport,
   (enabled) => {
-    if (enabled) syncTeleportPosition();
+    if (enabled && listboxOpen.value) syncTeleportPosition();
   }
 );
 
-onMounted(() => {
-  window.addEventListener('scroll', onViewportChange, true);
-  window.addEventListener('resize', onViewportChange);
+watch([listboxOpen, () => props.teleport], ([open, teleport]) => {
+  if (open && teleport) {
+    bindViewportListeners();
+    syncTeleportPosition();
+  } else {
+    unbindViewportListeners();
+  }
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('scroll', onViewportChange, true);
-  window.removeEventListener('resize', onViewportChange);
+  unbindViewportListeners();
 });
 
 const hasGroups = computed(() => (props.optionGroups?.length ?? 0) > 0);

@@ -889,10 +889,9 @@ const handleBulkAction = async (action, rows) => {
   const dealIds = rows.map(deal => deal._id);
   try {
     if (action === 'delete' || action === 'bulk-delete') {
-      await Promise.all(dealIds.map(id => apiClient.delete(`/deals/${id}`)));
-      await fetchKanbanDeals();
-      if (moduleListRef.value?.refresh) moduleListRef.value.refresh();
-    } else if (action === 'bulk-move-stage') {
+      return;
+    }
+    if (action === 'bulk-move-stage') {
       const stage = prompt(`Move ${rows.length} deals to stage:\n\nOptions: ${stages.value.join(', ')}`);
       if (!stage || !stages.value.includes(stage)) return;
       await Promise.all(dealIds.map(id => apiClient.patch(`/deals/${id}/stage`, { stage })));
@@ -961,7 +960,11 @@ const exportDeals = async () => {
 const handleImportComplete = () => {
   showImportModal.value = false;
   fetchKanbanDeals();
-  if (moduleListRef.value?.refresh) moduleListRef.value.refresh();
+  if (moduleListRef.value?.refreshAfterImport) {
+    void moduleListRef.value.refreshAfterImport();
+  } else {
+    moduleListRef.value?.refresh?.();
+  }
 };
 
 // Kanban: persist stage change and/or same-column reorder from KanbanBoard
@@ -1082,7 +1085,6 @@ onActivated(() => {
     router.replace({ query: { ...route.query, [VIEW_QUERY_KEY]: view } });
   }
   if (view === 'kanban') fetchKanbanDeals();
-  if (view === 'list') moduleListRef.value?.reactivate?.();
   nextTick(() => setTimeout(() => toggleTableView(view === 'list'), 80));
 });
 
