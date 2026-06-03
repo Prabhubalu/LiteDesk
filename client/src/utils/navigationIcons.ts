@@ -9,9 +9,12 @@ import {
   ClipboardDocumentIcon,
   ClipboardDocumentListIcon,
   CogIcon,
+  CreditCardIcon,
   CubeIcon,
   DocumentChartBarIcon,
+  DocumentCurrencyDollarIcon,
   DocumentMagnifyingGlassIcon,
+  DocumentTextIcon,
   ExclamationTriangleIcon,
   FolderIcon,
   InboxIcon,
@@ -19,11 +22,17 @@ import {
   MagnifyingGlassIcon,
   PresentationChartLineIcon,
   ShieldCheckIcon,
+  ShoppingCartIcon,
   Squares2X2Icon,
   TicketIcon,
   UserGroupIcon,
   UsersIcon
 } from '@heroicons/vue/24/outline';
+import {
+  MODULE_ICON_COMPONENTS,
+  MODULE_ICON_IDS,
+  resolveStoredModuleIconId
+} from '@/utils/moduleIcons';
 
 type IconLookupItem = {
   moduleKey?: string;
@@ -48,7 +57,8 @@ const MODULE_ICON_MAP: Record<string, any> = {
   import: ArchiveBoxIcon,
   dashboard: DocumentChartBarIcon,
   audits: DocumentMagnifyingGlassIcon,
-  findings: ExclamationTriangleIcon
+  findings: ExclamationTriangleIcon,
+  ...MODULE_ICON_COMPONENTS
 };
 
 const RAW_ICON_MAP: Record<string, any> = {
@@ -79,7 +89,14 @@ const RAW_ICON_MAP: Record<string, any> = {
   ticket: TicketIcon,
   support: LifebuoyIcon,
   'shield-check': ShieldCheckIcon,
-  shield: ShieldCheckIcon
+  shield: ShieldCheckIcon,
+  'document-text': DocumentTextIcon,
+  'shopping-cart': ShoppingCartIcon,
+  'document-currency-dollar': DocumentCurrencyDollarIcon,
+  'credit-card': CreditCardIcon,
+  ...Object.fromEntries(
+    Object.entries(MODULE_ICON_IDS).map(([moduleKey, iconId]) => [moduleKey, MODULE_ICON_COMPONENTS[moduleKey]])
+  )
 };
 
 const EMOJI_ICON_MAP: Record<string, string> = {
@@ -98,11 +115,13 @@ const EMOJI_ICON_MAP: Record<string, string> = {
   '🌐': 'squares',
   '📋': 'clipboard',
   '🛡️': 'shield-check',
-  '🎫': 'ticket'
+  '🎫': 'ticket',
+  '💳': 'credit-card'
 };
 
-export function getIconComponent(icon?: string): any {
-  const normalized = String(EMOJI_ICON_MAP[icon || ''] || icon || '').toLowerCase();
+export function getIconComponent(icon?: string, moduleKey?: string): any {
+  const resolvedId = resolveStoredModuleIconId(icon, moduleKey);
+  const normalized = String(EMOJI_ICON_MAP[icon || ''] || resolvedId || icon || '').toLowerCase();
   return RAW_ICON_MAP[normalized] || Squares2X2Icon;
 }
 
@@ -132,7 +151,7 @@ export function getNavigationIconComponent(item: IconLookupItem): any {
     return ClipboardDocumentListIcon;
   }
 
-  const iconComponent = getIconComponent(item.icon);
+  const iconComponent = getIconComponent(item.icon, moduleKey);
   if (iconComponent !== Squares2X2Icon) {
     return iconComponent;
   }

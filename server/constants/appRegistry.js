@@ -44,6 +44,12 @@ module.exports = {
     roles: ['CUSTOMER', 'VIEWER'],
     userTypesAllowed: ['EXTERNAL'],
     defaultRole: 'CUSTOMER'
+  },
+
+  INVENTORY: {
+    roles: ['ADMIN', 'MANAGER', 'USER'],
+    userTypesAllowed: ['INTERNAL'],
+    defaultRole: 'USER'
   }
 };
 

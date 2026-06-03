@@ -1596,6 +1596,18 @@ const isInvoicesModule = computed(() => {
   return false;
 });
 
+const isPaymentsModule = computed(() => {
+  if (moduleKey.value) {
+    const key = String(moduleKey.value).toUpperCase();
+    if (key === 'PAYMENTS') return true;
+  }
+  if (module.value) {
+    const key = (module.value.moduleKey || module.value.key || '').toUpperCase();
+    if (key === 'PAYMENTS') return true;
+  }
+  return false;
+});
+
 const usesModulesAndFields = computed(() =>
   isPeopleModule.value
   || isOrganizationsModule.value
@@ -1606,6 +1618,7 @@ const usesModulesAndFields = computed(() =>
   || isQuotesModule.value
   || isSalesOrdersModule.value
   || isInvoicesModule.value
+  || isPaymentsModule.value
 );
 
 const catalogEntityModuleFilter = (module) => {
@@ -1613,6 +1626,7 @@ const catalogEntityModuleFilter = (module) => {
   if (isQuotesModule.value) return quotesModuleFilter(module);
   if (isSalesOrdersModule.value) return salesOrdersModuleFilter(module);
   if (isInvoicesModule.value) return invoicesModuleFilter(module);
+  if (isPaymentsModule.value) return paymentsModuleFilter(module);
   return false;
 };
 
@@ -1621,6 +1635,7 @@ const catalogEntityModuleTitle = computed(() => {
   if (isQuotesModule.value) return t('settings.coreModDetailModuleQuotes');
   if (isSalesOrdersModule.value) return t('settings.coreModDetailModuleSalesOrders');
   if (isInvoicesModule.value) return t('settings.coreModDetailModuleInvoices');
+  if (isPaymentsModule.value) return t('settings.coreModDetailModulePayments');
   return '';
 });
 
@@ -1714,10 +1729,14 @@ const invoicesModuleFilter = (module) => {
   return module.key?.toLowerCase() === 'invoices';
 };
 
+const paymentsModuleFilter = (module) => {
+  return module.key?.toLowerCase() === 'payments';
+};
+
 // Ensure module query param is set for ModulesAndFields to auto-select core catalog modules
 watch(() => moduleKey.value, (newKey) => {
   const upperKey = newKey?.toUpperCase();
-  if ((upperKey === 'PEOPLE' || upperKey === 'ORGANIZATIONS' || upperKey === 'TASKS' || upperKey === 'EVENTS' || upperKey === 'FORMS' || upperKey === 'ITEMS' || upperKey === 'QUOTES' || upperKey === 'SALES_ORDERS' || upperKey === 'INVOICES') && !route.query.module) {
+  if ((upperKey === 'PEOPLE' || upperKey === 'ORGANIZATIONS' || upperKey === 'TASKS' || upperKey === 'EVENTS' || upperKey === 'FORMS' || upperKey === 'ITEMS' || upperKey === 'QUOTES' || upperKey === 'SALES_ORDERS' || upperKey === 'INVOICES' || upperKey === 'PAYMENTS') && !route.query.module) {
     // Set module query param so ModulesAndFields auto-selects the module
     router.replace({ 
       query: { 

@@ -95,6 +95,29 @@ const APP_DEFINITIONS = [
     }
   },
   {
+    appKey: 'inventory',
+    name: 'Inventory',
+    description: 'Stock ledger, locations, reservations, and fulfillment operations',
+    icon: 'cube',
+    category: 'BUSINESS',
+    owner: 'PLATFORM',
+    enabled: true,
+    order: 5,
+    capabilities: {
+      usesPeople: true,
+      usesOrganization: true,
+      usesTransactions: true,
+      usesAutomation: true
+    },
+    settingsSchema: null,
+    ui: {
+      sidebarOrder: 5,
+      icon: 'cube',
+      defaultRoute: '/dashboard/inventory',
+      showInAppSwitcher: true
+    }
+  },
+  {
     appKey: 'portal',
     name: 'Portal',
     description: 'Customer/Partner self-service portal',
@@ -102,7 +125,7 @@ const APP_DEFINITIONS = [
     category: 'BUSINESS',
     owner: 'PLATFORM',
     enabled: true,
-    order: 4,
+    order: 6,
     capabilities: {
       usesPeople: true,
       usesOrganization: false,
@@ -319,7 +342,7 @@ const MODULE_DEFINITIONS = [
     // Phase 0D: UI Metadata
     ui: {
       routeBase: '/quotes',
-      icon: '🧾',
+      icon: 'document-text',
       showInSidebar: true,
       sidebarOrder: 8,
       createLabel: 'Create Quote',
@@ -371,7 +394,7 @@ const MODULE_DEFINITIONS = [
     },
     ui: {
       routeBase: '/sales-orders',
-      icon: '📦',
+      icon: 'shopping-cart',
       showInSidebar: true,
       sidebarOrder: 9,
       createLabel: 'Create Sales Order',
@@ -592,6 +615,46 @@ const MODULE_DEFINITIONS = [
       // Navigation intent: Core Modules section (cross-functional, not Sales-specific)
       navigationEntity: true,
       excludeFromApps: true
+    }
+  },
+  {
+    moduleKey: 'inventory',
+    appKey: 'inventory',
+    label: 'Inventory',
+    pluralLabel: 'Inventory',
+    entityType: 'TRANSACTION',
+    primaryField: 'locationCode',
+    peopleConstraints: {
+      allowedTypes: [],
+      required: false
+    },
+    organizationConstraints: {
+      required: false
+    },
+    lifecycle: {
+      statusField: 'status',
+      allowedStatuses: ['active', 'inactive']
+    },
+    supports: {
+      ownership: false,
+      assignment: false,
+      comments: false,
+      attachments: false,
+      automation: false
+    },
+    permissions: {
+      create: true,
+      edit: true,
+      delete: false,
+      view: true
+    },
+    ui: {
+      routeBase: '/inventory',
+      icon: 'cube',
+      showInSidebar: false,
+      sidebarOrder: 1,
+      createLabel: 'Stock Operations',
+      listLabel: 'Inventory'
     }
   },
   {

@@ -142,6 +142,7 @@ function getCategoryFromAppKey(appKey) {
   if (upper === 'HELPDESK') return 'Support';
   if (upper === 'AUDIT') return 'Audit';
   if (upper === 'PORTAL') return 'Platform';
+  if (upper === 'INVENTORY') return 'Operations';
   return 'Operations';
 }
 

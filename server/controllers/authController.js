@@ -19,6 +19,7 @@
 
 const User = require('../models/User');
 const Organization = require('../models/Organization');
+const { buildOrgCapabilities } = require('../utils/orgCapabilities');
 const Role = require('../models/Role');
 const UserDirectory = require('../models/UserDirectory');
 const DemoRequest = require('../models/DemoRequest');
@@ -284,7 +285,8 @@ exports.registerUser = async (req, res) => {
                 subscription: organization.subscription,
                 limits: organization.limits,
                 enabledApps: organization.enabledApps || [APP_KEYS.SALES], // App-level enablement
-                enabledModules: organization.enabledModules // Legacy: kept for backward compatibility
+                enabledModules: organization.enabledModules, // Legacy: kept for backward compatibility
+                capabilities: buildOrgCapabilities(organization)
             },
             token: generateToken(user._id, organization._id),
         };
@@ -533,7 +535,6 @@ exports.loginUser = async (req, res) => {
         }
 
         const instanceContext = await resolveInstanceForLogin(organizationForLogin?._id, normalizedEmail);
-
         // Respond with Token and Organization Info (use orgUser data)
         res.json({
             _id: orgUser._id,
@@ -557,7 +558,8 @@ exports.loginUser = async (req, res) => {
                 database: organizationForLogin.database ? {
                     name: organizationForLogin.database.name,
                     initialized: organizationForLogin.database.initialized
-                } : null
+                } : null,
+                capabilities: buildOrgCapabilities(organizationForLogin)
             },
             instance: instanceContext,
             token: generateToken(orgUser._id, organizationForLogin._id),

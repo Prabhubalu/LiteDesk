@@ -2,6 +2,10 @@ import type { AppRegistry, SidebarStructure } from '@/types/sidebar.types';
 import { getAppRegistry } from '@/utils/getAppRegistry';
 import { buildSidebarFromRegistry } from '@/utils/buildSidebarFromRegistry';
 import { createPermissionSnapshot } from '@/types/permission-snapshot.types';
+import {
+  hasCommercialPlatformEntitlement,
+  isCommercialPlatformModuleKey
+} from '@/utils/commercialPlatformParticipation';
 
 type PermissionSnapshotUserLike = Parameters<typeof createPermissionSnapshot>[0];
 type UserLike = PermissionSnapshotUserLike & {
@@ -49,13 +53,34 @@ function normalizeUserAppAccess(user: UserLike): NormalizedUserAppAccess {
   };
 }
 
+function applyCoreModuleEntitlementFilters(
+  structure: SidebarStructure,
+  allowedAppKeys: Set<string>,
+  hasExplicitUserAppAccessData: boolean,
+  hasAppAccess: (appKey: string) => boolean
+): void {
+  const hasCommercial = hasCommercialPlatformEntitlement(
+    allowedAppKeys,
+    hasExplicitUserAppAccessData,
+    hasAppAccess
+  );
+
+  structure.coreModules = structure.coreModules.filter((item) => {
+    if (item.kind !== 'coreModule') return false;
+    const moduleKey = item.moduleKey.toLowerCase();
+    if (!moduleKey) return false;
+    if (isCommercialPlatformModuleKey(moduleKey)) {
+      return hasCommercial;
+    }
+    return true;
+  });
+}
+
 /**
  * Builds the locked SidebarStructure for the current session:
  * - Filters app registry by app entitlement (hasAppAccess)
  * - Keeps PLATFORM entry for internal module resolution
- * - Hides Core section when the user has no Sales app entitlement
- *
- * Used by Nav (platform shell), AuditLayout, and PortalLayout so behavior stays consistent.
+ * - Hides platform commercial modules unless Sales and/or Inventory is entitled
  */
 export async function buildSidebarStructureForSession(
   user: UserLike,
@@ -70,8 +95,6 @@ export async function buildSidebarStructureForSession(
       if (hasExplicitUserAppAccessData) {
         return allowedAppKeys.has(String(appKey).toUpperCase());
       }
-      // Legacy fallback: if explicit app access is missing in session payload,
-      // use existing entitlement helper so older users do not lose navigation.
       return hasAppAccess(appKey);
     })
   ) as AppRegistry;
@@ -79,12 +102,12 @@ export async function buildSidebarStructureForSession(
   const snapshot = createPermissionSnapshot(user);
   const structure = await buildSidebarFromRegistry(entitlementScopedRegistry, snapshot);
 
-  const hasSalesUserAccess = hasExplicitUserAppAccessData
-    ? allowedAppKeys.has('SALES')
-    : hasAppAccess('SALES');
-  if (!hasSalesUserAccess) {
-    structure.coreModules = [];
-  }
+  applyCoreModuleEntitlementFilters(
+    structure,
+    allowedAppKeys,
+    hasExplicitUserAppAccessData,
+    hasAppAccess
+  );
 
   return { structure, entitlementScopedRegistry };
 }

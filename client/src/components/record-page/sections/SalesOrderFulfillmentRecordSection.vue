@@ -33,11 +33,13 @@
             v-model="fulfillmentType"
             class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-2 py-1.5 text-sm"
           >
-            <option value="ship">ship</option>
-            <option value="deliver">deliver</option>
-            <option value="complete">complete</option>
-            <option value="cancel">cancel</option>
-            <option value="backorder">backorder</option>
+            <option
+              v-for="type in fulfillmentTypeOptions"
+              :key="type"
+              :value="type"
+            >
+              {{ type }}
+            </option>
           </select>
         </label>
       </div>
@@ -102,6 +104,8 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
+import { useAuthStore } from '@/stores/authRegistry';
+import { getSalesOrderFulfillmentEventTypes } from '@/utils/inventoryCapability';
 
 const props = defineProps({
   record: { type: Object, default: null },
@@ -110,6 +114,11 @@ const props = defineProps({
 
 const { t } = useI18n();
 const notifications = useNotifications();
+const authStore = useAuthStore();
+
+const fulfillmentTypeOptions = computed(() =>
+  [...getSalesOrderFulfillmentEventTypes(authStore.inventoryEnabled)]
+);
 
 const loading = ref(false);
 const busy = ref(false);
@@ -117,7 +126,18 @@ const busyReverseId = ref('');
 const events = ref([]);
 const selectedLineId = ref('');
 const quantityDelta = ref(1);
-const fulfillmentType = ref('ship');
+const fulfillmentType = ref('complete');
+
+watch(
+  fulfillmentTypeOptions,
+  (options) => {
+    if (!options.length) return;
+    if (!options.includes(fulfillmentType.value)) {
+      fulfillmentType.value = options[0];
+    }
+  },
+  { immediate: true }
+);
 
 const FULFILLABLE_STATUSES = new Set(['Confirmed', 'In Fulfillment', 'Partially Fulfilled', 'Fulfilled']);
 

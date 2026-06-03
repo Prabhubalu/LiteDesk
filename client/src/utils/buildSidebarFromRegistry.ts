@@ -109,6 +109,7 @@ function resolveActiveAppId(
     ['/portal/', 'PORTAL'],
     ['/audit/', 'AUDIT'],
     ['/helpdesk/', 'HELPDESK'],
+    ['/inventory/', 'INVENTORY'],
   ];
   for (const [prefix, appKey] of pathPrefixToAppKey) {
     if (!normalizedPath.startsWith(prefix)) continue;
@@ -374,13 +375,25 @@ function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: Pe
   if (!app) return { appId: activeAppId, modules: [] };
 
   // Enforce: ONLY one app lens is ever built.
+  const dashboardRoute = String(app.dashboardRoute || '').replace(/\/+$/, '');
+
   const modules: SidebarItem[] = (app.modules || [])
     .filter((m) => {
+      if (m.showInSidebar === false) return false;
       if (m.navigationCore === true) return false;
       if (m.navigationEntity === true) return false;
       if (m.excludeFromApps === true) return false;
       if (m.appKey && m.appKey.toLowerCase() === 'platform') return false;
       if (FORBIDDEN_RAW_ENTITY_MODULE_KEYS.has(m.moduleKey)) return false;
+      // Inventory app: Dashboard is the only lens until stock workbench UI ships.
+      if (
+        String(activeAppId || '').toUpperCase() === 'INVENTORY' &&
+        String(m.moduleKey || '').toLowerCase() === 'inventory'
+      ) {
+        return false;
+      }
+      const moduleRoute = String(m.route || '').replace(/\/+$/, '');
+      if (dashboardRoute && moduleRoute && moduleRoute === dashboardRoute) return false;
       return hasPermission(m.permission, snapshot);
     })
     .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))

@@ -56,6 +56,20 @@ async function ensureCoverageIndex(collection) {
   console.log('  ensured coverage lookup index');
 }
 
+async function migrateSalesOrderLineIndexesOnDb(db, label) {
+  const collectionName = 'salesorderlines';
+  const existing = await db.listCollections({ name: collectionName }).toArray();
+  if (existing.length === 0) {
+    console.log(`  ${label}: no ${collectionName} collection — skip`);
+    return;
+  }
+
+  const collection = db.collection(collectionName);
+  await dropLegacyIndex(collection);
+  await ensurePerOrderUniqueIndex(collection);
+  await ensureCoverageIndex(collection);
+}
+
 async function main() {
   const mongoUri = resolveMongoUri();
   if (!mongoUri) {
@@ -64,12 +78,34 @@ async function main() {
   }
 
   await mongoose.connect(mongoUri);
-  const collection = mongoose.connection.collection('salesorderlines');
+  const dbConnectionManager = require('../utils/databaseConnectionManager');
+  const Organization = require('../models/Organization');
+  await dbConnectionManager.initializeMasterConnection();
 
-  console.log('Migrating SalesOrderLine sourceQuoteLineId indexes...');
-  await dropLegacyIndex(collection);
-  await ensurePerOrderUniqueIndex(collection);
-  await ensureCoverageIndex(collection);
+  const masterDbName = mongoose.connection.db.databaseName;
+  console.log(`Migrating SalesOrderLine sourceQuoteLineId indexes (${masterDbName})...`);
+  await migrateSalesOrderLineIndexesOnDb(mongoose.connection.db, `master (${masterDbName})`);
+
+  const tenants = await Organization.find({
+    isTenant: true,
+    isActive: { $ne: false },
+    'database.name': { $exists: true, $ne: null }
+  })
+    .select('_id name database.name')
+    .lean();
+
+  for (const tenant of tenants) {
+    const dbName = tenant.database?.name;
+    if (!dbName) continue;
+    try {
+      const conn = await dbConnectionManager.getOrganizationConnection(dbName);
+      if (conn.readyState !== 1) await conn.asPromise();
+      await migrateSalesOrderLineIndexesOnDb(conn.db, `tenant ${tenant.name || tenant._id} (${dbName})`);
+    } catch (err) {
+      console.warn(`  tenant ${tenant._id}: ${err.message}`);
+    }
+  }
+
   console.log('Done.');
   await mongoose.disconnect();
 }

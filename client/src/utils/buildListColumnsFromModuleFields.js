@@ -6,6 +6,7 @@ import { isSystemField, isFieldVisibleInConfig } from '@/platform/fields/fieldCa
 import { getQuoteFieldMetadata } from '@/platform/fields/quoteFieldModel';
 import { getModuleListConfig } from '@/platform/modules/moduleListRegistry';
 import { getFieldDisplayLabel, formatKeyToLabel } from '@/utils/fieldDisplay';
+import { shouldHideFieldWhenInventoryDisabled } from '@/utils/inventoryCapability';
 
 /**
  * @param {string} fieldKey
@@ -42,9 +43,10 @@ export function inferListColumnDataType(fieldKey, fieldDataType) {
  * @param {string} moduleKey
  * @param {{ key?: string, visibility?: { list?: boolean }, isSystem?: boolean }} field
  */
-export function isFieldEligibleForListColumn(moduleKey, field) {
+export function isFieldEligibleForListColumn(moduleKey, field, inventoryEnabled = true) {
   const key = String(field?.key || '').trim();
   if (!key || key.includes('.')) return false;
+  if (shouldHideFieldWhenInventoryDisabled(moduleKey, key, inventoryEnabled)) return false;
   if (field?.isSystem === true) return false;
   if (isSystemField(moduleKey, { key })) return false;
   if (!isFieldVisibleInConfig(moduleKey, { key })) return false;
@@ -57,11 +59,11 @@ export function isFieldEligibleForListColumn(moduleKey, field) {
  * @param {string} moduleKey
  * @returns {import('@/types/module-list.types').ListColumn[]}
  */
-export function buildListColumnsFromModuleFields(fields, moduleKey) {
+export function buildListColumnsFromModuleFields(fields, moduleKey, inventoryEnabled = true) {
   if (!Array.isArray(fields) || !moduleKey) return [];
 
   const columns = fields
-    .filter((field) => isFieldEligibleForListColumn(moduleKey, field))
+    .filter((field) => isFieldEligibleForListColumn(moduleKey, field, inventoryEnabled))
     .map((field, index) => {
       const key = String(field.key);
       const dataType = inferListColumnDataType(key, field.dataType);
@@ -80,7 +82,7 @@ export function buildListColumnsFromModuleFields(fields, moduleKey) {
     })
     .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 
-  mergeRegistryDefaultListColumns(columns, moduleKey);
+  mergeRegistryDefaultListColumns(columns, moduleKey, inventoryEnabled);
 
   return columns;
 }
@@ -90,8 +92,8 @@ export function buildListColumnsFromModuleFields(fields, moduleKey) {
  * @param {import('@/types/module-list.types').ListColumn[]} columns
  * @param {string} moduleKey
  */
-function mergeRegistryDefaultListColumns(columns, moduleKey) {
-  const listConfig = getModuleListConfig(moduleKey);
+function mergeRegistryDefaultListColumns(columns, moduleKey, inventoryEnabled = true) {
+  const listConfig = getModuleListConfig(moduleKey, { inventoryEnabled });
   const defaultKeys = listConfig?.defaultColumns?.defaultVisibleColumns || [];
   if (!defaultKeys.length) return;
 

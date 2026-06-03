@@ -127,10 +127,9 @@ import {
   CalendarDaysIcon,
   FolderIcon,
   ClipboardDocumentListIcon,
-  DocumentTextIcon,
-  ShoppingCartIcon,
   CubeIcon,
 } from '@heroicons/vue/24/outline';
+import { MODULE_ICON_COMPONENTS } from '@/utils/moduleIcons';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -143,9 +142,7 @@ const moduleIconMap = {
   events: CalendarDaysIcon,
   items: FolderIcon,
   forms: ClipboardDocumentListIcon,
-  quotes: DocumentTextIcon,
-  sales_orders: ShoppingCartIcon,
-  invoices: DocumentTextIcon,
+  ...MODULE_ICON_COMPONENTS,
 };
 
 function getModuleIcon(moduleKey) {

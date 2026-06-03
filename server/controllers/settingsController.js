@@ -50,9 +50,25 @@ const {
 } = require('../constants/invoiceModuleDefaults');
 const { INVOICE_STATUSES } = require('../constants/invoiceLifecycle');
 const {
+    INITIAL_PAYMENT_QUICK_CREATE,
+    applyPaymentModuleFieldDefaults,
+    INITIAL_PAYMENT_FIELDS
+} = require('../constants/paymentModuleDefaults');
+const { PAYMENT_STATUSES } = require('../constants/paymentLifecycle');
+const {
     cloneQuoteDefaultRelationships,
     ensureQuoteRelationshipDefinitions
 } = require('../constants/defaultQuoteRelationships');
+const {
+    commercialModuleIconId,
+    shouldNormalizeCommercialIcon
+} = require('../constants/commercialModuleIcons');
+
+function applyCommercialUiIconPatch(existing, moduleKey, patch) {
+    if (existing && shouldNormalizeCommercialIcon(existing.ui?.icon, moduleKey)) {
+        patch['ui.icon'] = commercialModuleIconId(moduleKey);
+    }
+}
 
 function maskSecret(value) {
     if (!value) return '';
@@ -225,6 +241,7 @@ exports.getCoreModules = async (req, res) => {
         await ensurePlatformQuotesModuleDefinition();
         await ensurePlatformSalesOrdersModuleDefinition();
         await ensurePlatformInvoicesModuleDefinition();
+        await ensurePlatformPaymentsModuleDefinition();
 
         const organization = await Organization.findById(req.user.organizationId);
         if (!organization) {
@@ -235,7 +252,7 @@ exports.getCoreModules = async (req, res) => {
         }
 
         // Get enabled apps for this organization (defensive: handle null/undefined entries and legacy shapes)
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
         const rawApps = Array.isArray(organization.enabledApps) ? organization.enabledApps : [];
         const enabledAppKeys = rawApps
             .filter(app => app != null && (typeof app === 'object' ? app.status === 'ACTIVE' : typeof app === 'string' && app.length > 0))
@@ -246,7 +263,7 @@ exports.getCoreModules = async (req, res) => {
 
         // Core platform modules with explicit ordering
         // Order: People, Organization, Task, Event, Item, Form (new modules added at the bottom)
-        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices'];
+        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments'];
         const coreModuleKeys = [...coreModuleOrder, 'reports']; // reports and any future modules go at the end
 
         // Get all platform-owned modules (appKey: 'platform')
@@ -387,6 +404,9 @@ exports.getCoreModule = async (req, res) => {
         if (String(moduleKey || '').toLowerCase() === 'invoices') {
             await ensurePlatformInvoicesModuleDefinition();
         }
+        if (String(moduleKey || '').toLowerCase() === 'payments') {
+            await ensurePlatformPaymentsModuleDefinition();
+        }
 
         const organization = await Organization.findById(req.user.organizationId);
         
@@ -423,7 +443,7 @@ exports.getCoreModule = async (req, res) => {
             : (module.label || capitalizeFirst(module.moduleKey));
 
         // Get enabled apps (defensive: handle null/undefined entries and legacy shapes)
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
         const rawApps = Array.isArray(organization.enabledApps) ? organization.enabledApps : [];
         const enabledAppKeys = rawApps
             .filter(app => app != null && (typeof app === 'object' ? app.status === 'ACTIVE' : typeof app === 'string' && app.length > 0))
@@ -459,7 +479,7 @@ exports.getCoreModule = async (req, res) => {
         }
 
         // Core module order: People, Organization, Task, Event, Item, Form (new modules at the end)
-        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices'];
+        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments'];
         const orderIndex = coreModuleOrder.indexOf(module.moduleKey);
         const order = orderIndex === -1 ? 999 : orderIndex;
 
@@ -508,7 +528,8 @@ function getRequiredModulesForApp(appKey) {
         'projects': ['people'], // Projects requires People
         'audit': ['people'], // Audit requires People
         'portal': ['people'], // Portal requires People
-        'lms': [] // LMS might not require any
+        'lms': [], // LMS might not require any
+        'inventory': ['people', 'items']
     };
     return requiredModulesMap[appKeyLower] || [];
 }
@@ -540,6 +561,7 @@ async function ensurePlatformQuotesModuleDefinition() {
             patch.quickCreate = [...INITIAL_QUOTE_QUICK_CREATE];
             patch.quickCreateLayout = { version: 1, rows: [] };
         }
+        applyCommercialUiIconPatch(existing, 'quotes', patch);
         if (Object.keys(patch).length) {
             await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
         }
@@ -561,7 +583,7 @@ async function ensurePlatformQuotesModuleDefinition() {
         relationships: cloneQuoteDefaultRelationships(),
         ui: {
             routeBase: '/quotes',
-            icon: '🧾',
+            icon: commercialModuleIconId('quotes'),
             showInSidebar: true,
             sidebarOrder: 8,
             createLabel: 'Create Quote',
@@ -614,6 +636,7 @@ async function ensurePlatformSalesOrdersModuleDefinition() {
                 allowedStatuses: [...SALES_ORDER_STATUSES]
             };
         }
+        applyCommercialUiIconPatch(existing, 'sales_orders', patch);
         if (Object.keys(patch).length) {
             await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
         }
@@ -640,7 +663,7 @@ async function ensurePlatformSalesOrdersModuleDefinition() {
         },
         ui: {
             routeBase: '/sales-orders',
-            icon: '📦',
+            icon: commercialModuleIconId('sales_orders'),
             showInSidebar: true,
             sidebarOrder: 9,
             createLabel: 'Create Sales Order',
@@ -693,6 +716,7 @@ async function ensurePlatformInvoicesModuleDefinition() {
                 allowedStatuses: [...INVOICE_STATUSES]
             };
         }
+        applyCommercialUiIconPatch(existing, 'invoices', patch);
         if (Object.keys(patch).length) {
             await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
         }
@@ -719,11 +743,79 @@ async function ensurePlatformInvoicesModuleDefinition() {
         },
         ui: {
             routeBase: '/invoices',
-            icon: '🧾',
+            icon: commercialModuleIconId('invoices'),
             showInSidebar: true,
             sidebarOrder: 10,
             createLabel: 'Create Invoice',
             listLabel: 'All Invoices',
+            navigationEntity: true,
+            excludeFromApps: true
+        }
+    });
+}
+
+/** Ensures platform.payments exists as a core module (mirrors Invoices bootstrap). */
+async function ensurePlatformPaymentsModuleDefinition() {
+    const existing = await ModuleDefinition.findOne({
+        appKey: 'platform',
+        moduleKey: 'payments',
+        organizationId: null
+    })
+        .select('fields quickCreate lifecycle ui key name')
+        .lean();
+
+    if (existing) {
+        const patch = {
+            key: 'payments',
+            name: 'Payments'
+        };
+        if (!Array.isArray(existing.fields) || existing.fields.length === 0) {
+            patch.fields = applyPaymentModuleFieldDefaults(INITIAL_PAYMENT_FIELDS);
+        }
+        if (!Array.isArray(existing.quickCreate) || existing.quickCreate.length === 0) {
+            patch.quickCreate = [...INITIAL_PAYMENT_QUICK_CREATE];
+            patch.quickCreateLayout = { version: 1, rows: [] };
+        }
+        if (!existing.lifecycle?.allowedStatuses?.length) {
+            patch.lifecycle = {
+                statusField: 'status',
+                allowedStatuses: [...PAYMENT_STATUSES]
+            };
+        }
+        applyCommercialUiIconPatch(existing, 'payments', patch);
+        if (Object.keys(patch).length) {
+            await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
+        }
+        return;
+    }
+
+    await ModuleDefinition.create({
+        appKey: 'platform',
+        moduleKey: 'payments',
+        key: 'payments',
+        name: 'Payments',
+        organizationId: null,
+        label: 'Payment',
+        pluralLabel: 'Payments',
+        entityType: 'TRANSACTION',
+        primaryField: 'paymentNumber',
+        type: 'system',
+        enabled: true,
+        quickCreate: [...INITIAL_PAYMENT_QUICK_CREATE],
+        quickCreateLayout: { version: 1, rows: [] },
+        fields: applyPaymentModuleFieldDefaults(INITIAL_PAYMENT_FIELDS),
+        relationships: [],
+        lifecycle: {
+            statusField: 'status',
+            allowedStatuses: [...PAYMENT_STATUSES]
+        },
+        ui: {
+            routeBase: '/payments',
+            icon: commercialModuleIconId('payments'),
+            showInSidebar: true,
+            sidebarOrder: 11,
+            createLabel: 'Record Payment',
+            listLabel: 'All Payments',
             navigationEntity: true,
             excludeFromApps: true
         }
@@ -782,6 +874,12 @@ function getModuleUsage(moduleKey, appKey) {
             'projects': 'Used for project invoicing',
             'portal': 'Used for customer invoice visibility'
         },
+        'payments': {
+            'sales': 'Used for cash collection against invoices',
+            'helpdesk': 'Used for service payment recording',
+            'projects': 'Used for project payment tracking',
+            'portal': 'Used for customer payment visibility'
+        },
         'reports': {
             'sales': 'Used for sales analytics',
             'helpdesk': 'Used for support metrics',
@@ -823,7 +921,7 @@ exports.toggleAppParticipation = async (req, res) => {
         }
 
         // Validate app key
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
         const appKeyUpper = appKey.toUpperCase();
         if (!VALID_APPS.includes(appKeyUpper)) {
             return res.status(400).json({
@@ -932,7 +1030,7 @@ exports.getApplications = async (req, res) => {
         // Valid apps registry (platform apps currently supported for tenants)
         // NOTE: Helpdesk, Projects, and LMS have been removed from the platform
         // for this deployment. Keep this list in sync with AppDefinition seeds.
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
         
         // App metadata (in a real implementation, this would come from AppDefinition model)
         const appMetadata = {
@@ -950,43 +1048,30 @@ exports.getApplications = async (req, res) => {
                 name: 'Audit',
                 description: 'Audit management and compliance tracking',
                 icon: 'audit'
+            },
+            'INVENTORY': {
+                name: 'Inventory',
+                description: 'Stock ledger, locations, reservations, and fulfillment',
+                icon: 'cube'
             }
         };
 
-        // Get enabled apps from organization
-        const enabledAppEntries = (organization.enabledApps || [])
-            .filter(app => {
-                const appKey = typeof app === 'string' ? app : app.appKey;
-                return VALID_APPS.includes(appKey.toUpperCase());
-            })
-            .map(app => {
-                const appKey = typeof app === 'string' ? app : app.appKey;
-                return {
-                    appKey: appKey.toUpperCase(),
-                    status: typeof app === 'string' ? 'ACTIVE' : app.status,
-                    enabledAt: typeof app === 'object' ? app.enabledAt : new Date()
-                };
-            });
+        const { isAppEnabledForOrg, findEnabledAppEntryForOrg } = require('../utils/appAccessUtils');
 
         // Build applications list with status and dependencies
         const applications = VALID_APPS.map(appKey => {
-            const appEntry = enabledAppEntries.find(e => e.appKey === appKey);
+            const appEntry = findEnabledAppEntryForOrg(organization, appKey);
             const metadata = appMetadata[appKey];
-            
-            // Determine status
+
             let status = 'DISABLED';
             if (appEntry) {
-                if (appEntry.status === 'ACTIVE') {
-                    // Check if it's trial (could be determined by subscription tier)
+                const entryStatus = String(appEntry.status || '').toUpperCase();
+                if (entryStatus === 'SUSPENDED') {
+                    status = 'SUSPENDED';
+                } else if (isAppEnabledForOrg(organization, appKey)) {
                     const isTrial = organization.subscription?.tier === 'trial';
                     status = isTrial ? 'TRIAL' : 'ENABLED';
-                } else {
-                    status = 'SUSPENDED';
                 }
-            } else {
-                // Check if app is included by default (could be determined by subscription)
-                // For now, no apps are included by default
-                status = 'DISABLED';
             }
 
             // Get dependencies (required core modules for this app)
@@ -1003,6 +1088,7 @@ exports.getApplications = async (req, res) => {
                     'quotes': 'Quotes',
                     'sales_orders': 'Sales Orders',
                     'invoices': 'Invoices',
+                    'payments': 'Payments',
                     'reports': 'Reports'
                 };
                 return {
@@ -1054,7 +1140,7 @@ exports.getApplication = async (req, res) => {
 
         // Validate app key
         // Keep in sync with getApplications VALID_APPS
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
         const appKeyUpper = appKey.toUpperCase();
         if (!VALID_APPS.includes(appKeyUpper)) {
             return res.status(400).json({
@@ -1126,6 +1212,7 @@ exports.getApplication = async (req, res) => {
                 'quotes': 'Quotes',
                 'sales_orders': 'Sales Orders',
                 'invoices': 'Invoices',
+                'payments': 'Payments',
                 'reports': 'Reports'
             };
             return {
@@ -1137,7 +1224,7 @@ exports.getApplication = async (req, res) => {
         });
 
         // Get optional modules (modules that this app can use but doesn't require)
-        const allCoreModules = ['people', 'organizations', 'events', 'tasks', 'forms', 'items', 'quotes', 'sales_orders', 'invoices', 'reports'];
+        const allCoreModules = ['people', 'organizations', 'events', 'tasks', 'forms', 'items', 'quotes', 'sales_orders', 'invoices', 'payments', 'reports'];
         const optionalModules = allCoreModules
             .filter(moduleKey => !requiredModules.includes(moduleKey))
             .map(moduleKey => {
@@ -1154,6 +1241,7 @@ exports.getApplication = async (req, res) => {
                     'quotes': 'Quotes',
                     'sales_orders': 'Sales Orders',
                     'invoices': 'Invoices',
+                    'payments': 'Payments',
                     'reports': 'Reports'
                 };
                 return {
@@ -1205,7 +1293,7 @@ exports.getSubscriptions = async (req, res) => {
             });
         }
 
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
         
         // App metadata
         const appMetadata = {
@@ -1371,7 +1459,7 @@ exports.getSubscription = async (req, res) => {
         }
 
         // Validate app key
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
         const appKeyUpper = appKey.toUpperCase();
         if (!VALID_APPS.includes(appKeyUpper)) {
             return res.status(400).json({

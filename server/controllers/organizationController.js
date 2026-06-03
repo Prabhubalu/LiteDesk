@@ -340,28 +340,36 @@ exports.enableApp = async (req, res) => {
             });
         }
 
-        // Check if app is already enabled
-        if (isAppEnabledForOrg(organization, appKey)) {
-            return res.status(400).json({
-                success: false,
-                message: `App ${appKey} is already enabled for this organization`,
-                code: 'APP_ALREADY_ENABLED'
+        const normalizedAppKey = String(appKey).trim().toUpperCase();
+
+        // Idempotent: org may already have the app (e.g. migration) while catalog UI was stale
+        if (isAppEnabledForOrg(organization, normalizedAppKey)) {
+            return res.json({
+                success: true,
+                message: `App ${normalizedAppKey} is already enabled for this organization`,
+                code: 'APP_ALREADY_ENABLED',
+                data: {
+                    enabledApps: organization.enabledApps
+                }
             });
         }
 
-        // Add app to enabledApps
         if (!organization.enabledApps) {
             organization.enabledApps = [];
         }
 
-        // Remove any existing entry for this app (in case it's SUSPENDED)
-        organization.enabledApps = organization.enabledApps.filter(
-            app => typeof app === 'object' ? app.appKey !== appKey : app !== appKey
-        );
+        const stripEntry = (entry) => {
+            const key =
+                typeof entry === 'object' && entry !== null
+                    ? String(entry.appKey || '').trim().toUpperCase()
+                    : String(entry || '').trim().toUpperCase();
+            return key !== normalizedAppKey;
+        };
 
-        // Add new entry
+        organization.enabledApps = organization.enabledApps.filter(stripEntry);
+
         organization.enabledApps.push({
-            appKey: appKey,
+            appKey: normalizedAppKey,
             status: 'ACTIVE',
             enabledAt: new Date()
         });

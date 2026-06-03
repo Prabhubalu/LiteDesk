@@ -5007,6 +5007,10 @@
     "message": "LMS",
     "description": "App display name"
   },
+  "appsNameInventory": {
+    "message": "Inventory",
+    "description": "Inventory app display name"
+  },
   "appsDescSales": {
     "message": "Manage your sales pipeline, deals, and customer relationships",
     "description": "App description"
@@ -8683,6 +8687,10 @@
     "message": "LMS - Learning management and training content.",
     "description": "App management LMS description"
   },
+  "settingsAppMgmtDescInventory": {
+    "message": "Stock ledger, locations, reservations, and fulfillment operations.",
+    "description": "App management Inventory description"
+  },
   "settingsAppMgmtEnableConfirm": {
     "message": "Enable {app}? Users will be able to access this app.",
     "description": "Enable app confirmation"
@@ -9458,6 +9466,14 @@
   "modFieldsGroupCoreInvoice": {
     "message": "Core Invoice Fields",
     "description": "Field group heading for invoice core fields in module settings"
+  },
+  "modFieldsGroupCorePayment": {
+    "message": "Core Payment Fields",
+    "description": "Field group heading for payment core fields in module settings"
+  },
+  "coreModDetailModulePayments": {
+    "message": "Payments",
+    "description": "Payments module title in core module settings"
   },
   "coreModDetailNoteOrganizations": {
     "message": "Organizations are shared business entities (Customer, Partner, Vendor, etc.) used across applications. App participation is controlled at the application level, not here. This view is read-only for transparency.",

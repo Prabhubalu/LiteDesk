@@ -30,7 +30,12 @@ const { sumLedgerOnHand } = require('../../services/inventoryRollupService');
 const { confirmSalesOrder, cancelSalesOrder } = require('../../services/salesOrderManualService');
 const { postSalesOrderFulfillment } = require('../../services/salesOrderFulfillmentService');
 const { getAtpForVariant } = require('../../services/inventoryAtpService');
-const { seedInventoryContext, createTestSalesOrderWithLine, createSecondaryLocation } = require('./helpers/inventoryTestHelper');
+const {
+  seedInventoryContext,
+  seedSalesOnlyContext,
+  createTestSalesOrderWithLine,
+  createSecondaryLocation
+} = require('./helpers/inventoryTestHelper');
 
 let mongoServer;
 
@@ -1126,4 +1131,45 @@ test('receive incoming stub posts receipt and clears incoming rollup', async () 
   }).lean();
   assert.equal(Number(balance.incoming), 0);
   assert.equal(Number(balance.onHand), 5);
+});
+
+test('sales-only tenant skips SO confirm reservation and ATP guard no-ops', async () => {
+  const { tenant, variant, userId } = await seedSalesOnlyContext();
+  const { order, line } = await createTestSalesOrderWithLine({
+    organizationId: tenant._id,
+    userId,
+    variantId: variant._id,
+    quantity: 6
+  });
+
+  await confirmSalesOrder({
+    organizationId: tenant._id,
+    salesOrderRef: order.salesOrderId,
+    userId
+  });
+
+  const reservationCount = await InventoryReservation.countDocuments({
+    organizationId: tenant._id,
+    salesOrderLineId: line.salesOrderLineId
+  });
+  assert.equal(reservationCount, 0);
+
+  const { guardQuoteLineQuantity } = require('../../services/inventoryAtpGuardService');
+  const Quote = require('../../models/Quote');
+  const quote = await Quote.create({
+    organizationId: tenant._id,
+    quoteTitle: 'Sales-only ATP',
+    status: 'Draft',
+    currency: 'USD'
+  });
+
+  const atpResult = await guardQuoteLineQuantity({
+    organizationId: tenant._id,
+    quoteId: quote._id,
+    variantId: variant._id,
+    quantity: 9999,
+    userId
+  });
+  assert.equal(atpResult.sufficient, true);
+  assert.equal(atpResult.inventoryDisabled, true);
 });

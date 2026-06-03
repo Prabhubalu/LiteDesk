@@ -99,6 +99,21 @@ const routes = [
     }),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/dashboard/inventory',
+    name: 'inventory-dashboard',
+    component: () => import('@/views/inventory/InventoryDashboard.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'inventory', action: 'view' },
+      appKey: 'INVENTORY'
+    }
+  },
+  {
+    path: '/inventory',
+    name: 'inventory-home',
+    redirect: '/dashboard/inventory'
+  },
   // Backward compatibility: redirect /dashboard to /sales/dashboard
   {
     path: '/dashboard',

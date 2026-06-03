@@ -538,5 +538,17 @@
   "moduleInvoices": {
     "message": "Invoices",
     "description": "Invoices module navigation label"
+  },
+  "modulePayments": {
+    "message": "Payments",
+    "description": "Payments module navigation label"
+  },
+  "appInventory": {
+    "message": "Inventory",
+    "description": "Inventory app name in app switcher"
+  },
+  "inventoryDashboardBlurb": {
+    "message": "Manage stock locations, ledger movements, reservations, and fulfillment from this workspace.",
+    "description": "Short description on Inventory app dashboard"
   }
 }

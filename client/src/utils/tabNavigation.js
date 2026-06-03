@@ -80,7 +80,11 @@ export function getModuleIcon(path) {
     'imports': 'download',
     'items': 'folder',
     'demo-requests': 'book',
-    'instances': 'computer'
+    'instances': 'computer',
+    'quotes': 'document-text',
+    'sales-orders': 'shopping-cart',
+    'invoices': 'document-currency-dollar',
+    'payments': 'credit-card'
   };
   
   const module = path.split('/')[1];

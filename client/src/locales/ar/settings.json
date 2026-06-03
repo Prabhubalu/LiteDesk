@@ -10978,5 +10978,21 @@
   "modFieldsGroupCoreInvoice": {
     "message": "Core Invoice Fields",
     "description": "Field group heading for invoice core fields in module settings"
+  },
+  "modFieldsGroupCorePayment": {
+    "message": "Core Payment Fields",
+    "description": "Field group heading for payment core fields in module settings"
+  },
+  "coreModDetailModulePayments": {
+    "message": "Payments",
+    "description": "Payments module title in core module settings"
+  },
+  "appsNameInventory": {
+    "message": "Inventory",
+    "description": "Inventory app display name"
+  },
+  "settingsAppMgmtDescInventory": {
+    "message": "Stock ledger, locations, reservations, and fulfillment operations.",
+    "description": "App management Inventory description"
   }
 }

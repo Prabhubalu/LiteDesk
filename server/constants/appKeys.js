@@ -22,6 +22,7 @@
  * - PORTAL: Customer/Partner portal application
  * - AUDIT: Audit management application
  * - LMS: Learning Management System application
+ * - INVENTORY: Inventory & fulfillment operations (stock ledger)
  * - CONTROL_PLANE: Platform internal operations (non-tenant, non-billable)
  */
 const APP_KEYS = {
@@ -31,6 +32,7 @@ const APP_KEYS = {
     PORTAL: 'PORTAL',
     AUDIT: 'AUDIT',
     LMS: 'LMS',
+    INVENTORY: 'INVENTORY',
     CONTROL_PLANE: 'CONTROL_PLANE'
 };
 

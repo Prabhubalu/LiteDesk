@@ -150,6 +150,9 @@ export interface AppRegistryModule {
   
   /** Optional display order */
   order?: number;
+
+  /** When false, omit from app sidebar (module metadata may still exist for API/routes). */
+  showInSidebar?: boolean;
   
   /** Optional app key (if module belongs to an app) */
   appKey?: string;

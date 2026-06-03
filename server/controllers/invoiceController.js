@@ -49,6 +49,7 @@ function handleControllerError(res, error) {
           code === 'NOTHING_TO_INVOICE' ||
           code === 'INVOICE_HAS_PAYMENTS' ||
           code === 'INVOICE_NOT_DRAFT' ||
+          code === 'INVOICE_COMMERCIAL_LOCK' ||
           code === 'INVOICE_NOT_PENDING' ||
           code === 'INVOICE_NOT_POSTED' ||
           code === 'NOTHING_TO_CREDIT' ||

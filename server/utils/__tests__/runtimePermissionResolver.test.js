@@ -12,6 +12,7 @@ const {
   passesOrgAuthorizationGuards,
   materializeRuntimePermissionsOnUser
 } = require('../../services/runtimePermissionResolver');
+const { commercialParticipationActive } = require('../../constants/commercialPlatformParticipation');
 const { projectRoleToUserPermissions } = require('../rolePermissionProjection');
 
 test('org guard blocks deals when SALES app disabled', () => {
@@ -245,4 +246,23 @@ test('materializeRuntimePermissionsOnUser attaches runtime + org context', async
   assert.ok(user._orgPermissionContext);
   assert.equal(user.permissions.deals.view, true);
   assert.equal(user._permissionRuntime.modulesByApp.HELPDESK.cases.view, true);
+});
+
+test('commercial participation requires SALES not INVENTORY alone', () => {
+  assert.equal(commercialParticipationActive(['INVENTORY']), false);
+  assert.equal(commercialParticipationActive(['SALES']), true);
+
+  const inventoryOnly = buildOrgPermissionContext({
+    enabledApps: [{ appKey: 'INVENTORY', status: 'ACTIVE' }],
+    moduleOverrides: {}
+  });
+  assert.equal(inventoryOnly.inventoryEnabled, true);
+  assert.equal(passesOrgAuthorizationGuards(inventoryOnly, 'quotes', 'SALES'), false);
+
+  const salesOnly = buildOrgPermissionContext({
+    enabledApps: [{ appKey: 'SALES', status: 'ACTIVE' }],
+    moduleOverrides: {}
+  });
+  assert.equal(salesOnly.inventoryEnabled, false);
+  assert.equal(passesOrgAuthorizationGuards(salesOnly, 'quotes', 'SALES'), true);
 });

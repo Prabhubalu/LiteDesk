@@ -13,6 +13,7 @@ const {
   consumeReservation,
   restoreReservationConsumption
 } = require('./inventoryReservationService');
+const { isInventoryEnabled } = require('./inventoryCapabilityService');
 
 const DEDUCT_TYPES = new Set(INVENTORY_FULFILLMENT_DEDUCT_TYPES);
 
@@ -31,6 +32,10 @@ async function applyFulfillment({
   userId = null,
   isReversal = false
 }) {
+  if (!(await isInventoryEnabled(organizationId))) {
+    return { applied: false, transactions: [], inventoryDisabled: true };
+  }
+
   if (!shouldApplyInventoryForFulfillmentType(fulfillmentType) && !isReversal) {
     return { applied: false, transactions: [] };
   }

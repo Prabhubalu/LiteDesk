@@ -43,6 +43,7 @@ export const useAuthStore = defineStore('auth', {
         isTrialActive: (state) => state.organization?.subscription?.status === 'trial',
         subscriptionTier: (state) => state.organization?.subscription?.tier || 'trial',
         enabledModules: (state) => state.organization?.enabledModules || [],
+        inventoryEnabled: (state) => state.organization?.capabilities?.inventory === true,
         isMasterOrganization: (state) => state.organization?.name === 'Arivu Master',
         isPlatformAdmin: (state) => {
             // Check if user is platform admin (Phase 0H)

@@ -794,10 +794,10 @@
           </template>
 
           <!-- Items / Quotes / Sales Orders: grouped by field model ownership -->
-          <template v-else-if="isItemsModule || isQuotesModule || isSalesOrdersModule || isInvoicesModule">
+          <template v-else-if="isItemsModule || isQuotesModule || isSalesOrdersModule || isInvoicesModule || isPaymentsModule">
             <!-- Core catalog fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ isQuotesModule ? t('settings.modFieldsGroupCoreQuote') : isSalesOrdersModule ? t('settings.modFieldsGroupCoreSalesOrder') : isInvoicesModule ? t('settings.modFieldsGroupCoreInvoice') : t('settings.modFieldsGroupCoreItem') }}</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ isQuotesModule ? t('settings.modFieldsGroupCoreQuote') : isSalesOrdersModule ? t('settings.modFieldsGroupCoreSalesOrder') : isInvoicesModule ? t('settings.modFieldsGroupCoreInvoice') : isPaymentsModule ? t('settings.modFieldsGroupCorePayment') : t('settings.modFieldsGroupCoreItem') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="(fieldKey, idx) in groupedFields.coreIdentity"
@@ -5156,13 +5156,12 @@ import {
   CalendarDaysIcon,
   FolderIcon,
   ClipboardDocumentListIcon,
-  DocumentTextIcon,
-  ShoppingCartIcon,
   BanknotesIcon,
   LifebuoyIcon,
   TicketIcon,
   CubeIcon
 } from '@heroicons/vue/24/outline';
+import { MODULE_ICON_COMPONENTS } from '@/utils/moduleIcons';
 
 // DEV-only guards: Forms Settings must never support execution
 if (process.env.NODE_ENV === 'development') {
@@ -5261,6 +5260,7 @@ import {
 import {
   ITEM_FIELD_METADATA,
   getItemFieldMetadata,
+  shouldShowItemFieldForCapabilities,
   getCoreItemFields,
   getItemSystemFields,
   getItemParticipationFields,
@@ -5270,6 +5270,10 @@ import {
   groupItemFields,
   classifyItemField
 } from '@/platform/fields/itemFieldModel';
+import {
+  filterItemTypeOptionsForCapabilities,
+  filterModuleFieldsForInventory,
+} from '@/utils/inventoryCapability';
 import {
   classifyQuoteField,
   isQuoteProtectedField,
@@ -5285,6 +5289,11 @@ import {
   isInvoiceProtectedField,
   isExcludedFromInvoiceQuickCreate
 } from '@/platform/fields/invoiceFieldModel';
+import {
+  classifyPaymentField,
+  isPaymentProtectedField,
+  isExcludedFromPaymentQuickCreate
+} from '@/platform/fields/paymentFieldModel';
 import {
   CATALOG_LIFECYCLE_STATES,
   CATALOG_LIFECYCLE_LABEL_KEYS
@@ -5376,7 +5385,8 @@ function normalizeFieldsForConfig(moduleKey, fields) {
         moduleKey,
         getMetadata
       });
-      return mk === 'items' ? hydrateItemsPicklistDefaults(merged) : merged;
+      const hydrated = mk === 'items' ? hydrateItemsPicklistDefaults(merged) : merged;
+      return filterModuleFieldsForInventory(mk, hydrated, authStore.inventoryEnabled);
     }
   }
 
@@ -5387,7 +5397,16 @@ function normalizeFieldsForConfig(moduleKey, fields) {
 
 function hydrateItemsPicklistDefaults(fields) {
   const UNIT_OF_MEASURE_DEFAULTS = ['pcs', 'liters', 'hours', 'boxes', 'kg', 'meters', 'units'];
-  const ITEM_TYPE_DEFAULTS = ['Product', 'Service', 'Serialized Product', 'Non-Stock Product', 'Bundle'];
+  const ITEM_TYPE_DEFAULTS = filterItemTypeOptionsForCapabilities(
+    [
+      { value: 'Product' },
+      { value: 'Service' },
+      { value: 'Serialized Product' },
+      { value: 'Non-Stock Product' },
+      { value: 'Bundle' },
+    ],
+    authStore.inventoryEnabled
+  ).map((row) => row.value);
   const LIFECYCLE_DEFAULTS = ['Draft', 'Active', 'Discontinued', 'Archived'];
   return (Array.isArray(fields) ? fields : []).map((f) => {
     const key = String(f?.key || '').toLowerCase().trim();
@@ -5440,9 +5459,7 @@ const moduleCardIconMap = {
   events: CalendarDaysIcon,
   items: FolderIcon,
   forms: ClipboardDocumentListIcon,
-  quotes: DocumentTextIcon,
-  sales_orders: ShoppingCartIcon,
-  invoices: DocumentTextIcon,
+  ...MODULE_ICON_COMPONENTS,
   deals: BanknotesIcon,
   cases: TicketIcon
 };
@@ -6891,6 +6908,10 @@ const isInvoicesModule = computed(() => {
   return selectedModule.value?.key?.toLowerCase() === 'invoices';
 });
 
+const isPaymentsModule = computed(() => {
+  return selectedModule.value?.key?.toLowerCase() === 'payments';
+});
+
 // Check if current module is Forms
 // ARCHITECTURE NOTE: Forms Settings configure structure & behavior ONLY.
 // MUST NOT: Edit sections/questions, Edit responses, Execute workflows, Run scoring
@@ -7144,6 +7165,14 @@ const quickCreateAvailableFields = computed(() => {
     });
   }
 
+  if (isPaymentsModule.value) {
+    return editFields.value.filter((field) => {
+      if (!field?.key) return false;
+      if (isSystemField(field)) return false;
+      return !isExcludedFromPaymentQuickCreate(field.key);
+    });
+  }
+
   // For other modules (Deals, Items, etc.): only non-system fields
   return editFields.value.filter(f => f.key && !isSystemField(f));
 });
@@ -7195,7 +7224,7 @@ const quickCreateEventParticipationEntries = computed(() => {
 // See: docs/architecture/event-settings.md Section 6
 // See: client/src/platform/modules/forms/formsModule.definition.ts
 const groupedFields = computed(() => {
-  if (!isPeopleModule.value && !isOrganizationsModule.value && !isTasksModule.value && !isEventsModule.value && !isFormsModule.value && !isItemsModule.value && !isQuotesModule.value && !isSalesOrdersModule.value && !isInvoicesModule.value && !isDealsModule.value && !isCasesModule.value) {
+  if (!isPeopleModule.value && !isOrganizationsModule.value && !isTasksModule.value && !isEventsModule.value && !isFormsModule.value && !isItemsModule.value && !isQuotesModule.value && !isSalesOrdersModule.value && !isInvoicesModule.value && !isPaymentsModule.value && !isDealsModule.value && !isCasesModule.value) {
     return { coreIdentity: [], participation: {}, system: [] };
   }
 
@@ -7339,6 +7368,28 @@ const groupedFields = computed(() => {
 
       if (isInvoicesModule.value) {
         const classification = classifyInvoiceField(fieldKey);
+
+        if (classification === 'core') {
+          coreIdentity.push(fieldKey);
+          continue;
+        }
+
+        if (classification === 'system') {
+          system.push(fieldKey);
+          continue;
+        }
+
+        if (!classification) {
+          system.push(fieldKey);
+          continue;
+        }
+
+        system.push(fieldKey);
+        continue;
+      }
+
+      if (isPaymentsModule.value) {
+        const classification = classifyPaymentField(fieldKey);
 
         if (classification === 'core') {
           coreIdentity.push(fieldKey);
@@ -8083,6 +8134,10 @@ function isCoreField(field, moduleKey) {
 
   if (moduleKey.toLowerCase() === 'invoices') {
     return isInvoiceProtectedField(field.key);
+  }
+
+  if (moduleKey.toLowerCase() === 'payments') {
+    return isPaymentProtectedField(field.key);
   }
   
   // For Forms module, check formSettingsMap for system/fixed field markers

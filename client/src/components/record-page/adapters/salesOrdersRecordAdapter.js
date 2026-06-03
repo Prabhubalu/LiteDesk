@@ -9,7 +9,17 @@ import SalesOrderLineageRecordSection from '@/components/record-page/sections/Sa
 import SalesOrderInvoiceReadinessRecordSection from '@/components/record-page/sections/SalesOrderInvoiceReadinessRecordSection.vue';
 import SalesOrderBillingCoverageRecordSection from '@/components/record-page/sections/SalesOrderBillingCoverageRecordSection.vue';
 
-const SO_SECTION_STACK = ['details', 'lines', 'fulfillment', 'lineage', 'billing', 'invoice', 'source', 'related', 'description'];
+const SO_SECTION_STACK = [
+  'details',
+  'lines',
+  'fulfillment',
+  'lineage',
+  'billing',
+  'invoice',
+  'source',
+  'related',
+  'description'
+];
 
 function resolveExpandedSection(opts) {
   const expanded = opts.expandedLeftSection;

@@ -43,7 +43,7 @@
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-2">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                {{ getAppDisplayName(app.appKey) }}
+                {{ getAppDisplayName(app) }}
               </h3>
               <!-- Status Badge -->
               <span
@@ -58,7 +58,7 @@
 
             <!-- App Description -->
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              {{ getAppDescription(app.appKey) }}
+              {{ getAppDescription(app) }}
             </p>
 
             <!-- Seat Usage Info (for PER_USER apps) -->
@@ -179,6 +179,7 @@ async function syncAppEntitlementCaches() {
 const loading = ref(true);
 const error = ref('');
 const organization = ref(null);
+const applicationsCatalog = ref([]);
 const capabilities = ref([]);
 const processing = ref(null);
 
@@ -188,7 +189,8 @@ const APP_NAME_KEYS = {
   PROJECTS: 'settings.appsNameProjects',
   PORTAL: 'settings.appsNamePortal',
   AUDIT: 'settings.appsNameAudit',
-  LMS: 'settings.appsNameLms'
+  LMS: 'settings.appsNameLms',
+  INVENTORY: 'settings.appsNameInventory'
 };
 
 const APP_DESC_KEYS = {
@@ -197,7 +199,8 @@ const APP_DESC_KEYS = {
   PROJECTS: 'settings.settingsAppMgmtDescProjects',
   PORTAL: 'settings.settingsAppMgmtDescPortal',
   AUDIT: 'settings.settingsAppMgmtDescAudit',
-  LMS: 'settings.settingsAppMgmtDescLms'
+  LMS: 'settings.settingsAppMgmtDescLms',
+  INVENTORY: 'settings.settingsAppMgmtDescInventory'
 };
 
 const STATUS_KEYS = {
@@ -206,49 +209,56 @@ const STATUS_KEYS = {
   DISABLED: 'settings.settingsAppsStatusDisabled'
 };
 
-// All tenant-manageable apps (must match server: settingsController enable/disable VALID_APPS)
-const allAppKeys = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS'];
+/** Map GET /settings/applications status to enable/disable UI status. */
+function mapCatalogStatusToMgmt(status) {
+  const normalized = String(status || '').toUpperCase();
+  if (normalized === 'ENABLED' || normalized === 'TRIAL') return 'ACTIVE';
+  if (normalized === 'SUSPENDED') return 'SUSPENDED';
+  return 'DISABLED';
+}
 
-// Computed: All apps with status and seat info
+// Server-driven app catalog + seat capabilities from add-capabilities
 const allApps = computed(() => {
-  const apps = [];
-  const enabledAppsMap = {};
   const capabilitiesMap = {};
-
-  // Build map of enabled apps from organization
-  if (organization.value?.enabledApps) {
-    for (const enabledApp of organization.value.enabledApps) {
-      const appKey = typeof enabledApp === 'object' ? enabledApp.appKey : enabledApp;
-      const status = typeof enabledApp === 'object' ? enabledApp.status : 'ACTIVE';
-      enabledAppsMap[appKey] = status;
-    }
-  }
-
-  // Build map of capabilities (seat info)
   for (const cap of capabilities.value) {
     capabilitiesMap[cap.appKey] = cap;
   }
 
-  // Create app entries for all apps in registry
-  for (const appKey of allAppKeys) {
-    const status = enabledAppsMap[appKey] || 'DISABLED';
+  return applicationsCatalog.value.map((app) => {
+    const appKey = String(app.appKey || '').toUpperCase();
     const cap = capabilitiesMap[appKey];
-    
-    apps.push({
-      appKey: appKey,
-      status: status,
+    return {
+      appKey,
+      name: app.name,
+      description: app.description,
+      status: mapCatalogStatusToMgmt(app.status),
       roles: cap?.roles || [],
       userTypesAllowed: cap?.userTypesAllowed || [],
       seatInfo: cap?.seatInfo || null
-    });
-  }
-
-  return apps;
+    };
+  });
 });
 
 onMounted(async () => {
-  await Promise.all([fetchOrganization(), fetchCapabilities()]);
+  loading.value = true;
+  error.value = '';
+  try {
+    await Promise.all([fetchApplications(), fetchCapabilities()]);
+  } finally {
+    loading.value = false;
+  }
 });
+
+const fetchApplications = async () => {
+  try {
+    const data = await apiClient('/settings/applications', { method: 'GET' });
+    applicationsCatalog.value = Array.isArray(data?.applications) ? data.applications : [];
+  } catch (err) {
+    console.error('Error fetching applications catalog:', err);
+    applicationsCatalog.value = [];
+    error.value = t('settings.settingsAppMgmtLoadFailed');
+  }
+};
 
 const fetchOrganization = async () => {
   try {
@@ -270,20 +280,23 @@ const fetchCapabilities = async () => {
     }
   } catch (err) {
     console.error('Error fetching capabilities:', err);
-    // Don't set error here, just log it
-  } finally {
-    loading.value = false;
   }
 };
 
-const getAppDisplayName = (appKey) => {
-  const key = APP_NAME_KEYS[appKey];
-  return key ? t(key) : appKey;
+const getAppDisplayName = (app) => {
+  const appKey = typeof app === 'string' ? app : app?.appKey;
+  const labelKey = APP_NAME_KEYS[appKey];
+  if (labelKey) return t(labelKey);
+  if (typeof app === 'object' && app?.name) return app.name;
+  return appKey || '';
 };
 
-const getAppDescription = (appKey) => {
-  const key = APP_DESC_KEYS[appKey];
-  return key ? t(key) : t('settings.settingsAppMgmtNoDesc');
+const getAppDescription = (app) => {
+  const appKey = typeof app === 'string' ? app : app?.appKey;
+  const descKey = APP_DESC_KEYS[appKey];
+  if (descKey) return t(descKey);
+  if (typeof app === 'object' && app?.description) return app.description;
+  return t('settings.settingsAppMgmtNoDesc');
 };
 
 const getStatusDisplay = (status) => {
@@ -301,7 +314,7 @@ const getStatusBadgeClass = (status) => {
 };
 
 const handleEnable = async (app) => {
-  if (!confirm(t('settings.settingsAppMgmtEnableConfirm', { app: getAppDisplayName(app.appKey) }))) {
+  if (!confirm(t('settings.settingsAppMgmtEnableConfirm', { app: getAppDisplayName(app) }))) {
     return;
   }
 
@@ -314,15 +327,21 @@ const handleEnable = async (app) => {
     });
 
     if (response.success) {
-      // Refresh organization data
-      await fetchOrganization();
-      // Refresh capabilities to get updated seat info
-      await fetchCapabilities();
+      await Promise.all([fetchApplications(), fetchCapabilities(), fetchOrganization()]);
       await syncAppEntitlementCaches();
     } else {
       error.value = response.message || t('settings.settingsAppMgmtEnableFailed');
     }
   } catch (err) {
+    const code = err.response?.data?.code || err.code;
+    const alreadyEnabled =
+      code === 'APP_ALREADY_ENABLED' ||
+      String(err.message || '').toLowerCase().includes('already enabled');
+    if (alreadyEnabled) {
+      await Promise.all([fetchApplications(), fetchCapabilities(), fetchOrganization()]);
+      await syncAppEntitlementCaches();
+      return;
+    }
     console.error('Error enabling app:', err);
     error.value = err.message || t('settings.settingsAppMgmtEnableFailed');
     if (err.response?.data?.message) {
@@ -334,7 +353,7 @@ const handleEnable = async (app) => {
 };
 
 const handleDisable = async (app) => {
-  if (!confirm(t('settings.settingsAppMgmtDisableConfirm', { app: getAppDisplayName(app.appKey) }))) {
+  if (!confirm(t('settings.settingsAppMgmtDisableConfirm', { app: getAppDisplayName(app) }))) {
     return;
   }
 
@@ -347,10 +366,7 @@ const handleDisable = async (app) => {
     });
 
     if (response.success) {
-      // Refresh organization data
-      await fetchOrganization();
-      // Refresh capabilities to get updated seat info
-      await fetchCapabilities();
+      await Promise.all([fetchApplications(), fetchCapabilities(), fetchOrganization()]);
       await syncAppEntitlementCaches();
     } else {
       error.value = response.message || t('settings.settingsAppMgmtDisableFailed');

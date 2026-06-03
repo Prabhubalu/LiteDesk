@@ -35,6 +35,7 @@ const URL_NAMESPACE_MAP = {
     '/api/audit': APP_KEYS.AUDIT,  // Must come before /api
     '/api/portal': APP_KEYS.PORTAL, // Must come before /api
     '/api/lms': APP_KEYS.LMS,       // Must come before /api
+    '/api/inventory': APP_KEYS.INVENTORY, // Must come before /api
     '/api/control': APP_KEYS.CONTROL_PLANE, // Must come before /api
     '/app/crm': APP_KEYS.SALES,
     '/helpdesk': APP_KEYS.HELPDESK,
