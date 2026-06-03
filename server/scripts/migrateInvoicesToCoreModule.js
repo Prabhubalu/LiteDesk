@@ -18,7 +18,7 @@ const { INVOICE_STATUSES } = require('../constants/invoiceLifecycle');
 
 const INVOICES_UI = {
   routeBase: '/invoices',
-  icon: '🧾',
+  icon: require('../constants/commercialModuleIcons').commercialModuleIconId('invoices'),
   showInSidebar: true,
   sidebarOrder: 10,
   createLabel: 'Create Invoice',

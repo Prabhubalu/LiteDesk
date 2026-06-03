@@ -14,6 +14,7 @@ const {
 const { ensureDefaultSection } = require('./salesOrderSectionService');
 const { writeSalesOrderActivity } = require('./salesOrderActivityService');
 const { reserveForSalesOrder, releaseForSalesOrder } = require('./inventoryReservationService');
+const { isInventoryEnabled } = require('./inventoryCapabilityService');
 
 function normalizeNumber(value, { defaultValue = 0 } = {}) {
   const n = Number(value);
@@ -96,24 +97,26 @@ async function confirmSalesOrder({ organizationId, salesOrderRef, userId }) {
   await order.save();
 
   let inventoryReservation = null;
-  try {
-    inventoryReservation = await reserveForSalesOrder({
-      organizationId,
-      salesOrderId: order._id,
-      userId
-    });
-  } catch (err) {
-    await releaseForSalesOrder({
-      organizationId,
-      salesOrderId: order._id,
-      userId,
-      reason: 'confirm_failed',
-      status: 'cancelled'
-    });
-    order.status = fromStatus;
-    order.modifiedBy = userId ?? null;
-    await order.save();
-    throw err;
+  if (await isInventoryEnabled(organizationId)) {
+    try {
+      inventoryReservation = await reserveForSalesOrder({
+        organizationId,
+        salesOrderId: order._id,
+        userId
+      });
+    } catch (err) {
+      await releaseForSalesOrder({
+        organizationId,
+        salesOrderId: order._id,
+        userId,
+        reason: 'confirm_failed',
+        status: 'cancelled'
+      });
+      order.status = fromStatus;
+      order.modifiedBy = userId ?? null;
+      await order.save();
+      throw err;
+    }
   }
 
   await writeSalesOrderActivity({
@@ -169,8 +172,72 @@ async function cancelSalesOrder({ organizationId, salesOrderRef, userId }) {
   return order.toObject();
 }
 
+/**
+ * Soft-delete Draft sales order (trash). Confirmed+ orders must be cancelled, not deleted.
+ */
+async function deleteDraftSalesOrder({
+  organizationId,
+  salesOrderRef,
+  userId,
+  reason = null,
+  cascadeConfirmed = false
+}) {
+  const ref = String(salesOrderRef || '').trim();
+  const order =
+    (await SalesOrder.findOne({ organizationId, salesOrderId: ref, deletedAt: null })) ||
+    (await SalesOrder.findOne({ organizationId, _id: ref, deletedAt: null }));
+
+  if (!order) {
+    const err = new Error('Sales order not found');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+
+  if (String(order.status || '') !== 'Draft') {
+    const err = new Error('Only Draft sales orders can be deleted.');
+    err.code = 'SALES_ORDER_NOT_DRAFT';
+    err.details = { status: order.status };
+    throw err;
+  }
+
+  const deletionService = require('./deletionService');
+  const result = await deletionService.moveToTrash({
+    moduleKey: 'sales_orders',
+    recordId: order._id,
+    organizationId,
+    userId,
+    appKey: 'platform',
+    reason,
+    cascadeConfirmed: !!cascadeConfirmed
+  });
+
+  if (!result.ok) {
+    const err = new Error(result.message || 'Failed to delete sales order');
+    err.code = result.blocked ? 'DELETE_BLOCKED' : 'DELETE_FAILED';
+    err.blocked = !!result.blocked;
+    err.dependencies = result.dependencies;
+    throw err;
+  }
+
+  await writeSalesOrderActivity({
+    organizationId,
+    salesOrderId: order._id,
+    userId,
+    action: 'sales_order_deleted',
+    message: 'Sales order moved to trash',
+    details: { retentionExpiresAt: result.retentionExpiresAt }
+  });
+
+  return {
+    salesOrderId: order.salesOrderId,
+    salesOrderNumber: order.salesOrderNumber,
+    retentionExpiresAt: result.retentionExpiresAt
+  };
+}
+
 module.exports = {
   createManualSalesOrder,
   confirmSalesOrder,
-  cancelSalesOrder
+  cancelSalesOrder,
+  deleteDraftSalesOrder
 };

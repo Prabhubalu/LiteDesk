@@ -1,19 +1,36 @@
 const { PAYMENT_STATUSES, PAYMENT_PURPOSES } = require('./paymentLifecycle');
 
 const INITIAL_PAYMENT_QUICK_CREATE = [
-  { key: 'organizationRefId', required: true },
-  { key: 'amount', required: true },
-  { key: 'paymentCurrency', required: true },
-  { key: 'paymentDate', required: true },
-  { key: 'paymentPurpose', required: true }
+  'organizationRefId',
+  'amount',
+  'paymentCurrency',
+  'paymentDate',
+  'paymentPurpose'
 ];
 
+const INITIAL_PAYMENT_REQUIRED_FIELDS = ['amount', 'paymentCurrency', 'paymentDate'];
+
+const INITIAL_PAYMENT_REQUIRED_SET = new Set(
+  INITIAL_PAYMENT_REQUIRED_FIELDS.map((k) => String(k).toLowerCase())
+);
+
 function applyPaymentModuleFieldDefaults(fields) {
-  return (fields || []).map((field) => ({
-    visible: true,
-    editable: !field.system,
-    ...field
-  }));
+  if (!Array.isArray(fields)) return fields;
+  return fields.map((field) => {
+    const key = String(field?.key || '').toLowerCase();
+    const withDefaults = {
+      visible: true,
+      editable: !field.system,
+      ...field
+    };
+    if (!INITIAL_PAYMENT_REQUIRED_SET.has(key)) return withDefaults;
+    if (field.required === false) return withDefaults;
+    return { ...withDefaults, required: true };
+  });
+}
+
+function isInitialPaymentRequiredField(fieldKey) {
+  return INITIAL_PAYMENT_REQUIRED_SET.has(String(fieldKey || '').toLowerCase());
 }
 
 const INITIAL_PAYMENT_FIELDS = [
@@ -31,6 +48,8 @@ const INITIAL_PAYMENT_FIELDS = [
 
 module.exports = {
   INITIAL_PAYMENT_QUICK_CREATE,
+  INITIAL_PAYMENT_REQUIRED_FIELDS,
   INITIAL_PAYMENT_FIELDS,
-  applyPaymentModuleFieldDefaults
+  applyPaymentModuleFieldDefaults,
+  isInitialPaymentRequiredField
 };

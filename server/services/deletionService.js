@@ -27,6 +27,7 @@ const MODEL_BY_KEY = {
   organizations: () => require('../models/Organization'),
   deals: () => require('../models/Deal'),
   quotes: () => require('../models/Quote'),
+  sales_orders: () => require('../models/SalesOrder'),
   tasks: () => require('../models/Task'),
   events: () => require('../models/Event'),
   items: () => require('../models/Item'),
@@ -38,6 +39,7 @@ const APP_KEY_BY_MODULE = {
   organizations: 'SALES',
   deals: 'SALES',
   quotes: 'platform',
+  sales_orders: 'platform',
   tasks: 'platform',
   events: 'platform',
   items: 'platform',
@@ -98,6 +100,9 @@ function computeDisplayName(moduleKey, record, originalId) {
   if (moduleKey === 'items') return record.item_name || originalId;
   if (moduleKey === 'cases') return record.title || record.caseId || String(originalId || '');
   if (moduleKey === 'quotes') return record.quoteNumber || record.quoteTitle || String(originalId || '');
+  if (moduleKey === 'sales_orders') {
+    return record.salesOrderNumber || record.orderTitle || String(originalId || '');
+  }
   return String(originalId || '');
 }
 

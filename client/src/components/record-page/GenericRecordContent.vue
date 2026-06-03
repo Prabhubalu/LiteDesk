@@ -959,8 +959,11 @@ import { getPaymentActivityMessage } from '@/components/activity/adapters/paymen
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import {
+  extractIdFromFormValue,
   getOrgContactCoordinatedPatches,
+  normalizeFieldKeyLoose,
   resolveOrgContactPair,
+  resolvePersonFromContactLookupList,
   unwrapRecordFromListOrGetResponse,
 } from '@/utils/orgContactFormPairing';
 import RecordPageShell from '@/components/record-page/RecordPageShell.vue';
@@ -1044,6 +1047,7 @@ import {
   ArrowTopRightOnSquareIcon,
   ArrowRightCircleIcon
 } from '@heroicons/vue/24/outline';
+import { getModuleIconComponent } from '@/utils/moduleIcons';
 import Avatar from '@/components/common/Avatar.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DOMPurify from 'dompurify';
@@ -1637,7 +1641,7 @@ const recordAvatarIcon = computed(() => {
     items: CubeIcon,
     forms: DocumentTextIcon
   };
-  return map[key] || DocumentTextIcon;
+  return map[key] || getModuleIconComponent(key);
 });
 
 const canEditRecord = computed(() => authStore.can?.(props.moduleKey, 'edit') ?? false);
@@ -1915,7 +1919,19 @@ const genericAdapter = computed(() => {
     sectionLabels: createRecordSectionLabels(t),
     formatDate: (d) => (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
     moduleDefinition: moduleDefinition.value,
-    canEditDetails: () => canEditRecord.value,
+    inventoryEnabled: authStore.inventoryEnabled,
+    canEditDetails: (record, fieldKey) => {
+      if (!canEditRecord.value) return false;
+      if (moduleKeyLower.value !== 'invoices') return true;
+      const key = normalizeFieldKeyLoose(fieldKey);
+      const status = String(record?.status || 'Draft');
+      if (status === 'Draft') return true;
+      if (['Posted', 'Partially Paid'].includes(status)) {
+        if (key === 'organizationrefid') return !extractIdFromFormValue(record?.organizationRefId);
+        if (key === 'contactid') return !extractIdFromFormValue(record?.contactId);
+      }
+      return false;
+    },
     saveDetailField: async (fieldKey, value) => {
       const moduleKeyLower = (props.moduleKey || '').toLowerCase();
 
@@ -1970,16 +1986,30 @@ const genericAdapter = computed(() => {
         return;
       }
 
-      const caseLoose = String(fieldKey || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
-      const caseCanonical = { contactid: 'contactId', organizationrefid: 'organizationRefId', caseownerid: 'caseOwnerId' }[caseLoose];
-      const payloadKey = moduleKeyLower === 'cases' && caseCanonical ? caseCanonical : fieldKey;
+      const fieldLoose = String(fieldKey || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+      const commercialCanonical = { contactid: 'contactId', organizationrefid: 'organizationRefId', dealid: 'dealId' }[fieldLoose];
+      const caseCanonical = { contactid: 'contactId', organizationrefid: 'organizationRefId', caseownerid: 'caseOwnerId' }[fieldLoose];
+      let payloadKey = fieldKey;
+      if (moduleKeyLower === 'cases' && caseCanonical) {
+        payloadKey = caseCanonical;
+      } else if (['invoices', 'quotes'].includes(moduleKeyLower) && commercialCanonical) {
+        payloadKey = commercialCanonical;
+      }
       const payload = { [payloadKey]: value };
 
       const pair = resolveOrgContactPair(moduleKeyLower, moduleDefinition.value?.fields || []);
+      let coordinationValue = value;
+      if (pair && normalizeFieldKeyLoose(payloadKey) === normalizeFieldKeyLoose(pair.contactKey)) {
+        coordinationValue = resolvePersonFromContactLookupList(value, quoteContactLookupList.value);
+      }
       if (pair) {
-        const formAfter = { ...record.value, [payloadKey]: value };
+        const formAfter = { ...record.value, [payloadKey]: coordinationValue };
         const fetchPersonById = async (id) => {
           if (!id) return null;
+          const cached = resolvePersonFromContactLookupList(id, quoteContactLookupList.value);
+          if (cached && typeof cached === 'object' && cached._id != null) {
+            return cached;
+          }
           try {
             const r = await apiClient.get(`/people/${id}`);
             return unwrapRecordFromListOrGetResponse(r);
@@ -1991,10 +2021,14 @@ const genericAdapter = computed(() => {
           pair,
           formAfter,
           changedKey: payloadKey,
-          newValue: value,
+          newValue: coordinationValue,
           fetchPersonById,
         });
         Object.assign(payload, extra);
+        if (record.value) {
+          record.value[payloadKey] = coordinationValue;
+          Object.assign(record.value, extra);
+        }
       }
       const response = await apiClient.put(`${recordCrudPathBase.value}/${props.recordId}`, payload);
       const updatedRecord = response?.data ?? null;
@@ -2051,13 +2085,14 @@ const genericAdapter = computed(() => {
       if ((props.moduleKey || '').toLowerCase() === 'cases' && (key === 'organizationrefid' || key === 'accountid')) {
         return caseOrganizationLookupList.value;
       }
-      if ((props.moduleKey || '').toLowerCase() === 'quotes' && key === 'contactid') {
+      const mk = (props.moduleKey || '').toLowerCase();
+      if ((mk === 'quotes' || mk === 'invoices') && key === 'contactid') {
         return quoteContactLookupList.value;
       }
-      if ((props.moduleKey || '').toLowerCase() === 'quotes' && key === 'organizationrefid') {
+      if ((mk === 'quotes' || mk === 'invoices') && key === 'organizationrefid') {
         return quoteOrganizationLookupList.value;
       }
-      if ((props.moduleKey || '').toLowerCase() === 'quotes' && key === 'dealid') {
+      if ((mk === 'quotes' || mk === 'invoices') && key === 'dealid') {
         return quoteDealLookupList.value;
       }
       const fieldDef = (moduleDefinition.value?.fields || []).find(
@@ -2110,6 +2145,8 @@ function moduleFetchContextForRecord() {
   return ctx && ctx !== 'platform' ? ctx : undefined;
 }
 
+const salesOrderBillingRefreshToken = ref(0);
+
 const sectionContext = computed(() => {
   const base = {
     expandedLeftSection: expandedLeftSection.value,
@@ -2127,6 +2164,9 @@ const sectionContext = computed(() => {
   if (moduleKeyLower.value === 'items') {
     base.onCatalogUpdated = () => fetchRecord();
     base.canEditCatalog = canEditRecord.value;
+  }
+  if (moduleKeyLower.value === 'sales_orders') {
+    base.billingRefreshToken = salesOrderBillingRefreshToken.value;
   }
   return base;
 });
@@ -2759,6 +2799,13 @@ function handleSectionUpdated(event) {
       if (payload.totals) Object.assign(record.value, payload.totals);
       if (Array.isArray(payload.lines)) record.value.lines = payload.lines;
       if (Array.isArray(payload.sections)) record.value.sections = payload.sections;
+      if (event?.sectionKey === 'fulfillment') {
+        salesOrderBillingRefreshToken.value += 1;
+      }
+      return;
+    }
+    if (payload?.type === 'billing-refresh') {
+      salesOrderBillingRefreshToken.value += 1;
       return;
     }
     if (payload?.type === 'line-deleted') {
@@ -3107,7 +3154,7 @@ async function loadCaseLookups(lowerModuleKey, isCurrentRun) {
 }
 
 async function loadQuoteLookups(lowerModuleKey, isCurrentRun) {
-  if (lowerModuleKey !== 'quotes') {
+  if (!['quotes', 'invoices'].includes(lowerModuleKey)) {
     if (isCurrentRun()) {
       quoteContactLookupList.value = [];
       quoteOrganizationLookupList.value = [];

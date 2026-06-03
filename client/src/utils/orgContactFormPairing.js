@@ -12,6 +12,8 @@ const TENANT_ORG_KEYS = new Set(['organizationid']);
 const PREDEFINED_PAIRS = {
   deals: { orgKey: 'accountId', contactKey: 'contactId' },
   cases: { orgKey: 'organizationRefId', contactKey: 'contactId' },
+  invoices: { orgKey: 'organizationRefId', contactKey: 'contactId' },
+  quotes: { orgKey: 'organizationRefId', contactKey: 'contactId' },
 };
 
 /** Collapse to compare settings/API keys: "Contact Id", "contactId", "contactid" all match. */
@@ -56,17 +58,19 @@ function hasFieldKey(fields, key) {
  * @returns {{ orgKey: string, contactKey: string } | null}
  */
 export function resolveOrgContactPair(moduleKey, fields) {
-  if (!Array.isArray(fields) || fields.length === 0) return null;
   const mk = String(moduleKey || '').toLowerCase();
   const preset = PREDEFINED_PAIRS[mk];
   if (preset) {
-    const orgField = findFieldByLooseName(fields, preset.orgKey);
-    const contactField = findFieldByLooseName(fields, preset.contactKey);
-    if (orgField && contactField) {
-      // Use the module’s real field keys (CreateRecord / Settings can use "Contact Id" style keys)
-      return { orgKey: orgField.key, contactKey: contactField.key };
-    }
+    const fieldList = Array.isArray(fields) ? fields : [];
+    const orgField = findFieldByLooseName(fieldList, preset.orgKey);
+    const contactField = findFieldByLooseName(fieldList, preset.contactKey);
+    return {
+      orgKey: orgField?.key ?? preset.orgKey,
+      contactKey: contactField?.key ?? preset.contactKey
+    };
   }
+
+  if (!Array.isArray(fields) || fields.length === 0) return null;
 
   const orgLookups = fields.filter(isCrmOrganizationLookupField);
   const peopleLookups = fields.filter(isPeopleLookupField);
@@ -168,10 +172,26 @@ export function unwrapRecordFromListOrGetResponse(r) {
 
 export function extractOrganizationIdFromPersonPayload(person) {
   if (!person) return null;
-  const o = person.organization;
+  const o = person.organization ?? person.accountId ?? null;
   if (o === null || o === undefined || o === '') return null;
-  if (typeof o === 'object' && o._id) return o._id;
+  if (typeof o === 'object') {
+    return o._id ?? o.id ?? null;
+  }
   return o;
+}
+
+/**
+ * Resolve a people row from an in-memory contact lookup list (list GET includes populated `organization`).
+ * @param {unknown} contactValue id or partial row
+ * @param {Array<Record<string, unknown>>} contactRows
+ */
+export function resolvePersonFromContactLookupList(contactValue, contactRows) {
+  if (contactValue != null && typeof contactValue === 'object' && contactValue._id != null) {
+    return contactValue;
+  }
+  const id = extractIdFromFormValue(contactValue);
+  if (!id || !Array.isArray(contactRows)) return contactValue;
+  return contactRows.find((p) => String(p?._id ?? p?.id) === String(id)) || contactValue;
 }
 
 function keysMatch(a, b) {

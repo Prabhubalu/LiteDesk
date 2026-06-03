@@ -20,7 +20,8 @@ const {
   mergeSalesOrdersHandler,
   listInvoiceAllocations,
   getInvoiceReadiness,
-  getBillingCoverage
+  getBillingCoverage,
+  deleteSalesOrderHandler
 } = require('../controllers/salesOrderController');
 const { addSalesOrderLine, patchSalesOrderLine, deleteSalesOrderLine } = require('../controllers/salesOrderLineController');
 const {
@@ -69,5 +70,6 @@ router.get('/:id/sections', checkPermission('sales_orders', 'view'), listSection
 router.post('/:id/sections', checkPermission('sales_orders', 'edit'), createSection);
 router.patch('/:id/sections/:sectionId', checkPermission('sales_orders', 'edit'), patchSection);
 router.delete('/:id/sections/:sectionId', checkPermission('sales_orders', 'edit'), deleteSection);
+router.delete('/:id', checkPermission('sales_orders', 'delete'), deleteSalesOrderHandler);
 
 module.exports = router;

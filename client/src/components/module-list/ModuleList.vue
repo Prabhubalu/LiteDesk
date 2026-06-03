@@ -375,6 +375,12 @@ onActivated(async () => {
   }
 });
 const authStore = useAuthStore();
+const moduleListConfigOptions = computed(() => ({
+  inventoryEnabled: authStore.inventoryEnabled
+}));
+function resolveModuleListConfig(moduleKey = props.moduleKey) {
+  return getModuleListConfig(moduleKey, moduleListConfigOptions.value);
+}
 const { openTab } = useTabs();
 const { t, te } = useI18n();
 
@@ -493,7 +499,8 @@ const buildList = async () => {
     if (authStore.user && authStore.isAuthenticated) {
       const fieldColumns = buildListColumnsFromModuleFields(
         moduleFieldDefinitions.value,
-        props.moduleKey
+        props.moduleKey,
+        authStore.inventoryEnabled
       );
       if (fieldColumns.length > 0) {
         listDefinition.value = {
@@ -526,12 +533,17 @@ const buildList = async () => {
       // Otherwise fetch data even if empty state exists (might be NO_DATA)
       
       // Initialize module-specific configuration from registry
-      const moduleConfig = getModuleListConfig(props.moduleKey);
+      const moduleConfig = resolveModuleListConfig(props.moduleKey);
       const currentUserId = authStore.user?._id;
       const moduleLabel = listDefinition.value?.title || props.moduleKey.charAt(0).toUpperCase() + props.moduleKey.slice(1);
       
       // Get system views (from registry or generate defaults)
-      const systemViews = getSystemViews(props.moduleKey, moduleLabel, currentUserId);
+      const systemViews = getSystemViews(
+        props.moduleKey,
+        moduleLabel,
+        currentUserId,
+        moduleListConfigOptions.value
+      );
       
       // Convert system views to saved views format (with label instead of name)
       const systemViewsFormatted = systemViews.map(view => ({
@@ -1220,7 +1232,7 @@ function buildListFetchContext(requestedPage) {
     sortOrder: sortField.value ? (sortOrder.value || 'desc') : 'desc'
   };
 
-  const moduleConfig = getModuleListConfig(props.moduleKey);
+  const moduleConfig = resolveModuleListConfig(props.moduleKey);
   let normalizedFilters = { ...filters.value };
 
   if (moduleConfig?.normalizeFilters) {
@@ -1480,7 +1492,7 @@ async function fetchListReplace(opts = {}) {
         });
         if (!soft) {
           data.value = [];
-          const mc = getModuleListConfig(props.moduleKey);
+          const mc = resolveModuleListConfig(props.moduleKey);
           if (mc?.statistics?.computeFunction) {
             statistics.value = mc.statistics.computeFunction([], authStore.user?._id, { totalRecords: 0 });
           } else {
@@ -1494,7 +1506,7 @@ async function fetchListReplace(opts = {}) {
       console.error('[ModuleList] Error fetching data:', error);
       if (!soft) {
         data.value = [];
-        const moduleConfigErr = getModuleListConfig(props.moduleKey);
+        const moduleConfigErr = resolveModuleListConfig(props.moduleKey);
         if (moduleConfigErr?.statistics?.computeFunction) {
           statistics.value = moduleConfigErr.statistics.computeFunction([], authStore.user?._id, {
             totalRecords: 0
@@ -1758,7 +1770,7 @@ const handleFiltersUpdate = async (newFilters) => {
   
   // Handle saved view state for all modules (registry config or default views)
   // All modules get default system views via getSystemViews, so always handle saved view state
-  const moduleConfig = getModuleListConfig(props.moduleKey);
+  const moduleConfig = resolveModuleListConfig(props.moduleKey);
   const currentUserId = authStore.user?._id;
   
   // Only handle saved view state if module has system views (from registry or generated)
@@ -1806,7 +1818,7 @@ const handleFiltersUpdate = async (newFilters) => {
 
 // Handle stat click - apply derived filters
 const handleStatClick = (statItem) => {
-  const moduleConfig = getModuleListConfig(props.moduleKey);
+  const moduleConfig = resolveModuleListConfig(props.moduleKey);
   if (!moduleConfig) return;
   
   const currentUserId = authStore.user?._id;
@@ -1999,7 +2011,7 @@ const handleStatClick = (statItem) => {
 
 // Handle saved views updated (custom views changed)
 const handleSavedViewsUpdated = (customViews) => {
-  const moduleConfig = getModuleListConfig(props.moduleKey);
+  const moduleConfig = resolveModuleListConfig(props.moduleKey);
   if (!moduleConfig?.systemViews) return;
   
   // Rebuild savedViews with system views + custom views
@@ -2015,7 +2027,7 @@ const handleSavedViewsUpdated = (customViews) => {
 
 // Handle saved view selection
 const handleSavedViewSelected = (view) => {
-  const moduleConfig = getModuleListConfig(props.moduleKey);
+  const moduleConfig = resolveModuleListConfig(props.moduleKey);
   if (!moduleConfig) {
     return;
   }

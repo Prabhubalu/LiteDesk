@@ -18,7 +18,7 @@ const { SALES_ORDER_STATUSES } = require('../constants/salesOrderLifecycle');
 
 const SALES_ORDERS_UI = {
   routeBase: '/sales-orders',
-  icon: '📦',
+  icon: require('../constants/commercialModuleIcons').commercialModuleIconId('sales_orders'),
   showInSidebar: true,
   sidebarOrder: 9,
   createLabel: 'Create Sales Order',

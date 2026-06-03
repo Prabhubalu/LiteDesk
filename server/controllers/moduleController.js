@@ -24,6 +24,10 @@ const {
     INITIAL_INVOICE_QUICK_CREATE,
     isInitialInvoiceRequiredField,
 } = require('../constants/invoiceModuleDefaults');
+const {
+    INITIAL_PAYMENT_QUICK_CREATE,
+    isInitialPaymentRequiredField,
+} = require('../constants/paymentModuleDefaults');
 const { cloneQuoteDefaultRelationships } = require('../constants/defaultQuoteRelationships');
 const { filterFieldsByContext } = require('../utils/fieldContextFilter');
 
@@ -34,6 +38,7 @@ const MODULE_APP_KEY_BY_KEY = Object.freeze({
     quotes: 'platform',
     sales_orders: 'platform',
     invoices: 'platform',
+    payments: 'platform',
     tasks: 'platform',
     events: 'platform',
     forms: 'platform',
@@ -809,6 +814,7 @@ function getBaseFieldsForKey(key) {
             quotes: require('../models/Quote'),
             sales_orders: require('../models/SalesOrder'),
             invoices: require('../models/Invoice'),
+            payments: require('../models/Payment'),
             tasks: require('../models/Task'),
             cases: require('../models/Case'),
             events: require('../models/Event'),
@@ -839,6 +845,8 @@ function getBaseFieldsForKey(key) {
             'deletedAt',
             'deletedBy',
             'deletionReason',
+            // Import job linkage - set by import pipeline only
+            'importHistoryId',
             // Form-specific nested objects that shouldn't be fields
             'sections',       // Nested structure
             'kpiMetrics',    // Nested object
@@ -995,6 +1003,27 @@ function getBaseFieldsForKey(key) {
                     ]);
                     if (invoicesSchemaExcluded.has(name)) return false;
                 }
+                if (key === 'payments') {
+                    const paymentsSchemaExcluded = new Set([
+                        'paymentId',
+                        'paymentNumber',
+                        'amountAllocated',
+                        'amountUnallocated',
+                        'amountRefunded',
+                        'status',
+                        'recordedAt',
+                        'recordedBy',
+                        'externalReference',
+                        'paymentInstrumentSnapshot',
+                        'exchangeRateSnapshot',
+                        'sourceContext',
+                        'sourceRef',
+                        'valueDate',
+                        'modifiedBy'
+                    ]);
+                    if (paymentsSchemaExcluded.has(name)) return false;
+                    if (name.startsWith('paymentInstrumentSnapshot.')) return false;
+                }
                 // Exclude nested paths (e.g., "kpiMetrics.compliancePercentage" should be excluded if "kpiMetrics" is excluded)
                 for (const excludedField of excluded) {
                     if (name.startsWith(excludedField + '.')) {
@@ -1102,6 +1131,7 @@ function getBaseFieldsForKey(key) {
                             'Quote': 'quotes',
                             'SalesOrder': 'sales_orders',
                             'Invoice': 'invoices',
+                            'Payment': 'payments',
                             'Case': 'cases',
                             'Task': 'tasks',
                             'Event': 'events',
@@ -1131,6 +1161,7 @@ function getBaseFieldsForKey(key) {
                             'Quote': 'quotes',
                             'SalesOrder': 'sales_orders',
                             'Invoice': 'invoices',
+                            'Payment': 'payments',
                             'Case': 'cases',
                             'Task': 'tasks',
                             'Event': 'events',
@@ -1469,7 +1500,9 @@ function getBaseFieldsForKey(key) {
                                 ? true
                                 : (key === 'invoices' && isInitialInvoiceRequiredField(name))
                                     ? true
-                                    : !!path.isRequired,
+                                    : (key === 'payments' && isInitialPaymentRequiredField(name))
+                                        ? true
+                                        : !!path.isRequired,
                     options: eventTypeOptions,
                     defaultValue: eventTypeDefaultValue,
                     // Use placeholder as helper text for Lookup fields (shown under label in UI); never show technical IDs.
@@ -2242,6 +2275,7 @@ exports.listModules = async (req, res) => {
             { key: 'quotes', name: 'Quotes' },
             { key: 'sales_orders', name: 'Sales Orders' },
             { key: 'invoices', name: 'Invoices' },
+            { key: 'payments', name: 'Payments' },
             { key: 'cases', name: 'Cases' },
             { key: 'tasks', name: 'Tasks' },
             { key: 'events', name: 'Events' },
@@ -2411,7 +2445,7 @@ exports.listModules = async (req, res) => {
         // Mongoose .lean() + select('+quickCreate') can still omit quickCreate on some documents; when undefined,
         // merge falls back to [] and listModules applies canonical defaults — Settings "saves" but reload shows defaults.
         // Overlay from native driver (same reliability as People raw merge above).
-        const orgQuickCreateRawKeys = new Set(['tasks', 'organizations', 'events', 'items', 'deals', 'quotes', 'sales_orders', 'invoices', 'cases', 'forms']);
+        const orgQuickCreateRawKeys = new Set(['tasks', 'organizations', 'events', 'items', 'deals', 'quotes', 'sales_orders', 'invoices', 'payments', 'cases', 'forms']);
         for (const module of custom) {
             if (!module.organizationId) continue;
             const moduleKey = String(module.key || module.moduleKey || '').toLowerCase();
@@ -2433,7 +2467,7 @@ exports.listModules = async (req, res) => {
         }
 
         // Platform core modules: overlay quickCreate from raw Mongo (Settings saves to platform doc for quotes, etc.)
-        const platformQuickCreateRawKeys = new Set(['tasks', 'organizations', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices']);
+        const platformQuickCreateRawKeys = new Set(['tasks', 'organizations', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments']);
         for (const module of custom) {
             if (module.organizationId) continue;
             if (String(module.appKey || '').toLowerCase() !== 'platform') continue;
@@ -3185,6 +3219,10 @@ exports.listModules = async (req, res) => {
                     finalQuickCreate = [...INITIAL_INVOICE_QUICK_CREATE];
                     console.log('📋 Invoices: Applying canonical default Quick Create:', finalQuickCreate);
                 }
+                if (sys.key === 'payments' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_PAYMENT_QUICK_CREATE];
+                    console.log('📋 Payments: Applying canonical default Quick Create:', finalQuickCreate);
+                }
 
                 // Organizations: trust persisted quickCreate when non-empty (see empty-array default above).
                 // Previously we re-injected name/industry/website on every GET, which defeated Settings
@@ -3524,6 +3562,9 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'invoices') {
                     defaultQuickCreate = [...INITIAL_INVOICE_QUICK_CREATE];
                 }
+                if (sys.key === 'payments') {
+                    defaultQuickCreate = [...INITIAL_PAYMENT_QUICK_CREATE];
+                }
                 let taskFields = withOrder;
                 if (sys.key === 'tasks') {
                     taskFields = normalizeTasksModuleFields(taskFields);
@@ -3567,18 +3608,21 @@ exports.listModules = async (req, res) => {
                 });
             }
         }
-        // Remaining custom modules
+        // Remaining custom modules (tenant-defined modules not merged above)
         for (const m of customByKey.values()) {
+            const moduleKey = String(m.key || m.moduleKey || '').toLowerCase();
             const fields = Array.isArray(m.fields) ? [...m.fields] : [];
             fields.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
             merged.push({ 
-                ...m, 
+                ...m,
+                key: moduleKey || m.key,
+                name: m.name || m.label || moduleKey,
                 fields,
                 quickCreate: m.quickCreate || [],
                 quickCreateLayout: m.quickCreateLayout || { version: 1, rows: [] },
                 relationships: m.relationships || [],
                 // Phase 17: Include notification metadata (use saved or default)
-                notifications: m.notifications || getDefaultNotificationMetadata(m.key),
+                notifications: m.notifications || getDefaultNotificationMetadata(moduleKey || m.key),
                 pipelineSettings: Array.isArray(m.pipelineSettings) ? m.pipelineSettings : []
             });
         }
@@ -3598,6 +3642,8 @@ exports.listModules = async (req, res) => {
                 deals: Deal,
                 quotes: require('../models/Quote'),
                 sales_orders: require('../models/SalesOrder'),
+                invoices: require('../models/Invoice'),
+                payments: require('../models/Payment'),
                 cases: require('../models/Case'),
                 tasks: Task,
                 events: Event,
@@ -3635,7 +3681,9 @@ exports.listModules = async (req, res) => {
         // Sort: system first, then custom; within each, by name
         merged.sort((a, b) => {
             if (a.type !== b.type) return a.type === 'system' ? -1 : 1;
-            return a.name.localeCompare(b.name);
+            const nameA = String(a.name || a.label || a.key || '');
+            const nameB = String(b.name || b.label || b.key || '');
+            return nameA.localeCompare(nameB);
         });
 
         // Apply context filtering to all modules' fields
@@ -4154,7 +4202,7 @@ exports.updateSystemModule = async (req, res) => {
             $or: [{ key: keyLower }, { moduleKey: keyLower }]
         };
         const systemKeys = new Set([
-            'people', 'organizations', 'deals', 'cases', 'tasks', 'events', 'forms', 'items', 'quotes', 'sales_orders', 'invoices',
+            'people', 'organizations', 'deals', 'cases', 'tasks', 'events', 'forms', 'items', 'quotes', 'sales_orders', 'invoices', 'payments',
             'imports', 'reports'
         ]);
         if (!systemKeys.has(keyLower)) return res.status(400).json({ success: false, message: 'Invalid system module key' });

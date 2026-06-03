@@ -1,5 +1,7 @@
 import { isGlobalSystemFieldKey, isSystemField } from '@/platform/fields/fieldCapabilityEngine';
 import { getFieldMetadataFromRegistry, normalizeModuleKeyForRegistry } from '@/platform/fields/FieldRegistry';
+import { useAuthStore } from '@/stores/authRegistry';
+import { shouldHideFieldWhenInventoryDisabled } from '@/utils/inventoryCapability';
 
 const DETAIL_SYSTEM_FIELD_KEYS = new Set([
   '_id',
@@ -48,11 +50,24 @@ export function isExplicitCustomField(field) {
   return false;
 }
 
+function resolveInventoryEnabled(options = {}) {
+  if (typeof options.inventoryEnabled === 'boolean') return options.inventoryEnabled;
+  try {
+    return useAuthStore().inventoryEnabled === true;
+  } catch {
+    return false;
+  }
+}
+
 export function shouldHideDetailField(field, moduleKey, options = {}) {
   const { enforceRegistryKnown = false } = options;
   const key = String(field?.key || '').trim();
   if (!key) return true;
   const normalizedModuleKey = String(moduleKey || '').toLowerCase().trim();
+
+  if (shouldHideFieldWhenInventoryDisabled(normalizedModuleKey, key, resolveInventoryEnabled(options))) {
+    return true;
+  }
 
   if (isInfrastructureSystemFieldKey(key) || isInfrastructureSystemFieldKey(field?.label)) return true;
   if (field?.isSystem === true || field?.system === true) return true;
@@ -86,9 +101,13 @@ const RECORD_PANE_NEVER_SHOW_KEYS = new Set([
 /**
  * Right-pane Details tab: show system + audit fields read-only; still hide trash/infra blobs.
  */
-export function shouldHideRecordPaneDetailField(field, moduleKey) {
+export function shouldHideRecordPaneDetailField(field, moduleKey, options = {}) {
   const key = String(field?.key || '').trim();
   if (!key) return true;
+  const normalizedModuleKey = String(moduleKey || '').toLowerCase().trim();
+  if (shouldHideFieldWhenInventoryDisabled(normalizedModuleKey, key, resolveInventoryEnabled(options))) {
+    return true;
+  }
   const nk = normalizeFieldGuardKey(key);
   if (RECORD_PANE_NEVER_SHOW_KEYS.has(nk)) return true;
   if (isInfrastructureSystemFieldKey(key)) {
@@ -100,7 +119,6 @@ export function shouldHideRecordPaneDetailField(field, moduleKey) {
   if (typeof isGlobalSystemFieldKey === 'function' && isGlobalSystemFieldKey(key)) {
     return RECORD_PANE_NEVER_SHOW_KEYS.has(nk);
   }
-  const normalizedModuleKey = String(moduleKey || '').toLowerCase().trim();
   if (normalizedModuleKey && typeof isSystemField === 'function' && isSystemField(normalizedModuleKey, { key })) {
     return false;
   }

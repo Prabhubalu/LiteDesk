@@ -115,12 +115,13 @@ const OrganizationSchema = new mongoose.Schema({
     // - 'PORTAL': Customer/Partner portal application
     // - 'AUDIT': Audit management application
     // - 'LMS': Learning Management System application
+    // - 'INVENTORY': Stock ledger, locations, reservations, fulfillment
     enabledApps: [
         {
             appKey: { 
                 type: String, 
                 required: true,
-                enum: ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS']
+                enum: ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY']
             },
             status: { 
                 type: String, 

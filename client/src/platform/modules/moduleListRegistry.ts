@@ -15,6 +15,7 @@
 
 import { getItemFieldMetadata } from '@/platform/fields/itemFieldModel';
 import { dateFilterValueToParams } from '@/utils/dateFilterOptions';
+import { applyInventoryCapabilityToModuleListConfig } from '@/utils/inventoryCapability';
 
 export interface DefaultColumnConfig {
   /** Column keys in display order */
@@ -371,12 +372,17 @@ export function generateDefaultSystemViews(
  * Get system views for a module
  * Returns explicit system views from registry, or generates default ones
  */
+export type ModuleListConfigOptions = {
+  inventoryEnabled?: boolean;
+};
+
 export function getSystemViews(
   moduleKey: string,
   moduleLabel: string,
-  currentUserId?: string
+  currentUserId?: string,
+  options?: ModuleListConfigOptions
 ): SystemView[] {
-  const config = MODULE_LIST_REGISTRY[moduleKey];
+  const config = getModuleListConfig(moduleKey, options);
   if (config?.systemViews) {
     return config.systemViews;
   }
@@ -1451,8 +1457,16 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
 /**
  * Get module list configuration
  */
-export function getModuleListConfig(moduleKey: string): ModuleListConfig | null {
-  return MODULE_LIST_REGISTRY[moduleKey] || null;
+export function getModuleListConfig(
+  moduleKey: string,
+  options?: ModuleListConfigOptions
+): ModuleListConfig | null {
+  const raw = MODULE_LIST_REGISTRY[moduleKey] || null;
+  if (!raw) return null;
+  if (options?.inventoryEnabled === false) {
+    return applyInventoryCapabilityToModuleListConfig(raw, moduleKey, false);
+  }
+  return raw;
 }
 
 /**

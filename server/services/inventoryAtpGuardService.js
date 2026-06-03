@@ -13,6 +13,10 @@ const {
   shouldTrackInventoryForLine,
   shouldTrackInventoryForQuoteLine
 } = require('./inventoryLineEligibilityService');
+const {
+  isInventoryEnabled,
+  ATP_GUARD_DISABLED_RESULT
+} = require('./inventoryCapabilityService');
 
 function aggregateVariantQuantities(checks) {
   const byVariant = new Map();
@@ -121,6 +125,9 @@ async function guardQuoteLineQuantity({
   policy = null,
   excludeQuoteLineId = null
 }) {
+  if (!(await isInventoryEnabled(organizationId))) {
+    return { ...ATP_GUARD_DISABLED_RESULT };
+  }
   const policies = policy ? { lineAdd: policy } : await getAtpGuardPolicies(organizationId);
   const existingLines = await QuoteLine.find({ organizationId, quoteId, hiddenLine: { $ne: true } }).lean();
   const existingQty = existingLines
@@ -151,6 +158,9 @@ async function guardSalesOrderLineQuantity({
   policy = null,
   excludeSalesOrderLineId = null
 }) {
+  if (!(await isInventoryEnabled(organizationId))) {
+    return { ...ATP_GUARD_DISABLED_RESULT };
+  }
   const policies = policy ? { lineAdd: policy } : await getAtpGuardPolicies(organizationId);
   if (String(order?.fulfillmentMode || 'hybrid').toLowerCase() === 'service') {
     return { policy: policies.lineAdd, sufficient: true, results: [], warnings: [] };
@@ -187,6 +197,9 @@ async function guardQuoteLineCollection({
   forceProceed = false,
   policy = null
 }) {
+  if (!(await isInventoryEnabled(organizationId))) {
+    return { ...ATP_GUARD_DISABLED_RESULT };
+  }
   const policies = policy ? { lineAdd: policy } : await getAtpGuardPolicies(organizationId);
   return runAtpChecks({
     organizationId,
@@ -203,6 +216,9 @@ async function guardQuoteAcceptance({
   userId = null,
   policy = null
 }) {
+  if (!(await isInventoryEnabled(organizationId))) {
+    return { ...ATP_GUARD_DISABLED_RESULT };
+  }
   const policies = policy ? { quoteAccept: policy } : await getAtpGuardPolicies(organizationId);
   const resolvedPolicy = policies.quoteAccept;
 

@@ -16,8 +16,20 @@ const appRegistry = require('../constants/appRegistry');
  * @param {string} appKey - The app key (CRM, AUDIT, PORTAL)
  * @returns {object|null} - App configuration or null if not found
  */
+function normalizeAppKey(appKey) {
+  return String(appKey || '').trim().toUpperCase();
+}
+
 function getAppConfig(appKey) {
-  return appRegistry[appKey] || null;
+  return appRegistry[normalizeAppKey(appKey)] || null;
+}
+
+function getEquivalentAppKeys(appKey) {
+  const normalized = normalizeAppKey(appKey);
+  if (normalized === 'SALES' || normalized === 'CRM') {
+    return new Set(['SALES', 'CRM']);
+  }
+  return new Set([normalized]);
 }
 
 /**
@@ -97,35 +109,49 @@ function getAppsForUserType(userType) {
  * @returns {boolean} - True if app is enabled and active
  */
 function isAppEnabledForOrg(organization, appKey) {
-  if (!organization || !organization.enabledApps) {
+  if (!organization || !organization.enabledApps?.length) {
     return false;
   }
-  
-  // Validate app exists in registry
+
   if (!getAppConfig(appKey)) {
     return false;
   }
-  
-  // Backward compatibility: CRM and SALES are equivalent
-  // If checking for SALES, also accept CRM (and vice versa)
-  const equivalentKeys = [];
-  if (appKey === 'SALES' || appKey === 'sales') {
-    equivalentKeys.push('SALES', 'CRM', 'sales', 'crm');
-  } else if (appKey === 'CRM' || appKey === 'crm') {
-    equivalentKeys.push('SALES', 'CRM', 'sales', 'crm');
-  } else {
-    equivalentKeys.push(appKey, appKey.toUpperCase(), appKey.toLowerCase());
+
+  const equivalents = getEquivalentAppKeys(appKey);
+
+  return organization.enabledApps.some((entry) => {
+    if (typeof entry === 'string') {
+      return equivalents.has(normalizeAppKey(entry));
+    }
+    if (!entry || typeof entry !== 'object') {
+      return false;
+    }
+    if (!equivalents.has(normalizeAppKey(entry.appKey))) {
+      return false;
+    }
+    const status = String(entry.status || 'ACTIVE').toUpperCase();
+    return status === 'ACTIVE';
+  });
+}
+
+/**
+ * Find normalized enabledApps entry for catalog/status (not limited to ACTIVE).
+ */
+function findEnabledAppEntryForOrg(organization, appKey) {
+  if (!organization?.enabledApps?.length) return null;
+  const equivalents = getEquivalentAppKeys(appKey);
+  for (const entry of organization.enabledApps) {
+    if (typeof entry === 'string' && equivalents.has(normalizeAppKey(entry))) {
+      return { appKey: normalizeAppKey(entry), status: 'ACTIVE' };
+    }
+    if (entry && typeof entry === 'object' && equivalents.has(normalizeAppKey(entry.appKey))) {
+      return {
+        appKey: normalizeAppKey(entry.appKey),
+        status: String(entry.status || 'ACTIVE').toUpperCase()
+      };
+    }
   }
-  
-  // Check if enabledApps is array of objects (new structure)
-  if (organization.enabledApps.length > 0 && typeof organization.enabledApps[0] === 'object' && organization.enabledApps[0] !== null) {
-    return organization.enabledApps.some(
-      app => equivalentKeys.includes(app.appKey) && app.status === 'ACTIVE'
-    );
-  }
-  
-  // Legacy: array of strings
-  return organization.enabledApps.some(enabledApp => equivalentKeys.includes(enabledApp));
+  return null;
 }
 
 /**
@@ -151,6 +177,7 @@ function validateOrgAppEnabled(organization, appKey) {
 }
 
 module.exports = {
+  normalizeAppKey,
   getAppConfig,
   validateAppRole,
   validateUserTypeForApp,
@@ -158,6 +185,7 @@ module.exports = {
   getRolesForApp,
   getAppsForUserType,
   isAppEnabledForOrg,
+  findEnabledAppEntryForOrg,
   validateOrgAppEnabled
 };
 

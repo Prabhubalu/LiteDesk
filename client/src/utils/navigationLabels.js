@@ -28,6 +28,7 @@ export const MODULE_LABEL_KEYS = {
   quotes: 'navigation.moduleQuotes',
   sales_orders: 'navigation.moduleSalesOrders',
   invoices: 'navigation.moduleInvoices',
+  payments: 'navigation.modulePayments',
   responses: 'navigation.moduleResponses',
   imports: 'navigation.moduleImports',
   import: 'navigation.moduleImports',
@@ -45,6 +46,7 @@ export const APP_NAME_KEYS = {
   HELPDESK: 'navigation.appHelpdesk',
   PROJECTS: 'navigation.appProjects',
   PORTAL: 'navigation.appPortal',
+  INVENTORY: 'navigation.appInventory',
 };
 
 /** Exact path → titleKey (optional titleParams in resolver) */

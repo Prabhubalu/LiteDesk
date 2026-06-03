@@ -12,13 +12,17 @@ const SalesOrderLine = require('../../../models/SalesOrderLine');
 const InventoryReservation = require('../../../models/InventoryReservation');
 const InventoryLocation = require('../../../models/InventoryLocation');
 
-async function createTestOrganization(label = 'tenant') {
+async function createTestOrganization(label = 'tenant', { enableInventoryApp = false } = {}) {
   const suffix = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+  const enabledApps = enableInventoryApp
+    ? [{ appKey: 'INVENTORY', status: 'ACTIVE' }]
+    : [];
   return Organization.create({
     name: `Inventory Test ${label} ${suffix}`,
     slug: `inv-${label}-${suffix}`,
     isTenant: true,
-    isActive: true
+    isActive: true,
+    enabledApps
   });
 }
 
@@ -47,7 +51,13 @@ async function createTestVariant({ organizationId, costPrice = 10, unitOfMeasure
 }
 
 async function seedInventoryContext() {
-  const tenant = await createTestOrganization('tenant');
+  const tenant = await createTestOrganization('tenant', { enableInventoryApp: true });
+  const { variant, userId } = await createTestVariant({ organizationId: tenant._id });
+  return { tenant, variant, userId };
+}
+
+async function seedSalesOnlyContext() {
+  const tenant = await createTestOrganization('sales-only', { enableInventoryApp: false });
   const { variant, userId } = await createTestVariant({ organizationId: tenant._id });
   return { tenant, variant, userId };
 }
@@ -102,6 +112,7 @@ module.exports = {
   createTestOrganization,
   createTestVariant,
   seedInventoryContext,
+  seedSalesOnlyContext,
   createTestSalesOrderWithLine,
   createSecondaryLocation
 };

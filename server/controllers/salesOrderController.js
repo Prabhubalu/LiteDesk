@@ -6,7 +6,12 @@ const {
 const { convertQuoteToSalesOrder } = require('../services/salesOrderConversionService');
 const { listSalesOrderSections } = require('../services/salesOrderSectionService');
 const { userCanOverrideExpiredQuotes } = require('../services/quoteConversionService');
-const { createManualSalesOrder, confirmSalesOrder, cancelSalesOrder } = require('../services/salesOrderManualService');
+const {
+  createManualSalesOrder,
+  confirmSalesOrder,
+  cancelSalesOrder,
+  deleteDraftSalesOrder
+} = require('../services/salesOrderManualService');
 const {
   listSalesOrderFulfillments,
   postSalesOrderFulfillment,
@@ -335,6 +340,49 @@ async function confirmSalesOrderHandler(req, res) {
 }
 
 /**
+ * DELETE /api/sales-orders/:id
+ * Draft only — moves to trash via deletionService.
+ */
+async function deleteSalesOrderHandler(req, res) {
+  try {
+    const result = await deleteDraftSalesOrder({
+      organizationId: req.user.organizationId,
+      salesOrderRef: req.params.id,
+      userId: req.user._id,
+      reason: req.body?.reason,
+      cascadeConfirmed: !!req.body?.cascadeConfirmed
+    });
+    return res.status(200).json({
+      success: true,
+      message: 'Sales order moved to trash',
+      data: result,
+      retentionExpiresAt: result.retentionExpiresAt
+    });
+  } catch (err) {
+    if (err?.blocked) {
+      return res.status(400).json({
+        success: false,
+        blocked: true,
+        dependencies: err.dependencies,
+        message: err.message
+      });
+    }
+    const status =
+      err?.code === 'NOT_FOUND'
+        ? 404
+        : err?.code === 'SALES_ORDER_NOT_DRAFT' || err?.code === 'DELETE_BLOCKED'
+          ? 400
+          : 500;
+    return res.status(status).json({
+      success: false,
+      message: err.message || 'Failed to delete sales order',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
+/**
  * POST /api/sales-orders/:id/cancel
  */
 async function cancelSalesOrderHandler(req, res) {
@@ -637,5 +685,6 @@ module.exports = {
   mergeSalesOrdersHandler,
   listInvoiceAllocations,
   getInvoiceReadiness,
-  getBillingCoverage
+  getBillingCoverage,
+  deleteSalesOrderHandler
 };

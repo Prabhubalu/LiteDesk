@@ -21,6 +21,7 @@ const {
 const { releaseReservationQty } = require('./inventoryReservationService');
 const { getDefaultLocation } = require('./inventoryLocationService');
 const { resolveInventoryDeductionLines } = require('./inventoryLineEligibilityService');
+const { isInventoryEnabled } = require('./inventoryCapabilityService');
 
 const FULFILLMENT_BLOCKED_STATUSES = new Set(['Draft', 'On Hold', 'Cancelled', 'Closed']);
 const FULFILLMENT_ALLOWED_STATUSES = new Set(['Confirmed', 'In Fulfillment', 'Partially Fulfilled', 'Fulfilled']);
@@ -194,6 +195,11 @@ async function postSalesOrderFulfillment({
   assertCanPostFulfillment(order);
 
   const fulfillmentType = assertValidFulfillmentType(body.fulfillmentType);
+  if (fulfillmentType === 'backorder' && !(await isInventoryEnabled(organizationId))) {
+    const err = new Error('Backorder fulfillment requires the Inventory app');
+    err.code = 'INVENTORY_REQUIRED';
+    throw err;
+  }
   const lineInputs = Array.isArray(body.lines) ? body.lines : [];
   if (!lineInputs.length) {
     const err = new Error('At least one line delta is required.');

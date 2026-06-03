@@ -19,7 +19,23 @@ const AppDefinition = require('../models/AppDefinition');
 const uiCompositionService = require('./uiCompositionService');
 const { APP_KEYS, VALID_APP_KEYS } = require('../constants/appKeys');
 
-const CORE_MODULE_ORDER = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices'];
+const CORE_MODULE_ORDER = [
+  'people',
+  'organizations',
+  'tasks',
+  'events',
+  'items',
+  'forms',
+  'quotes',
+  'sales_orders',
+  'invoices',
+  'payments'
+];
+const {
+  isCommercialPlatformModuleKey,
+  commercialParticipationActive,
+  COMMERCIAL_PARTICIPATION_APP_KEYS
+} = require('../constants/commercialPlatformParticipation');
 const CORE_ENTITY_KEYS = new Set(CORE_MODULE_ORDER);
 const PLATFORM_ADMIN_KEYS = ['reports', 'users', 'settings', 'performance'];
 
@@ -46,7 +62,8 @@ const APP_DISPLAY_NAMES = {
   projects: 'Projects',
   portal: 'Portal',
   audit: 'Audit',
-  lms: 'Learning'
+  lms: 'Learning',
+  inventory: 'Inventory'
 };
 
 /** @type {Map<string, { at: number, data: object }>} */
@@ -121,7 +138,20 @@ function buildActionsFromDefinition(moduleDefPermissions = {}, moduleKey, kind) 
   if (p.edit !== false) actions.push('update');
   if (p.delete === true) actions.push('delete');
 
-  if (['people', 'organizations', 'deals', 'quotes', 'sales_orders', 'invoices', 'tasks', 'forms', 'items'].includes(moduleKey)) {
+  if (
+    [
+      'people',
+      'organizations',
+      'deals',
+      'quotes',
+      'sales_orders',
+      'invoices',
+      'payments',
+      'tasks',
+      'forms',
+      'items'
+    ].includes(moduleKey)
+  ) {
     actions.push('export', 'import');
   } else if (moduleKey === 'events') {
     // events: no import in legacy schema
@@ -148,8 +178,23 @@ function moduleKindForKey(moduleKey) {
 }
 
 function isCoreModuleEnabledForOrg(moduleKey, enabledAppKeys, moduleOverrides) {
+  const mod = String(moduleKey || '').toLowerCase();
+
+  if (isCommercialPlatformModuleKey(mod)) {
+    const participatingEnabled = enabledAppKeys.filter((appKey) =>
+      COMMERCIAL_PARTICIPATION_APP_KEYS.includes(String(appKey).toUpperCase())
+    );
+    if (!commercialParticipationActive(enabledAppKeys)) return false;
+    if (!participatingEnabled.length) return false;
+    return participatingEnabled.some((appKey) => {
+      const override = moduleOverrides?.[mod]?.[appKey];
+      if (override !== undefined) return override === true;
+      return true;
+    });
+  }
+
   return enabledAppKeys.some((appKey) => {
-    const override = moduleOverrides?.[moduleKey]?.[appKey];
+    const override = moduleOverrides?.[mod]?.[appKey];
     if (override !== undefined) return override === true;
     return true;
   });

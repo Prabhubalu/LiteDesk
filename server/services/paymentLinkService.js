@@ -29,17 +29,45 @@ async function resolveInvoiceTargets({ organizationId, organizationRefId, invoic
     throw err;
   }
 
-  const invoices = await Invoice.find({
+  const query = {
     organizationId,
-    organizationRefId,
     deletedAt: null,
     invoiceType: 'standard',
     invoiceId: { $in: ids },
     status: { $in: ['Posted', 'Partially Paid'] },
     amountDue: { $gt: 0 }
-  }).lean();
+  };
+  if (organizationRefId) {
+    query.organizationRefId = organizationRefId;
+  }
+
+  const invoices = await Invoice.find(query).lean();
 
   if (invoices.length !== ids.length) {
+    const err = new Error('One or more invoices are not payable');
+    err.code = 'INVOICE_NOT_PAYABLE';
+    throw err;
+  }
+
+  const orgRefIds = [
+    ...new Set(
+      invoices
+        .map((inv) => inv.organizationRefId)
+        .filter(Boolean)
+        .map((id) => String(id))
+    )
+  ];
+  if (orgRefIds.length !== 1) {
+    const err = new Error(
+      orgRefIds.length === 0
+        ? 'Invoice must have a customer organization before creating a payment link'
+        : 'All invoices must belong to the same customer organization'
+    );
+    err.code = 'VALIDATION';
+    throw err;
+  }
+  const resolvedOrganizationRefId = invoices[0].organizationRefId;
+  if (organizationRefId && String(organizationRefId) !== String(resolvedOrganizationRefId)) {
     const err = new Error('One or more invoices are not payable');
     err.code = 'INVOICE_NOT_PAYABLE';
     throw err;
@@ -59,6 +87,8 @@ async function resolveInvoiceTargets({ organizationId, organizationRefId, invoic
     amount: totalDue,
     payTargetType: ids.length === 1 ? 'single_invoice' : 'multi_invoice',
     invoiceIds: ids,
+    organizationRefId: resolvedOrganizationRefId,
+    contactId: invoices[0].contactId || null,
     invoiceTargets: invoices.map((inv) => ({
       invoiceId: inv.invoiceId,
       invoiceMongoId: inv._id,
@@ -84,11 +114,13 @@ async function createPaymentLink({
 }) {
   const resolved = await resolveInvoiceTargets({ organizationId, organizationRefId, invoiceIds });
   const brandingSnapshot = await buildBrandingSnapshot(organizationId);
+  const effectiveOrganizationRefId = organizationRefId || resolved.organizationRefId;
+  const effectiveContactId = contactId || resolved.contactId || null;
 
   const link = await PaymentLink.create({
     organizationId,
-    organizationRefId,
-    contactId,
+    organizationRefId: effectiveOrganizationRefId,
+    contactId: effectiveContactId,
     payTargetType: resolved.payTargetType,
     invoiceIds: resolved.invoiceIds,
     fixedAmount: resolved.amount,

@@ -20,8 +20,8 @@ const ADAPTERS = {
     campaigns: { entityType: 'campaign', status: 'stub' }
   },
   INVENTORY: {
-    orders: { entityType: 'order', status: 'stub' },
-    items: { entityType: 'item', status: 'stub' }
+    inventory: { entityType: 'inventory_location', defaultMetricField: null },
+    sales_orders: { entityType: 'sales_order', status: 'stub' }
   }
 };
 

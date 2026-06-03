@@ -503,7 +503,7 @@ export function createGenericRecordAdapter(opts = {}) {
         ['text', 'url', 'phone', 'number', 'date', 'select', 'entity', 'user'].includes(fieldType);
       const canOpenTagsEditor = isTags && typeof context?.openTagsEditor === 'function';
       const orgId = rawValue != null && typeof rawValue === 'object' ? (rawValue._id ?? rawValue.id) : (typeof rawValue === 'string' && rawValue.trim() ? rawValue.trim() : null);
-      const recordPathForEntity = fieldType === 'entity' && orgId != null && /^(organization|account|company)$/.test(String(fieldKey).toLowerCase())
+      const recordPathForEntity = fieldType === 'entity' && orgId != null && /^(organization|account|company|organizationrefid)$/.test(String(fieldKey).toLowerCase())
         ? `/organizations/${orgId}`
         : undefined;
       return {

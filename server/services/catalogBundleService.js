@@ -7,6 +7,7 @@ const {
   isCatalogBundlePricingMode,
   CATALOG_BUNDLE_PRICING_DEFAULT
 } = require('../constants/catalogBundle');
+const { CATALOG_SELLABLE_LIFECYCLE_STATES } = require('../constants/catalogLifecycle');
 
 function normalizeComponentPayload(row) {
   const componentVariantId = row.componentVariantId;
@@ -166,25 +167,37 @@ async function replaceBundleComponents({
 
 async function searchVariants(organizationId, { q = '', excludeVariantId = null, limit = 20 } = {}) {
   const cap = Math.min(Math.max(Number(limit) || 20, 1), 50);
-  const filter = { organizationId };
+  const trimmedQ = String(q || '').trim();
+
+  const activeItemIds = await Item.distinct('_id', { organizationId, deletedAt: null });
+  if (!activeItemIds.length) return [];
+
+  const filter = {
+    organizationId,
+    itemId: { $in: activeItemIds },
+    lifecycle_state: { $in: CATALOG_SELLABLE_LIFECYCLE_STATES }
+  };
 
   if (excludeVariantId) {
     filter._id = { $ne: excludeVariantId };
   }
 
-  if (q && String(q).trim()) {
-    const regex = new RegExp(String(q).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-    const items = await Item.find({
+  if (trimmedQ) {
+    const regex = new RegExp(trimmedQ.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    const nameItems = await Item.find({
       organizationId,
       deletedAt: null,
       $or: [{ item_name: regex }, { item_code: regex }]
-    }).select('_id').limit(100).lean();
-    const itemIds = items.map((i) => i._id);
+    })
+      .select('_id')
+      .limit(100)
+      .lean();
+    const nameItemIds = nameItems.map((i) => i._id);
 
     filter.$or = [
       { variant_code: regex },
       { barcode: regex },
-      ...(itemIds.length ? [{ itemId: { $in: itemIds } }] : [])
+      ...(nameItemIds.length ? [{ itemId: { $in: nameItemIds } }] : [])
     ];
   }
 
@@ -195,28 +208,32 @@ async function searchVariants(organizationId, { q = '', excludeVariantId = null,
 
   if (!variants.length) return [];
 
-  const itemIds = [...new Set(variants.map((v) => String(v.itemId)))];
+  const itemIds = [...new Set(variants.map((v) => v.itemId))];
   const items = await Item.find({
     organizationId,
     _id: { $in: itemIds },
     deletedAt: null
-  }).select('item_name item_code item_type').lean();
+  })
+    .select('item_name item_code item_type')
+    .lean();
   const itemById = new Map(items.map((i) => [String(i._id), i]));
 
-  return variants.map((v) => {
-    const item = itemById.get(String(v.itemId));
-    return {
-      _id: v._id,
-      variant_code: v.variant_code,
-      item_id: v.itemId,
-      item_name: item?.item_name || null,
-      item_code: item?.item_code || null,
-      item_type: item?.item_type || null,
-      selling_price: v.selling_price ?? 0,
-      currency: v.currency || 'USD',
-      is_default: v.is_default
-    };
-  });
+  return variants
+    .filter((v) => itemById.has(String(v.itemId)))
+    .map((v) => {
+      const item = itemById.get(String(v.itemId));
+      return {
+        _id: v._id,
+        variant_code: v.variant_code,
+        item_id: v.itemId,
+        item_name: item?.item_name || null,
+        item_code: item?.item_code || null,
+        item_type: item?.item_type || null,
+        selling_price: v.selling_price ?? 0,
+        currency: v.currency || 'USD',
+        is_default: v.is_default
+      };
+    });
 }
 
 async function expandBundlePreview({

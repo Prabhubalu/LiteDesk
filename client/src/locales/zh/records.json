@@ -3398,5 +3398,25 @@
   "portalInvoicesBack": {
     "message": "Back to invoices",
     "description": "Portal back link"
+  },
+  "status": {
+    "message": "Status",
+    "description": "Generic status field label"
+  },
+  "paymentLinkLifecycleActive": {
+    "message": "Active",
+    "description": "Payment link status active"
+  },
+  "paymentLinkLifecycleExpired": {
+    "message": "Expired",
+    "description": "Payment link status expired"
+  },
+  "paymentLinkLifecycleConsumed": {
+    "message": "Consumed",
+    "description": "Payment link status consumed"
+  },
+  "paymentLinkLifecycleRevoked": {
+    "message": "Revoked",
+    "description": "Payment link status revoked"
   }
 }

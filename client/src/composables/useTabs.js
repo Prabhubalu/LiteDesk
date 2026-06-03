@@ -24,8 +24,12 @@ import {
   TrashIcon,
   Cog6ToothIcon,
   LifebuoyIcon,
-  TicketIcon
+  TicketIcon,
+  CreditCardIcon,
+  DocumentCurrencyDollarIcon,
+  ShoppingCartIcon
 } from '@heroicons/vue/24/outline';
+import { MODULE_ICON_IDS, resolveStoredModuleIconId } from '@/utils/moduleIcons';
 import {
   getPersistedRecordTabName,
   getTabTitleMetaForPath,
@@ -148,11 +152,29 @@ const iconMap = {
   'cog': Cog6ToothIcon,
   'lifebuoy': LifebuoyIcon,
   'helpdesk': LifebuoyIcon,
-  'support': LifebuoyIcon
+  'support': LifebuoyIcon,
+  'document-text': DocumentTextIcon,
+  'shopping-cart': ShoppingCartIcon,
+  'document-currency-dollar': DocumentCurrencyDollarIcon,
+  'credit-card': CreditCardIcon,
+  quotes: DocumentTextIcon,
+  sales_orders: ShoppingCartIcon,
+  invoices: DocumentCurrencyDollarIcon,
+  payments: CreditCardIcon
 };
 
 // Map emoji icons to icon identifiers
-const migrateEmojiToIconId = (emojiIcon) => {
+const migrateEmojiToIconId = (emojiIcon, path = '') => {
+  const pathOnly = String(path || '').split('?')[0].split('#')[0].toLowerCase();
+  if (emojiIcon === '📦') {
+    if (pathOnly.startsWith('/sales-orders')) return MODULE_ICON_IDS.sales_orders;
+    return 'cube';
+  }
+  if (emojiIcon === '🧾') {
+    if (pathOnly.startsWith('/invoices')) return MODULE_ICON_IDS.invoices;
+    if (pathOnly.startsWith('/quotes')) return MODULE_ICON_IDS.quotes;
+    return MODULE_ICON_IDS.quotes;
+  }
   const emojiToIconIdMap = {
     '🏠': 'home',
     '👥': 'users',
@@ -170,9 +192,10 @@ const migrateEmojiToIconId = (emojiIcon) => {
     '📚': 'book',
     '🖥️': 'computer',
     '📄': 'document',
-    '🎫': 'ticket'
+    '🎫': 'ticket',
+    '💳': 'credit-card'
   };
-  
+
   return emojiToIconIdMap[emojiIcon] || 'document';
 };
 
@@ -190,7 +213,7 @@ const getIconComponent = (iconId) => {
     '🛟': 'lifebuoy',
   };
 
-  const resolved = aliases[normalized] || normalized;
+  const resolved = aliases[normalized] || resolveStoredModuleIconId(rawIcon) || normalized;
   return iconMap[resolved] || iconMap[rawIcon] || DocumentTextIcon;
 };
 
@@ -319,7 +342,7 @@ const loadTabsFromStorage = () => {
           // Check if it's an emoji (for migration)
           if (tab.icon.match(/[\u{1F300}-\u{1F9FF}]/u)) {
             logTabsDebug('🔄 Migrating emoji icon to icon ID:', tab.icon, 'for tab:', tab.title);
-            tab.icon = migrateEmojiToIconId(tab.icon);
+            tab.icon = migrateEmojiToIconId(tab.icon, tab.path);
           }
           // Convert icon ID to component
           tab.icon = getIconComponent(tab.icon);
@@ -587,7 +610,11 @@ const getIconForPath = (path) => {
     '/trash': 'trash',
     '/demo-requests': 'book',
     '/instances': 'computer',
-    '/settings': 'cog'
+    '/settings': 'cog',
+    '/quotes': MODULE_ICON_IDS.quotes,
+    '/sales-orders': MODULE_ICON_IDS.sales_orders,
+    '/invoices': MODULE_ICON_IDS.invoices,
+    '/payments': MODULE_ICON_IDS.payments
   };
 
   // Audit app route-specific mappings (must run before base-path fallback).

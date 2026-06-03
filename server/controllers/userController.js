@@ -1217,6 +1217,7 @@ exports.getProfile = async (req, res) => {
         const [userWithRole] = await attachRoleSummaries([sanitizedUser]);
 
         if (organization) {
+            const { buildOrgCapabilities } = require('../utils/orgCapabilities');
             userWithRole.organizationId = {
                 _id: organization._id,
                 name: organization.name,
@@ -1224,7 +1225,8 @@ exports.getProfile = async (req, res) => {
                 limits: organization.limits,
                 enabledApps: organization.enabledApps,
                 enabledModules: organization.enabledModules,
-                settings: organization.settings
+                settings: organization.settings,
+                capabilities: buildOrgCapabilities(organization)
             };
         }
 

@@ -35,7 +35,14 @@ function viewAllForModule(mod, rolePlain) {
 }
 
 const SALES_NATIVE_MODULES = new Set(['deals', 'responses', 'projects']);
+const INVENTORY_NATIVE_MODULES = new Set(['inventory']);
 const PLATFORM_ADMIN_MODULES = new Set(PLATFORM_ADMIN_KEYS);
+const {
+  isCommercialPlatformModuleKey,
+  commercialParticipationActive,
+  COMMERCIAL_PARTICIPATION_APP_KEYS
+} = require('../constants/commercialPlatformParticipation');
+const { isInventoryEnabledForOrg } = require('./inventoryCapabilityService');
 /** Cross-app capabilities that are not owned by a single business app. */
 const CROSS_FUNCTIONAL_MODULES = new Set(['imports']);
 
@@ -86,10 +93,13 @@ function buildOrgPermissionContext(organization) {
   const enabledAppsSet = new Set(enabledAppKeys);
   const moduleOverrides = organization?.moduleOverrides || {};
 
+  const inventoryEnabled = isInventoryEnabledForOrg(organization);
+
   return {
     enabledAppKeys,
     enabledAppsSet,
     moduleOverrides,
+    inventoryEnabled,
     isAppEnabled(appKey) {
       if (!appKey) return true;
       return enabledAppsSet.has(String(appKey).toUpperCase());
@@ -101,6 +111,14 @@ function buildOrgPermissionContext(organization) {
 
       const mod = normalizeOrgModuleKey(moduleKey);
       if (PLATFORM_ADMIN_MODULES.has(mod)) return true;
+
+      if (isCommercialPlatformModuleKey(mod)) {
+        if (!commercialParticipationActive(enabledAppKeys)) return false;
+        if (!COMMERCIAL_PARTICIPATION_APP_KEYS.includes(upper)) return false;
+        const override = moduleOverrides[mod]?.[upper];
+        if (override !== undefined) return override === true;
+        return true;
+      }
 
       if (CORE_ENTITY_KEYS.has(mod)) {
         const override = moduleOverrides[mod]?.[upper];
@@ -182,6 +200,7 @@ function resolveLegacyModuleAppKey(storageModuleKey) {
   const mod = storageModuleKey;
   if (PLATFORM_ADMIN_MODULES.has(mod)) return null;
   if (SALES_NATIVE_MODULES.has(mod)) return APP_KEYS.SALES;
+  if (INVENTORY_NATIVE_MODULES.has(mod)) return APP_KEYS.INVENTORY;
   if (mod === 'cases') return APP_KEYS.HELPDESK;
   if (mod === 'contacts' || CORE_ENTITY_KEYS.has(mod)) {
     return null;
@@ -255,7 +274,14 @@ function resolveEffectiveAppKey(storageModuleKey, requestAppKey) {
   if (PLATFORM_ADMIN_MODULES.has(mod) || CROSS_FUNCTIONAL_MODULES.has(mod)) return null;
 
   if (SALES_NATIVE_MODULES.has(mod)) return APP_KEYS.SALES;
+  if (INVENTORY_NATIVE_MODULES.has(mod)) return APP_KEYS.INVENTORY;
   if (mod === 'cases') return APP_KEYS.HELPDESK;
+
+  if (isCommercialPlatformModuleKey(mod)) {
+    const req = requestAppKey ? String(requestAppKey).toUpperCase() : null;
+    if (req && COMMERCIAL_PARTICIPATION_APP_KEYS.includes(req)) return req;
+    return APP_KEYS.SALES;
+  }
 
   if (mod === 'contacts' || CORE_ENTITY_KEYS.has(mod)) {
     return requestAppKey ? String(requestAppKey).toUpperCase() : APP_KEYS.SALES;
@@ -269,6 +295,26 @@ function passesOrgAuthorizationGuards(orgContext, storageModuleKey, effectiveApp
 
   if (PLATFORM_ADMIN_MODULES.has(storageModuleKey)) {
     return true;
+  }
+
+  const orgMod = normalizeOrgModuleKey(storageModuleKey);
+
+  if (isCommercialPlatformModuleKey(orgMod)) {
+    if (!commercialParticipationActive(orgContext.enabledAppKeys)) return false;
+    const participating = orgContext.enabledAppKeys.filter((appKey) =>
+      COMMERCIAL_PARTICIPATION_APP_KEYS.includes(String(appKey).toUpperCase())
+    );
+    if (!participating.length) return false;
+    return participating.some(
+      (appKey) =>
+        orgContext.isAppEnabled(appKey) &&
+        orgContext.isModuleEnabledForApp(storageModuleKey, appKey)
+    );
+  }
+
+  if (INVENTORY_NATIVE_MODULES.has(orgMod)) {
+    if (!orgContext.isAppEnabled(APP_KEYS.INVENTORY)) return false;
+    return orgContext.isModuleEnabledForApp(storageModuleKey, APP_KEYS.INVENTORY);
   }
 
   if (effectiveAppKey && !orgContext.isAppEnabled(effectiveAppKey)) {
@@ -324,12 +370,20 @@ function resolveRuntimePermission(user, module, action, options = {}) {
   }
 
   if (effectiveAppKey && requestAppKey && String(requestAppKey).toUpperCase() !== effectiveAppKey) {
-    if (SALES_NATIVE_MODULES.has(storageModule) || storageModule === 'cases') {
+    if (
+      SALES_NATIVE_MODULES.has(storageModule) ||
+      INVENTORY_NATIVE_MODULES.has(storageModule) ||
+      storageModule === 'cases'
+    ) {
       return false;
     }
   }
 
-  if (SALES_NATIVE_MODULES.has(storageModule) || storageModule === 'cases') {
+  if (
+    SALES_NATIVE_MODULES.has(storageModule) ||
+    INVENTORY_NATIVE_MODULES.has(storageModule) ||
+    storageModule === 'cases'
+  ) {
     if (requestAppKey && String(requestAppKey).toUpperCase() !== effectiveAppKey) {
       return false;
     }

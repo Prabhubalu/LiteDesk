@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Register platform.inventory core module (INV0).
+ * @deprecated Use migrateInventoryToApp.js — stock module is app-owned, not platform core.
  *
- * Usage: node scripts/migrateInventoryToCoreModule.js
+ * Usage: node scripts/migrateInventoryToApp.js
  */
 
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });

@@ -3772,7 +3772,7 @@ const autosizeAllColumns = () => {
 const router = useRouter();
 
 // Core modules are configured in Settings > Core Modules; app modules (e.g. Deals) in Settings > Applications
-const CORE_MODULE_KEYS = ['people', 'organizations', 'tasks', 'events', 'forms', 'items', 'quotes', 'sales_orders', 'invoices'];
+const CORE_MODULE_KEYS = ['people', 'organizations', 'tasks', 'events', 'forms', 'items', 'quotes', 'sales_orders', 'invoices', 'payments'];
 const APP_MODULE_CONFIG = {
   deals: { appKey: 'SALES', app: 'sales', config: 'schema' }
 };

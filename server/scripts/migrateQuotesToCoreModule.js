@@ -22,9 +22,11 @@ const {
   ensureQuoteRelationshipDefinitions
 } = require('../constants/defaultQuoteRelationships');
 
+const { commercialModuleIconId } = require('../constants/commercialModuleIcons');
+
 const QUOTES_UI = {
   routeBase: '/quotes',
-  icon: '🧾',
+  icon: commercialModuleIconId('quotes'),
   showInSidebar: true,
   sidebarOrder: 8,
   createLabel: 'Create Quote',

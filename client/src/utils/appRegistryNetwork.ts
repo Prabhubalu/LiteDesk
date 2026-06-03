@@ -77,6 +77,7 @@ function mapRawModulesToRegistryModules(app: { appKey: string }, modulesData: an
       icon: module.icon,
       order: module.sidebarOrder || 0,
       appKey: module.appKey,
+      showInSidebar: module.showInSidebar !== false,
       navigationCore: module.navigationCore || false,
       navigationEntity: module.navigationEntity || false,
       excludeFromApps: module.excludeFromApps || false,
@@ -86,7 +87,7 @@ function mapRawModulesToRegistryModules(app: { appKey: string }, modulesData: an
     };
   });
 
-  return modules;
+  return modules.filter((module) => module.showInSidebar !== false);
 }
 
 /** Default Audit app nav when platform module metadata is missing or filtered out. */

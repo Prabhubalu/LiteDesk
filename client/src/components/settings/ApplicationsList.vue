@@ -141,6 +141,7 @@ const appIconMap = {
   portal: GlobeAltIcon,
   audit: ClipboardDocumentCheckIcon,
   lms: AcademicCapIcon,
+  inventory: CubeIcon,
 };
 
 function getAppIcon(appKey) {

@@ -403,6 +403,10 @@
     "message": "Invoices",
     "description": "Invoices module navigation label"
   },
+  "modulePayments": {
+    "message": "Payments",
+    "description": "Payments module navigation label"
+  },
   "moduleResponses": {
     "message": "Responses",
     "description": "Form responses module navigation label"
@@ -442,6 +446,14 @@
   "appPortal": {
     "message": "Portal",
     "description": "Portal app name in app switcher"
+  },
+  "appInventory": {
+    "message": "Inventory",
+    "description": "Inventory app name in app switcher"
+  },
+  "inventoryDashboardBlurb": {
+    "message": "Manage stock locations, ledger movements, reservations, and fulfillment from this workspace.",
+    "description": "Short description on Inventory app dashboard"
   },
   "salesDashboard": {
     "message": "Sales Dashboard",

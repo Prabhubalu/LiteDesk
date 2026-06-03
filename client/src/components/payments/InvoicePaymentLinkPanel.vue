@@ -26,7 +26,7 @@
       </div>
       <div class="flex justify-between gap-2">
         <span class="text-gray-500">{{ t('records.status') }}</span>
-        <span>{{ activeLink.status }}</span>
+        <span>{{ paymentLinkStatusLabel(activeLink.status) }}</span>
       </div>
       <div v-if="activeLink.publicUrl" class="space-y-1">
         <div class="text-xs text-gray-500">{{ t('records.paymentLinkPublicUrl') }}</div>
@@ -60,23 +60,39 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import apiClient from '@/utils/apiClient';
+import { extractIdFromFormValue } from '@/utils/orgContactFormPairing';
 import { useNotifications } from '@/composables/useNotifications';
 
 const props = defineProps({
   record: { type: Object, default: null }
 });
 
-const { t } = useI18n();
+const { t, te } = useI18n();
 const auth = useAuthStore();
+
+const PAYMENT_LINK_STATUS_KEYS = {
+  active: 'records.paymentLinkLifecycleActive',
+  expired: 'records.paymentLinkLifecycleExpired',
+  consumed: 'records.paymentLinkLifecycleConsumed',
+  revoked: 'records.paymentLinkLifecycleRevoked'
+};
+
+function paymentLinkStatusLabel(status) {
+  const key = PAYMENT_LINK_STATUS_KEYS[String(status || '').toLowerCase()];
+  if (key && te(key)) return t(key);
+  return status ? String(status) : '—';
+}
 const notifications = useNotifications();
 const busy = ref(false);
 const activeLink = ref(null);
 
 const canManage = computed(() => auth.isOwner || auth.can('payments', 'managePaymentLinks'));
+const organizationRefId = computed(() => extractIdFromFormValue(props.record?.organizationRefId));
 const canCreate = computed(() => {
   if (!props.record?._id) return false;
   if (String(props.record?.invoiceType || 'standard') !== 'standard') return false;
   if (!['Posted', 'Partially Paid'].includes(String(props.record?.status || ''))) return false;
+  if (!organizationRefId.value) return false;
   return Number(props.record?.amountDue) > 0;
 });
 
@@ -98,8 +114,8 @@ async function createLink() {
   busy.value = true;
   try {
     const res = await apiClient.post('/payment-links', {
-      organizationRefId: props.record.organizationRefId,
-      contactId: props.record.contactId || null,
+      organizationRefId: organizationRefId.value,
+      contactId: extractIdFromFormValue(props.record?.contactId),
       invoiceIds: [props.record.invoiceId]
     });
     if (!res?.success) throw new Error(res?.message || 'Failed');

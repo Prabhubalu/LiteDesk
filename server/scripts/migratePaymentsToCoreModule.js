@@ -17,9 +17,11 @@ const {
 } = require('../constants/paymentModuleDefaults');
 const { PAYMENT_STATUSES } = require('../constants/paymentLifecycle');
 
+const { commercialModuleIconId } = require('../constants/commercialModuleIcons');
+
 const PAYMENTS_UI = {
   routeBase: '/payments',
-  icon: '💳',
+  icon: commercialModuleIconId('payments'),
   showInSidebar: true,
   sidebarOrder: 11,
   createLabel: 'Record Payment',
@@ -43,6 +45,8 @@ async function migratePaymentsToCoreModule() {
   const basePayload = {
     appKey: 'platform',
     moduleKey: 'payments',
+    key: 'payments',
+    name: 'Payments',
     label: 'Payment',
     pluralLabel: 'Payments',
     entityType: 'TRANSACTION',
@@ -71,7 +75,10 @@ async function migratePaymentsToCoreModule() {
   if (platformModule) {
     await ModuleDefinition.updateOne(
       { _id: platformModule._id },
-      { $set: basePayload, $unset: { organizationId: '', key: '' } }
+      {
+        $set: basePayload,
+        $unset: { organizationId: '' }
+      }
     );
     console.log('✅ Updated existing platform.payments module\n');
   } else {

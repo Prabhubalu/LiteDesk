@@ -57,6 +57,12 @@ import {
   classifyFieldBase,
   normalizeFieldKeyForMetadataLookup,
 } from './BaseFieldModel';
+import {
+  isInventoryEnabled,
+  isInventoryGatedField,
+  shouldHideFieldWhenInventoryDisabled,
+  type OrgCapabilities,
+} from '@/utils/inventoryCapability';
 
 // =============================================================================
 // ITEM-SPECIFIC TYPE ALIASES (for backward compatibility)
@@ -693,6 +699,24 @@ export function getItemCatalogScaffoldFieldKeys(): string[] {
 /** Legacy flat category labels — hidden from settings/create; use categoryId. */
 export function getItemLegacyCategoryFieldKeys(): string[] {
   return ['category', 'subcategory'];
+}
+
+/** @deprecated Use INVENTORY_GATED_FIELD_KEYS.items from inventoryCapability.ts */
+export const ITEM_INVENTORY_ENGINE_FIELD_KEYS = new Set([
+  'stock_quantity',
+  'reorder_level',
+  'serial_numbers',
+]);
+
+export function isItemInventoryEngineFieldKey(fieldKey: string): boolean {
+  return isInventoryGatedField('items', fieldKey);
+}
+
+export function shouldShowItemFieldForCapabilities(
+  fieldKey: string,
+  capabilities: OrgCapabilities
+): boolean {
+  return !shouldHideFieldWhenInventoryDisabled('items', fieldKey, isInventoryEnabled({ capabilities }));
 }
 
 /**

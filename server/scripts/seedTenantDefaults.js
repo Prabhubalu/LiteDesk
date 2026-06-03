@@ -39,7 +39,8 @@ const APP_KEY_MAP = {
   SALES: 'sales',
   AUDIT: 'audit',
   PORTAL: 'portal', // May not exist in platform metadata yet
-  LMS: 'lms' // May not exist in platform metadata yet
+  LMS: 'lms', // May not exist in platform metadata yet
+  INVENTORY: 'inventory'
 };
 
 async function seedTenantDefaults() {

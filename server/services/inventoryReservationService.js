@@ -18,6 +18,10 @@ const {
 } = require('./inventoryLineEligibilityService');
 const { writeInventoryActivity } = require('./inventoryActivityService');
 const { computeAtp } = require('../constants/inventoryLifecycle');
+const {
+  isInventoryEnabled,
+  RESERVATION_SKIPPED_RESULT
+} = require('./inventoryCapabilityService');
 
 function remainingReservationQty(reservation) {
   return roundQty(
@@ -172,6 +176,9 @@ async function reserveLine({
 }
 
 async function reserveForSalesOrder({ organizationId, salesOrderId, userId = null }) {
+  if (!(await isInventoryEnabled(organizationId))) {
+    return { ...RESERVATION_SKIPPED_RESULT };
+  }
   const order = await SalesOrder.findOne({ _id: salesOrderId, organizationId });
   if (!order) {
     const err = new Error('Sales order not found');
@@ -265,6 +272,9 @@ async function releaseForSalesOrder({
   reason = 'sales_order_cancelled',
   status = 'cancelled'
 }) {
+  if (!(await isInventoryEnabled(organizationId))) {
+    return { released: [], skipped: true };
+  }
   const query = {
     organizationId,
     salesOrderId,
