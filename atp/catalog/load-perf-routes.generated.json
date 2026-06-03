@@ -1,0 +1,1057 @@
+{
+  "generated": [
+    {
+      "id": "016",
+      "path": "/api/admin/automation-rules?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "admin automation-rules",
+      "capVus": 3,
+      "generated": true
+    },
+    {
+      "id": "017",
+      "path": "/api/admin/business-flow-templates",
+      "method": "GET",
+      "auth": true,
+      "label": "admin business-flow-templates",
+      "capVus": 3,
+      "generated": true
+    },
+    {
+      "id": "018",
+      "path": "/api/admin/business-flows?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "admin business-flows",
+      "capVus": 3,
+      "generated": true
+    },
+    {
+      "id": "019",
+      "path": "/api/admin/processes?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "admin processes",
+      "capVus": 3,
+      "generated": true
+    },
+    {
+      "id": "020",
+      "path": "/api/appointments/config",
+      "method": "GET",
+      "auth": true,
+      "label": "appointments config",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "021",
+      "path": "/api/appointments/config/me",
+      "method": "GET",
+      "auth": true,
+      "label": "config me",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "022",
+      "path": "/api/appointments/config/pages",
+      "method": "GET",
+      "auth": true,
+      "label": "config pages",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "023",
+      "path": "/api/appointments/config/slug-available?slug=atp-test",
+      "method": "GET",
+      "auth": true,
+      "label": "config slug-available",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "024",
+      "path": "/api/appointments/stats",
+      "method": "GET",
+      "auth": true,
+      "label": "appointments stats",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "025",
+      "path": "/api/audit/assignments?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "audit assignments",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "026",
+      "path": "/api/business-hours/holiday-calendars",
+      "method": "GET",
+      "auth": true,
+      "label": "business-hours holiday-calendars",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "027",
+      "path": "/api/business-hours/kpis",
+      "method": "GET",
+      "auth": true,
+      "label": "business-hours kpis",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "028",
+      "path": "/api/business-hours/sets",
+      "method": "GET",
+      "auth": true,
+      "label": "business-hours sets",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "029",
+      "path": "/api/catalog/categories",
+      "method": "GET",
+      "auth": true,
+      "label": "catalog categories",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "030",
+      "path": "/api/catalog/price-books",
+      "method": "GET",
+      "auth": true,
+      "label": "catalog price-books",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "031",
+      "path": "/api/communications/inbound/dead-letter",
+      "method": "GET",
+      "auth": true,
+      "label": "inbound dead-letter",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "032",
+      "path": "/api/communications/inbound/diagnostics",
+      "method": "GET",
+      "auth": true,
+      "label": "inbound diagnostics",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "033",
+      "path": "/api/communications/templates",
+      "method": "GET",
+      "auth": true,
+      "label": "communications templates",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "034",
+      "path": "/api/communications/webhook-test/events",
+      "method": "GET",
+      "auth": true,
+      "label": "webhook-test events",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "035",
+      "path": "/api/communications/workspace-thread-counts",
+      "method": "GET",
+      "auth": true,
+      "label": "communications workspace-thread-counts",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "036",
+      "path": "/api/communications/workspace-thread-ids",
+      "method": "GET",
+      "auth": true,
+      "label": "communications workspace-thread-ids",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "037",
+      "path": "/api/communications/workspace-threads",
+      "method": "GET",
+      "auth": true,
+      "label": "communications workspace-threads",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "038",
+      "path": "/api/config-registry/lifecycle-status-mappings/people_lifecycle",
+      "method": "GET",
+      "auth": true,
+      "label": "lifecycle-status-mappings people_lifecycle",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "039",
+      "path": "/api/config-registry/lifecycles/people",
+      "method": "GET",
+      "auth": true,
+      "label": "lifecycles people",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "040",
+      "path": "/api/config-registry/pipelines/deals/stages",
+      "method": "GET",
+      "auth": true,
+      "label": "deals stages",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "041",
+      "path": "/api/deals/?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "api deals",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "042",
+      "path": "/api/events/export",
+      "method": "GET",
+      "auth": true,
+      "label": "events export",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "043",
+      "path": "/api/forms/responses/all?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "responses all",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "044",
+      "path": "/api/health/live",
+      "method": "GET",
+      "auth": true,
+      "label": "health live",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "045",
+      "path": "/api/helpdesk/cases/analytics/audit-export",
+      "method": "GET",
+      "auth": true,
+      "label": "analytics audit-export",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "046",
+      "path": "/api/helpdesk/cases/analytics/distribution",
+      "method": "GET",
+      "auth": true,
+      "label": "analytics distribution",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "047",
+      "path": "/api/helpdesk/cases/analytics/owners",
+      "method": "GET",
+      "auth": true,
+      "label": "analytics owners",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "048",
+      "path": "/api/helpdesk/cases/canned-responses",
+      "method": "GET",
+      "auth": true,
+      "label": "cases canned-responses",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "049",
+      "path": "/api/items/low-stock",
+      "method": "GET",
+      "auth": true,
+      "label": "items low-stock",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "050",
+      "path": "/api/items/statistics",
+      "method": "GET",
+      "auth": true,
+      "label": "items statistics",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "051",
+      "path": "/api/items/type/product",
+      "method": "GET",
+      "auth": true,
+      "label": "type product",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "052",
+      "path": "/api/mailboxes?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "api mailboxes",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "053",
+      "path": "/api/modules/",
+      "method": "GET",
+      "auth": true,
+      "label": "api modules",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "054",
+      "path": "/api/modules/people/quick-create",
+      "method": "GET",
+      "auth": true,
+      "label": "people quick-create",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "055",
+      "path": "/api/notifications?appKey=SALES&limit=10",
+      "method": "GET",
+      "auth": true,
+      "label": "api notifications",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "056",
+      "path": "/api/people/?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "api people",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "057",
+      "path": "/api/portal/cases?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "portal cases",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "058",
+      "path": "/api/push/subscriptions",
+      "method": "GET",
+      "auth": true,
+      "label": "push subscriptions",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "059",
+      "path": "/api/reports?limit=1",
+      "method": "GET",
+      "auth": true,
+      "label": "api reports",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "060",
+      "path": "/api/reports?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "api reports",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "061",
+      "path": "/api/settings/applications",
+      "method": "GET",
+      "auth": true,
+      "label": "settings applications",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "062",
+      "path": "/api/settings/applications/helpdesk/execution-settings",
+      "method": "GET",
+      "auth": true,
+      "label": "helpdesk execution-settings",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "063",
+      "path": "/api/settings/automation/assignment-rules",
+      "method": "GET",
+      "auth": true,
+      "label": "automation assignment-rules",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "064",
+      "path": "/api/settings/automation/mailroom",
+      "method": "GET",
+      "auth": true,
+      "label": "automation mailroom",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "065",
+      "path": "/api/settings/automation/mailroom/metrics",
+      "method": "GET",
+      "auth": true,
+      "label": "mailroom metrics",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "066",
+      "path": "/api/settings/automation/mailroom/search?q=test",
+      "method": "GET",
+      "auth": true,
+      "label": "mailroom search",
+      "capVus": 4,
+      "generated": true
+    },
+    {
+      "id": "067",
+      "path": "/api/settings/core-modules/organizations/status-types",
+      "method": "GET",
+      "auth": true,
+      "label": "organizations status-types",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "068",
+      "path": "/api/settings/core-modules/people/people-types",
+      "method": "GET",
+      "auth": true,
+      "label": "people people-types",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "069",
+      "path": "/api/settings/integrations",
+      "method": "GET",
+      "auth": true,
+      "label": "settings integrations",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "070",
+      "path": "/api/settings/organization",
+      "method": "GET",
+      "auth": true,
+      "label": "settings organization",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "071",
+      "path": "/api/settings/quotes",
+      "method": "GET",
+      "auth": true,
+      "label": "settings quotes",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "072",
+      "path": "/api/settings/security",
+      "method": "GET",
+      "auth": true,
+      "label": "settings security",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "073",
+      "path": "/api/settings/subscriptions",
+      "method": "GET",
+      "auth": true,
+      "label": "settings subscriptions",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "074",
+      "path": "/api/targets/?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "api targets",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "075",
+      "path": "/api/targets/leaderboard",
+      "method": "GET",
+      "auth": true,
+      "label": "targets leaderboard",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "076",
+      "path": "/api/targets/lifecycle-options",
+      "method": "GET",
+      "auth": true,
+      "label": "targets lifecycle-options",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "077",
+      "path": "/api/targets/platform-settings",
+      "method": "GET",
+      "auth": true,
+      "label": "targets platform-settings",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "078",
+      "path": "/api/targets/summary",
+      "method": "GET",
+      "auth": true,
+      "label": "targets summary",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "079",
+      "path": "/api/targets/types",
+      "method": "GET",
+      "auth": true,
+      "label": "targets types",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "080",
+      "path": "/api/tasks/?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "api tasks",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "081",
+      "path": "/api/ui/app-definitions",
+      "method": "GET",
+      "auth": true,
+      "label": "ui app-definitions",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "082",
+      "path": "/api/ui/apps/SALES/modules",
+      "method": "GET",
+      "auth": true,
+      "label": "SALES modules",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "083",
+      "path": "/api/ui/entities",
+      "method": "GET",
+      "auth": true,
+      "label": "ui entities",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "084",
+      "path": "/api/ui/projection/SALES/people",
+      "method": "GET",
+      "auth": true,
+      "label": "SALES people",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "085",
+      "path": "/api/users/list",
+      "method": "GET",
+      "auth": true,
+      "label": "users list",
+      "capVus": 6,
+      "generated": true
+    },
+    {
+      "id": "086",
+      "path": "/api/v2/organization/?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "v2 organization",
+      "capVus": 6,
+      "generated": true
+    }
+  ],
+  "placeholders": [
+    {
+      "id": "P001",
+      "path": "/api/helpdesk/cases/__CASE__",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder cases __CASE__",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P002",
+      "path": "/api/helpdesk/cases/__CASE__/chat/session",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder chat session",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P003",
+      "path": "/api/helpdesk/cases/__CASE__/chat/messages",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder chat messages",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P004",
+      "path": "/api/helpdesk/cases/__CASE__/chat/stream",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder chat stream",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P005",
+      "path": "/api/communications/email/compose-preview?moduleKey=people&recordId=__RECORD__",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder email compose-preview",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P006",
+      "path": "/api/communications/email/reply-to-preview?moduleKey=people&recordId=__RECORD__",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder email reply-to-preview",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P007",
+      "path": "/api/events/__EVENT__",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder events __EVENT__",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P008",
+      "path": "/api/forms/__FORM__",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder forms __FORM__",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P009",
+      "path": "/api/forms/__FORM__/analytics",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder __FORM__ analytics",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P010",
+      "path": "/api/forms/__FORM__/kpis",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder __FORM__ kpis",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P011",
+      "path": "/api/forms/__FORM__/responses?limit=5",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder __FORM__ responses",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P012",
+      "path": "/api/modules/people/records/__RECORD__/activity",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder __RECORD__ activity",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P013",
+      "path": "/api/modules/people/records/__RECORD__/comments",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder __RECORD__ comments",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P014",
+      "path": "/api/modules/people/records/__RECORD__/neighbors",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder __RECORD__ neighbors",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P015",
+      "path": "/api/modules/people/records/__RECORD__/description-versions",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder __RECORD__ description-versions",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P016",
+      "path": "/api/quotes/__QUOTE__/process-approvals",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder __QUOTE__ process-approvals",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P017",
+      "path": "/api/quotes/__QUOTE__/conversion",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder __QUOTE__ conversion",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P018",
+      "path": "/api/quotes/__QUOTE__/sections",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder __QUOTE__ sections",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P019",
+      "path": "/api/quotes/__QUOTE__/lines",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder __QUOTE__ lines",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P020",
+      "path": "/api/quotes/__QUOTE__/documents",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder __QUOTE__ documents",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P021",
+      "path": "/api/relationships/links?moduleKey=people&recordId=__RECORD__",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder relationships links",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P022",
+      "path": "/api/relationships/linkable-targets?moduleKey=deals&recordId=__RECORD__",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder relationships linkable-targets",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P023",
+      "path": "/api/relationships/record-context?moduleKey=people&recordId=__RECORD__",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder relationships record-context",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P024",
+      "path": "/api/scheduling/deals/__DEAL__",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder deals __DEAL__",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    },
+    {
+      "id": "P025",
+      "path": "/api/scheduling/__SCH__",
+      "method": "GET",
+      "auth": true,
+      "label": "Placeholder scheduling __SCH__",
+      "capVus": 3,
+      "placeholder": true,
+      "generated": true
+    }
+  ],
+  "mutations": [
+    {
+      "id": "M001",
+      "path": "/api/business-hours/simulate",
+      "method": "POST",
+      "auth": true,
+      "label": "POST business-hours simulate",
+      "capVus": 2,
+      "mutation": true,
+      "body": {},
+      "generated": true
+    },
+    {
+      "id": "M002",
+      "path": "/api/helpdesk/cases/ingest/channel",
+      "method": "POST",
+      "auth": true,
+      "label": "POST ingest channel",
+      "capVus": 2,
+      "mutation": true,
+      "body": {},
+      "generated": true
+    },
+    {
+      "id": "M003",
+      "path": "/api/catalog/price-books/resolve",
+      "method": "POST",
+      "auth": true,
+      "label": "POST price-books resolve",
+      "capVus": 2,
+      "mutation": true,
+      "body": {},
+      "generated": true
+    },
+    {
+      "id": "M004",
+      "path": "/api/config-registry/compute-derived-status",
+      "method": "POST",
+      "auth": true,
+      "label": "POST config-registry compute-derived-status",
+      "capVus": 2,
+      "mutation": true,
+      "body": {},
+      "generated": true
+    },
+    {
+      "id": "M005",
+      "path": "/api/csv/check-duplicates/contacts",
+      "method": "POST",
+      "auth": true,
+      "label": "POST check-duplicates contacts",
+      "capVus": 2,
+      "mutation": true,
+      "body": {},
+      "generated": true
+    },
+    {
+      "id": "M006",
+      "path": "/api/events/",
+      "method": "POST",
+      "auth": true,
+      "label": "POST api events",
+      "capVus": 2,
+      "mutation": true,
+      "body": {},
+      "generated": true
+    },
+    {
+      "id": "M007",
+      "path": "/api/events/bulk-delete",
+      "method": "POST",
+      "auth": true,
+      "label": "POST events bulk-delete",
+      "capVus": 2,
+      "mutation": true,
+      "body": {},
+      "generated": true
+    },
+    {
+      "id": "M008",
+      "path": "/api/modules/people/records/batch",
+      "method": "POST",
+      "auth": true,
+      "label": "POST records batch",
+      "capVus": 2,
+      "mutation": true,
+      "body": {},
+      "generated": true
+    },
+    {
+      "id": "M009",
+      "path": "/api/settings/applications/helpdesk/recalculate-slas",
+      "method": "POST",
+      "auth": true,
+      "label": "POST helpdesk recalculate-slas",
+      "capVus": 2,
+      "mutation": true,
+      "body": {},
+      "generated": true
+    },
+    {
+      "id": "M010",
+      "path": "/api/targets/types/seed",
+      "method": "POST",
+      "auth": true,
+      "label": "POST types seed",
+      "capVus": 2,
+      "mutation": true,
+      "body": {},
+      "generated": true
+    },
+    {
+      "id": "M011",
+      "path": "/api/targets/conflicts/check",
+      "method": "POST",
+      "auth": true,
+      "label": "POST conflicts check",
+      "capVus": 2,
+      "mutation": true,
+      "body": {},
+      "generated": true
+    }
+  ],
+  "public": [
+    {
+      "id": "U001",
+      "path": "/health/ready",
+      "label": "Public health ready",
+      "method": "GET",
+      "auth": false,
+      "capVus": 8,
+      "public": true,
+      "generated": true
+    },
+    {
+      "id": "U002",
+      "path": "/health/live",
+      "label": "Public health live",
+      "method": "GET",
+      "auth": false,
+      "capVus": 8,
+      "public": true,
+      "generated": true
+    },
+    {
+      "id": "U003",
+      "path": "/api/auth/test-version",
+      "label": "Auth test version",
+      "method": "GET",
+      "auth": false,
+      "capVus": 8,
+      "public": true,
+      "generated": true
+    }
+  ],
+  "generatedAt": "2026-06-03T03:30:21.158Z",
+  "counts": {
+    "generated": 71,
+    "placeholders": 25,
+    "mutations": 11,
+    "public": 3
+  }
+}

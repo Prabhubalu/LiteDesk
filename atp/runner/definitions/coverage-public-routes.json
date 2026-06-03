@@ -1,0 +1,160 @@
+{
+  "TC-PUB-APT-001": {
+    "auth": false,
+    "m": "GET",
+    "p": "/api/public/appointments/manage/atp-invalid-token"
+  },
+  "TC-PUB-APT-002": {
+    "auth": false,
+    "m": "GET",
+    "p": "/api/public/appointments/manage/atp-invalid-token/slots"
+  },
+  "TC-PUB-APT-003": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/public/appointments/manage/atp-invalid-token/reschedule"
+  },
+  "TC-PUB-APT-004": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/public/appointments/manage/atp-invalid-token/cancel"
+  },
+  "TC-PUB-BOOK-001": {
+    "auth": false,
+    "m": "GET",
+    "p": "/api/public/book/atp-invalid-booking-slug"
+  },
+  "TC-PUB-BOOK-003": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/public/book/atp-invalid-booking-slug/book"
+  },
+  "TC-PUB-CHAT-002": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/embed/chat/sessions",
+    "h": {
+      "X-Instance-Key": "atp-invalid"
+    }
+  },
+  "TC-PUB-CHAT-003": {
+    "auth": false,
+    "m": "GET",
+    "p": "/api/embed/chat/messages",
+    "h": {
+      "X-Instance-Key": "atp-invalid"
+    }
+  },
+  "TC-PUB-CHAT-004": {
+    "auth": false,
+    "m": "GET",
+    "p": "/api/embed/chat/stream",
+    "h": {
+      "X-Instance-Key": "atp-invalid"
+    }
+  },
+  "TC-PUB-CHAT-005": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/embed/chat/typing",
+    "h": {
+      "X-Instance-Key": "atp-invalid"
+    }
+  },
+  "TC-PUB-CHAT-006": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/embed/chat/close",
+    "h": {
+      "X-Instance-Key": "atp-invalid"
+    }
+  },
+  "TC-PUB-FRM-001": {
+    "auth": false,
+    "m": "GET",
+    "p": "/api/public/forms/atp-nonexistent-slug-404"
+  },
+  "TC-PUB-FRM-002": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/public/forms/atp-nonexistent-slug-404/submit"
+  },
+  "TC-PUB-MRM-001": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/public/mailroom/ingest"
+  },
+  "TC-PUB-MRM-002": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/public/mailroom/ingest",
+    "body": {
+      "threadId": "atp-thread-1",
+      "messageId": "atp-msg-2",
+      "subject": "ATP thread append"
+    }
+  },
+  "TC-PUB-MRM-003": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/public/mailroom/ingest",
+    "h": {
+      "Authorization": "Bearer invalid"
+    }
+  },
+  "TC-PUB-QTE-002": {
+    "auth": false,
+    "m": "GET",
+    "p": "/api/public/quotes/atp-revoked-token-xyz/pdf"
+  },
+  "TC-PUB-QTE-003": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/public/quotes/atp-revoked-token-xyz/accept"
+  },
+  "TC-PUB-QTE-004": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/public/quotes/atp-revoked-token-xyz/reject"
+  },
+  "TC-PUB-QTE-005": {
+    "auth": false,
+    "m": "GET",
+    "p": "/api/public/quotes/atp-revoked-token-xyz/comments"
+  },
+  "TC-PUB-QTE-007": {
+    "auth": false,
+    "m": "GET",
+    "p": "/api/public/quotes/atp-revoked-token-xyz/view"
+  },
+  "TC-PUB-WH-003": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/webhooks/email/inbound"
+  },
+  "TC-PUB-WH-004": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/webhooks/email/ses-events"
+  },
+  "TC-PUB-WH-005": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/webhooks/email/events"
+  },
+  "TC-PUB-WH-006": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/webhooks/email/gmail/push"
+  },
+  "TC-PUB-WH-007": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/hooks/process/atp-invalid-webhook-key"
+  },
+  "TC-PUB-WH-008": {
+    "auth": false,
+    "m": "POST",
+    "p": "/api/hooks/process/atp-invalid-webhook-key"
+  }
+}
