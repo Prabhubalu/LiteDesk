@@ -209,7 +209,6 @@ const props = withDefaults(
     teleportOptions?: boolean;
   }>(),
   {
-    modelValue: '',
     compact: false,
     dense: false,
     inline: false,

@@ -66,7 +66,8 @@ function compileGroupNode(
       }
 
       if (parts.length === 1) {
-        children.push(parts[0]);
+        const single = parts[0];
+        if (single) children.push(single);
       } else if (parts.length > 1) {
         children.push({ logic: 'AND', children: parts });
       }

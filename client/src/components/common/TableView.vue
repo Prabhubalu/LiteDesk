@@ -559,15 +559,7 @@ import { normalizeListPagination } from '@/utils/normalizeListPagination'
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue'
 import ListColumnFilter from '@/components/common/ListColumnFilter.vue'
 import { resolveColumnFilterConfig } from '@/platform/filters/columnFilterResolver'
-
-type ColumnFilterConfig = {
-  key: string
-  label: string
-  filterType: string
-  fieldPath?: string
-  options?: Array<{ value: string; label: string }>
-  priority?: number
-}
+import type { FilterConfig } from '@/platform/filters/filterResolver'
 
 const COLUMN_LABEL_ROW_HEIGHT_PX = 46
 const COLUMN_FILTER_ROW_HEIGHT_PX = 44
@@ -662,7 +654,7 @@ const props = withDefaults(
     scrollSessionKey?: string
     /** Inline column-header filters (list view desktop). */
     columnFiltersEnabled?: boolean
-    filterConfigByKey?: Record<string, ColumnFilterConfig>
+    filterConfigByKey?: Record<string, FilterConfig>
     columnFilters?: Record<string, unknown>
   }>(),
   {
@@ -1395,20 +1387,17 @@ function teardownHeaderRowObserver() {
   headerRowsResizeObserver = null
 }
 
-const filterConfigForColumn = (column: ColumnDef): ColumnFilterConfig => {
+const filterConfigForColumn = (column: ColumnDef): FilterConfig => {
   const key = columnKey(column)
   if (key && props.filterConfigByKey?.[key]) {
     return props.filterConfigByKey[key]
   }
   const colObj = typeof column === 'object' && column ? column : { key: String(column) }
-  return resolveColumnFilterConfig(
-    {
-      key: key || colObj.key || '',
-      label: columnLabel(column),
-      dataType: colObj.dataType,
-    },
-    undefined
-  )
+  return resolveColumnFilterConfig({
+    key: key || colObj.key || '',
+    label: columnLabel(column),
+    dataType: colObj.dataType,
+  })
 }
 
 const filterValueForColumn = (column: ColumnDef): unknown => {
