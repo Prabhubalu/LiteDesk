@@ -1,0 +1,291 @@
+/**
+ * Search relevance scoring: prefix matches rank above substring matches.
+ * Lower score = better match.
+ */
+
+const NO_MATCH_SCORE = 99;
+
+function escapeSearchRegex(term) {
+  return String(term || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function normalizeSearchTerm(term) {
+  return String(term || '').trim();
+}
+
+/**
+ * Split a search query into individual terms. Commas act as OR separators.
+ * Single-value queries (no comma) return one term — same behavior as before.
+ * @param {string} query
+ * @returns {string[]}
+ */
+function parseSearchTerms(query) {
+  const normalized = normalizeSearchTerm(query);
+  if (!normalized) return [];
+  return normalized
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function buildContainsRegex(term) {
+  const escaped = escapeSearchRegex(normalizeSearchTerm(term));
+  return new RegExp(escaped, 'i');
+}
+
+function buildPrefixRegex(term) {
+  const escaped = escapeSearchRegex(normalizeSearchTerm(term));
+  return new RegExp(`^${escaped}`, 'i');
+}
+
+/**
+ * @param {string} text
+ * @param {string} query
+ * @returns {number} 0 = prefix, 1 = word-boundary prefix, 2 = contains, 99 = no match
+ */
+function scoreTextMatch(text, query) {
+  const normalized = normalizeSearchTerm(query);
+  if (!normalized) return NO_MATCH_SCORE;
+
+  const value = String(text ?? '').trim();
+  if (!value) return NO_MATCH_SCORE;
+
+  const lowerValue = value.toLowerCase();
+  const lowerQuery = normalized.toLowerCase();
+
+  if (lowerValue.startsWith(lowerQuery)) return 0;
+
+  const wordBoundaryRegex = new RegExp(`(?:^|\\s)${escapeSearchRegex(normalized)}`, 'i');
+  if (wordBoundaryRegex.test(value)) return 1;
+
+  if (lowerValue.includes(lowerQuery)) return 2;
+
+  return NO_MATCH_SCORE;
+}
+
+/**
+ * @param {object} record
+ * @param {string} query
+ * @param {Array<{ getValue: (record: object) => string, primary?: boolean }>} fieldGetters
+ */
+function scoreRecordMatch(record, query, fieldGetters) {
+  const terms = parseSearchTerms(query);
+  if (terms.length === 0) return NO_MATCH_SCORE;
+
+  let best = NO_MATCH_SCORE;
+
+  for (const term of terms) {
+    for (const { getValue, primary = false } of fieldGetters) {
+      const textScore = scoreTextMatch(getValue(record), term);
+      if (textScore === NO_MATCH_SCORE) continue;
+
+      const weightOffset = primary ? 0 : 3;
+      best = Math.min(best, textScore + weightOffset);
+    }
+  }
+
+  return best;
+}
+
+function sortBySearchRelevance(items, query, fieldGetters) {
+  if (parseSearchTerms(query).length === 0 || !Array.isArray(items) || items.length === 0) {
+    return items;
+  }
+
+  return [...items].sort((a, b) => {
+    const scoreA = scoreRecordMatch(a, query, fieldGetters);
+    const scoreB = scoreRecordMatch(b, query, fieldGetters);
+    if (scoreA !== scoreB) return scoreA - scoreB;
+    return 0;
+  });
+}
+
+function rankAndLimit(items, query, fieldGetters, limit) {
+  return sortBySearchRelevance(items, query, fieldGetters).slice(0, limit);
+}
+
+/**
+ * Build Mongo $or conditions: each term matches any of the given fields (term OR term, field OR field).
+ * @param {string} query
+ * @param {string[]} fieldNames
+ */
+function buildSearchOrConditions(query, fieldNames) {
+  const terms = parseSearchTerms(query);
+  if (terms.length === 0 || fieldNames.length === 0) return [];
+
+  const conditions = [];
+  for (const term of terms) {
+    const regex = buildContainsRegex(term);
+    for (const field of fieldNames) {
+      conditions.push({ [field]: regex });
+    }
+  }
+  return conditions;
+}
+
+function mongoFieldScoreExpr(fieldExpr, escapedQuery, { primary = true } = {}) {
+  const prefixScore = primary ? 0 : 3;
+  const wordScore = primary ? 1 : 4;
+  const containsScore = primary ? 2 : 5;
+  const strField = { $toString: { $ifNull: [fieldExpr, ''] } };
+
+  return {
+    $cond: [
+      { $regexMatch: { input: strField, regex: `^${escapedQuery}`, options: 'i' } },
+      prefixScore,
+      {
+        $cond: [
+          { $regexMatch: { input: strField, regex: `(?:^|\\s)${escapedQuery}`, options: 'i' } },
+          wordScore,
+          {
+            $cond: [
+              { $regexMatch: { input: strField, regex: escapedQuery, options: 'i' } },
+              containsScore,
+              NO_MATCH_SCORE
+            ]
+          }
+        ]
+      }
+    ]
+  };
+}
+
+/**
+ * @param {string} query
+ * @param {Array<{ expr: string | object, primary?: boolean }>} fieldSpecs
+ */
+function buildMongoRelevanceScoreExpr(query, fieldSpecs) {
+  const terms = parseSearchTerms(query);
+  if (terms.length === 0) return NO_MATCH_SCORE;
+
+  const termScores = terms.map((term) => {
+    const escaped = escapeSearchRegex(term);
+    const fieldScores = fieldSpecs.map((spec) =>
+      mongoFieldScoreExpr(spec.expr, escaped, { primary: spec.primary !== false })
+    );
+    return { $min: fieldScores };
+  });
+
+  return termScores.length === 1 ? termScores[0] : { $min: termScores };
+}
+
+function buildSearchAwareSort(searchTerm, fallbackSort = { createdAt: -1 }) {
+  if (parseSearchTerms(searchTerm).length === 0) return fallbackSort;
+  return { _searchScore: 1, ...fallbackSort };
+}
+
+function isSearchActive(searchTerm) {
+  return parseSearchTerms(searchTerm).length > 0;
+}
+
+/**
+ * Ranked page fetch: aggregate for relevance order, then hydrate with populate.
+ */
+async function fetchRankedSearchPage(Model, options) {
+  const {
+    matchQuery,
+    searchTerm,
+    fieldSpecs,
+    skip = 0,
+    limit = 20,
+    fallbackSort = { createdAt: -1 },
+    populate = [],
+    lean = true,
+    select = null
+  } = options;
+
+  const terms = parseSearchTerms(searchTerm);
+  if (terms.length === 0) {
+    let q = Model.find(matchQuery);
+    if (select) q = q.select(select);
+    for (const p of populate) q = q.populate(p);
+    return q.sort(fallbackSort).skip(skip).limit(limit).lean(lean);
+  }
+
+  const sort = buildSearchAwareSort(searchTerm, fallbackSort);
+  const pipeline = [
+    { $match: matchQuery },
+    { $addFields: { _searchScore: buildMongoRelevanceScoreExpr(searchTerm, fieldSpecs) } },
+    { $sort: sort },
+    { $skip: skip },
+    { $limit: limit },
+    { $project: { _id: 1 } }
+  ];
+
+  const ranked = await Model.aggregate(pipeline);
+  if (ranked.length === 0) return [];
+
+  const ids = ranked.map((r) => r._id);
+  let findQuery = Model.find({ _id: { $in: ids } });
+  if (select) findQuery = findQuery.select(select);
+  for (const p of populate) findQuery = findQuery.populate(p);
+
+  const docs = await findQuery.lean(lean);
+  const docMap = new Map(docs.map((d) => [String(d._id), d]));
+  return ids.map((id) => docMap.get(String(id))).filter(Boolean);
+}
+
+const PEOPLE_FULL_NAME_EXPR = {
+  $trim: {
+    input: {
+      $concat: [
+        { $ifNull: ['$first_name', ''] },
+        ' ',
+        { $ifNull: ['$last_name', ''] }
+      ]
+    }
+  }
+};
+
+const SEARCH_FIELD_PRESETS = {
+  people: [
+    { expr: '$first_name', primary: true },
+    { expr: '$last_name', primary: true },
+    { expr: PEOPLE_FULL_NAME_EXPR, primary: true },
+    { expr: '$email', primary: false },
+    { expr: '$phone', primary: false },
+    { expr: '$mobile', primary: false }
+  ],
+  organizations: [{ expr: '$name', primary: true }],
+  deals: [
+    { expr: '$name', primary: true },
+    { expr: '$description', primary: false }
+  ],
+  tasks: [
+    { expr: '$title', primary: true },
+    { expr: '$description', primary: false }
+  ],
+  events: [
+    { expr: '$eventName', primary: true },
+    { expr: '$location', primary: false }
+  ],
+  forms: [
+    { expr: '$name', primary: true },
+    { expr: '$description', primary: false }
+  ],
+  items: [
+    { expr: '$item_name', primary: true },
+    { expr: '$item_code', primary: false },
+    { expr: '$item_id', primary: false },
+    { expr: '$description', primary: false }
+  ]
+};
+
+module.exports = {
+  NO_MATCH_SCORE,
+  escapeSearchRegex,
+  normalizeSearchTerm,
+  parseSearchTerms,
+  buildContainsRegex,
+  buildPrefixRegex,
+  scoreTextMatch,
+  scoreRecordMatch,
+  sortBySearchRelevance,
+  rankAndLimit,
+  buildSearchOrConditions,
+  buildMongoRelevanceScoreExpr,
+  buildSearchAwareSort,
+  fetchRankedSearchPage,
+  isSearchActive,
+  SEARCH_FIELD_PRESETS
+};

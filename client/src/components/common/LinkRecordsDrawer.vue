@@ -158,6 +158,7 @@ import { XMarkIcon, ChevronLeftIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { useAuthStore } from '@/stores/authRegistry';
+import { getRecordLabel } from '@/utils/recordDisplay';
 
 const RECORD_TYPE_OPTIONS_DEFAULT = [
   { key: 'organizations', label: 'Organization' },
@@ -541,7 +542,7 @@ watch(searchQuery, () => {
   searchDebounce = setTimeout(() => fetchItems(), 250);
 });
 
-const getDisplayName = (item) => item.name || item.title || item.eventName || `${item.first_name || ''} ${item.last_name || ''}`.trim() || item.email || item._id;
+const getDisplayName = (item) => getRecordLabel(item);
 const getSecondaryText = (item) => item.email || item.status || (item.startDateTime ? new Date(item.startDateTime).toLocaleDateString() : '') || '';
 
 const isSelected = (id) => selectedIds.value.has(id);

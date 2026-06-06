@@ -18,13 +18,13 @@
         <button
           type="button"
           @click="toggleAppointmentsOnly"
-          class="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+          class="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-xs sm:text-sm font-medium transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
           :class="showAppointmentsScope
             ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-200'
             : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'"
           :aria-pressed="showAppointmentsScope"
         >
-          <CalendarDaysIcon class="h-4 w-4 shrink-0" />
+          <CalendarDaysIcon class="h-3.5 w-3.5 shrink-0" />
           <span class="hidden sm:inline">{{ t('events.eventsAppointmentsOnly') }}</span>
           <span class="sm:hidden">{{ t('events.eventsAppts') }}</span>
         </button>

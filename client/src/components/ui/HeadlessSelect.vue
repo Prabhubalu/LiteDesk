@@ -22,7 +22,8 @@
     >
       <span
         :class="[
-          'block truncate pr-8',
+          'block pr-8',
+          truncateButtonLabel ? 'truncate' : 'whitespace-nowrap',
           isMutedSelection && 'text-gray-500 dark:text-gray-500'
         ]"
       >
@@ -43,6 +44,7 @@
           :style="teleport ? teleportMenuStyle : undefined"
           @vue:before-mount="syncTeleportPosition"
           @vue:before-unmount="clearSearch"
+          @mousedown.stop
           :class="[
             teleport
               ? 'fixed z-[10050] mt-0 rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm'
@@ -170,7 +172,9 @@ const props = defineProps({
   /** Force search on/off; when omitted, search appears when option count exceeds searchMinOptions */
   searchable: { type: Boolean, default: undefined },
   /** Show search when total options exceed this count (default 7) */
-  searchMinOptions: { type: Number, default: 7 }
+  searchMinOptions: { type: Number, default: 7 },
+  /** When false, button label is not truncated (e.g. short AND/OR logic pickers). */
+  truncateButtonLabel: { type: Boolean, default: true }
 });
 
 const { t } = useI18n();

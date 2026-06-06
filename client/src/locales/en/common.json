@@ -47,9 +47,169 @@
     "message": "Save view",
     "description": "List view: save current filters/columns"
   },
+  "listUpdateView": {
+    "message": "Update view",
+    "description": "Overwrite the active saved view with current filters/columns"
+  },
+  "listSaveAsNewView": {
+    "message": "Save as new view",
+    "description": "Save current state as a new named view"
+  },
+  "listSaveAsNewViewTitle": {
+    "message": "Save as new view",
+    "description": "Save as new view modal title"
+  },
+  "listRenameViewTitle": {
+    "message": "Rename view",
+    "description": "Rename saved view modal title"
+  },
+  "listViewModifiedHint": {
+    "message": "This view has unsaved changes",
+    "description": "Tooltip on modified view indicator"
+  },
+  "listViewUpdated": {
+    "message": "View updated",
+    "description": "Toast after updating a saved view"
+  },
+  "listRevertView": {
+    "message": "Revert",
+    "description": "Discard unsaved view changes"
+  },
+  "listUpdateViewHint": {
+    "message": "Save changes to this view",
+    "description": "Update view button tooltip"
+  },
+  "listSaveAsNewViewHint": {
+    "message": "Save as a new view without changing this one",
+    "description": "Save as new view button tooltip"
+  },
   "listFilters": {
     "message": "Filters",
     "description": "List view filters panel title"
+  },
+  "listFiltersCount": {
+    "message": "Filters ({count})",
+    "description": "List view filters button with active rule count"
+  },
+  "filterBuilderInfo": {
+    "message": "Build filter rules by field. Column header filters and the builder share the same state.",
+    "description": "Filter builder popover info tooltip"
+  },
+  "filterBuilderSelectFilter": {
+    "message": "Select filter",
+    "description": "Filter builder field picker placeholder"
+  },
+  "filterBuilderSelectValue": {
+    "message": "Select value",
+    "description": "Filter builder value placeholder before field is chosen"
+  },
+  "filterBuilderAddFilter": {
+    "message": "Add filter",
+    "description": "Filter builder add rule button"
+  },
+  "filterBuilderClearAll": {
+    "message": "Clear all",
+    "description": "Filter builder clear all rules button"
+  },
+  "filterBuilderWhere": {
+    "message": "Where",
+    "description": "Filter builder first rule connector label"
+  },
+  "filterBuilderAnd": {
+    "message": "And",
+    "description": "Filter builder subsequent rule connector label"
+  },
+  "filterBuilderOperatorIs": {
+    "message": "Is",
+    "description": "Filter builder default operator label (Phase 0)"
+  },
+  "filterOperatorIs": {
+    "message": "is",
+    "description": "Filter operator: equals"
+  },
+  "filterOperatorIsNot": {
+    "message": "is not",
+    "description": "Filter operator: not equals"
+  },
+  "filterOperatorIsEmpty": {
+    "message": "is empty",
+    "description": "Filter operator: empty"
+  },
+  "filterOperatorIsNotEmpty": {
+    "message": "is not empty",
+    "description": "Filter operator: not empty"
+  },
+  "filterOperatorContains": {
+    "message": "contains",
+    "description": "Filter operator: contains"
+  },
+  "filterOperatorNotContains": {
+    "message": "does not contain",
+    "description": "Filter operator: not contains"
+  },
+  "filterOperatorIsAnyOf": {
+    "message": "is any of",
+    "description": "Filter operator: any of"
+  },
+  "filterBuilderValuePlaceholder": {
+    "message": "Enter value…",
+    "description": "Filter builder text value placeholder"
+  },
+  "filterBuilderNoValueNeeded": {
+    "message": "No value needed",
+    "description": "Filter builder empty-operator hint"
+  },
+  "filterBuilderSearchFields": {
+    "message": "Search…",
+    "description": "Filter builder field search placeholder"
+  },
+  "filterBuilderNoFields": {
+    "message": "No fields found",
+    "description": "Filter builder empty field search state"
+  },
+  "filterBuilderRemoveRule": {
+    "message": "Remove filter rule",
+    "description": "Filter builder delete rule button aria-label"
+  },
+  "filterBuilderOr": {
+    "message": "Or",
+    "description": "Filter builder OR logic connector label"
+  },
+  "filterBuilderAddNestedGroup": {
+    "message": "Add nested group",
+    "description": "Filter builder add nested AND/OR group button"
+  },
+  "filterBuilderAddNestedFilter": {
+    "message": "Add nested filter",
+    "description": "Filter builder add nested filter inside a rule"
+  },
+  "filterBuilderClearGroup": {
+    "message": "Clear group",
+    "description": "Filter builder clear nested group button"
+  },
+  "filterBuilderSavedFilters": {
+    "message": "Saved filters",
+    "description": "Filter builder saved presets menu label"
+  },
+  "filterBuilderSaveCurrent": {
+    "message": "Save current filters",
+    "description": "Filter builder save current filters action"
+  },
+  "filterBuilderNoSavedFilters": {
+    "message": "No saved filters yet",
+    "description": "Filter builder empty saved presets state"
+  },
+  "filterBuilderSavePresetTitle": {
+    "message": "Save filter preset",
+    "description": "Filter builder save preset dialog title"
+  },
+  "filterBuilderSavePresetPlaceholder": {
+    "message": "Preset name",
+    "description": "Filter builder save preset name input placeholder"
+  },
+  "filterBuilderDeletePreset": {
+    "message": "Delete preset {name}",
+    "description": "Filter builder delete saved preset aria-label"
   },
   "listAllRecords": {
     "message": "All",
@@ -58,6 +218,54 @@
   "listClearFilters": {
     "message": "Clear filters",
     "description": "Reset active list filters"
+  },
+  "listColumnFilterPlaceholder": {
+    "message": "Filter {label}…",
+    "description": "Inline column filter text input placeholder"
+  },
+  "listColumnFilterSearch": {
+    "message": "Search",
+    "description": "Inline text column filter placeholder"
+  },
+  "listColumnFilterGeneric": {
+    "message": "Filter",
+    "description": "Inline select/date column filter placeholder"
+  },
+  "listColumnFilterNumberExample": {
+    "message": "Filter (e.g., > 10)",
+    "description": "Inline number column filter placeholder"
+  },
+  "listColumnFilterAria": {
+    "message": "Filter by {label}",
+    "description": "Inline column filter accessibility label"
+  },
+  "listColumnFilterClear": {
+    "message": "Clear column filter",
+    "description": "Clear inline column filter button"
+  },
+  "listColumnFilterClearFor": {
+    "message": "Clear {label} filter",
+    "description": "Clear a specific inline column filter button"
+  },
+  "listColumnFilterAllShort": {
+    "message": "All",
+    "description": "Compact column filter empty state"
+  },
+  "listActiveFiltersRegion": {
+    "message": "Active filters",
+    "description": "Active filter chip bar region label"
+  },
+  "listActiveFiltersClearAll": {
+    "message": "Clear all",
+    "description": "Clear all active list filters"
+  },
+  "listActiveFilterRemove": {
+    "message": "Remove filter {label}",
+    "description": "Remove single active filter chip"
+  },
+  "listActiveFilterSearch": {
+    "message": "Search: \"{query}\"",
+    "description": "Active search filter chip label"
   },
   "listLoadingOptions": {
     "message": "Loading options…",
@@ -107,6 +315,10 @@
     "message": "View name",
     "description": "Saved view name field label"
   },
+  "listViewNameCharCount": {
+    "message": "{current} / {max}",
+    "description": "Saved view name character counter in save view modal"
+  },
   "listDeleteView": {
     "message": "Delete view",
     "description": "Delete saved list view action"
@@ -114,6 +326,10 @@
   "listCustomizeView": {
     "message": "Customize view",
     "description": "Open list view customization drawer"
+  },
+  "listCustomizeShort": {
+    "message": "Customize",
+    "description": "Short header label for view customization button"
   },
   "listLayoutOptions": {
     "message": "Layout options",
@@ -234,6 +450,10 @@
   "listShowStatistics": {
     "message": "Show statistics",
     "description": "Stats panel toggle tooltip when hidden"
+  },
+  "listStatisticsRegion": {
+    "message": "List statistics",
+    "description": "Accessible label for the compact statistics toolbar"
   },
   "listStatsShort": {
     "message": "Stats",
@@ -758,6 +978,22 @@
   "filterAllNamed": {
     "message": "All {label}",
     "description": "Filter option: all values for a named field"
+  },
+  "filterAllStatuses": {
+    "message": "All Statuses",
+    "description": "Filter option: no status restriction"
+  },
+  "filterAllAssignees": {
+    "message": "All Assignees",
+    "description": "Filter option: no assignee restriction"
+  },
+  "filterAllPriorities": {
+    "message": "All Priorities",
+    "description": "Filter option: no priority restriction"
+  },
+  "filterAllCategories": {
+    "message": "All Categories",
+    "description": "Filter option: no category restriction"
   },
   "filterDays": {
     "message": "Days",

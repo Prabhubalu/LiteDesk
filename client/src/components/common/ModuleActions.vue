@@ -1,25 +1,28 @@
 <template>
-  <div class="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4">
+  <div class="flex flex-wrap items-center gap-2">
     <!-- Create Button -->
     <PermissionButton
       v-if="showCreate"
       :module="module"
       action="create"
       variant="primary"
+      size="compact"
+      icon-only-mobile
       icon="plus"
+      icon-class="w-4 h-4"
+      :title="createLabel"
       @click="$emit('create')"
     >
-      <span class="sm:hidden">{{ createLabel.replace(/^New\s+/, '') }}</span>
       <span class="hidden sm:inline">{{ createLabel }}</span>
     </PermissionButton>
 
     <!-- More Actions (Import/Export) Dropdown -->
     <Menu v-if="hasImportOrExport" as="div" class="relative">
       <MenuButton
-        class="inline-flex items-center justify-center p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors bg-white border border-gray-200 dark:border-0 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 cursor-pointer focus:outline-none"
         :aria-label="t('common.moreActions')"
       >
-        <EllipsisVerticalIcon class="w-5 h-5" />
+        <EllipsisVerticalIcon class="w-4 h-4" />
       </MenuButton>
       <Transition
         enter-active-class="transition ease-out duration-100"

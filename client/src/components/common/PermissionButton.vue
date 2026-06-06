@@ -60,6 +60,11 @@ const props = defineProps({
     default: 'primary',
     validator: (value) => ['primary', 'secondary', 'danger', 'success', 'icon'].includes(value)
   },
+  size: {
+    type: String,
+    default: 'default',
+    validator: (value) => ['default', 'compact'].includes(value)
+  },
   icon: {
     type: String,
     default: ''
@@ -79,6 +84,10 @@ const props = defineProps({
   title: {
     type: String,
     default: ''
+  },
+  iconOnlyMobile: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -95,7 +104,12 @@ const hasPermission = computed(() => {
 
 // Button classes based on variant
 const buttonClasses = computed(() => {
-  const base = 'inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
+  const compactBase = props.iconOnlyMobile
+    ? 'inline-flex shrink-0 items-center justify-center size-8 p-0 sm:size-auto sm:gap-1.5 sm:px-2.5 md:px-3 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+    : 'inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
+  const base = props.size === 'compact'
+    ? compactBase
+    : 'inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
   
   switch (props.variant) {
     case 'primary':

@@ -120,6 +120,8 @@ export function getRecordLabel(record) {
 
   // Try common fields
   if (record.name) return record.name;
+  if (record.item_name) return record.item_name;
+  if (record.item_code) return record.item_code;
   if (record.quoteTitle) return record.quoteTitle;
   if (record.quoteNumber) return record.quoteNumber;
   if (record.invoiceNumber) return record.invoiceNumber;

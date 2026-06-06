@@ -152,14 +152,10 @@ exports.getForms = async (req, res) => {
             query.visibility = req.query.visibility;
         }
         
-        // Search functionality
-        if (req.query.search) {
-            const searchRegex = new RegExp(req.query.search, 'i');
-            query.$or = [
-                { name: searchRegex },
-                { description: searchRegex },
-                { formId: searchRegex }
-            ];
+        const searchTerm = req.query.search ? String(req.query.search).trim() : '';
+        if (searchTerm) {
+            const { buildSearchOrConditions } = require('../utils/searchRelevance');
+            query.$or = buildSearchOrConditions(searchTerm, ['name', 'description', 'formId']);
         }
         
         // Phase 2A.2: Apply projection filter (read-time filtering only)
@@ -188,20 +184,39 @@ exports.getForms = async (req, res) => {
         console.log('[formController] After projection filter:', {
           queryAfter: JSON.stringify(query)
         });
+
+        const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
+        query = applyListFilterQueryParam(query, req.query, 'forms', { userId: req.user?._id });
         
         // Sorting
         const sortBy = req.query.sortBy || 'createdAt';
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
         const sort = { [sortBy]: sortOrder };
         
-        // Execute query
-        const forms = await Form.find(query)
-            .populate('assignedTo', 'firstName lastName email')
-            .populate('createdBy', 'firstName lastName email')
-            .populate('organizationId', 'name')
-            .sort(sort)
-            .limit(limit)
-            .skip(skip);
+        const formPopulate = [
+            { path: 'assignedTo', select: 'firstName lastName email' },
+            { path: 'createdBy', select: 'firstName lastName email' },
+            { path: 'organizationId', select: 'name' }
+        ];
+        const { fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+        const forms = isSearchActive(searchTerm)
+            ? await fetchRankedSearchPage(Form, {
+                matchQuery: query,
+                searchTerm,
+                fieldSpecs: SEARCH_FIELD_PRESETS.forms,
+                skip,
+                limit,
+                fallbackSort: sort,
+                populate: formPopulate,
+                lean: false
+            })
+            : await Form.find(query)
+                .populate('assignedTo', 'firstName lastName email')
+                .populate('createdBy', 'firstName lastName email')
+                .populate('organizationId', 'name')
+                .sort(sort)
+                .limit(limit)
+                .skip(skip);
         
         const total = await Form.countDocuments(query);
         

@@ -4227,10 +4227,6 @@
     "message": "फ़ील्ड सत्यापन",
     "description": "Field editor sub-tab"
   },
-  "modFieldsSubTabFilters": {
-    "message": "फ़िल्टर सेटिंग्स",
-    "description": "Field editor sub-tab"
-  },
   "modFieldsSubTabDependencies": {
     "message": "निर्भरताएँ",
     "description": "Field editor sub-tab"
@@ -4794,54 +4790,6 @@
   "modFieldsAddCustomValidation": {
     "message": "कस्टम सत्यापन जोड़ें",
     "description": "Add custom validation button"
-  },
-  "modFieldsFilterSystemUnavailable": {
-    "message": "सिस्टम फ़ील्ड के लिए फ़िल्टर सेटिंग उपलब्ध नहीं हैं.",
-    "description": "System filter unavailable"
-  },
-  "modFieldsFilterableHint": {
-    "message": "फ़िल्टर करने योग्य फ़ील्ड सूची फ़िल्टर और सहेजे गए दृश्यों में दिखाई देते हैं।",
-    "description": "Filterable hint"
-  },
-  "modFieldsFilterCoreField": {
-    "message": "कोर फ़ील्ड: फ़िल्टर प्रकार केवल पढ़ने के लिए है और स्कीमा डिफ़ॉल्ट पर लॉक है।",
-    "description": "Core filter hint"
-  },
-  "modFieldsFilterAppOwned": {
-    "message": "ऐप-स्वामित्व वाली फ़ील्ड: पूरी तरह से संपादन योग्य।",
-    "description": "App-owned filter hint"
-  },
-  "modFieldsEnableFilter": {
-    "message": "फ़िल्टर के रूप में सक्षम करें",
-    "description": "Enable filter toggle"
-  },
-  "modFieldsEnableFilterHelp": {
-    "message": "इस फ़ील्ड को सूची दृश्यों में फ़िल्टर के रूप में उपयोग करने की अनुमति दें",
-    "description": "Enable filter help"
-  },
-  "modFieldsFilterType": {
-    "message": "फ़िल्टर प्रकार",
-    "description": "Filter type label"
-  },
-  "modFieldsSelectFilterTypePh": {
-    "message": "फ़िल्टर प्रकार चुनें...",
-    "description": "Select filter type placeholder"
-  },
-  "modFieldsFilterTypeHelp": {
-    "message": "फ़िल्टर प्रकार फ़ील्ड के डेटा प्रकार द्वारा निर्धारित किया जाता है",
-    "description": "Filter type help"
-  },
-  "modFieldsFilterPriority": {
-    "message": "फ़िल्टर प्राथमिकता",
-    "description": "Filter priority label"
-  },
-  "modFieldsFilterPriorityPh": {
-    "message": "ऑटो आवंटित",
-    "description": "Filter priority placeholder"
-  },
-  "modFieldsFilterPriorityHelp": {
-    "message": "कम संख्या = उच्च प्राथमिकता. डिफ़ॉल्ट दृश्यमान फ़िल्टर प्राथमिकता के आधार पर शीर्ष 3 पर हैं।",
-    "description": "Filter priority help"
   },
   "modFieldsFieldRules": {
     "message": "फ़ील्ड नियम",

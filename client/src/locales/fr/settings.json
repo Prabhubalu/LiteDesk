@@ -4227,10 +4227,6 @@
     "message": "Validation des champs",
     "description": "Field editor sub-tab"
   },
-  "modFieldsSubTabFilters": {
-    "message": "Paramètres de filtre",
-    "description": "Field editor sub-tab"
-  },
   "modFieldsSubTabDependencies": {
     "message": "Dépendances",
     "description": "Field editor sub-tab"
@@ -4794,54 +4790,6 @@
   "modFieldsAddCustomValidation": {
     "message": "Ajouter une validation personnalisée",
     "description": "Add custom validation button"
-  },
-  "modFieldsFilterSystemUnavailable": {
-    "message": "Les paramètres de filtre ne sont pas disponibles pour les champs système.",
-    "description": "System filter unavailable"
-  },
-  "modFieldsFilterableHint": {
-    "message": "Les champs filtrables apparaissent dans les filtres de liste et les vues enregistrées.",
-    "description": "Filterable hint"
-  },
-  "modFieldsFilterCoreField": {
-    "message": "Champ principal : le type de filtre est en lecture seule et verrouillé sur la valeur par défaut du schéma.",
-    "description": "Core filter hint"
-  },
-  "modFieldsFilterAppOwned": {
-    "message": "Champ appartenant à l'application : entièrement modifiable.",
-    "description": "App-owned filter hint"
-  },
-  "modFieldsEnableFilter": {
-    "message": "Activer comme filtre",
-    "description": "Enable filter toggle"
-  },
-  "modFieldsEnableFilterHelp": {
-    "message": "Autoriser ce champ à être utilisé comme filtre dans les vues de liste",
-    "description": "Enable filter help"
-  },
-  "modFieldsFilterType": {
-    "message": "Type de filtre",
-    "description": "Filter type label"
-  },
-  "modFieldsSelectFilterTypePh": {
-    "message": "Sélectionnez le type de filtre...",
-    "description": "Select filter type placeholder"
-  },
-  "modFieldsFilterTypeHelp": {
-    "message": "Le type de filtre est déterminé par le type de données du champ",
-    "description": "Filter type help"
-  },
-  "modFieldsFilterPriority": {
-    "message": "Priorité du filtre",
-    "description": "Filter priority label"
-  },
-  "modFieldsFilterPriorityPh": {
-    "message": "Attribution automatique",
-    "description": "Filter priority placeholder"
-  },
-  "modFieldsFilterPriorityHelp": {
-    "message": "Numéro inférieur = priorité plus élevée. Les filtres visibles par défaut sont les 3 premiers par priorité.",
-    "description": "Filter priority help"
   },
   "modFieldsFieldRules": {
     "message": "Règles de terrain",

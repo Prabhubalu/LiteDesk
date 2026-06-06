@@ -390,7 +390,7 @@ exports.createDeal = async (req, res) => {
 // @access  Private
 exports.getDeals = async (req, res) => {
     try {
-        const query = { organizationId: req.user.organizationId, deletedAt: null };
+        let query = { organizationId: req.user.organizationId, deletedAt: null };
         
         // Filter by user if needed
         if (req.filterByUser) {
@@ -430,13 +430,10 @@ exports.getDeals = async (req, res) => {
             query.pipeline = req.query.pipeline;
         }
         
-        // Search functionality
-        if (req.query.search) {
-            const searchRegex = new RegExp(req.query.search, 'i');
-            query.$or = [
-                { name: searchRegex },
-                { description: searchRegex }
-            ];
+        const searchTerm = req.query.search ? String(req.query.search).trim() : '';
+        if (searchTerm) {
+            const { buildSearchOrConditions } = require('../utils/searchRelevance');
+            query.$or = buildSearchOrConditions(searchTerm, ['name', 'description']);
         }
         
         // Date range filter
@@ -450,6 +447,9 @@ exports.getDeals = async (req, res) => {
             }
         }
         
+        const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
+        query = applyListFilterQueryParam(query, req.query, 'deals', { userId: req.user?._id });
+
         // Sorting (use stage + stageOrder for pipeline/Kanban order)
         const sortBy = req.query.sortBy || 'createdAt';
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
@@ -457,16 +457,34 @@ exports.getDeals = async (req, res) => {
             ? { stage: sortOrder, stageOrder: 1 }
             : { [sortBy]: sortOrder };
         
-        // Execute query
-        const deals = await Deal.find(query)
-            .populate('contactId', 'first_name last_name email')
-            .populate('ownerId', 'firstName lastName email')
-            .populate('accountId', 'name')
-            .populate('dealPeople.personId', 'first_name last_name email')
-            .populate('dealOrganizations.organizationId', 'name')
-            .sort(sort)
-            .limit(limit)
-            .skip(skip);
+        const dealPopulate = [
+            { path: 'contactId', select: 'first_name last_name email' },
+            { path: 'ownerId', select: 'firstName lastName email' },
+            { path: 'accountId', select: 'name' },
+            { path: 'dealPeople.personId', select: 'first_name last_name email' },
+            { path: 'dealOrganizations.organizationId', select: 'name' }
+        ];
+        const { fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+        const deals = isSearchActive(searchTerm)
+            ? await fetchRankedSearchPage(Deal, {
+                matchQuery: query,
+                searchTerm,
+                fieldSpecs: SEARCH_FIELD_PRESETS.deals,
+                skip,
+                limit,
+                fallbackSort: sort,
+                populate: dealPopulate,
+                lean: false
+            })
+            : await Deal.find(query)
+                .populate('contactId', 'first_name last_name email')
+                .populate('ownerId', 'firstName lastName email')
+                .populate('accountId', 'name')
+                .populate('dealPeople.personId', 'first_name last_name email')
+                .populate('dealOrganizations.organizationId', 'name')
+                .sort(sort)
+                .limit(limit)
+                .skip(skip);
         
         const total = await Deal.countDocuments(query);
         

@@ -5,6 +5,8 @@
     v-bind="$attrs"
     @mouseenter="handleShow"
     @mouseleave="handleHide"
+    @focusin="handleShow"
+    @focusout="handleHide"
   >
     <slot />
   </span>
@@ -12,7 +14,10 @@
     <div
       v-if="visible"
       ref="tooltipRef"
-      class="fixed z-[115] rounded-lg bg-slate-950 px-3 py-2 text-white shadow-2xl text-xs leading-4 text-slate-200 whitespace-nowrap"
+      :class="[
+        'fixed z-[115] rounded-lg bg-slate-950 px-3 py-2 text-white shadow-2xl text-xs leading-4 text-slate-200',
+        wrap ? 'max-w-xs whitespace-normal break-words' : 'whitespace-nowrap',
+      ]"
       :style="tooltipStyle"
       @mouseenter="cancelHide"
       @mouseleave="handleHide"
@@ -62,6 +67,16 @@ const props = defineProps({
   gap: {
     type: Number,
     default: 4
+  },
+  /** Allow multi-line tooltip content (for long labels) */
+  wrap: {
+    type: Boolean,
+    default: false
+  },
+  /** Suppress tooltip (e.g. when label is not truncated) */
+  disabled: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -72,6 +87,13 @@ const tooltipRef = ref(null);
 const visible = ref(false);
 let showTimer = null;
 let hideTimer = null;
+
+watch(
+  () => props.disabled,
+  (disabled) => {
+    if (disabled) visible.value = false;
+  }
+);
 
 const anchorEl = computed(() => {
   const trigger = triggerRef.value;
@@ -123,6 +145,7 @@ const cancelHide = () => {
 };
 
 const handleShow = () => {
+  if (props.disabled || !props.content) return;
   if (showTimer) clearTimeout(showTimer);
   if (hideTimer) {
     clearTimeout(hideTimer);

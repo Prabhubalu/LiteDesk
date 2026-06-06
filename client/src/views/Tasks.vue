@@ -39,7 +39,7 @@
           </div>
           <ModuleActions
             module="tasks"
-            create-:label="t('tasks.tasksNewTask')"
+            :create-label="t('tasks.listCreate')"
             @create="openCreateModal"
             @import="showImportModal = true"
             @export="exportTasks"

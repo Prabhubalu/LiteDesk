@@ -88,13 +88,18 @@ async function buildOrganizationListMongoQuery({
   let searchFilter = null;
   const searchTerm = params.search || params.name;
   if (searchTerm && String(searchTerm).trim()) {
-    const trimmedSearch = String(searchTerm).trim();
-    searchFilter = { name: new RegExp(trimmedSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') };
+    const { buildSearchOrConditions } = require('./searchRelevance');
+    searchFilter = { $or: buildSearchOrConditions(String(searchTerm).trim(), ['name']) };
   }
 
   let assignedToFilter = null;
   if (params.assignedTo !== undefined) {
-    if (params.assignedTo === 'null' || params.assignedTo === null || params.assignedTo === '') {
+    if (
+      params.assignedTo === 'null'
+      || params.assignedTo === 'unassigned'
+      || params.assignedTo === null
+      || params.assignedTo === ''
+    ) {
       assignedToFilter = {
         $or: [
           { assignedTo: null },
@@ -126,7 +131,16 @@ async function buildOrganizationListMongoQuery({
     projectionMeta
   });
 
-  return mergeSearchAndAssignedToFilters(query, searchFilter, assignedToFilter);
+  let finalQuery = mergeSearchAndAssignedToFilters(query, searchFilter, assignedToFilter);
+
+  if (params.filterQuery) {
+    const { applyFilterQueryToMongoQuery } = require('./filterQueryCompiler');
+    finalQuery = applyFilterQueryToMongoQuery(finalQuery, params.filterQuery, 'organizations', {
+      userId: user?._id,
+    });
+  }
+
+  return finalQuery;
 }
 
 module.exports = {

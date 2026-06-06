@@ -66,6 +66,13 @@ const UserPreferencesSchema = new mongoose.Schema({
             }, { _id: false })
         ],
         default: new Map()
+    },
+
+    // Custom list saved views per module (moduleKey → array of view configs)
+    listSavedViews: {
+        type: Map,
+        of: [mongoose.Schema.Types.Mixed],
+        default: new Map()
     }
 }, {
     timestamps: true

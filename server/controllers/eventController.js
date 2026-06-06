@@ -315,13 +315,11 @@ exports.getEvents = async (req, res) => {
             ];
         }
         
+        const searchTerm = search ? String(search).trim() : '';
         // Search filter
-        if (search) {
-            const searchConditions = [
-                { eventName: { $regex: search, $options: 'i' } },
-                { 'notes.text': { $regex: search, $options: 'i' } }, // notes is an array of subdocuments with 'text' field
-                { location: { $regex: search, $options: 'i' } }
-            ];
+        if (searchTerm) {
+            const { buildSearchOrConditions } = require('../utils/searchRelevance');
+            const searchConditions = buildSearchOrConditions(searchTerm, ['eventName', 'location', 'notes.text']);
             
             // If we already have an $or from related records, combine them with $and
             if (query.$or) {
@@ -361,6 +359,9 @@ exports.getEvents = async (req, res) => {
         console.log('[eventController] After projection filter:', {
           queryAfter: JSON.stringify(query)
         });
+
+        const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
+        query = applyListFilterQueryParam(query, req.query, 'events', { userId: req.user?._id });
         
         const pageNum = Math.max(1, parseInt(page, 10) || 1);
         const limitNum = Math.min(Math.max(1, parseInt(limit, 10) || 100), 200);
@@ -369,21 +370,46 @@ exports.getEvents = async (req, res) => {
         const sortOptions = {};
         sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
         
+        const eventSkip = (pageNum - 1) * limitNum;
+        const eventPopulate = [
+          { path: 'eventOwnerId', select: 'firstName lastName email' },
+          { path: 'auditorId', select: 'firstName lastName email' },
+          { path: 'reviewerId', select: 'firstName lastName email' },
+          { path: 'correctiveOwnerId', select: 'firstName lastName email' },
+          { path: 'linkedFormId', select: 'name formId formType status' },
+          { path: 'relatedToId', select: 'name' },
+          { path: 'createdBy', select: 'firstName lastName' },
+          { path: 'modifiedBy', select: 'firstName lastName' }
+        ];
+        const { fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+        const eventsPromise = isSearchActive(searchTerm)
+          ? fetchRankedSearchPage(Event, {
+              matchQuery: query,
+              searchTerm,
+              fieldSpecs: SEARCH_FIELD_PRESETS.events,
+              skip: eventSkip,
+              limit: limitNum,
+              fallbackSort: sortOptions,
+              populate: eventPopulate,
+              lean: true
+            })
+          : Event.find(query)
+              .populate('eventOwnerId', 'firstName lastName email')
+              .populate('auditorId', 'firstName lastName email')
+              .populate('reviewerId', 'firstName lastName email')
+              .populate('correctiveOwnerId', 'firstName lastName email')
+              .populate('linkedFormId', 'name formId formType status')
+              .populate('relatedToId', 'name')
+              .populate('createdBy', 'firstName lastName')
+              .populate('modifiedBy', 'firstName lastName')
+              .sort(sortOptions)
+              .limit(limitNum)
+              .skip(eventSkip)
+              .lean();
+
         // Fetch events and count in parallel for lower request latency.
         const [events, count] = await Promise.all([
-          Event.find(query)
-            .populate('eventOwnerId', 'firstName lastName email')
-            .populate('auditorId', 'firstName lastName email')
-            .populate('reviewerId', 'firstName lastName email')
-            .populate('correctiveOwnerId', 'firstName lastName email')
-            .populate('linkedFormId', 'name formId formType status')
-            .populate('relatedToId', 'name')
-            .populate('createdBy', 'firstName lastName')
-            .populate('modifiedBy', 'firstName lastName')
-            .sort(sortOptions)
-            .limit(limitNum)
-            .skip((pageNum - 1) * limitNum)
-            .lean(),
+          eventsPromise,
           Event.countDocuments(query)
         ]);
 

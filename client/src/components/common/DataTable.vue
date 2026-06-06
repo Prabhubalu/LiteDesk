@@ -508,6 +508,7 @@ import { InformationCircleIcon, XMarkIcon, TrashIcon, PencilSquareIcon, ArrowDow
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { formatRawValueForDisplay } from '@/utils/fieldDisplay';
+import { matchesAnySearchTerm, sortBySearchRelevance } from '@/utils/searchRelevance';
 
 function dtDbg(...args) {
   if (import.meta.env.DEV) {
@@ -838,13 +839,19 @@ const displayData = computed(() => {
   
   // Client-side search
   if (props.searchable && searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
+    const query = searchQuery.value.trim();
     result = result.filter(row => {
       return visibleColumns.value.some(column => {
         const value = getCellValue(row, column.key);
-        return String(value).toLowerCase().includes(query);
+        return matchesAnySearchTerm(String(value ?? ''), query);
       });
     });
+    result = sortBySearchRelevance(result, query, (row) =>
+      visibleColumns.value.map((column, index) => ({
+        texts: [String(getCellValue(row, column.key) ?? '')],
+        primary: index === 0
+      }))
+    );
   }
   
   // Client-side sort (only if not using server-side sorting)

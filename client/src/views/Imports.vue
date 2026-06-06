@@ -12,7 +12,6 @@
       :statistics="stats"
       :stats-config="statsConfig"
       :pagination="{ currentPage: pagination.currentPage, totalPages: pagination.totalPages, totalRecords: pagination.total, limit: pagination.limit }"
-      :filter-config="filterConfig"
       table-id="imports-table"
       row-key="_id"
       :empty-title="t('import.importsNoImportsYet')"
@@ -186,37 +185,36 @@ const statsConfig = computed(() => [
   { name: t('import.importsStatTotalErrors'), key: 'totalErrors', formatter: 'number' }
 ]);
 
-const filterConfig = computed(() => [
-  {
-    key: 'module',
-    label: t('import.importsFilterAllModules'),
-    options: [
-      { value: 'contacts', label: t('navigation.modulePeople') },
-      { value: 'deals', label: t('navigation.moduleDeals') },
-      { value: 'tasks', label: t('navigation.moduleTasks') },
-      { value: 'organizations', label: t('navigation.moduleOrganizations') }
-    ]
-  },
-  {
-    key: 'status',
-    label: t('import.importsFilterAllStatuses'),
-    options: [
-      { value: 'completed', label: t('import.importsStatusCompleted') },
-      { value: 'partial', label: t('import.importsStatusPartial') },
-      { value: 'failed', label: t('import.importsStatusFailed') },
-      { value: 'processing', label: t('import.importsStatusProcessing') }
-    ]
-  }
-]);
-
 // Column definitions
 const columns = computed(() => {
   return [
     { key: 'fileName', label: t('import.importsColFileName'), sortable: true },
-    { key: 'module', label: t('import.importsColModule'), sortable: true },
-    { key: 'importedBy', label: t('import.importsColImportedBy'), sortable: true },
-    { key: 'createdAt', label: t('import.importsColDate'), sortable: true },
-    { key: 'status', label: t('import.importsColStatus'), sortable: true },
+    {
+      key: 'module',
+      label: t('import.importsColModule'),
+      dataType: 'select',
+      sortable: true,
+      options: [
+        { value: 'contacts', label: t('navigation.modulePeople') },
+        { value: 'deals', label: t('navigation.moduleDeals') },
+        { value: 'tasks', label: t('navigation.moduleTasks') },
+        { value: 'organizations', label: t('navigation.moduleOrganizations') }
+      ]
+    },
+    { key: 'importedBy', label: t('import.importsColImportedBy'), dataType: 'user', sortable: true },
+    { key: 'createdAt', label: t('import.importsColDate'), dataType: 'date', sortable: true },
+    {
+      key: 'status',
+      label: t('import.importsColStatus'),
+      dataType: 'status',
+      sortable: true,
+      options: [
+        { value: 'completed', label: t('import.importsStatusCompleted') },
+        { value: 'partial', label: t('import.importsStatusPartial') },
+        { value: 'failed', label: t('import.importsStatusFailed') },
+        { value: 'processing', label: t('import.importsStatusProcessing') }
+      ]
+    },
     { key: 'stats', label: t('import.importsColRecords'), sortable: false }
   ];
 });

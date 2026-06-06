@@ -3,23 +3,8 @@
     <div class="w-full py-2 align-middle">
       <div
         class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900 overflow-hidden"
-        :class="showEmptyOverlay ? 'relative z-[1] flex min-h-[320px] flex-col' : 'relative z-[1]'"
+        :class="showEmptyOverlay ? 'relative z-[1] flex min-h-[480px] flex-col' : 'relative z-[1]'"
       >
-        <!-- Empty overlay: fixed in the body band; horizontal scroll stays on the container below -->
-        <div
-          v-if="showEmptyOverlay"
-          class="pointer-events-none absolute inset-x-0 z-[2] flex items-center justify-center px-6 py-10"
-          style="top: 52px; bottom: 20px;"
-        >
-          <div class="pointer-events-auto">
-            <slot name="empty">
-              <div class="flex flex-col items-center justify-center py-8 text-center">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ emptyTitle || t('common.listNoDataAvailable') }}</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ emptyMessage || t('common.listNoRecordsFound') }}</p>
-              </div>
-            </slot>
-          </div>
-        </div>
         <div
           ref="scrollContainerRef"
           class="relative table-scroll-container rounded-xl"
@@ -27,6 +12,21 @@
           :style="{ ...scrollContainerStyles, width: '100%', maxWidth: '100%', isolation: 'auto' }"
           @scroll="handleScroll"
         >
+          <!-- Empty overlay: body band only; stays below sticky header/filter row (higher z-index) -->
+          <div
+            v-if="showEmptyOverlay"
+            class="pointer-events-none absolute inset-x-0 z-[10] flex items-start justify-center overflow-y-auto px-6 pb-12 pt-8"
+            :style="{ top: emptyOverlayTop, bottom: '24px' }"
+          >
+            <div class="pointer-events-auto">
+              <slot name="empty">
+                <div class="flex flex-col items-center justify-center py-8 text-center">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ emptyTitle || t('common.listNoDataAvailable') }}</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">{{ emptyMessage || t('common.listNoRecordsFound') }}</p>
+                </div>
+              </slot>
+            </div>
+          </div>
           <div
             v-if="isResizing && resizeGuideX !== null && resizeGuideBounds"
             class="pointer-events-none fixed z-[999] w-0.5 bg-indigo-500"
@@ -38,7 +38,7 @@
           />
           <table
             ref="tableRef"
-            class="divide-y divide-gray-200 text-sm text-gray-900 dark:divide-white/15 dark:text-gray-200"
+            class="table-grid text-sm text-gray-900 dark:text-gray-200"
             :style="{ width: '100%', minWidth: tableMinWidth, display: 'table', tableLayout: 'fixed' }"
           >
             <colgroup>
@@ -52,12 +52,12 @@
               <col v-if="hasFlexFillColumn" style="min-width: 0; width: auto" />
             </colgroup>
             <thead class="bg-white dark:bg-gray-900">
-              <tr>
+              <tr ref="labelHeaderRowRef">
                 <th
                   v-if="selectable"
                   scope="col"
                   :class="[
-                    'relative box-border sticky border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-gray-200 after:content-[\'\'] dark:after:bg-gray-700',
+                    'table-head-cell table-selection-cell relative box-border sticky bg-white dark:bg-gray-900',
                     selectionColumnVariant === 'numbered-hover' ? 'px-1' : 'px-7 sm:w-12 sm:px-6',
                     leftEdgeColumnIndex === 0 ? 'rounded-tl-xl' : '',
                     'hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -83,25 +83,29 @@
                   scope="col"
                   :aria-sort="ariaSortForColumn(column)"
                   :class="[
-                    'group sticky border-b border-gray-200 bg-white text-left text-xs font-semibold uppercase tracking-wide text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-gray-200 after:content-[\'\'] dark:after:bg-gray-700',
-                    columnIndex === 0 ? 'title-column-cell z-15 sticky-column-border' : 'z-10',
+                    'table-head-cell group sticky text-left text-xs font-semibold uppercase tracking-wide text-gray-900 dark:text-white relative',
+                    isColumnFilterHighlighted(column)
+                      ? 'bg-indigo-50 dark:bg-indigo-900/25 table-column-filter-active'
+                      : 'bg-white dark:bg-gray-900',
+                    columnIndex === 0 ? 'title-column-cell z-[40] sticky-column-border' : 'z-20',
                     // Apply border-radius only to columns at visible edges
                     (selectable ? columnIndex + 1 : columnIndex) === leftEdgeColumnIndex ? 'rounded-tl-xl' : '',
                     (selectable ? columnIndex + 1 : columnIndex) === rightEdgeColumnIndex ? 'rounded-tr-xl' : '',
                     // Add hover effect for sticky columns
-                    'hover:bg-gray-50 dark:hover:bg-gray-800',
+                    isColumnFilterHighlighted(column) ? '' : 'hover:bg-gray-50 dark:hover:bg-gray-800',
                     // Add shadow when scrolled
                     columnIndex === 0 && isScrolledHorizontally ? 'sticky-column-scrolled' : ''
                   ]"
                   :style="[{ top: headerTop }, columnHeaderStyle(column)]"
                 >
-                  <Menu v-if="isColumnSortable(column)" as="div" class="relative w-full">
+                  <Menu v-if="isColumnSortable(column)" as="div" class="relative h-full w-full">
                     <MenuButton
                       type="button"
-                      class="group flex w-full items-center justify-between gap-2 px-5 py-3.5 text-left text-xs uppercase tracking-wide transition-colors focus:outline-none relative z-10"
+                      class="group flex h-full min-h-full w-full items-center justify-between gap-2 px-5 py-3.5 text-left text-xs uppercase tracking-wide transition-colors focus:outline-none relative z-10"
                       :class="{
-                        'cursor-pointer bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300': isColumnSorted(column),
-                        'cursor-pointer text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800': !isColumnSorted(column)
+                        'cursor-pointer text-indigo-600 dark:text-indigo-300': isColumnFilterHighlighted(column),
+                        'cursor-pointer bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300': isColumnSorted(column) && !isColumnFilterHighlighted(column),
+                        'cursor-pointer text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800': !isColumnHeaderHighlighted(column)
                       }"
                     >
                       <span class="flex items-center gap-2 truncate">
@@ -184,7 +188,15 @@
                       </MenuItems>
                     </transition>
                   </Menu>
-                  <span v-else class="block px-5 py-3.5 truncate">{{ columnLabel(column) }}</span>
+                  <span
+                    v-else
+                    class="block px-5 py-3.5 truncate"
+                    :class="isColumnFilterHighlighted(column)
+                      ? 'text-indigo-600 dark:text-indigo-300'
+                      : isColumnHeaderHighlighted(column)
+                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300'
+                        : ''"
+                  >{{ columnLabel(column) }}</span>
                   <span
                     v-if="isColumnResizable(column)"
                     class="group/resize absolute top-0 right-0 z-20 h-full w-3 cursor-col-resize select-none flex items-center justify-center"
@@ -198,12 +210,69 @@
                   v-if="hasFlexFillColumn"
                   scope="col"
                   aria-hidden="true"
-                  class="relative sticky z-10 border-b border-gray-200 bg-white p-0 dark:border-gray-700 dark:bg-gray-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-gray-200 after:content-[\'\'] dark:after:bg-gray-700"
+                  class="table-head-cell table-flex-fill relative sticky z-10 bg-white p-0 dark:bg-gray-900"
                   :style="{ top: headerTop }"
                 />
               </tr>
+              <tr v-if="columnFiltersEnabled" ref="filterHeaderRowRef" class="column-filter-row">
+                <th
+                  v-if="selectable"
+                  scope="col"
+                  :class="[
+                    'table-head-cell table-filter-cell table-selection-cell relative box-border sticky bg-gray-50 px-2 py-2 dark:bg-gray-800',
+                    leftEdgeColumnIndex === 0 ? 'rounded-none' : ''
+                  ]"
+                  :style="selectionFilterCellStyle"
+                >
+                  <div class="flex items-center justify-center">
+                    <button
+                      v-if="hasAnyColumnFilterActive"
+                      type="button"
+                      class="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-white hover:text-gray-600 dark:hover:bg-gray-900 dark:hover:text-gray-200"
+                      :aria-label="t('common.listClearFilters')"
+                      @click="emit('clear-column-filters')"
+                    >
+                      <XMarkIcon class="h-4 w-4" />
+                    </button>
+                    <MagnifyingGlassIcon
+                      v-else
+                      class="h-4 w-4 text-gray-400 dark:text-gray-500"
+                      aria-hidden="true"
+                    />
+                  </div>
+                </th>
+                <th
+                  v-for="(column, columnIndex) in displayColumns"
+                  :key="`${columnKey(column)}-filter`"
+                  scope="col"
+                  :class="[
+                    'table-head-cell table-filter-cell sticky px-3 py-2',
+                    isColumnFilterHighlighted(column)
+                      ? 'bg-indigo-50 dark:bg-indigo-900/25 table-column-filter-active'
+                      : 'bg-gray-50 dark:bg-gray-800',
+                    columnIndex === 0 ? 'title-column-cell z-[35] sticky-column-border' : 'z-15',
+                    columnIndex === 0 && isScrolledHorizontally ? 'sticky-column-scrolled' : ''
+                  ]"
+                  :style="[{ top: columnFilterRowTop }, columnHeaderStyle(column)]"
+                >
+                  <ListColumnFilter
+                    :filter="filterConfigForColumn(column)"
+                    :model-value="filterValueForColumn(column)"
+                    inline
+                    @update:model-value="(value) => emitColumnFilterChange(column, value)"
+                    @opened="emitColumnFilterOpened(column)"
+                  />
+                </th>
+                <th
+                  v-if="hasFlexFillColumn"
+                  scope="col"
+                  aria-hidden="true"
+                  class="table-head-cell table-filter-cell table-flex-fill sticky bg-gray-50 p-0 dark:bg-gray-800"
+                  :style="{ top: columnFilterRowTop }"
+                />
+              </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+            <tbody>
               <template v-if="showDataRows">
                 <tr
                   v-if="useVirtualScroll && virtualPaddingTop > 0"
@@ -228,7 +297,7 @@
                   <td
                     v-if="selectable"
                     :class="[
-                      'relative box-border sticky z-20',
+                      'table-body-cell relative box-border sticky z-20 table-selection-cell',
                       selectionColumnVariant === 'numbered-hover'
                         ? 'px-1 tv-num-when-hover'
                         : 'px-7 sm:w-12 sm:px-6',
@@ -268,7 +337,7 @@
                     v-for="(column, columnIndex) in displayColumns"
                     :key="cellKey(column)"
                     :class="[
-                      'px-5 text-sm text-gray-700 align-middle dark:text-gray-200',
+                      'table-body-cell px-5 text-sm text-gray-700 align-middle dark:text-gray-200',
                       rowHeightClass,
                       columnIndex === 0 ? [
                         'title-column-cell sticky z-20 sticky-column-border',
@@ -342,7 +411,7 @@
                     v-if="hasFlexFillColumn"
                     aria-hidden="true"
                     :class="[
-                      'border-0 p-0 align-middle',
+                      'table-body-cell table-flex-fill p-0 align-middle',
                       rowHeightClass,
                       item.selected ? 'bg-gray-50 dark:bg-indigo-950' : 'bg-white dark:bg-gray-900',
                       item.selected ? '' : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800'
@@ -405,7 +474,7 @@
                     <td
                       v-if="selectable"
                       :class="[
-                        'relative box-border border-0 bg-white align-middle dark:bg-gray-900',
+                        'table-body-cell relative box-border bg-white align-middle dark:bg-gray-900',
                         rowHeightClass,
                         selectionColumnVariant === 'numbered-hover'
                           ? 'px-1 tv-num-when-hover'
@@ -422,7 +491,7 @@
                       v-for="(column, columnIndex) in displayColumns"
                       :key="`sk-${n}-${cellKey(column)}`"
                       :class="[
-                        'border-0 px-5 align-middle',
+                        'table-body-cell px-5 align-middle',
                         rowHeightClass,
                         columnIndex === 0
                           ? 'title-column-cell sticky z-20 bg-white dark:bg-gray-900 sticky-column-border'
@@ -439,7 +508,7 @@
                     <td
                       v-if="hasFlexFillColumn"
                       aria-hidden="true"
-                      :class="['border-0 p-0 align-middle bg-white dark:bg-gray-900', rowHeightClass]"
+                      :class="['table-body-cell table-flex-fill p-0 align-middle bg-white dark:bg-gray-900', rowHeightClass]"
                     />
                   </tr>
                 </template>
@@ -484,10 +553,25 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { ArrowsUpDownIcon, ChevronDownIcon, ChevronUpIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/20/solid'
+import { ArrowsUpDownIcon, ChevronDownIcon, ChevronUpIcon, CheckIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/20/solid'
 import { formatRawValueForDisplay } from '@/utils/fieldDisplay'
 import { normalizeListPagination } from '@/utils/normalizeListPagination'
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue'
+import ListColumnFilter from '@/components/common/ListColumnFilter.vue'
+import { resolveColumnFilterConfig } from '@/platform/filters/columnFilterResolver'
+
+type ColumnFilterConfig = {
+  key: string
+  label: string
+  filterType: string
+  fieldPath?: string
+  options?: Array<{ value: string; label: string }>
+  priority?: number
+}
+
+const COLUMN_LABEL_ROW_HEIGHT_PX = 46
+const COLUMN_FILTER_ROW_HEIGHT_PX = 44
+const EMPTY_OVERLAY_HEADER_GAP_PX = 24
 
 type ListPaginationInput = Record<string, unknown>
 
@@ -533,6 +617,9 @@ const emit = defineEmits<{
   (e: 'load-more'): void
   (e: 'toggle-row', row: RowData): void
   (e: 'toggle-select-all-loaded'): void
+  (e: 'filter-change', payload: { key: string; value: unknown; filterType?: string }): void
+  (e: 'filter-opened', key: string): void
+  (e: 'clear-column-filters'): void
 }>()
 
 const props = withDefaults(
@@ -573,6 +660,10 @@ const props = withDefaults(
     excludedRowIds?: string[]
     /** Key for persisting scroll across tab switches (keep-alive). */
     scrollSessionKey?: string
+    /** Inline column-header filters (list view desktop). */
+    columnFiltersEnabled?: boolean
+    filterConfigByKey?: Record<string, ColumnFilterConfig>
+    columnFilters?: Record<string, unknown>
   }>(),
   {
     columns: () => [],
@@ -601,7 +692,10 @@ const props = withDefaults(
     selectionMode: 'none',
     selectedRowIds: () => [],
     excludedRowIds: () => [],
-    scrollSessionKey: ''
+    scrollSessionKey: '',
+    columnFiltersEnabled: false,
+    filterConfigByKey: () => ({}),
+    columnFilters: () => ({})
   }
 )
 
@@ -649,6 +743,11 @@ const resizeGuideBounds = ref<{ top: number; bottom: number } | null>(null)
 let saveTimeout: ReturnType<typeof setTimeout> | undefined
 const tableRef = ref<HTMLTableElement | null>(null)
 const scrollContainerRef = ref<HTMLDivElement | null>(null)
+const labelHeaderRowRef = ref<HTMLTableRowElement | null>(null)
+const filterHeaderRowRef = ref<HTMLTableRowElement | null>(null)
+const measuredLabelHeaderHeightPx = ref(COLUMN_LABEL_ROW_HEIGHT_PX)
+const measuredFilterHeaderHeightPx = ref(COLUMN_FILTER_ROW_HEIGHT_PX)
+let headerRowsResizeObserver: ResizeObserver | null = null
 const loadMoreSentinelRef = ref<HTMLDivElement | null>(null)
 let loadMoreObserver: IntersectionObserver | null = null
 let loadMoreScrollHandler: (() => void) | null = null
@@ -873,17 +972,13 @@ const columnHeaderStyle = (column: ColumnDef) => {
   if (maxW !== undefined) style.maxWidth = `${maxW}px`
   // Intentionally no overflow:hidden on sticky header — it clips the sort dropdown (HeadlessUI Menu).
 
-  // Make first data column sticky horizontally
-  // Header needs higher z-index (25) than cells (20) to stay on top when scrolling
-  // Border and shadow are handled via CSS class (sticky-column-border) for better visibility
+  // Make first data column sticky horizontally; z-index is set via th classes (label vs filter row).
   if (isFirstCol && props.selectable) {
     style.position = 'sticky'
     style.left = `${checkboxWidth}px`
-    style.zIndex = '25' // Higher than cell z-index (20)
   } else if (isFirstCol && !props.selectable) {
     style.position = 'sticky'
     style.left = '0px'
-    style.zIndex = '25' // Higher than cell z-index (20)
   }
   
   return style
@@ -1082,8 +1177,12 @@ onMounted(() => {
   loadStoredWidths()
   ensureColumnWidths()
   window.addEventListener('beforeunload', handleBeforeUnload)
+  nextTick(() => {
+    setupHeaderRowObserver()
+  })
   setTimeout(() => {
     updateEdgeColumns()
+    syncHeaderRowHeights()
     if (scrollContainerRef.value) {
       isScrolledHorizontally.value = scrollContainerRef.value.scrollLeft > 0
     }
@@ -1094,6 +1193,22 @@ onMounted(() => {
 
   window.addEventListener('resize', updateEdgeColumns)
 })
+
+watch(
+  () => props.columnFiltersEnabled,
+  () => {
+    nextTick(() => {
+      setupHeaderRowObserver()
+    })
+  }
+)
+
+watch(
+  () => displayColumns.value.length,
+  () => {
+    nextTick(() => syncHeaderRowHeights())
+  }
+)
 
 watch(
   () => displayRows.value.length,
@@ -1241,6 +1356,98 @@ const parseOffsetToCss = (offset: string | number | undefined): string => {
 const stickyTop = computed(() => parseOffsetToCss(props.stickyOffset))
 const headerTop = computed(() => (props.internalScroll ? '0px' : stickyTop.value))
 
+const columnFilterRowTop = computed(() => {
+  const base = props.internalScroll ? 0 : parseInt(stickyTop.value, 10) || 0
+  return `${base + measuredLabelHeaderHeightPx.value}px`
+})
+
+const emptyOverlayTop = computed(() => {
+  const headerHeight = props.columnFiltersEnabled
+    ? measuredLabelHeaderHeightPx.value + measuredFilterHeaderHeightPx.value
+    : measuredLabelHeaderHeightPx.value
+  return `${headerHeight + EMPTY_OVERLAY_HEADER_GAP_PX}px`
+})
+
+function syncHeaderRowHeights() {
+  const labelRow = labelHeaderRowRef.value
+  if (labelRow) {
+    const height = labelRow.getBoundingClientRect().height
+    if (height > 0) measuredLabelHeaderHeightPx.value = height
+  }
+  const filterRow = filterHeaderRowRef.value
+  if (filterRow) {
+    const height = filterRow.getBoundingClientRect().height
+    if (height > 0) measuredFilterHeaderHeightPx.value = height
+  }
+}
+
+function setupHeaderRowObserver() {
+  headerRowsResizeObserver?.disconnect()
+  if (typeof ResizeObserver === 'undefined') return
+  headerRowsResizeObserver = new ResizeObserver(() => syncHeaderRowHeights())
+  if (labelHeaderRowRef.value) headerRowsResizeObserver.observe(labelHeaderRowRef.value)
+  if (filterHeaderRowRef.value) headerRowsResizeObserver.observe(filterHeaderRowRef.value)
+  syncHeaderRowHeights()
+}
+
+function teardownHeaderRowObserver() {
+  headerRowsResizeObserver?.disconnect()
+  headerRowsResizeObserver = null
+}
+
+const filterConfigForColumn = (column: ColumnDef): ColumnFilterConfig => {
+  const key = columnKey(column)
+  if (key && props.filterConfigByKey?.[key]) {
+    return props.filterConfigByKey[key]
+  }
+  const colObj = typeof column === 'object' && column ? column : { key: String(column) }
+  return resolveColumnFilterConfig(
+    {
+      key: key || colObj.key || '',
+      label: columnLabel(column),
+      dataType: colObj.dataType,
+    },
+    undefined
+  )
+}
+
+const filterValueForColumn = (column: ColumnDef): unknown => {
+  const config = filterConfigForColumn(column)
+  return props.columnFilters?.[config.key] ?? ''
+}
+
+const hasAnyColumnFilterActive = computed(() => {
+  if (!props.columnFiltersEnabled || !props.columnFilters) return false
+  return displayColumns.value.some((column) => isColumnFilterActive(column))
+})
+
+const isColumnFilterActive = (column: ColumnDef): boolean => {
+  const value = filterValueForColumn(column)
+  if (value === undefined || value === null || value === '') return false
+  if (Array.isArray(value)) return value.length > 0
+  if (typeof value === 'object') return Object.keys(value as Record<string, unknown>).length > 0
+  return true
+}
+
+/** Inline column filter applied — tint label + filter cells (same indigo as active sort). */
+const isColumnFilterHighlighted = (column: ColumnDef): boolean =>
+  Boolean(props.columnFiltersEnabled && isColumnFilterActive(column))
+
+const isColumnHeaderHighlighted = (column: ColumnDef): boolean =>
+  isColumnSorted(column) || isColumnFilterHighlighted(column)
+
+const emitColumnFilterChange = (column: ColumnDef, value: unknown) => {
+  const config = filterConfigForColumn(column)
+  if (!config) return
+  emit('filter-change', { key: config.key, value, filterType: config.filterType })
+}
+
+const emitColumnFilterOpened = (column: ColumnDef) => {
+  const config = filterConfigForColumn(column)
+  if (!config) return
+  emit('filter-opened', config.key)
+}
+
 /** Keeps the selection column from stretching to full table width when data columns are not mounted yet */
 const selectionColumnWidthPx = computed(() =>
   props.selectionColumnVariant === 'numbered-hover' ? '44px' : '48px'
@@ -1259,7 +1466,16 @@ const selectionColumnCellStyle = computed(() => {
 const selectionHeaderCellStyle = computed(() => ({
   top: headerTop.value,
   left: '0px',
-  zIndex: '25',
+  zIndex: '45',
+  width: selectionColumnWidthPx.value,
+  minWidth: selectionColumnWidthPx.value,
+  maxWidth: selectionColumnWidthPx.value
+}))
+
+const selectionFilterCellStyle = computed(() => ({
+  top: columnFilterRowTop.value,
+  left: '0px',
+  zIndex: '40',
   width: selectionColumnWidthPx.value,
   minWidth: selectionColumnWidthPx.value,
   maxWidth: selectionColumnWidthPx.value
@@ -1512,6 +1728,7 @@ onBeforeUnmount(() => {
   if (scrollSaveTimer) clearTimeout(scrollSaveTimer)
   saveScrollSession()
   teardownLoadMoreObserver()
+  teardownHeaderRowObserver()
   stopColumnResize()
   flushColumnWidths()
   window.removeEventListener('beforeunload', handleBeforeUnload)
@@ -1684,65 +1901,79 @@ watch(
   border-top-right-radius: 0.75rem;
 }
 
-/* Ensure border-right and shadow are visible on the last sticky column */
-/* Use pseudo-element to ensure border stays visible above scrolling content */
-.table-scroll-container thead th.sticky-column-border,
-.table-scroll-container tbody td.sticky-column-border {
-  position: relative;
+/* Unified thead grid — solid borders that stay crisp on sticky cells while scrolling */
+.table-grid {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table-scroll-container thead th.table-head-cell {
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--tv-grid-border);
+  background-clip: padding-box;
+}
+
+.table-scroll-container thead th.table-head-cell:not(.table-flex-fill) {
+  border-right: 1px solid var(--tv-grid-border);
+}
+
+/* Inline filter dropdowns extend below the filter row — keep visible above the empty overlay */
+.table-scroll-container thead tr.column-filter-row th.table-filter-cell {
   overflow: visible;
 }
 
-/* Use ::before for header (since ::after is used for bottom border) */
-.table-scroll-container thead th.sticky-column-border::before {
+/* Filtered column — continuous highlight across label + filter header rows */
+.table-scroll-container thead tr:not(.column-filter-row) th.table-column-filter-active {
+  border-bottom-color: rgb(224 231 255); /* indigo-100 */
+}
+
+.dark .table-scroll-container thead tr:not(.column-filter-row) th.table-column-filter-active {
+  border-bottom-color: rgb(49 46 129 / 0.45); /* indigo-900 blend */
+}
+
+.table-scroll-container thead tr.column-filter-row th.table-column-filter-active {
+  border-top: none;
+}
+
+/* Label header row — sort menu must stack above the filter row below */
+.table-scroll-container thead tr:not(.column-filter-row) th.table-head-cell {
+  overflow: visible;
+  border-bottom: 1px solid var(--tv-grid-border);
+}
+
+/* Body grid — vertical + horizontal dividers matching thead */
+.table-scroll-container tbody td.table-body-cell {
+  box-sizing: border-box;
+  background-clip: padding-box;
+  border-bottom: 1px solid var(--tv-grid-border);
+}
+
+.table-scroll-container tbody td.table-body-cell:not(.table-flex-fill) {
+  border-right: 1px solid var(--tv-grid-border);
+}
+
+/* Sticky title column — scroll shadow is separate from the cell edge border */
+.table-scroll-container thead th.sticky-column-border,
+.table-scroll-container tbody td.sticky-column-border {
+  overflow: visible;
+}
+
+.table-scroll-container thead th.sticky-column-scrolled::before,
+.table-scroll-container tbody td.sticky-column-scrolled::before {
   content: '';
   position: absolute;
   top: 0;
-  right: 0;
+  right: -10px;
   bottom: 0;
-  width: 1px;
-  background-color: rgb(229 231 235); /* gray-200 - light mode */
-  z-index: 30;
-  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.1);
+  width: 10px;
   pointer-events: none;
+  z-index: 28;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.06), transparent);
 }
 
-/* Use ::after for cells */
-.table-scroll-container tbody td.sticky-column-border::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 1px;
-  background-color: rgb(229 231 235); /* gray-200 - light mode */
-  z-index: 30;
-  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.1);
-  pointer-events: none;
-}
-
-/* Dark mode border color - match header border-bottom (dark:border-gray-700) */
-/* Use the same pattern as other dark mode styles in this file */
-:global(.dark) .table-scroll-container thead th.sticky-column-border::before {
-  background-color: rgb(55 65 81) !important; /* gray-700 */
-  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.3) !important;
-}
-
-:global(.dark) .table-scroll-container tbody td.sticky-column-border::after {
-  background-color: rgb(55 65 81) !important; /* gray-700 */
-  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* Subtle box shadow on the right side when scrolled horizontally */
-/* This creates a shadow on the right edge to indicate content scrolling behind */
-.table-scroll-container thead th.sticky-column-scrolled,
-.table-scroll-container tbody td.sticky-column-scrolled {
-  box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.1), 2px 0 4px -1px rgba(0, 0, 0, 0.08) !important;
-}
-
-/* Dark mode shadow when scrolled - more visible shadow */
-:global(.dark) .table-scroll-container thead th.sticky-column-scrolled,
-:global(.dark) .table-scroll-container tbody td.sticky-column-scrolled {
-  box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.25), 2px 0 4px -1px rgba(0, 0, 0, 0.2) !important;
+:global(.dark) .table-scroll-container thead th.sticky-column-scrolled::before,
+:global(.dark) .table-scroll-container tbody td.sticky-column-scrolled::before {
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.22), transparent);
 }
 
 /* Title (first) column body cells only — thead uses the same .title-column-cell class for the

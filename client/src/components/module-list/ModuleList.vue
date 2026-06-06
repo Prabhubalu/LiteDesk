@@ -34,6 +34,7 @@
       :search-placeholder="listSearchPlaceholder"
       :data="data"
       :columns="adaptedColumns"
+      :filter-fields="adaptedFilterFields"
       :loading="dataLoading"
       :loading-more="loadingMore"
       infinite-scroll
@@ -46,7 +47,6 @@
       :sort-field="sortField"
       :sort-order="sortOrder"
       :pagination="pagination"
-      :filter-config="adaptedFilters"
       :external-filters="filters"
       :boost-visible-column-keys="boostVisibleColumnKeys"
       :table-id="`${listDefinition.moduleKey}-table`"
@@ -65,7 +65,6 @@
       @set-default-view="handleSetDefaultView"
       @saved-views-updated="handleSavedViewsUpdated"
       @stat-click="handleStatClick"
-      @filter-opened="handleFilterOpened"
       @fetch="fetchData"
       @load-more="handleLoadMore"
       @row-click="handleRowClick"
@@ -112,7 +111,6 @@ import { useI18n } from 'vue-i18n';
 import {
   resolveListColumnLabel,
   resolveListCreateLabel,
-  resolveListFilterLabel,
   resolveListPageTitle,
   resolveListSearchPlaceholder,
   resolveListStatLabel,
@@ -130,12 +128,13 @@ import { createPermissionSnapshot } from '@/types/permission-snapshot.types';
 import { EmptyStateType } from '@/types/empty-state.types';
 import ListView from '@/components/common/ListView.vue';
 import apiClient from '@/utils/apiClient';
-import { getStateFields, getFieldMetadata, getParticipationFields } from '@/platform/fields/peopleFieldModel';
+import { getStateFields } from '@/platform/fields/peopleFieldModel';
 import { getParticipation } from '@/utils/getParticipation';
-import { isPeopleSalesRoleFieldKey } from '@/utils/peopleParticipationUi';
 import { getModuleListConfig, hasModuleListConfig, getSystemViews } from '@/platform/modules/moduleListRegistry';
-import { getFiltersForModule } from '@/platform/filters/filterResolver';
-import { buildListColumnsFromModuleFields } from '@/utils/buildListColumnsFromModuleFields';
+import {
+  buildFilterFieldsFromModuleFields,
+  buildListColumnsFromModuleFields,
+} from '@/utils/buildListColumnsFromModuleFields';
 import { normalizeListPagination } from '@/utils/normalizeListPagination';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import { allSettledWithConcurrency } from '@/utils/allSettledWithConcurrency';
@@ -148,6 +147,12 @@ import {
   LIST_SESSION_RESTORE_KEY,
   patchListSession
 } from '@/utils/listScrollSession';
+import {
+  fetchCustomSavedViews,
+  loadActiveSavedViewId,
+  persistCustomSavedViews,
+  saveActiveSavedViewId,
+} from '@/utils/listViewSavedViewsStorage';
 
 /**
  * Check if a person participates in an app.
@@ -326,16 +331,19 @@ async function restoreListSessionAfterFetch() {
 }
 
 async function initialListFetch() {
-  if (replaceInFlight) {
-    await replaceInFlight;
+  const session = getListSession(listSessionKey.value);
+  const hasActiveQuery =
+    listParamsHaveActiveFilters(buildListFetchContext(1).params)
+    || Boolean(searchQuery.value && String(searchQuery.value).trim());
+
+  if (!session || hasActiveQuery) {
+    await fetchListReplace();
+    if (session && !hasActiveQuery) {
+      await restoreListSessionAfterFetch();
+    }
     return;
   }
 
-  const session = getListSession(listSessionKey.value);
-  if (!session) {
-    await fetchListReplace();
-    return;
-  }
   pagination.value.currentPage = 1;
   await fetchListReplace({ preserveSession: true, soft: true });
   await restoreListSessionAfterFetch();
@@ -430,36 +438,13 @@ const includesRoleMatch = (filterValues, roleValue) => {
   return filterValues.some((candidate) => String(candidate).trim().toLowerCase() === normalizedRole);
 };
 
-const isPeopleRoleFilterKey = (key) => {
-  const normalized = String(key || '').trim();
-  return normalized === 'type' || normalized === 'sales_type' || normalized === 'helpdesk_role';
-};
-
 // Saved Views for People module
 const savedViews = ref([]);
 const defaultViewId = ref(null);
 const activeSavedViewId = ref(null);
 
-// Schema-driven filter data
 const moduleFieldDefinitions = ref([]);
-const availableUsers = ref([]);
-const availableUsersLoading = ref(false);
-const availableOrganizations = ref([]);
-const availableOrganizationsLoading = ref(false);
 const appRegistry = ref(null);
-
-// Known app keys that can have People participation
-const knownParticipationApps = ['SALES', 'HELPDESK', 'MARKETING', 'AUDIT', 'PORTAL', 'PROJECTS'];
-
-// App display names
-const appDisplayNames = {
-  'SALES': 'Sales',
-  'HELPDESK': 'Helpdesk',
-  'MARKETING': 'Marketing',
-  'AUDIT': 'Audit',
-  'PORTAL': 'Portal',
-  'PROJECTS': 'Projects'
-};
 
 // Build list from registry
 const buildList = async () => {
@@ -553,18 +538,7 @@ const buildList = async () => {
         isDefault: view.isDefault === true
       }));
       
-      // Load custom saved views from localStorage
-      const customViewsStorageKey = `arivu-listview-${props.moduleKey}-saved-views`;
-      let customViews = [];
-      try {
-        const saved = localStorage.getItem(customViewsStorageKey);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          customViews = Array.isArray(parsed) ? parsed : [];
-        }
-      } catch (error) {
-        console.warn('[ModuleList] Failed to load custom views:', error);
-      }
+      const customViews = await fetchCustomSavedViews(props.moduleKey, currentUserId);
       
       // Merge system views with custom views
       savedViews.value = [...systemViewsFormatted, ...customViews];
@@ -579,11 +553,10 @@ const buildList = async () => {
       if (defaultView) {
         // Priority: last active view (if user switched before reload) > user's default (first visit) > "All"
         const defaultViewStorageKey = `arivu-listview-${props.moduleKey}-default-view`;
-        const savedViewStorageKey = `arivu-listview-${props.moduleKey}-active-view`;
         try {
           const userDefaultViewId = localStorage.getItem(defaultViewStorageKey);
           defaultViewId.value = userDefaultViewId || null;
-          const savedActiveViewId = localStorage.getItem(savedViewStorageKey);
+          const savedActiveViewId = loadActiveSavedViewId(props.moduleKey, currentUserId);
           const viewToLoad = (savedActiveViewId && savedViews.value.find(v => v.id === savedActiveViewId))
             ? savedActiveViewId
             : (userDefaultViewId && savedViews.value.find(v => v.id === userDefaultViewId))
@@ -591,13 +564,15 @@ const buildList = async () => {
               : defaultView.id;
           activeSavedViewId.value = viewToLoad;
           const savedView = savedViews.value.find(v => v.id === viewToLoad);
-          if (savedView && savedView.filters) {
-            const viewFilters = { ...savedView.filters };
-            if (moduleConfig?.normalizeViewFilters) {
-              const normalized = moduleConfig.normalizeViewFilters(viewFilters, currentUserId);
-              filters.value = normalized;
-            } else {
-              filters.value = viewFilters;
+          if (savedView) {
+            filters.value = resolveSavedViewFilters(savedView, currentUserId);
+            const savedConfig = savedView.config;
+            if (savedConfig?.sort?.field) {
+              sortField.value = normalizePeopleListSortField(savedConfig.sort.field);
+              sortOrder.value = savedConfig.sort.order === 'asc' ? 'asc' : 'desc';
+            }
+            if (savedConfig?.search !== undefined) {
+              searchQuery.value = savedConfig.search;
             }
           } else {
             filters.value = {};
@@ -642,12 +617,31 @@ const buildList = async () => {
 const adaptedColumns = computed(() => {
   if (!listDefinition.value?.columns) return [];
   
-  return listDefinition.value.columns.map(col => ({
-    key: col.key,
-    label: resolveListColumnLabel(props.moduleKey, col.key, col.label, t, te),
-    sortable: col.sortable ?? false,
-    sortKey: col.fieldPath || col.key,
-    dataType: col.dataType
+  return listDefinition.value.columns.map(col => {
+    const fieldDef = moduleFieldDefinitions.value.find((f) => f.key === col.key);
+    return {
+      key: col.key,
+      label: resolveListColumnLabel(props.moduleKey, col.key, col.label, t, te),
+      sortable: col.sortable ?? false,
+      sortKey: col.fieldPath || col.key,
+      dataType: col.dataType,
+      options: col.options || fieldDef?.options,
+    };
+  });
+});
+
+const adaptedFilterFields = computed(() => {
+  if (!moduleFieldDefinitions.value.length) return [];
+
+  return buildFilterFieldsFromModuleFields(
+    moduleFieldDefinitions.value,
+    props.moduleKey,
+    authStore.inventoryEnabled
+  ).map((field) => ({
+    key: field.key,
+    label: resolveListColumnLabel(props.moduleKey, field.key, field.label, t, te),
+    dataType: field.dataType,
+    options: field.options,
   }));
 });
 
@@ -704,7 +698,6 @@ const boostVisibleColumnKeys = computed(() => {
   return moduleConfig?.appointmentListColumns ?? [];
 });
 
-// Fetch module field definitions for schema-driven filters
 const fetchModuleFieldDefinitions = async () => {
   try {
     const params = { key: props.moduleKey };
@@ -715,164 +708,7 @@ const fetchModuleFieldDefinitions = async () => {
     }
     const response = await apiClient.get('/modules', { params });
     if (response.success && Array.isArray(response.data) && response.data.length > 0) {
-      const module = response.data[0];
-      let fields = module.fields || [];
-      
-      // Initialize filter metadata for People module fields if missing
-      if (props.moduleKey === 'people') {
-        const peopleFilterMetadata = {
-          'assignedTo': {
-            filterable: true,
-            filterType: 'user',
-            filterPriority: 1
-          },
-          'assigned_to': { // Also check for snake_case variant
-            filterable: true,
-            filterType: 'user',
-            filterPriority: 1
-          },
-          'sales_type': {
-            filterable: true,
-            filterType: 'multi-select',
-            filterPriority: 2
-          },
-          'helpdesk_role': {
-            filterable: true,
-            filterType: 'multi-select',
-            filterPriority: 2
-          },
-          'do_not_contact': {
-            filterable: true,
-            filterType: 'boolean',
-            filterPriority: 3
-          },
-          'doNotContact': { // Also check for camelCase variant
-            filterable: true,
-            filterType: 'boolean',
-            filterPriority: 3
-          },
-          'organization': {
-            filterable: true,
-            filterType: 'entity',
-            filterPriority: 4
-          }
-        };
-
-        fields = fields.map((field) => {
-          if (field.key && peopleFilterMetadata[field.key]) {
-            const filterMeta = peopleFilterMetadata[field.key];
-            return {
-              ...field,
-              filterable: filterMeta.filterable,
-              filterType: field.filterType || filterMeta.filterType,
-              filterPriority: field.filterPriority ?? filterMeta.filterPriority,
-            };
-          }
-          if (field.filterable === undefined) {
-            return { ...field, filterable: false };
-          }
-          return field;
-        });
-      }
-      
-      // Initialize filter metadata for Organizations module fields if missing
-      if (props.moduleKey === 'organizations') {
-        const organizationFilterMetadata = {
-          'assignedTo': {
-            filterable: true,
-            filterType: 'user',
-            filterPriority: 1
-          },
-          'assigned_to': { // Also check for snake_case variant
-            filterable: true,
-            filterType: 'user',
-            filterPriority: 1
-          },
-          'isActive': {
-            filterable: true,
-            filterType: 'boolean',
-            filterPriority: 2
-          },
-          'types': {
-            filterable: true,
-            filterType: 'multi-select',
-            filterPriority: 3
-          }
-        };
-
-        fields = fields.map((field) => {
-          if (field.key && organizationFilterMetadata[field.key]) {
-            const filterMeta = organizationFilterMetadata[field.key];
-            return {
-              ...field,
-              filterable: filterMeta.filterable,
-              filterType: field.filterType || filterMeta.filterType,
-              filterPriority: field.filterPriority ?? filterMeta.filterPriority,
-            };
-          }
-          if (field.filterable === undefined) {
-            return { ...field, filterable: false };
-          }
-          return field;
-        });
-      }
-      
-      // Initialize filter metadata for Tasks module fields if missing
-      if (props.moduleKey === 'tasks') {
-        const tasksFilterMetadata = {
-          'assignedTo': {
-            filterable: true,
-            filterType: 'user',
-            filterPriority: 1
-          },
-          'assigned_to': { // Also check for snake_case variant
-            filterable: true,
-            filterType: 'user',
-            filterPriority: 1
-          },
-          'status': {
-            filterable: true,
-            filterType: 'select',
-            filterPriority: 2
-          },
-          'dueDate': {
-            filterable: true,
-            filterType: 'date',
-            filterPriority: 3
-          },
-          'due_date': { // Also check for snake_case variant
-            filterable: true,
-            filterType: 'date',
-            filterPriority: 3
-          }
-        };
-
-        fields = fields.map((field) => {
-          if (field.key && tasksFilterMetadata[field.key]) {
-            const filterMeta = tasksFilterMetadata[field.key];
-            return {
-              ...field,
-              filterable: filterMeta.filterable,
-              filterType: field.filterType || filterMeta.filterType,
-              filterPriority: field.filterPriority ?? filterMeta.filterPriority,
-            };
-          }
-          if (field.filterable === undefined) {
-            return { ...field, filterable: false };
-          }
-          return field;
-        });
-      }
-      
-      moduleFieldDefinitions.value = fields;
-
-      const filterableFields = moduleFieldDefinitions.value.filter((f) => f.filterable === true);
-      if (
-        filterableFields.length === 0 &&
-        (props.moduleKey === 'people' || props.moduleKey === 'organizations' || props.moduleKey === 'tasks')
-      ) {
-        console.warn(`[ModuleList] No filterable fields for ${props.moduleKey}`);
-      }
+      moduleFieldDefinitions.value = response.data[0].fields || [];
     } else {
       moduleFieldDefinitions.value = [];
       console.warn('[ModuleList] No module found or empty response');
@@ -882,289 +718,6 @@ const fetchModuleFieldDefinitions = async () => {
     moduleFieldDefinitions.value = [];
   }
 };
-
-// Fetch lookup data for filter types that need it (user, entity)
-const fetchUsersForFilters = async () => {
-  if (availableUsersLoading.value || (Array.isArray(availableUsers.value) && availableUsers.value.length > 0)) {
-    return;
-  }
-  availableUsersLoading.value = true;
-  try {
-    const response = await apiClient.get('/users/list');
-    if (response.success && Array.isArray(response.data)) {
-      availableUsers.value = response.data;
-    } else {
-      availableUsers.value = [];
-    }
-  } catch (error) {
-    console.error('[ModuleList] Error fetching users for filters:', error);
-    availableUsers.value = [];
-  } finally {
-    availableUsersLoading.value = false;
-  }
-};
-
-const fetchOrganizationsForFilters = async () => {
-  if (availableOrganizationsLoading.value || (Array.isArray(availableOrganizations.value) && availableOrganizations.value.length > 0)) {
-    return;
-  }
-  availableOrganizationsLoading.value = true;
-  try {
-    const response = await apiClient.get('/v2/organization', { params: { limit: 1000 } });
-    if (response.success && Array.isArray(response.data)) {
-      availableOrganizations.value = response.data;
-    } else if (response.success && response.data?.data && Array.isArray(response.data.data)) {
-      availableOrganizations.value = response.data.data;
-    } else {
-      availableOrganizations.value = [];
-    }
-  } catch (error) {
-    console.error('[ModuleList] Error fetching organizations for filters:', error);
-    availableOrganizations.value = [];
-  } finally {
-    availableOrganizationsLoading.value = false;
-  }
-};
-
-const handleFilterOpened = async (filterKey) => {
-  if (!filterKey) return;
-  const filter = adaptedFilters.value.find((f) => f.key === filterKey);
-  if (!filter) return;
-  if (filter.filterType === 'user') {
-    await fetchUsersForFilters();
-  }
-  if (filter.filterType === 'entity' && props.moduleKey === 'people') {
-    await fetchOrganizationsForFilters();
-  }
-};
-
-// Helper to get user display name
-const getUserDisplayName = (user) => {
-  if (!user) return '';
-  if (user.firstName || user.lastName) {
-    return `${user.firstName || ''} ${user.lastName || ''}`.trim();
-  }
-  if (user.email) return user.email;
-  if (user.username) return user.username;
-  return String(user._id || user.id || 'Unknown User');
-};
-
-// Note: buildSchemaFilters logic moved to adaptedFilters computed property
-
-// Adapt filters from schema-driven field definitions
-const adaptedFilters = computed(() => {
-  // Use schema-driven filters if field definitions are available
-  if (moduleFieldDefinitions.value.length > 0) {
-    try {
-      const schemaFilters = getFiltersForModule(props.moduleKey, moduleFieldDefinitions.value);
-
-      // Enrich filters with options based on filterType
-      const enrichedSchemaFilters = schemaFilters.map(filter => {
-        const enrichedFilter = { ...filter };
-        
-        // Ensure options array exists (even if empty)
-        if (!enrichedFilter.options) {
-          enrichedFilter.options = [];
-        }
-        
-        // Add options for user filter type
-        if (filter.filterType === 'user') {
-          const currentUserId = authStore.user?._id;
-          const currentUserIdStr = currentUserId ? String(currentUserId) : null;
-          
-          const userOptions = [
-            { value: 'me', label: 'Me' },
-            { value: 'unassigned', label: 'Unassigned' }
-          ];
-          
-          // Add all users
-          if (Array.isArray(availableUsers.value)) {
-            availableUsers.value.forEach(user => {
-              if (user) {
-                const userIdStr = String(user._id || user.id);
-                if (currentUserIdStr && userIdStr !== currentUserIdStr) {
-                  userOptions.push({
-                    value: userIdStr,
-                    label: getUserDisplayName(user)
-                  });
-                }
-              }
-            });
-          }
-          
-          enrichedFilter.options = userOptions;
-        }
-        
-        // Add options for entity filter type (organization lookup)
-        if (filter.filterType === 'entity' && filter.key === 'organization') {
-          const entityOptions = [
-            { value: 'has', label: 'Has Organization' },
-            { value: '', label: 'No Organization' }
-          ];
-          
-          // Add all organizations
-          if (Array.isArray(availableOrganizations.value)) {
-            availableOrganizations.value.forEach(org => {
-              if (org) {
-                entityOptions.push({
-                  value: org._id || org.id,
-                  label: org.name || 'Unnamed Organization'
-                });
-              }
-            });
-          }
-          
-          enrichedFilter.options = entityOptions;
-        }
-        
-        // Add options for boolean filter type
-        if (filter.filterType === 'boolean') {
-          if (filter.key === 'do_not_contact' || filter.key === 'doNotContact') {
-            enrichedFilter.options = [
-              { value: 'allowed', label: 'Allowed' },
-              { value: 'doNotContact', label: 'Do Not Contact' }
-            ];
-          } else {
-            // Generic boolean options
-            enrichedFilter.options = [
-              { value: 'true', label: 'Yes' },
-              { value: 'false', label: 'No' }
-            ];
-          }
-        }
-        
-        // For select/multi-select, options should come from field definition
-        if ((filter.filterType === 'select' || filter.filterType === 'multi-select') && !enrichedFilter.options) {
-          const fieldDef = moduleFieldDefinitions.value.find(f => f.key === filter.key);
-          if (fieldDef?.options) {
-            enrichedFilter.options = fieldDef.options;
-          } else if ((isPeopleSalesRoleFieldKey(filter.key) || filter.key === 'helpdesk_role') && props.moduleKey === 'people') {
-            // Special handling for People type / virtual role filters (participation)
-            const participationOptions = [];
-            if (appRegistry.value) {
-              for (const appKey of knownParticipationApps) {
-                if (appRegistry.value[appKey]) {
-                  const appDisplayName = appDisplayNames[appKey] || appKey;
-                  const stateFields = getStateFields(appKey);
-                  const roles = [];
-                  
-                  for (const fieldKey of stateFields) {
-                    try {
-                      const metadata = getFieldMetadata(fieldKey);
-                      if (isPeopleSalesRoleFieldKey(fieldKey) && appKey === 'SALES') {
-                        roles.push('Lead');
-                        roles.push('Contact');
-                      } else if (appKey === 'HELPDESK' && roles.length === 0) {
-                        roles.push('Contact');
-                      }
-                    } catch (error) {
-                      // Field not in metadata - skip
-                    }
-                  }
-                  
-                  if (roles.length === 0) {
-                    participationOptions.push({
-                      value: `${appKey}:*`,
-                      label: appDisplayName
-                    });
-                  } else {
-                    roles.forEach(role => {
-                      participationOptions.push({
-                        value: `${appKey}:${role}`,
-                        label: `${appDisplayName} · ${role}`
-                      });
-                    });
-                  }
-                }
-              }
-            }
-            enrichedFilter.options = participationOptions;
-          }
-        }
-        
-        // People role filter labels/options should reflect the selected app tab context.
-        if (props.moduleKey === 'people' && isPeopleRoleFilterKey(enrichedFilter.key)) {
-          if (props.peopleContext === 'HELPDESK') {
-            // In HELPDESK tab, show role choices from helpdesk_role field when available.
-            const helpdeskFieldDef = moduleFieldDefinitions.value.find((f) => f.key === 'helpdesk_role');
-            const fallbackOptions = [{ value: 'Contact', label: 'Contact' }];
-            enrichedFilter.key = 'helpdesk_role';
-            enrichedFilter.label = 'Type';
-            enrichedFilter.options =
-              Array.isArray(helpdeskFieldDef?.options) && helpdeskFieldDef.options.length
-                ? helpdeskFieldDef.options
-                : fallbackOptions;
-          } else if (props.peopleContext === 'SALES') {
-            // In SALES tab, normalize to sales_type semantics.
-            const salesFieldDef = moduleFieldDefinitions.value.find((f) => f.key === 'sales_type' || f.key === 'type');
-            const fallbackOptions = [
-              { value: 'Lead', label: 'Lead' },
-              { value: 'Contact', label: 'Contact' }
-            ];
-            enrichedFilter.key = 'sales_type';
-            enrichedFilter.label = 'Type';
-            enrichedFilter.options =
-              Array.isArray(salesFieldDef?.options) && salesFieldDef.options.length
-                ? salesFieldDef.options
-                : fallbackOptions;
-          } else {
-            // All Apps: keep label as "Type" while preserving canonical keys.
-            if (enrichedFilter.key !== 'helpdesk_role') {
-              enrichedFilter.key = 'sales_type';
-            }
-            enrichedFilter.label = 'Type';
-          }
-        }
-
-        // Ensure filter always has a label
-        if (!enrichedFilter.label) {
-          enrichedFilter.label = enrichedFilter.key || 'Unknown Filter';
-        }
-        
-        return enrichedFilter;
-      });
-
-      // De-duplicate People role filters after key normalization (legacy `type` -> `sales_type`).
-      if (props.moduleKey === 'people') {
-        const deduped = [];
-        const seenKeys = new Set();
-        for (const filter of enrichedSchemaFilters) {
-          const canonicalKey = String(filter?.key || '').trim();
-          if (!canonicalKey) continue;
-          if (seenKeys.has(canonicalKey)) continue;
-          seenKeys.add(canonicalKey);
-          deduped.push(filter);
-        }
-        return deduped.map((filter) => ({
-          ...filter,
-          label: resolveListFilterLabel(props.moduleKey, filter.key, filter.label, t, te),
-        }));
-      }
-
-      return enrichedSchemaFilters.map((filter) => ({
-        ...filter,
-        label: resolveListFilterLabel(props.moduleKey, filter.key, filter.label, t, te),
-      }));
-    } catch (error) {
-      console.warn('[ModuleList] Error building schema filters:', error);
-      console.error('[ModuleList] Filter building error details:', error);
-      return [];
-    }
-  }
-  
-  // Fallback: use filters from definition (for backward compatibility)
-  if (!listDefinition.value?.filters) {
-    return [];
-  }
-  
-  return listDefinition.value.filters.map(filter => ({
-    key: filter.key,
-    label: resolveListFilterLabel(props.moduleKey, filter.key, filter.label, t, te),
-    options: filter.options || [],
-    fieldPath: filter.fieldPath,
-    filterType: filter.filterType || 'select'
-  }));
-});
 
 // Statistics computation is now handled by the registry
 
@@ -1221,6 +774,74 @@ function mergeAppendRowsById(existing, incoming) {
   return merged;
 }
 
+const LIST_FETCH_PAGINATION_KEYS = new Set(['page', 'limit', 'sortBy', 'sortOrder', 'appKey']);
+
+function listParamsHaveActiveFilters(params) {
+  if (!params || typeof params !== 'object') return false;
+  if (params.search && String(params.search).trim()) return true;
+  if (params.filterQuery && String(params.filterQuery).trim()) return true;
+  return Object.keys(params).some((key) => {
+    if (LIST_FETCH_PAGINATION_KEYS.has(key)) return false;
+    const value = params[key];
+    return value !== undefined && value !== '';
+  });
+}
+
+function zeroListStatistics(ctx, totalRecords = 0) {
+  const keys = ctx.moduleConfig?.statistics?.stats?.map((stat) => stat.key) ?? [];
+  const out = { totalRecords };
+  for (const key of keys) {
+    out[key] = 0;
+  }
+  out.totalPeople = totalRecords;
+  out.totalOrganizations = totalRecords;
+  return out;
+}
+
+function applyListStatisticsFromResponse(response, totalRecords, ctx) {
+  if (totalRecords === 0) {
+    statistics.value = zeroListStatistics(ctx, 0);
+    return;
+  }
+
+  if (response.listStatistics && typeof response.listStatistics === 'object') {
+    const raw = response.listStatistics;
+    const reportedTotal = Number(
+      raw.totalOrganizations ?? raw.totalPeople ?? raw.totalRecords ?? totalRecords
+    ) || 0;
+
+    // Stale cache or race can return unfiltered aggregates while pagination is filtered.
+    if (reportedTotal !== totalRecords) {
+      if (ctx.moduleConfig?.statistics?.computeFunction) {
+        statistics.value = ctx.moduleConfig.statistics.computeFunction(data.value, authStore.user?._id, {
+          totalRecords
+        });
+        return;
+      }
+      statistics.value = zeroListStatistics(ctx, totalRecords);
+      return;
+    }
+
+    statistics.value = {
+      ...raw,
+      totalPeople: raw.totalPeople ?? totalRecords,
+      totalOrganizations: raw.totalOrganizations ?? totalRecords
+    };
+    return;
+  }
+
+  if (ctx.moduleConfig?.statistics?.computeFunction) {
+    statistics.value = ctx.moduleConfig.statistics.computeFunction(data.value, authStore.user?._id, {
+      totalRecords
+    });
+    return;
+  }
+
+  if (response.statistics) {
+    statistics.value = response.statistics;
+  }
+}
+
 /** Shared GET params + endpoint for both replace and append (requestedPage differs). */
 function buildListFetchContext(requestedPage) {
   const page =
@@ -1239,7 +860,17 @@ function buildListFetchContext(requestedPage) {
     normalizedFilters = moduleConfig.normalizeFilters(normalizedFilters, authStore.user?._id);
   }
 
+  const hasAdvancedFilterQuery = Boolean(
+    normalizedFilters.filterQuery && String(normalizedFilters.filterQuery).trim()
+  );
+
   Object.keys(normalizedFilters).forEach((key) => {
+    if (key === 'filterQuery') {
+      if (hasAdvancedFilterQuery) {
+        params.filterQuery = normalizedFilters.filterQuery;
+      }
+      return;
+    }
     if (key === 'participation' || key === 'participationApp' || key === 'participationRole') {
       return;
     }
@@ -1251,7 +882,8 @@ function buildListFetchContext(requestedPage) {
     if (value !== undefined && value !== '') {
       params[key] = value;
     } else if (value === null) {
-      params[key] = null;
+      // apiClient strips null from query strings; server list handlers expect the literal 'null'.
+      params[key] = 'null';
     }
   });
 
@@ -1265,11 +897,11 @@ function buildListFetchContext(requestedPage) {
     params.search = searchQuery.value.trim();
   }
 
-  if (params.assignedTo === null && filters.value.assignedTo === undefined) {
+  if (params.assignedTo === 'null' && filters.value.assignedTo === undefined) {
     delete params.assignedTo;
   }
 
-  if (params.organization === null && filters.value.organization !== null && filters.value.organization !== undefined) {
+  if (params.organization === 'null' && filters.value.organization !== null && filters.value.organization !== undefined) {
     if (filters.value.organization === undefined) {
       delete params.organization;
     }
@@ -1420,71 +1052,50 @@ function applyPaginationFromResponse(response, fetchedRowCountForTotal, requeste
 async function fetchListReplace(opts = {}) {
   if (!listDefinition.value) return;
 
-  if (replaceInFlight) {
-    return replaceInFlight;
-  }
-
   const soft = Boolean(opts.soft);
   const hardClear = Boolean(opts.hardClear);
   const preserveSession = Boolean(opts.preserveSession);
 
+  // Always supersede an in-flight replace — returning the old promise dropped newer filters.
+  listDataEpoch.value += 1;
+  const epochForThisReplace = listDataEpoch.value;
+  const myReplaceSeq = ++replaceSeq;
+  replaceAbortController?.abort();
+  appendAbortController?.abort();
+  appendAbortController = null;
+
+  replaceAbortController = new AbortController();
+  const signal = replaceAbortController.signal;
+
+  dataLoading.value = true;
+  statistics.value = {};
+  if (hardClear) {
+    data.value = [];
+  }
+
   const run = async () => {
-    listDataEpoch.value += 1;
-    const epochForThisReplace = listDataEpoch.value;
-
-    const myReplaceSeq = ++replaceSeq;
-    replaceAbortController?.abort();
-    appendAbortController?.abort();
-    appendAbortController = null;
-
-    replaceAbortController = new AbortController();
-    const signal = replaceAbortController.signal;
-
-    dataLoading.value = true;
-    if (hardClear) {
-      data.value = [];
-      statistics.value = {};
-    }
-
     try {
       const ctx = buildListFetchContext(
         normalizeListPagination(pagination.value).currentPage
       );
       const response = await apiClient.get(ctx.endpoint, {
         params: ctx.params,
-        signal
+        signal,
+        cache: 'no-store'
       });
 
-      if (listDataEpoch.value !== epochForThisReplace) return;
-      if (signal.aborted) return;
+      if (listDataEpoch.value !== epochForThisReplace || signal.aborted) return;
 
       if (response.success) {
-        let fetchedData = applyClientSideListTransforms(response.data || [], ctx);
+        const fetchedData = applyClientSideListTransforms(response.data || [], ctx);
+        const totalRecords =
+          Number(
+            response.pagination?.totalRecords ?? response.meta?.total ?? pagination.value.totalRecords ?? 0
+          ) || 0;
+
         data.value = [...fetchedData];
-
         applyPaginationFromResponse(response, fetchedData.length, ctx.params.page);
-
-        const totalRecords = Number(
-          response.pagination?.totalRecords ?? response.meta?.total ?? pagination.value.totalRecords ?? 0
-        ) || 0;
-
-        await nextTick();
-        if (listDataEpoch.value !== epochForThisReplace) return;
-
-        // Prefer server aggregates when present (correct for full result set + paged/infinite scroll)
-        if (response.listStatistics && typeof response.listStatistics === 'object') {
-          statistics.value = {
-            ...response.listStatistics,
-            totalPeople: response.listStatistics.totalPeople ?? totalRecords,
-            totalOrganizations: response.listStatistics.totalOrganizations ?? totalRecords
-          };
-        } else if (ctx.moduleConfig?.statistics?.computeFunction) {
-          statistics.value = ctx.moduleConfig.statistics.computeFunction(data.value, authStore.user?._id, {
-            totalRecords
-          });
-        } else if (response.statistics) {
-          statistics.value = response.statistics;
-        }
+        applyListStatisticsFromResponse(response, totalRecords, ctx);
       } else {
         console.warn('[ModuleList] API response not successful:', {
           success: response.success,
@@ -1525,11 +1136,14 @@ async function fetchListReplace(opts = {}) {
     }
   };
 
-  replaceInFlight = run();
+  const promise = run();
+  replaceInFlight = promise;
   try {
-    await replaceInFlight;
+    await promise;
   } finally {
-    replaceInFlight = null;
+    if (replaceInFlight === promise) {
+      replaceInFlight = null;
+    }
   }
 }
 
@@ -1568,7 +1182,8 @@ async function fetchListAppend() {
     const ctx = buildListFetchContext(requestedPage);
     const response = await apiClient.get(ctx.endpoint, {
       params: ctx.params,
-      signal
+      signal,
+      cache: 'no-store'
     });
 
     if (listDataEpoch.value !== parentEpoch) return;
@@ -1748,7 +1363,24 @@ const filtersMatchView = (currentFilters, viewFilters, currentUserId) => {
   });
 };
 
-const handleFiltersUpdate = async (newFilters) => {
+function viewMatchesFilters(view, currentFilters, currentUserId) {
+  if (!view) return false;
+
+  if (currentFilters.filterQuery && view.config?.filterQuery) {
+    const savedFilterQuery = typeof view.config.filterQuery === 'string'
+      ? view.config.filterQuery
+      : JSON.stringify(view.config.filterQuery);
+    const incomingFilterQuery = typeof currentFilters.filterQuery === 'string'
+      ? currentFilters.filterQuery
+      : JSON.stringify(currentFilters.filterQuery);
+    return savedFilterQuery === incomingFilterQuery;
+  }
+
+  const viewFilters = view.config?.filters || view.filters || {};
+  return filtersMatchView(currentFilters, viewFilters, currentUserId);
+}
+
+const handleFiltersUpdate = async (newFilters, options = {}) => {
   // Clean up old participation filter keys if they exist (migration from old format)
   if (props.moduleKey === 'people') {
     // Remove old participationApp and participationRole filters if new participation filter exists
@@ -1761,10 +1393,15 @@ const handleFiltersUpdate = async (newFilters) => {
   // Create a new object to ensure reactivity
   filters.value = { ...newFilters };
   pagination.value.currentPage = 1;
+  pagination.value.totalRecords = 0;
+  pagination.value.total = 0;
+  pagination.value.totalPages = 0;
   clearListSessionState();
 
   emit('filters-changed', filters.value);
-  
+
+  fetchData();
+
   // Wait for next tick to ensure filters are properly set before checking saved views
   await nextTick();
   
@@ -1774,7 +1411,7 @@ const handleFiltersUpdate = async (newFilters) => {
   const currentUserId = authStore.user?._id;
   
   // Only handle saved view state if module has system views (from registry or generated)
-  if (savedViews.value.length > 0) {
+  if (savedViews.value.length > 0 && !options.preserveActiveView) {
     
     // Check if filters are empty (all cleared)
     // Include null values - they are valid filter values (e.g., organization: null)
@@ -1785,8 +1422,15 @@ const handleFiltersUpdate = async (newFilters) => {
     });
     
     if (!hasAnyFilters) {
-      // Filters cleared - return to "All" view
-      activeSavedViewId.value = 'all';
+      const activeView = activeSavedViewId.value
+        ? savedViews.value.find((v) => v.id === activeSavedViewId.value)
+        : null;
+      const isCustomSavedView = Boolean(
+        activeView?.id?.startsWith('custom-') || activeView?.config
+      );
+      if (!isCustomSavedView) {
+        activeSavedViewId.value = 'all';
+      }
     } else {
       // Check if current filters match any saved view
       // First check the active view, then check all views
@@ -1794,26 +1438,22 @@ const handleFiltersUpdate = async (newFilters) => {
       
       if (activeSavedViewId.value) {
         const activeView = savedViews.value.find(v => v.id === activeSavedViewId.value);
-        if (activeView && filtersMatchView(newFilters, activeView.filters, currentUserId)) {
+        if (viewMatchesFilters(activeView, newFilters, currentUserId)) {
           matchedView = activeView;
         }
       }
       
       // If active view doesn't match, check all views
       if (!matchedView) {
-        matchedView = savedViews.value.find(view => filtersMatchView(newFilters, view.filters, currentUserId));
+        matchedView = savedViews.value.find((view) => viewMatchesFilters(view, newFilters, currentUserId));
       }
       
       if (matchedView) {
         activeSavedViewId.value = matchedView.id;
-      } else {
-        activeSavedViewId.value = null;
       }
+      // Keep activeSavedViewId when unmatched so the UI can show modified view state.
     }
   }
-  
-  // Fetch data with updated filters
-  fetchData();
 };
 
 // Handle stat click - apply derived filters
@@ -2009,67 +1649,77 @@ const handleStatClick = (statItem) => {
   handleFiltersUpdate(newFilters);
 };
 
-// Handle saved views updated (custom views changed)
-const handleSavedViewsUpdated = (customViews) => {
-  const moduleConfig = resolveModuleListConfig(props.moduleKey);
-  if (!moduleConfig?.systemViews) return;
-  
-  // Rebuild savedViews with system views + custom views
-  const systemViews = moduleConfig.systemViews.map(view => ({
+function formatSystemViewsForList(systemViews) {
+  return systemViews.map((view) => ({
     id: view.id,
     label: view.name,
     filters: view.filters,
-    isDefault: view.isDefault === true
+    isDefault: view.isDefault === true,
   }));
-  
-  savedViews.value = [...systemViews, ...customViews];
-};
+}
 
-// Handle saved view selection
-const handleSavedViewSelected = (view) => {
-  const moduleConfig = resolveModuleListConfig(props.moduleKey);
-  if (!moduleConfig) {
-    return;
+function resolveSavedViewFilters(view, currentUserId) {
+  if (!view) return {};
+
+  const config = view.config;
+  let viewFilters = {};
+
+  if (config?.filterQuery) {
+    viewFilters = {
+      filterQuery: typeof config.filterQuery === 'string'
+        ? config.filterQuery
+        : JSON.stringify(config.filterQuery),
+    };
+  } else if (config?.filters && Object.keys(config.filters).length > 0) {
+    viewFilters = { ...config.filters };
+  } else if (view.filters) {
+    viewFilters = { ...view.filters };
   }
-  
-  // Set active saved view (will be persisted via watch)
-  activeSavedViewId.value = view?.id || null;
-  
-  if (!view) {
-    // Clear view selection - use handleFiltersUpdate to ensure proper sync
-    handleFiltersUpdate({});
-    return;
-  }
-  
-  // Apply view filters
-  let viewFilters = view.filters ? { ...view.filters } : {};
-  const currentUserId = authStore.user?._id;
-  
-  // Handle special date filters for events module (upcoming/past)
+
   if (props.moduleKey === 'events') {
     if (view.id === 'upcoming') {
-      // Upcoming: startDateTime >= now
       viewFilters = { startDateTime: new Date().toISOString() };
     } else if (view.id === 'past') {
-      // Past: startDateTime < now
-      // API uses endDateTime to set startDateTime.$lte
-      // Subtract 1 second to ensure we get events strictly before now
       const now = new Date();
       now.setSeconds(now.getSeconds() - 1);
       viewFilters = { endDateTime: now.toISOString() };
     } else if (viewFilters._special) {
-      // Remove special marker if present
       delete viewFilters._special;
     }
   }
-  
-  // Normalize filters using registry function if available
-  const normalizedFilters = moduleConfig.normalizeViewFilters
+
+  const moduleConfig = resolveModuleListConfig(props.moduleKey);
+  return moduleConfig?.normalizeViewFilters
     ? moduleConfig.normalizeViewFilters(viewFilters, currentUserId)
     : viewFilters;
-  
-  // Use handleFiltersUpdate to properly sync filters with ListView and trigger fetch
-  handleFiltersUpdate(normalizedFilters);
+}
+
+// Handle saved views updated (custom views changed)
+const handleSavedViewsUpdated = async (customViews) => {
+  const moduleLabel = listDefinition.value?.title
+    || props.moduleKey.charAt(0).toUpperCase() + props.moduleKey.slice(1);
+  const systemViews = getSystemViews(
+    props.moduleKey,
+    moduleLabel,
+    authStore.user?._id,
+    moduleListConfigOptions.value
+  );
+
+  savedViews.value = [...formatSystemViewsForList(systemViews), ...customViews];
+
+  await persistCustomSavedViews(props.moduleKey, authStore.user?._id, customViews);
+};
+
+// Handle saved view selection
+const handleSavedViewSelected = (view) => {
+  activeSavedViewId.value = view?.id || null;
+
+  if (!view) {
+    handleFiltersUpdate({});
+    return;
+  }
+
+  handleFiltersUpdate(resolveSavedViewFilters(view, authStore.user?._id), { preserveActiveView: true });
 };
 
 const handleSetDefaultView = (viewId) => {
@@ -2277,16 +1927,9 @@ watch(() => [props.moduleKey, props.appKey], () => {
   }
 });
 
-// Persist active saved view to localStorage (modules with registry config)
+// Persist active saved view to localStorage
 watch(() => activeSavedViewId.value, (newValue) => {
-  if (hasModuleListConfig(props.moduleKey)) {
-    const savedViewStorageKey = `arivu-listview-${props.moduleKey}-active-view`;
-    if (newValue) {
-      localStorage.setItem(savedViewStorageKey, newValue);
-    } else {
-      localStorage.removeItem(savedViewStorageKey);
-    }
-  }
+  saveActiveSavedViewId(props.moduleKey, authStore.user?._id, newValue);
 });
 
 // Initial build is handled by auth user watcher (immediate: true) — no duplicate buildList() on mount

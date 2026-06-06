@@ -8,6 +8,7 @@ const { getPeopleFieldQueryPath } = require('../utils/peopleFieldRegistry');
 const { applyProjectionFilter } = require('../utils/appProjectionQuery');
 const { getProjection } = require('../utils/moduleProjectionResolver');
 const { buildOrganizationListMongoQuery } = require('../utils/organizationsListQuery');
+const { applyFilterQueryToMongoQuery } = require('../utils/filterQueryCompiler');
 
 const MODEL_BY_KEY = {
   people: () => require('../models/People'),
@@ -25,7 +26,8 @@ const LIST_QUERY_SKIP_KEYS = new Set([
   'limit',
   'sortBy',
   'sortOrder',
-  'peopleContext'
+  'peopleContext',
+  'filterQuery',
 ]);
 
 async function getTenantUserIds(organizationId) {
@@ -108,7 +110,13 @@ async function buildBaseQuery(moduleKey, organizationId, listQuery, user, appKey
     }
   }
 
-  return applyListFiltersToQuery(query, listQuery, moduleKey);
+  let next = applyListFiltersToQuery(query, listQuery, moduleKey);
+  if (listQuery?.filterQuery) {
+    next = applyFilterQueryToMongoQuery(next, listQuery.filterQuery, moduleKey, {
+      userId: user?._id,
+    });
+  }
+  return next;
 }
 
 /**

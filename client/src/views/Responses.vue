@@ -40,7 +40,6 @@
       :pagination="{ currentPage: pagination.currentPage, totalPages: pagination.totalPages, totalRecords: pagination.totalResponses, limit: pagination.responsesPerPage }"
       :sort-field="sortField"
       :sort-order="sortOrder"
-      :filter-config="filterConfig"
       table-id="responses-table"
       row-key="_id"
       empty-:title="t('forms.hubResponsesEmptyTitle')"
@@ -437,18 +436,15 @@ const columns = [
   { key: 'responseId', label: 'Response ID', sortable: true, minWidth: '120px', visible: true, showInTable: true, visibility: { list: true } },
   { key: 'formName', label: 'Form', sortable: false, minWidth: '200px', visible: true, showInTable: true, visibility: { list: true } },
   { key: 'linkedTo', label: 'Linked To', sortable: false, minWidth: '120px', visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'executionStatus', label: 'Execution Status', sortable: true, minWidth: '140px', visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'reviewStatus', label: 'Review Status', sortable: true, minWidth: '160px', visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'finalScore', label: 'Final Score', sortable: false, minWidth: '120px', visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'submittedBy', label: 'Submitted By', sortable: true, minWidth: '150px', visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'submittedAt', label: 'Submitted At', sortable: true, minWidth: '140px', visible: true, showInTable: true, visibility: { list: true } }
-];
-
-// Filter configuration
-const filterConfig = computed(() => [
   {
     key: 'executionStatus',
     label: 'Execution Status',
+    dataType: 'select',
+    sortable: true,
+    minWidth: '140px',
+    visible: true,
+    showInTable: true,
+    visibility: { list: true },
     options: [
       { value: 'Not Started', label: 'Not Started' },
       { value: 'In Progress', label: 'In Progress' },
@@ -458,6 +454,12 @@ const filterConfig = computed(() => [
   {
     key: 'reviewStatus',
     label: 'Review Status',
+    dataType: 'select',
+    sortable: true,
+    minWidth: '160px',
+    visible: true,
+    showInTable: true,
+    visibility: { list: true },
     options: [
       { value: 'Pending Corrective Action', label: 'Pending Corrective Action' },
       { value: 'Needs Auditor Review', label: 'Needs Auditor Review' },
@@ -466,9 +468,16 @@ const filterConfig = computed(() => [
       { value: 'Closed', label: 'Closed' }
     ]
   },
+  { key: 'finalScore', label: 'Final Score', sortable: false, minWidth: '120px', visible: true, showInTable: true, visibility: { list: true } },
+  { key: 'submittedBy', label: 'Submitted By', dataType: 'user', sortable: true, minWidth: '150px', visible: true, showInTable: true, visibility: { list: true } },
+  { key: 'submittedAt', label: 'Submitted At', dataType: 'date', sortable: true, minWidth: '140px', visible: true, showInTable: true, visibility: { list: true } },
   {
     key: 'linkedToType',
-    label: 'Linked To',
+    label: 'Linked To Type',
+    dataType: 'select',
+    visible: true,
+    showInTable: false,
+    sortable: false,
     options: [
       { value: 'Organization', label: 'Organization' },
       { value: 'Deal', label: 'Deal' },
@@ -478,17 +487,9 @@ const filterConfig = computed(() => [
       { value: 'Contact', label: 'Contact' }
     ]
   },
-  {
-    key: 'fromDate',
-    label: 'From Date',
-    type: 'date'
-  },
-  {
-    key: 'toDate',
-    label: 'To Date',
-    type: 'date'
-  }
-]);
+  { key: 'fromDate', label: 'From Date', dataType: 'date', visible: true, showInTable: false, sortable: false },
+  { key: 'toDate', label: 'To Date', dataType: 'date', visible: true, showInTable: false, sortable: false }
+];
 
 // Methods
 const fetchResponses = async () => {
