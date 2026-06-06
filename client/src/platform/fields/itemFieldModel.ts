@@ -17,21 +17,14 @@
  * 
  * ARCHITECTURAL NOTES:
  * 
- * 1. Items are supporting/secondary entities
- *    - Items are shared across apps but primarily SALES-focused
- *    - Conservative classification: minimal core fields, SALES-scoped business fields
- *    - fieldScope: 'SALES' for business fields indicates SALES app ownership
+ * 1. Items are supporting/secondary catalog entities
+ *    - Items are shared across apps (primarily SALES) but are flat records, not participations
+ *    - All user-facing business fields are core Item fields (owner: 'core', fieldScope: 'CORE')
  * 
- * 2. Core fields are minimal identity fields
- *    - `item_name` (primary identifier)
- *    - `item_code` (identity/sku)
- *    - These are platform-level identity fields
- *    - fieldScope: 'CORE' indicates platform-level ownership
- * 
- * 3. Business fields are SALES-scoped participation fields
- *    - `item_type`, `category`, `description`, `price`, `inventory`, etc.
- *    - These exist primarily for SALES app usage
- *    - owner: 'participation', fieldScope: 'SALES'
+ * 2. Core fields include identity and catalog attributes
+ *    - Identity: `item_name`, `item_code`
+ *    - Catalog: `item_type`, `category`, `description`, `price`, `inventory`, etc.
+ *    - fieldScope: 'CORE' indicates platform-level Item ownership
  * 
  * 4. System fields are infrastructure-scoped
  *    - `createdBy`, `createdAt`, `updatedAt`, `organizationId`, `item_id`, etc.
@@ -245,26 +238,25 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
   
   // ===========================================================================
-  // PARTICIPATION FIELDS (SALES-scoped business fields)
+  // CORE CATALOG FIELDS (business attributes)
   // ===========================================================================
   
   item_type: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'state',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: true,
     filterType: 'select',
     filterPriority: 1,
-    requiredFor: ['SALES'],
   },
   
   /** @deprecated Denormalized label — use categoryId. Kept for list/filter compat. */
   category: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: false,
     isProtected: true,
     filterable: true,
@@ -274,9 +266,9 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
 
   categoryId: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: true,
@@ -285,9 +277,9 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
 
   attributeValues: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: false,
@@ -296,9 +288,9 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   
   /** @deprecated Denormalized sub-label when category has a parent — synced from categoryId. */
   subcategory: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: false,
     isProtected: true,
     filterable: true,
@@ -307,9 +299,9 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
   
   tags: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: true,
@@ -317,27 +309,27 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
   
   description: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: false,
   },
   
   product_image: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: false,
   },
   
   unit_of_measure: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: true,
@@ -345,9 +337,9 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
   
   status: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'state',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: true,
@@ -356,9 +348,9 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
 
   lifecycle_state: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'state',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: true,
@@ -367,9 +359,9 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
   
   cost_price: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'tracking',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: true,
@@ -377,9 +369,9 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
   
   selling_price: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'tracking',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: true,
@@ -388,9 +380,9 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
   
   currency: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'tracking',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: true,
@@ -398,9 +390,9 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
   
   tax_type: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: true,
@@ -408,27 +400,27 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
   
   tax_percentage: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'tracking',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: false,
   },
   
   commission_rate: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'tracking',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: false,
   },
   
   stock_quantity: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'tracking',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: false,
@@ -437,9 +429,9 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
 
   reorder_level: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'tracking',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: false,
     isProtected: false,
     filterable: false,
@@ -447,27 +439,27 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
   
   serial_numbers: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: false,
   },
   
   warranty_period_months: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: false,
   },
   
   vendor: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
     isProtected: false,
     filterable: true,
@@ -475,50 +467,51 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   },
   
   linked_deals: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: false,
     isProtected: false,
     filterable: false,
   },
   
   linked_invoices: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: false,
     isProtected: false,
     filterable: false,
   },
   
   linked_forms: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: false,
     isProtected: false,
     filterable: false,
   },
   
   linked_contacts: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: false,
     isProtected: false,
     filterable: false,
   },
   
-  // NOTE: customFields is a transitional container.
-  // Long-term, custom fields should become first-class metadata entries.
+  // Storage bucket for tenant-defined custom field values — not a configurable field.
   customFields: {
-    owner: 'participation',
-    intent: 'detail',
-    fieldScope: 'SALES',
-    editable: true,
-    isProtected: false,
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isProtected: true,
     filterable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
   },
 };
 
@@ -535,14 +528,14 @@ function validateItemFieldMetadata(fieldName: string, metadata: ItemFieldMetadat
   const { owner, intent } = metadata;
   
   // Core fields must have valid intents
-  const validCoreIntents = ['primary', 'identity', 'detail'];
+  const validCoreIntents = ['primary', 'identity', 'state', 'detail', 'tracking'];
   if (owner === 'core' && !validCoreIntents.includes(intent)) {
     throw new Error(
       `Field "${fieldName}": Item core fields must have intent: ${validCoreIntents.join(' | ')}. Found: ${intent}`
     );
   }
   
-  // Participation fields must have valid intents
+  // Participation fields must have valid intents (Items do not use participation fields)
   const validParticipationIntents = ['state', 'detail', 'tracking'];
   if (owner === 'participation' && !validParticipationIntents.includes(intent)) {
     throw new Error(

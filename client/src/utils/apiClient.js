@@ -52,10 +52,19 @@ function authSessionKey(authStore) {
     return `${user._id || ''}:${orgId}`;
 }
 
+function serializeQueryParamValue(value) {
+    if (value === null) return 'null';
+    return value;
+}
+
 function normalizeParams(params = {}) {
-    const entries = Object.entries(params || {}).filter(([, value]) => value !== undefined && value !== null);
+    const entries = Object.entries(params || {}).filter(([, value]) => value !== undefined);
     if (!entries.length) return '';
-    return new URLSearchParams(entries.sort(([a], [b]) => a.localeCompare(b))).toString();
+    return new URLSearchParams(
+        entries
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([key, value]) => [key, serializeQueryParamValue(value)])
+    ).toString();
 }
 
 function getPathWithSearch(fullUrl) {

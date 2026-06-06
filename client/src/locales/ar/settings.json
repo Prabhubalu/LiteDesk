@@ -4227,10 +4227,6 @@
     "message": "Field Validation",
     "description": "Field editor sub-tab"
   },
-  "modFieldsSubTabFilters": {
-    "message": "Filter Settings",
-    "description": "Field editor sub-tab"
-  },
   "modFieldsSubTabDependencies": {
     "message": "Dependencies",
     "description": "Field editor sub-tab"
@@ -4794,54 +4790,6 @@
   "modFieldsAddCustomValidation": {
     "message": "Add custom validation",
     "description": "Add custom validation button"
-  },
-  "modFieldsFilterSystemUnavailable": {
-    "message": "Filter settings are not available for system fields.",
-    "description": "System filter unavailable"
-  },
-  "modFieldsFilterableHint": {
-    "message": "Filterable fields appear in list filters and saved views.",
-    "description": "Filterable hint"
-  },
-  "modFieldsFilterCoreField": {
-    "message": "Core Field: Filter Type is read-only and locked to schema default.",
-    "description": "Core filter hint"
-  },
-  "modFieldsFilterAppOwned": {
-    "message": "App-Owned Field: Fully editable.",
-    "description": "App-owned filter hint"
-  },
-  "modFieldsEnableFilter": {
-    "message": "Enable as filter",
-    "description": "Enable filter toggle"
-  },
-  "modFieldsEnableFilterHelp": {
-    "message": "Allow this field to be used as a filter in list views",
-    "description": "Enable filter help"
-  },
-  "modFieldsFilterType": {
-    "message": "Filter type",
-    "description": "Filter type label"
-  },
-  "modFieldsSelectFilterTypePh": {
-    "message": "Select filter type...",
-    "description": "Select filter type placeholder"
-  },
-  "modFieldsFilterTypeHelp": {
-    "message": "Filter type is determined by the field's data type",
-    "description": "Filter type help"
-  },
-  "modFieldsFilterPriority": {
-    "message": "Filter priority",
-    "description": "Filter priority label"
-  },
-  "modFieldsFilterPriorityPh": {
-    "message": "Auto-assign",
-    "description": "Filter priority placeholder"
-  },
-  "modFieldsFilterPriorityHelp": {
-    "message": "Lower number = higher priority. Default visible filters are top 3 by priority.",
-    "description": "Filter priority help"
   },
   "modFieldsFieldRules": {
     "message": "Field Rules",

@@ -36,11 +36,11 @@ export function normalizeFiltersForAPI(
     // Normalize based on filterType
     switch (filterType) {
       case 'user':
-        // Convert 'me' to userId, 'unassigned' to null
+        // Convert 'me' to userId; use literal 'null' for unassigned (survives query serialization)
         if (value === 'me' && currentUserId) {
           normalized[key] = currentUserId;
         } else if (value === 'unassigned') {
-          normalized[key] = null;
+          normalized[key] = 'null';
         }
         break;
 

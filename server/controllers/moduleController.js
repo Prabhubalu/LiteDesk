@@ -1,7 +1,7 @@
 const ModuleDefinition = require('../models/ModuleDefinition');
 const RelationshipDefinition = require('../models/RelationshipDefinition');
 const relationshipRegistry = require('../utils/relationshipRegistry');
-const { getOutgoingRelationships } = require('../utils/relationshipRegistry');
+const { getOutgoingRelationships, getIncomingRelationships } = require('../utils/relationshipRegistry');
 const { filterFieldsByReadAccess, filterFieldsByWriteAccess, validateFieldWrite } = require('../utils/fieldAccessControl');
 const {
     normalizePeopleModuleFields,
@@ -111,6 +111,19 @@ async function ensurePlatformRelationshipDefinition({
     );
 
     return true;
+}
+
+function relationshipMatchesModule(def, sourceAppKey, sourceModuleKey, targetModuleKey) {
+    if (!def) return false;
+    const outgoingMatch =
+        def.source.appKey === sourceAppKey &&
+        def.source.moduleKey === sourceModuleKey &&
+        def.target.moduleKey === targetModuleKey;
+    const incomingMatch =
+        def.target.appKey === sourceAppKey &&
+        def.target.moduleKey === sourceModuleKey &&
+        def.source.moduleKey === targetModuleKey;
+    return outgoingMatch || incomingMatch;
 }
 
 /** Canonical key for field dedup: lowercase, trim, strip spaces and hyphens (so "deleted-by", "deletedBy", "Deleted By" all match) */
@@ -3860,6 +3873,7 @@ exports.updateModule = async (req, res) => {
                 return String(raw).toLowerCase().trim();
             };
             const outgoing = await getOutgoingRelationships(sourceAppKey, sourceModuleKey);
+            const incoming = getIncomingRelationships(sourceAppKey, sourceModuleKey);
             let createdDefinitions = false;
             for (const r of newRelationships) {
                 const targetKey = toTargetKey(r);
@@ -3868,6 +3882,13 @@ exports.updateModule = async (req, res) => {
                     const matches = outgoing.filter((def) => def.target && (String(def.target.moduleKey || '').toLowerCase() === targetKey));
                     if (matches.length === 1) {
                         r.relationshipKey = matches[0].relationshipKey;
+                        continue;
+                    }
+                    const incomingMatches = (incoming || []).filter(
+                        (def) => def.source && (String(def.source.moduleKey || '').toLowerCase() === targetKey)
+                    );
+                    if (incomingMatches.length === 1) {
+                        r.relationshipKey = incomingMatches[0].relationshipKey;
                         continue;
                     }
                     const generatedKey = currentKey || `${sourceModuleKey}_${targetKey}`.replace(/[^a-z0-9_]/g, '_');
@@ -3897,14 +3918,11 @@ exports.updateModule = async (req, res) => {
                     invalidKeys: invalidUnique
                 });
             }
-            // Verify each relationship's source matches this module and target matches the relationship's targetModuleKey
+            // Verify each relationship matches this module (outgoing or incoming perspective)
             const mismatch = newRelationships.findIndex((r) => {
                 const def = relationshipRegistry.get(r.relationshipKey);
-                if (!def) return true;
                 const targetModuleKey = toTargetKey(r);
-                const sourceMatch = def.source.appKey === sourceAppKey && def.source.moduleKey === sourceModuleKey;
-                const targetMatch = def.target.moduleKey === targetModuleKey;
-                return !sourceMatch || !targetMatch;
+                return !relationshipMatchesModule(def, sourceAppKey, sourceModuleKey, targetModuleKey);
             });
             if (mismatch !== -1) {
                 const r = newRelationships[mismatch];
@@ -4286,6 +4304,7 @@ exports.updateSystemModule = async (req, res) => {
                 return String(raw).toLowerCase().trim();
             };
             const outgoing = await getOutgoingRelationships(sourceAppKey, sourceModuleKey);
+            const incoming = getIncomingRelationships(sourceAppKey, sourceModuleKey);
             let createdDefinitions = false;
             for (const r of newRelationships) {
                 const targetKey = toTargetKey(r);
@@ -4294,6 +4313,13 @@ exports.updateSystemModule = async (req, res) => {
                     const matches = outgoing.filter((def) => def.target && (String(def.target.moduleKey || '').toLowerCase() === targetKey));
                     if (matches.length === 1) {
                         r.relationshipKey = matches[0].relationshipKey;
+                        continue;
+                    }
+                    const incomingMatches = (incoming || []).filter(
+                        (def) => def.source && (String(def.source.moduleKey || '').toLowerCase() === targetKey)
+                    );
+                    if (incomingMatches.length === 1) {
+                        r.relationshipKey = incomingMatches[0].relationshipKey;
                         continue;
                     }
                     const generatedKey = relKey || `${sourceModuleKey}_${targetKey}`.replace(/[^a-z0-9_]/g, '_');
@@ -4325,11 +4351,8 @@ exports.updateSystemModule = async (req, res) => {
             }
             const mismatch = newRelationships.findIndex((r) => {
                 const def = relationshipRegistry.get(r.relationshipKey);
-                if (!def) return true;
                 const targetModuleKey = toTargetKey(r);
-                const sourceMatch = def.source.appKey === sourceAppKey && def.source.moduleKey === sourceModuleKey;
-                const targetMatch = def.target.moduleKey === targetModuleKey;
-                return !sourceMatch || !targetMatch;
+                return !relationshipMatchesModule(def, sourceAppKey, sourceModuleKey, targetModuleKey);
             });
             if (mismatch !== -1) {
                 const r = newRelationships[mismatch];

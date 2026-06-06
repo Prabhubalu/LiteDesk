@@ -1,14 +1,27 @@
 <template>
   <div class="relative">
-    <Popover class="relative">
+    <Popover v-slot="{ open }" class="relative">
+      <span v-show="false" aria-hidden="true">{{ syncOpenState(open) }}</span>
       <PopoverButton
+        ref="buttonRef"
         :class="buttonClass"
         class="cursor-pointer relative w-full text-left leading-none"
+        @click="onButtonClick"
       >
-        <span class="block truncate pr-6">
-          {{ displayLabel || (filterLabel ? t('common.filterAllNamed', { label: filterLabel }) : t('common.filterAll')) }}
+        <span
+          class="block truncate font-normal"
+          :class="[
+            placeholderOverride && !displayLabel
+              ? 'pr-0 text-gray-400 dark:text-gray-500'
+              : 'pr-6 text-gray-900 dark:text-gray-100'
+          ]"
+        >
+          {{ displayLabel || placeholderOverride || filterAllLabel }}
         </span>
-        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+        <span
+          v-if="!placeholderOverride"
+          class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"
+        >
           <ChevronUpDownIcon class="h-4 w-4 text-gray-400" aria-hidden="true" />
         </span>
       </PopoverButton>
@@ -21,11 +34,14 @@
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <PopoverPanel
-          ref="panelRef"
-          :class="optionsClass"
-          style="z-index: 9999;"
-        >
+        <Teleport to="body" :disabled="!teleportOptions">
+          <PopoverPanel
+            v-if="!teleportOptions || open"
+            ref="panelRef"
+            :class="optionsClass"
+            :style="teleportOptions ? teleportMenuStyle : { zIndex: '9999' }"
+            @vue:before-mount="syncTeleportPosition"
+          >
           <!-- Option list -->
           <button
             type="button"
@@ -36,7 +52,7 @@
             @click="onSelectOption(null)"
           >
             <span :class="[!selectedOption ? 'font-medium' : 'font-normal', 'block truncate']">
-              {{ filterLabel ? t('common.filterAllNamed', { label: filterLabel }) : t('common.filterAll') }}
+              {{ filterAllLabel }}
             </span>
             <span
               v-if="!selectedOption"
@@ -120,17 +136,19 @@
               </div>
             </div>
           </div>
-        </PopoverPanel>
+          </PopoverPanel>
+        </Teleport>
       </Transition>
     </Popover>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
+import { resolveFilterAllLabel } from '@/platform/filters/filterAllLabelResolver';
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue';
 import { ChevronUpDownIcon, CheckIcon } from '@heroicons/vue/24/outline';
 import {
@@ -145,6 +163,10 @@ const props = defineProps({
     type: [Object, String],
     default: null
   },
+  filterKey: {
+    type: String,
+    default: ''
+  },
   filterLabel: {
     type: String,
     default: ''
@@ -156,10 +178,93 @@ const props = defineProps({
   optionsClass: {
     type: String,
     default: 'absolute mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm min-w-[200px]'
+  },
+  placeholderOverride: {
+    type: String,
+    default: ''
+  },
+  teleportOptions: {
+    type: Boolean,
+    default: false
   }
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'opened']);
+
+const filterAllLabel = computed(() => {
+  if (!props.filterKey && !props.filterLabel) {
+    return t('common.filterAll');
+  }
+  return resolveFilterAllLabel(
+    { key: props.filterKey || props.filterLabel, label: props.filterLabel },
+    t,
+    'common.filterAllNamed'
+  );
+});
+
+const buttonRef = ref(null);
+const teleportMenuStyle = ref({});
+const popoverOpen = ref(false);
+let viewportListenersBound = false;
+
+function getButtonElement() {
+  const raw = buttonRef.value;
+  if (!raw) return null;
+  return raw.$el ?? raw;
+}
+
+function syncTeleportPosition() {
+  if (!props.teleportOptions) return;
+  const el = getButtonElement();
+  if (!el?.getBoundingClientRect) return;
+  const rect = el.getBoundingClientRect();
+  teleportMenuStyle.value = {
+    top: `${rect.bottom + 4}px`,
+    left: `${rect.left}px`,
+    width: `${Math.max(rect.width, 256)}px`,
+  };
+}
+
+function syncOpenState(open) {
+  popoverOpen.value = open;
+  return '';
+}
+
+function onButtonClick() {
+  syncTeleportPosition();
+  emit('opened');
+}
+
+function onViewportChange() {
+  if (props.teleportOptions && popoverOpen.value) syncTeleportPosition();
+}
+
+function bindViewportListeners() {
+  if (viewportListenersBound) return;
+  viewportListenersBound = true;
+  window.addEventListener('scroll', onViewportChange, true);
+  window.addEventListener('resize', onViewportChange);
+}
+
+function unbindViewportListeners() {
+  if (!viewportListenersBound) return;
+  viewportListenersBound = false;
+  window.removeEventListener('scroll', onViewportChange, true);
+  window.removeEventListener('resize', onViewportChange);
+}
+
+watch([popoverOpen, () => props.teleportOptions], ([open, teleport]) => {
+  if (open && teleport) {
+    bindViewportListeners();
+    syncTeleportPosition();
+  } else {
+    unbindViewportListeners();
+  }
+});
+
+onBeforeUnmount(() => {
+  unbindViewportListeners();
+});
 
 const parsed = computed(() => parseDateFilterValue(props.modelValue));
 const displayLabel = computed(() => getDateFilterLabel(parsed.value));

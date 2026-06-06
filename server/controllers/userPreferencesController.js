@@ -144,3 +144,80 @@ exports.getMetricsConfig = async (req, res) => {
     }
 };
 
+// --- Save custom list saved views for a module ---
+exports.saveListSavedViews = async (req, res) => {
+    try {
+        const { moduleKey, views } = req.body;
+        const { organizationId, _id: userId } = req.user;
+
+        if (!moduleKey || !Array.isArray(views)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields: moduleKey, views'
+            });
+        }
+
+        let preferences = await UserPreferences.findOne({ organizationId, userId });
+        if (!preferences) {
+            preferences = await UserPreferences.create({
+                organizationId,
+                userId,
+                widgetLayouts: new Map(),
+                metricsConfigs: new Map(),
+                listSavedViews: new Map()
+            });
+        }
+
+        if (!preferences.listSavedViews) {
+            preferences.listSavedViews = new Map();
+        }
+
+        preferences.listSavedViews.set(String(moduleKey), views);
+        await preferences.save();
+
+        res.json({
+            success: true,
+            message: 'List saved views stored successfully',
+            data: views
+        });
+    } catch (error) {
+        console.error('Save list saved views error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error saving list saved views'
+        });
+    }
+};
+
+// --- Get custom list saved views for a module ---
+exports.getListSavedViews = async (req, res) => {
+    try {
+        const { moduleKey } = req.query;
+        const { organizationId, _id: userId } = req.user;
+
+        if (!moduleKey) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required field: moduleKey'
+            });
+        }
+
+        const preferences = await UserPreferences.findOne({ organizationId, userId });
+        if (!preferences?.listSavedViews) {
+            return res.json({ success: true, data: [] });
+        }
+
+        const views = preferences.listSavedViews.get(String(moduleKey)) || [];
+        res.json({
+            success: true,
+            data: Array.isArray(views) ? views : []
+        });
+    } catch (error) {
+        console.error('Get list saved views error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error fetching list saved views'
+        });
+    }
+};
+

@@ -12,6 +12,7 @@
  * - Return limited results per module (5-10)
  * - Fast response time (<200ms target)
  * - Case-insensitive search
+ * - Prefix matches rank above substring matches
  * 
  * ============================================================================
  */
@@ -41,6 +42,15 @@ try {
   console.warn('[SearchService] Item model not available:', error.message);
 }
 
+const {
+  buildContainsRegex,
+  buildSearchOrConditions,
+  rankAndLimit
+} = require('../utils/searchRelevance');
+
+const OVER_FETCH_MULTIPLIER = 5;
+const MIN_OVER_FETCH = 25;
+
 class SearchService {
   /**
    * Search across all enabled modules
@@ -51,26 +61,27 @@ class SearchService {
    */
   async searchAll(organizationId, query, options = {}) {
     const limit = options.limitPerModule || 5;
-    const searchRegex = new RegExp(query, 'i');
+    const searchRegex = buildContainsRegex(query);
+    const fetchLimit = Math.max(limit * OVER_FETCH_MULTIPLIER, MIN_OVER_FETCH);
     
     // Build search promises array (only include available models)
     const searchPromises = [
-      this.searchPeople(organizationId, searchRegex, limit),
-      this.searchOrganizations(organizationId, searchRegex, limit),
-      this.searchDeals(organizationId, searchRegex, limit),
-      this.searchTasks(organizationId, searchRegex, limit),
-      this.searchEvents(organizationId, searchRegex, limit)
+      this.searchPeople(organizationId, query, searchRegex, limit, fetchLimit),
+      this.searchOrganizations(organizationId, query, searchRegex, limit, fetchLimit),
+      this.searchDeals(organizationId, query, searchRegex, limit, fetchLimit),
+      this.searchTasks(organizationId, query, searchRegex, limit, fetchLimit),
+      this.searchEvents(organizationId, query, searchRegex, limit, fetchLimit)
     ];
     
     // Add optional models if available
     if (Form) {
-      searchPromises.push(this.searchForms(organizationId, searchRegex, limit));
+      searchPromises.push(this.searchForms(organizationId, query, searchRegex, limit, fetchLimit));
     } else {
       searchPromises.push(Promise.resolve([]));
     }
     
     if (Item) {
-      searchPromises.push(this.searchItems(organizationId, searchRegex, limit));
+      searchPromises.push(this.searchItems(organizationId, query, searchRegex, limit, fetchLimit));
     } else {
       searchPromises.push(Promise.resolve([]));
     }
@@ -105,23 +116,29 @@ class SearchService {
   /**
    * Search People/Contacts
    */
-  async searchPeople(organizationId, searchRegex, limit) {
+  async searchPeople(organizationId, query, searchRegex, limit, fetchLimit) {
     try {
       const results = await People.find({
         organizationId,
-        $or: [
-          { first_name: searchRegex },
-          { last_name: searchRegex },
-          { email: searchRegex },
-          { company: searchRegex },
-          { phone: searchRegex }
-        ]
+        $or: buildSearchOrConditions(query, ['first_name', 'last_name', 'email', 'company', 'phone'])
       })
       .select('first_name last_name email company phone avatar')
-      .limit(limit)
+      .limit(fetchLimit)
       .lean();
 
-      return results.map(person => ({
+      const ranked = rankAndLimit(results, query, [
+        { getValue: (person) => person.first_name, primary: true },
+        { getValue: (person) => person.last_name, primary: true },
+        {
+          getValue: (person) => `${person.first_name || ''} ${person.last_name || ''}`.trim(),
+          primary: true
+        },
+        { getValue: (person) => person.email, primary: false },
+        { getValue: (person) => person.company, primary: false },
+        { getValue: (person) => person.phone, primary: false }
+      ], limit);
+
+      return ranked.map(person => ({
         id: person._id,
         type: 'people',
         title: `${person.first_name || ''} ${person.last_name || ''}`.trim() || person.email,
@@ -142,7 +159,7 @@ class SearchService {
    * Note: CRM organizations are filtered by createdBy (users from tenant), not organizationId
    * This matches the pattern used in organizationV2Controller.list()
    */
-  async searchOrganizations(organizationId, searchRegex, limit) {
+  async searchOrganizations(organizationId, query, searchRegex, limit, fetchLimit) {
     try {
       const User = require('../models/User');
       
@@ -159,25 +176,27 @@ class SearchService {
 
       // Build query matching organizationV2Controller.list() pattern
       // CRM organizations created by users from this tenant organization
-      const query = {
+      const mongoQuery = {
         isTenant: false, // Only CRM organizations
         createdBy: { $in: userIds }, // Only orgs created by users from this tenant
-        $or: [
-          { name: searchRegex },
-          { email: searchRegex },
-          { website: searchRegex },
-          { industry: searchRegex }
-        ]
+        $or: buildSearchOrConditions(query, ['name', 'email', 'website', 'industry'])
       };
 
-      const results = await Organization.find(query)
+      const results = await Organization.find(mongoQuery)
         .select('name email website industry avatar logo image')
-        .limit(limit)
+        .limit(fetchLimit)
         .lean();
 
-      console.log(`[SearchService] Found ${results.length} organizations matching "${searchRegex}" for tenant ${organizationId}`);
+      console.log(`[SearchService] Found ${results.length} organizations matching "${query}" for tenant ${organizationId}`);
 
-      return results.map(org => ({
+      const ranked = rankAndLimit(results, query, [
+        { getValue: (org) => org.name, primary: true },
+        { getValue: (org) => org.email, primary: false },
+        { getValue: (org) => org.website, primary: false },
+        { getValue: (org) => org.industry, primary: false }
+      ], limit);
+
+      return ranked.map(org => ({
         id: org._id,
         type: 'organizations',
         title: org.name,
@@ -194,21 +213,23 @@ class SearchService {
   /**
    * Search Deals
    */
-  async searchDeals(organizationId, searchRegex, limit) {
+  async searchDeals(organizationId, query, searchRegex, limit, fetchLimit) {
     try {
       const results = await Deal.find({
         organizationId,
-        $or: [
-          { name: searchRegex },
-          { description: searchRegex },
-          { stage: searchRegex }
-        ]
+        $or: buildSearchOrConditions(query, ['name', 'description', 'stage'])
       })
       .select('name description stage value currency')
-      .limit(limit)
+      .limit(fetchLimit)
       .lean();
 
-      return results.map(deal => ({
+      const ranked = rankAndLimit(results, query, [
+        { getValue: (deal) => deal.name, primary: true },
+        { getValue: (deal) => deal.description, primary: false },
+        { getValue: (deal) => deal.stage, primary: false }
+      ], limit);
+
+      return ranked.map(deal => ({
         id: deal._id,
         type: 'deals',
         title: deal.name,
@@ -224,20 +245,22 @@ class SearchService {
   /**
    * Search Tasks
    */
-  async searchTasks(organizationId, searchRegex, limit) {
+  async searchTasks(organizationId, query, searchRegex, limit, fetchLimit) {
     try {
       const results = await Task.find({
         organizationId,
-        $or: [
-          { title: searchRegex },
-          { description: searchRegex }
-        ]
+        $or: buildSearchOrConditions(query, ['title', 'description'])
       })
       .select('title description status priority')
-      .limit(limit)
+      .limit(fetchLimit)
       .lean();
 
-      return results.map(task => ({
+      const ranked = rankAndLimit(results, query, [
+        { getValue: (task) => task.title, primary: true },
+        { getValue: (task) => task.description, primary: false }
+      ], limit);
+
+      return ranked.map(task => ({
         id: task._id,
         type: 'tasks',
         title: task.title,
@@ -253,24 +276,25 @@ class SearchService {
   /**
    * Search Events
    */
-  async searchEvents(organizationId, searchRegex, limit) {
+  async searchEvents(organizationId, query, searchRegex, limit, fetchLimit) {
     try {
       const results = await Event.find({
         organizationId,
-        $or: [
-          { eventName: searchRegex }, // Events use 'eventName', not 'title'
-          { notes: searchRegex }, // Events have 'notes' field
-          { location: searchRegex }, // Events have 'location' field
-          { eventType: searchRegex } // Events use 'eventType', not 'type'
-        ]
+        $or: buildSearchOrConditions(query, ['eventName', 'notes', 'location', 'eventType'])
       })
       .select('eventName eventType notes location startDateTime endDateTime')
-      .limit(limit)
+      .limit(fetchLimit)
       .lean();
 
-      console.log(`[SearchService] Found ${results.length} events matching "${searchRegex}" for tenant ${organizationId}`);
+      const ranked = rankAndLimit(results, query, [
+        { getValue: (event) => event.eventName, primary: true },
+        { getValue: (event) => event.location, primary: false },
+        { getValue: (event) => event.eventType, primary: false }
+      ], limit);
 
-      return results.map(event => ({
+      console.log(`[SearchService] Found ${results.length} events matching "${query}" for tenant ${organizationId}`);
+
+      return ranked.map(event => ({
         id: event._id,
         type: 'events',
         title: event.eventName, // Map eventName to title for display
@@ -286,24 +310,25 @@ class SearchService {
   /**
    * Search Forms
    */
-  async searchForms(organizationId, searchRegex, limit) {
+  async searchForms(organizationId, query, searchRegex, limit, fetchLimit) {
     if (!Form) {
       return [];
     }
     try {
-      // Form model uses 'name' and 'description' fields
       const results = await Form.find({
         organizationId,
-        $or: [
-          { name: searchRegex },
-          { description: searchRegex }
-        ]
+        $or: buildSearchOrConditions(query, ['name', 'description'])
       })
       .select('name description')
-      .limit(limit)
+      .limit(fetchLimit)
       .lean();
 
-      return results.map(form => ({
+      const ranked = rankAndLimit(results, query, [
+        { getValue: (form) => form.name, primary: true },
+        { getValue: (form) => form.description, primary: false }
+      ], limit);
+
+      return ranked.map(form => ({
         id: form._id,
         type: 'forms',
         title: form.name || 'Form',
@@ -319,25 +344,26 @@ class SearchService {
   /**
    * Search Items
    */
-  async searchItems(organizationId, searchRegex, limit) {
+  async searchItems(organizationId, query, searchRegex, limit, fetchLimit) {
     if (!Item) {
       return [];
     }
     try {
-      // Item model uses 'item_name' and 'description' fields
       const results = await Item.find({
         organizationId,
-        $or: [
-          { item_name: searchRegex },
-          { description: searchRegex },
-          { item_code: searchRegex }
-        ]
+        $or: buildSearchOrConditions(query, ['item_name', 'description', 'item_code'])
       })
       .select('item_name description item_code')
-      .limit(limit)
+      .limit(fetchLimit)
       .lean();
 
-      return results.map(item => ({
+      const ranked = rankAndLimit(results, query, [
+        { getValue: (item) => item.item_name, primary: true },
+        { getValue: (item) => item.item_code, primary: false },
+        { getValue: (item) => item.description, primary: false }
+      ], limit);
+
+      return ranked.map(item => ({
         id: item._id,
         type: 'items',
         title: item.item_name || 'Item',
@@ -352,4 +378,3 @@ class SearchService {
 }
 
 module.exports = new SearchService();
-

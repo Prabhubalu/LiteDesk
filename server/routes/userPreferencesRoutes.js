@@ -10,7 +10,9 @@ const {
     saveWidgetLayout,
     getWidgetLayout,
     saveMetricsConfig,
-    getMetricsConfig
+    getMetricsConfig,
+    saveListSavedViews,
+    getListSavedViews
 } = require('../controllers/userPreferencesController');
 
 // Apply auth and organization middleware to all routes
@@ -28,6 +30,10 @@ router.get('/widget-layout', getWidgetLayout);
 // Metrics Config Routes
 router.post('/metrics-config', saveMetricsConfig);
 router.get('/metrics-config', getMetricsConfig);
+
+// List saved views (custom views per module)
+router.post('/list-saved-views', saveListSavedViews);
+router.get('/list-saved-views', getListSavedViews);
 
 module.exports = router;
 

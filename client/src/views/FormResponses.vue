@@ -13,7 +13,6 @@
       :pagination="{ currentPage: pagination.currentPage, totalPages: pagination.totalPages, totalRecords: pagination.totalResponses, limit: pagination.responsesPerPage }"
       :sort-field="sortField"
       :sort-order="sortOrder"
-      :filter-config="filterConfig"
       table-id="form-responses-table"
       row-key="_id"
       :empty-title="t('forms.hubResponsesEmptyTitle')"
@@ -297,19 +296,13 @@ const statsConfig = computed(() => [
 ]);
 
 const columns = computed(() => [
-  { key: 'submittedAt', label: t('forms.hubColSubmitted'), sortable: true },
-  { key: 'submittedBy', label: t('forms.hubColSubmittedBy'), sortable: true },
-  { key: 'executionStatus', label: t('forms.hubColExecution'), sortable: true },
-  { key: 'reviewStatus', label: t('forms.hubColReview'), sortable: true },
-  { key: 'score', label: t('forms.hubColScore'), sortable: false },
-  { key: 'kpis', label: t('forms.hubColKpis'), sortable: false },
-  { key: 'linkedTo', label: t('forms.hubColLinkedTo'), sortable: false }
-]);
-
-const filterConfig = computed(() => [
+  { key: 'submittedAt', label: t('forms.hubColSubmitted'), dataType: 'date', sortable: true },
+  { key: 'submittedBy', label: t('forms.hubColSubmittedBy'), dataType: 'user', sortable: true },
   {
     key: 'executionStatus',
-    label: t('forms.hubFilterExecutionStatus'),
+    label: t('forms.hubColExecution'),
+    dataType: 'select',
+    sortable: true,
     options: [
       { value: 'Not Started', label: t('forms.hubExecutionNotStarted') },
       { value: 'In Progress', label: t('forms.hubExecutionInProgress') },
@@ -318,7 +311,9 @@ const filterConfig = computed(() => [
   },
   {
     key: 'reviewStatus',
-    label: t('forms.hubFilterReviewStatus'),
+    label: t('forms.hubColReview'),
+    dataType: 'select',
+    sortable: true,
     options: [
       { value: 'Pending Corrective Action', label: t('forms.hubReviewPendingCorrective') },
       { value: 'Needs Auditor Review', label: t('forms.hubReviewNeedsAuditor') },
@@ -327,9 +322,16 @@ const filterConfig = computed(() => [
       { value: 'Closed', label: t('forms.hubReviewClosed') }
     ]
   },
+  { key: 'score', label: t('forms.hubColScore'), sortable: false },
+  { key: 'kpis', label: t('forms.hubColKpis'), sortable: false },
+  { key: 'linkedTo', label: t('forms.hubColLinkedTo'), sortable: false },
   {
     key: 'linkedToType',
     label: t('forms.hubColLinkedTo'),
+    dataType: 'select',
+    visible: true,
+    showInTable: false,
+    sortable: false,
     options: [
       { value: 'Organization', label: t('forms.settingsLinkOrganization') },
       { value: 'Deal', label: t('forms.settingsLinkDeal') },
@@ -339,16 +341,8 @@ const filterConfig = computed(() => [
       { value: 'Contact', label: t('forms.hubLinkedContact') }
     ]
   },
-  {
-    key: 'fromDate',
-    label: t('forms.hubFilterFromDate'),
-    type: 'date'
-  },
-  {
-    key: 'toDate',
-    label: t('forms.hubFilterToDate'),
-    type: 'date'
-  }
+  { key: 'fromDate', label: t('forms.hubFilterFromDate'), dataType: 'date', visible: true, showInTable: false, sortable: false },
+  { key: 'toDate', label: t('forms.hubFilterToDate'), dataType: 'date', visible: true, showInTable: false, sortable: false }
 ]);
 
 // Methods

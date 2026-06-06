@@ -133,6 +133,7 @@ import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } fro
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
+import { getRecordLabel } from '@/utils/recordDisplay';
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
@@ -238,9 +239,7 @@ watch(() => props.isOpen, (open) => {
   }
 });
 
-const getDisplayName = (item) => {
-  return item.name || item.title || `${item.firstName || ''} ${item.lastName || ''}`.trim() || item.email || item._id;
-};
+const getDisplayName = (item) => getRecordLabel(item);
 
 const getSecondaryText = (item) => {
   return item.email || item.status || '';

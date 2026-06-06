@@ -618,13 +618,10 @@ const getTasks = async (req, res) => {
       query.status = { $nin: ['completed', 'cancelled'] };
     }
 
-    // Search
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { tags: { $regex: search, $options: 'i' } }
-      ];
+    const searchTerm = search ? String(search).trim() : '';
+    if (searchTerm) {
+      const { buildSearchOrConditions } = require('../utils/searchRelevance');
+      query.$or = buildSearchOrConditions(searchTerm, ['title', 'description', 'tags']);
     }
 
     // Phase 2A.2: Apply projection filter (read-time filtering only)
@@ -640,6 +637,9 @@ const getTasks = async (req, res) => {
       projectionMeta
     });
 
+    const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
+    query = applyListFilterQueryParam(query, req.query, 'tasks', { userId: req.user?._id });
+
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.min(Math.max(1, parseInt(limit, 10) || 20), 100);
     const skip = (pageNum - 1) * limitNum;
@@ -648,16 +648,35 @@ const getTasks = async (req, res) => {
     const sortObject = {};
     sortObject[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
+    const taskPopulate = [
+      { path: 'assignedTo', select: 'firstName lastName email avatar' },
+      { path: 'assignedBy', select: 'firstName lastName' },
+      { path: 'createdBy', select: 'firstName lastName' }
+    ];
+    const { fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+    const tasksPromise = isSearchActive(searchTerm)
+      ? fetchRankedSearchPage(Task, {
+          matchQuery: query,
+          searchTerm,
+          fieldSpecs: SEARCH_FIELD_PRESETS.tasks,
+          skip,
+          limit: limitNum,
+          fallbackSort: sortObject,
+          populate: taskPopulate,
+          lean: true
+        })
+      : Task.find(query)
+          .populate('assignedTo', 'firstName lastName email avatar')
+          .populate('assignedBy', 'firstName lastName')
+          .populate('createdBy', 'firstName lastName')
+          .sort(sortObject)
+          .limit(limitNum)
+          .skip(skip)
+          .lean();
+
     // Execute query and count concurrently for faster response.
     const [tasks, total] = await Promise.all([
-      Task.find(query)
-        .populate('assignedTo', 'firstName lastName email avatar')
-        .populate('assignedBy', 'firstName lastName')
-        .populate('createdBy', 'firstName lastName')
-        .sort(sortObject)
-        .limit(limitNum)
-        .skip(skip)
-        .lean(),
+      tasksPromise,
       Task.countDocuments(query)
     ]);
 

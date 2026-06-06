@@ -905,8 +905,8 @@
         </ModulesAndFields>
       </div>
 
-      <!-- Items / Quotes: field configuration via ModulesAndFields -->
-      <div v-else-if="isItemsModule || isQuotesModule || isSalesOrdersModule" class="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <!-- Items / Quotes / Invoices / Payments: field configuration via ModulesAndFields -->
+      <div v-else-if="isItemsModule || isQuotesModule || isSalesOrdersModule || isInvoicesModule || isPaymentsModule" class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Status & Types, Relationships, Quick Create) -->
         <ModulesAndFields
           class="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -1055,7 +1055,7 @@
         </ModulesAndFields>
       </div>
 
-      <!-- Standard Module Detail View (for non-People, non-Organizations, non-Tasks, non-Events, non-Forms, non-Items, non-Quotes modules) -->
+      <!-- Standard Module Detail View (for modules without ModulesAndFields integration) -->
       <div v-else class="space-y-6">
       <!-- Header -->
       <div>
@@ -1099,32 +1099,6 @@
         </div>
       </div>
 
-      <!-- Platform Ownership Info Box -->
-      <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <div class="flex items-start gap-3">
-          <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div>
-            <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">
-              {{ t('settings.modFieldsPlatformOwnedTitle') }}
-            </h3>
-            <p class="text-sm text-blue-800 dark:text-blue-400">
-              {{ t('settings.modFieldsPlatformOwnedBody') }}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Description -->
-      <div>
-        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ t('settings.coreModDetailDescription') }}</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
-          {{ module.description }}
-        </p>
-      </div>
-
-      <!-- Standard Module Content (for non-People modules) -->
       <!-- Platform Ownership Info Box -->
       <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <div class="flex items-start gap-3">

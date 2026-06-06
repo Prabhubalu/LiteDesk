@@ -447,7 +447,12 @@ exports.list = async (req, res) => {
     
     // Handle assignedTo filter (identity-based filter for saved views)
     if (req.query.assignedTo !== undefined) {
-      if (req.query.assignedTo === 'null' || req.query.assignedTo === null || req.query.assignedTo === '') {
+      if (
+        req.query.assignedTo === 'null'
+        || req.query.assignedTo === 'unassigned'
+        || req.query.assignedTo === null
+        || req.query.assignedTo === ''
+      ) {
         // Filter for unassigned (null or missing)
         query.assignedTo = null;
       } else {
@@ -474,16 +479,11 @@ exports.list = async (req, res) => {
     // Search functionality - search across name, email, phone fields
     // Store search condition separately - will be combined after projection filter
     let searchCondition = null;
-    if (req.query.search && req.query.search.trim()) {
-      const searchRegex = new RegExp(req.query.search.trim(), 'i');
+    const searchTerm = req.query.search && req.query.search.trim() ? req.query.search.trim() : '';
+    if (searchTerm) {
+      const { buildSearchOrConditions } = require('../utils/searchRelevance');
       searchCondition = {
-        $or: [
-          { first_name: searchRegex },
-          { last_name: searchRegex },
-          { email: searchRegex },
-          { phone: searchRegex },
-          { mobile: searchRegex }
-        ]
+        $or: buildSearchOrConditions(searchTerm, ['first_name', 'last_name', 'email', 'phone', 'mobile'])
       };
     }
 
@@ -531,6 +531,9 @@ exports.list = async (req, res) => {
         query.$or = searchCondition.$or;
       }
     }
+
+    const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
+    query = applyListFilterQueryParam(query, req.query, 'people', { userId: req.user?._id });
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -593,15 +596,34 @@ exports.list = async (req, res) => {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    const dataQuery = People.find(query)
-      .populate('assignedTo', 'firstName lastName email avatar')
-      .populate('createdBy', 'firstName lastName email avatar username')
-      .populate('lead_owner', 'firstName lastName email avatar username')
-      .populate('organization', 'name')
-      .sort(sortOptions)
-      .limit(limit)
-      .skip(skip)
-      .lean();
+    const peoplePopulate = [
+      { path: 'assignedTo', select: 'firstName lastName email avatar' },
+      { path: 'createdBy', select: 'firstName lastName email avatar username' },
+      { path: 'lead_owner', select: 'firstName lastName email avatar username' },
+      { path: 'organization', select: 'name' }
+    ];
+
+    const { fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+    const dataQuery = isSearchActive(searchTerm)
+      ? fetchRankedSearchPage(People, {
+          matchQuery: query,
+          searchTerm,
+          fieldSpecs: SEARCH_FIELD_PRESETS.people,
+          skip,
+          limit,
+          fallbackSort: sortOptions,
+          populate: peoplePopulate,
+          lean: true
+        })
+      : People.find(query)
+          .populate('assignedTo', 'firstName lastName email avatar')
+          .populate('createdBy', 'firstName lastName email avatar username')
+          .populate('lead_owner', 'firstName lastName email avatar username')
+          .populate('organization', 'name')
+          .sort(sortOptions)
+          .limit(limit)
+          .skip(skip)
+          .lean();
 
     const statisticsQuery = People.aggregate([
       { $match: query },

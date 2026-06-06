@@ -1865,100 +1865,6 @@
                 </div>
               </div>
             </div>
-            <div v-if="activeSubTab === 'filters'" class="space-y-4">
-              <!-- System fields: Hide Filter Settings entirely -->
-              <div v-if="isSystemField(currentField)" class="p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ t('settings.modFieldsFilterSystemUnavailable') }}
-                </p>
-              </div>
-
-              <!-- Filter Settings for non-system fields -->
-              <div v-else>
-                <!-- Helper text -->
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  {{ t('settings.modFieldsFilterableHint') }}
-                </p>
-
-                <!-- Field ownership info -->
-                <div v-if="isPeopleModule && currentField?.key && getPeopleFieldMetadata(currentField.key)" class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                  <p class="text-xs text-blue-800 dark:text-blue-300">
-                    <span v-if="getPeopleFieldMetadata(currentField.key)?.owner === 'core'">
-                      {{ t('settings.modFieldsFilterCoreField') }}
-                    </span>
-                    <span v-else-if="getPeopleFieldMetadata(currentField.key)?.owner === 'participation'">
-                      {{ t('settings.modFieldsFilterAppOwned') }}
-                    </span>
-                  </p>
-                </div>
-
-                <!-- Filterable Toggle -->
-                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        {{ t('settings.modFieldsEnableFilter') }}
-                      </label>
-                      <p class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ t('settings.modFieldsEnableFilterHelp') }}
-                      </p>
-                    </div>
-                    <HeadlessSwitch
-                      v-model="currentField.filterable"
-                      :disabled="isSystemField(currentField)"
-                      @change="handleFilterableChange"
-                      switch-class="w-11 h-6"
-                    />
-                  </div>
-
-                  <!-- Filter Type (visible only when filterable is ON) -->
-                  <div v-if="currentField.filterable" class="space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4">
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {{ t('settings.modFieldsFilterType') }}
-                      </label>
-                      <select
-                        v-model="currentField.filterType"
-                        :disabled="isSystemField(currentField) || (isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'core')"
-                        @change="handleFilterTypeChange"
-                        class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm"
-                      >
-                        <option value="">{{ t('settings.modFieldsSelectFilterTypePh') }}</option>
-                        <option
-                          v-for="filterType in getAllowedFilterTypes(currentField.dataType)"
-                          :key="filterType.value"
-                          :value="filterType.value"
-                        >
-                          {{ filterType.label }}
-                        </option>
-                      </select>
-                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        {{ t('settings.modFieldsFilterTypeHelp') }}
-                      </p>
-                    </div>
-
-                    <!-- Filter Priority (visible only when filterable is ON) -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {{ t('settings.modFieldsFilterPriority') }}
-                      </label>
-                      <input
-                        type="number"
-                        v-model.number="currentField.filterPriority"
-                        :disabled="isSystemField(currentField)"
-                        @input="handleFilterPriorityChange"
-                        min="1"
-                        :placeholder="t('settings.modFieldsFilterPriorityPh')"
-                        class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm"
-                      />
-                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        {{ t('settings.modFieldsFilterPriorityHelp') }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
             <div v-if="activeSubTab === 'dependencies'">
               <div class="space-y-6">
                 <!-- Section 1: Field Rules (Existing Field Dependencies) -->
@@ -6720,7 +6626,6 @@ function spanClass(span) {
 const subTabs = computed(() => [
   { id: 'general', name: t('settings.modFieldsSubTabGeneral') },
   { id: 'validations', name: t('settings.modFieldsSubTabValidations') },
-  { id: 'filters', name: t('settings.modFieldsSubTabFilters') },
   { id: 'dependencies', name: t('settings.modFieldsSubTabDependencies') }
 ]);
 
@@ -6729,7 +6634,7 @@ function isSubTabDisabled(tabId) {
   // Allow dependency configuration on protected/system fields while keeping
   // structural edits (rename/type/validation rules) restricted.
   if (!isSystemField(currentField.value)) return false;
-  return tabId !== 'general' && tabId !== 'filters' && tabId !== 'dependencies';
+  return tabId !== 'general' && tabId !== 'dependencies';
 }
 
 const activeSubTab = ref('general');
@@ -7830,77 +7735,6 @@ function getPeopleFieldMetadata(fieldKey) {
   }
 }
 
-// Filter Settings Helper Functions
-function getAllowedFilterTypes(dataType) {
-  if (!dataType) return [];
-  
-  const filterTypeMap = {
-    'Text': [{ value: 'text', label: 'Text' }],
-    'Email': [{ value: 'text', label: 'Text' }],
-    'Phone': [{ value: 'text', label: 'Text' }],
-    'Picklist': [
-      { value: 'select', label: 'Select' },
-      { value: 'multi-select', label: 'Multi-Select' }
-    ],
-    'Multi-Picklist': [
-      { value: 'select', label: 'Select' },
-      { value: 'multi-select', label: 'Multi-Select' }
-    ],
-    'Checkbox': [{ value: 'boolean', label: 'Boolean' }],
-    'Lookup (Relationship)': [{ value: 'entity', label: 'Entity' }],
-    'Date': [{ value: 'date', label: 'Date' }],
-    'Date-Time': [{ value: 'date', label: 'Date' }]
-  };
-
-  // Special handling for user lookup fields
-  if (dataType === 'Lookup (Relationship)') {
-    // Check if it's a user lookup (assignedTo, createdBy, etc.)
-    if (currentField.value?.lookupSettings?.targetModule === 'users' || 
-        currentField.value?.key === 'assignedTo' || 
-        currentField.value?.key === 'createdBy' ||
-        currentField.value?.key === 'lead_owner') {
-      return [{ value: 'user', label: 'User' }];
-    }
-    // Default to entity for other lookups
-    return filterTypeMap['Lookup (Relationship)'] || [];
-  }
-
-  return filterTypeMap[dataType] || [];
-}
-
-function handleFilterableChange() {
-  if (!currentField.value.filterable) {
-    // When disabling filterable, clear filterType and filterPriority
-    currentField.value.filterType = null;
-    currentField.value.filterPriority = null;
-  } else {
-    // When enabling filterable, auto-assign filterType based on dataType if not set
-    if (!currentField.value.filterType) {
-      const allowedTypes = getAllowedFilterTypes(currentField.value.dataType);
-      if (allowedTypes.length > 0) {
-        currentField.value.filterType = allowedTypes[0].value;
-      }
-    }
-    // Auto-assign priority if not set
-    if (!currentField.value.filterPriority) {
-      const filterableFields = editFields.value.filter(f => f.filterable && f.filterPriority !== null && f.filterPriority !== undefined);
-      const maxPriority = filterableFields.length > 0 
-        ? Math.max(...filterableFields.map(f => f.filterPriority || 0))
-        : 0;
-      currentField.value.filterPriority = maxPriority + 1;
-    }
-  }
-  // Changes are automatically tracked by isDirty computed property
-}
-
-function handleFilterTypeChange() {
-  // Changes are automatically tracked by isDirty computed property
-}
-
-function handleFilterPriorityChange() {
-  // Changes are automatically tracked by isDirty computed property
-}
-
 // Helper: Check if an Events field is an app participation field
 // ARCHITECTURE NOTE: Events app participation fields are visibility-configurable ONLY.
 // See: docs/architecture/event-settings.md Section 4.2
@@ -8837,7 +8671,7 @@ const fetchModules = async (apiGetOptions = {}) => {
         }
         // Set directly without triggering watcher during initialization
         activeTopTab.value = tabToSet;
-        const validSubTabs = ['general', 'validations', 'filters', 'dependencies'];
+        const validSubTabs = ['general', 'validations', 'dependencies'];
         if (subKey && validSubTabs.includes(subKey)) {
           activeSubTab.value = subKey;
         }
@@ -13517,7 +13351,7 @@ watch(
   ([subKey, modeKey]) => {
     const onFieldsConfig = modeKey === 'fields' || activeTopTab.value === 'fields';
     if (!onFieldsConfig) return;
-    const validSubTabs = ['general', 'validations', 'filters', 'dependencies'];
+    const validSubTabs = ['general', 'validations', 'dependencies'];
     if (typeof subKey === 'string' && validSubTabs.includes(subKey) && activeSubTab.value !== subKey) {
       activeSubTab.value = subKey;
     }

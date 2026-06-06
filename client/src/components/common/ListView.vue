@@ -3,13 +3,31 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-4">
       <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-3">
+        <div class="flex min-w-0 items-center gap-3">
           <!-- View Selector Dropdown (People module only) -->
-          <Menu v-if="savedViews && savedViews.length > 0" as="div" class="relative inline-block text-left">
-            <div>
-              <MenuButton class="inline-flex items-center gap-2 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-200 transition-colors focus:outline-none">
-                <span>{{ activePeopleViewTitle }}</span>
-                <ChevronDownIcon class="h-5 w-5 text-gray-500 dark:text-gray-400" aria-hidden="true" />
+          <Menu v-if="savedViews && savedViews.length > 0" as="div" class="relative inline-block min-w-0 max-w-full text-left">
+            <div class="min-w-0 max-w-full">
+              <MenuButton
+                :title="activeViewTitleTruncated ? activePeopleViewTitle : undefined"
+                class="inline-flex max-w-full min-w-0 items-center gap-1.5 text-base sm:text-lg md:text-xl font-bold text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-200 transition-colors focus:outline-none"
+              >
+                <span class="inline-flex min-w-0 max-w-full items-center gap-1.5">
+                  <TruncatedLabel
+                    :text="activePeopleViewTitle"
+                    :max-chars="SAVED_VIEW_NAME_HEADER_DISPLAY_MAX_LENGTH"
+                    tag="span"
+                    text-class="text-base sm:text-lg md:text-xl font-bold"
+                    class="min-w-0 max-w-full"
+                    @truncated-change="activeViewTitleTruncated = $event"
+                  />
+                  <span
+                    v-if="showActiveViewModifiedIndicator"
+                    class="text-indigo-500 dark:text-indigo-400 text-lg leading-none"
+                    :title="t('common.listViewModifiedHint')"
+                    aria-hidden="true"
+                  >•</span>
+                </span>
+                <ChevronDownIcon class="h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden="true" />
               </MenuButton>
             </div>
             <Transition
@@ -35,15 +53,16 @@
                         activeSavedViewId === view.id ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''
                       ]"
                     >
-                      <button
-                        @click="() => { handleSavedViewClick(view); close(); }"
+                      <TruncatedLabel
+                        :text="view.label"
+                        tag="button"
+                        type="button"
                         :class="[
                           activeSavedViewId === view.id ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100',
-                          'flex-1 min-w-0 text-left px-4 py-2 text-sm'
+                          'flex-1 min-w-0 text-left px-4 py-2 text-sm',
                         ]"
-                      >
-                        {{ view.label }}
-                      </button>
+                        @click="() => { handleSavedViewClick(view); close(); }"
+                      />
                       <div class="ml-auto flex shrink-0 items-center gap-1">
                         <!-- Edit/Delete actions for custom views only -->
                         <div v-if="!isSystemView(view.id)" class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -97,18 +116,51 @@
             </Transition>
           </Menu>
           <!-- Regular title (other modules) -->
-          <h1 v-else class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">{{ title }}</h1>
+          <h1 v-else class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white truncate">{{ title }}</h1>
           
-          <!-- Save View CTA (People and Organizations modules only, when state doesn't match any saved view) -->
-          <button
-            v-if="savedViews && savedViews.length > 0 && shouldShowSaveCTA"
-            @click="handleSaveCurrentView"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            :title="t('common.listSaveViewHint')"
+          <!-- Saved view actions: update / save as new / save (derived from dirty state) -->
+          <div
+            v-if="savedViews && savedViews.length > 0 && showViewSaveActions"
+            class="inline-flex shrink-0 items-center gap-2"
           >
-            <StarIcon class="w-4 h-4" />
-            <span>{{ t('common.listSaveView') }}</span>
-          </button>
+            <button
+              v-if="canUpdateActiveView"
+              type="button"
+              @click="handleUpdateActiveView"
+              class="inline-flex items-center gap-1 px-2.5 py-1 text-xs sm:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              :title="t('common.listUpdateViewHint')"
+            >
+              <span>{{ t('common.listUpdateView') }}</span>
+            </button>
+            <button
+              v-if="shouldShowSaveAsNew && !shouldShowSaveNewOnly"
+              type="button"
+              @click="handleSaveAsNewView"
+              class="inline-flex items-center gap-1 px-2.5 py-1 text-xs sm:text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              :title="t('common.listSaveAsNewViewHint')"
+            >
+              <StarIcon class="w-3.5 h-3.5" />
+              <span>{{ t('common.listSaveAsNewView') }}</span>
+            </button>
+            <button
+              v-if="shouldShowSaveNewOnly"
+              type="button"
+              @click="handleSaveCurrentView"
+              class="inline-flex items-center gap-1 px-2.5 py-1 text-xs sm:text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              :title="t('common.listSaveViewHint')"
+            >
+              <StarIcon class="w-3.5 h-3.5" />
+              <span>{{ t('common.listSaveView') }}</span>
+            </button>
+            <button
+              v-if="showActiveViewModifiedIndicator"
+              type="button"
+              @click="handleRevertToSavedView"
+              class="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            >
+              {{ t('common.listRevertView') }}
+            </button>
+          </div>
           
           <!-- Mobile Action Buttons with Stats Icon -->
           <div class="sm:hidden flex items-center gap-2 ml-auto">
@@ -116,13 +168,22 @@
             <button
               v-if="statsConfig && statsConfig.length > 0"
               @click="showStats = !showStats"
-              class="inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
               :title="statsToggleTitle"
             >
-              <ChartBarIcon v-if="!showStats" class="w-5 h-5" />
-              <XMarkIcon v-else class="w-5 h-5" />
+              <ChartBarIcon v-if="!showStats" class="w-4 h-4" />
+              <XMarkIcon v-else class="w-4 h-4" />
             </button>
             
+            <button
+              @click="handleCustomizeClick"
+              class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              :title="customizeButtonLabel"
+              :aria-label="customizeButtonLabel"
+            >
+              <Cog6ToothIcon class="w-4 h-4" />
+            </button>
+
             <slot name="header-actions">
               <ModuleActions 
                 :module="moduleKey"
@@ -141,28 +202,38 @@
           <button
             v-if="statsConfig && statsConfig.length > 0"
             @click="showStats = !showStats"
-            class="hidden sm:inline-flex md:hidden items-center justify-center px-2.5 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+            class="hidden sm:inline-flex md:hidden size-8 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
             :title="statsToggleTitle"
           >
-            <ChartBarIcon v-if="!showStats" class="w-5 h-5" />
-            <XMarkIcon v-else class="w-5 h-5" />
+            <ChartBarIcon v-if="!showStats" class="w-4 h-4" />
+            <XMarkIcon v-else class="w-4 h-4" />
           </button>
         </div>
         <p class="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-400 mt-1 sm:mt-2">{{ description }}</p>
       </div>
-      <div class="hidden sm:flex items-center gap-4 flex-shrink-0">
+      <div class="hidden sm:flex items-center gap-2.5 flex-shrink-0">
         <!-- Stats Toggle Button (Desktop) -->
         <button
           v-if="statsConfig && statsConfig.length > 0"
           @click="showStats = !showStats"
-          class="hidden md:inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-colors bg-white border border-gray-200 dark:border-0 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 cursor-pointer"
+          class="hidden md:inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors bg-white border border-gray-200 dark:border-0 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 cursor-pointer"
           :title="statsToggleTitle"
         >
-          <ChartBarIcon v-if="!showStats" class="w-5 h-5" />
-          <XMarkIcon v-else class="w-5 h-5" />
+          <ChartBarIcon v-if="!showStats" class="w-4 h-4" />
+          <XMarkIcon v-else class="w-4 h-4" />
           <span>{{ showStats ? t('common.listHideShort') : t('common.listStatsShort') }}</span>
         </button>
         
+        <button
+          @click="handleCustomizeClick"
+          class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors bg-white border border-gray-200 dark:border-0 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 cursor-pointer"
+          :title="customizeButtonLabel"
+          :aria-label="customizeButtonLabel"
+        >
+          <Cog6ToothIcon class="w-4 h-4" />
+          <span class="hidden md:inline">{{ customizeButtonShortLabel }}</span>
+        </button>
+
         <slot name="header-actions">
           <ModuleActions 
             :module="moduleKey"
@@ -178,57 +249,60 @@
       </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div v-if="statsConfig && statsConfig.length > 0 && showStats" class="mb-8">
-      <!-- Skeleton while list rows load (avoids flashing zeros) -->
+    <!-- Statistics strip -->
+    <div
+      v-if="statsConfig && statsConfig.length > 0 && showStats"
+      class="mb-4"
+    >
       <div
         v-if="statsBarSkeleton"
-        :class="[
-          'grid grid-cols-1 gap-3 divide-gray-200 overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-sm md:divide-y-0 md:gap-0 md:divide-x dark:divide-gray-700',
-          statsGridColsClass
-        ]"
+        class="flex items-stretch overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
         aria-hidden="true"
       >
         <div
           v-for="n in statsConfig.length"
           :key="`stat-sk-${n}`"
-          class="px-4 py-5 sm:p-6"
+          class="flex min-w-[5.5rem] flex-1 flex-col gap-2 border-r border-gray-200 px-3 py-2.5 last:border-r-0 dark:border-gray-700 sm:min-w-[7rem] sm:px-4 sm:py-3"
         >
-          <div class="relative mb-3 h-4 w-28 overflow-hidden rounded bg-gray-200 animate-pulse dark:bg-gray-600" />
-          <div class="relative h-8 w-20 overflow-hidden rounded-md bg-gray-200 animate-pulse dark:bg-gray-600" />
+          <div class="h-3.5 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-600" />
+          <div class="h-6 w-12 animate-pulse rounded bg-gray-200 dark:bg-gray-600" />
         </div>
       </div>
-      <dl
+      <div
         v-else
-        :class="[
-          'grid grid-cols-1 divide-gray-200 dark:divide-gray-700 overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-sm md:divide-x md:divide-y-0',
-          statsGridColsClass
-        ]"
+        role="toolbar"
+        :aria-label="t('common.listStatisticsRegion')"
+        class="flex items-stretch overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
       >
-        <div 
-          v-for="item in computedStats" 
-          :key="item.name" 
-          class="px-4 py-5 sm:p-6"
-          :class="statsConfig && statsConfig.length > 0 ? 'cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-700' : ''"
+        <button
+          v-for="item in computedStats"
+          :key="item.key"
+          type="button"
+          class="group flex min-w-[5.5rem] flex-1 flex-col items-start gap-1 border-r border-gray-200 px-3 py-2.5 text-left transition-[background-color,color] duration-150 last:border-r-0 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 dark:border-gray-700 dark:hover:bg-indigo-900/25 sm:min-w-[7rem] sm:gap-1.5 sm:px-4 sm:py-3"
+          :title="item.name"
           @click="handleStatClick(item)"
         >
-          <dt class="text-base font-normal text-gray-900 dark:text-gray-100">{{ item.name }}</dt>
-          <dd class="mt-1">
-            <div class="text-2xl font-semibold text-indigo-600 dark:text-indigo-400">
-              {{ item.stat }}
-            </div>
-          </dd>
-        </div>
-      </dl>
+          <TruncatedLabel
+            :text="item.name"
+            tag="span"
+            text-class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400"
+          />
+          <span
+            class="text-base font-semibold tabular-nums text-gray-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400 sm:text-lg"
+          >
+            {{ item.stat }}
+          </span>
+        </button>
+      </div>
     </div>
 
     <!-- Search and Filters -->
     <div class="flex flex-col gap-4 mb-4 relative">
       <!-- Mobile, Tablet & Small Desktop: Search, Filters Button, Columns Button in a single row -->
-      <div class="flex items-center gap-3 lg:hidden">
+      <div class="flex items-center gap-2.5 lg:hidden">
         <div class="flex-1 min-w-0">
           <div class="relative">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500 pointer-events-none z-10">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input 
@@ -236,7 +310,7 @@
               type="text" 
               :placeholder="searchPlaceholder"
               @input="debouncedSearch"
-              class="block w-full pl-9 pr-10 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 lg:text-sm dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+              class="block h-8 w-full pl-8 pr-9 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs sm:text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
             />
             <button
               v-if="searchQuery"
@@ -245,7 +319,7 @@
               class="absolute inset-y-0 right-2 flex items-center justify-center rounded-sm p-1 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer"
               :aria-label="t('common.listClearSearch', { title })"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-3.5 w-3.5">
                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 0 1 1.414 0L10 8.586l4.293-4.293a1 1 0 1 1 1.414 1.414L11.414 10l4.293 4.293a1 1 0 0 1-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 0 1-1.414-1.414L8.586 10 4.293 5.707a1 1 0 0 1 0-1.414Z" clip-rule="evenodd" />
               </svg>
             </button>
@@ -254,14 +328,25 @@
 
         <slot name="search-actions" />
 
+        <div class="flex min-w-0 flex-wrap items-center gap-2 sm:flex-1">
         <!-- Mobile & Tablet Filters Button -->
-        <Popover v-if="filterConfig && filterConfig.length > 0" class="relative">
+        <Popover v-if="showFilterBuilder || effectiveFilterConfig.length > 0" class="relative shrink-0">
           <PopoverButton
-            class="inline-flex h-10 items-center gap-2 px-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-sm cursor-pointer"
+            class="relative inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-xs sm:text-sm cursor-pointer sm:h-8 sm:w-auto sm:gap-1.5 sm:px-2.5"
+            @click="openFilterBuilder"
           >
-            <FunnelIcon class="w-4 h-4" />
-            <span class="hidden sm:inline">{{ t('common.listFilters') }}</span>
-            <span v-if="hasActiveFilters" class="flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-indigo-600 rounded-full">
+            <FunnelIcon class="w-3.5 h-3.5" />
+            <span class="hidden sm:inline">{{ filterButtonLabel }}</span>
+            <span
+              v-if="showFilterBuilder && activeFilterRulesCount > 0"
+              class="absolute -top-1 -right-1 flex sm:static items-center justify-center min-w-[1.125rem] h-4 px-1 text-[10px] font-medium text-white bg-indigo-600 rounded-full"
+            >
+              {{ activeFilterRulesCount }}
+            </span>
+            <span
+              v-else-if="!showFilterBuilder && hasActiveFilters"
+              class="absolute -top-1 -right-1 flex sm:static items-center justify-center w-4 h-4 text-[10px] font-medium text-white bg-indigo-600 rounded-full"
+            >
               {{ getActiveFiltersCount() }}
             </span>
           </PopoverButton>
@@ -275,111 +360,47 @@
             leave-to-class="opacity-0 translate-y-1"
           >
             <PopoverPanel
-              class="absolute z-20 mt-2 w-screen max-w-xs -right-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10"
+              :class="showFilterBuilder
+                ? 'absolute left-0 z-[60] mt-2 w-[48rem] max-w-[min(48rem,calc(100vw-2rem))] overflow-visible rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10'
+                : 'absolute left-0 z-[60] mt-2 w-72 max-w-[calc(100vw-2rem)] overflow-visible rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10'"
             >
-              <div class="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+              <FilterBuilderPanel
+                v-if="showFilterBuilder"
+                ref="mobileFilterBuilderPanelRef"
+                :filter-config="builderFilterConfigList"
+                :filters="filters"
+                :filter-by-key="builderFilterByKey"
+                :filter-operators="filterOperatorsMap"
+                :query="filterBuilderQuery"
+                @apply="handleBuilderFilterApply"
+                @clear-field="handleBuilderClearField"
+                @clear-all="clearFilters"
+                @update-query="handleFilterQueryUpdate"
+                @filter-opened="handleFilterOpened"
+              />
+              <div v-else class="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
                 <div
-                  v-for="filter in filterConfig"
+                  v-for="filter in effectiveFilterConfig"
                   :key="filter.key"
                   class="relative"
                 >
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {{ filter.label || filter.key }}
                   </label>
-                  
-                  <!-- Date filter: grouped Quick / Relative / Specific / Data Status -->
-                  <DateFilterDropdown
-                    v-if="filter.filterType === 'date'"
+                  <ListColumnFilter
+                    :filter="filter"
                     :model-value="filters[filter.key]"
-                    :filter-label="filter.label || filter.key"
-                    button-class="relative z-[26] inline-flex h-10 w-full items-center rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-3 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 cursor-pointer text-left"
-                    options-class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-sm shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none min-w-[200px]"
-                    @update:model-value="(value) => { filters[filter.key] = value; handleFilterChange(filter.key); }"
+                    compact
+                    @update:model-value="(value) => handleFilterInput(filter.key, value, filter.filterType, 'builder')"
+                    @opened="handleFilterOpened(filter.key)"
                   />
-                  <!-- All other filters: Dropdown -->
-                  <Listbox
-                    v-else
-                    :model-value="filter.filterType === 'multi-select' ? (Array.isArray(filters[filter.key]) ? filters[filter.key] : []) : (filters[filter.key] || '')" 
-                    @update:model-value="(value) => { filters[filter.key] = value; handleFilterChange(filter.key); }"
-                    :multiple="filter.filterType === 'multi-select'"
-                  >
-                    <div class="relative">
-                      <ListboxButton
-                        @click="emit('filter-opened', filter.key)"
-                        class="relative z-[26] inline-flex h-10 w-full items-center rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-3 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 cursor-pointer text-left"
-                      >
-                        <span class="block truncate pr-6">
-                          {{ getFilterLabel(filter, filters[filter.key]) || getFilterAllLabel(filter) }}
-                        </span>
-                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                          <ChevronUpDownIcon class="h-4 w-4 text-gray-400" aria-hidden="true" />
-                        </span>
-                      </ListboxButton>
-
-                      <Transition
-                        leave-active-class="transition duration-100 ease-in"
-                        leave-from-class="opacity-100"
-                        leave-to-class="opacity-0"
-                      >
-                        <ListboxOptions
-                          class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-sm shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none"
-                        >
-                          <ListboxOption
-                            :value="filter.filterType === 'multi-select' ? [] : ''"
-                            v-slot="{ active, selected }"
-                          >
-                            <li
-                              :class="[
-                                'relative cursor-pointer select-none py-2 pl-4 pr-10',
-                                active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'
-                              ]"
-                            >
-                              <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
-                                {{ t('common.listAllRecords') }}
-                              </span>
-                              <span
-                                v-if="selected"
-                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-400"
-                              >
-                                <CheckIcon class="h-5 w-5" aria-hidden="true" />
-                              </span>
-                            </li>
-                          </ListboxOption>
-                          <ListboxOption
-                            v-for="option in (filter.options || [])"
-                            :key="option?.value || option"
-                            :value="option?.value || option"
-                            v-slot="{ active, selected }"
-                          >
-                            <li
-                              :class="[
-                                'relative cursor-pointer select-none py-2 pl-4 pr-10',
-                                active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'
-                              ]"
-                            >
-                        <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
-                          {{ option?.label || option?.value || option || t('common.listUnknown') }}
-                        </span>
-                              <span
-                                v-if="selected"
-                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-400"
-                              >
-                                <CheckIcon class="h-5 w-5" aria-hidden="true" />
-                              </span>
-                            </li>
-                          </ListboxOption>
-                        </ListboxOptions>
-                      </Transition>
-                    </div>
-                  </Listbox>
                 </div>
-
-                <button 
+                <button
                   v-if="hasActiveFilters"
-                  @click="clearFilters" 
-                  class="w-full inline-flex h-10 items-center justify-center gap-2 px-3 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors text-sm cursor-pointer"
+                  @click="clearFilters"
+                  class="w-full inline-flex h-8 items-center justify-center gap-1.5 px-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors text-xs sm:text-sm cursor-pointer"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-3.5 h-3.5">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                   {{ t('common.listClearFilters') }}
@@ -389,22 +410,23 @@
           </Transition>
         </Popover>
 
-        <!-- Customize Button (Mobile & Tablet) -->
-        <button
-          @click="handleCustomizeClick"
-          class="inline-flex h-10 items-center gap-2 px-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-sm cursor-pointer"
-          :title="customizeButtonLabel"
-        >
-          <Cog6ToothIcon class="w-4 h-4" />
-          <span class="hidden sm:inline">{{ customizeButtonLabel }}</span>
-        </button>
+        <ActiveFilterChipBar
+          v-if="showFilterBuilder && hasActiveFilters"
+          :filters="filters"
+          :filter-config="builderFilterConfigList"
+          :filter-operators="filterOperatorsMap"
+          :search-query="searchQuery"
+          @remove="handleActiveFilterChipRemove"
+          @clear-all="clearFilters"
+        />
+        </div>
       </div>
 
       <!-- Large Desktop: Search and Filters in a row -->
-      <div class="hidden lg:flex lg:flex-row gap-4">
+      <div class="hidden lg:flex lg:flex-row gap-3">
         <div class="w-full sm:w-80 lg:w-80">
           <div class="relative">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500 pointer-events-none z-10">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -412,7 +434,7 @@
               type="text" 
               :placeholder="searchPlaceholder"
               @input="debouncedSearch"
-              class="block h-10 w-full pl-9 pr-10 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 lg:text-sm dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+              class="block h-8 w-full pl-8 pr-9 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs sm:text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
             />
             <button
               v-if="searchQuery"
@@ -421,7 +443,7 @@
               class="absolute inset-y-0 right-2 flex items-center justify-center rounded-full p-1 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer"
               :aria-label="t('common.listClearSearch', { title })"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-3.5 w-3.5">
                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 0 1 1.414 0L10 8.586l4.293-4.293a1 1 0 1 1 1.414 1.414L11.414 10l4.293 4.293a1 1 0 0 1-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 0 1-1.414-1.414L8.586 10 4.293 5.707a1 1 0 0 1 0-1.414Z" clip-rule="evenodd" />
               </svg>
             </button>
@@ -430,116 +452,102 @@
 
         <slot name="search-actions" />
 
-        <!-- Filters (Desktop/Tablet) - Type-based rendering -->
-        <div class="flex flex-wrap items-center gap-3 flex-1">
-          <div
-            v-for="filter in filterConfig"
-            :key="filter.key"
-            :data-filter-key="filter.key"
-            class="relative"
-          >
-            <!-- Date filter: grouped Quick / Relative / Specific / Data Status -->
-            <DateFilterDropdown
-              v-if="filter.filterType === 'date'"
-              :model-value="filters[filter.key]"
-              :filter-label="filter.label || filter.key"
-              button-class="inline-flex h-10 items-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500 cursor-pointer relative w-auto min-w-[140px] text-left leading-none"
-              options-class="absolute mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm min-w-[200px]"
-              @update:model-value="(value) => { filters[filter.key] = value; handleFilterChange(filter.key); }"
-            />
-            <!-- All other filters: Dropdown (select, multi-select, boolean, user, etc.) -->
-            <Listbox
-              v-else
-              :model-value="filter.filterType === 'multi-select' ? (Array.isArray(filters[filter.key]) ? filters[filter.key] : []) : (filters[filter.key] || '')" 
-              @update:model-value="(value) => { filters[filter.key] = value; handleFilterChange(filter.key); }"
-              :multiple="filter.filterType === 'multi-select'"
+        <!-- Filters (Desktop) -->
+        <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2.5">
+          <Popover v-if="showFilterBuilder || showLegacyToolbarFilters || showDesktopFiltersPopover" class="relative shrink-0">
+            <PopoverButton
+              class="inline-flex h-8 items-center gap-1.5 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-xs sm:text-sm cursor-pointer"
+              @click="openFilterBuilder"
             >
-              <div class="relative">
-                <ListboxButton
-                  @click="emit('filter-opened', filter.key)"
-                  class="inline-flex h-10 items-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500 cursor-pointer relative w-auto min-w-[140px] text-left leading-none"
-                >
-                  <span class="block truncate pr-6">
-                    {{ getFilterLabel(filter, filters[filter.key]) || filter.label || getFilterAllLabel(filter) }}
-                  </span>
-                  <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                    <ChevronUpDownIcon class="h-4 w-4 text-gray-400" aria-hidden="true" />
-                  </span>
-                </ListboxButton>
-
-                <Transition
-                  leave-active-class="transition duration-100 ease-in"
-                  leave-from-class="opacity-100"
-                  leave-to-class="opacity-0"
-                >
-                  <ListboxOptions
-                    class="absolute mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm min-w-[140px]"
-                    style="z-index: 9999; position: absolute;"
+              <FunnelIcon class="w-3.5 h-3.5" />
+              <span>{{ filterButtonLabel }}</span>
+            </PopoverButton>
+            <Transition
+              enter-active-class="transition duration-200 ease-out"
+              enter-from-class="opacity-0 translate-y-1"
+              enter-to-class="opacity-100 translate-y-0"
+              leave-active-class="transition duration-150 ease-in"
+              leave-from-class="opacity-100 translate-y-0"
+              leave-to-class="opacity-0 translate-y-1"
+            >
+              <PopoverPanel
+                :class="showFilterBuilder
+                  ? 'absolute left-0 z-[60] mt-2 w-[48rem] max-w-[min(48rem,calc(100vw-2rem))] overflow-visible rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10'
+                  : 'absolute left-0 z-[60] mt-2 w-72 max-w-[calc(100vw-2rem)] overflow-visible rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10'"
+              >
+                <FilterBuilderPanel
+                  v-if="showFilterBuilder"
+                  ref="desktopFilterBuilderPanelRef"
+                  :filter-config="builderFilterConfigList"
+                  :filters="filters"
+                  :filter-by-key="builderFilterByKey"
+                  :filter-operators="filterOperatorsMap"
+                  :query="filterBuilderQuery"
+                  @apply="handleBuilderFilterApply"
+                  @clear-field="handleBuilderClearField"
+                  @clear-all="clearFilters"
+                  @update-query="handleFilterQueryUpdate"
+                  @filter-opened="handleFilterOpened"
+                />
+                <div v-else-if="showDesktopFiltersPopover" class="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+                  <div
+                    v-for="filter in popoverFilterConfig"
+                    :key="`popover-${filter.key}`"
+                    class="relative"
                   >
-                    <ListboxOption
-                      :value="filter.filterType === 'multi-select' ? [] : ''"
-                      v-slot="{ active, selected }"
-                    >
-                      <li
-                        :class="[
-                          'relative cursor-default select-none py-2 pl-4 pr-10',
-                          active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'
-                        ]"
-                      >
-                        <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
-                          {{ filter.label || getFilterAllLabel(filter) }}
-                        </span>
-                        <span
-                          v-if="selected"
-                          class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-400"
-                        >
-                          <CheckIcon class="h-5 w-5" aria-hidden="true" />
-                        </span>
-                      </li>
-                    </ListboxOption>
-                    <ListboxOption
-                      v-for="option in (filter.options || [])"
-                      :key="option?.value || option"
-                      :value="option?.value || option"
-                      v-slot="{ active, selected }"
-                    >
-                      <li
-                        :class="[
-                          'relative cursor-default select-none py-2 pl-4 pr-10',
-                          active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'
-                        ]"
-                      >
-                        <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
-                          {{ option?.label || option?.value || option }}
-                        </span>
-                        <span
-                          v-if="selected"
-                          class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-400"
-                        >
-                          <CheckIcon class="h-5 w-5" aria-hidden="true" />
-                        </span>
-                      </li>
-                    </ListboxOption>
-                    <div v-if="!filter.options || filter.options.length === 0" class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                      {{ t('common.listLoadingOptions') }}
-                    </div>
-                  </ListboxOptions>
-                </Transition>
-              </div>
-            </Listbox>
-          </div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {{ filter.label || filter.key }}
+                    </label>
+                    <ListColumnFilter
+                      :filter="filter"
+                      :model-value="filters[filter.key]"
+                      compact
+                      @update:model-value="(value) => handleFilterInput(filter.key, value, filter.filterType, 'builder')"
+                      @opened="handleFilterOpened(filter.key)"
+                    />
+                  </div>
+                </div>
+                <div v-else class="flex flex-wrap items-center gap-2.5 p-4">
+                  <div
+                    v-for="filter in effectiveFilterConfig"
+                    :key="filter.key"
+                    :data-filter-key="filter.key"
+                    class="relative"
+                  >
+                    <ListColumnFilter
+                      :filter="filter"
+                      :model-value="filters[filter.key]"
+                      compact
+                      @update:model-value="(value) => handleFilterInput(filter.key, value, filter.filterType, 'builder')"
+                      @opened="handleFilterOpened(filter.key)"
+                    />
+                  </div>
+                </div>
+              </PopoverPanel>
+            </Transition>
+          </Popover>
 
-        <button 
-          v-if="hasActiveFilters"
-          @click="clearFilters" 
-          class="inline-flex h-10 items-center gap-2 px-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-sm cursor-pointer"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            {{ t('common.listClear') }}
-          </button>
-          
+          <ActiveFilterChipBar
+            v-if="showFilterBuilder && hasActiveFilters"
+            :filters="filters"
+            :filter-config="builderFilterConfigList"
+            :filter-operators="filterOperatorsMap"
+            :search-query="searchQuery"
+            @remove="handleActiveFilterChipRemove"
+            @clear-all="clearFilters"
+          />
+
+        <button
+          v-if="!showFilterBuilder && hasActiveFilters"
+          @click="clearFilters"
+          class="inline-flex h-8 items-center gap-1.5 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-xs sm:text-sm cursor-pointer"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-3.5 h-3.5">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          {{ t('common.listClear') }}
+        </button>
+
           <!-- Suggested Filters Section (Feature-flagged, opt-in only) -->
           <!-- 
             ARCHITECTURE NOTE: This section is informational only.
@@ -572,25 +580,13 @@
             </div>
           </div>
         </div>
-
-        <!-- Customize Button (Desktop/Tablet) -->
-        <div class="flex items-center">
-          <button
-            @click="handleCustomizeClick"
-            class="inline-flex items-center h-10 gap-2 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-sm cursor-pointer"
-            :title="customizeButtonLabel"
-          >
-            <Cog6ToothIcon class="w-4 h-4" />
-            <span>{{ customizeButtonLabel }}</span>
-          </button>
-        </div>
       </div>
     </div>
 
     <div class="mt-4 px-4 sm:px-6 lg:px-8" style="isolation: auto;">
-      <!-- Key must not include row count: infinite append changes length and would remount TableView and reset scroll. -->
+      <!-- Stable key: must not depend on row data or count — remounting resets scroll and inline filter focus. -->
       <TableView
-          :key="`table-${tableId}-${dataHash}`"
+          :key="`table-${tableId}`"
           internal-scroll
           :data="data"
           :columns="computedColumns"
@@ -617,10 +613,16 @@
           :selected-row-ids="selectedRowIdsForTable"
           :excluded-row-ids="excludedRowIdsForTable"
           :scroll-session-key="scrollSessionKey"
+          :column-filters-enabled="showInlineColumnFilters"
+          :filter-config-by-key="enrichedColumnFilterConfigByKey"
+          :column-filters="filters"
           @row-click="handleRowClick"
           @edit="handleEdit"
           @delete="handleDelete"
           @sort="handleSort"
+          @filter-change="handleColumnFilterChange"
+          @filter-opened="handleFilterOpened"
+          @clear-column-filters="clearColumnFilters"
           @toggle-row="toggleListRowSelection"
           @toggle-select-all-loaded="() => toggleListSelectAllLoaded(data)"
           @bulk-action="handleBulkAction"
@@ -644,7 +646,7 @@
           
           <!-- Empty State Slot -->
           <template #empty>
-            <div class="flex flex-col items-center justify-center py-12">
+            <div class="flex flex-col items-center justify-center py-8">
               <img
                 src="/assets/illustrations/empty_state.svg"
                 :alt="t('common.listEmptyIllustrationAlt')"
@@ -698,21 +700,42 @@
           <div class="bg-white dark:bg-gray-900 rounded-xl w-full max-w-md shadow-2xl" @click.stop>
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-                {{ editingView ? t('common.listEditViewTitle') : t('common.listSaveCurrentView') }}
+                {{ saveViewModalTitle }}
               </h2>
             </div>
             <form @submit.prevent="handleSaveView" class="p-6 space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {{ t('common.listViewName') }} <span class="text-red-500">*</span>
-                </label>
+                <div class="mb-2 flex items-baseline justify-between gap-3">
+                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {{ t('common.listViewName') }} <span class="text-red-500">*</span>
+                  </label>
+                  <span
+                    class="shrink-0 text-xs tabular-nums"
+                    :class="viewFormNameAtLimit
+                      ? 'font-medium text-amber-600 dark:text-amber-400'
+                      : 'text-gray-500 dark:text-gray-400'"
+                    aria-live="polite"
+                  >
+                    {{ t('common.listViewNameCharCount', {
+                      current: viewFormNameCharCount,
+                      max: SAVED_VIEW_NAME_MAX_LENGTH,
+                    }) }}
+                  </span>
+                </div>
                 <input
                   v-model="viewFormData.name"
                   type="text"
                   required
+                  :maxlength="SAVED_VIEW_NAME_MAX_LENGTH"
                   :placeholder="t('common.listViewNameExample')"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
+                <p
+                  v-if="viewFormNameError"
+                  class="mt-2 text-xs text-red-600 dark:text-red-400"
+                >
+                  {{ viewFormNameError }}
+                </p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -735,10 +758,10 @@
                 </button>
                 <button
                   type="submit"
-                  :disabled="!viewFormData.name.trim()"
+                  :disabled="!canSaveView"
                   class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer"
                 >
-                  {{ editingView ? t('actions.update') : t('actions.save') }}
+                  {{ saveMode === 'rename' ? t('actions.update') : t('actions.save') }}
                 </button>
               </div>
             </form>
@@ -1463,6 +1486,7 @@ import ModuleActions from '@/components/common/ModuleActions.vue';
 import RowActions from '@/components/common/RowActions.vue';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
 import HoverTooltip from '@/components/common/HoverTooltip.vue';
+import TruncatedLabel from '@/components/common/TruncatedLabel.vue';
 import QuickPreviewDrawer from '@/components/common/QuickPreviewDrawer.vue';
 import { useBulkActions } from '@/composables/useBulkActions';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -1478,9 +1502,36 @@ import { useListSelection } from '@/composables/useListSelection';
 import { useBulkDeleteProgressStore } from '@/stores/bulkDeleteProgress';
 import { normalizeListPagination } from '@/utils/normalizeListPagination';
 import DateFilterDropdown from '@/components/common/DateFilterDropdown.vue';
+import ListColumnFilter from '@/components/common/ListColumnFilter.vue';
+import ActiveFilterChipBar from '@/components/common/ActiveFilterChipBar.vue';
+import FilterBuilderPanel from '@/components/filters/FilterBuilderPanel.vue';
 import { parseDateFilterValue, getDateFilterLabel } from '@/utils/dateFilterOptions';
+import { useListColumnFilters } from '@/composables/useListColumnFilters';
+import { useFilterFieldOptions } from '@/composables/useFilterFieldOptions';
+import { getDefaultOperatorForFilter, operatorRequiresValue } from '@/platform/filters/filterOperators';
+import { inferFallbackFilterConfig } from '@/platform/filters/columnFilterResolver';
+import { createDefaultRootGroup } from '@/platform/filters/filterQueryAst';
+import { compileFilterQueryAst, syncRootGroupFromActiveFilters } from '@/platform/filters/filterQueryAstCompiler';
+import { compileOperatorValueForApi, isFilterRuleActive } from '@/platform/filters/filterQueryCompiler';
+import { countActiveFilterRules, createRuleId } from '@/platform/filters/filterQueryModel';
+import { resolveFilterAllLabel } from '@/platform/filters/filterAllLabelResolver';
+import { isFilterValueActive } from '@/platform/filters/filterValueUtils';
+import {
+  loadCustomSavedViews,
+  persistCustomSavedViews,
+  saveActiveSavedViewId,
+} from '@/utils/listViewSavedViewsStorage';
+import {
+  SAVED_VIEW_NAME_MAX_LENGTH,
+  SAVED_VIEW_NAME_HEADER_DISPLAY_MAX_LENGTH,
+  isSavedViewNameValid,
+  normalizeSavedViewName,
+  suggestCopyViewName,
+} from '@/utils/listViewNameLimits';
+import { useNotifications } from '@/composables/useNotifications';
 
 const authStore = useAuthStore();
+const notifications = useNotifications();
 const { activeTabId } = useTabs();
 
 const props = defineProps({
@@ -1543,6 +1594,10 @@ const props = defineProps({
     type: Array,
     required: true
   },
+  filterFields: {
+    type: Array,
+    default: () => []
+  },
   rowKey: {
     type: String,
     default: '_id'
@@ -1562,12 +1617,6 @@ const props = defineProps({
   emptyMessage: {
     type: String,
     default: 'Start by adding your first record'
-  },
-  
-  // Filters - Array of { key, label, options: [{value, label}] }
-  filterConfig: {
-    type: Array,
-    default: () => []
   },
   
   // Pagination
@@ -1744,7 +1793,18 @@ const previewRow = ref(null);
 // Saved View Management (People module only)
 const showSaveViewModal = ref(false);
 const editingView = ref(null);
+const saveMode = ref('create');
 const viewFormData = ref({ name: '', description: '' });
+const viewFormNameError = ref('');
+const activeViewTitleTruncated = ref(false);
+
+const canSaveView = computed(() => isSavedViewNameValid(viewFormData.value.name));
+
+const viewFormNameCharCount = computed(() => viewFormData.value.name.length);
+
+const viewFormNameAtLimit = computed(
+  () => viewFormNameCharCount.value >= SAVED_VIEW_NAME_MAX_LENGTH
+);
 const viewToDelete = ref(null);
 const showDeleteViewModal = ref(false);
 
@@ -1833,6 +1893,7 @@ const deleteRecordName = computed(() => {
 const customizeButtonLabel = computed(() =>
   props.viewMode === 'kanban' ? t('common.listCustomizeKanban') : t('common.listCustomizeView')
 );
+const customizeButtonShortLabel = computed(() => t('common.listCustomizeShort'));
 const handleCustomizeClick = () => {
   if (props.viewMode === 'kanban') {
     showKanbanSettings.value = !showKanbanSettings.value;
@@ -1872,7 +1933,7 @@ const rowHeightLabels = computed(() => ({
 
 // Check if we're on desktop (md breakpoint and above)
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024);
-const isDesktop = computed(() => windowWidth.value >= 768); // md breakpoint
+const isLargeDesktop = computed(() => windowWidth.value >= 1024);
 
 // Stats visibility - show by default on desktop, hide on mobile/tablet
 // Load from localStorage if available, otherwise use default based on screen size
@@ -2806,28 +2867,37 @@ watch(
   { deep: true, immediate: true }
 );
 
-// Computed grid columns class based on number of stats
-const statsGridColsClass = computed(() => {
-  if (!props.statsConfig || props.statsConfig.length === 0) return 'md:grid-cols-1';
-  
-  const count = props.statsConfig.length;
-  // Map count to Tailwind grid classes (up to 12 columns)
-  const gridClasses = {
-    1: 'md:grid-cols-1',
-    2: 'md:grid-cols-2',
-    3: 'md:grid-cols-3',
-    4: 'md:grid-cols-4',
-    5: 'md:grid-cols-5',
-    6: 'md:grid-cols-6',
-    7: 'md:grid-cols-7',
-    8: 'md:grid-cols-8',
-    9: 'md:grid-cols-9',
-    10: 'md:grid-cols-10',
-    11: 'md:grid-cols-11',
-    12: 'md:grid-cols-12'
-  };
-  
-  return gridClasses[count] || 'md:grid-cols-4';
+/** Stats cards must reflect the filtered result set, not tenant-wide aggregates. */
+const statsSource = computed(() => {
+  if (!props.statsConfig?.length) return props.statistics ?? {};
+
+  if (hasActiveFilters.value && dataLength.value === 0) {
+    const zeroed = {};
+    for (const cfg of props.statsConfig) {
+      zeroed[cfg.key] = 0;
+    }
+    return zeroed;
+  }
+
+  if (!hasActiveFilters.value) return props.statistics ?? {};
+
+  const filteredTotal = Number(
+    props.pagination?.totalRecords ?? props.pagination?.total ?? dataLength.value ?? 0
+  ) || 0;
+  const raw = props.statistics ?? {};
+  const reportedTotal = Number(
+    raw.totalOrganizations ?? raw.totalPeople ?? raw.totalRecords ?? 0
+  ) || 0;
+
+  if (reportedTotal !== filteredTotal) {
+    return {
+      ...raw,
+      totalOrganizations: filteredTotal,
+      totalPeople: filteredTotal,
+    };
+  }
+
+  return raw;
 });
 
 // Computed stats for HeadlessUI template
@@ -2835,9 +2905,9 @@ const computedStats = computed(() => {
   if (!props.statsConfig || props.statsConfig.length === 0) return [];
   
   return props.statsConfig.map(config => {
-    const currentValue = props.statistics[config.key] || 0;
+    const currentValue = statsSource.value[config.key] || 0;
     const previousValue = config.previousKey 
-      ? (props.statistics[config.previousKey] || 0)
+      ? (statsSource.value[config.previousKey] || 0)
       : Math.max(0, currentValue - Math.floor(currentValue * (config.changePercent || 0.1)));
     
     // Calculate change percentage
@@ -2852,6 +2922,8 @@ const computedStats = computed(() => {
       formattedStat = formatCurrencyValue(currentValue, { currencyCode }) || '—';
     } else if (config.formatter === 'number') {
       formattedStat = currentValue.toLocaleString();
+    } else if (config.formatter === 'percentage') {
+      formattedStat = `${currentValue}%`;
     } else if (typeof config.formatter === 'function') {
       formattedStat = config.formatter(currentValue);
     } else {
@@ -2865,6 +2937,8 @@ const computedStats = computed(() => {
       formattedPrevious = formatCurrencyValue(previousValue, { currencyCode }) || '—';
     } else if (config.formatter === 'number') {
       formattedPrevious = previousValue.toLocaleString();
+    } else if (config.formatter === 'percentage') {
+      formattedPrevious = `${previousValue}%`;
     } else if (typeof config.formatter === 'function') {
       formattedPrevious = config.formatter(previousValue);
     } else {
@@ -2921,20 +2995,135 @@ const computedColumns = computed(() => {
 
 // Dynamic positioning based on sidebar state (reads localStorage like TabBar)
 const recomputeTrigger = ref(0);
-const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024);
 
 const headerLeft = computed(() => {
   // Force dependency on recomputeTrigger
   const _ = recomputeTrigger.value;
   
   // On mobile/tablet (< 1024px), always at left: 0 (like TabBar)
-  if (viewportWidth.value < 1024) {
+  if (windowWidth.value < 1024) {
     return '0px';
   }
   
   // On desktop (≥ 1024px), position based on sidebar state
   const sidebarCollapsed = localStorage.getItem('arivu-sidebar-collapsed') === 'true';
   return sidebarCollapsed ? '64px' : '256px';
+});
+
+const columnFilterSources = computed(() =>
+  computedColumns.value.map((col) => ({
+    key: col.key,
+    label: col.label,
+    dataType: col.dataType,
+    options: col.options,
+  }))
+);
+
+const filterFieldSources = computed(() => {
+  const fields = Array.isArray(props.filterFields) ? props.filterFields : [];
+  if (fields.length > 0) {
+    return fields.map((field) => ({
+      key: field.key,
+      label: field.label,
+      dataType: field.dataType,
+      options: field.options,
+    }));
+  }
+  return columnFilterSources.value;
+});
+
+const {
+  featureEnabled: columnFiltersFeatureEnabled,
+  effectiveFilterConfig,
+  filterConfigByKey,
+  builderFilterConfigByKey,
+  showInlineColumnFilters,
+  popoverFilterConfig,
+  showDesktopFiltersPopover,
+  showLegacyToolbarFilters,
+  showFilterBuilder,
+} = useListColumnFilters({
+  columns: columnFilterSources,
+  filterFields: filterFieldSources,
+  viewMode: computed(() => props.viewMode),
+  isDesktop: isLargeDesktop,
+});
+
+const { handleFilterOpened: loadFilterFieldOptions, enrichFilterMap } = useFilterFieldOptions(
+  computed(() => props.moduleKey),
+  computed(() => String(authStore.user?._id || ''))
+);
+
+const enrichedColumnFilterConfigByKey = computed(() => enrichFilterMap(filterConfigByKey.value));
+const enrichedBuilderFilterConfigByKey = computed(() => enrichFilterMap(builderFilterConfigByKey.value));
+
+const builderFilterConfigList = computed(() =>
+  Object.values(enrichedBuilderFilterConfigByKey.value)
+);
+
+const filterDebounceTimers = {};
+const DEBOUNCED_FILTER_TYPES = new Set(['text', 'number']);
+const mobileFilterBuilderPanelRef = ref(null);
+const desktopFilterBuilderPanelRef = ref(null);
+const filterRuleMeta = reactive({});
+const filterBuilderQuery = ref(createDefaultRootGroup());
+/** Matches last payload from emitCompiledFilters to detect parent echo vs external filter changes. */
+let lastEmittedFiltersSignature = null;
+
+const builderFilterByKey = computed(() => enrichedBuilderFilterConfigByKey.value);
+
+const filterOperatorsMap = computed(() => {
+  const map = {};
+  Object.entries(filterRuleMeta).forEach(([key, meta]) => {
+    if (meta?.operator) map[key] = meta.operator;
+  });
+  return map;
+});
+
+const mergedFilterByKey = computed(() => ({
+  ...enrichedColumnFilterConfigByKey.value,
+  ...builderFilterByKey.value,
+}));
+
+function buildCompiledListFilters() {
+  const filterByKey = mergedFilterByKey.value;
+  const operators = filterOperatorsMap.value;
+  const { flat, filterQuery } = compileFilterQueryAst(
+    filterBuilderQuery.value,
+    filters,
+    operators,
+    filterByKey
+  );
+
+  const astFlatKeys = new Set(Object.keys(flat));
+  const supplemental = {};
+
+  for (const [key, value] of Object.entries(filters)) {
+    if (key === 'filterQuery' || astFlatKeys.has(key)) continue;
+    const operator = operators[key] ?? 'is';
+    if (!isFilterRuleActive(value, operator)) continue;
+    const filter = filterByKey[key] || inferFallbackFilterConfig(key);
+    if (!filter) continue;
+    supplemental[key] = compileOperatorValueForApi(filter, value, operator);
+  }
+
+  const flatAll = { ...flat, ...supplemental };
+  const apiPayload = filterQuery
+    ? { filterQuery: JSON.stringify(filterQuery), ...supplemental }
+    : flatAll;
+
+  return { flat, flatAll, supplemental, filterQuery, apiPayload };
+}
+
+const activeFilterRulesCount = computed(() =>
+  countActiveFilterRules(filters, filterOperatorsMap.value)
+);
+
+const filterButtonLabel = computed(() => {
+  if (activeFilterRulesCount.value > 0) {
+    return t('common.listFiltersCount', { count: activeFilterRulesCount.value });
+  }
+  return t('common.listFilters');
 });
 
 // Filters
@@ -2950,10 +3139,9 @@ const kanbanFieldsStorageKey = computed(() => `${STORAGE_PREFIX}-${props.moduleK
 const searchTerm = computed(() => searchQuery.value.trim());
 
 const activeFilterCount = computed(() => {
-  // Count filters from both internal filters and externalFilters
-  const internalFilterCount = Object.values(filters).filter(value => value !== '' && value !== undefined).length;
-  const externalFilterCount = props.externalFilters 
-    ? Object.values(props.externalFilters).filter(value => value !== '' && value !== undefined && value !== null).length
+  const internalFilterCount = countActiveFilterRules(filters);
+  const externalFilterCount = props.externalFilters
+    ? Object.values(props.externalFilters).filter((value) => isFilterValueActive(value)).length
     : 0;
   return internalFilterCount + externalFilterCount;
 });
@@ -2963,9 +3151,12 @@ const hasFiltersApplied = computed(() => activeFilterCount.value > 0);
 // Check if any filters are active (including search, internal filters, and external filters)
 const hasActiveFilters = computed(() => {
   const hasSearch = searchTerm.value !== '';
-  const hasInternalFilters = Object.values(filters).some(value => value !== '' && value !== undefined);
-  const hasExternalFilters = props.externalFilters 
-    ? Object.values(props.externalFilters).some(value => value !== '' && value !== undefined && value !== null)
+  const hasInternalFilters = countActiveFilterRules(filters, filterOperatorsMap.value) > 0;
+  const hasExternalFilters = props.externalFilters
+    ? (Boolean(props.externalFilters.filterQuery)
+      || Object.entries(props.externalFilters)
+        .filter(([key]) => key !== 'filterQuery')
+        .some(([, value]) => isFilterValueActive(value)))
     : false;
   return hasSearch || hasInternalFilters || hasExternalFilters;
 });
@@ -2980,14 +3171,6 @@ const effectiveRowNumberOffset = computed(() => {
   if (!Number.isFinite(cur) || !Number.isFinite(lim) || cur < 1 || lim < 1) return 0;
   return (cur - 1) * lim;
 });
-// Create a hash of the first few item IDs to detect data changes
-const dataHash = computed(() => {
-  if (!Array.isArray(props.data) || props.data.length === 0) return 'empty';
-  // Use first 3 item IDs to create a simple hash for the key
-  const ids = props.data.slice(0, 3).map(item => item[props.rowKey] || item._id).join('-');
-  return ids || 'no-ids';
-});
-
 /** Stats strip shimmer while list data is loading */
 const statsBarSkeleton = computed(
   () =>
@@ -3027,6 +3210,26 @@ function isEffectiveDefaultView(viewId) {
   return viewId === effectiveDefaultViewId.value;
 }
 
+const COMMON_SYSTEM_VIEW_IDS = [
+  'all',
+  'assigned-to-me',
+  'my-people',
+  'my-organizations',
+  'my-tasks',
+  'unassigned',
+  'active',
+  'trial',
+];
+
+function isSystemViewId(viewId) {
+  if (!viewId) return false;
+  if (COMMON_SYSTEM_VIEW_IDS.includes(viewId)) return true;
+  const view = props.savedViews?.find((v) => v.id === viewId);
+  return view?.isSystem === true;
+}
+
+const isActiveSystemView = computed(() => isSystemViewId(props.activeSavedViewId));
+
 // Active People view title - source of truth for page title
 // When a saved view is active, title reflects the view name
 // When manual filters/search are applied, title is "Custom"
@@ -3037,10 +3240,13 @@ const activePeopleViewTitle = computed(() => {
     return props.title;
   }
 
-  // If an active view is set, return the view's label
+  // If an active view is set, return the view's label (Custom when a system view was modified)
   if (props.activeSavedViewId) {
     const activeView = props.savedViews.find(view => view.id === props.activeSavedViewId);
     if (activeView) {
+      if (isActiveSystemView.value && isActiveViewModified.value) {
+        return t('common.listViewCustom');
+      }
       return activeView.label;
     }
   }
@@ -3063,34 +3269,280 @@ const activePeopleViewTitle = computed(() => {
   );
 });
 
-// STEP 3: Determine if Save CTA should be shown - DERIVED ONLY
-// Shows "Save view" button ONLY when current state doesn't match any saved view
-// This is READ-ONLY - does NOT mutate state, filters, or views
-const shouldShowSaveCTA = computed(() => {
-  // Only show save CTA if saved views are available
-  if (!props.savedViews || props.savedViews.length === 0) {
+// STEP 1: Normalize state - PURE FUNCTION
+// Extracts canonical view state (filters, sort, columns) for comparison
+// Explicitly EXCLUDES: pagination, selection, scroll, loading
+function normalizePeopleViewState(state) {
+  const normalizedFilters = {};
+  Object.keys(state.filters || {}).forEach((key) => {
+    const value = state.filters[key];
+    if (value !== undefined && value !== '') {
+      normalizedFilters[key] = value === null ? null : String(value);
+    }
+  });
+
+  const sortedFilterKeys = Object.keys(normalizedFilters).sort();
+  const normalizedFiltersObj = {};
+  sortedFilterKeys.forEach((key) => {
+    normalizedFiltersObj[key] = normalizedFilters[key];
+  });
+
+  const normalizedSort = {
+    field: String(state.sortField || 'createdAt'),
+    order: String(state.sortOrder || 'desc'),
+  };
+
+  const normalizedColumns = (state.columns || [])
+    .filter((col) => col.visible !== false)
+    .map((col) => ({
+      key: String(col.key || ''),
+      visible: col.visible !== false,
+      order: typeof col.order === 'number' ? col.order : 999,
+    }))
+    .sort((a, b) => a.order - b.order)
+    .map((col) => col.key);
+
+  return {
+    filters: normalizedFiltersObj,
+    sort: normalizedSort,
+    columns: normalizedColumns,
+  };
+}
+
+function canonicalizeFilterQueryString(value) {
+  if (value === undefined || value === null || value === '') return '';
+  try {
+    const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+    return JSON.stringify(parsed);
+  } catch {
+    return String(value);
+  }
+}
+
+function viewStateMatches(view, normalizedState, currentUserId, currentSearch = '') {
+  if (!view) return false;
+
+  const normalizeFilterValue = (key, value, userId) => {
+    if (key === 'filterQuery') {
+      return canonicalizeFilterQueryString(value);
+    }
+    if (key === 'assignedTo') {
+      if (value === 'me' && userId) return userId;
+      if (value === 'unassigned') return null;
+      if (value === userId && userId) return userId;
+      return value === null ? null : String(value);
+    }
+    return value === null ? null : String(value);
+  };
+
+  const filtersMatch = (currentFilters, viewFilters, userId) => {
+    const currentKeys = Object.keys(currentFilters).sort();
+    const viewKeys = Object.keys(viewFilters || {}).filter((k) => {
+      const v = viewFilters[k];
+      return v !== undefined && v !== '';
+    }).sort();
+
+    if (currentKeys.length !== viewKeys.length) return false;
+
+    for (let i = 0; i < currentKeys.length; i += 1) {
+      if (currentKeys[i] !== viewKeys[i]) return false;
+
+      const key = currentKeys[i];
+      const currentValue = normalizeFilterValue(key, currentFilters[key], userId);
+      const viewValue = normalizeFilterValue(key, viewFilters[key], userId);
+      if (currentValue !== viewValue) return false;
+    }
+
+    return true;
+  };
+
+  const hasExplicitConfig = Boolean(view.config || view.id?.startsWith('custom-'));
+  const viewConfig = view.config || {
+    filters: view.filters || {},
+    sort: view.sort || { field: 'createdAt', order: 'desc' },
+    columns: view.columns || [],
+    search: view.search,
+  };
+  const viewFilters = {};
+  if (viewConfig.filterQuery) {
+    viewFilters.filterQuery = typeof viewConfig.filterQuery === 'string'
+      ? viewConfig.filterQuery
+      : JSON.stringify(viewConfig.filterQuery);
+  }
+  const savedFilters = viewConfig.filters || {};
+  for (const [key, value] of Object.entries(savedFilters)) {
+    if (key === 'filterQuery' || value === undefined || value === '') continue;
+    viewFilters[key] = value;
+  }
+  if (!viewConfig.filterQuery && Object.keys(viewFilters).length === 0) {
+    Object.assign(viewFilters, savedFilters);
+  }
+  const normalizedViewFilters = normalizePeopleViewState({
+    filters: viewFilters,
+    sortField: 'createdAt',
+    sortOrder: 'desc',
+    columns: [],
+  }).filters;
+
+  if (!filtersMatch(normalizedState.filters, normalizedViewFilters, currentUserId)) {
     return false;
   }
-  
-  // Get current state
-  const currentState = {
-    filters: filters,
+
+  if (hasExplicitConfig) {
+    const normalizedViewState = normalizePeopleViewState({
+      filters: viewFilters,
+      sortField: viewConfig.sort?.field || 'createdAt',
+      sortOrder: viewConfig.sort?.order || 'desc',
+      columns: viewConfig.columns || [],
+    });
+
+    if (normalizedState.sort.field !== normalizedViewState.sort.field
+      || normalizedState.sort.order !== normalizedViewState.sort.order) {
+      return false;
+    }
+
+    if (viewConfig.columns?.length) {
+      if (normalizedState.columns.length !== normalizedViewState.columns.length) {
+        return false;
+      }
+
+      const columnsMatch = normalizedState.columns.every(
+        (key, index) => key === normalizedViewState.columns[index]
+      );
+      if (!columnsMatch) return false;
+    }
+  }
+
+  const savedSearch = String(viewConfig.search ?? '').trim();
+  if (savedSearch !== String(currentSearch ?? '').trim()) return false;
+
+  return true;
+}
+
+function doesStateMatchAnySavedView(normalizedState, savedViews, currentUserId, currentSearch = '') {
+  if (!savedViews || savedViews.length === 0) return false;
+
+  return savedViews.some((view) => viewStateMatches(
+    view,
+    normalizedState,
+    currentUserId,
+    currentSearch
+  ));
+}
+
+const normalizedCurrentViewState = computed(() => {
+  const { apiPayload } = buildCompiledListFilters();
+
+  return normalizePeopleViewState({
+    filters: apiPayload,
     sortField: props.sortField,
     sortOrder: props.sortOrder,
-    columns: visibleColumns.value
+    columns: visibleColumns.value,
+  });
+});
+
+const activeSavedViewRecord = computed(() => {
+  if (!props.activeSavedViewId || !props.savedViews?.length) return null;
+  return props.savedViews.find((view) => view.id === props.activeSavedViewId) ?? null;
+});
+
+function buildCurrentViewStateSignature() {
+  return JSON.stringify({
+    state: normalizedCurrentViewState.value,
+    search: searchQuery.value.trim(),
+  });
+}
+
+/** Snapshot of UI state when a custom view was last applied or saved — used for dirty detection. */
+const viewCleanBaseline = ref(null);
+
+const isActiveViewHydrating = ref(
+  Boolean(props.activeSavedViewId && !isSystemViewId(props.activeSavedViewId))
+);
+
+function syncViewCleanBaseline(viewId = props.activeSavedViewId) {
+  if (!viewId || isSystemViewId(viewId)) {
+    viewCleanBaseline.value = null;
+    return;
+  }
+  viewCleanBaseline.value = {
+    viewId,
+    signature: buildCurrentViewStateSignature(),
   };
-  
-  // Normalize current state
-  const normalizedState = normalizePeopleViewState(currentState);
-  
-  // Get current user ID for filter normalization
-  const currentUserId = authStore.user?._id;
-  
-  // Check if state matches any saved view
-  const matchesAnyView = doesStateMatchAnySavedView(normalizedState, props.savedViews, currentUserId);
-  
-  // Show CTA only when state does NOT match any saved view
-  return !matchesAnyView;
+}
+
+function currentStateMatchesActiveSavedView() {
+  if (!activeSavedViewRecord.value) return false;
+  return viewStateMatches(
+    activeSavedViewRecord.value,
+    normalizedCurrentViewState.value,
+    authStore.user?._id,
+    searchQuery.value.trim()
+  );
+}
+
+const isActiveViewModified = computed(() => {
+  if (isActiveViewHydrating.value) return false;
+  if (!activeSavedViewRecord.value || isActiveSystemView.value) return false;
+
+  if (currentStateMatchesActiveSavedView()) return false;
+
+  const baseline = viewCleanBaseline.value;
+  const currentSignature = buildCurrentViewStateSignature();
+
+  if (baseline?.viewId === props.activeSavedViewId) {
+    return baseline.signature !== currentSignature;
+  }
+
+  return true;
+});
+
+// Current state doesn't match any saved view (orphan / Custom)
+const shouldShowSaveCTA = computed(() => {
+  if (!props.savedViews?.length) return false;
+  return !doesStateMatchAnySavedView(
+    normalizedCurrentViewState.value,
+    props.savedViews,
+    authStore.user?._id,
+    searchQuery.value.trim()
+  );
+});
+
+const canUpdateActiveView = computed(() => (
+  isActiveViewModified.value
+  && activeSavedViewRecord.value
+  && !isActiveSystemView.value
+));
+
+const shouldShowSaveAsNew = computed(() => (
+  !isActiveSystemView.value
+  && isActiveViewModified.value
+  && activeSavedViewRecord.value
+));
+
+const shouldShowSaveNewOnly = computed(() => {
+  if (!props.savedViews?.length) return false;
+  if (isActiveSystemView.value) {
+    return isActiveViewModified.value || shouldShowSaveCTA.value;
+  }
+  return shouldShowSaveCTA.value && !isActiveViewModified.value;
+});
+
+const showActiveViewModifiedIndicator = computed(() => (
+  isActiveViewModified.value && !isActiveSystemView.value
+));
+
+const showViewSaveActions = computed(() => (
+  shouldShowSaveNewOnly.value
+  || (isActiveViewModified.value && Boolean(activeSavedViewRecord.value))
+));
+
+const saveViewModalTitle = computed(() => {
+  if (saveMode.value === 'rename') return t('common.listRenameViewTitle');
+  if (!isActiveSystemView.value && isActiveViewModified.value && activeSavedViewRecord.value) {
+    return t('common.listSaveAsNewViewTitle');
+  }
+  return t('common.listSaveCurrentView');
 });
 
 const emptyStateTitle = computed(() => {
@@ -3116,8 +3568,7 @@ const emptyStateMessage = computed(() => {
   return props.emptyMessage || t('common.listEmptyMessage');
 });
 
-const getFilterAllLabel = (filter) =>
-  t('common.listFilterAll', { filter: filter.label || filter.key });
+const getFilterAllLabel = (filter) => resolveFilterAllLabel(filter, t);
 
 const canClearFilters = computed(() => hasActiveFilters.value);
 
@@ -3161,7 +3612,7 @@ const getFilterLabel = (filter, value) => {
  * @returns Human-readable label for the filter
  */
 const getSuggestedFilterLabel = (fieldKey) => {
-  const filter = props.filterConfig?.find(f => f.key === fieldKey);
+  const filter = builderFilterByKey.value[fieldKey];
   return resolveListFilterLabel(
     props.moduleKey,
     fieldKey,
@@ -3181,11 +3632,8 @@ const getSuggestedFilterLabel = (fieldKey) => {
  * @param fieldKey - The field key to configure
  */
 const handleSuggestedFilterClick = (fieldKey) => {
-  // Find the filter in filterConfig
-  const filterIndex = props.filterConfig?.findIndex(f => f.key === fieldKey);
-  
-  if (filterIndex === -1 || filterIndex === undefined) {
-    console.warn(`[ListView] Suggested filter "${fieldKey}" not found in filterConfig`);
+  if (!builderFilterByKey.value[fieldKey]) {
+    console.warn(`[ListView] Suggested filter "${fieldKey}" not found in column filters`);
     return;
   }
   
@@ -3208,18 +3656,112 @@ const handleStatClick = (item) => {
 };
 
 // Get count of active filters for mobile badge
-const getActiveFiltersCount = () => {
-  return Object.values(filters).filter(value => value !== '' && value !== null && value !== undefined).length;
+const getActiveFiltersCount = () => countActiveFilterRules(filters, filterOperatorsMap.value);
+
+const emitCompiledFilters = () => {
+  const { apiPayload } = buildCompiledListFilters();
+  lastEmittedFiltersSignature = JSON.stringify(apiPayload);
+  emit('update:filters', apiPayload);
 };
 
 // Handle filter change
 const handleFilterChange = (key, value) => {
-  // If value is provided, use it; otherwise get from filters
   if (value !== undefined) {
     filters[key] = value;
   }
-  emit('update:filters', { ...filters });
-  emit('fetch');
+  emitCompiledFilters();
+};
+
+const trackFilterRuleMeta = (key, source, operator = 'is') => {
+  const existing = filterRuleMeta[key];
+  filterRuleMeta[key] = {
+    id: existing?.id || createRuleId(),
+    source,
+    operator,
+    updatedAt: Date.now(),
+  };
+};
+
+const handleFilterInput = (key, value, filterType, source = 'column') => {
+  filters[key] = value;
+  if (!isFilterValueActive(value)) {
+    delete filterRuleMeta[key];
+    clearTimeout(filterDebounceTimers[key]);
+    handleFilterChange(key, value);
+    return;
+  }
+  const filter = mergedFilterByKey.value[key];
+  const operator = filterRuleMeta[key]?.operator ?? getDefaultOperatorForFilter(filter);
+  trackFilterRuleMeta(key, source, operator);
+  if (!columnFiltersFeatureEnabled || !DEBOUNCED_FILTER_TYPES.has(String(filterType || ''))) {
+    handleFilterChange(key, value);
+    return;
+  }
+  clearTimeout(filterDebounceTimers[key]);
+  filterDebounceTimers[key] = setTimeout(() => {
+    emitCompiledFilters();
+  }, 400);
+};
+
+const handleBuilderFilterApply = ({ key, value, operator }) => {
+  const filter = builderFilterByKey.value[key];
+  const op = operator ?? getDefaultOperatorForFilter(filter);
+  trackFilterRuleMeta(key, 'builder', op);
+  if (!operatorRequiresValue(op)) {
+    filters[key] = '';
+    emitCompiledFilters();
+    return;
+  }
+  const active = isFilterRuleActive(value, op);
+  filters[key] = active ? value : '';
+  if (active) {
+    emitCompiledFilters();
+  }
+};
+
+const handleBuilderClearField = (key) => {
+  filters[key] = '';
+  delete filterRuleMeta[key];
+  emitCompiledFilters();
+};
+
+const handleFilterOpened = async (key) => {
+  await loadFilterFieldOptions(key, builderFilterByKey.value[key]);
+  emit('filter-opened', key);
+};
+
+const openFilterBuilder = () => {
+  nextTick(() => {
+    mobileFilterBuilderPanelRef.value?.syncRowsFromFilters?.();
+    desktopFilterBuilderPanelRef.value?.syncRowsFromFilters?.();
+  });
+};
+
+const handleFilterQueryUpdate = (query) => {
+  filterBuilderQuery.value = query;
+  emitCompiledFilters();
+};
+
+const handleColumnFilterChange = ({ key, value, filterType }) => {
+  handleFilterInput(key, value, filterType, 'column');
+};
+
+const handleActiveFilterChipRemove = (id) => {
+  if (id === '__search__') {
+    clearSearch();
+    return;
+  }
+  delete filterRuleMeta[id];
+  handleFilterChange(id, '');
+};
+
+const clearColumnFilters = () => {
+  Object.keys(enrichedColumnFilterConfigByKey.value).forEach((key) => {
+    filters[key] = '';
+    delete filterRuleMeta[key];
+  });
+  filterBuilderQuery.value = createDefaultRootGroup();
+  emitCompiledFilters();
 };
 
 // Update filters (kept for backward compatibility if needed)
@@ -3229,32 +3771,29 @@ const updateFilters = (key, value) => {
   emit('fetch');
 };
 
-// Initialize filters from filterConfig
-watch(() => props.filterConfig, (newConfig) => {
-  if (!Array.isArray(newConfig) || newConfig.length === 0) {
-    if (import.meta.env.DEV && props.moduleKey === 'people') {
-      console.log('[ListView] filterConfig is empty or not an array:', {
-        isArray: Array.isArray(newConfig),
-        length: newConfig?.length,
-        value: newConfig
-      });
-    }
-    return;
-  }
-  
-  if (import.meta.env.DEV && props.moduleKey === 'people') {
-    console.log('[ListView] filterConfig received:', {
-      count: newConfig.length,
-      filters: newConfig.map(f => ({ key: f.key, filterType: f.filterType, hasOptions: !!f.options, optionsCount: f.options?.length || 0 }))
-    });
-  }
-  
-  newConfig.forEach(filter => {
-    if (filter && filter.key && !(filter.key in filters)) {
-      filters[filter.key] = '';
+function ensureFilterKeys(configMap) {
+  if (!configMap) return;
+  Object.keys(configMap).forEach((key) => {
+    if (!(key in filters)) {
+      filters[key] = '';
     }
   });
-}, { immediate: true });
+}
+
+watch(
+  enrichedBuilderFilterConfigByKey,
+  (configMap) => ensureFilterKeys(configMap),
+  { immediate: true, deep: true }
+);
+
+watch(
+  enrichedColumnFilterConfigByKey,
+  (configMap) => {
+    if (!columnFiltersFeatureEnabled) return;
+    ensureFilterKeys(configMap);
+  },
+  { immediate: true, deep: true }
+);
 
 onMounted(async () => {
   let shouldRefetch = false;
@@ -3268,6 +3807,23 @@ onMounted(async () => {
   // Restore row height
   rowHeight.value = getDefaultRowHeight();
 
+  const activeSavedView = props.activeSavedViewId
+    ? props.savedViews?.find((view) => view.id === props.activeSavedViewId)
+    : null;
+
+  const shouldApplyActiveSavedView = Boolean(
+    activeSavedView
+    && (
+      activeSavedView.config
+      || activeSavedView.id?.startsWith('custom-')
+      || isSystemViewId(activeSavedView.id)
+    )
+  );
+
+  if (shouldApplyActiveSavedView) {
+    // applyViewConfig → update:filters already triggers ModuleList fetchData()
+    applySavedViewFromRecord(activeSavedView);
+  } else {
   // Restore search
   const savedSearch = localStorage.getItem(searchStorageKey.value);
   if (savedSearch !== null) {
@@ -3281,15 +3837,27 @@ onMounted(async () => {
   if (savedFilters) {
     try {
       const parsed = JSON.parse(savedFilters);
+      const savedValues = parsed?.filters ?? parsed;
+      const savedOperators = parsed?.operators ?? {};
       let changed = false;
       Object.keys(filters).forEach(key => {
-        if (parsed[key] !== undefined) {
-          filters[key] = parsed[key];
+        if (savedValues[key] !== undefined) {
+          filters[key] = savedValues[key];
           changed = true;
         }
       });
+      Object.entries(savedOperators).forEach(([key, operator]) => {
+        if (operator) {
+          trackFilterRuleMeta(key, 'builder', String(operator));
+          changed = true;
+        }
+      });
+      if (parsed?.query) {
+        filterBuilderQuery.value = parsed.query;
+        changed = true;
+      }
       if (changed) {
-        emit('update:filters', { ...filters });
+        emitCompiledFilters();
         shouldRefetch = true;
       }
     } catch (error) {
@@ -3311,66 +3879,170 @@ onMounted(async () => {
       console.warn('Failed to parse saved sort', error);
     }
   }
+  }
 
   if (shouldRefetch) {
     nextTick(() => emit('fetch'));
   }
-});
 
-watch(searchQuery, (value) => {
-  if (value) {
-    localStorage.setItem(searchStorageKey.value, value);
+  if (shouldApplyActiveSavedView) {
+    await nextTick();
+    syncViewCleanBaseline(activeSavedView.id);
+    isActiveViewHydrating.value = false;
   } else {
-    localStorage.removeItem(searchStorageKey.value);
+    isActiveViewHydrating.value = false;
   }
 });
 
 watch(
-  filters,
-  (value) => {
-    localStorage.setItem(filterStorageKey.value, JSON.stringify(value));
+  [
+    normalizedCurrentViewState,
+    searchQuery,
+    () => props.activeSavedViewId,
+    () => activeSavedViewRecord.value,
+  ],
+  () => {
+    if (isActiveViewHydrating.value || !activeSavedViewRecord.value || isActiveSystemView.value) {
+      return;
+    }
+    if (currentStateMatchesActiveSavedView()) {
+      syncViewCleanBaseline(props.activeSavedViewId);
+    }
+  },
+  { flush: 'post', deep: true }
+);
+
+watch(searchQuery, (value) => {
+  try {
+    if (value) {
+      localStorage.setItem(searchStorageKey.value, value);
+    } else {
+      localStorage.removeItem(searchStorageKey.value);
+    }
+  } catch (error) {
+    console.warn('[ListView] Failed to persist search session:', error);
+  }
+});
+
+watch(
+  [filters, filterRuleMeta],
+  () => {
+    safePersistFilterBuilderSession();
   },
   { deep: true }
 );
 
 // Watch externalFilters prop and sync to internal filters object
-// This ensures hasFiltersApplied correctly detects filters when stat is clicked or saved view is selected
 watch(
   () => props.externalFilters,
   (newExternalFilters) => {
     if (!newExternalFilters) return;
-    
-    // First, clear all existing filters
-    Object.keys(filters).forEach(key => {
-      filters[key] = '';
+
+    const incomingSignature = JSON.stringify(newExternalFilters);
+    if (incomingSignature === lastEmittedFiltersSignature) return;
+
+    if (Object.keys(newExternalFilters).length === 0) {
+      Object.keys(filters).forEach((key) => {
+        delete filters[key];
+      });
+      Object.keys(filterRuleMeta).forEach((key) => {
+        delete filterRuleMeta[key];
+      });
+      filterBuilderQuery.value = createDefaultRootGroup();
+      lastEmittedFiltersSignature = incomingSignature;
+      return;
+    }
+
+    if (isFilterQueryOnlyPayload(newExternalFilters)) {
+      const activeView = props.activeSavedViewId
+        ? props.savedViews?.find((view) => view.id === props.activeSavedViewId)
+        : null;
+      if (activeView) {
+        applySavedViewFromRecord(activeView, { force: true });
+        lastEmittedFiltersSignature = incomingSignature;
+        return;
+      }
+
+      try {
+        const saved = localStorage.getItem(filterStorageKey.value);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          applyFilterBuilderState({
+            filters: parsed?.filters,
+            operators: parsed?.operators,
+            query: parsed?.query,
+          });
+          lastEmittedFiltersSignature = incomingSignature;
+          return;
+        }
+      } catch {
+        /* use filterQuery payload as-is */
+      }
+      return;
+    }
+
+    Object.keys(filters).forEach((key) => {
+      if (key !== 'filterQuery') {
+        filters[key] = '';
+      }
     });
-    
-    // Then apply new external filters
+
     if (Object.keys(newExternalFilters).length > 0) {
-      Object.keys(newExternalFilters).forEach(key => {
+      Object.keys(newExternalFilters).forEach((key) => {
+        if (key === 'filterQuery') return;
         const value = newExternalFilters[key];
-        // Handle all value types including boolean, null, and empty strings
         if (value !== undefined) {
           filters[key] = value;
         }
       });
     }
+
+    lastEmittedFiltersSignature = null;
+    Object.keys(filterRuleMeta).forEach((key) => {
+      delete filterRuleMeta[key];
+    });
+
+    filterBuilderQuery.value = syncRootGroupFromActiveFilters(
+      filterBuilderQuery.value,
+      builderFilterConfigList.value,
+      filters,
+      filterOperatorsMap.value
+    );
   },
   { deep: true, immediate: true }
 );
 
+watch(
+  () => props.activeSavedViewId,
+  (viewId, previousViewId) => {
+    if (!viewId || viewId === previousViewId || !props.savedViews?.length) return;
+    const view = props.savedViews.find((entry) => entry.id === viewId);
+    if (!view) return;
+    applySavedViewFromRecord(view, { force: true });
+  }
+);
+
 // Clear filters
 const clearFilters = () => {
+  lastAppliedSavedViewSignature.value = '';
+  viewCleanBaseline.value = null;
   searchQuery.value = '';
   Object.keys(filters).forEach(key => {
     filters[key] = '';
   });
+  Object.keys(filterRuleMeta).forEach((key) => {
+    delete filterRuleMeta[key];
+  });
+  filterBuilderQuery.value = createDefaultRootGroup();
   emit('update:searchQuery', '');
-  emit('update:filters', filters);
-  emit('fetch');
+  emitCompiledFilters();
   localStorage.removeItem(searchStorageKey.value);
   localStorage.removeItem(filterStorageKey.value);
   localStorage.removeItem(sortStorageKey.value);
+  nextTick(() => {
+    mobileFilterBuilderPanelRef.value?.syncRowsFromFilters?.();
+    desktopFilterBuilderPanelRef.value?.syncRowsFromFilters?.();
+  });
 };
 
 /** System fields that are intentionally list-visible (e.g. Quote #, totals) stay in Customize view. */
@@ -4205,63 +4877,35 @@ const getActionIcon = (iconName) => {
 };
 
 // Saved View Management (works for all modules with savedViews prop)
-const viewsStorageKey = computed(() => `${STORAGE_PREFIX}-${props.moduleKey}-saved-views`);
+const savedViewsUserId = computed(() => authStore.user?._id ?? null);
 const systemViewIds = computed(() => {
-  // Extract system view IDs from savedViews prop
-  // System views are typically those with common IDs like 'all', 'assigned-to-me', etc.
-  if (!props.savedViews || props.savedViews.length === 0) return [];
-  
-  // Common system view IDs across modules
-  const commonSystemIds = ['all', 'assigned-to-me', 'my-people', 'my-organizations', 'my-tasks', 'unassigned', 'active', 'trial'];
-  
-  // Return IDs that match common system patterns or are explicitly marked as system views
+  if (!props.savedViews?.length) return [];
   return props.savedViews
-    .filter(view => {
-      // Check if it's a common system view ID
-      if (commonSystemIds.includes(view.id)) return true;
-      // Check if view has a system flag (if added in future)
-      return view.isSystem === true;
-    })
-    .map(view => view.id);
+    .filter((view) => isSystemViewId(view.id))
+    .map((view) => view.id);
 });
 
-const isSystemView = (viewId) => {
-  return systemViewIds.value.includes(viewId);
-};
+const isSystemView = (viewId) => isSystemViewId(viewId);
 
 // Load custom saved views from localStorage
-const loadCustomViews = () => {
-  if (!props.savedViews || props.savedViews.length === 0) return [];
-  
-  try {
-    const saved = localStorage.getItem(viewsStorageKey.value);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      return Array.isArray(parsed) ? parsed : [];
-    }
-  } catch (error) {
-    console.warn('[ListView] Failed to load custom views:', error);
-  }
-  return [];
-};
+const loadCustomViews = () =>
+  loadCustomSavedViews(props.moduleKey, savedViewsUserId.value);
 
-// Save custom views to localStorage
-const saveCustomViews = (views) => {
-  if (!props.savedViews || props.savedViews.length === 0) return;
-  
-  try {
-    // Only save custom views (not system views)
-    const customViews = views.filter(v => !isSystemView(v.id));
-    localStorage.setItem(viewsStorageKey.value, JSON.stringify(customViews));
-  } catch (error) {
-    console.warn('[ListView] Failed to save custom views:', error);
-  }
+// Save custom views (local cache + server)
+const saveCustomViews = async (views) => {
+  const customViews = views.filter((v) => !isSystemView(v.id));
+  await persistCustomSavedViews(props.moduleKey, savedViewsUserId.value, customViews);
 };
 
 // Get current view configuration (filters, columns, sort, search)
 const getCurrentViewConfig = () => {
+  const { flatAll, filterQuery } = buildCompiledListFilters();
+
   return {
-    filters: { ...filters },
+    filters: { ...flatAll },
+    operators: { ...filterOperatorsMap.value },
+    query: JSON.parse(JSON.stringify(filterBuilderQuery.value)),
+    filterQuery: filterQuery ? JSON.stringify(filterQuery) : undefined,
     search: searchQuery.value,
     sort: {
       field: props.sortField,
@@ -4276,178 +4920,222 @@ const getCurrentViewConfig = () => {
   };
 };
 
-// STEP 1: Normalize state - PURE FUNCTION
-// Extracts canonical view state (filters, sort, columns) for comparison
-// Explicitly EXCLUDES: pagination, selection, scroll, loading
-const normalizePeopleViewState = (state) => {
-  // Extract filters - normalize empty strings and undefined to consistent representation
-  const normalizedFilters = {};
-  Object.keys(state.filters || {}).forEach(key => {
-    const value = state.filters[key];
-    // Only include filters with meaningful values (null is valid, undefined/'' are not)
-    if (value !== undefined && value !== '') {
-      normalizedFilters[key] = value === null ? null : String(value);
-    }
-  });
-  
-  // Sort keys for consistent comparison
-  const sortedFilterKeys = Object.keys(normalizedFilters).sort();
-  const normalizedFiltersObj = {};
-  sortedFilterKeys.forEach(key => {
-    normalizedFiltersObj[key] = normalizedFilters[key];
-  });
-  
-  // Extract sort - normalize field and order
-  const normalizedSort = {
-    field: String(state.sortField || 'createdAt'),
-    order: String(state.sortOrder || 'desc')
-  };
-  
-  // Extract visible columns - normalize visible state and order
-  const normalizedColumns = (state.columns || [])
-    .filter(col => col.visible !== false) // Only visible columns
-    .map(col => ({
-      key: String(col.key || ''),
-      visible: col.visible !== false,
-      order: typeof col.order === 'number' ? col.order : 999
-    }))
-    .sort((a, b) => a.order - b.order) // Sort by order
-    .map(col => col.key); // Return just keys for comparison
-  
+function resolveSavedViewConfig(view) {
+  if (!view) return null;
+  if (view.config) return view.config;
   return {
-    filters: normalizedFiltersObj,
-    sort: normalizedSort,
-    columns: normalizedColumns
+    filters: view.filters || {},
+    search: view.search,
+    sort: view.sort,
+    columns: view.columns,
   };
-};
+}
 
-// STEP 2: Match state against saved views - PURE FUNCTION
-// Compares normalized state with saved views without any side effects
-const doesStateMatchAnySavedView = (normalizedState, savedViews, currentUserId) => {
-  if (!savedViews || savedViews.length === 0) return false;
-  
-  // Helper to normalize filters for comparison (handles 'me' and 'unassigned' values)
-  const normalizeFilterValue = (key, value, userId) => {
-    if (key === 'assignedTo') {
-      // Normalize 'me' to userId and 'unassigned' to null for comparison
-      if (value === 'me' && userId) return userId;
-      if (value === 'unassigned') return null;
-      if (value === userId && userId) return userId;
-      return value === null ? null : String(value);
+function viewConfigHasActiveFilters(config) {
+  if (!config) return false;
+  if (config.filterQuery) return true;
+  if (config.query) return true;
+  return Object.keys(config.filters || {}).some((key) => {
+    const value = config.filters[key];
+    return value !== undefined && value !== '';
+  });
+}
+
+function isFilterQueryOnlyPayload(payload) {
+  return Boolean(payload?.filterQuery) && Object.keys(payload).length === 1;
+}
+
+const FILTER_SESSION_STORAGE_MAX_CHARS = 120_000;
+
+function buildFilterSessionStoragePayload() {
+  const activeFilters = {};
+  for (const [key, value] of Object.entries(filters)) {
+    if (key === 'filterQuery') continue;
+    if (!isFilterValueActive(value)) continue;
+    activeFilters[key] = value;
+  }
+
+  const activeOperators = {};
+  for (const [key, operator] of Object.entries(filterOperatorsMap.value)) {
+    if (!operator) continue;
+    if (activeFilters[key] !== undefined || filterRuleMeta[key]) {
+      activeOperators[key] = operator;
     }
-    return value === null ? null : String(value);
+  }
+
+  return {
+    filters: activeFilters,
+    operators: activeOperators,
+    query: filterBuilderQuery.value,
   };
-  
-  // Helper to compare filters
-  const filtersMatch = (currentFilters, viewFilters, userId) => {
-    const currentKeys = Object.keys(currentFilters).sort();
-    const viewKeys = Object.keys(viewFilters || {}).filter(k => {
-      const v = viewFilters[k];
-      return v !== undefined && v !== '';
-    }).sort();
-    
-    if (currentKeys.length !== viewKeys.length) return false;
-    
-    for (let i = 0; i < currentKeys.length; i++) {
-      if (currentKeys[i] !== viewKeys[i]) return false;
-      
-      const key = currentKeys[i];
-      const currentValue = normalizeFilterValue(key, currentFilters[key], userId);
-      const viewValue = normalizeFilterValue(key, viewFilters[key], userId);
-      
-      // Compare normalized values
-      if (currentValue !== viewValue) {
-        return false;
-      }
-    }
-    
-    return true;
-  };
-  
-  // Compare against each saved view
-  for (const view of savedViews) {
-    // Check if view has explicit config (means it was saved with full config including columns/sort)
-    const hasExplicitConfig = !!view.config;
-    
-    // Get config from view (may be in view.config or view directly for backward compat)
-    const viewConfig = view.config || {
-      filters: view.filters || {},
-      sort: view.sort || { field: 'createdAt', order: 'desc' },
-      columns: view.columns || []
-    };
-    
-    // Normalize view filters for comparison
-    const viewFilters = viewConfig.filters || {};
-    
-    // Compare filters (always required)
-    const normalizedViewFilters = normalizePeopleViewState({
-      filters: viewFilters,
-      sortField: 'createdAt', // dummy values for filter normalization
-      sortOrder: 'desc',
-      columns: []
-    }).filters;
-    
-    if (!filtersMatch(normalizedState.filters, normalizedViewFilters, currentUserId)) {
-      continue;
-    }
-    
-    // If view has explicit config, also compare sort and columns
-    // System views without explicit config only need filters to match
-    if (hasExplicitConfig) {
-      // Normalize view state for full comparison
-      const normalizedViewState = normalizePeopleViewState({
-        filters: viewFilters,
-        sortField: viewConfig.sort?.field || 'createdAt',
-        sortOrder: viewConfig.sort?.order || 'desc',
-        columns: viewConfig.columns || []
-      });
-      
-      // Compare sort
-      if (normalizedState.sort.field !== normalizedViewState.sort.field ||
-          normalizedState.sort.order !== normalizedViewState.sort.order) {
-        continue;
-      }
-      
-      // Compare columns (order and visibility)
-      if (normalizedState.columns.length !== normalizedViewState.columns.length) {
-        continue;
-      }
-      
-      // Check column keys match (order already normalized)
-      const columnsMatch = normalizedState.columns.every((key, index) => 
-        key === normalizedViewState.columns[index]
-      );
-      
-      if (!columnsMatch) {
-        continue;
-      }
-    }
-    
-    // All required components match!
+}
+
+function shouldPersistEphemeralFilterSession() {
+  if (!props.activeSavedViewId || isSystemViewId(props.activeSavedViewId)) {
     return true;
   }
-  
   return false;
-};
+}
+
+function safePersistFilterBuilderSession() {
+  if (!shouldPersistEphemeralFilterSession()) {
+    try {
+      localStorage.removeItem(filterStorageKey.value);
+    } catch {
+      /* ignore */
+    }
+    return;
+  }
+
+  const payload = buildFilterSessionStoragePayload();
+  const serialized = JSON.stringify(payload);
+  if (serialized.length > FILTER_SESSION_STORAGE_MAX_CHARS) {
+    console.warn('[ListView] Skipping filter session localStorage — payload too large');
+    return;
+  }
+
+  try {
+    localStorage.setItem(filterStorageKey.value, serialized);
+  } catch (error) {
+    if (error?.name === 'QuotaExceededError') {
+      try {
+        localStorage.removeItem(filterStorageKey.value);
+        localStorage.setItem(filterStorageKey.value, serialized);
+      } catch {
+        console.warn('[ListView] Filter session localStorage quota exceeded');
+      }
+      return;
+    }
+    console.warn('[ListView] Failed to persist filter session:', error);
+  }
+}
+
+function persistFilterBuilderSession() {
+  safePersistFilterBuilderSession();
+}
+
+function applyFilterBuilderState(config) {
+  if (!config) return;
+
+  Object.keys(filterRuleMeta).forEach((key) => {
+    delete filterRuleMeta[key];
+  });
+
+  if (config.filters) {
+    Object.keys(filters).forEach((key) => {
+      if (key !== 'filterQuery') {
+        filters[key] = '';
+      }
+    });
+    Object.entries(config.filters).forEach(([key, value]) => {
+      if (key === 'filterQuery') return;
+      filters[key] = value;
+    });
+  }
+
+  if (config.operators) {
+    Object.entries(config.operators).forEach(([key, operator]) => {
+      if (operator) {
+        trackFilterRuleMeta(key, 'builder', String(operator));
+      }
+    });
+  }
+
+  if (config.query) {
+    filterBuilderQuery.value = JSON.parse(JSON.stringify(config.query));
+  } else if (config.filters) {
+    if (!viewConfigHasActiveFilters(config)) {
+      filterBuilderQuery.value = createDefaultRootGroup();
+    } else {
+      filterBuilderQuery.value = syncRootGroupFromActiveFilters(
+        filterBuilderQuery.value,
+        builderFilterConfigList.value,
+        filters,
+        filterOperatorsMap.value
+      );
+    }
+  }
+}
+
+const lastAppliedSavedViewSignature = ref('');
+
+function applySavedViewFromRecord(view, options = {}) {
+  if (!view) return;
+  const config = resolveSavedViewConfig(view) || { filters: {} };
+
+  const signature = `${view.id}:${JSON.stringify(config)}`;
+  if (!options.force && signature === lastAppliedSavedViewSignature.value) return;
+  lastAppliedSavedViewSignature.value = signature;
+
+  if (!isSystemViewId(view.id)) {
+    isActiveViewHydrating.value = true;
+  }
+
+  Object.keys(filterRuleMeta).forEach((key) => {
+    delete filterRuleMeta[key];
+  });
+
+  if (!viewConfigHasActiveFilters(config)) {
+    Object.keys(filters).forEach((key) => {
+      delete filters[key];
+    });
+    filterBuilderQuery.value = createDefaultRootGroup();
+  } else {
+    applyFilterBuilderState(config);
+  }
+
+  applyViewConfig(config);
+  persistFilterBuilderSession();
+
+  nextTick(() => {
+    mobileFilterBuilderPanelRef.value?.syncRowsFromFilters?.();
+    desktopFilterBuilderPanelRef.value?.syncRowsFromFilters?.();
+    syncViewCleanBaseline(view.id);
+    isActiveViewHydrating.value = false;
+  });
+}
+
+function emitParentListFilters(config) {
+  const { apiPayload } = buildCompiledListFilters();
+  const payload = { ...apiPayload };
+
+  if (config?.filterQuery && !payload.filterQuery) {
+    payload.filterQuery = typeof config.filterQuery === 'string'
+      ? config.filterQuery
+      : JSON.stringify(config.filterQuery);
+  }
+
+  const savedFilters = config?.filters || {};
+  for (const [key, value] of Object.entries(savedFilters)) {
+    if (key === 'filterQuery' || value === undefined || value === '') continue;
+    if (payload[key] === undefined) {
+      payload[key] = value;
+    }
+  }
+
+  lastEmittedFiltersSignature = JSON.stringify(payload);
+  emit('update:filters', payload);
+}
 
 // Apply view configuration (filters, columns, sort, search)
 const applyViewConfig = (config) => {
-  // Apply filters
-  if (config.filters) {
-    Object.keys(filters).forEach(key => {
+  if (viewConfigHasActiveFilters(config)) {
+    emitParentListFilters(config);
+  } else if (config.filters !== undefined) {
+    Object.keys(filters).forEach((key) => {
       delete filters[key];
     });
-    Object.keys(config.filters).forEach(key => {
+    Object.keys(config.filters).forEach((key) => {
       filters[key] = config.filters[key];
     });
-    emit('update:filters', { ...filters });
+    if (!config.query && !viewConfigHasActiveFilters(config)) {
+      filterBuilderQuery.value = createDefaultRootGroup();
+    }
+    emitCompiledFilters();
   }
-  
-  // Apply search
-  if (config.search !== undefined) {
-    searchQuery.value = config.search;
-    emit('update:searchQuery', config.search);
-  }
+
+  searchQuery.value = config.search ?? '';
+  emit('update:searchQuery', config.search ?? '');
   
   // Apply sort
   if (config.sort) {
@@ -4478,23 +5166,79 @@ const applyViewConfig = (config) => {
   }
 };
 
-// Handle save current view
+// Handle save current view (orphan Custom state — new view only)
 const handleSaveCurrentView = () => {
-  if (!props.savedViews || props.savedViews.length === 0) return;
-  
+  if (!props.savedViews?.length) return;
+
+  saveMode.value = 'create';
   editingView.value = null;
-  viewFormData.value = { name: '', description: '' };
+  const activeView = activeSavedViewRecord.value;
+  const suggestName = activeView?.label ? suggestCopyViewName(activeView.label) : '';
+  viewFormNameError.value = '';
+  viewFormData.value = {
+    name: isActiveSystemView.value ? suggestName : '',
+    description: '',
+  };
   showSaveViewModal.value = true;
 };
 
-// Handle edit view
+// Save as new view (from dirty active view)
+const handleSaveAsNewView = () => {
+  if (!props.savedViews?.length) return;
+
+  saveMode.value = 'create';
+  editingView.value = null;
+  const activeView = activeSavedViewRecord.value;
+  viewFormNameError.value = '';
+  viewFormData.value = {
+    name: activeView?.label ? suggestCopyViewName(activeView.label) : '',
+    description: '',
+  };
+  showSaveViewModal.value = true;
+};
+
+// One-click update of active custom view (no modal)
+const handleUpdateActiveView = async () => {
+  const view = activeSavedViewRecord.value;
+  if (!view || isSystemView(view.id)) return;
+
+  const currentConfig = getCurrentViewConfig();
+  const customViews = loadCustomViews();
+  const index = customViews.findIndex((v) => v.id === view.id);
+  if (index === -1) return;
+
+  const savedView = {
+    ...customViews[index],
+    filters: currentConfig.filters,
+    config: currentConfig,
+    updatedAt: new Date().toISOString(),
+  };
+  customViews[index] = savedView;
+
+  await saveCustomViews(customViews);
+  emit('saved-views-updated', customViews);
+  saveActiveSavedViewId(props.moduleKey, savedViewsUserId.value, savedView.id);
+  emit('saved-view-selected', savedView);
+  nextTick(() => syncViewCleanBaseline(savedView.id));
+  notifications.success(t('common.listViewUpdated'));
+};
+
+const handleRevertToSavedView = () => {
+  const view = activeSavedViewRecord.value;
+  if (!view) return;
+  applySavedViewFromRecord(view, { force: true });
+};
+
+// Rename view metadata only (pencil in dropdown)
 const handleEditView = (view) => {
-  if (!props.savedViews || props.savedViews.length === 0 || isSystemView(view.id)) return;
-  
+  if (!props.savedViews?.length || isSystemView(view.id)) return;
+
+  saveMode.value = 'rename';
   editingView.value = view;
+  viewFormNameError.value = '';
   viewFormData.value = {
     name: view.label || '',
-    description: view.description || ''
+    description: view.description || '',
   };
   showSaveViewModal.value = true;
 };
@@ -4508,23 +5252,32 @@ const handleDeleteView = (view) => {
 };
 
 // Save or update view
-const handleSaveView = () => {
-  if (!props.savedViews || props.savedViews.length === 0 || !viewFormData.value.name.trim()) return;
-  
+const handleSaveView = async () => {
+  if (!props.savedViews || props.savedViews.length === 0) return;
+
+  const viewName = normalizeSavedViewName(viewFormData.value.name);
+  if (!viewName) {
+    viewFormNameError.value = t('validation.required');
+    return;
+  }
+  if (viewName.length > SAVED_VIEW_NAME_MAX_LENGTH) {
+    viewFormNameError.value = t('validation.maxLength', { max: SAVED_VIEW_NAME_MAX_LENGTH });
+    return;
+  }
+  viewFormNameError.value = '';
+
   const currentConfig = getCurrentViewConfig();
   const customViews = loadCustomViews();
   let savedView = null;
   
-  if (editingView.value) {
-    // Update existing view
-    const index = customViews.findIndex(v => v.id === editingView.value.id);
+  if (saveMode.value === 'rename' && editingView.value) {
+    const index = customViews.findIndex((v) => v.id === editingView.value.id);
     if (index !== -1) {
       savedView = {
         ...customViews[index],
-        label: viewFormData.value.name.trim(),
+        label: viewName,
         description: viewFormData.value.description.trim() || undefined,
-        config: currentConfig,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       customViews[index] = savedView;
     }
@@ -4532,7 +5285,7 @@ const handleSaveView = () => {
     // Create new view
     savedView = {
       id: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      label: viewFormData.value.name.trim(),
+      label: viewName,
       description: viewFormData.value.description.trim() || undefined,
       filters: currentConfig.filters,
       config: currentConfig,
@@ -4541,24 +5294,25 @@ const handleSaveView = () => {
     customViews.push(savedView);
   }
   
-  saveCustomViews(customViews);
+  await saveCustomViews(customViews);
   emit('saved-views-updated', customViews);
-  
-  // Activate the saved view so the title reflects it immediately
+
   if (savedView) {
+    saveActiveSavedViewId(props.moduleKey, savedViewsUserId.value, savedView.id);
     emit('saved-view-selected', savedView);
+    nextTick(() => syncViewCleanBaseline(savedView.id));
   }
-  
+
   handleCloseSaveViewModal();
 };
 
 // Confirm delete view
-const confirmDeleteView = () => {
+const confirmDeleteView = async () => {
   if (!props.savedViews || props.savedViews.length === 0 || !viewToDelete.value || isSystemView(viewToDelete.value.id)) return;
   
   const customViews = loadCustomViews();
   const filtered = customViews.filter(v => v.id !== viewToDelete.value.id);
-  saveCustomViews(filtered);
+  await saveCustomViews(filtered);
   emit('saved-views-updated', filtered);
   
   // If deleted view was active, clear it
@@ -4573,7 +5327,9 @@ const confirmDeleteView = () => {
 const handleCloseSaveViewModal = () => {
   showSaveViewModal.value = false;
   editingView.value = null;
+  saveMode.value = 'create';
   viewFormData.value = { name: '', description: '' };
+  viewFormNameError.value = '';
 };
 
 // Close delete view modal
@@ -4584,14 +5340,14 @@ const handleCloseDeleteViewModal = () => {
 
 // Handle saved view click - apply full config
 const handleSavedViewClick = (view) => {
-  // Emit event to parent first - ModuleList will handle filter application and data fetching
-  // This ensures consistent behavior between ListView and ModuleList
+  applySavedViewFromRecord(view, { force: true });
   emit('saved-view-selected', view);
 };
 
 // Handle set as default - mark view as default and switch to it
 const handleSetDefaultView = (view) => {
   emit('set-default-view', view.id);
+  applySavedViewFromRecord(view, { force: true });
   emit('saved-view-selected', view);
 };
 </script>

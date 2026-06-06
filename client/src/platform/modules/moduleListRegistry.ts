@@ -259,7 +259,7 @@ function createGenericFilterNormalizer(_moduleKey: string) {
         if (normalized.assignedTo === 'me' && currentUserId) {
           normalized.assignedTo = currentUserId;
         } else if (normalized.assignedTo === 'unassigned') {
-          normalized.assignedTo = null;
+          normalized.assignedTo = 'null';
         }
       }
       return normalized;

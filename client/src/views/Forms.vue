@@ -14,7 +14,6 @@
       :pagination="{ currentPage: pagination.currentPage, totalPages: pagination.totalPages, totalRecords: pagination.totalForms, limit: pagination.formsPerPage }"
       :sort-field="sortField"
       :sort-order="sortOrder"
-      :filter-config="filterConfig"
       table-id="forms-table"
       row-key="_id"
       :empty-title="t('forms.hubEmptyTitle')"
@@ -365,10 +364,17 @@ const statsConfig = computed(() => [
   { name: t('forms.hubStatTotalResponses'), key: 'totalResponses', formatter: 'number' }
 ]);
 
-const filterConfig = computed(() => [
+const columns = computed(() => [
+  { key: 'formId', label: t('forms.fieldFormId'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
+  { key: 'name', label: t('forms.hubColName'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
   {
     key: 'formType',
-    label: t('forms.hubFilterAllTypes'),
+    label: t('forms.hubColType'),
+    dataType: 'select',
+    sortable: true,
+    visible: true,
+    showInTable: true,
+    visibility: { list: true },
     options: [
       { value: 'Audit', label: t('forms.typeAudit') },
       { value: 'Survey', label: t('forms.typeSurvey') },
@@ -379,30 +385,21 @@ const filterConfig = computed(() => [
   },
   {
     key: 'status',
-    label: t('forms.hubFilterAllStatus'),
+    label: t('forms.fieldStatus'),
+    dataType: 'status',
+    sortable: true,
+    visible: true,
+    showInTable: true,
+    visibility: { list: true },
     options: [
       { value: 'Draft', label: t('forms.statusDraft') },
       { value: 'Active', label: t('forms.statusActive') },
       { value: 'Closed', label: t('forms.statusClosed') }
     ]
   },
-  {
-    key: 'assignedTo',
-    label: t('forms.hubFilterAllAssignees'),
-    options: [
-      { value: 'me', label: t('forms.hubFilterMyForms') }
-    ]
-  }
-]);
-
-const columns = computed(() => [
-  { key: 'formId', label: t('forms.fieldFormId'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'name', label: t('forms.hubColName'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'formType', label: t('forms.hubColType'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'status', label: t('forms.fieldStatus'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'visibility', label: t('forms.hubColVisibility'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'assignedTo', label: t('forms.hubColAssignedTo'), sortable: true, visible: true, showInTable: true, visibility: { list: true } },
-  { key: 'createdAt', label: t('forms.hubColCreated'), sortable: true, visible: true, showInTable: true, visibility: { list: true } }
+  { key: 'visibility', label: t('forms.hubColVisibility'), dataType: 'select', sortable: true, visible: true, showInTable: true, visibility: { list: true } },
+  { key: 'assignedTo', label: t('forms.hubColAssignedTo'), dataType: 'user', sortable: true, visible: true, showInTable: true, visibility: { list: true } },
+  { key: 'createdAt', label: t('forms.hubColCreated'), dataType: 'date', sortable: true, visible: true, showInTable: true, visibility: { list: true } }
 ]);
 
 // Methods

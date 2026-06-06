@@ -91,6 +91,83 @@
                             {{ t('settings.settingsAddFieldCurrencyHint', { code: draft.currencyCode || 'USD' }) }}
                           </p>
                         </div>
+                        <div
+                          v-if="isPicklistFieldType"
+                          class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3"
+                        >
+                          <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                            {{ picklistOptionsSectionLabel }}
+                          </label>
+                          <div
+                            v-if="!draft.options.length"
+                            class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-lg p-3 text-center"
+                          >
+                            {{ t('settings.modFieldsNoOptionsDefined') }}
+                          </div>
+                          <ul v-else class="space-y-2">
+                            <li
+                              v-for="(option, optionIdx) in draft.options"
+                              :key="`${option.value}-${optionIdx}`"
+                              class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-white/5 rounded border border-gray-200 dark:border-white/10"
+                            >
+                              <input
+                                type="color"
+                                :value="option.color"
+                                class="h-7 w-9 shrink-0 cursor-pointer rounded border border-gray-300 bg-white p-0.5 dark:border-gray-600 dark:bg-gray-800"
+                                :aria-label="t('settings.modFieldsColorForOption', { label: option.value })"
+                                @input="updatePicklistOptionColor(optionIdx, $event.target.value)"
+                              />
+                              <span class="flex-1 min-w-0 text-sm font-medium text-gray-900 dark:text-white truncate">
+                                {{ option.value }}
+                              </span>
+                              <span
+                                class="shrink-0 px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                                :style="{ backgroundColor: option.color }"
+                              >
+                                {{ option.value }}
+                              </span>
+                              <button
+                                type="button"
+                                class="shrink-0 p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-200 rounded cursor-pointer"
+                                :title="t('actions.remove')"
+                                @click="removePicklistOption(optionIdx)"
+                              >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </li>
+                          </ul>
+                          <div class="space-y-2">
+                            <label for="add-field-option-value" class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                              {{ t('settings.modFieldsOptionValue') }}
+                            </label>
+                            <div class="flex items-center gap-2">
+                              <input
+                                id="add-field-option-value"
+                                v-model="newOptionValue"
+                                type="text"
+                                :placeholder="t('settings.modFieldsEnterOptionValuePh')"
+                                class="flex-1 min-w-0 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                                @keyup.enter.prevent="addPicklistOption"
+                              />
+                              <input
+                                type="color"
+                                v-model="newOptionColor"
+                                class="h-9 w-11 shrink-0 cursor-pointer rounded border border-gray-300 bg-white p-0.5 dark:border-gray-600 dark:bg-gray-800"
+                                :aria-label="t('settings.modFieldsColor')"
+                              />
+                              <button
+                                type="button"
+                                class="shrink-0 rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                :disabled="!newOptionValue.trim()"
+                                @click="addPicklistOption"
+                              >
+                                {{ t('settings.modFieldsAddOption') }}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                         <div class="flex items-center gap-6 pt-2">
                           <label class="inline-flex items-center gap-2 cursor-pointer">
                             <HeadlessCheckbox
@@ -229,6 +306,15 @@ const FIELD_TYPES = [
   'Rollup Summary',
 ];
 
+const PICKLIST_FIELD_TYPES = ['Picklist', 'Multi-Picklist', 'Radio Button'];
+const DEFAULT_OPTION_COLOR = '#3B82F6';
+
+const PICKLIST_OPTIONS_SECTION_I18N = {
+  Picklist: 'modFieldsPicklistOptions',
+  'Multi-Picklist': 'modFieldsPicklistOptionsMulti',
+  'Radio Button': 'modFieldsPicklistOptionsRadio',
+};
+
 const FIELD_TYPE_I18N = {
   Text: 'settingsAddFieldTypeText',
   'Text-Area': 'settingsAddFieldTypeTextArea',
@@ -302,6 +388,42 @@ const createEmptyDraft = () => {
 };
 
 const draft = ref(createEmptyDraft());
+const newOptionValue = ref('');
+const newOptionColor = ref(DEFAULT_OPTION_COLOR);
+
+const isPicklistFieldType = computed(() => PICKLIST_FIELD_TYPES.includes(draft.value.dataType));
+
+const picklistOptionsSectionLabel = computed(() => {
+  const key = PICKLIST_OPTIONS_SECTION_I18N[draft.value.dataType] || 'modFieldsPicklistOptions';
+  return t(`settings.${key}`);
+});
+
+function resetPicklistOptionDraft() {
+  newOptionValue.value = '';
+  newOptionColor.value = DEFAULT_OPTION_COLOR;
+}
+
+function addPicklistOption() {
+  const value = newOptionValue.value.trim();
+  if (!value) return;
+  const existingValues = (draft.value.options || []).map((opt) => String(opt?.value || '').trim());
+  if (existingValues.includes(value)) return;
+  draft.value.options = [
+    ...(draft.value.options || []),
+    { value, color: newOptionColor.value || DEFAULT_OPTION_COLOR },
+  ];
+  resetPicklistOptionDraft();
+}
+
+function removePicklistOption(index) {
+  if (!Array.isArray(draft.value.options)) return;
+  draft.value.options = draft.value.options.filter((_, idx) => idx !== index);
+}
+
+function updatePicklistOptionColor(index, color) {
+  if (!Array.isArray(draft.value.options) || !draft.value.options[index]) return;
+  draft.value.options[index] = { ...draft.value.options[index], color };
+}
 
 function labelToKey(label) {
   if (!label || typeof label !== 'string') return '';
@@ -317,6 +439,16 @@ watch(() => props.isOpen, (open) => {
   if (open) {
     draft.value = createEmptyDraft();
     draft.value.order = props.nextOrder;
+    resetPicklistOptionDraft();
+  }
+});
+
+watch(() => draft.value.dataType, (dataType, previousType) => {
+  if (PICKLIST_FIELD_TYPES.includes(previousType) && !PICKLIST_FIELD_TYPES.includes(dataType)) {
+    draft.value.options = [];
+  }
+  if (PICKLIST_FIELD_TYPES.includes(dataType)) {
+    resetPicklistOptionDraft();
   }
 });
 
@@ -352,11 +484,18 @@ const handleSave = () => {
   if (showScope && participationScope === 'app' && !appToken) return;
 
   const { participationScope: _ps, appContextToken: _at, currencyCode, ...rest } = draft.value;
+  const options = isPicklistFieldType.value
+    ? (draft.value.options || []).map((opt) => ({
+        value: String(opt?.value || '').trim(),
+        color: opt?.color || DEFAULT_OPTION_COLOR,
+      })).filter((opt) => opt.value)
+    : [];
   const nextField = {
     ...rest,
     key,
     label: draft.value.label.trim(),
     owner: 'org',
+    options,
     context:
       showScope && participationScope === 'app' && appToken
         ? appToken

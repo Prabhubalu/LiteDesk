@@ -147,7 +147,7 @@ exports.createItem = async (req, res) => {
 // @access  Private
 exports.getItems = async (req, res) => {
     try {
-        const query = { organizationId: req.user.organizationId, deletedAt: null };
+        let query = { organizationId: req.user.organizationId, deletedAt: null };
         
         // Filters
         if (req.query.lifecycle_state) {
@@ -176,16 +176,10 @@ exports.getItems = async (req, res) => {
             query.tags = req.query.tag;
         }
         
-        // Search functionality
-        if (req.query.search) {
-            const term = String(req.query.search).trim();
-            const searchRegex = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-            query.$or = [
-                { item_name: searchRegex },
-                { item_code: searchRegex },
-                { item_id: searchRegex },
-                { description: searchRegex }
-            ];
+        const searchTerm = req.query.search ? String(req.query.search).trim() : '';
+        if (searchTerm) {
+            const { buildSearchOrConditions } = require('../utils/searchRelevance');
+            query.$or = buildSearchOrConditions(searchTerm, ['item_name', 'item_code', 'item_id', 'description']);
         }
         
         // Low stock filter (deprecated — API compat only; hidden from catalog UI)
@@ -203,6 +197,9 @@ exports.getItems = async (req, res) => {
             query.stock_quantity = 0;
         }
         
+        const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
+        query = applyListFilterQueryParam(query, req.query, 'items', { userId: req.user?._id });
+
         // Pagination
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
@@ -213,14 +210,30 @@ exports.getItems = async (req, res) => {
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
         const sort = { [sortBy]: sortOrder };
         
-        // Execute query
-        const items = await Item.find(query)
-            .populate('vendor', 'name')
-            .populate('createdBy', 'firstName lastName email')
-            .populate('modifiedBy', 'firstName lastName email')
-            .sort(sort)
-            .limit(limit)
-            .skip(skip);
+        const itemPopulate = [
+            { path: 'vendor', select: 'name' },
+            { path: 'createdBy', select: 'firstName lastName email' },
+            { path: 'modifiedBy', select: 'firstName lastName email' }
+        ];
+        const { fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+        const items = isSearchActive(searchTerm)
+            ? await fetchRankedSearchPage(Item, {
+                matchQuery: query,
+                searchTerm,
+                fieldSpecs: SEARCH_FIELD_PRESETS.items,
+                skip,
+                limit,
+                fallbackSort: sort,
+                populate: itemPopulate,
+                lean: false
+            })
+            : await Item.find(query)
+                .populate('vendor', 'name')
+                .populate('createdBy', 'firstName lastName email')
+                .populate('modifiedBy', 'firstName lastName email')
+                .sort(sort)
+                .limit(limit)
+                .skip(skip);
         
         const total = await Item.countDocuments(query);
         

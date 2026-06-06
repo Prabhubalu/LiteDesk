@@ -55,6 +55,44 @@ export function isFieldEligibleForListColumn(moduleKey, field, inventoryEnabled 
 }
 
 /**
+ * Module filter picker: all user-facing module fields (not limited to list-visible columns).
+ * @param {string} moduleKey
+ * @param {{ key?: string, isSystem?: boolean }} field
+ */
+export function isFieldEligibleForModuleFilter(moduleKey, field, inventoryEnabled = true) {
+  const key = String(field?.key || '').trim();
+  if (!key || key.includes('.')) return false;
+  if (shouldHideFieldWhenInventoryDisabled(moduleKey, key, inventoryEnabled)) return false;
+  if (field?.isSystem === true) return false;
+  if (isSystemField(moduleKey, { key })) return false;
+  if (!isFieldVisibleInConfig(moduleKey, { key })) return false;
+  return true;
+}
+
+/**
+ * @param {Array<Record<string, unknown>>} fields
+ * @param {string} moduleKey
+ * @returns {import('@/types/module-list.types').ListColumn[]}
+ */
+export function buildFilterFieldsFromModuleFields(fields, moduleKey, inventoryEnabled = true) {
+  if (!Array.isArray(fields) || !moduleKey) return [];
+
+  return fields
+    .filter((field) => isFieldEligibleForModuleFilter(moduleKey, field, inventoryEnabled))
+    .map((field, index) => {
+      const key = String(field.key);
+      return {
+        key,
+        label: getFieldDisplayLabel(field),
+        dataType: inferListColumnDataType(key, field.dataType),
+        options: Array.isArray(field.options) ? field.options : undefined,
+        order: Number.isFinite(Number(field.order)) ? Number(field.order) : index + 1,
+      };
+    })
+    .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+}
+
+/**
  * @param {Array<Record<string, unknown>>} fields
  * @param {string} moduleKey
  * @returns {import('@/types/module-list.types').ListColumn[]}

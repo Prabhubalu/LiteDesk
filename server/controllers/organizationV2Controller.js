@@ -193,12 +193,31 @@ exports.list = async (req, res) => {
     const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
     const sort = { [sortBy]: sortOrder };
 
-    const dataQuery = Organization.find(query)
-      .populate('createdBy', 'firstName lastName email avatar username')
-      .populate('assignedTo', 'firstName lastName email avatar username')
-      .sort(sort)
-      .limit(limit)
-      .skip(skip);
+    const searchTerm = req.query.search || req.query.name
+      ? String(req.query.search || req.query.name).trim()
+      : '';
+    const orgPopulate = [
+      { path: 'createdBy', select: 'firstName lastName email avatar username' },
+      { path: 'assignedTo', select: 'firstName lastName email avatar username' }
+    ];
+    const { fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+    const dataQuery = isSearchActive(searchTerm)
+      ? fetchRankedSearchPage(Organization, {
+          matchQuery: query,
+          searchTerm,
+          fieldSpecs: SEARCH_FIELD_PRESETS.organizations,
+          skip,
+          limit,
+          fallbackSort: sort,
+          populate: orgPopulate,
+          lean: false
+        })
+      : Organization.find(query)
+          .populate('createdBy', 'firstName lastName email avatar username')
+          .populate('assignedTo', 'firstName lastName email avatar username')
+          .sort(sort)
+          .limit(limit)
+          .skip(skip);
 
     const listStatisticsPromise = computeOrganizationsListStatistics(query, req.user._id);
 
