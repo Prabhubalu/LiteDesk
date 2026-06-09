@@ -241,8 +241,11 @@ async function acceptInvite({ rawToken, password, profile = {} }) {
   user.inviteAcceptedAt = new Date();
   user.emailVerifiedAt = new Date();
   user.mustChangePassword = false;
-  await clearInviteTokens(user, user.email);
-  await clearVerificationTokens(user, user.email);
+  user.inviteTokenHash = null;
+  user.inviteTokenExpiresAt = null;
+  user.emailVerificationTokenHash = null;
+  user.emailVerificationExpiresAt = null;
+
   const {
     initializeOnboardingForUser,
     ONBOARDING_ORIGINS
@@ -263,7 +266,19 @@ async function acceptInvite({ rawToken, password, profile = {} }) {
     };
   }
 
+  if (typeof user.markModified === 'function') {
+    user.markModified('onboarding');
+  }
+
+  const { buildAuthSessionPayload } = require('./authSessionService');
+  const session = await buildAuthSessionPayload(user, organization);
   await user.save();
+
+  await syncDirectoryEntry(user.email, {
+    inviteTokenHash: null,
+    emailVerificationTokenHash: null,
+    status: 'active'
+  });
 
   if (ScopedUser !== User && user.organizationId) {
     await User.findOneAndUpdate(
@@ -277,6 +292,8 @@ async function acceptInvite({ rawToken, password, profile = {} }) {
           inviteAcceptedAt: user.inviteAcceptedAt,
           emailVerifiedAt: user.emailVerifiedAt,
           mustChangePassword: false,
+          lastLogin: user.lastLogin,
+          permissions: user.permissions,
           inviteTokenHash: null,
           inviteTokenExpiresAt: null,
           emailVerificationTokenHash: null,
@@ -295,10 +312,6 @@ async function acceptInvite({ rawToken, password, profile = {} }) {
       organizationId: user.organizationId
     }).catch(() => {});
   }
-
-  const { buildAuthSessionPayload } = require('./authSessionService');
-  const session = await buildAuthSessionPayload(user, organization);
-  await user.save();
 
   return {
     ok: true,
