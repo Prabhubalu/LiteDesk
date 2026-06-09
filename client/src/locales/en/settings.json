@@ -2816,8 +2816,8 @@
     "description": "Invite success when email failed"
   },
   "inviteSuccessEmailFailedGeneric": {
-    "message": "email service unavailable",
-    "description": "Generic email failure reason"
+    "message": "Configure Email Provider in Settings > Integrations, or set SYSTEM_EMAIL_* on the server",
+    "description": "Generic email failure reason with setup hint"
   },
   "inviteSuccessVerificationSent": {
     "message": "A verification email was sent to {email}. They can sign in now and verify later.",
