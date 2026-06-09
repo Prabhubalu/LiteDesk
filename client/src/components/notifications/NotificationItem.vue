@@ -1,5 +1,4 @@
 <template>
-  <!-- Wrapper keeps layout unchanged; icon is absolutely positioned -->
   <div
     class="w-full relative group notification-item"
     :class="[
@@ -11,79 +10,90 @@
     @focusin="isRowFocused = true"
     @focusout="isRowFocused = false"
   >
-    <!-- Card container -->
     <button
       type="button"
       :class="[
-        'w-full flex items-start gap-3 px-3 py-3 rounded-2xl text-left min-h-[56px] transition-all duration-200 ease-out',
-        'border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-600/50',
-        'bg-neutral-50/50 dark:bg-neutral-800/30 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/60',
-        'hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:ring-inset focus:border-primary-500/30',
-        inGroup ? 'border-l-[3px] border-l-transparent' : (isUnread ? 'border-l-[3px] border-l-primary-500 pl-[11px]' : 'border-l-[3px] border-l-transparent')
+        'notification-card w-full flex items-start gap-3 px-3.5 py-3 rounded-xl text-left min-h-[60px]',
+        'transition-all duration-200 ease-out',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-neutral-900',
+        cardSurfaceClass,
+        inGroup && 'ml-2 border-l-2 border-l-neutral-200/80 dark:border-l-neutral-700/60 rounded-l-lg pl-3'
       ]"
       @click="handleClick"
       :aria-label="item.title"
     >
-      <!-- Icon avatar -->
-      <div class="flex-shrink-0 mt-0.5">
+      <!-- Icon -->
+      <div class="flex-shrink-0 pt-0.5">
         <span
-          class="inline-flex items-center justify-center w-10 h-10 rounded-xl shadow-sm"
-          :class="[iconBgClass, isUnread && 'ring-2 ring-primary-500/20']"
+          class="inline-flex items-center justify-center w-9 h-9 rounded-full ring-1 ring-inset"
+          :class="iconShellClass"
         >
-          <component :is="iconComponent" class="w-5 h-5" :class="iconColorClass" />
+          <component :is="iconComponent" class="w-[18px] h-[18px]" :class="iconColorClass" />
         </span>
       </div>
 
       <!-- Content -->
-      <div class="flex-1 min-w-0 pr-6">
-        <!-- Title + New badge -->
-        <div class="flex items-start justify-between gap-2">
-          <p
-            class="text-sm leading-snug"
-            :class="item.readAt ? 'text-neutral-600 dark:text-neutral-400 font-medium' : 'font-semibold text-neutral-900 dark:text-white'"
-          >
-            {{ item.title }}
-          </p>
+      <div class="flex-1 min-w-0" :class="showActions ? 'pr-7' : 'pr-1'">
+        <div class="flex items-start gap-2">
           <span
-            v-if="isNew"
-            class="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-primary-500/15 text-primary-600 dark:text-primary-400"
-          >
-            {{ t('notifications.itemNew') }}
-          </span>
+            v-if="isUnread && !inGroup"
+            class="mt-[7px] flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary-500 dark:bg-primary-400 shadow-[0_0_0_3px_rgba(96,73,231,0.12)]"
+            aria-hidden="true"
+          />
+          <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between gap-2">
+              <p
+                class="text-[13px] leading-snug tracking-[-0.01em]"
+                :class="isUnread
+                  ? 'font-semibold text-neutral-900 dark:text-white'
+                  : 'font-medium text-neutral-600 dark:text-neutral-300'"
+              >
+                {{ item.title }}
+              </p>
+              <span
+                v-if="isNew"
+                class="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide bg-primary-500 text-white shadow-sm"
+              >
+                {{ t('notifications.itemNew') }}
+              </span>
+            </div>
+
+            <p
+              v-if="item.body"
+              class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-relaxed"
+            >
+              {{ item.body }}
+            </p>
+
+            <div class="mt-2 flex items-center gap-1.5 min-w-0">
+              <span
+                class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset"
+                :class="entityChipClass"
+              >
+                {{ entityLabel }}
+              </span>
+              <span class="text-neutral-300 dark:text-neutral-600" aria-hidden="true">·</span>
+              <span class="text-[11px] tabular-nums text-neutral-400 dark:text-neutral-500 truncate">
+                {{ relativeTime }}
+              </span>
+            </div>
+
+            <p
+              v-if="unavailable"
+              class="mt-2 text-xs text-warning-600 dark:text-warning-400"
+            >
+              {{ t('notifications.itemUnavailable') }}
+            </p>
+          </div>
         </div>
-
-        <!-- Body preview -->
-        <p
-          v-if="item.body"
-          class="mt-1 text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-relaxed"
-        >
-          {{ item.body }}
-        </p>
-
-        <!-- Metadata row: entity chip + time -->
-        <div class="mt-2 flex items-center gap-2 flex-wrap">
-          <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-neutral-200/80 dark:bg-neutral-700/80 text-neutral-600 dark:text-neutral-400">
-            {{ entityLabel }}
-          </span>
-          <span class="text-[11px] tabular-nums text-neutral-400 dark:text-neutral-500">
-            {{ relativeTime }}
-          </span>
-        </div>
-
-        <p
-          v-if="unavailable"
-          class="mt-2 text-xs text-warning-600 dark:text-warning-400"
-        >
-          {{ t('notifications.itemUnavailable') }}
-        </p>
       </div>
     </button>
 
     <!-- Inline actions (NotificationDrawer only) -->
     <div
       v-if="showActions"
-      class="absolute right-3 bottom-3 flex items-center gap-0.5 transition-opacity duration-200"
-      :class="actionsVisible ? 'opacity-100' : 'opacity-0'"
+      class="absolute right-2.5 top-2.5 flex items-center gap-0.5 rounded-lg bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm p-0.5 shadow-sm ring-1 ring-neutral-200/80 dark:ring-neutral-700/60 transition-all duration-200"
+      :class="actionsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-0.5'"
       :style="actionsVisible ? '' : 'pointer-events:none;'"
     >
       <!-- Inline feedback (no toast) -->
@@ -99,7 +109,7 @@
       <button
         v-if="isUnread"
         type="button"
-        class="inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 min-h-[32px] min-w-[32px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20 shadow-sm"
+        class="inline-flex items-center justify-center rounded-md text-neutral-400 hover:text-primary-600 dark:text-neutral-500 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 min-h-[28px] min-w-[28px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
         :tabindex="actionsVisible ? 0 : -1"
         :aria-label="t('notifications.markReadAria')"
         :title="t('notifications.markRead')"
@@ -111,7 +121,7 @@
       <!-- Dismiss -->
       <button
         type="button"
-        class="inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 min-h-[32px] min-w-[32px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20 shadow-sm"
+        class="inline-flex items-center justify-center rounded-md text-neutral-400 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 min-h-[28px] min-w-[28px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
         :tabindex="actionsVisible ? 0 : -1"
         :aria-label="t('notifications.dismissAria')"
         :title="t('notifications.dismiss')"
@@ -129,7 +139,7 @@
         <PopoverButton
           type="button"
           ref="snoozeButtonEl"
-          class="inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 min-h-[32px] min-w-[32px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20 shadow-sm"
+          class="inline-flex items-center justify-center rounded-md text-neutral-400 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 min-h-[28px] min-w-[28px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           :tabindex="actionsVisible ? 0 : -1"
           :aria-label="t('notifications.snoozeAria')"
           :title="t('notifications.snooze')"
@@ -164,7 +174,7 @@
       <button
         v-if="isResolvable"
         type="button"
-        class="inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 min-h-[32px] min-w-[32px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20 shadow-sm"
+        class="inline-flex items-center justify-center rounded-md text-neutral-400 hover:text-success-600 dark:text-neutral-500 dark:hover:text-success-400 hover:bg-success-50 dark:hover:bg-success-900/20 min-h-[28px] min-w-[28px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
         :tabindex="actionsVisible ? 0 : -1"
         :aria-label="t('notifications.acknowledgeAria')"
         :title="t('notifications.acknowledge')"
@@ -172,112 +182,106 @@
       >
         <CheckCircleIcon class="w-4 h-4" aria-hidden="true" />
       </button>
-    </div>
 
-    <!-- Anchored explainability popover (hidden by default on desktop) -->
-    <Popover
-      v-slot="{ open: infoOpen, close }"
-      class="absolute right-2 top-2"
-      :class="iconVisible ? 'opacity-100' : 'opacity-0'"
-      :style="iconVisible ? '' : 'pointer-events:none;'"
-    >
-      <span v-show="false">{{ syncInfoPopoverOpen(infoOpen) }}</span>
-      <PopoverButton
-        type="button"
-        ref="infoButtonEl"
-        class="inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 min-h-[28px] min-w-[28px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-        :tabindex="iconVisible ? 0 : -1"
-        :aria-label="t('notifications.whyAmISeeing')"
-        @click="onInfoClick"
+      <!-- Why am I seeing this -->
+      <Popover
+        v-slot="{ open: infoOpen, close }"
+        class="relative"
       >
-        <InfoOutlineIcon class="w-4 h-4" aria-hidden="true" />
-      </PopoverButton>
+        <span v-show="false">{{ syncInfoPopoverOpen(infoOpen) }}</span>
+        <PopoverButton
+          type="button"
+          ref="infoButtonEl"
+          class="inline-flex items-center justify-center rounded-md text-neutral-400 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 min-h-[28px] min-w-[28px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          :tabindex="actionsVisible ? 0 : -1"
+          :aria-label="t('notifications.whyAmISeeing')"
+          @click="onInfoClick"
+        >
+          <InfoOutlineIcon class="w-4 h-4" aria-hidden="true" />
+        </PopoverButton>
 
-      <PopoverPanel
-        ref="whyPanelEl"
-        class="absolute mt-2 w-[320px] max-w-[calc(100vw-32px)] rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-xl shadow-neutral-900/10 dark:shadow-black/20 p-4 z-[100] focus:outline-none"
-        :class="panelSide === 'right' ? 'right-0' : 'left-0'"
-      >
-        <div class="space-y-4">
-          <div>
-            <p class="text-sm font-semibold text-neutral-900 dark:text-white">
-              {{ t('notifications.whyReceived') }}
-            </p>
-            <p class="mt-0.5 text-xs text-neutral-600 dark:text-neutral-400">
-              {{ t('notifications.whyIntro') }}
-            </p>
-          </div>
+        <PopoverPanel
+          ref="whyPanelEl"
+          class="absolute right-0 top-full mt-2 w-[320px] max-w-[calc(100vw-32px)] rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-xl shadow-neutral-900/10 dark:shadow-black/20 p-4 z-[100] focus:outline-none"
+          :class="panelSide === 'right' ? 'right-0' : 'left-0'"
+        >
+          <div class="space-y-4">
+            <div>
+              <p class="text-sm font-semibold text-neutral-900 dark:text-white">
+                {{ t('notifications.whyReceived') }}
+              </p>
+              <p class="mt-0.5 text-xs text-neutral-600 dark:text-neutral-400">
+                {{ t('notifications.whyIntro') }}
+              </p>
+            </div>
 
-          <!-- Trigger -->
-          <div v-if="triggerLine">
-            <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              {{ t('notifications.happenedBecause') }}
-            </p>
-            <p class="mt-1 text-sm text-neutral-900 dark:text-white">
-              {{ triggerLine }}
-            </p>
-          </div>
+            <div v-if="triggerLine">
+              <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                {{ t('notifications.happenedBecause') }}
+              </p>
+              <p class="mt-1 text-sm text-neutral-900 dark:text-white">
+                {{ triggerLine }}
+              </p>
+            </div>
 
-          <!-- Your role -->
-          <div v-if="roleLines.length">
-            <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              {{ t('notifications.receivedBecause') }}
-            </p>
-            <ul class="mt-1 text-sm text-neutral-900 dark:text-white space-y-1">
-              <li v-for="(line, idx) in roleLines" :key="idx" class="flex gap-2">
-                <span class="text-neutral-400 dark:text-neutral-500">•</span>
-                <span>{{ line }}</span>
-              </li>
-            </ul>
-          </div>
+            <div v-if="roleLines.length">
+              <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                {{ t('notifications.receivedBecause') }}
+              </p>
+              <ul class="mt-1 text-sm text-neutral-900 dark:text-white space-y-1">
+                <li v-for="(line, idx) in roleLines" :key="idx" class="flex gap-2">
+                  <span class="text-neutral-400 dark:text-neutral-500">•</span>
+                  <span>{{ line }}</span>
+                </li>
+              </ul>
+            </div>
 
-          <!-- Delivery -->
-          <div v-if="deliveryLine">
-            <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              {{ t('notifications.deliveredVia') }}
-            </p>
-            <p class="mt-1 text-sm text-neutral-900 dark:text-white">
-              {{ deliveryLine }}
-            </p>
-          </div>
+            <div v-if="deliveryLine">
+              <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                {{ t('notifications.deliveredVia') }}
+              </p>
+              <p class="mt-1 text-sm text-neutral-900 dark:text-white">
+                {{ deliveryLine }}
+              </p>
+            </div>
 
-          <!-- Control -->
-          <div>
-            <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              {{ t('notifications.controlHeading') }}
-            </p>
-            <p class="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
-              {{ t('notifications.controlBody') }}
-            </p>
-            <div class="mt-2 flex flex-col gap-2">
-              <router-link
-                v-if="eventType"
-                :to="manageEventLink"
-                class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                @click="close"
-              >
-                {{ t('notifications.manageEventType') }}
-              </router-link>
-              <router-link
-                to="/settings?tab=notifications&notificationPage=preferences"
-                class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                @click="close"
-              >
-                {{ t('notifications.openSettings') }}
-              </router-link>
-              <router-link
-                v-if="hasRuleId"
-                to="/settings?tab=notifications&notificationPage=rules"
-                class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                @click="close"
-              >
-                {{ t('notifications.reviewRules') }}
-              </router-link>
+            <div>
+              <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                {{ t('notifications.controlHeading') }}
+              </p>
+              <p class="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
+                {{ t('notifications.controlBody') }}
+              </p>
+              <div class="mt-2 flex flex-col gap-2">
+                <router-link
+                  v-if="eventType"
+                  :to="manageEventLink"
+                  class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                  @click="close"
+                >
+                  {{ t('notifications.manageEventType') }}
+                </router-link>
+                <router-link
+                  to="/settings?tab=notifications&notificationPage=preferences"
+                  class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                  @click="close"
+                >
+                  {{ t('notifications.openSettings') }}
+                </router-link>
+                <router-link
+                  v-if="hasRuleId"
+                  to="/settings?tab=notifications&notificationPage=rules"
+                  class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                  @click="close"
+                >
+                  {{ t('notifications.reviewRules') }}
+                </router-link>
+              </div>
             </div>
           </div>
-        </div>
-      </PopoverPanel>
-    </Popover>
+        </PopoverPanel>
+      </Popover>
+    </div>
   </div>
 </template>
 
@@ -294,9 +298,13 @@ import {
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue';
 import {
   BellAlertIcon,
+  BoltIcon,
+  CalendarDaysIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
-  InformationCircleIcon
+  ClipboardDocumentCheckIcon,
+  ClipboardDocumentListIcon,
+  InformationCircleIcon,
+  UserPlusIcon
 } from '@heroicons/vue/24/solid';
 import { InformationCircleIcon as InfoOutlineIcon } from '@heroicons/vue/24/outline';
 import {
@@ -341,26 +349,88 @@ function syncInfoPopoverOpen(open) {
 const relativeTime = computed(() => store.formatRelative(props.item.createdAt));
 
 const iconComponent = computed(() => {
+  const evt = String(props.item?.eventType || '').toUpperCase();
   if (props.item.priority === 'HIGH') return BellAlertIcon;
+  if (evt.includes('MENTION')) return UserPlusIcon;
+  if (evt.includes('TASK')) return ClipboardDocumentListIcon;
+  if (evt.includes('DEAL') || evt.includes('PLAYBOOK')) return BoltIcon;
+  if (evt.includes('AUDIT') || evt.includes('CORRECTIVE')) return ClipboardDocumentCheckIcon;
+  if (evt.includes('DUE') || evt.includes('OVERDUE') || evt.includes('EXPIRING')) return CalendarDaysIcon;
+  if (evt.includes('USER') || evt.includes('PORTAL') || evt.includes('ASSIGNED')) return UserPlusIcon;
   if (props.item.priority === 'LOW') return InformationCircleIcon;
   return CheckCircleIcon;
 });
 
-const iconBgClass = computed(() => {
-  if (props.item.priority === 'HIGH') return 'bg-danger-100 dark:bg-danger-900/40';
-  if (props.item.priority === 'LOW') return 'bg-secondary-100 dark:bg-secondary-900/40';
-  return 'bg-success-100 dark:bg-success-900/40';
+const iconTone = computed(() => {
+  if (props.item.priority === 'HIGH') return 'danger';
+  const evt = String(props.item?.eventType || '').toUpperCase();
+  if (evt.includes('DUE') || evt.includes('OVERDUE') || evt.includes('EXPIRING')) return 'warning';
+  if (evt.includes('REJECTED') || evt.includes('SUSPENDED')) return 'danger';
+  if (props.item.priority === 'LOW') return 'neutral';
+  return 'primary';
+});
+
+const iconShellClass = computed(() => {
+  const map = {
+    primary: 'bg-primary-50 dark:bg-primary-500/10 ring-primary-500/15 dark:ring-primary-400/20',
+    success: 'bg-success-50 dark:bg-success-500/10 ring-success-500/15 dark:ring-success-400/20',
+    warning: 'bg-warning-50 dark:bg-warning-500/10 ring-warning-500/15 dark:ring-warning-400/20',
+    danger: 'bg-danger-50 dark:bg-danger-500/10 ring-danger-500/15 dark:ring-danger-400/20',
+    neutral: 'bg-neutral-100 dark:bg-neutral-800 ring-neutral-200/80 dark:ring-neutral-700/60'
+  };
+  return map[iconTone.value] || map.primary;
 });
 
 const iconColorClass = computed(() => {
-  if (props.item.priority === 'HIGH') return 'text-danger-600 dark:text-danger-400';
-  if (props.item.priority === 'LOW') return 'text-secondary-600 dark:text-secondary-400';
-  return 'text-success-600 dark:text-success-400';
+  const map = {
+    primary: 'text-primary-600 dark:text-primary-400',
+    success: 'text-success-600 dark:text-success-400',
+    warning: 'text-warning-600 dark:text-warning-400',
+    danger: 'text-danger-600 dark:text-danger-400',
+    neutral: 'text-neutral-500 dark:text-neutral-400'
+  };
+  return map[iconTone.value] || map.primary;
 });
 
-const entityLabel = computed(() => {
-  if (!props.item.entity || !props.item.entity.type) return 'Notification';
-  return props.item.entity.type;
+const cardSurfaceClass = computed(() => {
+  if (isUnread.value) {
+    return [
+      'bg-primary-500/[0.035] dark:bg-primary-400/[0.06]',
+      'ring-1 ring-primary-500/10 dark:ring-primary-400/15',
+      'hover:bg-primary-500/[0.06] dark:hover:bg-primary-400/[0.09]',
+      'hover:shadow-[0_2px_8px_-2px_rgba(96,73,231,0.18)]',
+      'hover:ring-primary-500/20 dark:hover:ring-primary-400/25'
+    ].join(' ');
+  }
+  return [
+    'bg-white dark:bg-neutral-900/50',
+    'ring-1 ring-neutral-200/70 dark:ring-neutral-700/50',
+    'hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40',
+    'hover:shadow-[0_2px_8px_-2px_rgba(15,23,42,0.08)] dark:hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.35)]',
+    'hover:ring-neutral-300/70 dark:hover:ring-neutral-600/50'
+  ].join(' ');
+});
+
+function formatEntityType(type) {
+  if (!type) return 'Notification';
+  return String(type)
+    .split('_')
+    .map(w => w.charAt(0) + w.slice(1).toLowerCase())
+    .join(' ');
+}
+
+const entityLabel = computed(() => formatEntityType(props.item?.entity?.type));
+
+const entityChipClass = computed(() => {
+  const type = String(props.item?.entity?.type || '').toUpperCase();
+  const map = {
+    TASK: 'bg-sky-50 text-sky-700 ring-sky-200/80 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20',
+    DEAL: 'bg-violet-50 text-violet-700 ring-violet-200/80 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/20',
+    EVENT: 'bg-amber-50 text-amber-700 ring-amber-200/80 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20',
+    AUDIT: 'bg-emerald-50 text-emerald-700 ring-emerald-200/80 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
+    CORRECTIVE_ACTION: 'bg-orange-50 text-orange-700 ring-orange-200/80 dark:bg-orange-500/10 dark:text-orange-300 dark:ring-orange-500/20'
+  };
+  return map[type] || 'bg-neutral-100 text-neutral-600 ring-neutral-200/80 dark:bg-neutral-800 dark:text-neutral-300 dark:ring-neutral-700/60';
 });
 
 const eventType = computed(() => props.item?.eventType || null);
@@ -415,7 +485,9 @@ function triggerFromEventType(evt) {
     PORTAL_ACCOUNT_CREATED: 'A portal account was created.',
     USER_ADDED_TO_APP: 'Access was updated in your workspace.',
     SYSTEM_TRIAL_EXPIRING: 'Your trial is approaching its end.',
-    SYSTEM_SUBSCRIPTION_SUSPENDED: 'Your subscription status changed.'
+    SYSTEM_SUBSCRIPTION_SUSPENDED: 'Your subscription status changed.',
+    RECORD_COMMENT_MENTION: 'You were mentioned in a comment.',
+    TASK_COMMENT_MENTION: 'You were mentioned in a comment.'
   };
   if (map[t]) return map[t];
   if (t.startsWith('SYSTEM_')) return 'A system update occurred.';
@@ -699,17 +771,26 @@ async function handleClick() {
 
 <style scoped>
 .notification-item {
-  animation: notification-item-in 0.3s ease-out both;
+  animation: notification-item-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .notification-item--new {
-  animation: notification-item-in 0.4s ease-out both, notification-item-new 0.6s ease-out 0.2s both;
+  animation: notification-item-in 0.36s cubic-bezier(0.22, 1, 0.36, 1) both,
+    notification-item-glow 1.2s ease-out 0.15s both;
+}
+
+.notification-card {
+  will-change: transform, box-shadow;
+}
+
+.group:hover .notification-card {
+  transform: translateY(-1px);
 }
 
 @keyframes notification-item-in {
   from {
     opacity: 0;
-    transform: translateY(-2px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -717,12 +798,12 @@ async function handleClick() {
   }
 }
 
-@keyframes notification-item-new {
+@keyframes notification-item-glow {
   0%, 100% {
-    opacity: 1;
+    filter: none;
   }
-  50% {
-    opacity: 0.95;
+  35% {
+    filter: drop-shadow(0 0 10px rgba(96, 73, 231, 0.18));
   }
 }
 </style>

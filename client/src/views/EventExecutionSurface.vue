@@ -751,7 +751,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
 import type { EventExecutionContext, ExecutionState, ExecutionUserRole } from '@/types/eventExecution.types';
-import { isAuditEventType } from '@/utils/eventUtils';
+import { deriveEventExecutionState, isAuditEventType } from '@/utils/eventUtils';
+import { mapExecutionError } from '@/utils/eventExecutionErrors';
+import { determineEventExecutionRole } from '@/utils/eventExecutionRole';
 import { getEventTypeDefinitionByKey } from '@/metadata/eventTypes';
 import type { EventTypeDefinition } from '@/types/eventSettings.types';
 import { deriveEventPermissions } from '@/platform/events/eventPermissions.utils';
@@ -783,62 +785,6 @@ const completing = ref(false);
 
 // Execution error state (for user-facing error messages)
 const executionError = ref<string | null>(null);
-
-/**
- * Map backend error codes/messages to human-friendly text
- * 
- * This function maps known backend error codes to user-friendly messages.
- * Unknown errors are logged to console and shown as generic messages.
- */
-function mapExecutionError(error: any): string {
-  const errorCode = error?.response?.data?.code || error?.code;
-  const errorMessage = error?.response?.data?.message || error?.message;
-  
-  // Map known error codes to friendly messages
-  const errorMap: Record<string, string> = {
-    'EVENT_ALREADY_COMPLETED': 'This event has already been completed and cannot be modified.',
-    'INVALID_STATE_TRANSITION': 'This action is not allowed in the current event state.',
-    'AUDIT_WORKFLOW_LOCKED': 'This audit workflow is locked and cannot be modified.',
-    'GEO_REQUIRED': 'Location tracking is required for this action. Please enable location access.',
-    'EVENT_NOT_FOUND': 'This event could not be found.',
-    'PERMISSION_DENIED': 'You do not have permission to perform this action.',
-    'AUDIT_ALREADY_SUBMITTED': 'This audit has already been submitted and cannot be modified.',
-    'AUDIT_PENDING_CORRECTIVE': 'This audit requires corrective actions before proceeding.'
-  };
-  
-  // Try to map by error code first
-  if (errorCode && errorMap[errorCode]) {
-    return errorMap[errorCode];
-  }
-  
-  // Try to map by error message (case-insensitive partial match)
-  if (errorMessage) {
-    const messageLower = errorMessage.toLowerCase();
-    for (const [code, friendlyMessage] of Object.entries(errorMap)) {
-      if (messageLower.includes(code.toLowerCase().replace(/_/g, ' '))) {
-        return friendlyMessage;
-      }
-    }
-    
-    // If message contains known patterns, map them
-    if (messageLower.includes('already completed')) {
-      return errorMap['EVENT_ALREADY_COMPLETED'] ?? 'This event has already been completed and cannot be modified.';
-    }
-    if (messageLower.includes('invalid state') || messageLower.includes('state transition')) {
-      return errorMap['INVALID_STATE_TRANSITION'] ?? 'This action is not allowed in the current event state.';
-    }
-    if (messageLower.includes('workflow locked') || messageLower.includes('audit locked')) {
-      return errorMap['AUDIT_WORKFLOW_LOCKED'] ?? 'This audit workflow is locked and cannot be modified.';
-    }
-    if (messageLower.includes('geo') || messageLower.includes('location')) {
-      return errorMap['GEO_REQUIRED'] ?? 'Location tracking is required for this action. Please enable location access.';
-    }
-  }
-  
-  // Unknown error - log full error and return generic message
-  console.error('[EventExecutionSurface] Unmapped execution error:', error);
-  return errorMessage || 'An unexpected error occurred. Please try again or contact support.';
-}
 
 /**
  * Normalize a possibly-populated reference into an ID string.
@@ -895,17 +841,17 @@ async function reloadEventState(reason: string) {
     
     // Update execution context from fresh event data
     const eventData = response.data;
-    const normalizedState = normalizeExecutionState(eventData.status || eventData.executionStatus || 'PLANNED');
-    const userRole = determineUserRole(eventData);
+    const execState = deriveEventExecutionState(eventData);
+    const userRole = determineEventExecutionRole(eventData);
     const isAudit = isAuditEventType(eventData.eventType);
     
     executionContext.value = {
       eventId: eventData._id || eventData.id || eventId,
       eventType: eventData.eventType || 'Unknown',
-      executionState: normalizedState,
+      executionState: execState,
       userRole: userRole,
-      canStart: normalizedState === 'NOT_STARTED' && userRole !== null && !isAudit,
-      canComplete: normalizedState === 'IN_PROGRESS' && userRole !== null && !isAudit,
+      canStart: execState === 'NOT_STARTED' && userRole !== null && !isAudit,
+      canComplete: execState === 'IN_PROGRESS' && userRole !== null && !isAudit,
       linkedFormId: normalizeId(eventData.linkedFormId),
       title: eventData.eventName || eventData.title || 'Untitled Event',
       startDateTime: eventData.startDateTime,
@@ -975,20 +921,30 @@ const fetchExecutionContext = async () => {
       
       // Extract minimal execution context
       // ARCHITECTURE NOTE: Map to EventExecutionContext projection
-      const normalizedState = normalizeExecutionState(eventData.status || eventData.executionStatus || 'PLANNED');
-      const userRole = determineUserRole(eventData);
+      const execState = deriveEventExecutionState(eventData);
+      const userRole = determineEventExecutionRole(eventData);
       
       // ARCHITECTURE NOTE: For audit events, use auditState instead of executionState
       // Audit events have their own state machine (Ready to start → checked_in → submitted → approved/closed)
       const isAudit = isAuditEventType(eventData.eventType);
+
+      // Generic events execute inline on the record page; keep /execute for audit workflows only.
+      if (!isAudit) {
+        await router.replace({
+          name: 'event-detail',
+          params: { id: String(eventId) },
+          query: { ...route.query, focus: 'execution' }
+        });
+        return;
+      }
       
       executionContext.value = {
         eventId: eventData._id || eventData.id || eventId,
         eventType: eventData.eventType || 'Unknown',
-        executionState: normalizedState,
+        executionState: execState,
         userRole: userRole,
-        canStart: normalizedState === 'NOT_STARTED' && userRole !== null && !isAudit, // Audit events use check-in, not start
-        canComplete: normalizedState === 'IN_PROGRESS' && userRole !== null && !isAudit, // Audit events use check-out, not complete
+        canStart: execState === 'NOT_STARTED' && userRole !== null && !isAudit, // Audit events use check-in, not start
+        canComplete: execState === 'IN_PROGRESS' && userRole !== null && !isAudit, // Audit events use check-out, not complete
         // IMPORTANT: Normalize populated refs to ID string
         linkedFormId: normalizeId(eventData.linkedFormId),
         // Store title and times for display (not part of EventExecutionContext but needed for UI)
@@ -1026,73 +982,6 @@ const fetchExecutionContext = async () => {
   } finally {
     loading.value = false;
   }
-};
-
-/**
- * Normalize execution state to EventExecutionContext format
- * 
- * ARCHITECTURE NOTE: Maps various status formats to ExecutionState type.
- * Backend may return different status formats (PLANNED, NOT_STARTED, etc.)
- * This normalizes them to the ExecutionState union type.
- */
-const normalizeExecutionState = (status: string): ExecutionState => {
-  const normalized = status.toUpperCase();
-  
-  if (normalized === 'PLANNED' || normalized === 'NOT_STARTED' || normalized === 'READY_TO_START') {
-    return 'NOT_STARTED';
-  }
-  if (normalized === 'IN_PROGRESS' || normalized === 'IN PROGRESS' || normalized === 'ACTIVE') {
-    return 'IN_PROGRESS';
-  }
-  if (normalized === 'COMPLETED' || normalized === 'DONE' || normalized === 'FINISHED') {
-    return 'COMPLETED';
-  }
-  if (normalized === 'CANCELLED' || normalized === 'CANCELED') {
-    return 'CANCELLED';
-  }
-  
-  // Default to NOT_STARTED if unknown
-  return 'NOT_STARTED';
-};
-
-/**
- * Determine user's role in this event
- * 
- * ARCHITECTURE NOTE: Role determination logic based on:
- * - Event type (Generic vs Audit)
- * - User assignments (auditorId, reviewerId, correctiveOwnerId, ownerId)
- * - Current user's ID
- * 
- * Returns ExecutionUserRole type (OWNER, AUDITOR, REVIEWER, CORRECTIVE_OWNER, or null).
- */
-const determineUserRole = (event: any): ExecutionUserRole => {
-  const currentUserId = authStore.user?._id || authStore.user?.id;
-  
-  if (!currentUserId) {
-    return null;
-  }
-
-  // Check role assignments (handle both string IDs and populated objects)
-  const normalizeId = (id: any) => {
-    if (!id) return null;
-    if (typeof id === 'string') return id;
-    return id._id || id.id || null;
-  };
-
-  if (normalizeId(event.auditorId) === currentUserId) {
-    return 'AUDITOR';
-  }
-  if (normalizeId(event.reviewerId) === currentUserId) {
-    return 'REVIEWER';
-  }
-  if (normalizeId(event.correctiveOwnerId) === currentUserId) {
-    return 'CORRECTIVE_OWNER';
-  }
-  if (normalizeId(event.ownerId) === currentUserId || normalizeId(event.createdBy) === currentUserId) {
-    return 'OWNER';
-  }
-
-  return null;
 };
 
 /**
@@ -1270,15 +1159,7 @@ const executionMode = computed(() => {
  * This is a read-only computed state that reflects the current execution state
  * based on event status and execution timestamps.
  */
-const executionState = computed<ExecutionState>(() => {
-  if (!event.value) return 'NOT_STARTED';
-
-  if (event.value.status === 'Cancelled' || event.value.status === 'CANCELLED') return 'CANCELLED';
-  if (event.value.status === 'Completed' || event.value.status === 'COMPLETED') return 'COMPLETED';
-  if (event.value.executionStartTime || event.value.executionStartedAt) return 'IN_PROGRESS';
-
-  return 'NOT_STARTED';
-});
+const executionState = computed<ExecutionState>(() => deriveEventExecutionState(event.value));
 
 /**
  * EXECUTION TRANSITIONS
@@ -1731,14 +1612,7 @@ const launchFormResponse = (responseId?: string | MouseEvent) => {
  * See: docs/architecture/inbox-surface-invariants.md
  */
 const handleStartEvent = async () => {
-  // DEV-ONLY INVARIANT GUARD: This is the ONLY place execution mutations occur
   if (process.env.NODE_ENV === 'development') {
-    console.assert(
-      route.path.includes('/execute'),
-      '[EventExecutionSurface] INVARIANT: Execution mutations must occur only in EventExecutionSurface',
-      { routePath: route.path }
-    );
-    
     // Guard: Check if transition is allowed
     console.assert(
       canTransition(executionState.value, 'IN_PROGRESS'),
@@ -1751,7 +1625,7 @@ const handleStartEvent = async () => {
   // Audit execution begins via Check In and proceeds via workflow.
   if (isAuditEvent.value) return;
 
-  if (!executionContext.value || !executionContext.value.canStart) return;
+  if (!executionContext.value || !canStart.value) return;
   
   starting.value = true;
   
@@ -1825,7 +1699,7 @@ const handleCompleteEvent = async () => {
   // No UI action may directly set status = 'Completed' for audit events.
   if (isAuditEvent.value) return;
 
-  if (!executionContext.value || !executionContext.value.canComplete) return;
+  if (!executionContext.value || !canComplete.value) return;
   
   completing.value = true;
   

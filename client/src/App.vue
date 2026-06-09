@@ -24,6 +24,9 @@ const ImportProgressBanner = defineAsyncComponent(() =>
 const BulkDeleteProgressBanner = defineAsyncComponent(() =>
   import('@/components/common/BulkDeleteProgressBanner.vue')
 );
+const EmailVerificationBanner = defineAsyncComponent(() =>
+  import('@/components/auth/EmailVerificationBanner.vue')
+);
 const HelpdeskNotificationDevPanel = defineAsyncComponent(() =>
   import('@/components/dev/HelpdeskNotificationDevPanel.vue')
 );
@@ -439,6 +442,7 @@ watch(
 
   <!-- Authenticated layout -->
   <div v-else-if="isAuthenticated">
+    <EmailVerificationBanner v-if="hideShell" />
     <!-- Shell-less pages (e.g., Settings) -->
     <div v-if="hideShell" class="min-h-screen bg-gray-100/70 dark:bg-gray-900">
       <div class="flex-1 overflow-y-hidden overflow-x-hidden">

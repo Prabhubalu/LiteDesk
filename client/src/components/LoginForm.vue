@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 
 const { t } = useI18n();
@@ -10,7 +10,9 @@ const email = ref('');
 const password = ref('');
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 const SESSION_TRANSFER_HASH_KEY = 'ld_session';
+const loginNotice = ref('');
 
 const resolveInstanceLoginTarget = (instance) => {
     if (!instance?.subdomain) return null;
@@ -79,12 +81,21 @@ const handleLogin = async () => {
 };
 
 onMounted(() => {
+    if (String(route.query.verified || '') === '1') {
+        loginNotice.value = t('auth.verifyEmailLoginNotice');
+    }
     void applyTransferredSessionFromHash();
 });
 </script>
 
 <template>
     <form class="space-y-6" @submit.prevent="handleLogin">
+        <div
+          v-if="loginNotice"
+          class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-200"
+        >
+          {{ loginNotice }}
+        </div>
         <div>
           <label for="email" class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('auth.emailLabel') }}</label>
           <div class="mt-2">

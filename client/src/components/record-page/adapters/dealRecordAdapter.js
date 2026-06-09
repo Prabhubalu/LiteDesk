@@ -1,6 +1,7 @@
 import DescriptionSection from '@/components/record-page/sections/DescriptionSection.vue';
 import DetailsSection from '@/components/record-page/sections/DetailsSection.vue';
 import StageHistorySection from '@/components/record-page/sections/StageHistorySection.vue';
+import PlaybookStageSection from '@/components/record-page/sections/PlaybookStageSection.vue';
 import RelatedSection from '@/components/record-page/sections/RelatedSection.vue';
 import {
   ChartBarIcon,
@@ -65,6 +66,7 @@ const DETAIL_SECTION_BASE_EXCLUDED_KEYS = Object.freeze([
   'createdBy', 'createdAt', 'modifiedBy', 'updatedAt',
   'deletedAt', 'deletedBy', 'deletionReason',
   'stageHistory',
+  'playbookState',
   // Infrastructure / internal – never show in Details (versions, logs, ordering, relationship arrays)
   'descriptionVersions',
   'activityLogs',
@@ -398,13 +400,15 @@ export const createDealRecordAdapter = ({
   canViewDescriptionHistory,
   openDescriptionHistory,
   expandedLeftSection,
-  openLeftSection
+  openLeftSection,
+  onPlaybookActionStatusChange
 }) => {
   const L = sl || {
     description: 'Description',
     details: 'Details',
     related: 'Related Records',
     stageHistory: 'Stage History',
+    stagePlaybook: 'Stage Playbook',
     expand: 'Expand',
     history: 'History',
     linkRecord: 'Link record',
@@ -418,8 +422,8 @@ export const createDealRecordAdapter = ({
       const currentExpandedSection = String(resolveValue(expandedLeftSection) || '').trim();
       const isExpandedMode = currentExpandedSection.length > 0;
       const visibleKeys = isExpandedMode
-        ? ['description', 'details', 'stage-history', 'related'].filter((key) => key === currentExpandedSection)
-        : ['description', 'details', 'stage-history', 'related'];
+        ? ['description', 'details', 'stage-playbook', 'stage-history', 'related'].filter((key) => key === currentExpandedSection)
+        : ['description', 'details', 'stage-playbook', 'stage-history', 'related'];
 
       const sections = {
         description: {
@@ -438,6 +442,13 @@ export const createDealRecordAdapter = ({
           component: DetailsSection,
           className: 'pt-2 pb-2',
           actions: (!isExpandedMode ? [{ key: 'expand-details', type: 'expand', label: L.expand, handler: () => openLeftSection?.('details') }] : [])
+        },
+        'stage-playbook': {
+          key: 'stage-playbook',
+          title: L.stagePlaybook,
+          component: PlaybookStageSection,
+          className: 'pt-2 pb-2',
+          actions: (!isExpandedMode ? [{ key: 'expand-stage-playbook', type: 'expand', label: L.expand, handler: () => openLeftSection?.('stage-playbook') }] : [])
         },
         'stage-history': {
           key: 'stage-history',
@@ -463,10 +474,13 @@ export const createDealRecordAdapter = ({
     },
 
     shouldRenderSection(section, record) {
-      const name = section?.name || section?.__name;
       if (!record) return false;
-      if (name === 'StageHistorySection') {
+      const sectionKey = section?.key;
+      if (sectionKey === 'stage-history') {
         return Array.isArray(record.stageHistory) && record.stageHistory.length > 0;
+      }
+      if (sectionKey === 'stage-playbook') {
+        return Array.isArray(record?.playbookState?.actions) && record.playbookState.actions.length > 0;
       }
       return true;
     },
@@ -646,6 +660,52 @@ export const createDealRecordAdapter = ({
         changedAtLabel: formatDate(entry?.changedAt),
         changedBy: entry?.changedBy?.firstName || ''
       }));
+    },
+
+    getPlaybookActions(record, context) {
+      if (!Array.isArray(record?.playbookState?.actions)) return [];
+      const canEdit = typeof context?.canEditPlaybook === 'boolean' ? context.canEditPlaybook : false;
+      return record.playbookState.actions.map((action) => {
+        const activityId = action.createdActivityId || null;
+        const activityType = action.createdActivityType || null;
+        let activityPath = null;
+        if (activityId) {
+          activityPath = activityType === 'event'
+            ? `/events/${activityId}`
+            : `/tasks/${activityId}`;
+        }
+        return {
+          actionKey: action.actionKey,
+          title: action.title || '—',
+          actionType: action.actionType || 'task',
+          dueAtLabel: formatDate(action.dueAt),
+          required: action.required !== false,
+          status: action.status === 'completed'
+            ? 'completed'
+            : (action.status === 'blocked' ? 'blocked' : 'pending'),
+          dependencies: Array.isArray(action.dependencies) ? action.dependencies : [],
+          blockedBy: Array.isArray(action.blockedBy) ? action.blockedBy : [],
+          createdActivityId: activityId,
+          createdActivityType: activityType,
+          activityPath,
+          canToggle: canEdit && action.status !== 'blocked',
+          resources: Array.isArray(action.resources)
+            ? action.resources
+              .map((resource) => ({
+                name: String(resource?.name || '').trim(),
+                type: String(resource?.type || 'document').trim() || 'document',
+                url: String(resource?.url || '').trim(),
+                description: String(resource?.description || '').trim()
+              }))
+              .filter((resource) => resource.name || resource.url || resource.description)
+            : []
+        };
+      });
+    },
+
+    async setPlaybookActionStatus(record, actionKey, status) {
+      if (typeof onPlaybookActionStatusChange !== 'function') return null;
+      return onPlaybookActionStatusChange(record, actionKey, status);
     },
 
     getRelatedGroups(record) {

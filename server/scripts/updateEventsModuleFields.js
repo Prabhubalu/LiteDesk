@@ -26,6 +26,7 @@ const MONGODB_URI = `${baseUri}/${masterDbName}${mongoQueryString}`;
 
 const ModuleDefinition = require('../models/ModuleDefinition');
 const Event = require('../models/Event');
+const { backfillPicklistOptionColors } = require('../utils/picklistColorPalette');
 
 const defaultEventRelationships = Object.freeze([
   { name: 'Related Deal', type: 'many_to_one', isLookup: true, targetModuleKey: 'deals', relationshipKey: 'deal_events' },
@@ -375,7 +376,11 @@ async function updateEventsModuleFields(organizationId = null) {
           
           // Update options for picklist fields
           if (enumOptions[fieldKey] && (!existingField.options || JSON.stringify(existingField.options) !== JSON.stringify(enumOptions[fieldKey]))) {
-            existingField.options = enumOptions[fieldKey].map(val => ({ value: val, color: '#3B82F6' }));
+            existingField.options = backfillPicklistOptionColors(
+              enumOptions[fieldKey].map((val) => ({ value: val })),
+              fieldKey,
+              'events'
+            );
             fieldChanged = true;
             console.log(`    Updated ${fieldKey} options`);
           }
@@ -437,7 +442,13 @@ async function updateEventsModuleFields(organizationId = null) {
             label: fieldLabel,
             dataType: dataType,
             required: false,
-            options: enumOptions[fieldKey] ? enumOptions[fieldKey].map(val => ({ value: val, color: '#3B82F6' })) : [],
+            options: enumOptions[fieldKey]
+              ? backfillPicklistOptionColors(
+                  enumOptions[fieldKey].map((val) => ({ value: val })),
+                  fieldKey,
+                  'events'
+                )
+              : [],
             visibility: { list: true, detail: true },
             order: fields.length,
             lookupSettings: lookupSettings,

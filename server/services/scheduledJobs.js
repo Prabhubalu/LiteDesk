@@ -12,6 +12,8 @@ const { processDueDeferredAutomationActions } = require('./deferredAutomationSch
 const { tickBusinessHoursKpiAggregation } = require('./businessHoursKpiSchedulerService');
 const { tickProcessWaitResume } = require('./processWaitResumeSchedulerService');
 const { tickQuoteExpiry } = require('./quoteExpirySchedulerService');
+const { processDuePlaybookDelayJobs } = require('./playbookSchedulingService');
+const { processDuePlaybookAlertJobs } = require('./playbookAlertSchedulingService');
 
 const NOTIFICATION_DEBUG = process.env.NOTIFICATION_DEBUG === 'true';
 const ENABLE_DIGEST_SCHEDULER = process.env.ENABLE_DIGEST_SCHEDULER !== 'false'; // Default: enabled
@@ -35,6 +37,10 @@ const ENABLE_TARGET_RECALC_SCHEDULER =
   process.env.ENABLE_TARGET_RECALC_SCHEDULER !== 'false';
 const ENABLE_QUOTE_EXPIRY_SCHEDULER =
   process.env.ENABLE_QUOTE_EXPIRY_SCHEDULER !== 'false';
+const ENABLE_PLAYBOOK_DELAY_SCHEDULER =
+  process.env.ENABLE_PLAYBOOK_DELAY_SCHEDULER !== 'false';
+const ENABLE_PLAYBOOK_ALERT_SCHEDULER =
+  process.env.ENABLE_PLAYBOOK_ALERT_SCHEDULER !== 'false';
 
 let dailyDigestJob = null;
 let weeklyDigestJob = null;
@@ -50,6 +56,8 @@ let businessHoursKpiJob = null;
 let processWaitResumeJob = null;
 let targetRecalcJob = null;
 let quoteExpiryJob = null;
+let playbookDelayJob = null;
+let playbookAlertJob = null;
 
 /**
  * Initialize and start scheduled jobs (node-cron).
@@ -387,6 +395,42 @@ function startScheduledJobs() {
     console.log('[scheduledJobs] Quote expiry scheduler disabled (ENABLE_QUOTE_EXPIRY_SCHEDULER=false)');
   }
 
+  if (ENABLE_PLAYBOOK_DELAY_SCHEDULER) {
+    playbookDelayJob = cron.schedule('* * * * *', async () => {
+      try {
+        const result = await processDuePlaybookDelayJobs();
+        if (result.processed > 0 || NOTIFICATION_DEBUG) {
+          console.log(
+            `[scheduledJobs] Playbook delay tick: processed=${result.processed} completed=${result.completed} failed=${result.failed} skipped=${result.skipped}`
+          );
+        }
+      } catch (err) {
+        console.error('[scheduledJobs] Playbook delay tick failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - Playbook delay triggers: every minute');
+  } else {
+    console.log('[scheduledJobs] Playbook delay scheduler disabled (ENABLE_PLAYBOOK_DELAY_SCHEDULER=false)');
+  }
+
+  if (ENABLE_PLAYBOOK_ALERT_SCHEDULER) {
+    playbookAlertJob = cron.schedule('* * * * *', async () => {
+      try {
+        const result = await processDuePlaybookAlertJobs();
+        if (result.processed > 0 || NOTIFICATION_DEBUG) {
+          console.log(
+            `[scheduledJobs] Playbook alert tick: processed=${result.processed} completed=${result.completed} failed=${result.failed} skipped=${result.skipped}`
+          );
+        }
+      } catch (err) {
+        console.error('[scheduledJobs] Playbook alert tick failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - Playbook alerts: every minute');
+  } else {
+    console.log('[scheduledJobs] Playbook alert scheduler disabled (ENABLE_PLAYBOOK_ALERT_SCHEDULER=false)');
+  }
+
   console.log(`[scheduledJobs]   - Timezone: ${process.env.DIGEST_TIMEZONE || 'UTC'}`);
   if (NOTIFICATION_DEBUG) {
     console.log('[scheduledJobs]   - Debug mode: enabled');
@@ -479,6 +523,18 @@ function stopScheduledJobs() {
     quoteExpiryJob.stop();
     quoteExpiryJob = null;
     console.log('[scheduledJobs] Quote expiry job stopped');
+  }
+
+  if (playbookDelayJob) {
+    playbookDelayJob.stop();
+    playbookDelayJob = null;
+    console.log('[scheduledJobs] Playbook delay job stopped');
+  }
+
+  if (playbookAlertJob) {
+    playbookAlertJob.stop();
+    playbookAlertJob = null;
+    console.log('[scheduledJobs] Playbook alert job stopped');
   }
 }
 

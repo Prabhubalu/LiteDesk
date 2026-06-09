@@ -46,7 +46,7 @@ export type CommandId = string;
  * - Command filtering and organization
  * - Understanding command intent
  */
-export type CommandCategory = 'navigation' | 'create' | 'action';
+export type CommandCategory = 'navigation' | 'create' | 'action' | 'settings';
 
 /**
  * Command scope

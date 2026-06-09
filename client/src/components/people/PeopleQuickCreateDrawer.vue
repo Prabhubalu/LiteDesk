@@ -10,7 +10,7 @@
   ALL CONTEXTS: Quick create fields always visible (identity creation)
   
   ALL APPS TAB (optionalAppParticipation + contextAppKey null):
-  - "App participation" picker: None | SALES | HELPDESK → AppSection when an app is selected
+  - App participation card picker (multi-select) → AppSection per selected app
   
   APP CONTEXT (when context !== 'ALL'):
   - Divider: "{AppName} Information"
@@ -78,8 +78,8 @@
                         <p v-if="appContextHint" class="text-xs text-indigo-200 dark:text-indigo-300 mt-2">
                           {{ appContextHint }}
                         </p>
-                        <p v-else-if="optionalAppParticipation && !effectiveAppKey" class="text-xs text-indigo-200 dark:text-indigo-300 mt-2">{{ t('people.peopleQuickCreateDrawerOptionalChooseAnAppBelowTo') }}</p>
-                        <p v-else-if="!effectiveAppKey" class="text-xs text-gray-400 dark:text-gray-500 mt-2">{{ t('people.peopleQuickCreateDrawerCreatesIdentityOnlyNoAppParticipation') }}</p>
+                        <p v-else-if="optionalAppParticipation && selectedOptionalAppKeys.length === 0" class="text-xs text-indigo-200 dark:text-indigo-300 mt-2">{{ t('people.peopleQuickCreateDrawerOptionalChooseAppsBelowTo') }}</p>
+                        <p v-else-if="effectiveSelectedApps.length === 0" class="text-xs text-gray-400 dark:text-gray-500 mt-2">{{ t('people.peopleQuickCreateDrawerCreatesIdentityOnlyNoAppParticipation') }}</p>
                       </div>
                   </div>
 
@@ -126,82 +126,153 @@
                             @ready="onFormReady"
                           />
 
-                          <!-- All Apps tab: optional app picker → AppSection -->
+                          <!-- All Apps tab: app tiles + configuration panels -->
                           <div
                             v-if="optionalAppParticipation && contextAppKeyPropIsNull"
                             class="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6"
                           >
-                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ t('records.genericAppParticipation') }}</h3>
-                            <Listbox
-                              :model-value="selectedOptionalAppKey"
-                              as="div"
-                              class="block"
-                              @update:model-value="onOptionalAppChange"
-                            >
-                              <ListboxLabel class="block text-sm/6 font-medium text-gray-900 dark:text-white mb-1">{{ t('people.peopleQuickCreateDrawerAddToApp') }}</ListboxLabel>
-                              <div class="relative mt-2">
-                                <ListboxButton
-                                  type="button"
-                                  :class="[
-                                    'block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-left text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500 cursor-default relative pr-10'
-                                  ]"
-                                >
-                                  <span class="block truncate">
-                                    {{ optionalAppListboxLabel }}
-                                  </span>
-                                  <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
-                                  </span>
-                                </ListboxButton>
-                                <Transition
-                                  enter-active-class="transition duration-100 ease-out"
-                                  enter-from-class="opacity-0"
-                                  enter-to-class="opacity-100"
-                                  leave-active-class="transition duration-100 ease-in"
-                                  leave-from-class="opacity-100"
-                                  leave-to-class="opacity-0"
-                                >
-                                  <ListboxOptions
-                                    as="ul"
-                                    class="absolute z-[100] mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm"
-                                  >
-                                    <ListboxOption
-                                      v-for="opt in optionalAppParticipationOptions"
-                                      :key="String(opt.value ?? 'none')"
-                                      :value="opt.value"
-                                      v-slot="{ active, selected }"
-                                    >
-                                      <div
-                                        :class="[
-                                          'relative cursor-default select-none py-2 pl-4 pr-10',
-                                          active
-                                            ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100'
-                                            : 'text-gray-900 dark:text-gray-100'
-                                        ]"
-                                      >
-                                        <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ opt.label }}</span>
-                                        <span
-                                          v-if="selected"
-                                          class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-400"
-                                        >
-                                          <CheckIcon class="h-5 w-5" aria-hidden="true" />
-                                        </span>
-                                      </div>
-                                    </ListboxOption>
-                                  </ListboxOptions>
-                                </Transition>
+                            <div class="rounded-xl border border-gray-200 bg-gray-50/80 p-4 dark:border-gray-700 dark:bg-gray-900/30">
+                              <div class="mb-3">
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+                                  {{ t('records.genericAppParticipation') }}
+                                </h3>
+                                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                  {{ t('people.peopleQuickCreateDrawerSelectAppsHint') }}
+                                </p>
                               </div>
-                            </Listbox>
+
+                              <div v-if="availableParticipationApps.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
+                                {{ t('people.peopleQuickCreateDrawerNoParticipationApps') }}
+                              </div>
+                              <div v-else class="grid grid-cols-2 gap-2">
+                                <button
+                                  v-for="appKey in availableParticipationApps"
+                                  :key="appKey"
+                                  type="button"
+                                  class="relative flex items-center gap-3 rounded-xl border-2 p-3 text-left transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                                  :class="isAppSelected(appKey)
+                                    ? 'border-indigo-500 bg-white shadow-sm ring-1 ring-indigo-500/20 dark:border-indigo-500 dark:bg-gray-800'
+                                    : 'border-transparent bg-white hover:border-gray-200 dark:bg-gray-800 dark:hover:border-gray-600'"
+                                  :aria-pressed="isAppSelected(appKey)"
+                                  @click="toggleAppSelection(appKey)"
+                                >
+                                  <div
+                                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                                    :class="getParticipationAppMeta(appKey).iconBg"
+                                  >
+                                    <component
+                                      :is="getParticipationAppMeta(appKey).icon"
+                                      class="h-5 w-5"
+                                      :class="getParticipationAppMeta(appKey).iconColor"
+                                      aria-hidden="true"
+                                    />
+                                  </div>
+                                  <div class="min-w-0 flex-1">
+                                    <div class="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                                      {{ getAppLabel(appKey) }}
+                                    </div>
+                                    <div
+                                      v-if="isAppSelected(appKey) && getAppForm(appKey).participationType"
+                                      class="truncate text-xs text-indigo-600 dark:text-indigo-400"
+                                    >
+                                      {{ getAppForm(appKey).participationType }}
+                                    </div>
+                                    <div
+                                      v-else-if="!isAppSelected(appKey)"
+                                      class="text-xs text-gray-500 dark:text-gray-400"
+                                    >
+                                      {{ t('people.peopleQuickCreateDrawerTapToAdd') }}
+                                    </div>
+                                  </div>
+                                  <CheckCircleIcon
+                                    v-if="isAppSelected(appKey)"
+                                    class="absolute right-2 top-2 h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                    aria-hidden="true"
+                                  />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div v-if="selectedOptionalAppKeys.length > 0" class="mt-4 space-y-3">
+                              <div
+                                v-for="appKey in selectedOptionalAppKeys"
+                                :key="`config-${appKey}`"
+                                class="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800/50"
+                              >
+                                <div class="flex items-center gap-2.5 rounded-t-xl border-b border-gray-100 bg-gray-50/90 px-4 py-2.5 dark:border-gray-700 dark:bg-gray-900/40">
+                                  <div
+                                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
+                                    :class="getParticipationAppMeta(appKey).iconBg"
+                                  >
+                                    <component
+                                      :is="getParticipationAppMeta(appKey).icon"
+                                      class="h-4 w-4"
+                                      :class="getParticipationAppMeta(appKey).iconColor"
+                                      aria-hidden="true"
+                                    />
+                                  </div>
+                                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                    {{ getAppLabel(appKey) }}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    class="ml-auto text-xs font-medium text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
+                                    @click="toggleAppSelection(appKey)"
+                                  >
+                                    {{ t('actions.remove') }}
+                                  </button>
+                                </div>
+                                <div class="p-4">
+                                  <AppSection
+                                    :app-key="appKey"
+                                    :model-value="getAppForm(appKey)"
+                                    embedded
+                                    collapsible-dependent-fields
+                                    hide-section-title
+                                    :module-override="peopleModuleOverride"
+                                    :errors="getAppErrors(appKey)"
+                                    @update:model-value="(value) => setAppForm(appKey, value)"
+                                  />
+                                </div>
+                              </div>
+                            </div>
                           </div>
 
-                          <!-- App section (generic, no hardcoded apps) -->
-                          <AppSection
-                            v-if="effectiveAppKey"
-                            :app-key="effectiveAppKey"
-                            v-model="appForm"
-                            :module-override="peopleModuleOverride"
-                            :errors="errors"
-                          />
+                          <!-- Single app context (Sales / Helpdesk tab) -->
+                          <div
+                            v-else-if="effectiveAppKey"
+                            class="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6"
+                          >
+                            <div class="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800/50">
+                              <div class="flex items-center gap-2.5 rounded-t-xl border-b border-gray-100 bg-gray-50/90 px-4 py-2.5 dark:border-gray-700 dark:bg-gray-900/40">
+                                <div
+                                  class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
+                                  :class="getParticipationAppMeta(effectiveAppKey).iconBg"
+                                >
+                                  <component
+                                    :is="getParticipationAppMeta(effectiveAppKey).icon"
+                                    class="h-4 w-4"
+                                    :class="getParticipationAppMeta(effectiveAppKey).iconColor"
+                                    aria-hidden="true"
+                                  />
+                                </div>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                  {{ getAppLabel(effectiveAppKey) }}
+                                </span>
+                              </div>
+                              <div class="p-4">
+                                <AppSection
+                                  :app-key="effectiveAppKey"
+                                  v-model="singleAppForm"
+                                  embedded
+                                  collapsible-dependent-fields
+                                  hide-section-title
+                                  :module-override="peopleModuleOverride"
+                                  :errors="getAppErrors(effectiveAppKey)"
+                                />
+                              </div>
+                            </div>
+                          </div>
                         </template>
                         <p v-else-if="isOpen" class="text-sm text-amber-600 dark:text-amber-400">{{ t('people.peopleQuickCreateDrawerCouldNotLoadPeopleModulePlease') }}</p>
                       </div>
@@ -244,22 +315,17 @@ declare const process: {
   };
 };
 
-import { ref, computed, watch, toRef, nextTick, type PropType } from 'vue';
+import { ref, computed, watch, toRef, nextTick, type PropType, type Component } from 'vue';
 import {
   Dialog,
   DialogPanel,
   DialogTitle,
   TransitionChild,
-  TransitionRoot,
-  Listbox,
-  ListboxLabel,
-  ListboxButton,
-  ListboxOptions,
-  ListboxOption
+  TransitionRoot
 } from '@headlessui/vue';
-import { XMarkIcon, ChevronUpDownIcon, CheckIcon } from '@heroicons/vue/24/outline';
+import { XMarkIcon, BriefcaseIcon, LifebuoyIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from '@/components/common/DynamicForm.vue';
-import AppSection from '@/components/people/AppSection.vue';
+import AppSection, { type AppSectionModelValue } from '@/components/people/AppSection.vue';
 import apiClient from '@/utils/apiClient';
 import { useTabs } from '@/composables/useTabs';
 import { useCreationContext } from '@/utils/creationContext';
@@ -271,6 +337,16 @@ import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import { getFormFieldValue, syncParticipationClassifierFields } from '@/utils/getFieldValue';
 import { normalizeModuleFieldsFromMetadata } from '@/platform/fields/fieldMerge';
 import { mergePeopleVirtualFieldDefinitions } from '@/platform/fields/peopleFieldRegistry';
+import { useAuthStore } from '@/stores/auth';
+import {
+  PEOPLE_PARTICIPATION_APP_KEYS,
+  type PeopleParticipationAppKey
+} from '@/utils/peopleParticipationUi';
+import {
+  applyCreateOwnerDefaultsToForm,
+  applyCreateOwnerDefaultsToPayload,
+  resolveCurrentUserId
+} from '@/utils/recordCreateOwnerDefaults';
 
 const props = defineProps({
   isOpen: {
@@ -306,48 +382,152 @@ const { t } = useI18n();
 const emit = defineEmits(['close', 'saved']);
 
 const { openTab } = useTabs();
+const authStore = useAuthStore();
 
 // Creation context: appKey is null for global, 'SALES'|'HELPDESK' for app-specific
 const { appKey } = useCreationContext(toRef(props, 'contextAppKey'));
 
-/** When optional participation mode (All Apps), user-selected app; null = identity only */
-const selectedOptionalAppKey = ref<'SALES' | 'HELPDESK' | null>(null);
+/** When optional participation mode (All Apps), user-selected apps */
+const selectedOptionalAppKeys = ref<PeopleParticipationAppKey[]>([]);
 
 const contextAppKeyPropIsNull = computed(() => props.contextAppKey === null);
 
-const effectiveAppKey = computed((): 'SALES' | 'HELPDESK' | null => {
+const effectiveAppKey = computed((): PeopleParticipationAppKey | null => {
   if (props.optionalAppParticipation && props.contextAppKey === null) {
-    return selectedOptionalAppKey.value;
+    return null;
   }
-  return appKey.value;
+  const key = appKey.value;
+  if (key && PEOPLE_PARTICIPATION_APP_KEYS.includes(key as PeopleParticipationAppKey)) {
+    return key as PeopleParticipationAppKey;
+  }
+  return null;
 });
 
-const OPTIONAL_APP_KEYS = ['SALES', 'HELPDESK'] as const;
-
-const optionalAppParticipationOptions = computed(() => [
-  { value: null as null, label: 'None (identity only)' },
-  ...OPTIONAL_APP_KEYS.map((k) => ({ value: k, label: getAppLabel(k) }))
-]);
-
-const optionalAppListboxLabel = computed(() => {
-  const k = selectedOptionalAppKey.value;
-  if (!k) return 'None (identity only)';
-  return getAppLabel(k);
+const availableParticipationApps = computed((): PeopleParticipationAppKey[] => {
+  const enabled = authStore.organization?.enabledApps;
+  if (!Array.isArray(enabled) || enabled.length === 0) {
+    return [...PEOPLE_PARTICIPATION_APP_KEYS];
+  }
+  const enabledKeys = new Set(
+    enabled
+      .filter((app) => app?.status === 'ACTIVE')
+      .map((app) => String(app.appKey).toUpperCase())
+  );
+  return PEOPLE_PARTICIPATION_APP_KEYS.filter((k) => enabledKeys.has(k));
 });
 
-function onOptionalAppChange(value: 'SALES' | 'HELPDESK' | null) {
-  markUserInteraction();
-  selectedOptionalAppKey.value = value;
-  appForm.value = { participationType: null };
+const effectiveSelectedApps = computed((): PeopleParticipationAppKey[] => {
+  if (props.optionalAppParticipation && props.contextAppKey === null) {
+    return selectedOptionalAppKeys.value;
+  }
+  return effectiveAppKey.value ? [effectiveAppKey.value] : [];
+});
+
+type ParticipationAppMeta = {
+  icon: Component;
+  iconBg: string;
+  iconColor: string;
+};
+
+const participationAppMeta: Record<PeopleParticipationAppKey, ParticipationAppMeta> = {
+  SALES: {
+    icon: BriefcaseIcon,
+    iconBg: 'bg-indigo-100 dark:bg-indigo-900/50',
+    iconColor: 'text-indigo-600 dark:text-indigo-400'
+  },
+  HELPDESK: {
+    icon: LifebuoyIcon,
+    iconBg: 'bg-sky-100 dark:bg-sky-900/50',
+    iconColor: 'text-sky-600 dark:text-sky-400'
+  }
+};
+
+function getParticipationAppMeta(appKey: string): ParticipationAppMeta {
+  const key = appKey as PeopleParticipationAppKey;
+  return participationAppMeta[key] ?? {
+    icon: BriefcaseIcon,
+    iconBg: 'bg-gray-100 dark:bg-gray-800',
+    iconColor: 'text-gray-600 dark:text-gray-400'
+  };
 }
 
-const { typeDefs: peopleTypeDefs } = usePeopleTypes(effectiveAppKey);
+function isAppSelected(appKey: PeopleParticipationAppKey) {
+  return selectedOptionalAppKeys.value.includes(appKey);
+}
+
+function toggleAppSelection(appKey: PeopleParticipationAppKey) {
+  markUserInteraction();
+  if (isAppSelected(appKey)) {
+    selectedOptionalAppKeys.value = selectedOptionalAppKeys.value.filter((k) => k !== appKey);
+    const nextForms = { ...appForms.value };
+    delete nextForms[appKey];
+    appForms.value = nextForms;
+    clearAppScopedErrors(appKey);
+  } else {
+    selectedOptionalAppKeys.value = [...selectedOptionalAppKeys.value, appKey];
+    appForms.value = { ...appForms.value, [appKey]: { participationType: null } };
+  }
+}
+
+const salesPeopleTypes = usePeopleTypes('SALES');
+const helpdeskPeopleTypes = usePeopleTypes('HELPDESK');
+
+function getTypeDefsForApp(appKey: string) {
+  if (appKey === 'SALES') return salesPeopleTypes.typeDefs.value;
+  if (appKey === 'HELPDESK') return helpdeskPeopleTypes.typeDefs.value;
+  return [];
+}
+
+function appErrorKey(appKey: string, fieldKey: string) {
+  return `${appKey}::${fieldKey}`;
+}
+
+function getAppErrors(appKey: string): Record<string, string> {
+  const prefix = `${appKey}::`;
+  const result: Record<string, string> = {};
+  for (const [key, message] of Object.entries(errors.value)) {
+    if (key.startsWith(prefix)) {
+      result[key.slice(prefix.length)] = message;
+    }
+  }
+  return result;
+}
+
+function clearAppScopedErrors(appKey: string) {
+  const prefix = `${appKey}::`;
+  const next = { ...errors.value };
+  for (const key of Object.keys(next)) {
+    if (key.startsWith(prefix)) delete next[key];
+  }
+  errors.value = next;
+}
 
 /** Hide platform-managed keys (e.g. source) — People quick create does not use CreateRecordDrawer’s exclude list */
 const quickCreateExcludeFields = computed(() => getGlobalSystemFieldKeys());
 
-// App form state (participation type + dependent fields) — used by AppSection
-const appForm = ref<Record<string, any>>({ participationType: null });
+// App form state per app (participation type + dependent fields)
+const appForms = ref<Record<string, AppSectionModelValue>>({});
+
+const singleAppForm = computed({
+  get(): AppSectionModelValue {
+    const key = effectiveAppKey.value;
+    if (!key) return { participationType: null };
+    return appForms.value[key] ?? { participationType: null };
+  },
+  set(value: AppSectionModelValue) {
+    const key = effectiveAppKey.value;
+    if (!key) return;
+    appForms.value = { ...appForms.value, [key]: value };
+  }
+});
+
+function getAppForm(appKey: string): AppSectionModelValue {
+  return appForms.value[appKey] ?? { participationType: null };
+}
+
+function setAppForm(appKey: string, value: AppSectionModelValue) {
+  appForms.value = { ...appForms.value, [appKey]: value };
+}
 
 // People module fetched when drawer opens (Settings → People → Quick Create + app participation fields).
 const peopleModuleOverride = ref<any>(null);
@@ -358,8 +538,8 @@ watch(() => props.isOpen, async (open) => {
   if (!open) {
     peopleModuleOverride.value = null;
     peopleModuleLoading.value = false;
-    appForm.value = { participationType: null };
-    selectedOptionalAppKey.value = null;
+    appForms.value = {};
+    selectedOptionalAppKeys.value = [];
     return;
   }
   peopleModuleLoading.value = true;
@@ -423,33 +603,39 @@ const quickCreateFieldsOverride = computed(() =>
   getPeopleQuickCreateFields(peopleModuleOverride.value)
 );
 
-// App-dependent fields for validation/payload (when in app context)
-const appDependentFields = computed(() => {
-  if (!effectiveAppKey.value || !appForm.value?.participationType) return [];
-  return getAppFields(effectiveAppKey.value, appForm.value.participationType, peopleTypeDefs.value);
-});
+// App-dependent fields for validation/payload (per app)
+function getAppDependentFields(appKey: string) {
+  const form = appForms.value[appKey];
+  if (!form?.participationType) return [];
+  return getAppFields(appKey, form.participationType, getTypeDefsForApp(appKey));
+}
 
-// UX hint: "This person will be added to {AppName} as {Role}"
+// UX hint: "This person will be added to Sales as Lead, Helpdesk as Customer"
 const appContextHint = computed(() => {
-  if (effectiveAppKey.value && appForm.value?.participationType) {
-    return `This person will be added to ${getAppLabel(effectiveAppKey.value)} as ${appForm.value.participationType}`;
-  }
-  return null;
+  const parts = effectiveSelectedApps.value
+    .map((appKey) => {
+      const role = appForms.value[appKey]?.participationType;
+      if (!role) return null;
+      return `${getAppLabel(appKey)} as ${role}`;
+    })
+    .filter(Boolean);
+  if (parts.length === 0) return null;
+  return `This person will be added to ${parts.join(', ')}`;
 });
 
-// Prevent submit when app context but no role selected
+// Prevent submit when any selected app is missing a role
 const submitDisabled = computed(() =>
-  !!effectiveAppKey.value && !appForm.value?.participationType
+  effectiveSelectedApps.value.some((appKey) => !appForms.value[appKey]?.participationType)
 );
 
 // Helper text
 const helperText = computed(() => {
-  if (!effectiveAppKey.value) {
+  if (effectiveSelectedApps.value.length === 0) {
     return props.optionalAppParticipation && props.contextAppKey === null
-      ? 'Create a new person with identity information. App participation is optional.'
-      : 'Create a new person with identity information.';
+      ? t('people.peopleQuickCreateDrawerHelperIdentityOptionalApps')
+      : t('people.peopleQuickCreateDrawerHelperIdentityOnly');
   }
-  return 'Create a new person with identity and app participation.';
+  return t('people.peopleQuickCreateDrawerHelperWithApps');
 });
 
 // Drawer panel class
@@ -458,9 +644,9 @@ const drawerPanelClass = 'pointer-events-auto w-screen max-w-2xl h-full';
 /**
  * Validate quick create + app fields (required in form from module)
  */
-function appFormDataForDependencies() {
-  const base = { ...(appForm.value || {}) } as Record<string, unknown>;
-  syncParticipationClassifierFields(base, effectiveAppKey.value);
+function appFormDataForDependencies(appKey: string) {
+  const base = { ...(appForms.value[appKey] || {}) } as Record<string, unknown>;
+  syncParticipationClassifierFields(base, appKey);
   return base;
 }
 
@@ -469,37 +655,60 @@ function validateForm() {
   if (!moduleDefinition.value?.fields) return;
 
   const moduleFields = moduleDefinition.value.fields as any[];
-  const qcFields = quickCreateFieldsOverride.value;
-  const appFields = appDependentFields.value;
-  const appDepForm = appFormDataForDependencies();
 
   for (const field of moduleFields) {
     if (!field.key) continue;
-    const isQcField = qcFields.includes(field.key);
-    const isAppField = appFields.includes(field.key);
-    if (!isQcField && !isAppField) continue;
+    const isQcField = quickCreateFieldsOverride.value.includes(field.key);
+    if (!isQcField) continue;
 
-    // Apply dependency-driven effective state (required/visibility), not static `field.required` only.
     const depState = getFieldDependencyState(
       field,
-      isAppField ? appDepForm : formData.value,
+      formData.value,
       moduleFields,
       { moduleKey: 'people' }
     );
     if (depState.visible === false) continue;
     if (depState.required !== true) continue;
 
-    const source = isQcField ? formData.value : appForm.value;
-    const value = field.key in source
-      ? source[field.key]
+    const value = field.key in formData.value
+      ? formData.value[field.key]
       : getFormFieldValue(formData.value, field.key, field, { moduleKey: 'people' });
     const isEmpty = value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0);
     if (isEmpty) {
       (errors.value as Record<string, string>)[field.key] = `${field.label || field.key} is required`;
     }
   }
-  if (effectiveAppKey.value && !appForm.value?.participationType) {
-    (errors.value as Record<string, string>).participationType = 'Type is required';
+
+  for (const appKey of effectiveSelectedApps.value) {
+    const appFields = getAppDependentFields(appKey);
+    const appDepForm = appFormDataForDependencies(appKey);
+    const appForm = appForms.value[appKey] || {};
+
+    for (const field of moduleFields) {
+      if (!field.key) continue;
+      if (!appFields.includes(field.key)) continue;
+
+      const depState = getFieldDependencyState(
+        field,
+        appDepForm,
+        moduleFields,
+        { moduleKey: 'people' }
+      );
+      if (depState.visible === false) continue;
+      if (depState.required !== true) continue;
+
+      const value = field.key in appForm
+        ? appForm[field.key]
+        : getFormFieldValue(appForm, field.key, field, { moduleKey: 'people' });
+      const isEmpty = value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0);
+      if (isEmpty) {
+        (errors.value as Record<string, string>)[appErrorKey(appKey, field.key)] = `${field.label || field.key} is required`;
+      }
+    }
+
+    if (!appForm.participationType) {
+      (errors.value as Record<string, string>)[appErrorKey(appKey, 'participationType')] = 'Type is required';
+    }
   }
 }
 
@@ -509,8 +718,8 @@ const closeDrawer = () => {
     // Reset form after closing
     setTimeout(() => {
       formData.value = {};
-      appForm.value = { participationType: null };
-      selectedOptionalAppKey.value = null;
+      appForms.value = {};
+      selectedOptionalAppKeys.value = [];
       errors.value = {};
       userHasEdited.value = false;
     }, 300);
@@ -545,7 +754,11 @@ const onFormReady = (module: any) => {
       }
     }
   }
-  formData.value = { ...initialForm };
+  formData.value = applyCreateOwnerDefaultsToForm(
+    { ...initialForm },
+    'people',
+    resolveCurrentUserId(authStore.user)
+  );
 };
 
 watch(formData, (newVal, oldVal) => {
@@ -560,55 +773,66 @@ watch(formData, (newVal, oldVal) => {
   }
 }, { deep: true });
 
-watch(appForm, (newVal, oldVal) => {
+watch(appForms, (newVal, oldVal) => {
   if (!oldVal) return;
-  for (const key in newVal) {
-    if (newVal[key] !== oldVal[key] && errors.value[key]) {
-      const v = newVal[key];
-      if (v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0)) {
-        delete errors.value[key];
+  for (const appKey of Object.keys(newVal)) {
+    const nextForm = newVal[appKey] || {};
+    const prevForm = oldVal[appKey] || {};
+    for (const key in nextForm) {
+      const errorKey = appErrorKey(appKey, key);
+      if (nextForm[key] !== prevForm[key] && errors.value[errorKey]) {
+        const v = nextForm[key];
+        if (v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0)) {
+          delete errors.value[errorKey];
+        }
       }
     }
   }
 }, { deep: true });
 
-/**
- * Build payload: context ALL → quick create only; context app → quick create + app fields
- */
-function buildCreatePersonPayload(): Record<string, any> {
-  const payload: Record<string, any> = {};
-  const qcFields = quickCreateFieldsOverride.value;
-  const appFields = appDependentFields.value;
+function appendFieldToPayload(payload: Record<string, unknown>, field: string, value: unknown) {
+  if (Array.isArray(value)) {
+    if (value.length > 0) payload[field] = value;
+  } else if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed !== '') payload[field] = trimmed;
+  } else if (value !== null && value !== undefined) {
+    payload[field] = value;
+  }
+}
 
-  for (const field of qcFields) {
+function buildCorePayload(): Record<string, unknown> {
+  const payload: Record<string, unknown> = {};
+  for (const field of quickCreateFieldsOverride.value) {
     if (field in formData.value) {
-      const value = formData.value[field];
-      if (Array.isArray(value)) {
-        if (value.length > 0) payload[field] = value;
-      } else if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (trimmed !== '') payload[field] = trimmed;
-      } else if (value !== null && value !== undefined) {
-        payload[field] = value;
-      }
+      appendFieldToPayload(payload, field, formData.value[field]);
     }
   }
+  return applyCreateOwnerDefaultsToPayload(
+    payload,
+    'people',
+    resolveCurrentUserId(authStore.user)
+  );
+}
 
+function buildAppFieldsPayload(appKey: string): Record<string, unknown> {
+  const payload: Record<string, unknown> = {};
+  const appFields = getAppDependentFields(appKey);
+  const appForm = appForms.value[appKey] || {};
   for (const field of appFields) {
-    if (field in appForm.value) {
-      const value = appForm.value[field];
-      if (Array.isArray(value)) {
-        if (value.length > 0) payload[field] = value;
-      } else if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (trimmed !== '') payload[field] = trimmed;
-      } else if (value !== null && value !== undefined) {
-        payload[field] = value;
-      }
+    if (field in appForm) {
+      appendFieldToPayload(payload, field, appForm[field]);
     }
   }
-
   return payload;
+}
+
+function buildAttachPayload(appKey: string): { appKey: string; role: string; formData: Record<string, unknown> } {
+  return {
+    appKey,
+    role: String(appForms.value[appKey]?.participationType || ''),
+    formData: buildAppFieldsPayload(appKey)
+  };
 }
 
 /**
@@ -628,18 +852,50 @@ const handleSubmit = async () => {
       return;
     }
 
-    const payload = buildCreatePersonPayload();
+    const selectedApps = effectiveSelectedApps.value;
+    const corePayload = buildCorePayload();
 
     let response;
-    if (!effectiveAppKey.value) {
-      response = await apiClient.post('/people', payload);
+    if (selectedApps.length === 0) {
+      response = await apiClient.post('/people', corePayload);
     } else {
-      const requestBody = {
-        appKey: effectiveAppKey.value,
-        role: appForm.value.participationType,
-        formData: payload
+      const [firstApp, ...remainingApps] = selectedApps;
+      const createPayload = {
+        ...corePayload,
+        ...buildAppFieldsPayload(firstApp)
       };
-      response = await apiClient.post('/people/create', requestBody);
+      response = await apiClient.post('/people/create', {
+        appKey: firstApp,
+        role: appForms.value[firstApp]?.participationType,
+        formData: createPayload
+      });
+
+      if (response.success && remainingApps.length > 0) {
+        const personId = response.data?._id || response.data?.id;
+        if (!personId) {
+          errors.value._general = 'Person created but could not attach additional apps.';
+          saving.value = false;
+          return;
+        }
+
+        for (const appKey of remainingApps) {
+          const attachResponse = await apiClient.post(`/people/${personId}/attach`, buildAttachPayload(appKey));
+          if (!attachResponse.success) {
+            if (attachResponse.errors) {
+              for (const [field, message] of Object.entries(attachResponse.errors)) {
+                errors.value[appErrorKey(appKey, field)] = String(message);
+              }
+            }
+            errors.value._general =
+              attachResponse.message ||
+              `Person created, but failed to attach to ${getAppLabel(appKey)}.`;
+            scrollToFirstErrorField();
+            saving.value = false;
+            return;
+          }
+          response.data = attachResponse.data;
+        }
+      }
     }
       
       if (response.success) {
@@ -725,8 +981,11 @@ watch(() => props.isOpen, (isOpen) => {
     userHasEdited.value = false;
     formData.value = {};
     errors.value = {};
-    appForm.value = { participationType: null };
-    selectedOptionalAppKey.value = null;
+    appForms.value = {};
+    selectedOptionalAppKeys.value = [];
+    if (effectiveAppKey.value) {
+      appForms.value = { [effectiveAppKey.value]: { participationType: null } };
+    }
   }
 });
 </script>

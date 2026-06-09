@@ -39,8 +39,8 @@ See `docs/architecture/notifications-hardening.md`.
           :aria-label="t('notifications.panelAria')"
         >
           <!-- Header -->
-          <header class="flex shrink-0 items-center justify-between border-b border-neutral-200/60 bg-white px-4 py-3 dark:border-neutral-700/60 dark:bg-neutral-900">
-            <h2 class="text-base font-semibold text-neutral-900 dark:text-white">
+          <header class="flex shrink-0 items-center justify-between border-b border-neutral-200/60 bg-white/80 px-4 py-3.5 backdrop-blur-md dark:border-neutral-700/60 dark:bg-neutral-900/80">
+            <h2 class="text-[15px] font-semibold tracking-[-0.01em] text-neutral-900 dark:text-white">
               {{ t('notifications.drawerHeading') }}
             </h2>
             <div class="flex items-center gap-2">
@@ -74,18 +74,18 @@ See `docs/architecture/notifications-hardening.md`.
           </div>
 
           <!-- Body -->
-          <section class="min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden bg-white px-2 py-2 dark:bg-neutral-900" :aria-busy="loading">
+          <section class="min-h-0 flex-1 space-y-5 overflow-y-auto overflow-x-hidden bg-neutral-50/40 px-2.5 py-3 dark:bg-neutral-950/40" :aria-busy="loading">
             <!-- Loading skeleton -->
             <template v-if="loading && !items.length">
-              <div class="space-y-4">
-                <div class="px-2 mb-1 h-3 w-16 rounded bg-neutral-200 dark:bg-neutral-700 animate-pulse"></div>
-                <div v-for="i in 4" :key="i" class="flex items-start gap-3 px-3 py-3 rounded-2xl bg-neutral-50/50 dark:bg-neutral-800/30">
-                  <div class="w-10 h-10 rounded-xl bg-neutral-200 dark:bg-neutral-700 animate-pulse flex-shrink-0"></div>
+              <div class="space-y-5">
+                <div class="px-1 mb-1 h-2.5 w-14 rounded-full bg-neutral-200 dark:bg-neutral-700 animate-pulse"></div>
+                <div v-for="i in 4" :key="i" class="flex items-start gap-3 px-3.5 py-3 rounded-xl bg-white dark:bg-neutral-900/50 ring-1 ring-neutral-200/70 dark:ring-neutral-700/50">
+                  <div class="w-9 h-9 rounded-full bg-neutral-200 dark:bg-neutral-700 animate-pulse flex-shrink-0"></div>
                   <div class="flex-1 min-w-0 space-y-2">
                     <div class="h-3.5 w-3/4 rounded-lg bg-neutral-200 dark:bg-neutral-700 animate-pulse"></div>
                     <div class="h-2.5 w-2/3 rounded bg-neutral-200 dark:bg-neutral-700 animate-pulse"></div>
                     <div class="flex gap-2 mt-2">
-                      <div class="h-5 w-16 rounded-md bg-neutral-200 dark:bg-neutral-700 animate-pulse"></div>
+                      <div class="h-5 w-14 rounded-md bg-neutral-200 dark:bg-neutral-700 animate-pulse"></div>
                       <div class="h-4 w-12 rounded bg-neutral-200 dark:bg-neutral-700 animate-pulse"></div>
                     </div>
                   </div>
@@ -94,11 +94,11 @@ See `docs/architecture/notifications-hardening.md`.
             </template>
             <template v-else-if="items.length">
               <div v-for="(section, sectionIdx) in groupedSections" :key="section.id" class="notification-section">
-                <p class="px-2 mb-1 text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                <p class="px-1 mb-2 text-[10px] font-bold uppercase tracking-[0.08em] text-neutral-400 dark:text-neutral-500">
                   {{ t(section.labelKey) }}
                 </p>
 
-                <TransitionGroup name="notification-list" tag="div" class="space-y-1.5">
+                <TransitionGroup name="notification-list" tag="div" class="space-y-2">
                   <template v-for="entry in section.entries">
                     <!-- "No updates" digest placeholder: plain text, not a card -->
                     <div
@@ -124,32 +124,32 @@ See `docs/architecture/notifications-hardening.md`.
                     <div
                       v-else
                       :key="`group-${entry.key}`"
-                      class="w-full"
+                      class="w-full group"
                     >
                       <button
                         type="button"
-                        class="w-full relative flex items-start gap-3 px-3 py-3 rounded-xl text-left min-h-[56px] transition-all duration-200 border border-transparent hover:border-neutral-200/80 dark:hover:border-neutral-600/50 hover:rounded-2xl bg-neutral-50/50 dark:bg-neutral-800/30 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/60 hover:shadow-sm"
+                        class="group-card w-full relative flex items-start gap-3 px-3.5 py-3 rounded-xl text-left min-h-[60px] transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-neutral-900 bg-white dark:bg-neutral-900/50 ring-1 ring-neutral-200/70 dark:ring-neutral-700/50 hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 hover:shadow-[0_2px_8px_-2px_rgba(15,23,42,0.08)] dark:hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.35)] hover:ring-neutral-300/70 dark:hover:ring-neutral-600/50"
                         :aria-expanded="isGroupOpen(entry.key) ? 'true' : 'false'"
                         :aria-label="t('notifications.groupEntryAria', { label: entry.groupLabel, count: entry.count })"
                         @click="toggleGroup(entry.key)"
                       >
                         <!-- Left icon -->
-                        <div class="flex-shrink-0 mt-0.5">
-                          <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl shadow-sm bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
-                            <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <div class="flex-shrink-0 pt-0.5">
+                          <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 dark:bg-neutral-800 ring-1 ring-inset ring-neutral-200/80 dark:ring-neutral-700/60 text-neutral-500 dark:text-neutral-400">
+                            <svg class="w-[18px] h-[18px]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                               <path d="M10 2a6 6 0 0 0-6 6v3.586l-.707.707A1 1 0 0 0 4 14h12a1 1 0 0 0 .707-1.707L16 11.586V8a6 6 0 0 0-6-6ZM10 18a3 3 0 0 1-3-3h6a3 3 0 0 1-3 3Z" />
                             </svg>
                           </span>
                         </div>
 
-                        <div class="flex-1 min-w-0">
+                        <div class="flex-1 min-w-0 pr-8">
                           <div class="flex items-start justify-between gap-2">
-                            <p class="text-sm font-semibold text-neutral-900 dark:text-white">
+                            <p class="text-[13px] font-semibold leading-snug tracking-[-0.01em] text-neutral-900 dark:text-white">
                               {{ entry.groupLabel }}
                             </p>
-                            <div class="flex items-center gap-2 flex-shrink-0">
+                            <div class="flex items-center gap-1.5 flex-shrink-0">
                               <span
-                                class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-neutral-200 dark:bg-neutral-700 text-[11px] font-semibold text-neutral-700 dark:text-neutral-200"
+                                class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary-500 text-[10px] font-bold text-white shadow-sm"
                                 :aria-label="t('notifications.countInGroupAria', { count: entry.count })"
                               >
                                 {{ entry.count }}
@@ -165,7 +165,7 @@ See `docs/architecture/notifications-hardening.md`.
                               </svg>
                             </div>
                           </div>
-                          <p class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                          <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400 truncate leading-relaxed">
                             {{ t('notifications.groupLatest', { title: entry.latestTitle, time: formatRelative(entry.latest.createdAt) }) }}
                           </p>
                         </div>
@@ -174,7 +174,7 @@ See `docs/architecture/notifications-hardening.md`.
                         <button
                           v-if="entry.unreadCount > 0"
                           type="button"
-                          class="absolute right-3 bottom-3 inline-flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-white dark:hover:bg-neutral-600 min-h-[32px] min-w-[32px] transition-all duration-150 shadow-sm"
+                          class="absolute right-2.5 top-2.5 inline-flex items-center justify-center rounded-md text-neutral-400 hover:text-primary-600 dark:text-neutral-500 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 min-h-[28px] min-w-[28px] transition-all duration-150 opacity-0 group-hover:opacity-100 focus:opacity-100"
                           :aria-label="t('notifications.groupMarkAllAria', { count: entry.count })"
                           :title="t('notifications.markAllRead')"
                           @click.stop.prevent="markGroupAllRead(entry)"
@@ -189,7 +189,7 @@ See `docs/architecture/notifications-hardening.md`.
                         v-if="isGroupOpen(entry.key)"
                         name="notification-list"
                         tag="div"
-                        class="mt-1.5 space-y-1.5 pl-1"
+                        class="mt-2 space-y-2 pl-1 border-l border-neutral-200/70 dark:border-neutral-700/50 ml-4"
                       >
                         <div v-for="n in entry.expandedItems" :key="n.id" class="w-full">
                           <NotificationItem
@@ -239,7 +239,7 @@ See `docs/architecture/notifications-hardening.md`.
           </section>
 
           <!-- Footer -->
-          <footer class="shrink-0 border-t border-neutral-200/60 bg-white px-4 py-3 dark:border-neutral-700/60 dark:bg-neutral-900">
+          <footer class="shrink-0 border-t border-neutral-200/60 bg-white/80 px-4 py-3 backdrop-blur-md dark:border-neutral-700/60 dark:bg-neutral-900/80">
             <router-link
               to="/settings?tab=notifications&notificationPage=preferences"
               class="block text-center text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors duration-150"
@@ -344,7 +344,9 @@ function getEventTypeGroupLabel(eventType, count) {
     PORTAL_ACCOUNT_CREATED: 'portal accounts created',
     USER_ADDED_TO_APP: 'access updates',
     SYSTEM_TRIAL_EXPIRING: 'trial expiring',
-    SYSTEM_SUBSCRIPTION_SUSPENDED: 'subscription updates'
+    SYSTEM_SUBSCRIPTION_SUSPENDED: 'subscription updates',
+    RECORD_COMMENT_MENTION: 'comment mentions',
+    TASK_COMMENT_MENTION: 'comment mentions'
   };
   const label = map[t] || (t ? formatEntityType(t.replace(/_/g, ' ')) : 'notifications');
   return `${count} new ${label}`;

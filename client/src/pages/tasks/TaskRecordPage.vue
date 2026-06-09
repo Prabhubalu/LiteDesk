@@ -34,7 +34,7 @@
       >
         <template #breadcrumbs>
           <span class="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-            {{ taskModuleLabel }} <span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500"></span> {{ task?._id?.slice(-8) || 'N/A' }}
+            {{ taskModuleLabel }} <span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500"></span> {{ (task?.title || '').trim() || (task?._id || '').slice(-8) || 'N/A' }}
           </span>
         </template>
         
@@ -395,19 +395,21 @@
         
         <!-- Editable Start Date slot -->
         <template #startDate>
-          <div v-if="canEditTask" class="flex-1 min-w-0 w-full min-h-8 flex items-center" @click="onStartDateCellClick">
-            <DatePicker
-              v-show="isEditingStartDate"
-              ref="startDateInputRef"
-              v-model="localStartDate"
-              :placeholder="keySectionFields.find((f) => f.key === 'startDate')?.label"
-              input-class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full cursor-pointer"
-              @blur="handleStartDateBlur"
-              @enter="handleStartDateBlur"
-              @escape="handleStartDateCancel"
-            />
+          <div v-if="canEditTask" class="flex-1 min-w-0 w-full min-h-8 flex items-center">
+            <div v-if="isEditingStartDate" class="w-full min-w-0" @click.stop>
+              <DatePicker
+                ref="startDateInputRef"
+                v-model="localStartDate"
+                :placeholder="keySectionFields.find((f) => f.key === 'startDate')?.label"
+                input-class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full cursor-pointer"
+                @blur="handleStartDateBlur"
+                @enter="handleStartDateBlur"
+                @escape="handleStartDateCancel"
+              />
+            </div>
             <span
-              v-show="!isEditingStartDate"
+              v-else
+              @click="startStartDateEdit"
               :class="[
                 'block w-full min-h-8 text-sm cursor-text rounded px-2 transition-colors flex items-center',
                 task.startDate ? 'text-gray-900 dark:text-white' : 'text-record-empty'
@@ -427,19 +429,21 @@
 
         <!-- Editable Due Date slot -->
         <template #dueDate>
-          <div v-if="canEditTask" class="flex-1 min-w-0 w-full min-h-8 flex items-center" @click="onDueDateCellClick">
-            <DatePicker
-              v-show="isEditingDueDate"
-              ref="dueDateInputRef"
-              v-model="localDueDate"
-              :placeholder="keySectionFields.find((f) => f.key === 'dueDate')?.label"
-              input-class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full cursor-pointer"
-              @blur="handleDueDateBlur"
-              @enter="handleDueDateBlur"
-              @escape="handleDueDateCancel"
-            />
+          <div v-if="canEditTask" class="flex-1 min-w-0 w-full min-h-8 flex items-center">
+            <div v-if="isEditingDueDate" class="w-full min-w-0" @click.stop>
+              <DatePicker
+                ref="dueDateInputRef"
+                v-model="localDueDate"
+                :placeholder="keySectionFields.find((f) => f.key === 'dueDate')?.label"
+                input-class="text-xs h-8 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full cursor-pointer"
+                @blur="handleDueDateBlur"
+                @enter="handleDueDateBlur"
+                @escape="handleDueDateCancel"
+              />
+            </div>
             <span
-              v-show="!isEditingDueDate"
+              v-else
+              @click="startDueDateEdit"
               :class="[
                 'block w-full min-h-8 text-sm cursor-text rounded px-2 transition-colors flex items-center',
                 task.dueDate ? 'text-gray-900 dark:text-white' : 'text-record-empty'
@@ -2053,11 +2057,22 @@ const isEditingTimeEstimate = ref(false);
 const localTimeEstimate = ref(0);
 const timeEstimateInputRef = ref(null);
 
-const onStartDateCellClick = () => {
-  if (!isEditingStartDate.value) isEditingStartDate.value = true;
+const startStartDateEdit = async () => {
+  if (!canEditTask.value || isEditingStartDate.value) return;
+  isEditingStartDate.value = true;
+  resetLocalStartDate();
+  await nextTick();
+  startDateInputRef.value?.focus?.();
+  startDateInputRef.value?.open?.();
 };
-const onDueDateCellClick = () => {
-  if (!isEditingDueDate.value) isEditingDueDate.value = true;
+
+const startDueDateEdit = async () => {
+  if (!canEditTask.value || isEditingDueDate.value) return;
+  isEditingDueDate.value = true;
+  resetLocalDueDate();
+  await nextTick();
+  dueDateInputRef.value?.focus?.();
+  dueDateInputRef.value?.open?.();
 };
 const onTimeEstimateCellClick = () => {
   if (!isEditingTimeEstimate.value) isEditingTimeEstimate.value = true;
@@ -2699,9 +2714,15 @@ const {
 } = useTaskSections(taskSectionSources);
 
 // Check if there are any related records
+const hasRelatedToLink = computed(() => {
+  const rt = getNormalizedRelatedTo(task.value);
+  return rt.type !== 'none' && !!rt.id;
+});
+
 const hasRelatedRecords = computed(() => {
   return !!(
     task.value?.projectId ||
+    hasRelatedToLink.value ||
     (taskPeople.value && taskPeople.value.length > 0) ||
     (taskEvents.value && taskEvents.value.length > 0) ||
     (taskDeals.value && taskDeals.value.length > 0) ||
@@ -2825,6 +2846,10 @@ const linkedRecordIds = computed(() => {
   }
   if (taskForms.value) {
     ids.push(...taskForms.value.map(f => f._id));
+  }
+  const rt = getNormalizedRelatedTo(task.value);
+  if (rt.type !== 'none' && rt.id) {
+    ids.push(rt.id);
   }
   return ids;
 });
@@ -3448,13 +3473,29 @@ const fetchRelatedRecords = async () => {
       ...collectFromContextByKeys('people', 'person', 'contact', 'tasks_people', 'people_tasks')
     ]);
     const rawDeals = dedupeRows([
-      ...collectFromLinksByKeys('deals', 'deal'),
-      ...collectFromContextByKeys('deals', 'deal')
+      ...collectFromLinksByKeys('deals', 'deal', 'task_deals'),
+      ...collectFromContextByKeys('deals', 'deal', 'task_deals')
     ]);
     const rawForms = dedupeRows([
       ...collectFromLinksByKeys('forms', 'form'),
       ...collectFromContextByKeys('forms', 'form')
     ]);
+
+    const relatedTo = getNormalizedRelatedTo(task.value);
+    if (relatedTo.type !== 'none' && relatedTo.id) {
+      const relatedToId = String(relatedTo.id);
+      const relatedToName = task.value?.relatedTo?.name || null;
+      const pushRelatedToFallback = (rows) => {
+        if (rows.some((row) => String(row._id) === relatedToId)) return rows;
+        return [...rows, relatedToName ? { _id: relatedToId, name: relatedToName } : { _id: relatedToId }];
+      };
+
+      if (relatedTo.type === 'deal') {
+        rawDeals.splice(0, rawDeals.length, ...pushRelatedToFallback(rawDeals));
+      } else if (relatedTo.type === 'contact') {
+        rawPeople.splice(0, rawPeople.length, ...pushRelatedToFallback(rawPeople));
+      }
+    }
 
     const [enrichedEvents, enrichedPeople, enrichedDeals, enrichedForms] = await Promise.all([
       enrichRelatedRecords('events', rawEvents),
@@ -4987,23 +5028,6 @@ const handleTimeEstimateCancel = () => {
   isEditingTimeEstimate.value = false;
   localTimeEstimate.value = task.value?.estimatedHours || 0;
 };
-
-// Focus inputs when editing starts
-watch(isEditingStartDate, async (isEditing) => {
-  if (isEditing) {
-    await nextTick();
-    startDateInputRef.value?.focus?.();
-    startDateInputRef.value?.open?.();
-  }
-});
-
-watch(isEditingDueDate, async (isEditing) => {
-  if (isEditing) {
-    await nextTick();
-    dueDateInputRef.value?.focus?.();
-    dueDateInputRef.value?.open?.();
-  }
-});
 
 watch(isEditingTimeEstimate, async (isEditing) => {
   if (isEditing) {

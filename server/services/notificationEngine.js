@@ -102,7 +102,16 @@ function safeLoadChannel(channel) {
  * Phase 10G: Added deduplication guard and structured logging.
  * Failures in any step are caught and logged but never affect business flows.
  */
-async function emitNotification({ eventType, entity, organizationId, triggeredBy, sourceAppKey = null }) {
+async function emitNotification({
+  eventType,
+  entity,
+  organizationId,
+  triggeredBy,
+  sourceAppKey = null,
+  channels: channelOverride = null,
+  title: titleOverride = null,
+  body: bodyOverride = null
+}) {
   // FAILURE ISOLATION: Unknown event type - log and continue, don't throw
   const isKnownEvent = eventType && Object.values(domainEvents).includes(eventType);
   if (!isKnownEvent) {
@@ -202,7 +211,9 @@ async function emitNotification({ eventType, entity, organizationId, triggeredBy
       continue; // Skip duplicate notification
     }
 
-    const channels = computeChannels(rule, prefsByUserId[String(recipient.userId)], eventType);
+    const channels = Array.isArray(channelOverride) && channelOverride.length
+      ? channelOverride
+      : computeChannels(rule, prefsByUserId[String(recipient.userId)], eventType);
     if (!channels || channels.length === 0) {
       continue; // user has disabled all channels for this event
     }
@@ -213,8 +224,8 @@ async function emitNotification({ eventType, entity, organizationId, triggeredBy
         appKey: resolvedAppKey,
         sourceAppKey: sourceAppKey || resolvedAppKey,
         eventType,
-        title: recipient.title || rule.title || eventType.replace(/_/g, ' '),
-        body: recipient.body || rule.body || '',
+        title: titleOverride || recipient.title || rule.title || eventType.replace(/_/g, ' '),
+        body: bodyOverride || recipient.body || rule.body || '',
         entity: pickEntityForStorage(entity),
         channel,
         priority: rule.priority || 'NORMAL'

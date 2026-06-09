@@ -12,114 +12,83 @@
   ============================================================================
 -->
 <template>
-  <div class="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
-    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+  <div :class="rootClass">
+    <h3
+      v-if="!hideSectionTitle"
+      class="text-sm font-semibold text-gray-900 dark:text-white mb-4"
+    >
       {{ appSectionTitle }}
     </h3>
 
-    <!-- Type (required): ListboxOption renders as <li> — slot content must NOT be another <li> -->
-    <div class="mb-4" data-field-key="participationType">
-      <Listbox
-        :model-value="modelValue?.participationType ?? null"
+    <!-- Type (required) -->
+    <div :class="embedded ? 'mb-0' : 'mb-4'" data-field-key="participationType">
+      <label class="block text-sm/6 font-medium text-gray-900 dark:text-white mb-1">
+        {{ t('settings.modFieldsValidationType') }}<span class="text-red-500">*</span>
+      </label>
+      <HeadlessSelect
+        :model-value="modelValue?.participationType ?? ''"
+        :options="roleOptions"
+        :placeholder="loading ? 'Loading...' : 'Select type'"
+        allow-empty
+        :empty-label="loading ? 'Loading...' : 'Select type'"
+        empty-value=""
         :disabled="loading"
-        as="div"
-        class="block"
+        teleport
+        wrapper-class="mt-2"
+        :invalid="!!errors?.participationType"
+        :options-class="appSectionListboxOptionsClass"
         @update:model-value="onParticipationTypeChange"
-      >
-        <ListboxLabel class="block text-sm/6 font-medium text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsValidationType') }}<span class="text-red-500">*</span>
-        </ListboxLabel>
-        <div class="relative mt-2">
-          <ListboxButton
-            type="button"
-            :disabled="loading"
-            :class="[
-              'block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-left text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500 cursor-default relative pr-10',
-              errors?.participationType
-                ? 'ring-2 ring-red-500 dark:ring-red-500'
-                : ''
-            ]"
-          >
-            <span
-              :class="[
-                'block truncate',
-                !modelValue?.participationType ? 'text-gray-500 dark:text-gray-400' : ''
-              ]"
-            >
-              {{
-                loading
-                  ? 'Loading...'
-                  : modelValue?.participationType
-                    ? modelValue.participationType
-                    : 'Select type'
-              }}
-            </span>
-            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              <ChevronUpDownIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
-            </span>
-          </ListboxButton>
-          <Transition
-            enter-active-class="transition duration-100 ease-out"
-            enter-from-class="opacity-0"
-            enter-to-class="opacity-100"
-            leave-active-class="transition duration-100 ease-in"
-            leave-from-class="opacity-100"
-            leave-to-class="opacity-0"
-          >
-            <ListboxOptions
-              as="ul"
-              class="absolute z-[100] mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm"
-            >
-              <ListboxOption
-                v-for="r in roles"
-                :key="r"
-                :value="r"
-                v-slot="{ active, selected }"
-              >
-                <div
-                  :class="[
-                    'relative cursor-default select-none py-2 pl-4 pr-10',
-                    active
-                      ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100'
-                      : 'text-gray-900 dark:text-gray-100'
-                  ]"
-                >
-                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ r }}</span>
-                  <span
-                    v-if="selected"
-                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-400"
-                  >
-                    <CheckIcon class="h-5 w-5" aria-hidden="true" />
-                  </span>
-                </div>
-              </ListboxOption>
-            </ListboxOptions>
-          </Transition>
-        </div>
-      </Listbox>
+      />
       <p v-if="errors?.participationType" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.participationType }}</p>
     </div>
 
     <!-- Role-dependent fields via getAppFields(appKey, role) -->
-    <DynamicForm
-      v-if="dependentFields.length > 0 && moduleOverride"
-      moduleKey="people"
-      :formData="localFormData"
-      :errors="errors"
-      :quickCreateMode="true"
-      :showAllFields="false"
-      :fieldsOverride="dependentFields"
-      :moduleOverride="moduleOverride"
-      :context="formFieldContext"
-      @update:formData="onFieldsUpdate"
-    />
+    <div v-if="hasDependentFields" :class="embedded ? 'mt-3' : 'mt-4'">
+      <button
+        v-if="collapsibleDependentFields"
+        type="button"
+        class="flex w-full items-center gap-2 text-left text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+        :aria-expanded="dependentFieldsExpanded"
+        @click="dependentFieldsExpanded = !dependentFieldsExpanded"
+      >
+        <ChevronDownIcon
+          class="h-4 w-4 shrink-0 transition-transform"
+          :class="{ 'rotate-180': dependentFieldsExpanded }"
+          aria-hidden="true"
+        />
+        <span>
+          {{
+            dependentFieldsExpanded
+              ? t('people.participationCardHideDetails')
+              : t('people.appSectionShowAdditionalFields', { count: dependentFields.length })
+          }}
+        </span>
+      </button>
+      <div
+        v-show="!collapsibleDependentFields || dependentFieldsExpanded"
+        :class="collapsibleDependentFields && embedded ? 'mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/80' : collapsibleDependentFields ? 'mt-4 rounded-md border border-gray-200 p-4 dark:border-gray-700' : ''"
+      >
+        <DynamicForm
+          moduleKey="people"
+          :formData="localFormData"
+          :errors="errors"
+          :quickCreateMode="true"
+          :showAllFields="false"
+          :fieldsOverride="dependentFields"
+          :moduleOverride="moduleOverride"
+          :context="formFieldContext"
+          @update:formData="onFieldsUpdate"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { ref, computed, watch, toRef, Transition, type PropType } from 'vue';
-import { Listbox, ListboxLabel, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
-import { ChevronUpDownIcon, CheckIcon } from '@heroicons/vue/24/outline';
+import { ref, computed, watch, toRef, type PropType } from 'vue';
+import { ChevronDownIcon } from '@heroicons/vue/24/outline';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import { appKeyToFieldContextToken } from '@/utils/fieldContextFilter';
 import { syncParticipationClassifierFields } from '@/utils/getFieldValue';
 import DynamicForm from '@/components/common/DynamicForm.vue';
@@ -151,6 +120,18 @@ const props = defineProps({
   errors: {
     type: Object as PropType<Record<string, string>>,
     default: () => ({})
+  },
+  collapsibleDependentFields: {
+    type: Boolean,
+    default: false
+  },
+  hideSectionTitle: {
+    type: Boolean,
+    default: false
+  },
+  embedded: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -160,8 +141,41 @@ const emit = defineEmits<{
   'update:modelValue': [value: AppSectionModelValue];
 }>();
 
+const dependentFieldsExpanded = ref(false);
+
+const appSectionListboxOptionsClass = 'z-[10050]';
+
+const rootClass = computed(() => {
+  if (props.embedded) return '';
+  if (props.hideSectionTitle) return '';
+  return 'border-t border-gray-200 dark:border-gray-700 pt-6 mt-6';
+});
+
 const { types: roles, typeDefs: peopleTypeDefs, defaultRole: tenantDefaultRole, loading } = usePeopleTypes(
   toRef(props, 'appKey')
+);
+
+const dependentFields = computed(() => {
+  const pt = props.modelValue?.participationType;
+  if (!pt) return [];
+  return getAppFields(props.appKey, pt, peopleTypeDefs.value);
+});
+
+const roleOptions = computed(() =>
+  (roles.value as string[]).map((role) => ({ value: role, label: role }))
+);
+
+const hasDependentFields = computed(
+  () => dependentFields.value.length > 0 && !!props.moduleOverride
+);
+
+watch(
+  [() => props.modelValue?.participationType, dependentFields],
+  ([type, fields]) => {
+    if (type && props.collapsibleDependentFields && fields.length > 0) {
+      dependentFieldsExpanded.value = true;
+    }
+  }
 );
 
 // Auto-select tenant default role when types load (explicit default from Settings → People → Types)
@@ -187,12 +201,6 @@ const appSectionTitle = computed(() =>
 
 const formFieldContext = computed(() => appKeyToFieldContextToken(props.appKey) || 'platform');
 
-const dependentFields = computed(() => {
-  const pt = props.modelValue?.participationType;
-  if (!pt) return [];
-  return getAppFields(props.appKey, pt, peopleTypeDefs.value);
-});
-
 // Local form data for dependent fields (derived from modelValue)
 const localFormData = ref<Record<string, unknown>>({});
 
@@ -215,8 +223,12 @@ watch(
   { immediate: true }
 );
 
-function onParticipationTypeChange(participationType: string | null) {
-  emit('update:modelValue', { ...props.modelValue, participationType: participationType || null });
+function onParticipationTypeChange(participationType: string | number | null) {
+  const next =
+    participationType === null || participationType === ''
+      ? null
+      : String(participationType);
+  emit('update:modelValue', { ...props.modelValue, participationType: next });
 }
 
 function onFieldsUpdate(data: Record<string, unknown>) {

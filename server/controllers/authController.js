@@ -254,6 +254,7 @@ exports.registerUser = async (req, res) => {
         // 4. Set owner permissions
         console.log('🔍 Step 6: Setting owner permissions...');
         user.setPermissionsByRole('owner');
+        user.emailVerifiedAt = new Date();
         await user.save();
         console.log('✅ Permissions set and user saved\n');
 
@@ -468,7 +469,15 @@ exports.loginUser = async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials.' });
         }
 
-        // 3. Check if user is active
+        // 3. Check if user is active (invited users must accept invitation first)
+        if (orgUser.status === 'invited') {
+            console.log('❌ User has pending invitation:', orgUser.status);
+            return res.status(403).json({
+                message: 'Please accept your invitation email before signing in.',
+                code: 'INVITE_PENDING'
+            });
+        }
+
         if (orgUser.status !== 'active') {
             console.log('❌ User status not active:', orgUser.status);
             return res.status(403).json({ 
@@ -477,6 +486,17 @@ exports.loginUser = async (req, res) => {
             });
         }
         console.log('✅ User status: active');
+
+        // Grandfather legacy users; keep manual-invite users unverified until they confirm email
+        if (!orgUser.emailVerifiedAt && orgUser.status === 'active') {
+            const pendingManualInvite = orgUser.invitedAt && !orgUser.inviteAcceptedAt && !orgUser.inviteTokenHash;
+            const legacyUser = !orgUser.invitedAt;
+            const acceptedViaInvite = Boolean(orgUser.inviteAcceptedAt);
+
+            if (legacyUser || acceptedViaInvite) {
+                orgUser.emailVerifiedAt = orgUser.lastLogin || orgUser.createdAt || new Date();
+            }
+        }
 
         // 4. Check if organization exists and is populated
         if (!organizationForLogin) {
@@ -563,6 +583,9 @@ exports.loginUser = async (req, res) => {
             },
             instance: instanceContext,
             token: generateToken(orgUser._id, organizationForLogin._id),
+            emailVerifiedAt: orgUser.emailVerifiedAt || null,
+            requiresEmailVerification: !orgUser.emailVerifiedAt,
+            mustChangePassword: orgUser.mustChangePassword === true
         });
         
     } catch (error) {

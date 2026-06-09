@@ -240,8 +240,33 @@ const UserSchema = new mongoose.Schema({
     // Status
     status: { 
         type: String, 
-        enum: ['active', 'inactive', 'suspended'],
+        enum: ['active', 'inactive', 'suspended', 'invited'],
         default: 'active'
+    },
+
+    // Invitation & email verification
+    emailVerifiedAt: Date,
+    invitedAt: Date,
+    invitedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    inviteAcceptedAt: Date,
+    inviteTokenHash: {
+        type: String,
+        default: null
+    },
+    inviteTokenExpiresAt: Date,
+    emailVerificationTokenHash: {
+        type: String,
+        default: null
+    },
+    emailVerificationSentAt: Date,
+    emailVerificationExpiresAt: Date,
+    mustChangePassword: {
+        type: Boolean,
+        default: false
     },
     
     // Activity Tracking

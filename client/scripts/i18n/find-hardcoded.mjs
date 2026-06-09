@@ -143,7 +143,7 @@ const PHASE_PATHS = {
     'src/components/settings/RolesPermissions.vue',
     'src/components/settings/RoleFormDrawer.vue',
     'src/components/settings/RoleUsersModal.vue',
-    'src/components/settings/InviteUserModal.vue',
+    'src/components/settings/InviteUserDrawer.vue',
     'src/components/settings/EditUserModal.vue',
     'src/components/settings/GroupsSettings.vue',
   ],

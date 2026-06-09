@@ -4,6 +4,8 @@ import { ref, computed } from 'vue';
 export const useBulkDeleteProgressStore = defineStore('bulkDeleteProgress', () => {
   const active = ref(false);
   const moduleKey = ref('');
+  /** @type {import('vue').Ref<'delete' | 'update'>} */
+  const operation = ref('delete');
   const phase = ref('deleting');
   const processed = ref(0);
   const total = ref(0);
@@ -27,19 +29,26 @@ export const useBulkDeleteProgressStore = defineStore('bulkDeleteProgress', () =
     () => active.value && Number(total.value) > 0 && Number(processed.value) === 0
   );
 
-  function start({ moduleKey: mk, total: initialTotal = 0, phase: initialPhase = 'deleting' }) {
+  function start({
+    moduleKey: mk,
+    total: initialTotal = 0,
+    phase: initialPhase = 'deleting',
+    operation: initialOperation = 'delete',
+  }) {
     active.value = true;
     moduleKey.value = String(mk || '');
+    operation.value = initialOperation === 'update' ? 'update' : 'delete';
     phase.value = initialPhase;
     processed.value = 0;
     total.value = Number(initialTotal || 0);
     cancelRequested.value = false;
   }
 
-  function updateProgress({ processed: p, total: t, phase: ph }) {
+  function updateProgress({ processed: p, total: t, phase: ph, operation: op }) {
     if (p != null) processed.value = Number(p);
     if (t != null) total.value = Number(t);
     if (ph) phase.value = ph;
+    if (op === 'update' || op === 'delete') operation.value = op;
   }
 
   function requestCancel() {
@@ -57,6 +66,7 @@ export const useBulkDeleteProgressStore = defineStore('bulkDeleteProgress', () =
   function finish() {
     active.value = false;
     moduleKey.value = '';
+    operation.value = 'delete';
     phase.value = 'deleting';
     processed.value = 0;
     total.value = 0;
@@ -67,6 +77,7 @@ export const useBulkDeleteProgressStore = defineStore('bulkDeleteProgress', () =
   return {
     active,
     moduleKey,
+    operation,
     phase,
     processed,
     total,

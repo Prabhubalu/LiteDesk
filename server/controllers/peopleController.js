@@ -17,7 +17,6 @@
  */
 
 const People = require('../models/People');
-const RelationshipInstance = require('../models/RelationshipInstance');
 const mongoose = require('mongoose');
 const { applyProjectionFilter } = require('../utils/appProjectionQuery');
 const { getProjection } = require('../utils/moduleProjectionResolver');
@@ -146,65 +145,9 @@ function normalizeObjectIdLike(value) {
   return String(value);
 }
 
-async function syncPeopleOrganizationRelationship({
-  tenantOrganizationId,
-  personId,
-  organizationValue,
-  userId
-}) {
-  const normalizedPersonId = normalizeObjectIdLike(personId);
-  const normalizedOrgId = normalizeObjectIdLike(organizationValue);
-  if (!normalizedPersonId) return;
-
-  // Keep people_organizations as a single effective link for this person.
-  await RelationshipInstance.deleteMany({
-    organizationId: tenantOrganizationId,
-    relationshipKey: 'people_organizations',
-    $or: [
-      {
-        'source.appKey': 'sales',
-        'source.moduleKey': 'people',
-        'source.recordId': normalizedPersonId
-      },
-      {
-        'target.appKey': 'sales',
-        'target.moduleKey': 'people',
-        'target.recordId': normalizedPersonId
-      }
-    ]
-  });
-
-  if (!normalizedOrgId) return;
-
-  await RelationshipInstance.updateOne(
-    {
-      organizationId: tenantOrganizationId,
-      relationshipKey: 'people_organizations',
-      'source.appKey': 'sales',
-      'source.moduleKey': 'people',
-      'source.recordId': normalizedPersonId,
-      'target.appKey': 'sales',
-      'target.moduleKey': 'organizations',
-      'target.recordId': normalizedOrgId
-    },
-    {
-      $setOnInsert: {
-        createdBy: userId,
-        source: {
-          appKey: 'sales',
-          moduleKey: 'people',
-          recordId: normalizedPersonId
-        },
-        target: {
-          appKey: 'sales',
-          moduleKey: 'organizations',
-          recordId: normalizedOrgId
-        }
-      }
-    },
-    { upsert: true }
-  );
-}
+const {
+  syncPeopleOrganizationRelationship
+} = require('../services/peopleOrganizationRelationshipSync');
 
 // Export for use in other controllers
 exports.getSalesParticipationFields = getSalesParticipationFields;
@@ -248,6 +191,7 @@ exports.create = async (req, res) => {
       ...standardPayload,
       organizationId: req.user.organizationId,
       createdBy: req.user._id,
+      assignedTo: standardPayload.assignedTo || req.user._id,
       ...(Object.keys(customFieldsSet).length > 0 && { customFields: customFieldsSet }),
       // Add initial activity log for record creation
       activityLogs: [{
@@ -264,6 +208,19 @@ exports.create = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid email format.' });
     }
     const record = await People.create(body);
+
+    if (record.organization) {
+      try {
+        await syncPeopleOrganizationRelationship({
+          tenantOrganizationId: req.user.organizationId,
+          personId: record._id,
+          organizationValue: record.organization,
+          userId: req.user._id
+        });
+      } catch (syncErr) {
+        console.warn('[PeopleController] Failed to sync people_organizations relationship on create:', syncErr?.message || syncErr);
+      }
+    }
     
     // Compute derived status (non-blocking)
     const { computeAndSetDerivedStatus } = require('../services/derivedStatusService');
@@ -470,9 +427,11 @@ exports.list = async (req, res) => {
       } else if (req.query.organization === 'has') {
         // Filter for with organization (non-null, exists)
         query.organization = { $ne: null, $exists: true };
+      } else if (mongoose.Types.ObjectId.isValid(req.query.organization)) {
+        query.organization = new mongoose.Types.ObjectId(req.query.organization);
       } else {
-        // Filter for specific organization (Sales organization, not tenant)
-        query.organization = req.query.organization;
+        // Name/text filter — resolved to org IDs after filterQuery merge
+        query.organization = String(req.query.organization).trim();
       }
     }
     
@@ -534,6 +493,12 @@ exports.list = async (req, res) => {
 
     const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
     query = applyListFilterQueryParam(query, req.query, 'people', { userId: req.user?._id });
+
+    const { resolvePeopleOrganizationFilters } = require('../utils/peopleOrganizationListFilter');
+    query = await resolvePeopleOrganizationFilters(query, {
+      tenantOrganizationId: orgIdObjectId,
+      user: req.user,
+    });
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;

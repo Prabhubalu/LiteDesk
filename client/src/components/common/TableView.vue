@@ -6,9 +6,25 @@
         :class="showEmptyOverlay ? 'relative z-[1] flex min-h-[480px] flex-col' : 'relative z-[1]'"
       >
         <div
+          v-if="showScrollRestoreOverlay"
+          class="absolute inset-0 z-[60] flex flex-col justify-start bg-white px-5 pt-10 dark:bg-gray-900"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <span class="sr-only">{{ t('common.tableLoadingSr') }}</span>
+          <div class="space-y-3">
+            <div
+              v-for="n in loadingSkeletonRowCount"
+              :key="`scroll-restore-sk-${n}`"
+              class="h-10 w-full rounded-lg bg-gray-100 animate-pulse dark:bg-gray-800/80"
+            />
+          </div>
+        </div>
+        <div
           ref="scrollContainerRef"
           class="relative table-scroll-container rounded-xl"
-          :class="scrollContainerClass"
+          :class="[scrollContainerClass, { 'invisible': showScrollRestoreOverlay }]"
           :style="{ ...scrollContainerStyles, width: '100%', maxWidth: '100%', isolation: 'auto' }"
           @scroll="handleScroll"
         >
@@ -259,6 +275,7 @@
                     :filter="filterConfigForColumn(column)"
                     :model-value="filterValueForColumn(column)"
                     inline
+                    teleport-options
                     @update:model-value="(value) => emitColumnFilterChange(column, value)"
                     @opened="emitColumnFilterOpened(column)"
                   />
@@ -340,7 +357,7 @@
                       'table-body-cell px-5 text-sm text-gray-700 align-middle dark:text-gray-200',
                       rowHeightClass,
                       columnIndex === 0 ? [
-                        'title-column-cell sticky z-20 sticky-column-border',
+                        'title-column-cell relative sticky z-20 sticky-column-border',
                         item.selected ? 'bg-gray-50 dark:bg-indigo-950' : 'bg-white dark:bg-gray-900',
                         item.selected ? '' : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800',
                         isScrolledHorizontally ? 'sticky-column-scrolled' : ''
@@ -545,7 +562,9 @@ import {
 } from 'vue'
 import {
   getListSession,
+  LIST_SESSION_PAGES_READY_KEY,
   LIST_SESSION_RESTORE_KEY,
+  LIST_SESSION_SCROLL_CONCEAL_KEY,
   patchListSession
 } from '@/utils/listScrollSession'
 import { useVirtualizer } from '@tanstack/vue-virtual'
@@ -572,6 +591,7 @@ type ColumnObjectDef = {
   label?: string
   width?: number | string
   minWidth?: number | string
+  maxWidth?: number | string
   sortable?: boolean
   sortKey?: string
   resizable?: boolean
@@ -693,7 +713,30 @@ const props = withDefaults(
 
 const pendingScrollRestore = ref<number | null>(null)
 const sessionRestoreTick = inject(LIST_SESSION_RESTORE_KEY, ref(0))
+const listSessionScrollConcealing = inject(LIST_SESSION_SCROLL_CONCEAL_KEY, ref(false))
+const listSessionPagesReady = inject(LIST_SESSION_PAGES_READY_KEY, ref(true))
 let scrollSaveTimer: ReturnType<typeof setTimeout> | null = null
+let scrollRestoreRevealFrame = 0
+
+const showScrollRestoreOverlay = computed(() => Boolean(listSessionScrollConcealing.value))
+
+function resetScrollContainerTop() {
+  const el = scrollContainerRef.value
+  if (!el) return
+  const previousBehavior = el.style.scrollBehavior
+  el.style.scrollBehavior = 'auto'
+  if (useVirtualScroll.value) {
+    rowVirtualizer.value.scrollToOffset(0, { align: 'start', behavior: 'auto' })
+  }
+  el.scrollTop = 0
+  el.style.scrollBehavior = previousBehavior
+}
+
+function clearScrollRestoreConceal() {
+  if (listSessionScrollConcealing.value) {
+    listSessionScrollConcealing.value = false
+  }
+}
 
 const normalizedPagination = computed(() => {
   if (!props.pagination) return null
@@ -921,7 +964,11 @@ const getColumnMinWidth = (column: ColumnDef) => {
 }
 
 const getColumnMaxWidth = (column: ColumnDef) => {
-  return isFirstColumn(column) ? FIRST_COLUMN_MAX : undefined
+  if (isFirstColumn(column)) return FIRST_COLUMN_MAX
+  if (typeof column === 'object' && column.maxWidth != null) {
+    return parseWidthValue(column.maxWidth)
+  }
+  return undefined
 }
 
 const getColumnDefaultWidth = (column: ColumnDef) => {
@@ -999,8 +1046,10 @@ const columnCellStyle = (column: ColumnDef) => {
   }
   const maxW = getColumnMaxWidth(column)
   if (maxW !== undefined) style.maxWidth = `${maxW}px`
-  // Clip all cells to fixed column width so long links/text cannot paint over the next column
-  style.overflow = 'hidden'
+  // Clip non-sticky cells; title column uses overflow:visible (CSS) so scroll shadow isn't clipped
+  if (!isFirstCol) {
+    style.overflow = 'hidden'
+  }
 
   // Make first data column sticky horizontally
   // Cells use z-20 (set via class), so don't override z-index here
@@ -1182,8 +1231,6 @@ onMounted(() => {
       rowVirtualizer.value.measure()
     }
   }, 100)
-
-  window.addEventListener('resize', updateEdgeColumns)
 })
 
 watch(
@@ -1208,7 +1255,9 @@ watch(
     if (useVirtualScroll.value) {
       nextTick(() => rowVirtualizer.value.measure())
     }
-    attemptScrollRestore()
+    if (listSessionPagesReady.value) {
+      attemptScrollRestore()
+    }
   }
 )
 
@@ -1237,29 +1286,57 @@ function queueScrollRestoreFromSession() {
   }
 }
 
-function attemptScrollRestore() {
-  const top = pendingScrollRestore.value
-  if (top == null || !Number.isFinite(top)) return
+function applyScrollRestoreOffset(top: number): boolean {
   const el = scrollContainerRef.value
-  if (!el || displayRows.value.length === 0 || isLoading.value) return
+  if (!el) return false
 
+  const previousBehavior = el.style.scrollBehavior
+  el.style.scrollBehavior = 'auto'
+
+  if (useVirtualScroll.value) {
+    rowVirtualizer.value.scrollToOffset(top, { align: 'start', behavior: 'auto' })
+  }
+  el.scrollTop = top
+
+  el.style.scrollBehavior = previousBehavior
+
+  return Math.abs(el.scrollTop - top) <= 4
+}
+
+function revealScrollRestore(top: number) {
+  const frame = ++scrollRestoreRevealFrame
   nextTick(() => {
     requestAnimationFrame(() => {
+      if (frame !== scrollRestoreRevealFrame) return
       if (useVirtualScroll.value) {
-        rowVirtualizer.value.scrollToOffset(top, { align: 'start' })
+        rowVirtualizer.value.measure?.()
       }
-      if (scrollContainerRef.value) {
-        scrollContainerRef.value.scrollTop = top
-      }
-      const applied = scrollContainerRef.value?.scrollTop ?? 0
-      if (Math.abs(applied - top) > 4) {
-        pendingScrollRestore.value = top
-      } else {
+      if (!applyScrollRestoreOffset(top)) return
+      requestAnimationFrame(() => {
+        if (frame !== scrollRestoreRevealFrame) return
+        if (!applyScrollRestoreOffset(top)) return
         pendingScrollRestore.value = null
-      }
+        clearScrollRestoreConceal()
+      })
     })
   })
 }
+
+function attemptScrollRestore() {
+  const top = pendingScrollRestore.value
+  if (top == null || !Number.isFinite(top)) return
+  if (!listSessionPagesReady.value) return
+  const el = scrollContainerRef.value
+  if (!el || displayRows.value.length === 0 || isLoading.value) return
+
+  revealScrollRestore(top)
+}
+
+watch(showScrollRestoreOverlay, (show) => {
+  if (show) {
+    resetScrollContainerTop()
+  }
+})
 
 watch(sessionRestoreTick, () => {
   queueScrollRestoreFromSession()
@@ -1268,12 +1345,22 @@ watch(sessionRestoreTick, () => {
 
 onDeactivated(() => {
   saveScrollSession()
+  teardownLoadMoreObserver()
+  teardownHeaderRowObserver()
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', updateEdgeColumns)
+  }
 })
 
 onActivated(() => {
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', updateEdgeColumns)
+  }
   queueScrollRestoreFromSession()
   attemptScrollRestore()
   nextTick(() => {
+    setupHeaderRowObserver()
+    setupLoadMoreObserver()
     if (useVirtualScroll.value) {
       rowVirtualizer.value.measure?.()
     }
@@ -1962,7 +2049,8 @@ watch(
 
 :global(.dark) .table-scroll-container thead th.sticky-column-scrolled::before,
 :global(.dark) .table-scroll-container tbody td.sticky-column-scrolled::before {
-  background: linear-gradient(to right, rgba(0, 0, 0, 0.22), transparent);
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.45), transparent);
+  box-shadow: 2px 0 6px -1px rgba(0, 0, 0, 0.55);
 }
 
 /* Title (first) column body cells only — thead uses the same .title-column-cell class for the

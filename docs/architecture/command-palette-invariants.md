@@ -35,7 +35,7 @@ It never returns entities for browsing.
 - Calm, minimal, keyboard-first
 - Scannable in under 2 seconds
 - No nested menus
-- No configuration or settings
+- Settings: hub + top-level tabs only (permission-gated); no deep configuration routes
 
 ## 6. Safety Rules
 
@@ -48,6 +48,7 @@ It never returns entities for browsing.
 - Navigation commands
 - Creation commands
 - Context-aware shortcuts (Inbox, People, Organization)
+- Settings hub and top-level tab navigation (permission-gated)
 
 ## 8. Non-goals
 

@@ -5,6 +5,7 @@ const { organizationIsolation, checkTrialStatus } = require('../middleware/organ
 const { canManageUsers } = require('../middleware/permissionMiddleware');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
 const { sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
+const { resendVerification } = require('../controllers/userInviteAuthController');
 const {
     getUsers,
     getUsersForAssignment,
@@ -32,6 +33,7 @@ router.use(checkTrialStatus);
 router.get('/profile', sessionBootstrapLimiter, getProfile);
 router.put('/profile', updateProfile);
 router.put('/profile/password', changePassword);
+router.post('/profile/resend-verification', resendVerification);
 router.post('/profile/avatar', uploadSingle('avatar'), uploadAvatar);
 router.delete('/profile/avatar', deleteAvatar);
 

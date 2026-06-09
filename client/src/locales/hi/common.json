@@ -2710,5 +2710,89 @@
   "listStatisticsRegion": {
     "message": "List statistics",
     "description": "Accessible label for the compact statistics toolbar"
+  },
+  "formAddPicklistOption": {
+    "message": "Add \"{value}\"",
+    "description": "Create a new picklist option from the typed search value"
+  },
+  "formAddPicklistOptionFailed": {
+    "message": "Could not add picklist option",
+    "description": "Error when inline picklist option creation fails"
+  },
+  "bulkUpdateBannerTitle": {
+    "message": "Updating records",
+    "description": "Bulk update progress banner title"
+  },
+  "bulkUpdateProgressUpdating": {
+    "message": "Updated {processed} of {total}",
+    "description": "Bulk update progress while updating"
+  },
+  "bulkUpdateLeaveConfirm": {
+    "message": "A bulk update is in progress. Leaving or refreshing now may leave some records unchanged. Stop the update and leave anyway?",
+    "description": "Confirm when navigating away during bulk update"
+  },
+  "bulkUpdateBackgroundHint": {
+    "message": "Do not close this tab until the update finishes.",
+    "description": "Bulk update progress hint"
+  },
+  "massEditTitle": {
+    "message": "Edit {count} records",
+    "description": "Mass edit drawer title"
+  },
+  "massEditDescription": {
+    "message": "Choose the fields to update on {count} selected {module}. Unselected fields stay unchanged.",
+    "description": "Mass edit drawer description"
+  },
+  "massEditSubmit": {
+    "message": "Update {count} records",
+    "description": "Mass edit drawer primary action"
+  },
+  "massEditUpdating": {
+    "message": "Updating…",
+    "description": "Mass edit submit in progress"
+  },
+  "massEditSearchFields": {
+    "message": "Search fields",
+    "description": "Mass edit field search placeholder"
+  },
+  "massEditSelectFieldHint": {
+    "message": "Select at least one field to update.",
+    "description": "Mass edit validation when no fields selected"
+  },
+  "massEditReviewHint": {
+    "message": "{fields} field(s) will be updated on {count} records.",
+    "description": "Mass edit footer review hint"
+  },
+  "massEditHighImpact": {
+    "message": "High impact",
+    "description": "Badge for owner-type fields in mass edit"
+  },
+  "massEditNoEditableFields": {
+    "message": "No fields are available for mass edit on this module.",
+    "description": "Mass edit empty state"
+  },
+  "massEditLoadFieldsFailed": {
+    "message": "Could not load fields. Try again.",
+    "description": "Mass edit module fields fetch error"
+  },
+  "massEditNoSelection": {
+    "message": "No records selected for update.",
+    "description": "Bulk update with empty selection"
+  },
+  "massEditNoMatches": {
+    "message": "No records matched your selection. Refresh the list and try again.",
+    "description": "Bulk update select-all found no rows"
+  },
+  "massEditFailed": {
+    "message": "Bulk update failed.",
+    "description": "Generic bulk update failure"
+  },
+  "massEditPartialFailed": {
+    "message": "Failed to update {failed} of {total} records. {message}",
+    "description": "Partial bulk update failure"
+  },
+  "massEditPartialSkipped": {
+    "message": "Updated {updated} records. {skipped} were skipped (locked, closed, or unchanged).",
+    "description": "Bulk update with skipped records"
   }
 }

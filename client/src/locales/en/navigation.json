@@ -3,6 +3,10 @@
     "message": "Settings",
     "description": "Settings area navigation label"
   },
+  "commandPaletteSettingsHubDesc": {
+    "message": "Open workspace settings",
+    "description": "Command palette description for the Settings hub command"
+  },
   "home": {
     "message": "Home",
     "description": "Home dashboard navigation label"

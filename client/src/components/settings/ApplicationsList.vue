@@ -55,59 +55,55 @@
         @click="viewApplicationDetail(app.appKey)"
         class="group flex flex-col h-full bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg hover:border-indigo-500/50 dark:hover:border-indigo-400/50 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
       >
-        <!-- Card Header -->
-        <div class="flex items-start gap-3">
-          <div class="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors">
-            <component :is="getAppIcon(app.appKey)" class="w-6 h-6" />
-          </div>
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2">
-              <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate min-w-0 flex-1">
-                {{ app.name }}
-              </h3>
-              <span
-                :class="[
-                  'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium flex-shrink-0 ml-auto',
-                  getStatusBadgeClass(app.status)
-                ]"
-              >
-                <svg
-                  v-if="app.status === 'ENABLED'"
-                  class="w-3 h-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <svg
-                  v-else-if="app.status === 'TRIAL'"
-                  class="w-3 h-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <svg
-                  v-else-if="app.status === 'DISABLED'"
-                  class="w-3 h-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                {{ getStatusLabel(app.status) }}
-              </span>
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex min-w-0 flex-1 items-start gap-3">
+            <div class="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors">
+              <component :is="getAppIcon(app.appKey)" class="w-6 h-6" />
             </div>
-            <p
-              v-if="app.description"
-              class="text-sm text-gray-600 dark:text-gray-400 mt-0.5 line-clamp-2"
-            >
-              {{ app.description }}
-            </p>
+            <div class="min-w-0 flex-1">
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">
+                {{ getAppDisplayName(app) }}
+              </h3>
+              <p class="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-2 min-h-[2.5rem]">
+                {{ getAppDescription(app) }}
+              </p>
+            </div>
           </div>
+          <span
+            :class="[
+              'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium flex-shrink-0',
+              getStatusBadgeClass(app.status)
+            ]"
+          >
+            <svg
+              v-if="app.status === 'ENABLED'"
+              class="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <svg
+              v-else-if="app.status === 'TRIAL'"
+              class="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <svg
+              v-else-if="app.status === 'DISABLED'"
+              class="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            {{ getStatusLabel(app.status) }}
+          </span>
         </div>
       </div>
     </div>
@@ -152,6 +148,26 @@ const applications = ref([]);
 const loading = ref(true);
 const error = ref(null);
 
+const APP_NAME_KEYS = {
+  SALES: 'settings.appsNameSales',
+  HELPDESK: 'settings.appsNameHelpdesk',
+  PROJECTS: 'settings.appsNameProjects',
+  PORTAL: 'settings.appsNamePortal',
+  AUDIT: 'settings.appsNameAudit',
+  LMS: 'settings.appsNameLms',
+  INVENTORY: 'settings.appsNameInventory',
+};
+
+const APP_DESC_KEYS = {
+  SALES: 'settings.appsDescSales',
+  HELPDESK: 'settings.appsDescHelpdesk',
+  PROJECTS: 'settings.appsDescProjects',
+  PORTAL: 'settings.appsDescPortal',
+  AUDIT: 'settings.appsDescAudit',
+  LMS: 'settings.appsDescLms',
+  INVENTORY: 'settings.appsDescInventory',
+};
+
 const STATUS_LABEL_KEYS = {
   ENABLED: 'settings.settingsAppsStatusEnabled',
   DISABLED: 'settings.settingsAppsStatusDisabled',
@@ -159,6 +175,18 @@ const STATUS_LABEL_KEYS = {
   SUSPENDED: 'settings.settingsAppsStatusSuspended',
   INCLUDED: 'settings.settingsAppsStatusIncluded',
 };
+
+function getAppDisplayName(app) {
+  const appKey = String(app?.appKey || '').toUpperCase();
+  const nameKey = APP_NAME_KEYS[appKey];
+  return nameKey ? t(nameKey) : app?.name || appKey;
+}
+
+function getAppDescription(app) {
+  const appKey = String(app?.appKey || '').toUpperCase();
+  const descKey = APP_DESC_KEYS[appKey];
+  return descKey ? t(descKey) : app?.description || '';
+}
 
 const fetchApplications = async () => {
   loading.value = true;

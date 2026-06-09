@@ -15,8 +15,35 @@ export const ALLOWED_RICH_DESCRIPTION_TAGS = [
   'h1',
   'h2',
   'h3',
-  'blockquote'
+  'blockquote',
+  'img'
 ];
+
+export const ALLOWED_RICH_DESCRIPTION_ATTR = [
+  'href',
+  'target',
+  'rel',
+  'src',
+  'alt',
+  'title',
+  'class',
+  'width',
+  'height',
+  'data-width',
+  'data-reply-quote',
+  'data-collapsed'
+];
+
+const SAFE_IMAGE_SRC_PATTERN = /^(https?:|\/)/i;
+
+export const ALLOWED_DESCRIPTION_IMAGE_WIDTHS = new Set(['25%', '50%', '75%', '100%']);
+
+function isSafeImageSrc(src: string): boolean {
+  const trimmed = String(src || '').trim();
+  if (!trimmed) return false;
+  if (/^(javascript|data|vbscript):/i.test(trimmed)) return false;
+  return SAFE_IMAGE_SRC_PATTERN.test(trimmed);
+}
 
 /**
  * After DOMPurify, ensure real hyperlinks open in a new tab. Skips fragment-only anchors.
@@ -53,7 +80,33 @@ export function sanitizeRichDescriptionHtml(raw: string): string {
   if (!str.trim()) return '';
 
   const clean = DOMPurify.sanitize(str, {
-    ALLOWED_TAGS: ALLOWED_RICH_DESCRIPTION_TAGS
+    ALLOWED_TAGS: ALLOWED_RICH_DESCRIPTION_TAGS,
+    ALLOWED_ATTR: ALLOWED_RICH_DESCRIPTION_ATTR
   });
-  return withLinksOpenInNewTab(clean);
+
+  if (typeof document === 'undefined' || !clean.includes('<img')) {
+    return withLinksOpenInNewTab(clean);
+  }
+
+  const tpl = document.createElement('template');
+  tpl.innerHTML = clean;
+  tpl.content.querySelectorAll('img').forEach((img) => {
+    const src = (img.getAttribute('src') || '').trim();
+    if (!isSafeImageSrc(src)) {
+      img.remove();
+      return;
+    }
+    img.setAttribute('loading', 'lazy');
+    if (!img.getAttribute('alt')) img.setAttribute('alt', '');
+    const width = (img.getAttribute('data-width') || img.getAttribute('width') || '').trim();
+    if (width && !ALLOWED_DESCRIPTION_IMAGE_WIDTHS.has(width)) {
+      img.removeAttribute('data-width');
+      img.removeAttribute('width');
+    } else if (width) {
+      img.setAttribute('data-width', width);
+      img.removeAttribute('width');
+    }
+  });
+
+  return withLinksOpenInNewTab(tpl.innerHTML);
 }

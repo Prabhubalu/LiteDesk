@@ -1,96 +1,83 @@
 <template>
   <div class="w-full relative">
-    <!-- Select All Across Pages Banner -->
-    <Transition name="slide-down">
-      <div v-if="selectable && showSelectAllBanner" class="mb-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-xl px-6 py-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <InformationCircleIcon class="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <p class="text-sm font-medium text-blue-900 dark:text-blue-100">
-              {{ t('common.tableAllPageSelected', { count: displayData.length }) }}
-            </p>
-          </div>
-          <div class="flex items-center gap-3">
-            <button
-              @click="selectAllAcrossPages"
-              class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline transition-colors"
+    <!-- Bulk Actions Bar (ListView-style) -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition-all duration-300 ease-out"
+        enter-from-class="opacity-0 translate-y-4 scale-95"
+        enter-to-class="opacity-100 translate-y-0 scale-100"
+        leave-active-class="transition-all duration-200 ease-in"
+        leave-from-class="opacity-100 translate-y-0 scale-100"
+        leave-to-class="opacity-0 translate-y-4 scale-95"
+      >
+        <div
+          v-if="selectable && selectedRows.length > 0"
+          class="fixed bottom-4 left-2 right-2 z-[9999] sm:bottom-6 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-[min(800px,100%)] sm:-translate-x-1/2"
+        >
+          <div class="rounded-xl bg-gray-800 shadow-lg dark:bg-gray-800">
+            <div
+              v-if="showSelectAllBanner"
+              class="border-b border-white/10 px-4 py-2 text-center text-sm text-gray-200"
             >
-              {{ t('common.tableSelectAllItems', { count: totalRecords || data.length }) }}
-            </button>
-            <button
-              @click="clearSelection"
-              class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-            >
-              {{ t('common.tableClearSelection') }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-
-    <!-- Bulk Actions Floating Bar -->
-    <Transition name="slide-up">
-      <div v-if="selectable && selectedRows.length > 0" class="bulk-actions-bar">
-        <div class="bg-indigo-600 dark:bg-indigo-700 text-white px-6 py-4 rounded-xl shadow-2xl border-2 border-indigo-700 dark:border-indigo-800">
-          <div class="flex items-center gap-6">
-            <!-- Selection Count -->
-            <div class="flex items-center gap-2">
-              <div class="bg-white/20 px-3 py-1.5 rounded-lg font-semibold">
-                <span v-if="selectAllPages">
-                  {{ t('common.tableAllSelected', { count: totalRecords || data.length }) }}
-                </span>
-                <span v-else>
-                  {{ t('common.tableSelectedCount', { count: selectedRows.length }) }}
-                </span>
-              </div>
               <button
+                type="button"
+                class="cursor-pointer font-medium text-indigo-300 underline-offset-2 hover:text-indigo-200 hover:underline"
+                @click="selectAllAcrossPages"
+              >
+                {{ t('common.tableSelectAllItems', { count: totalRecords || data.length }) }}
+              </button>
+            </div>
+            <div class="flex items-center gap-3 px-4 py-2 sm:px-6 sm:py-2.5">
+              <button
+                type="button"
+                class="inline-flex flex-shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-white/20 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700 dark:border-gray-600"
+                :title="t('common.listClearSelection')"
                 @click="clearSelection"
-                class="p-2 hover:bg-white/20 rounded-lg transition-all"
-                :title="t('common.tableClearSelection')"
               >
-                <XMarkIcon class="w-5 h-5" />
-              </button>
-            </div>
-
-            <!-- Divider -->
-            <div class="h-8 w-px bg-white/30"></div>
-
-            <!-- Mass Actions -->
-            <div class="flex items-center gap-2">
-              <!-- Custom Mass Actions -->
-              <button
-                v-for="action in massActions"
-                :key="action.action"
-                @click="handleBulkAction(action.action)"
-                :class="[
-                  'px-4 py-2 rounded-lg font-medium transition-all hover:scale-105 flex items-center gap-2',
-                  action.variant === 'danger' ? 'bg-red-500 hover:bg-red-600' :
-                  action.variant === 'success' ? 'bg-green-500 hover:bg-green-600' :
-                  action.variant === 'warning' ? 'bg-yellow-500 hover:bg-yellow-600' :
-                  'bg-white/20 hover:bg-white/30'
-                ]"
-              >
-                <TrashIcon v-if="action.icon === 'trash'" class="w-4 h-4" />
-                <PencilSquareIcon v-else-if="action.icon === 'edit'" class="w-4 h-4" />
-                <ArrowDownTrayIcon v-else-if="action.icon === 'export'" class="w-4 h-4" />
-                <ArchiveBoxIcon v-else-if="action.icon === 'archive'" class="w-4 h-4" />
-                {{ action.label }}
+                <span class="font-semibold">{{ selectionCount }}</span>
+                <span class="font-medium">{{ selectionLabelText }}</span>
+                <XMarkIcon class="h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5" aria-hidden="true" />
               </button>
 
-              <!-- Default Delete Action (if no custom actions) -->
-              <button
-                v-if="massActions.length === 0"
-                @click="handleBulkAction('delete')"
-                class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-medium transition-all hover:scale-105 flex items-center gap-2"
-              >
-                <TrashIcon class="w-4 h-4" />
-                {{ t('common.tableDeleteSelected') }}
-              </button>
+              <div class="flex flex-1 items-center justify-end gap-1 overflow-x-auto sm:gap-2 sm:overflow-visible">
+                <button
+                  v-for="action in nonDeleteMassActions"
+                  :key="action.action"
+                  type="button"
+                  class="group flex flex-shrink-0 cursor-pointer flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-gray-700 sm:gap-1 sm:px-3 sm:py-2"
+                  :class="action.variant === 'primary' ? 'text-teal-400' : 'text-gray-300'"
+                  @click="handleBulkAction(action.action)"
+                >
+                  <component :is="getMassActionIcon(action.icon)" class="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                  <span class="text-[10px] font-medium leading-tight sm:text-xs">{{ action.label }}</span>
+                </button>
+
+                <button
+                  v-for="action in deleteMassActions"
+                  :key="action.action"
+                  type="button"
+                  class="group flex flex-shrink-0 cursor-pointer flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-red-400 transition-colors hover:bg-gray-700 sm:gap-1 sm:px-3 sm:py-2"
+                  @click="handleBulkAction(action.action)"
+                >
+                  <component :is="getMassActionIcon(action.icon || 'trash')" class="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                  <span class="text-[10px] font-medium leading-tight sm:text-xs">{{ action.label }}</span>
+                </button>
+
+                <button
+                  v-if="massActions.length === 0"
+                  type="button"
+                  class="group flex flex-shrink-0 cursor-pointer flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-red-400 transition-colors hover:bg-gray-700 sm:gap-1 sm:px-3 sm:py-2"
+                  @click="handleBulkAction('delete')"
+                >
+                  <TrashIcon class="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                  <span class="text-[10px] font-medium leading-tight sm:text-xs">{{ t('common.tableDeleteSelected') }}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </Transition>
+      </Transition>
+    </Teleport>
 
     <!-- Table Controls -->
     <div v-if="showControls" class="flex items-center justify-between mb-6 gap-4 flex-wrap">
@@ -101,27 +88,25 @@
           v-model="searchQuery"
           type="text"
           :placeholder="searchPlaceholder"
-          class="w-full pl-11 pr-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 transition-all shadow-sm"
+          class="w-full pl-11 pr-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-sm transition-colors focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/30"
           @input="handleSearch"
         />
       </div>
 
-      <!-- Actions Slot -->
-      <div class="flex items-center gap-3">
-        <slot name="actions"></slot>
+      <!-- Toolbar Actions Slot -->
+      <div class="flex items-center gap-3 flex-wrap justify-end">
+        <slot name="toolbar-actions"></slot>
+        <button
+          v-if="columnSettings"
+          type="button"
+          @click="showColumnSettings = !showColumnSettings"
+          class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
+          :title="t('common.tableColumnSettings')"
+        >
+          <Cog6ToothIcon class="w-5 h-5" />
+          <span>{{ t('common.tableColumns') }}</span>
+        </button>
       </div>
-    </div>
-
-    <!-- Column Settings Button (Always visible when enabled) -->
-    <div v-if="columnSettings" class="flex justify-end mb-4">
-      <button
-        @click="showColumnSettings = !showColumnSettings"
-        class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all shadow-sm"
-        :title="t('common.tableColumnSettings')"
-      >
-        <Cog6ToothIcon class="w-5 h-5" />
-        <span>{{ t('common.tableColumns') }}</span>
-      </button>
     </div>
 
     <!-- Column Settings Modal -->
@@ -504,7 +489,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { InformationCircleIcon, XMarkIcon, TrashIcon, PencilSquareIcon, ArrowDownTrayIcon, ArchiveBoxIcon, ChevronLeftIcon, ChevronRightIcon, ArrowsUpDownIcon, EyeIcon, MagnifyingGlassIcon, Cog6ToothIcon, BookmarkIcon, ArchiveBoxXMarkIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
+import { XMarkIcon, TrashIcon, PencilSquareIcon, ArrowUpTrayIcon, ArchiveBoxIcon, ChevronLeftIcon, ChevronRightIcon, ArrowsUpDownIcon, EyeIcon, MagnifyingGlassIcon, Cog6ToothIcon, BookmarkIcon, ArchiveBoxXMarkIcon, ChevronUpIcon, ChevronDownIcon, CheckCircleIcon, NoSymbolIcon, DocumentDuplicateIcon, ArrowPathIcon, ArrowRightIcon, RectangleStackIcon, StarIcon, PuzzlePieceIcon } from '@heroicons/vue/24/outline';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { formatRawValueForDisplay } from '@/utils/fieldDisplay';
@@ -631,6 +616,11 @@ const props = defineProps({
   columnSettings: {
     type: Boolean,
     default: false
+  },
+  /** Entity name for bulk bar label, e.g. "Users" → "1 User selected" */
+  selectionBarTitle: {
+    type: String,
+    default: ''
   }
 });
 
@@ -643,6 +633,57 @@ const sortOrder = ref('asc');
 const currentPage = ref(1);
 const selectedRows = ref([]);
 const selectAllPages = ref(false);
+
+const isDeleteMassAction = (action) =>
+  action.action === 'delete'
+  || action.action === 'bulk-delete'
+  || action.icon === 'delete'
+  || action.icon === 'trash';
+
+const nonDeleteMassActions = computed(() => props.massActions.filter((action) => !isDeleteMassAction(action)));
+const deleteMassActions = computed(() => props.massActions.filter((action) => isDeleteMassAction(action)));
+
+const selectionCount = computed(() =>
+  selectAllPages.value ? (props.totalRecords || props.data.length) : selectedRows.value.length
+);
+
+const selectionLabelText = computed(() => {
+  const count = selectionCount.value;
+  if (selectAllPages.value && props.selectionBarTitle) {
+    return t('common.listAllMatchingSelected', { count, module: props.selectionBarTitle });
+  }
+  if (props.selectionBarTitle) {
+    const plural = props.selectionBarTitle;
+    const singular = plural.endsWith('s') ? plural.slice(0, -1) : plural;
+    return t('common.listRowsSelected', count, { count, singular, plural });
+  }
+  if (selectAllPages.value) {
+    return t('common.tableAllSelected', { count });
+  }
+  return t('common.tableSelectedCount', { count });
+});
+
+const massActionIconMap = {
+  trash: TrashIcon,
+  delete: TrashIcon,
+  export: ArrowUpTrayIcon,
+  download: ArrowUpTrayIcon,
+  duplicate: DocumentDuplicateIcon,
+  archive: ArchiveBoxIcon,
+  convert: ArrowPathIcon,
+  move: ArrowRightIcon,
+  sequence: RectangleStackIcon,
+  sidekick: StarIcon,
+  apps: PuzzlePieceIcon,
+  edit: PencilSquareIcon,
+  pencil: PencilSquareIcon,
+  check: CheckCircleIcon,
+  activate: CheckCircleIcon,
+  ban: NoSymbolIcon,
+  deactivate: NoSymbolIcon
+};
+
+const getMassActionIcon = (iconName) => massActionIconMap[iconName] || PencilSquareIcon;
 
 // Column resizing state
 const columnWidths = ref({});
@@ -1448,48 +1489,6 @@ tr:hover .actions-container {
   background-color: rgb(112, 93, 255);
 }
 
-/* Bulk Actions Bar */
-.bulk-actions-bar {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  max-width: 90vw;
-}
-
-/* Animations */
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateX(-50%) translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateX(-50%) translateY(20px);
-}
-
-/* Slide down animation for banner */
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-down-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.slide-down-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
 /* Modal animation */
 .modal-enter-active,
 .modal-leave-active {
@@ -1547,32 +1546,6 @@ tr:hover .actions-container {
 
 .dark .overflow-x-auto::-webkit-scrollbar-thumb:hover {
   background-color: rgba(75, 85, 99, 0.7);
-}
-
-/* Bulk Actions Floating Bar - Fixed at bottom-center */
-.bulk-actions-bar {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  max-width: 90vw;
-}
-
-/* Slide up transition for bulk actions bar */
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translate(-50%, 20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translate(-50%, 20px);
 }
 </style>
 

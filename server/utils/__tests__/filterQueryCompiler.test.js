@@ -72,6 +72,26 @@ test('compileNode: is me resolves to user id', () => {
   assert.deepEqual(clause, { assignedTo: userId });
 });
 
+test('compileNode: people name contains searches first_name and last_name', () => {
+  const clause = compileNode(
+    { fieldKey: 'name', operator: 'contains', value: 'te' },
+    'people'
+  );
+  assert.equal(clause.$or.length, 2);
+  assert.equal(clause.$or[0].first_name.source, 'te');
+  assert.equal(clause.$or[1].last_name.source, 'te');
+});
+
+test('compileNode: people name not_contains negates both name parts', () => {
+  const clause = compileNode(
+    { fieldKey: 'name', operator: 'not_contains', value: 'te' },
+    'people'
+  );
+  assert.equal(clause.$and.length, 2);
+  assert.equal(clause.$and[0].first_name.$not.source, 'te');
+  assert.equal(clause.$and[1].last_name.$not.source, 'te');
+});
+
 test('applyFilterQueryToMongoQuery: merges into base query $and', () => {
   const ast = {
     logic: 'OR',

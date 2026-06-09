@@ -1024,6 +1024,20 @@ const updateTask = async (req, res) => {
 
     await task.save();
 
+    if (requestedFields.includes('status') && !areTaskFieldValuesEqual(oldStatus, task.status)) {
+      try {
+        const { syncDealPlaybookFromActivity } = require('../services/playbookExecutionService');
+        await syncDealPlaybookFromActivity({
+          activityId: task._id,
+          activityType: 'task',
+          organizationId: req.user.organizationId,
+          activityDoc: task
+        });
+      } catch (playbookErr) {
+        console.error('[taskController] playbook sync on update failed:', playbookErr?.message || playbookErr);
+      }
+    }
+
     try {
       const { runImmediateAssignmentForSalesRecord } = require('../services/assignmentExecutionService');
       const { enqueueAssignmentJobsForSalesRecord } = require('../services/assignmentSchedulingService');
@@ -1271,6 +1285,20 @@ const updateTaskStatus = async (req, res) => {
     }
 
     await task.save();
+
+    if (!areTaskFieldValuesEqual(previousStatus, status)) {
+      try {
+        const { syncDealPlaybookFromActivity } = require('../services/playbookExecutionService');
+        await syncDealPlaybookFromActivity({
+          activityId: task._id,
+          activityType: 'task',
+          organizationId: req.user.organizationId,
+          activityDoc: task
+        });
+      } catch (playbookErr) {
+        console.error('[taskController] playbook sync on status failed:', playbookErr?.message || playbookErr);
+      }
+    }
 
     const updatedTask = await Task.findById(task._id)
       .populate('assignedTo', 'firstName lastName email avatar');
@@ -1753,8 +1781,10 @@ const createTaskComment = async (req, res) => {
     processCommentMentions({
       organizationId: String(req.user.organizationId),
       appKey: req.appKey || 'SALES',
-      taskId: String(req.params.id),
-      taskTitle: task.title || 'Task',
+      moduleKey: 'tasks',
+      entityId: String(req.params.id),
+      entityType: 'Task',
+      recordTitle: task.title || 'Task',
       commentId: String(comment._id),
       commentContent: content.trim(),
       authorId: String(req.user._id),
@@ -1828,8 +1858,10 @@ const updateTaskComment = async (req, res) => {
     processCommentMentions({
       organizationId: String(req.user.organizationId),
       appKey: req.appKey || 'SALES',
-      taskId: String(taskId),
-      taskTitle: task.title || 'Task',
+      moduleKey: 'tasks',
+      entityId: String(taskId),
+      entityType: 'Task',
+      recordTitle: task.title || 'Task',
       commentId: String(comment._id),
       commentContent: comment.content,
       authorId: String(req.user._id),

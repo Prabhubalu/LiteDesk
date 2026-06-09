@@ -18,3 +18,15 @@ export function getModuleRecordCrudPathBase(moduleKey, options = {}) {
   }
   return `/${mk}`;
 }
+
+/**
+ * In-app record detail route (Vue router path, not REST).
+ * Organizations use /v2/organization for API but /organizations in the router.
+ */
+export function getModuleRecordRoutePathBase(moduleKey, options = {}) {
+  const mk = String(moduleKey || '').toLowerCase().trim();
+  if (mk === 'organizations' || mk === 'organization') {
+    return '/organizations';
+  }
+  return getModuleRecordCrudPathBase(moduleKey, options);
+}

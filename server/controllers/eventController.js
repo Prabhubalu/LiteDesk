@@ -1363,6 +1363,20 @@ exports.updateEventStatus = async (req, res) => {
             .populate('eventOwnerId', 'firstName lastName email')
             .populate('modifiedBy', 'firstName lastName');
         
+        if (oldStatus !== status && updatedEvent?._id) {
+            try {
+                const { syncDealPlaybookFromActivity } = require('../services/playbookExecutionService');
+                await syncDealPlaybookFromActivity({
+                    activityId: updatedEvent._id,
+                    activityType: 'event',
+                    organizationId: req.user.organizationId,
+                    activityDoc: updatedEvent
+                });
+            } catch (playbookErr) {
+                console.error('[eventController] playbook sync on status failed:', playbookErr?.message || playbookErr);
+            }
+        }
+
         res.status(200).json({
             success: true,
             message: 'Event status updated successfully.',
@@ -2894,6 +2908,18 @@ exports.completeEvent = async (req, res) => {
         
         event.modifiedBy = req.user._id;
         await event.save();
+
+        try {
+            const { syncDealPlaybookFromActivity } = require('../services/playbookExecutionService');
+            await syncDealPlaybookFromActivity({
+                activityId: event._id,
+                activityType: 'event',
+                organizationId: req.user.organizationId,
+                activityDoc: event
+            });
+        } catch (playbookErr) {
+            console.error('[eventController] playbook sync on complete failed:', playbookErr?.message || playbookErr);
+        }
         
         res.status(200).json({
             success: true,

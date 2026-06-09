@@ -93,7 +93,7 @@
                             <!-- Checkbox on the left for easy selection -->
                             <div class="shrink-0">
                               <HeadlessCheckbox
-                                v-if="multiple"
+                                v-if="effectiveMultiple || useCheckboxListUi"
                                 checkbox-class="w-4 h-4"
                                 :checked="isSelected(item._id) || isPrelinked(item._id)"
                                 :disabled="isPrelinked(item._id) || isSelectionBlocked(item)"
@@ -104,7 +104,7 @@
                               <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ getDisplayName(item) }}</p>
                               <p v-if="getSecondaryText(item)" class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ getSecondaryText(item) }}</p>
                             </div>
-                            <div class="shrink-0" v-if="!multiple">
+                            <div class="shrink-0" v-if="!effectiveMultiple && !useCheckboxListUi">
                               <button
                                 type="button"
                                 :disabled="isPrelinked(item._id) || isSelectionBlocked(item)"
@@ -124,7 +124,7 @@
 
                   <!-- Footer (only when list view) -->
                   <div v-if="effectiveModuleKey" class="flex items-center justify-between gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                    <div class="text-xs text-gray-500 dark:text-gray-400" v-if="multiple">{{ t('common.linkRecordsSelectedCount', { count: deltaCount }) }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400" v-if="effectiveMultiple || useCheckboxListUi">{{ t('common.linkRecordsSelectedCount', { count: deltaCount }) }}</div>
                     <div class="ml-auto flex gap-3">
                       <button 
                         v-if="allowCreate"
@@ -135,7 +135,7 @@
                         {{ t('common.linkRecordsCreateNew') }}
                       </button>
                       <button type="button" class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700" @click="closeDrawer">{{ t('actions.cancel') }}</button>
-                      <button type="button" :disabled="multiple && deltaCount === 0" class="inline-flex justify-center rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 disabled:opacity-50" @click="confirmLink">{{ t('common.linkRecordsLink') }}</button>
+                      <button type="button" :disabled="(effectiveMultiple || useCheckboxListUi) && deltaCount === 0" class="inline-flex justify-center rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 disabled:opacity-50" @click="confirmLink">{{ t('common.linkRecordsLink') }}</button>
                     </div>
                   </div>
                 </div>
@@ -222,6 +222,21 @@ const normalizeModuleKey = (moduleKey) => {
 const showTypeSelector = computed(() => !props.moduleKey);
 const effectiveModuleKey = computed(() => normalizeModuleKey(props.moduleKey || selectedModuleKey.value));
 
+const isPeopleToOrganizationLink = computed(() => {
+  const source = normalizeModuleKey(props.sourceModuleKey);
+  const target = effectiveModuleKey.value;
+  const relKey = (selectedRecordTypeOption.value?.relationshipKey || '').toLowerCase();
+  if (source === 'people' && target === 'organizations') return true;
+  return relKey === 'people_organizations' && source === 'people';
+});
+
+const effectiveMultiple = computed(() => {
+  if (isPeopleToOrganizationLink.value) return false;
+  return props.multiple;
+});
+
+const useCheckboxListUi = computed(() => isPeopleToOrganizationLink.value);
+
 const useLinkableTargetsFromApi = computed(
   () =>
     Boolean(
@@ -275,12 +290,7 @@ const normalizeId = (value) => {
 const getContextPersonId = () => normalizeId(props.context?.personId ?? props.context?.contactId);
 const getContextSourceRecordId = () => normalizeId(props.context?.sourceRecordId ?? props.context?.organizationId);
 
-const isRecordTypeOptionDisabled = (opt) => {
-  const sourceModuleKey = normalizeModuleKey(props.sourceModuleKey);
-  const targetModuleKey = normalizeModuleKey(opt?.key);
-  if (sourceModuleKey !== 'people' || targetModuleKey !== 'organizations') return false;
-  return Boolean(getContextPersonId()) && prelinkedIds.value.size > 0;
-};
+const isRecordTypeOptionDisabled = () => false;
 
 const recordTypeOptionDisableReason = (opt) => {
   if (!isRecordTypeOptionDisabled(opt)) return '';
@@ -357,10 +367,54 @@ const handleCreate = (optOverride = null) => {
 
 // Allow closing only when no selection changes were made
 const handleDialogClose = () => {
-  if (props.multiple && deltaCount.value > 0) {
+  if ((effectiveMultiple.value || useCheckboxListUi.value) && deltaCount.value > 0) {
     return; // block close on unsaved changes
   }
   closeDrawer();
+};
+
+const mergePrelinkedIds = (ids) => {
+  const normalizedIds = ids.map((id) => String(id)).filter(Boolean);
+  if (normalizedIds.length === 0) return;
+  const mergedPrelinked = new Set([...prelinkedIds.value, ...normalizedIds]);
+  prelinkedIds.value = mergedPrelinked;
+  selectedIds.value = new Set([...mergedPrelinked, ...selectedIds.value]);
+};
+
+const mergePersonOrganizationFromLookup = async (modKey) => {
+  const sourceModuleKey = normalizeModuleKey(props.sourceModuleKey);
+  const targetModuleKey = normalizeModuleKey(modKey);
+  if (sourceModuleKey !== 'people' || targetModuleKey !== 'organizations') return;
+  const personId = getContextPersonId();
+  if (!personId) return;
+  try {
+    const contactRes = await apiClient.get(`/people/${personId}`);
+    if (contactRes?.success && contactRes.data?.organization) {
+      const orgId = normalizeId(contactRes.data.organization);
+      if (orgId) mergePrelinkedIds([orgId]);
+    }
+  } catch (e) {
+    // ignore
+  }
+};
+
+const mergeOrganizationPeopleFromLookup = async (modKey) => {
+  const sourceModuleKey = normalizeModuleKey(props.sourceModuleKey);
+  const targetModuleKey = normalizeModuleKey(modKey);
+  if (sourceModuleKey !== 'organizations' || targetModuleKey !== 'people') return;
+  const organizationId = getContextSourceRecordId();
+  if (!organizationId) return;
+  try {
+    const res = await apiClient.get('/people', {
+      params: { organization: organizationId, limit: 1000 }
+    });
+    if (!res?.success) return;
+    const rows = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+    const ids = rows.map((row) => normalizeId(row?._id)).filter(Boolean);
+    mergePrelinkedIds(ids);
+  } catch (e) {
+    // ignore
+  }
 };
 
 const endpointForModule = (moduleKey) => {
@@ -438,8 +492,8 @@ const fetchPrelinked = async () => {
       } catch (e) {
         // ignore
       }
-      // For source-record linking, prelinked state must come from relationships only.
-      // Falling through to module list queries marks unrelated rows as prelinked.
+      await mergePersonOrganizationFromLookup(modKey);
+      await mergeOrganizationPeopleFromLookup(modKey);
       return;
     }
     // Special case: when linking organizations to a contact, fetch the contact to get its current organization
@@ -582,8 +636,13 @@ const selectionBlockedReason = (item) => {
 
 const toggleSelect = (item) => {
   const id = item._id;
-  if (isPrelinked(id) || isSelectionBlocked(item)) return; // do nothing for disabled rows
-  if (selectedIds.value.has(id)) selectedIds.value.delete(id); else selectedIds.value.add(id);
+  if (isPrelinked(id) || isSelectionBlocked(item)) return;
+  if (!effectiveMultiple.value) {
+    selectedIds.value = new Set([...prelinkedIds.value, id]);
+    return;
+  }
+  if (selectedIds.value.has(id)) selectedIds.value.delete(id);
+  else selectedIds.value.add(id);
   selectedIds.value = new Set(selectedIds.value);
 };
 const selectSingle = (item) => {
@@ -594,7 +653,7 @@ const selectSingle = (item) => {
 
 const confirmLink = () => {
   const idsToLink = Array.from(deltaSelectedIds.value);
-  if (props.multiple && idsToLink.length === 0) return;
+  if ((effectiveMultiple.value || useCheckboxListUi.value) && idsToLink.length === 0) return;
   const payload = {
     moduleKey: effectiveModuleKey.value,
     ids: idsToLink,

@@ -480,6 +480,10 @@ function sanitizeUserResponsePayload(userDocOrPlain) {
       : { ...userDocOrPlain };
   delete o.password;
   delete o._roleAllowsPlatformOwnedFieldEdit;
+  delete o.inviteTokenHash;
+  delete o.inviteTokenExpiresAt;
+  delete o.emailVerificationTokenHash;
+  delete o.emailVerificationExpiresAt;
   return o;
 }
 

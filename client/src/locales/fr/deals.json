@@ -458,5 +458,33 @@
   "dealsStageUpdateFailed": {
     "message": "Échec de la mise à jour de l'étape de transaction",
     "description": "Kanban stage change error"
+  },
+  "dealsPlaybookBadgeComplete": {
+    "message": "Playbook done",
+    "description": "Deal playbook badge when stage playbook is complete"
+  },
+  "dealsPlaybookBadgeProgress": {
+    "message": "{completed}/{total}",
+    "description": "Deal playbook badge showing completed steps out of total"
+  },
+  "dealsPlaybookBadgeBlocked": {
+    "message": "{completed}/{total} · blocked",
+    "description": "Deal playbook badge when remaining steps are blocked"
+  },
+  "dealsPlaybookBadgeAria": {
+    "message": "Stage playbook: {label}",
+    "description": "Accessible label for deal playbook status badge"
+  },
+  "dealsPlaybookBadgeTooltipComplete": {
+    "message": "All required stage playbook steps are complete.",
+    "description": "Tooltip for completed deal playbook badge"
+  },
+  "dealsPlaybookBadgeTooltipProgress": {
+    "message": "{pending} of {total} playbook steps remaining.",
+    "description": "Tooltip for in-progress deal playbook badge"
+  },
+  "dealsPlaybookBadgeTooltipBlocked": {
+    "message": "{blocked} blocked, {pending} open — {total} steps in this stage playbook.",
+    "description": "Tooltip for blocked deal playbook badge"
   }
 }

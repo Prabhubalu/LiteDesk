@@ -27,7 +27,7 @@ const ENFORCEMENT_PATH_MARKERS = [
   'components/settings/RolesPermissions.vue',
   'components/settings/RoleFormDrawer.vue',
   'components/settings/RoleUsersModal.vue',
-  'components/settings/InviteUserModal.vue',
+  'components/settings/InviteUserDrawer.vue',
   'components/settings/EditUserModal.vue',
   'components/settings/GroupsSettings.vue',
   'components/groups/GroupFormModal.vue',

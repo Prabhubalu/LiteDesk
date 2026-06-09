@@ -53,6 +53,7 @@ export const useAuthStore = defineStore('auth', {
             const internalDomains = ['arivusystems.com', 'arivu.com', 'arivu.io'];
             return internalDomains.some(domain => email.toLowerCase().includes(`@${domain}`));
         },
+        requiresEmailVerification: (state) => Boolean(state.user && !state.user.emailVerifiedAt),
         hasAppAccess: (state) => {
             return (appKey) => {
                 const appKeyUpper = appKey.toUpperCase();
@@ -259,7 +260,10 @@ export const useAuthStore = defineStore('auth', {
                 permissions: userData.permissions,
                 token: userData.token,
                 appAccess: userData.appAccess,
-                allowedApps: allowedApps
+                allowedApps: allowedApps,
+                emailVerifiedAt: userData.emailVerifiedAt || null,
+                requiresEmailVerification: userData.requiresEmailVerification === true,
+                mustChangePassword: userData.mustChangePassword === true
             };
             
             if (userData.organization) {
@@ -277,6 +281,16 @@ export const useAuthStore = defineStore('auth', {
             });
 
             void this.syncI18nFromOrganization();
+        },
+
+        markEmailVerified() {
+            if (!this.user) return;
+            this.user = {
+                ...this.user,
+                emailVerifiedAt: new Date().toISOString(),
+                requiresEmailVerification: false
+            };
+            localStorage.setItem('user', JSON.stringify(this.user));
         },
 
         async syncI18nFromOrganization() {

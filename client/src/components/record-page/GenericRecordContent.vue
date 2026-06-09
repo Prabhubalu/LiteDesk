@@ -279,11 +279,18 @@
             class="shrink-0"
           />
           <div class="min-w-0 flex-1">
-            <EditableTitle
-              :title="recordTitle"
-              :can-edit="canEditRecord"
-              @save="handleTitleSave"
-            />
+            <div class="flex flex-wrap items-center gap-2">
+              <EditableTitle
+                :title="recordTitle"
+                :can-edit="canEditRecord"
+                @save="handleTitleSave"
+              />
+              <BadgeCell
+                v-if="isEventsModule && eventLifecycleStatus"
+                :value="eventLifecycleStatus"
+                :variant-map="eventStatusBadgeVariantMap"
+              />
+            </div>
             <CaseSlaContextBanner
               v-if="moduleKeyLower === 'cases' && record?.slaContext"
               :sla-context="record.slaContext"
@@ -312,6 +319,15 @@
             </div>
           </template>
         </RecordPageTitleRow>
+
+        <EventRecordExecutionPanel
+          v-if="isEventsModule && !expandedLeftSection && record && !isEventAppointment"
+          ref="eventExecutionPanelRef"
+          class="mt-4"
+          :event="record"
+          :event-id="eventExecutionRouteId"
+          @updated="fetchRecord"
+        />
 
         <div
           v-if="genericStateFields.length && (!expandedLeftSection || expandedLeftSection === 'key-fields')"
@@ -847,6 +863,7 @@
       :create-and-link="allowCreateFromLinkDrawer"
       :title="linkRecordDrawerTitle"
       :context="linkRecordDrawerContext"
+      :preselected-ids="linkRecordPreselectedIds"
       @close="closeLinkRecordDrawer"
       @linked="handleLinkRecordDrawerLinked"
       @create="handleLinkRecordDrawerCreate"
@@ -943,7 +960,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount, inject, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount, onActivated, onDeactivated, inject, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -957,7 +974,7 @@ import { getSalesOrderActivityMessage } from '@/components/activity/adapters/sal
 import { getInvoiceActivityMessage } from '@/components/activity/adapters/invoiceActivityUiAdapter';
 import { getPaymentActivityMessage } from '@/components/activity/adapters/paymentActivityUiAdapter';
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
-import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
+import { getModuleRecordCrudPathBase, getModuleRecordRoutePathBase } from '@/utils/moduleRecordApiPath';
 import {
   extractIdFromFormValue,
   getOrgContactCoordinatedPatches,
@@ -1070,6 +1087,7 @@ import SalesConvertLeadModal from '@/components/people/SalesConvertLeadModal.vue
 import { getParticipationFields } from '@/platform/fields/peopleFieldModel';
 import { hasPeoplePermission } from '@/platform/permissions/peoplePermissionHelper';
 import { PEOPLE_PERMISSIONS } from '@/platform/permissions/peoplePermissions';
+import EventRecordExecutionPanel from '@/components/events/EventRecordExecutionPanel.vue';
 import 'emoji-picker-element';
 
 const { t, te } = useI18n();
@@ -1285,6 +1303,25 @@ const isEventsModule = computed(() => moduleKeyLower.value === 'events');
 const isEventAppointment = computed(
   () => isEventsModule.value && !!record.value?.appointment?.isAppointment
 );
+const eventExecutionRouteId = computed(() => {
+  const r = record.value;
+  if (!r) return '';
+  return String(r.eventId || r._id || '').trim();
+});
+const eventLifecycleStatus = computed(() => {
+  const status = String(record.value?.status || '').trim();
+  return status || null;
+});
+const eventStatusBadgeVariantMap = {
+  planned: 'info',
+  scheduled: 'info',
+  completed: 'success',
+  cancelled: 'danger',
+  canceled: 'danger',
+  'in-progress': 'warning',
+  'in progress': 'warning'
+};
+const eventExecutionPanelRef = ref(null);
 /** REST + in-app paths for record CRUD (helpdesk cases use /helpdesk/cases, not /cases). */
 const recordCrudPathBase = computed(() =>
   getModuleRecordCrudPathBase(props.moduleKey, {
@@ -1435,7 +1472,32 @@ const linkRecordDrawerContext = computed(() => {
   if (!id) return {};
   const key = (props.moduleKey || '').toLowerCase();
   if (key === 'people') return { personId: id };
+  if (key === 'organizations') return { sourceRecordId: id, organizationId: id };
   return { sourceRecordId: id };
+});
+
+const linkRecordPreselectedIds = computed(() => {
+  const key = (props.moduleKey || '').toLowerCase();
+  if (key === 'people') {
+    const rawOrg = record.value?.organization;
+    if (!rawOrg) return [];
+    const orgId = typeof rawOrg === 'object' ? rawOrg._id : rawOrg;
+    return orgId ? [String(orgId)] : [];
+  }
+  if (key === 'organizations') {
+    const rels = Array.isArray(genericRecordContext.value?.relationships)
+      ? genericRecordContext.value.relationships
+      : [];
+    const peopleRel = rels.find(
+      (rel) => String(rel?.relationshipKey || '').toLowerCase() === 'people_organizations'
+    );
+    const records = Array.isArray(peopleRel?.records) ? peopleRel.records : [];
+    return records
+      .map((r) => r.recordId ?? r.id ?? r._id)
+      .filter(Boolean)
+      .map((id) => String(id));
+  }
+  return [];
 });
 
 const openLinkRecordDrawer = () => {
@@ -1464,15 +1526,27 @@ const canLinkRecords = computed(() => authStore.can(props.moduleKey, 'edit'));
 const { context: genericRecordContext, load: loadGenericRecordContext, canUnlink: genericRecordContextCanUnlink } = useRecordContext(
   () => recordContextAppKey.value,
   () => props.moduleKey,
-  () => record.value?._id
+  () => props.recordId || record.value?._id || ''
 );
-watch(record, (r) => {
-  if (r?._id) loadGenericRecordContext();
-}, { immediate: true });
-
 watch(() => props.recordId, () => {
   expandedLeftSection.value = '';
-});
+  if (props.recordId) loadGenericRecordContext(true);
+}, { immediate: true });
+
+function resolveRelatedGroupLabel(relationshipKey, rel, isOrganizationModule) {
+  const fromContext = rel?.ui?.label || rel?.label;
+  if (fromContext && String(fromContext).toLowerCase() !== String(relationshipKey || '').toLowerCase()) {
+    return fromContext;
+  }
+  const key = String(relationshipKey || '').toLowerCase();
+  if (isOrganizationModule && key === 'people_organizations') {
+    return t('organizations.relatedContactsWidgetRelatedContacts');
+  }
+  if (!isOrganizationModule && key === 'people_organizations') {
+    return t('organizations.relatedOrganizationWidgetRelatedOrganizations');
+  }
+  return fromContext || relationshipKey || 'Related';
+}
 
 const genericRelatedGroupsFromContext = computed(() => {
   const isOrganizationModule = moduleKeyLower.value === 'organizations';
@@ -1506,25 +1580,29 @@ const genericRelatedGroupsFromContext = computed(() => {
     })
     .map((rel) => {
       const key = rel.relationshipKey || rel.label || 'related';
-      const label = rel.ui?.label || rel.label || key;
+      const label = resolveRelatedGroupLabel(key, rel, isOrganizationModule);
       const direction = (rel.direction || 'SOURCE').toUpperCase();
       const items = (rel.records || [])
-        .filter((r) => !r?._isBroken)
         .map((r) => {
         const id = r.recordId ?? r.id ?? r._id;
         const moduleKey = (r.moduleKey || '').toLowerCase();
         const appKey = (r.appKey || 'SALES').toUpperCase();
         const path = moduleKey && id
-          ? `${getModuleRecordCrudPathBase(moduleKey, { appKey: r.appKey })}/${id}`
+          ? `${getModuleRecordRoutePathBase(moduleKey, { appKey: r.appKey })}/${id}`
           : null;
         const personName = [r.first_name || r.firstName || '', r.last_name || r.lastName || '']
           .filter(Boolean)
           .join(' ')
           .trim();
+        const fallbackTitle = id ? String(id).slice(0, 8) : 'Untitled';
         return {
           id: id?.toString?.() ?? String(id),
-          title: r.label || r.name || r.title || personName || (id ? String(id).slice(0, 8) : 'Untitled'),
-          meta: r.secondaryText || r.status || '',
+          title: r._isBroken
+            ? (r.label || r.email || personName || fallbackTitle)
+            : (r.label || r.name || r.title || personName || r.email || fallbackTitle),
+          meta: r._isBroken
+            ? (r.secondaryText || 'Related record unavailable')
+            : (r.secondaryText || r.status || r.email || ''),
           onOpen: path ? () => openTab(path, { background: false, insertAdjacent: true }) : undefined,
           relationshipKey: key,
           appKey,
@@ -1537,6 +1615,48 @@ const genericRelatedGroupsFromContext = computed(() => {
     })
     .filter(Boolean)
     : [];
+
+  if (moduleKeyLower.value === 'people') {
+    const rawOrg = record.value?.organization;
+    if (rawOrg != null && rawOrg !== '') {
+      const orgId = typeof rawOrg === 'object'
+        ? String(rawOrg._id ?? rawOrg.id ?? '')
+        : String(rawOrg);
+      if (orgId) {
+        const relKey = 'people_organizations';
+        const existingGroup = groups.find((g) => g.key === relKey);
+        const alreadyPresent = existingGroup?.items?.some((item) => item.id === orgId);
+        if (!alreadyPresent) {
+          const orgTitle = typeof rawOrg === 'object'
+            ? String(rawOrg.name || rawOrg.label || '')
+            : '';
+          const path = `${getModuleRecordRoutePathBase('organizations', { appKey: 'SALES' })}/${orgId}`;
+          const orgItem = {
+            id: orgId,
+            title: orgTitle || orgId.slice(0, 8),
+            meta: typeof rawOrg === 'object' ? String(rawOrg.industry || rawOrg.status || '') : '',
+            onOpen: () => openTab(path, { background: false, insertAdjacent: true }),
+            relationshipKey: relKey,
+            appKey: 'SALES',
+            moduleKey: 'organizations',
+            direction: 'SOURCE'
+          };
+          if (existingGroup) {
+            existingGroup.items = [...(existingGroup.items || []), orgItem];
+          } else {
+            const relDef = (moduleDefinition.value?.relationships || []).find(
+              (r) => String(r.relationshipKey || '').toLowerCase() === relKey
+            );
+            groups.push({
+              key: relKey,
+              label: relDef?.label || relDef?.name || 'Related Organization',
+              items: [orgItem]
+            });
+          }
+        }
+      }
+    }
+  }
 
   return groups;
 });
@@ -2052,7 +2172,7 @@ const genericAdapter = computed(() => {
     openRelatedItem: (item) => {
       const path = item?.recordPath
         || (item?.moduleKey && item?.id
-          ? `${getModuleRecordCrudPathBase(item.moduleKey, { appKey: item.appKey })}/${item.id}`
+          ? `${getModuleRecordRoutePathBase(item.moduleKey, { appKey: item.appKey })}/${item.id}`
           : null);
       if (path) openTab(path, { background: false, insertAdjacent: true });
     },
@@ -2728,6 +2848,19 @@ const activityEventsForDisplay = computed(() => {
   }
   return [activeThreadRootComment.value, ...threadReplyEvents.value];
 });
+
+watch(
+  () => [record.value, route.query.focus],
+  () => {
+    if (!record.value || route.query.focus !== 'execution') return;
+    nextTick(() => {
+      const panel = eventExecutionPanelRef.value;
+      const el = panel?.panelRootRef || panel?.$el;
+      el?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    });
+  },
+  { flush: 'post' }
+);
 
 async function cancelAppointment() {
   if (!record.value?._id) return;
@@ -3893,6 +4026,31 @@ watch(
 );
 
 watch(() => [props.moduleKey, props.recordId], () => fetchRecord(), { immediate: false });
+
+const attachRecordGlobalListeners = () => {
+  window.addEventListener('scroll', updateTagPopoverPosition, true);
+  window.addEventListener('resize', updateTagPopoverPosition);
+  window.addEventListener('scroll', updateCommentReactionPickerPosition, true);
+  window.addEventListener('scroll', updateCommentReactionTooltipPosition, true);
+  window.addEventListener('resize', updateCommentReactionPickerPosition);
+  window.addEventListener('resize', updateCommentReactionTooltipPosition);
+  document.addEventListener('mousedown', handleTagPopoverMousedown);
+  document.addEventListener('click', handleTagPopoverOutsideClick);
+  document.addEventListener('mousedown', handleCommentReactionPickerOutsideClick);
+};
+
+const detachRecordGlobalListeners = () => {
+  window.removeEventListener('scroll', updateTagPopoverPosition, true);
+  window.removeEventListener('resize', updateTagPopoverPosition);
+  window.removeEventListener('scroll', updateCommentReactionPickerPosition, true);
+  window.removeEventListener('scroll', updateCommentReactionTooltipPosition, true);
+  window.removeEventListener('resize', updateCommentReactionPickerPosition);
+  window.removeEventListener('resize', updateCommentReactionTooltipPosition);
+  document.removeEventListener('mousedown', handleTagPopoverMousedown);
+  document.removeEventListener('click', handleTagPopoverOutsideClick);
+  document.removeEventListener('mousedown', handleCommentReactionPickerOutsideClick);
+};
+
 onMounted(() => {
   fetchRecord();
   syncEmojiPickerTheme();
@@ -3903,28 +4061,22 @@ onMounted(() => {
       attributeFilter: ['class']
     });
   }
-  window.addEventListener('scroll', updateTagPopoverPosition, true);
-  window.addEventListener('resize', updateTagPopoverPosition);
-  window.addEventListener('scroll', updateCommentReactionPickerPosition, true);
-  window.addEventListener('scroll', updateCommentReactionTooltipPosition, true);
-  window.addEventListener('resize', updateCommentReactionPickerPosition);
-  window.addEventListener('resize', updateCommentReactionTooltipPosition);
-  document.addEventListener('mousedown', handleTagPopoverMousedown);
-  document.addEventListener('click', handleTagPopoverOutsideClick);
-  document.addEventListener('mousedown', handleCommentReactionPickerOutsideClick);
 });
+
+onActivated(() => {
+  attachRecordGlobalListeners();
+});
+
+onDeactivated(() => {
+  detachRecordGlobalListeners();
+  closeCommentReactionPicker();
+  cleanupCommentReactionTooltip();
+});
+
 onBeforeUnmount(() => {
   resetStickyTitle();
   detachStickyTitle();
-  window.removeEventListener('scroll', updateTagPopoverPosition, true);
-  window.removeEventListener('resize', updateTagPopoverPosition);
-  window.removeEventListener('scroll', updateCommentReactionPickerPosition, true);
-  window.removeEventListener('scroll', updateCommentReactionTooltipPosition, true);
-  window.removeEventListener('resize', updateCommentReactionPickerPosition);
-  window.removeEventListener('resize', updateCommentReactionTooltipPosition);
-  document.removeEventListener('mousedown', handleTagPopoverMousedown);
-  document.removeEventListener('click', handleTagPopoverOutsideClick);
-  document.removeEventListener('mousedown', handleCommentReactionPickerOutsideClick);
+  detachRecordGlobalListeners();
   closeCommentReactionPicker();
   cleanupCommentReactionTooltip();
   if (emojiThemeObserver) {

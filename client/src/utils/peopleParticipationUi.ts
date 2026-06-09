@@ -41,6 +41,30 @@ export function isPeopleListAppContext(context: string): boolean {
   return PEOPLE_PARTICIPATION_APP_KEYS.includes(upper as PeopleParticipationAppKey);
 }
 
+export const PEOPLE_PARTICIPATION_LIST_VISIBLE_MAX = 2;
+
+function normalizePeopleListParticipationColumnKey(columnKey: string): string {
+  const k = String(columnKey ?? '').trim();
+  return k === 'type' ? 'sales_type' : k;
+}
+
+/** All People: sales_type column reads as cross-app participation, not SALES-only type. */
+export function resolvePeopleListParticipationColumnLabel(
+  columnKey: string,
+  peopleContext: string,
+  resolveDefaultLabel: () => string,
+  t: (key: string, params?: Record<string, unknown>) => string,
+  te: (key: string) => boolean
+): string {
+  if (normalizePeopleListParticipationColumnKey(columnKey) !== 'sales_type') {
+    return resolveDefaultLabel();
+  }
+  if ((peopleContext || 'ALL').toUpperCase() === 'ALL' && te('people.listColumnParticipation')) {
+    return t('people.listColumnParticipation');
+  }
+  return resolveDefaultLabel();
+}
+
 /**
  * Normalized keys (lowercase, hyphens stripped) for the SALES participation role field
  * in module definitions / filters. Matches ModulesAndFields.normalizeFieldKey.

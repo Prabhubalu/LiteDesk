@@ -18,7 +18,9 @@ const Role = require('../models/Role');
 const Organization = require('../models/Organization');
 const UserDirectory = require('../models/UserDirectory');
 const bcrypt = require('bcrypt');
-const crypto = require('crypto');
+const userInviteService = require('../services/userInviteService');
+const { hashToken } = require('../utils/userAuthTokens');
+const { generateSecurePassword } = require('../services/provisioning/utils/passwordGenerator');
 const mongoose = require('mongoose');
 const { APP_KEYS } = require('../constants/appKeys');
 const {
@@ -119,7 +121,9 @@ exports.getUsers = async (req, res) => {
             search = '',
             sortBy = 'createdAt',
             sortOrder = 'desc',
-            roleId = ''
+            roleId = '',
+            status = '',
+            adminOnly = ''
         } = req.query;
 
         const organization = await Organization.findById(req.user.organizationId)
@@ -128,6 +132,7 @@ exports.getUsers = async (req, res) => {
 
         // Build query
         const query = buildUserScopeQuery(req, organization);
+        const andConditions = [];
 
         // Add roleId filter if provided
         if (roleId) {
@@ -136,12 +141,41 @@ exports.getUsers = async (req, res) => {
 
         // Add search filter
         if (search) {
-            query.$or = [
-                { firstName: { $regex: search, $options: 'i' } },
-                { lastName: { $regex: search, $options: 'i' } },
-                { email: { $regex: search, $options: 'i' } },
-                { username: { $regex: search, $options: 'i' } }
-            ];
+            andConditions.push({
+                $or: [
+                    { firstName: { $regex: search, $options: 'i' } },
+                    { lastName: { $regex: search, $options: 'i' } },
+                    { email: { $regex: search, $options: 'i' } },
+                    { username: { $regex: search, $options: 'i' } }
+                ]
+            });
+        }
+
+        if (status) {
+            if (status === 'active') {
+                andConditions.push({
+                    $or: [
+                        { status: 'active' },
+                        { status: { $exists: false } },
+                        { status: null }
+                    ]
+                });
+            } else {
+                andConditions.push({ status });
+            }
+        }
+
+        if (adminOnly === 'true') {
+            andConditions.push({
+                $or: [
+                    { isOwner: true },
+                    { role: { $in: ['admin', 'owner'] } }
+                ]
+            });
+        }
+
+        if (andConditions.length > 0) {
+            query.$and = andConditions;
         }
 
         // Build sort object
@@ -776,8 +810,17 @@ exports.inviteUser = async (req, res) => {
         }
 
         // Use provided password or generate temporary password
-        const tempPassword = password || crypto.randomBytes(8).toString('hex');
+        const wantsEmail = sendEmail === true;
+        const manualPassword = password ? String(password) : null;
+        const inviteCredentials = userInviteService.buildInviteCredentials({
+            wantsEmail,
+            manualPassword
+        });
+        const tempPassword = inviteCredentials.password;
         const hashedPassword = await bcrypt.hash(tempPassword, 10);
+        const inviteTokenHash = inviteCredentials.inviteTokenRaw
+            ? hashToken(inviteCredentials.inviteTokenRaw)
+            : null;
 
         // Create username from email
         const username = email.split('@')[0];
@@ -802,10 +845,16 @@ exports.inviteUser = async (req, res) => {
             roleId: roleId || null, // May be null for unified format
             role: legacyRole || null, // Store legacy role for backward compatibility
             isOwner: isOwner,
-            status: 'active',
+            status: inviteCredentials.initialStatus,
             userType: finalUserType,
             appAccess: finalAppAccess,
-            allowedApps: finalAppAccess.map(a => a.appKey) // Legacy field for backward compatibility
+            allowedApps: finalAppAccess.map(a => a.appKey), // Legacy field for backward compatibility
+            invitedAt: new Date(),
+            invitedBy: req.user._id,
+            mustChangePassword: inviteCredentials.mustChangePassword,
+            emailVerifiedAt: null,
+            inviteTokenHash,
+            inviteTokenExpiresAt: inviteCredentials.inviteTokenExpiresAt
         });
 
         await UserDirectory.findOneAndUpdate(
@@ -815,7 +864,9 @@ exports.inviteUser = async (req, res) => {
                     organizationId: organization._id,
                     tenantDatabaseName: organization.database?.name || null,
                     tenantUserId: newUser._id,
-                    status: 'active'
+                    status: 'active',
+                    inviteTokenHash: inviteTokenHash || null,
+                    emailVerificationTokenHash: null
                 }
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
@@ -835,8 +886,35 @@ exports.inviteUser = async (req, res) => {
             await Role.findByIdAndUpdate(roleId, { $inc: { userCount: 1 } });
         }
 
-        // TODO: Send invitation email with temporary password if sendEmail is true
-        // For now, we'll return it in the response (ONLY FOR DEVELOPMENT)
+        let emailSent = false;
+        let emailError = null;
+        let verificationEmailSent = false;
+
+        if (wantsEmail && inviteCredentials.inviteTokenRaw) {
+            const inviteEmailResult = await userInviteService.sendInviteForUser({
+                user: newUser,
+                organization,
+                inviter: req.user,
+                inviteToken: inviteCredentials.inviteTokenRaw
+            });
+            emailSent = inviteEmailResult.sent === true;
+            if (!emailSent) {
+                emailError = inviteEmailResult.reason || 'Failed to send invitation email';
+            }
+        } else {
+            const verificationResult = await userInviteService.issueVerificationForUser({
+                user: newUser,
+                organization,
+                forceNewToken: true
+            });
+            await newUser.save();
+            verificationEmailSent = verificationResult.sent === true;
+            if (verificationResult.sent) {
+                await userInviteService.syncDirectoryEntry(newUser.email, {
+                    emailVerificationTokenHash: newUser.emailVerificationTokenHash
+                });
+            }
+        }
 
         // Populate the role details
         if (newUser.roleId) {
@@ -847,22 +925,38 @@ exports.inviteUser = async (req, res) => {
             }
         }
 
+        const responseData = {
+            _id: newUser._id,
+            username: newUser.username,
+            email: newUser.email,
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            userType: newUser.userType,
+            appAccess: newUser.appAccess,
+            role: newUser.role,
+            roleId: newUser.roleId,
+            status: newUser.status,
+            emailVerifiedAt: newUser.emailVerifiedAt,
+            emailSent,
+            verificationEmailSent
+        };
+
+        if (emailError) {
+            responseData.emailError = emailError;
+        }
+
+        if (!wantsEmail && !manualPassword && process.env.NODE_ENV === 'development') {
+            responseData.tempPassword = tempPassword;
+        }
+
         res.status(201).json({
             success: true,
-            data: {
-                _id: newUser._id,
-                username: newUser.username,
-                email: newUser.email,
-                firstName: newUser.firstName,
-                lastName: newUser.lastName,
-                userType: newUser.userType,
-                appAccess: newUser.appAccess,
-                role: newUser.role,
-                roleId: newUser.roleId,
-                status: newUser.status,
-                tempPassword: tempPassword // Always return for now since email not implemented
-            },
-            message: 'User invited successfully'
+            data: responseData,
+            message: emailSent
+                ? 'User invited successfully. Invitation email sent.'
+                : wantsEmail
+                    ? 'User invited successfully, but the invitation email could not be sent.'
+                    : 'User invited successfully'
         });
 
     } catch (error) {
@@ -1376,20 +1470,31 @@ exports.resetUserPassword = async (req, res) => {
         }
 
         // Generate temporary password
-        const tempPassword = crypto.randomBytes(8).toString('hex');
+        const tempPassword = generateSecurePassword(16);
         const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
         user.password = hashedPassword;
+        user.mustChangePassword = true;
         await user.save();
 
-        // TODO: Send password reset email
-        // For now, we'll return it in the response (ONLY FOR DEVELOPMENT)
+        const verificationResult = await userInviteService.issueVerificationForUser({
+            user,
+            organization,
+            forceNewToken: true
+        });
+        await user.save();
+        if (verificationResult.sent) {
+            await userInviteService.syncDirectoryEntry(user.email, {
+                emailVerificationTokenHash: user.emailVerificationTokenHash
+            });
+        }
 
         res.json({
             success: true,
             message: 'Password reset successfully',
             data: {
-                tempPassword: process.env.NODE_ENV === 'development' ? tempPassword : undefined
+                tempPassword: process.env.NODE_ENV === 'development' ? tempPassword : undefined,
+                verificationEmailSent: verificationResult.sent === true
             }
         });
 

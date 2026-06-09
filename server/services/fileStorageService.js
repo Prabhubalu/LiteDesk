@@ -213,6 +213,50 @@ async function getObjectBuffer(storagePath) {
   return fs.promises.readFile(localPath);
 }
 
+function assertDeletableProductUploadKey(key, organizationId) {
+  assertOrgAccessToKey(key, organizationId);
+  const safeOrg = safeOrgId(organizationId);
+  if (!key.startsWith(`${UPLOADS_KEY_PREFIX}${safeOrg}/`)) {
+    const err = new Error('Forbidden');
+    err.statusCode = 403;
+    throw err;
+  }
+}
+
+async function deleteStoredUpload({ storagePath, organizationId }) {
+  const parsed = parseStoragePath(storagePath);
+  if (!parsed) {
+    const err = new Error('Invalid storage path');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  if (parsed.driver === 'oci') {
+    assertDeletableProductUploadKey(parsed.key, organizationId);
+    await objectStorage.deleteObject({ key: parsed.key });
+    return { deleted: true, driver: 'oci' };
+  }
+
+  const localPath = resolveLegacyLocalPath(storagePath);
+  if (!localPath) {
+    return { deleted: false, driver: 'local', reason: 'not_found' };
+  }
+  await fs.promises.unlink(localPath);
+  return { deleted: true, driver: 'local' };
+}
+
+function resolveStoragePathFromClientRef(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  if (raw.startsWith(OCI_PREFIX)) return raw;
+  const parsed = parseStoragePath(raw);
+  if (parsed?.driver === 'oci') return `${OCI_PREFIX}${parsed.key}`;
+  if (parsed?.driver === 'local' && parsed.relativePath) {
+    return `/api/uploads/${parsed.relativePath}`;
+  }
+  return null;
+}
+
 module.exports = {
   OCI_PREFIX,
   UPLOADS_KEY_PREFIX,
@@ -230,5 +274,7 @@ module.exports = {
   uploadBuffer,
   uploadMulterFile,
   persistMulterUpload,
-  getObjectBuffer
+  getObjectBuffer,
+  deleteStoredUpload,
+  resolveStoragePathFromClientRef
 };

@@ -32,7 +32,7 @@ const DETAIL_EXCLUDED = new Set([
   'createdBy', 'createdAt', 'modifiedBy', 'updatedAt',
   'deletedAt', 'deletedBy', 'deletionReason',
   'organizationId', // Infrastructure: tenant context, never show on record page
-  'activityLogs', 'subtasks', 'stageHistory'
+  'activityLogs', 'subtasks', 'stageHistory', 'playbookState'
 ]);
 
 /** Shown in Item catalog section stack, not the Details field list. */

@@ -19,8 +19,8 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ application?.name || t('settings.settingsAppDetailTitleFallback') }}</h2>
-            <p v-if="application?.description" class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ application.description }}</p>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ appDisplayName }}</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ appDescription }}</p>
           </div>
         </div>
         <!-- Status Badge -->
@@ -86,7 +86,7 @@
           <button
             v-for="config in salesConfigOptions"
             :key="config.id"
-            @click="navigateToSalesConfig(config.id)"
+            @click="navigateToSalesConfig(config)"
             class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md hover:border-indigo-500 dark:hover:border-indigo-400 transition-all cursor-pointer group text-left"
           >
             <div class="flex items-start gap-4">
@@ -331,6 +331,38 @@ const appKey = computed(() => {
   return route.query.appKey || route.params.appKey;
 });
 
+const APP_NAME_KEYS = {
+  SALES: 'settings.appsNameSales',
+  HELPDESK: 'settings.appsNameHelpdesk',
+  PROJECTS: 'settings.appsNameProjects',
+  PORTAL: 'settings.appsNamePortal',
+  AUDIT: 'settings.appsNameAudit',
+  LMS: 'settings.appsNameLms',
+  INVENTORY: 'settings.appsNameInventory',
+};
+
+const APP_DESC_KEYS = {
+  SALES: 'settings.appsDescSales',
+  HELPDESK: 'settings.appsDescHelpdesk',
+  PROJECTS: 'settings.appsDescProjects',
+  PORTAL: 'settings.appsDescPortal',
+  AUDIT: 'settings.appsDescAudit',
+  LMS: 'settings.appsDescLms',
+  INVENTORY: 'settings.appsDescInventory',
+};
+
+const appDisplayName = computed(() => {
+  const key = String(appKey.value || '').toUpperCase();
+  const nameKey = APP_NAME_KEYS[key];
+  return nameKey ? t(nameKey) : application.value?.name || t('settings.settingsAppDetailTitleFallback');
+});
+
+const appDescription = computed(() => {
+  const key = String(appKey.value || '').toUpperCase();
+  const descKey = APP_DESC_KEYS[key];
+  return descKey ? t(descKey) : application.value?.description || '';
+});
+
 const isSalesApp = computed(() => {
   return appKey.value === 'SALES';
 });
@@ -355,8 +387,8 @@ const SchemaIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'cur
   h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' })
 ]);
 
-const AutomationIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
-  h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M13 10V3L4 14h7v7l9-11h-7z' })
+const AssignmentRulesIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
+  h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' })
 ]);
 
 const PlaybookIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
@@ -368,9 +400,6 @@ const SettingsIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'c
   h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z' })
 ]);
 
-const PermissionsIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
-  h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' })
-]);
 const AnalyticsIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
   h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M13 17h8m0 0V9m0 8l-8-8-4 4-6-6' })
 ]);
@@ -406,22 +435,20 @@ const salesConfigOptions = [
     icon: PipelineIcon
   },
   {
-    id: 'automations',
-    nameKey: 'settings.settingsAppDetailAutomations',
-    descriptionKey: 'settings.settingsAppDetailAutomationsDesc',
-    icon: AutomationIcon
-  },
-  {
     id: 'playbooks',
     nameKey: 'settings.appsPlaybooks',
     descriptionKey: 'settings.appsPlaybooksDesc',
     icon: PlaybookIcon
   },
   {
-    id: 'permissions',
-    nameKey: 'settings.settingsAppDetailPermissions',
-    descriptionKey: 'settings.settingsAppDetailPermissionsDesc',
-    icon: PermissionsIcon
+    id: 'assignment-rules',
+    nameKey: 'settings.appsSalesAssignment',
+    descriptionKey: 'settings.appsSalesAssignmentDesc',
+    icon: AssignmentRulesIcon,
+    navigateTo: {
+      path: '/settings',
+      query: { tab: 'automation', automationView: 'assignment-rules', assignmentApp: 'SALES', assignmentModule: 'deals' }
+    }
   }
 ];
 
@@ -460,13 +487,17 @@ const sharedCoreEntities = [
   }
 ];
 
-const navigateToSalesConfig = (configId) => {
+const navigateToSalesConfig = (config) => {
+  if (config?.navigateTo) {
+    router.push(config.navigateTo);
+    return;
+  }
   router.push({
     path: '/settings',
     query: {
       tab: 'applications',
       app: 'sales',
-      config: configId
+      config: config.id
     }
   });
 };

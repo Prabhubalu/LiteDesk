@@ -112,7 +112,7 @@ const DEAL_FIELD_LABELS = {
     nextFollowUpDate: 'next follow-up date'
 };
 
-const DEAL_SYSTEM_FIELDS = ['id', '_id', '__v', 'organizationId', 'createdAt', 'updatedAt', 'modifiedBy'];
+const DEAL_SYSTEM_FIELDS = ['id', '_id', '__v', 'organizationId', 'createdAt', 'updatedAt', 'modifiedBy', 'playbookState'];
 
 const normalizeDealComparableValue = (value) => {
     if (value === undefined || value === null) return null;
@@ -315,6 +315,16 @@ exports.createDeal = async (req, res) => {
         }
 
         await syncRoleBasedToLegacy(newDeal);
+
+        try {
+            const { executePlaybookForDeal } = require('../services/playbookExecutionService');
+            await executePlaybookForDeal(newDeal, {
+                actorId: req.user._id,
+                organizationId: req.user.organizationId
+            });
+        } catch (playbookErr) {
+            console.error('[dealController] playbook on create failed:', playbookErr?.message || playbookErr);
+        }
         
         if (
             newDeal.isModified('dealPeople') ||
@@ -323,7 +333,8 @@ exports.createDeal = async (req, res) => {
             newDeal.isModified('accountId') ||
             newDeal.isModified('derivedStatus') ||
             newDeal.isModified('status') ||
-            newDeal.isModified('probability')
+            newDeal.isModified('probability') ||
+            newDeal.isModified('playbookState')
         ) {
             await newDeal.save();
         }
@@ -487,6 +498,13 @@ exports.getDeals = async (req, res) => {
                 .skip(skip);
         
         const total = await Deal.countDocuments(query);
+
+        try {
+            const { refreshPlaybookStatesForDealList } = require('../services/playbookExecutionService');
+            await refreshPlaybookStatesForDealList(deals, req.user.organizationId);
+        } catch (playbookErr) {
+            console.error('[dealController] playbook refresh on list failed:', playbookErr?.message || playbookErr);
+        }
         
         // Get statistics
         const stats = await Deal.aggregate([
@@ -571,6 +589,16 @@ exports.getDealById = async (req, res) => {
                 success: false,
                 message: 'Deal not found or access denied.' 
             });
+        }
+
+        try {
+            const { refreshPlaybookStateFromActivities } = require('../services/playbookExecutionService');
+            const playbookChanged = await refreshPlaybookStateFromActivities(deal);
+            if (playbookChanged) {
+                await deal.save();
+            }
+        } catch (playbookErr) {
+            console.error('[dealController] playbook refresh on get failed:', playbookErr?.message || playbookErr);
         }
         
         const { flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
@@ -868,6 +896,31 @@ exports.updateDeal = async (req, res) => {
         }
 
         await syncRoleBasedToLegacy(updatedDeal);
+
+        const stageChangedViaUpdate = Object.prototype.hasOwnProperty.call(req.body || {}, 'stage')
+            && existingDealForChanges.stage !== updatedDeal.stage;
+        if (stageChangedViaUpdate) {
+            try {
+                const { executePlaybookForDeal } = require('../services/playbookExecutionService');
+                await executePlaybookForDeal(updatedDeal, {
+                    actorId: req.user._id,
+                    organizationId: req.user.organizationId
+                });
+            } catch (playbookErr) {
+                console.error('[dealController] playbook on update failed:', playbookErr?.message || playbookErr);
+            }
+        } else if (updatedDeal.playbookState?.actions?.length) {
+            try {
+                const { reconcilePlaybookForDeal } = require('../services/playbookExecutionService');
+                await reconcilePlaybookForDeal(updatedDeal, {
+                    actorId: req.user._id,
+                    organizationId: req.user.organizationId
+                });
+            } catch (playbookErr) {
+                console.error('[dealController] playbook reconcile on update failed:', playbookErr?.message || playbookErr);
+            }
+        }
+
         await updatedDeal.save();
 
         try {
@@ -1525,6 +1578,30 @@ exports.getPipelineSummary = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error fetching pipeline summary',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Get playbook runtime analytics for active deals
+// @route   GET /api/deals/playbooks/analytics
+// @access  Private
+exports.getPlaybookAnalytics = async (req, res) => {
+    try {
+        const { getPlaybookAnalytics } = require('../services/playbookAnalyticsService');
+        const data = await getPlaybookAnalytics(req.user.organizationId, {
+            pipelineKey: req.query.pipeline || req.query.pipelineKey
+        });
+
+        res.status(200).json({
+            success: true,
+            data
+        });
+    } catch (error) {
+        console.error('Get playbook analytics error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching playbook analytics',
             error: error.message
         });
     }
@@ -2335,6 +2412,19 @@ exports.updateStage = async (req, res) => {
         if (configExists && computedDerivedStatus && deal.status !== computedDerivedStatus) {
             deal.status = computedDerivedStatus;
         }
+
+        if (stageChanged) {
+            try {
+                const { executePlaybookForDeal } = require('../services/playbookExecutionService');
+                await executePlaybookForDeal(deal, {
+                    actorId: req.user._id,
+                    organizationId: req.user.organizationId
+                });
+            } catch (playbookErr) {
+                console.error('[dealController] playbook on stage change failed:', playbookErr?.message || playbookErr);
+            }
+        }
+
         await deal.save();
 
         // Renormalize stageOrder so the moved deal is at index `order` and the rest are 0,1,2,...
@@ -2387,6 +2477,67 @@ exports.updateStage = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error updating stage',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Update playbook action completion status
+// @route   PATCH /api/deals/:id/playbook-state/actions/:actionKey
+// @access  Private
+exports.updatePlaybookActionStatus = async (req, res) => {
+    try {
+        const { actionKey } = req.params;
+        const status = req.body?.status === 'completed' ? 'completed' : 'pending';
+
+        const deal = await Deal.findOne({
+            _id: req.params.id,
+            organizationId: req.user.organizationId,
+            deletedAt: null
+        });
+
+        if (!deal) {
+            return res.status(404).json({
+                success: false,
+                message: 'Deal not found or access denied'
+            });
+        }
+
+        const { updatePlaybookActionStatus } = require('../services/playbookExecutionService');
+        const updatedAction = await updatePlaybookActionStatus(
+            deal,
+            actionKey,
+            status,
+            req.user.organizationId
+        );
+
+        if (!updatedAction) {
+            return res.status(404).json({
+                success: false,
+                message: 'Playbook action not found on this deal'
+            });
+        }
+
+        deal.modifiedBy = req.user._id;
+        await deal.save();
+
+        const { flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
+        return res.status(200).json({
+            success: true,
+            data: flattenCustomFieldsForResponse(deal)
+        });
+    } catch (error) {
+        if (error?.code === 'PLAYBOOK_ACTION_BLOCKED') {
+            return res.status(409).json({
+                success: false,
+                code: error.code,
+                message: 'This playbook action is blocked until prior steps are completed.'
+            });
+        }
+        console.error('Update playbook action status error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error updating playbook action status',
             error: error.message
         });
     }
@@ -2604,8 +2755,10 @@ exports.createDealComment = async (req, res) => {
     processCommentMentions({
       organizationId: String(req.user.organizationId),
       appKey: req.appKey || 'SALES',
-      taskId: String(req.params.id),
-      taskTitle: deal.name || 'Deal',
+      moduleKey: 'deals',
+      entityId: String(req.params.id),
+      entityType: 'Deal',
+      recordTitle: deal.name || 'Deal',
       commentId: String(comment._id),
       commentContent: content.trim(),
       authorId: String(req.user._id),
@@ -2679,8 +2832,10 @@ exports.updateDealComment = async (req, res) => {
     processCommentMentions({
       organizationId: String(req.user.organizationId),
       appKey: req.appKey || 'SALES',
-      taskId: String(dealId),
-      taskTitle: deal.name || 'Deal',
+      moduleKey: 'deals',
+      entityId: String(dealId),
+      entityType: 'Deal',
+      recordTitle: deal.name || 'Deal',
       commentId: String(comment._id),
       commentContent: comment.content,
       authorId: String(req.user._id),

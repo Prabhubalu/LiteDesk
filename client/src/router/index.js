@@ -24,6 +24,18 @@ const routes = [
     component: () => import('@/views/Login.vue')
   },
   {
+    path: '/accept-invite',
+    name: 'accept-invite',
+    component: () => import('@/views/AcceptInvitePage.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/verify-email',
+    name: 'verify-email',
+    component: () => import('@/views/VerifyEmailPage.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
     path: '/pay/checkout/razorpay',
     name: 'public-razorpay-checkout',
     component: () => import('@/views/payments/PublicRazorpayCheckoutPage.vue'),
@@ -406,9 +418,7 @@ const routes = [
     component: () => import('@/pages/ModuleRecordPage.vue'),
     meta: { requiresAuth: true, requiresPermission: { module: 'events', action: 'view' }, moduleKey: 'events' }
   },
-  // Invariant:
-  // /events/:id/execute is the ONLY route allowed to mutate execution state.
-  // EventDetail (/events/:id) must never perform execution actions.
+  // Audit workflow execution surface. Generic events redirect to /events/:id (inline panel).
   {
     path: '/events/:id/execute',
     name: 'event-execution',

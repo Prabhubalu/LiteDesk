@@ -7,8 +7,85 @@
 const mongoose = require('mongoose');
 const Notification = require('../models/Notification');
 const Group = require('../models/Group');
+const Deal = require('../models/Deal');
+const Task = require('../models/Task');
+const Event = require('../models/Event');
+const People = require('../models/People');
+const Organization = require('../models/Organization');
 // Same format as CommentContent.vue and CommentInput.vue
 const MENTION_REGEX = /@\[([^\]]+)\]\((user|group):([^)]+)\)/g;
+
+const MODULE_KEY_TO_ENTITY_TYPE = {
+  deals: 'Deal',
+  tasks: 'Task',
+  events: 'Event',
+  people: 'People',
+  organizations: 'Organization',
+  items: 'Item',
+  quotes: 'Quote',
+  sales_orders: 'SalesOrder',
+  cases: 'Case'
+};
+
+const ENTITY_BODY_LABEL = {
+  Task: 'Task',
+  Deal: 'Deal',
+  Event: 'Event',
+  People: 'Contact',
+  Organization: 'Organization',
+  Item: 'Item',
+  Quote: 'Quote',
+  SalesOrder: 'Sales order',
+  Case: 'Case'
+};
+
+function moduleKeyToEntityType(moduleKey) {
+  const key = String(moduleKey || '').toLowerCase();
+  if (MODULE_KEY_TO_ENTITY_TYPE[key]) return MODULE_KEY_TO_ENTITY_TYPE[key];
+  return key
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+}
+
+async function resolveRecordTitle(organizationId, moduleKey, recordId) {
+  if (!organizationId || !moduleKey || !recordId || !mongoose.Types.ObjectId.isValid(recordId)) {
+    return null;
+  }
+  const orgId = new mongoose.Types.ObjectId(organizationId);
+  const id = new mongoose.Types.ObjectId(recordId);
+  const key = String(moduleKey || '').toLowerCase();
+
+  try {
+    if (key === 'deals') {
+      const doc = await Deal.findOne({ _id: id, organizationId: orgId }).select('name').lean();
+      return doc?.name || null;
+    }
+    if (key === 'tasks') {
+      const doc = await Task.findOne({ _id: id, organizationId: orgId }).select('title').lean();
+      return doc?.title || null;
+    }
+    if (key === 'events') {
+      const doc = await Event.findOne({ _id: id, organizationId: orgId }).select('eventName').lean();
+      return doc?.eventName || null;
+    }
+    if (key === 'people') {
+      const doc = await People.findOne({ _id: id, organizationId: orgId }).select('first_name last_name email').lean();
+      if (!doc) return null;
+      const name = [doc.first_name, doc.last_name].filter(Boolean).join(' ').trim();
+      return name || doc.email || null;
+    }
+    if (key === 'organizations') {
+      const doc = await Organization.findOne({ _id: id, organizationId: orgId }).select('name').lean();
+      return doc?.name || null;
+    }
+    return null;
+  } catch (err) {
+    console.error('[commentMentionNotifications] resolveRecordTitle error:', err.message);
+    return null;
+  }
+}
 
 /**
  * Parse comment content for @[Name](type:id) mentions.
@@ -79,8 +156,12 @@ function contentToPlainSnippet(content) {
  * @param {Object} opts
  * @param {string} opts.organizationId - Organization ID
  * @param {string} opts.appKey - App key (e.g. SALES)
- * @param {string} opts.taskId - Task ID
- * @param {string} opts.taskTitle - Task title for notification body
+ * @param {string} [opts.entityId] - Record ID (alias: taskId)
+ * @param {string} [opts.entityType] - Entity type for deep-linking (e.g. Deal, Event)
+ * @param {string} [opts.moduleKey] - Module key used to resolve entity type/title
+ * @param {string} [opts.recordTitle] - Record title for notification body (alias: taskTitle)
+ * @param {string} [opts.taskId] - Legacy alias for entityId
+ * @param {string} [opts.taskTitle] - Legacy alias for recordTitle
  * @param {string} opts.commentId - Comment ID (for reference)
  * @param {string} opts.commentContent - Raw comment content (with mentions)
  * @param {string} opts.authorName - Display name of comment author
@@ -91,6 +172,9 @@ async function notifyMentionedUsers(opts) {
   const {
     organizationId,
     appKey,
+    entityId,
+    entityType,
+    recordTitle,
     taskId,
     taskTitle,
     commentId,
@@ -100,17 +184,26 @@ async function notifyMentionedUsers(opts) {
     authorId
   } = opts;
 
+  const resolvedEntityId = entityId || taskId;
+  const resolvedEntityType = entityType || 'Task';
+  const resolvedRecordTitle = recordTitle || taskTitle || null;
+
   const recipientIds = Array.from(mentionedUserIds).filter((id) => String(id) !== String(authorId));
-  if (recipientIds.length === 0) return;
+  if (recipientIds.length === 0 || !resolvedEntityId) return;
 
   const snippet = contentToPlainSnippet(commentContent);
   const snippetDisplay = snippet.length > 120 ? `${snippet.slice(0, 117)}...` : snippet;
   const title = `${authorName} mentioned you in a comment`;
-  const body = taskTitle
-    ? `Task: ${taskTitle}\n"${snippetDisplay}"`
+  const entityLabel = ENTITY_BODY_LABEL[resolvedEntityType] || resolvedEntityType;
+  const body = resolvedRecordTitle
+    ? `${entityLabel}: ${resolvedRecordTitle}\n"${snippetDisplay}"`
     : `"${snippetDisplay}"`;
 
-  const entity = { type: 'Task', id: new mongoose.Types.ObjectId(taskId) };
+  const entity = {
+    type: resolvedEntityType,
+    id: new mongoose.Types.ObjectId(resolvedEntityId),
+    ...(resolvedRecordTitle ? { title: resolvedRecordTitle } : {})
+  };
   const orgId = new mongoose.Types.ObjectId(organizationId);
   const normalizedAppKey = (appKey || 'SALES').toUpperCase();
   if (!['SALES', 'AUDIT', 'PORTAL'].includes(normalizedAppKey)) return;
@@ -120,7 +213,7 @@ async function notifyMentionedUsers(opts) {
     organizationId: orgId,
     appKey: normalizedAppKey,
     sourceAppKey: normalizedAppKey,
-    eventType: 'TASK_COMMENT_MENTION',
+    eventType: 'RECORD_COMMENT_MENTION',
     title,
     body,
     entity,
@@ -166,8 +259,12 @@ async function notifyMentionedUsers(opts) {
  * @param {Object} opts
  * @param {string} opts.organizationId - Organization ID
  * @param {string} [opts.appKey] - App key (default SALES)
- * @param {string} opts.taskId - Task ID
- * @param {string} opts.taskTitle - Task title
+ * @param {string} [opts.entityId] - Record ID (alias: taskId)
+ * @param {string} [opts.entityType] - Entity type for deep-linking
+ * @param {string} [opts.moduleKey] - Module key used to resolve entity type/title
+ * @param {string} [opts.recordTitle] - Record title (alias: taskTitle)
+ * @param {string} [opts.taskId] - Legacy alias for entityId
+ * @param {string} [opts.taskTitle] - Legacy alias for recordTitle
  * @param {string} opts.commentId - Comment ID
  * @param {string} opts.commentContent - Comment content with @[Name](type:id)
  * @param {string} opts.authorId - Comment author user ID
@@ -185,11 +282,19 @@ async function processCommentMentions(opts) {
     );
     if (mentionedUserIds.size === 0) return;
 
+    const entityId = opts.entityId || opts.taskId;
+    const entityType = opts.entityType || (opts.moduleKey ? moduleKeyToEntityType(opts.moduleKey) : 'Task');
+    let recordTitle = opts.recordTitle || opts.taskTitle || null;
+    if (!recordTitle && opts.moduleKey && entityId) {
+      recordTitle = await resolveRecordTitle(opts.organizationId, opts.moduleKey, entityId);
+    }
+
     await notifyMentionedUsers({
       organizationId: opts.organizationId,
       appKey: opts.appKey || 'SALES',
-      taskId: opts.taskId,
-      taskTitle: opts.taskTitle,
+      entityId,
+      entityType,
+      recordTitle,
       commentId: opts.commentId,
       commentContent: opts.commentContent,
       authorName: opts.authorName,
@@ -205,6 +310,8 @@ module.exports = {
   parseMentionedIds,
   resolveRecipientUserIds,
   contentToPlainSnippet,
+  moduleKeyToEntityType,
+  resolveRecordTitle,
   notifyMentionedUsers,
   processCommentMentions
 };

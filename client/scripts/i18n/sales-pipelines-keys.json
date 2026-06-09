@@ -67,6 +67,14 @@
     "message": "Set as default",
     "description": "Set default pipeline button"
   },
+  "salesPipeSetDefaultTitle": {
+    "message": "Set as default pipeline",
+    "description": "Star button tooltip to set default pipeline"
+  },
+  "salesPipeColProbability": {
+    "message": "Prob.",
+    "description": "Short column header for stage probability"
+  },
   "salesPipeStagesTitle": {
     "message": "Stages",
     "description": "Stages section heading"

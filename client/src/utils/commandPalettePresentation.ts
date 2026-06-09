@@ -19,6 +19,7 @@ const COMMAND_ID_MODULE: Record<string, string> = {
   'nav-inbox': 'inbox',
   'nav-people': 'people',
   'nav-platform': 'platform',
+  'nav-settings': 'settings',
   'create-person': 'people',
   'create-organization': 'organizations',
   'create-task': 'tasks',
@@ -49,6 +50,7 @@ const COMMAND_ROUTE_HINT: Record<string, string> = {
   'nav-inbox': '/inbox',
   'nav-people': '/people',
   'nav-platform': '/platform/home',
+  'nav-settings': '/settings',
   'schedule-audit': '/audit/schedule',
   'plan-audit-beat': '/audit/schedule'
 };

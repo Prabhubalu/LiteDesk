@@ -1110,5 +1110,53 @@
   "sysFieldAppointmentMeetingLink": {
     "message": "Meeting link",
     "description": "Events list appointment field label"
+  },
+  "recordLifecycleStatus": {
+    "message": "Lifecycle",
+    "description": "Event record page: system status badge label"
+  },
+  "recordConfirmCompleteEvent": {
+    "message": "Mark this event as completed?",
+    "description": "Confirm generic event completion from record page"
+  },
+  "recordEventCompleted": {
+    "message": "Event marked as completed.",
+    "description": "Toast after completing event from record page"
+  },
+  "recordEventCompleteFailed": {
+    "message": "Could not complete this event.",
+    "description": "Toast when event completion fails from record page"
+  },
+  "recordExecutionBadge": {
+    "message": "Execution",
+    "description": "Inline execution card badge on event record page"
+  },
+  "recordExecutionAuditBadge": {
+    "message": "Audit workflow",
+    "description": "Audit execution card badge on event record page"
+  },
+  "recordExecutionAuditHint": {
+    "message": "Check in, complete forms, and submit from the audit workspace.",
+    "description": "Audit execution card helper text"
+  },
+  "recordExecutionContinueAudit": {
+    "message": "Continue audit",
+    "description": "Link to audit execution surface from event record"
+  },
+  "recordExecutionCancelledHint": {
+    "message": "This event was cancelled and is no longer active.",
+    "description": "Cancelled event terminal state on record page"
+  },
+  "recordConfirmCancelEvent": {
+    "message": "Cancel this event? This cannot be undone.",
+    "description": "Confirm generic event cancellation from record page"
+  },
+  "recordExecutionInProgressLabel": {
+    "message": "In progress",
+    "description": "Execution badge when event has started but status is still Planned"
+  },
+  "recordExecutionPlannedLabel": {
+    "message": "Planned",
+    "description": "Execution badge fallback before status is set"
   }
 }
