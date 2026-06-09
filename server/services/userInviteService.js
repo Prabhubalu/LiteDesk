@@ -111,17 +111,28 @@ async function sendInviteForUser({
   const result = await sendInviteEmail({
     to: user.email,
     invitee: user,
+    organizationId: organization?._id,
     organizationName: organization?.name,
     inviterName: inviterDisplayName(inviter),
     inviteToken,
     welcomeNote
   });
 
+  if (!result.success) {
+    console.warn('[userInviteService] Invite email not sent:', {
+      email: user.email,
+      organizationId: organization?._id,
+      reason: result.reason || result.error,
+      channel: result.channel || null
+    });
+  }
+
   return {
     sent: result.success === true,
     skipped: result.skipped === true,
     reason: result.reason || result.error || null,
-    messageId: result.messageId || null
+    messageId: result.messageId || null,
+    channel: result.channel || null
   };
 }
 
@@ -141,15 +152,26 @@ async function issueVerificationForUser({
   const result = await sendVerificationEmail({
     to: user.email,
     user,
+    organizationId: organization?._id,
     organizationName: organization?.name,
     verificationToken: rawToken
   });
+
+  if (!result.success) {
+    console.warn('[userInviteService] Verification email not sent:', {
+      email: user.email,
+      organizationId: organization?._id,
+      reason: result.reason || result.error,
+      channel: result.channel || null
+    });
+  }
 
   return {
     sent: result.success === true,
     skipped: result.skipped === true,
     reason: result.reason || result.error || null,
-    messageId: result.messageId || null
+    messageId: result.messageId || null,
+    channel: result.channel || null
   };
 }
 

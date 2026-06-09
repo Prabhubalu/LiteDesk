@@ -1,8 +1,63 @@
 'use strict';
 
 const emailProviderGateway = require('../platform/communication/providers/emailProviderGateway');
+const emailService = require('./emailService');
 const { escapeHtml, buildEmailShell } = require('../utils/appointmentEmailUtils');
 const { buildInviteUrl, buildVerifyEmailUrl } = require('../utils/userAuthTokens');
+
+/**
+ * Send account lifecycle mail (invite, verification).
+ * Tries system channel first, then tenant CRM integration, then global CRM env.
+ */
+async function sendAccountEmail({ organizationId, to, subject, text, html, replyTo }) {
+  const payload = { to, subject, text, html, replyTo };
+
+  if (emailProviderGateway.isSystemConfigured()) {
+    const systemResult = await emailProviderGateway.sendSystemEmail(payload);
+    if (systemResult.success) {
+      return { ...systemResult, channel: 'system' };
+    }
+    console.warn('[userAccountEmailService] System email send failed:', systemResult.error);
+  }
+
+  if (organizationId && (await emailService.isConfiguredForOrganization(organizationId))) {
+    const orgResult = await emailProviderGateway.sendCrmEmail({
+      ...payload,
+      organizationId
+    });
+    if (orgResult.success) {
+      return { ...orgResult, channel: 'crm-tenant' };
+    }
+    console.warn('[userAccountEmailService] Tenant CRM email send failed:', orgResult.error);
+    return {
+      success: false,
+      skipped: false,
+      reason: orgResult.error || 'tenant_email_send_failed',
+      channel: 'crm-tenant'
+    };
+  }
+
+  if (emailService.isConfigured()) {
+    const envResult = await emailProviderGateway.sendCrmEmail(payload);
+    if (envResult.success) {
+      return { ...envResult, channel: 'crm-env' };
+    }
+    console.warn('[userAccountEmailService] Env CRM email send failed:', envResult.error);
+    return {
+      success: false,
+      skipped: false,
+      reason: envResult.error || 'crm_email_send_failed',
+      channel: 'crm-env'
+    };
+  }
+
+  return {
+    success: false,
+    skipped: true,
+    reason: 'email_not_configured',
+    error: 'No email provider configured. Set SYSTEM_EMAIL_* or configure Email Provider in Settings > Integrations.'
+  };
+}
 
 function displayName(user) {
   const full = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
@@ -108,11 +163,15 @@ function buildVerificationEmailContent({ user, organizationName, verifyUrl }) {
   };
 }
 
-async function sendInviteEmail({ to, invitee, organizationName, inviterName, inviteToken, welcomeNote = null }) {
-  if (!emailProviderGateway.isSystemConfigured()) {
-    return { success: false, skipped: true, reason: 'system_email_not_configured' };
-  }
-
+async function sendInviteEmail({
+  to,
+  invitee,
+  organizationId,
+  organizationName,
+  inviterName,
+  inviteToken,
+  welcomeNote = null
+}) {
   const inviteUrl = buildInviteUrl(inviteToken);
   const content = buildInviteEmailContent({
     invitee,
@@ -122,7 +181,8 @@ async function sendInviteEmail({ to, invitee, organizationName, inviterName, inv
     welcomeNote
   });
 
-  return emailProviderGateway.sendSystemEmail({
+  return sendAccountEmail({
+    organizationId,
     to,
     subject: content.subject,
     text: content.text,
@@ -131,11 +191,13 @@ async function sendInviteEmail({ to, invitee, organizationName, inviterName, inv
   });
 }
 
-async function sendVerificationEmail({ to, user, organizationName, verificationToken }) {
-  if (!emailProviderGateway.isSystemConfigured()) {
-    return { success: false, skipped: true, reason: 'system_email_not_configured' };
-  }
-
+async function sendVerificationEmail({
+  to,
+  user,
+  organizationId,
+  organizationName,
+  verificationToken
+}) {
   const verifyUrl = buildVerifyEmailUrl(verificationToken);
   const content = buildVerificationEmailContent({
     user,
@@ -143,7 +205,8 @@ async function sendVerificationEmail({ to, user, organizationName, verificationT
     verifyUrl
   });
 
-  return emailProviderGateway.sendSystemEmail({
+  return sendAccountEmail({
+    organizationId,
     to,
     subject: content.subject,
     text: content.text,
@@ -153,6 +216,7 @@ async function sendVerificationEmail({ to, user, organizationName, verificationT
 }
 
 module.exports = {
+  sendAccountEmail,
   sendInviteEmail,
   sendVerificationEmail,
   buildInviteEmailContent,

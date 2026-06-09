@@ -812,7 +812,7 @@ exports.inviteUser = async (req, res) => {
         }
 
         // Use provided password or generate temporary password
-        const wantsEmail = sendEmail === true;
+        const wantsEmail = sendEmail === true || sendEmail === 'true' || sendEmail === 1;
         const manualPassword = password ? String(password) : null;
         const inviteCredentials = userInviteService.buildInviteCredentials({
             wantsEmail,
@@ -923,6 +923,19 @@ exports.inviteUser = async (req, res) => {
             emailSent = inviteEmailResult.sent === true;
             if (!emailSent) {
                 emailError = inviteEmailResult.reason || 'Failed to send invitation email';
+                console.warn('[inviteUser] Invitation email failed:', {
+                    invitedEmail: newUser.email,
+                    organizationId: organization._id,
+                    reason: emailError,
+                    channel: inviteEmailResult.channel || null
+                });
+            } else {
+                console.log('[inviteUser] Invitation email sent:', {
+                    invitedEmail: newUser.email,
+                    organizationId: organization._id,
+                    channel: inviteEmailResult.channel || null,
+                    messageId: inviteEmailResult.messageId || null
+                });
             }
         } else {
             const verificationResult = await userInviteService.issueVerificationForUser({
