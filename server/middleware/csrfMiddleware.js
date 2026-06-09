@@ -17,7 +17,7 @@ const csrfProtection = (req, res, next) => {
     }
     
     // Skip CSRF for public endpoints (login, register)
-    const publicPaths = ['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/auth/invite/accept', '/api/auth/verify-email/confirm'];
+    const publicPaths = ['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/auth/reset-password', '/api/auth/invite/accept', '/api/auth/verify-email/confirm'];
     if (publicPaths.some(path => req.path.startsWith(path))) {
         return next();
     }

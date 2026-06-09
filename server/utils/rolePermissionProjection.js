@@ -484,6 +484,8 @@ function sanitizeUserResponsePayload(userDocOrPlain) {
   delete o.inviteTokenExpiresAt;
   delete o.emailVerificationTokenHash;
   delete o.emailVerificationExpiresAt;
+  delete o.passwordResetTokenHash;
+  delete o.passwordResetExpiresAt;
   return o;
 }
 

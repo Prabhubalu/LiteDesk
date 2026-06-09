@@ -3,7 +3,7 @@
 const emailProviderGateway = require('../platform/communication/providers/emailProviderGateway');
 const emailService = require('./emailService');
 const { escapeHtml, buildEmailShell } = require('../utils/appointmentEmailUtils');
-const { buildInviteUrl, buildVerifyEmailUrl } = require('../utils/userAuthTokens');
+const { buildInviteUrl, buildVerifyEmailUrl, buildResetPasswordUrl } = require('../utils/userAuthTokens');
 
 /**
  * Send account lifecycle mail (invite, verification).
@@ -191,6 +191,73 @@ async function sendInviteEmail({
   });
 }
 
+function buildPasswordResetEmailContent({ user, organizationName, resetUrl }) {
+  const name = displayName(user);
+  const org = organizationName || 'Arivu';
+  const subject = `Reset your ${org} password`;
+
+  const bodyHtml = `
+    <p style="margin:0 0 16px;font-size:15px;color:#3f3f46;line-height:1.6;">
+      Hi ${escapeHtml(name)}, we received a request to reset your password for your Arivu account.
+    </p>
+    <p style="margin:0 0 24px;font-size:14px;color:#52525b;line-height:1.6;">
+      Click the button below to choose a new password. This link expires in 1 hour.
+    </p>
+    <p style="margin:0 0 24px;">
+      <a href="${escapeHtml(resetUrl)}" style="display:inline-block;background:#4f46e5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:8px;">
+        Reset password
+      </a>
+    </p>
+    <p style="margin:0;font-size:13px;color:#71717a;line-height:1.5;">
+      If you did not request a password reset, you can ignore this email. Your password will not change.
+    </p>`;
+
+  const text = [
+    `Hi ${name},`,
+    '',
+    'We received a request to reset your password for your Arivu account.',
+    '',
+    'Choose a new password using this link (expires in 1 hour):',
+    resetUrl,
+    '',
+    'If you did not request a password reset, you can ignore this email.'
+  ].join('\n');
+
+  return {
+    subject,
+    text,
+    html: buildEmailShell({
+      title: 'Reset your password',
+      bodyHtml,
+      accentColor: '#4f46e5'
+    })
+  };
+}
+
+async function sendPasswordResetEmail({
+  to,
+  user,
+  organizationId,
+  organizationName,
+  resetToken
+}) {
+  const resetUrl = buildResetPasswordUrl(resetToken);
+  const content = buildPasswordResetEmailContent({
+    user,
+    organizationName,
+    resetUrl
+  });
+
+  return sendAccountEmail({
+    organizationId,
+    to,
+    subject: content.subject,
+    text: content.text,
+    html: content.html,
+    replyTo: process.env.SYSTEM_EMAIL_REPLY_TO || process.env.EMAIL_REPLY_TO
+  });
+}
+
 async function sendVerificationEmail({
   to,
   user,
@@ -219,6 +286,8 @@ module.exports = {
   sendAccountEmail,
   sendInviteEmail,
   sendVerificationEmail,
+  sendPasswordResetEmail,
   buildInviteEmailContent,
-  buildVerificationEmailContent
+  buildVerificationEmailContent,
+  buildPasswordResetEmailContent
 };

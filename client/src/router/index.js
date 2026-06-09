@@ -36,6 +36,18 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: () => import('@/views/ForgotPasswordPage.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: () => import('@/views/ResetPasswordPage.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
     path: '/pay/checkout/razorpay',
     name: 'public-razorpay-checkout',
     component: () => import('@/views/payments/PublicRazorpayCheckoutPage.vue'),

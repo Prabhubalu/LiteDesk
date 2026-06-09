@@ -583,12 +583,24 @@ exports.inviteUser = async (req, res) => {
             organizationId: req.user.organizationId 
         });
 
+        let reinviteUser = null;
         if (existingUser) {
-            return res.status(409).json({ 
-                success: false,
-                message: 'User with this email already exists in your organization' 
-            });
+            if (existingUser.status === 'active') {
+                return res.status(409).json({
+                    success: false,
+                    message: 'User with this email already exists in your organization'
+                });
+            }
+            if (!['inactive', 'invited'].includes(existingUser.status)) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'User with this email already exists in your organization'
+                });
+            }
+            reinviteUser = existingUser;
         }
+
+        const wasInactive = reinviteUser?.status === 'inactive';
 
         let finalAppAccess = [];
         let finalUserType = userType || 'INTERNAL';
@@ -843,34 +855,68 @@ exports.inviteUser = async (req, res) => {
             ? String(suggestedTask).trim().slice(0, 200)
             : '';
 
-        const newUser = await ScopedUser.create({
-            organizationId: req.user.organizationId,
-            username,
-            email: email.toLowerCase(),
-            password: hashedPassword,
-            firstName: finalFirstName,
-            lastName: finalLastName,
-            phoneNumber,
-            roleId: roleId || null, // May be null for unified format
-            role: legacyRole || null, // Store legacy role for backward compatibility
-            isOwner: isOwner,
-            status: inviteCredentials.initialStatus,
-            userType: finalUserType,
-            appAccess: finalAppAccess,
-            allowedApps: finalAppAccess.map(a => a.appKey), // Legacy field for backward compatibility
-            invitedAt: new Date(),
-            invitedBy: req.user._id,
-            mustChangePassword: inviteCredentials.mustChangePassword,
-            emailVerifiedAt: null,
-            inviteTokenHash,
-            inviteTokenExpiresAt: inviteCredentials.inviteTokenExpiresAt,
-            onboarding: (finalWelcomeNote || finalSuggestedTask)
-                ? {
-                    welcomeNote: finalWelcomeNote || undefined,
-                    suggestedTask: finalSuggestedTask || undefined
-                }
-                : undefined
-        });
+        const onboardingPayload = (finalWelcomeNote || finalSuggestedTask)
+            ? {
+                welcomeNote: finalWelcomeNote || undefined,
+                suggestedTask: finalSuggestedTask || undefined
+            }
+            : undefined;
+
+        let newUser;
+        if (reinviteUser) {
+            reinviteUser.username = reinviteUser.username || username;
+            reinviteUser.password = hashedPassword;
+            reinviteUser.firstName = finalFirstName;
+            reinviteUser.lastName = finalLastName;
+            if (phoneNumber !== undefined) {
+                reinviteUser.phoneNumber = phoneNumber;
+            }
+            reinviteUser.roleId = roleId || null;
+            reinviteUser.role = legacyRole || null;
+            reinviteUser.isOwner = isOwner;
+            reinviteUser.status = inviteCredentials.initialStatus;
+            reinviteUser.userType = finalUserType;
+            reinviteUser.appAccess = finalAppAccess;
+            reinviteUser.allowedApps = finalAppAccess.map((a) => a.appKey);
+            reinviteUser.invitedAt = new Date();
+            reinviteUser.invitedBy = req.user._id;
+            reinviteUser.mustChangePassword = inviteCredentials.mustChangePassword;
+            reinviteUser.emailVerifiedAt = null;
+            reinviteUser.inviteAcceptedAt = null;
+            reinviteUser.inviteTokenHash = inviteTokenHash;
+            reinviteUser.inviteTokenExpiresAt = inviteCredentials.inviteTokenExpiresAt;
+            reinviteUser.emailVerificationTokenHash = null;
+            reinviteUser.emailVerificationExpiresAt = null;
+            reinviteUser.emailVerificationSentAt = null;
+            if (onboardingPayload) {
+                reinviteUser.onboarding = onboardingPayload;
+            }
+            newUser = reinviteUser;
+        } else {
+            newUser = await ScopedUser.create({
+                organizationId: req.user.organizationId,
+                username,
+                email: email.toLowerCase(),
+                password: hashedPassword,
+                firstName: finalFirstName,
+                lastName: finalLastName,
+                phoneNumber,
+                roleId: roleId || null, // May be null for unified format
+                role: legacyRole || null, // Store legacy role for backward compatibility
+                isOwner: isOwner,
+                status: inviteCredentials.initialStatus,
+                userType: finalUserType,
+                appAccess: finalAppAccess,
+                allowedApps: finalAppAccess.map(a => a.appKey), // Legacy field for backward compatibility
+                invitedAt: new Date(),
+                invitedBy: req.user._id,
+                mustChangePassword: inviteCredentials.mustChangePassword,
+                emailVerifiedAt: null,
+                inviteTokenHash,
+                inviteTokenExpiresAt: inviteCredentials.inviteTokenExpiresAt,
+                onboarding: onboardingPayload
+            });
+        }
 
         await UserDirectory.findOneAndUpdate(
             { email: newUser.email.toLowerCase() },
@@ -898,12 +944,14 @@ exports.inviteUser = async (req, res) => {
         }
         
         // Increment seat usage for each app (atomic operations)
-        for (const appAccessEntry of finalAppAccess) {
-            await incrementSeat(organization._id, appAccessEntry.appKey);
+        if (!reinviteUser || wasInactive) {
+            for (const appAccessEntry of finalAppAccess) {
+                await incrementSeat(organization._id, appAccessEntry.appKey);
+            }
         }
         
         // Increment the role's user count (if roleId provided)
-        if (roleId) {
+        if (roleId && (!reinviteUser || wasInactive)) {
             const Role = require('../models/Role');
             await Role.findByIdAndUpdate(roleId, { $inc: { userCount: 1 } });
         }
@@ -1307,6 +1355,12 @@ exports.deleteUser = async (req, res) => {
         // Soft delete: just deactivate the user
         user.status = 'inactive';
         await user.save();
+
+        await userInviteService.syncDirectoryEntry(user.email, {
+            inviteTokenHash: null,
+            emailVerificationTokenHash: null,
+            status: 'inactive'
+        });
 
         // For hard delete, use: await user.remove();
 

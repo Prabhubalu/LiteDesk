@@ -40,6 +40,12 @@ const UserDirectorySchema = new mongoose.Schema(
             default: null,
             index: true,
             sparse: true
+        },
+        passwordResetTokenHash: {
+            type: String,
+            default: null,
+            index: true,
+            sparse: true
         }
     },
     { timestamps: true }
