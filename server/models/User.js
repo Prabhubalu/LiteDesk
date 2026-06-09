@@ -265,6 +265,11 @@ const UserSchema = new mongoose.Schema({
     },
     emailVerificationSentAt: Date,
     emailVerificationExpiresAt: Date,
+    passwordResetTokenHash: {
+        type: String,
+        default: null
+    },
+    passwordResetExpiresAt: Date,
     mustChangePassword: {
         type: Boolean,
         default: false

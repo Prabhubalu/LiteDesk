@@ -5,6 +5,11 @@ const {
     acceptInvite,
     confirmEmailVerification
 } = require('../controllers/userInviteAuthController');
+const {
+    forgotPassword,
+    validateResetPassword,
+    resetPassword
+} = require('../controllers/passwordResetAuthController');
 const { 
     authLimiter, 
     registrationLimiter, 
@@ -31,8 +36,8 @@ router.post('/invite/accept', passwordResetLimiter, acceptInvite);
 router.get('/verify-email/confirm', passwordResetLimiter, confirmEmailVerification);
 router.post('/verify-email/confirm', passwordResetLimiter, confirmEmailVerification);
 
-// Note: Add password reset route with passwordResetLimiter when implemented
-// router.post('/forgot-password', passwordResetLimiter, forgotPassword);
-// router.post('/reset-password', passwordResetLimiter, resetPassword);
+router.post('/forgot-password', passwordResetLimiter, forgotPassword);
+router.get('/reset-password/validate', passwordResetLimiter, validateResetPassword);
+router.post('/reset-password', passwordResetLimiter, resetPassword);
 
 module.exports = router;

@@ -4,6 +4,7 @@ const crypto = require('crypto');
 
 const INVITE_TTL_MS = 72 * 60 * 60 * 1000;
 const VERIFICATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 
 function generateRawToken() {
   return crypto.randomBytes(32).toString('base64url');
@@ -21,6 +22,10 @@ function getVerificationExpiry() {
   return new Date(Date.now() + VERIFICATION_TTL_MS);
 }
 
+function getPasswordResetExpiry() {
+  return new Date(Date.now() + PASSWORD_RESET_TTL_MS);
+}
+
 function buildClientUrl(path) {
   const base = String(process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '');
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;
@@ -34,6 +39,10 @@ function buildVerifyEmailUrl(rawToken) {
   return buildClientUrl(`/verify-email?token=${encodeURIComponent(rawToken)}`);
 }
 
+function buildResetPasswordUrl(rawToken) {
+  return buildClientUrl(`/reset-password?token=${encodeURIComponent(rawToken)}`);
+}
+
 function isTokenExpired(expiresAt) {
   if (!expiresAt) return true;
   return new Date(expiresAt).getTime() <= Date.now();
@@ -42,12 +51,15 @@ function isTokenExpired(expiresAt) {
 module.exports = {
   INVITE_TTL_MS,
   VERIFICATION_TTL_MS,
+  PASSWORD_RESET_TTL_MS,
   generateRawToken,
   hashToken,
   getInviteExpiry,
   getVerificationExpiry,
+  getPasswordResetExpiry,
   buildInviteUrl,
   buildVerifyEmailUrl,
+  buildResetPasswordUrl,
   buildClientUrl,
   isTokenExpired
 };

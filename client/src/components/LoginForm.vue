@@ -109,7 +109,7 @@ onMounted(() => {
           <div class="flex items-center justify-between">
             <label for="password" class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('auth.passwordLabel') }}</label>
             <div class="text-sm">
-              <a href="#" class="font-semibold text-indigo-400 hover:text-indigo-300">{{ t('auth.forgotPassword') }}</a>
+              <router-link to="/forgot-password" class="font-semibold text-indigo-400 hover:text-indigo-300">{{ t('auth.forgotPassword') }}</router-link>
             </div>
           </div>
           <div class="mt-2">

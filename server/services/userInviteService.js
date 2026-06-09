@@ -68,6 +68,71 @@ async function resolveUserByDirectoryToken(tokenHash, field) {
   return { user, organization, directoryEntry, ScopedUser };
 }
 
+async function repairDirectoryInviteToken(user, organization, tokenHash) {
+  if (!user?.email || !tokenHash) return;
+  await syncDirectoryEntry(user.email, {
+    organizationId: organization._id,
+    tenantDatabaseName: organization.database?.name || null,
+    tenantUserId: user._id,
+    inviteTokenHash: tokenHash,
+    emailVerificationTokenHash: null,
+    status: 'active'
+  });
+}
+
+async function resolveUserByInviteToken(tokenHash) {
+  const directoryResolved = await resolveUserByDirectoryToken(tokenHash, 'inviteTokenHash');
+  if (directoryResolved) {
+    return directoryResolved;
+  }
+
+  const staleDirectories = await UserDirectory.find({
+    inviteTokenHash: null,
+    tenantUserId: { $ne: null }
+  }).limit(200);
+
+  for (const entry of staleDirectories) {
+    const organization = await Organization.findById(entry.organizationId);
+    if (!organization) continue;
+
+    const ScopedUser = await getScopedUserModel(organization);
+    const user = await ScopedUser.findById(entry.tenantUserId);
+    if (!user || user.status !== 'invited' || user.inviteTokenHash !== tokenHash) {
+      continue;
+    }
+
+    await repairDirectoryInviteToken(user, organization, tokenHash);
+    return { user, organization, directoryEntry: entry, ScopedUser };
+  }
+
+  const masterMatches = await User.find({
+    inviteTokenHash: tokenHash,
+    status: 'invited'
+  }).limit(10);
+
+  for (const masterUser of masterMatches) {
+    const organization = await Organization.findById(masterUser.organizationId);
+    if (!organization) continue;
+
+    const ScopedUser = await getScopedUserModel(organization);
+    const user = ScopedUser === User
+      ? masterUser
+      : await ScopedUser.findOne({
+        _id: masterUser._id,
+        organizationId: masterUser.organizationId,
+        inviteTokenHash: tokenHash,
+        status: 'invited'
+      });
+
+    if (!user) continue;
+
+    await repairDirectoryInviteToken(user, organization, tokenHash);
+    return { user, organization, directoryEntry: null, ScopedUser };
+  }
+
+  return null;
+}
+
 async function clearInviteTokens(user, email) {
   user.inviteTokenHash = null;
   user.inviteTokenExpiresAt = null;
@@ -181,7 +246,7 @@ async function validateInviteToken(rawToken) {
   }
 
   const tokenHash = hashToken(rawToken);
-  const resolved = await resolveUserByDirectoryToken(tokenHash, 'inviteTokenHash');
+  const resolved = await resolveUserByInviteToken(tokenHash);
   if (!resolved) {
     return { valid: false, code: 'TOKEN_INVALID' };
   }
@@ -216,7 +281,7 @@ async function acceptInvite({ rawToken, password, profile = {} }) {
   }
 
   const tokenHash = hashToken(rawToken);
-  const resolved = await resolveUserByDirectoryToken(tokenHash, 'inviteTokenHash');
+  const resolved = await resolveUserByInviteToken(tokenHash);
   if (!resolved) {
     return { ok: false, code: 'TOKEN_INVALID', message: 'Invitation link is invalid' };
   }
