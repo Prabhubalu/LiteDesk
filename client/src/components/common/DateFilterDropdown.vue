@@ -41,6 +41,7 @@
             :class="optionsClass"
             :style="teleportOptions ? teleportMenuStyle : { zIndex: '9999' }"
             @vue:before-mount="syncTeleportPosition"
+            @mousedown.stop
           >
           <!-- Option list -->
           <button

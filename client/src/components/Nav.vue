@@ -417,6 +417,7 @@ const logoSrc = computed(() => {
 
     <!-- Desktop Sidebar Container with expand/collapse functionality -->
     <div 
+      data-onboarding-target="sidebar"
       @mouseenter="handleMouseEnter"
       @mouseleave="handleMouseLeave"
       :class="[

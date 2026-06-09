@@ -176,10 +176,10 @@ exports.getItems = async (req, res) => {
             query.tags = req.query.tag;
         }
         
-        const searchTerm = req.query.search ? String(req.query.search).trim() : '';
-        if (searchTerm) {
-            const { buildSearchOrConditions } = require('../utils/searchRelevance');
-            query.$or = buildSearchOrConditions(searchTerm, ['item_name', 'item_code', 'item_id', 'description']);
+        const { buildSearchOrConditions, resolveListSearchTerm, fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+        const directSearchTerm = req.query.search ? String(req.query.search).trim() : '';
+        if (directSearchTerm) {
+            query.$or = buildSearchOrConditions(directSearchTerm, ['item_name', 'item_code', 'item_id', 'description']);
         }
         
         // Low stock filter (deprecated — API compat only; hidden from catalog UI)
@@ -215,7 +215,7 @@ exports.getItems = async (req, res) => {
             { path: 'createdBy', select: 'firstName lastName email' },
             { path: 'modifiedBy', select: 'firstName lastName email' }
         ];
-        const { fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+        const searchTerm = resolveListSearchTerm(req.query, 'items');
         const items = isSearchActive(searchTerm)
             ? await fetchRankedSearchPage(Item, {
                 matchQuery: query,

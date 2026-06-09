@@ -263,7 +263,9 @@ export const useAuthStore = defineStore('auth', {
                 allowedApps: allowedApps,
                 emailVerifiedAt: userData.emailVerifiedAt || null,
                 requiresEmailVerification: userData.requiresEmailVerification === true,
-                mustChangePassword: userData.mustChangePassword === true
+                mustChangePassword: userData.mustChangePassword === true,
+                onboarding: userData.onboarding || null,
+                firstName: userData.firstName,
             };
             
             if (userData.organization) {
@@ -289,6 +291,20 @@ export const useAuthStore = defineStore('auth', {
                 ...this.user,
                 emailVerifiedAt: new Date().toISOString(),
                 requiresEmailVerification: false
+            };
+            localStorage.setItem('user', JSON.stringify(this.user));
+        },
+
+        updateOnboardingSummary(summary) {
+            if (!this.user || !summary) return;
+            this.user = {
+                ...this.user,
+                onboarding: {
+                    redirectTo: summary.redirectTo ?? null,
+                    persona: summary.persona ?? this.user.onboarding?.persona,
+                    origin: summary.origin ?? this.user.onboarding?.origin,
+                    completed: Boolean(summary.completedAt)
+                }
             };
             localStorage.setItem('user', JSON.stringify(this.user));
         },

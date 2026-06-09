@@ -29,22 +29,49 @@ function escapeRegex(value) {
 /**
  * People list "name" is computed (first_name + last_name); there is no DB field "name".
  */
+function compileContainsClause(fieldKey, value) {
+  const { buildSearchOrConditions } = require('./searchRelevance');
+  const conditions = buildSearchOrConditions(value, [fieldKey]);
+  if (conditions.length === 0) return null;
+  if (conditions.length === 1) return conditions[0];
+  return { $or: conditions };
+}
+
+function compileNotContainsClause(fieldKey, value) {
+  const { parseSearchTerms } = require('./searchRelevance');
+  const terms = parseSearchTerms(value);
+  if (terms.length === 0) return null;
+  const clauses = terms.map((term) => ({
+    [fieldKey]: { $not: new RegExp(escapeRegex(term), 'i') },
+  }));
+  if (clauses.length === 1) return clauses[0];
+  return { $and: clauses };
+}
+
 function compilePeopleNameClause(operator, value) {
   if (operator === 'contains' && typeof value === 'string') {
-    const regex = new RegExp(escapeRegex(value), 'i');
-    return {
-      $or: [{ first_name: regex }, { last_name: regex }],
-    };
+    const { buildSearchOrConditions } = require('./searchRelevance');
+    const conditions = buildSearchOrConditions(value, ['first_name', 'last_name']);
+    if (conditions.length === 0) return null;
+    if (conditions.length === 1) return conditions[0];
+    return { $or: conditions };
   }
 
   if (operator === 'not_contains' && typeof value === 'string') {
-    const regex = new RegExp(escapeRegex(value), 'i');
-    return {
-      $and: [
-        { first_name: { $not: regex } },
-        { last_name: { $not: regex } },
-      ],
-    };
+    const { parseSearchTerms } = require('./searchRelevance');
+    const terms = parseSearchTerms(value);
+    if (terms.length === 0) return null;
+    const clauses = terms.map((term) => {
+      const regex = new RegExp(escapeRegex(term), 'i');
+      return {
+        $and: [
+          { first_name: { $not: regex } },
+          { last_name: { $not: regex } },
+        ],
+      };
+    });
+    if (clauses.length === 1) return clauses[0];
+    return { $and: clauses };
   }
 
   if (operator === 'is_empty') {
@@ -149,13 +176,11 @@ function compileRuleToMongo(rule, moduleKey, context = {}) {
   }
 
   if (operator === 'contains' && typeof value === 'string') {
-    const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return { [fieldKey]: new RegExp(escaped, 'i') };
+    return compileContainsClause(fieldKey, value);
   }
 
   if (operator === 'not_contains' && typeof value === 'string') {
-    const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return { [fieldKey]: { $not: new RegExp(escaped, 'i') } };
+    return compileNotContainsClause(fieldKey, value);
   }
 
   if (operator === 'is_any_of' && Array.isArray(value)) {

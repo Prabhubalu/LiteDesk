@@ -237,6 +237,78 @@ const PEOPLE_FULL_NAME_EXPR = {
   }
 };
 
+function parseFilterQueryAst(raw) {
+  if (!raw) return null;
+  let current = raw;
+  for (let depth = 0; depth < 2; depth += 1) {
+    if (current && typeof current === 'object' && !Array.isArray(current)) return current;
+    if (typeof current !== 'string') return null;
+    try {
+      current = JSON.parse(String(current));
+    } catch {
+      return null;
+    }
+  }
+  return current && typeof current === 'object' && !Array.isArray(current) ? current : null;
+}
+
+function collectContainsRules(node, results = []) {
+  if (!node || typeof node !== 'object') return results;
+  const operator = String(node.operator || 'contains');
+  if (node.fieldKey && operator === 'contains' && typeof node.value === 'string') {
+    const trimmed = node.value.trim();
+    if (trimmed) {
+      results.push({ fieldKey: String(node.fieldKey), value: trimmed });
+    }
+    return results;
+  }
+  const children = Array.isArray(node.children) ? node.children : [];
+  for (const child of children) {
+    collectContainsRules(child, results);
+  }
+  return results;
+}
+
+const MODULE_PRIMARY_SEARCH_FILTER_FIELDS = {
+  organizations: ['name'],
+  people: ['name'],
+  deals: ['name'],
+  tasks: ['title'],
+  events: ['eventName'],
+  forms: ['name'],
+  items: ['item_name'],
+};
+
+/**
+ * When column filters use contains on a primary search field, treat like main search for ranking.
+ * @param {string|object|null} filterQueryParam
+ * @param {string[]} primaryFieldKeys
+ */
+function extractSearchTermFromFilterQuery(filterQueryParam, primaryFieldKeys = ['name']) {
+  const ast = parseFilterQueryAst(filterQueryParam);
+  if (!ast) return '';
+
+  const allowed = new Set(primaryFieldKeys.map((key) => String(key).toLowerCase()));
+  const rules = collectContainsRules(ast).filter((rule) =>
+    allowed.has(String(rule.fieldKey).toLowerCase())
+  );
+  return rules[0]?.value || '';
+}
+
+/**
+ * Resolve effective list search term from query params (main search or column contains on primary field).
+ * @param {Record<string, unknown>} params
+ * @param {string} [moduleKey]
+ */
+function resolveListSearchTerm(params, moduleKey) {
+  const direct = params?.search || params?.name;
+  if (direct && String(direct).trim()) {
+    return String(direct).trim();
+  }
+  const primaryFields = MODULE_PRIMARY_SEARCH_FILTER_FIELDS[moduleKey] || ['name'];
+  return extractSearchTermFromFilterQuery(params?.filterQuery, primaryFields);
+}
+
 const SEARCH_FIELD_PRESETS = {
   people: [
     { expr: '$first_name', primary: true },
@@ -287,5 +359,8 @@ module.exports = {
   buildSearchAwareSort,
   fetchRankedSearchPage,
   isSearchActive,
+  extractSearchTermFromFilterQuery,
+  resolveListSearchTerm,
+  MODULE_PRIMARY_SEARCH_FILTER_FIELDS,
   SEARCH_FIELD_PRESETS
 };

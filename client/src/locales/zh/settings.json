@@ -11302,5 +11302,57 @@
   "usersMassBarTitle": {
     "message": "Users",
     "description": "Bulk selection bar entity label for users list"
+  },
+  "inviteSectionOnboarding": {
+    "message": "Welcome message",
+    "description": "Invite drawer onboarding section"
+  },
+  "inviteWelcomeNote": {
+    "message": "Personal welcome note",
+    "description": "Optional welcome note for invitee"
+  },
+  "inviteWelcomeNotePh": {
+    "message": "Welcome to the team — glad to have you aboard!",
+    "description": "Welcome note placeholder"
+  },
+  "inviteWelcomeNoteHint": {
+    "message": "Shown on the invitee's welcome screen after they join.",
+    "description": "Welcome note hint"
+  },
+  "inviteSuggestedTask": {
+    "message": "Suggested first task",
+    "description": "Suggested task label"
+  },
+  "inviteSuggestedTaskPh": {
+    "message": "Review open deals in the pipeline",
+    "description": "Suggested task placeholder"
+  },
+  "inviteSuggestedTaskHint": {
+    "message": "Optional. Helps new members know what to do first.",
+    "description": "Suggested task hint"
+  },
+  "inviteSuggestedTaskPresetProfile": {
+    "message": "Complete profile",
+    "description": "Suggested task preset button"
+  },
+  "inviteSuggestedTaskPresetProfileMessage": {
+    "message": "Complete your profile and notification preferences",
+    "description": "Suggested task preset message"
+  },
+  "inviteSuggestedTaskPresetPipeline": {
+    "message": "Review pipeline",
+    "description": "Suggested task preset button"
+  },
+  "inviteSuggestedTaskPresetPipelineMessage": {
+    "message": "Review open deals in the sales pipeline",
+    "description": "Suggested task preset message"
+  },
+  "inviteSuggestedTaskPresetCases": {
+    "message": "Check cases",
+    "description": "Suggested task preset button"
+  },
+  "inviteSuggestedTaskPresetCasesMessage": {
+    "message": "Review assigned support cases",
+    "description": "Suggested task preset message"
   }
 }

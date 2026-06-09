@@ -441,10 +441,10 @@ exports.getDeals = async (req, res) => {
             query.pipeline = req.query.pipeline;
         }
         
-        const searchTerm = req.query.search ? String(req.query.search).trim() : '';
-        if (searchTerm) {
-            const { buildSearchOrConditions } = require('../utils/searchRelevance');
-            query.$or = buildSearchOrConditions(searchTerm, ['name', 'description']);
+        const { buildSearchOrConditions, resolveListSearchTerm, fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+        const directSearchTerm = req.query.search ? String(req.query.search).trim() : '';
+        if (directSearchTerm) {
+            query.$or = buildSearchOrConditions(directSearchTerm, ['name', 'description']);
         }
         
         // Date range filter
@@ -475,7 +475,7 @@ exports.getDeals = async (req, res) => {
             { path: 'dealPeople.personId', select: 'first_name last_name email' },
             { path: 'dealOrganizations.organizationId', select: 'name' }
         ];
-        const { fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+        const searchTerm = resolveListSearchTerm(req.query, 'deals');
         const deals = isSearchActive(searchTerm)
             ? await fetchRankedSearchPage(Deal, {
                 matchQuery: query,

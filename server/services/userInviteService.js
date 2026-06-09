@@ -105,14 +105,16 @@ async function sendInviteForUser({
   user,
   organization,
   inviter,
-  inviteToken
+  inviteToken,
+  welcomeNote = null
 }) {
   const result = await sendInviteEmail({
     to: user.email,
     invitee: user,
     organizationName: organization?.name,
     inviterName: inviterDisplayName(inviter),
-    inviteToken
+    inviteToken,
+    welcomeNote
   });
 
   return {
@@ -175,11 +177,15 @@ async function validateInviteToken(rawToken) {
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
-    organizationName: organization.name
+    organizationName: organization.name,
+    entitledApps: (user.appAccess || [])
+      .filter((a) => a?.status === 'ACTIVE')
+      .map((a) => a.appKey)
+      .filter(Boolean)
   };
 }
 
-async function acceptInvite({ rawToken, password }) {
+async function acceptInvite({ rawToken, password, profile = {} }) {
   if (!rawToken || !password) {
     return { ok: false, code: 'VALIDATION_ERROR', message: 'Token and password are required' };
   }
@@ -201,6 +207,13 @@ async function acceptInvite({ rawToken, password }) {
     return { ok: false, code: 'TOKEN_EXPIRED', message: 'This invitation link has expired' };
   }
 
+  if (profile.firstName !== undefined && String(profile.firstName).trim()) {
+    user.firstName = String(profile.firstName).trim();
+  }
+  if (profile.lastName !== undefined && String(profile.lastName).trim()) {
+    user.lastName = String(profile.lastName).trim();
+  }
+
   user.password = await bcrypt.hash(password, 10);
   user.status = 'active';
   user.inviteAcceptedAt = new Date();
@@ -208,6 +221,26 @@ async function acceptInvite({ rawToken, password }) {
   user.mustChangePassword = false;
   await clearInviteTokens(user, user.email);
   await clearVerificationTokens(user, user.email);
+  const {
+    initializeOnboardingForUser,
+    ONBOARDING_ORIGINS
+  } = require('./onboardingService');
+  await initializeOnboardingForUser(user, {
+    origin: ONBOARDING_ORIGINS.INVITED,
+    welcomeNote: user.onboarding?.welcomeNote || null,
+    suggestedTask: user.onboarding?.suggestedTask || null
+  });
+
+  const profileTimeZone = profile.timeZone ? String(profile.timeZone).trim() : null;
+  const profileLanguage = profile.language ? String(profile.language).trim() : null;
+  if (profileTimeZone || profileLanguage) {
+    user.onboarding.profile = {
+      timeZone: profileTimeZone,
+      language: profileLanguage,
+      completedAt: new Date()
+    };
+  }
+
   await user.save();
 
   if (ScopedUser !== User && user.organizationId) {
@@ -217,22 +250,39 @@ async function acceptInvite({ rawToken, password }) {
         $set: {
           password: user.password,
           status: user.status,
+          firstName: user.firstName,
+          lastName: user.lastName,
           inviteAcceptedAt: user.inviteAcceptedAt,
           emailVerifiedAt: user.emailVerifiedAt,
           mustChangePassword: false,
           inviteTokenHash: null,
           inviteTokenExpiresAt: null,
           emailVerificationTokenHash: null,
-          emailVerificationExpiresAt: null
+          emailVerificationExpiresAt: null,
+          onboarding: user.onboarding
         }
       }
     ).catch(() => {});
   }
 
+  if (user.invitedBy) {
+    const { notifyInviterInviteAccepted } = require('./onboardingInviteNotifications');
+    await notifyInviterInviteAccepted({
+      inviterId: user.invitedBy,
+      invitee: user,
+      organizationId: user.organizationId
+    }).catch(() => {});
+  }
+
+  const { buildAuthSessionPayload } = require('./authSessionService');
+  const session = await buildAuthSessionPayload(user, organization);
+  await user.save();
+
   return {
     ok: true,
     email: user.email,
-    organizationName: organization.name
+    organizationName: organization.name,
+    session
   };
 }
 

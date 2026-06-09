@@ -1544,12 +1544,38 @@ exports.bulkDeleteRecords = async (req, res) => {
     if (ids.length === 0) {
       return res.json({
         success: true,
-        message: 'No records to delete',
+        message: req.body?.resolveOnly ? 'No matching records' : 'No records to delete',
         data: {
           deletedCount: 0,
           failedCount: 0,
           failures: [],
-          requestedCount: 0
+          requestedCount: 0,
+          ids: [],
+          hasMore: false,
+          lastId: null,
+          resolvedCount: 0
+        }
+      });
+    }
+
+    const hasMore = batchSize > 0 && ids.length === batchSize;
+    const lastId = ids.length > 0 ? ids[ids.length - 1] : null;
+
+    if (req.body?.resolveOnly) {
+      if (!req.body?.deleteMatching) {
+        return res.status(400).json({
+          success: false,
+          message: 'resolveOnly requires deleteMatching'
+        });
+      }
+      return res.json({
+        success: true,
+        message: `Resolved ${ids.length} record(s)`,
+        data: {
+          ids,
+          hasMore,
+          lastId,
+          resolvedCount: ids.length
         }
       });
     }
@@ -1568,9 +1594,6 @@ exports.bulkDeleteRecords = async (req, res) => {
     if (!result.ok) {
       return res.status(400).json({ success: false, message: result.message });
     }
-
-    const hasMore = batchSize > 0 && ids.length === batchSize;
-    const lastId = ids.length > 0 ? ids[ids.length - 1] : null;
 
     return res.json({
       success: true,

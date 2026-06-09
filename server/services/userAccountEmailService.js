@@ -13,18 +13,26 @@ function buildInviteEmailContent({
   invitee,
   organizationName,
   inviterName,
-  inviteUrl
+  inviteUrl,
+  welcomeNote = null
 }) {
   const name = displayName(invitee);
   const org = organizationName || 'your organization';
   const inviter = inviterName || 'Your administrator';
   const subject = `You're invited to join ${org} on Arivu`;
 
+  const noteHtml = welcomeNote
+    ? `<blockquote style="margin:0 0 16px;padding:12px 16px;border-left:3px solid #4f46e5;background:#f4f4f5;font-size:14px;color:#3f3f46;line-height:1.6;">
+        ${escapeHtml(welcomeNote)}
+      </blockquote>`
+    : '';
+
   const bodyHtml = `
     <p style="margin:0 0 16px;font-size:15px;color:#3f3f46;line-height:1.6;">
       Hi ${escapeHtml(name)}, ${escapeHtml(inviter)} has invited you to join
       <strong>${escapeHtml(org)}</strong> on Arivu.
     </p>
+    ${noteHtml}
     <p style="margin:0 0 24px;font-size:14px;color:#52525b;line-height:1.6;">
       Accept your invitation to set your password and get started. Accepting also verifies your email address.
     </p>
@@ -100,7 +108,7 @@ function buildVerificationEmailContent({ user, organizationName, verifyUrl }) {
   };
 }
 
-async function sendInviteEmail({ to, invitee, organizationName, inviterName, inviteToken }) {
+async function sendInviteEmail({ to, invitee, organizationName, inviterName, inviteToken, welcomeNote = null }) {
   if (!emailProviderGateway.isSystemConfigured()) {
     return { success: false, skipped: true, reason: 'system_email_not_configured' };
   }
@@ -110,7 +118,8 @@ async function sendInviteEmail({ to, invitee, organizationName, inviterName, inv
     invitee,
     organizationName,
     inviterName,
-    inviteUrl
+    inviteUrl,
+    welcomeNote
   });
 
   return emailProviderGateway.sendSystemEmail({

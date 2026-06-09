@@ -501,6 +501,8 @@ exports.inviteUser = async (req, res) => {
         phoneNumber, 
         password, 
         sendEmail,
+        welcomeNote,
+        suggestedTask,
         // New unified format
         userType,
         appAccess,
@@ -834,6 +836,13 @@ exports.inviteUser = async (req, res) => {
             finalLastName = nameParts.slice(1).join(' ') || '';
         }
 
+        const finalWelcomeNote = welcomeNote !== undefined && welcomeNote !== null
+            ? String(welcomeNote).trim().slice(0, 500)
+            : '';
+        const finalSuggestedTask = suggestedTask !== undefined && suggestedTask !== null
+            ? String(suggestedTask).trim().slice(0, 200)
+            : '';
+
         const newUser = await ScopedUser.create({
             organizationId: req.user.organizationId,
             username,
@@ -854,7 +863,13 @@ exports.inviteUser = async (req, res) => {
             mustChangePassword: inviteCredentials.mustChangePassword,
             emailVerifiedAt: null,
             inviteTokenHash,
-            inviteTokenExpiresAt: inviteCredentials.inviteTokenExpiresAt
+            inviteTokenExpiresAt: inviteCredentials.inviteTokenExpiresAt,
+            onboarding: (finalWelcomeNote || finalSuggestedTask)
+                ? {
+                    welcomeNote: finalWelcomeNote || undefined,
+                    suggestedTask: finalSuggestedTask || undefined
+                }
+                : undefined
         });
 
         await UserDirectory.findOneAndUpdate(
@@ -874,6 +889,13 @@ exports.inviteUser = async (req, res) => {
 
         await materializeEffectiveCRMEnvelopeOnUser(newUser);
         await newUser.save();
+
+        try {
+            const { markOrgInviteSent } = require('../services/onboardingService');
+            await markOrgInviteSent(organization);
+        } catch (onboardingErr) {
+            console.warn('[inviteUser] org invite step update failed:', onboardingErr.message);
+        }
         
         // Increment seat usage for each app (atomic operations)
         for (const appAccessEntry of finalAppAccess) {
@@ -895,7 +917,8 @@ exports.inviteUser = async (req, res) => {
                 user: newUser,
                 organization,
                 inviter: req.user,
-                inviteToken: inviteCredentials.inviteTokenRaw
+                inviteToken: inviteCredentials.inviteTokenRaw,
+                welcomeNote: finalWelcomeNote || null
             });
             emailSent = inviteEmailResult.sent === true;
             if (!emailSent) {

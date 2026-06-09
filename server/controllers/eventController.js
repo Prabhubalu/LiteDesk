@@ -315,11 +315,11 @@ exports.getEvents = async (req, res) => {
             ];
         }
         
-        const searchTerm = search ? String(search).trim() : '';
+        const { buildSearchOrConditions, resolveListSearchTerm, fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+        const directSearchTerm = search ? String(search).trim() : '';
         // Search filter
-        if (searchTerm) {
-            const { buildSearchOrConditions } = require('../utils/searchRelevance');
-            const searchConditions = buildSearchOrConditions(searchTerm, ['eventName', 'location', 'notes.text']);
+        if (directSearchTerm) {
+            const searchConditions = buildSearchOrConditions(directSearchTerm, ['eventName', 'location', 'notes.text']);
             
             // If we already have an $or from related records, combine them with $and
             if (query.$or) {
@@ -381,7 +381,7 @@ exports.getEvents = async (req, res) => {
           { path: 'createdBy', select: 'firstName lastName' },
           { path: 'modifiedBy', select: 'firstName lastName' }
         ];
-        const { fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+        const searchTerm = resolveListSearchTerm(req.query, 'events');
         const eventsPromise = isSearchActive(searchTerm)
           ? fetchRankedSearchPage(Event, {
               matchQuery: query,

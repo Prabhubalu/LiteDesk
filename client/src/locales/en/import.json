@@ -84,12 +84,84 @@
     "description": "Import mapping table header"
   },
   "importDuplicateFieldsHint": {
-    "message": "Select one or more fields. A row is a duplicate only when all selected fields match an existing record.",
+    "message": "Select one or more fields. A row is a duplicate when all selected fields match an existing record or an earlier row in the file.",
     "description": "Hint below duplicate field checklist"
   },
   "importDuplicateCheckedFields": {
     "message": "Checked using: {fields}",
     "description": "Summary of fields used in the last duplicate scan"
+  },
+  "importDuplicateExistingInCrm": {
+    "message": "In CRM",
+    "description": "Duplicate summary card: rows matching existing CRM records"
+  },
+  "importDuplicateRepeatedInCsv": {
+    "message": "Repeated in CSV",
+    "description": "Duplicate summary card: rows repeated within the uploaded file"
+  },
+  "importDuplicateExistingSectionTitle": {
+    "message": "Matches existing records ({count})",
+    "description": "Section title for CRM duplicate review table"
+  },
+  "importDuplicateExistingSectionDesc": {
+    "message": "These rows match records already in your CRM. Choose whether to skip or update them during import.",
+    "description": "Section description for CRM duplicate review"
+  },
+  "importDuplicateInFileSectionTitle": {
+    "message": "Repeated within file ({count})",
+    "description": "Section title for in-file duplicate review table"
+  },
+  "importDuplicateInFileSectionDesc": {
+    "message": "These rows repeat a value from an earlier row in the same CSV. Only the first occurrence will be imported.",
+    "description": "Section description for in-file duplicate review"
+  },
+  "importDuplicateTableRow": {
+    "message": "Row",
+    "description": "Duplicate review table column: CSV row number"
+  },
+  "importDuplicateTableMatchedValue": {
+    "message": "Matched value",
+    "description": "Duplicate review table column: matched field value"
+  },
+  "importDuplicateTableFirstSeenRow": {
+    "message": "First seen at row",
+    "description": "Duplicate review table column: first CSV row with this value"
+  },
+  "importDuplicateExistingMore": {
+    "message": "... and {count} more CRM matches",
+    "description": "Truncated CRM duplicate sample footer"
+  },
+  "importDuplicateInFileMore": {
+    "message": "... and {count} more repeated rows",
+    "description": "Truncated in-file duplicate sample footer"
+  },
+  "importDuplicateNoMatchesTitle": {
+    "message": "No duplicates found",
+    "description": "Empty duplicate scan result title"
+  },
+  "importDuplicateNoMatchesDesc": {
+    "message": "Every row is new and unique within your file. You can proceed to import.",
+    "description": "Empty duplicate scan result description"
+  },
+  "importDuplicateExistingHandlingTitle": {
+    "message": "Existing CRM matches",
+    "description": "Fieldset legend for CRM duplicate handling options"
+  },
+  "importDuplicateSkipExistingHint": {
+    "message": "Skip {count} rows that match existing records",
+    "description": "Skip option hint for CRM duplicates only"
+  },
+  "importDuplicateUpdateExistingHint": {
+    "message": "Update {count} existing records with CSV data",
+    "description": "Update option hint for CRM duplicates only"
+  },
+  "importDuplicateInFileHandlingTitle": {
+    "message": "Repeated rows in CSV",
+    "description": "Info block title for in-file duplicate handling"
+  },
+  "importDuplicateInFileHandlingDesc": {
+    "message": "{count} repeated rows will be skipped automatically. The first occurrence of each value is kept.",
+    "description": "Info block description for in-file duplicate handling"
   },
   "importDupPresetEmail": {
     "message": "Email",
@@ -176,8 +248,8 @@
     "description": "Auto-migrated from cSVImportModal"
   },
   "cSVImportModalScanYourCsvForDuplicateRecords": {
-    "message": "Scan your CSV for duplicate records based on selected fields. Choose to skip duplicates or update existing records.",
-    "description": "Auto-migrated from cSVImportModal"
+    "message": "Compare your CSV against existing records and detect repeated rows within the file. Review each type separately before import.",
+    "description": "Duplicate detection option description"
   },
   "cSVImportModalCheckForDuplicates": {
     "message": "Check for Duplicates",

@@ -15,7 +15,8 @@ const emptySnapshot = () => ({
   resume: [],
   appPulses: [],
   greeting: null,
-  focusLine: ''
+  focusLine: '',
+  onboarding: null
 });
 
 /**
@@ -52,7 +53,8 @@ export function usePlatformHome() {
           resume: data.resume || [],
           appPulses: data.appPulses || [],
           greeting: data.greeting || null,
-          focusLine: data.focusLine || ''
+          focusLine: data.focusLine || '',
+          onboarding: data.onboarding || null
         };
       } else {
         error.value = 'Unable to load home';

@@ -45,9 +45,9 @@ export async function runBulkDelete(params) {
         listQuery: params.listQuery || {},
         excludedIds: selection?.excludedIds || [],
         expectedCount: initialTotal,
-        onProgress: async ({ processed, total }) => {
+        onProgress: async ({ processed, total, phase }) => {
           store.updateProgress({
-            phase: 'deleting',
+            phase: phase || 'deleting',
             processed: processed ?? 0,
             total: total || initialTotal
           });
@@ -68,8 +68,8 @@ export async function runBulkDelete(params) {
 
       outcome = await bulkDeleteRecords(params.moduleKey, ids, {
         ...params.options,
-        onProgress: async ({ processed, total }) => {
-          store.updateProgress({ phase: 'deleting', processed, total });
+        onProgress: async ({ processed, total, phase }) => {
+          store.updateProgress({ phase: phase || 'deleting', processed, total });
           await yieldToUi();
         },
         shouldCancel: () => store.cancelRequested,

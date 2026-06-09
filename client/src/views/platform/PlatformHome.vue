@@ -6,9 +6,14 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useAppShellStore } from '@/stores/appShell';
 import { useTabs } from '@/composables/useTabs';
 import { usePlatformHome } from '@/composables/usePlatformHome';
+import { useOnboarding } from '@/composables/useOnboarding';
 import { useAttentionItems } from '@/composables/useAttentionItems';
 import AttentionItemRow from '@/components/platform/AttentionItemRow.vue';
 import AppPulseCard from '@/components/platform/AppPulseCard.vue';
+import OnboardingWelcomePanel from '@/components/onboarding/OnboardingWelcomePanel.vue';
+import OnboardingChecklistCard from '@/components/onboarding/OnboardingChecklistCard.vue';
+import OnboardingTrialBanner from '@/components/onboarding/OnboardingTrialBanner.vue';
+import OnboardingSampleDataCard from '@/components/onboarding/OnboardingSampleDataCard.vue';
 import { formatPlatformGreeting, getLocalTimeOfDay } from '@/utils/platformHomeGreeting';
 import {
   CheckCircleIcon,
@@ -37,6 +42,16 @@ const { openTab } = useTabs();
 
 const { loading: homeLoading, error: homeError, snapshot, fetchSnapshot } = usePlatformHome();
 const { completeTask } = useAttentionItems();
+const { dismissWelcome, loading: onboardingLoading, acceptSampleData, declineSampleData } = useOnboarding();
+
+const onboarding = computed(() => snapshot.value.onboarding);
+const showWelcomePanel = computed(() => Boolean(onboarding.value?.showWelcome && onboarding.value?.welcome));
+const memberChecklistSteps = computed(() => (
+  onboarding.value?.persona === 'member' ? (onboarding.value?.steps || []) : []
+));
+const orgSetupSteps = computed(() => (
+  onboarding.value?.showSetupProgress ? (onboarding.value?.orgSteps || []) : []
+));
 
 const pageLoading = ref(true);
 const quickAccessApps = ref([]);
@@ -356,6 +371,30 @@ const loadData = async () => {
   }
 };
 
+const handleWelcomeDismiss = async () => {
+  const ok = await dismissWelcome();
+  if (ok) {
+    if (authStore.user?.onboarding) {
+      authStore.user.onboarding.redirectTo = null;
+    }
+    await fetchSnapshot();
+  }
+};
+
+const handleSampleDataAccept = async () => {
+  const ok = await acceptSampleData();
+  if (ok) {
+    await fetchSnapshot();
+  }
+};
+
+const handleSampleDataDecline = async () => {
+  const ok = await declineSampleData();
+  if (ok) {
+    await fetchSnapshot();
+  }
+};
+
 onMounted(() => {
   loadData();
 });
@@ -380,6 +419,36 @@ onMounted(() => {
           class="text-gray-600 dark:text-gray-400"
         >{{ t('platform.platformHomeWhatNeedsYourAttentionRightNow') }}</p>
       </header>
+
+      <div v-if="!pageLoading && onboarding" class="mb-6 space-y-4">
+        <OnboardingTrialBanner :trial="onboarding.trial" />
+        <OnboardingSampleDataCard
+          :offer="onboarding.sampleDataOffer"
+          :loading="onboardingLoading"
+          @accept="handleSampleDataAccept"
+          @decline="handleSampleDataDecline"
+        />
+        <OnboardingWelcomePanel
+          v-if="showWelcomePanel"
+          :welcome="onboarding.welcome"
+          :loading="onboardingLoading"
+          @dismiss="handleWelcomeDismiss"
+          @primary="handleWelcomeDismiss"
+        />
+        <OnboardingChecklistCard
+          v-if="memberChecklistSteps.length"
+          :steps="memberChecklistSteps"
+          :progress="onboarding.progress"
+          :loading="onboardingLoading"
+        />
+        <OnboardingChecklistCard
+          v-if="orgSetupSteps.length"
+          title-key="onboarding.setupProgressTitle"
+          :steps="orgSetupSteps"
+          :progress="onboarding.orgProgress"
+          :loading="onboardingLoading"
+        />
+      </div>
 
       <!-- Loading State -->
       <div v-if="pageLoading" class="space-y-6">

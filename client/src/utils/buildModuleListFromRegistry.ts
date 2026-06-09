@@ -422,7 +422,8 @@ function determineListEmptyState(
   hasColumns: boolean,
   hasPrimaryActions: boolean,
   snapshot: PermissionSnapshot,
-  modulePermission?: string
+  modulePermission?: string,
+  options?: { isFirstModuleVisit?: boolean }
 ): EmptyStateDefinition {
   const displayName = getModuleDisplayName(moduleKey);
   
@@ -446,6 +447,53 @@ function determineListEmptyState(
         route: `/settings/modules?module=${moduleKey}`,
         permission: 'settings.configure',
       },
+    };
+  }
+
+  const createRoute = getCreateRoute(moduleKey, appKey);
+  const firstTimeByModule: Record<string, { titleKey: string; descriptionKey: string; actionLabelKey: string }> = {
+    people: {
+      titleKey: 'onboarding.firstTimePeopleTitle',
+      descriptionKey: 'onboarding.firstTimePeopleDescription',
+      actionLabelKey: 'onboarding.firstTimePeopleAction',
+    },
+    deals: {
+      titleKey: 'onboarding.firstTimeDealsTitle',
+      descriptionKey: 'onboarding.firstTimeDealsDescription',
+      actionLabelKey: 'onboarding.firstTimeDealsAction',
+    },
+    tasks: {
+      titleKey: 'onboarding.firstTimeTasksTitle',
+      descriptionKey: 'onboarding.firstTimeTasksDescription',
+      actionLabelKey: 'onboarding.firstTimeTasksAction',
+    },
+    cases: {
+      titleKey: 'onboarding.firstTimeCasesTitle',
+      descriptionKey: 'onboarding.firstTimeCasesDescription',
+      actionLabelKey: 'onboarding.firstTimeCasesAction',
+    },
+    organizations: {
+      titleKey: 'onboarding.firstTimeOrganizationsTitle',
+      descriptionKey: 'onboarding.firstTimeOrganizationsDescription',
+      actionLabelKey: 'onboarding.firstTimeOrganizationsAction',
+    },
+  };
+
+  if (options?.isFirstModuleVisit && firstTimeByModule[moduleKey]) {
+    const copy = firstTimeByModule[moduleKey];
+    return {
+      type: EmptyStateType.FIRST_TIME,
+      title: '',
+      description: '',
+      titleKey: copy.titleKey,
+      descriptionKey: copy.descriptionKey,
+      primaryAction: hasPrimaryActions
+        ? {
+            label: '',
+            labelKey: copy.actionLabelKey,
+            route: createRoute,
+          }
+        : undefined,
     };
   }
   
@@ -488,7 +536,8 @@ export function buildModuleListFromRegistry(
   moduleKey: string,
   appKey: string,
   appRegistry: AppRegistry,
-  snapshot: PermissionSnapshot
+  snapshot: PermissionSnapshot,
+  options?: { isFirstModuleVisit?: boolean }
 ): ModuleListDefinition | null {
   // Find app in registry
   const app = appRegistry[appKey];
@@ -508,7 +557,7 @@ export function buildModuleListFromRegistry(
   
   // Use memoization for performance
   return memoizeBuilder(
-    'buildModuleListFromRegistry',
+    `buildModuleListFromRegistry:${options?.isFirstModuleVisit === true ? 'first-visit' : 'returning'}`,
     appRegistry,
     snapshot,
     appKey,
@@ -611,7 +660,8 @@ export function buildModuleListFromRegistry(
         columns.length > 0,
         primaryActions.length > 0,
         snapshot,
-        module.permission
+        module.permission,
+        options
       );
       
       const listDefinition: ModuleListDefinition = {

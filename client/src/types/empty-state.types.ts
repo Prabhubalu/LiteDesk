@@ -34,6 +34,9 @@ export interface EmptyStateAction {
   /** Button or link label */
   label: string;
 
+  /** i18n key alternative to label */
+  labelKey?: string;
+
   /** Route to navigate to when action is taken (optional for purely informational actions) */
   route?: string;
 
@@ -56,6 +59,10 @@ export interface EmptyStateDefinition {
 
   /** Primary action guiding the user on what to do next */
   primaryAction?: EmptyStateAction;
+
+  /** i18n keys (used for FIRST_TIME and onboarding-driven states) */
+  titleKey?: string;
+  descriptionKey?: string;
 
   /** Secondary action (optional) */
   secondaryAction?: EmptyStateAction;

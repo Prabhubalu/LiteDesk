@@ -8,17 +8,17 @@
     <div v-if="shouldShowEmptyState" class="flex items-center justify-center min-h-[60vh]">
       <div class="text-center max-w-md">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          {{ listDefinition.emptyState.title }}
+          {{ fullPageEmptyTitle }}
         </h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">
-          {{ listDefinition.emptyState.description }}
+          {{ fullPageEmptyMessage }}
         </p>
         <button
           v-if="listDefinition.emptyState.primaryAction"
           @click="handleAction(listDefinition.emptyState.primaryAction.route)"
           class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
         >
-          {{ listDefinition.emptyState.primaryAction.label }}
+          {{ fullPageEmptyActionLabel }}
         </button>
       </div>
     </div>
@@ -123,6 +123,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import { buildModuleListFromRegistry } from '@/utils/buildModuleListFromRegistry';
+import { useOnboarding } from '@/composables/useOnboarding';
+import { captureFirstTimeEmptyStateSeen } from '@/config/posthogOnboarding';
 import { getAppRegistry } from '@/utils/getAppRegistry';
 import { createPermissionSnapshot } from '@/types/permission-snapshot.types';
 import { EmptyStateType } from '@/types/empty-state.types';
@@ -144,6 +146,7 @@ import { allSettledWithConcurrency } from '@/utils/allSettledWithConcurrency';
 import { startBulkDelete } from '@/utils/runBulkDelete';
 import { startBulkUpdate } from '@/utils/runBulkUpdate';
 import { yieldToUi } from '@/utils/uiYield';
+import { resolveListSearchTerm } from '@/utils/searchRelevance';
 import {
   clearListSession,
   getListSession,
@@ -455,6 +458,11 @@ onActivated(async () => {
   }
 });
 const authStore = useAuthStore();
+const {
+  fetchOnboarding,
+  hasModuleVisit,
+  recordModuleVisit,
+} = useOnboarding();
 const moduleListConfigOptions = computed(() => ({
   inventoryEnabled: authStore.inventoryEnabled
 }));
@@ -545,13 +553,28 @@ const buildList = async () => {
     // Create permission snapshot
     const snapshot = createPermissionSnapshot(authStore.user);
 
+    await fetchOnboarding();
+    const isFirstModuleVisit = !hasModuleVisit(props.moduleKey, props.appKey);
+
     // Build list definition
     const definition = buildModuleListFromRegistry(
       props.moduleKey,
       props.appKey,
       registry,
-      snapshot
+      snapshot,
+      { isFirstModuleVisit }
     );
+
+    if (isFirstModuleVisit && definition) {
+      if (definition.emptyState?.type === EmptyStateType.FIRST_TIME) {
+        captureFirstTimeEmptyStateSeen(props.moduleKey, props.appKey, {
+          persona: authStore.user?.onboarding?.persona,
+          origin: authStore.user?.onboarding?.origin,
+          organizationId: authStore.user?.organizationId,
+        });
+      }
+      void recordModuleVisit(props.moduleKey, props.appKey);
+    }
 
     if (authStore.user && authStore.isAuthenticated) {
       const fieldColumns = buildListColumnsFromModuleFields(
@@ -751,6 +774,9 @@ const listEmptyTitle = computed(() => {
   if (!es || es.type === EmptyStateType.NO_DATA) {
     return t('common.listEmptyNoModuleYet', { module: moduleLabelLower.value });
   }
+  if (es.titleKey && te(es.titleKey)) {
+    return t(es.titleKey);
+  }
   return es.title;
 });
 
@@ -759,7 +785,31 @@ const listEmptyMessage = computed(() => {
   if (!es || es.type === EmptyStateType.NO_DATA) {
     return t('common.listEmptyModuleWillAppear', { module: moduleLabel.value });
   }
+  if (es.descriptionKey && te(es.descriptionKey)) {
+    return t(es.descriptionKey);
+  }
   return es.description || t('common.listEmptyMessage');
+});
+
+const fullPageEmptyTitle = computed(() => {
+  const es = listDefinition.value?.emptyState;
+  if (!es) return t('moduleList.emptyState.title');
+  if (es.titleKey && te(es.titleKey)) return t(es.titleKey);
+  return es.title || t('moduleList.emptyState.title');
+});
+
+const fullPageEmptyMessage = computed(() => {
+  const es = listDefinition.value?.emptyState;
+  if (!es) return t('moduleList.emptyState.description');
+  if (es.descriptionKey && te(es.descriptionKey)) return t(es.descriptionKey);
+  return es.description || t('moduleList.emptyState.description');
+});
+
+const fullPageEmptyActionLabel = computed(() => {
+  const action = listDefinition.value?.emptyState?.primaryAction;
+  if (!action) return '';
+  if (action.labelKey && te(action.labelKey)) return t(action.labelKey);
+  return action.label;
 });
 
 const listSearchPlaceholder = computed(() => resolveListSearchPlaceholder(props.moduleKey, t, te));
@@ -991,6 +1041,14 @@ function buildListFetchContext(requestedPage) {
 
   if (searchQuery.value && searchQuery.value.trim()) {
     params.search = searchQuery.value.trim();
+  } else {
+    const columnSearchTerm = resolveListSearchTerm(
+      { filterQuery: params.filterQuery },
+      props.moduleKey
+    );
+    if (columnSearchTerm) {
+      params.search = columnSearchTerm;
+    }
   }
 
   if (params.assignedTo === 'null' && filters.value.assignedTo === undefined) {

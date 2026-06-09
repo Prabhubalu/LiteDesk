@@ -24,6 +24,8 @@
       @update:pagination="(p) => { pagination.currentPage = p.currentPage; pagination.limit = p.limit || pagination.limit; fetchImports(); }"
       @fetch="fetchImports"
       @row-click="viewImport"
+      @delete="handleDelete"
+      @bulk-action="handleBulkAction"
     >
       <template #header-actions>
         <button v-if="canCreateImport" @click="showImportModal = true" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
@@ -145,6 +147,7 @@ import ListView from '@/components/common/ListView.vue';
 import BadgeCell from '../components/common/table/BadgeCell.vue';
 import UniversalImportModal from '../components/import/UniversalImportModal.vue';
 import { useActiveImportsStore } from '@/stores/activeImports';
+import { startBulkDelete } from '@/utils/runBulkDelete';
 
 // Router and auth
 const router = useRouter();
@@ -312,6 +315,106 @@ const handleImportComplete = () => {
   showImportModal.value = false;
   fetchImports();
   fetchStats();
+};
+
+function isBulkSelectionPayload(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) && 'mode' in value;
+}
+
+async function resolveAllImportIds(excludedIds = []) {
+  const excluded = new Set(excludedIds.map(String));
+  const ids = [];
+  let page = 1;
+  let totalPages = 1;
+
+  do {
+    const response = await apiClient.get('/imports', {
+      params: {
+        module: filters.module,
+        status: filters.status,
+        page,
+        limit: pagination.limit,
+      },
+    });
+    if (!response.success) break;
+    for (const row of response.data || []) {
+      const id = String(row._id);
+      if (!excluded.has(id)) ids.push(id);
+    }
+    totalPages = response.pagination?.totalPages || 1;
+    page += 1;
+  } while (page <= totalPages);
+
+  return ids;
+}
+
+async function refreshAfterBulkDelete(outcome) {
+  if (outcome.cancelled) {
+    if (outcome.deletedCount > 0) {
+      await fetchImports();
+      await fetchStats();
+    }
+    return;
+  }
+  if (outcome.failedCount > 0) {
+    const errorMessage =
+      outcome.firstError?.response?.data?.message ||
+      outcome.firstError?.message ||
+      t('common.listBulkDeleteIncomplete', { deleted: outcome.deletedCount, total: outcome.requestedCount });
+    alert(errorMessage);
+    if (outcome.deletedCount > 0) {
+      await fetchImports();
+      await fetchStats();
+    }
+    return;
+  }
+  await fetchImports();
+  await fetchStats();
+}
+
+const handleDelete = async (row) => {
+  if (!row?._id) return;
+  startBulkDelete({
+    moduleKey: 'imports',
+    ids: [String(row._id)],
+    onComplete: refreshAfterBulkDelete,
+    onError: (error) => {
+      console.error('Error deleting import:', error);
+      alert(error?.response?.data?.message || error?.message || t('common.listBulkDeleteIncomplete', { deleted: 0, total: 1 }));
+    },
+  });
+};
+
+const handleBulkAction = async (actionId, payloadOrRows) => {
+  if (actionId !== 'bulk-delete' && actionId !== 'delete') return;
+
+  let selection = isBulkSelectionPayload(payloadOrRows) ? payloadOrRows : null;
+  let pageIds = null;
+
+  if (!selection && Array.isArray(payloadOrRows)) {
+    pageIds = payloadOrRows.map((r) => String(r?._id || r?.id)).filter(Boolean);
+  }
+
+  if (selection?.mode === 'all') {
+    const resolvedIds = await resolveAllImportIds(selection.excludedIds || []);
+    selection = {
+      mode: 'page',
+      selectedIds: resolvedIds,
+      selectionCount: resolvedIds.length,
+      excludedIds: [],
+    };
+  }
+
+  startBulkDelete({
+    moduleKey: 'imports',
+    selection,
+    pageIds,
+    onComplete: refreshAfterBulkDelete,
+    onError: (error) => {
+      console.error('Error deleting imports:', error);
+      alert(error?.response?.data?.message || error?.message || t('common.listBulkDeleteIncomplete', { deleted: 0, total: 1 }));
+    },
+  });
 };
 
 // Pagination handled by ListView component

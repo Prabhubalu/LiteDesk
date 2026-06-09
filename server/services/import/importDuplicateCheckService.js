@@ -36,7 +36,7 @@ async function runDuplicateCheck(req, res, module) {
       ? await buildCrmOrganizationQuery(organizationId)
       : null;
 
-    const { duplicates, unique } = await countImportDuplicates({
+    const result = await countImportDuplicates({
       module,
       rows: source.rows(),
       fieldMapping,
@@ -49,12 +49,15 @@ async function runDuplicateCheck(req, res, module) {
       success: true,
       data: {
         total: source.totalRows,
-        duplicates,
-        unique,
-        duplicateRecords: [],
-        uniqueRecords: [],
+        duplicates: result.duplicates,
+        unique: result.unique,
+        existingDuplicates: result.existingDuplicates,
+        inFileDuplicates: result.inFileDuplicates,
+        uncheckable: result.uncheckable,
+        existingDuplicateSamples: result.existingDuplicateSamples,
+        inFileDuplicateSamples: result.inFileDuplicateSamples,
         checkedFields: checkFields,
-        samplesTruncated: false,
+        samplesTruncated: result.samplesTruncated,
         scannedFromStaging: Boolean(stagingId),
       },
     });

@@ -252,6 +252,57 @@
 
                         <section class="space-y-4">
                           <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            {{ t('settings.inviteSectionOnboarding') }}
+                          </h4>
+
+                          <div class="space-y-1">
+                            <label for="invite-welcome-note" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                              {{ t('settings.inviteWelcomeNote') }}
+                            </label>
+                            <textarea
+                              id="invite-welcome-note"
+                              v-model="form.welcomeNote"
+                              rows="3"
+                              maxlength="500"
+                              :placeholder="t('settings.inviteWelcomeNotePh')"
+                              class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                            />
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                              {{ t('settings.inviteWelcomeNoteHint') }}
+                            </p>
+                          </div>
+
+                          <div class="space-y-2">
+                            <label for="invite-suggested-task" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                              {{ t('settings.inviteSuggestedTask') }}
+                            </label>
+                            <div class="flex flex-wrap gap-2">
+                              <button
+                                v-for="preset in suggestedTaskPresets"
+                                :key="preset.key"
+                                type="button"
+                                class="rounded-full border border-gray-200 dark:border-gray-600 px-3 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                @click="applySuggestedTaskPreset(preset.message)"
+                              >
+                                {{ preset.label }}
+                              </button>
+                            </div>
+                            <input
+                              id="invite-suggested-task"
+                              v-model="form.suggestedTask"
+                              type="text"
+                              maxlength="200"
+                              :placeholder="t('settings.inviteSuggestedTaskPh')"
+                              class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                            />
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                              {{ t('settings.inviteSuggestedTaskHint') }}
+                            </p>
+                          </div>
+                        </section>
+
+                        <section class="space-y-4">
+                          <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             {{ t('settings.inviteSectionCredentials') }}
                           </h4>
 
@@ -355,6 +406,7 @@ import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { UserPlusIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
+import { captureInviteSent } from '@/config/posthogOnboarding';
 
 const { t } = useI18n();
 
@@ -371,7 +423,9 @@ const form = ref({
   userType: 'INTERNAL',
   roleId: '',
   password: '',
-  sendEmail: true
+  sendEmail: true,
+  welcomeNote: '',
+  suggestedTask: ''
 });
 
 const passwordOption = ref('auto');
@@ -410,6 +464,16 @@ const passwordAutoHint = computed(() =>
       : t('settings.invitePasswordManualDelivery')
   })
 );
+
+const suggestedTaskPresets = computed(() => [
+  { key: 'profile', label: t('settings.inviteSuggestedTaskPresetProfile'), message: t('settings.inviteSuggestedTaskPresetProfileMessage') },
+  { key: 'pipeline', label: t('settings.inviteSuggestedTaskPresetPipeline'), message: t('settings.inviteSuggestedTaskPresetPipelineMessage') },
+  { key: 'cases', label: t('settings.inviteSuggestedTaskPresetCases'), message: t('settings.inviteSuggestedTaskPresetCasesMessage') }
+]);
+
+const applySuggestedTaskPreset = (message) => {
+  form.value.suggestedTask = message;
+};
 
 const appDisplayNames = {
   SALES: 'SALES',
@@ -517,7 +581,9 @@ const resetForm = () => {
     userType: 'INTERNAL',
     roleId: '',
     password: '',
-    sendEmail: true
+    sendEmail: true,
+    welcomeNote: '',
+    suggestedTask: ''
   };
   passwordOption.value = 'auto';
   error.value = '';
@@ -641,7 +707,9 @@ const handleSubmit = async () => {
           appKey,
           roleKey: selectedAppRoles.value[appKey]
         })),
-        sendEmail: form.value.sendEmail
+        sendEmail: form.value.sendEmail,
+        welcomeNote: form.value.welcomeNote || undefined,
+        suggestedTask: form.value.suggestedTask || undefined
       };
 
       if (passwordOption.value === 'manual' && form.value.password) {
@@ -660,6 +728,12 @@ const handleSubmit = async () => {
     const response = await apiClient.post('/users', payload);
 
     if (response.success) {
+      captureInviteSent({
+        source: 'settings_drawer',
+        send_email: form.value.sendEmail,
+        has_welcome_note: Boolean(form.value.welcomeNote?.trim()),
+        has_suggested_task: Boolean(form.value.suggestedTask?.trim()),
+      });
       const data = response.data || {};
       if (form.value.sendEmail && data.emailSent) {
         successMessage.value = t('settings.inviteSuccessEmailSent', { email: form.value.email });

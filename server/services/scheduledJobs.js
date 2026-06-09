@@ -41,6 +41,10 @@ const ENABLE_PLAYBOOK_DELAY_SCHEDULER =
   process.env.ENABLE_PLAYBOOK_DELAY_SCHEDULER !== 'false';
 const ENABLE_PLAYBOOK_ALERT_SCHEDULER =
   process.env.ENABLE_PLAYBOOK_ALERT_SCHEDULER !== 'false';
+const ENABLE_STALLED_INVITE_SCHEDULER =
+  process.env.ENABLE_STALLED_INVITE_SCHEDULER !== 'false';
+const ENABLE_TRIAL_NUDGE_SCHEDULER =
+  process.env.ENABLE_TRIAL_NUDGE_SCHEDULER !== 'false';
 
 let dailyDigestJob = null;
 let weeklyDigestJob = null;
@@ -58,6 +62,8 @@ let targetRecalcJob = null;
 let quoteExpiryJob = null;
 let playbookDelayJob = null;
 let playbookAlertJob = null;
+let stalledInviteJob = null;
+let trialNudgeJob = null;
 
 /**
  * Initialize and start scheduled jobs (node-cron).
@@ -431,6 +437,40 @@ function startScheduledJobs() {
     console.log('[scheduledJobs] Playbook alert scheduler disabled (ENABLE_PLAYBOOK_ALERT_SCHEDULER=false)');
   }
 
+  if (ENABLE_STALLED_INVITE_SCHEDULER) {
+    const { tickStalledInviteNotifications } = require('./onboardingStalledInviteSchedulerService');
+    stalledInviteJob = cron.schedule('0 10 * * *', async () => {
+      try {
+        const result = await tickStalledInviteNotifications();
+        console.log(
+          `[scheduledJobs] Stalled invite nudges: tenants=${result.tenantsProcessed} notified=${result.notified} errors=${result.errors}`
+        );
+      } catch (err) {
+        console.error('[scheduledJobs] Stalled invite nudges failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - Stalled invite nudges: 10:00 AM daily');
+  } else {
+    console.log('[scheduledJobs] Stalled invite scheduler disabled (ENABLE_STALLED_INVITE_SCHEDULER=false)');
+  }
+
+  if (ENABLE_TRIAL_NUDGE_SCHEDULER) {
+    const { tickTrialOnboardingNudges } = require('./onboardingTrialNudgeSchedulerService');
+    trialNudgeJob = cron.schedule('0 10 * * *', async () => {
+      try {
+        const result = await tickTrialOnboardingNudges();
+        console.log(
+          `[scheduledJobs] Trial onboarding nudges: tenants=${result.tenantsProcessed} sent=${result.sent} skipped=${result.skipped} errors=${result.errors}`
+        );
+      } catch (err) {
+        console.error('[scheduledJobs] Trial onboarding nudges failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - Trial onboarding nudges: 10:00 AM daily');
+  } else {
+    console.log('[scheduledJobs] Trial nudge scheduler disabled (ENABLE_TRIAL_NUDGE_SCHEDULER=false)');
+  }
+
   console.log(`[scheduledJobs]   - Timezone: ${process.env.DIGEST_TIMEZONE || 'UTC'}`);
   if (NOTIFICATION_DEBUG) {
     console.log('[scheduledJobs]   - Debug mode: enabled');
@@ -535,6 +575,18 @@ function stopScheduledJobs() {
     playbookAlertJob.stop();
     playbookAlertJob = null;
     console.log('[scheduledJobs] Playbook alert job stopped');
+  }
+
+  if (stalledInviteJob) {
+    stalledInviteJob.stop();
+    stalledInviteJob = null;
+    console.log('[scheduledJobs] Stalled invite job stopped');
+  }
+
+  if (trialNudgeJob) {
+    trialNudgeJob.stop();
+    trialNudgeJob = null;
+    console.log('[scheduledJobs] Trial nudge job stopped');
   }
 }
 

@@ -64,6 +64,12 @@ const routes = [
     component: () => import('@/views/platform/PlatformHome.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/onboarding',
+    name: 'onboarding',
+    component: () => import('@/views/Onboarding.vue'),
+    meta: { requiresAuth: true }
+  },
   // Phase 2F: App Registry (Marketplace-Ready)
   {
     path: '/platform/apps',
@@ -879,6 +885,24 @@ router.beforeEach(async (to, from, next) => {
     }
     next({ name: 'login' })
     return
+  }
+
+  // Onboarding redirect for founders with incomplete wizard
+  if (authStore.isAuthenticated) {
+    const onboardingRedirect = authStore.user?.onboarding?.redirectTo;
+    if (onboardingRedirect === '/onboarding' && to.name !== 'onboarding') {
+      const allowWhileOnboarding = to.path.startsWith('/settings');
+      if (!allowWhileOnboarding) {
+        logNavDebug('Redirecting: Founder onboarding incomplete');
+        next({ name: 'onboarding' });
+        return;
+      }
+    }
+    if (to.name === 'onboarding' && onboardingRedirect !== '/onboarding') {
+      logNavDebug('Redirecting: Onboarding already complete');
+      next(getDefaultRoute(authStore));
+      return;
+    }
   }
 
   // Settings / forms UIs need deferred locale namespaces (settings, forms, process catalogs).

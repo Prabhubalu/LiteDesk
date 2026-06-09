@@ -86,10 +86,10 @@ async function buildOrganizationListMongoQuery({
   }
 
   let searchFilter = null;
-  const searchTerm = params.search || params.name;
-  if (searchTerm && String(searchTerm).trim()) {
-    const { buildSearchOrConditions } = require('./searchRelevance');
-    searchFilter = { $or: buildSearchOrConditions(String(searchTerm).trim(), ['name']) };
+  const { buildSearchOrConditions, resolveListSearchTerm } = require('./searchRelevance');
+  const searchTerm = resolveListSearchTerm(params, 'organizations');
+  if (searchTerm) {
+    searchFilter = { $or: buildSearchOrConditions(searchTerm, ['name']) };
   }
 
   let assignedToFilter = null;

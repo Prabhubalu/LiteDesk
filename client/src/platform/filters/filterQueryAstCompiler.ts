@@ -6,7 +6,7 @@ import {
   compileOperatorValueForApi,
   isFilterRuleActive,
 } from '@/platform/filters/filterQueryCompiler';
-import type { FilterGroupNode } from '@/platform/filters/filterQueryAst';
+import type { FilterGroupNode, FilterRuleRef } from '@/platform/filters/filterQueryAst';
 import {
   createEmptyRuleRef,
   createRuleRefId,
@@ -131,20 +131,42 @@ export function syncRootGroupFromActiveFilters(
   filters: Record<string, unknown>,
   operators: Record<string, FilterOperatorId>
 ): FilterGroupNode {
+  const activeKeys = new Set<string>();
+
   const activeRules = filterConfig
-    .filter((filter) => isFilterRuleActive(filters[filter.key], operators[filter.key] ?? 'is'))
+    .filter((filter) => {
+      const active = isFilterRuleActive(filters[filter.key], operators[filter.key] ?? 'is');
+      if (active) activeKeys.add(filter.key);
+      return active;
+    })
     .map((filter) => ({
       kind: 'rule' as const,
       id: createRuleRefId(),
       fieldKey: filter.key,
     }));
 
-  if (activeRules.length === 0) {
+  const inProgressRules = root.children
+    .filter((child): child is FilterRuleRef => isFilterRuleRef(child))
+    .filter(
+      (child) =>
+        Boolean(child.fieldKey) &&
+        !activeKeys.has(child.fieldKey!) &&
+        !isFilterRuleActive(filters[child.fieldKey!], operators[child.fieldKey!] ?? 'is')
+    )
+    .map((child) => ({
+      kind: 'rule' as const,
+      id: child.id,
+      fieldKey: child.fieldKey,
+      ...(child.nested ? { nested: child.nested } : {}),
+    }));
+
+  const children = [...activeRules, ...inProgressRules];
+  if (children.length === 0) {
     return { ...root, children: [createEmptyRuleRef()] };
   }
 
   return {
     ...root,
-    children: [...activeRules, createEmptyRuleRef()],
+    children: [...children, createEmptyRuleRef()],
   };
 }

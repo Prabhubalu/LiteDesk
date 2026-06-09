@@ -5,7 +5,10 @@ const Organization = require('../../models/Organization');
 const {
   DUPLICATE_CHECK_OR_CHUNK,
   DUPLICATE_CHECK_IN_CHUNK,
+  DUPLICATE_CHECK_MAX_SAMPLES,
 } = require('./importConstants');
+
+const DUPLICATE_CHECK_UI_SAMPLES = Math.min(DUPLICATE_CHECK_MAX_SAMPLES, 10);
 
 const COMPOSITE_CHECK_FIELDS = new Set([
   'full_name',
@@ -222,6 +225,14 @@ function buildImportDuplicateLookup({
     canCheck: true,
     query,
     key: serializeDuplicateKey(query),
+    matchedFields,
+  };
+}
+
+function formatMatchedFields(matchedFields) {
+  return {
+    matchedField: matchedFields.map((f) => f.field).join(' AND '),
+    matchedValue: matchedFields.map((f) => f.value).join(', '),
   };
 }
 
@@ -320,17 +331,26 @@ async function countImportDuplicates({
 }) {
   const handler = MODULE_HANDLERS[module];
   if (!handler) {
-    return { duplicates: 0, unique: 0 };
+    return {
+      duplicates: 0,
+      unique: 0,
+      existingDuplicates: 0,
+      inFileDuplicates: 0,
+      uncheckable: 0,
+      existingDuplicateSamples: [],
+      inFileDuplicateSamples: [],
+      samplesTruncated: false,
+    };
   }
 
   const fields = resolveCheckFields(handler, checkFields);
   const useSingleFieldBatch = isSingleFieldBatchEligible(fields);
   const fieldKey = useSingleFieldBatch ? fields[0] : null;
-  const rowFlags = [];
+  const rowEntries = [];
   const valuesForIn = new Set();
   const uniqueQueries = new Map();
 
-  for await (const { row } of rows) {
+  for await (const { rowNumber, row } of rows) {
     const lookup = buildImportDuplicateLookup({
       module,
       row,
@@ -341,20 +361,30 @@ async function countImportDuplicates({
     });
 
     if (!lookup.canCheck) {
-      rowFlags.push(null);
+      rowEntries.push({ rowNumber, canCheck: false });
       continue;
     }
 
+    const { matchedField, matchedValue } = formatMatchedFields(lookup.matchedFields);
+    let flag;
     if (useSingleFieldBatch) {
       const queryValue = lookup.query[fieldKey];
-      rowFlags.push(lookupFlagValue(module, fieldKey, queryValue));
+      flag = lookupFlagValue(module, fieldKey, queryValue);
       valuesForIn.add(queryValue);
     } else {
-      rowFlags.push(lookup.key);
+      flag = lookup.key;
       if (!uniqueQueries.has(lookup.key)) {
         uniqueQueries.set(lookup.key, lookup.query);
       }
     }
+
+    rowEntries.push({
+      rowNumber,
+      canCheck: true,
+      flag,
+      matchedField,
+      matchedValue,
+    });
   }
 
   let existingFlags;
@@ -375,23 +405,66 @@ async function countImportDuplicates({
     });
   }
 
-  const seenInFile = new Set();
+  const seenInFile = new Map();
   let duplicateCount = 0;
   let uniqueCount = 0;
-  for (const flag of rowFlags) {
-    if (flag == null) {
+  let existingDuplicates = 0;
+  let inFileDuplicates = 0;
+  let uncheckable = 0;
+  const existingDuplicateSamples = [];
+  const inFileDuplicateSamples = [];
+
+  for (const entry of rowEntries) {
+    if (!entry.canCheck) {
+      uncheckable += 1;
       uniqueCount += 1;
       continue;
     }
-    if (existingFlags.has(flag) || seenInFile.has(flag)) {
+
+    const { flag, rowNumber, matchedField, matchedValue } = entry;
+
+    if (existingFlags.has(flag)) {
       duplicateCount += 1;
-    } else {
-      seenInFile.add(flag);
-      uniqueCount += 1;
+      existingDuplicates += 1;
+      if (existingDuplicateSamples.length < DUPLICATE_CHECK_UI_SAMPLES) {
+        existingDuplicateSamples.push({ rowNumber, matchedField, matchedValue });
+      }
+      continue;
     }
+
+    if (seenInFile.has(flag)) {
+      duplicateCount += 1;
+      inFileDuplicates += 1;
+      if (inFileDuplicateSamples.length < DUPLICATE_CHECK_UI_SAMPLES) {
+        inFileDuplicateSamples.push({
+          rowNumber,
+          matchedField,
+          matchedValue,
+          firstSeenRow: seenInFile.get(flag),
+        });
+      }
+      continue;
+    }
+
+    seenInFile.set(flag, rowNumber);
+    uniqueCount += 1;
   }
 
-  return { duplicates: duplicateCount, unique: uniqueCount };
+  const samplesTruncated = (
+    existingDuplicates > existingDuplicateSamples.length
+    || inFileDuplicates > inFileDuplicateSamples.length
+  );
+
+  return {
+    duplicates: duplicateCount,
+    unique: uniqueCount,
+    existingDuplicates,
+    inFileDuplicates,
+    uncheckable,
+    existingDuplicateSamples,
+    inFileDuplicateSamples,
+    samplesTruncated,
+  };
 }
 
 async function findImportDuplicate({

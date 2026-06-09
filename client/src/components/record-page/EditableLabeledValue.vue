@@ -96,6 +96,28 @@
         </Listbox>
         <p v-if="saveHttpError" class="text-xs text-red-600 dark:text-red-400 leading-snug w-full min-w-0 break-words pl-0.5">{{ saveHttpError }}</p>
       </div>
+      <!-- Row: phone — popover editor (always when canEdit; panel teleported to escape overflow clipping) -->
+      <div
+        v-else-if="layout === 'row' && canEdit && type === 'phone'"
+        class="w-full min-w-0 flex-1 flex flex-col"
+        @click.stop
+      >
+        <PhoneInput
+          ref="inputRef"
+          popover
+          minimal-trigger
+          :model-value="localValue"
+          :placeholder="t('records.editablePhonePh')"
+          :invalid="Boolean(phoneError || saveHttpError)"
+          trigger-class="editable-labeled-value__display flex-1 min-w-0 w-full min-h-8 text-left rounded transition-colors cursor-pointer flex items-center hover:bg-gray-50 dark:hover:bg-gray-800 px-2 -mx-2 -my-1"
+          input-class="w-full h-8 px-2 py-1 text-sm border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          @update:model-value="onPhoneInput"
+          @blur="handlePhoneRowBlur"
+          @escape="handlePhoneRowCancel"
+        />
+        <p v-if="phoneError" class="mt-1 text-xs text-red-600 dark:text-red-400 leading-snug w-full min-w-0 break-words pl-0.5">{{ phoneError }}</p>
+        <p v-else-if="saveHttpError" class="mt-1 text-xs text-red-600 dark:text-red-400 leading-snug w-full min-w-0 break-words pl-0.5">{{ saveHttpError }}</p>
+      </div>
       <!-- Select/User/Entity read-only: tag or dash -->
       <div
         v-else-if="layout === 'row' && !canEdit && (type === 'select' || type === 'user' || type === 'entity')"
@@ -118,23 +140,8 @@
           multiline ? 'min-h-[80px]' : ''
         ]"
       >
-        <div v-if="type === 'phone'" class="flex flex-col w-full min-w-0">
-          <PhoneInput
-            ref="inputRef"
-            :model-value="localValue"
-            :placeholder="t('records.editablePhonePh')"
-            :invalid="Boolean(phoneError || saveHttpError)"
-            input-class="w-full h-8 px-2 py-1 text-sm border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            @update:model-value="onPhoneInput"
-            @blur="handleBlur"
-            @enter="handleBlur"
-            @escape="handleCancel"
-          />
-          <p v-if="phoneError" class="mt-1 text-xs text-red-600 dark:text-red-400 leading-snug">{{ phoneError }}</p>
-          <p v-else-if="saveHttpError" class="mt-1 text-xs text-red-600 dark:text-red-400 leading-snug">{{ saveHttpError }}</p>
-        </div>
         <input
-          v-else-if="(type === 'text' || type === 'url') && !multiline"
+          v-if="(type === 'text' || type === 'url') && !multiline"
           ref="inputRef"
           v-model="localValue"
           @blur="handleBlur"
@@ -786,8 +793,9 @@ const normalizedUrlHref = computed(() => {
 /** When true, the whole value cell is clickable to enter edit (row layout, text/number/date/tags, not editing). */
 const isValueCellClickable = computed(() => {
   if (props.layout !== 'row' || !props.canEdit || isEditing.value) return false;
+  if (props.layout === 'row' && props.type === 'phone') return false;
   if (props.type === 'tags' && typeof props.onTagsOpen === 'function') return true;
-  return ['text', 'url', 'phone', 'number', 'date', 'tags'].includes(props.type);
+  return ['text', 'url', 'number', 'date', 'tags'].includes(props.type);
 });
 
 const onValueCellClick = (event) => {
@@ -917,10 +925,12 @@ const handleClick = (event) => {
   nextTick(() => {
     if (inputRef.value) {
       inputRef.value.focus({ preventScroll: true });
-      if (props.type === 'text' || props.type === 'url' || props.type === 'number' || props.type === 'phone') {
+      if (props.type === 'text' || props.type === 'url' || props.type === 'number') {
         inputRef.value.select();
       } else if (props.type === 'date') {
         inputRef.value?.open?.();
+      } else if (props.type === 'phone') {
+        inputRef.value?.select?.();
       }
     }
   });
@@ -931,6 +941,49 @@ function onPhoneInput(value) {
   saveHttpError.value = null;
   localValue.value = sanitizeInternationalPhone(value == null ? '' : String(value));
 }
+
+async function savePhoneValue() {
+  let valueToSave = localValue.value;
+  valueToSave = sanitizeInternationalPhone(valueToSave == null ? '' : String(valueToSave));
+  localValue.value = valueToSave;
+  const phoneValidation = validatePhoneValue(valueToSave);
+  if (!phoneValidation.isValid) {
+    phoneError.value = phoneValidation.error;
+    return false;
+  }
+  phoneError.value = null;
+
+  if (valueToSave === props.value) {
+    return true;
+  }
+
+  if (typeof props.commitSave === 'function') {
+    saveHttpError.value = null;
+    try {
+      await props.commitSave(valueToSave);
+      emit('update:value', valueToSave);
+      emit('save', valueToSave);
+      return true;
+    } catch (e) {
+      saveHttpError.value = getApiErrorMessage(e);
+      return false;
+    }
+  }
+
+  emit('update:value', valueToSave);
+  emit('save', valueToSave);
+  return true;
+}
+
+const handlePhoneRowBlur = async () => {
+  await savePhoneValue();
+};
+
+const handlePhoneRowCancel = () => {
+  phoneError.value = null;
+  saveHttpError.value = null;
+  initializeLocalValue();
+};
 
 const handleBlur = async () => {
   if (!isEditing.value) return;
