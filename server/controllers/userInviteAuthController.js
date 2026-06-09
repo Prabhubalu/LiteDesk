@@ -64,10 +64,16 @@ exports.acceptInvite = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('[userInviteAuth] acceptInvite error:', error);
+    console.error('[userInviteAuth] acceptInvite error:', error?.message || error);
+    if (error?.stack) {
+      console.error('[userInviteAuth] acceptInvite stack:', error.stack);
+    }
     return res.status(500).json({
       success: false,
-      message: 'Server error accepting invitation'
+      message: 'Server error accepting invitation',
+      ...(process.env.NODE_ENV === 'development' && error?.message
+        ? { error: error.message }
+        : {})
     });
   }
 };

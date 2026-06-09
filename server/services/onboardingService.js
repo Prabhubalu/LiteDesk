@@ -539,6 +539,8 @@ async function initializeOnboardingForUser(user, { origin, welcomeNote = null, s
     dismissedAt: null,
     welcomeNote: welcomeNote || user.onboarding?.welcomeNote || null,
     suggestedTask: suggestedTask || user.onboarding?.suggestedTask || null,
+    profile: user.onboarding?.profile || undefined,
+    moduleVisits: user.onboarding?.moduleVisits || [],
     steps: initialSteps,
     coachmarks: user.onboarding?.coachmarks || []
   };
