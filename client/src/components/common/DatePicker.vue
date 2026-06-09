@@ -1,5 +1,11 @@
 <template>
-  <Popover v-slot="{ close }" class="relative w-full">
+  <Popover v-slot="{ open, close }" class="relative w-full">
+    <input
+      type="hidden"
+      tabindex="-1"
+      aria-hidden="true"
+      :value="syncPopoverOpen(open)"
+    />
     <PopoverButton
       ref="triggerRef"
       :id="id"
@@ -271,6 +277,16 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'blur', 'escape', 'enter']);
 
 const { t, locale } = useI18n();
+
+const popoverWasOpen = ref(false);
+
+function syncPopoverOpen(open) {
+  if (popoverWasOpen.value && !open) {
+    emit('blur');
+  }
+  popoverWasOpen.value = open;
+  return open ? '1' : '0';
+}
 
 const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 

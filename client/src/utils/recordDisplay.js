@@ -107,7 +107,7 @@ export async function fetchRecord(appKey, moduleKey, recordId, forceRefresh = fa
 
 /**
  * Get display label for a record
- * Tries multiple fields in order: name, title, eventName, primaryField, email, id
+ * Tries multiple fields in order: name, title, first/last name, email, id
  */
 export function getRecordLabel(record) {
   if (!record) return 'Unnamed Record';
@@ -128,12 +128,12 @@ export function getRecordLabel(record) {
   if (record.title) return record.title;
   if (record.eventName) return record.eventName;
   if (record.primaryField) return record.primaryField;
-  if (record.email) return record.email;
   const firstName = record.firstName || record.first_name || '';
   const lastName = record.lastName || record.last_name || '';
   if (firstName || lastName) {
     return `${firstName} ${lastName}`.trim() || 'Unnamed Record';
   }
+  if (record.email) return record.email;
   if (record._id) return record._id.toString().substring(0, 8);
   if (record.id) return record.id.toString().substring(0, 8);
   

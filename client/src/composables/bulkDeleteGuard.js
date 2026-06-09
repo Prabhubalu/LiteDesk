@@ -7,7 +7,9 @@ let removeRouterGuard = null;
 
 const t = i18n.global.t.bind(i18n.global);
 
-function leaveConfirmMessage() {
+function leaveConfirmMessage(activeSource) {
+  const operation = activeSource?.operation?.value ?? activeSource?.operation;
+  if (operation === 'update') return t('common.bulkUpdateLeaveConfirm');
   return t('common.bulkDeleteLeaveConfirm');
 }
 
@@ -36,7 +38,7 @@ export function installBulkDeleteGuard(activeSource) {
       next();
       return;
     }
-    if (window.confirm(leaveConfirmMessage())) {
+    if (window.confirm(leaveConfirmMessage(activeSource))) {
       next();
       return;
     }
@@ -59,7 +61,7 @@ export function uninstallBulkDeleteGuard() {
 }
 
 /** @returns {boolean} true if caller should abort the close/navigation */
-export function confirmBulkDeleteInterrupt(isActive) {
+export function confirmBulkDeleteInterrupt(isActive, activeSource = null) {
   if (!isActive) return false;
-  return !window.confirm(leaveConfirmMessage());
+  return !window.confirm(leaveConfirmMessage(activeSource));
 }

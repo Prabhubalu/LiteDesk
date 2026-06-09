@@ -331,6 +331,7 @@ import { useActiveSurface } from '@/composables/useActiveSurface';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
 import { useCommandPaletteCommands } from '@/composables/useCommandPaletteCommands';
+import { settingsCommandSortOrder } from '@/utils/buildSettingsPaletteCommands';
 import type { CommandPaletteItem, CommandContext, NavigationUtilities } from '@/types/commandPalette.types';
 import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
@@ -1375,14 +1376,26 @@ const groupedCommandSections = computed<CommandSection[]>(() => {
 
   const globalCreate = cmds.filter((c) => c.scope === 'global' && c.category === 'create');
   const globalAction = cmds.filter((c) => c.scope === 'global' && c.category === 'action');
+  const globalSettings = cmds
+    .filter((c) => c.scope === 'global' && c.category === 'settings')
+    .sort((a, b) => settingsCommandSortOrder(a.id) - settingsCommandSortOrder(b.id));
   if (globalCreate.length) {
     sections.push({ id: 'create', labelKey: 'globalSearchGroupCreate', commands: globalCreate });
   }
   if (globalAction.length) {
     sections.push({ id: 'actions', labelKey: 'globalSearchGroupActions', commands: globalAction });
   }
+  if (globalSettings.length) {
+    sections.push({ id: 'settings', labelKey: 'globalSearchGroupConfiguration', commands: globalSettings });
+  }
 
-  const categorized = new Set([...contextual, ...globalNav, ...globalCreate, ...globalAction]);
+  const categorized = new Set([
+    ...contextual,
+    ...globalNav,
+    ...globalCreate,
+    ...globalAction,
+    ...globalSettings,
+  ]);
   const uncategorized = cmds.filter((c) => !categorized.has(c));
   if (uncategorized.length) {
     sections.push({ id: 'other', labelKey: 'globalSearchCommandsHeader', commands: uncategorized });

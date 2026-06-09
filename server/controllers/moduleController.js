@@ -858,6 +858,7 @@ function getBaseFieldsForKey(key) {
             'deletedAt',
             'deletedBy',
             'deletionReason',
+            'playbookState',
             // Import job linkage - set by import pipeline only
             'importHistoryId',
             // Form-specific nested objects that shouldn't be fields
@@ -4892,6 +4893,106 @@ exports.updateSystemModule = async (req, res) => {
     } catch (error) {
         console.error('❌ Error updating system module:', error);
         res.status(500).json({ success: false, message: 'Error updating system module', error: error.message });
+    }
+};
+
+exports.addModuleFieldPicklistOption = async (req, res) => {
+    try {
+        const keyLower = String(req.params.key || '').toLowerCase();
+        const fieldKey = String(req.params.fieldKey || '').trim();
+        const rawValue = String(req.body?.value || req.body?.label || '').trim();
+        const {
+            canAddPicklistOptionInline,
+            optionExists,
+            buildPicklistOptionEntry,
+        } = require('../utils/picklistInlineOptionCreate');
+
+        const systemKeys = new Set([
+            'people', 'organizations', 'deals', 'cases', 'tasks', 'events', 'forms', 'items', 'quotes', 'sales_orders', 'invoices', 'payments',
+            'imports', 'reports'
+        ]);
+        if (!systemKeys.has(keyLower)) {
+            return res.status(400).json({ success: false, message: 'Invalid system module key' });
+        }
+        if (!fieldKey || !rawValue) {
+            return res.status(400).json({ success: false, message: 'Field key and value are required' });
+        }
+
+        const mongoose = require('mongoose');
+        const orgObjectId = new mongoose.Types.ObjectId(req.user.organizationId);
+        const orgFilterMongoose = {
+            organizationId: req.user.organizationId,
+            $or: [{ key: keyLower }, { moduleKey: keyLower }]
+        };
+
+        const existingMod = await ModuleDefinition.findOne(orgFilterMongoose).select('+fields').lean();
+        const baseFields = getBaseFieldsForKey(keyLower);
+        let fields = Array.isArray(existingMod?.fields) && existingMod.fields.length > 0
+            ? JSON.parse(JSON.stringify(existingMod.fields))
+            : JSON.parse(JSON.stringify(baseFields));
+
+        const fieldIdx = fields.findIndex((f) => String(f?.key || '').toLowerCase() === fieldKey.toLowerCase());
+        if (fieldIdx < 0) {
+            return res.status(404).json({ success: false, message: 'Field not found' });
+        }
+
+        const field = fields[fieldIdx];
+        if (!canAddPicklistOptionInline(keyLower, field)) {
+            return res.status(403).json({
+                success: false,
+                message: 'This picklist does not allow inline option creation',
+                code: 'PICKLIST_OPTION_CREATE_NOT_ALLOWED',
+            });
+        }
+
+        const optionEntry = buildPicklistOptionEntry(rawValue, fieldKey, keyLower, {
+            label: req.body?.label,
+            color: req.body?.color,
+            existingOptions: field.options,
+        });
+        if (!optionEntry) {
+            return res.status(400).json({ success: false, message: 'Invalid picklist option value' });
+        }
+        if (optionExists(field.options, optionEntry.value)) {
+            return res.json({ success: true, data: optionEntry, message: 'Option already exists' });
+        }
+
+        fields[fieldIdx] = {
+            ...field,
+            options: [...(Array.isArray(field.options) ? field.options : []), optionEntry],
+        };
+
+        const db = mongoose.connection.db;
+        const collection = db.collection('moduledefinitions');
+        await collection.updateOne(
+            orgFilterMongoose,
+            {
+                $set: {
+                    fields,
+                    organizationId: orgObjectId,
+                    key: keyLower,
+                    moduleKey: keyLower,
+                    type: 'system',
+                    label: keyLower.charAt(0).toUpperCase() + keyLower.slice(1),
+                    pluralLabel: `${keyLower.charAt(0).toUpperCase()}${keyLower.slice(1)}s`,
+                    entityType: 'CORE',
+                    updatedAt: new Date(),
+                },
+                $setOnInsert: {
+                    createdAt: new Date(),
+                },
+            },
+            { upsert: true }
+        );
+
+        return res.status(201).json({ success: true, data: optionEntry });
+    } catch (error) {
+        console.error('addModuleFieldPicklistOption error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to add picklist option',
+            error: error.message,
+        });
     }
 };
 

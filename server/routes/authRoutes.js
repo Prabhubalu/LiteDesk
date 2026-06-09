@@ -1,5 +1,10 @@
 const express = require('express');
 const { registerUser, loginUser } = require('../controllers/authController');
+const {
+    validateInvite,
+    acceptInvite,
+    confirmEmailVerification
+} = require('../controllers/userInviteAuthController');
 const { 
     authLimiter, 
     registrationLimiter, 
@@ -20,6 +25,11 @@ router.get('/test-version', (req, res) => {
 // Apply strict rate limiting to authentication endpoints
 router.post('/register', registrationLimiter, registerUser);
 router.post('/login', progressiveAuthThrottle, authLimiter, loginUser);
+
+router.get('/invite/validate', passwordResetLimiter, validateInvite);
+router.post('/invite/accept', passwordResetLimiter, acceptInvite);
+router.get('/verify-email/confirm', passwordResetLimiter, confirmEmailVerification);
+router.post('/verify-email/confirm', passwordResetLimiter, confirmEmailVerification);
 
 // Note: Add password reset route with passwordResetLimiter when implemented
 // router.post('/forgot-password', passwordResetLimiter, forgotPassword);

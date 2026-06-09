@@ -128,11 +128,18 @@
             size="md"
           />
           <div class="min-w-0 flex-1">
-            <span
-              class="block min-w-0 font-semibold text-gray-900 dark:text-white truncate"
-            >
-              {{ row.name }}
-            </span>
+            <div class="flex items-center gap-2 min-w-0">
+              <span
+                class="block min-w-0 font-semibold text-gray-900 dark:text-white truncate"
+              >
+                {{ row.name }}
+              </span>
+              <DealPlaybookStatusBadge
+                :playbook-state="row.playbookState"
+                size="md"
+                class="shrink-0"
+              />
+            </div>
             <div
               v-if="row.account?.name"
               class="min-w-0 text-sm text-gray-500 dark:text-gray-400 truncate"
@@ -282,8 +289,23 @@
         </template>
         <template #card="{ item: deal }">
           <!-- Title (name) -->
-          <div v-if="kanbanShownFieldKeys.includes('name') && (kanbanShowEmptyFields || (deal.name != null && deal.name !== ''))" class="mb-3">
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white leading-tight line-clamp-2">{{ deal.name || '—' }}</h4>
+          <div
+            v-if="kanbanShownFieldKeys.includes('name') && (kanbanShowEmptyFields || (deal.name != null && deal.name !== ''))"
+            class="mb-3 flex items-start justify-between gap-2"
+          >
+            <h4 class="text-sm font-semibold text-gray-900 dark:text-white leading-tight line-clamp-2 min-w-0 flex-1">
+              {{ deal.name || '—' }}
+            </h4>
+            <DealPlaybookStatusBadge
+              :playbook-state="deal.playbookState"
+              class="shrink-0 mt-0.5"
+            />
+          </div>
+          <div
+            v-else-if="deal.playbookState?.actions?.length"
+            class="mb-3 flex justify-end"
+          >
+            <DealPlaybookStatusBadge :playbook-state="deal.playbookState" />
           </div>
           <!-- Meta row: all other shown fields (amount, date, probability, etc.) in Customize Kanban order -->
           <div
@@ -408,6 +430,7 @@ import Avatar from '@/components/common/Avatar.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import KanbanBoard from '@/components/common/KanbanBoard.vue';
+import DealPlaybookStatusBadge from '@/components/deals/DealPlaybookStatusBadge.vue';
 import { getModuleListConfig } from '@/platform/modules/moduleListRegistry';
 import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
 import { ViewColumnsIcon, ListBulletIcon, UserIcon, CalendarDaysIcon, InboxIcon, RectangleStackIcon, PlusIcon, BuildingOfficeIcon, ChartBarIcon, BanknotesIcon, HashtagIcon } from '@heroicons/vue/24/outline';

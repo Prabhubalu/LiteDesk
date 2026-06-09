@@ -130,6 +130,9 @@ import ListView from '@/components/common/ListView.vue';
 import apiClient from '@/utils/apiClient';
 import { getStateFields } from '@/platform/fields/peopleFieldModel';
 import { getParticipation } from '@/utils/getParticipation';
+import {
+  resolvePeopleListParticipationColumnLabel,
+} from '@/utils/peopleParticipationUi';
 import { getModuleListConfig, hasModuleListConfig, getSystemViews } from '@/platform/modules/moduleListRegistry';
 import {
   buildFilterFieldsFromModuleFields,
@@ -139,12 +142,15 @@ import { normalizeListPagination } from '@/utils/normalizeListPagination';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import { allSettledWithConcurrency } from '@/utils/allSettledWithConcurrency';
 import { startBulkDelete } from '@/utils/runBulkDelete';
+import { startBulkUpdate } from '@/utils/runBulkUpdate';
 import { yieldToUi } from '@/utils/uiYield';
 import {
   clearListSession,
   getListSession,
   getListSessionKey,
   LIST_SESSION_RESTORE_KEY,
+  LIST_SESSION_SCROLL_CONCEAL_KEY,
+  LIST_SESSION_PAGES_READY_KEY,
   patchListSession
 } from '@/utils/listScrollSession';
 import {
@@ -229,7 +235,36 @@ const showListShellSkeleton = computed(
 
 const pendingListSessionRestore = ref(null);
 const sessionRestoreTick = ref(0);
+const listSessionScrollConcealing = ref(false);
+const listSessionPagesReady = ref(true);
 provide(LIST_SESSION_RESTORE_KEY, sessionRestoreTick);
+provide(LIST_SESSION_SCROLL_CONCEAL_KEY, listSessionScrollConcealing);
+provide(LIST_SESSION_PAGES_READY_KEY, listSessionPagesReady);
+
+function beginListSessionRestore() {
+  listSessionPagesReady.value = false;
+  listSessionScrollConcealing.value = true;
+}
+
+function completeListSessionRestore() {
+  listSessionPagesReady.value = true;
+  bumpSessionRestoreTick();
+}
+
+function sessionNeedsScrollConceal(session) {
+  if (!session) return false;
+  const targetPage = Math.max(1, Number(session.currentPage) || 1);
+  const scrollTop = Number(session.scrollTop);
+  return targetPage > 1 || (Number.isFinite(scrollTop) && scrollTop > 0);
+}
+
+function finishListSessionPageRestore() {
+  const session = getListSession(listSessionKey.value);
+  const scrollTop = Number(session?.scrollTop);
+  if (!Number.isFinite(scrollTop) || scrollTop <= 0) {
+    listSessionScrollConcealing.value = false;
+  }
+}
 
 function bumpSessionRestoreTick() {
   sessionRestoreTick.value += 1;
@@ -258,7 +293,8 @@ async function restoreListSessionPages() {
   }
 
   pendingListSessionRestore.value = null;
-  bumpSessionRestoreTick();
+  completeListSessionRestore();
+  finishListSessionPageRestore();
 }
 
 async function applyListSessionOnActivate() {
@@ -269,7 +305,8 @@ async function applyListSessionOnActivate() {
   const currentPage = normalizeListPagination(pagination.value).currentPage;
 
   if (data.value.length > 0 && currentPage >= targetPage) {
-    bumpSessionRestoreTick();
+    completeListSessionRestore();
+    finishListSessionPageRestore();
     return;
   }
 
@@ -301,20 +338,45 @@ function onBulkDeleteCompleteForList(event) {
   void fetchData();
 }
 
+function onBulkUpdateCompleteForList(event) {
+  onBulkDeleteCompleteForList(event);
+}
+
 onMounted(() => {
   window.addEventListener('litedesk:import-complete', onImportCompleteForList);
   window.addEventListener('litedesk:bulk-delete-complete', onBulkDeleteCompleteForList);
+  window.addEventListener('litedesk:bulk-update-complete', onBulkUpdateCompleteForList);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('litedesk:import-complete', onImportCompleteForList);
   window.removeEventListener('litedesk:bulk-delete-complete', onBulkDeleteCompleteForList);
+  window.removeEventListener('litedesk:bulk-update-complete', onBulkUpdateCompleteForList);
 });
 
 onDeactivated(() => {
   patchListSession(listSessionKey.value, {
     currentPage: normalizeListPagination(pagination.value).currentPage
   });
+  listSessionScrollConcealing.value = false;
+  listSessionPagesReady.value = true;
+
+  replaceAbortController?.abort();
+  appendAbortController?.abort();
+  appendAbortController = null;
+  loadingMore.value = false;
+  dataLoading.value = false;
+
+  // Release table VNodes while keep-alive caches this route; session restores on activate.
+  if (data.value.length > 0) {
+    listDataEpoch.value += 1;
+    data.value = [];
+    pagination.value = {
+      ...pagination.value,
+      currentPage: 1,
+      page: 1
+    };
+  }
 });
 
 async function restoreListSessionAfterFetch() {
@@ -326,7 +388,8 @@ async function restoreListSessionAfterFetch() {
     pendingListSessionRestore.value = session;
     await restoreListSessionPages();
   } else {
-    bumpSessionRestoreTick();
+    completeListSessionRestore();
+    finishListSessionPageRestore();
   }
 }
 
@@ -356,18 +419,27 @@ onActivated(async () => {
   }
 
   if (consumeImportListRefreshPending(props.moduleKey)) {
+    listSessionScrollConcealing.value = false;
     await refreshListAfterImport();
     return;
   }
 
   if (data.value.length > 0 && listDefinition.value) {
     await applyListSessionOnActivate();
-    bumpSessionRestoreTick();
+    finishListSessionPageRestore();
     return;
   }
 
   if (listDefinition.value) {
+    const session = getListSession(listSessionKey.value);
+    if (data.value.length === 0 && sessionNeedsScrollConceal(session)) {
+      beginListSessionRestore();
+    }
     await initialListFetch();
+    if (!listSessionPagesReady.value) {
+      completeListSessionRestore();
+    }
+    finishListSessionPageRestore();
     return;
   }
 
@@ -619,9 +691,20 @@ const adaptedColumns = computed(() => {
   
   return listDefinition.value.columns.map(col => {
     const fieldDef = moduleFieldDefinitions.value.find((f) => f.key === col.key);
+    const defaultLabel = resolveListColumnLabel(props.moduleKey, col.key, col.label, t, te);
+    const label =
+      props.moduleKey === 'people'
+        ? resolvePeopleListParticipationColumnLabel(
+            col.key,
+            props.peopleContext || 'ALL',
+            () => defaultLabel,
+            t,
+            te
+          )
+        : defaultLabel;
     return {
       key: col.key,
-      label: resolveListColumnLabel(props.moduleKey, col.key, col.label, t, te),
+      label,
       sortable: col.sortable ?? false,
       sortKey: col.fieldPath || col.key,
       dataType: col.dataType,
@@ -637,12 +720,25 @@ const adaptedFilterFields = computed(() => {
     moduleFieldDefinitions.value,
     props.moduleKey,
     authStore.inventoryEnabled
-  ).map((field) => ({
-    key: field.key,
-    label: resolveListColumnLabel(props.moduleKey, field.key, field.label, t, te),
-    dataType: field.dataType,
-    options: field.options,
-  }));
+  ).map((field) => {
+    const defaultLabel = resolveListColumnLabel(props.moduleKey, field.key, field.label, t, te);
+    const label =
+      props.moduleKey === 'people'
+        ? resolvePeopleListParticipationColumnLabel(
+            field.key,
+            props.peopleContext || 'ALL',
+            () => defaultLabel,
+            t,
+            te
+          )
+        : defaultLabel;
+    return {
+      key: field.key,
+      label,
+      dataType: field.dataType,
+      options: field.options,
+    };
+  });
 });
 
 const listPageTitle = computed(() => resolveListPageTitle(props.moduleKey, t, te));
@@ -1835,8 +1931,84 @@ const handleDelete = async (row) => {
   }
 };
 
+function buildListQueryForBulkOperations() {
+  return buildListQueryForBulkDelete();
+}
+
 const handleBulkAction = async (action, payloadOrRows) => {
   const isDeleteAction = action === 'bulk-delete' || action === 'delete';
+  const isMassEditAction = action === 'mass-edit';
+
+  if (isMassEditAction) {
+    const payload = isBulkSelectionPayload(payloadOrRows) ? payloadOrRows : null;
+    const updates = payload?.updates && typeof payload.updates === 'object' ? payload.updates : null;
+    if (!updates || Object.keys(updates).length === 0) {
+      alert(t('common.massEditSelectFieldHint'));
+      return;
+    }
+
+    startBulkUpdate({
+      moduleKey: props.moduleKey,
+      updates,
+      selection: payload,
+      pageIds: !payload && Array.isArray(payloadOrRows)
+        ? payloadOrRows.map((r) => String(r?._id || r?.id || r?.eventId || r)).filter(Boolean)
+        : null,
+      listQuery: buildListQueryForBulkOperations(),
+      options: { appKey: props.appKey, routePath: String(route.path || '') },
+      onComplete: (outcome) => {
+        void (async () => {
+          if (outcome.cancelled) {
+            if (outcome.updatedCount > 0) await fetchData();
+            return;
+          }
+          const {
+            updatedCount,
+            skippedCount,
+            failedCount,
+            firstError,
+            requestedCount,
+          } = outcome;
+          const totalAttempted = updatedCount + skippedCount + failedCount;
+          const hadSelection = Number(requestedCount || 0) > 0;
+
+          if (!props.moduleKey || (totalAttempted === 0 && !hadSelection)) {
+            alert(t('common.massEditNoSelection'));
+            return;
+          }
+          if (totalAttempted === 0 && hadSelection) {
+            alert(t('common.massEditNoMatches'));
+            return;
+          }
+          if (failedCount > 0) {
+            const errorMessage =
+              firstError?.response?.data?.message ||
+              firstError?.message ||
+              t('common.massEditFailed');
+            alert(
+              failedCount === totalAttempted
+                ? errorMessage
+                : t('common.massEditPartialFailed', { failed: failedCount, total: totalAttempted, message: errorMessage })
+            );
+            if (updatedCount > 0) await fetchData();
+            return;
+          }
+          if (skippedCount > 0) {
+            alert(t('common.massEditPartialSkipped', { updated: updatedCount, skipped: skippedCount }));
+          }
+          await fetchData();
+        })();
+      },
+      onError: (error) => {
+        const errorMessage =
+          error?.response?.data?.message ||
+          error?.message ||
+          t('common.massEditFailed');
+        alert(errorMessage);
+      },
+    });
+    return;
+  }
 
   if (isDeleteAction) {
     startBulkDelete({

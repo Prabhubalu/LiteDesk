@@ -1,5 +1,9 @@
 export declare const LIST_SESSION_RESTORE_KEY: unique symbol;
 
+export declare const LIST_SESSION_SCROLL_CONCEAL_KEY: unique symbol;
+
+export declare const LIST_SESSION_PAGES_READY_KEY: unique symbol;
+
 export interface ListSessionState {
   scrollTop?: number;
   currentPage?: number;
@@ -21,3 +25,5 @@ export function patchListSession(
 ): void;
 
 export function clearListSession(key: string | null | undefined): void;
+
+export function clearListSessionsForRoutePath(routePath: string | null | undefined): void;

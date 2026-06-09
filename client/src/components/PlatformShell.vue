@@ -32,6 +32,8 @@
         ]"
         :style="{ '--table-sticky-offset': tableStickyOffset }"
       >
+        <EmailVerificationBanner class="-mx-4 mb-2 lg:-mx-6" />
+
         <!-- Router view for dynamic routes; flex-1 min-h-0 so full-height record pages get a defined height -->
         <div
           :class="[
@@ -41,7 +43,7 @@
         >
           <RouterView v-slot="{ Component }">
             <!-- Cap cached route trees: each slot can hold a large list/record page. -->
-            <keep-alive :max="10">
+            <keep-alive :max="5">
               <component
                 :is="Component"
                 :key="routerViewKey"
@@ -67,10 +69,13 @@ const { t } = useI18n();
  * App layouts must NEVER own global surfaces - see GlobalSurfacesProvider.vue.
  */
 
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Nav from '@/components/Nav.vue';
 import TabBar from '@/components/TabBar.vue';
+const EmailVerificationBanner = defineAsyncComponent(() =>
+  import('@/components/auth/EmailVerificationBanner.vue')
+);
 import { useAppShellStore } from '@/stores/appShell';
 import { useTabs } from '@/composables/useTabs';
 import { useSidebarState } from '@/composables/useSidebarState';
@@ -78,10 +83,11 @@ import { useSidebarState } from '@/composables/useSidebarState';
 const route = useRoute();
 const appShellStore = useAppShellStore();
 
-/** Avoid remounting whole views when only query params change (e.g. inbox ?thread=). */
+/** Avoid remounting whole views when only query params change (e.g. inbox ?thread=, settings ?module=). */
 const routerViewKey = computed(() => {
   const name = typeof route.name === 'string' ? route.name : '';
   if (name === 'inbox') return route.path;
+  if (route.path.startsWith('/settings')) return route.path;
   const recordId = route.params?.id ?? route.params?.recordId;
   if (recordId && typeof recordId === 'string') {
     if (

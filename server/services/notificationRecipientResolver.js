@@ -51,6 +51,8 @@ async function resolveKey(key, context) {
       return resolveCaseNotifyTargets(context);
     case 'INBOX_SNOOZE_USER':
       return resolveInboxSnoozeWake(context);
+    case 'PLAYBOOK_ALERT_RECIPIENTS':
+      return resolvePlaybookAlertRecipients(context);
     default:
       console.warn('[notificationRecipientResolver] Unhandled recipient key:', key);
       return [];
@@ -97,6 +99,32 @@ async function resolvePeopleAssignee({ entity, organizationId, eventType }) {
       : `Update on contact "${label}".`;
 
   return [{ userId: row.assignedTo, title, body }];
+}
+
+async function resolvePlaybookAlertRecipients({ entity, organizationId }) {
+  const recipientUserIds = Array.isArray(entity?.alertRecipientUserIds)
+    ? entity.alertRecipientUserIds
+    : [];
+  if (!recipientUserIds.length || !organizationId) {
+    return [];
+  }
+
+  const users = await User.find({
+    _id: { $in: recipientUserIds },
+    organizationId,
+    status: { $in: ['active', null] }
+  }).select('_id');
+
+  const actionTitle = entity?.actionTitle || 'Playbook activity';
+  const dealTitle = entity?.title || 'Deal';
+  const title = `Playbook: ${actionTitle}`;
+  const body = `Reminder for "${actionTitle}" on deal "${dealTitle}".`;
+
+  return users.map((user) => ({
+    userId: user._id,
+    title,
+    body
+  }));
 }
 
 async function resolveDealOwnerNotify({ entity, organizationId, eventType }) {

@@ -293,7 +293,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount, onActivated, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount, onActivated, onDeactivated, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { CheckIcon } from '@heroicons/vue/24/solid';
@@ -344,6 +344,27 @@ const refreshSidebarOffset = () => {
   }
 };
 let sidebarOffsetInterval = null;
+let sidebarOffsetSyncActive = false;
+
+const startSidebarOffsetSync = () => {
+  if (sidebarOffsetSyncActive) return;
+  sidebarOffsetSyncActive = true;
+  refreshSidebarOffset();
+  window.addEventListener('storage', refreshSidebarOffset);
+  window.addEventListener('resize', refreshSidebarOffset);
+  sidebarOffsetInterval = window.setInterval(refreshSidebarOffset, 200);
+};
+
+const stopSidebarOffsetSync = () => {
+  if (!sidebarOffsetSyncActive) return;
+  sidebarOffsetSyncActive = false;
+  window.removeEventListener('storage', refreshSidebarOffset);
+  window.removeEventListener('resize', refreshSidebarOffset);
+  if (sidebarOffsetInterval) {
+    clearInterval(sidebarOffsetInterval);
+    sidebarOffsetInterval = null;
+  }
+};
 
 const formData = ref({
   name: '',
@@ -1187,13 +1208,6 @@ onMounted(async () => {
   if (formNameInput.value) {
     formNameInput.value.focus();
   }
-  // keep sidebar offset in sync with sidebar state
-  refreshSidebarOffset();
-  window.addEventListener('storage', refreshSidebarOffset);
-  window.addEventListener('resize', refreshSidebarOffset);
-  // lightweight, fast polling to catch sidebar toggle without storage/resize events
-  sidebarOffsetInterval = window.setInterval(refreshSidebarOffset, 60);
-  
   // Add beforeunload listener for page refresh/close
   window.addEventListener('beforeunload', handleBeforeUnload);
 
@@ -1563,19 +1577,16 @@ onMounted(async () => {
 // Handle keep-alive component activation
 // This is called when a cached component is activated (switched to)
 onActivated(() => {
-  console.log('🔵 onActivated: Component activated (keep-alive)', {
-    route: route.path,
-    routeId: route.params.id,
-    isEditing: isEditing.value,
-    formName: formData.value.name
-  });
-  
+  startSidebarOffsetSync();
+
   // Re-setup tab close handler when component is activated
-  // This ensures the handler is always attached, even if component was reused
   setTimeout(() => {
-    console.log('🔵 onActivated: Re-setting up tab close handler');
     setupTabCloseHandler();
   }, 300);
+});
+
+onDeactivated(() => {
+  stopSidebarOffsetSync();
 });
 
 onBeforeUnmount(() => {
@@ -1609,13 +1620,8 @@ onBeforeUnmount(() => {
   if (typeof autoSaveTimer !== 'undefined' && autoSaveTimer !== null) {
     clearTimeout(autoSaveTimer);
   }
-  window.removeEventListener('storage', refreshSidebarOffset);
-  window.removeEventListener('resize', refreshSidebarOffset);
+  stopSidebarOffsetSync();
   window.removeEventListener('beforeunload', handleBeforeUnload);
-  if (sidebarOffsetInterval) {
-    clearInterval(sidebarOffsetInterval);
-    sidebarOffsetInterval = null;
-  }
   
   // Final save attempt before component unmounts (critical fallback)
   // This runs when the component is about to be destroyed, regardless of how it's closed

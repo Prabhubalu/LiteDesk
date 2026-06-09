@@ -18,6 +18,7 @@ export function createRecordSectionLabels(t) {
     details: t('records.detailsTitle'),
     related: t('records.relatedRecordsTitle'),
     stageHistory: t('records.stageHistoryTitle'),
+    stagePlaybook: t('records.stagePlaybookTitle'),
     subtasks: t('records.subtasksTitle'),
     subtasksWithCount: (completed, total) =>
       t('records.subtasksTitleWithCount', { completed, total }),

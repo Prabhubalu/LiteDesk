@@ -5155,6 +5155,14 @@
     "message": "Specify {type}",
     "description": "Assignment target placeholder"
   },
+  "modFieldsAssignmentTargetsLoading": {
+    "message": "正在加载分配选项...",
+    "description": "Playbook assignment picker loading state"
+  },
+  "modFieldsSelectAssignmentTargetPh": {
+    "message": "选择{target}",
+    "description": "Playbook assignment target picker placeholder"
+  },
   "modFieldsRequiredCompleteStage": {
     "message": "Required to complete stage",
     "description": "Required activity checkbox"
@@ -10942,5 +10950,357 @@
   "settingsAppMgmtDescInventory": {
     "message": "Stock ledger, locations, reservations, and fulfillment operations.",
     "description": "App management Inventory description"
+  },
+  "salesPlayModeFlexible": {
+    "message": "Flexible (non-sequential)",
+    "description": "Non-sequential playbook mode"
+  },
+  "salesPlayTitleMoveUp": {
+    "message": "Move up",
+    "description": "Move activity up button title"
+  },
+  "salesPlayTitleMoveDown": {
+    "message": "Move down",
+    "description": "Move activity down button title"
+  },
+  "salesPlayDependenciesCountOne": {
+    "message": "{count} dependency",
+    "description": "Single dependency badge"
+  },
+  "salesPlayDependenciesCountOther": {
+    "message": "{count} dependencies",
+    "description": "Multiple dependencies badge"
+  },
+  "salesPlayPipelineSummary": {
+    "message": "{enabled} of {total} stages enabled · {activities} activities",
+    "description": "Pipeline playbook coverage summary"
+  },
+  "salesPlayStageActivityCountOne": {
+    "message": "{count} activity",
+    "description": "Stage activity count singular"
+  },
+  "salesPlayStageActivityCountOther": {
+    "message": "{count} activities",
+    "description": "Stage activity count plural"
+  },
+  "salesPlayStepLabel": {
+    "message": "Step {number}",
+    "description": "Activity step label in timeline"
+  },
+  "salesPlayConfigureHint": {
+    "message": "Click to configure",
+    "description": "Activity card configure hint"
+  },
+  "salesPlayEmptyAddFirst": {
+    "message": "Add your first activity",
+    "description": "Empty state add first activity button"
+  },
+  "salesPlayQuickAddTitle": {
+    "message": "{type} {number}",
+    "description": "Default title when quick-adding typed activity"
+  },
+  "salesPlayConfigurePipelines": {
+    "message": "Configure pipelines",
+    "description": "Navigate to pipelines settings button"
+  },
+  "salesPlayPipelineLabel": {
+    "message": "Pipeline",
+    "description": "Pipeline selector label in toolbar"
+  },
+  "salesPlayJumpToStage": {
+    "message": "Jump to {stage}",
+    "description": "Stage jump chip aria label"
+  },
+  "salesPlayRuntimeActiveDeals": {
+    "message": "{count} active playbook deals",
+    "description": "Runtime playbook analytics active deal count"
+  },
+  "salesPlayRuntimeCompletion": {
+    "message": "{rate}% action completion",
+    "description": "Runtime playbook action completion rate"
+  },
+  "salesPlayRuntimeOverdue": {
+    "message": "{count} overdue",
+    "description": "Runtime playbook overdue action count"
+  },
+  "salesPlayRuntimeBlocked": {
+    "message": "{count} blocked",
+    "description": "Runtime playbook blocked action count"
+  },
+  "salesPlayAdoptionTitle": {
+    "message": "Enable playbooks to guide reps through each stage",
+    "description": "Adoption banner title when no playbooks enabled"
+  },
+  "salesPlayAdoptionHint": {
+    "message": "Turn on a stage playbook and add activities. Reps will see a checklist on deals and tasks can auto-create on stage entry.",
+    "description": "Adoption banner hint"
+  },
+  "salesPlayConfigWarningsTitle": {
+    "message": "Review before saving",
+    "description": "Config validation warnings panel title"
+  },
+  "salesPlayWarnEmptyPlaybook": {
+    "message": "{stage}: playbook is enabled but has no activities",
+    "description": "Empty enabled playbook warning"
+  },
+  "salesPlayWarnAutoAdvanceNoStage": {
+    "message": "{stage}: auto-advance is on but no next stage is selected",
+    "description": "Auto-advance missing target warning"
+  },
+  "salesPlayWarnCustomExitNoConditions": {
+    "message": "{stage}: custom exit has no deal field conditions (will never auto-complete)",
+    "description": "Custom exit missing conditions warning"
+  },
+  "salesPlayWarnAssignmentTarget": {
+    "message": "{stage} · {activity}: assignment target is missing",
+    "description": "Missing assignment target warning"
+  },
+  "salesPlayWarnAfterActionSource": {
+    "message": "{stage} · {activity}: after-action trigger needs a source activity",
+    "description": "After-action missing source warning"
+  },
+  "salesPlayWarnAfterActionInvalidSource": {
+    "message": "{stage} · {activity}: after-action source activity was not found",
+    "description": "After-action invalid source warning"
+  },
+  "salesPlayWarnInvalidDependency": {
+    "message": "{stage} · {activity}: dependency references a missing activity",
+    "description": "Invalid dependency warning"
+  },
+  "salesPlaySaveWithWarningsConfirm": {
+    "message": "Save playbooks with these warnings?",
+    "description": "Confirm save when config warnings exist"
+  },
+  "salesPlayExitConditionsHint": {
+    "message": "All conditions must pass on the deal and required activities must be complete.",
+    "description": "Custom exit conditions helper"
+  },
+  "salesPlayRemoveCondition": {
+    "message": "Remove",
+    "description": "Remove exit condition button"
+  },
+  "salesPlayExitFieldAmount": {
+    "message": "Amount",
+    "description": "Deal exit condition field"
+  },
+  "salesPlayExitFieldProbability": {
+    "message": "Probability",
+    "description": "Deal exit condition field"
+  },
+  "salesPlayExitFieldStage": {
+    "message": "Stage",
+    "description": "Deal exit condition field"
+  },
+  "salesPlayExitFieldStatus": {
+    "message": "Status",
+    "description": "Deal exit condition field"
+  },
+  "salesPlayExitFieldPriority": {
+    "message": "Priority",
+    "description": "Deal exit condition field"
+  },
+  "salesPlayExitFieldType": {
+    "message": "Type",
+    "description": "Deal exit condition field"
+  },
+  "salesPlayExitFieldDerivedStatus": {
+    "message": "Derived status",
+    "description": "Deal exit condition field"
+  },
+  "salesPlayExitFieldCurrency": {
+    "message": "Currency",
+    "description": "Deal exit condition field"
+  },
+  "appsSalesAssignment": {
+    "message": "Assignment routing",
+    "description": "Sales app option"
+  },
+  "appsSalesAssignmentDesc": {
+    "message": "Route deals, people, and other Sales records to groups based on conditions",
+    "description": "Sales app option desc"
+  },
+  "appsDescInventory": {
+    "message": "Stock ledger, locations, reservations, and fulfillment",
+    "description": "Inventory app description"
+  },
+  "salesPlayDisabledBadge": {
+    "message": "Disabled",
+    "description": "Disabled playbook badge on stage card"
+  },
+  "salesPlayDisabledTitle": {
+    "message": "Playbook disabled",
+    "description": "Disabled playbook empty state title"
+  },
+  "salesPlayEnableCta": {
+    "message": "Enable playbook",
+    "description": "Button to enable a disabled stage playbook"
+  },
+  "salesPipeSetDefaultTitle": {
+    "message": "Set as default pipeline",
+    "description": "Star button tooltip to set default pipeline"
+  },
+  "salesPipeColProbability": {
+    "message": "Prob.",
+    "description": "Short column header for stage probability"
+  },
+  "inviteSuccessCreated": {
+    "message": "User invited successfully",
+    "description": "Invite modal success title"
+  },
+  "inviteSuccessEmailSent": {
+    "message": "Invitation email sent to {email}",
+    "description": "Invite success when email sent"
+  },
+  "inviteSuccessEmailVerifyHint": {
+    "message": "They can accept the invite from their email. Accepting also verifies their email address.",
+    "description": "Invite success hint about email verification"
+  },
+  "inviteSuccessEmailFailed": {
+    "message": "User was created, but the invitation email could not be sent: {reason}",
+    "description": "Invite success when email failed"
+  },
+  "inviteSuccessEmailFailedGeneric": {
+    "message": "email service unavailable",
+    "description": "Generic email failure reason"
+  },
+  "inviteSuccessVerificationSent": {
+    "message": "A verification email was sent to {email}. They can sign in now and verify later.",
+    "description": "Invite success when verification email sent without invite link"
+  },
+  "inviteSuccessManualDelivery": {
+    "message": "Share login credentials with the user securely. They will see a reminder to verify their email after signing in.",
+    "description": "Invite success for manual credential delivery"
+  },
+  "inviteDrawerSubtitle": {
+    "message": "Add a team member and configure their access.",
+    "description": "Invite drawer subtitle"
+  },
+  "inviteSectionProfile": {
+    "message": "Profile",
+    "description": "Invite drawer profile section"
+  },
+  "inviteSectionAccess": {
+    "message": "Access",
+    "description": "Invite drawer access section"
+  },
+  "inviteSectionCredentials": {
+    "message": "Credentials & delivery",
+    "description": "Invite drawer credentials section"
+  },
+  "usersStatPending": {
+    "message": "Pending Invite",
+    "description": "Users awaiting invite acceptance"
+  },
+  "usersSearchPlaceholder": {
+    "message": "Search by name or email…",
+    "description": "Users table search placeholder"
+  },
+  "usersFilterAll": {
+    "message": "All users",
+    "description": "Clear user status filter"
+  },
+  "usersFilterRole": {
+    "message": "All roles",
+    "description": "Role filter default option"
+  },
+  "usersFilterRoleLabel": {
+    "message": "Role",
+    "description": "Role filter label"
+  },
+  "usersStatusInvited": {
+    "message": "Invited",
+    "description": "User status invited"
+  },
+  "usersEmailUnverified": {
+    "message": "Unverified",
+    "description": "Email not yet verified badge"
+  },
+  "usersEmptyTitle": {
+    "message": "No users yet",
+    "description": "Empty users table title"
+  },
+  "usersEmptyBody": {
+    "message": "Invite teammates to collaborate in your workspace.",
+    "description": "Empty users table body"
+  },
+  "usersEmptyFilteredTitle": {
+    "message": "No users match your filters",
+    "description": "Empty users table when filters applied"
+  },
+  "usersEmptyFilteredBody": {
+    "message": "Try adjusting your search or filter criteria.",
+    "description": "Empty users table filtered body"
+  },
+  "usersEmptyCta": {
+    "message": "Invite your first user",
+    "description": "Empty users table CTA"
+  },
+  "usersClearFilters": {
+    "message": "Clear filters",
+    "description": "Reset user list filters"
+  },
+  "usersActivatedSuccess": {
+    "message": "User activated",
+    "description": "Single user activate toast"
+  },
+  "usersDeactivatedSuccess": {
+    "message": "User deactivated",
+    "description": "Single user deactivate toast"
+  },
+  "usersDeletedSuccess": {
+    "message": "User removed",
+    "description": "User delete success toast"
+  },
+  "usersBulkActivatedSuccess": {
+    "message": "{count} user(s) activated",
+    "description": "Bulk activate success toast"
+  },
+  "usersBulkDeactivatedSuccess": {
+    "message": "{count} user(s) deactivated",
+    "description": "Bulk deactivate success toast"
+  },
+  "usersBulkDeletedSuccess": {
+    "message": "{count} user(s) removed",
+    "description": "Bulk delete success toast"
+  },
+  "usersColType": {
+    "message": "Type",
+    "description": "Users table user type column"
+  },
+  "editUserUpdatedSuccess": {
+    "message": "User updated successfully",
+    "description": "User update success toast"
+  },
+  "editUserSectionAccount": {
+    "message": "Account",
+    "description": "Edit user account metadata section"
+  },
+  "editUserPhone": {
+    "message": "Phone",
+    "description": "Edit user phone field"
+  },
+  "editUserPhonePh": {
+    "message": "Optional phone number",
+    "description": "Edit user phone placeholder"
+  },
+  "editUserEmailReadonlyHint": {
+    "message": "Email cannot be changed here. The user can update it from their profile.",
+    "description": "Email read-only hint"
+  },
+  "editUserOwnerNotice": {
+    "message": "Organization owner profile, role, and status are protected. You can still update app access and reset their password.",
+    "description": "Owner edit restrictions notice"
+  },
+  "editUserEmailVerifiedYes": {
+    "message": "Verified",
+    "description": "Email verified badge"
+  },
+  "editUserEmailVerifiedNo": {
+    "message": "Not verified",
+    "description": "Email not verified badge"
+  },
+  "usersMassBarTitle": {
+    "message": "Users",
+    "description": "Bulk selection bar entity label for users list"
   }
 }

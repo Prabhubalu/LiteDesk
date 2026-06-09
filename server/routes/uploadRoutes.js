@@ -48,4 +48,47 @@ router.post('/', uploadSingle('file'), async (req, res) => {
     }
 });
 
+// @desc    Delete an inline upload from object storage
+// @route   DELETE /api/upload
+// @access  Private
+router.delete('/', async (req, res) => {
+    try {
+        const fileStorage = require('../services/fileStorageService');
+        const storagePath = fileStorage.resolveStoragePathFromClientRef(
+            req.body?.storagePath || req.body?.url
+        );
+
+        if (!storagePath) {
+            return res.status(400).json({
+                success: false,
+                message: 'storagePath or url is required'
+            });
+        }
+
+        const result = await fileStorage.deleteStoredUpload({
+            storagePath,
+            organizationId: req.user?.organizationId
+        });
+
+        return res.json({
+            success: true,
+            ...result
+        });
+    } catch (error) {
+        const status = error.statusCode || 500;
+        if (status !== 500) {
+            return res.status(status).json({
+                success: false,
+                message: error.message
+            });
+        }
+        console.error('Upload delete error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error deleting file',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;

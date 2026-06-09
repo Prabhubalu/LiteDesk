@@ -13,6 +13,10 @@ const {
   flushImportCheckpoint,
   shouldFlushProgress,
 } = require('./importHistoryRepository');
+const {
+  createImportPicklistContext,
+  ensurePicklistOptionsForImportRow,
+} = require('./importPicklistOptionService');
 const { IMPORT_BATCH_SIZE } = require('./importConstants');
 
 async function buildProcessorContext(importRecord) {
@@ -79,6 +83,10 @@ async function runImportJob(importHistoryId) {
 
   const processor = getRowProcessor(importRecord.module);
   const processorContext = await buildProcessorContext(importRecord);
+  const picklistContext = await createImportPicklistContext(
+    importRecord.organizationId,
+    importRecord.module
+  );
   const results = hydrateResultsFromRecord(importRecord);
   const skipDataRows = importRecord.jobState?.lastProcessedRow || 0;
   const totalRows = importRecord.stats?.total || importRecord.metadata?.totalRows || 0;
@@ -86,9 +94,14 @@ async function runImportJob(importHistoryId) {
   try {
     for await (const { dataRowIndex, rowNumber, row } of iterateCsvRows(importRecord.storagePath, { skipDataRows })) {
       try {
+        const normalizedRow = await ensurePicklistOptionsForImportRow({
+          fieldMapping: processorContext.fieldMapping,
+          row,
+          picklistContext,
+        });
         await processor({
           ...processorContext,
-          row,
+          row: normalizedRow,
           rowNumber,
           results,
         });

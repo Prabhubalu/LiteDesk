@@ -86,3 +86,37 @@ export function isAuditEventType(eventType: string | null | undefined): boolean 
 export function filterNonAuditEventTypes(eventTypes: string[]): string[] {
   return eventTypes.filter(type => !isAuditEventType(type));
 }
+
+export type EventExecutionState = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+
+/**
+ * Derive UI execution state from event record (mirrors server deriveExecutionState).
+ * Status stays Planned during in-progress generic events; executionStartTime marks progress.
+ */
+export function deriveEventExecutionState(
+  event: {
+    status?: string | null;
+    executionStartTime?: string | Date | null;
+    executionStartedAt?: string | Date | null;
+  } | null | undefined
+): EventExecutionState {
+  if (!event) return 'NOT_STARTED';
+
+  const status = String(event.status || '').trim();
+  if (status === 'Cancelled' || status === 'CANCELLED') return 'CANCELLED';
+  if (status === 'Completed' || status === 'COMPLETED') return 'COMPLETED';
+  if (event.executionStartTime || event.executionStartedAt) return 'IN_PROGRESS';
+
+  return 'NOT_STARTED';
+}
+
+/** Badge variant for system event status (Planned, Completed, Cancelled). */
+export function getEventStatusBadgeVariant(
+  status: string | null | undefined
+): 'info' | 'success' | 'danger' | 'warning' {
+  const normalized = String(status || '').toLowerCase();
+  if (normalized === 'completed') return 'success';
+  if (normalized === 'cancelled' || normalized === 'canceled') return 'danger';
+  if (normalized === 'in-progress' || normalized === 'in progress') return 'warning';
+  return 'info';
+}

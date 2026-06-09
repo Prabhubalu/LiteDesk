@@ -1,5 +1,6 @@
 import { computed } from 'vue';
 import { useAuthStore } from '@/stores/authRegistry';
+import { supportsMassEdit } from '@/utils/massEditFieldPolicy';
 
 /**
  * Composable for managing bulk actions with permission checks
@@ -20,6 +21,15 @@ export function useBulkActions(module) {
       );
     }
     
+    if (supportsMassEdit(module) && authStore.can(module, 'edit')) {
+      actions.push({
+        label: 'Edit',
+        icon: 'edit',
+        action: 'mass-edit',
+        variant: 'primary',
+      });
+    }
+
     if (module === 'sales_orders' && authStore.can(module, 'merge')) {
       actions.push({
         label: 'Merge orders',

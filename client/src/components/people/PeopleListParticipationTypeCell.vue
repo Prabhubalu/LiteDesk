@@ -1,23 +1,32 @@
 <template>
   <div
-    v-if="peopleContext === 'ALL' && getPeopleParticipationEntries(row).length"
-    class="flex flex-wrap items-center gap-x-2 gap-y-1.5"
+    v-if="peopleContext === 'ALL' && entries.length"
+    class="flex flex-wrap items-center gap-1 min-w-0"
   >
-    <template v-for="e in getPeopleParticipationEntries(row)" :key="e.appKey">
+    <span
+      v-for="entry in visibleEntries"
+      :key="entry.appKey"
+      class="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs leading-snug whitespace-nowrap"
+      :class="participationPillClass(entry.appKey)"
+      :title="`${entry.appLabel} · ${entry.role}`"
+    >
+      <span class="font-medium">{{ entry.appLabel }}</span>
+      <span class="opacity-35 select-none" aria-hidden="true">·</span>
+      <span>{{ entry.role }}</span>
+    </span>
+    <HoverTooltip
+      v-if="overflowCount > 0"
+      :content="overflowTooltip"
+      wrap
+    >
       <span
-        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-        :class="appBadgeClass(e.appLabel)"
+        class="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 cursor-default"
       >
-        {{ e.appLabel }}
+        {{ overflowLabel }}
       </span>
-      <BadgeCell
-        :value="e.role"
-        :options="badgeOptionsForApp(e.appKey)"
-        :variant-map="roleBadgeVariantMap"
-      />
-    </template>
+    </HoverTooltip>
   </div>
-  <div v-else-if="peopleContext !== 'ALL' && singleContextDisplay" class="flex flex-wrap items-center gap-1.5">
+  <div v-else-if="peopleContext !== 'ALL' && singleContextDisplay" class="min-w-0">
     <BadgeCell
       :value="singleContextDisplay.role ?? '-'"
       :options="badgeOptionsForApp(peopleContext)"
@@ -28,13 +37,15 @@
 </template>
 
 <script setup>
-import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
+import HoverTooltip from '@/components/common/HoverTooltip.vue';
 import { getRoleDisplay } from '@/utils/getRoleDisplay';
 import {
   getPeopleParticipationEntries,
   isPeopleListAppContext,
+  PEOPLE_PARTICIPATION_LIST_VISIBLE_MAX,
 } from '@/utils/peopleParticipationUi';
 
 const props = defineProps({
@@ -47,8 +58,38 @@ const props = defineProps({
 
 const { t } = useI18n();
 
+const entries = computed(() => getPeopleParticipationEntries(props.row));
+const visibleEntries = computed(() =>
+  entries.value.slice(0, PEOPLE_PARTICIPATION_LIST_VISIBLE_MAX)
+);
+const overflowEntries = computed(() =>
+  entries.value.slice(PEOPLE_PARTICIPATION_LIST_VISIBLE_MAX)
+);
+const overflowCount = computed(() => overflowEntries.value.length);
+const overflowTooltip = computed(() =>
+  overflowEntries.value.map((entry) => `${entry.appLabel} · ${entry.role}`).join('\n')
+);
+const overflowLabel = computed(() =>
+  t('people.listParticipationMore', { count: overflowCount.value })
+);
+
 function badgeOptionsForApp(appKey) {
   return props.badgeOptionsByApp[appKey] || [];
+}
+
+const PARTICIPATION_PILL_CLASSES = {
+  SALES: 'bg-blue-100/70 text-blue-900 dark:bg-blue-900/40 dark:text-blue-100',
+  HELPDESK: 'bg-emerald-100/70 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-100',
+  AUDIT: 'bg-purple-100/70 text-purple-900 dark:bg-purple-900/40 dark:text-purple-100',
+  PORTAL: 'bg-orange-100/70 text-orange-900 dark:bg-orange-900/40 dark:text-orange-100',
+  PROJECTS: 'bg-indigo-100/70 text-indigo-900 dark:bg-indigo-900/40 dark:text-indigo-100',
+};
+
+function participationPillClass(appKey) {
+  return (
+    PARTICIPATION_PILL_CLASSES[String(appKey || '').toUpperCase()] ||
+    'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'
+  );
 }
 
 const singleContextDisplay = computed(() => {
@@ -56,15 +97,4 @@ const singleContextDisplay = computed(() => {
   if (ctx === 'ALL' || !isPeopleListAppContext(ctx)) return null;
   return getRoleDisplay(props.row, ctx);
 });
-
-function appBadgeClass(app) {
-  const classMap = {
-    Sales: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200',
-    Helpdesk: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200',
-    Audit: 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200',
-    Portal: 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200',
-    Projects: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200',
-  };
-  return classMap[app] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-200';
-}
 </script>

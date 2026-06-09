@@ -917,22 +917,6 @@
 
     <!-- Customize View Drawer -->
     <Teleport to="body">
-      <!-- Backdrop -->
-      <Transition
-        enter-active-class="transition-opacity duration-300 ease-out"
-        enter-from-class="opacity-0"
-        enter-to-class="opacity-100"
-        leave-active-class="transition-opacity duration-300 ease-in"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
-        <div
-          v-if="showColumnSettings"
-          @click="showColumnSettings = false"
-          class="fixed inset-0 bg-black/20 dark:bg-black/40 z-[9998]"
-        ></div>
-      </Transition>
-      <!-- Drawer -->
       <Transition
         enter-active-class="transition-transform ease-out duration-300"
         enter-from-class="translate-x-full"
@@ -944,7 +928,11 @@
         <div
           v-if="showColumnSettings"
           @click.stop
-          class="fixed right-0 top-0 h-full w-full max-w-xs bg-white dark:bg-gray-900 shadow-2xl flex flex-col z-[9999]"
+          class="fixed right-0 w-full max-w-xs bg-white dark:bg-gray-900 shadow-2xl flex flex-col z-[9999] border-l border-gray-200 dark:border-gray-700"
+          :style="{
+            top: 'var(--tabbar-offset, 48px)',
+            height: 'calc(100dvh - var(--tabbar-offset, 48px))'
+          }"
         >
               <!-- Drawer Header -->
               <div class="flex items-center justify-between px-6 pr-4 py-3 border-b border-gray-200 dark:border-gray-700">
@@ -1186,20 +1174,6 @@
     <!-- Customize Kanban Drawer -->
     <Teleport to="body">
       <Transition
-        enter-active-class="transition-opacity duration-300 ease-out"
-        enter-from-class="opacity-0"
-        enter-to-class="opacity-100"
-        leave-active-class="transition-opacity duration-300 ease-in"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
-        <div
-          v-if="showKanbanSettings"
-          @click="showKanbanSettings = false"
-          class="fixed inset-0 bg-black/20 dark:bg-black/40 z-[9998]"
-        ></div>
-      </Transition>
-      <Transition
         enter-active-class="transition-transform ease-out duration-300"
         enter-from-class="translate-x-full"
         enter-to-class="translate-x-0"
@@ -1210,7 +1184,11 @@
         <div
           v-if="showKanbanSettings"
           @click.stop
-          class="fixed right-0 top-0 h-full w-full max-w-xs bg-white dark:bg-gray-900 shadow-2xl flex flex-col z-[9999]"
+          class="fixed right-0 w-full max-w-xs bg-white dark:bg-gray-900 shadow-2xl flex flex-col z-[9999] border-l border-gray-200 dark:border-gray-700"
+          :style="{
+            top: 'var(--tabbar-offset, 48px)',
+            height: 'calc(100dvh - var(--tabbar-offset, 48px))'
+          }"
         >
           <div class="flex items-center justify-between px-6 pr-4 py-3 border-b border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('common.listCustomizeKanban') }}</h3>
@@ -1434,6 +1412,16 @@
       </Transition>
     </Teleport>
 
+    <MassEditDrawer
+      ref="massEditDrawerRef"
+      :is-open="showMassEditDrawer"
+      :module-key="moduleKey"
+      :selection-count="selectionCount"
+      :module-title="title"
+      @close="showMassEditDrawer = false"
+      @submit="handleMassEditSubmit"
+    />
+
     <!-- Quick Preview Drawer -->
     <QuickPreviewDrawer
       v-if="activeTabId"
@@ -1455,7 +1443,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, reactive, computed, watch, onMounted, onUnmounted, onDeactivated, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   resolveListViewLabel,
@@ -1529,6 +1517,7 @@ import {
   suggestCopyViewName,
 } from '@/utils/listViewNameLimits';
 import { useNotifications } from '@/composables/useNotifications';
+import MassEditDrawer from '@/components/common/MassEditDrawer.vue';
 
 const authStore = useAuthStore();
 const notifications = useNotifications();
@@ -1757,6 +1746,8 @@ const kanbanDragStartIndex = ref(null);
 const backendModuleConfig = ref(null); // Store backend module configuration with all fields
 const resetWidthsTrigger = ref(0); // Trigger to reset column widths in TableView
 const showDeleteModal = ref(false);
+const showMassEditDrawer = ref(false);
+const massEditDrawerRef = ref(null);
 const rowToDelete = ref(null);
 const deleting = ref(false);
 const bulkDeleteStore = useBulkDeleteProgressStore();
@@ -1854,9 +1845,11 @@ watch(() => activeTabId.value, (newTabId, oldTabId) => {
     saveDrawerState();
     isRestoring.value = false;
   }
-  // Immediately close drawer when switching tabs (will restore if tab has saved state)
+  // Immediately close drawers when switching tabs (preview restores per-tab below)
   showPreviewDrawer.value = false;
   previewRow.value = null;
+  showColumnSettings.value = false;
+  showKanbanSettings.value = false;
   // Then restore state for new tab
   nextTick(() => {
     restoreDrawerState();
@@ -1869,6 +1862,11 @@ watch([showPreviewDrawer, previewRow], () => {
     saveDrawerState();
   }
 }, { deep: true });
+
+onDeactivated(() => {
+  showColumnSettings.value = false;
+  showKanbanSettings.value = false;
+});
 
 // Get record name for delete modal
 const deleteRecordName = computed(() => {
@@ -3659,6 +3657,12 @@ const handleStatClick = (item) => {
 const getActiveFiltersCount = () => countActiveFilterRules(filters, filterOperatorsMap.value);
 
 const emitCompiledFilters = () => {
+  filterBuilderQuery.value = syncRootGroupFromActiveFilters(
+    filterBuilderQuery.value,
+    Object.values(mergedFilterByKey.value),
+    filters,
+    filterOperatorsMap.value
+  );
   const { apiPayload } = buildCompiledListFilters();
   lastEmittedFiltersSignature = JSON.stringify(apiPayload);
   emit('update:filters', apiPayload);
@@ -4827,6 +4831,8 @@ watch(
 // Clear selection when route changes (switching modules/tabs)
 watch(() => router.currentRoute.value.path, () => {
   clearSelection();
+  showColumnSettings.value = false;
+  showKanbanSettings.value = false;
 }, { immediate: false });
 
 // Clear selection when moduleKey changes (switching modules)
@@ -4843,8 +4849,21 @@ const handleBulkAction = (actionId, selectedRows) => {
   emit('bulk-action', actionId, selectedRows);
 };
 
+function handleMassEditSubmit(updates) {
+  const payload = {
+    ...getBulkPayload(),
+    updates,
+  };
+  showMassEditDrawer.value = false;
+  emit('bulk-action', 'mass-edit', payload);
+}
+
 const handleBulkActionClick = (actionId) => {
   const payload = getBulkPayload();
+  if (actionId === 'mass-edit') {
+    showMassEditDrawer.value = true;
+    return;
+  }
   if (actionId === 'delete' || actionId === 'bulk-delete') {
     isBulkDelete.value = true;
     bulkDeletePayload.value = payload;
@@ -4871,7 +4890,9 @@ const getActionIcon = (iconName) => {
     'move': ArrowRightIcon,
     'sequence': RectangleStackIcon,
     'sidekick': StarIcon,
-    'apps': PuzzlePieceIcon
+    'apps': PuzzlePieceIcon,
+    'edit': PencilSquareIcon,
+    'pencil': PencilSquareIcon,
   };
   return iconMap[iconName] || TrashIcon;
 };

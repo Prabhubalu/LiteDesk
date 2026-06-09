@@ -27,7 +27,8 @@ import {
   TicketIcon,
   CreditCardIcon,
   DocumentCurrencyDollarIcon,
-  ShoppingCartIcon
+  ShoppingCartIcon,
+  CubeIcon
 } from '@heroicons/vue/24/outline';
 import { MODULE_ICON_IDS, resolveStoredModuleIconId } from '@/utils/moduleIcons';
 import {
@@ -40,6 +41,7 @@ import {
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 import { i18n } from '@/i18n/index';
 import { createHelpdeskTabAlertController } from '@/utils/helpdeskTabAlerts';
+import { clearListSessionsForRoutePath } from '@/utils/listScrollSession';
 
 const tabsDebugEnabled = () => {
   if (!import.meta.env.DEV) return false;
@@ -160,8 +162,11 @@ const iconMap = {
   quotes: DocumentTextIcon,
   sales_orders: ShoppingCartIcon,
   invoices: DocumentCurrencyDollarIcon,
-  payments: CreditCardIcon
+  payments: CreditCardIcon,
+  cube: CubeIcon
 };
+
+const GENERIC_TAB_ICON_IDS = new Set(['document', 'document-text']);
 
 // Map emoji icons to icon identifiers
 const migrateEmojiToIconId = (emojiIcon, path = '') => {
@@ -199,22 +204,50 @@ const migrateEmojiToIconId = (emojiIcon, path = '') => {
   return emojiToIconIdMap[emojiIcon] || 'document';
 };
 
+const TAB_ICON_ALIASES = {
+  helpdesk: 'lifebuoy',
+  audit: 'shield-check',
+  '🛡️': 'shield-check',
+  '📋': 'shield-check',
+  '🎧': 'lifebuoy',
+  '🛟': 'lifebuoy',
+};
+
+/** Resolve an explicit icon hint to a known tab icon id, or null when it is generic/unknown. */
+const resolveTabIconId = (iconId, path = '') => {
+  const rawIcon = String(iconId || '').trim();
+  if (!rawIcon) return null;
+
+  if (rawIcon.match(/[\u{1F300}-\u{1F9FF}]/u)) {
+    const migrated = migrateEmojiToIconId(rawIcon, path);
+    return GENERIC_TAB_ICON_IDS.has(migrated) ? null : migrated;
+  }
+
+  const normalized = rawIcon.toLowerCase();
+  const aliasTarget = TAB_ICON_ALIASES[normalized];
+  if (aliasTarget && iconMap[aliasTarget]) return aliasTarget;
+  if (iconMap[normalized]) return normalized;
+  if (iconMap[rawIcon]) return rawIcon;
+
+  const moduleResolved = resolveStoredModuleIconId(rawIcon, normalized);
+  if (
+    moduleResolved &&
+    !GENERIC_TAB_ICON_IDS.has(moduleResolved) &&
+    iconMap[moduleResolved]
+  ) {
+    return moduleResolved;
+  }
+
+  return null;
+};
+
 // Convert icon identifier to component
 const getIconComponent = (iconId) => {
-  const rawIcon = String(iconId || '');
-  const normalized = rawIcon.trim().toLowerCase();
-
-  const aliases = {
-    helpdesk: 'lifebuoy',
-    audit: 'shield-check',
-    '🛡️': 'shield-check',
-    '📋': 'shield-check',
-    '🎧': 'lifebuoy',
-    '🛟': 'lifebuoy',
-  };
-
-  const resolved = aliases[normalized] || resolveStoredModuleIconId(rawIcon) || normalized;
-  return iconMap[resolved] || iconMap[rawIcon] || DocumentTextIcon;
+  const resolvedId = resolveTabIconId(iconId);
+  if (resolvedId && iconMap[resolvedId]) {
+    return iconMap[resolvedId];
+  }
+  return DocumentTextIcon;
 };
 
 const APP_KEYS = ['sales', 'helpdesk', 'audit', 'portal', 'projects'];
@@ -348,12 +381,11 @@ const loadTabsFromStorage = () => {
           tab.icon = getIconComponent(tab.icon);
         }
 
-        // Recovery: older persisted tabs may contain un-serializable icon objects.
-        // If icon cannot be recognized, infer from path to avoid generic-document icons.
+        // Recovery: persisted tabs may have generic document icons — infer from route.
         const currentIconId = getIconId(tab.icon);
-        if (currentIconId === 'document') {
+        if (GENERIC_TAB_ICON_IDS.has(currentIconId)) {
           const inferredIconId = getIconForPath(tab.path || '');
-          if (inferredIconId !== 'document') {
+          if (!GENERIC_TAB_ICON_IDS.has(inferredIconId)) {
             tab.icon = getIconComponent(inferredIconId);
           }
         }
@@ -1666,6 +1698,9 @@ export function useTabs() {
 
       if (isHelpdeskCasesTab) {
         existingTab.icon = getIconComponent('cases');
+      } else {
+        const iconId = resolveTabIconId(options.icon, pathOnly) || getIconForPath(pathOnly);
+        existingTab.icon = getIconComponent(iconId);
       }
       
       // If not background mode, focus the tab
@@ -1692,10 +1727,12 @@ export function useTabs() {
       return existingTab;
     }
     
-    const tabIconId =
+    const pathIconId = getIconForPath(pathOnly);
+    const overrideIconId =
       options.icon && !isHelpdeskCasesTab
-        ? String(options.icon).toLowerCase()
-        : getIconForPath(pathOnly);
+        ? resolveTabIconId(options.icon, pathOnly)
+        : null;
+    const tabIconId = overrideIconId || pathIconId;
 
     // Create new tab
     const titleMeta = options.titleKey
@@ -1792,6 +1829,8 @@ export function useTabs() {
       console.log('🔵 closeTab: No beforeClose callback for tab:', tab.id);
     }
     
+    clearListSessionsForRoutePath(tab.path);
+
     // Remove tab
     tabs.value.splice(index, 1);
     
@@ -1833,6 +1872,10 @@ export function useTabs() {
 
   // Close all tabs except one
   const closeOtherTabs = (keepTabId) => {
+    tabs.value
+      .filter((tab) => tab.id !== keepTabId && tab.closable)
+      .forEach((tab) => clearListSessionsForRoutePath(tab.path));
+
     tabs.value = tabs.value.filter(tab => 
       tab.id === keepTabId || !tab.closable
     );
@@ -1862,6 +1905,10 @@ export function useTabs() {
 
   // Close all closable tabs
   const closeAllTabs = () => {
+    tabs.value
+      .filter((tab) => tab.closable)
+      .forEach((tab) => clearListSessionsForRoutePath(tab.path));
+
     tabs.value = tabs.value.filter(tab => !tab.closable);
     
     // Switch to first non-closable tab (should be home)

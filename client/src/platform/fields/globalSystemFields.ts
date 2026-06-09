@@ -11,6 +11,7 @@ const GLOBAL_SYSTEM_FIELD_KEYS = new Set([
   'deletionreason',
   'source',
   'appointment',
+  'playbookstate',
 ]);
 
 /** @internal Used by fieldCapabilityEngine with pre-normalized keys. */

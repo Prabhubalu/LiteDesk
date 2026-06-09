@@ -22,6 +22,60 @@ function resolveFieldKey(fieldKey, moduleKey) {
   return key;
 }
 
+function escapeRegex(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * People list "name" is computed (first_name + last_name); there is no DB field "name".
+ */
+function compilePeopleNameClause(operator, value) {
+  if (operator === 'contains' && typeof value === 'string') {
+    const regex = new RegExp(escapeRegex(value), 'i');
+    return {
+      $or: [{ first_name: regex }, { last_name: regex }],
+    };
+  }
+
+  if (operator === 'not_contains' && typeof value === 'string') {
+    const regex = new RegExp(escapeRegex(value), 'i');
+    return {
+      $and: [
+        { first_name: { $not: regex } },
+        { last_name: { $not: regex } },
+      ],
+    };
+  }
+
+  if (operator === 'is_empty') {
+    return {
+      $and: [
+        { $or: [{ first_name: null }, { first_name: '' }, { first_name: { $exists: false } }] },
+        { $or: [{ last_name: null }, { last_name: '' }, { last_name: { $exists: false } }] },
+      ],
+    };
+  }
+
+  if (operator === 'is_not_empty') {
+    return {
+      $or: [
+        { first_name: { $nin: [null, ''], $exists: true } },
+        { last_name: { $nin: [null, ''], $exists: true } },
+      ],
+    };
+  }
+
+  if ((operator === 'is' || operator === 'is_not') && typeof value === 'string') {
+    const regex = new RegExp(`^${escapeRegex(value)}$`, 'i');
+    const matchClause = {
+      $or: [{ first_name: regex }, { last_name: regex }],
+    };
+    return operator === 'is_not' ? { $nor: [matchClause] } : matchClause;
+  }
+
+  return null;
+}
+
 function compileIsEmptyClause(fieldKey, value) {
   if (value === 'unassigned') {
     return {
@@ -75,6 +129,11 @@ function compileRuleToMongo(rule, moduleKey, context = {}) {
   const value = rule.value;
 
   if (!fieldKey) return null;
+
+  if (moduleKey === 'people' && rule.fieldKey === 'name') {
+    const nameClause = compilePeopleNameClause(operator, value);
+    if (nameClause) return nameClause;
+  }
 
   if (operator === 'is_empty') {
     return compileIsEmptyClause(fieldKey, value);

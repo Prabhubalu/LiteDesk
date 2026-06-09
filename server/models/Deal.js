@@ -226,6 +226,46 @@ const DealSchema = new Schema({
         changedAt: { type: Date, default: Date.now },
         changedBy: { type: Schema.Types.ObjectId, ref: 'User' }
     }],
+    playbookState: {
+        stageKey: { type: String, default: null },
+        stageName: { type: String, default: null },
+        pipelineKey: { type: String, default: null },
+        startedAt: { type: Date, default: null },
+        mode: { type: String, enum: ['sequential', 'non_sequential'], default: 'non_sequential' },
+        exitCriteriaType: { type: String, default: null },
+        exitCriteriaCustomDescription: { type: String, default: '' },
+        exitCriteriaMet: { type: Boolean, default: false },
+        exitCriteriaMetAt: { type: Date, default: null },
+        autoAdvanceEnabled: { type: Boolean, default: false },
+        autoAdvancedAt: { type: Date, default: null },
+        autoAdvancedToStageKey: { type: String, default: null },
+        actions: [{
+            actionKey: { type: String, required: true },
+            title: { type: String, default: '' },
+            actionType: { type: String, default: 'task' },
+            dueAt: { type: Date, default: null },
+            required: { type: Boolean, default: true },
+            status: { type: String, enum: ['pending', 'completed', 'blocked'], default: 'pending' },
+            completedAt: { type: Date, default: null },
+            dependencies: [{ type: String }],
+            blockedBy: [{ type: String }],
+            createdActivityId: { type: Schema.Types.ObjectId, default: null },
+            createdActivityType: { type: String, enum: ['task', 'event', null], default: null },
+            resources: [{
+                name: { type: String, default: '' },
+                type: { type: String, default: 'document' },
+                url: { type: String, default: '' },
+                description: { type: String, default: '' }
+            }]
+        }],
+        executionLog: [{
+            stageKey: { type: String, required: true },
+            actionKey: { type: String, required: true },
+            createdActivityId: { type: Schema.Types.ObjectId, default: null },
+            createdActivityType: { type: String, default: null },
+            createdAt: { type: Date, default: Date.now }
+        }]
+    },
     
     // 💬 NOTES & ACTIVITIES
     // **********************************

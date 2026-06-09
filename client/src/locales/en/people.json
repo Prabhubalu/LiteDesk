@@ -155,6 +155,42 @@
     "message": "Optional: choose an app below to add participation, or save for identity only.",
     "description": "Auto-migrated from peopleQuickCreateDrawer"
   },
+  "peopleQuickCreateDrawerOptionalChooseAppsBelowTo": {
+    "message": "Optional: select one or more apps below, or save for identity only.",
+    "description": "People quick create — multi-app participation hint"
+  },
+  "peopleQuickCreateDrawerSelectAppsHint": {
+    "message": "Select one or more apps. Configure type and fields for each selected app.",
+    "description": "People quick create — app card picker helper"
+  },
+  "peopleQuickCreateDrawerNoParticipationApps": {
+    "message": "No apps are enabled for people participation.",
+    "description": "People quick create — empty app list"
+  },
+  "peopleQuickCreateDrawerHelperIdentityOptionalApps": {
+    "message": "Create a new person with identity information. App participation is optional.",
+    "description": "People quick create drawer helper — optional apps"
+  },
+  "peopleQuickCreateDrawerHelperIdentityOnly": {
+    "message": "Create a new person with identity information.",
+    "description": "People quick create drawer helper — identity only"
+  },
+  "peopleQuickCreateDrawerHelperWithApps": {
+    "message": "Create a new person with identity and app participation.",
+    "description": "People quick create drawer helper — with apps"
+  },
+  "appSectionAdditionalFields": {
+    "message": "Additional fields",
+    "description": "AppSection collapsible dependent fields label"
+  },
+  "appSectionShowAdditionalFields": {
+    "message": "Show {count} additional fields",
+    "description": "AppSection collapsed dependent fields toggle"
+  },
+  "peopleQuickCreateDrawerTapToAdd": {
+    "message": "Tap to add",
+    "description": "Unselected app tile hint in people quick create"
+  },
   "peopleQuickCreateDrawerCreatePerson": {
     "message": "Create Person",
     "description": "Auto-migrated from peopleQuickCreateDrawer"
@@ -654,5 +690,13 @@
   "listStatWithoutOrganization": {
     "message": "Without Organization",
     "description": "People list statistics card"
+  },
+  "listColumnParticipation": {
+    "message": "Participation",
+    "description": "People list column label when showing all app participations"
+  },
+  "listParticipationMore": {
+    "message": "+{count} more",
+    "description": "Overflow indicator for additional app participations in list cell"
   }
 }

@@ -4,13 +4,14 @@
     class="fixed bottom-4 left-4 right-4 z-[9000] flex justify-end pointer-events-none sm:left-auto sm:right-4 sm:max-w-md"
   >
     <div
-      class="pointer-events-auto w-full overflow-hidden rounded-xl border border-red-200 bg-white shadow-lg dark:border-red-800 dark:bg-gray-900"
+      class="pointer-events-auto w-full overflow-hidden rounded-xl border bg-white shadow-lg dark:bg-gray-900"
+      :class="bulkDeleteStore.operation === 'update' ? 'border-indigo-200 dark:border-indigo-800' : 'border-red-200 dark:border-red-800'"
     >
       <div class="px-4 py-3">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0 flex-1">
             <p class="text-sm font-semibold text-gray-900 dark:text-white">
-              {{ t('common.bulkDeleteBannerTitle') }}
+              {{ bannerTitle }}
             </p>
             <p class="mt-0.5 text-xs text-gray-600 dark:text-gray-400">
               {{ progressLabel }}
@@ -26,8 +27,11 @@
         </div>
         <div class="mt-3 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
           <div
-            class="h-full rounded-full bg-red-600 transition-all duration-300 ease-out"
-            :class="{ 'animate-pulse': bulkDeleteStore.progressIndeterminate }"
+            class="h-full rounded-full transition-all duration-300 ease-out"
+            :class="[
+              bulkDeleteStore.operation === 'update' ? 'bg-indigo-600' : 'bg-red-600',
+              { 'animate-pulse': bulkDeleteStore.progressIndeterminate },
+            ]"
             :style="{
               width: bulkDeleteStore.progressIndeterminate
                 ? '35%'
@@ -36,7 +40,7 @@
           />
         </div>
         <p class="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
-          {{ t('common.bulkDeleteBackgroundHint') }}
+          {{ t(backgroundHintKey) }}
         </p>
       </div>
     </div>
@@ -51,14 +55,34 @@ import { useBulkDeleteProgressStore } from '@/stores/bulkDeleteProgress';
 const { t } = useI18n();
 const bulkDeleteStore = useBulkDeleteProgressStore();
 
+const bannerTitle = computed(() =>
+  bulkDeleteStore.operation === 'update'
+    ? t('common.bulkUpdateBannerTitle')
+    : t('common.bulkDeleteBannerTitle')
+);
+
 const progressLabel = computed(() => {
   const processed = Number(bulkDeleteStore.processed || 0).toLocaleString();
   const total = Number(bulkDeleteStore.total || 0).toLocaleString();
-  return t('common.bulkDeleteProgressDeleting', { processed, total });
+  return bulkDeleteStore.operation === 'update'
+    ? t('common.bulkUpdateProgressUpdating', { processed, total })
+    : t('common.bulkDeleteProgressDeleting', { processed, total });
 });
 
+const leaveConfirmKey = computed(() =>
+  bulkDeleteStore.operation === 'update'
+    ? 'common.bulkUpdateLeaveConfirm'
+    : 'common.bulkDeleteLeaveConfirm'
+);
+
+const backgroundHintKey = computed(() =>
+  bulkDeleteStore.operation === 'update'
+    ? 'common.bulkUpdateBackgroundHint'
+    : 'common.bulkDeleteBackgroundHint'
+);
+
 function requestCancel() {
-  if (window.confirm(t('common.bulkDeleteLeaveConfirm'))) {
+  if (window.confirm(t(leaveConfirmKey.value))) {
     bulkDeleteStore.requestCancel();
   }
 }

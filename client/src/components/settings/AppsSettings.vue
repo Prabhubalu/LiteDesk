@@ -125,7 +125,7 @@
       </div>
     </div>
 
-    <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div v-else :class="['flex min-h-0 flex-1 flex-col overflow-hidden', SETTINGS_HEADER_CONTENT_GAP_CLASS]">
       <component
         v-if="hasSalesAccess && isSalesApp && currentSalesTabComponent"
         :is="currentSalesTabComponent"
@@ -321,12 +321,6 @@ const currentSalesTabComponent = computed(() => {
 
 const navigateToOption = (optionId) => {
   activeSalesTab.value = optionId;
-  // When opening Sales Modules, always show the module list first (clear any previously selected module)
-  if (optionId === 'schema') {
-    nextTick(() => {
-      salesTabContentRef.value?.goBackToModuleList?.();
-    });
-  }
 };
 
 const getOptionName = (optionId) => {
@@ -522,6 +516,7 @@ const goBack = () => {
   // If inside Sales Modules with a module selected, go back to module list first
   if (hasSalesAccess.value && isSalesApp.value && activeSalesTab.value === 'schema' && salesSelectedModule.value) {
     salesTabContentRef.value?.goBackToModuleList?.();
+    salesSelectedModule.value = null;
     return;
   }
   // If on Sales Modules list (schema tab, no module) or any other Sales option, go back to application detail (sale page)

@@ -4,7 +4,7 @@
  * Explicit sets gate inline exposure for audited modules.
  */
 const SUPPORTED_BY_MODULE: Record<string, ReadonlySet<string>> = {
-  people: new Set(['assignedTo', 'organization', 'sales_type', 'helpdesk_role', 'email']),
+  people: new Set(['name', 'assignedTo', 'organization', 'sales_type', 'helpdesk_role', 'email', 'phone']),
   tasks: new Set(['status', 'priority', 'assignedTo', 'dueDate', 'projectId', 'contactId', 'organizationId']),
   deals: new Set(['stage', 'status', 'priority', 'ownerId', 'contactId', 'accountId', 'pipeline']),
   organizations: new Set(['assignedTo', 'type', 'industry', 'email']),

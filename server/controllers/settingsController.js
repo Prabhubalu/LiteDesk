@@ -1039,15 +1039,30 @@ exports.getApplications = async (req, res) => {
                 description: 'Manage your sales pipeline, deals, and customer relationships',
                 icon: 'sales'
             },
+            'HELPDESK': {
+                name: 'Helpdesk',
+                description: 'Manage cases, support workflows, and customer issues',
+                icon: 'helpdesk'
+            },
+            'PROJECTS': {
+                name: 'Projects',
+                description: 'Plan and track projects, tasks, and deliverables',
+                icon: 'projects'
+            },
             'PORTAL': {
                 name: 'Portal',
-                description: 'Customer self-service portal',
+                description: 'Customer and partner self-service portal',
                 icon: 'portal'
             },
             'AUDIT': {
                 name: 'Audit',
-                description: 'Audit management and compliance tracking',
+                description: 'Audit and compliance tracking',
                 icon: 'audit'
+            },
+            'LMS': {
+                name: 'LMS',
+                description: 'Learning management and training',
+                icon: 'lms'
             },
             'INVENTORY': {
                 name: 'Inventory',
@@ -1158,28 +1173,33 @@ exports.getApplication = async (req, res) => {
             },
             'HELPDESK': {
                 name: 'Helpdesk',
-                description: 'Customer support and ticket management',
+                description: 'Manage cases, support workflows, and customer issues',
                 icon: 'helpdesk'
             },
             'PROJECTS': {
                 name: 'Projects',
-                description: 'Project management and task tracking',
+                description: 'Plan and track projects, tasks, and deliverables',
                 icon: 'projects'
             },
             'PORTAL': {
                 name: 'Portal',
-                description: 'Customer self-service portal',
+                description: 'Customer and partner self-service portal',
                 icon: 'portal'
             },
             'AUDIT': {
                 name: 'Audit',
-                description: 'Audit management and compliance tracking',
+                description: 'Audit and compliance tracking',
                 icon: 'audit'
             },
             'LMS': {
                 name: 'LMS',
-                description: 'Learning Management System',
+                description: 'Learning management and training',
                 icon: 'lms'
+            },
+            'INVENTORY': {
+                name: 'Inventory',
+                description: 'Stock ledger, locations, reservations, and fulfillment',
+                icon: 'cube'
             }
         };
 

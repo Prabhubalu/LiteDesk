@@ -1783,6 +1783,126 @@
     "message": "Stage History",
     "description": "Stage history section title"
   },
+  "stagePlaybookTitle": {
+    "message": "Stage Playbook",
+    "description": "Stage playbook section title on deal record"
+  },
+  "stagePlaybookRequired": {
+    "message": "Required",
+    "description": "Required playbook action badge"
+  },
+  "stagePlaybookDue": {
+    "message": "Due {date}",
+    "description": "Playbook action due date label"
+  },
+  "stagePlaybookStatusPending": {
+    "message": "Pending",
+    "description": "Playbook action pending status"
+  },
+  "stagePlaybookStatusBlocked": {
+    "message": "Blocked",
+    "description": "Playbook action blocked status"
+  },
+  "stagePlaybookBlockedGeneric": {
+    "message": "Complete prior steps to unlock this activity.",
+    "description": "Generic blocked playbook action hint"
+  },
+  "stagePlaybookBlockedBy": {
+    "message": "Waiting on: {steps}",
+    "description": "Blocked playbook action waiting on prior steps"
+  },
+  "stagePlaybookExitCriteriaMet": {
+    "message": "Stage playbook complete. You can move this deal to the next stage.",
+    "description": "Playbook exit criteria met without auto-advance"
+  },
+  "stagePlaybookExitCriteriaMetAutoAdvance": {
+    "message": "Stage playbook complete. Auto-advance is enabled for this stage.",
+    "description": "Playbook exit criteria met with auto-advance enabled"
+  },
+  "stagePlaybookCustomExitPending": {
+    "message": "Complete required playbook activities and satisfy the configured exit conditions to advance.",
+    "description": "Custom playbook exit criteria pending hint"
+  },
+  "stagePlaybookStatusCompleted": {
+    "message": "Completed",
+    "description": "Playbook action completed status"
+  },
+  "stagePlaybookMarkComplete": {
+    "message": "Mark complete",
+    "description": "Mark playbook action complete button"
+  },
+  "stagePlaybookMarkPending": {
+    "message": "Mark pending",
+    "description": "Mark playbook action pending button"
+  },
+  "stagePlaybookTypeTask": {
+    "message": "Task",
+    "description": "Playbook action type task"
+  },
+  "stagePlaybookTypeEvent": {
+    "message": "Event",
+    "description": "Playbook action type event"
+  },
+  "stagePlaybookTypeMeeting": {
+    "message": "Meeting",
+    "description": "Playbook action type meeting"
+  },
+  "stagePlaybookTypeCall": {
+    "message": "Call",
+    "description": "Playbook action type call"
+  },
+  "stagePlaybookTypeEmail": {
+    "message": "Email",
+    "description": "Playbook action type email"
+  },
+  "stagePlaybookTypeAlert": {
+    "message": "Alert",
+    "description": "Playbook action type alert"
+  },
+  "stagePlaybookTypeDocument": {
+    "message": "Document",
+    "description": "Playbook action type document"
+  },
+  "stagePlaybookTypeApproval": {
+    "message": "Approval",
+    "description": "Playbook action type approval"
+  },
+  "stagePlaybookTypeOther": {
+    "message": "Other",
+    "description": "Playbook action type other"
+  },
+  "stagePlaybookResources": {
+    "message": "Resources",
+    "description": "Playbook action resources section label"
+  },
+  "stagePlaybookOpenResource": {
+    "message": "Open resource {name}",
+    "description": "Open playbook resource link aria label"
+  },
+  "stagePlaybookResourceUntitled": {
+    "message": "Untitled resource",
+    "description": "Fallback label for playbook resource without name"
+  },
+  "stagePlaybookResourceTypeDocument": {
+    "message": "Document",
+    "description": "Playbook resource type document"
+  },
+  "stagePlaybookResourceTypeLink": {
+    "message": "Link",
+    "description": "Playbook resource type link"
+  },
+  "stagePlaybookResourceTypeForm": {
+    "message": "Form",
+    "description": "Playbook resource type form"
+  },
+  "stagePlaybookResourceTypeTemplate": {
+    "message": "Template",
+    "description": "Playbook resource type template"
+  },
+  "stagePlaybookResourceTypeOther": {
+    "message": "Other",
+    "description": "Playbook resource type other"
+  },
   "subtasksEditAria": {
     "message": "Edit subtask",
     "description": "Edit subtask button title"
@@ -2578,6 +2698,30 @@
   "taskDescriptionEditorInsertLink": {
     "message": "Insert link",
     "description": "Auto-migrated from taskDescriptionEditor"
+  },
+  "taskDescriptionEditorInsertImage": {
+    "message": "Insert image",
+    "description": "Tooltip for description editor image upload button"
+  },
+  "taskDescriptionEditorRemoveImage": {
+    "message": "Remove image",
+    "description": "Tooltip for description editor image delete button"
+  },
+  "taskDescriptionEditorImageSizeSmall": {
+    "message": "Small (25% width)",
+    "description": "Tooltip for description editor image size preset"
+  },
+  "taskDescriptionEditorImageSizeMedium": {
+    "message": "Medium (50% width)",
+    "description": "Tooltip for description editor image size preset"
+  },
+  "taskDescriptionEditorImageSizeLarge": {
+    "message": "Large (75% width)",
+    "description": "Tooltip for description editor image size preset"
+  },
+  "taskDescriptionEditorImageSizeFull": {
+    "message": "Full width (100%)",
+    "description": "Tooltip for description editor image size preset"
   },
   "taskDescriptionEditorRemoveLink": {
     "message": "Remove link",

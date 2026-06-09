@@ -10,8 +10,10 @@
       <TaskDescriptionEditor
         ref="descriptionEditorRef"
         v-model="editingValue"
+        auto-focus
         @blur="handleBlurSave"
         @cancel="cancelEdit"
+        @image-uploaded="onImageUploaded"
       />
     </div>
 
@@ -26,7 +28,7 @@
     >
       <div
         v-if="description"
-        class="min-h-[120px] px-6 py-4 text-md text-gray-900 dark:text-white leading-[1.75] [&_p]:mb-2 [&_p:last-child]:mb-0 [&_p]:leading-[1.75] [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:my-4 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-4 [&_h3]:mb-2 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:list-disc [&_ol]:list-decimal [&_a]:text-indigo-600 [&_a]:underline dark:[&_a]:text-indigo-400"
+        class="min-h-[120px] px-6 py-4 text-md text-gray-900 dark:text-white leading-[1.75] [&_p]:mb-2 [&_p:last-child]:mb-0 [&_p]:leading-[1.75] [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:my-4 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-4 [&_h3]:mb-2 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:list-disc [&_ol]:list-decimal [&_a]:text-indigo-600 [&_a]:underline dark:[&_a]:text-indigo-400 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md [&_img]:my-2 [&_img]:block"
         v-html="sanitizedDescription"
       ></div>
       <p v-else class="px-6 py-2 text-sm text-gray-500 dark:text-gray-400 italic m-0">
@@ -37,10 +39,13 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import DOMPurify from 'dompurify';
-import { withLinksOpenInNewTab } from '@/utils/richDescriptionHtml';
+import { sanitizeRichDescriptionHtml } from '@/utils/richDescriptionHtml';
+import {
+  deleteOrphanSessionUploads,
+  deleteRemovedInlineUploads
+} from '@/utils/inlineUploadStorage';
 import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
 
 const props = defineProps({
@@ -56,9 +61,7 @@ const { t } = useI18n();
 
 const title = computed(() => props.adapter?.getDescriptionTitle?.(props.record, props.context) || t('records.descriptionTitle'));
 const description = computed(() => props.adapter?.getDescription?.(props.record, props.context) || '');
-const sanitizedDescription = computed(() =>
-  withLinksOpenInNewTab(DOMPurify.sanitize(String(description.value || '')))
-);
+const sanitizedDescription = computed(() => sanitizeRichDescriptionHtml(description.value || ''));
 const hasDescription = computed(() => Boolean(String(description.value || '').trim()));
 const canEdit = computed(() => props.adapter?.canEditDescription?.(props.record, props.context) === true);
 const hideHeader = computed(() => props.context?.hideHeader === true);
@@ -66,6 +69,8 @@ const hideHeader = computed(() => props.context?.hideHeader === true);
 const isEditing = ref(false);
 const editingValue = ref('');
 const descriptionEditorRef = ref(null);
+const editBaselineHtml = ref('');
+const sessionUploadedUrls = ref([]);
 
 watch(description, (value) => {
   if (!isEditing.value) {
@@ -73,27 +78,37 @@ watch(description, (value) => {
   }
 }, { immediate: true });
 
-const startEdit = async () => {
+const startEdit = () => {
   if (!canEdit.value) return;
+  editBaselineHtml.value = String(description.value || '');
+  sessionUploadedUrls.value = [];
   isEditing.value = true;
   editingValue.value = String(description.value || '');
-  await nextTick();
-  if (descriptionEditorRef.value?.focus) {
-    descriptionEditorRef.value.focus();
-  }
 };
 
-const cancelEdit = () => {
-  editingValue.value = String(description.value || '');
+const onImageUploaded = (url) => {
+  const next = String(url || '').trim();
+  if (next) sessionUploadedUrls.value.push(next);
+};
+
+const cancelEdit = async () => {
+  const savedHtml = String(description.value || '');
+  await deleteOrphanSessionUploads(sessionUploadedUrls.value, savedHtml);
+  editingValue.value = savedHtml;
+  sessionUploadedUrls.value = [];
   isEditing.value = false;
 };
 
 const handleBlurSave = async () => {
   if (!isEditing.value) return;
   const nextValue = String(editingValue.value || '');
-  if (nextValue !== String(description.value || '')) {
+  const savedValue = String(description.value || '');
+  if (nextValue !== savedValue) {
     await props.adapter?.saveDescription?.(nextValue, props.record, props.context);
   }
+  await deleteRemovedInlineUploads(editBaselineHtml.value, nextValue);
+  await deleteOrphanSessionUploads(sessionUploadedUrls.value, nextValue);
+  sessionUploadedUrls.value = [];
   isEditing.value = false;
 };
 

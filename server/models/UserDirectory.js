@@ -28,6 +28,18 @@ const UserDirectorySchema = new mongoose.Schema(
             type: String,
             enum: ['active', 'inactive'],
             default: 'active'
+        },
+        inviteTokenHash: {
+            type: String,
+            default: null,
+            index: true,
+            sparse: true
+        },
+        emailVerificationTokenHash: {
+            type: String,
+            default: null,
+            index: true,
+            sparse: true
         }
     },
     { timestamps: true }

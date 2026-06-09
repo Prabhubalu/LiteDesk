@@ -550,5 +550,9 @@
   "inventoryDashboardBlurb": {
     "message": "Manage stock locations, ledger movements, reservations, and fulfillment from this workspace.",
     "description": "Short description on Inventory app dashboard"
+  },
+  "commandPaletteSettingsHubDesc": {
+    "message": "Open workspace settings",
+    "description": "Command palette description for the Settings hub command"
   }
 }

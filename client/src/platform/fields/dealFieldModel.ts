@@ -421,6 +421,14 @@ export const DEAL_FIELD_METADATA: Record<string, DealFieldMetadata> = {
     isSystem: true,
     isVisibleInConfig: true,
   },
+  playbookState: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
+  },
 
   // Notes and line items
   notes: {

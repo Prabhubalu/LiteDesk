@@ -172,8 +172,8 @@ function computePeopleStatistics(
       stats.unassigned++;
     }
 
-    // With/without organization
-    if (person.organization || person.organizationId) {
+    // With/without sales organization (People.organization — not tenant organizationId)
+    if (person.organization) {
       stats.withOrganization++;
     } else {
       stats.withoutOrganization++;

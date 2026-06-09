@@ -231,6 +231,19 @@ module.exports = {
       sms: false
     }
   },
+  [domainEvents.PLAYBOOK_ACTION_ALERT]: {
+    appKey: 'SALES',
+    recipients: ['PLAYBOOK_ALERT_RECIPIENTS'],
+    priority: 'NORMAL',
+    defaultChannels: ['IN_APP'],
+    channels: {
+      inApp: true,
+      email: true,
+      push: false,
+      whatsapp: false,
+      sms: true
+    }
+  },
   [domainEvents.CASE_CREATED]: {
     appKey: 'HELPDESK',
     recipients: ['CASE_NOTIFY_TARGETS'],

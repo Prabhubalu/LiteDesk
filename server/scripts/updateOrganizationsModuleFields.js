@@ -3,6 +3,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const ModuleDefinition = require('../models/ModuleDefinition');
 const Organization = require('../models/Organization');
+const { backfillPicklistOptionColors } = require('../utils/picklistColorPalette');
 
 const defaultOrganizationRelationships = Object.freeze([
   { name: 'Related Contacts', type: 'one_to_many', isLookup: false, targetModuleKey: 'people', relationshipKey: 'people_organizations' },
@@ -157,10 +158,11 @@ function generateOrganizationFields() {
     // Convert enum strings to {value, color} objects for picklist/multi-picklist fields
     let options = [];
     if (mapping.enum && mapping.enum.length > 0) {
-      options = mapping.enum.map(val => ({
-        value: val,
-        color: '#3B82F6' // Default blue color for all options
-      }));
+      options = backfillPicklistOptionColors(
+        mapping.enum.map((val) => ({ value: val })),
+        key,
+        'organizations'
+      );
     }
 
     const field = {

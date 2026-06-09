@@ -186,6 +186,11 @@ import { useCreationContext } from '@/utils/creationContext';
 import { getParticipationFields, getCoreIdentityFields, mergePeopleVirtualFieldDefinitions } from '@/platform/fields/peopleFieldModel';
 import { getFormFieldValue, syncPeopleVirtualFieldKeys, applyVirtualFieldDefault } from '@/utils/getFieldValue';
 import {
+  applyCreateOwnerDefaultsToForm,
+  applyCreateOwnerDefaultsToPayload,
+  resolveCurrentUserId
+} from '@/utils/recordCreateOwnerDefaults';
+import {
   getItemQuickCreateFields,
   getItemCatalogScaffoldFieldKeys,
   getItemLegacyCategoryFieldKeys
@@ -365,6 +370,7 @@ const effectiveExcludeFields = computed(() => {
       'descriptionVersions',
       'derivedStatus',
       'stageHistory',
+      'playbookState',
       'activityLogs',
       'stageOrder',
       'lineItems',
@@ -915,27 +921,13 @@ const initializeForm = (module) => {
     }
   }
 
-  // Helpdesk cases: default owner to the signed-in user when creating (unless initialData already set it).
-  if (props.moduleKey === 'cases' && !props.record) {
-    const currentPath = String(
-      activeTab.value?.path ||
-        (typeof window !== 'undefined' ? window.location.pathname : '') ||
-        ''
-    ).toLowerCase();
-    if (currentPath.startsWith('/helpdesk/')) {
-      const raw = authStore.user?._id;
-      const ownerId =
-        raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw._id ?? raw.id ?? null) : raw;
-      if (ownerId != null && ownerId !== '') {
-        const co = formData.value?.caseOwnerId;
-        const isEmpty = co === '' || co === null || co === undefined;
-        if (isEmpty) {
-          formData.value = { ...formData.value, caseOwnerId: ownerId };
-        }
-      }
-    }
+  if (!props.record) {
+    formData.value = applyCreateOwnerDefaultsToForm(
+      formData.value,
+      props.moduleKey,
+      resolveCurrentUserId(authStore.user)
+    );
   }
-
 };
 
 const onFormReady = (module) => {
@@ -1179,8 +1171,6 @@ const handleSubmit = async () => {
     drawerDbg('[CreateRecordDrawer] ✅ Validation passed, proceeding with submission...');
     
     // ARCHITECTURE NOTE: In Quick Create mode, only send fields that are in quickCreate configuration
-    // This ensures the API only receives fields configured in Settings → Core Modules → Tasks → Quick Create
-    // See: docs/architecture/task-settings.md Section 3.5
     let submitData = { ...formData.value };
     
     const qcList = moduleDefinition.value?.quickCreate;
@@ -1558,6 +1548,14 @@ const handleSubmit = async () => {
       }
       // Remove assignedTo as Scheduling API doesn't use it
       delete submitData.assignedTo;
+    }
+
+    if (!isEditing.value) {
+      submitData = applyCreateOwnerDefaultsToPayload(
+        submitData,
+        props.moduleKey,
+        resolveCurrentUserId(authStore.user)
+      );
     }
     
     // People create in Sales context: use create→attach flow (existing endpoint)

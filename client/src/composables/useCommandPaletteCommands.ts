@@ -1,8 +1,10 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import type { CommandPaletteItem } from '@/types/commandPalette.types';
 import { getManualCommands } from '@/commands/commandRegistry';
 import { buildPaletteCommandsFromSidebar, buildAllDashboardsFromRegistry } from '@/utils/commandPaletteFromRegistry';
+import { buildSettingsPaletteCommands } from '@/utils/buildSettingsPaletteCommands';
 import { buildSidebarStructureForSession } from '@/utils/buildSidebarForSession';
 import { createPermissionSnapshot } from '@/types/permission-snapshot.types';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -14,6 +16,7 @@ import type { AppRegistry } from '@/types/sidebar.types';
  */
 export function useCommandPaletteCommands() {
   const router = useRouter();
+  const { t, locale } = useI18n();
   const authStore = useAuthStore();
   const registryCommands = ref<CommandPaletteItem[]>([]);
   const loading = ref(false);
@@ -54,12 +57,24 @@ export function useCommandPaletteCommands() {
 
   const manualCommands = computed(() => getManualCommands(router));
 
-  /** Manual (drawers, contextual) + registry (entitled modules, apps, settings). */
+  const settingsCommands = computed<CommandPaletteItem[]>(() => {
+    void locale.value;
+    if (!authStore.user || !authStore.isAuthenticated) return [];
+    return buildSettingsPaletteCommands(t, {
+      isOwner: !!authStore.user.isOwner,
+      role: authStore.user.role,
+      permissions: authStore.user.permissions,
+    });
+  });
+
+  /** Manual (drawers, contextual) + registry (modules, apps) + settings navigation. */
   const allCommands = computed<CommandPaletteItem[]>(() => {
     const manual = manualCommands.value;
-    const manualIds = new Set(manual.map((c) => c.id));
-    const fromRegistry = registryCommands.value.filter((c) => !manualIds.has(c.id));
-    return [...manual, ...fromRegistry];
+    const reservedIds = new Set(manual.map((c) => c.id));
+    const fromRegistry = registryCommands.value.filter((c) => !reservedIds.has(c.id));
+    for (const cmd of fromRegistry) reservedIds.add(cmd.id);
+    const settings = settingsCommands.value.filter((c) => !reservedIds.has(c.id));
+    return [...manual, ...fromRegistry, ...settings];
   });
 
   const onModulesUpdated = () => {

@@ -14,6 +14,7 @@ const {
   DEFAULT_CONTACT_STATUS_VALUES,
 } = require('../utils/peopleModuleFieldDefaults');
 const { applyDefaultColorsToPicklistOptions } = require('../utils/peopleParticipationPicklistColors');
+const { backfillPicklistOptionColors } = require('../utils/picklistColorPalette');
 
 function resolveMasterUri() {
   const isProduction = process.env.NODE_ENV === 'production';
@@ -202,24 +203,8 @@ function normalizeOptions(options, fieldKey = null) {
   if (key === 'lead_status' || key === 'contact_status') {
     return applyDefaultColorsToPicklistOptions(key, options);
   }
-  
-  // If options are already objects, return as is
-  if (options[0] && typeof options[0] === 'object' && options[0].value) {
-    return options;
-  }
-  
-  // Convert string options to object format
-  // The schema supports both formats, but we'll use object format for consistency
-  return options.map(option => {
-    if (typeof option === 'string') {
-      return { value: option, color: '#3B82F6' }; // Default blue color
-    }
-    // If it's already an object, ensure it has value and color
-    return {
-      value: option.value || option,
-      color: option.color || '#3B82F6'
-    };
-  });
+
+  return backfillPicklistOptionColors(options, key, 'people');
 }
 
 async function updatePeopleModuleFields(organizationId = null) {

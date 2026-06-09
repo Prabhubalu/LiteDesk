@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Notification = require('../models/Notification');
 const Task = require('../models/Task');
+const Deal = require('../models/Deal');
 const Event = require('../models/Event');
 
 const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK'];
@@ -12,6 +13,7 @@ const { serializeEntityForClient } = require('../utils/notificationEntityDisplay
  */
 async function enrichWithEntityTitles(items, organizationId) {
   const taskIds = [];
+  const dealIds = [];
   const eventIds = [];
   const itemIndexByKey = new Map(); // 'Task_<id>' -> [indices]
 
@@ -24,6 +26,7 @@ async function enrichWithEntityTitles(items, organizationId) {
     itemIndexByKey.get(key).push(idx);
 
     if (type === 'Task') taskIds.push(id);
+    else if (type === 'Deal') dealIds.push(id);
     else if (type === 'Audit' || type === 'Event') eventIds.push(id);
   });
 
@@ -38,6 +41,18 @@ async function enrichWithEntityTitles(items, organizationId) {
       .lean();
     for (const t of tasks) {
       titleByKey.set(`Task_${t._id.toString()}`, t.title || null);
+    }
+  }
+
+  if (dealIds.length > 0) {
+    const deals = await Deal.find({
+      _id: { $in: dealIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      organizationId
+    })
+      .select('_id name')
+      .lean();
+    for (const d of deals) {
+      titleByKey.set(`Deal_${d._id.toString()}`, d.name || null);
     }
   }
 

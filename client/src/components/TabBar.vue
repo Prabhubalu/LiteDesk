@@ -92,7 +92,6 @@ const tabsArray = computed(() => {
 // Get sidebar state from parent (App.vue passes it via provide/inject or we calculate it)
 const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1920);
 const tabBarRef = ref(null);
-const DEFAULT_TOP_OFFSET = 64;
 
 // Calculate the actual available width for TabBar
 // Account for sidebar width (either 256px expanded or 64px collapsed)
@@ -140,7 +139,7 @@ const updateTabBarOffset = () => {
   }
 
   const rect = el.getBoundingClientRect();
-  const offset = Math.max(DEFAULT_TOP_OFFSET, Math.round(rect.bottom));
+  const offset = Math.round(rect.bottom);
 
   document.documentElement.style.setProperty('--tabbar-offset', `${offset}px`);
 };

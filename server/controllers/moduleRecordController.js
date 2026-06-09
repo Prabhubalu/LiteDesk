@@ -11,9 +11,35 @@ const RecordActivity = require('../models/RecordActivity');
 const User = require('../models/User');
 const mongoose = require('mongoose');
 const { persistMulterUpload } = require('../middleware/uploadMiddleware');
+const { processCommentMentions } = require('../services/commentMentionNotifications');
 
 const MODULES_WITH_NATIVE_ACTIVITY = new Set(['deals', 'tasks']);
 const MODULES_WITH_NATIVE_COMMENTS = new Set(['deals', 'tasks']);
+
+function getCommentAuthorName(author) {
+  if (!author) return 'Someone';
+  return [author.firstName, author.lastName].filter(Boolean).join(' ') || author.username || 'Someone';
+}
+
+function dispatchRecordActivityCommentMentions({
+  req,
+  moduleKey,
+  recordId,
+  commentId,
+  commentContent,
+  author
+}) {
+  processCommentMentions({
+    organizationId: String(req.user.organizationId),
+    appKey: req.appKey || 'SALES',
+    moduleKey,
+    entityId: String(recordId),
+    commentId: String(commentId),
+    commentContent,
+    authorId: String(req.user._id),
+    authorName: getCommentAuthorName(author)
+  }).catch((err) => console.error('[moduleRecordController] comment mention notifications error:', err));
+}
 
 function isMasterOrganizationRequest(req) {
   const orgName = String(req?.organization?.name || '').trim().toLowerCase();
@@ -720,6 +746,15 @@ exports.createComment = async (req, res) => {
       .populate('author', 'firstName lastName email avatar username')
       .lean();
 
+    dispatchRecordActivityCommentMentions({
+      req,
+      moduleKey,
+      recordId,
+      commentId: comment._id,
+      commentContent: populated.content,
+      author: populated.author
+    });
+
     return res.status(201).json({
       success: true,
       data: {
@@ -861,6 +896,15 @@ exports.updateComment = async (req, res) => {
       createdAt: populated.createdAt,
       updatedAt: populated.updatedAt
     };
+
+    dispatchRecordActivityCommentMentions({
+      req,
+      moduleKey,
+      recordId,
+      commentId: comment._id,
+      commentContent: populated.content,
+      author: populated.author
+    });
 
     return res.json({ success: true, data });
   } catch (err) {
@@ -1391,6 +1435,72 @@ const DELETION_SERVICE_MODULES = new Set([
  * POST /api/modules/:moduleKey/records/bulk-delete
  * Body: { ids: string[] }
  */
+/**
+ * PATCH /api/modules/:moduleKey/records/bulk-update
+ * Body: { ids?: string[], updates: object, updateMatching?: boolean, listQuery?: object, excludedIds?: string[] }
+ */
+exports.bulkUpdateRecords = async (req, res) => {
+  try {
+    const moduleKey = getModuleKey(req);
+    const { bulkUpdateRecords } = require('../services/bulkUpdateService');
+
+    const result = await bulkUpdateRecords({
+      moduleKey,
+      organizationId: req.user.organizationId,
+      user: req.user,
+      updates: req.body?.updates,
+      ids: req.body?.ids,
+      updateMatching: !!req.body?.updateMatching,
+      listQuery: req.body?.listQuery || {},
+      excludedIds: req.body?.excludedIds || [],
+      appKey: req.body?.appKey || req.appKey,
+      batchSize: req.body?.batchSize,
+      afterId: req.body?.afterId || null,
+    });
+
+    return res.json({
+      success: true,
+      message: `Updated ${result.updatedCount} record(s)`,
+      data: result,
+      meta: {
+        operation: 'bulk_update_records',
+        moduleKey,
+        updatedFields: result.updatedFields || [],
+      },
+    });
+  } catch (err) {
+    const code = err.code || 'BULK_UPDATE_FAILED';
+    if (code === 'MODULE_BULK_UPDATE_UNSUPPORTED') {
+      return res.status(400).json({ success: false, code, message: err.message });
+    }
+    if (code === 'BULK_UPDATE_EMPTY' || code === 'BULK_UPDATE_NO_IDS' || code === 'BULK_UPDATE_TOO_MANY_FIELDS') {
+      return res.status(400).json({ success: false, code, message: err.message });
+    }
+    if (code === 'BULK_UPDATE_FIELD_DENIED') {
+      return res.status(400).json({
+        success: false,
+        code,
+        message: err.message,
+        deniedFields: err.deniedFields || [],
+      });
+    }
+    if (code === 'FIELD_ACCESS_DENIED') {
+      return res.status(403).json({
+        success: false,
+        code,
+        message: err.message,
+        violations: err.violations || [],
+      });
+    }
+    console.error('bulkUpdateRecords error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Error bulk updating records',
+      error: err.message,
+    });
+  }
+};
+
 exports.bulkDeleteRecords = async (req, res) => {
   try {
     const moduleKey = getModuleKey(req);

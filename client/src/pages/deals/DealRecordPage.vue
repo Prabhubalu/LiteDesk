@@ -456,7 +456,7 @@
               <template #expectedCloseDate>
                 <div v-if="canEditDealKeyFields" class="w-full min-h-8 px-2 py-1 -mx-2 -my-1 flex items-center">
                   <DatePicker
-                    v-show="isEditingExpectedCloseDate"
+                    v-if="isEditingExpectedCloseDate"
                     ref="expectedCloseDateInputRef"
                     v-model="localExpectedCloseDate"
                     :placeholder="t('records.dealCloseDatePh')"
@@ -466,7 +466,7 @@
                     @escape="handleExpectedCloseDateCancel"
                   />
                   <span
-                    v-show="!isEditingExpectedCloseDate"
+                    v-else
                     @click="startExpectedCloseDateEdit"
                     :class="[
                       'block w-full h-8 text-sm cursor-text hover:bg-gray-50 dark:hover:bg-gray-800 rounded px-2 transition-colors flex items-center',
@@ -1674,12 +1674,31 @@ const restoreDescriptionVersion = async () => {
   }
 };
 
+const handlePlaybookActionStatusChange = async (record, actionKey, status) => {
+  if (!record?._id || !actionKey) return null;
+  try {
+    const response = await apiClient.patch(`/deals/${record._id}/playbook-state/actions/${actionKey}`, {
+      status
+    });
+    if (response?.success && response?.data) {
+      deal.value = response.data;
+      return response.data;
+    }
+    await fetchDeal();
+    return deal.value;
+  } catch (err) {
+    console.error('Failed to update playbook action status:', err);
+    return null;
+  }
+};
+
 const dealSectionContext = computed(() => ({
   module: 'deal',
   expandedLeftSection: expandedLeftSection.value,
   openLeftSection,
   closeExpandedLeftSection,
   openTab,
+  canEditPlaybook: authStore.can('deals', 'edit'),
   openTagsEditor: (...args) => openTagPopoverFromField(...args),
   getTagChipClass: getDealTagChipClass,
   getStateFieldOptions: (fieldKey) => {
@@ -1879,7 +1898,8 @@ const dealRecordAdapter = computed(() => createDealRecordAdapter({
   canViewDescriptionHistory: () => true,
   openDescriptionHistory,
   expandedLeftSection,
-  openLeftSection
+  openLeftSection,
+  onPlaybookActionStatusChange: handlePlaybookActionStatusChange
 }));
 
 const dealStateFields = computed(() => {

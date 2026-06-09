@@ -69,6 +69,7 @@ router.post('/', checkPermission('settings', 'edit'), controller.createModule);
 router.delete('/:id', checkPermission('settings', 'edit'), controller.deleteModule);
 router.put('/:id', checkPermission('settings', 'edit'), controller.updateModule);
 router.put('/system/:key', checkPermission('settings', 'edit'), controller.updateSystemModule);
+router.post('/system/:key/fields/:fieldKey/options', checkPermission('settings', 'edit'), controller.addModuleFieldPicklistOption);
 
 module.exports = router;
 

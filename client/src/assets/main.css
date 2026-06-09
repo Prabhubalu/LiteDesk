@@ -300,13 +300,6 @@ html.dark body {
   --tv-grid-border: rgb(55 65 81);
 }
 
-/* Dark mode border color for sticky column border - match header border-bottom */
-.dark .table-scroll-container thead th.sticky-column-border::before,
-.dark .table-scroll-container tbody td.sticky-column-border::after {
-  background-color: rgb(55 65 81) !important; /* gray-700 - same as dark:border-gray-700 */
-  box-shadow: 2px 0 4px -1px rgba(0, 0, 0, 0.3) !important;
-}
-
 /* Ensure selected sticky rows have solid backgrounds in dark mode */
 .dark .table-scroll-container tbody tr.bg-indigo-950,
 .dark .table-scroll-container tbody tr.bg-indigo-950 td,
@@ -652,4 +645,29 @@ html.rtl .me-auto {
 
 .dark .arivu-scrollbar:hover::-webkit-scrollbar-thumb:hover {
   background-color: rgb(167 139 250 / 0.7);
+}
+
+/* Rich description inline images (TaskDescriptionEditor) */
+img[data-width="25%"] {
+  width: 25%;
+  max-width: 100%;
+  height: auto;
+}
+
+img[data-width="50%"] {
+  width: 50%;
+  max-width: 100%;
+  height: auto;
+}
+
+img[data-width="75%"] {
+  width: 75%;
+  max-width: 100%;
+  height: auto;
+}
+
+img[data-width="100%"] {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
 }

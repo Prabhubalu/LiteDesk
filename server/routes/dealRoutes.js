@@ -12,7 +12,9 @@ const {
     addActivityLog,
     getDashboardMetrics,
     getPipelineSummary,
+    getPlaybookAnalytics,
     updateStage,
+    updatePlaybookActionStatus,
     getDescriptionVersions,
     restoreDescriptionVersion,
     getDealComments,
@@ -46,6 +48,7 @@ router.use(checkFeatureAccess('deals'));
 // Pipeline summary (must come before /:id routes)
 router.get('/dashboard/metrics', checkPermission('deals', 'view'), getDashboardMetrics);
 router.get('/pipeline/summary', checkPermission('deals', 'view'), getPipelineSummary);
+router.get('/playbooks/analytics', checkPermission('deals', 'view'), getPlaybookAnalytics);
 
 // Routes that handle collections (GET all, POST new)
 router.route('/')
@@ -62,6 +65,9 @@ router.patch('/:id/tags', checkPermission('deals', 'edit'), updateDealTags);
 
 // Update deal stage
 router.patch('/:id/stage', checkPermission('deals', 'edit'), updateStage);
+
+// Update playbook action completion
+router.patch('/:id/playbook-state/actions/:actionKey', checkPermission('deals', 'edit'), updatePlaybookActionStatus);
 
 // Legacy notes (kept for backward compatibility)
 router.post('/:id/notes', checkPermission('deals', 'edit'), addNote);

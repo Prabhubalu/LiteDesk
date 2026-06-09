@@ -283,7 +283,19 @@
               
               <!-- Options list (scrollable) -->
               <div class="max-h-60 overflow-auto py-1">
-                <div v-if="filteredSearchablePicklistOptions.length === 0" class="relative cursor-default select-none px-4 py-2 text-gray-700 dark:text-gray-300">
+                <button
+                  v-if="picklistCreateCandidate"
+                  type="button"
+                  class="w-full text-left px-4 py-2 text-sm text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  :disabled="picklistOptionCreating"
+                  @click.stop="handleCreatePicklistOption"
+                >
+                  <span class="inline-flex items-center gap-2">
+                    <PlusIcon class="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span>{{ t('common.formAddPicklistOption', { value: picklistCreateCandidate }) }}</span>
+                  </span>
+                </button>
+                <div v-if="filteredSearchablePicklistOptions.length === 0 && !picklistCreateCandidate" class="relative cursor-default select-none px-4 py-2 text-gray-700 dark:text-gray-300">
                   {{ t('common.formNoOptions') }}
                 </div>
                 <ComboboxOption
@@ -435,9 +447,42 @@
           @click.stop
           class="absolute z-20 mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 max-h-72 flex flex-col"
         >
+          <div
+            v-if="canCreatePicklistOption"
+            class="shrink-0 p-2 border-b border-gray-200 dark:border-gray-600"
+            @click.stop
+            @mousedown.stop
+          >
+            <div class="relative">
+              <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10" />
+              <input
+                type="text"
+                v-model="picklistSearchQuery"
+                @keydown.enter.stop.prevent="picklistCreateCandidate && handleCreatePicklistOption()"
+                @keydown.escape.stop
+                @click.stop
+                @mousedown.stop
+                :placeholder="t('common.formSearchOptions')"
+                class="w-full pl-9 pr-3 py-2 text-sm rounded-md bg-gray-100 dark:bg-gray-700 outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:outline-indigo-500 text-gray-900 dark:text-white placeholder:text-gray-500 relative z-10"
+                autocomplete="off"
+              />
+            </div>
+          </div>
           <div class="py-1 max-h-60 overflow-y-auto">
             <button
-              v-for="(option, optIdx) in filteredPicklistOptions"
+              v-if="picklistCreateCandidate"
+              type="button"
+              class="w-full text-left px-4 py-2 text-sm text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="picklistOptionCreating"
+              @click.stop="handleCreatePicklistOption"
+            >
+              <span class="inline-flex items-center gap-2">
+                <PlusIcon class="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>{{ t('common.formAddPicklistOption', { value: picklistCreateCandidate }) }}</span>
+              </span>
+            </button>
+            <button
+              v-for="(option, optIdx) in filteredSearchablePicklistOptions"
               :key="optIdx"
               type="button"
               @click.stop="toggleMultiSelect(option)"
@@ -464,7 +509,7 @@
               </div>
             </button>
             <div
-              v-if="filteredPicklistOptions.length === 0"
+              v-if="filteredSearchablePicklistOptions.length === 0 && !picklistCreateCandidate"
               class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400"
             >
               {{ t('common.formNoOptions') }}
@@ -987,6 +1032,12 @@ import { getWebsiteValidationMessage } from '@/utils/urlInputValidation';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { CURRENCY_OPTIONS, DEFAULT_CURRENCY_CODE } from '@/utils/currencyOptions';
 import { useAuthStore } from '@/stores/authRegistry';
+import { deleteInlineUpload, isManagedInlineUploadRef } from '@/utils/inlineUploadStorage';
+import {
+  canCreatePicklistOptionInline,
+  normalizeNewPicklistOptionValue,
+  picklistOptionExists,
+} from '@/utils/picklistInlineOptionCreate';
 import { canEditField } from '@/platform/fields/fieldCapabilityEngine';
 import { isModuleRegistered } from '@/platform/fields/FieldRegistry';
 
@@ -1070,7 +1121,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:value', 'validation-error', 'blur', 'update:currency-code']);
+const emit = defineEmits(['update:value', 'validation-error', 'blur', 'update:currency-code', 'picklist-option-created']);
 
 const displayLabel = computed(() => getFieldDisplayLabel(props.field));
 const effectiveLabel = computed(() => {
@@ -1132,6 +1183,8 @@ const showMultiOptions = ref(false);
 
 // Search queries for Combobox components
 const picklistSearchQuery = ref('');
+const picklistOptionCreating = ref(false);
+const additionalPicklistOptions = ref([]);
 const lookupSearchQuery = ref('');
 
 // Refs for search inputs to auto-focus
@@ -1197,23 +1250,51 @@ const effectiveCurrencyCode = computed(() =>
   ).toUpperCase()
 );
 
+const mergedPicklistSourceOptions = computed(() => {
+  const base = Array.isArray(props.field.options) ? props.field.options : [];
+  const extras = Array.isArray(additionalPicklistOptions.value) ? additionalPicklistOptions.value : [];
+  if (!extras.length) return base;
+  const seen = new Set(base.map((opt) => String(getPicklistOptionValue(opt) || '').toLowerCase()));
+  const merged = [...base];
+  for (const opt of extras) {
+    const value = String(getPicklistOptionValue(opt) || '').toLowerCase();
+    if (!value || seen.has(value)) continue;
+    seen.add(value);
+    merged.push(opt);
+  }
+  return merged;
+});
+
+const canCreatePicklistOption = computed(() => {
+  if (isReadOnly.value || !props.moduleKey) return false;
+  return canCreatePicklistOptionInline(props.moduleKey, props.field, authStore.user);
+});
+
+const picklistCreateCandidate = computed(() => {
+  const query = String(picklistSearchQuery.value || '').trim();
+  if (!query || !canCreatePicklistOption.value || picklistOptionCreating.value) return '';
+  const normalizedValue = normalizeNewPicklistOptionValue(query, props.field.key, props.moduleKey);
+  if (!normalizedValue) return '';
+  if (picklistOptionExists(mergedPicklistSourceOptions.value, normalizedValue)) return '';
+  return query;
+});
+
 // Get filtered picklist options based on dependency
 const filteredPicklistOptions = computed(() => {
   if (props.field.dataType !== 'Picklist' && props.field.dataType !== 'Multi-Picklist') {
-    return props.field.options || [];
+    return mergedPicklistSourceOptions.value;
   }
   
   const allowedOptions = props.dependencyState?.allowedOptions;
   if (!allowedOptions || !Array.isArray(allowedOptions) || allowedOptions.length === 0) {
-    // No dependency filter - show all options
-    return props.field.options || [];
+    return mergedPicklistSourceOptions.value;
   }
   
   // Normalize allowedOptions to strings for comparison
   const normalizedAllowed = allowedOptions.map(opt => String(opt || ''));
   
   // Filter options to only show allowed ones
-  const filtered = (props.field.options || []).filter(option => {
+  const filtered = mergedPicklistSourceOptions.value.filter(option => {
     const optionValue = String(getPicklistOptionValue(option) || '');
     return normalizedAllowed.includes(optionValue);
   });
@@ -1222,7 +1303,7 @@ const filteredPicklistOptions = computed(() => {
     console.warn('⚠️ No picklist options matched dependency filter:', {
       fieldKey: props.field.key,
       allowedOptions: normalizedAllowed,
-      allOptions: (props.field.options || []).map(opt => getPicklistOptionValue(opt))
+      allOptions: mergedPicklistSourceOptions.value.map(opt => getPicklistOptionValue(opt))
     });
   }
   
@@ -1510,6 +1591,57 @@ const handlePicklistChange = (newValue) => {
   emit('blur');
 };
 
+async function handleCreatePicklistOption() {
+  const rawValue = picklistCreateCandidate.value;
+  if (!rawValue || !canCreatePicklistOption.value || picklistOptionCreating.value) return;
+
+  const moduleKey = String(props.moduleKey || '').toLowerCase();
+  const fieldKey = String(props.field?.key || '').trim();
+  if (!moduleKey || !fieldKey) return;
+
+  picklistOptionCreating.value = true;
+  try {
+    const response = await apiClient.post(
+      `/modules/system/${encodeURIComponent(moduleKey)}/fields/${encodeURIComponent(fieldKey)}/options`,
+      { value: rawValue, label: rawValue }
+    );
+    const option = response?.data;
+    if (!option?.value) {
+      throw new Error(response?.message || 'Failed to add picklist option');
+    }
+
+    if (Array.isArray(props.field.options)) {
+      if (!picklistOptionExists(props.field.options, option.value)) {
+        props.field.options.push(option);
+      }
+    } else {
+      props.field.options = [option];
+    }
+    if (!picklistOptionExists(additionalPicklistOptions.value, option.value)) {
+      additionalPicklistOptions.value = [...additionalPicklistOptions.value, option];
+    }
+
+    emit('picklist-option-created', { fieldKey, option });
+
+    if (props.field.dataType === 'Multi-Picklist') {
+      const current = Array.isArray(props.value) ? [...props.value] : [];
+      if (!current.includes(option.value)) {
+        updateValue([...current, option.value]);
+      }
+    } else {
+      handlePicklistChange(option.value);
+    }
+
+    picklistSearchQuery.value = '';
+    showMultiOptions.value = false;
+  } catch (error) {
+    console.error('Failed to create picklist option:', error);
+    localValidationError.value = error?.message || t('common.formAddPicklistOptionFailed');
+  } finally {
+    picklistOptionCreating.value = false;
+  }
+}
+
 // Handler for radio button changes (emits blur immediately since selection is complete)
 const handleRadioChange = (newValue) => {
   updateValue(newValue);
@@ -1575,6 +1707,12 @@ const handleImageUpload = async (event) => {
 
     const result = await response.json();
     if (result.success && result.url) {
+      const previous = String(props.modelValue || '').trim();
+      if (previous && previous !== result.url && isManagedInlineUploadRef(previous)) {
+        deleteInlineUpload(previous).catch((error) => {
+          console.error('Previous image delete error:', error);
+        });
+      }
       updateValue(result.url);
     } else {
       throw new Error(result.message || 'Upload failed');
@@ -1591,7 +1729,15 @@ const handleImageUpload = async (event) => {
   }
 };
 
-const removeImage = () => {
+const removeImage = async () => {
+  const current = String(props.modelValue || '').trim();
+  if (current && isManagedInlineUploadRef(current)) {
+    try {
+      await deleteInlineUpload(current);
+    } catch (error) {
+      console.error('Image delete error:', error);
+    }
+  }
   updateValue('');
 };
 
@@ -1731,6 +1877,7 @@ function onMultiPicklistTriggerClick() {
 
 function closeMultiPicklistDropdown() {
   showMultiOptions.value = false;
+  picklistSearchQuery.value = '';
   emit('blur');
 }
 
@@ -2427,6 +2574,12 @@ watch(orgListRestrictIds, async (next, prev) => {
   await fetchLookupOptions();
   handlePopulatedValue();
   await ensureLookupLabelHydrated();
+});
+
+watch(() => props.field?.key, () => {
+  additionalPicklistOptions.value = [];
+  picklistSearchQuery.value = '';
+  picklistOptionCreating.value = false;
 });
 
 // Watch for field changes to refetch lookup options

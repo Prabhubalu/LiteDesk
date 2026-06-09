@@ -3,39 +3,23 @@
  * Keep in sync with server/utils/peopleParticipationPicklistColors.js
  */
 
-export const LEAD_STATUS_OPTION_COLORS: Readonly<Record<string, string>> = Object.freeze({
-  new: '#2563EB',
-  contacted: '#6366F1',
-  qualified: '#16A34A',
-  disqualified: '#DC2626',
-  nurturing: '#D97706',
-  're-engage': '#9333EA',
-  re_engage: '#9333EA',
-});
+import {
+  LEAD_STATUS_OPTION_COLORS,
+  CONTACT_STATUS_OPTION_COLORS,
+  PLATFORM_DEFAULT_PICKLIST_COLOR,
+  normalizePicklistColorKey,
+  getSemanticPicklistColor,
+  backfillPicklistOptionColors,
+} from '@/utils/picklistColorPalette';
 
-export const CONTACT_STATUS_OPTION_COLORS: Readonly<Record<string, string>> = Object.freeze({
-  active: '#16A34A',
-  inactive: '#6B7280',
-  donotcontact: '#DC2626',
-});
-
-export function normalizePicklistColorKey(value: unknown): string {
-  return String(value ?? '')
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '_');
-}
+export { LEAD_STATUS_OPTION_COLORS, CONTACT_STATUS_OPTION_COLORS, normalizePicklistColorKey };
 
 export function getDefaultParticipationPicklistColor(fieldKey: string, value: unknown): string {
-  const normalizedValue = normalizePicklistColorKey(value);
+  const semantic = getSemanticPicklistColor(fieldKey, value, 'people');
+  if (semantic) return semantic;
   const field = String(fieldKey || '').toLowerCase();
-  if (field === 'lead_status') {
-    return LEAD_STATUS_OPTION_COLORS[normalizedValue] || '#3B82F6';
-  }
-  if (field === 'contact_status') {
-    return CONTACT_STATUS_OPTION_COLORS[normalizedValue] || '#6B7280';
-  }
-  return '#3B82F6';
+  if (field === 'contact_status') return CONTACT_STATUS_OPTION_COLORS.inactive ?? PLATFORM_DEFAULT_PICKLIST_COLOR;
+  return LEAD_STATUS_OPTION_COLORS.new ?? PLATFORM_DEFAULT_PICKLIST_COLOR;
 }
 
 export function buildColoredPicklistOption(fieldKey: string, value: string) {
@@ -53,24 +37,7 @@ export function buildDefaultColoredPicklistOptions(fieldKey: string, values: rea
 }
 
 export function applyDefaultColorsToPicklistOptions(fieldKey: string, options: unknown[]) {
-  if (!Array.isArray(options)) return [];
-  return options.map((opt) => {
-    if (typeof opt === 'string') {
-      return buildColoredPicklistOption(fieldKey, opt);
-    }
-    if (opt != null && typeof opt === 'object') {
-      const row = opt as { value?: unknown; label?: unknown; enabled?: boolean; color?: string };
-      const value = String(row.value ?? row.label ?? '');
-      return {
-        ...row,
-        value,
-        label: row.label ?? value,
-        enabled: row.enabled !== false,
-        color: row.color || getDefaultParticipationPicklistColor(fieldKey, value),
-      };
-    }
-    return opt;
-  });
+  return backfillPicklistOptionColors(options, fieldKey, 'people');
 }
 
 export function getContrastColor(hexColor: string): string {

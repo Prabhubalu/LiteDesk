@@ -442,6 +442,24 @@ export const useTaskSectionDataProviders = (context = {}) => {
           recordId: String(deal?._id || '')
         }))
       });
+    } else {
+      const rt = record.relatedTo;
+      const rtType = rt?.type;
+      const rtId = rt?.id != null && typeof rt.id === 'object' && rt.id._id != null ? rt.id._id : rt?.id;
+      if (rtType === 'deal' && rtId) {
+        const dealRecord = typeof rt.id === 'object' ? rt.id : { _id: rtId, name: rt.name };
+        groups.push({
+          key: 'deals',
+          label: 'Deals',
+          items: [{
+            id: String(rtId),
+            title: getRelatedRecordTitle('deal', dealRecord),
+            meta: getRelatedRecordMeta('deal', dealRecord),
+            type: 'deal',
+            recordId: String(rtId)
+          }]
+        });
+      }
     }
 
     if (Array.isArray(taskForms) && taskForms.length > 0) {

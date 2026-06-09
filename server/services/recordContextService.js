@@ -105,6 +105,38 @@ function getLookupFieldKeysForTarget(moduleDef, targetModuleKey) {
     .filter(Boolean);
 }
 
+/** Canonical lookup fields for known cross-module relationships (data model source of truth). */
+function getCanonicalLookupKeys(sourceModuleKey, targetModuleKey) {
+  const src = String(sourceModuleKey || '').toLowerCase();
+  const tgt = String(targetModuleKey || '').toLowerCase();
+  if (src === 'people' && tgt === 'organizations') return ['organization'];
+  if (src === 'cases' && tgt === 'people') return ['contactId'];
+  if (src === 'cases' && tgt === 'organizations') return ['organizationRefId'];
+  if (src === 'quotes' && tgt === 'people') return ['contactId'];
+  if (src === 'quotes' && tgt === 'organizations') return ['organizationRefId'];
+  if (src === 'quotes' && tgt === 'deals') return ['dealId'];
+  if (src === 'quotes' && tgt === 'cases') return ['caseId'];
+  return [];
+}
+
+/** Drop infrastructure keys that collide with relationship lookup semantics. */
+function excludeMisleadingLookupKeys(sourceModuleKey, targetModuleKey, keys = []) {
+  const src = String(sourceModuleKey || '').toLowerCase();
+  const tgt = String(targetModuleKey || '').toLowerCase();
+  if (src === 'people' && tgt === 'organizations') {
+    return keys.filter(
+      (key) => String(key || '').toLowerCase().replace(/[^a-z0-9]/g, '') !== 'organizationid'
+    );
+  }
+  return keys;
+}
+
+function mergeEffectiveLookupKeys(discoveredKeys, sourceModuleKey, targetModuleKey) {
+  const filtered = excludeMisleadingLookupKeys(sourceModuleKey, targetModuleKey, discoveredKeys);
+  const canonical = getCanonicalLookupKeys(sourceModuleKey, targetModuleKey);
+  return [...new Set([...filtered, ...canonical])];
+}
+
 function extractLinkedIds(value) {
   if (value == null) return [];
   if (Array.isArray(value)) {
@@ -176,6 +208,55 @@ async function getModuleDefinitionForContext(organizationId, appKey, moduleKey) 
   }).select('fields').lean();
 }
 
+function getLookupModel(moduleKey) {
+  const key = String(moduleKey || '').toLowerCase();
+  switch (key) {
+    case 'people':
+      return People;
+    case 'organizations':
+    case 'organization':
+      return require('../models/Organization');
+    case 'deals':
+    case 'deal':
+      return require('../models/Deal');
+    case 'cases':
+    case 'case':
+      return require('../models/Case');
+    case 'quotes':
+    case 'quote':
+      return require('../models/Quote');
+    case 'tasks':
+    case 'task':
+      return require('../models/Task');
+    case 'events':
+    case 'event':
+      return Event;
+    case 'forms':
+    case 'form':
+      return Form;
+    case 'items':
+    case 'item':
+      return require('../models/Item');
+    default:
+      return null;
+  }
+}
+
+function appendTenantScopeToLookupQuery(query, organizationId, moduleKey, Model) {
+  const key = String(moduleKey || '').toLowerCase();
+  if (key === 'organizations' || key === 'organization') {
+    query.isTenant = false;
+    return query;
+  }
+  if (organizationId) {
+    query.organizationId = organizationId;
+  }
+  if (Model?.schema?.paths?.deletedAt) {
+    query.deletedAt = null;
+  }
+  return query;
+}
+
 async function getRecordLookupLinks(
   organizationId,
   queryAppKey,
@@ -186,21 +267,21 @@ async function getRecordLookupLinks(
   linkedModuleKey = queryModuleKey
 ) {
   if (!Array.isArray(lookupFieldKeys) || lookupFieldKeys.length === 0) return [];
-  const collection = mongoose.connection?.db?.collection(String(queryModuleKey || '').toLowerCase());
-  if (!collection) return [];
+  const moduleKey = String(queryModuleKey || '').toLowerCase();
+  const Model = getLookupModel(moduleKey);
+  if (!Model) return [];
 
   const objectId = toObjectIdOrNull(recordId);
   const idString = normalizeIdString(recordId);
-  const query = objectId
-    ? { _id: objectId }
-    : { _id: idString };
+  const query = appendTenantScopeToLookupQuery(
+    objectId ? { _id: objectId } : { _id: idString },
+    organizationId,
+    moduleKey,
+    Model
+  );
 
-  const projection = lookupFieldKeys.reduce((acc, key) => {
-    acc[key] = 1;
-    return acc;
-  }, { _id: 1 });
-
-  const record = await collection.findOne(query, { projection });
+  const selectFields = ['_id', ...lookupFieldKeys].join(' ');
+  const record = await Model.findOne(query).select(selectFields).lean();
   if (!record) return [];
 
   const refs = [];
@@ -217,14 +298,10 @@ async function getRecordLookupLinks(
   return refs;
 }
 
-async function getReverseLookupLinks(organizationId, sourceAppKey, sourceModuleKey, sourceLookupFieldKeys = [], targetRecordId) {
-  if (!Array.isArray(sourceLookupFieldKeys) || sourceLookupFieldKeys.length === 0) return [];
-  const collection = mongoose.connection?.db?.collection(String(sourceModuleKey || '').toLowerCase());
-  if (!collection) return [];
-
+function buildReverseLookupFieldClauses(targetRecordId, fieldKeys = []) {
   const objectId = toObjectIdOrNull(targetRecordId);
   const idString = normalizeIdString(targetRecordId);
-  const fieldOrClauses = sourceLookupFieldKeys.flatMap((fieldKey) => {
+  return fieldKeys.flatMap((fieldKey) => {
     const clauses = [];
     if (objectId) clauses.push({ [fieldKey]: objectId });
     if (idString) clauses.push({ [fieldKey]: idString });
@@ -232,18 +309,110 @@ async function getReverseLookupLinks(organizationId, sourceAppKey, sourceModuleK
     if (idString) clauses.push({ [`${fieldKey}._id`]: idString });
     return clauses;
   });
+}
+
+async function getReverseLookupLinks(organizationId, sourceAppKey, sourceModuleKey, sourceLookupFieldKeys = [], targetRecordId) {
+  if (!Array.isArray(sourceLookupFieldKeys) || sourceLookupFieldKeys.length === 0) return [];
+  const moduleKey = String(sourceModuleKey || '').toLowerCase();
+  const Model = getLookupModel(moduleKey);
+  if (!Model) return [];
+
+  const fieldOrClauses = buildReverseLookupFieldClauses(targetRecordId, sourceLookupFieldKeys);
   if (fieldOrClauses.length === 0) return [];
 
-  const cursor = collection.find({ $or: fieldOrClauses }, { projection: { _id: 1 } });
-  const docs = await cursor.toArray();
+  const query = appendTenantScopeToLookupQuery(
+    { $or: fieldOrClauses },
+    organizationId,
+    moduleKey,
+    Model
+  );
+
+  const docs = await Model.find(query).select('_id').lean();
   return docs
     .map((doc) => normalizeIdString(doc?._id))
     .filter(Boolean)
     .map((id) => ({
       appKey: String(sourceAppKey || '').toLowerCase(),
-      moduleKey: String(sourceModuleKey || '').toLowerCase(),
+      moduleKey,
       recordId: id
     }));
+}
+
+/** Direct query for people linked to a sales organization (canonical + customFields). */
+async function getPeopleLinkedToOrganizationRefs(organizationId, organizationRecordId, sourceAppKey = 'sales') {
+  const fieldKeys = ['organization', 'customFields.organization'];
+  const fieldOrClauses = buildReverseLookupFieldClauses(organizationRecordId, fieldKeys);
+  if (fieldOrClauses.length === 0) return [];
+
+  const query = appendTenantScopeToLookupQuery(
+    { $or: fieldOrClauses },
+    organizationId,
+    'people',
+    People
+  );
+
+  const docs = await People.find(query).select('_id first_name last_name email').lean();
+  return docs.map((doc) => {
+    const personName = [doc.first_name, doc.last_name].filter(Boolean).join(' ').trim();
+    return {
+      appKey: String(sourceAppKey || 'sales').toLowerCase(),
+      moduleKey: 'people',
+      recordId: normalizeIdString(doc._id),
+      first_name: doc.first_name,
+      last_name: doc.last_name,
+      email: doc.email,
+      label: personName || doc.email || undefined,
+      name: personName || undefined
+    };
+  });
+}
+
+async function hydrateRelatedPeopleRecords(organizationId, relationships = []) {
+  if (!organizationId || !Array.isArray(relationships) || relationships.length === 0) return;
+
+  const peopleIds = new Set();
+  for (const rel of relationships) {
+    for (const rec of rel.records || []) {
+      if (String(rec?.moduleKey || '').toLowerCase() !== 'people') continue;
+      const id = normalizeIdString(rec?.recordId ?? rec?.id ?? rec?._id);
+      if (id) peopleIds.add(id);
+    }
+  }
+  if (peopleIds.size === 0) return;
+
+  const objectIds = [...peopleIds]
+    .map((id) => toObjectIdOrNull(id))
+    .filter(Boolean);
+  const people = await People.find({
+    organizationId,
+    deletedAt: null,
+    $or: [
+      { _id: { $in: objectIds } },
+      { _id: { $in: [...peopleIds] } }
+    ]
+  })
+    .select('_id first_name last_name email')
+    .lean();
+  const peopleById = new Map(people.map((p) => [normalizeIdString(p._id), p]));
+
+  for (const rel of relationships) {
+    if (!Array.isArray(rel.records) || rel.records.length === 0) continue;
+    rel.records = rel.records.map((rec) => {
+      if (String(rec?.moduleKey || '').toLowerCase() !== 'people') return rec;
+      const id = normalizeIdString(rec?.recordId ?? rec?.id ?? rec?._id);
+      const person = peopleById.get(id);
+      if (!person) return rec;
+      const personName = [person.first_name, person.last_name].filter(Boolean).join(' ').trim();
+      return {
+        ...rec,
+        first_name: person.first_name,
+        last_name: person.last_name,
+        email: person.email,
+        label: rec.label || personName || person.email || rec.label,
+        name: rec.name || personName || undefined
+      };
+    });
+  }
 }
 
 /**
@@ -382,24 +551,7 @@ async function getRecordContext(organizationId, appKey, moduleKey, recordId, opt
         const sourceLookupKeys = getLookupFieldKeysForTarget(sourceDef, relDef.target.moduleKey);
         const srcMod = String(relDef.source?.moduleKey || '').toLowerCase();
         const tgtMod = String(relDef.target?.moduleKey || '').toLowerCase();
-        let effectiveLookupKeys = sourceLookupKeys;
-        if (sourceLookupKeys.length === 0) {
-          if (srcMod === 'people' && tgtMod === 'organizations') {
-            effectiveLookupKeys = ['organization', 'organizationId'];
-          } else if (srcMod === 'cases' && tgtMod === 'people') {
-            effectiveLookupKeys = ['contactId'];
-          } else if (srcMod === 'cases' && tgtMod === 'organizations') {
-            effectiveLookupKeys = ['organizationRefId'];
-          } else if (srcMod === 'quotes' && tgtMod === 'people') {
-            effectiveLookupKeys = ['contactId'];
-          } else if (srcMod === 'quotes' && tgtMod === 'organizations') {
-            effectiveLookupKeys = ['organizationRefId'];
-          } else if (srcMod === 'quotes' && tgtMod === 'deals') {
-            effectiveLookupKeys = ['dealId'];
-          } else if (srcMod === 'quotes' && tgtMod === 'cases') {
-            effectiveLookupKeys = ['caseId'];
-          }
-        }
+        const effectiveLookupKeys = mergeEffectiveLookupKeys(sourceLookupKeys, srcMod, tgtMod);
         const lookupRefs = await getRecordLookupLinks(
           organizationId,
           relDef.source.appKey,
@@ -419,24 +571,7 @@ async function getRecordContext(organizationId, appKey, moduleKey, recordId, opt
         const sourceLookupKeys = getLookupFieldKeysForTarget(sourceDef, moduleKey);
         const srcModRev = String(relDef.source?.moduleKey || '').toLowerCase();
         const curMod = String(moduleKey || '').toLowerCase();
-        let effectiveSourceLookupKeys = sourceLookupKeys;
-        if (sourceLookupKeys.length === 0) {
-          if (srcModRev === 'people' && curMod === 'organizations') {
-            effectiveSourceLookupKeys = ['organization', 'organizationId'];
-          } else if (srcModRev === 'cases' && curMod === 'people') {
-            effectiveSourceLookupKeys = ['contactId'];
-          } else if (srcModRev === 'cases' && curMod === 'organizations') {
-            effectiveSourceLookupKeys = ['organizationRefId'];
-          } else if (srcModRev === 'quotes' && curMod === 'people') {
-            effectiveSourceLookupKeys = ['contactId'];
-          } else if (srcModRev === 'quotes' && curMod === 'organizations') {
-            effectiveSourceLookupKeys = ['organizationRefId'];
-          } else if (srcModRev === 'quotes' && curMod === 'deals') {
-            effectiveSourceLookupKeys = ['dealId'];
-          } else if (srcModRev === 'quotes' && curMod === 'cases') {
-            effectiveSourceLookupKeys = ['caseId'];
-          }
-        }
+        const effectiveSourceLookupKeys = mergeEffectiveLookupKeys(sourceLookupKeys, srcModRev, curMod);
         const reverseRefs = await getReverseLookupLinks(
           organizationId,
           relDef.source.appKey,
@@ -447,6 +582,27 @@ async function getRecordContext(organizationId, appKey, moduleKey, recordId, opt
         relOut.records = mergeRecordRefs(relOut.records, reverseRefs);
       }
     }
+
+    // Organizations: always resolve linked people from People.organization (not tenant organizationId).
+    if (normModuleKey === 'organizations') {
+      const peopleOrgRel = relationships.find(
+        (rel) => String(rel.relationshipKey || '').toLowerCase() === 'people_organizations'
+      );
+      if (peopleOrgRel) {
+        const relDef = effectiveRelationships.find(
+          (rel) => String(rel.relationshipKey || '').toLowerCase() === 'people_organizations'
+        );
+        const sourceAppKey = relDef?.source?.appKey || 'sales';
+        const directPeople = await getPeopleLinkedToOrganizationRefs(
+          organizationId,
+          recordId,
+          sourceAppKey
+        );
+        peopleOrgRel.records = mergeRecordRefs(peopleOrgRel.records, directPeople);
+      }
+    }
+
+    await hydrateRelatedPeopleRecords(organizationId, relationships);
 
     // Enrich TARGET-direction relationships with isLookup from source module's relationship config (UI-only; no schema change)
     for (let i = 0; i < relationships.length; i++) {

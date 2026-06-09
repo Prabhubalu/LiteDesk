@@ -280,6 +280,11 @@ import {
   DEFAULT_CURRENCY_CODE,
   getCurrencySymbolFromCode,
 } from '@/utils/currencyOptions';
+import {
+  nextPicklistOptionColor,
+  backfillPicklistOptionColors,
+  normalizePicklistColorHex,
+} from '@/utils/picklistColorPalette';
 
 const { t } = useI18n();
 
@@ -307,7 +312,6 @@ const FIELD_TYPES = [
 ];
 
 const PICKLIST_FIELD_TYPES = ['Picklist', 'Multi-Picklist', 'Radio Button'];
-const DEFAULT_OPTION_COLOR = '#3B82F6';
 
 const PICKLIST_OPTIONS_SECTION_I18N = {
   Picklist: 'modFieldsPicklistOptions',
@@ -389,7 +393,7 @@ const createEmptyDraft = () => {
 
 const draft = ref(createEmptyDraft());
 const newOptionValue = ref('');
-const newOptionColor = ref(DEFAULT_OPTION_COLOR);
+const newOptionColor = ref(nextPicklistOptionColor([]));
 
 const isPicklistFieldType = computed(() => PICKLIST_FIELD_TYPES.includes(draft.value.dataType));
 
@@ -400,7 +404,7 @@ const picklistOptionsSectionLabel = computed(() => {
 
 function resetPicklistOptionDraft() {
   newOptionValue.value = '';
-  newOptionColor.value = DEFAULT_OPTION_COLOR;
+  newOptionColor.value = nextPicklistOptionColor(draft.value.options);
 }
 
 function addPicklistOption() {
@@ -408,9 +412,10 @@ function addPicklistOption() {
   if (!value) return;
   const existingValues = (draft.value.options || []).map((opt) => String(opt?.value || '').trim());
   if (existingValues.includes(value)) return;
+  const color = normalizePicklistColorHex(newOptionColor.value) || nextPicklistOptionColor(draft.value.options);
   draft.value.options = [
     ...(draft.value.options || []),
-    { value, color: newOptionColor.value || DEFAULT_OPTION_COLOR },
+    { value, color },
   ];
   resetPicklistOptionDraft();
 }
@@ -485,10 +490,14 @@ const handleSave = () => {
 
   const { participationScope: _ps, appContextToken: _at, currencyCode, ...rest } = draft.value;
   const options = isPicklistFieldType.value
-    ? (draft.value.options || []).map((opt) => ({
-        value: String(opt?.value || '').trim(),
-        color: opt?.color || DEFAULT_OPTION_COLOR,
-      })).filter((opt) => opt.value)
+    ? backfillPicklistOptionColors(draft.value.options, draft.value.key)
+        .map((opt) => {
+          if (typeof opt === 'string') return null;
+          const value = String(opt?.value || '').trim();
+          if (!value) return null;
+          return { value, color: String(opt?.color || nextPicklistOptionColor([])) };
+        })
+        .filter(Boolean)
     : [];
   const nextField = {
     ...rest,

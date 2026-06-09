@@ -34,6 +34,11 @@ router.post(
   checkPermissionFromParam('moduleKey', 'delete'),
   controller.bulkDeleteRecords
 );
+router.patch(
+  '/:moduleKey/records/bulk-update',
+  checkPermissionFromParam('moduleKey', 'edit'),
+  controller.bulkUpdateRecords
+);
 
 router.get(
   '/:moduleKey/records/:recordId/activity',

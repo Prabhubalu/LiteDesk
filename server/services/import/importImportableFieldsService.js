@@ -1,4 +1,5 @@
 const ModuleDefinition = require('../../models/ModuleDefinition');
+const { normalizePeopleModuleFields } = require('../../utils/normalizePeopleModuleConfig');
 const { SUPPORTED_MODULES } = require('./importConstants');
 
 const IMPORT_MODULE_TO_DEFINITION_KEY = Object.freeze({
@@ -70,6 +71,10 @@ async function loadModuleFields(organizationId, definitionKey) {
     fields = platform?.fields || [];
   }
 
+  if (moduleLower === 'people') {
+    fields = normalizePeopleModuleFields(fields);
+  }
+
   return fields.filter((f) => isImportableField(f, moduleLower));
 }
 
@@ -101,6 +106,7 @@ async function getImportableFieldKeySet(organizationId, importModule) {
 }
 
 module.exports = {
+  loadModuleFields,
   getImportableFieldsForModule,
   getImportableFieldKeySet,
   IMPORT_MODULE_TO_DEFINITION_KEY,

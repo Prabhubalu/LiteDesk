@@ -132,10 +132,9 @@
             </button>
           </nav>
         </div>
-        <div v-if="activeTopTab === 'pipeline' || activeTopTab === 'playbooks'" class="flex items-center justify-between py-3">
+        <div v-if="activeTopTab === 'pipeline'" class="flex items-center justify-between py-3">
           <div class="text-sm text-gray-500 dark:text-gray-400">
             <span v-if="activeTopTab === 'pipeline'">{{ t('settings.modFieldsPipelineHint') }}</span>
-            <span v-else-if="activeTopTab === 'playbooks'">{{ t('settings.modFieldsPlaybooksHint') }}</span>
           </div>
         </div>
       </div>
@@ -3829,286 +3828,6 @@
           </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto" v-else-if="activeTopTab === 'playbooks'">
-          <div class="p-4">
-          <div class="h-full flex flex-col lg:flex-row gap-4">
-            <aside class="w-full lg:w-80 flex-none bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
-              <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between">
-                <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsPipelinesTitle') }}</div>
-                <button @click="addPipeline" class="px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow">{{ t('actions.add') }}</button>
-              </div>
-              <div class="flex-1 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-800">
-                <div
-                  v-for="(pipeline, index) in pipelineSettings"
-                  :key="pipeline.key || index"
-                  :class="[
-                    'p-4 cursor-pointer transition-colors',
-                    selectedPipelineKey === pipeline.key
-                      ? 'bg-indigo-50 dark:bg-indigo-900/20'
-                      : 'hover:bg-gray-50 dark:hover:bg-white/5'
-                  ]"
-                  @click="selectedPipelineKey = pipeline.key"
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <span class="w-2.5 h-2.5 rounded-full border border-white shadow" :style="{ backgroundColor: pipeline.color || DEFAULT_PIPELINE_COLOR }"></span>
-                      <div class="min-w-0">
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ pipeline.name }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ pipeline.stages?.length || 0 }} stage{{ (pipeline.stages?.length || 0) === 1 ? '' : 's' }}</p>
-                      </div>
-                    </div>
-                    <span v-if="pipeline.isDefault" class="text-xs font-medium text-indigo-600 dark:text-indigo-300">{{ t('settings.modFieldsDefaultLabel') }}</span>
-                  </div>
-                  <div class="flex items-center gap-2 mt-3">
-                    <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                      <input
-                        type="radio"
-                        name="default-playbook-pipeline"
-                        class="text-indigo-600 border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
-                        :checked="pipeline.isDefault"
-                        @change.stop="setDefaultPipeline(pipeline.key)"
-                      />{{ t('settings.modFieldsDefaultLabel') }}</label>
-                    <div class="ml-auto flex items-center gap-1">
-                      <button
-                        class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
-                        :disabled="index === 0"
-                        :class="{ 'opacity-40 cursor-not-allowed': index === 0 }"
-                        @click.stop="movePipeline(pipeline.key, -1)"
-                        :title="t('settings.modFieldsTitleMoveUp')"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                          <path fill-rule="evenodd" d="M10 4a.75.75 0 01.53.22l4.5 4.5a.75.75 0 11-1.06 1.06L10 5.81 6.03 9.78a.75.75 0 11-1.06-1.06l4.5-4.5A.75.75 0 0110 4z" clip-rule="evenodd" />
-                          <path d="M5.25 15.25a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
-                        </svg>
-                      </button>
-                      <button
-                        class="p-1 rounded text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
-                        :disabled="index === pipelineSettings.length - 1"
-                        :class="{ 'opacity-40 cursor-not-allowed': index === pipelineSettings.length - 1 }"
-                        @click.stop="movePipeline(pipeline.key, 1)"
-                        :title="t('settings.modFieldsTitleMoveDown')"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                          <path fill-rule="evenodd" d="M10 16a.75.75 0 01-.53-.22l-4.5-4.5a.75.75 0 011.06-1.06L10 14.19l3.97-3.97a.75.75 0 111.06 1.06l-4.5 4.5A.75.75 0 0110 16z" clip-rule="evenodd" />
-                          <path d="M5.25 4.75a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
-                        </svg>
-                      </button>
-                      <button
-                        class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
-                        @click.stop="removePipeline(pipeline.key)"
-                        :title="t('settings.modFieldsTitleRemovePipeline')"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                          <path fill-rule="evenodd" d="M8.75 3a.75.75 0 00-.75.75V5H5.5a.75.75 0 000 1.5h.538l.599 9.27A1.75 1.75 0 008.382 17.5h3.236a1.75 1.75 0 001.745-1.73l.599-9.27h.538a.75.75 0 000-1.5H12v-1.25A.75.75 0 0011.25 3h-2.5zM9.5 6.5v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0zm-2 0v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0z" clip-rule="evenodd" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div v-if="!pipelineSettings.length" class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoPipelinesYet') }}</div>
-              </div>
-            </aside>
-            <section class="flex-1 min-w-0 bg-white dark:bg-gray-900/60 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
-              <div class="p-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-3">
-                <div class="min-w-0">
-                  <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
-                    {{ currentPipeline?.name || t('settings.modFieldsSelectPipeline') }}
-                  </p>
-                  <p v-if="currentPipeline" class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ currentPipeline.stages?.length || 0 }} stage{{ (currentPipeline.stages?.length || 0) === 1 ? '' : 's' }} ·
-                    {{ currentPipeline.isDefault ? t('settings.modFieldsDefaultPipeline') : t('settings.modFieldsCustomPipeline') }}
-                  </p>
-                </div>
-              </div>
-              <div v-if="currentPipeline" class="flex-1 flex flex-col gap-6 p-4 overflow-hidden">
-                <div>
-                  <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsStagePlaybooksTitle') }}</h4>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsStagePlaybooksDesc') }}</p>
-                </div>
-                <div class="flex-1 overflow-x-auto pb-6">
-                  <div class="flex items-start gap-4 min-w-full">
-                    <div
-                      v-for="(stage, stageIndex) in currentPipeline.stages"
-                      :key="stage.key || stageIndex"
-                      class="w-[28rem] flex-shrink-0"
-                    >
-                      <div class="h-full flex flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/60 shadow-sm">
-                        <div class="p-4 border-b border-gray-200 dark:border-white/10 space-y-3">
-                          <div class="flex items-start justify-between gap-3">
-                            <div class="min-w-0">
-                              <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
-                                {{ stage.name || t('settings.modFieldsStageNumber', { number: stageIndex + 1 }) }}
-                              </p>
-                              <p class="text-xs text-gray-500 dark:text-gray-400">
-                                Probability: {{ stage.probability ?? 0 }}% · Status: {{ stage.status || 'open' }}
-                              </p>
-                            </div>
-                            <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer flex-shrink-0">
-                              <HeadlessCheckbox
-                                v-model="stage.playbook.enabled"
-                                @change="handlePlaybookToggle(stage)"
-                                checkbox-class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
-                              />
-                              <span>{{ t('settings.modFieldsEnable') }}</span>
-                            </label>
-                          </div>
-                          <button
-                            type="button"
-                            class="inline-flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-                            @click="toggleStageSettings(stage.key)"
-                          >
-                            <svg
-                              :class="[
-                                'w-4 h-4 transition-transform duration-200',
-                                isStageSettingsOpen(stage) ? 'rotate-180' : ''
-                              ]"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                            <span>{{ t('settings.modFieldsStageSettings') }}</span>
-                          </button>
-                          <transition name="fade">
-                            <div
-                              v-if="isStageSettingsOpen(stage)"
-                              class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-4 space-y-4"
-                            >
-                              <div class="grid grid-cols-1 gap-3">
-                                <div>
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsPlaybookMode') }}</label>
-                                  <select v-model="stage.playbook.mode" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm">
-                                    <option v-for="option in playbookModeOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-                                  </select>
-                                </div>
-                                <div>
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsExitCriteria') }}</label>
-                                  <select v-model="stage.playbook.exitCriteria.type" @change="onPlaybookExitCriteriaChange(stage)" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm">
-                                    <option v-for="option in playbookExitOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-                                  </select>
-                                </div>
-                                <div>
-                                  <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
-                                    <HeadlessCheckbox v-model="stage.playbook.autoAdvance" @change="onPlaybookAutoAdvanceChange(stage)" checkbox-class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500" />{{ t('settings.modFieldsAutoMoveNextStage') }}</label>
-                                  <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsAutoMoveNextStageHint') }}</p>
-                                </div>
-                                <div v-if="stage.playbook.autoAdvance">
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsNextStage') }}</label>
-                                  <select v-model="stage.playbook.exitCriteria.nextStageKey" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm">
-                                    <option value="">{{ t('settings.modFieldsSelectStagePh') }}</option>
-                                    <option v-for="option in getNextStageOptions(currentPipeline, stage)" :key="option.value" :value="option.value">{{ option.label }}</option>
-                                  </select>
-                                </div>
-                                <div v-if="stage.playbook.exitCriteria.type === 'custom'">
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsCustomTriggerDesc') }}</label>
-                                  <textarea v-model="stage.playbook.exitCriteria.customDescription" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm" :placeholder="t('settings.modFieldsCustomTriggerPh')"></textarea>
-                                </div>
-                                <div>
-                                  <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsInternalNotesOptional') }}</label>
-                                  <textarea v-model="stage.playbook.notes" rows="2" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm" :placeholder="t('settings.modFieldsInternalNotesPh')"></textarea>
-                                </div>
-                              </div>
-                            </div>
-                          </transition>
-                        </div>
-                        <div class="flex-1 flex flex-col gap-4 p-4">
-                          <div class="flex items-start justify-between gap-3">
-                            <div>
-                              <h6 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ t('settings.modFieldsActivitiesTitle') }}</h6>
-                              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsActivitiesDesc') }}</p>
-                            </div>
-                            <button
-                              class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm hover:shadow"
-                              @click="addPlaybookAction(stage)"
-                              :disabled="!stage.playbook.enabled"
-                              :class="!stage.playbook.enabled ? 'opacity-50 cursor-not-allowed' : ''"
-                            >
-                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                              </svg>{{ t('settings.modFieldsAddActivity') }}</button>
-                          </div>
-                          <div v-if="!stage.playbook.enabled" class="flex-1 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-4 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsEnablePlaybookForStage') }}</div>
-                          <div v-else class="flex-1 flex flex-col gap-3 overflow-y-auto pr-1">
-                            <div v-if="!stage.playbook.actions.length" class="flex-1 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 px-4 py-8 text-center text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoActivitiesYet') }}</div>
-                            <div v-else class="space-y-3">
-                              <div
-                                v-for="(action, actionIndex) in stage.playbook.actions"
-                                :key="action.key || actionIndex"
-                                class="group border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900/70 p-4 shadow-sm hover:border-indigo-500/70 hover:shadow transition-colors cursor-pointer"
-                                @click="openActionModal(stage, actionIndex)"
-                              >
-                                <div class="flex items-start justify-between gap-2">
-                                  <div class="min-w-0">
-                                    <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                                      {{ action.title || t('settings.modFieldsActionFallback', { index: actionIndex + 1 }) }}
-                                    </p>
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                      {{ getPlaybookActionTypeLabel(action.actionType) }}
-                                      <span v-if="action.dueInDays !== null && action.dueInDays !== undefined" class="ml-1">• Due in {{ action.dueInDays }} day{{ action.dueInDays === 1 ? '' : 's' }}</span>
-                                    </p>
-                                  </div>
-                                  <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button
-                                      class="p-1 rounded text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200 transition-colors"
-                                      :disabled="actionIndex === 0"
-                                      :class="{ 'opacity-40 cursor-not-allowed': actionIndex === 0 }"
-                                      @click.stop="movePlaybookAction(stage, actionIndex, -1)"
-                                      :title="t('settings.modFieldsTitleMoveUp')"
-                                    >
-                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                                        <path fill-rule="evenodd" d="M10 4a.75.75 0 01.53.22l4.5 4.5a.75.75 0 11-1.06 1.06L10 5.81 6.03 9.78a.75.75 0 11-1.06-1.06l4.5-4.5A.75.75 0 0110 4z" clip-rule="evenodd" />
-                                        <path d="M5.25 15.25a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
-                                      </svg>
-                                    </button>
-                                    <button
-                                      class="p-1 rounded text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200 transition-colors"
-                                      :disabled="actionIndex === stage.playbook.actions.length - 1"
-                                      :class="{ 'opacity-40 cursor-not-allowed': actionIndex === stage.playbook.actions.length - 1 }"
-                                      @click.stop="movePlaybookAction(stage, actionIndex, 1)"
-                                      :title="t('settings.modFieldsTitleMoveDown')"
-                                    >
-                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                                        <path fill-rule="evenodd" d="M10 16a.75.75 0 01-.53-.22l-4.5-4.5a.75.75 0 011.06-1.06L10 14.19l3.97-3.97a.75.75 0 111.06 1.06l-4.5 4.5A.75.75 0 0110 16z" clip-rule="evenodd" />
-                                        <path d="M5.25 4.75a.75.75 0 01.75-.75h8a.75.75 0 010 1.5h-8a.75.75 0 01-.75-.75z" />
-                                      </svg>
-                                    </button>
-                                    <button
-                                      class="p-1 rounded text-red-500 hover:text-red-600 transition-colors"
-                                      @click.stop="removePlaybookAction(stage, actionIndex)"
-                                      :title="t('settings.modFieldsTitleRemoveActivity')"
-                                    >
-                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                                        <path fill-rule="evenodd" d="M8.75 3a.75.75 0 00-.75.75V5H5.5a.75.75 0 000 1.5h.538l.599 9.27A1.75 1.75 0 008.382 17.5h3.236a1.75 1.75 0 001.745-1.73l.599-9.27h.538a.75.75 0 000-1.5H12v-1.25A.75.75 0 0011.25 3h-2.5zM9.5 6.5v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0zm-2 0v7a.75.75 0 001.5 0v-7a.75.75 0 00-1.5 0z" clip-rule="evenodd" />
-                                      </svg>
-                                    </button>
-                                  </div>
-                                </div>
-                                <div class="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
-                                  <span v-if="action.required" class="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">{{ t('common.required') }}</span>
-                                  <span v-if="action.autoCreate" class="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">{{ t('settings.modFieldsAutoCreate') }}</span>
-                                  <span v-if="action.dependencies?.length" class="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
-                                    {{ action.dependencies.length }} dependenc{{ action.dependencies.length === 1 ? 'y' : 'ies' }}
-                                  </span>
-                                  <span class="truncate">
-                                    Assigned to {{ getPlaybookAssignmentLabel(action.assignment?.type) }}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div v-if="!currentPipeline" class="flex-1 flex items-center justify-center p-6 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsSelectPipelinePlaybooks') }}</div>
-            </section>
-          </div>
-          </div>
-        </div>
 
         <div class="flex-1 overflow-y-auto" v-else>
           <div class="p-4">
@@ -5044,6 +4763,12 @@ import {
   isPeopleSalesRoleFieldKey,
   PEOPLE_SALES_ROLE_FIELD_KEYS_NORMALIZED
 } from '@/utils/peopleParticipationUi';
+import {
+  PLATFORM_DEFAULT_PICKLIST_COLOR,
+  nextPicklistOptionColor,
+  resolveNewPicklistOptionColor,
+  backfillPicklistOptionColors,
+} from '@/utils/picklistColorPalette';
 import DatePicker from '@/components/common/DatePicker.vue';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
 import ModuleFormModal from './ModuleFormModal.vue';
@@ -5512,7 +5237,7 @@ function getAllowedTopTabs(moduleKey) {
     return ['details', 'fields', 'logic', 'outcomes', 'access', 'relationships'];
   }
   if (moduleKey === 'deals') {
-    return [...TOP_TAB_IDS_BASE, 'pipeline', 'playbooks'];
+    return [...TOP_TAB_IDS_BASE, 'pipeline'];
   }
   if (moduleKey === 'people') {
     return [...TOP_TAB_IDS_BASE, 'people-types'];
@@ -5559,12 +5284,8 @@ const topTabs = computed(() => {
     ].map(mapTopTab);
   }
   if (moduleKey === 'deals') {
-    // Only add pipeline/playbooks tabs if they're not excluded
     if (!props.excludedTabs.includes('pipeline')) {
       tabs.push({ id: 'pipeline', nameKey: 'settings.modFieldsTabPipeline' });
-    }
-    if (!props.excludedTabs.includes('playbooks')) {
-      tabs.push({ id: 'playbooks', nameKey: 'settings.modFieldsTabPlaybooks' });
     }
   }
   if (moduleKey === 'people') {
@@ -5622,7 +5343,6 @@ const tabTitleMap = {
   relationships: 'Relationships',
   quick: 'Quick Create',
   pipeline: 'Pipeline Settings',
-  playbooks: 'Playbook Configuration',
   logic: 'Logic & Rules',
   outcomes: 'Outcomes',
   access: 'Access'
@@ -7852,7 +7572,7 @@ function isParticipationStateField(field) {
 // Field type-specific settings
 const showAddOption = ref(false);
 const newOptionValue = ref('');
-const newOptionColor = ref('#3B82F6'); // Default blue color
+const newOptionColor = ref(PLATFORM_DEFAULT_PICKLIST_COLOR);
 const currencySelectOptions = computed(() =>
   CURRENCY_OPTIONS.map((currency) => ({
     value: currency.code,
@@ -8181,41 +7901,6 @@ function loadFieldSettings() {
 }
 
 // Add picklist option
-const TASK_STATUS_OPTION_DEFAULT_COLORS = Object.freeze({
-  todo: '#6B7280',
-  in_progress: '#2563EB',
-  waiting: '#D97706',
-  completed: '#16A34A',
-  cancelled: '#DC2626'
-});
-
-const TASK_PRIORITY_OPTION_DEFAULT_COLORS = Object.freeze({
-  low: '#6B7280',
-  medium: '#2563EB',
-  high: '#D97706',
-  urgent: '#DC2626'
-});
-
-const PEOPLE_LEAD_STATUS_OPTION_DEFAULT_COLORS = Object.freeze({
-  new: '#2563EB',
-  contacted: '#6366F1',
-  qualified: '#16A34A',
-  disqualified: '#DC2626',
-  nurturing: '#D97706',
-  're-engage': '#9333EA',
-  re_engage: '#9333EA',
-});
-
-const PEOPLE_CONTACT_STATUS_OPTION_DEFAULT_COLORS = Object.freeze({
-  active: '#16A34A',
-  inactive: '#6B7280',
-  donotcontact: '#DC2626',
-});
-
-function normalizePicklistColorKey(value) {
-  return String(value || '').trim().toLowerCase().replace(/\s+/g, '_');
-}
-
 function isTaskStatusField(field = currentField.value) {
   return isTasksModule.value && String(field?.key || '').toLowerCase() === 'status';
 }
@@ -8287,37 +7972,27 @@ const organizationStatusPicklistSections = [
   },
 ];
 
-function getDefaultOptionColor(optionValue, field = currentField.value) {
-  if (isTaskStatusField(field)) {
-    return TASK_STATUS_OPTION_DEFAULT_COLORS[normalizePicklistColorKey(optionValue)] || '#6B7280';
+function getDefaultOptionColor(optionValue, field = currentField.value, existingOptions = null) {
+  const siblings = existingOptions ?? field?.options ?? [];
+  if (!optionValue) {
+    return nextPicklistOptionColor(siblings);
   }
-  if (isTaskPriorityField(field)) {
-    return TASK_PRIORITY_OPTION_DEFAULT_COLORS[normalizePicklistColorKey(optionValue)] || '#6B7280';
-  }
-  if (isPeopleLeadStatusField(field)) {
-    return PEOPLE_LEAD_STATUS_OPTION_DEFAULT_COLORS[normalizePicklistColorKey(optionValue)] || '#3B82F6';
-  }
-  if (isPeopleContactStatusField(field)) {
-    return PEOPLE_CONTACT_STATUS_OPTION_DEFAULT_COLORS[normalizePicklistColorKey(optionValue)] || '#6B7280';
-  }
-  return '#3B82F6';
+  return resolveNewPicklistOptionColor({
+    fieldKey: field?.key,
+    moduleKey: selectedModule.value?.key || '',
+    optionValue,
+    existingOptions: siblings,
+  });
 }
 
 // Normalize options - convert strings to objects for backward compatibility
 const normalizedOptions = computed(() => {
   if (!currentField.value?.options || !Array.isArray(currentField.value.options)) return [];
-  return currentField.value.options.map(opt => {
-    if (typeof opt === 'string') {
-      return { value: opt, color: getDefaultOptionColor(opt, currentField.value) };
-    }
-    if (opt && typeof opt === 'object') {
-      return {
-        ...opt,
-        color: opt.color || getDefaultOptionColor(opt.value, currentField.value)
-      };
-    }
-    return opt;
-  });
+  return backfillPicklistOptionColors(
+    currentField.value.options,
+    currentField.value?.key,
+    selectedModule.value?.key || ''
+  );
 });
 
 // Get option value (handles both string and object formats)
@@ -8491,14 +8166,14 @@ const fetchModules = async (apiGetOptions = {}) => {
     const data = await apiClient.get('/modules', { params: { context: 'all' }, ...apiGetOptions });
     if (data.success) {
       modules.value = normalizeModulesForSettingsDefaults(data.data);
-      // Initialize from URL first (unless startWithModuleList: show cards first)
-      const moduleKeyFromRoute = !props.startWithModuleList
-        ? (typeof route.query.module === 'string'
-          ? route.query.module
-          : typeof route.query.moduleKey === 'string'
-            ? route.query.moduleKey
-            : null)
-        : null;
+      // Initialize from URL when present. startWithModuleList only blocks implicit auto-select
+      // (single filtered module, localStorage) — not an explicit ?module= from a card click.
+      // PlatformShell remounts settings on fullPath change, so card clicks must restore from URL.
+      const moduleKeyFromRoute = typeof route.query.module === 'string'
+        ? route.query.module
+        : typeof route.query.moduleKey === 'string'
+          ? route.query.moduleKey
+          : null;
       const fieldKey = typeof route.query.field === 'string' ? route.query.field : null;
       const modeKey = typeof route.query.mode === 'string' ? route.query.mode : null;
       const subKey = typeof route.query.subtab === 'string' ? route.query.subtab : null;
@@ -8506,7 +8181,7 @@ const fetchModules = async (apiGetOptions = {}) => {
       if (moduleKeyFromRoute) {
         initialMod = modules.value.find(m => m.key === moduleKeyFromRoute) || null;
       }
-      if (!initialMod && props.moduleFilter) {
+      if (!initialMod && props.moduleFilter && !props.startWithModuleList) {
         const filtered = modules.value.filter((m) => m.key !== 'users' && props.moduleFilter(m));
         if (filtered.length === 1) {
           initialMod = filtered[0];
@@ -8994,11 +8669,11 @@ const fetchModules = async (apiGetOptions = {}) => {
         }
       }
       // If no module from URL, use last persisted selection (only if that module is visible in current context)
-      if (!initialMod) {
+      if (!initialMod && !props.startWithModuleList) {
         const storedModuleKey = localStorage.getItem('arivu-modfields-module') || null;
         if (storedModuleKey) {
           const storedMod = modules.value.find(m => m.key === storedModuleKey) || null;
-          // When startWithModuleList or when using a moduleFilter, only restore if the stored module is in the current list (e.g. Sales Schema only shows Deals + custom; don't restore People from Core Entities)
+          // When using a moduleFilter, only restore if the stored module is in the current list (e.g. Sales Schema only shows Deals + custom; don't restore People from Core Entities)
           const storedModInDisplayList = storedMod && storedMod.key !== 'users' && (!props.moduleFilter || props.moduleFilter(storedMod));
           if (storedModInDisplayList) {
             selectedModuleId.value = storedMod._id;
@@ -9471,7 +9146,7 @@ watch(pipelineSettings, () => {
 });
 
 watch(activeTopTab, (tab) => {
-  if (!['pipeline', 'playbooks'].includes(tab)) return;
+  if (tab !== 'pipeline') return;
   if (!pipelineTabEnabled.value) return;
   ensurePipelineSelection();
 });
@@ -10344,51 +10019,47 @@ watch(optionsBuffer, (v) => {
   
   const arr = v.split(',').map(s => s.trim()).filter(Boolean);
   
-  // If we have existing options as objects, preserve their colors when converting from buffer
+  const moduleKey = selectedModule.value?.key || '';
+  const fieldKey = currentField.value?.key;
   if (Array.isArray(currentField.value.options) && currentField.value.options.length > 0) {
     const existingOptions = currentField.value.options;
-    // Map to preserve colors if option exists
-    currentField.value.options = arr.map(value => {
-      const existing = existingOptions.find(opt => {
+    const merged = arr.map((value) => {
+      const existing = existingOptions.find((opt) => {
         const existingValue = typeof opt === 'string' ? opt : opt.value;
         return existingValue === value;
       });
-      if (existing && typeof existing === 'object') {
-        return {
-          ...existing,
-          color: existing.color || getDefaultOptionColor(existing.value || value, currentField.value)
-        };
-      }
-      return { value: value, color: getDefaultOptionColor(value, currentField.value) };
+      return existing ?? value;
     });
+    currentField.value.options = backfillPicklistOptionColors(merged, fieldKey, moduleKey);
   } else {
-    // New options, create as objects with default color
-    currentField.value.options = arr.map(value => ({ value: value, color: getDefaultOptionColor(value, currentField.value) }));
+    currentField.value.options = backfillPicklistOptionColors(
+      arr.map((value) => ({ value })),
+      fieldKey,
+      moduleKey
+    );
   }
 });
 
 watch(currentField, (field) => {
-  newOptionColor.value = getDefaultOptionColor('', field);
-
-  if (!isTaskStatusField(field) || !Array.isArray(field?.options)) return;
-
-  field.options = field.options.map((option) => {
-    if (typeof option === 'string') {
-      return { value: option, color: getDefaultOptionColor(option, field) };
-    }
-    if (!option || typeof option !== 'object') return option;
-    return {
-      ...option,
-      color: option.color || getDefaultOptionColor(option.value, field)
-    };
-  });
+  newOptionColor.value = nextPicklistOptionColor(field?.options);
 }, { immediate: true });
 
 const clearSelection = () => {
   selectedModuleId.value = null;
+  originalSnapshot.value = '';
+  quickOriginalSnapshot.value = '';
+  statusTypesOriginalSnapshot.value = '';
+  itemStatusTypesOriginalSnapshot.value = '';
+  eventRolesRulesOriginalSnapshot.value = '';
+  eventStatusOriginalSnapshot.value = '';
+  pipelineSettings.value = [];
+  selectedPipelineKey.value = '';
   const q = { ...route.query };
   delete q.module;
   delete q.field;
+  delete q.mode;
+  delete q.subtab;
+  delete q.quickMode;
   router.replace({ query: q });
   try { localStorage.removeItem('arivu-modfields-module'); localStorage.removeItem('arivu-modfields-field'); } catch (e) {}
 };
@@ -11614,6 +11285,7 @@ function getSnapshot() {
   return JSON.stringify(payload);
 }
 const isDirty = computed(() => {
+  if (!selectedModuleId.value) return false;
   // If snapshot hasn't been initialized yet, we're not dirty
   if (!originalSnapshot.value) return false;
   return getSnapshot() !== originalSnapshot.value;
@@ -11661,6 +11333,7 @@ function getQuickSnapshot() {
   return JSON.stringify(payload);
 }
 const quickDirty = computed(() => {
+  if (!selectedModuleId.value) return false;
   // If snapshot hasn't been initialized yet, we're not dirty
   if (!quickOriginalSnapshot.value) return false;
   return getQuickSnapshot() !== quickOriginalSnapshot.value;
@@ -11947,7 +11620,7 @@ function normalizePicklistLabel(raw, value) {
   return resolvedValue;
 }
 
-function normalizePicklistColor(raw, value, fallbackHex = '#3B82F6') {
+function normalizePicklistColor(raw, value, fallbackHex = PLATFORM_DEFAULT_PICKLIST_COLOR) {
   if (raw && typeof raw === 'object' && typeof raw.color === 'string') {
     const trimmed = raw.color.trim();
     if (/^#[0-9A-Fa-f]{6}$/i.test(trimmed)) return trimmed;
@@ -11962,7 +11635,7 @@ function picklistColorFromField(field, value) {
   for (const opt of options) {
     const optValue = normalizePicklistValue(opt);
     if (optValue !== value) continue;
-    if (typeof opt === 'object' && opt.color) return normalizePicklistColor(opt, value, '#3B82F6');
+    if (typeof opt === 'object' && opt.color) return normalizePicklistColor(opt, value, PLATFORM_DEFAULT_PICKLIST_COLOR);
     return getDefaultOptionColor(value, field);
   }
   return getDefaultOptionColor(value, field);
@@ -12231,6 +11904,7 @@ const eventRolesRulesDirty = computed(() => {
 });
 
 const modulePageDirty = computed(() => {
+  if (!selectedModuleId.value) return false;
   const tab = activeTopTab.value;
   if (tab === 'quick') return quickDirty.value;
   if (tab === 'status-types') {
@@ -12238,7 +11912,7 @@ const modulePageDirty = computed(() => {
     if (isItemsModule.value) return itemStatusTypesDirty.value;
   }
   if (tab === 'roles-rules' && isEventsModule.value) return eventRolesRulesDirty.value;
-  if (['details', 'relationships', 'pipeline', 'fields', 'playbooks'].includes(tab)) return isDirty.value;
+  if (['details', 'relationships', 'pipeline', 'fields'].includes(tab)) return isDirty.value;
   return false;
 });
 

@@ -4,11 +4,41 @@ import Suggestion from '@tiptap/suggestion';
 
 const SlashCommandPluginKey = new PluginKey('slashCommand');
 
+/** Per-editor image upload trigger (supports multiple editors on one page). */
+const imageUploadTriggers = new WeakMap();
+
+export function registerDescriptionImageUploadTrigger(editor, trigger) {
+  if (editor && typeof trigger === 'function') {
+    imageUploadTriggers.set(editor, trigger);
+  }
+}
+
+export function unregisterDescriptionImageUploadTrigger(editor) {
+  if (editor) imageUploadTriggers.delete(editor);
+}
+
+function matchesSlashQuery(cmd, query) {
+  const q = query.toLowerCase();
+  if (!q) return true;
+  if (cmd.title.toLowerCase().includes(q)) return true;
+  return (cmd.keywords || []).some((keyword) => keyword.includes(q) || q.includes(keyword));
+}
+
 const SLASH_COMMANDS = [
   { title: 'Heading 1', command: (editor, range) => editor.chain().focus().deleteRange(range).setNode('heading', { level: 1 }).run() },
   { title: 'Heading 2', command: (editor, range) => editor.chain().focus().deleteRange(range).setNode('heading', { level: 2 }).run() },
   { title: 'Heading 3', command: (editor, range) => editor.chain().focus().deleteRange(range).setNode('heading', { level: 3 }).run() },
   { title: 'Paragraph', command: (editor, range) => editor.chain().focus().deleteRange(range).setParagraph().run() },
+  {
+    title: 'Image',
+    keywords: ['img', 'photo', 'picture', 'upload'],
+    command: (editor, range) => {
+      editor.chain().focus().deleteRange(range).run();
+      window.setTimeout(() => {
+        imageUploadTriggers.get(editor)?.();
+      }, 0);
+    }
+  },
   { title: 'Bullet list', command: (editor, range) => editor.chain().focus().deleteRange(range).toggleBulletList().run() },
   { title: 'Numbered list', command: (editor, range) => editor.chain().focus().deleteRange(range).toggleOrderedList().run() },
   { title: 'Blockquote', command: (editor, range) => editor.chain().focus().deleteRange(range).toggleBlockquote().run() },
@@ -32,12 +62,7 @@ export const SlashCommands = Extension.create({
         // Allow slash menu from any cursor position, not only line start.
         startOfLine: false,
         allowedPrefixes: null,
-        items: ({ query }) => {
-          const q = query.toLowerCase();
-          return SLASH_COMMANDS.filter(cmd =>
-            cmd.title.toLowerCase().includes(q)
-          );
-        },
+        items: ({ query }) => SLASH_COMMANDS.filter((cmd) => matchesSlashQuery(cmd, query)),
         command: ({ editor, range, props }) => {
           props.command(editor, range);
         },
