@@ -615,6 +615,13 @@ exports.convertToOrganization = async (req, res) => {
                 addedAt: new Date()
             }));
             existingUser.setPermissionsByRole('owner');
+            const {
+                initializeOnboardingForUser,
+                ONBOARDING_ORIGINS
+            } = require('../services/onboardingService');
+            await initializeOnboardingForUser(existingUser, {
+                origin: ONBOARDING_ORIGINS.DEMO_CONVERTED
+            });
             await existingUser.save();
             console.log('✅ Existing user updated as owner');
 
@@ -660,6 +667,13 @@ exports.convertToOrganization = async (req, res) => {
             
             // Set owner permissions
             ownerUser.setPermissionsByRole('owner');
+            const {
+                initializeOnboardingForUser,
+                ONBOARDING_ORIGINS
+            } = require('../services/onboardingService');
+            await initializeOnboardingForUser(ownerUser, {
+                origin: ONBOARDING_ORIGINS.DEMO_CONVERTED
+            });
             await ownerUser.save();
             
             console.log('✅ Owner user created in organization database:', ownerUser.email);

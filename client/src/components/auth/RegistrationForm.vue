@@ -65,8 +65,14 @@ const handleRegistration = async () => {
 
 
         if (success) {
-            // redirect to dashboard after successful register/login
-    router.push({ name: 'dashboard' });
+            const { captureOnboardingStarted } = await import('@/config/posthogOnboarding');
+            captureOnboardingStarted({
+              persona: 'founder',
+              origin: 'self_serve',
+              organizationId: authStore.user?.organizationId,
+            });
+            const redirectTo = authStore.user?.onboarding?.redirectTo || '/onboarding';
+            router.push(redirectTo);
         }
 
     // } catch (error) {

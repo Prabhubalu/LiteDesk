@@ -722,42 +722,149 @@
                 {{ t('import.importDuplicateCheckedFields', { fields: duplicateData.checkedFields.map(duplicateFieldLabel).join(', ') }) }}
               </p>
 
-              <div class="grid grid-cols-3 gap-2 text-center">
-                <div class="rounded-lg border border-gray-200 px-2 py-3 dark:border-gray-700">
-                  <p class="text-xl font-semibold text-gray-900 dark:text-white">{{ duplicateData.unique }}</p>
-                  <p class="text-xs text-gray-500">{{ t('import.cSVImportModalNewRecords') }}</p>
+              <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <div class="rounded-lg border border-emerald-200 bg-emerald-50/40 px-3 py-3 text-center dark:border-emerald-800/60 dark:bg-emerald-900/10">
+                  <p class="text-xl font-semibold text-emerald-700 dark:text-emerald-300">{{ duplicateData.unique }}</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">{{ t('import.cSVImportModalNewRecords') }}</p>
                 </div>
-                <div class="rounded-lg border border-amber-200 bg-amber-50/50 px-2 py-3 dark:border-amber-800 dark:bg-amber-900/10">
-                  <p class="text-xl font-semibold text-amber-700 dark:text-amber-300">{{ duplicateData.duplicates }}</p>
-                  <p class="text-xs text-gray-500">{{ t('import.cSVImportModalDuplicatesFound') }}</p>
+                <div class="rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-3 text-center dark:border-amber-800 dark:bg-amber-900/10">
+                  <p class="text-xl font-semibold text-amber-700 dark:text-amber-300">{{ duplicateExistingCount }}</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">{{ t('import.importDuplicateExistingInCrm') }}</p>
                 </div>
-                <div class="rounded-lg border border-gray-200 px-2 py-3 dark:border-gray-700">
+                <div class="rounded-lg border border-violet-200 bg-violet-50/50 px-3 py-3 text-center dark:border-violet-800 dark:bg-violet-900/10">
+                  <p class="text-xl font-semibold text-violet-700 dark:text-violet-300">{{ duplicateInFileCount }}</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">{{ t('import.importDuplicateRepeatedInCsv') }}</p>
+                </div>
+                <div class="rounded-lg border border-gray-200 px-3 py-3 text-center dark:border-gray-700">
                   <p class="text-xl font-semibold text-gray-900 dark:text-white">{{ duplicateData.total }}</p>
-                  <p class="text-xs text-gray-500">{{ t('import.cSVImportModalTotalRows') }}</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">{{ t('import.cSVImportModalTotalRows') }}</p>
                 </div>
               </div>
 
-              <fieldset>
-                <legend class="mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                  {{ t('import.cSVImportModalHowHandleDuplicates') }}
-                </legend>
-                <div class="space-y-2">
-                  <label
-                    v-for="opt in duplicateActionOptions"
-                    :key="opt.value"
-                    class="flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-2.5 transition-colors"
-                    :class="duplicateAction === opt.value
-                      ? 'border-indigo-500 bg-indigo-50/60 dark:border-indigo-500 dark:bg-indigo-900/20'
-                      : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50'"
+              <div v-if="duplicateHasAnyMatches" class="space-y-3">
+                <section
+                  v-if="duplicateExistingCount > 0"
+                  class="overflow-hidden rounded-xl border border-amber-200 dark:border-amber-800/60"
+                >
+                  <div class="flex items-center justify-between gap-3 border-b border-amber-200/80 bg-amber-50/60 px-4 py-3 dark:border-amber-800/50 dark:bg-amber-900/15">
+                    <div>
+                      <h4 class="text-sm font-semibold text-gray-900 dark:text-white">
+                        {{ t('import.importDuplicateExistingSectionTitle', { count: duplicateExistingCount }) }}
+                      </h4>
+                      <p class="mt-0.5 text-xs text-gray-600 dark:text-gray-400">
+                        {{ t('import.importDuplicateExistingSectionDesc') }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-amber-100 text-sm dark:divide-amber-900/40">
+                      <thead class="bg-white/70 dark:bg-gray-900/40">
+                        <tr>
+                          <th scope="col" class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">{{ t('import.importDuplicateTableRow') }}</th>
+                          <th scope="col" class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">{{ t('import.importDuplicateTableMatchedValue') }}</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-amber-100/80 bg-white/40 dark:divide-amber-900/30 dark:bg-gray-900/20">
+                        <tr v-for="sample in duplicateData.existingDuplicateSamples" :key="`existing-${sample.rowNumber}`">
+                          <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">{{ sample.rowNumber }}</td>
+                          <td class="px-4 py-2 text-gray-700 dark:text-gray-300">{{ sample.matchedValue }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p
+                    v-if="duplicateExistingCount > (duplicateData.existingDuplicateSamples?.length || 0)"
+                    class="border-t border-amber-200/80 px-4 py-2 text-xs text-gray-500 dark:border-amber-800/50"
                   >
-                    <input v-model="duplicateAction" type="radio" :value="opt.value" class="mt-0.5 text-indigo-600" />
-                    <span class="min-w-0">
-                      <span class="text-sm font-medium text-gray-900 dark:text-white">{{ opt.label }}</span>
-                      <span class="mt-0.5 block text-xs text-gray-500 dark:text-gray-400">{{ opt.hint }}</span>
-                    </span>
-                  </label>
+                    {{ t('import.importDuplicateExistingMore', { count: duplicateExistingCount - duplicateData.existingDuplicateSamples.length }) }}
+                  </p>
+                </section>
+
+                <section
+                  v-if="duplicateInFileCount > 0"
+                  class="overflow-hidden rounded-xl border border-violet-200 dark:border-violet-800/60"
+                >
+                  <div class="flex items-center justify-between gap-3 border-b border-violet-200/80 bg-violet-50/60 px-4 py-3 dark:border-violet-800/50 dark:bg-violet-900/15">
+                    <div>
+                      <h4 class="text-sm font-semibold text-gray-900 dark:text-white">
+                        {{ t('import.importDuplicateInFileSectionTitle', { count: duplicateInFileCount }) }}
+                      </h4>
+                      <p class="mt-0.5 text-xs text-gray-600 dark:text-gray-400">
+                        {{ t('import.importDuplicateInFileSectionDesc') }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-violet-100 text-sm dark:divide-violet-900/40">
+                      <thead class="bg-white/70 dark:bg-gray-900/40">
+                        <tr>
+                          <th scope="col" class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">{{ t('import.importDuplicateTableRow') }}</th>
+                          <th scope="col" class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">{{ t('import.importDuplicateTableMatchedValue') }}</th>
+                          <th scope="col" class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-gray-500">{{ t('import.importDuplicateTableFirstSeenRow') }}</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-violet-100/80 bg-white/40 dark:divide-violet-900/30 dark:bg-gray-900/20">
+                        <tr v-for="sample in duplicateData.inFileDuplicateSamples" :key="`infile-${sample.rowNumber}`">
+                          <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900 dark:text-white">{{ sample.rowNumber }}</td>
+                          <td class="px-4 py-2 text-gray-700 dark:text-gray-300">{{ sample.matchedValue }}</td>
+                          <td class="whitespace-nowrap px-4 py-2 text-gray-600 dark:text-gray-400">{{ sample.firstSeenRow }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p
+                    v-if="duplicateInFileCount > (duplicateData.inFileDuplicateSamples?.length || 0)"
+                    class="border-t border-violet-200/80 px-4 py-2 text-xs text-gray-500 dark:border-violet-800/50"
+                  >
+                    {{ t('import.importDuplicateInFileMore', { count: duplicateInFileCount - duplicateData.inFileDuplicateSamples.length }) }}
+                  </p>
+                </section>
+
+                <p
+                  v-if="duplicateData.samplesTruncated"
+                  class="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400"
+                >
+                  <InformationCircleIcon class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>{{ t('import.cSVImportModalDuplicateSamplesTruncated') }}</span>
+                </p>
+              </div>
+
+              <div v-else class="rounded-lg border border-emerald-200 bg-emerald-50/50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-900/10">
+                <p class="text-sm font-medium text-emerald-800 dark:text-emerald-200">{{ t('import.importDuplicateNoMatchesTitle') }}</p>
+                <p class="mt-1 text-xs text-emerald-700/80 dark:text-emerald-300/80">{{ t('import.importDuplicateNoMatchesDesc') }}</p>
+              </div>
+
+              <div class="space-y-4">
+                <fieldset v-if="duplicateExistingCount > 0">
+                  <legend class="mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    {{ t('import.importDuplicateExistingHandlingTitle') }}
+                  </legend>
+                  <div class="space-y-2">
+                    <label
+                      v-for="opt in duplicateExistingActionOptions"
+                      :key="opt.value"
+                      class="flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-2.5 transition-colors"
+                      :class="duplicateAction === opt.value
+                        ? 'border-indigo-500 bg-indigo-50/60 dark:border-indigo-500 dark:bg-indigo-900/20'
+                        : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50'"
+                    >
+                      <input v-model="duplicateAction" type="radio" :value="opt.value" class="mt-0.5 text-indigo-600" />
+                      <span class="min-w-0">
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ opt.label }}</span>
+                        <span class="mt-0.5 block text-xs text-gray-500 dark:text-gray-400">{{ opt.hint }}</span>
+                      </span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <div
+                  v-if="duplicateInFileCount > 0"
+                  class="rounded-lg border border-violet-200/80 bg-violet-50/30 px-4 py-3 dark:border-violet-800/50 dark:bg-violet-900/10"
+                >
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('import.importDuplicateInFileHandlingTitle') }}</p>
+                  <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">{{ t('import.importDuplicateInFileHandlingDesc', { count: duplicateInFileCount }) }}</p>
                 </div>
-              </fieldset>
+              </div>
             </template>
             </div>
           </div>
@@ -1580,18 +1687,36 @@ const importWizardProgressAriaLabel = computed(() =>
   })
 );
 
-const duplicateActionOptions = computed(() => {
+const duplicateExistingCount = computed(() => {
+  const d = duplicateData.value;
+  if (!d) return 0;
+  if (typeof d.existingDuplicates === 'number') return d.existingDuplicates;
+  return d.duplicates ?? 0;
+});
+
+const duplicateInFileCount = computed(() => {
+  const d = duplicateData.value;
+  if (!d) return 0;
+  return d.inFileDuplicates ?? 0;
+});
+
+const duplicateHasAnyMatches = computed(() =>
+  duplicateExistingCount.value > 0 || duplicateInFileCount.value > 0
+);
+
+const duplicateExistingActionOptions = computed(() => {
   if (!duplicateData.value) return [];
+  const existingCount = duplicateExistingCount.value;
   return [
     {
       value: 'skip',
       label: t('import.cSVImportModalSkipDuplicates'),
-      hint: t('import.cSVImportModalOnlyImportNew', { count: duplicateData.value.unique }),
+      hint: t('import.importDuplicateSkipExistingHint', { count: existingCount }),
     },
     {
       value: 'update',
       label: t('import.cSVImportModalUpdateExistingRecords'),
-      hint: t('import.cSVImportModalUpdateDuplicatesCount', { count: duplicateData.value.duplicates }),
+      hint: t('import.importDuplicateUpdateExistingHint', { count: existingCount }),
     },
   ];
 });

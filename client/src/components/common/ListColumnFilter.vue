@@ -131,6 +131,7 @@
                 ? 'fixed z-[10050] max-h-60 overflow-auto rounded-lg border border-gray-200 bg-white py-1 text-left text-sm shadow-lg dark:border-gray-600 dark:bg-gray-800'
                 : 'absolute left-0 z-[80] mt-1 max-h-60 w-full min-w-[10rem] overflow-auto rounded-lg border border-gray-200 bg-white py-1 text-left text-sm shadow-lg dark:border-gray-600 dark:bg-gray-800'"
               @vue:before-mount="syncTeleportPosition"
+              @mousedown.stop
             >
             <ListboxOption
               :value="filter.filterType === 'multi-select' ? [] : ''"

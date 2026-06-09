@@ -25,8 +25,8 @@ const BULK_DELETE_API_MODULES = new Set([
 /** Large selections: server batches with insertMany/bulkWrite (trash) like bulk-purge. */
 const BULK_DELETE_REQUEST_CHUNK = 5000;
 const BULK_DELETE_REQUEST_CONCURRENCY = 3;
-/** Select-all: delete matching records in server batches for live progress. */
-const BULK_DELETE_MATCHING_BATCH_SIZE = 500;
+/** Select-all: resolve IDs in lightweight batches, then delete with parallel chunks. */
+const BULK_DELETE_RESOLVE_BATCH_SIZE = 5000;
 
 function throwIfCancelled(shouldCancel) {
   if (typeof shouldCancel === 'function' && shouldCancel()) {
@@ -51,6 +51,20 @@ async function postBulkDeleteChunk(moduleKey, body, options) {
   if (!response?.success) {
     throw new Error(response?.message || 'Bulk delete failed');
   }
+
+  if (body.resolveOnly) {
+    const ids = (response.data?.ids || []).map((id) => String(id));
+    return {
+      deletedCount: 0,
+      failedCount: 0,
+      requestedCount: 0,
+      resolvedIds: ids,
+      hasMore: Boolean(response.data?.hasMore),
+      lastId: response.data?.lastId ? String(response.data.lastId) : null,
+      firstError: null,
+    };
+  }
+
   const deletedCount = Number(response.data?.deletedCount ?? 0);
   const failedCount = Number(response.data?.failedCount ?? 0);
   const requestedCount = Number(
@@ -73,6 +87,45 @@ async function postBulkDeleteChunk(moduleKey, body, options) {
   };
 }
 
+/**
+ * Select-all phase 1: paginate matching IDs only (no trash snapshots / dependency work).
+ */
+async function resolveMatchingIds(moduleKey, options) {
+  const { onProgress, shouldCancel, listQuery, excludedIds, expectedCount } = options;
+  const ids = [];
+  let afterId = null;
+  let resolved = 0;
+
+  await onProgress?.({ processed: 0, total: expectedCount || 0, phase: 'resolving' });
+  await yieldToUi();
+
+  do {
+    throwIfCancelled(shouldCancel);
+    const chunkOutcome = await postBulkDeleteChunk(moduleKey, {
+      deleteMatching: true,
+      resolveOnly: true,
+      listQuery: listQuery || {},
+      excludedIds: excludedIds || [],
+      batchSize: BULK_DELETE_RESOLVE_BATCH_SIZE,
+      afterId,
+    }, options);
+
+    ids.push(...(chunkOutcome.resolvedIds || []));
+    resolved = ids.length;
+    await onProgress?.({
+      processed: resolved,
+      total: expectedCount || resolved,
+      phase: 'resolving',
+    });
+    await yieldToUi();
+
+    if (!chunkOutcome.hasMore) break;
+    afterId = chunkOutcome.lastId;
+  } while (afterId);
+
+  return [...new Set(ids)];
+}
+
 async function bulkDeleteViaApi(moduleKey, uniqueIds, options) {
   const { onProgress, shouldCancel } = options;
   const total = uniqueIds.length;
@@ -81,45 +134,15 @@ async function bulkDeleteViaApi(moduleKey, uniqueIds, options) {
 
   if (options.deleteMatching) {
     const expectedTotal = Number(options.expectedCount || 0);
-    let processed = 0;
-    let afterId = null;
-    let outcome = { deletedCount: 0, failedCount: 0, requestedCount: 0, firstError: null };
-
-    await onProgress?.({ processed: 0, total: expectedTotal, phase: 'deleting' });
-    await yieldToUi();
-
-    do {
-      throwIfCancelled(shouldCancel);
-      const chunkOutcome = await postBulkDeleteChunk(moduleKey, {
-        deleteMatching: true,
-        listQuery: options.listQuery || {},
-        excludedIds: options.excludedIds || [],
-        batchSize: BULK_DELETE_MATCHING_BATCH_SIZE,
-        afterId,
-      }, options);
-
-      outcome = aggregateBulkDeleteOutcome(outcome, chunkOutcome);
-      processed = outcome.deletedCount;
-      await onProgress?.({
-        processed,
-        total: expectedTotal || processed,
-        phase: 'deleting',
-      });
-      await yieldToUi();
-
-      if (chunkOutcome.firstError) {
-        return outcome;
-      }
-      if (!chunkOutcome.hasMore) break;
-      afterId = chunkOutcome.lastId;
-    } while (afterId);
-
-    await onProgress?.({
-      processed,
-      total: expectedTotal || processed,
-      phase: 'deleting',
+    const resolvedIds = await resolveMatchingIds(moduleKey, options);
+    if (resolvedIds.length === 0) {
+      return { deletedCount: 0, failedCount: 0, requestedCount: 0, firstError: null };
+    }
+    return bulkDeleteViaApi(moduleKey, resolvedIds, {
+      ...options,
+      deleteMatching: false,
+      expectedCount: expectedTotal || resolvedIds.length,
     });
-    return outcome;
   }
 
   if (uniqueIds.length <= BULK_DELETE_REQUEST_CHUNK) {

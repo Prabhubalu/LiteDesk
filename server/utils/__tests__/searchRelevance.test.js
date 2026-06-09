@@ -110,3 +110,27 @@ test('fetchRankedSearchPage: active search builds relevance pipeline without err
   assert.equal(pipelines.length, 1);
   assert.ok(pipelines[0][1].$addFields._searchScore);
 });
+
+test('resolveListSearchTerm: prefers direct search over column filterQuery', () => {
+  const { resolveListSearchTerm } = require('../searchRelevance');
+  const ast = {
+    logic: 'AND',
+    children: [{ fieldKey: 'name', operator: 'contains', value: 'Column' }],
+  };
+  assert.equal(
+    resolveListSearchTerm({ search: 'Main', filterQuery: JSON.stringify(ast) }, 'organizations'),
+    'Main'
+  );
+});
+
+test('resolveListSearchTerm: falls back to column contains on primary field', () => {
+  const { resolveListSearchTerm } = require('../searchRelevance');
+  const ast = {
+    logic: 'AND',
+    children: [{ fieldKey: 'name', operator: 'contains', value: 'Karpe' }],
+  };
+  assert.equal(
+    resolveListSearchTerm({ filterQuery: JSON.stringify(ast) }, 'organizations'),
+    'Karpe'
+  );
+});

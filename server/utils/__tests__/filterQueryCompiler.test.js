@@ -110,3 +110,21 @@ test('applyFilterQueryToMongoQuery: merges into base query $and', () => {
     $and: [{ $or: [{ status: 'open' }, { status: 'pending' }] }],
   });
 });
+
+test('compileNode: contains supports comma-separated OR terms', () => {
+  const clause = compileNode(
+    { fieldKey: 'name', operator: 'contains', value: 'Acme, Beta' },
+    'organizations'
+  );
+  assert.equal(clause.$or.length, 2);
+  assert.equal(clause.$or[0].name.source, 'Acme');
+  assert.equal(clause.$or[1].name.source, 'Beta');
+});
+
+test('compileNode: people name contains supports comma-separated OR terms', () => {
+  const clause = compileNode(
+    { fieldKey: 'name', operator: 'contains', value: 'John, Jane' },
+    'people'
+  );
+  assert.equal(clause.$or.length, 4);
+});

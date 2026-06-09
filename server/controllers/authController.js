@@ -255,6 +255,11 @@ exports.registerUser = async (req, res) => {
         console.log('🔍 Step 6: Setting owner permissions...');
         user.setPermissionsByRole('owner');
         user.emailVerifiedAt = new Date();
+        const {
+          initializeOnboardingForUser,
+          ONBOARDING_ORIGINS
+        } = require('../services/onboardingService');
+        await initializeOnboardingForUser(user, { origin: ONBOARDING_ORIGINS.SELF_SERVE });
         await user.save();
         console.log('✅ Permissions set and user saved\n');
 
@@ -290,6 +295,7 @@ exports.registerUser = async (req, res) => {
                 capabilities: buildOrgCapabilities(organization)
             },
             token: generateToken(user._id, organization._id),
+            onboarding: require('../services/onboardingService').buildLoginOnboardingSummary(user)
         };
         
         console.log('✅ Response prepared');
@@ -521,6 +527,13 @@ exports.loginUser = async (req, res) => {
         // 6. Last login + denormalized permission snapshot (one save)
         orgUser.lastLogin = new Date();
         await materializeEffectiveCRMEnvelopeOnUser(orgUser);
+        const {
+          ensureOnboardingStarted,
+          syncAutomaticCompletions,
+          buildLoginOnboardingSummary
+        } = require('../services/onboardingService');
+        await ensureOnboardingStarted(orgUser);
+        await syncAutomaticCompletions(orgUser, organizationForLogin);
         await orgUser.save();
 
         if (user && orgUser !== user) {
@@ -585,7 +598,8 @@ exports.loginUser = async (req, res) => {
             token: generateToken(orgUser._id, organizationForLogin._id),
             emailVerifiedAt: orgUser.emailVerifiedAt || null,
             requiresEmailVerification: !orgUser.emailVerifiedAt,
-            mustChangePassword: orgUser.mustChangePassword === true
+            mustChangePassword: orgUser.mustChangePassword === true,
+            onboarding: buildLoginOnboardingSummary(orgUser)
         });
         
     } catch (error) {

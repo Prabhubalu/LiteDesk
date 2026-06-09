@@ -618,10 +618,10 @@ const getTasks = async (req, res) => {
       query.status = { $nin: ['completed', 'cancelled'] };
     }
 
-    const searchTerm = search ? String(search).trim() : '';
-    if (searchTerm) {
-      const { buildSearchOrConditions } = require('../utils/searchRelevance');
-      query.$or = buildSearchOrConditions(searchTerm, ['title', 'description', 'tags']);
+    const { buildSearchOrConditions, resolveListSearchTerm, fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+    const directSearchTerm = search ? String(search).trim() : '';
+    if (directSearchTerm) {
+      query.$or = buildSearchOrConditions(directSearchTerm, ['title', 'description', 'tags']);
     }
 
     // Phase 2A.2: Apply projection filter (read-time filtering only)
@@ -653,7 +653,7 @@ const getTasks = async (req, res) => {
       { path: 'assignedBy', select: 'firstName lastName' },
       { path: 'createdBy', select: 'firstName lastName' }
     ];
-    const { fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+    const searchTerm = resolveListSearchTerm(req.query, 'tasks');
     const tasksPromise = isSearchActive(searchTerm)
       ? fetchRankedSearchPage(Task, {
           matchQuery: query,

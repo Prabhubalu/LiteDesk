@@ -3061,6 +3061,7 @@ const builderFilterConfigList = computed(() =>
 
 const filterDebounceTimers = {};
 const DEBOUNCED_FILTER_TYPES = new Set(['text', 'number']);
+const COLUMN_FILTER_DEBOUNCE_MS = 500;
 const mobileFilterBuilderPanelRef = ref(null);
 const desktopFilterBuilderPanelRef = ref(null);
 const filterRuleMeta = reactive({});
@@ -3704,7 +3705,7 @@ const handleFilterInput = (key, value, filterType, source = 'column') => {
   clearTimeout(filterDebounceTimers[key]);
   filterDebounceTimers[key] = setTimeout(() => {
     emitCompiledFilters();
-  }, 400);
+  }, COLUMN_FILTER_DEBOUNCE_MS);
 };
 
 const handleBuilderFilterApply = ({ key, value, operator }) => {
@@ -3743,7 +3744,6 @@ const openFilterBuilder = () => {
 
 const handleFilterQueryUpdate = (query) => {
   filterBuilderQuery.value = query;
-  emitCompiledFilters();
 };
 
 const handleColumnFilterChange = ({ key, value, filterType }) => {

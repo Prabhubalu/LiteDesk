@@ -7,6 +7,7 @@ const { buildInboxItemsForUser } = require('../controllers/inboxController');
 const { loadWorkspaceThreadSummaries } = require('./workspaceThreadSummariesService');
 const { getAppPulses } = require('./appPulseService');
 const { buildFocusLine, buildGreetingPayload } = require('./platformHomeFocusService');
+const { getPlatformHomeOnboarding } = require('./onboardingService');
 
 const ATTENTION_PREVIEW_LIMIT = 7;
 const RESUME_LIMIT = 5;
@@ -143,13 +144,20 @@ async function getResumeItems(userId, organizationId) {
 async function getPlatformHomeSnapshot(req) {
   const userId = req.user._id;
   const organizationId = req.user.organizationId;
+  const organization = req.organization
+    || await require('../models/Organization').findById(organizationId).lean();
 
-  const [attentionItems, approvalsPending, mail, resume, appPulses] = await Promise.all([
+  const [attentionItems, approvalsPending, mail, resume, appPulses, onboarding] = await Promise.all([
     safePlatformHomeSection('attention', () => buildInboxItemsForUser(userId, organizationId), []),
     safePlatformHomeSection('approvals', () => getApprovalsPendingCount(userId, organizationId), 0),
     safePlatformHomeSection('mail', () => getMailCounts(req), { all: 0, unread: 0, assignedToMe: 0 }),
     safePlatformHomeSection('resume', () => getResumeItems(userId, organizationId), []),
-    safePlatformHomeSection('appPulses', () => getAppPulses(req), [])
+    safePlatformHomeSection('appPulses', () => getAppPulses(req), []),
+    safePlatformHomeSection(
+      'onboarding',
+      () => getPlatformHomeOnboarding(req, organization),
+      null
+    )
   ]);
 
   const summary = summarizeAttentionItems(attentionItems);
@@ -166,7 +174,8 @@ async function getPlatformHomeSnapshot(req) {
     attention,
     shell,
     resume,
-    appPulses
+    appPulses,
+    onboarding
   };
 }
 

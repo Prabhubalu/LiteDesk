@@ -37,8 +37,14 @@ exports.acceptInvite = async (req, res) => {
   try {
     const token = String(req.body.token || '').trim();
     const password = String(req.body.password || '');
+    const profile = {
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      timeZone: req.body.timeZone,
+      language: req.body.language
+    };
 
-    const result = await userInviteService.acceptInvite({ rawToken: token, password });
+    const result = await userInviteService.acceptInvite({ rawToken: token, password, profile });
     if (!result.ok) {
       const status = result.code === 'VALIDATION_ERROR' ? 400 : 400;
       return res.status(status).json({
@@ -53,7 +59,8 @@ exports.acceptInvite = async (req, res) => {
       message: 'Invitation accepted successfully',
       data: {
         email: result.email,
-        organizationName: result.organizationName
+        organizationName: result.organizationName,
+        session: result.session
       }
     });
   } catch (error) {

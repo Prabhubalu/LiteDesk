@@ -193,14 +193,12 @@ exports.list = async (req, res) => {
     const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
     const sort = { [sortBy]: sortOrder };
 
-    const searchTerm = req.query.search || req.query.name
-      ? String(req.query.search || req.query.name).trim()
-      : '';
+    const { fetchRankedSearchPage, isSearchActive, resolveListSearchTerm, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+    const searchTerm = resolveListSearchTerm(req.query, 'organizations');
     const orgPopulate = [
       { path: 'createdBy', select: 'firstName lastName email avatar username' },
       { path: 'assignedTo', select: 'firstName lastName email avatar username' }
     ];
-    const { fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
     const dataQuery = isSearchActive(searchTerm)
       ? fetchRankedSearchPage(Organization, {
           matchQuery: query,

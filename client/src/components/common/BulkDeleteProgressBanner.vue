@@ -64,9 +64,13 @@ const bannerTitle = computed(() =>
 const progressLabel = computed(() => {
   const processed = Number(bulkDeleteStore.processed || 0).toLocaleString();
   const total = Number(bulkDeleteStore.total || 0).toLocaleString();
-  return bulkDeleteStore.operation === 'update'
-    ? t('common.bulkUpdateProgressUpdating', { processed, total })
-    : t('common.bulkDeleteProgressDeleting', { processed, total });
+  if (bulkDeleteStore.operation === 'update') {
+    return t('common.bulkUpdateProgressUpdating', { processed, total });
+  }
+  if (bulkDeleteStore.phase === 'resolving') {
+    return t('common.bulkDeleteProgressResolving', { processed, total });
+  }
+  return t('common.bulkDeleteProgressDeleting', { processed, total });
 });
 
 const leaveConfirmKey = computed(() =>

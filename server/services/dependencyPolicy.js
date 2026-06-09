@@ -13,7 +13,7 @@
  * ============================================================================
  */
 
-const { validateDelete } = require('./systemInvariants');
+const { validateDelete, findActiveReferencesBulk } = require('./systemInvariants');
 
 const MODULE_LABELS = {
   people: 'People',
@@ -74,7 +74,46 @@ async function validateMoveToTrash(context) {
   }
 }
 
+/**
+ * Batch validate move-to-trash for bulk delete (people/organizations).
+ *
+ * @returns {Promise<Map<string, { blocked: boolean, dependencies: Array, message: string }>>}
+ */
+async function validateMoveToTrashBulk(context) {
+  const { moduleKey, recordIds, organizationId } = context;
+  const blockedMap = new Map();
+
+  if (moduleKey !== 'people' && moduleKey !== 'organizations') {
+    return blockedMap;
+  }
+
+  const ids = [...new Set((recordIds || []).map((id) => String(id).trim()).filter(Boolean))];
+  if (!ids.length) {
+    return blockedMap;
+  }
+
+  try {
+    const referencesByRecord = await findActiveReferencesBulk(moduleKey, ids, organizationId);
+    for (const [recordId, { errors, message }] of referencesByRecord) {
+      blockedMap.set(recordId, {
+        blocked: true,
+        dependencies: (errors || []).map((err) => ({
+          module: MODULE_LABELS[err.moduleKey] || err.moduleKey,
+          moduleKey: err.moduleKey,
+          count: err.count || (err.recordIds && err.recordIds.length) || 0
+        })),
+        message
+      });
+    }
+    return blockedMap;
+  } catch (error) {
+    console.error('[dependencyPolicy] validateMoveToTrashBulk error:', error);
+    return blockedMap;
+  }
+}
+
 module.exports = {
   validateMoveToTrash,
+  validateMoveToTrashBulk,
   MODULE_LABELS
 };

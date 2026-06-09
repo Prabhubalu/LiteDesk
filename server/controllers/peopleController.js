@@ -438,11 +438,11 @@ exports.list = async (req, res) => {
     // Search functionality - search across name, email, phone fields
     // Store search condition separately - will be combined after projection filter
     let searchCondition = null;
-    const searchTerm = req.query.search && req.query.search.trim() ? req.query.search.trim() : '';
-    if (searchTerm) {
-      const { buildSearchOrConditions } = require('../utils/searchRelevance');
+    const { buildSearchOrConditions, resolveListSearchTerm, fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+    const directSearchTerm = req.query.search && req.query.search.trim() ? req.query.search.trim() : '';
+    if (directSearchTerm) {
       searchCondition = {
-        $or: buildSearchOrConditions(searchTerm, ['first_name', 'last_name', 'email', 'phone', 'mobile'])
+        $or: buildSearchOrConditions(directSearchTerm, ['first_name', 'last_name', 'email', 'phone', 'mobile'])
       };
     }
 
@@ -568,7 +568,7 @@ exports.list = async (req, res) => {
       { path: 'organization', select: 'name' }
     ];
 
-    const { fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+    const searchTerm = resolveListSearchTerm(req.query, 'people');
     const dataQuery = isSearchActive(searchTerm)
       ? fetchRankedSearchPage(People, {
           matchQuery: query,

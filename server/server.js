@@ -338,6 +338,7 @@ app.use('/api/inbox', inboxRoutes);
 
 // Platform home snapshot (landing page)
 app.use('/api/platform', require('./routes/platformHomeRoutes'));
+app.use('/api/onboarding', require('./routes/onboardingRoutes'));
 app.use('/api/platform/inbound-parser', require('./routes/platformInboundParserRoutes'));
 
 // Portal Application Routes (App #2)

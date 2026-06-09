@@ -71,12 +71,12 @@ const handleLogin = async () => {
             }
         }
 
-        // Wait a tick to ensure user data is fully set
         await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Phase 1G: Redirect to platform landing after login
-        console.log('Redirecting to platform landing');
-        router.push('/platform/home');
+
+        const redirectTo = authStore.user?.onboarding?.redirectTo
+            || authStore.lastLoginResult?.onboarding?.redirectTo
+            || '/platform/home';
+        router.push(redirectTo);
     }
 };
 

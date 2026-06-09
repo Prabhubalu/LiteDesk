@@ -40,5 +40,7 @@ export async function initClientObservability(app: App, router: Router): Promise
         /* optional */
       }
     })
+    const { initOnboardingRouteTracking } = await import('@/config/posthogOnboarding')
+    initOnboardingRouteTracking(router)
   }
 }

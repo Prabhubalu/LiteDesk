@@ -28,6 +28,7 @@
  * ============================================================================
  */
 
+const mongoose = require('mongoose');
 const People = require('../models/People');
 const Organization = require('../models/Organization');
 const Deal = require('../models/Deal');
@@ -153,6 +154,154 @@ async function findActiveReferences(moduleKey, recordId, organizationId) {
   }
   
   return references;
+}
+
+function castObjectIdList(ids) {
+  const out = [];
+  for (const id of ids || []) {
+    const s = String(id).trim();
+    if (!mongoose.Types.ObjectId.isValid(s)) continue;
+    out.push(new mongoose.Types.ObjectId(s));
+  }
+  return out;
+}
+
+function formatReferenceRecordNames(records) {
+  return records.map((r) => {
+    if (r.name) return r.name;
+    if (r.first_name || r.last_name) {
+      return `${r.first_name || ''} ${r.last_name || ''}`.trim();
+    }
+    if (r.email) return r.email;
+    return r._id.toString();
+  }).join(', ');
+}
+
+function buildDeleteBlockedEntry(moduleKey, referenceGroups) {
+  const errors = referenceGroups.map((ref) => ({
+    moduleKey: ref.moduleKey,
+    relationship: ref.relationship,
+    count: ref.records.length,
+    recordIds: ref.records.map((r) => r._id.toString()),
+    recordNames: formatReferenceRecordNames(ref.records)
+  }));
+
+  let message = `Cannot delete this ${moduleKey} record because it is referenced by active records:`;
+  for (const err of errors) {
+    message += `\n- ${err.count} active ${err.moduleKey === 'deals' ? 'deal' : err.moduleKey} record${err.count > 1 ? 's' : ''} (${err.recordNames})`;
+  }
+
+  return { errors, message };
+}
+
+/**
+ * Batch variant of findActiveReferences for bulk delete (constant query count per module).
+ *
+ * @returns {Promise<Map<string, { errors: Array, message: string }>>}
+ */
+async function findActiveReferencesBulk(moduleKey, recordIds, organizationId) {
+  const blocked = new Map();
+  const objectIds = castObjectIdList(recordIds);
+  if (!objectIds.length) return blocked;
+
+  const addReferenceGroup = (recordId, ref) => {
+    const key = String(recordId);
+    if (!blocked.has(key)) {
+      blocked.set(key, { referenceGroups: [] });
+    }
+    blocked.get(key).referenceGroups.push(ref);
+  };
+
+  if (moduleKey === 'people') {
+    const activeDeals = await Deal.find({
+      organizationId,
+      contactId: { $in: objectIds },
+      status: { $in: ['Open', 'Active'] },
+      deletedAt: null
+    }).select('_id name status contactId').lean();
+
+    const dealsByContact = new Map();
+    for (const deal of activeDeals) {
+      const contactId = String(deal.contactId);
+      if (!dealsByContact.has(contactId)) dealsByContact.set(contactId, []);
+      dealsByContact.get(contactId).push(deal);
+    }
+    for (const [contactId, records] of dealsByContact) {
+      addReferenceGroup(contactId, { moduleKey: 'deals', records, relationship: 'contactId' });
+    }
+
+    const orgsWithContact = await Organization.find({
+      primaryContact: { $in: objectIds },
+      isTenant: false,
+      deletedAt: null
+    }).select('_id name primaryContact').lean();
+
+    const orgsByContact = new Map();
+    for (const org of orgsWithContact) {
+      const contactId = String(org.primaryContact);
+      if (!orgsByContact.has(contactId)) orgsByContact.set(contactId, []);
+      orgsByContact.get(contactId).push(org);
+    }
+    for (const [contactId, records] of orgsByContact) {
+      addReferenceGroup(contactId, { moduleKey: 'organizations', records, relationship: 'primaryContact' });
+    }
+  } else if (moduleKey === 'organizations') {
+    const activeDeals = await Deal.find({
+      organizationId,
+      accountId: { $in: objectIds },
+      status: { $in: ['Open', 'Active'] },
+      deletedAt: null
+    }).select('_id name status accountId').lean();
+
+    const dealsByAccount = new Map();
+    for (const deal of activeDeals) {
+      const accountId = String(deal.accountId);
+      if (!dealsByAccount.has(accountId)) dealsByAccount.set(accountId, []);
+      dealsByAccount.get(accountId).push(deal);
+    }
+    for (const [accountId, records] of dealsByAccount) {
+      addReferenceGroup(accountId, { moduleKey: 'deals', records, relationship: 'accountId' });
+    }
+
+    const peopleWithOrg = await People.find({
+      organizationId,
+      organization: { $in: objectIds },
+      deletedAt: null
+    }).select('_id first_name last_name email organization').lean();
+
+    const peopleByOrg = new Map();
+    for (const person of peopleWithOrg) {
+      const orgId = String(person.organization);
+      if (!peopleByOrg.has(orgId)) peopleByOrg.set(orgId, []);
+      peopleByOrg.get(orgId).push(person);
+    }
+    for (const [orgId, records] of peopleByOrg) {
+      addReferenceGroup(orgId, { moduleKey: 'people', records, relationship: 'organization' });
+    }
+
+    const orgsWithContact = await Organization.find({
+      primaryContact: { $in: objectIds },
+      isTenant: false,
+      _id: { $nin: objectIds },
+      deletedAt: null
+    }).select('_id name primaryContact').lean();
+
+    const orgsByPrimaryContact = new Map();
+    for (const org of orgsWithContact) {
+      const contactId = String(org.primaryContact);
+      if (!orgsByPrimaryContact.has(contactId)) orgsByPrimaryContact.set(contactId, []);
+      orgsByPrimaryContact.get(contactId).push(org);
+    }
+    for (const [contactId, records] of orgsByPrimaryContact) {
+      addReferenceGroup(contactId, { moduleKey: 'organizations', records, relationship: 'primaryContact' });
+    }
+  }
+
+  const result = new Map();
+  for (const [recordId, { referenceGroups }] of blocked) {
+    result.set(recordId, buildDeleteBlockedEntry(moduleKey, referenceGroups));
+  }
+  return result;
 }
 
 /**
@@ -858,5 +1007,6 @@ module.exports = {
   validateDealRelationships,
   validateInvariant,
   observeStatusMismatch,
-  findActiveReferences
+  findActiveReferences,
+  findActiveReferencesBulk
 };

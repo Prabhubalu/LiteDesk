@@ -67,6 +67,80 @@ export function matchesAnySearchTerm(text: string, query: string): boolean {
   return terms.some((term) => lowerValue.includes(term.toLowerCase()));
 }
 
+type FilterQueryNode = {
+  fieldKey?: string;
+  operator?: string;
+  value?: unknown;
+  children?: FilterQueryNode[];
+};
+
+const MODULE_PRIMARY_SEARCH_FILTER_FIELDS: Record<string, string[]> = {
+  organizations: ['name'],
+  people: ['name'],
+  deals: ['name'],
+  tasks: ['title'],
+  events: ['eventName'],
+  forms: ['name'],
+  items: ['item_name'],
+};
+
+function parseFilterQueryAst(raw: unknown): FilterQueryNode | null {
+  if (!raw) return null;
+  let current: unknown = raw;
+  for (let depth = 0; depth < 2; depth += 1) {
+    if (current && typeof current === 'object' && !Array.isArray(current)) {
+      return current as FilterQueryNode;
+    }
+    if (typeof current !== 'string') return null;
+    try {
+      current = JSON.parse(current);
+    } catch {
+      return null;
+    }
+  }
+  return current && typeof current === 'object' && !Array.isArray(current)
+    ? (current as FilterQueryNode)
+    : null;
+}
+
+function collectContainsRules(node: FilterQueryNode | null | undefined, results: Array<{ fieldKey: string; value: string }> = []) {
+  if (!node || typeof node !== 'object') return results;
+  const operator = String(node.operator || 'contains');
+  if (node.fieldKey && operator === 'contains' && typeof node.value === 'string') {
+    const trimmed = node.value.trim();
+    if (trimmed) results.push({ fieldKey: String(node.fieldKey), value: trimmed });
+  }
+  for (const child of node.children || []) {
+    collectContainsRules(child, results);
+  }
+  return results;
+}
+
+/** Extract search term from column filterQuery contains on primary module fields. */
+export function extractSearchTermFromFilterQuery(
+  filterQueryParam: unknown,
+  primaryFieldKeys: string[] = ['name']
+): string {
+  const ast = parseFilterQueryAst(filterQueryParam);
+  if (!ast) return '';
+  const allowed = new Set(primaryFieldKeys.map((key) => key.toLowerCase()));
+  const rules = collectContainsRules(ast).filter((rule) =>
+    allowed.has(rule.fieldKey.toLowerCase())
+  );
+  return rules[0]?.value || '';
+}
+
+/** Resolve list search term from API params (main search or column contains on primary field). */
+export function resolveListSearchTerm(
+  params: { search?: unknown; name?: unknown; filterQuery?: unknown },
+  moduleKey?: string
+): string {
+  const direct = params.search ?? params.name;
+  if (direct && String(direct).trim()) return String(direct).trim();
+  const primaryFields = (moduleKey && MODULE_PRIMARY_SEARCH_FILTER_FIELDS[moduleKey]) || ['name'];
+  return extractSearchTermFromFilterQuery(params.filterQuery, primaryFields);
+}
+
 export function sortBySearchRelevance<T>(
   items: T[],
   query: string,

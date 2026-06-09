@@ -18,7 +18,7 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 const TrashSnapshot = require('../models/TrashSnapshot');
 const User = require('../models/User');
-const { validateMoveToTrash } = require('./dependencyPolicy');
+const { validateMoveToTrash, validateMoveToTrashBulk } = require('./dependencyPolicy');
 
 const DEFAULT_RETENTION_DAYS = parseInt(process.env.TRASH_RETENTION_DAYS || '30', 10);
 
@@ -400,11 +400,6 @@ async function purgeExpiredRetention() {
   return { purged, failed, skipped };
 }
 
-const BULK_MOVE_CONCURRENCY = Math.max(
-  10,
-  Number(process.env.BULK_DELETE_CONCURRENCY || 80)
-);
-
 const PURGE_BATCH_SIZE = Math.max(
   100,
   Number(process.env.TRASH_PURGE_BATCH_SIZE || 2000)
@@ -682,29 +677,22 @@ async function bulkMoveToTrash(params) {
   let eligible = records;
   if (!cascadeConfirmed && records.length > 0) {
     eligible = [];
-    for (let offset = 0; offset < records.length; offset += BULK_MOVE_CONCURRENCY) {
-      const chunk = records.slice(offset, offset + BULK_MOVE_CONCURRENCY);
-      const depResults = await Promise.all(
-        chunk.map(async (record) => {
-          const depResult = await validateMoveToTrash({
-            moduleKey,
-            recordId: record._id,
-            organizationId
-          });
-          return { record, depResult };
-        })
-      );
-      for (const { record, depResult } of depResults) {
-        if (depResult.blocked) {
-          failures.push({
-            id: String(record._id),
-            message: depResult.message || 'Cannot delete: dependencies exist',
-            blocked: true,
-            dependencies: depResult.dependencies
-          });
-        } else {
-          eligible.push(record);
-        }
+    const blockedByRecord = await validateMoveToTrashBulk({
+      moduleKey,
+      recordIds: records.map((record) => record._id),
+      organizationId
+    });
+    for (const record of records) {
+      const depResult = blockedByRecord.get(String(record._id));
+      if (depResult?.blocked) {
+        failures.push({
+          id: String(record._id),
+          message: depResult.message || 'Cannot delete: dependencies exist',
+          blocked: true,
+          dependencies: depResult.dependencies
+        });
+      } else {
+        eligible.push(record);
       }
     }
   }

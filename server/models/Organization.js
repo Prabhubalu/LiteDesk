@@ -237,6 +237,28 @@ const OrganizationSchema = new mongoose.Schema({
         }
     },
 
+    // Founder org setup progress (website signup track)
+    onboarding: {
+        setupCompletedAt: Date,
+        sampleDataAccepted: { type: Boolean, default: false },
+        sampleDataDeclinedAt: Date,
+        settingsVisitedAt: Date,
+        trialNudgesSent: [{
+            day: { type: Number, required: true },
+            sentAt: { type: Date, required: true }
+        }],
+        steps: [{
+            key: { type: String, required: true },
+            status: {
+                type: String,
+                enum: ['pending', 'completed', 'skipped'],
+                default: 'pending'
+            },
+            completedAt: Date,
+            skippedAt: Date
+        }]
+    },
+
     // Public embed keys (Option B) — safe identifiers for widgets.
     // Stored on master Organization so public requests can resolve tenant context.
     embed: {

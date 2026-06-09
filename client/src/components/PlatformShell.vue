@@ -9,6 +9,7 @@
     <!-- ARCHITECTURE NOTE: GlobalSearch is owned by GlobalSurfacesProvider. -->
     <!-- Sidebar search click dispatches arivu:open-global-search custom event. -->
     <Nav v-model="sidebarCollapsed" />
+    <OnboardingCoachmarks />
     
     <!-- Main Content Area - Dynamic margin based on sidebar state -->
     <main
@@ -75,6 +76,9 @@ import Nav from '@/components/Nav.vue';
 import TabBar from '@/components/TabBar.vue';
 const EmailVerificationBanner = defineAsyncComponent(() =>
   import('@/components/auth/EmailVerificationBanner.vue')
+);
+const OnboardingCoachmarks = defineAsyncComponent(() =>
+  import('@/components/onboarding/OnboardingCoachmarks.vue')
 );
 import { useAppShellStore } from '@/stores/appShell';
 import { useTabs } from '@/composables/useTabs';

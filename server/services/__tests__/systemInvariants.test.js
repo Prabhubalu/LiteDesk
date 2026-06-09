@@ -15,7 +15,8 @@ const {
   validateUnlink,
   validateTypeMutation,
   validateRoleInvariant,
-  findActiveReferences
+  findActiveReferences,
+  findActiveReferencesBulk
 } = require('../systemInvariants');
 
 // Mock models for testing
@@ -92,6 +93,47 @@ describe('System Invariants', () => {
 
       expect(result.valid).toBe(false);
       expect(result.code).toBe('DELETE_BLOCKED_BY_REFERENCES');
+    });
+  });
+
+  describe('findActiveReferencesBulk', () => {
+    it('should block multiple people in one query batch', async () => {
+      Deal.find.mockResolvedValue([
+        { _id: 'deal1', name: 'Deal 1', status: 'Open', contactId: 'person1' },
+        { _id: 'deal2', name: 'Deal 2', status: 'Active', contactId: 'person2' }
+      ]);
+      Organization.find.mockResolvedValue([]);
+
+      const blocked = await findActiveReferencesBulk(
+        'people',
+        ['person1', 'person2', 'person3'],
+        'org123'
+      );
+
+      expect(blocked.size).toBe(2);
+      expect(blocked.has('person1')).toBe(true);
+      expect(blocked.has('person2')).toBe(true);
+      expect(blocked.has('person3')).toBe(false);
+    });
+
+    it('should block organizations referenced by people and deals in bulk', async () => {
+      Deal.find.mockResolvedValue([
+        { _id: 'deal1', name: 'Deal 1', status: 'Open', accountId: 'org1' }
+      ]);
+      People.find.mockResolvedValue([
+        { _id: 'person1', first_name: 'A', last_name: 'B', organization: 'org2' }
+      ]);
+      Organization.find.mockResolvedValue([]);
+
+      const blocked = await findActiveReferencesBulk(
+        'organizations',
+        ['org1', 'org2', 'org3'],
+        'tenant123'
+      );
+
+      expect(blocked.size).toBe(2);
+      expect(blocked.has('org1')).toBe(true);
+      expect(blocked.has('org2')).toBe(true);
     });
   });
 

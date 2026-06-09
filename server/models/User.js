@@ -247,6 +247,7 @@ const UserSchema = new mongoose.Schema({
     // Invitation & email verification
     emailVerifiedAt: Date,
     invitedAt: Date,
+    stalledInviteNotifiedAt: Date,
     invitedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -271,6 +272,61 @@ const UserSchema = new mongoose.Schema({
     
     // Activity Tracking
     lastLogin: Date,
+
+    // User onboarding (invited member + founder wizard state)
+    onboarding: {
+        version: { type: Number, default: 1 },
+        origin: {
+            type: String,
+            enum: ['invited', 'self_serve', 'demo_converted', null],
+            default: null
+        },
+        persona: {
+            type: String,
+            enum: ['founder', 'member', null],
+            default: null
+        },
+        context: {
+            primaryAppKey: String,
+            roleKey: String,
+            roleName: String,
+            entitledAppKeys: [String]
+        },
+        goalKey: {
+            type: String,
+            enum: ['sales', 'support', 'audit', 'explore', null],
+            default: null
+        },
+        startedAt: Date,
+        completedAt: Date,
+        dismissedAt: Date,
+    welcomeNote: String,
+    suggestedTask: String,
+    profile: {
+      timeZone: String,
+      language: String,
+      completedAt: Date
+    },
+    steps: [{
+            key: { type: String, required: true },
+            status: {
+                type: String,
+                enum: ['pending', 'completed', 'skipped'],
+                default: 'pending'
+            },
+            completedAt: Date,
+            skippedAt: Date
+        }],
+        coachmarks: [{
+            key: String,
+            seenAt: Date
+        }],
+        moduleVisits: [{
+            moduleKey: String,
+            appKey: String,
+            visitedAt: Date
+        }]
+    },
     
     // Legacy field (keeping for backward compatibility, but not required anymore)
     vertical: String
