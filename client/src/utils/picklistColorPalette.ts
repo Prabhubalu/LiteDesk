@@ -71,7 +71,8 @@ function normalizeFieldKey(fieldKey: string | null | undefined): string {
 export function normalizePicklistColorHex(color: unknown): string | null {
   const s = String(color ?? '').trim();
   const m = s.match(/^#?([0-9A-Fa-f]{6})$/);
-  return m ? `#${m[1].toUpperCase()}` : null;
+  const hex = m?.[1];
+  return hex ? `#${hex.toUpperCase()}` : null;
 }
 
 type PicklistOptionLike = string | { value?: unknown; label?: unknown; color?: unknown; enabled?: boolean };
@@ -205,7 +206,7 @@ export function backfillPicklistOptionColors(
       });
       continue;
     }
-    result.push(opt);
+    continue;
   }
   return result;
 }

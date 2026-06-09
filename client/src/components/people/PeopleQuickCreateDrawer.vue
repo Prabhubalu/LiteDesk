@@ -859,7 +859,8 @@ const handleSubmit = async () => {
     if (selectedApps.length === 0) {
       response = await apiClient.post('/people', corePayload);
     } else {
-      const [firstApp, ...remainingApps] = selectedApps;
+      const firstApp = selectedApps[0]!;
+      const remainingApps = selectedApps.slice(1);
       const createPayload = {
         ...corePayload,
         ...buildAppFieldsPayload(firstApp)

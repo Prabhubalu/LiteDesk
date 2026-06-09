@@ -33,16 +33,16 @@ export function mapExecutionError(error: {
     }
 
     if (messageLower.includes('already completed')) {
-      return errorMap.EVENT_ALREADY_COMPLETED;
+      return errorMap.EVENT_ALREADY_COMPLETED!;
     }
     if (messageLower.includes('invalid state') || messageLower.includes('state transition')) {
-      return errorMap.INVALID_STATE_TRANSITION;
+      return errorMap.INVALID_STATE_TRANSITION!;
     }
     if (messageLower.includes('workflow locked') || messageLower.includes('audit locked')) {
-      return errorMap.AUDIT_WORKFLOW_LOCKED;
+      return errorMap.AUDIT_WORKFLOW_LOCKED!;
     }
     if (messageLower.includes('geo') || messageLower.includes('location')) {
-      return errorMap.GEO_REQUIRED;
+      return errorMap.GEO_REQUIRED!;
     }
   }
 

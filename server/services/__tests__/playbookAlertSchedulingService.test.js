@@ -19,6 +19,7 @@ const {
 } = require('../playbookAlertSchedulingService');
 const { computeAlertRunAt } = require('../../utils/playbookAlertUtils');
 const { resolveStagePlaybook } = require('../../utils/playbookResolver');
+const notificationSSEHub = require('../notificationSSEHub');
 
 let mongoServer;
 
@@ -111,6 +112,7 @@ test.before(async () => {
 });
 
 test.after(async () => {
+  notificationSSEHub.shutdown();
   await mongoose.disconnect();
   if (mongoServer) await mongoServer.stop();
 });

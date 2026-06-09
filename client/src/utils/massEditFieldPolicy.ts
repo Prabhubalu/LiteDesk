@@ -49,7 +49,7 @@ export function isMassEditableField(moduleKey: string, field: { key?: string; da
   if (NON_MASS_EDIT_DATA_TYPES.has(dataType)) return false;
   if (dataType.includes('rich')) return false;
 
-  return canEditField(moduleKey, field);
+  return canEditField(moduleKey, { ...field, key });
 }
 
 export function getMassEditableFields(

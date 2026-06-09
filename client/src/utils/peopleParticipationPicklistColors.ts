@@ -6,6 +6,7 @@
 import {
   LEAD_STATUS_OPTION_COLORS,
   CONTACT_STATUS_OPTION_COLORS,
+  PLATFORM_DEFAULT_PICKLIST_COLOR,
   normalizePicklistColorKey,
   getSemanticPicklistColor,
   backfillPicklistOptionColors,
@@ -17,8 +18,8 @@ export function getDefaultParticipationPicklistColor(fieldKey: string, value: un
   const semantic = getSemanticPicklistColor(fieldKey, value, 'people');
   if (semantic) return semantic;
   const field = String(fieldKey || '').toLowerCase();
-  if (field === 'contact_status') return CONTACT_STATUS_OPTION_COLORS.inactive;
-  return LEAD_STATUS_OPTION_COLORS.new;
+  if (field === 'contact_status') return CONTACT_STATUS_OPTION_COLORS.inactive ?? PLATFORM_DEFAULT_PICKLIST_COLOR;
+  return LEAD_STATUS_OPTION_COLORS.new ?? PLATFORM_DEFAULT_PICKLIST_COLOR;
 }
 
 export function buildColoredPicklistOption(fieldKey: string, value: string) {
