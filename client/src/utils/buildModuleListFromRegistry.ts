@@ -557,12 +557,11 @@ export function buildModuleListFromRegistry(
   
   // Use memoization for performance
   return memoizeBuilder(
-    'buildModuleListFromRegistry',
+    `buildModuleListFromRegistry:${options?.isFirstModuleVisit === true ? 'first-visit' : 'returning'}`,
     appRegistry,
     snapshot,
     appKey,
     moduleKey,
-    options?.isFirstModuleVisit === true ? 'first-visit' : 'returning',
     () => {
       // Get list configuration from module
       // Type assertion needed because AppRegistry module type doesn't include list

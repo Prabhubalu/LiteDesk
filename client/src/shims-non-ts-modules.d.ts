@@ -49,6 +49,11 @@ declare module '@/composables/useTabs' {
   export function useTabs(): any;
 }
 
+declare module '@/composables/useOnboarding' {
+  // JS onboarding composable (no TS declarations yet)
+  export function useOnboarding(): any;
+}
+
 declare module '@/composables/useColorMode' {
   // JS color mode composable (no TS declarations yet)
   export function useColorMode(): {
