@@ -7,6 +7,7 @@ import { useColorMode } from '@/composables/useColorMode';
 import { useTabs } from '@/composables/useTabs';
 import { hasAnySettingsAccess } from '@/utils/settingsTabAccess';
 import { useUserStatus } from '@/composables/useUserStatus';
+import AvatarInitials from '@/components/ui/AvatarInitials.vue';
 import {
   UserCircleIcon,
   ShieldCheckIcon,
@@ -36,9 +37,6 @@ const authStore = useAuthStore();
 const { colorMode, toggleColorMode } = useColorMode();
 const { openTab } = useTabs();
 
-const DEFAULT_AVATAR =
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=128&h=128&q=80';
-
 const userId = computed(() => authStore.user?._id || null);
 const {
   state: statusState,
@@ -52,7 +50,6 @@ const {
   clearCustomStatus
 } = useUserStatus(userId);
 
-const avatarUrl = computed(() => authStore.user?.avatar || DEFAULT_AVATAR);
 const displayName = computed(() => authStore.user?.username || t('navigation.userAccountFallback'));
 const email = computed(() => authStore.user?.email || '');
 const role = computed(() => authStore.user?.role || '');
@@ -216,11 +213,16 @@ function chooseStatus(typeId) {
       <div class="relative rounded-t-2xl px-5 pt-5 pb-4 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800/60 dark:to-gray-900">
         <div class="flex items-start gap-3">
           <div class="relative shrink-0">
-            <img
-              :src="avatarUrl"
-              alt=""
-              class="h-12 w-12 rounded-full object-cover ring-2 ring-white dark:ring-gray-900"
-            />
+            <div class="rounded-full ring-2 ring-white dark:ring-gray-900">
+              <AvatarInitials
+                :first-name="authStore.user?.firstName"
+                :last-name="authStore.user?.lastName"
+                :email="authStore.user?.email"
+                :username="authStore.user?.username"
+                :avatar="authStore.user?.avatar"
+                size="md"
+              />
+            </div>
             <span
               :class="[
                 'absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-gray-900',

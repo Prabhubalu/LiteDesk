@@ -156,6 +156,12 @@ class UICompositionService {
     try {
       const appKeyLower = appKey.toLowerCase();
 
+      // Quote-to-cash core modules are lazy-seeded on Settings; ensure they exist for sidebar/registry too.
+      if (appKeyLower === 'platform') {
+        const { ensurePlatformCommercialCoreModules } = require('../controllers/settingsController');
+        await ensurePlatformCommercialCoreModules();
+      }
+
       // Get module definitions for this app
       // Priority: platform-level modules (organizationId: null) first, then organization-specific
       // Note: appKey filter already excludes platform modules (appKey: 'platform')

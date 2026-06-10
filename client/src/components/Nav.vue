@@ -18,6 +18,7 @@ import { useUserStatus } from '@/composables/useUserStatus';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarSkeleton from '@/components/AppSidebarSkeleton.vue';
 import UserMenu from '@/components/UserMenu.vue';
+import AvatarInitials from '@/components/ui/AvatarInitials.vue';
 import clickOutside from '@/directives/clickOutside';
 import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import { 
@@ -302,11 +303,6 @@ const userName = computed(() => authStore.user?.username || 'User');
 const userVertical = computed(() => authStore.user?.vertical || 'N/A');
 const workspaceName = computed(() => authStore.organization?.name || `${userName.value}'s Space`);
 
-const DEFAULT_AVATAR =
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=128&h=128&q=80';
-
-const workspaceAvatar = computed(() => authStore.user?.avatar || DEFAULT_AVATAR);
-
 // Mobile-top-bar account dropdown is now a shared <UserMenu>. Track open state +
 // surface the current presence dot on the avatar so the menu and the trigger
 // stay visually in sync (mirrors TabBar's desktop treatment).
@@ -485,7 +481,14 @@ const logoSrc = computed(() => {
             :aria-expanded="showProfileDropdown"
             @click.stop="toggleProfileDropdown"
           >
-            <img :src="workspaceAvatar" alt="" class="w-full h-full rounded-full object-cover" />
+            <AvatarInitials
+              :first-name="authStore.user?.firstName"
+              :last-name="authStore.user?.lastName"
+              :email="authStore.user?.email"
+              :username="authStore.user?.username"
+              :avatar="authStore.user?.avatar"
+              size="sm"
+            />
             <span
               :class="[
                 'absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-gray-900',

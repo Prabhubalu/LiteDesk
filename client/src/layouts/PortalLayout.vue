@@ -20,7 +20,14 @@
             class="rounded-full overflow-hidden w-8 h-8 flex-shrink-0 ring-1 ring-gray-200 dark:ring-gray-600 hover:ring-gray-300 dark:hover:ring-gray-500 transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             :aria-label="t('navigation.userMenu')"
           >
-            <img :src="portalAvatarUrl" alt="" class="w-full h-full object-cover" />
+            <AvatarInitials
+              :first-name="authStore.user?.firstName"
+              :last-name="authStore.user?.lastName"
+              :email="authStore.user?.email"
+              :username="authStore.user?.username"
+              :avatar="authStore.user?.avatar"
+              size="sm"
+            />
           </button>
         </div>
       </div>
@@ -73,7 +80,14 @@
             class="rounded-full overflow-hidden w-8 h-8 flex-shrink-0 ring-1 ring-gray-200 dark:ring-gray-600 hover:ring-gray-300 dark:hover:ring-gray-500 transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             :aria-label="t('navigation.userMenu')"
           >
-            <img :src="portalAvatarUrl" alt="" class="w-full h-full object-cover" />
+            <AvatarInitials
+              :first-name="authStore.user?.firstName"
+              :last-name="authStore.user?.lastName"
+              :email="authStore.user?.email"
+              :username="authStore.user?.username"
+              :avatar="authStore.user?.avatar"
+              size="sm"
+            />
           </button>
           
           <!-- User Menu Dropdown (Desktop) -->
@@ -293,6 +307,7 @@ import NotificationDrawer from '@/components/notifications/NotificationDrawer.vu
 import NotificationSheet from '@/components/notifications/NotificationSheet.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarSkeleton from '@/components/AppSidebarSkeleton.vue';
+import AvatarInitials from '@/components/ui/AvatarInitials.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -391,11 +406,6 @@ onUnmounted(() => {
 const organizationName = computed(() => {
   return authStore.organization?.name || 'Portal';
 });
-
-const DEFAULT_AVATAR =
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=128&h=128&q=80';
-
-const portalAvatarUrl = computed(() => authStore.user?.avatar || DEFAULT_AVATAR);
 
 const handleLogout = () => {
   showUserMenu.value = false;

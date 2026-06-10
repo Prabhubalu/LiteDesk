@@ -822,6 +822,14 @@ async function ensurePlatformPaymentsModuleDefinition() {
     });
 }
 
+/** Bootstrap platform quote-to-cash core modules when missing (sidebar registry path). */
+exports.ensurePlatformCommercialCoreModules = async () => {
+    await ensurePlatformQuotesModuleDefinition();
+    await ensurePlatformSalesOrdersModuleDefinition();
+    await ensurePlatformInvoicesModuleDefinition();
+    await ensurePlatformPaymentsModuleDefinition();
+};
+
 // Helper function to get module usage description
 function getModuleUsage(moduleKey, appKey) {
     const usageMap = {
