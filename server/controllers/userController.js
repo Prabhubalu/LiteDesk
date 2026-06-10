@@ -577,11 +577,13 @@ exports.inviteUser = async (req, res) => {
             });
         }
 
-        // Check if user already exists in this organization
+        // Check if user already exists in this organization.
+        // Tenant DBs are org-scoped by database; do not require organizationId on the document.
+        const inviteScopeQuery = buildUserScopeQuery(req, organization);
         const existingUser = await ScopedUser.findOne({
             email: email.toLowerCase(),
-            organizationId: req.user.organizationId 
-        });
+            ...inviteScopeQuery
+        }).sort({ updatedAt: -1 });
 
         let reinviteUser = null;
         if (existingUser) {
@@ -824,7 +826,7 @@ exports.inviteUser = async (req, res) => {
         }
 
         // Use provided password or generate temporary password
-        const wantsEmail = sendEmail === true || sendEmail === 'true' || sendEmail === 1;
+        const wantsEmail = sendEmail === true || sendEmail === 'true' || sendEmail === 1 || sendEmail === '1';
         const manualPassword = password ? String(password) : null;
         const inviteCredentials = userInviteService.buildInviteCredentials({
             wantsEmail,
@@ -864,6 +866,9 @@ exports.inviteUser = async (req, res) => {
 
         let newUser;
         if (reinviteUser) {
+            if (!reinviteUser.organizationId) {
+                reinviteUser.organizationId = organization._id;
+            }
             reinviteUser.username = reinviteUser.username || username;
             reinviteUser.password = hashedPassword;
             reinviteUser.firstName = finalFirstName;
@@ -918,6 +923,33 @@ exports.inviteUser = async (req, res) => {
             });
         }
 
+        await materializeEffectiveCRMEnvelopeOnUser(newUser);
+        await newUser.save();
+
+        if (wantsEmail && inviteCredentials.inviteTokenRaw) {
+            const persistedInvite = await ScopedUser.findById(newUser._id)
+                .select('status inviteTokenHash inviteTokenExpiresAt')
+                .lean();
+            if (
+                !persistedInvite
+                || persistedInvite.status !== 'invited'
+                || persistedInvite.inviteTokenHash !== inviteTokenHash
+            ) {
+                console.error('[inviteUser] Invite token not persisted after save:', {
+                    email: newUser.email,
+                    organizationId: organization._id,
+                    expectedStatus: 'invited',
+                    actualStatus: persistedInvite?.status || null,
+                    hasTokenHash: Boolean(persistedInvite?.inviteTokenHash)
+                });
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to persist invitation. Please try again.',
+                    code: 'INVITE_TOKEN_PERSIST_FAILED'
+                });
+            }
+        }
+
         await UserDirectory.findOneAndUpdate(
             { email: newUser.email.toLowerCase() },
             {
@@ -932,9 +964,6 @@ exports.inviteUser = async (req, res) => {
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );
-
-        await materializeEffectiveCRMEnvelopeOnUser(newUser);
-        await newUser.save();
 
         try {
             const { markOrgInviteSent } = require('../services/onboardingService');
