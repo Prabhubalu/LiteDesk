@@ -1354,12 +1354,16 @@ exports.deleteUser = async (req, res) => {
 
         // Soft delete: just deactivate the user
         user.status = 'inactive';
+        user.inviteTokenHash = null;
+        user.inviteTokenExpiresAt = null;
+        user.emailVerificationTokenHash = null;
+        user.emailVerificationExpiresAt = null;
         await user.save();
 
         await userInviteService.syncDirectoryEntry(user.email, {
-            inviteTokenHash: null,
-            emailVerificationTokenHash: null,
-            status: 'inactive'
+          inviteTokenHash: null,
+          emailVerificationTokenHash: null,
+          status: 'inactive'
         });
 
         // For hard delete, use: await user.remove();

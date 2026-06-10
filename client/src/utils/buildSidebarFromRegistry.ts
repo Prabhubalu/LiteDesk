@@ -307,6 +307,26 @@ async function fetchCoreModulesFromSettings(snapshot: PermissionSnapshot): Promi
   }
 }
 
+const IMPORTS_MODULE_KEY = 'imports';
+
+function pinImportsLast(coreModules: SidebarItem[]): SidebarItem[] {
+  const importsIndex = coreModules.findIndex(
+    (item) => item.kind === 'coreModule' && item.moduleKey === IMPORTS_MODULE_KEY
+  );
+  if (importsIndex === -1 || importsIndex === coreModules.length - 1) {
+    return coreModules;
+  }
+  const importsItem = coreModules[importsIndex];
+  if (!importsItem) {
+    return coreModules;
+  }
+  return [
+    ...coreModules.slice(0, importsIndex),
+    ...coreModules.slice(importsIndex + 1),
+    importsItem,
+  ];
+}
+
 function dedupeCoreModules(coreModules: SidebarItem[]): SidebarItem[] {
   const uniqueCoreModules = new Map<string, SidebarItem>();
   for (const item of coreModules) {
@@ -317,7 +337,7 @@ function dedupeCoreModules(coreModules: SidebarItem[]): SidebarItem[] {
     uniqueCoreModules.set(key, item);
   }
 
-  return Array.from(uniqueCoreModules.values());
+  return pinImportsLast(Array.from(uniqueCoreModules.values()));
 }
 
 function buildAppSwitcherApps(appRegistry: AppRegistry, snapshot: PermissionSnapshot): AppSummary[] {

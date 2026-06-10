@@ -6,11 +6,18 @@
           <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('auth.acceptInviteLoading') }}</p>
         </div>
 
-        <div v-else-if="!inviteValid" class="rounded-xl border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
-          <h1 class="text-lg font-semibold text-red-900 dark:text-red-100">{{ t('auth.acceptInviteInvalidTitle') }}</h1>
-          <p class="mt-2 text-sm text-red-800 dark:text-red-200">{{ errorMessage || t('auth.acceptInviteInvalidBody') }}</p>
-          <router-link to="/login" class="mt-4 inline-flex text-sm font-semibold text-indigo-600 hover:text-indigo-500">
-            {{ t('auth.acceptInviteBackToLogin') }}
+        <div v-else-if="!inviteValid" class="rounded-xl border p-6" :class="alreadyAccepted ? 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20' : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'">
+          <h1 class="text-lg font-semibold" :class="alreadyAccepted ? 'text-amber-900 dark:text-amber-100' : 'text-red-900 dark:text-red-100'">
+            {{ alreadyAccepted ? t('auth.acceptInviteAlreadyAcceptedTitle') : t('auth.acceptInviteInvalidTitle') }}
+          </h1>
+          <p class="mt-2 text-sm" :class="alreadyAccepted ? 'text-amber-800 dark:text-amber-200' : 'text-red-800 dark:text-red-200'">
+            {{ errorMessage || t('auth.acceptInviteInvalidBody') }}
+          </p>
+          <router-link
+            :to="loginLink"
+            class="mt-4 inline-flex text-sm font-semibold text-indigo-600 hover:text-indigo-500"
+          >
+            {{ alreadyAccepted ? t('auth.acceptInviteAlreadyAcceptedSignIn') : t('auth.acceptInviteBackToLogin') }}
           </router-link>
         </div>
 
@@ -100,7 +107,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { getApiUrlForFetch } from '@/config/apiBase';
@@ -114,6 +121,8 @@ const authStore = useAuthStore();
 
 const loading = ref(true);
 const inviteValid = ref(false);
+const alreadyAccepted = ref(false);
+const loginEmail = ref('');
 const submitting = ref(false);
 const step = ref('password');
 const errorMessage = ref('');
@@ -135,6 +144,50 @@ const profileForm = ref({
 });
 
 const token = () => String(route.query.token || '').trim();
+const loginLink = computed(() => (
+  loginEmail.value
+    ? { name: 'login', query: { email: loginEmail.value } }
+    : { name: 'login' }
+));
+const SESSION_TRANSFER_HASH_KEY = 'ld_session';
+
+function resolveInstanceLoginTarget(instance) {
+  if (!instance?.subdomain) return null;
+
+  const configuredTemplate = import.meta.env.VITE_INSTANCE_LOCAL_REDIRECT_TEMPLATE;
+  const localProtocol = window.location.protocol || 'http:';
+  const localPort = window.location.port ? `:${window.location.port}` : '';
+  const defaultLocalTarget = `${localProtocol}//${instance.subdomain}.localhost${localPort}`;
+  const fallbackTarget = instance.frontendUrl || defaultLocalTarget;
+  const template = import.meta.env.DEV ? (configuredTemplate || defaultLocalTarget) : fallbackTarget;
+
+  return String(template)
+    .replace('{subdomain}', instance.subdomain)
+    .replace('{port}', window.location.port || '');
+}
+
+async function navigateAfterAccept(session, redirectTo) {
+  const targetBaseUrl = resolveInstanceLoginTarget(session?.instance);
+  if (targetBaseUrl) {
+    try {
+      const target = new URL(targetBaseUrl);
+      const isDifferentHost = target.host !== window.location.host;
+      if (isDifferentHost) {
+        const transferPayload = authStore.buildSessionTransferPayload();
+        if (transferPayload) {
+          const redirectUrl = new URL('/login', target.origin);
+          redirectUrl.hash = `${SESSION_TRANSFER_HASH_KEY}=${encodeURIComponent(transferPayload)}`;
+          window.location.assign(redirectUrl.toString());
+          return;
+        }
+      }
+    } catch (_error) {
+      // Fall through to in-app redirect.
+    }
+  }
+
+  await router.push(redirectTo);
+}
 
 async function loadInvite() {
   loading.value = true;
@@ -145,7 +198,17 @@ async function loadInvite() {
     const data = await response.json();
     if (!response.ok || !data.success) {
       inviteValid.value = false;
-      errorMessage.value = data.message || t('auth.acceptInviteInvalidBody');
+      alreadyAccepted.value = data.code === 'INVITE_ALREADY_ACCEPTED';
+      loginEmail.value = data.data?.email || '';
+      if (alreadyAccepted.value) {
+        errorMessage.value = t('auth.acceptInviteAlreadyAcceptedBody', {
+          organization: data.data?.organizationName || invite.value.organizationName || 'your organization'
+        });
+      } else if (data.code === 'TOKEN_EXPIRED') {
+        errorMessage.value = t('auth.acceptInviteExpiredBody');
+      } else {
+        errorMessage.value = data.message || t('auth.acceptInviteInvalidBody');
+      }
       return;
     }
     invite.value = data.data;
@@ -197,6 +260,15 @@ async function submitAccept(skipProfile = false) {
     });
     const data = await response.json();
     if (!response.ok || !data.success) {
+      if (data.code === 'INVITE_ALREADY_ACCEPTED') {
+        inviteValid.value = false;
+        alreadyAccepted.value = true;
+        loginEmail.value = data.data?.email || invite.value.email || '';
+        errorMessage.value = t('auth.acceptInviteAlreadyAcceptedBody', {
+          organization: data.data?.organizationName || invite.value.organizationName || 'your organization'
+        });
+        return;
+      }
       errorMessage.value = data.message || t('auth.acceptInviteFailed');
       return;
     }
@@ -212,11 +284,11 @@ async function submitAccept(skipProfile = false) {
         organizationId: data.data.session.organizationId,
       });
       const redirectTo = data.data.session.onboarding?.redirectTo || '/platform/home';
-      await router.push(redirectTo);
+      await navigateAfterAccept(data.data.session, redirectTo);
       return;
     }
 
-    await router.push('/login');
+    errorMessage.value = t('auth.acceptInviteFailed');
   } catch (_error) {
     errorMessage.value = t('auth.acceptInviteFailed');
   } finally {
@@ -225,6 +297,8 @@ async function submitAccept(skipProfile = false) {
 }
 
 onMounted(() => {
+  authStore.clearUser();
+
   if (!token()) {
     loading.value = false;
     inviteValid.value = false;
