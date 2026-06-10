@@ -5,12 +5,49 @@ const test = require('node:test');
 
 const {
   projectRoleToUserPermissions,
+  attachCommercialCoreModulesFromDeals,
   roleAllowsPlatformOwnedFieldEdits,
   buildCasesEnvelopeFromAppAccess,
   ensurePermissionEnvelopeDefaults,
   sanitizeUserResponsePayload
 } = require('../rolePermissionProjection');
 const { APP_KEYS } = require('../../constants/appKeys');
+
+test('commercial core modules inherit deals permissions from Role matrix', () => {
+  const role = {
+    name: 'Admin',
+    canViewAllData: true,
+    permissions: {
+      deals: { read: true, create: true, update: true, delete: true, export: true, import: true, scope: 'all' }
+    }
+  };
+  const p = projectRoleToUserPermissions(role, []);
+  assert.equal(p.quotes.view, true);
+  assert.equal(p.quotes.create, true);
+  assert.equal(p.sales_orders.view, true);
+  assert.equal(p.invoices.view, true);
+  assert.equal(p.payments.view, true);
+});
+
+test('attachCommercialCoreModulesFromDeals mirrors deals envelope', () => {
+  const base = {
+    deals: { view: true, create: true, edit: true, delete: false, viewAll: true, exportData: true },
+    tasks: { view: true, create: false, edit: false, delete: false, viewAll: false }
+  };
+  const out = attachCommercialCoreModulesFromDeals(base);
+  assert.deepEqual(out.quotes, base.deals);
+  assert.deepEqual(out.payments, base.deals);
+  assert.equal(out.tasks.view, true);
+});
+
+test('ensurePermissionEnvelopeDefaults fills commercial core module keys', () => {
+  const m = { contacts: { view: true, create: false, edit: false, delete: false, viewAll: false, exportData: false } };
+  ensurePermissionEnvelopeDefaults(m);
+  assert.ok(m.quotes);
+  assert.ok(m.sales_orders);
+  assert.ok(m.invoices);
+  assert.ok(m.payments);
+});
 
 test('viewAll true when canViewAllData even if module scope is team', () => {
   const role = {

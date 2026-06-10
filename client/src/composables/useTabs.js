@@ -120,6 +120,29 @@ export function isStandalonePublicRoute(path) {
   return p.startsWith('/book/') || p.startsWith('/appointments/manage/');
 }
 
+/** Auth lifecycle pages (invite accept, verify email, password reset) — never CRM tabs. */
+export function isAuthLifecyclePublicRoute(path) {
+  const p = String(path || '').split('?')[0];
+  return (
+    p === '/accept-invite' ||
+    p === '/verify-email' ||
+    p === '/forgot-password' ||
+    p === '/reset-password' ||
+    p === '/login'
+  );
+}
+
+/** Routes the tab bar must not track (public, auth, audit shell, landing). */
+export function shouldSkipTabRoute(path) {
+  const p = String(path || '').split('?')[0];
+  return (
+    p === '/' ||
+    p.startsWith('/audit/') ||
+    isStandalonePublicRoute(path) ||
+    isAuthLifecyclePublicRoute(path)
+  );
+}
+
 // Icon mapping for serialization/deserialization
 const iconMap = {
   'home': HomeIcon,
@@ -926,7 +949,7 @@ export function useTabs() {
     // Skip if path is login, landing, or audit app (no tabs)
     // Audit app has its own layout and doesn't use the CRM tabs system
     // Settings now uses internal tabs
-    if (path === '/login' || path === '/' || path.startsWith('/audit/') || isStandalonePublicRoute(path)) {
+    if (shouldSkipTabRoute(path)) {
       logTabsDebug('⏭️ Skipping sync for path:', path);
       return;
     }
@@ -1115,7 +1138,7 @@ export function useTabs() {
     
     // First, check if we have an active tab from storage - restore it
     // Skip restoration when landing on a public booking URL (e.g. link opened in new tab)
-    if (activeTabId.value && !isStandalonePublicRoute(currentPath)) {
+    if (activeTabId.value && !shouldSkipTabRoute(currentPath)) {
       const activeTab = tabs.value.find(tab => tab.id === activeTabId.value);
       if (activeTab) {
         // If user loaded directly on Settings (e.g. bookmark), create Settings tab and stay
@@ -1212,8 +1235,8 @@ export function useTabs() {
           activeTabId.value = 'home';
         }
       }
-    } else if (isStandalonePublicRoute(currentPath)) {
-      logTabsDebug('⏭️ [setupRouteWatcher] Standalone public route, keeping URL:', currentPath);
+    } else if (shouldSkipTabRoute(currentPath)) {
+      logTabsDebug('⏭️ [setupRouteWatcher] Non-tab route, keeping URL:', currentPath);
     } else {
       // On a different route (e.g., dashboard route)
       // If tabs are empty, create a tab for the current route
@@ -1347,7 +1370,7 @@ export function useTabs() {
       // These routes should be handled by the router, not by tab syncing
       // Audit app has its own layout and doesn't use the CRM tabs system
       // Settings now uses internal tabs
-      if (newPath === '/login' || newPath === '/' || newPath.startsWith('/audit/') || isStandalonePublicRoute(newPath)) {
+      if (shouldSkipTabRoute(newPath)) {
         console.log('⏭️ Route watcher: skipping tab sync for non-tab route:', newPath);
         return;
       }
@@ -1518,8 +1541,7 @@ export function useTabs() {
       
       // Skip non-tab routes (but log it)
       // Settings now uses internal tabs
-      if (targetPathWithoutQuery === '/login' || targetPathWithoutQuery === '/' ||
-          targetPathWithoutQuery.startsWith('/audit/') || isStandalonePublicRoute(targetPathWithoutQuery)) {
+      if (shouldSkipTabRoute(targetPathWithoutQuery)) {
         console.log('🔙 Skipping - non-tab route:', targetPathWithoutQuery);
         return;
       }

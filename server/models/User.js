@@ -417,7 +417,10 @@ UserSchema.methods.setPermissionsByRole = function(role) {
         }
     };
     
-    this.permissions = rolePermissions[role] || rolePermissions.user;
+    const { attachCommercialCoreModulesFromDeals } = require('../utils/rolePermissionProjection');
+    this.permissions = attachCommercialCoreModulesFromDeals(
+        rolePermissions[role] || rolePermissions.user
+    );
     if (this.permissions.contacts) {
         const contactsPermissions = this.permissions.contacts.toObject
             ? this.permissions.contacts.toObject()
