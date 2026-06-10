@@ -528,22 +528,30 @@ async function initializeOnboardingForUser(user, { origin, welcomeNote = null, s
     ? ensureSteps([], FOUNDER_WIZARD_STEP_KEYS)
     : ensureSteps([], MEMBER_STEP_KEYS);
 
-  user.onboarding = {
-    version: ONBOARDING_VERSION,
-    origin: origin || null,
-    persona,
-    context: user.onboarding?.context || {},
-    goalKey: user.onboarding?.goalKey || null,
-    startedAt: null,
-    completedAt: null,
-    dismissedAt: null,
-    welcomeNote: welcomeNote || user.onboarding?.welcomeNote || null,
-    suggestedTask: suggestedTask || user.onboarding?.suggestedTask || null,
-    profile: user.onboarding?.profile || undefined,
-    moduleVisits: user.onboarding?.moduleVisits || [],
-    steps: initialSteps,
-    coachmarks: user.onboarding?.coachmarks || []
-  };
+  const previousOnboarding = user.onboarding && typeof user.onboarding === 'object'
+    ? user.onboarding
+    : {};
+
+  user.onboarding = previousOnboarding;
+  user.onboarding.version = ONBOARDING_VERSION;
+  user.onboarding.origin = origin || null;
+  user.onboarding.persona = persona;
+  if (!user.onboarding.context || typeof user.onboarding.context !== 'object') {
+    user.onboarding.context = {};
+  }
+  user.onboarding.goalKey = user.onboarding.goalKey || null;
+  user.onboarding.startedAt = null;
+  user.onboarding.completedAt = null;
+  user.onboarding.dismissedAt = null;
+  user.onboarding.welcomeNote = welcomeNote || user.onboarding.welcomeNote || null;
+  user.onboarding.suggestedTask = suggestedTask || user.onboarding.suggestedTask || null;
+  user.onboarding.moduleVisits = user.onboarding.moduleVisits || [];
+  user.onboarding.steps = initialSteps;
+  user.onboarding.coachmarks = user.onboarding.coachmarks || [];
+
+  if (typeof user.markModified === 'function') {
+    user.markModified('onboarding');
+  }
 
   return user;
 }
