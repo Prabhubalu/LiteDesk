@@ -2,7 +2,7 @@ const { parseRawMime } = require('../../communication/inbound/inboundParser');
 const { processRawInbound } = require('../../communication/inbound/inboundDispatcher');
 const { getOrCreateConfig } = require('../../../services/mailroomConfigService');
 const { evaluate, evaluatePipeline } = require('../policies/policyEngine');
-const { mapParsedMimeToNormalized, mapParserApiMessageToNormalized } = require('../domain/parsedMessageMappers');
+const { mapParsedMimeToNormalized, mapParserApiMessageToNormalized, enrichNormalizedMessageWithMailbox } = require('../domain/parsedMessageMappers');
 const MailroomRawPayload = require('../../../models/MailroomRawPayload');
 const { storeRawPayload, markRawPayloadProcessed, markRawPayloadFailed } = require('../services/rawPayloadService');
 const { buildEmailCandidates } = require('../services/candidatesService');
@@ -422,9 +422,9 @@ async function processParserEventThroughMailroom(eventDoc, {
       _id: resolved.mailboxId,
       organizationId
     })
-      .select('kind')
+      .select('kind emailAddress routingAddress')
       .lean();
-    normalized.metadata.mailboxKind = mailbox?.kind || null;
+    enrichNormalizedMessageWithMailbox(normalized, mailbox || {});
 
     const config = await getOrCreateConfig(organizationId);
     policies = config.policies || {};

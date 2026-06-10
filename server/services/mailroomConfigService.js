@@ -37,10 +37,28 @@ async function getOrCreateConfig(organizationId) {
 
 function resolvePoliciesForRow(row) {
   const stored = row?.policies || {};
-  if (hasConfiguredPolicies(stored)) return stored;
-
   const template = getTemplate(row?.activeTemplateId || 'helpdesk_standard_email');
-  return template?.policies || getDefaultMailroomConfig().policies;
+  const defaults = template?.policies || getDefaultMailroomConfig().policies;
+
+  if (!hasConfiguredPolicies(stored)) return defaults;
+
+  return {
+    ...defaults,
+    ...stored,
+    threading: { ...(defaults.threading || {}), ...(stored.threading || {}) },
+    ingest: stored.ingest || defaults.ingest,
+    dedup: { ...(defaults.dedup || {}), ...(stored.dedup || {}) },
+    caseLink: {
+      ...(defaults.caseLink || {}),
+      ...(stored.caseLink || {}),
+      defaults: {
+        ...(defaults.caseLink?.defaults || {}),
+        ...(stored.caseLink?.defaults || {})
+      }
+    },
+    classification: stored.classification || defaults.classification,
+    dispatch: stored.dispatch || defaults.dispatch
+  };
 }
 
 function resolveConnectorsForRow(row) {
