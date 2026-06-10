@@ -4,7 +4,10 @@ const jwt = require('jsonwebtoken');
 const DemoRequest = require('../models/DemoRequest');
 const InstanceRegistry = require('../models/InstanceRegistry');
 const { buildOrgCapabilities } = require('../utils/orgCapabilities');
-const { materializeEffectiveCRMEnvelopeOnUser } = require('../utils/rolePermissionProjection');
+const {
+  materializeEffectiveCRMEnvelopeOnUser,
+  userPermissionsEnvelopeToPlain
+} = require('../utils/rolePermissionProjection');
 const {
   ensureOnboardingStarted,
   syncAutomaticCompletions,
@@ -113,7 +116,7 @@ async function buildAuthSessionPayload(user, organization, options = {}) {
     role: orgUser.role,
     isOwner: orgUser.isOwner,
     isPlatformAdmin: orgUser.isPlatformAdmin === true,
-    permissions: orgUser.permissions,
+    permissions: userPermissionsEnvelopeToPlain(orgUser),
     allowedApps,
     appAccess: orgUser.appAccess,
     organization: {

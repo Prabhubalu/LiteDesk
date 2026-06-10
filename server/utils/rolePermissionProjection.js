@@ -38,9 +38,21 @@ function toPlain(permsOrSub) {
 }
 
 function userPermissionsEnvelopeToPlain(user) {
+  const runtimeEnvelope = user?._permissionRuntime?.envelope;
+  if (runtimeEnvelope && typeof runtimeEnvelope === 'object') {
+    const plain =
+      typeof runtimeEnvelope.toObject === 'function'
+        ? runtimeEnvelope.toObject()
+        : { ...runtimeEnvelope };
+    ensurePermissionEnvelopeDefaults(plain);
+    return plain;
+  }
+
   const p = user?.permissions;
   if (!p || typeof p !== 'object') return {};
-  return typeof p.toObject === 'function' ? p.toObject() : { ...p };
+  const plain = typeof p.toObject === 'function' ? p.toObject() : { ...p };
+  ensurePermissionEnvelopeDefaults(plain);
+  return plain;
 }
 
 function finalizeUserPermissionEnvelope(user) {
@@ -517,10 +529,12 @@ async function enrichLeanUsersWithEffectiveCRMPermissions(leanUsers) {
  */
 function sanitizeUserResponsePayload(userDocOrPlain) {
   if (userDocOrPlain == null) return userDocOrPlain;
+  const permissions = userPermissionsEnvelopeToPlain(userDocOrPlain);
   const o =
     typeof userDocOrPlain.toObject === 'function'
       ? userDocOrPlain.toObject({ flattenMaps: false })
       : { ...userDocOrPlain };
+  o.permissions = permissions;
   delete o.password;
   delete o._roleAllowsPlatformOwnedFieldEdit;
   delete o.inviteTokenHash;
@@ -542,5 +556,6 @@ module.exports = {
   buildCasesEnvelopeFromAppAccess,
   enrichLeanUsersWithEffectiveCRMPermissions,
   sanitizeUserResponsePayload,
+  userPermissionsEnvelopeToPlain,
   hydrateUserPermissionsFromRole
 };
