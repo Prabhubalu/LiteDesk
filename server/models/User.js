@@ -104,6 +104,38 @@ const UserSchema = new mongoose.Schema({
             viewAll: { type: Boolean, default: true },
             exportData: { type: Boolean, default: false }
         },
+        quotes: {
+            view: { type: Boolean, default: true },
+            create: { type: Boolean, default: true },
+            edit: { type: Boolean, default: true },
+            delete: { type: Boolean, default: false },
+            viewAll: { type: Boolean, default: true },
+            exportData: { type: Boolean, default: false }
+        },
+        sales_orders: {
+            view: { type: Boolean, default: true },
+            create: { type: Boolean, default: true },
+            edit: { type: Boolean, default: true },
+            delete: { type: Boolean, default: false },
+            viewAll: { type: Boolean, default: true },
+            exportData: { type: Boolean, default: false }
+        },
+        invoices: {
+            view: { type: Boolean, default: true },
+            create: { type: Boolean, default: true },
+            edit: { type: Boolean, default: true },
+            delete: { type: Boolean, default: false },
+            viewAll: { type: Boolean, default: true },
+            exportData: { type: Boolean, default: false }
+        },
+        payments: {
+            view: { type: Boolean, default: true },
+            create: { type: Boolean, default: true },
+            edit: { type: Boolean, default: true },
+            delete: { type: Boolean, default: false },
+            viewAll: { type: Boolean, default: true },
+            exportData: { type: Boolean, default: false }
+        },
         organizations: {
             view: { type: Boolean, default: true },
             create: { type: Boolean, default: false },

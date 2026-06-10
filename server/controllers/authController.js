@@ -28,7 +28,10 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { APP_KEYS } = require('../constants/appKeys');
-const { materializeEffectiveCRMEnvelopeOnUser } = require('../utils/rolePermissionProjection');
+const {
+    materializeEffectiveCRMEnvelopeOnUser,
+    userPermissionsEnvelopeToPlain
+} = require('../utils/rolePermissionProjection');
 const securityLogger = require('../middleware/securityLoggingMiddleware');
 const { getDefaultRoleForApp } = require('../utils/appAccessUtils');
 const { ensureDefaultCommunicationSettingsForOrganization } = require('../services/communicationDefaultsSeeder');
@@ -576,7 +579,7 @@ exports.loginUser = async (req, res) => {
             role: orgUser.role,
             isOwner: orgUser.isOwner,
             isPlatformAdmin: orgUser.isPlatformAdmin === true,
-            permissions: orgUser.permissions,
+            permissions: userPermissionsEnvelopeToPlain(orgUser),
             allowedApps: allowedApps, // Include app access
             appAccess: orgUser.appAccess,
             organization: {

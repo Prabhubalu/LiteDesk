@@ -9,9 +9,48 @@ const {
   roleAllowsPlatformOwnedFieldEdits,
   buildCasesEnvelopeFromAppAccess,
   ensurePermissionEnvelopeDefaults,
-  sanitizeUserResponsePayload
+  sanitizeUserResponsePayload,
+  userPermissionsEnvelopeToPlain
 } = require('../rolePermissionProjection');
 const { APP_KEYS } = require('../../constants/appKeys');
+
+test('userPermissionsEnvelopeToPlain prefers runtime envelope (includes commercial core)', () => {
+  const { userPermissionsEnvelopeToPlain } = require('../rolePermissionProjection');
+  const user = {
+    permissions: {
+      deals: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true }
+    },
+    _permissionRuntime: {
+      envelope: {
+        deals: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
+        quotes: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
+        sales_orders: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
+        invoices: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
+        payments: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true }
+      }
+    }
+  };
+  const plain = userPermissionsEnvelopeToPlain(user);
+  assert.equal(plain.quotes.view, true);
+  assert.equal(plain.payments.view, true);
+  assert.equal(plain.deals.view, true);
+});
+
+test('sanitizeUserResponsePayload exports runtime permissions envelope', () => {
+  const user = {
+    email: 'x@example.com',
+    permissions: { deals: { view: true } },
+    _permissionRuntime: {
+      envelope: {
+        deals: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
+        quotes: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true }
+      }
+    }
+  };
+  const o = sanitizeUserResponsePayload(user);
+  assert.equal(o.permissions.quotes.view, true);
+  assert.equal(o.email, 'x@example.com');
+});
 
 test('commercial core modules inherit deals permissions from Role matrix', () => {
   const role = {
