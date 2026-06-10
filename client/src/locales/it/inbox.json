@@ -1162,5 +1162,33 @@
   "inboxSidebarMailboxCount": {
     "message": "{count} mailboxes",
     "description": "Subtitle when all mail is selected showing mailbox count"
+  },
+  "inboxSidebarSearchMail": {
+    "message": "Search mail",
+    "description": "Inbox sidebar search placeholder"
+  },
+  "inboxSidebarCompose": {
+    "message": "Compose",
+    "description": "Primary compose action in inbox sidebar"
+  },
+  "inboxSidebarCategories": {
+    "message": "Categories",
+    "description": "Gmail category section in inbox sidebar"
+  },
+  "inboxSidebarFolders": {
+    "message": "Folders",
+    "description": "Mail folders section in inbox sidebar"
+  },
+  "inboxSidebarEmailSettings": {
+    "message": "Email settings",
+    "description": "Inbox sidebar link to email integration settings"
+  },
+  "inboxSidebarMailboxActions": {
+    "message": "Mailbox actions",
+    "description": "Aria label for inbox sidebar mailbox overflow menu"
+  },
+  "inboxSidebarClearSearch": {
+    "message": "Clear search",
+    "description": "Aria label for inbox sidebar search clear button"
   }
 }
