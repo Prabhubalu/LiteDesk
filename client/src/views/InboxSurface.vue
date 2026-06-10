@@ -27,6 +27,7 @@
       :view-items="inboxSidebarViewItems"
       :mail-items="inboxSidebarMailItems"
       :mailbox-items="inboxSidebarMailboxItems"
+      :selected-mailbox-id="selectedMailboxFilter"
       :gmail-folder-items="inboxSidebarGmailFolderItems"
       :mailbox-flags="mailboxFlags"
       :mailbox-action-loading="mailboxActionLoading"
@@ -518,6 +519,7 @@ const mailboxActionLoading = ref(false);
 const mailboxDetailsOpen = ref(false);
 const mailboxDetailsTarget = ref(null);
 const selectedMailboxFilter = ref(null);
+const mailboxScopeAllMail = ref(false);
 const selectedGmailLabelId = ref(null);
 const gmailLabelCatalog = ref([]);
 const gmailLabelsLoading = ref(false);
@@ -1262,6 +1264,7 @@ const emailFilterOptions = computed(() => [
 
 function onSidebarSelectView(viewId) {
   if (viewId === 'unread') {
+    mailboxScopeAllMail.value = true;
     selectedMailboxFilter.value = null;
     selectedGmailLabelId.value = null;
     emailFilter.value = 'unread';
@@ -1275,6 +1278,7 @@ function onSidebarSelectView(viewId) {
 function onSidebarSelectMail(mailId) {
   selectedThreadIds.value = [];
   if (mailId === 'all') {
+    mailboxScopeAllMail.value = true;
     selectedMailboxFilter.value = null;
     selectedGmailLabelId.value = null;
     emailFilter.value = 'all';
@@ -1282,6 +1286,7 @@ function onSidebarSelectMail(mailId) {
     return;
   }
   if (mailId === 'sent') {
+    mailboxScopeAllMail.value = true;
     selectedMailboxFilter.value = null;
     selectedGmailLabelId.value = null;
     emailFilter.value = 'sent';
@@ -1364,8 +1369,19 @@ function sidebarFolderActive(filterValue) {
     : 'text-neutral-800 hover:bg-neutral-200/70 dark:text-gray-200 dark:hover:bg-gray-800/70';
 }
 
+function applyDefaultMailboxSelection() {
+  if (selectedMailboxFilter.value) {
+    const exists = mailboxes.value.some((m) => String(m.id) === String(selectedMailboxFilter.value));
+    if (!exists) selectedMailboxFilter.value = null;
+  }
+  if (!selectedMailboxFilter.value && !mailboxScopeAllMail.value && ownedPersonalMailbox.value?.id) {
+    selectedMailboxFilter.value = ownedPersonalMailbox.value.id;
+  }
+}
+
 function selectMailboxFilter(mailboxId) {
   selectedMailboxFilter.value = mailboxId;
+  mailboxScopeAllMail.value = !mailboxId;
   selectedGmailLabelId.value = null;
   selectedThreadIds.value = [];
   refreshInboxThreadsAndCounts();
@@ -2053,6 +2069,7 @@ const fetchMailboxes = async () => {
       if (gmailSidebarMailbox.value?.gmailInboxSync?.connected) {
         loadGmailLabelCatalog();
       }
+      applyDefaultMailboxSelection();
     } else {
       mailboxes.value = [];
       mailboxesError.value = res?.message || 'Unable to load mailboxes';
@@ -2071,14 +2088,19 @@ const deletePersonalMailbox = async () => {
   if (!mb?.id || !mailboxFlags.value.canDeletePersonal) return;
   const confirmed =
     typeof window !== 'undefined'
-    && window.confirm(
-      'Remove your personal mailbox?\n\nExisting conversations stay in the inbox but are no longer tied to this mailbox. Turn off email forwarding in Gmail or Microsoft 365 if you configured it.'
-    );
+    && window.confirm(t('inbox.mailboxDetailsRemovePersonalConfirm'));
   if (!confirmed) return;
+
+  const deleteEmails =
+    typeof window !== 'undefined'
+    && window.confirm(t('inbox.mailboxDetailsRemovePersonalDeleteEmailsConfirm'));
 
   mailboxActionLoading.value = true;
   try {
-    const res = await apiClient(`/mailboxes/${encodeURIComponent(mb.id)}`, { method: 'DELETE' });
+    const res = await apiClient(`/mailboxes/${encodeURIComponent(mb.id)}`, {
+      method: 'DELETE',
+      params: deleteEmails ? { deleteEmails: 'true' } : undefined
+    });
     if (res?.success) {
       if (selectedMailboxFilter.value && String(selectedMailboxFilter.value) === String(mb.id)) {
         selectedMailboxFilter.value = null;
@@ -2087,16 +2109,20 @@ const deletePersonalMailbox = async () => {
       await fetchEmailThreads();
       const warn = Array.isArray(res.warnings) ? res.warnings[0] : null;
       if (warn) notifications.warning(warn);
-      else notifications.success('Personal mailbox removed');
+      else if (deleteEmails) {
+        notifications.success(t('inbox.mailboxDetailsRemovePersonalSuccessWithEmails'));
+      } else {
+        notifications.success(t('inbox.mailboxDetailsRemovePersonalSuccess'));
+      }
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('litedesk:mailbox-connected'));
       }
     } else {
-      notifications.error(res?.message || 'Could not remove personal mailbox');
+      notifications.error(res?.message || t('inbox.mailboxDetailsRemovePersonalError'));
     }
   } catch (err) {
     notifications.error(
-      err?.response?.data?.message || err?.message || 'Could not remove personal mailbox'
+      err?.response?.data?.message || err?.message || t('inbox.mailboxDetailsRemovePersonalError')
     );
   } finally {
     mailboxActionLoading.value = false;

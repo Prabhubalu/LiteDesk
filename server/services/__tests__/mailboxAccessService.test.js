@@ -52,9 +52,9 @@ describe('mailboxAccessService (R1)', () => {
     assert.notEqual(assertGmailSyncManageAccess(groupMb, member), null);
   });
 
-  it('restricts personal mailbox threads to owner and admin', () => {
+  it('restricts personal mailbox threads to owner only', () => {
     assert.equal(canUserAccessMailboxThreads(owner, personalMb), true);
-    assert.equal(canUserAccessMailboxThreads(admin, personalMb), true);
+    assert.equal(canUserAccessMailboxThreads(admin, personalMb), false);
     assert.equal(canUserAccessMailboxThreads(member, personalMb), false);
   });
 
@@ -67,6 +67,13 @@ describe('mailboxAccessService (R1)', () => {
       groupMbWithId,
       otherPersonal
     ]);
+    assert.deepEqual(ids.map(String), ['mb-group']);
+  });
+
+  it('excludes other users personal mailboxes for admins', async () => {
+    const groupMbWithId = { _id: 'mb-group', kind: 'group', ownerUserId: null, memberUserIds: [] };
+    const otherPersonal = { _id: 'mb-other', kind: 'personal', ownerUserId: 'u9', memberUserIds: [] };
+    const ids = await getAccessibleMailboxIds(admin, 'org1', [groupMbWithId, otherPersonal]);
     assert.deepEqual(ids.map(String), ['mb-group']);
   });
 });

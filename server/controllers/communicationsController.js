@@ -1555,8 +1555,12 @@ exports.getThreadMessages = async (req, res) => {
         _id: { $in: mailboxIds },
         organizationId: orgId
       }).lean();
-      const hasAccess = mailboxes.some((mb) => canUserAccessMailboxThreads(req.user, mb));
-      if (!hasAccess) {
+      const mailboxById = new Map(mailboxes.map((mb) => [String(mb._id), mb]));
+      const allAccessible = mailboxIds.every((id) => {
+        const mb = mailboxById.get(id);
+        return mb && canUserAccessMailboxThreads(req.user, mb);
+      });
+      if (!allAccessible) {
         return res.status(403).json({
           success: false,
           message: 'Not allowed to view this thread'

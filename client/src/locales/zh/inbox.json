@@ -1130,5 +1130,29 @@
   "mailboxDetailsRemoveGroupError": {
     "message": "Could not remove group mailbox",
     "description": "Toast when shared mailbox deletion fails"
+  },
+  "mailboxDetailsRemovePersonalConfirm": {
+    "message": "Remove your personal mailbox?\n\nTurn off email forwarding in Gmail or Microsoft 365 if you configured it.",
+    "description": "Confirm before deleting a personal mailbox"
+  },
+  "mailboxDetailsRemovePersonalDeleteEmailsConfirm": {
+    "message": "Also delete all emails from this mailbox?\n\nThis permanently removes those messages from your workspace. Choose Cancel to keep the emails but remove the mailbox connection.",
+    "description": "Second confirm: delete emails tied to personal mailbox"
+  },
+  "mailboxDetailsRemovePersonalSuccess": {
+    "message": "Personal mailbox removed",
+    "description": "Toast after personal mailbox deletion when emails are kept"
+  },
+  "mailboxDetailsRemovePersonalSuccessWithEmails": {
+    "message": "Personal mailbox and its emails removed",
+    "description": "Toast after personal mailbox deletion when emails are deleted"
+  },
+  "mailboxDetailsRemovePersonalError": {
+    "message": "Could not remove personal mailbox",
+    "description": "Toast when personal mailbox deletion fails"
+  },
+  "inboxSidebarSelectMailbox": {
+    "message": "Select mailbox",
+    "description": "Placeholder for inbox sidebar mailbox dropdown"
   }
 }

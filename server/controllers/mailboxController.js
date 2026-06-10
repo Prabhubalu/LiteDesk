@@ -4,8 +4,15 @@
  * ============================================================================
  */
 
+const fs = require('fs');
+const path = require('path');
 const mongoose = require('mongoose');
 const Mailbox = require('../models/Mailbox');
+const CommunicationEvent = require('../models/CommunicationEvent');
+const CommunicationThreadMeta = require('../models/CommunicationThreadMeta');
+const ThreadView = require('../models/ThreadView');
+const EmailThreadRegistry = require('../models/EmailThreadRegistry');
+const { uploadsDir } = require('../middleware/uploadMiddleware');
 const { isTenantAdmin, canUserAccessMailboxThreads } = require('../services/mailboxAccessService');
 const { loadWorkspaceThreadSummaries } = require('../services/workspaceThreadSummariesService');
 const {
@@ -40,12 +47,28 @@ const {
 } = require('../services/inboundParserProvisioningService');
 const Communication = require('../models/Communication');
 const { getPublicInboundParserStatus } = require('../services/inboundParserConfigService');
+const { resolveParserIdsForMailbox } = require('../utils/parserIdCodec');
 
 function toId(value) {
   if (value == null) return null;
   if (value instanceof mongoose.Types.ObjectId) return value;
   if (mongoose.Types.ObjectId.isValid(String(value))) return new mongoose.Types.ObjectId(String(value));
   return null;
+}
+
+/** Assign unique parser tenant/mailbox ids at creation (personal + group). */
+async function persistUniqueParserIds(mailboxDoc, organizationId) {
+  const { parserTenantId, parserMailboxId } = resolveParserIdsForMailbox({
+    organizationId,
+    mailbox: mailboxDoc
+  });
+  await Mailbox.updateOne(
+    { _id: mailboxDoc._id, organizationId },
+    { $set: { parserTenantId, parserMailboxId } }
+  );
+  mailboxDoc.parserTenantId = parserTenantId;
+  mailboxDoc.parserMailboxId = parserMailboxId;
+  return mailboxDoc;
 }
 
 function serializeMailbox(doc) {
@@ -220,6 +243,7 @@ async function createMailbox(req, res) {
         syncStatus: 'not_configured',
         parserProvisionStatus: 'pending'
       });
+      await persistUniqueParserIds(doc, orgId);
       const provision = await provisionMailboxWithParser({
         organizationId: orgId,
         mailbox: doc
@@ -251,6 +275,7 @@ async function createMailbox(req, res) {
       syncStatus: 'not_configured',
       parserProvisionStatus: 'pending'
     });
+    await persistUniqueParserIds(doc, orgId);
     const provision = await provisionMailboxWithParser({
       organizationId: orgId,
       mailbox: doc
@@ -285,6 +310,132 @@ function canEditMailbox(user, mailboxLean) {
 function canDeleteMailbox(user, mailboxLean) {
   if (!mailboxLean) return false;
   return canEditMailbox(user, mailboxLean);
+}
+
+function collectCommunicationThreadIds(communications) {
+  const set = new Set();
+  for (const c of communications) {
+    const tid = c.threadId != null ? String(c.threadId) : String(c._id);
+    if (tid) set.add(tid);
+  }
+  return [...set];
+}
+
+function buildThreadPresenceOr(threadIds) {
+  const oidStrings = new Set();
+  const oids = [];
+  for (const k of threadIds) {
+    if (mongoose.Types.ObjectId.isValid(k) && String(new mongoose.Types.ObjectId(k)) === k) {
+      oidStrings.add(k);
+      oids.push(new mongoose.Types.ObjectId(k));
+    }
+  }
+  const orPart = [];
+  if (oids.length > 0) {
+    orPart.push({ threadId: { $in: oids } });
+    orPart.push({
+      _id: { $in: oids },
+      $or: [{ threadId: null }, { threadId: { $exists: false } }]
+    });
+  }
+  for (const k of threadIds) {
+    if (!oidStrings.has(k)) {
+      orPart.push({ threadId: k });
+    }
+  }
+  return orPart;
+}
+
+async function deleteCommunicationsForMailbox(orgId, mailboxId) {
+  const communications = await Communication.find({
+    organizationId: orgId,
+    mailboxId,
+    kind: 'email'
+  })
+    .select('_id threadId attachments')
+    .lean();
+
+  if (!communications.length) {
+    return { deleted: 0 };
+  }
+
+  const commIds = communications.map((c) => c._id);
+  const threadIds = collectCommunicationThreadIds(communications);
+
+  for (const c of communications) {
+    for (const att of c.attachments || []) {
+      const rel = att?.storagePath;
+      if (!rel) continue;
+      const full = path.join(uploadsDir, rel);
+      try {
+        if (fs.existsSync(full)) fs.unlinkSync(full);
+      } catch {
+        /* ignore attachment cleanup failures */
+      }
+    }
+  }
+
+  await CommunicationEvent.deleteMany({
+    organizationId: orgId,
+    communicationId: { $in: commIds }
+  });
+  await Communication.deleteMany({ _id: { $in: commIds } });
+
+  const threadIdsToClean = [];
+  for (const threadId of threadIds) {
+    const orPart = buildThreadPresenceOr([threadId]);
+    if (!orPart.length) continue;
+    const remaining = await Communication.countDocuments({
+      organizationId: orgId,
+      kind: 'email',
+      $or: orPart
+    });
+    if (remaining === 0) {
+      threadIdsToClean.push(threadId);
+    }
+  }
+
+  if (threadIdsToClean.length) {
+    const threadOidStrings = new Set();
+    const threadOids = [];
+    for (const k of threadIdsToClean) {
+      if (mongoose.Types.ObjectId.isValid(k) && String(new mongoose.Types.ObjectId(k)) === k) {
+        threadOidStrings.add(k);
+        threadOids.push(new mongoose.Types.ObjectId(k));
+      }
+    }
+    const threadOr = [];
+    if (threadOids.length) threadOr.push({ threadId: { $in: threadOids } });
+    for (const k of threadIdsToClean) {
+      if (!threadOidStrings.has(k)) threadOr.push({ threadId: k });
+    }
+    if (threadOr.length) {
+      await ThreadView.deleteMany({ organizationId: orgId, $or: threadOr });
+      await CommunicationThreadMeta.deleteMany({ organizationId: orgId, $or: threadOr });
+    }
+
+    const conversationIds = threadIdsToClean.map((k) =>
+      mongoose.Types.ObjectId.isValid(k) ? new mongoose.Types.ObjectId(k) : k
+    );
+    await EmailThreadRegistry.deleteMany({
+      tenantId: orgId,
+      conversationId: { $in: conversationIds }
+    });
+  }
+
+  await EmailThreadRegistry.updateMany(
+    { tenantId: orgId, mailboxId },
+    { $set: { mailboxId: null, mailboxType: 'none' } }
+  );
+
+  return { deleted: commIds.length };
+}
+
+function parseDeleteEmailsFlag(req) {
+  const q = req.query?.deleteEmails;
+  if (q === 'true' || q === '1') return true;
+  if (q === 'false' || q === '0') return false;
+  return req.body?.deleteEmails === true;
 }
 
 /**
@@ -324,10 +475,17 @@ async function deleteMailbox(req, res) {
       mailbox
     });
 
-    await Communication.updateMany(
-      { organizationId: orgId, mailboxId: id },
-      { $set: { mailboxId: null } }
-    );
+    const deleteEmails = mailbox.kind === 'personal' && parseDeleteEmailsFlag(req);
+    let emailsDeleted = 0;
+    if (deleteEmails) {
+      const emailResult = await deleteCommunicationsForMailbox(orgId, id);
+      emailsDeleted = emailResult.deleted;
+    } else {
+      await Communication.updateMany(
+        { organizationId: orgId, mailboxId: id },
+        { $set: { mailboxId: null } }
+      );
+    }
 
     const parserTenantId = String(mailbox.parserTenantId || '').trim();
     const parserMailboxId = String(mailbox.parserMailboxId || '').trim();
@@ -355,6 +513,7 @@ async function deleteMailbox(req, res) {
       data: {
         deleted: true,
         mailboxId: String(id),
+        emailsDeleted,
         parserDeprovision
       },
       ...(warnings.length ? { warnings } : {})
