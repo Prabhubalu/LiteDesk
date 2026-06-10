@@ -35,6 +35,19 @@ function collectThreadedCommunicationIds(emailThreads = []) {
   return ids;
 }
 
+function isMailroomEmailTimelineActivity(activity) {
+  const meta = activity?.metadata || {};
+  return meta.source === 'mailroom' && Boolean(String(meta.mailroomMessageId || '').trim());
+}
+
+function shouldSkipActivityAsThreadedEmail(activity, threadedCommIds) {
+  const commId = String(activity?.metadata?.communicationId || '').trim();
+  if (commId && threadedCommIds.has(commId)) return true;
+  // Communications are canonical in the email conversation feed; mailroom rows duplicate them.
+  if (isMailroomEmailTimelineActivity(activity) && threadedCommIds.size > 0) return true;
+  return false;
+}
+
 function activityTimestamp(activity) {
   return activity?.createdAt || activity?.updatedAt || new Date().toISOString();
 }
@@ -186,8 +199,7 @@ export function buildCaseEmailConversationItems({
     }
 
     if (isCaseEmailMessageActivity(activity)) {
-      const commId = String(activity?.metadata?.communicationId || '').trim();
-      if (commId && threadedCommIds.has(commId)) continue;
+      if (shouldSkipActivityAsThreadedEmail(activity, threadedCommIds)) continue;
       const normalized = caseActivityToEmailMessage(activity, caseRecord);
       const inbound = normalized.direction === 'inbound';
       const isFirstInbound = inbound && !sawOutbound;

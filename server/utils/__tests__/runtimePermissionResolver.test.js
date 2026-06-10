@@ -248,6 +248,40 @@ test('materializeRuntimePermissionsOnUser attaches runtime + org context', async
   assert.equal(user._permissionRuntime.modulesByApp.HELPDESK.cases.view, true);
 });
 
+test('tenant Admin role resolves cases.view even when role matrix defaults are false', () => {
+  const orgContext = buildOrgPermissionContext({
+    enabledApps: [
+      { appKey: 'SALES', status: 'ACTIVE' },
+      { appKey: 'HELPDESK', status: 'ACTIVE' }
+    ],
+    moduleOverrides: {}
+  });
+
+  const user = {
+    role: 'admin',
+    _isTenantPrivileged: true,
+    permissions: {},
+    _permissionRuntime: {
+      envelope: { cases: { view: true, create: true, edit: true, delete: true, viewAll: true } },
+      modulesByApp: {
+        HELPDESK: {
+          cases: { view: false, create: false, edit: false, delete: false, viewAll: false }
+        }
+      },
+      flat: {}
+    },
+    _orgPermissionContext: orgContext
+  };
+
+  assert.equal(
+    resolveRuntimePermission(user, 'cases', 'view', {
+      appKey: 'HELPDESK',
+      orgContext
+    }),
+    true
+  );
+});
+
 test('commercial participation requires SALES not INVENTORY alone', () => {
   assert.equal(commercialParticipationActive(['INVENTORY']), false);
   assert.equal(commercialParticipationActive(['SALES']), true);

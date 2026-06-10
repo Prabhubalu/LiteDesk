@@ -11354,5 +11354,9 @@
   "inviteSuggestedTaskPresetCasesMessage": {
     "message": "Review assigned support cases",
     "description": "Suggested task preset message"
+  },
+  "roleDrawerSummaryFullTenantAccess": {
+    "message": "Full access to all enabled modules and applications",
+    "description": "Access summary for Owner and Admin system roles"
   }
 }

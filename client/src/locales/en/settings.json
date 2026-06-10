@@ -3439,6 +3439,10 @@
     "message": "Can view all records across modules (ownership bypass)",
     "description": "Access summary line"
   },
+  "roleDrawerSummaryFullTenantAccess": {
+    "message": "Full access to all enabled modules and applications",
+    "description": "Access summary for Owner and Admin system roles"
+  },
   "roleDrawerSummaryManageTeam": {
     "message": "Can manage team members and assignments",
     "description": "Access summary line"

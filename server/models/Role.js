@@ -320,8 +320,66 @@ roleSchema.statics.getHierarchy = async function(organizationId) {
     return rootRoles;
 };
 
+function buildFullPrivilegedRolePermissions() {
+    const fullCrudAll = {
+        create: true,
+        read: true,
+        update: true,
+        delete: true,
+        export: true,
+        import: true,
+        scope: 'all'
+    };
+    const fullCrudNoImport = {
+        create: true,
+        read: true,
+        update: true,
+        delete: true,
+        export: true,
+        scope: 'all'
+    };
+    const fullEvents = {
+        create: true,
+        read: true,
+        update: true,
+        delete: true,
+        scope: 'all'
+    };
+
+    return {
+        contacts: { ...fullCrudAll },
+        organizations: { ...fullCrudAll },
+        deals: { ...fullCrudAll },
+        tasks: { ...fullCrudNoImport },
+        events: { ...fullEvents },
+        forms: { ...fullCrudAll },
+        items: { ...fullCrudAll },
+        cases: { create: true, read: true, update: true, delete: true, scope: 'all' },
+        reports: { create: true, read: true, update: true, delete: true, export: true },
+        users: { create: true, read: true, update: true, delete: true, manageRoles: true },
+        settings: { view: true, edit: true, manageRoles: true, manageBilling: true },
+        performance: {
+            targets: {
+                view: true,
+                create: true,
+                edit: true,
+                activate: true,
+                manageTypes: true,
+                manageOrgSettings: true
+            }
+        }
+    };
+}
+
+const PRIVILEGED_SYSTEM_ROLE_FLAGS = {
+    canViewAllData: true,
+    canManageTeam: true,
+    canExportData: true
+};
+
 // Static method to create default roles for new organization
 roleSchema.statics.createDefaultRoles = async function(organizationId) {
+    const fullPermissions = buildFullPrivilegedRolePermissions();
     const defaultRoles = [
         {
             organizationId,
@@ -331,65 +389,19 @@ roleSchema.statics.createDefaultRoles = async function(organizationId) {
             level: 0,
             color: '#9333ea',
             icon: 'crown',
-            permissions: {
-                contacts: { create: true, read: true, update: true, delete: true, export: true, import: true, scope: 'all' },
-                organizations: { create: true, read: true, update: true, delete: true, export: true, import: true, scope: 'all' },
-                deals: { create: true, read: true, update: true, delete: true, export: true, import: true, scope: 'all' },
-                tasks: { create: true, read: true, update: true, delete: true, export: true, scope: 'all' },
-                events: { create: true, read: true, update: true, delete: true, scope: 'all' },
-                forms: { create: true, read: true, update: true, delete: true, export: true, import: true, scope: 'all' },
-                items: { create: true, read: true, update: true, delete: true, export: true, import: true, scope: 'all' },
-                reports: { create: true, read: true, update: true, delete: true, export: true },
-                users: { create: true, read: true, update: true, delete: true, manageRoles: true },
-                settings: { view: true, edit: true, manageRoles: true, manageBilling: true },
-                performance: {
-                    targets: {
-                        view: true,
-                        create: true,
-                        edit: true,
-                        activate: true,
-                        manageTypes: true,
-                        manageOrgSettings: true
-                    }
-                }
-            },
-            canViewAllData: true,
-            canManageTeam: true,
-            canExportData: true
+            permissions: fullPermissions,
+            ...PRIVILEGED_SYSTEM_ROLE_FLAGS
         },
         {
             organizationId,
             name: 'Admin',
-            description: 'Administrative access with most permissions',
+            description: 'Full administrative access with all permissions',
             isSystemRole: true,
             level: 1,
             color: '#ef4444',
             icon: 'shield',
-            permissions: {
-                contacts: { create: true, read: true, update: true, delete: true, export: true, import: true, scope: 'all' },
-                organizations: { create: true, read: true, update: true, delete: false, export: true, import: true, scope: 'all' },
-                deals: { create: true, read: true, update: true, delete: true, export: true, import: true, scope: 'all' },
-                tasks: { create: true, read: true, update: true, delete: true, export: true, scope: 'all' },
-                events: { create: true, read: true, update: true, delete: true, scope: 'all' },
-                forms: { create: true, read: true, update: true, delete: true, export: true, import: true, scope: 'all' },
-                items: { create: true, read: true, update: true, delete: true, export: true, import: true, scope: 'all' },
-                reports: { create: true, read: true, update: true, delete: false, export: true },
-                users: { create: true, read: true, update: true, delete: false, manageRoles: false },
-                settings: { view: true, edit: true, manageRoles: false, manageBilling: false },
-                performance: {
-                    targets: {
-                        view: true,
-                        create: true,
-                        edit: true,
-                        activate: true,
-                        manageTypes: true,
-                        manageOrgSettings: false
-                    }
-                }
-            },
-            canViewAllData: true,
-            canManageTeam: true,
-            canExportData: true
+            permissions: fullPermissions,
+            ...PRIVILEGED_SYSTEM_ROLE_FLAGS
         },
         {
             organizationId,
@@ -486,6 +498,30 @@ roleSchema.statics.createDefaultRoles = async function(organizationId) {
     ];
     
     return await this.insertMany(defaultRoles);
+};
+
+roleSchema.statics.upgradePrivilegedSystemRoles = async function(organizationId) {
+    const fullPermissions = buildFullPrivilegedRolePermissions();
+    await this.updateMany(
+        { organizationId, isSystemRole: true, name: 'Owner' },
+        {
+            $set: {
+                permissions: fullPermissions,
+                description: 'Full system access with all permissions',
+                ...PRIVILEGED_SYSTEM_ROLE_FLAGS
+            }
+        }
+    );
+    await this.updateMany(
+        { organizationId, isSystemRole: true, name: 'Admin' },
+        {
+            $set: {
+                permissions: fullPermissions,
+                description: 'Full administrative access with all permissions',
+                ...PRIVILEGED_SYSTEM_ROLE_FLAGS
+            }
+        }
+    );
 };
 
 const Role = mongoose.model('Role', roleSchema);

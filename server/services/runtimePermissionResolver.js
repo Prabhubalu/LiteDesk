@@ -27,6 +27,7 @@ const {
   buildCasesEnvelopeFromAppAccess,
   ensurePermissionEnvelopeDefaults
 } = require('../utils/rolePermissionProjection');
+const { isTenantPrivilegedUser } = require('../utils/tenantPrivilegedAccess');
 
 function viewAllForModule(mod, rolePlain) {
   const m = toPlainObject(mod);
@@ -389,6 +390,10 @@ function resolveRuntimePermission(user, module, action, options = {}) {
     }
   }
 
+  if (isTenantPrivilegedUser(user)) {
+    return true;
+  }
+
   const runtime = user._permissionRuntime;
   if (runtime) {
     return readGrantFromRuntime(runtime, storageModule, envelopeAction, effectiveAppKey);
@@ -564,6 +569,10 @@ function resolveStringPermission(user, permission, options = {}) {
   const orgContext = options.orgContext || user._orgPermissionContext || null;
   if (!passesOrgGuardsForStringPermission(orgContext, parsed)) {
     return false;
+  }
+
+  if (isTenantPrivilegedUser(user)) {
+    return true;
   }
 
   const effectiveAppKey =

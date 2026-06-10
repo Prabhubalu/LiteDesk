@@ -20,6 +20,7 @@ const {
   passesOrgGuardsForStringPermission,
   parsePermissionString
 } = require('../services/runtimePermissionResolver');
+const { isTenantPrivilegedUser } = require('../utils/tenantPrivilegedAccess');
 
 const SECURITY_DISABLED = process.env.DISABLE_SECURITY === 'true';
 
@@ -61,7 +62,7 @@ module.exports = function requirePermission(permission) {
       });
     }
 
-    if (user.isOwner) {
+    if (user.isOwner || isTenantPrivilegedUser(user)) {
       return next();
     }
 
