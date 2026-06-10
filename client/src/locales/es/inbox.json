@@ -1154,5 +1154,13 @@
   "inboxSidebarSelectMailbox": {
     "message": "Select mailbox",
     "description": "Placeholder for inbox sidebar mailbox dropdown"
+  },
+  "inboxSidebarMailboxSwitcher": {
+    "message": "Switch mailbox",
+    "description": "Aria label for inbox sidebar mailbox switcher"
+  },
+  "inboxSidebarMailboxCount": {
+    "message": "{count} mailboxes",
+    "description": "Subtitle when all mail is selected showing mailbox count"
   }
 }

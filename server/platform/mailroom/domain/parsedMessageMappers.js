@@ -1,5 +1,28 @@
 const { buildNormalizedMessage } = require('./normalizedMessage');
 
+function parserAddressToNormalized(value) {
+  if (!value) return null;
+  if (typeof value === 'string') {
+    const address = value.trim();
+    return address ? { address } : null;
+  }
+  if (typeof value === 'object') {
+    const address = String(value.address || value.email || '').trim();
+    if (!address) return null;
+    return { address, name: value.name ? String(value.name).trim() : '' };
+  }
+  return null;
+}
+
+function parserAddressListToNormalized(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value.map(parserAddressToNormalized).filter(Boolean);
+  }
+  const one = parserAddressToNormalized(value);
+  return one ? [one] : [];
+}
+
 function mapParsedMimeToNormalized(parsedMessage = {}) {
   return buildNormalizedMessage({
     channel: 'email',
@@ -49,8 +72,9 @@ function mapParserApiMessageToNormalized(msg = {}, eventDoc = {}) {
     references: msg.references || null,
     participants: {
       from: fromAddr ? { address: fromAddr } : null,
-      to: [],
-      cc: []
+      to: parserAddressListToNormalized(msg.to || msg.toAddresses),
+      cc: parserAddressListToNormalized(msg.cc || msg.ccAddresses),
+      bcc: parserAddressListToNormalized(msg.bcc || msg.bccAddresses)
     },
     receivedAt: eventDoc.receivedAt || msg.receivedAt || new Date(),
     metadata: {
