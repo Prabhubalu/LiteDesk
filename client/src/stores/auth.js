@@ -266,6 +266,8 @@ export const useAuthStore = defineStore('auth', {
                 mustChangePassword: userData.mustChangePassword === true,
                 onboarding: userData.onboarding || null,
                 firstName: userData.firstName,
+                lastName: userData.lastName,
+                avatar: userData.avatar || '',
             };
             
             if (userData.organization) {

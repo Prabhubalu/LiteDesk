@@ -1,8 +1,8 @@
 <template>
   <div class="flex-shrink-0">
     <img
-      v-if="avatar"
-      :src="avatar"
+      v-if="resolvedAvatar"
+      :src="resolvedAvatar"
       :alt="displayName"
       class="object-cover rounded-full"
       :class="sizeClass"
@@ -19,6 +19,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
+import { getApiUrlForFetch } from '@/config/apiBase';
 
 const props = defineProps({
   firstName: {
@@ -30,6 +31,10 @@ const props = defineProps({
     default: ''
   },
   email: {
+    type: String,
+    default: ''
+  },
+  username: {
     type: String,
     default: ''
   },
@@ -57,16 +62,36 @@ const sizeClass = computed(() => {
   return sizes[props.size] || sizes.md;
 });
 
+const resolvedAvatar = computed(() => {
+  const url = String(props.avatar || '').trim();
+  if (!url) return '';
+  if (
+    url.startsWith('http://')
+    || url.startsWith('https://')
+    || url.startsWith('data:')
+    || url.startsWith('blob:')
+  ) {
+    return url;
+  }
+  return getApiUrlForFetch(url);
+});
+
 // Get initials (first letter of first name + first letter of last name)
 const initials = computed(() => {
   const first = props.firstName?.trim()?.[0]?.toUpperCase() || '';
   const last = props.lastName?.trim()?.[0]?.toUpperCase() || '';
-  
+
   if (first && last) {
     return `${first}${last}`;
   }
   if (first) {
     return first;
+  }
+  const username = props.username?.trim() || '';
+  if (username) {
+    const seg = username.split(/[^a-z0-9]/i).filter(Boolean);
+    if (seg.length >= 2) return (seg[0][0] + seg[1][0]).toUpperCase();
+    return (seg[0]?.slice(0, 2) || 'U').toUpperCase();
   }
   if (props.email) {
     return props.email[0].toUpperCase();

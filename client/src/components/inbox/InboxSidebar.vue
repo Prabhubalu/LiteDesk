@@ -7,11 +7,16 @@
     <!-- Profile + compose -->
     <div class="flex items-start gap-2 px-4 pb-3 pt-4">
       <div class="flex min-w-0 flex-1 items-center gap-2.5">
-        <img
-          :src="userAvatar"
-          :alt="userDisplayName"
-          class="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-black/5 dark:ring-white/10"
-        />
+        <div class="shrink-0 ring-1 ring-black/5 dark:ring-white/10 rounded-full">
+          <AvatarInitials
+            :first-name="authStore.user?.firstName"
+            :last-name="authStore.user?.lastName"
+            :email="authStore.user?.email"
+            :username="authStore.user?.username"
+            :avatar="authStore.user?.avatar"
+            size="sm"
+          />
+        </div>
         <div class="min-w-0 flex-1">
           <p class="truncate text-[13px] font-medium leading-tight text-[#37352F] dark:text-gray-100">
             {{ userDisplayName }}
@@ -185,6 +190,7 @@ import {
   UserGroupIcon
 } from '@heroicons/vue/24/outline';
 import { useAuthStore } from '@/stores/authRegistry';
+import AvatarInitials from '@/components/ui/AvatarInitials.vue';
 
 export interface SidebarNavItem {
   id: string;
@@ -233,9 +239,6 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const authStore = useAuthStore();
 
-const DEFAULT_AVATAR =
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=128&h=128&q=80';
-
 const userDisplayName = computed(() => {
   const u = authStore.user;
   if (!u) return '';
@@ -243,8 +246,6 @@ const userDisplayName = computed(() => {
 });
 
 const userEmail = computed(() => String(authStore.user?.email || '').trim());
-
-const userAvatar = computed(() => authStore.user?.avatar || DEFAULT_AVATAR);
 
 function navItemClass(active: boolean) {
   return active

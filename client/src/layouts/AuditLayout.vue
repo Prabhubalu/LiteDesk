@@ -40,10 +40,13 @@
             <MenuButton
               class="inline-flex items-center justify-center rounded-full overflow-hidden w-8 h-8 flex-shrink-0 ring-1 ring-gray-200 dark:ring-gray-600 hover:ring-gray-300 dark:hover:ring-gray-500 transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
-              <img
-                :src="auditHeaderAvatarUrl"
-                :alt="authStore.user?.username || 'User'"
-                class="w-full h-full object-cover"
+              <AvatarInitials
+                :first-name="authStore.user?.firstName"
+                :last-name="authStore.user?.lastName"
+                :email="authStore.user?.email"
+                :username="authStore.user?.username"
+                :avatar="authStore.user?.avatar"
+                size="sm"
               />
             </MenuButton>
             <transition
@@ -273,18 +276,13 @@ import NotificationDrawer from '@/components/notifications/NotificationDrawer.vu
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarSkeleton from '@/components/AppSidebarSkeleton.vue';
 import TabBar from '@/components/TabBar.vue';
+import AvatarInitials from '@/components/ui/AvatarInitials.vue';
 import { configureTabsStorage, useTabs } from '@/composables/useTabs';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
-const DEFAULT_AVATAR =
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=128&h=128&q=80';
-
-const auditHeaderAvatarUrl = computed(
-  () => authStore.user?.avatar || DEFAULT_AVATAR
-);
 const appShellStore = useAppShellStore();
 const { colorMode, toggleColorMode } = useColorMode();
 const { collapsed } = useSidebarState();

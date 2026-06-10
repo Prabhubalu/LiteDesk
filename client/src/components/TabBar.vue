@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import clickOutside from '@/directives/clickOutside';
 import NotificationBell from '@/components/notifications/NotificationBell.vue';
 import UserMenu from '@/components/UserMenu.vue';
+import AvatarInitials from '@/components/ui/AvatarInitials.vue';
 import { useUserStatus } from '@/composables/useUserStatus';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
 import { resolveTabTitleWithHelpdeskAlerts } from '@/utils/helpdeskTabAlerts';
@@ -52,13 +53,6 @@ function tabAlertRingClass(tab) {
   if (tab.alertKind === 'case') return 'tab-helpdesk-alert-icon__ring--case';
   return 'tab-helpdesk-alert-icon__ring--email';
 }
-
-const DEFAULT_AVATAR =
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=128&h=128&q=80';
-
-const workspaceAvatarUrl = computed(
-  () => authStore.user?.avatar || DEFAULT_AVATAR
-);
 
 const currentUserId = computed(() => authStore.user?._id || null);
 const { currentPreset: userStatusPreset } = useUserStatus(currentUserId);
@@ -522,7 +516,14 @@ onUnmounted(() => {
             :aria-expanded="showProfileDropdown"
             @click.stop="toggleProfileDropdown"
           >
-            <img :src="workspaceAvatarUrl" alt="" class="w-full h-full rounded-full object-cover" />
+            <AvatarInitials
+              :first-name="authStore.user?.firstName"
+              :last-name="authStore.user?.lastName"
+              :email="authStore.user?.email"
+              :username="authStore.user?.username"
+              :avatar="authStore.user?.avatar"
+              size="sm"
+            />
             <span
               :class="[
                 'absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-gray-800',
