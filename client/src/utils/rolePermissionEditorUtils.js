@@ -201,13 +201,41 @@ function summarizeSection(section, modules, permissions) {
   };
 }
 
+export function applyFullAccessToAllModules(permissions, modules) {
+  if (!permissions || !Array.isArray(modules)) return permissions;
+  for (const module of modules) {
+    const perms = permissions[module.key];
+    if (!perms) continue;
+    applyModuleAccessMode(module, perms, 'full');
+    getAdvancedActionsForModule(module).forEach((action) => {
+      perms[action] = true;
+    });
+    if (module.hasScope) perms.scope = 'all';
+    if (module.supportsViewAll) perms.viewAll = true;
+  }
+  return permissions;
+}
+
+export function isFullyPrivilegedSystemRoleName(roleName) {
+  const name = String(roleName || '').trim();
+  return name === 'Owner' || name === 'Admin';
+}
+
 /**
  * Human-readable access summary bullets for the role drawer.
  * @returns {{ text: string, tone: 'positive'|'neutral'|'muted'|'warning' }[]}
  */
-export function buildRoleAccessSummary({ permissions, modules, sections, form }) {
+export function buildRoleAccessSummary({ permissions, modules, sections, form, roleName }) {
   const lines = [];
   const perms = permissions || {};
+
+  if (isFullyPrivilegedSystemRoleName(roleName)) {
+    lines.push({ i18nKey: 'roleDrawerSummaryFullTenantAccess', params: {}, tone: 'positive' });
+    lines.push({ i18nKey: 'roleDrawerSummaryViewAll', params: {}, tone: 'warning' });
+    lines.push({ i18nKey: 'roleDrawerSummaryManageUsersRoles', params: {}, tone: 'warning' });
+    lines.push({ i18nKey: 'roleDrawerSummaryManageBilling', params: {}, tone: 'warning' });
+    return lines;
+  }
 
   if (form?.canViewAllData) {
     lines.push({ i18nKey: 'roleDrawerSummaryViewAll', params: {}, tone: 'warning' });

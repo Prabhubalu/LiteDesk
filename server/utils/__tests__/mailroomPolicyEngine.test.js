@@ -1,7 +1,7 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert');
 const { buildNormalizedMessage } = require('../../platform/mailroom/domain/normalizedMessage');
-const { mapParserApiMessageToNormalized } = require('../../platform/mailroom/domain/parsedMessageMappers');
+const { mapParserApiMessageToNormalized, enrichNormalizedMessageWithMailbox } = require('../../platform/mailroom/domain/parsedMessageMappers');
 const { evaluate, evaluatePipeline } = require('../../platform/mailroom/policies/policyEngine');
 const { getTemplate } = require('../../platform/mailroom/policies/templates/defaultTemplates');
 const { validateMailroomConfig } = require('../../platform/mailroom/policies/validators/mailroomPolicyValidator');
@@ -119,6 +119,35 @@ describe('mailroom policy engine', () => {
     });
     assert.equal(ccResult.matched, true);
     assert.equal(ccResult.action.type, 'manual_review');
+  });
+
+  it('ingest policy matches mailbox email when parser message has no to header', () => {
+    const message = enrichNormalizedMessageWithMailbox(
+      mapParserApiMessageToNormalized({
+        from: 'customer@example.com',
+        subject: 'Need support'
+      }),
+      { emailAddress: 'hello@arivusystems.com', routingAddress: 'support+t_m@reply.arivusystems.com', kind: 'group' }
+    );
+    const result = evaluate('ingest', {
+      message,
+      policies: {
+        ingest: {
+          rules: [
+            {
+              id: 'mailbox-rule',
+              enabled: true,
+              match: 'all',
+              conditions: [{ field: 'to', operator: 'equals', value: 'hello@arivusystems.com' }],
+              action: { type: 'route_to_case_flow' }
+            }
+          ],
+          defaultAction: { type: 'workspace_only' }
+        }
+      }
+    });
+    assert.equal(result.matched, true);
+    assert.equal(result.action.type, 'route_to_case_flow');
   });
 
   it('case_link appends to open case', () => {

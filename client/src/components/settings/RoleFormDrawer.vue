@@ -499,13 +499,15 @@ import {
   applyModuleAccessMode,
   applyPermissionSideEffects,
   applyPermissionUncheck,
+  applyFullAccessToAllModules,
   buildRoleAccessSummary,
   chipVariantForAction,
   getAdvancedActionsForModule,
   getCrudActionsForModule,
   getModuleAccessMode,
   hasAction,
-  hasAnyAdvancedEnabled
+  hasAnyAdvancedEnabled,
+  isFullyPrivilegedSystemRoleName
 } from '@/utils/rolePermissionEditorUtils';
 
 const { t } = useI18n();
@@ -659,6 +661,9 @@ function advancedActionLabel(action) {
 
 const isEditing = computed(() => !!props.role);
 const isSystemRole = computed(() => Boolean(props.role?.isSystemRole));
+const isFullyPrivilegedSystemRole = computed(
+  () => isSystemRole.value && isFullyPrivilegedSystemRoleName(props.role?.name)
+);
 
 const headerSubtitle = computed(() => {
   if (isSystemRole.value) {
@@ -715,7 +720,8 @@ const accessSummaryLines = computed(() =>
     permissions: form.value.permissions,
     modules: permissionModules.value,
     sections: permissionSections.value,
-    form: form.value
+    form: form.value,
+    roleName: props.role?.name
   }).map((line) => ({
     tone: line.tone,
     text: t(`settings.${line.i18nKey}`, line.params || {})
@@ -816,15 +822,18 @@ const loadRoleIntoForm = () => {
   Object.keys(basePerms).forEach((m) => {
     basePerms[m] = { ...basePerms[m], ...existingPerms[m] };
   });
+  if (isFullyPrivilegedSystemRole.value) {
+    applyFullAccessToAllModules(basePerms, permissionModules.value);
+  }
   form.value = {
     name: props.role.name || '',
     description: props.role.description || '',
     parentRole: props.role.parentRole?._id || props.role.parentRole || '',
     color: props.role.color || '#6366f1',
     icon: props.role.icon || 'user',
-    canViewAllData: props.role.canViewAllData || false,
-    canManageTeam: props.role.canManageTeam || false,
-    canExportData: props.role.canExportData || false,
+    canViewAllData: isFullyPrivilegedSystemRole.value ? true : props.role.canViewAllData || false,
+    canManageTeam: isFullyPrivilegedSystemRole.value ? true : props.role.canManageTeam || false,
+    canExportData: isFullyPrivilegedSystemRole.value ? true : props.role.canExportData || false,
     permissions: basePerms
   };
 };

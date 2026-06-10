@@ -23,6 +23,52 @@ function parserAddressListToNormalized(value) {
   return one ? [one] : [];
 }
 
+function mergeParticipantAddresses(existing = [], additions = []) {
+  const seen = new Set();
+  const merged = [];
+
+  for (const entry of [...existing, ...additions]) {
+    const address = typeof entry === 'string'
+      ? entry.trim()
+      : String(entry?.address || entry?.email || '').trim();
+    if (!address) continue;
+    const key = address.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(typeof entry === 'string' ? { address } : { ...entry, address });
+  }
+
+  return merged;
+}
+
+/**
+ * Parser webhooks identify the receiving mailbox by ID; the fetched message may omit
+ * or replace the tenant-facing To address. Inject mailbox addresses for ingest routing.
+ */
+function enrichNormalizedMessageWithMailbox(normalizedMessage, mailbox = {}) {
+  if (!normalizedMessage) return normalizedMessage;
+
+  const additions = [];
+  for (const field of ['emailAddress', 'routingAddress']) {
+    const address = String(mailbox[field] || '').trim();
+    if (address) additions.push({ address });
+  }
+  if (!additions.length) return normalizedMessage;
+
+  normalizedMessage.participants = normalizedMessage.participants || {};
+  normalizedMessage.participants.to = mergeParticipantAddresses(
+    normalizedMessage.participants.to,
+    additions
+  );
+  normalizedMessage.metadata = {
+    ...(normalizedMessage.metadata || {}),
+    mailboxEmailAddress: mailbox.emailAddress || null,
+    mailboxRoutingAddress: mailbox.routingAddress || null,
+    mailboxKind: mailbox.kind || normalizedMessage.metadata?.mailboxKind || null
+  };
+  return normalizedMessage;
+}
+
 function mapParsedMimeToNormalized(parsedMessage = {}) {
   return buildNormalizedMessage({
     channel: 'email',
@@ -72,7 +118,9 @@ function mapParserApiMessageToNormalized(msg = {}, eventDoc = {}) {
     references: msg.references || null,
     participants: {
       from: fromAddr ? { address: fromAddr } : null,
-      to: parserAddressListToNormalized(msg.to || msg.toAddresses),
+      to: parserAddressListToNormalized(
+        msg.to || msg.toAddresses || msg.deliveredTo || msg.envelopeTo
+      ),
       cc: parserAddressListToNormalized(msg.cc || msg.ccAddresses),
       bcc: parserAddressListToNormalized(msg.bcc || msg.bccAddresses)
     },
@@ -86,5 +134,6 @@ function mapParserApiMessageToNormalized(msg = {}, eventDoc = {}) {
 
 module.exports = {
   mapParsedMimeToNormalized,
-  mapParserApiMessageToNormalized
+  mapParserApiMessageToNormalized,
+  enrichNormalizedMessageWithMailbox
 };

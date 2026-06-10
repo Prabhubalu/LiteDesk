@@ -28,9 +28,31 @@ function resolveActorName(msg) {
   return msg.direction === 'outbound' ? 'Agent' : 'Customer';
 }
 
+function communicationIdFromMailroomMessage(msg) {
+  const linked = msg?.linkedCommunicationId;
+  return linked ? String(linked) : null;
+}
+
+function withEmbeddedCommunicationId(mailroomAct, embeddedAct) {
+  const embeddedCommId = String(embeddedAct?.metadata?.communicationId || '').trim();
+  if (!embeddedCommId) return mailroomAct;
+
+  const existingCommId = String(mailroomAct?.metadata?.communicationId || '').trim();
+  if (existingCommId) return mailroomAct;
+
+  return {
+    ...mailroomAct,
+    metadata: {
+      ...mailroomAct.metadata,
+      communicationId: embeddedCommId
+    }
+  };
+}
+
 function mapMailroomMessageToActivity(msg, attachmentSummaries = []) {
   const isOutbound = String(msg.direction || '').toLowerCase() === 'outbound';
   const internal = msg.metadata?.internal === true;
+  const fromAddress = getFromAddress(msg.participants || msg);
   return {
     _id: `mailroom:${msg._id}`,
     activityType: isOutbound ? 'agent_message' : 'channel_message_received',
@@ -42,7 +64,9 @@ function mapMailroomMessageToActivity(msg, attachmentSummaries = []) {
       mailroomAttachments: attachmentSummaries,
       source: 'mailroom',
       subject: msg.subject || null,
-      externalMessageId: msg.externalMessageId || null
+      externalMessageId: msg.externalMessageId || null,
+      communicationId: communicationIdFromMailroomMessage(msg),
+      fromAddress: typeof fromAddress === 'string' ? fromAddress : null
     },
     actorId: null,
     actorName: resolveActorName(msg),
@@ -119,7 +143,7 @@ async function buildCaseTimelineActivities(organizationId, caseId, embeddedActiv
     const msgId = activityMailroomId(act);
 
     if (msgId && mailroomById.has(msgId)) {
-      merged.push(mailroomById.get(msgId));
+      merged.push(withEmbeddedCommunicationId(mailroomById.get(msgId), act));
       consumedMailroomIds.add(msgId);
       continue;
     }
@@ -132,7 +156,7 @@ async function buildCaseTimelineActivities(organizationId, caseId, embeddedActiv
         return preview && body && (body.includes(preview) || preview.includes(body));
       });
       if (duplicate) {
-        merged.push(duplicate);
+        merged.push(withEmbeddedCommunicationId(duplicate, act));
         consumedMailroomIds.add(String(duplicate.metadata.mailroomMessageId));
         continue;
       }

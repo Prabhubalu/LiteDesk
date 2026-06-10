@@ -394,7 +394,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
         admin: {
             contacts: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             deals: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
-            organizations: { view: true, create: true, edit: true, delete: false, viewAll: true, exportData: true },
+            organizations: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             projects: { view: true, create: true, edit: true, delete: true, viewAll: true },
             tasks: { view: true, create: true, edit: true, delete: true, viewAll: true },
             events: { view: true, create: true, edit: true, delete: true, viewAll: true },
@@ -402,7 +402,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             items: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             cases: { view: true, create: true, edit: true, delete: true, viewAll: true },
             imports: { view: true, create: true, delete: true },
-            settings: { manageUsers: true, manageBilling: false, manageIntegrations: true, customizeFields: true },
+            settings: { manageUsers: true, manageBilling: true, manageIntegrations: true, customizeFields: true },
             reports: { viewStandard: true, viewCustom: true, createCustom: true, exportReports: true }
         },
         manager: {

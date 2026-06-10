@@ -16,6 +16,10 @@
  */
 
 const mongoose = require('mongoose');
+const {
+  isPrivilegedSystemRole,
+  isTenantPrivilegedUser
+} = require('./tenantPrivilegedAccess');
 const { APP_KEYS } = require('../constants/appKeys');
 const { COMMERCIAL_PLATFORM_MODULE_KEYS } = require('../constants/commercialPlatformParticipation');
 
@@ -384,6 +388,39 @@ function roleAllowsPlatformOwnedFieldEdits(rolePlain) {
 }
 
 /**
+ * Materialize full tenant-admin envelope (Owner / Admin system roles and isOwner users).
+ * @param {import('mongoose').Document|object} user
+ * @param {object|null} [organization]
+ * @param {{ roleLean?: object|null }} [options]
+ */
+async function applyFullPrivilegedEnvelopeToUser(user, organization = null, options = {}) {
+  if (!user) return;
+
+  const { materializeRuntimePermissionsOnUser } = require('../services/runtimePermissionResolver');
+
+  if (typeof user.setPermissionsByRole === 'function') {
+    user.setPermissionsByRole('owner');
+  }
+  user._roleAllowsPlatformOwnedFieldEdit = true;
+  user._isTenantPrivileged = true;
+
+  const plain = userPermissionsEnvelopeToPlain(user);
+  plain.cases = { view: true, create: true, edit: true, delete: true, viewAll: true };
+  ensurePermissionEnvelopeDefaults(plain);
+
+  await materializeRuntimePermissionsOnUser(user, {
+    roleLean: options.roleLean || null,
+    organization,
+    appAccess: user.appAccess
+  });
+
+  user.permissions = plain;
+  if (user._permissionRuntime) {
+    user._permissionRuntime.envelope = plain;
+  }
+}
+
+/**
  * Applies projection + runtime grants + org guards to req.user / User document.
  * @param {import('mongoose').Document|object} user
  * @param {object|null} roleLean
@@ -391,6 +428,12 @@ function roleAllowsPlatformOwnedFieldEdits(rolePlain) {
  */
 async function applyProjectionToUser(user, roleLean, organization = null) {
   if (!user || !roleLean) return;
+
+  if (isPrivilegedSystemRole(roleLean)) {
+    await applyFullPrivilegedEnvelopeToUser(user, organization, { roleLean });
+    return;
+  }
+
   const { materializeRuntimePermissionsOnUser } = require('../services/runtimePermissionResolver');
   await materializeRuntimePermissionsOnUser(user, {
     roleLean,
@@ -398,6 +441,7 @@ async function applyProjectionToUser(user, roleLean, organization = null) {
     appAccess: user.appAccess
   });
   user._roleAllowsPlatformOwnedFieldEdit = roleAllowsPlatformOwnedFieldEdits(roleLean);
+  user._isTenantPrivileged = false;
 }
 
 /**
@@ -421,23 +465,8 @@ async function materializeEffectiveCRMEnvelopeOnUser(user, options = {}) {
         .lean();
     }
 
-    if (user.isOwner === true && typeof user.setPermissionsByRole === 'function') {
-      user.setPermissionsByRole('owner');
-      user._roleAllowsPlatformOwnedFieldEdit = true;
-      const plain = userPermissionsEnvelopeToPlain(user);
-      plain.cases = buildCasesEnvelopeFromAppAccess(user.appAccess);
-      ensurePermissionEnvelopeDefaults(plain);
-      await materializeRuntimePermissionsOnUser(user, {
-        organization,
-        appAccess: user.appAccess
-      });
-      user.permissions = plain;
-      user._permissionRuntime = user._permissionRuntime || {
-        envelope: plain,
-        modulesByApp: {},
-        flat: {}
-      };
-      user._permissionRuntime.envelope = plain;
+    if (user.isOwner === true || isTenantPrivilegedUser(user)) {
+      await applyFullPrivilegedEnvelopeToUser(user, organization);
       return;
     }
 
@@ -551,7 +580,9 @@ module.exports = {
   attachCommercialCoreModulesFromDeals,
   roleAllowsPlatformOwnedFieldEdits,
   applyProjectionToUser,
+  applyFullPrivilegedEnvelopeToUser,
   materializeEffectiveCRMEnvelopeOnUser,
+  isTenantPrivilegedUser,
   ensurePermissionEnvelopeDefaults,
   buildCasesEnvelopeFromAppAccess,
   enrichLeanUsersWithEffectiveCRMPermissions,

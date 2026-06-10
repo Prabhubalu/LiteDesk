@@ -7,16 +7,26 @@ const {
     invalidateTenantPermissionCaches
 } = require('../services/rolePermissionCatalogService');
 
+const upgradedPrivilegedRolesOrgs = new Set();
+
 function attachUIPermissionAliases(roleObj) {
     if (!roleObj) return roleObj;
     roleObj.permissions = expandRolePermissionsForUI(roleObj);
     return roleObj;
 }
 
+async function ensurePrivilegedSystemRolesUpgraded(organizationId) {
+    const orgKey = String(organizationId || '');
+    if (!orgKey || upgradedPrivilegedRolesOrgs.has(orgKey)) return;
+    await Role.upgradePrivilegedSystemRoles(organizationId);
+    upgradedPrivilegedRolesOrgs.add(orgKey);
+}
+
 // Get all roles for organization
 exports.getRoles = async (req, res) => {
     try {
-        let roles = await Role.find({ 
+        await ensurePrivilegedSystemRolesUpgraded(req.user.organizationId);
+        let roles = await Role.find({
             organizationId: req.user.organizationId 
         })
         .populate('parentRole', 'name')
@@ -59,7 +69,8 @@ exports.getRoleHierarchy = async (req, res) => {
 // Get single role
 exports.getRole = async (req, res) => {
     try {
-        let role = await Role.findOne({ 
+        await ensurePrivilegedSystemRolesUpgraded(req.user.organizationId);
+        let role = await Role.findOne({
             _id: req.params.id,
             organizationId: req.user.organizationId 
         }).populate('parentRole', 'name');

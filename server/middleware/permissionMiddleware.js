@@ -35,6 +35,7 @@ const {
     resolveEffectiveAppKey,
     passesOrgAuthorizationGuards
 } = require('../services/runtimePermissionResolver');
+const { isTenantPrivilegedUser } = require('../utils/tenantPrivilegedAccess');
 
 // Sales-specific modules that should only be accessible from Sales app
 const SALES_MODULES = [
@@ -134,7 +135,7 @@ const checkPermission = (module, action) => {
                 });
             }
 
-            if (user.isOwner) {
+            if (user.isOwner || isTenantPrivilegedUser(user)) {
                 return next();
             }
 
@@ -365,6 +366,7 @@ const filterByOwnership = (module) => {
             }
 
             const canViewAll =
+                isTenantPrivilegedUser(user) ||
                 (user.isOwner && orgContext.isAppEnabled(req.appKey || APP_KEYS.SALES)) ||
                 resolveRuntimePermission(user, module, 'viewAll', {
                     appKey: req.appKey,

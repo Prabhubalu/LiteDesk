@@ -46,6 +46,43 @@ describe('caseEmailConversation', () => {
     expect(items.filter((i: CaseEmailConversationItem) => i.kind === 'message')).toHaveLength(1);
   });
 
+  it('dedupes mailroom timeline activities when email threads are present', () => {
+    const items = buildCaseEmailConversationItems({
+      emailThreads: [
+        {
+          threadId: 't1',
+          messages: [
+            {
+              _id: 'comm-1',
+              direction: 'inbound',
+              fromAddress: 'customer@example.com',
+              body: 'Yep',
+              receivedAt: '2026-01-02T10:00:00Z'
+            }
+          ]
+        }
+      ],
+      activities: [
+        {
+          _id: 'mailroom:m1',
+          activityType: 'channel_message_received',
+          createdAt: '2026-01-02T10:00:00Z',
+          message: 'Yep',
+          metadata: {
+            mailroomMessageId: 'm1',
+            source: 'mailroom'
+          },
+          actorName: 'Customer'
+        }
+      ]
+    });
+    expect(items.filter((i: CaseEmailConversationItem) => i.kind === 'message')).toHaveLength(1);
+    expect(items[0]?.kind).toBe('message');
+    if (items[0]?.kind === 'message') {
+      expect(items[0].message._id).toBe('comm-1');
+    }
+  });
+
   it('includes internal comments in the conversation feed', () => {
     const items = buildCaseEmailConversationItems({
       activities: [
