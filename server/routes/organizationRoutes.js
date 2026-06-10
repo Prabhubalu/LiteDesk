@@ -18,6 +18,7 @@ const {
     enableApp,
     disableApp
 } = require('../controllers/organizationController');
+const { invalidateCacheOnSuccessfulMutation } = require('../middleware/responseCacheMiddleware');
 
 // Apply auth and organization middleware to all routes
 router.use(protect);
@@ -39,11 +40,15 @@ router.post('/subscription/upgrade', canManageBilling(), upgradeSubscription);
 router.post('/subscription/cancel', canManageBilling(), cancelSubscription);
 
 // --- App Management Routes (Admin only) ---
-router.post('/apps/enable', requireOwner(), enableApp);
-router.post('/apps/disable', requireOwner(), disableApp);
+const invalidateApplicationsSettingsCache = invalidateCacheOnSuccessfulMutation({
+    namespace: 'settings:applications',
+});
+
+router.post('/apps/enable', requireOwner(), invalidateApplicationsSettingsCache, enableApp);
+router.post('/apps/disable', requireOwner(), invalidateApplicationsSettingsCache, disableApp);
 // Support organization ID in path for admin operations
-router.post('/:id/apps/enable', requireOwner(), enableApp);
-router.post('/:id/apps/disable', requireOwner(), disableApp);
+router.post('/:id/apps/enable', requireOwner(), invalidateApplicationsSettingsCache, enableApp);
+router.post('/:id/apps/disable', requireOwner(), invalidateApplicationsSettingsCache, disableApp);
 
 module.exports = router;
 

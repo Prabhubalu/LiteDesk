@@ -249,9 +249,12 @@ onMounted(async () => {
   }
 });
 
-const fetchApplications = async () => {
+const fetchApplications = async ({ bypassCache = false } = {}) => {
   try {
-    const data = await apiClient('/settings/applications', { method: 'GET' });
+    const data = await apiClient('/settings/applications', {
+      method: 'GET',
+      ...(bypassCache ? { params: { noCache: 'true' } } : {}),
+    });
     applicationsCatalog.value = Array.isArray(data?.applications) ? data.applications : [];
   } catch (err) {
     console.error('Error fetching applications catalog:', err);
@@ -327,7 +330,11 @@ const handleEnable = async (app) => {
     });
 
     if (response.success) {
-      await Promise.all([fetchApplications(), fetchCapabilities(), fetchOrganization()]);
+      await Promise.all([
+        fetchApplications({ bypassCache: true }),
+        fetchCapabilities(),
+        fetchOrganization(),
+      ]);
       await syncAppEntitlementCaches();
     } else {
       error.value = response.message || t('settings.settingsAppMgmtEnableFailed');
@@ -338,7 +345,11 @@ const handleEnable = async (app) => {
       code === 'APP_ALREADY_ENABLED' ||
       String(err.message || '').toLowerCase().includes('already enabled');
     if (alreadyEnabled) {
-      await Promise.all([fetchApplications(), fetchCapabilities(), fetchOrganization()]);
+      await Promise.all([
+        fetchApplications({ bypassCache: true }),
+        fetchCapabilities(),
+        fetchOrganization(),
+      ]);
       await syncAppEntitlementCaches();
       return;
     }
@@ -366,7 +377,11 @@ const handleDisable = async (app) => {
     });
 
     if (response.success) {
-      await Promise.all([fetchApplications(), fetchCapabilities(), fetchOrganization()]);
+      await Promise.all([
+        fetchApplications({ bypassCache: true }),
+        fetchCapabilities(),
+        fetchOrganization(),
+      ]);
       await syncAppEntitlementCaches();
     } else {
       error.value = response.message || t('settings.settingsAppMgmtDisableFailed');
