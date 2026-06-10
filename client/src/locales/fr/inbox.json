@@ -1062,5 +1062,73 @@
   "inboxReaderResizePanelHint": {
     "message": "Drag to resize. Double-click to reset to 60%.",
     "description": "Tooltip for inbox reader resize handle"
+  },
+  "mailboxDetailsView": {
+    "message": "View mailbox details",
+    "description": "Sidebar action to open mailbox details modal"
+  },
+  "mailboxDetailsViewShort": {
+    "message": "Info",
+    "description": "Short label for mailbox details action in sidebar"
+  },
+  "mailboxDetailsKind": {
+    "message": "Type",
+    "description": "Mailbox details field label"
+  },
+  "mailboxDetailsPersonal": {
+    "message": "Personal mailbox",
+    "description": "Mailbox kind label"
+  },
+  "mailboxDetailsShared": {
+    "message": "Shared mailbox",
+    "description": "Mailbox kind label"
+  },
+  "mailboxDetailsEmail": {
+    "message": "Email address",
+    "description": "Mailbox details field label"
+  },
+  "mailboxDetailsStatus": {
+    "message": "Connection status",
+    "description": "Mailbox details field label"
+  },
+  "mailboxDetailsForwardingAddress": {
+    "message": "Forward mail to this address",
+    "description": "Parser forwarding address heading"
+  },
+  "mailboxDetailsRemovePersonal": {
+    "message": "Remove personal mailbox",
+    "description": "Delete personal mailbox action"
+  },
+  "mailboxDetailsConnectPrompt": {
+    "message": "Connect this mailbox to start receiving mail in your inbox.",
+    "description": "Banner when mailbox is not connected"
+  },
+  "mailboxSidebarAddPersonal": {
+    "message": "+ Personal mailbox",
+    "description": "Sidebar action to create personal mailbox"
+  },
+  "mailboxSidebarAddGroup": {
+    "message": "+ Group mailbox",
+    "description": "Sidebar action to create shared mailbox"
+  },
+  "mailboxSidebarCancelGroup": {
+    "message": "Cancel new group",
+    "description": "Sidebar action to hide group mailbox form"
+  },
+  "mailboxDetailsRemoveGroup": {
+    "message": "Remove group mailbox",
+    "description": "Delete shared mailbox action"
+  },
+  "mailboxDetailsRemoveGroupConfirm": {
+    "message": "Remove this group mailbox?\n\nExisting conversations stay in the inbox but are no longer tied to this mailbox. Turn off email forwarding in your email provider if you configured it.",
+    "description": "Confirm before deleting a shared mailbox"
+  },
+  "mailboxDetailsRemoveGroupSuccess": {
+    "message": "Group mailbox removed",
+    "description": "Toast after shared mailbox deletion"
+  },
+  "mailboxDetailsRemoveGroupError": {
+    "message": "Could not remove group mailbox",
+    "description": "Toast when shared mailbox deletion fails"
   }
 }

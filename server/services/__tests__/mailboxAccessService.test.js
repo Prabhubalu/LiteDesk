@@ -4,7 +4,9 @@ const {
   canManageGmailInboxSync,
   canRunGmailInboxSync,
   assertGmailSyncManageAccess,
-  assertGmailSyncRunAccess
+  assertGmailSyncRunAccess,
+  canUserAccessMailboxThreads,
+  getAccessibleMailboxIds
 } = require('../mailboxAccessService');
 
 const admin = { _id: 'u1', role: 'admin', isOwner: false };
@@ -48,5 +50,23 @@ describe('mailboxAccessService (R1)', () => {
     assert.equal(canRunGmailInboxSync(member, groupMb), true);
     assert.equal(assertGmailSyncRunAccess(groupMb, member), null);
     assert.notEqual(assertGmailSyncManageAccess(groupMb, member), null);
+  });
+
+  it('restricts personal mailbox threads to owner and admin', () => {
+    assert.equal(canUserAccessMailboxThreads(owner, personalMb), true);
+    assert.equal(canUserAccessMailboxThreads(admin, personalMb), true);
+    assert.equal(canUserAccessMailboxThreads(member, personalMb), false);
+  });
+
+  it('returns only accessible mailbox ids for a member', async () => {
+    const groupMbWithId = { _id: 'mb-group', kind: 'group', ownerUserId: null, memberUserIds: ['u2'] };
+    const otherPersonal = { _id: 'mb-other', kind: 'personal', ownerUserId: 'u9', memberUserIds: [] };
+    const personalMbWithId = { _id: 'mb-personal', kind: 'personal', ownerUserId: 'u3', memberUserIds: [] };
+    const ids = await getAccessibleMailboxIds(member, 'org1', [
+      personalMbWithId,
+      groupMbWithId,
+      otherPersonal
+    ]);
+    assert.deepEqual(ids.map(String), ['mb-group']);
   });
 });

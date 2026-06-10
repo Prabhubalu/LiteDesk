@@ -299,13 +299,6 @@ async function submitAccept(skipProfile = false) {
 }
 
 onMounted(() => {
-  if (authStore.isAuthenticated) {
-    void router.replace(authStore.user?.onboarding?.redirectTo || '/platform/home');
-    return;
-  }
-
-  authStore.clearUser();
-
   if (!token()) {
     loading.value = false;
     inviteValid.value = false;
