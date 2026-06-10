@@ -470,6 +470,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
 import {
   ChevronLeftIcon,
+  EnvelopeIcon,
   HashtagIcon,
   InboxIcon,
   PaperAirplaneIcon,
@@ -951,9 +952,22 @@ const GMAIL_VIEW_DEFS = [
   { id: 'CATEGORY_PROMOTIONS', labelKey: 'inbox.inboxSidebarViewPromotions', icon: markRaw(HashtagIcon), iconClass: 'text-violet-500' }
 ];
 
+const NON_GMAIL_MAIL_DEFS = [
+  { id: 'all', labelKey: 'inbox.inboxSurfaceAllMail', icon: markRaw(InboxIcon) },
+  {
+    id: 'unread',
+    labelKey: 'inbox.inboxSurfaceFolderUnread',
+    icon: markRaw(EnvelopeIcon),
+    iconClass: 'text-[#2383E2] dark:text-blue-400',
+    countKey: 'unread',
+    badgeVariant: 'unread'
+  },
+  { id: 'sent', labelKey: 'inbox.inboxSurfaceFolderSent', icon: markRaw(PaperAirplaneIcon) }
+];
+
 const GMAIL_MAIL_DEFS = [
-  { id: 'all', labelKey: 'inbox.inboxSurfaceAllMail', icon: markRaw(InboxIcon), countKey: 'all' },
-  { id: 'sent', labelKey: 'inbox.inboxSurfaceFolderSent', icon: markRaw(PaperAirplaneIcon), countKey: 'sent' },
+  { id: 'all', labelKey: 'inbox.inboxSurfaceAllMail', icon: markRaw(InboxIcon) },
+  { id: 'sent', labelKey: 'inbox.inboxSurfaceFolderSent', icon: markRaw(PaperAirplaneIcon) },
   { id: 'DRAFT', labelKey: 'inbox.inboxSidebarFolderDrafts', icon: markRaw(PencilSquareIcon), gmailLabel: true },
   { id: 'SPAM', labelKey: 'inbox.inboxSidebarFolderSpam', icon: markRaw(HashtagIcon), gmailLabel: true },
   { id: 'TRASH', labelKey: 'inbox.inboxSidebarFolderTrash', icon: markRaw(TrashIcon), gmailLabel: true }
@@ -961,16 +975,7 @@ const GMAIL_MAIL_DEFS = [
 
 const inboxSidebarViewItems = computed(() => {
   if (!mailboxFlags.value.gmailIntegrationEnabled || !gmailSidebarMailbox.value?.gmailInboxSync?.connected) {
-    return [
-      {
-        id: 'unread',
-        label: t('inbox.inboxSurfaceFolderUnread'),
-        active: emailFilter.value === 'unread' && !selectedGmailLabelId.value,
-        count: threadCounts.value.unread,
-        icon: markRaw(InboxIcon),
-        iconClass: 'text-red-500'
-      }
-    ];
+    return [];
   }
   const syncIds = new Set(
     (gmailSidebarMailbox.value.gmailInboxSync.syncLabelIds || []).map((id) => String(id).toUpperCase())
@@ -992,7 +997,9 @@ const inboxSidebarMailItems = computed(() => {
     ? new Set((gmailSidebarMailbox.value.gmailInboxSync.syncLabelIds || []).map((id) => String(id).toUpperCase()))
     : new Set();
 
-  return GMAIL_MAIL_DEFS.filter((item) => {
+  const defs = gmailOn ? GMAIL_MAIL_DEFS : NON_GMAIL_MAIL_DEFS;
+
+  return defs.filter((item) => {
     if (item.gmailLabel && gmailOn) return syncIds.has(item.id);
     if (item.gmailLabel && !gmailOn) return false;
     return true;
@@ -1002,6 +1009,8 @@ const inboxSidebarMailItems = computed(() => {
       active = selectedGmailLabelId.value === item.id;
     } else if (item.id === 'all') {
       active = selectedMailboxFilter.value === null && emailFilter.value === 'all' && !selectedGmailLabelId.value;
+    } else if (item.id === 'unread') {
+      active = emailFilter.value === 'unread' && !selectedGmailLabelId.value;
     } else if (item.id === 'sent') {
       active = emailFilter.value === 'sent' && !selectedGmailLabelId.value;
     }
@@ -1010,7 +1019,9 @@ const inboxSidebarMailItems = computed(() => {
       label: t(item.labelKey),
       active,
       count: item.countKey ? threadCounts.value[item.countKey] : null,
-      icon: item.icon
+      icon: item.icon,
+      iconClass: item.iconClass,
+      badgeVariant: item.badgeVariant
     };
   });
 });
@@ -1282,6 +1293,14 @@ function onSidebarSelectMail(mailId) {
     selectedMailboxFilter.value = null;
     selectedGmailLabelId.value = null;
     emailFilter.value = 'all';
+    refreshInboxThreadsAndCounts();
+    return;
+  }
+  if (mailId === 'unread') {
+    mailboxScopeAllMail.value = true;
+    selectedMailboxFilter.value = null;
+    selectedGmailLabelId.value = null;
+    emailFilter.value = 'unread';
     refreshInboxThreadsAndCounts();
     return;
   }

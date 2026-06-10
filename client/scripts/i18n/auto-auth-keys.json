@@ -96,7 +96,7 @@
     "description": "Auto-migrated from demoRequestForm"
   },
   "demoRequestFormYourEmailCom": {
-    "message": "your@email.com",
+    "message": "your{'@'}email.com",
     "description": "Auto-migrated from demoRequestForm"
   },
   "demoRequestFormEnterYourFullName": {

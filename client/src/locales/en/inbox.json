@@ -983,9 +983,29 @@
     "message": "Search",
     "description": "Inbox sidebar search placeholder"
   },
+  "inboxSidebarSearchMail": {
+    "message": "Search mail",
+    "description": "Inbox sidebar search placeholder"
+  },
+  "inboxSidebarClearSearch": {
+    "message": "Clear search",
+    "description": "Aria label for inbox sidebar search clear button"
+  },
+  "inboxSidebarCompose": {
+    "message": "Compose",
+    "description": "Primary compose action in inbox sidebar"
+  },
   "inboxSidebarViews": {
     "message": "Views",
     "description": "Inbox sidebar views section"
+  },
+  "inboxSidebarCategories": {
+    "message": "Categories",
+    "description": "Gmail category section in inbox sidebar"
+  },
+  "inboxSidebarFolders": {
+    "message": "Folders",
+    "description": "Mail folders section in inbox sidebar"
   },
   "inboxSidebarSettings": {
     "message": "Settings",
@@ -994,6 +1014,14 @@
   "inboxSidebarEmailSetup": {
     "message": "Email setup",
     "description": "Inbox sidebar email setup link"
+  },
+  "inboxSidebarEmailSettings": {
+    "message": "Email settings",
+    "description": "Inbox sidebar link to email integration settings"
+  },
+  "inboxSidebarMailboxActions": {
+    "message": "Mailbox actions",
+    "description": "Aria label for inbox sidebar mailbox overflow menu"
   },
   "inboxSidebarViewInbox": {
     "message": "Inbox",
@@ -1140,11 +1168,11 @@
     "description": "Banner when mailbox is not connected"
   },
   "mailboxSidebarAddPersonal": {
-    "message": "+ Personal mailbox",
+    "message": "Add personal mailbox",
     "description": "Sidebar action to create personal mailbox"
   },
   "mailboxSidebarAddGroup": {
-    "message": "+ Group mailbox",
+    "message": "Add group mailbox",
     "description": "Sidebar action to create shared mailbox"
   },
   "mailboxSidebarCancelGroup": {
