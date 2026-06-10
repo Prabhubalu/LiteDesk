@@ -288,10 +288,12 @@ async function loadWorkspaceThreadSummaries(req, mailboxIdQuery) {
     if (accessibleIds.length === 0) {
       commQuery.mailboxId = { $in: [] };
     } else {
+      // Record-linked CRM threads without mailboxId stay org-visible; workspace threads
+      // without mailboxId are excluded so personal mail cannot leak across users.
       commQuery.$or = [
         { mailboxId: { $in: accessibleIds } },
-        { mailboxId: null },
-        { mailboxId: { $exists: false } }
+        { mailboxId: null, 'relatedTo.moduleKey': { $ne: 'workspace' } },
+        { mailboxId: { $exists: false }, 'relatedTo.moduleKey': { $ne: 'workspace' } }
       ];
     }
   }

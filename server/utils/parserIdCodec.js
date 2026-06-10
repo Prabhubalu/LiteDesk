@@ -5,13 +5,13 @@ const ParserMailboxRegistry = require('../models/ParserMailboxRegistry');
 
 const TENANT_PREFIX = 't_';
 const MAILBOX_PREFIX = 'm_';
-/** Hex chars from Mongo ObjectId used in plus-address (keeps addresses short). */
+/** @deprecated Legacy 4-char ids; kept for registry lookups only. New ids use full ObjectId hex. */
 const SHORT_PARSER_ID_HEX_LENGTH = 4;
 
-function objectIdToShortHex(objectId) {
+function objectIdToParserHex(objectId) {
   const hex = String(objectId || '').trim();
   if (!mongoose.Types.ObjectId.isValid(hex)) return '';
-  return hex.slice(0, SHORT_PARSER_ID_HEX_LENGTH);
+  return hex;
 }
 
 function toParserTenantId(organizationId) {
@@ -20,11 +20,12 @@ function toParserTenantId(organizationId) {
   if (raw.startsWith(TENANT_PREFIX)) {
     const suffix = raw.slice(TENANT_PREFIX.length);
     if (mongoose.Types.ObjectId.isValid(suffix)) {
-      return `${TENANT_PREFIX}${objectIdToShortHex(suffix)}`;
+      return `${TENANT_PREFIX}${suffix}`;
     }
     return raw;
   }
-  return `${TENANT_PREFIX}${objectIdToShortHex(raw)}`;
+  const hex = objectIdToParserHex(raw);
+  return hex ? `${TENANT_PREFIX}${hex}` : '';
 }
 
 function toParserMailboxId(mailboxId) {
@@ -33,11 +34,12 @@ function toParserMailboxId(mailboxId) {
   if (raw.startsWith(MAILBOX_PREFIX)) {
     const suffix = raw.slice(MAILBOX_PREFIX.length);
     if (mongoose.Types.ObjectId.isValid(suffix)) {
-      return `${MAILBOX_PREFIX}${objectIdToShortHex(suffix)}`;
+      return `${MAILBOX_PREFIX}${suffix}`;
     }
     return raw;
   }
-  return `${MAILBOX_PREFIX}${objectIdToShortHex(raw)}`;
+  const hex = objectIdToParserHex(raw);
+  return hex ? `${MAILBOX_PREFIX}${hex}` : '';
 }
 
 function parseParserTenantId(parserTenantId) {
@@ -83,7 +85,24 @@ async function resolveParserEventIds(parserTenantId, parserMailboxId) {
   };
 }
 
-function routingLocalPartFromMailbox({ label, emailAddress, kind }) {
+/**
+ * Resolve stable, unique parser tenant/mailbox ids for a CRM mailbox document.
+ * Uses full ObjectId hex (one id per personal or group mailbox).
+ * Upgrades legacy 4-char short ids on re-provision.
+ */
+function resolveParserIdsForMailbox({ organizationId, mailbox }) {
+  let parserTenantId = String(mailbox?.parserTenantId || '').trim();
+  let parserMailboxId = String(mailbox?.parserMailboxId || '').trim();
+  if (!parserTenantId || !parseParserTenantId(parserTenantId)) {
+    parserTenantId = toParserTenantId(organizationId);
+  }
+  if (!parserMailboxId || !parseParserMailboxId(parserMailboxId)) {
+    parserMailboxId = toParserMailboxId(mailbox?._id);
+  }
+  return { parserTenantId, parserMailboxId };
+}
+
+function routingLocalPartFromMailbox({ label, emailAddress, kind, ownerUserId, mailboxObjectId }) {
   const fromEmail = String(emailAddress || '').trim().toLowerCase();
   if (fromEmail.includes('@')) {
     const local = fromEmail.split('@')[0].replace(/[^a-z0-9-]/gi, '').slice(0, 40);
@@ -94,8 +113,19 @@ function routingLocalPartFromMailbox({ label, emailAddress, kind }) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 40);
-  if (slug) return slug;
-  return kind === 'personal' ? 'personal' : 'support';
+  let base = slug || (kind === 'personal' ? 'personal' : 'support');
+  if (kind === 'personal' && ownerUserId) {
+    const ownerHex = objectIdToParserHex(ownerUserId);
+    if (ownerHex) {
+      base = `${base}-${ownerHex.slice(-8)}`.replace(/^-+|-+$/g, '').slice(0, 40);
+    }
+  } else if (kind === 'group' && mailboxObjectId) {
+    const mbHex = objectIdToParserHex(mailboxObjectId);
+    if (mbHex) {
+      base = `${base}-${mbHex.slice(-8)}`.replace(/^-+|-+$/g, '').slice(0, 40);
+    }
+  }
+  return base;
 }
 
 module.exports = {
@@ -106,6 +136,7 @@ module.exports = {
   toParserMailboxId,
   parseParserTenantId,
   parseParserMailboxId,
+  resolveParserIdsForMailbox,
   resolveParserEventIds,
   routingLocalPartFromMailbox
 };

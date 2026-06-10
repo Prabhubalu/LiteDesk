@@ -3,8 +3,7 @@
 const Mailbox = require('../models/Mailbox');
 const ParserMailboxRegistry = require('../models/ParserMailboxRegistry');
 const {
-  toParserTenantId,
-  toParserMailboxId,
+  resolveParserIdsForMailbox,
   routingLocalPartFromMailbox
 } = require('../utils/parserIdCodec');
 const { runWithOrganizationTenantContext } = require('../utils/organizationTenantContext');
@@ -17,7 +16,9 @@ function buildLocalRoutingAddress(mailbox, parserMailboxId) {
   const localPart = routingLocalPartFromMailbox({
     label: mailbox.label,
     emailAddress: mailbox.emailAddress,
-    kind: mailbox.kind
+    kind: mailbox.kind,
+    ownerUserId: mailbox.ownerUserId,
+    mailboxObjectId: mailbox._id
   });
   return `${localPart}+${parserMailboxId}@${LOCAL_ROUTING_DOMAIN}`;
 }
@@ -26,8 +27,32 @@ function buildLocalRoutingAddress(mailbox, parserMailboxId) {
  * Provision parser routing locally (no remote parser API).
  */
 async function provisionMailboxLocally({ organizationId, mailbox }) {
-  const parserTenantId = toParserTenantId(organizationId);
-  const parserMailboxId = toParserMailboxId(mailbox._id);
+  const { parserTenantId, parserMailboxId } = resolveParserIdsForMailbox({
+    organizationId,
+    mailbox
+  });
+  const existingRegistry = await ParserMailboxRegistry.findOne({
+    parserTenantId,
+    parserMailboxId
+  })
+    .select('mailboxObjectId')
+    .lean();
+  if (
+    existingRegistry
+    && String(existingRegistry.mailboxObjectId) !== String(mailbox._id)
+  ) {
+    const message = 'Parser mailbox id already assigned to another mailbox in this tenant';
+    await Mailbox.updateOne(
+      { _id: mailbox._id, organizationId },
+      {
+        $set: {
+          parserProvisionStatus: 'failed',
+          parserProvisioningError: message.slice(0, 500)
+        }
+      }
+    );
+    return { ok: false, error: message };
+  }
   const routingAddress = buildLocalRoutingAddress(mailbox, parserMailboxId);
   const forwardingHint =
     'Local simulation: forward support mail to this address, or use npm run simulate:parser-inbound.';
@@ -161,6 +186,17 @@ async function createSimulatedMailbox({
       syncStatus: 'not_configured',
       parserProvisionStatus: 'pending'
     });
+
+    const { parserTenantId, parserMailboxId } = resolveParserIdsForMailbox({
+      organizationId,
+      mailbox: doc
+    });
+    await Mailbox.updateOne(
+      { _id: doc._id, organizationId },
+      { $set: { parserTenantId, parserMailboxId } }
+    );
+    doc.parserTenantId = parserTenantId;
+    doc.parserMailboxId = parserMailboxId;
 
     const provision = await provisionMailboxLocally({
       organizationId,

@@ -4,10 +4,7 @@ const Organization = require('../models/Organization');
 const Mailbox = require('../models/Mailbox');
 const ParserMailboxRegistry = require('../models/ParserMailboxRegistry');
 const {
-  toParserTenantId,
-  toParserMailboxId,
-  parseParserTenantId,
-  parseParserMailboxId,
+  resolveParserIdsForMailbox,
   routingLocalPartFromMailbox
 } = require('../utils/parserIdCodec');
 const { getEffectiveInboundParserConfig } = require('./inboundParserConfigService');
@@ -54,20 +51,39 @@ async function provisionMailboxWithParser({ organizationId, mailbox }) {
   }
 
   const org = await Organization.findById(organizationId).select('name').lean();
-  let tenantId = String(mailbox.parserTenantId || '').trim();
-  let mailboxId = String(mailbox.parserMailboxId || '').trim();
-  // Regenerate when missing or legacy full-ObjectId ids (shorten plus-address).
-  if (!tenantId || parseParserTenantId(tenantId)) {
-    tenantId = toParserTenantId(organizationId);
-  }
-  if (!mailboxId || parseParserMailboxId(mailboxId)) {
-    mailboxId = toParserMailboxId(mailbox._id);
+  const { parserTenantId: tenantId, parserMailboxId: mailboxId } = resolveParserIdsForMailbox({
+    organizationId,
+    mailbox
+  });
+  const existingRegistry = await ParserMailboxRegistry.findOne({
+    parserTenantId: tenantId,
+    parserMailboxId: mailboxId
+  })
+    .select('mailboxObjectId')
+    .lean();
+  if (
+    existingRegistry
+    && String(existingRegistry.mailboxObjectId) !== String(mailbox._id)
+  ) {
+    const message = 'Parser mailbox id already assigned to another mailbox in this tenant';
+    await Mailbox.updateOne(
+      { _id: mailbox._id },
+      {
+        $set: {
+          parserProvisionStatus: 'failed',
+          parserProvisioningError: message.slice(0, 500)
+        }
+      }
+    );
+    return { ok: false, error: message };
   }
   const mailboxName = String(mailbox.label || 'Inbox').trim();
   const routingLocalPart = routingLocalPartFromMailbox({
     label: mailbox.label,
     emailAddress: mailbox.emailAddress,
-    kind: mailbox.kind
+    kind: mailbox.kind,
+    ownerUserId: mailbox.ownerUserId,
+    mailboxObjectId: mailbox._id
   });
   const type = mailbox.kind === 'personal' ? 'private' : 'shared';
 
@@ -187,10 +203,10 @@ async function deprovisionMailboxFromParser({ organizationId, mailbox }) {
     return { skipped: true, reason: 'inbound_parser_not_configured' };
   }
 
-  const tenantId =
-    String(mailbox.parserTenantId || '').trim() || toParserTenantId(organizationId);
-  const parserMailboxId =
-    String(mailbox.parserMailboxId || '').trim() || toParserMailboxId(mailbox._id);
+  const { parserTenantId: tenantId, parserMailboxId } = resolveParserIdsForMailbox({
+    organizationId,
+    mailbox
+  });
   if (!tenantId || !parserMailboxId) {
     return { skipped: true, reason: 'missing_parser_ids' };
   }

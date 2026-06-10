@@ -11,15 +11,15 @@ function isTenantAdmin(user) {
 
 /**
  * Who may see threads scoped to this mailbox in workspace inbox / APIs.
- * - personal: owner or tenant admin
+ * - personal: owner only (never other users or admins)
  * - group: all org users if memberUserIds is empty; else listed members + admins
  */
 function canUserAccessMailboxThreads(user, mailboxLean) {
   if (!mailboxLean || !user) return false;
-  if (isTenantAdmin(user)) return true;
   if (mailboxLean.kind === 'personal') {
     return String(mailboxLean.ownerUserId || '') === String(user._id);
   }
+  if (isTenantAdmin(user)) return true;
   const members = mailboxLean.memberUserIds || [];
   if (!Array.isArray(members) || members.length === 0) {
     return true;
@@ -86,7 +86,7 @@ function assertGmailSyncRunAccess(mailboxLean, user) {
 }
 
 /**
- * Mailbox ids the user may see threads for (personal owner, group membership, or admin).
+ * Mailbox ids the user may see threads for (personal owner, group membership, or admin for group only).
  * @param {object} user
  * @param {import('mongoose').Types.ObjectId | string} organizationId
  * @param {object[]} [mailboxesLean] — optional preloaded mailboxes for the org

@@ -118,10 +118,12 @@ async function ensurePersonalMailbox(input = {}) {
 /**
  * @param {{ label: string, emailAddress?: string, memberUserIds?: string[] }} input
  */
-async function deletePersonalMailbox(mailboxId) {
+async function deletePersonalMailbox(mailboxId, options = {}) {
   if (!mailboxId) return false;
+  const deleteEmails = options.deleteEmails === true;
   const res = await apiClient(`/mailboxes/${encodeURIComponent(mailboxId)}`, {
-    method: 'DELETE'
+    method: 'DELETE',
+    params: deleteEmails ? { deleteEmails: 'true' } : undefined
   });
   if (res?.success) {
     await refreshMailboxes();
