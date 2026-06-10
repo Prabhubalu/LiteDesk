@@ -8,10 +8,22 @@ exports.validateInvite = async (req, res) => {
     const result = await userInviteService.validateInviteToken(token);
 
     if (!result.valid) {
+      const messages = {
+        INVITE_ALREADY_ACCEPTED: 'This invitation was already accepted. Sign in with your password.',
+        TOKEN_EXPIRED: 'This invitation link has expired.',
+        TOKEN_MISSING: 'Invitation link is missing a token.',
+        TOKEN_INVALID: 'This invitation link is invalid or has expired.'
+      };
       return res.status(400).json({
         success: false,
         code: result.code,
-        message: 'Invitation link is invalid or expired'
+        message: messages[result.code] || messages.TOKEN_INVALID,
+        data: result.email
+          ? {
+              email: result.email,
+              organizationName: result.organizationName || null
+            }
+          : undefined
       });
     }
 
@@ -21,7 +33,8 @@ exports.validateInvite = async (req, res) => {
         email: result.email,
         firstName: result.firstName,
         lastName: result.lastName,
-        organizationName: result.organizationName
+        organizationName: result.organizationName,
+        entitledApps: result.entitledApps || []
       }
     });
   } catch (error) {
@@ -50,7 +63,13 @@ exports.acceptInvite = async (req, res) => {
       return res.status(status).json({
         success: false,
         code: result.code,
-        message: result.message
+        message: result.message,
+        data: result.email
+          ? {
+              email: result.email,
+              organizationName: result.organizationName || null
+            }
+          : undefined
       });
     }
 

@@ -233,7 +233,7 @@ watch(() => route.path, async (newPath) => {
 
 // Refresh permissions on app mount (page refresh)
 onMounted(async () => {
-  if (authStore.isAuthenticated) {
+  if (authStore.isAuthenticated && !isPublicRoute.value) {
     activeImportsStore.init();
     const neededMetadata = !appShellStore.isLoaded;
     appLog('Auto-refreshing permissions on page load...');

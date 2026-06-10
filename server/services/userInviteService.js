@@ -69,40 +69,57 @@ async function resolveUserByDirectoryToken(tokenHash, field) {
 }
 
 async function repairDirectoryInviteToken(user, organization, tokenHash) {
-  if (!user?.email || !tokenHash) return;
-  await syncDirectoryEntry(user.email, {
-    organizationId: organization._id,
-    tenantDatabaseName: organization.database?.name || null,
-    tenantUserId: user._id,
-    inviteTokenHash: tokenHash,
-    emailVerificationTokenHash: null,
-    status: 'active'
-  });
+  const normalizedEmail = String(user?.email || '').toLowerCase().trim();
+  if (!normalizedEmail || !tokenHash) return;
+
+  await UserDirectory.findOneAndUpdate(
+    { email: normalizedEmail },
+    {
+      $set: {
+        organizationId: organization._id,
+        tenantDatabaseName: organization.database?.name || null,
+        tenantUserId: user._id,
+        inviteTokenHash: tokenHash,
+        emailVerificationTokenHash: null,
+        status: user.status === 'inactive' ? 'inactive' : 'active'
+      }
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+}
+
+async function discoverUserByInviteTokenHash(tokenHash) {
+  const tenantOrgs = await Organization.find({
+    'database.initialized': true,
+    'database.name': { $exists: true, $ne: null }
+  }).select('_id name database');
+
+  for (const organization of tenantOrgs) {
+    try {
+      const ScopedUser = await getScopedUserModel(organization);
+      const user = await ScopedUser.findOne({
+        inviteTokenHash: tokenHash,
+        status: 'invited'
+      });
+      if (!user) continue;
+
+      await repairDirectoryInviteToken(user, organization, tokenHash);
+      return { user, organization, directoryEntry: null, ScopedUser };
+    } catch (err) {
+      console.warn(
+        `[userInviteService] Invite token discovery skipped for ${organization.database?.name}:`,
+        err.message
+      );
+    }
+  }
+
+  return null;
 }
 
 async function resolveUserByInviteToken(tokenHash) {
   const directoryResolved = await resolveUserByDirectoryToken(tokenHash, 'inviteTokenHash');
   if (directoryResolved) {
     return directoryResolved;
-  }
-
-  const staleDirectories = await UserDirectory.find({
-    inviteTokenHash: null,
-    tenantUserId: { $ne: null }
-  }).limit(200);
-
-  for (const entry of staleDirectories) {
-    const organization = await Organization.findById(entry.organizationId);
-    if (!organization) continue;
-
-    const ScopedUser = await getScopedUserModel(organization);
-    const user = await ScopedUser.findById(entry.tenantUserId);
-    if (!user || user.status !== 'invited' || user.inviteTokenHash !== tokenHash) {
-      continue;
-    }
-
-    await repairDirectoryInviteToken(user, organization, tokenHash);
-    return { user, organization, directoryEntry: entry, ScopedUser };
   }
 
   const masterMatches = await User.find({
@@ -130,7 +147,7 @@ async function resolveUserByInviteToken(tokenHash) {
     return { user, organization, directoryEntry: null, ScopedUser };
   }
 
-  return null;
+  return discoverUserByInviteTokenHash(tokenHash);
 }
 
 async function clearInviteTokens(user, email) {
@@ -253,10 +270,15 @@ async function validateInviteToken(rawToken) {
 
   const { user, organization } = resolved;
   if (user.status !== 'invited') {
-    return { valid: false, code: 'INVITE_ALREADY_ACCEPTED' };
+    return {
+      valid: false,
+      code: 'INVITE_ALREADY_ACCEPTED',
+      email: user.email,
+      organizationName: organization.name
+    };
   }
   if (isTokenExpired(user.inviteTokenExpiresAt)) {
-    return { valid: false, code: 'TOKEN_EXPIRED' };
+    return { valid: false, code: 'TOKEN_EXPIRED', email: user.email };
   }
 
   return {
@@ -288,7 +310,7 @@ async function acceptInvite({ rawToken, password, profile = {} }) {
 
   const { user, organization, ScopedUser } = resolved;
   if (user.status !== 'invited') {
-    return { ok: false, code: 'INVITE_ALREADY_ACCEPTED', message: 'This invitation has already been accepted' };
+    return { ok: false, code: 'INVITE_ALREADY_ACCEPTED', message: 'This invitation has already been accepted', email: user.email, organizationName: organization.name };
   }
   if (isTokenExpired(user.inviteTokenExpiresAt)) {
     return { ok: false, code: 'TOKEN_EXPIRED', message: 'This invitation link has expired' };

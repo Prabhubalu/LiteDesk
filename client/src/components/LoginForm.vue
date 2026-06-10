@@ -81,6 +81,10 @@ const handleLogin = async () => {
 };
 
 onMounted(() => {
+    const queryEmail = String(route.query.email || '').trim();
+    if (queryEmail) {
+        email.value = queryEmail;
+    }
     if (String(route.query.verified || '') === '1') {
         loginNotice.value = t('auth.verifyEmailLoginNotice');
     }
