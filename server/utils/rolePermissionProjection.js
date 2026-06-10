@@ -17,6 +17,19 @@
 
 const mongoose = require('mongoose');
 const { APP_KEYS } = require('../constants/appKeys');
+const { COMMERCIAL_PLATFORM_MODULE_KEYS } = require('../constants/commercialPlatformParticipation');
+
+/** Platform core quote-to-cash modules — same sidebar/RBAC surface as deals/items. */
+const COMMERCIAL_CORE_MODULE_KEYS = COMMERCIAL_PLATFORM_MODULE_KEYS;
+
+const COMMERCIAL_CRUD_DEFAULTS = {
+  view: false,
+  create: false,
+  edit: false,
+  delete: false,
+  viewAll: false,
+  exportData: false
+};
 
 function toPlain(permsOrSub) {
   if (!permsOrSub) return {};
@@ -41,6 +54,35 @@ function viewAllForModule(mod, rolePlain) {
   const m = toPlain(mod);
   if (rolePlain.canViewAllData === true) return true;
   return m.scope === 'all' || m.viewAll === true;
+}
+
+/**
+ * Project legacy Role.permissions CRUD matrix into envelope shape.
+ * Commercial core modules inherit from `deals` when not explicitly configured on the role.
+ */
+function projectCrudFromLegacyRole(rolePerms, rolePlain, moduleKey, inheritFromKey = 'deals') {
+  const src = rolePerms[moduleKey] || rolePerms[inheritFromKey] || {};
+  return {
+    view: src.read === true,
+    create: src.create === true,
+    edit: src.update === true,
+    delete: src.delete === true,
+    viewAll: viewAllForModule(src, rolePlain),
+    exportData: src.export === true
+  };
+}
+
+/** Mirror deals envelope onto platform quote-to-cash core modules (setPermissionsByRole path). */
+function attachCommercialCoreModulesFromDeals(permissions) {
+  if (!permissions || typeof permissions !== 'object' || !permissions.deals) {
+    return permissions;
+  }
+  const deals = permissions.deals;
+  const commercial = {};
+  for (const moduleKey of COMMERCIAL_CORE_MODULE_KEYS) {
+    commercial[moduleKey] = { ...deals };
+  }
+  return { ...permissions, ...commercial };
 }
 
 /**
@@ -211,6 +253,11 @@ function projectRoleToUserPermissions(rolePlain, appAccess = []) {
       }
     : buildCasesEnvelopeFromAppAccess(access);
 
+  const commercialCore = {};
+  for (const moduleKey of COMMERCIAL_CORE_MODULE_KEYS) {
+    commercialCore[moduleKey] = projectCrudFromLegacyRole(p, rolePlain, moduleKey);
+  }
+
   const projected = {
     contacts,
     people: { ...contacts },
@@ -225,7 +272,8 @@ function projectRoleToUserPermissions(rolePlain, appAccess = []) {
     settings,
     performance,
     reports,
-    cases: casesModule
+    cases: casesModule,
+    ...commercialCore
   };
 
   return projected;
@@ -276,14 +324,9 @@ function ensurePermissionEnvelopeDefaults(merged) {
     viewAll: false,
     exportData: false
   });
-  ensureModule('quotes', {
-    view: false,
-    create: false,
-    edit: false,
-    delete: false,
-    viewAll: false,
-    exportData: false
-  });
+  for (const moduleKey of COMMERCIAL_CORE_MODULE_KEYS) {
+    ensureModule(moduleKey, { ...COMMERCIAL_CRUD_DEFAULTS });
+  }
   ensureModule('tasks', { view: false, create: false, edit: false, delete: false, viewAll: false });
   ensureModule('events', { view: false, create: false, edit: false, delete: false, viewAll: false });
   ensureModule('forms', {
@@ -491,6 +534,7 @@ function sanitizeUserResponsePayload(userDocOrPlain) {
 
 module.exports = {
   projectRoleToUserPermissions,
+  attachCommercialCoreModulesFromDeals,
   roleAllowsPlatformOwnedFieldEdits,
   applyProjectionToUser,
   materializeEffectiveCRMEnvelopeOnUser,

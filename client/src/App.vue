@@ -35,6 +35,7 @@ const showHelpdeskNotificationDevPanel =
   import.meta.env.DEV &&
   import.meta.env.VITE_ENABLE_HELPDESK_NOTIFICATION_DEV_PANEL === 'true';
 import { useSidebarState } from '@/composables/useSidebarState';
+import { isAuthLifecyclePublicRoute } from '@/composables/useTabs';
 import { identifyProductUser } from '@/config/posthogUser';
 import {
   startNotificationRealtime,
@@ -173,6 +174,7 @@ const handleResize = () => {
 // don't silently switch accounts in this tab.
 const handleStorageEvent = (e) => {
   if (e.key !== 'user') return;
+  if (isAuthLifecyclePublicRoute(route.path)) return;
   if (!authStore.isAuthenticated || !authStore.user?._id) return;
 
   // User removed (logout in another tab)

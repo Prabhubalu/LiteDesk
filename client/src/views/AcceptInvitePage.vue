@@ -177,7 +177,7 @@ async function navigateAfterAccept(session, redirectTo) {
         if (transferPayload) {
           const redirectUrl = new URL('/login', target.origin);
           redirectUrl.hash = `${SESSION_TRANSFER_HASH_KEY}=${encodeURIComponent(transferPayload)}`;
-          window.location.assign(redirectUrl.toString());
+          window.location.replace(redirectUrl.toString());
           return;
         }
       }
@@ -186,7 +186,7 @@ async function navigateAfterAccept(session, redirectTo) {
     }
   }
 
-  await router.push(redirectTo);
+  await router.replace(redirectTo);
 }
 
 async function loadInvite() {
@@ -206,8 +206,10 @@ async function loadInvite() {
         });
       } else if (data.code === 'TOKEN_EXPIRED') {
         errorMessage.value = t('auth.acceptInviteExpiredBody');
+      } else if (data.code === 'PASSWORD_RESET_LIMIT_EXCEEDED') {
+        errorMessage.value = data.error || data.message || t('auth.acceptInviteRateLimitedBody');
       } else {
-        errorMessage.value = data.message || t('auth.acceptInviteInvalidBody');
+        errorMessage.value = data.message || data.error || t('auth.acceptInviteInvalidBody');
       }
       return;
     }
@@ -297,6 +299,11 @@ async function submitAccept(skipProfile = false) {
 }
 
 onMounted(() => {
+  if (authStore.isAuthenticated) {
+    void router.replace(authStore.user?.onboarding?.redirectTo || '/platform/home');
+    return;
+  }
+
   authStore.clearUser();
 
   if (!token()) {
