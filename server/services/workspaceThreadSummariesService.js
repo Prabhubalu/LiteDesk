@@ -12,7 +12,10 @@ const Case = require('../models/Case');
 const Organization = require('../models/Organization');
 const Task = require('../models/Task');
 const { SUPPORTED_MODULES } = require('../platform/communication/domain/sendEmailContract');
-const { canUserAccessMailboxThreads } = require('./mailboxAccessService');
+const {
+  canUserAccessMailboxThreads,
+  getAccessibleMailboxIds
+} = require('./mailboxAccessService');
 
 async function getTenantUserIds(organizationId) {
   const users = await User.find({ organizationId }).select('_id').lean();
@@ -280,6 +283,17 @@ async function loadWorkspaceThreadSummaries(req, mailboxIdQuery) {
       return { error: { status: 403, message: 'Not allowed to view threads for this mailbox' }, threads: [] };
     }
     commQuery.mailboxId = new mongoose.Types.ObjectId(mailboxIdQuery);
+  } else {
+    const accessibleIds = await getAccessibleMailboxIds(req.user, orgId);
+    if (accessibleIds.length === 0) {
+      commQuery.mailboxId = { $in: [] };
+    } else {
+      commQuery.$or = [
+        { mailboxId: { $in: accessibleIds } },
+        { mailboxId: null },
+        { mailboxId: { $exists: false } }
+      ];
+    }
   }
 
   const threadKeysOrdered = await listWorkspaceThreadKeysOrdered(commQuery);

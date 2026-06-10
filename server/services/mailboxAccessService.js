@@ -85,11 +85,30 @@ function assertGmailSyncRunAccess(mailboxLean, user) {
   return null;
 }
 
+/**
+ * Mailbox ids the user may see threads for (personal owner, group membership, or admin).
+ * @param {object} user
+ * @param {import('mongoose').Types.ObjectId | string} organizationId
+ * @param {object[]} [mailboxesLean] — optional preloaded mailboxes for the org
+ * @returns {Promise<import('mongoose').Types.ObjectId[]>}
+ */
+async function getAccessibleMailboxIds(user, organizationId, mailboxesLean) {
+  const Mailbox = require('../models/Mailbox');
+  const rows =
+    Array.isArray(mailboxesLean) && mailboxesLean.length > 0
+      ? mailboxesLean
+      : await Mailbox.find({ organizationId }).select('kind ownerUserId memberUserIds').lean();
+  return rows
+    .filter((mb) => canUserAccessMailboxThreads(user, mb))
+    .map((mb) => mb._id);
+}
+
 module.exports = {
   isTenantAdmin,
   canUserAccessMailboxThreads,
   canManageGmailInboxSync,
   canRunGmailInboxSync,
   assertGmailSyncManageAccess,
-  assertGmailSyncRunAccess
+  assertGmailSyncRunAccess,
+  getAccessibleMailboxIds
 };

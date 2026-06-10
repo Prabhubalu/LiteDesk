@@ -283,12 +283,12 @@ function canEditMailbox(user, mailboxLean) {
 }
 
 function canDeleteMailbox(user, mailboxLean) {
-  if (!mailboxLean || mailboxLean.kind !== 'personal') return false;
+  if (!mailboxLean) return false;
   return canEditMailbox(user, mailboxLean);
 }
 
 /**
- * DELETE /api/mailboxes/:id — personal mailboxes only (owner or tenant admin).
+ * DELETE /api/mailboxes/:id — personal (owner or tenant admin) or group (tenant admin).
  */
 async function deleteMailbox(req, res) {
   try {
@@ -306,10 +306,7 @@ async function deleteMailbox(req, res) {
     if (!canDeleteMailbox(req.user, mailbox)) {
       return res.status(403).json({
         success: false,
-        message:
-          mailbox.kind === 'group'
-            ? 'Shared mailboxes cannot be deleted here. Contact an administrator.'
-            : 'Not allowed to delete this mailbox'
+        message: 'Not allowed to delete this mailbox'
       });
     }
 

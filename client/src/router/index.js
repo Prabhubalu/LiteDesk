@@ -865,6 +865,13 @@ const getDefaultRoute = (authStore) => {
 // Add debug logging and permission checks
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+
+  // Invite links must not inherit a stale session — otherwise we briefly route to
+  // platform/home, authenticated API calls fail, and the user lands on login.
+  if (to.name === 'accept-invite' && String(to.query?.token || '').trim()) {
+    authStore.clearUser()
+  }
+
   const logoutRequested = to.name === 'login' && String(to.query?.logout || '') === '1'
   if (logoutRequested) {
     authStore.clearUser()

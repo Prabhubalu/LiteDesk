@@ -13,7 +13,7 @@
         :inbound-parser-mode="!mailboxFlags.gmailIntegrationEnabled"
         :connect-loading="gmailSyncLoading"
         @connect-mailbox="openConnectInboxModal"
-        @setup-group="onGetStartedGroupSetup"
+        @setup-group="openConnectGroupMailbox"
         @coming-soon="onGetStartedComingSoon"
       />
     </div>
@@ -28,12 +28,20 @@
       :mail-items="inboxSidebarMailItems"
       :mailbox-items="inboxSidebarMailboxItems"
       :gmail-folder-items="inboxSidebarGmailFolderItems"
+      :mailbox-flags="mailboxFlags"
+      :mailbox-action-loading="mailboxActionLoading"
       @compose="openNewCompose"
       @update:search-query="onInboxSearchInput"
       @select-view="onSidebarSelectView"
       @select-mail="onSidebarSelectMail"
       @select-mailbox="selectMailboxFilter"
       @select-gmail-folder="selectGmailLabel"
+      @view-mailbox="openMailboxDetails"
+      @connect-mailbox="onSidebarConnectMailbox"
+      @manage-members="onSidebarManageMembers"
+      @create-personal-mailbox="openConnectInboxModal"
+      @delete-personal-mailbox="deletePersonalMailbox"
+      @setup-group-mailbox="openConnectGroupMailbox"
     />
 
     <!-- Thread list + optional reader panel (non-blocking, resizable) -->
@@ -65,7 +73,51 @@
         @load-more="loadMoreEmailThreads"
       >
         <template #banners>
-          <!-- INBOX_BANNERS -->
+          <div
+            v-if="mailboxFlags.gmailIntegrationEnabled && selectedMailbox && selectedMailbox.gmailSmtpOutbound?.connected && !selectedMailbox.gmailInboxSync?.connected"
+            class="border-b border-emerald-200 bg-emerald-50/90 px-3 py-2.5 text-xs text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100"
+          >
+            <div class="font-semibold text-emerald-900 dark:text-emerald-100">
+              Gmail SMTP send — {{ selectedMailbox.kind === 'group' ? 'Shared' : 'Personal' }}
+            </div>
+            <p class="mt-1 text-[11px] leading-snug text-emerald-800/90 dark:text-emerald-200/90">
+              {{ t('inbox.inboxSurfaceOutboundEmailUsesYourGoogleApp') }}
+              <button
+                type="button"
+                class="font-medium underline hover:no-underline"
+                @click="onGmailProviderClick"
+              >
+                {{ t('inbox.inboxSurfaceConnectGmail') }}
+              </button>
+              {{ t('inbox.inboxSurfaceToImportAndReadMailIn') }}
+            </p>
+          </div>
+          <div
+            v-if="!mailboxFlags.gmailIntegrationEnabled && selectedMailbox?.inboundParser?.routingAddress"
+            class="border-b border-emerald-200 bg-emerald-50/90 px-4 py-3 text-xs text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100"
+          >
+            <div class="font-semibold">{{ t('inbox.mailboxDetailsForwardingAddress') }}</div>
+            <p class="mt-1 font-mono text-[11px] break-all select-all">
+              {{ selectedMailbox.inboundParser.routingAddress }}
+            </p>
+            <p v-if="selectedMailbox.inboundParser.forwardingHint" class="mt-1 leading-snug opacity-90">
+              {{ selectedMailbox.inboundParser.forwardingHint }}
+            </p>
+          </div>
+          <div
+            v-else-if="selectedMailbox && mailboxNeedsConnect(selectedMailbox)"
+            class="border-b border-blue-200 bg-blue-50/90 px-4 py-3 text-xs text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/25 dark:text-blue-100"
+          >
+            <div class="font-semibold">{{ selectedMailbox.label }}</div>
+            <p class="mt-1 leading-snug">{{ t('inbox.mailboxDetailsConnectPrompt') }}</p>
+            <button
+              type="button"
+              class="mt-2 rounded-md bg-emerald-600 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-emerald-700"
+              @click="openMailboxForwardingSetup(selectedMailbox)"
+            >
+              {{ t('inbox.inboxSurfaceConnect') }}
+            </button>
+          </div>
         </template>
       </InboxThreadList>
 
@@ -291,6 +343,20 @@
       </div>
     </div>
 
+    <MailboxDetailsModal
+      v-model="mailboxDetailsOpen"
+      :mailbox="mailboxDetailsTarget"
+      :sync-status-label="mailboxDetailsTarget ? formatMailboxSyncStatus(mailboxDetailsTarget) : ''"
+      :gmail-integration-enabled="mailboxFlags.gmailIntegrationEnabled"
+      :can-delete-personal="mailboxFlags.canDeletePersonal"
+      :can-create-group="mailboxFlags.canCreateGroup"
+      :action-loading="mailboxActionLoading"
+      :show-connect-action="mailboxDetailsTarget ? mailboxNeedsConnect(mailboxDetailsTarget) : false"
+      @connect="onMailboxDetailsConnect"
+      @manage-members="onMailboxDetailsManageMembers"
+      @delete="onMailboxDetailsDelete"
+    />
+
     <GmailMailboxFolderModal
       v-model="gmailFolderModalOpen"
       :mailbox-id="gmailFolderModalMailboxId"
@@ -395,7 +461,7 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, markRaw } from 'vue';
 import { useRoute, useRouter, RouterLink } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import { getApiOrigin } from '@/config/apiBase';
@@ -418,6 +484,7 @@ import EmailThreadReader from '@/components/inbox/EmailThreadReader.vue';
 import InboxContextPanel from '@/components/inbox/InboxContextPanel.vue';
 import InboxSidebar from '@/components/inbox/InboxSidebar.vue';
 import InboxThreadList from '@/components/inbox/InboxThreadList.vue';
+import MailboxDetailsModal from '@/components/inbox/MailboxDetailsModal.vue';
 import { useConnectMailboxPrompt } from '@/composables/useConnectMailboxPrompt';
 import { isMailboxConnectedForProvider } from '@/constants/inboxProviders';
 import { isInboxShellUnblocked, formatMailboxInboundStatus } from '@/utils/mailboxInboundStatus';
@@ -448,9 +515,8 @@ const mailboxFlags = ref({
 const mailboxesLoading = ref(true);
 const mailboxesError = ref(null);
 const mailboxActionLoading = ref(false);
-const showGroupMailboxForm = ref(false);
-const newGroupMailboxLabel = ref('');
-const newGroupMailboxEmail = ref('');
+const mailboxDetailsOpen = ref(false);
+const mailboxDetailsTarget = ref(null);
 const selectedMailboxFilter = ref(null);
 const selectedGmailLabelId = ref(null);
 const gmailLabelCatalog = ref([]);
@@ -878,17 +944,17 @@ const groupedEmailThreads = computed(() => {
 });
 
 const GMAIL_VIEW_DEFS = [
-  { id: 'INBOX', labelKey: 'inbox.inboxSidebarViewInbox', icon: InboxIcon, iconClass: 'text-red-500', countKey: 'unread' },
-  { id: 'CATEGORY_SOCIAL', labelKey: 'inbox.inboxSidebarViewSocial', icon: HashtagIcon, iconClass: 'text-[#2383E2]' },
-  { id: 'CATEGORY_PROMOTIONS', labelKey: 'inbox.inboxSidebarViewPromotions', icon: HashtagIcon, iconClass: 'text-violet-500' }
+  { id: 'INBOX', labelKey: 'inbox.inboxSidebarViewInbox', icon: markRaw(InboxIcon), iconClass: 'text-red-500', countKey: 'unread' },
+  { id: 'CATEGORY_SOCIAL', labelKey: 'inbox.inboxSidebarViewSocial', icon: markRaw(HashtagIcon), iconClass: 'text-[#2383E2]' },
+  { id: 'CATEGORY_PROMOTIONS', labelKey: 'inbox.inboxSidebarViewPromotions', icon: markRaw(HashtagIcon), iconClass: 'text-violet-500' }
 ];
 
 const GMAIL_MAIL_DEFS = [
-  { id: 'all', labelKey: 'inbox.inboxSurfaceAllMail', icon: InboxIcon, countKey: 'all' },
-  { id: 'sent', labelKey: 'inbox.inboxSurfaceFolderSent', icon: PaperAirplaneIcon, countKey: 'sent' },
-  { id: 'DRAFT', labelKey: 'inbox.inboxSidebarFolderDrafts', icon: PencilSquareIcon, gmailLabel: true },
-  { id: 'SPAM', labelKey: 'inbox.inboxSidebarFolderSpam', icon: HashtagIcon, gmailLabel: true },
-  { id: 'TRASH', labelKey: 'inbox.inboxSidebarFolderTrash', icon: TrashIcon, gmailLabel: true }
+  { id: 'all', labelKey: 'inbox.inboxSurfaceAllMail', icon: markRaw(InboxIcon), countKey: 'all' },
+  { id: 'sent', labelKey: 'inbox.inboxSurfaceFolderSent', icon: markRaw(PaperAirplaneIcon), countKey: 'sent' },
+  { id: 'DRAFT', labelKey: 'inbox.inboxSidebarFolderDrafts', icon: markRaw(PencilSquareIcon), gmailLabel: true },
+  { id: 'SPAM', labelKey: 'inbox.inboxSidebarFolderSpam', icon: markRaw(HashtagIcon), gmailLabel: true },
+  { id: 'TRASH', labelKey: 'inbox.inboxSidebarFolderTrash', icon: markRaw(TrashIcon), gmailLabel: true }
 ];
 
 const inboxSidebarViewItems = computed(() => {
@@ -899,7 +965,7 @@ const inboxSidebarViewItems = computed(() => {
         label: t('inbox.inboxSurfaceFolderUnread'),
         active: emailFilter.value === 'unread' && !selectedGmailLabelId.value,
         count: threadCounts.value.unread,
-        icon: InboxIcon,
+        icon: markRaw(InboxIcon),
         iconClass: 'text-red-500'
       }
     ];
@@ -947,13 +1013,45 @@ const inboxSidebarMailItems = computed(() => {
   });
 });
 
+function mailboxNeedsConnect(mb) {
+  if (!mb) return false;
+  if (mailboxFlags.value.gmailIntegrationEnabled) {
+    if (mb.kind === 'group' && mailboxFlags.value.canCreateGroup && !mb.gmailInboxSync?.connected) {
+      return true;
+    }
+    if (mb.kind === 'personal' && !mb.gmailInboxSync?.connected && !mb.gmailSmtpOutbound?.connected) {
+      return true;
+    }
+    return false;
+  }
+  return !mb.inboundParser?.routingAddress
+    && (mb.kind === 'personal' || (mb.kind === 'group' && mailboxFlags.value.canCreateGroup));
+}
+
+function formatMailboxSyncStatus(mb) {
+  if (!mailboxFlags.value.gmailIntegrationEnabled) {
+    return formatMailboxInboundStatus(mb, mailboxFlags.value);
+  }
+  if (mb?.gmailInboxSync?.connected) return 'gmail on';
+  if (mb?.gmailSmtpOutbound?.connected) return 'smtp send';
+  const s = String(mb?.syncStatus || 'not_configured');
+  if (s === 'not_configured') return 'sync off';
+  if (s === 'pending') return 'sync pending';
+  if (s === 'connected') return 'sync on';
+  return s;
+}
+
 const inboxSidebarMailboxItems = computed(() =>
   mailboxes.value.map((mb) => ({
     id: String(mb.id),
     label: mb.label,
     kind: mb.kind,
     active: selectedMailboxFilter.value === mb.id && !selectedGmailLabelId.value,
-    unreadCount: Number(mb.threadUnreadCount) || 0
+    unreadCount: Number(mb.threadUnreadCount) || 0,
+    emailAddress: mb.emailAddress || '',
+    syncStatusLabel: formatMailboxSyncStatus(mb),
+    showConnect: mailboxNeedsConnect(mb),
+    showMembers: mb.kind === 'group' && mailboxFlags.value.canCreateGroup
   }))
 );
 
@@ -1521,7 +1619,7 @@ const showInboxGetStarted = computed(() => {
   return !isInboxShellUnblocked(mailboxes.value, mailboxFlags.value);
 });
 
-function onGetStartedGroupSetup() {
+function openConnectGroupMailbox() {
   if (!mailboxFlags.value.canCreateGroup) {
     notifications.warning('Only admins can set up shared mailboxes.');
     return;
@@ -1894,17 +1992,42 @@ async function saveMembersModal() {
   }
 }
 
-function formatMailboxSyncStatus(mb) {
-  if (!mailboxFlags.value.gmailIntegrationEnabled) {
-    return formatMailboxInboundStatus(mb, mailboxFlags.value);
+function openMailboxDetails(mailboxId) {
+  const mb = mailboxes.value.find((x) => String(x.id) === String(mailboxId));
+  if (!mb) return;
+  mailboxDetailsTarget.value = mb;
+  mailboxDetailsOpen.value = true;
+}
+
+function onSidebarConnectMailbox(mailboxId) {
+  const mb = mailboxes.value.find((x) => String(x.id) === String(mailboxId));
+  if (!mb) return;
+  if (mailboxFlags.value.gmailIntegrationEnabled && mb.kind === 'group') {
+    openConnectGroupGmail(mb);
+  } else {
+    openMailboxForwardingSetup(mb);
   }
-  if (mb?.gmailInboxSync?.connected) return 'gmail on';
-  if (mb?.gmailSmtpOutbound?.connected) return 'smtp send';
-  const s = String(mb?.syncStatus || 'not_configured');
-  if (s === 'not_configured') return 'sync off';
-  if (s === 'pending') return 'sync pending';
-  if (s === 'connected') return 'sync on';
-  return s;
+}
+
+function onSidebarManageMembers(mailboxId) {
+  const mb = mailboxes.value.find((x) => String(x.id) === String(mailboxId));
+  if (mb) openMembersModal(mb);
+}
+
+function onMailboxDetailsConnect(mb) {
+  mailboxDetailsOpen.value = false;
+  onSidebarConnectMailbox(mb.id);
+}
+
+function onMailboxDetailsManageMembers(mb) {
+  mailboxDetailsOpen.value = false;
+  openMembersModal(mb);
+}
+
+function onMailboxDetailsDelete(mb) {
+  mailboxDetailsOpen.value = false;
+  if (mb?.kind === 'personal') deletePersonalMailbox();
+  else if (mb?.kind === 'group') deleteGroupMailbox(mb);
 }
 
 const fetchMailboxes = async () => {
@@ -1940,27 +2063,6 @@ const fetchMailboxes = async () => {
     mailboxesError.value = err?.response?.data?.message || err?.message || 'Unable to load mailboxes';
   } finally {
     mailboxesLoading.value = false;
-  }
-};
-
-const createPersonalMailbox = async () => {
-  mailboxActionLoading.value = true;
-  try {
-    const res = await apiClient('/mailboxes', {
-      method: 'POST',
-      body: JSON.stringify({ kind: 'personal', label: 'My work inbox' })
-    });
-    if (res?.success) {
-      await fetchMailboxes();
-      notifications.success('Personal mailbox created');
-    } else {
-      notifications.error(res?.message || 'Could not create mailbox');
-    }
-  } catch (err) {
-    const msg = err?.response?.data?.message || err?.message || 'Could not create mailbox';
-    notifications.error(msg);
-  } finally {
-    mailboxActionLoading.value = false;
   }
 };
 
@@ -2001,29 +2103,35 @@ const deletePersonalMailbox = async () => {
   }
 };
 
-const createGroupMailbox = async () => {
-  const label = newGroupMailboxLabel.value.trim();
-  if (!label) return;
+const deleteGroupMailbox = async (mb) => {
+  if (!mb?.id || mb.kind !== 'group' || !mailboxFlags.value.canCreateGroup) return;
+  const confirmed =
+    typeof window !== 'undefined'
+    && window.confirm(t('inbox.mailboxDetailsRemoveGroupConfirm'));
+  if (!confirmed) return;
+
   mailboxActionLoading.value = true;
   try {
-    const body = {
-      kind: 'group',
-      label,
-      emailAddress: newGroupMailboxEmail.value.trim() || undefined
-    };
-    const res = await apiClient('/mailboxes', { method: 'POST', body: JSON.stringify(body) });
+    const res = await apiClient(`/mailboxes/${encodeURIComponent(mb.id)}`, { method: 'DELETE' });
     if (res?.success) {
-      newGroupMailboxLabel.value = '';
-      newGroupMailboxEmail.value = '';
-      showGroupMailboxForm.value = false;
+      if (selectedMailboxFilter.value && String(selectedMailboxFilter.value) === String(mb.id)) {
+        selectedMailboxFilter.value = null;
+      }
       await fetchMailboxes();
-      notifications.success('Group mailbox created');
+      await fetchEmailThreads();
+      const warn = Array.isArray(res.warnings) ? res.warnings[0] : null;
+      if (warn) notifications.warning(warn);
+      else notifications.success(t('inbox.mailboxDetailsRemoveGroupSuccess'));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('litedesk:mailbox-connected'));
+      }
     } else {
-      notifications.error(res?.message || 'Could not create group mailbox');
+      notifications.error(res?.message || t('inbox.mailboxDetailsRemoveGroupError'));
     }
   } catch (err) {
-    const msg = err?.response?.data?.message || err?.message || 'Could not create group mailbox';
-    notifications.error(msg);
+    notifications.error(
+      err?.response?.data?.message || err?.message || t('inbox.mailboxDetailsRemoveGroupError')
+    );
   } finally {
     mailboxActionLoading.value = false;
   }
