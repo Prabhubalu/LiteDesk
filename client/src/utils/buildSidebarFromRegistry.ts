@@ -317,6 +317,9 @@ function pinImportsLast(coreModules: SidebarItem[]): SidebarItem[] {
     return coreModules;
   }
   const importsItem = coreModules[importsIndex];
+  if (!importsItem) {
+    return coreModules;
+  }
   return [
     ...coreModules.slice(0, importsIndex),
     ...coreModules.slice(importsIndex + 1),
