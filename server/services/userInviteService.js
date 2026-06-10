@@ -62,7 +62,20 @@ async function resolveUserByDirectoryToken(tokenHash, field) {
   if (!organization) return null;
 
   const ScopedUser = await getScopedUserModel(organization);
-  const user = await ScopedUser.findById(directoryEntry.tenantUserId);
+  let user = directoryEntry.tenantUserId
+    ? await ScopedUser.findById(directoryEntry.tenantUserId)
+    : null;
+
+  if (!user && directoryEntry.email) {
+    user = await ScopedUser.findOne({
+      email: String(directoryEntry.email).toLowerCase(),
+      [field]: tokenHash
+    });
+    if (user && field === 'inviteTokenHash') {
+      await repairDirectoryInviteToken(user, organization, tokenHash);
+    }
+  }
+
   if (!user) return null;
 
   return { user, organization, directoryEntry, ScopedUser };
