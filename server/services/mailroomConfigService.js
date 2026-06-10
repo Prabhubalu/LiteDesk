@@ -63,6 +63,7 @@ function hasConfiguredPolicies(policies) {
   if (!policies || typeof policies !== 'object') return false;
   return Boolean(
     policies.threading
+    || policies.ingest
     || policies.dedup
     || policies.caseLink
     || policies.classification

@@ -1,6 +1,7 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert');
 const { buildNormalizedMessage } = require('../../platform/mailroom/domain/normalizedMessage');
+const { mapParserApiMessageToNormalized } = require('../../platform/mailroom/domain/parsedMessageMappers');
 const { evaluate, evaluatePipeline } = require('../../platform/mailroom/policies/policyEngine');
 const { getTemplate } = require('../../platform/mailroom/policies/templates/defaultTemplates');
 const { validateMailroomConfig } = require('../../platform/mailroom/policies/validators/mailroomPolicyValidator');
@@ -70,6 +71,54 @@ describe('mailroom policy engine', () => {
     assert.equal(result.matched, true);
     assert.equal(result.ruleId, 'r1');
     assert.equal(result.action.type, 'route_to_case_flow');
+  });
+
+  it('ingest policy matches parser API message recipients', () => {
+    const message = mapParserApiMessageToNormalized({
+      from: 'customer@example.com',
+      to: ['support@xyz.com', 'help@xyz.com'],
+      cc: [{ address: 'ops@xyz.com' }],
+      subject: 'Need support'
+    });
+    const toResult = evaluate('ingest', {
+      message,
+      policies: {
+        ingest: {
+          rules: [
+            {
+              id: 'to-rule',
+              enabled: true,
+              match: 'all',
+              conditions: [{ field: 'to', operator: 'contains', value: 'support@xyz.com' }],
+              action: { type: 'workspace_only' }
+            }
+          ],
+          defaultAction: { type: 'route_to_case_flow' }
+        }
+      }
+    });
+    assert.equal(toResult.matched, true);
+    assert.equal(toResult.action.type, 'workspace_only');
+
+    const ccResult = evaluate('ingest', {
+      message,
+      policies: {
+        ingest: {
+          rules: [
+            {
+              id: 'cc-rule',
+              enabled: true,
+              match: 'all',
+              conditions: [{ field: 'cc', operator: 'equals', value: 'ops@xyz.com' }],
+              action: { type: 'manual_review' }
+            }
+          ],
+          defaultAction: { type: 'route_to_case_flow' }
+        }
+      }
+    });
+    assert.equal(ccResult.matched, true);
+    assert.equal(ccResult.action.type, 'manual_review');
   });
 
   it('case_link appends to open case', () => {
