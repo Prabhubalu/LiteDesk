@@ -347,6 +347,7 @@
             :model-value="localValue"
             :placeholder="t('records.editablePhonePh')"
             :invalid="Boolean(phoneError || saveHttpError)"
+            :editor-height-class="compact ? '' : 'h-8'"
             :input-class="stackSingleLineEditInputClass"
             @update:model-value="onPhoneInput"
             @blur="handleBlur"

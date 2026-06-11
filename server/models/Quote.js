@@ -153,13 +153,24 @@ const QuoteSchema = new Schema(
 // Ensure uniqueness per org (and allow future multi-tenant DB separation)
 QuoteSchema.index({ organizationId: 1, quoteNumber: 1, revisionNumber: 1 }, { unique: true });
 
+async function resolveNextQuoteNumber(QuoteModel, organizationId) {
+  const rows = await QuoteModel.find({ organizationId }).select('quoteNumber').lean();
+  let max = 0;
+  for (const row of rows) {
+    const match = /^QT-(\d+)$/i.exec(String(row.quoteNumber || '').trim());
+    if (match) {
+      max = Math.max(max, Number.parseInt(match[1], 10));
+    }
+  }
+  return `QT-${String(max + 1).padStart(4, '0')}`;
+}
+
 // Assign before Mongoose required-field validation (pre('save') runs too late).
 QuoteSchema.pre('validate', async function generateQuoteNumber(next) {
   if (this.quoteNumber) return next();
   try {
     const QuoteModel = this.constructor;
-    const count = await QuoteModel.countDocuments({ organizationId: this.organizationId });
-    this.quoteNumber = `QT-${String(count + 1).padStart(4, '0')}`;
+    this.quoteNumber = await resolveNextQuoteNumber(QuoteModel, this.organizationId);
     return next();
   } catch (e) {
     return next(e);

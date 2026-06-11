@@ -299,8 +299,35 @@ export function normalizeModuleFieldsFromMetadata(
   );
 }
 
+const QUOTE_LOOKUP_TARGET_BY_KEY: Record<string, string> = {
+  ownerid: 'users',
+  contactid: 'people',
+  organizationrefid: 'organizations',
+  dealid: 'deals',
+};
+
 function hydrateRuntimeFieldConfig(moduleKey: string, fields: MergeableField[]): MergeableField[] {
   const mk = String(moduleKey || '').toLowerCase().trim();
+  if (mk === 'quotes') {
+    return (fields || []).map((f) => {
+      const keyLower = String(f?.key || '').toLowerCase().trim();
+      const targetModule = QUOTE_LOOKUP_TARGET_BY_KEY[keyLower];
+      if (!targetModule) return f;
+      const dataType = String(f.dataType || '').toLowerCase();
+      const isLookup =
+        dataType.includes('lookup') ||
+        dataType.includes('relationship') ||
+        dataType.includes('reference') ||
+        dataType.includes('entity');
+      if (!isLookup) return f;
+      const ls =
+        f.lookupSettings && typeof f.lookupSettings === 'object'
+          ? (f.lookupSettings as Record<string, unknown>)
+          : null;
+      if (ls?.targetModule) return f;
+      return { ...f, lookupSettings: { targetModule } };
+    });
+  }
   if (mk !== 'items') return fields;
 
   return (fields || []).map((f) => {
@@ -332,7 +359,10 @@ function hydrateRuntimeFieldConfig(moduleKey: string, fields: MergeableField[]):
 
     // Items: categoryId is a CatalogCategory lookup under /catalog/categories/tree (not a normal module list).
     if (keyLower === 'categoryid') {
-      const ls = (f as any).lookupSettings && typeof (f as any).lookupSettings === 'object' ? (f as any).lookupSettings : null;
+      const ls =
+        f.lookupSettings && typeof f.lookupSettings === 'object'
+          ? (f.lookupSettings as Record<string, unknown>)
+          : null;
       const targetModule = String(ls?.targetModule || '').trim();
       if (!targetModule) {
         return {

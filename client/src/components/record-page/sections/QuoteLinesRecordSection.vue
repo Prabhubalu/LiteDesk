@@ -116,15 +116,6 @@
               </span>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-              <button
-                v-if="linesEditable && !block.isOrphan"
-                type="button"
-                class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline disabled:opacity-50"
-                :disabled="busy"
-                @click="beginAddLineToSection(block)"
-              >
-                {{ t('records.linesAddToSection') }}
-              </button>
               <span
                 v-if="block.section.showSectionTotal !== false"
                 class="text-sm font-semibold tabular-nums text-gray-900 dark:text-gray-100"
@@ -338,14 +329,106 @@
               </tr>
             </template>
           </draggable>
-          <tbody v-else-if="!getSectionRows(block.key).length" class="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody
+            v-if="linesEditable && hasDraftRow(block.key) && !isReorderDragging"
+            class="quote-line-draft-tbody"
+          >
+            <tr class="quote-line-draft-row bg-indigo-50/40 dark:bg-indigo-950/25 text-gray-900 dark:text-gray-100">
+              <td
+                :colspan="draftSearchColspan"
+                :class="[stickyColClass('name'), 'quote-line-draft-search-cell px-3 py-2 align-middle']"
+              >
+                <div class="flex items-center gap-1.5 min-w-0 w-full max-w-2xl">
+                  <div class="relative min-w-0 flex-1">
+                    <MagnifyingGlassIcon
+                      class="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400"
+                      aria-hidden="true"
+                    />
+                    <input
+                      :data-quote-draft-search="block.key"
+                      v-model="draftRow(block).searchQuery"
+                      type="search"
+                      :class="lineInlineSearchInputClass"
+                      :placeholder="t('records.linesInlineSearchPlaceholder')"
+                      :disabled="busy || draftRow(block).committing"
+                      autocomplete="off"
+                      @input="onDraftSearchInput(block)"
+                      @focus="onDraftSearchFocus(block)"
+                      @blur="onDraftSearchBlur(block)"
+                      @keydown="onDraftSearchKeydown(block, $event)"
+                    />
+                    <ul
+                      v-if="draftRow(block).searchOpen"
+                      class="absolute left-0 z-30 mt-1 w-full min-w-[16rem] max-h-52 overflow-y-auto rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black/5 dark:ring-white/10"
+                    >
+                      <li
+                        v-if="draftSearchDropdownLabel(block)"
+                        class="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
+                      >
+                        {{ draftSearchDropdownLabel(block) }}
+                      </li>
+                      <li
+                        v-if="draftRow(block).searchLoading"
+                        class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"
+                      >
+                        {{ t('states.loading') }}
+                      </li>
+                      <li
+                        v-else-if="!draftRow(block).searchResults.length"
+                        class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"
+                      >
+                        {{ t('records.linesNoVariantsFound') }}
+                      </li>
+                      <li
+                        v-for="(hit, hitIdx) in draftRow(block).searchResults"
+                        :key="hit._id"
+                        class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+                        :class="hitIdx === draftRow(block).searchHighlight ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''"
+                        @mousedown.prevent="commitDraftFromHit(block, hit)"
+                      >
+                        <span class="text-gray-900 dark:text-white">{{ hit.item_name || hit.variant_code }}</span>
+                        <span v-if="hit.variant_code" class="block text-xs text-gray-500 font-mono">{{ hit.variant_code }}</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <button
+                    type="button"
+                    class="inline-flex shrink-0 items-center justify-center h-8 w-8 rounded-md text-gray-500 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-white dark:hover:bg-gray-800 disabled:opacity-50"
+                    :disabled="busy || draftRow(block).committing"
+                    :title="t('records.linesOpenLookup')"
+                    :aria-label="t('records.linesOpenLookup')"
+                    @click="openVariantPickerForDraft(block)"
+                  >
+                    <MagnifyingGlassIcon class="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </div>
+              </td>
+              <td :class="[stickyColClass('total'), 'px-3 py-2 align-middle text-right text-xs text-gray-400 dark:text-gray-500 tabular-nums']">—</td>
+              <td :class="[stickyColClass('actions'), 'px-3 py-2 align-middle text-right']">
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
+                  :disabled="busy || draftRow(block).committing"
+                  :title="t('actions.cancel')"
+                  :aria-label="t('actions.cancel')"
+                  @click="clearDraftRow(block.key)"
+                >
+                  <XMarkIcon class="h-4 w-4" aria-hidden="true" />
+                </button>
+              </td>
+            </tr>
+          </tbody>
+          <tbody
+            v-else-if="!linesEditable && !getSectionRows(block.key).length"
+            class="divide-y divide-gray-200 dark:divide-gray-700"
+          >
             <tr>
               <td class="px-3 py-6 text-center text-sm text-gray-500 dark:text-gray-400" :colspan="tableColspan">
                 {{ t('records.linesEmpty') }}
               </td>
             </tr>
           </tbody>
-          <tbody v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody v-else-if="!linesEditable" class="divide-y divide-gray-200 dark:divide-gray-700">
             <tr
               v-for="{ line, indent, isBundleParent, isOptional } in getSectionRows(block.key)"
               :key="lineRowKey(line)"
@@ -381,11 +464,51 @@
               </td>
             </tr>
           </tbody>
-          <tfoot v-if="linesEditable && !getSectionRows(block.key).length && !isReorderDragging">
+          <tfoot v-if="linesEditable && !getSectionRows(block.key).length && isReorderDragging">
             <tr>
               <td class="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400" :colspan="tableColspan">
                 {{ canCrossSectionDrag ? t('records.linesEmptyDropHint') : t('records.linesEmpty') }}
               </td>
+            </tr>
+          </tfoot>
+          <tfoot
+            v-if="linesEditable && !isReorderDragging"
+            class="quote-lines-add-actions-foot"
+          >
+            <tr>
+              <td
+                :colspan="addActionsLeadingColspan"
+                :class="[
+                  lineTableFootCellClass,
+                  stickyColClass('name'),
+                  stickyColumnsActive && showPricingColumns && 'quote-lines-col-name',
+                  'quote-lines-add-actions-cell'
+                ]"
+              >
+                <div class="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    class="inline-flex h-8 items-center justify-center gap-1.5 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white px-3 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="busy || hasDraftRow(block.key)"
+                    @click="startDraftRow(block)"
+                  >
+                    <PlusIcon class="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {{ t('records.linesAdd') }}
+                  </button>
+                  <button
+                    type="button"
+                    class="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="busy"
+                    @click="openBundlePickerForSection(block)"
+                  >
+                    <Squares2X2Icon class="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-400" aria-hidden="true" />
+                    {{ t('records.linesAddBundle') }}
+                  </button>
+                </div>
+              </td>
+              <td :colspan="addActionsMiddleColspan" :class="lineTableFootCellClass" />
+              <td :class="[lineTableFootCellClass, stickyColClass('total')]" />
+              <td :class="[lineTableFootCellClass, stickyColClass('actions')]" />
             </tr>
           </tfoot>
           <tfoot
@@ -440,76 +563,6 @@
       <div
         class="shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm"
       >
-        <div
-          v-if="linesEditable"
-          class="px-3 py-2 border-b border-gray-100 dark:border-gray-800"
-          role="group"
-          :aria-label="t('records.linesAddBarLabel')"
-        >
-          <div class="flex flex-wrap items-center gap-2">
-            <HeadlessSelect
-              v-if="hasSections && addTargetSections.length"
-              v-model="addTargetSectionId"
-              :options="addTargetSectionOptions"
-              :placeholder="t('records.quoteSectionAddTarget')"
-              :disabled="busy"
-              :button-class="lineAddBarSelectClass"
-              wrapper-class="w-[8.5rem] shrink-0"
-              teleport
-            />
-            <button
-              type="button"
-              :class="[lineAddBarControlClass, 'flex-1 min-w-[10rem] text-left hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors']"
-              :disabled="busy"
-              @click="openVariantPicker"
-            >
-              <span v-if="variantLabel" class="block truncate text-gray-900 dark:text-gray-100">{{ variantLabel }}</span>
-              <span v-else class="text-gray-500 dark:text-gray-400">{{ t('records.linesPickVariant') }}</span>
-            </button>
-            <HeadlessSelect
-              v-model="selectedPriceBookId"
-              :options="priceBookOptions"
-              allow-empty
-              :empty-label="t('records.linesDefaultPriceBook')"
-              empty-value=""
-              :placeholder="t('records.linesPriceBook')"
-              :disabled="busy || priceBooksLoading"
-              :button-class="lineAddBarSelectClass"
-              wrapper-class="w-[9rem] shrink-0 hidden sm:block"
-              teleport
-            />
-            <input
-              v-model.number="quantity"
-              :class="lineAddBarQtyClass"
-              type="number"
-              min="1"
-              step="1"
-              :aria-label="t('records.linesQty')"
-              :disabled="busy"
-            />
-            <div class="flex items-center gap-1.5 shrink-0 ml-auto">
-              <button
-                type="button"
-                class="inline-flex h-8 items-center justify-center rounded-md bg-indigo-600 hover:bg-indigo-700 text-white px-3 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                :disabled="busy || !variantId"
-                @click="addLine"
-              >
-                <PlusIcon class="h-4 w-4 sm:mr-1 shrink-0" aria-hidden="true" />
-                <span class="hidden sm:inline">{{ t('records.linesAdd') }}</span>
-              </button>
-              <button
-                type="button"
-                class="inline-flex h-8 items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                :disabled="busy"
-                @click="openBundlePicker"
-              >
-                <span class="hidden md:inline">{{ t('records.linesAddBundle') }}</span>
-                <span class="md:hidden">{{ t('records.linesAddBundleShort') }}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
         <div class="flex items-center justify-between gap-3 p-3">
           <div
             class="w-full max-w-md space-y-1.5 text-sm"
@@ -610,7 +663,13 @@
           </li>
         </ul>
         <div class="flex justify-end">
-          <button type="button" class="px-3 py-2 text-sm" @click="showBundlePicker = false">{{ t('actions.cancel') }}</button>
+          <button
+            type="button"
+            class="px-3 py-2 text-sm"
+            @click="showBundlePicker = false; bundlePickerBlockKey = null"
+          >
+            {{ t('actions.cancel') }}
+          </button>
         </div>
       </div>
     </div>
@@ -688,7 +747,13 @@
           </li>
         </ul>
         <div class="flex justify-end">
-          <button type="button" class="px-3 py-2 text-sm" @click="showVariantPicker = false">{{ t('actions.cancel') }}</button>
+          <button
+            type="button"
+            class="px-3 py-2 text-sm"
+            @click="showVariantPicker = false; variantPickerBlockKey = null"
+          >
+            {{ t('actions.cancel') }}
+          </button>
         </div>
       </div>
     </div>
@@ -716,7 +781,16 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Bars3Icon, ChevronDownIcon, ChevronUpIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import {
+  Bars3Icon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  MagnifyingGlassIcon,
+  PlusIcon,
+  Squares2X2Icon,
+  TrashIcon,
+  XMarkIcon
+} from '@heroicons/vue/24/outline';
 import draggable from 'vuedraggable';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
@@ -770,6 +844,10 @@ const lineAddBarControlClass =
 const lineAddBarSelectClass =
   '!h-8 !px-2 !py-1 !text-xs !rounded-md !bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-white !outline-none ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:!ring-2 focus:!ring-indigo-500 disabled:!opacity-50 disabled:!cursor-not-allowed';
 const lineAddBarQtyClass = `${lineAddBarControlClass} w-14 text-right tabular-nums shrink-0`;
+const lineInlineSearchInputClass =
+  `${lineAddBarControlClass} min-w-0 w-full !pl-9 !pr-3 text-left`;
+const QUOTE_RECENT_VARIANTS_KEY = 'arivu:quote-recent-variants';
+const QUOTE_RECENT_VARIANTS_MAX = 12;
 
 const discountTypeOptions = computed(() => [
   { value: 'percent', label: t('records.linesDiscountPercent') },
@@ -779,9 +857,6 @@ const discountTypeOptions = computed(() => [
 const quoteId = computed(() => props.record?._id);
 const { busy, overrideLock } = useQuoteLinesSession(quoteId);
 
-const variantId = ref('');
-const variantLabel = ref('');
-const quantity = ref(1);
 const showPricingColumns = ref(false);
 const showDeleteLineModal = ref(false);
 const linePendingDelete = ref(null);
@@ -842,43 +917,74 @@ function onQuoteLinesTableScroll(event) {
 }
 
 const movableSections = computed(() => quoteSections.value.filter((s) => s?._id));
-const addTargetSections = computed(() => movableSections.value);
-
-const addTargetSectionId = ref('');
-
-watch(
-  addTargetSections,
-  (sections) => {
-    if (!sections.length) {
-      addTargetSectionId.value = '';
-      return;
-    }
-    const current = addTargetSectionId.value;
-    const stillValid = sections.some((s) => quoteSectionRef(s) === current);
-    if (!stillValid) {
-      addTargetSectionId.value = quoteSectionRef(sections[0]);
-    }
-  },
-  { immediate: true }
-);
-
 function sectionRef(section) {
   return quoteSectionRef(section);
 }
 
-const addTargetSectionOptions = computed(() =>
-  addTargetSections.value.map((s) => ({
-    value: sectionRef(s),
-    label: s.sectionTitle
-  }))
-);
-
 function lineSectionRef(line) {
   const sid = line?.quoteSectionId;
-  if (!sid) return addTargetSectionId.value || '';
+  if (!sid) return '';
   const match = quoteSections.value.find((s) => String(s._id) === String(sid));
   return match ? quoteSectionRef(match) : String(sid);
 }
+
+const draftRowsMap = ref({});
+
+function createDraftRowState() {
+  return {
+    searchQuery: '',
+    searchResults: [],
+    searchLoading: false,
+    searchOpen: false,
+    searchHighlight: -1,
+    committing: false
+  };
+}
+
+function draftRow(block) {
+  return draftRowsMap.value[block?.key];
+}
+
+function hasDraftRow(blockKey) {
+  return Boolean(draftRowsMap.value[blockKey]);
+}
+
+function startDraftRow(block) {
+  if (!linesEditable.value || isReorderDragging.value) return;
+  const key = block.key;
+  if (hasDraftRow(key)) {
+    focusDraftSearch(block);
+    openDraftSearchWithRecent(block);
+    return;
+  }
+  draftRowsMap.value = { ...draftRowsMap.value, [key]: createDraftRowState() };
+  activeAddBlockKey.value = key;
+  openDraftSearchWithRecent(block);
+  focusDraftSearch(block);
+}
+
+function clearDraftRow(blockKey) {
+  const next = { ...draftRowsMap.value };
+  delete next[blockKey];
+  draftRowsMap.value = next;
+}
+
+function focusDraftSearch(block) {
+  const key = String(block?.key || '');
+  if (!key) return;
+  requestAnimationFrame(() => {
+    const el = workspacePanelRef.value?.querySelector(`[data-quote-draft-search="${key}"]`);
+    if (el && typeof el.focus === 'function') {
+      el.focus();
+    }
+  });
+}
+
+const inlineSearchTimers = {};
+const pendingDraftCommits = new Set();
+const variantPickerBlockKey = ref(null);
+const bundlePickerBlockKey = ref(null);
+const activeAddBlockKey = ref('');
 
 const sectionRowsMap = ref({});
 const isReorderDragging = ref(false);
@@ -966,8 +1072,31 @@ function getSectionRows(key) {
   return sectionRowsMap.value[key] || [];
 }
 
+function buildSectionRowsFromBlockRows(blockRows) {
+  const seen = new Set();
+  const rows = [];
+  for (const row of blockRows || []) {
+    const uid = lineRowKey(row?.line);
+    if (!uid || seen.has(uid)) continue;
+    seen.add(uid);
+    rows.push({ ...row, uid });
+  }
+  return rows;
+}
+
 function setSectionRows(key, rows) {
-  sectionRowsMap.value = { ...sectionRowsMap.value, [key]: rows };
+  // vuedraggable echoes @update:model-value when the parent replaces model-value after
+  // add/delete — only accept local row mutations while the user is actively dragging.
+  if (!isReorderDragging.value) return;
+  const seen = new Set();
+  const deduped = [];
+  for (const row of rows || []) {
+    const uid = row?.uid || lineRowKey(row?.line);
+    if (!uid || seen.has(uid)) continue;
+    seen.add(uid);
+    deduped.push({ ...row, uid });
+  }
+  sectionRowsMap.value = { ...sectionRowsMap.value, [key]: deduped };
 }
 
 watch(
@@ -976,10 +1105,7 @@ watch(
     if (isReorderDragging.value) return;
     const next = {};
     for (const block of blocks) {
-      next[block.key] = block.rows.map((row) => ({
-        ...row,
-        uid: lineRowKey(row.line)
-      }));
+      next[block.key] = buildSectionRowsFromBlockRows(block.rows);
     }
     sectionRowsMap.value = next;
   },
@@ -1233,6 +1359,13 @@ const tableColspan = computed(() => {
   return n;
 });
 
+/** Draft add-line search spans scrollable columns; total + actions stay separate. */
+const draftSearchColspan = computed(() => tableColspan.value - 2);
+
+/** Add-line footer: name+sku (sticky) + scrollable middle + total + actions (sticky). */
+const addActionsLeadingColspan = computed(() => 2);
+const addActionsMiddleColspan = computed(() => tableColspan.value - addActionsLeadingColspan.value - 2);
+
 /** Columns from SKU through QTY — footer label sits in the unit-price column. */
 const sectionFooterBeforeUnitPriceColspan = computed(() => {
   let n = 2; // sku, qty
@@ -1454,10 +1587,7 @@ async function onLineOrderDragEnd() {
 function syncSectionRowsFromBlocks() {
   const next = {};
   for (const block of sectionBlocks.value) {
-    next[block.key] = block.rows.map((row) => ({
-      ...row,
-      uid: lineRowKey(row.line)
-    }));
+    next[block.key] = buildSectionRowsFromBlockRows(block.rows);
   }
   sectionRowsMap.value = next;
 }
@@ -1563,24 +1693,240 @@ function variantHitLabel(hit) {
   return hit.variant_code || String(hit._id);
 }
 
-function beginAddLineToSection(block) {
-  if (!linesEditable.value || !block?.section || block.isOrphan) return;
-  addTargetSectionId.value = sectionRef(block.section);
-  openVariantPicker();
+function readRecentVariantHits() {
+  try {
+    const raw = localStorage.getItem(QUOTE_RECENT_VARIANTS_KEY);
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
-function openVariantPicker() {
+function recordRecentVariant(hit) {
+  if (!hit?._id || typeof localStorage === 'undefined') return;
+  const entry = {
+    _id: String(hit._id),
+    item_name: hit.item_name || null,
+    variant_code: hit.variant_code || null
+  };
+  const next = [
+    entry,
+    ...readRecentVariantHits().filter((row) => String(row?._id || '') !== entry._id)
+  ].slice(0, QUOTE_RECENT_VARIANTS_MAX);
+  localStorage.setItem(QUOTE_RECENT_VARIANTS_KEY, JSON.stringify(next));
+}
+
+function recentHitsFromQuoteLines() {
+  const seen = new Set();
+  const hits = [];
+  for (const line of lines.value) {
+    const id = String(line?.variantId || '');
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    hits.push({
+      _id: id,
+      item_name: line.itemNameSnapshot || null,
+      variant_code: line.skuSnapshot || null
+    });
+  }
+  return hits;
+}
+
+function recentHitsForAdd() {
+  const seen = new Set();
+  const merged = [];
+  for (const hit of [...recentHitsFromQuoteLines(), ...readRecentVariantHits()]) {
+    const id = String(hit?._id || '');
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    merged.push(hit);
+  }
+  return merged.slice(0, 8);
+}
+
+function draftSearchDropdownLabel(block) {
+  const state = draftRow(block);
+  if (!state || state.searchLoading) return '';
+  if (!state.searchQuery.trim() && state.searchResults.length) {
+    return t('records.linesRecentProducts');
+  }
+  if (state.searchQuery.trim() && state.searchResults.length) {
+    return t('records.linesSearchResults');
+  }
+  return '';
+}
+
+function getDefaultAddBlock() {
+  if (activeAddBlockKey.value) {
+    const active = displaySectionBlocks.value.find((b) => b.key === activeAddBlockKey.value);
+    if (active) return active;
+  }
+  return displaySectionBlocks.value.find((b) => !b.isOrphan) || displaySectionBlocks.value[0] || null;
+}
+
+function openDraftSearchWithRecent(block) {
+  const state = draftRow(block);
+  if (!state) return;
+  if (state.searchQuery.trim()) {
+    state.searchOpen = true;
+    if (!state.searchResults.length) debouncedDraftSearch(block);
+    return;
+  }
+  const recent = recentHitsForAdd();
+  state.searchResults = recent;
+  state.searchOpen = recent.length > 0;
+  state.searchHighlight = -1;
+}
+
+function quoteSectionIdForBlockKey(blockKey) {
+  const block = displaySectionBlocks.value.find((b) => b.key === blockKey);
+  if (!block) return null;
+  return blockSectionRef(block);
+}
+
+function openVariantPickerForDraft(block) {
   if (!linesEditable.value) return;
+  if (!hasDraftRow(block.key)) startDraftRow(block);
+  activeAddBlockKey.value = block?.key ?? '';
+  variantPickerBlockKey.value = block?.key ?? null;
+  const state = draftRow(block);
   showVariantPicker.value = true;
-  variantSearchQuery.value = '';
+  variantSearchQuery.value = state?.searchQuery || '';
   runVariantSearch();
 }
 
-function openBundlePicker() {
+function openBundlePickerForSection(block) {
   if (!linesEditable.value) return;
+  activeAddBlockKey.value = block?.key ?? '';
+  bundlePickerBlockKey.value = block?.key ?? null;
   showBundlePicker.value = true;
   bundleSearchQuery.value = '';
   runBundleSearch();
+}
+
+function onDraftSearchInput(block) {
+  activeAddBlockKey.value = block?.key ?? '';
+  const state = draftRow(block);
+  if (!state) return;
+  state.searchOpen = true;
+  state.searchHighlight = -1;
+  debouncedDraftSearch(block);
+}
+
+function debouncedDraftSearch(block) {
+  const key = String(block?.key || '_default');
+  clearTimeout(inlineSearchTimers[key]);
+  inlineSearchTimers[key] = setTimeout(() => runDraftSearch(block), 300);
+}
+
+async function runDraftSearch(block) {
+  const state = draftRow(block);
+  if (!state) return;
+  if (!state.searchQuery.trim()) {
+    state.searchResults = recentHitsForAdd();
+    state.searchOpen = state.searchResults.length > 0;
+    state.searchLoading = false;
+    state.searchHighlight = -1;
+    return;
+  }
+  state.searchLoading = true;
+  try {
+    const res = await apiClient.get('/catalog/variants/search', {
+      params: { q: state.searchQuery, limit: 8 }
+    });
+    const hits = unwrapCatalogApiData(res);
+    state.searchResults = Array.isArray(hits) ? hits : [];
+    state.searchOpen = true;
+    if (state.searchHighlight >= state.searchResults.length) {
+      state.searchHighlight = state.searchResults.length ? 0 : -1;
+    }
+  } finally {
+    state.searchLoading = false;
+  }
+}
+
+async function commitDraftFromHit(block, hit) {
+  const key = block?.key;
+  const state = draftRow(block);
+  const variantId = String(hit?._id || '');
+  if (!state || !variantId || !linesEditable.value || !props.record?._id) return;
+  const commitKey = `${key}:${variantId}`;
+  if (state.committing || pendingDraftCommits.has(commitKey)) return;
+  pendingDraftCommits.add(commitKey);
+  recordRecentVariant(hit);
+  state.committing = true;
+  state.searchOpen = false;
+  try {
+    const res = await apiClient.post(`/quotes/${props.record._id}/lines`, {
+      variantId: variantId,
+      quantity: 1,
+      priceBookId: selectedPriceBookId.value || null,
+      quoteSectionId: blockSectionRef(block) || null,
+      overridePricing: overrideLock.value === true
+    });
+    if (res?.success) {
+      clearDraftRow(key);
+      const line = res?.data?.line;
+      if (line) {
+        emit('updated', {
+          type: 'lines-added',
+          lines: [line],
+          ...mutationPayload(res.data)
+        });
+      } else {
+        await refresh();
+      }
+    } else {
+      notifications.error(res?.message || t('records.linesAddFailed'));
+      state.committing = false;
+    }
+  } catch (e) {
+    notifications.error(e?.message || t('records.linesAddFailed'));
+    state.committing = false;
+  } finally {
+    pendingDraftCommits.delete(commitKey);
+  }
+}
+
+function onDraftSearchFocus(block) {
+  activeAddBlockKey.value = block?.key ?? '';
+  openDraftSearchWithRecent(block);
+}
+
+function onDraftSearchBlur(block) {
+  setTimeout(() => {
+    const state = draftRow(block);
+    if (state) state.searchOpen = false;
+  }, 150);
+}
+
+function onDraftSearchKeydown(block, event) {
+  const state = draftRow(block);
+  if (!state) return;
+  const results = state.searchResults;
+  if (event.key === 'ArrowDown' && state.searchOpen && results.length) {
+    event.preventDefault();
+    state.searchHighlight = Math.min(state.searchHighlight + 1, results.length - 1);
+    return;
+  }
+  if (event.key === 'ArrowUp' && state.searchOpen && results.length) {
+    event.preventDefault();
+    state.searchHighlight = Math.max(state.searchHighlight - 1, 0);
+    return;
+  }
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    clearDraftRow(block.key);
+    return;
+  }
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    if (state.searchOpen && results.length) {
+      const idx = state.searchHighlight >= 0 ? state.searchHighlight : 0;
+      commitDraftFromHit(block, results[idx]);
+    }
+  }
 }
 
 function debouncedVariantSearch() {
@@ -1621,9 +1967,15 @@ async function runBundleSearch() {
 }
 
 function pickVariant(hit) {
-  variantId.value = String(hit._id);
-  variantLabel.value = variantHitLabel(hit);
+  const blockKey = variantPickerBlockKey.value;
+  if (blockKey) {
+    const block = displaySectionBlocks.value.find((b) => b.key === blockKey);
+    if (block) {
+      commitDraftFromHit(block, hit);
+    }
+  }
   showVariantPicker.value = false;
+  variantPickerBlockKey.value = null;
 }
 
 const bundleOptionalModalTitle = computed(() => {
@@ -1780,15 +2132,16 @@ async function confirmBundleOptionalModal() {
 
 async function submitAddBundle(hit, includedOptionalComponentVariantIds) {
   if (!props.record?._id) return;
+  const blockKey = bundlePickerBlockKey.value;
   busy.value = true;
   try {
     const res = await apiClient.post(`/quotes/${props.record._id}/bundles`, {
       bundleVariantId: String(hit._id),
       priceBookId: selectedPriceBookId.value ? String(selectedPriceBookId.value) : null,
-      quantity: quantity.value > 0 ? quantity.value : 1,
+      quantity: 1,
       asOfDate: props.record?.quoteDate ?? null,
       includedOptionalComponentVariantIds: includedOptionalComponentVariantIds,
-      quoteSectionId: addTargetSectionId.value || null,
+      quoteSectionId: quoteSectionIdForBlockKey(blockKey) || null,
       overridePricing: overrideLock.value === true
     });
     if (!res?.success) {
@@ -1798,6 +2151,9 @@ async function submitAddBundle(hit, includedOptionalComponentVariantIds) {
     const parent = res?.data?.parent;
     const components = Array.isArray(res?.data?.components) ? res.data.components : [];
     const addedLines = [parent, ...components].filter(Boolean);
+    if (blockKey) {
+      clearDraftRow(blockKey);
+    }
     if (addedLines.length) {
       emit('updated', {
         type: 'lines-added',
@@ -1811,46 +2167,12 @@ async function submitAddBundle(hit, includedOptionalComponentVariantIds) {
     notifications.error(e?.message || t('records.linesAddBundleFailed'));
   } finally {
     busy.value = false;
+    bundlePickerBlockKey.value = null;
   }
 }
 
 async function refresh() {
   emit('updated', { type: 'soft-refresh' });
-}
-
-async function addLine() {
-  if (!linesEditable.value || !props.record?._id || !variantId.value) return;
-  busy.value = true;
-  try {
-    const res = await apiClient.post(`/quotes/${props.record._id}/lines`, {
-      variantId: variantId.value,
-      quantity: quantity.value,
-      priceBookId: selectedPriceBookId.value || null,
-      quoteSectionId: addTargetSectionId.value || null,
-      overridePricing: overrideLock.value === true
-    });
-    if (res?.success) {
-      variantId.value = '';
-      variantLabel.value = '';
-      quantity.value = 1;
-      const line = res?.data?.line;
-      if (line) {
-        emit('updated', {
-          type: 'lines-added',
-          lines: [line],
-          ...mutationPayload(res.data)
-        });
-      } else {
-        await refresh();
-      }
-    } else {
-      notifications.error(res?.message || t('records.linesAddFailed'));
-    }
-  } catch (e) {
-    notifications.error(e?.message || t('records.linesAddFailed'));
-  } finally {
-    busy.value = false;
-  }
 }
 
 async function patchQty(line, raw) {
@@ -1956,12 +2278,47 @@ async function loadPriceBooks() {
   }
 }
 
+function onWorkspaceKeydown(event) {
+  if (!linesEditable.value || !props.record?._id) return;
+  if (!(event.metaKey || event.ctrlKey) || String(event.key || '').toLowerCase() !== 'k') return;
+  const tag = String(event.target?.tagName || '').toLowerCase();
+  if (tag === 'textarea') return;
+  event.preventDefault();
+  event.stopPropagation();
+  const block = getDefaultAddBlock();
+  if (!block) return;
+  if (!hasDraftRow(block.key)) {
+    startDraftRow(block);
+  } else {
+    activeAddBlockKey.value = block.key;
+    openDraftSearchWithRecent(block);
+    focusDraftSearch(block);
+  }
+}
+
+function bindWorkspaceKeydown(el) {
+  if (!el) return;
+  el.addEventListener('keydown', onWorkspaceKeydown, true);
+}
+
+function unbindWorkspaceKeydown(el) {
+  if (!el) return;
+  el.removeEventListener('keydown', onWorkspaceKeydown, true);
+}
+
+watch(workspacePanelRef, (el, prev) => {
+  unbindWorkspaceKeydown(prev);
+  bindWorkspaceKeydown(el);
+});
+
 onMounted(() => {
   loadPriceBooks();
+  bindWorkspaceKeydown(workspacePanelRef.value);
 });
 
 onUnmounted(() => {
   document.body.classList.remove('quote-lines-reorder-active');
+  unbindWorkspaceKeydown(workspacePanelRef.value);
   clearQuoteLinesSession(quoteId.value);
 });
 
@@ -2038,6 +2395,14 @@ function priceProvenanceTitle(line) {
 
 .quote-lines-col-scroll {
   min-width: 8.5rem;
+}
+
+.quote-line-draft-search-cell {
+  min-width: 14rem;
+}
+
+.quote-lines-add-actions-foot .quote-lines-add-actions-cell {
+  min-width: 17rem;
 }
 
 .quote-lines-table-scroll {
@@ -2258,5 +2623,21 @@ function priceProvenanceTitle(line) {
 
 .quote-line-sortable-drag {
   opacity: 1 !important;
+}
+
+.quote-line-draft-row td {
+  border-top: 1px dashed rgb(199 210 254 / 0.85);
+}
+
+.dark .quote-line-draft-row td {
+  border-top-color: rgb(67 56 202 / 0.45);
+}
+
+.quote-lines-add-actions-foot td {
+  background-color: rgb(249 250 251 / 0.8);
+}
+
+.dark .quote-lines-add-actions-foot td {
+  background-color: rgb(17 24 39 / 0.5);
 }
 </style>

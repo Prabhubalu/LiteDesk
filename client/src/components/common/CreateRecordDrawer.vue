@@ -31,7 +31,7 @@
                 <DialogPanel
                   :class="[
                     'flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl max-w-[95vw] transition-[width] duration-200 ease-out',
-                    fullMode ? 'w-[60rem]' : 'w-[30rem]'
+                    isQuoteForm || fullMode ? 'w-[60rem]' : 'w-[30rem]'
                   ]"
                   @pointerdown.capture="markUserInteraction"
                   @focusin.capture="markUserInteraction"
@@ -99,7 +99,33 @@
                             :quickCreateFirstWhenExpanded="effectiveQuickCreateMode"
                             @update:formData="updateFormData"
                             @ready="onFormReady"
-                          />
+                          >
+                            <template v-if="isQuoteForm" #after-quick-create>
+                              <div class="space-y-3 pt-2">
+                                <div class="flex items-center gap-3">
+                                  <h3 class="text-sm font-semibold tracking-wide text-gray-900 dark:text-white uppercase">
+                                    {{ t('records.quoteLinesSectionTitle') }}
+                                  </h3>
+                                  <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+                                </div>
+                                <div v-if="quoteFormLoading" class="flex justify-center py-10">
+                                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+                                </div>
+                                <QuoteLinesRecordSection
+                                  v-else-if="quoteFormRecord"
+                                  :record="quoteFormRecord"
+                                  :context="quoteLinesFormContext"
+                                  @updated="handleQuoteLinesUpdated"
+                                />
+                                <p
+                                  v-else
+                                  class="text-sm text-red-600 dark:text-red-400"
+                                >
+                                  {{ isQuoteEdit ? t('records.quoteLoadFailed') : t('records.quoteCreateDraftFailed') }}
+                                </p>
+                              </div>
+                            </template>
+                          </DynamicForm>
                           <!-- Deal relationship editor (People + Organizations) -->
                           <div
                             v-if="moduleKey === 'deals' && (!effectiveQuickCreateMode || fullMode || isEditing)"
@@ -165,6 +191,7 @@ import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } fro
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from './DynamicForm.vue';
 import DealRelationshipEditor from '@/components/deals/DealRelationshipEditor.vue';
+import QuoteLinesRecordSection from '@/components/record-page/sections/QuoteLinesRecordSection.vue';
 import apiClient from '@/utils/apiClient';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
@@ -180,7 +207,11 @@ import {
   filterCaseEditSubmitPayload,
   buildCaseEditSubmitPayload
 } from '@/platform/fields/caseFieldModel';
-import { getGlobalSystemFieldKeys, normalizeFieldKeyForSystemMatch } from '@/platform/fields/fieldCapabilityEngine';
+import {
+  getGlobalSystemFieldKeys,
+  isSystemField,
+  normalizeFieldKeyForSystemMatch,
+} from '@/platform/fields/fieldCapabilityEngine';
 import { shouldFilterPayloadByQuickCreate } from '@/utils/quickCreatePayloadFilter';
 import { useCreationContext } from '@/utils/creationContext';
 import { getParticipationFields, getCoreIdentityFields, mergePeopleVirtualFieldDefinitions } from '@/platform/fields/peopleFieldModel';
@@ -196,6 +227,12 @@ import {
   getItemLegacyCategoryFieldKeys
 } from '@/platform/fields/itemFieldModel';
 import { normalizeModuleFieldsFromMetadata } from '@/platform/fields/fieldMerge';
+import {
+  applyQuoteLineDeleteToRecord,
+  applyQuoteLinesAddToRecord,
+  applyQuoteLinesMutationToRecord,
+  applyQuoteLinesRecalculateToRecord,
+} from '@/utils/quoteRecordPatch';
 
 const _c = globalThis.console;
 function drawerDbg(...args) {
@@ -269,12 +306,47 @@ const { openTab, activeTab } = useTabs();
 // Omit override = infer from route + activeApp on /people (null would mean explicit global-only)
 const { isSalesContext } = useCreationContext();
 const isEditing = computed(() => !!props.record);
+const isQuoteModule = computed(() => props.moduleKey?.toLowerCase() === 'quotes');
+const isQuoteCreate = computed(() => isQuoteModule.value && !isEditing.value);
+const isQuoteEdit = computed(() => isQuoteModule.value && isEditing.value);
+const isQuoteForm = computed(() => isQuoteModule.value);
 const fullMode = ref(false);
 const closeButtonRef = ref(null);
+const quoteFormRecord = ref(null);
+const quoteFormLoading = ref(false);
+const quoteFormEnsurePromise = ref(null);
+const quoteLinesFormContext = { expandedLeftSection: '' };
+
+function isDuplicateKeyError(error) {
+  const msg = String(
+    error?.message ||
+    error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    ''
+  );
+  return error?.response?.status === 409 ||
+    msg.includes('E11000') ||
+    msg.includes('duplicate key');
+}
+
+async function createQuoteDraftWithRetry(payload, maxAttempts = 3) {
+  let lastError = null;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    try {
+      return await apiClient.post('/quotes', payload);
+    } catch (error) {
+      lastError = error;
+      if (!isDuplicateKeyError(error) || attempt >= maxAttempts - 1) {
+        throw error;
+      }
+    }
+  }
+  throw lastError;
+}
 
 // Two modes: Quick Create Mode (only quick create fields) | Full Form Mode (all fields from config except system)
-// Show toggle only when in quick create mode (limited fields)
-const showFullModeToggle = computed(() => effectiveQuickCreateMode.value && !isEditing.value);
+// Show toggle only when in quick create mode (limited fields). Quotes always open in full form.
+const showFullModeToggle = computed(() => effectiveQuickCreateMode.value && !isEditing.value && !isQuoteForm.value);
 
 function toggleFullMode() {
   markUserInteraction();
@@ -284,6 +356,7 @@ function toggleFullMode() {
 // Quick Create Mode: show only fields from Settings → Quick Create
 // Full Form Mode: show all fields from module config (except system) in config order
 const effectiveQuickCreateMode = computed(() => {
+  if (isQuoteEdit.value) return true;
   if (isEditing.value) return false;
   if (props.quickCreateMode) return true;
   // If module settings provide a quickCreate config, default to strict quick-create mode.
@@ -319,6 +392,7 @@ const moduleNameMap = {
   'tasks': 'Task',
   'cases': 'Case',
   'events': 'Event',
+  'quotes': 'Quote',
   'users': 'User'
 };
 
@@ -401,6 +475,22 @@ const effectiveExcludeFields = computed(() => {
         return caseSystemPrefixes.some((prefix) => normalized.startsWith(prefix));
       });
     [...caseSystemFields, ...caseSystemFieldsFromModule].forEach((k) => excluded.add(k));
+    return Array.from(excluded);
+  }
+  if (props.moduleKey?.toLowerCase() === 'quotes') {
+    const quoteFields = effectiveModuleOverrideForDrawer.value?.fields || [];
+    for (const field of quoteFields) {
+      const key = String(field?.key || '');
+      if (!key) continue;
+      const normalized = normalizeFieldKeyForSystemMatch(key);
+      if (isSystemField('quotes', { key })) {
+        excluded.add(key);
+        continue;
+      }
+      if (normalized.startsWith('customerresponse')) {
+        excluded.add(key);
+      }
+    }
     return Array.from(excluded);
   }
   return Array.from(excluded);
@@ -722,6 +812,9 @@ const normalizeDealRelationships = (value = {}, options = {}) => {
 const closeDrawer = () => {
   if (!saving.value) {
     fullMode.value = false;
+    quoteFormRecord.value = null;
+    quoteFormLoading.value = false;
+    quoteFormEnsurePromise.value = null;
     emit('close');
     // Reset form after closing
     setTimeout(() => {
@@ -734,6 +827,126 @@ const closeDrawer = () => {
     }, 300);
   }
 };
+
+async function loadQuoteFormRecord(quoteId) {
+  const loaded = await apiClient.get(`/quotes/${quoteId}`);
+  quoteFormRecord.value = loaded?.data || loaded;
+}
+
+async function ensureQuoteFormRecord() {
+  if (!isQuoteForm.value) return;
+
+  const editId = props.record?._id || props.record?.id;
+  if (isQuoteEdit.value && editId) {
+    if (String(quoteFormRecord.value?._id || '') === String(editId)) return;
+    if (quoteFormEnsurePromise.value) {
+      await quoteFormEnsurePromise.value;
+      return;
+    }
+
+    quoteFormLoading.value = true;
+    quoteFormEnsurePromise.value = (async () => {
+      try {
+        await loadQuoteFormRecord(editId);
+      } catch (error) {
+        drawerWarn('[CreateRecordDrawer] Failed to load quote for edit:', error);
+      } finally {
+        quoteFormEnsurePromise.value = null;
+        quoteFormLoading.value = false;
+      }
+    })();
+    await quoteFormEnsurePromise.value;
+    return;
+  }
+
+  if (!isQuoteCreate.value || quoteFormRecord.value?._id) return;
+  if (quoteFormEnsurePromise.value) {
+    await quoteFormEnsurePromise.value;
+    return;
+  }
+
+  quoteFormLoading.value = true;
+  quoteFormEnsurePromise.value = (async () => {
+    try {
+      const createPayload = applyCreateOwnerDefaultsToPayload(
+        { ...props.initialData },
+        'quotes',
+        resolveCurrentUserId(authStore.user)
+      );
+      const created = await createQuoteDraftWithRetry(createPayload);
+      const createdRecord = created?.data || created;
+      const quoteId = createdRecord?._id || createdRecord?.id;
+      if (!quoteId) {
+        throw new Error('Quote draft was not created');
+      }
+      await loadQuoteFormRecord(quoteId);
+      if (moduleDefinition.value) {
+        mergeQuoteFormRecordIntoFormData(quoteFormRecord.value);
+      }
+    } catch (error) {
+      drawerWarn('[CreateRecordDrawer] Failed to create quote draft:', error);
+    } finally {
+      quoteFormEnsurePromise.value = null;
+      quoteFormLoading.value = false;
+    }
+  })();
+
+  await quoteFormEnsurePromise.value;
+}
+
+function mergeQuoteFormRecordIntoFormData(record) {
+  if (!record || !moduleDefinition.value?.fields) return;
+  const next = { ...formData.value };
+  for (const field of moduleDefinition.value.fields) {
+    const key = field?.key;
+    if (!key || !(key in record)) continue;
+    let value = record[key];
+    if (value && typeof value === 'object' && !Array.isArray(value) && value._id) {
+      value = value._id;
+    }
+    if (value !== null && value !== undefined && value !== '') {
+      next[key] = value;
+    }
+  }
+  formData.value = next;
+}
+
+function handleQuoteLinesUpdated(payload) {
+  const record = quoteFormRecord.value;
+  if (!record) return;
+
+  if (payload?.type === 'line-deleted') {
+    applyQuoteLineDeleteToRecord(record, {
+      deletedLine: payload.deletedLine,
+      totals: payload.totals,
+      sections: payload.sections,
+    });
+    return;
+  }
+  if (payload?.type === 'lines-added') {
+    applyQuoteLinesAddToRecord(record, {
+      lines: payload.lines,
+      totals: payload.totals,
+      sections: payload.sections,
+    });
+    return;
+  }
+  if (payload?.type === 'line-updated') {
+    applyQuoteLinesMutationToRecord(record, {
+      line: payload.line,
+      totals: payload.totals,
+      sections: payload.sections,
+    });
+    return;
+  }
+  if (payload?.type === 'lines-recalculated') {
+    applyQuoteLinesRecalculateToRecord(record, {
+      lines: payload.lines,
+      totals: payload.totals,
+      sections: payload.sections,
+    });
+  }
+}
 
 // Handle dialog close (escape/backdrop/portal interactions).
 // If the user already interacted with the drawer content, treat close as accidental.
@@ -940,6 +1153,9 @@ const onFormReady = (module) => {
   if (isFirstLoad || isEditing.value) {
     initializeForm(module);
     if (!isEditing.value) applySearchPrefill(module);
+    if (isQuoteCreate.value && quoteFormRecord.value) {
+      mergeQuoteFormRecordIntoFormData(quoteFormRecord.value);
+    }
   }
 };
 
@@ -970,8 +1186,14 @@ watch(() => props.record, () => {
 watch(() => [props.isOpen, props.moduleKey], ([open, key]) => {
   if (open && key) {
     fetchModuleForDrawer();
+    if (String(key).toLowerCase() === 'quotes') {
+      ensureQuoteFormRecord();
+    }
   } else {
     moduleOverrideFromSettings.value = null;
+    quoteFormRecord.value = null;
+    quoteFormLoading.value = false;
+    quoteFormEnsurePromise.value = null;
     dealOverrideCache.mod = null;
     dealOverrideCache.pipelineKey = undefined;
     dealOverrideCache.quickMode = undefined;
@@ -1093,6 +1315,10 @@ const handleSubmit = async () => {
   });
   
   errors.value = {};
+  if (isQuoteCreate.value && !quoteFormRecord.value?._id) {
+    errors.value._general = t('records.quoteCreateDraftFailed');
+    return;
+  }
   saving.value = true;
 
   try {
@@ -1614,6 +1840,20 @@ const handleSubmit = async () => {
         role: 'Lead',
         formData: submitData
       });
+    } else if (isQuoteCreate.value && quoteFormRecord.value?._id) {
+      const quoteId = quoteFormRecord.value._id;
+      response = await apiClient.put(`${endpoint}/${quoteId}`, submitData);
+      const savedData = response?.data || response;
+      if (savedData && quoteFormRecord.value) {
+        response = {
+          ...response,
+          data: {
+            ...savedData,
+            lines: quoteFormRecord.value.lines,
+            sections: quoteFormRecord.value.sections,
+          },
+        };
+      }
     } else {
       // Create new record (including people in Global context)
       response = await apiClient.post(createEndpoint, submitData);
@@ -1842,11 +2082,14 @@ const handleSubmit = async () => {
 watch(() => props.isOpen, (isOpen) => {
   if (isOpen) {
     userHasEdited.value = false;
-    fullMode.value = false;
+    fullMode.value = isQuoteForm.value;
     errors.value = {};
     moduleDefinition.value = null;
     // Form seeds from record in onFormReady / moduleOverride watch after module loads
   } else {
+    quoteFormRecord.value = null;
+    quoteFormLoading.value = false;
+    quoteFormEnsurePromise.value = null;
     // Reset when closed so the next open re-seeds from record via onFormReady
     setTimeout(() => {
       formData.value = {};
