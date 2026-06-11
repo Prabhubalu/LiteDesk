@@ -195,6 +195,30 @@
     "message": "Search variants…",
     "description": "Search input placeholder in quote line variant picker"
   },
+  "linesInlineSearchPlaceholder": {
+    "message": "Search products…",
+    "description": "Inline search placeholder in quote lines add row"
+  },
+  "linesOpenLookup": {
+    "message": "Open product lookup",
+    "description": "Aria label for opening full variant lookup from quote lines add row"
+  },
+  "linesRecentProducts": {
+    "message": "Recent & on this quote",
+    "description": "Section label in quote line inline search dropdown for recent products"
+  },
+  "linesSearchResults": {
+    "message": "Search results",
+    "description": "Section label in quote line inline search dropdown for typed search results"
+  },
+  "linesUnitPricePreview": {
+    "message": "Unit price",
+    "description": "Label for resolved unit price preview before adding a quote line"
+  },
+  "linesAddShortcutHint": {
+    "message": "Tip: With focus in lines, press ⌘K (Ctrl+K) to search products",
+    "description": "Keyboard shortcut hint below quote line add panel"
+  },
   "linesNoVariantsFound": {
     "message": "No variants found.",
     "description": "Empty state in quote line variant picker"
@@ -306,6 +330,18 @@
   "quoteSectionAdd": {
     "message": "Add section",
     "description": "Button to create a new quote section"
+  },
+  "quoteLinesSectionTitle": {
+    "message": "Lines",
+    "description": "Section heading for quote lines in create drawer"
+  },
+  "quoteCreateDraftFailed": {
+    "message": "Could not start a new quote. Please try again.",
+    "description": "Error when quote draft creation fails on drawer open"
+  },
+  "quoteLoadFailed": {
+    "message": "Could not load quote lines. Please try again.",
+    "description": "Error when quote record with lines fails to load in edit drawer"
   },
   "quoteSectionAddTitle": {
     "message": "New section",

@@ -1144,6 +1144,7 @@ function inferLookupTargetFromFieldKey(fieldKey) {
   const k = String(fieldKey || '').toLowerCase();
   if (k === 'contactid' || k === 'personid') return 'people';
   if (k === 'organizationrefid' || k === 'accountid') return 'organizations';
+  if (k === 'dealid') return 'deals';
   return '';
 }
 

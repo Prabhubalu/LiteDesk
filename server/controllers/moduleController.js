@@ -707,6 +707,22 @@ function getFieldDataType(key, fieldName, path) {
     if (key === 'tasks' && taskFieldMappings[fieldName]) {
         return taskFieldMappings[fieldName];
     }
+
+    const quoteFieldMappings = {
+        quoteTitle: 'Text',
+        quoteDate: 'Date',
+        validUntil: 'Date',
+        status: 'Picklist',
+        currency: 'Picklist',
+        ownerId: 'Lookup (Relationship)',
+        contactId: 'Lookup (Relationship)',
+        organizationRefId: 'Lookup (Relationship)',
+        dealId: 'Lookup (Relationship)',
+    };
+    if (key === 'quotes' && quoteFieldMappings[fieldName]) {
+        return quoteFieldMappings[fieldName];
+    }
+
     // Fall back to inference based on schema type
     return inferDataType(path);
 }
@@ -915,6 +931,10 @@ function getBaseFieldsForKey(key) {
                         'quoteNumber',
                         'sourceContext',
                         'sourceRef',
+                        'exchangeRateSnapshot',
+                        'globalDiscountType',
+                        'globalDiscountValue',
+                        'globalDiscountAmount',
                         'subtotal',
                         'lineDiscountTotal',
                         'globalDiscountTotal',
@@ -928,6 +948,9 @@ function getBaseFieldsForKey(key) {
                         'sentAt',
                         'publicShareToken',
                         'portalAccessEnabled',
+                        'customerShareMode',
+                        'draftSharedAt',
+                        'customerResponse',
                         'converted',
                         'conversionStatus',
                         'customerId',
@@ -935,6 +958,7 @@ function getBaseFieldsForKey(key) {
                         'customRecordId'
                     ]);
                     if (quotesSchemaExcluded.has(name)) return false;
+                    if (name.startsWith('customerResponse.')) return false;
                 }
                 if (key === 'sales_orders') {
                     const salesOrdersSchemaExcluded = new Set([

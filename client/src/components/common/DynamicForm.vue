@@ -119,6 +119,7 @@
             </div>
           </div>
         </div>
+        <slot name="after-quick-create" />
         <hr v-if="groupedRemainingSections.length" class="border-gray-200 dark:border-gray-700" />
         <section
           v-for="section in groupedRemainingSections"
@@ -405,6 +406,7 @@ import {
   canEditField,
   isFieldVisibleInConfig
 } from '@/platform/fields/fieldCapabilityEngine';
+import { getQuoteFieldMetadata } from '@/platform/fields/quoteFieldModel';
 
 const _c = globalThis.console;
 function formDbg(...args) {
@@ -1146,9 +1148,24 @@ const resolveFieldSectionKey = (field) => {
   return 'CORE';
 };
 
+const filterQuoteFullFormRemainingFields = (fields) => {
+  return fields.filter((field) => {
+    const meta = getQuoteFieldMetadata(field.key);
+    if (meta) {
+      if (meta.owner === 'system' || meta.isComputed === true) return false;
+      return meta.owner === 'core';
+    }
+    return !isSystemField('quotes', field);
+  });
+};
+
 const fullFormSections = computed(() => {
   if (!useSectionedFullForm.value) return [];
-  const sourceFields = remainingFields.value;
+  const moduleKeyLower = String(props.moduleKey || '').toLowerCase();
+  let sourceFields = remainingFields.value;
+  if (moduleKeyLower === 'quotes') {
+    sourceFields = filterQuoteFullFormRemainingFields(sourceFields);
+  }
   const coreFields = [];
   const participationMap = new Map();
 

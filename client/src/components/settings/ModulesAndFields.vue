@@ -6769,6 +6769,7 @@ const quickCreateAvailableFields = computed(() => {
     return editFields.value.filter((field) => {
       if (!field?.key) return false;
       if (isSystemField(field)) return false;
+      if (field.required) return true;
       return !isExcludedFromQuoteQuickCreate(field.key);
     });
   }
@@ -6778,6 +6779,7 @@ const quickCreateAvailableFields = computed(() => {
     return editFields.value.filter((field) => {
       if (!field?.key) return false;
       if (isSystemField(field)) return false;
+      if (field.required) return true;
       return !isExcludedFromSalesOrderQuickCreate(field.key);
     });
   }
@@ -6786,6 +6788,7 @@ const quickCreateAvailableFields = computed(() => {
     return editFields.value.filter((field) => {
       if (!field?.key) return false;
       if (isSystemField(field)) return false;
+      if (field.required) return true;
       return !isExcludedFromInvoiceQuickCreate(field.key);
     });
   }
@@ -6794,6 +6797,7 @@ const quickCreateAvailableFields = computed(() => {
     return editFields.value.filter((field) => {
       if (!field?.key) return false;
       if (isSystemField(field)) return false;
+      if (field.required) return true;
       return !isExcludedFromPaymentQuickCreate(field.key);
     });
   }
