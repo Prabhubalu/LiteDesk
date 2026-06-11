@@ -78,20 +78,15 @@
     </Teleport>
   </Popover>
 
-  <div v-else :class="['flex w-full min-w-0 items-center', editorHeightClass]">
+  <div v-else :class="inlineWrapperClass">
     <Listbox
       :model-value="selectedCountry.iso2"
       :disabled="disabled"
       @update:model-value="handleCountryChange"
     >
-      <div class="relative flex-shrink-0 self-center">
+      <div class="relative h-full flex-shrink-0">
         <ListboxButton
-          :class="[
-            'flex shrink-0 items-center gap-1 rounded-l-md border border-r-0 bg-gray-100 px-2 text-left text-sm text-gray-900 outline-none transition-colors dark:bg-gray-700 dark:text-white',
-            editorHeightClass,
-            disabled ? 'cursor-not-allowed opacity-60' : 'hover:bg-gray-50 dark:hover:bg-gray-800',
-            invalid ? 'border-red-500 dark:border-red-500' : 'border-gray-300/60 dark:border-gray-600'
-          ]"
+          :class="countryButtonClass"
           :title="`${selectedCountry.name} +${selectedCountry.dialCode}`"
         >
           <span class="font-medium">{{ selectedCountry.iso2 }}</span>
@@ -136,7 +131,7 @@
       </div>
     </Listbox>
 
-    <div class="min-w-0 flex-1 self-center">
+    <div class="min-w-0 h-full flex-1">
       <input
         ref="inputRef"
         :id="id"
@@ -151,7 +146,7 @@
         :disabled="disabled"
         :class="[
           inputClass,
-          editorHeightClass,
+          numberInputHeightClass,
           'rounded-l-none box-border',
           invalid ? 'border-red-500 dark:border-red-500' : ''
         ]"
@@ -245,10 +240,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  /** Shared height for country selector + number input (e.g. h-8). */
+  /** Fixed height for compact layouts (e.g. h-8). Omit for standard form field height. */
   editorHeightClass: {
     type: String,
-    default: 'h-8',
+    default: '',
   },
 });
 
@@ -266,6 +261,44 @@ const skipNextBlurCommit = ref(false);
 const { panelStyle, refresh, close: closePanelPosition, openAt } = useAnchoredPanelPosition({ panelWidth: 320 });
 const selectedCountry = ref(getPhoneCountry(props.defaultCountry));
 const nationalNumber = ref('');
+
+/** Matches DynamicForm lookup/combobox controls (h-[2.5rem]). */
+const FORM_FIELD_HEIGHT_CLASS = 'h-[2.5rem]';
+
+const isCompactEditor = computed(() => Boolean(props.editorHeightClass));
+
+const inlineWrapperClass = computed(() => [
+  'flex w-full min-w-0 items-center',
+  isCompactEditor.value ? props.editorHeightClass : FORM_FIELD_HEIGHT_CLASS,
+]);
+
+const numberInputHeightClass = computed(() => (
+  isCompactEditor.value ? props.editorHeightClass : 'h-full'
+));
+
+const countryButtonClass = computed(() => {
+  const typographyClass = isCompactEditor.value ? 'text-sm' : 'text-base sm:text-sm/6';
+  const shared = [
+    'flex shrink-0 items-center gap-1 rounded-l-md bg-gray-100 px-2 text-left text-gray-900 transition-colors dark:bg-gray-700 dark:text-white',
+    typographyClass,
+    props.disabled ? 'cursor-not-allowed opacity-60' : 'hover:bg-gray-50 dark:hover:bg-gray-800',
+  ];
+
+  if (isCompactEditor.value) {
+    return [
+      ...shared,
+      'border border-r-0 outline-none',
+      props.editorHeightClass,
+      props.invalid ? 'border-red-500 dark:border-red-500' : 'border-gray-300/60 dark:border-gray-600',
+    ];
+  }
+
+  return [
+    ...shared,
+    'h-full outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800',
+    props.invalid ? 'border border-red-500 dark:border-red-500' : '',
+  ];
+});
 
 const displayText = computed(() => {
   const raw = props.modelValue;

@@ -320,7 +320,10 @@ function hydrateRuntimeFieldConfig(moduleKey: string, fields: MergeableField[]):
         dataType.includes('reference') ||
         dataType.includes('entity');
       if (!isLookup) return f;
-      const ls = f.lookupSettings && typeof f.lookupSettings === 'object' ? f.lookupSettings : null;
+      const ls =
+        f.lookupSettings && typeof f.lookupSettings === 'object'
+          ? (f.lookupSettings as Record<string, unknown>)
+          : null;
       if (ls?.targetModule) return f;
       return { ...f, lookupSettings: { targetModule } };
     });
@@ -356,7 +359,10 @@ function hydrateRuntimeFieldConfig(moduleKey: string, fields: MergeableField[]):
 
     // Items: categoryId is a CatalogCategory lookup under /catalog/categories/tree (not a normal module list).
     if (keyLower === 'categoryid') {
-      const ls = (f as any).lookupSettings && typeof (f as any).lookupSettings === 'object' ? (f as any).lookupSettings : null;
+      const ls =
+        f.lookupSettings && typeof f.lookupSettings === 'object'
+          ? (f.lookupSettings as Record<string, unknown>)
+          : null;
       const targetModule = String(ls?.targetModule || '').trim();
       if (!targetModule) {
         return {

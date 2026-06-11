@@ -101,6 +101,10 @@
       :disabled="isReadOnly"
       :invalid="Boolean(localValidationError || errors[field.key])"
       class="mt-2"
+      :input-class="[
+        'block w-full min-w-0 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
+        localValidationError || errors[field.key] ? 'border-red-500 dark:border-red-500' : '',
+      ].join(' ')"
       @update:model-value="updateValue($event)"
       @blur="onPhoneFieldBlur"
       @enter="$emit('blur')"
