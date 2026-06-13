@@ -198,7 +198,7 @@ export function getTabTitleMetaForPath(path, params = {}) {
     const appKeyUpper = appKey.toUpperCase();
     const appNameKey = getAppNameKey(appKeyUpper);
     if (appNameKey) {
-      return { titleKey: 'navigation.appDashboard', titleParams: { app: appKey } };
+      return { titleKey: 'navigation.appDashboard', titleParams: { app: appKey, appNameKey } };
     }
     return { titleKey: 'navigation.dashboard' };
   }
@@ -334,6 +334,12 @@ function localizedTabTitleParams(titleKey, params, t, te) {
         ...params,
         module: resolveModuleDisplayName(String(moduleRoute), t, te),
       };
+    }
+  }
+  if (params && titleKey === 'navigation.appDashboard' && params.appNameKey) {
+    const appNameKey = String(params.appNameKey);
+    if (te(appNameKey)) {
+      return { ...params, app: t(appNameKey) };
     }
   }
   return params || {};
