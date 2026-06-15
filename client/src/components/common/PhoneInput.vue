@@ -68,7 +68,7 @@
             :invalid="invalid"
             :default-country="defaultCountry"
             :input-class="inputClass"
-            editor-height-class="h-8"
+            :editor-height-class="editorHeightClass"
             @update:model-value="$emit('update:modelValue', $event)"
             @enter="handlePopoverCommit(close)"
             @escape="handlePopoverCancel(close)"
@@ -86,49 +86,54 @@
     >
       <div class="relative h-full flex-shrink-0">
         <ListboxButton
+          ref="countryButtonRef"
           :class="countryButtonClass"
           :title="`${selectedCountry.name} +${selectedCountry.dialCode}`"
+          @mousedown.prevent
+          @click.stop="syncCountryListAfterToggle"
         >
           <span class="font-medium">{{ selectedCountry.iso2 }}</span>
           <span class="text-gray-500 dark:text-gray-400">+{{ selectedCountry.dialCode }}</span>
           <ChevronUpDownIcon class="h-4 w-4 text-gray-400 dark:text-gray-500" aria-hidden="true" />
         </ListboxButton>
-
-        <Transition
-          leave-active-class="transition duration-100 ease-in"
-          leave-from-class="opacity-100"
-          leave-to-class="opacity-0"
-        >
-          <ListboxOptions
-            class="absolute left-0 z-30 mt-1 max-h-72 w-72 overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:bg-gray-700 dark:ring-white/10"
-          >
-            <ListboxOption
-              v-for="country in PHONE_COUNTRIES"
-              :key="country.iso2"
-              :value="country.iso2"
-              v-slot="{ active, selected }"
-            >
-              <li
-                :class="[
-                  'relative cursor-default select-none py-2 pl-3 pr-9',
-                  active ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-900/20 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'
-                ]"
-              >
-                <div class="flex min-w-0 items-center justify-between gap-3">
-                  <span class="truncate">{{ country.name }}</span>
-                  <span class="flex-shrink-0 text-gray-500 dark:text-gray-400">+{{ country.dialCode }}</span>
-                </div>
-                <span
-                  v-if="selected"
-                  class="absolute inset-y-0 right-0 flex items-center pr-2 text-indigo-600 dark:text-indigo-400"
-                >
-                  <CheckIcon class="h-4 w-4" aria-hidden="true" />
-                </span>
-              </li>
-            </ListboxOption>
-          </ListboxOptions>
-        </Transition>
       </div>
+
+      <Transition
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <ListboxOptions
+          ref="countryOptionsRef"
+          :style="countryListPanelStyle"
+          class="fixed z-[120] mt-0 max-h-72 w-72 overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:bg-gray-700 dark:ring-white/10"
+        >
+          <ListboxOption
+            v-for="country in PHONE_COUNTRIES"
+            :key="country.iso2"
+            :value="country.iso2"
+            v-slot="{ active, selected }"
+          >
+            <li
+              :class="[
+                'relative cursor-default select-none py-2 pl-3 pr-9',
+                active ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-900/20 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'
+              ]"
+            >
+              <div class="flex min-w-0 items-center justify-between gap-3">
+                <span class="truncate">{{ country.name }}</span>
+                <span class="flex-shrink-0 text-gray-500 dark:text-gray-400">+{{ country.dialCode }}</span>
+              </div>
+              <span
+                v-if="selected"
+                class="absolute inset-y-0 right-0 flex items-center pr-2 text-indigo-600 dark:text-indigo-400"
+              >
+                <CheckIcon class="h-4 w-4" aria-hidden="true" />
+              </span>
+            </li>
+          </ListboxOption>
+        </ListboxOptions>
+      </Transition>
     </Listbox>
 
     <div class="min-w-0 h-full flex-1">
@@ -255,10 +260,20 @@ const inputRef = ref(null);
 const triggerRef = ref(null);
 const innerRef = ref(null);
 const panelRef = ref(null);
+const countryButtonRef = ref(null);
+const countryOptionsRef = ref(null);
 const popoverWasOpen = ref(false);
+const countryListWasOpen = ref(false);
+const skipNextCountryBlur = ref(false);
 const popoverCloseFn = ref(null);
 const skipNextBlurCommit = ref(false);
 const { panelStyle, refresh, close: closePanelPosition, openAt } = useAnchoredPanelPosition({ panelWidth: 320 });
+const {
+  panelStyle: countryListPanelStyle,
+  openAt: openCountryList,
+  close: closeCountryList,
+  refresh: refreshCountryList,
+} = useAnchoredPanelPosition({ panelWidth: 288, panelHeight: 288 });
 const selectedCountry = ref(getPhoneCountry(props.defaultCountry));
 const nationalNumber = ref('');
 
@@ -312,6 +327,46 @@ const displayIsEmpty = computed(() => {
   const raw = props.modelValue;
   return raw === null || raw === undefined || String(raw).trim() === '';
 });
+
+function resolveCountryOptionsElement() {
+  return countryOptionsRef.value?.$el ?? countryOptionsRef.value;
+}
+
+function isCountryListVisible() {
+  const el = resolveCountryOptionsElement();
+  if (!(el instanceof HTMLElement)) return false;
+  const style = window.getComputedStyle(el);
+  return style.display !== 'none' && style.visibility !== 'hidden';
+}
+
+function onCountryListOpened() {
+  countryListWasOpen.value = true;
+  nextTick(() => {
+    openCountryList(countryButtonRef, countryOptionsRef);
+    requestAnimationFrame(() => refreshCountryList());
+  });
+}
+
+function onCountryListClosed() {
+  countryListWasOpen.value = false;
+  closeCountryList();
+}
+
+function syncCountryListAfterToggle() {
+  window.setTimeout(() => {
+    if (isCountryListVisible()) {
+      if (!countryListWasOpen.value) {
+        onCountryListOpened();
+      } else {
+        refreshCountryList();
+      }
+      return;
+    }
+    if (countryListWasOpen.value) {
+      onCountryListClosed();
+    }
+  }, 0);
+}
 
 function syncPopoverOpen(open, close) {
   popoverCloseFn.value = close;
@@ -389,12 +444,19 @@ function handlePopoverCancel(close) {
 
 function handleInlineBlur() {
   if (props.popover) return;
-  emit('blur');
+  window.setTimeout(() => {
+    if (countryListWasOpen.value || skipNextCountryBlur.value) return;
+    emit('blur');
+  }, 0);
 }
 
 function handleInlineEnter() {
   emit('enter');
 }
+
+watch(countryOptionsRef, () => {
+  if (countryListWasOpen.value) refreshCountryList();
+});
 
 watch(panelRef, () => {
   if (popoverWasOpen.value) refresh();
@@ -403,6 +465,7 @@ watch(panelRef, () => {
 onUnmounted(() => {
   detachOutsideListener();
   closePanelPosition();
+  closeCountryList();
 });
 
 const maxNationalLength = computed(() => {
@@ -425,10 +488,18 @@ function emitValue() {
 }
 
 function handleCountryChange(iso2) {
+  skipNextCountryBlur.value = true;
   selectedCountry.value = getPhoneCountry(iso2);
   nationalNumber.value = sanitizePhoneDigits(nationalNumber.value, maxNationalLength.value);
   emitValue();
-  inputRef.value?.focus?.();
+  countryListWasOpen.value = false;
+  closeCountryList();
+  nextTick(() => {
+    inputRef.value?.focus?.();
+    window.setTimeout(() => {
+      skipNextCountryBlur.value = false;
+    }, 50);
+  });
 }
 
 function handleNumberInput(event) {

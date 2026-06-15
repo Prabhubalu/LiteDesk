@@ -18,6 +18,7 @@ import {
   isTabTitleTruncated,
   shouldShowTabPreview,
 } from '@/utils/tabPreviewContext';
+import { sidebarMainColumnOffsetPx } from '@/utils/sidebarLayout';
 
 const { t, te } = useI18n();
 useHelpdeskBrowserTitle();
@@ -54,6 +55,62 @@ function tabAlertRingClass(tab) {
   return 'tab-helpdesk-alert-icon__ring--email';
 }
 
+function tabItemClasses(tab, index) {
+  const active = activeTabId.value === tab.id;
+  const alert = tabHasHelpdeskAlert(tab);
+  const dragOver = dragOverTabId.value === tab.id;
+  const nextTab = tabsArray.value[index + 1];
+  const isLastTab = index === tabsArray.value.length - 1;
+  const showInactiveSeparator =
+    !active &&
+    ((nextTab != null && activeTabId.value !== nextTab.id) || isLastTab);
+
+  const base = [
+    'group relative flex items-center min-w-0 px-3 h-full',
+    'cursor-pointer select-none transition-all duration-150',
+    'overflow-hidden',
+  ];
+
+  if (dragOver) {
+    base.push('ring-2 ring-inset ring-primary-500/35');
+  }
+
+  if (active) {
+    return [
+      ...base,
+      'tab-item--active z-10 overflow-visible',
+      'bg-white dark:bg-neutral-900',
+    ];
+  }
+
+  const inactiveSeparator = showInactiveSeparator ? 'tab-item--separator' : '';
+
+  if (alert) {
+    return [
+      ...base,
+      'tab-item--inactive tab-item--inactive-alert',
+      inactiveSeparator,
+    ];
+  }
+
+  return [
+    ...base,
+    'tab-item--inactive',
+    inactiveSeparator,
+  ];
+}
+
+function tabTitleClasses(tab) {
+  const active = activeTabId.value === tab.id;
+  if (active) {
+    return 'text-sm font-medium text-neutral-900 dark:text-neutral-100';
+  }
+  if (tabHasHelpdeskAlert(tab)) {
+    return 'text-sm font-normal text-amber-950 dark:text-amber-100';
+  }
+  return 'text-sm font-normal text-neutral-600 dark:text-neutral-400';
+}
+
 const currentUserId = computed(() => authStore.user?._id || null);
 const { currentPreset: userStatusPreset } = useUserStatus(currentUserId);
 
@@ -83,45 +140,27 @@ const tabsArray = computed(() => {
   return tabsValue;
 });
 
+const isSettingsRouteActive = computed(() => route.path.startsWith('/settings'));
+
 // Get sidebar state from parent (App.vue passes it via provide/inject or we calculate it)
 const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1920);
 const tabBarRef = ref(null);
 
-// Calculate the actual available width for TabBar
-// Account for sidebar width (either 256px expanded or 64px collapsed)
-const tabBarWidth = computed(() => {
-  // On mobile, full width
-  if (viewportWidth.value < 1024) {
-    return viewportWidth.value;
-  }
-  
-  // On desktop, we need to check sidebar state
-  // Read from localStorage since sidebar state is stored there
-  const sidebarCollapsed = localStorage.getItem('arivu-sidebar-collapsed') === 'true';
-  const sidebarWidth = sidebarCollapsed ? 64 : 256;
-  const calculatedWidth = viewportWidth.value - sidebarWidth;
-  
-  console.log('📊 TabBar Width:', {
-    viewport: viewportWidth.value,
-    sidebarCollapsed,
-    sidebarWidth,
-    tabBarWidth: calculatedWidth,
-    totalTabs: tabsArray.value.length
-  });
-  
-  return calculatedWidth;
-});
+const isDesktopShell = computed(() => viewportWidth.value >= 1024);
 
-// Calculate the left position for the TabBar
-const tabBarLeft = computed(() => {
-  // On mobile, always at left: 0
-  if (viewportWidth.value < 1024) {
-    return '0px';
+const tabBarPositionStyle = computed(() => {
+  if (isDesktopShell.value) {
+    return { width: '100%', maxWidth: '100%', minWidth: 0 };
   }
-  
-  // On desktop, position based on sidebar state
+
   const sidebarCollapsed = localStorage.getItem('arivu-sidebar-collapsed') === 'true';
-  return sidebarCollapsed ? '64px' : '256px';
+  const width = viewportWidth.value - sidebarMainColumnOffsetPx(sidebarCollapsed);
+  return {
+    width: `${width}px`,
+    maxWidth: `${width}px`,
+    minWidth: 0,
+    left: `${sidebarMainColumnOffsetPx(sidebarCollapsed)}px`,
+  };
 });
 
 const updateTabBarOffset = () => {
@@ -347,18 +386,17 @@ const handleResize = () => {
   updateTabBarOffset();
 };
 
-// Listen for sidebar toggle custom event
-const handleSidebarToggle = (e) => {
-  console.log('🔔 Sidebar toggled:', e.detail);
-  // Force recompute by triggering a viewport "change"
-  // This will cause tabBarWidth computed to recalculate
+const handleSidebarToggle = () => {
+  if (isDesktopShell.value) {
+    nextTick(() => updateTabBarOffset());
+    return;
+  }
+
   const currentWidth = viewportWidth.value;
   viewportWidth.value = currentWidth + 1;
   setTimeout(() => {
     viewportWidth.value = currentWidth;
-    nextTick(() => {
-      updateTabBarOffset();
-    });
+    nextTick(() => updateTabBarOffset());
   }, 0);
 };
 
@@ -367,22 +405,12 @@ onMounted(() => {
   window.addEventListener('resize', handleResize);
   window.addEventListener('sidebar-toggle', handleSidebarToggle);
   
-  // Set initial viewport width
   viewportWidth.value = window.innerWidth;
-  console.log('📐 TabBar mounted, tabs count:', tabsArray.value.length);
-  
-  // Force a check - if tabs aren't initialized yet, wait a bit
+
   if (tabsArray.value.length === 0) {
-    console.log('⚠️ [TabBar] No tabs on mount, waiting for initialization...');
-    // Wait a bit for initTabs to complete
-    setTimeout(() => {
-      console.log('🔍 [TabBar] After timeout, tabs count:', tabsArray.value.length);
-      updateTabBarOffset();
-    }, 100);
+    setTimeout(() => updateTabBarOffset(), 100);
   } else {
-    nextTick(() => {
-      updateTabBarOffset();
-    });
+    nextTick(() => updateTabBarOffset());
   }
 });
 
@@ -398,18 +426,14 @@ onUnmounted(() => {
   <div 
     ref="tabBarRef"
     data-onboarding-target="tabs"
-    class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 fixed top-16 left-0 right-0 lg:top-0 lg:left-auto lg:right-auto z-30 transition-all duration-300 ease-in-out"
-    :style="{ 
-      width: tabBarWidth + 'px',
-      maxWidth: tabBarWidth + 'px',
-      minWidth: 0,
-      left: tabBarLeft
-    }"
+    class="tab-strip bg-neutral-100 dark:bg-neutral-800/60 border-b border-neutral-200 dark:border-neutral-700 fixed top-16 left-0 right-0 z-30 transition-all duration-300 ease-in-out lg:sticky lg:top-0 lg:z-40 lg:w-full lg:max-w-full lg:flex-shrink-0 lg:border-b-0"
+    :class="{ 'tab-strip--settings-active': isSettingsRouteActive }"
+    :style="tabBarPositionStyle"
   >
-    <div class="flex items-stretch h-12 min-w-0 w-full gap-6" :style="{ width: '100%', maxWidth: '100%' }">
+    <div class="flex items-center h-11 min-w-0 w-full gap-2 pl-0 pr-2" :style="{ width: '100%', maxWidth: '100%' }">
       <div
         ref="tabsContainerRef"
-        class="flex flex-1 min-w-0 items-center h-full overflow-x-hidden"
+        class="flex flex-1 min-w-0 items-center gap-0 h-full overflow-x-hidden"
         @mouseleave="handleTabsContainerMouseLeave"
         @mouseover="handleTabsContainerMouseOver"
       >
@@ -417,7 +441,7 @@ onUnmounted(() => {
            until the cursor leaves the strip. -->
       <template v-if="tabsArray.length > 0">
         <div
-          v-for="tab in tabsArray"
+          v-for="(tab, index) in tabsArray"
           :key="tab.id"
         data-tab-item
         :data-tab-id="tab.id"
@@ -429,17 +453,7 @@ onUnmounted(() => {
         @drop="handleDrop($event, tab.id)"
         @click="handleTabClick(tab.id)"
         @contextmenu="handleContextMenu($event, tab)"
-        :class="[
-          'group relative flex items-center h-full px-3 border-r border-gray-200 dark:border-gray-700',
-          'cursor-pointer select-none transition-all duration-150',
-          'overflow-hidden',
-          activeTabId === tab.id
-            ? 'bg-gray-50 dark:bg-gray-900 border-b-2 border-b-blue-500'
-            : tabHasHelpdeskAlert(tab)
-              ? 'bg-amber-100 dark:bg-amber-950/55 ring-1 ring-inset ring-amber-300/80 dark:ring-amber-600/50 hover:bg-amber-50 dark:hover:bg-amber-900/45'
-              : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700',
-          dragOverTabId === tab.id ? 'border-l-2 border-l-blue-500' : ''
-        ]"
+        :class="tabItemClasses(tab, index)"
         :style="tabItemStyle"
       >
         <!-- Icon (pulse + ring when unread helpdesk activity on background tab) -->
@@ -464,12 +478,8 @@ onUnmounted(() => {
         <span
           data-tab-title
           :class="[
-            'text-sm overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0',
-            activeTabId === tab.id
-              ? 'font-medium text-gray-900 dark:text-white'
-              : tabHasHelpdeskAlert(tab)
-                ? 'font-semibold text-amber-950 dark:text-amber-100'
-                : 'font-medium text-gray-600 dark:text-gray-400'
+            'overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0 leading-none',
+            tabTitleClasses(tab),
           ]"
         >
           {{ tabDisplayTitle(tab) }}
@@ -481,9 +491,9 @@ onUnmounted(() => {
           @click="handleCloseTab($event, tab.id)"
           :aria-label="t('navigation.tabCloseTab')"
           :class="[
-            'p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-150 overflow-hidden',
+            'inline-flex items-center justify-center shrink-0 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-150 overflow-hidden h-6 w-6',
             activeTabId === tab.id
-              ? 'opacity-100 w-6 ml-2'
+              ? 'opacity-100 ml-2'
               : 'opacity-0 w-0 ml-0 group-hover:opacity-100 group-hover:w-6 group-hover:ml-2'
           ]"
         >
@@ -496,21 +506,21 @@ onUnmounted(() => {
       <!-- Tablet (md–lg): profile + bell live in Nav top bar (lg:hidden). Desktop (lg+): show here. -->
       <div
         v-if="authStore.user"
-        class="hidden lg:flex relative flex-shrink-0 items-center gap-3 pr-3"
+        class="hidden lg:flex relative flex-shrink-0 self-center items-center gap-3 pr-1"
       >
         <NotificationBell
           :show-count-on-desktop="true"
-          class="!min-h-9 !min-w-9 !p-1.5 rounded-md !border-0 !bg-transparent shadow-none hover:!bg-gray-100 dark:hover:!bg-gray-700 [&_svg]:!w-6 [&_svg]:!h-6"
+          class="!min-h-8 !min-w-8 !p-1 cursor-pointer rounded-md !border-0 !bg-transparent shadow-none hover:!bg-neutral-200 dark:hover:!bg-neutral-700 [&_svg]:!w-5 [&_svg]:!h-5 [&_span.notification-bell-badge]:min-w-4 [&_span.notification-bell-badge]:h-4 [&_span.notification-bell-badge]:text-[9px]"
           @toggle="openNotificationsPanel"
         />
         <div
           ref="profileDropdownRef"
           v-click-outside="closeProfileDropdown"
-          class="relative flex items-center"
+          class="relative z-50 flex items-center"
         >
           <button
             type="button"
-            class="relative rounded-full overflow-visible w-8 h-8 flex-shrink-0 ring-1 ring-gray-200 dark:ring-gray-600 hover:ring-gray-300 dark:hover:ring-gray-500 transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            class="relative rounded-full overflow-visible w-8 h-8 flex-shrink-0 ring-1 ring-neutral-200 dark:ring-neutral-600 hover:ring-neutral-300 dark:hover:ring-neutral-500 transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             :title="t('navigation.tabAccount')"
             aria-haspopup="true"
             :aria-expanded="showProfileDropdown"
@@ -603,6 +613,84 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.tab-strip {
+  --tab-strip-padding-y: 0.1875rem;
+  --tab-strip-separator-inset-y: 0.625rem;
+}
+
+@media (min-width: 1024px) {
+  /* Overlap the content surface by 1px so the active tab white bridges cleanly */
+  .tab-strip--settings-active {
+    margin-bottom: -1px;
+  }
+}
+
+[data-tab-item] {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+/* Compact hover pill + separator share padded vertical inset */
+.tab-item--inactive::before {
+  content: '';
+  position: absolute;
+  left: 0.375rem;
+  right: 0.375rem;
+  top: var(--tab-strip-padding-y);
+  bottom: var(--tab-strip-padding-y);
+  height: auto;
+  border-radius: 0.25rem;
+  opacity: 0;
+  transition: opacity 150ms ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tab-item--inactive:hover::before {
+  opacity: 1;
+  background-color: color-mix(in srgb, var(--color-neutral-200) 70%, transparent);
+}
+
+.tab-item--inactive-alert:hover::before {
+  background-color: color-mix(in srgb, var(--color-warning-200) 80%, transparent);
+}
+
+.tab-item--inactive > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Short vertical separator between inactive tabs (Chrome-style) */
+.tab-item--separator::after {
+  content: '';
+  position: absolute;
+  right: 0.375rem;
+  top: var(--tab-strip-separator-inset-y);
+  bottom: var(--tab-strip-separator-inset-y);
+  width: 1px;
+  height: auto;
+  background-color: var(--color-neutral-300);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 120ms ease;
+}
+
+
+.tab-item--separator:hover::after,
+.tab-item--separator:has(+ [data-tab-item]:hover)::after {
+  opacity: 0;
+}
+
+/* Active tab surface continues into content (Chrome-style) */
+.tab-item--active {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  box-shadow: 0 1px 0 0 #ffffff;
+}
+
+
 @keyframes tab-helpdesk-icon-pulse {
   0%,
   100% {
@@ -680,5 +768,25 @@ onUnmounted(() => {
   .tab-helpdesk-alert-icon__glyph {
     transform: scale(1.1);
   }
+}
+</style>
+
+<style>
+/* Unscoped: Vue scoped :global(html.dark) compiles onto <html>, so dark overrides never apply. */
+html.dark .tab-item--inactive:hover::before {
+  background-color: rgb(255 255 255 / 0.06);
+}
+
+html.dark .tab-item--inactive-alert:hover::before {
+  background-color: color-mix(in srgb, var(--color-warning-900) 55%, transparent);
+}
+
+html.dark .tab-item--separator::after {
+  background-color: var(--color-neutral-600);
+  opacity: 0.65;
+}
+
+html.dark .tab-item--active {
+  box-shadow: 0 1px 0 0 var(--color-neutral-900);
 }
 </style>

@@ -2,16 +2,28 @@
   <div
     ref="layoutRootRef"
     :class="[
-      'record-page-layout flex flex-col h-full w-full bg-white dark:bg-gray-900 overflow-hidden absolute inset-0',
+      'record-page-layout relative flex flex-col h-full min-h-0 w-full bg-white dark:bg-gray-900 overflow-hidden',
       { 'record-page-layout--left-expanded': leftExpanded, 'record-page-layout--lines-expanded': isLinesExpanded }
     ]"
   >
     <!-- Fixed header - positioned below TabBar -->
-    <header v-if="$slots.header" :class="['record-page-layout__header', 'fixed', 'z-20', 'flex-shrink-0', 'bg-white', 'dark:bg-gray-900', 'border-b', 'border-gray-200', 'dark:border-gray-700', 'record-page-layout__header--positioned', { 'transition-all duration-300 ease-in-out': allowTransition }]">
+    <header
+      v-if="$slots.header"
+      :class="[
+        'record-page-layout__header',
+        'flex-shrink-0',
+        'bg-white',
+        'dark:bg-gray-900',
+        useViewportAnchoredLayout
+          ? ['fixed', 'z-30', 'record-page-layout__header--positioned']
+          : ['relative', 'z-30', 'overflow-visible'],
+        { 'transition-all duration-300 ease-in-out': allowTransition },
+      ]"
+    >
       <slot name="header" />
     </header>
     <!-- Body container - no scroll, only columns scroll -->
-    <div :class="['record-page-layout__body', 'flex', 'flex-1', 'min-h-0', 'gap-0', bodyPaddingClass, 'pr-0', bodyTopPaddingClass, 'overflow-hidden', 'record-page-layout__body--responsive', !forceMobile && 'record-page-layout__body--with-header', !forceMobile && 'record-page-layout__body--positioned', { 'transition-all duration-300 ease-in-out': allowTransition }]">
+    <div :class="['record-page-layout__body', 'relative', 'z-0', 'flex', 'flex-1', 'min-h-0', 'gap-0', bodyPaddingClass, 'pr-0', bodyTopPaddingClass, 'overflow-hidden', 'record-page-layout__body--responsive', useViewportAnchoredLayout && 'record-page-layout__body--with-header', useViewportAnchoredLayout && 'record-page-layout__body--positioned', { 'transition-all duration-300 ease-in-out': allowTransition }]">
       <!-- Left column: Main content (2/3 width) - scrollable; on mobile/tablet hidden unless leftExpanded (e.g. version history) -->
       <div
         v-show="!isMobile || leftExpanded"
@@ -72,6 +84,8 @@ const SCROLL_HIDE_DELAY = 800;
 
 const windowIsMobile = ref(typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT);
 const isMobile = computed(() => props.forceMobile || windowIsMobile.value);
+/** Desktop work panel: tab bar is in-flow above content — no viewport-fixed record chrome. */
+const useViewportAnchoredLayout = computed(() => !props.forceMobile && windowIsMobile.value);
 const summaryTeleportReady = ref(false);
 
 const isLinesExpanded = computed(() => props.leftExpanded && props.expandedSectionKey === 'lines');
@@ -83,11 +97,7 @@ const bodyPaddingClass = computed(() => {
   return 'px-6';
 });
 
-const bodyTopPaddingClass = computed(() => {
-  if (props.forceMobile) return 'pt-0';
-  if (isLinesExpanded.value) return 'pt-0';
-  return 'pt-6';
-});
+const bodyTopPaddingClass = computed(() => 'pt-0');
 
 const leftColumnClass = computed(() => [
   'record-page-layout__left',
@@ -144,30 +154,30 @@ function applyLayout() {
 
   const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
   const isMobileView = viewportWidth < MOBILE_BREAKPOINT;
-  const mobileTopNavHeight = 64;
-  const tabBarHeight = 48;
-  const isTabletView = isMobileView && viewportWidth >= TABLET_MIN_WIDTH;
-  const tabBarTopOffset = isMobileView
-    ? (isTabletView ? mobileTopNavHeight + tabBarHeight : mobileTopNavHeight)
-    : tabBarHeight;
-
-  let sidebarWidth = 0;
-  let leftOffset = 0;
-  if (!isMobileView && typeof localStorage !== 'undefined') {
-    const collapsed = localStorage.getItem('arivu-sidebar-collapsed') === 'true';
-    sidebarWidth = collapsed ? 64 : 256;
-    leftOffset = sidebarWidth;
-  }
-
   const headerEl = root.querySelector('.record-page-layout__header');
   const headerHeightPx = headerEl ? headerEl.offsetHeight : DEFAULT_HEADER_HEIGHT_PX;
 
-  root.style.setProperty('--tabbar-height', `${tabBarTopOffset}px`);
-  root.style.setProperty('--sidebar-width', `${sidebarWidth}px`);
-  root.style.setProperty('--header-top', `${tabBarTopOffset}px`);
-  root.style.setProperty('--header-left', `${leftOffset}px`);
-  root.style.setProperty('--body-left', `${leftOffset}px`);
   root.style.setProperty('--header-height', `${headerHeightPx}px`);
+
+  if (!isMobileView) {
+    root.style.setProperty('--tabbar-height', '0px');
+    root.style.setProperty('--sidebar-width', '0px');
+    root.style.setProperty('--header-top', '0px');
+    root.style.setProperty('--header-left', '0px');
+    root.style.setProperty('--body-left', '0px');
+    return;
+  }
+
+  const mobileTopNavHeight = 64;
+  const tabBarHeight = 48;
+  const isTabletView = viewportWidth >= TABLET_MIN_WIDTH;
+  const tabBarTopOffset = isTabletView ? mobileTopNavHeight + tabBarHeight : mobileTopNavHeight;
+
+  root.style.setProperty('--tabbar-height', `${tabBarTopOffset}px`);
+  root.style.setProperty('--sidebar-width', '0px');
+  root.style.setProperty('--header-top', `${tabBarTopOffset}px`);
+  root.style.setProperty('--header-left', '0px');
+  root.style.setProperty('--body-left', '0px');
 }
 
 function scheduleLayout() {

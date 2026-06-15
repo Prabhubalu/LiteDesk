@@ -2,12 +2,12 @@
   <!-- Row layout: icon + label (min-width) + value next to label (Core Fields style) -->
   <div
     v-if="layout === 'row'"
-    :class="['editable-labeled-value editable-labeled-value--row flex items-center gap-3', rowPaddingClass]"
+    :class="['editable-labeled-value editable-labeled-value--row record-field-row-grid', rowPaddingClass]"
   >
-    <span class="editable-labeled-value__icon flex-shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true">
-      <component :is="fieldIcon" class="w-4 h-4" />
+    <span class="editable-labeled-value__icon flex h-4 w-4 shrink-0 items-center justify-center text-gray-400 dark:text-gray-500" aria-hidden="true">
+      <component :is="fieldIcon" class="h-4 w-4" />
     </span>
-    <span class="editable-labeled-value__label text-sm text-gray-700 dark:text-gray-300 flex-shrink-0 min-w-[12rem]">{{ label }}</span>
+    <span class="editable-labeled-value__label min-w-0 truncate text-sm text-gray-700 dark:text-gray-300">{{ label }}</span>
     <div
       :class="[
         'editable-labeled-value__value flex-1 min-w-0 flex min-h-8 text-sm rounded px-2 -mx-2 -my-1 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800',
@@ -96,7 +96,7 @@
         </Listbox>
         <p v-if="saveHttpError" class="text-xs text-red-600 dark:text-red-400 leading-snug w-full min-w-0 break-words pl-0.5">{{ saveHttpError }}</p>
       </div>
-      <!-- Row: phone — popover editor (always when canEdit; panel teleported to escape overflow clipping) -->
+      <!-- Row: phone — popover editor (click to edit; panel uses create-drawer PhoneInput styling) -->
       <div
         v-else-if="layout === 'row' && canEdit && type === 'phone'"
         class="w-full min-w-0 flex-1 flex flex-col"
@@ -110,7 +110,7 @@
           :placeholder="t('records.editablePhonePh')"
           :invalid="Boolean(phoneError || saveHttpError)"
           trigger-class="editable-labeled-value__display flex-1 min-w-0 w-full min-h-8 text-left rounded transition-colors cursor-pointer flex items-center hover:bg-gray-50 dark:hover:bg-gray-800 px-2 -mx-2 -my-1"
-          input-class="w-full h-8 px-2 py-1 text-sm border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          :input-class="formPhoneInputClass"
           @update:model-value="onPhoneInput"
           @blur="handlePhoneRowBlur"
           @escape="handlePhoneRowCancel"
@@ -233,35 +233,43 @@
   </div>
   <!-- Stack layout: label above value -->
   <div v-else class="min-w-0">
-    <dt
-      :class="[
-        compact
-          ? 'text-sm font-normal text-gray-600 dark:text-gray-400'
-          : 'text-sm text-gray-500 dark:text-gray-400'
-      ]"
-    >
+    <dt :class="compact ? DRAWER_FIELD_LABEL_CLASS : 'text-sm text-gray-500 dark:text-gray-400'">
       {{ label }}
     </dt>
-    <dd :class="compact ? 'mt-1 text-sm leading-snug text-gray-900 dark:text-gray-100' : 'mt-2 text-sm text-gray-900 dark:text-white'">
-      <!-- Select/User: Dropdown — single root inside Listbox; error below wrapper -->
+    <dd :class="compact ? '' : 'mt-2 text-sm text-gray-900 dark:text-white'">
+      <!-- Select/User: Dropdown — compact pane uses HeadlessSelect (teleport); default stack uses Listbox -->
       <div v-if="canEdit && (type === 'select' || type === 'user' || type === 'entity')" class="w-full">
-        <Listbox
+        <HeadlessSelect
+          v-if="compact"
           :model-value="selectModelValue"
+          :options="selectOptions"
+          :allow-empty="allowEmpty || type === 'user' || type === 'entity'"
+          :empty-label="type === 'user' ? t('records.editableUnassigned') : (type === 'entity' ? t('records.editableSelectOption') : (emptyLabel || t('records.editableSelectOption')))"
+          :empty-value="null"
+          teleport
+          wrapper-class="mt-1"
+          :button-class="compactDrawerListboxClass"
+          :invalid="!!saveHttpError"
           @update:model-value="handleSelectChange"
-          class="w-full"
-        >
-          <div class="relative w-full">
-            <ListboxButton
-            :class="[
-              'editable-labeled-value__display w-full text-left transition-colors cursor-pointer',
-              compact
-                ? 'rounded-md border border-gray-200/90 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-2.5 py-1.5 min-h-[2.25rem] flex items-center hover:border-indigo-300/60 dark:hover:border-indigo-500/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/30'
-                : 'rounded px-2 py-1 -mx-2 -my-1 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-0',
-              saveHttpError ? 'ring-2 ring-red-500/80 ring-offset-1 dark:ring-offset-gray-900' : ''
-            ]"
+        />
+        <div v-else :class="''">
+          <Listbox
+            :model-value="selectModelValue"
+            @update:model-value="handleSelectChange"
+            class="w-full"
           >
+            <div class="relative w-full">
+              <ListboxButton
+              :class="[
+                'editable-labeled-value__display w-full text-left transition-colors cursor-pointer rounded px-2 py-1 -mx-2 -my-1 hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-0',
+                saveHttpError ? 'ring-2 ring-red-500/80 ring-offset-1 dark:ring-offset-gray-900' : ''
+              ]"
+            >
             <slot>
-              <span v-if="displayValue !== null && displayValue !== undefined && displayValue !== ''" class="editable-labeled-value__text block truncate">{{ displayValue }}</span>
+              <span
+                v-if="displayValue !== null && displayValue !== undefined && displayValue !== ''"
+                class="editable-labeled-value__text block truncate"
+              >{{ displayValue }}</span>
               <span v-else class="editable-labeled-value__text block truncate w-full text-record-empty">—</span>
             </slot>
           </ListboxButton>
@@ -320,9 +328,10 @@
               </div>
             </ListboxOptions>
           </Transition>
-          </div>
-        </Listbox>
-        <p v-if="saveHttpError" class="mt-1 text-xs text-red-600 dark:text-red-400 leading-snug w-full min-w-0 break-words">{{ saveHttpError }}</p>
+            </div>
+          </Listbox>
+        </div>
+        <p v-if="saveHttpError" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ saveHttpError }}</p>
       </div>
 
       <!-- Select/User read-only display -->
@@ -330,16 +339,139 @@
         v-else-if="!canEdit && (type === 'select' || type === 'user' || type === 'entity')"
         :class="[
           'editable-labeled-value__display',
-          compact ? 'rounded-md border border-gray-100 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/40 px-2.5 py-1.5 min-h-[2.25rem] flex items-center' : ''
+          compact ? compactDrawerReadOnlyClass : ''
         ]"
       >
         <slot>
-          <span v-if="displayValue !== null && displayValue !== undefined && displayValue !== ''" class="editable-labeled-value__text block truncate">{{ displayValue }}</span>
-          <span v-else class="editable-labeled-value__text block truncate w-full text-record-empty">—</span>
+          <span v-if="displayValue !== null && displayValue !== undefined && displayValue !== ''" class="block truncate">{{ displayValue }}</span>
+          <span v-else class="block truncate w-full text-record-empty">—</span>
         </slot>
       </div>
 
-      <!-- Editable mode for text/url/phone/number/date -->
+      <!-- Compact pane: drawer-matched controls (display + edit share classes — no layout shift) -->
+      <div v-else-if="compact && canEdit">
+        <PhoneInput
+          v-if="type === 'phone' && isEditing"
+          ref="inputRef"
+          class="mt-1"
+          :model-value="localValue"
+          :placeholder="t('records.editablePhonePh')"
+          :invalid="Boolean(phoneError || saveHttpError)"
+          :input-class="formPhoneInputClass"
+          @update:model-value="onPhoneInput"
+          @blur="handleBlur"
+          @enter="handleBlur"
+          @escape="handleCancel"
+        />
+        <input
+          v-else-if="isEditing && (type === 'text' || type === 'url') && !multiline"
+          ref="inputRef"
+          v-model="localValue"
+          @blur="handleBlur"
+          @keydown.enter="handleBlur"
+          @keydown.esc="handleCancel"
+          :class="compactDrawerControlClass"
+          type="text"
+        />
+        <textarea
+          v-else-if="isEditing && type === 'text' && multiline"
+          ref="inputRef"
+          v-model="localValue"
+          @blur="handleBlur"
+          @keydown.esc="handleCancel"
+          :class="compactDrawerTextareaClass"
+          :rows="rows || 4"
+        />
+        <input
+          v-else-if="isEditing && type === 'number'"
+          ref="inputRef"
+          v-model.number="localValue"
+          @blur="handleBlur"
+          @keydown.enter="handleBlur"
+          @keydown.esc="handleCancel"
+          :class="compactDrawerControlClass"
+          type="number"
+          :min="min"
+          :max="max"
+          :step="step"
+        />
+        <DatePicker
+          v-else-if="isEditing && type === 'date'"
+          ref="inputRef"
+          v-model="localValue"
+          :invalid="Boolean(saveHttpError)"
+          :input-class="[compactDrawerControlClass, 'cursor-pointer'].join(' ')"
+          @blur="handleBlur"
+          @escape="handleCancel"
+        />
+        <div
+          v-else
+          :class="compactDrawerDisplayClass"
+          @click="handleClick($event)"
+        >
+          <div v-if="type === 'tags'" class="flex flex-wrap gap-1.5">
+            <span
+              v-for="(tag, index) in tagList"
+              :key="`${tag}-${index}`"
+              :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
+            >
+              {{ tag }}
+            </span>
+            <span v-if="tagList.length === 0" class="text-record-empty">—</span>
+          </div>
+          <slot v-else>
+            <a
+              v-if="type === 'url' && normalizedUrlHref && displayValue !== null && displayValue !== undefined && displayValue !== ''"
+              :href="normalizedUrlHref"
+              target="_blank"
+              rel="noopener noreferrer"
+              :class="multiline ? 'block max-h-48 overflow-y-auto whitespace-pre-wrap break-words text-indigo-600 dark:text-indigo-400 hover:underline' : 'block truncate text-indigo-600 dark:text-indigo-400 hover:underline'"
+              @click.stop
+            >{{ displayValue }}</a>
+            <span
+              v-else-if="displayValue !== null && displayValue !== undefined && displayValue !== ''"
+              :class="multiline ? 'block max-h-48 overflow-y-auto whitespace-pre-wrap break-words' : 'block truncate'"
+            >{{ displayValue }}</span>
+            <span v-else class="block w-full truncate text-record-empty">—</span>
+          </slot>
+        </div>
+        <p v-if="phoneError" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ phoneError }}</p>
+        <p v-else-if="saveHttpError && type !== 'phone'" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ saveHttpError }}</p>
+      </div>
+
+      <!-- Compact read-only text/url/phone/number/date/tags -->
+      <div
+        v-else-if="compact && !canEdit"
+        :class="compactDrawerReadOnlyClass"
+      >
+        <div v-if="type === 'tags'" class="flex flex-wrap gap-1.5">
+          <span
+            v-for="(tag, index) in tagList"
+            :key="`${tag}-${index}`"
+            :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
+          >
+            {{ tag }}
+          </span>
+          <span v-if="tagList.length === 0" class="text-record-empty">—</span>
+        </div>
+        <slot v-else>
+          <a
+            v-if="type === 'url' && normalizedUrlHref && displayValue !== null && displayValue !== undefined && displayValue !== ''"
+            :href="normalizedUrlHref"
+            target="_blank"
+            rel="noopener noreferrer"
+            :class="multiline ? 'block max-h-48 overflow-y-auto whitespace-pre-wrap break-words text-indigo-600 dark:text-indigo-400 hover:underline' : 'block truncate text-indigo-600 dark:text-indigo-400 hover:underline'"
+            @click.stop
+          >{{ displayValue }}</a>
+          <span
+            v-else-if="displayValue !== null && displayValue !== undefined && displayValue !== ''"
+            :class="multiline ? 'block max-h-48 overflow-y-auto whitespace-pre-wrap break-words' : 'block truncate'"
+          >{{ displayValue }}</span>
+          <span v-else class="block w-full truncate text-record-empty">—</span>
+        </slot>
+      </div>
+
+      <!-- Editable mode for text/url/phone/number/date (non-compact) -->
       <div v-else-if="isEditing && canEdit" class="editable-labeled-value__edit">
         <div v-if="type === 'phone'" class="flex flex-col w-full">
           <PhoneInput
@@ -461,10 +593,12 @@
 import { ref, watch, computed, nextTick, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 
 const { t } = useI18n();
 import {
   CheckIcon,
+  ChevronUpDownIcon,
   CurrencyDollarIcon,
   CalendarDaysIcon,
   DocumentTextIcon,
@@ -478,6 +612,24 @@ import PhoneInput from '@/components/common/PhoneInput.vue';
 import DatePicker from '@/components/common/DatePicker.vue';
 import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInput';
 import { getApiErrorMessage } from '@/utils/httpErrors';
+
+/** Match DynamicFormField / quick create drawer — keep in sync. */
+const DRAWER_FIELD_LABEL_CLASS = 'block text-sm/6 font-medium text-gray-900 dark:text-white';
+
+const DRAWER_FIELD_CONTROL_CLASS =
+  'block w-full mt-1 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500';
+
+const DRAWER_FIELD_TEXTAREA_CLASS = `${DRAWER_FIELD_CONTROL_CLASS} resize-none`;
+
+const DRAWER_FIELD_READ_ONLY_DISPLAY_CLASS =
+  'block w-full mt-1 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 sm:text-sm/6 dark:outline-white/10';
+
+const DRAWER_FIELD_LISTBOX_CLASS =
+  'block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 relative cursor-default text-left';
+
+function joinDrawerFieldClasses(...parts) {
+  return parts.filter(Boolean).join(' ');
+}
 
 const props = defineProps({
   label: {
@@ -598,17 +750,7 @@ const fieldIcon = computed(() => {
 /** Stack layout, display mode (not editing): compact pane vs default hover row */
 const stackDisplayModeClass = computed(() => {
   const classes = ['editable-labeled-value__display'];
-  if (props.compact && !isEditing.value) {
-    if (props.canEdit) {
-      classes.push(
-        'rounded-md border border-gray-200/90 dark:border-gray-600 bg-white dark:bg-gray-900/50 px-2.5 py-1.5 min-h-[2.25rem] transition-colors hover:border-indigo-300/70 dark:hover:border-indigo-500/35 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20',
-        props.type === 'tags' && props.onTagsOpen ? 'cursor-pointer' : 'cursor-text'
-      );
-      return classes;
-    }
-    classes.push(
-      'rounded-md border border-gray-100 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-800/35 px-2.5 py-1.5 min-h-[2.25rem] text-gray-800 dark:text-gray-200'
-    );
+  if (props.compact) {
     return classes;
   }
   if (props.canEdit) {
@@ -630,11 +772,52 @@ const listboxSearchQuery = ref('');
 const phoneError = ref(null);
 /** Server / validation error after commitSave fails */
 const saveHttpError = ref(null);
+
+/** Right-pane Details tab — DynamicFormField / quick create drawer control classes. */
+const compactDrawerControlClass = computed(() => {
+  const hasErr = Boolean(saveHttpError.value || (props.type === 'phone' && phoneError.value));
+  return joinDrawerFieldClasses(
+    DRAWER_FIELD_CONTROL_CLASS,
+    hasErr && 'border border-red-500 dark:border-red-500'
+  );
+});
+
+const compactDrawerTextareaClass = computed(() => {
+  const hasErr = Boolean(saveHttpError.value);
+  return joinDrawerFieldClasses(
+    DRAWER_FIELD_TEXTAREA_CLASS,
+    hasErr && 'border border-red-500 dark:border-red-500'
+  );
+});
+
+const compactDrawerListboxClass = computed(() => {
+  const hasErr = Boolean(saveHttpError.value);
+  return joinDrawerFieldClasses(
+    DRAWER_FIELD_LISTBOX_CLASS,
+    hasErr && 'border border-red-500 dark:border-red-500'
+  );
+});
+
+const compactDrawerReadOnlyClass = computed(() => DRAWER_FIELD_READ_ONLY_DISPLAY_CLASS);
+
+const compactDrawerDisplayClass = computed(() => {
+  const clickable =
+    props.type === 'tags' && typeof props.onTagsOpen === 'function' ? 'cursor-pointer' : 'cursor-text';
+  return joinDrawerFieldClasses(compactDrawerControlClass.value, clickable);
+});
+
 const isValidObjectId = (value) => typeof value === 'string' && /^[0-9a-fA-F]{24}$/.test(value);
 
+/** Matches DynamicFormField / quick create drawer phone control styling. */
+const formPhoneInputClass = computed(() => {
+  const base =
+    'block w-full min-w-0 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500';
+  const hasErr = phoneError.value || saveHttpError.value;
+  return joinDrawerFieldClasses(base, hasErr && 'border-red-500 dark:border-red-500');
+});
+
 /**
- * Stack layout inline edit: match compact right-pane chip (min-height, padding, border) so display → edit does not jump.
- * Non-compact stack keeps previous looser padding.
+ * Stack layout inline edit (non-compact pane only).
  */
 const stackSingleLineEditInputClass = computed(() => {
   const baseFocus =
@@ -642,12 +825,7 @@ const stackSingleLineEditInputClass = computed(() => {
   const hasErr = saveHttpError.value || (props.type === 'phone' && phoneError.value);
   const borderClass = hasErr
     ? 'border-red-500 dark:border-red-500'
-    : props.compact
-      ? 'border-gray-200/90 dark:border-gray-600'
-      : 'border-gray-300 dark:border-gray-600';
-  if (props.compact) {
-    return `w-full box-border min-h-[2.25rem] px-2.5 py-1.5 text-sm rounded-md border ${borderClass} ${baseFocus}`;
-  }
+    : 'border-gray-300 dark:border-gray-600';
   return `w-full px-2 py-1 text-sm border rounded ${borderClass} ${baseFocus}`;
 });
 
@@ -656,12 +834,7 @@ const stackMultilineEditInputClass = computed(() => {
     'bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y min-h-[80px]';
   const borderClass = saveHttpError.value
     ? 'border-red-500 dark:border-red-500'
-    : props.compact
-      ? 'border-gray-200/90 dark:border-gray-600'
-      : 'border-gray-300 dark:border-gray-600';
-  if (props.compact) {
-    return `w-full box-border px-2.5 py-1.5 text-sm rounded-md border ${borderClass} ${baseFocus}`;
-  }
+    : 'border-gray-300 dark:border-gray-600';
   return `w-full px-2 py-1 text-sm border rounded ${borderClass} ${baseFocus}`;
 });
 

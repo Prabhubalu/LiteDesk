@@ -35,6 +35,10 @@
     "message": "Conversation",
     "description": "Case record main tab"
   },
+  "recordMainTabsLabel": {
+    "message": "Case workspace sections",
+    "description": "Accessible label for case record main tab list"
+  },
   "recordLiveChatHeading": {
     "message": "Live chat",
     "description": "Live chat panel heading on case record"

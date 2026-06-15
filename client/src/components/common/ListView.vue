@@ -8,7 +8,6 @@
           <Menu v-if="savedViews && savedViews.length > 0" as="div" class="relative inline-block min-w-0 max-w-full text-left">
             <div class="min-w-0 max-w-full">
               <MenuButton
-                :title="activeViewTitleTruncated ? activePeopleViewTitle : undefined"
                 class="inline-flex max-w-full min-w-0 items-center gap-1.5 text-base sm:text-lg md:text-xl font-bold text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-200 transition-colors focus:outline-none"
               >
                 <span class="inline-flex min-w-0 max-w-full items-center gap-1.5">
@@ -18,7 +17,6 @@
                     tag="span"
                     text-class="text-base sm:text-lg md:text-xl font-bold"
                     class="min-w-0 max-w-full"
-                    @truncated-change="activeViewTitleTruncated = $event"
                   />
                   <span
                     v-if="showActiveViewModifiedIndicator"
@@ -47,7 +45,7 @@
                     v-slot="{ active, close }"
                   >
                     <div
-                      class="group flex items-center w-full pr-2"
+                      class="group flex min-w-0 w-full items-center"
                       :class="[
                         active ? 'bg-gray-100 dark:bg-gray-700' : '',
                         activeSavedViewId === view.id ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''
@@ -57,15 +55,17 @@
                         :text="view.label"
                         tag="button"
                         type="button"
+                        tooltip-placement="above"
+                        tooltip-align="start"
                         :class="[
                           activeSavedViewId === view.id ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100',
                           'flex-1 min-w-0 text-left px-4 py-2 text-sm',
                         ]"
                         @click="() => { handleSavedViewClick(view); close(); }"
                       />
-                      <div class="ml-auto flex shrink-0 items-center gap-1">
+                      <div :class="savedViewActionsColumnClass(view.id)">
                         <!-- Edit/Delete actions for custom views only -->
-                        <div v-if="!isSystemView(view.id)" class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div v-if="!isSystemView(view.id)" class="flex items-center gap-0.5">
                           <button
                             @click.stop="handleEditView(view)"
                             class="p-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
@@ -89,6 +89,7 @@
                         <HoverTooltip
                           :content="isEffectiveDefaultView(view.id) ? t('common.listDefaultViewTooltip') : t('common.listSetDefaultViewTooltip')"
                           anchor-selector="button"
+                          preferred-placement="above"
                           :show-delay="50"
                           :hide-delay="80"
                           :gap="4"
@@ -176,6 +177,7 @@
             </button>
             
             <button
+              ref="customizeButtonMobileRef"
               @click="handleCustomizeClick"
               class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
               :title="customizeButtonLabel"
@@ -225,6 +227,7 @@
         </button>
         
         <button
+          ref="customizeButtonDesktopRef"
           @click="handleCustomizeClick"
           class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors bg-white border border-gray-200 dark:border-0 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 cursor-pointer"
           :title="customizeButtonLabel"
@@ -256,13 +259,13 @@
     >
       <div
         v-if="statsBarSkeleton"
-        class="flex items-stretch overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+        class="flex items-stretch overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
         aria-hidden="true"
       >
         <div
           v-for="n in statsConfig.length"
           :key="`stat-sk-${n}`"
-          class="flex min-w-[5.5rem] flex-1 flex-col gap-2 border-r border-gray-200 px-3 py-2.5 last:border-r-0 dark:border-gray-700 sm:min-w-[7rem] sm:px-4 sm:py-3"
+          class="flex min-w-[5.5rem] flex-1 flex-col gap-2 border-r border-gray-100 px-3 py-2.5 last:border-r-0 dark:border-gray-800 sm:min-w-[7rem] sm:px-4 sm:py-3"
         >
           <div class="h-3.5 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-600" />
           <div class="h-6 w-12 animate-pulse rounded bg-gray-200 dark:bg-gray-600" />
@@ -272,13 +275,13 @@
         v-else
         role="toolbar"
         :aria-label="t('common.listStatisticsRegion')"
-        class="flex items-stretch overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+        class="flex items-stretch overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
       >
         <button
           v-for="item in computedStats"
           :key="item.key"
           type="button"
-          class="group flex min-w-[5.5rem] flex-1 flex-col items-start gap-1 border-r border-gray-200 px-3 py-2.5 text-left transition-[background-color,color] duration-150 last:border-r-0 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 dark:border-gray-700 dark:hover:bg-indigo-900/25 sm:min-w-[7rem] sm:gap-1.5 sm:px-4 sm:py-3"
+          class="group flex min-w-[5.5rem] flex-1 flex-col items-start gap-1 border-r border-gray-100 px-3 py-2.5 text-left transition-[background-color,color] duration-150 last:border-r-0 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 dark:border-gray-800 dark:hover:bg-indigo-900/25 sm:min-w-[7rem] sm:gap-1.5 sm:px-4 sm:py-3"
           :title="item.name"
           @click="handleStatClick(item)"
         >
@@ -915,8 +918,15 @@
       </Transition>
     </Teleport>
 
-    <!-- Customize View Drawer -->
-    <Teleport to="body">
+    <!-- Customize View / Kanban drawers -->
+    <Teleport :to="workspaceDrawerHost">
+      <div
+        v-if="showColumnSettings || showKanbanSettings"
+        class="absolute inset-x-0 bottom-0 z-40"
+        :style="customizeDrawerInsetStyle"
+        aria-hidden="true"
+        @click="closeCustomizeDrawers"
+      />
       <Transition
         enter-active-class="transition-transform ease-out duration-300"
         enter-from-class="translate-x-full"
@@ -928,47 +938,44 @@
         <div
           v-if="showColumnSettings"
           @click.stop
-          class="fixed right-0 w-full max-w-xs bg-white dark:bg-gray-900 shadow-2xl flex flex-col z-[9999] border-l border-gray-200 dark:border-gray-700"
-          :style="{
-            top: 'var(--tabbar-offset, 48px)',
-            height: 'calc(100dvh - var(--tabbar-offset, 48px))'
-          }"
+          class="absolute bottom-0 right-0 w-full max-w-xs bg-white dark:bg-neutral-900 shadow-lg flex flex-col z-50 overflow-hidden border-l border-t border-neutral-200 dark:border-neutral-700 rounded-tl-xl"
+          :style="customizeDrawerInsetStyle"
         >
               <!-- Drawer Header -->
-              <div class="flex items-center justify-between px-6 pr-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('common.listCustomizeView') }}</h3>
+              <div class="flex items-center justify-between px-4 py-2.5 border-b border-neutral-200 dark:border-neutral-700">
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('common.listCustomizeView') }}</h3>
                 <button
                   @click="showColumnSettings = false"
-                  class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
+                  class="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                 >
-                  <XMarkIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <XMarkIcon class="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 </button>
               </div>
 
               <!-- Drawer Body -->
               <div class="flex-1 overflow-y-auto">
                 <!-- Layout Options Section -->
-                <div class="border-b border-gray-200 dark:border-gray-700">
+                <div class="border-b border-neutral-200 dark:border-neutral-700">
                   <button
                     @click="layoutOptionsExpanded = !layoutOptionsExpanded"
-                    class="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                    class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors cursor-pointer"
                   >
-                    <div class="flex items-center gap-3">
-                      <WrenchScrewdriverIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <div class="flex items-center gap-2.5">
+                      <WrenchScrewdriverIcon class="w-4 h-4 text-gray-500 dark:text-gray-400" />
                       <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('common.listLayoutOptions') }}</span>
                     </div>
                     <ChevronDownIcon 
-                      :class="['w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform', layoutOptionsExpanded ? 'rotate-180' : '']" 
+                      :class="['w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform', layoutOptionsExpanded ? 'rotate-180' : '']" 
                     />
                   </button>
                   
-                  <div v-if="layoutOptionsExpanded" class="pb-4 space-y-0">
+                  <div v-if="layoutOptionsExpanded" class="pb-3 space-y-0">
                     <!-- Row Height -->
                     <Menu as="div" class="relative px-3">
-                      <MenuButton class="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
+                      <MenuButton class="w-full flex items-center justify-between px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md transition-colors cursor-pointer">
                         <span>{{ t('common.listRowHeight') }}</span>
                         <div class="flex items-center gap-2">
-                          <span class="text-gray-500 dark:text-gray-400">{{ rowHeightLabels[rowHeight] }}</span>
+                          <span class="text-sm text-gray-500 dark:text-gray-400">{{ rowHeightLabels[rowHeight] }}</span>
                           <ChevronRightIcon class="w-4 h-4" />
                         </div>
                       </MenuButton>
@@ -980,7 +987,7 @@
                         leave-from-class="transform scale-100 opacity-100"
                         leave-to-class="transform scale-95 opacity-0"
                       >
-                        <MenuItems class="absolute right-4 z-10 mt-2 w-40 origin-top-right rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg focus:outline-none">
+                        <MenuItems class="absolute right-2 z-10 mt-1 w-40 origin-top-right rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg focus:outline-none">
                           <div class="py-1">
                             <MenuItem
                               v-for="(label, value) in rowHeightLabels"
@@ -990,9 +997,9 @@
                               <button
                                 @click="rowHeight = value"
                                 :class="[
-                                  active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                                  active ? 'bg-neutral-100 dark:bg-neutral-700' : '',
                                   rowHeight === value ? 'text-indigo-600 dark:text-indigo-400 font-medium' : 'text-gray-700 dark:text-gray-300',
-                                  'block w-full text-left px-4 py-2 text-sm cursor-pointer'
+                                  'block w-full text-left px-3 py-2 text-sm cursor-pointer'
                                 ]"
                               >
                                 {{ label }}
@@ -1005,7 +1012,7 @@
 
                     <!-- Reset -->
                     <Menu as="div" class="relative px-3">
-                      <MenuButton class="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
+                      <MenuButton class="w-full flex items-center justify-between px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md transition-colors cursor-pointer">
                         <span>{{ t('common.listReset') }}</span>
                         <ChevronRightIcon class="w-4 h-4" />
                       </MenuButton>
@@ -1017,14 +1024,14 @@
                         leave-from-class="transform scale-100 opacity-100"
                         leave-to-class="transform scale-95 opacity-0"
                       >
-                        <MenuItems class="absolute right-4 z-10 mt-2 w-56 origin-top-right rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg focus:outline-none">
+                        <MenuItems class="absolute right-2 z-10 mt-1 w-52 origin-top-right rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg focus:outline-none">
                           <div class="py-1">
                             <MenuItem v-slot="{ active }">
                               <button
                                 @click="autosizeAllColumns"
                                 :class="[
-                                  active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                                  'block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer'
+                                  active ? 'bg-neutral-100 dark:bg-neutral-700' : '',
+                                  'block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer'
                                 ]"
                               >
                                 {{ t('common.listColumnWidths') }}
@@ -1034,8 +1041,8 @@
                               <button
                                 @click="resetColumnSettings"
                                 :class="[
-                                  active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                                  'block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer'
+                                  active ? 'bg-neutral-100 dark:bg-neutral-700' : '',
+                                  'block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer'
                                 ]"
                               >
                                 {{ t('common.listDefaultView') }}
@@ -1053,35 +1060,35 @@
                 <div>
                   <button
                     @click="manageFieldsExpanded = !manageFieldsExpanded"
-                    class="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                    class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors cursor-pointer"
                   >
-                    <div class="flex items-center gap-3">
-                      <PencilSquareIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <div class="flex items-center gap-2.5">
+                      <PencilSquareIcon class="w-4 h-4 text-gray-500 dark:text-gray-400" />
                       <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('common.listManageFields') }}</span>
                     </div>
                     <ChevronDownIcon 
-                      :class="['w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform', manageFieldsExpanded ? 'rotate-180' : '']" 
+                      :class="['w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform', manageFieldsExpanded ? 'rotate-180' : '']" 
                     />
                   </button>
                   
-                  <div v-if="manageFieldsExpanded" class="pb-4 space-y-4">
+                  <div v-if="manageFieldsExpanded" class="pb-3 space-y-3">
                     <!-- Search Fields -->
-                    <div class="relative px-6">
-                      <MagnifyingGlassIcon class="absolute left-9 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <div class="relative px-4">
+                      <MagnifyingGlassIcon class="absolute left-8 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input
                         v-model="fieldSearchQuery"
                         type="text"
                         :placeholder="t('common.listSearchFields')"
-                        class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+                        class="w-full pl-8 pr-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                       />
                     </div>
 
                     <!-- Shown Fields -->
                     <div>
-                      <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 px-6">
+                      <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 px-4">
                         {{ t('common.listShownCount', { count: shownFields.length }) }}
                       </h4>
-                      <div class="space-y-1 px-3">
+                      <div class="space-y-0.5 px-2">
                         <template v-for="(field, index) in shownFields" :key="field.key">
                           <div
                             :draggable="!(props.moduleKey === 'forms' && field.key?.toLowerCase() === 'name') || field.locked === true"
@@ -1092,13 +1099,13 @@
                             @drop.prevent="handleDrop($event, index)"
                             @dragend="handleDragEnd"
                             :class="[
-                              'flex items-center gap-3 px-2 py-2 rounded-lg transition-colors cursor-move',
-                              dragOverIndex === index ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'hover:bg-gray-100 dark:hover:bg-gray-800',
-                              field.locked ? 'cursor-not-allowed opacity-70' : '' // Add class for locked fields
+                              'flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors cursor-move',
+                              dragOverIndex === index ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'hover:bg-neutral-100 dark:hover:bg-neutral-800',
+                              field.locked ? 'cursor-not-allowed opacity-70' : ''
                             ]"
                           >
                           <!-- Grip handle icon (6 dots vertical) -->
-                          <svg class="w-5 h-5 text-gray-400 flex-shrink-0 cursor-move" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <svg class="w-4 h-4 text-gray-400 flex-shrink-0 cursor-move" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="9" cy="5" r="1.5" />
                             <circle cx="9" cy="12" r="1.5" />
                             <circle cx="9" cy="19" r="1.5" />
@@ -1110,14 +1117,13 @@
                             :is="getFieldIcon(field.dataType)"
                             class="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0"
                           />
-                          <span class="flex-1 text-sm text-gray-900 dark:text-white">{{ field.label }}</span>
-                          <span v-if="props.moduleKey === 'forms' && field.key?.toLowerCase() === 'name'" class="text-xs text-gray-500 dark:text-gray-400 mr-2">{{ t('common.listFieldRequired') }}</span>
-                          <span v-if="field.locked" class="text-xs text-gray-500 dark:text-gray-400 mr-2">{{ t('common.listFieldLocked') }}</span>
+                          <span class="flex-1 min-w-0 truncate text-sm text-gray-900 dark:text-white">{{ field.label }}</span>
+                          <span v-if="props.moduleKey === 'forms' && field.key?.toLowerCase() === 'name'" class="text-xs text-gray-500 dark:text-gray-400 shrink-0">{{ t('common.listFieldRequired') }}</span>
+                          <span v-if="field.locked" class="text-xs text-gray-500 dark:text-gray-400 shrink-0">{{ t('common.listFieldLocked') }}</span>
                           <HeadlessSwitch
                             :checked="field.visible"
                             @change="toggleFieldVisibility(field.key)"
                             :disabled="(props.moduleKey === 'forms' && field.key?.toLowerCase() === 'name') || field.locked"
-                            switch-class="w-9 h-5"
                           />
                           </div>
                         </template>
@@ -1126,25 +1132,25 @@
 
                     <!-- Hidden Fields -->
                     <div>
-                      <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 px-6">
+                      <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 px-4">
                         {{ t('common.listFieldHidden') }}
                       </h4>
-                      <div class="space-y-1 px-3">
+                      <div class="space-y-0.5 px-2">
                         <template v-for="field in hiddenFields" :key="field.key">
                           <div
-                            class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                           >
+                          <span class="w-4 flex-shrink-0" aria-hidden="true" />
                           <component
                             :is="getFieldIcon(field.dataType)"
                             class="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0"
                           />
-                          <span class="flex-1 text-sm text-gray-900 dark:text-white">{{ field.label }}</span>
-                          <span v-if="field.locked" class="text-xs text-gray-500 dark:text-gray-400 mr-2">{{ t('common.listFieldLocked') }}</span>
+                          <span class="flex-1 min-w-0 truncate text-sm text-gray-900 dark:text-white">{{ field.label }}</span>
+                          <span v-if="field.locked" class="text-xs text-gray-500 dark:text-gray-400 shrink-0">{{ t('common.listFieldLocked') }}</span>
                           <HeadlessSwitch
                             :checked="field.visible"
                             @change="toggleFieldVisibility(field.key)"
                             :disabled="(props.moduleKey === 'forms' && field.key?.toLowerCase() === 'name') || field.locked"
-                            switch-class="w-9 h-5"
                           />
                             </div>
                         </template>
@@ -1158,21 +1164,17 @@
               </div>
 
               <!-- Drawer Footer -->
-              <div class="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+              <div class="border-t border-neutral-200 dark:border-neutral-700 px-4 py-3">
                 <button
                   @click="openNewCustomField"
-                  class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 text-white rounded-lg transition-colors text-sm font-medium cursor-pointer"
+                  class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 text-white rounded-md transition-colors text-sm font-medium cursor-pointer"
                 >
-                  <PlusIcon class="w-5 h-5" />
+                  <PlusIcon class="w-4 h-4" />
                   <span>{{ t('common.listNewCustomField') }}</span>
                 </button>
               </div>
         </div>
       </Transition>
-    </Teleport>
-
-    <!-- Customize Kanban Drawer -->
-    <Teleport to="body">
       <Transition
         enter-active-class="transition-transform ease-out duration-300"
         enter-from-class="translate-x-full"
@@ -1184,42 +1186,39 @@
         <div
           v-if="showKanbanSettings"
           @click.stop
-          class="fixed right-0 w-full max-w-xs bg-white dark:bg-gray-900 shadow-2xl flex flex-col z-[9999] border-l border-gray-200 dark:border-gray-700"
-          :style="{
-            top: 'var(--tabbar-offset, 48px)',
-            height: 'calc(100dvh - var(--tabbar-offset, 48px))'
-          }"
+          class="absolute bottom-0 right-0 w-full max-w-xs bg-white dark:bg-neutral-900 shadow-lg flex flex-col z-50 overflow-hidden border-l border-t border-neutral-200 dark:border-neutral-700 rounded-tl-xl"
+          :style="customizeDrawerInsetStyle"
         >
-          <div class="flex items-center justify-between px-6 pr-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('common.listCustomizeKanban') }}</h3>
+          <div class="flex items-center justify-between px-4 py-2.5 border-b border-neutral-200 dark:border-neutral-700">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('common.listCustomizeKanban') }}</h3>
             <button
               @click="showKanbanSettings = false"
-              class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
+              class="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
             >
-              <XMarkIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              <XMarkIcon class="w-4 h-4 text-gray-500 dark:text-gray-400" />
             </button>
           </div>
           <div class="flex-1 overflow-y-auto">
             <!-- Kanban options -->
-            <div class="border-b border-gray-200 dark:border-gray-700">
+            <div class="border-b border-neutral-200 dark:border-neutral-700">
               <button
                 @click="kanbanOptionsExpanded = !kanbanOptionsExpanded"
-                class="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors cursor-pointer"
               >
-                <div class="flex items-center gap-3">
-                  <ViewColumnsIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <div class="flex items-center gap-2.5">
+                  <ViewColumnsIcon class="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('common.listKanbanOptions') }}</span>
                 </div>
                 <ChevronDownIcon
-                  :class="['w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform', kanbanOptionsExpanded ? 'rotate-180' : '']"
+                  :class="['w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform', kanbanOptionsExpanded ? 'rotate-180' : '']"
                 />
               </button>
-              <div v-if="kanbanOptionsExpanded" class="pb-4 space-y-0 px-3">
+              <div v-if="kanbanOptionsExpanded" class="pb-3 space-y-0 px-3">
                 <Menu as="div" class="relative">
-                  <MenuButton class="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
+                  <MenuButton class="w-full flex items-center justify-between px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md transition-colors cursor-pointer">
                     <span>{{ t('common.listCardSize') }}</span>
                     <div class="flex items-center gap-2">
-                      <span class="text-gray-500 dark:text-gray-400">{{ kanbanCardSizeLabels[kanbanCardSize] || kanbanCardSize }}</span>
+                      <span class="text-sm text-gray-500 dark:text-gray-400">{{ kanbanCardSizeLabels[kanbanCardSize] || kanbanCardSize }}</span>
                       <ChevronRightIcon class="w-4 h-4" />
                     </div>
                   </MenuButton>
@@ -1231,7 +1230,7 @@
                     leave-from-class="transform scale-100 opacity-100"
                     leave-to-class="transform scale-95 opacity-0"
                   >
-                    <MenuItems class="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg focus:outline-none">
+                    <MenuItems class="absolute right-0 z-10 mt-1 w-40 origin-top-right rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg focus:outline-none">
                       <div class="py-1">
                         <MenuItem
                           v-for="(label, value) in kanbanCardSizeLabels"
@@ -1241,9 +1240,9 @@
                           <button
                             @click="setKanbanCardSize(value)"
                             :class="[
-                              active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                              active ? 'bg-neutral-100 dark:bg-neutral-700' : '',
                               kanbanCardSize === value ? 'text-indigo-600 dark:text-indigo-400 font-medium' : 'text-gray-700 dark:text-gray-300',
-                              'block w-full text-left px-4 py-2 text-sm cursor-pointer'
+                              'block w-full text-left px-3 py-2 text-sm cursor-pointer'
                             ]"
                           >
                             {{ label }}
@@ -1253,41 +1252,37 @@
                     </MenuItems>
                   </Transition>
                 </Menu>
-                <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                <div class="flex items-center justify-between px-2 py-2 text-sm text-gray-700 dark:text-gray-300">
                   <span>{{ t('common.listStackFields') }}</span>
                   <HeadlessSwitch
                     v-model="kanbanStackFields"
                     @change="saveKanbanOptions()"
-                    switch-class="w-9 h-5"
                   />
                 </div>
-                <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                <div class="flex items-center justify-between px-2 py-2 text-sm text-gray-700 dark:text-gray-300">
                   <span>{{ t('common.listCollapseEmpty') }}</span>
                   <HeadlessSwitch
                     v-model="kanbanCollapseEmptyColumns"
                     @change="saveKanbanOptions()"
-                    switch-class="w-9 h-5"
                   />
                 </div>
-                <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                <div class="flex items-center justify-between px-2 py-2 text-sm text-gray-700 dark:text-gray-300">
                   <span>{{ t('common.listShowEmptyFields') }}</span>
                   <HeadlessSwitch
                     v-model="kanbanShowEmptyFields"
                     @change="saveKanbanOptions()"
-                    switch-class="w-9 h-5"
                   />
                 </div>
-                <div class="flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                <div class="flex items-center justify-between px-2 py-2 text-sm text-gray-700 dark:text-gray-300">
                   <span>{{ t('common.listShowClosedRecords') }}</span>
                   <HeadlessSwitch
                     v-model="kanbanClosedTasks"
                     @change="saveKanbanOptions()"
-                    switch-class="w-9 h-5"
                   />
                 </div>
                 <!-- Reset -->
                 <Menu as="div" class="relative">
-                  <MenuButton class="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
+                  <MenuButton class="w-full flex items-center justify-between px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md transition-colors cursor-pointer">
                     <span>{{ t('common.listReset') }}</span>
                     <ChevronRightIcon class="w-4 h-4" />
                   </MenuButton>
@@ -1299,14 +1294,14 @@
                     leave-from-class="transform scale-100 opacity-100"
                     leave-to-class="transform scale-95 opacity-0"
                   >
-                    <MenuItems class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg focus:outline-none">
+                    <MenuItems class="absolute right-0 z-10 mt-1 w-52 origin-top-right rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg focus:outline-none">
                       <div class="py-1">
                         <MenuItem v-slot="{ active }">
                           <button
                             @click="resetKanbanToDefault"
                             :class="[
-                              active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                              'block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer'
+                              active ? 'bg-neutral-100 dark:bg-neutral-700' : '',
+                              'block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer'
                             ]"
                           >
                             {{ t('common.listDefaultView') }}
@@ -1322,31 +1317,31 @@
             <div>
               <button
                 @click="kanbanManageFieldsExpanded = !kanbanManageFieldsExpanded"
-                class="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors cursor-pointer"
               >
-                <div class="flex items-center gap-3">
-                  <PencilSquareIcon class="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <div class="flex items-center gap-2.5">
+                  <PencilSquareIcon class="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('common.listManageFields') }}</span>
                 </div>
                 <ChevronDownIcon
-                  :class="['w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform', kanbanManageFieldsExpanded ? 'rotate-180' : '']"
+                  :class="['w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform', kanbanManageFieldsExpanded ? 'rotate-180' : '']"
                 />
               </button>
-              <div v-if="kanbanManageFieldsExpanded" class="pb-4 space-y-4">
-                <div class="relative px-6">
-                  <MagnifyingGlassIcon class="absolute left-9 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <div v-if="kanbanManageFieldsExpanded" class="pb-3 space-y-3">
+                <div class="relative px-4">
+                  <MagnifyingGlassIcon class="absolute left-8 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     v-model="kanbanFieldSearchQuery"
                     type="text"
                     :placeholder="t('common.listSearchFields')"
-                    class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+                    class="w-full pl-8 pr-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                   />
                 </div>
                 <div>
-                  <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 px-6">
+                  <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 px-4">
                     {{ t('common.listShownCount', { count: kanbanShownFields.length }) }}
                   </h4>
-                  <div class="space-y-1 px-3">
+                  <div class="space-y-0.5 px-2">
                     <div
                       v-for="(field, index) in kanbanShownFields"
                       :key="field.key"
@@ -1358,13 +1353,13 @@
                       @drop.prevent="handleKanbanDrop($event, index)"
                       @dragend="handleKanbanDragEnd"
                       :class="[
-                        'flex items-center gap-3 px-2 py-2 rounded-lg transition-colors',
-                        field.locked ? 'cursor-not-allowed opacity-70' : 'cursor-move hover:bg-gray-100 dark:hover:bg-gray-800',
+                        'flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors',
+                        field.locked ? 'cursor-not-allowed opacity-70' : 'cursor-move hover:bg-neutral-100 dark:hover:bg-neutral-800',
                         kanbanDragOverIndex === index ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''
                       ]"
                     >
                       <!-- Grip handle icon (6 dots vertical) - same as Customize List -->
-                      <svg class="w-5 h-5 text-gray-400 flex-shrink-0 cursor-move" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <svg class="w-4 h-4 text-gray-400 flex-shrink-0 cursor-move" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="9" cy="5" r="1.5" />
                         <circle cx="9" cy="12" r="1.5" />
                         <circle cx="9" cy="19" r="1.5" />
@@ -1373,33 +1368,32 @@
                         <circle cx="15" cy="19" r="1.5" />
                       </svg>
                       <component :is="getFieldIcon(field.dataType)" class="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
-                      <span class="flex-1 text-sm text-gray-900 dark:text-white">{{ field.label || field.key }}</span>
-                      <span v-if="field.locked" class="text-xs text-gray-500 dark:text-gray-400 mr-2">{{ t('common.listFieldLocked') }}</span>
+                      <span class="flex-1 min-w-0 truncate text-sm text-gray-900 dark:text-white">{{ field.label || field.key }}</span>
+                      <span v-if="field.locked" class="text-xs text-gray-500 dark:text-gray-400 shrink-0">{{ t('common.listFieldLocked') }}</span>
                       <HeadlessSwitch
                         :checked="field.visible"
                         @change="toggleKanbanFieldVisibility(field.key)"
                         :disabled="field.locked"
-                        switch-class="w-9 h-5"
                       />
                     </div>
                   </div>
                 </div>
                 <div>
-                  <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 px-6">
+                  <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 px-4">
                     {{ t('common.listFieldHidden') }}
                   </h4>
-                  <div class="space-y-1 px-3">
+                  <div class="space-y-0.5 px-2">
                     <div
                       v-for="field in kanbanHiddenFields"
                       :key="field.key"
-                      class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                     >
+                      <span class="w-4 flex-shrink-0" aria-hidden="true" />
                       <component :is="getFieldIcon(field.dataType)" class="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
-                      <span class="flex-1 text-sm text-gray-900 dark:text-white">{{ field.label || field.key }}</span>
+                      <span class="flex-1 min-w-0 truncate text-sm text-gray-900 dark:text-white">{{ field.label || field.key }}</span>
                       <HeadlessSwitch
                         :checked="false"
                         @change="toggleKanbanFieldVisibility(field.key)"
-                        switch-class="w-9 h-5"
                       />
                     </div>
                     <div v-if="kanbanHiddenFields.length === 0" class="text-sm text-gray-500 dark:text-gray-400 py-2 text-center">{{ t('common.listNoHiddenFields') }}</div>
@@ -1518,6 +1512,9 @@ import {
 } from '@/utils/listViewNameLimits';
 import { useNotifications } from '@/composables/useNotifications';
 import MassEditDrawer from '@/components/common/MassEditDrawer.vue';
+import { PLATFORM_WORKSPACE_DRAWER_HOST_ID } from '@/utils/sidebarLayout';
+
+const workspaceDrawerHost = `#${PLATFORM_WORKSPACE_DRAWER_HOST_ID}`;
 
 const authStore = useAuthStore();
 const notifications = useNotifications();
@@ -1681,11 +1678,17 @@ const props = defineProps({
   scrollSessionKey: {
     type: String,
     default: ''
+  },
+  /** When set (ModuleList), search input syncs from parent on view/search reset */
+  parentSearchQuery: {
+    type: String,
+    default: undefined
   }
 });
 
 const emit = defineEmits([
   'update:searchQuery',
+  'search-submit',
   'update:filters',
   'update:sort',
   'update:pagination',
@@ -1722,8 +1725,20 @@ const {
   isDefaultFilter: isSuggestedFilter,
 } = useDefaultListFilters(props.moduleKey);
 
-// State
+// Local search input — debounced to parent via update:searchQuery (ModuleList owns fetch params)
 const searchQuery = ref('');
+
+watch(
+  () => props.parentSearchQuery,
+  (value) => {
+    if (value === undefined) return;
+    const next = value ?? '';
+    if (next !== searchQuery.value) {
+      searchQuery.value = next;
+    }
+  },
+  { immediate: true }
+);
 const showColumnSettings = ref(false);
 const showKanbanSettings = ref(false);
 const visibleColumns = ref([]);
@@ -1787,7 +1802,6 @@ const editingView = ref(null);
 const saveMode = ref('create');
 const viewFormData = ref({ name: '', description: '' });
 const viewFormNameError = ref('');
-const activeViewTitleTruncated = ref(false);
 
 const canSaveView = computed(() => isSavedViewNameValid(viewFormData.value.name));
 
@@ -1892,7 +1906,63 @@ const customizeButtonLabel = computed(() =>
   props.viewMode === 'kanban' ? t('common.listCustomizeKanban') : t('common.listCustomizeView')
 );
 const customizeButtonShortLabel = computed(() => t('common.listCustomizeShort'));
+const customizeButtonDesktopRef = ref(null);
+const customizeButtonMobileRef = ref(null);
+const customizeDrawerTopPx = ref(0);
+
+function resolveCustomizeButtonEl() {
+  for (const el of [customizeButtonDesktopRef.value, customizeButtonMobileRef.value]) {
+    if (!(el instanceof HTMLElement)) continue;
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) return el;
+  }
+  return null;
+}
+
+function syncCustomizeDrawerPosition() {
+  if (typeof document === 'undefined') return;
+
+  const host = document.getElementById(PLATFORM_WORKSPACE_DRAWER_HOST_ID);
+  const button = resolveCustomizeButtonEl();
+  if (!(host instanceof HTMLElement) || !button) {
+    customizeDrawerTopPx.value = 0;
+    return;
+  }
+
+  const hostRect = host.getBoundingClientRect();
+  const buttonRect = button.getBoundingClientRect();
+  customizeDrawerTopPx.value = Math.max(0, Math.round(buttonRect.top - hostRect.top));
+}
+
+const customizeDrawerInsetStyle = computed(() => ({
+  top: `${customizeDrawerTopPx.value}px`,
+}));
+
+let customizeDrawerPositionListenersBound = false;
+
+function bindCustomizeDrawerPositionListeners() {
+  if (customizeDrawerPositionListenersBound) return;
+  customizeDrawerPositionListenersBound = true;
+  window.addEventListener('resize', syncCustomizeDrawerPosition, { passive: true });
+  const scrollRoot = document.querySelector('[data-platform-scroll-root]');
+  scrollRoot?.addEventListener('scroll', syncCustomizeDrawerPosition, { passive: true });
+}
+
+function unbindCustomizeDrawerPositionListeners() {
+  if (!customizeDrawerPositionListenersBound) return;
+  customizeDrawerPositionListenersBound = false;
+  window.removeEventListener('resize', syncCustomizeDrawerPosition);
+  const scrollRoot = document.querySelector('[data-platform-scroll-root]');
+  scrollRoot?.removeEventListener('scroll', syncCustomizeDrawerPosition);
+}
+
+const closeCustomizeDrawers = () => {
+  showColumnSettings.value = false;
+  showKanbanSettings.value = false;
+};
+
 const handleCustomizeClick = () => {
+  syncCustomizeDrawerPosition();
   if (props.viewMode === 'kanban') {
     showKanbanSettings.value = !showKanbanSettings.value;
     if (showKanbanSettings.value) {
@@ -1902,6 +1972,16 @@ const handleCustomizeClick = () => {
     showColumnSettings.value = !showColumnSettings.value;
   }
 };
+
+watch([showColumnSettings, showKanbanSettings], ([columnOpen, kanbanOpen]) => {
+  if (columnOpen || kanbanOpen) {
+    syncCustomizeDrawerPosition();
+    nextTick(() => requestAnimationFrame(syncCustomizeDrawerPosition));
+    bindCustomizeDrawerPositionListeners();
+    return;
+  }
+  unbindCustomizeDrawerPositionListeners();
+});
 
 // Row height - load from localStorage
 const rowHeightStorageKey = computed(() => `${STORAGE_PREFIX}-${props.moduleKey}-row-height`);
@@ -1981,6 +2061,7 @@ onUnmounted(() => {
   if (typeof window !== 'undefined') {
     window.removeEventListener('resize', updateWindowWidth);
   }
+  unbindCustomizeDrawerPositionListeners();
 });
 
 const QUOTES_LIST_COLUMNS_PREFS_VERSION = 2;
@@ -3573,19 +3654,23 @@ const canClearFilters = computed(() => hasActiveFilters.value);
 
 // Debounced search
 let searchTimeout;
+const emitSearchToParent = (query) => {
+  const term = query ?? '';
+  emit('update:searchQuery', term);
+  emit('search-submit', term);
+};
+
 const debouncedSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    emit('update:searchQuery', searchQuery.value);
-    emit('fetch');
+    emitSearchToParent(searchQuery.value);
   }, 500);
 };
 
 const clearSearch = () => {
   if (!searchQuery.value) return;
   searchQuery.value = '';
-  emit('update:searchQuery', '');
-  emit('fetch');
+  emitSearchToParent('');
   localStorage.removeItem(searchStorageKey.value);
 };
 
@@ -3826,66 +3911,63 @@ onMounted(async () => {
 
   if (shouldApplyActiveSavedView) {
     // applyViewConfig → update:filters already triggers ModuleList fetchData()
-    applySavedViewFromRecord(activeSavedView);
+    applySavedViewFromRecord(activeSavedView, { preserveSearch: true });
   } else {
-  // Restore search
+    // Restore filters
+    const savedFilters = localStorage.getItem(filterStorageKey.value);
+    if (savedFilters) {
+      try {
+        const parsed = JSON.parse(savedFilters);
+        const savedValues = parsed?.filters ?? parsed;
+        const savedOperators = parsed?.operators ?? {};
+        let changed = false;
+        Object.keys(filters).forEach(key => {
+          if (savedValues[key] !== undefined) {
+            filters[key] = savedValues[key];
+            changed = true;
+          }
+        });
+        Object.entries(savedOperators).forEach(([key, operator]) => {
+          if (operator) {
+            trackFilterRuleMeta(key, 'builder', String(operator));
+            changed = true;
+          }
+        });
+        if (parsed?.query) {
+          filterBuilderQuery.value = parsed.query;
+          changed = true;
+        }
+        if (changed) {
+          emitCompiledFilters();
+          shouldRefetch = true;
+        }
+      } catch (error) {
+        console.warn('Failed to parse saved filters', error);
+      }
+    }
+
+    const savedSort = localStorage.getItem(sortStorageKey.value);
+    if (savedSort) {
+      try {
+        const parsed = JSON.parse(savedSort);
+        const field = typeof parsed?.field === 'string' ? parsed.field : '';
+        const order = parsed?.order === 'desc' ? 'desc' : 'asc';
+        emit('update:sort', { sortField: field, sortOrder: order });
+        if (field) {
+          shouldRefetch = true;
+        }
+      } catch (error) {
+        console.warn('Failed to parse saved sort', error);
+      }
+    }
+  }
+
+  // Restore persisted search for all views (including My People / My Organizations)
   const savedSearch = localStorage.getItem(searchStorageKey.value);
-  if (savedSearch !== null) {
+  if (savedSearch !== null && savedSearch.trim() !== '') {
     searchQuery.value = savedSearch;
-    emit('update:searchQuery', savedSearch);
-    shouldRefetch = true;
-  }
-
-  // Restore filters
-  const savedFilters = localStorage.getItem(filterStorageKey.value);
-  if (savedFilters) {
-    try {
-      const parsed = JSON.parse(savedFilters);
-      const savedValues = parsed?.filters ?? parsed;
-      const savedOperators = parsed?.operators ?? {};
-      let changed = false;
-      Object.keys(filters).forEach(key => {
-        if (savedValues[key] !== undefined) {
-          filters[key] = savedValues[key];
-          changed = true;
-        }
-      });
-      Object.entries(savedOperators).forEach(([key, operator]) => {
-        if (operator) {
-          trackFilterRuleMeta(key, 'builder', String(operator));
-          changed = true;
-        }
-      });
-      if (parsed?.query) {
-        filterBuilderQuery.value = parsed.query;
-        changed = true;
-      }
-      if (changed) {
-        emitCompiledFilters();
-        shouldRefetch = true;
-      }
-    } catch (error) {
-      console.warn('Failed to parse saved filters', error);
-    }
-  }
-
-  const savedSort = localStorage.getItem(sortStorageKey.value);
-  if (savedSort) {
-    try {
-      const parsed = JSON.parse(savedSort);
-      const field = typeof parsed?.field === 'string' ? parsed.field : '';
-      const order = parsed?.order === 'desc' ? 'desc' : 'asc';
-      emit('update:sort', { sortField: field, sortOrder: order });
-      if (field) {
-        shouldRefetch = true;
-      }
-    } catch (error) {
-      console.warn('Failed to parse saved sort', error);
-    }
-  }
-  }
-
-  if (shouldRefetch) {
+    emitSearchToParent(savedSearch);
+  } else if (shouldRefetch) {
     nextTick(() => emit('fetch'));
   }
 
@@ -3962,7 +4044,7 @@ watch(
         ? props.savedViews?.find((view) => view.id === props.activeSavedViewId)
         : null;
       if (activeView) {
-        applySavedViewFromRecord(activeView, { force: true });
+        applySavedViewFromRecord(activeView, { force: true, preserveSearch: true });
         lastEmittedFiltersSignature = incomingSignature;
         return;
       }
@@ -4038,7 +4120,7 @@ const clearFilters = () => {
     delete filterRuleMeta[key];
   });
   filterBuilderQuery.value = createDefaultRootGroup();
-  emit('update:searchQuery', '');
+  emitSearchToParent('');
   emitCompiledFilters();
   localStorage.removeItem(searchStorageKey.value);
   localStorage.removeItem(filterStorageKey.value);
@@ -4908,6 +4990,22 @@ const systemViewIds = computed(() => {
 
 const isSystemView = (viewId) => isSystemViewId(viewId);
 
+function savedViewActionsColumnClass(viewId) {
+  const base = 'flex shrink-0 items-center gap-0.5 overflow-hidden pr-2 transition-[max-width,opacity] duration-150';
+  const isDefault = isEffectiveDefaultView(viewId);
+  const isCustom = !isSystemView(viewId);
+
+  if (isCustom) {
+    return isDefault
+      ? `${base} max-w-7 opacity-100 group-hover:max-w-20`
+      : `${base} max-w-0 opacity-0 group-hover:max-w-20 group-hover:opacity-100`;
+  }
+
+  return isDefault
+    ? `${base} max-w-7 opacity-100`
+    : `${base} max-w-0 opacity-0 group-hover:max-w-7 group-hover:opacity-100`;
+}
+
 // Load custom saved views from localStorage
 const loadCustomViews = () =>
   loadCustomSavedViews(props.moduleKey, savedViewsUserId.value);
@@ -5106,6 +5204,15 @@ function applySavedViewFromRecord(view, options = {}) {
   }
 
   applyViewConfig(config);
+
+  if (
+    !options.preserveSearch
+    && !Object.prototype.hasOwnProperty.call(config, 'search')
+  ) {
+    searchQuery.value = '';
+    emitSearchToParent('');
+  }
+
   persistFilterBuilderSession();
 
   nextTick(() => {
@@ -5155,8 +5262,10 @@ const applyViewConfig = (config) => {
     emitCompiledFilters();
   }
 
-  searchQuery.value = config.search ?? '';
-  emit('update:searchQuery', config.search ?? '');
+  if (Object.prototype.hasOwnProperty.call(config, 'search')) {
+    searchQuery.value = config.search ?? '';
+    emitSearchToParent(config.search ?? '');
+  }
   
   // Apply sort
   if (config.sort) {

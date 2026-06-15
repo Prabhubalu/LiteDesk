@@ -14,6 +14,17 @@ function isMasterLikeRequest(req, currentTenantOrg) {
   return orgName === 'arivu master' || orgName.includes('arivu master') || isInternalEmail;
 }
 
+/** ObjectId for $match in aggregation pipelines (Mongoose find casts strings; aggregate does not). */
+function normalizeAssignedToUserId(value) {
+  if (value === undefined || value === null || value === '') return value;
+  const raw = String(value);
+  return mongoose.Types.ObjectId.isValid(raw) ? new mongoose.Types.ObjectId(raw) : value;
+}
+
+function buildAssignedToUserFilter(userId) {
+  return { assignedTo: normalizeAssignedToUserId(userId) };
+}
+
 function mergeSearchAndAssignedToFilters(query, searchFilter, assignedToFilter) {
   if (!searchFilter && !assignedToFilter) return query;
 
@@ -28,8 +39,11 @@ function mergeSearchAndAssignedToFilters(query, searchFilter, assignedToFilter) 
     if (searchFilter) next.$and.push(searchFilter);
     if (assignedToFilter) next.$and.push(assignedToFilter);
   } else {
-    if (searchFilter) Object.assign(next, searchFilter);
-    if (assignedToFilter) {
+    if (searchFilter && assignedToFilter) {
+      next.$and = [searchFilter, assignedToFilter];
+    } else if (searchFilter) {
+      Object.assign(next, searchFilter);
+    } else if (assignedToFilter) {
       if (assignedToFilter.$or) {
         next.$or = assignedToFilter.$or;
       } else {
@@ -107,7 +121,7 @@ async function buildOrganizationListMongoQuery({
         ]
       };
     } else {
-      assignedToFilter = { assignedTo: params.assignedTo };
+      assignedToFilter = buildAssignedToUserFilter(params.assignedTo);
     }
   }
 
@@ -146,5 +160,7 @@ async function buildOrganizationListMongoQuery({
 module.exports = {
   isMasterLikeRequest,
   buildOrganizationListMongoQuery,
-  mergeSearchAndAssignedToFilters
+  mergeSearchAndAssignedToFilters,
+  normalizeAssignedToUserId,
+  buildAssignedToUserFilter,
 };

@@ -80,7 +80,7 @@
           v-slot="{ active }"
         >
           <li :class="optionRowClass(active)">
-            <span class="block truncate">{{ emptyLabel }}</span>
+            <span :class="['block', truncateOptions ? 'truncate' : 'whitespace-nowrap', selected ? 'font-semibold' : 'font-normal']">{{ emptyLabel }}</span>
           </li>
         </ListboxOption>
         <template v-if="hasGroups">
@@ -102,7 +102,7 @@
               v-slot="{ active, selected }"
             >
               <li :class="optionRowClass(active)">
-                <span :class="['block truncate', selected ? 'font-semibold' : 'font-normal']">{{ opt.label }}</span>
+                <span :class="['block', truncateOptions ? 'truncate' : 'whitespace-nowrap', selected ? 'font-semibold' : 'font-normal']">{{ opt.label }}</span>
                 <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-400">
                   <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
@@ -120,7 +120,7 @@
           v-slot="{ active, selected }"
         >
           <li :class="optionRowClass(active)">
-            <span :class="['block truncate', selected ? 'font-semibold' : 'font-normal']">{{ opt.label }}</span>
+            <span :class="['block', truncateOptions ? 'truncate' : 'whitespace-nowrap', selected ? 'font-semibold' : 'font-normal']">{{ opt.label }}</span>
             <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-400">
               <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
@@ -174,7 +174,19 @@ const props = defineProps({
   /** Show search when total options exceed this count (default 7) */
   searchMinOptions: { type: Number, default: 7 },
   /** When false, button label is not truncated (e.g. short AND/OR logic pickers). */
-  truncateButtonLabel: { type: Boolean, default: true }
+  truncateButtonLabel: { type: Boolean, default: true },
+  /** Teleport: pin menu width to trigger (default). When false, menu grows to fit option labels. */
+  teleportMatchWidth: { type: Boolean, default: true },
+  /** Teleport + !matchWidth: minimum menu width in px (defaults to trigger width). */
+  teleportMinWidthPx: { type: Number, default: 0 },
+  /** When false, option labels are not truncated in the dropdown list. */
+  truncateOptions: { type: Boolean, default: true },
+  /** Teleport horizontal alignment relative to the trigger: start (left) or end (right). */
+  teleportAlign: {
+    type: String,
+    default: 'start',
+    validator: (value) => value === 'start' || value === 'end'
+  }
 });
 
 const { t } = useI18n();
@@ -200,10 +212,25 @@ function syncTeleportPosition() {
   const el = getButtonElement();
   if (!el?.getBoundingClientRect) return;
   const rect = el.getBoundingClientRect();
+  const minWidth = Math.max(rect.width, props.teleportMinWidthPx || 0);
+  const horizontal =
+    props.teleportAlign === 'end'
+      ? { left: 'auto', right: `${window.innerWidth - rect.right}px` }
+      : { left: `${rect.left}px`, right: 'auto' };
+
+  if (props.teleportMatchWidth) {
+    teleportMenuStyle.value = {
+      top: `${rect.bottom + 4}px`,
+      ...horizontal,
+      width: `${rect.width}px`
+    };
+    return;
+  }
   teleportMenuStyle.value = {
     top: `${rect.bottom + 4}px`,
-    left: `${rect.left}px`,
-    width: `${rect.width}px`
+    ...horizontal,
+    minWidth: `${minWidth}px`,
+    width: 'max-content'
   };
 }
 

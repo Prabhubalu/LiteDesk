@@ -48,6 +48,7 @@
       :sort-order="sortOrder"
       :pagination="pagination"
       :external-filters="filters"
+      :parent-search-query="searchQuery"
       :boost-visible-column-keys="boostVisibleColumnKeys"
       :table-id="`${listDefinition.moduleKey}-table`"
       :scroll-session-key="listSessionKey"
@@ -57,7 +58,7 @@
       @create="handleCreate"
       @import="handleImport"
       @export="handleExport"
-      @update:searchQuery="handleSearchQueryUpdate"
+      @search-submit="handleSearchQueryUpdate"
       @update:filters="handleFiltersUpdate"
       @update:sort="handleSortUpdate"
       @update:pagination="handlePaginationUpdate"
@@ -135,7 +136,7 @@ import { getParticipation } from '@/utils/getParticipation';
 import {
   resolvePeopleListParticipationColumnLabel,
 } from '@/utils/peopleParticipationUi';
-import { getModuleListConfig, hasModuleListConfig, getSystemViews } from '@/platform/modules/moduleListRegistry';
+import { getModuleListConfig, hasModuleListConfig, getSystemViews, resolvePeopleListAppContext } from '@/platform/modules/moduleListRegistry';
 import {
   buildFilterFieldsFromModuleFields,
   buildListColumnsFromModuleFields,
@@ -195,12 +196,6 @@ const props = defineProps({
     type: String,
     default: null
   },
-  /** People page context: 'ALL' = no filter; otherwise filter getParticipation(person, context) != null */
-  peopleContext: {
-    type: String,
-    default: 'ALL',
-    validator: (v) => !v || v === 'ALL' || v === 'SALES' || v === 'HELPDESK'
-  },
   /** Passed to ListView/TableView: 'numbered-hover' shows row # until hover (desktop);
    *  'checkbox' always shows boxes */
   selectionColumnVariant: {
@@ -210,7 +205,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['create', 'import', 'export', 'row-click', 'edit', 'delete', 'bulk-action', 'filters-changed', 'search-changed', 'kanban-settings-changed', 'stats-visibility-changed']);
+const emit = defineEmits(['create', 'import', 'export', 'row-click', 'edit', 'delete', 'bulk-action', 'filters-changed', 'search-changed', 'kanban-settings-changed', 'stats-visibility-changed', 'people-context-changed']);
 
 /** Capture at setup — getCurrentInstance() is null inside async event handlers */
 const setupInstance = getCurrentInstance();
@@ -219,17 +214,6 @@ const parentHandlesDelete = typeof setupInstance?.vnode?.props?.onDelete === 'fu
 
 const route = useRoute();
 const router = useRouter();
-
-const listSessionScope = computed(() => {
-  if (props.moduleKey === 'people' && props.peopleContext) {
-    return String(props.peopleContext);
-  }
-  return '';
-});
-
-const listSessionKey = computed(() =>
-  getListSessionKey(props.moduleKey, props.appKey, route.path, listSessionScope.value)
-);
 
 /** Only block the whole page on first load — not when returning from another tab */
 const showListShellSkeleton = computed(
@@ -523,6 +507,38 @@ const savedViews = ref([]);
 const defaultViewId = ref(null);
 const activeSavedViewId = ref(null);
 
+function resolveViewPeopleContext(view) {
+  if (props.moduleKey !== 'people') return 'ALL';
+  if (view?.peopleContext) return view.peopleContext;
+  if (view?.id) {
+    return resolvePeopleListAppContext(props.moduleKey, view.id, moduleListConfigOptions.value);
+  }
+  return 'ALL';
+}
+
+const effectivePeopleContext = computed(() => {
+  if (props.moduleKey !== 'people') return 'ALL';
+  const view = savedViews.value.find((v) => v.id === activeSavedViewId.value);
+  return resolveViewPeopleContext(view);
+});
+
+function peopleEmptyFilterViewId(context) {
+  if (context === 'SALES') return 'sales';
+  if (context === 'HELPDESK') return 'helpdesk';
+  return 'all';
+}
+
+const listSessionScope = computed(() => {
+  if (activeSavedViewId.value) {
+    return String(activeSavedViewId.value);
+  }
+  return '';
+});
+
+const listSessionKey = computed(() =>
+  getListSessionKey(props.moduleKey, props.appKey, route.path, listSessionScope.value)
+);
+
 const moduleFieldDefinitions = ref([]);
 const appRegistry = ref(null);
 
@@ -630,7 +646,8 @@ const buildList = async () => {
         id: view.id,
         label: view.name,
         filters: view.filters,
-        isDefault: view.isDefault === true
+        isDefault: view.isDefault === true,
+        peopleContext: view.peopleContext,
       }));
       
       const customViews = await fetchCustomSavedViews(props.moduleKey, currentUserId);
@@ -694,6 +711,10 @@ const buildList = async () => {
         });
       }
 
+      if (props.moduleKey === 'people') {
+        emit('people-context-changed', effectivePeopleContext.value);
+      }
+
       return;
     }
   } catch (error) {
@@ -719,7 +740,7 @@ const adaptedColumns = computed(() => {
       props.moduleKey === 'people'
         ? resolvePeopleListParticipationColumnLabel(
             col.key,
-            props.peopleContext || 'ALL',
+            effectivePeopleContext.value,
             () => defaultLabel,
             t,
             te
@@ -749,7 +770,7 @@ const adaptedFilterFields = computed(() => {
       props.moduleKey === 'people'
         ? resolvePeopleListParticipationColumnLabel(
             field.key,
-            props.peopleContext || 'ALL',
+            effectivePeopleContext.value,
             () => defaultLabel,
             t,
             te
@@ -848,8 +869,8 @@ const fetchModuleFieldDefinitions = async () => {
   try {
     const params = { key: props.moduleKey };
     if (props.moduleKey === 'people') {
-      if (props.peopleContext === 'SALES') params.context = 'sales';
-      else if (props.peopleContext === 'HELPDESK') params.context = 'helpdesk';
+      if (effectivePeopleContext.value === 'SALES') params.context = 'sales';
+      else if (effectivePeopleContext.value === 'HELPDESK') params.context = 'helpdesk';
       else params.context = 'all';
     }
     const response = await apiClient.get('/modules', { params });
@@ -864,6 +885,22 @@ const fetchModuleFieldDefinitions = async () => {
     moduleFieldDefinitions.value = [];
   }
 };
+
+async function rebuildPeopleListColumns() {
+  if (props.moduleKey !== 'people' || !listDefinition.value) return;
+  await fetchModuleFieldDefinitions();
+  const fieldColumns = buildListColumnsFromModuleFields(
+    moduleFieldDefinitions.value,
+    props.moduleKey,
+    authStore.inventoryEnabled
+  );
+  if (fieldColumns.length > 0) {
+    listDefinition.value = {
+      ...listDefinition.value,
+      columns: fieldColumns,
+    };
+  }
+}
 
 // Statistics computation is now handled by the registry
 
@@ -988,8 +1025,33 @@ function applyListStatisticsFromResponse(response, totalRecords, ctx) {
   }
 }
 
+/** System views (My People, etc.) must always scope list GETs — search cannot drop assignedTo. */
+function applyActiveSystemViewScope(normalizedFilters, moduleConfig) {
+  const viewId = activeSavedViewId.value;
+  if (!viewId || !savedViews.value.length) return normalizedFilters;
+  if (!isRegistrySystemView(props.moduleKey, viewId)) return normalizedFilters;
+
+  const activeView = savedViews.value.find((v) => v.id === viewId);
+  if (!activeView) return normalizedFilters;
+
+  const rawViewFilters = activeView.config?.filters ?? activeView.filters ?? {};
+  if (!rawViewFilters || typeof rawViewFilters !== 'object') return normalizedFilters;
+
+  const viewFilters = moduleConfig?.normalizeViewFilters
+    ? moduleConfig.normalizeViewFilters({ ...rawViewFilters }, authStore.user?._id)
+    : { ...rawViewFilters };
+
+  const merged = { ...normalizedFilters };
+  for (const [key, value] of Object.entries(viewFilters)) {
+    if (key === 'filterQuery') continue;
+    if (value === undefined || value === '') continue;
+    merged[key] = value;
+  }
+  return merged;
+}
+
 /** Shared GET params + endpoint for both replace and append (requestedPage differs). */
-function buildListFetchContext(requestedPage) {
+function buildListFetchContext(requestedPage, options = {}) {
   const page =
     requestedPage ?? normalizeListPagination(pagination.value).currentPage;
   const params = {
@@ -1000,7 +1062,7 @@ function buildListFetchContext(requestedPage) {
   };
 
   const moduleConfig = resolveModuleListConfig(props.moduleKey);
-  let normalizedFilters = { ...filters.value };
+  let normalizedFilters = applyActiveSystemViewScope({ ...filters.value }, moduleConfig);
 
   if (moduleConfig?.normalizeFilters) {
     normalizedFilters = moduleConfig.normalizeFilters(normalizedFilters, authStore.user?._id);
@@ -1039,8 +1101,12 @@ function buildListFetchContext(requestedPage) {
     params.appKey = props.appKey;
   }
 
-  if (searchQuery.value && searchQuery.value.trim()) {
-    params.search = searchQuery.value.trim();
+  const activeSearchTerm = options.searchOverride !== undefined
+    ? String(options.searchOverride ?? '').trim()
+    : String(searchQuery.value ?? '').trim();
+
+  if (activeSearchTerm) {
+    params.search = activeSearchTerm;
   } else {
     const columnSearchTerm = resolveListSearchTerm(
       { filterQuery: params.filterQuery },
@@ -1100,8 +1166,8 @@ function applyClientSideListTransforms(rawRows, ctx) {
     });
   }
 
-  if (props.moduleKey === 'people' && props.peopleContext && props.peopleContext !== 'ALL') {
-    const ctxApp = props.peopleContext;
+  if (props.moduleKey === 'people' && effectivePeopleContext.value && effectivePeopleContext.value !== 'ALL') {
+    const ctxApp = effectivePeopleContext.value;
     fetchedData = fetchedData.filter((person) => getParticipation(person, ctxApp) != null);
   }
 
@@ -1110,7 +1176,7 @@ function applyClientSideListTransforms(rawRows, ctx) {
     const helpdeskRoleValues = coerceFilterValuesToArray(normalizedFilters.helpdesk_role);
 
     const legacyTypeOnHelpdesk =
-      props.peopleContext === 'HELPDESK' && helpdeskRoleValues.length === 0 ? salesTypeValues : [];
+      effectivePeopleContext.value === 'HELPDESK' && helpdeskRoleValues.length === 0 ? salesTypeValues : [];
 
     fetchedData = fetchedData.filter((person) => {
       const salesRole = getParticipation(person, 'SALES')?.role ?? '';
@@ -1120,10 +1186,10 @@ function applyClientSideListTransforms(rawRows, ctx) {
       const matchesHelpdesk = includesRoleMatch(helpdeskRoleValues, helpdeskRole);
       const matchesLegacyHelpdesk = includesRoleMatch(legacyTypeOnHelpdesk, helpdeskRole);
 
-      if (props.peopleContext === 'HELPDESK') {
+      if (effectivePeopleContext.value === 'HELPDESK') {
         return matchesHelpdesk && matchesLegacyHelpdesk;
       }
-      if (props.peopleContext === 'SALES') {
+      if (effectivePeopleContext.value === 'SALES') {
         return matchesSales;
       }
 
@@ -1230,7 +1296,8 @@ async function fetchListReplace(opts = {}) {
   const run = async () => {
     try {
       const ctx = buildListFetchContext(
-        normalizeListPagination(pagination.value).currentPage
+        normalizeListPagination(pagination.value).currentPage,
+        { searchOverride: opts.searchOverride }
       );
       const response = await apiClient.get(ctx.endpoint, {
         params: ctx.params,
@@ -1242,13 +1309,10 @@ async function fetchListReplace(opts = {}) {
 
       if (response.success) {
         const fetchedData = applyClientSideListTransforms(response.data || [], ctx);
-        const totalRecords =
-          Number(
-            response.pagination?.totalRecords ?? response.meta?.total ?? pagination.value.totalRecords ?? 0
-          ) || 0;
 
         data.value = [...fetchedData];
         applyPaginationFromResponse(response, fetchedData.length, ctx.params.page);
+        const totalRecords = Number(pagination.value.totalRecords ?? 0) || 0;
         applyListStatisticsFromResponse(response, totalRecords, ctx);
       } else {
         console.warn('[ModuleList] API response not successful:', {
@@ -1307,8 +1371,8 @@ function buildListQueryForBulkDelete() {
   const params = { ...ctx.params };
   delete params.page;
   delete params.limit;
-  if (props.moduleKey === 'people' && props.peopleContext && props.peopleContext !== 'ALL') {
-    params.peopleContext = props.peopleContext;
+  if (props.moduleKey === 'people' && effectivePeopleContext.value && effectivePeopleContext.value !== 'ALL') {
+    params.peopleContext = effectivePeopleContext.value;
   }
   return params;
 }
@@ -1434,16 +1498,22 @@ const handleAction = (route) => {
 
 // Handle events
 const handleSearchQueryUpdate = (query) => {
-  searchQuery.value = query;
+  const term = String(query ?? '').trim();
+  searchQuery.value = term;
   pagination.value.currentPage = 1;
   clearListSessionState();
-  emit('search-changed', query);
-  fetchData();
+  emit('search-changed', term);
+  // soft: keep rows visible; searchOverride guarantees the term is on this fetch
+  fetchData({ searchOverride: term, soft: true });
 };
+
+function filtersPayloadSignature(payload) {
+  return JSON.stringify(payload ?? {});
+}
 
 // Helper function to check if filters match a saved view (with normalization)
 // Shared between handleFiltersUpdate and handleStatClick
-const filtersMatchView = (currentFilters, viewFilters, currentUserId) => {
+function filtersMatchView(currentFilters, viewFilters, currentUserId) {
   // Get filter keys for both - include null and boolean values as they are valid filter values
   const viewFilterKeys = Object.keys(viewFilters).filter(k => {
     const v = viewFilters[k];
@@ -1453,12 +1523,12 @@ const filtersMatchView = (currentFilters, viewFilters, currentUserId) => {
     const v = currentFilters[k];
     return v !== undefined && v !== '';
   });
-  
+
   // Must have same number of filters
   if (viewFilterKeys.length !== currentFilterKeys.length) {
     return false;
   }
-  
+
   // Must have the same filter keys
   const viewKeysSet = new Set(viewFilterKeys);
   const currentKeysSet = new Set(currentFilterKeys);
@@ -1471,12 +1541,12 @@ const filtersMatchView = (currentFilters, viewFilters, currentUserId) => {
       return false;
     }
   }
-  
+
   // Check if all filter values match (with normalization for assignedTo)
   return viewFilterKeys.every(key => {
     const viewValue = viewFilters[key];
     const currentValue = currentFilters[key];
-    
+
     // Normalize assignedTo for comparison
     // 'me' should match currentUserId
     // 'unassigned' should match null
@@ -1498,7 +1568,7 @@ const filtersMatchView = (currentFilters, viewFilters, currentUserId) => {
         return true;
       }
     }
-    
+
     // Handle null comparison - null is a valid filter value
     if (viewValue === null) {
       return currentValue === null;
@@ -1506,16 +1576,16 @@ const filtersMatchView = (currentFilters, viewFilters, currentUserId) => {
     if (currentValue === null) {
       return viewValue === null;
     }
-    
+
     // Handle boolean comparison - boolean values should be compared directly
     if (typeof viewValue === 'boolean' || typeof currentValue === 'boolean') {
       return viewValue === currentValue;
     }
-    
+
     // String comparison for non-null, non-boolean values
     return String(viewValue) === String(currentValue);
   });
-};
+}
 
 function viewMatchesFilters(view, currentFilters, currentUserId) {
   if (!view) return false;
@@ -1543,18 +1613,23 @@ const handleFiltersUpdate = async (newFilters, options = {}) => {
       delete newFilters.participationRole;
     }
   }
-  
+
+  const prevSignature = filtersPayloadSignature(filters.value);
+  const nextSignature = filtersPayloadSignature(newFilters);
+  const filtersChanged = prevSignature !== nextSignature;
+
   // Create a new object to ensure reactivity
   filters.value = { ...newFilters };
-  pagination.value.currentPage = 1;
-  pagination.value.totalRecords = 0;
-  pagination.value.total = 0;
-  pagination.value.totalPages = 0;
-  clearListSessionState();
 
-  emit('filters-changed', filters.value);
-
-  fetchData();
+  if (filtersChanged || options.forceFetch) {
+    pagination.value.currentPage = 1;
+    pagination.value.totalRecords = 0;
+    pagination.value.total = 0;
+    pagination.value.totalPages = 0;
+    clearListSessionState();
+    emit('filters-changed', filters.value);
+    fetchData();
+  }
 
   // Wait for next tick to ensure filters are properly set before checking saved views
   await nextTick();
@@ -1583,7 +1658,11 @@ const handleFiltersUpdate = async (newFilters, options = {}) => {
         activeView?.id?.startsWith('custom-') || activeView?.config
       );
       if (!isCustomSavedView) {
-        activeSavedViewId.value = 'all';
+        if (props.moduleKey === 'people') {
+          activeSavedViewId.value = peopleEmptyFilterViewId(effectivePeopleContext.value);
+        } else {
+          activeSavedViewId.value = 'all';
+        }
       }
     } else {
       // Check if current filters match any saved view
@@ -1809,6 +1888,7 @@ function formatSystemViewsForList(systemViews) {
     label: view.name,
     filters: view.filters,
     isDefault: view.isDefault === true,
+    peopleContext: view.peopleContext,
   }));
 }
 
@@ -1865,12 +1945,19 @@ const handleSavedViewsUpdated = async (customViews) => {
 };
 
 // Handle saved view selection
-const handleSavedViewSelected = (view) => {
+const handleSavedViewSelected = async (view) => {
+  const prevContext = effectivePeopleContext.value;
   activeSavedViewId.value = view?.id || null;
 
   if (!view) {
     handleFiltersUpdate({});
     return;
+  }
+
+  const nextContext = resolveViewPeopleContext(view);
+  if (props.moduleKey === 'people' && prevContext !== nextContext) {
+    await rebuildPeopleListColumns();
+    emit('people-context-changed', nextContext);
   }
 
   handleFiltersUpdate(resolveSavedViewFilters(view, authStore.user?._id), { preserveActiveView: true });
@@ -2175,7 +2262,8 @@ defineExpose({
   getFilters: () => filters.value,
   getSearchQuery: () => searchQuery.value,
   getCurrentRows: () => (Array.isArray(data.value) ? data.value : []),
-  setFilters: (newFilters) => handleFiltersUpdate(newFilters)
+  setFilters: (newFilters) => handleFiltersUpdate(newFilters),
+  getPeopleContext: () => effectivePeopleContext.value,
 });
 </script>
 

@@ -3598,5 +3598,13 @@
   "linesAddShortcutHint": {
     "message": "Tip: With focus in lines, press ⌘K (Ctrl+K) to search products",
     "description": "Keyboard shortcut hint below quote line add panel"
+  },
+  "rightPaneResizeHandle": {
+    "message": "Resize activity panel",
+    "description": "Aria label for record right pane resize handle"
+  },
+  "rightPaneResizeHint": {
+    "message": "Drag to resize. Double-click to reset.",
+    "description": "Tooltip for record right pane resize handle"
   }
 }

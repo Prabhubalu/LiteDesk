@@ -1,29 +1,43 @@
 <template>
   <div
     v-if="peopleContext === 'ALL' && entries.length"
-    class="flex flex-wrap items-center gap-1 min-w-0"
+    class="flex flex-nowrap items-center gap-1 min-w-0 overflow-hidden"
   >
     <span
       v-for="entry in visibleEntries"
       :key="entry.appKey"
-      class="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs leading-snug whitespace-nowrap"
+      class="inline-flex min-w-0 max-w-full shrink items-center gap-1 overflow-hidden rounded px-2 py-0.5 text-xs leading-snug"
       :class="participationPillClass(entry.appKey)"
       :title="`${entry.appLabel} · ${entry.role}`"
     >
-      <span class="font-medium">{{ entry.appLabel }}</span>
-      <span class="opacity-35 select-none" aria-hidden="true">·</span>
-      <span>{{ entry.role }}</span>
+      <span class="truncate font-medium">{{ entry.appLabel }}</span>
+      <span class="shrink-0 opacity-35 select-none" aria-hidden="true">·</span>
+      <span class="truncate">{{ entry.role }}</span>
     </span>
     <HoverTooltip
       v-if="overflowCount > 0"
       :content="overflowTooltip"
       wrap
+      align="start"
     >
       <span
         class="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 cursor-default"
       >
         {{ overflowLabel }}
       </span>
+      <template #content>
+        <div class="flex flex-col gap-1.5">
+          <div
+            v-for="entry in overflowEntries"
+            :key="entry.appKey"
+            class="flex items-center gap-1 text-xs leading-snug"
+          >
+            <span class="font-medium text-white">{{ entry.appLabel }}</span>
+            <span class="opacity-40 select-none" aria-hidden="true">·</span>
+            <span class="text-slate-200">{{ entry.role }}</span>
+          </div>
+        </div>
+      </template>
     </HoverTooltip>
   </div>
   <div v-else-if="peopleContext !== 'ALL' && singleContextDisplay" class="min-w-0">

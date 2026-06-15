@@ -1,8 +1,10 @@
 <template>
   <div
     :class="[
-      'flex overflow-x-hidden bg-gray-100/70 dark:bg-gray-900',
-      useViewportLock ? 'h-dvh max-h-dvh overflow-hidden' : 'min-h-screen'
+      'flex overflow-x-hidden bg-neutral-100 dark:bg-neutral-900',
+      useViewportLock
+        ? 'h-dvh max-h-dvh overflow-hidden'
+        : 'min-h-screen lg:h-dvh lg:max-h-dvh lg:overflow-hidden'
     ]"
   >
     <!-- Sidebar Navigation -->
@@ -11,47 +13,73 @@
     <Nav v-model="sidebarCollapsed" />
     <OnboardingCoachmarks />
     
-    <!-- Main Content Area - Dynamic margin based on sidebar state -->
+    <!-- Work column: floating panel on desktop (matches sidebar material) -->
     <main
       :class="[
-        'flex flex-1 flex-col overflow-x-hidden transition-all duration-300',
-        useViewportLock ? 'h-dvh max-h-dvh min-h-0 overflow-hidden' : 'min-h-screen',
-        sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+        'flex flex-1 flex-col min-w-0 overflow-x-hidden transition-[margin-left] duration-200 ease-out',
+        useViewportLock ? 'h-dvh max-h-dvh min-h-0 overflow-hidden' : 'min-h-screen lg:h-dvh lg:min-h-0 lg:overflow-hidden',
+        sidebarCollapsed ? 'lg:ml-[calc(3.5rem+1rem)]' : 'lg:ml-[calc(13.75rem+1rem)]',
+        'lg:box-border lg:p-2 lg:pl-0'
       ]"
     >
-      <!-- Tab Bar - Hidden on mobile, visible on tablet and up -->
-      <TabBar class="hidden md:block" />
-      
-      <!-- Content wrapper with padding; min-h-0 so record pages can fill and use internal scroll -->
       <div
-        ref="contentWrapperRef"
         :class="[
-          'box-border flex min-h-0 flex-1 flex-col overflow-x-hidden',
-          useViewportLock
-            ? 'min-h-0 overflow-hidden px-4 pb-4 pt-16 md:pt-[7.5rem] lg:px-6 lg:pb-6 lg:pt-14'
-            : 'mt-16 overflow-y-auto p-4 md:mt-30 lg:mt-14 lg:p-6'
+          'flex flex-1 flex-col min-h-0 min-w-0',
+          'max-lg:contents',
+          'lg:overflow-hidden',
+          WORK_PANEL_SURFACE_CLASS
         ]"
-        :style="{ '--table-sticky-offset': tableStickyOffset }"
       >
-        <EmailVerificationBanner class="-mx-4 mb-2 lg:-mx-6" />
+        <TabBar class="hidden md:block shrink-0" />
 
-        <!-- Router view for dynamic routes; flex-1 min-h-0 so full-height record pages get a defined height -->
         <div
-          :class="[
-            'flex min-h-0 flex-1 flex-col',
-            useViewportLock ? 'h-full overflow-hidden' : ''
-          ]"
+          :id="PLATFORM_WORKSPACE_DRAWER_HOST_ID"
+          class="relative flex min-h-0 flex-1 flex-col overflow-hidden"
         >
-          <RouterView v-slot="{ Component }">
-            <!-- Cap cached route trees: each slot can hold a large list/record page. -->
-            <keep-alive :max="5">
-              <component
-                :is="Component"
-                :key="routerViewKey"
-                :class="routerViewClass"
-              />
-            </keep-alive>
-          </RouterView>
+          <div
+            ref="contentWrapperRef"
+            data-platform-scroll-root
+            :class="[
+              'box-border flex min-h-0 flex-1 flex-col overflow-x-hidden',
+              useFillHeightContent ? 'relative' : '',
+              useViewportLock
+                ? isProcessDesignerRoute || isInboxRoute
+                  ? 'min-h-0 overflow-hidden pt-16 md:pt-[7.5rem] lg:pt-0 lg:px-0 lg:pb-0 lg:bg-white lg:dark:bg-neutral-900'
+                  : [
+                      'min-h-0 overflow-hidden px-4 pb-4 pt-16 md:pt-[7.5rem]',
+                      isSettingsRoute
+                        ? 'lg:px-0 lg:pb-0 lg:pt-0 lg:bg-white lg:dark:bg-neutral-900'
+                        : 'lg:px-6 lg:pb-6 lg:pt-0 lg:bg-white lg:dark:bg-neutral-900',
+                    ]
+                : isRecordDetailRoute
+                  ? 'min-h-0 overflow-hidden pt-16 md:pt-[7.5rem] lg:pt-0 lg:bg-white lg:dark:bg-neutral-900'
+                  : 'mt-16 overflow-y-auto p-4 md:mt-30 lg:mt-0 lg:overflow-y-auto lg:p-6 lg:bg-white lg:dark:bg-neutral-900'
+            ]"
+            :style="{ '--table-sticky-offset': tableStickyOffset }"
+          >
+            <EmailVerificationBanner
+              v-if="!isRecordDetailRoute && !isProcessDesignerRoute && !isInboxRoute"
+              class="-mx-4 mb-2 lg:-mx-6"
+            />
+
+            <div
+              :class="[
+                useFillHeightContent
+                  ? 'relative flex h-full min-h-0 flex-1 flex-col overflow-hidden'
+                  : 'block w-full flex-none'
+              ]"
+            >
+              <RouterView v-slot="{ Component }">
+                <keep-alive :max="5">
+                  <component
+                    :is="Component"
+                    :key="routerViewKey"
+                    :class="routerViewClass"
+                  />
+                </keep-alive>
+              </RouterView>
+            </div>
+          </div>
         </div>
       </div>
     </main>
@@ -83,6 +111,7 @@ const OnboardingCoachmarks = defineAsyncComponent(() =>
 import { useAppShellStore } from '@/stores/appShell';
 import { useTabs } from '@/composables/useTabs';
 import { useSidebarState } from '@/composables/useSidebarState';
+import { PLATFORM_WORKSPACE_DRAWER_HOST_ID, WORK_PANEL_SURFACE_CLASS } from '@/utils/sidebarLayout';
 
 const route = useRoute();
 const appShellStore = useAppShellStore();
@@ -91,6 +120,7 @@ const appShellStore = useAppShellStore();
 const routerViewKey = computed(() => {
   const name = typeof route.name === 'string' ? route.name : '';
   if (name === 'inbox') return route.path;
+  if (name === 'platform-home') return route.fullPath;
   if (route.path.startsWith('/settings')) return route.path;
   const recordId = route.params?.id ?? route.params?.recordId;
   if (recordId && typeof recordId === 'string') {
@@ -106,11 +136,31 @@ const routerViewKey = computed(() => {
 });
 
 const isInboxRoute = computed(() => route.name === 'inbox');
-const isSettingsRoute = computed(() => route.path.startsWith('/settings'));
-const useViewportLock = computed(() => isInboxRoute.value || isSettingsRoute.value);
+/** Only the Settings split-pane shell — not standalone /settings/* admin pages (processes, flows, notifications). */
+const isSettingsRoute = computed(() => route.name === 'settings');
+const isProcessDesignerRoute = computed(() => {
+  const name = typeof route.name === 'string' ? route.name : '';
+  return name === 'process-designer' || name === 'process-designer-new';
+});
+const useViewportLock = computed(
+  () => isInboxRoute.value || isSettingsRoute.value || isProcessDesignerRoute.value
+);
+
+const isRecordDetailRoute = computed(() => {
+  const routeName = typeof route.name === 'string' ? route.name : '';
+  if (RECORD_DETAIL_ROUTE_NAMES.has(routeName)) return true;
+
+  const path = route.path || '';
+  return /^\/(people|deals|tasks|events|items|imports|organizations|groups|responses)\/[^/]+$/.test(path)
+    || /^\/forms\/[^/]+\/responses\/[^/]+$/.test(path);
+});
+
+const useFillHeightContent = computed(
+  () => useViewportLock.value || isRecordDetailRoute.value
+);
 
 const routerViewClass = computed(() => {
-  if (useViewportLock.value) {
+  if (useFillHeightContent.value) {
     return 'flex min-h-0 flex-1 flex-col overflow-hidden h-full';
   }
   return '';
@@ -137,21 +187,13 @@ const RECORD_DETAIL_ROUTE_NAMES = new Set([
   'import-detail',
   'group-detail',
   'response-detail',
-  'form-response-detail'
+  'form-response-detail',
+  'helpdesk-cases-detail',
 ]);
-
-const isRecordDetailRoute = () => {
-  const routeName = typeof route.name === 'string' ? route.name : '';
-  if (RECORD_DETAIL_ROUTE_NAMES.has(routeName)) return true;
-
-  const path = route.path || '';
-  return /^\/(people|deals|tasks|events|items|imports|organizations|groups|responses)\/[^/]+$/.test(path)
-    || /^\/forms\/[^/]+\/responses\/[^/]+$/.test(path);
-};
 
 const collapseSidebarForRecordOnTablet = () => {
   if (window.innerWidth > TABLET_RECORD_COLLAPSE_MAX_WIDTH) return;
-  if (!isRecordDetailRoute()) return;
+  if (!isRecordDetailRoute.value) return;
   if (sidebarCollapsed.value) return;
 
   sidebarCollapsed.value = true;
@@ -181,11 +223,33 @@ const queueContentOffsetUpdate = () => {
   });
 };
 
+/** keep-alive tab swaps can leave the page scroll root stuck until reflow. */
+const syncPageScrollContainer = () => {
+  if (useFillHeightContent.value) return;
+
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      const el = contentWrapperRef.value;
+      if (!(el instanceof HTMLElement)) return;
+
+      updateContentOffset();
+
+      void el.offsetHeight;
+      el.scrollTop = 0;
+      el.style.overflowY = 'scroll';
+      void el.offsetHeight;
+      el.style.overflowY = '';
+      void el.offsetHeight;
+    });
+  });
+};
+
 watch(
   () => route.fullPath,
   () => {
     collapseSidebarForRecordOnTablet();
     queueContentOffsetUpdate();
+    syncPageScrollContainer();
   }
 );
 
@@ -214,15 +278,16 @@ onMounted(() => {
   collapseSidebarForRecordOnTablet();
   queueContentOffsetUpdate();
   window.addEventListener('resize', handleResize, { passive: true });
+  window.addEventListener('platform-shell:sync-scroll', syncPageScrollContainer);
 });
 
 onUnmounted(() => {
   setInboxViewportLock(false);
   window.removeEventListener('resize', handleResize);
+  window.removeEventListener('platform-shell:sync-scroll', syncPageScrollContainer);
 });
 </script>
 
 <style scoped>
 /* Component-specific styles if needed */
 </style>
-

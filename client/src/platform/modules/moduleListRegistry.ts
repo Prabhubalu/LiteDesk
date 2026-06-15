@@ -46,11 +46,15 @@ export interface StatisticsConfig {
   ) => Record<string, number>;
 }
 
+export type PeopleListAppContext = 'ALL' | 'SALES' | 'HELPDESK';
+
 export interface SystemView {
   id: string;
   name: string;
   filters: Record<string, any>;
   isDefault?: boolean;
+  /** People list only: app scope for columns, field defs, and participation filtering. */
+  peopleContext?: PeopleListAppContext;
 }
 
 export interface ModuleListConfig {
@@ -389,6 +393,18 @@ export function getSystemViews(
   
   // Generate default views for modules without explicit config
   return generateDefaultSystemViews(moduleKey, moduleLabel, currentUserId);
+}
+
+/** Resolve People list app context from a system view id (defaults to ALL). */
+export function resolvePeopleListAppContext(
+  moduleKey: string,
+  viewId: string | null | undefined,
+  options?: ModuleListConfigOptions
+): PeopleListAppContext {
+  if (moduleKey !== 'people' || !viewId) return 'ALL';
+  const config = getModuleListConfig(moduleKey, options);
+  const view = config?.systemViews?.find((v) => v.id === viewId);
+  return view?.peopleContext ?? 'ALL';
 }
 
 /**
@@ -980,21 +996,30 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
     },
     systemViews: [
       {
+        id: 'assigned-to-me',
+        name: 'My People',
+        filters: { assignedTo: 'me' },
+        peopleContext: 'ALL',
+        isDefault: true,
+      },
+      {
         id: 'all',
         name: 'All People',
         filters: {},
-        isDefault: true
+        peopleContext: 'ALL',
       },
       {
-        id: 'assigned-to-me',
-        name: 'My People',
-        filters: { assignedTo: 'me' }
+        id: 'sales',
+        name: 'Sales People',
+        filters: {},
+        peopleContext: 'SALES',
       },
       {
-        id: 'unassigned',
-        name: 'Unassigned',
-        filters: { assignedTo: 'unassigned' }
-      }
+        id: 'helpdesk',
+        name: 'Helpdesk People',
+        filters: {},
+        peopleContext: 'HELPDESK',
+      },
     ],
     apiEndpoint: '/people',
     normalizeFilters: normalizePeopleFilters,

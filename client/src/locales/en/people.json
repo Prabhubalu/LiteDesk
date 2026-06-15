@@ -195,6 +195,10 @@
     "message": "Create Person",
     "description": "Auto-migrated from peopleQuickCreateDrawer"
   },
+  "peopleQuickCreateDrawerEditPerson": {
+    "message": "Edit Person",
+    "description": "People quick create drawer title in edit mode"
+  },
   "relationshipDrillDownsViewAllCases": {
     "message": "View all cases",
     "description": "Auto-migrated from relationshipDrillDowns"
@@ -670,6 +674,14 @@
   "listViewMy": {
     "message": "My People",
     "description": "People list assigned-to-me view title"
+  },
+  "listViewSales": {
+    "message": "Sales People",
+    "description": "People list Sales app participation view title"
+  },
+  "listViewHelpdesk": {
+    "message": "Helpdesk People",
+    "description": "People list Helpdesk app participation view title"
   },
   "listCreate": {
     "message": "New Person",

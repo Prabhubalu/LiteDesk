@@ -1,0 +1,168 @@
+<template>
+  <div
+    :class="[
+      PLATFORM_HOME_CARD_CLASS,
+      PLATFORM_HOME_INTENT_GRADIENT_CLASS,
+      'p-4 sm:p-5'
+    ]"
+  >
+    <p class="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-200">
+      {{ t('platform.platformHomeIntentPrompt') }}
+    </p>
+
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <button
+        type="button"
+        class="flex min-h-11 flex-1 items-center gap-3 rounded-xl px-4 py-2.5 text-left transition-colors hover:border-primary-200 hover:bg-white dark:hover:border-primary-500/40 dark:hover:bg-neutral-900/70"
+        :class="PLATFORM_HOME_INSET_CONTROL_CLASS"
+        @click="openSearch"
+      >
+        <MagnifyingGlassIcon class="h-5 w-5 shrink-0 text-neutral-400 dark:text-neutral-500" />
+        <span class="flex-1 truncate text-sm text-neutral-400 dark:text-neutral-500">
+          {{ t('platform.platformHomeIntentPlaceholder') }}
+        </span>
+        <kbd
+          class="hidden shrink-0 rounded-md border border-neutral-200/55 bg-neutral-50 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500 shadow-none sm:inline dark:border-white/[0.10] dark:bg-neutral-900/60 dark:text-neutral-400"
+        >
+          {{ searchShortcutLabel }}
+        </kbd>
+      </button>
+
+      <Menu as="div" class="relative shrink-0">
+        <MenuButton
+          type="button"
+          class="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-primary-200 bg-primary-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700 dark:border-primary-700 dark:bg-primary-600 dark:hover:bg-primary-500 sm:w-auto"
+          :class="PLATFORM_HOME_PRIMARY_BUTTON_CLASS"
+        >
+          <PlusIcon class="h-4 w-4" />
+          {{ t('actions.create') }}
+          <ChevronDownIcon class="h-4 w-4 opacity-80" />
+        </MenuButton>
+
+        <Transition
+          enter-active-class="transition duration-100 ease-out"
+          enter-from-class="scale-95 opacity-0"
+          enter-to-class="scale-100 opacity-100"
+          leave-active-class="transition duration-75 ease-in"
+          leave-from-class="scale-100 opacity-100"
+          leave-to-class="scale-95 opacity-0"
+        >
+          <MenuItems
+            class="absolute right-0 z-20 mt-2 w-52 origin-top-right rounded-xl border border-neutral-200/50 bg-white p-1 focus:outline-none dark:border-white/[0.12] dark:bg-neutral-800"
+            :class="PLATFORM_HOME_DROPDOWN_CLASS"
+          >
+            <MenuItem v-for="action in createActions" :key="action.id" v-slot="{ active }">
+              <button
+                type="button"
+                :class="[
+                  'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm',
+                  active ? 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white' : 'text-neutral-700 dark:text-neutral-300'
+                ]"
+                @click="action.run"
+              >
+                <component :is="action.icon" class="h-4 w-4 shrink-0 text-neutral-400 dark:text-neutral-500" />
+                {{ action.label }}
+              </button>
+            </MenuItem>
+          </MenuItems>
+        </Transition>
+      </Menu>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
+import {
+  BriefcaseIcon,
+  BuildingOfficeIcon,
+  ChevronDownIcon,
+  MagnifyingGlassIcon,
+  PlusIcon,
+  TicketIcon,
+  UserGroupIcon,
+  CheckCircleIcon
+} from '@heroicons/vue/24/outline';
+
+import {
+  PLATFORM_HOME_CARD_CLASS,
+  PLATFORM_HOME_DROPDOWN_CLASS,
+  PLATFORM_HOME_INSET_CONTROL_CLASS,
+  PLATFORM_HOME_INTENT_GRADIENT_CLASS,
+  PLATFORM_HOME_PRIMARY_BUTTON_CLASS
+} from '@/utils/platformHomeLayout';
+import {
+  capturePlatformHomeCreateAction,
+  capturePlatformHomeIntentSearchClick
+} from '@/config/posthogPlatformHome';
+
+const { t } = useI18n();
+
+const searchShortcutLabel = computed(() => {
+  if (typeof navigator === 'undefined') return '⌘K';
+  return /Mac|iPhone|iPod|iPad/i.test(navigator.platform) ? '⌘K' : 'Ctrl+K';
+});
+
+function openSearch() {
+  capturePlatformHomeIntentSearchClick();
+  window.dispatchEvent(new CustomEvent('arivu:open-global-search'));
+}
+
+function dispatchCreate(moduleKey, title) {
+  window.dispatchEvent(new CustomEvent('arivu:open-create-drawer', {
+    detail: { moduleKey, initialData: {}, title }
+  }));
+}
+
+const createActions = computed(() => [
+  {
+    id: 'person',
+    label: t('platform.platformHomeCreatePerson'),
+    icon: UserGroupIcon,
+    run: () => {
+      capturePlatformHomeCreateAction('person');
+      window.dispatchEvent(new CustomEvent('arivu:open-people-quick-create'));
+    }
+  },
+  {
+    id: 'organization',
+    label: t('platform.platformHomeCreateOrganization'),
+    icon: BuildingOfficeIcon,
+    run: () => {
+      capturePlatformHomeCreateAction('organization');
+      window.dispatchEvent(new CustomEvent('arivu:open-organization-quick-create', {
+        detail: { initialData: {}, autoLinkContext: null }
+      }));
+    }
+  },
+  {
+    id: 'deal',
+    label: t('platform.platformHomeCreateDeal'),
+    icon: BriefcaseIcon,
+    run: () => {
+      capturePlatformHomeCreateAction('deal');
+      dispatchCreate('deals', t('platform.platformHomeCreateDeal'));
+    }
+  },
+  {
+    id: 'task',
+    label: t('platform.platformHomeCreateTask'),
+    icon: CheckCircleIcon,
+    run: () => {
+      capturePlatformHomeCreateAction('task');
+      dispatchCreate('tasks', t('platform.platformHomeCreateTask'));
+    }
+  },
+  {
+    id: 'case',
+    label: t('platform.platformHomeCreateCase'),
+    icon: TicketIcon,
+    run: () => {
+      capturePlatformHomeCreateAction('case');
+      dispatchCreate('cases', t('platform.platformHomeCreateCase'));
+    }
+  }
+]);
+</script>

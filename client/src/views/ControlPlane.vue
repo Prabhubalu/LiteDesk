@@ -66,6 +66,34 @@
         </div>
       </router-link>
 
+      <!-- Release Notes -->
+      <router-link
+        to="/control/release-notes"
+        class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-indigo-500 dark:hover:border-indigo-500 transition-all cursor-pointer group"
+      >
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+              {{ t('releaseNotes.adminControlPlaneTitle') }}
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              {{ t('releaseNotes.adminControlPlaneDesc') }}
+            </p>
+            <div class="flex items-center text-sm text-indigo-600 dark:text-indigo-400 font-medium">
+              {{ t('process.controlPlaneViewModule') }}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </router-link>
+
       <!-- Instances Module -->
       <router-link
         to="/control/instances"

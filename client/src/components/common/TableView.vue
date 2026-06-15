@@ -2,7 +2,7 @@
   <div class="-mx-4 -my-2 sm:-mx-6 lg:-mx-8">
     <div class="w-full py-2 align-middle">
       <div
-        class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900 overflow-hidden"
+        class="table-view-shell rounded-xl bg-white shadow-sm dark:bg-gray-900 overflow-hidden"
         :class="showEmptyOverlay ? 'relative z-[1] flex min-h-[480px] flex-col' : 'relative z-[1]'"
       >
         <div
@@ -1989,7 +1989,8 @@ watch(
   background-clip: padding-box;
 }
 
-.table-scroll-container thead th.table-head-cell:not(.table-flex-fill) {
+/* Vertical dividers only after the sticky title column — row lines carry the rest */
+.table-scroll-container thead th.sticky-column-border {
   border-right: 1px solid var(--tv-grid-border);
 }
 
@@ -2024,7 +2025,7 @@ watch(
   border-bottom: 1px solid var(--tv-grid-border);
 }
 
-.table-scroll-container tbody td.table-body-cell:not(.table-flex-fill) {
+.table-scroll-container tbody td.sticky-column-border {
   border-right: 1px solid var(--tv-grid-border);
 }
 

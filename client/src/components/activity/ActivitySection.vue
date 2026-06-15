@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col h-full min-h-0 overflow-hidden">
-    <div class="sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
+    <div class="sticky top-0 z-[1] flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
       <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ resolvedTitle }}</h2>
       <div class="flex items-center gap-2">
         <button

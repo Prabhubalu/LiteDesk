@@ -1,5 +1,5 @@
 <template>
-  <div class="h-[calc(100vh-4rem)] flex flex-col bg-gray-50 dark:bg-gray-900">
+  <div class="flex h-full min-h-0 flex-col bg-gray-50 dark:bg-gray-900">
     <!-- Header -->
     <header class="relative z-30 shrink-0 flex flex-nowrap items-center gap-2 sm:gap-3 px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-visible">
       <button
@@ -260,6 +260,8 @@ import { graphErrorsByElement } from '@/utils/processGraphValidation';
 import { useProcessModuleFields } from '@/composables/useProcessModuleFields';
 import { useProcessNodeDrafts } from '@/composables/useProcessNodeDrafts';
 import { useNotifications } from '@/composables/useNotifications';
+import { useTabs } from '@/composables/useTabs';
+import { isProcessDesignerTabPath } from '@/utils/navigationLabels';
 import {
   isTriggerSelectionPending,
   PROCESS_TITLE_INPUT_CLASS
@@ -269,6 +271,7 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const { success: notifySuccess, error: notifyError } = useNotifications();
+const { activeTabId, updateTabTitle, findTabById } = useTabs();
 
 const processId = computed(() => route.params.id);
 
@@ -289,6 +292,23 @@ const process = ref({
   nodes: [],
   edges: []
 });
+
+function processTabDisplayName(name) {
+  const trimmed = String(name ?? '').trim();
+  return trimmed || t('process.setupTitle');
+}
+
+watch(
+  () => [activeTabId.value, route.name, process.value?.name],
+  () => {
+    const tabId = activeTabId.value;
+    if (!tabId || route.name !== 'process-designer') return;
+    const tab = findTabById(tabId);
+    if (!tab?.path || !isProcessDesignerTabPath(tab.path)) return;
+    updateTabTitle(tabId, processTabDisplayName(process.value.name));
+  },
+  { immediate: true }
+);
 
 const flowNodes = ref([]);
 const flowEdges = ref([]);

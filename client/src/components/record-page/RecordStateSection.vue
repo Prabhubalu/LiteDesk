@@ -1,11 +1,12 @@
 <template>
-  <section class="record-state-section mb-8 mt-4" aria-labelledby="record-state-heading">
+  <section ref="sectionRef" class="record-state-section mb-8 mt-4" aria-labelledby="record-state-heading">
     <h2 id="record-state-heading" class="sr-only">{{ resolvedHeading }}</h2>
     <div
       v-if="hasConfiguredFields"
       :class="[
-        'grid gap-x-8',
-        singleColumn ? 'grid-cols-1 gap-y-1 record-state-section--compact' : 'grid-cols-1 xl:grid-cols-2 gap-y-2'
+        'record-state-section__grid',
+        singleColumn || isContainerNarrow ? 'record-state-section__grid--single' : '',
+        singleColumn ? 'record-state-section--compact' : ''
       ]"
     >
       <div
@@ -31,17 +32,17 @@
           />
           <div
             v-else-if="shouldRenderActionField(field)"
-            class="record-state-section__row flex items-center gap-3"
+            class="record-state-section__row record-field-row-grid"
           >
-            <div class="record-state-section__label flex items-center gap-3 flex-shrink-0">
+            <span class="flex h-4 w-4 shrink-0 items-center justify-center text-gray-400 dark:text-gray-500" aria-hidden="true">
               <component
                 v-if="field.icon"
                 :is="field.icon"
-                class="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0"
+                class="h-4 w-4"
               />
-              <span class="text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
-            </div>
-            <div class="flex-1 min-w-0 min-h-8 flex">
+            </span>
+            <span class="min-w-0 truncate text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
+            <div class="min-w-0 min-h-8 flex">
               <button
                 type="button"
                 class="flex-1 min-w-0 w-full min-h-8 text-left text-sm text-gray-900 dark:text-white rounded px-2 py-1 -mx-2 -my-1 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer flex items-center"
@@ -80,17 +81,17 @@
           </div>
           <div
             v-else
-            class="record-state-section__row flex items-center gap-3"
+            class="record-state-section__row record-field-row-grid"
           >
-            <div class="record-state-section__label flex items-center gap-3 flex-shrink-0">
+            <span class="flex h-4 w-4 shrink-0 items-center justify-center text-gray-400 dark:text-gray-500" aria-hidden="true">
               <component
                 v-if="field.icon"
                 :is="field.icon"
-                class="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0"
+                class="h-4 w-4"
               />
-              <span class="text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
-            </div>
-            <div class="flex-1 min-w-0 min-h-8 flex items-center rounded px-2 -mx-2 -my-1 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
+            </span>
+            <span class="min-w-0 truncate text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
+            <div class="min-w-0 min-h-8 flex items-center rounded px-2 -mx-2 -my-1 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
               <slot :name="field.slotKey || field.key">
                 <a
                   v-if="shouldRenderLinkValue(field)"
@@ -133,7 +134,7 @@
 </template>
 
 <script setup>
-import { computed, useSlots, inject } from 'vue';
+import { computed, useSlots, inject, ref, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import EditableLabeledValue from '@/components/record-page/EditableLabeledValue.vue';
 import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
@@ -141,7 +142,8 @@ import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
 const { t, te } = useI18n();
 
 /**
- * RecordStateSection – Key fields in two-column layout (or single-column when embed/quick preview).
+ * RecordStateSection – Key fields in two-column layout by default; collapses to one field per row
+ * when the left column narrows (e.g. wider right pane). Field rows stack label/value at very narrow widths.
  *
  * Standardized: single data-driven path. Props `fields` + `fieldValues` define all rows;
  * one template renders both columns via v-for over columnGroups (single list when singleColumn).
@@ -166,6 +168,11 @@ function displayFieldLabel(field) {
 const recordLayoutIsMobile = inject('recordLayoutIsMobile', null);
 const singleColumn = computed(() => Boolean(recordLayoutIsMobile?.value));
 
+const sectionRef = ref(null);
+const isContainerNarrow = ref(false);
+const NARROW_CONTAINER_PX = 704;
+let sectionResizeObserver = null;
+
 const hasConfiguredFields = computed(() => Array.isArray(props.fields) && props.fields.length > 0);
 const slots = useSlots();
 
@@ -183,11 +190,27 @@ const rightFields = computed(() => {
   return props.fields.filter((_, index) => index % 2 === 1);
 });
 
-/** When singleColumn (e.g. quick preview), one group with all fields in order; otherwise left + right. */
+/** Flat list on mobile/embed or when left column narrows; otherwise left + right columns. */
 const columnGroups = computed(() => {
   if (!hasConfiguredFields.value) return [];
-  if (singleColumn.value) return [props.fields];
+  if (singleColumn.value || isContainerNarrow.value) return [props.fields];
   return [leftFields.value, rightFields.value];
+});
+
+onMounted(() => {
+  const el = sectionRef.value;
+  if (!el || typeof ResizeObserver === 'undefined') return;
+
+  sectionResizeObserver = new ResizeObserver((entries) => {
+    const width = entries[0]?.contentRect?.width ?? 0;
+    isContainerNarrow.value = width > 0 && width <= NARROW_CONTAINER_PX;
+  });
+  sectionResizeObserver.observe(el);
+});
+
+onBeforeUnmount(() => {
+  sectionResizeObserver?.disconnect();
+  sectionResizeObserver = null;
 });
 
 const getFieldValue = (field) => {
@@ -266,20 +289,40 @@ const getFieldHref = (field) => normalizeExternalUrl(getFieldValue(field));
 </script>
 
 <style scoped>
+.record-state-section {
+  container-type: inline-size;
+  container-name: record-state;
+}
+
+.record-state-section__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 2rem;
+  row-gap: 0.25rem;
+}
+
+.record-state-section__grid--single,
+.record-state-section--compact {
+  grid-template-columns: 1fr;
+}
+
+@container record-state (max-width: 44rem) {
+  .record-state-section__grid:not(.record-state-section__grid--single) {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Match DetailsSection and EditableLabeledValue default row: same padding and min-height for consistent label–value spacing across People, Task, etc. */
 .record-state-section__row {
   min-height: 2.5rem;
-  padding: 0.5rem 1rem; /* py-2 px-4 */
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 /* Tighter spacing in quick preview / single-column (embed) layout */
 .record-state-section--compact .record-state-section__row {
   min-height: 2.5rem;
-  padding: 0.25rem 1rem;
-}
-
-/* Match EditableLabeledValue row layout: same label width so key fields align across People, Tasks, etc. */
-.record-state-section__label {
-  min-width: 12rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }
 </style>

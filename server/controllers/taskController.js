@@ -13,6 +13,7 @@ const { emitTaskDomainEvent } = require('../services/taskDomainEventHelpers');
 const { applyProjectionFilter } = require('../utils/appProjectionQuery');
 const { getProjection } = require('../utils/moduleProjectionResolver');
 const { resolveCreateType, getTypeFieldName } = require('../utils/appProjectionCreateResolver');
+const { DEFAULT_TASK_TYPE, TASK_TYPE_LABELS } = require('../constants/taskTypes');
 const { performance } = require('perf_hooks');
 
 const TASK_STATUS_LABELS = {
@@ -38,6 +39,7 @@ const TASK_FIELD_LABELS = {
   assignedTo: 'assignee',
   status: 'status',
   priority: 'priority',
+  taskType: 'task type',
   dueDate: 'due date',
   startDate: 'start date',
   completedDate: 'completed date',
@@ -50,7 +52,7 @@ const TASK_FIELD_LABELS = {
 
 const TASK_ALLOWED_UPDATES = [
   'title', 'description', 'relatedTo', 'projectId', 'assignedTo',
-  'status', 'priority', 'dueDate', 'startDate', 'completedDate',
+  'status', 'priority', 'taskType', 'dueDate', 'startDate', 'completedDate',
   'estimatedHours', 'actualHours', 'subtasks', 'tags', 'reminderDate'
 ];
 
@@ -208,6 +210,8 @@ const formatTaskFieldValueForLog = (field, value, userNameById = {}) => {
       return TASK_STATUS_LABELS[value] || String(value);
     case 'priority':
       return TASK_PRIORITY_LABELS[value] || String(value);
+    case 'taskType':
+      return TASK_TYPE_LABELS[value] || String(value);
     case 'assignedTo': {
       const id = String(value);
       return userNameById[id] || id;
@@ -285,7 +289,7 @@ const createTask = async (req, res) => {
         req.body[typeFieldName] = resolved.type;
       }
     }
-    // If typeFieldName is null (Tasks don't have type), skip silently
+    // If typeFieldName is null, skip projection type assignment silently
 
     const {
       title,
@@ -295,6 +299,7 @@ const createTask = async (req, res) => {
       assignedTo,
       status,
       priority,
+      taskType,
       dueDate,
       startDate,
       estimatedHours,
@@ -331,6 +336,7 @@ const createTask = async (req, res) => {
       assignedBy: req.user._id,
       status: status || 'todo',
       priority: priority || 'medium',
+      taskType: taskType || DEFAULT_TASK_TYPE,
       dueDate,
       startDate,
       estimatedHours,
@@ -693,6 +699,7 @@ const getTasks = async (req, res) => {
       pagination: {
         currentPage: pageNum,
         totalPages: Math.ceil(total / limitNum),
+        totalRecords: total,
         totalTasks: total,
         tasksPerPage: limitNum
       }

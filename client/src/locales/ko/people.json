@@ -698,5 +698,25 @@
   "listParticipationMore": {
     "message": "+{count} more",
     "description": "Overflow indicator for additional app participations in list cell"
+  },
+  "listViewSales": {
+    "message": "Sales People",
+    "description": "People list Sales app participation view title"
+  },
+  "listViewHelpdesk": {
+    "message": "Helpdesk People",
+    "description": "People list Helpdesk app participation view title"
+  },
+  "peopleQuickCreateDrawerEditPerson": {
+    "message": "Edit Person",
+    "description": "People quick create drawer title in edit mode"
+  },
+  "peopleQuickCreateDrawerQuickCreateFields": {
+    "message": "Quick create fields",
+    "description": "People full-form drawer section — quick create fields"
+  },
+  "peopleQuickCreateDrawerOtherFields": {
+    "message": "Other fields",
+    "description": "People full-form drawer section — remaining core fields"
   }
 }

@@ -402,7 +402,19 @@ exports.list = async (req, res) => {
     }
     if (req.query.email) query.email = req.query.email;
     
-    // Handle assignedTo filter (identity-based filter for saved views)
+    // Search functionality - search across name, email, phone fields
+    // Store search condition separately - will be combined after projection filter
+    let searchCondition = null;
+    let assignedToFilter = null;
+    const { buildSearchOrConditions, resolveListSearchTerm, fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
+    const { mergeSearchAndAssignedToFilters, buildAssignedToUserFilter } = require('../utils/organizationsListQuery');
+    const directSearchTerm = req.query.search && req.query.search.trim() ? req.query.search.trim() : '';
+    if (directSearchTerm) {
+      searchCondition = {
+        $or: buildSearchOrConditions(directSearchTerm, ['first_name', 'last_name', 'email', 'phone', 'mobile'])
+      };
+    }
+
     if (req.query.assignedTo !== undefined) {
       if (
         req.query.assignedTo === 'null'
@@ -410,15 +422,17 @@ exports.list = async (req, res) => {
         || req.query.assignedTo === null
         || req.query.assignedTo === ''
       ) {
-        // Filter for unassigned (null or missing)
-        query.assignedTo = null;
+        assignedToFilter = {
+          $or: [
+            { assignedTo: null },
+            { assignedTo: { $exists: false } }
+          ]
+        };
       } else {
-        // Filter for specific user
-        query.assignedTo = req.query.assignedTo;
+        assignedToFilter = buildAssignedToUserFilter(req.query.assignedTo);
       }
+      delete query.assignedTo;
     }
-    
-    // Handle organization filter (identity-based filter for saved views)
     // Note: organization filter can be for specific org, null (without organization), or 'has' (with organization)
     if (req.query.organization !== undefined) {
       if (req.query.organization === 'null' || req.query.organization === null || req.query.organization === '') {
@@ -435,19 +449,7 @@ exports.list = async (req, res) => {
       }
     }
     
-    // Search functionality - search across name, email, phone fields
-    // Store search condition separately - will be combined after projection filter
-    let searchCondition = null;
-    const { buildSearchOrConditions, resolveListSearchTerm, fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
-    const directSearchTerm = req.query.search && req.query.search.trim() ? req.query.search.trim() : '';
-    if (directSearchTerm) {
-      searchCondition = {
-        $or: buildSearchOrConditions(directSearchTerm, ['first_name', 'last_name', 'email', 'phone', 'mobile'])
-      };
-    }
-
     // Phase 2A.2: Apply projection filter (read-time filtering only)
-    // SAFETY: Projection filtering is read-only.
     // SAFETY: No record ownership or permissions are enforced here.
     // CRITICAL: For PLATFORM appKey, skip projection filtering to show ALL people
     // including those without app participation (identity-only records)
@@ -472,24 +474,8 @@ exports.list = async (req, res) => {
       debugPeopleList('[PeopleController] PLATFORM appKey detected - skipping projection filter to show all people');
     }
     
-    // Apply search condition after projection filter
-    // If projection filter added $or, combine with $and; otherwise just add search $or
-    if (searchCondition) {
-      if (query.$or) {
-        // Projection filter added $or, combine with $and
-        query = {
-          ...query,
-          $and: [
-            { $or: query.$or },
-            searchCondition
-          ]
-        };
-        delete query.$or;
-      } else {
-        // No existing $or, just add search $or
-        query.$or = searchCondition.$or;
-      }
-    }
+    // Apply search + assignedTo after projection filter (must AND together correctly)
+    query = mergeSearchAndAssignedToFilters(query, searchCondition, assignedToFilter);
 
     const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
     query = applyListFilterQueryParam(query, req.query, 'people', { userId: req.user?._id });

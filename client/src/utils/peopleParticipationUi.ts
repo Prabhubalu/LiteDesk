@@ -41,7 +41,7 @@ export function isPeopleListAppContext(context: string): boolean {
   return PEOPLE_PARTICIPATION_APP_KEYS.includes(upper as PeopleParticipationAppKey);
 }
 
-export const PEOPLE_PARTICIPATION_LIST_VISIBLE_MAX = 2;
+export const PEOPLE_PARTICIPATION_LIST_VISIBLE_MAX = 1;
 
 function normalizePeopleListParticipationColumnKey(columnKey: string): string {
   const k = String(columnKey ?? '').trim();

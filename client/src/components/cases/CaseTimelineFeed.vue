@@ -1,5 +1,5 @@
 <template>
-  <div ref="feedRef" class="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4">
+  <div ref="feedRef" class="mx-auto max-w-3xl flex-1 min-h-0 overflow-y-auto px-4 py-4 sm:px-6 space-y-4">
     <div v-if="!activities.length" class="flex flex-col items-center justify-center py-16 text-center">
       <ChatBubbleLeftRightIcon class="h-12 w-12 text-gray-300 dark:text-gray-600" />
       <p class="mt-3 text-sm font-medium text-gray-900 dark:text-white">{{ emptyTitle }}</p>

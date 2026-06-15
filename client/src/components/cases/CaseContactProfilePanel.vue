@@ -48,19 +48,10 @@
 
         <div class="border-b border-gray-200 px-4 py-3 dark:border-gray-700">
           <div class="flex items-center gap-3">
-            <div class="relative min-w-0 flex-1">
-              <MagnifyingGlassIcon
-                class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-                aria-hidden="true"
-              />
-              <input
-                v-model="detailsTabSearchQuery"
-                type="search"
-                :placeholder="t('records.genericFilterFieldsPh')"
-                autocomplete="off"
-                class="w-full rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-500 focus:border-indigo-500/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:border-gray-600 dark:bg-gray-800/80 dark:text-white dark:placeholder-gray-400"
-              />
-            </div>
+            <DetailsTabFieldFilter
+              v-model="detailsTabSearchQuery"
+              :placeholder="t('records.genericFilterFieldsPh')"
+            />
             <label class="flex shrink-0 cursor-pointer select-none items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
               <input
                 v-model="detailsShowEmptyFields"
@@ -72,7 +63,7 @@
           </div>
         </div>
 
-        <div class="px-3 pb-4 pt-3">
+        <div class="px-4 pb-6 pt-4">
           <template v-if="genericAdapter">
             <p
               v-if="allModuleFields.length && !filteredDetailFields.length && (detailsTabSearchQuery || '').trim()"
@@ -109,9 +100,9 @@
 <script setup>
 import { computed, ref, watch, toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import Avatar from '@/components/common/Avatar.vue';
 import DetailsSection from '@/components/record-page/sections/DetailsSection.vue';
+import DetailsTabFieldFilter from '@/components/record-page/DetailsTabFieldFilter.vue';
 import apiClient from '@/utils/apiClient';
 import { usePersonRecordDetailFields } from '@/composables/usePersonRecordDetailFields';
 import { useTabs } from '@/composables/useTabs';

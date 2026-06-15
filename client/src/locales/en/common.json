@@ -2583,6 +2583,82 @@
     "message": "{count} years ago",
     "description": "Relative time multiple years"
   },
+  "attentionDueOverdue": {
+    "message": "overdue",
+    "description": "Attention item due label when past due"
+  },
+  "attentionDueInOneDay": {
+    "message": "in 1 day",
+    "description": "Attention item due in one day"
+  },
+  "attentionDueInManyDays": {
+    "message": "in {count} days",
+    "description": "Attention item due in multiple days"
+  },
+  "attentionDueInOneHour": {
+    "message": "in 1 hour",
+    "description": "Attention item due in one hour"
+  },
+  "attentionDueInManyHours": {
+    "message": "in {count} hours",
+    "description": "Attention item due in multiple hours"
+  },
+  "attentionDueOneHourAgo": {
+    "message": "1 hour ago",
+    "description": "Attention item due one hour ago"
+  },
+  "attentionDueManyHoursAgo": {
+    "message": "{count} hours ago",
+    "description": "Attention item due multiple hours ago"
+  },
+  "attentionDueSoon": {
+    "message": "soon",
+    "description": "Attention item due very soon"
+  },
+  "upcomingEventInOneMinute": {
+    "message": "in 1 min",
+    "description": "Upcoming event starting in one minute"
+  },
+  "upcomingEventInManyMinutes": {
+    "message": "in {count} min",
+    "description": "Upcoming event starting in multiple minutes"
+  },
+  "upcomingEventInOneHour": {
+    "message": "in 1 hour",
+    "description": "Upcoming event starting in one hour"
+  },
+  "upcomingEventInManyHours": {
+    "message": "in {count} hours",
+    "description": "Upcoming event starting in multiple hours"
+  },
+  "upcomingEventInOneDay": {
+    "message": "in 1 day",
+    "description": "Upcoming event starting in one day"
+  },
+  "upcomingEventInManyDays": {
+    "message": "in {count} days",
+    "description": "Upcoming event starting in multiple days"
+  },
+  "eventAttentionActionRequired": {
+    "message": "Action Required",
+    "description": "Event attention badge default label"
+  },
+  "eventAttentionStartingSoon": {
+    "message": "Starting Soon",
+    "description": "Event attention badge for start type"
+  },
+  "eventAttentionNeedsReview": {
+    "message": "Needs Review",
+    "description": "Event attention badge for review type"
+  },
+  "eventAttentionCorrectiveActions": {
+    "message": "Corrective Actions",
+    "description": "Event attention badge for corrective type"
+  },
+  "eventAttentionApprovalRequired": {
+    "message": "Approval Required",
+    "description": "Event attention badge for approval type"
+  },
   "phraseAnnualRevenue": {
     "message": "Annual Revenue",
     "description": "Common tenant custom field label"

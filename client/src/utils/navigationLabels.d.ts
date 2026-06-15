@@ -20,6 +20,7 @@ export function getTabTitleMetaForPath(
 export function pathSegments(path: string): string[];
 export function isRecordIdSegment(segment: string): boolean;
 export function isRecordDetailTabPath(path: string): boolean;
+export function isProcessDesignerTabPath(path: string): boolean;
 export function isGenericRecordTabTitleKey(titleKey: string | undefined): boolean;
 export function getPersistedRecordTabName(tab: {
   recordTitle?: string;

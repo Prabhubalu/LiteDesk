@@ -43,6 +43,16 @@
     :target-mailbox="connectModalTargetMailbox"
     @connected="onMailboxConnected"
   />
+
+  <WhatsNewModal
+    v-model="whatsNewModalOpen"
+    :releases="unseenReleases"
+  />
+  <WhatsNewDrawer
+    v-model="whatsNewDrawerOpen"
+    :releases="unseenReleases"
+  />
+  <ReleaseNotesCenter v-model="centerOpen" />
 </template>
 
 <script setup>
@@ -64,10 +74,24 @@ const { t } = useI18n();
  * Any deviation requires architecture review.
  */
 
-import { ref, onMounted, onBeforeUnmount, defineAsyncComponent } from 'vue';
+import { ref, onMounted, onBeforeUnmount, defineAsyncComponent, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/authRegistry';
 import { useConnectMailboxPrompt } from '@/composables/useConnectMailboxPrompt';
 import { useMailboxConnection } from '@/composables/useMailboxConnection';
+import { useReleaseNotes } from '@/composables/useReleaseNotes';
+import { useOnboarding } from '@/composables/useOnboarding';
 import ConnectMailboxModal from '@/components/inbox/ConnectMailboxModal.vue';
+
+const WhatsNewModal = defineAsyncComponent(() =>
+  import('@/components/release-notes/WhatsNewModal.vue')
+);
+const WhatsNewDrawer = defineAsyncComponent(() =>
+  import('@/components/release-notes/WhatsNewDrawer.vue')
+);
+const ReleaseNotesCenter = defineAsyncComponent(() =>
+  import('@/components/release-notes/ReleaseNotesCenter.vue')
+);
 
 // Async so GlobalSearch (+ drawers, field engines, command registry, API client) is NOT in the
 // same synchronous ESM pass as app.use(router) / root shell. A static import caused production
@@ -81,6 +105,22 @@ const {
   connectModalTargetMailbox
 } = useConnectMailboxPrompt();
 const { refreshMailboxes } = useMailboxConnection();
+const authStore = useAuthStore();
+const route = useRoute();
+const {
+  unseenReleases,
+  surface,
+  whatsNewModalOpen,
+  whatsNewDrawerOpen,
+  centerOpen,
+  initializeIfReady,
+  refreshOnFocus,
+  resetReleaseNotesState,
+  retryAutoSurface,
+  openCenter,
+  maybeScheduleAutoSurface
+} = useReleaseNotes();
+const { state: onboardingState } = useOnboarding();
 
 function onMailboxConnected() {
   void refreshMailboxes();
@@ -173,20 +213,82 @@ const handleOpenCommandPaletteEvent = () => {
   openCommandPalette();
 };
 
+const handleOpenWhatsNewEvent = () => {
+  openCenter('help_menu');
+};
+
+const handleWindowFocus = () => {
+  void refreshOnFocus();
+};
+
+const handleVisibilityChange = () => {
+  if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+    void refreshOnFocus();
+  }
+};
+
+watch(
+  () => authStore.isAuthenticated,
+  (isAuthenticated) => {
+    if (isAuthenticated) {
+      void initializeIfReady();
+      return;
+    }
+    resetReleaseNotesState();
+  },
+  { immediate: true }
+);
+
+watch(
+  () => route.path,
+  (path, prev) => {
+    if (authStore.isAuthenticated) {
+      void refreshOnFocus();
+    }
+    if (prev?.startsWith('/onboarding') && !path.startsWith('/onboarding')) {
+      void retryAutoSurface();
+    }
+  }
+);
+
+watch(
+  () => onboardingState.value?.completedAt,
+  (completedAt, prev) => {
+    if (completedAt && !prev) {
+      void retryAutoSurface();
+    }
+  }
+);
+
+watch(
+  () => [unseenReleases.value.length, surface.value],
+  () => {
+    maybeScheduleAutoSurface();
+  }
+);
+
 // Setup event listeners on mount
 onMounted(() => {
   // Keyboard shortcuts
   window.addEventListener('keydown', handleKeydown);
-  
+  window.addEventListener('focus', handleWindowFocus);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
   // Custom events
   window.addEventListener('arivu:open-global-search', handleOpenGlobalSearchEvent);
   window.addEventListener('arivu:open-command-palette', handleOpenCommandPaletteEvent);
+  window.addEventListener('arivu:open-whats-new', handleOpenWhatsNewEvent);
+  window.addEventListener('arivu:open-release-notes-center', handleOpenWhatsNewEvent);
 });
 
 // Cleanup event listeners on unmount
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown);
+  window.removeEventListener('focus', handleWindowFocus);
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
   window.removeEventListener('arivu:open-global-search', handleOpenGlobalSearchEvent);
   window.removeEventListener('arivu:open-command-palette', handleOpenCommandPaletteEvent);
+  window.removeEventListener('arivu:open-whats-new', handleOpenWhatsNewEvent);
+  window.removeEventListener('arivu:open-release-notes-center', handleOpenWhatsNewEvent);
 });
 </script>

@@ -20,7 +20,7 @@
 
     <div
       v-else
-      class="inbox-workspace flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row"
+      class="inbox-workspace flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row lg:gap-2 lg:p-2"
     >
     <InboxSidebar
       :search-query="emailSearchInput"

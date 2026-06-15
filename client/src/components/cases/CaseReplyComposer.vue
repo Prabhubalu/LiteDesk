@@ -11,13 +11,16 @@
         class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-400"
       >
         <span class="font-medium">{{ t('cases.recordComposerVia') }}</span>
-        <select
-          v-model="viaChannel"
+        <HeadlessSelect
+          :model-value="viaChannel"
+          :options="channelOptions"
           :disabled="disabled"
-          class="rounded-lg border border-gray-200 bg-white px-2 py-1 text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-        >
-          <option v-for="ch in channels" :key="ch" :value="ch">{{ ch }}</option>
-        </select>
+          teleport
+          :searchable="false"
+          wrapper-class="inline-block min-w-[7rem]"
+          :button-class="composerSelectButtonClass"
+          @update:model-value="viaChannel = $event"
+        />
       </label>
       <label class="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
         <span class="font-medium">{{ t('cases.recordComposerFrom') }}</span>
@@ -146,6 +149,7 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { BoltIcon } from '@heroicons/vue/24/outline';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import { CASE_CHANNELS } from '@/constants/caseLifecycle';
 import { useAuthStore } from '@/stores/authRegistry';
 import CommentInput from '@/components/record-page/CommentInput.vue';
@@ -190,6 +194,13 @@ const typingTimer = ref(null);
 const lastTypingSentAt = ref(0);
 
 const channels = CASE_CHANNELS;
+
+const channelOptions = computed(() =>
+  channels.map((channel) => ({ value: channel, label: channel }))
+);
+
+const composerSelectButtonClass =
+  'rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white !bg-white dark:!bg-gray-800';
 
 watch(
   () => [props.fixedChannel, props.caseRecord?.channel],

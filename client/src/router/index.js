@@ -342,6 +342,35 @@ const routes = [
     }
   },
   {
+    path: '/control/release-notes',
+    name: 'control-release-notes',
+    component: () => import('@/views/admin/PlatformReleaseNotesList.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPlatformAdmin: true
+    }
+  },
+  {
+    path: '/control/release-notes/new',
+    name: 'control-release-note-new',
+    component: () => import('@/views/admin/PlatformReleaseNoteEditor.vue'),
+    props: { id: 'new' },
+    meta: {
+      requiresAuth: true,
+      requiresPlatformAdmin: true
+    }
+  },
+  {
+    path: '/control/release-notes/:id',
+    name: 'control-release-note-edit',
+    component: () => import('@/views/admin/PlatformReleaseNoteEditor.vue'),
+    props: (route) => ({ id: route.params.id }),
+    meta: {
+      requiresAuth: true,
+      requiresPlatformAdmin: true
+    }
+  },
+  {
     path: '/control/automation-rules',
     redirect: '/settings/automation/automation-rules',
   },

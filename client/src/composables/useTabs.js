@@ -27,6 +27,7 @@ import {
   TicketIcon,
   CreditCardIcon,
   DocumentCurrencyDollarIcon,
+  DocumentChartBarIcon,
   ShoppingCartIcon,
   CubeIcon
 } from '@heroicons/vue/24/outline';
@@ -35,6 +36,7 @@ import {
   getPersistedRecordTabName,
   getTabTitleMetaForPath,
   hydrateTabFromStorage,
+  isProcessDesignerTabPath,
   isRecordDetailTabPath,
   shouldPreserveRecordTabTitle
 } from '@/utils/navigationLabels';
@@ -161,6 +163,8 @@ const iconMap = {
   'shield-check': ShieldCheckIcon,
   'magnifying-glass': MagnifyingGlassIcon,
   'squares': Squares2X2Icon,
+  'document-chart-bar': DocumentChartBarIcon,
+  'dashboard': DocumentChartBarIcon,
   'presentation-chart': PresentationChartLineIcon,
   'document-magnifying-glass': DocumentMagnifyingGlassIcon,
   // Audit app module aliases from registry/backend
@@ -423,6 +427,18 @@ const loadTabsFromStorage = () => {
             tab.icon = getIconComponent('cases');
           }
         }
+
+        const isSalesDashboardPath =
+          tabPathBase === '/sales/dashboard'
+          || tabPathBase.startsWith('/sales/dashboard/')
+          || tabPathBase === '/dashboard/sales'
+          || tabPathBase.startsWith('/dashboard/sales/');
+        if (isSalesDashboardPath) {
+          const id = getIconId(tab.icon);
+          if (id !== 'document-chart-bar' && id !== 'dashboard') {
+            tab.icon = getIconComponent('document-chart-bar');
+          }
+        }
         
         // Migrate only legacy shared /dashboard tabs.
         // Keep app-scoped routes like /dashboard/helpdesk untouched.
@@ -431,7 +447,7 @@ const loadTabsFromStorage = () => {
           tab.id = generateTabId(); // Generate new ID since it's not the home tab
           tab.path = '/dashboard/sales';
           tab.title = 'Sales Dashboard';
-          tab.icon = getIconComponent('home');
+          tab.icon = getIconComponent('document-chart-bar');
           tab.closable = true; // Dashboard tabs are closable
         }
       });
@@ -480,6 +496,38 @@ const getIconId = (iconComponent) => {
   return 'document'; // fallback
 };
 
+/** Restore a module list tab title after leaving a record/designer view. */
+function restoreModuleListTabTitle(tab, path) {
+  if (!tab || !path) return;
+  const pathBase = String(path).split('?')[0];
+  delete tab.recordTitle;
+  if (tab.params && 'name' in tab.params) {
+    const nextParams = { ...tab.params };
+    delete nextParams.name;
+    tab.params = nextParams;
+  }
+  const meta = getTabTitleMetaForPath(pathBase, tab.params || {});
+  if (meta.titleKey) {
+    tab.titleKey = meta.titleKey;
+    tab.titleParams = meta.titleParams || {};
+    delete tab.title;
+  } else if (meta.title) {
+    tab.title = meta.title;
+    delete tab.titleKey;
+    delete tab.titleParams;
+  } else {
+    const fallbackTitle = getTitleForPath(pathBase, tab.params || {});
+    if (fallbackTitle) tab.title = fallbackTitle;
+    delete tab.titleKey;
+    delete tab.titleParams;
+  }
+}
+
+function isAutomationModuleListRoute(path) {
+  const pathBase = String(path || '').split('?')[0];
+  return pathBase.startsWith('/settings/automation/') && !isProcessDesignerTabPath(pathBase);
+}
+
 /** Apply a record display name to a tab (persisted as recordTitle + title). */
 function applyRecordTabTitle(tab, name) {
   const trimmed = String(name || '').trim();
@@ -495,6 +543,9 @@ function applyRecordTabTitle(tab, name) {
       moduleRoute,
       name: trimmed
     };
+  } else {
+    delete tab.titleKey;
+    delete tab.titleParams;
   }
 }
 
@@ -645,7 +696,7 @@ const getIconForPath = (path) => {
   const pathOnly = String(path || '').split('?')[0].split('#')[0];
   const icons = {
     '/platform/home': 'home',
-    '/sales/dashboard': 'home',
+    '/sales/dashboard': 'document-chart-bar',
     '/dashboard': 'home', // backward compat
     '/inbox': 'inbox',
     '/approvals': 'check',
@@ -681,6 +732,7 @@ const getIconForPath = (path) => {
   if (pathOnly === '/helpdesk/dashboard' || pathOnly.startsWith('/helpdesk/')) return 'lifebuoy';
   if (pathOnly === '/dashboard/helpdesk' || pathOnly.startsWith('/dashboard/helpdesk')) return 'lifebuoy';
   if (pathOnly === '/dashboard/audit' || pathOnly.startsWith('/dashboard/audit')) return 'shield-check';
+  if (pathOnly === '/dashboard/sales' || pathOnly.startsWith('/dashboard/sales')) return 'document-chart-bar';
   if (pathOnly.startsWith('/dashboard/')) return 'home';
   
   // Check for exact match first
@@ -755,17 +807,20 @@ const getTitleForPath = (path, params = {}) => {
 
   // Settings → Automation routes (handle flow detail pages)
   if (path.startsWith('/settings/automation/')) {
-    if (segments[3] === 'flows' && segments[4]) {
-      if (segments[5] === 'health') {
+    if (isProcessDesignerTabPath(path)) {
+      return i18n.global.t('process.setupTitle');
+    }
+    if (segments[2] === 'flows' && segments[3]) {
+      if (segments[4] === 'health') {
         return 'Flow Health';
-      } else if (segments[5] === 'edit') {
+      } else if (segments[4] === 'edit') {
         return 'Edit Business Flow';
-      } else if (segments[4] === 'create') {
+      } else if (segments[3] === 'create') {
         return 'Create Business Flow';
       }
       return 'Business Flow';
     }
-    return titles[`/settings/automation/${segments[3]}`] || 'Automation';
+    return titles[`/settings/automation/${segments[2]}`] || 'Automation';
   }
   
   // Special case: Audit app routes (should not use tabs system)
@@ -967,16 +1022,13 @@ export function useTabs() {
     const parentListPath = isCreateRoute ? pathWithoutQuery.replace(/\/new\/?$/, '') : null;
 
     // Create routes should reuse their parent list tab (drawer opens in same tab).
-    if (!existingTab && parentListPath) {
+    if (!existingTab && parentListPath && parentListPath !== '/settings/automation/processes') {
       const parentTab = findTabByPath(parentListPath);
       if (parentTab) {
         if (activeTabId.value !== parentTab.id) {
           activeTabId.value = parentTab.id;
         }
-        const parentTitle = getTitleForPath(parentListPath, parentTab.params || {});
-        if (parentTitle && parentTab.title !== parentTitle) {
-          parentTab.title = parentTitle;
-        }
+        restoreModuleListTabTitle(parentTab, parentListPath);
         return;
       }
     }
@@ -1410,22 +1462,32 @@ export function useTabs() {
       }
 
       // Keep create routes in their parent list tab so drawer flows stay in-tab.
-      if (parentListPath) {
+      if (parentListPath && parentListPath !== '/settings/automation/processes') {
         const parentTab = findTabByPath(parentListPath);
         if (parentTab) {
           if (activeTabId.value !== parentTab.id) {
             activeTabId.value = parentTab.id;
           }
-          const parentTitle = getTitleForPath(parentListPath, parentTab.params || {});
-          if (parentTitle && parentTab.title !== parentTitle) {
-            parentTab.title = parentTitle;
-          }
+          restoreModuleListTabTitle(parentTab, parentListPath);
           return;
+        }
+      }
+
+      const currentActiveTab = tabs.value.find(tab => tab.id === activeTabId.value);
+      if (currentActiveTab) {
+        const activePathBase = currentActiveTab.path.split('?')[0];
+        if (isProcessDesignerTabPath(newPath) && activePathBase === '/settings/automation/processes') {
+          currentActiveTab.path = newFullPath || newPath;
+        } else if (
+          newPath === '/settings/automation/processes' &&
+          (isProcessDesignerTabPath(activePathBase) || currentActiveTab.recordTitle)
+        ) {
+          currentActiveTab.path = newPath;
+          restoreModuleListTabTitle(currentActiveTab, newPath);
         }
       }
       
       // Check if active tab already matches this route (with or without query params)
-      const currentActiveTab = tabs.value.find(tab => tab.id === activeTabId.value);
       if (currentActiveTab) {
         const currentPathWithoutQuery = currentActiveTab.path.split('?')[0];
         const newPathWithoutQuery = newPath.split('?')[0];
@@ -1435,12 +1497,10 @@ export function useTabs() {
             newPathWithoutQuery === '/people' || newPathWithoutQuery === '/organizations' || newPathWithoutQuery === '/forms' ||
             newPathWithoutQuery === '/items' || newPathWithoutQuery === '/imports' || newPathWithoutQuery === '/trash' ||
             newPathWithoutQuery === '/helpdesk/cases' ||
-            newPathWithoutQuery === '/platform/home' || newPathWithoutQuery === '/sales/dashboard' || newPathWithoutQuery.startsWith('/control/') || newPathWithoutQuery.startsWith('/settings/automation/');
+            newPathWithoutQuery === '/platform/home' || newPathWithoutQuery === '/sales/dashboard' || newPathWithoutQuery.startsWith('/control/') ||
+            (newPathWithoutQuery.startsWith('/settings/automation/') && !isProcessDesignerTabPath(newPathWithoutQuery));
           if (isListRoute) {
-            const moduleTitle = getTitleForPath(newPathWithoutQuery, currentActiveTab.params || {});
-            if (moduleTitle && currentActiveTab.title !== moduleTitle) {
-              currentActiveTab.title = moduleTitle;
-            }
+            restoreModuleListTabTitle(currentActiveTab, newPathWithoutQuery);
           }
           console.log('✅ Active tab already matches route, skipping sync');
           return;
@@ -1505,10 +1565,10 @@ export function useTabs() {
           newPathBase === '/people' || newPathBase === '/organizations' || newPathBase === '/forms' ||
           newPathBase === '/items' || newPathBase === '/imports' || newPathBase === '/trash' ||
           newPathBase === '/helpdesk/cases' ||
-          newPathBase === '/platform/home' || newPathBase === '/sales/dashboard' || newPathBase.startsWith('/control/') || newPathBase.startsWith('/settings/automation/');
+          newPathBase === '/platform/home' || newPathBase === '/sales/dashboard' || newPathBase.startsWith('/control/') ||
+          (newPathBase.startsWith('/settings/automation/') && !isProcessDesignerTabPath(newPathBase));
         if (isListRoute) {
-          const titleForPath = getTitleForPath(newPathBase, existingTabForRoute.params || {});
-          if (titleForPath) existingTabForRoute.title = titleForPath;
+          restoreModuleListTabTitle(existingTabForRoute, newPathBase);
         }
         return;
       }
@@ -1868,10 +1928,10 @@ export function useTabs() {
           pathBase === '/people' || pathBase === '/organizations' || pathBase === '/forms' ||
           pathBase === '/items' || pathBase === '/imports' || pathBase === '/trash' ||
           pathBase === '/helpdesk/cases' ||
-          pathBase === '/platform/home' || pathBase === '/sales/dashboard' || pathBase.startsWith('/control/') || pathBase.startsWith('/settings/automation/');
+          pathBase === '/platform/home' || pathBase === '/sales/dashboard' || pathBase.startsWith('/control/') ||
+          isAutomationModuleListRoute(pathBase);
         if (isListPath) {
-          const listTitle = getTitleForPath(pathBase, newActiveTab.params || {});
-          if (listTitle) newActiveTab.title = listTitle;
+          restoreModuleListTabTitle(newActiveTab, pathBase);
         }
         // Mark as programmatic navigation
         isProgrammaticNavigation = true;
@@ -1961,6 +2021,10 @@ export function useTabs() {
     const tab = findTabById(tabId);
     if (tab) {
       helpdeskTabAlertController.clearTabAlert(tab);
+      const pathBase = (tab.path || '').split('?')[0];
+      if (pathBase === '/settings/automation/processes' && tab.recordTitle) {
+        restoreModuleListTabTitle(tab, pathBase);
+      }
       console.log('📍 Switching to tab:', tab.title, 'path:', tab.path);
       
       // Mark as programmatic navigation FIRST, before any navigation

@@ -73,6 +73,8 @@ const RAW_ICON_MAP: Record<string, any> = {
   'calendar-days': CalendarDaysIcon,
   cog: CogIcon,
   squares: Squares2X2Icon,
+  'document-chart-bar': DocumentChartBarIcon,
+  dashboard: DocumentChartBarIcon,
   'presentation-chart': PresentationChartLineIcon,
   'document-magnifying-glass': DocumentMagnifyingGlassIcon,
   'exclamation-triangle': ExclamationTriangleIcon,

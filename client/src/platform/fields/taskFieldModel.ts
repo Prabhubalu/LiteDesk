@@ -23,7 +23,7 @@
  *    - fieldScope: 'CORE' indicates platform-level ownership
  * 
  * 2. Core task fields are platform-scoped
- *    - `title`, `description`, `status`, `priority`, `dueDate`, etc.
+ *    - `title`, `description`, `status`, `priority`, `taskType`, `dueDate`, etc.
  *    - These exist independently of any app participation
  *    - fieldScope: 'CORE' indicates platform-level ownership
  * 
@@ -293,6 +293,18 @@ export const TASK_FIELD_METADATA: Record<string, TaskFieldMetadata> = {
     filterable: true,
     filterType: 'select',
     filterPriority: 3,
+  },
+
+  // Task Type - core classification field
+  taskType: {
+    owner: 'core',
+    intent: 'state',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'select',
+    filterPriority: 6,
   },
   
   // Assignment - core field with special handling

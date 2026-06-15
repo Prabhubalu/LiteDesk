@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-gray-900 flex flex-col">
+  <div class="flex h-full min-h-0 flex-col bg-gray-50 dark:bg-gray-900">
     <header class="shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
       <button
         type="button"
@@ -160,8 +160,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
@@ -176,9 +176,13 @@ import {
   buildTriggerFromCore,
   buildProcessScopeSentence
 } from '@/utils/processDesignerConstants';
+import { isProcessDesignerTabPath } from '@/utils/navigationLabels';
+import { useTabs } from '@/composables/useTabs';
 
 const { t } = useI18n();
 const router = useRouter();
+const route = useRoute();
+const { activeTabId, updateTabTitle, findTabById } = useTabs();
 const SELECT_CLASS = PROCESS_SELECT_BUTTON_CLASS;
 
 const saving = ref(false);
@@ -277,4 +281,21 @@ function goBack() {
 onMounted(() => {
   document.title = t('process.setupPageTitle');
 });
+
+function processTabDisplayName(name) {
+  const trimmed = String(name ?? '').trim();
+  return trimmed || t('process.setupTitle');
+}
+
+watch(
+  () => [activeTabId.value, route.path, form.value.name],
+  () => {
+    const tabId = activeTabId.value;
+    if (!tabId || route.name !== 'process-designer-new') return;
+    const tab = findTabById(tabId);
+    if (!tab?.path || !isProcessDesignerTabPath(tab.path)) return;
+    updateTabTitle(tabId, processTabDisplayName(form.value.name));
+  },
+  { immediate: true }
+);
 </script>

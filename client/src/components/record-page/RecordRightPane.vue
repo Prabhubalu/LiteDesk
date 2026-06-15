@@ -1,14 +1,42 @@
 <template>
-  <div 
+  <div
+    ref="paneRootRef"
     :class="[
-      'record-right-pane flex min-w-0 flex-col h-full bg-white dark:bg-gray-900 overflow-hidden transition-all duration-300',
+      'record-right-pane relative flex min-w-0 flex-col h-full bg-white dark:bg-gray-900 overflow-hidden',
+      isResizing ? 'record-right-pane--no-transition' : 'transition-[width] duration-300 ease-out',
+      { 'is-scrolling': isScrolling },
       fullWidth || layoutIsMobile
         ? 'w-full flex-1'
         : activeTab
-          ? 'w-full lg:w-[500px]'
+          ? 'w-full lg:flex-shrink-0'
           : 'w-20'
     ]"
+    :style="paneRootStyle"
+    @scroll.capture="showScrollbar"
+    @wheel.capture="showScrollbar"
+    @touchstart.capture="showScrollbar"
   >
+    <div
+      v-if="isResizableDesktop"
+      role="separator"
+      aria-orientation="vertical"
+      :aria-valuemin="MIN_PANE_WIDTH_PX"
+      :aria-valuemax="maxPaneWidthPx"
+      :aria-valuenow="effectivePaneWidthPx"
+      :aria-label="t('records.rightPaneResizeHandle')"
+      :title="t('records.rightPaneResizeHint')"
+      class="record-right-pane-resize-handle group absolute left-0 top-0 z-30 flex h-full w-5 -translate-x-1/2 touch-none select-none items-center justify-center"
+      :class="{ 'record-right-pane-resize-handle--active': isResizing }"
+      @pointerdown.prevent="startPaneResize"
+      @dblclick.prevent="resetPaneWidth"
+    >
+      <span class="record-right-pane-resize-line" aria-hidden="true" />
+      <span class="record-right-pane-resize-grip" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </span>
+    </div>
     <!-- Header: in embed/quick-preview mode (showHeader + showCloseButton) only show prefix and close to avoid duplicating the main page header -->
     <div v-if="showHeader" class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900 z-20 relative">
       <div class="flex items-center gap-2 min-w-0">
@@ -126,7 +154,7 @@
           </div>
           <span 
             :class="[
-              'text-xs font-medium leading-tight text-center',
+              'text-[10.5px] font-medium leading-tight text-center',
               activeTab === tab.id
                 ? 'text-indigo-600 dark:text-indigo-400'
                 : 'text-gray-600 dark:text-gray-400'
@@ -158,6 +186,27 @@ import {
 } from '@heroicons/vue/24/outline';
 
 const { t } = useI18n();
+
+const PANE_WIDTH_STORAGE_KEY = 'arivu:record-right-pane-width-px';
+const PANE_WIDTH_RESIZED_KEY = 'arivu:record-right-pane-user-resized';
+const DEFAULT_PANE_WIDTH_PX = 500;
+const MIN_PANE_WIDTH_PX = 480;
+const MAX_PANE_WIDTH_PX = 720;
+const LEFT_CONTENT_MIN_PX = 380;
+const RESIZE_DRAG_THRESHOLD_PX = 4;
+
+function loadPaneUserResized() {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem(PANE_WIDTH_RESIZED_KEY) === 'true';
+}
+
+function loadPaneWidthPx() {
+  if (typeof window === 'undefined') return DEFAULT_PANE_WIDTH_PX;
+  if (!loadPaneUserResized()) return DEFAULT_PANE_WIDTH_PX;
+  const stored = Number(window.localStorage.getItem(PANE_WIDTH_STORAGE_KEY));
+  if (Number.isFinite(stored)) return stored;
+  return DEFAULT_PANE_WIDTH_PX;
+}
 
 // Inject mobile state from RecordPageLayout
 const layoutIsMobile = inject('recordLayoutIsMobile', ref(false));
@@ -279,19 +328,170 @@ const savePersistedTab = (tabId) => {
   }
 };
 
-// Initialize activeTab with priority: defaultTab prop > persisted > null
-const initialTab = props.defaultTab || loadPersistedTab() || null;
-const activeTab = ref(initialTab);
-const scrollContainer = ref(null);
+const resolveActiveTab = () => loadPersistedTab() || props.defaultTab || null;
 
-// Load persisted tab on mount if not provided via prop
-onMounted(() => {
-  if (!props.defaultTab && !activeTab.value) {
-    const persisted = loadPersistedTab();
-    if (persisted) {
-      activeTab.value = persisted;
+// Initialize activeTab with priority: persisted > defaultTab prop > null
+const activeTab = ref(resolveActiveTab());
+const paneRootRef = ref(null);
+const paneUserResized = ref(loadPaneUserResized());
+const paneWidthPx = ref(loadPaneWidthPx());
+const isResizing = ref(false);
+const scrollContainer = ref(null);
+const isScrolling = ref(false);
+let scrollHideTimer = null;
+const SCROLL_HIDE_DELAY = 800;
+let resizeHandleEl = null;
+let resizePointerId = null;
+let resizeStartX = 0;
+let resizeStartWidthPx = 0;
+let resizeDidDrag = false;
+let windowResizeHandler = null;
+
+const isResizableDesktop = computed(
+  () => !props.fullWidth && !layoutIsMobile.value && !!activeTab.value
+);
+
+function getResizeContainerWidth() {
+  const el = paneRootRef.value;
+  if (!el) {
+    return typeof window !== 'undefined' ? window.innerWidth : 1280;
+  }
+  const body = el.closest('.record-page-layout__body');
+  if (body) return body.getBoundingClientRect().width;
+  return el.parentElement?.getBoundingClientRect().width ?? window.innerWidth;
+}
+
+function clampPaneWidth(width) {
+  const containerWidth = getResizeContainerWidth();
+  const maxByViewport = Math.max(MIN_PANE_WIDTH_PX, containerWidth - LEFT_CONTENT_MIN_PX);
+  const max = Math.min(MAX_PANE_WIDTH_PX, maxByViewport);
+  return Math.min(max, Math.max(MIN_PANE_WIDTH_PX, width));
+}
+
+const maxPaneWidthPx = computed(() => clampPaneWidth(MAX_PANE_WIDTH_PX));
+
+const effectivePaneWidthPx = computed(() => {
+  const baseWidth = paneUserResized.value ? paneWidthPx.value : DEFAULT_PANE_WIDTH_PX;
+  return clampPaneWidth(baseWidth);
+});
+
+const paneRootStyle = computed(() => {
+  if (!isResizableDesktop.value) return undefined;
+  return {
+    width: `${effectivePaneWidthPx.value}px`,
+    minWidth: `${MIN_PANE_WIDTH_PX}px`,
+    maxWidth: '100%'
+  };
+});
+
+function persistPaneWidth() {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(PANE_WIDTH_STORAGE_KEY, String(Math.round(paneWidthPx.value)));
+  window.localStorage.setItem(PANE_WIDTH_RESIZED_KEY, 'true');
+}
+
+function endPaneResize({ persist = false } = {}) {
+  if (!isResizing.value) return;
+  isResizing.value = false;
+
+  if (resizeHandleEl && resizePointerId != null) {
+    try {
+      resizeHandleEl.releasePointerCapture(resizePointerId);
+    } catch {
+      /* ignore */
     }
   }
+
+  resizeHandleEl = null;
+  resizePointerId = null;
+  resizeDidDrag = false;
+  document.body.classList.remove('record-right-pane-resizing');
+  document.removeEventListener('pointermove', onPaneResize);
+  document.removeEventListener('pointerup', stopPaneResize);
+  document.removeEventListener('pointercancel', stopPaneResize);
+  window.removeEventListener('blur', onPaneResizeAbort);
+
+  if (persist) {
+    persistPaneWidth();
+  }
+}
+
+function onPaneResizeAbort() {
+  endPaneResize({ persist: false });
+}
+
+function startPaneResize(event) {
+  if (!(event instanceof PointerEvent) || event.button !== 0) return;
+
+  endPaneResize({ persist: false });
+
+  resizeHandleEl = event.currentTarget;
+  resizePointerId = event.pointerId;
+  resizeStartX = event.clientX;
+  resizeStartWidthPx = effectivePaneWidthPx.value;
+  resizeDidDrag = false;
+  isResizing.value = true;
+
+  try {
+    resizeHandleEl.setPointerCapture(event.pointerId);
+  } catch {
+    /* ignore */
+  }
+
+  document.addEventListener('pointermove', onPaneResize);
+  document.addEventListener('pointerup', stopPaneResize);
+  document.addEventListener('pointercancel', stopPaneResize);
+  window.addEventListener('blur', onPaneResizeAbort);
+}
+
+function onPaneResize(event) {
+  if (!isResizing.value || !(event instanceof PointerEvent)) return;
+
+  const deltaX = resizeStartX - event.clientX;
+  if (!resizeDidDrag && Math.abs(deltaX) < RESIZE_DRAG_THRESHOLD_PX) return;
+
+  if (!resizeDidDrag) {
+    resizeDidDrag = true;
+    document.body.classList.add('record-right-pane-resizing');
+  }
+
+  paneUserResized.value = true;
+  paneWidthPx.value = clampPaneWidth(resizeStartWidthPx + deltaX);
+}
+
+function stopPaneResize() {
+  endPaneResize({ persist: resizeDidDrag });
+}
+
+function resetPaneWidth() {
+  paneUserResized.value = false;
+  paneWidthPx.value = DEFAULT_PANE_WIDTH_PX;
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem(PANE_WIDTH_STORAGE_KEY);
+    window.localStorage.removeItem(PANE_WIDTH_RESIZED_KEY);
+  }
+}
+
+function showScrollbar() {
+  isScrolling.value = true;
+  if (scrollHideTimer) clearTimeout(scrollHideTimer);
+  scrollHideTimer = setTimeout(() => {
+    isScrolling.value = false;
+    scrollHideTimer = null;
+  }, SCROLL_HIDE_DELAY);
+}
+
+onMounted(() => {
+  if (!activeTab.value) {
+    activeTab.value = resolveActiveTab();
+  }
+
+  windowResizeHandler = () => {
+    if (paneUserResized.value) {
+      paneWidthPx.value = clampPaneWidth(paneWidthPx.value);
+    }
+  };
+  window.addEventListener('resize', windowResizeHandler);
 });
 
 const syncSummaryTeleportReady = () => {
@@ -317,19 +517,25 @@ watch([activeTab, layoutIsMobile], syncSummaryTeleportReady, {
 onUpdated(syncSummaryTeleportReady);
 
 onBeforeUnmount(() => {
+  if (scrollHideTimer) clearTimeout(scrollHideTimer);
   layoutSummaryTeleportReady.value = false;
-});
-
-// Watch for defaultTab changes
-watch(() => props.defaultTab, (newTab) => {
-  if (newTab) {
-    activeTab.value = newTab;
-  } else {
-    // Only clear if there's no persisted value
-    const persisted = loadPersistedTab();
-    activeTab.value = persisted || null;
+  endPaneResize({ persist: false });
+  if (windowResizeHandler) {
+    window.removeEventListener('resize', windowResizeHandler);
+    windowResizeHandler = null;
   }
 });
+
+watch(() => props.defaultTab, () => {
+  activeTab.value = resolveActiveTab();
+});
+
+watch(
+  () => props.persistenceKey || props.recordId,
+  () => {
+    activeTab.value = resolveActiveTab();
+  }
+);
 
 // When switching to mobile, auto-select Summary tab if no tab is selected
 watch(layoutIsMobile, (isMobile) => {
@@ -401,7 +607,16 @@ const getTabIcon = (tabId) => {
 </script>
 
 <style scoped>
-/* Custom scrollbar styling */
+/* Match RecordPageLayout left column: hidden until scrolling */
+.record-right-pane :deep(.overflow-y-auto) {
+  scrollbar-color: transparent transparent;
+  scrollbar-width: thin;
+}
+
+.record-right-pane.is-scrolling :deep(.overflow-y-auto) {
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+}
+
 .record-right-pane :deep(.overflow-y-auto)::-webkit-scrollbar {
   width: 8px;
 }
@@ -411,16 +626,103 @@ const getTabIcon = (tabId) => {
 }
 
 .record-right-pane :deep(.overflow-y-auto)::-webkit-scrollbar-thumb {
-  background: rgb(203 213 225);
+  background: transparent;
   border-radius: 4px;
 }
 
-:global(.dark) .record-right-pane :deep(.overflow-y-auto)::-webkit-scrollbar-thumb {
+.record-right-pane.is-scrolling :deep(.overflow-y-auto)::-webkit-scrollbar-thumb {
+  background: rgb(203 213 225);
+}
+
+:global(.dark) .record-right-pane.is-scrolling :deep(.overflow-y-auto) {
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+:global(.dark) .record-right-pane.is-scrolling :deep(.overflow-y-auto)::-webkit-scrollbar-thumb {
   background: rgb(75 85 99);
 }
 
 /* Summary content spacing (teleported from RecordPageLayout) */
 .record-right-pane__summary-content > * + * {
   margin-top: 0.75rem;
+}
+
+.record-right-pane--no-transition {
+  transition: none;
+}
+
+.record-right-pane-resize-handle {
+  cursor: col-resize;
+}
+
+.record-right-pane-resize-line {
+  position: absolute;
+  inset: 0 auto 0 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: transparent;
+  transition: background-color 0.15s ease, width 0.15s ease;
+}
+
+.record-right-pane-resize-grip {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 2.75rem;
+  width: 0.55rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background: transparent;
+  opacity: 0;
+  transition: opacity 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.record-right-pane-resize-grip span {
+  display: block;
+  height: 1rem;
+  width: 2px;
+  border-radius: 9999px;
+  background: rgb(156 163 175);
+}
+
+.record-right-pane-resize-handle:hover .record-right-pane-resize-line,
+.record-right-pane-resize-handle--active .record-right-pane-resize-line {
+  width: 2px;
+  background: rgb(99 102 241 / 0.45);
+}
+
+.record-right-pane-resize-handle:hover .record-right-pane-resize-grip,
+.record-right-pane-resize-handle--active .record-right-pane-resize-grip {
+  opacity: 1;
+  border-color: rgb(229 231 235);
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.08);
+}
+
+.record-right-pane-resize-handle--active .record-right-pane-resize-line {
+  background: rgb(99 102 241 / 0.75);
+}
+
+.record-right-pane-resize-handle--active .record-right-pane-resize-grip span {
+  background: rgb(79 70 229);
+}
+
+:global(.dark) .record-right-pane-resize-handle:hover .record-right-pane-resize-grip,
+:global(.dark) .record-right-pane-resize-handle--active .record-right-pane-resize-grip {
+  border-color: rgb(55 65 81);
+  background: rgb(17 24 39);
+}
+
+:global(.dark) .record-right-pane-resize-grip span {
+  background: rgb(107 114 128);
+}
+
+:global(body.record-right-pane-resizing) {
+  cursor: col-resize !important;
+  user-select: none;
 }
 </style>

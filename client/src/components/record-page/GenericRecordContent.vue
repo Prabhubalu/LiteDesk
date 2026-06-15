@@ -297,20 +297,6 @@
               :cycle-status="record.currentSlaCycle?.status"
               :case-status="record.status"
             />
-            <!-- People: participation badges under name (Sales, Lead) -->
-            <div
-              v-if="isPeopleModule && peopleHeaderBadges.length"
-              class="flex flex-wrap gap-1.5 mt-1.5"
-            >
-              <span
-                v-for="(b, i) in peopleHeaderBadges"
-                :key="`badge-${i}`"
-                class="inline-flex px-2 py-0.5 rounded text-xs font-medium"
-                :class="peopleContextIsAppView ? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300' : b.appKey ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'"
-              >
-                {{ b.label }}
-              </span>
-            </div>
           </div>
           <template v-if="moduleKeyLower === 'quotes'" #below>
             <div class="space-y-2">
@@ -709,38 +695,37 @@
           </template>
           <template #tab-details>
             <div class="flex flex-col h-full min-h-0">
-              <div class="record-context-panel__header flex flex-shrink-0 flex-col gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
-                <div class="flex items-baseline justify-between gap-2">
-                  <h2 class="text-sm font-normal text-gray-900 dark:text-white">{{ t('records.detailsTitle') }}</h2>
+              <div class="record-context-panel__header flex flex-shrink-0 flex-col gap-2.5 border-b border-gray-200/90 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+                <div class="flex items-center justify-between gap-2">
+                  <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.detailsTitle') }}</h2>
                   <span
                     v-if="detailsTabFieldCountLabel"
-                    class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium tabular-nums text-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                    class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium tabular-nums text-gray-500 dark:bg-gray-800 dark:text-gray-400"
                   >
                     {{ detailsTabFieldCountLabel }}
                   </span>
                 </div>
-                <div class="flex items-center gap-3">
-                  <div class="relative min-w-0 flex-1">
-                    <MagnifyingGlassIcon class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" aria-hidden="true" />
-                    <input
-                      v-model="detailsTabSearchQuery"
-                      type="search"
-                      :placeholder="t('records.genericFilterFieldsPh')"
-                      autocomplete="off"
-                      class="w-full rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-500 focus:border-indigo-500/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:border-gray-600 dark:bg-gray-800/80 dark:text-white dark:placeholder-gray-400"
-                    />
-                  </div>
-                  <label class="flex shrink-0 cursor-pointer items-center gap-2 select-none text-xs text-gray-600 dark:text-gray-400">
-                    <input
-                      v-model="detailsShowEmptyFields"
-                      type="checkbox"
-                      class="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800"
-                    />
+                <div class="flex items-center gap-2">
+                  <DetailsTabFieldFilter
+                    v-model="detailsTabSearchQuery"
+                    :placeholder="t('records.genericFilterFieldsPh')"
+                  />
+                  <button
+                    type="button"
+                    :class="[
+                      DETAILS_TAB_TOOLBAR_HEIGHT_CLASS,
+                      'inline-flex shrink-0 items-center rounded-lg border px-2.5 py-0 text-xs font-medium leading-none transition-colors',
+                      detailsShowEmptyFields
+                        ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/35 dark:bg-indigo-950/40 dark:text-indigo-200'
+                        : 'border-gray-200/90 bg-white text-gray-600 hover:border-gray-300 dark:border-gray-600/70 dark:bg-gray-800/50 dark:text-gray-400 dark:hover:border-gray-500'
+                    ]"
+                    @click="detailsShowEmptyFields = !detailsShowEmptyFields"
+                  >
                     {{ t('records.genericShowEmptyFields') }}
-                  </label>
+                  </button>
                 </div>
               </div>
-              <div class="min-h-0 flex-1 overflow-y-auto px-3 pb-4 pt-3">
+              <div class="min-h-0 flex-1 overflow-y-auto px-4 pb-6 pt-4">
                 <template v-if="record?._id && genericAdapter">
                   <p
                     v-if="rightPaneAllModuleFields.length && !rightPaneDetailsFilteredFields.length && (detailsTabSearchQuery || '').trim()"
@@ -995,6 +980,8 @@ import QuoteRecordStatusBanner from '@/components/record-page/sections/QuoteReco
 import QuoteCustomerResponseBanner from '@/components/record-page/sections/QuoteCustomerResponseBanner.vue';
 import RelatedSection from '@/components/record-page/sections/RelatedSection.vue';
 import DetailsSection from '@/components/record-page/sections/DetailsSection.vue';
+import DetailsTabFieldFilter from '@/components/record-page/DetailsTabFieldFilter.vue';
+import { DETAILS_TAB_TOOLBAR_HEIGHT_CLASS } from '@/components/record-page/detailsTabToolbar';
 import RecordRightPane from '@/components/record-page/RecordRightPane.vue';
 import EditableTitle from '@/components/record-page/EditableTitle.vue';
 import RecordTagPopover from '@/components/record-page/RecordTagPopover.vue';
@@ -1056,7 +1043,6 @@ import {
   ArrowDownTrayIcon,
   EnvelopeIcon,
   LinkIcon,
-  MagnifyingGlassIcon,
   PlusIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -1387,23 +1373,6 @@ function participationAppBadgeClass(appLabel) {
   };
   return classMap[appLabel] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-200';
 }
-
-/** Header badges for People — app route: current app role only; ALL: [App][Role] per participation */
-const peopleHeaderBadges = computed(() => {
-  if (!isPeopleModule.value) return [];
-  const visible = peopleParticipationEntriesVisible.value;
-  if (!visible.length) return [];
-  const badges = [];
-  for (const e of visible) {
-    if (peopleContextIsAppView.value) {
-      badges.push({ label: e.role });
-    } else {
-      badges.push({ label: e.appLabel, appKey: e.appKey });
-      badges.push({ label: e.role });
-    }
-  }
-  return badges;
-});
 
 /** Sales Lead: show “Convert to Contact” on the Sales app row (same lifecycle permission as ParticipationCard). */
 const showPeopleConvertLeadPrimary = computed(() => {

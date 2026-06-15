@@ -42,6 +42,22 @@ const TASK_PRIORITY_OPTION_COLORS = Object.freeze({
     urgent: '#DC2626',
 });
 
+const TASK_TYPE_OPTION_COLORS = Object.freeze({
+    general_task: '#6B7280',
+    follow_up: '#F59E0B',
+    call: '#2563EB',
+    email: '#6366F1',
+    meeting: '#8B5CF6',
+    support: '#0EA5E9',
+    research: '#06B6D4',
+    documentation: '#14B8A6',
+    internal: '#64748B',
+    bug: '#DC2626',
+    enhancement: '#22C55E',
+    feature_request: '#A855F7',
+    usability: '#EC4899',
+});
+
 const LEAD_STATUS_OPTION_COLORS = Object.freeze({
     new: '#2563EB',
     contacted: '#6366F1',
@@ -125,6 +141,7 @@ function getSemanticPicklistColor(fieldKey, optionValue, moduleKey = '') {
     if (mod === 'tasks' || mod === '') {
         if (key === 'status') return TASK_STATUS_OPTION_COLORS[val] || null;
         if (key === 'priority') return TASK_PRIORITY_OPTION_COLORS[val] || null;
+        if (key === 'tasktype') return TASK_TYPE_OPTION_COLORS[val] || null;
     }
     if (key === 'lead_status') return LEAD_STATUS_OPTION_COLORS[val] || null;
     if (key === 'contact_status') return CONTACT_STATUS_OPTION_COLORS[val] || null;
@@ -186,6 +203,7 @@ module.exports = {
     PICKLIST_COLOR_PALETTE,
     TASK_STATUS_OPTION_COLORS,
     TASK_PRIORITY_OPTION_COLORS,
+    TASK_TYPE_OPTION_COLORS,
     LEAD_STATUS_OPTION_COLORS,
     CONTACT_STATUS_OPTION_COLORS,
     normalizePicklistColorKey,

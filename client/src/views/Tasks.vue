@@ -21,21 +21,21 @@
       <!-- Custom Header Slot - View Switcher + Actions -->
       <template #header-actions>
         <div class="flex gap-3 items-center">
-          <div class="relative flex h-10 items-stretch rounded-xl bg-gray-100 dark:bg-gray-700/90 p-[0.1rem] border border-gray-200/80 dark:border-gray-600 shadow-inner min-w-[200px]">
+          <div class="relative flex h-[34px] items-stretch rounded-lg bg-gray-100 dark:bg-gray-700/90 p-[0.1rem] border border-gray-200/80 dark:border-gray-600 shadow-inner min-w-[200px]">
             <button
               type="button"
               @click="switchView('kanban')"
-              class="relative z-10 flex-1 flex items-center justify-center gap-2 pl-3 pr-3 py-0 rounded-lg text-sm font-semibold transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
+              class="relative z-10 flex-1 flex items-center justify-center gap-1.5 px-2.5 py-0 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
               :class="currentView === 'kanban' ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'"
             >
-              <ViewColumnsIcon class="w-5 h-5 shrink-0" />{{ t('tasks.tasksBoard') }}</button>
+              <ViewColumnsIcon class="w-4 h-4 shrink-0" />{{ t('tasks.tasksBoard') }}</button>
             <button
               type="button"
               @click="switchView('list')"
-              class="relative z-10 flex-1 flex items-center justify-center gap-2 pl-3 pr-3 py-0 rounded-lg text-sm font-semibold transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
+              class="relative z-10 flex-1 flex items-center justify-center gap-1.5 px-2.5 py-0 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
               :class="currentView === 'list' ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'"
             >
-              <ListBulletIcon class="w-5 h-5 shrink-0" />{{ t('forms.rbLayoutList') }}</button>
+              <ListBulletIcon class="w-4 h-4 shrink-0" />{{ t('forms.rbLayoutList') }}</button>
           </div>
           <ModuleActions
             module="tasks"
@@ -256,14 +256,14 @@
       </KanbanBoard>
     </div>
 
-    <!-- Task Form Modal -->
+    <!-- Task create/edit drawer (quick + full mode) -->
     <CreateRecordDrawer 
-      :isOpen="showFormModal"
+      :isOpen="showTaskDrawer"
       moduleKey="tasks"
-      :record="editingTask"
+      :record="taskDrawerRecord"
       :initial-data="createInitialData"
-      @close="closeFormModal"
-      @saved="handleTaskSave"
+      @close="closeTaskDrawer"
+      @saved="handleTaskDrawerSaved"
     />
 
     <!-- CSV Import Modal -->
@@ -272,15 +272,6 @@
       entity-type="Tasks"
       @close="showImportModal = false"
       @import-complete="handleImportComplete"
-    />
-
-    <!-- Edit Task Drawer (from list view edit icon) -->
-    <TaskEditDrawer
-      v-if="editTaskForDrawer"
-      :isOpen="showEditDrawer"
-      :record="editTaskForDrawer"
-      @close="closeEditDrawer"
-      @saved="handleEditDrawerSaved"
     />
   </div>
 </template>
@@ -300,7 +291,6 @@ import ModuleActions from '@/components/common/ModuleActions.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
-import TaskEditDrawer from '@/components/tasks/TaskEditDrawer.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import KanbanBoard from '@/components/common/KanbanBoard.vue';
@@ -421,11 +411,9 @@ const kanbanMetaFieldKeys = computed(() =>
 
 // State
 const moduleListRef = ref(null);
-const showFormModal = ref(false);
+const showTaskDrawer = ref(false);
 const showImportModal = ref(false);
-const editingTask = ref(null);
-const editTaskForDrawer = ref(null);
-const showEditDrawer = ref(false);
+const taskDrawerRecord = ref(null);
 const currentSearchQuery = ref('');
 
 const refreshList = () => {
@@ -645,10 +633,23 @@ const handleTaskCardClick = (task, event) => {
 };
 
 const createInitialData = ref({});
-const openCreateTaskInStatus = (status) => {
-  createInitialData.value = { status };
-  editingTask.value = null;
-  showFormModal.value = true;
+
+const openTaskDrawer = (record = null, initialData = {}) => {
+  taskDrawerRecord.value = record;
+  createInitialData.value = initialData;
+  showTaskDrawer.value = true;
+};
+
+const closeTaskDrawer = () => {
+  showTaskDrawer.value = false;
+  taskDrawerRecord.value = null;
+  createInitialData.value = {};
+};
+
+const handleTaskDrawerSaved = () => {
+  closeTaskDrawer();
+  if (currentView.value === 'kanban') fetchKanbanTasks();
+  refreshList();
 };
 
 // When switching back to this tab (keep-alive), refetch and sync URL to current view so session persists
@@ -738,9 +739,15 @@ const toggleTaskStatus = async (task) => {
 
 // Modal handlers
 const openCreateModal = () => {
-  createInitialData.value = {};
-  editingTask.value = null;
-  showFormModal.value = true;
+  openTaskDrawer(null, {});
+};
+
+const openCreateTaskInStatus = (status) => {
+  openTaskDrawer(null, { status });
+};
+
+const handleEditFromList = (row) => {
+  openTaskDrawer(row, {});
 };
 
 const handleRowClick = (row) => {
@@ -811,36 +818,6 @@ const handleImportComplete = () => {
   showImportModal.value = false;
   if (currentView.value === 'kanban') fetchKanbanTasks();
   refreshList();
-};
-
-const handleTaskSave = () => {
-  showFormModal.value = false;
-  editingTask.value = null;
-  createInitialData.value = {};
-  if (currentView.value === 'kanban') fetchKanbanTasks();
-  refreshList();
-};
-
-const handleEditFromList = (row) => {
-  editTaskForDrawer.value = row;
-  showEditDrawer.value = true;
-};
-
-const closeEditDrawer = () => {
-  showEditDrawer.value = false;
-  editTaskForDrawer.value = null;
-};
-
-const handleEditDrawerSaved = () => {
-  closeEditDrawer();
-  if (currentView.value === 'kanban') fetchKanbanTasks();
-  refreshList();
-};
-
-const closeFormModal = () => {
-  showFormModal.value = false;
-  editingTask.value = null;
-  createInitialData.value = {};
 };
 
 // Utility functions

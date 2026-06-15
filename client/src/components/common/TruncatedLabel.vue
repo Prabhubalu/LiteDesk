@@ -3,16 +3,18 @@
     v-if="text"
     :content="text"
     :disabled="!showTooltip"
+    :preferred-placement="tooltipPlacement"
+    :align="tooltipAlign"
+    anchor-selector=".truncated-label__text"
     wrap
-    class="inline-flex min-w-0 max-w-full"
-    :class="wrapperClass"
+    :class="['min-w-0 max-w-full', wrapperLayoutClass, wrapperClass]"
   >
     <component
       :is="tag"
-      :class="[blockClass, 'min-w-0 max-w-full', tag === 'span' ? 'inline-flex' : 'flex']"
-      v-bind="elementAttrs"
+      :class="[blockClass, innerLayoutClass, tag === 'span' ? 'inline-flex' : 'flex']"
+      v-bind="passthroughAttrs"
     >
-      <span ref="textRef" :class="['block min-w-0 truncate', textClass]">{{ displayText }}</span>
+      <span ref="textRef" :class="['truncated-label__text block min-w-0 truncate', textClass]">{{ displayText }}</span>
     </component>
   </HoverTooltip>
 </template>
@@ -36,12 +38,16 @@ const props = withDefaults(
     wrapperClass?: string;
     /** Optional character cap for display only; full `text` is kept for tooltip. */
     maxChars?: number | null;
+    tooltipPlacement?: 'auto' | 'above' | 'below';
+    tooltipAlign?: 'center' | 'start';
   }>(),
   {
     tag: 'span',
     textClass: '',
     wrapperClass: '',
     maxChars: null,
+    tooltipPlacement: 'auto',
+    tooltipAlign: 'center',
   }
 );
 
@@ -80,10 +86,15 @@ const blockClass = computed(() => {
   return Array.isArray(cls) ? cls.join(' ') : String(cls);
 });
 
-const elementAttrs = computed(() => ({
-  ...passthroughAttrs.value,
-  title: showTooltip.value ? props.text : undefined,
-}));
+const hasFlexGrow = computed(() => /\bflex-1\b/.test(blockClass.value));
+
+const wrapperLayoutClass = computed(() =>
+  hasFlexGrow.value ? 'flex flex-1 min-w-0' : 'inline-flex'
+);
+
+const innerLayoutClass = computed(() =>
+  hasFlexGrow.value ? 'w-full min-w-0' : 'min-w-0 max-w-full'
+);
 
 watch(showTooltip, (value) => emit('truncated-change', value), { immediate: true });
 </script>
