@@ -1,7 +1,7 @@
 <template>
   <button
     type="button"
-    class="relative inline-flex items-center justify-center rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors duration-150 min-h-[44px] min-w-[44px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:ring-offset-2 dark:focus:ring-offset-neutral-900"
+    class="relative inline-flex cursor-pointer items-center justify-center rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors duration-150 min-h-[44px] min-w-[44px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:ring-offset-2 dark:focus:ring-offset-neutral-900"
     :aria-label="ariaLabel"
     :title="tooltipText"
     @click.stop.prevent="handleClick"

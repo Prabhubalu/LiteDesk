@@ -128,6 +128,7 @@ async function getSalesPulse(organizationId, userId, roleContext) {
   const signals = [];
   if (closingSoon > 0) {
     signals.push({
+      signalKey: 'deals_closing_soon',
       text: teamView
         ? `${closingSoon} team deal${closingSoon !== 1 ? 's' : ''} closing soon`
         : `${closingSoon} deal${closingSoon !== 1 ? 's' : ''} closing soon`,
@@ -137,6 +138,7 @@ async function getSalesPulse(organizationId, userId, roleContext) {
   }
   if (staleCount > 0) {
     signals.push({
+      signalKey: 'deals_stale',
       text: teamView ? `${staleCount} stale team-wide` : `${staleCount} stale in pipeline`,
       severity: 'warning',
       route: '/deals'
@@ -144,6 +146,7 @@ async function getSalesPulse(organizationId, userId, roleContext) {
   }
   if (overdueFollowUps > 0) {
     signals.push({
+      signalKey: 'deals_overdue_followup',
       text: `${overdueFollowUps} overdue follow-up${overdueFollowUps !== 1 ? 's' : ''}`,
       severity: 'danger',
       route: '/deals'
@@ -179,6 +182,7 @@ async function getHelpdeskPulse(organizationId, userId, roleContext) {
   const signals = [];
   if (openAssigned > 0) {
     signals.push({
+      signalKey: 'cases_open',
       text: teamView
         ? `${openAssigned} open case${openAssigned !== 1 ? 's' : ''} team-wide`
         : `${openAssigned} open case${openAssigned !== 1 ? 's' : ''} assigned`,
@@ -188,6 +192,7 @@ async function getHelpdeskPulse(organizationId, userId, roleContext) {
   }
   if (slaAtRisk > 0) {
     signals.push({
+      signalKey: 'cases_sla_at_risk',
       text: `${slaAtRisk} SLA at risk`,
       severity: 'danger',
       route: '/helpdesk/cases'
@@ -234,6 +239,7 @@ async function getAuditPulse(organizationId, userId, roleContext) {
   const signals = [];
   if (startingSoon > 0) {
     signals.push({
+      signalKey: 'audits_starting_soon',
       text: `${startingSoon} audit${startingSoon !== 1 ? 's' : ''} starting soon`,
       severity: 'warning',
       route: '/audit/audits'
@@ -241,6 +247,7 @@ async function getAuditPulse(organizationId, userId, roleContext) {
   }
   if (needsReview > 0) {
     signals.push({
+      signalKey: 'audits_needs_review',
       text: `${needsReview} need${needsReview === 1 ? 's' : ''} review`,
       severity: 'danger',
       route: '/audit/audits'

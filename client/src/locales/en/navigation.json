@@ -335,6 +335,22 @@
     "message": "Trash",
     "description": "User menu trash link"
   },
+  "helpMenu": {
+    "message": "Help",
+    "description": "User menu help section label"
+  },
+  "helpDocumentation": {
+    "message": "Documentation",
+    "description": "User menu documentation link"
+  },
+  "helpContactSupport": {
+    "message": "Contact support",
+    "description": "User menu support link"
+  },
+  "helpWhatsNew": {
+    "message": "What's new",
+    "description": "User menu release notes link"
+  },
   "userSwitchToLight": {
     "message": "Switch to light mode",
     "description": "Theme toggle label when dark"

@@ -754,5 +754,217 @@
   "catalogBundleNoResults": {
     "message": "No matching variants",
     "description": "Bundle search empty state"
+  },
+  "platformHomeUpNext": {
+    "message": "Up next",
+    "description": "Platform home action queue section title"
+  },
+  "platformHomeRecentWork": {
+    "message": "Recent",
+    "description": "Platform home recent work section title"
+  },
+  "platformHomeAllClear": {
+    "message": "All clear",
+    "description": "Platform home empty queue title"
+  },
+  "platformHomeAllClearHint": {
+    "message": "Nothing needs you right now.",
+    "description": "Platform home empty queue hint"
+  },
+  "platformHomeAppTileOpen": {
+    "message": "Open app",
+    "description": "Platform home app tile fallback label"
+  },
+  "platformHomeFocusOverdueOne": {
+    "message": "Start with 1 overdue item — clear that first.",
+    "description": "Platform home focus line"
+  },
+  "platformHomeFocusOverdueMany": {
+    "message": "Start with {count} overdue items — clear those first.",
+    "description": "Platform home focus line"
+  },
+  "platformHomeFocusOverdueAndDueToday": {
+    "message": "Start with {overdue} overdue and {dueToday} due today.",
+    "description": "Platform home focus line"
+  },
+  "platformHomeFocusAppDanger": {
+    "message": "Priority: {signal}",
+    "description": "Platform home focus line from app pulse"
+  },
+  "platformHomeFocusApprovalsOne": {
+    "message": "1 approval waiting for you.",
+    "description": "Platform home focus line"
+  },
+  "platformHomeFocusApprovalsMany": {
+    "message": "{count} approvals waiting for you.",
+    "description": "Platform home focus line"
+  },
+  "platformHomeFocusDueTodayOne": {
+    "message": "You have 1 item due today.",
+    "description": "Platform home focus line"
+  },
+  "platformHomeFocusDueTodayMany": {
+    "message": "You have {count} items due today.",
+    "description": "Platform home focus line"
+  },
+  "platformHomeFocusUnreadOne": {
+    "message": "1 unread thread in your inbox.",
+    "description": "Platform home focus line"
+  },
+  "platformHomeFocusUnreadMany": {
+    "message": "{count} unread threads in your inbox.",
+    "description": "Platform home focus line"
+  },
+  "platformHomeFocusAttentionOne": {
+    "message": "1 thing needs your attention.",
+    "description": "Platform home focus line"
+  },
+  "platformHomeFocusAttentionMany": {
+    "message": "{count} things need your attention.",
+    "description": "Platform home focus line"
+  },
+  "platformHomeFocusCaughtUp": {
+    "message": "You're all caught up. Pick an app to continue.",
+    "description": "Platform home focus line"
+  },
+  "platformHomeFocusQuiet": {
+    "message": "Your workspace is quiet. Open an app to get started.",
+    "description": "Platform home focus line"
+  },
+  "platformHomeIntentPrompt": {
+    "message": "What do you need to do right now?",
+    "description": "Platform home intent bar heading"
+  },
+  "platformHomeIntentPlaceholder": {
+    "message": "Search records, run commands…",
+    "description": "Platform home intent bar search placeholder"
+  },
+  "platformHomeTodayTitle": {
+    "message": "Today",
+    "description": "Platform home today brief section title"
+  },
+  "platformHomeWorkspaceTitle": {
+    "message": "Workspace",
+    "description": "Platform home workspace section title"
+  },
+  "platformHomeExploreApps": {
+    "message": "Explore apps",
+    "description": "Platform home link to app registry"
+  },
+  "platformHomeCreatePerson": {
+    "message": "New person",
+    "description": "Platform home create menu item"
+  },
+  "platformHomeCreateOrganization": {
+    "message": "New organization",
+    "description": "Platform home create menu item"
+  },
+  "platformHomeCreateDeal": {
+    "message": "New deal",
+    "description": "Platform home create menu item"
+  },
+  "platformHomeCreateTask": {
+    "message": "New task",
+    "description": "Platform home create menu item"
+  },
+  "platformHomeCreateCase": {
+    "message": "New case",
+    "description": "Platform home create menu item"
+  },
+  "platformHomeApprovalProcessing": {
+    "message": "…",
+    "description": "Inline approval action loading state on Platform Home"
+  },
+  "platformHomeNextEventBadge": {
+    "message": "Next",
+    "description": "Badge on upcoming event row in Up next"
+  },
+  "platformHomeInboxTitle": {
+    "message": "Inbox",
+    "description": "Workspace inbox card title"
+  },
+  "platformHomeInboxEmpty": {
+    "message": "No unread messages or alerts.",
+    "description": "Empty state for workspace inbox card"
+  },
+  "platformHomeInboxNotifications": {
+    "message": "Alerts",
+    "description": "Notifications subsection label in inbox card"
+  },
+  "platformHomeInboxEmail": {
+    "message": "Email",
+    "description": "Email subsection label in inbox card"
+  },
+  "platformHomeNotificationCountOne": {
+    "message": "{count} alert",
+    "description": "Notification count singular in inbox header"
+  },
+  "platformHomeNotificationCountMany": {
+    "message": "{count} alerts",
+    "description": "Notification count plural in inbox header"
+  },
+  "appRegistryStatusAvailable": {
+    "message": "Available",
+    "description": "App registry status badge for apps not yet enabled"
+  },
+  "appRegistryStatusComingSoon": {
+    "message": "Coming soon",
+    "description": "App registry status badge for upcoming apps"
+  },
+  "appRegistryStatusBeta": {
+    "message": "Beta",
+    "description": "App registry status badge for beta apps"
+  },
+  "appRegistryActionView": {
+    "message": "View details",
+    "description": "App registry CTA for unavailable apps"
+  },
+  "appRegistryCategorySales": {
+    "message": "Sales",
+    "description": "App registry marketplace category"
+  },
+  "appRegistryCategoryOperations": {
+    "message": "Operations",
+    "description": "App registry marketplace category"
+  },
+  "appRegistryCategorySupport": {
+    "message": "Support",
+    "description": "App registry marketplace category"
+  },
+  "appRegistryCategoryAudit": {
+    "message": "Audit",
+    "description": "App registry marketplace category"
+  },
+  "appRegistryCategoryPlatform": {
+    "message": "Platform",
+    "description": "App registry marketplace category"
+  },
+  "appRegistryCapabilityPeople": {
+    "message": "People",
+    "description": "App capability chip"
+  },
+  "appRegistryCapabilityOrganizations": {
+    "message": "Organizations",
+    "description": "App capability chip"
+  },
+  "appRegistryCapabilityTransactions": {
+    "message": "Transactions",
+    "description": "App capability chip"
+  },
+  "appRegistryCapabilityAutomation": {
+    "message": "Automation",
+    "description": "App capability chip"
+  },
+  "appRegistryActiveApps": {
+    "message": "Active apps",
+    "description": "App registry section for enabled apps"
+  },
+  "appRegistryDiscoverApps": {
+    "message": "Discover apps",
+    "description": "App registry section for available apps"
+  },
+  "appRegistryFallbackDescription": {
+    "message": "Explore the {app} application",
+    "description": "Fallback app description in app registry"
   }
 }

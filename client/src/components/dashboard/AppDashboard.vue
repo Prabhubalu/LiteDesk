@@ -1,5 +1,5 @@
 <template>
-  <div v-if="loading" class="space-y-4 p-2">
+  <div v-if="loading" class="dashboard-shell space-y-4 p-2">
     <div class="h-36 animate-pulse rounded-2xl border border-slate-200 bg-slate-100/70 dark:border-slate-700 dark:bg-slate-800/70"></div>
     <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
       <div
@@ -104,7 +104,7 @@
     </div>
   </div>
 
-  <div v-else class="flex items-center justify-center min-h-[60vh]">
+  <div v-else class="dashboard-shell flex items-center justify-center min-h-[60vh]">
     <div class="text-center">
       <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ t('dashboard.appDashboardDashboardNotFound') }}</h2>
       <p class="text-gray-600 dark:text-gray-400">{{ t('dashboard.appDashboardTheDashboardForThisAppIs') }}</p>
@@ -189,6 +189,9 @@ const handleAction = (route) => {
   background: transparent;
   border-radius: 0;
   padding: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 </style>
-

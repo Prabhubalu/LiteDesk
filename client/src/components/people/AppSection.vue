@@ -76,6 +76,7 @@
           :showAllFields="false"
           :fieldsOverride="dependentFields"
           :moduleOverride="moduleOverride"
+          :singleColumn="singleColumn"
           :context="formFieldContext"
           @update:formData="onFieldsUpdate"
         />
@@ -130,6 +131,10 @@ const props = defineProps({
     default: false
   },
   embedded: {
+    type: Boolean,
+    default: false
+  },
+  singleColumn: {
     type: Boolean,
     default: false
   }

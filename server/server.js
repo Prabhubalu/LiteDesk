@@ -340,6 +340,8 @@ app.use('/api/inbox', inboxRoutes);
 app.use('/api/platform', require('./routes/platformHomeRoutes'));
 app.use('/api/onboarding', require('./routes/onboardingRoutes'));
 app.use('/api/platform/inbound-parser', require('./routes/platformInboundParserRoutes'));
+app.use('/api/platform/release-notes', require('./routes/platformReleaseNoteRoutes'));
+app.use('/api/release-notes', require('./routes/releaseNoteRoutes'));
 
 // Portal Application Routes (App #2)
 app.use('/portal', portalRoutes);

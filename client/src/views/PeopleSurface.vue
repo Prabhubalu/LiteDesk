@@ -356,17 +356,11 @@
       @saved="handleRecordCreated"
     />
 
-    <!-- Edit Profile Drawer -->
-    <!-- ENFORCES: Only shows fields that are eligible for Quick Create -->
-    <!-- Same fields as quick create: core identity fields + system fields with allowOnCreate -->
-    <!-- EXCLUDES: All other fields (participation fields, app-specific fields, etc.) -->
-    <!-- Uses quickCreate order to match quick create form -->
-    <CreateRecordDrawer
+    <PeopleQuickCreateDrawer
       :isOpen="showEditProfileDrawer"
-      moduleKey="people"
       :record="editProfileRecord"
-      :excludeFields="excludedProfileFields"
-      :useQuickCreateOrder="true"
+      :context-app-key="editProfileContextAppKey"
+      :optional-app-participation="editProfileOptionalAppParticipation"
       @close="showEditProfileDrawer = false"
       @saved="handleProfileUpdated"
     />
@@ -417,6 +411,7 @@ import MomentumLayer from '@/components/people/MomentumLayer.vue';
 import HistoryLayer from '@/components/people/HistoryLayer.vue';
 import RelationshipDrillDowns from '@/components/people/RelationshipDrillDowns.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
+import PeopleQuickCreateDrawer from '@/components/people/PeopleQuickCreateDrawer.vue';
 import AttachToAppModal from '@/components/people/AttachToAppModal.vue';
 import SalesConvertLeadModal from '@/components/people/SalesConvertLeadModal.vue';
 import DetachFromAppModal from '@/components/people/DetachFromAppModal.vue';
@@ -425,13 +420,7 @@ import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.v
 import { useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
 import { assertAttachPermission, assertEditParticipationPermission, assertLifecyclePermission } from '@/platform/permissions/peopleGuards';
-import { getFieldMetadata, PEOPLE_FIELD_METADATA } from '@/platform/fields/peopleFieldModel';
-// CONTRACT-LOCKED:
-// See docs/architecture/platform-permission-contract.md
-// Platform Permissions MUST remain explanatory-only.
-import {
-  derivePlatformPermissions
-} from '@/platform/permissions/platformPermissions.utils';
+import { derivePlatformPermissions } from '@/platform/permissions/platformPermissions.utils';
 
 const route = useRoute();
 const router = useRouter();
@@ -482,74 +471,17 @@ const editDetailsParticipationData = ref(null);
 // Edit profile state
 const showEditProfileDrawer = ref(false);
 const editProfileRecord = ref(null);
+const editProfileContextAppKey = computed(() => {
+  const appKey = String(route.query.appKey || '').toUpperCase();
+  if (appKey === 'SALES' || appKey === 'HELPDESK') return appKey;
+  return null;
+});
+const editProfileOptionalAppParticipation = computed(() => editProfileContextAppKey.value === null);
 
 // Email compose state
 const showEmailModal = ref(false);
 const activityRefreshKey = ref(0);
 const pendingEmail = ref(null); // Optimistic: { to, subject } while send in progress
-
-/**
- * Check if a field is eligible for Quick Create (same logic as PeopleQuickCreate)
- * Includes ONLY:
- * - Core identity fields (owner === 'core', intent === 'identity', editable === true)
- * - System fields with allowOnCreate (owner === 'system', editable === true, allowOnCreate === true)
- */
-function isFieldEligibleForQuickCreate(fieldKey) {
-  try {
-    const metadata = getFieldMetadata(fieldKey);
-    
-    // Core identity fields: owner === 'core', intent === 'identity', editable === true
-    const isCoreIdentity = (
-      metadata.owner === 'core' &&
-      metadata.intent === 'identity' &&
-      metadata.editable === true
-    );
-    
-    // System fields with allowOnCreate: owner === 'system', editable === true, allowOnCreate === true
-    const isAllowedSystemField = (
-      metadata.owner === 'system' &&
-      metadata.editable === true &&
-      metadata.allowOnCreate === true
-    );
-    
-    return isCoreIdentity || isAllowedSystemField;
-  } catch (err) {
-    // Field not found in metadata - exclude it
-    return false;
-  }
-}
-
-/**
- * Get all field keys that are eligible for Quick Create
- * (same fields shown in quick create form)
- */
-function getEligibleFieldKeys() {
-  const eligibleKeys = [];
-  const allFieldKeys = Object.keys(PEOPLE_FIELD_METADATA);
-  
-  for (const key of allFieldKeys) {
-    if (isFieldEligibleForQuickCreate(key)) {
-      eligibleKeys.push(key);
-    }
-  }
-  
-  return eligibleKeys;
-}
-
-/**
- * Computed: Fields to exclude from "Edit profile" drawer
- * Excludes all fields that are NOT eligible for quick create
- * This ensures edit profile shows the same fields as quick create
- */
-const excludedProfileFields = computed(() => {
-  const eligibleKeys = getEligibleFieldKeys();
-  const allFieldKeys = Object.keys(PEOPLE_FIELD_METADATA);
-  
-  // Exclude all fields that are NOT eligible
-  const excluded = allFieldKeys.filter(key => !eligibleKeys.includes(key));
-  
-  return excluded;
-});
 
 // Create drawer state
 const showCreateDrawer = ref(false);
@@ -991,60 +923,16 @@ const handleStatusUpdated = async (updateData) => {
 // ENFORCES: Edit profile edits ONLY core person identity fields
 // EXCLUDES: Participation fields, Lead/Contact status, app-specific fields, workflow state
 const handleEditProfile = async (personId) => {
-  // DEV-ONLY INVARIANT GUARD: PeopleSurface must not contain create/edit logic
   if (process.env.NODE_ENV === 'development') {
     console.assert(
-      true, // This handler redirects to drawer, which is allowed
+      true,
       '[PeopleSurface] INVARIANT: Edit operations must redirect to PeopleQuickCreateDrawer, not mutate inline'
     );
   }
-  
+
   if (!personId) return;
-  
-  try {
-    // Load person record for editing
-    const response = await apiClient.get(`/people/${personId}`);
-    if (response.success && response.data) {
-      const fullRecord = response.data;
-      
-      // Filter to ONLY core identity fields
-      // Core fields that are editable via "Edit profile"
-      const coreFields = [
-        '_id',
-        'first_name',
-        'last_name',
-        'email',
-        'phone',
-        'mobile',
-        'organization', // Primary organization
-        'tags',
-        'do_not_contact', // Compliance flag
-        'source', // If core-owned
-        'avatar'
-      ];
-      
-      // Build filtered record with ONLY core fields
-      const coreRecord = {};
-      coreFields.forEach(field => {
-        if (fullRecord.hasOwnProperty(field)) {
-          coreRecord[field] = fullRecord[field];
-        }
-      });
-      
-      // Ensure _id is present for edit mode
-      if (!coreRecord._id && fullRecord._id) {
-        coreRecord._id = fullRecord._id;
-      }
-      
-      editProfileRecord.value = coreRecord;
-      showEditProfileDrawer.value = true;
-    }
-  } catch (err) {
-    console.error('Error loading person for editing:', err);
-    // Fallback: open drawer with just personId
-    editProfileRecord.value = { _id: personId };
-    showEditProfileDrawer.value = true;
-  }
+  editProfileRecord.value = { _id: personId };
+  showEditProfileDrawer.value = true;
 };
 
 // Email compose handler

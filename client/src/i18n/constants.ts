@@ -57,6 +57,7 @@ export const SHARED_NAMESPACES = [
   'audit',
   'platform',
   'onboarding',
+  'releaseNotes',
 ] as const;
 
 export type SharedNamespace = (typeof SHARED_NAMESPACES)[number];

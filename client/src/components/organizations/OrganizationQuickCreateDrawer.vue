@@ -114,8 +114,8 @@
                             </div>
                           </div>
                           
-                          <!-- QUICK CREATE MODE: Settings-driven fields (create only) -->
-                          <template v-if="mode === 'quick' && !isEditMode">
+                          <!-- QUICK CREATE MODE: Settings-driven fields -->
+                          <template v-if="mode === 'quick'">
                             <!-- 
                               ARCHITECTURAL INTENT: Quick Create Mode
                               - Render ONLY fields defined in Settings → Organizations → Quick Create
@@ -203,8 +203,8 @@
 
                   <!-- Fixed Footer -->
                   <div class="flex shrink-0 items-center justify-between gap-3 px-4 py-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-                    <!-- Left: Mode switch button (create mode only) -->
-                    <div v-if="!isEditMode" class="flex-1">
+                    <!-- Left: Mode switch button -->
+                    <div class="flex-1">
                       <button 
                         v-if="mode === 'quick'"
                         type="button" 
@@ -218,7 +218,6 @@
                         @click="switchToQuick"
                       >{{ t('organizations.organizationQuickCreateDrawerBackToQuick') }}</button>
                     </div>
-                    <span v-else />
 
                     <!-- Right: Cancel and Save/Create buttons (always on the right) -->
                     <div class="flex gap-3">
@@ -302,9 +301,8 @@ const createMode = ref('quick');
 const isEditMode = computed(() => !!props.organizationId);
 
 // Mode state: 'quick' | 'full' (default: 'quick')
-// ARCHITECTURAL INTENT: Quick Create unblocks flow. Full Form is intentional completion. Both are creation-only.
+// ARCHITECTURAL INTENT: Quick Create unblocks flow. Full Form is intentional completion.
 // NOTE: This is the UI mode. createMode tracks submission intent and must be kept in sync.
-// In edit mode, always start in 'full' mode to show all editable fields
 const mode = ref('quick');
 
 // Form data (preserved across mode switches)
@@ -517,8 +515,7 @@ const helperText = computed(() => {
 
 // Computed: Drawer width class based on mode (quick vs full)
 const drawerWidthClass = computed(() => {
-  const fullLike = isEditMode.value || mode.value === 'full';
-  return fullLike ? 'w-[60rem]' : 'w-[30rem]';
+  return mode.value === 'full' ? 'w-[60rem]' : 'w-[30rem]';
 });
 
 // Fields to exclude from Quick Create
@@ -717,17 +714,8 @@ const handleSubmit = async () => {
     let response;
     
     if (isEditMode.value) {
-      // EDIT MODE: PATCH /organizations/:id
-      // Payload must be shape-complete: include all editable fields
-      const payload = {
-        name: formData.value.name.trim(),
-        types: formData.value.types || [],
-        industry: formData.value.industry?.trim() || null,
-        website: formData.value.website?.trim() || null,
-        phone: formData.value.phone?.trim() || null,
-        address: formData.value.address?.trim() || null
-      };
-      
+      // EDIT MODE: PATCH /organizations/:id — only fields visible in the active mode
+      const payload = buildCreateOrganizationPayload(formData.value);
       response = await apiClient.patch(`/organizations/${props.organizationId}`, payload);
     } else {
       // CREATE MODE: POST /organizations
@@ -843,9 +831,8 @@ const fetchOrganizationData = async () => {
         address: data.address || ''
       };
       
-      // In edit mode, always start in full mode
-      mode.value = 'full';
-      createMode.value = 'full';
+      mode.value = 'quick';
+      createMode.value = 'quick';
     } else {
       errors.value._general = response.message || 'Failed to load organization data';
     }
@@ -871,7 +858,8 @@ watch(() => props.isOpen, (isOpen) => {
   if (isOpen) {
     fetchOrganizationModuleDefinition();
     if (isEditMode.value) {
-      // Edit mode: fetch organization data
+      mode.value = 'quick';
+      createMode.value = 'quick';
       fetchOrganizationData();
     } else {
       // Create mode: use initial data

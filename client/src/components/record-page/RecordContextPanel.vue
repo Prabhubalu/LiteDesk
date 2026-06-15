@@ -1,5 +1,11 @@
 <template>
-  <div class="record-context-panel flex flex-col flex-1 min-h-0">
+  <div
+    class="record-context-panel flex flex-col flex-1 min-h-0"
+    :class="{ 'is-scrolling': isScrolling }"
+    @scroll.capture="showScrollbar"
+    @wheel.capture="showScrollbar"
+    @touchstart.capture="showScrollbar"
+  >
     <!-- Content area with tabs -->
     <div class="record-context-panel__body flex flex-1 min-h-0">
       <!-- Tab panels content (left of tab rail) -->
@@ -30,7 +36,7 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { ref, watch } from 'vue';
+import { ref, watch, onUnmounted } from 'vue';
 import RecordContextTabs from './RecordContextTabs.vue';
 
 /**
@@ -57,6 +63,22 @@ const props = defineProps({
 const { t } = useI18n();
 
 const activeTab = ref(props.defaultTab || (props.tabs.length > 0 ? props.tabs[0].key : null));
+const isScrolling = ref(false);
+let scrollHideTimer = null;
+const SCROLL_HIDE_DELAY = 800;
+
+function showScrollbar() {
+  isScrolling.value = true;
+  if (scrollHideTimer) clearTimeout(scrollHideTimer);
+  scrollHideTimer = setTimeout(() => {
+    isScrolling.value = false;
+    scrollHideTimer = null;
+  }, SCROLL_HIDE_DELAY);
+}
+
+onUnmounted(() => {
+  if (scrollHideTimer) clearTimeout(scrollHideTimer);
+});
 
 const handleTabChange = (tabKey) => {
   activeTab.value = tabKey;
@@ -96,7 +118,37 @@ watch(() => props.tabs, (newTabs) => {
   flex: 1;
   min-width: 0;
   overflow-y: auto;
-  scrollbar-gutter: stable;
+  scrollbar-color: transparent transparent;
+  scrollbar-width: thin;
+}
+
+.record-context-panel.is-scrolling .record-context-panel__content {
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+}
+
+.record-context-panel__content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.record-context-panel__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.record-context-panel__content::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.record-context-panel.is-scrolling .record-context-panel__content::-webkit-scrollbar-thumb {
+  background: rgb(203 213 225);
+}
+
+:global(.dark) .record-context-panel.is-scrolling .record-context-panel__content {
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+:global(.dark) .record-context-panel.is-scrolling .record-context-panel__content::-webkit-scrollbar-thumb {
+  background: rgb(75 85 99);
 }
 
 .record-context-panel__panel {

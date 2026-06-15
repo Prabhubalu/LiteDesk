@@ -1,33 +1,31 @@
 <template>
   <SettingsScrollPanel>
     <template #header>
-      <div>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('navigation.settings') }}</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          {{ t('settings.landingSubtitle') }}
-        </p>
-      </div>
+      <SettingsPageHeader
+        :title="t('navigation.settings')"
+        :subtitle="t('settings.landingSubtitle')"
+      />
     </template>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       <div
         v-for="section in sections"
         :key="section.id"
+        :class="[SETTINGS_OVERVIEW_CARD_CLASS, 'group']"
         @click="navigateToSection(section.id)"
-        class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md hover:border-indigo-500 dark:hover:border-indigo-400 transition-all cursor-pointer group"
       >
         <!-- Icon -->
-        <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 mb-4 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors">
-          <component :is="section.icon" class="w-6 h-6" />
+        <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50 text-primary-600 transition-colors group-hover:bg-primary-100 dark:bg-primary-900/20 dark:text-primary-400 dark:group-hover:bg-primary-900/30">
+          <component :is="section.icon" class="h-5 w-5" />
         </div>
 
         <!-- Title -->
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        <h3 :class="[SETTINGS_SECTION_TITLE_CLASS, 'mb-1.5']">
           {{ t(section.nameKey) }}
         </h3>
 
         <!-- Description -->
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <p class="text-helper text-neutral-600 dark:text-neutral-400">
           {{ t(section.descriptionKey) }}
         </p>
       </div>
@@ -37,6 +35,11 @@
 
 <script setup>
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
+import SettingsPageHeader from '@/components/settings/SettingsPageHeader.vue';
+import {
+  SETTINGS_OVERVIEW_CARD_CLASS,
+  SETTINGS_SECTION_TITLE_CLASS,
+} from '@/components/settings/settingsSaveBar';
 import { computed, h } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
@@ -322,4 +325,3 @@ const navigateToSection = (sectionId) => {
   }
 };
 </script>
-

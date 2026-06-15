@@ -7,6 +7,7 @@ import { useColorMode } from '@/composables/useColorMode';
 import { useTabs } from '@/composables/useTabs';
 import { hasAnySettingsAccess } from '@/utils/settingsTabAccess';
 import { useUserStatus } from '@/composables/useUserStatus';
+import { useReleaseNotes } from '@/composables/useReleaseNotes';
 import AvatarInitials from '@/components/ui/AvatarInitials.vue';
 import {
   UserCircleIcon,
@@ -20,7 +21,10 @@ import {
   PencilSquareIcon,
   XMarkIcon,
   ChevronDownIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  BookOpenIcon,
+  ChatBubbleLeftRightIcon,
+  SparklesIcon
 } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
@@ -36,6 +40,10 @@ const router = useRouter();
 const authStore = useAuthStore();
 const { colorMode, toggleColorMode } = useColorMode();
 const { openTab } = useTabs();
+const { showHelpBadge } = useReleaseNotes();
+
+const helpDocsUrl = String(import.meta.env.VITE_HELP_DOCS_URL || '').trim();
+const helpSupportUrl = String(import.meta.env.VITE_HELP_SUPPORT_URL || '').trim();
 
 const userId = computed(() => authStore.user?._id || null);
 const {
@@ -169,6 +177,25 @@ function openAppointments() {
 }
 function openTrash() {
   go(() => router.push('/trash'));
+}
+function openDocumentation() {
+  go(() => {
+    if (helpDocsUrl) {
+      window.open(helpDocsUrl, '_blank', 'noopener,noreferrer');
+    }
+  });
+}
+function openSupport() {
+  go(() => {
+    if (helpSupportUrl) {
+      window.open(helpSupportUrl, '_blank', 'noopener,noreferrer');
+    }
+  });
+}
+function openWhatsNew() {
+  go(() => {
+    window.dispatchEvent(new CustomEvent('arivu:open-whats-new'));
+  });
 }
 function toggleTheme() {
   toggleColorMode(isDark.value ? 'light' : 'dark');
@@ -474,6 +501,48 @@ function chooseStatus(typeId) {
         >
           <TrashIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" />
           {{ t('navigation.userTrash') }}
+        </button>
+      </div>
+
+      <div class="border-t border-gray-100 dark:border-gray-800 py-1">
+        <div class="px-5 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+          {{ t('navigation.helpMenu') }}
+        </div>
+        <button
+          v-if="helpDocsUrl"
+          type="button"
+          role="menuitem"
+          class="flex w-full items-center gap-3 px-5 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+          @click="openDocumentation"
+        >
+          <BookOpenIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" />
+          {{ t('navigation.helpDocumentation') }}
+        </button>
+        <button
+          v-if="helpSupportUrl"
+          type="button"
+          role="menuitem"
+          class="flex w-full items-center gap-3 px-5 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+          @click="openSupport"
+        >
+          <ChatBubbleLeftRightIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" />
+          {{ t('navigation.helpContactSupport') }}
+        </button>
+        <button
+          type="button"
+          role="menuitem"
+          class="flex w-full items-center gap-3 px-5 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+          @click="openWhatsNew"
+        >
+          <SparklesIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" />
+          <span class="flex min-w-0 flex-1 items-center justify-between gap-2">
+            <span>{{ t('navigation.helpWhatsNew') }}</span>
+            <span
+              v-if="showHelpBadge"
+              class="inline-flex h-2 w-2 shrink-0 rounded-full bg-indigo-500"
+              :aria-label="t('releaseNotes.unseenBadge')"
+            />
+          </span>
         </button>
       </div>
 

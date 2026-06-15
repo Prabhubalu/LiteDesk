@@ -182,5 +182,61 @@
   "listStatTotal": {
     "message": "Total Tasks",
     "description": "Tasks list statistics card"
+  },
+  "sysFieldTaskType": {
+    "message": "Task Type",
+    "description": "System task field label"
+  },
+  "picklistGeneralTask": {
+    "message": "General Task",
+    "description": "Task type picklist value"
+  },
+  "picklistFollowUp": {
+    "message": "Follow-up",
+    "description": "Task type picklist value"
+  },
+  "picklistCall": {
+    "message": "Call",
+    "description": "Task type picklist value"
+  },
+  "picklistEmail": {
+    "message": "Email",
+    "description": "Task type picklist value"
+  },
+  "picklistMeeting": {
+    "message": "Meeting",
+    "description": "Task type picklist value"
+  },
+  "picklistSupport": {
+    "message": "Support",
+    "description": "Task type picklist value"
+  },
+  "picklistResearch": {
+    "message": "Research",
+    "description": "Task type picklist value"
+  },
+  "picklistDocumentation": {
+    "message": "Documentation",
+    "description": "Task type picklist value"
+  },
+  "picklistInternal": {
+    "message": "Internal",
+    "description": "Task type picklist value"
+  },
+  "picklistBug": {
+    "message": "Bug",
+    "description": "Task type picklist value"
+  },
+  "picklistEnhancement": {
+    "message": "Enhancement",
+    "description": "Task type picklist value"
+  },
+  "picklistFeatureRequest": {
+    "message": "Feature Request",
+    "description": "Task type picklist value"
+  },
+  "picklistUsabilityIssue": {
+    "message": "Usability Issue",
+    "description": "Task type picklist value"
   }
 }

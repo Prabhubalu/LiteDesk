@@ -14,6 +14,7 @@ import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
 import { createPermissionSnapshot, hasPermission as hasSnapshotPermission } from '@/types/permission-snapshot.types';
 import { useColorMode } from '@/composables/useColorMode';
 import { useSidebarState } from '@/composables/useSidebarState';
+import { SIDEBAR_FLOATING_SURFACE_CLASS } from '@/utils/sidebarLayout';
 import { useUserStatus } from '@/composables/useUserStatus';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarSkeleton from '@/components/AppSidebarSkeleton.vue';
@@ -318,7 +319,7 @@ const { currentPreset: userStatusPreset } = useUserStatus(currentUserId);
 
 /** Same compact bell treatment as TabBar (mobile / tablet top bar). */
 const shellTopBarBellClass =
-  '!min-h-9 !min-w-9 !p-1.5 rounded-md !border-0 !bg-transparent shadow-none hover:!bg-gray-100 dark:hover:!bg-gray-700 [&_svg]:!w-6 [&_svg]:!h-6';
+  '!min-h-9 !min-w-9 !p-1.5 cursor-pointer rounded-md !border-0 !bg-transparent shadow-none hover:!bg-neutral-200 dark:hover:!bg-neutral-700 [&_svg]:!w-6 [&_svg]:!h-6';
 
 const mobileHeaderTitle = computed(() => {
   const path = route.path || '/';
@@ -417,20 +418,17 @@ const logoSrc = computed(() => {
       @mouseenter="handleMouseEnter"
       @mouseleave="handleMouseLeave"
       :class="[
-        'fixed left-0 top-0 h-screen transition-all duration-300 ease-in-out',
-        // AppSidebar owns the visual container (Figma-accurate).
+        'fixed left-0 top-0 h-dvh p-2 box-border transition-[width] duration-200 ease-out',
         'bg-transparent border-0 flex flex-col',
-        // Desktop
         'hidden lg:flex',
-        // Width based on expanded state (click or hover)
-        // Responsive: 15.833rem (190px) expanded, 4rem collapsed (matches AppSidebar w-[4rem])
-        shouldShowExpanded ? 'lg:w-[15.833rem]' : 'lg:w-[4rem]',
-        // Z-index only (shadow handled by AppSidebar)
+        shouldShowExpanded ? 'lg:w-[calc(13.75rem+1rem)]' : 'lg:w-[calc(3.5rem+1rem)]',
         'z-50'
       ]"
     >
-      <!-- Navigation Links - Rendered by AppSidebar (locked SidebarStructure) -->
-      <div class="flex-1 overflow-y-auto">
+      <!-- Floating card: detached from tab bar and main canvas -->
+      <div
+        :class="['flex-1 min-h-0 flex flex-col', SIDEBAR_FLOATING_SURFACE_CLASS]"
+      >
         <AppSidebar
           v-if="sidebarStructure"
           :sidebar-structure="sidebarStructure"
@@ -449,7 +447,6 @@ const logoSrc = computed(() => {
           {{ t('navigation.noNav') }}
         </div>
       </div>
-
     </div>
 
     <!-- Mobile top bar -->

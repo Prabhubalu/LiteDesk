@@ -10,12 +10,15 @@ const emptySnapshot = () => ({
   },
   shell: {
     approvalsPending: 0,
-    mail: { all: 0, unread: 0, assignedToMe: 0 }
+    approvalsPreview: [],
+    nextEvent: null,
+    mail: { all: 0, unread: 0, assignedToMe: 0, preview: [] },
+    notifications: { unread: 0, preview: [] }
   },
   resume: [],
   appPulses: [],
   greeting: null,
-  focusLine: '',
+  focus: null,
   onboarding: null
 });
 
@@ -44,16 +47,23 @@ export function usePlatformHome() {
           },
           shell: {
             approvalsPending: data.shell?.approvalsPending ?? 0,
+            approvalsPreview: data.shell?.approvalsPreview || [],
+            nextEvent: data.shell?.nextEvent || null,
             mail: {
               all: data.shell?.mail?.all ?? 0,
               unread: data.shell?.mail?.unread ?? 0,
-              assignedToMe: data.shell?.mail?.assignedToMe ?? 0
+              assignedToMe: data.shell?.mail?.assignedToMe ?? 0,
+              preview: data.shell?.mail?.preview || []
+            },
+            notifications: {
+              unread: data.shell?.notifications?.unread ?? 0,
+              preview: data.shell?.notifications?.preview || []
             }
           },
           resume: data.resume || [],
           appPulses: data.appPulses || [],
           greeting: data.greeting || null,
-          focusLine: data.focusLine || '',
+          focus: data.focus || null,
           onboarding: data.onboarding || null
         };
       } else {

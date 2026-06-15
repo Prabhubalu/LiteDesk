@@ -14,7 +14,7 @@
     </div>
 
     <div v-else ref="scrollRef" class="flex-1 min-h-0 overflow-y-auto">
-      <div class="mx-auto w-[90%] divide-y divide-gray-200 py-2 dark:divide-gray-700">
+      <div class="mx-auto max-w-3xl divide-y divide-gray-100 px-4 py-3 sm:px-6 dark:divide-gray-800">
         <template v-for="row in displayItems" :key="row.id">
           <div v-if="row.kind === 'system'" class="flex justify-center py-6">
             <span

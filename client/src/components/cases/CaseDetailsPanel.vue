@@ -1,8 +1,8 @@
 <template>
-  <div class="flex h-full min-h-0 flex-col">
-    <div class="record-context-panel__header flex shrink-0 flex-col gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
-      <div class="flex items-baseline justify-between gap-2">
-        <h2 class="text-sm font-normal text-gray-900 dark:text-white">{{ t('cases.recordDetailsTitle') }}</h2>
+  <div class="flex h-full min-h-0 flex-col bg-gray-50/50 dark:bg-gray-900">
+    <div class="record-context-panel__header flex shrink-0 flex-col gap-2.5 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('cases.recordDetailsTitle') }}</h2>
         <div class="flex shrink-0 items-center gap-2">
           <span
             v-if="fieldCountLabel"
@@ -21,31 +21,18 @@
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <div class="relative min-w-0 flex-1">
-          <MagnifyingGlassIcon
-            class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-            aria-hidden="true"
-          />
-          <input
-            v-model="detailsTabSearchQuery"
-            type="search"
-            :placeholder="t('records.genericFilterFieldsPh')"
-            autocomplete="off"
-            class="w-full rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-500 focus:border-indigo-500/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:border-gray-600 dark:bg-gray-800/80 dark:text-white dark:placeholder-gray-400"
-          />
-        </div>
+        <DetailsTabFieldFilter
+          v-model="detailsTabSearchQuery"
+          :placeholder="t('records.genericFilterFieldsPh')"
+        />
         <label class="flex shrink-0 cursor-pointer select-none items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-          <input
-            v-model="detailsShowEmptyFields"
-            type="checkbox"
-            class="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800"
-          />
+          <HeadlessCheckbox v-model="detailsShowEmptyFields" size="sm" />
           {{ t('records.genericShowEmptyFields') }}
         </label>
       </div>
     </div>
 
-    <div class="min-h-0 flex-1 overflow-y-auto px-3 pb-4 pt-3">
+    <div class="min-h-0 flex-1 overflow-y-auto px-4 pb-6 pt-4">
       <p v-if="!caseRecord?._id" class="text-sm text-gray-500 dark:text-gray-400">
         {{ t('records.genericNoRecordLoaded') }}
       </p>
@@ -83,8 +70,9 @@
 <script setup>
 import { computed, toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import DetailsSection from '@/components/record-page/sections/DetailsSection.vue';
+import DetailsTabFieldFilter from '@/components/record-page/DetailsTabFieldFilter.vue';
+import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { useCaseRecordDetailFields } from '@/composables/useCaseRecordDetailFields';
 import { useTabs } from '@/composables/useTabs';
 

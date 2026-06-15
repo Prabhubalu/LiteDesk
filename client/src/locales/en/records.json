@@ -2295,6 +2295,14 @@
     "message": "Activity",
     "description": "Right pane activity tab"
   },
+  "rightPaneResizeHandle": {
+    "message": "Resize activity panel",
+    "description": "Aria label for record right pane resize handle"
+  },
+  "rightPaneResizeHint": {
+    "message": "Drag to resize. Double-click to reset.",
+    "description": "Tooltip for record right pane resize handle"
+  },
   "commentComposerDefaultPh": {
     "message": "Write a comment... @mention users or groups",
     "description": "Default comment composer placeholder"

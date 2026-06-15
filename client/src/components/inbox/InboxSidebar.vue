@@ -1,7 +1,12 @@
 <template>
   <aside
-    class="inbox-sidebar flex w-[260px] shrink-0 flex-col overflow-hidden border-r border-[#EBEBEB] bg-[#F7F7F5] dark:border-gray-800 dark:bg-[#1a1a1a]"
-    :class="hiddenOnMobile ? 'max-lg:hidden' : ''"
+    :class="[
+      'inbox-sidebar flex w-[260px] shrink-0 flex-col overflow-hidden',
+      INBOX_SIDEBAR_SURFACE_CLASS,
+      NESTED_PANEL_FLOATING_LG_CLASS,
+      'max-lg:border-r max-lg:border-neutral-200 dark:max-lg:border-neutral-800',
+      hiddenOnMobile ? 'max-lg:hidden' : '',
+    ]"
     :aria-label="t('inbox.inboxSurfaceMailFoldersAndMailboxes')"
   >
     <!-- Mailbox switcher + compose -->
@@ -319,7 +324,7 @@
       </div>
 
       <!-- Footer utilities — pinned to nav bottom, same gutter -->
-      <div class="mt-auto shrink-0 border-t border-[#EBEBEB] pt-2 pb-2.5 dark:border-gray-800">
+      <div class="mt-auto shrink-0 border-t border-neutral-200 pt-2 pb-2.5 dark:border-neutral-800">
         <div
           v-if="mailboxFlags.canCreatePersonal || mailboxFlags.canCreateGroup"
           class="mb-1 flex flex-col gap-0.5"
@@ -380,6 +385,7 @@ import {
   XMarkIcon
 } from '@heroicons/vue/24/outline';
 import AvatarInitials from '@/components/ui/AvatarInitials.vue';
+import { INBOX_SIDEBAR_SURFACE_CLASS, NESTED_PANEL_FLOATING_LG_CLASS } from '@/utils/sidebarLayout';
 
 export interface SidebarNavItem {
   id: string;
@@ -718,7 +724,7 @@ function clearSearch() {
 function navItemClass(active: boolean) {
   return active
     ? 'bg-[rgba(84,71,255,0.1)] font-semibold text-[#432DD6] dark:bg-[rgba(84,71,255,0.2)] dark:text-purple-300'
-    : 'font-medium text-[#37352F] hover:bg-[#F8F9FB] dark:text-gray-200 dark:hover:bg-gray-800';
+    : 'font-medium text-neutral-800 hover:bg-neutral-200/60 dark:text-neutral-200 dark:hover:bg-neutral-800';
 }
 
 function navIconClass(active: boolean) {

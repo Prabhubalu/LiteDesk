@@ -1539,7 +1539,6 @@
     :initialData="createDrawerInitialData"
     :record="createDrawerRecord"
     :title="getCreateDrawerTitle()"
-    :description="getCreateDrawerDescription()"
     @close="handleCreateDrawerClose"
     @saved="handleCreateDrawerSaved"
   />
@@ -6134,19 +6133,6 @@ const getCreateDrawerTitle = () => {
     'users': 'New User'
   };
   return titles[createDrawerModuleKey.value] || 'Create Record';
-};
-
-const getCreateDrawerDescription = () => {
-  if (createDrawerRecord.value) return null; // let drawer compute edit description
-  const descriptions = {
-    'people': 'Add a new contact to your CRM.',
-    'organizations': 'Add a new organization to your CRM.',
-    'deals': 'Create a new deal opportunity.',
-    'tasks': 'Create a new task.',
-    'events': 'Schedule a new event.',
-    'users': 'Add a new user to your organization.'
-  };
-  return descriptions[createDrawerModuleKey.value] || 'Fill in the information below to create a new record.';
 };
 
 const openEditDrawer = () => {

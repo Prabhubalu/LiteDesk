@@ -1,16 +1,13 @@
 <template>
   <section
     v-if="fields.length"
-    :class="[
-      'details-section',
-      isCompact ? 'space-y-3' : 'space-y-2'
-    ]"
+    class="details-section"
   >
     <h3 v-if="!hideHeader" class="text-sm font-normal text-gray-900 dark:text-white">{{ t('records.detailsTitle') }}</h3>
     <div
       :class="[
         isCompact
-          ? 'overflow-hidden rounded-xl  border-gray-200/90  divide-gray-200/80 dark:divide-gray-700/80 dark:border-gray-700 dark:bg-gray-950/30'
+          ? 'details-section__compact-list'
           : 'border-y border-x-0 border-gray-200/70 dark:border-gray-700/70 divide-y divide-gray-200/70 dark:divide-gray-700/70'
       ]"
     >
@@ -21,30 +18,27 @@
         <h4
           v-if="isCompact && groupFields && isNewGroupHeader(fieldIdx, field)"
           :class="[
-            'details-section__group-header border-gray-200/80 px-3 py-2.5 text-sm font-normal text-gray-900 dark:text-gray-100 dark:border-gray-700/80',
-            fieldIdx > 0 ? 'mt-2  border-gray-200/80 pt-3 dark:border-gray-700/90' : ''
+            'details-section__group-header',
+            fieldIdx > 0 ? 'border-t border-gray-200/80 pt-5 dark:border-gray-700/80' : ''
           ]"
         >
-          <!-- Tint lives on inner wrapper so it matches field row content width (same px-3 as values). -->
           <div
             :class="[
-              'flex min-w-0 w-full items-center gap-1.5  px-2.5 py-2',
+              'flex min-w-0 w-full items-center gap-2',
               groupHeaderClass(field)
             ]"
           >
             <span
-              class="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-current"
+              class="h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-80"
               aria-hidden="true"
-            >
-              <span class="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-            </span>
+            />
             <span class="min-w-0 truncate">{{ field.groupLabel || 'Fields' }}</span>
           </div>
         </h4>
         <!-- Related record link + optional inline listbox: hover → primary; click value → open record. Inline edit via dropdown, never edit drawer. -->
         <div
           v-if="field.recordPath && typeof context.openTab === 'function'"
-          :class="isCompact ? 'space-y-1.5 px-3 py-2.5' : 'flex min-h-[2rem] items-center gap-3 px-4 py-2'"
+          :class="isCompact ? 'details-section__field' : 'flex min-h-[2rem] items-center gap-3 px-4 py-2'"
         >
           <template v-if="!isCompact">
             <span class="flex-shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true">
@@ -52,35 +46,45 @@
             </span>
             <span class="min-w-[12rem] flex-shrink-0 text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
           </template>
-          <div v-else class="flex min-w-0 items-center gap-1.5">
-            <component :is="getFieldIcon(field)" class="h-3.5 w-3.5 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
-            <span class="truncate text-sm font-normal text-gray-600 dark:text-gray-400">{{ displayFieldLabel(field) }}</span>
-          </div>
+          <span v-else :class="DRAWER_FIELD_LABEL_CLASS">{{ displayFieldLabel(field) }}</span>
+
+          <HeadlessSelect
+            v-if="isCompact && field.options?.length && field.canEdit && typeof field.onSave === 'function'"
+            :model-value="getRecordPathFieldSelectedId(field)"
+            :options="displayFieldOptions(field)"
+            allow-empty
+            :empty-label="t('records.detailsSelectOption')"
+            :empty-value="null"
+            teleport
+            wrapper-class="mt-1 relative min-w-0 w-full"
+            :button-class="DRAWER_FIELD_LISTBOX_CLASS"
+            @update:model-value="(v) => field.onSave(v)"
+          />
 
           <Listbox
-            v-if="field.options?.length && field.canEdit && typeof field.onSave === 'function'"
+            v-else-if="field.options?.length && field.canEdit && typeof field.onSave === 'function'"
             as="div"
             :model-value="getRecordPathFieldSelectedId(field)"
             @update:model-value="(v) => field.onSave(v)"
-            :class="isCompact ? 'min-w-0 w-full' : 'min-w-0 flex-1'"
+            :class="isCompact ? 'mt-1 relative min-w-0 w-full' : 'min-w-0 flex-1'"
           >
             <div class="relative w-full">
               <ListboxButton
                 :class="[
-                  'flex w-full cursor-pointer items-center gap-2 text-left transition-colors focus:outline-none focus:ring-0',
                   isCompact
-                    ? 'min-h-[2.25rem] rounded-md border border-gray-200/90 bg-white px-2.5 py-1.5  hover:border-indigo-300/60 dark:border-gray-600 dark:bg-gray-900/50 dark:hover:border-indigo-500/40'
-                    : 'min-h-8 rounded px-2 py-1 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    ? DRAWER_FIELD_LISTBOX_CLASS
+                    : 'flex min-h-8 w-full cursor-pointer items-center gap-2 rounded px-2 py-1 text-left text-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-0 dark:hover:bg-gray-800'
                 ]"
               >
                 <span
                   v-if="field.displayValue"
-                  class="text-sm min-w-0 flex-1 truncate text-gray-900 dark:text-white transition-colors hover:text-primary-600 dark:hover:text-primary-400"
+                  class="min-w-0 flex-1 truncate text-gray-900 dark:text-white transition-colors hover:text-primary-600 dark:hover:text-primary-400"
+                  :class="isCompact ? 'text-base sm:text-sm/6' : 'text-sm'"
                 >
                   <span
                     role="button"
                     tabindex="0"
-                    class="text-sm inline cursor-pointer"
+                    class="inline cursor-pointer"
                     @click.stop="(e) => { if (field.recordPath && context.openTab) { e.stopPropagation(); context.openTab(field.recordPath, { background: false, insertAdjacent: true }); } }"
                   >
                     {{ field.displayValue }}
@@ -88,9 +92,16 @@
                 </span>
                 <span
                   v-else
-                  class="text-sm min-w-0 flex-1 truncate text-record-empty"
+                  class="min-w-0 flex-1 truncate text-record-empty"
+                  :class="isCompact ? 'text-base sm:text-sm/6' : 'text-sm'"
                 >
                   {{ t('records.detailsSelectOption') }}
+                </span>
+                <span
+                  v-if="isCompact"
+                  class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"
+                >
+                  <ChevronUpDownIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
                 </span>
               </ListboxButton>
               <Transition
@@ -129,10 +140,10 @@
             v-else-if="field.canOpenEditor && typeof field.onEdit === 'function'"
             type="button"
             :class="[
-              'cursor-pointer text-left text-sm text-gray-900 transition-colors dark:text-white',
+              'cursor-pointer text-left text-gray-900 transition-colors dark:text-white',
               isCompact
-                ? 'min-h-[2.25rem] w-full rounded-md border border-gray-200/90 bg-white px-2.5 py-1.5 hover:border-indigo-300/60 hover:bg-indigo-50/40 dark:border-gray-600 dark:bg-gray-900/50 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/30'
-                : '-mx-2 -my-1 flex-1 min-w-0 rounded px-2 py-1 hover:bg-gray-50 dark:hover:bg-gray-800'
+                ? joinDrawerFieldClasses(DRAWER_FIELD_CONTROL_CLASS, 'hover:opacity-95')
+                : '-mx-2 -my-1 flex-1 min-w-0 rounded px-2 py-1 text-sm hover:bg-gray-50 dark:hover:bg-gray-800'
             ]"
             @click="handleFieldEdit(field, $event)"
           >
@@ -155,10 +166,10 @@
           <div
             v-else
             :class="[
-              'min-w-0 text-left text-sm text-gray-900 dark:text-white',
+              'min-w-0 text-left text-gray-900 dark:text-white',
               isCompact
-                ? 'w-full rounded-md border border-gray-100 bg-gray-50/80 px-2.5 py-1.5 dark:border-gray-700 dark:bg-gray-800/40'
-                : '-mx-2 -my-1 flex-1 rounded px-2 py-1'
+                ? DRAWER_FIELD_READ_ONLY_DISPLAY_CLASS
+                : '-mx-2 -my-1 flex-1 rounded px-2 py-1 text-sm'
             ]"
           >
             <span
@@ -180,7 +191,7 @@
 
         <div
           v-else-if="field.canOpenEditor && typeof field.onEdit === 'function'"
-          :class="isCompact ? 'space-y-1.5 px-3 py-2.5' : 'flex min-h-[2rem] items-center gap-3 px-4 py-2'"
+          :class="isCompact ? 'details-section__field' : 'flex min-h-[2rem] items-center gap-3 px-4 py-2'"
         >
           <template v-if="!isCompact">
             <span class="flex-shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true">
@@ -188,17 +199,14 @@
             </span>
             <span class="min-w-[12rem] flex-shrink-0 text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
           </template>
-          <div v-else class="flex min-w-0 items-center gap-1.5">
-            <component :is="getFieldIcon(field)" class="h-3.5 w-3.5 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
-            <span class="truncate text-sm font-normal text-gray-600 dark:text-gray-400">{{ displayFieldLabel(field) }}</span>
-          </div>
+          <span v-else :class="DRAWER_FIELD_LABEL_CLASS">{{ displayFieldLabel(field) }}</span>
           <button
             type="button"
             :class="[
-              'cursor-pointer text-left text-sm text-gray-900 transition-colors dark:text-white',
+              'cursor-pointer text-left text-gray-900 transition-colors dark:text-white',
               isCompact
-                ? 'min-h-[2.25rem] w-full rounded-md border border-gray-200/90 bg-white px-2.5 py-1.5  hover:border-indigo-300/60 hover:bg-indigo-50/40 dark:border-gray-600 dark:bg-gray-900/50 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/30'
-                : '-mx-2 -my-1 flex-1 min-w-0 rounded px-2 py-1 hover:bg-gray-50 dark:hover:bg-gray-800'
+                ? joinDrawerFieldClasses(DRAWER_FIELD_CONTROL_CLASS, 'hover:opacity-95')
+                : '-mx-2 -my-1 flex-1 min-w-0 rounded px-2 py-1 text-sm hover:bg-gray-50 dark:hover:bg-gray-800'
             ]"
             @click="handleFieldEdit(field, $event)"
           >
@@ -223,7 +231,7 @@
           </button>
         </div>
 
-        <div v-else :class="isCompact ? 'px-3 py-2.5' : ''">
+        <div v-else :class="isCompact ? 'details-section__field' : ''">
           <EditableLabeledValue
             :label="displayFieldLabel(field)"
             :value="field.value"
@@ -272,10 +280,28 @@ import {
   TagIcon,
   UserIcon,
   LinkIcon,
-  CheckIcon
+  CheckIcon,
+  ChevronUpDownIcon
 } from '@heroicons/vue/24/outline';
 import EditableLabeledValue from '@/components/record-page/EditableLabeledValue.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import { shouldHideDetailField, shouldHideRecordPaneDetailField } from '@/components/record-page/fieldVisibilityGuards';
+
+/** Match DynamicFormField / quick create drawer — keep in sync with EditableLabeledValue. */
+const DRAWER_FIELD_LABEL_CLASS = 'block text-sm/6 font-medium text-gray-900 dark:text-white';
+
+const DRAWER_FIELD_CONTROL_CLASS =
+  'block w-full mt-1 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500';
+
+const DRAWER_FIELD_READ_ONLY_DISPLAY_CLASS =
+  'block w-full mt-1 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 sm:text-sm/6 dark:outline-white/10';
+
+const DRAWER_FIELD_LISTBOX_CLASS =
+  'block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 relative cursor-default text-left';
+
+function joinDrawerFieldClasses(...parts) {
+  return parts.filter(Boolean).join(' ');
+}
 
 function getRecordPathFieldSelectedId(field) {
   const v = field?.value;
@@ -342,25 +368,25 @@ function isNewGroupHeader(fieldIdx, field) {
   return (field.groupId || '') !== (prev.groupId || '');
 }
 
-/** Visual accent per adapter group (Core, app scopes, System, etc.) — inner strip + left border. */
+/** Visual accent per adapter group (Core, app scopes, System, etc.). */
 function groupHeaderClass(field) {
   const id = String(field?.groupId || '').toLowerCase();
   if (id === 'core') {
-    return 'border-l-[3px] border-l-indigo-500 bg-indigo-50 text-indigo-900 dark:bg-indigo-950/45 dark:text-indigo-100 dark:border-l-indigo-400';
+    return 'text-indigo-700 dark:text-indigo-300';
   }
   if (id === 'system') {
-    return 'border-l-[3px] border-l-slate-500 bg-slate-100 text-slate-900 dark:bg-slate-900/55 dark:text-slate-100 dark:border-l-slate-400';
+    return 'text-slate-600 dark:text-slate-300';
   }
   if (id.startsWith('app-')) {
-    return 'border-l-[3px] border-l-emerald-600 bg-emerald-50 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-50 dark:border-l-emerald-400';
+    return 'text-emerald-700 dark:text-emerald-300';
   }
   if (id === 'meta') {
-    return 'border-l-[3px] border-l-amber-500 bg-amber-50 text-amber-950 dark:bg-amber-950/35 dark:text-amber-50 dark:border-l-amber-400';
+    return 'text-amber-700 dark:text-amber-300';
   }
   if (id.startsWith('explicit-')) {
-    return 'border-l-[3px] border-l-violet-500 bg-violet-50 text-violet-950 dark:bg-violet-950/40 dark:text-violet-50 dark:border-l-violet-400';
+    return 'text-violet-700 dark:text-violet-300';
   }
-  return 'border-l-[3px] border-l-gray-400 bg-gray-100 text-gray-900 dark:bg-gray-800/80 dark:text-gray-100 dark:border-l-gray-500';
+  return 'text-gray-600 dark:text-gray-300';
 }
 
 const fields = computed(() => {
@@ -441,6 +467,22 @@ const handleFieldEdit = (field, event) => {
 </script>
 
 <style scoped>
+/* Match DynamicForm / quick create drawer: space-y-6 between field blocks */
+.details-section__compact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Pull first field in a group closer to its header (24px gap → ~8px visual) */
+.details-section__group-header {
+  margin-bottom: -1rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .details-section :deep(.text-record-empty) {
   color: var(--color-neutral-300) !important;
 }

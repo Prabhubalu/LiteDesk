@@ -45,6 +45,8 @@ const ENABLE_STALLED_INVITE_SCHEDULER =
   process.env.ENABLE_STALLED_INVITE_SCHEDULER !== 'false';
 const ENABLE_TRIAL_NUDGE_SCHEDULER =
   process.env.ENABLE_TRIAL_NUDGE_SCHEDULER !== 'false';
+const ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER =
+  process.env.ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER !== 'false';
 
 let dailyDigestJob = null;
 let weeklyDigestJob = null;
@@ -64,6 +66,7 @@ let playbookDelayJob = null;
 let playbookAlertJob = null;
 let stalledInviteJob = null;
 let trialNudgeJob = null;
+let releaseNotePublishJob = null;
 
 /**
  * Initialize and start scheduled jobs (node-cron).
@@ -471,6 +474,23 @@ function startScheduledJobs() {
     console.log('[scheduledJobs] Trial nudge scheduler disabled (ENABLE_TRIAL_NUDGE_SCHEDULER=false)');
   }
 
+  if (ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER) {
+    const { tickReleaseNotePublish } = require('./releaseNotePublishScheduler');
+    releaseNotePublishJob = cron.schedule('*/5 * * * *', async () => {
+      try {
+        const result = await tickReleaseNotePublish();
+        if (result.published > 0) {
+          console.log(`[scheduledJobs] Release notes published: ${result.published}`);
+        }
+      } catch (err) {
+        console.error('[scheduledJobs] Release note publish tick failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - Release note publish: every 5 minutes');
+  } else {
+    console.log('[scheduledJobs] Release note publish scheduler disabled (ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER=false)');
+  }
+
   console.log(`[scheduledJobs]   - Timezone: ${process.env.DIGEST_TIMEZONE || 'UTC'}`);
   if (NOTIFICATION_DEBUG) {
     console.log('[scheduledJobs]   - Debug mode: enabled');
@@ -587,6 +607,11 @@ function stopScheduledJobs() {
     trialNudgeJob.stop();
     trialNudgeJob = null;
     console.log('[scheduledJobs] Trial nudge job stopped');
+  }
+  if (releaseNotePublishJob) {
+    releaseNotePublishJob.stop();
+    releaseNotePublishJob = null;
+    console.log('[scheduledJobs] Release note publish job stopped');
   }
 }
 

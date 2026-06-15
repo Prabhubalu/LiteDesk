@@ -33,8 +33,8 @@
       <!-- Custom Header Slot - View Switcher (segmented control with sliding pill) -->
       <template #header-actions>
         <div class="flex gap-3 items-center">
-          <!-- View Toggle - Segmented control with sliding pill (h-10 to match header buttons) -->
-          <div class="relative flex h-10 items-stretch rounded-xl bg-gray-100 dark:bg-gray-700/90 p-[0.1rem] border border-gray-200/80 dark:border-gray-600 shadow-inner min-w-[200px]">
+          <!-- View Toggle - Segmented control (h-[34px] to match header action buttons) -->
+          <div class="relative flex h-[34px] items-stretch rounded-lg bg-gray-100 dark:bg-gray-700/90 p-[0.1rem] border border-gray-200/80 dark:border-gray-600 shadow-inner min-w-[200px]">
             <!-- <div
               class="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-600 transition-all duration-200 ease-out pointer-events-none"
               :style="{ left: currentView === 'calendar' ? '4px' : 'calc(50% + 2px)' }"
@@ -42,17 +42,17 @@
             <button
               type="button"
               @click="switchView('calendar')"
-              class="relative z-10 flex-1 flex items-center justify-center gap-2 pl-3 pr-3 py-0 rounded-lg text-sm font-semibold transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
+              class="relative z-10 flex-1 flex items-center justify-center gap-1.5 px-2.5 py-0 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
               :class="currentView === 'calendar' ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'"
             >
-              <CalendarIcon class="w-5 h-5 shrink-0" />{{ t('events.eventsCalendar') }}</button>
+              <CalendarIcon class="w-4 h-4 shrink-0" />{{ t('events.eventsCalendar') }}</button>
             <button
               type="button"
               @click="switchView('list')"
-              class="relative z-10 flex-1 flex items-center justify-center gap-2 pl-3 pr-3 py-0 rounded-lg text-sm font-semibold transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
+              class="relative z-10 flex-1 flex items-center justify-center gap-1.5 px-2.5 py-0 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
               :class="currentView === 'list' ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'"
             >
-              <ListBulletIcon class="w-5 h-5 shrink-0" />{{ t('forms.rbLayoutList') }}</button>
+              <ListBulletIcon class="w-4 h-4 shrink-0" />{{ t('forms.rbLayoutList') }}</button>
           </div>
           <ModuleActions
             module="events"

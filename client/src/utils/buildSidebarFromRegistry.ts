@@ -441,8 +441,12 @@ function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: Pe
     ...sidebarLabel(getModuleLabelKey('dashboard'), 'Dashboard'),
     route: app.dashboardRoute,
     // Use route-context-aware dashboard icons so tab and sidebar stay visually aligned.
-    // Audit dashboard gets a distinct analytics icon; others keep the generic grid icon.
-    icon: String(activeAppId || '').toUpperCase() === 'AUDIT' ? 'presentation-chart' : 'squares',
+    icon:
+      String(activeAppId || '').toUpperCase() === 'AUDIT'
+        ? 'presentation-chart'
+        : String(activeAppId || '').toUpperCase() === 'SALES'
+          ? 'document-chart-bar'
+          : 'squares',
   };
 
   return { appId: activeAppId, dashboard, modules };

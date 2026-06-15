@@ -3,9 +3,14 @@
  * @see docs/architecture/inbox-aggregation.md
  */
 
-export function formatAttentionDueTime(dueAt, isOverdue) {
+/**
+ * @param {string|Date|null|undefined} dueAt
+ * @param {boolean} isOverdue
+ * @param {(key: string, params?: Record<string, unknown>) => string} [t]
+ */
+export function formatAttentionDueTime(dueAt, isOverdue, t) {
   if (isOverdue) {
-    return 'overdue';
+    return t ? t('common.attentionDueOverdue') : 'overdue';
   }
 
   const now = new Date();
@@ -15,19 +20,58 @@ export function formatAttentionDueTime(dueAt, isOverdue) {
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays > 0) {
-    return `in ${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+    return diffDays === 1
+      ? (t ? t('common.attentionDueInOneDay') : 'in 1 day')
+      : (t ? t('common.attentionDueInManyDays', { count: diffDays }) : `in ${diffDays} days`);
   }
 
   if (diffHours > 0) {
-    return `in ${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
+    return diffHours === 1
+      ? (t ? t('common.attentionDueInOneHour') : 'in 1 hour')
+      : (t ? t('common.attentionDueInManyHours', { count: diffHours }) : `in ${diffHours} hours`);
   }
 
   if (diffHours < 0) {
     const absHours = Math.abs(diffHours);
-    return `${absHours} hour${absHours !== 1 ? 's' : ''} ago`;
+    return absHours === 1
+      ? (t ? t('common.attentionDueOneHourAgo') : '1 hour ago')
+      : (t ? t('common.attentionDueManyHoursAgo', { count: absHours }) : `${absHours} hours ago`);
   }
 
-  return 'soon';
+  return t ? t('common.attentionDueSoon') : 'soon';
+}
+
+/**
+ * @param {string|Date|null|undefined} startAt
+ * @param {(key: string, params?: Record<string, unknown>) => string} t
+ */
+export function formatUpcomingEventTime(startAt, t) {
+  if (!startAt || !t) return '';
+  const start = new Date(startAt);
+  if (Number.isNaN(start.getTime())) return '';
+
+  const now = new Date();
+  const diffMs = start - now;
+  if (diffMs <= 0) return t('common.attentionDueSoon');
+
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  if (diffMinutes < 60) {
+    return diffMinutes <= 1
+      ? t('common.upcomingEventInOneMinute')
+      : t('common.upcomingEventInManyMinutes', { count: diffMinutes });
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) {
+    return diffHours === 1
+      ? t('common.upcomingEventInOneHour')
+      : t('common.upcomingEventInManyHours', { count: diffHours });
+  }
+
+  const diffDays = Math.floor(diffHours / 24);
+  return diffDays === 1
+    ? t('common.upcomingEventInOneDay')
+    : t('common.upcomingEventInManyDays', { count: diffDays });
 }
 
 export function getEventAttentionType(item) {
@@ -37,15 +81,29 @@ export function getEventAttentionType(item) {
   return null;
 }
 
-export function getEventAttentionBadgeLabel(attentionType) {
-  if (!attentionType) return 'Action Required';
+/**
+ * @param {string|null|undefined} attentionType
+ * @param {(key: string) => string} [t]
+ */
+export function getEventAttentionBadgeLabel(attentionType, t) {
+  if (!attentionType) {
+    return t ? t('common.eventAttentionActionRequired') : 'Action Required';
+  }
+  const keys = {
+    start: 'common.eventAttentionStartingSoon',
+    review: 'common.eventAttentionNeedsReview',
+    corrective: 'common.eventAttentionCorrectiveActions',
+    approval: 'common.eventAttentionApprovalRequired'
+  };
+  const key = keys[attentionType];
+  if (key && t) return t(key);
   const labels = {
     start: 'Starting Soon',
     review: 'Needs Review',
     corrective: 'Corrective Actions',
     approval: 'Approval Required'
   };
-  return labels[attentionType] || 'Action Required';
+  return labels[attentionType] || (t ? t('common.eventAttentionActionRequired') : 'Action Required');
 }
 
 export function getEventAttentionBadgeVariant(attentionType) {

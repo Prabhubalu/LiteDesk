@@ -1526,10 +1526,11 @@
     </div>
   </Teleport>
 
-  <!-- Edit task drawer (Quick Edit / Full Edit progressive disclosure) -->
-  <TaskEditDrawer
+  <!-- Edit task drawer (quick + full mode) -->
+  <CreateRecordDrawer
     v-if="task"
     :isOpen="showEditDrawer"
+    moduleKey="tasks"
     :record="task"
     @close="showEditDrawer = false"
     @saved="handleTaskEditSaved"
@@ -1630,7 +1631,6 @@ import {
 } from '@/components/record-page/activityEventModel';
 import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
-import TaskEditDrawer from '@/components/tasks/TaskEditDrawer.vue';
 import TaskRelatedToField from '@/components/tasks/TaskRelatedToField.vue';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
 import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.vue';

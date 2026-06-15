@@ -15,12 +15,10 @@
       v-if="visible"
       ref="tooltipRef"
       :class="[
-        'fixed z-[115] rounded-lg bg-slate-950 px-3 py-2 text-white shadow-2xl text-xs leading-4 text-slate-200',
+        'pointer-events-none fixed z-[115] rounded-lg bg-slate-950 px-3 py-2 text-white shadow-2xl text-xs leading-4 text-slate-200',
         wrap ? 'max-w-xs whitespace-normal break-words' : 'whitespace-nowrap',
       ]"
       :style="tooltipStyle"
-      @mouseenter="cancelHide"
-      @mouseleave="handleHide"
     >
       <slot name="content">
         {{ content }}
@@ -77,6 +75,18 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false
+  },
+  /** Prefer above/below; auto picks based on viewport space */
+  preferredPlacement: {
+    type: String,
+    default: 'auto',
+    validator: (v) => ['auto', 'above', 'below'].includes(v)
+  },
+  /** Horizontal alignment relative to anchor */
+  align: {
+    type: String,
+    default: 'center',
+    validator: (v) => ['center', 'start'].includes(v)
   }
 });
 
@@ -105,44 +115,40 @@ const anchorEl = computed(() => {
   return trigger;
 });
 
+function resolvePlacement(rect) {
+  const tooltipHeight = 40;
+  const gap = props.gap;
+  if (props.preferredPlacement === 'above') return 'above';
+  if (props.preferredPlacement === 'below') return 'below';
+  const spaceAbove = rect.top;
+  const spaceBelow = window.innerHeight - rect.bottom;
+  return spaceAbove >= tooltipHeight + gap || spaceAbove >= spaceBelow ? 'above' : 'below';
+}
+
 const tooltipStyle = computed(() => {
   const anchor = anchorEl.value;
   if (!anchor || !visible.value) return {};
   const rect = anchor.getBoundingClientRect();
   const tooltipHeight = 40;
   const gap = props.gap;
-  const spaceAbove = rect.top;
-  const spaceBelow = window.innerHeight - rect.bottom;
-  const showAbove = spaceAbove >= tooltipHeight + gap || spaceAbove >= spaceBelow;
+  const showAbove = resolvePlacement(rect) === 'above';
   const top = showAbove ? rect.top - tooltipHeight - gap : rect.bottom + gap;
-  const centerX = rect.left + rect.width / 2;
-  const minLeft = 100;
-  const maxLeft = window.innerWidth - 100;
-  const left = Math.max(minLeft, Math.min(centerX, maxLeft));
+  const minLeft = 8;
+  const maxLeft = window.innerWidth - 8;
+  const anchorX = props.align === 'start' ? rect.left : rect.left + rect.width / 2;
+  const left = Math.max(minLeft, Math.min(anchorX, maxLeft));
   return {
     top: `${top}px`,
     left: `${left}px`,
-    transform: 'translateX(-50%)'
+    transform: props.align === 'start' ? 'none' : 'translateX(-50%)'
   };
 });
 
 const placement = computed(() => {
   const anchor = anchorEl.value;
   if (!anchor || !visible.value) return 'above';
-  const rect = anchor.getBoundingClientRect();
-  const tooltipHeight = 40;
-  const gap = props.gap;
-  const spaceAbove = rect.top;
-  const spaceBelow = window.innerHeight - rect.bottom;
-  return spaceAbove >= tooltipHeight + gap || spaceAbove >= spaceBelow ? 'above' : 'below';
+  return resolvePlacement(anchor.getBoundingClientRect());
 });
-
-const cancelHide = () => {
-  if (hideTimer) {
-    clearTimeout(hideTimer);
-    hideTimer = null;
-  }
-};
 
 const handleShow = () => {
   if (props.disabled || !props.content) return;

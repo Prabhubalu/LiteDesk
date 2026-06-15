@@ -3,14 +3,25 @@
 const ApprovalInstance = require('../models/ApprovalInstance');
 const Task = require('../models/Task');
 const Deal = require('../models/Deal');
+const Case = require('../models/Case');
+const People = require('../models/People');
+const Organization = require('../models/Organization');
+const Event = require('../models/Event');
+const Notification = require('../models/Notification');
+const { serializeEntityForClient } = require('../utils/notificationEntityDisplay');
 const { buildInboxItemsForUser } = require('../controllers/inboxController');
 const { loadWorkspaceThreadSummaries } = require('./workspaceThreadSummariesService');
-const { getAppPulses } = require('./appPulseService');
-const { buildFocusLine, buildGreetingPayload } = require('./platformHomeFocusService');
+const { getAppPulses, resolveEnabledAppKeys } = require('./appPulseService');
+const { buildFocus, buildGreetingPayload } = require('./platformHomeFocusService');
 const { getPlatformHomeOnboarding } = require('./onboardingService');
 
 const ATTENTION_PREVIEW_LIMIT = 7;
-const RESUME_LIMIT = 5;
+const RESUME_LIMIT = 8;
+const RESUME_PER_MODULE = 2;
+const APPROVAL_PREVIEW_LIMIT = 3;
+const MAIL_PREVIEW_LIMIT = 5;
+const NOTIFICATION_PREVIEW_LIMIT = 5;
+const CLOSED_CASE_STATUSES = ['Resolved', 'Closed'];
 
 async function safePlatformHomeSection(label, fn, fallback) {
   try {
@@ -65,41 +76,161 @@ function computeWorkspaceThreadCounts(threadsRaw, userId) {
   };
 }
 
-async function getApprovalsPendingCount(userId, organizationId) {
-  return ApprovalInstance.countDocuments({
+async function resolveEntityLabel(entityType, entityId) {
+  try {
+    if (entityType === 'deal') {
+      const doc = await Deal.findById(entityId).select('name').lean();
+      return doc?.name || null;
+    }
+    if (entityType === 'people') {
+      const doc = await People.findById(entityId).select('first_name last_name email').lean();
+      if (!doc) return null;
+      return `${doc.first_name || ''} ${doc.last_name || ''}`.trim() || doc.email || null;
+    }
+    if (entityType === 'organization') {
+      const doc = await Organization.findById(entityId).select('name isTenant').lean();
+      if (!doc || doc.isTenant) return null;
+      return doc.name || null;
+    }
+    if (entityType === 'quote') {
+      const Quote = require('../models/Quote');
+      const doc = await Quote.findById(entityId).select('quoteNumber quoteTitle').lean();
+      return doc?.quoteTitle || doc?.quoteNumber || null;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+async function getApprovalsShell(userId, organizationId) {
+  const baseFilter = {
     organizationId,
     status: 'pending',
     approvers: { $in: [userId] }
-  });
+  };
+
+  const [total, rows] = await Promise.all([
+    ApprovalInstance.countDocuments(baseFilter),
+    ApprovalInstance.find(baseFilter)
+      .populate('processId', 'name')
+      .sort({ createdAt: -1 })
+      .limit(APPROVAL_PREVIEW_LIMIT)
+      .lean()
+  ]);
+
+  const preview = await Promise.all(rows.map(async (row) => {
+    const entityLabel = row.entityType && row.entityId
+      ? await resolveEntityLabel(row.entityType, row.entityId)
+      : null;
+    return {
+      id: String(row._id),
+      title: row.processId?.name || 'Approval',
+      subtitle: entityLabel,
+      route: `/approvals/${row._id}`,
+      kind: 'approval',
+      updatedAt: row.createdAt ? new Date(row.createdAt).toISOString() : null
+    };
+  }));
+
+  return { pending: total, preview };
 }
 
-async function getMailCounts(req) {
+async function getMailShell(req) {
+  const emptyCounts = { all: 0, unread: 0, assignedToMe: 0 };
   try {
     const { error, threads } = await loadWorkspaceThreadSummaries(req, '');
     if (error || !Array.isArray(threads)) {
-      return { all: 0, unread: 0, assignedToMe: 0 };
+      return { counts: emptyCounts, preview: [] };
     }
-    return computeWorkspaceThreadCounts(threads, req.user._id);
+
+    const counts = computeWorkspaceThreadCounts(threads, req.user._id);
+    const preview = threads
+      .filter((thread) => !thread.done && !thread.snoozeActive && thread.unread)
+      .sort((a, b) => new Date(b.lastActivityAt || 0) - new Date(a.lastActivityAt || 0))
+      .slice(0, MAIL_PREVIEW_LIMIT)
+      .map((thread) => ({
+        id: String(thread.threadId),
+        title: thread.subject || '(no subject)',
+        subtitle: thread.participantDisplay || null,
+        route: `/inbox?thread=${encodeURIComponent(String(thread.threadId))}`,
+        kind: 'mail',
+        updatedAt: thread.lastActivityAt
+          ? new Date(thread.lastActivityAt).toISOString()
+          : null
+      }));
+
+    return { counts, preview };
   } catch (err) {
-    console.error('[PlatformHome] mail counts error:', err.message);
-    return { all: 0, unread: 0, assignedToMe: 0 };
+    console.error('[PlatformHome] mail shell error:', err.message);
+    return { counts: emptyCounts, preview: [] };
   }
 }
 
+function truncatePreviewText(value, max = 80) {
+  const text = String(value || '').trim();
+  if (!text) return null;
+  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
+async function getNotificationsShell(userId, organizationId, appKeys) {
+  const keys = (appKeys || []).map((key) => String(key).toUpperCase()).filter(Boolean);
+  if (!keys.length) return { unread: 0, preview: [] };
+
+  try {
+    const baseFilter = {
+      userId,
+      organizationId,
+      appKey: { $in: keys },
+      channel: 'IN_APP',
+      readAt: null
+    };
+
+    const [unread, rows] = await Promise.all([
+      Notification.countDocuments(baseFilter),
+      Notification.find(baseFilter)
+        .sort({ createdAt: -1 })
+        .limit(NOTIFICATION_PREVIEW_LIMIT)
+        .select('title body appKey entity eventType createdAt')
+        .lean()
+    ]);
+
+    const preview = rows.map((row) => ({
+      id: String(row._id),
+      title: row.title || 'Notification',
+      subtitle: truncatePreviewText(row.body),
+      appKey: row.appKey,
+      entity: serializeEntityForClient(row.entity),
+      eventType: row.eventType || null,
+      kind: 'notification',
+      updatedAt: row.createdAt ? new Date(row.createdAt).toISOString() : null
+    }));
+
+    return { unread, preview };
+  } catch (err) {
+    console.error('[PlatformHome] notifications shell error:', err.message);
+    return { unread: 0, preview: [] };
+  }
+}
+
+function buildPersonTitle(person) {
+  return `${person.first_name || ''} ${person.last_name || ''}`.trim() || person.email || 'Person';
+}
+
 /**
- * Recently touched work records for "Continue where you left off".
+ * Recently touched work records across modules.
  */
 async function getResumeItems(userId, organizationId) {
   const orgFilter = { organizationId, deletedAt: null };
 
-  const [tasks, deals] = await Promise.all([
+  const [tasks, deals, cases, people, organizations] = await Promise.all([
     Task.find({
       ...orgFilter,
       assignedTo: userId,
       status: { $nin: ['completed', 'cancelled'] }
     })
       .sort({ updatedAt: -1 })
-      .limit(3)
+      .limit(RESUME_PER_MODULE)
       .select('title updatedAt')
       .lean(),
     Deal.find({
@@ -108,34 +239,119 @@ async function getResumeItems(userId, organizationId) {
       deletedAt: null
     })
       .sort({ updatedAt: -1 })
-      .limit(3)
+      .limit(RESUME_PER_MODULE)
+      .select('name updatedAt')
+      .lean(),
+    Case.find({
+      ...orgFilter,
+      caseOwnerId: userId,
+      status: { $nin: CLOSED_CASE_STATUSES }
+    })
+      .sort({ updatedAt: -1 })
+      .limit(RESUME_PER_MODULE)
+      .select('title updatedAt')
+      .lean(),
+    People.find({
+      ...orgFilter,
+      assignedTo: userId
+    })
+      .sort({ updatedAt: -1 })
+      .limit(RESUME_PER_MODULE)
+      .select('first_name last_name email updatedAt')
+      .lean(),
+    Organization.find({
+      isTenant: false,
+      deletedAt: null,
+      assignedTo: userId
+    })
+      .sort({ updatedAt: -1 })
+      .limit(RESUME_PER_MODULE)
       .select('name updatedAt')
       .lean()
   ]);
 
   const candidates = [
-    ...tasks.map((t) => ({
-      id: String(t._id),
-      title: t.title || 'Task',
-      route: `/tasks/${t._id}`,
+    ...tasks.map((row) => ({
+      id: String(row._id),
+      title: row.title || 'Task',
+      route: `/tasks/${row._id}`,
       sourceApp: 'Tasks',
       moduleKey: 'tasks',
-      updatedAt: t.updatedAt ? new Date(t.updatedAt).toISOString() : null
+      updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : null
     })),
-    ...deals.map((d) => ({
-      id: String(d._id),
-      title: d.name || 'Deal',
-      route: `/deals/${d._id}`,
+    ...deals.map((row) => ({
+      id: String(row._id),
+      title: row.name || 'Deal',
+      route: `/deals/${row._id}`,
       sourceApp: 'Sales',
       moduleKey: 'deals',
-      updatedAt: d.updatedAt ? new Date(d.updatedAt).toISOString() : null
+      updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : null
+    })),
+    ...cases.map((row) => ({
+      id: String(row._id),
+      title: row.title || 'Case',
+      route: `/helpdesk/cases/${row._id}`,
+      sourceApp: 'Helpdesk',
+      moduleKey: 'cases',
+      updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : null
+    })),
+    ...people.map((row) => ({
+      id: String(row._id),
+      title: buildPersonTitle(row),
+      route: `/people/${row._id}`,
+      sourceApp: 'Sales',
+      moduleKey: 'people',
+      updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : null
+    })),
+    ...organizations.map((row) => ({
+      id: String(row._id),
+      title: row.name || 'Organization',
+      route: `/organizations/${row._id}`,
+      sourceApp: 'Sales',
+      moduleKey: 'organizations',
+      updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : null
     }))
   ];
 
   return candidates
-    .filter((c) => c.updatedAt)
+    .filter((candidate) => candidate.updatedAt)
     .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
     .slice(0, RESUME_LIMIT);
+}
+
+function resolveEventSourceApp(eventType) {
+  const type = String(eventType || '');
+  if (type.includes('Audit')) return 'Audit';
+  return 'Sales';
+}
+
+async function getNextEvent(userId, organizationId) {
+  const now = new Date();
+  const row = await Event.findOne({
+    organizationId,
+    deletedAt: null,
+    status: { $nin: ['Completed', 'Cancelled'] },
+    startDateTime: { $gte: now },
+    $or: [
+      { eventOwnerId: userId },
+      { auditorId: userId },
+      { reviewerId: userId }
+    ]
+  })
+    .sort({ startDateTime: 1 })
+    .select('eventName startDateTime eventType')
+    .lean();
+
+  if (!row) return null;
+
+  return {
+    id: String(row._id),
+    title: row.eventName || 'Event',
+    startAt: new Date(row.startDateTime).toISOString(),
+    route: `/events/${row._id}`,
+    sourceApp: resolveEventSourceApp(row.eventType),
+    kind: 'event'
+  };
 }
 
 /**
@@ -145,18 +361,26 @@ async function getPlatformHomeSnapshot(req) {
   const userId = req.user._id;
   const organizationId = req.user.organizationId;
   const organization = req.organization
-    || await require('../models/Organization').findById(organizationId).lean();
+    || await Organization.findById(organizationId).lean();
 
-  const [attentionItems, approvalsPending, mail, resume, appPulses, onboarding] = await Promise.all([
+  const enabledAppKeys = resolveEnabledAppKeys(req);
+
+  const [attentionItems, approvalsShell, mailShell, resume, appPulses, onboarding, nextEvent, notificationsShell] = await Promise.all([
     safePlatformHomeSection('attention', () => buildInboxItemsForUser(userId, organizationId), []),
-    safePlatformHomeSection('approvals', () => getApprovalsPendingCount(userId, organizationId), 0),
-    safePlatformHomeSection('mail', () => getMailCounts(req), { all: 0, unread: 0, assignedToMe: 0 }),
+    safePlatformHomeSection('approvals', () => getApprovalsShell(userId, organizationId), { pending: 0, preview: [] }),
+    safePlatformHomeSection('mail', () => getMailShell(req), { counts: { all: 0, unread: 0, assignedToMe: 0 }, preview: [] }),
     safePlatformHomeSection('resume', () => getResumeItems(userId, organizationId), []),
     safePlatformHomeSection('appPulses', () => getAppPulses(req), []),
     safePlatformHomeSection(
       'onboarding',
       () => getPlatformHomeOnboarding(req, organization),
       null
+    ),
+    safePlatformHomeSection('nextEvent', () => getNextEvent(userId, organizationId), null),
+    safePlatformHomeSection(
+      'notifications',
+      () => getNotificationsShell(userId, organizationId, enabledAppKeys),
+      { unread: 0, preview: [] }
     )
   ]);
 
@@ -166,11 +390,25 @@ async function getPlatformHomeSnapshot(req) {
     total: attentionItems.length,
     summary
   };
-  const shell = { approvalsPending, mail };
+  const shell = {
+    approvalsPending: approvalsShell.pending ?? 0,
+    approvalsPreview: approvalsShell.preview ?? [],
+    nextEvent: nextEvent || null,
+    mail: {
+      all: mailShell.counts?.all ?? 0,
+      unread: mailShell.counts?.unread ?? 0,
+      assignedToMe: mailShell.counts?.assignedToMe ?? 0,
+      preview: mailShell.preview ?? []
+    },
+    notifications: {
+      unread: notificationsShell.unread ?? 0,
+      preview: notificationsShell.preview ?? []
+    }
+  };
 
   return {
     greeting: buildGreetingPayload(req.user),
-    focusLine: buildFocusLine({ attention, shell, appPulses }),
+    focus: buildFocus({ attention, shell, appPulses }),
     attention,
     shell,
     resume,

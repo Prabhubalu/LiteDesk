@@ -38,21 +38,18 @@
                 >
                 <form @submit.prevent="handleSubmit" class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700">
                   <!-- Header: fixed at top -->
-                  <div class="bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6 flex-shrink-0">
-                    <div class="flex items-center justify-between">
-                      <DialogTitle class="text-base font-semibold text-white">{{ computedTitle }}</DialogTitle>
-                      <button
-                        ref="closeButtonRef"
-                        type="button"
-                        class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white cursor-pointer"
-                        @click="closeDrawer"
-                      >
-                        <span class="absolute -inset-2.5" />
-                        <span class="sr-only">{{ t('common.closePanel') }}</span>
-                        <XMarkIcon class="size-6" aria-hidden="true" />
-                      </button>
-                    </div>
-                    <p class="mt-1 text-sm text-indigo-300">{{ computedDescription }}</p>
+                  <div class="flex items-center justify-between bg-indigo-700 dark:bg-indigo-800 px-4 py-4 sm:px-6 flex-shrink-0">
+                    <DialogTitle class="text-base font-semibold text-white">{{ computedTitle }}</DialogTitle>
+                    <button
+                      ref="closeButtonRef"
+                      type="button"
+                      class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white cursor-pointer"
+                      @click="closeDrawer"
+                    >
+                      <span class="absolute -inset-2.5" />
+                      <span class="sr-only">{{ t('common.closePanel') }}</span>
+                      <XMarkIcon class="size-6" aria-hidden="true" />
+                    </button>
                   </div>
 
                   <!-- Body: scrollable (user interaction only — not programmatic DynamicForm sync) -->
@@ -92,7 +89,7 @@
                             :errors="errors"
                             :excludeFields="effectiveExcludeFields"
                             :lockedFields="lockedFields"
-                            :showAllFields="isEditing || fullMode || !effectiveQuickCreateMode"
+                            :showAllFields="fullMode || !effectiveQuickCreateMode"
                             :quickCreateMode="strictQuickCreateForForm"
                             :useQuickCreateOrder="(useQuickCreateOrder || strictQuickCreateForForm) && !fullMode"
                             :singleColumn="!fullMode"
@@ -128,7 +125,7 @@
                           </DynamicForm>
                           <!-- Deal relationship editor (People + Organizations) -->
                           <div
-                            v-if="moduleKey === 'deals' && (!effectiveQuickCreateMode || fullMode || isEditing)"
+                            v-if="moduleKey === 'deals' && (!effectiveQuickCreateMode || fullMode)"
                             class="pt-6 border-t border-gray-200 dark:border-gray-700"
                           >
                             <DealRelationshipEditor
@@ -233,6 +230,7 @@ import {
   applyQuoteLinesMutationToRecord,
   applyQuoteLinesRecalculateToRecord,
 } from '@/utils/quoteRecordPatch';
+import { clearQuoteLinesSession } from '@/composables/useQuoteLinesSession';
 
 const _c = globalThis.console;
 function drawerDbg(...args) {
@@ -252,10 +250,6 @@ const props = defineProps({
     required: true
   },
   title: {
-    type: String,
-    default: null // Will be computed from moduleKey and record
-  },
-  description: {
     type: String,
     default: null // Will be computed from moduleKey and record
   },
@@ -315,6 +309,9 @@ const closeButtonRef = ref(null);
 const quoteFormRecord = ref(null);
 const quoteFormLoading = ref(false);
 const quoteFormEnsurePromise = ref(null);
+/** Auto-created quote id while create drawer is open; discarded unless Save succeeds */
+const quoteCreateDraftId = ref(null);
+const quoteCreateSaved = ref(false);
 const quoteLinesFormContext = { expandedLeftSection: '' };
 
 function isDuplicateKeyError(error) {
@@ -345,8 +342,8 @@ async function createQuoteDraftWithRetry(payload, maxAttempts = 3) {
 }
 
 // Two modes: Quick Create Mode (only quick create fields) | Full Form Mode (all fields from config except system)
-// Show toggle only when in quick create mode (limited fields). Quotes always open in full form.
-const showFullModeToggle = computed(() => effectiveQuickCreateMode.value && !isEditing.value && !isQuoteForm.value);
+// Show toggle when quick-create is configured. Quotes always open in full form (no toggle).
+const showFullModeToggle = computed(() => effectiveQuickCreateMode.value && !isQuoteForm.value);
 
 function toggleFullMode() {
   markUserInteraction();
@@ -357,7 +354,6 @@ function toggleFullMode() {
 // Full Form Mode: show all fields from module config (except system) in config order
 const effectiveQuickCreateMode = computed(() => {
   if (isQuoteEdit.value) return true;
-  if (isEditing.value) return false;
   if (props.quickCreateMode) return true;
   // If module settings provide a quickCreate config, default to strict quick-create mode.
   // This keeps create drawers aligned with Settings-selected fields.
@@ -376,7 +372,7 @@ const effectiveQuickCreateMode = computed(() => {
 const strictQuickCreateForForm = computed(() => {
   if (!effectiveQuickCreateMode.value) return false;
   if (props.quickCreateMode) return true;
-  if (fullMode.value || isEditing.value) return false;
+  if (fullMode.value) return false;
   // Quotes: only Settings → Quick Create selected fields (never required-field fallback).
   if (props.moduleKey?.toLowerCase() === 'quotes') return true;
   const qc = effectiveModuleOverrideForDrawer.value?.quickCreate
@@ -400,14 +396,6 @@ const computedTitle = computed(() => {
   if (props.title) return props.title;
   const moduleName = moduleNameMap[props.moduleKey] || props.moduleKey;
   return isEditing.value ? `Edit ${moduleName}` : `New ${moduleName}`;
-});
-
-const computedDescription = computed(() => {
-  if (props.description) return props.description;
-  const moduleName = moduleNameMap[props.moduleKey] || props.moduleKey;
-  return isEditing.value 
-    ? `Update the ${moduleName.toLowerCase()} information below.`
-    : `Fill in the information below to create a new ${moduleName.toLowerCase()}.`;
 });
 
 const coreSystemFieldKeys = [
@@ -809,13 +797,36 @@ const normalizeDealRelationships = (value = {}, options = {}) => {
   };
 };
 
+function discardQuoteCreateDraft(draftId) {
+  const id = String(draftId || quoteCreateDraftId.value || '').trim();
+  if (!id || quoteCreateSaved.value) return;
+  apiClient.delete(`/quotes/${id}`)
+    .catch((error) => {
+      drawerWarn('[CreateRecordDrawer] Failed to discard quote draft:', error);
+    })
+    .finally(() => {
+      clearQuoteLinesSession(id);
+    });
+}
+
 const closeDrawer = () => {
   if (!saving.value) {
+    const draftIdToDiscard =
+      isQuoteCreate.value && quoteCreateDraftId.value && !quoteCreateSaved.value
+        ? quoteCreateDraftId.value
+        : null;
+
     fullMode.value = false;
     quoteFormRecord.value = null;
     quoteFormLoading.value = false;
     quoteFormEnsurePromise.value = null;
+    quoteCreateDraftId.value = null;
+    quoteCreateSaved.value = false;
     emit('close');
+
+    if (draftIdToDiscard) {
+      discardQuoteCreateDraft(draftIdToDiscard);
+    }
     // Reset form after closing
     setTimeout(() => {
       formData.value = {};
@@ -879,6 +890,8 @@ async function ensureQuoteFormRecord() {
       if (!quoteId) {
         throw new Error('Quote draft was not created');
       }
+      quoteCreateDraftId.value = quoteId;
+      quoteCreateSaved.value = false;
       await loadQuoteFormRecord(quoteId);
       if (moduleDefinition.value) {
         mergeQuoteFormRecordIntoFormData(quoteFormRecord.value);
@@ -1869,7 +1882,10 @@ const handleSubmit = async () => {
     if (response.success || response.data) {
       drawerDbg('[CreateRecordDrawer] ✅ Success! Closing drawer...');
       saving.value = false; // Reset saving state before closing
-      
+      if (isQuoteCreate.value) {
+        quoteCreateSaved.value = true;
+      }
+
       const savedRecord = response.data || response;
       
       // Always open the saved record in a new tab
@@ -2079,9 +2095,17 @@ const handleSubmit = async () => {
 };
 
 // Reset form when drawer opens/closes
-watch(() => props.isOpen, (isOpen) => {
+watch(() => props.isOpen, (isOpen, wasOpen) => {
+  if (!isOpen && wasOpen) {
+    const draftId = quoteCreateDraftId.value;
+    if (isQuoteCreate.value && draftId && !quoteCreateSaved.value) {
+      discardQuoteCreateDraft(draftId);
+    }
+  }
   if (isOpen) {
     userHasEdited.value = false;
+    quoteCreateDraftId.value = null;
+    quoteCreateSaved.value = false;
     fullMode.value = isQuoteForm.value;
     errors.value = {};
     moduleDefinition.value = null;
@@ -2090,6 +2114,8 @@ watch(() => props.isOpen, (isOpen) => {
     quoteFormRecord.value = null;
     quoteFormLoading.value = false;
     quoteFormEnsurePromise.value = null;
+    quoteCreateDraftId.value = null;
+    quoteCreateSaved.value = false;
     // Reset when closed so the next open re-seeds from record via onFormReady
     setTimeout(() => {
       formData.value = {};

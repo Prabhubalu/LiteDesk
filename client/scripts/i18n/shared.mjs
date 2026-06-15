@@ -33,6 +33,8 @@ export const SHARED_NAMESPACES = [
   'import',
   'audit',
   'platform',
+  'onboarding',
+  'releaseNotes',
 ];
 
 export const SUPPORTED_LANGUAGES = [

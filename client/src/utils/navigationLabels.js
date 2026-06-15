@@ -155,6 +155,9 @@ export function getTabTitleMetaForPath(path, params = {}) {
   }
 
   if (pathOnly.startsWith('/settings/automation/')) {
+    if (isProcessDesignerTabPath(pathOnly)) {
+      return { titleKey: 'process.setupTitle' };
+    }
     const sub = segments[2];
     if (sub === 'flows' && segments[3]) {
       if (segments[4] === 'health') return { titleKey: 'navigation.tabFlowHealth' };
@@ -324,6 +327,13 @@ export function shouldPreserveRecordTabTitle(tab, path) {
  * @param {(key: string) => boolean} te
  */
 function localizedTabTitleParams(titleKey, params, t, te) {
+  if (titleKey === 'navigation.appDashboard' && params?.app) {
+    const appNameKey = getAppNameKey(String(params.app));
+    if (appNameKey && te(appNameKey)) {
+      return { ...params, app: t(appNameKey) };
+    }
+  }
+
   if (
     params &&
     (titleKey === 'navigation.tabRecordNamed' || titleKey === 'navigation.tabRecordDetail')
@@ -345,9 +355,19 @@ function localizedTabTitleParams(titleKey, params, t, te) {
  * @param {(key: string, params?: Record<string, unknown>) => string} t
  * @param {(key: string) => boolean} [te]
  */
+/** Process setup (`/new`) or designer (`/:id/design`) — dynamic tab title. */
+export function isProcessDesignerTabPath(path) {
+  const pathOnly = String(path || '').split('?')[0].split('#')[0];
+  if (!pathOnly.startsWith('/settings/automation/processes/')) return false;
+  return pathOnly !== '/settings/automation/processes';
+}
+
 export function resolveTabTitle(tab, t, te = () => false) {
   const recordName = getPersistedRecordTabName(tab);
-  if (recordName && isRecordDetailTabPath(tab?.path)) {
+  if (
+    recordName &&
+    (isRecordDetailTabPath(tab?.path) || isProcessDesignerTabPath(tab?.path))
+  ) {
     return recordName;
   }
 

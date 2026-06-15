@@ -29,6 +29,7 @@ const {
     isInitialPaymentRequiredField,
 } = require('../constants/paymentModuleDefaults');
 const { cloneQuoteDefaultRelationships } = require('../constants/defaultQuoteRelationships');
+const { DEFAULT_TASK_TYPE_OPTIONS } = require('../constants/taskTypes');
 const { filterFieldsByContext } = require('../utils/fieldContextFilter');
 
 const MODULE_APP_KEY_BY_KEY = Object.freeze({
@@ -148,7 +149,7 @@ function dedupeFieldsByKey(fields) {
 
 /** Picklists whose option catalog is tenant-managed in ModuleDefinition (not fixed by schema enum). */
 const TENANT_PICKLIST_OPTION_SOURCE_FIELDS = {
-    tasks: new Set(['status', 'priority']),
+    tasks: new Set(['status', 'priority', 'taskType']),
     organizations: new Set([
         'types',
         'industry',
@@ -701,6 +702,7 @@ function getFieldDataType(key, fieldName, path) {
     const taskFieldMappings = {
         'status': 'Picklist',
         'priority': 'Picklist',
+        'taskType': 'Picklist',
         'relatedTo': 'Lookup (Relationship)',
         'tags': 'Multi-Picklist'
     };
@@ -789,6 +791,7 @@ function getBaseFieldsForKey(key) {
             'title',
             'status',
             'priority',
+            'taskType',
             'startDate',
             'dueDate',
             'assignedTo',
@@ -1103,11 +1106,15 @@ function getBaseFieldsForKey(key) {
                     dataType = 'Picklist';
                 }
                 
-                // Tasks status/priority: provide default options when schema has no enum (allows custom values)
-                if (key === 'tasks' && (name === 'status' || name === 'priority') && options.length === 0) {
-                    options = name === 'status'
-                        ? [{ value: 'todo', label: 'To Do', enabled: true, color: '#6B7280' }, { value: 'in_progress', label: 'In Progress', enabled: true, color: '#2563EB' }, { value: 'waiting', label: 'Waiting', enabled: true, color: '#D97706' }, { value: 'completed', label: 'Completed', enabled: true, color: '#16A34A' }, { value: 'cancelled', label: 'Cancelled', enabled: true, color: '#DC2626' }]
-                        : [{ value: 'low', label: 'Low', enabled: true, color: '#6B7280' }, { value: 'medium', label: 'Medium', enabled: true, color: '#2563EB' }, { value: 'high', label: 'High', enabled: true, color: '#D97706' }, { value: 'urgent', label: 'Urgent', enabled: true, color: '#DC2626' }];
+                // Tasks status/priority/taskType: provide default options when schema has no enum (allows custom values)
+                if (key === 'tasks' && (name === 'status' || name === 'priority' || name === 'taskType') && options.length === 0) {
+                    if (name === 'status') {
+                        options = [{ value: 'todo', label: 'To Do', enabled: true, color: '#6B7280' }, { value: 'in_progress', label: 'In Progress', enabled: true, color: '#2563EB' }, { value: 'waiting', label: 'Waiting', enabled: true, color: '#D97706' }, { value: 'completed', label: 'Completed', enabled: true, color: '#16A34A' }, { value: 'cancelled', label: 'Cancelled', enabled: true, color: '#DC2626' }];
+                    } else if (name === 'priority') {
+                        options = [{ value: 'low', label: 'Low', enabled: true, color: '#6B7280' }, { value: 'medium', label: 'Medium', enabled: true, color: '#2563EB' }, { value: 'high', label: 'High', enabled: true, color: '#D97706' }, { value: 'urgent', label: 'Urgent', enabled: true, color: '#DC2626' }];
+                    } else {
+                        options = DEFAULT_TASK_TYPE_OPTIONS.map((opt) => ({ ...opt }));
+                    }
                 }
 
                 // Organizations industry: provide standard options when schema has no enum.

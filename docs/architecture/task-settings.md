@@ -124,6 +124,7 @@ Task Settings allow configuration of fields grouped by ownership:
 - `startDate` (date field)
 - `priority` (picklist, see Section 3.3)
 - `status` (picklist, see Section 3.3)
+- `taskType` (picklist, see Section 3.3)
 - `tags` (array of strings)
 
 **Allowed Actions:**
@@ -215,6 +216,32 @@ Tasks receive status and priority picklist configuration, unlike People (which d
 - Configure priority order/sequence
 
 **Rationale:** Priority picklists control task urgency options. Configuration allows organizations to customize priority values to match their business processes.
+
+#### Task Type Picklist
+
+**Default Values:**
+- `general_task` (General Task) - Default
+- `follow_up` (Follow-up)
+- `call` (Call)
+- `email` (Email)
+- `meeting` (Meeting)
+- `support` (Support)
+- `research` (Research)
+- `documentation` (Documentation)
+- `internal` (Internal)
+- `bug` (Bug)
+- `enhancement` (Enhancement)
+- `feature_request` (Feature Request)
+- `usability` (Usability Issue)
+
+**Allowed Configuration:**
+- Add custom task type values
+- Remove task type values (except must maintain at least one)
+- Configure task type labels (display names)
+- Set default task type (must be one of available values)
+- Configure task type order/sequence
+
+**Rationale:** Task type classifies the nature of work (activity, support, product feedback, etc.) independently of status and priority.
 
 ### 3.4 Relationship Configuration
 

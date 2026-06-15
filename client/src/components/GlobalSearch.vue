@@ -295,7 +295,6 @@
       :initialData="createDrawerInitialData"
       :lockedFields="createDrawerLockedFields"
       :title="createDrawerTitle"
-      :description="createDrawerDescription"
       @close="handleCreateDrawerClose"
       @saved="handleCreateDrawerSaved"
     />
@@ -464,7 +463,6 @@ const showEventDrawer = ref(false);
 const createDrawerModuleKey = ref('');
 const createDrawerInitialData = ref<Record<string, any>>({});
 const createDrawerTitle = ref('');
-const createDrawerDescription = ref('');
 const createDrawerLockedFields = ref<string[]>([]);
 const createDrawerAutoLinkContext = ref<Record<string, any> | null>({});
 
@@ -880,7 +878,7 @@ const handleLinkDrawerOpen = (event: CustomEvent) => {
 
 // Listen for create drawer open events (from create action commands)
 const handleCreateDrawerOpen = (event: CustomEvent) => {
-  const { moduleKey, initialData, title, description, lockedFields, autoLinkContext } = event.detail;
+  const { moduleKey, initialData, title, lockedFields, autoLinkContext } = event.detail;
   
   // ARCHITECTURAL INTENT: Organizations must use Quick Create flow, not full create
   // This ensures command palette actions respect Settings → Quick Create configuration
@@ -904,7 +902,6 @@ const handleCreateDrawerOpen = (event: CustomEvent) => {
   createDrawerModuleKey.value = moduleKey;
   createDrawerInitialData.value = enhancedInitialData;
   createDrawerTitle.value = title || '';
-  createDrawerDescription.value = description || '';
   createDrawerLockedFields.value = lockedFields || [];
   createDrawerAutoLinkContext.value = autoLinkContext || {};
   showCreateDrawer.value = true;
@@ -1695,7 +1692,6 @@ const handleLinkDrawerCreate = () => {
   createDrawerModuleKey.value = moduleKey;
   createDrawerInitialData.value = initialData;
   createDrawerTitle.value = `New ${moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1)}`;
-  createDrawerDescription.value = `Create a new ${moduleKey}${context.personId ? ' and link it to this person' : ''}`;
   createDrawerLockedFields.value = [];
   
   // Store context for auto-linking after creation
@@ -1713,7 +1709,6 @@ const handleCreateDrawerClose = () => {
   createDrawerModuleKey.value = '';
   createDrawerInitialData.value = {};
   createDrawerTitle.value = '';
-  createDrawerDescription.value = '';
   createDrawerLockedFields.value = [];
   createDrawerAutoLinkContext.value = {};
 };

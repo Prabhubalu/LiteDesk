@@ -35,7 +35,7 @@ const MODULE_TYPE_FIELD_MAP = {
   organizations: 'type', // May not exist in model, will be handled gracefully
   events: 'eventType',
   forms: 'formType',
-  tasks: 'type' // May not exist in model, will be handled gracefully
+  tasks: 'taskType'
 };
 
 /**
@@ -112,9 +112,9 @@ function mapProjectionTypeToModelValue(moduleKey, projectionType) {
     return typeMap[normalizedType] || null;
   }
 
-  // Task: May not have type field - return null
+  // Task: projection type mapping not defined; taskType is set explicitly when provided
   if (normalizedModuleKey === 'tasks') {
-    return null; // Tasks don't have a type field currently
+    return null;
   }
 
   return null;

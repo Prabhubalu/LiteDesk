@@ -176,8 +176,7 @@
       </div>
 
       <template v-if="caseRecord && !embed" #header>
-        <div class="flex flex-col gap-2">
-          <CaseRecordHeader
+        <CaseRecordHeader
             :case-record="caseRecord"
             :allowed-status-transitions="allowedStatusTransitions"
             :priorities="priorities"
@@ -198,13 +197,12 @@
             @next="goToNext"
             @typing="onTyping"
           />
-          <RecordClosedBanner
-            v-if="isClosed"
-            module-key="cases"
-            :can-reopen="canEdit"
-            @reopen="handleReopenCase"
-          />
-        </div>
+        <RecordClosedBanner
+          v-if="isClosed"
+          module-key="cases"
+          :can-reopen="canEdit"
+          @reopen="handleReopenCase"
+        />
       </template>
 
       <template v-if="caseRecord && !embed" #left>

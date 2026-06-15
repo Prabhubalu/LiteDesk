@@ -1,37 +1,10 @@
 <template>
   <div class="mx-auto w-full">
-    <!-- App participation (tabs) -->
-    <div class="mb-4">
-      <nav
-        class="flex flex-wrap gap-1 border-b border-gray-200 dark:border-gray-700"
-        role="tablist"
-        :aria-label="t('records.genericAppParticipation')"
-      >
-        <button
-          v-for="opt in contextOptions"
-          :key="opt.value"
-          type="button"
-          role="tab"
-          :aria-selected="peopleContext === opt.value"
-          class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 rounded-t-md"
-          :class="
-            peopleContext === opt.value
-              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-300'
-              : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100'
-          "
-          @click="peopleContext = opt.value"
-        >
-          {{ opt.label }}
-        </button>
-      </nav>
-    </div>
-
-    <!-- Registry-Driven ModuleList -->
     <ModuleList
       ref="moduleListRef"
       module-key="people"
       app-key="PLATFORM"
-      :people-context="peopleContext"
+      @people-context-changed="peopleContext = $event"
       @create="openCreateModal"
       @import="showImportModal = true"
       @export="exportContacts"
@@ -67,17 +40,7 @@
 
       <!-- Custom Organization Cell -->
       <template #cell-organization="{ row }">
-        <span class="font-medium text-gray-900 dark:text-white">
-          <template v-if="row.organization && typeof row.organization === 'object' && row.organization.name">
-            {{ row.organization.name }}
-          </template>
-          <template v-else-if="row.organization && typeof row.organization === 'string'">
-            {{ row.organization }}
-          </template>
-          <template v-else>
-            <span class="text-gray-400 dark:text-gray-500">-</span>
-          </template>
-        </span>
+        <LookupCell :value="row.organization" target-module="organizations" />
       </template>
 
       <!-- Custom Email Cell -->
@@ -241,7 +204,7 @@
       </template>
     </ModuleList>
 
-    <!-- Quick Create Drawer (context-aware: AppSection when peopleContext is an app) -->
+    <!-- Quick Create / Edit Drawer (context-aware: AppSection when peopleContext is an app) -->
     <PeopleQuickCreateDrawer
       :isOpen="showQuickCreate"
       :context-app-key="peopleContext === 'ALL' ? null : peopleContext"
@@ -250,11 +213,11 @@
       @saved="handlePersonCreated"
     />
 
-    <!-- Edit drawer (list row actions) -->
-    <CreateRecordDrawer
+    <PeopleQuickCreateDrawer
       :isOpen="showEditDrawer"
-      module-key="people"
       :record="editingContact"
+      :context-app-key="peopleContext === 'ALL' ? null : peopleContext"
+      :optional-app-participation="peopleContext === 'ALL'"
       @close="closeEditDrawer"
       @saved="handleContactSaved"
     />
@@ -270,7 +233,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -279,9 +242,9 @@ import apiClient from '@/utils/apiClient';
 import ModuleList from '@/components/module-list/ModuleList.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
+import LookupCell from '@/components/common/table/LookupCell.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import PeopleQuickCreateDrawer from '@/components/people/PeopleQuickCreateDrawer.vue';
-import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import { getFieldMetadata } from '@/platform/fields/peopleFieldModel';
 import { getParticipation } from '@/utils/getParticipation';
@@ -294,28 +257,15 @@ import {
   findPeopleModuleField,
   getPeopleModuleFieldOptionsWithDefaults,
 } from '@/utils/peopleModuleFieldUtils';
-import { APP_NAME_KEYS } from '@/utils/navigationLabels';
 import { startBulkDelete } from '@/utils/runBulkDelete';
 
 const router = useRouter();
-const { t, te } = useI18n();
+const { t } = useI18n();
 const authStore = useAuthStore();
 const { openTab } = useTabs();
 
 /** @type {import('vue').Ref<'ALL' | 'SALES' | 'HELPDESK'>} */
 const peopleContext = ref('ALL');
-
-const contextOptions = computed(() => [
-  { label: t('people.contextAllApps'), value: 'ALL' },
-  {
-    label: te(APP_NAME_KEYS.SALES) ? t(APP_NAME_KEYS.SALES) : getAppLabel('SALES'),
-    value: 'SALES',
-  },
-  {
-    label: te(APP_NAME_KEYS.HELPDESK) ? t(APP_NAME_KEYS.HELPDESK) : getAppLabel('HELPDESK'),
-    value: 'HELPDESK',
-  },
-]);
 
 const { typeDefs: salesPeopleTypeDefs } = usePeopleTypes('SALES');
 const { typeDefs: helpdeskPeopleTypeDefs } = usePeopleTypes('HELPDESK');
@@ -332,12 +282,6 @@ const participationBadgeOptionsByApp = computed(() => ({
   SALES: typeDefsToBadgeOptions(salesPeopleTypeDefs.value),
   HELPDESK: typeDefsToBadgeOptions(helpdeskPeopleTypeDefs.value)
 }));
-
-watch(peopleContext, () => {
-  if (moduleListRef.value?.refresh) {
-    moduleListRef.value.refresh();
-  }
-});
 
 // State
 const moduleListRef = ref(null);

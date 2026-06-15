@@ -63,16 +63,20 @@
     <div
       class="flex shrink-0 gap-0.5 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"
       :class="embed ? 'px-6' : 'px-4 sm:px-6'"
+      role="tablist"
+      :aria-label="t('cases.recordMainTabsLabel')"
     >
       <button
         v-for="tab in mainTabs"
         :key="tab.id"
         type="button"
-        class="border-b-2 px-3 py-2 text-sm font-medium transition-colors"
+        role="tab"
+        :aria-selected="activeTab === tab.id"
+        class="relative px-3 py-2.5 text-sm font-medium transition-colors"
         :class="
           activeTab === tab.id
-            ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-            : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
+            ? 'text-indigo-600 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-indigo-600 dark:text-indigo-400 dark:after:bg-indigo-400'
+            : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
         "
         @click="$emit('update:activeTab', tab.id)"
       >

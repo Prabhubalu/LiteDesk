@@ -65,6 +65,11 @@ const TaskSchema = new Schema({
     default: 'medium',
     index: true
   },
+  taskType: {
+    type: String,
+    default: 'general_task',
+    index: true
+  },
 
   // Timeline
   dueDate: {

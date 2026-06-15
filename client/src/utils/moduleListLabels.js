@@ -21,7 +21,8 @@ const SYSTEM_VIEW_KEYS = {
   people: {
     all: 'people.listViewAll',
     'assigned-to-me': 'people.listViewMy',
-    unassigned: 'common.listStatUnassigned',
+    sales: 'people.listViewSales',
+    helpdesk: 'people.listViewHelpdesk',
   },
   organizations: {
     all: 'organizations.listViewAll',
@@ -258,5 +259,8 @@ export function resolveListPageTitle(moduleKey, t, te) {
 export function isRegistrySystemView(moduleKey, viewId) {
   const views = SYSTEM_VIEW_KEYS[moduleKey];
   if (views && viewId in views) return true;
+  if (moduleKey === 'people') {
+    return ['all', 'assigned-to-me', 'sales', 'helpdesk'].includes(viewId);
+  }
   return ['all', 'assigned-to-me', 'unassigned'].includes(viewId);
 }
