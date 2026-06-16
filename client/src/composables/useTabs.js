@@ -534,12 +534,12 @@ function applyRecordTabTitle(tab, name) {
   if (!tab || !trimmed) return;
   tab.recordTitle = trimmed;
   tab.title = trimmed;
-  tab.params = { ...(tab.params || {}), name: trimmed };
+  tab.params = { ...tab.params, name: trimmed };
   if (isRecordDetailTabPath(tab.path)) {
     const moduleRoute = String(tab.path).split('?')[0].split('/').filter(Boolean)[0];
     tab.titleKey = 'navigation.tabRecordNamed';
     tab.titleParams = {
-      ...(tab.titleParams || {}),
+      ...tab.titleParams,
       moduleRoute,
       name: trimmed
     };
@@ -565,7 +565,7 @@ function serializeTabForStorage(tab) {
       serialized.titleKey = 'navigation.tabRecordNamed';
       const moduleRoute = String(tab.path).split('?')[0].split('/').filter(Boolean)[0];
       serialized.titleParams = {
-        ...(tab.titleParams || {}),
+        ...tab.titleParams,
         moduleRoute,
         name: recordName
       };

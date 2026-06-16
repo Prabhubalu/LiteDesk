@@ -52,28 +52,58 @@ async function getNextOpenInstantForUsers(organizationId, userIds, at = new Date
 
 async function collectMemberIdsForRules(organizationId, rules = []) {
   const groupIds = new Set();
+  const groupRules = new Map();
+  const userIds = new Set();
+
   for (const rule of rules) {
-    if (rule?.primaryGroupId) groupIds.add(String(rule.primaryGroupId));
+    if (rule?.metadata?.assignTargetType === 'custom') {
+      for (const id of rule?.metadata?.customUserIds || []) {
+        if (id) userIds.add(String(id));
+      }
+      continue;
+    }
+    if (rule?.primaryGroupId) {
+      const gid = String(rule.primaryGroupId);
+      groupIds.add(gid);
+      if (!groupRules.has(gid)) groupRules.set(gid, []);
+      groupRules.get(gid).push(rule);
+    }
     for (const id of rule?.fallbackGroupIds || []) {
       if (id) groupIds.add(String(id));
     }
   }
-  if (!groupIds.size) return [];
 
-  const groups = await Group.find({
-    organizationId,
-    _id: { $in: [...groupIds] },
-    isActive: { $ne: false }
-  })
-    .select('members')
-    .lean();
+  if (groupIds.size > 0) {
+    const groups = await Group.find({
+      organizationId,
+      _id: { $in: [...groupIds] },
+      isActive: { $ne: false }
+    })
+      .select('members')
+      .lean();
 
-  const userIds = new Set();
-  for (const group of groups) {
-    for (const memberId of group.members || []) {
-      userIds.add(String(memberId));
+    for (const group of groups) {
+      const gid = String(group._id);
+      const rulesForGroup = groupRules.get(gid) || [];
+      const hasUnrestricted = rulesForGroup.some((rule) => {
+        const ids = rule?.metadata?.enabledMemberIds;
+        return !Array.isArray(ids) || ids.length === 0;
+      });
+      const enabledSets = rulesForGroup
+        .map((rule) => {
+          const ids = rule?.metadata?.enabledMemberIds;
+          return Array.isArray(ids) && ids.length > 0 ? new Set(ids.map(String)) : null;
+        })
+        .filter(Boolean);
+
+      for (const memberId of group.members || []) {
+        const id = String(memberId);
+        if (!hasUnrestricted && enabledSets.length > 0 && !enabledSets.some((set) => set.has(id))) continue;
+        userIds.add(id);
+      }
     }
   }
+
   return [...userIds];
 }
 

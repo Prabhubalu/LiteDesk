@@ -4,6 +4,7 @@ const { tick: escalationTick } = require('./escalationResolver');
 const { purgeExpiredRetention } = require('./deletionService');
 const { processDueAssignmentJobs } = require('./assignmentSchedulingService');
 const { tickHelpdeskSlaNotifications } = require('./helpdeskSlaMonitorService');
+const { tickSlaPolicyInstances } = require('./sla/slaPolicyMonitorService');
 const { isGmailIntegrationEnabled } = require('../config/emailFeatureFlags');
 const { tickScheduledGmailInboxSync } = require('./gmailInboxSyncSchedulerService');
 const { tickSnoozeWakeNotifications } = require('./snoozeWakeNotificationSchedulerService');
@@ -21,6 +22,7 @@ const ENABLE_ESCALATION_SCHEDULER = process.env.ENABLE_ESCALATION_SCHEDULER !== 
 const ENABLE_TRASH_RETENTION_SCHEDULER = process.env.ENABLE_TRASH_RETENTION_SCHEDULER !== 'false'; // Default: enabled
 const ENABLE_ASSIGNMENT_SCHEDULER = process.env.ENABLE_ASSIGNMENT_SCHEDULER !== 'false'; // Default: enabled (Helpdesk Step 7C)
 const ENABLE_HELPDESK_SLA_SCHEDULER = process.env.ENABLE_HELPDESK_SLA_SCHEDULER !== 'false'; // Default: enabled (Step 9)
+const ENABLE_SLA_POLICY_SCHEDULER = process.env.ENABLE_SLA_POLICY_SCHEDULER !== 'false';
 const ENABLE_GMAIL_INBOX_SYNC_SCHEDULER =
   isGmailIntegrationEnabled() && process.env.ENABLE_GMAIL_INBOX_SYNC_SCHEDULER !== 'false';
 const ENABLE_SNOOZE_WAKE_NOTIFICATION_SCHEDULER =
@@ -54,6 +56,7 @@ let escalationJob = null;
 let trashRetentionJob = null;
 let assignmentJob = null;
 let helpdeskSlaJob = null;
+let slaPolicyJob = null;
 let gmailInboxSyncJob = null;
 let snoozeWakeNotificationJob = null;
 let appointmentReminderJob = null;
@@ -282,6 +285,24 @@ function startScheduledJobs() {
     console.log('[scheduledJobs]   - Helpdesk SLA monitor: every minute');
   } else {
     console.log('[scheduledJobs] Helpdesk SLA scheduler disabled (ENABLE_HELPDESK_SLA_SCHEDULER=false)');
+  }
+
+  if (ENABLE_SLA_POLICY_SCHEDULER) {
+    slaPolicyJob = cron.schedule('* * * * *', async () => {
+      try {
+        const result = await tickSlaPolicyInstances();
+        if (result.breached > 0 || result.warnings > 0 || NOTIFICATION_DEBUG) {
+          console.log(
+            `[scheduledJobs] SLA policy tick: scanned=${result.scanned} breached=${result.breached} warnings=${result.warnings}`
+          );
+        }
+      } catch (err) {
+        console.error('[scheduledJobs] SLA policy tick failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - Generic SLA policy monitor: every minute');
+  } else {
+    console.log('[scheduledJobs] Generic SLA policy scheduler disabled (ENABLE_SLA_POLICY_SCHEDULER=false)');
   }
 
   // Gmail personal inbox sync (Phase 5): poll Gmail API on an interval across tenant DBs
@@ -535,6 +556,12 @@ function stopScheduledJobs() {
     helpdeskSlaJob.stop();
     helpdeskSlaJob = null;
     console.log('[scheduledJobs] Helpdesk SLA scheduler job stopped');
+  }
+
+  if (slaPolicyJob) {
+    slaPolicyJob.stop();
+    slaPolicyJob = null;
+    console.log('[scheduledJobs] Generic SLA policy scheduler job stopped');
   }
 
   if (gmailInboxSyncJob) {

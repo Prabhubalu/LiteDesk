@@ -1,273 +1,181 @@
 <template>
-  <Teleport to="body">
-    <div
-      v-if="open"
-      class="fixed inset-0 z-50 flex justify-end"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-[1px]" @click="requestClose" />
-      <div class="relative flex h-full w-full max-w-lg flex-col bg-white shadow-2xl dark:bg-gray-900">
-        <div class="flex items-start justify-between gap-3 border-b border-gray-200 px-6 py-5 dark:border-gray-800">
-          <div>
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ isNew ? t('settings.helpdeskExecSlaDrawerNewTitle') : t('settings.helpdeskExecSlaDrawerEditTitle') }}
-            </h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {{ t('settings.helpdeskExecSlaDrawerSubtitle') }}
-            </p>
-          </div>
-          <button
-            type="button"
-            class="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800"
-            @click="requestClose"
-          >
-            <span class="sr-only">{{ t('actions.close') }}</span>
-            ✕
-          </button>
-        </div>
+  <TransitionRoot as="template" :show="open">
+    <Dialog class="relative z-[10000]" @close="requestClose">
+      <TransitionChild
+        as="template"
+        enter="ease-out duration-200"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="ease-in duration-200"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-gray-500/75 dark:bg-black/75" aria-hidden="true" />
+      </TransitionChild>
 
-        <div class="flex-1 overflow-y-auto px-6 py-5 space-y-6">
-          <div class="flex items-center justify-between gap-4 rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
-            <div>
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.helpdeskExecSlaPolicyEnabled') }}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.helpdeskExecSlaPolicyEnabledHint') }}</p>
-            </div>
-            <span class="relative inline-flex h-6 w-11 shrink-0">
-              <input v-model="draft.enabled" type="checkbox" class="peer sr-only" />
-              <span class="h-6 w-11 rounded-full bg-gray-200 transition peer-checked:bg-indigo-600 dark:bg-gray-700" />
-              <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5" />
-            </span>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              {{ t('settings.helpdeskExecSlaPolicyName') }}
-            </label>
-            <input
-              v-model.trim="draft.name"
-              type="text"
-              :placeholder="t('settings.helpdeskExecSlaDrawerNamePh')"
-              class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-            />
-          </div>
-
-          <div class="space-y-4">
-            <div>
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.helpdeskExecSlaDrawerScope') }}</p>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.helpdeskExecSlaDrawerScopeHint') }}</p>
-            </div>
-
-            <div>
-              <p class="mb-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{{ t('settings.helpdeskExecSlaPolicyChannels') }}</p>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="channel in channels"
-                  :key="channel"
-                  type="button"
-                  class="rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
-                  :class="pillClass(draft.channels, channel)"
-                  @click="toggleValue(draft.channels, channel)"
-                >
-                  {{ channel }}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <p class="mb-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{{ t('settings.helpdeskExecEnabledCaseTypes') }}</p>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="type in caseTypes"
-                  :key="type"
-                  type="button"
-                  class="rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
-                  :class="pillClass(draft.caseTypes, type)"
-                  @click="toggleValue(draft.caseTypes, type)"
-                >
-                  {{ caseTypeLabel(type) }}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <p class="mb-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{{ t('settings.helpdeskExecSlaPriorityColumn') }}</p>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="priority in priorities"
-                  :key="priority"
-                  type="button"
-                  class="rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
-                  :class="pillClass(draft.priorities, priority)"
-                  @click="toggleValue(draft.priorities, priority)"
-                >
-                  {{ priorityLabel(priority) }}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between gap-3 mb-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.helpdeskExecSlaPolicyTargets') }}</p>
-              <button
-                type="button"
-                class="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
-                @click="copyFromStandard"
-              >
-                {{ t('settings.helpdeskExecSlaPolicyCopyDefault') }}
-              </button>
-            </div>
-            <HelpdeskSlaTargetGrid
-              v-model:targets="draft.targets"
-              :priorities="priorities"
-              :priority-label="priorityLabel"
-            />
-          </div>
-        </div>
-
-        <div class="border-t border-gray-200 px-6 py-4 flex items-center justify-between gap-3 dark:border-gray-800">
-          <button
-            v-if="!isNew"
-            type="button"
-            class="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400"
-            @click="$emit('remove')"
-          >
-            {{ t('actions.remove') }}
-          </button>
-          <div v-else />
-          <div class="flex gap-2">
-            <button
-              type="button"
-              class="rounded-xl px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-              @click="requestClose"
+      <div class="fixed inset-0 overflow-hidden">
+        <div class="absolute inset-0 overflow-hidden">
+          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+            <TransitionChild
+              as="template"
+              enter="transform transition ease-in-out duration-300"
+              enter-from="translate-x-full"
+              enter-to="translate-x-0"
+              leave="transform transition ease-in-out duration-300"
+              leave-from="translate-x-0"
+              leave-to="translate-x-full"
             >
-              {{ t('actions.cancel') }}
-            </button>
-            <button
-              type="button"
-              class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-              @click="save"
-            >
-              {{ t('settings.helpdeskExecSlaDrawerSave') }}
-            </button>
+              <DialogPanel class="pointer-events-auto flex h-full w-screen max-w-2xl flex-col bg-white shadow-xl dark:bg-gray-900">
+                <div class="flex shrink-0 items-start justify-between gap-3 border-b border-gray-200 px-5 py-4 dark:border-gray-800">
+                  <div class="min-w-0">
+                    <DialogTitle class="text-base font-semibold text-gray-900 dark:text-white">
+                      {{ drawerTitle }}
+                    </DialogTitle>
+                    <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                      {{ t('settings.slaPolicyEditorSubtitle') }}
+                    </p>
+                  </div>
+                  <div class="flex shrink-0 items-center gap-2">
+                    <div v-if="!isStandard" class="flex items-center gap-2">
+                      <span class="text-xs text-gray-500">{{ enabledLabel }}</span>
+                      <button type="button" class="relative inline-flex h-6 w-11" @click="toggleEnabled">
+                        <span class="h-6 w-11 rounded-full transition" :class="enabled ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'" />
+                        <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition" :class="enabled ? 'translate-x-5' : ''" />
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800"
+                      @click="requestClose"
+                    >
+                      <span class="sr-only">{{ t('actions.close') }}</span>
+                      <XMarkIcon class="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div v-if="open" class="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+                  <HelpdeskSlaPolicyEditor
+                    ref="editorRef"
+                    :key="editorKey"
+                    in-drawer
+                    :policy-id="policyId || 'new'"
+                    :is-new="isNew"
+                    :is-standard="isStandard"
+                    :initial-policy="initialPolicy"
+                    :priorities="priorities"
+                    :case-types="caseTypes"
+                    :channels="channels"
+                    :sla-policy-options="slaPolicyOptions"
+                    :case-type-label="caseTypeLabel"
+                    :priority-label="priorityLabel"
+                    :standard-targets="standardTargets"
+                    :business-hours="businessHours"
+                    :enabled-case-types="enabledCaseTypes"
+                    :recalculating-slas="recalculatingSlas"
+                    :recalculate-message="recalculateMessage"
+                    @remove="handleRemove"
+                    @recalculate="$emit('recalculate')"
+                    @update:business-hours="$emit('update:businessHours', $event)"
+                    @update:enabled-case-types="$emit('update:enabledCaseTypes', $event)"
+                  />
+                </div>
+
+                <div class="flex shrink-0 items-center justify-between gap-3 border-t border-gray-200 px-5 py-3 dark:border-gray-800">
+                  <button
+                    v-if="!isNew && !isStandard"
+                    type="button"
+                    class="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400"
+                    @click="handleRemove"
+                  >
+                    {{ t('settings.slaPolicyDelete') }}
+                  </button>
+                  <div v-else />
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      class="rounded-xl px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                      @click="requestClose"
+                    >
+                      {{ t('actions.cancel') }}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                      @click="save"
+                    >
+                      {{ t('settings.helpdeskExecSlaDrawerSave') }}
+                    </button>
+                  </div>
+                </div>
+              </DialogPanel>
+            </TransitionChild>
           </div>
         </div>
       </div>
-    </div>
-  </Teleport>
+    </Dialog>
+  </TransitionRoot>
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import HelpdeskSlaTargetGrid from '@/components/settings/helpdesk/HelpdeskSlaTargetGrid.vue';
+import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
+import { XMarkIcon } from '@heroicons/vue/24/outline';
+import HelpdeskSlaPolicyEditor from '@/components/settings/helpdesk/HelpdeskSlaPolicyEditor.vue';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
-  isNew: { type: Boolean, default: true },
+  policyId: { type: String, default: '' },
+  isNew: { type: Boolean, default: false },
+  isStandard: { type: Boolean, default: false },
+  initialPolicy: { type: Object, default: null },
   priorities: { type: Array, required: true },
   caseTypes: { type: Array, required: true },
   channels: { type: Array, required: true },
+  slaPolicyOptions: { type: Object, required: true },
   caseTypeLabel: { type: Function, required: true },
   priorityLabel: { type: Function, required: true },
   standardTargets: { type: Object, default: () => ({}) },
-  initialPolicy: { type: Object, default: null }
+  businessHours: { type: Object, required: true },
+  enabledCaseTypes: { type: Array, default: () => [] },
+  recalculatingSlas: { type: Boolean, default: false },
+  recalculateMessage: { type: String, default: '' }
 });
 
-const emit = defineEmits(['close', 'save', 'remove']);
+const emit = defineEmits(['close', 'save', 'remove', 'recalculate', 'update:businessHours', 'update:enabledCaseTypes']);
 
 const { t } = useI18n();
 
-const draft = reactive(createEmptyDraft());
+const editorRef = ref(null);
+const enabled = ref(true);
 
-function createEmptyDraft() {
-  return {
-    key: '',
-    name: '',
-    enabled: true,
-    channels: [],
-    caseTypes: [],
-    priorities: [],
-    targets: {}
-  };
-}
+const editorKey = computed(() => `${props.policyId || 'new'}-${props.isNew}`);
 
-function minutesToHours(minutes) {
-  return Math.max(1, Math.round(Number(minutes || 0) / 60));
-}
+const drawerTitle = computed(() => {
+  if (props.isNew) return t('settings.slaPolicyDrawerNew');
+  if (props.isStandard) return t('settings.slaPolicyStandardName');
+  return props.initialPolicy?.name || t('settings.helpdeskExecSlaDrawerEditTitle');
+});
 
-function hoursToMinutes(hours) {
-  return Math.max(1, Math.round(Number(hours || 0) * 60));
-}
-
-function buildTargetsFromPolicy(policy) {
-  const targets = {};
-  for (const priority of props.priorities) {
-    const source = policy?.priorityTargets?.[priority] || props.standardTargets[priority] || {};
-    targets[priority] = {
-      responseHours: minutesToHours(source.firstResponseMinutes || 240),
-      resolutionHours: minutesToHours(source.resolutionMinutes || 2880)
-    };
-  }
-  return targets;
-}
-
-function buildTargetsFromStandard() {
-  const targets = {};
-  for (const priority of props.priorities) {
-    const source = props.standardTargets?.[priority] || {};
-    targets[priority] = {
-      responseHours: Number(source.responseHours) || minutesToHours(source.firstResponseMinutes || 240),
-      resolutionHours: Number(source.resolutionHours) || minutesToHours(source.resolutionMinutes || 2880)
-    };
-  }
-  return targets;
-}
-
-function loadDraft(policy) {
-  const base = policy || createEmptyDraft();
-  draft.key = base.key || '';
-  draft.name = base.name || '';
-  draft.enabled = base.enabled !== false;
-  draft.channels = [...(base.channels || [])];
-  draft.caseTypes = [...(base.caseTypes || [])];
-  draft.priorities = [...(base.priorities || [])];
-  draft.targets = policy ? buildTargetsFromPolicy(policy) : buildTargetsFromStandard();
-}
+const enabledLabel = computed(() => (
+  enabled.value ? t('settings.slaPolicyStatusActive') : t('settings.slaPolicyStatusInactive')
+));
 
 watch(
-  () => [props.open, props.initialPolicy, props.isNew],
+  () => [props.open, props.initialPolicy],
   () => {
-    if (props.open) loadDraft(props.isNew ? null : props.initialPolicy);
+    if (props.open) {
+      enabled.value = props.initialPolicy?.enabled !== false;
+    }
   },
   { immediate: true }
 );
 
-function pillClass(list, value) {
-  const active = Array.isArray(list) && list.includes(value);
-  return active
-    ? 'bg-indigo-600 text-white shadow-sm'
-    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700';
-}
-
-function toggleValue(list, value) {
-  const idx = list.indexOf(value);
-  if (idx >= 0) list.splice(idx, 1);
-  else list.push(value);
-}
-
-function copyFromStandard() {
-  draft.targets = buildTargetsFromStandard();
-}
-
-function slugifyKey(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 48);
+function toggleEnabled() {
+  enabled.value = !enabled.value;
+  const draft = editorRef.value?.getDraft?.();
+  if (draft) draft.enabled = enabled.value;
 }
 
 function requestClose() {
@@ -275,23 +183,20 @@ function requestClose() {
 }
 
 function save() {
-  if (!String(draft.name || '').trim()) return;
-  const priorityTargets = {};
-  for (const priority of props.priorities) {
-    const row = draft.targets[priority] || { responseHours: 4, resolutionHours: 48 };
-    priorityTargets[priority] = {
-      firstResponseMinutes: hoursToMinutes(row.responseHours),
-      resolutionMinutes: hoursToMinutes(row.resolutionHours)
-    };
-  }
-  emit('save', {
-    key: draft.key || slugifyKey(draft.name) || `policy-${Date.now()}`,
-    name: draft.name.trim(),
-    enabled: draft.enabled !== false,
-    channels: [...draft.channels],
-    caseTypes: [...draft.caseTypes],
-    priorities: [...draft.priorities],
-    priorityTargets
-  });
+  const err = editorRef.value?.validate?.();
+  if (err) return;
+  const payload = editorRef.value?.getPayload?.();
+  if (!payload) return;
+  payload.enabled = enabled.value;
+  emit('save', payload);
 }
+
+function handleRemove() {
+  emit('remove');
+}
+
+defineExpose({
+  validate: () => editorRef.value?.validate?.(),
+  getPayload: () => editorRef.value?.getPayload?.()
+});
 </script>

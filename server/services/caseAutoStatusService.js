@@ -2,6 +2,7 @@
 
 const { canTransitionCaseStatus, applyStatusToSlaCycle } = require('./caseLifecycleService');
 const { shouldMarkFirstResponseSla, tryMarkResponseSlaMetOnCycle } = require('./helpdeskSlaClockService');
+const { applyCaseSlaLifecycle } = require('./sla/slaCaseBridgeService');
 
 const LIVE_CHAT_CHANNELS = new Set(['Live Chat']);
 
@@ -138,7 +139,7 @@ function maybeAutoTransitionCaseStatus(caseRecord, {
 /**
  * Apply response SLA + auto-status after a timeline activity is appended.
  */
-function applyCaseActivitySideEffects(caseRecord, {
+async function applyCaseActivitySideEffects(caseRecord, {
   activityType,
   internal = true,
   actorId = null,
@@ -160,6 +161,22 @@ function applyCaseActivitySideEffects(caseRecord, {
     channel,
     trigger
   });
+
+  if (statusResult.changed && caseRecord.organizationId) {
+    caseRecord.currentSlaCycle = await applyCaseSlaLifecycle({
+      organizationId: caseRecord.organizationId,
+      caseRecord,
+      cycle: caseRecord.currentSlaCycle?.toObject?.() || caseRecord.currentSlaCycle,
+      changes: { status: statusResult.toStatus, fromStatus: statusResult.fromStatus },
+      event: {
+        type: 'field_change',
+        field: 'status',
+        fromValue: statusResult.fromStatus,
+        toValue: statusResult.toStatus
+      },
+      actorId
+    });
+  }
 
   return { slaMarked, statusResult };
 }

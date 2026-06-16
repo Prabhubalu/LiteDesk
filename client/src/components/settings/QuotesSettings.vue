@@ -224,7 +224,7 @@ function resetForm() {
 function syncAuthOrgSettings(settings) {
   if (!authStore.organization) return;
   const org = { ...authStore.organization };
-  org.settings = { ...(org.settings || {}), quotes: { ...settings } };
+  org.settings = { ...org.settings, quotes: { ...settings } };
   authStore.organization = org;
   localStorage.setItem('organization', JSON.stringify(org));
 }

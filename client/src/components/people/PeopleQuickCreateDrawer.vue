@@ -919,7 +919,7 @@ async function loadEditRecord() {
  * Validate quick create + app fields (required in form from module)
  */
 function appFormDataForDependencies(appKey: string) {
-  const base = { ...(appForms.value[appKey] || {}) } as Record<string, unknown>;
+  const base = { ...appForms.value[appKey] } as Record<string, unknown>;
   syncParticipationClassifierFields(base, appKey);
   return base;
 }

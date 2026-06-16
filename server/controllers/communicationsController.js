@@ -34,7 +34,7 @@ const User = require('../models/User');
 const replyToTokenService = require('../services/replyToTokenService');
 const { MAX_ATTACHMENT_SIZE_BYTES, MAX_TOTAL_ATTACHMENTS_BYTES } = require('../models/Communication');
 const { createInitialSlaCycle } = require('../services/caseLifecycleService');
-const { applySlaTargetsToCycle } = require('../services/helpdeskSlaService');
+const { finalizeCaseSlaOnCreate } = require('../services/sla/slaCaseBridgeService');
 const caseExecutionService = require('../services/caseExecutionService');
 const { applyCaseActivitySideEffects } = require('../services/caseAutoStatusService');
 const communicationPlatformService = require('../platform/communication/api/communicationPlatformService');
@@ -576,7 +576,7 @@ exports.sendEmail = async (req, res) => {
           actorName: userName,
           createdAt: new Date()
         });
-        const { slaMarked, statusResult } = applyCaseActivitySideEffects(caseRow, {
+        const { slaMarked, statusResult } = await applyCaseActivitySideEffects(caseRow, {
           activityType: 'email_sent',
           internal: true,
           actorId: req.user._id,
@@ -1898,16 +1898,6 @@ exports.createCaseFromEmail = async (req, res) => {
     const actorName = `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email || 'System';
 
     const cycle = createInitialSlaCycle(1, now);
-    const slaCycle = await applySlaTargetsToCycle({
-      organizationId: orgId,
-      cycle,
-      context: {
-        caseType: 'Support Ticket',
-        priority: 'Medium',
-        channel: 'Email'
-      },
-      startedAt: cycle.startedAt
-    });
 
     const caseId = `CAS-${now.getUTCFullYear()}-${String(Date.now()).slice(-6)}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     const payload = {
@@ -1920,7 +1910,7 @@ exports.createCaseFromEmail = async (req, res) => {
       channel: 'Email',
       caseNotes: notes,
       caseOwnerId: req.user._id,
-      currentSlaCycle: slaCycle,
+      currentSlaCycle: cycle,
       activities: [
         {
           activityType: 'case_created',
@@ -1944,6 +1934,12 @@ exports.createCaseFromEmail = async (req, res) => {
     const { assignResolvedSource } = require('../services/sourceResolver');
     assignResolvedSource(payload, 'email');
     const createdCase = await Case.create(payload);
+    createdCase.currentSlaCycle = await finalizeCaseSlaOnCreate({
+      organizationId: orgId,
+      caseRecord: createdCase,
+      actorId: req.user._id
+    });
+    await createdCase.save();
     await caseExecutionService.onCaseCreated({
       caseRecord: createdCase,
       actorId: req.user._id

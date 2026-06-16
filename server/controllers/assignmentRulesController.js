@@ -39,12 +39,38 @@ function sanitizeTriggerConfig(triggerType, raw) {
   if (triggerType === 'scheduled') {
     const scheduleType = ['one_time', 'recurring'].includes(c.scheduleType) ? c.scheduleType : 'recurring';
     const frequency = ['daily', 'weekly', 'custom'].includes(c.frequency) ? c.frequency : 'daily';
-    const cron = typeof c.cron === 'string' && c.cron.trim() ? c.cron.trim() : '0 10 * * *';
+    const scheduleTime = typeof c.scheduleTime === 'string' && /^\d{1,2}:\d{2}$/.test(c.scheduleTime.trim())
+      ? c.scheduleTime.trim()
+      : '10:00';
+    const scheduleDayOfWeek = Number.isFinite(Number(c.scheduleDayOfWeek))
+      ? Math.min(6, Math.max(0, Math.floor(Number(c.scheduleDayOfWeek))))
+      : 1;
+    let everyMinutes = null;
+    if (frequency === 'custom') {
+      const em = Number(c.everyMinutes);
+      everyMinutes = Number.isFinite(em) && em >= 1 ? Math.floor(em) : 60;
+    }
+    let runAt = null;
+    if (c.runAt) {
+      const parsed = new Date(c.runAt);
+      if (!Number.isNaN(parsed.getTime())) runAt = parsed;
+    }
+    if (scheduleType === 'one_time' && !runAt) {
+      throw new Error(`Rule ${index + 1}: run date and time is required for a one-time schedule`);
+    }
+    const [hourPart, minutePart] = scheduleTime.split(':');
+    const cron = frequency === 'custom'
+      ? `*/${everyMinutes || 60} * * * *`
+      : `${minutePart || '0'} ${hourPart || '10'} * * ${frequency === 'weekly' ? scheduleDayOfWeek : '*'}`;
     return {
       delayMinutes: null,
       scheduleType,
       frequency,
       cron,
+      runAt,
+      everyMinutes,
+      scheduleTime: frequency === 'daily' || frequency === 'weekly' ? scheduleTime : null,
+      scheduleDayOfWeek: frequency === 'weekly' ? scheduleDayOfWeek : null,
       recheckConditionsAtExecution: recheck,
       evaluateScope
     };
@@ -57,9 +83,42 @@ function sanitizeTriggerConfig(triggerType, raw) {
   };
 }
 
+function sanitizeCustomUserIds(metadata) {
+  const ids = Array.isArray(metadata?.customUserIds) ? metadata.customUserIds : [];
+  return ids.filter((id) => mongoose.Types.ObjectId.isValid(id)).map(String);
+}
+
+function sanitizeEnabledMemberIds(metadata) {
+  const ids = Array.isArray(metadata?.enabledMemberIds) ? metadata.enabledMemberIds : null;
+  if (!ids) return null;
+  return ids.filter((id) => mongoose.Types.ObjectId.isValid(id)).map(String);
+}
+
 function sanitizeRule(rule, index) {
+  const metadata = rule.metadata && typeof rule.metadata === 'object' ? { ...rule.metadata } : {};
+  const customUserIds = sanitizeCustomUserIds(metadata);
+  const assignTargetType =
+    metadata.assignTargetType === 'custom' || customUserIds.length > 0 ? 'custom' : 'group';
+  metadata.assignTargetType = assignTargetType;
+  metadata.customUserIds = assignTargetType === 'custom' ? customUserIds : [];
+
+  if (assignTargetType === 'group') {
+    const enabledMemberIds = sanitizeEnabledMemberIds(metadata);
+    if (Array.isArray(metadata?.enabledMemberIds) && (!enabledMemberIds || enabledMemberIds.length === 0)) {
+      throw new Error(`Rule ${index + 1}: at least one group member must be enabled`);
+    }
+    if (enabledMemberIds) metadata.enabledMemberIds = enabledMemberIds;
+    else delete metadata.enabledMemberIds;
+  } else {
+    delete metadata.enabledMemberIds;
+  }
+
   const primaryGroupId = rule.primaryGroupId || rule.groupId;
-  if (!primaryGroupId || !mongoose.Types.ObjectId.isValid(primaryGroupId)) {
+  if (assignTargetType === 'custom') {
+    if (customUserIds.length === 0) {
+      throw new Error(`Rule ${index + 1}: at least one user is required for custom assignment`);
+    }
+  } else if (!primaryGroupId || !mongoose.Types.ObjectId.isValid(primaryGroupId)) {
     throw new Error(`Rule ${index + 1}: primaryGroupId is required`);
   }
 
@@ -87,12 +146,12 @@ function sanitizeRule(rule, index) {
     triggerType,
     triggerConfig: sanitizeTriggerConfig(triggerType, rule.triggerConfig),
     conditions: sanitizeConditions(rule.conditions),
-    primaryGroupId,
+    primaryGroupId: assignTargetType === 'group' ? primaryGroupId : undefined,
     distribution: rule.distribution && typeof rule.distribution === 'object' ? rule.distribution : { mode: 'queue' },
     fallbackGroupIds,
     escalation: rule.escalation && typeof rule.escalation === 'object' ? rule.escalation : {},
     reassignment: rule.reassignment && typeof rule.reassignment === 'object' ? rule.reassignment : {},
-    metadata: rule.metadata && typeof rule.metadata === 'object' ? rule.metadata : {}
+    metadata
   };
 }
 

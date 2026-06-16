@@ -30,7 +30,13 @@ const {
   applyStatusToSlaCycle,
   createReopenedSlaState
 } = require('../services/caseLifecycleService');
-const { applySlaTargetsToCycle } = require('../services/helpdeskSlaService');
+const {
+  finalizeCaseSlaOnCreate,
+  applyCaseSlaLifecycle,
+  recalculateCaseSlaTargets,
+  reopenCaseSla,
+  buildSlaContextFromCase
+} = require('../services/sla/slaCaseBridgeService');
 const { getSlaScheduleContext, resolveSlaScheduleForOrganization } = require('../services/helpdeskBusinessHoursService');
 const { computeCycleSlaProgress } = require('../services/helpdeskSlaClockService');
 const { applyCaseActivitySideEffects } = require('../services/caseAutoStatusService');
@@ -158,11 +164,7 @@ async function ensureOwnerInOrg(ownerId, organizationId) {
 }
 
 function buildSlaContextFromCasePayload(payload) {
-  return {
-    caseType: payload.caseType || 'Support Ticket',
-    priority: payload.priority || 'Medium',
-    channel: payload.channel || 'Internal'
-  };
+  return buildSlaContextFromCase(payload);
 }
 
 function isValidOptionalObjectId(value) {
@@ -352,16 +354,6 @@ exports.createCase = async (req, res) => {
     }
     const cycle = createInitialSlaCycle(1, new Date());
     const adjustedCycle = applyStatusToSlaCycle(cycle, normalizedStatus);
-    const targetAwareCycle = await applySlaTargetsToCycle({
-      organizationId: req.user.organizationId,
-      cycle: adjustedCycle,
-      context: buildSlaContextFromCasePayload({
-        caseType: resolvedCaseType,
-        priority: resolvedPriority,
-        channel: resolvedChannel
-      }),
-      startedAt: adjustedCycle.startedAt
-    });
 
     const { customFieldsSet } = extractCustomFields(req.body, Case);
     const now = new Date();
@@ -411,7 +403,7 @@ exports.createCase = async (req, res) => {
       visitDate: visitDate ? new Date(visitDate) : null,
       visitStatus: visitStatus ? String(visitStatus).trim() : null,
       replacementRequired: Boolean(replacementRequired),
-      currentSlaCycle: targetAwareCycle,
+      currentSlaCycle: adjustedCycle,
       activities: [
         {
           activityType: 'case_created',
@@ -430,6 +422,12 @@ exports.createCase = async (req, res) => {
 
     assignResolvedSource(payload, 'ui');
     const created = await Case.create(payload);
+    created.currentSlaCycle = await finalizeCaseSlaOnCreate({
+      organizationId: req.user.organizationId,
+      caseRecord: created,
+      actorId: req.user._id
+    });
+    await created.save();
     await caseExecutionService.onCaseCreated({
       caseRecord: created,
       actorId: req.user._id
@@ -773,11 +771,10 @@ exports.updateCase = async (req, res) => {
     assignResolvedSource(row, row.source || 'ui');
 
     if (shouldRecalculateSlaTargets && row.currentSlaCycle?.status !== 'stopped') {
-      row.currentSlaCycle = await applySlaTargetsToCycle({
+      row.currentSlaCycle = await recalculateCaseSlaTargets({
         organizationId: req.user.organizationId,
-        cycle: row.currentSlaCycle?.toObject?.() || row.currentSlaCycle,
-        context: buildSlaContextFromCasePayload(row.toObject ? row.toObject() : row),
-        startedAt: row.currentSlaCycle?.startedAt
+        caseRecord: row,
+        cycle: row.currentSlaCycle?.toObject?.() || row.currentSlaCycle
       });
       row.activities.push({
         activityType: 'sla_recalculated',
@@ -944,6 +941,14 @@ exports.updateCaseStatus = async (req, res) => {
     const fromStatus = row.status;
     row.status = status;
     row.currentSlaCycle = applyStatusToSlaCycle(row.currentSlaCycle?.toObject?.() || row.currentSlaCycle, status);
+    row.currentSlaCycle = await applyCaseSlaLifecycle({
+      organizationId: req.user.organizationId,
+      caseRecord: row,
+      cycle: row.currentSlaCycle,
+      changes: { status, fromStatus },
+      event: { type: 'field_change', field: 'status', fromValue: fromStatus, toValue: status },
+      actorId: req.user._id
+    });
     if (typeof req.body.resolutionSummary === 'string') {
       row.resolutionSummary = req.body.resolutionSummary.trim();
     }
@@ -1059,6 +1064,14 @@ exports.bulkUpdateCases = async (req, res) => {
         }
         row.status = incoming.status;
         row.currentSlaCycle = applyStatusToSlaCycle(row.currentSlaCycle?.toObject?.() || row.currentSlaCycle, incoming.status);
+        row.currentSlaCycle = await applyCaseSlaLifecycle({
+          organizationId: req.user.organizationId,
+          caseRecord: row,
+          cycle: row.currentSlaCycle,
+          changes: { status: incoming.status, fromStatus },
+          event: { type: 'field_change', field: 'status', fromValue: fromStatus, toValue: incoming.status },
+          actorId: req.user._id
+        });
         row.activities.push({
           activityType: 'status_changed',
           message: `Status changed from ${fromStatus} to ${incoming.status}`,
@@ -1134,11 +1147,12 @@ exports.reopenCase = async (req, res) => {
 
     const { previousCycle, nextCycle } = createReopenedSlaState(row.currentSlaCycle?.toObject?.() || row.currentSlaCycle, new Date());
     row.slaCycles.push(previousCycle);
-    row.currentSlaCycle = await applySlaTargetsToCycle({
+    row.currentSlaCycle = await reopenCaseSla({
       organizationId: req.user.organizationId,
-      cycle: nextCycle,
-      context: buildSlaContextFromCasePayload(row.toObject ? row.toObject() : row),
-      startedAt: nextCycle.startedAt
+      caseRecord: row,
+      previousCycle,
+      nextCycle,
+      actorId: req.user._id
     });
     row.status = 'In Progress';
     row.reopenReason = reopenReasonValidation.value;
@@ -1214,7 +1228,7 @@ exports.addCaseActivity = async (req, res) => {
       createdAt: new Date()
     });
 
-    const { slaMarked: responseMarked, statusResult } = applyCaseActivitySideEffects(row, {
+    const { slaMarked: responseMarked, statusResult } = await applyCaseActivitySideEffects(row, {
       activityType: String(activityType).trim(),
       internal: Boolean(internal),
       actorId: req.user._id,

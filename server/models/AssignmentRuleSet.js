@@ -92,6 +92,10 @@ const TriggerConfigSchema = new Schema(
     scheduleType: { type: String, enum: ['one_time', 'recurring'], required: false },
     frequency: { type: String, enum: ['daily', 'weekly', 'custom'], required: false },
     cron: { type: String, required: false },
+    runAt: { type: Date, required: false },
+    everyMinutes: { type: Number, default: null, min: 1 },
+    scheduleTime: { type: String, required: false },
+    scheduleDayOfWeek: { type: Number, required: false, min: 0, max: 6 },
     evaluateScope: { type: Schema.Types.Mixed, default: null },
     recheckConditionsAtExecution: { type: Boolean, default: true }
   },
@@ -111,7 +115,7 @@ const AssignmentRuleSchema = new Schema(
     },
     triggerConfig: { type: TriggerConfigSchema, default: () => ({}) },
     conditions: { type: ConditionGroupSchema, default: () => ({}) },
-    primaryGroupId: { type: Schema.Types.ObjectId, ref: 'Group', required: true },
+    primaryGroupId: { type: Schema.Types.ObjectId, ref: 'Group', required: false },
     distribution: { type: DistributionSchema, default: () => ({}) },
     fallbackGroupIds: {
       type: [{ type: Schema.Types.ObjectId, ref: 'Group' }],

@@ -1,15 +1,7 @@
 'use strict';
 
 const Case = require('../models/Case');
-const { applySlaTargetsToCycle } = require('./helpdeskSlaService');
-
-function buildSlaContextFromCase(row) {
-  return {
-    caseType: row.caseType,
-    priority: row.priority,
-    channel: row.channel
-  };
-}
+const { recalculateCaseSlaTargets } = require('./sla/slaCaseBridgeService');
 
 /**
  * Recompute SLA targets for open cases after schedule changes.
@@ -30,14 +22,13 @@ async function recalculateOpenCaseSlas(organizationId, { limit = 500 } = {}) {
 
   for (const row of rows) {
     try {
-      const cycle = row.currentSlaCycle;
-      if (!cycle) continue;
+      const doc = await Case.findOne({ _id: row._id, organizationId });
+      if (!doc?.currentSlaCycle) continue;
 
-      const nextCycle = await applySlaTargetsToCycle({
+      const nextCycle = await recalculateCaseSlaTargets({
         organizationId,
-        cycle,
-        context: buildSlaContextFromCase(row),
-        startedAt: cycle.startedAt
+        caseRecord: doc,
+        cycle: doc.currentSlaCycle?.toObject?.() || doc.currentSlaCycle
       });
 
       await Case.updateOne(

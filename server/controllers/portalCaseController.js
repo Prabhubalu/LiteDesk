@@ -5,7 +5,7 @@ const {
   createInitialSlaCycle,
   applyStatusToSlaCycle
 } = require('../services/caseLifecycleService');
-const { applySlaTargetsToCycle } = require('../services/helpdeskSlaService');
+const { finalizeCaseSlaOnCreate } = require('../services/sla/slaCaseBridgeService');
 const caseExecutionService = require('../services/caseExecutionService');
 const { applyCaseActivitySideEffects } = require('../services/caseAutoStatusService');
 const { assertPortalUserCanAccessCase } = require('../platform/mailroom/connectors/portal/portalSafety');
@@ -128,16 +128,6 @@ async function createPortalCase(req, res) {
     const caseId = `CAS-${now.getUTCFullYear()}-${String(Date.now()).slice(-6)}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     const baseCycle = createInitialSlaCycle(1, now);
     const adjustedCycle = applyStatusToSlaCycle(baseCycle, 'New');
-    const targetAwareCycle = await applySlaTargetsToCycle({
-      organizationId,
-      cycle: adjustedCycle,
-      context: {
-        caseType: defaults.defaultCaseType || 'Support Ticket',
-        priority: priority || defaults.defaultPriority || 'Medium',
-        channel: portalChannel
-      },
-      startedAt: adjustedCycle.startedAt
-    });
 
     const userEmail = String(req.user?.email || '').trim() || null;
     const displayName = [req.user?.firstName, req.user?.lastName].filter(Boolean).join(' ').trim()
@@ -156,7 +146,7 @@ async function createPortalCase(req, res) {
       caseOwnerId: ownerId,
       channel: portalChannel,
       requesterEmail: userEmail,
-      currentSlaCycle: targetAwareCycle,
+      currentSlaCycle: adjustedCycle,
       activities: [
         {
           activityType: 'case_created',
@@ -171,6 +161,13 @@ async function createPortalCase(req, res) {
       createdBy: req.user._id,
       updatedBy: req.user._id
     });
+
+    created.currentSlaCycle = await finalizeCaseSlaOnCreate({
+      organizationId,
+      caseRecord: created,
+      actorId: req.user._id
+    });
+    await created.save();
 
     await caseExecutionService.onCaseCreated({ caseRecord: created, actorId: req.user._id });
 
@@ -229,7 +226,7 @@ async function createPortalCase(req, res) {
         actorName: displayName,
         createdAt: now
       });
-      const { statusResult } = applyCaseActivitySideEffects(created, {
+      const { statusResult } = await applyCaseActivitySideEffects(created, {
         activityType: 'channel_message_received',
         internal: false,
         actorId: req.user._id,

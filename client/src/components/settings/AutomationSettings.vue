@@ -41,6 +41,15 @@
     v-else-if="currentView === 'assignment-rules'"
     class="flex min-h-0 flex-1 flex-col overflow-hidden"
   />
+  <HelpdeskExecutionSettings
+    v-else-if="currentView === 'sla'"
+    class="flex min-h-0 flex-1 flex-col overflow-hidden"
+  />
+  <SlaPolicyHub
+    v-else-if="currentView === 'sla-policies'"
+    class="flex min-h-0 flex-1 flex-col overflow-hidden"
+    @back="navigateToOverview"
+  />
   <MailroomSettings v-else-if="currentView === 'mailroom'" class="flex min-h-0 flex-1 flex-col overflow-hidden" />
   <CatalogSettingsHub v-else-if="currentView === 'catalog'" class="flex min-h-0 flex-1 flex-col overflow-hidden" @back="navigateToOverview" />
   <QuotesSettings v-else-if="currentView === 'quotes'" class="flex min-h-0 flex-1 flex-col overflow-hidden" @back="navigateToOverview" />
@@ -52,6 +61,8 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import AssignmentRulesSettings from '@/components/settings/AssignmentRulesSettings.vue';
+import HelpdeskExecutionSettings from '@/components/settings/HelpdeskExecutionSettings.vue';
+import SlaPolicyHub from '@/components/settings/sla/SlaPolicyHub.vue';
 
 const { t } = useI18n();
 import MailroomSettings from '@/components/settings/MailroomSettings.vue';
@@ -61,6 +72,20 @@ import { getModuleIconComponent } from '@/utils/moduleIcons';
 
 const route = useRoute();
 const router = useRouter();
+
+const SlaIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg',
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+  }),
+]);
 
 const AssignmentRulesIcon = () => h('svg', {
   fill: 'none',
@@ -158,6 +183,22 @@ const automationOptions = [
     inShell: true,
   },
   {
+    id: 'sla-policies',
+    nameKey: 'settings.automationSlaPolicies',
+    descriptionKey: 'settings.automationSlaPoliciesDesc',
+    icon: SlaIcon,
+    iconBg: 'bg-gradient-to-br from-violet-500 to-violet-600',
+    inShell: true,
+  },
+  {
+    id: 'sla',
+    nameKey: 'settings.automationSla',
+    descriptionKey: 'settings.automationSlaDesc',
+    icon: SlaIcon,
+    iconBg: 'bg-gradient-to-br from-rose-500 to-rose-600',
+    inShell: true,
+  },
+  {
     id: 'mailroom',
     nameKey: 'settings.automationMailroom',
     descriptionKey: 'settings.automationMailroomDesc',
@@ -210,6 +251,8 @@ const automationOptions = [
 const currentView = computed(() => {
   const view = route.query.automationView;
   if (view === 'assignment-rules') return 'assignment-rules';
+  if (view === 'sla-policies') return 'sla-policies';
+  if (view === 'sla') return 'sla';
   if (view === 'mailroom') return 'mailroom';
   if (view === 'catalog') return 'catalog';
   if (view === 'quotes') return 'quotes';

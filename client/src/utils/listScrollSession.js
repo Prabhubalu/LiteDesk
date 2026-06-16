@@ -41,7 +41,7 @@ export function getListSession(key) {
 export function patchListSession(key, patch) {
   if (!key || !patch || typeof patch !== 'object') return;
   const next = {
-    ...(getListSession(key) || {}),
+    ...getListSession(key),
     ...patch,
     savedAt: Date.now()
   };

@@ -7,7 +7,7 @@ const {
   createInitialSlaCycle,
   applyStatusToSlaCycle
 } = require('./caseLifecycleService');
-const { applySlaTargetsToCycle } = require('./helpdeskSlaService');
+const { finalizeCaseSlaOnCreate } = require('./sla/slaCaseBridgeService');
 const caseExecutionService = require('./caseExecutionService');
 const { applyCaseActivitySideEffects } = require('./caseAutoStatusService');
 
@@ -89,17 +89,6 @@ async function createCaseFromInboundEmail({
   const status = 'New';
   const baseCycle = createInitialSlaCycle(1, new Date());
   const adjustedCycle = applyStatusToSlaCycle(baseCycle, status);
-  const targetAwareCycle = await applySlaTargetsToCycle({
-    organizationId,
-    cycle: adjustedCycle,
-    context: {
-      caseType: defaults.defaultCaseType || 'Support Ticket',
-      priority: defaults.defaultPriority || 'Medium',
-      channel: 'Email'
-    },
-    startedAt: adjustedCycle.startedAt
-  });
-
   const title = String(subject || '').trim() || 'Inbound email';
   const now = new Date();
   const created = await Case.create({
@@ -113,7 +102,7 @@ async function createCaseFromInboundEmail({
     channel: defaults.defaultChannel || defaults.channel || 'Email',
     queue: defaults.defaultQueue || defaults.queue || null,
     caseNotes: String(body || '').trim() || '',
-    currentSlaCycle: targetAwareCycle,
+    currentSlaCycle: adjustedCycle,
     activities: [
       {
         activityType: 'case_created',
@@ -147,6 +136,13 @@ async function createCaseFromInboundEmail({
     updatedBy: actorId || ownerId
   });
 
+  created.currentSlaCycle = await finalizeCaseSlaOnCreate({
+    organizationId,
+    caseRecord: created,
+    actorId: actorId || ownerId
+  });
+  await created.save();
+
   await caseExecutionService.onCaseCreated({ caseRecord: created, actorId: actorId || ownerId });
   return created;
 }
@@ -169,17 +165,6 @@ async function createCaseFromChannelInteraction({
   const status = 'New';
   const baseCycle = createInitialSlaCycle(1, new Date());
   const adjustedCycle = applyStatusToSlaCycle(baseCycle, status);
-  const targetAwareCycle = await applySlaTargetsToCycle({
-    organizationId,
-    cycle: adjustedCycle,
-    context: {
-      caseType: defaults.defaultCaseType || 'Support Ticket',
-      priority: defaults.defaultPriority || 'Medium',
-      channel
-    },
-    startedAt: adjustedCycle.startedAt
-  });
-
   const now = new Date();
   const title = String(subject || '').trim() || `${channel} interaction`;
   const created = await Case.create({
@@ -194,7 +179,7 @@ async function createCaseFromChannelInteraction({
     contactId: links.contactId || null,
     organizationRefId: links.organizationRefId || null,
     caseNotes: String(message || '').trim() || '',
-    currentSlaCycle: targetAwareCycle,
+    currentSlaCycle: adjustedCycle,
     activities: [
       {
         activityType: 'case_created',
@@ -225,6 +210,13 @@ async function createCaseFromChannelInteraction({
     updatedBy: actorId || ownerId
   });
 
+  created.currentSlaCycle = await finalizeCaseSlaOnCreate({
+    organizationId,
+    caseRecord: created,
+    actorId: actorId || ownerId
+  });
+  await created.save();
+
   await caseExecutionService.onCaseCreated({ caseRecord: created, actorId: actorId || ownerId });
   return created;
 }
@@ -250,7 +242,7 @@ async function appendInboundEmailActivity({
     actorName: fromAddress || 'External Sender',
     createdAt: new Date()
   });
-  const { statusResult } = applyCaseActivitySideEffects(caseRecord, {
+  const { statusResult } = await applyCaseActivitySideEffects(caseRecord, {
     activityType: 'email_received',
     internal: false,
     actorId: null,
@@ -303,7 +295,7 @@ async function appendChannelActivity({
     actorName: channel,
     createdAt: new Date()
   });
-  const { statusResult } = applyCaseActivitySideEffects(caseRecord, {
+  const { statusResult } = await applyCaseActivitySideEffects(caseRecord, {
     activityType: 'channel_message_received',
     internal: false,
     actorId: actorId || null,

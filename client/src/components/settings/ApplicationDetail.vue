@@ -460,12 +460,6 @@ const helpdeskConfigOptions = [
     icon: SchemaIcon
   },
   {
-    id: 'execution-settings',
-    nameKey: 'settings.appsHelpdeskExecution',
-    descriptionKey: 'settings.appsHelpdeskExecutionDesc',
-    icon: SettingsIcon
-  },
-  {
     id: 'analytics',
     nameKey: 'settings.appsHelpdeskAnalytics',
     descriptionKey: 'settings.appsHelpdeskAnalyticsDesc',

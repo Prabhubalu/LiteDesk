@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-4">
-    <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+    <label v-if="!alwaysExpanded" class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
       <input
         v-model="enabled"
         type="checkbox"
@@ -9,7 +9,7 @@
       <span>{{ t('settings.helpdeskSlaUseBusinessHours') }}</span>
     </label>
 
-    <template v-if="enabled">
+    <template v-if="showScheduleOptions">
       <p class="text-xs text-gray-500 dark:text-gray-400">
         {{ t('settings.helpdeskSlaHintBefore') }}
         <RouterLink
@@ -116,6 +116,10 @@ import { useBusinessHours } from '@/composables/useBusinessHours';
 
 const { t } = useI18n();
 
+const props = defineProps({
+  alwaysExpanded: { type: Boolean, default: false }
+});
+
 const businessHours = defineModel('businessHours', {
   type: Object,
   required: true
@@ -151,6 +155,16 @@ const enabled = computed({
     businessHours.value = next;
   }
 });
+
+const showScheduleOptions = computed(() => props.alwaysExpanded || enabled.value);
+
+watch(
+  () => props.alwaysExpanded,
+  (expanded) => {
+    if (expanded && !enabled.value) enabled.value = true;
+  },
+  { immediate: true }
+);
 
 const scheduleSource = computed({
   get: () => businessHours.value?.scheduleSource || 'legacy',
