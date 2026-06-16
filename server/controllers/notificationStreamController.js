@@ -1,7 +1,6 @@
 const notificationSSEHub = require('../services/notificationSSEHub');
 const { applySseCors } = require('../utils/sseCors');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const { resolveUserFromToken } = require('../utils/resolveUserFromToken');
 
 const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK'];
 
@@ -21,57 +20,15 @@ function normalizeAppKey(req) {
  * Returns user object if valid, null otherwise.
  */
 async function validateTokenFromQuery(req) {
-  // Check query param first (for EventSource)
   let token = req.query.token;
-  
-  // Fallback to Authorization header (for regular requests)
-  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+  if (!token && req.headers.authorization?.startsWith('Bearer ')) {
     token = req.headers.authorization.split(' ')[1];
   }
-  
   if (!token) {
     console.log('[notificationStreamController] No token provided');
     return null;
   }
-
-  try {
-    if (!process.env.JWT_SECRET) {
-      console.error('[notificationStreamController] JWT_SECRET not configured');
-      return null;
-    }
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('[notificationStreamController] Token decoded, userId:', decoded.id);
-    
-    const user = await User.findById(decoded.id).select('-password').lean();
-    if (!user) {
-      console.warn('[notificationStreamController] User not found:', decoded.id);
-      return null;
-    }
-    
-    // Status check: treat undefined/null as active (backward compatibility)
-    if (user.status && user.status !== 'active') {
-      console.warn('[notificationStreamController] User not active:', decoded.id, 'status:', user.status);
-      return null;
-    }
-    
-    if (!user.organizationId) {
-      console.warn('[notificationStreamController] User missing organizationId:', decoded.id);
-      return null;
-    }
-    
-    console.log('[notificationStreamController] Token validated successfully for user:', {
-      id: decoded.id,
-      email: user.email,
-      status: user.status || 'active (default)',
-      organizationId: user.organizationId,
-      allowedApps: user.allowedApps
-    });
-    return user;
-  } catch (err) {
-    console.error('[notificationStreamController] Token validation failed:', err.message, err.name);
-    return null;
-  }
+  return resolveUserFromToken(token, { lean: true });
 }
 
 /**
