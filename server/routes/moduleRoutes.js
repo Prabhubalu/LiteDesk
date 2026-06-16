@@ -62,9 +62,12 @@ router.use((req, res, next) => {
 
 router.use(organizationIsolation);
 
-// Settings permission (reuse settings.edit to manage modules)
-router.get('/people/quick-create', sessionBootstrapLimiter, checkPermission('settings', 'edit'), controller.getPeopleQuickCreate);
-router.get('/', sessionBootstrapLimiter, checkPermission('settings', 'edit'), controller.listModules);
+// GET: authenticated tenant users. Field-level read filtering happens in controller
+// (filterFieldsByReadAccess). ModuleList and record surfaces need schema read access
+// without settings.edit.
+// POST/PUT/DELETE: settings administrators only.
+router.get('/people/quick-create', sessionBootstrapLimiter, controller.getPeopleQuickCreate);
+router.get('/', sessionBootstrapLimiter, controller.listModules);
 router.post('/', checkPermission('settings', 'edit'), controller.createModule);
 router.delete('/:id', checkPermission('settings', 'edit'), controller.deleteModule);
 router.put('/:id', checkPermission('settings', 'edit'), controller.updateModule);

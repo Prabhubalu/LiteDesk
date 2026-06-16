@@ -370,6 +370,11 @@ exports.list = async (req, res) => {
       : userOrgId;
     
     let query = { organizationId: orgIdObjectId, deletedAt: null };
+
+    const peopleContext = req.query.peopleContext;
+    if (peopleContext && peopleContext !== 'ALL') {
+      query[`participations.${peopleContext}`] = { $exists: true, $ne: null };
+    }
     
     // Debug logging
     debugPeopleList('[PeopleController] Filtering by organizationId:', {

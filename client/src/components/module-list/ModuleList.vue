@@ -957,7 +957,7 @@ function mergeAppendRowsById(existing, incoming) {
   return merged;
 }
 
-const LIST_FETCH_PAGINATION_KEYS = new Set(['page', 'limit', 'sortBy', 'sortOrder', 'appKey']);
+const LIST_FETCH_PAGINATION_KEYS = new Set(['page', 'limit', 'sortBy', 'sortOrder', 'appKey', 'peopleContext']);
 
 function listParamsHaveActiveFilters(params) {
   if (!params || typeof params !== 'object') return false;
@@ -1097,6 +1097,10 @@ function buildListFetchContext(requestedPage, options = {}) {
 
   if (props.moduleKey === 'people') {
     params.appKey = 'PLATFORM';
+    const peopleCtx = effectivePeopleContext.value;
+    if (peopleCtx && peopleCtx !== 'ALL') {
+      params.peopleContext = peopleCtx;
+    }
   } else if (props.appKey) {
     params.appKey = props.appKey;
   }
