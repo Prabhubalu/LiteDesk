@@ -4222,11 +4222,16 @@ exports.getPeopleQuickCreate = async (req, res) => {
         const peopleCfg = await getPeopleTypesConfig(orgId, 'SALES');
         const enrichedFields = enrichPeopleFieldsWithPeopleTypes(normalizedFields, peopleCfg.typeDefs);
         const enrichedFieldsWithPhoneDefaults = ensurePhoneFieldDefaultValidations(enrichedFields);
+        const readableFields = filterFieldsByReadAccess(
+            enrichedFieldsWithPhoneDefaults,
+            req.user,
+            'people'
+        );
 
         const out = {
             key: 'people',
             name: 'People',
-            fields: enrichedFieldsWithPhoneDefaults,
+            fields: readableFields,
             quickCreate,
             quickCreateLayout
         };
