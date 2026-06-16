@@ -410,11 +410,11 @@ export function hydrateTabFromStorage(tab) {
         title: name,
         titleKey: 'navigation.tabRecordNamed',
         titleParams: {
-          ...(tab.titleParams || {}),
+          ...tab.titleParams,
           moduleRoute: segments[0],
           name
         },
-        params: { ...(tab.params || {}), name }
+        params: { ...tab.params, name }
       };
     }
 

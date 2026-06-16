@@ -1,5 +1,6 @@
 const TenantAppConfiguration = require('../models/TenantAppConfiguration');
 const { CASE_TYPES, CASE_PRIORITIES, CASE_CHANNELS } = require('../constants/caseLifecycle');
+const { buildHelpdeskExecutionMetadata } = require('../constants/helpdeskSlaPolicy');
 const {
   normalizeCannedResponses,
   sanitizeCannedResponsesForSave,
@@ -318,6 +319,7 @@ exports.getHelpdeskExecutionSettings = async (req, res) => {
       success: true,
       appKey: 'HELPDESK',
       enabled: config ? Boolean(config.enabled) : false,
+      metadata: buildHelpdeskExecutionMetadata(),
       settings: effective
     });
   } catch (error) {

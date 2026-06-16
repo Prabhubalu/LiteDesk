@@ -52,6 +52,8 @@
     "migrate:business-hours-v1": "node scripts/migrateBusinessHoursV1.js",
     "migrate:business-hours-v1:dry-run": "node scripts/migrateBusinessHoursV1.js --dry-run",
     "test:business-hours": "node --test services/__tests__/businessHoursEngine.test.js services/__tests__/helpdeskSlaService.test.js services/__tests__/helpdeskSlaClockService.test.js services/__tests__/caseLifecycleService.test.js services/__tests__/caseAutoStatusService.test.js services/__tests__/assignmentAvailabilityLogic.test.js",
+    "test:sla": "node --test services/__tests__/slaPolicyEngine.test.js services/__tests__/slaCaseBridgeService.test.js services/__tests__/slaRecordApplication.test.js",
+    "test:sla:integration": "node scripts/testSlaRecordApplication.js",
     "test:related-records": "node --test services/__tests__/recordContextRelatedRecords.test.js",
     "seed:internal-beta": "node scripts/seedInternalBetaData.js",
     "start": "node server.js",

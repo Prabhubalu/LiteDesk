@@ -117,7 +117,7 @@ exports.sendCaseChatMessage = async (req, res) => {
         actorName: authorName,
         createdAt: new Date()
       });
-      const { slaMarked, statusResult } = applyCaseActivitySideEffects(row, {
+      const { slaMarked, statusResult } = await applyCaseActivitySideEffects(row, {
         activityType: 'agent_message',
         internal: false,
         actorId: req.user._id,

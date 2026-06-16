@@ -119,6 +119,18 @@
     "message": "Route records to groups, distribute work across users, run on a schedule, and notify new owners when automation applies.",
     "description": "Assignment rules option description"
   },
+  "automationSla": {
+    "message": "Service Level Agreement",
+    "description": "Automation hub SLA option"
+  },
+  "automationSlaDesc": {
+    "message": "Helpdesk SLA schedules, alerts, and case notification settings.",
+    "description": "SLA option description"
+  },
+  "slaHelpdeskCasesOnlyHint": {
+    "message": "This Helpdesk SLA tab is Cases-only. For other modules, go to Automation → SLA Policies.",
+    "description": "Hint that Helpdesk SLA settings only apply to cases"
+  },
   "automationMailroom": {
     "message": "Mailroom",
     "description": "Automation hub Mailroom option"
@@ -3995,6 +4007,870 @@
     "message": "Helpdesk execution settings saved.",
     "description": "Save success message"
   },
+  "slaPageTitle": {
+    "message": "Service Level Agreement",
+    "description": "SLA settings page title"
+  },
+  "slaPageSubtitle": {
+    "message": "Define response and resolution targets, alert rules, and coverage for your cases.",
+    "description": "SLA settings page subtitle"
+  },
+  "slaStatTotalPolicies": {
+    "message": "Total Policies",
+    "description": "SLA stats total policies"
+  },
+  "slaStatActivePolicies": {
+    "message": "Active Policies",
+    "description": "SLA stats active policies"
+  },
+  "slaStatAlertsConfigured": {
+    "message": "Alerts Configured",
+    "description": "SLA stats alerts configured"
+  },
+  "slaCardPriorities": {
+    "message": "{count} Priorities",
+    "description": "SLA card priorities count"
+  },
+  "slaCardAlertRules": {
+    "message": "{count} Alert Rules",
+    "description": "SLA card alert rules count"
+  },
+  "slaCardHours24x7": {
+    "message": "24×7 Calendar",
+    "description": "SLA card 24x7 hours"
+  },
+  "slaCardHoursFromSchedule": {
+    "message": "From saved schedule",
+    "description": "SLA card hours from schedule"
+  },
+  "slaCardHoursWeekdays": {
+    "message": "Mon–Fri, {start} – {end}",
+    "description": "SLA card weekday hours"
+  },
+  "slaCardDescStandard": {
+    "message": "Default response and resolution targets for all cases.",
+    "description": "Standard SLA card description"
+  },
+  "slaCardDescCustom": {
+    "message": "Custom response and resolution targets for matched cases.",
+    "description": "Custom SLA card description"
+  },
+  "slaNavCaseNotifications": {
+    "message": "Case Notifications",
+    "description": "Nav tab for case creation/assignment notifications"
+  },
+  "slaPolicyNew": {
+    "message": "New Policy",
+    "description": "Create new SLA policy button"
+  },
+  "slaPolicyDrawerNew": {
+    "message": "New Service Level Agreement",
+    "description": "SLA policy drawer title for new policy"
+  },
+  "slaPolicyCreate": {
+    "message": "Create Policy",
+    "description": "Empty state create policy button"
+  },
+  "slaPolicySearchPh": {
+    "message": "Search policies…",
+    "description": "SLA policy search placeholder"
+  },
+  "slaPolicyFilterAll": {
+    "message": "All statuses",
+    "description": "SLA policy status filter all"
+  },
+  "slaPolicyFilterActive": {
+    "message": "Active",
+    "description": "SLA policy status filter active"
+  },
+  "slaPolicyFilterInactive": {
+    "message": "Inactive",
+    "description": "SLA policy status filter inactive"
+  },
+  "slaPolicyPreview": {
+    "message": "Preview",
+    "description": "SLA policy card preview action"
+  },
+  "slaPolicyPreviewSubtitle": {
+    "message": "Review targets, coverage, and escalation settings.",
+    "description": "SLA policy drawer subtitle in preview mode"
+  },
+  "slaPolicyViewCards": {
+    "message": "Cards",
+    "description": "SLA policy card view toggle"
+  },
+  "slaPolicyViewTable": {
+    "message": "List",
+    "description": "SLA policy table view toggle"
+  },
+  "slaPolicyEmptyTitle": {
+    "message": "No service level agreements found",
+    "description": "SLA policy empty state title"
+  },
+  "slaPolicyEmptyHint": {
+    "message": "Service level agreements define response and resolution commitments.",
+    "description": "SLA policy empty state hint"
+  },
+  "slaPolicyStatusActive": {
+    "message": "Active",
+    "description": "SLA policy active status badge"
+  },
+  "slaPolicyStatusInactive": {
+    "message": "Inactive",
+    "description": "SLA policy inactive status badge"
+  },
+  "slaPolicyAlertCount": {
+    "message": "{count} alert rules",
+    "description": "SLA policy alert count on card"
+  },
+  "slaPolicyColPolicy": {
+    "message": "Policy",
+    "description": "SLA policy table column"
+  },
+  "slaPolicyColHours": {
+    "message": "Hours",
+    "description": "SLA policy table hours column"
+  },
+  "slaPolicyColAlerts": {
+    "message": "Alerts",
+    "description": "SLA policy table alerts column"
+  },
+  "slaPolicyColCoverage": {
+    "message": "Coverage",
+    "description": "SLA policy table coverage column"
+  },
+  "slaPolicyColStatus": {
+    "message": "Status",
+    "description": "SLA policy table status column"
+  },
+  "slaPolicyColModule": {
+    "message": "Module",
+    "description": "SLA policy table module column"
+  },
+  "slaPolicyColTargets": {
+    "message": "Targets",
+    "description": "SLA policy table targets column"
+  },
+  "slaPolicyColPrecedence": {
+    "message": "Precedence",
+    "description": "SLA policy table precedence column"
+  },
+  "slaPolicyTargetsCount": {
+    "message": "{count} milestones",
+    "description": "SLA policy card milestones/targets count"
+  },
+  "slaPolicyConditionsCount": {
+    "message": "{count} conditions",
+    "description": "SLA policy card entry criteria conditions count"
+  },
+  "slaPolicyPrecedenceValue": {
+    "message": "Precedence: {value}",
+    "description": "SLA policy card precedence label"
+  },
+  "slaPolicyStandardName": {
+    "message": "Standard SLA",
+    "description": "Default standard SLA policy name"
+  },
+  "slaPolicyHoursBusiness": {
+    "message": "Business Hours",
+    "description": "Business hours time calculation label"
+  },
+  "slaPolicyHoursCalendar": {
+    "message": "Calendar Hours",
+    "description": "Calendar hours time calculation label"
+  },
+  "slaPolicyCoverageAllCases": {
+    "message": "All case types",
+    "description": "Coverage pill when no filters"
+  },
+  "slaPolicyBackToList": {
+    "message": "Back to policies",
+    "description": "Back button from policy editor"
+  },
+  "slaPolicyEditorSubtitle": {
+    "message": "Configure targets, alerts, coverage, and escalation.",
+    "description": "Policy editor subtitle"
+  },
+  "slaMockupDrawerOnly": {
+    "message": "Open this editor in the SLA policy drawer.",
+    "description": "Non-drawer placeholder"
+  },
+  "slaMockupGeneralHint": {
+    "message": "Configure core SLA information used across policies.",
+    "description": "Mockup general section hint"
+  },
+  "slaMockupScopeHint": {
+    "message": "Define which module and record types this policy applies to.",
+    "description": "Mockup scope section hint"
+  },
+  "slaMockupTriggerHint": {
+    "message": "SLA will start when the selected field changes to the chosen value.",
+    "description": "Mockup trigger section hint"
+  },
+  "slaPolicyCode": {
+    "message": "Policy Code",
+    "description": "Policy code label"
+  },
+  "slaPolicyStatus": {
+    "message": "Policy Status",
+    "description": "Policy status label"
+  },
+  "slaStatusActive": {
+    "message": "Active",
+    "description": "Policy active status option"
+  },
+  "slaStatusDraft": {
+    "message": "Draft",
+    "description": "Policy draft status option"
+  },
+  "slaTags": {
+    "message": "Tags",
+    "description": "Tags label"
+  },
+  "slaTagsPlaceholder": {
+    "message": "Type and press Enter",
+    "description": "Tags input placeholder"
+  },
+  "slaTriggerType": {
+    "message": "Trigger Type",
+    "description": "Trigger type label"
+  },
+  "slaTriggerField": {
+    "message": "Field",
+    "description": "Trigger field label"
+  },
+  "slaTargetsTabStandard": {
+    "message": "Response & Resolution",
+    "description": "Targets standard tab label"
+  },
+  "slaTargetsTabCustom": {
+    "message": "Custom Milestones",
+    "description": "Targets custom milestones tab label"
+  },
+  "slaTargetDimensionValue": {
+    "message": "Dimension value",
+    "description": "Target dimension value label"
+  },
+  "slaMilestones": {
+    "message": "Milestones",
+    "description": "Milestones label"
+  },
+  "slaMilestoneAddPlaceholder": {
+    "message": "Add milestone key (e.g. first_response)",
+    "description": "Milestone add input placeholder"
+  },
+  "slaSimpleDrawerHint": {
+    "message": "Set targets and choose which cases this applies to.",
+    "description": "Simplified SLA drawer subtitle"
+  },
+  "slaSimpleHoursHint": {
+    "message": "Business hours count only working time. Calendar hours count 24/7.",
+    "description": "Hours mode hint"
+  },
+  "slaSimpleTargetsHint": {
+    "message": "How quickly agents should respond and resolve by priority.",
+    "description": "Targets section hint"
+  },
+  "slaSimpleAppliesTo": {
+    "message": "Applies to",
+    "description": "Coverage section title"
+  },
+  "slaSimpleAppliesToHint": {
+    "message": "Select case types. Leave none selected to apply broadly.",
+    "description": "Coverage section hint"
+  },
+  "slaSimpleAppliesToAll": {
+    "message": "Applies to all case types.",
+    "description": "Coverage all types summary"
+  },
+  "slaSimpleAppliesToSelected": {
+    "message": "Applies to {count} case types: {types}",
+    "description": "Coverage selected summary"
+  },
+  "slaSimpleNotifications": {
+    "message": "Notifications",
+    "description": "Notifications section title"
+  },
+  "slaShowAdvancedSettings": {
+    "message": "Show advanced settings",
+    "description": "Expand advanced SLA policy editor"
+  },
+  "slaHideAdvancedSettings": {
+    "message": "Hide advanced settings",
+    "description": "Collapse advanced SLA policy editor"
+  },
+  "slaModuleCompletionTarget": {
+    "message": "Completion target",
+    "description": "Generic module SLA completion hours label"
+  },
+  "slaModuleCompletionTargetHint": {
+    "message": "Maximum time to complete this record after the SLA starts.",
+    "description": "Generic module SLA completion hint"
+  },
+  "slaTargetDimensionField": {
+    "message": "Target grouping field",
+    "description": "Picklist field that determines which target row applies"
+  },
+  "slaTargetDimensionFieldDefault": {
+    "message": "Default (module priority field)",
+    "description": "Use adapter default dimension field"
+  },
+  "slaTargetDimensionFieldHint": {
+    "message": "Choose a picklist field (e.g. Priority, Status, Type). Targets can be defined per value of this field.",
+    "description": "Hint for target dimension field selector"
+  },
+  "slaCustomMilestonesHintTitle": {
+    "message": "Custom milestones",
+    "description": "Custom milestones label"
+  },
+  "slaCustomMilestonesHint": {
+    "message": "In Targets you can type any milestone key you want. You’re not limited to first response or resolution.",
+    "description": "Custom milestones hint"
+  },
+  "slaGenericSimpleDrawerHint": {
+    "message": "Name the policy and set how long records have to complete.",
+    "description": "Simplified SLA drawer subtitle for non-case modules"
+  },
+  "slaPolicyUseAsDefault": {
+    "message": "Use as default SLA",
+    "description": "Default policy checkbox"
+  },
+  "slaPolicyTimeCalculation": {
+    "message": "Time calculation",
+    "description": "Time calculation section label"
+  },
+  "slaPolicyCalendarHours": {
+    "message": "Calendar Hours",
+    "description": "Calendar hours radio option"
+  },
+  "slaPolicyCalendarHoursInfo": {
+    "message": "SLA time counts continuously, 24 hours a day including nights and weekends.",
+    "description": "Calendar hours mode hint in SLA policy editor"
+  },
+  "slaPolicyBusinessHours": {
+    "message": "Business Hours",
+    "description": "Business hours radio option"
+  },
+  "slaPolicyBusinessHoursInfo": {
+    "message": "SLA time counts only during your organization's configured business hours. Nights and weekends are excluded.",
+    "description": "Business hours mode hint in SLA policy editor"
+  },
+  "slaPolicyDescription": {
+    "message": "Description",
+    "description": "Policy description label"
+  },
+  "slaPolicyDescriptionPh": {
+    "message": "Optional",
+    "description": "Policy description placeholder"
+  },
+  "slaPolicyDelete": {
+    "message": "Delete Policy",
+    "description": "Delete policy button"
+  },
+  "slaSectionGeneral": {
+    "message": "General",
+    "description": "SLA policy general section"
+  },
+  "slaSectionTargets": {
+    "message": "Targets",
+    "description": "SLA policy targets section"
+  },
+  "slaSectionTargetsHint": {
+    "message": "Define response and resolution goals by priority.",
+    "description": "SLA targets section hint"
+  },
+  "slaSectionAlerts": {
+    "message": "Alerts",
+    "description": "SLA policy alerts section"
+  },
+  "slaSectionAlertsHint": {
+    "message": "Configure notifications before and after breaches.",
+    "description": "SLA alerts section hint"
+  },
+  "slaSectionCoverage": {
+    "message": "Coverage",
+    "description": "SLA policy coverage section"
+  },
+  "slaSectionCoverageHint": {
+    "message": "Define where this SLA applies.",
+    "description": "SLA coverage section hint"
+  },
+  "slaSectionEscalation": {
+    "message": "Escalation",
+    "description": "SLA policy escalation section"
+  },
+  "slaSectionEscalationHint": {
+    "message": "Define the escalation path when SLAs are at risk.",
+    "description": "SLA escalation section hint"
+  },
+  "slaSectionOverrides": {
+    "message": "Business Hour Overrides",
+    "description": "SLA business hour overrides section"
+  },
+  "slaSectionOverridesHint": {
+    "message": "Override business hours for specific priorities.",
+    "description": "SLA overrides section hint"
+  },
+  "slaSectionOverridesHours": {
+    "message": "Operational Hours",
+    "description": "Override hours column header"
+  },
+  "slaSectionPreview": {
+    "message": "Coverage Preview",
+    "description": "SLA coverage preview section"
+  },
+  "slaSectionAdvanced": {
+    "message": "Advanced",
+    "description": "SLA advanced section"
+  },
+  "slaGenericHubTitle": {
+    "message": "SLA Policies",
+    "description": "Generic SLA policy hub title"
+  },
+  "slaGenericHubDesc": {
+    "message": "Configure service level agreements across modules using metadata-driven policies.",
+    "description": "Generic SLA policy hub description"
+  },
+  "slaGenericEmptyHint": {
+    "message": "No policies for this module yet. Migrate helpdesk policies or create a new policy.",
+    "description": "Generic SLA empty state hint"
+  },
+  "slaMigrateHelpdesk": {
+    "message": "Migrate Helpdesk Policies",
+    "description": "Button to import legacy helpdesk SLA policies"
+  },
+  "automationSlaPolicies": {
+    "message": "SLA Policy Engine",
+    "description": "Automation hub card for generic SLA policies"
+  },
+  "automationSlaPoliciesDesc": {
+    "message": "Create SLA policies for any module — cases, deals, tasks, and more.",
+    "description": "Automation hub card description for generic SLA"
+  },
+  "slaConditionAnd": {
+    "message": "AND",
+    "description": "Condition group AND combinator"
+  },
+  "slaConditionOr": {
+    "message": "OR",
+    "description": "Condition group OR combinator"
+  },
+  "slaConditionAddClause": {
+    "message": "Add condition",
+    "description": "Add condition clause button"
+  },
+  "slaConditionAddGroup": {
+    "message": "Add group",
+    "description": "Add nested condition group button"
+  },
+  "slaConditionRemoveGroup": {
+    "message": "Remove group",
+    "description": "Remove nested condition group"
+  },
+  "slaConditionEmpty": {
+    "message": "No conditions — policy applies to all records in scope.",
+    "description": "Empty condition builder hint"
+  },
+  "slaConditionFieldPh": {
+    "message": "Select field",
+    "description": "Condition field placeholder"
+  },
+  "slaConditionValuePh": {
+    "message": "Value",
+    "description": "Condition value placeholder"
+  },
+  "slaOp_equals": {
+    "message": "Equals",
+    "description": "SLA condition operator equals"
+  },
+  "slaOp_not_equals": {
+    "message": "Not equals",
+    "description": "SLA condition operator not equals"
+  },
+  "slaOp_contains": {
+    "message": "Contains",
+    "description": "SLA condition operator contains"
+  },
+  "slaOp_in": {
+    "message": "In",
+    "description": "SLA condition operator in"
+  },
+  "slaOp_not_in": {
+    "message": "Not in",
+    "description": "SLA condition operator not in"
+  },
+  "slaOp_gt": {
+    "message": "Greater than",
+    "description": "SLA condition operator gt"
+  },
+  "slaOp_gte": {
+    "message": "Greater or equal",
+    "description": "SLA condition operator gte"
+  },
+  "slaOp_lt": {
+    "message": "Less than",
+    "description": "SLA condition operator lt"
+  },
+  "slaOp_lte": {
+    "message": "Less or equal",
+    "description": "SLA condition operator lte"
+  },
+  "slaOp_before": {
+    "message": "Before",
+    "description": "SLA condition operator before date"
+  },
+  "slaOp_after": {
+    "message": "After",
+    "description": "SLA condition operator after date"
+  },
+  "slaOp_is_true": {
+    "message": "Is true",
+    "description": "SLA condition operator is true"
+  },
+  "slaOp_is_false": {
+    "message": "Is false",
+    "description": "SLA condition operator is false"
+  },
+  "slaOp_exists": {
+    "message": "Exists",
+    "description": "SLA condition operator exists"
+  },
+  "slaSectionScope": {
+    "message": "Scope",
+    "description": "SLA policy scope section"
+  },
+  "slaSectionScopeHint": {
+    "message": "Choose which module and record type this policy applies to.",
+    "description": "SLA scope section hint"
+  },
+  "slaScopeModule": {
+    "message": "Module",
+    "description": "SLA scope module field"
+  },
+  "slaScopeModuleSelect": {
+    "message": "Select module",
+    "description": "SLA scope module placeholder when creating a policy"
+  },
+  "slaScopeModuleRequired": {
+    "message": "Select a module for this policy.",
+    "description": "Validation when SLA policy module is missing"
+  },
+  "slaScopeRecordType": {
+    "message": "Record type (optional)",
+    "description": "SLA scope record type field"
+  },
+  "slaScopeRecordTypePh": {
+    "message": "e.g. Incident, Enterprise",
+    "description": "SLA record type placeholder"
+  },
+  "slaSectionEntryCriteria": {
+    "message": "Entry criteria",
+    "description": "SLA entry criteria section"
+  },
+  "slaSectionEntryCriteriaHint": {
+    "message": "Records must match these conditions before the SLA applies.",
+    "description": "SLA entry criteria hint"
+  },
+  "slaSectionTrigger": {
+    "message": "Trigger",
+    "description": "SLA trigger section"
+  },
+  "slaSectionTriggerHint": {
+    "message": "When the SLA clock starts.",
+    "description": "SLA trigger hint"
+  },
+  "slaTriggerToValue": {
+    "message": "To value",
+    "description": "Field change trigger to value"
+  },
+  "slaTriggerEventName": {
+    "message": "Event name",
+    "description": "Custom event trigger name"
+  },
+  "slaTrigger_record_created": {
+    "message": "Record created",
+    "description": "SLA trigger type record created"
+  },
+  "slaTrigger_field_change": {
+    "message": "Field change",
+    "description": "SLA trigger type field change"
+  },
+  "slaTrigger_date_field_reached": {
+    "message": "Date field reached",
+    "description": "SLA trigger type date field"
+  },
+  "slaTrigger_custom_event": {
+    "message": "Custom event",
+    "description": "SLA trigger type custom event"
+  },
+  "slaExecutionMode": {
+    "message": "Execution mode",
+    "description": "SLA execution mode label"
+  },
+  "slaExecMode_first_match": {
+    "message": "First match",
+    "description": "SLA execution mode first match"
+  },
+  "slaExecMode_all_matches": {
+    "message": "All matches",
+    "description": "SLA execution mode all matches"
+  },
+  "slaExecMode_highest_priority": {
+    "message": "Highest priority",
+    "description": "SLA execution mode highest priority"
+  },
+  "slaPrecedence": {
+    "message": "Precedence",
+    "description": "SLA policy precedence"
+  },
+  "slaMilestone": {
+    "message": "Milestone",
+    "description": "SLA target milestone"
+  },
+  "slaPriorityOptional": {
+    "message": "Priority (optional)",
+    "description": "SLA target priority optional"
+  },
+  "slaDurationMinutes": {
+    "message": "Duration (minutes)",
+    "description": "SLA target duration"
+  },
+  "slaAddTarget": {
+    "message": "Add target",
+    "description": "Add SLA target button"
+  },
+  "slaSectionPauseResume": {
+    "message": "Pause & resume",
+    "description": "SLA pause resume section"
+  },
+  "slaSectionPauseResumeHint": {
+    "message": "Suspend the clock when conditions match; resume when others match.",
+    "description": "SLA pause resume hint"
+  },
+  "slaPauseConditions": {
+    "message": "Pause conditions",
+    "description": "SLA pause conditions label"
+  },
+  "slaResumeConditions": {
+    "message": "Resume conditions",
+    "description": "SLA resume conditions label"
+  },
+  "slaSavePauseGroup": {
+    "message": "Add pause group",
+    "description": "Save pause condition group"
+  },
+  "slaSaveResumeGroup": {
+    "message": "Add resume group",
+    "description": "Save resume condition group"
+  },
+  "slaPauseGroup": {
+    "message": "Pause group {n}",
+    "description": "Pause group chip label"
+  },
+  "slaResumeGroup": {
+    "message": "Resume group {n}",
+    "description": "Resume group chip label"
+  },
+  "slaSectionSuccess": {
+    "message": "Success criteria",
+    "description": "SLA success section"
+  },
+  "slaSectionSuccessHint": {
+    "message": "Conditions that complete the SLA before breach.",
+    "description": "SLA success hint"
+  },
+  "slaSectionCalendar": {
+    "message": "Calendar",
+    "description": "SLA calendar section"
+  },
+  "slaCoverageSimulateHint": {
+    "message": "Preview which policies would match a sample record.",
+    "description": "SLA coverage simulation hint"
+  },
+  "slaRunSimulation": {
+    "message": "Run preview",
+    "description": "SLA simulation button"
+  },
+  "slaSimulationMatches": {
+    "message": "{count} matching policies",
+    "description": "SLA simulation result count"
+  },
+  "slaTargetsLabel": {
+    "message": "targets",
+    "description": "SLA targets count label"
+  },
+  "slaTargetsRequired": {
+    "message": "At least one target is required.",
+    "description": "SLA validation targets required"
+  },
+  "slaFieldStatus": {
+    "message": "Status",
+    "description": "SLA condition field status"
+  },
+  "slaEnginePolicies": {
+    "message": "Policy engine",
+    "description": "Generic SLA engine policies section"
+  },
+  "slaEnginePoliciesHint": {
+    "message": "Default and custom SLA policies are managed here. The default policy applies when no other policy matches.",
+    "description": "Embedded SLA engine hint in helpdesk settings"
+  },
+  "slaPoliciesCount": {
+    "message": "policies",
+    "description": "SLA policies count suffix"
+  },
+  "slaLegacyHelpdeskConfig": {
+    "message": "Helpdesk configuration (legacy)",
+    "description": "Legacy helpdesk SLA section title"
+  },
+  "slaLegacyHelpdeskConfigHint": {
+    "message": "Tenant execution settings; migrated policies drive the runtime engine.",
+    "description": "Legacy helpdesk SLA section hint"
+  },
+  "slaRecalculateHint": {
+    "message": "Recalculate open SLAs after changing targets or schedules.",
+    "description": "Recalculate SLAs hint"
+  },
+  "slaTargetOverrideHours": {
+    "message": "Override Hours",
+    "description": "Target grid override hours column"
+  },
+  "slaOverrideDefault": {
+    "message": "Default",
+    "description": "Default hours override option"
+  },
+  "slaOverrideStandard": {
+    "message": "Standard Hours",
+    "description": "Standard hours override option"
+  },
+  "slaOverrideCalendar24x7": {
+    "message": "24×7 Calendar",
+    "description": "24x7 calendar override option"
+  },
+  "slaAlertPriorities": {
+    "message": "Priorities",
+    "description": "Alert priorities label"
+  },
+  "slaAlertRecipients": {
+    "message": "Notify",
+    "description": "Alert recipients label"
+  },
+  "slaAlertTiming": {
+    "message": "Timing",
+    "description": "Alert timing label"
+  },
+  "slaAlertTimingBefore": {
+    "message": "Before breach",
+    "description": "Alert timing before breach"
+  },
+  "slaAlertTimingAfter": {
+    "message": "After breach",
+    "description": "Alert timing after breach"
+  },
+  "slaAlertTimingImmediately": {
+    "message": "Immediately",
+    "description": "Alert timing immediately"
+  },
+  "slaAlertTimingMinutes": {
+    "message": "Minutes",
+    "description": "Alert timing minutes label"
+  },
+  "slaAlertMinutesShort": {
+    "message": "min",
+    "description": "Minutes abbreviation"
+  },
+  "slaAlertChannels": {
+    "message": "Channels",
+    "description": "Alert channels label"
+  },
+  "slaAlertChannelInApp": {
+    "message": "In-App",
+    "description": "In-app notification channel"
+  },
+  "slaAlertChannelEmail": {
+    "message": "Email",
+    "description": "Email notification channel"
+  },
+  "slaAlertChannelPush": {
+    "message": "Push",
+    "description": "Push notification channel"
+  },
+  "slaAlertDelete": {
+    "message": "Delete Alert",
+    "description": "Delete alert button"
+  },
+  "slaAlertAdd": {
+    "message": "Add Alert",
+    "description": "Add alert button"
+  },
+  "slaAlertWarning": {
+    "message": "Warning Alert",
+    "description": "Warning alert card title"
+  },
+  "slaAlertBreach": {
+    "message": "Breach Alert",
+    "description": "Breach alert card title"
+  },
+  "slaAlertCustom": {
+    "message": "Custom Alert",
+    "description": "Custom alert card title"
+  },
+  "slaAlertRecipientAssigned": {
+    "message": "Assigned User",
+    "description": "Alert recipient assigned user"
+  },
+  "slaAlertRecipientManager": {
+    "message": "Manager",
+    "description": "Alert recipient manager"
+  },
+  "slaAlertRecipientGroup": {
+    "message": "Assigned Group",
+    "description": "Alert recipient group"
+  },
+  "slaAlertRecipientOwner": {
+    "message": "Record Owner",
+    "description": "Alert recipient record owner"
+  },
+  "slaEscalationRole": {
+    "message": "Escalation step",
+    "description": "Escalation step role label"
+  },
+  "slaEscalationDelay": {
+    "message": "Delay",
+    "description": "Escalation delay label"
+  },
+  "slaEscalationCooldown": {
+    "message": "Cooldown",
+    "description": "Escalation cooldown label"
+  },
+  "slaEscalationAddStep": {
+    "message": "Add step",
+    "description": "Add escalation step button"
+  },
+  "slaEscalationTeamLead": {
+    "message": "Team Lead",
+    "description": "Escalation team lead role"
+  },
+  "slaEscalationOpsHead": {
+    "message": "Operations Head",
+    "description": "Escalation operations head role"
+  },
+  "slaCoverageAppliesTo": {
+    "message": "Applies To",
+    "description": "Coverage preview applies to label"
+  },
+  "slaCoverageAllRecords": {
+    "message": "All matching records",
+    "description": "Coverage preview all records"
+  },
+  "slaCoverageAnd": {
+    "message": "AND",
+    "description": "Coverage preview AND connector"
+  },
+  "slaCoverageChannel": {
+    "message": "Channel",
+    "description": "Coverage preview channel label"
+  },
   "helpdeskExecCannedResponsesHint": {
     "message": "Templates agents insert from the bolt icon in the case composer.",
     "description": "Hint for canned responses list section"
@@ -4332,8 +5208,260 @@
     "description": "Page title"
   },
   "assignRulesSubtitle": {
-    "message": "Assignment rules resolve ownership: group routing first, then user distribution. Rules run in order; the first match wins. When automation assigns or reassigns someone, they get the same notification path as a manual assignment (system rules and user notification rules), including for delayed and scheduled runs once they apply.",
+    "message": "Automate record ownership by creating rules. Rules are evaluated in order and the first matching rule is applied.",
     "description": "Page subtitle"
+  },
+  "assignRulesWhenLabel": {
+    "message": "WHEN",
+    "description": "Conditions section label"
+  },
+  "assignRulesThenLabel": {
+    "message": "Assign to",
+    "description": "Assignment target section label"
+  },
+  "assignRulesDistributeBy": {
+    "message": "Distribute by",
+    "description": "Distribution mode section label"
+  },
+  "assignRulesMembers": {
+    "message": "Members",
+    "description": "Group members section label"
+  },
+  "assignRulesMembersCount": {
+    "message": "{enabled} of {total} selected",
+    "description": "Enabled members count when subset selected"
+  },
+  "assignRulesMemberIncludeHint": {
+    "message": "Uncheck members to exclude them from this rule.",
+    "description": "Hint above group member checkboxes"
+  },
+  "assignRulesMemberIncludeLabel": {
+    "message": "Include in assignment",
+    "description": "Checkbox title for group member inclusion"
+  },
+  "assignRulesNoEnabledMembers": {
+    "message": "Select at least one member to receive assignments.",
+    "description": "Warning when all group members are unchecked"
+  },
+  "assignRulesEnabledMembersRequired": {
+    "message": "Rule \"{name}\": select at least one member.",
+    "description": "Save validation when no members enabled"
+  },
+  "assignRulesNoMembers": {
+    "message": "This group has no members yet.",
+    "description": "Empty group members"
+  },
+  "assignRulesOpen": {
+    "message": "open",
+    "description": "Workload placeholder suffix"
+  },
+  "assignRulesWeightTotal": {
+    "message": "Total: {total}%",
+    "description": "Weighted distribution total"
+  },
+  "assignRulesAvailabilitySection": {
+    "message": "Availability",
+    "description": "Availability section label"
+  },
+  "assignRulesSkipInactive": {
+    "message": "Skip inactive users",
+    "description": "Availability option"
+  },
+  "assignRulesSkipOnLeave": {
+    "message": "Skip users on leave",
+    "description": "Availability option"
+  },
+  "assignRulesRespectBusinessHours": {
+    "message": "Respect business hours",
+    "description": "Availability option"
+  },
+  "assignRulesRespectTimezone": {
+    "message": "Respect user timezone",
+    "description": "Availability option"
+  },
+  "assignRulesFallbackGroup": {
+    "message": "Fallback group",
+    "description": "Fallback section label"
+  },
+  "assignRulesNoFallback": {
+    "message": "Leave unassigned",
+    "description": "No fallback option"
+  },
+  "assignRulesExecutionMode": {
+    "message": "Execution mode",
+    "description": "Execution mode section label"
+  },
+  "assignRulesImmediateHint": {
+    "message": "Records will be assigned immediately when conditions are met.",
+    "description": "Immediate execution hint"
+  },
+  "assignRulesAdvanced": {
+    "message": "Advanced settings",
+    "description": "Advanced settings collapsible"
+  },
+  "assignRulesNoConditions": {
+    "message": "No conditions",
+    "description": "Default rule chip"
+  },
+  "assignRulesActive": {
+    "message": "Active",
+    "description": "Rule active badge"
+  },
+  "assignRulesDisable": {
+    "message": "Disable",
+    "description": "Disable rule button"
+  },
+  "assignRulesEnable": {
+    "message": "Enable",
+    "description": "Enable rule button"
+  },
+  "assignRulesDragHandle": {
+    "message": "Drag to reorder",
+    "description": "Drag handle tooltip"
+  },
+  "assignRulesSimMatchedRule": {
+    "message": "Matched rule",
+    "description": "Simulation result"
+  },
+  "assignRulesSimGroup": {
+    "message": "Group",
+    "description": "Simulation result group"
+  },
+  "assignRulesSimUser": {
+    "message": "Selected user",
+    "description": "Simulation result user"
+  },
+  "assignRulesSimState": {
+    "message": "Outcome",
+    "description": "Simulation result state"
+  },
+  "assignRulesSimTrace": {
+    "message": "Assignment trace",
+    "description": "Simulation trace expandable"
+  },
+  "assignRulesRuleSetLabel": {
+    "message": "Rule set:",
+    "description": "Toolbar rule set label"
+  },
+  "assignRulesScopeTitle": {
+    "message": "Application scope",
+    "description": "Scope tab section title"
+  },
+  "assignRulesEditConditions": {
+    "message": "Edit conditions",
+    "description": "Rule menu item"
+  },
+  "assignRulesManageMembers": {
+    "message": "Add / Remove Members",
+    "description": "Link to groups settings"
+  },
+  "assignRulesQueueNoMembers": {
+    "message": "Queue mode — members claim records from the queue.",
+    "description": "Queue mode members hint"
+  },
+  "assignRulesFooterBanner": {
+    "message": "Rules are evaluated from top to bottom. The first rule that matches will be applied.",
+    "description": "Rules list footer"
+  },
+  "assignRulesHowItWorks": {
+    "message": "How it works",
+    "description": "Sidebar section"
+  },
+  "assignRulesHowStep1": {
+    "message": "A record is created or updated in the selected module.",
+    "description": "How it works step 1"
+  },
+  "assignRulesHowStep2": {
+    "message": "Rules are evaluated in order from top to bottom.",
+    "description": "How it works step 2"
+  },
+  "assignRulesHowStep3": {
+    "message": "The first rule whose conditions match is selected.",
+    "description": "How it works step 3"
+  },
+  "assignRulesHowStep4": {
+    "message": "The record is routed to the assigned group.",
+    "description": "How it works step 4"
+  },
+  "assignRulesHowStep5": {
+    "message": "Distribution logic picks a user within the group.",
+    "description": "How it works step 5"
+  },
+  "assignRulesHowStep6": {
+    "message": "The new owner is notified and the assignment is logged.",
+    "description": "How it works step 6"
+  },
+  "assignRulesTipsTitle": {
+    "message": "Tips",
+    "description": "Sidebar tips section"
+  },
+  "assignRulesTip1": {
+    "message": "Place specific rules before general catch-all rules.",
+    "description": "Tip 1"
+  },
+  "assignRulesTip2": {
+    "message": "Keep group membership up to date for accurate distribution.",
+    "description": "Tip 2"
+  },
+  "assignRulesTip3": {
+    "message": "Use simulation mode to test rules before going live.",
+    "description": "Tip 3"
+  },
+  "assignRulesNeedHelp": {
+    "message": "Need help?",
+    "description": "Sidebar help section"
+  },
+  "assignRulesUserGuide": {
+    "message": "User Guide",
+    "description": "Help link"
+  },
+  "assignRulesBestPractices": {
+    "message": "Best Practices",
+    "description": "Help link"
+  },
+  "assignRulesWatchVideo": {
+    "message": "Watch Video",
+    "description": "Help link"
+  },
+  "assignRulesNavGroups": {
+    "message": "Groups",
+    "description": "Related menu groups link"
+  },
+  "assignRulesAssignCustom": {
+    "message": "Custom",
+    "description": "Custom assign-to option"
+  },
+  "assignRulesSelectAssignTo": {
+    "message": "Select…",
+    "description": "Assign to placeholder"
+  },
+  "assignRulesManageUsers": {
+    "message": "Manage users",
+    "description": "Open user picker drawer"
+  },
+  "assignRulesCustomUsersEmpty": {
+    "message": "Select users for this custom assignment.",
+    "description": "Empty custom users hint"
+  },
+  "assignRulesCustomUsersRequired": {
+    "message": "Rule \"{name}\" needs at least one user for custom assignment.",
+    "description": "Validation for custom assign target"
+  },
+  "assignRulesRemoveMember": {
+    "message": "Remove user",
+    "description": "Remove user from custom list"
+  },
+  "assignRulesUsersDrawerTitle": {
+    "message": "Select users",
+    "description": "User picker drawer title"
+  },
+  "assignRulesUsersDrawerSelected": {
+    "message": "{count} selected",
+    "description": "Selected user count in drawer"
+  },
+  "assignRulesUsersDrawerEmpty": {
+    "message": "No users match your search.",
+    "description": "Empty user search in drawer"
   },
   "assignRulesInfoTitle": {
     "message": "Scoped by application and module",
@@ -4484,8 +5612,64 @@
     "description": "Frequency"
   },
   "assignRulesFreqCustom": {
-    "message": "Custom (cron)",
+    "message": "Custom interval",
     "description": "Frequency"
+  },
+  "assignRulesScheduleRunAt": {
+    "message": "Date and time",
+    "description": "One-time schedule datetime label"
+  },
+  "assignRulesScheduleRunAtPh": {
+    "message": "Select date and time",
+    "description": "One-time schedule datetime placeholder"
+  },
+  "assignRulesScheduleTime": {
+    "message": "Time of day",
+    "description": "Daily/weekly schedule time label"
+  },
+  "assignRulesScheduleDayOfWeek": {
+    "message": "Day of week",
+    "description": "Weekly schedule day label"
+  },
+  "assignRulesScheduleEveryMinutes": {
+    "message": "Repeat every",
+    "description": "Custom interval minutes label"
+  },
+  "assignRulesScheduleMinutesUnit": {
+    "message": "minutes",
+    "description": "Custom interval minutes unit"
+  },
+  "assignRulesScheduleEveryMinutesHint": {
+    "message": "The rule runs repeatedly at this interval after a record matches.",
+    "description": "Custom interval hint"
+  },
+  "assignRulesScheduleOneTimeHint": {
+    "message": "Runs once at the selected date and time.",
+    "description": "One-time schedule type hint"
+  },
+  "assignRulesScheduleRecurringHint": {
+    "message": "Repeats on a daily, weekly, or custom interval.",
+    "description": "Recurring schedule type hint"
+  },
+  "assignRulesScheduleSummaryOnce": {
+    "message": "Runs once on {datetime}.",
+    "description": "One-time schedule summary"
+  },
+  "assignRulesScheduleSummaryDaily": {
+    "message": "Runs daily at {time}, starting {datetime}.",
+    "description": "Daily schedule summary"
+  },
+  "assignRulesScheduleSummaryWeekly": {
+    "message": "Runs every {day} at {time}, starting {datetime}.",
+    "description": "Weekly schedule summary"
+  },
+  "assignRulesScheduleSummaryCustom": {
+    "message": "Runs every {minutes} minutes, starting {datetime}.",
+    "description": "Custom interval schedule summary"
+  },
+  "assignRulesScheduleRunAtRequired": {
+    "message": "Rule \"{name}\": select a date and time for the one-time schedule.",
+    "description": "Save validation for one-time schedule"
   },
   "assignRulesCron": {
     "message": "Cron expression",
@@ -4576,7 +5760,7 @@
     "description": "Distribution label"
   },
   "assignRulesDistQueue": {
-    "message": "Queue (claim)",
+    "message": "Queue (Claim based)",
     "description": "Distribution mode"
   },
   "assignRulesDistRoundRobin": {

@@ -5,7 +5,8 @@
         <tr class="text-left text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
           <th class="pb-3 pr-4">{{ t('settings.helpdeskExecSlaPriorityColumn') }}</th>
           <th class="pb-3 pr-4">{{ t('settings.helpdeskExecFirstResponse') }}</th>
-          <th class="pb-3">{{ t('settings.helpdeskExecResolution') }}</th>
+          <th class="pb-3 pr-4">{{ t('settings.helpdeskExecResolution') }}</th>
+          <th v-if="showOverrideHours" class="pb-3">{{ t('settings.slaTargetOverrideHours') }}</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -14,7 +15,7 @@
             <span
               class="inline-flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-white"
             >
-              <span class="h-2 w-2 rounded-full" :class="priorityDotClass(priority)" />
+              <span class="h-2 w-2 rounded-full" :class="priorityDotClassFor(priority)" />
               {{ priorityLabel(priority) }}
             </span>
           </td>
@@ -29,7 +30,7 @@
               <span class="shrink-0 text-xs text-gray-400">{{ t('settings.helpdeskExecHoursShort') }}</span>
             </div>
           </td>
-          <td class="py-3">
+          <td class="py-3 pr-4">
             <div class="flex items-center gap-2 max-w-[8.5rem]">
               <input
                 v-model.number="model[priority].resolutionHours"
@@ -43,6 +44,16 @@
               {{ resolutionDaysLabel(priority) }}
             </p>
           </td>
+          <td v-if="showOverrideHours" class="py-3">
+            <select
+              v-model="model[priority].overrideHours"
+              class="rounded-lg border border-gray-200 bg-white px-2 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+            >
+              <option v-for="mode in overrideModeOptions" :key="mode.value" :value="mode.value">
+                {{ mode.label }}
+              </option>
+            </select>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -50,26 +61,45 @@
 </template>
 
 <script setup>
+import { computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { priorityDotClass, targetRowFromStandard } from '@/constants/helpdeskSlaPolicy';
+import { buildOverrideModeOptions } from '@/components/settings/helpdesk/slaPolicyOptionLabels.js';
 
-defineProps({
+const props = defineProps({
   priorities: { type: Array, required: true },
-  priorityLabel: { type: Function, required: true }
+  priorityLabel: { type: Function, required: true },
+  standardTargets: { type: Object, default: () => ({}) },
+  hourOverrideModes: { type: Array, default: () => [] },
+  showOverrideHours: { type: Boolean, default: false }
 });
 
 const model = defineModel('targets', { type: Object, required: true });
 
 const { t } = useI18n();
 
-const PRIORITY_DOT = {
-  Critical: 'bg-red-500',
-  High: 'bg-orange-500',
-  Medium: 'bg-amber-500',
-  Low: 'bg-gray-400'
-};
+const overrideModeOptions = computed(() => buildOverrideModeOptions(props.hourOverrideModes, t));
 
-function priorityDotClass(priority) {
-  return PRIORITY_DOT[priority] || 'bg-gray-400';
+function ensureRows() {
+  if (!model.value || typeof model.value !== 'object') {
+    model.value = {};
+  }
+  const defaultMode = props.hourOverrideModes[0] || 'default';
+  for (const priority of props.priorities) {
+    if (!model.value[priority]) {
+      model.value[priority] = {
+        ...targetRowFromStandard(priority, props.standardTargets, props.priorities),
+        overrideHours: defaultMode
+      };
+    }
+  }
+}
+
+onMounted(ensureRows);
+watch(() => [props.priorities, props.standardTargets], ensureRows, { immediate: true, deep: true });
+
+function priorityDotClassFor(priority) {
+  return priorityDotClass(props.priorities, priority);
 }
 
 function resolutionDaysLabel(priority) {

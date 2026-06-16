@@ -624,6 +624,20 @@ watch(() => route.query.tab, () => {
   syncTabFromRoute();
 });
 
+watch(
+  () => [route.query.tab, route.query.app, route.query.config],
+  () => {
+    if (
+      route.query.tab === 'applications'
+      && route.query.app === 'helpdesk'
+      && route.query.config === 'execution-settings'
+    ) {
+      router.replace({ path: '/settings', query: { tab: 'automation', automationView: 'sla' } });
+    }
+  },
+  { immediate: true },
+);
+
 watch(activeTab, (val) => {
   const current = route.query.tab;
   const normalizedCurrent = current == null || current === '' ? null : String(current);

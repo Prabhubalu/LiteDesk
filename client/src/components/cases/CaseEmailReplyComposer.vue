@@ -436,7 +436,7 @@ function setComposeTab(id) {
     }
     form.value.to = '';
     composeBridge.initialDraft = {
-      ...(composeBridge.initialDraft || {}),
+      ...composeBridge.initialDraft,
       parentCommunicationId: null
     };
   } else if (id === 'replyAll') {
@@ -460,7 +460,7 @@ function applyDraftFields(draft) {
   if (draft.subject !== undefined) form.value.subject = draft.subject;
   if (draft.body !== undefined) form.value.body = draft.body;
   composeBridge.initialDraft = {
-    ...(composeBridge.initialDraft || {}),
+    ...composeBridge.initialDraft,
     ...draft
   };
 }
@@ -547,7 +547,7 @@ watch(
       emailThreads: props.emailThreads
     });
     composeBridge.initialDraft = {
-      ...(composeBridge.initialDraft || {}),
+      ...composeBridge.initialDraft,
       ...(draft.parentCommunicationId ? { parentCommunicationId: draft.parentCommunicationId } : {}),
       subject: draft.subject,
       to: draft.to

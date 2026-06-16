@@ -257,7 +257,7 @@ async function processSendJobInner(communicationId) {
         actorName: userName,
         createdAt: new Date()
       });
-      const { slaMarked, statusResult } = applyCaseActivitySideEffects(caseRow, {
+      const { slaMarked, statusResult } = await applyCaseActivitySideEffects(caseRow, {
         activityType: 'email_sent',
         internal: true,
         actorId: doc.sentByUserId,

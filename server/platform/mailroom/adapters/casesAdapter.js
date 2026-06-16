@@ -10,7 +10,7 @@ const {
 const {
   createReopenedSlaState
 } = require('../../../services/caseLifecycleService');
-const { applySlaTargetsToCycle } = require('../../../services/helpdeskSlaService');
+const { reopenCaseSla } = require('../../../services/sla/slaCaseBridgeService');
 const caseExecutionService = require('../../../services/caseExecutionService');
 const { getFromAddress } = require('../services/conversationPersistenceService');
 const { normalizeDefaultsForCaseCreate } = require('../policies/strategies/classificationStrategies');
@@ -137,15 +137,11 @@ async function reopenCaseForInboundEmail({
 
   caseRecord.slaCycles = Array.isArray(caseRecord.slaCycles) ? caseRecord.slaCycles : [];
   caseRecord.slaCycles.push(previousCycle);
-  caseRecord.currentSlaCycle = await applySlaTargetsToCycle({
+  caseRecord.currentSlaCycle = await reopenCaseSla({
     organizationId,
-    cycle: nextCycle,
-    context: {
-      caseType: caseRecord.caseType,
-      priority: caseRecord.priority,
-      channel: caseRecord.channel || 'Email'
-    },
-    startedAt: nextCycle.startedAt
+    caseRecord,
+    previousCycle,
+    nextCycle
   });
   caseRecord.status = 'In Progress';
   caseRecord.reopenReason = reopenReason;

@@ -5,6 +5,7 @@ const { organizationIsolation } = require('../middleware/organizationMiddleware'
 const controller = require('../controllers/settingsController');
 const helpdeskSettingsController = require('../controllers/helpdeskSettingsController');
 const assignmentRulesController = require('../controllers/assignmentRulesController');
+const slaPolicyController = require('../controllers/slaPolicyController');
 const mailroomSettingsController = require('../controllers/mailroomSettingsController');
 const quoteSettingsController = require('../controllers/quoteSettingsController');
 const { organizationSettingsLimiter, sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
@@ -45,6 +46,16 @@ router.get('/applications/:appKey', controller.getApplication);
 router.get('/automation/assignment-rules', assignmentRulesController.getAssignmentRuleSet);
 router.put('/automation/assignment-rules', assignmentRulesController.upsertAssignmentRuleSet);
 router.post('/automation/assignment-rules/simulate', assignmentRulesController.simulateAssignmentRules);
+
+// Generic SLA Policy Engine
+router.get('/automation/sla-policies/metadata', slaPolicyController.getSlaPolicyMetadata);
+router.get('/automation/sla-policies', slaPolicyController.listSlaPolicies);
+router.get('/automation/sla-policies/:policyKey', slaPolicyController.getSlaPolicy);
+router.put('/automation/sla-policies/:policyKey', slaPolicyController.upsertSlaPolicy);
+router.delete('/automation/sla-policies/:policyKey', slaPolicyController.deleteSlaPolicy);
+router.post('/automation/sla-policies/simulate', slaPolicyController.simulateSlaPolicy);
+router.post('/automation/sla-policies/migrate-helpdesk', slaPolicyController.migrateHelpdeskSlaPolicies);
+router.post('/automation/sla-policies/:policyKey/set-default', slaPolicyController.setDefaultSlaPolicy);
 
 // Mailroom (conversation-first ingestion policies)
 router.get('/automation/mailroom', mailroomSettingsController.getMailroomSettings);

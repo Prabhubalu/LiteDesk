@@ -153,7 +153,6 @@ import SalesSchema from './SalesSchema.vue';
 import SalesPipelines from './SalesPipelines.vue';
 import SalesPlaybooks from './SalesPlaybooks.vue';
 import HelpdeskSchema from './HelpdeskSchema.vue';
-import HelpdeskExecutionSettings from './HelpdeskExecutionSettings.vue';
 import HelpdeskAnalyticsDashboard from './HelpdeskAnalyticsDashboard.vue';
 
 const { t } = useI18n();
@@ -365,13 +364,6 @@ const getAppOptions = (app) => {
         available: true
       },
       {
-        id: 'execution-settings',
-        nameKey: 'settings.appsHelpdeskExecution',
-        descriptionKey: 'settings.appsHelpdeskExecutionDesc',
-        icon: SettingsIcon,
-        available: true
-      },
-      {
         id: 'analytics',
         nameKey: 'settings.appsHelpdeskAnalytics',
         descriptionKey: 'settings.appsHelpdeskAnalyticsDesc',
@@ -479,7 +471,6 @@ const getAppOptions = (app) => {
 const appSettingsComponents = {
   helpdesk: {
     schema: HelpdeskSchema,
-    'execution-settings': HelpdeskExecutionSettings,
     analytics: HelpdeskAnalyticsDashboard
   }
 };
@@ -557,6 +548,11 @@ watch(() => route.query.app, (newApp) => {
 // Watch for config query parameter to navigate directly to a config option
 watch(() => route.query.config, (configId) => {
   if (!configId) return;
+
+  if (configId === 'execution-settings' && String(selectedApp.value || '').toLowerCase() === 'helpdesk') {
+    router.replace({ path: '/settings', query: { tab: 'automation', automationView: 'sla' } });
+    return;
+  }
 
   if (isSalesApp.value && activeSalesTab.value === 'options') {
     const configExists = salesOptions.some(opt => opt.id === configId);

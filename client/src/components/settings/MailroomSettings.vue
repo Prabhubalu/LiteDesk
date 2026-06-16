@@ -1066,8 +1066,8 @@ function mergeSecurityFromApi(raw) {
   const base = defaultSecurity();
   if (!raw || typeof raw !== 'object') return base;
   return {
-    email: { ...base.email, ...(raw.email || {}) },
-    attachments: { ...base.attachments, ...(raw.attachments || {}) }
+    email: { ...base.email, ...raw.email },
+    attachments: { ...base.attachments, ...raw.attachments }
   };
 }
 const selectedTemplateId = ref('helpdesk_standard_email');
@@ -1116,10 +1116,10 @@ function mergePortalConnectorFromApi(raw) {
         ? raw.audienceDetection.partnerPeopleTypes
         : base.audienceDetection.partnerPeopleTypes
     },
-    customer: { ...base.customer, ...(raw.customer || {}) },
+    customer: { ...base.customer, ...raw.customer },
     partner: {
       ...base.partner,
-      ...(raw.partner || {}),
+      ...raw.partner,
       allowedMimeTypes: Array.isArray(raw.partner?.allowedMimeTypes)
         ? raw.partner.allowedMimeTypes
         : base.partner.allowedMimeTypes

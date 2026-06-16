@@ -138,6 +138,38 @@ async function resolveGroupCandidates(organizationId, primaryGroupId, fallbackGr
   return groupIds.map((id) => map.get(id.toString())).filter(Boolean);
 }
 
+function isCustomAssignTarget(rule) {
+  if (rule?.metadata?.assignTargetType === 'custom') return true;
+  const ids = rule?.metadata?.customUserIds;
+  return Array.isArray(ids) && ids.length > 0;
+}
+
+function getCustomUserIds(rule) {
+  const ids = rule?.metadata?.customUserIds;
+  return Array.isArray(ids) ? ids.map((id) => String(id)).filter(Boolean) : [];
+}
+
+function buildVirtualGroupFromCustom(rule) {
+  const members = getCustomUserIds(rule);
+  return { _id: null, name: 'Custom', members };
+}
+
+function getEnabledMemberIds(rule) {
+  const ids = rule?.metadata?.enabledMemberIds;
+  if (!Array.isArray(ids) || ids.length === 0) return null;
+  return ids.map((id) => String(id)).filter(Boolean);
+}
+
+function applyPrimaryGroupMemberFilter(group, rule) {
+  if (!group) return group;
+  const enabledIds = getEnabledMemberIds(rule);
+  if (!enabledIds) return group;
+  const members = (group.members || [])
+    .map((id) => String(id))
+    .filter((id) => enabledIds.includes(id));
+  return { ...group, members };
+}
+
 function normalizeRules(rules) {
   return (Array.isArray(rules) ? rules : [])
     .filter((rule) => rule && rule.enabled !== false)
@@ -173,11 +205,20 @@ async function simulateAssignment({ organizationId, appKey, moduleKey, rules, re
 
     if (!matched) continue;
 
-    const groupCandidates = await resolveGroupCandidates(
-      organizationId,
-      rule.primaryGroupId,
-      rule.fallbackGroupIds || []
-    );
+    let groupCandidates;
+    if (isCustomAssignTarget(rule)) {
+      const virtual = buildVirtualGroupFromCustom(rule);
+      groupCandidates = virtual.members.length > 0 ? [virtual] : [];
+    } else {
+      groupCandidates = await resolveGroupCandidates(
+        organizationId,
+        rule.primaryGroupId,
+        rule.fallbackGroupIds || []
+      );
+      if (groupCandidates.length > 0) {
+        groupCandidates[0] = applyPrimaryGroupMemberFilter(groupCandidates[0], rule);
+      }
+    }
 
     if (groupCandidates.length === 0) {
       return {
