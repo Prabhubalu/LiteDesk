@@ -2,6 +2,13 @@ const mongoose = require('mongoose');
 const AssignmentRuleSet = require('../models/AssignmentRuleSet');
 const AssignmentExecutionLog = require('../models/AssignmentExecutionLog');
 const { simulateAssignment } = require('../services/assignmentRulesEngine');
+const { getAdapter } = require('../services/assignment/assignmentModuleRegistry');
+const {
+  buildAssignmentRulesMetadata,
+  listTenantAssignmentModules,
+  getAssignmentModuleConditionFields,
+  resolveModuleAppKey
+} = require('../services/assignment/assignmentModuleMetadataService');
 const {
   ASSIGNMENT_TRIGGER_TYPES,
   ASSIGNMENT_DISTRIBUTION_MODES
@@ -155,6 +162,78 @@ function sanitizeRule(rule, index) {
   };
 }
 
+async function getAssignmentRulesMetadata(req, res) {
+  try {
+    const moduleKey = req.query.moduleKey ? String(req.query.moduleKey).toLowerCase() : null;
+    const modules = await listTenantAssignmentModules(req.user.organizationId);
+    const moduleRow = moduleKey
+      ? modules.find((row) => row.moduleKey === moduleKey)
+      : null;
+    const resolvedAppKey = moduleKey
+      ? (moduleRow?.appKey || await resolveModuleAppKey(req.user.organizationId, moduleKey, req.query.appKey))
+      : null;
+    const moduleFields = moduleKey
+      ? await getAssignmentModuleConditionFields(
+        req.user.organizationId,
+        resolvedAppKey || req.query.appKey,
+        moduleKey
+      )
+      : [];
+    const adapter = moduleKey
+      ? getAdapter(moduleKey, { appKey: resolvedAppKey || req.query.appKey, moduleFields })
+      : null;
+
+    return res.json({
+      success: true,
+      metadata: buildAssignmentRulesMetadata(),
+      modules,
+      moduleFields,
+      adapter: adapter ? {
+        moduleKey: adapter.moduleKey,
+        appKey: adapter.appKey || resolvedAppKey || null,
+        ownerPath: adapter.ownerPath || null,
+        generic: Boolean(adapter.generic)
+      } : null
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to load assignment rules metadata',
+      error: error.message
+    });
+  }
+}
+
+async function listAssignmentRuleSets(req, res) {
+  try {
+    const rows = await AssignmentRuleSet.find({
+      organizationId: req.user.organizationId
+    })
+      .select('appKey moduleKey enabled version applyStrategy rules updatedAt createdAt')
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    const data = rows.map((row) => ({
+      appKey: row.appKey,
+      moduleKey: row.moduleKey,
+      enabled: row.enabled !== false,
+      version: row.version || 1,
+      applyStrategy: row.applyStrategy || 'new_records_only',
+      ruleCount: Array.isArray(row.rules) ? row.rules.length : 0,
+      updatedAt: row.updatedAt,
+      createdAt: row.createdAt
+    }));
+
+    return res.json({ success: true, data });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to list assignment rules',
+      error: error.message
+    });
+  }
+}
+
 async function getAssignmentRuleSet(req, res) {
   try {
     const appKey = String(req.query.appKey || 'HELPDESK').toUpperCase();
@@ -300,6 +379,8 @@ async function simulateAssignmentRules(req, res) {
 }
 
 module.exports = {
+  getAssignmentRulesMetadata,
+  listAssignmentRuleSets,
   getAssignmentRuleSet,
   upsertAssignmentRuleSet,
   simulateAssignmentRules

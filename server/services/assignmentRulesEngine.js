@@ -11,44 +11,88 @@ function getValueByPath(source, path) {
   return current;
 }
 
+function normalizeMultiValue(value) {
+  if (value == null || value === '') return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        /* ignore invalid JSON */
+      }
+    }
+    return trimmed ? [trimmed] : [];
+  }
+  return [value];
+}
+
+function scalarEqual(left, right) {
+  if (left === right) return true;
+  if (typeof left === 'string' && typeof right === 'string') {
+    return left.trim().toLowerCase() === right.trim().toLowerCase();
+  }
+  return false;
+}
+
+function multiValueOverlap(leftValues, rightValues) {
+  return rightValues.some((rightValue) => leftValues.some((leftValue) => scalarEqual(leftValue, rightValue)));
+}
+
 function evaluateClause(clause, data) {
-  const left = getValueByPath(data, clause.field);
-  const right = clause.value;
+  const leftRaw = getValueByPath(data, clause.field);
+  const rightRaw = clause.value;
   const operator = String(clause.operator || 'equals').toLowerCase();
+  const leftValues = normalizeMultiValue(leftRaw);
+  const rightValues = normalizeMultiValue(rightRaw);
+  const leftIsMulti = Array.isArray(leftRaw) || leftValues.length > 1
+    || (typeof leftRaw === 'string' && String(leftRaw).trim().startsWith('['));
+  const rightIsMulti = Array.isArray(rightRaw) || rightValues.length > 1
+    || (typeof rightRaw === 'string' && String(rightRaw).trim().startsWith('['));
 
   switch (operator) {
     case 'equals':
     case '==':
     case '===':
-      if (left === right) return true;
-      if (typeof left === 'string' && typeof right === 'string') {
-        return left.trim().toLowerCase() === right.trim().toLowerCase();
+      if (leftIsMulti || rightIsMulti) {
+        return multiValueOverlap(leftValues, rightValues);
       }
-      return false;
+      if (leftRaw === rightRaw) return true;
+      return scalarEqual(leftRaw, rightRaw);
     case 'not_equals':
     case '!=':
     case '!==':
-      if (left === right) return false;
-      if (typeof left === 'string' && typeof right === 'string') {
-        return left.trim().toLowerCase() !== right.trim().toLowerCase();
+      if (leftIsMulti || rightIsMulti) {
+        return !multiValueOverlap(leftValues, rightValues);
       }
-      return left !== right;
+      if (leftRaw === rightRaw) return false;
+      return !scalarEqual(leftRaw, rightRaw);
     case 'contains':
-      return String(left || '').toLowerCase().includes(String(right || '').toLowerCase());
+      if (leftIsMulti) {
+        return rightValues.some((rightValue) => multiValueOverlap(leftValues, [rightValue]));
+      }
+      return String(leftRaw || '').toLowerCase().includes(String(rightRaw || '').toLowerCase());
     case 'in':
-      return Array.isArray(right) && right.includes(left);
+      if (rightValues.length === 0) return false;
+      if (leftIsMulti || Array.isArray(leftRaw)) return multiValueOverlap(leftValues, rightValues);
+      return rightValues.some((rightValue) => scalarEqual(leftRaw, rightValue));
     case 'not_in':
-      return Array.isArray(right) && !right.includes(left);
+      if (rightValues.length === 0) return true;
+      if (leftIsMulti || Array.isArray(leftRaw)) return !multiValueOverlap(leftValues, rightValues);
+      return !rightValues.some((rightValue) => scalarEqual(leftRaw, rightValue));
     case 'exists':
-      return left !== undefined && left !== null && left !== '';
+      if (Array.isArray(leftRaw)) return leftRaw.length > 0;
+      return leftRaw !== undefined && leftRaw !== null && leftRaw !== '';
     case 'gt':
-      return Number(left) > Number(right);
+      return Number(leftRaw) > Number(rightRaw);
     case 'gte':
-      return Number(left) >= Number(right);
+      return Number(leftRaw) >= Number(rightRaw);
     case 'lt':
-      return Number(left) < Number(right);
+      return Number(leftRaw) < Number(rightRaw);
     case 'lte':
-      return Number(left) <= Number(right);
+      return Number(leftRaw) <= Number(rightRaw);
     default:
       return false;
   }
@@ -296,5 +340,9 @@ async function simulateAssignment({ organizationId, appKey, moduleKey, rules, re
 }
 
 module.exports = {
-  simulateAssignment
+  simulateAssignment,
+  evaluateClause,
+  evaluateConditionGroup,
+  getValueByPath,
+  normalizeMultiValue
 };

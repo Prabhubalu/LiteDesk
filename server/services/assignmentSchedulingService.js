@@ -6,6 +6,7 @@ const Group = require('../models/Group');
 const { simulateAssignment } = require('./assignmentRulesEngine');
 const { loadRecordForAssignmentJob } = require('../utils/assignmentRecordLoader');
 const assignmentExecution = require('./assignmentExecutionService');
+const { getAdapter } = require('./assignment/assignmentModuleRegistry');
 const {
   getNextOpenInstantForUsers,
   collectMemberIdsForRule
@@ -28,19 +29,11 @@ function isValidObjectId(value) {
 
 /** Context for round_robin / distribution: current owner + record id. */
 function buildSimulateContext(appKey, moduleKey, recordDoc, recordId) {
-  const ak = String(appKey || '').toUpperCase();
   const mk = String(moduleKey || '').toLowerCase();
   const rid = recordId || toIdString(recordDoc?._id);
-  if (ak === CASE_APP_KEY && mk === CASE_MODULE_KEY) {
-    return { previousOwnerId: toIdString(recordDoc?.caseOwnerId), recordId: rid };
-  }
-  if (ak === 'SALES') {
-    const profile = assignmentExecution.SALES_MODULE_ASSIGNMENT_PROFILES[mk];
-    if (!profile) return { recordId: rid };
-    return {
-      previousOwnerId: assignmentExecution.getOwnerFromRecord(recordDoc, profile.ownerPath),
-      recordId: rid
-    };
+  const adapter = getAdapter(mk, { appKey });
+  if (adapter?.buildSimulateContext) {
+    return adapter.buildSimulateContext(recordDoc, rid);
   }
   return { recordId: rid };
 }
@@ -486,6 +479,82 @@ async function applyScheduledAssignmentForCase(job, record, rule, ruleSetVersion
   return { ownerChanged: ownerChanged || Boolean(escalatedOwner), state };
 }
 
+async function applyScheduledAssignmentForModule(job, record, rule, ruleSetVersion) {
+  const mk = String(job.moduleKey || '').toLowerCase();
+  const adapter = getAdapter(mk, { appKey: job.appKey });
+  if (!adapter) {
+    return { ownerChanged: false, state: 'skipped', reason: 'unsupported_module' };
+  }
+
+  const previousOwnerId = adapter.getOwner(record);
+  const recordForRules = mk === 'people'
+    ? assignmentExecution.buildSalesRecordForAssignmentRules(mk, record)
+    : adapter.normalizeRecord(record);
+  const simulation = await simulateAssignment({
+    organizationId: job.organizationId,
+    appKey: job.appKey,
+    moduleKey: job.moduleKey,
+    rules: [rule],
+    record: recordForRules,
+    context: adapter.buildSimulateContext(record, toIdString(job.recordId))
+  });
+  const assignedUserId = toIdString(simulation?.outcome?.assignedUserId);
+  const assignedGroupId = toIdString(simulation?.outcome?.assignedGroupId);
+  const state = simulation?.outcome?.state || 'skipped';
+  const canAssign = state === 'assigned' && isValidObjectId(assignedUserId);
+  const ownerChanged = canAssign && previousOwnerId !== assignedUserId;
+
+  if (ownerChanged) {
+    adapter.setOwner(record, assignedUserId);
+    const logPath = adapter.activityLogPath;
+    if (logPath && Array.isArray(record[logPath])) {
+      record[logPath].push({
+        user: 'Assignment Scheduler',
+        userId: null,
+        action: 'assignment_scheduled_applied',
+        details: { ruleId: rule.ruleId, assignedGroupId },
+        timestamp: new Date()
+      });
+    }
+    await record.save();
+
+    if (String(job.appKey || '').toUpperCase() === 'SALES') {
+      emitSalesRecordOwnerAssignedNotify({
+        organizationId: job.organizationId,
+        moduleKey: mk,
+        record,
+        triggeredBy: null
+      }).catch((err) => {
+        console.error('[assignmentSchedulingService] scheduled assignment notification:', err?.message || err);
+      });
+    }
+  }
+
+  const finalStatus = state === 'queued' ? 'queued' : ownerChanged ? 'assigned' : 'skipped';
+
+  await AssignmentExecutionLog.create({
+    organizationId: job.organizationId,
+    appKey: job.appKey,
+    moduleKey: job.moduleKey,
+    recordId: toIdString(job.recordId),
+    executionId: `asg_sched_${Date.now()}_${Math.round(Math.random() * 100000)}`,
+    triggerSource: 'scheduled',
+    ruleId: rule.ruleId,
+    previousOwnerId,
+    newOwnerId: canAssign ? assignedUserId : previousOwnerId,
+    assignedGroupId,
+    status: finalStatus,
+    idempotencyKey: job.dedupeKey || null,
+    details: {
+      ruleSetVersion,
+      outcome: simulation.outcome,
+      ownerChanged
+    }
+  });
+
+  return { ownerChanged, state };
+}
+
 async function applyScheduledAssignmentForSales(job, record, rule, ruleSetVersion, moduleKey) {
   const key = String(moduleKey || '').toLowerCase();
   const profile = assignmentExecution.SALES_MODULE_ASSIGNMENT_PROFILES[key];
@@ -639,14 +708,16 @@ async function processDueAssignmentJobs() {
       }
 
       if (rule.triggerConfig?.recheckConditionsAtExecution !== false) {
-        const ak = String(job.appKey || '').toUpperCase();
         const mk = String(job.moduleKey || '').toLowerCase();
+        const adapter = getAdapter(mk, { appKey: job.appKey });
         const recordForProbe =
-          ak === 'SALES'
+          mk === 'people'
             ? assignmentExecution.buildSalesRecordForAssignmentRules(mk, record)
-            : typeof record.toObject === 'function'
-              ? record.toObject()
-              : record;
+            : adapter?.normalizeRecord
+              ? adapter.normalizeRecord(record)
+              : typeof record.toObject === 'function'
+                ? record.toObject()
+                : record;
         const probeContext = buildSimulateContext(job.appKey, job.moduleKey, record, toIdString(job.recordId));
         const probe = await simulateAssignment({
           organizationId: job.organizationId,
@@ -669,16 +740,10 @@ async function processDueAssignmentJobs() {
 
       if (job.appKey === CASE_APP_KEY && job.moduleKey === CASE_MODULE_KEY) {
         await applyScheduledAssignmentForCase(job, record, rule, ruleSet.version);
-      } else if (job.appKey === 'SALES') {
+      } else if (job.appKey === 'SALES' && assignmentExecution.SALES_MODULE_ASSIGNMENT_PROFILES[String(job.moduleKey || '').toLowerCase()]) {
         await applyScheduledAssignmentForSales(job, record, rule, ruleSet.version, job.moduleKey);
       } else {
-        job.status = 'skipped';
-        job.lastError = 'unsupported_app_module';
-        await job.save();
-        noteSkip('unsupported_app_module');
-        skipped += 1;
-        processed += 1;
-        continue;
+        await applyScheduledAssignmentForModule(job, record, rule, ruleSet.version);
       }
 
       job.status = 'completed';

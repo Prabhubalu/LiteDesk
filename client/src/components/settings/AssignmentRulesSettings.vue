@@ -4,14 +4,13 @@
       {{ loadError }}
     </div>
 
-    <div v-else-if="loading" class="flex flex-1 justify-center py-16">
+    <div v-else-if="bootstrapLoading" class="flex flex-1 justify-center py-16">
       <div class="h-10 w-10 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
     </div>
 
-    <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <!-- Header -->
+    <div v-else-if="view === 'list'" class="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div class="sticky top-0 z-10 shrink-0 border-b border-gray-200 bg-white/95 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95">
-        <div class="flex items-start justify-between gap-3 px-1 pb-2 pt-1">
+        <div class="flex items-start justify-between gap-3 px-1 pb-3 pt-1">
           <div class="flex min-w-0 items-start gap-3">
             <button
               type="button"
@@ -26,6 +25,55 @@
             <div class="min-w-0">
               <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ t('settings.automationAssignmentRules') }}</h2>
               <p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.assignRulesSubtitle') }}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            @click="openCreateRuleSet"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            {{ t('settings.assignRulesNewRuleSet') }}
+          </button>
+        </div>
+      </div>
+
+      <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain" :class="SETTINGS_HEADER_CONTENT_GAP_CLASS">
+        <AssignmentRuleSetList
+          :rule-sets="ruleSetSummaries"
+          :modules="assignmentModules"
+          :loading="listLoading"
+          @create="openCreateRuleSet"
+          @edit="({ appKey, moduleKey }) => openEditRuleSet(appKey, moduleKey)"
+        />
+      </div>
+    </div>
+
+    <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div v-if="loading" class="flex flex-1 justify-center py-16">
+        <div class="h-10 w-10 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+      </div>
+      <template v-else>
+      <div class="sticky top-0 z-10 shrink-0 border-b border-gray-200 bg-white/95 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95">
+        <div class="flex items-start justify-between gap-3 px-1 pb-2 pt-1">
+          <div class="flex min-w-0 items-start gap-3">
+            <button
+              type="button"
+              class="mt-0.5 text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              :title="t('settings.assignRulesBackToList')"
+              @click="backToList"
+            >
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </button>
+            <div class="min-w-0">
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                {{ isNewRuleSet ? t('settings.assignRulesNewRuleSet') : t('settings.assignRulesEditRuleSet') }}
+              </h2>
+              <p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
+                {{ appLabel(scopeApp) }} · {{ moduleLabelForScope() }}
+              </p>
             </div>
           </div>
           <Menu as="div" class="relative shrink-0">
@@ -54,54 +102,33 @@
             </transition>
           </Menu>
         </div>
-
-        <!-- Tabs (underline style) -->
-        <nav class="flex gap-6 border-t border-gray-100 px-1 dark:border-gray-800">
-          <button
-            v-for="item in tabItems"
-            :key="item.id"
-            type="button"
-            class="-mb-px border-b-2 px-1 py-2.5 text-sm font-medium transition-colors"
-            :class="activeTab === item.id
-              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'"
-            @click="activeTab = item.id"
-          >
-            {{ item.label }}
-          </button>
-        </nav>
       </div>
 
       <div
         class="min-h-0 flex-1 overflow-y-auto overscroll-contain"
         :class="[SETTINGS_HEADER_CONTENT_GAP_CLASS, isDirty ? SETTINGS_SAVE_BAR_CONTENT_CLASS : '']"
       >
-        <div class="flex min-h-0 gap-6" :class="activeTab === TAB.rules ? 'xl:flex-row' : ''">
-          <!-- Main column -->
+        <div class="flex min-h-0 gap-6 xl:flex-row">
           <div class="min-w-0 flex-1 space-y-4">
-            <!-- Scope & Policy -->
-            <div v-show="activeTab === TAB.scope" class="space-y-4">
-              <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-                <h3 class="mb-4 text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.assignRulesScopeTitle') }}</h3>
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('settings.assignRulesLabelApplication') }}</label>
-                    <select v-model="scopeApp" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                      <option v-for="app in appOptions" :key="app.key" :value="app.key">{{ app.label }}</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('settings.assignRulesLabelModule') }}</label>
-                    <select v-model="scopeModule" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                      <option v-for="mod in moduleOptionsForApp" :key="mod.key" :value="mod.key">{{ mod.label }}</option>
-                    </select>
-                  </div>
+            <div v-if="isNewRuleSet" class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+              <h3 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.assignRulesScopeForNew') }}</h3>
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('settings.assignRulesLabelApplication') }}</label>
+                  <select v-model="scopeApp" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                    <option v-for="app in appOptions" :key="app.key" :value="app.key">{{ app.label }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('settings.assignRulesLabelModule') }}</label>
+                  <select v-model="scopeModule" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                    <option v-for="mod in moduleOptionsForApp" :key="mod.key" :value="mod.key">{{ mod.label }}</option>
+                  </select>
                 </div>
               </div>
             </div>
 
-            <!-- Rules -->
-            <div v-show="activeTab === TAB.rules" class="space-y-4">
+            <div class="space-y-4">
               <!-- Toolbar -->
               <div class="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
                 <div class="flex items-center gap-2">
@@ -248,11 +275,115 @@
                             </select>
                           </div>
                           <div class="col-span-5">
-                            <select v-if="clauseValueOptionList(clause)" v-model="clause.value" class="w-full rounded border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-700">
-                              <option value="">{{ t('settings.assignRulesSelectValue') }}</option>
-                              <option v-for="opt in clauseValueOptionList(clause)" :key="String(opt.value)" :value="opt.value">{{ opt.label }}</option>
-                            </select>
-                            <input v-else-if="clause.operator !== 'exists'" v-model.trim="clause.value" type="text" :placeholder="clauseValuePlaceholder(clause)" class="w-full rounded border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-700" />
+                            <template v-if="clause.operator !== 'exists'">
+                              <!-- multi-picklist with known options: native multi-select -->
+                              <div
+                                v-if="isMultiValueOperator(clause.operator) || clauseFieldDataType(clause) === 'multi-picklist'"
+                                class="w-full"
+                              >
+                                <div class="relative">
+                                  <div
+                                    class="w-full rounded border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-700 cursor-pointer"
+                                    @click.stop="toggleClauseMultiPicker(clause)"
+                                  >
+                                    <div class="flex flex-wrap items-center gap-1.5">
+                                      <template v-if="clauseMultiPickerValues(clause).length > 0">
+                                        <span
+                                          v-for="(selected, selIdx) in clauseMultiPickerValues(clause)"
+                                          :key="`${String(selected)}_${selIdx}`"
+                                          class="inline-flex items-center gap-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 px-2 py-0.5 text-[11px] font-medium text-indigo-800 dark:text-indigo-200"
+                                        >
+                                          <span>{{ selected }}</span>
+                                          <button
+                                            type="button"
+                                            class="rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800"
+                                            @click.stop="removeMultiPickValue(clause, selected)"
+                                            :aria-label="t('actions.remove')"
+                                          >
+                                            ×
+                                          </button>
+                                        </span>
+                                      </template>
+                                      <span v-else class="text-gray-500 dark:text-gray-400">
+                                        {{ t('settings.assignRulesValueArrayPh') }}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div
+                                    v-if="clauseMultiPickerOpen(clause)"
+                                    v-click-outside="() => closeClauseMultiPicker(clause)"
+                                    class="absolute z-20 mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 max-h-72 flex flex-col"
+                                    @click.stop
+                                  >
+                                    <div class="shrink-0 p-2 border-b border-gray-200 dark:border-gray-600">
+                                      <input
+                                        type="text"
+                                        :value="clauseMultiPickerQuery(clause)"
+                                        @input="setClauseMultiPickerQuery(clause, $event.target.value)"
+                                        @keydown.enter.stop.prevent="createMultiPickValueFromQuery(clause)"
+                                        @keydown.escape.stop="closeClauseMultiPicker(clause)"
+                                        :placeholder="t('common.formSearchOptions')"
+                                        class="w-full px-3 py-2 text-xs rounded-md bg-gray-100 dark:bg-gray-700 outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:outline-indigo-500 text-gray-900 dark:text-white placeholder:text-gray-500"
+                                        autocomplete="off"
+                                      />
+                                      <button
+                                        v-if="clauseMultiPickerCreateCandidate(clause)"
+                                        type="button"
+                                        class="mt-2 w-full rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+                                        @click="createMultiPickValueFromQuery(clause)"
+                                      >
+                                        {{ t('actions.add') }} “{{ clauseMultiPickerCreateCandidate(clause) }}”
+                                      </button>
+                                    </div>
+
+                                    <div class="overflow-auto">
+                                      <button
+                                        v-for="opt in clauseMultiPickerFilteredOptions(clause)"
+                                        :key="String(opt.value)"
+                                        type="button"
+                                        class="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between"
+                                        @click="toggleMultiPickValue(clause, opt.value)"
+                                      >
+                                        <span class="truncate">{{ opt.label }}</span>
+                                        <span v-if="clauseMultiPickerValues(clause).some((v) => String(v) === String(opt.value))" class="text-indigo-600 dark:text-indigo-300">✓</span>
+                                      </button>
+
+                                      <div v-if="(clauseValueMultiOptionList(clause) || []).length === 0" class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                                        Type and press Enter to add.
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <select
+                                v-else-if="clauseValueOptionList(clause)"
+                                v-model="clause.value"
+                                class="w-full rounded border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-700"
+                              >
+                                <option value="">{{ t('settings.assignRulesSelectValue') }}</option>
+                                <option v-for="opt in clauseValueOptionList(clause)" :key="String(opt.value)" :value="opt.value">{{ opt.label }}</option>
+                              </select>
+
+                              <select
+                                v-else-if="clauseFieldDataType(clause) === 'boolean' && !isMultiValueOperator(clause.operator)"
+                                v-model="clause.value"
+                                class="w-full rounded border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-700"
+                              >
+                                <option value="">{{ t('settings.assignRulesSelectValue') }}</option>
+                                <option value="true">{{ t('settings.assignRulesYes') }}</option>
+                                <option value="false">{{ t('settings.assignRulesNo') }}</option>
+                              </select>
+
+                              <input
+                                v-else
+                                v-model.trim="clause.value"
+                                :type="clauseValueInputType(clause)"
+                                :placeholder="clauseValuePlaceholder(clause)"
+                                class="w-full rounded border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-700"
+                              />
+                            </template>
                           </div>
                           <div class="col-span-1 flex justify-end">
                             <button type="button" class="p-1 text-gray-400 hover:text-red-600" @click="removeClause(rule, cIdx)">
@@ -486,15 +617,13 @@
                 </template>
               </draggable>
 
-              <!-- Footer banner -->
               <div v-if="rules.length > 0" class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-200">
                 {{ t('settings.assignRulesFooterBanner') }}
               </div>
             </div>
           </div>
 
-          <!-- Right sidebar (Rules tab only) -->
-          <aside v-if="activeTab === TAB.rules" class="hidden w-72 shrink-0 space-y-5 xl:block">
+          <aside class="hidden w-72 shrink-0 space-y-5 xl:block">
             <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
               <h4 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.assignRulesHowItWorks') }}</h4>
               <ol class="space-y-2.5">
@@ -526,6 +655,7 @@
       </div>
 
       <SettingsSaveBar :visible="isDirty" :saving="saving" :error="saveError" :reset-label="t('settings.assignRulesReset')" :reset-disabled="loading" :save-disabled="loading" @reset="loadRuleSet" @save="save" />
+      </template>
     </div>
 
     <AssignmentRuleUsersDrawer
@@ -540,6 +670,7 @@
 
 <script setup>
 import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
+import AssignmentRuleSetList from '@/components/settings/AssignmentRuleSetList.vue';
 import AssignmentRuleUsersDrawer from '@/components/settings/AssignmentRuleUsersDrawer.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
@@ -555,15 +686,15 @@ import draggable from 'vuedraggable';
 import apiClient from '@/utils/apiClient';
 import { usePeopleTypes } from '@/composables/usePeopleTypes';
 import { useNotifications } from '@/composables/useNotifications';
+import { resolveModuleLabel } from '@/constants/assignmentRules';
 
 const { t, locale } = useI18n();
 
-const TAB = { scope: 'scope', rules: 'rules' };
-
-const tabItems = computed(() => [
-  { id: TAB.scope, label: t('settings.assignRulesNavScope') },
-  { id: TAB.rules, label: t('settings.assignRulesNavRules') }
-]);
+const view = ref('list');
+const isNewRuleSet = ref(false);
+const bootstrapLoading = ref(true);
+const listLoading = ref(false);
+const ruleSetSummaries = ref([]);
 
 const howItWorksSteps = computed(() => [
   t('settings.assignRulesHowStep1'),
@@ -579,7 +710,6 @@ const tipsList = computed(() => [
   t('settings.assignRulesTip2')
 ]);
 
-const activeTab = ref(TAB.rules);
 const conditionEditor = reactive({});
 const CUSTOM_ASSIGN_VALUE = '__custom__';
 const usersDrawerOpen = ref(false);
@@ -596,10 +726,21 @@ const MODULE_LABEL_KEYS = {
   items: 'settings.assignRulesModItems', forms: 'settings.assignRulesModForms'
 };
 
-const APP_MODULES = { HELPDESK: ['cases'], SALES: ['people', 'organizations', 'deals', 'tasks', 'events', 'items', 'forms'] };
+const FALLBACK_MODULES = [
+  { moduleKey: 'cases', appKey: 'HELPDESK', label: 'Cases' },
+  { moduleKey: 'people', appKey: 'SALES', label: 'People' },
+  { moduleKey: 'organizations', appKey: 'SALES', label: 'Organizations' },
+  { moduleKey: 'deals', appKey: 'SALES', label: 'Deals' },
+  { moduleKey: 'tasks', appKey: 'SALES', label: 'Tasks' }
+];
+
+const assignmentModules = ref([...FALLBACK_MODULES]);
+const moduleFields = ref([]);
 
 const ASSIGNMENT_CONDITION_FIELD_OPTIONS = {
   'HELPDESK:cases': ['priority', 'status', 'caseType', 'channel', 'title', 'caseId', 'contactId', 'organizationRefId', 'caseOwnerId', 'source'],
+  'HELPDESK:people': ['assignedTo', 'lead_owner', 'organization', 'derivedStatus', 'first_name', 'last_name', 'email', 'type', 'sales_type', 'lead_status', 'contact_status', 'helpdesk_role', 'role', 'preferred_contact_method', 'do_not_contact', 'tags'],
+  'PLATFORM:people': ['assignedTo', 'lead_owner', 'organization', 'derivedStatus', 'first_name', 'last_name', 'email', 'type', 'sales_type', 'lead_status', 'contact_status', 'helpdesk_role', 'role', 'preferred_contact_method', 'do_not_contact', 'tags'],
   'SALES:people': ['assignedTo', 'lead_owner', 'organization', 'derivedStatus', 'first_name', 'last_name', 'email', 'type', 'sales_type', 'lead_status', 'contact_status', 'helpdesk_role', 'role', 'preferred_contact_method', 'do_not_contact', 'tags'],
   'SALES:organizations': ['name', 'assignedTo', 'types', 'customerStatus', 'partnerStatus', 'vendorStatus', 'derivedStatus', 'territory', 'industry', 'accountManager', 'tags'],
   'SALES:deals': ['name', 'ownerId', 'stage', 'pipeline', 'status', 'priority', 'amount', 'probability', 'accountId', 'contactId', 'type', 'derivedStatus', 'currency', 'tags'],
@@ -613,9 +754,30 @@ function condFieldI18nKey(value) {
   return `settings.assignRulesCondField${parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join('')}`;
 }
 
-function getConditionFieldOptions(appKey, moduleKey) {
-  const key = `${String(appKey || '').toUpperCase()}:${String(moduleKey || '').toLowerCase()}`;
-  return ASSIGNMENT_CONDITION_FIELD_OPTIONS[key] || ASSIGNMENT_CONDITION_FIELD_OPTIONS._fallback;
+function getConditionFieldOptions() {
+  return conditionFieldOptions.value.map((row) => row.value);
+}
+
+function fieldMeta(fieldKey) {
+  return moduleFields.value.find((field) => field.key === fieldKey) || null;
+}
+
+function moduleExists(appKey, moduleKey) {
+  const app = String(appKey || '').toUpperCase();
+  const mod = String(moduleKey || '').toLowerCase();
+  return assignmentModules.value.some(
+    (row) => String(row.appKey || '').toUpperCase() === app && String(row.moduleKey || '').toLowerCase() === mod
+  );
+}
+
+function ensureValidScope() {
+  const appRows = assignmentModules.value.filter((row) => String(row.appKey || '').toUpperCase() === scopeApp.value);
+  if (!appRows.some((row) => row.moduleKey === scopeModule.value)) {
+    scopeModule.value = appRows[0]?.moduleKey || assignmentModules.value[0]?.moduleKey || 'cases';
+  }
+  if (!assignmentModules.value.some((row) => String(row.appKey || '').toUpperCase() === scopeApp.value)) {
+    scopeApp.value = String(assignmentModules.value[0]?.appKey || 'HELPDESK').toUpperCase();
+  }
 }
 
 const CASE_PRIORITY_VALUES = ['Low', 'Medium', 'High', 'Critical'];
@@ -641,8 +803,41 @@ function getConditionValueEnumList(appKey, moduleKey, fieldPath) {
   const scopeKey = `${String(appKey || '').toUpperCase()}:${String(moduleKey || '').toLowerCase()}`;
   const f = String(fieldPath || '').trim();
   const map = ASSIGNMENT_CONDITION_VALUE_ENUMS[scopeKey];
-  if (!map || !f) return null;
-  const list = map[f];
+  if (!f) return null;
+  // Global fallbacks for common picklist-like keys (when module metadata lacks options).
+  if (f === 'priority') {
+    return CASE_PRIORITY_VALUES.map((v) => ({ value: v, label: v }));
+  }
+  const list = map?.[f];
+  if ((!list || !Array.isArray(list) || list.length === 0)) {
+    const mk = String(moduleKey || '').toLowerCase();
+    if (mk === 'cases') {
+      const casesMap = { priority: CASE_PRIORITY_VALUES, status: CASE_STATUS_VALUES, caseType: CASE_TYPE_VALUES, channel: CASE_CHANNEL_VALUES };
+      const fallback = casesMap[f];
+      return Array.isArray(fallback) && fallback.length > 0 ? fallback.map((v) => ({ value: v, label: v })) : null;
+    }
+    if (mk === 'deals') {
+      const dealsMap = { status: ['Open', 'Won', 'Lost', 'Stalled', 'Active', 'Abandoned'], priority: ['Low', 'Medium', 'High', 'Urgent'], type: ['New Business', 'Existing Customer', 'Existing Business', 'Upsell', 'Renewal', 'Cross-Sell'] };
+      const fallback = dealsMap[f];
+      return Array.isArray(fallback) && fallback.length > 0 ? fallback.map((v) => ({ value: v, label: v })) : null;
+    }
+    if (mk === 'tasks') {
+      const tasksMap = { status: ['todo', 'in_progress', 'waiting', 'completed', 'cancelled'], priority: ['low', 'medium', 'high', 'urgent'], 'relatedTo.type': ['contact', 'deal', 'project', 'organization', 'none'] };
+      const fallback = tasksMap[f];
+      return Array.isArray(fallback) && fallback.length > 0 ? fallback.map((v) => ({ value: v, label: v })) : null;
+    }
+    if (mk === 'organizations') {
+      const orgMap = { customerStatus: ['Active', 'Prospect', 'Churned', 'Lead Customer'], partnerStatus: ['Active', 'Onboarding', 'Inactive'], vendorStatus: ['Approved', 'Pending', 'Suspended'] };
+      const fallback = orgMap[f];
+      return Array.isArray(fallback) && fallback.length > 0 ? fallback.map((v) => ({ value: v, label: v })) : null;
+    }
+    if (mk === 'people') {
+      const peopleMap = { lead_status: PEOPLE_LEAD_STATUS_VALUES, contact_status: PEOPLE_CONTACT_STATUS_VALUES, role: PEOPLE_CONTACT_ROLE_VALUES, preferred_contact_method: PEOPLE_PREFERRED_CONTACT_VALUES };
+      const fallback = peopleMap[f];
+      return Array.isArray(fallback) && fallback.length > 0 ? fallback.map((v) => ({ value: v, label: v })) : null;
+    }
+    return null;
+  }
   return Array.isArray(list) && list.length > 0 ? list.map((v) => ({ value: v, label: v })) : null;
 }
 
@@ -651,14 +846,268 @@ function clauseValuePlaceholder(clause) {
   return op === 'in' || op === 'not_in' ? t('settings.assignRulesValueArrayPh') : t('settings.assignRulesValuePh');
 }
 
-function onClauseOperatorChange(clause) {
-  if (clause.operator === 'exists') clause.value = '';
+function clauseMultiPickerQuery(clause) {
+  if (!clause) return '';
+  if (typeof clause._mpQuery !== 'string') clause._mpQuery = '';
+  return clause._mpQuery;
 }
 
-const appOptions = computed(() => [
-  { key: 'HELPDESK', label: t('settings.assignRulesAppHelpdesk') },
-  { key: 'SALES', label: t('settings.assignRulesAppSales') }
-]);
+function setClauseMultiPickerQuery(clause, value) {
+  if (!clause) return;
+  clause._mpQuery = String(value || '');
+}
+
+function clauseMultiPickerOpen(clause) {
+  if (!clause) return false;
+  return !!clause._mpOpen;
+}
+
+function toggleClauseMultiPicker(clause) {
+  if (!clause) return;
+  clause._mpOpen = !clause._mpOpen;
+}
+
+function closeClauseMultiPicker(clause) {
+  if (!clause) return;
+  clause._mpOpen = false;
+  clause._mpQuery = '';
+}
+
+function clauseMultiPickerValues(clause) {
+  normalizeClauseValueForFieldAndOperator(clause);
+  return Array.isArray(clause?.value) ? clause.value : [];
+}
+
+function removeMultiPickValue(clause, value) {
+  const current = clauseMultiPickerValues(clause);
+  clause.value = current.filter((v) => String(v) !== String(value));
+}
+
+function toggleMultiPickValue(clause, value) {
+  const current = clauseMultiPickerValues(clause);
+  const str = String(value);
+  const exists = current.some((v) => String(v) === str);
+  clause.value = exists ? current.filter((v) => String(v) !== str) : [...current, str];
+}
+
+function clauseMultiPickerFilteredOptions(clause) {
+  const opts = clauseValueMultiOptionList(clause) || [];
+  const q = String(clauseMultiPickerQuery(clause) || '').trim().toLowerCase();
+  if (!q) return opts;
+  return opts.filter((o) => String(o?.label ?? o?.value ?? '').toLowerCase().includes(q));
+}
+
+function clauseMultiPickerCreateCandidate(clause) {
+  const raw = String(clauseMultiPickerQuery(clause) || '').trim();
+  if (!raw) return '';
+  const current = clauseMultiPickerValues(clause);
+  if (current.some((v) => String(v).toLowerCase() === raw.toLowerCase())) return '';
+  return raw;
+}
+
+function createMultiPickValueFromQuery(clause) {
+  const candidate = clauseMultiPickerCreateCandidate(clause);
+  if (!candidate) return;
+  toggleMultiPickValue(clause, candidate);
+  setClauseMultiPickerQuery(clause, '');
+}
+
+function onClauseOperatorChange(clause) {
+  const op = String(clause.operator || '').toLowerCase();
+  if (op === 'exists') {
+    clause.value = '';
+    return;
+  }
+  normalizeClauseValueForFieldAndOperator(clause);
+}
+
+function appLabel(appKey) {
+  const key = String(appKey || '').toUpperCase();
+  if (key === 'HELPDESK') return t('settings.assignRulesAppHelpdesk');
+  if (key === 'SALES') return t('settings.assignRulesAppSales');
+  return key;
+}
+
+function moduleLabelForSet(set) {
+  const mod = assignmentModules.value.find(
+    (row) => row.moduleKey === set.moduleKey && String(row.appKey || '').toUpperCase() === String(set.appKey || '').toUpperCase()
+  );
+  return resolveModuleLabel(mod || { moduleKey: set.moduleKey }, t, MODULE_LABEL_KEYS);
+}
+
+function moduleLabelForScope() {
+  const mod = assignmentModules.value.find(
+    (row) => row.moduleKey === scopeModule.value && String(row.appKey || '').toUpperCase() === scopeApp.value
+  );
+  return resolveModuleLabel(mod || { moduleKey: scopeModule.value }, t, MODULE_LABEL_KEYS);
+}
+
+async function loadRuleSetList() {
+  listLoading.value = true;
+  try {
+    const res = await apiClient.get('/settings/automation/assignment-rules/list');
+    ruleSetSummaries.value = res?.success && Array.isArray(res.data) ? res.data : [];
+  } catch {
+    ruleSetSummaries.value = [];
+  } finally {
+    listLoading.value = false;
+  }
+}
+
+function syncEditorToRoute() {
+  router.replace({
+    path: '/settings',
+    query: {
+      ...route.query,
+      tab: 'automation',
+      automationView: 'assignment-rules',
+      assignmentApp: scopeApp.value,
+      assignmentModule: scopeModule.value
+    }
+  });
+}
+
+function clearEditorRoute() {
+  const nextQuery = { ...route.query, tab: 'automation', automationView: 'assignment-rules' };
+  delete nextQuery.assignmentApp;
+  delete nextQuery.assignmentModule;
+  router.replace({ path: '/settings', query: nextQuery });
+}
+
+async function openCreateRuleSet() {
+  isNewRuleSet.value = true;
+  loadError.value = '';
+  ensureValidScope();
+  meta.enabled = true;
+  meta.applyStrategy = 'new_records_only';
+  rules.value = [];
+  Object.keys(expanded).forEach((k) => delete expanded[k]);
+  Object.keys(conditionEditor).forEach((k) => delete conditionEditor[k]);
+  view.value = 'editor';
+  syncingFromUrl.value = true;
+  syncEditorToRoute();
+  loading.value = true;
+  try {
+    await Promise.all([loadMetadata(), fetchGroups(), fetchTenantUsers()]);
+    await syncExistingScopeRulesOnCreate();
+    lastSavedFingerprint.value = saveStateFingerprint();
+  } catch (e) {
+    loadError.value = e?.message || t('settings.assignRulesLoadFailed');
+    lastSavedFingerprint.value = null;
+  } finally {
+    loading.value = false;
+    await nextTick();
+    syncingFromUrl.value = false;
+  }
+}
+
+function applyExistingScopeRuleSet(row) {
+  meta.enabled = row.enabled !== false;
+  meta.applyStrategy = row.applyStrategy || 'new_records_only';
+  rules.value = (Array.isArray(row.rules) ? row.rules : [])
+    .map((r, i) => normalizeRule(r, i))
+    .sort((a, b) => a.order - b.order);
+  Object.keys(expanded).forEach((k) => delete expanded[k]);
+  Object.keys(conditionEditor).forEach((k) => delete conditionEditor[k]);
+  if (rules.value.length > 0) expanded[rules.value[0].ruleId] = true;
+  lastSavedFingerprint.value = saveStateFingerprint();
+}
+
+async function syncExistingScopeRulesOnCreate() {
+  if (!isNewRuleSet.value || view.value !== 'editor') return;
+
+  try {
+    const res = await apiClient.get('/settings/automation/assignment-rules', {
+      params: { appKey: scopeApp.value, moduleKey: scopeModule.value }
+    });
+    const row = res?.success ? res.data : null;
+    if (!row?._id) {
+      rules.value = [];
+      meta.enabled = true;
+      meta.applyStrategy = 'new_records_only';
+      lastSavedFingerprint.value = saveStateFingerprint();
+      return;
+    }
+
+    const sortedRules = (Array.isArray(row.rules) ? row.rules : [])
+      .slice()
+      .sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+    if (sortedRules.length === 0) {
+      rules.value = [];
+      meta.enabled = row.enabled !== false;
+      meta.applyStrategy = row.applyStrategy || 'new_records_only';
+      lastSavedFingerprint.value = saveStateFingerprint();
+      return;
+    }
+
+    applyExistingScopeRuleSet(row);
+  } catch {
+    /* keep current scope selection */
+  }
+}
+
+function openEditRuleSet(appKey, moduleKey) {
+  isNewRuleSet.value = false;
+  scopeApp.value = String(appKey || '').toUpperCase();
+  scopeModule.value = String(moduleKey || '').toLowerCase();
+  view.value = 'editor';
+  syncEditorToRoute();
+  loadMetadata();
+  loadRuleSet();
+}
+
+function backToList() {
+  view.value = 'list';
+  isNewRuleSet.value = false;
+  clearEditorRoute();
+  loadRuleSetList();
+}
+
+const appOptions = computed(() => {
+  const apps = new Map();
+  for (const mod of assignmentModules.value) {
+    const key = String(mod.appKey || '').toUpperCase();
+    if (!key || apps.has(key)) continue;
+    const label = key === 'HELPDESK'
+      ? t('settings.assignRulesAppHelpdesk')
+      : key === 'SALES'
+        ? t('settings.assignRulesAppSales')
+        : key;
+    apps.set(key, label);
+  }
+  return Array.from(apps.entries()).map(([key, label]) => ({ key, label }));
+});
+
+const moduleOptionsForApp = computed(() =>
+  assignmentModules.value
+    .filter((mod) => String(mod.appKey || '').toUpperCase() === scopeApp.value)
+    .map((mod) => ({
+      key: mod.moduleKey,
+      label: resolveModuleLabel(mod, t, MODULE_LABEL_KEYS)
+    }))
+);
+
+const conditionFieldOptions = computed(() => {
+  const scopeKey = `${String(scopeApp.value || '').toUpperCase()}:${String(scopeModule.value || '').toLowerCase()}`;
+  const fromApi = moduleFields.value.length > 0
+    ? moduleFields.value.map((field) => ({
+      value: field.key,
+      label: field.label || field.key
+    }))
+    : [];
+  const apiKeys = new Set(fromApi.map((row) => row.value));
+  const fallbackKeys = ASSIGNMENT_CONDITION_FIELD_OPTIONS[scopeKey] || ASSIGNMENT_CONDITION_FIELD_OPTIONS._fallback;
+  const extras = fallbackKeys
+    .filter((key) => !apiKeys.has(key))
+    .map((value) => ({ value, label: t(condFieldI18nKey(value)) }));
+  const merged = [...fromApi, ...extras];
+  if (merged.length > 0) {
+    return merged.sort((a, b) => String(a.label).localeCompare(String(b.label)));
+  }
+  const fallback = ASSIGNMENT_CONDITION_FIELD_OPTIONS[scopeKey] || ASSIGNMENT_CONDITION_FIELD_OPTIONS._fallback;
+  return fallback.map((value) => ({ value, label: t(condFieldI18nKey(value)) }));
+});
 
 const operators = computed(() => [
   { value: 'equals', label: t('settings.assignRulesOpEquals') },
@@ -734,18 +1183,33 @@ function resolveConditionValueOptions(appKey, moduleKey, fieldKey) {
   if (!field) return null;
   const ak = String(appKey || '').toUpperCase();
   const mk = String(moduleKey || '').toLowerCase();
-  if (ak === 'SALES' && mk === 'people') {
+  if (mk === 'people') {
     if (field === 'sales_type' || field === 'type') {
-      const types = salesPeopleTypeValues.value?.length ? salesPeopleTypeValues.value : PEOPLE_SALES_CLASSIFIER_FALLBACK;
+      const types = (ak === 'SALES' && salesPeopleTypeValues.value?.length)
+        ? salesPeopleTypeValues.value
+        : PEOPLE_SALES_CLASSIFIER_FALLBACK;
       return types.map((v) => ({ value: v, label: v }));
     }
     if (field === 'helpdesk_role') {
-      const types = helpdeskPeopleTypeValues.value?.length ? helpdeskPeopleTypeValues.value : PEOPLE_HELPDESK_ROLE_FALLBACK;
+      const types = (helpdeskPeopleTypeValues.value?.length)
+        ? helpdeskPeopleTypeValues.value
+        : PEOPLE_HELPDESK_ROLE_FALLBACK;
       return types.map((v) => ({ value: v, label: v }));
     }
     if (field === 'do_not_contact') {
       return [{ value: 'true', label: t('settings.assignRulesYes') }, { value: 'false', label: t('settings.assignRulesNo') }];
     }
+  }
+  const meta = fieldMeta(field);
+  if (meta?.options?.length) {
+    return meta.options.map((opt) => {
+      const value = typeof opt === 'object' ? (opt.value ?? opt.label) : opt;
+      const label = typeof opt === 'object' ? (opt.label ?? opt.value) : opt;
+      return { value, label };
+    });
+  }
+  if (String(meta?.dataType || '').toLowerCase() === 'boolean') {
+    return [{ value: 'true', label: t('settings.assignRulesYes') }, { value: 'false', label: t('settings.assignRulesNo') }];
   }
   return getConditionValueEnumList(appKey, moduleKey, field);
 }
@@ -754,22 +1218,65 @@ function clauseValueOptionList(clause) {
   const op = String(clause?.operator || 'equals');
   if (op === 'exists' || op === 'in' || op === 'not_in') return null;
   if (clauseFieldIsCustom(clause)) return null;
+  if (clauseFieldDataType(clause) === 'multi-picklist') return null;
   const field = String(clause?.field || '').trim();
   return field ? resolveConditionValueOptions(scopeApp.value, scopeModule.value, field) : null;
 }
 
-const moduleOptionsForApp = computed(() =>
-  (APP_MODULES[scopeApp.value] || APP_MODULES.HELPDESK).map((key) => ({ key, label: t(MODULE_LABEL_KEYS[key] || MODULE_LABEL_KEYS.cases) }))
-);
+function clauseValueMultiOptionList(clause) {
+  const op = String(clause?.operator || 'equals');
+  if (clauseFieldIsCustom(clause)) return null;
+  const dt = clauseFieldDataType(clause);
+  if (dt !== 'multi-picklist' && op !== 'in' && op !== 'not_in') return null;
+  const field = String(clause?.field || '').trim();
+  return field ? resolveConditionValueOptions(scopeApp.value, scopeModule.value, field) : null;
+}
 
-const conditionFieldOptions = computed(() =>
-  getConditionFieldOptions(scopeApp.value, scopeModule.value).map((value) => ({ value, label: t(condFieldI18nKey(value)) }))
-);
+function isMultiValueOperator(operator) {
+  const op = String(operator || '').toLowerCase();
+  return op === 'in' || op === 'not_in';
+}
+
+function clauseFieldDataType(clause) {
+  if (clauseFieldIsCustom(clause)) return 'text';
+  const field = String(clause?.field || '').trim();
+  const meta = field ? fieldMeta(field) : null;
+  return String(meta?.dataType || 'text').toLowerCase();
+}
+
+function normalizeClauseValueForFieldAndOperator(clause) {
+  if (!clause) return clause;
+  const dt = clauseFieldDataType(clause);
+  const op = String(clause.operator || '').toLowerCase();
+  const multi = dt === 'multi-picklist' || op === 'in' || op === 'not_in';
+  if (multi) {
+    if (Array.isArray(clause.value)) return clause;
+    if (typeof clause.value === 'string' && clause.value.trim().startsWith('[')) {
+      try {
+        const parsed = JSON.parse(clause.value);
+        clause.value = Array.isArray(parsed) ? parsed : [];
+        return clause;
+      } catch { /* ignore */ }
+    }
+    clause.value = clause.value ? [clause.value] : [];
+    return clause;
+  }
+  if (Array.isArray(clause.value)) clause.value = clause.value[0] ?? '';
+  return clause;
+}
+
+function clauseValueInputType(clause) {
+  const dt = clauseFieldDataType(clause);
+  if (dt === 'number' || dt === 'currency' || dt === 'percent') return 'number';
+  if (dt === 'date') return 'date';
+  if (dt === 'datetime') return 'datetime-local';
+  return 'text';
+}
 
 function inferClauseFieldSelect(field) {
   const f = String(field || '').trim();
   if (!f) return 'preset';
-  return getConditionFieldOptions(scopeApp.value, scopeModule.value).includes(f) ? 'preset' : 'custom';
+  return getConditionFieldOptions().includes(f) ? 'preset' : 'custom';
 }
 
 function clauseFieldPresetValue(clause) {
@@ -785,7 +1292,16 @@ function onClauseFieldPresetChange(clause, event) {
   if (v === '') { clause._fieldSelect = 'preset'; clause.field = ''; return; }
   clause._fieldSelect = 'preset';
   clause.field = v;
+  normalizeClauseValueForFieldAndOperator(clause);
   const list = resolveConditionValueOptions(scopeApp.value, scopeModule.value, v);
+  const op = String(clause.operator || '').toLowerCase();
+  if (op === 'in' || op === 'not_in') {
+    if (!Array.isArray(clause.value)) clause.value = [];
+    if (list && Array.isArray(clause.value)) {
+      clause.value = clause.value.filter((x) => list.some((o) => String(o.value) === String(x)));
+    }
+    return;
+  }
   if (list && clause.value !== '' && clause.value != null && !list.some((o) => String(o.value) === String(clause.value))) clause.value = '';
 }
 
@@ -1012,7 +1528,7 @@ function onRulesReorder() {
 }
 
 const syncingFromUrl = ref(false);
-const loading = ref(true);
+const loading = ref(false);
 const loadError = ref('');
 const saving = ref(false);
 const saveError = ref('');
@@ -1256,9 +1772,11 @@ function normalizeRule(r, index) {
           else if (v === true) v = 'true';
           else if (v === false) v = 'false';
         }
-        if (Array.isArray(v)) v = JSON.stringify(v);
+        if (Array.isArray(v)) v = v.map((x) => String(x));
         else if (v !== null && typeof v === 'object') v = JSON.stringify(v);
-        return { field: c.field, operator: c.operator || 'equals', value: v, _fieldSelect: c._fieldSelect || inferClauseFieldSelect(c.field) };
+        const clause = { field: c.field, operator: c.operator || 'equals', value: v, _fieldSelect: c._fieldSelect || inferClauseFieldSelect(c.field) };
+        normalizeClauseValueForFieldAndOperator(clause);
+        return clause;
       }) : []
     },
     primaryGroupId: metadata.assignTargetType === 'custom' ? '' : (r.primaryGroupId ? String(r.primaryGroupId) : ''),
@@ -1279,7 +1797,6 @@ function addRule() {
   const r = createEmptyRule();
   rules.value = [...rules.value, r];
   expanded[r.ruleId] = true;
-  activeTab.value = TAB.rules;
 }
 
 function removeRule(index) {
@@ -1300,8 +1817,42 @@ function removeClause(rule, idx) {
 function applyScopeFromRoute() {
   const a = route.query.assignmentApp;
   const m = route.query.assignmentModule;
-  if (typeof a === 'string' && a.trim()) { const up = a.toUpperCase(); if (APP_MODULES[up]) scopeApp.value = up; }
-  if (typeof m === 'string' && m.trim()) { const low = m.toLowerCase(); if ((APP_MODULES[scopeApp.value] || []).includes(low)) scopeModule.value = low; }
+  if (typeof a === 'string' && a.trim()) {
+    const up = a.toUpperCase();
+    if (moduleExists(up, scopeModule.value) || assignmentModules.value.some((row) => String(row.appKey).toUpperCase() === up)) {
+      scopeApp.value = up;
+    }
+  }
+  if (typeof m === 'string' && m.trim()) {
+    const low = m.toLowerCase();
+    if (moduleExists(scopeApp.value, low)) scopeModule.value = low;
+  }
+  ensureValidScope();
+}
+
+async function loadMetadata() {
+  try {
+    const res = await apiClient.get('/settings/automation/assignment-rules/metadata', {
+      params: {
+        moduleKey: scopeModule.value,
+        appKey: scopeApp.value
+      }
+    });
+    if (!res?.success) return;
+    if (Array.isArray(res.modules) && res.modules.length > 0) {
+      assignmentModules.value = res.modules;
+    }
+    moduleFields.value = Array.isArray(res.moduleFields) ? res.moduleFields : [];
+    if (!isNewRuleSet.value && res.adapter?.appKey) {
+      const adapterApp = String(res.adapter.appKey).toUpperCase();
+      if (assignmentModules.value.some((row) => String(row.appKey).toUpperCase() === adapterApp)) {
+        scopeApp.value = adapterApp;
+      }
+    }
+    ensureValidScope();
+  } catch {
+    moduleFields.value = [];
+  }
 }
 
 function goBackToAutomation() {
@@ -1310,10 +1861,6 @@ function goBackToAutomation() {
   delete nextQuery.assignmentApp;
   delete nextQuery.assignmentModule;
   router.push({ path: '/settings', query: nextQuery });
-}
-
-function syncScopeToRoute() {
-  router.replace({ path: '/settings', query: { ...route.query, tab: 'automation', automationView: 'assignment-rules', assignmentApp: scopeApp.value, assignmentModule: scopeModule.value } });
 }
 
 async function fetchGroups() {
@@ -1342,9 +1889,18 @@ function payloadRulesForApi() {
       let val = c.value;
       if ((c.operator === 'in' || c.operator === 'not_in') && typeof val === 'string' && val.trim().startsWith('[')) { try { val = JSON.parse(val); } catch { /* keep */ } }
       if (c.operator === 'exists') val = null;
-      if (String(c.field || '').trim() === 'do_not_contact' && c.operator !== 'exists') {
-        if ((c.operator === 'in' || c.operator === 'not_in') && Array.isArray(val)) val = val.map((x) => (x === true || x === 'true' ? true : x === false || x === 'false' ? false : x));
-        else if (c.operator === 'equals' || c.operator === 'not_equals') { if (val === 'true' || val === true) val = true; else if (val === 'false' || val === false) val = false; }
+      const fieldKey = String(c.field || '').trim();
+      const meta = fieldKey && !fieldKey.startsWith('customFields.') ? fieldMeta(fieldKey) : null;
+      const isBooleanField =
+        fieldKey === 'do_not_contact' ||
+        String(meta?.dataType || '').toLowerCase() === 'boolean';
+      if (isBooleanField && c.operator !== 'exists') {
+        if ((c.operator === 'in' || c.operator === 'not_in') && Array.isArray(val)) {
+          val = val.map((x) => (x === true || x === 'true' ? true : x === false || x === 'false' ? false : x));
+        } else if (c.operator === 'equals' || c.operator === 'not_equals') {
+          if (val === 'true' || val === true) val = true;
+          else if (val === 'false' || val === false) val = false;
+        }
       }
       return { field: c.field, operator: c.operator, value: val };
     });
@@ -1442,7 +1998,9 @@ async function save() {
     const res = await apiClient.put('/settings/automation/assignment-rules', { appKey: scopeApp.value, moduleKey: scopeModule.value, enabled: meta.enabled, simulationOnly: false, applyStrategy: meta.applyStrategy, rules: payloadRulesForApi() });
     if (!res?.success) throw new Error(res?.message || t('settings.assignRulesSaveFailed'));
     notifySuccess(t('settings.assignRulesSaved'));
+    isNewRuleSet.value = false;
     await loadRuleSet();
+    await loadRuleSetList();
   } catch (e) {
     const serverErr = e.response?.data?.error;
     const serverDetails = e.response?.data?.details;
@@ -1452,31 +2010,61 @@ async function save() {
   }
 }
 
-watch([scopeApp, scopeModule], () => {
-  if (syncingFromUrl.value) return;
-  const mods = APP_MODULES[scopeApp.value] || [];
-  if (!mods.includes(scopeModule.value)) scopeModule.value = mods[0] || 'cases';
-  syncScopeToRoute();
-  loadRuleSet();
+watch([scopeApp, scopeModule], async () => {
+  if (view.value !== 'editor' || syncingFromUrl.value) return;
+  ensureValidScope();
+  syncEditorToRoute();
+  await loadMetadata();
+  if (isNewRuleSet.value) {
+    await syncExistingScopeRulesOnCreate();
+    return;
+  }
+  await loadRuleSet();
 });
 
-watch(() => [route.query.tab, route.query.assignmentApp, route.query.assignmentModule], () => {
-  if (route.query.tab !== 'automation') return;
+watch(() => [route.query.tab, route.query.assignmentApp, route.query.assignmentModule], async () => {
+  if (syncingFromUrl.value) return;
+  if (route.query.tab !== 'automation' || route.query.automationView !== 'assignment-rules') return;
   const qa = typeof route.query.assignmentApp === 'string' ? route.query.assignmentApp.toUpperCase() : '';
   const qm = typeof route.query.assignmentModule === 'string' ? route.query.assignmentModule.toLowerCase() : '';
-  if (!qa || !APP_MODULES[qa] || !(APP_MODULES[qa] || []).includes(qm)) return;
-  if (qa === scopeApp.value && qm === scopeModule.value) return;
+  if (!qa || !qm) {
+    if (view.value === 'editor' && !isNewRuleSet.value) backToList();
+    return;
+  }
+  if (!moduleExists(qa, qm)) return;
+  if (qa === scopeApp.value && qm === scopeModule.value && view.value === 'editor') return;
   syncingFromUrl.value = true;
+  isNewRuleSet.value = false;
   scopeApp.value = qa;
   scopeModule.value = qm;
-  nextTick(() => { syncingFromUrl.value = false; loadRuleSet(); });
+  view.value = 'editor';
+  await nextTick();
+  syncingFromUrl.value = false;
+  await loadMetadata();
+  await loadRuleSet();
 });
 
-onMounted(() => {
-  syncingFromUrl.value = true;
-  applyScopeFromRoute();
-  syncScopeToRoute();
-  nextTick(() => { syncingFromUrl.value = false; loadRuleSet(); });
+onMounted(async () => {
+  bootstrapLoading.value = true;
+  try {
+    await loadMetadata();
+    await loadRuleSetList();
+    applyScopeFromRoute();
+    const qa = typeof route.query.assignmentApp === 'string' ? route.query.assignmentApp.toUpperCase() : '';
+    const qm = typeof route.query.assignmentModule === 'string' ? route.query.assignmentModule.toLowerCase() : '';
+    if (qa && qm && moduleExists(qa, qm)) {
+      isNewRuleSet.value = false;
+      scopeApp.value = qa;
+      scopeModule.value = qm;
+      view.value = 'editor';
+      await loadMetadata();
+      await loadRuleSet();
+    } else {
+      view.value = 'list';
+    }
+  } finally {
+    bootstrapLoading.value = false;
+  }
 });
 </script>
 
