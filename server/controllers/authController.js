@@ -80,6 +80,28 @@ async function resolveInstanceForLogin(organizationId, email) {
                     status: instance.status || null
                 };
             }
+
+            const organization = await Organization.findById(organizationId)
+                .select('database')
+                .lean();
+            const dbName = organization?.database?.name;
+            if (dbName) {
+                const fallbackByDatabase = await InstanceRegistry.findOne({
+                    'databaseConnection.database': dbName
+                })
+                    .sort({ updatedAt: -1 })
+                    .select('subdomain urls status')
+                    .lean();
+
+                if (fallbackByDatabase) {
+                    return {
+                        subdomain: fallbackByDatabase.subdomain || null,
+                        frontendUrl: fallbackByDatabase.urls?.frontend || null,
+                        apiUrl: fallbackByDatabase.urls?.api || null,
+                        status: fallbackByDatabase.status || null
+                    };
+                }
+            }
         }
 
         if (email) {

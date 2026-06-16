@@ -37,6 +37,7 @@ const { resolveAppContext } = require('../middleware/resolveAppContextMiddleware
 const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMiddleware');
 const { lazySalesInitialization } = require('../middleware/lazySalesInitializationMiddleware');
 const { requireSalesApp } = require('../middleware/requireSalesAppMiddleware');
+const { organizationIsolation } = require('../middleware/organizationMiddleware');
 const controller = require('../controllers/organizationV2Controller');
 const createController = require('../controllers/organizationCreateController');
 
@@ -45,6 +46,7 @@ router.use(resolveAppContext);
 router.use(requireAppEntitlement);
 router.use(lazySalesInitialization);
 router.use(requireSalesApp);
+router.use(organizationIsolation);
 
 // CreateOrganizationSurface endpoint (must be before /:id route)
 // ARCHITECTURAL INTENT: Dedicated endpoint for creation-only surface
