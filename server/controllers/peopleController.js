@@ -240,6 +240,7 @@ exports.create = async (req, res) => {
         await runImmediateAssignmentForSalesRecord({
           record: fresh,
           moduleKey: 'people',
+          appKey,
           actorId: req.user._id,
           triggerSource: 'immediate',
           changedFields: []
@@ -1168,6 +1169,7 @@ exports.update = async (req, res) => {
         await runImmediateAssignmentForSalesRecord({
           record: assignDoc,
           moduleKey: 'people',
+          appKey: req.appKey || req.query.appKey || 'SALES',
           actorId: req.user._id,
           triggerSource: 'immediate',
           changedFields: changedFieldKeys

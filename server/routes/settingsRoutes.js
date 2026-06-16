@@ -42,7 +42,9 @@ router.get('/quotes', quoteSettingsController.getQuoteSettings);
 router.put('/quotes', quoteSettingsController.updateQuoteSettings);
 router.get('/applications/:appKey', controller.getApplication);
 
-// Assignment Rules (Step 7A simulation foundation)
+// Assignment Rules (metadata-driven, module-scoped)
+router.get('/automation/assignment-rules/metadata', assignmentRulesController.getAssignmentRulesMetadata);
+router.get('/automation/assignment-rules/list', assignmentRulesController.listAssignmentRuleSets);
 router.get('/automation/assignment-rules', assignmentRulesController.getAssignmentRuleSet);
 router.put('/automation/assignment-rules', assignmentRulesController.upsertAssignmentRuleSet);
 router.post('/automation/assignment-rules/simulate', assignmentRulesController.simulateAssignmentRules);

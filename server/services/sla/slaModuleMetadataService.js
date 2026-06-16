@@ -35,6 +35,30 @@ const SUPPORTED_FIELD_TYPES = new Set([
   'lookup'
 ]);
 
+const ASSIGNMENT_EXTRA_FIELD_TYPES = new Set([
+  'array',
+  'multiselect',
+  'reference',
+  'user',
+  'lookup-user'
+]);
+
+function normalizeFieldDataType(raw) {
+  const src = String(raw || '').trim();
+  if (!src) return 'text';
+  const lower = src.toLowerCase().replace(/_/g, '-').replace(/\s+/g, '-');
+  if (lower === 'text-area' || lower === 'textarea') return 'textarea';
+  if (lower === 'multi-picklist' || lower === 'multi-pick-list') return 'multi-picklist';
+  if (lower === 'pick-list') return 'picklist';
+  if (lower === 'multi-select' || lower === 'multiselect') return 'multiselect';
+  if (lower === 'date-time' || lower === 'date-time-local') return 'datetime';
+  if (lower === 'bool') return 'boolean';
+  if (lower === 'user' || lower === 'users') return 'user';
+  if (lower === 'lookup-user' || lower === 'user-lookup') return 'lookup-user';
+  if (lower === 'ref' || lower === 'objectid' || lower === 'object-id') return 'reference';
+  return lower;
+}
+
 async function listTenantSlaModules(organizationId) {
   const modules = [];
   const seen = new Set();
@@ -118,7 +142,12 @@ async function listTenantSlaModules(organizationId) {
   return modules.sort((a, b) => String(a.label).localeCompare(String(b.label)));
 }
 
-async function loadModuleDefinitionFields(organizationId, appKey, moduleKey) {
+async function loadModuleDefinitionFields(organizationId, appKey, moduleKey, options = {}) {
+  const includeHidden = options.includeHidden === true;
+  const forAssignment = options.forAssignment === true;
+  const allowedTypes = forAssignment
+    ? new Set([...SUPPORTED_FIELD_TYPES, ...ASSIGNMENT_EXTRA_FIELD_TYPES])
+    : SUPPORTED_FIELD_TYPES;
   const normApp = String(appKey || '').toLowerCase();
   const normMod = String(moduleKey || '').toLowerCase();
   if (!normApp || !normMod) return [];
@@ -155,17 +184,16 @@ async function loadModuleDefinitionFields(organizationId, appKey, moduleKey) {
       const key = String(field?.key || '').trim();
       if (!key) return false;
       if (EXCLUDED_FIELD_KEYS.has(key.toLowerCase())) return false;
-      const dataType = String(field?.dataType || 'text').toLowerCase();
-      // For conditions we always want picklist fields available, even if hidden in some UI contexts.
-      if (!['picklist', 'multi-picklist'].includes(dataType)) {
+      const dataType = normalizeFieldDataType(field?.dataType || 'text');
+      if (!includeHidden && !['picklist', 'multi-picklist'].includes(dataType)) {
         if (field?.visibility?.detail === false && field?.visibility?.list === false) return false;
       }
-      return SUPPORTED_FIELD_TYPES.has(dataType);
+      return allowedTypes.has(dataType);
     })
     .map((field) => ({
       key: field.key,
       label: field.label || field.key,
-      dataType: field.dataType || 'text',
+      dataType: normalizeFieldDataType(field.dataType || 'text'),
       options: Array.isArray(field.options) ? field.options : []
     }))
     .sort((a, b) => String(a.label).localeCompare(String(b.label)));
@@ -200,5 +228,6 @@ async function resolveModuleAppKey(organizationId, moduleKey, appKey = null) {
 module.exports = {
   listTenantSlaModules,
   getSlaModuleConditionFields,
+  loadModuleDefinitionFields,
   resolveModuleAppKey
 };

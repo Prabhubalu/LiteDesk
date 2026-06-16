@@ -5531,6 +5531,74 @@
     "message": "Add rule",
     "description": "Add rule button"
   },
+  "assignRulesNewRuleSet": {
+    "message": "New assignment rules",
+    "description": "Create assignment rules for app and module"
+  },
+  "assignRulesEditRuleSet": {
+    "message": "Edit assignment rules",
+    "description": "Edit assignment rules for app and module"
+  },
+  "assignRulesBackToList": {
+    "message": "Back to assignment rules list",
+    "description": "Back from editor to list"
+  },
+  "assignRulesEmptyListTitle": {
+    "message": "No assignment rules configured",
+    "description": "Empty list title"
+  },
+  "assignRulesEmptyListHint": {
+    "message": "Create assignment rules for a specific application and module.",
+    "description": "Empty list hint"
+  },
+  "assignRulesScopeForNew": {
+    "message": "Application & module",
+    "description": "Scope picker when creating new rule set"
+  },
+  "assignRulesExistingScopeLoading": {
+    "message": "Checking for existing assignment rules…",
+    "description": "Loading indicator while checking scope for existing rules"
+  },
+  "assignRulesExistingScopeTitle": {
+    "message": "Assignment rules already exist for {app} · {module}",
+    "description": "Title when create scope matches an existing rule set"
+  },
+  "assignRulesExistingScopeHint": {
+    "message": "These rules are loaded below. Saving will update this rule set.",
+    "description": "Hint when existing rules are shown during create flow"
+  },
+  "assignRulesRuleCount": {
+    "message": "{count} rules",
+    "description": "Rule count on list card"
+  },
+  "assignRulesStatTotalSets": {
+    "message": "Rule sets",
+    "description": "Assignment rules list stat: total rule sets"
+  },
+  "assignRulesStatActiveSets": {
+    "message": "Active rule sets",
+    "description": "Assignment rules list stat: active rule sets"
+  },
+  "assignRulesStatTotalRules": {
+    "message": "Total rules",
+    "description": "Assignment rules list stat: total rules across sets"
+  },
+  "assignRulesListSearchPh": {
+    "message": "Search rule sets…",
+    "description": "Assignment rules list search placeholder"
+  },
+  "assignRulesListColScope": {
+    "message": "Scope",
+    "description": "Assignment rules list table column: scope"
+  },
+  "assignRulesListColRules": {
+    "message": "Rules",
+    "description": "Assignment rules list table column: rules"
+  },
+  "assignRulesListColStrategy": {
+    "message": "When rules change",
+    "description": "Assignment rules list table column: apply strategy"
+  },
   "assignRulesEmpty": {
     "message": "No rules yet. Add a rule to define routing for this module.",
     "description": "Empty rules"

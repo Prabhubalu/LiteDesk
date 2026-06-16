@@ -5,6 +5,8 @@ const Group = require('../models/Group');
 const { simulateAssignment } = require('./assignmentRulesEngine');
 const { enqueueOffHoursDeferredAssignment } = require('./assignmentAvailabilityService');
 const { emitSalesRecordOwnerAssignedNotify } = require('./assignmentSalesOwnerNotify');
+const { getAdapter } = require('./assignment/assignmentModuleRegistry');
+const { resolveModuleAppKey } = require('./assignment/assignmentModuleMetadataService');
 
 function toIdString(value) {
   if (value == null) return null;
@@ -54,7 +56,10 @@ function clearAssignmentLock(caseRecord) {
   };
 }
 
-function isRelevantReevaluation(changedFields = []) {
+function isRelevantReevaluation(changedFields = [], adapter = null) {
+  if (adapter?.shouldReevaluate) {
+    return adapter.shouldReevaluate(changedFields);
+  }
   const relevant = new Set([
     'priority',
     'caseType',
@@ -80,18 +85,50 @@ function shouldSkipAutoAssignmentOnUpdate(applyStrategy) {
   );
 }
 
+const MODULE_APP_KEY_CANDIDATES = {
+  people: ['SALES', 'PLATFORM', 'HELPDESK'],
+  cases: ['HELPDESK'],
+  deals: ['SALES'],
+  tasks: ['SALES'],
+  organizations: ['SALES'],
+  events: ['SALES'],
+  items: ['SALES'],
+  forms: ['SALES']
+};
+
+function buildAppKeyCandidates(appKey, moduleKey) {
+  const mk = String(moduleKey || '').toLowerCase();
+  const preferred = appKey ? String(appKey).toUpperCase() : null;
+  const fallbacks = MODULE_APP_KEY_CANDIDATES[mk] || ['SALES', 'HELPDESK', 'PLATFORM'];
+  return [...new Set([preferred, ...fallbacks].filter(Boolean))];
+}
+
 async function loadImmediateRuleSet({ organizationId, appKey, moduleKey }) {
-  const ruleSet = await AssignmentRuleSet.findOne({
-    organizationId,
-    appKey,
-    moduleKey,
-    enabled: true
-  }).lean();
-  if (!ruleSet) return null;
-  return {
-    ...ruleSet,
-    rules: (ruleSet.rules || []).filter((rule) => rule?.enabled !== false && rule.triggerType === 'immediate')
-  };
+  const mk = String(moduleKey || '').toLowerCase();
+  const candidates = buildAppKeyCandidates(appKey, mk);
+
+  for (const candidateAppKey of candidates) {
+    const ruleSet = await AssignmentRuleSet.findOne({
+      organizationId,
+      appKey: candidateAppKey,
+      moduleKey: mk,
+      enabled: true
+    }).lean();
+    if (!ruleSet) continue;
+
+    const immediateRules = (ruleSet.rules || []).filter(
+      (rule) => rule?.enabled !== false && rule.triggerType === 'immediate'
+    );
+    if (immediateRules.length === 0) continue;
+
+    return {
+      ...ruleSet,
+      appKey: candidateAppKey,
+      rules: immediateRules
+    };
+  }
+
+  return null;
 }
 
 async function findLatestAssignmentLog({ organizationId, appKey, moduleKey, recordId }) {
@@ -435,6 +472,10 @@ function buildSalesRecordForAssignmentRules(moduleKey, recordDoc) {
 }
 
 function shouldRunSalesReevaluation(moduleKey, changedFields) {
+  const adapter = getAdapter(moduleKey);
+  if (adapter?.shouldReevaluate) {
+    return adapter.shouldReevaluate(changedFields);
+  }
   const profile = SALES_MODULE_ASSIGNMENT_PROFILES[moduleKey];
   if (!profile) return false;
   if (!Array.isArray(changedFields) || changedFields.length === 0) return true;
@@ -461,24 +502,34 @@ function setOwnerOnRecord(record, ownerPath, userId) {
 async function runImmediateAssignmentForSalesRecord({
   record,
   moduleKey,
+  appKey = null,
   actorId,
   triggerSource = 'immediate',
   changedFields = [],
   tenantOrganizationId = null
 }) {
   const key = String(moduleKey || '').toLowerCase();
+  const resolvedHintAppKey = appKey
+    ? String(appKey).toUpperCase()
+    : await resolveModuleAppKey(tenantOrganizationId || record?.organizationId, key, null);
+  const adapter = getAdapter(key, { appKey: resolvedHintAppKey || 'SALES' });
   const profile = SALES_MODULE_ASSIGNMENT_PROFILES[key];
   const organizationId = tenantOrganizationId || record?.organizationId;
-  if (!profile || !record?._id || !organizationId) {
+  if ((!profile && !adapter) || !record?._id || !organizationId) {
     return { executed: false, reason: 'invalid_profile_or_record' };
   }
   if (triggerSource === 'immediate' && changedFields.length > 0 && !shouldRunSalesReevaluation(key, changedFields)) {
     return { executed: false, reason: 'no_relevant_changes' };
   }
-  const appKey = 'SALES';
   const recordId = toIdString(record._id);
+  const ownerPath = adapter?.ownerPath || profile?.ownerPath;
 
-  const ruleSet = await loadImmediateRuleSet({ organizationId, appKey, moduleKey: key });
+  const ruleSet = await loadImmediateRuleSet({
+    organizationId,
+    appKey: resolvedHintAppKey,
+    moduleKey: key
+  });
+  const appKeyForExecution = ruleSet?.appKey || resolvedHintAppKey || 'SALES';
   if (!ruleSet || !Array.isArray(ruleSet.rules) || ruleSet.rules.length === 0) {
     return { executed: false, reason: 'no_immediate_rules' };
   }
@@ -499,7 +550,7 @@ async function runImmediateAssignmentForSalesRecord({
 
   const existing = await AssignmentExecutionLog.findOne({
     organizationId,
-    appKey,
+    appKey: appKeyForExecution,
     moduleKey: key,
     recordId,
     idempotencyKey
@@ -510,12 +561,13 @@ async function runImmediateAssignmentForSalesRecord({
     return { executed: false, reason: 'idempotent_replay' };
   }
 
-  const ownerPath = profile.ownerPath;
-  const previousOwnerId = getOwnerFromRecord(record, ownerPath);
+  const previousOwnerId = adapter?.getOwner
+    ? adapter.getOwner(record)
+    : getOwnerFromRecord(record, ownerPath);
   const ruleInput = buildSalesRecordForAssignmentRules(key, record);
   const simulation = await simulateAssignment({
     organizationId,
-    appKey,
+    appKey: appKeyForExecution,
     moduleKey: key,
     rules: ruleSet.rules,
     record: ruleInput,
@@ -528,7 +580,11 @@ async function runImmediateAssignmentForSalesRecord({
   const ownerChanged = canAssign && previousOwnerId !== nextOwnerId;
 
   if (ownerChanged) {
-    setOwnerOnRecord(record, ownerPath, nextOwnerId);
+    if (adapter?.setOwner) {
+      adapter.setOwner(record, nextOwnerId);
+    } else {
+      setOwnerOnRecord(record, ownerPath, nextOwnerId);
+    }
     if (key === 'people') {
       if (!Array.isArray(record.activityLogs)) record.activityLogs = [];
       record.activityLogs.push({
@@ -583,7 +639,7 @@ async function runImmediateAssignmentForSalesRecord({
   } else {
     const offHoursDefer = await maybeEnqueueOffHoursAssignment({
       organizationId,
-      appKey,
+      appKey: appKeyForExecution,
       moduleKey: key,
       recordId,
       ruleSet,
@@ -612,7 +668,7 @@ async function runImmediateAssignmentForSalesRecord({
 
   await createExecutionLog({
     organizationId,
-    appKey,
+    appKey: appKeyForExecution,
     moduleKey: key,
     recordId,
     triggerSource,
@@ -909,9 +965,173 @@ async function runImmediateAssignmentForCase({
   };
 }
 
+/**
+ * Generic immediate assignment for any module with a registered or inferred adapter.
+ */
+async function runImmediateAssignmentForRecord({
+  record,
+  moduleKey,
+  appKey = null,
+  actorId,
+  triggerSource = 'immediate',
+  changedFields = [],
+  tenantOrganizationId = null
+}) {
+  const key = String(moduleKey || '').toLowerCase();
+  const organizationId = tenantOrganizationId || record?.organizationId;
+  if (!record?._id || !organizationId) {
+    return { executed: false, reason: 'invalid_record' };
+  }
+
+  const resolvedAppKey = appKey
+    ? String(appKey).toUpperCase()
+    : await resolveModuleAppKey(organizationId, key, null);
+  const adapter = getAdapter(key, { appKey: resolvedAppKey });
+  if (!adapter) {
+    return { executed: false, reason: 'unsupported_module' };
+  }
+
+  if (key === 'cases') {
+    return runImmediateAssignmentForCase({
+      caseRecord: record,
+      actorId,
+      triggerSource,
+      changedFields
+    });
+  }
+
+  if (SALES_MODULE_ASSIGNMENT_PROFILES[key]) {
+    return runImmediateAssignmentForSalesRecord({
+      record,
+      moduleKey: key,
+      actorId,
+      triggerSource,
+      changedFields,
+      tenantOrganizationId: organizationId
+    });
+  }
+
+  if (triggerSource === 'immediate' && changedFields.length > 0 && !adapter.shouldReevaluate(changedFields)) {
+    return { executed: false, reason: 'no_relevant_changes' };
+  }
+
+  const app = resolvedAppKey || adapter.appKey || 'SALES';
+  const recordId = toIdString(record._id);
+  const ruleSet = await loadImmediateRuleSet({ organizationId, appKey: app, moduleKey: key });
+  if (!ruleSet || !Array.isArray(ruleSet.rules) || ruleSet.rules.length === 0) {
+    return { executed: false, reason: 'no_immediate_rules' };
+  }
+  if (ruleSet.simulationOnly) {
+    return { executed: false, reason: 'simulation_only_enabled' };
+  }
+  if (triggerSource === 'immediate' && changedFields.length > 0 && shouldSkipAutoAssignmentOnUpdate(ruleSet.applyStrategy)) {
+    return { executed: false, reason: 'apply_strategy_skips_updates' };
+  }
+
+  const idempotencyKey = [
+    'generic_immediate',
+    key,
+    recordId,
+    toIdString(record.updatedAt?.getTime?.() || record.updatedAt || Date.now()),
+    String(ruleSet.version || 1)
+  ].join(':');
+
+  const existing = await AssignmentExecutionLog.findOne({
+    organizationId,
+    appKey: app,
+    moduleKey: key,
+    recordId,
+    idempotencyKey
+  })
+    .select('_id')
+    .lean();
+  if (existing) {
+    return { executed: false, reason: 'idempotent_replay' };
+  }
+
+  const previousOwnerId = adapter.getOwner(record);
+  const ruleInput = adapter.normalizeRecord(record);
+  const simulation = await simulateAssignment({
+    organizationId,
+    appKey: app,
+    moduleKey: key,
+    rules: ruleSet.rules,
+    record: ruleInput,
+    context: adapter.buildSimulateContext(record, recordId)
+  });
+  const nextOwnerId = toIdString(simulation?.outcome?.assignedUserId);
+  const assignedGroupId = toIdString(simulation?.outcome?.assignedGroupId);
+  const state = simulation?.outcome?.state || 'skipped';
+  const canAssign = state === 'assigned' && mongoose.Types.ObjectId.isValid(nextOwnerId);
+  const ownerChanged = canAssign && previousOwnerId !== nextOwnerId;
+
+  if (ownerChanged) {
+    adapter.setOwner(record, nextOwnerId);
+    const logPath = adapter.activityLogPath;
+    if (logPath && Array.isArray(record[logPath])) {
+      record[logPath].push({
+        user: 'Assignment Engine',
+        userId: actorId || null,
+        action: 'assignment_auto_applied',
+        message: 'Assigned by automation rules',
+        details: { ruleId: simulation.ruleId, assignedGroupId },
+        timestamp: new Date()
+      });
+    }
+    await record.save();
+
+    if (app === 'SALES') {
+      emitSalesRecordOwnerAssignedNotify({
+        organizationId,
+        moduleKey: key,
+        record,
+        triggeredBy: actorId || null
+      }).catch((err) => {
+        console.error('[assignmentExecutionService] generic SALES assignment notification:', err?.message || err);
+      });
+    }
+  }
+
+  await createExecutionLog({
+    organizationId,
+    appKey: app,
+    moduleKey: key,
+    recordId,
+    triggerSource,
+    ruleId: simulation.ruleId,
+    previousOwnerId,
+    newOwnerId: canAssign ? nextOwnerId : previousOwnerId,
+    assignedGroupId,
+    status:
+      state === 'assigned' && ownerChanged
+        ? 'assigned'
+        : state === 'queued'
+          ? 'queued'
+          : 'skipped',
+    idempotencyKey,
+    details: {
+      ruleSetVersion: ruleSet.version,
+      trace: simulation.trace,
+      outcome: simulation.outcome,
+      ownerChanged
+    }
+  });
+
+  return {
+    executed: true,
+    ownerChanged,
+    previousOwnerId,
+    newOwnerId: canAssign ? nextOwnerId : previousOwnerId,
+    assignedGroupId,
+    ruleId: simulation.ruleId,
+    outcome: simulation.outcome
+  };
+}
+
 module.exports = {
   runImmediateAssignmentForCase,
   runImmediateAssignmentForSalesRecord,
+  runImmediateAssignmentForRecord,
   registerManualOwnerOverride,
   buildSalesRecordForAssignmentRules,
   shouldRunSalesReevaluation,

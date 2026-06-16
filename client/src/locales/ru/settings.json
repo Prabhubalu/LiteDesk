@@ -12542,5 +12542,33 @@
   "slaScopeModuleRequired": {
     "message": "Select a module for this policy.",
     "description": "Validation when SLA policy module is missing"
+  },
+  "assignRulesNewRuleSet": {
+    "message": "New assignment rules",
+    "description": "Create assignment rules for app and module"
+  },
+  "assignRulesEditRuleSet": {
+    "message": "Edit assignment rules",
+    "description": "Edit assignment rules for app and module"
+  },
+  "assignRulesBackToList": {
+    "message": "Back to assignment rules list",
+    "description": "Back from editor to list"
+  },
+  "assignRulesEmptyListTitle": {
+    "message": "No assignment rules configured",
+    "description": "Empty list title"
+  },
+  "assignRulesEmptyListHint": {
+    "message": "Create assignment rules for a specific application and module.",
+    "description": "Empty list hint"
+  },
+  "assignRulesScopeForNew": {
+    "message": "Application & module",
+    "description": "Scope picker when creating new rule set"
+  },
+  "assignRulesRuleCount": {
+    "message": "{count} rules",
+    "description": "Rule count on list card"
   }
 }
