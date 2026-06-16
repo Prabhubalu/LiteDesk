@@ -189,6 +189,10 @@ const RECORD_DETAIL_ROUTE_NAMES = new Set([
   'response-detail',
   'form-response-detail',
   'helpdesk-cases-detail',
+  'quote-detail',
+  'sales-order-detail',
+  'invoice-detail',
+  'payment-detail',
 ]);
 
 const collapseSidebarForRecordOnTablet = () => {
