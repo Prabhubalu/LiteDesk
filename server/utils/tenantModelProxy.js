@@ -25,17 +25,42 @@
 const mongoose = require('mongoose');
 const { getTenantConnection } = require('./tenantContext');
 
+function collectReferencedModelNames(schema) {
+    const refs = new Set();
+    if (!schema || typeof schema.eachPath !== 'function') {
+        return refs;
+    }
+
+    schema.eachPath((_pathName, schemaType) => {
+        const directRef = schemaType?.options?.ref;
+        if (typeof directRef === 'string' && directRef) {
+            refs.add(directRef);
+        }
+
+        const casterRef = schemaType?.caster?.options?.ref;
+        if (typeof casterRef === 'string' && casterRef) {
+            refs.add(casterRef);
+        }
+    });
+
+    return refs;
+}
+
 /**
  * Compile / return a cached Model on the tenant connection that mirrors the
  * master model's schema (including methods, statics, and indexes). The
  * connection retains its own model registry, so we re-use the cached entry on
  * subsequent calls.
  */
-function getModelOnConnection(connection, masterModel) {
+function getModelOnConnection(connection, masterModel, visiting = new Set()) {
     const modelName = masterModel.modelName;
     if (connection.models[modelName]) {
         return connection.models[modelName];
     }
+    if (visiting.has(modelName)) {
+        return connection.models[modelName] || masterModel;
+    }
+    visiting.add(modelName);
 
     const sourceSchema = masterModel.schema;
     const cloned = new mongoose.Schema(sourceSchema.obj, sourceSchema.options);
@@ -88,7 +113,24 @@ function getModelOnConnection(connection, masterModel) {
         }
     }
 
-    return connection.model(modelName, cloned);
+    const tenantModel = connection.model(modelName, cloned);
+
+    // Ensure populate refs are available on tenant connection to avoid
+    // MissingSchemaError during tenant-scoped queries.
+    const refNames = collectReferencedModelNames(sourceSchema);
+    for (const refName of refNames) {
+        if (refName === modelName || connection.models[refName]) continue;
+        const masterRefModel = mongoose.models[refName];
+        if (!masterRefModel || !masterRefModel.schema) continue;
+        try {
+            getModelOnConnection(connection, masterRefModel, visiting);
+        } catch (_err) {
+            // Best-effort: skip unresolved refs and let callers continue.
+        }
+    }
+
+    visiting.delete(modelName);
+    return tenantModel;
 }
 
 /**
