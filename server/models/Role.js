@@ -156,6 +156,20 @@ const roleSchema = new mongoose.Schema({
             }
         },
 
+        // Webforms Module (Settings — separate from Audit forms)
+        webforms: {
+            create: { type: Boolean, default: false },
+            read: { type: Boolean, default: false },
+            update: { type: Boolean, default: false },
+            delete: { type: Boolean, default: false },
+            export: { type: Boolean, default: false },
+            scope: {
+                type: String,
+                enum: ['all', 'team', 'own', 'none'],
+                default: 'own'
+            }
+        },
+
         // Items Module
         items: {
             create: { type: Boolean, default: false },
@@ -353,6 +367,7 @@ function buildFullPrivilegedRolePermissions() {
         tasks: { ...fullCrudNoImport },
         events: { ...fullEvents },
         forms: { ...fullCrudAll },
+        webforms: { ...fullCrudNoImport },
         items: { ...fullCrudAll },
         cases: { create: true, read: true, update: true, delete: true, scope: 'all' },
         reports: { create: true, read: true, update: true, delete: true, export: true },
@@ -418,6 +433,7 @@ roleSchema.statics.createDefaultRoles = async function(organizationId) {
                 tasks: { create: true, read: true, update: true, delete: false, export: true, scope: 'team' },
                 events: { create: true, read: true, update: true, delete: false, scope: 'team' },
                 forms: { create: true, read: true, update: true, delete: false, export: true, import: false, scope: 'team' },
+                webforms: { create: true, read: true, update: true, delete: false, export: true, scope: 'team' },
                 items: { create: true, read: true, update: true, delete: false, export: true, import: true, scope: 'team' },
                 reports: { create: false, read: true, update: false, delete: false, export: true },
                 users: { create: false, read: true, update: false, delete: false, manageRoles: false },
@@ -486,6 +502,7 @@ roleSchema.statics.createDefaultRoles = async function(organizationId) {
                 tasks: { create: false, read: true, update: false, delete: false, export: false, scope: 'own' },
                 events: { create: false, read: true, update: false, delete: false, scope: 'own' },
                 forms: { create: false, read: true, update: false, delete: false, export: false, import: false, scope: 'own' },
+                webforms: { create: false, read: true, update: false, delete: false, export: false, scope: 'own' },
                 items: { create: false, read: true, update: false, delete: false, export: false, import: false, scope: 'own' },
                 reports: { create: false, read: true, update: false, delete: false, export: false },
                 users: { create: false, read: false, update: false, delete: false, manageRoles: false },

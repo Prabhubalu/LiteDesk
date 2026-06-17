@@ -286,60 +286,20 @@ import {
   normalizePicklistColorHex,
 } from '@/utils/picklistColorPalette';
 
+import {
+  FIELD_TYPE_I18N,
+  PICKLIST_FIELD_TYPES,
+  PLATFORM_MODULE_FIELD_TYPES
+} from '@/constants/moduleFieldTypes';
+
 const { t } = useI18n();
 
-const FIELD_TYPES = [
-  'Text',
-  'Text-Area',
-  'Rich Text',
-  'Integer',
-  'Decimal',
-  'Currency',
-  'Date',
-  'Date-Time',
-  'Picklist',
-  'Multi-Picklist',
-  'Checkbox',
-  'Radio Button',
-  'Email',
-  'Phone',
-  'URL',
-  'Image',
-  'Auto-Number',
-  'Lookup (Relationship)',
-  'Formula',
-  'Rollup Summary',
-];
-
-const PICKLIST_FIELD_TYPES = ['Picklist', 'Multi-Picklist', 'Radio Button'];
+const FIELD_TYPES = PLATFORM_MODULE_FIELD_TYPES;
 
 const PICKLIST_OPTIONS_SECTION_I18N = {
   Picklist: 'modFieldsPicklistOptions',
   'Multi-Picklist': 'modFieldsPicklistOptionsMulti',
   'Radio Button': 'modFieldsPicklistOptionsRadio',
-};
-
-const FIELD_TYPE_I18N = {
-  Text: 'settingsAddFieldTypeText',
-  'Text-Area': 'settingsAddFieldTypeTextArea',
-  'Rich Text': 'settingsAddFieldTypeRichText',
-  Integer: 'settingsAddFieldTypeInteger',
-  Decimal: 'settingsAddFieldTypeDecimal',
-  Currency: 'settingsAddFieldTypeCurrency',
-  Date: 'settingsAddFieldTypeDate',
-  'Date-Time': 'settingsAddFieldTypeDateTime',
-  Picklist: 'settingsAddFieldTypePicklist',
-  'Multi-Picklist': 'settingsAddFieldTypeMultiPicklist',
-  Checkbox: 'settingsAddFieldTypeCheckbox',
-  'Radio Button': 'settingsAddFieldTypeRadioButton',
-  Email: 'settingsAddFieldTypeEmail',
-  Phone: 'settingsAddFieldTypePhone',
-  URL: 'settingsAddFieldTypeUrl',
-  Image: 'settingsAddFieldTypeImage',
-  'Auto-Number': 'settingsAddFieldTypeAutoNumber',
-  'Lookup (Relationship)': 'settingsAddFieldTypeLookup',
-  Formula: 'settingsAddFieldTypeFormula',
-  'Rollup Summary': 'settingsAddFieldTypeRollupSummary',
 };
 
 const props = defineProps({

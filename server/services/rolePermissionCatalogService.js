@@ -37,7 +37,7 @@ const {
   COMMERCIAL_PARTICIPATION_APP_KEYS
 } = require('../constants/commercialPlatformParticipation');
 const CORE_ENTITY_KEYS = new Set(CORE_MODULE_ORDER);
-const PLATFORM_ADMIN_KEYS = ['reports', 'users', 'settings', 'performance'];
+const PLATFORM_ADMIN_KEYS = ['reports', 'users', 'settings', 'performance', 'webforms'];
 
 /** Modules stored on Role.permissions (flat legacy envelope). */
 const LEGACY_FLAT_STORAGE_KEYS = new Set([
@@ -47,6 +47,7 @@ const LEGACY_FLAT_STORAGE_KEYS = new Set([
   'tasks',
   'events',
   'forms',
+  'webforms',
   'items',
   'reports',
   'users',

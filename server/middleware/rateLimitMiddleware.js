@@ -435,6 +435,51 @@ const PUBLIC_QUOTE_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
 const PUBLIC_QUOTE_VIEW_MAX = parsePositiveInteger(process.env.PUBLIC_QUOTE_VIEW_MAX, 120);
 const PUBLIC_QUOTE_ACTION_MAX = parsePositiveInteger(process.env.PUBLIC_QUOTE_ACTION_MAX, 20);
 
+const PUBLIC_WEBFORM_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
+    process.env.PUBLIC_WEBFORM_RATE_LIMIT_WINDOW_MS,
+    15 * 60 * 1000
+);
+const PUBLIC_WEBFORM_VIEW_MAX = parsePositiveInteger(process.env.PUBLIC_WEBFORM_VIEW_MAX, 180);
+const PUBLIC_WEBFORM_SUBMIT_MAX = parsePositiveInteger(process.env.PUBLIC_WEBFORM_SUBMIT_MAX, 30);
+
+const publicWebformViewLimiter = rateLimit({
+    windowMs: PUBLIC_WEBFORM_RATE_LIMIT_WINDOW_MS,
+    max: PUBLIC_WEBFORM_VIEW_MAX,
+    ...rateLimitHeadersAndStore('public-webform-view', PUBLIC_WEBFORM_RATE_LIMIT_WINDOW_MS, ROUTE_RATE_LIMIT_REDIS_FAILURE_MODE),
+    message: {
+        error: 'Too many requests for this webform. Please try again later.',
+        code: 'PUBLIC_WEBFORM_RATE_LIMIT_EXCEEDED'
+    },
+    keyGenerator: (req) => {
+        const slug = String(req.params?.slug || 'unknown').slice(0, 64).toLowerCase();
+        return `public-webform:view:${slug}:${getClientIp(req)}`;
+    },
+    handler: makeRateLimitHandler('public-webform-view', {
+        error: 'Too many requests for this webform. Please try again later.',
+        code: 'PUBLIC_WEBFORM_RATE_LIMIT_EXCEEDED'
+    }),
+    skip: (req) => SECURITY_DISABLED || shouldBypassRateLimit(req)
+});
+
+const publicWebformSubmitLimiter = rateLimit({
+    windowMs: PUBLIC_WEBFORM_RATE_LIMIT_WINDOW_MS,
+    max: PUBLIC_WEBFORM_SUBMIT_MAX,
+    ...rateLimitHeadersAndStore('public-webform-submit', PUBLIC_WEBFORM_RATE_LIMIT_WINDOW_MS, SENSITIVE_RATE_LIMIT_REDIS_FAILURE_MODE),
+    message: {
+        error: 'Too many submissions for this webform. Please try again later.',
+        code: 'PUBLIC_WEBFORM_SUBMIT_RATE_LIMIT_EXCEEDED'
+    },
+    keyGenerator: (req) => {
+        const slug = String(req.params?.slug || 'unknown').slice(0, 64).toLowerCase();
+        return `public-webform:submit:${slug}:${getClientIp(req)}`;
+    },
+    handler: makeRateLimitHandler('public-webform-submit', {
+        error: 'Too many submissions for this webform. Please try again later.',
+        code: 'PUBLIC_WEBFORM_SUBMIT_RATE_LIMIT_EXCEEDED'
+    }),
+    skip: (req) => SECURITY_DISABLED || shouldBypassRateLimit(req)
+});
+
 const publicQuoteViewLimiter = rateLimit({
     windowMs: PUBLIC_QUOTE_RATE_LIMIT_WINDOW_MS,
     max: PUBLIC_QUOTE_VIEW_MAX,
@@ -505,5 +550,7 @@ module.exports = {
     mailroomPublicIngestLimiter,
     mailroomPortalIngestLimiter,
     publicQuoteViewLimiter,
-    publicQuoteActionLimiter
+    publicQuoteActionLimiter,
+    publicWebformViewLimiter,
+    publicWebformSubmitLimiter
 };

@@ -88,6 +88,8 @@ void (async () => {
     await initI18n()
   }
 
+  await router.isReady()
+
   app.mount('#app')
 
   // Sentry + PostHog after first paint: avoids blocking TTI on analytics bundles.

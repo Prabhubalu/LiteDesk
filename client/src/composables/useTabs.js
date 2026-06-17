@@ -116,34 +116,9 @@ let isBrowserNavigation = false;
 // Flag to prevent concurrent calls to createDefaultTab
 let isCreatingHomeTab = false;
 
-/** Public booking / manage URLs must not be overridden by persisted CRM tabs. */
-export function isStandalonePublicRoute(path) {
-  const p = String(path || '').split('?')[0];
-  return p.startsWith('/book/') || p.startsWith('/appointments/manage/');
-}
-
-/** Auth lifecycle pages (invite accept, verify email, password reset) — never CRM tabs. */
-export function isAuthLifecyclePublicRoute(path) {
-  const p = String(path || '').split('?')[0];
-  return (
-    p === '/accept-invite' ||
-    p === '/verify-email' ||
-    p === '/forgot-password' ||
-    p === '/reset-password' ||
-    p === '/login'
-  );
-}
-
-/** Routes the tab bar must not track (public, auth, audit shell, landing). */
-export function shouldSkipTabRoute(path) {
-  const p = String(path || '').split('?')[0];
-  return (
-    p === '/' ||
-    p.startsWith('/audit/') ||
-    isStandalonePublicRoute(path) ||
-    isAuthLifecyclePublicRoute(path)
-  );
-}
+/** Public booking / manage / webform fill URLs must not be overridden by persisted CRM tabs. */
+import { isStandalonePublicRoute, isAuthLifecyclePublicRoute, shouldSkipTabRoute } from '@/utils/standaloneRoutes';
+export { isStandalonePublicRoute, isAuthLifecyclePublicRoute, shouldSkipTabRoute };
 
 // Icon mapping for serialization/deserialization
 const iconMap = {
@@ -1172,8 +1147,13 @@ export function useTabs() {
     
     // Skip audit routes - they have their own layout and don't use tabs
     // Settings now uses internal tabs
-    if (routeToWatch.path.startsWith('/audit/')) {
-      console.log('⏭️ Audit route detected, skipping tab watcher setup');
+    if (
+      routeToWatch.path.startsWith('/audit/')
+      || routeToWatch.path.startsWith('/webforms/staff-preview/')
+      || routeToWatch.path.startsWith('/webforms/public/')
+      || routeToWatch.path.startsWith('/webforms/embed/')
+    ) {
+      console.log('⏭️ Standalone shell-less route detected, skipping tab watcher setup');
       return;
     }
     

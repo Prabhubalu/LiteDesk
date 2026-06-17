@@ -185,6 +185,12 @@ export async function ensureFullLocaleLoaded(language: I18nLanguage): Promise<Fl
   return loadFullLocaleMessages(language);
 }
 
+/** Load only the webforms namespace (fast — avoids blocking on settings/forms bundles). */
+export async function ensureWebformsNamespaceLoaded(language: I18nLanguage): Promise<FlatMessages> {
+  const messages = await loadNamespaceGroup(language, ['webforms']);
+  return applyPseudo(language, messages);
+}
+
 export function prefetchLocale(language: I18nLanguage): void {
   void loadFullLocaleMessages(language);
 }

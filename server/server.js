@@ -247,6 +247,7 @@ const refundRoutes = require('./routes/refundRoutes');
 const customerStatementRoutes = require('./routes/customerStatementRoutes');
 const paymentLinkRoutes = require('./routes/paymentLinkRoutes');
 const paymentGatewayRoutes = require('./routes/paymentGatewayRoutes');
+const webformRoutes = require('./routes/webformRoutes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
@@ -307,7 +308,8 @@ app.use('/api/modules', moduleRecordRoutes);
 app.use('/api/modules', moduleRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/business-hours', require('./routes/businessHoursRoutes'));
-app.use('/api/public/forms', formRoutes); // Public form routes
+app.use('/api/public/forms', formRoutes); // Public form routes (Audit / Survey — do not use for Webforms)
+app.use('/api/public/webforms', webformRoutes); // Public webform routes
 app.use('/api/public/book', require('./routes/publicBookingRoutes'));
 app.use('/api/public/appointments/manage', require('./routes/publicAppointmentManageRoutes'));
 app.use('/api/public/quotes', require('./routes/publicQuoteRoutes'));
@@ -326,7 +328,8 @@ app.get(
   require('./controllers/appointmentCalendarController').microsoftOAuthCallback
 );
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
-app.use('/api/forms', formRoutes.protected); // Protected form routes
+app.use('/api/forms', formRoutes.protected); // Protected form routes (Audit / Survey)
+app.use('/api/webforms', webformRoutes.protected); // Protected webform routes
 app.use('/api/reports', reportRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/catalog', require('./routes/catalogRoutes'));

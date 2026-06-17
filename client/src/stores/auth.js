@@ -30,12 +30,12 @@ export const useAuthStore = defineStore('auth', {
         userRole: (state) => state.user?.role || null,
         isAdminLike: (state) => {
             const role = state.user?.role || '';
-            return state.user?.isOwner || role.toLowerCase() === 'admin';
+            return state.user?.isOwner || role.toLowerCase() === 'admin' || role.toLowerCase() === 'owner';
         },
         hasPermission: (state) => {
             return (module, action) => {
                 const role = state.user?.role || '';
-                if (state.user?.isOwner || role.toLowerCase() === 'admin') return true;
+                if (state.user?.isOwner || role.toLowerCase() === 'admin' || role.toLowerCase() === 'owner') return true;
                 const normalized = module === 'people' ? 'contacts' : module;
                 return state.user?.permissions?.[normalized]?.[action] || false;
             };
@@ -505,7 +505,7 @@ export const useAuthStore = defineStore('auth', {
         // Check if user has a specific permission
         can(module, action) {
             const role = this.user?.role || '';
-            if (this.user?.isOwner || role.toLowerCase() === 'admin') return true;
+            if (this.user?.isOwner || role.toLowerCase() === 'admin' || role.toLowerCase() === 'owner') return true;
             const normalized = module === 'people' ? 'contacts' : module;
             return this.user?.permissions?.[normalized]?.[action] || false;
         },

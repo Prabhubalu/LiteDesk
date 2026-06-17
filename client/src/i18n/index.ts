@@ -113,6 +113,7 @@ export {
   loadCoreLocaleMessages,
   loadFullLocaleMessages,
   ensureFullLocaleLoaded,
+  ensureWebformsNamespaceLoaded,
   prefetchLocale,
   clearLocaleCache,
 } from './loadLocale';

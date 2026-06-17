@@ -1,0 +1,1254 @@
+{
+  "hubTitle": {
+    "message": "Webforms",
+    "description": "Webforms settings hub title"
+  },
+  "hubDescription": {
+    "message": "Build hosted lead-capture forms that create and update CRM records.",
+    "description": "Webforms settings hub subtitle"
+  },
+  "hubCreateLabel": {
+    "message": "New Webform",
+    "description": "Create webform button"
+  },
+  "hubSearchPlaceholder": {
+    "message": "Search webforms…",
+    "description": "Webforms list search placeholder"
+  },
+  "hubEmptyTitle": {
+    "message": "No webforms yet",
+    "description": "Empty state title"
+  },
+  "hubEmptyMessage": {
+    "message": "Create your first webform to capture leads and sync them to CRM.",
+    "description": "Empty state message"
+  },
+  "statTotal": {
+    "message": "Total webforms",
+    "description": "Stats card total"
+  },
+  "statActive": {
+    "message": "Active",
+    "description": "Stats card active count"
+  },
+  "statSubmissions": {
+    "message": "Submissions",
+    "description": "Stats card submissions"
+  },
+  "filterAllStatuses": {
+    "message": "All statuses",
+    "description": "Status filter all option"
+  },
+  "statusDraft": {
+    "message": "Draft",
+    "description": "Draft status label"
+  },
+  "statusActive": {
+    "message": "Active",
+    "description": "Active status label"
+  },
+  "statusArchived": {
+    "message": "Archived",
+    "description": "Archived status label"
+  },
+  "colName": {
+    "message": "Name",
+    "description": "List column name"
+  },
+  "colTarget": {
+    "message": "Target module",
+    "description": "List column target"
+  },
+  "colStatus": {
+    "message": "Status",
+    "description": "List column status"
+  },
+  "colSubmissions": {
+    "message": "Submissions",
+    "description": "List column submissions"
+  },
+  "colActions": {
+    "message": "Actions",
+    "description": "List column actions"
+  },
+  "targetPeople": {
+    "message": "People",
+    "description": "Target module people"
+  },
+  "targetOrganizations": {
+    "message": "Organizations",
+    "description": "Target module organizations"
+  },
+  "targetCases": {
+    "message": "Cases",
+    "description": "Target module cases"
+  },
+  "targetDeals": {
+    "message": "Deals",
+    "description": "Target module deals"
+  },
+  "defaultName": {
+    "message": "Untitled Webform",
+    "description": "Default name for new webform"
+  },
+  "confirmDelete": {
+    "message": "Delete this webform? This cannot be undone.",
+    "description": "Delete confirmation"
+  },
+  "builderComingSoon": {
+    "message": "Webform builder is coming in the next sprint.",
+    "description": "Placeholder when opening builder deep link"
+  },
+  "builderBackToList": {
+    "message": "Back to webforms",
+    "description": "Builder back navigation"
+  },
+  "builderPublish": {
+    "message": "Save & publish",
+    "description": "Publish webform button"
+  },
+  "builderStepDetails": {
+    "message": "Details",
+    "description": "Builder step details"
+  },
+  "builderStepDetailsHint": {
+    "message": "Name your webform and choose which platform or app module submissions should target.",
+    "description": "Builder step details hint"
+  },
+  "builderStepFields": {
+    "message": "Fields",
+    "description": "Builder step fields"
+  },
+  "builderStepFieldsHint": {
+    "message": "Add questions and map each one to a CRM field.",
+    "description": "Builder step fields hint"
+  },
+  "builderStepOutcomes": {
+    "message": "Outcomes",
+    "description": "Builder step outcomes"
+  },
+  "builderStepOutcomesHint": {
+    "message": "Configure what happens after someone submits the form.",
+    "description": "Builder step outcomes hint"
+  },
+  "builderStepPublish": {
+    "message": "Publish",
+    "description": "Builder step publish"
+  },
+  "builderStepBuild": {
+    "message": "Build",
+    "description": "Builder step build"
+  },
+  "builderStepConfigure": {
+    "message": "Configure",
+    "description": "Builder step configure"
+  },
+  "builderStepAutomate": {
+    "message": "Automate",
+    "description": "Builder step automate"
+  },
+  "builderStepConfigureHint": {
+    "message": "Set CRM outcomes, duplicate handling, and the post-submit experience.",
+    "description": "Configure step hint"
+  },
+  "builderStepAutomateHint": {
+    "message": "Notify your team and send data to external systems when a submission is processed.",
+    "description": "Automate step hint"
+  },
+  "builderSaveDraft": {
+    "message": "Save draft",
+    "description": "Save draft button"
+  },
+  "builderSaving": {
+    "message": "Saving…",
+    "description": "Save in progress label"
+  },
+  "builderSaveSuccess": {
+    "message": "Webform saved",
+    "description": "Save success toast"
+  },
+  "builderSaveFailed": {
+    "message": "Could not save webform. Please try again.",
+    "description": "Save failure toast"
+  },
+  "builderSaveForbidden": {
+    "message": "You do not have permission to edit webforms.",
+    "description": "Save forbidden toast"
+  },
+  "builderLoadFailed": {
+    "message": "Could not load webform.",
+    "description": "Load failure toast"
+  },
+  "builderPublishSuccess": {
+    "message": "Webform published",
+    "description": "Publish success toast"
+  },
+  "builderPublishFailed": {
+    "message": "Could not publish webform.",
+    "description": "Publish failure toast"
+  },
+  "builderNext": {
+    "message": "Next",
+    "description": "Next step button"
+  },
+  "builderStepAdvanceSaveWarning": {
+    "message": "Moved to the next step, but your latest changes could not be saved. Fix any errors and use Save draft.",
+    "description": "Shown when step navigation succeeds but save failed"
+  },
+  "builderFieldLibrary": {
+    "message": "Field library",
+    "description": "Field library panel title"
+  },
+  "builderFieldLibraryDragHint": {
+    "message": "Drag fields onto the canvas or click to add.",
+    "description": "Field library drag hint"
+  },
+  "builderCanvasDropHint": {
+    "message": "Drag fields here from the library.",
+    "description": "Canvas drop hint"
+  },
+  "builderHeaderImage": {
+    "message": "Header image (optional)",
+    "description": "Header image label"
+  },
+  "builderHeaderImageEmpty": {
+    "message": "No header image yet",
+    "description": "Empty header image state"
+  },
+  "builderHeaderImageUpload": {
+    "message": "Upload image",
+    "description": "Upload header image button"
+  },
+  "builderHeaderImageUploadFailed": {
+    "message": "Image upload failed. Please try again.",
+    "description": "Header image upload failure"
+  },
+  "builderHeaderImageUrlToggle": {
+    "message": "Or paste image URL",
+    "description": "Toggle URL input for header image"
+  },
+  "builderHeaderImagePh": {
+    "message": "https://example.com/banner.jpg",
+    "description": "Header image URL placeholder"
+  },
+  "builderHeaderImageHint": {
+    "message": "Shown at the top of the hosted form. Leave blank for no banner.",
+    "description": "Header image hint"
+  },
+  "builderHeaderImageRemove": {
+    "message": "Remove image",
+    "description": "Remove header image"
+  },
+  "builderFieldWidth": {
+    "message": "Column width",
+    "description": "Field width label"
+  },
+  "builderFieldWidthFull": {
+    "message": "Full width",
+    "description": "Full width option"
+  },
+  "builderFieldWidthHalf": {
+    "message": "Half width (2-column row)",
+    "description": "Half width option"
+  },
+  "builderFieldLibrarySearch": {
+    "message": "Search fields…",
+    "description": "Field library search"
+  },
+  "builderFieldLibraryLoading": {
+    "message": "Loading field types…",
+    "description": "Field library loading state"
+  },
+  "builderStandardFields": {
+    "message": "Standard fields",
+    "description": "Standard fields section"
+  },
+  "builderPaletteShortText": {
+    "message": "Short text",
+    "description": "Short text field type"
+  },
+  "builderPaletteLongText": {
+    "message": "Long text",
+    "description": "Long text field type"
+  },
+  "builderPaletteEmail": {
+    "message": "Email",
+    "description": "Email field type"
+  },
+  "builderPalettePhone": {
+    "message": "Phone",
+    "description": "Phone field type"
+  },
+  "builderPaletteNumber": {
+    "message": "Number",
+    "description": "Number field type"
+  },
+  "builderPaletteDropdown": {
+    "message": "Dropdown",
+    "description": "Dropdown field type"
+  },
+  "builderPaletteCheckbox": {
+    "message": "Checkbox",
+    "description": "Checkbox field type"
+  },
+  "builderPaletteDate": {
+    "message": "Date",
+    "description": "Date field type"
+  },
+  "builderCanvasTitle": {
+    "message": "Form preview",
+    "description": "Canvas title"
+  },
+  "builderCanvasEmpty": {
+    "message": "Your form canvas is empty",
+    "description": "Empty canvas message"
+  },
+  "builderCanvasEmptyHint": {
+    "message": "Add fields from the library on the left.",
+    "description": "Empty canvas hint"
+  },
+  "builderFormSettings": {
+    "message": "Form settings",
+    "description": "Form settings panel"
+  },
+  "builderFieldInspector": {
+    "message": "Field options",
+    "description": "Field inspector panel"
+  },
+  "builderFieldPlaceholder": {
+    "message": "Placeholder",
+    "description": "Field placeholder label"
+  },
+  "builderAnalyticsTitle": {
+    "message": "Form analytics",
+    "description": "Analytics widget title"
+  },
+  "builderAnalyticsFields": {
+    "message": "Fields",
+    "description": "Analytics fields count"
+  },
+  "builderAnalyticsHint": {
+    "message": "Save the form to load views, conversion, and activity metrics.",
+    "description": "Analytics placeholder hint"
+  },
+  "analyticsViews": {
+    "message": "Views",
+    "description": "Analytics views count"
+  },
+  "analyticsConversion": {
+    "message": "Conversion",
+    "description": "Analytics conversion rate"
+  },
+  "analyticsDedupHits": {
+    "message": "Dedup hits",
+    "description": "Analytics dedup count"
+  },
+  "analyticsLoading": {
+    "message": "Loading analytics…",
+    "description": "Analytics loading state"
+  },
+  "analyticsLoadError": {
+    "message": "Could not load analytics.",
+    "description": "Analytics load error"
+  },
+  "analyticsTrendTitle": {
+    "message": "Submissions (last 7 days)",
+    "description": "Analytics trend title"
+  },
+  "analyticsTrendPoint": {
+    "message": "{count} submissions",
+    "description": "Analytics trend point"
+  },
+  "analyticsAuditTitle": {
+    "message": "Recent activity",
+    "description": "Audit log section title"
+  },
+  "builderCaptchaTitle": {
+    "message": "CAPTCHA protection",
+    "description": "CAPTCHA section title"
+  },
+  "builderCaptchaHint": {
+    "message": "Protect public submissions with Google reCAPTCHA v2. Enter your site and secret keys below, or set RECAPTCHA_SITE_KEY / RECAPTCHA_SECRET_KEY on the server as a fallback.",
+    "description": "CAPTCHA section hint"
+  },
+  "builderCaptchaEnabled": {
+    "message": "Enable CAPTCHA",
+    "description": "CAPTCHA toggle label"
+  },
+  "builderCaptchaSiteKey": {
+    "message": "Site key",
+    "description": "CAPTCHA site key label"
+  },
+  "builderCaptchaSiteKeyPh": {
+    "message": "6Lc…",
+    "description": "CAPTCHA site key placeholder"
+  },
+  "builderCaptchaSecretKey": {
+    "message": "Secret key",
+    "description": "CAPTCHA secret key label"
+  },
+  "builderCaptchaSecretKeyPh": {
+    "message": "6Lc…",
+    "description": "CAPTCHA secret key placeholder"
+  },
+  "builderCaptchaSecretConfiguredPh": {
+    "message": "Leave blank to keep the saved secret key",
+    "description": "CAPTCHA secret configured placeholder"
+  },
+  "builderCaptchaSecretHint": {
+    "message": "The secret key is stored securely and never shown again after save.",
+    "description": "CAPTCHA secret field hint"
+  },
+  "builderCaptchaStatusDisabled": {
+    "message": "CAPTCHA is off for this form. Public visitors will not see a challenge.",
+    "description": "CAPTCHA disabled status"
+  },
+  "builderCaptchaStatusReady": {
+    "message": "CAPTCHA is configured. Active public forms will show reCAPTCHA before submit.",
+    "description": "CAPTCHA ready status"
+  },
+  "builderCaptchaStatusIncomplete": {
+    "message": "Add both site key and secret key, then save, before publishing.",
+    "description": "CAPTCHA incomplete status"
+  },
+  "builderCaptchaPublishTitle": {
+    "message": "CAPTCHA protection",
+    "description": "Publish step CAPTCHA title"
+  },
+  "publicCaptchaRequired": {
+    "message": "Please complete the CAPTCHA.",
+    "description": "CAPTCHA required validation"
+  },
+  "publicCaptchaError": {
+    "message": "CAPTCHA failed to load. Refresh and try again.",
+    "description": "CAPTCHA load error"
+  },
+  "auditType_published": {
+    "message": "Published",
+    "description": "Audit type published"
+  },
+  "auditType_unpublished": {
+    "message": "Unpublished",
+    "description": "Audit type unpublished"
+  },
+  "auditType_status_changed": {
+    "message": "Status changed",
+    "description": "Audit type status changed"
+  },
+  "auditType_submission_processed": {
+    "message": "Submission processed",
+    "description": "Audit type submission processed"
+  },
+  "auditType_dedup_hit": {
+    "message": "Dedup hit",
+    "description": "Audit type dedup hit"
+  },
+  "auditType_crm_failed": {
+    "message": "CRM failed",
+    "description": "Audit type crm failed"
+  },
+  "auditType_registry_synced": {
+    "message": "Registry synced",
+    "description": "Audit type registry synced"
+  },
+  "builderSubmissionExperience": {
+    "message": "Submission experience",
+    "description": "Thank you / redirect section"
+  },
+  "builderFormActions": {
+    "message": "Form buttons",
+    "description": "Submit, reset, and cancel button settings"
+  },
+  "builderFormActionsAlign": {
+    "message": "Button alignment",
+    "description": "Horizontal alignment of form action buttons"
+  },
+  "builderFormActionsAlign_left": {
+    "message": "Left",
+    "description": "Align buttons left"
+  },
+  "builderFormActionsAlign_center": {
+    "message": "Center",
+    "description": "Align buttons center"
+  },
+  "builderFormActionsAlign_right": {
+    "message": "Right",
+    "description": "Align buttons right"
+  },
+  "builderFormActionsSubmit": {
+    "message": "Submit button",
+    "description": "Submit button settings section"
+  },
+  "builderFormActionsNext": {
+    "message": "Next button",
+    "description": "Multi-step next button settings section"
+  },
+  "builderFormActionsBack": {
+    "message": "Back button",
+    "description": "Multi-step back button settings section"
+  },
+  "builderFormActionsReset": {
+    "message": "Reset button",
+    "description": "Reset button settings section"
+  },
+  "builderFormActionsCancel": {
+    "message": "Cancel button",
+    "description": "Cancel button settings section"
+  },
+  "builderFormActionsEnabled": {
+    "message": "Show",
+    "description": "Toggle optional form button"
+  },
+  "builderFormActionsLabel": {
+    "message": "Label",
+    "description": "Button label field"
+  },
+  "builderFormActionsColor": {
+    "message": "Color",
+    "description": "Button color field"
+  },
+  "builderFormActionsWidth": {
+    "message": "Width",
+    "description": "Button width field"
+  },
+  "builderFormActionsColor_blue": {
+    "message": "Blue",
+    "description": "Blue button color"
+  },
+  "builderFormActionsColor_indigo": {
+    "message": "Indigo",
+    "description": "Indigo button color"
+  },
+  "builderFormActionsColor_emerald": {
+    "message": "Green",
+    "description": "Green button color"
+  },
+  "builderFormActionsColor_red": {
+    "message": "Red",
+    "description": "Red button color"
+  },
+  "builderFormActionsColor_gray": {
+    "message": "Light gray",
+    "description": "Gray outline button color"
+  },
+  "builderFormActionsColor_dark": {
+    "message": "Dark",
+    "description": "Dark button color"
+  },
+  "builderFormActionsWidth_full": {
+    "message": "Full width",
+    "description": "Full width button"
+  },
+  "builderFormActionsWidth_fit": {
+    "message": "Fit content",
+    "description": "Auto width button"
+  },
+  "builderFormActionsWidth_half": {
+    "message": "Half width",
+    "description": "Half width button"
+  },
+  "builderFormActionsCancelUrl": {
+    "message": "Cancel redirect URL",
+    "description": "Optional URL when cancel is clicked"
+  },
+  "builderFormActionsCancelUrlPh": {
+    "message": "https://example.com/back",
+    "description": "Cancel redirect URL placeholder"
+  },
+  "builderFormActionsCancelUrlHint": {
+    "message": "Leave blank to clear the form instead of navigating away.",
+    "description": "Cancel redirect hint"
+  },
+  "formActionReset": {
+    "message": "Reset",
+    "description": "Default reset button label"
+  },
+  "formActionCancel": {
+    "message": "Cancel",
+    "description": "Default cancel button label"
+  },
+  "builderPublishReady": {
+    "message": "Ready to publish",
+    "description": "Publish ready banner"
+  },
+  "builderStepPublishHint": {
+    "message": "Enable a hosted link and copy embed code for your website.",
+    "description": "Builder step publish hint"
+  },
+  "fieldName": {
+    "message": "Name",
+    "description": "Webform name field"
+  },
+  "fieldDescription": {
+    "message": "Description",
+    "description": "Webform description field"
+  },
+  "fieldTargetModule": {
+    "message": "Target module",
+    "description": "Target module field"
+  },
+  "targetGroupPlatform": {
+    "message": "Platform modules",
+    "description": "Platform module optgroup label"
+  },
+  "targetGroupApp": {
+    "message": "{app} modules",
+    "description": "App module optgroup label"
+  },
+  "fieldStatus": {
+    "message": "Status",
+    "description": "Webform status field"
+  },
+  "builderAddField": {
+    "message": "Add field",
+    "description": "Add field button"
+  },
+  "builderNoFields": {
+    "message": "No fields yet. Add at least one field before publishing.",
+    "description": "Empty fields state"
+  },
+  "builderFieldNumber": {
+    "message": "Field {n}",
+    "description": "Field index label"
+  },
+  "builderFieldLabel": {
+    "message": "Label",
+    "description": "Field label input"
+  },
+  "builderFieldType": {
+    "message": "Type",
+    "description": "Field type select"
+  },
+  "builderCrmField": {
+    "message": "CRM field mapping",
+    "description": "CRM field mapping select"
+  },
+  "builderCrmFieldNone": {
+    "message": "Do not map",
+    "description": "No CRM mapping option"
+  },
+  "builderFieldRequired": {
+    "message": "Required",
+    "description": "Required checkbox"
+  },
+  "builderFieldOptions": {
+    "message": "Options (comma-separated)",
+    "description": "Dropdown options label"
+  },
+  "builderFieldOptionsPh": {
+    "message": "Option A, Option B, Option C",
+    "description": "Dropdown options placeholder"
+  },
+  "builderNewFieldLabel": {
+    "message": "New field",
+    "description": "Default label for new field"
+  },
+  "builderRecordAction": {
+    "message": "Record action",
+    "description": "Record action label"
+  },
+  "builderRecordActionCreate": {
+    "message": "Always create a new record",
+    "description": "Create action"
+  },
+  "builderRecordActionUpdate": {
+    "message": "Update existing record only",
+    "description": "Update action"
+  },
+  "builderRecordActionUpsert": {
+    "message": "Create or update when a match is found",
+    "description": "Upsert action"
+  },
+  "builderOutcomesCrmNote": {
+    "message": "Submissions create or update CRM records using the field bindings above. Assignment rules run automatically after ingestion.",
+    "description": "CRM outcome active note"
+  },
+  "builderDedupTitle": {
+    "message": "Duplicate handling",
+    "description": "Dedup section title"
+  },
+  "builderDedupHint": {
+    "message": "When enabled, matching uses CRM fields before create/update.",
+    "description": "Dedup section hint"
+  },
+  "builderDedupEnabled": {
+    "message": "Enable dedup",
+    "description": "Dedup enabled toggle"
+  },
+  "builderDedupAction": {
+    "message": "When a duplicate is found",
+    "description": "Dedup action label"
+  },
+  "builderDedupActionUpdate": {
+    "message": "Update the existing record",
+    "description": "Dedup update action"
+  },
+  "builderDedupActionReject": {
+    "message": "Reject the submission",
+    "description": "Dedup reject action"
+  },
+  "builderDedupActionCreateAnyway": {
+    "message": "Create a new record anyway",
+    "description": "Dedup create anyway action"
+  },
+  "builderDedupKeys": {
+    "message": "Match keys (comma-separated)",
+    "description": "Dedup keys label"
+  },
+  "builderDedupKeysHint": {
+    "message": "Leave blank to use module defaults.",
+    "description": "Dedup keys hint"
+  },
+  "builderNotifyTitle": {
+    "message": "Notifications",
+    "description": "Notify section title"
+  },
+  "builderNotifyHint": {
+    "message": "Notify the webform creator and selected users via in-app and email when a submission is processed.",
+    "description": "Notify section hint"
+  },
+  "builderNotifyEnabled": {
+    "message": "Notify on submit",
+    "description": "Notify enabled toggle"
+  },
+  "builderTaskTitle": {
+    "message": "Follow-up task",
+    "description": "Task template section title"
+  },
+  "builderTaskHint": {
+    "message": "Create a task linked to the CRM record when a submission is processed.",
+    "description": "Task template section hint"
+  },
+  "builderTaskEnabled": {
+    "message": "Create task on submit",
+    "description": "Task template enabled toggle"
+  },
+  "builderTaskTitleField": {
+    "message": "Task title",
+    "description": "Task title field label"
+  },
+  "builderTaskTitlePh": {
+    "message": "Follow up on new lead",
+    "description": "Task title placeholder"
+  },
+  "builderTaskDescription": {
+    "message": "Description",
+    "description": "Task description field label"
+  },
+  "builderTaskDescriptionPh": {
+    "message": "Optional details for the assignee",
+    "description": "Task description placeholder"
+  },
+  "builderTaskDueDays": {
+    "message": "Due in (days)",
+    "description": "Task due days label"
+  },
+  "builderTaskDueDaysPh": {
+    "message": "e.g. 3",
+    "description": "Task due days placeholder"
+  },
+  "builderTaskAssignee": {
+    "message": "Assign to",
+    "description": "Task assignee label"
+  },
+  "builderTaskAssigneeRecordOwner": {
+    "message": "CRM record owner",
+    "description": "Task assignee record owner option"
+  },
+  "builderTaskAssigneeCreator": {
+    "message": "Webform creator",
+    "description": "Task assignee creator option"
+  },
+  "builderWebhookTitle": {
+    "message": "Outbound webhook",
+    "description": "Webhook section title"
+  },
+  "builderWebhookHint": {
+    "message": "POST a JSON payload with HMAC signature when a submission is processed.",
+    "description": "Webhook section hint"
+  },
+  "builderWebhookEnabled": {
+    "message": "Enable webhook",
+    "description": "Webhook enabled toggle"
+  },
+  "builderWebhookUrl": {
+    "message": "Webhook URL",
+    "description": "Webhook URL label"
+  },
+  "builderWebhookUrlPh": {
+    "message": "https://example.com/hooks/webform",
+    "description": "Webhook URL placeholder"
+  },
+  "builderWebhookSecret": {
+    "message": "Signing secret (optional)",
+    "description": "Webhook secret label"
+  },
+  "builderWebhookSecretPh": {
+    "message": "Used for X-LiteDesk-Signature HMAC",
+    "description": "Webhook secret placeholder"
+  },
+  "builderThankYou": {
+    "message": "Thank-you message",
+    "description": "Thank you message field"
+  },
+  "builderThankYouPh": {
+    "message": "Thanks — we received your submission.",
+    "description": "Thank you placeholder"
+  },
+  "builderRedirectUrl": {
+    "message": "Redirect URL (optional)",
+    "description": "Redirect URL field"
+  },
+  "builderRedirectUrlPh": {
+    "message": "https://example.com/thank-you",
+    "description": "Redirect URL placeholder"
+  },
+  "builderHostedUrl": {
+    "message": "Hosted URL",
+    "description": "Hosted URL label"
+  },
+  "builderPreview": {
+    "message": "Preview",
+    "description": "Preview button"
+  },
+  "builderPreviewInline": {
+    "message": "Live preview",
+    "description": "Inline iframe preview label"
+  },
+  "builderPreviewMode": {
+    "message": "Preview mode — submissions are not saved",
+    "description": "Preview mode banner"
+  },
+  "builderPreviewNoFields": {
+    "message": "Add fields in the Fields step to preview the form.",
+    "description": "Preview empty fields hint"
+  },
+  "builderPreviewSubmit": {
+    "message": "Try submit",
+    "description": "Preview submit button"
+  },
+  "builderPreviewSubmitNote": {
+    "message": "This is a preview only. Publish the form to accept real submissions.",
+    "description": "Preview thank-you note"
+  },
+  "builderPreviewReset": {
+    "message": "Reset preview",
+    "description": "Reset preview button"
+  },
+  "staffPreviewBack": {
+    "message": "Back",
+    "description": "Staff preview back button"
+  },
+  "staffPreviewBadge": {
+    "message": "Staff preview",
+    "description": "Staff preview badge"
+  },
+  "builderNotPublished": {
+    "message": "This webform is not published yet.",
+    "description": "Unpublished state"
+  },
+  "builderEnablePublic": {
+    "message": "Enable public link",
+    "description": "Enable public link button"
+  },
+  "builderEmbedIframe": {
+    "message": "Iframe embed code",
+    "description": "Iframe embed label"
+  },
+  "builderEmbedScript": {
+    "message": "Script embed code",
+    "description": "Script embed label"
+  },
+  "builderPrefillTitle": {
+    "message": "Prefill via URL",
+    "description": "Prefill section title on publish step"
+  },
+  "builderPrefillHint": {
+    "message": "Append query parameters to the hosted or embed URL to prefill fields. Keys match CRM field key, field ID, slugified label, or field_ plus field ID. Example: ?email=user{'@'}example.com{'&'}first_name=Ada",
+    "description": "Prefill section hint on publish step"
+  },
+  "builderBrandingTitle": {
+    "message": "Branding",
+    "description": "Branding section title in builder form settings"
+  },
+  "builderBrandingHint": {
+    "message": "Logo, colors, and font apply to hosted, embed, and live preview surfaces.",
+    "description": "Branding section hint"
+  },
+  "builderBrandingLogo": {
+    "message": "Logo",
+    "description": "Branding logo label"
+  },
+  "builderBrandingLogoEmpty": {
+    "message": "No logo uploaded.",
+    "description": "Branding logo empty state"
+  },
+  "builderBrandingLogoUpload": {
+    "message": "Upload logo",
+    "description": "Branding logo upload button"
+  },
+  "builderBrandingLogoPh": {
+    "message": "https://… or upload",
+    "description": "Branding logo URL placeholder"
+  },
+  "builderBrandingLogoUploadFailed": {
+    "message": "Logo upload failed.",
+    "description": "Branding logo upload error"
+  },
+  "builderBrandingThemeColor": {
+    "message": "Accent color",
+    "description": "Branding theme color label"
+  },
+  "builderBrandingBackground": {
+    "message": "Page background",
+    "description": "Branding page background label"
+  },
+  "builderBrandingBackgroundPh": {
+    "message": "Default (gray)",
+    "description": "Branding background placeholder"
+  },
+  "builderBrandingFont": {
+    "message": "Font",
+    "description": "Branding font label"
+  },
+  "builderBrandingFontSystem": {
+    "message": "System sans-serif",
+    "description": "Branding font option"
+  },
+  "builderBrandingFontSerif": {
+    "message": "Serif",
+    "description": "Branding font option"
+  },
+  "builderBrandingFontMono": {
+    "message": "Monospace",
+    "description": "Branding font option"
+  },
+  "publicSuccessTitle": {
+    "message": "Thank you",
+    "description": "Public submit success title"
+  },
+  "publicSuccessDefault": {
+    "message": "Your submission was received.",
+    "description": "Default thank you message"
+  },
+  "publicSelectOption": {
+    "message": "Select an option",
+    "description": "Dropdown placeholder"
+  },
+  "publicSubmit": {
+    "message": "Submit",
+    "description": "Public submit button"
+  },
+  "publicSubmitting": {
+    "message": "Submitting…",
+    "description": "Public submit loading"
+  },
+  "publicLoadError": {
+    "message": "This webform is unavailable.",
+    "description": "Public load error"
+  },
+  "publicSubmitError": {
+    "message": "Could not submit the form. Please try again.",
+    "description": "Public submit error"
+  },
+  "validationRequired": {
+    "message": "\"{label}\" is required.",
+    "description": "Required field validation on public form"
+  },
+  "validationEmailInvalid": {
+    "message": "Enter a valid email address for \"{label}\".",
+    "description": "Email field validation on public form"
+  },
+  "validationPhoneInvalid": {
+    "message": "Enter a valid phone number for \"{label}\".",
+    "description": "Phone field validation on public form"
+  },
+  "builderFieldOptionsFromCrm": {
+    "message": "Options are synced from the linked CRM picklist field.",
+    "description": "Hint when picklist options come from CRM binding"
+  },
+  "builderVisibilityTitle": {
+    "message": "Show when",
+    "description": "Conditional visibility section title in field inspector"
+  },
+  "builderVisibilityHint": {
+    "message": "Show this field only when the conditions below are met.",
+    "description": "Conditional visibility section hint"
+  },
+  "builderVisibilityEnabled": {
+    "message": "Enable rules",
+    "description": "Toggle to enable conditional visibility"
+  },
+  "builderVisibilityMatch": {
+    "message": "Match",
+    "description": "Label for all/any match mode"
+  },
+  "builderVisibilityMatchAll": {
+    "message": "All conditions",
+    "description": "Require all visibility conditions"
+  },
+  "builderVisibilityMatchAny": {
+    "message": "Any condition",
+    "description": "Require any visibility condition"
+  },
+  "builderVisibilitySourceField": {
+    "message": "When field",
+    "description": "Source field for visibility condition"
+  },
+  "builderVisibilitySourceFieldPh": {
+    "message": "Select a field",
+    "description": "Placeholder for visibility source field"
+  },
+  "builderVisibilityOperator": {
+    "message": "Operator",
+    "description": "Visibility condition operator label"
+  },
+  "builderVisibilityOperator_equals": {
+    "message": "equals",
+    "description": "Visibility operator equals"
+  },
+  "builderVisibilityOperator_not_equals": {
+    "message": "does not equal",
+    "description": "Visibility operator not equals"
+  },
+  "builderVisibilityOperator_contains": {
+    "message": "contains",
+    "description": "Visibility operator contains"
+  },
+  "builderVisibilityOperator_not_contains": {
+    "message": "does not contain",
+    "description": "Visibility operator not contains"
+  },
+  "builderVisibilityOperator_is_empty": {
+    "message": "is empty",
+    "description": "Visibility operator is empty"
+  },
+  "builderVisibilityOperator_is_not_empty": {
+    "message": "is not empty",
+    "description": "Visibility operator is not empty"
+  },
+  "builderVisibilityOperator_is_checked": {
+    "message": "is checked",
+    "description": "Visibility operator is checked"
+  },
+  "builderVisibilityOperator_is_not_checked": {
+    "message": "is not checked",
+    "description": "Visibility operator is not checked"
+  },
+  "builderVisibilityValue": {
+    "message": "Value",
+    "description": "Visibility condition value label"
+  },
+  "builderVisibilityValuePh": {
+    "message": "Enter a value",
+    "description": "Visibility condition value placeholder"
+  },
+  "builderVisibilityAddCondition": {
+    "message": "Add condition",
+    "description": "Add visibility condition button"
+  },
+  "builderVisibilityRemoveCondition": {
+    "message": "Remove condition",
+    "description": "Remove visibility condition button"
+  },
+  "builderMultiStepTitle": {
+    "message": "Multi-step form",
+    "description": "Multi-step settings section title"
+  },
+  "builderMultiStepHint": {
+    "message": "Split fields across steps with a progress indicator on the public form.",
+    "description": "Multi-step settings hint"
+  },
+  "builderMultiStepEnabled": {
+    "message": "Enable multi-step",
+    "description": "Toggle multi-step form"
+  },
+  "builderMultiStepShowProgress": {
+    "message": "Show progress bar",
+    "description": "Toggle progress bar on public form"
+  },
+  "builderMultiStepNumber": {
+    "message": "Step {number}",
+    "description": "Step number label in builder"
+  },
+  "builderMultiStepLabel": {
+    "message": "Step title",
+    "description": "Step title field label"
+  },
+  "builderMultiStepDescription": {
+    "message": "Step description",
+    "description": "Step description field label"
+  },
+  "builderMultiStepAdd": {
+    "message": "Add step",
+    "description": "Add step button"
+  },
+  "builderMultiStepRemove": {
+    "message": "Remove",
+    "description": "Remove step button"
+  },
+  "builderMultiStepMoveUp": {
+    "message": "Up",
+    "description": "Move step up"
+  },
+  "builderMultiStepMoveDown": {
+    "message": "Down",
+    "description": "Move step down"
+  },
+  "builderMultiStepFieldStep": {
+    "message": "Step",
+    "description": "Field step assignment label"
+  },
+  "multiStepBack": {
+    "message": "Back",
+    "description": "Multi-step back button"
+  },
+  "multiStepNext": {
+    "message": "Next",
+    "description": "Multi-step next button"
+  },
+  "multiStepProgress": {
+    "message": "Step {current} of {total}",
+    "description": "Multi-step progress label"
+  },
+  "multiStepUntitled": {
+    "message": "Step {number}",
+    "description": "Fallback step title"
+  },
+  "multiStepNoVisibleFields": {
+    "message": "No fields to show on this step.",
+    "description": "Empty step message on public form"
+  },
+  "builderFieldTypeFile": {
+    "message": "File upload",
+    "description": "Webform-only file field type label"
+  },
+  "builderFileFieldPlaceholder": {
+    "message": "Choose a file",
+    "description": "Canvas placeholder for file field"
+  },
+  "fileFieldUploading": {
+    "message": "Uploading file…",
+    "description": "File field upload in progress"
+  },
+  "fileFieldUploadFailed": {
+    "message": "Upload failed. Try again.",
+    "description": "File field upload error"
+  },
+  "fileFieldRemove": {
+    "message": "Remove",
+    "description": "Remove uploaded file"
+  },
+  "fileFieldPreviewHint": {
+    "message": "File uploads are not saved in preview mode.",
+    "description": "Hint in builder live preview"
+  },
+  "fileFieldUnavailable": {
+    "message": "File upload is unavailable in this view.",
+    "description": "Hint when public slug missing"
+  },
+  "validationFileInvalid": {
+    "message": "{label} requires a valid uploaded file.",
+    "description": "Validation error for file field"
+  },
+  "actionSubmissions": {
+    "message": "Submissions",
+    "description": "View submissions action"
+  },
+  "submissionsTitle": {
+    "message": "Submissions",
+    "description": "Submissions panel title fallback"
+  },
+  "submissionsSubtitle": {
+    "message": "Review public submissions and CRM sync outcomes.",
+    "description": "Submissions panel subtitle"
+  },
+  "submissionsBackToList": {
+    "message": "Back to webforms",
+    "description": "Submissions back link"
+  },
+  "submissionsOpenForm": {
+    "message": "Open public form",
+    "description": "Open hosted form link"
+  },
+  "submissionsEditForm": {
+    "message": "Edit form",
+    "description": "Open builder from submissions"
+  },
+  "submissionsEmptyTitle": {
+    "message": "No submissions yet",
+    "description": "Submissions empty title"
+  },
+  "submissionsEmptyMessage": {
+    "message": "Submit the public form to see entries here.",
+    "description": "Submissions empty message"
+  },
+  "submissionsPageInfo": {
+    "message": "Page {page} of {total}",
+    "description": "Submissions pagination"
+  },
+  "subColSubmitted": {
+    "message": "Submitted",
+    "description": "Submission column submitted at"
+  },
+  "subColStatus": {
+    "message": "Status",
+    "description": "Submission column status"
+  },
+  "subColValues": {
+    "message": "Values",
+    "description": "Submission column values"
+  },
+  "subColCrm": {
+    "message": "CRM outcome",
+    "description": "Submission column CRM"
+  },
+  "subColActions": {
+    "message": "Actions",
+    "description": "Submission column actions"
+  },
+  "subStatusProcessed": {
+    "message": "Processed",
+    "description": "Submission status processed"
+  },
+  "subStatusFailed": {
+    "message": "Failed",
+    "description": "Submission status failed"
+  },
+  "subStatusDuplicate": {
+    "message": "Duplicate rejected",
+    "description": "Submission status duplicate"
+  },
+  "subStatusPending": {
+    "message": "Pending",
+    "description": "Submission status pending"
+  },
+  "subCrmCreated": {
+    "message": "Created",
+    "description": "CRM action created"
+  },
+  "subCrmUpdated": {
+    "message": "Updated",
+    "description": "CRM action updated"
+  },
+  "subCrmSkipped": {
+    "message": "Skipped",
+    "description": "CRM action skipped"
+  },
+  "subCrmFailed": {
+    "message": "CRM sync failed",
+    "description": "CRM failure fallback"
+  },
+  "subViewRecord": {
+    "message": "View record",
+    "description": "Link to CRM record"
+  },
+  "subShowDetails": {
+    "message": "Details",
+    "description": "Expand submission row"
+  },
+  "subHideDetails": {
+    "message": "Hide",
+    "description": "Collapse submission row"
+  }
+}

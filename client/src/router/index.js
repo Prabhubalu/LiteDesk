@@ -4,6 +4,7 @@
  * avoid router → apiClient → auth → router ESM TDZ in production.
  */
 import { createRouter, createWebHistory } from 'vue-router'
+import WebformStaffPreviewView from '@/views/WebformStaffPreviewView.vue';
 import { hasAnySettingsAccess } from '@/utils/settingsTabAccess'
 import { useAuthStore } from '@/stores/authRegistry'
 import auditRoutes from './audit.routes'
@@ -771,6 +772,24 @@ const routes = [
     meta: { requiresAuth: false, hideShell: true } // Public route - render without app shell (sidebar/tabbar)
   },
   {
+    path: '/webforms/staff-preview/:slug',
+    name: 'staff-webform-preview',
+    component: WebformStaffPreviewView,
+    meta: { requiresAuth: true, hideShell: true }
+  },
+  {
+    path: '/webforms/public/:slug',
+    name: 'public-webform',
+    component: () => import('@/views/WebformPublicView.vue'),
+    meta: { requiresAuth: false, hideShell: true }
+  },
+  {
+    path: '/webforms/embed/:slug',
+    name: 'public-webform-embed',
+    component: () => import('@/views/WebformPublicView.vue'),
+    meta: { requiresAuth: false, hideShell: true, embed: true }
+  },
+  {
     path: '/public/quotes/:token',
     name: 'public-quote',
     component: () => import('@/views/PublicQuoteView.vue'),
@@ -939,7 +958,7 @@ router.beforeEach(async (to, from, next) => {
   if (authStore.isAuthenticated) {
     const onboardingRedirect = authStore.user?.onboarding?.redirectTo;
     if (onboardingRedirect === '/onboarding' && to.name !== 'onboarding') {
-      const allowWhileOnboarding = to.path.startsWith('/settings');
+      const allowWhileOnboarding = to.path.startsWith('/settings') || to.path.startsWith('/webforms/staff-preview/');
       if (!allowWhileOnboarding) {
         logNavDebug('Redirecting: Founder onboarding incomplete');
         next({ name: 'onboarding' });
@@ -953,22 +972,31 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  // Settings / forms UIs need deferred locale namespaces (settings, forms, process catalogs).
-  if (
-    authStore.isAuthenticated
-    && (to.path.startsWith('/settings') || to.path.startsWith('/forms'))
-  ) {
+  // Settings / legacy audit forms need deferred locale namespaces in the guard.
+  const needsFullLocale =
+    to.path.startsWith('/settings')
+    || to.path.startsWith('/forms');
+
+  const needsWebformsLocale =
+    to.path.startsWith('/webforms/public/')
+    || to.path.startsWith('/webforms/embed/')
+    || to.path.startsWith('/webforms/staff-preview/');
+
+  if (needsFullLocale || needsWebformsLocale) {
     try {
-      const { ensureFullLocaleLoaded, i18n } = await import('@/i18n')
-      const lang = i18n.global.locale.value
-      const full = await ensureFullLocaleLoaded(lang)
-      i18n.global.setLocaleMessage(lang, full)
+      const { ensureFullLocaleLoaded, ensureWebformsNamespaceLoaded, i18n } = await import('@/i18n');
+      const lang = i18n.global.locale.value;
+      if (needsFullLocale) {
+        const full = await ensureFullLocaleLoaded(lang);
+        i18n.global.setLocaleMessage(lang, full);
+      } else {
+        const webforms = await ensureWebformsNamespaceLoaded(lang);
+        i18n.global.mergeLocaleMessage(lang, webforms);
+      }
     } catch (err) {
-      console.warn('[i18n] Failed to preload full locale for route', to.path, err)
+      console.warn('[i18n] Failed to preload locale for route', to.path, err);
     }
   }
-
-  // Settings hub and nested /settings/* routes require at least one entitled settings section
   if (authStore.isAuthenticated && to.path.startsWith('/settings')) {
     const settingsCtx = {
       isOwner: !!authStore.user?.isOwner,
