@@ -197,6 +197,15 @@ function projectRoleToUserPermissions(rolePlain, appAccess = []) {
     exportData: p.forms?.export === true
   };
 
+  const webforms = {
+    view: p.webforms?.read === true,
+    create: p.webforms?.create === true,
+    edit: p.webforms?.update === true,
+    delete: p.webforms?.delete === true,
+    viewAll: viewAllForModule(p.webforms, rolePlain),
+    exportData: p.webforms?.export === true
+  };
+
   const items = {
     view: p.items?.read === true,
     create: p.items?.create === true,
@@ -283,6 +292,7 @@ function projectRoleToUserPermissions(rolePlain, appAccess = []) {
     tasks,
     events,
     forms,
+    webforms,
     items,
     imports,
     settings,
@@ -353,6 +363,14 @@ function ensurePermissionEnvelopeDefaults(merged) {
     viewAll: false,
     exportData: false
   });
+  ensureModule('webforms', {
+    view: false,
+    create: false,
+    edit: false,
+    delete: false,
+    viewAll: false,
+    exportData: false
+  });
   ensureModule('items', {
     view: false,
     create: false,
@@ -406,6 +424,14 @@ async function applyFullPrivilegedEnvelopeToUser(user, organization = null, opti
 
   const plain = userPermissionsEnvelopeToPlain(user);
   plain.cases = { view: true, create: true, edit: true, delete: true, viewAll: true };
+  plain.webforms = {
+    view: true,
+    create: true,
+    edit: true,
+    delete: true,
+    viewAll: true,
+    exportData: true
+  };
   ensurePermissionEnvelopeDefaults(plain);
 
   await materializeRuntimePermissionsOnUser(user, {

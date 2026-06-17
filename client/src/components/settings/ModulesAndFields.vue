@@ -4757,6 +4757,7 @@ import {
   getCurrencySymbolFromCode,
   formatCurrencyValue,
 } from '@/utils/currencyOptions';
+import { PLATFORM_MODULE_FIELD_TYPES } from '@/constants/moduleFieldTypes';
 import { parsePeopleTypesApiPayload, peopleTypeColorToHex } from '@/utils/peopleTypeColors';
 import { peopleTypesCacheVersion } from '@/utils/peopleTypesInvalidate';
 import {
@@ -5182,28 +5183,7 @@ const optionsBuffer = ref('');
 const editingOptionIdx = ref(-1);
 const editOptionValue = ref('');
 const allowedValuesBuffers = ref({});
-const fieldTypes = [
-  'Text',
-  'Text-Area',
-  'Rich Text',
-  'Integer',
-  'Decimal',
-  'Currency',
-  'Date',
-  'Date-Time',
-  'Picklist',
-  'Multi-Picklist',
-  'Checkbox',
-  'Radio Button',
-  'Email',
-  'Phone',
-  'URL',
-  'Image',
-  'Auto-Number',
-  'Lookup (Relationship)',
-  'Formula',
-  'Rollup Summary'
-];
+const fieldTypes = PLATFORM_MODULE_FIELD_TYPES;
 const selectedModule = computed(() => modules.value.find(m => m._id === selectedModuleId.value));
 
 // Form Settings Permissions (explanatory only, not enforcement)

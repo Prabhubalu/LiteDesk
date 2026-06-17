@@ -38,7 +38,9 @@ const DOMAIN_EVENT_TYPES = [
   'appointment.updated',
   'appointment.completed',
   'appointment.cancelled',
-  'appointment.no_show'
+  'appointment.no_show',
+  // Webform events
+  'webform.submission.processed'
 ];
 
 // Known action types
@@ -48,7 +50,7 @@ const ACTION_TYPES = ['create_task', 'notify_user'];
 const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL'];
 
 // Known entity types
-const ENTITY_TYPES = ['people', 'organization', 'deal', 'events'];
+const ENTITY_TYPES = ['people', 'organization', 'deal', 'events', 'webform_submission'];
 
 /**
  * Validate trigger schema

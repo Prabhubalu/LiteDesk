@@ -14,8 +14,12 @@ function resolveDevSameOriginProxy(explicitOrigin: string): string {
   }
   try {
     const api = new URL(explicitOrigin)
+    // In local dev always use the Vite origin + proxy for API hosts on this machine.
+    if (LOCAL_DEV_HOSTS.has(api.hostname)) {
+      return ''
+    }
     const page = window.location
-    if (!LOCAL_DEV_HOSTS.has(api.hostname) || !LOCAL_DEV_HOSTS.has(page.hostname)) {
+    if (!LOCAL_DEV_HOSTS.has(page.hostname)) {
       return explicitOrigin
     }
     if (api.port !== page.port) {

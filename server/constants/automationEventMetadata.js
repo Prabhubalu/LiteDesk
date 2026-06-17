@@ -135,6 +135,16 @@ const EVENT_METADATA = {
     category: 'appointments',
     suggestedEntityType: 'events',
     conditionFields: APPOINTMENT_CONDITION_FIELDS
+  },
+  'webform.submission.processed': {
+    label: 'Webform submission processed',
+    category: 'crm',
+    suggestedEntityType: 'webform_submission',
+    conditionFields: [
+      { value: 'currentState.crmAction', label: 'CRM action' },
+      { value: 'currentState.targetModuleKey', label: 'Target module' },
+      { value: 'currentState.status', label: 'Submission status' }
+    ]
   }
 };
 
@@ -190,6 +200,21 @@ function buildPreviewTestEvent(rule, { organizationId, userId } = {}) {
         bookedByName: 'Preview Guest',
         noShow: eventType === 'appointment.no_show'
       }
+    };
+    return base;
+  }
+
+  if (eventType === 'webform.submission.processed') {
+    base.entityType = rule.entityType || 'webform_submission';
+    base.entityId = '507f1f77bcf86cd799439011';
+    base.currentState = {
+      webformId: 'WFM-001',
+      webformName: 'Preview Webform',
+      submissionId: '507f1f77bcf86cd799439012',
+      status: 'processed',
+      crmAction: 'created',
+      targetModuleKey: 'people',
+      crmRecordId: '507f1f77bcf86cd799439011'
     };
     return base;
   }

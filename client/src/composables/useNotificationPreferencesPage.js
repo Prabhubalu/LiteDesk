@@ -36,6 +36,12 @@ export const GROUP_DEFINITIONS = {
       events: ['TASK_ASSIGNED', 'TASK_CREATED', 'TASK_STATUS_CHANGED', 'TASK_DUE_SOON']
     },
     {
+      id: 'webforms',
+      label: 'Webforms',
+      description: 'Lead capture form submissions.',
+      events: ['WEBFORM_SUBMISSION']
+    },
+    {
       id: 'system-updates',
       label: 'System updates',
       description: 'Workspace and account-level updates.',
@@ -147,6 +153,7 @@ function eventTypeToLabel(eventType) {
     TASK_CREATED: 'Task created',
     TASK_STATUS_CHANGED: 'Task status changed',
     TASK_DUE_SOON: 'Task due soon',
+    WEBFORM_SUBMISSION: 'Webform submission',
     EVIDENCE_UPLOADED: 'Evidence uploaded',
     PORTAL_ACCOUNT_CREATED: 'Portal account created',
     USER_ADDED_TO_APP: 'Added to workspace',
@@ -176,6 +183,7 @@ function eventTypeToDescription(eventType, appKey) {
     TASK_CREATED: 'When a new task is created.',
     TASK_STATUS_CHANGED: 'When the status of a task changes.',
     TASK_DUE_SOON: 'When a task is approaching its due date.',
+    WEBFORM_SUBMISSION: 'When a webform you manage receives a new submission.',
     EVIDENCE_UPLOADED: 'When evidence or files are uploaded to an audit.',
     PORTAL_ACCOUNT_CREATED: 'When a new portal account is created.',
     USER_ADDED_TO_APP: 'When you are added to a workspace or module.',

@@ -373,6 +373,19 @@ module.exports = {
       sms: false
     }
   },
+  [domainEvents.WEBFORM_SUBMISSION]: {
+    appKey: '*',
+    recipients: ['WEBFORM_NOTIFY_RECIPIENTS'],
+    priority: 'NORMAL',
+    defaultChannels: ['IN_APP', 'EMAIL'],
+    channels: {
+      inApp: true,
+      email: true,
+      push: false,
+      whatsapp: false,
+      sms: false
+    }
+  },
   [domainEvents.DIGEST_DAILY]: {
     appKey: '*',
     recipients: ['USER_SELF'],

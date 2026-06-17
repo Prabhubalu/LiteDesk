@@ -8,6 +8,7 @@ const assignmentRulesController = require('../controllers/assignmentRulesControl
 const slaPolicyController = require('../controllers/slaPolicyController');
 const mailroomSettingsController = require('../controllers/mailroomSettingsController');
 const quoteSettingsController = require('../controllers/quoteSettingsController');
+const webformController = require('../controllers/webformController');
 const { organizationSettingsLimiter, sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
 const {
@@ -41,6 +42,10 @@ router.post('/applications/helpdesk/recalculate-slas', helpdeskSettingsControlle
 router.get('/quotes', quoteSettingsController.getQuoteSettings);
 router.put('/quotes', quoteSettingsController.updateQuoteSettings);
 router.get('/applications/:appKey', controller.getApplication);
+
+// Webforms (Settings metadata — separate from Audit forms)
+router.get('/webforms/modules', webformController.getWebformModules);
+router.get('/webforms/field-types', webformController.getWebformFieldTypes);
 
 // Assignment Rules (metadata-driven, module-scoped)
 router.get('/automation/assignment-rules/metadata', assignmentRulesController.getAssignmentRulesMetadata);

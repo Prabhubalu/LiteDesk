@@ -43,6 +43,7 @@ export const SHARED_NAMESPACES = [
   'performance',
   'records',
   'forms',
+  'webforms',
   'process',
   'appointments',
   'tasks',
@@ -66,7 +67,7 @@ export type SharedNamespace = (typeof SHARED_NAMESPACES)[number];
  * Large catalogs loaded after core shell messages (settings ~400KB, forms ~160KB, process ~110KB per locale).
  * Routes under /settings and /forms await the full bundle via ensureFullLocaleLoaded().
  */
-export const DEFERRED_LOCALE_NAMESPACES = ['settings', 'forms', 'process'] as const satisfies readonly SharedNamespace[];
+export const DEFERRED_LOCALE_NAMESPACES = ['settings', 'forms', 'webforms', 'process'] as const satisfies readonly SharedNamespace[];
 
 export type DeferredLocaleNamespace = (typeof DEFERRED_LOCALE_NAMESPACES)[number];
 

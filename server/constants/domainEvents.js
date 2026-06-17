@@ -54,6 +54,9 @@ module.exports = {
   DIGEST_WEEKLY: 'DIGEST_WEEKLY',
 
   /** Workspace inbox: user's snooze window ended; thread is visible in default folders again. */
-  EMAIL_THREAD_SNOOZE_ENDED: 'EMAIL_THREAD_SNOOZE_ENDED'
+  EMAIL_THREAD_SNOOZE_ENDED: 'EMAIL_THREAD_SNOOZE_ENDED',
+
+  // Webform events
+  WEBFORM_SUBMISSION: 'WEBFORM_SUBMISSION'
 };
 

@@ -53,6 +53,8 @@ async function resolveKey(key, context) {
       return resolveInboxSnoozeWake(context);
     case 'PLAYBOOK_ALERT_RECIPIENTS':
       return resolvePlaybookAlertRecipients(context);
+    case 'WEBFORM_NOTIFY_RECIPIENTS':
+      return resolveWebformNotifyRecipients(context);
     default:
       console.warn('[notificationRecipientResolver] Unhandled recipient key:', key);
       return [];
@@ -119,6 +121,33 @@ async function resolvePlaybookAlertRecipients({ entity, organizationId }) {
   const dealTitle = entity?.title || 'Deal';
   const title = `Playbook: ${actionTitle}`;
   const body = `Reminder for "${actionTitle}" on deal "${dealTitle}".`;
+
+  return users.map((user) => ({
+    userId: user._id,
+    title,
+    body
+  }));
+}
+
+async function resolveWebformNotifyRecipients({ entity, organizationId, eventType }) {
+  if (eventType !== domainEvents.WEBFORM_SUBMISSION) return [];
+
+  const recipientUserIds = Array.isArray(entity?.notifyRecipientUserIds)
+    ? entity.notifyRecipientUserIds
+    : [];
+  if (!recipientUserIds.length || !organizationId) {
+    return [];
+  }
+
+  const users = await User.find({
+    _id: { $in: recipientUserIds },
+    organizationId,
+    status: { $in: ['active', null] }
+  }).select('_id');
+
+  const webformName = entity?.title || 'Webform';
+  const title = `New submission: ${webformName}`;
+  const body = 'A webform submission was received and processed.';
 
   return users.map((user) => ({
     userId: user._id,

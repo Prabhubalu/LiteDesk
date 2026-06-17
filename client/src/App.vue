@@ -35,7 +35,7 @@ const showHelpdeskNotificationDevPanel =
   import.meta.env.DEV &&
   import.meta.env.VITE_ENABLE_HELPDESK_NOTIFICATION_DEV_PANEL === 'true';
 import { useSidebarState } from '@/composables/useSidebarState';
-import { isAuthLifecyclePublicRoute } from '@/composables/useTabs';
+import { isAuthLifecyclePublicRoute, shouldSkipTabRoute, isStandaloneShelllessPath } from '@/utils/standaloneRoutes';
 import { identifyProductUser } from '@/config/posthogUser';
 import {
   startNotificationRealtime,
@@ -107,7 +107,15 @@ const hideShell = computed(() => {
   // Platform routes show the shell
   return false;
 });
-const isPublicRoute = computed(() => route.meta.requiresAuth === false);
+const isStandaloneShelllessRoute = computed(() => {
+  if (route.meta.requiresAuth === false) return true;
+  const routePath = String(route.path || '').split('?')[0];
+  if (isStandaloneShelllessPath(routePath)) return true;
+  if (typeof window !== 'undefined') {
+    return isStandaloneShelllessPath(window.location.pathname);
+  }
+  return false;
+});
 
 const DEFAULT_CONTENT_OFFSET = 0;
 const EXTRA_OFFSET_LIGHT = '2rem';
@@ -235,7 +243,7 @@ watch(() => route.path, async (newPath) => {
 
 // Refresh permissions on app mount (page refresh)
 onMounted(async () => {
-  if (authStore.isAuthenticated && !isPublicRoute.value) {
+  if (authStore.isAuthenticated && !isStandaloneShelllessRoute.value) {
     activeImportsStore.init();
     const neededMetadata = !appShellStore.isLoaded;
     appLog('Auto-refreshing permissions on page load...');
@@ -275,7 +283,8 @@ onMounted(async () => {
     // Audit and Portal have their own layouts. Settings now uses internal tabs.
     const isAuditRoute = route.path.startsWith('/audit/');
     const isPortalRoute = route.path.startsWith('/portal/');
-    if (!isAuditRoute && !isPortalRoute) {
+    const skipTabsInit = isAuditRoute || isPortalRoute || shouldSkipTabRoute(route.path);
+    if (!skipTabsInit) {
       // Tabs are scoped by instanceId + userId to prevent leakage across instances/users.
       const instanceId = authStore.organization?._id || authStore.organization?.instanceId;
       const userId = authStore.user?._id;
@@ -360,8 +369,9 @@ watch(
         // Use 'route' from useRoute() (same as onMounted) instead of router.currentRoute.value
         const isAuditRoute = route.path.startsWith('/audit/');
         const isPortalRoute = route.path.startsWith('/portal/');
-        
-        if (!isAuditRoute && !isPortalRoute) {
+        const skipTabsInit = isAuditRoute || isPortalRoute || shouldSkipTabRoute(route.path);
+
+        if (!skipTabsInit) {
           const { configureTabsStorage, useTabs } = await import('@/composables/useTabs');
           const { initTabs, setupRouteWatcher } = useTabs();
           configureTabsStorage({ instanceId, userId });
@@ -437,8 +447,8 @@ watch(
 </script>
 
 <template>
-  <!-- Public routes (no shell, no auth required) -->
-  <div v-if="isPublicRoute">
+  <!-- Standalone shell-less routes (public pages, staff webform preview) -->
+  <div v-if="isStandaloneShelllessRoute" class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <RouterView />
   </div>
 

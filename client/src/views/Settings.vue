@@ -192,6 +192,7 @@ const InstanceManagement = defineAsyncComponent(() => import('@/views/InstanceMa
 const AutomationSettings = defineAsyncComponent(() => import('@/components/settings/AutomationSettings.vue'));
 const PerformanceSettings = defineAsyncComponent(() => import('@/components/settings/PerformanceSettings.vue'));
 const BusinessHoursSettings = defineAsyncComponent(() => import('@/components/settings/BusinessHoursSettings.vue'));
+const WebformsSettings = defineAsyncComponent(() => import('@/components/settings/WebformsSettings.vue'));
 
 const authStore = useAuthStore();
 const { colorMode, toggleColorMode } = useColorMode();
@@ -215,8 +216,14 @@ const isDeepAutomationConfig = computed(() =>
   )
 );
 
+const isDeepWebformConfig = computed(() =>
+  activeTab.value === 'webforms'
+  && typeof route.query.webformId === 'string'
+  && route.query.webformId.length > 0
+);
+
 const isDeepSettingsView = computed(() =>
-  isDeepAppConfig.value || isDeepAutomationConfig.value
+  isDeepAppConfig.value || isDeepAutomationConfig.value || isDeepWebformConfig.value
 );
 
 // Navigate back function
@@ -386,6 +393,20 @@ const AutomationIcon = () => h('svg', {
   })
 ]);
 
+const WebformsIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg'
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+  })
+]);
+
 const PerformanceIcon = () => h('svg', {
   fill: 'none',
   stroke: 'currentColor',
@@ -429,6 +450,7 @@ const tabs = computed(() => {
     { id: 'core-modules', nameKey: 'settings.tabCoreModules', icon: CoreModulesIcon, component: CoreModulesList },
     { id: 'applications', nameKey: 'settings.tabApplications', icon: AppsIcon, component: ApplicationsList },
     { id: 'automation', nameKey: 'settings.tabAutomation', icon: AutomationIcon, component: AutomationSettings },
+    { id: 'webforms', nameKey: 'settings.tabWebforms', icon: WebformsIcon, component: WebformsSettings },
     { id: 'performance', nameKey: 'settings.tabPerformance', icon: PerformanceIcon, component: PerformanceSettings },
     { id: 'subscriptions', nameKey: 'settings.tabSubscriptions', icon: SubscriptionsIcon, component: SubscriptionsList },
     { id: 'notifications', nameKey: 'settings.tabNotifications', icon: BellIcon, component: NotificationSettings },
@@ -566,6 +588,9 @@ function handleTabClick(tab) {
   } else if (tab.id === 'performance') {
     activeTab.value = 'performance';
     router.replace({ path: '/settings', query: { tab: 'performance' } });
+  } else if (tab.id === 'webforms') {
+    activeTab.value = 'webforms';
+    router.replace({ path: '/settings', query: { tab: 'webforms' } });
   } else if (tab.path) {
     // Internal tabs use query parameters to stay within Settings layout
     activeTab.value = tab.id;

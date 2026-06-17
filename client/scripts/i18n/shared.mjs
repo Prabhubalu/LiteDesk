@@ -20,6 +20,7 @@ export const SHARED_NAMESPACES = [
   'performance',
   'records',
   'forms',
+  'webforms',
   'process',
   'appointments',
   'tasks',

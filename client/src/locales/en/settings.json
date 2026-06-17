@@ -103,6 +103,14 @@
     "message": "Assignment rules, automation rules, processes, and business flows",
     "description": "Automation landing card description"
   },
+  "tabWebforms": {
+    "message": "Webforms",
+    "description": "Webforms settings tab"
+  },
+  "tabWebformsDesc": {
+    "message": "Lead-capture forms with CRM ingestion, publishing, and embeds",
+    "description": "Webforms landing card description"
+  },
   "automationHubDesc": {
     "message": "Configure assignment routing, event-driven rules, multi-step processes, and business flow groupings.",
     "description": "Automation hub page subtitle"
