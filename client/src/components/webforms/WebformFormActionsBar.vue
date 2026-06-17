@@ -1,84 +1,27 @@
 <template>
   <div :class="[actionsContainerClasses(), actionsAlignClasses(formActions.align)]">
-    <component
-      :is="staticPreview ? 'div' : 'button'"
-      v-if="formActions.cancel.enabled"
-      :type="staticPreview ? undefined : 'button'"
-      class="rounded-lg px-4 py-2.5 text-center text-sm font-semibold transition"
-      :class="[
-        buttonColorClasses(formActions.cancel.color),
-        buttonWidthClasses(formActions.cancel.width, formActions.align),
-        staticPreview ? 'pointer-events-none opacity-90' : 'disabled:opacity-60'
-      ]"
-      :disabled="staticPreview ? undefined : (disabled || submitting)"
-      @click="!staticPreview && handleCancel()"
+    <div
+      v-for="item in visibleActionItems"
+      :key="item.key"
+      :class="[selectableWrapperClass(item.key), actionOuterClass(item.key)]"
+      @click.stop="handleSelect(item.key)"
     >
-      {{ cancelLabel }}
-    </component>
-
-    <component
-      :is="staticPreview ? 'div' : 'button'"
-      v-if="formActions.reset.enabled"
-      :type="staticPreview ? undefined : 'button'"
-      class="rounded-lg px-4 py-2.5 text-center text-sm font-semibold transition"
-      :class="[
-        buttonColorClasses(formActions.reset.color),
-        buttonWidthClasses(formActions.reset.width, formActions.align),
-        staticPreview ? 'pointer-events-none opacity-90' : 'disabled:opacity-60'
-      ]"
-      :disabled="staticPreview ? undefined : (disabled || submitting)"
-      @click="!staticPreview && emit('reset')"
-    >
-      {{ resetLabel }}
-    </component>
-
-    <component
-      :is="staticPreview ? 'div' : 'button'"
-      v-if="stepMode && showBack"
-      :type="staticPreview ? undefined : 'button'"
-      class="rounded-lg px-4 py-2.5 text-center text-sm font-semibold transition"
-      :class="[
-        secondaryButtonClass(formActions.back.color),
-        buttonWidthClasses(formActions.back.width, formActions.align),
-        staticPreview ? 'pointer-events-none opacity-90' : 'disabled:opacity-60'
-      ]"
-      :disabled="staticPreview ? undefined : (disabled || submitting)"
-      @click="!staticPreview && emit('back')"
-    >
-      {{ backLabelResolved }}
-    </component>
-
-    <component
-      :is="staticPreview ? 'div' : 'button'"
-      v-if="stepMode && showNext"
-      :type="staticPreview ? undefined : 'button'"
-      class="rounded-lg px-4 py-2.5 text-center text-sm font-semibold transition"
-      :class="[
-        secondaryButtonClass(formActions.next.color),
-        buttonWidthClasses(formActions.next.width, formActions.align),
-        staticPreview ? 'pointer-events-none opacity-90' : 'disabled:opacity-60'
-      ]"
-      :disabled="staticPreview ? undefined : (disabled || submitting)"
-      @click="!staticPreview && emit('next')"
-    >
-      {{ nextLabelResolved }}
-    </component>
-
-    <component
-      :is="staticPreview ? 'div' : 'button'"
-      v-if="showSubmit"
-      :type="staticPreview ? undefined : 'submit'"
-      class="rounded-lg px-4 py-2.5 text-center text-sm font-semibold transition"
-      :class="[
-        submitButtonClass,
-        buttonWidthClasses(formActions.submit.width, formActions.align, { paired: pairedWithBack }),
-        staticPreview ? 'pointer-events-none opacity-90' : 'disabled:opacity-60'
-      ]"
-      :style="submitButtonStyle"
-      :disabled="staticPreview ? undefined : (disabled || submitting)"
-    >
-      {{ submitLabelResolved }}
-    </component>
+      <component
+        :is="staticPreview ? 'div' : 'button'"
+        :type="item.submitType"
+        class="rounded-lg px-4 py-2.5 text-center text-sm font-semibold transition"
+        :class="[
+          item.colorClass,
+          actionInnerClass(item.key),
+          staticPreview ? 'pointer-events-none' : 'disabled:opacity-60',
+          builderMutedClass(),
+        ]"
+        :disabled="staticPreview ? undefined : (disabled || submitting)"
+        @click="item.onClick?.($event)"
+      >
+        {{ item.label }}
+      </component>
+    </div>
   </div>
 </template>
 
@@ -93,11 +36,14 @@ import {
   mergeFormActions,
   resolveButtonLabel
 } from '@/utils/webformFormActions';
+import { WEBFORM_FIELD_SELECTED_CLASS, WEBFORM_THEMED_PRIMARY_BTN_CLASS } from '@/utils/webformUiClasses';
 
 const props = defineProps({
   formActions: { type: Object, default: () => ({}) },
   preview: { type: Boolean, default: false },
   staticPreview: { type: Boolean, default: false },
+  selectable: { type: Boolean, default: false },
+  selectedButtonKey: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
   submitting: { type: Boolean, default: false },
   submitLabel: { type: String, default: '' },
@@ -108,11 +54,13 @@ const props = defineProps({
   showSubmit: { type: Boolean, default: true }
 });
 
-const emit = defineEmits(['reset', 'back', 'next']);
+const emit = defineEmits(['reset', 'back', 'next', 'select-button']);
 
 const { t } = useI18n();
 
 const formActions = computed(() => mergeFormActions(props.formActions));
+
+const themedAccent = computed(() => /^#[0-9a-f]{6}$/i.test(String(props.themeColor || '').trim()));
 
 const pairedWithBack = computed(() => {
   if (!props.stepMode || !props.showBack || !props.showSubmit) return false;
@@ -120,46 +68,109 @@ const pairedWithBack = computed(() => {
   return width === 'full' || width === 'half';
 });
 
-const submitLabelResolved = computed(() => {
-  if (props.submitting) return t('webforms.publicSubmitting');
-  if (props.submitLabel) return props.submitLabel;
-  return resolveButtonLabel(formActions.value.submit.label, t('webforms.publicSubmit'));
+function themedPrimaryClass(color) {
+  if (themedAccent.value && color === 'blue') return WEBFORM_THEMED_PRIMARY_BTN_CLASS;
+  return buttonColorClasses(color);
+}
+
+const visibleActionItems = computed(() => {
+  const items = [];
+  const actions = formActions.value;
+
+  if (actions.cancel.enabled) {
+    items.push({
+      key: 'cancel',
+      label: resolveButtonLabel(actions.cancel.label, t('webforms.formActionCancel')),
+      colorClass: buttonColorClasses(actions.cancel.color),
+      submitType: props.staticPreview ? undefined : 'button',
+      onClick: () => !props.staticPreview && handleCancel()
+    });
+  }
+
+  if (actions.reset.enabled) {
+    items.push({
+      key: 'reset',
+      label: resolveButtonLabel(actions.reset.label, t('webforms.formActionReset')),
+      colorClass: buttonColorClasses(actions.reset.color),
+      submitType: props.staticPreview ? undefined : 'button',
+      onClick: () => !props.staticPreview && emit('reset')
+    });
+  }
+
+  if (props.stepMode && props.showBack) {
+    items.push({
+      key: 'back',
+      label: resolveButtonLabel(actions.back.label, t('webforms.multiStepBack')),
+      colorClass: buttonColorClasses(actions.back.color),
+      submitType: props.staticPreview ? undefined : 'button',
+      onClick: () => !props.staticPreview && emit('back')
+    });
+  }
+
+  if (props.stepMode && props.showNext) {
+    items.push({
+      key: 'next',
+      label: resolveButtonLabel(actions.next.label, t('webforms.multiStepNext')),
+      colorClass: buttonColorClasses(actions.next.color),
+      submitType: props.staticPreview ? undefined : 'button',
+      onClick: () => !props.staticPreview && emit('next')
+    });
+  }
+
+  if (props.showSubmit) {
+    items.push({
+      key: 'submit',
+      label: props.submitting
+        ? t('webforms.publicSubmitting')
+        : (props.submitLabel || resolveButtonLabel(actions.submit.label, t('webforms.publicSubmit'))),
+      colorClass: themedPrimaryClass(actions.submit.color),
+      submitType: props.staticPreview ? undefined : 'submit',
+      onClick: undefined
+    });
+  }
+
+  return items;
 });
 
-const resetLabel = computed(() =>
-  resolveButtonLabel(formActions.value.reset.label, t('webforms.formActionReset'))
-);
-
-const cancelLabel = computed(() =>
-  resolveButtonLabel(formActions.value.cancel.label, t('webforms.formActionCancel'))
-);
-
-const backLabelResolved = computed(() =>
-  resolveButtonLabel(formActions.value.back.label, t('webforms.multiStepBack'))
-);
-
-const nextLabelResolved = computed(() =>
-  resolveButtonLabel(formActions.value.next.label, t('webforms.multiStepNext'))
-);
-
-const themedAccent = computed(() => /^#[0-9a-f]{6}$/i.test(String(props.themeColor || '').trim()));
-
-function secondaryButtonClass(color) {
-  return buttonColorClasses(color);
+function actionWidthOptions(key) {
+  return {
+    paired: key === 'submit' && pairedWithBack.value
+  };
 }
 
-function themedPrimaryClass(color) {
-  if (themedAccent.value && color === 'blue') return 'text-white hover:opacity-90';
-  return buttonColorClasses(color);
+function actionOuterClass(key) {
+  if (!props.selectable) return '';
+  const width = formActions.value[key]?.width || 'fit';
+  return buttonWidthClasses(width, formActions.value.align, actionWidthOptions(key));
 }
 
-function themedPrimaryStyle(color) {
-  if (!themedAccent.value || color !== 'blue') return undefined;
-  return { backgroundColor: String(props.themeColor).trim() };
+function actionInnerClass(key) {
+  const width = formActions.value[key]?.width || 'fit';
+  const layout = buttonWidthClasses(width, formActions.value.align, actionWidthOptions(key));
+  if (!props.selectable) {
+    return [layout, width === 'fit' ? 'inline-block' : 'block min-w-0'].filter(Boolean).join(' ');
+  }
+  return width === 'fit' ? 'inline-block w-auto max-w-full' : 'block w-full min-w-0';
 }
 
-const submitButtonClass = computed(() => themedPrimaryClass(formActions.value.submit.color));
-const submitButtonStyle = computed(() => themedPrimaryStyle(formActions.value.submit.color));
+function selectableWrapperClass(key) {
+  if (!props.selectable) return 'contents';
+  return [
+    'min-w-0 rounded-lg border-2 p-0.5 transition cursor-pointer',
+    props.selectedButtonKey === key
+      ? WEBFORM_FIELD_SELECTED_CLASS
+      : 'border-transparent hover:border-gray-200 dark:hover:border-gray-600'
+  ];
+}
+
+function builderMutedClass() {
+  return props.staticPreview ? 'opacity-90' : '';
+}
+
+function handleSelect(key) {
+  if (!props.selectable) return;
+  emit('select-button', key);
+}
 
 function handleCancel() {
   const url = String(formActions.value.cancel.redirectUrl || '').trim();

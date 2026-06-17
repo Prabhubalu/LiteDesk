@@ -1,0 +1,226 @@
+<template>
+  <div class="relative">
+    <div
+      :class="[
+        'w-full rounded-md transition-all text-base sm:text-sm/6',
+        disabled
+          ? 'bg-gray-100 dark:bg-gray-700 opacity-50 cursor-not-allowed'
+          : 'bg-gray-100 dark:bg-gray-700 cursor-pointer focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10',
+        hasError ? 'outline-2 -outline-offset-2 outline-red-500 dark:outline-red-500' : '',
+        showOptions && !disabled ? 'outline-2 -outline-offset-2 outline-indigo-500 dark:outline-indigo-500' : ''
+      ]"
+      @click.stop="!disabled && toggleDropdown()"
+    >
+      <div class="flex flex-wrap items-center gap-2 px-3 py-2 min-h-[2.5rem]">
+        <template v-if="selectedValues.length > 0">
+          <span
+            v-for="(selected, index) in selectedValues"
+            :key="`${optionKey(selected)}-${index}`"
+            class="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 px-3 py-1 text-sm font-medium text-indigo-800 dark:text-indigo-200"
+          >
+            <span
+              v-if="optionColor(selected)"
+              class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              :style="{ backgroundColor: optionColor(selected) }"
+            />
+            <span>{{ optionLabel(selected) }}</span>
+            <button
+              v-if="!disabled"
+              type="button"
+              class="ml-0.5 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
+              :aria-label="t('actions.remove')"
+              @click.stop="removeValue(selected)"
+            >
+              <XMarkIcon class="h-3.5 w-3.5" />
+            </button>
+          </span>
+        </template>
+        <span
+          v-else
+          class="text-gray-500 dark:text-gray-500 text-base sm:text-sm/6 px-2"
+        >
+          {{ placeholder }}
+        </span>
+      </div>
+    </div>
+
+    <Transition
+      enter-active-class="transition ease-out duration-100"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition ease-in duration-75"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
+    >
+      <div
+        v-if="showOptions && !disabled"
+        v-click-outside="closeDropdown"
+        class="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 max-h-72 flex flex-col"
+        @click.stop
+      >
+        <div
+          v-if="showSearch"
+          class="shrink-0 p-2 border-b border-gray-200 dark:border-gray-600"
+          @click.stop
+          @mousedown.stop
+        >
+          <div class="relative">
+            <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10" />
+            <input
+              v-model="searchQuery"
+              type="text"
+              :placeholder="t('common.formSearchOptions')"
+              class="w-full pl-9 pr-3 py-2 text-sm rounded-md bg-gray-100 dark:bg-gray-700 outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:outline-indigo-500 text-gray-900 dark:text-white placeholder:text-gray-500 relative z-10"
+              autocomplete="off"
+              @keydown.escape.stop="closeDropdown"
+              @click.stop
+              @mousedown.stop
+            />
+          </div>
+        </div>
+        <div class="py-1 max-h-60 overflow-y-auto">
+          <button
+            v-for="(option, index) in filteredOptions"
+            :key="`${optionKey(option)}-${index}`"
+            type="button"
+            class="w-full text-left px-4 py-2 text-sm transition-colors"
+            :class="isSelected(option)
+              ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 font-medium'
+              : 'text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'"
+            @click.stop="toggleOption(option)"
+          >
+            <div class="flex items-center gap-2">
+              <div
+                class="flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors"
+                :class="isSelected(option)
+                  ? 'bg-indigo-600 dark:bg-indigo-500 border-indigo-600 dark:border-indigo-500'
+                  : 'border-gray-300 dark:border-gray-600'"
+              >
+                <CheckSolidIcon v-if="isSelected(option)" class="w-3 h-3 text-white" />
+              </div>
+              <span
+                v-if="optionColor(option)"
+                class="w-3 h-3 rounded-full flex-shrink-0"
+                :style="{ backgroundColor: optionColor(option) }"
+              />
+              <span>{{ optionLabel(option) }}</span>
+            </div>
+          </button>
+          <div
+            v-if="filteredOptions.length === 0"
+            class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400"
+          >
+            {{ t('common.formNoOptions') }}
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </div>
+</template>
+
+<script setup>
+import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { Transition } from 'vue';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { CheckIcon as CheckSolidIcon } from '@heroicons/vue/24/solid';
+import clickOutside from '@/directives/clickOutside';
+import {
+  filterPicklistOptions,
+  picklistOptionColor,
+  picklistOptionKey,
+  picklistOptionLabel
+} from '@/utils/picklistOptionUtils';
+import { getPicklistOptionValue } from '@/utils/picklistColorPalette';
+
+const vClickOutside = clickOutside;
+
+const props = defineProps({
+  modelValue: { type: Array, default: () => [] },
+  options: { type: Array, default: () => [] },
+  disabled: { type: Boolean, default: false },
+  hasError: { type: Boolean, default: false },
+  placeholder: { type: String, default: '' }
+});
+
+const emit = defineEmits(['update:modelValue']);
+
+const { t } = useI18n();
+
+const showOptions = ref(false);
+const searchQuery = ref('');
+
+const showSearch = computed(() => props.options.length > 6);
+
+const selectedValues = computed(() => {
+  const value = props.modelValue;
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string' && value.trim()) {
+    return value.split(',').map((part) => part.trim()).filter(Boolean);
+  }
+  return [value].filter(Boolean);
+});
+
+const filteredOptions = computed(() => filterPicklistOptions(props.options, searchQuery.value));
+
+function optionKey(option) {
+  return picklistOptionKey(option);
+}
+
+function optionLabel(option) {
+  return picklistOptionLabel(option);
+}
+
+function optionColor(option) {
+  return picklistOptionColor(option);
+}
+
+function isSelected(option) {
+  const optionValue = getPicklistOptionValue(option);
+  return selectedValues.value.some((selected) => {
+    const selectedValue = getPicklistOptionValue(selected);
+    return selectedValue === optionValue || String(selectedValue) === String(optionValue);
+  });
+}
+
+function emitValues(values) {
+  emit('update:modelValue', values);
+}
+
+function toggleDropdown() {
+  showOptions.value = !showOptions.value;
+}
+
+function closeDropdown() {
+  if (!showOptions.value) return;
+  showOptions.value = false;
+  searchQuery.value = '';
+}
+
+function toggleOption(option) {
+  const optionValue = getPicklistOptionValue(option);
+  const current = [...selectedValues.value];
+  const index = current.findIndex((selected) => {
+    const selectedValue = getPicklistOptionValue(selected);
+    return selectedValue === optionValue || String(selectedValue) === String(optionValue);
+  });
+
+  if (index > -1) {
+    current.splice(index, 1);
+  } else {
+    current.push(optionValue);
+  }
+
+  emitValues(current);
+}
+
+function removeValue(option) {
+  const optionValue = getPicklistOptionValue(option);
+  const current = selectedValues.value.filter((selected) => {
+    const selectedValue = getPicklistOptionValue(selected);
+    return selectedValue !== optionValue && String(selectedValue) !== String(optionValue);
+  });
+  emitValues(current);
+}
+</script>

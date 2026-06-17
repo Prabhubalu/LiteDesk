@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full min-h-0 flex-1 flex-col bg-[#eef1f6] dark:bg-gray-950/40">
+  <div :class="['flex h-full min-h-0 flex-1 flex-col', WEBFORM_BUILDER_CANVAS_BG]">
     <div class="border-b border-gray-200 bg-white px-4 py-2.5 dark:border-gray-700 dark:bg-gray-900">
       <div class="flex items-center justify-between gap-3">
         <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -12,7 +12,7 @@
             type="button"
             class="rounded-md px-2.5 py-1 text-xs font-medium transition"
             :class="previewDevice === device.id
-              ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400'
+              ? WEBFORM_DEVICE_TAB_ACTIVE_CLASS
               : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'"
             @click="$emit('update:previewDevice', device.id)"
           >
@@ -27,7 +27,7 @@
           type="button"
           class="rounded-full px-3 py-1 text-xs font-medium transition"
           :class="activeStepId === step.stepId
-            ? 'bg-blue-600 text-white'
+            ? WEBFORM_STEP_ACTIVE_CLASS
             : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'"
           @click="$emit('update:activeStepId', step.stepId)"
         >
@@ -39,15 +39,19 @@
     <div class="flex flex-1 items-start justify-center overflow-y-auto p-5 sm:p-8">
       <div class="w-full transition-all duration-200" :class="deviceWidthClass">
         <div
-          class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800"
+          :class="[WEBFORM_CARD_CLASS, webformBrandingSurfaceClasses(branding), 'overflow-visible']"
           :style="brandingStyle"
         >
-          <img
+          <div
             v-if="headerImageUrl"
-            :src="resolveWebformImageUrl(headerImageUrl)"
-            alt=""
-            class="h-36 w-full object-cover"
+            :class="WEBFORM_CARD_HEADER_IMAGE_WRAP_CLASS"
           >
+            <img
+              :src="resolveWebformImageUrl(headerImageUrl)"
+              alt=""
+              class="h-36 w-full object-cover"
+            >
+          </div>
 
           <div class="p-6 sm:p-8">
             <header class="mb-6">
@@ -92,7 +96,7 @@
                     fieldSpanClass(field),
                     'group relative rounded-lg border-2 px-3 py-3 transition',
                     selectedFieldId === field.fieldId
-                      ? 'border-blue-500 bg-blue-50/40 dark:border-blue-500 dark:bg-blue-950/20'
+                      ? WEBFORM_FIELD_SELECTED_CLASS
                       : 'border-transparent hover:border-gray-200 hover:bg-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-900/30'
                   ]"
                   @click="$emit('select-field', field.fieldId)"
@@ -130,7 +134,8 @@
               </template>
             </draggable>
 
-            <WebformFormActionsBar
+            <div v-if="fields.length" class="mt-4 overflow-visible">
+              <WebformFormActionsBar
               v-if="fields.length"
               :form-actions="webform.formActions"
               :theme-color="branding.themeColor"
@@ -138,9 +143,13 @@
               :show-back="canvasStepMode && canvasStepIndex > 0"
               :show-next="canvasStepMode && !canvasIsLastStep"
               :show-submit="!canvasStepMode || canvasIsLastStep"
+              selectable
+              :selected-button-key="selectedButtonKey"
               static-preview
               preview
-            />
+              @select-button="$emit('select-button', $event)"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -153,7 +162,15 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import draggable from 'vuedraggable';
 import { resolveWebformImageUrl } from '@/utils/webformFormatters';
-import { mergeWebformBranding, webformBrandingCssVars } from '@/utils/webformBranding';
+import { mergeWebformBranding, webformBrandingCssVars, webformBrandingSurfaceClasses } from '@/utils/webformBranding';
+import {
+  WEBFORM_BUILDER_CANVAS_BG,
+  WEBFORM_CARD_CLASS,
+  WEBFORM_CARD_HEADER_IMAGE_WRAP_CLASS,
+  WEBFORM_DEVICE_TAB_ACTIVE_CLASS,
+  WEBFORM_FIELD_SELECTED_CLASS,
+  WEBFORM_STEP_ACTIVE_CLASS
+} from '@/utils/webformUiClasses';
 import { isMultiStepFormActive } from '@/utils/webformMultiStep';
 import WebformFormActionsBar from '@/components/webforms/WebformFormActionsBar.vue';
 import {
@@ -175,6 +192,7 @@ const props = defineProps({
   webform: { type: Object, required: true },
   fields: { type: Array, default: () => [] },
   selectedFieldId: { type: String, default: '' },
+  selectedButtonKey: { type: String, default: '' },
   previewDevice: { type: String, default: 'desktop' },
   headerImageUrl: { type: String, default: '' },
   activeStepId: { type: String, default: '' },
@@ -184,6 +202,7 @@ const props = defineProps({
 const emit = defineEmits([
   'update:fields',
   'select-field',
+  'select-button',
   'remove-field',
   'update:previewDevice',
   'update:activeStepId',

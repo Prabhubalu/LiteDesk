@@ -31,6 +31,12 @@ export function isStandaloneShelllessPath(path) {
   return isStandalonePublicRoute(path);
 }
 
+/** Browser pathname check for async callbacks (auth refresh, apiClient) outside Vue setup. */
+export function isOnPublicShellRoute() {
+  if (typeof window === 'undefined') return false;
+  return isStandalonePublicRoute(window.location.pathname);
+}
+
 /** Routes the tab bar must not track (public, auth, audit shell, landing). */
 export function shouldSkipTabRoute(path) {
   const p = resolveRoutePathname(path);

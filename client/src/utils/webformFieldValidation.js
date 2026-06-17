@@ -2,6 +2,7 @@ import { normalizeWebformFieldType, isFieldValueEmpty, isFileFieldType } from '@
 import { validatePhoneValue } from '@/utils/phoneInput';
 import { validateField } from '@/utils/fieldValidation';
 import { getDefaultEmailValidations } from '@/utils/defaultFieldValidations';
+import { getWebformFieldDependencyState } from '@/utils/webformModuleFields';
 
 const PHONE_CRM_KEY_PATTERN = /(^|_)(phone|mobile|tel)(_|$)/i;
 
@@ -24,20 +25,31 @@ export function isWebformPhoneField(field) {
  * @param {Array} fields
  * @param {Record<string, unknown>} values
  * @param {{ required: (label: string) => string, emailInvalid: (label: string) => string, phoneInvalid: (label: string) => string }} messages
+ * @param {{ moduleKey?: string, allFields?: Array, moduleFields?: Array }} [options]
  */
-export function validateWebformFields(fields, values, messages = {}) {
+export function validateWebformFields(fields, values, messages = {}, options = {}) {
   const errors = {};
   const rows = Array.isArray(fields) ? fields : [];
+  const allFields = Array.isArray(options.allFields) ? options.allFields : rows;
+  const moduleKey = String(options.moduleKey || '').trim();
+  const moduleFields = Array.isArray(options.moduleFields) ? options.moduleFields : null;
 
   for (const field of rows) {
     const fieldId = String(field.fieldId || '');
     if (!fieldId) continue;
 
+    const depState = moduleKey
+      ? getWebformFieldDependencyState(field, allFields, values, moduleKey, moduleFields)
+      : null;
+
+    if (depState && depState.visible === false) continue;
+
     const type = normalizeWebformFieldType(field.type);
     const value = values[fieldId];
     const label = String(field.label || fieldId).trim() || fieldId;
+    const isRequired = depState ? depState.required === true : field.required === true;
 
-    if (field.required && isFieldValueEmpty(type, value)) {
+    if (isRequired && isFieldValueEmpty(type, value)) {
       errors[fieldId] = messages.required
         ? messages.required(label)
         : `${label} is required.`;

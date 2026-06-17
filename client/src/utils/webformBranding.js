@@ -49,32 +49,34 @@ export function webformFontFamilyCss(fontFamily) {
 
 export function webformBrandingCssVars(branding) {
   const merged = mergeWebformBranding(branding);
-  return {
+  const vars = {
     '--wf-accent': merged.themeColor,
     '--wf-font-family': webformFontFamilyCss(merged.fontFamily)
   };
+  if (merged.backgroundColor) {
+    vars['--wf-surface-bg'] = merged.backgroundColor;
+  }
+  return vars;
+}
+
+/** Tailwind classes for branded form surfaces; pair with webformBrandingCssVars() for CSS variables. */
+export function webformBrandingSurfaceClasses(branding) {
+  const merged = mergeWebformBranding(branding);
+  const classes = ['[font-family:var(--wf-font-family)]'];
+  if (merged.backgroundColor) {
+    classes.push('bg-[var(--wf-surface-bg)]');
+  }
+  return classes.join(' ');
 }
 
 export function webformSurfaceStyle(branding, { embed = false } = {}) {
   const merged = mergeWebformBranding(branding);
-  const style = {
-    ...webformBrandingCssVars(merged),
-    fontFamily: 'var(--wf-font-family)'
-  };
-  if (merged.backgroundColor) {
-    style.backgroundColor = merged.backgroundColor;
-  } else if (!embed) {
-    style.backgroundColor = '';
-  }
-  return style;
+  return webformBrandingCssVars(merged);
 }
 
 export function webformFormCardStyle(branding) {
-  const merged = mergeWebformBranding(branding);
-  if (!merged.backgroundColor) return {};
-  return {
-    backgroundColor: '#ffffff'
-  };
+  void branding;
+  return {};
 }
 
 export function webformFieldFocusClass() {

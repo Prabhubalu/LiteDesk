@@ -994,5 +994,321 @@
   "builderCaptchaPublishTitle": {
     "message": "CAPTCHA protection",
     "description": "Publish step CAPTCHA title"
+  },
+  "createSetupTitle": {
+    "message": "Create webform",
+    "description": "Create webform setup modal title"
+  },
+  "createSetupHint": {
+    "message": "Choose a name and target CRM module. Mandatory module fields are added to the form automatically.",
+    "description": "Create webform setup modal hint"
+  },
+  "createSetupNamePh": {
+    "message": "e.g. Contact us",
+    "description": "Create webform name placeholder"
+  },
+  "createSetupModulePh": {
+    "message": "Select a module",
+    "description": "Create webform module placeholder"
+  },
+  "createSetupContinue": {
+    "message": "Continue to builder",
+    "description": "Create webform setup continue button"
+  },
+  "createSetupCreating": {
+    "message": "Creating…",
+    "description": "Create webform setup creating state"
+  },
+  "builderStepAdvanceSaveWarning": {
+    "message": "Moved to the next step, but your latest changes could not be saved. Fix any errors and use Save draft.",
+    "description": "Shown when step navigation succeeds but save failed"
+  },
+  "builderModuleFieldsDragHint": {
+    "message": "Drag module fields onto the canvas. Each field maps directly to CRM.",
+    "description": "Module field library drag hint"
+  },
+  "builderModuleFields": {
+    "message": "Module fields",
+    "description": "Module fields library section title"
+  },
+  "builderModuleFieldsEmpty": {
+    "message": "No fields available for this module.",
+    "description": "Empty module fields library"
+  },
+  "builderModuleFieldsOnForm": {
+    "message": "Already on form",
+    "description": "Module fields already placed on the form"
+  },
+  "builderModuleFieldKey": {
+    "message": "Module field",
+    "description": "Read-only module field key label in inspector"
+  },
+  "builderTargetModuleLocked": {
+    "message": "Target module is set when the webform is created.",
+    "description": "Target module locked hint in builder"
+  },
+  "builderMandatoryFieldLocked": {
+    "message": "This field is required by the module and cannot be marked optional.",
+    "description": "Mandatory field required checkbox locked hint"
+  },
+  "builderCannotRemoveMandatory": {
+    "message": "Mandatory module fields cannot be removed from the form.",
+    "description": "Error when removing mandatory field"
+  },
+  "builderFormActionsNext": {
+    "message": "Next button",
+    "description": "Multi-step next button settings section"
+  },
+  "builderFormActionsBack": {
+    "message": "Back button",
+    "description": "Multi-step back button settings section"
+  },
+  "builderPrefillTitle": {
+    "message": "Prefill via URL",
+    "description": "Prefill section title on publish step"
+  },
+  "builderPrefillHint": {
+    "message": "Append query parameters to the hosted or embed URL to prefill fields. Keys match CRM field key, field ID, slugified label, or field_ plus field ID. Example: ?email=user{'@'}example.com{'&'}first_name=Ada",
+    "description": "Prefill section hint on publish step"
+  },
+  "builderBrandingTitle": {
+    "message": "Branding",
+    "description": "Branding section title in builder form settings"
+  },
+  "builderBrandingHint": {
+    "message": "Logo, colors, and font apply to hosted, embed, and live preview surfaces.",
+    "description": "Branding section hint"
+  },
+  "builderBrandingLogo": {
+    "message": "Logo",
+    "description": "Branding logo label"
+  },
+  "builderBrandingLogoEmpty": {
+    "message": "No logo uploaded.",
+    "description": "Branding logo empty state"
+  },
+  "builderBrandingLogoUpload": {
+    "message": "Upload logo",
+    "description": "Branding logo upload button"
+  },
+  "builderBrandingLogoPh": {
+    "message": "https://… or upload",
+    "description": "Branding logo URL placeholder"
+  },
+  "builderBrandingLogoUploadFailed": {
+    "message": "Logo upload failed.",
+    "description": "Branding logo upload error"
+  },
+  "builderBrandingThemeColor": {
+    "message": "Accent color",
+    "description": "Branding theme color label"
+  },
+  "builderBrandingBackground": {
+    "message": "Page background",
+    "description": "Branding page background label"
+  },
+  "builderBrandingBackgroundPh": {
+    "message": "Default (gray)",
+    "description": "Branding background placeholder"
+  },
+  "builderBrandingFont": {
+    "message": "Font",
+    "description": "Branding font label"
+  },
+  "builderBrandingFontSystem": {
+    "message": "System sans-serif",
+    "description": "Branding font option"
+  },
+  "builderBrandingFontSerif": {
+    "message": "Serif",
+    "description": "Branding font option"
+  },
+  "builderBrandingFontMono": {
+    "message": "Monospace",
+    "description": "Branding font option"
+  },
+  "builderVisibilityTitle": {
+    "message": "Show when",
+    "description": "Conditional visibility section title in field inspector"
+  },
+  "builderVisibilityHint": {
+    "message": "Show this field only when the conditions below are met.",
+    "description": "Conditional visibility section hint"
+  },
+  "builderVisibilityEnabled": {
+    "message": "Enable rules",
+    "description": "Toggle to enable conditional visibility"
+  },
+  "builderVisibilityMatch": {
+    "message": "Match",
+    "description": "Label for all/any match mode"
+  },
+  "builderVisibilityMatchAll": {
+    "message": "All conditions",
+    "description": "Require all visibility conditions"
+  },
+  "builderVisibilityMatchAny": {
+    "message": "Any condition",
+    "description": "Require any visibility condition"
+  },
+  "builderVisibilitySourceField": {
+    "message": "When field",
+    "description": "Source field for visibility condition"
+  },
+  "builderVisibilitySourceFieldPh": {
+    "message": "Select a field",
+    "description": "Placeholder for visibility source field"
+  },
+  "builderVisibilityOperator": {
+    "message": "Operator",
+    "description": "Visibility condition operator label"
+  },
+  "builderVisibilityOperator_equals": {
+    "message": "equals",
+    "description": "Visibility operator equals"
+  },
+  "builderVisibilityOperator_not_equals": {
+    "message": "does not equal",
+    "description": "Visibility operator not equals"
+  },
+  "builderVisibilityOperator_contains": {
+    "message": "contains",
+    "description": "Visibility operator contains"
+  },
+  "builderVisibilityOperator_not_contains": {
+    "message": "does not contain",
+    "description": "Visibility operator not contains"
+  },
+  "builderVisibilityOperator_is_empty": {
+    "message": "is empty",
+    "description": "Visibility operator is empty"
+  },
+  "builderVisibilityOperator_is_not_empty": {
+    "message": "is not empty",
+    "description": "Visibility operator is not empty"
+  },
+  "builderVisibilityOperator_is_checked": {
+    "message": "is checked",
+    "description": "Visibility operator is checked"
+  },
+  "builderVisibilityOperator_is_not_checked": {
+    "message": "is not checked",
+    "description": "Visibility operator is not checked"
+  },
+  "builderVisibilityValue": {
+    "message": "Value",
+    "description": "Visibility condition value label"
+  },
+  "builderVisibilityValuePh": {
+    "message": "Enter a value",
+    "description": "Visibility condition value placeholder"
+  },
+  "builderVisibilityAddCondition": {
+    "message": "Add condition",
+    "description": "Add visibility condition button"
+  },
+  "builderVisibilityRemoveCondition": {
+    "message": "Remove condition",
+    "description": "Remove visibility condition button"
+  },
+  "builderMultiStepTitle": {
+    "message": "Multi-step form",
+    "description": "Multi-step settings section title"
+  },
+  "builderMultiStepHint": {
+    "message": "Split fields across steps with a progress indicator on the public form.",
+    "description": "Multi-step settings hint"
+  },
+  "builderMultiStepEnabled": {
+    "message": "Enable multi-step",
+    "description": "Toggle multi-step form"
+  },
+  "builderMultiStepShowProgress": {
+    "message": "Show progress bar",
+    "description": "Toggle progress bar on public form"
+  },
+  "builderMultiStepNumber": {
+    "message": "Step {number}",
+    "description": "Step number label in builder"
+  },
+  "builderMultiStepLabel": {
+    "message": "Step title",
+    "description": "Step title field label"
+  },
+  "builderMultiStepDescription": {
+    "message": "Step description",
+    "description": "Step description field label"
+  },
+  "builderMultiStepAdd": {
+    "message": "Add step",
+    "description": "Add step button"
+  },
+  "builderMultiStepRemove": {
+    "message": "Remove",
+    "description": "Remove step button"
+  },
+  "builderMultiStepMoveUp": {
+    "message": "Up",
+    "description": "Move step up"
+  },
+  "builderMultiStepMoveDown": {
+    "message": "Down",
+    "description": "Move step down"
+  },
+  "builderMultiStepFieldStep": {
+    "message": "Step",
+    "description": "Field step assignment label"
+  },
+  "multiStepBack": {
+    "message": "Back",
+    "description": "Multi-step back button"
+  },
+  "multiStepNext": {
+    "message": "Next",
+    "description": "Multi-step next button"
+  },
+  "multiStepProgress": {
+    "message": "Step {current} of {total}",
+    "description": "Multi-step progress label"
+  },
+  "multiStepUntitled": {
+    "message": "Step {number}",
+    "description": "Fallback step title"
+  },
+  "multiStepNoVisibleFields": {
+    "message": "No fields to show on this step.",
+    "description": "Empty step message on public form"
+  },
+  "builderFieldTypeFile": {
+    "message": "File upload",
+    "description": "Webform-only file field type label"
+  },
+  "builderFileFieldPlaceholder": {
+    "message": "Choose a file",
+    "description": "Canvas placeholder for file field"
+  },
+  "fileFieldUploading": {
+    "message": "Uploading file…",
+    "description": "File field upload in progress"
+  },
+  "fileFieldUploadFailed": {
+    "message": "Upload failed. Try again.",
+    "description": "File field upload error"
+  },
+  "fileFieldRemove": {
+    "message": "Remove",
+    "description": "Remove uploaded file"
+  },
+  "fileFieldPreviewHint": {
+    "message": "File uploads are not saved in preview mode.",
+    "description": "Hint in builder live preview"
+  },
+  "fileFieldUnavailable": {
+    "message": "File upload is unavailable in this view.",
+    "description": "Hint when public slug missing"
+  },
+  "validationFileInvalid": {
+    "message": "{label} requires a valid uploaded file.",
+    "description": "Validation error for file field"
   }
 }

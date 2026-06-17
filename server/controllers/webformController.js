@@ -25,7 +25,7 @@ const {
 } = require('../constants/webformFields');
 const { sanitizeFormActions } = require('../constants/webformFormActions');
 const { sanitizeWebformBranding } = require('../constants/webformBranding');
-const { sanitizeFieldVisibility } = require('../constants/webformConditionalLogic');
+const { sanitizeFieldVisibility, defaultFieldVisibility } = require('../constants/webformConditionalLogic');
 const {
   isMultiStepEnabled,
   sanitizeFieldStepId,
@@ -35,7 +35,9 @@ const {
 const {
   listTenantWebformModules,
   resolveWebformTargetModule,
-  resolveModuleAppKey
+  resolveModuleAppKey,
+  getModuleFieldsForWebform,
+  serializeModuleFieldsForWebformClient
 } = require('../services/webformModuleMetadataService');
 const { resolvePublicCaptchaConfig, isCaptchaRequiredForWebform, verifyRecaptchaToken, formatCaptchaForClient } = require('../services/webformCaptchaService');
 const { getWebformAnalytics } = require('../services/webformAnalyticsService');
@@ -73,20 +75,74 @@ function applyCaptchaToUpdate(update, captcha, rawSecret) {
   }
 }
 
-function buildPublicWebformPayload(webform) {
+async function resolveWebformFillModuleFields(organizationId, moduleKey, appKey, fields) {
+  const key = String(moduleKey || '').trim().toLowerCase();
+  if (!key || !organizationId) return [];
+
+  try {
+    const liveFields = await getModuleFieldsForWebform(organizationId, key, appKey);
+    return serializeModuleFieldsForWebformClient(liveFields, fields);
+  } catch (err) {
+    console.warn('[webformController.resolveWebformFillModuleFields] failed:', err?.message || err);
+    return [];
+  }
+}
+
+async function buildPublicWebformPayload(webform) {
+  const fields = Array.isArray(webform?.fields) ? webform.fields : [];
+  const moduleKey = String(webform?.targetModuleKey || '').trim().toLowerCase();
+  const moduleFields = moduleKey && webform?.organizationId
+    ? await resolveWebformFillModuleFields(webform.organizationId, moduleKey, webform.targetAppKey, fields)
+    : [];
+
   return {
     webformId: webform.webformId,
     name: webform.name,
     description: webform.description,
+    targetModuleKey: webform.targetModuleKey || '',
+    targetAppKey: webform.targetAppKey || '',
     headerImageUrl: webform.headerImageUrl || '',
     branding: sanitizeWebformBranding(webform.branding),
     multiStep: sanitizeMultiStepConfig(webform.multiStep),
     steps: sanitizeWebformSteps(webform.steps, isMultiStepEnabled(webform)),
-    fields: webform.fields,
+    fields,
+    moduleFields,
     formActions: sanitizeFormActions(webform.formActions),
     thankYouMessage: webform.thankYouMessage,
     redirectUrl: webform.redirectUrl,
     captcha: resolvePublicCaptchaConfig(webform)
+  };
+}
+
+async function buildWebformFillPreviewPayloadFromBody(organizationId, body) {
+  const multiStep = sanitizeMultiStepConfig(body?.multiStep);
+  const steps = sanitizeWebformSteps(body?.steps, multiStep.enabled);
+  const webformShape = { multiStep, steps };
+  const fields = Array.isArray(body?.fields)
+    ? body.fields.map((field, index) => sanitizeField(field, index, webformShape))
+    : [];
+  const moduleKey = String(body?.targetModuleKey || '').trim().toLowerCase();
+  const moduleFields = moduleKey
+    ? await resolveWebformFillModuleFields(organizationId, moduleKey, body?.targetAppKey, fields)
+    : [];
+
+  return {
+    webformId: body?.webformId || '',
+    name: String(body?.name || '').trim(),
+    description: String(body?.description || '').trim(),
+    targetModuleKey: body?.targetModuleKey || '',
+    targetAppKey: body?.targetAppKey || '',
+    headerImageUrl: String(body?.headerImageUrl || '').trim(),
+    branding: sanitizeWebformBranding(body?.branding),
+    multiStep,
+    steps,
+    fields,
+    moduleFields,
+    formActions: sanitizeFormActions(body?.formActions),
+    thankYouMessage: String(body?.thankYouMessage || '').trim(),
+    redirectUrl: String(body?.redirectUrl || '').trim(),
+    status: WEBFORM_STATUSES.includes(body?.status) ? body.status : 'Draft',
+    captcha: resolvePublicCaptchaConfig(body)
   };
 }
 
@@ -104,6 +160,7 @@ function sanitizeField(field, index, webform) {
   const normalizedType = normalizeWebformFieldType(field.type);
   const type = WEBFORM_FIELD_TYPES.includes(normalizedType) ? normalizedType : 'Text';
   const picklist = isWebformPicklistFieldType(type);
+  const crmFieldKey = String(field.crmFieldKey || '').trim();
   return {
     fieldId,
     label: String(field.label || `Field ${index + 1}`).trim(),
@@ -114,11 +171,18 @@ function sanitizeField(field, index, webform) {
     options: picklist && Array.isArray(field.options)
       ? field.options.map((opt) => String(opt).trim()).filter(Boolean)
       : [],
-    crmFieldKey: String(field.crmFieldKey || '').trim(),
+    crmFieldKey,
     columnWidth: WEBFORM_FIELD_WIDTHS.includes(field.columnWidth) ? field.columnWidth : 'full',
     order: Number.isFinite(Number(field.order)) ? Number(field.order) : index,
     stepId: sanitizeFieldStepId(field.stepId, webform),
-    visibility: sanitizeFieldVisibility(field.visibility)
+    ...(crmFieldKey
+      ? { visibility: defaultFieldVisibility() }
+      : {
+        dependencies: Array.isArray(field.dependencies) && field.dependencies.length
+          ? field.dependencies
+          : undefined,
+        visibility: sanitizeFieldVisibility(field.visibility)
+      })
   };
 }
 
@@ -130,7 +194,7 @@ async function sanitizeWebformPayload(body, organizationId, userId) {
     || (await resolveWebformTargetModule(organizationId, requestedModuleKey))
     || {
       moduleKey: requestedModuleKey,
-      appKey: resolveModuleAppKey(requestedModuleKey, requestedAppKey || 'SALES')
+      appKey: resolveModuleAppKey(requestedModuleKey, requestedAppKey || 'PLATFORM')
     };
 
   const multiStep = sanitizeMultiStepConfig(body.multiStep);
@@ -143,7 +207,7 @@ async function sanitizeWebformPayload(body, organizationId, userId) {
     description: String(body.description || '').trim(),
     status: WEBFORM_STATUSES.includes(body.status) ? body.status : 'Draft',
     targetModuleKey: resolvedTarget.moduleKey,
-    targetAppKey: resolvedTarget.appKey || resolveModuleAppKey(resolvedTarget.moduleKey, 'SALES'),
+    targetAppKey: resolvedTarget.appKey || resolveModuleAppKey(resolvedTarget.moduleKey, 'PLATFORM'),
     fields: Array.isArray(body.fields) ? body.fields.map((field, index) => sanitizeField(field, index, webformShape)) : [],
     recordAction: body.recordAction || 'create',
     headerImageUrl: String(body.headerImageUrl || '').trim(),
@@ -339,12 +403,17 @@ exports.createWebform = async (req, res) => {
 
 exports.getWebformById = async (req, res) => {
   try {
-    const webform = await Webform.findOne({
-      _id: req.params.id,
-      organizationId: req.user.organizationId
-    })
+    const id = String(req.params.id || '').trim();
+    const orgFilter = { organizationId: req.user.organizationId };
+    let webform = await Webform.findOne({ _id: id, ...orgFilter })
       .populate('createdBy', 'firstName lastName email')
       .populate('modifiedBy', 'firstName lastName email');
+
+    if (!webform && id) {
+      webform = await Webform.findOne({ webformId: id, ...orgFilter })
+        .populate('createdBy', 'firstName lastName email')
+        .populate('modifiedBy', 'firstName lastName email');
+    }
 
     if (!webform) {
       return res.status(404).json({ success: false, message: 'Webform not found.' });
@@ -552,6 +621,16 @@ exports.getWebformFieldTypes = async (req, res) => {
   } catch (error) {
     console.error('[webformController.getWebformFieldTypes]', error);
     return res.status(500).json({ success: false, message: 'Error fetching webform field types.' });
+  }
+};
+
+exports.resolveWebformFillPreviewPayload = async (req, res) => {
+  try {
+    const data = await buildWebformFillPreviewPayloadFromBody(req.user.organizationId, req.body);
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[webformController.resolveWebformFillPreviewPayload]', error);
+    return res.status(500).json({ success: false, message: 'Error building webform fill preview.' });
   }
 };
 
@@ -784,7 +863,7 @@ exports.getWebformPreviewBySlug = async (req, res) => {
 
     return res.json({
       success: true,
-      data: buildPublicWebformPayload(webform)
+      data: await buildPublicWebformPayload(webform)
     });
   } catch (error) {
     console.error('[webformController.getWebformPreviewBySlug]', error);
@@ -814,7 +893,7 @@ exports.getPublicWebformBySlug = async (req, res) => {
 
     return res.json({
       success: true,
-      data: buildPublicWebformPayload(webform)
+      data: await buildPublicWebformPayload(webform)
     });
   } catch (error) {
     console.error('[webformController.getPublicWebformBySlug]', error);

@@ -193,13 +193,16 @@ function resolveRecordIntent(recordAction, existingRecord) {
 
 function buildSalesParticipation(appKey) {
   const normalized = String(appKey || 'SALES').toUpperCase();
-  if (normalized !== 'SALES') return null;
-  return {
-    SALES: {
-      role: 'Lead',
-      lead_status: 'New'
-    }
-  };
+  // Platform-target webforms still create SALES leads by default (lead capture).
+  if (normalized === 'PLATFORM' || normalized === 'SALES') {
+    return {
+      SALES: {
+        role: 'Lead',
+        lead_status: 'New'
+      }
+    };
+  }
+  return null;
 }
 
 async function applyDefaultDealPipeline(payload, organizationId, appKey) {

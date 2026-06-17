@@ -23,8 +23,9 @@
     ============================================================================
   -->
   
-  <!-- Global Search -->
+  <!-- Global Search (authenticated app shell only — avoids auth API side effects on public pages) -->
   <GlobalSearch
+    v-if="surfacesEnabled"
     :is-open="showGlobalSearch"
     :initial-mode="globalSearchInitialMode"
     @close="closeGlobalSearch"
@@ -36,23 +37,25 @@
   <!-- GlobalSearch switches to command mode when user types '/' -->
   <!-- A separate CommandPalette component can be added here if needed in the future -->
 
-  <ConnectMailboxModal
-    v-model="connectModalOpen"
-    :reason="connectModalReason"
-    :mailbox-kind="connectModalMailboxKind"
-    :target-mailbox="connectModalTargetMailbox"
-    @connected="onMailboxConnected"
-  />
+  <template v-if="surfacesEnabled">
+    <ConnectMailboxModal
+      v-model="connectModalOpen"
+      :reason="connectModalReason"
+      :mailbox-kind="connectModalMailboxKind"
+      :target-mailbox="connectModalTargetMailbox"
+      @connected="onMailboxConnected"
+    />
 
-  <WhatsNewModal
-    v-model="whatsNewModalOpen"
-    :releases="unseenReleases"
-  />
-  <WhatsNewDrawer
-    v-model="whatsNewDrawerOpen"
-    :releases="unseenReleases"
-  />
-  <ReleaseNotesCenter v-model="centerOpen" />
+    <WhatsNewModal
+      v-model="whatsNewModalOpen"
+      :releases="unseenReleases"
+    />
+    <WhatsNewDrawer
+      v-model="whatsNewDrawerOpen"
+      :releases="unseenReleases"
+    />
+    <ReleaseNotesCenter v-model="centerOpen" />
+  </template>
 </template>
 
 <script setup>
@@ -74,9 +77,10 @@ const { t } = useI18n();
  * Any deviation requires architecture review.
  */
 
-import { ref, onMounted, onBeforeUnmount, defineAsyncComponent, watch } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount, defineAsyncComponent, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
+import { isStandalonePublicRoute } from '@/utils/standaloneRoutes';
 import { useConnectMailboxPrompt } from '@/composables/useConnectMailboxPrompt';
 import { useMailboxConnection } from '@/composables/useMailboxConnection';
 import { useReleaseNotes } from '@/composables/useReleaseNotes';
@@ -107,6 +111,7 @@ const {
 const { refreshMailboxes } = useMailboxConnection();
 const authStore = useAuthStore();
 const route = useRoute();
+const surfacesEnabled = computed(() => !isStandalonePublicRoute(route.path));
 const {
   unseenReleases,
   surface,
@@ -230,6 +235,7 @@ const handleVisibilityChange = () => {
 watch(
   () => authStore.isAuthenticated,
   (isAuthenticated) => {
+    if (!surfacesEnabled.value) return;
     if (isAuthenticated) {
       void initializeIfReady();
       return;
@@ -242,6 +248,7 @@ watch(
 watch(
   () => route.path,
   (path, prev) => {
+    if (!surfacesEnabled.value) return;
     if (authStore.isAuthenticated) {
       void refreshOnFocus();
     }
