@@ -33,6 +33,7 @@
         v-model="formData"
         :submitting="submitting"
         :submit-error="submitError"
+        :public-slug="String(route.params.slug || '')"
         @submit="submitForm"
       />
 
@@ -51,7 +52,7 @@ import { getApiUrlForFetch } from '@/config/apiBase';
 import WebformFillForm from '@/components/webforms/WebformFillForm.vue';
 import { normalizePublicWebformPayload } from '@/utils/webformFormActions';
 
-const PREVIEW_CACHE_PREFIX = 'arivu:webform-staff-preview:';
+const PREVIEW_CACHE_PREFIX = 'arivu:webform-staff-preview:v2:';
 const PREVIEW_CACHE_TTL_MS = 10 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 10000;
 
@@ -106,6 +107,8 @@ function readCachedPreview(slug) {
     const parsed = JSON.parse(raw);
     if (!parsed?.data) return null;
     if (parsed.savedAt && Date.now() - parsed.savedAt > PREVIEW_CACHE_TTL_MS) return null;
+    const targetModuleKey = String(parsed.data?.targetModuleKey || '').trim();
+    if (targetModuleKey && !Array.isArray(parsed.data?.moduleFields)) return null;
     return parsed.data;
   } catch {
     return null;
@@ -196,11 +199,29 @@ async function loadViaPreviewSlug(slug, token) {
   return { ok: true, data: toPreviewPayload(payload.data) };
 }
 
+async function loadViaPublicApi(slug) {
+  const url = getApiUrlForFetch(`/public/webforms/${encodeURIComponent(String(slug))}`);
+  const { response, payload } = await fetchJsonWithTimeout(url, { cache: 'no-store' });
+  if (!response.ok || !payload?.success || !payload?.data) {
+    return { ok: false, message: payload?.message || null };
+  }
+  return { ok: true, data: toPreviewPayload(payload.data) };
+}
+
 async function refreshFromApi(slug, generation) {
+  const publicResult = await loadViaPublicApi(slug);
+  if (generation !== loadGeneration) return;
+
+  if (publicResult.ok && publicResult.data) {
+    applyWebformData(publicResult.data);
+    error.value = '';
+    return;
+  }
+
   const token = getAuthToken();
   if (!token) {
     if (!webform.value) {
-      error.value = 'Please sign in to preview this webform.';
+      error.value = publicResult.message || translate('webforms.publicLoadError', 'This webform is unavailable.');
     }
     return;
   }
@@ -219,7 +240,7 @@ async function refreshFromApi(slug, generation) {
 
   if (!result?.ok || !result.data) {
     if (!webform.value) {
-      error.value = result?.message || translate('webforms.publicLoadError', 'This webform is unavailable.');
+      error.value = result?.message || publicResult.message || translate('webforms.publicLoadError', 'This webform is unavailable.');
     }
     return;
   }

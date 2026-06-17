@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { logAuthAccessDebug, warnAuthAccessDebug } from '@/config/arivuDebug.js';
 import { getApiUrlForFetch } from '@/config/apiBase';
+import { isOnPublicShellRoute } from '@/utils/standaloneRoutes';
 import { identifyProductUser, captureUserLoggedIn, resetPosthog } from '@/config/posthogUser';
 import { registerUseAuthStore } from './authRegistry';
 
@@ -694,9 +695,10 @@ export const useAuthStore = defineStore('auth', {
                         return true;
                     }
                 } else if (response.status === 401) {
-                    // Token expired, logout
-                    console.warn('Session expired, logging out');
-                    this.logout();
+                    if (!isOnPublicShellRoute()) {
+                        console.warn('Session expired, logging out');
+                        this.logout();
+                    }
                     return false;
                 }
             } catch (error) {

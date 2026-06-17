@@ -1,5 +1,6 @@
 import { getApiUrlForFetch } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
+import { isOnPublicShellRoute } from '@/utils/standaloneRoutes';
 
 // Request deduplication: map of in-flight requests by URL+method
 const _inFlightRequests = new Map();
@@ -281,8 +282,10 @@ const apiClient = async (url, options = {}) => {
             });
 
             if (response.status === 401) {
-                // If unauthorized, force logout
-                authStore.logout();
+                const skipLogout = options.skipAuthLogout === true || isOnPublicShellRoute();
+                if (!skipLogout) {
+                    authStore.logout();
+                }
                 throw new Error('Session expired. Please log in again.');
             }
 

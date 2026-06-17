@@ -1,16 +1,20 @@
 <template>
   <div
-    class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+    :class="[WEBFORM_CARD_CLASS, webformBrandingSurfaceClasses(branding), 'overflow-visible']"
     :style="brandingStyle"
   >
-    <img
+    <div
       v-if="webform.headerImageUrl"
-      :src="resolveWebformImageUrl(webform.headerImageUrl)"
-      alt=""
-      class="h-36 w-full object-cover"
+      :class="WEBFORM_CARD_HEADER_IMAGE_WRAP_CLASS"
     >
+      <img
+        :src="resolveWebformImageUrl(webform.headerImageUrl)"
+        alt=""
+        class="h-36 w-full object-cover"
+      >
+    </div>
 
-    <div class="p-6 sm:p-8">
+    <div class="overflow-visible p-6 sm:p-8">
       <header class="mb-6">
         <img
           v-if="branding.logoUrl"
@@ -29,7 +33,7 @@
           {{ t('webforms.builderPreviewNoFields') }}
         </div>
 
-      <form v-else @submit.prevent="handleSubmit">
+      <form v-else class="overflow-visible" @submit.prevent="handleSubmit">
         <div v-if="multiStepActive && currentStep" class="mb-6">
           <div v-if="showProgress" class="mb-3">
             <div class="mb-2 flex items-center justify-between text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -39,7 +43,8 @@
             <div class="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
               <div
                 class="h-full rounded-full transition-all duration-300"
-                :style="{ width: `${((currentStepIndex + 1) / orderedSteps.length) * 100}%`, backgroundColor: branding.themeColor }"
+                :class="WEBFORM_ACCENT_BG_CLASS"
+                :style="{ width: `${((currentStepIndex + 1) / orderedSteps.length) * 100}%` }"
               />
             </div>
           </div>
@@ -49,7 +54,7 @@
               :key="step.stepId"
               class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
               :class="index === currentStepIndex
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300'
+                ? WEBFORM_MULTI_STEP_CHIP_ACTIVE_CLASS
                 : index < currentStepIndex
                   ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
                   : 'bg-gray-50 text-gray-400 dark:bg-gray-900 dark:text-gray-500'"
@@ -65,7 +70,7 @@
           </h2>
         </div>
 
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div class="grid grid-cols-1 gap-5 overflow-visible sm:grid-cols-2">
           <div
             v-if="!activeVisibleFields.length"
             class="sm:col-span-2 rounded-lg border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400"
@@ -75,7 +80,10 @@
           <div
             v-for="field in activeVisibleFields"
             :key="field.fieldId"
-            :class="field.columnWidth === 'half' ? 'sm:col-span-1' : 'sm:col-span-2'"
+            :class="[
+              field.columnWidth === 'half' ? 'sm:col-span-1' : 'sm:col-span-2',
+              'overflow-visible'
+            ]"
             :data-field-id="field.fieldId"
           >
             <label
@@ -83,7 +91,7 @@
               class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
               {{ field.label }}
-              <span v-if="field.required" class="text-red-500">*</span>
+              <span v-if="isFieldRequired(field)" class="text-red-500">*</span>
             </label>
             <p v-if="field.helpText" class="mb-1 text-xs text-gray-500 dark:text-gray-400">{{ field.helpText }}</p>
 
@@ -91,9 +99,9 @@
               v-if="isNativeInputFieldType(field.type)"
               :value="modelValue[field.fieldId]"
               :type="htmlInputTypeForFieldType(field.type)"
-              :required="field.required && !preview"
+              :required="isFieldRequired(field) && !preview"
               :placeholder="field.placeholder || ''"
-              :disabled="disabled"
+              :disabled="disabled || isFieldReadonly(field)"
               :class="fieldInputClass(field.fieldId)"
               @input="onFieldInput(field.fieldId, $event.target.value)"
             />
@@ -101,69 +109,44 @@
             <textarea
               v-else-if="isTextareaFieldType(field.type)"
               :value="modelValue[field.fieldId]"
-              :required="field.required && !preview"
-              :disabled="disabled"
+              :required="isFieldRequired(field) && !preview"
+              :disabled="disabled || isFieldReadonly(field)"
               rows="4"
               :class="fieldInputClass(field.fieldId)"
               @input="onFieldInput(field.fieldId, $event.target.value)"
             />
 
-            <select
-              v-else-if="isSingleSelectFieldType(field.type)"
-              :value="modelValue[field.fieldId]"
-              :required="field.required && !preview"
-              :disabled="disabled"
-              :class="fieldInputClass(field.fieldId)"
-              @change="onFieldInput(field.fieldId, $event.target.value)"
-            >
-              <option value="">{{ selectPlaceholder }}</option>
-              <option v-for="opt in field.options || []" :key="opt" :value="opt">{{ opt }}</option>
-            </select>
+            <PicklistComboboxField
+              v-else-if="isSingleSelectFieldType(field.type) || isRadioFieldType(field.type)"
+              :model-value="modelValue[field.fieldId] ?? ''"
+              :options="fieldOptions(field)"
+              :disabled="disabled || isFieldReadonly(field)"
+              :has-error="!!fieldErrors[field.fieldId]"
+              :placeholder="field.placeholder || selectPlaceholder"
+              @update:model-value="onFieldInput(field.fieldId, $event)"
+            />
 
-            <select
+            <TagMultiPicklistField
               v-else-if="isMultiPicklistFieldType(field.type)"
-              multiple
-              :required="field.required && !preview"
-              :disabled="disabled"
-              :class="fieldInputClass(field.fieldId)"
-              :value="multiSelectValue(field.fieldId)"
-              @change="onMultiSelectInput(field.fieldId, $event.target)"
-            >
-              <option v-for="opt in field.options || []" :key="opt" :value="opt">{{ opt }}</option>
-            </select>
-
-            <div v-else-if="isRadioFieldType(field.type)" class="space-y-2">
-              <label
-                v-for="opt in field.options || []"
-                :key="opt"
-                class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
-              >
-                <input
-                  type="radio"
-                  :name="field.fieldId"
-                  :value="opt"
-                  :checked="modelValue[field.fieldId] === opt"
-                  :disabled="disabled"
-                  class="border-gray-300 disabled:opacity-60"
-                  :style="accentControlStyle"
-                  @change="onFieldInput(field.fieldId, opt)"
-                />
-                {{ opt }}
-              </label>
-            </div>
+              :model-value="multiSelectValue(field.fieldId)"
+              :options="fieldOptions(field)"
+              :disabled="disabled || isFieldReadonly(field)"
+              :has-error="!!fieldErrors[field.fieldId]"
+              :placeholder="field.placeholder || selectPlaceholder"
+              @update:model-value="onFieldInput(field.fieldId, $event)"
+            />
 
             <label v-else-if="isCheckboxFieldType(field.type)" class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
               <input
                 type="checkbox"
                 :checked="!!modelValue[field.fieldId]"
-                :disabled="disabled"
-                class="rounded border-gray-300 disabled:opacity-60"
-                :style="accentControlStyle"
+                :disabled="disabled || isFieldReadonly(field)"
+                :class="['rounded border-gray-300 disabled:opacity-60', WEBFORM_ACCENT_CONTROL_CLASS]"
                 @change="onFieldInput(field.fieldId, $event.target.checked)"
               />
               <span>
                 {{ field.placeholder || field.label }}
-                <span v-if="field.required" class="text-red-500">*</span>
+                <span v-if="isFieldRequired(field)" class="text-red-500">*</span>
               </span>
             </label>
 
@@ -206,9 +189,9 @@
               v-else
               :value="modelValue[field.fieldId]"
               type="text"
-              :required="field.required && !preview"
+              :required="isFieldRequired(field) && !preview"
               :placeholder="field.placeholder || ''"
-              :disabled="disabled"
+              :disabled="disabled || isFieldReadonly(field)"
               :class="fieldInputClass(field.fieldId)"
               @input="onFieldInput(field.fieldId, $event.target.value)"
             />
@@ -247,15 +230,28 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { resolveWebformImageUrl } from '@/utils/webformFormatters';
+import { mergeWebformBranding, webformBrandingCssVars, webformBrandingSurfaceClasses } from '@/utils/webformBranding';
 import {
-  mergeWebformBranding,
-  webformBrandingCssVars,
-  webformFieldFocusClass
-} from '@/utils/webformBranding';
+  WEBFORM_ACCENT_BG_CLASS,
+  WEBFORM_ACCENT_CONTROL_CLASS,
+  WEBFORM_CARD_CLASS,
+  WEBFORM_CARD_HEADER_IMAGE_WRAP_CLASS,
+  WEBFORM_FIELD_INPUT_CLASS,
+  WEBFORM_FIELD_INPUT_ERROR_CLASS,
+  WEBFORM_FIELD_INPUT_FOCUS_CLASS,
+  WEBFORM_MULTI_STEP_CHIP_ACTIVE_CLASS
+} from '@/utils/webformUiClasses';
 import WebformFormActionsBar from '@/components/webforms/WebformFormActionsBar.vue';
+import TagMultiPicklistField from '@/components/common/TagMultiPicklistField.vue';
+import PicklistComboboxField from '@/components/common/PicklistComboboxField.vue';
 import { validateWebformFields } from '@/utils/webformFieldValidation';
 import { uploadPublicWebformFile } from '@/utils/webformFileUpload';
 import { filterVisibleWebformFields } from '@/utils/webformConditionalLogic';
+import {
+  filterVisibleWebformFieldsWithDependencies,
+  getWebformFieldDependencyState,
+  resolveWebformModuleFields
+} from '@/utils/webformModuleFields';
 import {
   filterVisibleFieldsForStep,
   isMultiStepFormActive,
@@ -302,17 +298,18 @@ const showProgress = computed(() => props.webform?.multiStep?.showProgress !== f
 
 const brandingStyle = computed(() => webformBrandingCssVars(branding.value));
 
-const accentControlStyle = computed(() => ({
-  accentColor: branding.value.themeColor
-}));
-
 const selectPlaceholder = computed(() => {
   const value = t('webforms.publicSelectOption');
   return value && !String(value).startsWith('[missing:') ? value : 'Select an option';
 });
 
-const fieldInputBaseClass =
-  'w-full rounded-lg border px-3 py-2 text-sm disabled:opacity-60 dark:bg-gray-900 dark:text-white';
+function fieldInputClass(fieldId) {
+  const hasError = !!fieldErrors.value[fieldId];
+  return [
+    WEBFORM_FIELD_INPUT_CLASS,
+    hasError ? WEBFORM_FIELD_INPUT_ERROR_CLASS : WEBFORM_FIELD_INPUT_FOCUS_CLASS
+  ];
+}
 
 const sortedFields = computed(() => {
   const fields = Array.isArray(props.webform?.fields) ? [...props.webform.fields] : [];
@@ -321,9 +318,20 @@ const sortedFields = computed(() => {
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 });
 
-const visibleFields = computed(() =>
-  filterVisibleWebformFields(sortedFields.value, props.modelValue)
-);
+const moduleKey = computed(() => String(props.webform?.targetModuleKey || '').trim());
+const moduleFields = computed(() => resolveWebformModuleFields(props.webform));
+
+const visibleFields = computed(() => {
+  if (moduleKey.value) {
+    return filterVisibleWebformFieldsWithDependencies(
+      sortedFields.value,
+      props.modelValue,
+      moduleKey.value,
+      moduleFields.value
+    );
+  }
+  return filterVisibleWebformFields(sortedFields.value, props.modelValue);
+});
 
 const activeVisibleFields = computed(() => {
   if (!multiStepActive.value || !currentStep.value) return visibleFields.value;
@@ -342,14 +350,63 @@ watch(
   }
 );
 
-function fieldInputClass(fieldId) {
-  const hasError = !!fieldErrors.value[fieldId];
-  return [
-    fieldInputBaseClass,
-    hasError
-      ? 'border-red-500 focus:border-red-500 focus:ring-red-500 dark:border-red-500'
-      : `${webformFieldFocusClass()} focus:outline-none focus:ring-1`
-  ];
+function validationOptions() {
+  return {
+    moduleKey: moduleKey.value,
+    allFields: sortedFields.value,
+    moduleFields: moduleFields.value
+  };
+}
+
+function fieldDependencyState(field) {
+  if (!moduleKey.value) {
+    return {
+      visible: true,
+      required: field.required === true,
+      allowedOptions: null
+    };
+  }
+  return getWebformFieldDependencyState(
+    field,
+    sortedFields.value,
+    props.modelValue,
+    moduleKey.value,
+    moduleFields.value
+  );
+}
+
+function isFieldRequired(field) {
+  return fieldDependencyState(field).required === true;
+}
+
+function isFieldReadonly(field) {
+  return fieldDependencyState(field).readonly === true;
+}
+
+function applyDependencySetValues(values) {
+  if (!moduleKey.value) return values;
+  const next = { ...values };
+  for (const field of sortedFields.value) {
+    const state = getWebformFieldDependencyState(
+      field,
+      sortedFields.value,
+      next,
+      moduleKey.value,
+      moduleFields.value
+    );
+    if (state.setValue !== null && state.setValue !== undefined) {
+      next[field.fieldId] = state.setValue;
+    }
+  }
+  return next;
+}
+
+function fieldOptions(field) {
+  const state = fieldDependencyState(field);
+  if (Array.isArray(state.allowedOptions) && state.allowedOptions.length) {
+    return state.allowedOptions;
+  }
+  return Array.isArray(field.options) ? field.options : [];
 }
 
 function validationMessages() {
@@ -375,7 +432,7 @@ function handleSubmit() {
     return;
   }
 
-  const result = validateWebformFields(visibleFields.value, props.modelValue, validationMessages());
+  const result = validateWebformFields(visibleFields.value, props.modelValue, validationMessages(), validationOptions());
   fieldErrors.value = result.errors;
 
   if (!result.valid) {
@@ -406,7 +463,8 @@ function goToNextStep() {
   const result = validateWebformFields(
     activeVisibleFields.value,
     props.modelValue,
-    validationMessages()
+    validationMessages(),
+    validationOptions()
   );
   fieldErrors.value = result.errors;
 
@@ -449,11 +507,6 @@ function onFieldInput(fieldId, value) {
   updateField(fieldId, value);
 }
 
-function onMultiSelectInput(fieldId, selectEl) {
-  clearFieldError(fieldId);
-  updateMultiSelect(fieldId, selectEl);
-}
-
 function multiSelectValue(fieldId) {
   const value = props.modelValue[fieldId];
   if (Array.isArray(value)) return value;
@@ -464,12 +517,7 @@ function multiSelectValue(fieldId) {
 }
 
 function updateField(fieldId, value) {
-  emit('update:modelValue', { ...props.modelValue, [fieldId]: value });
-}
-
-function updateMultiSelect(fieldId, selectEl) {
-  const values = Array.from(selectEl.selectedOptions).map((option) => option.value);
-  updateField(fieldId, values);
+  emit('update:modelValue', applyDependencySetValues({ ...props.modelValue, [fieldId]: value }));
 }
 
 function setFileUploadState(fieldId, patch) {

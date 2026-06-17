@@ -5,7 +5,7 @@
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="min-w-0">
           <nav class="mb-1 flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
-            <button type="button" class="hover:text-blue-600 dark:hover:text-blue-400" @click="goBack">
+            <button type="button" :class="WEBFORM_LINK_SUBTLE_CLASS" @click="goBack">
               {{ t('webforms.hubTitle') }}
             </button>
             <ChevronRightIcon class="h-3.5 w-3.5" />
@@ -19,14 +19,14 @@
         <div class="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            class="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+            :class="WEBFORM_BTN_SECONDARY"
             @click="openSubmissions"
           >
             {{ t('webforms.actionSubmissions') }}
           </button>
           <button
             type="button"
-            class="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
+            :class="WEBFORM_BTN_SECONDARY"
             :disabled="saving || !canEdit"
             @click="saveWebform"
           >
@@ -35,7 +35,7 @@
           <button
             v-if="currentStep !== 'publish'"
             type="button"
-            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+            :class="WEBFORM_BTN_PRIMARY"
             :disabled="saving"
             @click="goNextStep"
           >
@@ -44,7 +44,7 @@
           <button
             v-else-if="canEdit"
             type="button"
-            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+            :class="WEBFORM_BTN_PRIMARY"
             :disabled="saving || publishing"
             @click="saveAndPublish"
           >
@@ -74,7 +74,7 @@
             </span>
             <span
               class="hidden text-sm font-medium sm:inline"
-              :class="currentStep === step.id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'"
+              :class="currentStep === step.id ? WEBFORM_STEP_TEXT_ACTIVE_CLASS : 'text-gray-500 dark:text-gray-400'"
             >
               {{ step.label }}
             </span>
@@ -88,7 +88,7 @@
     </header>
 
     <div v-if="loading" class="flex flex-1 items-center justify-center">
-      <div class="h-10 w-10 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+      <div :class="WEBFORM_SPINNER_CLASS" />
     </div>
 
     <!-- Build: 3-column layout -->
@@ -97,15 +97,22 @@
         <label class="mb-1 block text-xs font-medium text-gray-500">{{ t('webforms.builderFieldLibrary') }}</label>
         <select :class="inputClass" @change="onMobileAddField($event)">
           <option value="">{{ t('webforms.builderAddField') }}</option>
-          <option v-for="type in fieldTypes" :key="type" :value="type">{{ defaultLabelForType(type) }}</option>
+          <option
+            v-for="item in availableModulePalette"
+            :key="item.key"
+            :value="item.key"
+          >
+            {{ item.label }}
+          </option>
         </select>
       </div>
 
       <div class="hidden w-56 shrink-0 lg:block xl:w-60">
         <WebformBuilderFieldLibrary
-          :create-field="createFieldFromType"
-          :palette="fieldTypePalette"
-          @add-field="addFieldOfType"
+          :create-field="createFieldFromModuleKey"
+          :palette="moduleFieldPalette"
+          :loading="moduleFieldsLoading"
+          @add-field="addFieldFromModuleKey"
         />
       </div>
 
@@ -114,13 +121,15 @@
         :fields="canvasFields"
         :header-image-url="draft.headerImageUrl"
         :selected-field-id="selectedFieldId"
+        :selected-button-key="selectedButtonKey"
         :preview-device="previewDevice"
         :active-step-id="draft.multiStep.enabled ? activeBuilderStepId : ''"
         :ordered-steps="orderedBuilderSteps"
         @update:fields="onFieldsUpdate"
-        @select-field="selectedFieldId = $event"
+        @select-field="onSelectField"
+        @select-button="onSelectButton"
         @remove-field="removeField"
-        @field-added="selectedFieldId = $event"
+        @field-added="onSelectField"
         @update:preview-device="previewDevice = $event"
         @update:active-step-id="activeBuilderStepId = $event"
       />
@@ -160,8 +169,7 @@
                 </p>
                 <div v-if="canEdit" class="flex flex-wrap items-center gap-2">
                   <label
-                    class="inline-flex cursor-pointer items-center rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
-                    :class="headerImageUploading ? 'pointer-events-none opacity-60' : ''"
+                    :class="[WEBFORM_BTN_PRIMARY_SM, headerImageUploading ? 'pointer-events-none opacity-60' : '']"
                   >
                     <input
                       type="file"
@@ -191,7 +199,7 @@
                 <input
                   v-model="draft.headerImageUrl"
                   type="url"
-                  class="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                  :class="[WEBFORM_INPUT_CLASS, 'mt-2']"
                   :placeholder="t('webforms.builderHeaderImagePh')"
                 />
               </details>
@@ -217,8 +225,7 @@
                 <p v-else class="text-xs text-gray-400 dark:text-gray-500">{{ t('webforms.builderBrandingLogoEmpty') }}</p>
                 <div v-if="canEdit" class="flex flex-wrap items-center gap-2">
                   <label
-                    class="inline-flex cursor-pointer items-center rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
-                    :class="logoUploading ? 'pointer-events-none opacity-60' : ''"
+                    :class="[WEBFORM_BTN_PRIMARY_SM, logoUploading ? 'pointer-events-none opacity-60' : '']"
                   >
                     <input
                       type="file"
@@ -243,7 +250,7 @@
               <input
                 v-model="draft.branding.logoUrl"
                 type="url"
-                class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                :class="WEBFORM_INPUT_CLASS"
                 :placeholder="t('webforms.builderBrandingLogoPh')"
               />
             </div>
@@ -294,7 +301,7 @@
               <input
                 v-model="draft.multiStep.enabled"
                 type="checkbox"
-                class="rounded border-gray-300 text-blue-600"
+                :class="WEBFORM_CHECKBOX_CLASS"
                 @change="onMultiStepToggle"
               />
               {{ t('webforms.builderMultiStepEnabled') }}
@@ -305,7 +312,7 @@
                 <input
                   v-model="draft.multiStep.showProgress"
                   type="checkbox"
-                  class="rounded border-gray-300 text-blue-600"
+                  :class="WEBFORM_CHECKBOX_CLASS"
                 />
                 {{ t('webforms.builderMultiStepShowProgress') }}
               </label>
@@ -354,7 +361,7 @@
 
               <button
                 type="button"
-                class="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+                :class="['text-xs', WEBFORM_LINK_CLASS]"
                 @click="addBuilderStep"
               >
                 {{ t('webforms.builderMultiStepAdd') }}
@@ -372,18 +379,10 @@
           </div>
           <div>
             <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.fieldTargetModule') }}</label>
-            <select v-model="draft.targetModuleKey" :class="inputClass" @change="onTargetModuleChange">
-              <optgroup v-if="platformTargetModules.length" :label="t('webforms.targetGroupPlatform')">
-                <option v-for="mod in platformTargetModules" :key="`${mod.appKey}:${mod.moduleKey}`" :value="mod.moduleKey">
-                  {{ mod.label }}
-                </option>
-              </optgroup>
-              <optgroup v-for="group in appTargetModuleGroups" :key="group.appKey" :label="group.label">
-                <option v-for="mod in group.modules" :key="`${mod.appKey}:${mod.moduleKey}`" :value="mod.moduleKey">
-                  {{ mod.label }}
-                </option>
-              </optgroup>
-            </select>
+            <p class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-600 dark:bg-gray-800/60 dark:text-gray-200">
+              {{ targetModuleLabel }}
+            </p>
+            <p class="mt-1 text-xs text-gray-400">{{ t('webforms.builderTargetModuleLocked') }}</p>
           </div>
           <div>
             <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.fieldStatus') }}</label>
@@ -393,192 +392,86 @@
               <option value="Archived">{{ t('webforms.statusArchived') }}</option>
             </select>
           </div>
-        </div>
 
-        <div class="border-b border-gray-200 dark:border-gray-700">
-          <button
-            type="button"
-            class="flex w-full items-center justify-between gap-2 p-4 text-left transition hover:bg-gray-50 dark:hover:bg-gray-800/60"
-            :aria-expanded="formActionsOpen"
-            @click="formActionsOpen = !formActionsOpen"
-          >
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('webforms.builderFormActions') }}</h3>
-            <ChevronDownIcon
-              class="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200"
-              :class="formActionsOpen ? 'rotate-180' : ''"
-            />
-          </button>
-        </div>
-
-        <div v-show="formActionsOpen" class="space-y-4 border-b border-gray-200 p-4 dark:border-gray-700">
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsAlign') }}</label>
-            <select v-model="draft.formActions.align" :class="inputClass">
-              <option v-for="align in buttonAligns" :key="align" :value="align">
-                {{ t(`webforms.builderFormActionsAlign_${align}`) }}
-              </option>
-            </select>
-          </div>
-
-          <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-            <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">{{ t('webforms.builderFormActionsSubmit') }}</p>
+          <div class="border-t border-gray-100 pt-4 dark:border-gray-800">
+            <h4 class="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              {{ t('webforms.builderFormActions') }}
+            </h4>
             <div class="space-y-3">
               <div>
-                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsLabel') }}</label>
-                <input v-model="draft.formActions.submit.label" type="text" :class="inputClass" :placeholder="t('webforms.publicSubmit')" />
+                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsAlign') }}</label>
+                <select v-model="draft.formActions.align" :class="inputClass">
+                  <option v-for="align in buttonAligns" :key="align" :value="align">
+                    {{ t(`webforms.builderFormActionsAlign_${align}`) }}
+                  </option>
+                </select>
               </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsColor') }}</label>
-                  <select v-model="draft.formActions.submit.color" :class="inputClass">
-                    <option v-for="color in buttonColors" :key="color" :value="color">{{ t(`webforms.builderFormActionsColor_${color}`) }}</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsWidth') }}</label>
-                  <select v-model="draft.formActions.submit.width" :class="inputClass">
-                    <option v-for="width in buttonWidths" :key="width" :value="width">{{ t(`webforms.builderFormActionsWidth_${width}`) }}</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="draft.multiStep.enabled" class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-            <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">{{ t('webforms.builderFormActionsNext') }}</p>
-            <div class="space-y-3">
-              <div>
-                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsLabel') }}</label>
-                <input v-model="draft.formActions.next.label" type="text" :class="inputClass" :placeholder="t('webforms.multiStepNext')" />
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsColor') }}</label>
-                  <select v-model="draft.formActions.next.color" :class="inputClass">
-                    <option v-for="color in buttonColors" :key="color" :value="color">{{ t(`webforms.builderFormActionsColor_${color}`) }}</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsWidth') }}</label>
-                  <select v-model="draft.formActions.next.width" :class="inputClass">
-                    <option v-for="width in buttonWidths" :key="width" :value="width">{{ t(`webforms.builderFormActionsWidth_${width}`) }}</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="draft.multiStep.enabled" class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-            <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">{{ t('webforms.builderFormActionsBack') }}</p>
-            <div class="space-y-3">
-              <div>
-                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsLabel') }}</label>
-                <input v-model="draft.formActions.back.label" type="text" :class="inputClass" :placeholder="t('webforms.multiStepBack')" />
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsColor') }}</label>
-                  <select v-model="draft.formActions.back.color" :class="inputClass">
-                    <option v-for="color in buttonColors" :key="color" :value="color">{{ t(`webforms.builderFormActionsColor_${color}`) }}</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsWidth') }}</label>
-                  <select v-model="draft.formActions.back.width" :class="inputClass">
-                    <option v-for="width in buttonWidths" :key="width" :value="width">{{ t(`webforms.builderFormActionsWidth_${width}`) }}</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-            <div class="mb-3 flex items-center justify-between gap-2">
-              <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ t('webforms.builderFormActionsReset') }}</p>
-              <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                <input v-model="draft.formActions.reset.enabled" type="checkbox" class="rounded border-gray-300 text-blue-600" />
-                {{ t('webforms.builderFormActionsEnabled') }}
+              <label class="flex items-center justify-between gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <span>{{ t('webforms.builderFormActionsReset') }}</span>
+                <input v-model="draft.formActions.reset.enabled" type="checkbox" :class="WEBFORM_CHECKBOX_CLASS" />
+              </label>
+              <label class="flex items-center justify-between gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <span>{{ t('webforms.builderFormActionsCancel') }}</span>
+                <input v-model="draft.formActions.cancel.enabled" type="checkbox" :class="WEBFORM_CHECKBOX_CLASS" />
               </label>
             </div>
-            <div v-if="draft.formActions.reset.enabled" class="space-y-3">
-              <div>
-                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsLabel') }}</label>
-                <input v-model="draft.formActions.reset.label" type="text" :class="inputClass" :placeholder="t('webforms.formActionReset')" />
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsColor') }}</label>
-                  <select v-model="draft.formActions.reset.color" :class="inputClass">
-                    <option v-for="color in buttonColors" :key="color" :value="color">{{ t(`webforms.builderFormActionsColor_${color}`) }}</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsWidth') }}</label>
-                  <select v-model="draft.formActions.reset.width" :class="inputClass">
-                    <option v-for="width in buttonWidths" :key="width" :value="width">{{ t(`webforms.builderFormActionsWidth_${width}`) }}</option>
-                  </select>
-                </div>
-              </div>
-            </div>
           </div>
+        </div>
 
-          <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-            <div class="mb-3 flex items-center justify-between gap-2">
-              <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ t('webforms.builderFormActionsCancel') }}</p>
-              <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                <input v-model="draft.formActions.cancel.enabled" type="checkbox" class="rounded border-gray-300 text-blue-600" />
-                {{ t('webforms.builderFormActionsEnabled') }}
-              </label>
+        <div v-if="selectedButtonKey" class="border-t border-gray-200 p-4 dark:border-gray-700">
+          <h3 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">{{ selectedButtonInspectorTitle }}</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsLabel') }}</label>
+              <input
+                v-model="draft.formActions[selectedButtonKey].label"
+                type="text"
+                :class="inputClass"
+                :placeholder="selectedButtonLabelPlaceholder"
+              />
             </div>
-            <div v-if="draft.formActions.cancel.enabled" class="space-y-3">
+
+            <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsLabel') }}</label>
-                <input v-model="draft.formActions.cancel.label" type="text" :class="inputClass" :placeholder="t('webforms.formActionCancel')" />
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsColor') }}</label>
-                  <select v-model="draft.formActions.cancel.color" :class="inputClass">
-                    <option v-for="color in buttonColors" :key="color" :value="color">{{ t(`webforms.builderFormActionsColor_${color}`) }}</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsWidth') }}</label>
-                  <select v-model="draft.formActions.cancel.width" :class="inputClass">
-                    <option v-for="width in buttonWidths" :key="width" :value="width">{{ t(`webforms.builderFormActionsWidth_${width}`) }}</option>
-                  </select>
-                </div>
+                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsColor') }}</label>
+                <select v-model="draft.formActions[selectedButtonKey].color" :class="inputClass">
+                  <option v-for="color in buttonColors" :key="color" :value="color">{{ t(`webforms.builderFormActionsColor_${color}`) }}</option>
+                </select>
               </div>
               <div>
-                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsCancelUrl') }}</label>
-                <input v-model="draft.formActions.cancel.redirectUrl" type="url" :class="inputClass" :placeholder="t('webforms.builderFormActionsCancelUrlPh')" />
-                <p class="mt-1 text-xs text-gray-400">{{ t('webforms.builderFormActionsCancelUrlHint') }}</p>
+                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsWidth') }}</label>
+                <select v-model="draft.formActions[selectedButtonKey].width" :class="inputClass">
+                  <option v-for="width in buttonWidths" :key="width" :value="width">{{ t(`webforms.builderFormActionsWidth_${width}`) }}</option>
+                </select>
               </div>
+            </div>
+
+            <div v-if="selectedButtonKey === 'cancel'">
+              <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFormActionsCancelUrl') }}</label>
+              <input v-model="draft.formActions.cancel.redirectUrl" type="url" :class="inputClass" :placeholder="t('webforms.builderFormActionsCancelUrlPh')" />
+              <p class="mt-1 text-xs text-gray-400">{{ t('webforms.builderFormActionsCancelUrlHint') }}</p>
             </div>
           </div>
         </div>
 
-        <div v-if="selectedField" class="border-t border-gray-200 p-4 dark:border-gray-700">
+        <div v-else-if="selectedField" class="border-t border-gray-200 p-4 dark:border-gray-700">
           <h3 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">{{ t('webforms.builderFieldInspector') }}</h3>
           <div class="space-y-3">
             <div>
               <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFieldLabel') }}</label>
               <input v-model="selectedField.label" type="text" :class="inputClass" />
             </div>
-            <div>
-              <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFieldType') }}</label>
-              <select v-model="selectedField.type" :class="inputClass">
-                <option v-for="type in fieldTypes" :key="type" :value="type">{{ type }}</option>
-              </select>
+            <div v-if="selectedField.crmFieldKey">
+              <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderModuleFieldKey') }}</label>
+              <p class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800/60 dark:text-gray-200">
+                {{ selectedField.crmFieldKey }}
+              </p>
             </div>
             <div>
-              <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderCrmField') }}</label>
-              <select v-model="selectedField.crmFieldKey" :class="inputClass" @change="onCrmFieldKeyChange">
-                <option value="">{{ t('webforms.builderCrmFieldNone') }}</option>
-                <option v-for="crmField in crmFields" :key="crmField.key" :value="crmField.key">
-                  {{ crmField.label }}
-                </option>
-              </select>
+              <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFieldType') }}</label>
+              <p class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800/60 dark:text-gray-200">
+                {{ selectedField.type }}
+              </p>
             </div>
             <div>
               <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFieldPlaceholder') }}</label>
@@ -604,9 +497,17 @@
               </select>
             </div>
             <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input v-model="selectedField.required" type="checkbox" class="rounded border-gray-300 text-blue-600" />
+              <input
+                v-model="selectedField.required"
+                type="checkbox"
+                :class="WEBFORM_CHECKBOX_CLASS"
+                :disabled="selectedFieldMandatoryLocked"
+              />
               {{ t('webforms.builderFieldRequired') }}
             </label>
+            <p v-if="selectedFieldMandatoryLocked" class="text-xs text-gray-400">
+              {{ t('webforms.builderMandatoryFieldLocked') }}
+            </p>
             <div v-if="fieldTypeNeedsOptions(selectedField.type)">
               <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderFieldOptions') }}</label>
               <input
@@ -622,7 +523,13 @@
               </p>
             </div>
 
-            <div class="border-t border-gray-100 pt-3 dark:border-gray-800">
+            <div v-if="selectedField.crmFieldKey" class="border-t border-gray-100 pt-3 dark:border-gray-800">
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ t('webforms.builderVisibilityFromModule') }}
+              </p>
+            </div>
+
+            <div v-else class="border-t border-gray-100 pt-3 dark:border-gray-800">
               <div class="flex items-center justify-between gap-2">
                 <div>
                   <h4 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -634,7 +541,7 @@
                   <input
                     v-model="selectedFieldVisibility.enabled"
                     type="checkbox"
-                    class="rounded border-gray-300 text-blue-600"
+                    :class="WEBFORM_CHECKBOX_CLASS"
                   />
                   {{ t('webforms.builderVisibilityEnabled') }}
                 </label>
@@ -682,20 +589,12 @@
                     </div>
                     <div v-if="visibilityConditionNeedsValue(condition)">
                       <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderVisibilityValue') }}</label>
-                      <select
+                      <PicklistComboboxField
                         v-if="visibilityConditionValueOptions(condition).length"
                         v-model="condition.value"
-                        :class="inputClass"
-                      >
-                        <option value="">{{ t('webforms.publicSelectOption') }}</option>
-                        <option
-                          v-for="opt in visibilityConditionValueOptions(condition)"
-                          :key="opt"
-                          :value="opt"
-                        >
-                          {{ opt }}
-                        </option>
-                      </select>
+                        :options="visibilityConditionValueOptions(condition)"
+                        :placeholder="t('webforms.publicSelectOption')"
+                      />
                       <input
                         v-else
                         v-model="condition.value"
@@ -716,7 +615,7 @@
 
                 <button
                   type="button"
-                  class="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+                  :class="['text-xs', WEBFORM_LINK_CLASS]"
                   :disabled="!visibilitySourceFields.length"
                   @click="addVisibilityCondition"
                 >
@@ -762,7 +661,7 @@
               <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ t('webforms.builderDedupHint') }}</p>
             </div>
             <label class="inline-flex items-center gap-2 text-sm">
-              <input v-model="draft.dedup.enabled" type="checkbox" class="rounded border-gray-300 text-blue-600" />
+              <input v-model="draft.dedup.enabled" type="checkbox" :class="WEBFORM_CHECKBOX_CLASS" />
               {{ t('webforms.builderDedupEnabled') }}
             </label>
           </div>
@@ -789,7 +688,7 @@
               <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ t('webforms.builderCaptchaHint') }}</p>
             </div>
             <label class="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              <input v-model="draft.captcha.enabled" type="checkbox" class="rounded border-gray-300 text-blue-600" />
+              <input v-model="draft.captcha.enabled" type="checkbox" :class="WEBFORM_CHECKBOX_CLASS" />
               {{ t('webforms.builderCaptchaEnabled') }}
             </label>
           </div>
@@ -856,7 +755,7 @@
               <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ t('webforms.builderNotifyHint') }}</p>
             </div>
             <label class="inline-flex items-center gap-2 text-sm">
-              <input v-model="draft.notifyOnSubmit.enabled" type="checkbox" class="rounded border-gray-300 text-blue-600" />
+              <input v-model="draft.notifyOnSubmit.enabled" type="checkbox" :class="WEBFORM_CHECKBOX_CLASS" />
               {{ t('webforms.builderNotifyEnabled') }}
             </label>
           </div>
@@ -869,7 +768,7 @@
               <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ t('webforms.builderTaskHint') }}</p>
             </div>
             <label class="inline-flex items-center gap-2 text-sm">
-              <input v-model="draft.taskOnSubmit.enabled" type="checkbox" class="rounded border-gray-300 text-blue-600" />
+              <input v-model="draft.taskOnSubmit.enabled" type="checkbox" :class="WEBFORM_CHECKBOX_CLASS" />
               {{ t('webforms.builderTaskEnabled') }}
             </label>
           </div>
@@ -905,7 +804,7 @@
               <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ t('webforms.builderWebhookHint') }}</p>
             </div>
             <label class="inline-flex items-center gap-2 text-sm">
-              <input v-model="draft.webhook.enabled" type="checkbox" class="rounded border-gray-300 text-blue-600" />
+              <input v-model="draft.webhook.enabled" type="checkbox" :class="WEBFORM_CHECKBOX_CLASS" />
               {{ t('webforms.builderWebhookEnabled') }}
             </label>
           </div>
@@ -949,7 +848,7 @@
                 :href="publicUrl"
                 target="_blank"
                 rel="noopener"
-                class="break-all text-sm text-blue-600 hover:underline dark:text-blue-400"
+                :class="WEBFORM_LINK_CLASS"
                 @click="openHostedUrl"
               >{{ publicUrl }}</a>
               <button type="button" class="rounded-lg border border-gray-200 px-2 py-1 text-xs dark:border-gray-600" @click="copyText(publicUrl)">{{ t('actions.copy') }}</button>
@@ -960,20 +859,20 @@
           <section v-if="draft.publicLink?.slug" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('webforms.builderEmbedIframe') }}</h3>
             <textarea :value="iframeSnippet" readonly rows="3" :class="[inputClass, 'mt-2 font-mono text-xs']" />
-            <button type="button" class="mt-2 text-sm text-blue-600 dark:text-blue-400" @click="copyText(iframeSnippet)">{{ t('actions.copy') }}</button>
+            <button type="button" :class="['mt-2', WEBFORM_LINK_CLASS]" @click="copyText(iframeSnippet)">{{ t('actions.copy') }}</button>
           </section>
 
           <section v-if="draft.publicLink?.slug" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('webforms.builderEmbedScript') }}</h3>
             <textarea :value="scriptSnippet" readonly rows="3" :class="[inputClass, 'mt-2 font-mono text-xs']" />
-            <button type="button" class="mt-2 text-sm text-blue-600 dark:text-blue-400" @click="copyText(scriptSnippet)">{{ t('actions.copy') }}</button>
+            <button type="button" :class="['mt-2', WEBFORM_LINK_CLASS]" @click="copyText(scriptSnippet)">{{ t('actions.copy') }}</button>
           </section>
 
           <section v-if="draft.publicLink?.slug && prefillExampleUrl" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('webforms.builderPrefillTitle') }}</h3>
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('webforms.builderPrefillHint') }}</p>
             <textarea :value="prefillExampleUrl" readonly rows="2" :class="[inputClass, 'mt-2 font-mono text-xs']" />
-            <button type="button" class="mt-2 text-sm text-blue-600 dark:text-blue-400" @click="copyText(prefillExampleUrl)">{{ t('actions.copy') }}</button>
+            <button type="button" :class="['mt-2', WEBFORM_LINK_CLASS]" @click="copyText(prefillExampleUrl)">{{ t('actions.copy') }}</button>
           </section>
         </div>
 
@@ -982,7 +881,7 @@
           <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">{{ t('webforms.builderNotPublished') }}</p>
           <button
             type="button"
-            class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+            :class="WEBFORM_BTN_PRIMARY"
             :disabled="publishing"
             @click="enablePublicLink"
           >
@@ -990,7 +889,10 @@
           </button>
         </div>
 
-        <WebformLivePreview v-if="draft.fields.length" :webform="draft" />
+        <WebformLivePreview v-if="draft.fields.length && previewWebform" :webform="previewWebform" />
+        <div v-else-if="draft.fields.length" class="flex justify-center py-12">
+          <div :class="WEBFORM_SPINNER_CLASS" />
+        </div>
       </div>
     </div>
   </div>
@@ -1016,18 +918,18 @@ import WebformLivePreview from '@/components/webforms/WebformLivePreview.vue';
 import WebformBuilderFieldLibrary from '@/components/webforms/WebformBuilderFieldLibrary.vue';
 import WebformBuilderCanvas from '@/components/webforms/WebformBuilderCanvas.vue';
 import WebformAnalyticsPanel from '@/components/webforms/WebformAnalyticsPanel.vue';
+import PicklistComboboxField from '@/components/common/PicklistComboboxField.vue';
 import { captureWebformPublished } from '@/config/posthogWebforms';
-import { WEBFORM_BUILDER_STEPS, buildWebformFieldPalette, fallbackWebformFieldPalette } from '@/constants/webformBuilderFields';
+import { WEBFORM_BUILDER_STEPS } from '@/constants/webformBuilderFields';
 import {
-  defaultColumnWidthForFieldType,
   fieldTypeNeedsOptions,
-  fieldTypeSettingsLabelKey,
-  normalizeWebformFieldType,
-  WEBFORM_FIELD_TYPES
+  normalizeWebformFieldType
 } from '@/constants/moduleFieldTypes';
 import {
+  buildWebformFillFieldsFromDraft,
   defaultFormActions,
   mergeFormActions,
+  normalizePublicWebformPayload,
   WEBFORM_BUTTON_ALIGNS,
   WEBFORM_BUTTON_COLORS,
   WEBFORM_BUTTON_WIDTHS
@@ -1036,12 +938,32 @@ import {
   buildWebformIframeSnippet,
   buildWebformPublicUrl,
   buildWebformScriptSnippet,
-  createWebformFieldId,
   resolveWebformImageUrl
 } from '@/utils/webformFormatters';
-import { applyCrmFieldBinding, isCrmPicklistField } from '@/utils/webformCrmFieldUtils';
+import { fetchWebformModuleDefinition } from '@/utils/webformModuleDefinition';
+import {
+  applyModuleFieldToWebformField,
+  createWebformFieldFromModuleField,
+  isBaseMandatoryModuleField,
+  moduleFieldsForWebformPalette
+} from '@/utils/webformModuleFields';
+import { isCrmPicklistField } from '@/utils/webformCrmFieldUtils';
 import { buildWebformPrefillExampleUrl } from '@/utils/webformPrefill';
 import { defaultWebformBranding, mergeWebformBranding } from '@/utils/webformBranding';
+import {
+  WEBFORM_BTN_PRIMARY,
+  WEBFORM_BTN_PRIMARY_SM,
+  WEBFORM_BTN_SECONDARY,
+  WEBFORM_CHECKBOX_CLASS,
+  WEBFORM_INPUT_CLASS,
+  WEBFORM_LINK_CLASS,
+  WEBFORM_LINK_SUBTLE_CLASS,
+  WEBFORM_SPINNER_CLASS,
+  WEBFORM_STEP_ACTIVE_CLASS,
+  WEBFORM_STEP_COMPLETE_CLASS,
+  WEBFORM_STEP_IDLE_CLASS,
+  WEBFORM_STEP_TEXT_ACTIVE_CLASS
+} from '@/utils/webformUiClasses';
 import {
   conditionOperatorNeedsValue,
   defaultFieldVisibility,
@@ -1075,7 +997,6 @@ const publishing = ref(false);
 const headerImageUploading = ref(false);
 const logoUploading = ref(false);
 const formSettingsOpen = ref(true);
-const formActionsOpen = ref(true);
 const buttonColors = WEBFORM_BUTTON_COLORS;
 const buttonWidths = WEBFORM_BUTTON_WIDTHS;
 const buttonAligns = WEBFORM_BUTTON_ALIGNS;
@@ -1084,10 +1005,13 @@ const buttonAligns = WEBFORM_BUTTON_ALIGNS;
 let draftSyncGeneration = 0;
 const currentStep = ref('build');
 const targetModules = ref([]);
-const crmFields = ref([]);
-const builderFieldTypes = ref([]);
-const fieldTypePalette = ref([]);
+const moduleFields = ref([]);
+const moduleFieldsLoading = ref(false);
+const fillPreviewPayload = ref(null);
+let fillPreviewGeneration = 0;
+let fillPreviewTimer = null;
 const selectedFieldId = ref('');
+const selectedButtonKey = ref('');
 const activeBuilderStepId = ref('');
 const previewDevice = ref('desktop');
 const dedupKeysInput = ref('');
@@ -1097,6 +1021,86 @@ const RESERVED_CRM_KEYS = new Set([
   'deletedat', 'deletedby', 'deletionreason', 'source'
 ]);
 
+const usedCrmFieldKeys = computed(() => {
+  const keys = new Set();
+  for (const field of draft.fields) {
+    const key = String(field.crmFieldKey || '').trim().toLowerCase();
+    if (key) keys.add(key);
+  }
+  return keys;
+});
+
+const moduleFieldPalette = computed(() =>
+  moduleFieldsForWebformPalette(draft.targetModuleKey, moduleFields.value, usedCrmFieldKeys.value)
+);
+
+const availableModulePalette = computed(() =>
+  moduleFieldPalette.value.filter((item) => !item.onCanvas)
+);
+
+const targetModuleLabel = computed(() => {
+  const mod = targetModules.value.find(
+    (row) => row.moduleKey === draft.targetModuleKey
+      && String(row.appKey || '').toUpperCase() === String(draft.targetAppKey || '').toUpperCase()
+  ) || targetModules.value.find((row) => row.moduleKey === draft.targetModuleKey);
+  if (mod?.label) return mod.label;
+  return draft.targetModuleKey;
+});
+
+const selectedFieldMandatoryLocked = computed(() => {
+  if (!selectedField.value?.crmFieldKey) return false;
+  const moduleField = findModuleFieldByKey(selectedField.value.crmFieldKey);
+  return isBaseMandatoryModuleField(draft.targetModuleKey, moduleField, moduleFields.value);
+});
+
+const previewWebform = computed(() => fillPreviewPayload.value);
+
+function scheduleFillPreviewRefresh() {
+  if (fillPreviewTimer) {
+    window.clearTimeout(fillPreviewTimer);
+  }
+  fillPreviewTimer = window.setTimeout(() => {
+    void refreshFillPreviewPayload();
+  }, 200);
+}
+
+async function refreshFillPreviewPayload() {
+  if (!draft.fields.length) {
+    fillPreviewPayload.value = null;
+    return;
+  }
+
+  const generation = ++fillPreviewGeneration;
+  try {
+    const res = await apiClient.post('/webforms/fill-preview-payload', {
+      webformId: draft.webformId,
+      name: draft.name,
+      description: draft.description,
+      status: draft.status,
+      targetModuleKey: draft.targetModuleKey,
+      targetAppKey: draft.targetAppKey,
+      multiStep: draft.multiStep,
+      steps: draft.steps,
+      fields: draft.fields,
+      headerImageUrl: draft.headerImageUrl,
+      branding: draft.branding,
+      formActions: draft.formActions,
+      thankYouMessage: draft.thankYouMessage,
+      redirectUrl: draft.redirectUrl,
+      captcha: draft.captcha
+    });
+    if (generation !== fillPreviewGeneration) return;
+    fillPreviewPayload.value = res?.success && res.data
+      ? normalizePublicWebformPayload(res.data)
+      : null;
+  } catch (err) {
+    console.warn('[WebformBuilder] fill preview payload failed', err);
+    if (generation === fillPreviewGeneration) {
+      fillPreviewPayload.value = null;
+    }
+  }
+}
+
 const draft = reactive({
   _id: '',
   webformId: '',
@@ -1104,7 +1108,7 @@ const draft = reactive({
   description: '',
   status: 'Draft',
   targetModuleKey: 'people',
-  targetAppKey: 'SALES',
+  targetAppKey: 'PLATFORM',
   fields: [],
   recordAction: 'create',
   dedup: { enabled: false, keys: [], action: 'update' },
@@ -1130,52 +1134,12 @@ const draft = reactive({
   totalSubmissions: 0
 });
 
-const APP_LABELS = {
-  SALES: 'Sales',
-  HELPDESK: 'Helpdesk',
-  PROJECTS: 'Projects',
-  PORTAL: 'Portal',
-  AUDIT: 'Audit',
-  LMS: 'LMS',
-  INVENTORY: 'Inventory',
-  PLATFORM: 'Platform'
-};
-
 const DEFAULT_DEDUP_KEYS = {
   people: ['email', 'phone'],
   organizations: ['name'],
   cases: ['requesterEmail'],
   deals: ['name']
 };
-
-const fieldTypes = computed(() =>
-  builderFieldTypes.value.length
-    ? builderFieldTypes.value.map((row) => row.type)
-    : [...WEBFORM_FIELD_TYPES]
-);
-
-function labelForFieldType(type) {
-  const key = fieldTypeSettingsLabelKey(type);
-  if (key) return t(`settings.${key}`);
-  if (normalizeWebformFieldType(type) === 'File') return t('webforms.builderFieldTypeFile');
-  return String(type || '');
-}
-
-function syncFieldTypePalette() {
-  const rows = builderFieldTypes.value.length
-    ? builderFieldTypes.value
-    : WEBFORM_FIELD_TYPES.map((type) => ({ type, category: 'text' }));
-  fieldTypePalette.value = buildWebformFieldPalette(rows, labelForFieldType);
-}
-
-const inputClass =
-  'w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white';
-
-const canEdit = computed(() => canManageWebforms({
-  isOwner: !!authStore.user?.isOwner,
-  role: authStore.user?.role,
-  permissions: authStore.user?.permissions
-}, 'edit'));
 
 const steps = computed(() => [
   { id: 'build', label: t('webforms.builderStepBuild') },
@@ -1184,26 +1148,13 @@ const steps = computed(() => [
   { id: 'publish', label: t('webforms.builderStepPublish') }
 ]);
 
-const platformTargetModules = computed(() =>
-  targetModules.value.filter((row) => row.scope === 'platform')
-);
+const inputClass = WEBFORM_INPUT_CLASS;
 
-const appTargetModuleGroups = computed(() => {
-  const groups = new Map();
-  for (const mod of targetModules.value) {
-    if (mod.scope !== 'app') continue;
-    const appKey = String(mod.appKey || '').toUpperCase();
-    if (!groups.has(appKey)) {
-      groups.set(appKey, {
-        appKey,
-        label: t('webforms.targetGroupApp', { app: APP_LABELS[appKey] || appKey }),
-        modules: []
-      });
-    }
-    groups.get(appKey).modules.push(mod);
-  }
-  return [...groups.values()];
-});
+const canEdit = computed(() => canManageWebforms({
+  isOwner: !!authStore.user?.isOwner,
+  role: authStore.user?.role,
+  permissions: authStore.user?.permissions
+}, 'edit'));
 
 const dedupKeysPlaceholder = computed(() => {
   const defaults = DEFAULT_DEDUP_KEYS[draft.targetModuleKey] || ['email'];
@@ -1247,6 +1198,42 @@ const captchaStatusClass = computed(() => {
 const selectedField = computed(() =>
   draft.fields.find((field) => field.fieldId === selectedFieldId.value) || null
 );
+
+const BUTTON_INSPECTOR_TITLE_KEYS = {
+  submit: 'webforms.builderFormActionsSubmit',
+  next: 'webforms.builderFormActionsNext',
+  back: 'webforms.builderFormActionsBack',
+  reset: 'webforms.builderFormActionsReset',
+  cancel: 'webforms.builderFormActionsCancel'
+};
+
+const BUTTON_LABEL_PLACEHOLDER_KEYS = {
+  submit: 'webforms.publicSubmit',
+  next: 'webforms.multiStepNext',
+  back: 'webforms.multiStepBack',
+  reset: 'webforms.formActionReset',
+  cancel: 'webforms.formActionCancel'
+};
+
+const selectedButtonInspectorTitle = computed(() => {
+  const key = selectedButtonKey.value;
+  return t(BUTTON_INSPECTOR_TITLE_KEYS[key] || 'webforms.builderFormActions');
+});
+
+const selectedButtonLabelPlaceholder = computed(() => {
+  const key = selectedButtonKey.value;
+  return t(BUTTON_LABEL_PLACEHOLDER_KEYS[key] || '');
+});
+
+function onSelectField(fieldId) {
+  selectedFieldId.value = fieldId;
+  selectedButtonKey.value = '';
+}
+
+function onSelectButton(key) {
+  selectedButtonKey.value = key;
+  selectedFieldId.value = '';
+}
 
 const selectedFieldVisibility = computed(() => {
   if (!selectedField.value) return defaultFieldVisibility();
@@ -1293,12 +1280,12 @@ function stepCircleClass(stepId) {
   const index = WEBFORM_BUILDER_STEPS.indexOf(stepId);
   const currentIndex = WEBFORM_BUILDER_STEPS.indexOf(currentStep.value);
   if (stepId === currentStep.value) {
-    return 'bg-blue-600 text-white';
+    return WEBFORM_STEP_ACTIVE_CLASS;
   }
   if (index < currentIndex) {
-    return 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300';
+    return WEBFORM_STEP_COMPLETE_CLASS;
   }
-  return 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400';
+  return WEBFORM_STEP_IDLE_CLASS;
 }
 
 function isStepComplete(stepId) {
@@ -1328,7 +1315,7 @@ function applyWebform(data) {
   draft.description = data.description || '';
   draft.status = data.status || 'Draft';
   draft.targetModuleKey = data.targetModuleKey || 'people';
-  draft.targetAppKey = data.targetAppKey || 'SALES';
+  draft.targetAppKey = data.targetAppKey || 'PLATFORM';
   draft.multiStep = sanitizeMultiStepConfig(data.multiStep);
   draft.steps = sanitizeWebformSteps(data.steps, draft.multiStep.enabled);
   draft.fields = Array.isArray(data.fields)
@@ -1337,7 +1324,8 @@ function applyWebform(data) {
       type: normalizeWebformFieldType(field.type),
       columnWidth: field.columnWidth === 'half' ? 'half' : 'full',
       stepId: sanitizeFieldStepId(field.stepId, { multiStep: draft.multiStep, steps: draft.steps }),
-      visibility: sanitizeFieldVisibility(field.visibility)
+      visibility: sanitizeFieldVisibility(field.visibility),
+      dependencies: Array.isArray(field.dependencies) ? field.dependencies : []
     }))
     : [];
   syncActiveBuilderStep();
@@ -1402,70 +1390,34 @@ async function loadTargetModules() {
   syncTargetAppKeyFromSelection();
 }
 
-async function loadFieldTypes() {
+async function loadModuleFields(moduleKey = draft.targetModuleKey) {
+  moduleFieldsLoading.value = true;
   try {
-    const res = await apiClient.get('/settings/webforms/field-types');
-    builderFieldTypes.value = res?.success && Array.isArray(res.data) ? res.data : [];
+    const { fields } = await fetchWebformModuleDefinition(moduleKey);
+    moduleFields.value = fields.filter((field) => {
+      const key = String(field.key || '').toLowerCase();
+      return key && !RESERVED_CRM_KEYS.has(key);
+    });
+    syncWebformFieldsFromModule();
   } catch {
-    builderFieldTypes.value = [];
-  }
-  if (!builderFieldTypes.value.length) {
-    fieldTypePalette.value = fallbackWebformFieldPalette(labelForFieldType);
-    return;
-  }
-  syncFieldTypePalette();
-}
-
-async function loadCrmFields(moduleKey = draft.targetModuleKey) {
-  try {
-    const res = await apiClient.get('/modules', { params: { key: moduleKey } });
-    const moduleRow = res?.success && Array.isArray(res.data) ? res.data[0] : null;
-    const fields = Array.isArray(moduleRow?.fields) ? moduleRow.fields : [];
-    crmFields.value = fields
-      .filter((field) => {
-        const key = String(field.key || '').toLowerCase();
-        return key && !RESERVED_CRM_KEYS.has(key);
-      })
-      .map((field) => ({
-        key: field.key,
-        label: field.label || field.key,
-        dataType: field.dataType || '',
-        options: Array.isArray(field.options) ? field.options : []
-      }));
-    refreshPicklistOptionsFromCrm();
-  } catch {
-    crmFields.value = [];
+    moduleFields.value = [];
+  } finally {
+    moduleFieldsLoading.value = false;
+    scheduleFillPreviewRefresh();
   }
 }
 
-function findCrmFieldByKey(key) {
-  return crmFields.value.find((field) => field.key === key) || null;
+function findModuleFieldByKey(key) {
+  const normalized = String(key || '').toLowerCase();
+  return moduleFields.value.find((field) => String(field.key || '').toLowerCase() === normalized) || null;
 }
 
-function syncFieldFromCrmBinding(field) {
-  if (!field?.crmFieldKey) return;
-  const crmField = findCrmFieldByKey(field.crmFieldKey);
-  if (!crmField) return;
-  applyCrmFieldBinding(field, crmField);
-}
-
-function refreshPicklistOptionsFromCrm() {
+function syncWebformFieldsFromModule() {
   for (const field of draft.fields) {
-    if (field.crmFieldKey) {
-      syncFieldFromCrmBinding(field);
-    }
+    if (!field.crmFieldKey) continue;
+    const moduleField = findModuleFieldByKey(field.crmFieldKey);
+    if (moduleField) applyModuleFieldToWebformField(field, moduleField);
   }
-}
-
-function crmPicklistBound(field) {
-  if (!field?.crmFieldKey) return false;
-  const crmField = findCrmFieldByKey(field.crmFieldKey);
-  return isCrmPicklistField(crmField) && Array.isArray(field.options) && field.options.length > 0;
-}
-
-function onCrmFieldKeyChange() {
-  if (!selectedField.value) return;
-  syncFieldFromCrmBinding(selectedField.value);
 }
 
 async function loadWebform() {
@@ -1476,7 +1428,7 @@ async function loadWebform() {
     if (generation !== draftSyncGeneration) return;
     if (res?.success && res.data) {
       applyWebform(res.data);
-      await loadCrmFields();
+      await loadModuleFields();
     } else {
       notifyError(res?.message || t('webforms.builderLoadFailed'));
     }
@@ -1519,20 +1471,7 @@ function buildPayload() {
     status: draft.status,
     targetModuleKey: draft.targetModuleKey,
     targetAppKey: mod?.appKey || draft.targetAppKey,
-    fields: draft.fields.map((field, index) => ({
-      fieldId: field.fieldId,
-      label: field.label,
-      type: normalizeWebformFieldType(field.type),
-      required: !!field.required,
-      helpText: field.helpText || '',
-      placeholder: field.placeholder || '',
-      options: Array.isArray(field.options) ? [...field.options] : [],
-      crmFieldKey: field.crmFieldKey || '',
-      columnWidth: field.columnWidth === 'half' ? 'half' : 'full',
-      order: index,
-      stepId: sanitizeFieldStepId(field.stepId, draft),
-      visibility: sanitizeFieldVisibility(field.visibility)
-    })),
+    fields: buildWebformFillFieldsFromDraft(draft),
     recordAction: draft.recordAction,
     dedup: { ...draft.dedup, keys: [...draft.dedup.keys] },
     notifyOnSubmit: {
@@ -1632,27 +1571,23 @@ async function saveAndPublish() {
   await enablePublicLink();
 }
 
-function defaultLabelForType(type) {
-  return labelForFieldType(type) || t('webforms.builderNewFieldLabel');
+function createFieldFromModuleKey(moduleFieldKey) {
+  const moduleField = findModuleFieldByKey(moduleFieldKey);
+  if (!moduleField) return null;
+  if (usedCrmFieldKeys.value.has(String(moduleFieldKey).toLowerCase())) return null;
+
+  const field = createWebformFieldFromModuleField(moduleField, {
+    order: draft.fields.length,
+    stepId: activeBuilderStepId.value || orderedBuilderSteps.value[0]?.stepId || ''
+  });
+  return field;
 }
 
-function createFieldFromType(type) {
-  const normalizedType = normalizeWebformFieldType(type);
-  const fieldId = createWebformFieldId();
-  return {
-    fieldId,
-    label: defaultLabelForType(normalizedType),
-    type: normalizedType,
-    required: false,
-    helpText: '',
-    placeholder: '',
-    options: fieldTypeNeedsOptions(normalizedType) ? ['Option 1', 'Option 2'] : [],
-    crmFieldKey: '',
-    columnWidth: defaultColumnWidthForFieldType(normalizedType),
-    order: draft.fields.length,
-    stepId: activeBuilderStepId.value || orderedBuilderSteps.value[0]?.stepId || '',
-    visibility: defaultFieldVisibility()
-  };
+function addFieldFromModuleKey(moduleFieldKey) {
+  const field = createFieldFromModuleKey(moduleFieldKey);
+  if (!field) return;
+  draft.fields.push(field);
+  onSelectField(field.fieldId);
 }
 
 function syncActiveBuilderStep() {
@@ -1679,6 +1614,9 @@ function onMultiStepToggle() {
     return;
   }
   activeBuilderStepId.value = '';
+  if (['next', 'back'].includes(selectedButtonKey.value)) {
+    selectedButtonKey.value = '';
+  }
 }
 
 function addBuilderStep() {
@@ -1755,10 +1693,11 @@ function onVisibilitySourceChange(condition) {
   condition.value = '';
 }
 
-function addFieldOfType(type) {
-  const field = createFieldFromType(type);
-  draft.fields.push(field);
-  selectedFieldId.value = field.fieldId;
+function onMobileAddField(event) {
+  const key = event.target.value;
+  if (!key) return;
+  addFieldFromModuleKey(key);
+  event.target.value = '';
 }
 
 function onFieldsUpdate(nextFields) {
@@ -1780,28 +1719,29 @@ function onFieldsUpdate(nextFields) {
   }));
 }
 
-function onMobileAddField(event) {
-  const type = event.target.value;
-  if (!type) return;
-  addFieldOfType(type);
-  event.target.value = '';
-}
-
 function removeField(fieldId) {
   const index = draft.fields.findIndex((field) => field.fieldId === fieldId);
   if (index < 0) return;
   const removed = draft.fields[index];
+  if (removed?.crmFieldKey) {
+    const moduleField = findModuleFieldByKey(removed.crmFieldKey);
+    if (isBaseMandatoryModuleField(draft.targetModuleKey, moduleField, moduleFields.value)) {
+      notifyError(t('webforms.builderCannotRemoveMandatory'));
+      return;
+    }
+  }
   draft.fields.splice(index, 1);
   if (removed?.fieldId === selectedFieldId.value) selectedFieldId.value = '';
 }
 
-function updateFieldOptions(field, raw) {
-  field.options = String(raw || '').split(',').map((part) => part.trim()).filter(Boolean);
+function crmPicklistBound(field) {
+  if (!field?.crmFieldKey) return false;
+  const moduleField = findModuleFieldByKey(field.crmFieldKey);
+  return isCrmPicklistField(moduleField) && Array.isArray(field.options) && field.options.length > 0;
 }
 
-async function onTargetModuleChange() {
-  syncTargetAppKeyFromSelection();
-  await loadCrmFields();
+function updateFieldOptions(field, raw) {
+  field.options = String(raw || '').split(',').map((part) => part.trim()).filter(Boolean);
 }
 
 function resolveHeaderImageUrl(url) {
@@ -1850,13 +1790,9 @@ function openSubmissions() {
 }
 
 function buildHostedPreviewUrl() {
-  if (!publicUrl.value) return '';
-  if (typeof window === 'undefined') return publicUrl.value;
-  const url = new URL(publicUrl.value, window.location.origin);
-  if (props.webformId) {
-    url.searchParams.set('webformId', String(props.webformId));
-  }
-  return url.toString();
+  const slug = draft.publicLink?.slug;
+  if (!slug) return '';
+  return buildWebformPublicUrl(slug);
 }
 
 async function waitForSaveBeforePreview(timeoutMs = 8000) {
@@ -1901,9 +1837,41 @@ async function copyText(text) {
 }
 
 onMounted(async () => {
-  await Promise.all([loadTargetModules(), loadFieldTypes()]);
+  await loadTargetModules();
   await loadWebform();
 });
+
+watch(
+  () => [draft.formActions.reset.enabled, draft.formActions.cancel.enabled],
+  () => {
+    if (selectedButtonKey.value === 'reset' && !draft.formActions.reset.enabled) {
+      selectedButtonKey.value = '';
+    }
+    if (selectedButtonKey.value === 'cancel' && !draft.formActions.cancel.enabled) {
+      selectedButtonKey.value = '';
+    }
+  }
+);
+
+watch(
+  () => ({
+    targetModuleKey: draft.targetModuleKey,
+    targetAppKey: draft.targetAppKey,
+    status: draft.status,
+    fields: draft.fields,
+    multiStep: draft.multiStep,
+    steps: draft.steps,
+    branding: draft.branding,
+    formActions: draft.formActions,
+    thankYouMessage: draft.thankYouMessage,
+    headerImageUrl: draft.headerImageUrl,
+    name: draft.name,
+    description: draft.description,
+    captchaEnabled: draft.captcha?.enabled
+  }),
+  () => scheduleFillPreviewRefresh(),
+  { deep: true }
+);
 
 watch(() => props.webformId, (id, prev) => {
   if (id && id !== prev) loadWebform();

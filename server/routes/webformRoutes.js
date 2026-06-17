@@ -13,7 +13,8 @@ const {
   getWebformPreviewBySlug,
   getPublicWebformBySlug,
   submitPublicWebform,
-  uploadPublicWebformFile
+  uploadPublicWebformFile,
+  resolveWebformFillPreviewPayload
 } = require('../controllers/webformController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -40,6 +41,7 @@ protectedRouter.route('/')
   .get(checkPermission('webforms', 'view'), getWebforms)
   .post(checkPermission('webforms', 'create'), createWebform);
 
+protectedRouter.post('/fill-preview-payload', checkPermission('webforms', 'view'), resolveWebformFillPreviewPayload);
 protectedRouter.post('/:id/duplicate', checkPermission('webforms', 'create'), duplicateWebform);
 protectedRouter.post('/:id/enable-public', checkPermission('webforms', 'edit'), enablePublicLink);
 protectedRouter.post('/:id/sync-public-registry', checkPermission('webforms', 'edit'), syncPublicRegistry);
