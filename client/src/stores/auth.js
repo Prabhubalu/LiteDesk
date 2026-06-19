@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { logAuthAccessDebug, warnAuthAccessDebug } from '@/config/arivuDebug.js';
 import { getApiUrlForFetch } from '@/config/apiBase';
 import { isOnPublicShellRoute } from '@/utils/standaloneRoutes';
+import { validateUserTypeForApp } from '@/utils/appUserTypeAccess';
 import { identifyProductUser, captureUserLoggedIn, resetPosthog } from '@/config/posthogUser';
 import { registerUseAuthStore } from './authRegistry';
 
@@ -58,6 +59,10 @@ export const useAuthStore = defineStore('auth', {
         hasAppAccess: (state) => {
             return (appKey) => {
                 const appKeyUpper = appKey.toUpperCase();
+                const userType = state.user?.userType || 'INTERNAL';
+                if (!validateUserTypeForApp(userType, appKeyUpper)) {
+                    return false;
+                }
                 const allowedApps = (state.user?.allowedApps || []).map(app =>
                     typeof app === 'string' ? app.toUpperCase() : app
                 );
@@ -82,8 +87,9 @@ export const useAuthStore = defineStore('auth', {
                     state.user?.isOwner === true ||
                     String(state.user?.role || '').toLowerCase() === 'owner';
 
-                // Mirrors server uiCompositionService.getUIAppsForTenant: owners see every ACTIVE
-                // org-enabled app in the shell (seat / role enforcement happens inside each app).
+                // Mirrors server uiCompositionService.getUIAppsForTenant: owners see org-enabled
+                // apps that match their userType (INTERNAL users never get PORTAL in navigation).
+                // Seat / role enforcement still happens inside each app.
                 // IMPORTANT: do not prefer User.allowedApps over organization.enabledApps — that
                 // caused the sidebar registry to keep only legacy defaults (e.g. SALES) and hide
                 // the app switcher even after enabling HELPDESK/AUDIT on the org.
@@ -126,6 +132,10 @@ export const useAuthStore = defineStore('auth', {
             return (appKey) => {
                 const appKeyUpper = String(appKey || '').toUpperCase();
                 if (!appKeyUpper) return false;
+                const userType = state.user?.userType || 'INTERNAL';
+                if (!validateUserTypeForApp(userType, appKeyUpper)) {
+                    return false;
+                }
 
                 const allowedApps = Array.isArray(state.user?.allowedApps) ? state.user.allowedApps : [];
                 const hasAllowedApps = allowedApps.length > 0;
@@ -256,6 +266,7 @@ export const useAuthStore = defineStore('auth', {
                 username: userData.username,
                 email: userData.email,
                 role: userData.role,
+                userType: userData.userType || 'INTERNAL',
                 isOwner: userData.isOwner,
                 isPlatformAdmin: userData.isPlatformAdmin === true,
                 permissions: userData.permissions,
