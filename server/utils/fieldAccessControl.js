@@ -11,7 +11,22 @@
  * - App-owned fields: Users with app access and edit permission can edit
  * - Org-owned fields: Users with edit permission can edit
  * - READ access: Based on view permission for the module
+ * - RBAC v2 field permissions (hidden/read/write) tighten access when enabled
  */
+
+const {
+  resolveFieldPermission,
+  isFieldHidden
+} = require('../services/fieldPermissionResolver');
+
+function rbacFieldParams(user, moduleKey, field, appKey = null) {
+  return {
+    appKey: appKey || user?._fieldPermissionAppKey || null,
+    moduleKey,
+    fieldKey: field?.key,
+    organization: user?.organization || null
+  };
+}
 
 /**
  * Check if user can READ a field
@@ -19,24 +34,29 @@
  * @param {Object} field - Field definition
  * @param {Object} user - User object with permissions
  * @param {string} moduleKey - Module key (e.g., 'people', 'deals')
+ * @param {string|null} [appKey] - Optional app key for RBAC field map
  * @returns {boolean} - True if user can read the field
  */
-function canReadField(field, user, moduleKey) {
+function canReadField(field, user, moduleKey, appKey = null) {
   if (!field || !user) return false;
   
   // Owners can read all fields
   if (user.isOwner) return true;
+
+  if (isFieldHidden(user, rbacFieldParams(user, moduleKey, field, appKey))) {
+    return false;
+  }
   
   // Check module-level view permission
   const normalizedModule = moduleKey === 'people' ? 'contacts' : moduleKey;
   const hasViewPermission = user.permissions?.[normalizedModule]?.view || 
                            user.permissions?.[normalizedModule]?.viewAll ||
+                           user.permissions?.[moduleKey]?.view ||
+                           user.permissions?.[moduleKey]?.viewAll ||
                            false;
   
   if (!hasViewPermission) return false;
   
-  // All fields in a module are readable if user has view permission
-  // (Field-level read restrictions can be added here if needed)
   return true;
 }
 
@@ -48,8 +68,13 @@ function canReadField(field, user, moduleKey) {
  * @param {string} moduleKey - Module key (e.g., 'people', 'deals')
  * @returns {boolean} - True if user can write to the field
  */
-function canWriteField(field, user, moduleKey) {
+function canWriteField(field, user, moduleKey, appKey = null) {
   if (!field || !user) return false;
+
+  const rbacState = resolveFieldPermission(user, rbacFieldParams(user, moduleKey, field, appKey));
+  if (rbacState === 'hidden' || rbacState === 'read') {
+    return false;
+  }
 
   const normalizedRole = String(user.role || '').toLowerCase();
   const isLegacyAdmin = normalizedRole === 'admin' || normalizedRole === 'owner';
@@ -165,7 +190,7 @@ function filterFieldsByWriteAccess(fields, user, moduleKey) {
  * @param {string} moduleKey - Module key
  * @returns {Object} - { allowed: boolean, reason: string }
  */
-function validateFieldWrite(fieldKey, fields, user, moduleKey) {
+function validateFieldWrite(fieldKey, fields, user, moduleKey, appKey = null) {
   if (!fieldKey || !fields || !user) {
     return { allowed: false, reason: 'Missing required parameters' };
   }
@@ -176,8 +201,21 @@ function validateFieldWrite(fieldKey, fields, user, moduleKey) {
     // Field doesn't exist - allow (might be custom field or new field)
     return { allowed: true, reason: 'Field not found in definitions' };
   }
+
+  const rbacState = resolveFieldPermission(user, {
+    appKey: appKey || user?._fieldPermissionAppKey || null,
+    moduleKey,
+    fieldKey: field.key,
+    organization: user?.organization || null
+  });
+  if (rbacState === 'hidden') {
+    return { allowed: false, reason: 'Field is hidden by role profile' };
+  }
+  if (rbacState === 'read') {
+    return { allowed: false, reason: 'Field is read-only by role profile' };
+  }
   
-  const canWrite = canWriteField(field, user, moduleKey);
+  const canWrite = canWriteField(field, user, moduleKey, appKey);
   
   if (!canWrite) {
     const fieldOwner = (field.owner || 'platform').toLowerCase();

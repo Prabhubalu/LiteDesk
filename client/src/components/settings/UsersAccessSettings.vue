@@ -35,6 +35,14 @@
       <RolesPermissions embedded />
     </div>
 
+    <div v-if="activeTab === 'profiles'" class="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <ProfilesSettings embedded />
+    </div>
+
+    <div v-if="activeTab === 'sharing'" class="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <SharingRulesSettings embedded />
+    </div>
+
     <div v-if="activeTab === 'groups'" class="flex min-h-0 flex-1 flex-col overflow-hidden">
       <GroupsSettings embedded />
     </div>
@@ -42,23 +50,46 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/stores/auth';
+import { isRbacV2Enabled, isSharingV1Enabled } from '@/utils/rbacFeatureFlags';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import UserManagement from './UserManagement.vue';
 import RolesPermissions from './RolesPermissions.vue';
+import ProfilesSettings from './ProfilesSettings.vue';
+import SharingRulesSettings from './SharingRulesSettings.vue';
 import GroupsSettings from './GroupsSettings.vue';
 
 const { t } = useI18n();
+const authStore = useAuthStore();
 
 const USERS_ACCESS_TAB_KEY = 'arivu-users-access-tab';
 const activeTab = ref(localStorage.getItem(USERS_ACCESS_TAB_KEY) || 'users');
 
-const tabs = [
-  { id: 'users', nameKey: 'settings.usersTabManagement' },
-  { id: 'roles', nameKey: 'settings.usersTabRoles' },
-  { id: 'groups', nameKey: 'settings.usersTabGroups' }
-];
+const rbacV2 = computed(() => isRbacV2Enabled(authStore.organization));
+const sharingV1 = computed(() => isSharingV1Enabled(authStore.organization));
+
+const tabs = computed(() => {
+  const items = [
+    { id: 'users', nameKey: 'settings.usersTabManagement' },
+    { id: 'roles', nameKey: 'settings.usersTabRoles' }
+  ];
+  if (rbacV2.value) {
+    items.push({ id: 'profiles', nameKey: 'settings.usersTabProfiles' });
+  }
+  if (sharingV1.value) {
+    items.push({ id: 'sharing', nameKey: 'settings.usersTabSharing' });
+  }
+  items.push({ id: 'groups', nameKey: 'settings.usersTabGroups' });
+  return items;
+});
+
+watch(tabs, (items) => {
+  if (!items.some((tab) => tab.id === activeTab.value)) {
+    activeTab.value = 'users';
+  }
+}, { immediate: true });
 
 watch(activeTab, (v) => {
   localStorage.setItem(USERS_ACCESS_TAB_KEY, v);

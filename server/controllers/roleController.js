@@ -1,4 +1,6 @@
 const Role = require('../models/Role');
+const Organization = require('../models/Organization');
+const { legacyRoleCapabilitiesForPersistence } = require('../utils/rbacFeatureFlags');
 const {
     getRolePermissionCatalog,
     expandRolePermissionsForUI,
@@ -6,6 +8,14 @@ const {
     mergeIncomingRolePermissions,
     invalidateTenantPermissionCaches
 } = require('../services/rolePermissionCatalogService');
+const {
+    wouldCreateRoleHierarchyCycle,
+    recalculateOrganizationRoleLevels,
+    ensureSiblingSortOrders,
+    reorderSiblingRoles,
+    normalizeParentRoleId,
+    syncRoleUserCounts
+} = require('../services/roleHierarchyService');
 
 const upgradedPrivilegedRolesOrgs = new Set();
 
@@ -26,10 +36,12 @@ async function ensurePrivilegedSystemRolesUpgraded(organizationId) {
 exports.getRoles = async (req, res) => {
     try {
         await ensurePrivilegedSystemRolesUpgraded(req.user.organizationId);
+        await syncRoleUserCounts(req.user.organizationId);
         let roles = await Role.find({
             organizationId: req.user.organizationId 
         })
         .populate('parentRole', 'name')
+        .populate('profileId', 'name')
         .sort({ level: 1, name: 1 });
         roles = roles.map((r) => attachUIPermissionAliases(r.toObject()));
         res.json({
@@ -50,6 +62,8 @@ exports.getRoles = async (req, res) => {
 // Get role hierarchy tree
 exports.getRoleHierarchy = async (req, res) => {
     try {
+        await syncRoleUserCounts(req.user.organizationId);
+        await ensureSiblingSortOrders(req.user.organizationId);
         const hierarchy = await Role.getHierarchy(req.user.organizationId);
 
         res.json({
@@ -108,7 +122,13 @@ exports.createRole = async (req, res) => {
             icon,
             canViewAllData,
             canManageTeam,
-            canExportData
+            canExportData,
+            userType,
+            privilegeMode,
+            profileId,
+            appEntitlements,
+            recordAssignment,
+            fieldPermissions
         } = req.body;
 
         // Validate required fields
@@ -134,6 +154,14 @@ exports.createRole = async (req, res) => {
 
         const { permissions: normalizedPermissions, appPermissions } = normalizeRolePermissions(permissions);
 
+        const organization = await Organization.findById(req.user.organizationId).select('settings').lean();
+        const legacyCaps = legacyRoleCapabilitiesForPersistence(organization);
+        const capabilityFields = legacyCaps ?? {
+            canViewAllData: canViewAllData || false,
+            canManageTeam: canManageTeam || false,
+            canExportData: canExportData || false
+        };
+
         const createPayload = {
             organizationId: req.user.organizationId,
             name: name.trim(),
@@ -142,11 +170,15 @@ exports.createRole = async (req, res) => {
             permissions: normalizedPermissions,
             color: color || '#6366f1',
             icon: icon || 'user',
-            canViewAllData: canViewAllData || false,
-            canManageTeam: canManageTeam || false,
-            canExportData: canExportData || false,
-            isSystemRole: false
+            ...capabilityFields,
+            isSystemRole: false,
+            userType: userType || 'INTERNAL',
+            privilegeMode: privilegeMode || 'inline',
+            profileId: profileId || null
         };
+        if (appEntitlements) createPayload.appEntitlements = appEntitlements;
+        if (recordAssignment) createPayload.recordAssignment = recordAssignment;
+        if (fieldPermissions) createPayload.fieldPermissions = fieldPermissions;
         if (appPermissions) {
             createPayload.appPermissions = appPermissions;
         }
@@ -212,7 +244,13 @@ exports.updateRole = async (req, res) => {
             'icon',
             'canViewAllData',
             'canManageTeam',
-            'canExportData'
+            'canExportData',
+            'userType',
+            'privilegeMode',
+            'profileId',
+            'appEntitlements',
+            'recordAssignment',
+            'fieldPermissions'
         ];
 
         if (!role.isSystemRole) {
@@ -227,11 +265,18 @@ exports.updateRole = async (req, res) => {
             }
         }
 
+        const organization = await Organization.findById(req.user.organizationId).select('settings').lean();
+        const legacyCaps = legacyRoleCapabilitiesForPersistence(organization);
+
         allowedUpdates.forEach(field => {
             if (req.body[field] !== undefined) {
                 role[field] = req.body[field];
             }
         });
+
+        if (legacyCaps) {
+            Object.assign(role, legacyCaps);
+        }
 
         await role.save();
         await role.populate('parentRole', 'name');
@@ -374,6 +419,184 @@ exports.initializeDefaultRoles = async (req, res) => {
         res.status(500).json({ 
             success: false,
             message: 'Error initializing default roles',
+            error: error.message
+        });
+    }
+};
+
+// Reparent or reorder role in hierarchy (cycle-safe, recalculates levels)
+exports.moveRole = async (req, res) => {
+    try {
+        const parentRoleId = Object.prototype.hasOwnProperty.call(req.body, 'parentRoleId')
+            ? req.body.parentRoleId
+            : req.body.parentRole;
+        const insertBeforeRoleId = req.body.insertBeforeRoleId || null;
+        const insertAfterRoleId = req.body.insertAfterRoleId || null;
+
+        const role = await Role.findOne({
+            _id: req.params.id,
+            organizationId: req.user.organizationId
+        });
+
+        if (!role) {
+            return res.status(404).json({
+                success: false,
+                message: 'Role not found'
+            });
+        }
+
+        if (role.isSystemRole && role.name === 'Owner') {
+            return res.status(403).json({
+                success: false,
+                message: 'Cannot move the Owner role',
+                code: 'CANNOT_MOVE_OWNER'
+            });
+        }
+
+        const isReorderOnly = Boolean(insertBeforeRoleId || insertAfterRoleId);
+        const normalizedParent = Object.prototype.hasOwnProperty.call(req.body, 'parentRoleId') || Object.prototype.hasOwnProperty.call(req.body, 'parentRole')
+            ? normalizeParentRoleId(parentRoleId)
+            : normalizeParentRoleId(role.parentRole);
+
+        if (normalizedParent) {
+            const parentRole = await Role.findOne({
+                _id: normalizedParent,
+                organizationId: req.user.organizationId
+            });
+            if (!parentRole) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Parent role not found in your organization',
+                    code: 'PARENT_ROLE_NOT_FOUND'
+                });
+            }
+        }
+
+        const rolesLean = await Role.find({ organizationId: req.user.organizationId })
+            .select('_id parentRole name isSystemRole')
+            .lean();
+
+        if (!isReorderOnly && wouldCreateRoleHierarchyCycle(rolesLean, role._id, normalizedParent)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot move a role under itself or one of its subordinate roles',
+                code: 'ROLE_HIERARCHY_CYCLE'
+            });
+        }
+
+        if (isReorderOnly) {
+            if (insertBeforeRoleId && insertAfterRoleId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Specify either insertBeforeRoleId or insertAfterRoleId, not both',
+                    code: 'INVALID_REORDER'
+                });
+            }
+
+            const anchorId = insertBeforeRoleId || insertAfterRoleId;
+            const anchorRole = await Role.findOne({
+                _id: anchorId,
+                organizationId: req.user.organizationId
+            });
+            if (!anchorRole) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Reorder anchor role not found',
+                    code: 'ANCHOR_ROLE_NOT_FOUND'
+                });
+            }
+
+            const anchorParent = normalizeParentRoleId(anchorRole.parentRole);
+            if (anchorParent !== normalizedParent) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Reorder anchor must belong to the target sibling group',
+                    code: 'INVALID_REORDER_ANCHOR'
+                });
+            }
+
+            if (wouldCreateRoleHierarchyCycle(rolesLean, role._id, normalizedParent)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Cannot move a role under itself or one of its subordinate roles',
+                    code: 'ROLE_HIERARCHY_CYCLE'
+                });
+            }
+
+            await reorderSiblingRoles(req.user.organizationId, role._id, {
+                parentRoleId: normalizedParent,
+                insertBeforeRoleId,
+                insertAfterRoleId
+            });
+        } else {
+            const siblings = await Role.find({
+                organizationId: req.user.organizationId,
+                ...(normalizedParent
+                    ? { parentRole: normalizedParent }
+                    : { $or: [{ parentRole: null }, { parentRole: { $exists: false } }] })
+            }).sort({ sortOrder: -1 }).limit(1);
+
+            role.parentRole = normalizedParent;
+            role.sortOrder = (siblings[0]?.sortOrder ?? -1) + 1;
+            await role.save();
+            await ensureSiblingSortOrders(req.user.organizationId);
+        }
+
+        await recalculateOrganizationRoleLevels(req.user.organizationId);
+        const updatedRole = await Role.findById(role._id).populate('parentRole', 'name');
+        invalidateTenantPermissionCaches(req.user.organizationId);
+
+        res.json({
+            success: true,
+            data: attachUIPermissionAliases(updatedRole.toObject()),
+            message: isReorderOnly ? 'Role reordered successfully' : 'Role moved successfully'
+        });
+    } catch (error) {
+        console.error('Move role error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error moving role',
+            error: error.message
+        });
+    }
+};
+
+// RBAC v2: seed profiles + Sales Manager / Sales Executive hierarchy
+exports.seedRolesForOrganization = async (req, res) => {
+    try {
+        const { isRbacV2Enabled } = require('../utils/rbacFeatureFlags');
+        const { seedRolesAndProfilesForOrganization } = require('../services/roleSeedService');
+
+        const organization = req.organization || await require('../models/Organization').findById(req.user.organizationId);
+        if (!isRbacV2Enabled(organization)) {
+            return res.status(400).json({
+                success: false,
+                message: 'RBAC v2 is not enabled for this organization',
+                code: 'RBAC_V2_DISABLED'
+            });
+        }
+
+        const existingRoles = await Role.countDocuments({ organizationId: req.user.organizationId });
+        if (existingRoles > 0) {
+            return res.status(409).json({
+                success: false,
+                message: 'Roles already exist for this organization. Use migration script for existing tenants.',
+                code: 'ROLES_ALREADY_EXIST'
+            });
+        }
+
+        const result = await seedRolesAndProfilesForOrganization(req.user.organizationId, organization);
+
+        res.status(201).json({
+            success: true,
+            data: result,
+            message: 'RBAC v2 roles and profiles seeded successfully'
+        });
+    } catch (error) {
+        console.error('Seed roles error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error seeding roles',
             error: error.message
         });
     }

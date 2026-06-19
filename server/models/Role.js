@@ -53,6 +53,10 @@ const roleSchema = new mongoose.Schema({
         ref: 'Role',
         default: null // For organizational hierarchy
     },
+    sortOrder: {
+        type: Number,
+        default: 0 // Sibling order within the same parent
+    },
     
     // App-Scoped Permissions (new structure for multi-app support)
     // Format: { appKey: { module: { action: boolean } } }
@@ -262,6 +266,66 @@ const roleSchema = new mongoose.Schema({
     userCount: {
         type: Number,
         default: 0 // Track how many users have this role
+    },
+
+    // --- RBAC v2 ---
+    userType: {
+        type: String,
+        enum: ['INTERNAL', 'EXTERNAL', 'SYSTEM'],
+        default: 'INTERNAL'
+    },
+    privilegeMode: {
+        type: String,
+        enum: ['inline', 'profile'],
+        default: 'inline'
+    },
+    profileId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Profile',
+        default: null
+    },
+    isTemplateSeed: {
+        type: Boolean,
+        default: false
+    },
+    appEntitlements: [{
+        appKey: {
+            type: String,
+            required: true
+        },
+        enabled: {
+            type: Boolean,
+            default: true
+        },
+        seatConsuming: {
+            type: Boolean,
+            default: true
+        },
+        appRoleKey: {
+            type: String,
+            required: true
+        }
+    }],
+    recordAssignment: {
+        users: {
+            type: String,
+            enum: ['all', 'same_role_or_hierarchy', 'subordinates_only'],
+            default: 'same_role_or_hierarchy'
+        },
+        groups: {
+            type: String,
+            enum: ['all', 'member_groups', 'selected', 'none'],
+            default: 'member_groups'
+        },
+        selectedGroupIds: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Group'
+        }]
+    },
+    fieldPermissions: {
+        type: Map,
+        of: String,
+        default: () => new Map()
     }
 }, {
     timestamps: true
@@ -330,7 +394,12 @@ roleSchema.statics.getHierarchy = async function(organizationId) {
             rootRoles.push(roleMap[role._id]);
         }
     });
-    
+
+    const { sortHierarchyChildren } = require('../services/roleHierarchyService');
+    for (const root of rootRoles) {
+        if (root.children?.length) sortHierarchyChildren(root.children);
+    }
+
     return rootRoles;
 };
 
@@ -514,7 +583,43 @@ roleSchema.statics.createDefaultRoles = async function(organizationId) {
         }
     ];
     
-    return await this.insertMany(defaultRoles);
+    const inserted = await this.insertMany(defaultRoles);
+
+    const ownerRole = inserted.find((r) => r.name === 'Owner');
+    const adminRole = inserted.find((r) => r.name === 'Admin');
+    const managerRole = inserted.find((r) => r.name === 'Manager');
+    const userRole = inserted.find((r) => r.name === 'User');
+    const viewerRole = inserted.find((r) => r.name === 'Viewer');
+
+    if (adminRole && ownerRole) {
+        adminRole.parentRole = ownerRole._id;
+        adminRole.level = 1;
+        await adminRole.save();
+    }
+    if (managerRole && adminRole) {
+        managerRole.parentRole = adminRole._id;
+        managerRole.level = 2;
+        managerRole.sortOrder = 0;
+        await managerRole.save();
+    }
+    if (userRole && managerRole) {
+        userRole.parentRole = managerRole._id;
+        userRole.level = 3;
+        userRole.sortOrder = 0;
+        await userRole.save();
+    }
+    if (viewerRole && adminRole) {
+        viewerRole.parentRole = adminRole._id;
+        viewerRole.level = 2;
+        viewerRole.sortOrder = 1;
+        await viewerRole.save();
+    }
+    if (ownerRole) {
+        ownerRole.sortOrder = 0;
+        await ownerRole.save();
+    }
+
+    return inserted;
 };
 
 roleSchema.statics.upgradePrivilegedSystemRoles = async function(organizationId) {

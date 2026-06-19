@@ -88,8 +88,8 @@
                     <!-- Body -->
                     <div class="h-0 flex-1 overflow-y-auto">
                       <div class="px-4 sm:px-6 py-6">
-                        <!-- Overview -->
-                        <div v-show="activeTab === 'overview'" class="space-y-6">
+                        <!-- General -->
+                        <div v-show="activeTab === 'general'" class="space-y-6">
                           <div
                             v-if="isSystemRole"
                             class="rounded-lg border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/25 px-4 py-3 text-sm text-amber-900 dark:text-amber-100"
@@ -100,9 +100,8 @@
                             </p>
                           </div>
 
-                          <div class="space-y-4">
-                            <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.roleDrawerIdentity') }}</h4>
-                            <div class="space-y-1">
+                          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div class="space-y-1 sm:col-span-2">
                               <label for="role-name" class="block text-sm font-medium text-gray-900 dark:text-white">
                                 {{ t('settings.roleDrawerRoleName') }} <span class="text-red-500">*</span>
                               </label>
@@ -116,21 +115,74 @@
                                 class="block w-full rounded-lg bg-gray-50 dark:bg-gray-700/50 px-3 py-2.5 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                               />
                             </div>
-                            <div class="space-y-1">
+                            <div class="space-y-1 sm:col-span-2">
                               <label for="role-desc" class="block text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.roleDrawerDescription') }}</label>
                               <textarea
                                 id="role-desc"
                                 v-model="form.description"
-                                rows="3"
+                                rows="2"
                                 :placeholder="t('settings.roleDrawerDescriptionPh')"
                                 class="block w-full rounded-lg bg-gray-50 dark:bg-gray-700/50 px-3 py-2.5 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                               />
                             </div>
+                            <div class="space-y-1">
+                              <label class="block text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.roleDrawerHierarchy') }}</label>
+                              <HeadlessSelect
+                                id="role-parent"
+                                v-model="form.parentRole"
+                                :options="parentRoleOptions"
+                                allow-empty
+                                :empty-label="t('settings.roleDrawerParentNone')"
+                                :placeholder="t('settings.roleDrawerParentNone')"
+                                :button-class="drawerSelectButtonClass"
+                                teleport
+                              />
+                            </div>
+                            <div v-if="rbacV2" class="space-y-1">
+                              <label class="block text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.roleDrawerUserType') }}</label>
+                              <HeadlessSelect
+                                v-model="form.userType"
+                                :options="userTypeOptions"
+                                :disabled="isSystemRole"
+                                :button-class="drawerSelectButtonClass"
+                                teleport
+                              />
+                            </div>
                           </div>
 
-                          <div class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
-                            <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.roleDrawerAppearance') }}</h4>
-                            <div class="grid grid-cols-2 gap-4">
+                          <div
+                            v-if="rbacV2"
+                            class="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/60 dark:bg-indigo-950/30 p-4 space-y-3"
+                          >
+                            <div>
+                              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.roleDrawerProfileCardTitle') }}</p>
+                              <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{{ t('settings.roleDrawerProfileCardHint') }}</p>
+                            </div>
+                            <HeadlessSelect
+                              v-model="form.privilegeMode"
+                              :options="privilegeModeOptions"
+                              :disabled="isSystemRole"
+                              :button-class="drawerSelectButtonClass"
+                              teleport
+                            />
+                            <div v-if="form.privilegeMode === 'profile'" class="space-y-1">
+                              <HeadlessSelect
+                                v-model="form.profileId"
+                                :options="profileSelectOptions"
+                                allow-empty
+                                :empty-label="t('settings.roleDrawerProfileNone')"
+                                :disabled="isSystemRole"
+                                :button-class="drawerSelectButtonClass"
+                                teleport
+                              />
+                            </div>
+                          </div>
+
+                          <details class="rounded-xl border border-gray-200 dark:border-gray-700 group">
+                            <summary class="cursor-pointer list-none px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/30 rounded-xl">
+                              {{ t('settings.roleDrawerAppearanceOptional') }}
+                            </summary>
+                            <div class="px-4 pb-4 pt-1 grid grid-cols-2 gap-4 border-t border-gray-100 dark:border-gray-700">
                               <div class="space-y-2">
                                 <label class="block text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.roleDrawerColor') }}</label>
                                 <div class="flex flex-wrap gap-2">
@@ -150,286 +202,348 @@
                               </div>
                               <div class="space-y-2">
                                 <label for="role-icon" class="block text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.roleDrawerIcon') }}</label>
-                                <HeadlessSelect id="role-icon" v-model="form.icon" :options="iconOptions" />
+                                <HeadlessSelect id="role-icon" v-model="form.icon" :options="iconOptions" :button-class="drawerSelectButtonClass" teleport />
                               </div>
                             </div>
-                          </div>
-
-                          <div class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
-                            <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ t('settings.roleDrawerHierarchy') }}</h4>
-                            <HeadlessSelect
-                              id="role-parent"
-                              v-model="form.parentRole"
-                              :options="parentRoleOptions"
-                              allow-empty
-                              :empty-label="t('settings.roleDrawerParentNone')"
-                              :placeholder="t('settings.roleDrawerParentNone')"
-                            />
-                          </div>
+                          </details>
                         </div>
 
-                        <!-- Permissions -->
-                        <div v-show="activeTab === 'permissions'" class="space-y-4">
-                          <div
-                            v-if="isSystemRole"
-                            class="rounded-lg border border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 flex gap-3"
-                          >
-                            <LockClosedIcon class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <!-- Access -->
+                        <div v-show="activeTab === 'access'" class="space-y-6">
+                          <!-- Step 1: App access -->
+                          <section v-if="rbacV2" class="space-y-3">
                             <div>
-                              <p class="text-sm font-medium text-amber-900 dark:text-amber-100">{{ t('settings.roleDrawerPermsViewOnlyTitle') }}</p>
-                              <p class="text-xs text-amber-800 dark:text-amber-200/80 mt-0.5">
-                                {{ t('settings.roleDrawerPermsViewOnlyBody') }}
+                              <p class="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                                {{ t('settings.roleDrawerAccessStepApps') }}
+                              </p>
+                              <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                {{ t('settings.roleDrawerAppsIntro') }}
                               </p>
                             </div>
-                          </div>
-
-                          <!-- Access summary -->
-                          <div
-                            v-if="!loadingModules && permissionModules.length"
-                            class="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-900/40 p-4"
-                          >
-                            <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                              {{ t('settings.roleDrawerAccessSummary') }}
-                            </h4>
-                            <ul class="space-y-1.5">
-                              <li
-                                v-for="(line, idx) in accessSummaryLines"
-                                :key="idx"
-                                class="flex items-start gap-2 text-sm"
-                              >
-                                <span
-                                  class="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
-                                  :class="summaryDotClass(line.tone)"
-                                />
-                                <span :class="summaryTextClass(line.tone)">{{ line.text }}</span>
-                              </li>
-                            </ul>
-                          </div>
-
-                          <!-- Toolbar -->
-                          <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
-                            <div class="relative flex-1">
-                              <MagnifyingGlassIcon class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                              <input
-                                v-model="permissionSearch"
-                                type="search"
-                                :placeholder="t('settings.roleDrawerSearchModulesPh')"
-                                class="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700/50 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                              />
+                            <div
+                              v-if="appCapabilities.length === 0"
+                              class="rounded-xl border border-dashed border-gray-300 dark:border-gray-600 px-4 py-8 text-center text-sm text-gray-500"
+                            >
+                              {{ t('settings.roleDrawerAppsEmpty') }}
                             </div>
-                            <label
-                              v-if="permissionModules.length >= 20"
-                              class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer shrink-0"
-                            >
-                              <HeadlessCheckbox v-model="compactMode" checkbox-class="w-4 h-4 rounded text-indigo-600" />
-                              {{ t('settings.roleDrawerCompactView') }}
-                            </label>
-                          </div>
-
-                          <div v-if="loadingModules" class="flex justify-center py-16">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
-                          </div>
-
-                          <div
-                            v-else-if="permissionSections.length === 0"
-                            class="text-center py-12 rounded-xl border border-dashed border-gray-300 dark:border-gray-600"
-                          >
-                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.roleDrawerNoModulesOrg') }}</p>
-                          </div>
-
-                          <div v-else-if="filteredSections.length === 0" class="text-center py-10 text-sm text-gray-500">
-                            {{ t('settings.roleDrawerNoSearchMatch', { query: permissionSearch }) }}
-                          </div>
-
-                          <div v-else class="space-y-5 pb-2">
-                            <section
-                              v-for="section in filteredSections"
-                              :key="section.id"
-                              class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
-                            >
-                              <!-- Sticky section header -->
+                            <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <div
-                                class="sticky top-0 z-10 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-4 py-3 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700"
+                                v-for="app in appCapabilities"
+                                :key="app.appKey"
+                                :class="[
+                                  'rounded-xl border p-4 transition-colors',
+                                  isAppEntitlementEnabled(app.appKey)
+                                    ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50/50 dark:bg-indigo-950/20 ring-1 ring-indigo-200/60 dark:ring-indigo-800/60'
+                                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50'
+                                ]"
                               >
-                                <div class="min-w-0">
-                                  <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ section.label }}</h4>
-                                  <p v-if="section.description && !compactMode" class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                    {{ section.description }}
-                                  </p>
+                                <div class="flex items-start gap-3">
+                                  <HeadlessCheckbox
+                                    :checked="isAppEntitlementEnabled(app.appKey)"
+                                    :disabled="isSystemRole"
+                                    checkbox-class="mt-0.5"
+                                    @change="handleAppEntitlementToggle(app)"
+                                  />
+                                  <div class="flex-1 min-w-0 space-y-2">
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                                      {{ getAppDisplayName(app.appKey) }}
+                                    </p>
+                                    <HeadlessSelect
+                                      v-if="isAppEntitlementEnabled(app.appKey)"
+                                      :model-value="getEntitlement(app.appKey)?.appRoleKey"
+                                      :options="getAppRoleOptions(app)"
+                                      :disabled="isSystemRole"
+                                      :button-class="drawerSelectButtonClass"
+                                      teleport
+                                      @update:model-value="updateAppEntitlementRole(app.appKey, $event)"
+                                    />
+                                  </div>
                                 </div>
-                                <div v-if="!isSystemRole" class="flex flex-wrap items-center gap-x-3 gap-y-1 shrink-0">
-                                  <button
-                                    type="button"
-                                    class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium"
-                                    @click="grantReadAllInSection(section.id)"
-                                  >
-                                    {{ t('settings.roleDrawerGrantReadSection') }}
-                                  </button>
-                                  <span class="text-gray-300 dark:text-gray-600 hidden sm:inline">|</span>
-                                  <button
-                                    type="button"
-                                    class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                                    @click="clearSection(section.id)"
-                                  >
-                                    {{ t('settings.roleDrawerClearSection') }}
-                                  </button>
+                              </div>
+                            </div>
+                            <div
+                              v-if="rbacV2 && !hasEntitledApps && form.userType !== 'EXTERNAL'"
+                              class="rounded-lg border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-900 dark:text-amber-100"
+                            >
+                              {{ t('settings.roleDrawerAccessNoAppsSelected') }}
+                            </div>
+                          </section>
+
+                          <!-- Step 2: Module permissions -->
+                          <section class="space-y-3">
+                            <div>
+                              <p class="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                                {{ t('settings.roleDrawerAccessStepModules') }}
+                              </p>
+                              <p v-if="isPermissionsFromProfile" class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                {{ t('settings.roleDrawerAccessProfilePreviewHint', { profile: linkedProfileName || t('settings.roleDrawerProfileNone') }) }}
+                              </p>
+                            </div>
+
+                            <div
+                              v-if="isPermissionsFromProfile"
+                              class="rounded-lg border border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/25 px-4 py-3 text-sm text-indigo-900 dark:text-indigo-100"
+                            >
+                              <p class="font-medium">{{ t('settings.roleDrawerPermsFromProfileTitle') }}</p>
+                              <p class="mt-1 text-xs text-indigo-800 dark:text-indigo-200/90">
+                                {{ t('settings.roleDrawerPermsFromProfileBody', { profile: linkedProfileName || t('settings.roleDrawerProfileNone') }) }}
+                              </p>
+                            </div>
+                            <div
+                              v-else-if="isSystemRole"
+                              class="rounded-lg border border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 flex gap-3"
+                            >
+                              <LockClosedIcon class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                              <div>
+                                <p class="text-sm font-medium text-amber-900 dark:text-amber-100">{{ t('settings.roleDrawerPermsViewOnlyTitle') }}</p>
+                                <p class="text-xs text-amber-800 dark:text-amber-200/80 mt-0.5">
+                                  {{ t('settings.roleDrawerPermsViewOnlyBody') }}
+                                </p>
+                              </div>
+                            </div>
+
+                            <template v-if="!isPermissionsFromProfile || linkedProfilePermissions">
+                              <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+                                <div class="relative flex-1">
+                                  <MagnifyingGlassIcon class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                  <input
+                                    v-model="permissionSearch"
+                                    type="search"
+                                    :placeholder="t('settings.roleDrawerSearchModulesPh')"
+                                    :disabled="isPermissionsFromProfile"
+                                    class="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700/50 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
+                                  />
                                 </div>
                               </div>
 
-                              <!-- Module rows -->
-                              <div class="divide-y divide-gray-100 dark:divide-gray-700/80">
-                                <div
-                                  v-for="module in modulesForSection(section.id)"
-                                  :key="module.key"
-                                  :class="[
-                                    'transition-colors',
-                                    compactMode ? 'px-3 py-2.5' : 'px-4 py-3.5',
-                                    !isSystemRole && 'hover:bg-gray-50/60 dark:hover:bg-gray-900/20'
-                                  ]"
+                              <div
+                                v-if="rbacV2 && !loadingModules && accessVisibleModules.some((m) => moduleSupportsFieldPermissions(m))"
+                                class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-900/30 px-3 py-2 text-xs text-gray-600 dark:text-gray-400"
+                              >
+                                {{ t('settings.roleDrawerFieldModulesHint') }}
+                              </div>
+
+                              <div
+                                v-if="!isPermissionsLocked && !isPermissionsFromProfile && !loadingModules && accessVisibleModules.length"
+                                class="flex flex-wrap gap-2"
+                              >
+                                <button
+                                  v-for="preset in accessPresets"
+                                  :key="preset.id"
+                                  type="button"
+                                  class="rounded-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 dark:hover:border-indigo-700 transition-colors"
+                                  @click="applyAccessPreset(preset.id)"
                                 >
-                                  <div class="flex flex-col gap-2 lg:flex-row lg:items-start lg:gap-4">
-                                    <div :class="compactMode ? 'min-w-0 lg:w-[28%]' : 'min-w-0 lg:w-[32%]'">
-                                      <p :class="compactMode ? 'text-xs font-medium' : 'text-sm font-medium'" class="text-gray-900 dark:text-white">
-                                        {{ module.label }}
-                                      </p>
-                                      <p
-                                        v-if="module.description && !compactMode"
-                                        class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2"
-                                      >
-                                        {{ module.description }}
+                                  {{ preset.label }}
+                                </button>
+                              </div>
+
+                              <div v-if="loadingModules || loadingProfilePreview" class="flex justify-center py-16">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+                              </div>
+
+                              <div
+                                v-else-if="accessVisibleSections.length === 0"
+                                class="text-center py-12 rounded-xl border border-dashed border-gray-300 dark:border-gray-600"
+                              >
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                  {{ rbacV2 && !hasEntitledApps ? t('settings.roleDrawerAccessNoAppsSelected') : t('settings.roleDrawerNoModulesOrg') }}
+                                </p>
+                              </div>
+
+                              <div v-else-if="filteredAccessSections.length === 0" class="text-center py-10 text-sm text-gray-500">
+                                {{ t('settings.roleDrawerNoSearchMatch', { query: permissionSearch }) }}
+                              </div>
+
+                              <div v-else class="space-y-4 pb-2">
+                                <section
+                                  v-for="section in filteredAccessSections"
+                                  :key="section.id"
+                                  class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+                                >
+                                  <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
+                                    <div class="min-w-0">
+                                      <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ section.label }}</h4>
+                                      <p v-if="sectionDescription(section)" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                        {{ sectionDescription(section) }}
                                       </p>
                                     </div>
-
-                                    <div class="flex-1 min-w-0 space-y-2">
-                                      <!-- Access mode -->
-                                      <div class="flex flex-wrap items-center gap-2">
-                                        <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide shrink-0">
-                                          {{ t('settings.roleDrawerAccessLabel') }}
-                                        </span>
-                                        <div
-                                          class="inline-flex flex-wrap rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/50 p-0.5"
-                                          role="group"
-                                          :aria-label="t('settings.roleDrawerAccessModeAria', { module: module.label })"
-                                        >
-                                          <button
-                                            v-for="opt in accessModeOptions"
-                                            :key="opt.value"
-                                            type="button"
-                                            :disabled="isSystemRole"
-                                            :class="accessModeButtonClass(module, opt.value)"
-                                            @click="setModuleMode(module, opt.value)"
-                                          >
-                                            {{ opt.label }}
-                                          </button>
+                                  </div>
+                                  <div class="divide-y divide-gray-100 dark:divide-gray-700/80">
+                                    <div
+                                      v-for="module in modulesForAccessSection(section.id)"
+                                      :key="module.key"
+                                      class="px-4 py-3"
+                                    >
+                                      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                        <div class="min-w-0 flex-1">
+                                          <p class="text-sm font-medium text-gray-900 dark:text-white">{{ module.label }}</p>
+                                          <p v-if="module.description && !compactMode" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+                                            {{ module.description }}
+                                          </p>
+                                        </div>
+                                        <div class="w-full sm:w-44 shrink-0">
+                                          <HeadlessSelect
+                                            :model-value="getModeForDisplay(module)"
+                                            :options="accessModeOptions"
+                                            :disabled="isPermissionsLocked || isPermissionsFromProfile"
+                                            :button-class="drawerSelectButtonClass"
+                                            teleport
+                                            @update:model-value="setModuleMode(module, $event)"
+                                          />
                                         </div>
                                       </div>
-
-                                      <!-- CRUD (custom mode or partial) -->
                                       <div
-                                        v-if="showCrudEditor(module) && getCrudActionsForModule(module).length"
-                                        class="flex flex-wrap items-center gap-1.5"
+                                        v-if="!isPermissionsFromProfile && showCrudEditor(module) && getCrudActionsForModule(module).length"
+                                        class="mt-2 flex flex-wrap gap-1.5 pl-0 sm:pl-2"
                                       >
-                                        <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide w-full sm:w-auto shrink-0">
-                                          {{ t('settings.roleDrawerResourceLabel') }}
-                                        </span>
                                         <PermissionChip
                                           v-for="action in getCrudActionsForModule(module)"
                                           :key="`${module.key}-${action}`"
                                           :label="getCrudLabel(action)"
                                           :variant="chipVariantForAction(action)"
-                                          :active="!!form.permissions[module.key]?.[action]"
-                                          :disabled="isSystemRole || isCrudDisabled(module, action)"
+                                          :active="!!effectivePermissions[module.key]?.[action]"
+                                          :disabled="isPermissionsLocked || isCrudDisabled(module, action)"
                                           size="sm"
                                           @toggle="togglePermission(module.key, action)"
                                         />
                                       </div>
-
-                                      <!-- Advanced (collapsed) -->
-                                      <div v-if="getAdvancedActionsForModule(module).length">
+                                      <div
+                                        v-if="moduleShowsFieldPermissions(module)"
+                                        class="mt-3 border-t border-gray-100 dark:border-gray-700/80 pt-3"
+                                      >
                                         <button
                                           type="button"
-                                          class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                                          :disabled="isSystemRole"
-                                          @click="toggleAdvancedExpanded(module.key)"
+                                          :disabled="!canConfigureModuleFieldPermissions(module) || isSystemRole"
+                                          :class="[
+                                            'inline-flex items-center gap-1.5 text-xs font-medium',
+                                            canConfigureModuleFieldPermissions(module) && !isSystemRole
+                                              ? 'text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300'
+                                              : 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                                          ]"
+                                          @click="canConfigureModuleFieldPermissions(module) && toggleFieldModuleExpand(module.key)"
                                         >
                                           <ChevronRightIcon
                                             :class="[
-                                              'w-3.5 h-3.5 transition-transform',
-                                              isAdvancedExpanded(module.key) && 'rotate-90'
+                                              'h-3.5 w-3.5 transition-transform',
+                                              isFieldModuleExpanded(module.key) && 'rotate-90'
                                             ]"
                                           />
-                                          {{ t('settings.roleDrawerAdvancedCapabilities') }}
+                                          {{ t('settings.roleDrawerModuleFields') }}
                                           <span
-                                            v-if="advancedActiveCount(module)"
-                                            class="rounded-full bg-teal-100 dark:bg-teal-900/40 text-teal-800 dark:text-teal-300 px-1.5 py-0.5 text-[10px] font-semibold"
+                                            v-if="fieldOverrideCount(module) > 0"
+                                            class="rounded-full bg-indigo-100 dark:bg-indigo-900/40 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700 dark:text-indigo-300"
                                           >
-                                            {{ advancedActiveCount(module) }}
+                                            {{ fieldOverrideCount(module) }}
                                           </span>
                                         </button>
-                                        <div
-                                          v-show="isAdvancedExpanded(module.key)"
-                                          class="mt-2 flex flex-wrap gap-1.5 pl-5 border-l-2 border-teal-200 dark:border-teal-800"
+                                        <p
+                                          v-if="!canConfigureModuleFieldPermissions(module)"
+                                          class="mt-1 text-[11px] text-gray-500 dark:text-gray-400"
                                         >
-                                          <PermissionChip
-                                            v-for="action in getAdvancedActionsForModule(module)"
-                                            :key="`${module.key}-adv-${action}`"
-                                            :label="advancedActionLabel(action)"
-                                            :variant="chipVariantForAction(action)"
-                                            :active="!!form.permissions[module.key]?.[action]"
-                                            :disabled="isSystemRole || isAdvancedDisabled(module, action)"
-                                            size="sm"
-                                            @toggle="togglePermission(module.key, action)"
+                                          {{ t('settings.roleDrawerModuleFieldsRequiresRead') }}
+                                        </p>
+                                        <div
+                                          v-show="canConfigureModuleFieldPermissions(module) && isFieldModuleExpanded(module.key)"
+                                          class="mt-2"
+                                        >
+                                          <FieldPermissionsEditor
+                                            variant="inline"
+                                            :modules="[module]"
+                                            v-model="form.fieldPermissions"
+                                            :baseline-permissions="linkedProfileFieldPermissions"
+                                            :inherit-from-profile="isPermissionsFromProfile"
+                                            :disabled="isSystemRole"
+                                            :empty-label="t('settings.fieldPermsEmpty')"
                                           />
                                         </div>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
+                                </section>
                               </div>
-                            </section>
-
-                            <p class="text-xs text-gray-500 dark:text-gray-400 rounded-lg bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 px-3 py-2.5">
-                              <strong class="text-slate-700 dark:text-slate-300">{{ t('settings.roleDrawerDependencyRulesTitle') }}</strong>
-                              {{ t('settings.roleDrawerDependencyRulesBody') }}
+                            </template>
+                            <div
+                              v-else-if="isPermissionsFromProfile && !loadingProfilePreview"
+                              class="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 px-4 py-6 text-center text-sm text-gray-500"
+                            >
+                              {{ t('settings.roleDrawerAccessProfileLoadingFailed') }}
+                            </div>
+                            <p
+                              v-if="rbacV2 && isPermissionsFromProfile && linkedProfilePermissions"
+                              class="text-xs text-gray-500 dark:text-gray-400"
+                            >
+                              {{ t('settings.roleDrawerFieldOverridesHint') }}
                             </p>
-                          </div>
+                          </section>
                         </div>
 
-                        <!-- Capabilities -->
-                        <div v-show="activeTab === 'capabilities'" class="space-y-4">
+                        <!-- More settings -->
+                        <div v-show="activeTab === 'more'" class="space-y-3">
                           <div
-                            v-if="isSystemRole"
-                            class="rounded-lg border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/25 px-4 py-3 text-xs text-amber-800 dark:text-amber-200"
+                            v-if="!rbacV2"
+                            class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
                           >
-                            {{ t('settings.roleDrawerCapabilitiesSystemFixed') }}
-                          </div>
-                          <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {{ t('settings.roleDrawerCapabilitiesIntro') }}
-                          </p>
-                          <label
-                            v-for="cap in capabilityToggles"
-                            :key="cap.key"
-                            :class="[
-                              'flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors',
-                              cap.sensitive
-                                ? 'border-amber-200 dark:border-amber-800/60 hover:border-amber-300 dark:hover:border-amber-700'
-                                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600',
-                              isSystemRole && 'opacity-60 cursor-not-allowed'
-                            ]"
-                          >
-                            <HeadlessCheckbox
-                              v-model="form[cap.key]"
-                              :disabled="isSystemRole"
-                              :checkbox-class="[
-                                'mt-0.5 w-5 h-5 rounded',
-                                cap.sensitive ? 'text-amber-600 focus:ring-amber-500' : 'text-indigo-600 focus:ring-indigo-500'
-                              ]"
-                            />
-                            <div>
-                              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ cap.label }}</span>
-                              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ cap.hint }}</p>
+                            <button
+                              type="button"
+                              class="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900/40 hover:bg-gray-100 dark:hover:bg-gray-900/60"
+                              @click="toggleMoreSection('capabilities')"
+                            >
+                              {{ t('settings.roleDrawerTabCapabilities') }}
+                              <ChevronRightIcon :class="['h-4 w-4 transition-transform', expandedMoreSections.capabilities && 'rotate-90']" />
+                            </button>
+                            <div v-show="expandedMoreSections.capabilities" class="p-4 space-y-3 border-t border-gray-200 dark:border-gray-700">
+                              <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.roleDrawerCapabilitiesIntro') }}</p>
+                              <label
+                                v-for="cap in capabilityToggles"
+                                :key="cap.key"
+                                class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer"
+                              >
+                                <HeadlessCheckbox
+                                  v-model="form[cap.key]"
+                                  :disabled="isSystemRole"
+                                  checkbox-class="mt-0.5"
+                                />
+                                <div>
+                                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{ cap.label }}</span>
+                                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ cap.hint }}</p>
+                                </div>
+                              </label>
                             </div>
-                          </label>
+                          </div>
+
+                          <div v-if="rbacV2" class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                            <button
+                              type="button"
+                              class="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900/40 hover:bg-gray-100 dark:hover:bg-gray-900/60"
+                              @click="toggleMoreSection('assignment')"
+                            >
+                              {{ t('settings.roleDrawerRecordAssignment') }}
+                              <ChevronRightIcon :class="['h-4 w-4 transition-transform', expandedMoreSections.assignment && 'rotate-90']" />
+                            </button>
+                            <div v-show="expandedMoreSections.assignment" class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-gray-200 dark:border-gray-700">
+                              <div class="space-y-1">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.roleDrawerRecordAssignmentUsers') }}</label>
+                                <HeadlessSelect
+                                  v-model="form.recordAssignment.users"
+                                  :options="recordAssignmentUserOptions"
+                                  :disabled="isSystemRole"
+                                  :button-class="drawerSelectButtonClass"
+                                  teleport
+                                />
+                              </div>
+                              <div class="space-y-1">
+                                <label class="block text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.roleDrawerRecordAssignmentGroups') }}</label>
+                                <HeadlessSelect
+                                  v-model="form.recordAssignment.groups"
+                                  :options="recordAssignmentGroupOptions"
+                                  :disabled="isSystemRole"
+                                  :button-class="drawerSelectButtonClass"
+                                  teleport
+                                />
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
                         <div v-if="error" class="mt-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
@@ -494,12 +608,21 @@ import {
 import { StarIcon } from '@heroicons/vue/24/solid';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import FieldPermissionsEditor from './FieldPermissionsEditor.vue';
+import {
+  countFieldOverridesForModule,
+  moduleSupportsFieldPermissions
+} from '@/utils/fieldRbacPermission';
+import { useRoleAccessCatalog, stripFieldPermissionsForApp, moduleHasReadAccess } from '@/composables/useRoleAccessCatalog';
 import apiClient from '@/utils/apiClient';
+import { useAuthStore } from '@/stores/auth';
+import { isRbacV2Enabled } from '@/utils/rbacFeatureFlags';
 import {
   applyModuleAccessMode,
   applyPermissionSideEffects,
   applyPermissionUncheck,
   applyFullAccessToAllModules,
+  applyAccessPresetToAllModules,
   buildRoleAccessSummary,
   chipVariantForAction,
   getAdvancedActionsForModule,
@@ -511,6 +634,12 @@ import {
 } from '@/utils/rolePermissionEditorUtils';
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const rbacV2 = computed(() => isRbacV2Enabled(authStore.organization));
+
+/** White select trigger across role drawer pickers. */
+const drawerSelectButtonClass =
+  'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-xs focus:bg-white dark:focus:bg-gray-800';
 
 const ADVANCED_ACTION_I18N = {
   export: 'roleDrawerPermExport',
@@ -526,7 +655,8 @@ const ADVANCED_ACTION_I18N = {
 const props = defineProps({
   open: { type: Boolean, default: false },
   role: { type: Object, default: null },
-  initialTab: { type: String, default: 'overview' }
+  initialTab: { type: String, default: 'overview' },
+  defaultParentRoleId: { type: String, default: null }
 });
 
 const emit = defineEmits(['close', 'saved']);
@@ -587,23 +717,110 @@ const form = ref(createEmptyForm());
 const initialSnapshot = ref('');
 const saving = ref(false);
 const error = ref('');
-const activeTab = ref('overview');
+const activeTab = ref('general');
 const permissionSearch = ref('');
 const permissionModules = ref([]);
 const permissionSections = ref([]);
 const catalogMeta = ref({ enabledApps: [] });
 const loadingModules = ref(false);
 const availableParentRoles = ref([]);
+const availableProfiles = ref([]);
+const allAppCapabilities = ref([]);
+
+const appCapabilities = computed(() => {
+  const userType = form.value.userType || 'INTERNAL';
+  return allAppCapabilities.value.filter((app) =>
+    app.userTypesAllowed?.includes(userType)
+  );
+});
 const compactMode = ref(false);
 const expandedAdvanced = ref({});
 /** Modules where user chose Custom to fine-tune CRUD chips */
 const customEditModules = ref(new Set());
+/** Module keys with expanded inline field permission panels */
+const expandedFieldModules = ref(new Set());
 
-const editorTabs = computed(() => [
-  { id: 'overview', label: t('settings.roleDrawerTabOverview') },
-  { id: 'permissions', label: t('settings.roleDrawerTabPermissions') },
-  { id: 'capabilities', label: t('settings.roleDrawerTabCapabilities') }
-]);
+const expandedMoreSections = ref({ capabilities: false, assignment: true });
+
+const {
+  accessVisibleModules,
+  accessVisibleSections,
+  modulesByVisibleSection,
+  hasEntitledApps
+} = useRoleAccessCatalog({
+  modules: permissionModules,
+  sections: permissionSections,
+  appEntitlements: computed(() => form.value.appEntitlements),
+  permissions: computed(() => form.value.permissions),
+  userType: computed(() => form.value.userType),
+  rbacV2
+});
+
+const linkedProfilePermissions = ref(null);
+const linkedProfileFieldPermissions = ref({});
+const loadingProfilePreview = ref(false);
+
+function normalizeDrawerTab(tab) {
+  const map = {
+    overview: 'general',
+    permissions: 'access',
+    capabilities: 'more',
+    apps: 'more',
+    fields: 'more'
+  };
+  return map[tab] || tab || 'general';
+}
+
+const editorTabs = computed(() => {
+  const tabs = [
+    { id: 'general', label: t('settings.roleDrawerTabGeneral') },
+    { id: 'access', label: t('settings.roleDrawerTabAccess') },
+    { id: 'more', label: t('settings.roleDrawerTabMore') }
+  ];
+  return tabs;
+});
+
+const effectivePermissions = computed(() =>
+  isPermissionsFromProfile.value && linkedProfilePermissions.value
+    ? linkedProfilePermissions.value
+    : form.value.permissions
+);
+
+function moduleHasFieldCatalog(module) {
+  if (!rbacV2.value) return false;
+  return moduleSupportsFieldPermissions(module);
+}
+
+function canConfigureModuleFieldPermissions(module) {
+  return moduleHasFieldCatalog(module) && moduleHasReadAccess(effectivePermissions.value, module);
+}
+
+function moduleShowsFieldPermissions(module) {
+  return moduleHasFieldCatalog(module);
+}
+
+function toggleFieldModuleExpand(moduleKey) {
+  const next = new Set(expandedFieldModules.value);
+  if (next.has(moduleKey)) next.delete(moduleKey);
+  else next.add(moduleKey);
+  expandedFieldModules.value = next;
+}
+
+function isFieldModuleExpanded(moduleKey) {
+  return expandedFieldModules.value.has(moduleKey);
+}
+
+function fieldOverrideCount(module) {
+  return countFieldOverridesForModule(form.value.fieldPermissions, module);
+}
+
+function syncExpandedFieldModulesFromOverrides() {
+  const next = new Set(expandedFieldModules.value);
+  for (const mod of accessVisibleModules.value) {
+    if (fieldOverrideCount(mod) > 0) next.add(mod.key);
+  }
+  expandedFieldModules.value = next;
+}
 
 const colorPresets = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#64748b'];
 
@@ -629,9 +846,34 @@ function getCrudLabel(action) {
 const accessModeOptions = computed(() => [
   { value: 'none', label: t('settings.roleDrawerAccessModeNone') },
   { value: 'readOnly', label: t('settings.roleDrawerAccessModeReadOnly') },
+  { value: 'edit', label: t('settings.roleDrawerAccessModeEdit') },
   { value: 'full', label: t('settings.roleDrawerAccessModeFull') },
   { value: 'custom', label: t('settings.roleDrawerAccessModeCustom') }
 ]);
+
+const accessPresets = computed(() => [
+  { id: 'readOnly', label: t('settings.roleDrawerPresetReadOnly') },
+  { id: 'edit', label: t('settings.roleDrawerPresetStandard') },
+  { id: 'full', label: t('settings.roleDrawerPresetFull') },
+  { id: 'none', label: t('settings.roleDrawerPresetNone') }
+]);
+
+function applyAccessPreset(mode) {
+  if (isPermissionsLocked.value) return;
+  applyAccessPresetToAllModules(form.value.permissions, accessVisibleModules.value, mode);
+  customEditModules.value = new Set();
+}
+
+function sectionDescription(section) {
+  if (section?.description) return section.description;
+  if (section?.id === 'platform') return t('settings.roleDrawerAccessPlatformSectionHint');
+  if (section?.id === 'core') return t('settings.roleDrawerAccessCoreSectionHint');
+  return '';
+}
+
+function toggleMoreSection(key) {
+  expandedMoreSections.value[key] = !expandedMoreSections.value[key];
+}
 
 const capabilityToggles = computed(() => [
   {
@@ -661,6 +903,135 @@ function advancedActionLabel(action) {
 
 const isEditing = computed(() => !!props.role);
 const isSystemRole = computed(() => Boolean(props.role?.isSystemRole));
+const isPermissionsFromProfile = computed(
+  () => rbacV2.value && form.value.privilegeMode === 'profile' && Boolean(form.value.profileId)
+);
+const isPermissionsLocked = computed(() => isSystemRole.value || isPermissionsFromProfile.value);
+const privilegeModeOptions = computed(() => [
+  { value: 'inline', label: t('settings.roleDrawerPrivilegeInline') },
+  { value: 'profile', label: t('settings.roleDrawerPrivilegeProfile') }
+]);
+
+const userTypeOptions = computed(() => [
+  { value: 'INTERNAL', label: t('settings.inviteInternal') },
+  { value: 'EXTERNAL', label: t('settings.inviteExternal') },
+  { value: 'SYSTEM', label: t('settings.roleDrawerUserTypeSystem') }
+]);
+
+const recordAssignmentUserOptions = computed(() => [
+  { value: 'same_role_or_hierarchy', label: t('settings.roleDrawerRecordAssignmentUsersSameHierarchy') },
+  { value: 'subordinates_only', label: t('settings.roleDrawerRecordAssignmentUsersSubordinates') },
+  { value: 'all', label: t('settings.roleDrawerRecordAssignmentUsersAll') }
+]);
+
+const recordAssignmentGroupOptions = computed(() => [
+  { value: 'member_groups', label: t('settings.roleDrawerRecordAssignmentGroupsMember') },
+  { value: 'selected', label: t('settings.roleDrawerRecordAssignmentGroupsSelected') },
+  { value: 'all', label: t('settings.roleDrawerRecordAssignmentGroupsAll') },
+  { value: 'none', label: t('settings.roleDrawerRecordAssignmentGroupsNone') }
+]);
+
+const profileSelectOptions = computed(() => [
+  { value: '', label: t('settings.roleDrawerProfileNone') },
+  ...availableProfiles.value.map((p) => ({ value: p._id, label: p.name }))
+]);
+
+const linkedProfileName = computed(() => {
+  if (!form.value.profileId) return '';
+  const match = availableProfiles.value.find((p) => p._id === form.value.profileId);
+  if (match) return match.name;
+  const populated = props.role?.profileId;
+  if (populated && typeof populated === 'object') return populated.name;
+  return '';
+});
+
+const appDisplayNames = {
+  SALES: 'SALES',
+  CRM: 'CRM',
+  AUDIT: 'Audit',
+  PORTAL: 'Portal'
+};
+
+const appRoleDisplayNames = {
+  SALES: { ADMIN: 'Admin', MANAGER: 'Manager', USER: 'User' },
+  CRM: { ADMIN: 'Admin', MANAGER: 'Manager', USER: 'User' },
+  AUDIT: { AUDITOR: 'Auditor' },
+  PORTAL: { CUSTOMER: 'Customer', VIEWER: 'Viewer' }
+};
+
+function getAppDisplayName(appKey) {
+  return appDisplayNames[appKey] || appKey;
+}
+
+function getAppRoleDisplayName(appKey, roleKey) {
+  return appRoleDisplayNames[appKey]?.[roleKey] || roleKey;
+}
+
+function getEntitlement(appKey) {
+  return form.value.appEntitlements.find((e) => e.appKey === appKey);
+}
+
+function isAppEntitlementEnabled(appKey) {
+  const ent = getEntitlement(appKey);
+  return ent ? ent.enabled !== false : false;
+}
+
+function toggleAppEntitlement(app) {
+  if (isSystemRole.value) return;
+  const idx = form.value.appEntitlements.findIndex((e) => e.appKey === app.appKey);
+  if (idx >= 0) {
+    form.value.appEntitlements[idx].enabled = !form.value.appEntitlements[idx].enabled;
+    return;
+  }
+  const defaultRole = app.defaultRole || app.roles?.[0] || 'USER';
+  form.value.appEntitlements.push({
+    appKey: app.appKey,
+    enabled: true,
+    seatConsuming: true,
+    appRoleKey: defaultRole
+  });
+}
+
+function handleAppEntitlementToggle(app) {
+  const wasEnabled = isAppEntitlementEnabled(app.appKey);
+  toggleAppEntitlement(app);
+  if (wasEnabled && !isAppEntitlementEnabled(app.appKey)) {
+    clearPermissionsForApp(app.appKey);
+  }
+}
+
+function clearPermissionsForApp(appKey) {
+  const upper = String(appKey || '').toUpperCase();
+  for (const mod of permissionModules.value) {
+    if (mod.scope === 'app' && String(mod.appKey || '').toUpperCase() === upper) {
+      const perms = form.value.permissions[mod.key];
+      if (perms) applyModuleAccessMode(mod, perms, 'none');
+    }
+  }
+  form.value.fieldPermissions = stripFieldPermissionsForApp(form.value.fieldPermissions, upper);
+}
+
+function updateAppEntitlementRole(appKey, appRoleKey) {
+  const ent = getEntitlement(appKey);
+  if (ent) ent.appRoleKey = appRoleKey;
+}
+
+function getAppRoleOptions(app) {
+  return (app.roles || []).map((roleKey) => ({
+    value: roleKey,
+    label: getAppRoleDisplayName(app.appKey, roleKey)
+  }));
+}
+
+function buildDefaultAppEntitlements() {
+  return appCapabilities.value.map((app) => ({
+    appKey: app.appKey,
+    enabled: true,
+    seatConsuming: true,
+    appRoleKey: app.defaultRole || app.roles?.[0] || 'USER'
+  }));
+}
+
 const isFullyPrivilegedSystemRole = computed(
   () => isSystemRole.value && isFullyPrivilegedSystemRoleName(props.role?.name)
 );
@@ -687,18 +1058,8 @@ const roleIconComponent = computed(() => {
   return map[form.value.icon] || UserIcon;
 });
 
-const modulesBySection = computed(() => {
-  const map = {};
-  for (const mod of permissionModules.value) {
-    const sid = mod.sectionId || 'default';
-    if (!map[sid]) map[sid] = [];
-    map[sid].push(mod);
-  }
-  return map;
-});
-
-const modulesForSection = (sectionId) => {
-  const list = modulesBySection.value[sectionId] || [];
+const modulesForAccessSection = (sectionId) => {
+  const list = modulesByVisibleSection.value[sectionId] || [];
   const q = permissionSearch.value.trim().toLowerCase();
   if (!q) return list;
   return list.filter(
@@ -709,19 +1070,20 @@ const modulesForSection = (sectionId) => {
   );
 };
 
-const filteredSections = computed(() => {
+const filteredAccessSections = computed(() => {
   const q = permissionSearch.value.trim().toLowerCase();
-  if (!q) return permissionSections.value;
-  return permissionSections.value.filter((s) => (modulesForSection(s.id) || []).length > 0);
+  if (!q) return accessVisibleSections.value;
+  return accessVisibleSections.value.filter((s) => (modulesForAccessSection(s.id) || []).length > 0);
 });
 
 const accessSummaryLines = computed(() =>
   buildRoleAccessSummary({
     permissions: form.value.permissions,
-    modules: permissionModules.value,
-    sections: permissionSections.value,
+    modules: rbacV2.value ? accessVisibleModules.value : permissionModules.value,
+    sections: rbacV2.value ? accessVisibleSections.value : permissionSections.value,
     form: form.value,
-    roleName: props.role?.name
+    roleName: props.role?.name,
+    rbacV2: rbacV2.value
   }).map((line) => ({
     tone: line.tone,
     text: t(`settings.${line.i18nKey}`, line.params || {})
@@ -737,6 +1099,45 @@ watch(
   }
 );
 
+watch(
+  () => form.value.userType,
+  (userType) => {
+    if (!rbacV2.value) return;
+    const allowedKeys = new Set(
+      allAppCapabilities.value
+        .filter((app) => app.userTypesAllowed?.includes(userType || 'INTERNAL'))
+        .map((app) => app.appKey)
+    );
+    const nextEntitlements = [];
+    for (const ent of form.value.appEntitlements) {
+      if (!allowedKeys.has(ent.appKey)) {
+        if (ent.enabled !== false) clearPermissionsForApp(ent.appKey);
+        continue;
+      }
+      nextEntitlements.push(ent);
+    }
+    form.value.appEntitlements = nextEntitlements;
+  }
+);
+
+function toPlainFieldPerms(value) {
+  if (!value) return {};
+  if (typeof value.entries === 'function') {
+    const out = {};
+    for (const [k, v] of value.entries()) out[k] = v;
+    return out;
+  }
+  return { ...value };
+}
+
+function defaultRecordAssignment() {
+  return {
+    users: 'same_role_or_hierarchy',
+    groups: 'member_groups',
+    selectedGroupIds: []
+  };
+}
+
 function createEmptyForm() {
   return {
     name: '',
@@ -747,7 +1148,13 @@ function createEmptyForm() {
     canViewAllData: false,
     canManageTeam: false,
     canExportData: false,
-    permissions: {}
+    permissions: {},
+    userType: 'INTERNAL',
+    privilegeMode: rbacV2.value ? 'profile' : 'inline',
+    profileId: '',
+    appEntitlements: [],
+    fieldPermissions: {},
+    recordAssignment: defaultRecordAssignment()
   };
 }
 
@@ -816,6 +1223,30 @@ const fetchParentRoles = async () => {
   }
 };
 
+const fetchProfiles = async () => {
+  if (!rbacV2.value) return;
+  try {
+    const response = await apiClient.get('/profiles');
+    if (response.success) {
+      availableProfiles.value = response.data || [];
+    }
+  } catch (err) {
+    console.error('Error fetching profiles:', err);
+  }
+};
+
+const fetchAppCapabilities = async () => {
+  if (!rbacV2.value) return;
+  try {
+    const response = await apiClient.get('/users/add-capabilities');
+    if (response.success) {
+      allAppCapabilities.value = response.data.apps || [];
+    }
+  } catch (err) {
+    console.error('Error fetching app capabilities:', err);
+  }
+};
+
 const loadRoleIntoForm = () => {
   const basePerms = initializePermissions();
   const existingPerms = JSON.parse(JSON.stringify(props.role.permissions || {}));
@@ -834,17 +1265,33 @@ const loadRoleIntoForm = () => {
     canViewAllData: isFullyPrivilegedSystemRole.value ? true : props.role.canViewAllData || false,
     canManageTeam: isFullyPrivilegedSystemRole.value ? true : props.role.canManageTeam || false,
     canExportData: isFullyPrivilegedSystemRole.value ? true : props.role.canExportData || false,
-    permissions: basePerms
+    permissions: basePerms,
+    userType: props.role.userType || 'INTERNAL',
+    privilegeMode: props.role.privilegeMode || 'inline',
+    profileId: props.role.profileId?._id || props.role.profileId || '',
+    appEntitlements: Array.isArray(props.role.appEntitlements) && props.role.appEntitlements.length
+      ? JSON.parse(JSON.stringify(props.role.appEntitlements))
+      : buildDefaultAppEntitlements(),
+    fieldPermissions: toPlainFieldPerms(props.role.fieldPermissions),
+    recordAssignment: {
+      ...defaultRecordAssignment(),
+      ...(props.role.recordAssignment || {})
+    }
   };
+  syncExpandedFieldModulesFromOverrides();
 };
 
 const resetForm = () => {
   form.value = { ...createEmptyForm(), permissions: initializePermissions() };
   error.value = '';
-  activeTab.value = 'overview';
+  activeTab.value = 'general';
   permissionSearch.value = '';
   expandedAdvanced.value = {};
   customEditModules.value = new Set();
+  expandedFieldModules.value = new Set();
+  expandedMoreSections.value = { capabilities: false, assignment: true };
+  linkedProfilePermissions.value = null;
+  linkedProfileFieldPermissions.value = {};
 };
 
 const markClean = () => {
@@ -855,19 +1302,35 @@ watch(
   () => props.open,
   async (isOpen) => {
     if (!isOpen) return;
-    const tab = props.initialTab;
-    activeTab.value = editorTabs.value.some((tabItem) => tabItem.id === tab) ? tab : 'overview';
+    const tab = normalizeDrawerTab(props.initialTab);
+    activeTab.value = editorTabs.value.some((tabItem) => tabItem.id === tab) ? tab : 'general';
     permissionSearch.value = '';
     error.value = '';
     expandedAdvanced.value = {};
     customEditModules.value = new Set();
     await fetchPermissionModules();
     fetchParentRoles();
+    await Promise.all([fetchProfiles(), fetchAppCapabilities()]);
     if (props.role) loadRoleIntoForm();
-    else resetForm();
+    else {
+      resetForm();
+      if (props.defaultParentRoleId) {
+        form.value.parentRole = props.defaultParentRoleId;
+      }
+      if (rbacV2.value && appCapabilities.value.length) {
+        form.value.appEntitlements = buildDefaultAppEntitlements();
+      }
+    }
+    if (rbacV2.value && form.value.privilegeMode === 'profile' && form.value.profileId) {
+      await fetchLinkedProfilePreview(form.value.profileId);
+    }
     markClean();
   }
 );
+
+function getModeForDisplay(module) {
+  return getModuleAccessMode(module, effectivePermissions.value[module.key] || {});
+}
 
 function getMode(module) {
   return getModuleAccessMode(module, form.value.permissions[module.key] || {});
@@ -878,7 +1341,7 @@ function showCrudEditor(module) {
 }
 
 function setModuleMode(module, mode) {
-  if (isSystemRole.value) return;
+  if (isPermissionsLocked.value) return;
   const perms = form.value.permissions[module.key];
   if (!perms) return;
   if (mode === 'custom') {
@@ -888,19 +1351,9 @@ function setModuleMode(module, mode) {
   customEditModules.value.delete(module.key);
   customEditModules.value = new Set(customEditModules.value);
   applyModuleAccessMode(module, perms, mode);
-}
-
-function accessModeButtonClass(module, modeValue) {
-  const current = getMode(module);
-  const inCustomUi = customEditModules.value.has(module.key);
-  const isActive =
-    modeValue === 'custom'
-      ? current === 'custom' || inCustomUi
-      : current === modeValue && !inCustomUi;
-  const base =
-    'px-2 py-1 text-[11px] font-medium rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed';
-  if (isActive) return `${base} bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm`;
-  return `${base} text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200`;
+  if (mode !== 'none' && moduleHasFieldCatalog(module)) {
+    expandedFieldModules.value = new Set([...expandedFieldModules.value, module.key]);
+  }
 }
 
 function isCrudDisabled(module, action) {
@@ -935,7 +1388,7 @@ function toggleAdvancedExpanded(moduleKey) {
 }
 
 const togglePermission = (moduleKey, action) => {
-  if (isSystemRole.value) return;
+  if (isPermissionsLocked.value) return;
   const perms = form.value.permissions[moduleKey];
   if (!perms) return;
   perms[action] = !perms[action];
@@ -947,20 +1400,48 @@ const togglePermission = (moduleKey, action) => {
   }
 };
 
-const grantReadAllInSection = (sectionId) => {
-  if (isSystemRole.value) return;
-  for (const mod of modulesBySection.value[sectionId] || []) {
-    applyModuleAccessMode(mod, form.value.permissions[mod.key], 'readOnly');
+async function fetchLinkedProfilePreview(profileId) {
+  if (!profileId || !rbacV2.value) {
+    linkedProfilePermissions.value = null;
+    linkedProfileFieldPermissions.value = {};
+    return;
   }
-};
+  loadingProfilePreview.value = true;
+  try {
+    const response = await apiClient.get(`/profiles/${profileId}`);
+    if (response.success && response.data) {
+      const basePerms = initializePermissions();
+      const profilePerms = JSON.parse(JSON.stringify(response.data.permissions || {}));
+      Object.keys(basePerms).forEach((m) => {
+        basePerms[m] = { ...basePerms[m], ...profilePerms[m] };
+      });
+      linkedProfilePermissions.value = basePerms;
+      linkedProfileFieldPermissions.value = toPlainFieldPerms(response.data.fieldPermissions);
+      syncExpandedFieldModulesFromOverrides();
+    } else {
+      linkedProfilePermissions.value = null;
+      linkedProfileFieldPermissions.value = {};
+    }
+  } catch (err) {
+    console.error('Error loading profile preview:', err);
+    linkedProfilePermissions.value = null;
+    linkedProfileFieldPermissions.value = {};
+  } finally {
+    loadingProfilePreview.value = false;
+  }
+}
 
-const clearSection = (sectionId) => {
-  if (isSystemRole.value) return;
-  if (!confirm(t('settings.roleDrawerClearSectionConfirm'))) return;
-  for (const mod of modulesBySection.value[sectionId] || []) {
-    applyModuleAccessMode(mod, form.value.permissions[mod.key], 'none');
+watch(
+  () => [form.value.profileId, form.value.privilegeMode, isPermissionsFromProfile.value],
+  ([profileId, , fromProfile]) => {
+    if (fromProfile && profileId) {
+      fetchLinkedProfilePreview(profileId);
+    } else {
+      linkedProfilePermissions.value = null;
+      linkedProfileFieldPermissions.value = {};
+    }
   }
-};
+);
 
 const requestClose = () => {
   if (saving.value) return;
@@ -976,6 +1457,12 @@ const handleSubmit = async () => {
   try {
     const payload = { ...form.value };
     if (payload.parentRole === '') payload.parentRole = null;
+    if (payload.profileId === '') payload.profileId = null;
+    if (rbacV2.value) {
+      payload.canViewAllData = false;
+      payload.canManageTeam = false;
+      payload.canExportData = false;
+    }
     const response = isEditing.value
       ? await apiClient.put(`/roles/${props.role._id}`, payload)
       : await apiClient.post('/roles', payload);

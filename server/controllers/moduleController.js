@@ -853,6 +853,7 @@ function getBaseFieldsForKey(key) {
             imports: require('../models/ImportHistory'),
             forms: require('../models/Form'),
             items: require('../models/Item'),
+            responses: require('../models/FormResponse'),
         };
         const model = modelByKey[key];
         if (!model) return [];
@@ -1065,6 +1066,21 @@ function getBaseFieldsForKey(key) {
                     if (paymentsSchemaExcluded.has(name)) return false;
                     if (name.startsWith('paymentInstrumentSnapshot.')) return false;
                 }
+                if (key === 'responses') {
+                    const responsesSchemaExcluded = new Set([
+                        'responseId',
+                        'responseDetails',
+                        'sectionScores',
+                        'correctiveActions',
+                        'finalReport',
+                        'kpis'
+                    ]);
+                    if (responsesSchemaExcluded.has(name)) return false;
+                    if (name === 'linkedTo.type' || name === 'linkedTo.id') return false;
+                    for (const prefix of ['kpis.', 'finalReport.']) {
+                        if (name.startsWith(prefix)) return false;
+                    }
+                }
                 // Exclude nested paths (e.g., "kpiMetrics.compliancePercentage" should be excluded if "kpiMetrics" is excluded)
                 for (const excludedField of excluded) {
                     if (name.startsWith(excludedField + '.')) {
@@ -1224,6 +1240,7 @@ function getBaseFieldsForKey(key) {
                 
                 // Special handling for linkedFormId in events module - add visibility dependency
                 let dependencies = [];
+                let fieldVisibility = { list: true, detail: true };
                 if (key === 'events' && name === 'linkedFormId') {
                     dependencies = [{
                         name: 'Show for audit event types',
@@ -1524,7 +1541,6 @@ function getBaseFieldsForKey(key) {
                     ? normalizeMeetingEventTypeLabel(path.defaultValue ?? null)
                     : (path.defaultValue ?? null);
 
-                let fieldVisibility = { list: true, detail: true };
                 if (key === 'cases' && name === 'reopenReason') {
                     dataType = 'Text-Area';
                     fieldVisibility = { list: false, detail: true };

@@ -35,6 +35,7 @@ export const ADVANCED_LABELS = {
 export const ACCESS_MODE_OPTIONS = [
   { value: 'none', label: 'None' },
   { value: 'readOnly', label: 'Read only' },
+  { value: 'edit', label: 'Can edit' },
   { value: 'full', label: 'Full' },
   { value: 'custom', label: 'Custom' }
 ];
@@ -63,7 +64,7 @@ export function hasAnyAdvancedEnabled(perms, module) {
   return getAdvancedActionsForModule(module).some((a) => perms?.[a] === true);
 }
 
-/** @returns {'none'|'readOnly'|'full'|'custom'} */
+/** @returns {'none'|'readOnly'|'edit'|'full'|'custom'} */
 export function getModuleAccessMode(module, perms = {}) {
   if (!perms || typeof perms !== 'object') return 'none';
 
@@ -83,7 +84,15 @@ export function getModuleAccessMode(module, perms = {}) {
   const onlyRead =
     readOn && crud.filter((a) => a !== 'read').every((a) => perms[a] !== true);
 
+  const editMode =
+    readOn &&
+    perms.create === true &&
+    perms.update === true &&
+    (!hasAction(module, 'delete') || perms.delete !== true) &&
+    crud.filter((a) => !['read', 'create', 'update'].includes(a)).every((a) => perms[a] !== true);
+
   if (onlyRead) return 'readOnly';
+  if (editMode) return 'edit';
   if (allCrudOn && crud.length > 0) return 'full';
   return 'custom';
 }
@@ -111,6 +120,16 @@ export function applyModuleAccessMode(module, perms, mode) {
   if (mode === 'readOnly') {
     crud.forEach((a) => {
       if (perms[a] !== undefined) perms[a] = a === 'read';
+    });
+    clearAdvanced();
+    return;
+  }
+
+  if (mode === 'edit') {
+    crud.forEach((a) => {
+      if (perms[a] !== undefined) {
+        perms[a] = ['read', 'create', 'update'].includes(a);
+      }
     });
     clearAdvanced();
     return;
@@ -216,6 +235,17 @@ export function applyFullAccessToAllModules(permissions, modules) {
   return permissions;
 }
 
+/** Apply the same access mode to every module in the catalog. */
+export function applyAccessPresetToAllModules(permissions, modules, mode) {
+  if (!permissions || !Array.isArray(modules)) return permissions;
+  for (const module of modules) {
+    const perms = permissions[module.key];
+    if (!perms) continue;
+    applyModuleAccessMode(module, perms, mode);
+  }
+  return permissions;
+}
+
 export function isFullyPrivilegedSystemRoleName(roleName) {
   const name = String(roleName || '').trim();
   return name === 'Owner' || name === 'Admin';
@@ -225,26 +255,30 @@ export function isFullyPrivilegedSystemRoleName(roleName) {
  * Human-readable access summary bullets for the role drawer.
  * @returns {{ text: string, tone: 'positive'|'neutral'|'muted'|'warning' }[]}
  */
-export function buildRoleAccessSummary({ permissions, modules, sections, form, roleName }) {
+export function buildRoleAccessSummary({ permissions, modules, sections, form, roleName, rbacV2 = false }) {
   const lines = [];
   const perms = permissions || {};
 
   if (isFullyPrivilegedSystemRoleName(roleName)) {
     lines.push({ i18nKey: 'roleDrawerSummaryFullTenantAccess', params: {}, tone: 'positive' });
-    lines.push({ i18nKey: 'roleDrawerSummaryViewAll', params: {}, tone: 'warning' });
-    lines.push({ i18nKey: 'roleDrawerSummaryManageUsersRoles', params: {}, tone: 'warning' });
-    lines.push({ i18nKey: 'roleDrawerSummaryManageBilling', params: {}, tone: 'warning' });
+    if (!rbacV2) {
+      lines.push({ i18nKey: 'roleDrawerSummaryViewAll', params: {}, tone: 'warning' });
+      lines.push({ i18nKey: 'roleDrawerSummaryManageUsersRoles', params: {}, tone: 'warning' });
+      lines.push({ i18nKey: 'roleDrawerSummaryManageBilling', params: {}, tone: 'warning' });
+    }
     return lines;
   }
 
-  if (form?.canViewAllData) {
-    lines.push({ i18nKey: 'roleDrawerSummaryViewAll', params: {}, tone: 'warning' });
-  }
-  if (form?.canManageTeam) {
-    lines.push({ i18nKey: 'roleDrawerSummaryManageTeam', params: {}, tone: 'neutral' });
-  }
-  if (form?.canExportData) {
-    lines.push({ i18nKey: 'roleDrawerSummaryExportData', params: {}, tone: 'neutral' });
+  if (!rbacV2) {
+    if (form?.canViewAllData) {
+      lines.push({ i18nKey: 'roleDrawerSummaryViewAll', params: {}, tone: 'warning' });
+    }
+    if (form?.canManageTeam) {
+      lines.push({ i18nKey: 'roleDrawerSummaryManageTeam', params: {}, tone: 'neutral' });
+    }
+    if (form?.canExportData) {
+      lines.push({ i18nKey: 'roleDrawerSummaryExportData', params: {}, tone: 'neutral' });
+    }
   }
 
   const usersPerms = perms.users || perms.Users;

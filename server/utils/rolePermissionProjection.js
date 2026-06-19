@@ -402,7 +402,7 @@ function ensurePermissionEnvelopeDefaults(merged) {
 function roleAllowsPlatformOwnedFieldEdits(rolePlain) {
   if (!rolePlain) return false;
   const name = String(rolePlain.name || '').trim();
-  return name === 'Owner' || name === 'Admin';
+  return name === 'Owner' || name === 'Admin' || name === 'Administrator';
 }
 
 /**
@@ -444,6 +444,8 @@ async function applyFullPrivilegedEnvelopeToUser(user, organization = null, opti
   if (user._permissionRuntime) {
     user._permissionRuntime.envelope = plain;
   }
+  delete user.fieldPermissions;
+  delete user._fieldPermissionAppKey;
 }
 
 /**
@@ -455,18 +457,51 @@ async function applyFullPrivilegedEnvelopeToUser(user, organization = null, opti
 async function applyProjectionToUser(user, roleLean, organization = null) {
   if (!user || !roleLean) return;
 
-  if (isPrivilegedSystemRole(roleLean)) {
-    await applyFullPrivilegedEnvelopeToUser(user, organization, { roleLean });
+  const { resolveRoleLeanWithProfile } = require('../services/roleProfileResolver');
+  const effectiveRole = await resolveRoleLeanWithProfile(roleLean, organization);
+
+  if (isPrivilegedSystemRole(effectiveRole)) {
+    await applyFullPrivilegedEnvelopeToUser(user, organization, { roleLean: effectiveRole });
     return;
   }
 
   const { materializeRuntimePermissionsOnUser } = require('../services/runtimePermissionResolver');
+  const {
+    isRbacV2Enabled,
+    withoutLegacyCapabilitiesWhenRbacV2
+  } = require('../utils/rbacFeatureFlags');
+  const { deriveAppAccessFromRole } = require('../services/roleEntitlementService');
+
+  let appAccess = user.appAccess;
+  if (isRbacV2Enabled(organization) && effectiveRole.appEntitlements?.length) {
+    const derived = deriveAppAccessFromRole(effectiveRole, organization);
+    appAccess = derived.appAccess;
+    user.appAccess = derived.appAccess;
+    user.allowedApps = derived.allowedApps;
+  }
+
   await materializeRuntimePermissionsOnUser(user, {
-    roleLean,
+    roleLean: effectiveRole,
     organization,
-    appAccess: user.appAccess
+    appAccess
   });
-  user._roleAllowsPlatformOwnedFieldEdit = roleAllowsPlatformOwnedFieldEdits(roleLean);
+
+  const { toPlainFieldPermissions } = require('../services/fieldPermissionResolver');
+  user.fieldPermissions = toPlainFieldPermissions(
+    effectiveRole._fieldPermissions || effectiveRole.fieldPermissions
+  );
+
+  const enabledApps = Array.isArray(organization?.enabledApps) ? organization.enabledApps : [];
+  const primary =
+    enabledApps.find((a) => String(a.appKey || '').toUpperCase() === 'SALES') ||
+    enabledApps[0];
+  user._fieldPermissionAppKey = primary?.appKey
+    ? String(primary.appKey).toUpperCase()
+    : 'SALES';
+
+  user._roleAllowsPlatformOwnedFieldEdit = roleAllowsPlatformOwnedFieldEdits(effectiveRole);
+  const runtimeRole = withoutLegacyCapabilitiesWhenRbacV2(effectiveRole, organization);
+  user._canViewAllData = runtimeRole?.canViewAllData === true;
   user._isTenantPrivileged = false;
 }
 
@@ -591,7 +626,12 @@ function sanitizeUserResponsePayload(userDocOrPlain) {
       : { ...userDocOrPlain };
   o.permissions = permissions;
   delete o.password;
+  if (userDocOrPlain._fieldPermissionAppKey) {
+    o.fieldPermissionAppKey = userDocOrPlain._fieldPermissionAppKey;
+  }
   delete o._roleAllowsPlatformOwnedFieldEdit;
+  delete o._fieldPermissionAppKey;
+  delete o._isTenantPrivileged;
   delete o.inviteTokenHash;
   delete o.inviteTokenExpiresAt;
   delete o.emailVerificationTokenHash;

@@ -178,27 +178,30 @@ function moduleKindForKey(moduleKey) {
   return 'crud';
 }
 
-function isCoreModuleEnabledForOrg(moduleKey, enabledAppKeys, moduleOverrides) {
+function getParticipatingAppsForCoreModule(moduleKey, enabledAppKeys, moduleOverrides) {
   const mod = String(moduleKey || '').toLowerCase();
 
   if (isCommercialPlatformModuleKey(mod)) {
     const participatingEnabled = enabledAppKeys.filter((appKey) =>
       COMMERCIAL_PARTICIPATION_APP_KEYS.includes(String(appKey).toUpperCase())
     );
-    if (!commercialParticipationActive(enabledAppKeys)) return false;
-    if (!participatingEnabled.length) return false;
-    return participatingEnabled.some((appKey) => {
+    if (!commercialParticipationActive(enabledAppKeys)) return [];
+    return participatingEnabled.filter((appKey) => {
       const override = moduleOverrides?.[mod]?.[appKey];
       if (override !== undefined) return override === true;
       return true;
     });
   }
 
-  return enabledAppKeys.some((appKey) => {
+  return enabledAppKeys.filter((appKey) => {
     const override = moduleOverrides?.[mod]?.[appKey];
     if (override !== undefined) return override === true;
     return true;
   });
+}
+
+function isCoreModuleEnabledForOrg(moduleKey, enabledAppKeys, moduleOverrides) {
+  return getParticipatingAppsForCoreModule(moduleKey, enabledAppKeys, moduleOverrides).length > 0;
 }
 
 function resolveEnabledAppKeys(organization) {
@@ -283,6 +286,18 @@ function buildPlatformAdminCatalogEntries() {
       scope: 'platform',
       appKey: null,
       order: 203,
+      hasScope: false,
+      supportsViewAll: false
+    },
+    {
+      key: 'webforms',
+      moduleKey: 'webforms',
+      label: 'Web Forms',
+      description: 'Create and manage public web forms',
+      kind: 'crud',
+      scope: 'platform',
+      appKey: null,
+      order: 204,
       hasScope: false,
       supportsViewAll: false
     }
@@ -482,6 +497,217 @@ async function loadModuleDefinitionsForPairs(pairs) {
   return map;
 }
 
+const PLATFORM_ADMIN_MODULE_KEYS = new Set([
+  'imports',
+  'reports',
+  'users',
+  'settings',
+  'performance',
+  'webforms'
+]);
+
+const FIELD_RBAC_EXCLUDED_KEYS = new Set([
+  'deletedat',
+  'deletedby',
+  'deletionreason',
+  'source',
+  'appointment',
+  'playbookstate',
+  '_id',
+  '__v',
+  'organizationid',
+  'participations',
+  'activitylogs',
+  'descriptionversions',
+  'derivedstatus',
+  'legacycontactid'
+]);
+
+function normalizeFieldKeyForRbac(fieldKey) {
+  return String(fieldKey || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[\s._-]+/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function fieldKeyFromDefinition(field) {
+  return String(field?.key || field?.name || '').trim();
+}
+
+function resolveFieldCatalogLookupKeys(moduleKey) {
+  const norm = normalizeHelpdeskCaseModuleKey(String(moduleKey || '').toLowerCase());
+  if (norm === 'people') return ['people', 'contacts'];
+  return [norm];
+}
+
+function resolveFieldCatalogAppKeys(mod, enabledAppKeys = []) {
+  if (mod.scope === 'app' && mod.appKey) {
+    return [String(mod.appKey).toLowerCase(), 'platform'];
+  }
+  if (mod.scope === 'core') {
+    const participating = Array.isArray(mod.participatingApps)
+      ? mod.participatingApps.map((a) => String(a).toLowerCase())
+      : enabledAppKeys.map((a) => String(a).toLowerCase());
+    return [...new Set([...participating, 'platform'])];
+  }
+  return ['platform'];
+}
+
+function isFieldEligibleForRbacCatalog(field) {
+  const key = fieldKeyFromDefinition(field);
+  if (!key) return false;
+  const norm = normalizeFieldKeyForRbac(key);
+  if (!norm || FIELD_RBAC_EXCLUDED_KEYS.has(norm)) return false;
+  if (field?.isVisibleInConfig === false) return false;
+  return true;
+}
+
+function mapFieldCatalogEntries(rawFields) {
+  if (!Array.isArray(rawFields)) return [];
+  return rawFields
+    .filter((f) => isFieldEligibleForRbacCatalog(f))
+    .map((f) => {
+      const key = fieldKeyFromDefinition(f);
+      return {
+        key,
+        label: f.label || f.name || key,
+        defaultAccess: 'write'
+      };
+    })
+    .sort((a, b) => String(a.label).localeCompare(String(b.label)));
+}
+
+async function buildFieldCatalogLookup(organizationId) {
+  const [orgDefs, platformDefs] = await Promise.all([
+    organizationId
+      ? ModuleDefinition.find({ organizationId }).select('key moduleKey appKey fields').lean()
+      : Promise.resolve([]),
+    ModuleDefinition.find({
+      $or: [{ organizationId: null }, { organizationId: { $exists: false } }]
+    })
+      .select('key moduleKey appKey fields')
+      .lean()
+  ]);
+
+  const orgByModuleKey = new Map();
+  for (const def of orgDefs) {
+    const mk = String(def.moduleKey || def.key || '').toLowerCase();
+    if (!mk || !Array.isArray(def.fields) || !def.fields.length) continue;
+    orgByModuleKey.set(mk, def.fields);
+    if (mk === 'people') orgByModuleKey.set('contacts', def.fields);
+  }
+
+  const platformByAppModule = new Map();
+  const platformByModuleKey = new Map();
+  for (const def of platformDefs) {
+    const mk = String(def.moduleKey || def.key || '').toLowerCase();
+    if (!mk || !Array.isArray(def.fields) || !def.fields.length) continue;
+    const ak = String(def.appKey || 'platform').toLowerCase();
+    platformByAppModule.set(`${ak}:${mk}`, def.fields);
+    if (!platformByModuleKey.has(mk)) platformByModuleKey.set(mk, def.fields);
+    if (mk === 'people') {
+      platformByAppModule.set(`${ak}:contacts`, def.fields);
+      if (!platformByModuleKey.has('contacts')) platformByModuleKey.set('contacts', def.fields);
+    }
+  }
+
+  return { orgByModuleKey, platformByAppModule, platformByModuleKey };
+}
+
+function resolveFieldCatalogForModule(mod, lookup, enabledAppKeys = []) {
+  if (!mod || mod.scope === 'platform') return [];
+  if (PLATFORM_ADMIN_MODULE_KEYS.has(String(mod.moduleKey || '').toLowerCase())) return [];
+
+  const lookupKeys = resolveFieldCatalogLookupKeys(mod.moduleKey);
+  for (const mk of lookupKeys) {
+    const orgFields = lookup.orgByModuleKey.get(mk);
+    if (orgFields) {
+      const mapped = mapFieldCatalogEntries(orgFields);
+      if (mapped.length) return mapped;
+    }
+  }
+
+  const appKeys = resolveFieldCatalogAppKeys(mod, enabledAppKeys);
+  for (const mk of lookupKeys) {
+    for (const ak of appKeys) {
+      const fields =
+        lookup.platformByAppModule.get(`${ak}:${mk}`) || lookup.platformByModuleKey.get(mk);
+      if (fields) {
+        const mapped = mapFieldCatalogEntries(fields);
+        if (mapped.length) return mapped;
+      }
+    }
+  }
+
+  for (const mk of lookupKeys) {
+    const schemaCatalog = resolveSchemaFallbackFieldCatalog(mk);
+    if (schemaCatalog.length) return schemaCatalog;
+  }
+
+  return [];
+}
+
+const SCHEMA_FIELD_CATALOG_ALIASES = Object.freeze({
+  audits: 'events'
+});
+
+/** Modules that are navigation/workflow surfaces — no field-level RBAC catalog. */
+const SCHEMA_FIELD_CATALOG_SKIP_KEYS = new Set(['schedule']);
+
+function resolveSchemaFieldCatalogModuleKey(moduleKey) {
+  const mk = String(moduleKey || '').toLowerCase();
+  if (SCHEMA_FIELD_CATALOG_SKIP_KEYS.has(mk)) return null;
+  return SCHEMA_FIELD_CATALOG_ALIASES[mk] || mk;
+}
+
+let cachedGetBaseFieldsForKey = null;
+
+function resolveSchemaFallbackFieldCatalog(moduleKey) {
+  const schemaKey = resolveSchemaFieldCatalogModuleKey(moduleKey);
+  if (!schemaKey) return [];
+  if (!cachedGetBaseFieldsForKey) {
+    ({ getBaseFieldsForKey: cachedGetBaseFieldsForKey } = require('../controllers/moduleController'));
+  }
+  const fields = cachedGetBaseFieldsForKey(schemaKey);
+  return mapFieldCatalogEntries(fields);
+}
+
+function attachFieldPermissionAppKey(mod, enabledAppKeys = []) {
+  if (mod.scope === 'app' && mod.appKey) {
+    mod.fieldPermissionAppKey = String(mod.appKey).toUpperCase();
+    return;
+  }
+  if (mod.scope === 'core') {
+    const participating = mod.participatingApps || enabledAppKeys;
+    mod.fieldPermissionAppKey = participating.includes('SALES')
+      ? 'SALES'
+      : (participating[0] || null);
+    return;
+  }
+  mod.fieldPermissionAppKey = null;
+}
+
+/**
+ * Field catalog for RBAC v2 field permission editor.
+ * @param {string|import('mongoose').Types.ObjectId} organizationId
+ * @param {string} moduleKey
+ * @param {{ appKey?: string|null, scope?: string, participatingApps?: string[] }} [options]
+ */
+async function loadModuleFieldCatalog(organizationId, moduleKey, options = {}) {
+  const lookup = await buildFieldCatalogLookup(organizationId);
+  return resolveFieldCatalogForModule(
+    {
+      moduleKey,
+      scope: options.scope || 'core',
+      appKey: options.appKey || null,
+      participatingApps: options.participatingApps || []
+    },
+    lookup,
+    options.participatingApps || []
+  );
+}
+
 /**
  * @param {string|import('mongoose').Types.ObjectId} organizationId
  */
@@ -555,7 +781,12 @@ async function buildRolePermissionCatalog(organizationId) {
   sections.push(coreSection);
 
   coreKeysForQuery.forEach((moduleKey, index) => {
-    if (!isCoreModuleEnabledForOrg(moduleKey, enabledAppKeys, moduleOverrides)) {
+    const participatingApps = getParticipatingAppsForCoreModule(
+      moduleKey,
+      enabledAppKeys,
+      moduleOverrides
+    );
+    if (!participatingApps.length) {
       return;
     }
     const def = platformByKey.get(moduleKey);
@@ -576,6 +807,7 @@ async function buildRolePermissionCatalog(organizationId) {
         kind: 'crud',
         scope: 'core',
         appKey: null,
+        participatingApps,
         order: index,
         hasScope: true,
         supportsViewAll: true,
@@ -661,6 +893,18 @@ async function buildRolePermissionCatalog(organizationId) {
     if (secA !== secB) return secA - secB;
     return (a.order ?? 999) - (b.order ?? 999);
   });
+
+  const fieldCatalogLookup = await buildFieldCatalogLookup(organizationId);
+  for (const mod of modules) {
+    if (mod.scope !== 'core' && mod.scope !== 'app') continue;
+
+    const fieldCatalog = resolveFieldCatalogForModule(mod, fieldCatalogLookup, enabledAppKeys);
+    mod.fieldCatalog = fieldCatalog;
+    mod.supportsFieldPermissions = fieldCatalog.length > 0;
+    if (!mod.supportsFieldPermissions) continue;
+
+    attachFieldPermissionAppKey(mod, enabledAppKeys);
+  }
 
   return {
     sections,
@@ -756,7 +1000,12 @@ module.exports = {
   buildActionsFromDefinition,
   normalizeHelpdeskCaseModuleKey,
   normalizeModulePerms,
+  loadModuleFieldCatalog,
+  buildFieldCatalogLookup,
+  resolveFieldCatalogForModule,
+  mapFieldCatalogEntries,
   CORE_ENTITY_KEYS,
   LEGACY_FLAT_STORAGE_KEYS,
-  PLATFORM_ADMIN_KEYS
+  PLATFORM_ADMIN_KEYS,
+  getParticipatingAppsForCoreModule
 };

@@ -64,8 +64,11 @@ function mapLegacyRoleToSales(legacyRole) {
     const roleMap = {
         'owner': 'ADMIN',
         'admin': 'ADMIN',
+        'administrator': 'ADMIN',
         'manager': 'MANAGER',
+        'sales manager': 'MANAGER',
         'user': 'USER',
+        'sales executive': 'USER',
         'viewer': 'USER'
     };
     return roleMap[legacyRole?.toLowerCase()] || 'USER';

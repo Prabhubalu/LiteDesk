@@ -187,6 +187,9 @@ exports.registerUser = async (req, res) => {
         console.log('🔍 Step 3: Creating organization...');
         console.log('   Organization Name:', organizationName || `${username}'s Organization`);
         console.log('   Industry:', vertical);
+        const { shouldSeedRbacV2ForNewOrganization } = require('../utils/rbacFeatureFlags');
+        const useRbacV2Seed = shouldSeedRbacV2ForNewOrganization();
+
         const organization = await Organization.create({
             name: organizationName || `${username}'s Organization`,
             industry: vertical,
@@ -202,16 +205,16 @@ exports.registerUser = async (req, res) => {
                 maxDeals: 50,
                 maxStorageGB: 1
             },
-            // ⚠️ BACKWARD COMPATIBILITY: Explicitly set SALES modules for new registrations
-            //    Schema default is empty array (app-agnostic), but we set SALES modules here
-            //    for backward compatibility with existing SALES functionality
             enabledModules: ['contacts', 'deals', 'tasks', 'events'],
-            // New organizations start with Sales enabled only
             enabledApps: [{
                 appKey: 'SALES',
                 status: 'ACTIVE',
                 enabledAt: new Date()
-            }]
+            }],
+            settings: {
+                rbacV2Enabled: useRbacV2Seed,
+                sharingV1Enabled: false
+            }
         });
         await ensureDefaultCommunicationSettingsForOrganization(organization._id);
         console.log('✅ ✅ ✅ ORGANIZATION CREATED SUCCESSFULLY! ✅ ✅ ✅');
@@ -223,15 +226,26 @@ exports.registerUser = async (req, res) => {
 
         // 1.5. Create Default Roles for Organization
         console.log('🔍 Step 3.5: Creating default roles...');
+        let ownerRoleId = null;
         try {
-            const roles = await Role.createDefaultRoles(organization._id);
-            console.log('✅ Default roles created:', roles.length, 'roles');
-            roles.forEach(role => {
-                console.log(`   - ${role.name} (Level ${role.level})`);
-            });
+            if (useRbacV2Seed) {
+                const { seedRolesAndProfilesForOrganization } = require('../services/roleSeedService');
+                const seedResult = await seedRolesAndProfilesForOrganization(organization._id, organization);
+                ownerRoleId = seedResult.roleIds?.owner || null;
+                console.log('✅ RBAC v2 roles seeded:', seedResult.roles.created.length, 'roles');
+                seedResult.roles.created.forEach((role) => {
+                    console.log(`   - ${role.name} (Level ${role.level})`);
+                });
+            } else {
+                const roles = await Role.createDefaultRoles(organization._id);
+                ownerRoleId = roles.find((r) => r.name === 'Owner')?._id || null;
+                console.log('✅ Default roles created:', roles.length, 'roles');
+                roles.forEach(role => {
+                    console.log(`   - ${role.name} (Level ${role.level})`);
+                });
+            }
         } catch (roleError) {
             console.warn('⚠️  Failed to create default roles:', roleError.message);
-            // Continue even if role creation fails - roles can be initialized manually
         }
         console.log('\n');
 
@@ -255,16 +269,17 @@ exports.registerUser = async (req, res) => {
             password: hashedPassword,
             vertical,
             role: 'owner',
+            roleId: ownerRoleId,
             isOwner: true,
             status: 'active',
-            userType: 'INTERNAL', // Platform user type
+            userType: 'INTERNAL',
             appAccess: [{
                 appKey: APP_KEYS.SALES,
-                roleKey: 'ADMIN', // Organization owner must have Sales: ADMIN
+                roleKey: 'ADMIN',
                 status: 'ACTIVE',
                 addedAt: new Date()
             }],
-            allowedApps: [APP_KEYS.SALES] // Legacy field for backward compatibility
+            allowedApps: [APP_KEYS.SALES]
         });
         console.log('✅ ✅ ✅ USER CREATED SUCCESSFULLY! ✅ ✅ ✅');
         console.log('   ID:', user._id);
@@ -287,6 +302,10 @@ exports.registerUser = async (req, res) => {
         await initializeOnboardingForUser(user, { origin: ONBOARDING_ORIGINS.SELF_SERVE });
         await user.save();
         console.log('✅ Permissions set and user saved\n');
+
+        if (ownerRoleId) {
+            await Role.findByIdAndUpdate(ownerRoleId, { $inc: { userCount: 1 } });
+        }
 
         await UserDirectory.findOneAndUpdate(
             { email: user.email.toLowerCase() },

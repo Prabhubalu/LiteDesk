@@ -28,6 +28,9 @@ const {
   ensurePermissionEnvelopeDefaults
 } = require('../utils/rolePermissionProjection');
 const { isTenantPrivilegedUser } = require('../utils/tenantPrivilegedAccess');
+const {
+  withoutLegacyCapabilitiesWhenRbacV2
+} = require('../utils/rbacFeatureFlags');
 
 function viewAllForModule(mod, rolePlain) {
   const m = toPlainObject(mod);
@@ -424,7 +427,10 @@ async function materializeRuntimePermissionsOnUser(user, options = {}) {
   const orgContext = buildOrgPermissionContext(organization);
   user._orgPermissionContext = orgContext;
 
-  const roleLean = options.roleLean;
+  const roleLeanRaw = options.roleLean;
+  const roleLean = roleLeanRaw
+    ? withoutLegacyCapabilitiesWhenRbacV2(roleLeanRaw, organization)
+    : null;
   const appAccess = options.appAccess || user.appAccess || [];
 
   let envelope;

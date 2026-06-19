@@ -570,5 +570,9 @@
   "helpWhatsNew": {
     "message": "What's new",
     "description": "User menu release notes link"
+  },
+  "apps": {
+    "message": "Apps",
+    "description": "App Registry tab title"
   }
 }

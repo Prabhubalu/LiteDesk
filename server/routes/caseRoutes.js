@@ -4,7 +4,7 @@ const { resolveAppContext } = require('../middleware/resolveAppContextMiddleware
 const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMiddleware');
 const { requireHelpdeskApp } = require('../middleware/requireHelpdeskAppMiddleware');
 const { organizationIsolation, checkTrialStatus } = require('../middleware/organizationMiddleware');
-const { checkPermission, filterByOwnership } = require('../middleware/permissionMiddleware');
+const { checkPermission, applySharingFilter } = require('../middleware/permissionMiddleware');
 const {
   createCase,
   getCases,
@@ -43,15 +43,15 @@ router.use(checkTrialStatus);
 
 router.route('/')
   .post(checkPermission('cases', 'create'), createCase)
-  .get(filterByOwnership('cases'), checkPermission('cases', 'view'), getCases);
+  .get(applySharingFilter('cases'), checkPermission('cases', 'view'), getCases);
 
 router.post('/ingest/channel', checkPermission('cases', 'create'), ingestCaseChannelInteraction);
 router.patch('/bulk/update', checkPermission('cases', 'edit'), bulkUpdateCases);
-router.get('/analytics/summary', filterByOwnership('cases'), checkPermission('cases', 'view'), getCaseAnalyticsSummary);
-router.get('/analytics/trends', filterByOwnership('cases'), checkPermission('cases', 'view'), getCaseAnalyticsTrends);
-router.get('/analytics/owners', filterByOwnership('cases'), checkPermission('cases', 'view'), getCaseAnalyticsOwners);
-router.get('/analytics/distribution', filterByOwnership('cases'), checkPermission('cases', 'view'), getCaseAnalyticsDistribution);
-router.get('/analytics/audit-export', filterByOwnership('cases'), checkPermission('cases', 'view'), getCaseAuditExport);
+router.get('/analytics/summary', applySharingFilter('cases'), checkPermission('cases', 'view'), getCaseAnalyticsSummary);
+router.get('/analytics/trends', applySharingFilter('cases'), checkPermission('cases', 'view'), getCaseAnalyticsTrends);
+router.get('/analytics/owners', applySharingFilter('cases'), checkPermission('cases', 'view'), getCaseAnalyticsOwners);
+router.get('/analytics/distribution', applySharingFilter('cases'), checkPermission('cases', 'view'), getCaseAnalyticsDistribution);
+router.get('/analytics/audit-export', applySharingFilter('cases'), checkPermission('cases', 'view'), getCaseAuditExport);
 router.get('/canned-responses', checkPermission('cases', 'view'), listCaseCannedResponses);
 router.get('/:id', checkPermission('cases', 'view'), getCaseById);
 router.put('/:id', checkPermission('cases', 'edit'), updateCase);

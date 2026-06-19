@@ -1,112 +1,126 @@
 <template>
     <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
       <div class="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
-      <!-- Split-pane layout: rail continues the active Settings tab surface -->
-      <div class="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row lg:items-stretch">
-        <!-- Left: Vertical Nav (collapsible like main nav) -->
-        <aside
-          @mouseenter="handleMouseEnter"
-          @mouseleave="handleMouseLeave"
+      <!-- Split-pane layout: floating rail + content (matches Inbox nested panel pattern) -->
+      <div
+        class="flex min-h-0 flex-1 flex-col lg:flex-row lg:gap-2 lg:p-2"
+        :class="railFlyoutOpen ? 'lg:overflow-visible' : 'overflow-hidden'"
+      >
+        <!-- Flex slot: collapsed reserves 3.5rem; hover flyout overlays without shifting content -->
+        <div
+          class="relative shrink-0 self-stretch flex-none max-lg:w-full lg:transition-[width] lg:duration-200 lg:ease-in-out"
           :class="[
-            'settings-rail shrink-0 self-stretch flex-none transition-[width] duration-300',
-            'border-b border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900',
-            'lg:border-b-0 lg:border-r',
-            shouldShowExpanded ? 'lg:w-64' : 'lg:w-20',
-            'w-full min-h-0 overflow-y-auto'
+            railSlotWidthClass,
+            railFlyoutOpen ? 'lg:overflow-visible lg:z-30' : 'overflow-hidden',
           ]"
         >
-          <!-- Header with collapse/expand button -->
-          <div class="flex min-h-[2.75rem] items-center justify-between border-b border-neutral-200/80 px-3 py-2 dark:border-neutral-700/80">
-            <transition enter-active-class="transition-all duration-300" enter-from-class="opacity-0 w-0" enter-to-class="opacity-100 w-auto" leave-active-class="transition-all duration-300" leave-from-class="opacity-100 w-auto" leave-to-class="opacity-0 w-0">
-              <h2 v-if="shouldShowExpanded" class="truncate text-[0.875rem] font-semibold text-neutral-900 dark:text-neutral-100">{{ t('navigation.settings') }}</h2>
-            </transition>
-            <button
-              type="button"
-              @click="toggleSidebar"
-              :title="isCollapsed ? t('settings.expandSidebar') : t('settings.collapseSidebar')"
-              class="flex-shrink-0 p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-            >
-              <svg :class="shouldShowExpanded ? 'w-5 h-5' : 'w-6 h-6'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path v-if="shouldShowExpanded" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-
-          <nav class="px-2 py-2">
-            <ul class="space-y-0.5">
-              <!-- Overview / Landing Page Option -->
-              <li>
-                <button
-                  @click="activeTab = null; router.push('/settings')"
-                  :title="!shouldShowExpanded ? t('settings.navOverview') : ''"
-                  :class="settingsRailItemClass(!activeTab)"
-                >
-                  <div class="flex h-[1.125rem] w-[1.125rem] items-center justify-center shrink-0">
-                    <svg class="h-[1.125rem] w-[1.125rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          <aside
+            @mouseenter="handleMouseEnter"
+            @mouseleave="handleMouseLeave"
+            :class="[
+              'settings-rail flex min-h-0 flex-col overflow-hidden',
+              'bg-white dark:bg-neutral-900',
+              NESTED_PANEL_FLOATING_LG_CLASS,
+              'max-lg:relative max-lg:h-auto max-lg:w-full',
+              'max-lg:border-b max-lg:border-neutral-200 dark:max-lg:border-neutral-700',
+              'lg:absolute lg:inset-y-0 lg:left-0 lg:z-20',
+              'lg:transition-[width] lg:duration-200 lg:ease-in-out',
+              railAsideWidthClass,
+            ]"
+          >
+            <!-- Fixed expanded layout; outer width clips labels when narrow -->
+            <div class="flex h-full w-64 min-w-64 flex-col">
+              <div class="flex min-h-[2.75rem] shrink-0 items-center border-b border-neutral-200/80 dark:border-neutral-700/80">
+                <div class="flex w-[3.5rem] shrink-0 justify-center py-2">
+                  <button
+                    type="button"
+                    @click="toggleSidebar"
+                    :title="isCollapsed ? t('settings.expandSidebar') : t('settings.collapseSidebar')"
+                    class="flex-shrink-0 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200"
+                  >
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path v-if="!isCollapsed" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                      <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
-                  </div>
-                  <transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 max-w-0" enter-to-class="opacity-100 max-w-xs" leave-active-class="transition-all duration-300 ease-in" leave-from-class="opacity-100 max-w-xs" leave-to-class="opacity-0 max-w-0">
-                    <span v-if="shouldShowExpanded" class="truncate">{{ t('settings.navOverview') }}</span>
-                  </transition>
-                </button>
-              </li>
-              <template v-for="(tab, idx) in tabs" :key="tab.id">
-                <li>
-                  <button
-                    @click="handleTabClick(tab)"
-                    :title="!shouldShowExpanded ? t(tab.nameKey) : ''"
-                    :class="settingsRailItemClass(activeTab === tab.id || (tab.id === 'notifications' && route.path.includes('/notifications')))"
-                  >
-                    <div class="flex h-[1.125rem] w-[1.125rem] items-center justify-center shrink-0">
-                      <component :is="tab.icon" class="h-[1.125rem] w-[1.125rem]" />
-                    </div>
-                    <transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 max-w-0" enter-to-class="opacity-100 max-w-xs" leave-active-class="transition-all duration-300 ease-in" leave-from-class="opacity-100 max-w-xs" leave-to-class="opacity-0 max-w-0">
-                      <span v-if="shouldShowExpanded" class="truncate">{{ t(tab.nameKey) }}</span>
-                    </transition>
                   </button>
-                </li>
-                <!-- Visual separator between the personal "Your Profile" tab and the
-                     workspace-level tabs below it. Only render when the next tab is the
-                     first workspace tab, so we don't draw a divider if Profile is the
-                     only entry visible. -->
-                <li v-if="tab.id === 'profile' && idx < tabs.length - 1">
-                  <hr class="my-2 border-neutral-200 dark:border-neutral-700" />
-                  <div v-if="shouldShowExpanded" :class="SETTINGS_RAIL_SECTION_LABEL_CLASS">
-                    {{ t('settings.navWorkspace') }}
-                  </div>
-                </li>
-              </template>
-              
-              <!-- Internal Section (Environment-Gated) -->
-              <template v-if="isInternalEnvironment">
-                <li>
-                  <hr class="my-2 border-neutral-200 dark:border-neutral-700" />
-                </li>
-                <li>
-                  <div v-if="shouldShowExpanded" :class="SETTINGS_RAIL_SECTION_LABEL_CLASS">
-                    {{ t('settings.navInternal') }}
-                  </div>
-                </li>
-                <li v-for="internalTab in internalTabs" :key="internalTab.id">
-                  <button
-                    @click="handleTabClick(internalTab)"
-                    :title="!shouldShowExpanded ? t(internalTab.nameKey) : ''"
-                    :class="settingsRailItemClass(activeTab === internalTab.id || route.path.includes(internalTab.path))"
-                  >
-                    <div class="flex h-[1.125rem] w-[1.125rem] items-center justify-center shrink-0">
-                      <component :is="internalTab.icon" class="h-[1.125rem] w-[1.125rem]" />
-                    </div>
-                    <transition enter-active-class="transition-all duration-300 ease-out" enter-from-class="opacity-0 max-w-0" enter-to-class="opacity-100 max-w-xs" leave-active-class="transition-all duration-300 ease-in" leave-from-class="opacity-100 max-w-xs" leave-to-class="opacity-0 max-w-0">
-                      <span v-if="shouldShowExpanded" class="truncate">{{ t(internalTab.nameKey) }}</span>
-                    </transition>
-                  </button>
-                </li>
-              </template>
-            </ul>
-          </nav>
-        </aside>
+                </div>
+                <h2
+                  v-if="railShowsFullLabels"
+                  class="min-w-0 flex-1 truncate py-2 pr-3 text-left text-[0.875rem] font-semibold text-neutral-900 dark:text-neutral-100"
+                >
+                  {{ t('navigation.settings') }}
+                </h2>
+              </div>
+
+              <nav class="min-h-0 flex-1 overflow-y-auto px-[0.5rem] py-2">
+                <ul class="space-y-0.5">
+                  <li>
+                    <button
+                      @click="activeTab = null; router.push('/settings')"
+                      :title="isCollapsed && !railShowsFullLabels ? t('settings.navOverview') : ''"
+                      :class="settingsRailItemClass(!activeTab)"
+                    >
+                      <span class="flex h-[1.125rem] w-[1.125rem] shrink-0 items-center justify-center">
+                        <svg class="h-[1.125rem] w-[1.125rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                      </span>
+                      <span v-if="railShowsFullLabels" class="min-w-0 flex-1 truncate text-left">{{ t('settings.navOverview') }}</span>
+                    </button>
+                  </li>
+                  <template v-for="(tab, idx) in tabs" :key="tab.id">
+                    <li>
+                      <button
+                        @click="handleTabClick(tab)"
+                        :title="isCollapsed && !railShowsFullLabels ? t(tab.nameKey) : ''"
+                        :class="settingsRailItemClass(activeTab === tab.id || (tab.id === 'notifications' && route.path.includes('/notifications')))"
+                      >
+                        <span class="flex h-[1.125rem] w-[1.125rem] shrink-0 items-center justify-center">
+                          <component :is="tab.icon" class="h-[1.125rem] w-[1.125rem]" />
+                        </span>
+                        <span v-if="railShowsFullLabels" class="min-w-0 flex-1 truncate text-left">{{ t(tab.nameKey) }}</span>
+                      </button>
+                    </li>
+                    <li v-if="tab.id === 'profile' && idx < tabs.length - 1">
+                      <hr class="my-2 shrink-0 border-neutral-200 dark:border-neutral-700" />
+                      <div
+                        :class="[
+                          SETTINGS_RAIL_SECTION_LABEL_CLASS,
+                          !railShowsFullLabels && 'flex w-[calc(0.5rem+1.125rem+0.5rem)] shrink-0 items-center justify-center px-[0.5rem]',
+                        ]"
+                      >
+                        {{ railShowsFullLabels ? t('settings.navWorkspace') : '·' }}
+                      </div>
+                    </li>
+                  </template>
+
+                  <template v-if="isInternalEnvironment">
+                    <li v-if="railShowsFullLabels">
+                      <hr class="my-2 border-neutral-200 dark:border-neutral-700" />
+                    </li>
+                    <li v-if="railShowsFullLabels">
+                      <div :class="SETTINGS_RAIL_SECTION_LABEL_CLASS">
+                        {{ t('settings.navInternal') }}
+                      </div>
+                    </li>
+                    <li v-for="internalTab in internalTabs" :key="internalTab.id">
+                      <button
+                        @click="handleTabClick(internalTab)"
+                        :title="isCollapsed && !railShowsFullLabels ? t(internalTab.nameKey) : ''"
+                        :class="settingsRailItemClass(activeTab === internalTab.id || route.path.includes(internalTab.path))"
+                      >
+                        <span class="flex h-[1.125rem] w-[1.125rem] shrink-0 items-center justify-center">
+                          <component :is="internalTab.icon" class="h-[1.125rem] w-[1.125rem]" />
+                        </span>
+                        <span v-if="railShowsFullLabels" class="min-w-0 flex-1 truncate text-left">{{ t(internalTab.nameKey) }}</span>
+                      </button>
+                    </li>
+                  </template>
+                </ul>
+              </nav>
+            </div>
+          </aside>
+        </div>
 
         <!-- Right: Content -->
         <section
@@ -156,7 +170,7 @@
 </template>
 
 <script setup>
-import { ref, computed, h, watch, defineAsyncComponent } from 'vue';
+import { ref, computed, h, watch, onUnmounted, defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -164,11 +178,13 @@ const { t } = useI18n();
 import { useAuthStore } from '@/stores/authRegistry';
 import { canAccessSettingsTab } from '@/utils/settingsTabAccess';
 import {
-  SETTINGS_RAIL_ITEM_ACTIVE_CLASS,
   SETTINGS_RAIL_ITEM_BASE_CLASS,
+  SETTINGS_RAIL_ITEM_COLLAPSED_CLASS,
+  SETTINGS_RAIL_ITEM_ACTIVE_CLASS,
   SETTINGS_RAIL_ITEM_INACTIVE_CLASS,
   SETTINGS_RAIL_SECTION_LABEL_CLASS,
 } from '@/components/settings/settingsSaveBar';
+import { NESTED_PANEL_FLOATING_LG_CLASS } from '@/utils/sidebarLayout';
 import { useColorMode } from '@/composables/useColorMode';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 
@@ -242,18 +258,59 @@ const goBack = () => {
 };
 
 // Collapsible left rail behavior (mirrors main nav)
+const RAIL_WIDTH_TRANSITION_MS = 200;
 const isCollapsed = ref(localStorage.getItem('arivu-settings-collapsed') === 'true');
 const isHovering = ref(false);
-const shouldShowExpanded = computed(() => !isCollapsed.value || isHovering.value);
+const isFlyoutClosing = ref(false);
+let flyoutCloseTimer = null;
+
+const railFlyoutOpen = computed(() => isCollapsed.value && (isHovering.value || isFlyoutClosing.value));
+const railShowsFullLabels = computed(() => !isCollapsed.value || isHovering.value || isFlyoutClosing.value);
+const railSlotWidthClass = computed(() => (isCollapsed.value ? 'lg:w-[3.5rem]' : 'lg:w-64'));
+const railAsideWidthClass = computed(() => {
+  if (!isCollapsed.value || isHovering.value) return 'lg:w-64';
+  return 'lg:w-[3.5rem]';
+});
+
+function clearFlyoutCloseTimer() {
+  if (flyoutCloseTimer) {
+    clearTimeout(flyoutCloseTimer);
+    flyoutCloseTimer = null;
+  }
+}
+
 const toggleSidebar = () => {
+  clearFlyoutCloseTimer();
+  isFlyoutClosing.value = false;
+  isHovering.value = false;
   isCollapsed.value = !isCollapsed.value;
 };
-const handleMouseEnter = () => { if (isCollapsed.value) isHovering.value = true; };
-const handleMouseLeave = () => { isHovering.value = false; };
+const handleMouseEnter = () => {
+  if (!isCollapsed.value) return;
+  clearFlyoutCloseTimer();
+  isFlyoutClosing.value = false;
+  isHovering.value = true;
+};
+const handleMouseLeave = () => {
+  if (!isCollapsed.value) {
+    isHovering.value = false;
+    return;
+  }
+  isHovering.value = false;
+  isFlyoutClosing.value = true;
+  clearFlyoutCloseTimer();
+  flyoutCloseTimer = setTimeout(() => {
+    isFlyoutClosing.value = false;
+    flyoutCloseTimer = null;
+  }, RAIL_WIDTH_TRANSITION_MS);
+};
+
+onUnmounted(clearFlyoutCloseTimer);
 
 function settingsRailItemClass(active) {
   return [
     SETTINGS_RAIL_ITEM_BASE_CLASS,
+    !railShowsFullLabels.value && SETTINGS_RAIL_ITEM_COLLAPSED_CLASS,
     active ? SETTINGS_RAIL_ITEM_ACTIVE_CLASS : SETTINGS_RAIL_ITEM_INACTIVE_CLASS,
   ];
 }

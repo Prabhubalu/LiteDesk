@@ -190,6 +190,14 @@ const OrganizationSchema = new mongoose.Schema({
             type: String, 
             default: '#7f56d9' 
         },
+        rbacV2Enabled: {
+            type: Boolean,
+            default: false
+        },
+        sharingV1Enabled: {
+            type: Boolean,
+            default: false
+        },
         /** Platform quotes module policies (tenant-wide) */
         quotes: {
             requireApprovalBeforeSend: {

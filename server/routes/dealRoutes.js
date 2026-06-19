@@ -26,7 +26,7 @@ const {
 } = require('../controllers/dealController');
 const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation, checkTrialStatus, checkFeatureAccess } = require('../middleware/organizationMiddleware');
-const { checkPermission, filterByOwnership } = require('../middleware/permissionMiddleware');
+const { checkPermission, applySharingFilter } = require('../middleware/permissionMiddleware');
 const { resolveAppContext } = require('../middleware/resolveAppContextMiddleware');
 const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMiddleware');
 const { lazySalesInitialization } = require('../middleware/lazySalesInitializationMiddleware');
@@ -52,7 +52,7 @@ router.get('/playbooks/analytics', checkPermission('deals', 'view'), getPlaybook
 
 // Routes that handle collections (GET all, POST new)
 router.route('/')
-    .get(filterByOwnership('deals'), checkPermission('deals', 'view'), getDeals)
+    .get(applySharingFilter('deals'), checkPermission('deals', 'view'), getDeals)
     .post(checkPermission('deals', 'create'), createDeal);
 
 // Routes that handle single resources (GET by ID, PUT, DELETE)
