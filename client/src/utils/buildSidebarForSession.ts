@@ -6,9 +6,11 @@ import {
   hasCommercialPlatformEntitlement,
   isCommercialPlatformModuleKey
 } from '@/utils/commercialPlatformParticipation';
+import { validateUserTypeForApp } from '@/utils/appUserTypeAccess';
 
 type PermissionSnapshotUserLike = Parameters<typeof createPermissionSnapshot>[0];
 type UserLike = PermissionSnapshotUserLike & {
+  userType?: string;
   allowedApps?: string[];
   appAccess?: Array<{
     appKey?: string;
@@ -88,12 +90,15 @@ export async function buildSidebarStructureForSession(
 ): Promise<BuildSidebarForSessionResult> {
   const registry = await getAppRegistry();
   const { allowedAppKeys, hasExplicitUserAppAccessData } = normalizeUserAppAccess(user);
+  const userType = user?.userType || 'INTERNAL';
 
   const entitlementScopedRegistry = Object.fromEntries(
     Object.entries(registry).filter(([appKey]) => {
-      if (String(appKey).toUpperCase() === 'PLATFORM') return true;
+      const normalizedAppKey = String(appKey).toUpperCase();
+      if (normalizedAppKey === 'PLATFORM') return true;
+      if (!validateUserTypeForApp(userType, normalizedAppKey)) return false;
       if (hasExplicitUserAppAccessData) {
-        return allowedAppKeys.has(String(appKey).toUpperCase());
+        return allowedAppKeys.has(normalizedAppKey);
       }
       return hasAppAccess(appKey);
     })

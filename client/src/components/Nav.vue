@@ -109,6 +109,15 @@ const detectAppFromRoute = (path) => {
   return null;
 };
 
+const notificationAppKey = computed(() => {
+  const key = detectAppFromRoute(route.path);
+  if (key) return key;
+  if (route.path.startsWith('/dashboard') || route.path.startsWith('/people') || route.path.startsWith('/organizations') || route.path.startsWith('/deals') || route.path.startsWith('/tasks') || route.path.startsWith('/events') || route.path.startsWith('/items') || route.path.startsWith('/forms')) {
+    return 'SALES';
+  }
+  return 'SALES';
+});
+
 const canAccessSidebarModule = (permission) => {
   if (!permission) return true;
   try {
@@ -501,7 +510,7 @@ const logoSrc = computed(() => {
   </div>
   <NotificationDrawer
     :open="showDrawer"
-    app-key="SALES"
+    :app-key="notificationAppKey"
     @close="showDrawer = false"
   />
   

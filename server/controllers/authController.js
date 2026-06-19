@@ -187,8 +187,12 @@ exports.registerUser = async (req, res) => {
         console.log('🔍 Step 3: Creating organization...');
         console.log('   Organization Name:', organizationName || `${username}'s Organization`);
         console.log('   Industry:', vertical);
-        const { shouldSeedRbacV2ForNewOrganization } = require('../utils/rbacFeatureFlags');
+        const {
+            shouldSeedRbacV2ForNewOrganization,
+            getNewOrganizationRbacSettings
+        } = require('../utils/rbacFeatureFlags');
         const useRbacV2Seed = shouldSeedRbacV2ForNewOrganization();
+        const rbacSettings = getNewOrganizationRbacSettings();
 
         const organization = await Organization.create({
             name: organizationName || `${username}'s Organization`,
@@ -212,8 +216,7 @@ exports.registerUser = async (req, res) => {
                 enabledAt: new Date()
             }],
             settings: {
-                rbacV2Enabled: useRbacV2Seed,
-                sharingV1Enabled: false
+                ...rbacSettings
             }
         });
         await ensureDefaultCommunicationSettingsForOrganization(organization._id);
@@ -618,6 +621,7 @@ exports.loginUser = async (req, res) => {
             username: orgUser.username,
             email: orgUser.email,
             role: orgUser.role,
+            userType: orgUser.userType || 'INTERNAL',
             isOwner: orgUser.isOwner,
             isPlatformAdmin: orgUser.isPlatformAdmin === true,
             permissions: userPermissionsEnvelopeToPlain(orgUser),

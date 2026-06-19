@@ -1147,11 +1147,9 @@ export function useTabs() {
     console.log('🔧 Using route:', routeToWatch.path, routeToWatch.fullPath);
     console.log('🔧 Route is reactive?', route !== null);
     
-    // Skip audit routes - they have their own layout and don't use tabs
     // Settings now uses internal tabs
     if (
-      routeToWatch.path.startsWith('/audit/')
-      || routeToWatch.path.startsWith('/webforms/staff-preview/')
+      routeToWatch.path.startsWith('/webforms/staff-preview/')
       || routeToWatch.path.startsWith('/webforms/public/')
       || routeToWatch.path.startsWith('/webforms/embed/')
     ) {

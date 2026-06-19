@@ -33,6 +33,15 @@ function shouldSeedRbacV2ForNewOrganization() {
   return process.env.RBAC_V2 === 'true';
 }
 
+/** Org settings for new tenant signup — RBAC v2 + sharing enabled together. */
+function getNewOrganizationRbacSettings() {
+  const enabled = shouldSeedRbacV2ForNewOrganization();
+  return {
+    rbacV2Enabled: enabled,
+    sharingV1Enabled: enabled
+  };
+}
+
 const ZERO_LEGACY_ROLE_CAPABILITIES = Object.freeze({
   canViewAllData: false,
   canManageTeam: false,
@@ -67,6 +76,7 @@ module.exports = {
   isRbacV2Enabled,
   isSharingV1Enabled,
   shouldSeedRbacV2ForNewOrganization,
+  getNewOrganizationRbacSettings,
   withoutLegacyCapabilitiesWhenRbacV2,
   legacyRoleCapabilitiesForPersistence,
   ZERO_LEGACY_ROLE_CAPABILITIES

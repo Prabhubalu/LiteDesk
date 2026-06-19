@@ -14,6 +14,9 @@ const PlatformShell = defineAsyncComponent(() => import('@/components/PlatformSh
 const NotificationSheet = defineAsyncComponent(() =>
   import('@/components/notifications/NotificationSheet.vue')
 );
+const SyncDrawer = defineAsyncComponent(() =>
+  import('@/components/audit/SyncDrawer.vue')
+);
 import NotificationContainer from '@/components/NotificationContainer.vue';
 const GlobalSurfacesProvider = defineAsyncComponent(() =>
   import('@/components/global/GlobalSurfacesProvider.vue')
@@ -106,9 +109,7 @@ const hideShell = computed(() => {
   if (route.meta.hideShell) return true;
   // Hide for auth routes only
   if (route.path.startsWith('/login') || route.path.startsWith('/auth/')) return true;
-  // Hide for audit routes (they use AuditLayout)
-  if (route.path.startsWith('/audit/')) return true;
-  // Portal routes now use standard PlatformShell layout
+  // Portal and audit routes use standard PlatformShell layout
   // Platform routes show the shell
   return false;
 });
@@ -127,13 +128,18 @@ const EXTRA_OFFSET_LIGHT = '2rem';
 const EXTRA_OFFSET_LARGE = '2rem';
 const contentWrapperRef = ref(null);
 const tableStickyOffset = ref(`calc(${DEFAULT_CONTENT_OFFSET}px + ${EXTRA_OFFSET_LIGHT})`);
-const salesNotificationSheetOpen = ref(false);
+const notificationSheetOpen = ref(false);
+const auditSyncDrawerOpen = ref(false);
 
-const handleSalesOpenNotifications = () => {
+const handleOpenNotifications = () => {
   if (!authStore.isAuthenticated) return;
   if (window.innerWidth < 1024) {
-    salesNotificationSheetOpen.value = true;
+    notificationSheetOpen.value = true;
   }
+};
+
+const handleOpenAuditSyncDrawer = () => {
+  auditSyncDrawerOpen.value = true;
 };
 
 // Sidebar collapsed state - Load from localStorage, default to false
@@ -233,6 +239,9 @@ const detectActiveAppFromRoute = (path) => {
   return 'SALES'; // Default to Sales
 };
 
+const notificationAppKey = computed(() => detectActiveAppFromRoute(route.path));
+const isAuditRoute = computed(() => route.path.startsWith('/audit/'));
+
 // Phase 2D: Watch route changes and update activeApp
 watch(() => route.path, async (newPath) => {
   if (authStore.isAuthenticated && appShellStore.isLoaded) {
@@ -284,11 +293,9 @@ onMounted(async () => {
       appShellStore.setActiveApp(detectedApp);
     }
 
-    // Only initialize tabs system for CRM routes (not audit or portal)
-    // Audit and Portal have their own layouts. Settings now uses internal tabs.
-    const isAuditRoute = route.path.startsWith('/audit/');
+    // Portal omits tabs; audit and CRM use the shared tab system.
     const isPortalRoute = route.path.startsWith('/portal/');
-    const skipTabsInit = isAuditRoute || isPortalRoute || shouldSkipTabRoute(route.path);
+    const skipTabsInit = isPortalRoute || shouldSkipTabRoute(route.path);
     if (!skipTabsInit) {
       // Tabs are scoped by instanceId + userId to prevent leakage across instances/users.
       const instanceId = authStore.organization?._id || authStore.organization?.instanceId;
@@ -315,7 +322,7 @@ onMounted(async () => {
         });
       }
     } else {
-      appLog('📋 Audit/Portal route detected, skipping tabs initialization');
+      appLog('📋 Portal route detected, skipping tabs initialization');
     }
 
     // Note: We don't need a router.beforeEach guard here because:
@@ -327,11 +334,12 @@ onMounted(async () => {
   queueContentOffsetUpdate();
   window.addEventListener('resize', handleResize, { passive: true });
   window.addEventListener('storage', handleStorageEvent);
-  window.addEventListener('sales-open-notifications', handleSalesOpenNotifications);
+  window.addEventListener('sales-open-notifications', handleOpenNotifications);
+  window.addEventListener('arivu:open-audit-sync-drawer', handleOpenAuditSyncDrawer);
 });
 
-watch(salesNotificationSheetOpen, (val) => {
-  appLog('[App] salesNotificationSheetOpen changed:', val);
+watch(notificationSheetOpen, (val) => {
+  appLog('[App] notificationSheetOpen changed:', val);
 });
 
 onBeforeUnmount(() => {
@@ -341,7 +349,8 @@ onBeforeUnmount(() => {
   }
   window.removeEventListener('resize', handleResize);
   window.removeEventListener('storage', handleStorageEvent);
-  window.removeEventListener('sales-open-notifications', handleSalesOpenNotifications);
+  window.removeEventListener('sales-open-notifications', handleOpenNotifications);
+  window.removeEventListener('arivu:open-audit-sync-drawer', handleOpenAuditSyncDrawer);
 });
 
 // Watch for authentication changes to initialize tabs
@@ -371,10 +380,9 @@ watch(
         }
         
         // Post-login route may still be /login while LoginForm navigates to platform home.
-        // Auth lifecycle routes must not skip tab init — only audit/portal shells omit tabs.
-        const isAuditRoute = route.path.startsWith('/audit/');
+        // Auth lifecycle routes must not skip tab init — only portal omits tabs.
         const isPortalRoute = route.path.startsWith('/portal/');
-        const skipTabsInit = isAuditRoute || isPortalRoute;
+        const skipTabsInit = isPortalRoute;
 
         if (!skipTabsInit) {
           const { configureTabsStorage, useTabs } = await import('@/composables/useTabs');
@@ -486,13 +494,16 @@ watch(
   <ImportProgressBanner v-if="isAuthenticated" />
   <BulkDeleteProgressBanner v-if="isAuthenticated" />
 
-  <!-- Sales Notification Sheet (mobile) -->
+  <!-- Mobile notification sheet -->
   <NotificationSheet
-    :open="salesNotificationSheetOpen"
-    app-key="SALES"
+    :open="notificationSheetOpen"
+    :app-key="notificationAppKey"
     :mark-all-disabled="false"
-    @close="salesNotificationSheetOpen = false"
+    @close="notificationSheetOpen = false"
   />
+
+  <!-- Audit offline sync drawer -->
+  <SyncDrawer v-if="isAuditRoute" v-model="auditSyncDrawerOpen" />
 
   <!-- Global Surfaces Provider -->
   <!-- ARCHITECTURE NOTE: Mounted once at root level, app-agnostic -->

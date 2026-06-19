@@ -85,6 +85,17 @@ function buildUserScopeQuery(req, organization) {
     return { organizationId: req.user.organizationId };
 }
 
+function buildMasterUserListQuery(organizationId, scopedQuery) {
+    const masterQuery = { organizationId };
+    if (scopedQuery.roleId) {
+        masterQuery.roleId = scopedQuery.roleId;
+    }
+    if (scopedQuery.$and) {
+        masterQuery.$and = scopedQuery.$and;
+    }
+    return masterQuery;
+}
+
 async function attachRoleSummaries(users = []) {
     const list = Array.isArray(users) ? users : [];
     if (list.length === 0) return list;
@@ -192,7 +203,7 @@ exports.getUsers = async (req, res) => {
                 .limit(listLimit)
                 .lean(),
             usingDedicatedTenantDb
-                ? User.find({ organizationId: req.user.organizationId })
+                ? User.find(buildMasterUserListQuery(req.user.organizationId, query))
                     .select('-password')
                     .sort(sortOptions)
                     .limit(listLimit)

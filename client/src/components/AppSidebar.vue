@@ -236,27 +236,32 @@
         >
           <div
             v-if="showAppSwitcherDropdown && !collapsed"
-            class="absolute left-0 top-[2.25rem] w-full bg-white rounded-[0.5rem] shadow-lg border border-neutral-200 py-[0.5rem] z-50 max-h-[10rem] overflow-y-auto"
+            class="absolute left-0 top-[calc(100%+0.25rem)] w-full rounded-[0.333rem] ring-1 ring-white/20 dark:ring-neutral-700 bg-primary-900 dark:bg-neutral-900 shadow-xl py-[0.25rem] z-50 max-h-[10rem] overflow-y-auto"
           >
             <button
               v-for="app in sidebarStructure.appSwitcher.apps"
               :key="app.id"
               @click="handleAppSelect(app.id)"
               :class="[
-                'w-full text-left px-[0.75rem] py-[0.583rem] text-[0.875rem] transition-colors flex items-center gap-[0.5rem]',
-                sidebarStructure.appSwitcher.activeAppId === app.id
-                  ? 'bg-primary-50 text-primary-700 font-medium'
-                  : 'text-neutral-800 hover:bg-neutral-50'
+                'sidebar-nav-item w-full h-[1.75rem] rounded-[0.333rem] flex items-center gap-[0.5rem] text-[0.875rem] text-left transition-colors',
+                sidebarStructure.appSwitcher.activeAppId === app.id ? 'sidebar-nav-item--active' : ''
               ]"
             >
-              <span class="w-[1rem] h-[1rem] flex-shrink-0 flex items-center justify-center">
+              <span class="w-[1.125rem] h-[1.125rem] flex-shrink-0 flex items-center justify-center">
                 <component
                   :is="getAppIcon(app)"
                   class="w-full h-full"
                   :fill="sidebarStructure.appSwitcher.activeAppId === app.id ? iconColors.active : iconColors.primary"
                 />
               </span>
-              <span class="truncate flex-1">{{ appDisplayName(app) }}</span>
+              <span
+                class="truncate flex-1 min-w-0"
+                :class="sidebarStructure.appSwitcher.activeAppId === app.id
+                  ? 'text-white font-medium'
+                  : 'text-white/90 dark:text-neutral-400'"
+              >
+                {{ appDisplayName(app) }}
+              </span>
             </button>
           </div>
         </Transition>

@@ -24,8 +24,25 @@ const ModuleDefinition = require('../models/ModuleDefinition');
 const TenantModuleConfiguration = require('../models/TenantModuleConfiguration');
 const Organization = require('../models/Organization');
 const { resolveAppAccess } = require('./accessResolutionService');
+const { validateUserTypeForApp } = require('../utils/appAccessUtils');
 
 class UICompositionService {
+  filterAppsByUserType(apps, user) {
+    if (!Array.isArray(apps) || apps.length === 0) {
+      return [];
+    }
+
+    const userType = user?.userType || 'INTERNAL';
+
+    return apps.filter((app) => {
+      const appKey = String(app?.appKey || '').toUpperCase();
+      if (!appKey || appKey === 'CONTROL_PLANE') {
+        return false;
+      }
+      return validateUserTypeForApp(userType, appKey);
+    });
+  }
+
   /**
    * Get all enabled apps for a tenant with UI metadata
    * Phase 0F: Uses access resolution service to determine accessible apps
@@ -102,11 +119,14 @@ class UICompositionService {
       // Phase 0F: Use access resolution service to filter apps
       // CONTROL_PLANE is explicitly excluded (platform-only, never shown to tenants)
       //
-      // Short-circuit: organization owners should see all enabled apps in the switcher.
-      // Detailed per-app access (roles, subscriptions) is still enforced deeper in each app.
+      // Organization owners see all org-enabled apps that match their userType.
+      // INTERNAL users never get PORTAL in navigation; configure Portal via Settings.
       if (user && (user.isOwner === true || user.role === 'owner')) {
-        console.log(`[UIComposition] Owner detected (isOwner: ${user.isOwner}, role: ${user.role}), returning all ${uiApps.length} enabled apps`);
-        return uiApps.filter(app => app.appKey.toUpperCase() !== 'CONTROL_PLANE');
+        const ownerApps = this.filterAppsByUserType(uiApps, user);
+        console.log(
+          `[UIComposition] Owner detected (isOwner: ${user.isOwner}, role: ${user.role}), returning ${ownerApps.length}/${uiApps.length} enabled apps after userType filter`
+        );
+        return ownerApps;
       }
       
       console.log(`[UIComposition] Non-owner user, checking access for ${uiApps.length} apps`);
@@ -139,7 +159,7 @@ class UICompositionService {
         }
       }
 
-      return accessibleApps;
+      return this.filterAppsByUserType(accessibleApps, user);
     } catch (error) {
       console.error('[UIComposition] Error getting apps for tenant:', error);
       return [];
