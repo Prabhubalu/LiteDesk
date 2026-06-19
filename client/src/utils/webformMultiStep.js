@@ -1,4 +1,5 @@
 import { filterVisibleWebformFields } from '@/utils/webformConditionalLogic';
+import { filterVisibleWebformFieldsWithDependencies } from '@/utils/webformModuleFields';
 
 export function defaultMultiStepConfig() {
   return {
@@ -79,7 +80,13 @@ export function fieldsOnStep(fields, webform, stepId) {
 }
 
 export function filterVisibleFieldsForStep(fields, webform, stepId, values) {
-  return filterVisibleWebformFields(fieldsOnStep(fields, webform, stepId), values, fields);
+  const stepFields = fieldsOnStep(fields, webform, stepId);
+  const moduleKey = String(webform?.targetModuleKey || '').trim();
+  const moduleFields = Array.isArray(webform?.moduleFields) ? webform.moduleFields : null;
+  if (moduleKey) {
+    return filterVisibleWebformFieldsWithDependencies(stepFields, values, moduleKey, moduleFields);
+  }
+  return filterVisibleWebformFields(stepFields, values, fields);
 }
 
 export function nextWebformStepId(steps) {

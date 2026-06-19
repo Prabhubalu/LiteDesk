@@ -775,7 +775,7 @@ const routes = [
     path: '/webforms/staff-preview/:slug',
     name: 'staff-webform-preview',
     component: WebformStaffPreviewView,
-    meta: { requiresAuth: true, hideShell: true }
+    meta: { requiresAuth: false, hideShell: true }
   },
   {
     path: '/webforms/public/:slug',
@@ -958,7 +958,10 @@ router.beforeEach(async (to, from, next) => {
   if (authStore.isAuthenticated) {
     const onboardingRedirect = authStore.user?.onboarding?.redirectTo;
     if (onboardingRedirect === '/onboarding' && to.name !== 'onboarding') {
-      const allowWhileOnboarding = to.path.startsWith('/settings') || to.path.startsWith('/webforms/staff-preview/');
+      const allowWhileOnboarding = to.path.startsWith('/settings')
+        || to.path.startsWith('/webforms/staff-preview/')
+        || to.path.startsWith('/webforms/public/')
+        || to.path.startsWith('/webforms/embed/');
       if (!allowWhileOnboarding) {
         logNavDebug('Redirecting: Founder onboarding incomplete');
         next({ name: 'onboarding' });
@@ -983,19 +986,22 @@ router.beforeEach(async (to, from, next) => {
     || to.path.startsWith('/webforms/staff-preview/');
 
   if (needsFullLocale || needsWebformsLocale) {
-    try {
-      const { ensureFullLocaleLoaded, ensureWebformsNamespaceLoaded, i18n } = await import('@/i18n');
-      const lang = i18n.global.locale.value;
-      if (needsFullLocale) {
-        const full = await ensureFullLocaleLoaded(lang);
-        i18n.global.setLocaleMessage(lang, full);
-      } else {
-        const webforms = await ensureWebformsNamespaceLoaded(lang);
-        i18n.global.mergeLocaleMessage(lang, webforms);
+    // Do not block navigation on deferred locale chunks — public webforms must paint immediately.
+    void (async () => {
+      try {
+        const { ensureFullLocaleLoaded, ensureWebformsNamespaceLoaded, i18n } = await import('@/i18n');
+        const lang = i18n.global.locale.value;
+        if (needsFullLocale) {
+          const full = await ensureFullLocaleLoaded(lang);
+          i18n.global.setLocaleMessage(lang, full);
+        } else {
+          const webforms = await ensureWebformsNamespaceLoaded(lang);
+          i18n.global.mergeLocaleMessage(lang, webforms);
+        }
+      } catch (err) {
+        console.warn('[i18n] Failed to preload locale for route', to.path, err);
       }
-    } catch (err) {
-      console.warn('[i18n] Failed to preload locale for route', to.path, err);
-    }
+    })();
   }
   if (authStore.isAuthenticated && to.path.startsWith('/settings')) {
     const settingsCtx = {

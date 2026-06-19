@@ -19,7 +19,7 @@
           type="button"
           class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           :disabled="creating"
-          @click="createWebform"
+          @click="openCreateModal"
         >
           <PlusIcon class="h-4 w-4" />
           {{ t('webforms.hubCreateLabel') }}
@@ -162,6 +162,12 @@
       </table>
     </div>
   </SettingsScrollPanel>
+
+  <WebformCreateSetupModal
+    :open="showCreateModal"
+    @close="showCreateModal = false"
+    @create="onCreateSetup"
+  />
 </template>
 
 <script setup>
@@ -176,7 +182,10 @@ import {
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import WebformBuilder from '@/components/webforms/WebformBuilder.vue';
 import WebformSubmissionsPanel from '@/components/webforms/WebformSubmissionsPanel.vue';
+import WebformCreateSetupModal from '@/components/webforms/WebformCreateSetupModal.vue';
 import apiClient from '@/utils/apiClient';
+import { buildMandatoryWebformFields } from '@/utils/webformModuleFields';
+import { fetchWebformModuleDefinition } from '@/utils/webformModuleDefinition';
 import { useAuthStore } from '@/stores/authRegistry';
 import { canManageWebforms } from '@/utils/settingsTabAccess';
 import { captureWebformsSettingsViewed } from '@/config/posthogWebforms';
@@ -188,6 +197,7 @@ const authStore = useAuthStore();
 
 const loading = ref(false);
 const creating = ref(false);
+const showCreateModal = ref(false);
 const webforms = ref([]);
 const searchQuery = ref('');
 const statusFilter = ref('all');
@@ -257,16 +267,30 @@ async function fetchWebforms() {
   }
 }
 
-async function createWebform() {
+async function openCreateModal() {
+  showCreateModal.value = true;
+}
+
+async function onCreateSetup({ name, targetModuleKey, targetAppKey }) {
   creating.value = true;
   try {
+    let fields = [];
+    try {
+      const { fields: moduleFields } = await fetchWebformModuleDefinition(targetModuleKey);
+      fields = buildMandatoryWebformFields(targetModuleKey, moduleFields);
+    } catch {
+      fields = [];
+    }
+
     const res = await apiClient.post('/webforms', {
-      name: t('webforms.defaultName'),
+      name,
       status: 'Draft',
-      targetModuleKey: 'people',
-      fields: []
+      targetModuleKey,
+      targetAppKey,
+      fields
     });
     if (res?.success && res.data?._id) {
+      showCreateModal.value = false;
       await fetchWebforms();
       openWebform(res.data);
     }

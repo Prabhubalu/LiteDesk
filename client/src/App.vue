@@ -35,7 +35,12 @@ const showHelpdeskNotificationDevPanel =
   import.meta.env.DEV &&
   import.meta.env.VITE_ENABLE_HELPDESK_NOTIFICATION_DEV_PANEL === 'true';
 import { useSidebarState } from '@/composables/useSidebarState';
-import { isAuthLifecyclePublicRoute, shouldSkipTabRoute, isStandaloneShelllessPath } from '@/utils/standaloneRoutes';
+import {
+  isAuthLifecyclePublicRoute,
+  isStandalonePublicRoute,
+  shouldSkipTabRoute,
+  isStandaloneShelllessPath
+} from '@/utils/standaloneRoutes';
 import { identifyProductUser } from '@/config/posthogUser';
 import {
   startNotificationRealtime,
@@ -410,9 +415,9 @@ watch(
 usePermissionSync(2);
 
 watch(
-  () => authStore.isAuthenticated,
-  (isAuthed) => {
-    if (isAuthed) {
+  () => [authStore.isAuthenticated, route.path],
+  ([isAuthed, path]) => {
+    if (isAuthed && !isStandalonePublicRoute(path)) {
       startNotificationRealtime();
     } else {
       stopNotificationRealtime();
@@ -442,6 +447,10 @@ watch(
   () => route.path,
   () => {
     onNotificationRouteChange();
+    if (shouldSkipTabRoute(route.path) && typeof cleanupRouteWatcher === 'function') {
+      cleanupRouteWatcher();
+      cleanupRouteWatcher = null;
+    }
   }
 );
 </script>

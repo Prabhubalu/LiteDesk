@@ -27,6 +27,7 @@ const WebformFieldSchema = new Schema(
     placeholder: { type: String, trim: true, default: '' },
     options: [{ type: String, trim: true }],
     crmFieldKey: { type: String, trim: true, default: '' },
+    dependencies: [{ type: Schema.Types.Mixed }],
     columnWidth: {
       type: String,
       enum: WEBFORM_FIELD_WIDTHS,
@@ -85,7 +86,7 @@ const WebformSchema = new Schema(
       type: String,
       trim: true,
       uppercase: true,
-      default: 'SALES'
+      default: 'PLATFORM'
     },
     fields: {
       type: [WebformFieldSchema],

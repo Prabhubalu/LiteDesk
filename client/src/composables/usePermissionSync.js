@@ -1,5 +1,6 @@
 import { onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/authRegistry';
+import { isOnPublicShellRoute } from '@/utils/standaloneRoutes';
 
 /**
  * Composable to automatically sync user permissions periodically
@@ -10,7 +11,7 @@ export function usePermissionSync(intervalMinutes = 5) {
   let intervalId = null;
 
   const syncPermissions = async () => {
-    if (!authStore.isAuthenticated) {
+    if (!authStore.isAuthenticated || isOnPublicShellRoute()) {
       return;
     }
 

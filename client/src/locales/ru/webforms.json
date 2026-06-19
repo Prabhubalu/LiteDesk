@@ -995,9 +995,65 @@
     "message": "CAPTCHA protection",
     "description": "Publish step CAPTCHA title"
   },
+  "createSetupTitle": {
+    "message": "Create webform",
+    "description": "Create webform setup modal title"
+  },
+  "createSetupHint": {
+    "message": "Choose a name and target CRM module. Mandatory module fields are added to the form automatically.",
+    "description": "Create webform setup modal hint"
+  },
+  "createSetupNamePh": {
+    "message": "e.g. Contact us",
+    "description": "Create webform name placeholder"
+  },
+  "createSetupModulePh": {
+    "message": "Select a module",
+    "description": "Create webform module placeholder"
+  },
+  "createSetupContinue": {
+    "message": "Continue to builder",
+    "description": "Create webform setup continue button"
+  },
+  "createSetupCreating": {
+    "message": "Creating…",
+    "description": "Create webform setup creating state"
+  },
   "builderStepAdvanceSaveWarning": {
     "message": "Moved to the next step, but your latest changes could not be saved. Fix any errors and use Save draft.",
     "description": "Shown when step navigation succeeds but save failed"
+  },
+  "builderModuleFieldsDragHint": {
+    "message": "Drag module fields onto the canvas. Each field maps directly to CRM.",
+    "description": "Module field library drag hint"
+  },
+  "builderModuleFields": {
+    "message": "Module fields",
+    "description": "Module fields library section title"
+  },
+  "builderModuleFieldsEmpty": {
+    "message": "No fields available for this module.",
+    "description": "Empty module fields library"
+  },
+  "builderModuleFieldsOnForm": {
+    "message": "Already on form",
+    "description": "Module fields already placed on the form"
+  },
+  "builderModuleFieldKey": {
+    "message": "Module field",
+    "description": "Read-only module field key label in inspector"
+  },
+  "builderTargetModuleLocked": {
+    "message": "Target module is set when the webform is created.",
+    "description": "Target module locked hint in builder"
+  },
+  "builderMandatoryFieldLocked": {
+    "message": "This field is required by the module and cannot be marked optional.",
+    "description": "Mandatory field required checkbox locked hint"
+  },
+  "builderCannotRemoveMandatory": {
+    "message": "Mandatory module fields cannot be removed from the form.",
+    "description": "Error when removing mandatory field"
   },
   "builderFormActionsNext": {
     "message": "Next button",

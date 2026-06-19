@@ -5051,3 +5051,4 @@ exports.addModuleFieldPicklistOption = async (req, res) => {
 /** Used by dealController to assign default pipeline/stage when creating a deal without them. */
 exports.getDefaultPipelineSettings = getDefaultPipelineSettings;
 exports.getBaseFieldsForKey = getBaseFieldsForKey;
+exports.getPeopleVirtualBaseFields = getPeopleVirtualBaseFields;
