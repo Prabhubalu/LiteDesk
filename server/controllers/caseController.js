@@ -341,6 +341,12 @@ exports.createCase = async (req, res) => {
       });
     }
 
+    const { validateRecordAssignmentRequest } = require('../services/recordAssignmentService');
+    const ownerAssignCheck = await validateRecordAssignmentRequest(req, ownerId, { skipSelf: true });
+    if (ownerAssignCheck) {
+      return res.status(ownerAssignCheck.status).json(ownerAssignCheck.body);
+    }
+
     if (status && !isValidCaseStatus(status)) {
       return res.status(400).json({ success: false, message: 'Invalid status value' });
     }
@@ -472,6 +478,8 @@ exports.getCases = async (req, res) => {
       deletedAt: null,
       ...parsedQuery.filters
     };
+    const { applyListSharingToQuery } = require('../utils/sharingQueryUtils');
+    applyListSharingToQuery(query, req, 'cases');
     const limit = parsedQuery.limit;
     const skip = parsedQuery.skip;
 
@@ -743,6 +751,12 @@ exports.updateCase = async (req, res) => {
           success: false,
           message: 'caseOwnerId must be an active user in your organization'
         });
+      }
+
+      const { validateRecordAssignmentRequest } = require('../services/recordAssignmentService');
+      const ownerAssignCheck = await validateRecordAssignmentRequest(req, incoming.caseOwnerId, { skipSelf: true });
+      if (ownerAssignCheck) {
+        return res.status(ownerAssignCheck.status).json(ownerAssignCheck.body);
       }
     }
 

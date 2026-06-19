@@ -188,6 +188,8 @@ if (process.env.NODE_ENV === 'production') {
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const roleRoutes = require('./routes/roleRoutes');
+const profileRoutes = require('./routes/profileRoutes');
+const sharingRoutes = require('./routes/sharingRoutes');
 const organizationRoutes = require('./routes/organizationRoutes');
 const dealRoutes = require('./routes/dealRoutes');
 const taskRoutes = require('./routes/taskRoutes');
@@ -253,6 +255,8 @@ const webformRoutes = require('./routes/webformRoutes');
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
+app.use('/api/profiles', profileRoutes);
+app.use('/api/sharing', sharingRoutes);
 app.use('/api/organization', organizationRoutes);
 app.use('/api/deals', dealRoutes);
 app.use('/api/tasks', taskRoutes);

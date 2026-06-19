@@ -371,6 +371,10 @@
     "message": "Attention",
     "description": "Attention shell navigation label"
   },
+  "apps": {
+    "message": "Apps",
+    "description": "App Registry tab title"
+  },
   "search": {
     "message": "Search",
     "description": "Search shell navigation label"

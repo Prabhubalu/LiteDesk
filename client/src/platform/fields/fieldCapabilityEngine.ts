@@ -35,6 +35,26 @@ import {
   normalizeFieldKeyForMetadataLookup,
 } from './BaseFieldModel';
 import { globalSystemFieldKeySetHas } from './globalSystemFields';
+import {
+  getFieldRbacAuthContext,
+  isFieldHiddenByRbac,
+  isFieldReadOnlyByRbac,
+  type FieldPermissionsMap
+} from '@/utils/fieldRbacPermission';
+import { useAuthStore } from '@/stores/authRegistry';
+
+function resolveAuthRbacContext(): {
+  fieldPermissions?: FieldPermissionsMap;
+  fieldPermissionAppKey?: string | null;
+  bypass?: boolean;
+} | null {
+  try {
+    const auth = useAuthStore();
+    return getFieldRbacAuthContext(auth.user, auth.organization);
+  } catch {
+    return null;
+  }
+}
 
 // Re-export for existing imports from fieldCapabilityEngine (see globalSystemFields.ts).
 export {
@@ -93,6 +113,9 @@ export interface CapabilityContext {
   userRole?: string;
   viewType?: 'form' | 'table' | 'summary' | 'preview';
   recordState?: string;
+  fieldPermissions?: FieldPermissionsMap;
+  fieldPermissionAppKey?: string | null;
+  rbacBypass?: boolean;
 }
 
 // =============================================================================
@@ -132,6 +155,38 @@ export function isComputedField(moduleKey: string, field: Field): boolean {
   return getIsComputedBase(metadata);
 }
 
+function resolveRbacContext(context?: CapabilityContext) {
+  if (context?.rbacBypass) return { bypass: true as const };
+  if (context?.fieldPermissions) {
+    return {
+      fieldPermissions: context.fieldPermissions,
+      fieldPermissionAppKey: context.fieldPermissionAppKey ?? 'SALES'
+    };
+  }
+  const authCtx = resolveAuthRbacContext();
+  if (!authCtx) return null;
+  if (authCtx.bypass) return { bypass: true as const };
+  return authCtx;
+}
+
+/**
+ * RBAC v2: field hidden by profile/role field permission map.
+ */
+export function isFieldHiddenForUser(
+  moduleKey: string,
+  field: Field,
+  context?: CapabilityContext
+): boolean {
+  const rbac = resolveRbacContext(context);
+  if (!rbac || 'bypass' in rbac) return false;
+  return isFieldHiddenByRbac(
+    rbac.fieldPermissions,
+    rbac.fieldPermissionAppKey,
+    moduleKey,
+    field.key
+  );
+}
+
 /**
  * Check if a field can be edited by the user.
  * Returns false if ANY of:
@@ -146,7 +201,17 @@ export function isComputedField(moduleKey: string, field: Field): boolean {
  *
  * Engine does NOT use field.editable — metadata + base helpers only.
  */
-export function canEditField(moduleKey: string, field: Field): boolean {
+export function canEditField(moduleKey: string, field: Field, context?: CapabilityContext): boolean {
+  const rbac = resolveRbacContext(context);
+  if (rbac && !('bypass' in rbac)) {
+    if (
+      isFieldHiddenByRbac(rbac.fieldPermissions, rbac.fieldPermissionAppKey, moduleKey, field.key) ||
+      isFieldReadOnlyByRbac(rbac.fieldPermissions, rbac.fieldPermissionAppKey, moduleKey, field.key)
+    ) {
+      return false;
+    }
+  }
+
   const raw = String(field.key || '');
   if (raw === '__v') return false;
   const keyLower = normalizeFieldKeyForMetadataLookup(field.key);

@@ -7,6 +7,7 @@ const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMi
 const { lazySalesInitialization } = require('../middleware/lazySalesInitializationMiddleware');
 const { requireSalesApp } = require('../middleware/requireSalesAppMiddleware');
 const requirePermission = require('../middleware/requirePermission');
+const { applySharingFilter } = require('../middleware/permissionMiddleware');
 const PEOPLE_PERMISSIONS = require('../permissions/peoplePermissions');
 const controller = require('../controllers/peopleController');
 const resolverController = require('../controllers/peopleResolverController');
@@ -90,7 +91,7 @@ router.use((req, res, next) => {
 });
 
 router.post('/', controller.create);
-router.get('/', controller.list);
+router.get('/', applySharingFilter('people'), controller.list);
 
 // Activity logs (must be before /:id route)
 router.get('/:id/activity-logs', controller.getActivityLogs);

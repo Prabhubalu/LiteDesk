@@ -210,11 +210,20 @@ async function createDefaultAdmin() {
         // Set all permissions to true for owner
         adminUser.setPermissionsByRole('owner');
 
+        const ownerRole = await Role.findOne({ organizationId: organization._id, name: 'Owner' }).select('_id');
+        if (ownerRole) {
+            adminUser.roleId = ownerRole._id;
+        }
+
         await adminUser.save();
         console.log('✅ Admin User created');
         console.log(`   Name: ${adminUser.firstName} ${adminUser.lastName}`);
         console.log(`   Email: ${adminUser.email}`);
         console.log(`   Role: ${adminUser.role}`);
+
+        if (ownerRole) {
+            await Role.findByIdAndUpdate(ownerRole._id, { $inc: { userCount: 1 } });
+        }
 
         // Mark this org's Instance as internal so subscriptionBootstrapService and
         // ensureOrgSubscriptionForEnabledApps permanently treat it as ENTERPRISE /

@@ -204,10 +204,24 @@ async function seedDefaultRoles(orgConnection, organization) {
         return { created: 0, skipped: existingCount, total: existingCount };
     }
 
-    // Reuse the canonical default role definitions from the master Role model.
-    // We can't call `MasterRoleModel.createDefaultRoles` directly because that
-    // would write to master; we instead read the role payloads via a temporary
-    // shim so we stay aligned with the master schema's defaults.
+    const { shouldSeedRbacV2ForNewOrganization } = require('../utils/rbacFeatureFlags');
+    if (shouldSeedRbacV2ForNewOrganization()) {
+        const MasterProfileModel = require('../../models/Profile');
+        const TenantProfile = getTenantModel(orgConnection, 'Profile', MasterProfileModel);
+        const { seedRolesAndProfilesForOrganization } = require('../roleSeedService');
+        const result = await seedRolesAndProfilesForOrganization(orgId, organization, {
+            RoleModel: TenantRole,
+            ProfileModel: TenantProfile
+        });
+        return {
+            created: result.roles.created.length,
+            skipped: 0,
+            total: result.roles.created.length,
+            rbacV2: true,
+            roleIds: result.roleIds
+        };
+    }
+
     const created = await TenantRole.createDefaultRoles(orgId);
     return { created: created.length, skipped: 0, total: created.length };
 }

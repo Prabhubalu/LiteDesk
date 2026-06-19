@@ -250,6 +250,12 @@ exports.createDeal = async (req, res) => {
             }]
         };
 
+        const { validateRecordAssignmentRequest } = require('../services/recordAssignmentService');
+        const ownerAssignCheck = await validateRecordAssignmentRequest(req, payload.ownerId, { skipSelf: true });
+        if (ownerAssignCheck) {
+            return res.status(ownerAssignCheck.status).json(ownerAssignCheck.body);
+        }
+
         const statusWriteResult = await validateStatusWriteProtection('deal', payload, appKey);
         if (statusWriteResult) {
             return res.status(400).json({
@@ -403,10 +409,8 @@ exports.getDeals = async (req, res) => {
     try {
         let query = { organizationId: req.user.organizationId, deletedAt: null };
         
-        // Filter by user if needed
-        if (req.filterByUser) {
-            query.ownerId = req.filterByUser;
-        }
+        const { applyListSharingToQuery } = require('../utils/sharingQueryUtils');
+        applyListSharingToQuery(query, req, 'deals');
         
         // Get pagination params
         const page = parseInt(req.query.page) || 1;
@@ -777,6 +781,24 @@ exports.updateDeal = async (req, res) => {
             acc[field] = existingDealForChanges[field];
             return acc;
         }, {});
+
+        if (Object.prototype.hasOwnProperty.call(req.body || {}, 'ownerId')) {
+            const { validateRecordAssignmentRequest } = require('../services/recordAssignmentService');
+            const newOwnerRaw = req.body.ownerId;
+            const newOwnerId = typeof newOwnerRaw === 'object'
+                ? (newOwnerRaw._id || newOwnerRaw.id)
+                : newOwnerRaw;
+            const oldOwnerRaw = existingDealForChanges.ownerId;
+            const oldOwnerId = typeof oldOwnerRaw === 'object'
+                ? (oldOwnerRaw._id || oldOwnerRaw.id)
+                : oldOwnerRaw;
+            if (String(newOwnerId || '') !== String(oldOwnerId || '')) {
+                const ownerAssignCheck = await validateRecordAssignmentRequest(req, newOwnerId, { skipSelf: true });
+                if (ownerAssignCheck) {
+                    return res.status(ownerAssignCheck.status).json(ownerAssignCheck.body);
+                }
+            }
+        }
 
         const { buildUpdateWithCustomFields, flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
         const $set = buildUpdateWithCustomFields(req.body, Deal);

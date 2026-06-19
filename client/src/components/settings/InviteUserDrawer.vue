@@ -123,7 +123,7 @@
                             {{ t('settings.inviteSectionAccess') }}
                           </h4>
 
-                          <div class="space-y-1">
+                          <div v-if="!rbacV2Enabled" class="space-y-1">
                             <span class="block text-sm/6 font-medium text-gray-900 dark:text-white">
                               {{ t('settings.inviteUserType') }} <span class="text-red-500">*</span>
                             </span>
@@ -161,9 +161,39 @@
                             <p v-if="validationErrors.roleId" class="text-xs text-red-600 dark:text-red-400 mt-1">
                               {{ validationErrors.roleId }}
                             </p>
+                            <p v-if="rbacV2Enabled" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                              {{ t('settings.inviteRbacV2RoleHint') }}
+                            </p>
                           </div>
 
-                          <div v-if="form.userType" class="space-y-3">
+                          <div
+                            v-if="rbacV2Enabled && selectedRole"
+                            class="rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50/60 dark:bg-indigo-900/20 p-4 space-y-3"
+                          >
+                            <p class="text-xs font-semibold text-indigo-800 dark:text-indigo-200 uppercase tracking-wider">
+                              {{ t('settings.inviteRbacV2PreviewTitle') }}
+                            </p>
+                            <p v-if="selectedRole.description" class="text-sm text-gray-700 dark:text-gray-300">
+                              {{ selectedRole.description }}
+                            </p>
+                            <p v-if="selectedRoleProfileName" class="text-xs text-gray-600 dark:text-gray-400">
+                              {{ t('settings.inviteRbacV2Profile', { profile: selectedRoleProfileName }) }}
+                            </p>
+                            <div v-if="selectedRoleAppPreview.length" class="flex flex-wrap gap-2">
+                              <span
+                                v-for="chip in selectedRoleAppPreview"
+                                :key="chip.appKey"
+                                class="inline-flex items-center rounded-full bg-white dark:bg-gray-800 border border-indigo-200 dark:border-indigo-700 px-2.5 py-1 text-xs font-medium text-indigo-800 dark:text-indigo-200"
+                              >
+                                {{ chip.label }}
+                              </span>
+                            </div>
+                            <p v-else class="text-xs text-gray-500 dark:text-gray-400">
+                              {{ t('settings.inviteRbacV2NoApps') }}
+                            </p>
+                          </div>
+
+                          <div v-if="!rbacV2Enabled && form.userType" class="space-y-3">
                             <span class="block text-sm/6 font-medium text-gray-900 dark:text-white">
                               {{ t('settings.inviteAppAccess') }} <span class="text-red-500">*</span>
                             </span>
@@ -406,12 +436,20 @@ import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { UserPlusIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
+import { useAuthStore } from '@/stores/auth';
+import { isRbacV2Enabled } from '@/utils/rbacFeatureFlags';
 import { captureInviteSent } from '@/config/posthogOnboarding';
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const rbacV2Enabled = computed(() => isRbacV2Enabled(authStore.organization));
 
 const props = defineProps({
-  isOpen: Boolean
+  isOpen: Boolean,
+  initialRoleId: {
+    type: String,
+    default: ''
+  }
 });
 
 const emit = defineEmits(['close', 'user-invited']);
@@ -453,9 +491,33 @@ const roleSelectOptions = computed(() => [
   { value: '', label: t('settings.inviteSelectRole') },
   ...availableRoles.value.map((role) => ({
     value: role._id,
-    label: `${role.name} — ${role.description}`
+    label: rbacV2Enabled.value ? role.name : `${role.name} — ${role.description}`
   }))
 ]);
+
+const selectedRole = computed(() =>
+  availableRoles.value.find((r) => r._id === form.value.roleId) || null
+);
+
+const selectedRoleAppPreview = computed(() => {
+  const role = selectedRole.value;
+  if (!role || !Array.isArray(role.appEntitlements)) return [];
+  return role.appEntitlements
+    .filter((e) => e.enabled !== false)
+    .map((e) => ({
+      appKey: e.appKey,
+      appRoleKey: e.appRoleKey,
+      label: `${getAppDisplayName(e.appKey)} · ${getRoleDisplayName(e.appKey, e.appRoleKey)}`
+    }));
+});
+
+const selectedRoleProfileName = computed(() => {
+  const role = selectedRole.value;
+  if (!role || role.privilegeMode !== 'profile') return '';
+  const profile = role.profileId;
+  if (profile && typeof profile === 'object') return profile.name;
+  return '';
+});
 
 const passwordAutoHint = computed(() =>
   t('settings.invitePasswordAutoHint', {
@@ -518,6 +580,10 @@ const isFormValid = computed(() => {
     return false;
   }
 
+  if (rbacV2Enabled.value) {
+    return true;
+  }
+
   if (form.value.userType) {
     if (selectedApps.value.length === 0) {
       return false;
@@ -542,8 +608,13 @@ watch(passwordOption, (value) => {
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     resetForm();
+    if (props.initialRoleId) {
+      form.value.roleId = props.initialRoleId;
+    }
     fetchRoles();
-    fetchCapabilities();
+    if (!rbacV2Enabled.value) {
+      fetchCapabilities();
+    }
   }
 });
 
@@ -655,6 +726,10 @@ const validateForm = () => {
     return false;
   }
 
+  if (rbacV2Enabled.value) {
+    return true;
+  }
+
   if (form.value.userType) {
     if (selectedApps.value.length === 0) {
       validationErrors.value.appAccess = t('settings.inviteAppAccessRequired');
@@ -696,7 +771,20 @@ const handleSubmit = async () => {
   try {
     let payload;
 
-    if (form.value.userType && selectedApps.value.length > 0) {
+    if (rbacV2Enabled.value) {
+      payload = {
+        firstName: form.value.firstName,
+        lastName: form.value.lastName,
+        email: form.value.email,
+        roleId: form.value.roleId,
+        sendEmail: form.value.sendEmail,
+        welcomeNote: form.value.welcomeNote || undefined,
+        suggestedTask: form.value.suggestedTask || undefined
+      };
+      if (passwordOption.value === 'manual' && form.value.password) {
+        payload.password = form.value.password;
+      }
+    } else if (form.value.userType && selectedApps.value.length > 0) {
       payload = {
         firstName: form.value.firstName,
         lastName: form.value.lastName,

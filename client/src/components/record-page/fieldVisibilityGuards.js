@@ -1,4 +1,4 @@
-import { isGlobalSystemFieldKey, isSystemField } from '@/platform/fields/fieldCapabilityEngine';
+import { isGlobalSystemFieldKey, isSystemField, isFieldHiddenForUser } from '@/platform/fields/fieldCapabilityEngine';
 import { getFieldMetadataFromRegistry, normalizeModuleKeyForRegistry } from '@/platform/fields/FieldRegistry';
 import { useAuthStore } from '@/stores/authRegistry';
 import { shouldHideFieldWhenInventoryDisabled } from '@/utils/inventoryCapability';
@@ -66,6 +66,10 @@ export function shouldHideDetailField(field, moduleKey, options = {}) {
   const normalizedModuleKey = String(moduleKey || '').toLowerCase().trim();
 
   if (shouldHideFieldWhenInventoryDisabled(normalizedModuleKey, key, resolveInventoryEnabled(options))) {
+    return true;
+  }
+
+  if (normalizedModuleKey && typeof isFieldHiddenForUser === 'function' && isFieldHiddenForUser(normalizedModuleKey, { key })) {
     return true;
   }
 

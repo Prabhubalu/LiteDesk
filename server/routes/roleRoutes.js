@@ -9,9 +9,11 @@ const {
     getRoleHierarchy,
     createRole,
     updateRole,
+    moveRole,
     deleteRole,
     getPermissionModules,
-    initializeDefaultRoles
+    initializeDefaultRoles,
+    seedRolesForOrganization
 } = require('../controllers/roleController');
 
 // Apply auth and organization middleware to all routes
@@ -30,6 +32,8 @@ router.get('/:id', getRole);
 // Protected routes (requires manageRoles permission)
 router.post('/', canManageRoles(), createRole);
 router.post('/initialize', canManageRoles(), initializeDefaultRoles);
+router.post('/seed', canManageRoles(), seedRolesForOrganization);
+router.patch('/:id/move', canManageRoles(), moveRole);
 router.put('/:id', canManageRoles(), updateRole);
 router.delete('/:id', canManageRoles(), deleteRole);
 

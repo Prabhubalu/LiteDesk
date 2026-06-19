@@ -13,6 +13,11 @@ function validateEnv() {
       console.error('❌ FATAL: DISABLE_SECURITY cannot be true in production.');
       process.exit(1);
     }
+    if (process.env.RBAC_V2 === 'true' || process.env.SHARING_V1 === 'true') {
+      console.warn(
+        '⚠️  RBAC_V2 and/or SHARING_V1 are enabled globally. Prefer per-org flags until migration is complete.'
+      );
+    }
   }
 }
 

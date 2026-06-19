@@ -87,6 +87,7 @@ export const ROUTE_TITLE_KEYS = {
   '/audit/dashboard': 'navigation.auditDashboard',
   '/audit/audits': 'navigation.tabMyAudits',
   '/platform/attention': 'navigation.attention',
+  '/platform/apps': 'navigation.apps',
 };
 
 /**

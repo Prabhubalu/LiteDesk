@@ -671,6 +671,7 @@ const getIconForPath = (path) => {
   const pathOnly = String(path || '').split('?')[0].split('#')[0];
   const icons = {
     '/platform/home': 'home',
+    '/platform/apps': 'squares',
     '/sales/dashboard': 'document-chart-bar',
     '/dashboard': 'home', // backward compat
     '/inbox': 'inbox',
@@ -722,6 +723,7 @@ const getIconForPath = (path) => {
 const getTitleForPath = (path, params = {}) => {
   const titles = {
     '/platform/home': 'Home',
+    '/platform/apps': 'Apps',
     '/sales/dashboard': 'Sales Dashboard',
     '/dashboard': 'Dashboard', // backward compat
     '/contacts': 'Contacts',

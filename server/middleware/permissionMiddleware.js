@@ -382,6 +382,7 @@ const filterByOwnership = (module) => {
             // Others can only see data assigned to them
             req.viewAll = false;
             req.filterByUser = user._id;
+            req.sharingOwnerField = require('../services/sharingResolver').getOwnerFieldForModule(module);
             
             next();
         } catch (error) {
@@ -426,6 +427,80 @@ const requirePlatformAdmin = () => {
     };
 };
 
+/**
+ * Sharing v1 list filter — replaces filterByOwnership when SHARING_V1 enabled.
+ * Falls back to legacy ownership filter when flag is off.
+ */
+const applySharingFilter = (module) => {
+    return async (req, res, next) => {
+        if (SECURITY_DISABLED) {
+            console.warn(`⚠️  [DEV] Sharing filter bypassed: ${module}`);
+            req.viewAll = true;
+            return next();
+        }
+
+        try {
+            const { isSharingV1Enabled } = require('../utils/rbacFeatureFlags');
+            const { buildRecordVisibilityFilter, getOwnerFieldForModule } = require('../services/sharingResolver');
+            const Organization = require('../models/Organization');
+
+            const organization = req.organization
+                || (req.user?.organizationId
+                    ? await Organization.findById(req.user.organizationId).select('settings enabledApps').lean()
+                    : null);
+
+            if (!isSharingV1Enabled(organization)) {
+                return filterByOwnership(module)(req, res, next);
+            }
+
+            const user = req.user;
+            if (!user) {
+                return res.status(401).json({ message: 'Authentication required' });
+            }
+
+            const normalizedModule = normalizeStorageModuleKey(module);
+            const orgContext = organization
+                ? buildOrgPermissionContext(organization)
+                : await getOrgPermissionContextForUser(user);
+
+            if (isSalesModule(normalizedModule) && req.appKey && req.appKey !== APP_KEYS.SALES) {
+                return res.status(403).json({
+                    message: 'Sales modules are only accessible from the Sales application',
+                    code: 'SALES_MODULE_NOT_ACCESSIBLE',
+                    module: normalizedModule,
+                    currentApp: req.appKey,
+                    requiredApp: APP_KEYS.SALES
+                });
+            }
+
+            const appKey = req.appKey || APP_KEYS.SALES;
+            const roleLean = user.roleId && typeof user.roleId === 'object' ? user.roleId : null;
+
+            const sharingFilter = await buildRecordVisibilityFilter(user, {
+                appKey,
+                moduleKey: module,
+                organization,
+                roleLean
+            });
+
+            req.sharingOwnerField = getOwnerFieldForModule(module);
+
+            if (sharingFilter === null) {
+                req.viewAll = true;
+                req.sharingFilter = null;
+            } else {
+                req.viewAll = false;
+                req.sharingFilter = sharingFilter;
+            }
+
+            next();
+        } catch (error) {
+            console.error('Sharing filter error:', error);
+            res.status(500).json({ message: 'Server error during sharing filter' });
+        }
+    };
+};
+
 module.exports = {
     checkPermission,
     checkPermissionFromParam,
@@ -437,6 +512,7 @@ module.exports = {
     canManageUsers,
     canManageBilling,
     canManageRoles,
-    filterByOwnership
+    filterByOwnership,
+    applySharingFilter
 };
 

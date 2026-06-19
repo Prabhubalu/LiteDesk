@@ -209,10 +209,11 @@ exports.getUsers = async (req, res) => {
             dedupedUsers.push(row);
         });
 
+        const skipEmptyListFallback = Boolean(roleId || search || status || adminOnly);
+
         // Safety fallback: ensure currently-authenticated user is visible in Users list.
-        // This prevents a blank Settings > Users state when legacy/migrated data has
-        // mismatched organizationId values across tenant/master databases.
-        if (dedupedUsers.length === 0) {
+        // Skip for filtered queries (e.g. roleId) — empty results are valid.
+        if (dedupedUsers.length === 0 && !skipEmptyListFallback) {
             const currentUserById = await ScopedUser.findById(req.user._id)
                 .select('-password')
                 .lean();
@@ -537,14 +538,27 @@ exports.inviteUser = async (req, res) => {
         }
 
         // Determine if using new unified format or legacy format
-        const isUnifiedFormat = appAccess && Array.isArray(appAccess) && appAccess.length > 0;
-        const isLegacyFormat = roleId && !isUnifiedFormat;
+        const { isRbacV2Enabled } = require('../utils/rbacFeatureFlags');
+        const rbacV2 = isRbacV2Enabled(organization);
+
+        if (rbacV2 && appAccess && Array.isArray(appAccess) && appAccess.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'appAccess cannot be set directly when RBAC v2 is enabled. Assign a role instead.',
+                code: 'RBAC_V2_APP_ACCESS_NOT_ALLOWED'
+            });
+        }
+
+        const isUnifiedFormat = !rbacV2 && appAccess && Array.isArray(appAccess) && appAccess.length > 0;
+        const isLegacyFormat = Boolean(roleId) && (rbacV2 || !isUnifiedFormat);
 
         if (!isUnifiedFormat && !isLegacyFormat) {
             return res.status(400).json({
                 success: false,
-                message: 'Either appAccess array (unified format) or roleId (legacy format) is required',
-                code: 'MISSING_APP_ACCESS_OR_ROLE'
+                message: rbacV2
+                    ? 'roleId is required when RBAC v2 is enabled'
+                    : 'Either appAccess array (unified format) or roleId (legacy format) is required',
+                code: rbacV2 ? 'RBAC_V2_ROLE_REQUIRED' : 'MISSING_APP_ACCESS_OR_ROLE'
             });
         }
 
@@ -731,39 +745,52 @@ exports.inviteUser = async (req, res) => {
                 });
             }
 
-            // Map role name to legacy role enum for backward compatibility
-            legacyRole = roleDoc.name.toLowerCase();
-            isOwner = roleDoc.name === 'Owner';
-            
-            // Map legacy role to Sales roleKey
-            crmRoleKey = isOwner ? 'ADMIN' : mapLegacyRoleToCRM(legacyRole);
+            const {
+                deriveAppAccessFromRole,
+                mapRoleNameToLegacyEnum
+            } = require('../services/roleEntitlementService');
 
-            // Validate Sales roleKey
-            if (!validateAppRole(APP_KEYS.SALES, crmRoleKey)) {
-                console.warn(`Invalid Sales roleKey ${crmRoleKey}, using default`);
-                const defaultRole = getDefaultRoleForApp(APP_KEYS.SALES);
-                crmRoleKey = defaultRole || 'USER';
+            if (rbacV2) {
+                const derived = deriveAppAccessFromRole(roleDoc, organization);
+                finalAppAccess = derived.appAccess;
+                finalUserType = roleDoc.userType || 'INTERNAL';
+                legacyRole = mapRoleNameToLegacyEnum(roleDoc.name);
+                isOwner = roleDoc.name === 'Owner';
+            } else {
+                // Map role name to legacy role enum for backward compatibility
+                legacyRole = roleDoc.name.toLowerCase();
+                isOwner = roleDoc.name === 'Owner';
+                
+                // Map legacy role to Sales roleKey
+                crmRoleKey = isOwner ? 'ADMIN' : mapLegacyRoleToCRM(legacyRole);
+
+                // Validate Sales roleKey
+                if (!validateAppRole(APP_KEYS.SALES, crmRoleKey)) {
+                    console.warn(`Invalid Sales roleKey ${crmRoleKey}, using default`);
+                    const defaultRole = getDefaultRoleForApp(APP_KEYS.SALES);
+                    crmRoleKey = defaultRole || 'USER';
+                }
+
+                // Validate Sales is enabled for organization
+                if (!isAppEnabledForOrg(organization, APP_KEYS.SALES)) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Sales app is not enabled for this organization',
+                        code: 'APP_NOT_ENABLED'
+                    });
+                }
+
+                // Create appAccess from legacy format (Sales only)
+                finalAppAccess = [{
+                    appKey: APP_KEYS.SALES,
+                    roleKey: crmRoleKey,
+                    status: 'ACTIVE',
+                    addedAt: new Date()
+                }];
+
+                // Default to INTERNAL for legacy format
+                finalUserType = 'INTERNAL';
             }
-
-            // Validate Sales is enabled for organization
-            if (!isAppEnabledForOrg(organization, APP_KEYS.SALES)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Sales app is not enabled for this organization',
-                    code: 'APP_NOT_ENABLED'
-                });
-            }
-
-            // Create appAccess from legacy format (Sales only)
-            finalAppAccess = [{
-                appKey: APP_KEYS.SALES,
-                roleKey: crmRoleKey,
-                status: 'ACTIVE',
-                addedAt: new Date()
-            }];
-
-            // Default to INTERNAL for legacy format
-            finalUserType = 'INTERNAL';
         }
 
         // ============================================

@@ -207,6 +207,12 @@ exports.create = async (req, res) => {
     if (body.email !== undefined && body.email !== null && !isOptionalEmailWellFormed(body.email)) {
       return res.status(400).json({ success: false, message: 'Invalid email format.' });
     }
+
+    const { validateRecordAssignmentRequest } = require('../services/recordAssignmentService');
+    const assignCheck = await validateRecordAssignmentRequest(req, body.assignedTo, { skipSelf: true });
+    if (assignCheck) {
+      return res.status(assignCheck.status).json(assignCheck.body);
+    }
     const record = await People.create(body);
 
     if (record.organization) {
@@ -371,6 +377,9 @@ exports.list = async (req, res) => {
       : userOrgId;
     
     let query = { organizationId: orgIdObjectId, deletedAt: null };
+
+    const { applyListSharingToQuery } = require('../utils/sharingQueryUtils');
+    applyListSharingToQuery(query, req, 'people');
 
     const peopleContext = req.query.peopleContext;
     if (peopleContext && peopleContext !== 'ALL') {
@@ -994,6 +1003,19 @@ exports.update = async (req, res) => {
     const previous = await People.findOne(
       { _id: req.params.id, organizationId: req.user.organizationId, deletedAt: null }
     ).lean();
+
+    if (
+      previous
+      && Object.prototype.hasOwnProperty.call(updateData, 'assignedTo')
+      && String(updateData.assignedTo || '') !== String(previous.assignedTo || '')
+      && updateData.assignedTo
+    ) {
+      const { validateRecordAssignmentRequest } = require('../services/recordAssignmentService');
+      const assignCheck = await validateRecordAssignmentRequest(req, updateData.assignedTo, { skipSelf: true });
+      if (assignCheck) {
+        return res.status(assignCheck.status).json(assignCheck.body);
+      }
+    }
 
     // Redirect type / sales_type / lead_status / contact_status / helpdesk_role → participations (source of truth)
     const {

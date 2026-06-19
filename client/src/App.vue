@@ -365,11 +365,11 @@ watch(
           cleanupRouteWatcher = null;
         }
         
-        // Use the same initialization logic as onMounted
-        // Use 'route' from useRoute() (same as onMounted) instead of router.currentRoute.value
+        // Post-login route may still be /login while LoginForm navigates to platform home.
+        // Auth lifecycle routes must not skip tab init — only audit/portal shells omit tabs.
         const isAuditRoute = route.path.startsWith('/audit/');
         const isPortalRoute = route.path.startsWith('/portal/');
-        const skipTabsInit = isAuditRoute || isPortalRoute || shouldSkipTabRoute(route.path);
+        const skipTabsInit = isAuditRoute || isPortalRoute;
 
         if (!skipTabsInit) {
           const { configureTabsStorage, useTabs } = await import('@/composables/useTabs');

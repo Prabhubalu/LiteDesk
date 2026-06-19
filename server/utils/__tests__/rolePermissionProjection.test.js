@@ -100,6 +100,20 @@ test('viewAll true when canViewAllData even if module scope is team', () => {
   assert.equal(p.contacts.viewAll, true);
 });
 
+test('canViewAllData ignored when role sanitized for RBAC v2', () => {
+  const { withoutLegacyCapabilitiesWhenRbacV2 } = require('../rbacFeatureFlags');
+  const role = {
+    name: 'Admin',
+    canViewAllData: true,
+    permissions: {
+      contacts: { read: true, create: true, update: true, delete: true, export: false, import: false, scope: 'team' }
+    }
+  };
+  const sanitized = withoutLegacyCapabilitiesWhenRbacV2(role, { settings: { rbacV2Enabled: true } });
+  const p = projectRoleToUserPermissions(sanitized, []);
+  assert.equal(p.contacts.viewAll, false);
+});
+
 test('viewAll when module scope is all', () => {
   const role = {
     name: 'User',

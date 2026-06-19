@@ -9,7 +9,7 @@ function normalizeRoleName(user) {
 
 function isPrivilegedSystemRoleName(roleName) {
   const name = String(roleName || '').trim();
-  return name === 'Owner' || name === 'Admin';
+  return name === 'Owner' || name === 'Admin' || name === 'Administrator';
 }
 
 function isPrivilegedSystemRole(roleLean) {
@@ -22,7 +22,7 @@ function isTenantPrivilegedUser(user) {
   if (user.isOwner === true) return true;
   if (user._isTenantPrivileged === true) return true;
   const role = normalizeRoleName(user);
-  return role === 'owner' || role === 'admin';
+  return role === 'owner' || role === 'admin' || role === 'administrator';
 }
 
 module.exports = {

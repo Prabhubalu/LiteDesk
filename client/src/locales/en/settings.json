@@ -79,6 +79,522 @@
     "message": "Groups & Teams",
     "description": "Users & Access sub-tab"
   },
+  "usersTabProfiles": {
+    "message": "Profiles",
+    "description": "Users & Access profiles sub-tab (RBAC v2)"
+  },
+  "profilesPageTitle": {
+    "message": "Profiles",
+    "description": "Profiles settings page title"
+  },
+  "profilesPageSubtitle": {
+    "message": "Reusable permission templates linked to roles. Read-only access is a profile, not a role.",
+    "description": "Profiles settings page subtitle"
+  },
+  "profilesCount": {
+    "message": "{count} profile(s)",
+    "description": "Profiles list count"
+  },
+  "profilesCreate": {
+    "message": "Create profile",
+    "description": "Create profile button"
+  },
+  "profilesEmptyTitle": {
+    "message": "No profiles yet",
+    "description": "Empty profiles state title"
+  },
+  "profilesEmptyBody": {
+    "message": "Seed RBAC v2 or create a custom profile to define module permissions.",
+    "description": "Empty profiles state body"
+  },
+  "profilesColName": {
+    "message": "Name",
+    "description": "Profiles table column"
+  },
+  "profilesColDescription": {
+    "message": "Description",
+    "description": "Profiles table column"
+  },
+  "profilesColType": {
+    "message": "Type",
+    "description": "Profiles table column"
+  },
+  "profilesColActions": {
+    "message": "Actions",
+    "description": "Profiles table column"
+  },
+  "profilesNoDescription": {
+    "message": "No description",
+    "description": "Profile without description"
+  },
+  "profilesSystemBadge": {
+    "message": "System",
+    "description": "System profile badge"
+  },
+  "profilesCustomBadge": {
+    "message": "Custom",
+    "description": "Custom profile badge"
+  },
+  "profilesClone": {
+    "message": "Clone",
+    "description": "Clone profile action"
+  },
+  "profilesCloneNamePrompt": {
+    "message": "Name for the cloned profile",
+    "description": "Clone profile prompt"
+  },
+  "profilesCloneFailed": {
+    "message": "Failed to clone profile",
+    "description": "Clone profile error"
+  },
+  "profilesDeleteConfirm": {
+    "message": "Delete profile \"{name}\"? Roles using it must be updated first.",
+    "description": "Delete profile confirm"
+  },
+  "profilesDeleteFailed": {
+    "message": "Failed to delete profile",
+    "description": "Delete profile error"
+  },
+  "profileDrawerCreate": {
+    "message": "Create profile",
+    "description": "Profile drawer create title"
+  },
+  "profileDrawerEdit": {
+    "message": "Edit profile",
+    "description": "Profile drawer edit title"
+  },
+  "profileDrawerSubtitle": {
+    "message": "Module and field capabilities assigned via this profile.",
+    "description": "Profile drawer subtitle"
+  },
+  "profileDrawerSystemLocked": {
+    "message": "System profile — name locked",
+    "description": "System profile notice"
+  },
+  "profileDrawerNavAria": {
+    "message": "Profile editor sections",
+    "description": "Profile drawer nav aria"
+  },
+  "profileDrawerTabOverview": {
+    "message": "Overview",
+    "description": "Profile drawer tab"
+  },
+  "profileDrawerTabPermissions": {
+    "message": "Permissions",
+    "description": "Profile drawer tab"
+  },
+  "profileDrawerName": {
+    "message": "Profile name",
+    "description": "Profile name label"
+  },
+  "profileDrawerNamePh": {
+    "message": "e.g. Sales Standard",
+    "description": "Profile name placeholder"
+  },
+  "profileDrawerDescription": {
+    "message": "Description",
+    "description": "Profile description label"
+  },
+  "profileDrawerDescriptionPh": {
+    "message": "What this profile is for",
+    "description": "Profile description placeholder"
+  },
+  "profileDrawerSave": {
+    "message": "Save profile",
+    "description": "Save profile button"
+  },
+  "profileDrawerCreateBtn": {
+    "message": "Create profile",
+    "description": "Create profile submit"
+  },
+  "profileDrawerSaveFailed": {
+    "message": "Failed to save profile",
+    "description": "Profile save error"
+  },
+  "roleDrawerTabApps": {
+    "message": "Apps & seats",
+    "description": "Role drawer apps tab (RBAC v2)"
+  },
+  "roleDrawerPrivileges": {
+    "message": "Privileges",
+    "description": "Role drawer privileges section"
+  },
+  "roleDrawerUserType": {
+    "message": "User type",
+    "description": "Role user type field"
+  },
+  "roleDrawerUserTypeSystem": {
+    "message": "System",
+    "description": "System user type option"
+  },
+  "roleDrawerPrivilegeMode": {
+    "message": "Permission source",
+    "description": "Role privilege mode field"
+  },
+  "roleDrawerPrivilegeInline": {
+    "message": "Inline on role",
+    "description": "Inline privilege mode"
+  },
+  "roleDrawerPrivilegeProfile": {
+    "message": "Linked profile",
+    "description": "Profile privilege mode"
+  },
+  "roleDrawerLinkedProfile": {
+    "message": "Profile",
+    "description": "Linked profile field"
+  },
+  "roleDrawerProfileNone": {
+    "message": "None selected",
+    "description": "No profile selected"
+  },
+  "roleDrawerLinkedProfileHint": {
+    "message": "Permissions on the Permissions tab are read-only when a profile is linked.",
+    "description": "Linked profile hint"
+  },
+  "roleDrawerRecordAssignment": {
+    "message": "Record assignment",
+    "description": "Record assignment section title in role drawer"
+  },
+  "roleDrawerRecordAssignmentHint": {
+    "message": "Controls which users and groups members of this role can assign records to.",
+    "description": "Record assignment section hint"
+  },
+  "roleDrawerRecordAssignmentUsers": {
+    "message": "Assign to users",
+    "description": "Record assignment users policy label"
+  },
+  "roleDrawerRecordAssignmentUsersSameHierarchy": {
+    "message": "Same role or subordinates",
+    "description": "Record assignment users policy option"
+  },
+  "roleDrawerRecordAssignmentUsersSubordinates": {
+    "message": "Subordinates only",
+    "description": "Record assignment users policy option"
+  },
+  "roleDrawerRecordAssignmentUsersAll": {
+    "message": "All users in organization",
+    "description": "Record assignment users policy option"
+  },
+  "roleDrawerRecordAssignmentGroups": {
+    "message": "Assign to groups",
+    "description": "Record assignment groups policy label"
+  },
+  "roleDrawerRecordAssignmentGroupsMember": {
+    "message": "Member groups only",
+    "description": "Record assignment groups policy option"
+  },
+  "roleDrawerRecordAssignmentGroupsSelected": {
+    "message": "Selected groups only",
+    "description": "Record assignment groups policy option"
+  },
+  "roleDrawerRecordAssignmentGroupsAll": {
+    "message": "All groups",
+    "description": "Record assignment groups policy option"
+  },
+  "roleDrawerRecordAssignmentGroupsNone": {
+    "message": "No group assignment",
+    "description": "Record assignment groups policy option"
+  },
+  "roleDrawerPermsFromProfileTitle": {
+    "message": "Permissions from profile",
+    "description": "Profile-linked permissions notice title"
+  },
+  "roleDrawerPermsFromProfileBody": {
+    "message": "Module permissions come from \"{profile}\". Expand a module below to override field access for this role.",
+    "description": "Profile-linked permissions notice body"
+  },
+  "roleDrawerAppsIntro": {
+    "message": "Choose which applications this role can access. Module and field permissions below update based on your selection.",
+    "description": "Role apps section intro on access tab"
+  },
+  "roleDrawerAccessStepApps": {
+    "message": "1 · Application access",
+    "description": "Access tab step label for app entitlements"
+  },
+  "roleDrawerAccessStepModules": {
+    "message": "2 · Module permissions",
+    "description": "Access tab step label for module permissions"
+  },
+  "roleDrawerAccessStepFields": {
+    "message": "3 · Field-level access",
+    "description": "Access tab step label for field permissions"
+  },
+  "roleDrawerAccessNoAppsSelected": {
+    "message": "Select at least one application to configure shared and app-specific modules.",
+    "description": "Empty state when no app entitlements selected"
+  },
+  "roleDrawerAccessPlatformSectionHint": {
+    "message": "Cross-application administration — available regardless of app seats.",
+    "description": "Hint under platform administration section"
+  },
+  "roleDrawerAccessCoreSectionHint": {
+    "message": "Shared data modules used across your selected applications.",
+    "description": "Hint under core modules section"
+  },
+  "roleDrawerAccessProfilePreviewHint": {
+    "message": "Module access comes from profile “{profile}”. Expand a module to override field access for this role.",
+    "description": "Hint when role uses linked profile"
+  },
+  "roleDrawerAccessProfileLoadingFailed": {
+    "message": "Could not load profile permissions for preview.",
+    "description": "Error when profile preview fails"
+  },
+  "roleDrawerFieldPermsFromProfile": {
+    "message": "Field restrictions are defined on the linked profile (read-only preview).",
+    "description": "Field permissions note in profile mode"
+  },
+  "roleDrawerFieldOverridesHint": {
+    "message": "Expand a module below to override field access for this role. Overrides apply on top of the linked profile.",
+    "description": "Hint for role-level field overrides when profile is linked"
+  },
+  "roleDrawerModuleFields": {
+    "message": "Field permissions",
+    "description": "Toggle label for inline field permissions under a module"
+  },
+  "roleDrawerModuleFieldsRequiresRead": {
+    "message": "Set module access to Read or higher to configure field permissions.",
+    "description": "Hint when module has no read access for field configuration"
+  },
+  "roleDrawerFieldModulesHint": {
+    "message": "Expand Field permissions on any module below after granting read access.",
+    "description": "Hint for field-level permissions in role drawer"
+  },
+  "fieldPermsInheritFromProfile": {
+    "message": "Inherit from profile",
+    "description": "Field permission inherit option when role uses a profile"
+  },
+  "fieldPermsProfileDefault": {
+    "message": "Profile default: {level}",
+    "description": "Shows inherited field level from linked profile"
+  },
+  "fieldPermsAppScope": {
+    "message": "Scoped to {app}",
+    "description": "Field permission app scope badge"
+  },
+  "fieldPermsSharedScope": {
+    "message": "Shared across apps",
+    "description": "Field permission shared core scope badge"
+  },
+  "fieldPermsEmptyModules": {
+    "message": "Grant read access to a module above to configure its fields.",
+    "description": "Empty field permissions when no readable modules"
+  },
+  "roleDrawerAppsEmpty": {
+    "message": "No applications available for this organization.",
+    "description": "Role apps tab empty"
+  },
+  "roleDrawerAppRoleLabel": {
+    "message": "App role in {app}",
+    "description": "Per-app role label in role drawer"
+  },
+  "inviteRbacV2RoleHint": {
+    "message": "App access and permissions are derived from the selected role.",
+    "description": "RBAC v2 invite role hint"
+  },
+  "inviteRbacV2PreviewTitle": {
+    "message": "Access preview",
+    "description": "RBAC v2 invite preview title"
+  },
+  "inviteRbacV2Profile": {
+    "message": "Profile: {profile}",
+    "description": "RBAC v2 invite profile chip"
+  },
+  "inviteRbacV2NoApps": {
+    "message": "No app entitlements on this role.",
+    "description": "RBAC v2 invite no apps"
+  },
+  "roleDrawerTabFields": {
+    "message": "Field permissions",
+    "description": "Role drawer field permissions tab"
+  },
+  "profileDrawerTabFields": {
+    "message": "Field permissions",
+    "description": "Profile drawer field permissions tab"
+  },
+  "fieldPermsIntro": {
+    "message": "Tighten access per field. Inherit uses module-level permissions only.",
+    "description": "Field permissions editor intro"
+  },
+  "fieldPermsRoleIntro": {
+    "message": "Inline field rules for this role. When a profile is linked, edit field rules on the profile instead.",
+    "description": "Role field permissions intro"
+  },
+  "fieldPermsEmpty": {
+    "message": "No field catalog available for deals or people in this organization.",
+    "description": "Field permissions empty state"
+  },
+  "fieldPermsModuleHint": {
+    "message": "Inherit · Write · Read-only · Hidden",
+    "description": "Field permissions module hint"
+  },
+  "fieldPermsInherit": {
+    "message": "Inherit",
+    "description": "Field permission inherit option"
+  },
+  "fieldPermsWrite": {
+    "message": "Write",
+    "description": "Field permission write option"
+  },
+  "fieldPermsRead": {
+    "message": "Read-only",
+    "description": "Field permission read option"
+  },
+  "fieldPermsHidden": {
+    "message": "Hidden",
+    "description": "Field permission hidden option"
+  },
+  "usersTabSharing": {
+    "message": "Sharing",
+    "description": "Users & Access sharing sub-tab"
+  },
+  "sharingPageTitle": {
+    "message": "Organization sharing",
+    "description": "Sharing settings page title"
+  },
+  "sharingPageSubtitle": {
+    "message": "Default record visibility per module. Private uses role hierarchy — managers see subordinates' records.",
+    "description": "Sharing settings subtitle"
+  },
+  "sharingColApp": {
+    "message": "App",
+    "description": "Sharing table column"
+  },
+  "sharingColModule": {
+    "message": "Module",
+    "description": "Sharing table column"
+  },
+  "sharingColMode": {
+    "message": "Default access",
+    "description": "Sharing table column"
+  },
+  "sharingLoadFailed": {
+    "message": "Failed to load sharing defaults",
+    "description": "Sharing load error"
+  },
+  "sharingSaveFailed": {
+    "message": "Failed to update sharing default",
+    "description": "Sharing save error"
+  },
+  "sharingPrivateHint": {
+    "message": "Private: users see records owned by themselves and by users in the same or subordinate roles. Custom rules (P5) add exceptions on top.",
+    "description": "Sharing private mode hint"
+  },
+  "sharingMode_public_read": {
+    "message": "Public Read Only",
+    "description": "Sharing mode label"
+  },
+  "sharingMode_public_read_write": {
+    "message": "Public Read/Write",
+    "description": "Sharing mode label"
+  },
+  "sharingMode_public_read_write_delete": {
+    "message": "Public Read/Write/Delete",
+    "description": "Sharing mode label"
+  },
+  "sharingMode_private": {
+    "message": "Private",
+    "description": "Sharing mode label"
+  },
+  "sharingMode_record_level": {
+    "message": "Record Level",
+    "description": "Sharing mode label"
+  },
+  "sharingRulesEmpty": {
+    "message": "No custom rules — default mode only.",
+    "description": "Empty custom rules for module"
+  },
+  "sharingRuleAdd": {
+    "message": "Add custom rule",
+    "description": "Add sharing rule button"
+  },
+  "sharingRuleEdit": {
+    "message": "Edit custom rule",
+    "description": "Edit sharing rule title"
+  },
+  "sharingRuleName": {
+    "message": "Rule name",
+    "description": "Sharing rule name field"
+  },
+  "sharingRuleSource": {
+    "message": "Records owned by",
+    "description": "Sharing rule source label"
+  },
+  "sharingRuleTarget": {
+    "message": "Also visible to",
+    "description": "Sharing rule target label"
+  },
+  "sharingRulePrivilege": {
+    "message": "Privilege",
+    "description": "Sharing rule privilege field"
+  },
+  "sharingRulePriority": {
+    "message": "Priority",
+    "description": "Sharing rule priority field"
+  },
+  "sharingRuleEnabled": {
+    "message": "Enabled",
+    "description": "Sharing rule enabled toggle"
+  },
+  "sharingRuleSelectRole": {
+    "message": "Select role",
+    "description": "Sharing rule role placeholder"
+  },
+  "sharingRuleSelectGroup": {
+    "message": "Select group",
+    "description": "Sharing rule group placeholder"
+  },
+  "sharingRuleSaveFailed": {
+    "message": "Failed to save sharing rule",
+    "description": "Sharing rule save error"
+  },
+  "sharingRuleDeleteConfirm": {
+    "message": "Delete rule \"{name}\"?",
+    "description": "Delete sharing rule confirm"
+  },
+  "sharingRuleDeleteFailed": {
+    "message": "Failed to delete sharing rule",
+    "description": "Delete sharing rule error"
+  },
+  "sharingParty_role": {
+    "message": "Role",
+    "description": "Sharing party type"
+  },
+  "sharingParty_role_subtree": {
+    "message": "Role & subordinates",
+    "description": "Sharing party type"
+  },
+  "sharingParty_group": {
+    "message": "Group",
+    "description": "Sharing party type"
+  },
+  "sharingParty_user": {
+    "message": "User",
+    "description": "Sharing party type"
+  },
+  "sharingParty_all_internal": {
+    "message": "All internal users",
+    "description": "Sharing party type"
+  },
+  "sharingPrivilege_read": {
+    "message": "Read only",
+    "description": "Sharing privilege"
+  },
+  "sharingPrivilege_read_write": {
+    "message": "Read / Write",
+    "description": "Sharing privilege"
+  },
+  "sharingSectionPlatform": {
+    "message": "Platform Administration",
+    "description": "Sharing settings section for cross-app platform modules"
+  },
+  "sharingSectionAppHint": {
+    "message": "App-specific modules for {app}.",
+    "description": "Hint under per-app sharing section"
+  },
+  "sharingAppSectionEmpty": {
+    "message": "No app-specific modules. Shared modules are configured under Core Modules above.",
+    "description": "Empty state when an enabled app has no app-exclusive sharing defaults"
+  },
   "tabCoreModules": {
     "message": "Core Modules",
     "description": "Core modules settings tab"
@@ -2488,8 +3004,52 @@
     "description": "Users table user type column"
   },
   "rolesPageSubtitle": {
-    "message": "Manage custom roles, permissions, and organizational hierarchy",
+    "message": "Define who can do what — organize roles in a list or hierarchy",
     "description": "Roles page subtitle"
+  },
+  "rolesViewList": {
+    "message": "List",
+    "description": "Roles list view toggle"
+  },
+  "rolesViewHierarchy": {
+    "message": "Hierarchy",
+    "description": "Roles hierarchy view toggle"
+  },
+  "rolesViewToggleAria": {
+    "message": "Roles view mode",
+    "description": "Aria label for list/hierarchy toggle"
+  },
+  "rolesSearchPh": {
+    "message": "Search roles…",
+    "description": "Roles list search placeholder"
+  },
+  "rolesSearchEmpty": {
+    "message": "No roles match \"{query}\"",
+    "description": "Roles search empty state"
+  },
+  "rolesHierarchyHint": {
+    "message": "Drag roles to reparent · click a role to edit",
+    "description": "Hierarchy view hint"
+  },
+  "rolesListColRole": {
+    "message": "Role",
+    "description": "Roles table role column"
+  },
+  "rolesListColReportsTo": {
+    "message": "Reports to",
+    "description": "Roles table parent column"
+  },
+  "rolesListColUsers": {
+    "message": "Users",
+    "description": "Roles table users column"
+  },
+  "rolesListColLevel": {
+    "message": "Level",
+    "description": "Roles table level column"
+  },
+  "rolesListColActions": {
+    "message": "Actions",
+    "description": "Roles table actions column sr-only"
   },
   "rolesTabManagement": {
     "message": "Roles Management",
@@ -3067,6 +3627,46 @@
     "message": "Permissions",
     "description": "Permissions tab"
   },
+  "roleDrawerTabGeneral": {
+    "message": "General",
+    "description": "Role drawer general tab"
+  },
+  "roleDrawerTabAccess": {
+    "message": "Access",
+    "description": "Role drawer access tab"
+  },
+  "roleDrawerTabMore": {
+    "message": "More",
+    "description": "Role drawer more settings tab"
+  },
+  "roleDrawerProfileCardTitle": {
+    "message": "How should this role get permissions?",
+    "description": "Profile card title in role drawer"
+  },
+  "roleDrawerProfileCardHint": {
+    "message": "Link a profile for consistent, easy-to-manage access. Use inline permissions only when you need a one-off role.",
+    "description": "Profile card hint"
+  },
+  "roleDrawerAppearanceOptional": {
+    "message": "Appearance (optional)",
+    "description": "Collapsible appearance section"
+  },
+  "roleDrawerPresetReadOnly": {
+    "message": "All read only",
+    "description": "Apply read-only to all modules"
+  },
+  "roleDrawerPresetStandard": {
+    "message": "Standard user",
+    "description": "Apply standard edit access preset"
+  },
+  "roleDrawerPresetFull": {
+    "message": "Full access",
+    "description": "Apply full access preset"
+  },
+  "roleDrawerPresetNone": {
+    "message": "Clear all",
+    "description": "Clear all module access"
+  },
   "roleDrawerSystemNoticeTitle": {
     "message": "This role is managed by the system",
     "description": "System notice title"
@@ -3390,6 +3990,10 @@
   "roleDrawerAccessModeReadOnly": {
     "message": "Read only",
     "description": "Access mode read only"
+  },
+  "roleDrawerAccessModeEdit": {
+    "message": "Can edit",
+    "description": "Access mode can edit without delete"
   },
   "roleDrawerAccessModeFull": {
     "message": "Full",
@@ -10190,6 +10794,154 @@
   "settingsHierarchyLegendClickRole": {
     "message": "Click on any role to view or edit its details",
     "description": "Hierarchy legend item"
+  },
+  "settingsHierarchyLegendDrag": {
+    "message": "Drag a role onto another to reparent it, or drop on the root zone to make it top-level",
+    "description": "Hierarchy legend drag item"
+  },
+  "settingsHierarchyDropRoot": {
+    "message": "Drop here to move the role to the top level (no parent)",
+    "description": "Hierarchy root drop zone"
+  },
+  "settingsHierarchyMoveFailed": {
+    "message": "Could not move role in hierarchy",
+    "description": "Hierarchy move error"
+  },
+  "settingsHierarchyAlreadyThere": {
+    "message": "This role is already under that position",
+    "description": "Hierarchy move no-op when parent unchanged"
+  },
+  "settingsHierarchyInfoBanner": {
+    "message": "Every user is assigned to a role. With private sharing, users typically see records owned by themselves and users in subordinate roles. Drag roles to reorganize reporting lines.",
+    "description": "Hierarchy info banner"
+  },
+  "settingsHierarchySearchPh": {
+    "message": "Search roles and users in tree…",
+    "description": "Hierarchy tree search"
+  },
+  "settingsHierarchySearchEmpty": {
+    "message": "No roles or users match \"{query}\" in the hierarchy",
+    "description": "Hierarchy search empty"
+  },
+  "settingsHierarchyNodeHint": {
+    "message": "Click to edit",
+    "description": "Hierarchy node click hint"
+  },
+  "settingsHierarchyDragHint": {
+    "message": "Drag a role card to reorder or reparent. Click a role to edit.",
+    "description": "Hierarchy drag instruction in toolbar"
+  },
+  "settingsHierarchyRoleDragHint": {
+    "message": "Drag to move · Click to edit",
+    "description": "Draggable role card tooltip"
+  },
+  "settingsHierarchyToolbarHint": {
+    "message": "Organize reporting lines and assign users inline",
+    "description": "Hierarchy view subtitle in roles page toolbar"
+  },
+  "settingsHierarchyDragHandle": {
+    "message": "Drag to move role",
+    "description": "Drag handle tooltip"
+  },
+  "settingsHierarchyAddChild": {
+    "message": "Add subordinate role",
+    "description": "Add child role action"
+  },
+  "settingsHierarchyAddRootRole": {
+    "message": "Add role",
+    "description": "Add top-level role under organization"
+  },
+  "settingsHierarchyOrgRoot": {
+    "message": "Organization",
+    "description": "Synthetic org root label fallback"
+  },
+  "settingsHierarchyExpand": {
+    "message": "Expand branch",
+    "description": "Expand hierarchy branch"
+  },
+  "settingsHierarchyCollapse": {
+    "message": "Collapse branch",
+    "description": "Collapse hierarchy branch"
+  },
+  "settingsHierarchyToggleUsers": {
+    "message": "Show or hide users assigned to this role",
+    "description": "Hierarchy user count toggle"
+  },
+  "settingsHierarchyUsersLoading": {
+    "message": "Loading users…",
+    "description": "Hierarchy users loading"
+  },
+  "settingsHierarchyUsersEmpty": {
+    "message": "No users assigned to this role",
+    "description": "Hierarchy users empty"
+  },
+  "settingsHierarchyUserHint": {
+    "message": "Click to edit user",
+    "description": "Hierarchy user leaf hint"
+  },
+  "settingsHierarchyUserFallback": {
+    "message": "User",
+    "description": "Hierarchy user fallback name"
+  },
+  "settingsHierarchyInviteToRole": {
+    "message": "Invite to this role",
+    "description": "Invite user action on empty role branch"
+  },
+  "settingsHierarchyShowAllUsers": {
+    "message": "Show all users",
+    "description": "Toggle to expand all role user branches"
+  },
+  "settingsHierarchyShowAllUsersHint": {
+    "message": "Display every assigned user inline — useful for small teams",
+    "description": "Show all users toggle hint"
+  },
+  "settingsHierarchyExpandAll": {
+    "message": "Expand all",
+    "description": "Expand entire hierarchy tree"
+  },
+  "settingsHierarchyCollapseAll": {
+    "message": "Collapse all",
+    "description": "Collapse entire hierarchy tree"
+  },
+  "settingsHierarchyMoveSuccess": {
+    "message": "Moved {name}",
+    "description": "Role move success toast"
+  },
+  "settingsHierarchyMoveUndoHint": {
+    "message": "Tap to undo",
+    "description": "Undo hint on role move toast"
+  },
+  "settingsHierarchyUserMoved": {
+    "message": "User reassigned to role",
+    "description": "User drag reassignment success"
+  },
+  "settingsHierarchyUserMoveFailed": {
+    "message": "Could not reassign user to that role",
+    "description": "User drag reassignment failure"
+  },
+  "settingsHierarchyUserDragHint": {
+    "message": "Drag to another role to reassign",
+    "description": "User leaf drag handle tooltip"
+  },
+  "settingsHierarchyAvatarStackHint": {
+    "message": "Users assigned to this role",
+    "description": "Avatar stack tooltip on role row"
+  },
+  "settingsHierarchyUserDropOverlay": {
+    "message": "Drop on a role to reassign this user",
+    "description": "User drag overlay hint"
+  },
+  "settingsHierarchyCompact": {
+    "message": "Compact",
+    "description": "Compact density toggle label"
+  },
+  "settingsHierarchyCompactHint": {
+    "message": "Tighter spacing for large role trees",
+    "description": "Compact density toggle hint"
+  },
+  "settingsHierarchyRoleAria": {
+    "message": "{name}, {count} users. Use arrow keys to navigate.",
+    "description": "Role card aria label for keyboard navigation"
   },
   "settingsSalesPeopleTitle": {
     "message": "People Configuration Moved",
