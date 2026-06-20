@@ -597,6 +597,8 @@ type ColumnObjectDef = {
   resizable?: boolean
   locked?: boolean
   dataType?: string
+  filterType?: FilterConfig['filterType']
+  options?: Array<{ value: string; label: string }>
 }
 type ColumnDef = ColumnObjectDef | string
 type RowData = Record<string, unknown>

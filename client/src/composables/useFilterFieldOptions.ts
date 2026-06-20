@@ -17,6 +17,15 @@ const BOOLEAN_OPTIONS: FilterConfig['options'] = [
   { value: 'false', label: 'No' },
 ];
 
+type DocumentFolderRow = {
+  _id?: string;
+  id?: string;
+  name?: string;
+  path?: string;
+};
+
+type FilterSelectOption = NonNullable<FilterConfig['options']>[number];
+
 export function useFilterFieldOptions(
   moduleKey: Ref<string> | ComputedRef<string>,
   currentUserId: Ref<string | undefined>
@@ -110,13 +119,13 @@ export function useFilterFieldOptions(
     try {
       const response = await apiClient.get('/document-folders', { params: { all: '1' } });
       const rows = response?.success && Array.isArray(response?.data) ? response.data : [];
-      optionsByKey[key] = rows.map((folder) => {
+      optionsByKey[key] = rows.map((folder: DocumentFolderRow) => {
         const id = String(folder?._id ?? folder?.id ?? '');
         const name = String(folder?.name || '').trim() || id;
         const path = String(folder?.path || '').trim();
         const label = path && path !== `/${name}` ? `${name} (${path})` : name;
         return { value: id, label };
-      }).filter((option) => Boolean(option.value));
+      }).filter((option: FilterSelectOption) => Boolean(option.value));
       if (key === 'folderId' || key === 'folderName') {
         optionsByKey.folderId = optionsByKey[key];
         optionsByKey.folderName = optionsByKey[key];
