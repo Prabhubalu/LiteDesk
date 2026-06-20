@@ -227,6 +227,15 @@ function projectRoleToUserPermissions(rolePlain, appAccess = []) {
     delete: false
   };
 
+  const documents = {
+    view: p.documents?.read === true,
+    create: p.documents?.create === true,
+    edit: p.documents?.update === true,
+    delete: p.documents?.delete === true,
+    viewAll: viewAllForModule(p.documents, rolePlain),
+    exportData: p.documents?.export === true
+  };
+
   const settings = {
     view: p.settings?.view === true,
     manageUsers:
@@ -295,6 +304,7 @@ function projectRoleToUserPermissions(rolePlain, appAccess = []) {
     webforms,
     items,
     imports,
+    documents,
     settings,
     performance,
     reports,
@@ -381,6 +391,14 @@ function ensurePermissionEnvelopeDefaults(merged) {
   });
   ensureModule('cases', { view: false, create: false, edit: false, delete: false, viewAll: false });
   ensureModule('imports', { view: false, create: false, delete: false });
+  ensureModule('documents', {
+    view: false,
+    create: false,
+    edit: false,
+    delete: false,
+    viewAll: false,
+    exportData: false
+  });
   ensureModule('settings', {
     view: false,
     edit: false,

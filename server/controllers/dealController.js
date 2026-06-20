@@ -2697,6 +2697,22 @@ exports.uploadDealCommentAttachment = async (req, res) => {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
     const uploadResult = await persistMulterUpload(req, 'comments');
+    let documentId = null;
+    try {
+      const documentService = require('../services/documentService');
+      const registration = await documentService.registerCommentAttachmentAsDocument({
+        organizationId: req.user.organizationId,
+        userId: req.user._id,
+        moduleKey: 'deals',
+        recordId: req.params.id,
+        appKey: req.appKey || 'SALES',
+        uploadResult,
+        file: req.file
+      });
+      documentId = registration?.document?._id ? String(registration.document._id) : null;
+    } catch (registerError) {
+      console.error('Deal comment attachment document registration failed:', registerError.message);
+    }
     res.json({
       success: true,
       url: uploadResult.url,
@@ -2704,7 +2720,8 @@ exports.uploadDealCommentAttachment = async (req, res) => {
       filename: uploadResult.storedFileName,
       originalname: req.file.originalname,
       size: req.file.size,
-      mimetype: req.file.mimetype
+      mimetype: req.file.mimetype,
+      documentId
     });
   } catch (error) {
     console.error('Upload deal comment attachment error:', error);
@@ -2736,7 +2753,21 @@ exports.createDealComment = async (req, res) => {
     }
 
     const validAttachments = Array.isArray(attachments)
-      ? attachments.filter(a => a && typeof a.url === 'string' && typeof a.filename === 'string').slice(0, 10)
+      ? attachments
+        .filter((a) => a && typeof a.url === 'string' && typeof a.filename === 'string')
+        .slice(0, 10)
+        .map((a) => {
+          const row = {
+            url: a.url,
+            filename: a.filename,
+            size: a.size || 0,
+            mimetype: a.mimetype || ''
+          };
+          if (a.documentId && mongoose.Types.ObjectId.isValid(a.documentId)) {
+            row.documentId = a.documentId;
+          }
+          return row;
+        })
       : [];
 
     let validatedParentCommentId = null;

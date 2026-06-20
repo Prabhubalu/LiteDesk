@@ -40,6 +40,10 @@
         
         <!-- Page actions (top right) -->
         <template #pageActions>
+          <RecordPresenceAvatars
+            v-if="showRecordPresenceAvatars"
+            :sessions="recordPresenceOthers"
+          />
           <button
             type="button"
             @click="showEditDrawer = true"
@@ -1350,6 +1354,23 @@
             </div>
           </div>
         </template>
+        <template v-if="showRecordDocumentsTab" #tab-documents>
+          <div class="flex h-full flex-col">
+            <div class="record-context-panel__header flex flex-shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+              <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.genericTabDocuments') }}</h2>
+            </div>
+            <div class="min-h-0 flex-1 overflow-y-auto p-4">
+              <RecordDocumentsPanel
+                v-if="task?._id"
+                module-key="tasks"
+                :record-id="String(task._id)"
+                app-key="PLATFORM"
+                :can-create="canCreateDocuments"
+                :can-edit="canEditDocuments"
+              />
+            </div>
+          </div>
+        </template>
         <template #tab-integrations>
           <div class="flex flex-col h-full">
             <!-- Integrations header -->
@@ -1621,6 +1642,8 @@ import { useRecordPageLifecycle } from '@/components/record-page/composables/use
 import { useStickyTitleRow } from '@/components/record-page/composables/useStickyTitleRow';
 import RecordPageTitleRow from '@/components/record-page/RecordPageTitleRow.vue';
 import EditableTitle from '@/components/record-page/EditableTitle.vue';
+import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
+import { useRecordPresence } from '@/composables/useRecordPresence';
 import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import {
@@ -1631,6 +1654,8 @@ import {
 } from '@/components/record-page/activityEventModel';
 import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
+import RecordDocumentsPanel from '@/components/record-page/RecordDocumentsPanel.vue';
+import { supportsDocumentAttachments } from '@/constants/documentAttachments';
 import TaskRelatedToField from '@/components/tasks/TaskRelatedToField.vue';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
 import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.vue';
@@ -1670,7 +1695,8 @@ import {
   FaceSmileIcon,
   EnvelopeIcon,
   DocumentTextIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,
+  DocumentDuplicateIcon
 } from '@heroicons/vue/24/outline';
 import {
   StarIcon as StarIconSolid,
@@ -1851,6 +1877,23 @@ const descriptionDisplayRef = ref(null);
 const descriptionMinHeight = ref(null);
 const isDescriptionExpanded = ref(false);
 const expandedLeftSection = ref(null);
+
+const showRecordPresenceAvatars = computed(
+  () => Boolean(effectiveTaskId.value && task.value && authStore.can('tasks', 'view'))
+);
+
+const recordPresenceActivityType = computed(() => {
+  const section = expandedLeftSection.value;
+  if (!section || section === 'key-fields') return 'viewing';
+  return 'editing';
+});
+
+const { otherSessions: recordPresenceOthers } = useRecordPresence(
+  () => 'tasks',
+  () => String(effectiveTaskId.value || task.value?._id || ''),
+  () => recordPresenceActivityType.value
+);
+
 const DESCRIPTION_PREVIEW_LINES = 7;
 const DESCRIPTION_PREVIEW_LINE_HEIGHT_REM = 1.5;
 const DESCRIPTION_PREVIEW_CHAR_THRESHOLD = 600;
@@ -3167,11 +3210,24 @@ watch(activeThreadRootComment, (threadRoot) => {
   activeThreadRootCommentId.value = null;
 });
 
-const rightPaneTabs = computed(() => ([
-  { id: 'activity', name: t('records.genericTabActivity'), icon: ClockIcon },
-  { id: 'related', name: t('records.taskRelatedRecordsTab'), icon: LinkIcon },
-  { id: 'integrations', name: t('records.genericIntegrations'), icon: PuzzlePieceIcon }
-]));
+const canViewDocuments = computed(() => authStore.can?.('documents', 'view') ?? false);
+const canCreateDocuments = computed(() => authStore.can?.('documents', 'create') ?? false);
+const canEditDocuments = computed(() => authStore.can?.('documents', 'edit') ?? false);
+const showRecordDocumentsTab = computed(
+  () => supportsDocumentAttachments('tasks') && canViewDocuments.value && !!task.value?._id
+);
+
+const rightPaneTabs = computed(() => {
+  const tabs = [
+    { id: 'activity', name: t('records.genericTabActivity'), icon: ClockIcon },
+    { id: 'related', name: t('records.taskRelatedRecordsTab'), icon: LinkIcon }
+  ];
+  if (showRecordDocumentsTab.value) {
+    tabs.push({ id: 'documents', name: t('records.genericTabDocuments'), icon: DocumentDuplicateIcon });
+  }
+  tabs.push({ id: 'integrations', name: t('records.genericIntegrations'), icon: PuzzlePieceIcon });
+  return tabs;
+});
 
 const contextRelatedGroups = computed(() => {
   const groups = [];
@@ -4042,7 +4098,8 @@ const handleAddComment = async (payload) => {
             url: result.url,
             filename: result.originalname || file.name,
             size: result.size ?? file.size,
-            mimetype: result.mimetype || file.type
+            mimetype: result.mimetype || file.type,
+            documentId: result.documentId || undefined
           });
         }
       } else {
@@ -4185,7 +4242,8 @@ const saveEditComment = async (submitPayload) => {
             url: result.url,
             filename: result.originalname || file.name,
             size: result.size ?? file.size,
-            mimetype: result.mimetype || file.type
+            mimetype: result.mimetype || file.type,
+            documentId: result.documentId || undefined
           });
         }
       } else {
@@ -5305,6 +5363,18 @@ const handleLinkRecordDrawerLinked = async ({ moduleKey, ids, context, relations
     } else if (payloadRelationshipKey && payloadTargetAppKey) {
       for (const recordId of idsToLink) {
         try {
+          if (normalizedModuleKey === 'documents') {
+            const linkRes = await apiClient.post(`/documents/${recordId}/link`, {
+              moduleKey: 'tasks',
+              recordId: String(task.value._id),
+              appKey: 'PLATFORM'
+            });
+            if (!linkRes?.success) {
+              throw new Error(linkRes?.message || 'Failed to link document');
+            }
+            continue;
+          }
+
           await apiClient.post('/relationships/link', {
             relationshipKey: payloadRelationshipKey,
             source: {
@@ -5328,13 +5398,27 @@ const handleLinkRecordDrawerLinked = async ({ moduleKey, ids, context, relations
       const targetAppKeyByModule = {
         events: 'platform',
         deals: 'sales',
-        forms: 'platform'
+        forms: 'platform',
+        documents: 'platform'
       };
       const targetAppKey = targetAppKeyByModule[normalizedModuleKey];
-      const relationshipKey = payloadRelationshipKey || normalizedModuleKey;
+      const relationshipKey = payloadRelationshipKey
+        || (normalizedModuleKey === 'documents' ? 'task_documents' : normalizedModuleKey);
       if (targetAppKey) {
         for (const recordId of idsToLink) {
           try {
+            if (normalizedModuleKey === 'documents') {
+              const linkRes = await apiClient.post(`/documents/${recordId}/link`, {
+                moduleKey: 'tasks',
+                recordId: String(task.value._id),
+                appKey: 'PLATFORM'
+              });
+              if (!linkRes?.success) {
+                throw new Error(linkRes?.message || 'Failed to link document');
+              }
+              continue;
+            }
+
             await apiClient.post('/relationships/link', {
               relationshipKey,
               source: {

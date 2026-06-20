@@ -1,7 +1,7 @@
 <template>
   <div class="mx-auto w-full">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-4">
+    <div v-if="!hidePageHeader" class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-4">
       <div class="flex-1 min-w-0">
         <div class="flex min-w-0 items-center gap-3">
           <!-- View Selector Dropdown (People module only) -->
@@ -167,16 +167,17 @@
           <div class="sm:hidden flex items-center gap-2 ml-auto">
             <!-- Stats Toggle Button (Mobile) -->
             <button
-              v-if="statsConfig && statsConfig.length > 0"
-              @click="showStats = !showStats"
+              v-if="showStats && statsConfig && statsConfig.length > 0"
+              @click="statsPanelVisible = !statsPanelVisible"
               class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
               :title="statsToggleTitle"
             >
-              <ChartBarIcon v-if="!showStats" class="w-4 h-4" />
+              <ChartBarIcon v-if="!statsPanelVisible" class="w-4 h-4" />
               <XMarkIcon v-else class="w-4 h-4" />
             </button>
             
             <button
+              v-if="!hidePageHeader"
               ref="customizeButtonMobileRef"
               @click="handleCustomizeClick"
               class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
@@ -202,12 +203,12 @@
           
           <!-- Stats Toggle Button (Tablet) -->
           <button
-            v-if="statsConfig && statsConfig.length > 0"
-            @click="showStats = !showStats"
+            v-if="showStats && statsConfig && statsConfig.length > 0"
+            @click="statsPanelVisible = !statsPanelVisible"
             class="hidden sm:inline-flex md:hidden size-8 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
             :title="statsToggleTitle"
           >
-            <ChartBarIcon v-if="!showStats" class="w-4 h-4" />
+            <ChartBarIcon v-if="!statsPanelVisible" class="w-4 h-4" />
             <XMarkIcon v-else class="w-4 h-4" />
           </button>
         </div>
@@ -216,17 +217,18 @@
       <div class="hidden sm:flex items-center gap-2.5 flex-shrink-0">
         <!-- Stats Toggle Button (Desktop) -->
         <button
-          v-if="statsConfig && statsConfig.length > 0"
-          @click="showStats = !showStats"
+          v-if="showStats && statsConfig && statsConfig.length > 0"
+          @click="statsPanelVisible = !statsPanelVisible"
           class="hidden md:inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors bg-white border border-gray-200 dark:border-0 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 cursor-pointer"
           :title="statsToggleTitle"
         >
-          <ChartBarIcon v-if="!showStats" class="w-4 h-4" />
+          <ChartBarIcon v-if="!statsPanelVisible" class="w-4 h-4" />
           <XMarkIcon v-else class="w-4 h-4" />
-          <span>{{ showStats ? t('common.listHideShort') : t('common.listStatsShort') }}</span>
+          <span>{{ statsPanelVisible ? t('common.listHideShort') : t('common.listStatsShort') }}</span>
         </button>
         
         <button
+          v-if="!hidePageHeader"
           ref="customizeButtonDesktopRef"
           @click="handleCustomizeClick"
           class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors bg-white border border-gray-200 dark:border-0 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 cursor-pointer"
@@ -252,9 +254,11 @@
       </div>
     </div>
 
+    <slot name="active-filters" />
+
     <!-- Statistics strip -->
     <div
-      v-if="statsConfig && statsConfig.length > 0 && showStats"
+      v-if="showStats && statsConfig && statsConfig.length > 0 && statsPanelVisible"
       class="mb-4"
     >
       <div
@@ -300,7 +304,7 @@
     </div>
 
     <!-- Search and Filters -->
-    <div class="flex flex-col gap-4 mb-4 relative">
+    <div v-if="!hideSearchToolbar" class="flex flex-col gap-4 mb-4 relative">
       <!-- Mobile, Tablet & Small Desktop: Search, Filters Button, Columns Button in a single row -->
       <div class="flex items-center gap-2.5 lg:hidden">
         <div class="flex-1 min-w-0">
@@ -1503,6 +1507,7 @@ import {
   persistCustomSavedViews,
   saveActiveSavedViewId,
 } from '@/utils/listViewSavedViewsStorage';
+import { applyFilterQueryContainsToFlatFilters } from '@/utils/searchRelevance';
 import {
   SAVED_VIEW_NAME_MAX_LENGTH,
   SAVED_VIEW_NAME_HEADER_DISPLAY_MAX_LENGTH,
@@ -1549,6 +1554,26 @@ const props = defineProps({
   showExport: {
     type: Boolean,
     default: true
+  },
+  /** When false, hides stats toggle and statistics strip entirely */
+  showStats: {
+    type: Boolean,
+    default: true
+  },
+  /** Hides title, description, customize, and header action row (embedded list layouts) */
+  hidePageHeader: {
+    type: Boolean,
+    default: false
+  },
+  /** External customize button element ref for drawer positioning when hidePageHeader is true */
+  externalCustomizeButtonRef: {
+    type: Object,
+    default: null
+  },
+  /** Hides the search input and filter toolbar above the table (parent owns search/filters) */
+  hideSearchToolbar: {
+    type: Boolean,
+    default: false
   },
   searchPlaceholder: {
     type: String,
@@ -1911,6 +1936,12 @@ const customizeButtonMobileRef = ref(null);
 const customizeDrawerTopPx = ref(0);
 
 function resolveCustomizeButtonEl() {
+  const externalRef = props.externalCustomizeButtonRef;
+  const externalEl = externalRef?.value ?? externalRef;
+  if (externalEl instanceof HTMLElement) {
+    const rect = externalEl.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) return externalEl;
+  }
   for (const el of [customizeButtonDesktopRef.value, customizeButtonMobileRef.value]) {
     if (!(el instanceof HTMLElement)) continue;
     const rect = el.getBoundingClientRect();
@@ -2024,21 +2055,21 @@ const getDefaultShowStats = () => {
   return window.innerWidth >= 768; // Show by default on desktop
 };
 
-const showStats = ref(getDefaultShowStats());
+const statsPanelVisible = ref(getDefaultShowStats());
 
 const statsToggleTitle = computed(() =>
-  showStats.value ? t('common.listHideStatistics') : t('common.listShowStatistics')
+  statsPanelVisible.value ? t('common.listHideStatistics') : t('common.listShowStatistics')
 );
 
 // Save stats visibility preference to localStorage
 const saveStatsPreference = () => {
   if (typeof window !== 'undefined') {
-    localStorage.setItem(`arivu-stats-visible-${props.moduleKey}`, showStats.value.toString());
+    localStorage.setItem(`arivu-stats-visible-${props.moduleKey}`, statsPanelVisible.value.toString());
   }
 };
 
-// Watch for changes to showStats and save to localStorage; emit so parent (e.g. Deals) can adjust Kanban height
-watch(showStats, (val) => {
+// Watch for changes to statsPanelVisible and save to localStorage; emit so parent (e.g. Deals) can adjust Kanban height
+watch(statsPanelVisible, (val) => {
   saveStatsPreference();
   emit('stats-visibility-changed', val);
 });
@@ -2051,8 +2082,8 @@ const updateWindowWidth = () => {
 onMounted(() => {
   if (typeof window !== 'undefined') {
     windowWidth.value = window.innerWidth;
-    // Initialize showStats from localStorage or default
-    showStats.value = getDefaultShowStats();
+    // Initialize statsPanelVisible from localStorage or default
+    statsPanelVisible.value = getDefaultShowStats();
     window.addEventListener('resize', updateWindowWidth);
   }
 });
@@ -3053,14 +3084,34 @@ const tableLoading = computed(() => {
 });
 
 // Computed columns based on visible columns (preserve locked for title column width in TableView)
+function findPropsColumnDefinition(key) {
+  const normalized = String(key || '').trim();
+  if (!normalized) return null;
+  const direct = props.columns.find((c) => c.key === normalized);
+  if (direct) return direct;
+  if (normalized === 'folderName') {
+    return props.columns.find((c) => c.key === 'folderId') || null;
+  }
+  return null;
+}
+
+function mergeVisibleColumnWithProps(visibleCol) {
+  const originalCol = findPropsColumnDefinition(visibleCol.key);
+  if (!originalCol) return { ...visibleCol };
+  const canonicalKey = originalCol.key;
+  return {
+    ...visibleCol,
+    ...originalCol,
+    key: canonicalKey,
+    label: visibleCol.label || originalCol.label,
+    locked: visibleCol.locked ?? originalCol.locked,
+  };
+}
+
 const computedColumns = computed(() => {
   const mapped = visibleColumns.value
     .filter(col => col.visible)
-    .map(col => {
-      const originalCol = props.columns.find(c => c.key === col.key);
-      const merged = originalCol ? { ...originalCol, locked: col.locked } : { ...col };
-      return merged;
-    });
+    .map((col) => mergeVisibleColumnWithProps(col));
   if (mapped.length > 0) return mapped;
   // Fallback while visibleColumns is still initializing (async onMounted) or rows are loading.
   // Without this, rows can render with zero data columns and row numbers center in the full table width.
@@ -3094,6 +3145,7 @@ const columnFilterSources = computed(() =>
     key: col.key,
     label: col.label,
     dataType: col.dataType,
+    filterType: col.filterType,
     options: col.options,
   }))
 );
@@ -3105,6 +3157,7 @@ const filterFieldSources = computed(() => {
       key: field.key,
       label: field.label,
       dataType: field.dataType,
+      filterType: field.filterType,
       options: field.options,
     }));
   }
@@ -4018,6 +4071,41 @@ watch(
   { deep: true }
 );
 
+function hydrateExternalFilterQueryPayload(externalFilters) {
+  if (!externalFilters?.filterQuery) return false;
+
+  const hydrated = applyFilterQueryContainsToFlatFilters(
+    externalFilters.filterQuery,
+    filters,
+    ['name', 'title', 'eventName', 'item_name']
+  );
+  if (!hydrated) return false;
+
+  for (const [key, value] of Object.entries(externalFilters)) {
+    if (key === 'filterQuery') continue;
+    if (value !== undefined) {
+      filters[key] = value;
+    }
+  }
+
+  for (const [key, value] of Object.entries(filters)) {
+    if (key === 'filterQuery') continue;
+    if (!isFilterValueActive(value)) continue;
+    const filter = mergedFilterByKey.value[key] || inferFallbackFilterConfig(key);
+    const operator = filterRuleMeta[key]?.operator
+      ?? getDefaultOperatorForFilter(filter);
+    trackFilterRuleMeta(key, 'column', operator);
+  }
+
+  filterBuilderQuery.value = syncRootGroupFromActiveFilters(
+    filterBuilderQuery.value,
+    builderFilterConfigList.value,
+    filters,
+    filterOperatorsMap.value
+  );
+  return true;
+}
+
 // Watch externalFilters prop and sync to internal filters object
 watch(
   () => props.externalFilters,
@@ -4026,6 +4114,11 @@ watch(
 
     const incomingSignature = JSON.stringify(newExternalFilters);
     if (incomingSignature === lastEmittedFiltersSignature) return;
+
+    if (hydrateExternalFilterQueryPayload(newExternalFilters)) {
+      lastEmittedFiltersSignature = incomingSignature;
+      return;
+    }
 
     if (Object.keys(newExternalFilters).length === 0) {
       Object.keys(filters).forEach((key) => {
@@ -5480,4 +5573,8 @@ const handleSetDefaultView = (view) => {
   applySavedViewFromRecord(view, { force: true });
   emit('saved-view-selected', view);
 };
+
+defineExpose({
+  openCustomize: handleCustomizeClick,
+});
 </script>

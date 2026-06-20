@@ -335,6 +335,8 @@ app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/forms', formRoutes.protected); // Protected form routes (Audit / Survey)
 app.use('/api/webforms', webformRoutes.protected); // Protected webform routes
 app.use('/api/reports', reportRoutes);
+app.use('/api/documents', require('./routes/documentRoutes'));
+app.use('/api/document-folders', require('./routes/documentFolderRoutes'));
 app.use('/api/items', itemRoutes);
 app.use('/api/catalog', require('./routes/catalogRoutes'));
 app.use('/api/trash', trashRoutes);
@@ -477,6 +479,15 @@ connectMasterWithRetry(masterUri)
       console.log('✅ Quote relationship defaults ensured');
     } catch (quoteRelError) {
       console.warn('⚠️  Failed to ensure quote relationship defaults:', quoteRelError.message);
+    }
+
+    // 1.66. Register default document attachment relationships (idempotent)
+    try {
+      const { ensureDocumentRelationshipDefinitions } = require('./constants/defaultDocumentRelationships');
+      await ensureDocumentRelationshipDefinitions();
+      console.log('✅ Document attachment relationship defaults registered');
+    } catch (docRelError) {
+      console.warn('⚠️  Failed to register document attachment relationships:', docRelError.message);
     }
 
     // 1.7. Refresh relationship key cache (registry.has) for validation without DB hits

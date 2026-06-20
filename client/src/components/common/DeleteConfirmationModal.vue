@@ -142,7 +142,8 @@ const recordTypeLabel = computed(() => {
     'events': 'Event',
     'item': 'Item',
     'trash item': 'Trash item',
-    'quote line': 'Quote line'
+    'quote line': 'Quote line',
+    'folder': 'Folder'
   };
   return labels[type] || type.charAt(0).toUpperCase() + type.slice(1);
 });

@@ -477,6 +477,11 @@ function determineListEmptyState(
       descriptionKey: 'onboarding.firstTimeOrganizationsDescription',
       actionLabelKey: 'onboarding.firstTimeOrganizationsAction',
     },
+    documents: {
+      titleKey: 'onboarding.firstTimeDocumentsTitle',
+      descriptionKey: 'onboarding.firstTimeDocumentsDescription',
+      actionLabelKey: 'onboarding.firstTimeDocumentsAction',
+    },
   };
 
   if (options?.isFirstModuleVisit && firstTimeByModule[moduleKey]) {

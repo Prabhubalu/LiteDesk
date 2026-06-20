@@ -597,6 +597,8 @@ type ColumnObjectDef = {
   resizable?: boolean
   locked?: boolean
   dataType?: string
+  filterType?: FilterConfig['filterType']
+  options?: Array<{ value: string; label: string }>
 }
 type ColumnDef = ColumnObjectDef | string
 type RowData = Record<string, unknown>
@@ -1484,6 +1486,8 @@ const filterConfigForColumn = (column: ColumnDef): FilterConfig => {
     key: key || colObj.key || '',
     label: columnLabel(column),
     dataType: colObj.dataType,
+    filterType: colObj.filterType,
+    options: colObj.options,
   })
 }
 

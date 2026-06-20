@@ -92,6 +92,9 @@ import type { InvoiceFieldMetadata } from './invoiceFieldModel';
 import { PAYMENT_FIELD_METADATA } from './paymentFieldModel';
 import type { PaymentFieldMetadata } from './paymentFieldModel';
 
+import { DOCUMENT_FIELD_METADATA } from './documentsFieldModel';
+import type { DocumentFieldMetadata } from './documentsFieldModel';
+
 // =============================================================================
 // MODULE KEY TYPE
 // =============================================================================
@@ -100,13 +103,13 @@ import type { PaymentFieldMetadata } from './paymentFieldModel';
  * Stable module key type.
  * Add new modules here as they are created.
  */
-export type ModuleKey = 'people' | 'tasks' | 'organization' | 'deal' | 'event' | 'item' | 'case' | 'quote' | 'salesOrder' | 'invoice' | 'payment';
+export type ModuleKey = 'people' | 'tasks' | 'organization' | 'deal' | 'event' | 'item' | 'case' | 'quote' | 'salesOrder' | 'invoice' | 'payment' | 'documents';
 
 /**
  * All registered module keys.
  * Used for iteration and validation.
  */
-export const MODULE_KEYS: readonly ModuleKey[] = ['people', 'tasks', 'organization', 'deal', 'event', 'item', 'case', 'quote', 'salesOrder', 'invoice', 'payment'] as const;
+export const MODULE_KEYS: readonly ModuleKey[] = ['people', 'tasks', 'organization', 'deal', 'event', 'item', 'case', 'quote', 'salesOrder', 'invoice', 'payment', 'documents'] as const;
 
 /**
  * Map UI module keys (plural) to registry keys (singular).
@@ -142,7 +145,7 @@ export function normalizeModuleKeyForRegistry(moduleKey: string): ModuleKey | un
  * Union type for all module field metadata types.
  * Extends BaseFieldMetadata to ensure compatibility.
  */
-export type AnyFieldMetadata = PeopleFieldMetadata | TaskFieldMetadata | OrganizationFieldMetadata | DealFieldMetadata | EventFieldMetadata | ItemFieldMetadata | CaseFieldMetadata | QuoteFieldMetadata | SalesOrderFieldMetadata | InvoiceFieldMetadata | PaymentFieldMetadata;
+export type AnyFieldMetadata = PeopleFieldMetadata | TaskFieldMetadata | OrganizationFieldMetadata | DealFieldMetadata | EventFieldMetadata | ItemFieldMetadata | CaseFieldMetadata | QuoteFieldMetadata | SalesOrderFieldMetadata | InvoiceFieldMetadata | PaymentFieldMetadata | DocumentFieldMetadata;
 
 /**
  * Type for the field registry map.
@@ -159,6 +162,7 @@ type FieldRegistryMap = {
   readonly salesOrder: Record<string, SalesOrderFieldMetadata>;
   readonly invoice: Record<string, InvoiceFieldMetadata>;
   readonly payment: Record<string, PaymentFieldMetadata>;
+  readonly documents: Record<string, DocumentFieldMetadata>;
 };
 
 /**
@@ -179,6 +183,7 @@ const FIELD_REGISTRY: FieldRegistryMap = {
   salesOrder: SALES_ORDER_FIELD_METADATA,
   invoice: INVOICE_FIELD_METADATA,
   payment: PAYMENT_FIELD_METADATA,
+  documents: DOCUMENT_FIELD_METADATA,
 } as const;
 
 // =============================================================================

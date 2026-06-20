@@ -13,7 +13,8 @@ const emptySnapshot = () => ({
     approvalsPreview: [],
     nextEvent: null,
     mail: { all: 0, unread: 0, assignedToMe: 0, preview: [] },
-    notifications: { unread: 0, preview: [] }
+    notifications: { unread: 0, preview: [] },
+    documents: { pendingReview: 0, expiringSoon: 0, preview: [] }
   },
   resume: [],
   appPulses: [],
@@ -58,6 +59,11 @@ export function usePlatformHome() {
             notifications: {
               unread: data.shell?.notifications?.unread ?? 0,
               preview: data.shell?.notifications?.preview || []
+            },
+            documents: {
+              pendingReview: data.shell?.documents?.pendingReview ?? 0,
+              expiringSoon: data.shell?.documents?.expiringSoon ?? 0,
+              preview: data.shell?.documents?.preview || []
             }
           },
           resume: data.resume || [],

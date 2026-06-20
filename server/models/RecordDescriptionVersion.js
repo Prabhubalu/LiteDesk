@@ -13,6 +13,7 @@ const RecordDescriptionVersionSchema = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
   moduleKey: { type: String, required: true, trim: true, index: true },
   recordId: { type: String, required: true, trim: true, index: true },
+  contentField: { type: String, required: true, trim: true, default: 'description', index: true },
   versions: [{
     content: { type: String, default: '' },
     createdAt: { type: Date, default: Date.now, required: true },
@@ -21,7 +22,7 @@ const RecordDescriptionVersionSchema = new Schema({
 }, { timestamps: true });
 
 RecordDescriptionVersionSchema.index(
-  { organizationId: 1, moduleKey: 1, recordId: 1 },
+  { organizationId: 1, moduleKey: 1, recordId: 1, contentField: 1 },
   { unique: true }
 );
 

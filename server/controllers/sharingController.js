@@ -55,6 +55,32 @@ function validateRulePayload(payload) {
   return null;
 }
 
+function mergeSharingDefaultRows(rows, catalogEntries) {
+  const byKey = new Map(
+    (rows || []).map((row) => [
+      `${String(row.appKey || '').toUpperCase()}:${String(row.moduleKey || '').toLowerCase()}`,
+      row
+    ])
+  );
+
+  for (const entry of catalogEntries || []) {
+    const key = `${String(entry.appKey || '').toUpperCase()}:${String(entry.moduleKey || '').toLowerCase()}`;
+    if (!byKey.has(key)) {
+      byKey.set(key, {
+        appKey: String(entry.appKey || '').toUpperCase(),
+        moduleKey: String(entry.moduleKey || '').toLowerCase(),
+        mode: entry.mode || 'private'
+      });
+    }
+  }
+
+  return [...byKey.values()].sort(
+    (a, b) =>
+      String(a.appKey || '').localeCompare(String(b.appKey || ''))
+      || String(a.moduleKey || '').localeCompare(String(b.moduleKey || ''))
+  );
+}
+
 exports.listSharingDefaults = async (req, res) => {
   try {
     const organization = await ensureSharingEnabled(req, res);
@@ -74,10 +100,11 @@ exports.listSharingDefaults = async (req, res) => {
     rows = await ModuleSharingDefault.find(filter).sort({ appKey: 1, moduleKey: 1 }).lean();
 
     const catalog = await buildDefaultSharingEntries(req.user.organizationId, organization);
+    const mergedRows = mergeSharingDefaultRows(rows, catalog);
 
     res.json({
       success: true,
-      data: rows,
+      data: mergedRows,
       catalog,
       modes: SHARING_MODES
     });

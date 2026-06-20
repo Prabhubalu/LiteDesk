@@ -8,6 +8,8 @@ const DealComment = require('../models/DealComment');
 const Task = require('../models/Task');
 const TaskComment = require('../models/TaskComment');
 const RecordActivity = require('../models/RecordActivity');
+const documentService = require('../services/documentService');
+const recordPresenceService = require('../services/recordPresenceService');
 const User = require('../models/User');
 const mongoose = require('mongoose');
 const { persistMulterUpload } = require('../middleware/uploadMiddleware');
@@ -49,6 +51,20 @@ function isMasterOrganizationRequest(req) {
     || userEmail.endsWith('@arivu.com')
     || userEmail.endsWith('@arivu.io');
   return orgName === 'arivu master' || orgName.includes('arivu master') || isInternalEmail;
+}
+
+async function buildOrganizationRecordAccessQuery(organizationId, recordId, req) {
+  if (isMasterOrganizationRequest(req)) {
+    return {
+      _id: recordId,
+      isTenant: false,
+      deletedAt: null
+    };
+  }
+  const { buildTenantAccessibleCrmOrganizationQuery } = require('../utils/crmOrganizationAccess');
+  return buildTenantAccessibleCrmOrganizationQuery(organizationId, {
+    recordIds: [recordId]
+  });
 }
 
 /**
@@ -485,6 +501,9 @@ exports.getActivity = async (req, res) => {
       if (moduleKey === 'cases') {
         await mergeCaseEmbeddedActivities(events, recordId, organizationId);
       }
+      if (moduleKey === 'documents') {
+        await documentService.mergeDocumentAuditActivity(events, recordId, organizationId);
+      }
     }
 
     events.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
@@ -625,26 +644,40 @@ exports.uploadCommentAttachment = async (req, res) => {
     if (!Model) {
       return res.status(404).json({ success: false, message: `Unknown module: ${moduleKey}` });
     }
-    const baseQuery = { _id: recordObjectId };
-    if (Model.schema?.paths?.deletedAt) {
-      baseQuery.deletedAt = null;
-    }
+    let record;
     if (moduleKey === 'organizations') {
-      const tenantUsers = await User.find({ organizationId }).select('_id').lean();
-      const tenantUserIds = tenantUsers.map((user) => user._id);
-      if (!isMasterOrganizationRequest(req)) {
-        baseQuery.isTenant = false;
-        baseQuery.createdBy = { $in: tenantUserIds };
-      }
+      const baseQuery = await buildOrganizationRecordAccessQuery(organizationId, recordObjectId, req);
+      record = await Model.findOne(baseQuery).select('_id').lean();
     } else {
+      const baseQuery = { _id: recordObjectId };
+      if (Model.schema?.paths?.deletedAt) {
+        baseQuery.deletedAt = null;
+      }
       baseQuery.organizationId = organizationId;
+      record = await Model.findOne(baseQuery).select('_id').lean();
     }
-    const record = await Model.findOne(baseQuery).select('_id').lean();
     if (!record) {
       return res.status(404).json({ success: false, message: 'Record not found' });
     }
 
     const uploadResult = await persistMulterUpload(req, 'comments');
+    let documentId = null;
+    try {
+      const { SOURCE_APP_BY_MODULE } = require('../constants/defaultDocumentRelationships');
+      const documentService = require('../services/documentService');
+      const registration = await documentService.registerCommentAttachmentAsDocument({
+        organizationId,
+        userId: req.user._id,
+        moduleKey,
+        recordId,
+        appKey: SOURCE_APP_BY_MODULE[moduleKey] || 'platform',
+        uploadResult,
+        file: req.file
+      });
+      documentId = registration?.document?._id ? String(registration.document._id) : null;
+    } catch (registerError) {
+      console.error('Module comment attachment document registration failed:', registerError.message);
+    }
     return res.json({
       success: true,
       url: uploadResult.url,
@@ -652,7 +685,8 @@ exports.uploadCommentAttachment = async (req, res) => {
       filename: uploadResult.storedFileName,
       originalname: req.file.originalname,
       size: req.file.size,
-      mimetype: req.file.mimetype
+      mimetype: req.file.mimetype,
+      documentId
     });
   } catch (err) {
     console.error('uploadCommentAttachment error:', err);
@@ -674,11 +708,25 @@ exports.createComment = async (req, res) => {
       return res.status(400).json({ success: false, message: 'moduleKey and recordId are required' });
     }
     const validAttachments = Array.isArray(attachments)
-      ? attachments.filter((attachment) => (
-        attachment
-          && typeof attachment.url === 'string'
-          && typeof attachment.filename === 'string'
-      )).slice(0, 10)
+      ? attachments
+        .filter((attachment) => (
+          attachment
+            && typeof attachment.url === 'string'
+            && typeof attachment.filename === 'string'
+        ))
+        .slice(0, 10)
+        .map((attachment) => {
+          const row = {
+            url: attachment.url,
+            filename: attachment.filename,
+            size: attachment.size || 0,
+            mimetype: attachment.mimetype || ''
+          };
+          if (attachment.documentId && mongoose.Types.ObjectId.isValid(attachment.documentId)) {
+            row.documentId = attachment.documentId;
+          }
+          return row;
+        })
       : [];
     const normalizedContent = typeof content === 'string' ? content.trim() : '';
     if (!normalizedContent && validAttachments.length === 0) {
@@ -1078,7 +1126,7 @@ exports.getNeighbors = async (req, res) => {
 };
 
 const RecordDescriptionVersion = require('../models/RecordDescriptionVersion');
-const { getRecordDescription, setRecordDescription } = require('../utils/descriptionVersionHelper');
+const { getRecordDescription, setRecordDescription, buildVersionDocQuery } = require('../utils/descriptionVersionHelper');
 
 const MODULES_WITH_NATIVE_DESCRIPTION_VERSIONS = new Set(['deals', 'tasks']);
 const DESCRIPTION_VERSION_RETENTION_DAYS = 365;
@@ -1151,19 +1199,15 @@ exports.getDescriptionVersions = async (req, res) => {
     }
 
     const Model = getModel();
-    const query = {
-      _id: recordId,
-      ...(Model.schema.paths.deletedAt ? { deletedAt: null } : {})
-    };
+    let query;
     if (key === 'organizations') {
-      const tenantUsers = await User.find({ organizationId }).select('_id').lean();
-      const tenantUserIds = tenantUsers.map((u) => u._id);
-      if (!isMasterOrganizationRequest(req)) {
-        query.isTenant = false;
-        query.createdBy = { $in: tenantUserIds };
-      }
+      query = await buildOrganizationRecordAccessQuery(organizationId, recordId, req);
     } else {
-      query.organizationId = organizationId;
+      query = {
+        _id: recordId,
+        ...(Model.schema.paths.deletedAt ? { deletedAt: null } : {}),
+        organizationId
+      };
     }
 
     const record = await Model.findOne(query)
@@ -1177,11 +1221,9 @@ exports.getDescriptionVersions = async (req, res) => {
     const currentDescription = getRecordDescription(record);
     let rawVersions = Array.isArray(record.descriptionVersions) ? record.descriptionVersions : [];
     if (rawVersions.length === 0) {
-      const versionDoc = await RecordDescriptionVersion.findOne({
-        organizationId,
-        moduleKey: key,
-        recordId: String(recordId)
-      }).lean();
+      const versionDoc = await RecordDescriptionVersion.findOne(
+        buildVersionDocQuery(organizationId, key, recordId, 'description')
+      ).lean();
       rawVersions = (versionDoc && versionDoc.versions) || [];
     }
     const versions = rawVersions
@@ -1284,19 +1326,15 @@ exports.restoreDescriptionVersion = async (req, res) => {
 
     const Model = getModel();
 
-    const query = {
-      _id: recordId,
-      ...(Model.schema.paths.deletedAt ? { deletedAt: null } : {})
-    };
+    let query;
     if (key === 'organizations') {
-      const tenantUsers = await User.find({ organizationId }).select('_id').lean();
-      const tenantUserIds = tenantUsers.map((u) => u._id);
-      if (!isMasterOrganizationRequest(req)) {
-        query.isTenant = false;
-        query.createdBy = { $in: tenantUserIds };
-      }
+      query = await buildOrganizationRecordAccessQuery(organizationId, recordId, req);
     } else {
-      query.organizationId = organizationId;
+      query = {
+        _id: recordId,
+        ...(Model.schema.paths.deletedAt ? { deletedAt: null } : {}),
+        organizationId
+      };
     }
 
     const record = await Model.findOne(query);
@@ -1307,11 +1345,9 @@ exports.restoreDescriptionVersion = async (req, res) => {
 
     let versions = Array.isArray(record.descriptionVersions) ? record.descriptionVersions.slice() : [];
     if (versions.length === 0) {
-      const versionDoc = await RecordDescriptionVersion.findOne({
-        organizationId,
-        moduleKey: key,
-        recordId: String(recordId)
-      }).lean();
+      const versionDoc = await RecordDescriptionVersion.findOne(
+        buildVersionDocQuery(organizationId, key, recordId, 'description')
+      ).lean();
       versions = Array.isArray(versionDoc?.versions) ? versionDoc.versions.slice() : [];
     }
     const sorted = versions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -1345,7 +1381,92 @@ exports.restoreDescriptionVersion = async (req, res) => {
 };
 
 /** Modules that support batch fetch for related-record enrichment. */
-const BATCH_MODULES = new Set(['deals', 'events', 'forms', 'people', 'cases', 'quotes', 'sales_orders']);
+const BATCH_MODULES = new Set([
+  'people',
+  'organizations',
+  'deals',
+  'tasks',
+  'events',
+  'forms',
+  'items',
+  'cases',
+  'quotes',
+  'sales_orders',
+  'invoices',
+  'documents'
+]);
+
+async function buildBatchQueryForModule(req, moduleKey, organizationId, ids) {
+  const idQuery = normalizeBatchIdQuery(ids);
+  if (!idQuery) return null;
+  const baseOrgQuery = { ...idQuery, organizationId };
+
+  if (moduleKey === 'deals') {
+    return { Model: Deal, query: { ...baseOrgQuery, deletedAt: null } };
+  }
+  if (moduleKey === 'events') {
+    return { Model: require('../models/Event'), query: { ...baseOrgQuery, deletedAt: null } };
+  }
+  if (moduleKey === 'forms') {
+    return { Model: require('../models/Form'), query: baseOrgQuery };
+  }
+  if (moduleKey === 'people') {
+    return { Model: require('../models/People'), query: { ...baseOrgQuery, deletedAt: null } };
+  }
+  if (moduleKey === 'cases') {
+    return { Model: require('../models/Case'), query: { ...baseOrgQuery, deletedAt: null } };
+  }
+  if (moduleKey === 'quotes') {
+    return { Model: require('../models/Quote'), query: { ...baseOrgQuery, deletedAt: null } };
+  }
+  if (moduleKey === 'sales_orders') {
+    return { Model: require('../models/SalesOrder'), query: { ...baseOrgQuery, deletedAt: null } };
+  }
+  if (moduleKey === 'tasks') {
+    return { Model: require('../models/Task'), query: { ...baseOrgQuery, deletedAt: null } };
+  }
+  if (moduleKey === 'items') {
+    return { Model: require('../models/Item'), query: { ...baseOrgQuery, deletedAt: null } };
+  }
+  if (moduleKey === 'invoices') {
+    return { Model: require('../models/Invoice'), query: { ...baseOrgQuery, deletedAt: null } };
+  }
+  if (moduleKey === 'documents') {
+    return { Model: require('../models/Document'), query: { ...baseOrgQuery, deletedAt: null } };
+  }
+  if (moduleKey === 'organizations') {
+    const Organization = require('../models/Organization');
+    const { buildTenantAccessibleCrmOrganizationQuery } = require('../utils/crmOrganizationAccess');
+    const query = await buildTenantAccessibleCrmOrganizationQuery(organizationId, {
+      recordIds: ids,
+      masterAccess: isMasterOrganizationRequest(req)
+    });
+    return { Model: Organization, query };
+  }
+  return null;
+}
+
+function normalizeBatchIdQuery(ids = []) {
+  const objectIds = [];
+  const stringIds = [];
+  for (const rawId of ids) {
+    const id = rawId != null ? String(rawId).trim() : '';
+    if (!id) continue;
+    if (mongoose.Types.ObjectId.isValid(id) && id.length === 24) {
+      objectIds.push(new mongoose.Types.ObjectId(id));
+    } else {
+      stringIds.push(id);
+    }
+  }
+  if (objectIds.length === 0 && stringIds.length === 0) return null;
+  if (objectIds.length > 0 && stringIds.length === 0) {
+    return { _id: { $in: objectIds } };
+  }
+  if (stringIds.length > 0 && objectIds.length === 0) {
+    return { _id: { $in: stringIds } };
+  }
+  return { $or: [{ _id: { $in: objectIds } }, { _id: { $in: stringIds } }] };
+}
 
 /**
  * POST /api/modules/:moduleKey/records/batch
@@ -1371,42 +1492,15 @@ exports.getRecordsBatch = async (req, res) => {
       return res.json({ success: true, data: [] });
     }
 
-    let Model;
-    let query = { _id: { $in: ids }, organizationId };
-    if (moduleKey === 'deals') {
-      Model = Deal;
-      query.deletedAt = null;
-    } else if (moduleKey === 'events') {
-      Model = require('../models/Event');
-      query.deletedAt = null;
-    } else if (moduleKey === 'forms') {
-      Model = require('../models/Form');
-    } else if (moduleKey === 'people') {
-      Model = require('../models/People');
-      query.deletedAt = null;
-    } else if (moduleKey === 'cases') {
-      Model = require('../models/Case');
-      query.deletedAt = null;
-    } else if (moduleKey === 'quotes') {
-      Model = require('../models/Quote');
-      query.deletedAt = null;
-    } else if (moduleKey === 'sales_orders') {
-      Model = require('../models/SalesOrder');
-      query.deletedAt = null;
-    } else {
+    const batchConfig = await buildBatchQueryForModule(req, moduleKey, organizationId, ids);
+    if (!batchConfig) {
       return res.json({ success: true, data: [] });
     }
 
+    const { Model, query } = batchConfig;
     const records = await Model.find(query).lean();
-    let data = records;
-    if (moduleKey === 'deals' && records.length > 0) {
-      const { flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
-      data = records.map((r) => flattenCustomFieldsForResponse(r));
-    }
-    if (moduleKey === 'events' && records.length > 0) {
-      const { flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
-      data = records.map((r) => flattenCustomFieldsForResponse(r));
-    }
+    const { flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
+    const data = records.map((record) => flattenCustomFieldsForResponse(record));
 
     return res.json({ success: true, data });
   } catch (err) {
@@ -1656,5 +1750,52 @@ exports.deleteTagFromModule = async (req, res) => {
   } catch (err) {
     console.error('deleteTagFromModule error:', err);
     return res.status(500).json({ success: false, message: 'Error deleting tag from module', error: err.message });
+  }
+};
+
+exports.getRecordPresence = async (req, res) => {
+  try {
+    const presence = await recordPresenceService.listRecordPresence({
+      organizationId: req.user.organizationId,
+      moduleKey: getModuleKey(req),
+      recordId: getRecordId(req)
+    });
+    return res.json({ success: true, data: presence });
+  } catch (error) {
+    console.error('[moduleRecordController] getRecordPresence error:', error);
+    const status = error.message === 'Record not found' ? 404 : 400;
+    return res.status(status).json({ success: false, message: error.message || 'Failed to load presence' });
+  }
+};
+
+exports.heartbeatRecordPresence = async (req, res) => {
+  try {
+    const session = await recordPresenceService.heartbeatRecordPresence({
+      organizationId: req.user.organizationId,
+      moduleKey: getModuleKey(req),
+      recordId: getRecordId(req),
+      userId: req.user._id,
+      activityType: req.body?.activityType
+    });
+    return res.json({ success: true, data: session });
+  } catch (error) {
+    console.error('[moduleRecordController] heartbeatRecordPresence error:', error);
+    const status = error.message === 'Record not found' ? 404 : 400;
+    return res.status(status).json({ success: false, message: error.message || 'Failed to update presence' });
+  }
+};
+
+exports.clearRecordPresence = async (req, res) => {
+  try {
+    await recordPresenceService.clearRecordPresence({
+      organizationId: req.user.organizationId,
+      moduleKey: getModuleKey(req),
+      recordId: getRecordId(req),
+      userId: req.user._id
+    });
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('[moduleRecordController] clearRecordPresence error:', error);
+    return res.status(400).json({ success: false, message: error.message || 'Failed to clear presence' });
   }
 };

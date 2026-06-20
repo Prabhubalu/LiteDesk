@@ -14,19 +14,107 @@
 
 import apiClient from '@/utils/apiClient';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
+import { fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
+import { getKeyFields, getFieldValue, getFieldDisplayLabel } from '@/utils/fieldDisplay';
 
 // Cache for record data (key: appKey.moduleKey.recordId)
 const recordCache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-const BATCH_FETCH_MODULES = new Set(['deals', 'events', 'forms', 'people', 'cases', 'quotes', 'sales_orders', 'invoices']);
+
+/** Module definitions used to resolve configured key fields for related record cards. */
+let relatedModuleDefinitionsByKey = null;
+let relatedModuleDefinitionsPromise = null;
+
+/**
+ * Load and cache module definitions for related-record key field resolution.
+ * Must complete before deciding a related record is "enriched" (avoids refresh race).
+ */
+export async function ensureRelatedModuleDefinitions() {
+  if (relatedModuleDefinitionsByKey) return relatedModuleDefinitionsByKey;
+  if (!relatedModuleDefinitionsPromise) {
+    relatedModuleDefinitionsPromise = fetchModulesListCached({})
+      .then((response) => {
+        const modules = Array.isArray(response) ? response : response?.data ?? response?.modules ?? [];
+        const next = {};
+        for (const mod of modules) {
+          const key = normalizeRelatedModuleKey(mod?.key);
+          if (key) next[key] = mod;
+        }
+        relatedModuleDefinitionsByKey = next;
+        return next;
+      })
+      .catch((error) => {
+        relatedModuleDefinitionsPromise = null;
+        console.warn('[recordDisplay] Failed to load module definitions:', error);
+        return {};
+      });
+  }
+  return relatedModuleDefinitionsPromise;
+}
+
+export function getRelatedModuleDefinition(moduleKey) {
+  const mk = normalizeRelatedModuleKey(moduleKey);
+  return relatedModuleDefinitionsByKey?.[mk] || null;
+}
+
+export function clearRelatedModuleDefinitionsCache() {
+  relatedModuleDefinitionsByKey = null;
+  relatedModuleDefinitionsPromise = null;
+}
+
+export function relatedDisplayOptionsForModule(moduleKey) {
+  return { moduleDefinition: getRelatedModuleDefinition(moduleKey) };
+}
+/** Must stay aligned with server BATCH_MODULES (moduleRecordController.js). */
+const BATCH_FETCH_MODULES = new Set([
+  'people',
+  'deals',
+  'tasks',
+  'events',
+  'forms',
+  'items',
+  'cases',
+  'quotes',
+  'sales_orders',
+  'invoices',
+  'documents',
+  'organizations'
+]);
+/** CRM orgs use createdBy tenant scoping — batch route handles this correctly. */
+const DIRECT_FETCH_MODULES = new Set([]);
 const unsupportedBatchModules = new Set();
+
+const MODULE_KEY_ALIASES = Object.freeze({
+  organization: 'organizations',
+  contact: 'people',
+  contacts: 'people',
+  person: 'people',
+  deal: 'deals',
+  event: 'events',
+  task: 'tasks',
+  form: 'forms',
+  document: 'documents',
+  item: 'items',
+  case: 'cases',
+  quote: 'quotes',
+  invoice: 'invoices',
+  'sales-order': 'sales_orders',
+  salesorders: 'sales_orders',
+  project: 'projects',
+  payment: 'payments'
+});
+
+export function normalizeRelatedModuleKey(moduleKey) {
+  const normalized = String(moduleKey || '').toLowerCase().trim();
+  return MODULE_KEY_ALIASES[normalized] || normalized;
+}
 
 /**
  * Get endpoint for a record type.
  * Server routes are module-based (/api/tasks, /api/deals, etc.), not /api/{appKey}/{moduleKey}.
  */
 function getRecordEndpoint(appKey, moduleKey) {
-  const normalizedModule = (moduleKey ?? '').toString().toLowerCase().trim();
+  const normalizedModule = normalizeRelatedModuleKey(moduleKey);
   const helpdeskCases = getModuleRecordCrudPathBase(normalizedModule, { appKey, routePath: '' });
   if (helpdeskCases === '/helpdesk/cases') return helpdeskCases;
   // Map moduleKey to actual server path (no appKey in path)
@@ -46,6 +134,8 @@ function getRecordEndpoint(appKey, moduleKey) {
     item: '/items',
     quotes: '/quotes',
     quote: '/quotes',
+    documents: '/documents',
+    document: '/documents',
     sales_orders: '/sales-orders',
     salesorders: '/sales-orders',
     invoices: '/invoices',
@@ -90,12 +180,13 @@ export async function fetchRecord(appKey, moduleKey, recordId, forceRefresh = fa
     if (!response) return null;
     
     if (response.success && response.data) {
+      const normalized = normalizeRecordForDisplay(response.data);
       // Cache the record
       recordCache.set(cacheKey, {
-        data: response.data,
+        data: normalized,
         timestamp: Date.now()
       });
-      return response.data;
+      return normalized;
     }
     
     return null;
@@ -126,6 +217,7 @@ export function getRecordLabel(record) {
   if (record.quoteNumber) return record.quoteNumber;
   if (record.invoiceNumber) return record.invoiceNumber;
   if (record.title) return record.title;
+  if (record.documentNumber) return record.documentNumber;
   if (record.eventName) return record.eventName;
   if (record.primaryField) return record.primaryField;
   const firstName = record.firstName || record.first_name || '';
@@ -138,6 +230,23 @@ export function getRecordLabel(record) {
   if (record.id) return record.id.toString().substring(0, 8);
   
   return 'Unnamed Record';
+}
+
+/**
+ * True when record context / server hydration already has enough to render a related card.
+ */
+export function isRecordEnrichedForDisplay(record, moduleKey, options = {}) {
+  if (!record) return false;
+  if (record._isBroken) return true;
+
+  const id = record.recordId ?? record.id ?? record._id;
+  const label = getRecordLabel(record);
+  if (!label || label === 'Unnamed Record') return false;
+
+  const idSuffix = id ? String(id).slice(-8) : '';
+  if (idSuffix && label === idSuffix) return false;
+
+  return hasPopulatedRelatedKeyField(record, moduleKey, 2, options);
 }
 
 /**
@@ -154,6 +263,188 @@ export function getRecordSecondaryText(record) {
   return '';
 }
 
+const RELATED_RECORD_KEY_FIELDS = Object.freeze({
+  organizations: [
+    { key: 'industry', label: 'Industry' },
+    { key: 'types', label: 'Type' },
+    { key: 'phone', label: 'Phone', altKeys: ['website', 'customerStatus'] }
+  ],
+  deals: [
+    { key: 'stage', label: 'Stage', altKeys: ['stageName'] },
+    { key: 'amount', label: 'Amount', format: 'currency' },
+    { key: 'probability', label: 'Probability' }
+  ],
+  quotes: [
+    { key: 'quoteNumber', label: 'Quote #' },
+    { key: 'status', label: 'Status' }
+  ],
+  sales_orders: [
+    { key: 'salesOrderNumber', label: 'Order #' },
+    { key: 'status', label: 'Status' }
+  ],
+  invoices: [
+    { key: 'invoiceNumber', label: 'Invoice #' },
+    { key: 'status', label: 'Status' }
+  ],
+  payments: [
+    { key: 'paymentNumber', label: 'Payment #' },
+    { key: 'status', label: 'Status' }
+  ],
+  people: [
+    { key: 'email', label: 'Email' },
+    { key: 'mobile', label: 'Mobile', altKeys: ['phone'] }
+  ],
+  documents: [
+    { key: 'documentNumber', label: 'Doc #' },
+    { key: 'status', label: 'Status' }
+  ],
+  cases: [
+    { key: 'status', label: 'Status' },
+    { key: 'priority', label: 'Priority' }
+  ],
+  tasks: [
+    { key: 'status', label: 'Status' },
+    { key: 'dueDate', label: 'Due', format: 'date' }
+  ],
+  events: [
+    { key: 'eventType', label: 'Type' },
+    { key: 'status', label: 'Status', altKeys: ['startDateTime'] }
+  ],
+  forms: [
+    { key: 'formType', label: 'Type' },
+    { key: 'status', label: 'Status' }
+  ],
+  items: [
+    { key: 'item_code', label: 'Code', altKeys: ['itemCode'] },
+    { key: 'status', label: 'Status' }
+  ],
+  projects: [
+    { key: 'status', label: 'Status' },
+    { key: 'priority', label: 'Priority' }
+  ]
+});
+
+const RELATED_RECORD_EMPTY_VALUE = '-';
+
+function resolveRecordRawFieldValue(record, fieldKey) {
+  let value = record?.[fieldKey];
+  if (value == null || value === '') {
+    value = record?.customFields?.[fieldKey];
+  }
+  return value;
+}
+
+function resolveRelatedFieldRawValue(record, field) {
+  let value = resolveRecordRawFieldValue(record, field.key);
+  if ((value == null || value === '') && Array.isArray(field.altKeys)) {
+    for (const altKey of field.altKeys) {
+      const altValue = resolveRecordRawFieldValue(record, altKey);
+      if (altValue != null && altValue !== '') {
+        value = altValue;
+        break;
+      }
+    }
+  }
+  return value;
+}
+
+function isDisplayableRelatedRawValue(value) {
+  if (value == null || value === '') return false;
+  if (Array.isArray(value)) return value.some((entry) => isDisplayableRelatedRawValue(entry));
+  if (typeof value === 'string' && /^[0-9a-fA-F]{24}$/.test(value)) return false;
+  if (typeof value === 'object') {
+    const display = value.name || value.title || value.firstName || value.first_name
+      || value.label || value.email || value.username;
+    if (display) return true;
+    if (value._id && !display) return false;
+  }
+  return true;
+}
+
+function resolveRelatedKeyFieldConfig(moduleKey, moduleDefinition, maxFields = 2) {
+  const normalizedModuleKey = normalizeRelatedModuleKey(moduleKey);
+  const configured = getKeyFields(moduleDefinition || {});
+  if (configured.length > 0) {
+    return configured.slice(0, maxFields).map((fieldDef) => ({
+      key: fieldDef.key,
+      label: getFieldDisplayLabel(fieldDef) || fieldDef.key,
+      fieldDef
+    }));
+  }
+  const fallback = RELATED_RECORD_KEY_FIELDS[normalizedModuleKey] || [
+    { key: 'status', label: 'Status' },
+    { key: 'email', label: 'Email', altKeys: ['phone', 'mobile'] }
+  ];
+  return fallback.slice(0, maxFields);
+}
+
+function hasPopulatedRelatedKeyField(record, moduleKey, maxFields = 2, options = {}) {
+  if (!record) return false;
+  const config = resolveRelatedKeyFieldConfig(moduleKey, options.moduleDefinition, maxFields);
+  return config.some((field) => {
+    const value = field.fieldDef
+      ? resolveRecordRawFieldValue(record, field.key)
+      : resolveRelatedFieldRawValue(record, field);
+    return isDisplayableRelatedRawValue(value);
+  });
+}
+function formatRelatedFieldValue(record, field, rawValue) {
+  if (rawValue == null || rawValue === '') return '';
+  if (Array.isArray(rawValue)) {
+    const parts = rawValue.filter((value) => value != null && value !== '');
+    if (!parts.length) return '';
+    return parts.map((value) => String(value)).join(', ');
+  }
+  if (field.format === 'currency' && typeof rawValue === 'number') {
+    const currency = record?.currency || record?.currencyCode || 'USD';
+    try {
+      return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(rawValue);
+    } catch {
+      return String(rawValue);
+    }
+  }
+  if (field.format === 'date') {
+    const d = new Date(rawValue);
+    if (!Number.isNaN(d.getTime())) {
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+  }
+  return String(rawValue);
+}
+
+/**
+ * First N key field label/value pairs for related record cards.
+ * Always returns up to maxFields entries; empty values use emptyValue (default "-").
+ */
+export function getRelatedRecordDetailLines(record, moduleKey, maxFields = 2, options = {}) {
+  const { emptyValue = RELATED_RECORD_EMPTY_VALUE, moduleDefinition = null } = options;
+  const config = resolveRelatedKeyFieldConfig(moduleKey, moduleDefinition, maxFields);
+  return config.map((field) => {
+    if (field.fieldDef) {
+      const formatted = getFieldValue(field.fieldDef, record || {});
+      return {
+        label: field.label,
+        value: formatted || emptyValue,
+        isEmpty: !formatted
+      };
+    }
+    const rawValue = resolveRelatedFieldRawValue(record || {}, field);
+    const formatted = formatRelatedFieldValue(record || {}, field, rawValue);
+    return {
+      label: field.label,
+      value: formatted || emptyValue,
+      isEmpty: !formatted
+    };
+  });
+}
+
+function normalizeRecordForDisplay(record) {
+  if (!record || typeof record !== 'object') return record;
+  if (!record.customFields || typeof record.customFields !== 'object') return record;
+  const { customFields, ...rest } = record;
+  return { ...customFields, ...rest };
+}
+
 /**
  * Batch fetch records for display (with caching)
  */
@@ -166,7 +457,7 @@ export async function fetchRecordsForDisplay(records, forceRefresh = false) {
   // First pass: resolve from cache and group batch-capable misses.
   records.forEach((record, index) => {
     const recordId = record.recordId ?? record.id ?? record._id;
-    const moduleKey = String(record.moduleKey || '').toLowerCase();
+    const moduleKey = normalizeRelatedModuleKey(record.moduleKey);
     const appKey = String(record.appKey || '').toUpperCase();
     if (!recordId || !moduleKey) {
       fetchedRecords[index] = null;
@@ -181,6 +472,11 @@ export async function fetchRecordsForDisplay(records, forceRefresh = false) {
         return;
       }
       recordCache.delete(cacheKey);
+    }
+
+    if (DIRECT_FETCH_MODULES.has(moduleKey)) {
+      fetchedRecords[index] = fetchRecord(appKey, moduleKey, recordId, forceRefresh);
+      return;
     }
 
     if (BATCH_FETCH_MODULES.has(moduleKey) && !unsupportedBatchModules.has(moduleKey)) {
@@ -207,17 +503,25 @@ export async function fetchRecordsForDisplay(records, forceRefresh = false) {
     if (ids.length === 0) return;
 
     try {
-      const response = await apiClient.post(`/modules/${moduleKey}/records/batch`, { ids });
+      const response = await apiClient.postOptional(`/modules/${moduleKey}/records/batch`, { ids });
+      if (!response) {
+        unsupportedBatchModules.add(moduleKey);
+        await Promise.all(entries.map(async ({ index, recordId, appKey }) => {
+          fetchedRecords[index] = await fetchRecord(appKey, moduleKey, recordId, forceRefresh);
+        }));
+        return;
+      }
       const rows = Array.isArray(response?.data) ? response.data : [];
       const rowById = new Map(rows.map((row) => [String(row?._id ?? row?.id ?? ''), row]));
 
       entries.forEach(({ index, recordId, appKey }) => {
         const row = rowById.get(String(recordId)) || null;
-        fetchedRecords[index] = row;
-        if (row) {
+        const normalized = row ? normalizeRecordForDisplay(row) : null;
+        fetchedRecords[index] = normalized;
+        if (normalized) {
           const cacheKey = getCacheKey(appKey, moduleKey, recordId);
           recordCache.set(cacheKey, {
-            data: row,
+            data: normalized,
             timestamp: Date.now()
           });
         }
@@ -239,11 +543,12 @@ export async function fetchRecordsForDisplay(records, forceRefresh = false) {
   return fetchedRecords.map((fetched, index) => {
     if (!fetched) return null;
     const original = records[index];
+    const normalized = normalizeRecordForDisplay(fetched);
     return {
       ...original,
-      ...fetched,
-      label: getRecordLabel(fetched || original),
-      secondaryText: getRecordSecondaryText(fetched || original)
+      ...normalized,
+      label: getRecordLabel(normalized || original),
+      secondaryText: getRecordSecondaryText(normalized || original)
     };
   });
 }

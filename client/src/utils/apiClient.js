@@ -380,6 +380,20 @@ apiClient.post = (url, data, options = {}) => {
     return apiClient(url, { ...options, method: 'POST', body: JSON.stringify(data) });
 };
 
+/**
+ * POST that returns null on expected enrichment failures (404/403/unsupported batch).
+ */
+apiClient.postOptional = (url, data, options = {}) => {
+    return apiClient.post(url, data, options).catch((err) => {
+        if (err?.status === 404 || err?.status === 403) return null;
+        const msg = String(err?.message || '').toLowerCase();
+        if (err?.status === 400 && (msg.includes('batch not supported') || String(url || '').includes('/records/batch'))) {
+            return null;
+        }
+        throw err;
+    });
+};
+
 apiClient.put = (url, data, options = {}) => {
     return apiClient(url, { ...options, method: 'PUT', body: JSON.stringify(data) });
 };

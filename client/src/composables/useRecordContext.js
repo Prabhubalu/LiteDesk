@@ -15,7 +15,7 @@
 import { ref, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/authRegistry';
-import { fetchRecordsForDisplay } from '@/utils/recordDisplay';
+import { fetchRecordsForDisplay, isRecordEnrichedForDisplay, ensureRelatedModuleDefinitions, relatedDisplayOptionsForModule } from '@/utils/recordDisplay';
 import { showGlobalNotification } from '@/composables/useNotifications';
 
 // Cache for record contexts
@@ -132,6 +132,129 @@ async function cleanupBrokenRelationshipLink({
 }
 
 /**
+ * Fetch labels/details for linked records (background enrichment).
+ */
+async function enrichContextRelationshipRecords(contextData, appKeyValue, moduleKeyValue, recordIdValue) {
+  if (!contextData?.relationships?.length) return contextData;
+
+  await ensureRelatedModuleDefinitions();
+
+  await Promise.all(contextData.relationships.map(async (rel) => {
+    if (!rel.records?.length) return;
+    try {
+      const originalRecords = Array.isArray(rel.records) ? [...rel.records] : [];
+      const pendingIndexes = [];
+      const pendingRecords = [];
+
+      originalRecords.forEach((record, index) => {
+        const moduleKey = String(record?.moduleKey || '').toLowerCase();
+        if (isRecordEnrichedForDisplay(record, moduleKey, relatedDisplayOptionsForModule(moduleKey))) return;
+        pendingIndexes.push(index);
+        pendingRecords.push(record);
+      });
+
+      if (!pendingRecords.length) return;
+
+      const enhancedRecords = await fetchRecordsForDisplay(pendingRecords);
+
+      const brokenRecords = pendingRecords.filter((_, index) => !enhancedRecords[index]);
+      if (brokenRecords.length > 0) {
+        let existingLinks = [];
+        try {
+          const linksRes = await apiClient.get('/relationships/links', {
+            params: {
+              appKey: appKeyValue,
+              moduleKey: moduleKeyValue,
+              recordId: normalizeRecordId(recordIdValue)
+            }
+          });
+          existingLinks = Array.isArray(linksRes?.data) ? linksRes.data : [];
+        } catch (_linksErr) {
+          existingLinks = [];
+        }
+
+        void Promise.allSettled(
+          brokenRecords.map((brokenRecord) =>
+            cleanupBrokenRelationshipLink({
+              relationshipKey: rel.relationshipKey,
+              targetRecord: brokenRecord,
+              existingLinks
+            })
+          )
+        ).then((results) => {
+          const cleanedCount = results.filter((r) => r.status === 'fulfilled' && r.value === true).length;
+          if (cleanedCount > 0) {
+            const noun = cleanedCount === 1 ? 'stale relationship link was' : 'stale relationship links were';
+            showGlobalNotification(`${cleanedCount} ${noun} removed automatically.`, 3500);
+          }
+        });
+      }
+
+      const mergedRecords = [...originalRecords];
+      pendingIndexes.forEach((originalIndex, pendingIndex) => {
+        const record = enhancedRecords[pendingIndex];
+        const original = originalRecords[originalIndex];
+        if (!record) {
+          mergedRecords[originalIndex] = {
+            ...original,
+            _isBroken: true,
+            label: 'Related record unavailable',
+            secondaryText: 'Record may have been deleted or access denied',
+            isDisabled: true
+          };
+          return;
+        }
+
+        const projection = record.projection || original.projection;
+        mergedRecords[originalIndex] = {
+          ...original,
+          ...record,
+          primaryField: record.label || original.primaryField || record.primaryField,
+          label: record.label || original.label,
+          secondaryText: record.secondaryText || original.secondaryText,
+          projection: projection ? {
+            currentType: projection.currentType,
+            basePrimitive: projection.basePrimitive,
+            appKey: projection.appKey || original.appKey?.toUpperCase() || 'SALES',
+            allowedTypes: projection.allowedTypes,
+            defaultType: projection.defaultType,
+            readOnly: projection.readOnly,
+            platformOwned: projection.platformOwned
+          } : null
+        };
+      });
+
+      rel.records = mergedRecords;
+    } catch (error) {
+      console.warn('[useRecordContext] Error fetching record details:', error);
+      rel.records = rel.records.map((record) => ({
+        ...record,
+        _isBroken: true,
+        label: 'Related record unavailable',
+        secondaryText: 'Error loading record details',
+        isDisabled: true
+      }));
+    }
+  }));
+
+  return contextData;
+}
+
+/** Shallow-clone context so nested relationship record updates trigger Vue reactivity. */
+function cloneContextSnapshot(contextData) {
+  if (!contextData || typeof contextData !== 'object') return contextData;
+  return {
+    ...contextData,
+    relationships: Array.isArray(contextData.relationships)
+      ? contextData.relationships.map((rel) => ({
+          ...rel,
+          records: Array.isArray(rel.records) ? rel.records.map((rec) => ({ ...rec })) : []
+        }))
+      : []
+  };
+}
+
+/**
  * Get record context from API
  */
 async function fetchRecordContext(appKey, moduleKey, recordId) {
@@ -212,6 +335,15 @@ export function useRecordContext(appKey, moduleKey, recordId) {
   const error = ref(null);
   const context = ref(null);
   const accessMode = ref(null);
+  const contextRevision = ref(0);
+
+  function publishContext(nextContext, cacheKeyValue = null) {
+    context.value = nextContext;
+    contextRevision.value += 1;
+    if (cacheKeyValue) {
+      contextCache.set(cacheKeyValue, nextContext);
+    }
+  }
 
   // Ensure accessors are called to get actual values
   const cacheKey = computed(() => {
@@ -302,9 +434,19 @@ export function useRecordContext(appKey, moduleKey, recordId) {
 
     // Check cache first (unless force refresh)
     if (!forceRefresh && contextCache.has(key)) {
-      context.value = contextCache.get(key);
-      // Still resolve access mode (may have changed)
+      const cached = cloneContextSnapshot(contextCache.get(key));
+      publishContext(cached);
       accessMode.value = await resolveAccessMode(appKeyValue);
+      loading.value = false;
+      const loadKey = key;
+      void enrichContextRelationshipRecords(cached, appKeyValue, moduleKeyValue, recordIdValue)
+        .then((enriched) => {
+          if (cacheKey.value !== loadKey) return;
+          publishContext(cloneContextSnapshot(enriched), loadKey);
+        })
+        .catch((enrichErr) => {
+          console.warn('[useRecordContext] Cache enrichment failed:', enrichErr);
+        });
       return;
     }
 
@@ -340,107 +482,22 @@ export function useRecordContext(appKey, moduleKey, recordId) {
         }
       }
 
-      // Phase 2E: Enhance linked records with fetched details for better labels
-      // SAFETY: Handle broken relationships gracefully (deleted records, disabled apps, etc.)
-      if (contextData.relationships) {
-        for (const rel of contextData.relationships) {
-          if (rel.records && rel.records.length > 0) {
-            try {
-              // Fetch record details in parallel
-              const originalRecords = Array.isArray(rel.records) ? [...rel.records] : [];
-              const enhancedRecords = await fetchRecordsForDisplay(originalRecords);
-
-              const brokenRecords = originalRecords.filter((_, index) => !enhancedRecords[index]);
-              if (brokenRecords.length > 0) {
-                let existingLinks = [];
-                try {
-                  const linksRes = await apiClient.get('/relationships/links', {
-                    params: {
-                      appKey: appKeyValue,
-                      moduleKey: moduleKeyValue,
-                      recordId: normalizeRecordId(recordIdValue)
-                    }
-                  });
-                  existingLinks = Array.isArray(linksRes?.data) ? linksRes.data : [];
-                } catch (_linksErr) {
-                  existingLinks = [];
-                }
-
-                // Fire cleanups in parallel, but do not block rendering.
-                void Promise.allSettled(
-                  brokenRecords.map((brokenRecord) =>
-                    cleanupBrokenRelationshipLink({
-                      relationshipKey: rel.relationshipKey,
-                      targetRecord: brokenRecord,
-                      existingLinks
-                    })
-                  )
-                ).then((results) => {
-                  const cleanedCount = results.filter((r) => r.status === 'fulfilled' && r.value === true).length;
-                  if (cleanedCount > 0) {
-                    const noun = cleanedCount === 1 ? 'stale relationship link was' : 'stale relationship links were';
-                    showGlobalNotification(`${cleanedCount} ${noun} removed automatically.`, 3500);
-                  }
-                });
-              }
-              
-              // Phase 2E: Filter out null records (deleted or inaccessible)
-              // Replace with placeholder rows for broken relationships
-              rel.records = enhancedRecords.map((record, index) => {
-                const original = originalRecords[index];
-                
-                // If record fetch failed (null), create placeholder
-                if (!record) {
-                  return {
-                    ...original,
-                    _isBroken: true,
-                    label: 'Related record unavailable',
-                    secondaryText: 'Record may have been deleted or access denied',
-                    isDisabled: true
-                  };
-                }
-                
-                // Phase 2E: Preserve projection metadata from record if available
-                // The record context API should include projection metadata
-                const projection = record.projection || original.projection;
-                
-                return {
-                  ...record,
-                  ...original,
-                  primaryField: record.label || record.primaryField,
-                  label: record.label,
-                  // Phase 2E: Include projection metadata for projection-aware labels
-                  projection: projection ? {
-                    currentType: projection.currentType,
-                    basePrimitive: projection.basePrimitive,
-                    appKey: projection.appKey || original.appKey?.toUpperCase() || 'SALES',
-                    allowedTypes: projection.allowedTypes,
-                    defaultType: projection.defaultType,
-                    readOnly: projection.readOnly,
-                    platformOwned: projection.platformOwned
-                  } : null
-                };
-              });
-            } catch (error) {
-              // Phase 2E: Never throw - mark all records as broken
-              console.warn('[useRecordContext] Error fetching record details:', error);
-              rel.records = rel.records.map(record => ({
-                ...record,
-                _isBroken: true,
-                label: 'Related record unavailable',
-                secondaryText: 'Error loading record details',
-                isDisabled: true
-              }));
-            }
-          }
-        }
-      }
-
-      context.value = contextData;
+      // Publish raw links immediately so Related Records updates without waiting for label enrichment.
+      publishContext(contextData);
       accessMode.value = access;
+      loading.value = false;
 
-      // Cache the context
-      contextCache.set(key, contextData);
+      const loadKey = key;
+      void enrichContextRelationshipRecords(contextData, appKeyValue, moduleKeyValue, recordIdValue)
+        .then((enriched) => {
+          if (cacheKey.value !== loadKey) return;
+          publishContext(cloneContextSnapshot(enriched), loadKey);
+        })
+        .catch((enrichErr) => {
+          console.warn('[useRecordContext] Background enrichment failed:', enrichErr);
+        });
+
+      return;
     } catch (err) {
       error.value = err;
       console.error('[useRecordContext] Error loading context:', err);
@@ -469,6 +526,7 @@ export function useRecordContext(appKey, moduleKey, recordId) {
     error,
     context,
     accessMode,
+    contextRevision,
 
     // Computed
     relatedGroups,
@@ -504,5 +562,110 @@ export function invalidateRecordContext(appKey, moduleKey, recordId) {
   const recordIdStr = normalizeRecordId(recordId);
   const key = `${appKeyStr}.${moduleKeyStr}.${recordIdStr}`;
   contextCache.delete(key);
+}
+
+/**
+ * Merge newly linked records into an in-memory context (optimistic UI).
+ */
+export function mergeLinkedRecordsIntoContext(contextRef, relationshipKey, newRecords, options = {}) {
+  const ctx = contextRef?.value ?? contextRef;
+  if (!ctx || !relationshipKey || !Array.isArray(newRecords) || newRecords.length === 0) return;
+
+  if (!Array.isArray(ctx.relationships)) {
+    ctx.relationships = [];
+  }
+
+  const relKey = String(relationshipKey).toLowerCase();
+  let rel = ctx.relationships.find(
+    (entry) => String(entry?.relationshipKey || '').toLowerCase() === relKey
+  );
+
+  if (!rel) {
+    rel = {
+      relationshipKey: relKey,
+      label: options.label || relKey,
+      direction: options.direction || 'TARGET',
+      records: [],
+      ui: { showAs: 'TAB', label: options.label || relKey }
+    };
+    ctx.relationships.push(rel);
+  }
+
+  if (!Array.isArray(rel.records)) {
+    rel.records = [];
+  }
+
+  for (const rec of newRecords) {
+    const id = normalizeRecordId(rec?.recordId ?? rec?.id ?? rec?._id);
+    if (!id) continue;
+    const alreadyLinked = rel.records.some(
+      (existing) => normalizeRecordId(existing?.recordId ?? existing?.id ?? existing?._id) === id
+    );
+    if (alreadyLinked) continue;
+    rel.records.push({
+      ...rec,
+      recordId: id,
+      id,
+      appKey: String(rec?.appKey || options.appKey || 'PLATFORM').toUpperCase(),
+      moduleKey: String(rec?.moduleKey || options.moduleKey || '').toLowerCase()
+    });
+  }
+
+  if (contextRef?.value != null) {
+    contextRef.value = cloneContextSnapshot(ctx);
+  }
+  if (typeof options.onUpdated === 'function') {
+    options.onUpdated();
+  }
+}
+
+/**
+ * Replace lookup-backed relationship records after a key field save (many-to-one).
+ */
+export function syncLookupRelationshipInContext(contextRef, relationshipKey, linkedRecord, options = {}) {
+  const ctx = contextRef?.value ?? contextRef;
+  if (!ctx || !relationshipKey) return;
+
+  if (!Array.isArray(ctx.relationships)) {
+    ctx.relationships = [];
+  }
+
+  const relKey = String(relationshipKey).toLowerCase();
+  let rel = ctx.relationships.find(
+    (entry) => String(entry?.relationshipKey || '').toLowerCase() === relKey
+  );
+
+  if (!rel) {
+    rel = {
+      relationshipKey: relKey,
+      label: options.label || relKey,
+      direction: options.direction || 'SOURCE',
+      records: [],
+      ui: { showAs: 'TAB', label: options.label || relKey }
+    };
+    ctx.relationships.push(rel);
+  }
+
+  if (!linkedRecord) {
+    rel.records = [];
+  } else {
+    const id = normalizeRecordId(linkedRecord?.recordId ?? linkedRecord?.id ?? linkedRecord?._id);
+    rel.records = id
+      ? [{
+          ...linkedRecord,
+          recordId: id,
+          id,
+          appKey: String(linkedRecord?.appKey || options.appKey || 'SALES').toUpperCase(),
+          moduleKey: String(linkedRecord?.moduleKey || options.moduleKey || '').toLowerCase()
+        }]
+      : [];
+  }
+
+  if (contextRef?.value != null) {
+    contextRef.value = cloneContextSnapshot(ctx);
+  }
+  if (typeof options.onUpdated === 'function') {
+    options.onUpdated();
+  }
 }
 

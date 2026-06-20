@@ -40,6 +40,7 @@ const componentMap = {
   forms: () => import('@/views/Forms.vue'),
   'form-detail': () => import('@/views/FormDetail.vue'),
   imports: () => import('@/views/Imports.vue'),
+  documents: () => import('@/views/Documents.vue'),
   'import-detail': () => import('@/views/ImportDetail.vue'),
   responses: () => import('@/views/Responses.vue'),
   'response-detail': () => import('@/views/FormResponseDetail.vue'),

@@ -25,6 +25,28 @@
             </span>
           </template>
           <template #pageActions>
+            <RecordPresenceAvatars
+              v-if="showRecordPresenceAvatars"
+              :sessions="recordPresenceOthers"
+            />
+            <button
+              v-if="canPublishDocument"
+              type="button"
+              class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+              @click="handlePublishDocument"
+            >
+              <CheckCircleIcon class="h-4 w-4" />
+              {{ t('documents.publish') }}
+            </button>
+            <button
+              v-if="canOpenDocumentEditor"
+              type="button"
+              class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+              @click="openDocumentEditor"
+            >
+              <PencilSquareIcon class="h-4 w-4" />
+              {{ t('documents.openEditor') }}
+            </button>
             <button
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -173,90 +195,37 @@
           </div>
         </div>
 
-        <!-- Description version history full page -->
+        <!-- Content version history full page (description + rich text) -->
+        <ContentVersionHistoryView
+          v-if="record && isContentVersionHistoryOpen"
+          :page-title="recordTitle || moduleLabelSingular"
+          :versions="contentVersionHistoryList"
+          v-model:selected-index="selectedDescriptionVersionIndex"
+          :loading="descriptionVersionsLoading"
+          :restore-loading="descriptionRestoreLoading"
+          :radio-name="contentVersionHistoryRadioName"
+          @restore="restoreContentVersion"
+        />
+
+        <!-- Rich document full-page editor -->
         <div
-          v-if="record && expandedLeftSection === 'description-history'"
-          class="description-history-page flex-1 min-h-0 mt-4 flex flex-col gap-6"
+          v-if="record && expandedLeftSection === 'content-editor' && isDocumentsRichRecord"
+          class="document-editor-page-shell flex-1 min-h-0 mt-4 flex flex-col"
         >
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex-shrink-0">{{ recordTitle || moduleLabelSingular }}</h2>
-          <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] grid-rows-[1fr] gap-6 min-h-0 flex-1">
-            <div class="flex flex-col min-h-0 min-w-0 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden h-full">
-              <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain">
-                <div
-                  v-if="descriptionHistoryShowDiff && descriptionHistoryDiffHtml"
-                  class="text-md text-gray-900 dark:text-white px-6 py-4 leading-[1.75] [&_del]:px-0.5 [&_ins]:px-0.5"
-                  v-html="descriptionHistoryDiffHtml"
-                />
-                <div
-                  v-else-if="descriptionHistorySelectedHasContent"
-                  class="text-md text-gray-900 dark:text-white px-6 py-4 leading-[1.75] [&_p]:mb-2 [&_p:last-child]:mb-0 [&_p]:leading-[1.75] [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:my-4 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-4 [&_h3]:mb-2 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:list-disc [&_ol]:list-decimal [&_blockquote]:border-l-4 [&_blockquote]:border-gray-200 [&_blockquote]:pl-4 [&_blockquote]:my-2 [&_blockquote]:text-gray-500 dark:[&_blockquote]:border-gray-600 dark:[&_blockquote]:text-gray-400 [&_a]:text-indigo-600 [&_a]:underline dark:[&_a]:text-indigo-400"
-                  v-html="descriptionHistorySelectedContent"
-                />
-                <p v-else class="px-6 py-4 text-sm text-gray-400 dark:text-gray-500 italic m-0">
-                  {{ t('records.genericNoDescInVersion') }}
-                </p>
-              </div>
-            </div>
-            <div class="flex flex-col min-h-0 min-w-0 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden h-full">
-              <h3 class="font-semibold text-gray-900 dark:text-white px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                {{ t('records.genericVersionHistory') }}
-              </h3>
-              <div v-if="descriptionVersionsLoading" class="flex items-center justify-center py-8 flex-1 min-h-0 overflow-hidden">
-                <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
-              </div>
-              <div v-else class="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-0">
-                <label
-                  v-for="(ver, idx) in descriptionHistoryList"
-                  :key="ver.isCurrent ? 'current' : `version-${idx}-${ver.createdAt}`"
-                  :class="[
-                    'flex items-start gap-3 py-3 px-3 rounded-lg cursor-pointer transition-colors',
-                    selectedDescriptionVersionIndex === idx
-                      ? 'bg-indigo-50 dark:bg-indigo-900/30'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                  ]"
-                >
-                  <input
-                    v-model="selectedDescriptionVersionIndex"
-                    type="radio"
-                    :name="'generic-desc-version-' + (record?._id || '')"
-                    :value="idx"
-                    class="mt-1 h-4 w-4 text-indigo-600 border-gray-300 dark:border-gray-600 focus:ring-indigo-500"
-                  />
-                  <div class="min-w-0 flex-1">
-                    <span class="text-sm text-gray-900 dark:text-white block">
-                      {{ formatDescriptionVersionDate(ver.createdAt) }}
-                    </span>
-                    <span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">
-                      <span v-if="ver.isCurrent" class="font-medium text-gray-600 dark:text-gray-300">{{ t('records.genericCurrentVersion') }}</span>
-                      <template v-else>
-                        <Avatar
-                          v-if="ver.createdBy"
-                          :record="{ name: ver.createdBy }"
-                          size="sm"
-                          class="shrink-0"
-                        />
-                        {{ ver.createdBy || t('records.genericSomeone') }}
-                      </template>
-                    </span>
-                  </div>
-                </label>
-              </div>
-              <p class="text-xs text-gray-400 dark:text-gray-500 px-4 py-2 border-t border-gray-100 dark:border-gray-700 flex-shrink-0">
-                {{ t('records.genericVersionRetention') }}
-              </p>
-              <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-                <button
-                  type="button"
-                  :disabled="selectedDescriptionVersionIndex === 0 || descriptionRestoreLoading"
-                  class="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:pointer-events-none"
-                  @click="restoreDescriptionVersion"
-                >
-                  <span v-if="descriptionRestoreLoading">{{ t('records.genericRestoring') }}</span>
-                  <span v-else>{{ t('records.genericRestoreVersion') }}</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <DocumentEditorPage
+            ref="documentEditorPageRef"
+            :record="record"
+            :can-edit="canEditRecord"
+            :can-publish="canPublishDocument"
+            :saving="documentEditorSaving"
+            :type-label-map="documentTypeLabelMap"
+            :presence-sessions="recordPresenceOthers"
+            :on-save="handleDocumentEditorSave"
+            @save="handleDocumentEditorSave"
+            @publish="handlePublishDocument"
+            @inline-comment-request="handleInlineCommentRequest"
+            @draft-saved="handleDocumentDraftSaved"
+          />
         </div>
 
         <div v-if="embed && !expandedLeftSection" class="pt-0 flex-shrink-0" aria-hidden="true" />
@@ -688,6 +657,8 @@
                 <RelatedSection
                   :record="record"
                   :adapter="genericAdapter"
+                  :related-groups="genericRelatedGroupsFromContext"
+                  :context-revision="contextRevision"
                   :context="{ hideHeader: true }"
                 />
               </div>
@@ -751,6 +722,24 @@
                   <p v-else class="px-1 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{{ t('records.genericNoFieldsToShow') }}</p>
                 </template>
                 <p v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.genericNoRecordLoaded') }}</p>
+              </div>
+            </div>
+          </template>
+          <template v-if="showRecordDocumentsTab" #tab-documents>
+            <div class="flex h-full flex-col">
+              <div class="record-context-panel__header flex flex-shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.genericTabDocuments') }}</h2>
+              </div>
+              <div class="min-h-0 flex-1 overflow-y-auto p-4">
+                <RecordDocumentsPanel
+                  v-if="record?._id"
+                  :module-key="moduleKey"
+                  :record-id="String(record._id)"
+                  :app-key="recordContextAppKey"
+                  :can-create="canCreateDocuments"
+                  :can-edit="canEditDocuments"
+                  @documents-changed="handleRecordDocumentsChanged"
+                />
               </div>
             </div>
           </template>
@@ -849,6 +838,7 @@
       :title="linkRecordDrawerTitle"
       :context="linkRecordDrawerContext"
       :preselected-ids="linkRecordPreselectedIds"
+      :supplement-record-types="linkRecordDrawerSupplementTypes"
       @close="closeLinkRecordDrawer"
       @linked="handleLinkRecordDrawerLinked"
       @create="handleLinkRecordDrawerCreate"
@@ -958,6 +948,7 @@ import { getQuoteActivityMessage, getQuoteActivityActorLabel } from '@/component
 import { getSalesOrderActivityMessage } from '@/components/activity/adapters/salesOrderActivityUiAdapter';
 import { getInvoiceActivityMessage } from '@/components/activity/adapters/invoiceActivityUiAdapter';
 import { getPaymentActivityMessage } from '@/components/activity/adapters/paymentActivityUiAdapter';
+import { getDocumentActivityMessage } from '@/components/activity/adapters/documentActivityUiAdapter';
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 import { getModuleRecordCrudPathBase, getModuleRecordRoutePathBase } from '@/utils/moduleRecordApiPath';
 import {
@@ -983,10 +974,14 @@ import DetailsSection from '@/components/record-page/sections/DetailsSection.vue
 import DetailsTabFieldFilter from '@/components/record-page/DetailsTabFieldFilter.vue';
 import { DETAILS_TAB_TOOLBAR_HEIGHT_CLASS } from '@/components/record-page/detailsTabToolbar';
 import RecordRightPane from '@/components/record-page/RecordRightPane.vue';
+import RecordDocumentsPanel from '@/components/record-page/RecordDocumentsPanel.vue';
 import EditableTitle from '@/components/record-page/EditableTitle.vue';
 import RecordTagPopover from '@/components/record-page/RecordTagPopover.vue';
 import { useRecordTagPopoverPosition } from '@/components/record-page/composables/useRecordTagPopoverPosition';
-import { useRecordContext, invalidateRecordContext } from '@/composables/useRecordContext';
+import { useRecordContext, invalidateRecordContext, mergeLinkedRecordsIntoContext } from '@/composables/useRecordContext';
+import { refreshRelatedRecordsAfterLookupFieldSave } from '@/composables/useLookupFieldRelatedSync';
+import { refreshRelatedRecordsAfterDocumentChange } from '@/composables/useDocumentRelatedSync';
+import { resolveDocumentRelationshipKey } from '@/constants/documentAttachments';
 import ActivitySection from '@/components/activity/ActivitySection.vue';
 import {
   buildCommentReactions,
@@ -1006,6 +1001,7 @@ import { createQuotesRecordAdapter } from '@/components/record-page/adapters/quo
 import { createSalesOrdersRecordAdapter } from '@/components/record-page/adapters/salesOrdersRecordAdapter';
 import { createInvoicesRecordAdapter } from '@/components/record-page/adapters/invoicesRecordAdapter';
 import { createPaymentsRecordAdapter } from '@/components/record-page/adapters/paymentsRecordAdapter';
+import { createDocumentsRecordAdapter } from '@/components/record-page/adapters/documentsRecordAdapter';
 import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
 import {
   applyQuoteLineDeleteToRecord,
@@ -1048,14 +1044,21 @@ import {
   ArrowRightIcon,
   ArrowsPointingInIcon,
   ArrowTopRightOnSquareIcon,
-  ArrowRightCircleIcon
+  ArrowRightCircleIcon,
+  CheckCircleIcon
 } from '@heroicons/vue/24/outline';
 import { getModuleIconComponent } from '@/utils/moduleIcons';
 import Avatar from '@/components/common/Avatar.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
-import DOMPurify from 'dompurify';
-import { sanitizeRichDescriptionHtml } from '@/utils/richDescriptionHtml';
+import { toRichContentPayload, isRichDocument, getRichContentHtml } from '@/utils/documentRichContent';
+import { useDocuments } from '@/composables/useDocuments';
+import DocumentEditorPage from '@/components/documents/DocumentEditorPage.vue';
+import ContentVersionHistoryView from '@/components/record-page/ContentVersionHistoryView.vue';
+import { buildContentVersionHistoryList } from '@/utils/contentVersionHistory';
+import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
+import { useRecordPresence } from '@/composables/useRecordPresence';
 import { resolveFieldContext } from '@/utils/fieldContextFilter';
+import { supportsDocumentAttachments } from '@/constants/documentAttachments';
 import { getParticipation } from '@/utils/getParticipation';
 import { getAppLabel } from '@/utils/getRoleDisplay';
 import {
@@ -1091,6 +1094,12 @@ const emit = defineEmits(['close']);
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const {
+  reserveDocument,
+  releaseReservation,
+  takeoverReservation,
+  notifyReservationHolder
+} = useDocuments();
 const notifications = useNotifications();
 const { guardAndOpenEmailCompose } = useOpenEmailCompose();
 const { openTab, activeTabId, findTabById, updateTabTitle, replaceActiveTab } = useTabs();
@@ -1105,10 +1114,13 @@ const activityRaw = ref([]);
   const emailThreads = ref([]);
   const neighbors = ref({ previousId: null, nextId: null });
   const expandedLeftSection = ref('');
-  const descriptionVersionsData = ref({ currentDescription: '', versions: [] });
+  const suppressDocumentEditorAutoOpen = ref(false);
+  const descriptionVersionsData = ref({ currentDescription: '', currentContent: '', versions: [] });
+  const contentVersionHistoryMode = ref('description');
   const selectedDescriptionVersionIndex = ref(0);
   const descriptionVersionsLoading = ref(false);
   const descriptionRestoreLoading = ref(false);
+  const richContentFlushSave = ref(null);
   const newCommentText = ref('');
   const activitySectionRef = ref(null);
   const editingCommentId = ref(null);
@@ -1270,6 +1282,8 @@ function caseContactOptionsForRecord(rec, allContacts) {
   const selected = allContacts.find((p) => String(p._id) === String(contactId));
   return selected ? [...filtered, selected] : filtered;
 }
+/** Document folders for folderId lookup on document record Details. */
+const documentFolderLookupList = ref([]);
 /** Tenant user list used to render user lookup labels (e.g., assignedTo) in generic sections. */
 const userLookupList = ref([]);
 const deleting = ref(false);
@@ -1315,8 +1329,16 @@ const recordCrudPathBase = computed(() =>
     routePath: route.path
   })
 );
+
+async function updateRecordFields(payload) {
+  const path = `${recordCrudPathBase.value}/${props.recordId}`;
+  if (moduleKeyLower.value === 'documents') {
+    return apiClient.patch(path, payload);
+  }
+  return apiClient.put(path, payload);
+}
 const isPeopleModule = computed(() => moduleKeyLower.value === 'people');
-const supportsTags = computed(() => ['people', 'organizations'].includes(moduleKeyLower.value));
+const supportsTags = computed(() => ['people', 'organizations', 'documents'].includes(moduleKeyLower.value));
 
 const peopleParticipationEntries = computed(() => {
   const r = record.value;
@@ -1492,22 +1514,32 @@ const closeAddRelatedRecordDrawer = () => {
 
 const canLinkRecords = computed(() => authStore.can(props.moduleKey, 'edit'));
 
-const { context: genericRecordContext, load: loadGenericRecordContext, canUnlink: genericRecordContextCanUnlink } = useRecordContext(
+const { context: genericRecordContext, contextRevision, load: loadGenericRecordContext, canUnlink: genericRecordContextCanUnlink } = useRecordContext(
   () => recordContextAppKey.value,
   () => props.moduleKey,
   () => props.recordId || record.value?._id || ''
 );
 watch(() => props.recordId, () => {
+  suppressDocumentEditorAutoOpen.value = false;
   expandedLeftSection.value = '';
   if (props.recordId) loadGenericRecordContext(true);
 }, { immediate: true });
 
 function resolveRelatedGroupLabel(relationshipKey, rel, isOrganizationModule) {
+  const key = String(relationshipKey || '').toLowerCase();
+  const labelByKey = {
+    deal_contacts: 'Linked Deals',
+    people_deals: 'Related Deals',
+    people_documents: 'Related Documents',
+    quote_people: 'Related Quotes',
+    case_people: 'Related Cases'
+  };
+  if (labelByKey[key]) return labelByKey[key];
+
   const fromContext = rel?.ui?.label || rel?.label;
-  if (fromContext && String(fromContext).toLowerCase() !== String(relationshipKey || '').toLowerCase()) {
+  if (fromContext && String(fromContext).toLowerCase() !== key) {
     return fromContext;
   }
-  const key = String(relationshipKey || '').toLowerCase();
   if (isOrganizationModule && key === 'people_organizations') {
     return t('organizations.relatedContactsWidgetRelatedContacts');
   }
@@ -1519,34 +1551,19 @@ function resolveRelatedGroupLabel(relationshipKey, rel, isOrganizationModule) {
 
 const genericRelatedGroupsFromContext = computed(() => {
   const isOrganizationModule = moduleKeyLower.value === 'organizations';
+
   const contextRelationships = Array.isArray(genericRecordContext.value?.relationships)
     ? genericRecordContext.value.relationships
     : [];
 
-  // Organizations should always show default related groups (Contacts/Deals),
-  // even when there are currently zero linked records.
-  const fallbackRelationships = isOrganizationModule && contextRelationships.length === 0
-    ? (Array.isArray(moduleDefinition.value?.relationships) ? moduleDefinition.value.relationships : []).map((rel) => ({
-      relationshipKey: rel.relationshipKey || rel.key || rel.name || 'related',
-      label: rel.label || rel.name || rel.relationshipKey || 'Related',
-      ui: {
-        label: rel.label || rel.name || rel.relationshipKey || 'Related'
-      },
-      direction: 'TARGET',
-      records: []
-    }))
-    : [];
+  const relationshipsForGroups = contextRelationships.filter((rel) => {
+    const relKey = String(rel?.relationshipKey || '').toLowerCase();
+    if (relKey.endsWith('_documents')) return Array.isArray(rel.records) && rel.records.length > 0;
+    return String(rel?.ui?.showAs || 'TAB').toUpperCase() !== 'NONE';
+  });
 
-  const relationshipsForGroups = contextRelationships.length > 0
-    ? contextRelationships
-    : fallbackRelationships;
-
-  const groups = Array.isArray(relationshipsForGroups)
-    ? relationshipsForGroups
-    .filter((rel) => {
-      if (isOrganizationModule) return true;
-      return rel.records && rel.records.length > 0;
-    })
+  const groups = relationshipsForGroups
+    .filter((rel) => Array.isArray(rel.records) && rel.records.length > 0)
     .map((rel) => {
       const key = rel.relationshipKey || rel.label || 'related';
       const label = resolveRelatedGroupLabel(key, rel, isOrganizationModule);
@@ -1563,71 +1580,32 @@ const genericRelatedGroupsFromContext = computed(() => {
           .filter(Boolean)
           .join(' ')
           .trim();
+        const displayTitle = r.label || r.name || r.title || r.quoteTitle || r.item_name || personName || r.email;
         const fallbackTitle = id ? String(id).slice(0, 8) : 'Untitled';
         return {
           id: id?.toString?.() ?? String(id),
           title: r._isBroken
-            ? (r.label || r.email || personName || fallbackTitle)
-            : (r.label || r.name || r.title || personName || r.email || fallbackTitle),
+            ? (displayTitle || r.email || personName || fallbackTitle)
+            : (displayTitle || fallbackTitle),
           meta: r._isBroken
             ? (r.secondaryText || 'Related record unavailable')
             : (r.secondaryText || r.status || r.email || ''),
-          onOpen: path ? () => openTab(path, { background: false, insertAdjacent: true }) : undefined,
+          recordData: r,
+          onOpen: path && !r._isBroken
+            ? () => openTab(path, { background: false, insertAdjacent: true })
+            : undefined,
           relationshipKey: key,
           appKey,
           moduleKey,
           direction
         };
       });
-      if (items.length === 0 && !isOrganizationModule) return null;
+      if (items.length === 0) return null;
       return { key, label, items };
     })
-    .filter(Boolean)
-    : [];
+    .filter(Boolean);
 
-  if (moduleKeyLower.value === 'people') {
-    const rawOrg = record.value?.organization;
-    if (rawOrg != null && rawOrg !== '') {
-      const orgId = typeof rawOrg === 'object'
-        ? String(rawOrg._id ?? rawOrg.id ?? '')
-        : String(rawOrg);
-      if (orgId) {
-        const relKey = 'people_organizations';
-        const existingGroup = groups.find((g) => g.key === relKey);
-        const alreadyPresent = existingGroup?.items?.some((item) => item.id === orgId);
-        if (!alreadyPresent) {
-          const orgTitle = typeof rawOrg === 'object'
-            ? String(rawOrg.name || rawOrg.label || '')
-            : '';
-          const path = `${getModuleRecordRoutePathBase('organizations', { appKey: 'SALES' })}/${orgId}`;
-          const orgItem = {
-            id: orgId,
-            title: orgTitle || orgId.slice(0, 8),
-            meta: typeof rawOrg === 'object' ? String(rawOrg.industry || rawOrg.status || '') : '',
-            onOpen: () => openTab(path, { background: false, insertAdjacent: true }),
-            relationshipKey: relKey,
-            appKey: 'SALES',
-            moduleKey: 'organizations',
-            direction: 'SOURCE'
-          };
-          if (existingGroup) {
-            existingGroup.items = [...(existingGroup.items || []), orgItem];
-          } else {
-            const relDef = (moduleDefinition.value?.relationships || []).find(
-              (r) => String(r.relationshipKey || '').toLowerCase() === relKey
-            );
-            groups.push({
-              key: relKey,
-              label: relDef?.label || relDef?.name || 'Related Organization',
-              items: [orgItem]
-            });
-          }
-        }
-      }
-    }
-  }
-
-  return groups;
+  return groups.filter((group) => (group.items || []).length > 0);
 });
 
 const {
@@ -1656,7 +1634,7 @@ const persistRecordTags = async (cleaned) => {
     const supportsDedicatedTagsEndpoint = moduleKey === 'deals' || moduleKey === 'tasks';
     const response = supportsDedicatedTagsEndpoint
       ? await apiClient.put(`${recordCrudPathBase.value}/${props.recordId}/tags`, { tags: cleaned })
-      : await apiClient.put(`${recordCrudPathBase.value}/${props.recordId}`, { tags: cleaned });
+      : await updateRecordFields({ tags: cleaned });
     if (response?.success && response?.data) {
       record.value.tags = Array.isArray(response.data.tags) ? response.data.tags : cleaned;
     } else {
@@ -1734,6 +1712,119 @@ const recordAvatarIcon = computed(() => {
 });
 
 const canEditRecord = computed(() => authStore.can?.(props.moduleKey, 'edit') ?? false);
+const canViewDocuments = computed(() => authStore.can?.('documents', 'view') ?? false);
+const canCreateDocuments = computed(() => authStore.can?.('documents', 'create') ?? false);
+const canEditDocuments = computed(() => authStore.can?.('documents', 'edit') ?? false);
+const showRecordDocumentsTab = computed(
+  () => supportsDocumentAttachments(props.moduleKey) && canViewDocuments.value && !!record.value?._id
+);
+const canPublishDocument = computed(
+  () => moduleKeyLower.value === 'documents'
+    && canEditRecord.value
+    && isRichDocument(record.value)
+    && String(record.value?.status || '').toLowerCase() === 'draft'
+);
+const isDocumentsRichRecord = computed(
+  () => moduleKeyLower.value === 'documents' && isRichDocument(record.value)
+);
+const canOpenDocumentEditor = computed(
+  () => isDocumentsRichRecord.value
+    && canEditRecord.value
+    && expandedLeftSection.value !== 'content-editor'
+);
+
+const showRecordPresenceAvatars = computed(
+  () => Boolean(props.recordId && record.value && authStore.can(props.moduleKey, 'view'))
+);
+
+const recordPresenceActivityType = computed(() => {
+  if (expandedLeftSection.value === 'content-editor') return 'editing';
+  if (expandedLeftSection.value === 'lines') return 'editing';
+  return 'viewing';
+});
+
+const { otherSessions: recordPresenceOthers } = useRecordPresence(
+  () => props.moduleKey,
+  () => String(props.recordId || record.value?._id || ''),
+  () => recordPresenceActivityType.value
+);
+
+const documentEditorSaving = ref(false);
+const documentEditorPageRef = ref(null);
+const pendingCommentAnchor = ref(null);
+const localDraftSavedAt = ref(null);
+
+const documentTypeLabelMap = {
+  file: 'documents.typeFile',
+  rich_document: 'documents.typeRichDocument',
+  sop: 'documents.typeSop',
+  meeting_notes: 'documents.typeMeetingNotes',
+  checklist: 'documents.typeChecklist',
+  template: 'documents.typeTemplate',
+  knowledge_article: 'documents.typeKnowledgeArticle',
+  playbook: 'documents.typePlaybook'
+};
+
+function openDocumentEditor() {
+  suppressDocumentEditorAutoOpen.value = false;
+  expandedLeftSection.value = 'content-editor';
+}
+
+async function handleDocumentEditorSave(html) {
+  if (!props.recordId || moduleKeyLower.value !== 'documents') return;
+  documentEditorSaving.value = true;
+  try {
+    const response = await updateRecordFields({
+      richContent: toRichContentPayload(html)
+    });
+    const updated = response?.data;
+    if (record.value && updated && typeof updated === 'object') {
+      Object.assign(record.value, updated);
+    } else if (record.value) {
+      record.value.richContent = toRichContentPayload(html);
+    }
+    await refreshRecordActivity();
+  } catch (error) {
+    notifications.error(error?.message || t('documents.editorSaveFailed'));
+  } finally {
+    documentEditorSaving.value = false;
+  }
+}
+
+async function handlePublishDocument() {
+  if (!canPublishDocument.value || !props.recordId) return;
+  try {
+    const response = await updateRecordFields({ status: 'published' });
+    if (record.value) {
+      const updated = response?.data;
+      if (updated && typeof updated === 'object') {
+        Object.assign(record.value, updated);
+      } else {
+        record.value.status = 'published';
+      }
+    }
+    notifications.success(t('documents.publishSuccess'));
+    await refreshRecordActivity();
+  } catch (error) {
+    notifications.error(error?.message || t('documents.publishFailed'));
+  }
+}
+
+function handleInlineCommentRequest(anchor) {
+  pendingCommentAnchor.value = anchor || null;
+  if (expandedLeftSection.value === 'content-editor') {
+    suppressDocumentEditorAutoOpen.value = true;
+    expandedLeftSection.value = '';
+    if (route.query.edit === '1') {
+      const { edit, ...rest } = route.query;
+      router.replace({ query: rest });
+    }
+  }
+}
+
+function handleDocumentDraftSaved(savedAt) {
+  localDraftSavedAt.value = savedAt || new Date().toISOString();
+}
 
 // Use real tag colors for People (must be after canEditRecord)
 const { getTagChipClass: getTagChipClassFromComposable } = useRecordTags(record, {
@@ -1757,174 +1848,223 @@ const layoutProps = computed(() => ({
 
 async function handleUnlinkGenericRelated(item, group, rec) {
   if (!rec?._id || !item?.id || !group?.key) return;
-  const currentRef = { appKey: (recordContextAppKey.value || 'PLATFORM').toUpperCase(), moduleKey: (props.moduleKey || '').toLowerCase(), recordId: rec._id };
+  const relKey = String(group.key || '').toLowerCase();
+  const curMod = (props.moduleKey || '').toLowerCase();
+  const currentRef = { appKey: (recordContextAppKey.value || 'SALES').toUpperCase(), moduleKey: curMod, recordId: rec._id };
   const relatedRef = { appKey: (item.appKey || 'SALES').toUpperCase(), moduleKey: (item.moduleKey || '').toLowerCase(), recordId: item.id };
   const isCurrentSource = (item.direction || 'SOURCE').toUpperCase() === 'SOURCE';
   const source = isCurrentSource ? currentRef : relatedRef;
   const target = isCurrentSource ? relatedRef : currentRef;
+
+  const applyLocalUnlink = () => {
+    if (relKey === 'people_organizations' && curMod === 'people' && record.value) {
+      record.value.organization = null;
+    }
+    const rels = genericRecordContext.value?.relationships;
+    if (Array.isArray(rels)) {
+      const rel = rels.find((r) => String(r.relationshipKey || '').toLowerCase() === relKey);
+      if (rel && Array.isArray(rel.records)) {
+        rel.records = rel.records.filter(
+          (r) => String(r.recordId ?? r.id ?? r._id) !== String(item.id)
+        );
+      }
+    }
+  };
+
   try {
     await apiClient.post('/relationships/unlink', {
       relationshipKey: group.key,
       source,
       target
     });
+    applyLocalUnlink();
     invalidateRecordContext(recordContextAppKey.value, props.moduleKey, rec._id);
-    await loadGenericRecordContext(true);
+    await Promise.all([
+      loadGenericRecordContext(true),
+      fetchRecord()
+    ]);
   } catch (err) {
+    const notFound = err?.status === 404
+      || String(err?.response?.data?.message || err?.message || '').toLowerCase().includes('not found');
+    if (notFound && relKey === 'people_organizations' && curMod === 'people') {
+      try {
+        await updateRecordFields({ organization: null });
+        applyLocalUnlink();
+        invalidateRecordContext(recordContextAppKey.value, props.moduleKey, rec._id);
+        await Promise.all([
+          loadGenericRecordContext(true),
+          fetchRecord()
+        ]);
+        return;
+      } catch (clearErr) {
+        console.error('Error clearing people organization lookup:', clearErr);
+      }
+    }
     console.error('Error unlinking related record:', err);
     alert(err?.response?.data?.message || t('records.genericUnlinkFailed'));
   }
 }
 
-const rightPaneTabs = computed(() => [
-  { id: 'activity', name: t('records.genericTabActivity') },
-  { id: 'related', name: t('records.relatedTitle') },
-  { id: 'details', name: t('records.detailsTitle') },
-  { id: 'integrations', name: t('records.genericIntegrations') }
-]);
+const rightPaneTabs = computed(() => {
+  const tabs = [
+    { id: 'activity', name: t('records.genericTabActivity') },
+    { id: 'related', name: t('records.relatedTitle') }
+  ];
+  if (showRecordDocumentsTab.value) {
+    tabs.push({ id: 'documents', name: t('records.genericTabDocuments') });
+  }
+  tabs.push(
+    { id: 'details', name: t('records.detailsTitle') },
+    { id: 'integrations', name: t('records.genericIntegrations') }
+  );
+  return tabs;
+});
 
 const linkRecordDrawerTitle = computed(() =>
   allowCreateFromLinkDrawer.value ? t('records.genericLinkDrawerAddAndLink') : t('records.genericLinkDrawerLink')
 );
 
-const descriptionHistoryList = computed(() => {
+/** Same relationship set as Related Records — fills gaps when linkable-targets API is stale. */
+const linkRecordDrawerSupplementTypes = computed(() => {
+  const rels = Array.isArray(genericRecordContext.value?.relationships)
+    ? genericRecordContext.value.relationships
+    : [];
+
+  return rels
+    .filter((rel) => String(rel?.ui?.showAs || 'TAB').toUpperCase() !== 'NONE')
+    .filter((rel) => rel.userLinkable !== false)
+    .filter((rel) => !(rel.display && rel.display.linkRecord === false))
+    .map((rel) => {
+      const relationshipKey = String(rel.relationshipKey || '').toLowerCase();
+      const isSource = String(rel.direction || 'SOURCE').toUpperCase() === 'SOURCE';
+      const linkedModuleKey = isSource ? rel.target?.moduleKey : rel.source?.moduleKey;
+      const linkedAppKey = isSource ? rel.target?.appKey : rel.source?.appKey;
+      if (!relationshipKey || !linkedModuleKey) return null;
+      return {
+        key: String(linkedModuleKey).toLowerCase(),
+        label: rel.ui?.label || rel.label || relationshipKey,
+        relationshipKey,
+        targetAppKey: String(linkedAppKey || recordContextAppKey.value || 'SALES').toUpperCase(),
+        sourceIsCurrent: isSource
+      };
+    })
+    .filter(Boolean);
+});
+
+const isContentVersionHistoryOpen = computed(
+  () => expandedLeftSection.value === 'description-history'
+    || expandedLeftSection.value === 'rich-content-history'
+);
+
+const contentVersionHistoryRadioName = computed(
+  () => `${contentVersionHistoryMode.value}-version-${record.value?._id || ''}`
+);
+
+const contentVersionHistoryList = computed(() => {
   const rec = record.value;
   const data = descriptionVersionsData.value;
   if (!rec) return [];
-  const current = {
-    isCurrent: true,
-    createdAt: rec.updatedAt || rec.createdAt || new Date(),
-    createdBy: null,
-    content: rec.description ?? rec.customFields?.description ?? ''
-  };
   const currentUserName = authStore.user
     ? [authStore.user.firstName, authStore.user.lastName].filter(Boolean).join(' ').trim() || authStore.user.email
     : 'You';
-  const list = [{ ...current, createdBy: currentUserName }];
-  (data.versions || []).forEach((v) => {
-    list.push({
-      isCurrent: false,
-      createdAt: v.createdAt,
-      createdBy: v.createdBy,
-      content: v.content
-    });
+  const currentContent = contentVersionHistoryMode.value === 'richContent'
+    ? (data.currentContent ?? getRichContentHtml(rec.richContent))
+    : (rec.description ?? rec.customFields?.description ?? data.currentDescription ?? '');
+  return buildContentVersionHistoryList({
+    record: rec,
+    versions: data.versions,
+    currentContent,
+    currentUserName
   });
-  return list;
 });
 
 const canViewDescriptionHistory = true;
 
-function formatDescriptionVersionDate(date) {
-  if (!date) return '';
-  const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) return '';
-  return parsed.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit'
-  });
+function registerRichContentFlush(fn) {
+  richContentFlushSave.value = typeof fn === 'function' ? fn : null;
 }
 
-function getPlainTextFromHtml(html) {
-  if (!html || typeof html !== 'string') return '';
-  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-}
-
-function diffWordsToHtml(oldText, newText) {
-  const oldParts = String(oldText || '').split(/(\s+)/);
-  const newParts = String(newText || '').split(/(\s+)/);
-  const escape = (value) => {
-    const el = document.createElement('div');
-    el.textContent = value;
-    return el.innerHTML;
-  };
-  const result = [];
-  let oldIndex = 0;
-  let newIndex = 0;
-  while (oldIndex < oldParts.length || newIndex < newParts.length) {
-    if (oldIndex < oldParts.length && newIndex < newParts.length && oldParts[oldIndex] === newParts[newIndex]) {
-      result.push(escape(oldParts[oldIndex]));
-      oldIndex += 1;
-      newIndex += 1;
-      continue;
-    }
-    if (newIndex < newParts.length && !oldParts.slice(oldIndex).includes(newParts[newIndex])) {
-      result.push(`<ins class="bg-green-100 dark:bg-green-900/30 text-green-900 dark:text-green-200 no-underline">${escape(newParts[newIndex])}</ins>`);
-      newIndex += 1;
-      continue;
-    }
-    if (oldIndex < oldParts.length) {
-      result.push(`<del class="bg-red-100 dark:bg-red-900/30 text-red-900 dark:text-red-200 line-through">${escape(oldParts[oldIndex])}</del>`);
-      oldIndex += 1;
-      continue;
-    }
-    if (newIndex < newParts.length) {
-      result.push(`<ins class="bg-green-100 dark:bg-green-900/30 text-green-900 dark:text-green-200 no-underline">${escape(newParts[newIndex])}</ins>`);
-      newIndex += 1;
-    }
+async function flushRichContentSave() {
+  if (typeof richContentFlushSave.value === 'function') {
+    await richContentFlushSave.value();
   }
-  return result.join('');
 }
-
-const descriptionHistorySelectedContent = computed(() => {
-  const selected = descriptionHistoryList.value[selectedDescriptionVersionIndex.value];
-  const raw = String(selected?.content || '');
-  if (!raw.trim()) return '';
-  return sanitizeRichDescriptionHtml(raw);
-});
-
-const descriptionHistoryShowDiff = computed(
-  () => descriptionHistoryList.value.length > 1 && selectedDescriptionVersionIndex.value > 0
-);
-
-const descriptionHistoryDiffHtml = computed(() => {
-  if (!descriptionHistoryShowDiff.value) return '';
-  const list = descriptionHistoryList.value;
-  const currentVersion = list[0];
-  const selectedVersion = list[selectedDescriptionVersionIndex.value];
-  if (!currentVersion || !selectedVersion) return '';
-  const oldPlain = getPlainTextFromHtml(selectedVersion.content);
-  const newPlain = getPlainTextFromHtml(currentVersion.content);
-  const diffHtml = diffWordsToHtml(oldPlain, newPlain);
-  return DOMPurify.sanitize(diffHtml, { ALLOWED_TAGS: ['ins', 'del'], ALLOWED_ATTR: ['class'] });
-});
-
-const descriptionHistorySelectedHasContent = computed(() => {
-  const selected = descriptionHistoryList.value[selectedDescriptionVersionIndex.value];
-  return Boolean(selected && String(selected.content || '').trim());
-});
 
 function openDescriptionHistory() {
+  contentVersionHistoryMode.value = 'description';
   selectedDescriptionVersionIndex.value = 0;
   expandedLeftSection.value = 'description-history';
-  fetchDescriptionVersions();
+  fetchContentVersions();
 }
 
-function closeExpandedLeftSection() {
+async function flushDocumentEditorSave() {
+  if (typeof documentEditorPageRef.value?.flushPendingSave === 'function') {
+    await documentEditorPageRef.value.flushPendingSave();
+  }
+}
+
+async function openRichContentHistory() {
+  if (expandedLeftSection.value === 'content-editor') {
+    await flushDocumentEditorSave();
+  }
+  await flushRichContentSave();
+  contentVersionHistoryMode.value = 'richContent';
+  selectedDescriptionVersionIndex.value = 0;
+  expandedLeftSection.value = 'rich-content-history';
+  await fetchContentVersions();
+}
+
+async function closeExpandedLeftSection() {
+  if (expandedLeftSection.value === 'content-editor') {
+    await flushDocumentEditorSave();
+    suppressDocumentEditorAutoOpen.value = true;
+    if (route.query.edit) {
+      const { edit, ...rest } = route.query;
+      router.replace({ query: rest });
+    }
+  }
   expandedLeftSection.value = '';
 }
 
-async function fetchDescriptionVersions() {
-  if (!record.value?._id || !props.moduleKey) return;
+async function fetchContentVersions() {
+  if (!record.value?._id) return;
   descriptionVersionsLoading.value = true;
   try {
+    if (contentVersionHistoryMode.value === 'richContent' && moduleKeyLower.value === 'documents') {
+      const res = await apiClient.get(`/documents/${props.recordId}/rich-content-versions`);
+      descriptionVersionsData.value = res?.data ?? { currentContent: '', versions: [] };
+      return;
+    }
+    if (!props.moduleKey) return;
     const res = await apiClient.get(`/modules/${props.moduleKey}/records/${props.recordId}/description-versions`);
     descriptionVersionsData.value = res?.data ?? { currentDescription: '', versions: [] };
   } catch (err) {
-    console.error('Fetch description versions failed:', err);
-    descriptionVersionsData.value = { currentDescription: '', versions: [] };
+    console.error('Fetch content versions failed:', err);
+    descriptionVersionsData.value = { currentDescription: '', currentContent: '', versions: [] };
   } finally {
     descriptionVersionsLoading.value = false;
   }
 }
 
-async function restoreDescriptionVersion() {
-  if (!record.value?._id || !props.moduleKey || selectedDescriptionVersionIndex.value === 0) return;
+async function restoreContentVersion() {
+  if (!record.value?._id || selectedDescriptionVersionIndex.value === 0) return;
   descriptionRestoreLoading.value = true;
   try {
     const apiIndex = selectedDescriptionVersionIndex.value - 1;
+    if (contentVersionHistoryMode.value === 'richContent' && moduleKeyLower.value === 'documents') {
+      const response = await apiClient.post(
+        `/documents/${props.recordId}/rich-content-versions/restore`,
+        { versionIndex: apiIndex }
+      );
+      const updated = response?.data?.data ?? response?.data;
+      if (updated && record.value) {
+        Object.assign(record.value, updated);
+        closeExpandedLeftSection();
+        await refreshRecordActivity();
+      }
+      return;
+    }
+    if (!props.moduleKey) return;
     const response = await apiClient.post(
       `/modules/${props.moduleKey}/records/${props.recordId}/description-versions/restore`,
       { versionIndex: apiIndex }
@@ -1935,7 +2075,7 @@ async function restoreDescriptionVersion() {
       closeExpandedLeftSection();
     }
   } catch (err) {
-    console.error('Restore description version failed:', err);
+    console.error('Restore content version failed:', err);
   } finally {
     descriptionRestoreLoading.value = false;
   }
@@ -1991,11 +2131,56 @@ function appendRawActivityEvent(event) {
   activityRaw.value = [...withoutDuplicate, event].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
 }
 
+async function handleRecordDocumentsChanged(payload = {}) {
+  const recordId = props.recordId || record.value?._id;
+  if (!recordId) return;
+  await refreshRelatedRecordsAfterDocumentChange({
+    moduleKey: payload.moduleKey || props.moduleKey,
+    recordId: payload.recordId || recordId,
+    appKey: payload.appKey || recordContextAppKey.value,
+    contextRef: genericRecordContext,
+    loadRecordContext: loadGenericRecordContext,
+    documents: payload.action === 'attach' ? (payload.documents || []) : [],
+    detachedDocumentIds: payload.action === 'detach' ? (payload.detachedDocumentIds || []) : [],
+    onContextRevision: () => { contextRevision.value += 1; }
+  });
+}
+
+async function syncRelatedRecordsForLookupField(fieldKey, value) {
+  const recordId = props.recordId || record.value?._id;
+  if (!recordId) return;
+  await refreshRelatedRecordsAfterLookupFieldSave({
+    moduleKey: props.moduleKey,
+    fieldKey,
+    value,
+    moduleDefinition: moduleDefinition.value,
+    recordContextRef: genericRecordContext,
+    contextRevisionRef: contextRevision,
+    appKey: recordContextAppKey.value,
+    recordId,
+    loadRecordContext: loadGenericRecordContext,
+    lookupLists: {
+      organizations: peopleOrganizationList.value.length
+        ? peopleOrganizationList.value
+        : [...caseOrganizationLookupList.value, ...quoteOrganizationLookupList.value],
+      people: caseContactLookupList.value.length
+        ? caseContactLookupList.value
+        : quoteContactLookupList.value,
+      deals: quoteDealLookupList.value
+    }
+  });
+}
+
 const genericAdapter = computed(() => {
   if (!record.value || !moduleDefinition.value) return null;
+  // Track related-record context so main-area RelatedSection re-renders on link/unlink.
+  genericRelatedGroupsFromContext.value;
+  contextRevision.value;
   const adapterFactory = moduleKeyLower.value === 'items'
     ? createItemsRecordAdapter
-    : moduleKeyLower.value === 'quotes'
+    : moduleKeyLower.value === 'documents'
+      ? createDocumentsRecordAdapter
+      : moduleKeyLower.value === 'quotes'
       ? createQuotesRecordAdapter
       : moduleKeyLower.value === 'sales_orders'
         ? createSalesOrdersRecordAdapter
@@ -2119,8 +2304,8 @@ const genericAdapter = computed(() => {
           Object.assign(record.value, extra);
         }
       }
-      const response = await apiClient.put(`${recordCrudPathBase.value}/${props.recordId}`, payload);
-      const updatedRecord = response?.data ?? null;
+      const response = await updateRecordFields(payload);
+      const updatedRecord = response?.data?.data ?? response?.data ?? null;
       if (record.value) {
         if (moduleKeyLower === 'cases' && caseCanonical && caseCanonical !== fieldKey) {
           try {
@@ -2135,6 +2320,7 @@ const genericAdapter = computed(() => {
           record.value[payloadKey] = value;
         }
       }
+      await syncRelatedRecordsForLookupField(payloadKey, coordinationValue ?? value);
       await refreshRecordActivity();
     },
     getRelatedGroups: () => genericRelatedGroupsFromContext.value,
@@ -2145,14 +2331,14 @@ const genericAdapter = computed(() => {
           : null);
       if (path) openTab(path, { background: false, insertAdjacent: true });
     },
-    canUnlinkRelated: () => genericRecordContextCanUnlink.value,
+    canUnlinkRelated: () => genericRecordContextCanUnlink.value || canEditRecord.value,
     onUnlinkRelated: handleUnlinkGenericRelated,
     canLinkRecords: canLinkRecords.value,
     openLinkRecordDrawer,
     openAddRecordDrawer,
     handleDescriptionSave: async (value) => {
       try {
-        await apiClient.put(`${recordCrudPathBase.value}/${props.recordId}`, { description: value });
+        await updateRecordFields({ description: value });
         if (record.value) record.value.description = value;
       } catch (e) {
         console.error('Save description error:', e);
@@ -2163,6 +2349,7 @@ const genericAdapter = computed(() => {
     openLeftSection: (key) => { expandedLeftSection.value = key; },
     canViewDescriptionHistory,
     openDescriptionHistory,
+    openRichContentHistory: moduleKeyLower.value === 'documents' ? openRichContentHistory : undefined,
     getEntityOptions: (fieldKey) => {
       const key = String(fieldKey || '').toLowerCase().trim();
       if ((props.moduleKey || '').toLowerCase() === 'people' && key === 'organization') {
@@ -2187,7 +2374,13 @@ const genericAdapter = computed(() => {
       const fieldDef = (moduleDefinition.value?.fields || []).find(
         (f) => String(f?.key || '').toLowerCase().trim() === key
       );
-      const dataType = String(fieldDef?.dataType || '').toLowerCase();
+      const dataType = String(fieldDef?.dataType || fieldDef?.type || '').toLowerCase();
+      if (
+        mk === 'documents' &&
+        (key === 'folderid' || key === 'folder' || String(fieldDef?.lookupModule || '').toLowerCase() === 'document_folders')
+      ) {
+        return documentFolderLookupList.value;
+      }
       if (
         dataType.includes('user') ||
         key === 'assignedto' ||
@@ -2202,7 +2395,8 @@ const genericAdapter = computed(() => {
         return userLookupList.value;
       }
       return [];
-    }
+    },
+    openDocumentEditor: moduleKeyLower.value === 'documents' ? openDocumentEditor : undefined
   });
 });
 
@@ -2244,7 +2438,9 @@ const sectionContext = computed(() => {
     moduleKey: props.moduleKey,
     openTab,
     fieldContext: effectiveRecordFieldContext.value,
-    onSectionUpdated: handleSectionUpdated
+    onSectionUpdated: handleSectionUpdated,
+    relatedGroups: genericRelatedGroupsFromContext.value,
+    contextRevision: contextRevision.value
   };
   if (supportsTags.value) {
     base.openTagsEditor = (event) => openTagPopoverFromField(event);
@@ -2253,6 +2449,86 @@ const sectionContext = computed(() => {
   if (moduleKeyLower.value === 'items') {
     base.onCatalogUpdated = () => fetchRecord();
     base.canEditCatalog = canEditRecord.value;
+  }
+  if (moduleKeyLower.value === 'documents') {
+    base.canEdit = canEditRecord.value;
+    base.pendingCommentAnchor = pendingCommentAnchor.value;
+    base.localDraftSavedAt = localDraftSavedAt.value;
+    base.onCommentAnchorCleared = () => {
+      pendingCommentAnchor.value = null;
+    };
+    base.onFileUpdated = () => fetchRecord();
+    base.canEditFile = canEditRecord.value;
+    base.canEditRichContent = canEditRecord.value;
+    base.canEditVisibility = canEditRecord.value;
+    base.canEditLifecycle = canEditRecord.value;
+    base.canCheckExternalLink = canEditRecord.value || authStore.can?.('documents', 'view');
+    base.canManageReservation = canEditRecord.value;
+    base.presenceActivityType = recordPresenceActivityType.value;
+    base.onExternalLinkUpdated = () => fetchRecord();
+    base.onLifecycleSave = async (payload) => {
+      const response = await updateRecordFields(payload);
+      const updated = response?.data;
+      if (record.value && updated && typeof updated === 'object') {
+        Object.assign(record.value, updated);
+      } else if (record.value && payload) {
+        Object.assign(record.value, payload);
+      }
+      await refreshRecordActivity();
+    };
+    base.onReserve = async (reason = '') => {
+      const response = await reserveDocument(props.recordId, reason);
+      if (response?.success && response?.data && record.value) {
+        Object.assign(record.value, response.data);
+      } else {
+        throw new Error(response?.message || 'Failed to reserve document');
+      }
+    };
+    base.onReleaseReservation = async () => {
+      const response = await releaseReservation(props.recordId);
+      if (response?.success && response?.data && record.value) {
+        Object.assign(record.value, response.data);
+      } else {
+        throw new Error(response?.message || 'Failed to release reservation');
+      }
+    };
+    base.onTakeoverReservation = async (reason = '') => {
+      const response = await takeoverReservation(props.recordId, reason);
+      if (response?.success && response?.data && record.value) {
+        Object.assign(record.value, response.data);
+      } else {
+        throw new Error(response?.message || 'Failed to take over reservation');
+      }
+    };
+    base.onNotifyReserver = async () => {
+      const response = await notifyReservationHolder(props.recordId);
+      if (!response?.success) {
+        throw new Error(response?.message || 'Failed to notify reserver');
+      }
+    };
+    base.onVisibilitySave = async (payload) => {
+      const response = await updateRecordFields(payload);
+      const updated = response?.data;
+      if (record.value && updated && typeof updated === 'object') {
+        Object.assign(record.value, updated);
+      } else if (record.value && payload?.visibility) {
+        record.value.visibility = payload.visibility;
+      }
+      await refreshRecordActivity();
+    };
+    base.onRichContentSave = async (html) => {
+      const response = await updateRecordFields({
+        richContent: toRichContentPayload(html)
+      });
+      const updated = response?.data;
+      if (record.value && updated && typeof updated === 'object') {
+        Object.assign(record.value, updated);
+      } else if (record.value) {
+        record.value.richContent = toRichContentPayload(html);
+      }
+      await refreshRecordActivity();
+    };
+    base.registerRichContentFlush = registerRichContentFlush;
   }
   if (moduleKeyLower.value === 'sales_orders') {
     base.billingRefreshToken = salesOrderBillingRefreshToken.value;
@@ -2515,6 +2791,10 @@ const activityUi = computed(() => {
       if (moduleKeyLower.value === 'payments') {
         const payMsg = getPaymentActivityMessage(event);
         if (payMsg) return payMsg;
+      }
+      if (moduleKeyLower.value === 'documents') {
+        const docMsg = getDocumentActivityMessage(event);
+        if (docMsg) return docMsg;
       }
       const mod = (props.moduleKey || '').toLowerCase();
       if (action === 'record_created') {
@@ -3152,6 +3432,7 @@ async function loadDeferredRecordData(runId, loadedRecord) {
     loadPeopleOrganizationLookup(lowerModuleKey, isCurrentRun),
     loadCaseLookups(lowerModuleKey, isCurrentRun),
     loadQuoteLookups(lowerModuleKey, isCurrentRun),
+    loadDocumentFolderLookups(lowerModuleKey, isCurrentRun),
     loadUserLookup(isCurrentRun)
   ];
 
@@ -3187,7 +3468,7 @@ async function loadEmailThreadsForRecord(loadedRecord, isCurrentRun) {
   }
 
   try {
-    const threadsRes = await apiClient.get('/communications/threads', {
+    const threadsRes = await apiClient.getOptional('/communications/threads', {
       params: { moduleKey: props.moduleKey, recordId: loadedRecord._id, includeDone: true }
     });
     if (!isCurrentRun()) return;
@@ -3319,6 +3600,31 @@ async function loadQuoteLookups(lowerModuleKey, isCurrentRun) {
   }
 }
 
+async function loadDocumentFolderLookups(lowerModuleKey, isCurrentRun) {
+  if (lowerModuleKey !== 'documents') {
+    if (isCurrentRun()) documentFolderLookupList.value = [];
+    return;
+  }
+
+  try {
+    const res = await apiClient.get('/document-folders', { params: { all: '1' } });
+    if (!isCurrentRun()) return;
+    const rows = res?.success && Array.isArray(res?.data)
+      ? res.data
+      : (Array.isArray(res?.data) ? res.data : []);
+    documentFolderLookupList.value = rows.map((folder) => {
+      const id = folder?._id ?? folder?.id;
+      const name = String(folder?.name || '').trim() || (id != null ? String(id) : '—');
+      const path = String(folder?.path || '').trim();
+      const label = path && path !== `/${name}` ? `${name} (${path})` : name;
+      return { _id: id, name: label, ...folder };
+    }).filter((folder) => Boolean(folder._id));
+  } catch (e) {
+    console.error('Fetch document folder lookup list error:', e);
+    if (isCurrentRun()) documentFolderLookupList.value = [];
+  }
+}
+
 async function loadUserLookup(isCurrentRun) {
   try {
     const usersRes = await apiClient.get('/users/list', { params: { limit: 500 } });
@@ -3383,7 +3689,8 @@ async function uploadModuleCommentAttachmentFile(file) {
     url: result.url,
     filename: result.originalname || file.name,
     size: result.size ?? file.size,
-    mimetype: result.mimetype || file.type
+    mimetype: result.mimetype || file.type,
+    documentId: result.documentId || undefined
   };
 }
 
@@ -3703,6 +4010,15 @@ function handleTitleSave(value) {
     return;
   }
 
+  if (moduleKeyLower === 'documents') {
+    updateRecordFields({ title })
+      .then(() => {
+        if (record.value) record.value.title = title;
+      })
+      .catch((e) => console.error('Save document title error:', e));
+    return;
+  }
+
   // Other modules: only update the generic name/title field.
   apiClient.put(`${recordCrudPathBase.value}/${props.recordId}`, { name: title }).then(() => {
     if (record.value) record.value.name = title;
@@ -3859,11 +4175,14 @@ const TARGET_APP_BY_MODULE_KEY = {
   organizations: 'SALES',
   people: 'SALES',
   deals: 'SALES',
+  items: 'SALES',
+  cases: 'HELPDESK',
+  quotes: 'PLATFORM',
   tasks: 'PLATFORM',
   events: 'PLATFORM',
   forms: 'PLATFORM',
   projects: 'PROJECTS',
-  items: 'PLATFORM'
+  documents: 'PLATFORM'
 };
 
 async function handleLinkRecordDrawerLinked({ moduleKey: targetModuleKey, ids, context, relationshipKey: payloadRelationshipKey, targetAppKey: payloadTargetAppKey, sourceIsCurrent: payloadSourceIsCurrent }) {
@@ -3876,23 +4195,53 @@ async function handleLinkRecordDrawerLinked({ moduleKey: targetModuleKey, ids, c
   const relationshipKey = (payloadRelationshipKey || normalizedTarget).toLowerCase();
   const sourceAppKey = (recordContextAppKey.value || 'PLATFORM').toUpperCase();
   const sourceModuleKey = (props.moduleKey || '').toLowerCase();
-  const targetAppKey = (payloadTargetAppKey || TARGET_APP_BY_MODULE_KEY[normalizedTarget] || 'PLATFORM').toUpperCase();
+  const linkedModuleAppKey = (payloadTargetAppKey || TARGET_APP_BY_MODULE_KEY[normalizedTarget] || 'PLATFORM').toUpperCase();
   const sourceIsCurrent = payloadSourceIsCurrent !== false;
+  const optimisticRecords = [];
 
   for (const recordId of ids) {
-    const linkPayload = sourceIsCurrent
-      ? {
-          relationshipKey,
-          source: { appKey: sourceAppKey, moduleKey: sourceModuleKey, recordId: currentId },
-          target: { appKey: targetAppKey, moduleKey: normalizedTarget, recordId }
-        }
-      : {
-          relationshipKey,
-          source: { appKey: targetAppKey, moduleKey: normalizedTarget, recordId },
-          target: { appKey: sourceAppKey, moduleKey: sourceModuleKey, recordId: currentId }
-        };
     try {
+      if (normalizedTarget === 'documents') {
+        const linkRes = await apiClient.post(`/documents/${recordId}/link`, {
+          moduleKey: sourceModuleKey,
+          recordId: String(currentId),
+          appKey: sourceAppKey
+        });
+        if (!linkRes?.success) {
+          alert(linkRes?.message || t('documents.linkFailed'));
+          return;
+        }
+        const linkedDoc = linkRes.data?.document || linkRes.document;
+        optimisticRecords.push({
+          recordId: String(recordId),
+          moduleKey: 'documents',
+          appKey: 'PLATFORM',
+          label: linkedDoc?.title || linkedDoc?.documentNumber || String(recordId).slice(-8),
+          title: linkedDoc?.title,
+          documentNumber: linkedDoc?.documentNumber
+        });
+        continue;
+      }
+
+      const linkPayload = sourceIsCurrent
+        ? {
+            relationshipKey,
+            source: { appKey: sourceAppKey, moduleKey: sourceModuleKey, recordId: currentId },
+            target: { appKey: linkedModuleAppKey, moduleKey: normalizedTarget, recordId }
+          }
+        : {
+            relationshipKey,
+            source: { appKey: linkedModuleAppKey, moduleKey: normalizedTarget, recordId },
+            target: { appKey: sourceAppKey, moduleKey: sourceModuleKey, recordId: currentId }
+          };
       await apiClient.post('/relationships/link', linkPayload);
+
+      optimisticRecords.push({
+        recordId: String(recordId),
+        moduleKey: normalizedTarget,
+        appKey: linkedModuleAppKey,
+        label: String(recordId).slice(-8)
+      });
     } catch (err) {
       console.error('Error linking record:', err);
       const responseMessage = err?.response?.data?.message;
@@ -3906,10 +4255,23 @@ async function handleLinkRecordDrawerLinked({ moduleKey: targetModuleKey, ids, c
       return;
     }
   }
+
+  if (optimisticRecords.length > 0) {
+    const docRelationshipKey = normalizedTarget === 'documents'
+      ? resolveDocumentRelationshipKey(sourceModuleKey)
+      : relationshipKey;
+    mergeLinkedRecordsIntoContext(genericRecordContext, docRelationshipKey || relationshipKey, optimisticRecords, {
+      moduleKey: normalizedTarget,
+      appKey: linkedModuleAppKey,
+      direction: sourceIsCurrent ? 'SOURCE' : 'TARGET',
+      onUpdated: () => { contextRevision.value += 1; }
+    });
+  }
+
   closeLinkRecordDrawer();
   invalidateRecordContext(recordContextAppKey.value, props.moduleKey, currentId);
-  await loadGenericRecordContext(true);
-  await fetchRecord();
+  void loadGenericRecordContext(true);
+  void fetchRecord();
 }
 
 function handleLinkRecordDrawerCreate(payload = {}) {
@@ -3965,6 +4327,14 @@ watch(record, (r) => {
     return;
   }
   attachStickyTitleWhenReady();
+  if (
+    moduleKeyLower.value === 'documents'
+    && route.query.edit === '1'
+    && isRichDocument(r)
+    && !suppressDocumentEditorAutoOpen.value
+  ) {
+    expandedLeftSection.value = 'content-editor';
+  }
 }, { immediate: true });
 
 // Keep tab title in sync with the current record display title.

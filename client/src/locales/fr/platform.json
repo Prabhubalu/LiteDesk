@@ -966,5 +966,21 @@
   "appRegistryFallbackDescription": {
     "message": "Explore the {app} application",
     "description": "Fallback app description in app registry"
+  },
+  "platformHomeDocumentsPendingReviewOne": {
+    "message": "1 document pending review",
+    "description": "Platform home documents pending review count"
+  },
+  "platformHomeDocumentsPendingReviewMany": {
+    "message": "{count} documents pending review",
+    "description": "Platform home documents pending review count"
+  },
+  "platformHomeDocumentsExpiringSoonOne": {
+    "message": "1 document expiring soon",
+    "description": "Platform home documents expiring soon count"
+  },
+  "platformHomeDocumentsExpiringSoonMany": {
+    "message": "{count} documents expiring soon",
+    "description": "Platform home documents expiring soon count"
   }
 }

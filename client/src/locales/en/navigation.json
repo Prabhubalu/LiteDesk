@@ -59,6 +59,10 @@
     "message": "Cases",
     "description": "Portal bottom nav support cases tab"
   },
+  "portalKnowledge": {
+    "message": "Help",
+    "description": "Portal bottom nav knowledge base tab"
+  },
   "portalInvoices": {
     "message": "Invoices",
     "description": "Portal bottom nav invoices tab"
@@ -438,6 +442,10 @@
   "moduleImports": {
     "message": "Import",
     "description": "Imports module navigation label"
+  },
+  "moduleDocuments": {
+    "message": "Documents",
+    "description": "Documents module navigation label"
   },
   "moduleCases": {
     "message": "Cases",

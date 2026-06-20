@@ -69,6 +69,17 @@
       >
         <span class="line-through text-sm">S</span>
       </button>
+      <button
+        v-if="variant === 'document'"
+        type="button"
+        class="p-2 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+        :title="t('documents.inlineCommentsAddFromSelection')"
+        @click="requestInlineComment"
+      >
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h6m-7 8l-4-4V6a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H8z" />
+        </svg>
+      </button>
       <span class="w-px h-5 bg-gray-200 dark:bg-gray-600 mx-0.5" />
       <button
         type="button"
@@ -230,6 +241,8 @@ import { useEditor, EditorContent, BubbleMenu } from '@tiptap/vue-3';
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue';
 import StarterKit from '@tiptap/starter-kit';
 import Blockquote from '@tiptap/extension-blockquote';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
 import Heading from '@tiptap/extension-heading';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
@@ -239,6 +252,7 @@ import {
   registerDescriptionImageUploadTrigger,
   unregisterDescriptionImageUploadTrigger
 } from './slashCommands.js';
+import { createDocumentSlashCommands } from '@/components/documents/documentSlashCommands.js';
 import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue';
 import { getApiUrlForFetch } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -255,12 +269,20 @@ const props = defineProps({
   autoFocus: {
     type: Boolean,
     default: false
+  },
+  variant: {
+    type: String,
+    default: 'task'
+  },
+  fullPage: {
+    type: Boolean,
+    default: false
   }
 });
 
 const { t } = useI18n();
 
-const emit = defineEmits(['update:modelValue', 'blur', 'cancel', 'image-uploaded']);
+const emit = defineEmits(['update:modelValue', 'blur', 'cancel', 'image-uploaded', 'inline-comment-request']);
 
 const linkUrl = ref('https://');
 
@@ -333,6 +355,20 @@ function computeShortcutPanelPosition(ed) {
 
 function syncLinkUrlFromSelection() {
   linkUrl.value = editorInstance.current?.getAttributes('link')?.href || 'https://';
+}
+
+function requestInlineComment() {
+  const ed = editorInstance.current;
+  if (!ed) return;
+  const { from, to } = ed.state.selection;
+  if (from === to) return;
+  const quotedText = ed.state.doc.textBetween(from, to, ' ').trim();
+  if (!quotedText) return;
+  emit('inline-comment-request', {
+    quotedText,
+    anchorFrom: from,
+    anchorTo: to
+  });
 }
 
 function focusLinkInput() {
@@ -600,17 +636,15 @@ const DescriptionImage = Image.extend({
   }
 });
 
-const editor = useEditor({
-  content: props.modelValue || '',
-  extensions: [
+const isDocumentVariant = computed(() => props.variant === 'document');
+
+function buildEditorExtensions() {
+  const base = [
     StarterKit.configure({
       heading: false,
       blockquote: false
     }),
-    ReplyQuoteBlockquote,
-    Heading.configure({
-      levels: [1, 2, 3]
-    }),
+    Heading.configure({ levels: [1, 2, 3] }),
     Link.configure({
       openOnClick: false,
       HTMLAttributes: {
@@ -628,12 +662,35 @@ const editor = useEditor({
     }),
     Placeholder.configure({
       placeholder: props.placeholder
-    }),
-    SlashCommands
-  ],
+    })
+  ];
+
+  if (props.variant === 'document') {
+    base.splice(1, 0, Blockquote);
+    base.push(
+      TaskList.configure({
+        HTMLAttributes: { class: 'document-task-list' }
+      }),
+      TaskItem.configure({
+        nested: true,
+        HTMLAttributes: { class: 'document-task-item' }
+      }),
+      createDocumentSlashCommands(() => triggerImageUpload())
+    );
+  } else {
+    base.splice(1, 0, ReplyQuoteBlockquote);
+    base.push(SlashCommands);
+  }
+
+  return base;
+}
+
+const editor = useEditor({
+  content: props.modelValue || '',
+  extensions: buildEditorExtensions(),
   editorProps: {
     attributes: {
-      class: 'rte-content min-h-[120px] px-6 py-4 text-md text-gray-900 dark:text-white focus:outline-none'
+      class: `rte-content ${props.fullPage ? 'min-h-[calc(100vh-14rem)]' : 'min-h-[120px]'} px-6 py-4 text-md text-gray-900 dark:text-white focus:outline-none`
     },
     handleKeyDown: (view, event) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
@@ -844,5 +901,27 @@ onBeforeUnmount(() => {
   box-shadow:
     0 0 0 2px rgb(31 41 55),
     0 0 0 4px rgb(129 140 248 / 0.55);
+}
+
+.task-description-editor :deep(.tiptap ul[data-type="taskList"]) {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding: 0;
+}
+
+.task-description-editor :deep(.tiptap ul[data-type="taskList"] li) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.task-description-editor :deep(.tiptap ul[data-type="taskList"] li > label) {
+  flex: 0 0 auto;
+  margin-top: 0.2rem;
+  user-select: none;
+}
+
+.task-description-editor :deep(.tiptap ul[data-type="taskList"] li > div) {
+  flex: 1 1 auto;
 }
 </style>

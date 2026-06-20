@@ -89,10 +89,15 @@ const useViewportAnchoredLayout = computed(() => !props.forceMobile && windowIsM
 const summaryTeleportReady = ref(false);
 
 const isLinesExpanded = computed(() => props.leftExpanded && props.expandedSectionKey === 'lines');
+const WIDE_EXPANDED_SECTION_KEYS = new Set(['content-editor', 'description-history', 'rich-content-history']);
+const isWideExpandedContent = computed(
+  () => props.leftExpanded && WIDE_EXPANDED_SECTION_KEYS.has(props.expandedSectionKey)
+);
 
 const bodyPaddingClass = computed(() => {
   if (isMobile.value) return 'px-0';
   if (isLinesExpanded.value) return 'px-2 lg:px-4';
+  if (isWideExpandedContent.value) return 'px-6 lg:px-8';
   if (props.leftExpanded) return 'px-4';
   return 'px-6';
 });
@@ -115,9 +120,14 @@ const leftColumnClass = computed(() => [
       : ['py-6', 'pr-10', 'overflow-y-auto']
 ]);
 
+const wideLeftContentClass = 'record-page-layout__left-content w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col flex-1 min-h-0';
+
 const leftContentClass = computed(() => {
   if (isLinesExpanded.value) {
     return 'record-page-layout__left-content w-[90%] max-w-[90%] mx-auto px-3 sm:px-4 lg:px-6 flex flex-col flex-1 min-h-0 h-full overflow-hidden';
+  }
+  if (isWideExpandedContent.value) {
+    return wideLeftContentClass;
   }
   if (props.leftExpanded) {
     return 'record-page-layout__left-content max-w-4xl mx-auto w-full px-6 flex flex-col flex-1 min-h-0';

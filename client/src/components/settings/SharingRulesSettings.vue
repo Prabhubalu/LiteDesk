@@ -164,6 +164,7 @@ const CORE_MODULE_ORDER = [
   'events',
   'items',
   'forms',
+  'documents',
   'quotes',
   'sales_orders',
   'invoices',
@@ -171,11 +172,47 @@ const CORE_MODULE_ORDER = [
 ];
 const CORE_MODULE_KEYS = new Set(CORE_MODULE_ORDER);
 
+const DEFAULT_SHARING_MODE_BY_MODULE = Object.freeze({
+  items: 'public_read',
+  forms: 'record_level',
+  documents: 'record_level',
+  quotes: 'record_level',
+  sales_orders: 'record_level',
+  invoices: 'record_level',
+  payments: 'record_level'
+});
+
+function defaultSharingModeFor(moduleKey) {
+  return DEFAULT_SHARING_MODE_BY_MODULE[String(moduleKey || '').toLowerCase()] || 'private';
+}
+
 const rowTargets = (row) => (Array.isArray(row.linkedRows) && row.linkedRows.length ? row.linkedRows : [row]);
 
 const rowKey = (row) => {
   if (row.scopeKey) return row.scopeKey;
   return `${row.appKey}:${row.moduleKey}`;
+};
+
+function mergeDefaultsWithCatalog(dbRows, catalogEntries) {
+  const byKey = new Map(
+    (dbRows || []).map((row) => [
+      `${String(row.appKey || '').toUpperCase()}:${String(row.moduleKey || '').toLowerCase()}`,
+      row
+    ])
+  );
+
+  for (const entry of catalogEntries || []) {
+    const key = `${String(entry.appKey || '').toUpperCase()}:${String(entry.moduleKey || '').toLowerCase()}`;
+    if (!byKey.has(key)) {
+      byKey.set(key, {
+        appKey: String(entry.appKey || '').toUpperCase(),
+        moduleKey: String(entry.moduleKey || '').toLowerCase(),
+        mode: entry.mode || 'private'
+      });
+    }
+  }
+
+  return [...byKey.values()];
 };
 
 const pickPrimaryCoreRow = (linkedRows) => {
@@ -281,17 +318,54 @@ const enabledAppKeys = computed(() => {
 
 const isPlatformRow = (row) => {
   const moduleKey = String(row.moduleKey || '').toLowerCase();
+  const lookupKey = normalizeModuleKey(moduleKey);
+  if (CORE_MODULE_KEYS.has(lookupKey)) return false;
   const { platformByModuleKey } = catalogIndex.value;
   return platformByModuleKey.has(moduleKey) || PLATFORM_MODULE_KEYS.has(moduleKey);
 };
 
 const isCoreRow = (row) => {
-  if (isPlatformRow(row)) return false;
   const moduleKey = String(row.moduleKey || '').toLowerCase();
   const lookupKey = normalizeModuleKey(moduleKey);
+  if (CORE_MODULE_KEYS.has(lookupKey)) return true;
+  if (isPlatformRow(row)) return false;
   const { coreByModuleKey } = catalogIndex.value;
-  return coreByModuleKey.has(lookupKey) || CORE_MODULE_KEYS.has(lookupKey);
+  return coreByModuleKey.has(lookupKey);
 };
+
+function resolveCoreSharingRows(allDefaults) {
+  const byModule = new Map();
+  for (const row of allDefaults || []) {
+    if (!isCoreRow(row) || isPlatformRow(row)) continue;
+    const key = normalizeModuleKey(row.moduleKey);
+    if (!byModule.has(key)) byModule.set(key, []);
+    byModule.get(key).push(row);
+  }
+
+  const appsFromDefaults = [...new Set(
+    (allDefaults || []).map((row) => String(row.appKey || '').toUpperCase()).filter(Boolean)
+  )];
+  const apps = enabledAppKeys.value.length ? enabledAppKeys.value : appsFromDefaults;
+  const fallbackApps = apps.length ? apps : ['SALES'];
+
+  const merged = [];
+  for (const moduleKey of CORE_MODULE_ORDER) {
+    const existing = byModule.get(moduleKey);
+    if (existing?.length) {
+      merged.push(...existing);
+      continue;
+    }
+    for (const appKey of fallbackApps) {
+      merged.push({
+        appKey: String(appKey).toUpperCase(),
+        moduleKey,
+        mode: defaultSharingModeFor(moduleKey)
+      });
+    }
+  }
+
+  return dedupeCoreRows(merged);
+}
 
 const rowSortOrder = (row) => {
   const moduleKey = String(row.moduleKey || '').toLowerCase();
@@ -367,14 +441,12 @@ const groupedSections = computed(() => {
     });
   }
 
-  const coreRows = defaults.value.filter((row) => isCoreRow(row) && !isPlatformRow(row));
-  if (coreRows.length) {
-    sections.push({
-      id: 'core',
-      ...sectionMeta('core'),
-      rows: dedupeCoreRows(coreRows)
-    });
-  }
+  const coreRows = resolveCoreSharingRows(defaults.value);
+  sections.push({
+    id: 'core',
+    ...sectionMeta('core'),
+    rows: coreRows
+  });
 
   for (const appKey of enabledAppKeys.value) {
     const appRows = defaults.value.filter((row) => {
@@ -432,7 +504,7 @@ const fetchAll = async () => {
       return;
     }
 
-    defaults.value = defaultsRes.data || [];
+    defaults.value = mergeDefaultsWithCatalog(defaultsRes.data || [], defaultsRes.catalog || []);
     modes.value = defaultsRes.modes || [];
     rules.value = rulesRes.success ? rulesRes.data || [] : [];
     sourceTypes.value = rulesRes.sourceTypes || [];

@@ -274,6 +274,7 @@ const MODULE_PRIMARY_SEARCH_FILTER_FIELDS = {
   people: ['name'],
   deals: ['name'],
   tasks: ['title'],
+  documents: ['title'],
   events: ['eventName'],
   forms: ['name'],
   items: ['item_name'],

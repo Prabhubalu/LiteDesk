@@ -27,6 +27,52 @@ const RelationshipInstance = require('../models/RelationshipInstance');
 const RelationshipDefinition = require('../models/RelationshipDefinition');
 const TenantRelationshipConfiguration = require('../models/TenantRelationshipConfiguration');
 const { getEffectiveRelationships } = require('../utils/tenantMetadata');
+const {
+  MODULE_APP_FALLBACKS,
+  isDocumentRelationshipKey,
+  PLATFORM_DOCUMENT_RELATIONSHIP_DEFINITIONS
+} = require('../constants/defaultDocumentRelationships');
+
+function getAppKeyCandidates(appKey, moduleKey) {
+  const normalizedAppKey = String(appKey || '').toLowerCase().trim();
+  const normalizedModuleKey = String(moduleKey || '').toLowerCase().trim();
+  const fallbacks = MODULE_APP_FALLBACKS[normalizedModuleKey] || [];
+  return [...new Set([normalizedAppKey, ...fallbacks.map((key) => String(key).toLowerCase())])];
+}
+
+function matchesRecordEndpoint(endpoint, appKeyCandidates, moduleKey, recordId) {
+  if (!endpoint?.appKey || !endpoint?.moduleKey || endpoint.recordId == null) return false;
+  if (String(endpoint.moduleKey).toLowerCase() !== String(moduleKey).toLowerCase()) return false;
+  if (!appKeyCandidates.includes(String(endpoint.appKey).toLowerCase())) return false;
+  return String(endpoint.recordId) === String(recordId);
+}
+
+function getDocumentRelationshipFallbackDef(relationshipKey) {
+  const relKey = String(relationshipKey || '').toLowerCase();
+  if (!isDocumentRelationshipKey(relKey)) return null;
+  const def = PLATFORM_DOCUMENT_RELATIONSHIP_DEFINITIONS.find(
+    (entry) => String(entry.relationshipKey || '').toLowerCase() === relKey
+  );
+  if (!def) return null;
+  return {
+    relationshipKey: relKey,
+    source: {
+      appKey: String(def.source?.appKey || '').toUpperCase(),
+      moduleKey: def.source?.moduleKey
+    },
+    target: {
+      appKey: String(def.target?.appKey || '').toUpperCase(),
+      moduleKey: def.target?.moduleKey
+    },
+    cardinality: def.cardinality,
+    relationshipType: def.relationshipType || def.cardinality,
+    ownership: def.ownership,
+    required: def.required,
+    userLinkable: def.userLinkable !== undefined ? def.userLinkable : true,
+    display: def.display || null,
+    ui: def.ui
+  };
+}
 
 /**
  * Normalize recordId for query (RelationshipInstance stores recordId as ObjectId)
@@ -54,6 +100,13 @@ async function getRelationshipsForRecord(organizationId, appKey, moduleKey, reco
     const normalizedAppKey = appKey.toLowerCase();
     const normalizedModuleKey = moduleKey.toLowerCase();
     const normalizedRecordId = normalizeRecordIdForQuery(recordId);
+    const appKeyCandidates = getAppKeyCandidates(normalizedAppKey, normalizedModuleKey);
+    const sourceAppKeyQuery = appKeyCandidates.length === 1
+      ? appKeyCandidates[0]
+      : { $in: appKeyCandidates };
+    const targetAppKeyQuery = appKeyCandidates.length === 1
+      ? appKeyCandidates[0]
+      : { $in: appKeyCandidates };
 
     // SAFETY: Cross-app relationship resolution must never throw
     // Get all relationship instances where this record is source OR target
@@ -61,12 +114,12 @@ async function getRelationshipsForRecord(organizationId, appKey, moduleKey, reco
       organizationId,
       $or: [
         {
-          'source.appKey': normalizedAppKey,
+          'source.appKey': sourceAppKeyQuery,
           'source.moduleKey': normalizedModuleKey,
           'source.recordId': normalizedRecordId
         },
         {
-          'target.appKey': normalizedAppKey,
+          'target.appKey': targetAppKeyQuery,
           'target.moduleKey': normalizedModuleKey,
           'target.recordId': normalizedRecordId
         }
@@ -113,6 +166,7 @@ async function getRelatedRecords(organizationId, appKey, moduleKey, recordId) {
     const relationshipMap = new Map(
       effectiveRelationships.map(rel => [rel.relationshipKey.toLowerCase(), rel])
     );
+    const appKeyCandidates = getAppKeyCandidates(normalizedAppKey, normalizedModuleKey);
 
     // Group instances by relationship key
     const grouped = new Map();
@@ -121,7 +175,10 @@ async function getRelatedRecords(organizationId, appKey, moduleKey, recordId) {
       const relKey = instance.relationshipKey?.toLowerCase();
       if (!relKey) continue; // SAFETY: Skip invalid instances
 
-      const relDef = relationshipMap.get(relKey);
+      let relDef = relationshipMap.get(relKey);
+      if (!relDef) {
+        relDef = getDocumentRelationshipFallbackDef(relKey);
+      }
 
       // SAFETY: Skip if relationship definition not found or disabled
       if (!relDef) {
@@ -130,10 +187,12 @@ async function getRelatedRecords(organizationId, appKey, moduleKey, recordId) {
 
       // SAFETY: Ensure both source and target app keys are respected
       // Determine direction
-      const isSource = 
-        instance.source?.appKey === normalizedAppKey &&
-        instance.source?.moduleKey === normalizedModuleKey &&
-        instance.source?.recordId?.toString() === recordId.toString();
+      const isSource = matchesRecordEndpoint(
+        instance.source,
+        appKeyCandidates,
+        normalizedModuleKey,
+        recordId
+      );
 
       // SAFETY: Validate target record exists before adding
       const relatedRecord = isSource

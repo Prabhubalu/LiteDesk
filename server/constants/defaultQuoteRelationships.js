@@ -106,6 +106,13 @@ const INITIAL_QUOTE_MODULE_RELATIONSHIPS = Object.freeze([
     isLookup: true,
     targetModuleKey: 'cases',
     relationshipKey: 'quote_cases'
+  },
+  {
+    name: 'Related Documents',
+    type: 'many_to_many',
+    isLookup: false,
+    targetModuleKey: 'documents',
+    relationshipKey: 'quote_documents'
   }
 ]);
 

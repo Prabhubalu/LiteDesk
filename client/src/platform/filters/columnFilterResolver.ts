@@ -4,6 +4,7 @@ export type ColumnFilterSource = {
   key: string;
   label?: string;
   dataType?: string;
+  filterType?: FilterConfig['filterType'];
   options?: Array<{ value: string; label: string }>;
 };
 
@@ -53,6 +54,7 @@ const PICKLIST_FIELD_KEYS = new Set([
   'pipeline',
   'priority',
   'type',
+  'documenttype',
   'salestype',
   'sales_type',
   'helpdeskrole',
@@ -88,6 +90,10 @@ const DATE_FIELD_KEYS = new Set([
 ]);
 
 export function inferFilterTypeFromColumn(column: ColumnFilterSource): FilterConfig['filterType'] {
+  if (column.filterType) {
+    return column.filterType;
+  }
+
   const metadataType = String(column.dataType || '').toLowerCase();
   const keyNorm = normalizeKey(column.key);
 
@@ -103,6 +109,9 @@ export function inferFilterTypeFromColumn(column: ColumnFilterSource): FilterCon
   if (PICKLIST_FIELD_KEYS.has(keyNorm)) {
     return 'select';
   }
+  if (keyNorm === 'folderid' || keyNorm === 'foldername') {
+    return 'select';
+  }
   if (TEXT_SEARCH_KEYS.has(keyNorm) || keyNorm.endsWith('name') || keyNorm.endsWith('title')) {
     return 'text';
   }
@@ -116,15 +125,17 @@ export function inferFilterTypeFromColumn(column: ColumnFilterSource): FilterCon
     return 'boolean';
   }
   if (['entity', 'link', 'lookup'].includes(metadataType)) {
+    if (column.options?.length) return 'select';
+    if (keyNorm === 'organization') return 'entity';
     return 'text';
   }
-  if (['status', 'select', 'priority'].includes(metadataType)) {
+  if (['status', 'select', 'picklist', 'priority'].includes(metadataType)) {
     return 'select';
   }
-  if (['multi-select', 'tags'].includes(metadataType)) {
+  if (['multi-select', 'tags', 'multiselect'].includes(metadataType)) {
     return 'multi-select';
   }
-  if (metadataType === 'text' || metadataType === 'text-area') {
+  if (metadataType === 'text' || metadataType === 'text-area' || metadataType === 'textarea') {
     return 'text';
   }
   return 'text';
@@ -185,6 +196,17 @@ export function inferFallbackFilterConfig(key: string): FilterConfig | null {
       label: trimmed,
       filterType: 'entity',
       fieldPath: trimmed,
+      priority: 999,
+      options: [],
+    };
+  }
+
+  if (keyNorm === 'folderid' || keyNorm === 'foldername') {
+    return {
+      key: keyNorm === 'foldername' ? 'folderId' : trimmed,
+      label: trimmed,
+      filterType: 'select',
+      fieldPath: 'folderId',
       priority: 999,
       options: [],
     };

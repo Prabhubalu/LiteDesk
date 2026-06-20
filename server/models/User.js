@@ -389,6 +389,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             items: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             cases: { view: true, create: true, edit: true, delete: true, viewAll: true },
             imports: { view: true, create: true, delete: true },
+            documents: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             settings: { manageUsers: true, manageBilling: true, manageIntegrations: true, customizeFields: true },
             reports: { viewStandard: true, viewCustom: true, createCustom: true, exportReports: true }
         },
@@ -404,6 +405,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             items: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             cases: { view: true, create: true, edit: true, delete: true, viewAll: true },
             imports: { view: true, create: true, delete: true },
+            documents: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             settings: { manageUsers: true, manageBilling: true, manageIntegrations: true, customizeFields: true },
             reports: { viewStandard: true, viewCustom: true, createCustom: true, exportReports: true }
         },
@@ -419,6 +421,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             items: { view: true, create: true, edit: true, delete: false, viewAll: true, exportData: true },
             cases: { view: true, create: true, edit: true, delete: false, viewAll: true },
             imports: { view: true, create: true, delete: false },
+            documents: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             settings: { manageUsers: false, manageBilling: false, manageIntegrations: false, customizeFields: false },
             reports: { viewStandard: true, viewCustom: true, createCustom: false, exportReports: false }
         },
@@ -434,6 +437,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             items: { view: true, create: true, edit: true, delete: false, viewAll: false, exportData: false },
             cases: { view: true, create: true, edit: true, delete: false, viewAll: false },
             imports: { view: true, create: false, delete: false },
+            documents: { view: true, create: true, edit: true, delete: false, viewAll: false, exportData: false },
             settings: { manageUsers: false, manageBilling: false, manageIntegrations: false, customizeFields: false },
             reports: { viewStandard: true, viewCustom: false, createCustom: false, exportReports: false }
         },
@@ -449,6 +453,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             items: { view: true, create: false, edit: false, delete: false, viewAll: false, exportData: false },
             cases: { view: true, create: false, edit: false, delete: false, viewAll: false },
             imports: { view: true, create: false, delete: false },
+            documents: { view: true, create: false, edit: false, delete: false, viewAll: false, exportData: false },
             settings: { manageUsers: false, manageBilling: false, manageIntegrations: false, customizeFields: false },
             reports: { viewStandard: false, viewCustom: false, createCustom: false, exportReports: false }
         }

@@ -378,5 +378,17 @@
   "inviteFailed": {
     "message": "Unable to send the invitation. Try again or skip for now.",
     "description": "Inline invite error"
+  },
+  "firstTimeDocumentsTitle": {
+    "message": "Store and share your files in one place",
+    "description": "First visit empty state for Documents"
+  },
+  "firstTimeDocumentsDescription": {
+    "message": "Upload contracts, SOPs, and knowledge articles. Link documents to people, deals, and cases.",
+    "description": "First visit empty state description for Documents"
+  },
+  "firstTimeDocumentsAction": {
+    "message": "Upload a document",
+    "description": "First visit CTA for Documents"
   }
 }

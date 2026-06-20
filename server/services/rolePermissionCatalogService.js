@@ -26,6 +26,7 @@ const CORE_MODULE_ORDER = [
   'events',
   'items',
   'forms',
+  'documents',
   'quotes',
   'sales_orders',
   'invoices',
@@ -49,6 +50,7 @@ const LEGACY_FLAT_STORAGE_KEYS = new Set([
   'forms',
   'webforms',
   'items',
+  'documents',
   'reports',
   'users',
   'settings',
@@ -130,6 +132,7 @@ function buildActionsFromDefinition(moduleDefPermissions = {}, moduleKey, kind) 
   if (kind === 'performance') return ['view', 'create', 'edit', 'activate', 'manageTypes', 'manageOrgSettings'];
   if (kind === 'reports') return [...DEFAULT_ACTIONS_BY_KIND.reports];
   if (moduleKey === 'imports') return ['read', 'create', 'delete'];
+  if (moduleKey === 'documents') return ['read', 'create', 'update', 'delete'];
 
   const actions = [];
   const p = moduleDefPermissions || {};
@@ -712,6 +715,11 @@ async function loadModuleFieldCatalog(organizationId, moduleKey, options = {}) {
  * @param {string|import('mongoose').Types.ObjectId} organizationId
  */
 async function buildRolePermissionCatalog(organizationId) {
+  try {
+    const { ensurePlatformDocumentsModuleDefinition } = require('../controllers/settingsController');
+    await ensurePlatformDocumentsModuleDefinition();
+  } catch (_) { /* non-fatal */ }
+
   const organization = await Organization.findById(organizationId).lean();
   if (!organization) {
     return { sections: [], modules: [], enabledApps: [] };
@@ -1004,6 +1012,7 @@ module.exports = {
   buildFieldCatalogLookup,
   resolveFieldCatalogForModule,
   mapFieldCatalogEntries,
+  CORE_MODULE_ORDER,
   CORE_ENTITY_KEYS,
   LEGACY_FLAT_STORAGE_KEYS,
   PLATFORM_ADMIN_KEYS,

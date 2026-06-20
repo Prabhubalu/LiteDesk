@@ -14,6 +14,7 @@ const MODULE_I18N_NS = {
   deals: 'deals',
   quotes: 'quotes',
   items: 'platform',
+  documents: 'documents',
 };
 
 /** @type {Record<string, Record<string, string>>} */
@@ -67,6 +68,10 @@ const SYSTEM_VIEW_KEYS = {
     discontinued: 'platform.listViewDiscontinuedItems',
     products: 'platform.listViewProducts',
     services: 'platform.listViewServices',
+  },
+  documents: {
+    all: 'documents.listViewAll',
+    'assigned-to-me': 'documents.listViewMy',
   },
 };
 
@@ -261,6 +266,9 @@ export function isRegistrySystemView(moduleKey, viewId) {
   if (views && viewId in views) return true;
   if (moduleKey === 'people') {
     return ['all', 'assigned-to-me', 'sales', 'helpdesk'].includes(viewId);
+  }
+  if (moduleKey === 'documents') {
+    return ['all', 'assigned-to-me'].includes(viewId);
   }
   return ['all', 'assigned-to-me', 'unassigned'].includes(viewId);
 }

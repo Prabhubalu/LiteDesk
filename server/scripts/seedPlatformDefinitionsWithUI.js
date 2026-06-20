@@ -448,6 +448,48 @@ const MODULE_DEFINITIONS = [
     }
   },
   {
+    moduleKey: 'documents',
+    appKey: 'platform',
+    label: 'Document',
+    pluralLabel: 'Documents',
+    entityType: 'CORE',
+    primaryField: 'title',
+    peopleConstraints: {
+      allowedTypes: ['Contact'],
+      required: false
+    },
+    organizationConstraints: {
+      required: false
+    },
+    lifecycle: {
+      statusField: 'status',
+      allowedStatuses: ['draft', 'pending_review', 'approved', 'published', 'archived']
+    },
+    supports: {
+      ownership: true,
+      assignment: false,
+      comments: true,
+      attachments: true,
+      automation: true
+    },
+    permissions: {
+      create: true,
+      edit: true,
+      delete: true,
+      view: true
+    },
+    ui: {
+      routeBase: '/documents',
+      icon: 'document-duplicate',
+      showInSidebar: true,
+      sidebarOrder: 9,
+      createLabel: 'New Document',
+      listLabel: 'Documents',
+      navigationEntity: true,
+      excludeFromApps: true
+    }
+  },
+  {
     moduleKey: 'events',
     appKey: 'platform', // Core entity - shared across apps
     label: 'Event',

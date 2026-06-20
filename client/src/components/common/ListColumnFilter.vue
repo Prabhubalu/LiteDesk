@@ -128,11 +128,31 @@
               v-if="!teleportOptions || open"
               :style="teleportOptions ? teleportMenuStyle : undefined"
               :class="teleportOptions
-                ? 'fixed z-[10050] max-h-60 overflow-auto rounded-lg border border-gray-200 bg-white py-1 text-left text-sm shadow-lg dark:border-gray-600 dark:bg-gray-800'
-                : 'absolute left-0 z-[80] mt-1 max-h-60 w-full min-w-[10rem] overflow-auto rounded-lg border border-gray-200 bg-white py-1 text-left text-sm shadow-lg dark:border-gray-600 dark:bg-gray-800'"
+                ? 'fixed z-[10050] max-h-72 overflow-hidden rounded-lg border border-gray-200 bg-white text-left text-sm shadow-lg dark:border-gray-600 dark:bg-gray-800 flex flex-col'
+                : 'absolute left-0 z-[80] mt-1 max-h-72 w-full min-w-[10rem] overflow-hidden rounded-lg border border-gray-200 bg-white text-left text-sm shadow-lg dark:border-gray-600 dark:bg-gray-800 flex flex-col'"
               @vue:before-mount="syncTeleportPosition"
               @mousedown.stop
             >
+            <div
+              v-if="showListboxSearch"
+              class="sticky top-0 z-10 border-b border-gray-200 bg-white p-2 dark:border-gray-600 dark:bg-gray-800"
+              @click.stop
+              @mousedown.stop
+            >
+              <div class="relative">
+                <MagnifyingGlassIcon class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                <input
+                  v-model="listboxSearchQuery"
+                  type="text"
+                  :placeholder="t('common.formSearchOptions')"
+                  class="w-full rounded-md border border-gray-200 bg-gray-50 py-1.5 pl-8 pr-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white"
+                  autocomplete="off"
+                  @click.stop
+                  @keydown.stop
+                />
+              </div>
+            </div>
+            <div class="min-h-0 flex-1 overflow-y-auto py-1">
             <ListboxOption
               :value="filter.filterType === 'multi-select' ? [] : ''"
               v-slot="{ active, selected }"
@@ -153,7 +173,7 @@
               </li>
             </ListboxOption>
             <ListboxOption
-              v-for="option in filter.options || []"
+              v-for="option in filteredListboxOptions"
               :key="String(option.value)"
               :value="option.value"
               v-slot="{ active, selected }"
@@ -174,11 +194,18 @@
               </li>
             </ListboxOption>
             <li
-              v-if="!filter.options?.length"
+              v-if="showListboxSearch && filteredListboxOptions.length === 0"
+              class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"
+            >
+              {{ t('common.formNoOptions') }}
+            </li>
+            <li
+              v-else-if="!filter.options?.length"
               class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"
             >
               {{ t('common.listLoadingOptions') }}
             </li>
+            </div>
             </ListboxOptions>
           </Teleport>
         </Transition>
@@ -192,6 +219,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import { CheckIcon, XMarkIcon } from '@heroicons/vue/20/solid';
+import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import { Transition, Teleport } from 'vue';
 import DateFilterDropdown from '@/components/common/DateFilterDropdown.vue';
 import Avatar from '@/components/common/Avatar.vue';
@@ -228,6 +256,7 @@ const { t } = useI18n();
 const listboxButtonRef = ref<{ $el?: HTMLElement } | HTMLElement | null>(null);
 const teleportMenuStyle = ref<Record<string, string>>({});
 const listboxOpen = ref(false);
+const listboxSearchQuery = ref('');
 let viewportListenersBound = false;
 
 function getListboxButtonElement(): HTMLElement | null {
@@ -249,9 +278,30 @@ function syncTeleportPosition() {
 }
 
 function syncListboxOpenState(open: boolean) {
+  if (!open && listboxOpen.value) {
+    listboxSearchQuery.value = '';
+  }
   listboxOpen.value = open;
   return '';
 }
+
+const showListboxSearch = computed(() => {
+  const optionCount = props.filter.options?.length || 0;
+  const key = String(props.filter.key || '').toLowerCase();
+  if (key === 'folderid' || key === 'foldername') return optionCount > 0;
+  return optionCount > 6;
+});
+
+const filteredListboxOptions = computed(() => {
+  const options = props.filter.options || [];
+  const query = listboxSearchQuery.value.trim().toLowerCase();
+  if (!showListboxSearch.value || !query) return options;
+  return options.filter((option) => {
+    const label = String(option.label ?? '').toLowerCase();
+    const value = String(option.value ?? '').toLowerCase();
+    return label.includes(query) || value.includes(query);
+  });
+});
 
 function onListboxButtonClick() {
   syncTeleportPosition();

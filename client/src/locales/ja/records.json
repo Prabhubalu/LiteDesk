@@ -3606,5 +3606,41 @@
   "rightPaneResizeHint": {
     "message": "Drag to resize. Double-click to reset.",
     "description": "Tooltip for record right pane resize handle"
+  },
+  "genericTabDocuments": {
+    "message": "Documents",
+    "description": "Right pane documents tab on record pages"
+  },
+  "presenceAvatarsLabel": {
+    "message": "Others viewing this record",
+    "description": "Aria label for overlapping presence avatars"
+  },
+  "presenceAvatarTooltip": {
+    "message": "{name} — {activity}",
+    "description": "Tooltip for a presence avatar"
+  },
+  "presenceAvatarTooltipWithTime": {
+    "message": "{name} — {activity} ({time})",
+    "description": "Tooltip for a presence avatar with relative time"
+  },
+  "presenceAvatarsOverflow": {
+    "message": "{count} more: {names}",
+    "description": "Tooltip when presence avatars overflow"
+  },
+  "presenceUnknownUser": {
+    "message": "Unknown user",
+    "description": "Fallback name for presence session without user"
+  },
+  "presenceActivityEditing": {
+    "message": "Editing",
+    "description": "Presence activity label when user is editing"
+  },
+  "presenceActivityViewing": {
+    "message": "Viewing",
+    "description": "Presence activity label when user is viewing"
+  },
+  "presenceActivityIdle": {
+    "message": "Idle",
+    "description": "Presence activity label when user is idle"
   }
 }

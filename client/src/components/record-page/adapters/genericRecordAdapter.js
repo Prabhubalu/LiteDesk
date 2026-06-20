@@ -51,6 +51,22 @@ const ITEM_CATALOG_DETAIL_EXCLUDED = new Set([
   'defaultvariantid'
 ]);
 
+/** Shown in Document file section stack, not the Details field list. */
+const DOCUMENT_FILE_DETAIL_EXCLUDED = new Set([
+  'storagepath',
+  'storageprovider',
+  'checksum',
+  'mimetype',
+  'filesizebytes',
+  'filetype',
+  'currentversionid',
+  'versionnumber',
+  'sourcetype',
+  'sourceprovider',
+  'externalurl',
+  'richcontent'
+]);
+
 /** Normalize field key for exclusion matching (lowercase, no spaces/dashes). */
 function normKey(key) {
   return String(key || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -214,6 +230,7 @@ function getDetailFieldKeys(moduleDefinition, moduleKey = '', fieldContext = 'pl
       if (!key) return false;
       if (excluded.has(normKey(key))) return false;
       if (normalizedModuleKey === 'items' && ITEM_CATALOG_DETAIL_EXCLUDED.has(normKey(key))) return false;
+      if (normalizedModuleKey === 'documents' && DOCUMENT_FILE_DETAIL_EXCLUDED.has(normKey(key))) return false;
       if (shouldHideDetailField(f, normalizedModuleKey, { enforceRegistryKnown: true })) return false;
       const vis = f?.visibility;
       return vis?.detail !== false;
@@ -292,6 +309,7 @@ function getRecordPaneAllModuleFieldKeys(moduleDefinition, moduleKey = '', field
       const key = String(f?.key || '').trim();
       if (!key) return false;
       if (normalizedModuleKey === 'items' && ITEM_CATALOG_DETAIL_EXCLUDED.has(normKey(key))) return false;
+      if (normalizedModuleKey === 'documents' && DOCUMENT_FILE_DETAIL_EXCLUDED.has(normKey(key))) return false;
       if (shouldHideRecordPaneDetailField(f, normalizedModuleKey)) return false;
       const vis = f?.visibility;
       return vis?.detail !== false;

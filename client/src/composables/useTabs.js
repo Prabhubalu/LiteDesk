@@ -688,6 +688,7 @@ const getIconForPath = (path) => {
     '/audit': 'shield',
     '/calendar': 'calendar', // backward compat
     '/imports': 'download',
+    '/documents': 'document-duplicate',
     '/items': 'folder',
     '/trash': 'trash',
     '/demo-requests': 'book',
@@ -738,6 +739,7 @@ const getTitleForPath = (path, params = {}) => {
     '/forms': 'Forms',
     '/calendar': 'Events', // backward compat
     '/imports': 'Imports',
+    '/documents': 'Documents',
     '/items': 'Items',
     '/helpdesk/cases': 'Cases',
     '/helpdesk/cases/': 'Cases',
@@ -1475,7 +1477,7 @@ export function useTabs() {
           // Module list tab should always show the module name
           const isListRoute = newPathWithoutQuery === '/tasks' || newPathWithoutQuery === '/deals' || newPathWithoutQuery === '/events' ||
             newPathWithoutQuery === '/people' || newPathWithoutQuery === '/organizations' || newPathWithoutQuery === '/forms' ||
-            newPathWithoutQuery === '/items' || newPathWithoutQuery === '/imports' || newPathWithoutQuery === '/trash' ||
+            newPathWithoutQuery === '/items' || newPathWithoutQuery === '/imports' || newPathWithoutQuery === '/documents' || newPathWithoutQuery === '/trash' ||
             newPathWithoutQuery === '/helpdesk/cases' ||
             newPathWithoutQuery === '/platform/home' || newPathWithoutQuery === '/sales/dashboard' || newPathWithoutQuery.startsWith('/control/') ||
             (newPathWithoutQuery.startsWith('/settings/automation/') && !isProcessDesignerTabPath(newPathWithoutQuery));
@@ -1543,7 +1545,7 @@ export function useTabs() {
         const newPathBase = newPath.split('?')[0];
         const isListRoute = newPathBase === '/tasks' || newPathBase === '/deals' || newPathBase === '/events' ||
           newPathBase === '/people' || newPathBase === '/organizations' || newPathBase === '/forms' ||
-          newPathBase === '/items' || newPathBase === '/imports' || newPathBase === '/trash' ||
+          newPathBase === '/items' || newPathBase === '/imports' || newPathBase === '/documents' || newPathBase === '/trash' ||
           newPathBase === '/helpdesk/cases' ||
           newPathBase === '/platform/home' || newPathBase === '/sales/dashboard' || newPathBase.startsWith('/control/') ||
           (newPathBase.startsWith('/settings/automation/') && !isProcessDesignerTabPath(newPathBase));
@@ -1906,7 +1908,7 @@ export function useTabs() {
         const pathBase = (newActiveTab.path || '').split('?')[0];
         const isListPath = pathBase === '/tasks' || pathBase === '/deals' || pathBase === '/events' ||
           pathBase === '/people' || pathBase === '/organizations' || pathBase === '/forms' ||
-          pathBase === '/items' || pathBase === '/imports' || pathBase === '/trash' ||
+          pathBase === '/items' || pathBase === '/imports' || pathBase === '/documents' || pathBase === '/trash' ||
           pathBase === '/helpdesk/cases' ||
           pathBase === '/platform/home' || pathBase === '/sales/dashboard' || pathBase.startsWith('/control/') ||
           isAutomationModuleListRoute(pathBase);

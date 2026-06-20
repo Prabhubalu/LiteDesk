@@ -36,7 +36,7 @@
                     <!-- Record type selector (when no moduleKey and no type selected yet) -->
                     <div v-if="showTypeSelector && !effectiveModuleKey" class="flex-1 overflow-auto p-4">
                       <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ typeSelectorPrompt }}</p>
-                      <div v-if="linkableTargetsLoading" class="flex items-center justify-center py-8">
+                      <div v-if="linkableTargetsLoading && recordTypeOptions.length === 0" class="flex items-center justify-center py-8">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                       </div>
                       <div v-else-if="recordTypeOptions.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
@@ -45,7 +45,7 @@
                       <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <button
                           v-for="opt in recordTypeOptions"
-                          :key="opt.key"
+                          :key="opt.relationshipKey || opt.key"
                           type="button"
                           :disabled="isRecordTypeOptionDisabled(opt)"
                           :title="isRecordTypeOptionDisabled(opt) ? recordTypeOptionDisableReason(opt) : ''"
@@ -172,6 +172,7 @@ const props = defineProps({
   isOpen: { type: Boolean, default: false },
   moduleKey: { type: String, default: '' }, // When empty, show record type selector first
   recordTypes: { type: Array, default: null }, // Optional override for type selector (e.g. [{ key: 'project', label: 'Project' }, ...])
+  supplementRecordTypes: { type: Array, default: () => [] }, // Merged with API results (e.g. record-context relationships)
   sourceAppKey: { type: String, default: '' }, // When set with sourceModuleKey, record types are fetched from settings/relationships (linkable-targets)
   sourceModuleKey: { type: String, default: '' }, // Source module for linkable-targets (e.g. 'deals', 'tasks')
   multiple: { type: Boolean, default: true },
@@ -246,10 +247,27 @@ const useLinkableTargetsFromApi = computed(
     )
 );
 
+function mergeRecordTypeOptions(primary, supplement) {
+  const byRelKey = new Map();
+  for (const opt of primary || []) {
+    const relKey = String(opt?.relationshipKey || opt?.key || '').toLowerCase();
+    if (relKey) byRelKey.set(relKey, opt);
+  }
+  for (const opt of supplement || []) {
+    const relKey = String(opt?.relationshipKey || opt?.key || '').toLowerCase();
+    if (relKey && !byRelKey.has(relKey)) byRelKey.set(relKey, opt);
+  }
+  return Array.from(byRelKey.values());
+}
+
 const recordTypeOptions = computed(() => {
   if (props.recordTypes && props.recordTypes.length) return props.recordTypes;
-  if (useLinkableTargetsFromApi.value && linkableTargets.value.length) return linkableTargets.value;
-  if (useLinkableTargetsFromApi.value) return []; // Still loading or no relationships configured
+  const fromApi = useLinkableTargetsFromApi.value && linkableTargets.value.length
+    ? linkableTargets.value
+    : [];
+  const merged = mergeRecordTypeOptions(fromApi, props.supplementRecordTypes);
+  if (merged.length) return merged;
+  if (useLinkableTargetsFromApi.value) return [];
   return RECORD_TYPE_OPTIONS_DEFAULT;
 });
 
@@ -339,7 +357,11 @@ const fetchLinkableTargets = async () => {
   linkableTargets.value = [];
   try {
     const res = await apiClient.get('/relationships/linkable-targets', {
-      params: { appKey: props.sourceAppKey, moduleKey: props.sourceModuleKey }
+      params: {
+        appKey: props.sourceAppKey,
+        moduleKey: props.sourceModuleKey,
+        _ts: Date.now()
+      }
     });
     if (res?.success && Array.isArray(res.data)) {
       linkableTargets.value = res.data;

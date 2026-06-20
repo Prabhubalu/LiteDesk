@@ -379,10 +379,6 @@
     "message": "Preview",
     "description": "Open release note item image preview"
   },
-  "itemImagePreviewTitle": {
-    "message": "Image preview",
-    "description": "Release note image preview dialog title"
-  },
   "adminFieldOptional": {
     "message": "optional",
     "description": "Optional field hint"

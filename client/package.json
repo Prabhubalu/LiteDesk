@@ -67,6 +67,8 @@
     "@tiptap/extension-image": "^2.27.2",
     "@tiptap/extension-link": "^2.18.0",
     "@tiptap/extension-placeholder": "^2.18.0",
+    "@tiptap/extension-task-item": "^2.18.0",
+    "@tiptap/extension-task-list": "^2.18.0",
     "@tiptap/pm": "^2.18.0",
     "@tiptap/starter-kit": "^2.18.0",
     "@tiptap/suggestion": "^2.18.0",

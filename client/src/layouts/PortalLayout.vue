@@ -257,6 +257,18 @@
           <span class="text-xs font-medium">{{ t('navigation.portalCases') }}</span>
         </router-link>
         <router-link
+          to="/portal/knowledge"
+          class="flex flex-col items-center justify-center flex-1 min-h-[44px] transition-colors"
+          :class="[
+            $route.path.startsWith('/portal/knowledge')
+              ? 'text-blue-600 dark:text-blue-400'
+              : 'text-gray-500 dark:text-gray-400'
+          ]"
+        >
+          <component :is="$route.path.startsWith('/portal/knowledge') ? BookOpenIconSolid : BookOpenIcon" class="w-6 h-6 mb-1" />
+          <span class="text-xs font-medium">{{ t('navigation.portalKnowledge') }}</span>
+        </router-link>
+        <router-link
           to="/portal/actions"
           class="flex flex-col items-center justify-center flex-1 min-h-[44px] transition-colors"
           :class="[
@@ -290,6 +302,7 @@ import {
   DocumentTextIcon, 
   ClipboardDocumentCheckIcon,
   LifebuoyIcon,
+  BookOpenIcon,
   UserIcon,
   Cog6ToothIcon,
   ChevronLeftIcon,
@@ -300,6 +313,7 @@ import {
   DocumentTextIcon as DocumentTextIconSolid,
   ClipboardDocumentCheckIcon as ClipboardDocumentCheckIconSolid,
   LifebuoyIcon as LifebuoyIconSolid,
+  BookOpenIcon as BookOpenIconSolid,
   UserIcon as UserIconSolid
 } from '@heroicons/vue/24/solid';
 import NotificationBell from '@/components/notifications/NotificationBell.vue';

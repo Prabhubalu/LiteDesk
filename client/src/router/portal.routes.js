@@ -41,6 +41,18 @@ const portalRoutes = [
         meta: { requiresAuth: true, requiresPortalApp: true }
       },
       {
+        path: 'knowledge',
+        name: 'portal-knowledge',
+        component: () => import('@/views/portal/PortalKnowledge.vue'),
+        meta: { requiresAuth: true, requiresPortalApp: true }
+      },
+      {
+        path: 'knowledge/:id',
+        name: 'portal-knowledge-article',
+        component: () => import('@/views/portal/PortalKnowledgeArticle.vue'),
+        meta: { requiresAuth: true, requiresPortalApp: true }
+      },
+      {
         path: 'invoices',
         name: 'portal-invoices',
         component: () => import('@/views/portal/PortalInvoices.vue'),

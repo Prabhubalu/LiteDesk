@@ -30,7 +30,8 @@ const DealCommentSchema = new Schema({
     url: { type: String, required: true },
     filename: { type: String, required: true },
     size: { type: Number, default: 0 },
-    mimetype: { type: String, default: '' }
+    mimetype: { type: String, default: '' },
+    documentId: { type: Schema.Types.ObjectId, ref: 'Document', default: null }
   }],
   reactions: [{
     emoji: {
