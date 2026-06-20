@@ -13,6 +13,10 @@ const { processDueDeferredAutomationActions } = require('./deferredAutomationSch
 const { tickBusinessHoursKpiAggregation } = require('./businessHoursKpiSchedulerService');
 const { tickProcessWaitResume } = require('./processWaitResumeSchedulerService');
 const { tickQuoteExpiry } = require('./quoteExpirySchedulerService');
+const { tickDocumentExpiryNotifications } = require('./documentExpiryNotificationSchedulerService');
+const { tickDocumentExternalLinkChecks } = require('./documentExternalLinkSchedulerService');
+const { tickDocumentOcrIndex } = require('./documentOcrIndexSchedulerService');
+const { tickDocumentReservationExpiration } = require('./documentReservationExpirationSchedulerService');
 const { processDuePlaybookDelayJobs } = require('./playbookSchedulingService');
 const { processDuePlaybookAlertJobs } = require('./playbookAlertSchedulingService');
 
@@ -39,6 +43,14 @@ const ENABLE_TARGET_RECALC_SCHEDULER =
   process.env.ENABLE_TARGET_RECALC_SCHEDULER !== 'false';
 const ENABLE_QUOTE_EXPIRY_SCHEDULER =
   process.env.ENABLE_QUOTE_EXPIRY_SCHEDULER !== 'false';
+const ENABLE_DOCUMENT_EXPIRY_NOTIFICATION_SCHEDULER =
+  process.env.ENABLE_DOCUMENT_EXPIRY_NOTIFICATION_SCHEDULER !== 'false';
+const ENABLE_DOCUMENT_EXTERNAL_LINK_SCHEDULER =
+  process.env.ENABLE_DOCUMENT_EXTERNAL_LINK_SCHEDULER !== 'false';
+const ENABLE_DOCUMENT_OCR_INDEX_SCHEDULER =
+  process.env.ENABLE_DOCUMENT_OCR_INDEX_SCHEDULER !== 'false';
+const ENABLE_DOCUMENT_RESERVATION_SCHEDULER =
+  process.env.ENABLE_DOCUMENT_RESERVATION_SCHEDULER !== 'false';
 const ENABLE_PLAYBOOK_DELAY_SCHEDULER =
   process.env.ENABLE_PLAYBOOK_DELAY_SCHEDULER !== 'false';
 const ENABLE_PLAYBOOK_ALERT_SCHEDULER =
@@ -65,6 +77,10 @@ let businessHoursKpiJob = null;
 let processWaitResumeJob = null;
 let targetRecalcJob = null;
 let quoteExpiryJob = null;
+let documentExpiryNotificationJob = null;
+let documentExternalLinkJob = null;
+let documentOcrIndexJob = null;
+let documentReservationJob = null;
 let playbookDelayJob = null;
 let playbookAlertJob = null;
 let stalledInviteJob = null;
@@ -425,6 +441,110 @@ function startScheduledJobs() {
     console.log('[scheduledJobs] Quote expiry scheduler disabled (ENABLE_QUOTE_EXPIRY_SCHEDULER=false)');
   }
 
+  if (ENABLE_DOCUMENT_EXPIRY_NOTIFICATION_SCHEDULER) {
+    const documentExpiryCron = String(process.env.DOCUMENT_EXPIRY_NOTIFICATION_CRON || '0 8 * * *').trim();
+    if (!cron.validate(documentExpiryCron)) {
+      console.error(
+        `[scheduledJobs] Invalid DOCUMENT_EXPIRY_NOTIFICATION_CRON="${documentExpiryCron}" — document expiry notification scheduler not started`
+      );
+    } else {
+      documentExpiryNotificationJob = cron.schedule(
+        documentExpiryCron,
+        async () => {
+          try {
+            await tickDocumentExpiryNotifications();
+          } catch (err) {
+            console.error('[scheduledJobs] Document expiry notification tick failed:', err.message);
+          }
+        },
+        { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' }
+      );
+      console.log(`[scheduledJobs]   - Document expiry notifications: cron "${documentExpiryCron}"`);
+    }
+  } else {
+    console.log(
+      '[scheduledJobs] Document expiry notification scheduler disabled (ENABLE_DOCUMENT_EXPIRY_NOTIFICATION_SCHEDULER=false)'
+    );
+  }
+
+  if (ENABLE_DOCUMENT_EXTERNAL_LINK_SCHEDULER) {
+    const externalLinkCron = String(process.env.DOCUMENT_EXTERNAL_LINK_CRON || '30 3 * * *').trim();
+    if (!cron.validate(externalLinkCron)) {
+      console.error(
+        `[scheduledJobs] Invalid DOCUMENT_EXTERNAL_LINK_CRON="${externalLinkCron}" — external link scheduler not started`
+      );
+    } else {
+      documentExternalLinkJob = cron.schedule(
+        externalLinkCron,
+        async () => {
+          try {
+            await tickDocumentExternalLinkChecks();
+          } catch (err) {
+            console.error('[scheduledJobs] Document external link tick failed:', err.message);
+          }
+        },
+        { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' }
+      );
+      console.log(`[scheduledJobs]   - Document external link checks: cron "${externalLinkCron}"`);
+    }
+  } else {
+    console.log(
+      '[scheduledJobs] Document external link scheduler disabled (ENABLE_DOCUMENT_EXTERNAL_LINK_SCHEDULER=false)'
+    );
+  }
+
+  if (ENABLE_DOCUMENT_OCR_INDEX_SCHEDULER) {
+    const ocrIndexCron = String(process.env.DOCUMENT_OCR_INDEX_CRON || '0 * * * *').trim();
+    if (!cron.validate(ocrIndexCron)) {
+      console.error(
+        `[scheduledJobs] Invalid DOCUMENT_OCR_INDEX_CRON="${ocrIndexCron}" — OCR index scheduler not started`
+      );
+    } else {
+      documentOcrIndexJob = cron.schedule(
+        ocrIndexCron,
+        async () => {
+          try {
+            await tickDocumentOcrIndex();
+          } catch (err) {
+            console.error('[scheduledJobs] Document OCR index tick failed:', err.message);
+          }
+        },
+        { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' }
+      );
+      console.log(`[scheduledJobs]   - Document OCR indexing: cron "${ocrIndexCron}"`);
+    }
+  } else {
+    console.log(
+      '[scheduledJobs] Document OCR index scheduler disabled (ENABLE_DOCUMENT_OCR_INDEX_SCHEDULER=false)'
+    );
+  }
+
+  if (ENABLE_DOCUMENT_RESERVATION_SCHEDULER) {
+    const reservationCron = String(process.env.DOCUMENT_RESERVATION_CRON || '*/15 * * * *').trim();
+    if (!cron.validate(reservationCron)) {
+      console.error(
+        `[scheduledJobs] Invalid DOCUMENT_RESERVATION_CRON="${reservationCron}" — reservation scheduler not started`
+      );
+    } else {
+      documentReservationJob = cron.schedule(
+        reservationCron,
+        async () => {
+          try {
+            await tickDocumentReservationExpiration();
+          } catch (err) {
+            console.error('[scheduledJobs] Document reservation tick failed:', err.message);
+          }
+        },
+        { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' }
+      );
+      console.log(`[scheduledJobs]   - Document reservation expiry: cron "${reservationCron}"`);
+    }
+  } else {
+    console.log(
+      '[scheduledJobs] Document reservation scheduler disabled (ENABLE_DOCUMENT_RESERVATION_SCHEDULER=false)'
+    );
+  }
+
   if (ENABLE_PLAYBOOK_DELAY_SCHEDULER) {
     playbookDelayJob = cron.schedule('* * * * *', async () => {
       try {
@@ -610,6 +730,26 @@ function stopScheduledJobs() {
     quoteExpiryJob.stop();
     quoteExpiryJob = null;
     console.log('[scheduledJobs] Quote expiry job stopped');
+  }
+  if (documentExpiryNotificationJob) {
+    documentExpiryNotificationJob.stop();
+    documentExpiryNotificationJob = null;
+    console.log('[scheduledJobs] Document expiry notification job stopped');
+  }
+  if (documentExternalLinkJob) {
+    documentExternalLinkJob.stop();
+    documentExternalLinkJob = null;
+    console.log('[scheduledJobs] Document external link job stopped');
+  }
+  if (documentOcrIndexJob) {
+    documentOcrIndexJob.stop();
+    documentOcrIndexJob = null;
+    console.log('[scheduledJobs] Document OCR index job stopped');
+  }
+  if (documentReservationJob) {
+    documentReservationJob.stop();
+    documentReservationJob = null;
+    console.log('[scheduledJobs] Document reservation job stopped');
   }
 
   if (playbookDelayJob) {

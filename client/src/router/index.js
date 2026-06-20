@@ -656,6 +656,18 @@ const routes = [
     meta: { requiresAuth: true, requiresPermission: { module: 'imports', action: 'view' } }
   },
   {
+    path: '/documents',
+    name: 'documents',
+    component: () => import('@/views/Documents.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'documents', action: 'view' } }
+  },
+  {
+    path: '/documents/:id',
+    name: 'document-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'documents', action: 'view' }, moduleKey: 'documents' }
+  },
+  {
     path: '/organizations',
     name: 'organizations',
     component: () => import('@/views/Organizations.vue'),
@@ -701,32 +713,28 @@ const routes = [
       
       // Try to fetch the organization to verify it's a business org (not tenant)
       try {
-        const { default: apiClient } = await import('@/utils/apiClient')
-        const response = await apiClient(`/v2/organization/${orgId}`, { method: 'GET' });
-        
-        // If successful, check if it's a tenant org (shouldn't happen via this endpoint, but double-check)
-        if (response.success && response.data?.isTenant === true) {
+        const { default: apiClient } = await import('@/utils/apiClient');
+        const response = await apiClient.getOptional(`/v2/organization/${orgId}`);
+
+        if (response?.success && response.data?.isTenant === true) {
           next({ name: 'settings', query: { tab: 'organization' } });
           return;
         }
-        
-        // Business org - allow access
-        next();
-      } catch (error) {
-        // If 404, it might be a tenant org or non-existent org
-        // Check if it matches current user's org ID
-        if (error.is404 || error.status === 404) {
-          // If it's the current user's org, redirect to settings
-          if (authStore.organization?._id === orgId || authStore.organizationId === orgId) {
-            next({ name: 'settings', query: { tab: 'organization' } });
-            return;
-          }
-          // Otherwise, let 404 pass through (organization not found)
+
+        if (response?.success) {
+          next();
+          return;
         }
-        
-        // For other errors, allow navigation (component will handle error display)
-        next();
+
+        if (authStore.organization?._id === orgId || authStore.organizationId === orgId) {
+          next({ name: 'settings', query: { tab: 'organization' } });
+          return;
+        }
+      } catch (_error) {
+        // fall through — component handles load errors
       }
+
+      next();
     }
   },
   {

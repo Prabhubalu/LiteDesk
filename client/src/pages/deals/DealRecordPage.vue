@@ -39,6 +39,10 @@
           </template>
 
           <template #pageActions>
+            <RecordPresenceAvatars
+              v-if="showRecordPresenceAvatars"
+              :sessions="recordPresenceOthers"
+            />
             <button
               v-if="primaryContact?.email"
               type="button"
@@ -974,13 +978,33 @@
             <div class="p-4 overflow-y-auto flex-1 min-h-0">
               <section v-if="deal._id">
                 <RelatedSection
-                  :key="relatedRefreshKey"
                   :record="deal"
                   :adapter="dealRecordAdapter"
+                  :related-groups="dealRelatedGroupsFromContext"
+                  :context-revision="dealContextRevision"
                   :context="{ hideHeader: true }"
                 />
               </section>
             </div>
+            </div>
+          </template>
+
+          <template v-if="showRecordDocumentsTab" #tab-documents>
+            <div class="flex h-full flex-col">
+              <div class="record-context-panel__header flex flex-shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.genericTabDocuments') }}</h2>
+              </div>
+              <div class="min-h-0 flex-1 overflow-y-auto p-4">
+                <RecordDocumentsPanel
+                  v-if="deal._id"
+                  module-key="deals"
+                  :record-id="String(deal._id)"
+                  app-key="SALES"
+                  :can-create="canCreateDocuments"
+                  :can-edit="canEditDocuments"
+                  @documents-changed="handleDealDocumentsChanged"
+                />
+              </div>
             </div>
           </template>
 
@@ -1179,6 +1203,8 @@ import RelatedSection from '@/components/record-page/sections/RelatedSection.vue
 import { useRecordTagPopoverPosition } from '@/components/record-page/composables/useRecordTagPopoverPosition';
 import { useRecordTags } from '@/components/record-page/composables/useRecordTags';
 import EditableTitle from '@/components/record-page/EditableTitle.vue';
+import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
+import { useRecordPresence } from '@/composables/useRecordPresence';
 import { createActivityTimelineRefSetter } from '@/components/activity/useRecordActivityAdapter';
 import { createDealActivityUi } from '@/components/activity/adapters/dealActivityUiAdapter';
 import { createDealRecordAdapter } from '@/components/record-page/adapters/dealRecordAdapter';
@@ -1211,7 +1237,8 @@ import {
   ClockIcon,
   LinkIcon,
   PuzzlePieceIcon,
-  TagIcon
+  TagIcon,
+  DocumentDuplicateIcon
 } from '@heroicons/vue/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid';
 import Avatar from '@/components/common/Avatar.vue';
@@ -1225,7 +1252,11 @@ import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
 import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.vue';
 import { useRecordContext, invalidateRecordContext } from '@/composables/useRecordContext';
+import { refreshRelatedRecordsAfterLookupFieldSave } from '@/composables/useLookupFieldRelatedSync';
+import { refreshRelatedRecordsAfterDocumentChange } from '@/composables/useDocumentRelatedSync';
 import AutomationContext from '@/components/automation/AutomationContext.vue';
+import RecordDocumentsPanel from '@/components/record-page/RecordDocumentsPanel.vue';
+import { supportsDocumentAttachments } from '@/constants/documentAttachments';
 
 const { t, te } = useI18n();
 
@@ -1247,6 +1278,23 @@ const emit = defineEmits(['close']);
 const deal = ref(null);
 const expandedLeftSection = ref('');
 const effectiveDealId = computed(() => props.embed && props.dealId ? props.dealId : route.params.id);
+
+const showRecordPresenceAvatars = computed(
+  () => Boolean(effectiveDealId.value && deal.value && authStore.can('deals', 'view'))
+);
+
+const recordPresenceActivityType = computed(() => {
+  const section = expandedLeftSection.value;
+  if (!section || section === 'key-fields') return 'viewing';
+  return 'editing';
+});
+
+const { otherSessions: recordPresenceOthers } = useRecordPresence(
+  () => 'deals',
+  () => String(effectiveDealId.value || deal.value?._id || ''),
+  () => recordPresenceActivityType.value
+);
+
 const loading = ref(true);
 const error = ref(null);
 const showEditModal = ref(false);
@@ -1359,7 +1407,7 @@ const ACTIVITY_FILTER_STORAGE_KEY = 'arivu-deal-activity-filter';
 const linkRecordDrawerContext = computed(() => (deal.value?._id ? { dealId: deal.value._id } : {}));
 const canLinkRecords = computed(() => authStore.can('deals', 'edit'));
 
-const { context: dealRecordContext, load: loadDealRecordContext } = useRecordContext(
+const { context: dealRecordContext, contextRevision: dealContextRevision, load: loadDealRecordContext } = useRecordContext(
   'SALES',
   'deals',
   () => deal.value?._id
@@ -1367,6 +1415,20 @@ const { context: dealRecordContext, load: loadDealRecordContext } = useRecordCon
 watch(deal, (d) => {
   if (d?._id) loadDealRecordContext();
 }, { immediate: true });
+
+async function handleDealDocumentsChanged(payload = {}) {
+  if (!deal.value?._id) return;
+  await refreshRelatedRecordsAfterDocumentChange({
+    moduleKey: 'deals',
+    recordId: deal.value._id,
+    appKey: 'SALES',
+    contextRef: dealRecordContext,
+    loadRecordContext: loadDealRecordContext,
+    documents: payload.action === 'attach' ? (payload.documents || []) : [],
+    detachedDocumentIds: payload.action === 'detach' ? (payload.detachedDocumentIds || []) : [],
+    onContextRevision: () => { dealContextRevision.value += 1; }
+  });
+}
 
 const dealRelatedGroupsFromContext = computed(() => {
   const rels = dealRecordContext.value?.relationships;
@@ -1386,6 +1448,7 @@ const dealRelatedGroupsFromContext = computed(() => {
           id: id?.toString?.() ?? String(id),
           title: r.label || r.name || r.title || (id ? String(id).slice(0, 8) : 'Untitled'),
           meta: r.secondaryText || r.status || '',
+          recordData: r,
           onOpen: path ? () => router.push(path) : undefined,
           relationshipKey: key,
           appKey,
@@ -1397,11 +1460,24 @@ const dealRelatedGroupsFromContext = computed(() => {
     });
 });
 
-const rightPaneTabs = computed(() => ([
-  { id: 'activity', name: t('records.genericTabActivity'), icon: ClockIcon },
-  { id: 'related', name: t('records.dealRelatedRecordsTab'), icon: LinkIcon },
-  { id: 'integrations', name: t('records.genericIntegrations'), icon: PuzzlePieceIcon }
-]));
+const canViewDocuments = computed(() => authStore.can?.('documents', 'view') ?? false);
+const canCreateDocuments = computed(() => authStore.can?.('documents', 'create') ?? false);
+const canEditDocuments = computed(() => authStore.can?.('documents', 'edit') ?? false);
+const showRecordDocumentsTab = computed(
+  () => supportsDocumentAttachments('deals') && canViewDocuments.value && !!deal.value?._id
+);
+
+const rightPaneTabs = computed(() => {
+  const tabs = [
+    { id: 'activity', name: t('records.genericTabActivity'), icon: ClockIcon },
+    { id: 'related', name: t('records.dealRelatedRecordsTab'), icon: LinkIcon }
+  ];
+  if (showRecordDocumentsTab.value) {
+    tabs.push({ id: 'documents', name: t('records.genericTabDocuments'), icon: DocumentDuplicateIcon });
+  }
+  tabs.push({ id: 'integrations', name: t('records.genericIntegrations'), icon: PuzzlePieceIcon });
+  return tabs;
+});
 
 const DEAL_NAV_CONTEXT_STORAGE_PREFIX = 'arivu-deal-nav-context:';
 const dealNavigationContextToken = computed(() => String(route.query?.navCtx || '').trim());
@@ -1801,6 +1877,21 @@ const handleDealDetailFieldSave = async (fieldKey, value) => {
     } else {
       await fetchDeal();
     }
+    await refreshRelatedRecordsAfterLookupFieldSave({
+      moduleKey: 'deals',
+      fieldKey,
+      value: nextValue,
+      moduleDefinition: dealModuleDefinition,
+      recordContextRef: dealRecordContext,
+      contextRevisionRef: dealContextRevision,
+      appKey: 'SALES',
+      recordId: deal.value._id,
+      loadRecordContext: loadDealRecordContext,
+      lookupLists: {
+        organizations: dealOrganizationOptions.value,
+        people: dealPeopleOptions.value
+      }
+    });
   } catch (err) {
     console.error('Failed to save deal detail field:', err);
   }
@@ -3277,7 +3368,8 @@ const uploadDealCommentAttachmentFile = async (file) => {
     url: result.url,
     filename: result.originalname || file.name,
     size: result.size ?? file.size,
-    mimetype: result.mimetype || file.type
+    mimetype: result.mimetype || file.type,
+    documentId: result.documentId || undefined
   };
 };
 
@@ -3721,14 +3813,28 @@ const handleLinkRecordDrawerLinked = async ({ moduleKey, ids, context, relations
     forms: 'platform',
     projects: 'projects',
     organizations: 'sales',
-    people: 'sales'
+    people: 'sales',
+    documents: 'platform'
   };
   const targetAppKey = payloadTargetAppKey || targetAppKeyByModule[normalizedModuleKey];
-  const relationshipKey = payloadRelationshipKey || normalizedModuleKey;
+  const relationshipKey = payloadRelationshipKey
+    || (normalizedModuleKey === 'documents' ? 'deal_documents' : normalizedModuleKey);
   if (!targetAppKey) return;
 
   for (const recordId of ids) {
     try {
+      if (normalizedModuleKey === 'documents') {
+        const linkRes = await apiClient.post(`/documents/${recordId}/link`, {
+          moduleKey: 'deals',
+          recordId: String(deal.value._id),
+          appKey: 'SALES'
+        });
+        if (!linkRes?.success) {
+          throw new Error(linkRes?.message || 'Failed to link document');
+        }
+        continue;
+      }
+
       await apiClient.post('/relationships/link', {
         relationshipKey,
         source: {
@@ -3744,7 +3850,9 @@ const handleLinkRecordDrawerLinked = async ({ moduleKey, ids, context, relations
       });
     } catch (linkErr) {
       if (linkErr?.status === 409) continue;
-      throw linkErr;
+      console.error('Error linking record:', linkErr);
+      alert(linkErr?.response?.data?.message || linkErr?.message || t('records.taskLinkModuleFailed', { moduleKey: normalizedModuleKey }));
+      return;
     }
   }
 

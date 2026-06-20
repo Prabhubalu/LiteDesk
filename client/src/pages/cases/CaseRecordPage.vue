@@ -187,6 +187,7 @@
             :can-delete="canDelete"
             :can-edit="canEdit"
             :can-email="!!contactEmail"
+            :presence-sessions="recordPresenceOthers"
             @status-change="onStatusSelect"
             @priority-change="updatePriority"
             @edit-record="openEditDrawer"
@@ -428,6 +429,7 @@ import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
 import CaseResolutionDialog from '@/components/cases/CaseResolutionDialog.vue';
 import { useCaseRecord } from '@/composables/useCaseRecord';
+import { useRecordPresence } from '@/composables/useRecordPresence';
 import {
   useCaseStatusResolution,
   CASE_STATUS_RESOLUTION_KEY
@@ -498,6 +500,12 @@ const {
   emailThreads,
   emailThreadsLoading
 } = useCaseRecord(effectiveCaseId);
+
+const { otherSessions: recordPresenceOthers } = useRecordPresence(
+  () => 'cases',
+  () => String(effectiveCaseId.value || caseRecord.value?._id || ''),
+  () => 'viewing'
+);
 
 const {
   showResolutionDialog,

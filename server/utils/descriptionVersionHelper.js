@@ -7,6 +7,25 @@
 
 const RecordDescriptionVersion = require('../models/RecordDescriptionVersion');
 
+function buildVersionDocQuery(organizationId, moduleKey, recordId, contentField = 'description') {
+  const key = (moduleKey || '').toLowerCase();
+  const recordKey = String(recordId || '');
+  if (contentField === 'description') {
+    return {
+      organizationId,
+      moduleKey: key,
+      recordId: recordKey,
+      $or: [{ contentField: 'description' }, { contentField: { $exists: false } }]
+    };
+  }
+  return {
+    organizationId,
+    moduleKey: key,
+    recordId: recordKey,
+    contentField
+  };
+}
+
 /**
  * Get description from a record. Handles top-level description or customFields.description.
  * @param {Object} record - Mongoose doc or plain object
@@ -47,37 +66,86 @@ function setRecordDescription(doc, value, model) {
  * @param {string} params.recordId - Record id
  * @param {string} params.previousContent - Previous description content
  * @param {Object} params.userId - User id (createdBy)
+ * @param {string} [params.contentField='description'] - Field being versioned (e.g. richContent)
  */
-async function pushDescriptionVersion({ organizationId, moduleKey, recordId, previousContent, userId }) {
+async function pushDescriptionVersion({
+  organizationId,
+  moduleKey,
+  recordId,
+  previousContent,
+  userId,
+  contentField = 'description'
+}) {
   if (typeof previousContent !== 'string') return;
 
   const RetentionDays = RecordDescriptionVersion.statics.RETENTION_DAYS || 365;
   const retentionCutoff = new Date();
   retentionCutoff.setDate(retentionCutoff.getDate() - RetentionDays);
 
-  let doc = await RecordDescriptionVersion.findOne({
-    organizationId,
-    moduleKey: (moduleKey || '').toLowerCase(),
-    recordId: String(recordId || '')
-  });
-
-  if (!doc) {
-    doc = await RecordDescriptionVersion.create({
-      organizationId,
-      moduleKey: (moduleKey || '').toLowerCase(),
-      recordId: String(recordId || ''),
-      versions: []
-    });
-  }
-
-  doc.versions.push({
+  const key = (moduleKey || '').toLowerCase();
+  const recordKey = String(recordId || '');
+  const query = buildVersionDocQuery(organizationId, key, recordKey, contentField);
+  const versionEntry = {
     content: previousContent,
     createdAt: new Date(),
     createdBy: userId
+  };
+
+  await RecordDescriptionVersion.findOneAndUpdate(
+    query,
+    {
+      $push: { versions: versionEntry },
+      $setOnInsert: {
+        organizationId,
+        moduleKey: key,
+        recordId: recordKey,
+        contentField
+      }
+    },
+    { upsert: true }
+  );
+
+  await RecordDescriptionVersion.updateOne(query, {
+    $pull: { versions: { createdAt: { $lt: retentionCutoff } } }
   });
-  doc.versions = doc.versions.filter((v) => v && v.createdAt >= retentionCutoff);
-  doc.markModified('versions');
-  await doc.save();
+}
+
+async function listContentVersions({ organizationId, moduleKey, recordId, contentField = 'description' }) {
+  const doc = await RecordDescriptionVersion.findOne(
+    buildVersionDocQuery(organizationId, moduleKey, recordId, contentField)
+  ).lean();
+  return Array.isArray(doc?.versions) ? doc.versions : [];
+}
+
+async function restoreContentVersion({
+  organizationId,
+  moduleKey,
+  recordId,
+  contentField,
+  versionIndex,
+  userId,
+  getCurrentContent,
+  setCurrentContent
+}) {
+  const versions = (await listContentVersions({ organizationId, moduleKey, recordId, contentField }))
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const version = versions[versionIndex];
+  if (!version) {
+    throw new Error('Version not found');
+  }
+
+  const previousContent = getCurrentContent();
+  await pushDescriptionVersion({
+    organizationId,
+    moduleKey,
+    recordId,
+    previousContent: typeof previousContent === 'string' ? previousContent : '',
+    userId,
+    contentField
+  });
+
+  setCurrentContent(version.content || '');
 }
 
 /**
@@ -117,5 +185,8 @@ module.exports = {
   getRecordDescription,
   setRecordDescription,
   pushDescriptionVersion,
-  pushPreviousDescriptionVersionIfChanged
+  pushPreviousDescriptionVersionIfChanged,
+  listContentVersions,
+  restoreContentVersion,
+  buildVersionDocQuery
 };

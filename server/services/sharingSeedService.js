@@ -10,22 +10,10 @@ const {
   getParticipatingAppsForCoreModule,
   normalizeHelpdeskCaseModuleKey,
   CORE_ENTITY_KEYS,
+  CORE_MODULE_ORDER,
   PLATFORM_ADMIN_KEYS
 } = require('./rolePermissionCatalogService');
 const { APP_KEYS } = require('../constants/appKeys');
-
-const CORE_MODULE_ORDER = [
-  'people',
-  'organizations',
-  'tasks',
-  'events',
-  'items',
-  'forms',
-  'quotes',
-  'sales_orders',
-  'invoices',
-  'payments'
-];
 
 /** Default mode by module (RBAC §8.5). App-specific overrides win. */
 const DEFAULT_MODE_BY_MODULE = {
@@ -42,6 +30,7 @@ const DEFAULT_MODE_BY_MODULE = {
   sales_orders: 'record_level',
   invoices: 'record_level',
   forms: 'record_level',
+  documents: 'record_level',
   payments: 'record_level',
   audits: 'private',
   findings: 'private',
@@ -145,6 +134,13 @@ async function buildDefaultSharingEntries(organizationId, organization) {
     }
   }
 
+  // Cross-functional core modules must always appear in sharing defaults.
+  for (const appKey of enabledApps) {
+    const override = moduleOverrides?.documents?.[appKey];
+    if (override === false) continue;
+    pushEntry(appKey, 'documents');
+  }
+
   return entries;
 }
 
@@ -175,25 +171,29 @@ async function seedSharingDefaultsForOrganization(organizationId, organization, 
   const skipped = [];
 
   for (const entry of entries) {
-    const existing = await ModuleSharingDefaultModel.findOne({
-      organizationId,
-      appKey: entry.appKey,
-      moduleKey: entry.moduleKey
-    }).lean();
+    const result = await ModuleSharingDefaultModel.updateOne(
+      {
+        organizationId,
+        appKey: entry.appKey,
+        moduleKey: entry.moduleKey
+      },
+      {
+        $setOnInsert: {
+          organizationId,
+          appKey: entry.appKey,
+          moduleKey: entry.moduleKey,
+          mode: entry.mode,
+          updatedBy: options.updatedBy || null
+        }
+      },
+      { upsert: true }
+    );
 
-    if (existing) {
+    if (result.upsertedCount > 0) {
+      created.push(entry);
+    } else {
       skipped.push(entry);
-      continue;
     }
-
-    const doc = await ModuleSharingDefaultModel.create({
-      organizationId,
-      appKey: entry.appKey,
-      moduleKey: entry.moduleKey,
-      mode: entry.mode,
-      updatedBy: options.updatedBy || null
-    });
-    created.push(doc);
   }
 
   return { created, skipped, total: entries.length };

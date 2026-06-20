@@ -31,7 +31,8 @@ const MODEL_BY_KEY = {
   tasks: () => require('../models/Task'),
   events: () => require('../models/Event'),
   items: () => require('../models/Item'),
-  cases: () => require('../models/Case')
+  cases: () => require('../models/Case'),
+  documents: () => require('../models/Document')
 };
 
 const APP_KEY_BY_MODULE = {
@@ -43,7 +44,8 @@ const APP_KEY_BY_MODULE = {
   tasks: 'platform',
   events: 'platform',
   items: 'platform',
-  cases: 'HELPDESK'
+  cases: 'HELPDESK',
+  documents: 'platform'
 };
 
 /**
@@ -102,6 +104,9 @@ function computeDisplayName(moduleKey, record, originalId) {
   if (moduleKey === 'quotes') return record.quoteNumber || record.quoteTitle || String(originalId || '');
   if (moduleKey === 'sales_orders') {
     return record.salesOrderNumber || record.orderTitle || String(originalId || '');
+  }
+  if (moduleKey === 'documents') {
+    return record.title || record.documentNumber || String(originalId || '');
   }
   return String(originalId || '');
 }

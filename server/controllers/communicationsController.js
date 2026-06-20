@@ -58,9 +58,9 @@ const {
 
 const WEBHOOK_TEST_EVENT_TYPES = ['delivered', 'opened', 'bounced', 'complained'];
 
-async function getTenantUserIds(organizationId) {
-  const users = await User.find({ organizationId }).select('_id').lean();
-  return users.map((u) => u._id);
+async function findAccessibleOrganizationRecord(tenantOrganizationId, recordId) {
+  const { findTenantAccessibleCrmOrganization } = require('../utils/crmOrganizationAccess');
+  return findTenantAccessibleCrmOrganization(tenantOrganizationId, recordId);
 }
 
 /**
@@ -287,13 +287,7 @@ exports.sendEmail = async (req, res) => {
     } else if (moduleKey === 'people') {
       record = await People.findOne({ _id: recordId, organizationId: orgId, deletedAt: null }).lean();
     } else if (moduleKey === 'organizations') {
-      const tenantUserIds = await getTenantUserIds(orgId);
-      record = await Organization.findOne({
-        _id: recordId,
-        isTenant: false,
-        deletedAt: null,
-        createdBy: { $in: tenantUserIds }
-      }).lean();
+      record = await findAccessibleOrganizationRecord(orgId, recordId);
     } else if (moduleKey === 'deals') {
       record = await Deal.findOne({ _id: recordId, organizationId: orgId }).lean();
     } else if (moduleKey === 'tasks') {
@@ -550,13 +544,10 @@ exports.sendEmail = async (req, res) => {
     } else if (moduleKey === 'people') {
       await pushActivityLog(People, { _id: recordId, organizationId: orgId, deletedAt: null });
     } else if (moduleKey === 'organizations') {
-      const tenantUserIds = await getTenantUserIds(orgId);
-      await pushActivityLog(Organization, {
-        _id: recordId,
-        isTenant: false,
-        deletedAt: null,
-        createdBy: { $in: tenantUserIds }
-      });
+      const org = await findAccessibleOrganizationRecord(orgId, recordId);
+      if (org) {
+        await pushActivityLog(Organization, { _id: org._id, isTenant: false, deletedAt: null });
+      }
     } else if (moduleKey === 'tasks') {
       await pushActivityLog(Task, { _id: recordId, organizationId: orgId });
     } else if (moduleKey === 'cases') {
@@ -666,13 +657,7 @@ exports.getThreads = async (req, res) => {
     } else if (moduleKey === 'people') {
       record = await People.findOne({ _id: recordId, organizationId: orgId, deletedAt: null }).lean();
     } else if (moduleKey === 'organizations') {
-      const tenantUserIds = await getTenantUserIds(orgId);
-      record = await Organization.findOne({
-        _id: recordId,
-        isTenant: false,
-        deletedAt: null,
-        createdBy: { $in: tenantUserIds }
-      }).lean();
+      record = await findAccessibleOrganizationRecord(orgId, recordId);
     } else if (moduleKey === 'deals') {
       record = await Deal.findOne({ _id: recordId, organizationId: orgId }).lean();
     } else if (moduleKey === 'tasks') {

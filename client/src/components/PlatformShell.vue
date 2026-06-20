@@ -151,7 +151,7 @@ const isRecordDetailRoute = computed(() => {
   if (RECORD_DETAIL_ROUTE_NAMES.has(routeName)) return true;
 
   const path = route.path || '';
-  return /^\/(people|deals|tasks|events|items|imports|organizations|groups|responses)\/[^/]+$/.test(path)
+  return /^\/(people|deals|tasks|events|items|imports|documents|organizations|groups|responses)\/[^/]+$/.test(path)
     || /^\/forms\/[^/]+\/responses\/[^/]+$/.test(path);
 });
 
@@ -185,6 +185,7 @@ const RECORD_DETAIL_ROUTE_NAMES = new Set([
   'event-detail',
   'item-detail',
   'import-detail',
+  'document-detail',
   'group-detail',
   'response-detail',
   'form-response-detail',

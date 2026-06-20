@@ -100,6 +100,9 @@ export function invalidateTenantSchemaCaches() {
   coreModulesInflight = null;
   modulesCache.clear();
   modulesInflight.clear();
+  import('@/utils/recordDisplay')
+    .then(({ clearRelatedModuleDefinitionsCache }) => clearRelatedModuleDefinitionsCache())
+    .catch(() => {});
   apiClient.clearMetadataResponseCache?.();
   import('@/composables/usePeopleModuleFields')
     .then(({ invalidatePeopleModuleFieldsCache }) => invalidatePeopleModuleFieldsCache())

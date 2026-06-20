@@ -37,6 +37,7 @@ test('buildDefaultSharingEntries seeds core + app modules for every enabled app'
     const keys = new Set(entries.map((row) => `${row.appKey}:${row.moduleKey}`));
 
     assert.ok(keys.has(`${APP_KEYS.SALES}:people`));
+    assert.ok(keys.has(`${APP_KEYS.SALES}:documents`));
     assert.ok(keys.has(`${APP_KEYS.SALES}:deals`));
     assert.ok(keys.has(`${APP_KEYS.HELPDESK}:people`));
     assert.ok(keys.has(`${APP_KEYS.HELPDESK}:cases`));
@@ -71,6 +72,23 @@ test('seedSharingDefaultsForOrganization backfills missing enabled-app rows', as
             row.moduleKey === query.moduleKey
         ) || null
     }),
+    updateOne: async (query, update, options = {}) => {
+      const existing = stored.find(
+        (row) =>
+          String(row.organizationId) === String(query.organizationId) &&
+          row.appKey === query.appKey &&
+          row.moduleKey === query.moduleKey
+      );
+      if (existing) return { matchedCount: 1, modifiedCount: 0, upsertedCount: 0 };
+      const doc = {
+        ...(update?.$setOnInsert || {}),
+        organizationId: query.organizationId,
+        appKey: query.appKey,
+        moduleKey: query.moduleKey
+      };
+      stored.push(doc);
+      return { matchedCount: 0, modifiedCount: 0, upsertedCount: 1 };
+    },
     create: async (doc) => {
       stored.push(doc);
       return doc;
@@ -107,6 +125,15 @@ test('seedSharingDefaultsForOrganization removes app-exclusive modules from wron
     findOne: () => ({
       lean: async () => null
     }),
+    updateOne: async (query, update) => {
+      const doc = {
+        ...(update?.$setOnInsert || {}),
+        organizationId: query.organizationId,
+        appKey: query.appKey,
+        moduleKey: query.moduleKey
+      };
+      return { matchedCount: 0, modifiedCount: 0, upsertedCount: 1 };
+    },
     create: async (doc) => doc
   };
 

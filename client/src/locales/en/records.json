@@ -2055,6 +2055,38 @@
     "message": "Copy URL",
     "description": "Copy URL button"
   },
+  "presenceAvatarsLabel": {
+    "message": "Others viewing this record",
+    "description": "Aria label for overlapping presence avatars"
+  },
+  "presenceAvatarTooltip": {
+    "message": "{name} — {activity}",
+    "description": "Tooltip for a presence avatar"
+  },
+  "presenceAvatarTooltipWithTime": {
+    "message": "{name} — {activity} ({time})",
+    "description": "Tooltip for a presence avatar with relative time"
+  },
+  "presenceAvatarsOverflow": {
+    "message": "{count} more: {names}",
+    "description": "Tooltip when presence avatars overflow"
+  },
+  "presenceUnknownUser": {
+    "message": "Unknown user",
+    "description": "Fallback name for presence session without user"
+  },
+  "presenceActivityEditing": {
+    "message": "Editing",
+    "description": "Presence activity label when user is editing"
+  },
+  "presenceActivityViewing": {
+    "message": "Viewing",
+    "description": "Presence activity label when user is viewing"
+  },
+  "presenceActivityIdle": {
+    "message": "Idle",
+    "description": "Presence activity label when user is idle"
+  },
   "genericMoreActions": {
     "message": "More actions",
     "description": "More actions menu"
@@ -2294,6 +2326,10 @@
   "genericTabActivity": {
     "message": "Activity",
     "description": "Right pane activity tab"
+  },
+  "genericTabDocuments": {
+    "message": "Documents",
+    "description": "Right pane documents tab on record pages"
   },
   "rightPaneResizeHandle": {
     "message": "Resize activity panel",

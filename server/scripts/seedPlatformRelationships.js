@@ -22,6 +22,7 @@ const mongoose = require('mongoose');
 const RelationshipDefinition = require('../models/RelationshipDefinition');
 const { validateRelationship } = require('../utils/relationshipRegistry');
 const { PLATFORM_QUOTE_RELATIONSHIP_DEFINITIONS } = require('../constants/defaultQuoteRelationships');
+const { PLATFORM_DOCUMENT_RELATIONSHIP_DEFINITIONS } = require('../constants/defaultDocumentRelationships');
 
 // Support both MONGODB_URI and MONGO_URI
 const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGO_URI_LOCAL;
@@ -289,7 +290,8 @@ const RELATIONSHIP_DEFINITIONS = [
     },
     enabled: true
   },
-  ...PLATFORM_QUOTE_RELATIONSHIP_DEFINITIONS
+  ...PLATFORM_QUOTE_RELATIONSHIP_DEFINITIONS,
+  ...PLATFORM_DOCUMENT_RELATIONSHIP_DEFINITIONS
 ];
 
 async function seedPlatformRelationships() {
@@ -375,4 +377,5 @@ if (require.main === module) {
 }
 
 module.exports = seedPlatformRelationships;
+module.exports.RELATIONSHIP_DEFINITIONS = RELATIONSHIP_DEFINITIONS;
 

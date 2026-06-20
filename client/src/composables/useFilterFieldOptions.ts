@@ -93,11 +93,50 @@ export function useFilterFieldOptions(
     }
     if (filter.filterType === 'entity' && key === 'organization' && moduleKey.value === 'people') {
       await loadOrganizationOptions(key);
+      return;
+    }
+    if (
+      filter.filterType === 'select' &&
+      (key === 'folderId' || key === 'folderName') &&
+      moduleKey.value === 'documents'
+    ) {
+      await loadDocumentFolderOptions(key);
+    }
+  }
+
+  async function loadDocumentFolderOptions(key: string) {
+    if (loadingKeys.has(key) || (optionsByKey[key]?.length ?? 0) > 0) return;
+    loadingKeys.add(key);
+    try {
+      const response = await apiClient.get('/document-folders', { params: { all: '1' } });
+      const rows = response?.success && Array.isArray(response?.data) ? response.data : [];
+      optionsByKey[key] = rows.map((folder) => {
+        const id = String(folder?._id ?? folder?.id ?? '');
+        const name = String(folder?.name || '').trim() || id;
+        const path = String(folder?.path || '').trim();
+        const label = path && path !== `/${name}` ? `${name} (${path})` : name;
+        return { value: id, label };
+      }).filter((option) => Boolean(option.value));
+      if (key === 'folderId' || key === 'folderName') {
+        optionsByKey.folderId = optionsByKey[key];
+        optionsByKey.folderName = optionsByKey[key];
+      }
+    } catch {
+      optionsByKey[key] = [];
+    } finally {
+      loadingKeys.delete(key);
     }
   }
 
   function enrichFilterConfig(config: FilterConfig): FilterConfig {
-    const loaded = optionsByKey[config.key];
+    if (config.options?.length) {
+      return config;
+    }
+    const peerKey =
+      config.key === 'folderId' ? 'folderName'
+        : config.key === 'folderName' ? 'folderId'
+          : null;
+    const loaded = optionsByKey[config.key] ?? (peerKey ? optionsByKey[peerKey] : undefined);
     if (loaded?.length) {
       return { ...config, options: loaded };
     }

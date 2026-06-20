@@ -1,0 +1,1578 @@
+{
+  "pageTitle": {
+    "message": "Documents",
+    "description": "Documents module page title"
+  },
+  "pageDescription": {
+    "message": "Centralized place to manage all your content",
+    "description": "Documents module page subtitle"
+  },
+  "searchPlaceholder": {
+    "message": "Search documents by title, content, tags, or folder…",
+    "description": "Documents search input placeholder"
+  },
+  "upload": {
+    "message": "Upload",
+    "description": "Upload document button"
+  },
+  "newDocument": {
+    "message": "New Document",
+    "description": "Create new document button"
+  },
+  "viewDashboard": {
+    "message": "Dashboard",
+    "description": "Documents dashboard view tab"
+  },
+  "viewList": {
+    "message": "List View",
+    "description": "Documents list view tab"
+  },
+  "viewGrid": {
+    "message": "Grid View",
+    "description": "Documents grid view tab"
+  },
+  "viewFolder": {
+    "message": "Folder View",
+    "description": "Documents folder view tab"
+  },
+  "statTotal": {
+    "message": "Total Documents",
+    "description": "Dashboard stat card label"
+  },
+  "statPublished": {
+    "message": "Published",
+    "description": "Published documents stat label"
+  },
+  "statDrafts": {
+    "message": "Drafts",
+    "description": "Draft documents stat label"
+  },
+  "statPendingReview": {
+    "message": "Pending Review",
+    "description": "Pending review stat label"
+  },
+  "statExpiringSoon": {
+    "message": "Expiring Soon",
+    "description": "Expiring soon stat label"
+  },
+  "recentDocuments": {
+    "message": "Recent Documents",
+    "description": "Recent documents widget title"
+  },
+  "viewAll": {
+    "message": "View all",
+    "description": "View all documents link"
+  },
+  "quickAccess": {
+    "message": "Quick Access",
+    "description": "Quick access widget title"
+  },
+  "quickFavorites": {
+    "message": "My Favorites",
+    "description": "Quick access favorites card"
+  },
+  "quickShared": {
+    "message": "Shared with me",
+    "description": "Quick access shared card"
+  },
+  "quickDrafts": {
+    "message": "My Drafts",
+    "description": "Quick access drafts card"
+  },
+  "quickPendingApprovals": {
+    "message": "Pending Approvals",
+    "description": "Quick access pending approvals card"
+  },
+  "quickExpiring": {
+    "message": "Expiring Soon",
+    "description": "Quick access expiring card"
+  },
+  "quickRecycleBin": {
+    "message": "Recycle Bin",
+    "description": "Quick access recycle bin card"
+  },
+  "foldersTitle": {
+    "message": "Folders",
+    "description": "Folders widget title"
+  },
+  "documentsByType": {
+    "message": "Documents by Type",
+    "description": "Documents by type chart title"
+  },
+  "recentActivity": {
+    "message": "Recent Activity",
+    "description": "Recent activity widget title"
+  },
+  "searchTip": {
+    "message": "Tip: Use advanced search to find documents by content, tags, or linked records.",
+    "description": "Documents search tip banner"
+  },
+  "advancedSearch": {
+    "message": "Try Advanced Search",
+    "description": "Advanced search link text"
+  },
+  "emptyTitle": {
+    "message": "No documents yet",
+    "description": "Empty state title when no documents exist"
+  },
+  "emptyMessage": {
+    "message": "Upload files or create a new document to get started.",
+    "description": "Empty state message"
+  },
+  "emptyFolderTitle": {
+    "message": "No folders yet",
+    "description": "Empty folders state title"
+  },
+  "emptyFolderMessage": {
+    "message": "Create folders to organize your documents.",
+    "description": "Empty folders state message"
+  },
+  "columnName": {
+    "message": "Document Name",
+    "description": "List column header for document name"
+  },
+  "columnType": {
+    "message": "Type",
+    "description": "List column header for document type"
+  },
+  "columnFolder": {
+    "message": "Folder",
+    "description": "List column header for folder"
+  },
+  "columnStatus": {
+    "message": "Status",
+    "description": "List column header for status"
+  },
+  "columnVersion": {
+    "message": "Version",
+    "description": "List column header for version"
+  },
+  "columnOwner": {
+    "message": "Owner",
+    "description": "List column header for owner"
+  },
+  "columnTags": {
+    "message": "Tags",
+    "description": "List column header for tags"
+  },
+  "columnModified": {
+    "message": "Modified",
+    "description": "List column header for modified date"
+  },
+  "allDocuments": {
+    "message": "All Documents",
+    "description": "Root folder label"
+  },
+  "newFolder": {
+    "message": "New Folder",
+    "description": "Create folder button"
+  },
+  "uploadSuccess": {
+    "message": "Document uploaded successfully",
+    "description": "Toast after successful upload"
+  },
+  "uploadFailed": {
+    "message": "Failed to upload document",
+    "description": "Toast after failed upload"
+  },
+  "deleteSuccess": {
+    "message": "Document moved to trash",
+    "description": "Toast after delete"
+  },
+  "deleteFailed": {
+    "message": "Failed to delete document",
+    "description": "Toast after failed delete"
+  },
+  "deleteConfirm": {
+    "message": "Move this document to trash?",
+    "description": "Delete confirmation prompt"
+  },
+  "typeFile": {
+    "message": "File",
+    "description": "Document type label"
+  },
+  "typeRichDocument": {
+    "message": "Rich Doc",
+    "description": "Rich document type label"
+  },
+  "typeSop": {
+    "message": "SOP",
+    "description": "SOP document type label"
+  },
+  "typeChecklist": {
+    "message": "Checklist",
+    "description": "Checklist document type label"
+  },
+  "typeTemplate": {
+    "message": "Template",
+    "description": "Template document type label"
+  },
+  "typeExternalLink": {
+    "message": "External Link",
+    "description": "External link document type label"
+  },
+  "typeGenerated": {
+    "message": "Generated",
+    "description": "Generated document type label"
+  },
+  "typeKnowledgeArticle": {
+    "message": "Knowledge Article",
+    "description": "Knowledge article type label"
+  },
+  "typePlaybook": {
+    "message": "Playbook",
+    "description": "Playbook document type label"
+  },
+  "typeMeetingNotes": {
+    "message": "Meeting Notes",
+    "description": "Meeting notes type label"
+  },
+  "statusDraft": {
+    "message": "Draft",
+    "description": "Document status draft"
+  },
+  "statusPendingReview": {
+    "message": "Pending Review",
+    "description": "Document status pending review"
+  },
+  "statusApproved": {
+    "message": "Approved",
+    "description": "Document status approved"
+  },
+  "statusPublished": {
+    "message": "Published",
+    "description": "Document status published"
+  },
+  "statusArchived": {
+    "message": "Archived",
+    "description": "Document status archived"
+  },
+  "activityUpload": {
+    "message": "{name} uploaded {title}",
+    "description": "Activity feed upload action"
+  },
+  "activityUpdate": {
+    "message": "{name} updated {title}",
+    "description": "Activity feed update action"
+  },
+  "activityCreate": {
+    "message": "{name} created {title}",
+    "description": "Activity feed create action"
+  },
+  "activityDefault": {
+    "message": "{name} modified {title}",
+    "description": "Activity feed default action"
+  },
+  "documentsCount": {
+    "message": "{count} documents",
+    "description": "Folder document count label"
+  },
+  "versionLabel": {
+    "message": "v{version}",
+    "description": "Document version label"
+  },
+  "dropToUpload": {
+    "message": "Drop files to upload",
+    "description": "Drag and drop upload overlay message"
+  },
+  "uploading": {
+    "message": "Uploading files…",
+    "description": "Upload in progress banner"
+  },
+  "preview": {
+    "message": "Preview",
+    "description": "Preview document action"
+  },
+  "download": {
+    "message": "Download",
+    "description": "Download document action"
+  },
+  "previewLoading": {
+    "message": "Loading preview…",
+    "description": "Preview modal loading state"
+  },
+  "previewFailed": {
+    "message": "Failed to load preview",
+    "description": "Preview error toast"
+  },
+  "downloadFailed": {
+    "message": "Failed to download document",
+    "description": "Download error toast"
+  },
+  "folderNamePlaceholder": {
+    "message": "Folder name",
+    "description": "Create folder name input placeholder"
+  },
+  "folderCreateSuccess": {
+    "message": "Folder created",
+    "description": "Folder create success toast"
+  },
+  "folderCreateFailed": {
+    "message": "Failed to create folder",
+    "description": "Folder create error toast"
+  },
+  "filterStatus": {
+    "message": "Status",
+    "description": "Status filter label"
+  },
+  "filterFileType": {
+    "message": "File type",
+    "description": "File type filter label"
+  },
+  "filterFolder": {
+    "message": "Folder",
+    "description": "Folder filter label"
+  },
+  "filterAllStatuses": {
+    "message": "All statuses",
+    "description": "Status filter all option"
+  },
+  "filterAllFileTypes": {
+    "message": "All file types",
+    "description": "File type filter all option"
+  },
+  "filterImage": {
+    "message": "Images",
+    "description": "Image file type filter option"
+  },
+  "fileSectionTitle": {
+    "message": "File",
+    "description": "Document record page file section title"
+  },
+  "versionHistory": {
+    "message": "Version history",
+    "description": "Document version history section title"
+  },
+  "versionsLoading": {
+    "message": "Loading versions…",
+    "description": "Version list loading state"
+  },
+  "noVersions": {
+    "message": "No versions found",
+    "description": "Empty version history state"
+  },
+  "versionsLoadFailed": {
+    "message": "Failed to load version history",
+    "description": "Version list error toast"
+  },
+  "uploadNewVersion": {
+    "message": "Upload new version",
+    "description": "Upload new document version button"
+  },
+  "versionUploadSuccess": {
+    "message": "New version uploaded",
+    "description": "Version upload success toast"
+  },
+  "versionUploadFailed": {
+    "message": "Failed to upload new version",
+    "description": "Version upload error toast"
+  },
+  "restoreVersion": {
+    "message": "Restore",
+    "description": "Restore document version action"
+  },
+  "restoreVersionConfirm": {
+    "message": "Restore this version as the current file?",
+    "description": "Restore version confirmation"
+  },
+  "restoreVersionSuccess": {
+    "message": "Version restored",
+    "description": "Restore version success toast"
+  },
+  "restoreVersionFailed": {
+    "message": "Failed to restore version",
+    "description": "Restore version error toast"
+  },
+  "currentVersion": {
+    "message": "Current",
+    "description": "Current version badge label"
+  },
+  "versionUploadedBy": {
+    "message": "Uploaded by",
+    "description": "Version history column for uploader"
+  },
+  "versionUploadedAt": {
+    "message": "Uploaded at",
+    "description": "Version history column for upload time"
+  },
+  "versionChangeSummary": {
+    "message": "Summary",
+    "description": "Version history column for change summary"
+  },
+  "columnActions": {
+    "message": "Actions",
+    "description": "Table actions column header"
+  },
+  "uploadInTrash": {
+    "message": "\"{title}\" is already in Trash ({documentNumber}). Restore it from Trash to use it again.",
+    "description": "Upload blocked because matching document is in trash"
+  },
+  "uploadAlreadyExists": {
+    "message": "\"{title}\" already exists ({documentNumber}). Open the existing document or upload a different file.",
+    "description": "Upload blocked because matching document already exists"
+  },
+  "recordUploadTitle": {
+    "message": "Attach files",
+    "description": "Record documents panel upload section title"
+  },
+  "recordUploadHint": {
+    "message": "Upload files to attach them to this record.",
+    "description": "Record documents panel upload hint"
+  },
+  "recordDocumentsLoading": {
+    "message": "Loading documents…",
+    "description": "Record documents panel loading state"
+  },
+  "recordDocumentsEmpty": {
+    "message": "No documents attached",
+    "description": "Record documents panel empty state title"
+  },
+  "recordDocumentsEmptyHint": {
+    "message": "Upload a file to attach it to this record.",
+    "description": "Record documents panel empty state hint"
+  },
+  "recordDocumentsLoadFailed": {
+    "message": "Failed to load attached documents",
+    "description": "Record documents panel load error"
+  },
+  "recordAttachSuccess": {
+    "message": "Document attached to record",
+    "description": "Toast after attaching document to record"
+  },
+  "detach": {
+    "message": "Detach",
+    "description": "Detach document from record action"
+  },
+  "detachConfirm": {
+    "message": "Detach this document from the record? The file will remain in Documents.",
+    "description": "Detach document confirmation"
+  },
+  "detachSuccess": {
+    "message": "Document detached from record",
+    "description": "Detach document success toast"
+  },
+  "detachFailed": {
+    "message": "Failed to detach document",
+    "description": "Detach document error toast"
+  },
+  "linkFailed": {
+    "message": "Failed to link document to this record",
+    "description": "Link document to record error toast"
+  },
+  "linkExisting": {
+    "message": "Link existing",
+    "description": "Link existing document button on record panel"
+  },
+  "linkExistingTitle": {
+    "message": "Link existing document",
+    "description": "Link existing document dialog title"
+  },
+  "linkExistingSearchPlaceholder": {
+    "message": "Search documents by title or number…",
+    "description": "Link existing document search placeholder"
+  },
+  "linkExistingNoResults": {
+    "message": "No documents found",
+    "description": "Link existing document empty search state"
+  },
+  "linkExistingAction": {
+    "message": "Link",
+    "description": "Link existing document action button"
+  },
+  "linkExistingSearchFailed": {
+    "message": "Failed to search documents",
+    "description": "Link existing document search error"
+  },
+  "linking": {
+    "message": "Linking…",
+    "description": "Link existing document in-progress state"
+  },
+  "filterLinkedModule": {
+    "message": "Linked module",
+    "description": "Documents list filter for linked module"
+  },
+  "filterLinkedRecord": {
+    "message": "Record ID",
+    "description": "Documents list filter for linked record id"
+  },
+  "filterLinkedRecordPlaceholder": {
+    "message": "Paste record ID",
+    "description": "Documents list linked record id placeholder"
+  },
+  "filterAllModules": {
+    "message": "All modules",
+    "description": "Documents list linked module filter all option"
+  },
+  "filterOwner": {
+    "message": "Owner",
+    "description": "Documents list owner filter label"
+  },
+  "filterAllOwners": {
+    "message": "All owners",
+    "description": "Documents list owner filter all option"
+  },
+  "emptyFilteredTitle": {
+    "message": "No matching documents",
+    "description": "Empty state title when filters return no results"
+  },
+  "emptyFilteredMessage": {
+    "message": "Try adjusting your filters or search query.",
+    "description": "Empty state message when filters return no results"
+  },
+  "filterLinkedRecordSelect": {
+    "message": "Select record",
+    "description": "Linked record filter picker button"
+  },
+  "filterLinkedRecordClear": {
+    "message": "Clear",
+    "description": "Linked record filter clear button"
+  },
+  "filterLinkedRecordPickerTitle": {
+    "message": "Select linked record",
+    "description": "Linked record filter picker dialog title"
+  },
+  "filterLinkedRecordSearchPlaceholder": {
+    "message": "Search records…",
+    "description": "Linked record filter picker search placeholder"
+  },
+  "createDocumentTitle": {
+    "message": "New document",
+    "description": "Create document drawer title"
+  },
+  "createDocumentTemplate": {
+    "message": "Choose a template",
+    "description": "Create document template picker label"
+  },
+  "createDocumentName": {
+    "message": "Document name",
+    "description": "Create document title field label"
+  },
+  "createDocumentNamePlaceholder": {
+    "message": "Enter a title",
+    "description": "Create document title placeholder"
+  },
+  "createDocumentAction": {
+    "message": "Create",
+    "description": "Create document submit button"
+  },
+  "creatingDocument": {
+    "message": "Creating…",
+    "description": "Create document in-progress state"
+  },
+  "createDocumentSuccess": {
+    "message": "Document created",
+    "description": "Create document success toast"
+  },
+  "createDocumentFailed": {
+    "message": "Failed to create document",
+    "description": "Create document error toast"
+  },
+  "templateBlank": {
+    "message": "Blank document",
+    "description": "Blank document template title"
+  },
+  "templateBlankHint": {
+    "message": "Start from an empty page",
+    "description": "Blank document template description"
+  },
+  "templateMeetingNotes": {
+    "message": "Meeting Notes",
+    "description": "Meeting notes template title"
+  },
+  "templateMeetingNotesHint": {
+    "message": "Agenda, discussion, and action items",
+    "description": "Meeting notes template description"
+  },
+  "templateMeetingNotesTitle": {
+    "message": "Meeting Notes",
+    "description": "Default title for meeting notes template"
+  },
+  "templateRca": {
+    "message": "Root Cause Analysis",
+    "description": "RCA template title"
+  },
+  "templateRcaHint": {
+    "message": "Incident analysis and corrective actions",
+    "description": "RCA template description"
+  },
+  "templateRcaTitle": {
+    "message": "Root Cause Analysis",
+    "description": "Default title for RCA template"
+  },
+  "templateInstallationChecklist": {
+    "message": "Installation Checklist",
+    "description": "Installation checklist template title"
+  },
+  "templateInstallationChecklistHint": {
+    "message": "Pre-install, install, and sign-off steps",
+    "description": "Installation checklist template description"
+  },
+  "templateInstallationChecklistTitle": {
+    "message": "Installation Checklist",
+    "description": "Default title for installation checklist template"
+  },
+  "editorSectionTitle": {
+    "message": "Content",
+    "description": "Rich document editor section title"
+  },
+  "editorPlaceholder": {
+    "message": "Write your document or type '/' for commands",
+    "description": "Rich document editor placeholder"
+  },
+  "editorEmptyHint": {
+    "message": "Click to start writing",
+    "description": "Rich document editor empty hint"
+  },
+  "publish": {
+    "message": "Publish",
+    "description": "Publish document button"
+  },
+  "publishSuccess": {
+    "message": "Document published",
+    "description": "Publish document success toast"
+  },
+  "publishFailed": {
+    "message": "Failed to publish document",
+    "description": "Publish document error toast"
+  },
+  "openEditor": {
+    "message": "Open editor",
+    "description": "Open full-page document editor button"
+  },
+  "editorSaving": {
+    "message": "Saving…",
+    "description": "Full-page document editor save in progress"
+  },
+  "editorSaveFailed": {
+    "message": "Failed to save document",
+    "description": "Full-page document editor save error toast"
+  },
+  "quickRecent": {
+    "message": "Recently viewed",
+    "description": "Quick access recently viewed documents card"
+  },
+  "favorite": {
+    "message": "Add to favorites",
+    "description": "Favorite document action"
+  },
+  "unfavorite": {
+    "message": "Remove from favorites",
+    "description": "Unfavorite document action"
+  },
+  "favoriteFailed": {
+    "message": "Failed to update favorite",
+    "description": "Favorite toggle error toast"
+  },
+  "visibilityTitle": {
+    "message": "Visibility",
+    "description": "Document visibility section title"
+  },
+  "visibilityPrivate": {
+    "message": "Private document",
+    "description": "Private visibility toggle label"
+  },
+  "visibilityPrivateHint": {
+    "message": "Only you, shared teams, shared roles, and users with view-all access can see this document.",
+    "description": "Private visibility helper text"
+  },
+  "visibilityTeams": {
+    "message": "Teams",
+    "description": "Visibility teams label"
+  },
+  "visibilityRoles": {
+    "message": "Roles",
+    "description": "Visibility roles label"
+  },
+  "visibilitySaving": {
+    "message": "Saving visibility…",
+    "description": "Visibility save in progress"
+  },
+  "filterTag": {
+    "message": "Tag",
+    "description": "Documents list tag filter label"
+  },
+  "filterTagPlaceholder": {
+    "message": "Filter by tag",
+    "description": "Documents list tag filter placeholder"
+  },
+  "uploadAsNewVersionConfirm": {
+    "message": "\"{title}\" ({documentNumber}) already exists. Upload as a new version?",
+    "description": "Confirm uploading duplicate file as new version"
+  },
+  "addExternalLink": {
+    "message": "External link",
+    "description": "Add external link button"
+  },
+  "createExternalLinkTitle": {
+    "message": "Add external link",
+    "description": "Create external link drawer title"
+  },
+  "createExternalLinkAction": {
+    "message": "Add link",
+    "description": "Create external link submit button"
+  },
+  "createExternalLinkSuccess": {
+    "message": "External link created",
+    "description": "External link created toast"
+  },
+  "createExternalLinkFailed": {
+    "message": "Failed to create external link",
+    "description": "External link create error toast"
+  },
+  "externalLinkUrl": {
+    "message": "URL",
+    "description": "External link URL field label"
+  },
+  "externalLinkUrlPlaceholder": {
+    "message": "https://drive.google.com/...",
+    "description": "External link URL placeholder"
+  },
+  "externalLinkProvider": {
+    "message": "Provider",
+    "description": "External link provider field label"
+  },
+  "externalProviderGoogleDrive": {
+    "message": "Google Drive",
+    "description": "Google Drive provider label"
+  },
+  "externalProviderOneDrive": {
+    "message": "OneDrive",
+    "description": "OneDrive provider label"
+  },
+  "externalProviderDropbox": {
+    "message": "Dropbox",
+    "description": "Dropbox provider label"
+  },
+  "openExternalLink": {
+    "message": "Open in provider",
+    "description": "Open external link button"
+  },
+  "externalLinkUnavailable": {
+    "message": "This external link is unavailable",
+    "description": "Broken external link status"
+  },
+  "visibilityPortal": {
+    "message": "Visible on portal",
+    "description": "Portal visibility toggle"
+  },
+  "visibilityPortalHint": {
+    "message": "Allow customers to view this document on the portal when published.",
+    "description": "Portal visibility hint"
+  },
+  "visibilityKnowledgeBase": {
+    "message": "Include in knowledge base",
+    "description": "Knowledge base visibility toggle"
+  },
+  "visibilityKnowledgeBaseHint": {
+    "message": "Surface this document in internal knowledge base listings.",
+    "description": "Knowledge base visibility hint"
+  },
+  "externalLinkCheck": {
+    "message": "Check link",
+    "description": "Manual external link availability check"
+  },
+  "externalLinkChecking": {
+    "message": "Checking…",
+    "description": "External link check in progress"
+  },
+  "externalLinkCheckSuccess": {
+    "message": "External link is reachable",
+    "description": "External link check success toast"
+  },
+  "externalLinkCheckFailed": {
+    "message": "Failed to check external link",
+    "description": "External link check error toast"
+  },
+  "externalLinkAvailable": {
+    "message": "Link verified",
+    "description": "External link available status"
+  },
+  "externalLinkUnavailableConfirm": {
+    "message": "This external link may be unavailable. Open it anyway?",
+    "description": "Confirm opening unavailable external link"
+  },
+  "lifecycleTitle": {
+    "message": "Lifecycle",
+    "description": "Document lifecycle section title"
+  },
+  "lifecycleSaving": {
+    "message": "Saving lifecycle…",
+    "description": "Lifecycle save in progress"
+  },
+  "lifecycleEffectiveDate": {
+    "message": "Effective date",
+    "description": "Document effective date field"
+  },
+  "lifecycleExpiryDate": {
+    "message": "Expiry date",
+    "description": "Document expiry date field"
+  },
+  "lifecycleRenewalDate": {
+    "message": "Renewal date",
+    "description": "Document renewal date field"
+  },
+  "lifecycleRetentionPolicy": {
+    "message": "Retention policy",
+    "description": "Document retention policy field"
+  },
+  "lifecycleRetentionPolicyPlaceholder": {
+    "message": "e.g. 7 years after archive",
+    "description": "Retention policy placeholder"
+  },
+  "lifecycleExpiringSoonHint": {
+    "message": "This document expires within 30 days.",
+    "description": "Lifecycle expiring soon warning"
+  },
+  "viewTimeline": {
+    "message": "Timeline",
+    "description": "Documents timeline view tab"
+  },
+  "timelineTitle": {
+    "message": "Activity Timeline",
+    "description": "Timeline view title"
+  },
+  "timelineDescription": {
+    "message": "Uploads, edits, versions, sharing, and governance events across your document library.",
+    "description": "Timeline view description"
+  },
+  "timelineLoading": {
+    "message": "Loading activity…",
+    "description": "Timeline loading state"
+  },
+  "timelineEmpty": {
+    "message": "No document activity yet.",
+    "description": "Timeline empty state"
+  },
+  "timelinePrevious": {
+    "message": "Previous",
+    "description": "Timeline pagination previous"
+  },
+  "timelineNext": {
+    "message": "Next",
+    "description": "Timeline pagination next"
+  },
+  "timelinePage": {
+    "message": "Page {page} of {total}",
+    "description": "Timeline pagination label"
+  },
+  "externalLinkBrokenBadge": {
+    "message": "Broken link",
+    "description": "Broken external link badge in list"
+  },
+  "versionCompareAction": {
+    "message": "Compare versions",
+    "description": "Open version compare modal"
+  },
+  "versionCompareTitle": {
+    "message": "Compare versions",
+    "description": "Version compare modal title"
+  },
+  "versionCompareLeft": {
+    "message": "Version A",
+    "description": "Version compare left selector"
+  },
+  "versionCompareRight": {
+    "message": "Version B",
+    "description": "Version compare right selector"
+  },
+  "versionCompareField": {
+    "message": "Field",
+    "description": "Version compare table field column"
+  },
+  "versionCompareResult": {
+    "message": "Result",
+    "description": "Version compare table result column"
+  },
+  "versionCompareSame": {
+    "message": "Same",
+    "description": "Version compare same value"
+  },
+  "versionCompareDifferent": {
+    "message": "Different",
+    "description": "Version compare different value"
+  },
+  "versionCompareMimeType": {
+    "message": "MIME type",
+    "description": "Version compare mime type row"
+  },
+  "versionCompareSize": {
+    "message": "File size",
+    "description": "Version compare size row"
+  },
+  "versionCompareChecksum": {
+    "message": "Checksum",
+    "description": "Version compare checksum row"
+  },
+  "versionCompareChecksumMatch": {
+    "message": "Checksums match — file content is identical.",
+    "description": "Version compare checksum match summary"
+  },
+  "versionCompareChecksumDifferent": {
+    "message": "Checksums differ — file content changed between versions.",
+    "description": "Version compare checksum different summary"
+  },
+  "activityVersionChange": {
+    "message": "{name} changed version of {title} (v{version})",
+    "description": "Activity feed version change message"
+  },
+  "activityDelete": {
+    "message": "{name} moved {title} to trash",
+    "description": "Activity feed delete message"
+  },
+  "activityShare": {
+    "message": "{name} linked {title} to a record",
+    "description": "Activity feed share/link message"
+  },
+  "activityOwnershipChange": {
+    "message": "{name} changed owner of {title}",
+    "description": "Activity feed ownership change message"
+  },
+  "activityPreview": {
+    "message": "{name} previewed {title}",
+    "description": "Activity feed preview message"
+  },
+  "activityDownload": {
+    "message": "{name} downloaded {title}",
+    "description": "Activity feed download message"
+  },
+  "activityExternalLinkCheck": {
+    "message": "{name} checked external link for {title} ({status})",
+    "description": "Activity feed external link check message"
+  },
+  "activityUnlink": {
+    "message": "{name} unlinked {title} from a record",
+    "description": "Activity feed unlink message"
+  },
+  "presenceSectionTitle": {
+    "message": "Active now",
+    "description": "Native document presence section title"
+  },
+  "presenceActiveNow": {
+    "message": "Active now",
+    "description": "Presence section heading"
+  },
+  "presenceNobodyActive": {
+    "message": "Nobody else is viewing this document right now.",
+    "description": "Presence empty state"
+  },
+  "presenceUnknownUser": {
+    "message": "Someone",
+    "description": "Fallback presence user label"
+  },
+  "presenceActivityEditing": {
+    "message": "is editing",
+    "description": "Presence activity label for editing"
+  },
+  "presenceActivityViewing": {
+    "message": "is viewing",
+    "description": "Presence activity label for viewing"
+  },
+  "presenceActivityIdle": {
+    "message": "is idle",
+    "description": "Presence activity label for idle"
+  },
+  "presenceJoinedAgo": {
+    "message": "joined {time} ago",
+    "description": "Presence joined time label"
+  },
+  "presenceOtherEditing": {
+    "message": "{names} is editing this document. You can still edit.",
+    "description": "Presence warning when others are editing"
+  },
+  "reservationSectionTitle": {
+    "message": "Editing status",
+    "description": "Reservation section title for editable files"
+  },
+  "reservationEditingStatus": {
+    "message": "Editing status",
+    "description": "Reservation card heading"
+  },
+  "reservationAvailableTitle": {
+    "message": "Available",
+    "description": "Reservation available state title"
+  },
+  "reservationNobodyEditing": {
+    "message": "Nobody is editing.",
+    "description": "Reservation available state subtitle"
+  },
+  "reservationReservedBy": {
+    "message": "Reserved by {name}",
+    "description": "Reservation held by another user"
+  },
+  "reservationActiveByYou": {
+    "message": "Reserved by you",
+    "description": "Reservation held by current user"
+  },
+  "reservationExpiredTitle": {
+    "message": "Reservation expired",
+    "description": "Reservation expired state title"
+  },
+  "reservationStartedAt": {
+    "message": "Started {time}",
+    "description": "Reservation start time"
+  },
+  "reservationExpiresIn": {
+    "message": "Expires in {time}",
+    "description": "Reservation remaining time"
+  },
+  "reservationReserveAction": {
+    "message": "Reserve for editing",
+    "description": "Reserve document action"
+  },
+  "reservationReleaseAction": {
+    "message": "Release reservation",
+    "description": "Release reservation action"
+  },
+  "reservationNotifyAction": {
+    "message": "Notify user",
+    "description": "Notify reservation holder action"
+  },
+  "reservationTakeoverAction": {
+    "message": "Take over",
+    "description": "Take over reservation action"
+  },
+  "reservationTakeoverTitle": {
+    "message": "Take over reservation?",
+    "description": "Takeover confirmation title"
+  },
+  "reservationTakeoverMessage": {
+    "message": "This document is currently reserved by {name}. Do you want to take over the reservation?",
+    "description": "Takeover confirmation message"
+  },
+  "reservationTakeoverCancel": {
+    "message": "Cancel",
+    "description": "Takeover confirmation cancel"
+  },
+  "reservationTakeoverConfirm": {
+    "message": "Take over",
+    "description": "Takeover confirmation confirm"
+  },
+  "reservationReserveSuccess": {
+    "message": "Document reserved for editing",
+    "description": "Reserve success toast"
+  },
+  "reservationReserveFailed": {
+    "message": "Failed to reserve document",
+    "description": "Reserve error toast"
+  },
+  "reservationReleaseSuccess": {
+    "message": "Reservation released",
+    "description": "Release success toast"
+  },
+  "reservationReleaseFailed": {
+    "message": "Failed to release reservation",
+    "description": "Release error toast"
+  },
+  "reservationNotifySuccess": {
+    "message": "Notification sent",
+    "description": "Notify success toast"
+  },
+  "reservationNotifyFailed": {
+    "message": "Failed to notify reserver",
+    "description": "Notify error toast"
+  },
+  "reservationTakeoverSuccess": {
+    "message": "Reservation taken over",
+    "description": "Takeover success toast"
+  },
+  "reservationTakeoverFailed": {
+    "message": "Failed to take over reservation",
+    "description": "Takeover error toast"
+  },
+  "versionConflictTitle": {
+    "message": "Newer version detected",
+    "description": "Version conflict dialog title"
+  },
+  "versionConflictMessage": {
+    "message": "A newer version of this document already exists.",
+    "description": "Version conflict dialog message"
+  },
+  "versionConflictDetail": {
+    "message": "Your upload was based on version {baseVersion}. Current version is {currentVersion}.",
+    "description": "Version conflict detail"
+  },
+  "versionConflictCreateAnyway": {
+    "message": "Create version anyway",
+    "description": "Force upload despite conflict"
+  },
+  "versionConflictCompare": {
+    "message": "Compare versions",
+    "description": "Open version compare from conflict dialog"
+  },
+  "versionConflictCancel": {
+    "message": "Cancel upload",
+    "description": "Cancel upload from conflict dialog"
+  },
+  "activityReservationCreated": {
+    "message": "{name} reserved {title} for editing",
+    "description": "Activity feed reservation created message"
+  },
+  "activityReservationReleased": {
+    "message": "{name} released the reservation on {title}",
+    "description": "Activity feed reservation released message"
+  },
+  "activityReservationExpired": {
+    "message": "Reservation expired on {title}",
+    "description": "Activity feed reservation expired message"
+  },
+  "activityReservationTakenOver": {
+    "message": "{name} took over the reservation on {title}",
+    "description": "Activity feed reservation taken over message"
+  },
+  "activityPresenceDetected": {
+    "message": "{name} is active on {title}",
+    "description": "Activity feed presence detected message"
+  },
+  "activityConflictDetected": {
+    "message": "{name} detected a version conflict on {title}",
+    "description": "Activity feed conflict detected message"
+  },
+  "activityConflictResolved": {
+    "message": "{name} resolved a version conflict on {title}",
+    "description": "Activity feed conflict resolved message"
+  },
+  "activityConflictCancelled": {
+    "message": "{name} cancelled an upload due to a version conflict on {title}",
+    "description": "Activity feed conflict cancelled message"
+  },
+  "activityPortalAccessRevoked": {
+    "message": "{name} revoked portal access for {title}",
+    "description": "Activity feed portal access revoked message"
+  },
+  "addSubfolder": {
+    "message": "Add subfolder",
+    "description": "Create a folder under the selected folder"
+  },
+  "folderTreeDescription": {
+    "message": "Expand folders to browse documents. Use + to add a subfolder.",
+    "description": "Folder tree view helper text"
+  },
+  "folderTreeUnfiled": {
+    "message": "Unfiled",
+    "description": "Virtual folder for documents without a folder"
+  },
+  "folderTreeExpand": {
+    "message": "Expand folder",
+    "description": "Folder tree expand button aria label"
+  },
+  "folderTreeCollapse": {
+    "message": "Collapse folder",
+    "description": "Folder tree collapse button aria label"
+  },
+  "presenceAvatarsLabel": {
+    "message": "Active collaborators",
+    "description": "Aria label for document presence avatar group"
+  },
+  "presenceAvatarTooltip": {
+    "message": "{name} · {activity}",
+    "description": "Tooltip for a presence avatar"
+  },
+  "presenceAvatarTooltipWithTime": {
+    "message": "{name} · {activity} · {time} ago",
+    "description": "Tooltip for a presence avatar with relative time"
+  },
+  "presenceAvatarsOverflow": {
+    "message": "+{count} more: {names}",
+    "description": "Tooltip for overflow presence avatars"
+  },
+  "viewKnowledge": {
+    "message": "Knowledge Base",
+    "description": "Documents knowledge base view tab"
+  },
+  "knowledgeBaseTitle": {
+    "message": "Knowledge Base",
+    "description": "Knowledge base view title"
+  },
+  "knowledgeBaseDescription": {
+    "message": "Published articles and guides flagged for internal knowledge base access.",
+    "description": "Knowledge base view description"
+  },
+  "knowledgeBaseEmpty": {
+    "message": "No published knowledge base articles yet.",
+    "description": "Knowledge base empty state"
+  },
+  "portalKnowledgeTitle": {
+    "message": "Help Center",
+    "description": "Portal knowledge base page title"
+  },
+  "portalKnowledgeSubtitle": {
+    "message": "Browse published articles shared with your organization.",
+    "description": "Portal knowledge base subtitle"
+  },
+  "portalKnowledgeEmptyTitle": {
+    "message": "No articles available",
+    "description": "Portal knowledge empty title"
+  },
+  "portalKnowledgeEmptyMessage": {
+    "message": "Your organization has not published any portal articles yet.",
+    "description": "Portal knowledge empty message"
+  },
+  "portalKnowledgeLoadFailed": {
+    "message": "Failed to load help center articles.",
+    "description": "Portal knowledge load error"
+  },
+  "portalKnowledgeBack": {
+    "message": "Back to articles",
+    "description": "Portal knowledge article back link"
+  },
+  "portalKnowledgeUpdated": {
+    "message": "Updated {date}",
+    "description": "Portal knowledge article updated label"
+  },
+  "commentsSectionTitle": {
+    "message": "Comments & suggestions",
+    "description": "Document record comments section title"
+  },
+  "signaturesSectionTitle": {
+    "message": "Signatures",
+    "description": "Document record signatures section title"
+  },
+  "collaborationSectionTitle": {
+    "message": "Collaboration",
+    "description": "Document record collaboration section title"
+  },
+  "inlineCommentsAddFromSelection": {
+    "message": "Add comment on selection",
+    "description": "Document editor bubble menu comment action"
+  },
+  "inlineCommentsTitle": {
+    "message": "Inline comments",
+    "description": "Inline comments section heading"
+  },
+  "inlineCommentsSelectedText": {
+    "message": "Selected text",
+    "description": "Label for anchored comment selection"
+  },
+  "inlineCommentsPlaceholder": {
+    "message": "Write a comment or suggestion…",
+    "description": "Inline comment compose placeholder"
+  },
+  "inlineCommentsSuggestion": {
+    "message": "This is a suggested edit",
+    "description": "Checkbox label for suggestion type"
+  },
+  "inlineCommentsSuggestedTextPlaceholder": {
+    "message": "Suggested replacement text",
+    "description": "Suggested text input placeholder"
+  },
+  "inlineCommentsSubmitting": {
+    "message": "Posting…",
+    "description": "Inline comment submit loading"
+  },
+  "inlineCommentsSubmit": {
+    "message": "Post comment",
+    "description": "Inline comment submit button"
+  },
+  "inlineCommentsLoading": {
+    "message": "Loading comments…",
+    "description": "Inline comments loading state"
+  },
+  "inlineCommentsEmpty": {
+    "message": "No comments yet. Select text in the editor and use the comment button to anchor a note.",
+    "description": "Inline comments empty state"
+  },
+  "inlineCommentsSuggestedText": {
+    "message": "Suggest: {text}",
+    "description": "Displayed suggested replacement text"
+  },
+  "inlineCommentsReopen": {
+    "message": "Reopen",
+    "description": "Reopen resolved comment thread"
+  },
+  "inlineCommentsResolve": {
+    "message": "Resolve",
+    "description": "Resolve open comment thread"
+  },
+  "inlineCommentsUnknownAuthor": {
+    "message": "Unknown user",
+    "description": "Fallback inline comment author label"
+  },
+  "inlineCommentsLoadFailed": {
+    "message": "Failed to load comments",
+    "description": "Inline comments load error"
+  },
+  "inlineCommentsCreateFailed": {
+    "message": "Failed to post comment",
+    "description": "Inline comment create error"
+  },
+  "inlineCommentsCreateSuccess": {
+    "message": "Comment posted",
+    "description": "Inline comment create success"
+  },
+  "inlineCommentsUpdateFailed": {
+    "message": "Failed to update comment",
+    "description": "Inline comment resolve/reopen error"
+  },
+  "signaturesTitle": {
+    "message": "Signature requests",
+    "description": "Signatures section heading"
+  },
+  "signaturesRequest": {
+    "message": "Request signatures",
+    "description": "Open signature request form"
+  },
+  "signaturesMessagePlaceholder": {
+    "message": "Optional message for signers",
+    "description": "Signature request message placeholder"
+  },
+  "signaturesSignerName": {
+    "message": "Signer name",
+    "description": "Signature signer name field"
+  },
+  "signaturesSignerEmail": {
+    "message": "Signer email",
+    "description": "Signature signer email field"
+  },
+  "signaturesAddSigner": {
+    "message": "Add signer",
+    "description": "Add another signer row"
+  },
+  "signaturesCreating": {
+    "message": "Sending…",
+    "description": "Signature request create loading"
+  },
+  "signaturesSendRequest": {
+    "message": "Send request",
+    "description": "Submit signature request"
+  },
+  "signaturesLoading": {
+    "message": "Loading signature requests…",
+    "description": "Signatures loading state"
+  },
+  "signaturesEmpty": {
+    "message": "No signature requests yet.",
+    "description": "Signatures empty state"
+  },
+  "signaturesCancel": {
+    "message": "Cancel request",
+    "description": "Cancel signature request button"
+  },
+  "signaturesTypeSignature": {
+    "message": "Type your full name to sign",
+    "description": "Typed signature input placeholder"
+  },
+  "signaturesSigning": {
+    "message": "Signing…",
+    "description": "Sign action loading"
+  },
+  "signaturesSign": {
+    "message": "Sign document",
+    "description": "Sign document button"
+  },
+  "signaturesStatusDraft": {
+    "message": "Draft",
+    "description": "Signature request draft status"
+  },
+  "signaturesStatusSent": {
+    "message": "Sent",
+    "description": "Signature request sent status"
+  },
+  "signaturesStatusPartiallySigned": {
+    "message": "Partially signed",
+    "description": "Signature request partially signed status"
+  },
+  "signaturesStatusCompleted": {
+    "message": "Completed",
+    "description": "Signature request completed status"
+  },
+  "signaturesStatusCancelled": {
+    "message": "Cancelled",
+    "description": "Signature request cancelled status"
+  },
+  "signaturesLoadFailed": {
+    "message": "Failed to load signature requests",
+    "description": "Signatures load error"
+  },
+  "signaturesCreateFailed": {
+    "message": "Failed to create signature request",
+    "description": "Signature request create error"
+  },
+  "signaturesCreateSuccess": {
+    "message": "Signature request sent",
+    "description": "Signature request create success"
+  },
+  "signaturesSignFailed": {
+    "message": "Failed to sign document",
+    "description": "Sign action error"
+  },
+  "signaturesSignSuccess": {
+    "message": "Document signed",
+    "description": "Sign action success"
+  },
+  "signaturesCancelFailed": {
+    "message": "Failed to cancel signature request",
+    "description": "Cancel signature request error"
+  },
+  "collaborationDraftsTitle": {
+    "message": "Other editors have unsaved drafts",
+    "description": "Collaboration drafts banner title"
+  },
+  "collaborationDraftsDescription": {
+    "message": "Drafts autosave while editing. Publish your changes to update the document for everyone.",
+    "description": "Collaboration drafts banner description"
+  },
+  "collaborationDraftSaved": {
+    "message": "last saved {time}",
+    "description": "Other user draft saved relative time"
+  },
+  "collaborationYourDraftSaved": {
+    "message": "Your draft autosaved {time}",
+    "description": "Current user draft saved relative time"
+  },
+  "collaborationUnknownEditor": {
+    "message": "Another editor",
+    "description": "Fallback collaboration editor name"
+  },
+  "collaborationJustNow": {
+    "message": "just now",
+    "description": "Collaboration relative time just now"
+  },
+  "collaborationMinutesAgo": {
+    "message": "{count} min ago",
+    "description": "Collaboration relative time minutes ago"
+  },
+  "searchModeLabel": {
+    "message": "Search mode",
+    "description": "Documents search mode toggle aria label"
+  },
+  "searchModeKeyword": {
+    "message": "Keyword",
+    "description": "Keyword search mode label"
+  },
+  "searchModeSemantic": {
+    "message": "Semantic",
+    "description": "Semantic search mode label"
+  },
+  "semanticSearchPlaceholder": {
+    "message": "Describe what you're looking for…",
+    "description": "Semantic search input placeholder"
+  },
+  "semanticSearchEmptyTitle": {
+    "message": "No similar documents found",
+    "description": "Semantic search empty title"
+  },
+  "semanticSearchEmptyMessage": {
+    "message": "Try different wording or switch to keyword search for exact matches.",
+    "description": "Semantic search empty message"
+  },
+  "folderBrowseAllFiles": {
+    "message": "All Files",
+    "description": "Folder browse pane files section title"
+  },
+  "folderBrowseSortBy": {
+    "message": "Sort By",
+    "description": "Folder browse sort dropdown label"
+  },
+  "folderBrowseSortName": {
+    "message": "Name",
+    "description": "Folder browse sort by name"
+  },
+  "folderBrowseSortUpdated": {
+    "message": "Last edited",
+    "description": "Folder browse sort by updated date"
+  },
+  "folderBrowseSortType": {
+    "message": "Type",
+    "description": "Folder browse sort by type"
+  },
+  "folderBrowseSortSize": {
+    "message": "Size",
+    "description": "Folder browse sort by size"
+  },
+  "folderBrowseSize": {
+    "message": "Size",
+    "description": "Folder browse table size column"
+  },
+  "folderBrowseLastEdit": {
+    "message": "Last Edit",
+    "description": "Folder browse table last edit column"
+  },
+  "folderBrowseLastEditBy": {
+    "message": "{date} By, {name}",
+    "description": "Folder browse last edit with owner"
+  },
+  "folderBrowseTypeFolder": {
+    "message": "Folder",
+    "description": "Folder browse row type label for folders"
+  },
+  "folderBrowseDateLabel": {
+    "message": "Date: {date}",
+    "description": "Folder card date label in browse pane"
+  },
+  "listViewAll": {
+    "message": "All Documents",
+    "description": "Documents list default view title"
+  },
+  "listViewMy": {
+    "message": "My Documents",
+    "description": "Documents list owner view title"
+  },
+  "activeFilterFolder": {
+    "message": "Folder: {name}",
+    "description": "Active list filter chip for selected folder"
+  },
+  "activeFilterStatus": {
+    "message": "Status: {value}",
+    "description": "Active list filter chip for document status"
+  },
+  "activeFilterFileType": {
+    "message": "File type: {value}",
+    "description": "Active list filter chip for file type"
+  },
+  "activeFilterOwner": {
+    "message": "Owner: {value}",
+    "description": "Active list filter chip for document owner"
+  },
+  "activeFilterTag": {
+    "message": "Tag: {value}",
+    "description": "Active list filter chip for tag"
+  },
+  "activeFilterLinkedModule": {
+    "message": "Linked module: {value}",
+    "description": "Active list filter chip for linked module"
+  },
+  "activeFilterLinkedRecord": {
+    "message": "Linked record: {value}",
+    "description": "Active list filter chip for linked record"
+  },
+  "activeFilterDocumentType": {
+    "message": "Type: {value}",
+    "description": "Active list filter chip for document type"
+  },
+  "activeFilterFavorites": {
+    "message": "Favorites",
+    "description": "Active list filter chip for favorites-only filter"
+  },
+  "activeFilterRecent": {
+    "message": "Recently viewed",
+    "description": "Active list filter chip for recent-only filter"
+  },
+  "activeFilterShared": {
+    "message": "Shared with me",
+    "description": "Active list filter chip for shared-with-me filter"
+  },
+  "activeFilterExpiring": {
+    "message": "Expiring soon",
+    "description": "Active list filter chip for expiring-soon filter"
+  },
+  "activeFilterName": {
+    "message": "Name: {value}",
+    "description": "Active list filter chip for document name column filter"
+  },
+  "deleteFolder": {
+    "message": "Delete folder",
+    "description": "Delete folder action label"
+  },
+  "folderDeleteSuccess": {
+    "message": "Folder deleted",
+    "description": "Folder delete success toast"
+  },
+  "folderDeleteSuccessWithDocuments": {
+    "message": "Folder deleted. {count} document(s) moved to All Documents.",
+    "description": "Folder delete success toast when documents were unfiled"
+  },
+  "folderDeleteFailed": {
+    "message": "Failed to delete folder",
+    "description": "Folder delete error toast"
+  }
+}

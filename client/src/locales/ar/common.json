@@ -2387,10 +2387,6 @@
     "message": "All {count} {module} selected",
     "description": "Bulk bar label when all matching records are selected"
   },
-  "listPerformanceCap": {
-    "message": "Showing {loaded} of {total} {module} in the table for performance. Scroll loading pauses here — use \"Select all\" in the bulk bar to act on every matching record.",
-    "description": "Footer when list DOM row cap is reached"
-  },
   "notificationPreferencesToastPushPermissionRequired": {
     "message": "Push notification permission is \"{permission}\". Enable push notifications first.",
     "description": "Toast from NotificationPreferences.vue when testing push without granted permission"

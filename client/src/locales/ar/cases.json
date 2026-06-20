@@ -1,9 +1,26 @@
 {
-  "casesBoard": { "message": "Board", "description": "Cases kanban view label" },
-  "casesNewCase": { "message": "New case", "description": "Create button label for cases" },
-  "casesAddCase": { "message": "Add case", "description": "Kanban add action label for cases" },
-  "casesLoadingBoard": { "message": "Loading cases…", "description": "Loading label for cases kanban board" },
-  "casesNoCasesInThisStatus": { "message": "No cases in this status", "description": "Empty message for a kanban column with no cases" },
-  "casesToastFailedToUpdateStatus": { "message": "Failed to update case status", "description": "Fallback error toast when case status update fails" }
+  "casesBoard": {
+    "message": "Board",
+    "description": "Cases kanban view label"
+  },
+  "casesNewCase": {
+    "message": "New case",
+    "description": "Create button label for cases"
+  },
+  "casesAddCase": {
+    "message": "Add case",
+    "description": "Kanban add action label for cases"
+  },
+  "casesLoadingBoard": {
+    "message": "Loading cases…",
+    "description": "Loading label for cases kanban board"
+  },
+  "casesNoCasesInThisStatus": {
+    "message": "No cases in this status",
+    "description": "Empty message for a kanban column with no cases"
+  },
+  "casesToastFailedToUpdateStatus": {
+    "message": "Failed to update case status",
+    "description": "Fallback error toast when case status update fails"
+  }
 }
-

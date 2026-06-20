@@ -574,5 +574,13 @@
   "apps": {
     "message": "Apps",
     "description": "App Registry tab title"
+  },
+  "moduleDocuments": {
+    "message": "Documents",
+    "description": "Documents module navigation label"
+  },
+  "portalKnowledge": {
+    "message": "Help",
+    "description": "Portal bottom nav knowledge base tab"
   }
 }

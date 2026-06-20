@@ -11,7 +11,7 @@ const controller = require('../controllers/moduleController');
 const { sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
 
 // Core entities that are platform-owned (don't require Sales app)
-const CORE_ENTITIES = ['people', 'organizations', 'events', 'forms', 'tasks', 'items', 'quotes', 'reports'];
+const CORE_ENTITIES = ['people', 'organizations', 'events', 'forms', 'tasks', 'items', 'quotes', 'reports', 'documents'];
 
 // Helper to check if a module is a core entity
 function isCoreEntity(moduleKey) {

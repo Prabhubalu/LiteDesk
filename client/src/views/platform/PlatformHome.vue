@@ -121,6 +121,9 @@ const mailPreview = computed(() => shellCounts.value?.mail?.preview || []);
 const notificationsPreview = computed(() => shellCounts.value?.notifications?.preview || []);
 const notificationsUnread = computed(() => shellCounts.value?.notifications?.unread ?? 0);
 const nextEvent = computed(() => shellCounts.value?.nextEvent || null);
+const documentsPendingReview = computed(() => shellCounts.value?.documents?.pendingReview ?? 0);
+const documentsExpiringSoon = computed(() => shellCounts.value?.documents?.expiringSoon ?? 0);
+const documentsPreview = computed(() => shellCounts.value?.documents?.preview || []);
 
 const hasMoreApprovals = computed(() => approvalsPending.value > approvalsPreview.value.length);
 
@@ -128,6 +131,9 @@ const hasUpNextItems = computed(() =>
   attentionTotal.value > 0
   || approvalsPending.value > 0
   || Boolean(nextEvent.value)
+  || documentsPendingReview.value > 0
+  || documentsExpiringSoon.value > 0
+  || documentsPreview.value.length > 0
 );
 
 const showInboxCard = computed(() =>
@@ -143,6 +149,24 @@ const approvalsLabel = computed(() =>
       ? 'platform.platformHomeApprovalCountOne'
       : 'platform.platformHomeApprovalCountMany',
     { count: approvalsPending.value }
+  )
+);
+
+const documentsPendingReviewLabel = computed(() =>
+  t(
+    documentsPendingReview.value === 1
+      ? 'platform.platformHomeDocumentsPendingReviewOne'
+      : 'platform.platformHomeDocumentsPendingReviewMany',
+    { count: documentsPendingReview.value }
+  )
+);
+
+const documentsExpiringSoonLabel = computed(() =>
+  t(
+    documentsExpiringSoon.value === 1
+      ? 'platform.platformHomeDocumentsExpiringSoonOne'
+      : 'platform.platformHomeDocumentsExpiringSoonMany',
+    { count: documentsExpiringSoon.value }
   )
 );
 
@@ -359,6 +383,8 @@ const handleNextEventSelect = (item) => {
 
 const goToAttention = () => router.push('/platform/attention');
 const goToApprovals = () => router.push('/approvals');
+const goToDocumentsPendingReview = () => router.push('/documents?status=pending_review');
+const goToDocumentsExpiringSoon = () => router.push('/documents?expiringOnly=1');
 const goToInbox = () => router.push('/inbox');
 const goToNotifications = () => {
   window.dispatchEvent(new CustomEvent('arivu:open-notifications-panel'));
@@ -651,6 +677,49 @@ onActivated(() => {
                   @approve="handleApprovalApprove"
                   @reject="handleApprovalReject"
                 />
+
+                <button
+                  v-for="item in documentsPreview"
+                  :key="`document-${item.id}`"
+                  type="button"
+                  class="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                  @click="handleQueueSelect(item)"
+                >
+                  <span class="flex-1">
+                    <span class="block truncate text-sm font-medium text-neutral-900 dark:text-white">
+                      {{ item.title }}
+                    </span>
+                    <span v-if="item.subtitle" class="mt-0.5 block truncate text-xs text-neutral-500 dark:text-neutral-400">
+                      {{ item.subtitle }}
+                    </span>
+                  </span>
+                  <ArrowRightIcon class="h-4 w-4 text-neutral-300 group-hover:text-neutral-400 dark:text-neutral-600 dark:group-hover:text-neutral-500" />
+                </button>
+
+                <button
+                  v-if="!documentsPreview.length && documentsPendingReview > 0"
+                  type="button"
+                  class="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                  @click="goToDocumentsPendingReview"
+                >
+                  <span class="flex-1 text-sm font-medium text-neutral-900 dark:text-white">
+                    {{ documentsPendingReviewLabel }}
+                  </span>
+                  <ArrowRightIcon class="h-4 w-4 text-neutral-300 group-hover:text-neutral-400 dark:text-neutral-600 dark:group-hover:text-neutral-500" />
+                </button>
+
+                <button
+                  v-if="documentsExpiringSoon > 0"
+                  type="button"
+                  class="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                  @click="goToDocumentsExpiringSoon"
+                >
+                  <span class="flex-1 text-sm font-medium text-neutral-900 dark:text-white">
+                    {{ documentsExpiringSoonLabel }}
+                  </span>
+                  <ArrowRightIcon class="h-4 w-4 text-neutral-300 group-hover:text-neutral-400 dark:text-neutral-600 dark:group-hover:text-neutral-500" />
+                </button>
+
                 <button
                   v-if="!approvalsPreview.length && approvalsPending > 0"
                   type="button"

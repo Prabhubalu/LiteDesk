@@ -48,6 +48,10 @@
         class="flex shrink-0 items-center gap-1.5 sm:gap-2"
         :class="embedToolbar ? 'ml-auto' : ''"
       >
+        <RecordPresenceAvatars
+          v-if="presenceSessions.length"
+          :sessions="presenceSessions"
+        />
         <div
           class="case-header-chip inline-flex min-w-0 items-center rounded-md py-0.5 pl-1.5 pr-0.5 ring-1 ring-inset transition-[filter] hover:brightness-[0.97] dark:hover:brightness-110"
           :style="statusChipStyle"
@@ -250,6 +254,7 @@ import {
   TicketIcon
 } from '@heroicons/vue/24/outline';
 import Avatar from '@/components/common/Avatar.vue';
+import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import CaseSlaBadge from '@/components/cases/CaseSlaBadge.vue';
 import CaseSlaContextBanner from '@/components/helpdesk/CaseSlaContextBanner.vue';
@@ -272,7 +277,8 @@ const props = defineProps({
   canDelete: { type: Boolean, default: false },
   canEdit: { type: Boolean, default: true },
   previewMode: { type: Boolean, default: false },
-  embedToolbar: { type: Boolean, default: false }
+  embedToolbar: { type: Boolean, default: false },
+  presenceSessions: { type: Array, default: () => [] }
 });
 
 const emit = defineEmits([

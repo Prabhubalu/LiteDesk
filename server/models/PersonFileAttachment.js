@@ -15,7 +15,8 @@ const PersonFileAttachmentSchema = new Schema(
     storagePath: { type: String, required: true },
     uploaded_by: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     created_at: { type: Date, default: Date.now },
-    appContext: { type: String }
+    appContext: { type: String },
+    migratedDocumentId: { type: Schema.Types.ObjectId, ref: 'Document', default: null, index: true }
   },
   { timestamps: false }
 );

@@ -535,10 +535,6 @@
     "message": "Field library",
     "description": "Field library panel title"
   },
-  "builderFieldLibraryHint": {
-    "message": "Click a field to add it to the canvas.",
-    "description": "Field library hint"
-  },
   "builderFieldLibrarySearch": {
     "message": "Search fields…",
     "description": "Field library search"
@@ -1310,5 +1306,9 @@
   "validationFileInvalid": {
     "message": "{label} requires a valid uploaded file.",
     "description": "Validation error for file field"
+  },
+  "builderVisibilityFromModule": {
+    "message": "Visibility, required rules, and picklist dependencies for this field are managed in module settings.",
+    "description": "Shown for CRM-bound webform fields instead of webform-level Show when rules"
   }
 }

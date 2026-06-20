@@ -60,6 +60,10 @@ const {
   startPortalPayHandler,
   getPortalPaymentSessionStatusHandler
 } = require('../controllers/portalPaymentController');
+const {
+  listPortalKnowledgeArticles,
+  getPortalKnowledgeArticle
+} = require('../controllers/portalDocumentController');
 const { mailroomPortalIngestLimiter } = require('../middleware/rateLimitMiddleware');
 
 // Apply middleware to all Portal routes
@@ -94,6 +98,10 @@ router.get('/invoices', listPortalInvoicesHandler);
 router.get('/invoices/:id/pay-eligibility', getPortalPayEligibilityHandler);
 router.post('/invoices/:id/pay', startPortalPayHandler);
 router.get('/payment-sessions/:id/status', getPortalPaymentSessionStatusHandler);
+
+// Knowledge base (portal-visible published articles)
+router.get('/knowledge-base', listPortalKnowledgeArticles);
+router.get('/knowledge-base/:id', getPortalKnowledgeArticle);
 
 // Mailroom connector (M5) — portal-originated messages into the Mailroom pipeline
 router.use('/mailroom', mailroomPortalIngestLimiter);

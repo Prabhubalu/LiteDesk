@@ -11,10 +11,11 @@
 const express = require('express');
 const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation } = require('../middleware/organizationMiddleware');
-const { checkPermissionFromParam } = require('../middleware/permissionMiddleware');
+const { checkPermissionFromParam, checkPermission } = require('../middleware/permissionMiddleware');
 const { resolveAppContext } = require('../middleware/resolveAppContextMiddleware');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
 const controller = require('../controllers/moduleRecordController');
+const documentController = require('../controllers/documentController');
 const { sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
 
 const router = express.Router();
@@ -94,6 +95,26 @@ router.post(
   '/:moduleKey/records/:recordId/description-versions/restore',
   checkPermissionFromParam('moduleKey', 'edit'),
   controller.restoreDescriptionVersion
+);
+router.get(
+  '/:moduleKey/records/:recordId/documents',
+  checkPermission('documents', 'view'),
+  documentController.getRecordDocuments
+);
+router.get(
+  '/:moduleKey/records/:recordId/presence',
+  checkPermissionFromParam('moduleKey', 'view'),
+  controller.getRecordPresence
+);
+router.post(
+  '/:moduleKey/records/:recordId/presence/heartbeat',
+  checkPermissionFromParam('moduleKey', 'view'),
+  controller.heartbeatRecordPresence
+);
+router.delete(
+  '/:moduleKey/records/:recordId/presence',
+  checkPermissionFromParam('moduleKey', 'view'),
+  controller.clearRecordPresence
 );
 
 module.exports = router;

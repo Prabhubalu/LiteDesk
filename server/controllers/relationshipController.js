@@ -35,7 +35,8 @@ const mongoose = require('mongoose');
 const { getRecordContextForUI } = require('../services/recordContextService');
 const ModuleDefinition = require('../models/ModuleDefinition');
 const relationshipRegistry = require('../utils/relationshipRegistry');
-const { getOutgoingRelationships, getIncomingRelationships } = require('../utils/relationshipRegistry');
+const { getRelationshipsForModule } = require('../utils/relationshipRegistry');
+const { getEffectiveRelationships } = require('../utils/tenantMetadata');
 
 // Map targetModuleKey → appKey for link API (used when building linkable from Settings relationships)
 const TARGET_APP_BY_MODULE_KEY = {
@@ -46,8 +47,429 @@ const TARGET_APP_BY_MODULE_KEY = {
   events: 'platform',
   forms: 'platform',
   projects: 'projects',
-  cases: 'helpdesk'
+  cases: 'helpdesk',
+  documents: 'platform',
+  items: 'sales',
+  quotes: 'platform'
 };
+
+function toRelationshipConfigTargetKey(r) {
+  const raw = r?.targetModuleKey ?? r?.targetModule;
+  if (raw == null) return '';
+  if (typeof raw === 'object') return String(raw.key ?? raw.moduleKey ?? '').toLowerCase().trim();
+  return String(raw).toLowerCase().trim();
+}
+
+function isConfigRelationshipLinkable(r) {
+  if (r?.userLinkable === false) return false;
+  if (r?.display && r.display.linkRecord === false) return false;
+  return true;
+}
+
+function isRegistryRelationshipLinkable(def) {
+  if (!def) return false;
+  if (def.userLinkable === false) return false;
+  if (def.display && def.display.linkRecord === false) return false;
+  return true;
+}
+
+function buildLinkableEntryFromRegistry({
+  relationshipKey,
+  registryDef,
+  normalizedAppKey,
+  normalizedModuleKey,
+  labelOverride
+}) {
+  const relKey = String(relationshipKey || '').trim().toLowerCase();
+  if (!relKey || !registryDef) return null;
+
+  const sourceIsCurrent =
+    String(registryDef.source?.appKey || '').toLowerCase() === normalizedAppKey &&
+    String(registryDef.source?.moduleKey || '').toLowerCase() === normalizedModuleKey;
+
+  const linkedModuleKey = sourceIsCurrent
+    ? String(registryDef.target?.moduleKey || '').toLowerCase().trim()
+    : String(registryDef.source?.moduleKey || '').toLowerCase().trim();
+  if (!linkedModuleKey) return null;
+
+  const linkedModuleAppKey = sourceIsCurrent
+    ? String(registryDef.target?.appKey || TARGET_APP_BY_MODULE_KEY[linkedModuleKey] || 'platform').toUpperCase()
+    : String(registryDef.source?.appKey || TARGET_APP_BY_MODULE_KEY[linkedModuleKey] || 'platform').toUpperCase();
+
+  const defaultLabel = linkedModuleKey.charAt(0).toUpperCase() + linkedModuleKey.slice(1);
+  const label = String(labelOverride || '').trim() || defaultLabel;
+
+  return {
+    key: linkedModuleKey,
+    label,
+    relationshipKey: relKey,
+    targetAppKey: linkedModuleAppKey,
+    sourceIsCurrent
+  };
+}
+
+function mergeLinkableByRelationshipKey(existing, additions) {
+  const byKey = new Map();
+  for (const item of existing || []) {
+    if (item?.relationshipKey) byKey.set(String(item.relationshipKey).toLowerCase(), item);
+  }
+  for (const item of additions || []) {
+    if (!item?.relationshipKey) continue;
+    const relKey = String(item.relationshipKey).toLowerCase();
+    const prev = byKey.get(relKey);
+    byKey.set(relKey, prev ? { ...item, label: prev.label || item.label } : item);
+  }
+  return Array.from(byKey.values());
+}
+
+function buildRegistryLinkableTargets(outgoing, incoming, normalizedAppKey, normalizedModuleKey) {
+  const items = [];
+
+  for (const def of outgoing || []) {
+    const relKey = String(def?.relationshipKey || '').trim().toLowerCase();
+    if (!relKey || !relationshipRegistry.has(relKey) || !isRegistryRelationshipLinkable(def)) continue;
+    const entry = buildLinkableEntryFromRegistry({
+      relationshipKey: relKey,
+      registryDef: relationshipRegistry.get(relKey),
+      normalizedAppKey,
+      normalizedModuleKey,
+      labelOverride: def?.ui?.source?.label
+    });
+    if (entry) items.push(entry);
+  }
+
+  for (const def of incoming || []) {
+    const relKey = String(def?.relationshipKey || '').trim().toLowerCase();
+    if (!relKey || !relationshipRegistry.has(relKey)) continue;
+    const fullDef = relationshipRegistry.get(relKey);
+    if (!fullDef) continue;
+    const entry = buildLinkableEntryFromRegistry({
+      relationshipKey: relKey,
+      registryDef: fullDef,
+      normalizedAppKey,
+      normalizedModuleKey,
+      labelOverride: def?.ui?.target?.label
+    });
+    if (entry) items.push(entry);
+  }
+
+  return items;
+}
+
+function supplementLinkableFromConfiguredRelationships(
+  linkable,
+  relationships,
+  normalizedAppKey,
+  normalizedModuleKey
+) {
+  const additions = [];
+  const presentKeys = new Set(
+    (linkable || []).map((item) => String(item?.relationshipKey || '').toLowerCase()).filter(Boolean)
+  );
+
+  for (const r of relationships || []) {
+    if (!isConfigRelationshipLinkable(r)) continue;
+    const relKey = String(r.relationshipKey || '').trim().toLowerCase();
+    if (!relKey || presentKeys.has(relKey) || !relationshipRegistry.has(relKey)) continue;
+
+    const label = (r.label || r.name || '').toString().trim();
+    const entry = buildLinkableEntryFromRegistry({
+      relationshipKey: relKey,
+      registryDef: relationshipRegistry.get(relKey),
+      normalizedAppKey,
+      normalizedModuleKey,
+      labelOverride: label
+    });
+    if (entry) {
+      additions.push(entry);
+      presentKeys.add(relKey);
+    }
+  }
+
+  return mergeLinkableByRelationshipKey(linkable, additions);
+}
+
+function findModuleDefsForConfigTarget(moduleDefs, targetKey, normalizedAppKey, normalizedModuleKey) {
+  const normalizedTarget = String(targetKey || '').toLowerCase().trim();
+  if (!normalizedTarget) return [];
+
+  return (moduleDefs || []).filter((def) => {
+    if (!def?.relationshipKey || !isRegistryRelationshipLinkable(def)) return false;
+    const relKey = String(def.relationshipKey).toLowerCase();
+    const reg = relationshipRegistry.get(relKey);
+    if (!reg) return false;
+    const sourceIsCurrent =
+      reg.source.appKey === normalizedAppKey &&
+      reg.source.moduleKey === normalizedModuleKey;
+    const linkedKey = sourceIsCurrent ? reg.target.moduleKey : reg.source.moduleKey;
+    return linkedKey === normalizedTarget;
+  });
+}
+
+function resolveRelationshipKeysOnConfig(configRows, moduleDefs, normalizedAppKey, normalizedModuleKey) {
+  for (const row of configRows || []) {
+    if (!row || typeof row !== 'object') continue;
+    const existingKey = String(row.relationshipKey || '').trim();
+    if (existingKey && relationshipRegistry.has(existingKey)) continue;
+
+    const targetKey = toRelationshipConfigTargetKey(row);
+    if (!targetKey) continue;
+
+    const matches = findModuleDefsForConfigTarget(
+      moduleDefs,
+      targetKey,
+      normalizedAppKey,
+      normalizedModuleKey
+    );
+    if (matches.length === 1) {
+      row.relationshipKey = matches[0].relationshipKey;
+      continue;
+    }
+    if (matches.length > 1 && existingKey) {
+      const keyed = matches.find(
+        (def) => String(def.relationshipKey || '').toLowerCase() === existingKey.toLowerCase()
+      );
+      if (keyed) row.relationshipKey = keyed.relationshipKey;
+    }
+  }
+}
+
+function buildLinkableFromModuleDefs(moduleDefs, normalizedAppKey, normalizedModuleKey) {
+  const items = [];
+  const seen = new Set();
+
+  for (const def of moduleDefs || []) {
+    const relKey = String(def?.relationshipKey || '').trim().toLowerCase();
+    if (!relKey || seen.has(relKey) || !relationshipRegistry.has(relKey)) continue;
+    if (!isRegistryRelationshipLinkable(def)) continue;
+
+    const registryDef = relationshipRegistry.get(relKey);
+    if (!registryDef) continue;
+
+    const sourceIsCurrent =
+      registryDef.source.appKey === normalizedAppKey &&
+      registryDef.source.moduleKey === normalizedModuleKey;
+    const labelOverride = sourceIsCurrent ? def?.ui?.source?.label : def?.ui?.target?.label;
+
+    const entry = buildLinkableEntryFromRegistry({
+      relationshipKey: relKey,
+      registryDef,
+      normalizedAppKey,
+      normalizedModuleKey,
+      labelOverride
+    });
+    if (entry) {
+      items.push(entry);
+      seen.add(relKey);
+    }
+  }
+
+  return items;
+}
+
+function applyConfigFilterAndLabels(
+  linkable,
+  configRows,
+  moduleDefs,
+  normalizedAppKey,
+  normalizedModuleKey,
+  { usedTenantModule }
+) {
+  const rows = Array.isArray(configRows) ? configRows : [];
+
+  // Tenant explicitly cleared relationships in Settings — hide all link targets.
+  if (usedTenantModule && rows.length === 0) {
+    return [];
+  }
+
+  const labelByKey = new Map();
+  const disabledKeys = new Set();
+
+  for (const row of rows) {
+    let relKey = String(row.relationshipKey || '').trim().toLowerCase();
+    if (!relKey || !relationshipRegistry.has(relKey)) {
+      const targetKey = toRelationshipConfigTargetKey(row);
+      const matches = findModuleDefsForConfigTarget(
+        moduleDefs,
+        targetKey,
+        normalizedAppKey,
+        normalizedModuleKey
+      );
+      if (matches.length === 1) {
+        relKey = String(matches[0].relationshipKey).toLowerCase();
+      }
+    }
+    if (!relKey) continue;
+
+    if (!isConfigRelationshipLinkable(row)) {
+      disabledKeys.add(relKey);
+      continue;
+    }
+    const label = String(row.label || row.name || '').trim();
+    if (label) labelByKey.set(relKey, label);
+  }
+
+  // Registry-first: show all platform linkables unless explicitly disabled in tenant config.
+  // Tenant config supplies labels and opt-outs only (matches record-context related groups).
+  return (linkable || [])
+    .filter((item) => !disabledKeys.has(String(item.relationshipKey || '').toLowerCase()))
+    .map((item) => {
+      const relKey = String(item.relationshipKey || '').toLowerCase();
+      return {
+        ...item,
+        label: labelByKey.get(relKey) || item.label
+      };
+    });
+}
+
+async function findModuleDefinitionForLinkable(organizationId, normalizedAppKey, normalizedModuleKey) {
+  if (organizationId) {
+    const tenantMod = await ModuleDefinition.findOne({
+      organizationId,
+      $or: [{ key: normalizedModuleKey }, { moduleKey: normalizedModuleKey }]
+    })
+      .select('relationships key moduleKey organizationId')
+      .lean();
+    if (tenantMod) return tenantMod;
+  }
+
+  return ModuleDefinition.findOne({
+    appKey: normalizedAppKey,
+    $or: [{ key: normalizedModuleKey }, { moduleKey: normalizedModuleKey }],
+    $and: [
+      {
+        $or: [
+          { organizationId: null },
+          { organizationId: { $exists: false } }
+        ]
+      }
+    ]
+  })
+    .select('relationships key moduleKey organizationId')
+    .lean();
+}
+
+function buildLinkableFromEffectiveRelationship(rel, normalizedAppKey, normalizedModuleKey, labelOverride) {
+  const relKey = String(rel?.relationshipKey || '').trim().toLowerCase();
+  if (!relKey) return null;
+
+  const isSource =
+    String(rel.source?.appKey || '').toLowerCase() === normalizedAppKey &&
+    String(rel.source?.moduleKey || '').toLowerCase() === normalizedModuleKey;
+
+  const linkedModuleKey = isSource
+    ? String(rel.target?.moduleKey || '').toLowerCase().trim()
+    : String(rel.source?.moduleKey || '').toLowerCase().trim();
+  if (!linkedModuleKey) return null;
+
+  const linkedModuleAppKey = isSource
+    ? String(rel.target?.appKey || TARGET_APP_BY_MODULE_KEY[linkedModuleKey] || 'platform').toUpperCase()
+    : String(rel.source?.appKey || TARGET_APP_BY_MODULE_KEY[linkedModuleKey] || 'platform').toUpperCase();
+
+  const defaultLabel = linkedModuleKey.charAt(0).toUpperCase() + linkedModuleKey.slice(1);
+  const label = String(labelOverride || '').trim() || defaultLabel;
+
+  return {
+    key: linkedModuleKey,
+    label,
+    relationshipKey: relKey,
+    targetAppKey: linkedModuleAppKey,
+    sourceIsCurrent: isSource
+  };
+}
+
+function buildLinkableFromEffectiveRelationships(
+  effectiveRelationships,
+  configRows,
+  normalizedAppKey,
+  normalizedModuleKey,
+  { usedTenantModule }
+) {
+  const rows = Array.isArray(configRows) ? configRows : [];
+
+  if (usedTenantModule && rows.length === 0) {
+    return [];
+  }
+
+  const disabledKeys = new Set();
+  const labelByKey = new Map();
+
+  for (const row of rows) {
+    let relKey = String(row.relationshipKey || '').trim().toLowerCase();
+    if (!relKey) {
+      const targetKey = toRelationshipConfigTargetKey(row);
+      if (targetKey) {
+        const match = (effectiveRelationships || []).find((rel) => {
+          const isSource =
+            String(rel.source?.appKey || '').toLowerCase() === normalizedAppKey &&
+            String(rel.source?.moduleKey || '').toLowerCase() === normalizedModuleKey;
+          const linkedKey = isSource ? rel.target?.moduleKey : rel.source?.moduleKey;
+          return String(linkedKey || '').toLowerCase() === targetKey;
+        });
+        if (match) relKey = String(match.relationshipKey || '').toLowerCase();
+      }
+    }
+    if (!relKey) continue;
+    if (!isConfigRelationshipLinkable(row)) {
+      disabledKeys.add(relKey);
+      continue;
+    }
+    const label = String(row.label || row.name || '').trim();
+    if (label) labelByKey.set(relKey, label);
+  }
+
+  const linkable = [];
+  const seen = new Set();
+
+  for (const rel of effectiveRelationships || []) {
+    const relKey = String(rel.relationshipKey || '').trim().toLowerCase();
+    if (!relKey || seen.has(relKey)) continue;
+    if (disabledKeys.has(relKey)) continue;
+    if (rel.userLinkable === false) continue;
+    if (rel.display && rel.display.linkRecord === false) continue;
+
+    const isSource =
+      String(rel.source?.appKey || '').toLowerCase() === normalizedAppKey &&
+      String(rel.source?.moduleKey || '').toLowerCase() === normalizedModuleKey;
+    const defaultLabel = isSource ? rel.ui?.source?.label : rel.ui?.target?.label;
+
+    const entry = buildLinkableFromEffectiveRelationship(
+      rel,
+      normalizedAppKey,
+      normalizedModuleKey,
+      labelByKey.get(relKey) || defaultLabel
+    );
+    if (entry) {
+      linkable.push(entry);
+      seen.add(relKey);
+    }
+  }
+
+  return linkable;
+}
+
+function mergeMissingPlatformRelationships(tenantRelationships, platformRelationships) {
+  const merged = (tenantRelationships || []).map((row) => ({ ...row }));
+  const presentKeys = new Set(
+    merged.map((row) => String(row.relationshipKey || '').toLowerCase()).filter(Boolean)
+  );
+  const presentTargets = new Set(
+    merged.map((row) => toRelationshipConfigTargetKey(row)).filter(Boolean)
+  );
+
+  for (const row of platformRelationships || []) {
+    if (!isConfigRelationshipLinkable(row)) continue;
+    const key = String(row.relationshipKey || '').toLowerCase();
+    const target = toRelationshipConfigTargetKey(row);
+    if (key && presentKeys.has(key)) continue;
+    if (target && presentTargets.has(target)) continue;
+    merged.push({ ...row });
+    if (key) presentKeys.add(key);
+    if (target) presentTargets.add(target);
+  }
+
+  return merged;
+}
 
 const EVENTS_LINKABLE_DEFAULT_RELATIONSHIPS = Object.freeze([
   { name: 'Related Deal', type: 'many_to_one', isLookup: true, targetModuleKey: 'deals', relationshipKey: 'deal_events' },
@@ -176,6 +598,50 @@ async function ensureItemsRelationshipDefinitions() {
   }
 }
 
+/**
+ * Idempotent: upsert platform RelationshipDefinition rows touching the requested module.
+ * Ensures linkable-targets works even when seedPlatformRelationships.js was never run.
+ */
+async function ensurePlatformRelationshipDefinitionsForModule(normalizedAppKey, normalizedModuleKey) {
+  const { RELATIONSHIP_DEFINITIONS } = require('../scripts/seedPlatformRelationships');
+  const defs = Array.isArray(RELATIONSHIP_DEFINITIONS) ? RELATIONSHIP_DEFINITIONS : [];
+  const normApp = String(normalizedAppKey || '').toLowerCase();
+  const normMod = String(normalizedModuleKey || '').toLowerCase();
+  if (!normApp || !normMod) return;
+
+  const relevant = defs.filter((def) => {
+    const src = def?.source || {};
+    const tgt = def?.target || {};
+    const sourceMatches =
+      String(src.appKey || '').toLowerCase() === normApp &&
+      String(src.moduleKey || '').toLowerCase() === normMod;
+    const targetMatches =
+      String(tgt.appKey || '').toLowerCase() === normApp &&
+      String(tgt.moduleKey || '').toLowerCase() === normMod;
+    return sourceMatches || targetMatches;
+  });
+
+  for (const def of relevant) {
+    const key = String(def.relationshipKey || '').toLowerCase();
+    if (!key) continue;
+    // eslint-disable-next-line no-await-in-loop
+    await RelationshipDefinition.updateOne(
+      { relationshipKey: key },
+      {
+        $set: {
+          ...def,
+          relationshipKey: key,
+          enabled: def.enabled !== false
+        },
+        $setOnInsert: {
+          createdBy: 'system'
+        }
+      },
+      { upsert: true }
+    );
+  }
+}
+
 async function syncPeopleOrganizationLink({ organizationId, relationshipKey, source, target }) {
   if (relationshipKey !== 'people_organizations') return;
   if (!source?.recordId || !target?.recordId) return;
@@ -209,9 +675,8 @@ async function syncPeopleOrganizationUnlink({ organizationId, relationshipKey, s
 
 /**
  * Get linkable target modules for a source module (for Link Record drawer).
- * Reads from ModuleDefinition.relationships (tenant config). Does NOT derive relationshipKey:
- * only includes entries that have relationshipKey set and that exist in RelationshipDefinition.
- * Entries with missing or unknown relationshipKey are excluded from the list.
+ * Uses the same effective-relationship source as record context / Related Records.
+ * Tenant ModuleDefinition.relationships supplies labels and explicit opt-outs only.
  * GET /api/relationships/linkable-targets?appKey=&moduleKey=
  */
 exports.getLinkableTargets = async (req, res) => {
@@ -231,36 +696,33 @@ exports.getLinkableTargets = async (req, res) => {
 
     if (normalizedModuleKey === 'items') {
       await ensureItemsRelationshipDefinitions();
-      // Refresh cache so relationshipRegistry.has() recognizes new keys
-      await relationshipRegistry.refreshRelationshipKeyCache();
     }
     if (normalizedModuleKey === 'quotes') {
       await ensureQuoteRelationshipDefinitions();
-      await relationshipRegistry.refreshRelationshipKeyCache();
+    }
+    if (normalizedModuleKey === 'documents') {
+      const { ensureDocumentRelationshipDefinitions } = require('../constants/defaultDocumentRelationships');
+      await ensureDocumentRelationshipDefinitions();
+    }
+    const { DOCUMENT_ATTACHMENT_MODULES } = require('../constants/defaultDocumentRelationships');
+    if (DOCUMENT_ATTACHMENT_MODULES.includes(normalizedModuleKey)) {
+      const { registerDefaultDocumentRelationships } = require('../services/documentRelationshipInitializer');
+      await registerDefaultDocumentRelationships();
+    }
+    if (['people', 'deals', 'organizations'].includes(normalizedModuleKey)) {
+      await ensureQuoteRelationshipDefinitions();
+      const { ensureDocumentRelationshipDefinitions } = require('../constants/defaultDocumentRelationships');
+      await ensureDocumentRelationshipDefinitions();
     }
 
-    // Load module: tenant override first (organizationId + key or moduleKey), then platform (organizationId null + appKey + moduleKey).
-    // If the tenant module exists, use its relationships as-is (even if empty) so clearing relationships in Settings
-    // actually hides link targets. Only fall back to platform when no tenant module exists.
-    let mod = await ModuleDefinition.findOne({
+    await ensurePlatformRelationshipDefinitionsForModule(normalizedAppKey, normalizedModuleKey);
+    await relationshipRegistry.refreshRelationshipKeyCache();
+
+    const mod = await findModuleDefinitionForLinkable(
       organizationId,
-      $or: [
-        { key: normalizedModuleKey },
-        { moduleKey: normalizedModuleKey }
-      ]
-    })
-      .select('relationships key moduleKey organizationId')
-      .lean();
-
-    if (!mod) {
-      mod = await ModuleDefinition.findOne({
-        organizationId: null,
-        appKey: normalizedAppKey,
-        moduleKey: normalizedModuleKey
-      })
-        .select('relationships')
-        .lean();
-    }
+      normalizedAppKey,
+      normalizedModuleKey
+    );
 
     let relationships = Array.isArray(mod?.relationships) ? [...mod.relationships] : [];
     if (normalizedModuleKey === 'events' && relationships.length === 0) {
@@ -275,116 +737,36 @@ exports.getLinkableTargets = async (req, res) => {
     if (normalizedModuleKey === 'quotes' && relationships.length === 0) {
       relationships = cloneQuotesLinkableDefaultRelationships();
     }
-    // Resolve missing relationshipKey from platform (so Settings relationships show even if saved before relationshipKey was set)
-    const outgoing = await getOutgoingRelationships(normalizedAppKey, normalizedModuleKey);
-    const incoming = getIncomingRelationships(normalizedAppKey, normalizedModuleKey);
-    const toTargetKey = (r) => {
-      const raw = r.targetModuleKey ?? r.targetModule;
-      if (raw == null) return '';
-      if (typeof raw === 'object') return String(raw.key ?? raw.moduleKey ?? '').toLowerCase().trim();
-      return String(raw).toLowerCase().trim();
-    };
-    function buildLinkableFromRelationships() {
-      for (const r of relationships) {
-        const targetKey = toTargetKey(r);
-        const relKey = r.relationshipKey && String(r.relationshipKey).trim();
-        if (targetKey && (!relKey || !relationshipRegistry.has(relKey))) {
-          const outgoingMatches = outgoing.filter((def) => def.target && (String(def.target.moduleKey || '').toLowerCase() === targetKey));
-          if (outgoingMatches.length === 1) {
-            r.relationshipKey = outgoingMatches[0].relationshipKey;
-            continue;
-          }
-          // Some modules (e.g. organizations) are represented by incoming definitions where
-          // the current module is the target and the selectable module is the source.
-          const incomingMatches = (incoming || []).filter(
-            (def) => def.source && (String(def.source.moduleKey || '').toLowerCase() === targetKey)
-          );
-          if (incomingMatches.length === 1) {
-            r.relationshipKey = incomingMatches[0].relationshipKey;
-          }
-        }
-      }
-
-      return relationships
-        .filter((r) => {
-          const relKey = r.relationshipKey && String(r.relationshipKey).trim();
-          if (!relKey || !relationshipRegistry.has(relKey)) return false;
-          const target = toTargetKey(r);
-          if (!target) return false;
-          if (r.userLinkable === false) return false;
-          if (r.display && r.display.linkRecord === false) return false;
-          return true;
-        })
-        .map((r) => {
-          const targetModuleKey = toTargetKey(r);
-          const label = (r.label || r.name || targetModuleKey).toString().trim() || targetModuleKey;
-          const relationshipKey = String(r.relationshipKey).trim().toLowerCase();
-          const targetAppKey = (TARGET_APP_BY_MODULE_KEY[targetModuleKey] || 'platform').toUpperCase();
-          const relDef = relationshipRegistry.get(relationshipKey);
-          const sourceIsCurrent = !!(
-            relDef &&
-            String(relDef.source?.appKey || '').toLowerCase() === normalizedAppKey &&
-            String(relDef.source?.moduleKey || '').toLowerCase() === normalizedModuleKey
-          );
-          return {
-            key: targetModuleKey,
-            label,
-            relationshipKey,
-            targetAppKey,
-            sourceIsCurrent
-          };
-        });
-    }
-
-    // First pass uses in-memory cache (fast path)
-    let linkable = buildLinkableFromRelationships();
-
-    // Stale-cache safeguard: if module has relationship keys but none are recognized,
-    // refresh registry cache once and retry (covers newly seeded definitions at runtime).
-    const hasAnyRelationshipKeys = relationships.some((r) => String(r?.relationshipKey || '').trim());
-    if (linkable.length === 0 && hasAnyRelationshipKeys) {
-      await relationshipRegistry.refreshRelationshipKeyCache();
-      linkable = buildLinkableFromRelationships();
+    if (normalizedModuleKey === 'documents' && relationships.length === 0) {
+      const { cloneDocumentDefaultRelationships } = require('../constants/documentModuleDefaults');
+      relationships = cloneDocumentDefaultRelationships();
     }
 
     const usedTenantModule = mod && mod.organizationId != null;
-    const allowSystemDefaultFallback =
-      usedTenantModule &&
-      linkable.length === 0 &&
-      (!Array.isArray(relationships) || relationships.length === 0) &&
-      (normalizedModuleKey === 'people' || normalizedModuleKey === 'deals' || normalizedModuleKey === 'events' || normalizedModuleKey === 'cases');
-    const linkableFromFallback = linkable.length === 0 && (!usedTenantModule || allowSystemDefaultFallback);
-    // Fallback to platform registry when no tenant module exists.
-    // Also allow fallback for core Sales system modules when tenant module exists but has empty relationships,
-    // which indicates an uninitialized/legacy module definition rather than an intentional customization.
-    if ((!usedTenantModule || allowSystemDefaultFallback) && linkable.length === 0 && ((Array.isArray(outgoing) && outgoing.length > 0) || (Array.isArray(incoming) && incoming.length > 0))) {
-      const outgoingFallback = (outgoing || [])
-        .filter((def) => def.relationshipKey && def.target && relationshipRegistry.has(String(def.relationshipKey).trim().toLowerCase()))
-        .map((def) => {
-          const targetModuleKey = String(def.target.moduleKey || '').toLowerCase().trim();
-          const label = targetModuleKey ? (targetModuleKey.charAt(0).toUpperCase() + targetModuleKey.slice(1)) : targetModuleKey;
-          const relationshipKey = String(def.relationshipKey).trim().toLowerCase();
-          const targetAppKey = (TARGET_APP_BY_MODULE_KEY[targetModuleKey] || 'platform').toUpperCase();
-          return { key: targetModuleKey, label, relationshipKey, targetAppKey, sourceIsCurrent: true };
-        });
 
-      const incomingFallback = (incoming || [])
-        .filter((def) => def.relationshipKey && def.source && relationshipRegistry.has(String(def.relationshipKey).trim().toLowerCase()))
-        .map((def) => {
-          const sourceModuleKey = String(def.source.moduleKey || '').toLowerCase().trim();
-          const label = sourceModuleKey ? (sourceModuleKey.charAt(0).toUpperCase() + sourceModuleKey.slice(1)) : sourceModuleKey;
-          const relationshipKey = String(def.relationshipKey).trim().toLowerCase();
-          const targetAppKey = (TARGET_APP_BY_MODULE_KEY[sourceModuleKey] || 'platform').toUpperCase();
-          return { key: sourceModuleKey, label, relationshipKey, targetAppKey, sourceIsCurrent: false };
-        });
+    let effectiveRelationships = await getEffectiveRelationships(
+      organizationId,
+      normalizedAppKey,
+      normalizedModuleKey
+    );
 
-      const deduped = new Map();
-      for (const item of [...outgoingFallback, ...incomingFallback]) {
-        const dedupeKey = `${item.relationshipKey}:${item.key}:${item.sourceIsCurrent ? 'src' : 'tgt'}`;
-        if (!deduped.has(dedupeKey)) deduped.set(dedupeKey, item);
-      }
-      linkable = Array.from(deduped.values());
+    if (effectiveRelationships.length === 0) {
+      await ensurePlatformRelationshipDefinitionsForModule(normalizedAppKey, normalizedModuleKey);
+      await relationshipRegistry.refreshRelationshipKeyCache();
+      effectiveRelationships = await getEffectiveRelationships(
+        organizationId,
+        normalizedAppKey,
+        normalizedModuleKey
+      );
     }
+
+    let linkable = buildLinkableFromEffectiveRelationships(
+      effectiveRelationships,
+      relationships,
+      normalizedAppKey,
+      normalizedModuleKey,
+      { usedTenantModule }
+    );
 
     const payload = { success: true, data: linkable };
     // Optional debug for verifying relationship creation (e.g. ?debug=1)
@@ -415,10 +797,12 @@ exports.getLinkableTargets = async (req, res) => {
           : [],
         platformModuleFound: !!platformMod,
         platformRelationshipsCount: (platformMod?.relationships && Array.isArray(platformMod.relationships)) ? platformMod.relationships.length : 0,
-        outgoingFromRegistryCount: Array.isArray(outgoing) ? outgoing.length : 0,
-        outgoingKeys: Array.isArray(outgoing) ? outgoing.map((d) => d.relationshipKey) : [],
-        linkableFromFallback: linkableFromFallback,
-        linkableCount: linkable.length
+        effectiveRelationshipsCount: Array.isArray(effectiveRelationships) ? effectiveRelationships.length : 0,
+        effectiveRelationshipKeys: Array.isArray(effectiveRelationships)
+          ? effectiveRelationships.map((d) => d.relationshipKey)
+          : [],
+        linkableCount: linkable.length,
+        linkableKeys: linkable.map((item) => item.relationshipKey)
       };
     }
     return res.status(200).json(payload);
@@ -522,6 +906,16 @@ exports.linkRecords = async (req, res) => {
       moduleKey: target.moduleKey.toLowerCase(),
       recordId: target.recordId
     };
+
+    if (
+      normalizedTarget.moduleKey === 'documents' ||
+      normalizedSource.moduleKey === 'documents' ||
+      normalizedRelKey.endsWith('_documents')
+    ) {
+      const { registerDefaultDocumentRelationships } = require('../services/documentRelationshipInitializer');
+      await registerDefaultDocumentRelationships();
+      await relationshipRegistry.refreshRelationshipKeyCache();
+    }
 
     // Get relationship definition
     const relDef = await RelationshipDefinition.findOne({
@@ -893,6 +1287,33 @@ exports.unlinkRecords = async (req, res) => {
     });
 
     if (!relationshipInstance) {
+      if (normalizedRelKey === 'people_organizations') {
+        let personId = null;
+        let orgId = null;
+        if (normalizedSource.moduleKey === 'people' && normalizedTarget.moduleKey === 'organizations') {
+          personId = normalizedSource.recordId;
+          orgId = normalizedTarget.recordId;
+        } else if (normalizedSource.moduleKey === 'organizations' && normalizedTarget.moduleKey === 'people') {
+          personId = normalizedTarget.recordId;
+          orgId = normalizedSource.recordId;
+        }
+        if (personId && orgId) {
+          const cleared = await People.updateOne(
+            {
+              _id: personId,
+              organizationId,
+              organization: orgId
+            },
+            { $set: { organization: null } }
+          );
+          if (cleared.modifiedCount > 0) {
+            return res.status(200).json({
+              success: true,
+              message: 'Relationship removed successfully'
+            });
+          }
+        }
+      }
       return res.status(404).json({
         success: false,
         message: 'Relationship not found'

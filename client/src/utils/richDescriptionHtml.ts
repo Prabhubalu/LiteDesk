@@ -16,7 +16,9 @@ export const ALLOWED_RICH_DESCRIPTION_TAGS = [
   'h2',
   'h3',
   'blockquote',
-  'img'
+  'img',
+  'pre',
+  'code'
 ];
 
 export const ALLOWED_RICH_DESCRIPTION_ATTR = [
@@ -31,7 +33,8 @@ export const ALLOWED_RICH_DESCRIPTION_ATTR = [
   'height',
   'data-width',
   'data-reply-quote',
-  'data-collapsed'
+  'data-collapsed',
+  'data-type'
 ];
 
 const SAFE_IMAGE_SRC_PATTERN = /^(https?:|\/)/i;

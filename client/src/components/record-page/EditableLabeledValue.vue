@@ -246,6 +246,7 @@
           :allow-empty="allowEmpty || type === 'user' || type === 'entity'"
           :empty-label="type === 'user' ? t('records.editableUnassigned') : (type === 'entity' ? t('records.editableSelectOption') : (emptyLabel || t('records.editableSelectOption')))"
           :empty-value="null"
+          :searchable="enablePicklistSearch"
           teleport
           wrapper-class="mt-1"
           :button-class="compactDrawerListboxClass"
@@ -1039,10 +1040,17 @@ const selectOptions = computed(() => {
   return [];
 });
 
+const enablePicklistSearch = computed(() => {
+  const count = selectOptions.value?.length || 0;
+  if (count === 0) return false;
+  if (props.type === 'entity') return true;
+  return count > 6;
+});
+
 const showListboxSearch = computed(
   () =>
     (props.type === 'select' || props.type === 'user' || props.type === 'entity') &&
-    (selectOptions.value?.length > 0)
+    enablePicklistSearch.value
 );
 
 const listboxSearchPlaceholder = computed(() => t('records.editableListboxSearchPh'));

@@ -79,6 +79,7 @@ const MODULE_PRIMARY_SEARCH_FILTER_FIELDS: Record<string, string[]> = {
   people: ['name'],
   deals: ['name'],
   tasks: ['title'],
+  documents: ['title'],
   events: ['eventName'],
   forms: ['name'],
   items: ['item_name'],
@@ -132,13 +133,32 @@ export function extractSearchTermFromFilterQuery(
 
 /** Resolve list search term from API params (main search or column contains on primary field). */
 export function resolveListSearchTerm(
-  params: { search?: unknown; name?: unknown; filterQuery?: unknown },
+  params: { search?: unknown; name?: unknown; title?: unknown; filterQuery?: unknown },
   moduleKey?: string
 ): string {
-  const direct = params.search ?? params.name;
+  const direct = params.search ?? params.name ?? params.title;
   if (direct && String(direct).trim()) return String(direct).trim();
   const primaryFields = (moduleKey && MODULE_PRIMARY_SEARCH_FILTER_FIELDS[moduleKey]) || ['name'];
   return extractSearchTermFromFilterQuery(params.filterQuery, primaryFields);
+}
+
+/** Apply contains rules from filterQuery AST into a flat filters map (ListView external sync). */
+export function applyFilterQueryContainsToFlatFilters(
+  filterQueryRaw: unknown,
+  target: Record<string, unknown>,
+  primaryFieldKeys: string[] = ['name', 'title']
+): boolean {
+  const ast = parseFilterQueryAst(filterQueryRaw);
+  if (!ast) return false;
+  const allowed = new Set(primaryFieldKeys.map((key) => key.toLowerCase()));
+  const rules = collectContainsRules(ast).filter((rule) =>
+    allowed.has(rule.fieldKey.toLowerCase())
+  );
+  if (rules.length === 0) return false;
+  for (const rule of rules) {
+    target[rule.fieldKey] = rule.value;
+  }
+  return true;
 }
 
 export function sortBySearchRelevance<T>(

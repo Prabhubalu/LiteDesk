@@ -55,6 +55,7 @@ export const SHARED_NAMESPACES = [
   'inbox',
   'dashboard',
   'import',
+  'documents',
   'audit',
   'platform',
   'onboarding',

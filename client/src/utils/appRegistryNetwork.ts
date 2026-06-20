@@ -58,6 +58,9 @@ function mapRawModulesToRegistryModules(app: { appKey: string }, modulesData: an
       if (normalizedModuleKey === 'portal_support' || normalizedModuleKey === 'support') {
         route = '/portal/cases';
       }
+      if (normalizedModuleKey === 'portal_knowledge' || normalizedModuleKey === 'knowledge') {
+        route = '/portal/knowledge';
+      }
       if (normalizedModuleKey === 'portal_audits') {
         route = '/portal/audits';
       }
@@ -193,6 +196,36 @@ function injectPortalInvoicesModule(registry: AppRegistry): void {
   app.modules.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 }
 
+function injectPortalKnowledgeModule(registry: AppRegistry): void {
+  const portalKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'PORTAL');
+  if (!portalKey) return;
+  const app = registry[portalKey];
+  if (!app) return;
+
+  const hasKnowledge = (app.modules || []).some((m) => {
+    const key = String(m.moduleKey || '').toLowerCase();
+    return key === 'portal_knowledge' || key === 'knowledge' || m.route === '/portal/knowledge';
+  });
+  if (hasKnowledge) return;
+
+  app.modules = app.modules || [];
+  app.modules.push({
+    moduleKey: 'portal_knowledge',
+    label: 'Help Center',
+    route: '/portal/knowledge',
+    permission: undefined,
+    icon: 'book-open',
+    order: 3,
+    appKey: portalKey,
+    navigationCore: false,
+    navigationEntity: false,
+    excludeFromApps: false,
+    system: false,
+    coreEntity: false
+  });
+  app.modules.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+}
+
 function addPlatformModulesToRegistry(registry: AppRegistry, entityModules: any[] | undefined): void {
   if (!entityModules?.length) return;
 
@@ -304,6 +337,7 @@ function buildRegistryFromPayload(payload: {
   ensureAuditAppNavigationModules(registry);
   injectPortalCustomerSupportModule(registry);
   injectPortalInvoicesModule(registry);
+  injectPortalKnowledgeModule(registry);
   return registry;
 }
 

@@ -168,8 +168,11 @@ export const getKeyFields = (moduleDefinition) => {
  * @returns {string|null} Formatted value or null if empty
  */
 export const getFieldValue = (fieldDef, record) => {
-  const value = record?.[fieldDef.key];
-  
+  let value = record?.[fieldDef.key];
+  if (value === null || value === undefined || value === '') {
+    value = record?.customFields?.[fieldDef.key];
+  }
+
   if (value === null || value === undefined || value === '') {
     return null;
   }

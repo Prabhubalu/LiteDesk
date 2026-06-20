@@ -23,6 +23,7 @@ const MODULE_LABELS = {
   events: 'Events',
   items: 'Items',
   cases: 'Cases',
+  documents: 'Documents',
   responses: 'Form Responses'
 };
 

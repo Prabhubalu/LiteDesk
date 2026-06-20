@@ -378,6 +378,7 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { TrashIcon, ArrowPathIcon, MagnifyingGlassIcon, ExclamationTriangleIcon, ChevronUpDownIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import apiClient from '@/utils/apiClient';
@@ -387,6 +388,7 @@ import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 
 const authStore = useAuthStore();
+const route = useRoute();
 const loading = ref(true);
 const error = ref(null);
 const items = ref([]);
@@ -424,6 +426,10 @@ const MODULE_LABELS = {
   tasks: 'Tasks',
   events: 'Events',
   items: 'Items',
+  forms: 'Forms',
+  cases: 'Cases',
+  quotes: 'Quotes',
+  documents: 'Documents',
   responses: 'Form Responses'
 };
 
@@ -730,6 +736,10 @@ async function confirmEmptyTrash() {
 }
 
 onMounted(async () => {
+  const moduleFromQuery = String(route.query.moduleKey || '').trim();
+  if (moduleFromQuery && MODULE_LABELS[moduleFromQuery]) {
+    filterModule.value = moduleFromQuery;
+  }
   await loadStats();
   await loadItems(1);
 });

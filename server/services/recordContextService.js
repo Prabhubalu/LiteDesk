@@ -35,6 +35,7 @@ const ModuleDefinition = require('../models/ModuleDefinition');
 const mongoose = require('mongoose');
 const FormResponse = require('../models/FormResponse');
 const People = require('../models/People');
+const Organization = require('../models/Organization');
 const Event = require('../models/Event');
 const Form = require('../models/Form');
 // Phase 0I.3: Import review actions metadata
@@ -237,6 +238,9 @@ function getLookupModel(moduleKey) {
     case 'items':
     case 'item':
       return require('../models/Item');
+    case 'documents':
+    case 'document':
+      return require('../models/Document');
     default:
       return null;
   }
@@ -368,48 +372,162 @@ async function getPeopleLinkedToOrganizationRefs(organizationId, organizationRec
 }
 
 async function hydrateRelatedPeopleRecords(organizationId, relationships = []) {
+  await hydrateRelatedRecordLabels(organizationId, relationships);
+}
+
+const MODULE_LABEL_SELECT = Object.freeze({
+  organizations: '_id name industry status',
+  deals: '_id name stage amount currency',
+  quotes: '_id quoteTitle quoteNumber status',
+  documents: '_id title documentNumber status documentType',
+  cases: '_id title status',
+  tasks: '_id title status',
+  events: '_id eventName eventType status',
+  forms: '_id name formType',
+  items: '_id item_name item_code',
+  people: '_id first_name last_name email'
+});
+
+function buildRelatedRecordLabel(moduleKey, doc) {
+  if (!doc) return '';
+  const key = String(moduleKey || '').toLowerCase();
+  switch (key) {
+    case 'organizations':
+      return doc.name || '';
+    case 'deals':
+      return doc.name || '';
+    case 'quotes':
+      return doc.quoteTitle || doc.quoteNumber || '';
+    case 'documents':
+      return doc.title || doc.documentNumber || '';
+    case 'cases':
+      return doc.title || '';
+    case 'tasks':
+      return doc.title || '';
+    case 'events':
+      return doc.eventName || '';
+    case 'forms':
+      return doc.name || '';
+    case 'items':
+      return doc.item_name || doc.item_code || '';
+    case 'people': {
+      const personName = [doc.first_name, doc.last_name].filter(Boolean).join(' ').trim();
+      return personName || doc.email || '';
+    }
+    default:
+      return doc.name || doc.title || doc.label || '';
+  }
+}
+
+function buildRelatedRecordSecondaryText(moduleKey, doc) {
+  if (!doc) return '';
+  const key = String(moduleKey || '').toLowerCase();
+  switch (key) {
+    case 'organizations':
+      return doc.industry || doc.status || '';
+    case 'deals':
+      return doc.stage || '';
+    case 'quotes':
+      return doc.status || doc.quoteNumber || '';
+    case 'documents':
+      return doc.status || doc.documentType || '';
+    case 'cases':
+      return doc.status || '';
+    case 'tasks':
+      return doc.status || '';
+    case 'events':
+      return doc.eventType || doc.status || '';
+    case 'people':
+      return doc.email || '';
+    default:
+      return doc.status || doc.email || '';
+  }
+}
+
+async function hydrateRelatedRecordLabels(organizationId, relationships = []) {
   if (!organizationId || !Array.isArray(relationships) || relationships.length === 0) return;
 
-  const peopleIds = new Set();
+  const idsByModule = new Map();
   for (const rel of relationships) {
     for (const rec of rel.records || []) {
-      if (String(rec?.moduleKey || '').toLowerCase() !== 'people') continue;
+      const moduleKey = String(rec?.moduleKey || '').toLowerCase();
       const id = normalizeIdString(rec?.recordId ?? rec?.id ?? rec?._id);
-      if (id) peopleIds.add(id);
+      if (!moduleKey || !id) continue;
+      if (!idsByModule.has(moduleKey)) idsByModule.set(moduleKey, new Set());
+      idsByModule.get(moduleKey).add(id);
     }
   }
-  if (peopleIds.size === 0) return;
 
-  const objectIds = [...peopleIds]
-    .map((id) => toObjectIdOrNull(id))
-    .filter(Boolean);
-  const people = await People.find({
-    organizationId,
-    deletedAt: null,
-    $or: [
-      { _id: { $in: objectIds } },
-      { _id: { $in: [...peopleIds] } }
-    ]
-  })
-    .select('_id first_name last_name email')
-    .lean();
-  const peopleById = new Map(people.map((p) => [normalizeIdString(p._id), p]));
+  const docsByModule = new Map();
+  for (const [moduleKey, idSet] of idsByModule.entries()) {
+    const ids = [...idSet];
+    const select = MODULE_LABEL_SELECT[moduleKey] || '_id name title';
+
+    if (moduleKey === 'organizations' || moduleKey === 'organization') {
+      const { buildTenantAccessibleCrmOrganizationQuery } = require('../utils/crmOrganizationAccess');
+      const query = await buildTenantAccessibleCrmOrganizationQuery(organizationId, { recordIds: ids });
+      const docs = await Organization.find(query).select(select).lean();
+      docsByModule.set(
+        moduleKey,
+        new Map(docs.map((doc) => [normalizeIdString(doc._id), doc]))
+      );
+      continue;
+    }
+
+    const Model = getLookupModel(moduleKey);
+    if (!Model) continue;
+
+    const objectIds = ids.map((id) => toObjectIdOrNull(id)).filter(Boolean);
+    const orClauses = [];
+    if (objectIds.length > 0) orClauses.push({ _id: { $in: objectIds } });
+    if (ids.length > 0) orClauses.push({ _id: { $in: ids } });
+    if (orClauses.length === 0) continue;
+
+    const query = appendTenantScopeToLookupQuery(
+      { $or: orClauses },
+      organizationId,
+      moduleKey,
+      Model
+    );
+
+    const docs = await Model.find(query).select(select).lean();
+    docsByModule.set(
+      moduleKey,
+      new Map(docs.map((doc) => [normalizeIdString(doc._id), doc]))
+    );
+  }
 
   for (const rel of relationships) {
     if (!Array.isArray(rel.records) || rel.records.length === 0) continue;
     rel.records = rel.records.map((rec) => {
-      if (String(rec?.moduleKey || '').toLowerCase() !== 'people') return rec;
+      const moduleKey = String(rec?.moduleKey || '').toLowerCase();
       const id = normalizeIdString(rec?.recordId ?? rec?.id ?? rec?._id);
-      const person = peopleById.get(id);
-      if (!person) return rec;
-      const personName = [person.first_name, person.last_name].filter(Boolean).join(' ').trim();
+      if (!moduleKey || !id) return rec;
+
+      const doc = docsByModule.get(moduleKey)?.get(id);
+      if (!doc) {
+        if (rec.label || rec.name || rec.title || rec.quoteTitle) {
+          return {
+            ...rec,
+            secondaryText: rec.secondaryText || buildRelatedRecordSecondaryText(moduleKey, rec)
+          };
+        }
+        return { ...rec, _isBroken: true, secondaryText: rec.secondaryText || 'Related record unavailable' };
+      }
+
+      const label = buildRelatedRecordLabel(moduleKey, doc);
+      const secondaryText = buildRelatedRecordSecondaryText(moduleKey, doc);
+      const personName = moduleKey === 'people'
+        ? [doc.first_name, doc.last_name].filter(Boolean).join(' ').trim()
+        : '';
+
       return {
         ...rec,
-        first_name: person.first_name,
-        last_name: person.last_name,
-        email: person.email,
-        label: rec.label || personName || person.email || rec.label,
-        name: rec.name || personName || undefined
+        ...doc,
+        label: label || rec.label,
+        name: doc.name || rec.name || personName || undefined,
+        title: doc.title || rec.title || undefined,
+        secondaryText: secondaryText || rec.secondaryText
       };
     });
   }
@@ -428,6 +546,11 @@ async function getRecordContext(organizationId, appKey, moduleKey, recordId, opt
   try {
     const normAppKey = appKey.toLowerCase();
     const normModuleKey = moduleKey.toLowerCase();
+
+    try {
+      const { ensureDocumentRelationshipDefinitions } = require('../constants/defaultDocumentRelationships');
+      await ensureDocumentRelationshipDefinitions();
+    } catch (_) { /* non-fatal */ }
 
     // Get platform module definition (same rule as getTenantModuleConfig: organizationId null or missing)
     let moduleDef = await ModuleDefinition.findOne({
@@ -535,6 +658,67 @@ async function getRecordContext(organizationId, appKey, moduleKey, recordId, opt
         }
       };
     });
+
+    // Ensure document attachment links appear even when platform defs are missing from effectiveRelationships.
+    const {
+      isDocumentRelationshipKey,
+      PLATFORM_DOCUMENT_RELATIONSHIP_DEFINITIONS
+    } = require('../constants/defaultDocumentRelationships');
+
+    for (const related of relatedRecords) {
+      const relKey = String(related?.relationshipKey || '').toLowerCase();
+      if (!isDocumentRelationshipKey(relKey) || !relKey.endsWith('_documents')) continue;
+      if (!Array.isArray(related.records) || related.records.length === 0) continue;
+
+      const existing = relationships.find(
+        (entry) => String(entry?.relationshipKey || '').toLowerCase() === relKey
+      );
+      if (existing) {
+        if (!Array.isArray(existing.records) || existing.records.length === 0) {
+          existing.records = related.records;
+        }
+        continue;
+      }
+
+      const def = PLATFORM_DOCUMENT_RELATIONSHIP_DEFINITIONS.find(
+        (entry) => String(entry.relationshipKey || '').toLowerCase() === relKey
+      );
+      if (!def) continue;
+
+      const isSource = String(def.source?.moduleKey || '').toLowerCase() === normModuleKey;
+      const uiConfig = isSource ? def.ui?.source : def.ui?.target;
+
+      relationships.push({
+        relationshipKey: relKey,
+        label: uiConfig?.label || 'Related Documents',
+        direction: isSource ? 'SOURCE' : 'TARGET',
+        cardinality: def.cardinality,
+        relationshipType: def.relationshipType || def.cardinality,
+        required: false,
+        requiredSatisfied: true,
+        ownership: def.ownership,
+        userLinkable: def.userLinkable !== undefined ? def.userLinkable : true,
+        display: def.display || null,
+        constraints: def.constraints || null,
+        isDefault: !!def.isDefault,
+        isAdvanced: false,
+        activateWhenModuleExists: !!def.activateWhenModuleExists,
+        status: 'ACTIVE',
+        localField: null,
+        foreignField: null,
+        cascade: def.cascade,
+        target: isSource
+          ? { appKey: def.target?.appKey?.toUpperCase() || 'PLATFORM', moduleKey: def.target?.moduleKey || 'documents' }
+          : { appKey: def.source?.appKey?.toUpperCase() || 'SALES', moduleKey: def.source?.moduleKey || normModuleKey },
+        records: related.records,
+        isLookup: false,
+        ui: {
+          showAs: uiConfig?.showAs || 'TAB',
+          label: uiConfig?.label || 'Related Documents',
+          picker: def.ui?.picker
+        }
+      });
+    }
 
     // Metadata-driven lookup reconciliation:
     // include lookup-backed links in relationship groups (both source and reverse target directions)

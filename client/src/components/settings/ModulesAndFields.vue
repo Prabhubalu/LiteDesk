@@ -793,10 +793,10 @@
           </template>
 
           <!-- Items / Quotes / Sales Orders: grouped by field model ownership -->
-          <template v-else-if="isItemsModule || isQuotesModule || isSalesOrdersModule || isInvoicesModule || isPaymentsModule">
+          <template v-else-if="isItemsModule || isQuotesModule || isSalesOrdersModule || isInvoicesModule || isPaymentsModule || isDocumentsModule">
             <!-- Core catalog fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ isQuotesModule ? t('settings.modFieldsGroupCoreQuote') : isSalesOrdersModule ? t('settings.modFieldsGroupCoreSalesOrder') : isInvoicesModule ? t('settings.modFieldsGroupCoreInvoice') : isPaymentsModule ? t('settings.modFieldsGroupCorePayment') : t('settings.modFieldsGroupCoreItem') }}</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ isDocumentsModule ? t('settings.modFieldsGroupCoreDocument') : isQuotesModule ? t('settings.modFieldsGroupCoreQuote') : isSalesOrdersModule ? t('settings.modFieldsGroupCoreSalesOrder') : isInvoicesModule ? t('settings.modFieldsGroupCoreInvoice') : isPaymentsModule ? t('settings.modFieldsGroupCorePayment') : t('settings.modFieldsGroupCoreItem') }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="(fieldKey, idx) in groupedFields.coreIdentity"
@@ -2801,6 +2801,83 @@
               </div>
             </div>
 
+          </div>
+        </div>
+
+        <!-- Status & Types Tab (Documents module) -->
+        <div class="flex-1 overflow-y-auto" v-else-if="activeTopTab === 'status-types' && isDocumentsModule">
+          <div class="p-6">
+            <div class="mb-6">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsDocumentsStatusTypesDesc') }}</p>
+            </div>
+
+            <div class="mb-8">
+              <div class="flex items-center justify-between mb-4 gap-3">
+                <div class="min-w-0">
+                  <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsDocumentTypesTitle') }}</h4>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsDocumentTypesDesc') }}</p>
+                </div>
+                <button
+                  type="button"
+                  @click="openDocumentPicklistInFieldConfig('documentType')"
+                  class="flex-shrink-0 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                >
+                  {{ t('settings.modFieldsEditInFieldConfig') }}
+                </button>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                <div v-if="documentTypePicklist.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsLoadingDocumentTypes') }}</div>
+                <div v-else class="space-y-2">
+                  <div
+                    v-for="(type, index) in documentTypePicklist"
+                    :key="type.value || index"
+                    class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+                  >
+                    <span class="flex-1 min-w-0 text-sm font-medium text-gray-900 dark:text-white">{{ type.label }}</span>
+                    <HeadlessSwitch
+                      :checked="type.enabled"
+                      @change="setDocumentPicklistEnabled('documentType', index, $event)"
+                      switch-class="w-9 h-5"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-4 gap-3">
+                <div class="min-w-0">
+                  <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsDocumentStatusTitle') }}</h4>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsDocumentStatusDesc') }}</p>
+                </div>
+                <button
+                  type="button"
+                  @click="openDocumentPicklistInFieldConfig('status')"
+                  class="flex-shrink-0 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                >
+                  {{ t('settings.modFieldsEditInFieldConfig') }}
+                </button>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                <div v-if="documentStatusPicklist.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsLoadingStatusValues') }}</div>
+                <div v-else class="space-y-2">
+                  <div
+                    v-for="(status, index) in documentStatusPicklist"
+                    :key="status.value || index"
+                    class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+                  >
+                    <span class="flex-1 min-w-0 text-sm font-medium text-gray-900 dark:text-white">{{ status.label }}</span>
+                    <HeadlessSwitch
+                      :checked="status.enabled"
+                      @change="setDocumentPicklistEnabled('status', index, $event)"
+                      switch-class="w-9 h-5"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -4927,6 +5004,11 @@ import {
   isExcludedFromPaymentQuickCreate
 } from '@/platform/fields/paymentFieldModel';
 import {
+  classifyDocumentField,
+  isDocumentProtectedField,
+  isExcludedFromDocumentQuickCreate
+} from '@/platform/fields/documentsFieldModel';
+import {
   CATALOG_LIFECYCLE_STATES,
   CATALOG_LIFECYCLE_LABEL_KEYS
 } from '@/constants/catalogLifecycle';
@@ -5110,19 +5192,25 @@ const DEAL_RELATIONSHIP_DEFAULTS = Object.freeze([
   { name: 'Related Contacts', type: 'many_to_many', isLookup: false, targetModuleKey: 'people', relationshipKey: 'deal_contacts' },
   { name: 'Related Tasks', type: 'one_to_many', isLookup: false, targetModuleKey: 'tasks', relationshipKey: 'deal_tasks' },
   { name: 'Related Events', type: 'one_to_many', isLookup: false, targetModuleKey: 'events', relationshipKey: 'deal_events' },
-  { name: 'Related Forms', type: 'one_to_many', isLookup: false, targetModuleKey: 'forms', relationshipKey: 'deal_forms' }
+  { name: 'Related Forms', type: 'one_to_many', isLookup: false, targetModuleKey: 'forms', relationshipKey: 'deal_forms' },
+  { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_deals' },
+  { name: 'Related Documents', type: 'many_to_many', isLookup: false, targetModuleKey: 'documents', relationshipKey: 'deal_documents' }
 ]);
 
 const PEOPLE_RELATIONSHIP_DEFAULTS = Object.freeze([
   { name: 'Related Organization', type: 'many_to_one', isLookup: true, targetModuleKey: 'organizations', relationshipKey: 'people_organizations' },
   { name: 'Related Deals', type: 'many_to_many', isLookup: false, targetModuleKey: 'deals', relationshipKey: 'people_deals' },
   { name: 'Related Tasks', type: 'many_to_many', isLookup: false, targetModuleKey: 'tasks', relationshipKey: 'people_tasks' },
-  { name: 'Related Events', type: 'many_to_many', isLookup: false, targetModuleKey: 'events', relationshipKey: 'people_events' }
+  { name: 'Related Events', type: 'many_to_many', isLookup: false, targetModuleKey: 'events', relationshipKey: 'people_events' },
+  { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_people' },
+  { name: 'Related Documents', type: 'many_to_many', isLookup: false, targetModuleKey: 'documents', relationshipKey: 'people_documents' }
 ]);
 
 const ORGANIZATIONS_RELATIONSHIP_DEFAULTS = Object.freeze([
   { name: 'Related Contacts', type: 'one_to_many', isLookup: false, targetModuleKey: 'people', relationshipKey: 'people_organizations' },
-  { name: 'Related Deals', type: 'one_to_many', isLookup: false, targetModuleKey: 'deals', relationshipKey: 'deal_organizations' }
+  { name: 'Related Deals', type: 'one_to_many', isLookup: false, targetModuleKey: 'deals', relationshipKey: 'deal_organizations' },
+  { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_organizations' },
+  { name: 'Related Documents', type: 'many_to_many', isLookup: false, targetModuleKey: 'documents', relationshipKey: 'organizations_documents' }
 ]);
 
 const CASES_RELATIONSHIP_DEFAULTS = Object.freeze([
@@ -5242,6 +5330,9 @@ function getAllowedTopTabs(moduleKey) {
     // Items module has Status & Types tab (Items-specific, similar to Tasks)
     return [...TOP_TAB_IDS_BASE, 'status-types'];
   }
+  if (moduleKey === 'documents') {
+    return [...TOP_TAB_IDS_BASE, 'status-types'];
+  }
   return [...TOP_TAB_IDS_BASE];
 }
 const topTabs = computed(() => {
@@ -5305,6 +5396,12 @@ const topTabs = computed(() => {
   if (moduleKey === 'items') {
     // Insert "Status & Types" tab after "Field Configurations" and before "Relationships"
     // ARCHITECTURE NOTE: Items have status and item_type picklists, similar to Tasks
+    const fieldsTabIndex = tabs.findIndex(tab => tab.id === 'fields');
+    if (fieldsTabIndex >= 0) {
+      tabs.splice(fieldsTabIndex + 1, 0, { id: 'status-types', nameKey: 'settings.modFieldsTabStatusTypes' });
+    }
+  }
+  if (moduleKey === 'documents') {
     const fieldsTabIndex = tabs.findIndex(tab => tab.id === 'fields');
     if (fieldsTabIndex >= 0) {
       tabs.splice(fieldsTabIndex + 1, 0, { id: 'status-types', nameKey: 'settings.modFieldsTabStatusTypes' });
@@ -6517,6 +6614,10 @@ const isPaymentsModule = computed(() => {
   return selectedModule.value?.key?.toLowerCase() === 'payments';
 });
 
+const isDocumentsModule = computed(() => {
+  return selectedModule.value?.key?.toLowerCase() === 'documents';
+});
+
 // Check if current module is Forms
 // ARCHITECTURE NOTE: Forms Settings configure structure & behavior ONLY.
 // MUST NOT: Edit sections/questions, Edit responses, Execute workflows, Run scoring
@@ -6782,6 +6883,15 @@ const quickCreateAvailableFields = computed(() => {
     });
   }
 
+  if (isDocumentsModule.value) {
+    return editFields.value.filter((field) => {
+      if (!field?.key) return false;
+      if (isSystemField(field)) return false;
+      if (field.required) return true;
+      return !isExcludedFromDocumentQuickCreate(field.key);
+    });
+  }
+
   // For other modules (Deals, Items, etc.): only non-system fields
   return editFields.value.filter(f => f.key && !isSystemField(f));
 });
@@ -6833,7 +6943,7 @@ const quickCreateEventParticipationEntries = computed(() => {
 // See: docs/architecture/event-settings.md Section 6
 // See: client/src/platform/modules/forms/formsModule.definition.ts
 const groupedFields = computed(() => {
-  if (!isPeopleModule.value && !isOrganizationsModule.value && !isTasksModule.value && !isEventsModule.value && !isFormsModule.value && !isItemsModule.value && !isQuotesModule.value && !isSalesOrdersModule.value && !isInvoicesModule.value && !isPaymentsModule.value && !isDealsModule.value && !isCasesModule.value) {
+  if (!isPeopleModule.value && !isOrganizationsModule.value && !isTasksModule.value && !isEventsModule.value && !isFormsModule.value && !isItemsModule.value && !isQuotesModule.value && !isSalesOrdersModule.value && !isInvoicesModule.value && !isPaymentsModule.value && !isDocumentsModule.value && !isDealsModule.value && !isCasesModule.value) {
     return { coreIdentity: [], participation: {}, system: [] };
   }
 
@@ -6999,6 +7109,28 @@ const groupedFields = computed(() => {
 
       if (isPaymentsModule.value) {
         const classification = classifyPaymentField(fieldKey);
+
+        if (classification === 'core') {
+          coreIdentity.push(fieldKey);
+          continue;
+        }
+
+        if (classification === 'system') {
+          system.push(fieldKey);
+          continue;
+        }
+
+        if (!classification) {
+          system.push(fieldKey);
+          continue;
+        }
+
+        system.push(fieldKey);
+        continue;
+      }
+
+      if (isDocumentsModule.value) {
+        const classification = classifyDocumentField(fieldKey);
 
         if (classification === 'core') {
           coreIdentity.push(fieldKey);
@@ -7677,6 +7809,10 @@ function isCoreField(field, moduleKey) {
   if (moduleKey.toLowerCase() === 'payments') {
     return isPaymentProtectedField(field.key);
   }
+
+  if (moduleKey.toLowerCase() === 'documents') {
+    return isDocumentProtectedField(field.key);
+  }
   
   // For Forms module, check formSettingsMap for system/fixed field markers
   if (moduleKey.toLowerCase() === 'forms') {
@@ -7930,6 +8066,53 @@ function openTaskPriorityInFieldConfig() {
 function openOrganizationPicklistInFieldConfig(fieldKey) {
   activeTopTab.value = 'fields';
   void nextTick(() => selectFieldByKey(fieldKey));
+}
+
+function getDocumentPicklistFieldFromConfig(fieldKey) {
+  const normalizedFieldKey = String(fieldKey || '').toLowerCase();
+  return editFields.value.find(field => String(field?.key || '').toLowerCase() === normalizedFieldKey);
+}
+
+function normalizeDocumentFieldOptions(options) {
+  if (!Array.isArray(options)) return [];
+  return options.map((opt) => {
+    if (typeof opt === 'string') {
+      return { value: opt, label: opt, enabled: true };
+    }
+    const value = opt.value ?? opt.label ?? '';
+    return {
+      value,
+      label: opt.label ?? value,
+      enabled: opt.enabled !== false,
+    };
+  });
+}
+
+const documentTypePicklist = computed(() => {
+  const field = getDocumentPicklistFieldFromConfig('documentType');
+  return normalizeDocumentFieldOptions(field?.options);
+});
+
+const documentStatusPicklist = computed(() => {
+  const field = getDocumentPicklistFieldFromConfig('status');
+  return normalizeDocumentFieldOptions(field?.options);
+});
+
+function openDocumentPicklistInFieldConfig(fieldKey) {
+  activeTopTab.value = 'fields';
+  void nextTick(() => selectFieldByKey(fieldKey));
+}
+
+function setDocumentPicklistEnabled(fieldKey, index, event) {
+  const field = getDocumentPicklistFieldFromConfig(fieldKey);
+  if (!field?.options?.length || index < 0 || index >= field.options.length) return;
+  const enabled = Boolean(event?.target?.checked);
+  const option = field.options[index];
+  if (typeof option === 'string') {
+    field.options[index] = { value: option, label: option, enabled };
+  } else {
+    field.options[index] = { ...option, enabled };
+  }
 }
 
 const organizationStatusPicklistSections = [

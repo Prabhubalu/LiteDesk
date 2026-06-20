@@ -8,12 +8,17 @@ const People = require('../models/People');
 const Organization = require('../models/Organization');
 const Event = require('../models/Event');
 const Notification = require('../models/Notification');
+const Document = require('../models/Document');
 const { serializeEntityForClient } = require('../utils/notificationEntityDisplay');
 const { buildInboxItemsForUser } = require('../controllers/inboxController');
 const { loadWorkspaceThreadSummaries } = require('./workspaceThreadSummariesService');
 const { getAppPulses, resolveEnabledAppKeys } = require('./appPulseService');
 const { buildFocus, buildGreetingPayload } = require('./platformHomeFocusService');
 const { getPlatformHomeOnboarding } = require('./onboardingService');
+const { resolveRuntimePermission } = require('./runtimePermissionResolver');
+const { getUserGroupIds, applyDocumentVisibilityFilter } = require('../utils/documentVisibility');
+
+const DOCUMENTS_PREVIEW_LIMIT = 3;
 
 const ATTENTION_PREVIEW_LIMIT = 7;
 const RESUME_LIMIT = 8;
@@ -220,10 +225,14 @@ function buildPersonTitle(person) {
 /**
  * Recently touched work records across modules.
  */
-async function getResumeItems(userId, organizationId) {
+async function getResumeItems(userId, organizationId, req = null) {
   const orgFilter = { organizationId, deletedAt: null };
 
-  const [tasks, deals, cases, people, organizations] = await Promise.all([
+  const documentPromise = req && canViewDocuments(req)
+    ? getResumeDocumentItems(userId, organizationId)
+    : Promise.resolve([]);
+
+  const [tasks, deals, cases, people, organizations, documents] = await Promise.all([
     Task.find({
       ...orgFilter,
       assignedTo: userId,
@@ -267,7 +276,8 @@ async function getResumeItems(userId, organizationId) {
       .sort({ updatedAt: -1 })
       .limit(RESUME_PER_MODULE)
       .select('name updatedAt')
-      .lean()
+      .lean(),
+    documentPromise
   ]);
 
   const candidates = [
@@ -310,13 +320,98 @@ async function getResumeItems(userId, organizationId) {
       sourceApp: 'Sales',
       moduleKey: 'organizations',
       updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : null
-    }))
+    })),
+    ...documents
   ];
 
   return candidates
     .filter((candidate) => candidate.updatedAt)
     .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
     .slice(0, RESUME_LIMIT);
+}
+
+async function buildDocumentsVisibilityContext(req) {
+  const organizationId = req.user.organizationId;
+  const userId = req.user._id;
+  const userGroupIds = await getUserGroupIds(organizationId, userId);
+  const hasViewAll = resolveRuntimePermission(req.user, 'documents', 'viewAll', {
+    organizationId,
+    appKey: 'platform'
+  });
+
+  return {
+    hasViewAll: Boolean(hasViewAll),
+    userId,
+    userRoleId: req.user.roleId || null,
+    userGroupIds
+  };
+}
+
+function canViewDocuments(req) {
+  return Boolean(resolveRuntimePermission(req.user, 'documents', 'view', {
+    organizationId: req.user.organizationId,
+    appKey: 'platform'
+  }));
+}
+
+async function getDocumentsShell(req) {
+  if (!canViewDocuments(req)) {
+    return { pendingReview: 0, expiringSoon: 0, preview: [] };
+  }
+
+  const organizationId = req.user.organizationId;
+  const visibilityContext = await buildDocumentsVisibilityContext(req);
+  const baseQuery = { organizationId, deletedAt: null };
+  const now = new Date();
+  const soon = new Date(now);
+  soon.setDate(soon.getDate() + 30);
+
+  const pendingQuery = { ...baseQuery, status: 'pending_review' };
+  const expiringQuery = { ...baseQuery, expiryDate: { $gte: now, $lte: soon } };
+  applyDocumentVisibilityFilter(pendingQuery, visibilityContext);
+  applyDocumentVisibilityFilter(expiringQuery, visibilityContext);
+
+  const [pendingReview, expiringSoon, previewRows] = await Promise.all([
+    Document.countDocuments(pendingQuery),
+    Document.countDocuments(expiringQuery),
+    Document.find(pendingQuery)
+      .sort({ updatedAt: -1 })
+      .limit(DOCUMENTS_PREVIEW_LIMIT)
+      .select('title updatedAt status documentNumber')
+      .lean()
+  ]);
+
+  const preview = previewRows.map((row) => ({
+    id: String(row._id),
+    title: row.title || row.documentNumber || 'Document',
+    subtitle: row.documentNumber || null,
+    route: `/documents/${row._id}`,
+    kind: 'document',
+    updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : null
+  }));
+
+  return { pendingReview, expiringSoon, preview };
+}
+
+async function getResumeDocumentItems(userId, organizationId) {
+  const rows = await Document.find({
+    organizationId,
+    deletedAt: null,
+    $or: [{ ownerId: userId }, { modifiedBy: userId }, { createdBy: userId }]
+  })
+    .sort({ updatedAt: -1 })
+    .limit(RESUME_PER_MODULE)
+    .select('title updatedAt documentNumber')
+    .lean();
+
+  return rows.map((row) => ({
+    id: String(row._id),
+    title: row.title || row.documentNumber || 'Document',
+    route: `/documents/${row._id}`,
+    sourceApp: 'Documents',
+    moduleKey: 'documents',
+    updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : null
+  }));
 }
 
 function resolveEventSourceApp(eventType) {
@@ -365,11 +460,11 @@ async function getPlatformHomeSnapshot(req) {
 
   const enabledAppKeys = resolveEnabledAppKeys(req);
 
-  const [attentionItems, approvalsShell, mailShell, resume, appPulses, onboarding, nextEvent, notificationsShell] = await Promise.all([
+  const [attentionItems, approvalsShell, mailShell, resume, appPulses, onboarding, nextEvent, notificationsShell, documentsShell] = await Promise.all([
     safePlatformHomeSection('attention', () => buildInboxItemsForUser(userId, organizationId), []),
     safePlatformHomeSection('approvals', () => getApprovalsShell(userId, organizationId), { pending: 0, preview: [] }),
     safePlatformHomeSection('mail', () => getMailShell(req), { counts: { all: 0, unread: 0, assignedToMe: 0 }, preview: [] }),
-    safePlatformHomeSection('resume', () => getResumeItems(userId, organizationId), []),
+    safePlatformHomeSection('resume', () => getResumeItems(userId, organizationId, req), []),
     safePlatformHomeSection('appPulses', () => getAppPulses(req), []),
     safePlatformHomeSection(
       'onboarding',
@@ -381,7 +476,8 @@ async function getPlatformHomeSnapshot(req) {
       'notifications',
       () => getNotificationsShell(userId, organizationId, enabledAppKeys),
       { unread: 0, preview: [] }
-    )
+    ),
+    safePlatformHomeSection('documents', () => getDocumentsShell(req), { pendingReview: 0, expiringSoon: 0, preview: [] })
   ]);
 
   const summary = summarizeAttentionItems(attentionItems);
@@ -403,6 +499,11 @@ async function getPlatformHomeSnapshot(req) {
     notifications: {
       unread: notificationsShell.unread ?? 0,
       preview: notificationsShell.preview ?? []
+    },
+    documents: {
+      pendingReview: documentsShell.pendingReview ?? 0,
+      expiringSoon: documentsShell.expiringSoon ?? 0,
+      preview: documentsShell.preview ?? []
     }
   };
 

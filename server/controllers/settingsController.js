@@ -63,6 +63,12 @@ const {
     commercialModuleIconId,
     shouldNormalizeCommercialIcon
 } = require('../constants/commercialModuleIcons');
+const {
+    INITIAL_DOCUMENT_QUICK_CREATE,
+    INITIAL_DOCUMENT_FIELDS,
+    cloneDocumentDefaultRelationships,
+    applyDocumentModuleFieldDefaults
+} = require('../constants/documentModuleDefaults');
 
 function applyCommercialUiIconPatch(existing, moduleKey, patch) {
     if (existing && shouldNormalizeCommercialIcon(existing.ui?.icon, moduleKey)) {
@@ -242,6 +248,7 @@ exports.getCoreModules = async (req, res) => {
         await ensurePlatformSalesOrdersModuleDefinition();
         await ensurePlatformInvoicesModuleDefinition();
         await ensurePlatformPaymentsModuleDefinition();
+        await ensurePlatformDocumentsModuleDefinition();
 
         const organization = await Organization.findById(req.user.organizationId);
         if (!organization) {
@@ -263,7 +270,7 @@ exports.getCoreModules = async (req, res) => {
 
         // Core platform modules with explicit ordering
         // Order: People, Organization, Task, Event, Item, Form (new modules added at the bottom)
-        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments'];
+        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents'];
         const coreModuleKeys = [...coreModuleOrder, 'reports']; // reports and any future modules go at the end
 
         // Get all platform-owned modules (appKey: 'platform')
@@ -383,7 +390,7 @@ exports.getCoreModules = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to fetch core modules',
-            error: error.message
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 };
@@ -406,6 +413,9 @@ exports.getCoreModule = async (req, res) => {
         }
         if (String(moduleKey || '').toLowerCase() === 'payments') {
             await ensurePlatformPaymentsModuleDefinition();
+        }
+        if (String(moduleKey || '').toLowerCase() === 'documents') {
+            await ensurePlatformDocumentsModuleDefinition();
         }
 
         const organization = await Organization.findById(req.user.organizationId);
@@ -479,7 +489,7 @@ exports.getCoreModule = async (req, res) => {
         }
 
         // Core module order: People, Organization, Task, Event, Item, Form (new modules at the end)
-        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments'];
+        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents'];
         const orderIndex = coreModuleOrder.indexOf(module.moduleKey);
         const order = orderIndex === -1 ? 999 : orderIndex;
 
@@ -822,12 +832,118 @@ async function ensurePlatformPaymentsModuleDefinition() {
     });
 }
 
+/** Bootstrap platform documents core module when missing (Settings + sidebar registry path). */
+async function ensurePlatformDocumentsModuleDefinition() {
+    try {
+        const documentsUi = {
+            routeBase: '/documents',
+            icon: 'document-duplicate',
+            showInSidebar: true,
+            sidebarOrder: 9,
+            createLabel: 'New Document',
+            listLabel: 'Documents',
+            navigationEntity: true,
+            excludeFromApps: true
+        };
+
+        let existing = await ModuleDefinition.findOne({
+            appKey: 'platform',
+            moduleKey: 'documents',
+            organizationId: null
+        })
+            .select('_id ui label pluralLabel fields relationships quickCreate quickCreateLayout')
+            .lean();
+
+        if (!existing) {
+            existing = await ModuleDefinition.findOne({
+                appKey: 'platform',
+                moduleKey: 'documents',
+                organizationId: { $exists: false }
+            })
+                .select('_id ui label pluralLabel fields relationships quickCreate quickCreateLayout')
+                .lean();
+        }
+
+        if (existing) {
+            const patch = {};
+            if (!existing.label) patch.label = 'Document';
+            if (!existing.pluralLabel) patch.pluralLabel = 'Documents';
+            patch.ui = { ...(existing.ui || {}), ...documentsUi };
+            if (!Array.isArray(existing.fields) || existing.fields.length === 0) {
+                patch.fields = applyDocumentModuleFieldDefaults(INITIAL_DOCUMENT_FIELDS);
+            }
+            if (!Array.isArray(existing.relationships) || existing.relationships.length === 0) {
+                patch.relationships = cloneDocumentDefaultRelationships();
+            }
+            if (!Array.isArray(existing.quickCreate) || existing.quickCreate.length === 0) {
+                patch.quickCreate = [...INITIAL_DOCUMENT_QUICK_CREATE];
+                patch.quickCreateLayout = { version: 1, rows: [] };
+            }
+            if (Object.keys(patch).length) {
+                await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
+            }
+            const { ensureDocumentRelationshipDefinitions } = require('../constants/defaultDocumentRelationships');
+            await ensureDocumentRelationshipDefinitions();
+            return;
+        }
+
+        await ModuleDefinition.create({
+            appKey: 'platform',
+            moduleKey: 'documents',
+            key: 'documents',
+            name: 'Documents',
+            organizationId: null,
+            label: 'Document',
+            pluralLabel: 'Documents',
+            entityType: 'CORE',
+            primaryField: 'title',
+            type: 'system',
+            enabled: true,
+            fields: applyDocumentModuleFieldDefaults(INITIAL_DOCUMENT_FIELDS),
+            relationships: cloneDocumentDefaultRelationships(),
+            quickCreate: [...INITIAL_DOCUMENT_QUICK_CREATE],
+            quickCreateLayout: { version: 1, rows: [] },
+            peopleConstraints: {
+                allowedTypes: ['Contact'],
+                required: false
+            },
+            organizationConstraints: {
+                required: false
+            },
+            lifecycle: {
+                statusField: 'status',
+                allowedStatuses: ['draft', 'pending_review', 'approved', 'published', 'archived']
+            },
+            supports: {
+                ownership: true,
+                assignment: false,
+                comments: true,
+                attachments: true,
+                automation: true
+            },
+            permissions: {
+                create: true,
+                edit: true,
+                delete: true,
+                view: true
+            },
+            ui: documentsUi
+        });
+        const { ensureDocumentRelationshipDefinitions } = require('../constants/defaultDocumentRelationships');
+        await ensureDocumentRelationshipDefinitions();
+    } catch (error) {
+        console.warn('[settings] ensurePlatformDocumentsModuleDefinition failed:', error.message);
+    }
+}
+
 /** Bootstrap platform quote-to-cash core modules when missing (sidebar registry path). */
+exports.ensurePlatformDocumentsModuleDefinition = ensurePlatformDocumentsModuleDefinition;
 exports.ensurePlatformCommercialCoreModules = async () => {
     await ensurePlatformQuotesModuleDefinition();
     await ensurePlatformSalesOrdersModuleDefinition();
     await ensurePlatformInvoicesModuleDefinition();
     await ensurePlatformPaymentsModuleDefinition();
+    await ensurePlatformDocumentsModuleDefinition();
 };
 
 // Helper function to get module usage description
@@ -887,6 +1003,13 @@ function getModuleUsage(moduleKey, appKey) {
             'helpdesk': 'Used for service payment recording',
             'projects': 'Used for project payment tracking',
             'portal': 'Used for customer payment visibility'
+        },
+        'documents': {
+            'sales': 'Used for contracts, proposals, and deal attachments',
+            'helpdesk': 'Used for support documentation and case files',
+            'projects': 'Used for project deliverables and shared files',
+            'audit': 'Used for compliance and audit documentation',
+            'portal': 'Used for customer-facing document sharing'
         },
         'reports': {
             'sales': 'Used for sales analytics',

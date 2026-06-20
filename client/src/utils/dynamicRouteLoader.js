@@ -44,6 +44,7 @@ function getViewComponentName(moduleKey, type) {
     'items': 'Items',
     'forms': 'Forms',
     'imports': 'Imports',
+    'documents': 'Documents',
     'groups': 'Groups'
   };
   
@@ -62,7 +63,7 @@ function getViewComponentName(moduleKey, type) {
 /** Known module keys with dedicated list views. Custom/unknown modules use GenericModule for list. */
 const KNOWN_MODULE_KEYS = new Set([
   'people', 'contacts', 'organizations', 'deals', 'quotes', 'sales-orders', 'tasks', 'events', 'items', 'forms',
-  'imports', 'groups', 'responses'
+  'imports', 'documents', 'groups', 'responses'
 ]);
 
 /**

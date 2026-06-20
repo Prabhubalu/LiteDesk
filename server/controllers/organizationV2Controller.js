@@ -14,6 +14,19 @@ function organizationQueryAnd(baseQuery, clause) {
   return { $and: [baseQuery, clause] };
 }
 
+async function resolveAccessibleCrmOrganizationQuery(req, recordId) {
+  const tenantOrganizationId = req.user?.organizationId;
+  if (!tenantOrganizationId) {
+    return { error: { status: 400, message: 'Organization context required' } };
+  }
+  const { buildTenantAccessibleCrmOrganizationQuery } = require('../utils/crmOrganizationAccess');
+  const query = await buildTenantAccessibleCrmOrganizationQuery(tenantOrganizationId, {
+    recordIds: recordId ? [String(recordId)] : null,
+    masterAccess: isMasterLikeRequest(req, req.organization)
+  });
+  return { query, tenantOrganizationId };
+}
+
 /**
  * Full-result stats for list UI cards (same Mongo filter as the list query).
  * Matches client registry keys: totalOrganizations, assignedToMe, unassigned,
@@ -283,7 +296,6 @@ exports.list = async (req, res) => {
 // Get by ID (Sales organization, filtered by tenant context)
 exports.getById = async (req, res) => {
   try {
-    const User = require('../models/User');
     const tenantOrganizationId = req.user?.organizationId;
     
     if (!tenantOrganizationId) {
@@ -293,123 +305,21 @@ exports.getById = async (req, res) => {
       });
     }
 
-    // Get all users from this tenant organization
-    const tenantUserIds = await User.find({ organizationId: tenantOrganizationId })
-      .select('_id')
-      .lean();
-    const userIds = tenantUserIds.map(u => u._id);
-
-    // Only allow access to Sales organizations created by users from this tenant
-    const org = await Organization.findOne({ 
-      _id: req.params.id, 
-      isTenant: false,
-      createdBy: { $in: userIds },
-      deletedAt: null
-    })
-      .populate('createdBy', 'firstName lastName email avatar username')
-      .populate('assignedTo', 'firstName lastName email avatar username');
+    const resolved = await resolveAccessibleCrmOrganizationQuery(req, req.params.id);
+    if (resolved.error) {
+      return res.status(resolved.error.status).json({ success: false, message: resolved.error.message });
+    }
+    const org = await Organization.findOne(resolved.query);
     if (!org) return res.status(404).json({ success: false, message: 'Not found' });
+
+    await org.populate([
+      { path: 'createdBy', select: 'firstName lastName email avatar username' },
+      { path: 'assignedTo', select: 'firstName lastName email avatar username' }
+    ]);
     const { flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
-    res.json({ success: true, data: flattenCustomFieldsForResponse(org) });
+    res.json({ success: true, data: flattenCustomFieldsForResponse(org.toObject()) });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error fetching organization', error: error.message });
-  }
-};
-
-// Update (Sales organization, filtered by tenant context)
-exports.update = async (req, res) => {
-  try {
-    const User = require('../models/User');
-    const tenantOrganizationId = req.user?.organizationId;
-    
-    if (!tenantOrganizationId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Organization context required' 
-      });
-    }
-
-    // Get all users from this tenant organization
-    const tenantUserIds = await User.find({ organizationId: tenantOrganizationId })
-      .select('_id')
-      .lean();
-    const userIds = tenantUserIds.map(u => u._id);
-
-    const { buildUpdateWithCustomFields, flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
-    const previous = await Organization.findOne({
-      _id: req.params.id,
-      isTenant: false,
-      deletedAt: null,
-      createdBy: { $in: userIds }
-    }).lean();
-
-    const $set = buildUpdateWithCustomFields(req.body, Organization);
-
-    // Only allow update of Sales organizations created by users from this tenant
-    const updated = await Organization.findOneAndUpdate(
-      { 
-        _id: req.params.id, 
-        isTenant: false,
-        deletedAt: null,
-        createdBy: { $in: userIds } // CRITICAL: Filter by tenant context
-      }, 
-      { $set }, 
-      { new: true }
-    )
-      .populate('createdBy', 'firstName lastName email avatar username')
-      .populate('assignedTo', 'firstName lastName email avatar username');
-    if (!updated) return res.status(404).json({ success: false, message: 'Not found' });
-
-    try {
-      const { appendFieldChangeLogs } = require('../utils/recordActivityLogger');
-      const ModuleDefinition = require('../models/ModuleDefinition');
-      const moduleDef = await ModuleDefinition.findOne({ organizationId: tenantOrganizationId, key: 'organizations' });
-      await appendFieldChangeLogs({
-        organizationId: tenantOrganizationId,
-        moduleKey: 'organizations',
-        recordId: req.params.id,
-        authorId: req.user._id,
-        previous: previous || {},
-        updated: updated.toObject ? updated.toObject() : updated,
-        updateDataKeys: Object.keys(req.body || {}),
-        fieldLabels: moduleDef && Array.isArray(moduleDef.fields) ? moduleDef.fields : undefined
-      });
-    } catch (logErr) {
-      console.warn('Record activity log (organization update) failed:', logErr?.message || logErr);
-    }
-
-    try {
-      const { runImmediateAssignmentForSalesRecord } = require('../services/assignmentExecutionService');
-      const { enqueueAssignmentJobsForSalesRecord } = require('../services/assignmentSchedulingService');
-      const assignDoc = await Organization.findById(updated._id);
-      if (assignDoc) {
-        const changedKeys = Object.keys(req.body || {});
-        await runImmediateAssignmentForSalesRecord({
-          record: assignDoc,
-          moduleKey: 'organizations',
-          actorId: req.user._id,
-          triggerSource: 'immediate',
-          changedFields: changedKeys,
-          tenantOrganizationId
-        });
-        await enqueueAssignmentJobsForSalesRecord({
-          record: assignDoc,
-          moduleKey: 'organizations',
-          actorId: req.user._id,
-          changedFields: changedKeys,
-          tenantOrganizationId
-        });
-      }
-    } catch (assignErr) {
-      console.error('[organizationV2Controller] assignment on update failed:', assignErr?.message || assignErr);
-    }
-
-    const out = await Organization.findById(updated._id)
-      .populate('createdBy', 'firstName lastName email avatar username')
-      .populate('assignedTo', 'firstName lastName email avatar username');
-    res.json({ success: true, data: flattenCustomFieldsForResponse(out || updated) });
-  } catch (error) {
-    res.status(400).json({ success: false, message: 'Error updating organization', error: error.message });
   }
 };
 
@@ -460,29 +370,12 @@ exports.remove = async (req, res) => {
 // Get activity logs for an organization (filtered by tenant context)
 exports.getActivityLogs = async (req, res) => {
   try {
-    const User = require('../models/User');
-    const tenantOrganizationId = req.user?.organizationId;
-    
-    if (!tenantOrganizationId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Organization context required' 
-      });
+    const resolved = await resolveAccessibleCrmOrganizationQuery(req, req.params.id);
+    if (resolved.error) {
+      return res.status(resolved.error.status).json({ success: false, message: resolved.error.message });
     }
 
-    // Get all users from this tenant organization
-    const tenantUserIds = await User.find({ organizationId: tenantOrganizationId })
-      .select('_id')
-      .lean();
-    const userIds = tenantUserIds.map(u => u._id);
-
-    // Only allow access to activity logs of Sales organizations created by users from this tenant
-    const org = await Organization.findOne({ 
-      _id: req.params.id, 
-      isTenant: false,
-      createdBy: { $in: userIds },
-      deletedAt: null
-    }).select('activityLogs');
+    const org = await Organization.findOne(resolved.query).select('activityLogs');
     
     if (!org) {
       return res.status(404).json({
@@ -522,29 +415,13 @@ exports.addActivityLog = async (req, res) => {
       });
     }
     
-    const User = require('../models/User');
-    const tenantOrganizationId = req.user?.organizationId;
-    
-    if (!tenantOrganizationId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Organization context required' 
-      });
+    const resolved = await resolveAccessibleCrmOrganizationQuery(req, req.params.id);
+    if (resolved.error) {
+      return res.status(resolved.error.status).json({ success: false, message: resolved.error.message });
     }
-
-    // Get all users from this tenant organization
-    const tenantUserIds = await User.find({ organizationId: tenantOrganizationId })
-      .select('_id')
-      .lean();
-    const userIds = tenantUserIds.map(u => u._id);
     
-    // Only allow adding activity logs to Sales organizations created by users from this tenant
     const org = await Organization.findOneAndUpdate(
-      { 
-        _id: req.params.id, 
-        isTenant: false,
-        createdBy: { $in: userIds } // CRITICAL: Filter by tenant context
-      },
+      resolved.query,
       {
         $push: {
           activityLogs: {
@@ -604,28 +481,12 @@ exports.addActivityLog = async (req, res) => {
  */
 exports.getEditable = async (req, res) => {
   try {
-    const User = require('../models/User');
-    const tenantOrganizationId = req.user?.organizationId;
-    
-    if (!tenantOrganizationId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Organization context required' 
-      });
+    const resolved = await resolveAccessibleCrmOrganizationQuery(req, req.params.id);
+    if (resolved.error) {
+      return res.status(resolved.error.status).json({ success: false, message: resolved.error.message });
     }
 
-    // Get all users from this tenant organization
-    const tenantUserIds = await User.find({ organizationId: tenantOrganizationId })
-      .select('_id')
-      .lean();
-    const userIds = tenantUserIds.map(u => u._id);
-
-    // Fetch organization - MUST be business org (isTenant: false)
-    const org = await Organization.findOne({ 
-      _id: req.params.id, 
-      isTenant: false, // CRITICAL: Reject tenant orgs
-      createdBy: { $in: userIds } // CRITICAL: Filter by tenant context
-    }).lean();
+    const org = await Organization.findOne(resolved.query).lean();
     
     if (!org) {
       return res.status(404).json({ 
@@ -688,27 +549,13 @@ exports.getEditable = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const User = require('../models/User');
-    const tenantOrganizationId = req.user?.organizationId;
-    
-    if (!tenantOrganizationId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Organization context required' 
-      });
+    const resolved = await resolveAccessibleCrmOrganizationQuery(req, req.params.id);
+    if (resolved.error) {
+      return res.status(resolved.error.status).json({ success: false, message: resolved.error.message });
     }
+    const tenantOrganizationId = resolved.tenantOrganizationId;
 
-    // Get all users from this tenant organization
-    const tenantUserIds = await User.find({ organizationId: tenantOrganizationId })
-      .select('_id')
-      .lean();
-    const userIds = tenantUserIds.map(u => u._id);
-
-    // Fetch organization - MUST be business org (isTenant: false)
-    const org = await Organization.findOne({ 
-      _id: req.params.id, 
-      isTenant: false, // CRITICAL: Reject tenant orgs
-      createdBy: { $in: userIds } // CRITICAL: Filter by tenant context
-    });
+    const org = await Organization.findOne(resolved.query);
     
     if (!org) {
       return res.status(404).json({ 
@@ -890,6 +737,22 @@ exports.update = async (req, res) => {
             hasChanges = true;
             updatedKeys.push(field);
           }
+        } else if (['assignedTo', 'primaryContact', 'accountManager'].includes(field)) {
+          let nextRef = null;
+          if (fieldValue != null && fieldValue !== '') {
+            if (typeof fieldValue === 'object') {
+              nextRef = fieldValue._id ?? fieldValue.id ?? null;
+            } else {
+              nextRef = fieldValue;
+            }
+          }
+          const currentRef = org[field] ? String(org[field]) : null;
+          const nextRefStr = nextRef ? String(nextRef) : null;
+          if (currentRef !== nextRefStr) {
+            org[field] = nextRef;
+            hasChanges = true;
+            updatedKeys.push(field);
+          }
         } else {
           // For other fields, allow empty strings (will be stored as empty)
           const newValue = fieldValue !== null ? (fieldValue || '') : '';
@@ -1065,30 +928,15 @@ exports.update = async (req, res) => {
 // See docs/architecture/organization-surface-invariants.md
 exports.getSurface = async (req, res) => {
   try {
-    const User = require('../models/User');
     const People = require('../models/People');
     const RelationshipInstance = require('../models/RelationshipInstance');
-    const tenantOrganizationId = req.user?.organizationId;
-    
-    if (!tenantOrganizationId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Organization context required' 
-      });
+    const resolved = await resolveAccessibleCrmOrganizationQuery(req, req.params.id);
+    if (resolved.error) {
+      return res.status(resolved.error.status).json({ success: false, message: resolved.error.message });
     }
+    const tenantOrganizationId = resolved.tenantOrganizationId;
 
-    // Get all users from this tenant organization
-    const tenantUserIds = await User.find({ organizationId: tenantOrganizationId })
-      .select('_id')
-      .lean();
-    const userIds = tenantUserIds.map(u => u._id);
-
-    // Fetch organization - MUST be business org (isTenant: false)
-    const org = await Organization.findOne({ 
-      _id: req.params.id, 
-      isTenant: false, // CRITICAL: Reject tenant orgs
-      createdBy: { $in: userIds } // CRITICAL: Filter by tenant context
-    })
+    const org = await Organization.findOne(resolved.query)
       .populate('primaryContact', 'first_name last_name email')
       .lean();
     

@@ -29,6 +29,17 @@ const {
     isInitialPaymentRequiredField,
 } = require('../constants/paymentModuleDefaults');
 const { cloneQuoteDefaultRelationships } = require('../constants/defaultQuoteRelationships');
+const {
+    INITIAL_DOCUMENT_QUICK_CREATE,
+    cloneDocumentDefaultRelationships,
+    applyDocumentModuleFieldDefaults
+} = require('../constants/documentModuleDefaults');
+const {
+    ensureDocumentRelationshipDefinitions,
+    isDocumentRelationshipKey,
+    cloneDocumentInverseRelationship,
+    DOCUMENT_ATTACHMENT_MODULES
+} = require('../constants/defaultDocumentRelationships');
 const { DEFAULT_TASK_TYPE_OPTIONS } = require('../constants/taskTypes');
 const { filterFieldsByContext } = require('../utils/fieldContextFilter');
 
@@ -40,6 +51,7 @@ const MODULE_APP_KEY_BY_KEY = Object.freeze({
     sales_orders: 'platform',
     invoices: 'platform',
     payments: 'platform',
+    documents: 'platform',
     tasks: 'platform',
     events: 'platform',
     forms: 'platform',
@@ -60,6 +72,26 @@ function normalizeRelationshipCardinality(rawType) {
     if (normalized === 'one_to_many') return 'ONE_TO_MANY';
     if (normalized === 'many_to_one' || normalized === 'lookup') return 'MANY_TO_ONE';
     return 'MANY_TO_MANY';
+}
+
+async function ensureDocumentRelationshipsIfReferenced(relationships, sourceModuleKey = '') {
+    const moduleKey = String(sourceModuleKey || '').toLowerCase();
+    const keys = (Array.isArray(relationships) ? relationships : [])
+        .map((row) => String(row?.relationshipKey || '').trim().toLowerCase())
+        .filter(Boolean);
+    const targetsDocuments = (Array.isArray(relationships) ? relationships : []).some((row) => {
+        const raw = row?.targetModuleKey ?? row?.targetModule;
+        const target = typeof raw === 'object'
+            ? String(raw.key ?? raw.moduleKey ?? '').toLowerCase().trim()
+            : String(raw || '').toLowerCase().trim();
+        return target === 'documents';
+    });
+    const needsEnsure = DOCUMENT_ATTACHMENT_MODULES.includes(moduleKey)
+        || targetsDocuments
+        || keys.some((key) => isDocumentRelationshipKey(key));
+    if (!needsEnsure) return;
+    await ensureDocumentRelationshipDefinitions();
+    await relationshipRegistry.refreshRelationshipKeyCache();
 }
 
 async function ensurePlatformRelationshipDefinition({
@@ -854,6 +886,7 @@ function getBaseFieldsForKey(key) {
             forms: require('../models/Form'),
             items: require('../models/Item'),
             responses: require('../models/FormResponse'),
+            documents: require('../models/Document'),
         };
         const model = modelByKey[key];
         if (!model) return [];
@@ -1065,6 +1098,33 @@ function getBaseFieldsForKey(key) {
                     ]);
                     if (paymentsSchemaExcluded.has(name)) return false;
                     if (name.startsWith('paymentInstrumentSnapshot.')) return false;
+                }
+                if (key === 'documents') {
+                    const documentsSchemaExcluded = new Set([
+                        'organizationId',
+                        'documentNumber',
+                        'storageProvider',
+                        'storagePath',
+                        'checksum',
+                        'mimeType',
+                        'fileSizeBytes',
+                        'currentVersionId',
+                        'richContent',
+                        'externalUrl',
+                        'sourceProvider',
+                        'sourceType',
+                        'reservedBy',
+                        'reservedAt',
+                        'reservationExpiresAt',
+                        'reservationReason',
+                        'reservationStatus',
+                        'deletedAt',
+                        'deletedBy',
+                        'deletionReason',
+                        'visibility'
+                    ]);
+                    if (documentsSchemaExcluded.has(name)) return false;
+                    if (name.startsWith('visibility.')) return false;
                 }
                 if (key === 'responses') {
                     const responsesSchemaExcluded = new Set([
@@ -2217,29 +2277,33 @@ const DEAL_DEFAULT_RELATIONSHIPS = Object.freeze([
     { name: 'Related Tasks', type: 'one_to_many', isLookup: false, targetModuleKey: 'tasks', relationshipKey: 'deal_tasks' },
     { name: 'Related Events', type: 'one_to_many', isLookup: false, targetModuleKey: 'events', relationshipKey: 'deal_events' },
     { name: 'Related Forms', type: 'one_to_many', isLookup: false, targetModuleKey: 'forms', relationshipKey: 'deal_forms' },
-    { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_deals' }
-]);
+    { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_deals' },
+    cloneDocumentInverseRelationship('deals')
+].filter(Boolean));
 
 const PEOPLE_DEFAULT_RELATIONSHIPS = Object.freeze([
     { name: 'Related Organization', type: 'many_to_one', isLookup: true, targetModuleKey: 'organizations', relationshipKey: 'people_organizations' },
     { name: 'Related Deals', type: 'many_to_many', isLookup: false, targetModuleKey: 'deals', relationshipKey: 'people_deals' },
     { name: 'Related Tasks', type: 'many_to_many', isLookup: false, targetModuleKey: 'tasks', relationshipKey: 'people_tasks' },
     { name: 'Related Events', type: 'many_to_many', isLookup: false, targetModuleKey: 'events', relationshipKey: 'people_events' },
-    { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_people' }
-]);
+    { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_people' },
+    cloneDocumentInverseRelationship('people')
+].filter(Boolean));
 
 const ORGANIZATIONS_DEFAULT_RELATIONSHIPS = Object.freeze([
     { name: 'Related Contacts', type: 'one_to_many', isLookup: false, targetModuleKey: 'people', relationshipKey: 'people_organizations' },
     { name: 'Related Deals', type: 'one_to_many', isLookup: false, targetModuleKey: 'deals', relationshipKey: 'deal_organizations' },
-    { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_organizations' }
-]);
+    { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_organizations' },
+    cloneDocumentInverseRelationship('organizations')
+].filter(Boolean));
 
 const CASES_DEFAULT_RELATIONSHIPS = Object.freeze([
     { name: 'Related Contact', type: 'many_to_one', isLookup: true, targetModuleKey: 'people', relationshipKey: 'case_people' },
     { name: 'Related Organization', type: 'many_to_one', isLookup: true, targetModuleKey: 'organizations', relationshipKey: 'case_organizations' },
     { name: 'Related Tasks', type: 'many_to_many', isLookup: false, targetModuleKey: 'tasks', relationshipKey: 'task_cases' },
-    { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_cases' }
-]);
+    { name: 'Related Quotes', type: 'one_to_many', isLookup: false, targetModuleKey: 'quotes', relationshipKey: 'quote_cases' },
+    cloneDocumentInverseRelationship('cases')
+].filter(Boolean));
 
 const EVENTS_DEFAULT_RELATIONSHIPS = Object.freeze([
     { name: 'Related Deal', type: 'many_to_one', isLookup: true, targetModuleKey: 'deals', relationshipKey: 'deal_events' },
@@ -2259,8 +2323,9 @@ const EVENTS_DEFAULT_RELATIONSHIPS = Object.freeze([
         cascadeDelete: false,
         label: 'Linked Form',
         description: 'Link audit forms to events for audit event types'
-    }
-]);
+    },
+    cloneDocumentInverseRelationship('events')
+].filter(Boolean));
 
 function cloneDealDefaultRelationships() {
     return JSON.parse(JSON.stringify(DEAL_DEFAULT_RELATIONSHIPS));
@@ -2309,6 +2374,10 @@ function shouldUseOverrideRelationships(override, sys) {
         return false;
     }
 
+    if (moduleKey === 'documents' && Array.isArray(override.relationships) && override.relationships.length === 0) {
+        return false;
+    }
+
     // Organization-level overrides intentionally control behavior, including explicit empty arrays.
     if (override?.organizationId) {
         return true;
@@ -2337,6 +2406,7 @@ exports.listModules = async (req, res) => {
             { key: 'sales_orders', name: 'Sales Orders' },
             { key: 'invoices', name: 'Invoices' },
             { key: 'payments', name: 'Payments' },
+            { key: 'documents', name: 'Documents' },
             { key: 'cases', name: 'Cases' },
             { key: 'tasks', name: 'Tasks' },
             { key: 'events', name: 'Events' },
@@ -2418,8 +2488,9 @@ exports.listModules = async (req, res) => {
                     cascadeDelete: false,
                     label: 'Linked Contacts',
                     description: 'Contacts linked to this item (end users, product testers, etc.)'
-                }
-            ] : m.key === 'quotes' ? cloneQuoteDefaultRelationships() : [],
+                },
+                cloneDocumentInverseRelationship('items')
+            ].filter(Boolean) : m.key === 'quotes' ? cloneQuoteDefaultRelationships() : m.key === 'documents' ? cloneDocumentDefaultRelationships() : [],
             // Phase 17: Add default notification metadata
             notifications: getDefaultNotificationMetadata(m.key)
         };
@@ -2434,7 +2505,7 @@ exports.listModules = async (req, res) => {
         const custom = await ModuleDefinition.find({ 
             $or: [
                 { organizationId: req.user.organizationId, key: { $ne: 'groups' } }, // Org-specific overrides
-                { appKey: 'platform', organizationId: null, moduleKey: { $in: ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments'] } } // Platform core entities
+                { appKey: 'platform', organizationId: null, moduleKey: { $in: ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents'] } } // Platform core entities
             ]
         })
         .select('+quickCreate +quickCreateLayout')
@@ -2506,7 +2577,7 @@ exports.listModules = async (req, res) => {
         // Mongoose .lean() + select('+quickCreate') can still omit quickCreate on some documents; when undefined,
         // merge falls back to [] and listModules applies canonical defaults — Settings "saves" but reload shows defaults.
         // Overlay from native driver (same reliability as People raw merge above).
-        const orgQuickCreateRawKeys = new Set(['tasks', 'organizations', 'events', 'items', 'deals', 'quotes', 'sales_orders', 'invoices', 'payments', 'cases', 'forms']);
+        const orgQuickCreateRawKeys = new Set(['tasks', 'organizations', 'events', 'items', 'deals', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents', 'cases', 'forms']);
         for (const module of custom) {
             if (!module.organizationId) continue;
             const moduleKey = String(module.key || module.moduleKey || '').toLowerCase();
@@ -2528,7 +2599,7 @@ exports.listModules = async (req, res) => {
         }
 
         // Platform core modules: overlay quickCreate from raw Mongo (Settings saves to platform doc for quotes, etc.)
-        const platformQuickCreateRawKeys = new Set(['tasks', 'organizations', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments']);
+        const platformQuickCreateRawKeys = new Set(['tasks', 'organizations', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents']);
         for (const module of custom) {
             if (module.organizationId) continue;
             if (String(module.appKey || '').toLowerCase() !== 'platform') continue;
@@ -3284,6 +3355,10 @@ exports.listModules = async (req, res) => {
                     finalQuickCreate = [...INITIAL_PAYMENT_QUICK_CREATE];
                     console.log('📋 Payments: Applying canonical default Quick Create:', finalQuickCreate);
                 }
+                if (sys.key === 'documents' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_DOCUMENT_QUICK_CREATE];
+                    console.log('📋 Documents: Applying canonical default Quick Create:', finalQuickCreate);
+                }
 
                 // Organizations: trust persisted quickCreate when non-empty (see empty-array default above).
                 // Previously we re-injected name/industry/website on every GET, which defeated Settings
@@ -3549,6 +3624,9 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'quotes' && (!Array.isArray(resolvedRelationships) || resolvedRelationships.length === 0)) {
                     resolvedRelationships = cloneQuoteDefaultRelationships();
                 }
+                if (sys.key === 'documents' && (!Array.isArray(resolvedRelationships) || resolvedRelationships.length === 0)) {
+                    resolvedRelationships = cloneDocumentDefaultRelationships();
+                }
                 merged.push({ 
                     ...sys, 
                     fields: finalFields,
@@ -3626,6 +3704,9 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'payments') {
                     defaultQuickCreate = [...INITIAL_PAYMENT_QUICK_CREATE];
                 }
+                if (sys.key === 'documents') {
+                    defaultQuickCreate = [...INITIAL_DOCUMENT_QUICK_CREATE];
+                }
                 let taskFields = withOrder;
                 if (sys.key === 'tasks') {
                     taskFields = normalizeTasksModuleFields(taskFields);
@@ -3654,7 +3735,9 @@ exports.listModules = async (req, res) => {
                 }
                 const defaultRelationships = sys.key === 'quotes'
                     ? cloneQuoteDefaultRelationships()
-                    : (sys.relationships || []);
+                    : sys.key === 'documents'
+                        ? cloneDocumentDefaultRelationships()
+                        : (sys.relationships || []);
                 merged.push({ 
                     ...sys, 
                     fields: fieldsToPush,
@@ -3710,6 +3793,7 @@ exports.listModules = async (req, res) => {
                 events: Event,
                 forms: Form,
                 imports: ImportHistory,
+                documents: require('../models/Document'),
                 reports: null, // no direct model
                 users: null // Users module is for lookup targets only, no fields needed
             };
@@ -3954,6 +4038,7 @@ exports.updateModule = async (req, res) => {
             if (createdDefinitions) {
                 await relationshipRegistry.refreshRelationshipKeyCache();
             }
+            await ensureDocumentRelationshipsIfReferenced(newRelationships, sourceModuleKey);
             const invalid = newRelationships
                 .map((r) => String(r.relationshipKey).trim())
                 .filter((k) => !relationshipRegistry.has(k));
@@ -4273,7 +4358,7 @@ exports.updateSystemModule = async (req, res) => {
             $or: [{ key: keyLower }, { moduleKey: keyLower }]
         };
         const systemKeys = new Set([
-            'people', 'organizations', 'deals', 'cases', 'tasks', 'events', 'forms', 'items', 'quotes', 'sales_orders', 'invoices', 'payments',
+            'people', 'organizations', 'deals', 'cases', 'tasks', 'events', 'forms', 'items', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents',
             'imports', 'reports'
         ]);
         if (!systemKeys.has(keyLower)) return res.status(400).json({ success: false, message: 'Invalid system module key' });
@@ -4390,6 +4475,7 @@ exports.updateSystemModule = async (req, res) => {
             if (createdDefinitions) {
                 await relationshipRegistry.refreshRelationshipKeyCache();
             }
+            await ensureDocumentRelationshipsIfReferenced(newRelationships, sourceModuleKey);
             const invalid = newRelationships
                 .map((r) => String(r.relationshipKey).trim())
                 .filter((k) => !relationshipRegistry.has(k));
@@ -4960,7 +5046,7 @@ exports.addModuleFieldPicklistOption = async (req, res) => {
         } = require('../utils/picklistInlineOptionCreate');
 
         const systemKeys = new Set([
-            'people', 'organizations', 'deals', 'cases', 'tasks', 'events', 'forms', 'items', 'quotes', 'sales_orders', 'invoices', 'payments',
+            'people', 'organizations', 'deals', 'cases', 'tasks', 'events', 'forms', 'items', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents',
             'imports', 'reports'
         ]);
         if (!systemKeys.has(keyLower)) {

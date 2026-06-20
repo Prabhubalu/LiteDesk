@@ -48,7 +48,7 @@ const {
 } = require('../constants/commercialPlatformParticipation');
 const { isInventoryEnabledForOrg } = require('./inventoryCapabilityService');
 /** Cross-app capabilities that are not owned by a single business app. */
-const CROSS_FUNCTIONAL_MODULES = new Set(['imports']);
+const CROSS_FUNCTIONAL_MODULES = new Set(['imports', 'documents']);
 
 /** In-memory org context cache for a single request materialization burst */
 const orgContextCache = new Map();
@@ -346,13 +346,24 @@ function readGrantFromRuntime(runtime, storageModuleKey, envelopeAction, effecti
     if (storageModuleKey === 'contacts' && envelope.people) {
       return envelope.people[envelopeAction] === true;
     }
-    return false;
+  } else {
+    if (modGrant[envelopeAction] === true) return true;
+    if (storageModuleKey === 'settings' && envelopeAction === 'edit' && modGrant.customizeFields === true) {
+      return true;
+    }
   }
 
-  if (modGrant[envelopeAction] === true) return true;
-  if (storageModuleKey === 'settings' && envelopeAction === 'edit' && modGrant.customizeFields === true) {
-    return true;
+  if (CROSS_FUNCTIONAL_MODULES.has(storageModuleKey) && runtime?.modulesByApp) {
+    for (const appModules of Object.values(runtime.modulesByApp)) {
+      const grant = appModules?.[storageModuleKey];
+      if (!grant) continue;
+      if (grant[envelopeAction] === true) return true;
+      if (storageModuleKey === 'settings' && envelopeAction === 'edit' && grant.customizeFields === true) {
+        return true;
+      }
+    }
   }
+
   return false;
 }
 

@@ -710,13 +710,5 @@
   "peopleQuickCreateDrawerEditPerson": {
     "message": "Edit Person",
     "description": "People quick create drawer title in edit mode"
-  },
-  "peopleQuickCreateDrawerQuickCreateFields": {
-    "message": "Quick create fields",
-    "description": "People full-form drawer section — quick create fields"
-  },
-  "peopleQuickCreateDrawerOtherFields": {
-    "message": "Other fields",
-    "description": "People full-form drawer section — remaining core fields"
   }
 }

@@ -13370,5 +13370,37 @@
   "sharingAppSectionEmpty": {
     "message": "No app-specific modules. Shared modules are configured under Core Modules above.",
     "description": "Empty state when an enabled app has no app-exclusive sharing defaults"
+  },
+  "coreModDetailModuleDocuments": {
+    "message": "Documents",
+    "description": "Documents module title in core module settings"
+  },
+  "modFieldsGroupCoreDocument": {
+    "message": "Core Document Fields",
+    "description": "Field group heading for document core fields in module settings"
+  },
+  "modFieldsDocumentsStatusTypesDesc": {
+    "message": "Configure document types and lifecycle statuses available for this tenant.",
+    "description": "Documents module status and types tab description"
+  },
+  "modFieldsDocumentTypesTitle": {
+    "message": "Document Types",
+    "description": "Document types section title in module settings"
+  },
+  "modFieldsDocumentTypesDesc": {
+    "message": "Enable or disable document types. Edit labels and add types in Field Configurations.",
+    "description": "Document types section description in module settings"
+  },
+  "modFieldsLoadingDocumentTypes": {
+    "message": "Loading document types…",
+    "description": "Loading state for document types in module settings"
+  },
+  "modFieldsDocumentStatusTitle": {
+    "message": "Document Status",
+    "description": "Document status section title in module settings"
+  },
+  "modFieldsDocumentStatusDesc": {
+    "message": "Enable or disable lifecycle statuses. Edit labels and add statuses in Field Configurations.",
+    "description": "Document status section description in module settings"
   }
 }
