@@ -322,6 +322,10 @@ const apiClient = async (url, options = {}) => {
                 throw error;
             }
 
+            if (response.status === 204 || response.status === 205) {
+                return { success: true };
+            }
+
             const data = await response.json();
             if (cacheableMetadataGet) {
                 const ttlMs = cacheTtlForGet(pathWithSearch);

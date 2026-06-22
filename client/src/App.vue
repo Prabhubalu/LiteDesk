@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { computed, defineAsyncComponent, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, inject, nextTick, onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
 import { useAuthStore } from '@/stores/authRegistry';
@@ -68,6 +68,7 @@ const appLog = (...args) => {
 };
 
 function resetTabsStateFromModule() {
+  resetTabsSessionInit();
   void import('@/composables/useTabs').then((m) => m.resetTabsState());
 }
 
@@ -96,6 +97,13 @@ const recoverUnmatchedDynamicRoute = async () => {
 
 // Store cleanup function for route watcher (popstate listener)
 let cleanupRouteWatcher = null;
+let tabsSessionInitPromise = null;
+let tabsSessionScopeKey = null;
+
+function resetTabsSessionInit() {
+  tabsSessionInitPromise = null;
+  tabsSessionScopeKey = null;
+}
 
 // Initialize color mode
 const { colorMode } = useColorMode();
@@ -255,21 +263,95 @@ watch(() => route.path, async (newPath) => {
   }
 }, { immediate: true });
 
+const shellTabsReady = ref(
+  !authStore.isAuthenticated || isStandaloneShelllessRoute.value
+);
+
+async function initializeTabsForSession() {
+  const isPortalRoute = route.path.startsWith('/portal/');
+  const skipTabsInit = isPortalRoute || shouldSkipTabRoute(route.path);
+  if (skipTabsInit) {
+    appLog('📋 Skipping tabs initialization for route:', route.path);
+    return;
+  }
+
+  const instanceId = authStore.organization?._id || authStore.organization?.instanceId;
+  const userId = authStore.user?._id;
+  if (!instanceId || !userId) {
+    console.error('[Tabs] Skipping tab initialization: missing instanceId or userId', {
+      instanceId,
+      userId
+    });
+    return;
+  }
+
+  const scopeKey = `${instanceId}:${userId}`;
+  if (tabsSessionInitPromise && tabsSessionScopeKey === scopeKey) {
+    return tabsSessionInitPromise;
+  }
+
+  tabsSessionScopeKey = scopeKey;
+  tabsSessionInitPromise = (async () => {
+    if (typeof cleanupRouteWatcher === 'function') {
+      cleanupRouteWatcher();
+      cleanupRouteWatcher = null;
+    }
+
+    const { configureTabsStorage, useTabs } = await import('@/composables/useTabs');
+    const { initTabs, setupRouteWatcher } = useTabs();
+    configureTabsStorage({ instanceId, userId });
+    initTabs();
+    await router.isReady();
+    await nextTick();
+
+    appLog('📊 [App] After initTabs, checking tabs state...');
+    const { tabs: tabsRef } = useTabs();
+    appLog('📊 [App] Tabs count:', tabsRef.value.length);
+    appLog('📊 [App] Tabs:', tabsRef.value.map(t => ({ id: t.id, title: t.title, path: t.path })));
+
+    cleanupRouteWatcher = setupRouteWatcher(route);
+  })();
+
+  try {
+    await tabsSessionInitPromise;
+  } catch (error) {
+    tabsSessionInitPromise = null;
+    tabsSessionScopeKey = null;
+    throw error;
+  }
+}
+
+// Initialize tabs before shell mounts so Live Chat deep links are not redirected mid-load.
+onBeforeMount(async () => {
+  if (authStore.isAuthenticated && !isStandaloneShelllessRoute.value) {
+    try {
+      await initializeTabsForSession();
+    } catch (tabErr) {
+      console.warn('[App] Tab initialization failed:', tabErr);
+    } finally {
+      shellTabsReady.value = true;
+    }
+  } else {
+    shellTabsReady.value = true;
+  }
+});
+
 // Refresh permissions on app mount (page refresh)
 onMounted(async () => {
   if (authStore.isAuthenticated && !isStandaloneShelllessRoute.value) {
     activeImportsStore.init();
+
     const neededMetadata = !appShellStore.isLoaded;
     appLog('Auto-refreshing permissions on page load...');
-    // Always force a profile re-fetch on mount. The 5-min freshness throttle
-    // hides legitimate entitlement changes (app enable/disable, role edits)
-    // when the user lands on the page right after the change.
-    // Registry/UI caches are invalidated only from explicit settings events
-    // (see Nav.vue onCoreModulesUpdated) to avoid a startup request storm.
-    await Promise.all([
-      authStore.refreshUser({ force: true }),
-      neededMetadata ? appShellStore.loadUIMetadata() : Promise.resolve()
-    ]);
+    try {
+      await Promise.all([
+        authStore.refreshUser({ force: true }),
+        neededMetadata ? appShellStore.loadUIMetadata() : Promise.resolve()
+      ]);
+    } catch (bootstrapErr) {
+      console.warn('[App] Bootstrap refresh failed:', bootstrapErr);
+    }
+
     identifyProductUser({
       _id: authStore.user?._id,
       email: authStore.user?.email,
@@ -281,54 +363,20 @@ onMounted(async () => {
     if (neededMetadata) {
       appLog('Initializing dynamic routes...');
       if (typeof initDynamicRoutes === 'function') {
-        await initDynamicRoutes();
+        try {
+          await initDynamicRoutes();
+        } catch (routeErr) {
+          console.warn('[App] Dynamic routes init failed:', routeErr);
+        }
       }
     }
     await recoverUnmatchedDynamicRoute();
-    
-    // Phase 2D: Set initial activeApp based on current route
+
     const detectedApp = detectActiveAppFromRoute(route.path);
     if (detectedApp && appShellStore.activeApp !== detectedApp) {
       appLog(`[App] Initial route: ${route.path}, setting activeApp to ${detectedApp}`);
       appShellStore.setActiveApp(detectedApp);
     }
-
-    // Portal omits tabs; audit and CRM use the shared tab system.
-    const isPortalRoute = route.path.startsWith('/portal/');
-    const skipTabsInit = isPortalRoute || shouldSkipTabRoute(route.path);
-    if (!skipTabsInit) {
-      // Tabs are scoped by instanceId + userId to prevent leakage across instances/users.
-      const instanceId = authStore.organization?._id || authStore.organization?.instanceId;
-      const userId = authStore.user?._id;
-
-      if (instanceId && userId) {
-        const { configureTabsStorage, useTabs } = await import('@/composables/useTabs');
-        const { initTabs, setupRouteWatcher } = useTabs();
-        configureTabsStorage({ instanceId, userId });
-        initTabs();
-
-        await nextTick();
-
-        appLog('📊 [App] After initTabs, checking tabs state...');
-        const { tabs: tabsRef } = useTabs();
-        appLog('📊 [App] Tabs count:', tabsRef.value.length);
-        appLog('📊 [App] Tabs:', tabsRef.value.map(t => ({ id: t.id, title: t.title, path: t.path })));
-
-        cleanupRouteWatcher = setupRouteWatcher(route);
-      } else {
-        console.error('[Tabs] Skipping tab initialization: missing instanceId or userId', {
-          instanceId,
-          userId
-        });
-      }
-    } else {
-      appLog('📋 Portal route detected, skipping tabs initialization');
-    }
-
-    // Note: We don't need a router.beforeEach guard here because:
-    // 1. Tab creation is handled by click handlers (Nav.vue, DataTables, etc.)
-    // 2. Page refresh will restore tabs from localStorage
-    // 3. Adding a guard here creates circular loops with openTab() calling router.replace()
   }
 
   queueContentOffsetUpdate();
@@ -361,58 +409,20 @@ watch(
       stopNotificationRealtime();
       activeImportsStore.reset();
       resetTabsStateFromModule();
+      shellTabsReady.value = false;
       // Cleanup route watcher when logging out
       if (typeof cleanupRouteWatcher === 'function') {
         cleanupRouteWatcher();
         cleanupRouteWatcher = null;
       }
     } else if (!wasAuthed && isAuthed) {
-      // User just logged in - initialize tabs (same as onMounted logic)
       appLog('🔄 [App] User authenticated, initializing tabs...');
-      const instanceId = authStore.organization?._id || authStore.organization?.instanceId;
-      const userId = authStore.user?._id;
-      
-      if (instanceId && userId) {
-        // Cleanup any existing route watcher before setting up a new one
-        if (typeof cleanupRouteWatcher === 'function') {
-          cleanupRouteWatcher();
-          cleanupRouteWatcher = null;
-        }
-        
-        // Post-login route may still be /login while LoginForm navigates to platform home.
-        // Auth lifecycle routes must not skip tab init — only portal omits tabs.
-        const isPortalRoute = route.path.startsWith('/portal/');
-        const skipTabsInit = isPortalRoute;
-
-        if (!skipTabsInit) {
-          const { configureTabsStorage, useTabs } = await import('@/composables/useTabs');
-          const { initTabs, setupRouteWatcher } = useTabs();
-          configureTabsStorage({ instanceId, userId });
-          initTabs();
-
-          await router.isReady();
-          await nextTick();
-
-          appLog('📊 [App] After login - After initTabs, checking tabs state...');
-          const { tabs: tabsRef } = useTabs();
-          appLog('📊 [App] After login - Tabs count:', tabsRef.value.length);
-          appLog('📊 [App] After login - Tabs:', tabsRef.value.map(t => ({ id: t.id, title: t.title, path: t.path })));
-          appLog('📊 [App] After login - Current route:', route.path, route.fullPath);
-
-          // Setup route watcher for browser navigation (same as onMounted)
-          // Use 'route' from useRoute() just like onMounted does
-          // Store cleanup function to remove popstate listener on unmount
-          appLog('🔧 [App] After login - Setting up route watcher on route:', route.path);
-          cleanupRouteWatcher = setupRouteWatcher(route);
-          
-          if (typeof cleanupRouteWatcher === 'function') {
-            appLog('✅ [App] After login - Route watcher successfully set up');
-          } else {
-            console.warn('⚠️ [App] After login - setupRouteWatcher did not return cleanup function');
-          }
-        } else {
-          appLog('📋 [App] After login - Audit/Portal route detected, skipping tabs initialization');
-        }
+      try {
+        await initializeTabsForSession();
+      } catch (tabErr) {
+        console.warn('[App] Tab initialization after login failed:', tabErr);
+      } finally {
+        shellTabsReady.value = true;
       }
     }
   },
@@ -480,7 +490,7 @@ watch(
     </div>
 
     <!-- Phase 1A: Platform Shell with dynamic UI composition -->
-    <PlatformShell v-else />
+    <PlatformShell v-else-if="shellTabsReady" />
   </div>
 
   <!-- Landing Page (no sidebar) -->

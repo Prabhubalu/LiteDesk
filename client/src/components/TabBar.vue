@@ -11,6 +11,8 @@ import AvatarInitials from '@/components/ui/AvatarInitials.vue';
 import { useUserStatus } from '@/composables/useUserStatus';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
 import { resolveTabTitleWithHelpdeskAlerts } from '@/utils/helpdeskTabAlerts';
+import { resolveTabTitleWithLiveChatAlerts } from '@/utils/liveChatTabAlerts';
+import { resolveTabTitle } from '@/utils/navigationLabels';
 import { useHelpdeskBrowserTitle } from '@/composables/useHelpdeskBrowserTitle';
 import TabHoverPreview from '@/components/TabHoverPreview.vue';
 import {
@@ -27,7 +29,10 @@ const authStore = useAuthStore();
 const { tabs, activeTabId, switchToTab, closeTab, closeOtherTabs, closeAllTabs } = useTabs();
 
 function tabDisplayTitle(tab) {
-  return resolveTabTitleWithHelpdeskAlerts(tab, t, te);
+  const base = resolveTabTitle(tab, t, te);
+  const withHelpdesk = resolveTabTitleWithHelpdeskAlerts(tab, t, te);
+  if (withHelpdesk !== base) return withHelpdesk;
+  return resolveTabTitleWithLiveChatAlerts(tab, t, te);
 }
 
 function tabHasHelpdeskAlert(tab) {
@@ -40,7 +45,7 @@ function tabAlertIconColorClass(tab) {
       ? 'text-gray-900 dark:text-white'
       : 'text-gray-600 dark:text-gray-400';
   }
-  if (tab.alertKind === 'chat') {
+  if (tab.alertKind === 'chat' || tab.alertKind === 'session') {
     return 'text-emerald-600 dark:text-emerald-400';
   }
   if (tab.alertKind === 'case') {
@@ -50,7 +55,7 @@ function tabAlertIconColorClass(tab) {
 }
 
 function tabAlertRingClass(tab) {
-  if (tab.alertKind === 'chat') return 'tab-helpdesk-alert-icon__ring--chat';
+  if (tab.alertKind === 'chat' || tab.alertKind === 'session') return 'tab-helpdesk-alert-icon__ring--chat';
   if (tab.alertKind === 'case') return 'tab-helpdesk-alert-icon__ring--case';
   return 'tab-helpdesk-alert-icon__ring--email';
 }

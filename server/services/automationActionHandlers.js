@@ -237,10 +237,103 @@ async function startProcessAction(ctx, params, automationExecutionId = null) {
   }
 }
 
+async function liveChatCreateCase(ctx, params) {
+  if (String(ctx.entityType || '').toLowerCase() !== 'live_chat_session') {
+    return { ok: false, error: 'live_chat_create_case requires live_chat_session trigger' };
+  }
+  if (!ctx.organizationId || !ctx.entityId) {
+    return { ok: false, error: 'live_chat_create_case requires organizationId and session entityId' };
+  }
+
+  try {
+    const { createCaseFromLiveChatSession } = require('./liveChatCaseAdapter');
+    const result = await createCaseFromLiveChatSession({
+      organizationId: ctx.organizationId,
+      sessionId: ctx.entityId,
+      actorId: ctx.triggeredBy,
+      title: params?.title,
+    });
+    return { ok: true, caseId: result.caseId };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+}
+
+async function liveChatLinkCase(ctx, params) {
+  if (String(ctx.entityType || '').toLowerCase() !== 'live_chat_session') {
+    return { ok: false, error: 'live_chat_link_case requires live_chat_session trigger' };
+  }
+  const caseId = params?.caseId;
+  if (!caseId) {
+    return { ok: false, error: 'live_chat_link_case requires caseId' };
+  }
+
+  try {
+    const { linkExistingCaseToSession } = require('./liveChatCaseAdapter');
+    const result = await linkExistingCaseToSession({
+      organizationId: ctx.organizationId,
+      sessionId: ctx.entityId,
+      caseId,
+      actorId: ctx.triggeredBy,
+    });
+    return { ok: true, caseId: result.caseId };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+}
+
+async function liveChatCreateLead(ctx) {
+  if (String(ctx.entityType || '').toLowerCase() !== 'live_chat_session') {
+    return { ok: false, error: 'live_chat_create_lead requires live_chat_session trigger' };
+  }
+  if (!ctx.organizationId || !ctx.entityId) {
+    return { ok: false, error: 'live_chat_create_lead requires organizationId and session entityId' };
+  }
+
+  try {
+    const { createLeadFromLiveChatSession } = require('./liveChatCrmAdapter');
+    const result = await createLeadFromLiveChatSession({
+      organizationId: ctx.organizationId,
+      sessionId: ctx.entityId,
+      actorId: ctx.triggeredBy,
+    });
+    return { ok: true, personId: result.personId, created: result.created };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+}
+
+async function liveChatLinkPerson(ctx, params) {
+  if (String(ctx.entityType || '').toLowerCase() !== 'live_chat_session') {
+    return { ok: false, error: 'live_chat_link_person requires live_chat_session trigger' };
+  }
+  const personId = params?.personId;
+  if (!personId) {
+    return { ok: false, error: 'live_chat_link_person requires personId' };
+  }
+
+  try {
+    const { linkExistingPersonToSession } = require('./liveChatCrmAdapter');
+    const result = await linkExistingPersonToSession({
+      organizationId: ctx.organizationId,
+      sessionId: ctx.entityId,
+      personId,
+      actorId: ctx.triggeredBy,
+    });
+    return { ok: true, personId: result.personId };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+}
+
 const handlers = {
   create_task: createTask,
   notify_user: notifyUser,
-  start_process: startProcessAction
+  start_process: startProcessAction,
+  live_chat_create_case: liveChatCreateCase,
+  live_chat_link_case: liveChatLinkCase,
+  live_chat_create_lead: liveChatCreateLead,
+  live_chat_link_person: liveChatLinkPerson,
 };
 
 /**

@@ -11,6 +11,11 @@ const {
   getSupplementalAssignmentConditionFields,
   mergeConditionFields
 } = require('../../constants/assignmentConditionFields');
+const { isAddonEntitledForOrg } = require('../../utils/addonAccessUtils');
+
+const ADDON_GATED_ASSIGNMENT_MODULES = {
+  live_chat_sessions: 'live_chat',
+};
 
 async function listTenantAssignmentModules(organizationId) {
   const modules = await listTenantSlaModules(organizationId);
@@ -22,10 +27,22 @@ async function listTenantAssignmentModules(organizationId) {
     modules.push({
       moduleKey,
       appKey: adapter.appKey || null,
-      label: adapter.labelKey || moduleKey
+      label: adapter.labelKey || moduleKey,
+      labelKey: adapter.labelKey || null,
     });
   }
-  return modules.sort((a, b) => String(a.label).localeCompare(String(b.label)));
+
+  const filtered = [];
+  for (const mod of modules) {
+    const addonKey = ADDON_GATED_ASSIGNMENT_MODULES[mod.moduleKey];
+    if (addonKey) {
+      const entitled = await isAddonEntitledForOrg(organizationId, addonKey);
+      if (!entitled) continue;
+    }
+    filtered.push(mod);
+  }
+
+  return filtered.sort((a, b) => String(a.label).localeCompare(String(b.label)));
 }
 
 async function getAssignmentModuleConditionFields(organizationId, appKey, moduleKey) {

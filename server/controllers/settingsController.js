@@ -69,6 +69,8 @@ const {
     cloneDocumentDefaultRelationships,
     applyDocumentModuleFieldDefaults
 } = require('../constants/documentModuleDefaults');
+const { buildAddonSubscriptionLineItems } = require('../services/subscriptionAddonLineItemsService');
+const { normalizeAddonKey } = require('../constants/addonKeys');
 
 function applyCommercialUiIconPatch(existing, moduleKey, patch) {
     if (existing && shouldNormalizeCommercialIcon(existing.ui?.icon, moduleKey)) {
@@ -1579,9 +1581,18 @@ exports.getSubscriptions = async (req, res) => {
             };
         }).filter(sub => sub.status === 'ACTIVE' || sub.canUpgrade);
 
+        let addonSubscriptions = [];
+        try {
+            addonSubscriptions = await buildAddonSubscriptionLineItems(organization._id);
+        } catch (addonErr) {
+            console.error('[getSubscriptions] addon line items failed', addonErr);
+        }
+        const allSubscriptions = [...subscriptions, ...addonSubscriptions];
+
         res.json({
             success: true,
-            subscriptions: subscriptions
+            subscriptions: allSubscriptions,
+            addonSubscriptions,
         });
     } catch (error) {
         console.error('Get subscriptions error:', error);
@@ -1606,6 +1617,51 @@ exports.getSubscription = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: 'Organization not found'
+            });
+        }
+
+        const rawAppKey = String(appKey || '').trim();
+        if (rawAppKey.toLowerCase().startsWith('addon:')) {
+            const addonKey = normalizeAddonKey(rawAppKey.slice('addon:'.length));
+            const items = await buildAddonSubscriptionLineItems(organization._id);
+            const item = items.find((row) => row.addonKey === addonKey);
+            if (!item) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Addon subscription not found'
+                });
+            }
+
+            let planDetails = null;
+            const sub = item.subscriptionDetails;
+            if (item.plan === 'Trial' && sub?.trialEndsAt) {
+                const daysRemaining = Math.max(
+                    0,
+                    Math.ceil((new Date(sub.trialEndsAt) - new Date()) / (1000 * 60 * 60 * 24)),
+                );
+                planDetails = {
+                    name: 'Trial',
+                    period: {
+                        start: sub.startedAt || null,
+                        end: sub.trialEndsAt,
+                    },
+                    daysRemaining,
+                };
+            } else if (sub?.startedAt) {
+                planDetails = {
+                    name: item.plan,
+                    period: {
+                        start: sub.startedAt,
+                        end: sub.trialEndsAt || null,
+                    },
+                };
+            }
+
+            return res.json({
+                success: true,
+                ...item,
+                planDetails,
+                limits: item.limits || {},
             });
         }
 

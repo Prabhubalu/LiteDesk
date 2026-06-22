@@ -198,6 +198,7 @@ const SettingsLandingPage = defineAsyncComponent(() => import('@/components/sett
 const CoreModulesList = defineAsyncComponent(() => import('@/components/settings/CoreModulesList.vue'));
 const CoreModuleDetail = defineAsyncComponent(() => import('@/components/settings/CoreModuleDetail.vue'));
 const ApplicationsList = defineAsyncComponent(() => import('@/components/settings/ApplicationsList.vue'));
+const AddonsSettings = defineAsyncComponent(() => import('@/components/settings/AddonsSettings.vue'));
 const ApplicationDetail = defineAsyncComponent(() => import('@/components/settings/ApplicationDetail.vue'));
 const AppManagement = defineAsyncComponent(() => import('@/components/settings/AppManagement.vue'));
 const SubscriptionsList = defineAsyncComponent(() => import('@/components/settings/SubscriptionsList.vue'));
@@ -422,6 +423,20 @@ const AppsIcon = () => h('svg', {
   })
 ]);
 
+const AddonsIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg'
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z'
+  })
+]);
+
 const BusinessHoursIcon = () => h('svg', {
   fill: 'none',
   stroke: 'currentColor',
@@ -506,6 +521,7 @@ const tabs = computed(() => {
     { id: 'users-access', nameKey: 'settings.tabUsersAccess', icon: UsersIcon, component: UsersAccessSettings },
     { id: 'core-modules', nameKey: 'settings.tabCoreModules', icon: CoreModulesIcon, component: CoreModulesList },
     { id: 'applications', nameKey: 'settings.tabApplications', icon: AppsIcon, component: ApplicationsList },
+    { id: 'addons', nameKey: 'settings.tabAddons', icon: AddonsIcon, component: AddonsSettings },
     { id: 'automation', nameKey: 'settings.tabAutomation', icon: AutomationIcon, component: AutomationSettings },
     { id: 'webforms', nameKey: 'settings.tabWebforms', icon: WebformsIcon, component: WebformsSettings },
     { id: 'performance', nameKey: 'settings.tabPerformance', icon: PerformanceIcon, component: PerformanceSettings },
@@ -639,6 +655,9 @@ function handleTabClick(tab) {
     activeTab.value = 'notifications';
     // Use query parameters instead of route paths to stay within Settings
     router.replace({ path: '/settings', query: { ...route.query, tab: 'notifications', notificationPage: 'preferences' } });
+  } else if (tab.id === 'addons') {
+    activeTab.value = 'addons';
+    router.replace({ path: '/settings', query: { tab: 'addons' } });
   } else if (tab.id === 'automation') {
     activeTab.value = 'automation';
     router.replace({ path: '/settings', query: { tab: 'automation' } });

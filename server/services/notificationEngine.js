@@ -30,7 +30,8 @@ function debugLog(event, data) {
 /** Inbound customer messages must notify on every message, not once per case per minute. */
 const SKIP_DEDUPLICATION_EVENT_TYPES = new Set([
   domainEvents.CASE_CHAT_MESSAGE_RECEIVED,
-  domainEvents.CASE_EMAIL_RECEIVED
+  domainEvents.CASE_EMAIL_RECEIVED,
+  domainEvents.LIVE_CHAT_MESSAGE_RECEIVED,
 ]);
 
 function getDeduplicationKey(eventType, entity, userId) {
@@ -38,6 +39,9 @@ function getDeduplicationKey(eventType, entity, userId) {
   let hashInput = `${eventType}_${entityKey}_${userId}`;
   if (eventType === domainEvents.CASE_CHAT_MESSAGE_RECEIVED) {
     const preview = String(entity?.preview || entity?.chatSessionId || '').trim();
+    hashInput += `_${preview || Date.now()}`;
+  } else if (eventType === domainEvents.LIVE_CHAT_MESSAGE_RECEIVED) {
+    const preview = String(entity?.preview || '').trim();
     hashInput += `_${preview || Date.now()}`;
   } else if (eventType === domainEvents.CASE_EMAIL_RECEIVED) {
     const subject = String(entity?.subject || '').trim();

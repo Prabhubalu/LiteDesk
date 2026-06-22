@@ -11,7 +11,7 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useOffline } from './useOffline';
-import { withApiOrigin } from '@/config/apiBase';
+import { getApiUrlForEventSource } from '@/config/apiBase';
 
 const connections = new Map(); // appKey -> EventSource
 const reconnectTimers = new Map(); // appKey -> timer
@@ -103,7 +103,7 @@ export function connectNotificationStream(appKey, onNotification, options = {}) 
       return;
     }
 
-    const url = withApiOrigin(
+    const url = getApiUrlForEventSource(
       `/api/notifications/stream?appKey=${appKey}&token=${encodeURIComponent(token)}`
     );
     console.log(`[connectNotificationStream] Connecting to ${url}...`);
@@ -220,7 +220,7 @@ export function useNotificationStream(appKey, onNotification) {
       return;
     }
 
-    const url = withApiOrigin(
+    const url = getApiUrlForEventSource(
       `/api/notifications/stream?appKey=${appKey}&token=${encodeURIComponent(token)}`
     );
     console.log(`[useNotificationStream] Connecting to ${url}...`);

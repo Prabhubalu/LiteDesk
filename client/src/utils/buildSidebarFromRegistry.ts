@@ -32,7 +32,9 @@ import {
   getAppNameKey,
   getModuleLabelKey,
   getSurfaceLabelKey,
+  getAddonSurfaceLabelKey,
 } from '@/utils/navigationLabels';
+import type { AddonNavItem } from '@/utils/addonNavigation';
 
 const LAST_ACTIVE_APP_ID_KEY = 'arivu-sidebar-last-active-app-id';
 
@@ -145,7 +147,7 @@ function sidebarLabel(labelKey: string | undefined, fallback: string): { label: 
   return labelKey ? { label: fallback, labelKey } : { label: fallback };
 }
 
-function buildShell(snapshot: PermissionSnapshot): SidebarItem[] {
+function buildShell(snapshot: PermissionSnapshot, addonNav: AddonNavItem[] = []): SidebarItem[] {
   // These are stable surfaces (not registry-driven modules).
   const shell: SidebarItem[] = [];
 
@@ -164,6 +166,17 @@ function buildShell(snapshot: PermissionSnapshot): SidebarItem[] {
     route: '/inbox',
     icon: 'inbox',
   });
+
+  for (const addon of addonNav) {
+    const surfaceId = addon.surfaceId as 'live-chat';
+    shell.push({
+      kind: 'surface',
+      id: surfaceId,
+      ...sidebarLabel(getAddonSurfaceLabelKey(surfaceId), addon.label),
+      route: addon.route,
+      icon: addon.icon || 'chat-bubble-left-right',
+    });
+  }
 
   shell.push({
     kind: 'surface',
@@ -463,7 +476,8 @@ function buildPlatformGovernance(snapshot: PermissionSnapshot): SidebarItem[] {
 export async function buildSidebarFromRegistry(
   appRegistry: AppRegistry,
   snapshot: PermissionSnapshot,
-  validate: boolean = import.meta.env.DEV
+  validate: boolean = import.meta.env.DEV,
+  addonNav: AddonNavItem[] = [],
 ): Promise<SidebarStructure> {
   if (validate) {
     try {
@@ -489,7 +503,7 @@ export async function buildSidebarFromRegistry(
   const effectiveActiveAppId = activeAppId || apps[0]?.id || '';
 
   const sidebar: SidebarStructure = {
-    shell: buildShell(snapshot),
+    shell: buildShell(snapshot, addonNav),
     coreModules,
     appSwitcher: {
       activeAppId: effectiveActiveAppId,

@@ -1,0 +1,1606 @@
+{
+  "sessionsTitle": {
+    "message": "Live Chat",
+    "description": "Live Chat sessions workspace title"
+  },
+  "sessionsDesc": {
+    "message": "Manage visitor chat sessions and agent replies.",
+    "description": "Live Chat sessions workspace subtitle"
+  },
+  "sessionsEmpty": {
+    "message": "No open sessions yet. Visitor conversations will appear here when the widget is embedded and entitled.",
+    "description": "Live Chat open sessions empty state"
+  },
+  "noClosedSessions": {
+    "message": "No closed sessions yet.",
+    "description": "Live Chat closed sessions empty state"
+  },
+  "selectSessionHint": {
+    "message": "Select a session to view the conversation and reply to the visitor.",
+    "description": "Live Chat detail pane empty hint"
+  },
+  "emptyStateIllustrationAlt": {
+    "message": "No live chat conversations",
+    "description": "Live Chat empty state illustration alt text"
+  },
+  "emptyStateListMineTitle": {
+    "message": "Your queue is clear",
+    "description": "Live Chat my queue empty state title"
+  },
+  "emptyStateListMineDescription": {
+    "message": "When visitors start a chat assigned to you, they'll appear here.",
+    "description": "Live Chat my queue empty state description"
+  },
+  "emptyStateListMineAction": {
+    "message": "Browse all queues",
+    "description": "Live Chat my queue empty state action to view all queues"
+  },
+  "emptyStateListAllTitle": {
+    "message": "No open conversations",
+    "description": "Live Chat all queues empty state title"
+  },
+  "emptyStateListAllDescription": {
+    "message": "Embed the chat widget on your site. Visitor messages will show up here as they arrive.",
+    "description": "Live Chat all queues empty state description"
+  },
+  "emptyStateDetailTitle": {
+    "message": "Pick a conversation",
+    "description": "Live Chat detail pane empty state title"
+  },
+  "emptyStateDetailDescription": {
+    "message": "Choose a chat from the list to read messages and reply to your visitor.",
+    "description": "Live Chat detail pane empty state description"
+  },
+  "sessionsLoadFailed": {
+    "message": "Failed to load chat sessions.",
+    "description": "Live Chat sessions list load error"
+  },
+  "loadingMessages": {
+    "message": "Loading messages…",
+    "description": "Live Chat messages loading"
+  },
+  "noMessagesYet": {
+    "message": "No messages in this session yet.",
+    "description": "Live Chat thread empty"
+  },
+  "loadFailed": {
+    "message": "Failed to load chat session.",
+    "description": "Live Chat session load error"
+  },
+  "sendFailed": {
+    "message": "Failed to send message.",
+    "description": "Live Chat send error"
+  },
+  "sessionClosedHint": {
+    "message": "This session has ended. Select an open session to reply.",
+    "description": "Live Chat closed session composer hint"
+  },
+  "visitor": {
+    "message": "Visitor",
+    "description": "Live Chat visitor label"
+  },
+  "agent": {
+    "message": "Agent",
+    "description": "Live Chat agent label"
+  },
+  "replyPlaceholder": {
+    "message": "Type your message…",
+    "description": "Live Chat reply composer placeholder"
+  },
+  "notePlaceholder": {
+    "message": "Add an internal note for your team…",
+    "description": "Live Chat internal note composer placeholder"
+  },
+  "composerReply": {
+    "message": "Reply",
+    "description": "Live Chat composer reply tab"
+  },
+  "composerNote": {
+    "message": "Internal Note",
+    "description": "Live Chat composer internal note tab"
+  },
+  "composerEmoji": {
+    "message": "Insert emoji",
+    "description": "Live Chat composer emoji button"
+  },
+  "composerAttachFile": {
+    "message": "Attach file",
+    "description": "Live Chat composer attach file button"
+  },
+  "composerAttachImage": {
+    "message": "Attach image",
+    "description": "Live Chat composer attach image button"
+  },
+  "composerAttachDocument": {
+    "message": "Attach document",
+    "description": "Live Chat composer attach document button"
+  },
+  "composerInsertCode": {
+    "message": "Insert code block",
+    "description": "Live Chat composer code block button"
+  },
+  "composerMoreActions": {
+    "message": "More actions",
+    "description": "Live Chat composer overflow menu button"
+  },
+  "composerClearDraft": {
+    "message": "Clear draft",
+    "description": "Live Chat composer clear draft action"
+  },
+  "composerSendOptions": {
+    "message": "Send options",
+    "description": "Live Chat composer send options button"
+  },
+  "composerSendAndClose": {
+    "message": "Send and close",
+    "description": "Live Chat composer send and close action"
+  },
+  "composerRemoveAttachment": {
+    "message": "Remove {name}",
+    "description": "Live Chat composer remove pending attachment"
+  },
+  "composerAttachment": {
+    "message": "Attachment",
+    "description": "Live Chat message attachment fallback label"
+  },
+  "composerSending": {
+    "message": "Sending…",
+    "description": "Live Chat composer send button in-progress label"
+  },
+  "composerResize": {
+    "message": "Resize message composer",
+    "description": "Live Chat composer drag handle aria label"
+  },
+  "addNote": {
+    "message": "Add note",
+    "description": "Live Chat add internal note header action"
+  },
+  "chatStartedAt": {
+    "message": "Chat started {time}",
+    "description": "Live Chat session start time label"
+  },
+  "returningVisitor": {
+    "message": "Returning visitor",
+    "description": "Live Chat returning visitor subtitle"
+  },
+  "queueTabMine": {
+    "message": "My queue ({count})",
+    "description": "Live Chat my queue tab with count"
+  },
+  "queueTabAll": {
+    "message": "All queues ({count})",
+    "description": "Live Chat all queues tab with count"
+  },
+  "sectionAssignedToMe": {
+    "message": "Assigned to me",
+    "description": "Live Chat queue section assigned to current agent"
+  },
+  "sectionWaitingInQueue": {
+    "message": "Waiting in queue",
+    "description": "Live Chat queue section unassigned waiting sessions"
+  },
+  "sectionRecentlyClosed": {
+    "message": "Recently closed",
+    "description": "Live Chat queue section recently closed sessions"
+  },
+  "sectionAllOpen": {
+    "message": "All open",
+    "description": "Live Chat queue section all open sessions"
+  },
+  "myQueueEmpty": {
+    "message": "No active chats assigned to you.",
+    "description": "Live Chat my queue empty state"
+  },
+  "contextNavLabel": {
+    "message": "Session context",
+    "description": "Live Chat session context panel tab navigation aria label"
+  },
+  "visitorContextTitle": {
+    "message": "Visitor context",
+    "description": "Live Chat visitor context panel title"
+  },
+  "visitorContextExpand": {
+    "message": "Show visitor context",
+    "description": "Live Chat expand visitor context panel"
+  },
+  "visitorContextCollapse": {
+    "message": "Hide visitor context",
+    "description": "Live Chat collapse visitor context panel"
+  },
+  "contextSectionDetails": {
+    "message": "Visitor details",
+    "description": "Live Chat context visitor details section"
+  },
+  "contextSectionDetailsEmpty": {
+    "message": "No visitor details captured yet.",
+    "description": "Live Chat context empty visitor details"
+  },
+  "contextSectionPreviousChats": {
+    "message": "Previous chats",
+    "description": "Live Chat context previous chats section"
+  },
+  "contextTabInfo": {
+    "message": "Visitor info",
+    "description": "Live Chat context visitor info tab"
+  },
+  "contextTabHistory": {
+    "message": "Previous chats ({count})",
+    "description": "Live Chat context previous chats tab"
+  },
+  "contextTabNotes": {
+    "message": "Notes",
+    "description": "Live Chat context notes tab"
+  },
+  "notesComingSoon": {
+    "message": "Session notes are coming soon.",
+    "description": "Live Chat context notes placeholder"
+  },
+  "visitorJourneyTitle": {
+    "message": "Visitor journey",
+    "description": "Live Chat visitor journey section title"
+  },
+  "visitorJourneyPage": {
+    "message": "Visited {page}",
+    "description": "Live Chat visitor journey page entry"
+  },
+  "linkedRecordsTitle": {
+    "message": "Linked records",
+    "description": "Live Chat linked records section title"
+  },
+  "noLinkedRecords": {
+    "message": "No linked CRM records yet.",
+    "description": "Live Chat no linked records empty state"
+  },
+  "linkedCaseLabel": {
+    "message": "Case …{id}",
+    "description": "Live Chat linked case label"
+  },
+  "linkedPersonLabel": {
+    "message": "Contact",
+    "description": "Live Chat linked person label"
+  },
+  "linkedRecordFallback": {
+    "message": "Linked record",
+    "description": "Live Chat linked record fallback label"
+  },
+  "linkedRecordModuleFallback": {
+    "message": "Record",
+    "description": "Live Chat linked record module label fallback"
+  },
+  "linkedRecordsToggleGroup": {
+    "message": "{module} ({count})",
+    "description": "Live Chat linked records module group expand/collapse aria label"
+  },
+  "linkedDealLabel": {
+    "message": "Deal",
+    "description": "Live Chat linked deal label"
+  },
+  "linkedOrganizationLabel": {
+    "message": "Organization",
+    "description": "Live Chat linked organization label"
+  },
+  "linkedTaskLabel": {
+    "message": "Task",
+    "description": "Live Chat linked task label"
+  },
+  "linkedEventLabel": {
+    "message": "Event",
+    "description": "Live Chat linked event label"
+  },
+  "linkedQuoteLabel": {
+    "message": "Quote",
+    "description": "Live Chat linked quote label"
+  },
+  "linkedDocumentLabel": {
+    "message": "Document",
+    "description": "Live Chat linked document label"
+  },
+  "linkedItemLabel": {
+    "message": "Item",
+    "description": "Live Chat linked item label"
+  },
+  "linkedFormLabel": {
+    "message": "Form",
+    "description": "Live Chat linked form label"
+  },
+  "linkedSalesOrderLabel": {
+    "message": "Sales order",
+    "description": "Live Chat linked sales order label"
+  },
+  "linkedInvoiceLabel": {
+    "message": "Invoice",
+    "description": "Live Chat linked invoice label"
+  },
+  "linkedPaymentLabel": {
+    "message": "Payment",
+    "description": "Live Chat linked payment label"
+  },
+  "linkedRecordSourceCrm": {
+    "message": "Linked via contact",
+    "description": "Live Chat linked record sourced from CRM relationship"
+  },
+  "linkedRecordSourceVisitor": {
+    "message": "Linked to visitor",
+    "description": "Live Chat linked record sourced from visitor profile"
+  },
+  "chatDetailsTitle": {
+    "message": "Chat details",
+    "description": "Live Chat chat details section title"
+  },
+  "detailChannel": {
+    "message": "Channel",
+    "description": "Live Chat chat detail channel label"
+  },
+  "detailQueue": {
+    "message": "Queue",
+    "description": "Live Chat chat detail queue label"
+  },
+  "detailQueueDefault": {
+    "message": "General",
+    "description": "Live Chat default queue label"
+  },
+  "detailAgent": {
+    "message": "Assigned agent",
+    "description": "Live Chat chat detail assigned agent label"
+  },
+  "detailStatus": {
+    "message": "Status",
+    "description": "Live Chat chat detail status label"
+  },
+  "detailSessionId": {
+    "message": "Session ID",
+    "description": "Live Chat session ID field label"
+  },
+  "detailHandledBy": {
+    "message": "Handled by",
+    "description": "Live Chat session handled-by field label"
+  },
+  "detailStartedAt": {
+    "message": "Started at",
+    "description": "Live Chat session started-at field label"
+  },
+  "detailEndedAt": {
+    "message": "Ended at",
+    "description": "Live Chat session ended-at field label"
+  },
+  "detailDuration": {
+    "message": "Duration",
+    "description": "Live Chat session duration field label"
+  },
+  "detailMessageCount": {
+    "message": "Messages",
+    "description": "Live Chat session message count field label"
+  },
+  "channel.web": {
+    "message": "Website",
+    "description": "Live Chat web channel label"
+  },
+  "visitorTyping": {
+    "message": "{name} is typing…",
+    "description": "Live Chat visitor typing indicator"
+  },
+  "filterOpen": {
+    "message": "Open",
+    "description": "Live Chat open sessions filter"
+  },
+  "filterClosed": {
+    "message": "Closed",
+    "description": "Live Chat closed sessions filter"
+  },
+  "endSession": {
+    "message": "End session",
+    "description": "Live Chat end session button"
+  },
+  "createCase": {
+    "message": "Create case",
+    "description": "Create Helpdesk case from session"
+  },
+  "createCaseFailed": {
+    "message": "Failed to create Helpdesk case.",
+    "description": "Create case from session error"
+  },
+  "linkCase": {
+    "message": "Link case",
+    "description": "Link existing Helpdesk case button"
+  },
+  "linkCaseTitle": {
+    "message": "Link Helpdesk case",
+    "description": "Link case dialog title"
+  },
+  "linkCaseDesc": {
+    "message": "Paste the case record ID to link this chat session. The case will store a session reference only — no transcript is copied.",
+    "description": "Link case dialog description"
+  },
+  "linkCaseIdLabel": {
+    "message": "Case ID",
+    "description": "Link case id field label"
+  },
+  "linkCaseIdPlaceholder": {
+    "message": "Case record ObjectId",
+    "description": "Link case id placeholder"
+  },
+  "linkCaseConfirm": {
+    "message": "Link case",
+    "description": "Link case confirm button"
+  },
+  "linkCaseFailed": {
+    "message": "Failed to link Helpdesk case.",
+    "description": "Link case error"
+  },
+  "linking": {
+    "message": "Linking…",
+    "description": "Link case in progress"
+  },
+  "openLinkedCase": {
+    "message": "Open case",
+    "description": "Open linked Helpdesk case"
+  },
+  "createLead": {
+    "message": "Create lead",
+    "description": "Create Sales lead from session visitor"
+  },
+  "createLeadFailed": {
+    "message": "Failed to create Sales lead.",
+    "description": "Create lead from session error"
+  },
+  "linkPerson": {
+    "message": "Link person",
+    "description": "Link existing Sales person button"
+  },
+  "linkPersonTitle": {
+    "message": "Link Sales person",
+    "description": "Link person dialog title"
+  },
+  "linkPersonDesc": {
+    "message": "Paste the person record ID to link this chat session. The person record stores a session reference only — no transcript is copied.",
+    "description": "Link person dialog description"
+  },
+  "linkPersonIdLabel": {
+    "message": "Person ID",
+    "description": "Link person id field label"
+  },
+  "linkPersonIdPlaceholder": {
+    "message": "Person record ObjectId",
+    "description": "Link person id placeholder"
+  },
+  "linkPersonConfirm": {
+    "message": "Link person",
+    "description": "Link person confirm button"
+  },
+  "linkPersonFailed": {
+    "message": "Failed to link Sales person.",
+    "description": "Link person error"
+  },
+  "openLinkedPerson": {
+    "message": "Open person",
+    "description": "Open linked Sales person"
+  },
+  "claimSession": {
+    "message": "Claim session",
+    "description": "Claim waiting chat session"
+  },
+  "claimSessionFailed": {
+    "message": "Failed to claim session.",
+    "description": "Claim session error"
+  },
+  "unassigned": {
+    "message": "Unassigned",
+    "description": "Session waiting for agent claim"
+  },
+  "endSessionConfirm": {
+    "message": "End this chat session for the visitor?",
+    "description": "Live Chat end session confirmation"
+  },
+  "endSessionTitle": {
+    "message": "End chat session",
+    "description": "Live Chat end session dialog title"
+  },
+  "endSessionDesc": {
+    "message": "Choose an outcome before closing. This may trigger Process Designer automations.",
+    "description": "Live Chat end session dialog description"
+  },
+  "endSessionConfirmAction": {
+    "message": "End session",
+    "description": "Live Chat end session confirm button"
+  },
+  "outcomeLabel": {
+    "message": "Outcome",
+    "description": "Live Chat session outcome field label"
+  },
+  "selectOutcome": {
+    "message": "Select outcome…",
+    "description": "Live Chat outcome placeholder"
+  },
+  "outcomes.resolved": {
+    "message": "Resolved in Chat",
+    "description": "Live Chat resolved outcome"
+  },
+  "outcomes.missed": {
+    "message": "Missed",
+    "description": "Live Chat missed outcome"
+  },
+  "outcomes.follow_up_required": {
+    "message": "Follow-up required",
+    "description": "Live Chat follow-up outcome"
+  },
+  "outcomes.escalated": {
+    "message": "Escalated",
+    "description": "Live Chat escalated outcome"
+  },
+  "outcomes.abandoned": {
+    "message": "Abandoned",
+    "description": "Live Chat abandoned outcome"
+  },
+  "outcomes.spam": {
+    "message": "Spam",
+    "description": "Live Chat spam outcome"
+  },
+  "outcomes.informational": {
+    "message": "Informational",
+    "description": "Live Chat informational outcome"
+  },
+  "endSessionFailed": {
+    "message": "Failed to end session.",
+    "description": "Live Chat end session error"
+  },
+  "loadingOutcomes": {
+    "message": "Loading outcomes…",
+    "description": "End session dialog loading outcomes"
+  },
+  "workspaceNavLabel": {
+    "message": "Live Chat sections",
+    "description": "Live Chat workspace tab navigation aria label"
+  },
+  "navSessions": {
+    "message": "Sessions",
+    "description": "Live Chat sessions workspace tab"
+  },
+  "navVisitors": {
+    "message": "Visitors",
+    "description": "Live Chat visitors workspace tab (deprecated)"
+  },
+  "navClosed": {
+    "message": "Closed",
+    "description": "Live Chat closed sessions workspace tab"
+  },
+  "navReports": {
+    "message": "Reports",
+    "description": "Live Chat reports workspace tab"
+  },
+  "reportsTitle": {
+    "message": "Live Chat reports",
+    "description": "Live Chat reports page title"
+  },
+  "reportsDesc": {
+    "message": "Operational metrics, agent performance, and business outcomes from linked records.",
+    "description": "Live Chat reports page subtitle"
+  },
+  "reportsLoading": {
+    "message": "Loading reports…",
+    "description": "Live Chat reports loading state"
+  },
+  "reportsLoadFailed": {
+    "message": "Failed to load Live Chat reports.",
+    "description": "Live Chat reports load error"
+  },
+  "reportsRangeLabel": {
+    "message": "Period",
+    "description": "Live Chat reports date range label"
+  },
+  "reportsRange7d": {
+    "message": "Last 7 days",
+    "description": "Live Chat reports 7-day range"
+  },
+  "reportsRange30d": {
+    "message": "Last 30 days",
+    "description": "Live Chat reports 30-day range"
+  },
+  "reportsRange90d": {
+    "message": "Last 90 days",
+    "description": "Live Chat reports 90-day range"
+  },
+  "reportsOperational": {
+    "message": "Operational",
+    "description": "Live Chat operational metrics section"
+  },
+  "reportsActiveNow": {
+    "message": "Active sessions",
+    "description": "Live Chat active sessions metric"
+  },
+  "reportsWaitingNow": {
+    "message": "Waiting now",
+    "description": "Live Chat waiting sessions metric"
+  },
+  "reportsOnlineAgents": {
+    "message": "Online agents",
+    "description": "Live Chat online agents metric"
+  },
+  "reportsClosedInRange": {
+    "message": "Closed in period",
+    "description": "Live Chat closed sessions in range metric"
+  },
+  "reportsMissed": {
+    "message": "Missed",
+    "description": "Live Chat missed outcome count"
+  },
+  "reportsAvgHandleTime": {
+    "message": "Avg handle time",
+    "description": "Live Chat average handle time metric"
+  },
+  "reportsAgentsActive": {
+    "message": "Agents with closed sessions",
+    "description": "Live Chat agents who closed sessions in range"
+  },
+  "reportsAvgSessionsPerAgent": {
+    "message": "Avg sessions per agent",
+    "description": "Live Chat average closed sessions per active agent"
+  },
+  "reportsQuality": {
+    "message": "Quality",
+    "description": "Live Chat quality metrics section"
+  },
+  "reportsAvgCsat": {
+    "message": "Avg CSAT",
+    "description": "Live Chat average CSAT score"
+  },
+  "reportsCsatRated": {
+    "message": "CSAT responses",
+    "description": "Live Chat count of rated sessions"
+  },
+  "reportsTotalTransfers": {
+    "message": "Total transfers",
+    "description": "Live Chat transfer count in period"
+  },
+  "reportsTransferRate": {
+    "message": "Transfer rate",
+    "description": "Live Chat percentage of sessions with transfers"
+  },
+  "reportsCsatDistribution": {
+    "message": "CSAT distribution",
+    "description": "Live Chat CSAT score distribution"
+  },
+  "reportsCsatScore": {
+    "message": "Score",
+    "description": "Live Chat CSAT score label"
+  },
+  "reportsNoCsat": {
+    "message": "No CSAT responses in this period.",
+    "description": "Live Chat empty CSAT state"
+  },
+  "reportsAgentTransfers": {
+    "message": "Transfers",
+    "description": "Live Chat agent transfer count column"
+  },
+  "reportsQueueLoad": {
+    "message": "Queue load",
+    "description": "Live Chat queue load section"
+  },
+  "reportsQueue": {
+    "message": "Queue",
+    "description": "Live Chat queue column header"
+  },
+  "reportsCount": {
+    "message": "Count",
+    "description": "Live Chat report count column"
+  },
+  "reportsNoQueueLoad": {
+    "message": "No sessions waiting in queues.",
+    "description": "Live Chat empty queue load state"
+  },
+  "reportsOutcomes": {
+    "message": "Outcomes",
+    "description": "Live Chat outcomes section"
+  },
+  "reportsNoOutcomes": {
+    "message": "No closed sessions in this period.",
+    "description": "Live Chat empty outcomes state"
+  },
+  "reportsBusiness": {
+    "message": "Business links",
+    "description": "Live Chat business metrics section"
+  },
+  "reportsCasesCreated": {
+    "message": "Cases created",
+    "description": "Live Chat cases created from chat metric"
+  },
+  "reportsCasesLinked": {
+    "message": "Cases linked",
+    "description": "Live Chat cases linked metric"
+  },
+  "reportsPeopleCreated": {
+    "message": "People created",
+    "description": "Live Chat people created from chat metric"
+  },
+  "reportsPeopleLinked": {
+    "message": "People linked",
+    "description": "Live Chat people linked metric"
+  },
+  "reportsAgentMetrics": {
+    "message": "Agent metrics",
+    "description": "Live Chat agent metrics section"
+  },
+  "reportsSessionsHandled": {
+    "message": "Sessions",
+    "description": "Live Chat agent sessions handled column"
+  },
+  "reportsAvgFrt": {
+    "message": "Avg first response",
+    "description": "Live Chat average first response time column"
+  },
+  "reportsNoAgents": {
+    "message": "No agent-handled sessions in this period.",
+    "description": "Live Chat empty agent metrics state"
+  },
+  "reportsDurationSeconds": {
+    "message": "{count}s",
+    "description": "Live Chat duration seconds"
+  },
+  "reportsDurationMinutes": {
+    "message": "{count}m",
+    "description": "Live Chat duration minutes"
+  },
+  "reportsDurationHours": {
+    "message": "{hours}h {minutes}m",
+    "description": "Live Chat duration hours and minutes"
+  },
+  "visitorsTitle": {
+    "message": "Visitors",
+    "description": "Live Chat visitors list title (deprecated)"
+  },
+  "closedSessionsTitle": {
+    "message": "Closed sessions",
+    "description": "Live Chat closed sessions list title"
+  },
+  "closedSessionsDesc": {
+    "message": "Browse ended chat sessions and open a transcript with linked records.",
+    "description": "Live Chat closed sessions list subtitle"
+  },
+  "closedSessionsEmpty": {
+    "message": "No closed sessions yet. Ended conversations will appear here.",
+    "description": "Live Chat closed sessions empty state"
+  },
+  "closedSessionsSearchEmpty": {
+    "message": "No closed sessions match your search.",
+    "description": "Live Chat closed sessions search empty state"
+  },
+  "closedSessionsSearchPlaceholder": {
+    "message": "Search by visitor, outcome, or message…",
+    "description": "Live Chat closed sessions search placeholder"
+  },
+  "closedSessionsLoadFailed": {
+    "message": "Failed to load closed sessions.",
+    "description": "Live Chat closed sessions list load error"
+  },
+  "closedSessionsLoadMore": {
+    "message": "Load more",
+    "description": "Live Chat closed sessions pagination"
+  },
+  "selectClosedSessionHint": {
+    "message": "Select a closed session to view the transcript and linked records.",
+    "description": "Live Chat closed session detail pane empty hint"
+  },
+  "closedSessionBack": {
+    "message": "Back to closed sessions",
+    "description": "Live Chat closed session detail back navigation"
+  },
+  "closedSessionTabsLabel": {
+    "message": "Closed session views",
+    "description": "Live Chat closed session detail tab list aria label"
+  },
+  "closedSessionTabTranscript": {
+    "message": "Transcript",
+    "description": "Live Chat closed session transcript tab"
+  },
+  "closedSessionTabSummary": {
+    "message": "Summary",
+    "description": "Live Chat closed session summary tab"
+  },
+  "closedSessionTabJourney": {
+    "message": "Visitor Journey",
+    "description": "Live Chat closed session visitor journey tab"
+  },
+  "closedSessionTabLinkedRecords": {
+    "message": "Linked Records",
+    "description": "Live Chat closed session linked records tab"
+  },
+  "closedSessionTabLinkedRecordsCount": {
+    "message": "Linked Records ({count})",
+    "description": "Live Chat closed session linked records tab with count"
+  },
+  "closedSessionTabNotes": {
+    "message": "Notes",
+    "description": "Live Chat closed session notes tab"
+  },
+  "closedSessionTabNotesCount": {
+    "message": "Notes ({count})",
+    "description": "Live Chat closed session notes tab with count"
+  },
+  "closedSessionTabFeedback": {
+    "message": "Feedback",
+    "description": "Live Chat closed session feedback tab"
+  },
+  "closedSessionTabFeedbackCount": {
+    "message": "Feedback ({count})",
+    "description": "Live Chat closed session feedback tab with count"
+  },
+  "closedSessionTabAudit": {
+    "message": "Audit Trail",
+    "description": "Live Chat closed session audit trail tab"
+  },
+  "closedSessionTranscriptSearch": {
+    "message": "Search in transcript…",
+    "description": "Live Chat closed session transcript search placeholder"
+  },
+  "closedSessionTranscriptSearchEmpty": {
+    "message": "No messages match your search.",
+    "description": "Live Chat closed session transcript search empty state"
+  },
+  "closedSessionFooter": {
+    "message": "This session is closed.",
+    "description": "Live Chat closed session transcript footer"
+  },
+  "closedSessionCsatFooter": {
+    "message": "Visitor rated this chat {score}/5.",
+    "description": "Live Chat closed session CSAT footer"
+  },
+  "closedSessionNoSummary": {
+    "message": "No summary was recorded for this session.",
+    "description": "Live Chat closed session empty summary"
+  },
+  "closedSessionNoFeedback": {
+    "message": "No visitor feedback was submitted.",
+    "description": "Live Chat closed session empty feedback"
+  },
+  "closedSessionFeedbackTitle": {
+    "message": "Visitor Feedback",
+    "description": "Live Chat closed session feedback panel title"
+  },
+  "closedSessionDetailsCard": {
+    "message": "Session Details",
+    "description": "Live Chat closed session details card title"
+  },
+  "closedSessionAgentCard": {
+    "message": "Agent & Queue",
+    "description": "Live Chat closed session agent and queue card title"
+  },
+  "closedSessionVisitorCard": {
+    "message": "Visitor Information",
+    "description": "Live Chat closed session visitor card title"
+  },
+  "closedSessionInsightsCard": {
+    "message": "Conversation Insights",
+    "description": "Live Chat closed session AI insights card title"
+  },
+  "botLabel": {
+    "message": "Bot",
+    "description": "Live Chat bot author label"
+  },
+  "tabNewSession": {
+    "message": "New session",
+    "description": "Live Chat browser tab alert for one new session"
+  },
+  "tabNewSessions": {
+    "message": "{count} New sessions",
+    "description": "Live Chat browser tab alert for multiple new sessions"
+  },
+  "realtimeToastSessionStarted": {
+    "message": "New live chat",
+    "description": "Live Chat toast category when a visitor starts a chat"
+  },
+  "realtimeToastDefault": {
+    "message": "Live chat",
+    "description": "Live Chat toast fallback category"
+  },
+  "closedColSessionId": {
+    "message": "Session ID",
+    "description": "Live Chat closed sessions table session ID column"
+  },
+  "closedColVisitor": {
+    "message": "Visitor",
+    "description": "Live Chat closed sessions table visitor column"
+  },
+  "closedColChannel": {
+    "message": "Channel",
+    "description": "Live Chat closed sessions table channel column"
+  },
+  "closedColStatus": {
+    "message": "Status",
+    "description": "Live Chat closed sessions table status column"
+  },
+  "closedColOutcome": {
+    "message": "Outcome",
+    "description": "Live Chat closed sessions table outcome column"
+  },
+  "closedColQueue": {
+    "message": "Queue",
+    "description": "Live Chat closed sessions table queue column"
+  },
+  "closedColAssignedAgent": {
+    "message": "Assigned agent",
+    "description": "Live Chat closed sessions table assigned agent column"
+  },
+  "closedColHandledBy": {
+    "message": "Handled by",
+    "description": "Live Chat closed sessions table handled-by column"
+  },
+  "closedColStarted": {
+    "message": "Started",
+    "description": "Live Chat closed sessions table started-at column"
+  },
+  "closedColClosed": {
+    "message": "Ended",
+    "description": "Live Chat closed sessions table ended-at column"
+  },
+  "closedColDuration": {
+    "message": "Duration",
+    "description": "Live Chat closed sessions table duration column"
+  },
+  "closedColSummary": {
+    "message": "Summary",
+    "description": "Live Chat closed sessions table summary column"
+  },
+  "closedColTags": {
+    "message": "Tags",
+    "description": "Live Chat closed sessions table tags column"
+  },
+  "closedColCsat": {
+    "message": "CSAT",
+    "description": "Live Chat closed sessions table CSAT column"
+  },
+  "fieldSummary": {
+    "message": "Summary",
+    "description": "Live Chat session summary field label"
+  },
+  "fieldSummaryPlaceholder": {
+    "message": "Brief summary of the conversation…",
+    "description": "Live Chat session summary placeholder"
+  },
+  "fieldTags": {
+    "message": "Tags",
+    "description": "Live Chat session tags field label"
+  },
+  "fieldTagsPlaceholder": {
+    "message": "billing, vip, escalation",
+    "description": "Live Chat session tags placeholder"
+  },
+  "fieldCsat": {
+    "message": "CSAT score",
+    "description": "Live Chat session CSAT field label"
+  },
+  "fieldFeedbackComment": {
+    "message": "Visitor feedback",
+    "description": "Live Chat session visitor feedback comment label"
+  },
+  "contextSectionTiming": {
+    "message": "Timing & ownership",
+    "description": "Live Chat context panel timing section title"
+  },
+  "fieldAssignedAt": {
+    "message": "Assigned at",
+    "description": "Live Chat session assigned at field"
+  },
+  "fieldFirstResponseAt": {
+    "message": "First response at",
+    "description": "Live Chat session first response at field"
+  },
+  "fieldAssignedBy": {
+    "message": "Assigned by",
+    "description": "Live Chat session assigned by field"
+  },
+  "fieldWaitTime": {
+    "message": "Wait time",
+    "description": "Live Chat session wait time metric"
+  },
+  "fieldFirstResponseTime": {
+    "message": "First response time",
+    "description": "Live Chat session first response time metric"
+  },
+  "fieldHandleTime": {
+    "message": "Handle time",
+    "description": "Live Chat session handle time metric"
+  },
+  "fieldTransferCount": {
+    "message": "Transfers",
+    "description": "Live Chat session transfer count field"
+  },
+  "fieldAgentsInvolved": {
+    "message": "Agents involved",
+    "description": "Live Chat session agents involved field"
+  },
+  "assignmentHistoryTitle": {
+    "message": "Assignment history",
+    "description": "Live Chat assignment history section title"
+  },
+  "assignmentHistoryEmpty": {
+    "message": "No assignment events yet.",
+    "description": "Live Chat assignment history empty state"
+  },
+  "assignmentHistoryLoadFailed": {
+    "message": "Failed to load assignment history.",
+    "description": "Live Chat assignment history load error"
+  },
+  "assignmentAction.assigned": {
+    "message": "Assigned",
+    "description": "Live Chat assignment action assigned"
+  },
+  "assignmentAction.claimed": {
+    "message": "Claimed",
+    "description": "Live Chat assignment action claimed"
+  },
+  "assignmentAction.transferred": {
+    "message": "Transferred",
+    "description": "Live Chat assignment action transferred"
+  },
+  "assignmentAction.unassigned": {
+    "message": "Unassigned",
+    "description": "Live Chat assignment action unassigned"
+  },
+  "assignedBy.queue_routing": {
+    "message": "Queue routing",
+    "description": "Live Chat assigned by queue routing"
+  },
+  "assignedBy.bot": {
+    "message": "Bot",
+    "description": "Live Chat assigned by bot"
+  },
+  "assignedBy.manual": {
+    "message": "Manual",
+    "description": "Live Chat assigned by manual"
+  },
+  "assignedBy.supervisor": {
+    "message": "Supervisor",
+    "description": "Live Chat assigned by supervisor"
+  },
+  "contextSectionDevice": {
+    "message": "Device & location",
+    "description": "Live Chat context panel device section title"
+  },
+  "contextSectionDeviceEmpty": {
+    "message": "Device details are captured when the visitor starts chat from the widget.",
+    "description": "Live Chat device section empty state"
+  },
+  "fieldReferrer": {
+    "message": "Referrer",
+    "description": "Live Chat session referrer URL field"
+  },
+  "fieldEntryPage": {
+    "message": "Entry page",
+    "description": "Live Chat session entry page field"
+  },
+  "fieldBrowser": {
+    "message": "Browser",
+    "description": "Live Chat session browser field"
+  },
+  "fieldOperatingSystem": {
+    "message": "Operating system",
+    "description": "Live Chat session OS field"
+  },
+  "fieldDeviceType": {
+    "message": "Device type",
+    "description": "Live Chat session device type field"
+  },
+  "fieldCountry": {
+    "message": "Country",
+    "description": "Live Chat session country field"
+  },
+  "fieldLanguage": {
+    "message": "Language",
+    "description": "Live Chat session language field"
+  },
+  "visitorJourneyEmpty": {
+    "message": "No page visits recorded for this session.",
+    "description": "Live Chat visitor journey empty state"
+  },
+  "journeyAction.page_view": {
+    "message": "Page view",
+    "description": "Live Chat journey page view action"
+  },
+  "journeyAction.page_change": {
+    "message": "Page change",
+    "description": "Live Chat journey page change action"
+  },
+  "deviceType.desktop": {
+    "message": "Desktop",
+    "description": "Live Chat device type desktop"
+  },
+  "deviceType.mobile": {
+    "message": "Mobile",
+    "description": "Live Chat device type mobile"
+  },
+  "deviceType.tablet": {
+    "message": "Tablet",
+    "description": "Live Chat device type tablet"
+  },
+  "contextSectionIdentity": {
+    "message": "Visitor identity",
+    "description": "Live Chat context identity section title"
+  },
+  "fieldVisitorType": {
+    "message": "Visitor type",
+    "description": "Live Chat visitor type field"
+  },
+  "fieldVisitorTypeUnset": {
+    "message": "Not set",
+    "description": "Live Chat visitor type unset option"
+  },
+  "fieldPriority": {
+    "message": "Priority",
+    "description": "Live Chat session priority field"
+  },
+  "fieldPriorityUnset": {
+    "message": "None",
+    "description": "Live Chat priority unset option"
+  },
+  "fieldInternalNotes": {
+    "message": "Internal notes",
+    "description": "Live Chat internal notes field"
+  },
+  "fieldInternalNotesPlaceholder": {
+    "message": "Agent-only notes about this session…",
+    "description": "Live Chat internal notes placeholder"
+  },
+  "saveInternalNotes": {
+    "message": "Save notes",
+    "description": "Live Chat save internal notes button"
+  },
+  "identitySaveFailed": {
+    "message": "Failed to save identity fields.",
+    "description": "Live Chat identity save error"
+  },
+  "sessionNotesTitle": {
+    "message": "Session notes",
+    "description": "Live Chat session notes section title"
+  },
+  "sessionNotesEmpty": {
+    "message": "No internal notes yet.",
+    "description": "Live Chat session notes empty state"
+  },
+  "sessionNotesLoadFailed": {
+    "message": "Failed to load session notes.",
+    "description": "Live Chat session notes load error"
+  },
+  "sessionNoteAddFailed": {
+    "message": "Failed to add note.",
+    "description": "Live Chat session note add error"
+  },
+  "sessionNotePlaceholder": {
+    "message": "Add an internal note…",
+    "description": "Live Chat session note placeholder"
+  },
+  "addSessionNote": {
+    "message": "Add note",
+    "description": "Live Chat add session note button"
+  },
+  "visitorType.anonymous": {
+    "message": "Anonymous",
+    "description": "Live Chat visitor type anonymous"
+  },
+  "visitorType.known_visitor": {
+    "message": "Known visitor",
+    "description": "Live Chat visitor type known visitor"
+  },
+  "visitorType.customer": {
+    "message": "Customer",
+    "description": "Live Chat visitor type customer"
+  },
+  "visitorType.partner": {
+    "message": "Partner",
+    "description": "Live Chat visitor type partner"
+  },
+  "sessionPriority.low": {
+    "message": "Low",
+    "description": "Live Chat session priority low"
+  },
+  "sessionPriority.normal": {
+    "message": "Normal",
+    "description": "Live Chat session priority normal"
+  },
+  "sessionPriority.high": {
+    "message": "High",
+    "description": "Live Chat session priority high"
+  },
+  "sessionPriority.urgent": {
+    "message": "Urgent",
+    "description": "Live Chat session priority urgent"
+  },
+  "transferSession": {
+    "message": "Transfer",
+    "description": "Live Chat transfer session button"
+  },
+  "transferSessionTitle": {
+    "message": "Transfer session",
+    "description": "Live Chat transfer dialog title"
+  },
+  "transferSessionDesc": {
+    "message": "Assign this conversation to another agent.",
+    "description": "Live Chat transfer dialog description"
+  },
+  "transferAgentLabel": {
+    "message": "Transfer to",
+    "description": "Live Chat transfer agent select label"
+  },
+  "transferAgentPlaceholder": {
+    "message": "Select an agent…",
+    "description": "Live Chat transfer agent placeholder"
+  },
+  "loadingTransferAgents": {
+    "message": "Loading agents…",
+    "description": "Live Chat transfer agents loading"
+  },
+  "transferAgentsLoadFailed": {
+    "message": "Failed to load agents.",
+    "description": "Live Chat transfer agents load error"
+  },
+  "transferSessionConfirm": {
+    "message": "Transfer",
+    "description": "Live Chat transfer confirm button"
+  },
+  "transferring": {
+    "message": "Transferring…",
+    "description": "Live Chat transfer in progress"
+  },
+  "transferSessionFailed": {
+    "message": "Failed to transfer session.",
+    "description": "Live Chat transfer error"
+  },
+  "fieldBotInvolved": {
+    "message": "Bot involved",
+    "description": "Live Chat bot involved field"
+  },
+  "fieldBotEscalated": {
+    "message": "Bot escalated",
+    "description": "Live Chat bot escalated field"
+  },
+  "fieldBotResolution": {
+    "message": "Bot resolution",
+    "description": "Live Chat bot resolution field"
+  },
+  "fieldBotMessageCount": {
+    "message": "Bot messages",
+    "description": "Live Chat bot message count field"
+  },
+  "botResolution.escalated": {
+    "message": "Escalated to agent",
+    "description": "Live Chat bot resolution escalated"
+  },
+  "botResolution.unresolved": {
+    "message": "Unresolved",
+    "description": "Live Chat bot resolution unresolved"
+  },
+  "botResolution.resolved": {
+    "message": "Resolved by bot",
+    "description": "Live Chat bot resolution resolved"
+  },
+  "valueYes": {
+    "message": "Yes",
+    "description": "Live Chat yes label"
+  },
+  "valueNo": {
+    "message": "No",
+    "description": "Live Chat no label"
+  },
+  "resolutionRating.excellent": {
+    "message": "Excellent",
+    "description": "Live Chat resolution rating excellent"
+  },
+  "resolutionRating.good": {
+    "message": "Good",
+    "description": "Live Chat resolution rating good"
+  },
+  "resolutionRating.average": {
+    "message": "Average",
+    "description": "Live Chat resolution rating average"
+  },
+  "resolutionRating.poor": {
+    "message": "Poor",
+    "description": "Live Chat resolution rating poor"
+  },
+  "closedColMessages": {
+    "message": "Messages",
+    "description": "Live Chat closed sessions table message count column"
+  },
+  "visitorsEmpty": {
+    "message": "No visitors yet. Profiles appear when visitors start chats through the embedded widget.",
+    "description": "Live Chat visitors empty state"
+  },
+  "visitorsSearchEmpty": {
+    "message": "No visitors match your search.",
+    "description": "Live Chat visitors search empty state"
+  },
+  "visitorsSearchPlaceholder": {
+    "message": "Search by name, email, or ID…",
+    "description": "Live Chat visitors search placeholder"
+  },
+  "visitorsLoadFailed": {
+    "message": "Failed to load visitors.",
+    "description": "Live Chat visitors list load error"
+  },
+  "visitorLoadFailed": {
+    "message": "Failed to load visitor profile.",
+    "description": "Live Chat visitor detail load error"
+  },
+  "selectVisitorHint": {
+    "message": "Select a visitor to view their profile and chat history.",
+    "description": "Live Chat visitor detail pane empty hint"
+  },
+  "anonymousVisitor": {
+    "message": "Anonymous visitor",
+    "description": "Live Chat visitor without name or email"
+  },
+  "visitorSessionCount": {
+    "message": "{count} session | {count} sessions",
+    "description": "Live Chat visitor session count label"
+  },
+  "visitorEmail": {
+    "message": "Email",
+    "description": "Live Chat visitor email field label"
+  },
+  "visitorPhone": {
+    "message": "Phone",
+    "description": "Live Chat visitor phone field label"
+  },
+  "visitorExternalId": {
+    "message": "External ID",
+    "description": "Live Chat visitor external id field label"
+  },
+  "visitorFirstSeen": {
+    "message": "First seen",
+    "description": "Live Chat visitor first seen label"
+  },
+  "visitorLastSeen": {
+    "message": "Last seen",
+    "description": "Live Chat visitor last seen label"
+  },
+  "visitorLastPage": {
+    "message": "Last page",
+    "description": "Live Chat visitor last page label"
+  },
+  "visitorSessionsTitle": {
+    "message": "Chat sessions",
+    "description": "Live Chat visitor sessions section title"
+  },
+  "visitorNoSessions": {
+    "message": "No sessions linked to this visitor yet.",
+    "description": "Live Chat visitor with no sessions"
+  },
+  "lifecycle.waiting": {
+    "message": "Waiting",
+    "description": "Live Chat lifecycle waiting"
+  },
+  "lifecycle.assigned": {
+    "message": "Assigned",
+    "description": "Live Chat lifecycle assigned"
+  },
+  "lifecycle.active": {
+    "message": "Active",
+    "description": "Live Chat lifecycle active"
+  },
+  "lifecycle.ended": {
+    "message": "Ended",
+    "description": "Live Chat lifecycle ended"
+  },
+  "lifecycle.bot_handling": {
+    "message": "Bot handling",
+    "description": "Live Chat lifecycle bot handling"
+  },
+  "presenceLabel": {
+    "message": "Your status",
+    "description": "Agent presence selector label"
+  },
+  "presence.online": {
+    "message": "Online",
+    "description": "Agent online presence"
+  },
+  "presence.busy": {
+    "message": "Busy",
+    "description": "Agent busy presence"
+  },
+  "presence.away": {
+    "message": "Away",
+    "description": "Agent away presence"
+  },
+  "presence.offline": {
+    "message": "Offline",
+    "description": "Agent offline presence"
+  },
+  "linkedSessionCardTitle": {
+    "message": "Linked live chat session",
+    "description": "Linked live chat session card title on CRM records"
+  },
+  "linkedSessionOutcome": {
+    "message": "Outcome",
+    "description": "Linked live chat session outcome label"
+  },
+  "linkedSessionDuration": {
+    "message": "Duration",
+    "description": "Linked live chat session duration label"
+  },
+  "linkedSessionDurationSeconds": {
+    "message": "{count} sec | {count} secs",
+    "description": "Linked live chat session duration in seconds"
+  },
+  "linkedSessionDurationMinutes": {
+    "message": "{count} min | {count} mins",
+    "description": "Linked live chat session duration in minutes"
+  },
+  "linkedSessionMissing": {
+    "message": "Session record no longer exists.",
+    "description": "Linked live chat session missing warning"
+  },
+  "linkedSessionOpenTranscript": {
+    "message": "Open transcript",
+    "description": "Open linked live chat session transcript"
+  },
+  "fieldVisitorMessageCount": {
+    "message": "Visitor messages",
+    "description": "Live Chat visitor message count field"
+  },
+  "fieldAgentMessageCount": {
+    "message": "Agent messages",
+    "description": "Live Chat agent message count field"
+  },
+  "fieldAttachmentCount": {
+    "message": "Attachments",
+    "description": "Live Chat attachment count field"
+  },
+  "fieldAgentCount": {
+    "message": "Agents involved",
+    "description": "Live Chat distinct agent count field"
+  },
+  "contextSectionIntelligence": {
+    "message": "Conversation intelligence",
+    "description": "Live Chat context panel intelligence section"
+  },
+  "fieldIntent": {
+    "message": "Intent",
+    "description": "Live Chat session intent field"
+  },
+  "fieldSentiment": {
+    "message": "Sentiment",
+    "description": "Live Chat session sentiment field"
+  },
+  "fieldAiIntent": {
+    "message": "AI intent",
+    "description": "Live Chat AI-derived intent field"
+  },
+  "fieldAiSentimentScore": {
+    "message": "AI sentiment score",
+    "description": "Live Chat AI sentiment score field"
+  },
+  "fieldAiSummary": {
+    "message": "AI summary",
+    "description": "Live Chat AI summary field"
+  },
+  "intent.support": {
+    "message": "Support",
+    "description": "Live Chat support intent"
+  },
+  "intent.sales": {
+    "message": "Sales",
+    "description": "Live Chat sales intent"
+  },
+  "intent.billing": {
+    "message": "Billing",
+    "description": "Live Chat billing intent"
+  },
+  "intent.general": {
+    "message": "General",
+    "description": "Live Chat general intent"
+  },
+  "sentiment.positive": {
+    "message": "Positive",
+    "description": "Live Chat positive sentiment"
+  },
+  "sentiment.neutral": {
+    "message": "Neutral",
+    "description": "Live Chat neutral sentiment"
+  },
+  "sentiment.negative": {
+    "message": "Negative",
+    "description": "Live Chat negative sentiment"
+  },
+  "contextSectionCompliance": {
+    "message": "Compliance",
+    "description": "Live Chat context panel compliance section"
+  },
+  "fieldConsentGiven": {
+    "message": "Visitor consent",
+    "description": "Live Chat visitor consent field"
+  },
+  "fieldConsentTimestamp": {
+    "message": "Consent recorded",
+    "description": "Live Chat consent timestamp field"
+  },
+  "fieldSessionArchived": {
+    "message": "Archived",
+    "description": "Live Chat session archived field"
+  },
+  "fieldArchiveDate": {
+    "message": "Archived at",
+    "description": "Live Chat archive date field"
+  },
+  "fieldExported": {
+    "message": "Transcript exported",
+    "description": "Live Chat exported field"
+  },
+  "exportTranscript": {
+    "message": "Export transcript",
+    "description": "Live Chat export transcript action"
+  },
+  "exportTranscriptFailed": {
+    "message": "Failed to export transcript.",
+    "description": "Live Chat export transcript error"
+  },
+  "archiveSession": {
+    "message": "Archive session",
+    "description": "Live Chat archive session action"
+  },
+  "unarchiveSession": {
+    "message": "Restore session",
+    "description": "Live Chat unarchive session action"
+  },
+  "archiveSessionFailed": {
+    "message": "Failed to update archive status.",
+    "description": "Live Chat archive session error"
+  },
+  "sessionColumnsCustomizeHint": {
+    "message": "Choose which columns appear in your closed sessions list. Locked columns always stay visible.",
+    "description": "Live Chat session column customize hint"
+  },
+  "closedColVisitorMessages": {
+    "message": "Visitor msgs",
+    "description": "Live Chat closed list visitor message count column"
+  },
+  "closedColAgentMessages": {
+    "message": "Agent msgs",
+    "description": "Live Chat closed list agent message count column"
+  },
+  "closedColTransfers": {
+    "message": "Transfers",
+    "description": "Live Chat closed list transfer count column"
+  },
+  "closedColWaitTime": {
+    "message": "Wait time",
+    "description": "Live Chat closed list wait time column"
+  },
+  "closedColFirstResponse": {
+    "message": "First response",
+    "description": "Live Chat closed list first response column"
+  },
+  "closedColHandleTime": {
+    "message": "Handle time",
+    "description": "Live Chat closed list handle time column"
+  },
+  "closedColVisitorType": {
+    "message": "Visitor type",
+    "description": "Live Chat closed list visitor type column"
+  },
+  "closedColPriority": {
+    "message": "Priority",
+    "description": "Live Chat closed list priority column"
+  },
+  "closedColSentiment": {
+    "message": "Sentiment",
+    "description": "Live Chat closed list sentiment column"
+  },
+  "closedColIntent": {
+    "message": "Intent",
+    "description": "Live Chat closed list intent column"
+  },
+  "closedColBotInvolved": {
+    "message": "Bot involved",
+    "description": "Live Chat closed list bot involved column"
+  },
+  "closedColConsent": {
+    "message": "Consent",
+    "description": "Live Chat closed list consent column"
+  },
+  "closedColArchived": {
+    "message": "Archived",
+    "description": "Live Chat closed list archived column"
+  },
+  "closedColExported": {
+    "message": "Exported",
+    "description": "Live Chat closed list exported column"
+  }
+}

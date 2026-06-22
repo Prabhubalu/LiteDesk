@@ -250,6 +250,7 @@ const customerStatementRoutes = require('./routes/customerStatementRoutes');
 const paymentLinkRoutes = require('./routes/paymentLinkRoutes');
 const paymentGatewayRoutes = require('./routes/paymentGatewayRoutes');
 const webformRoutes = require('./routes/webformRoutes');
+const liveChatRoutes = require('./routes/liveChatRoutes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
@@ -278,6 +279,7 @@ app.use('/api/admin/business-flows', businessFlowRoutes); // Business Flow UI (P
 app.use('/api/admin/business-flow-templates', businessFlowTemplateRoutes); // Business Flow Templates (Default Templates)
 app.use('/api/automation', automationContextRoutes); // Automation context visibility (read-only)
 app.use('/api/admin/notifications', notificationAnalyticsRoutes); // Admin notification analytics
+app.use('/api/admin/addon-pricing', require('./routes/addonPricingAdminRoutes')); // Master org addon pricing
 app.use('/api/user-preferences', userPreferencesRoutes);
 app.use('/api/notification-preferences', notificationPreferenceRoutes);
 app.use('/api/notification-rules', notificationRuleRoutes);
@@ -344,6 +346,7 @@ app.use('/api/upload', uploadRoutes);
 
 // Inbox Routes (Cross-app attention surface)
 app.use('/api/inbox', inboxRoutes);
+app.use('/api/live-chat', liveChatRoutes);
 
 // Platform home snapshot (landing page)
 app.use('/api/platform', require('./routes/platformHomeRoutes'));
@@ -461,6 +464,22 @@ connectMasterWithRetry(masterUri)
     } catch (seedError) {
       console.warn('⚠️  Failed to check/seed platform definitions:', seedError.message);
       // Don't block server startup if seeding fails
+    }
+
+    // 1.55. Ensure addon catalog exists in master DB (AddonDefinition lives in arivu_master)
+    try {
+      const AddonDefinition = require('./models/AddonDefinition');
+      const enabledAddonCount = await AddonDefinition.countDocuments({ enabled: true });
+      if (enabledAddonCount === 0) {
+        console.log('📦 Addon catalog empty, seeding live_chat...');
+        const { ensureAddonCatalogSeeded } = require('./scripts/seedAddonDefinitions');
+        const { defResult, pricingResult } = await ensureAddonCatalogSeeded({ useExistingConnection: true });
+        console.log(`✅ Addon catalog seeded (live_chat: ${defResult}, pricing: ${pricingResult})`);
+      } else {
+        console.log(`✅ Addon catalog present (${enabledAddonCount} enabled addon(s))`);
+      }
+    } catch (addonSeedError) {
+      console.warn('⚠️  Failed to check/seed addon catalog:', addonSeedError.message);
     }
 
     // 1.6. Register default Task relationships + seed settings defaults (safe to run repeatedly)

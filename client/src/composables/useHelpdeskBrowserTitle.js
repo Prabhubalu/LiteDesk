@@ -4,16 +4,29 @@ import { useRoute } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
 import {
   resolveTabTitleWithHelpdeskAlerts,
-  sumHelpdeskChatAlertCount
+  sumHelpdeskChatAlertCount,
 } from '@/utils/helpdeskTabAlerts';
+import {
+  resolveTabTitleWithLiveChatAlerts,
+  sumLiveChatAlertCount,
+} from '@/utils/liveChatTabAlerts';
+import { resolveTabTitle } from '@/utils/navigationLabels';
 
 const DEFAULT_TITLE = 'Arivu';
 
 let installed = false;
 let baseTitle = DEFAULT_TITLE;
 
+function resolveActiveTabLabel(active, t, te) {
+  if (!active) return '';
+  const base = resolveTabTitle(active, t, te);
+  const withHelpdesk = resolveTabTitleWithHelpdeskAlerts(active, t, te);
+  if (withHelpdesk !== base) return withHelpdesk;
+  return resolveTabTitleWithLiveChatAlerts(active, t, te);
+}
+
 /**
- * Prefix browser tab title with unread helpdesk chat count, e.g. "(3) Case #12 · Arivu".
+ * Prefix browser tab title with unread helpdesk / live chat counts.
  */
 export function useHelpdeskBrowserTitle() {
   if (installed || typeof document === 'undefined') return;
@@ -30,25 +43,26 @@ export function useHelpdeskBrowserTitle() {
   watch(
     [() => tabs.value, () => activeTabId.value, () => route.path],
     () => {
-      const chatUnread = sumHelpdeskChatAlertCount(tabs.value);
+      const path = String(route.path || '');
+      const chatUnread = sumHelpdeskChatAlertCount(tabs.value) + sumLiveChatAlertCount(tabs.value);
       const active = tabs.value.find((tab) => tab.id === activeTabId.value);
-      const activeLabel = active
-        ? resolveTabTitleWithHelpdeskAlerts(active, t, te)
-        : '';
+      const activeLabel = resolveActiveTabLabel(active, t, te);
 
-      if (chatUnread > 0 && String(route.path || '').startsWith('/helpdesk')) {
-        const segment = activeLabel || t('navigation.helpdesk');
+      if (chatUnread > 0 && (path.startsWith('/helpdesk') || path.startsWith('/live-chat'))) {
+        const segment = activeLabel || (path.startsWith('/live-chat')
+          ? t('navigation.liveChat')
+          : t('navigation.helpdesk'));
         document.title = `(${chatUnread}) ${segment} · ${DEFAULT_TITLE}`;
         return;
       }
 
-      if (activeLabel && String(route.path || '').startsWith('/helpdesk')) {
+      if (activeLabel && (path.startsWith('/helpdesk') || path.startsWith('/live-chat'))) {
         document.title = `${activeLabel} · ${DEFAULT_TITLE}`;
         return;
       }
 
       document.title = baseTitle;
     },
-    { deep: true, immediate: true }
+    { deep: true, immediate: true },
   );
 }

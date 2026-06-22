@@ -723,7 +723,8 @@ const { success: notifySuccess } = useNotifications();
 const MODULE_LABEL_KEYS = {
   cases: 'settings.assignRulesModCases', people: 'settings.assignRulesModPeople', organizations: 'settings.assignRulesModOrganizations',
   deals: 'settings.assignRulesModDeals', tasks: 'settings.assignRulesModTasks', events: 'settings.assignRulesModEvents',
-  items: 'settings.assignRulesModItems', forms: 'settings.assignRulesModForms'
+  items: 'settings.assignRulesModItems', forms: 'settings.assignRulesModForms',
+  live_chat_sessions: 'settings.assignRulesModLiveChatSessions'
 };
 
 const FALLBACK_MODULES = [
@@ -746,6 +747,7 @@ const ASSIGNMENT_CONDITION_FIELD_OPTIONS = {
   'SALES:deals': ['name', 'ownerId', 'stage', 'pipeline', 'status', 'priority', 'amount', 'probability', 'accountId', 'contactId', 'type', 'derivedStatus', 'currency', 'tags'],
   'SALES:tasks': ['title', 'assignedTo', 'status', 'priority', 'dueDate', 'projectId', 'relatedTo.type', 'tags'],
   'SALES:events': ['title', 'status', 'name'], 'SALES:items': ['name', 'status'], 'SALES:forms': ['name', 'status'],
+  'PLATFORM:live_chat_sessions': ['queueKey', 'queueId', 'lifecycleStatus', 'channel', 'pageUrl', 'sessionKey', 'assignedAgentId', 'visitor.email', 'visitor.name', 'status'],
   _fallback: ['status', 'title', 'name']
 };
 
@@ -925,6 +927,7 @@ function appLabel(appKey) {
   const key = String(appKey || '').toUpperCase();
   if (key === 'HELPDESK') return t('settings.assignRulesAppHelpdesk');
   if (key === 'SALES') return t('settings.assignRulesAppSales');
+  if (key === 'PLATFORM') return t('settings.assignRulesAppPlatform');
   return key;
 }
 

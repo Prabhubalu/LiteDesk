@@ -572,5 +572,6 @@ module.exports = {
   handleInboundEmailForHelpdesk,
   handleChannelInteractionForHelpdesk,
   createCaseFromInboundEmail,
-  appendInboundEmailActivity
+  appendInboundEmailActivity,
+  createCaseFromChannelInteraction,
 };

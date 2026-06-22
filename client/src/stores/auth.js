@@ -260,7 +260,10 @@ export const useAuthStore = defineStore('auth', {
             const allowedApps = this.resolveAllowedApps(userData, {
                 organization: userData.organization
             });
-            
+            const organizationId = userData.organization?._id
+                ? String(userData.organization._id)
+                : (userData.organizationId ? String(userData.organizationId) : undefined);
+
             this.user = {
                 _id: userData._id,
                 username: userData.username,
@@ -271,6 +274,7 @@ export const useAuthStore = defineStore('auth', {
                 isPlatformAdmin: userData.isPlatformAdmin === true,
                 permissions: userData.permissions,
                 token: userData.token,
+                organizationId,
                 appAccess: userData.appAccess,
                 allowedApps: allowedApps,
                 emailVerifiedAt: userData.emailVerifiedAt || null,
@@ -291,10 +295,12 @@ export const useAuthStore = defineStore('auth', {
             identifyProductUser({
                 _id: this.user._id,
                 email: this.user.email,
-                organizationId: userData.organization?._id
-                    ? String(userData.organization._id)
-                    : (userData.organizationId ? String(userData.organizationId) : undefined),
+                organizationId,
             });
+
+            import('@/utils/addonNavigation').then(({ invalidateAddonNavigationCache }) => {
+                invalidateAddonNavigationCache();
+            }).catch(() => {});
 
             void this.syncI18nFromOrganization();
         },
@@ -359,7 +365,10 @@ export const useAuthStore = defineStore('auth', {
                 appShellStore.clear();
             });
             import('@/utils/tenantSchemaApiCache').then((m) => m.invalidateTenantSchemaCaches()).catch(() => {});
-            
+            import('@/utils/addonNavigation').then(({ invalidateAddonNavigationCache }) => {
+                invalidateAddonNavigationCache();
+            }).catch(() => {});
+
             // Clear offline data (IndexedDB) on logout
             import('@/services/offlineDb.js').then(({ clearAllData }) => {
                 clearAllData().catch(err => {

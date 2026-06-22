@@ -54,7 +54,7 @@ type SidebarLabelFields = {
 export type SidebarItem =
   | ({
       kind: 'surface';
-      id: 'home' | 'inbox' | 'attention' | 'search' | 'trash' | 'approvals';
+      id: 'home' | 'inbox' | 'live-chat' | 'attention' | 'search' | 'trash' | 'approvals';
       route: string;
       icon?: string;
     } & SidebarLabelFields)

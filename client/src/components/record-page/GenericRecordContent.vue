@@ -284,6 +284,13 @@
           @updated="fetchRecord"
         />
 
+        <LiveChatLinkedSessionCard
+          v-if="isPeopleModule && record && !expandedLeftSection"
+          :fetch-path="peopleLiveChatSessionPath"
+          :session-ref="record.liveChat"
+          class="mt-4"
+        />
+
         <div
           v-if="genericStateFields.length && (!expandedLeftSection || expandedLeftSection === 'key-fields')"
           :class="['group/left-section', expandedLeftSection ? 'mt-8' : 'mt-4']"
@@ -967,6 +974,7 @@ import { useStickyTitleRow } from '@/components/record-page/composables/useStick
 import SectionStack from '@/components/record-page/sections/SectionStack.vue';
 import AppointmentDetailCard from '@/components/appointments/AppointmentDetailCard.vue';
 import CaseSlaContextBanner from '@/components/helpdesk/CaseSlaContextBanner.vue';
+import LiveChatLinkedSessionCard from '@/components/live-chat/LiveChatLinkedSessionCard.vue';
 import QuoteRecordStatusBanner from '@/components/record-page/sections/QuoteRecordStatusBanner.vue';
 import QuoteCustomerResponseBanner from '@/components/record-page/sections/QuoteCustomerResponseBanner.vue';
 import RelatedSection from '@/components/record-page/sections/RelatedSection.vue';
@@ -1338,6 +1346,10 @@ async function updateRecordFields(payload) {
   return apiClient.put(path, payload);
 }
 const isPeopleModule = computed(() => moduleKeyLower.value === 'people');
+const peopleLiveChatSessionPath = computed(() => {
+  if (!isPeopleModule.value || !record.value?._id) return '';
+  return `${recordCrudPathBase.value}/${String(record.value._id)}/live-chat-session`;
+});
 const supportsTags = computed(() => ['people', 'organizations', 'documents'].includes(moduleKeyLower.value));
 
 const peopleParticipationEntries = computed(() => {

@@ -33,7 +33,8 @@ export function useCommandPaletteCommands() {
     try {
       const { structure, entitlementScopedRegistry } = await buildSidebarStructureForSession(
         authStore.user,
-        authStore.hasAppAccess
+        authStore.hasAppAccess,
+        authStore.organization,
       );
       const snapshot = createPermissionSnapshot(authStore.user);
       const dashboards = buildAllDashboardsFromRegistry(

@@ -1,6 +1,7 @@
 'use strict';
 
 const casesAssignmentAdapter = require('./adapters/casesAssignmentAdapter');
+const liveChatSessionAssignmentAdapter = require('./adapters/liveChatSessionAssignmentAdapter');
 const { createGenericAssignmentAdapter } = require('./adapters/genericAssignmentAdapter');
 
 const adapters = new Map();
@@ -44,6 +45,9 @@ function listAdapters() {
 function bootstrapAssignmentModuleRegistry() {
   if (!adapters.has('cases')) {
     registerAdapter('cases', casesAssignmentAdapter);
+  }
+  if (!adapters.has('live_chat_sessions')) {
+    registerAdapter('live_chat_sessions', liveChatSessionAssignmentAdapter);
   }
 }
 

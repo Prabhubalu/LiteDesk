@@ -16,7 +16,8 @@ function normalizeEntityType(entityType) {
   const aliases = {
     CORRECTIVEACTION: 'CORRECTIVE_ACTION',
     CONTACT: 'PEOPLE',
-    PERSON: 'PEOPLE'
+    PERSON: 'PEOPLE',
+    LIVECHATSESSION: 'LIVE_CHAT_SESSION',
   };
   return aliases[upper] || upper;
 }
@@ -85,6 +86,13 @@ const NOTIFICATION_ROUTE_MAP = {
   HELPDESK: {
     CASE: (entityId) => ({
       path: `/helpdesk/cases/${entityId}`
+    }),
+  },
+
+  PLATFORM: {
+    LIVE_CHAT_SESSION: (entityId) => ({
+      name: 'live-chat-session',
+      params: { sessionId: entityId }
     }),
   },
 };

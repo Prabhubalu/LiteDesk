@@ -121,6 +121,16 @@ const routerViewKey = computed(() => {
   const name = typeof route.name === 'string' ? route.name : '';
   if (name === 'inbox') return route.path;
   if (name === 'platform-home') return route.fullPath;
+  if (name === 'live-chat-session' || name === 'live-chat-sessions') {
+    return 'live-chat-sessions-workspace';
+  }
+  if (name === 'live-chat-closed-session' && route.params?.sessionId) {
+    return `live-chat-closed:${String(route.params.sessionId)}`;
+  }
+  if (name === 'live-chat-closed') {
+    return 'live-chat-closed-workspace';
+  }
+  if (route.path.startsWith('/live-chat/')) return route.path;
   if (route.path.startsWith('/settings')) return route.path;
   const recordId = route.params?.id ?? route.params?.recordId;
   if (recordId && typeof recordId === 'string') {
@@ -136,6 +146,9 @@ const routerViewKey = computed(() => {
 });
 
 const isInboxRoute = computed(() => route.name === 'inbox');
+const isLiveChatRoute = computed(() => String(route.path || '').startsWith('/live-chat/'));
+/** Closed sessions list uses standard scrollable list shell (ListView customize drawer). */
+const isLiveChatClosedListRoute = computed(() => route.name === 'live-chat-closed');
 /** Only the Settings split-pane shell — not standalone /settings/* admin pages (processes, flows, notifications). */
 const isSettingsRoute = computed(() => route.name === 'settings');
 const isProcessDesignerRoute = computed(() => {
@@ -143,7 +156,10 @@ const isProcessDesignerRoute = computed(() => {
   return name === 'process-designer' || name === 'process-designer-new';
 });
 const useViewportLock = computed(
-  () => isInboxRoute.value || isSettingsRoute.value || isProcessDesignerRoute.value
+  () => isInboxRoute.value
+    || (isLiveChatRoute.value && !isLiveChatClosedListRoute.value)
+    || isSettingsRoute.value
+    || isProcessDesignerRoute.value
 );
 
 const isRecordDetailRoute = computed(() => {

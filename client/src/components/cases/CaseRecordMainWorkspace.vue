@@ -89,16 +89,15 @@
       v-if="activeTab === 'conversation'"
       class="flex min-h-0 flex-1 flex-col overflow-hidden"
     >
-      <CaseLiveChatPanel
+      <div
         v-if="isLiveChatCase"
-        ref="liveChatPanelRef"
-        :case-id="caseId"
-        :can-reply="canEdit"
-        @chat-updated="$emit('chat-updated')"
-        @typing-label="setLiveChatTypingLabel"
-      />
+        class="shrink-0 border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200 sm:px-6"
+      >
+        {{ t('cases.liveChatMovedToAddonBanner') }}
+      </div>
+      <CaseLiveChatSessionCard :case-id="caseId" />
       <CaseEmailConversationFeed
-        v-else-if="isEmailCase"
+        v-if="isEmailCase"
         :activities="tabActivities"
         :case-record="caseRecord"
         :email-threads="emailThreads"
@@ -114,14 +113,8 @@
         :empty-title="emptyConversationTitle"
         :empty-message="emptyConversationMessage"
       />
-      <div
-        v-if="isLiveChatCase && liveChatTypingLabel"
-        class="shrink-0 bg-white px-4 py-2 text-xs text-indigo-600 dark:bg-gray-900 dark:text-indigo-300 sm:px-6"
-      >
-        {{ liveChatTypingLabel }}
-      </div>
       <CaseResizableReplyComposer
-        v-if="!isClosed && caseId"
+        v-if="!isClosed && caseId && !isLiveChatCase"
         ref="replyComposerRef"
         pane-key="conversation"
         :case-id="caseId"
@@ -198,9 +191,9 @@ import CaseRecordHeader from '@/components/cases/CaseRecordHeader.vue';
 import CaseTimelineFeed from '@/components/cases/CaseTimelineFeed.vue';
 import CaseEmailConversationFeed from '@/components/cases/CaseEmailConversationFeed.vue';
 import { isEmailChannelCase } from '@/utils/caseEmailReply';
-import CaseLiveChatPanel from '@/components/cases/CaseLiveChatPanel.vue';
 import CaseResizableReplyComposer from '@/components/cases/CaseResizableReplyComposer.vue';
 import CaseTasksTab from '@/components/cases/CaseTasksTab.vue';
+import CaseLiveChatSessionCard from '@/components/cases/CaseLiveChatSessionCard.vue';
 
 const props = defineProps({
   embed: { type: Boolean, default: false },
@@ -230,23 +223,9 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
-const liveChatPanelRef = ref(null);
-const liveChatTypingLabel = ref('');
 const caseModuleLabel = computed(() => t('navigation.moduleCases'));
 const isLiveChatCase = computed(() => String(props.caseRecord?.channel || '').toLowerCase() === 'live chat');
 const isEmailCase = computed(() => isEmailChannelCase(props.caseRecord));
-
-function setLiveChatTypingLabel(label) {
-  liveChatTypingLabel.value = String(label || '');
-}
-
-function appendLiveChatMessage(msg) {
-  liveChatPanelRef.value?.appendMessage?.(msg);
-}
-
-function refreshLiveChatMessages() {
-  return liveChatPanelRef.value?.refreshMessages?.();
-}
 
 const replyComposerRef = ref(null);
 
@@ -264,7 +243,7 @@ function onTimelineReplyEmail(payload) {
   replyComposerRef.value?.applyReplyTarget?.(message, { replyAll, forward });
 }
 
-defineExpose({ appendLiveChatMessage, refreshLiveChatMessages, clearReplyComposer });
+defineExpose({ clearReplyComposer });
 
 defineEmits([
   'update:activeTab',

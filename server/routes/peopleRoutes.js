@@ -73,6 +73,13 @@ router.use(protect);
 router.use(resolveAppContext); // After auth, resolve appKey from URL
 router.use(organizationIsolation);
 
+// Live Chat session summary — platform-readable, no Sales app gate
+router.get(
+  '/:id/live-chat-session',
+  requirePermission(PEOPLE_PERMISSIONS.VIEW),
+  controller.getPersonLiveChatSession,
+);
+
 // Conditional middleware: Allow PLATFORM appKey for GET requests (list view)
 // Require Sales app only for modifications and Sales-specific operations
 router.use((req, res, next) => {

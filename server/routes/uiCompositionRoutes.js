@@ -30,7 +30,8 @@ const {
   getModulesForApp,
   getEntityModules,
   getProjectionMetadata,
-  getAllAppDefinitions
+  getAllAppDefinitions,
+  getAddonNavigation,
 } = require('../controllers/uiCompositionController');
 
 // Apply auth and organization middleware to all routes
@@ -40,6 +41,7 @@ router.use(sessionBootstrapLimiter);
 
 // UI Composition Routes
 router.get('/registry', getRegistry);
+router.get('/addon-navigation', getAddonNavigation);
 router.get('/apps', getApps);
 router.get('/sidebar', getSidebar);
 router.get('/routes', getRoutes);

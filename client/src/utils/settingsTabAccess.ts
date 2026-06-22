@@ -61,6 +61,8 @@ export function canAccessSettingsTab(
       return Boolean(p.customizeFields || p.edit);
     case 'applications':
       return Boolean(p.edit);
+    case 'addons':
+      return Boolean(p.edit || p.manageBilling);
     case 'subscriptions':
       return Boolean(p.manageBilling);
     case 'notifications':
@@ -93,6 +95,7 @@ const SETTINGS_TAB_IDS = [
   'users-access',
   'core-modules',
   'applications',
+  'addons',
   'automation',
   'webforms',
   'performance',

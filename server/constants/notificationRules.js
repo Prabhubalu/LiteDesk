@@ -265,6 +265,20 @@ module.exports = {
     defaultChannels: ['IN_APP'],
     channels: { inApp: true, email: false, push: true, whatsapp: false, sms: false }
   },
+  [domainEvents.LIVE_CHAT_MESSAGE_RECEIVED]: {
+    appKey: 'PLATFORM',
+    recipients: ['LIVE_CHAT_NOTIFY_TARGETS'],
+    priority: 'HIGH',
+    defaultChannels: ['IN_APP'],
+    channels: { inApp: true, email: false, push: true, whatsapp: false, sms: false }
+  },
+  [domainEvents.LIVE_CHAT_SESSION_STARTED]: {
+    appKey: 'PLATFORM',
+    recipients: ['LIVE_CHAT_NOTIFY_TARGETS'],
+    priority: 'HIGH',
+    defaultChannels: ['IN_APP'],
+    channels: { inApp: true, email: false, push: true, whatsapp: false, sms: false }
+  },
   [domainEvents.CASE_ASSIGNED]: {
     appKey: 'HELPDESK',
     recipients: ['CASE_NOTIFY_TARGETS'],
