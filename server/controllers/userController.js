@@ -1473,6 +1473,8 @@ exports.getProfile = async (req, res) => {
 
         if (organization) {
             const { buildOrgCapabilities } = require('../utils/orgCapabilities');
+            const { buildClientSessionEntitlements } = require('../utils/clientSessionEntitlements');
+            userWithRole.entitledAddons = await buildClientSessionEntitlements(userWithRole, organization._id);
             userWithRole.organizationId = {
                 _id: organization._id,
                 name: organization.name,

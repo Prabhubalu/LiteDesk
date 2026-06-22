@@ -1,6 +1,15 @@
 import { canViewLiveChatSessions } from '@/utils/liveChatPermissions';
 
 /**
+ * Mirrors server notificationStreamController PLATFORM gate
+ * (canViewLiveChatSessions + live_chat addon entitlement).
+ */
+export function canAccessPlatformNotificationStream(user) {
+  if (!canViewLiveChatSessions(user)) return false;
+  return user?.entitledAddons?.live_chat === true;
+}
+
+/**
  * App keys that support the notification SSE stream.
  * Keep in sync with server notificationStreamController APP_KEYS.
  */
@@ -10,7 +19,7 @@ export const NOTIFICATION_STREAM_APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDE
  * All entitled app streams the user should stay subscribed to (not only the current route).
  * Ensures HELPDESK alerts arrive even when navigating within helpdesk or from sales.
  *
- * @param {{ allowedApps?: string[] } | null | undefined} user
+ * @param {{ allowedApps?: string[], entitledAddons?: { live_chat?: boolean } } | null | undefined} user
  * @returns {string[]}
  */
 export function getNotificationStreamAppKeysForUser(user) {
@@ -19,7 +28,7 @@ export function getNotificationStreamAppKeysForUser(user) {
   );
   const keys = NOTIFICATION_STREAM_APP_KEYS.filter((key) => {
     if (key === 'PLATFORM') {
-      return canViewLiveChatSessions(user);
+      return canAccessPlatformNotificationStream(user);
     }
     return allowed.has(key);
   });

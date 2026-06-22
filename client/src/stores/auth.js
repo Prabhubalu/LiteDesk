@@ -284,6 +284,7 @@ export const useAuthStore = defineStore('auth', {
                 firstName: userData.firstName,
                 lastName: userData.lastName,
                 avatar: userData.avatar || '',
+                entitledAddons: userData.entitledAddons || null,
             };
             
             if (userData.organization) {
@@ -694,7 +695,8 @@ export const useAuthStore = defineStore('auth', {
                             allowedApps: this.resolveAllowedApps(incoming, {
                                 fallbackAllowedApps: existingAllowedApps,
                                 organization: incoming.organizationId || this.organization
-                            })
+                            }),
+                            entitledAddons: incoming.entitledAddons ?? this.user?.entitledAddons ?? null,
                         };
                         localStorage.setItem('user', JSON.stringify(this.user));
                         localStorage.setItem(PROFILE_REFRESHED_AT_KEY, String(Date.now()));

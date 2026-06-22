@@ -20,6 +20,7 @@
 const User = require('../models/User');
 const Organization = require('../models/Organization');
 const { buildOrgCapabilities } = require('../utils/orgCapabilities');
+const { buildClientSessionEntitlements } = require('../utils/clientSessionEntitlements');
 const Role = require('../models/Role');
 const UserDirectory = require('../models/UserDirectory');
 const DemoRequest = require('../models/DemoRequest');
@@ -615,6 +616,7 @@ exports.loginUser = async (req, res) => {
         }
 
         const instanceContext = await resolveInstanceForLogin(organizationForLogin?._id, normalizedEmail);
+        const entitledAddons = await buildClientSessionEntitlements(orgUser, organizationForLogin._id);
         // Respond with Token and Organization Info (use orgUser data)
         res.json({
             _id: orgUser._id,
@@ -626,6 +628,7 @@ exports.loginUser = async (req, res) => {
             isPlatformAdmin: orgUser.isPlatformAdmin === true,
             permissions: userPermissionsEnvelopeToPlain(orgUser),
             allowedApps: allowedApps, // Include app access
+            entitledAddons,
             appAccess: orgUser.appAccess,
             organization: {
                 _id: organizationForLogin._id,

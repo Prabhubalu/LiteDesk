@@ -263,11 +263,35 @@ watch(() => route.path, async (newPath) => {
   }
 }, { immediate: true });
 
-const shellTabsReady = ref(
-  !authStore.isAuthenticated || isStandaloneShelllessRoute.value
-);
+const shellTabsReady = ref(false);
+
+async function waitForPostLoginNavigation() {
+  if (!isAuthLifecyclePublicRoute(route.path) && route.path !== '/') {
+    return;
+  }
+
+  await router.isReady();
+  await nextTick();
+
+  await new Promise((resolve) => {
+    const timeout = setTimeout(resolve, 2000);
+    const stop = watch(
+      () => route.path,
+      (path) => {
+        if (!isAuthLifecyclePublicRoute(path) && path !== '/') {
+          clearTimeout(timeout);
+          stop();
+          resolve();
+        }
+      }
+    );
+  });
+  await nextTick();
+}
 
 async function initializeTabsForSession() {
+  await waitForPostLoginNavigation();
+
   const isPortalRoute = route.path.startsWith('/portal/');
   const skipTabsInit = isPortalRoute || shouldSkipTabRoute(route.path);
   if (skipTabsInit) {
@@ -416,6 +440,7 @@ watch(
         cleanupRouteWatcher = null;
       }
     } else if (!wasAuthed && isAuthed) {
+      shellTabsReady.value = false;
       appLog('🔄 [App] User authenticated, initializing tabs...');
       try {
         await initializeTabsForSession();
@@ -446,6 +471,14 @@ watch(
 
 watch(
   () => authStore.user?.allowedApps,
+  () => {
+    refreshNotificationRealtimeConnections();
+  },
+  { deep: true }
+);
+
+watch(
+  () => authStore.user?.entitledAddons,
   () => {
     refreshNotificationRealtimeConnections();
   },

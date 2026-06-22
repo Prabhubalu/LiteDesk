@@ -178,6 +178,10 @@ exports.installAddon = async (req, res) => {
 
     if (addonKey === ADDON_KEYS.LIVE_CHAT) {
       await ensureEmbedPublicKey(organizationId);
+      await Organization.updateOne(
+        { _id: organizationId },
+        { $set: { 'embed.chat.enabled': true } },
+      );
     }
 
     return res.status(201).json({
