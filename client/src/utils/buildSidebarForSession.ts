@@ -2,6 +2,7 @@ import type { AppRegistry, SidebarStructure } from '@/types/sidebar.types';
 import { getAppRegistry } from '@/utils/getAppRegistry';
 import { buildSidebarFromRegistry } from '@/utils/buildSidebarFromRegistry';
 import { createPermissionSnapshot } from '@/types/permission-snapshot.types';
+import { fetchAddonNavigation } from '@/utils/addonNavigation';
 import {
   hasCommercialPlatformEntitlement,
   isCommercialPlatformModuleKey
@@ -11,12 +12,25 @@ import { validateUserTypeForApp } from '@/utils/appUserTypeAccess';
 type PermissionSnapshotUserLike = Parameters<typeof createPermissionSnapshot>[0];
 type UserLike = PermissionSnapshotUserLike & {
   userType?: string;
+  organizationId?: string;
+  organization?: { _id?: string };
   allowedApps?: string[];
   appAccess?: Array<{
     appKey?: string;
     status?: string;
   }>;
 };
+
+type OrganizationLike = { _id?: string } | null | undefined;
+
+function resolveOrganizationId(user: UserLike, organization?: OrganizationLike): string {
+  return String(
+    user?.organizationId
+    || user?.organization?._id
+    || organization?._id
+    || '',
+  ).trim();
+}
 
 export type BuildSidebarForSessionResult = {
   structure: SidebarStructure;
@@ -86,7 +100,8 @@ function applyCoreModuleEntitlementFilters(
  */
 export async function buildSidebarStructureForSession(
   user: UserLike,
-  hasAppAccess: (appKey: string) => boolean
+  hasAppAccess: (appKey: string) => boolean,
+  organization?: OrganizationLike,
 ): Promise<BuildSidebarForSessionResult> {
   const registry = await getAppRegistry();
   const { allowedAppKeys, hasExplicitUserAppAccessData } = normalizeUserAppAccess(user);
@@ -105,7 +120,9 @@ export async function buildSidebarStructureForSession(
   ) as AppRegistry;
 
   const snapshot = createPermissionSnapshot(user);
-  const structure = await buildSidebarFromRegistry(entitlementScopedRegistry, snapshot);
+  const orgId = resolveOrganizationId(user, organization);
+  const addonNav = orgId ? await fetchAddonNavigation(orgId) : [];
+  const structure = await buildSidebarFromRegistry(entitlementScopedRegistry, snapshot, import.meta.env.DEV, addonNav);
 
   applyCoreModuleEntitlementFilters(
     structure,

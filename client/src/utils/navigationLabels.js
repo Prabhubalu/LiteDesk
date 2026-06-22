@@ -8,6 +8,7 @@ import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 export const SURFACE_LABEL_KEYS = {
   home: 'navigation.home',
   inbox: 'navigation.inbox',
+  'live-chat': 'navigation.liveChat',
   approvals: 'navigation.approvals',
   attention: 'navigation.attention',
   search: 'navigation.search',
@@ -57,6 +58,9 @@ export const ROUTE_TITLE_KEYS = {
   '/sales/dashboard': 'navigation.salesDashboard',
   '/dashboard': 'navigation.dashboard',
   '/inbox': 'navigation.inbox',
+  '/live-chat/sessions': 'navigation.liveChat',
+  '/live-chat/closed': 'liveChat.navClosed',
+  '/live-chat/reports': 'liveChat.navReports',
   '/approvals': 'navigation.approvals',
   '/contacts': 'navigation.moduleContacts',
   '/people': 'navigation.modulePeople',
@@ -108,6 +112,14 @@ export function getModuleLabelKey(moduleKey) {
  * @returns {string|undefined}
  */
 export function getSurfaceLabelKey(surfaceId) {
+  return SURFACE_LABEL_KEYS[surfaceId];
+}
+
+/**
+ * @param {string} surfaceId
+ * @returns {string|undefined}
+ */
+export function getAddonSurfaceLabelKey(surfaceId) {
   return SURFACE_LABEL_KEYS[surfaceId];
 }
 
@@ -197,6 +209,19 @@ export function getTabTitleMetaForPath(path, params = {}) {
       return { titleKey: 'navigation.moduleCases' };
     }
     return { titleKey: 'navigation.tabCaseDetail' };
+  }
+
+  if (pathOnly.startsWith('/live-chat/sessions')) {
+    return { titleKey: 'navigation.liveChat' };
+  }
+  if (pathOnly.startsWith('/live-chat/closed')) {
+    return { titleKey: 'liveChat.navClosed' };
+  }
+  if (pathOnly.startsWith('/live-chat/visitors')) {
+    return { titleKey: 'liveChat.navClosed' };
+  }
+  if (pathOnly.startsWith('/live-chat/reports')) {
+    return { titleKey: 'liveChat.navReports' };
   }
 
   if (segments[0] === 'dashboard' && segments[1]) {

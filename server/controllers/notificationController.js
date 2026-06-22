@@ -4,7 +4,8 @@ const Task = require('../models/Task');
 const Deal = require('../models/Deal');
 const Event = require('../models/Event');
 
-const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK'];
+const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK', 'PLATFORM'];
+const { canAccessLiveChatNotifications } = require('../utils/liveChatNotificationAccess');
 const { serializeEntityForClient } = require('../utils/notificationEntityDisplay');
 
 /**

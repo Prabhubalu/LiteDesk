@@ -1425,7 +1425,30 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
     apiEndpoint: '/items',
     normalizeFilters: normalizeItemsFilters,
     normalizeViewFilters: normalizeItemsViewFilters
-  }
+  },
+
+  'live-chat-closed': {
+    defaultColumns: {
+      defaultVisibleColumns: [
+        'visitor',
+        'sessionKey',
+        'channel',
+        'lifecycleStatus',
+        'outcome',
+        'queue',
+        'assignedAgent',
+        'handledBy',
+        'startedAt',
+        'endedAt',
+        'duration',
+        'summary',
+        'tags',
+        'csatScore',
+      ],
+      lockedColumn: 'visitor',
+    },
+    apiEndpoint: '/live-chat/sessions',
+  },
 };
 
 /**

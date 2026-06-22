@@ -10,6 +10,7 @@ const ENTITY_DISPLAY_KEYS = [
   'subject',
   'fromAddress',
   'chatSessionId',
+  'sessionKey',
   'status',
   'priority'
 ];
@@ -22,6 +23,7 @@ const MAX_LEN = {
   subject: 240,
   fromAddress: 200,
   chatSessionId: 64,
+  sessionKey: 32,
   status: 64,
   priority: 32
 };

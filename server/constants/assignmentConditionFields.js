@@ -142,6 +142,18 @@ const SUPPLEMENTAL_BY_SCOPE = {
   'sales:forms': [
     field('name', 'Name', 'text'),
     field('status', 'Status', 'picklist')
+  ],
+  'platform:live_chat_sessions': [
+    field('queueKey', 'Queue', 'text'),
+    field('queueId', 'Queue ID', 'lookup'),
+    field('lifecycleStatus', 'Lifecycle status', 'picklist', picklistOptions(['waiting', 'assigned', 'active', 'ended', 'bot_handling'])),
+    field('channel', 'Channel', 'picklist', picklistOptions(['web'])),
+    field('pageUrl', 'Page URL', 'text'),
+    field('sessionKey', 'Session key', 'text'),
+    field('assignedAgentId', 'Assigned agent', 'lookup'),
+    field('visitor.email', 'Visitor email', 'email'),
+    field('visitor.name', 'Visitor name', 'text'),
+    field('status', 'Status', 'picklist', picklistOptions(['open', 'closed']))
   ]
 };
 

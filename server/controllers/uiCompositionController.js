@@ -15,6 +15,7 @@
  */
 
 const uiCompositionService = require('../services/uiCompositionService');
+const { getAddonNavigationItems } = require('../services/addonNavigationService');
 
 /**
  * Get enabled apps for the current tenant
@@ -111,6 +112,37 @@ exports.getSidebar = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching sidebar definition'
+    });
+  }
+};
+
+/**
+ * Entitled addon shell navigation (e.g. Live Chat below Inbox).
+ * GET /api/ui/addon-navigation
+ */
+exports.getAddonNavigation = async (req, res) => {
+  try {
+    const organizationId = req.user.organizationId;
+
+    if (!organizationId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Organization ID required',
+      });
+    }
+
+    const items = await getAddonNavigationItems(organizationId, req.user);
+
+    res.set('Cache-Control', 'private, no-store, max-age=0, must-revalidate');
+    return res.json({
+      success: true,
+      data: items,
+    });
+  } catch (error) {
+    console.error('[UIComposition] Error getting addon navigation:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error fetching addon navigation',
     });
   }
 };

@@ -105,6 +105,40 @@
     if (e.data === 'litedesk_chat_close') close()
   })
 
+  function getPageContext() {
+    return {
+      type: 'litedesk_chat_page_context',
+      pageUrl: window.location.href,
+      referrerUrl: document.referrer || '',
+      language: (navigator.language || '').trim(),
+    }
+  }
+
+  function postPageContextToFrame() {
+    if (!frame.contentWindow) return
+    try {
+      frame.contentWindow.postMessage(getPageContext(), '*')
+    } catch (_) {}
+  }
+
+  frame.addEventListener('load', postPageContextToFrame)
+
+  var lastTrackedUrl = window.location.href
+  window.addEventListener('popstate', function () {
+    lastTrackedUrl = window.location.href
+    postPageContextToFrame()
+  })
+  window.addEventListener('hashchange', function () {
+    lastTrackedUrl = window.location.href
+    postPageContextToFrame()
+  })
+  setInterval(function () {
+    if (window.location.href !== lastTrackedUrl) {
+      lastTrackedUrl = window.location.href
+      postPageContextToFrame()
+    }
+  }, 1000)
+
   document.body.appendChild(overlay)
   document.body.appendChild(frame)
   document.body.appendChild(btn)

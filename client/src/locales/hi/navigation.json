@@ -582,5 +582,9 @@
   "portalKnowledge": {
     "message": "Help",
     "description": "Portal bottom nav knowledge base tab"
+  },
+  "liveChat": {
+    "message": "Live Chat",
+    "description": "Live Chat addon sessions navigation label"
   }
 }

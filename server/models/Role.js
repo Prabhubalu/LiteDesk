@@ -237,6 +237,13 @@ const roleSchema = new mongoose.Schema({
                 enum: ['all', 'team', 'own', 'none'],
                 default: 'own'
             }
+        },
+
+        // Live Chat addon
+        liveChat: {
+            view: { type: Boolean, default: false },
+            reply: { type: Boolean, default: false },
+            admin: { type: Boolean, default: false }
         }
     },
     
@@ -451,7 +458,8 @@ function buildFullPrivilegedRolePermissions() {
                 manageTypes: true,
                 manageOrgSettings: true
             }
-        }
+        },
+        liveChat: { view: true, reply: true, admin: true }
     };
 }
 

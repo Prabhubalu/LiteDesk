@@ -17,6 +17,7 @@ const {
   computeSegmentPerformance
 } = require('../utils/caseAnalytics');
 const { handleChannelInteractionForHelpdesk } = require('../services/helpdeskChannelIngestionService');
+const { getLiveChatSummaryForCase } = require('../services/liveChatCaseAdapter');
 const { stripClientSource, assignResolvedSource } = require('../services/sourceResolver');
 const {
   CASE_TYPES,
@@ -1695,6 +1696,39 @@ exports.ingestCaseChannelInteraction = async (req, res) => {
       success: false,
       message: 'Failed to ingest channel interaction'
     });
+  }
+};
+
+exports.getCaseLiveChatSession = async (req, res) => {
+  try {
+    const caseIdValidation = validateCaseRecordId(req.params.id);
+    if (!caseIdValidation.valid) {
+      return res.status(400).json({ success: false, message: caseIdValidation.error });
+    }
+
+    const row = await Case.findOne({
+      _id: req.params.id,
+      organizationId: req.user.organizationId,
+      deletedAt: null,
+    }).lean();
+
+    if (!row) {
+      return res.status(404).json({ success: false, message: 'Case not found' });
+    }
+
+    const summary = await getLiveChatSummaryForCase({
+      organizationId: req.user.organizationId,
+      caseRecord: row,
+    });
+
+    if (!summary) {
+      return res.status(404).json({ success: false, message: 'No live chat session linked to this case' });
+    }
+
+    return res.json({ success: true, data: summary });
+  } catch (error) {
+    console.error('[caseController] getCaseLiveChatSession error', error);
+    return res.status(500).json({ success: false, message: 'Failed to load live chat session summary' });
   }
 };
 

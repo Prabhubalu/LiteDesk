@@ -157,6 +157,48 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/live-chat/sessions',
+    name: 'live-chat-sessions',
+    component: () => import('@/views/live-chat/LiveChatSessionsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/live-chat/sessions/:sessionId',
+    name: 'live-chat-session',
+    component: () => import('@/views/live-chat/LiveChatSessionsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/live-chat/closed',
+    name: 'live-chat-closed',
+    component: () => import('@/views/live-chat/LiveChatClosedSessionsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/live-chat/closed/:sessionId',
+    name: 'live-chat-closed-session',
+    component: () => import('@/views/live-chat/LiveChatClosedSessionDetailView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/live-chat/visitors',
+    redirect: '/live-chat/closed'
+  },
+  {
+    path: '/live-chat/visitors/:visitorId',
+    redirect: '/live-chat/closed'
+  },
+  {
+    path: '/live-chat/reports',
+    name: 'live-chat-reports',
+    component: () => import('@/views/live-chat/LiveChatReportsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/live-chat',
+    redirect: '/live-chat/sessions'
+  },
+  {
     path: '/trash',
     name: 'trash',
     component: () => import('@/views/Trash.vue'),

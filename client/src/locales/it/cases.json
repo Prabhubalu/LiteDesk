@@ -22,5 +22,897 @@
   "casesToastFailedToUpdateStatus": {
     "message": "Failed to update case status",
     "description": "Fallback error toast when case status update fails"
+  },
+  "recordLoading": {
+    "message": "Loading case…",
+    "description": "Case record page loading message"
+  },
+  "recordErrorTitle": {
+    "message": "Unable to load case",
+    "description": "Case record page error title"
+  },
+  "recordTabConversation": {
+    "message": "Conversation",
+    "description": "Case record main tab"
+  },
+  "recordMainTabsLabel": {
+    "message": "Case workspace sections",
+    "description": "Accessible label for case record main tab list"
+  },
+  "recordLiveChatHeading": {
+    "message": "Live chat",
+    "description": "Live chat panel heading on case record"
+  },
+  "liveChatMovedToAddonBanner": {
+    "message": "Legacy live chat case — use the linked session below to view the transcript and reply in Live Chat.",
+    "description": "Banner on legacy live chat cases after LC0 decoupling"
+  },
+  "liveChatSessionCardTitle": {
+    "message": "Linked live chat session",
+    "description": "Case record live chat session card title"
+  },
+  "liveChatSessionOutcome": {
+    "message": "Outcome",
+    "description": "Live chat session outcome label on case"
+  },
+  "liveChatSessionDuration": {
+    "message": "Duration",
+    "description": "Live chat session duration label on case"
+  },
+  "liveChatSessionDurationSeconds": {
+    "message": "{count}s",
+    "description": "Live chat duration seconds"
+  },
+  "liveChatSessionDurationMinutes": {
+    "message": "{count} min",
+    "description": "Live chat duration minutes"
+  },
+  "liveChatSessionMissing": {
+    "message": "Session record is no longer available.",
+    "description": "Missing linked live chat session"
+  },
+  "liveChatSessionOpenTranscript": {
+    "message": "Open transcript",
+    "description": "Link to live chat session from case"
+  },
+  "chatLoading": {
+    "message": "Loading chat…",
+    "description": "Live chat messages loading state"
+  },
+  "chatEmpty": {
+    "message": "No messages yet.",
+    "description": "Live chat empty state"
+  },
+  "chatVisitor": {
+    "message": "Visitor",
+    "description": "Fallback author label for visitor chat messages"
+  },
+  "chatAgent": {
+    "message": "Agent",
+    "description": "Fallback author label for agent chat messages"
+  },
+  "chatStatusLabel": {
+    "message": "Status: {status}",
+    "description": "Live chat session status label"
+  },
+  "chatTyping": {
+    "message": "{name} is typing…",
+    "description": "Visitor typing indicator in live chat"
+  },
+  "chatSessionLoadFailed": {
+    "message": "Failed to load chat session",
+    "description": "Error when chat session cannot be loaded"
+  },
+  "chatLoadFailed": {
+    "message": "Failed to load chat",
+    "description": "Generic live chat load error"
+  },
+  "chatReceiptSent": {
+    "message": "Sent",
+    "description": "WhatsApp-style receipt: message sent"
+  },
+  "chatReceiptDelivered": {
+    "message": "Delivered",
+    "description": "WhatsApp-style receipt: message delivered"
+  },
+  "chatReceiptRead": {
+    "message": "Read",
+    "description": "WhatsApp-style receipt: message read"
+  },
+  "recordTabDetails": {
+    "message": "Details",
+    "description": "Case record right pane details tab"
+  },
+  "recordTabContact": {
+    "message": "Contact",
+    "description": "Case record right pane contact profile tab"
+  },
+  "recordContactEmpty": {
+    "message": "No contact linked to this case.",
+    "description": "Empty state when case has no contact"
+  },
+  "recordContactOpenProfile": {
+    "message": "Open full profile",
+    "description": "Link to open person record in a new tab"
+  },
+  "recordContactUnnamed": {
+    "message": "Unnamed contact",
+    "description": "Fallback label when contact has no name"
+  },
+  "recordContactLoadFailed": {
+    "message": "Could not load contact profile.",
+    "description": "Error loading linked person for case"
+  },
+  "recordEditClosedHint": {
+    "message": "Closed cases cannot be edited. Reopen the case first.",
+    "description": "Shown when trying to edit a closed case"
+  },
+  "recordClosedTitle": {
+    "message": "This case is closed",
+    "description": "Banner title shown when case is closed"
+  },
+  "recordClosedDescription": {
+    "message": "You can reopen the case to continue working, but edits are blocked while it remains Closed.",
+    "description": "Banner description shown when case is closed"
+  },
+  "recordKnowledgeTitle": {
+    "message": "Knowledge base",
+    "description": "Knowledge panel title"
+  },
+  "recordKnowledgeSoon": {
+    "message": "Article search and suggested answers from your knowledge base will appear here in a future release.",
+    "description": "Knowledge panel placeholder"
+  },
+  "recordTabTasks": {
+    "message": "Tasks",
+    "description": "Case record tasks tab"
+  },
+  "recordTabActivity": {
+    "message": "Activity logs",
+    "description": "Case record activity tab"
+  },
+  "recordTabNotes": {
+    "message": "Internal Comments",
+    "description": "Case record internal comments tab"
+  },
+  "recordEmptyConversationTitle": {
+    "message": "No messages yet",
+    "description": "Empty conversation feed title"
+  },
+  "recordEmptyConversationMessage": {
+    "message": "Customer and agent messages will appear here.",
+    "description": "Empty conversation feed description"
+  },
+  "recordEmptyActivityTitle": {
+    "message": "No activity yet",
+    "description": "Empty activity log title"
+  },
+  "recordEmptyActivityMessage": {
+    "message": "Status changes, assignments, and SLA events are logged here.",
+    "description": "Empty activity log description"
+  },
+  "recordEmptyNotesTitle": {
+    "message": "No internal comments yet",
+    "description": "Empty internal comments tab title"
+  },
+  "recordEmptyNotesMessage": {
+    "message": "Add a private comment visible only to your team.",
+    "description": "Empty internal comments tab description"
+  },
+  "recordComposerVia": {
+    "message": "Via",
+    "description": "Reply composer channel label"
+  },
+  "recordComposerFrom": {
+    "message": "From",
+    "description": "Reply composer sender label"
+  },
+  "recordComposerPlaceholder": {
+    "message": "Reply to customer or add an internal comment…",
+    "description": "Reply composer placeholder"
+  },
+  "recordEmailComposerFrom": {
+    "message": "From",
+    "description": "Email reply composer from address label"
+  },
+  "recordEmailComposerSubject": {
+    "message": "Subject",
+    "description": "Email reply composer subject label"
+  },
+  "recordEmailComposerToPlaceholder": {
+    "message": "customer{'@'}example.com",
+    "description": "Email reply composer to field placeholder"
+  },
+  "recordEmailComposerBodyPlaceholder": {
+    "message": "Write your reply…",
+    "description": "Email reply composer rich text placeholder"
+  },
+  "recordEmailComposerAttach": {
+    "message": "Attach",
+    "description": "Email reply composer attach files button"
+  },
+  "recordEmailComposerUploading": {
+    "message": "Uploading…",
+    "description": "Email reply composer attachment upload in progress"
+  },
+  "recordEmailComposerSendEmail": {
+    "message": "Send email",
+    "description": "Email reply composer send button"
+  },
+  "recordEmailComposerHeadersToggle": {
+    "message": "Show email headers",
+    "description": "Expand collapsed To/Subject/From fields"
+  },
+  "recordEmailComposerHeadersToggleHide": {
+    "message": "Hide email headers",
+    "description": "Collapse To/Subject/From fields"
+  },
+  "recordEmailComposerHeadersSummaryTo": {
+    "message": "To",
+    "description": "Collapsed header summary label for recipients"
+  },
+  "recordEmailComposerHeadersSummarySubject": {
+    "message": "Subject",
+    "description": "Collapsed header summary label for subject"
+  },
+  "recordActivityTitle": {
+    "message": "Activity",
+    "description": "Email case conversation feed title"
+  },
+  "recordActivityRoleCustomer": {
+    "message": "Customer",
+    "description": "Role badge on inbound email activity"
+  },
+  "recordActivityRoleAgent": {
+    "message": "Agent",
+    "description": "Role badge on outbound email activity"
+  },
+  "recordActivitySentEmail": {
+    "message": "sent email",
+    "description": "Action label after role on email activity row"
+  },
+  "recordActivityAttachments": {
+    "message": "Attachments ({count})",
+    "description": "Collapsible attachments section title"
+  },
+  "recordEmailExpand": {
+    "message": "Expand email",
+    "description": "Expand collapsed email in case timeline"
+  },
+  "recordEmailCollapse": {
+    "message": "Collapse email",
+    "description": "Collapse expanded email in case timeline"
+  },
+  "recordEmailTimelineTitle": {
+    "message": "Email Timeline",
+    "description": "Deprecated: use recordActivityTitle"
+  },
+  "recordEmailTimelineAllChannels": {
+    "message": "All Channels",
+    "description": "Timeline filter showing all item types"
+  },
+  "recordEmailTimelineEmailOnly": {
+    "message": "Email only",
+    "description": "Timeline filter for email messages"
+  },
+  "recordEmailTimelineUpdatesOnly": {
+    "message": "Updates only",
+    "description": "Timeline filter for system status updates"
+  },
+  "recordEmailTimelineFilter": {
+    "message": "Filter",
+    "description": "Timeline filter button label"
+  },
+  "recordEmailTimelineToday": {
+    "message": "Today",
+    "description": "Timeline timestamp day label"
+  },
+  "recordEmailTimelineYesterday": {
+    "message": "Yesterday",
+    "description": "Timeline timestamp day label"
+  },
+  "recordEmailTimelineCustomerReplied": {
+    "message": "Customer Replied",
+    "description": "Inbound follow-up email badge"
+  },
+  "recordEmailTimelineAgentReply": {
+    "message": "Agent Reply",
+    "description": "Outbound agent email badge"
+  },
+  "recordEmailTimelineIncomingEmail": {
+    "message": "Incoming Email",
+    "description": "First inbound email badge"
+  },
+  "recordEmailTimelineNew": {
+    "message": "New",
+    "description": "Badge on newest unread inbound message"
+  },
+  "recordEmailTimelineForward": {
+    "message": "Forward",
+    "description": "Forward email action tooltip"
+  },
+  "recordEmailTimelineStatusUpdated": {
+    "message": "Status updated → {status}",
+    "description": "System pill when case status changes"
+  },
+  "recordEmailComposerTabReply": {
+    "message": "Reply",
+    "description": "Email composer mode tab"
+  },
+  "recordEmailComposerTabReplyAll": {
+    "message": "Reply All",
+    "description": "Email composer mode tab"
+  },
+  "recordEmailComposerTabForward": {
+    "message": "Forward",
+    "description": "Email composer mode tab"
+  },
+  "recordEmailComposerTabInternalNote": {
+    "message": "Internal Note",
+    "description": "Deprecated: use recordEmailComposerTabInternalComment"
+  },
+  "recordEmailComposerTabInternalComment": {
+    "message": "Internal Comment",
+    "description": "Email composer internal comment tab"
+  },
+  "recordEmailComposerAiDraft": {
+    "message": "AI Draft",
+    "description": "AI-assisted email draft button (placeholder)"
+  },
+  "recordComposerResize": {
+    "message": "Drag to resize reply area",
+    "description": "Aria label for reply composer resize handle"
+  },
+  "recordNotesPlaceholder": {
+    "message": "Add an internal comment…",
+    "description": "Deprecated: use recordInternalCommentPlaceholder"
+  },
+  "recordInternalCommentPlaceholder": {
+    "message": "Add an internal comment…",
+    "description": "Internal comment composer placeholder"
+  },
+  "recordInternalNote": {
+    "message": "Internal note",
+    "description": "Deprecated: use recordInternalComment"
+  },
+  "recordInternalComment": {
+    "message": "Internal Comment",
+    "description": "Label for team-only comments on a case"
+  },
+  "recordInternal": {
+    "message": "Internal",
+    "description": "Badge on internal messages"
+  },
+  "recordSend": {
+    "message": "Send",
+    "description": "Send reply button"
+  },
+  "recordReopen": {
+    "message": "Reopen case",
+    "description": "Reopen closed case button"
+  },
+  "recordReopenReasonPrompt": {
+    "message": "Why are you reopening this case? (required)",
+    "description": "Prompt shown before reopening a case"
+  },
+  "recordReopenReasonRequired": {
+    "message": "Reopen reason is required.",
+    "description": "Shown when user tries to reopen without reason"
+  },
+  "recordReopenSuccess": {
+    "message": "Case reopened",
+    "description": "Success toast when case is reopened"
+  },
+  "recordReopenFailed": {
+    "message": "Failed to reopen case",
+    "description": "Fallback error toast when reopen fails"
+  },
+  "recordReopenDialogTitle": {
+    "message": "Reopen this case?",
+    "description": "Dialog title when reopening a case"
+  },
+  "recordReopenDialogDescription": {
+    "message": "Add a short reason so your team understands why this case is being reopened.",
+    "description": "Dialog description when reopening a case"
+  },
+  "recordReopenDialogLabel": {
+    "message": "Reopen reason",
+    "description": "Label for reopen reason textarea"
+  },
+  "recordReopenDialogCancel": {
+    "message": "Cancel",
+    "description": "Cancel button on reopen dialog"
+  },
+  "recordReopenDialogConfirm": {
+    "message": "Reopen case",
+    "description": "Confirm button on reopen dialog"
+  },
+  "recordSupport": {
+    "message": "Support",
+    "description": "Default agent display name"
+  },
+  "recordViaChannel": {
+    "message": "Via {channel}",
+    "description": "Channel label on timeline message"
+  },
+  "recordAttachmentPreview": {
+    "message": "Preview",
+    "description": "Preview mailroom attachment inline in case timeline"
+  },
+  "recordAttachmentDownload": {
+    "message": "Download",
+    "description": "Download mailroom attachment from case timeline"
+  },
+  "recordAttachmentPreviewUnavailable": {
+    "message": "Preview is not available for this file type. Download to open it.",
+    "description": "Fallback when attachment cannot be previewed in modal"
+  },
+  "recordAttachmentPreviewFailed": {
+    "message": "Could not load this attachment. Try downloading it instead.",
+    "description": "Error when attachment fetch fails in preview modal"
+  },
+  "recordAttachmentPreviewLoading": {
+    "message": "Loading attachment…",
+    "description": "Loading state in attachment preview modal"
+  },
+  "recordMacrosSoon": {
+    "message": "Macros (soon)",
+    "description": "Deprecated: use recordMacros"
+  },
+  "recordMacros": {
+    "message": "Macros",
+    "description": "Canned responses menu in case composer"
+  },
+  "recordMacrosLoading": {
+    "message": "Loading macros…",
+    "description": "Canned responses menu loading state"
+  },
+  "recordMacrosEmpty": {
+    "message": "No macros configured. Add them in Settings → Helpdesk.",
+    "description": "Empty canned responses list in composer"
+  },
+  "recordMacrosInternalOnly": {
+    "message": "Enable Internal Comment for macros",
+    "description": "Hint when macros are only available for internal comments"
+  },
+  "recordMacroChannelEmail": {
+    "message": "Email",
+    "description": "Macro badge for customer email replies"
+  },
+  "recordMacroChannelInternal": {
+    "message": "Internal",
+    "description": "Macro badge for internal comments"
+  },
+  "recordMacroChannelAll": {
+    "message": "Both",
+    "description": "Macro badge for email and internal"
+  },
+  "recordResolutionPrompt": {
+    "message": "Resolution summary (required to resolve or close):",
+    "description": "Legacy prompt when resolving without summary"
+  },
+  "recordResolutionRequired": {
+    "message": "Resolution summary is required.",
+    "description": "Shown when user tries to resolve or close without a summary"
+  },
+  "recordResolutionDialogTitle": {
+    "message": "Update case status",
+    "description": "Dialog title when resolving or closing a case"
+  },
+  "recordResolutionDialogTitleResolve": {
+    "message": "Resolve this case?",
+    "description": "Dialog title when moving to Resolved"
+  },
+  "recordResolutionDialogTitleClose": {
+    "message": "Close this case?",
+    "description": "Dialog title when moving to Closed"
+  },
+  "recordResolutionDialogDescription": {
+    "message": "Add a resolution summary so your team and the customer know how this case was handled.",
+    "description": "Dialog description when resolving or closing a case"
+  },
+  "recordResolutionDialogLabel": {
+    "message": "Resolution summary",
+    "description": "Label for resolution summary textarea"
+  },
+  "recordResolutionDialogCancel": {
+    "message": "Cancel",
+    "description": "Cancel button on resolve/close dialog"
+  },
+  "recordResolutionDialogConfirm": {
+    "message": "Update status",
+    "description": "Confirm button on resolve/close dialog"
+  },
+  "recordResolutionDialogConfirmResolve": {
+    "message": "Mark resolved",
+    "description": "Confirm button when resolving a case"
+  },
+  "recordResolutionDialogConfirmClose": {
+    "message": "Close case",
+    "description": "Confirm button when closing a case"
+  },
+  "recordSlaResponse": {
+    "message": "First response",
+    "description": "SLA response metric label"
+  },
+  "recordSlaResolution": {
+    "message": "Resolution",
+    "description": "SLA resolution metric label"
+  },
+  "recordSlaDue": {
+    "message": "{metric} in {time}",
+    "description": "SLA due in future"
+  },
+  "recordSlaBreached": {
+    "message": "{metric} breached {time} ago",
+    "description": "SLA breached"
+  },
+  "recordSlaWarning": {
+    "message": "{metric} due in {time}",
+    "description": "SLA warning nearing breach"
+  },
+  "recordSlaMet": {
+    "message": "{metric} met",
+    "description": "SLA target met"
+  },
+  "recordSlaMetWithTime": {
+    "message": "{metric} met · {time}",
+    "description": "SLA target met with relative timestamp"
+  },
+  "listColumnResponseSla": {
+    "message": "First response",
+    "description": "Case list column for response SLA status"
+  },
+  "listResponseSlaMet": {
+    "message": "Met",
+    "description": "Response SLA met badge in case list"
+  },
+  "listResponseSlaAwaiting": {
+    "message": "Awaiting",
+    "description": "Response SLA not yet met in case list"
+  },
+  "listResponseSlaDue": {
+    "message": "Due in {time}",
+    "description": "Response SLA due soon in case list"
+  },
+  "listResponseSlaOverdue": {
+    "message": "Overdue {time}",
+    "description": "Response SLA breached in case list"
+  },
+  "recordSlaPaused": {
+    "message": "SLA paused",
+    "description": "SLA paused badge"
+  },
+  "recordEventCreated": {
+    "message": "Case created",
+    "description": "Timeline system event"
+  },
+  "recordEventReopened": {
+    "message": "Case reopened",
+    "description": "Timeline system event"
+  },
+  "recordEventStatus": {
+    "message": "Status: {from} → {to}",
+    "description": "Timeline status change"
+  },
+  "recordEventAssignment": {
+    "message": "Assignment updated",
+    "description": "Timeline assignment event"
+  },
+  "recordEventSla": {
+    "message": "SLA updated",
+    "description": "Timeline SLA event"
+  },
+  "recordEventResponseSlaMet": {
+    "message": "First response SLA met",
+    "description": "Timeline event when first response SLA is satisfied"
+  },
+  "recordSideConversations": {
+    "message": "Side conversations",
+    "description": "Side panel title"
+  },
+  "recordSideThread": {
+    "message": "Thread",
+    "description": "Side panel thread tab"
+  },
+  "recordSideEmail": {
+    "message": "Email",
+    "description": "Side panel email tab"
+  },
+  "recordSideChild": {
+    "message": "Child tickets",
+    "description": "Side panel child cases tab"
+  },
+  "recordSideSearch": {
+    "message": "Search…",
+    "description": "Side panel search placeholder"
+  },
+  "recordSideNew": {
+    "message": "New side conversation",
+    "description": "Side panel new button"
+  },
+  "recordSideComingSoon": {
+    "message": "Email threads and child cases will be available in a future release.",
+    "description": "Side panel placeholder"
+  },
+  "recordSideNoParticipants": {
+    "message": "No participants linked yet.",
+    "description": "Empty side panel participants"
+  },
+  "recordRoleOwner": {
+    "message": "Case owner",
+    "description": "Participant role"
+  },
+  "recordRoleCustomer": {
+    "message": "Customer",
+    "description": "Participant role"
+  },
+  "recordUtilityRail": {
+    "message": "Case tools",
+    "description": "Utility rail aria label"
+  },
+  "recordRailKnowledge": {
+    "message": "Knowledge base",
+    "description": "Utility rail knowledge"
+  },
+  "recordRailIntegrations": {
+    "message": "Integrations",
+    "description": "Utility rail integrations"
+  },
+  "recordRailProfile": {
+    "message": "Customer profile",
+    "description": "Utility rail profile"
+  },
+  "recordRailConversation": {
+    "message": "Conversation",
+    "description": "Utility rail conversation"
+  },
+  "recordTasksSoon": {
+    "message": "Tasks coming soon",
+    "description": "Tasks tab placeholder title"
+  },
+  "recordTasksSoonDetail": {
+    "message": "Link follow-up tasks to this case from the task module.",
+    "description": "Tasks tab placeholder detail"
+  },
+  "recordHeaderAssignedTo": {
+    "message": "Assigned to",
+    "description": "Case header assignee label"
+  },
+  "recordHeaderStatus": {
+    "message": "Status",
+    "description": "Case header status select label"
+  },
+  "recordHeaderPriority": {
+    "message": "Priority",
+    "description": "Case header priority select label"
+  },
+  "recordSlaAlertPaused": {
+    "message": "SLA paused — case is on hold",
+    "description": "Compact SLA alert when on hold"
+  },
+  "recordSlaAlertWaitingCustomer": {
+    "message": "SLA paused — waiting for customer",
+    "description": "Compact SLA alert when waiting for customer"
+  },
+  "recordSlaAlertOutsideHours": {
+    "message": "Outside business hours",
+    "description": "Compact SLA alert when clock stopped"
+  },
+  "recordSlaAlertSchedule": {
+    "message": "Schedule: {name}",
+    "description": "SLA schedule name in alert banner"
+  },
+  "recordHeaderEmail": {
+    "message": "Send email",
+    "description": "Case header email action"
+  },
+  "recordNoContactEmail": {
+    "message": "Add a contact with an email address to send email from this case.",
+    "description": "Error when composing email without contact"
+  },
+  "recordDetailsTitle": {
+    "message": "Case details",
+    "description": "Details drawer title"
+  },
+  "recordDetailsDescription": {
+    "message": "Description",
+    "description": "Details field label"
+  },
+  "recordDetailsInternalNotes": {
+    "message": "Internal comments",
+    "description": "Details field label for team-only comments"
+  },
+  "recordDetailsResolution": {
+    "message": "Resolution",
+    "description": "Details field label"
+  },
+  "recordDetailsLinks": {
+    "message": "Linked records",
+    "description": "Details section"
+  },
+  "recordDetailsNoLinks": {
+    "message": "No contact or organization linked.",
+    "description": "Empty links in details"
+  },
+  "recordDetailsOwner": {
+    "message": "Owner",
+    "description": "Owner field in details"
+  },
+  "recordDetailsUnassigned": {
+    "message": "Unassigned",
+    "description": "Unassigned owner option"
+  },
+  "recordDetailsRelated": {
+    "message": "Related records",
+    "description": "Related records in details"
+  },
+  "recordDetailsReopenReason": {
+    "message": "Reopen reason",
+    "description": "Reopen reason field label in details panel"
+  },
+  "recordTasksEmpty": {
+    "message": "No tasks linked to this case",
+    "description": "Empty tasks tab"
+  },
+  "recordTasksLink": {
+    "message": "Link task",
+    "description": "Link task button"
+  },
+  "recordLinkSuccess": {
+    "message": "Records linked",
+    "description": "Toast after linking"
+  },
+  "recordSideComposeEmail": {
+    "message": "Compose email",
+    "description": "Side panel compose"
+  },
+  "recordSideNoSubject": {
+    "message": "(No subject)",
+    "description": "Empty email subject"
+  },
+  "recordSideNoEmails": {
+    "message": "No email threads on this case yet.",
+    "description": "Empty email list in side panel"
+  },
+  "recordSideChildHint": {
+    "message": "Related records linked to this case:",
+    "description": "Child tab hint"
+  },
+  "recordRoleOrganization": {
+    "message": "Organization",
+    "description": "Participant role"
+  },
+  "recordRailEmail": {
+    "message": "Email",
+    "description": "Utility rail email"
+  },
+  "recordRailDetails": {
+    "message": "Details",
+    "description": "Utility rail details"
+  },
+  "portalCasesTitle": {
+    "message": "Support cases",
+    "description": "Portal cases list page title"
+  },
+  "portalCasesSubtitle": {
+    "message": "View and manage your support requests.",
+    "description": "Portal cases list subtitle"
+  },
+  "portalCasesPartnerNoCreate": {
+    "message": "Partner accounts cannot create new cases. Contact your account manager for support.",
+    "description": "Shown when partner users cannot create cases"
+  },
+  "portalCasesNew": {
+    "message": "New case",
+    "description": "Create case button"
+  },
+  "portalCasesEmptyTitle": {
+    "message": "No cases yet",
+    "description": "Empty state title"
+  },
+  "portalCasesEmptyMessage": {
+    "message": "Open a new case to get help from our team.",
+    "description": "Empty state message"
+  },
+  "portalCasesUpdated": {
+    "message": "Updated {date}",
+    "description": "Case list updated timestamp"
+  },
+  "portalCasesCreateTitle": {
+    "message": "Open a new case",
+    "description": "Create modal title"
+  },
+  "portalCasesFieldTitle": {
+    "message": "Subject",
+    "description": "Create form title field"
+  },
+  "portalCasesFieldDescription": {
+    "message": "How can we help?",
+    "description": "Create form description field"
+  },
+  "portalCasesFieldPriority": {
+    "message": "Priority",
+    "description": "Create form priority field"
+  },
+  "portalCasesSubmit": {
+    "message": "Submit case",
+    "description": "Create submit button"
+  },
+  "portalCasesSubmitting": {
+    "message": "Submitting…",
+    "description": "Create submitting state"
+  },
+  "portalCasesCreateFailed": {
+    "message": "Could not create case. Please try again.",
+    "description": "Create error"
+  },
+  "portalCasesLoadFailed": {
+    "message": "Could not load cases. Please try again.",
+    "description": "Load error"
+  },
+  "portalCasesAuthRequired": {
+    "message": "Please sign in to view your support cases.",
+    "description": "Portal cases auth required"
+  },
+  "portalCasesSessionExpired": {
+    "message": "Your session has expired. Please sign out and sign in again.",
+    "description": "Portal cases 401"
+  },
+  "portalCasesAccessDenied": {
+    "message": "You do not have access to the customer portal. Contact your administrator.",
+    "description": "Portal cases 403"
+  },
+  "portalCasesAttachmentsLabel": {
+    "message": "Attachments (optional)",
+    "description": "Portal cases attachments label"
+  },
+  "portalCasesAttachmentUploadFailed": {
+    "message": "Could not upload attachment. Please try again.",
+    "description": "Portal attachment upload error"
+  },
+  "portalCasesBack": {
+    "message": "All cases",
+    "description": "Back to list link"
+  },
+  "portalCasesConversation": {
+    "message": "Conversation",
+    "description": "Timeline section title"
+  },
+  "portalCasesNoMessages": {
+    "message": "No messages yet.",
+    "description": "Empty timeline"
+  },
+  "portalCasesSupport": {
+    "message": "Support",
+    "description": "Agent message label"
+  },
+  "portalCasesReplyLabel": {
+    "message": "Your reply",
+    "description": "Reply composer label"
+  },
+  "portalCasesReplyPlaceholder": {
+    "message": "Type your message…",
+    "description": "Reply placeholder"
+  },
+  "portalCasesReplySend": {
+    "message": "Send reply",
+    "description": "Send reply button"
+  },
+  "portalCasesReplySending": {
+    "message": "Sending…",
+    "description": "Sending reply state"
+  },
+  "portalCasesReplyFailed": {
+    "message": "Could not send reply. Please try again.",
+    "description": "Reply error"
+  },
+  "portalCasesClosedNoReply": {
+    "message": "This case is closed. Replies are not accepted.",
+    "description": "Closed case hint"
+  },
+  "portalCasesNotFound": {
+    "message": "Case not found or you do not have access.",
+    "description": "404 message"
   }
 }

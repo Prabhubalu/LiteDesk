@@ -59,6 +59,8 @@ const ENABLE_STALLED_INVITE_SCHEDULER =
   process.env.ENABLE_STALLED_INVITE_SCHEDULER !== 'false';
 const ENABLE_TRIAL_NUDGE_SCHEDULER =
   process.env.ENABLE_TRIAL_NUDGE_SCHEDULER !== 'false';
+const ENABLE_ADDON_TRIAL_EXPIRY_SCHEDULER =
+  process.env.ENABLE_ADDON_TRIAL_EXPIRY_SCHEDULER !== 'false';
 const ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER =
   process.env.ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER !== 'false';
 
@@ -85,6 +87,7 @@ let playbookDelayJob = null;
 let playbookAlertJob = null;
 let stalledInviteJob = null;
 let trialNudgeJob = null;
+let addonTrialExpiryJob = null;
 let releaseNotePublishJob = null;
 
 /**
@@ -615,6 +618,23 @@ function startScheduledJobs() {
     console.log('[scheduledJobs] Trial nudge scheduler disabled (ENABLE_TRIAL_NUDGE_SCHEDULER=false)');
   }
 
+  if (ENABLE_ADDON_TRIAL_EXPIRY_SCHEDULER) {
+    const { expireAddonTrials } = require('./addonTrialExpirySchedulerService');
+    addonTrialExpiryJob = cron.schedule('5 * * * *', async () => {
+      try {
+        const result = await expireAddonTrials();
+        if (result.expired > 0) {
+          console.log(`[scheduledJobs] Addon trial expiry: suspended=${result.expired}`);
+        }
+      } catch (err) {
+        console.error('[scheduledJobs] Addon trial expiry failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - Addon trial expiry: hourly at :05');
+  } else {
+    console.log('[scheduledJobs] Addon trial expiry disabled (ENABLE_ADDON_TRIAL_EXPIRY_SCHEDULER=false)');
+  }
+
   if (ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER) {
     const { tickReleaseNotePublish } = require('./releaseNotePublishScheduler');
     releaseNotePublishJob = cron.schedule('*/5 * * * *', async () => {
@@ -774,6 +794,11 @@ function stopScheduledJobs() {
     trialNudgeJob.stop();
     trialNudgeJob = null;
     console.log('[scheduledJobs] Trial nudge job stopped');
+  }
+  if (addonTrialExpiryJob) {
+    addonTrialExpiryJob.stop();
+    addonTrialExpiryJob = null;
+    console.log('[scheduledJobs] Addon trial expiry job stopped');
   }
   if (releaseNotePublishJob) {
     releaseNotePublishJob.stop();

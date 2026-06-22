@@ -24,6 +24,7 @@ const { buildGraphState } = require('../services/processExecutionTracker');
 const { simulateProcessRun } = require('../services/processDryRun');
 const { getCapabilitiesForProcessDesigner } = require('../utils/executionCapabilityRegistry');
 const { getProcessDesignerActions } = require('../constants/processDesignerActions');
+const { LIVE_CHAT_PROCESS_DESIGNER_TRIGGERS } = require('../constants/liveChatProcessDesigner');
 const {
   buildWebhookKey,
   generateWebhookSecret,
@@ -82,10 +83,10 @@ async function enrichProcessForClient(process, req) {
 }
 
 // Known app keys
-const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL'];
+const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'PLATFORM'];
 
 // Known entity types
-const ENTITY_TYPES = ['people', 'organization', 'deal'];
+const ENTITY_TYPES = ['people', 'organization', 'deal', 'live_chat_session'];
 
 // Known trigger types
 const TRIGGER_TYPES = ['domain_event', 'manual', 'webhook', 'schedule'];
@@ -208,6 +209,7 @@ exports.getDesignerMetadata = async (req, res) => {
         capabilities,
         processActions,
         entityTypes: ENTITY_TYPES,
+        liveChatTriggers: LIVE_CHAT_PROCESS_DESIGNER_TRIGGERS,
         coreTriggers: CORE_TRIGGER_TYPES.map((value) => ({
           value,
           label:

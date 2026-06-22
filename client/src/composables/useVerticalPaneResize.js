@@ -8,7 +8,9 @@ export function useVerticalPaneResize({
   defaultHeight = 180,
   minHeight = 120,
   maxHeightRatio = 0.65,
-  absoluteMaxHeight = 520
+  absoluteMaxHeight = 520,
+  /** Walk up from pane parent when the immediate wrapper shrink-wraps the pane. */
+  heightParentDepth = 1,
 } = {}) {
   const height = ref(defaultHeight);
   const isResizing = ref(false);
@@ -30,8 +32,16 @@ export function useVerticalPaneResize({
     }
   }
 
+  function getHeightParent() {
+    let el = paneRef.value?.parentElement ?? null;
+    for (let i = 1; i < heightParentDepth && el; i += 1) {
+      el = el.parentElement;
+    }
+    return el;
+  }
+
   function getMaxHeight() {
-    const parent = paneRef.value?.parentElement;
+    const parent = getHeightParent();
     const parentH = parent?.clientHeight ?? window.innerHeight;
     return Math.min(absoluteMaxHeight, Math.floor(parentH * maxHeightRatio));
   }

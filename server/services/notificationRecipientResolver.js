@@ -5,6 +5,7 @@ const People = require('../models/People');
 const Deal = require('../models/Deal');
 const Organization = require('../models/Organization');
 const User = require('../models/User');
+const Role = require('../models/Role');
 const domainEvents = require('../constants/domainEvents');
 const { aggregateDigest } = require('./notificationDigestService');
 
@@ -49,6 +50,8 @@ async function resolveKey(key, context) {
       return resolveCaseOwner(context);
     case 'CASE_NOTIFY_TARGETS':
       return resolveCaseNotifyTargets(context);
+    case 'LIVE_CHAT_NOTIFY_TARGETS':
+      return resolveLiveChatNotifyTargets(context);
     case 'INBOX_SNOOZE_USER':
       return resolveInboxSnoozeWake(context);
     case 'PLAYBOOK_ALERT_RECIPIENTS':
@@ -250,6 +253,79 @@ function caseNotificationCopy(eventType, caseLabel, entity = {}) {
     title: titles[eventType] || 'Case notification',
     body: bodies[eventType] || `Update on ${caseLabel}.`
   };
+}
+
+function liveChatNotificationCopy(eventType, entity = {}) {
+  const author = String(entity.authorName || 'Visitor').trim();
+  const preview = String(entity.preview || '').trim();
+  const sessionKey = String(entity.sessionKey || entity.title || '').trim();
+  const label = sessionKey || 'Live chat session';
+
+  if (eventType === domainEvents.LIVE_CHAT_MESSAGE_RECEIVED) {
+    return {
+      title: 'Live chat message',
+      body: preview
+        ? `New message from ${author}: ${preview}`
+        : `New message from ${author} on ${label}.`,
+    };
+  }
+
+  if (eventType === domainEvents.LIVE_CHAT_SESSION_STARTED) {
+    return {
+      title: 'Live chat started',
+      body: sessionKey ? `Visitor started ${sessionKey}.` : 'Visitor started a chat session.',
+    };
+  }
+
+  return {
+    title: 'Live chat notification',
+    body: `Update on ${label}.`,
+  };
+}
+
+async function resolveLiveChatNotifyTargets({ entity, organizationId, eventType }) {
+  if (!organizationId) return [];
+
+  const copy = liveChatNotificationCopy(eventType, entity);
+
+  const liveChatRoles = await Role.find({
+    organizationId,
+    'permissions.liveChat.view': true,
+  })
+    .select('_id')
+    .lean();
+
+  const roleIds = liveChatRoles.map((row) => row._id);
+
+  const agents = await User.find({
+    organizationId,
+    $or: [
+      { isOwner: true },
+      { role: { $in: ['owner', 'admin'] } },
+      { 'permissions.liveChat.view': true },
+      ...(roleIds.length ? [{ roleId: { $in: roleIds } }] : []),
+    ],
+    $and: [
+      {
+        $or: [{ status: 'active' }, { status: { $exists: false } }, { status: null }],
+      },
+    ],
+  })
+    .select('_id')
+    .limit(40)
+    .lean();
+
+  if (!agents.length) {
+    return resolveOrgAdmins({ organizationId }).then((admins) =>
+      admins.map((admin) => ({ ...admin, title: copy.title, body: copy.body })),
+    );
+  }
+
+  return agents.map((user) => ({
+    userId: user._id,
+    title: copy.title,
+    body: copy.body,
+  }));
 }
 
 async function resolveCaseOwner({ entity, organizationId, eventType }) {

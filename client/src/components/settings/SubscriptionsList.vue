@@ -41,8 +41,8 @@
       <div
         v-for="subscription in subscriptions"
         :key="subscription.appKey"
-        @click="viewSubscriptionDetail(subscription.appKey)"
         class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md hover:border-indigo-500 dark:hover:border-indigo-400 transition-all cursor-pointer group"
+        @click="viewSubscriptionDetail(subscription)"
       >
         <!-- Subscription Header -->
         <div class="flex items-start justify-between mb-4">
@@ -56,9 +56,17 @@
 
             <!-- App Name and Description -->
             <div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                {{ subscription.appName }}
-              </h3>
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  {{ subscription.appName }}
+                </h3>
+                <span
+                  v-if="subscription.itemType === 'addon'"
+                  class="rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
+                >
+                  {{ t('settings.settingsSubsAddonBadge') }}
+                </span>
+              </div>
               <p v-if="subscription.description" class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 {{ subscription.description }}
               </p>
@@ -80,6 +88,24 @@
 
         <!-- Usage and Limits -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <!-- Agents (addons) -->
+          <div v-if="subscription.usage?.agents">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubsUsageAgents') }}</span>
+              <span class="text-xs text-gray-500 dark:text-gray-500">
+                {{ subscription.usage.agents.current }}
+                /
+                {{ subscription.usage.agents.limit ?? t('settings.addonsUnlimited') }}
+              </span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div
+                class="bg-indigo-600 h-2 rounded-full transition-all"
+                :style="{ width: agentUsageWidth(subscription.usage.agents) }"
+              ></div>
+            </div>
+          </div>
+
           <!-- Users -->
           <div v-if="subscription.usage?.users">
             <div class="flex items-center justify-between mb-1">
@@ -130,7 +156,7 @@
         </div>
 
         <!-- Upgrade CTA (only for eligible apps) -->
-        <div v-if="subscription.canUpgrade" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div v-if="subscription.canUpgrade && subscription.itemType !== 'addon'" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <button
             @click.stop="handleUpgrade(subscription.appKey)"
             class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-300 dark:border-indigo-700 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
@@ -140,6 +166,13 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </button>
+        </div>
+
+        <div
+          v-else-if="subscription.itemType === 'addon' && subscription.subscriptionDetails?.trialEndsAt && subscription.plan === 'Trial'"
+          class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400"
+        >
+          {{ t('settings.addonsTrialEnds', { date: formatDate(subscription.subscriptionDetails.trialEndsAt) }) }}
         </div>
       </div>
     </div>
@@ -167,6 +200,10 @@ const PLAN_LABEL_KEYS = {
   Suspended: 'settings.settingsSubsPlanSuspended',
   'Not Subscribed': 'settings.settingsSubsPlanNotSubscribed',
   DISABLED: 'settings.settingsSubsPlanNotSubscribed',
+  BASIC: 'settings.settingsSubsPlanBasic',
+  PRO: 'settings.settingsSubsPlanPro',
+  ENTERPRISE: 'settings.settingsSubsPlanEnterprise',
+  Archived: 'settings.settingsSubsPlanArchived',
 };
 
 const fetchSubscriptions = async () => {
@@ -175,7 +212,8 @@ const fetchSubscriptions = async () => {
 
   try {
     const data = await apiClient('/settings/subscriptions', {
-      method: 'GET'
+      method: 'GET',
+      cache: 'no-store',
     });
 
     if (data && data.subscriptions) {
@@ -192,13 +230,29 @@ const fetchSubscriptions = async () => {
   }
 };
 
-const viewSubscriptionDetail = (appKey) => {
-  router.push({ path: '/settings', query: { tab: 'subscriptions', appKey: appKey } });
+const viewSubscriptionDetail = (subscription) => {
+  router.push({ path: '/settings', query: { tab: 'subscriptions', appKey: subscription.appKey } });
 };
 
 const handleUpgrade = (appKey) => {
-  viewSubscriptionDetail(appKey);
+  router.push({ path: '/settings', query: { tab: 'subscriptions', appKey } });
 };
+
+function agentUsageWidth(agents) {
+  const current = Number(agents?.current) || 0;
+  const limit = Number(agents?.limit);
+  if (!Number.isFinite(limit) || limit <= 0) return '0%';
+  return `${Math.min(100, (current / limit) * 100)}%`;
+}
+
+function formatDate(value) {
+  if (!value) return '';
+  try {
+    return new Date(value).toLocaleDateString();
+  } catch {
+    return '';
+  }
+}
 
 function planLabel(plan) {
   const key = PLAN_LABEL_KEYS[plan];
@@ -210,7 +264,11 @@ const getPlanBadgeClass = (plan) => {
     'Trial': 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
     'Paid': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
     'Active': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+    'BASIC': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+    'PRO': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+    'ENTERPRISE': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
     'Suspended': 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300',
+    'Archived': 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400',
     'Not Subscribed': 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400',
     'DISABLED': 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
   };

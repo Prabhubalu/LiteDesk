@@ -1,7 +1,7 @@
 const NotificationPreference = require('../models/NotificationPreference');
 const domainEvents = require('../constants/domainEvents');
 
-const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK'];
+const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK', 'PLATFORM'];
 const ALL_EVENTS = Object.values(domainEvents);
 
 /**
@@ -90,6 +90,16 @@ function buildDefaultMap(appKey) {
       domainEvents.CASE_CHAT_MESSAGE_RECEIVED
     ];
     helpdeskEvents.forEach((evt) => {
+      defaults[evt] = createEventPref(true, false, true, true, false, false, false, false);
+    });
+  }
+
+  if (appKey === 'PLATFORM') {
+    const liveChatEvents = [
+      domainEvents.LIVE_CHAT_MESSAGE_RECEIVED,
+      domainEvents.LIVE_CHAT_SESSION_STARTED,
+    ];
+    liveChatEvents.forEach((evt) => {
       defaults[evt] = createEventPref(true, false, true, true, false, false, false, false);
     });
   }

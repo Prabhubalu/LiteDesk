@@ -4,7 +4,9 @@ const {
   getEmbedChatConfig,
   getSession,
   closeSession,
+  submitSessionFeedback,
   createSession,
+  recordSessionJourney,
   postMessage,
   postMessageReceipts,
   listMessages,
@@ -36,7 +38,9 @@ router.use(resolveEmbedChatInstance);
 router.get('/config', getEmbedChatConfig);
 router.post('/sessions', createSession);
 router.get('/sessions/:sessionId', getSession);
+router.post('/sessions/:sessionId/journey', recordSessionJourney);
 router.post('/sessions/:sessionId/close', closeSession);
+router.post('/sessions/:sessionId/feedback', submitSessionFeedback);
 router.get('/sessions/:sessionId/messages', listMessages);
 router.post('/sessions/:sessionId/messages', postMessage);
 router.post('/sessions/:sessionId/messages/receipts', postMessageReceipts);

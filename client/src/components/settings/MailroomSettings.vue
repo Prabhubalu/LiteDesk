@@ -362,111 +362,15 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400">
                   {{ t('settings.mailroomConnectorChatEndpointHint') }}
                 </p>
-
-                <div v-if="!chatEmbedKey" class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ t('settings.mailroomConnectorChatEmbedNotEnabled') }}
-                </div>
-
-                <div v-else class="space-y-3">
-                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.mailroomConnectorChatEmbedTitle') }}</p>
-                  <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800 space-y-3">
-                    <p class="text-xs font-medium text-gray-700 dark:text-gray-200">{{ t('settings.chatWidgetPrechatTitle') }}</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-200">
-                        <input
-                          type="checkbox"
-                          :checked="embedChatConfig.captureFields.includes('name')"
-                          class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                          @change="($event) => {
-                            const checked = $event?.target?.checked === true;
-                            const set = new Set(embedChatConfig.captureFields || []);
-                            if (checked) set.add('name'); else set.delete('name');
-                            embedChatConfig.captureFields = Array.from(set);
-                          }"
-                        />
-                        {{ t('settings.chatWidgetFieldName') }}
-                      </label>
-                      <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-200">
-                        <input
-                          type="checkbox"
-                          :checked="embedChatConfig.captureFields.includes('email')"
-                          class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                          @change="($event) => {
-                            const checked = $event?.target?.checked === true;
-                            const set = new Set(embedChatConfig.captureFields || []);
-                            if (checked) set.add('email'); else set.delete('email');
-                            embedChatConfig.captureFields = Array.from(set);
-                          }"
-                        />
-                        {{ t('settings.chatWidgetFieldEmail') }}
-                      </label>
-                      <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-200">
-                        <input
-                          type="checkbox"
-                          :checked="embedChatConfig.captureFields.includes('phone')"
-                          class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                          @change="($event) => {
-                            const checked = $event?.target?.checked === true;
-                            const set = new Set(embedChatConfig.captureFields || []);
-                            if (checked) set.add('phone'); else set.delete('phone');
-                            embedChatConfig.captureFields = Array.from(set);
-                          }"
-                        />
-                        {{ t('settings.chatWidgetFieldPhone') }}
-                      </label>
-                      <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-200">
-                        <input
-                          type="checkbox"
-                          :checked="embedChatConfig.captureFields.includes('externalId')"
-                          class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                          @change="($event) => {
-                            const checked = $event?.target?.checked === true;
-                            const set = new Set(embedChatConfig.captureFields || []);
-                            if (checked) set.add('externalId'); else set.delete('externalId');
-                            embedChatConfig.captureFields = Array.from(set);
-                          }"
-                        />
-                        {{ t('settings.chatWidgetFieldExternalId') }}
-                      </label>
-                    </div>
-                    <label class="block text-xs text-gray-600 dark:text-gray-300">
-                      {{ t('settings.chatWidgetWelcomeMessage') }}
-                      <textarea
-                        v-model.trim="embedChatConfig.welcomeMessage"
-                        rows="3"
-                        class="mt-1 w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                      />
-                    </label>
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">
-                      {{ t('settings.mailroomConnectorChatEmbedKeyLabel') }}
-                    </label>
-                    <input
-                      :value="chatEmbedKey"
-                      readonly
-                      class="mt-1 w-full max-w-xl rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    >
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">
-                      {{ t('settings.mailroomConnectorChatEmbedSnippetLabel') }}
-                    </label>
-                    <textarea
-                      :value="chatEmbedSnippet"
-                      readonly
-                      rows="4"
-                      class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-mono text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    />
-                    <button
-                      type="button"
-                      class="mt-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                      @click="copyChatSnippet"
-                    >
-                      Copy snippet
-                    </button>
-                  </div>
-                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  {{ t('settings.mailroomConnectorChatMovedToAddons') }}
+                </p>
+                <RouterLink
+                  :to="{ path: '/settings', query: { tab: 'addons', addonView: 'live-chat', liveChatView: 'settings' } }"
+                  class="inline-flex text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                  {{ t('settings.mailroomConnectorChatOpenAddons') }}
+                </RouterLink>
               </div>
             </div>
               </div>
@@ -961,7 +865,6 @@ import { computed, defineComponent, h, onMounted, reactive, ref, watch } from 'v
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
-import { getApiOrigin } from '@/config/apiBase';
 import { useNotifications } from '@/composables/useNotifications';
 import { CASE_TYPES, CASE_PRIORITIES, CASE_CHANNELS } from '@/constants/caseLifecycle';
 import {
@@ -1033,11 +936,6 @@ const routingLogs = ref([]);
 const mailroomMetrics = ref(null);
 const replayingId = ref('');
 const activeTab = ref(localStorage.getItem(MAILROOM_TAB_KEY) || 'overview');
-const chatEmbedKey = ref('');
-const embedChatConfig = ref({
-  captureFields: ['name', 'email'],
-  welcomeMessage: "Hey! Let’s discuss how we can help you. Fill out the form to start chatting."
-});
 const form = ref({
   enabled: false,
   activeTemplateId: 'helpdesk_standard_email',
@@ -1567,14 +1465,6 @@ async function load() {
     const res = await apiClient.get('/settings/automation/mailroom');
     if (!res.success) throw new Error(res.message || 'Load failed');
     templates.value = res.meta?.templates || [];
-    chatEmbedKey.value = res.meta?.chatEmbed?.publicKey || '';
-    embedChatConfig.value = {
-      captureFields: Array.isArray(res.meta?.chatEmbed?.config?.captureFields)
-        ? res.meta.chatEmbed.config.captureFields
-        : ['name', 'email'],
-      welcomeMessage: String(res.meta?.chatEmbed?.config?.welcomeMessage || '').trim()
-        || "Hey! Let’s discuss how we can help you. Fill out the form to start chatting."
-    };
     form.value = {
       enabled: res.data?.enabled === true,
       activeTemplateId: res.data?.activeTemplateId || 'helpdesk_standard_email',
@@ -1612,27 +1502,6 @@ async function load() {
   }
 }
 
-const chatEmbedSnippet = computed(() => {
-  if (!chatEmbedKey.value) return '';
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const apiOrigin = getApiOrigin();
-  const apiOriginAttr = apiOrigin ? `\\n  data-api-origin=\\"${apiOrigin}\\"` : '';
-  // IMPORTANT: never embed a literal script-close tag inside a Vue SFC <script> block.
-  // Browsers terminate the SFC script element early, breaking the component.
-  const closeTag = '</scr' + 'ipt>';
-  return `<script\\n  src=\\"${origin}/embed/chat.js\\"\\n  data-instance=\\"${chatEmbedKey.value}\\"\\n  data-position=\\"right\\"\\n  data-theme=\\"light\\"${apiOriginAttr}\\n>${closeTag}`;
-});
-
-async function copyChatSnippet() {
-  try {
-    if (!chatEmbedSnippet.value) return;
-    await navigator.clipboard.writeText(chatEmbedSnippet.value);
-    notifications.success('Copied');
-  } catch (e) {
-    notifications.error(e.message || 'Copy failed');
-  }
-}
-
 async function save() {
   syncAllPolicies();
   saving.value = true;
@@ -1643,7 +1512,6 @@ async function save() {
       policies: form.value.policies,
       connectors: form.value.connectors,
       security: form.value.security,
-      embedChatConfig: embedChatConfig.value
     };
     if (selectedTemplateId.value !== form.value.activeTemplateId) {
       payload.applyTemplateId = selectedTemplateId.value;
@@ -1651,18 +1519,6 @@ async function save() {
     const res = await apiClient.put('/settings/automation/mailroom', payload);
     if (!res.success) throw new Error(res.message || 'Save failed');
     form.value = { ...form.value, ...res.data };
-    if (res.meta?.chatEmbed?.publicKey) {
-      chatEmbedKey.value = res.meta.chatEmbed.publicKey;
-    }
-    if (res.meta?.chatEmbed?.config) {
-      embedChatConfig.value = {
-        captureFields: Array.isArray(res.meta.chatEmbed.config.captureFields)
-          ? res.meta.chatEmbed.config.captureFields
-          : ['name', 'email'],
-        welcomeMessage: String(res.meta.chatEmbed.config.welcomeMessage || '').trim()
-          || "Hey! Let’s discuss how we can help you. Fill out the form to start chatting."
-      };
-    }
     hydrateThreadingStrategies();
     hydrateIngestPolicy();
     hydrateDedupAndCaseLink();
@@ -1717,7 +1573,7 @@ onMounted(() => {
 });
 
 watch(
-  [form, selectedTemplateId, embedChatConfig, threadingStrategies, dedupForm, classificationForm, classificationRules, caseLinkForm, ingestRules, ingestDefaultAction],
+  [form, selectedTemplateId, threadingStrategies, dedupForm, classificationForm, classificationRules, caseLinkForm, ingestRules, ingestDefaultAction],
   () => {
     if (trackChanges.value && !loading.value) {
       isDirty.value = true;

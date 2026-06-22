@@ -373,7 +373,8 @@ const buildSidebar = async () => {
     if (!authStore.user || !authStore.isAuthenticated) return;
     const { structure } = await buildSidebarStructureForSession(
       authStore.user,
-      authStore.hasAppAccess
+      authStore.hasAppAccess,
+      authStore.organization,
     );
     sidebarStructure.value = structure;
   } catch (e) {

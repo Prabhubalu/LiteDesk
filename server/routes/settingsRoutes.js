@@ -9,6 +9,7 @@ const slaPolicyController = require('../controllers/slaPolicyController');
 const mailroomSettingsController = require('../controllers/mailroomSettingsController');
 const quoteSettingsController = require('../controllers/quoteSettingsController');
 const webformController = require('../controllers/webformController');
+const addonSettingsController = require('../controllers/addonSettingsController');
 const { organizationSettingsLimiter, sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
 const {
@@ -42,6 +43,21 @@ router.post('/applications/helpdesk/recalculate-slas', helpdeskSettingsControlle
 router.get('/quotes', quoteSettingsController.getQuoteSettings);
 router.put('/quotes', quoteSettingsController.updateQuoteSettings);
 router.get('/applications/:appKey', controller.getApplication);
+
+// Addons (tenant-scoped installable capabilities)
+router.get('/addons', addonSettingsController.listAddons);
+router.get('/addons/live_chat/widget', addonSettingsController.getLiveChatWidgetSettings);
+router.put('/addons/live_chat/widget', addonSettingsController.updateLiveChatWidgetSettings);
+router.get('/addons/live_chat/outcomes', addonSettingsController.getLiveChatOutcomeSettings);
+router.put('/addons/live_chat/outcomes', addonSettingsController.updateLiveChatOutcomeSettings);
+router.get('/addons/live_chat/session-fields', addonSettingsController.getLiveChatSessionFieldSettings);
+router.put('/addons/live_chat/session-fields', addonSettingsController.updateLiveChatSessionFieldSettings);
+router.get('/addons/:addonKey', addonSettingsController.getAddon);
+router.post('/addons/:addonKey/install', invalidateCacheOnSuccessfulMutation({ namespace: 'settings:subscriptions:v2' }), addonSettingsController.installAddon);
+router.post('/addons/:addonKey/enable', invalidateCacheOnSuccessfulMutation({ namespace: 'settings:subscriptions:v2' }), addonSettingsController.enableAddon);
+router.post('/addons/:addonKey/disable', invalidateCacheOnSuccessfulMutation({ namespace: 'settings:subscriptions:v2' }), addonSettingsController.disableAddon);
+router.post('/addons/:addonKey/archive', invalidateCacheOnSuccessfulMutation({ namespace: 'settings:subscriptions:v2' }), addonSettingsController.archiveAddon);
+router.post('/addons/:addonKey/uninstall', invalidateCacheOnSuccessfulMutation({ namespace: 'settings:subscriptions:v2' }), addonSettingsController.uninstallAddon);
 
 // Webforms (Settings metadata — separate from Audit forms)
 router.get('/webforms/modules', webformController.getWebformModules);
@@ -87,7 +103,7 @@ router.get('/automation/mailroom/search', mailroomSettingsController.searchMailr
 router.post('/automation/mailroom/failures/:rawPayloadId/replay', mailroomSettingsController.replayMailroomProcessingFailure);
 
 // Subscriptions endpoints
-router.get('/subscriptions', cacheJsonResponse({ namespace: 'settings:subscriptions' }), controller.getSubscriptions);
+router.get('/subscriptions', cacheJsonResponse({ namespace: 'settings:subscriptions:v2' }), controller.getSubscriptions);
 router.get('/subscriptions/:appKey', controller.getSubscription);
 
 // Organization settings endpoints

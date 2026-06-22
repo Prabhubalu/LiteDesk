@@ -70,6 +70,54 @@ const PROCESS_DESIGNER_ACTIONS = [
     ]
   },
   {
+    actionType: 'live_chat_create_case',
+    label: 'Create Helpdesk case',
+    description: 'Creates a case from the live chat session (session reference only, no transcript).',
+    params: [
+      {
+        key: 'title',
+        label: 'Case title',
+        type: 'text',
+        required: false,
+        placeholder: 'Optional — defaults to visitor + session key'
+      }
+    ]
+  },
+  {
+    actionType: 'live_chat_link_case',
+    label: 'Link existing case',
+    description: 'Links an existing Helpdesk case to the live chat session.',
+    params: [
+      {
+        key: 'caseId',
+        label: 'Case record ID',
+        type: 'text',
+        required: true,
+        placeholder: 'MongoDB case _id'
+      }
+    ]
+  },
+  {
+    actionType: 'live_chat_create_lead',
+    label: 'Create Sales lead',
+    description: 'Creates or associates a Sales lead from the visitor (session reference only, no transcript).',
+    params: []
+  },
+  {
+    actionType: 'live_chat_link_person',
+    label: 'Link existing person',
+    description: 'Links an existing Sales person record to the live chat session.',
+    params: [
+      {
+        key: 'personId',
+        label: 'Person record ID',
+        type: 'text',
+        required: true,
+        placeholder: 'MongoDB people _id'
+      }
+    ]
+  },
+  {
     actionType: 'start_process',
     label: 'Start another process',
     description: 'Starts a different active process for the same record (nested invocation).',

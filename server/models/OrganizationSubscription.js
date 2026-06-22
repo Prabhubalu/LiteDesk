@@ -67,6 +67,48 @@ const OrganizationSubscriptionSchema = new mongoose.Schema({
         }
     ],
 
+    addons: [
+        {
+            addonKey: {
+                type: String,
+                required: true,
+                trim: true,
+                lowercase: true,
+            },
+            planKey: {
+                type: String,
+                required: true,
+                enum: ['BASIC', 'PRO', 'ENTERPRISE'],
+            },
+            agentLimit: {
+                type: Number,
+                default: null, // null = unlimited (PER_AGENT billing)
+            },
+            agentsUsed: {
+                type: Number,
+                default: 0,
+            },
+            status: {
+                type: String,
+                enum: ['ACTIVE', 'TRIAL', 'SUSPENDED', 'ARCHIVED'],
+                default: 'TRIAL',
+            },
+            trialEndsAt: {
+                type: Date,
+                default: null,
+            },
+            startedAt: {
+                type: Date,
+                default: Date.now,
+            },
+            installedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+                default: null,
+            },
+        },
+    ],
+
     createdAt: {
         type: Date,
         default: Date.now
@@ -85,6 +127,7 @@ OrganizationSubscriptionSchema.pre('save', function(next) {
 
 // Index for app lookups
 OrganizationSubscriptionSchema.index({ 'apps.appKey': 1 });
+OrganizationSubscriptionSchema.index({ 'addons.addonKey': 1 });
 
 const OrganizationSubscription = mongoose.model('OrganizationSubscription', OrganizationSubscriptionSchema);
 

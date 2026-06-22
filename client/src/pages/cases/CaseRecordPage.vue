@@ -532,7 +532,6 @@ function onChatUpdated() {
 onActivated(() => {
   if (effectiveCaseId.value && caseRecord.value) {
     refreshCaseSilently();
-    mainWorkspaceRef.value?.refreshLiveChatMessages?.();
   }
 });
 
@@ -639,7 +638,6 @@ async function onSendEmail(payload) {
 
 async function onSendMessage(payload) {
   const channel = String(caseRecord.value?.channel || '').toLowerCase();
-  const isLiveChat = channel === 'live chat';
   const isEmail = channel === 'email';
   if (isEmail && payload.internal) {
     const ok = await postActivity({
@@ -653,24 +651,6 @@ async function onSendMessage(payload) {
   if (isEmail && !payload.internal) {
     return;
   }
-  if (isLiveChat && !payload.internal) {
-    // For live chat cases, replies go to the chat stream (and are mirrored into the case timeline server-side).
-    const body = String(payload.message || '').trim();
-    if (!body) return;
-    try {
-      const res = await apiClient.post(`/helpdesk/cases/${effectiveCaseId.value}/chat/messages`, { body });
-      if (res?.success && res.data) {
-        mainWorkspaceRef.value?.appendLiveChatMessage?.(res.data);
-      } else {
-        await mainWorkspaceRef.value?.refreshLiveChatMessages?.();
-      }
-      await refreshCaseSilently();
-    } catch (err) {
-      const msg = err?.response?.data?.message || err?.message || 'Failed to send message';
-      notifications.error(msg);
-    }
-    return;
-  }
   await postActivity({
     ...payload,
     activityType: payload.internal ? 'comment' : 'agent_message',
@@ -678,17 +658,8 @@ async function onSendMessage(payload) {
   });
 }
 
-async function onTyping(payload) {
-  const channel = String(caseRecord.value?.channel || '').toLowerCase();
-  const isLiveChat = channel === 'live chat';
-  if (!isLiveChat) return;
-  if (payload?.internal) return;
-  try {
-    await apiClient.post(`/helpdesk/cases/${effectiveCaseId.value}/chat/typing`, {});
-  } catch (_) {
-    // Helpful when debugging SSE/typing behavior (EventSource can't show POST errors).
-    console.warn('[CaseRecordPage] chat typing ping failed');
-  }
+function onTyping() {
+  // Legacy case-bound live chat typing removed (LC0).
 }
 
 async function onSendNote(payload) {

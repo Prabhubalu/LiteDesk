@@ -43,6 +43,38 @@
     "message": "Live chat",
     "description": "Live chat panel heading on case record"
   },
+  "liveChatMovedToAddonBanner": {
+    "message": "Legacy live chat case — use the linked session below to view the transcript and reply in Live Chat.",
+    "description": "Banner on legacy live chat cases after LC0 decoupling"
+  },
+  "liveChatSessionCardTitle": {
+    "message": "Linked live chat session",
+    "description": "Case record live chat session card title"
+  },
+  "liveChatSessionOutcome": {
+    "message": "Outcome",
+    "description": "Live chat session outcome label on case"
+  },
+  "liveChatSessionDuration": {
+    "message": "Duration",
+    "description": "Live chat session duration label on case"
+  },
+  "liveChatSessionDurationSeconds": {
+    "message": "{count}s",
+    "description": "Live chat duration seconds"
+  },
+  "liveChatSessionDurationMinutes": {
+    "message": "{count} min",
+    "description": "Live chat duration minutes"
+  },
+  "liveChatSessionMissing": {
+    "message": "Session record is no longer available.",
+    "description": "Missing linked live chat session"
+  },
+  "liveChatSessionOpenTranscript": {
+    "message": "Open transcript",
+    "description": "Link to live chat session from case"
+  },
   "chatLoading": {
     "message": "Loading chat…",
     "description": "Live chat messages loading state"

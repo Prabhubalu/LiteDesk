@@ -13402,5 +13402,597 @@
   "modFieldsDocumentStatusDesc": {
     "message": "Enable or disable lifecycle statuses. Edit labels and add statuses in Field Configurations.",
     "description": "Document status section description in module settings"
+  },
+  "tabAddons": {
+    "message": "Addons",
+    "description": "Addons settings tab"
+  },
+  "tabAddonsDesc": {
+    "message": "Install optional capabilities such as Live Chat independently from applications",
+    "description": "Addons card description"
+  },
+  "addonsHubDesc": {
+    "message": "Extend your workspace with installable addons. Each addon is licensed and configured per tenant.",
+    "description": "Addons hub subtitle"
+  },
+  "addonsPlatformSection": {
+    "message": "Platform",
+    "description": "Addons hub platform section for master org"
+  },
+  "addonsInstalledSection": {
+    "message": "Installed",
+    "description": "Addons hub installed section title"
+  },
+  "addonsMarketplaceSection": {
+    "message": "Marketplace",
+    "description": "Addons hub marketplace section title"
+  },
+  "addonsInstall": {
+    "message": "Install",
+    "description": "Install addon button"
+  },
+  "addonsDisable": {
+    "message": "Disable",
+    "description": "Disable addon button"
+  },
+  "addonsEnable": {
+    "message": "Enable",
+    "description": "Enable addon button"
+  },
+  "addonsUninstall": {
+    "message": "Uninstall",
+    "description": "Uninstall addon button"
+  },
+  "addonsUninstallConfirm": {
+    "message": "Uninstall this addon for your organization? This removes the entitlement.",
+    "description": "Uninstall addon confirmation"
+  },
+  "addonsInstallSuccess": {
+    "message": "Addon installed successfully.",
+    "description": "Addon install success toast"
+  },
+  "addonsInstallFailed": {
+    "message": "Failed to install addon.",
+    "description": "Addon install failure toast"
+  },
+  "addonsDisableSuccess": {
+    "message": "Addon disabled.",
+    "description": "Addon disable success toast"
+  },
+  "addonsDisableFailed": {
+    "message": "Failed to disable addon.",
+    "description": "Addon disable failure toast"
+  },
+  "addonsEnableSuccess": {
+    "message": "Addon enabled.",
+    "description": "Addon enable success toast"
+  },
+  "addonsEnableFailed": {
+    "message": "Failed to enable addon.",
+    "description": "Addon enable failure toast"
+  },
+  "addonsUninstallSuccess": {
+    "message": "Addon uninstalled.",
+    "description": "Addon uninstall success toast"
+  },
+  "addonsUninstallFailed": {
+    "message": "Failed to uninstall addon.",
+    "description": "Addon uninstall failure toast"
+  },
+  "addonsLoadFailed": {
+    "message": "Failed to load addons.",
+    "description": "Addons list load error"
+  },
+  "addonsEmpty": {
+    "message": "No addons are available yet.",
+    "description": "Addons hub empty state"
+  },
+  "addonsBeta": {
+    "message": "Beta",
+    "description": "Addon beta badge"
+  },
+  "addonsPerAgentBilling": {
+    "message": "Per-agent licensing",
+    "description": "Addon per-agent billing hint"
+  },
+  "addonsAgentsUsage": {
+    "message": "{used} / {limit} agents",
+    "description": "Addon agent seat usage"
+  },
+  "addonsUnlimited": {
+    "message": "Unlimited",
+    "description": "Unlimited agents label"
+  },
+  "addonsTrialEnds": {
+    "message": "Trial ends {date}",
+    "description": "Addon trial end date"
+  },
+  "addonsStatusTrial": {
+    "message": "Trial",
+    "description": "Addon status trial"
+  },
+  "addonsStatusActive": {
+    "message": "Active",
+    "description": "Addon status active"
+  },
+  "addonsStatusDisabled": {
+    "message": "Disabled",
+    "description": "Addon status disabled"
+  },
+  "addonsStatusArchived": {
+    "message": "Archived",
+    "description": "Addon status archived"
+  },
+  "addonsStatusSuspended": {
+    "message": "Suspended",
+    "description": "Addon status suspended"
+  },
+  "addonsStatusInstalled": {
+    "message": "Installed",
+    "description": "Addon status installed"
+  },
+  "addonsStatusAvailable": {
+    "message": "Available",
+    "description": "Addon status available"
+  },
+  "addonsPlatformPricing": {
+    "message": "Addon pricing",
+    "description": "Master org addon pricing hub card"
+  },
+  "addonsPlatformPricingDesc": {
+    "message": "Configure trial length, billing model, and per-agent rates for installable addons.",
+    "description": "Master org addon pricing hub card description"
+  },
+  "addonsBackToHub": {
+    "message": "Back to addons",
+    "description": "Back navigation from addon sub-view"
+  },
+  "addonsLiveChatName": {
+    "message": "Live Chat",
+    "description": "Live Chat addon display name"
+  },
+  "addonsConfigure": {
+    "message": "Configure",
+    "description": "Open addon configuration view"
+  },
+  "addonsLiveChatSettingsTitle": {
+    "message": "Live Chat settings",
+    "description": "Live Chat addon settings page title"
+  },
+  "addonsLiveChatSettingsDesc": {
+    "message": "Configure the website widget and embed snippet for visitor chat.",
+    "description": "Live Chat addon settings page description"
+  },
+  "addonsLiveChatWidgetTitle": {
+    "message": "Website widget",
+    "description": "Live Chat widget settings section title"
+  },
+  "addonsLiveChatWidgetDesc": {
+    "message": "Enable the embeddable chat widget for your site visitors.",
+    "description": "Live Chat widget settings section description"
+  },
+  "addonsLiveChatEmbedTitle": {
+    "message": "Embed snippet",
+    "description": "Live Chat embed snippet section title"
+  },
+  "addonsLiveChatCopySnippet": {
+    "message": "Copy snippet",
+    "description": "Copy embed snippet button"
+  },
+  "addonsLiveChatSettingsLoadFailed": {
+    "message": "Failed to load Live Chat settings.",
+    "description": "Live Chat settings load error"
+  },
+  "addonsLiveChatSettingsSaved": {
+    "message": "Live Chat settings saved.",
+    "description": "Live Chat settings save success"
+  },
+  "addonsLiveChatSettingsSaveFailed": {
+    "message": "Failed to save Live Chat settings.",
+    "description": "Live Chat settings save failure"
+  },
+  "addonsLiveChatSnippetCopied": {
+    "message": "Embed snippet copied.",
+    "description": "Embed snippet copy success"
+  },
+  "addonsLiveChatSnippetCopyFailed": {
+    "message": "Failed to copy embed snippet.",
+    "description": "Embed snippet copy failure"
+  },
+  "addonsLiveChatOutcomesTitle": {
+    "message": "Session outcomes",
+    "description": "Live Chat outcomes settings section title"
+  },
+  "addonsLiveChatOutcomesDesc": {
+    "message": "Standard outcomes agents select when ending a session. Use Process Designer to automate actions (for example, notify supervisors when outcome is Missed).",
+    "description": "Live Chat outcomes settings description"
+  },
+  "addonsLiveChatOutcomeSystem": {
+    "message": "Standard",
+    "description": "Live Chat system outcome badge"
+  },
+  "addonsLiveChatQueuesNav": {
+    "message": "Queues",
+    "description": "Live Chat queues settings nav label"
+  },
+  "addonsLiveChatQueuesManage": {
+    "message": "Manage queues",
+    "description": "Open Live Chat queues settings"
+  },
+  "addonsLiveChatQueuesTitle": {
+    "message": "Live Chat queues",
+    "description": "Live Chat queues settings title"
+  },
+  "addonsLiveChatQueuesDesc": {
+    "message": "Name and organize chat queues. New sessions land on the default queue; use queue key in assignment rule conditions.",
+    "description": "Live Chat queues settings description"
+  },
+  "addonsLiveChatQueuesAssignmentHint": {
+    "message": "Agent routing (groups, distribution, availability) is configured in Automation → Assignment Rules for Live Chat sessions.",
+    "description": "Hint that queue routing uses assignment rules"
+  },
+  "addonsLiveChatQueuesAssignmentLink": {
+    "message": "Open Live Chat assignment rules",
+    "description": "Link to assignment rules for live chat"
+  },
+  "addonsLiveChatQueuesEmpty": {
+    "message": "No queues configured yet.",
+    "description": "Live Chat queues empty state"
+  },
+  "addonsLiveChatQueuesLoadFailed": {
+    "message": "Failed to load Live Chat queues.",
+    "description": "Live Chat queues load error"
+  },
+  "addonsLiveChatQueuesSaved": {
+    "message": "Queue saved.",
+    "description": "Live Chat queue save success"
+  },
+  "addonsLiveChatQueuesSaveFailed": {
+    "message": "Failed to save queue.",
+    "description": "Live Chat queue save error"
+  },
+  "addonsLiveChatQueueDeleted": {
+    "message": "Queue deleted.",
+    "description": "Live Chat queue delete success"
+  },
+  "addonsLiveChatQueueDeleteConfirm": {
+    "message": "Delete this queue?",
+    "description": "Live Chat queue delete confirm"
+  },
+  "addonsLiveChatQueueAdd": {
+    "message": "Add queue",
+    "description": "Add Live Chat queue button"
+  },
+  "addonsLiveChatQueueEdit": {
+    "message": "Edit queue",
+    "description": "Edit Live Chat queue dialog title"
+  },
+  "addonsLiveChatQueueName": {
+    "message": "Name",
+    "description": "Live Chat queue name field"
+  },
+  "addonsLiveChatQueueKey": {
+    "message": "Key",
+    "description": "Live Chat queue key field"
+  },
+  "addonsLiveChatQueueDescription": {
+    "message": "Description",
+    "description": "Live Chat queue description field"
+  },
+  "addonsLiveChatQueueGroup": {
+    "message": "Agent group",
+    "description": "Live Chat queue group field"
+  },
+  "addonsLiveChatQueueNoGroup": {
+    "message": "No group (manual pickup)",
+    "description": "Live Chat queue without group"
+  },
+  "addonsLiveChatQueueDistribution": {
+    "message": "Distribution",
+    "description": "Live Chat queue distribution field"
+  },
+  "addonsLiveChatQueueDefault": {
+    "message": "Default",
+    "description": "Default Live Chat queue badge"
+  },
+  "addonsLiveChatBotsNav": {
+    "message": "Bots",
+    "description": "Live Chat bots settings nav label"
+  },
+  "addonsLiveChatBotsManage": {
+    "message": "Manage bots",
+    "description": "Open Live Chat bots settings"
+  },
+  "addonsLiveChatBotsTitle": {
+    "message": "Live Chat bots",
+    "description": "Live Chat bots settings title"
+  },
+  "addonsLiveChatBotsDesc": {
+    "message": "Configure greeting bots and Process Designer flows for automated visitor handling.",
+    "description": "Live Chat bots settings description"
+  },
+  "addonsLiveChatBotsHint": {
+    "message": "Bots search published knowledge base articles and website content pages to answer visitors. Configure sources per bot; escalate to an agent when no match is found or the visitor asks for a human.",
+    "description": "Live Chat bots settings hint"
+  },
+  "addonsLiveChatBotsEmpty": {
+    "message": "No bots configured yet.",
+    "description": "Live Chat bots empty state"
+  },
+  "addonsLiveChatBotsLoadFailed": {
+    "message": "Failed to load Live Chat bots.",
+    "description": "Live Chat bots load error"
+  },
+  "addonsLiveChatBotsSaved": {
+    "message": "Bot saved.",
+    "description": "Live Chat bot save success"
+  },
+  "addonsLiveChatBotsSaveFailed": {
+    "message": "Failed to save bot.",
+    "description": "Live Chat bot save error"
+  },
+  "addonsLiveChatBotDeleted": {
+    "message": "Bot deleted.",
+    "description": "Live Chat bot delete success"
+  },
+  "addonsLiveChatBotDeleteConfirm": {
+    "message": "Delete this bot?",
+    "description": "Live Chat bot delete confirm"
+  },
+  "addonsLiveChatBotAdd": {
+    "message": "Add bot",
+    "description": "Add Live Chat bot button"
+  },
+  "addonsLiveChatBotEdit": {
+    "message": "Edit bot",
+    "description": "Edit Live Chat bot dialog title"
+  },
+  "addonsLiveChatBotName": {
+    "message": "Name",
+    "description": "Live Chat bot name field"
+  },
+  "addonsLiveChatBotKey": {
+    "message": "Key",
+    "description": "Live Chat bot key field"
+  },
+  "addonsLiveChatBotDescription": {
+    "message": "Description",
+    "description": "Live Chat bot description field"
+  },
+  "addonsLiveChatBotGreeting": {
+    "message": "Greeting message",
+    "description": "Live Chat bot greeting field"
+  },
+  "addonsLiveChatBotGreetingPlaceholder": {
+    "message": "Hi! How can we help you today?",
+    "description": "Live Chat bot greeting placeholder"
+  },
+  "addonsLiveChatBotDefault": {
+    "message": "Default bot",
+    "description": "Default Live Chat bot badge"
+  },
+  "addonsLiveChatBotSources": {
+    "message": "Answer sources",
+    "description": "Live Chat bot knowledge sources fieldset"
+  },
+  "addonsLiveChatBotSourceKb": {
+    "message": "Knowledge base",
+    "description": "Live Chat bot knowledge base source"
+  },
+  "addonsLiveChatBotSourceWebsite": {
+    "message": "Website content",
+    "description": "Live Chat bot website content source"
+  },
+  "addonsLiveChatBotFallback": {
+    "message": "Fallback message (before agent escalation)",
+    "description": "Live Chat bot fallback message field"
+  },
+  "addonsLiveChatBotConfidence": {
+    "message": "Minimum match score",
+    "description": "Live Chat bot confidence threshold"
+  },
+  "addonsLiveChatWebsiteContentManage": {
+    "message": "Manage website content",
+    "description": "Open Live Chat website content settings"
+  },
+  "addonsLiveChatWebsiteContentTitle": {
+    "message": "Website content pages",
+    "description": "Live Chat website content settings title"
+  },
+  "addonsLiveChatWebsiteContentDesc": {
+    "message": "Pages the bot can use to answer visitors based on their message and current URL.",
+    "description": "Live Chat website content settings description"
+  },
+  "addonsLiveChatWebsiteContentHint": {
+    "message": "Add content for product pages, pricing, or FAQs. Optional match path boosts relevance when the visitor URL contains that path.",
+    "description": "Live Chat website content settings hint"
+  },
+  "addonsLiveChatWebsiteContentEmpty": {
+    "message": "No website content pages yet.",
+    "description": "Live Chat website content empty state"
+  },
+  "addonsLiveChatWebsiteContentAdd": {
+    "message": "Add page",
+    "description": "Add Live Chat website content page"
+  },
+  "addonsLiveChatWebsiteContentEdit": {
+    "message": "Edit page",
+    "description": "Edit Live Chat website content page"
+  },
+  "addonsLiveChatWebsiteContentTitleLabel": {
+    "message": "Title",
+    "description": "Live Chat website content page title"
+  },
+  "addonsLiveChatWebsiteContentKey": {
+    "message": "Page key",
+    "description": "Live Chat website content page key"
+  },
+  "addonsLiveChatWebsiteContentMatchPath": {
+    "message": "URL match path",
+    "description": "Live Chat website content URL match path"
+  },
+  "addonsLiveChatWebsiteContentMatchPathPlaceholder": {
+    "message": "/pricing",
+    "description": "Live Chat website content match path placeholder"
+  },
+  "addonsLiveChatWebsiteContentBody": {
+    "message": "Content",
+    "description": "Live Chat website content body"
+  },
+  "addonsLiveChatWebsiteContentLoadFailed": {
+    "message": "Failed to load website content pages.",
+    "description": "Live Chat website content load error"
+  },
+  "addonsLiveChatWebsiteContentSaved": {
+    "message": "Page saved.",
+    "description": "Live Chat website content save success"
+  },
+  "addonsLiveChatWebsiteContentSaveFailed": {
+    "message": "Failed to save page.",
+    "description": "Live Chat website content save error"
+  },
+  "addonsLiveChatWebsiteContentDeleted": {
+    "message": "Page deleted.",
+    "description": "Live Chat website content delete success"
+  },
+  "addonsLiveChatWebsiteContentDeleteConfirm": {
+    "message": "Delete this website content page?",
+    "description": "Live Chat website content delete confirm"
+  },
+  "addonsLiveChatDistribution.round_robin": {
+    "message": "Round robin",
+    "description": "Round robin distribution mode"
+  },
+  "addonsLiveChatDistribution.load_balanced": {
+    "message": "Load balanced",
+    "description": "Load balanced distribution mode"
+  },
+  "addonsLiveChatDistribution.availability_based": {
+    "message": "Availability based",
+    "description": "Availability based distribution mode"
+  },
+  "addonsLiveChatDistribution.queue": {
+    "message": "Queue (manual claim)",
+    "description": "Queue distribution mode"
+  },
+  "addonsLiveChatDistribution.weighted": {
+    "message": "Weighted",
+    "description": "Weighted distribution mode"
+  },
+  "addonsPricingTrialDays": {
+    "message": "Trial days",
+    "description": "Addon pricing trial days field"
+  },
+  "addonsPricingDefaultPlan": {
+    "message": "Default plan on install",
+    "description": "Addon pricing default plan field"
+  },
+  "addonsPricingPlan": {
+    "message": "Plan",
+    "description": "Addon pricing plan column"
+  },
+  "addonsPricingAgentLimit": {
+    "message": "Agent limit",
+    "description": "Addon pricing agent limit column"
+  },
+  "addonsPricingPerAgentCents": {
+    "message": "Price per agent (cents)",
+    "description": "Addon pricing per agent cents column"
+  },
+  "addonsPricingLoadFailed": {
+    "message": "Failed to load addon pricing.",
+    "description": "Addon pricing load error"
+  },
+  "addonsPricingSaveSuccess": {
+    "message": "Addon pricing saved.",
+    "description": "Addon pricing save success"
+  },
+  "addonsPricingSaveFailed": {
+    "message": "Failed to save addon pricing.",
+    "description": "Addon pricing save failure"
+  },
+  "mailroomConnectorChatMovedToAddons": {
+    "message": "Website widget configuration and embed snippets are managed in Settings → Addons → Live Chat.",
+    "description": "Mailroom chat connector moved-to-addons notice"
+  },
+  "mailroomConnectorChatOpenAddons": {
+    "message": "Open Live Chat settings",
+    "description": "Link to Live Chat addon settings from Mailroom"
+  },
+  "assignRulesAppPlatform": {
+    "message": "Platform",
+    "description": "App option for platform-scoped assignment modules"
+  },
+  "assignRulesModLiveChatSessions": {
+    "message": "Live Chat sessions",
+    "description": "Module label for live chat session assignment rules"
+  },
+  "settingsSubsUsageAgents": {
+    "message": "Licensed agents",
+    "description": "Subscription list addon agent seats usage label"
+  },
+  "settingsSubsAddonBadge": {
+    "message": "Addon",
+    "description": "Badge on addon subscription line items"
+  },
+  "settingsSubsPlanBasic": {
+    "message": "Basic",
+    "description": "Addon subscription Basic plan"
+  },
+  "settingsSubsPlanPro": {
+    "message": "Pro",
+    "description": "Addon subscription Pro plan"
+  },
+  "settingsSubsPlanEnterprise": {
+    "message": "Enterprise",
+    "description": "Addon subscription Enterprise plan"
+  },
+  "settingsSubsPlanArchived": {
+    "message": "Archived",
+    "description": "Addon subscription archived state"
+  },
+  "addonsLiveChatSessionFieldsTitle": {
+    "message": "Session list fields",
+    "description": "Live Chat session field settings title"
+  },
+  "addonsLiveChatSessionFieldsDesc": {
+    "message": "Control which session fields are available in list views for your workspace.",
+    "description": "Live Chat session field settings description"
+  },
+  "addonsLiveChatAdvancedFieldsTitle": {
+    "message": "Advanced fields",
+    "description": "Live Chat advanced fields toggle title"
+  },
+  "addonsLiveChatAdvancedFieldsDesc": {
+    "message": "Enable timing, intelligence, bot, and compliance columns beyond the default 14-field set.",
+    "description": "Live Chat advanced fields toggle description"
+  },
+  "addonsLiveChatDefaultColumnsTitle": {
+    "message": "Default columns",
+    "description": "Live Chat default columns settings title"
+  },
+  "addonsLiveChatDefaultColumnsDesc": {
+    "message": "Choose the tenant default columns for new users. Agents can still customize their own view.",
+    "description": "Live Chat default columns settings description"
+  },
+  "chatWidgetConsentTitle": {
+    "message": "Visitor consent",
+    "description": "Chat widget consent settings title"
+  },
+  "chatWidgetConsentDesc": {
+    "message": "Require visitors to accept terms before starting a chat.",
+    "description": "Chat widget consent settings description"
+  },
+  "chatWidgetConsentMessage": {
+    "message": "Consent message",
+    "description": "Chat widget consent message label"
+  },
+  "chatWidgetPrivacyPolicyUrl": {
+    "message": "Privacy policy URL",
+    "description": "Chat widget privacy policy URL label"
+  },
+  "chatWidgetTermsUrl": {
+    "message": "Terms URL",
+    "description": "Chat widget terms URL label"
   }
 }

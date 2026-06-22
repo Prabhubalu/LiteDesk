@@ -93,7 +93,8 @@ const MODULE_APP_KEY_CANDIDATES = {
   organizations: ['SALES'],
   events: ['SALES'],
   items: ['SALES'],
-  forms: ['SALES']
+  forms: ['SALES'],
+  live_chat_sessions: ['PLATFORM']
 };
 
 function buildAppKeyCandidates(appKey, moduleKey) {
@@ -965,6 +966,184 @@ async function runImmediateAssignmentForCase({
   };
 }
 
+async function enrichLiveChatSessionRecord(organizationId, sessionRecord) {
+  const adapter = getAdapter('live_chat_sessions', { appKey: 'PLATFORM' });
+  const row = adapter.normalizeRecord(sessionRecord);
+  if (row.queueId) {
+    const { getQueueById } = require('./liveChatQueueService');
+    const queue = await getQueueById(organizationId, row.queueId);
+    if (queue?.queueKey) row.queueKey = queue.queueKey;
+  }
+  return row;
+}
+
+async function runImmediateAssignmentForLiveChatSession({
+  sessionRecord,
+  actorId,
+  triggerSource = 'immediate',
+  changedFields = [],
+  triggeredBy = null,
+}) {
+  const adapter = getAdapter('live_chat_sessions', { appKey: 'PLATFORM' });
+  if (!sessionRecord?._id || !sessionRecord?.organizationId) {
+    return { executed: false, reason: 'invalid_session_record', assigned: false };
+  }
+  if (triggerSource === 'immediate' && changedFields.length > 0 && !adapter.shouldReevaluate(changedFields)) {
+    return { executed: false, reason: 'no_relevant_changes', assigned: false };
+  }
+
+  const organizationId = sessionRecord.organizationId;
+  const appKey = 'PLATFORM';
+  const moduleKey = 'live_chat_sessions';
+  const recordId = toIdString(sessionRecord._id);
+
+  if (
+    sessionRecord.assignedAgentId
+    && ['assigned', 'active'].includes(String(sessionRecord.lifecycleStatus || ''))
+  ) {
+    return { executed: false, reason: 'already_assigned', assigned: false };
+  }
+
+  const ruleSet = await loadImmediateRuleSet({ organizationId, appKey, moduleKey });
+  if (!ruleSet || !Array.isArray(ruleSet.rules) || ruleSet.rules.length === 0) {
+    if (String(sessionRecord.lifecycleStatus || '') !== 'closed') {
+      sessionRecord.lifecycleStatus = sessionRecord.lifecycleStatus || 'waiting';
+      sessionRecord.updatedAt = new Date();
+      await sessionRecord.save();
+    }
+    return { executed: false, reason: 'no_immediate_rules', assigned: false };
+  }
+  if (ruleSet.simulationOnly) {
+    return { executed: false, reason: 'simulation_only_enabled', assigned: false };
+  }
+  if (triggerSource === 'immediate' && changedFields.length > 0 && shouldSkipAutoAssignmentOnUpdate(ruleSet.applyStrategy)) {
+    return { executed: false, reason: 'apply_strategy_skips_updates', assigned: false };
+  }
+
+  const idempotencyKey = [
+    'live_chat_immediate',
+    recordId,
+    toIdString(sessionRecord.updatedAt?.getTime?.() || sessionRecord.updatedAt || Date.now()),
+    String(ruleSet.version || 1)
+  ].join(':');
+
+  const existing = await AssignmentExecutionLog.findOne({
+    organizationId,
+    appKey,
+    moduleKey,
+    recordId,
+    idempotencyKey
+  })
+    .select('_id')
+    .lean();
+  if (existing) {
+    return { executed: false, reason: 'idempotent_replay', assigned: false };
+  }
+
+  const previousOwnerId = adapter.getOwner(sessionRecord);
+  const recordInput = await enrichLiveChatSessionRecord(organizationId, sessionRecord);
+
+  const needsPresence = (ruleSet.rules || []).some(
+    (rule) => rule?.enabled !== false && rule.distribution?.mode === 'availability_based'
+  );
+  let simulateContext = adapter.buildSimulateContext(sessionRecord, recordId);
+  if (needsPresence) {
+    const { collectMemberIdsForRules } = require('./assignmentAvailabilityService');
+    const { listOnlineUserIds } = require('./liveChatPresenceService');
+    const memberIds = await collectMemberIdsForRules(organizationId, ruleSet.rules);
+    simulateContext = {
+      ...simulateContext,
+      availableUserIds: await listOnlineUserIds(organizationId, memberIds),
+    };
+  }
+
+  const simulation = await simulateAssignment({
+    organizationId,
+    appKey,
+    moduleKey,
+    rules: ruleSet.rules,
+    record: recordInput,
+    context: simulateContext,
+  });
+
+  const nextOwnerId = toIdString(simulation?.outcome?.assignedUserId);
+  const assignedGroupId = toIdString(simulation?.outcome?.assignedGroupId);
+  const state = simulation?.outcome?.state || 'skipped';
+  const canAssign = state === 'assigned' && mongoose.Types.ObjectId.isValid(nextOwnerId);
+  const ownerChanged = canAssign && previousOwnerId !== nextOwnerId;
+
+  if (ownerChanged) {
+    const {
+      LIVE_CHAT_ASSIGNED_BY,
+      applySessionAgentAssignment,
+    } = require('./liveChatSessionAssignmentTrackingService');
+    await applySessionAgentAssignment({
+      organizationId,
+      sessionId: sessionRecord._id,
+      agentId: nextOwnerId,
+      assignedBy: LIVE_CHAT_ASSIGNED_BY.QUEUE_ROUTING,
+      performedByUserId: triggeredBy || actorId || null,
+      previousAgentId: previousOwnerId,
+      lifecycleStatus: 'assigned',
+      metadata: {
+        ruleId: simulation.ruleId,
+        assignedGroupId,
+        strategyDetail: simulation?.outcome?.reason || null,
+      },
+    });
+    adapter.setOwner(sessionRecord, nextOwnerId);
+    sessionRecord.lifecycleStatus = 'assigned';
+    sessionRecord.updatedAt = new Date();
+  } else if (simulation.matched && state === 'queued') {
+    sessionRecord.lifecycleStatus = 'waiting';
+    sessionRecord.updatedAt = new Date();
+    await sessionRecord.save();
+  } else if (String(sessionRecord.status || '') !== 'closed') {
+    sessionRecord.lifecycleStatus = sessionRecord.lifecycleStatus || 'waiting';
+    sessionRecord.updatedAt = new Date();
+    await sessionRecord.save();
+  }
+
+  await createExecutionLog({
+    organizationId,
+    appKey,
+    moduleKey,
+    recordId,
+    triggerSource,
+    ruleId: simulation.ruleId,
+    previousOwnerId,
+    newOwnerId: canAssign ? nextOwnerId : previousOwnerId,
+    assignedGroupId,
+    status:
+      state === 'assigned' && ownerChanged
+        ? 'assigned'
+        : state === 'queued'
+          ? 'queued'
+          : 'skipped',
+    idempotencyKey,
+    details: {
+      ruleSetVersion: ruleSet.version,
+      trace: simulation.trace,
+      outcome: simulation.outcome,
+      ownerChanged,
+    },
+  });
+
+  return {
+    executed: true,
+    assigned: ownerChanged,
+    ownerChanged,
+    previousOwnerId,
+    newOwnerId: canAssign ? nextOwnerId : previousOwnerId,
+    assignedGroupId,
+    ruleId: simulation.ruleId,
+    outcome: simulation.outcome,
+    reason: ownerChanged ? 'assigned' : state,
+    agentId: ownerChanged ? nextOwnerId : null,
+    queueId: sessionRecord.queueId || null,
+  };
+}
+
 /**
  * Generic immediate assignment for any module with a registered or inferred adapter.
  */
@@ -997,6 +1176,16 @@ async function runImmediateAssignmentForRecord({
       actorId,
       triggerSource,
       changedFields
+    });
+  }
+
+  if (key === 'live_chat_sessions') {
+    return runImmediateAssignmentForLiveChatSession({
+      sessionRecord: record,
+      actorId,
+      triggerSource,
+      changedFields,
+      triggeredBy: actorId,
     });
   }
 
@@ -1130,6 +1319,7 @@ async function runImmediateAssignmentForRecord({
 
 module.exports = {
   runImmediateAssignmentForCase,
+  runImmediateAssignmentForLiveChatSession,
   runImmediateAssignmentForSalesRecord,
   runImmediateAssignmentForRecord,
   registerManualOwnerOverride,

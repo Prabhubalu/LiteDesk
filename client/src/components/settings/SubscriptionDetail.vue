@@ -100,6 +100,24 @@
       <div>
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.settingsSubDetailSectionUsage') }}</h3>
         <div class="space-y-4">
+          <!-- Agents Usage (addons) -->
+          <div v-if="subscription.usage?.agents" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.settingsSubsUsageAgents') }}</span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">
+                {{ subscription.usage.agents.current }}
+                /
+                {{ subscription.usage.agents.limit ?? t('settings.addonsUnlimited') }}
+              </span>
+            </div>
+            <div v-if="subscription.usage.agents.limit" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+              <div
+                class="bg-indigo-600 h-3 rounded-full transition-all"
+                :style="{ width: `${Math.min(100, (subscription.usage.agents.current / subscription.usage.agents.limit) * 100)}%` }"
+              ></div>
+            </div>
+          </div>
+
           <!-- Users Usage -->
           <div v-if="subscription.usage?.users" class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-2">
@@ -260,6 +278,10 @@ const PLAN_LABEL_KEYS = {
   Suspended: 'settings.settingsSubsPlanSuspended',
   'Not Subscribed': 'settings.settingsSubsPlanNotSubscribed',
   DISABLED: 'settings.settingsAppsStatusDisabled',
+  BASIC: 'settings.settingsSubsPlanBasic',
+  PRO: 'settings.settingsSubsPlanPro',
+  ENTERPRISE: 'settings.settingsSubsPlanEnterprise',
+  Archived: 'settings.settingsSubsPlanArchived',
 };
 
 const appKey = computed(() => {
@@ -282,7 +304,7 @@ const fetchSubscription = async () => {
   error.value = null;
 
   try {
-    const data = await apiClient(`/settings/subscriptions/${appKey.value}`, {
+    const data = await apiClient(`/settings/subscriptions/${encodeURIComponent(appKey.value)}`, {
       method: 'GET'
     });
 
@@ -330,7 +352,11 @@ const getPlanBadgeClass = (plan) => {
     'Active': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
     'Suspended': 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300',
     'Not Subscribed': 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400',
-    'DISABLED': 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+    'DISABLED': 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400',
+    'Archived': 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400',
+    'BASIC': 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300',
+    'PRO': 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300',
+    'ENTERPRISE': 'bg-violet-100 dark:bg-violet-900/30 text-violet-800 dark:text-violet-300',
   };
   return classes[plan] || classes['Not Subscribed'];
 };

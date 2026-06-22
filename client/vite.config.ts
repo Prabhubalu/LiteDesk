@@ -60,7 +60,7 @@ export default defineConfig(({ mode }) => {
           target: apiProxyTarget,
           changeOrigin: true,
         },
-        '^/embed/chat/sessions/[^/]+/(messages|typing|stream|close)(/|\\?|$)': {
+        '^/embed/chat/sessions/[^/]+/(messages|typing|stream|close|journey|feedback)(/|\\?|$)': {
           target: apiProxyTarget,
           changeOrigin: true,
         },

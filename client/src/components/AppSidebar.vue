@@ -381,6 +381,7 @@ import clickOutside from '@/directives/clickOutside';
 import logoWordmarkLightUrl from '/assets/logo/Logo_word_light.svg';
 import logoLightUrl from '/assets/logo/Logo_light.svg';
 import {
+  ChatBubbleLeftRightIcon,
   DocumentChartBarIcon,
   ExclamationTriangleIcon,
   LifebuoyIcon,
@@ -578,6 +579,7 @@ function getFigmaNavIcon(item: any) {
   if (item?.kind === 'surface') {
     if (item.id === 'home') return FigmaHomeIcon;
     if (item.id === 'inbox') return FigmaInboxIcon;
+    if (item.id === 'live-chat') return wrapHeroIcon(ChatBubbleLeftRightIcon);
     if (item.id === 'attention') return wrapHeroIcon(ExclamationTriangleIcon);
   }
   if (item?.kind === 'coreModule') {

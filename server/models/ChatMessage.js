@@ -6,10 +6,18 @@ const ChatMessageSchema = new mongoose.Schema({
   sessionId: { type: mongoose.Schema.Types.ObjectId, ref: 'ChatSession', index: true, required: true },
 
   direction: { type: String, enum: ['inbound', 'outbound'], required: true, index: true },
-  authorType: { type: String, enum: ['visitor', 'agent', 'system'], required: true, index: true },
+  authorType: { type: String, enum: ['visitor', 'agent', 'bot', 'system'], required: true, index: true },
   authorName: { type: String, default: '' },
 
   body: { type: String, default: '' },
+
+  attachments: [{
+    fileName: { type: String, default: '' },
+    mimeType: { type: String, default: '' },
+    size: { type: Number, default: 0 },
+    url: { type: String, default: '' },
+    storagePath: { type: String, default: '' },
+  }],
 
   /** Recipient received the message (visitor for outbound, agent for inbound). */
   deliveredAt: { type: Date, default: null },

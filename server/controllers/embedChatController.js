@@ -1,25 +1,45 @@
 const crypto = require('crypto');
 const ChatSession = require('../models/ChatSession');
 const ChatMessage = require('../models/ChatMessage');
-const { handleChannelInteractionForHelpdesk } = require('../services/helpdeskChannelIngestionService');
 const { setTyping, getTypingState } = require('../services/chatTypingService');
 const {
   markRead,
   markOutboundDeliveredToVisitor,
   listReceiptUpdates
 } = require('../services/chatMessageReceiptService');
+const { DEFAULT_WELCOME_MESSAGE } = require('../services/liveChatWidgetService');
+const {
+  emitSessionStarted,
+  emitMessageReceived
+} = require('../services/liveChatEventService');
+const { notifyLiveChatInboundMessage, notifyLiveChatSessionStarted } = require('../services/liveChatNotificationService');
+const { emitSessionEnded } = require('../services/liveChatEventService');
+const { normalizeOutcomeKey } = require('../services/liveChatOutcomeService');
+const { allocateSessionKey } = require('../services/liveChatSessionKeyService');
+const {
+  bindSessionToDefaultQueue,
+  assignWaitingSession,
+} = require('../services/liveChatSessionAssignmentService');
+const {
+  startBotHandlingOnSession,
+  handleBotVisitorMessage,
+} = require('../services/liveChatBotRuntimeService');
+const {
+  resolveOrCreateVisitor,
+  incrementVisitorSessionCount,
+} = require('../services/liveChatVisitorService');
+const { buildVisitorFeedbackPatch } = require('../constants/liveChatSessionFields');
+const { buildSessionCloseFieldPatches } = require('../services/liveChatSessionCloseService');
+const {
+  buildSessionVisitorContextFromRequest,
+  recordJourneyEvent,
+} = require('../services/liveChatVisitorJourneyService');
+const { LIVE_CHAT_JOURNEY_ACTIONS } = require('../constants/liveChatVisitorContext');
+const { inferVisitorTypeFromVisitor } = require('../constants/liveChatSessionIdentity');
+const { buildSessionConsentPatch } = require('../constants/liveChatSessionCompliance');
 
 function secret() {
   return crypto.randomBytes(24).toString('hex');
-}
-
-function buildLiveChatSubject(session) {
-  const name = String(session?.visitor?.name || '').trim();
-  const email = String(session?.visitor?.email || '').trim();
-  if (name && email) return `Live chat from ${name} (${email})`;
-  if (name) return `Live chat from ${name}`;
-  if (email) return `Live chat from ${email}`;
-  return 'Live chat';
 }
 
 async function createSession(req, res) {
@@ -27,28 +47,101 @@ async function createSession(req, res) {
     const instancePublicKey =
       String(req.query?.instanceKey || req.body?.instanceKey || req.headers['x-instance-key'] || '').trim();
 
-    const visitor = req.body?.visitor && typeof req.body.visitor === 'object' ? req.body.visitor : {};
-    const pageUrl = String(req.body?.pageUrl || '').trim();
+    const organizationId = req.organization?._id || null;
+    const visitorPayload = req.body?.visitor && typeof req.body.visitor === 'object' ? req.body.visitor : {};
+    const visitorContext = buildSessionVisitorContextFromRequest(req, req.body || {});
+    const pageUrl = visitorContext.pageUrl;
+
+    const visitorId = organizationId
+      ? await resolveOrCreateVisitor({
+          organizationId,
+          visitor: visitorPayload,
+          pageUrl,
+          userAgent: visitorContext.userAgent,
+          ip: String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || ''),
+        })
+      : null;
+
+    const sessionKey = organizationId ? await allocateSessionKey(organizationId) : null;
+    const widget = req.liveChatWidget || {};
+    const consentPatch = buildSessionConsentPatch(req.body || {}, {
+      consentRequired: widget.consentRequired !== false,
+    });
 
     const row = await ChatSession.create({
-      organizationId: req.organization?._id || null,
+      organizationId,
+      sessionKey,
+      channel: 'web',
+      visitorId,
       instancePublicKey,
       sessionSecret: secret(),
+      lifecycleStatus: 'waiting',
+      ...consentPatch,
       visitor: {
-        name: String(visitor.name || '').trim(),
-        email: String(visitor.email || '').trim(),
-        phone: String(visitor.phone || '').trim(),
-        externalId: String(visitor.externalId || '').trim(),
+        name: String(visitorPayload.name || '').trim(),
+        email: String(visitorPayload.email || '').trim(),
+        phone: String(visitorPayload.phone || '').trim(),
+        externalId: String(visitorPayload.externalId || '').trim(),
       },
+      visitorType: inferVisitorTypeFromVisitor(visitorPayload),
       pageUrl,
-      userAgent: String(req.headers['user-agent'] || ''),
-      ip: String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '')
+      referrerUrl: visitorContext.referrerUrl,
+      entryPage: visitorContext.entryPage,
+      browser: visitorContext.browser,
+      operatingSystem: visitorContext.operatingSystem,
+      deviceType: visitorContext.deviceType,
+      country: visitorContext.country,
+      language: visitorContext.language,
+      userAgent: visitorContext.userAgent,
+      ip: String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || ''),
     });
+
+    if (visitorId) {
+      await incrementVisitorSessionCount(visitorId);
+    }
+
+    if (organizationId && pageUrl) {
+      await recordJourneyEvent({
+        organizationId,
+        sessionId: row._id,
+        page: pageUrl,
+        action: LIVE_CHAT_JOURNEY_ACTIONS.PAGE_VIEW,
+      });
+    }
+
+    emitSessionStarted({
+      organizationId: req.organization?._id || null,
+      sessionId: row._id,
+      metadata: {
+        pageUrl,
+        instancePublicKey,
+      },
+    });
+
+    if (organizationId) {
+      void notifyLiveChatSessionStarted({
+        organizationId,
+        session: row,
+      }).catch(() => {});
+    }
+
+    if (organizationId) {
+      await bindSessionToDefaultQueue({ organizationId, sessionId: row._id });
+      const botStart = await startBotHandlingOnSession({ organizationId, sessionId: row._id });
+      if (!botStart.started) {
+        await assignWaitingSession({ organizationId, sessionId: row._id });
+      }
+      const { tryAutoLinkExistingPersonToSession } = require('../services/liveChatCrmAdapter');
+      void tryAutoLinkExistingPersonToSession({ organizationId, sessionId: row._id }).catch((linkErr) => {
+        console.warn('[embedChatController] auto-link person skipped:', linkErr?.message || linkErr);
+      });
+    }
 
     return res.json({
       success: true,
       data: {
         sessionId: row._id,
+        sessionKey: row.sessionKey || null,
         sessionSecret: row.sessionSecret
       }
     });
@@ -60,18 +153,21 @@ async function createSession(req, res) {
 
 async function getEmbedChatConfig(req, res) {
   try {
-    const cfg = req.organization?.embed?.chat?.config || {};
-    const captureFields = Array.isArray(cfg.captureFields) ? cfg.captureFields : ['name', 'email'];
+    const widget = req.liveChatWidget || {};
+    const captureFields = Array.isArray(widget.captureFields) ? widget.captureFields : ['name', 'email'];
     const welcomeMessage =
-      String(cfg.welcomeMessage || '').trim()
-      || "Hey! Let’s discuss how we can help you. Fill out the form to start chatting.";
+      String(widget.welcomeMessage || '').trim() || DEFAULT_WELCOME_MESSAGE;
 
     return res.json({
       success: true,
       data: {
         captureFields: captureFields.map((v) => String(v || '').trim()).filter(Boolean),
-        welcomeMessage
-      }
+        welcomeMessage,
+        consentRequired: widget.consentRequired !== false,
+        consentMessage: String(widget.consentMessage || '').trim(),
+        privacyPolicyUrl: String(widget.privacyPolicyUrl || '').trim(),
+        termsUrl: String(widget.termsUrl || '').trim(),
+      },
     });
   } catch (err) {
     console.error('[embedChatController] getEmbedChatConfig', err);
@@ -101,8 +197,10 @@ async function getSession(req, res) {
         status: session.status || 'open',
         createdAt: session.createdAt,
         lastMessageAt: session.lastMessageAt || null,
-        visitor: session.visitor || {}
-      }
+        visitor: session.visitor || {},
+        ratedByVisitor: Boolean(session.ratedByVisitor),
+        csatScore: typeof session.csatScore === 'number' ? session.csatScore : null,
+      },
     });
   } catch (err) {
     const status = err.statusCode || 500;
@@ -119,7 +217,38 @@ async function closeSession(req, res) {
     if (!session) return res.status(404).json({ success: false, message: 'Session not found' });
     await assertSessionSecret(req, session);
 
-    await ChatSession.updateOne({ _id: session._id }, { $set: { status: 'closed', updatedAt: new Date() } });
+    const endedAt = new Date();
+    const organizationId = req.organization?._id || session.organizationId || null;
+    const closeFieldPatches = await buildSessionCloseFieldPatches({
+      organizationId,
+      sessionId: session._id,
+      session,
+    });
+
+    await ChatSession.updateOne(
+      { _id: session._id },
+      {
+        $set: {
+          status: 'closed',
+          lifecycleStatus: 'ended',
+          outcome: 'abandoned',
+          endedAt,
+          updatedAt: endedAt,
+          ...closeFieldPatches,
+        },
+      },
+    );
+
+    if (req.organization?._id) {
+      emitSessionEnded({
+        organizationId: req.organization._id,
+        sessionId: session._id,
+        outcome: 'abandoned',
+        sessionKey: session.sessionKey || null,
+        metadata: { closedBy: 'visitor' },
+      });
+    }
+
     return res.json({ success: true, data: { sessionId: session._id, status: 'closed' } });
   } catch (err) {
     const status = err.statusCode || 500;
@@ -135,6 +264,9 @@ async function postMessage(req, res) {
     const session = await ChatSession.findById(sessionId).lean();
     if (!session) return res.status(404).json({ success: false, message: 'Session not found' });
     await assertSessionSecret(req, session);
+    if (String(session.status || '') === 'closed') {
+      return res.status(409).json({ success: false, message: 'Session is closed' });
+    }
 
     const body = String(req.body?.body || '').trim();
     if (!body) return res.status(400).json({ success: false, message: 'body is required' });
@@ -149,60 +281,67 @@ async function postMessage(req, res) {
     });
 
     const now = new Date();
-
-    // Auto-create/link a Helpdesk Case on first inbound message.
-    let caseRecordId = session.caseRecordId || null;
-    if (!caseRecordId && req.organization?._id) {
-      try {
-        const result = await handleChannelInteractionForHelpdesk({
-          organizationId: req.organization._id,
-          actorId: null,
-          channel: 'Live Chat',
-          explicitCaseId: null,
-          externalReference: String(session._id),
-          subject: buildLiveChatSubject(session),
-          message: body,
-          links: {},
-          metadata: {
-            chatSessionId: String(session._id),
-            pageUrl: session.pageUrl || null,
-            visitorName: String(req.body?.authorName || session.visitor?.name || '').trim()
-          }
-        });
-        caseRecordId = result?.caseRecord?._id || null;
-      } catch (e) {
-        // Don't block chat delivery if helpdesk case creation fails.
-        console.error('[embedChatController] postMessage case create failed', e);
-      }
-    }
-
-    // For follow-up inbound messages, append to the linked case timeline explicitly (avoid duplicate-handling surprises).
-    if (caseRecordId && req.organization?._id) {
-      try {
-        await handleChannelInteractionForHelpdesk({
-          organizationId: req.organization._id,
-          actorId: null,
-          channel: 'Live Chat',
-          explicitCaseId: caseRecordId,
-          externalReference: String(session._id),
-          subject: buildLiveChatSubject(session),
-          message: body,
-          links: {},
-          metadata: {
-            chatSessionId: String(session._id),
-            pageUrl: session.pageUrl || null,
-            visitorName: String(req.body?.authorName || session.visitor?.name || '').trim()
-          }
-        });
-      } catch (e) {
-        console.error('[embedChatController] postMessage case append failed', e);
-      }
-    }
+    const isFirstMessage = !session.lastMessageAt;
 
     await ChatSession.updateOne(
       { _id: session._id },
-      { $set: { lastMessageAt: now, ...(caseRecordId ? { caseRecordId } : {}) } }
+      {
+        $set: {
+          lastMessageAt: now,
+          lifecycleStatus:
+            session.lifecycleStatus === 'bot_handling'
+              ? 'bot_handling'
+              : session.lifecycleStatus === 'waiting'
+                ? 'active'
+                : session.lifecycleStatus,
+        },
+      },
     );
+
+    const refreshedSession = await ChatSession.findById(session._id).lean();
+
+    emitMessageReceived({
+      organizationId: req.organization?._id || null,
+      sessionId: session._id,
+      messageId: msg._id,
+      direction: 'inbound',
+      metadata: {
+        isFirstMessage,
+        pageUrl: session.pageUrl || null,
+      },
+    });
+
+    if (req.organization?._id) {
+      let botResult = null;
+      if (String(refreshedSession?.lifecycleStatus || '') === 'bot_handling') {
+        botResult = await handleBotVisitorMessage({
+          organizationId: req.organization._id,
+          session: refreshedSession,
+          message: msg,
+        });
+      }
+
+      const shouldNotifyAgents = !botResult?.handled || botResult?.escalated === true;
+      if (shouldNotifyAgents) {
+        await notifyLiveChatInboundMessage({
+          organizationId: req.organization._id,
+          session: refreshedSession || session,
+          message: msg,
+        });
+      }
+
+      const latestSession = await ChatSession.findById(session._id).lean();
+      const lifecycle = String(latestSession?.lifecycleStatus || '');
+      if (
+        lifecycle !== 'bot_handling'
+        && (!latestSession?.assignedAgentId || lifecycle === 'waiting')
+      ) {
+        await assignWaitingSession({
+          organizationId: req.organization._id,
+          sessionId: session._id,
+        });
+      }
+    }
 
     return res.json({ success: true, data: msg });
   } catch (err) {
@@ -310,8 +449,16 @@ async function streamMessages(req, res) {
     let after = Number(req.query.after) || startedAt;
     let receiptAfter = startedAt;
     let lastTypingHash = '';
+    let sessionClosedEmitted = String(session.status || '') === 'closed';
     const timer = setInterval(async () => {
       try {
+        const currentSession = await ChatSession.findById(session._id).select('status lifecycleStatus').lean();
+        if (currentSession && String(currentSession.status || '') === 'closed' && !sessionClosedEmitted) {
+          sessionClosedEmitted = true;
+          res.write('event: session\n');
+          res.write(`data: ${JSON.stringify({ status: 'closed' })}\n\n`);
+        }
+
         const rows = await ChatMessage.find({
           sessionId: session._id,
           createdAt: { $gt: new Date(after) }
@@ -347,7 +494,6 @@ async function streamMessages(req, res) {
 
         const typing = getTypingState(session._id);
         const typingHash = typing ? JSON.stringify(typing) : '';
-        // Emit typing periodically while active (more resilient to reconnects/missed first event).
         if (typing) {
           lastTypingHash = typingHash;
           res.write(`event: typing\n`);
@@ -379,15 +525,102 @@ async function streamMessages(req, res) {
   }
 }
 
+async function submitSessionFeedback(req, res) {
+  try {
+    const sessionId = req.params.sessionId;
+    const session = await ChatSession.findById(sessionId).lean();
+    if (!session) return res.status(404).json({ success: false, message: 'Session not found' });
+    await assertSessionSecret(req, session);
+
+    if (String(session.status || '') !== 'closed') {
+      return res.status(409).json({ success: false, message: 'Session is not closed' });
+    }
+
+    if (session.ratedByVisitor && typeof session.csatScore === 'number') {
+      return res.json({
+        success: true,
+        data: {
+          sessionId: session._id,
+          csatScore: session.csatScore,
+          ratedByVisitor: true,
+        },
+      });
+    }
+
+    const feedbackPatch = buildVisitorFeedbackPatch(req.body || {});
+    const updatedAt = new Date();
+    await ChatSession.updateOne(
+      { _id: session._id },
+      { $set: { ...feedbackPatch, updatedAt } },
+    );
+
+    return res.json({
+      success: true,
+      data: {
+        sessionId: session._id,
+        csatScore: feedbackPatch.csatScore,
+        ratedByVisitor: true,
+        resolutionRating: feedbackPatch.resolutionRating || null,
+      },
+    });
+  } catch (err) {
+    const status = err.statusCode || 500;
+    if (status !== 500) return res.status(status).json({ success: false, message: err.message });
+    console.error('[embedChatController] submitSessionFeedback', err);
+    return res.status(500).json({ success: false, message: 'Failed to submit feedback' });
+  }
+}
+
+async function recordSessionJourney(req, res) {
+  try {
+    const sessionId = req.params.sessionId;
+    const session = await ChatSession.findById(sessionId).lean();
+    if (!session) return res.status(404).json({ success: false, message: 'Session not found' });
+    await assertSessionSecret(req, session);
+
+    if (String(session.status || '') === 'closed') {
+      return res.status(409).json({ success: false, message: 'Session is closed' });
+    }
+
+    const organizationId = session.organizationId || req.organization?._id || null;
+    const page = String(req.body?.pageUrl || req.body?.page || '').trim();
+    const action = String(req.body?.action || LIVE_CHAT_JOURNEY_ACTIONS.PAGE_CHANGE).trim();
+
+    const result = await recordJourneyEvent({
+      organizationId,
+      sessionId: session._id,
+      page,
+      action,
+    });
+
+    if (!result.recorded) {
+      return res.status(400).json({ success: false, message: 'pageUrl is required' });
+    }
+
+    await ChatSession.updateOne(
+      { _id: session._id },
+      { $set: { pageUrl: page, updatedAt: new Date() } },
+    );
+
+    return res.status(201).json({ success: true, data: { eventId: result.eventId } });
+  } catch (err) {
+    const status = err.statusCode || 500;
+    if (status !== 500) return res.status(status).json({ success: false, message: err.message });
+    console.error('[embedChatController] recordSessionJourney', err);
+    return res.status(500).json({ success: false, message: 'Failed to record journey event' });
+  }
+}
+
 module.exports = {
   getEmbedChatConfig,
   getSession,
   closeSession,
+  submitSessionFeedback,
   createSession,
+  recordSessionJourney,
   postMessage,
   postMessageReceipts,
   listMessages,
   setSessionTyping,
   streamMessages
 };
-

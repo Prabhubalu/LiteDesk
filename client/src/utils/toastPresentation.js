@@ -189,6 +189,66 @@ export function buildHelpdeskToastPresentation(notification, t) {
   };
 }
 
+const LIVE_CHAT_EVENT_TYPES = new Set([
+  'LIVE_CHAT_MESSAGE_RECEIVED',
+  'LIVE_CHAT_SESSION_STARTED',
+]);
+
+/**
+ * @param {object} notification
+ * @param {(key: string, params?: object) => string} t
+ * @returns {ToastPresentation|null}
+ */
+export function buildLiveChatToastPresentation(notification, t) {
+  if (!notification) return null;
+
+  const eventType = String(notification.eventType || '');
+  if (!LIVE_CHAT_EVENT_TYPES.has(eventType)) return null;
+
+  const entity = notification.entity || {};
+  const title = String(notification.title || '').trim();
+  const body = String(notification.body || '').trim();
+  const sessionLabel = String(entity.sessionKey || entity.title || '').trim();
+  const authorName = String(entity.authorName || '').trim();
+  const preview = String(entity.preview || '').trim();
+
+  let iconKey = 'user';
+  let category = title || t('liveChat.realtimeToastDefault');
+  let primary = '';
+  let secondary = body || null;
+  let meta = sessionLabel || null;
+
+  if (eventType === 'LIVE_CHAT_SESSION_STARTED') {
+    iconKey = 'bell';
+    category = t('liveChat.realtimeToastSessionStarted');
+    primary = authorName || t('liveChat.visitor');
+    secondary = sessionLabel || body || null;
+  } else {
+    category = t('notifications.toastCategoryChat');
+    primary = authorName || t('liveChat.visitor');
+    secondary = preview || body || null;
+  }
+
+  const ariaLabel = [category, primary, secondary, meta].filter(Boolean).join('. ');
+
+  return {
+    id: `${Date.now()}-${Math.random()}`,
+    variant: 'helpdesk',
+    duration: 6000,
+    appKey: notification.appKey || 'PLATFORM',
+    entity: notification.entity,
+    notificationId: notification.id ? String(notification.id) : undefined,
+    eventType,
+    iconKey,
+    iconTone: 'warning',
+    category,
+    primary,
+    secondary,
+    meta,
+    ariaLabel,
+  };
+}
+
 /**
  * @param {string} message
  * @param {object} opts
@@ -234,6 +294,8 @@ export function buildToastPresentation(messageOrPayload, opts = {}, t) {
     if (payload.eventType && t) {
       const helpdesk = buildHelpdeskToastPresentation(payload, t);
       if (helpdesk) return helpdesk;
+      const liveChat = buildLiveChatToastPresentation(payload, t);
+      if (liveChat) return liveChat;
     }
     if (payload.primary != null) return payload;
     return buildSimpleToastPresentation(payload.message || '', payload);

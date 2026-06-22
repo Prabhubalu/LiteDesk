@@ -5,6 +5,7 @@ export const ROUTE_TITLE_KEYS: Record<string, string>;
 
 export function getModuleLabelKey(moduleKey: string): string | undefined;
 export function getSurfaceLabelKey(surfaceId: string): string | undefined;
+export function getAddonSurfaceLabelKey(surfaceId: string): string | undefined;
 export function getAppNameKey(appKey: string): string | undefined;
 
 export function resolveSidebarItemLabel(

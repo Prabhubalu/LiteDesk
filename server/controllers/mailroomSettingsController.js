@@ -1,6 +1,4 @@
 const mailroomConfigService = require('../services/mailroomConfigService');
-const Organization = require('../models/Organization');
-const crypto = require('crypto');
 const { buildNormalizedMessage } = require('../platform/mailroom/domain/normalizedMessage');
 const { evaluate, evaluatePipeline } = require('../platform/mailroom/policies/policyEngine');
 const { buildEmailCandidates } = require('../platform/mailroom/services/candidatesService');
@@ -23,29 +21,10 @@ async function getMailroomSettings(req, res) {
   try {
     const config = await mailroomConfigService.getOrCreateConfig(req.user.organizationId);
     const templates = mailroomConfigService.listTemplates();
-    let chatEmbed = null;
-    try {
-      const org = await Organization.findById(req.user.organizationId)
-        .select('embed.chat')
-        .lean();
-      chatEmbed = {
-        enabled: org?.embed?.chat?.enabled === true,
-        publicKey: org?.embed?.chat?.publicKey || null,
-        config: {
-          captureFields: Array.isArray(org?.embed?.chat?.config?.captureFields)
-            ? org.embed.chat.config.captureFields
-            : ['name', 'email'],
-          welcomeMessage: String(org?.embed?.chat?.config?.welcomeMessage || '').trim()
-            || "Hey! Let’s discuss how we can help you. Fill out the form to start chatting."
-        }
-      };
-    } catch (e) {
-      chatEmbed = null;
-    }
     return res.json({
       success: true,
       data: config,
-      meta: { templates, chatEmbed }
+      meta: { templates },
     });
   } catch (error) {
     console.error('[mailroomSettingsController] getMailroomSettings', error);
@@ -64,79 +43,6 @@ async function updateMailroomSettings(req, res) {
       req.body || {}
     );
 
-    // M6: If chat connector is enabled, ensure the tenant has a public embed key.
-    try {
-      const chatEnabled = row?.connectors?.chat?.enabled === true;
-      const embedChatConfig = req.body?.embedChatConfig && typeof req.body.embedChatConfig === 'object'
-        ? req.body.embedChatConfig
-        : {};
-      const nextCaptureFields = Array.isArray(embedChatConfig.captureFields)
-        ? embedChatConfig.captureFields.map(v => String(v || '').trim()).filter(Boolean)
-        : null;
-      const nextWelcome = typeof embedChatConfig.welcomeMessage === 'string'
-        ? String(embedChatConfig.welcomeMessage || '').trim()
-        : null;
-
-      if (chatEnabled) {
-        const org = await Organization.findById(req.user.organizationId)
-          .select('embed')
-          .lean();
-        const hasKey = Boolean(org?.embed?.chat?.publicKey);
-        if (!hasKey) {
-          const publicKey = `inst_chat_${crypto.randomBytes(16).toString('hex')}`;
-          await Organization.updateOne(
-            { _id: req.user.organizationId },
-            {
-              $set: {
-                'embed.chat.enabled': true,
-                'embed.chat.publicKey': publicKey,
-                ...(nextCaptureFields ? { 'embed.chat.config.captureFields': nextCaptureFields } : {}),
-                ...(nextWelcome != null ? { 'embed.chat.config.welcomeMessage': nextWelcome } : {})
-              }
-            }
-          );
-        } else {
-          await Organization.updateOne(
-            { _id: req.user.organizationId },
-            {
-              $set: {
-                'embed.chat.enabled': true,
-                ...(nextCaptureFields ? { 'embed.chat.config.captureFields': nextCaptureFields } : {}),
-                ...(nextWelcome != null ? { 'embed.chat.config.welcomeMessage': nextWelcome } : {})
-              }
-            }
-          );
-        }
-      } else {
-        await Organization.updateOne(
-          { _id: req.user.organizationId },
-          { $set: { 'embed.chat.enabled': false } }
-        );
-      }
-    } catch (embedErr) {
-      console.warn('[mailroomSettingsController] chat embed key sync failed:', embedErr.message);
-    }
-
-    let chatEmbed = null;
-    try {
-      const org = await Organization.findById(req.user.organizationId)
-        .select('embed.chat')
-        .lean();
-      chatEmbed = {
-        enabled: org?.embed?.chat?.enabled === true,
-        publicKey: org?.embed?.chat?.publicKey || null,
-        config: {
-          captureFields: Array.isArray(org?.embed?.chat?.config?.captureFields)
-            ? org.embed.chat.config.captureFields
-            : ['name', 'email'],
-          welcomeMessage: String(org?.embed?.chat?.config?.welcomeMessage || '').trim()
-            || "Hey! Let’s discuss how we can help you. Fill out the form to start chatting."
-        }
-      };
-    } catch (_e) {
-      chatEmbed = null;
-    }
-
     return res.json({
       success: true,
       data: {
@@ -149,7 +55,7 @@ async function updateMailroomSettings(req, res) {
         security: row.security,
         updatedAt: row.updatedAt
       },
-      meta: { chatEmbed }
+      meta: {}
     });
   } catch (error) {
     const status = error.statusCode || 500;

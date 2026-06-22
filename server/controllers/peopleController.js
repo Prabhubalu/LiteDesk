@@ -1397,3 +1397,36 @@ exports.addActivityLog = async (req, res) => {
     });
   }
 };
+
+exports.getPersonLiveChatSession = async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, message: 'Invalid person id' });
+    }
+
+    const row = await People.findOne({
+      _id: req.params.id,
+      organizationId: req.user.organizationId,
+      deletedAt: null,
+    }).lean();
+
+    if (!row) {
+      return res.status(404).json({ success: false, message: 'Person not found' });
+    }
+
+    const { getLiveChatSummaryForPerson } = require('../services/liveChatCrmAdapter');
+    const summary = await getLiveChatSummaryForPerson({
+      organizationId: req.user.organizationId,
+      personRecord: row,
+    });
+
+    if (!summary) {
+      return res.status(404).json({ success: false, message: 'No live chat session linked to this person' });
+    }
+
+    return res.json({ success: true, data: summary });
+  } catch (error) {
+    console.error('[peopleController] getPersonLiveChatSession error', error);
+    return res.status(500).json({ success: false, message: 'Failed to load live chat session summary' });
+  }
+};

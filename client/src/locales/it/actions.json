@@ -98,5 +98,9 @@
   "export": {
     "message": "Esportare",
     "description": "Export record or list data"
+  },
+  "send": {
+    "message": "Send",
+    "description": "Send a message or submit outbound content"
   }
 }

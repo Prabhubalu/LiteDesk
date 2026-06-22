@@ -11,6 +11,7 @@ import { buildSidebarStructureForSession } from '@/utils/buildSidebarForSession'
 
 const { t, te } = useI18n();
 import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
+import { invalidateAddonNavigationCache } from '@/utils/addonNavigation';
 import { createPermissionSnapshot, hasPermission as hasSnapshotPermission } from '@/types/permission-snapshot.types';
 import { useColorMode } from '@/composables/useColorMode';
 import { useSidebarState } from '@/composables/useSidebarState';
@@ -216,54 +217,66 @@ watch(
 // This component can dispatch 'arivu:open-global-search' event to open search if needed
 
 // Build sidebar from registry
+const SIDEBAR_BUILD_TIMEOUT_MS = 25000;
+
 const buildSidebar = async () => {
   if (!authStore.user || !authStore.isAuthenticated) {
     sidebarStructure.value = null;
+    loadingSidebar.value = false;
     return;
   }
   
   loadingSidebar.value = true;
   try {
-    // Check if component is still mounted and user is still authenticated
     if (!authStore.user || !authStore.isAuthenticated) {
       return;
     }
 
-    const { structure, entitlementScopedRegistry } = await buildSidebarStructureForSession(
+    const buildPromise = buildSidebarStructureForSession(
       authStore.user,
-      authStore.hasAppAccess
+      authStore.hasAppAccess,
+      authStore.organization,
     );
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Sidebar build timed out')), SIDEBAR_BUILD_TIMEOUT_MS);
+    });
+
+    const { structure, entitlementScopedRegistry } = await Promise.race([
+      buildPromise,
+      timeoutPromise,
+    ]);
 
     appRegistry.value = entitlementScopedRegistry;
 
-    // Double-check before setting (component might have unmounted)
     if (authStore.user && authStore.isAuthenticated) {
       sidebarStructure.value = structure;
     }
   } catch (error) {
     console.error('[Nav] Error building sidebar:', error);
-    // Only set to null if still authenticated (might have logged out)
     if (authStore.isAuthenticated) {
       sidebarStructure.value = null;
     }
   } finally {
-    if (authStore.isAuthenticated) {
-      loadingSidebar.value = false;
-    }
+    loadingSidebar.value = false;
   }
 };
 
-// Single watcher: user reference updates on login, logout, and refreshUser (permissions).
+// Rebuild when session identity or org context changes (login, logout, refreshUser).
 watch(
-  () => authStore.user,
-  (newUser) => {
-    if (newUser && authStore.isAuthenticated) {
+  () => [
+    authStore.user?._id,
+    authStore.user?.token,
+    authStore.organization?._id,
+    authStore.user?.permissions,
+  ],
+  () => {
+    if (authStore.user && authStore.isAuthenticated) {
       buildSidebar();
     } else {
       sidebarStructure.value = null;
     }
   },
-  { immediate: true }
+  { immediate: true, deep: true },
 );
 
 // Global search handlers
@@ -276,6 +289,7 @@ const onCoreModulesUpdated = async () => {
   if (authStore.user && authStore.isAuthenticated) {
     appShellStore.invalidateAppRegistryCache();
     invalidateTenantSchemaCaches();
+    invalidateAddonNavigationCache();
     buildSidebar();
     try {
       if (typeof initDynamicRoutes === 'function') {
@@ -300,11 +314,13 @@ const handleNotificationClick = () => {
 
 onMounted(() => {
   window.addEventListener('arivu:core-modules-updated', onCoreModulesUpdated);
+  window.addEventListener('arivu:addons-updated', onCoreModulesUpdated);
   window.addEventListener('arivu:open-notifications-panel', handleNotificationClick);
 });
 
 onUnmounted(() => {
   window.removeEventListener('arivu:core-modules-updated', onCoreModulesUpdated);
+  window.removeEventListener('arivu:addons-updated', onCoreModulesUpdated);
   window.removeEventListener('arivu:open-notifications-panel', handleNotificationClick);
 });
 

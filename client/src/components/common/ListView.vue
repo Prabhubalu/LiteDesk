@@ -337,7 +337,7 @@
 
         <div class="flex min-w-0 flex-wrap items-center gap-2 sm:flex-1">
         <!-- Mobile & Tablet Filters Button -->
-        <Popover v-if="showFilterBuilder || effectiveFilterConfig.length > 0" class="relative shrink-0">
+        <Popover v-if="resolvedShowFilterBuilder || resolvedToolbarFilterConfig.length > 0" class="relative shrink-0">
           <PopoverButton
             class="relative inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-xs sm:text-sm cursor-pointer sm:h-8 sm:w-auto sm:gap-1.5 sm:px-2.5"
             @click="openFilterBuilder"
@@ -345,13 +345,13 @@
             <FunnelIcon class="w-3.5 h-3.5" />
             <span class="hidden sm:inline">{{ filterButtonLabel }}</span>
             <span
-              v-if="showFilterBuilder && activeFilterRulesCount > 0"
+              v-if="resolvedShowFilterBuilder && activeFilterRulesCount > 0"
               class="absolute -top-1 -right-1 flex sm:static items-center justify-center min-w-[1.125rem] h-4 px-1 text-[10px] font-medium text-white bg-indigo-600 rounded-full"
             >
               {{ activeFilterRulesCount }}
             </span>
             <span
-              v-else-if="!showFilterBuilder && hasActiveFilters"
+              v-else-if="!resolvedShowFilterBuilder && hasActiveFilters"
               class="absolute -top-1 -right-1 flex sm:static items-center justify-center w-4 h-4 text-[10px] font-medium text-white bg-indigo-600 rounded-full"
             >
               {{ getActiveFiltersCount() }}
@@ -367,12 +367,12 @@
             leave-to-class="opacity-0 translate-y-1"
           >
             <PopoverPanel
-              :class="showFilterBuilder
+              :class="resolvedShowFilterBuilder
                 ? 'absolute left-0 z-[60] mt-2 w-[48rem] max-w-[min(48rem,calc(100vw-2rem))] overflow-visible rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10'
                 : 'absolute left-0 z-[60] mt-2 w-72 max-w-[calc(100vw-2rem)] overflow-visible rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10'"
             >
               <FilterBuilderPanel
-                v-if="showFilterBuilder"
+                v-if="resolvedShowFilterBuilder"
                 ref="mobileFilterBuilderPanelRef"
                 :filter-config="builderFilterConfigList"
                 :filters="filters"
@@ -387,7 +387,7 @@
               />
               <div v-else class="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
                 <div
-                  v-for="filter in effectiveFilterConfig"
+                  v-for="filter in resolvedToolbarFilterConfig"
                   :key="filter.key"
                   class="relative"
                 >
@@ -418,7 +418,7 @@
         </Popover>
 
         <ActiveFilterChipBar
-          v-if="showFilterBuilder && hasActiveFilters"
+          v-if="resolvedShowFilterBuilder && hasActiveFilters"
           :filters="filters"
           :filter-config="builderFilterConfigList"
           :filter-operators="filterOperatorsMap"
@@ -461,7 +461,7 @@
 
         <!-- Filters (Desktop) -->
         <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2.5">
-          <Popover v-if="showFilterBuilder || showLegacyToolbarFilters || showDesktopFiltersPopover" class="relative shrink-0">
+          <Popover v-if="resolvedShowFilterBuilder || resolvedShowLegacyToolbarFilters || resolvedShowDesktopFiltersPopover" class="relative shrink-0">
             <PopoverButton
               class="inline-flex h-8 items-center gap-1.5 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-xs sm:text-sm cursor-pointer"
               @click="openFilterBuilder"
@@ -478,12 +478,12 @@
               leave-to-class="opacity-0 translate-y-1"
             >
               <PopoverPanel
-                :class="showFilterBuilder
+                :class="resolvedShowFilterBuilder
                   ? 'absolute left-0 z-[60] mt-2 w-[48rem] max-w-[min(48rem,calc(100vw-2rem))] overflow-visible rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10'
                   : 'absolute left-0 z-[60] mt-2 w-72 max-w-[calc(100vw-2rem)] overflow-visible rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10'"
               >
                 <FilterBuilderPanel
-                  v-if="showFilterBuilder"
+                  v-if="resolvedShowFilterBuilder"
                   ref="desktopFilterBuilderPanelRef"
                   :filter-config="builderFilterConfigList"
                   :filters="filters"
@@ -496,7 +496,7 @@
                   @update-query="handleFilterQueryUpdate"
                   @filter-opened="handleFilterOpened"
                 />
-                <div v-else-if="showDesktopFiltersPopover" class="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+                <div v-else-if="resolvedShowDesktopFiltersPopover" class="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
                   <div
                     v-for="filter in popoverFilterConfig"
                     :key="`popover-${filter.key}`"
@@ -516,7 +516,7 @@
                 </div>
                 <div v-else class="flex flex-wrap items-center gap-2.5 p-4">
                   <div
-                    v-for="filter in effectiveFilterConfig"
+                    v-for="filter in resolvedToolbarFilterConfig"
                     :key="filter.key"
                     :data-filter-key="filter.key"
                     class="relative"
@@ -535,7 +535,7 @@
           </Popover>
 
           <ActiveFilterChipBar
-            v-if="showFilterBuilder && hasActiveFilters"
+            v-if="resolvedShowFilterBuilder && hasActiveFilters"
             :filters="filters"
             :filter-config="builderFilterConfigList"
             :filter-operators="filterOperatorsMap"
@@ -545,7 +545,7 @@
           />
 
         <button
-          v-if="!showFilterBuilder && hasActiveFilters"
+          v-if="!resolvedShowFilterBuilder && hasActiveFilters"
           @click="clearFilters"
           class="inline-flex h-8 items-center gap-1.5 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-xs sm:text-sm cursor-pointer"
         >
@@ -593,13 +593,14 @@
     <div class="mt-4 px-4 sm:px-6 lg:px-8" style="isolation: auto;">
       <!-- Stable key: must not depend on row data or count — remounting resets scroll and inline filter focus. -->
       <TableView
+          v-if="columnsInitialized"
           :key="`table-${tableId}`"
           internal-scroll
           :data="data"
           :columns="computedColumns"
           :loading="tableLoading"
-          :selectable="true"
-          :has-actions="true"
+          :selectable="selectable"
+          :has-actions="hasActions"
           :sort-field="sortField"
           :sort-order="sortOrder"
           :mass-actions="massActions"
@@ -620,7 +621,7 @@
           :selected-row-ids="selectedRowIdsForTable"
           :excluded-row-ids="excludedRowIdsForTable"
           :scroll-session-key="scrollSessionKey"
-          :column-filters-enabled="showInlineColumnFilters"
+          :column-filters-enabled="resolvedColumnHeaderFilters"
           :filter-config-by-key="enrichedColumnFilterConfigByKey"
           :column-filters="filters"
           @row-click="handleRowClick"
@@ -635,20 +636,27 @@
           @bulk-action="handleBulkAction"
           @load-more="emit('load-more')"
         >
-          <!-- Forward all provided slots to the inner TableView -->
-          <template v-for="(_, slotName) in $slots" #[slotName]="slotProps">
+          <!-- Forward parent slots (actions handled separately for stable vnode patching) -->
+          <template
+            v-for="slotName in forwardedSlotNames"
+            :key="slotName"
+            #[slotName]="slotProps"
+          >
             <slot :name="slotName" v-bind="slotProps" />
           </template>
 
           <!-- Custom Actions -->
           <template #actions="{ row }">
-            <RowActions 
-              :row="row"
-              :module="moduleKey"
-              @view="handleView(row)"
-              @edit="handleEdit(row)"
-              @delete="handleDeleteClick(row)"
-            />
+            <div class="inline-flex items-center">
+              <RowActions
+                v-if="hasActions"
+                :row="row"
+                :module="moduleKey"
+                @view="handleView(row)"
+                @edit="handleEdit(row)"
+                @delete="handleDeleteClick(row)"
+              />
+            </div>
           </template>
           
           <!-- Empty State Slot -->
@@ -1441,7 +1449,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onUnmounted, onDeactivated, nextTick } from 'vue';
+import { ref, reactive, computed, watch, onMounted, onUnmounted, onDeactivated, nextTick, useSlots } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   resolveListViewLabel,
@@ -1552,6 +1560,26 @@ const props = defineProps({
     default: true
   },
   showExport: {
+    type: Boolean,
+    default: true
+  },
+  /** When false, hides row selection checkboxes / row numbers */
+  selectable: {
+    type: Boolean,
+    default: true
+  },
+  /** When false, hides hover row actions (view/edit/delete) */
+  hasActions: {
+    type: Boolean,
+    default: true
+  },
+  /** When false, disables inline per-column header filters */
+  columnHeaderFilters: {
+    type: Boolean,
+    default: undefined
+  },
+  /** When false, hides filter builder / filter toolbar controls (search remains) */
+  showFilters: {
     type: Boolean,
     default: true
   },
@@ -1737,6 +1765,11 @@ const emit = defineEmits([
   'load-more'
 ]);
 
+const slots = useSlots();
+const forwardedSlotNames = computed(() =>
+  Object.keys(slots).filter((name) => name !== 'actions').sort(),
+);
+
 // Use bulk actions composable
 const { bulkActions: massActions } = useBulkActions(props.moduleKey);
 
@@ -1767,6 +1800,7 @@ watch(
 const showColumnSettings = ref(false);
 const showKanbanSettings = ref(false);
 const visibleColumns = ref([]);
+const columnsInitialized = ref(false);
 const layoutOptionsExpanded = ref(true);
 const manageFieldsExpanded = ref(true);
 const fieldSearchQuery = ref('');
@@ -2097,6 +2131,8 @@ onUnmounted(() => {
 
 const QUOTES_LIST_COLUMNS_PREFS_VERSION = 2;
 const quotesListColumnsPrefsVersionKey = 'arivu-listview-quotes-columns-prefs-version';
+const LIVE_CHAT_CLOSED_COLUMNS_PREFS_VERSION = 4;
+const liveChatClosedColumnsPrefsVersionKey = 'arivu-listview-live-chat-closed-columns-prefs-version';
 
 // Load saved column settings from localStorage
 const loadSavedColumnSettings = () => {
@@ -2117,15 +2153,36 @@ const loadSavedColumnSettings = () => {
       }
     }
 
+    if (props.moduleKey === 'live-chat-closed') {
+      const prefsVersion = Number(localStorage.getItem(liveChatClosedColumnsPrefsVersionKey) || 0);
+      if (prefsVersion < LIVE_CHAT_CLOSED_COLUMNS_PREFS_VERSION) {
+        localStorage.removeItem(columnsStorageKey.value);
+        localStorage.setItem(
+          liveChatClosedColumnsPrefsVersionKey,
+          String(LIVE_CHAT_CLOSED_COLUMNS_PREFS_VERSION)
+        );
+        return null;
+      }
+    }
+
     const saved = localStorage.getItem(columnsStorageKey.value);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed && Array.isArray(parsed)) {
+        const propKeys = new Set(props.columns.map((col) => col.key));
+        const sanitized = parsed.filter((col) => col?.key && propKeys.has(col.key));
+        const missingPropColumn = props.columns.some(
+          (col) => !sanitized.some((savedCol) => savedCol.key === col.key),
+        );
+        if (missingPropColumn || sanitized.length !== parsed.length) {
+          localStorage.removeItem(columnsStorageKey.value);
+          return null;
+        }
         // Cases: guard against old saved settings that included internal/system keys
         if (props.moduleKey === 'cases') {
-          return parsed.filter((c) => c && c.key && !String(c.key).includes('.'));
+          return sanitized.filter((c) => c && c.key && !String(c.key).includes('.'));
         }
-        return parsed;
+        return sanitized;
       }
     }
   } catch (error) {
@@ -2545,6 +2602,28 @@ const normalizeColumnOrder = (columns) => {
     return [];
   }
 
+  if (props.moduleKey === 'live-chat-closed') {
+    const lockedKeys = ['visitor', 'sessionKey'];
+    const orderedColumns = [];
+    const processedKeys = new Set();
+
+    lockedKeys.forEach((key) => {
+      const col = columns.find((column) => column.key === key);
+      if (col) {
+        orderedColumns.push({ ...col, locked: true });
+        processedKeys.add(key);
+      }
+    });
+
+    columns.forEach((col) => {
+      if (!processedKeys.has(col.key)) {
+        orderedColumns.push(col);
+      }
+    });
+
+    return orderedColumns;
+  }
+
   if (props.moduleKey === 'quotes') {
     const quotesOrder = ['quoteNumber', 'quoteTitle', 'status', 'grandTotal', 'validUntil', 'updatedAt'];
     const orderedColumns = [];
@@ -2626,14 +2705,42 @@ const normalizeColumnOrder = (columns) => {
 
 // Default column builders are now in the module list registry
 
+function mapPropsColumnsToVisible(cols) {
+  return normalizeColumnOrder(
+    cols.map((col) => ({
+      key: col.key,
+      label: col.label || col.key,
+      visible: col.visible !== false,
+      sortable: col.sortable !== false,
+      dataType: col.dataType || 'Text',
+      showInTable: col.showInTable !== false,
+      locked: Boolean(col.locked) || col.key === 'name',
+    })),
+  );
+}
+
+function seedVisibleColumnsFromProps() {
+  if (!Array.isArray(props.columns) || props.columns.length === 0) return;
+  visibleColumns.value = mapPropsColumnsToVisible(props.columns);
+}
+
+// Seed synchronously so the first data fetch does not patch against an empty column set.
+seedVisibleColumnsFromProps();
+
+let isInitializingColumns = false;
+
 // Initialize visible columns from props.columns, saved settings, or backend configuration
 const initializeColumns = async () => {
-  if (!Array.isArray(props.columns)) {
+  if (!Array.isArray(props.columns) || props.columns.length === 0) {
     visibleColumns.value = [];
+    columnsInitialized.value = false;
     return;
   }
 
-  // Try to load saved settings first
+  seedVisibleColumnsFromProps();
+  isInitializingColumns = true;
+
+  try {
   const savedSettings = loadSavedColumnSettings();
   
   if (savedSettings && savedSettings.length > 0) {
@@ -2678,7 +2785,7 @@ const initializeColumns = async () => {
           sortable: originalCol?.sortable !== false,
           dataType: saved.dataType || originalCol?.dataType || backendField?.dataType || 'Text',
           showInTable: saved.showInTable !== undefined ? saved.showInTable : (saved.visible !== false),
-          locked: saved.key === lockedColumnKey
+          locked: Boolean(originalCol?.locked) || saved.key === lockedColumnKey
         });
         processedKeys.add(saved.key);
       }
@@ -2695,7 +2802,7 @@ const initializeColumns = async () => {
           sortable: propsCol?.sortable !== false,
           dataType: field.dataType || propsCol?.dataType || 'Text',
           showInTable: field.visibility?.list !== false,
-          locked: field.key === lockedColumnKey
+          locked: Boolean(propsCol?.locked) || field.key === lockedColumnKey
         });
         processedKeys.add(field.key);
       }
@@ -2711,7 +2818,7 @@ const initializeColumns = async () => {
           sortable: col.sortable !== false,
           dataType: col.dataType || 'Text',
           showInTable: col.showInTable !== false,
-          locked: col.key === lockedColumnKey
+          locked: Boolean(col.locked) || col.key === lockedColumnKey
         });
       }
     });
@@ -2800,7 +2907,7 @@ const initializeColumns = async () => {
         sortable: col.sortable !== false,
         dataType: col.dataType || 'Text',
         showInTable: (fieldVisibilityMap.get(col.key) || false),
-        locked: col.key === 'name', // Default lock 'name' for non-people modules too
+        locked: Boolean(col.locked) || col.key === 'name', // Default lock 'name' for non-people modules too
       }));
       visibleColumns.value = normalizeColumnOrder(initializedColumns);
       saveColumnSettings();
@@ -2813,7 +2920,7 @@ const initializeColumns = async () => {
         sortable: col.sortable !== false,
         dataType: col.dataType || 'Text',
         showInTable: col.showInTable !== false,
-        locked: col.key === 'name', // Default lock 'name'
+        locked: Boolean(col.locked) || col.key === 'name', // Default lock 'name'
       }));
       visibleColumns.value = normalizeColumnOrder(mappedColumns);
       saveColumnSettings();
@@ -2823,10 +2930,16 @@ const initializeColumns = async () => {
   if (!visibleColumns.value.some((col) => col.visible)) {
     await applyRegistryDefaultVisibleColumns();
   }
+  } finally {
+    columnsInitialized.value = true;
+    isInitializingColumns = false;
+  }
 };
 
 // Watch for column changes from props (new columns added)
-watch(() => props.columns, async () => {
+watch(
+  () => (Array.isArray(props.columns) ? props.columns.map((c) => c.key).join('|') : ''),
+  async () => {
   // Only update if we don't have saved settings, or if new columns are added
   const savedSettings = loadSavedColumnSettings();
   if (!savedSettings || savedSettings.length === 0) {
@@ -2894,11 +3007,13 @@ watch(() => props.columns, async () => {
       saveColumnSettings();
     }
   }
-}, { deep: true });
+  },
+);
 
 // Watch visibleColumns and save whenever they change (debounced to avoid excessive saves)
 let saveTimeout = null;
 watch(visibleColumns, () => {
+  if (isInitializingColumns) return;
   // Debounce saves to avoid excessive localStorage writes during drag operations
   if (saveTimeout) {
     clearTimeout(saveTimeout);
@@ -3113,12 +3228,13 @@ const computedColumns = computed(() => {
     .filter(col => col.visible)
     .map((col) => mergeVisibleColumnWithProps(col));
   if (mapped.length > 0) return mapped;
-  // Fallback while visibleColumns is still initializing (async onMounted) or rows are loading.
-  // Without this, rows can render with zero data columns and row numbers center in the full table width.
-  if (Array.isArray(props.columns) && props.columns.length > 0) {
-    if (tableLoading.value || visibleColumns.value.length === 0) {
-      return props.columns.map((c) => ({ ...c }));
-    }
+  // Fallback only before column init seeds visibleColumns (first paint).
+  if (
+    !columnsInitialized.value
+    && Array.isArray(props.columns)
+    && props.columns.length > 0
+  ) {
+    return props.columns.map((c) => ({ ...c }));
   }
   return [];
 });
@@ -3180,6 +3296,22 @@ const {
   viewMode: computed(() => props.viewMode),
   isDesktop: isLargeDesktop,
 });
+
+const resolvedColumnHeaderFilters = computed(
+  () => props.columnHeaderFilters !== false && showInlineColumnFilters.value,
+);
+const resolvedShowFilterBuilder = computed(
+  () => props.showFilters && showFilterBuilder.value,
+);
+const resolvedShowLegacyToolbarFilters = computed(
+  () => props.showFilters && showLegacyToolbarFilters.value,
+);
+const resolvedShowDesktopFiltersPopover = computed(
+  () => props.columnHeaderFilters !== false && props.showFilters && showDesktopFiltersPopover.value,
+);
+const resolvedToolbarFilterConfig = computed(
+  () => (props.showFilters ? effectiveFilterConfig.value : []),
+);
 
 const { handleFilterOpened: loadFilterFieldOptions, enrichFilterMap } = useFilterFieldOptions(
   computed(() => props.moduleKey),

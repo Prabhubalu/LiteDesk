@@ -1,8 +1,9 @@
 const notificationSSEHub = require('../services/notificationSSEHub');
 const { applySseCors } = require('../utils/sseCors');
 const { resolveUserFromToken } = require('../utils/resolveUserFromToken');
+const { canAccessLiveChatNotifications } = require('../utils/liveChatNotificationAccess');
 
-const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK'];
+const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK', 'PLATFORM'];
 
 function normalizeAppKey(req) {
   const fromQuery = req.query.appKey;
@@ -73,7 +74,18 @@ exports.streamNotifications = async (req, res) => {
 
   // Validate app entitlement (user must have access to this app)
   const allowedApps = user.allowedApps || [];
-  if (!allowedApps.includes(appKey)) {
+  if (appKey === 'PLATFORM') {
+    const canPlatform = await canAccessLiveChatNotifications(user, user.organizationId);
+    if (!canPlatform) {
+      console.warn('[notificationStreamController] Live Chat notification access denied:', {
+        userId: user._id,
+        appKey,
+      });
+      res.writeHead(403, { 'Content-Type': 'text/plain' });
+      res.end('App access denied');
+      return;
+    }
+  } else if (!allowedApps.includes(appKey)) {
     console.warn('[notificationStreamController] App access denied:', {
       userId: user._id,
       appKey,

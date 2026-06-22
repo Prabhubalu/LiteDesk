@@ -248,7 +248,8 @@ const MODULE_LABEL_KEYS = {
   tasks: 'settings.assignRulesModTasks',
   events: 'settings.assignRulesModEvents',
   items: 'settings.assignRulesModItems',
-  forms: 'settings.assignRulesModForms'
+  forms: 'settings.assignRulesModForms',
+  live_chat_sessions: 'settings.assignRulesModLiveChatSessions'
 };
 
 const CARD_COLORS = [

@@ -269,6 +269,13 @@ function projectRoleToUserPermissions(rolePlain, appAccess = []) {
     exportReports: p.reports?.export === true
   };
 
+  const lc = p.liveChat || {};
+  const liveChat = {
+    view: lc.view === true,
+    reply: lc.reply === true,
+    admin: lc.admin === true
+  };
+
   const roleCases = p.cases;
   const hasRoleCasesMatrix =
     roleCases &&
@@ -309,6 +316,7 @@ function projectRoleToUserPermissions(rolePlain, appAccess = []) {
     performance,
     reports,
     cases: casesModule,
+    liveChat,
     ...commercialCore
   };
 
@@ -413,6 +421,7 @@ function ensurePermissionEnvelopeDefaults(merged) {
     createCustom: false,
     exportReports: false
   });
+  ensureModule('liveChat', { view: false, reply: false, admin: false });
   ensureModule('projects', { view: false, create: false, edit: false, delete: false, viewAll: false });
 }
 

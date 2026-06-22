@@ -1,5 +1,6 @@
 const Organization = require('../models/Organization');
 const { tenantContext } = require('./tenantContextMiddleware');
+const { resolvePublicEmbedContext } = require('../services/liveChatWidgetService');
 
 /**
  * Resolve instance context for public embed chat routes.
@@ -8,6 +9,8 @@ const { tenantContext } = require('./tenantContextMiddleware');
  * - query.instanceKey
  * - body.instanceKey
  * - header: x-instance-key
+ *
+ * Requires Live Chat addon entitlement + widget enabled for tenant.
  */
 async function resolveEmbedChatInstance(req, res, next) {
   try {
@@ -21,17 +24,18 @@ async function resolveEmbedChatInstance(req, res, next) {
       return res.status(400).json({ success: false, message: 'instanceKey is required' });
     }
 
-    const org = await Organization.findOne({
-      'embed.chat.publicKey': String(instanceKey).trim(),
-      'embed.chat.enabled': true
-    }).lean();
-
-    if (!org) {
-      return res.status(404).json({ success: false, message: 'Instance not found' });
+    const ctx = await resolvePublicEmbedContext(instanceKey);
+    if (!ctx?.organization) {
+      return res.status(404).json({
+        success: false,
+        message: 'Chat widget is not available for this instance',
+        code: 'LIVE_CHAT_EMBED_UNAVAILABLE',
+      });
     }
 
-    req.organization = org;
-    req.organizationId = org._id;
+    req.organization = ctx.organization;
+    req.organizationId = ctx.organization._id;
+    req.liveChatWidget = ctx.widget;
     return tenantContext(req, res, next);
   } catch (err) {
     console.error('[embedChatContext] resolve instance failed:', err);
@@ -40,6 +44,5 @@ async function resolveEmbedChatInstance(req, res, next) {
 }
 
 module.exports = {
-  resolveEmbedChatInstance
+  resolveEmbedChatInstance,
 };
-

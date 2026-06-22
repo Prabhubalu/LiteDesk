@@ -199,6 +199,11 @@ const UserSchema = new mongoose.Schema({
             manageIntegrations: { type: Boolean, default: false },
             customizeFields: { type: Boolean, default: false }
         },
+        liveChat: {
+            view: { type: Boolean, default: false },
+            reply: { type: Boolean, default: false },
+            admin: { type: Boolean, default: false }
+        },
         reports: {
             viewStandard: { type: Boolean, default: true },
             viewCustom: { type: Boolean, default: false },
@@ -391,6 +396,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             imports: { view: true, create: true, delete: true },
             documents: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             settings: { manageUsers: true, manageBilling: true, manageIntegrations: true, customizeFields: true },
+            liveChat: { view: true, reply: true, admin: true },
             reports: { viewStandard: true, viewCustom: true, createCustom: true, exportReports: true }
         },
         admin: {
@@ -407,6 +413,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             imports: { view: true, create: true, delete: true },
             documents: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             settings: { manageUsers: true, manageBilling: true, manageIntegrations: true, customizeFields: true },
+            liveChat: { view: true, reply: true, admin: true },
             reports: { viewStandard: true, viewCustom: true, createCustom: true, exportReports: true }
         },
         manager: {
@@ -423,6 +430,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             imports: { view: true, create: true, delete: false },
             documents: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             settings: { manageUsers: false, manageBilling: false, manageIntegrations: false, customizeFields: false },
+            liveChat: { view: true, reply: true, admin: false },
             reports: { viewStandard: true, viewCustom: true, createCustom: false, exportReports: false }
         },
         user: {
@@ -439,6 +447,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             imports: { view: true, create: false, delete: false },
             documents: { view: true, create: true, edit: true, delete: false, viewAll: false, exportData: false },
             settings: { manageUsers: false, manageBilling: false, manageIntegrations: false, customizeFields: false },
+            liveChat: { view: true, reply: true, admin: false },
             reports: { viewStandard: true, viewCustom: false, createCustom: false, exportReports: false }
         },
         viewer: {

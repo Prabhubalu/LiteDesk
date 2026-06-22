@@ -85,8 +85,50 @@ export function normalizeToApiPath(url: string): string {
   return '/api' + (url.startsWith('/') ? url : `/${url}`)
 }
 
+/**
+ * Dev-only: route fetch/EventSource to the API port directly so long-lived SSE does
+ * not exhaust the Vite proxy connection pool (which also stalls static assets and POSTs).
+ */
+function getDevDirectFetchOrigin(): string {
+  if (!import.meta.env.DEV || typeof window === 'undefined') return ''
+  const pageHost = window.location.hostname.toLowerCase()
+  if (!LOCAL_DEV_HOSTS.has(pageHost)) return ''
+
+  const explicitOrigin = (import.meta.env.VITE_API_ORIGIN as string | undefined)?.replace(/\/$/, '')
+  if (explicitOrigin) {
+    try {
+      const api = new URL(explicitOrigin)
+      if (LOCAL_DEV_HOSTS.has(api.hostname)) return api.origin
+    } catch {
+      // ignore
+    }
+  }
+
+  const legacyUrl = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '')
+  if (legacyUrl) {
+    try {
+      const api = new URL(legacyUrl.replace(/\/api$/, ''))
+      if (LOCAL_DEV_HOSTS.has(api.hostname)) return api.origin
+    } catch {
+      // ignore
+    }
+  }
+
+  return 'http://localhost:3000'
+}
+
 export function getApiUrlForFetch(url: string): string {
-  return withApiOrigin(normalizeToApiPath(url))
+  const path = normalizeToApiPath(url)
+  const directOrigin = getDevDirectFetchOrigin()
+  if (directOrigin) {
+    return `${directOrigin}${path}`
+  }
+  return withApiOrigin(path)
+}
+
+/** Long-lived SSE streams; same dev direct-origin routing as fetch. */
+export function getApiUrlForEventSource(url: string): string {
+  return getApiUrlForFetch(url)
 }
 
 /**
