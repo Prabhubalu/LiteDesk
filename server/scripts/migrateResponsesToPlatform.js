@@ -54,8 +54,7 @@ async function migrateResponsesToPlatform() {
           $set: {
             ui: {
               ...toPlainObject(platformModule.ui),
-              ...PLATFORM_RESPONSES_UI,
-              icon: 'clipboard-document-list'
+              ...PLATFORM_RESPONSES_UI
             }
           }
         }
@@ -71,11 +70,9 @@ async function migrateResponsesToPlatform() {
         { _id: platformModule._id },
         {
           $set: {
-            'ui.icon': 'clipboard-document-list',
             ui: {
               ...toPlainObject(platformModule.ui),
-              ...PLATFORM_RESPONSES_UI,
-              icon: 'clipboard-document-list'
+              ...PLATFORM_RESPONSES_UI
             }
           }
         }
@@ -89,11 +86,9 @@ async function migrateResponsesToPlatform() {
         {
           $set: {
             appKey: 'platform',
-            'ui.icon': 'clipboard-document-list',
             ui: {
               ...toPlainObject(source.ui),
-              ...PLATFORM_RESPONSES_UI,
-              icon: 'clipboard-document-list'
+              ...PLATFORM_RESPONSES_UI
             }
           }
         }
