@@ -38,7 +38,7 @@ function viewAllForModule(mod, rolePlain) {
   return m.scope === 'all' || m.viewAll === true;
 }
 
-const SALES_NATIVE_MODULES = new Set(['deals', 'responses', 'projects']);
+const SALES_NATIVE_MODULES = new Set(['deals', 'projects']);
 const INVENTORY_NATIVE_MODULES = new Set(['inventory']);
 const PLATFORM_ADMIN_MODULES = new Set(PLATFORM_ADMIN_KEYS);
 const {
@@ -346,6 +346,9 @@ function readGrantFromRuntime(runtime, storageModuleKey, envelopeAction, effecti
     if (storageModuleKey === 'contacts' && envelope.people) {
       return envelope.people[envelopeAction] === true;
     }
+    if (storageModuleKey === 'responses' && envelope.forms) {
+      return envelope.forms[envelopeAction] === true;
+    }
   } else {
     if (modGrant[envelopeAction] === true) return true;
     if (storageModuleKey === 'settings' && envelopeAction === 'edit' && modGrant.customizeFields === true) {
@@ -414,7 +417,10 @@ function resolveRuntimePermission(user, module, action, options = {}) {
   }
 
   const legacyMod = storageModule === 'contacts' ? 'contacts' : storageModule;
-  const perms = user.permissions?.[legacyMod] || user.permissions?.people;
+  let perms = user.permissions?.[legacyMod] || user.permissions?.people;
+  if (!perms && storageModule === 'responses') {
+    perms = user.permissions?.forms;
+  }
   if (!perms) return false;
   if (perms[envelopeAction] === true) return true;
   if (storageModule === 'settings' && envelopeAction === 'edit' && perms.customizeFields === true) {

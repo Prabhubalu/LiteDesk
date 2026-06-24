@@ -213,6 +213,10 @@ import SectionsBuilder from '@/components/forms/SectionsBuilder.vue';
 import FormSettingsTab from '@/components/forms/FormSettingsTab.vue';
 import FormTemplateTab from '@/components/forms/FormTemplateTab.vue';
 import FormPreview from '@/components/forms/FormPreview.vue';
+import {
+  normalizeEngagementExpiryForInput,
+  serializeEngagementExpiryForApi
+} from '@/utils/engagementFormDisplay';
 
 const route = useRoute();
 const router = useRouter();
@@ -299,6 +303,9 @@ const fetchForm = async () => {
 
     if (response.success) {
       const fetchedForm = response.data || form.value;
+      if (fetchedForm.expiryDate) {
+        fetchedForm.expiryDate = normalizeEngagementExpiryForInput(fetchedForm.expiryDate);
+      }
       form.value = fetchedForm;
       // Initialize lastSavedForm to prevent immediate auto-save after fetch
       lastSavedForm = JSON.stringify(fetchedForm);
@@ -456,7 +463,9 @@ const saveForm = async (isAutoSave = false) => {
       // Preserve current status - auto-save never changes status
       status: isAutoSave ? currentStatus : (formData.status || currentStatus),
       assignedTo: formData.assignedTo || null,
-      expiryDate: formData.expiryDate || null,
+      expiryDate: formData.expiryDate
+        ? serializeEngagementExpiryForApi(formData.expiryDate)
+        : null,
       tags: formData.tags || [],
       approvalRequired: formData.approvalRequired || false,
       sections: formData.sections || [],
@@ -674,7 +683,7 @@ watch(() => form.value, (newForm) => {
   }
   
   // Only allow auto-save for Draft and Ready forms (both allow full editing)
-  if (form.value.status && !canEditForm(form.value.status)) {
+  if (form.value.status && !canEditForm(form.value.status, form.value.formType)) {
     return;
   }
   
@@ -695,7 +704,7 @@ watch(() => form.value, (newForm) => {
   clearTimeout(autoSaveTimer);
   autoSaveTimer = setTimeout(() => {
     // Only auto-save if form actually changed, we're not in the middle of a save, and form is editable (Draft or Ready)
-    if (!saving.value && !isManualSave.value && canEditForm(form.value.status)) {
+    if (!saving.value && !isManualSave.value && canEditForm(form.value.status, form.value.formType)) {
       // Double-check Ready form validity before auto-saving
       if (form.value.status === 'Ready' && !isReadyFormValid(form.value)) {
         return; // Don't auto-save invalid Ready forms

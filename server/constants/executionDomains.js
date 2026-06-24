@@ -2,31 +2,37 @@
  * ============================================================================
  * Execution Domains Registry
  * ============================================================================
- * 
+ *
  * Platform-level registry for execution domains.
  * Execution domains represent first-class execution entities in the platform
  * that drive workflows, corrective actions, approvals, and reporting.
- * 
+ *
  * ⚠️ This is PLATFORM metadata, NOT tenant data
  * ⚠️ Defines execution domains, NOT new apps
- * 
- * Phase 0I.1: Responses Registration
- * - Responses are an execution domain within Sales, not a separate app
- * - Sales remains the sole execution authority for Responses
+ *
+ * Responses Registration:
+ * - Responses are a platform execution domain (FormResponse state machine)
+ * - Platform controllers (/api/forms) remain the mutation surface
  * - Audit App and Portal consume Response state read-only
- * 
+ *
  * ============================================================================
  */
 
 // Phase 0I.3: Import review actions metadata
 const { RESPONSE_REVIEW_ACTIONS } = require('./reviewActions');
 
+const PLATFORM_EXECUTION_OWNER = 'PLATFORM';
+const READ_ONLY_RESPONSE_APPS = ['AUDIT', 'PORTAL'];
+
 module.exports = {
+  PLATFORM_EXECUTION_OWNER,
+  READ_ONLY_RESPONSE_APPS,
+
   RESPONSE: {
     key: 'RESPONSE',
     label: 'Response',
-    sourceApp: 'SALES',
-    executionOwner: 'SALES',
+    sourceApp: PLATFORM_EXECUTION_OWNER,
+    executionOwner: PLATFORM_EXECUTION_OWNER,
     primaryModel: 'FormResponse',
     reviewable: true,
     supportsCorrectiveActions: true,
@@ -49,25 +55,24 @@ module.exports = {
       ]
     },
 
-    lifecycleOwner: 'SALES',
+    lifecycleOwner: PLATFORM_EXECUTION_OWNER,
 
     // Phase 0I.3: Review actions metadata
     // ⚠️ SAFETY: These are declarative metadata only, not executable logic.
-    // All actions are Sales-owned. Audit App and Portal are read-only.
+    // All actions are Platform-owned. Audit App and Portal are read-only.
     reviewActions: RESPONSE_REVIEW_ACTIONS,
-    
+
     // Phase 0I.3: Execution ownership metadata
-    executionOwnedBy: 'SALES',
+    executionOwnedBy: PLATFORM_EXECUTION_OWNER,
     allowsDirectExecution: false,
     auditAppReadOnly: true,
     portalReadOnly: true,
 
-    // Phase 0I.1: Detailed app access rules
     appAccessRules: {
       AUDIT: {
         mode: 'READ_ONLY',
         via: 'Execution Gateway',
-        description: 'Audit App never mutates Response directly. All mutations go through Sales controllers.'
+        description: 'Audit App never mutates Response directly. All mutations go through Platform execution controllers.'
       },
       PORTAL: {
         mode: 'INDIRECT',
@@ -80,4 +85,3 @@ module.exports = {
       'Execution record created from form submission. Drives corrective actions, auditor review, and reporting.'
   }
 };
-

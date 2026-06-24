@@ -38,12 +38,12 @@ const componentMap = {
   items: () => import('@/views/Items.vue'),
   'item-detail': () => import('@/pages/ModuleRecordPage.vue'),
   forms: () => import('@/views/Forms.vue'),
-  'form-detail': () => import('@/views/FormDetail.vue'),
+  'form-detail': () => import('@/pages/ModuleRecordPage.vue'),
   imports: () => import('@/views/Imports.vue'),
   documents: () => import('@/views/Documents.vue'),
   'import-detail': () => import('@/views/ImportDetail.vue'),
   responses: () => import('@/views/Responses.vue'),
-  'response-detail': () => import('@/views/FormResponseDetail.vue'),
+  'response-detail': () => import('@/pages/ModuleRecordPage.vue'),
   
   // Default fallback
   default: () => import('@/views/Dashboard.vue')

@@ -182,7 +182,11 @@ import {
   Squares2X2Icon,
   BookOpenIcon,
   EnvelopeIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  EyeIcon,
+  ClipboardDocumentListIcon,
+  DocumentDuplicateIcon,
+  Bars3BottomLeftIcon
 } from '@heroicons/vue/24/outline';
 
 const { t } = useI18n();
@@ -590,17 +594,20 @@ const getTabIcon = (tabId) => {
   
   // Fallback to default icon map
   const iconMap = {
-    'summary': Squares2X2Icon,
-    'details': DocumentTextIcon,
-    'updates': ClockIcon,
-    'comments': ChatBubbleLeftRightIcon,
-    'timeline': ClockIcon,
-    'related': LinkIcon,
-    'integrations': PuzzlePieceIcon,
-    'knowledge': BookOpenIcon,
-    'email': EnvelopeIcon,
-    'participants': UserGroupIcon,
-    'details': DocumentTextIcon
+    summary: Squares2X2Icon,
+    activity: ClockIcon,
+    details: Bars3BottomLeftIcon,
+    updates: ClockIcon,
+    preview: EyeIcon,
+    responses: ClipboardDocumentListIcon,
+    documents: DocumentDuplicateIcon,
+    comments: ChatBubbleLeftRightIcon,
+    timeline: ClockIcon,
+    related: LinkIcon,
+    integrations: PuzzlePieceIcon,
+    knowledge: BookOpenIcon,
+    email: EnvelopeIcon,
+    participants: UserGroupIcon
   };
   return iconMap[tabId] || RectangleStackIcon;
 };

@@ -290,7 +290,7 @@
           <!-- Related Records Panel (Phase 0F.1: Show Corrective Actions) -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('records.taskRelatedRecordsTab') }}</h3>
-            <!-- SAFETY: Response Detail is read-only. Any execution or review mutations must occur via CRM execution controllers only. -->
+            <!-- SAFETY: Response Detail is read-only. Execution mutations occur via Platform controllers only. -->
             <RelatedRecordsPanel
               app-key="SALES"
               module-key="responses"
@@ -331,7 +331,7 @@ const accessDeniedMessage = ref('');
 const { success: showSuccess, error: showError } = useNotifications();
 
 // Record context for execution capabilities and projection metadata
-const { context: recordContext, load: loadRecordContext } = useRecordContext('SALES', 'responses', () => route.params.id);
+const { context: recordContext, load: loadRecordContext } = useRecordContext('PLATFORM', 'responses', () => route.params.id);
 
 // Phase 2C: Computed projection type label and badge (minimal for responses)
 const projectionTypeLabel = computed(() => {

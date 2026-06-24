@@ -4,7 +4,7 @@
     <div class="mb-6">
       <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ t('forms.previewSaveHeading') }}</h3>
       <p class="text-sm text-gray-600 dark:text-gray-400">
-        {{ t('forms.previewSaveIntro') }}
+        {{ engagementMode ? t('forms.engagementPreviewIntro') : t('forms.previewSaveIntro') }}
       </p>
     </div>
 
@@ -12,8 +12,8 @@
     <div class="flex-1 flex gap-6 min-h-0">
       <!-- Left Column: Tabbed Review Content (Scrollable) -->
       <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
-        <!-- Tabs -->
-        <div class="flex border-b border-gray-200 dark:border-gray-700 mb-4">
+        <!-- Tabs (audit only — engagement forms have a single preview) -->
+        <div v-if="!engagementMode" class="flex border-b border-gray-200 dark:border-gray-700 mb-4">
           <button
             @click="activeTab = 'execution'"
             class="px-6 py-3 text-sm font-medium border-b-2 transition-colors"
@@ -36,8 +36,8 @@
 
         <!-- Tab Content (Scrollable) -->
         <div class="flex-1 overflow-y-auto">
-          <!-- Execution Tab (Default) -->
-          <div v-if="activeTab === 'execution'" class="space-y-4">
+          <!-- Execution preview (default for engagement; tabbed for audit) -->
+          <div v-if="engagementMode || activeTab === 'execution'" class="space-y-4">
             <div class="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 overflow-hidden">
               <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
                 <h4 class="text-base font-semibold text-gray-900 dark:text-white">
@@ -212,7 +212,7 @@
                 </span>
               </div>
               <p class="text-xs text-green-700 dark:text-green-400 mt-2">
-                {{ t('forms.previewFormSavedNotLiveYet') }}
+                {{ engagementMode ? t('forms.engagementPreviewReadyDesc') : t('forms.previewFormSavedNotLiveYet') }}
               </p>
             </div>
           </div>
@@ -234,6 +234,10 @@ const props = defineProps({
   form: {
     type: Object,
     required: true
+  },
+  engagementMode: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -390,19 +394,39 @@ const readinessChecklist = computed(() => {
     });
   }
   
-  // Response Template
-  // Always consider valid - default template will be used if none is explicitly configured
-  const hasTemplate = activeTemplate.value !== null;
-  const templateName = hasTemplate ? activeTemplateName.value : t('forms.previewDefaultTemplateName');
-  checklist.push({
-    key: 'template',
-    label: t('forms.previewChecklistTemplate'),
-    status: 'complete',
-    message: t('forms.previewChecklistUsingTemplate', {
-      name: templateName,
-      suffix: !hasTemplate ? t('forms.previewChecklistTemplateDefaultSuffix') : ''
-    })
-  });
+  // Response Template (Audit only)
+  if (!props.engagementMode) {
+    const hasTemplate = activeTemplate.value !== null;
+    const templateName = hasTemplate ? activeTemplateName.value : t('forms.previewDefaultTemplateName');
+    checklist.push({
+      key: 'template',
+      label: t('forms.previewChecklistTemplate'),
+      status: 'complete',
+      message: t('forms.previewChecklistUsingTemplate', {
+        name: templateName,
+        suffix: !hasTemplate ? t('forms.previewChecklistTemplateDefaultSuffix') : ''
+      })
+    });
+  } else {
+    const isPublic = props.form?.visibility === 'Public' || props.form?.publicLink?.enabled;
+    checklist.push({
+      key: 'distribution',
+      label: t('forms.engagementPreviewChecklistDistribution'),
+      status: isPublic ? 'complete' : 'incomplete',
+      message: isPublic
+        ? t('forms.engagementPreviewChecklistDistributionOk')
+        : t('forms.engagementPreviewChecklistDistributionMissing')
+    });
+
+    if (props.form?.kpiMetrics?.rating || props.form?.kpiMetrics?.satisfactionPercentage) {
+      checklist.push({
+        key: 'analytics',
+        label: t('forms.engagementPreviewChecklistAnalytics'),
+        status: 'complete',
+        message: t('forms.engagementPreviewChecklistAnalyticsOk')
+      });
+    }
+  }
   
   return checklist;
 });

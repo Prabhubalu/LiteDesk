@@ -207,6 +207,24 @@ const iconMap = {
 
 const GENERIC_TAB_ICON_IDS = new Set(['document', 'document-text']);
 
+const RESPONSES_PATH_PREFIX = '/responses';
+
+function isResponsesPath(path = '') {
+  const pathOnly = String(path || '').split('?')[0].split('#')[0].toLowerCase();
+  return pathOnly === RESPONSES_PATH_PREFIX || pathOnly.startsWith(`${RESPONSES_PATH_PREFIX}/`);
+}
+
+function resolveTabIconForPath(pathOnly, optionsIcon) {
+  if (isResponsesPath(pathOnly)) {
+    return getIconForPath(pathOnly);
+  }
+  if (optionsIcon) {
+    const resolved = resolveTabIconId(optionsIcon, pathOnly);
+    if (resolved) return resolved;
+  }
+  return getIconForPath(pathOnly);
+}
+
 // Map emoji icons to icon identifiers
 const migrateEmojiToIconId = (emojiIcon, path = '') => {
   const pathOnly = String(path || '').split('?')[0].split('#')[0].toLowerCase();
@@ -219,6 +237,10 @@ const migrateEmojiToIconId = (emojiIcon, path = '') => {
     if (pathOnly.startsWith('/quotes')) return MODULE_ICON_IDS.quotes;
     return MODULE_ICON_IDS.quotes;
   }
+  if (emojiIcon === '📋') {
+    if (isResponsesPath(path)) return 'clipboard-document-list';
+    return 'shield-check';
+  }
   const emojiToIconIdMap = {
     '🏠': 'home',
     '👥': 'users',
@@ -227,7 +249,6 @@ const migrateEmojiToIconId = (emojiIcon, path = '') => {
     '💼': 'briefcase',
     '✅': 'check',
     '📅': 'calendar',
-    '📋': 'shield-check',
     '🛡️': 'shield-check',
     '🎧': 'lifebuoy',
     '🛟': 'lifebuoy',
@@ -661,18 +682,16 @@ function serializeTabForStorage(tab) {
     params: tab.params,
     icon: typeof tab.icon === 'string' ? tab.icon : getIconId(tab.icon)
   };
-  if (recordName) {
+  if (recordName && isRecordDetailTabPath(tab.path)) {
     serialized.recordTitle = recordName;
     serialized.title = recordName;
-    if (isRecordDetailTabPath(tab.path)) {
-      serialized.titleKey = 'navigation.tabRecordNamed';
-      const moduleRoute = String(tab.path).split('?')[0].split('/').filter(Boolean)[0];
-      serialized.titleParams = {
-        ...tab.titleParams,
-        moduleRoute,
-        name: recordName
-      };
-    }
+    serialized.titleKey = 'navigation.tabRecordNamed';
+    const moduleRoute = String(tab.path).split('?')[0].split('/').filter(Boolean)[0];
+    serialized.titleParams = {
+      ...tab.titleParams,
+      moduleRoute,
+      name: recordName
+    };
   } else if (tab.titleKey) {
     serialized.titleKey = tab.titleKey;
     serialized.titleParams = tab.titleParams;
@@ -701,9 +720,11 @@ const saveTabsToStorage = () => {
   }
 };
 
-// Watch for changes and save
+// Watch for changes and save (skip until bootstrap configures per-user storage)
 watch([tabs, activeTabId], () => {
-  saveTabsToStorage();
+  if (storageConfigured && storageKey) {
+    saveTabsToStorage();
+  }
 }, { deep: true });
 
 // Create default home tab (platform home)
@@ -869,6 +890,7 @@ const getTitleForPath = (path, params = {}) => {
     '/tasks': 'Tasks',
     '/events': 'Events',
     '/forms': 'Forms',
+    '/responses': 'Responses',
     '/calendar': 'Events', // backward compat
     '/imports': 'Imports',
     '/documents': 'Documents',
@@ -894,7 +916,8 @@ const getTitleForPath = (path, params = {}) => {
     '/control/flows': 'Business Flows',
     // Audit app routes
     '/audit/dashboard': 'Audit Dashboard',
-    '/audit/audits': 'My Audits'
+    '/audit/audits': 'My Audits',
+    '/audit/responses': 'Responses'
   };
   
   // Check for exact path match FIRST (before any other logic)
@@ -934,7 +957,7 @@ const getTitleForPath = (path, params = {}) => {
     return titles[`/settings/automation/${segments[2]}`] || 'Automation';
   }
   
-  // Special case: Audit app routes (should not use tabs system)
+  // Special case: Audit app routes
   if (path.startsWith('/audit/')) {
     // Return specific titles for audit routes
     if (path === '/audit/dashboard' || path.startsWith('/audit/dashboard')) {
@@ -1443,9 +1466,7 @@ export function useTabs() {
       return;
     }
     
-    // Skip if path is login, landing, or audit app (no tabs)
-    // Audit app has its own layout and doesn't use the CRM tabs system
-    // Settings now uses internal tabs
+    // Skip public/auth/landing routes (Settings uses internal tabs)
     if (shouldSkipTabRoute(path)) {
       logTabsDebug('⏭️ Skipping sync for path:', path);
       return;
@@ -1896,10 +1917,7 @@ export function useTabs() {
         return; // Don't continue processing
       }
       
-      // Skip routes that don't use tabs (login, landing, audit app)
-      // These routes should be handled by the router, not by tab syncing
-      // Audit app has its own layout and doesn't use the CRM tabs system
-      // Settings now uses internal tabs
+      // Skip public/auth/landing routes (Settings uses internal tabs)
       if (shouldSkipTabRoute(newPath)) {
         console.log('⏭️ Route watcher: skipping tab sync for non-tab route:', newPath);
         return;
@@ -1981,6 +1999,7 @@ export function useTabs() {
           // Module list tab should always show the module name
           const isListRoute = newPathWithoutQuery === '/tasks' || newPathWithoutQuery === '/deals' || newPathWithoutQuery === '/events' ||
             newPathWithoutQuery === '/people' || newPathWithoutQuery === '/organizations' || newPathWithoutQuery === '/forms' ||
+            newPathWithoutQuery === '/responses' || newPathWithoutQuery === '/audit/responses' ||
             newPathWithoutQuery === '/items' || newPathWithoutQuery === '/imports' || newPathWithoutQuery === '/documents' || newPathWithoutQuery === '/trash' ||
             newPathWithoutQuery === '/helpdesk/cases' ||
             newPathWithoutQuery === '/platform/home' || newPathWithoutQuery === '/sales/dashboard' || newPathWithoutQuery.startsWith('/control/') ||
@@ -2054,6 +2073,7 @@ export function useTabs() {
         const newPathBase = newPath.split('?')[0];
         const isListRoute = newPathBase === '/tasks' || newPathBase === '/deals' || newPathBase === '/events' ||
           newPathBase === '/people' || newPathBase === '/organizations' || newPathBase === '/forms' ||
+          newPathBase === '/responses' || newPathBase === '/audit/responses' ||
           newPathBase === '/items' || newPathBase === '/imports' || newPathBase === '/documents' || newPathBase === '/trash' ||
           newPathBase === '/helpdesk/cases' ||
           newPathBase === '/platform/home' || newPathBase === '/sales/dashboard' || newPathBase.startsWith('/control/') ||
@@ -2287,8 +2307,7 @@ export function useTabs() {
       if (isHelpdeskCasesTab) {
         existingTab.icon = getIconComponent('cases');
       } else {
-        const iconId = resolveTabIconId(options.icon, pathOnly) || getIconForPath(pathOnly);
-        existingTab.icon = getIconComponent(iconId);
+        existingTab.icon = getIconComponent(resolveTabIconForPath(pathOnly, options.icon));
       }
       
       // If not background mode, focus the tab
@@ -2315,12 +2334,7 @@ export function useTabs() {
       return existingTab;
     }
     
-    const pathIconId = getIconForPath(pathOnly);
-    const overrideIconId =
-      options.icon && !isHelpdeskCasesTab
-        ? resolveTabIconId(options.icon, pathOnly)
-        : null;
-    const tabIconId = overrideIconId || pathIconId;
+    const tabIconId = resolveTabIconForPath(pathOnly, options.icon);
 
     // Create new tab
     const titleMeta = options.titleKey

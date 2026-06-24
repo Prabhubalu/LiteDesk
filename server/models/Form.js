@@ -11,6 +11,7 @@
 
 const mongoose = require('mongoose');
 const { wrapTenantModel } = require('../utils/tenantModelProxy');
+const { isEngagementFormExpired } = require('../utils/engagementFormLifecycle');
 const Schema = mongoose.Schema;
 
 // Question Schema (nested in subsections and sections)
@@ -376,6 +377,12 @@ const FormSchema = new Schema({
             // unique: true removed - using explicit unique index below instead
         }
     },
+    branding: {
+        logoUrl: { type: String, trim: true, default: '' },
+        themeColor: { type: String, trim: true, default: '#2563eb' },
+        backgroundColor: { type: String, trim: true, default: '' },
+        fontFamily: { type: String, trim: true, default: 'system' }
+    },
 
     // 📊 OUTCOMES & RULES
     // **********************************
@@ -479,11 +486,40 @@ FormSchema.index({ organizationId: 1, assignedTo: 1 });
 FormSchema.index({ 'publicLink.slug': 1 }, { unique: true, sparse: true });
 
 // Pre-save middleware to auto-generate formId
+async function generateNextFormId(FormModel) {
+    const docs = await FormModel.find({ formId: { $regex: /^FRM-\d+$/i } })
+        .select('formId')
+        .lean();
+
+    let max = 0;
+    for (const doc of docs) {
+        const match = typeof doc.formId === 'string' ? doc.formId.match(/^FRM-(\d+)$/i) : null;
+        if (match) {
+            max = Math.max(max, parseInt(match[1], 10));
+        }
+    }
+
+    return `FRM-${String(max + 1).padStart(3, '0')}`;
+}
+
 FormSchema.pre('save', async function(next) {
     if (!this.formId) {
-        // Generate formId: FRM-001, FRM-002, etc.
-        const count = await mongoose.model('Form').countDocuments({ organizationId: this.organizationId });
-        this.formId = `FRM-${String(count + 1).padStart(3, '0')}`;
+        const FormModel = mongoose.model('Form');
+        let assigned = false;
+
+        for (let attempt = 0; attempt < 10; attempt += 1) {
+            const candidate = await generateNextFormId(FormModel);
+            const exists = await FormModel.exists({ formId: candidate });
+            if (!exists) {
+                this.formId = candidate;
+                assigned = true;
+                break;
+            }
+        }
+
+        if (!assigned) {
+            return next(new Error('Unable to generate unique formId'));
+        }
     }
     
     // Auto-increment formVersion on update
@@ -501,8 +537,7 @@ FormSchema.pre('save', async function(next) {
 
 // Method to check if form is expired (for Surveys)
 FormSchema.methods.isExpired = function() {
-    if (!this.expiryDate) return false;
-    return new Date() > this.expiryDate;
+    return isEngagementFormExpired(this.expiryDate);
 };
 
 // Method to get total questions count

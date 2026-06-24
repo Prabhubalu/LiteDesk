@@ -231,7 +231,6 @@
               </div>
               </div>
             </div>
-          </div>
           
           <!-- Execution Error Display (if any) -->
           <div v-if="executionError" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-red-200 dark:border-red-800 p-4">
@@ -283,6 +282,7 @@
               <p v-if="executionBlockers.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-3">{{ t('events.eventExecutionSurfaceExecutionMayBeBlockedUntilThe3') }}</p>
             </div>
           </div>
+        </div>
 
         <!-- Audit Execution Panel -->
         <div v-else-if="executionMode === 'audit-workflow'" class="space-y-6">
@@ -370,38 +370,8 @@
             </div>
           </div>
           
-          <!-- Who Can Do What Section (Read-Only Explanation) -->
-          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('events.eventExecutionSurfaceWhoCanDoWhat') }}</h3>
-            <div class="space-y-3">
-              <div v-for="permission in permissions" :key="permission.action" class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                <div class="flex-1">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">
-                      {{ getActionLabel(permission.action) }}
-                    </span>
-                    <span
-                      :class="[
-                        'px-2 py-0.5 text-xs font-medium rounded',
-                        permission.allowed
-                          ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                          : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                      ]"
-                    >
-                      {{ permission.allowed ? 'Allowed' : 'Not Allowed' }}
-                    </span>
-                  </div>
-                  <p v-if="permission.reason" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    {{ permission.reason }}
-                  </p>
-                </div>
-              </div>
-              <div v-if="permissions.length === 0" class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoPermissionInfo') }}</div>
-            </div>
-          </div>
-          
           <!-- Ready to Start (Check In Required) -->
-          <div v-if="auditState === 'Ready to start'" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border-2 border-indigo-200 dark:border-indigo-800 p-8">
+          <div v-if="isAuditReadyForCheckIn" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border-2 border-indigo-200 dark:border-indigo-800 p-8">
             <div class="text-center">
               <div class="mb-6">
                 <svg class="mx-auto h-16 w-16 text-indigo-600 dark:text-indigo-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -424,6 +394,7 @@
                     </div>
                   </div>
                 </div>
+              </div>
 
                 <!-- Check In Button -->
               <button
@@ -444,10 +415,9 @@
               <p v-if="executionBlockers.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-3">{{ t('events.eventExecutionSurfaceExecutionMayBeBlockedUntilThe2') }}</p>
             </div>
           </div>
-        </div>
 
           <!-- Checked In (Form Completion) -->
-          <div v-else-if="auditState === 'checked_in'" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+          <div v-else-if="isAuditCheckedIn" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
           <div class="mb-6">
             <div class="flex items-center gap-3 mb-4">
               <div class="flex-shrink-0 w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
@@ -500,87 +470,6 @@
             </ul>
           </div>
         </div>
-
-          <!-- IN_PROGRESS State: Current Step + Complete Action -->
-          <div v-else-if="executionState === 'IN_PROGRESS'" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-          <div class="mb-6">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="flex-shrink-0 w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
-                <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ t('events.eventExecutionSurfaceEventInProgress') }}</h2>
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionSurfaceExecutionIsCurrentlyActive') }}</p>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Complete Action -->
-          <div class="text-center space-y-3">
-            <button
-              v-if="canComplete"
-              @click="handleCompleteEvent"
-              :disabled="completing"
-              class="inline-flex items-center gap-3 px-8 py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              {{ completing ? 'Completing...' : 'Complete Event' }}
-            </button>
-            <p v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('events.eventExecutionSurfaceYouDoNotHavePermissionTo') }}</p>
-            
-            <!-- Cancel Execution Button -->
-            <div v-if="canCancel">
-              <button
-                @click="handleCancelEvent"
-                class="inline-flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium transition-colors"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>{{ t('events.eventExecutionSurfaceCancelExecution') }}</button>
-            </div>
-            
-            <!-- Contextual helper text -->
-            <p v-if="executionBlockers.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-3">{{ t('events.eventExecutionSurfaceExecutionMayBeBlockedUntilThe') }}</p>
-          </div>
-        </div>
-
-          <!-- COMPLETED State: Completion Summary -->
-          <div v-else-if="executionState === 'COMPLETED'" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-          <div class="text-center">
-            <div class="mb-6">
-              <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full mb-4">
-                <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{{ t('events.eventExecutionSurfaceEventCompleted') }}</h2>
-              <p class="text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionSurfaceThisEventHasBeenSuccessfullyCompleted') }}</p>
-            </div>
-            <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-left max-w-md mx-auto">
-              <p class="text-sm font-medium text-green-800 dark:text-green-200 mb-2">{{ t('events.eventExecutionSurfaceCompletionSummary') }}</p>
-              <p class="text-sm text-green-700 dark:text-green-300">{{ t('events.eventExecutionSurfaceAllRequiredWorkHasBeenCompleted') }}</p>
-            </div>
-          </div>
-        </div>
-
-          <!-- CANCELLED State: Cancellation Notice -->
-          <div v-else-if="executionState === 'CANCELLED'" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-            <div class="text-center">
-              <div class="mb-6">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full mb-4">
-                  <svg class="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </div>
-                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{{ t('events.eventExecutionSurfaceEventCancelled') }}</h2>
-                <p class="text-gray-600 dark:text-gray-400">{{ t('events.eventExecutionSurfaceThisEventHasBeenCancelledAnd') }}</p>
-              </div>
-            </div>
-          </div>
           
           <!-- Audit Workflow Explanation (Read-Only) -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -1380,6 +1269,14 @@ const formattedAuditState = computed(() => {
   
   return stateMap[auditState.value] || auditState.value;
 });
+
+const normalizedAuditState = computed(() => String(auditState.value || '').trim().toLowerCase());
+
+const isAuditReadyForCheckIn = computed(() => normalizedAuditState.value === 'ready to start');
+
+const isAuditCheckedIn = computed(() => (
+  normalizedAuditState.value === 'checked_in' || normalizedAuditState.value === 'checked in'
+));
 
 /**
  * Audit state badge styling

@@ -739,10 +739,10 @@ const MODULE_DEFINITIONS = [
       listLabel: 'All Cases'
     }
   },
-  // Phase 0I.1: Responses as Execution Domain (Sales-owned)
+  // Responses: Platform execution domain + entity (paired with Forms)
   {
     moduleKey: 'responses',
-    appKey: 'sales',
+    appKey: 'platform',
     label: 'Response',
     pluralLabel: 'Responses',
     entityType: 'TRANSACTION',
@@ -780,15 +780,16 @@ const MODULE_DEFINITIONS = [
       review: true,
       approve: true
     },
-    // Phase 0I.1: UI Metadata
     ui: {
       routeBase: '/responses',
-      icon: '📋',
+      icon: 'clipboard-document-list',
       showInSidebar: true,
       sidebarOrder: 7.5,
       showAsTabUnder: ['forms'],
       createLabel: 'New Response',
-      listLabel: 'All Responses'
+      listLabel: 'All Responses',
+      navigationEntity: true,
+      excludeFromApps: true
     }
   }
 ];

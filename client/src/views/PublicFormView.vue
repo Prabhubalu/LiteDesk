@@ -1,9 +1,16 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+  <div
+    class="min-h-screen py-8 px-4"
+    :class="pageUsesDefaultBackground ? 'bg-gray-50 dark:bg-gray-900' : webformBrandingSurfaceClasses(pageBranding)"
+    :style="pageBrandingStyle"
+  >
     <div class="max-w-3xl mx-auto">
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-12">
-        <div class="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
+        <div
+          class="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 rounded-full animate-spin mx-auto mb-4"
+          :style="{ borderTopColor: pageBranding.themeColor }"
+        ></div>
         <p class="text-gray-600 dark:text-gray-400">{{ t('forms.builderShellLoading') }}</p>
       </div>
 
@@ -17,9 +24,20 @@
       </div>
 
       <!-- Form Display -->
-      <div v-else-if="form" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8">
+      <div
+        v-else-if="form"
+        class="rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8 bg-white dark:bg-gray-800"
+        :class="webformBrandingSurfaceClasses(pageBranding)"
+        :style="cardBrandingStyle"
+      >
         <!-- Form Header -->
         <div class="mb-8">
+          <img
+            v-if="pageBranding.logoUrl"
+            :src="resolveLogoUrl(pageBranding.logoUrl)"
+            alt=""
+            class="mx-auto mb-4 max-h-14 w-auto object-contain"
+          />
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ form.name }}</h1>
           <p v-if="form.description" class="text-gray-600 dark:text-gray-400">{{ form.description }}</p>
           <div class="flex items-center gap-4 mt-4 text-sm text-gray-500 dark:text-gray-400">
@@ -30,116 +48,168 @@
 
         <!-- Form Sections -->
         <form @submit.prevent="submitForm" class="space-y-8">
-          <div v-for="(section, sectionIndex) in form.sections" :key="section.sectionId || sectionIndex" class="border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">{{ section.name }}</h2>
+          <div
+            v-for="(section, sectionIndex) in visibleSections"
+            :key="section.sectionId || sectionIndex"
+            class="space-y-4"
+          >
+            <h2 v-if="shouldShowEngagementSectionTitle(form, section)" class="text-xl font-semibold text-gray-900 dark:text-white mb-4">{{ section.name }}</h2>
+
+            <!-- Section-level questions -->
+            <div v-if="section.questions && section.questions.length > 0" class="space-y-4">
+              <div v-for="(question, qIndex) in section.questions" :key="question.questionId || qIndex" class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {{ question.questionText }}
+                  <span v-if="question.mandatory" class="text-red-500">*</span>
+                </label>
+
+                <TextQuestion
+                  v-if="question.type === 'Text' || question.type === 'Email' || question.type === 'Number'"
+                  :question="question"
+                  :value="formData[question.questionId]"
+                  :form="form"
+                  :form-type="form?.formType"
+                  @update="(val) => updateAnswer(question.questionId, val)"
+                />
+                <TextareaQuestion
+                  v-else-if="question.type === 'Textarea'"
+                  :question="question"
+                  :value="formData[question.questionId]"
+                  :form="form"
+                  :form-type="form?.formType"
+                  @update="(val) => updateAnswer(question.questionId, val)"
+                />
+                <DateQuestion
+                  v-else-if="question.type === 'Date'"
+                  :question="question"
+                  :value="formData[question.questionId]"
+                  :form="form"
+                  :form-type="form?.formType"
+                  @update="(val) => updateAnswer(question.questionId, val)"
+                />
+                <DropdownQuestion
+                  v-else-if="question.type === 'Dropdown'"
+                  :question="question"
+                  :value="formData[question.questionId]"
+                  :form="form"
+                  :form-type="form?.formType"
+                  @update="(val) => updateAnswer(question.questionId, val)"
+                />
+                <RatingQuestion
+                  v-else-if="question.type === 'Rating'"
+                  :question="question"
+                  :value="formData[question.questionId]"
+                  :form="form"
+                  :form-type="form?.formType"
+                  @update="(val) => updateAnswer(question.questionId, val)"
+                />
+                <YesNoQuestion
+                  v-else-if="question.type === 'Yes-No'"
+                  :question="question"
+                  :value="formData[question.questionId]"
+                  :form="form"
+                  :form-type="form?.formType"
+                  @update="(val) => updateAnswer(question.questionId, val)"
+                />
+                <FileQuestion
+                  v-else-if="question.type === 'File'"
+                  :question="question"
+                  :value="formData[question.questionId]"
+                  :form="form"
+                  :form-type="form?.formType"
+                  @update="(val) => updateAnswer(question.questionId, val)"
+                />
+                <SignatureQuestion
+                  v-else-if="question.type === 'Signature'"
+                  :question="question"
+                  :value="formData[question.questionId]"
+                  :form="form"
+                  :form-type="form?.formType"
+                  @update="(val) => updateAnswer(question.questionId, val)"
+                />
+              </div>
+            </div>
             
             <!-- Subsections -->
-            <div v-for="(subsection, subIndex) in section.subsections" :key="subsection.subsectionId || subIndex" class="ml-4 mb-6">
-              <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">{{ subsection.name }}</h3>
+            <div
+              v-for="(subsection, subIndex) in section.subsections"
+              :key="subsection.subsectionId || subIndex"
+              class="mb-6"
+              :class="shouldShowEngagementSubsectionTitle(form, section, subsection) ? 'ml-4' : ''"
+            >
+              <h3 v-if="shouldShowEngagementSubsectionTitle(form, section, subsection)" class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">{{ subsection.name }}</h3>
               
               <!-- Questions -->
-              <div class="ml-4 space-y-4">
+              <div class="space-y-4" :class="shouldShowEngagementSubsectionTitle(form, section, subsection) ? 'ml-4' : ''">
                 <div v-for="(question, qIndex) in subsection.questions" :key="question.questionId || qIndex" class="mb-4">
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {{ question.questionText }}
                     <span v-if="question.mandatory" class="text-red-500">*</span>
                   </label>
-                  
-                  <!-- Text Input -->
-                  <input
-                    v-if="question.type === 'Text'"
-                    v-model="formData[question.questionId]"
-                    type="text"
-                    :required="question.mandatory"
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+
+                  <TextQuestion
+                    v-if="question.type === 'Text' || question.type === 'Email' || question.type === 'Number'"
+                    :question="question"
+                    :value="formData[question.questionId]"
+                    :form="form"
+                    :form-type="form?.formType"
+                    @update="(val) => updateAnswer(question.questionId, val)"
                   />
-                  
-                  <!-- Yes-No -->
-                  <div v-else-if="question.type === 'Yes-No'" class="flex gap-4">
-                    <label class="flex items-center">
-                      <input
-                        type="radio"
-                        :name="question.questionId"
-                        :value="'Yes'"
-                        v-model="formData[question.questionId]"
-                        :required="question.mandatory"
-                        class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                      />
-                      <span class="ml-2 text-gray-700 dark:text-gray-300">{{ t('forms.answerYes') }}</span>
-                    </label>
-                    <label class="flex items-center">
-                      <input
-                        type="radio"
-                        :name="question.questionId"
-                        :value="'No'"
-                        v-model="formData[question.questionId]"
-                        :required="question.mandatory"
-                        class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                      />
-                      <span class="ml-2 text-gray-700 dark:text-gray-300">{{ t('forms.answerNo') }}</span>
-                    </label>
-                  </div>
-                  
-                  <!-- Dropdown -->
-                  <select
-                    v-else-if="question.type === 'Dropdown'"
-                    v-model="formData[question.questionId]"
-                    :required="question.mandatory"
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  >
-                    <option value="">{{ t('forms.selectOption') }}</option>
-                    <option v-for="option in question.options" :key="option" :value="option">{{ option }}</option>
-                  </select>
-                  
-                  <!-- Rating -->
-                  <div v-else-if="question.type === 'Rating'" class="flex gap-2">
-                    <button
-                      v-for="rating in 5"
-                      :key="rating"
-                      type="button"
-                      @click="formData[question.questionId] = rating"
-                      :class="[
-                        'w-10 h-10 rounded-lg border-2 transition-colors',
-                        formData[question.questionId] >= rating
-                          ? 'bg-indigo-600 border-indigo-600 text-white'
-                          : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
-                      ]"
-                    >
-                      {{ rating }}
-                    </button>
-                  </div>
-                  
-                  <!-- Textarea -->
-                  <textarea
+                  <TextareaQuestion
                     v-else-if="question.type === 'Textarea'"
-                    v-model="formData[question.questionId]"
-                    :required="question.mandatory"
-                    rows="4"
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  ></textarea>
-                  
-                  <!-- Date -->
-                  <DatePicker
+                    :question="question"
+                    :value="formData[question.questionId]"
+                    :form="form"
+                    :form-type="form?.formType"
+                    @update="(val) => updateAnswer(question.questionId, val)"
+                  />
+                  <DateQuestion
                     v-else-if="question.type === 'Date'"
-                    v-model="formData[question.questionId]"
-                    input-class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
+                    :question="question"
+                    :value="formData[question.questionId]"
+                    :form="form"
+                    :form-type="form?.formType"
+                    @update="(val) => updateAnswer(question.questionId, val)"
                   />
-                  
-                  <!-- File Upload -->
-                  <input
+                  <DropdownQuestion
+                    v-else-if="question.type === 'Dropdown'"
+                    :question="question"
+                    :value="formData[question.questionId]"
+                    :form="form"
+                    :form-type="form?.formType"
+                    @update="(val) => updateAnswer(question.questionId, val)"
+                  />
+                  <RatingQuestion
+                    v-else-if="question.type === 'Rating'"
+                    :question="question"
+                    :value="formData[question.questionId]"
+                    :form="form"
+                    :form-type="form?.formType"
+                    @update="(val) => updateAnswer(question.questionId, val)"
+                  />
+                  <YesNoQuestion
+                    v-else-if="question.type === 'Yes-No'"
+                    :question="question"
+                    :value="formData[question.questionId]"
+                    :form="form"
+                    :form-type="form?.formType"
+                    @update="(val) => updateAnswer(question.questionId, val)"
+                  />
+                  <FileQuestion
                     v-else-if="question.type === 'File'"
-                    type="file"
-                    @change="handleFileUpload(question.questionId, $event)"
-                    :required="question.mandatory"
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    :question="question"
+                    :value="formData[question.questionId]"
+                    :form="form"
+                    :form-type="form?.formType"
+                    @update="(val) => updateAnswer(question.questionId, val)"
                   />
-                  
-                  <!-- Signature -->
-                  <SignaturePad
+                  <SignatureQuestion
                     v-else-if="question.type === 'Signature'"
-                    v-model="formData[question.questionId]"
-                    :label="question.questionText"
-                    :required="question.mandatory"
+                    :question="question"
+                    :value="formData[question.questionId]"
+                    :form="form"
+                    :form-type="form?.formType"
+                    @update="(val) => updateAnswer(question.questionId, val)"
                   />
                 </div>
               </div>
@@ -151,7 +221,7 @@
             <button
               type="submit"
               :disabled="submitting"
-              class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-6 py-3 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--wf-accent)] hover:opacity-90"
             >
               <span v-if="submitting">{{ t('forms.hubFillSubmitting') }}</span>
               <span v-else>{{ t('forms.previewSubmitForm') }}</span>
@@ -173,11 +243,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import SignaturePad from '@/components/forms/SignaturePad.vue';
-import DatePicker from '@/components/common/DatePicker.vue';
+import TextQuestion from '@/components/forms/question-types/TextQuestion.vue';
+import TextareaQuestion from '@/components/forms/question-types/TextareaQuestion.vue';
+import DateQuestion from '@/components/forms/question-types/DateQuestion.vue';
+import DropdownQuestion from '@/components/forms/question-types/DropdownQuestion.vue';
+import RatingQuestion from '@/components/forms/question-types/RatingQuestion.vue';
+import YesNoQuestion from '@/components/forms/question-types/YesNoQuestion.vue';
+import FileQuestion from '@/components/forms/question-types/FileQuestion.vue';
+import SignatureQuestion from '@/components/forms/question-types/SignatureQuestion.vue';
+import {
+  shouldShowEngagementSectionTitle,
+  shouldShowEngagementSubsectionTitle,
+  getVisibleFormSections,
+  forEachFormQuestion
+} from '@/utils/engagementFormDisplay';
+import {
+  mergeWebformBranding,
+  webformBrandingCssVars,
+  webformBrandingSurfaceClasses
+} from '@/utils/webformBranding';
+import { resolveWebformImageUrl } from '@/utils/webformFormatters';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -190,34 +278,40 @@ const formData = ref({});
 const submitting = ref(false);
 const submitted = ref(false);
 
+const pageBranding = computed(() => mergeWebformBranding(form.value?.branding));
+const pageUsesDefaultBackground = computed(() => !pageBranding.value.backgroundColor);
+const pageBrandingStyle = computed(() => webformBrandingCssVars(pageBranding.value));
+const cardBrandingStyle = computed(() => webformBrandingCssVars(pageBranding.value));
+const visibleSections = computed(() => getVisibleFormSections(form.value?.sections));
+
+const resolveLogoUrl = (url) => resolveWebformImageUrl(url);
+
+const initializeFormData = () => {
+  formData.value = {};
+  if (form.value?.sections) {
+    forEachFormQuestion(form.value.sections, (question) => {
+      formData.value[question.questionId] = '';
+    });
+  }
+};
+
 const fetchForm = async () => {
   loading.value = true;
   error.value = null;
   try {
-    // Public endpoint - apiClient adds /api prefix, so this becomes /api/public/forms/:slug
-    const response = await fetch(`/api/public/forms/${slug}`, {
+    const res = await fetch(`/api/public/forms/${slug}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
       }
-    }).then(res => res.json());
+    });
+    const response = await res.json().catch(() => ({}));
 
-    if (response.success && response.data) {
+    if (res.ok && response.success && response.data) {
       form.value = response.data;
-      // Initialize formData object with question IDs
-      if (form.value.sections) {
-        form.value.sections.forEach(section => {
-          if (section.subsections) {
-            section.subsections.forEach(subsection => {
-              if (subsection.questions) {
-                subsection.questions.forEach(question => {
-                  formData.value[question.questionId] = '';
-                });
-              }
-            });
-          }
-        });
-      }
+      initializeFormData();
+    } else if (res.status === 410) {
+      error.value = response.message || t('forms.hubPublicFormExpired');
     } else {
       error.value = response.message || t('forms.hubPublicFormNotFound');
     }
@@ -229,13 +323,8 @@ const fetchForm = async () => {
   }
 };
 
-const handleFileUpload = (questionId, event) => {
-  const file = event.target.files[0];
-  if (file) {
-    // For now, just store the file name
-    // In production, you'd upload to a file storage service
-    formData.value[questionId] = file.name;
-  }
+const updateAnswer = (questionId, value) => {
+  formData.value[questionId] = value;
 };
 
 const submitForm = async () => {
@@ -245,26 +334,16 @@ const submitForm = async () => {
     const responseDetails = Object.keys(formData.value)
       .filter(questionId => formData.value[questionId] !== '' && formData.value[questionId] !== null)
       .map(questionId => {
-        // Find the question to get section/subsection IDs
         let sectionId = '';
         let subsectionId = '';
-        
+
         if (form.value.sections) {
-          for (const section of form.value.sections) {
-            if (section.subsections) {
-              for (const subsection of section.subsections) {
-                if (subsection.questions) {
-                  const question = subsection.questions.find(q => q.questionId === questionId);
-                  if (question) {
-                    sectionId = section.sectionId;
-                    subsectionId = subsection.subsectionId;
-                    break;
-                  }
-                }
-              }
+          forEachFormQuestion(form.value.sections, (question, section, subsection) => {
+            if (question.questionId === questionId) {
+              sectionId = section.sectionId;
+              subsectionId = subsection?.subsectionId || '';
             }
-            if (sectionId) break;
-          }
+          });
         }
         
         return {
@@ -306,21 +385,7 @@ const submitForm = async () => {
       // Reset form after 3 seconds
       setTimeout(() => {
         submitted.value = false;
-        formData.value = {};
-        // Re-initialize formData
-        if (form.value.sections) {
-          form.value.sections.forEach(section => {
-            if (section.subsections) {
-              section.subsections.forEach(subsection => {
-                if (subsection.questions) {
-                  subsection.questions.forEach(question => {
-                    formData.value[question.questionId] = '';
-                  });
-                }
-              });
-            }
-          });
-        }
+        initializeFormData();
       }, 3000);
     }
   } catch (err) {

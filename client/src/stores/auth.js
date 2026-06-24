@@ -529,7 +529,13 @@ export const useAuthStore = defineStore('auth', {
             const role = this.user?.role || '';
             if (this.user?.isOwner || role.toLowerCase() === 'admin' || role.toLowerCase() === 'owner') return true;
             const normalized = module === 'people' ? 'contacts' : module;
-            return this.user?.permissions?.[normalized]?.[action] || false;
+            const perms = this.user?.permissions?.[normalized];
+            if (perms?.[action]) return true;
+            // Responses inherits Forms access until roles are explicitly configured
+            if (normalized === 'responses') {
+                return this.user?.permissions?.forms?.[action] || false;
+            }
+            return false;
         },
         
         // Check if module is enabled for organization

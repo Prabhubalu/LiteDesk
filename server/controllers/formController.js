@@ -8,6 +8,23 @@ const mongoose = require('mongoose');
 const { applyProjectionFilter } = require('../utils/appProjectionQuery');
 const { getProjection } = require('../utils/moduleProjectionResolver');
 const { resolveCreateType, getTypeFieldName } = require('../utils/appProjectionCreateResolver');
+const { sanitizeWebformBranding } = require('../constants/webformBranding');
+const {
+    isEngagementFormType,
+    normalizeEngagementPublishStatus,
+    isFormStructurallyLocked,
+    isEngagementFormExpired,
+    normalizeEngagementExpiryDate,
+    FORM_HAS_SUBMITTED_RESPONSES,
+    countSubmittedFormResponses
+} = require('../utils/engagementFormLifecycle');
+
+function applyFormBrandingToPayload(payload) {
+    if (!payload || typeof payload !== 'object') return;
+    if (payload.branding !== undefined) {
+        payload.branding = sanitizeWebformBranding(payload.branding);
+    }
+}
 
 // Helper function to clean responseTemplate.activeTemplateId
 // Converts string "default" to null since schema expects ObjectId or null
@@ -17,6 +34,109 @@ const cleanResponseTemplateActiveId = (payload) => {
     }
     return payload;
 };
+
+function slugifyFormName(name) {
+    let baseSlug = String(name || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .substring(0, 50);
+
+    return baseSlug;
+}
+
+async function generateUniqueFormPublicSlug({ formName, formId, organizationId, excludeFormId }) {
+    let baseSlug = slugifyFormName(formName);
+    if (!baseSlug) {
+        const idPart = formId ? String(formId).substring(0, 8) : 'unknown';
+        baseSlug = `form-${idPart}`;
+    }
+
+    let slug = baseSlug;
+    let counter = 1;
+    let existingForm = await Form.findOne({
+        'publicLink.slug': slug,
+        _id: { $ne: excludeFormId },
+        organizationId
+    });
+
+    while (existingForm) {
+        slug = `${baseSlug}-${counter}`;
+        existingForm = await Form.findOne({
+            'publicLink.slug': slug,
+            _id: { $ne: excludeFormId },
+            organizationId
+        });
+        counter += 1;
+        if (counter > 100) {
+            slug = `${baseSlug}-${Date.now()}`;
+            break;
+        }
+    }
+
+    return slug;
+}
+
+async function resolvePublicLinkPayload({
+    publicLink,
+    formName,
+    formId,
+    organizationId,
+    excludeFormId,
+    visibility,
+    formType,
+    status
+}) {
+    const isEngagement = ['survey', 'feedback'].includes(String(formType || '').toLowerCase());
+    const publishReady = ['Ready', 'Active'].includes(String(status || ''));
+    const explicitlyEnabled = publicLink?.enabled === true;
+    const shouldEnable = explicitlyEnabled
+        || (isEngagement && visibility === 'Public' && publishReady);
+
+    if (!shouldEnable) {
+        return explicitlyEnabled === false ? { enabled: false } : null;
+    }
+
+    let slug = String(publicLink?.slug || '').trim().toLowerCase();
+    if (!slug) {
+        slug = await generateUniqueFormPublicSlug({
+            formName,
+            formId,
+            organizationId,
+            excludeFormId
+        });
+    }
+
+    return { enabled: true, slug };
+}
+
+async function applyPublicLinkToPayload(payload, { organizationId, excludeFormId } = {}) {
+    if (!payload || typeof payload !== 'object') return;
+
+    const resolved = await resolvePublicLinkPayload({
+        publicLink: payload.publicLink,
+        formName: payload.name,
+        formId: payload._id || payload.formId,
+        organizationId,
+        excludeFormId,
+        visibility: payload.visibility,
+        formType: payload.formType,
+        status: payload.status
+    });
+
+    if (resolved) {
+        payload.publicLink = resolved;
+        return;
+    }
+
+    if (payload.publicLink) {
+        if (!payload.publicLink.enabled || !payload.publicLink.slug || payload.publicLink.slug.trim() === '') {
+            delete payload.publicLink.slug;
+        }
+    }
+}
 
 // @desc    Create new form
 // @route   POST /api/forms
@@ -62,14 +182,19 @@ exports.createForm = async (req, res) => {
         // Clean up responseTemplate.activeTemplateId - convert "default" string to null
         cleanResponseTemplateActiveId(payload);
 
-        // Clean up publicLink.slug - remove the field entirely if empty or if publicLink is disabled
-        // This prevents MongoDB unique sparse index conflicts (sparse indexes ignore missing fields, not null values)
-        if (payload.publicLink) {
-            if (!payload.publicLink.enabled || !payload.publicLink.slug || payload.publicLink.slug.trim() === '') {
-                // Remove the slug field entirely (don't set to null) so sparse index ignores it
-                delete payload.publicLink.slug;
-            }
+        await applyPublicLinkToPayload(payload, {
+            organizationId: req.user.organizationId
+        });
+        applyFormBrandingToPayload(payload);
+
+        if (Object.prototype.hasOwnProperty.call(payload, 'expiryDate')) {
+            payload.expiryDate = normalizeEngagementExpiryDate(payload.expiryDate);
         }
+
+        // Never accept client-supplied formId on create — server assigns it
+        delete payload.formId;
+
+        payload.status = normalizeEngagementPublishStatus(payload.status, payload.formType);
 
         // Draft forms can be saved without validation (incomplete state is allowed)
         // Only validate if form is being set to Ready or Active
@@ -97,7 +222,25 @@ exports.createForm = async (req, res) => {
         }
         // Draft forms: no validation required (allow incomplete/invalid states)
 
-        const newForm = await Form.create(payload);
+        let newForm;
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+            try {
+                newForm = await Form.create(payload);
+                break;
+            } catch (createError) {
+                const isDuplicateFormId = createError?.code === 11000
+                    && (createError?.keyPattern?.formId || String(createError?.message || '').includes('formId'));
+                if (isDuplicateFormId && attempt < 2) {
+                    delete payload.formId;
+                    continue;
+                }
+                throw createError;
+            }
+        }
+
+        if (!newForm) {
+            throw new Error('Unable to create form after retries');
+        }
         
         const populatedForm = await Form.findById(newForm._id)
             .populate('assignedTo', 'firstName lastName email')
@@ -557,7 +700,7 @@ const isBreakingChange = (existingForm, updateData) => {
 // Helper function to check if only cosmetic changes are being made
 const isCosmeticChangeOnly = (existingForm, updateData) => {
     // Allowed cosmetic changes: name, description, section titles, question labels, help text
-    const allowedFields = ['name', 'description', 'notes', 'tags', 'visibility'];
+    const allowedFields = ['name', 'description', 'notes', 'tags', 'visibility', 'branding'];
     
     // Check if only allowed fields are being updated
     const updateKeys = Object.keys(updateData);
@@ -611,13 +754,19 @@ exports.updateForm = async (req, res) => {
         }
         
         // Handle status transitions
+        if (req.body.status) {
+            req.body.status = normalizeEngagementPublishStatus(
+                req.body.status,
+                req.body.formType || existingForm.formType
+            );
+        }
         const newStatus = req.body.status;
         const currentStatus = existingForm.status;
         
         // Validate status transitions
         if (newStatus && newStatus !== currentStatus) {
             const validTransitions = {
-                'Draft': ['Ready'],
+                'Draft': ['Ready', 'Active', 'Archived'],
                 'Ready': ['Active', 'Archived'],
                 'Active': ['Archived'],
                 'Archived': [] // No transitions from Archived
@@ -639,7 +788,7 @@ exports.updateForm = async (req, res) => {
             });
         }
         
-        if (existingForm.status === 'Active') {
+        if (isFormStructurallyLocked(existingForm.formType, existingForm.status)) {
             // Check for breaking changes
             if (isBreakingChange(existingForm, req.body)) {
                 return res.status(400).json({
@@ -698,13 +847,14 @@ exports.updateForm = async (req, res) => {
         // Clean up responseTemplate.activeTemplateId - convert "default" string to null
         cleanResponseTemplateActiveId(req.body);
 
-        // Clean up publicLink.slug - remove the field entirely if empty or if publicLink is disabled
-        // This prevents MongoDB unique sparse index conflicts (sparse indexes ignore missing fields, not null values)
-        if (req.body.publicLink) {
-            if (!req.body.publicLink.enabled || !req.body.publicLink.slug || req.body.publicLink.slug.trim() === '') {
-                // Remove the slug field entirely (don't set to null) so sparse index ignores it
-                delete req.body.publicLink.slug;
-            }
+        await applyPublicLinkToPayload(req.body, {
+            organizationId: req.user.organizationId,
+            excludeFormId: existingForm._id
+        });
+        applyFormBrandingToPayload(req.body);
+
+        if (Object.prototype.hasOwnProperty.call(req.body, 'expiryDate')) {
+            req.body.expiryDate = normalizeEngagementExpiryDate(req.body.expiryDate);
         }
 
         // Generic description versioning: store previous description before update.
@@ -770,21 +920,38 @@ exports.updateForm = async (req, res) => {
 // @access  Private
 exports.deleteForm = async (req, res) => {
     try {
-        const result = await Form.findOneAndDelete({ 
-            _id: req.params.id, 
-            organizationId: req.user.organizationId 
+        const form = await Form.findOne({
+            _id: req.params.id,
+            organizationId: req.user.organizationId
         });
 
-        if (!result) {
-            return res.status(404).json({ 
+        if (!form) {
+            return res.status(404).json({
                 success: false,
-                message: 'Form not found or access denied.' 
+                message: 'Form not found or access denied.'
             });
         }
-        
-        // Optionally delete associated responses and KPIs
-        // For now, we'll keep them for historical data
-        
+
+        const submittedCount = await countSubmittedFormResponses(
+            FormResponse,
+            form._id,
+            req.user.organizationId
+        );
+
+        if (submittedCount > 0) {
+            return res.status(403).json({
+                success: false,
+                message: 'Forms with submitted responses cannot be deleted. Archive the form instead.',
+                code: FORM_HAS_SUBMITTED_RESPONSES,
+                submittedCount
+            });
+        }
+
+        await Form.findOneAndDelete({
+            _id: form._id,
+            organizationId: req.user.organizationId
+        });
+
         res.status(200).json({
             success: true,
             message: 'Form deleted successfully'
@@ -867,11 +1034,18 @@ exports.duplicateForm = async (req, res) => {
 // @access  Public
 exports.getFormBySlug = async (req, res) => {
     try {
-        // Allow both Active and Draft forms for preview (Draft forms can be previewed)
+        const slug = String(req.params.slug || '').trim().toLowerCase();
+        if (!slug) {
+            return res.status(404).json({
+                success: false,
+                message: 'Form not found or not available.'
+            });
+        }
+
         const form = await Form.findOne({
-            'publicLink.slug': req.params.slug,
+            'publicLink.slug': slug,
             'publicLink.enabled': true,
-            status: { $in: ['Active', 'Draft'] } // Allow both Active and Draft for preview
+            status: { $in: ['Active', 'Ready', 'Draft'] }
         })
         .populate('assignedTo', 'firstName lastName email');
         
@@ -883,7 +1057,7 @@ exports.getFormBySlug = async (req, res) => {
         }
         
         // Check if form is expired (for Surveys)
-        if (form.expiryDate && new Date() > form.expiryDate) {
+        if (isEngagementFormExpired(form.expiryDate)) {
             return res.status(410).json({
                 success: false,
                 message: 'This form has expired.'
@@ -892,7 +1066,10 @@ exports.getFormBySlug = async (req, res) => {
         
         res.status(200).json({
             success: true,
-            data: form
+            data: {
+                ...form.toObject(),
+                branding: sanitizeWebformBranding(form.branding)
+            }
         });
     } catch (error) {
         console.error('Get form by slug error:', error);
@@ -996,6 +1173,42 @@ exports.getFormAnalytics = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error fetching form analytics.',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Get consolidated per-question response summary (survey/feedback)
+// @route   GET /api/forms/:id/response-summary
+// @access  Private
+exports.getFormResponseSummary = async (req, res) => {
+    try {
+        const { buildFormResponseSummary } = require('../services/formResponseSummaryService');
+
+        const form = await Form.findOne({
+            _id: req.params.id,
+            organizationId: req.user.organizationId
+        });
+
+        if (!form) {
+            return res.status(404).json({
+                success: false,
+                message: 'Form not found or access denied.'
+            });
+        }
+
+        const textPreviewLimit = parseInt(req.query.textPreviewLimit, 10) || 5;
+        const data = await buildFormResponseSummary(form, req.user.organizationId, { textPreviewLimit });
+
+        res.status(200).json({
+            success: true,
+            data
+        });
+    } catch (error) {
+        console.error('Get form response summary error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching form response summary.',
             error: error.message
         });
     }
@@ -1117,44 +1330,14 @@ exports.enablePublicLink = async (req, res) => {
         // Generate slug from form name if not already set
         let slug = form.publicLink?.slug;
         if (!slug) {
-            // Generate slug from form name
-            let baseSlug = form.name
-                .toLowerCase()
-                .replace(/[^a-z0-9\s-]/g, '')  // Remove special chars
-                .replace(/\s+/g, '-')           // Replace spaces with hyphens
-                .replace(/-+/g, '-')            // Replace multiple hyphens with single
-                .replace(/^-|-$/g, '')          // Remove leading/trailing hyphens
-                .substring(0, 50);              // Limit length
-
-            // Ensure slug is not empty
-            if (!baseSlug) {
-                baseSlug = `form-${form.formId || form._id.toString().substring(0, 8)}`;
-            }
-
-            // Check if slug exists and make it unique
-            slug = baseSlug;
-            let counter = 1;
-            let existingForm = await Form.findOne({
-                'publicLink.slug': slug,
-                _id: { $ne: form._id },
-                organizationId: req.user.organizationId
+            slug = await generateUniqueFormPublicSlug({
+                formName: form.name,
+                formId: form.formId || form._id,
+                organizationId: req.user.organizationId,
+                excludeFormId: form._id
             });
-
-            while (existingForm) {
-                slug = `${baseSlug}-${counter}`;
-                existingForm = await Form.findOne({
-                    'publicLink.slug': slug,
-                    _id: { $ne: form._id },
-                    organizationId: req.user.organizationId
-                });
-                counter++;
-                
-                // Prevent infinite loop
-                if (counter > 100) {
-                    slug = `${baseSlug}-${Date.now()}`;
-                    break;
-                }
-            }
+        } else {
+            slug = String(slug).trim().toLowerCase();
         }
 
         // Update form with public link
@@ -1163,6 +1346,20 @@ exports.enablePublicLink = async (req, res) => {
             slug: slug
         };
         form.modifiedBy = req.user._id;
+
+        if (isEngagementFormType(form.formType) && form.status !== 'Archived') {
+            if (form.status === 'Draft') {
+                const validation = form.validateStructure();
+                if (!validation.valid) {
+                    return res.status(400).json({
+                        success: false,
+                        message: validation.error
+                    });
+                }
+            }
+            form.status = 'Active';
+        }
+
         await form.save();
 
         const populatedForm = await Form.findById(form._id)

@@ -1,16 +1,15 @@
 <template>
   <div class="space-y-4">
-    <select
-      :value="value"
-      @change="handleAnswerChange($event.target.value)"
-      :required="question.mandatory"
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
-    >
-      <option value="" disabled>{{ t('forms.selectOption') }}</option>
-      <option v-for="option in question.options" :key="option" :value="option">
-        {{ option }}
-      </option>
-    </select>
+    <HeadlessSelect
+      :model-value="value"
+      :options="dropdownOptions"
+      :placeholder="t('forms.selectOption')"
+      :allow-empty="!question.mandatory"
+      :empty-label="t('forms.selectOption')"
+      teleport
+      button-class="!bg-white dark:!bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
+      @update:model-value="handleAnswerChange"
+    />
 
     <!-- Evidence Inputs (only for Audit forms, after answer is selected) -->
     <div
@@ -95,6 +94,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 
 const props = defineProps({
   question: {
@@ -118,6 +118,10 @@ const props = defineProps({
 const emit = defineEmits(['update', 'evidence-update']);
 
 const { t } = useI18n();
+
+const dropdownOptions = computed(() =>
+  (props.question.options || []).map((option) => ({ value: option, label: option }))
+);
 
 const evidenceData = ref({
   comment: '',

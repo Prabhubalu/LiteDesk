@@ -2,7 +2,6 @@
   <div class="mx-auto w-full">
     <ListView
       :title="t('forms.hubTitle')"
-      :description="t('forms.hubDescription')"
       module-key="forms"
       :create-label="t('forms.hubCreateLabel')"
       :search-placeholder="t('forms.hubSearchPlaceholder')"
@@ -30,6 +29,7 @@
       @edit="openFormBuilder"
       @delete="handleDelete"
       @bulk-action="handleBulkAction"
+      :row-can-delete="canHardDeleteForm"
     >
       <!-- Custom Form ID Cell -->
       <template #cell-formId="{ value }">
@@ -133,10 +133,9 @@
         </div>
       </template>
     </ListView>
-  </div>
 
-  <!-- Type Picker Modal -->
-  <Teleport to="body">
+    <!-- Type Picker Modal -->
+    <Teleport to="body">
     <Transition
       enter-active-class="transition duration-200 ease-out"
       enter-from-class="opacity-0"
@@ -194,11 +193,12 @@
         </div>
       </div>
     </Transition>
-  </Teleport>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onActivated, watch, onBeforeMount } from 'vue';
+import { ref, computed, onMounted, onActivated, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -209,6 +209,9 @@ import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import { XMarkIcon, ClipboardDocumentCheckIcon, ChatBubbleLeftRightIcon, HandThumbUpIcon } from '@heroicons/vue/24/outline';
 import { useProjectionCreate } from '@/composables/useProjectionCreate';
+import { canHardDeleteForm } from '@/utils/formEditPermissions';
+
+const FORM_DELETE_BLOCKED_CODE = 'FORM_HAS_SUBMITTED_RESPONSES';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -485,6 +488,7 @@ const startFormWithType = (type) => {
   const pathBase = '/forms/create';
   const query = { formType: type };
   const typeLabel = formTypeLabel(type);
+  const pathWithQuery = `${pathBase}?formType=${encodeURIComponent(type)}`;
 
   const closeOtherCreateTabs = (keepId = null) => {
     tabs.value
@@ -497,15 +501,15 @@ const startFormWithType = (type) => {
   if (existingTab) {
     closeOtherCreateTabs(existingTab.id);
     existingTab.title = t('forms.hubTabNewForm', { type: typeLabel });
+    existingTab.path = pathWithQuery;
     switchToTab(existingTab.id);
   } else {
     closeOtherCreateTabs();
-    openTab(pathBase, {
+    openTab(pathWithQuery, {
       name: 'form-create',
       title: t('forms.hubTabNewForm', { type: typeLabel }),
       component: 'FormCreate',
-      params: {},
-      query
+      params: {}
     });
   }
 
@@ -560,6 +564,11 @@ const viewResponses = (form) => {
 };
 
 const handleDelete = async (form) => {
+  if (!canHardDeleteForm(form)) {
+    alert(t('forms.deleteBlockedSubmittedResponses.message'));
+    return;
+  }
+
   try {
     const response = await apiClient(`/forms/${form._id}`, {
       method: 'DELETE'
@@ -570,6 +579,11 @@ const handleDelete = async (form) => {
     }
   } catch (error) {
     console.error('Error deleting form:', error);
+    if (error?.response?.data?.code === FORM_DELETE_BLOCKED_CODE) {
+      alert(t('forms.deleteBlockedSubmittedResponses.message'));
+      return;
+    }
+    alert(t('forms.hubDeleteFormFailed.message'));
   }
 };
 
@@ -580,11 +594,29 @@ const handleBulkAction = async (actionId, selectedRows) => {
     if (actionId === 'bulk-delete' || actionId === 'delete') {
       if (!formIds.length) return;
 
-      await Promise.all(
-        formIds.map(id =>
-          apiClient(`/forms/${id}`, { method: 'DELETE' })
+      const deletableRows = selectedRows.filter((form) => canHardDeleteForm(form));
+      const skippedCount = selectedRows.length - deletableRows.length;
+
+      if (skippedCount > 0) {
+        alert(t('forms.hubDeleteBlockedSubmittedCount.message', { count: skippedCount }));
+      }
+
+      if (!deletableRows.length) return;
+
+      const results = await Promise.allSettled(
+        deletableRows.map((form) =>
+          apiClient(`/forms/${form._id}`, { method: 'DELETE' })
         )
       );
+
+      const blocked = results.filter(
+        (result) => result.status === 'rejected'
+          && result.reason?.response?.data?.code === FORM_DELETE_BLOCKED_CODE
+      ).length;
+
+      if (blocked > 0) {
+        alert(t('forms.hubDeleteBlockedSubmittedCount.message', { count: blocked }));
+      }
 
       await fetchForms();
     }
@@ -615,73 +647,17 @@ const exportForms = async () => {
   }
 };
 
-onBeforeMount(() => {
-  if (typeof window !== 'undefined') {
-    const expectedKeys = new Set([
-      'formId',
-      'name',
-      'formType',
-      'status',
-      'visibility',
-      'assignedTo',
-      'createdAt'
-    ]);
-
-    const listViewKey = 'arivu-listview-forms-columns';
-    const savedListView = localStorage.getItem(listViewKey);
-    let shouldReset = false;
-
-    if (savedListView) {
-      try {
-        const parsed = JSON.parse(savedListView);
-        if (Array.isArray(parsed)) {
-          const savedKeys = new Set(parsed.map(c => c.key || c));
-
-          const hasAllExpected = [...expectedKeys].every(key => savedKeys.has(key));
-          const hasOnlyExpected = [...savedKeys].every(key => expectedKeys.has(key));
-          const sizeMatches = savedKeys.size === expectedKeys.size;
-
-          if (!hasAllExpected || !hasOnlyExpected || !sizeMatches) {
-            shouldReset = true;
-          } else {
-            const allVisible = parsed.every(c => {
-              const key = c.key || c;
-              return expectedKeys.has(key) && (c.visible !== false);
-            });
-            if (!allVisible) {
-              shouldReset = true;
-            }
-          }
-        } else {
-          shouldReset = true;
-        }
-      } catch {
-        shouldReset = true;
-      }
-    } else {
-      shouldReset = true;
-    }
-
-    if (shouldReset) {
-      const columnsToSave = columns.value.map(col => ({
-        key: col.key,
-        label: col.label,
-        visible: true,
-        sortable: col.sortable !== false,
-        dataType: col.dataType || 'Text',
-        showInTable: true
-      }));
-
-      localStorage.setItem(listViewKey, JSON.stringify(columnsToSave));
-    }
-  }
-});
+let skipNextActivatedFetch = true;
 
 onMounted(() => {
   fetchForms();
 });
 
 onActivated(() => {
+  if (skipNextActivatedFetch) {
+    skipNextActivatedFetch = false;
+    return;
+  }
   fetchForms();
 });
 

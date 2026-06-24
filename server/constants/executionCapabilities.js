@@ -22,7 +22,8 @@
  * - Execution ownership is explicit
  * - Every action has exactly one execution owner app
  * - Discovery ≠ Execution
- * - SALES remains execution engine
+ * - Platform owns Response execution (FormResponse state machine)
+ * - Sales remains execution engine for Event/Audit workflows
  * - Audit App and Portal are never execution owners
  * 
  * ============================================================================
@@ -51,11 +52,11 @@ const EXECUTION_CAPABILITIES = {
     domain: 'RESPONSE',
     action: 'SUBMIT',
     
-    executionOwnerApp: 'SALES',
+    executionOwnerApp: 'PLATFORM',
     executionType: 'USER',
     
     discoverableBy: ['SALES', 'AUDIT', 'PORTAL', 'PROCESS_DESIGNER'],
-    executableBy: ['SALES'],
+    executableBy: ['PLATFORM'],
     
     auditAppPolicy: 'READ_ONLY',
     portalPolicy: 'READ_ONLY',
@@ -76,11 +77,11 @@ const EXECUTION_CAPABILITIES = {
     domain: 'RESPONSE',
     action: 'APPROVE',
     
-    executionOwnerApp: 'SALES',
+    executionOwnerApp: 'PLATFORM',
     executionType: 'AUTOMATION', // Can be automated by Process Designer
     
     discoverableBy: ['SALES', 'AUDIT', 'PORTAL', 'PROCESS_DESIGNER'],
-    executableBy: ['SALES'],
+    executableBy: ['PLATFORM'],
     
     auditAppPolicy: 'READ_ONLY',
     portalPolicy: 'READ_ONLY',
@@ -101,11 +102,11 @@ const EXECUTION_CAPABILITIES = {
     domain: 'RESPONSE',
     action: 'REJECT',
     
-    executionOwnerApp: 'SALES',
+    executionOwnerApp: 'PLATFORM',
     executionType: 'AUTOMATION',
     
     discoverableBy: ['SALES', 'AUDIT', 'PORTAL', 'PROCESS_DESIGNER'],
-    executableBy: ['SALES'],
+    executableBy: ['PLATFORM'],
     
     auditAppPolicy: 'READ_ONLY',
     portalPolicy: 'READ_ONLY',
@@ -126,11 +127,11 @@ const EXECUTION_CAPABILITIES = {
     domain: 'RESPONSE',
     action: 'CLOSE',
     
-    executionOwnerApp: 'SALES',
+    executionOwnerApp: 'PLATFORM',
     executionType: 'AUTOMATION',
     
     discoverableBy: ['SALES', 'AUDIT', 'PORTAL', 'PROCESS_DESIGNER'],
-    executableBy: ['SALES'],
+    executableBy: ['PLATFORM'],
     
     auditAppPolicy: 'READ_ONLY',
     portalPolicy: 'READ_ONLY',

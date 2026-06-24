@@ -4,6 +4,94 @@ const Task = require('../models/Task');
 const Event = require('../models/Event');
 const mongoose = require('mongoose');
 const formProcessingService = require('../services/formProcessingService');
+const { isEngagementFormExpired } = require('../utils/engagementFormLifecycle');
+
+function toUserIdString(value) {
+    if (value == null) return null;
+    if (typeof value === 'object' && value._id != null) return value._id.toString();
+    return String(value);
+}
+
+/** Batch-attach form metadata without replacing missing formId refs with null. */
+async function attachFormDetailsToResponses(responses) {
+    if (!Array.isArray(responses) || responses.length === 0) return responses;
+
+    const formIds = [
+        ...new Set(
+            responses
+                .map((response) => response.formId)
+                .filter(Boolean)
+                .map((formId) => (typeof formId === 'object' && formId._id != null ? formId._id : formId))
+                .map(String)
+        )
+    ];
+
+    if (formIds.length === 0) return responses;
+
+    const forms = await Form.find({ _id: { $in: formIds } })
+        .select('_id name formId formType')
+        .lean();
+    const formById = new Map(forms.map((form) => [String(form._id), form]));
+
+    return responses.map((response) => {
+        const rawFormId = response.formId;
+        if (!rawFormId) return response;
+
+        const formKey = typeof rawFormId === 'object' && rawFormId._id != null
+            ? String(rawFormId._id)
+            : String(rawFormId);
+        const formDoc = formById.get(formKey);
+
+        return {
+            ...response,
+            formId: formDoc || rawFormId
+        };
+    });
+}
+
+function inferAllowSelfReview(linkedEvent) {
+    return (
+        linkedEvent.allowSelfReview === true
+        || ((linkedEvent.allowSelfReview === undefined || linkedEvent.allowSelfReview === null)
+            && linkedEvent.eventType === 'Internal Audit')
+    );
+}
+
+/** When no explicit reviewer, auditor may review if self-review is allowed. */
+function resolveEffectiveReviewerId(linkedEvent) {
+    const explicit = toUserIdString(linkedEvent.reviewerId);
+    if (explicit) return explicit;
+    if (!inferAllowSelfReview(linkedEvent)) return null;
+    return toUserIdString(linkedEvent.auditorId) || toUserIdString(linkedEvent.eventOwnerId);
+}
+
+function assertAuditReviewAuthority(linkedEvent, response, currentUserId) {
+    const effectiveReviewerId = resolveEffectiveReviewerId(linkedEvent);
+    if (!effectiveReviewerId) {
+        return {
+            status: 403,
+            message: 'No reviewer is assigned for this audit.',
+            code: 'AUDIT_REVIEWER_NOT_ASSIGNED'
+        };
+    }
+    if (currentUserId !== effectiveReviewerId) {
+        return {
+            status: 403,
+            message: 'You are not assigned as the reviewer for this audit.',
+            code: 'AUDIT_REVIEWER_MISMATCH'
+        };
+    }
+    const submittedById = response.submittedBy ? response.submittedBy.toString() : null;
+    const isSelfReview = submittedById && submittedById === currentUserId;
+    if (isSelfReview && !inferAllowSelfReview(linkedEvent)) {
+        return {
+            status: 403,
+            message: 'Self-review is not allowed for this audit',
+            code: 'SELF_REVIEW_NOT_ALLOWED'
+        };
+    }
+    return null;
+}
 
 // @desc    Submit form response (public or authenticated)
 // @route   POST /api/public/forms/:slug/submit OR POST /api/forms/:id/submit
@@ -15,11 +103,12 @@ exports.submitForm = async (req, res) => {
         
         // Determine if this is a public submission or authenticated
         if (req.params.slug) {
-            // Public form submission - allow both Active and Draft for preview
+            const slug = String(req.params.slug || '').trim().toLowerCase();
+            // Public form submission
             form = await Form.findOne({
-                'publicLink.slug': req.params.slug,
+                'publicLink.slug': slug,
                 'publicLink.enabled': true,
-                status: { $in: ['Active', 'Draft'] } // Allow Draft for preview
+                status: { $in: ['Active', 'Ready', 'Draft'] }
             });
             
             if (!form) {
@@ -29,8 +118,8 @@ exports.submitForm = async (req, res) => {
                 });
             }
             
-            // Check expiry
-            if (form.expiryDate && new Date() > form.expiryDate) {
+            // Check expiry — valid through end of expiry day (UTC)
+            if (isEngagementFormExpired(form.expiryDate)) {
                 return res.status(410).json({
                     success: false,
                     message: 'This form has expired.'
@@ -677,6 +766,40 @@ exports.submitForm = async (req, res) => {
 // @desc    Get all responses for an organization (across all forms)
 // @route   GET /api/responses
 // @access  Private
+exports.getResponseMeta = async (req, res) => {
+    try {
+        const response = await FormResponse.findOne({
+            _id: req.params.responseId,
+            organizationId: req.user.organizationId
+        })
+            .select('formId responseId')
+            .lean();
+
+        if (!response) {
+            return res.status(404).json({
+                success: false,
+                message: 'Response not found or access denied.'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                formId: response.formId ? String(response.formId) : null,
+                responseId: String(response._id),
+                responseCode: response.responseId || null
+            }
+        });
+    } catch (error) {
+        console.error('Get response meta error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching response metadata.',
+            error: error.message
+        });
+    }
+};
+
 exports.getAllResponses = async (req, res) => {
     try {
         const isAuditScoped = req.auditScopedResponses === true || String(req.appKey || '').toUpperCase() === 'AUDIT';
@@ -785,26 +908,16 @@ exports.getAllResponses = async (req, res) => {
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
         const sort = { [sortBy]: sortOrder };
         
-        // Execute query - handle populate errors gracefully
-        let responses;
-        try {
-            responses = await FormResponse.find(query)
-                .populate('formId', '_id name formId formType')
-                .populate('submittedBy', 'firstName lastName email')
-                .populate('linkedTo.id')
-                .sort(sort)
-                .limit(limit)
-                .skip(skip)
-                .lean(); // Convert to plain objects for better JSON serialization
-        } catch (populateError) {
-            console.error('Populate error in getAllResponses:', populateError);
-            // Try without populate if there's an error - formId will still be included as ObjectId string
-            responses = await FormResponse.find(query)
-                .sort(sort)
-                .limit(limit)
-                .skip(skip)
-                .lean(); // Convert to plain objects for better JSON serialization
-        }
+        // Do not populate formId directly — missing forms would null out the raw ObjectId ref.
+        let responses = await FormResponse.find(query)
+            .populate('submittedBy', 'firstName lastName email')
+            .populate('linkedTo.id')
+            .sort(sort)
+            .limit(limit)
+            .skip(skip)
+            .lean();
+
+        responses = await attachFormDetailsToResponses(responses);
         
         const total = await FormResponse.countDocuments(query);
         
@@ -1689,35 +1802,13 @@ exports.approveResponse = async (req, res) => {
             }
 
             if (linkedEvent && isAuditEvent) {
-                // Reviewer authority enforcement (non-bypassable)
-                // Only the explicitly assigned reviewer for the audit Event may approve audit responses.
-                const eventReviewerId = linkedEvent.reviewerId ? linkedEvent.reviewerId.toString() : null;
                 const currentUserId = req.user._id.toString();
-                if (!eventReviewerId) {
-                    return res.status(403).json({
+                const reviewDenied = assertAuditReviewAuthority(linkedEvent, response, currentUserId);
+                if (reviewDenied) {
+                    return res.status(reviewDenied.status).json({
                         success: false,
-                        message: 'No reviewer is assigned for this audit.',
-                        code: 'AUDIT_REVIEWER_NOT_ASSIGNED'
-                    });
-                }
-                if (currentUserId !== eventReviewerId) {
-                    return res.status(403).json({
-                        success: false,
-                        message: 'You are not assigned as the reviewer for this audit.',
-                        code: 'AUDIT_REVIEWER_MISMATCH'
-                    });
-                }
-
-                const submittedById = response.submittedBy ? response.submittedBy.toString() : null;
-                const reviewerId = req.user._id.toString();
-                const isSelfReview = submittedById && submittedById === reviewerId;
-                const allowSelfReview = linkedEvent.allowSelfReview === true;
-
-                if (isSelfReview && !allowSelfReview) {
-                    return res.status(403).json({
-                        success: false,
-                        message: 'Self-review is not allowed for this audit',
-                        code: 'SELF_REVIEW_NOT_ALLOWED'
+                        message: reviewDenied.message,
+                        code: reviewDenied.code
                     });
                 }
             }
@@ -1850,6 +1941,25 @@ exports.rejectResponse = async (req, res) => {
         }
         
         if (response.executionStatus === 'Submitted') {
+            if (response.linkedTo && response.linkedTo.type === 'Event' && response.linkedTo.id) {
+                const linkedEvent = await Event.findOne({
+                    _id: response.linkedTo.id,
+                    organizationId: req.user.organizationId
+                }).lean();
+                const isAuditEvent = linkedEvent && ['Internal Audit', 'External Audit', 'External Audit — Single Org', 'External Audit Beat'].includes(linkedEvent.eventType);
+                if (isAuditEvent) {
+                    const currentUserId = req.user._id.toString();
+                    const reviewDenied = assertAuditReviewAuthority(linkedEvent, response, currentUserId);
+                    if (reviewDenied) {
+                        return res.status(reviewDenied.status).json({
+                            success: false,
+                            message: reviewDenied.message,
+                            code: reviewDenied.code
+                        });
+                    }
+                }
+            }
+
             // Set rejected status (this is one status that can be set manually)
             response.reviewStatus = 'Rejected';
             response.approved = false; // Reset approval when rejecting

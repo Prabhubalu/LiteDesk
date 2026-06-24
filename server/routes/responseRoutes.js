@@ -25,6 +25,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation } = require('../middleware/organizationMiddleware');
 const { resolveAppContext } = require('../middleware/resolveAppContextMiddleware');
 const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMiddleware');
+const { checkPermission } = require('../middleware/permissionMiddleware');
 
 const router = express.Router();
 
@@ -36,8 +37,8 @@ router.use(organizationIsolation);
 
 // Get response detail (read-only)
 // SAFETY: Response Detail is read-only.
-// Any execution or review mutations must occur via CRM execution controllers only.
-router.get('/:responseId', getResponseDetail);
+// Any execution or review mutations must occur via Platform execution controllers only.
+router.get('/:responseId', checkPermission('responses', 'view'), getResponseDetail);
 
 module.exports = router;
 

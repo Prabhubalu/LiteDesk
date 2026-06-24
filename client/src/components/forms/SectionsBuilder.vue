@@ -84,30 +84,46 @@
       </div>
     </div>
 
-    <!-- Flat mode: Show questions directly without sections panel -->
+    <!-- Flat mode: direct questions when no named sections exist (survey / feedback create) -->
     <div
       v-if="isFlatMode && visibleSections.length === 0"
-      class="grid grid-cols-1 gap-4 items-start"
+      class="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 items-stretch"
     >
       <!-- Center: Canvas for flat mode -->
-      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex flex-col min-h-[600px]">
-        <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-100 dark:border-gray-700">
+      <div class="col-span-1 md:col-span-8 bg-white dark:bg-gray-900 flex flex-col min-h-0 border-r border-gray-200 dark:border-gray-800">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
           <div>
             <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
               {{ t('forms.builderQuestionsHeading') }}
             </p>
             <p class="text-base font-semibold text-gray-900 dark:text-white">
-              {{ t('forms.builderQuestionCount', { count: rootQuestions.length }) }}
+              {{ formatBuilderQuestionCount(rootQuestions.length) }}
             </p>
           </div>
-    </div>
+          <button
+            v-if="isSurveyMode"
+            type="button"
+            @click="addSection"
+            :disabled="!canModifyFormStructure"
+            :title="!canModifyFormStructure ? getBlockingMessage(formStatus) : t('forms.builderTitleAddSection')"
+            class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            :class="!canModifyFormStructure ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            {{ t('forms.builderAddSection') }}
+          </button>
+        </div>
 
-        <div class="flex-1 flex flex-col gap-4">
+        <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
           <!-- Question list as cards -->
-          <div class="grid grid-cols-1 gap-4">
+          <div ref="questionsScrollContainer" class="flex-1 overflow-y-auto p-6">
+            <div class="grid grid-cols-1 gap-4">
       <div
               v-for="(question, qIdx) in rootQuestions"
               :key="question.questionId || qIdx"
+              :ref="el => { if (el && qIdx !== undefined) questionRefs[qIdx] = el }"
               data-question-card
         :draggable="true"
               @dragstart="(e) => handleRootQuestionDragStart(e, qIdx)"
@@ -119,10 +135,11 @@
               :class="[
                 draggedRootQuestionIndex === qIdx
                   ? 'opacity-50 border-gray-300 dark:border-gray-600'
-                  : dragOverRootQuestionIndex === qIdx
-                    ? 'border-indigo-500 border-2 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600',
-                selectedQuestionIndex === qIdx && selectedRootQuestion ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-500 shadow-lg bg-indigo-50/30 dark:bg-indigo-900/20' : ''
+                  : selectedQuestionIndex === qIdx && selectedRootQuestion
+                    ? 'border-2 border-indigo-500 shadow-md bg-indigo-50/30 dark:bg-indigo-900/20'
+                    : dragOverRootQuestionIndex === qIdx
+                      ? 'border-2 border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
               ]"
               @click.stop="selectRootQuestion(qIdx)"
             >
@@ -190,23 +207,22 @@
               </div>
             </div>
             </div>
+          </div>
 
           <!-- Question palette -->
-          <div class="mt-6 pt-5 border-t border-gray-200 dark:border-gray-700">
-            <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          <div data-question-palette class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex-shrink-0">
+            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
               {{ t('forms.builderAddQuestion') }}
             </p>
-            <div class="flex flex-wrap gap-2.5">
+            <div class="flex flex-wrap gap-2">
               <button
                 v-for="qt in questionPalette"
                 :key="qt.type"
                 @click="addRootQuestion(qt.type)"
-                class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-sm font-medium transition-all duration-200 cursor-pointer shadow-sm hover:shadow"
-                :class="qt.primary
-                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-400 dark:bg-indigo-900/30 dark:text-indigo-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 hover:border-indigo-600'
-                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+                class="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                :class="qt.primary ? 'border-indigo-500 text-indigo-700 dark:border-indigo-400 dark:text-indigo-300' : ''"
               >
-                <span>{{ qt.label }}</span>
+                {{ qt.label }}
               </button>
             </div>
           </div>
@@ -214,16 +230,16 @@
       </div>
 
       <!-- Right: Inspector for flat mode -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex flex-col">
-        <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
-          <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+      <div class="col-span-1 md:col-span-4 bg-white dark:bg-gray-900 flex flex-col min-h-0">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
+          <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
             {{ t('forms.builderInspector') }}
           </h3>
-          <span v-if="selectedRootQuestion" class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-full font-medium">
+          <span v-if="selectedRootQuestion" class="text-xs text-gray-500 dark:text-gray-400">
             {{ t('forms.builderQuestionIndex', { number: (selectedQuestionIndex !== null ? selectedQuestionIndex : 0) + 1 }) }}
           </span>
         </div>
-        <div v-if="selectedRootQuestion" class="space-y-5 overflow-y-auto max-h-[600px] pr-1 -mr-1 text-sm">
+        <div v-if="selectedRootQuestion" data-question-settings-panel class="flex-1 overflow-y-auto px-6 py-4 text-sm min-h-0">
           <!-- Question basics -->
           <div class="space-y-4">
             <div>
@@ -232,42 +248,39 @@
               </p>
               <div class="space-y-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('forms.builderQuestionText') }}</label>
-                        <input
+                  <label :class="INSPECTOR_LABEL_CLASS" for="root-question-text">{{ t('forms.builderQuestionText') }}</label>
+                  <input
+                    id="root-question-text"
                     v-model="selectedRootQuestion.questionText"
-                          type="text"
+                    type="text"
                     data-question-settings-text-input="true"
                     :placeholder="t('forms.builderNewQuestionPh')"
-                    class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                    :class="INSPECTOR_INPUT_CLASS"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('forms.builderDescriptionHelpText') }}</label>
+                  <label :class="INSPECTOR_LABEL_CLASS" for="root-question-help">{{ t('forms.builderDescriptionHelpText') }}</label>
                   <textarea
+                    id="root-question-help"
                     v-model="selectedRootQuestion.helpText"
                     rows="3"
-                    class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none transition-all"
+                    :class="INSPECTOR_TEXTAREA_CLASS"
                     :placeholder="t('forms.builderHelpTextInspectorPh')"
-                  ></textarea>
+                  />
                 </div>
                 <div class="flex items-end gap-3">
                   <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('forms.builderType') }}</label>
-                        <select
+                    <label :class="INSPECTOR_LABEL_CLASS" for="root-question-type">{{ t('forms.builderType') }}</label>
+                    <HeadlessSelect
+                      id="root-question-type"
                       v-model="selectedRootQuestion.type"
-                      class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
-                        >
-                          <option
-                            v-for="opt in questionTypeOptions"
-                            :key="opt.value"
-                            :value="opt.value"
-                          >
-                            {{ opt.label }}
-                          </option>
-                        </select>
+                      :options="questionTypeOptions"
+                      teleport
+                      wrapper-class="mt-2"
+                    />
                   </div>
-                  <label class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all" @click.stop @mousedown.stop>
-                          <HeadlessCheckbox
+                  <label class="inline-flex items-center gap-2 px-3 py-2 mt-2 rounded-md bg-gray-100 dark:bg-gray-700 cursor-pointer" @click.stop @mousedown.stop>
+                    <HeadlessCheckbox
                       v-model="selectedRootQuestion.mandatory"
                       @click.stop="handleQuestionSettingsFocus"
                       @mousedown.stop
@@ -275,11 +288,11 @@
                       @focus="handleQuestionSettingsFocus"
                       @blur="handleQuestionSettingsBlur"
                       checkbox-class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
-                          />
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('forms.builderRequired') }}</span>
-                        </label>
-                        </div>
-                      </div>
+                    />
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('forms.builderRequired') }}</span>
+                  </label>
+                </div>
+              </div>
                     </div>
 
             <!-- Dropdown options -->
@@ -297,12 +310,12 @@
                     v-model="selectedRootQuestion.options[optIdx]"
                     type="text"
                     :placeholder="t('forms.builderOptionNumber', { number: optIdx + 1 })"
-                    class="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                    :class="[INSPECTOR_INPUT_CLASS, 'flex-1']"
                   />
-                    <button
+                  <button
                     @click="removeRootQuestionOption(optIdx)"
                     class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all duration-200 cursor-pointer"
-                    >
+                  >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                       </svg>
@@ -321,14 +334,14 @@
             </div>
           </div>
         </div>
-        <div v-else class="flex-1 flex flex-col items-center justify-center text-center text-gray-400 dark:text-gray-500 py-12">
+        <div v-else class="flex-1 flex flex-col items-center justify-center text-center text-gray-400 dark:text-gray-500 px-6 py-12 min-h-0">
           <svg class="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('forms.builderSelectQuestionEmpty') }}</p>
         </div>
       </div>
-                  </div>
+    </div>
 
     <!-- Structured mode: Show 3-panel layout with sections (Audit mode or flat mode with visible sections) -->
     <div
@@ -615,7 +628,7 @@
                 {{ currentSubsectionTitle }}
               </h3>
               <span class="text-sm text-gray-500 dark:text-gray-400">•</span>
-              <span class="text-sm text-gray-500 dark:text-gray-400">{{ t('forms.builderCanvasQuestionCount', { count: currentQuestions.length }) }}</span>
+              <span class="text-sm text-gray-500 dark:text-gray-400">{{ formatBuilderCanvasQuestionCount(currentQuestions.length) }}</span>
             </div>
           </div>
           <button
@@ -654,7 +667,9 @@
                       dragOverQuestionSectionIndex === selectedSectionIndex
                       ? 'border-indigo-500 border-2'
                       : '',
-                  selectedQuestionIndex === qIdx ? 'border-indigo-500 ring-1 ring-indigo-500' : 'hover:border-gray-300 dark:hover:border-gray-600'
+                  selectedQuestionIndex === qIdx
+                    ? 'border-2 border-indigo-500 bg-indigo-50/30 dark:bg-indigo-900/20'
+                    : 'hover:border-gray-300 dark:hover:border-gray-600'
                 ]"
                 @click.stop="selectQuestion(qIdx)"
               >
@@ -723,7 +738,7 @@
           </div>
 
           <!-- Question palette - Fixed at bottom -->
-          <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+          <div data-question-palette class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
             <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderAddQuestion') }}</p>
             <div class="flex flex-wrap gap-2">
                       <button
@@ -762,48 +777,44 @@
               <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderBasics') }}</p>
               <div class="space-y-4">
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderQuestionTextLabel') }}</label>
-                          <input
+                  <label :class="INSPECTOR_LABEL_CLASS" for="structured-question-text">{{ t('forms.builderQuestionTextLabel') }}</label>
+                  <input
+                    id="structured-question-text"
                     v-model="currentQuestion.questionText"
-                            type="text"
+                    type="text"
                     data-question-settings-text-input="true"
                     :placeholder="t('forms.builderNewQuestionPh')"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                          />
-                        </div>
+                    :class="INSPECTOR_INPUT_CLASS"
+                  />
+                </div>
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderHelpTextLabel') }}</label>
-                          <input
+                  <label :class="INSPECTOR_LABEL_CLASS" for="structured-question-help">{{ t('forms.builderHelpTextLabel') }}</label>
+                  <textarea
+                    id="structured-question-help"
                     v-model="currentQuestion.helpText"
-                    type="text"
+                    rows="3"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    :class="INSPECTOR_TEXTAREA_CLASS"
                     :placeholder="t('forms.builderHelpTextStructuredPh')"
-                          />
-                        </div>
+                  />
+                </div>
                 <div class="flex items-end gap-3">
                   <div class="flex-1">
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderType') }}</label>
-                        <select
+                    <label :class="INSPECTOR_LABEL_CLASS" for="structured-question-type">{{ t('forms.builderType') }}</label>
+                    <HeadlessSelect
+                      id="structured-question-type"
                       v-model="currentQuestion.type"
-                      @focus="handleQuestionSettingsFocus"
-                      @blur="handleQuestionSettingsBlur"
-                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
-                        >
-                          <option
-                            v-for="opt in questionTypeOptions"
-                            :key="opt.value"
-                            :value="opt.value"
-                          >
-                            {{ opt.label }}
-                          </option>
-                        </select>
+                      :options="questionTypeOptions"
+                      teleport
+                      wrapper-class="mt-2"
+                      @update:model-value="handleQuestionSettingsFocus"
+                    />
                   </div>
-                  <label class="inline-flex items-center gap-2 px-3 py-2 h-[34px]" @click.stop @mousedown.stop>
-                          <HeadlessCheckbox
+                  <label class="inline-flex items-center gap-2 px-3 py-2 mt-2 rounded-md bg-gray-100 dark:bg-gray-700" @click.stop @mousedown.stop>
+                    <HeadlessCheckbox
                       v-model="currentQuestion.mandatory"
                       @click.stop="handleQuestionSettingsFocus"
                       @mousedown.stop
@@ -811,11 +822,11 @@
                       @focus="handleQuestionSettingsFocus"
                       @blur="handleQuestionSettingsBlur"
                       checkbox-class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
-                          />
-                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('forms.builderRequired') }}</span>
-                        </label>
-                        </div>
-                      </div>
+                    />
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('forms.builderRequired') }}</span>
+                  </label>
+                </div>
+              </div>
                     </div>
 
             <!-- Visibility -->
@@ -823,93 +834,63 @@
               <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t('forms.builderVisibility') }}</p>
                     <div class="space-y-3">
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderShowQuestionIf') }}<span class="text-xs text-gray-400 ml-2">{{ t('forms.builderQuestionsAvailable', { count: allQuestions.length }) }}</span>
+                  <label :class="INSPECTOR_LABEL_CLASS">
+                    {{ t('forms.builderShowQuestionIf') }}
+                    <span class="text-xs font-normal text-gray-500 dark:text-gray-400 ml-2">{{ t('forms.builderQuestionsAvailable', { count: allQuestions.length }) }}</span>
                   </label>
-                          <select
-                    :value="currentQuestion.conditionalLogic?.showIf?.questionId || ''"
-                    @change="handleVisibilityQuestionChange"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    <option value="">{{ t('forms.builderAlwaysVisible') }}</option>
-                    <option
-                      v-for="(q, qIdx) in allQuestions"
-                      :key="q.questionId || qIdx"
-                      :value="q.questionId || `temp-${qIdx}`"
-                      :disabled="(q.questionId || `temp-${qIdx}`) === (currentQuestion?.questionId || '')"
-                    >
-                      {{ q.questionText || t('forms.builderQuestionFallback', { number: qIdx + 1 }) }}
-                    </option>
-                  </select>
+                  <HeadlessSelect
+                    :model-value="currentQuestion.conditionalLogic?.showIf?.questionId || ''"
+                    :options="visibilityQuestionOptions"
+                    allow-empty
+                    :empty-label="t('forms.builderAlwaysVisible')"
+                    teleport
+                    wrapper-class="mt-2"
+                    @update:model-value="handleVisibilityQuestionChange"
+                  />
                 </div>
 
                 <!-- Operator and Value - only show when a question is selected -->
                 <template v-if="currentQuestion?.conditionalLogic?.showIf?.questionId">
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderCondition') }}</label>
-                    <select
+                    <label :class="INSPECTOR_LABEL_CLASS">{{ t('forms.builderCondition') }}</label>
+                    <HeadlessSelect
                       v-model="currentQuestion.conditionalLogic.showIf.operator"
-                      @focus="handleQuestionSettingsFocus"
-                      @blur="handleQuestionSettingsBlur"
-                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                    >
-                      <option value="equals">{{ t('forms.builderCondEquals') }}</option>
-                      <option value="notEquals">{{ t('forms.builderCondNotEquals') }}</option>
-                      <option v-if="getConditionalQuestion()?.type === 'Text' || getConditionalQuestion()?.type === 'Textarea' || getConditionalQuestion()?.type === 'Email'" value="contains">{{ t('forms.builderCondContains') }}</option>
-                      <option v-if="getConditionalQuestion()?.type === 'Text' || getConditionalQuestion()?.type === 'Textarea' || getConditionalQuestion()?.type === 'Email'" value="notContains">{{ t('forms.builderCondNotContains') }}</option>
-                      <option v-if="getConditionalQuestion()?.type === 'Number' || getConditionalQuestion()?.type === 'Rating'" value="greaterThan">{{ t('forms.builderCondGreaterThan') }}</option>
-                      <option v-if="getConditionalQuestion()?.type === 'Number' || getConditionalQuestion()?.type === 'Rating'" value="lessThan">{{ t('forms.builderCondLessThan') }}</option>
-                    </select>
+                      :options="conditionalOperatorOptions"
+                      teleport
+                      wrapper-class="mt-2"
+                      @update:model-value="handleQuestionSettingsFocus"
+                    />
                   </div>
 
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('forms.builderValue') }}</label>
-                    <!-- Dropdown question - show options -->
-                    <select
+                    <label :class="INSPECTOR_LABEL_CLASS">{{ t('forms.builderValue') }}</label>
+                    <HeadlessSelect
                       v-if="getConditionalQuestion()?.type === 'Dropdown'"
                       v-model="currentQuestion.conditionalLogic.showIf.value"
-                      @focus="handleQuestionSettingsFocus"
-                      @blur="handleQuestionSettingsBlur"
-                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                    >
-                      <option value="">{{ t('forms.builderSelectOption') }}</option>
-                      <option
-                        v-for="(option, optIdx) in (getConditionalQuestion()?.options || [])"
-                        :key="optIdx"
-                        :value="option"
-                      >
-                        {{ option }}
-                      </option>
-                    </select>
-                    <!-- Yes-No question - show Yes/No options -->
-                    <select
+                      :options="conditionalDropdownValueOptions"
+                      allow-empty
+                      :empty-label="t('forms.builderSelectOption')"
+                      teleport
+                      wrapper-class="mt-2"
+                    />
+                    <HeadlessSelect
                       v-else-if="getConditionalQuestion()?.type === 'Yes-No'"
                       v-model="currentQuestion.conditionalLogic.showIf.value"
-                      @focus="handleQuestionSettingsFocus"
-                      @blur="handleQuestionSettingsBlur"
-                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                    >
-                      <option value="">{{ t('forms.builderSelectOption') }}</option>
-                      <option value="Yes">{{ t('forms.builderAnswerYes') }}</option>
-                      <option value="No">{{ t('forms.builderAnswerNo') }}</option>
-                    </select>
-                    <!-- Rating question - show dropdown with rating options -->
-                    <select
+                      :options="yesNoValueOptions"
+                      allow-empty
+                      :empty-label="t('forms.builderSelectOption')"
+                      teleport
+                      wrapper-class="mt-2"
+                    />
+                    <HeadlessSelect
                       v-else-if="getConditionalQuestion()?.type === 'Rating'"
                       v-model="currentQuestion.conditionalLogic.showIf.value"
-                      @focus="handleQuestionSettingsFocus"
-                      @blur="handleQuestionSettingsBlur"
-                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                    >
-                      <option value="">{{ t('forms.builderSelectRating') }}</option>
-                      <option
-                        v-for="rating in getRatingOptions()"
-                        :key="rating"
-                        :value="rating"
-                      >
-                        {{ rating }}
-                      </option>
-                    </select>
-                    <!-- Number question - show number input -->
+                      :options="conditionalRatingValueOptions"
+                      allow-empty
+                      :empty-label="t('forms.builderSelectRating')"
+                      teleport
+                      wrapper-class="mt-2"
+                    />
                     <input
                       v-else-if="getConditionalQuestion()?.type === 'Number'"
                       v-model.number="currentQuestion.conditionalLogic.showIf.value"
@@ -917,16 +898,14 @@
                       :placeholder="t('forms.builderEnterNumberPh')"
                       @focus="handleQuestionSettingsFocus"
                       @blur="handleQuestionSettingsBlur"
-                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      :class="INSPECTOR_INPUT_CLASS"
                     />
-                    <!-- Date question - show date input -->
                     <DatePicker
                       v-else-if="getConditionalQuestion()?.type === 'Date'"
                       v-model="currentQuestion.conditionalLogic.showIf.value"
-                      input-class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
+                      :input-class="INSPECTOR_DATE_INPUT_CLASS"
                       @blur="handleQuestionSettingsBlur"
                     />
-                    <!-- Text, Textarea, Email - show text input -->
                     <input
                       v-else
                       v-model="currentQuestion.conditionalLogic.showIf.value"
@@ -934,7 +913,7 @@
                       :placeholder="getConditionalQuestion()?.type === 'Email' ? t('forms.builderEnterEmailPh') : t('forms.builderEnterValuePh')"
                       @focus="handleQuestionSettingsFocus"
                       @blur="handleQuestionSettingsBlur"
-                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      :class="INSPECTOR_INPUT_CLASS"
                     />
                   </div>
                 </template>
@@ -956,7 +935,7 @@
                     :placeholder="t('forms.builderOptionNumber', { number: optIdx + 1 })"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
-                    class="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    :class="[INSPECTOR_INPUT_CLASS, 'flex-1']"
                         />
                         <button
                     @click="removeOption(selectedSectionIndex, selectedSubsectionIndex, selectedQuestionIndex, optIdx)"
@@ -991,7 +970,7 @@
                     type="text"
                     readonly
                     disabled
-                    class="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                    :class="INSPECTOR_READONLY_INPUT_CLASS"
                   />
                 </div>
               </div>
@@ -1025,15 +1004,12 @@
                     
                     <!-- Yes/No: Expected value -->
                     <div v-if="currentQuestion.type === 'Yes-No'" class="space-y-2">
-                      <select
+                      <HeadlessSelect
                         v-model="currentQuestion.scoring.passCondition.expectedValue"
-                        @focus="handleQuestionSettingsFocus"
-                        @blur="handleQuestionSettingsBlur"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
-                      >
-                        <option value="Yes">{{ t('forms.builderAnswerYes') }}</option>
-                        <option value="No">{{ t('forms.builderAnswerNo') }}</option>
-                      </select>
+                        :options="yesNoValueOptions"
+                        teleport
+                        wrapper-class="mt-2"
+                      />
                     </div>
 
                     <!-- Dropdown: One or more pass options -->
@@ -1070,7 +1046,7 @@
                           max="5"
                           @focus="handleQuestionSettingsFocus"
                           @blur="handleQuestionSettingsBlur"
-                          class="w-20 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                          :class="[INSPECTOR_INPUT_CLASS, 'w-20']"
                         />
                       </div>
                       <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -1080,16 +1056,12 @@
 
                     <!-- Number: Rule-based (>=, <=, between) -->
                     <div v-else-if="currentQuestion.type === 'Number'" class="space-y-2">
-                      <select
+                      <HeadlessSelect
                         v-model="currentQuestion.scoring.passCondition.rule"
-                        @focus="handleQuestionSettingsFocus"
-                        @blur="handleQuestionSettingsBlur"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
-                      >
-                        <option value=">=">{{ t('forms.builderRuleGte') }}</option>
-                        <option value="<=">{{ t('forms.builderRuleLte') }}</option>
-                        <option value="between">{{ t('forms.builderRuleBetween') }}</option>
-                      </select>
+                        :options="numberScoringRuleOptions"
+                        teleport
+                        wrapper-class="mt-2"
+                      />
                       
                       <!-- Single value for >= or <= -->
                       <div v-if="currentQuestion.scoring.passCondition.rule === '>=' || currentQuestion.scoring.passCondition.rule === '<='" class="mt-2">
@@ -1099,7 +1071,7 @@
                           step="any"
                           @focus="handleQuestionSettingsFocus"
                           @blur="handleQuestionSettingsBlur"
-                          class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                          :class="INSPECTOR_INPUT_CLASS"
                           :placeholder="getNumberPassValuePlaceholder()"
                         />
                       </div>
@@ -1112,7 +1084,7 @@
                           step="any"
                           @focus="handleQuestionSettingsFocus"
                           @blur="handleQuestionSettingsBlur"
-                          class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                          :class="INSPECTOR_INPUT_CLASS"
                           :placeholder="t('forms.builderMinValuePh')"
                         />
                         <input
@@ -1121,7 +1093,7 @@
                           step="any"
                           @focus="handleQuestionSettingsFocus"
                           @blur="handleQuestionSettingsBlur"
-                          class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                          :class="INSPECTOR_INPUT_CLASS"
                           :placeholder="t('forms.builderMaxValuePh')"
                         />
                       </div>
@@ -1138,7 +1110,7 @@
                       step="1"
                       @focus="handleQuestionSettingsFocus"
                       @blur="handleQuestionSettingsBlur"
-                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      :class="INSPECTOR_INPUT_CLASS"
                       :placeholder="t('forms.builderWeightDefaultPh')"
                     />
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderWeightQuestionHint') }}</p>
@@ -1210,73 +1182,48 @@
 
                     <!-- When condition -->
                     <div class="mb-3" @click.stop @mousedown.stop>
-                      <label class="block text-xs text-gray-700 dark:text-gray-300 mb-1">{{ t('forms.builderWhenAnswerIs') }}</label>
-                      <select
+                      <label :class="INSPECTOR_LABEL_CLASS">{{ t('forms.builderWhenAnswerIs') }}</label>
+                      <HeadlessSelect
                         v-model="rule.when"
-                        @focus="handleQuestionSettingsFocus"
-                        @blur="handleQuestionSettingsBlur"
-                        @click.stop
-                        @mousedown.stop
-                        class="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                      >
-                        <option v-if="currentQuestion.type === 'Yes-No'" value="Yes">{{ t('forms.builderAnswerYes') }}</option>
-                        <option v-if="currentQuestion.type === 'Yes-No'" value="No">{{ t('forms.builderAnswerNo') }}</option>
-                        <option v-if="currentQuestion.type === 'Rating'" v-for="r in 5" :key="r" :value="String(r)">{{ r }}</option>
-                        <option v-if="currentQuestion.type === 'Dropdown'" v-for="opt in currentQuestion.options" :key="opt" :value="opt">{{ opt }}</option>
-                      </select>
+                        :options="evidenceWhenOptions"
+                        teleport
+                        wrapper-class="mt-2"
+                      />
                     </div>
 
                     <!-- Evidence Types Configuration -->
                     <div class="space-y-2" @click.stop @mousedown.stop>
                       <!-- Comment -->
-                      <div class="flex items-center justify-between">
-                        <label class="text-xs text-gray-700 dark:text-gray-300">{{ t('forms.builderEvidenceComment') }}</label>
-                        <select
+                      <div class="flex items-center justify-between gap-3">
+                        <label class="text-sm text-gray-900 dark:text-white">{{ t('forms.builderEvidenceComment') }}</label>
+                        <HeadlessSelect
                           v-model="rule.comment.required"
-                          @focus="handleQuestionSettingsFocus"
-                          @blur="handleQuestionSettingsBlur"
-                          @click.stop
-                          @mousedown.stop
-                          class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                        >
-                          <option value="hidden">{{ t('forms.builderEvidenceNotRequired') }}</option>
-                          <option value="optional">{{ t('forms.builderEvidenceOptional') }}</option>
-                          <option value="required">{{ t('forms.builderRequired') }}</option>
-                        </select>
+                          :options="evidenceRequiredLevelOptions"
+                          teleport
+                          wrapper-class="w-36"
+                        />
                       </div>
 
                       <!-- Image -->
-                      <div class="flex items-center justify-between">
-                        <label class="text-xs text-gray-700 dark:text-gray-300">{{ t('forms.builderEvidenceImage') }}</label>
-                        <select
+                      <div class="flex items-center justify-between gap-3">
+                        <label class="text-sm text-gray-900 dark:text-white">{{ t('forms.builderEvidenceImage') }}</label>
+                        <HeadlessSelect
                           v-model="rule.image.required"
-                          @focus="handleQuestionSettingsFocus"
-                          @blur="handleQuestionSettingsBlur"
-                          @click.stop
-                          @mousedown.stop
-                          class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                        >
-                          <option value="hidden">{{ t('forms.builderEvidenceNotRequired') }}</option>
-                          <option value="optional">{{ t('forms.builderEvidenceOptional') }}</option>
-                          <option value="required">{{ t('forms.builderRequired') }}</option>
-                        </select>
+                          :options="evidenceRequiredLevelOptions"
+                          teleport
+                          wrapper-class="w-36"
+                        />
                       </div>
 
                       <!-- Video -->
-                      <div class="flex items-center justify-between">
-                        <label class="text-xs text-gray-700 dark:text-gray-300">{{ t('forms.builderEvidenceVideo') }}</label>
-                        <select
+                      <div class="flex items-center justify-between gap-3">
+                        <label class="text-sm text-gray-900 dark:text-white">{{ t('forms.builderEvidenceVideo') }}</label>
+                        <HeadlessSelect
                           v-model="rule.video.required"
-                          @focus="handleQuestionSettingsFocus"
-                          @blur="handleQuestionSettingsBlur"
-                          @click.stop
-                          @mousedown.stop
-                          class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                        >
-                          <option value="hidden">{{ t('forms.builderEvidenceNotRequired') }}</option>
-                          <option value="optional">{{ t('forms.builderEvidenceOptional') }}</option>
-                          <option value="required">{{ t('forms.builderRequired') }}</option>
-                        </select>
+                          :options="evidenceRequiredLevelOptions"
+                          teleport
+                          wrapper-class="w-36"
+                        />
                       </div>
                     </div>
                   </div>
@@ -1342,7 +1289,7 @@
                     min="0"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    :class="INSPECTOR_INPUT_CLASS"
                   />
                   <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderDisplayOrderHint') }}</p>
                 </div>
@@ -1355,7 +1302,7 @@
                     rows="2"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                    :class="INSPECTOR_TEXTAREA_CLASS"
                     :placeholder="t('forms.builderPassFailDefinitionPh')"
                   ></textarea>
                 </div>
@@ -1388,7 +1335,7 @@
                     type="text"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    :class="INSPECTOR_INPUT_CLASS"
                     :placeholder="t('forms.builderEnterSubsectionNamePh')"
                   />
                 </div>
@@ -1408,7 +1355,7 @@
                     step="1"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    :class="INSPECTOR_INPUT_CLASS"
                     :placeholder="t('forms.builderWeightDefaultPh')"
                   />
                   <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderWeightSubsectionHint') }}</p>
@@ -1424,7 +1371,7 @@
                     step="1"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    :class="INSPECTOR_INPUT_CLASS"
                     :placeholder="t('forms.builderThresholdDefaultPh')"
                   />
                   <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderSubsectionThresholdHint') }}</p>
@@ -1448,7 +1395,7 @@
                     type="text"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    :class="INSPECTOR_INPUT_CLASS"
                     :placeholder="t('forms.builderEnterSectionNamePh')"
                   />
                 </div>
@@ -1468,7 +1415,7 @@
                     step="1"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    :class="INSPECTOR_INPUT_CLASS"
                     :placeholder="t('forms.builderWeightDefaultPh')"
                   />
                   <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderWeightSectionHint') }}</p>
@@ -1484,7 +1431,7 @@
                     step="1"
                     @focus="handleQuestionSettingsFocus"
                     @blur="handleQuestionSettingsBlur"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    :class="INSPECTOR_INPUT_CLASS"
                     :placeholder="t('forms.builderThresholdDefaultPh')"
                   />
                   <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.builderSectionThresholdHint') }}</p>
@@ -1529,7 +1476,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>{{ t('forms.builderAddFirstSection') }}</button>
       <button
-          v-if="isFlatMode"
+          v-if="isSurveyMode"
         @click="addSection"
           class="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 font-medium text-sm transition-all duration-200 cursor-pointer shadow-sm hover:shadow"
       >
@@ -1559,6 +1506,8 @@
 
 <script setup>
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import { PROCESS_INPUT_CLASS } from '@/utils/processDesignerConstants';
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import DatePicker from '@/components/common/DatePicker.vue';
@@ -1580,8 +1529,24 @@ import {
   isEditAllowed,
   getStatusInfo
 } from '@/utils/formEditPermissions';
+import { collapseSurveyDefaultWrapper, flattenFeedbackFormStructure } from '@/utils/engagementFormDisplay';
 
 const { t } = useI18n();
+
+const INSPECTOR_LABEL_CLASS = 'block text-sm/6 font-medium text-gray-900 dark:text-white';
+const INSPECTOR_INPUT_CLASS = PROCESS_INPUT_CLASS.replace('block w-full', 'block w-full mt-2');
+const INSPECTOR_TEXTAREA_CLASS = `${INSPECTOR_INPUT_CLASS} resize-none`;
+const INSPECTOR_DATE_INPUT_CLASS = `${INSPECTOR_INPUT_CLASS} cursor-pointer`;
+const INSPECTOR_READONLY_INPUT_CLASS =
+  'block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-500 dark:text-gray-400 text-sm sm:text-sm/6 cursor-not-allowed';
+
+function formatBuilderQuestionCount(count) {
+  return t(count === 1 ? 'forms.builderQuestionCountOne' : 'forms.builderQuestionCountOther', { count });
+}
+
+function formatBuilderCanvasQuestionCount(count) {
+  return t(count === 1 ? 'forms.builderCanvasQuestionCountOne' : 'forms.builderCanvasQuestionCountOther', { count });
+}
 
 const structureSectionNamePh = computed(() => t('forms.builderStructureSectionNamePh'));
 const structureSubsectionNamePh = computed(() => t('forms.builderStructureSubsectionNamePh'));
@@ -1617,6 +1582,96 @@ const questionTypeOptions = computed(() => [
   { value: 'Yes-No', label: t('forms.builderQtYesNo') },
 ]);
 
+const yesNoValueOptions = computed(() => [
+  { value: 'Yes', label: t('forms.builderAnswerYes') },
+  { value: 'No', label: t('forms.builderAnswerNo') },
+]);
+
+const numberScoringRuleOptions = computed(() => [
+  { value: '>=', label: t('forms.builderRuleGte') },
+  { value: '<=', label: t('forms.builderRuleLte') },
+  { value: 'between', label: t('forms.builderRuleBetween') },
+]);
+
+const evidenceRequiredLevelOptions = computed(() => [
+  { value: 'hidden', label: t('forms.builderEvidenceNotRequired') },
+  { value: 'optional', label: t('forms.builderEvidenceOptional') },
+  { value: 'required', label: t('forms.builderRequired') },
+]);
+
+const visibilityQuestionOptions = computed(() => {
+  const currentId = currentQuestion.value?.questionId || '';
+  return allQuestions.value
+    .map((q, qIdx) => ({
+      value: q.questionId || `temp-${qIdx}`,
+      label: q.questionText || t('forms.builderQuestionFallback', { number: qIdx + 1 })
+    }))
+    .filter((opt) => opt.value !== currentId);
+});
+
+const conditionalOperatorOptions = computed(() => {
+  const conditionalQuestion = getConditionalQuestion();
+  const options = [
+    { value: 'equals', label: t('forms.builderCondEquals') },
+    { value: 'notEquals', label: t('forms.builderCondNotEquals') },
+  ];
+
+  if (['Text', 'Textarea', 'Email'].includes(conditionalQuestion?.type)) {
+    options.push(
+      { value: 'contains', label: t('forms.builderCondContains') },
+      { value: 'notContains', label: t('forms.builderCondNotContains') },
+    );
+  }
+
+  if (['Number', 'Rating'].includes(conditionalQuestion?.type)) {
+    options.push(
+      { value: 'greaterThan', label: t('forms.builderCondGreaterThan') },
+      { value: 'lessThan', label: t('forms.builderCondLessThan') },
+    );
+  }
+
+  return options;
+});
+
+const conditionalDropdownValueOptions = computed(() =>
+  (getConditionalQuestion()?.options || []).map((option) => ({
+    value: option,
+    label: option
+  }))
+);
+
+const conditionalRatingValueOptions = computed(() =>
+  getRatingOptions().map((rating) => ({
+    value: rating,
+    label: String(rating)
+  }))
+);
+
+const evidenceWhenOptions = computed(() => {
+  const question = currentQuestion.value;
+  if (!question) return [];
+
+  if (question.type === 'Yes-No') {
+    return yesNoValueOptions.value;
+  }
+
+  if (question.type === 'Rating') {
+    return Array.from({ length: 5 }, (_, index) => ({
+      value: String(index + 1),
+      label: String(index + 1)
+    }));
+  }
+
+  if (question.type === 'Dropdown') {
+    return (question.options || []).map((option) => ({
+      value: option,
+      label: option
+    }));
+  }
+
+  return [];
+});
+
 const props = defineProps({
   form: {
     type: Object,
@@ -1637,16 +1692,18 @@ const formStatus = computed(() => {
   return props.form?.status || 'Draft';
 });
 
-const canEdit = computed(() => canEditForm(formStatus.value));
+const formTypeValue = computed(() => props.form?.formType || 'Audit');
+
+const canEdit = computed(() => canEditForm(formStatus.value, formTypeValue.value));
 const isReadOnly = computed(() => isFormReadOnly(formStatus.value));
-const isLocked = computed(() => isFormLocked(formStatus.value));
-const canModifyFormStructure = computed(() => canModifyStructure(formStatus.value));
-const canModifyFormQuestions = computed(() => canModifyQuestions(formStatus.value));
-const canModifyFormQuestionType = computed(() => canChangeQuestionType(formStatus.value));
-const canModifyFormScoring = computed(() => canModifyScoring(formStatus.value));
-const canModifyFormEvidence = computed(() => canModifyEvidenceRules(formStatus.value));
-const canMakeCosmeticEdits = computed(() => canMakeCosmeticChanges(formStatus.value));
-const statusInfo = computed(() => getStatusInfo(formStatus.value));
+const isLocked = computed(() => isFormLocked(formStatus.value, formTypeValue.value));
+const canModifyFormStructure = computed(() => canModifyStructure(formStatus.value, formTypeValue.value));
+const canModifyFormQuestions = computed(() => canModifyQuestions(formStatus.value, formTypeValue.value));
+const canModifyFormQuestionType = computed(() => canChangeQuestionType(formStatus.value, formTypeValue.value));
+const canModifyFormScoring = computed(() => canModifyScoring(formStatus.value, formTypeValue.value));
+const canModifyFormEvidence = computed(() => canModifyEvidenceRules(formStatus.value, formTypeValue.value));
+const canMakeCosmeticEdits = computed(() => canMakeCosmeticChanges(formStatus.value, formTypeValue.value));
+const statusInfo = computed(() => getStatusInfo(formStatus.value, formTypeValue.value));
 
 const isAuditMode = computed(() => {
   return formType.value?.toLowerCase() === 'audit';
@@ -1700,7 +1757,7 @@ const getRootSection = () => {
         threshold: 100
       }
     };
-    localForm.value.sections.push(rootSection);
+    localForm.value.sections.unshift(rootSection);
   }
   return rootSection;
 };
@@ -1739,9 +1796,15 @@ const rootQuestions = computed(() => {
   return rootSection.subsections[0].questions || [];
 });
 
+// True when the 3-panel structure/canvas layout is active (audit or survey with sections).
+const usesStructuredQuestionCanvas = computed(() => {
+  if (isFeedbackMode.value) return false;
+  return visibleSections.value.length > 0 || isAuditMode.value;
+});
+
 // Get current questions based on mode (flat mode, subsection, or section-level)
 const currentQuestions = computed(() => {
-  if (isFlatMode.value) {
+  if (!usesStructuredQuestionCanvas.value && isFlatMode.value) {
     return rootQuestions.value;
   }
   if (currentSubsection.value) {
@@ -1979,11 +2042,14 @@ const initializeLocalForm = () => {
     });
   }
   
-  // For Survey/Feedback mode: ensure root section exists for root-level questions
+  // For Survey/Feedback mode: ensure root section exists at index 0 for flat question entry.
   if ((formTypeValue === 'survey' || formTypeValue === 'feedback')) {
-    const hasRootSection = initializedForm.sections.some(s => s._isRootSection);
-    if (!hasRootSection) {
-      initializedForm.sections.push({
+    const rootIndex = initializedForm.sections.findIndex(s => s._isRootSection);
+    if (rootIndex > 0) {
+      const [rootSection] = initializedForm.sections.splice(rootIndex, 1);
+      initializedForm.sections.unshift(rootSection);
+    } else if (rootIndex === -1) {
+      initializedForm.sections.unshift({
         sectionId: generateIdLocal('SEC'),
         name: '',
         weightage: 0,
@@ -2007,6 +2073,12 @@ const initializeLocalForm = () => {
         }
       });
     }
+
+    collapseSurveyDefaultWrapper(initializedForm, { generateId: generateIdLocal });
+
+    if (formTypeValue === 'feedback') {
+      flattenFeedbackFormStructure(initializedForm, { generateId: generateIdLocal });
+    }
   }
   
   return initializedForm;
@@ -2019,8 +2091,10 @@ const selectedQuestionIndex = ref(null);
 let isSyncing = false;
 let skipAutoSelectSubsection = false; // Flag to prevent ensureSelection from auto-selecting subsections
 const pendingSectionIdToSelect = ref(null); // Track section ID that should be selected
+const pendingQuestionIdToSelect = ref(null); // Track question ID that should be selected
 let isAddingSection = false; // Flag to completely prevent ensureSelection from running
 let lastSectionAddTime = 0; // Track when we last added a section
+let lastQuestionAddTime = 0; // Track when we last added a question
 let ensureSelectionDisabled = false; // Global flag to completely disable ensureSelection
 let lastEmittedForm = null;
 let activeSectionAddInterval = null; // Track active interval for section addition
@@ -2112,7 +2186,7 @@ watch(() => props.form, (newForm) => {
     // Skip watcher updates if we're currently syncing OR adding a section (to prevent reset loops)
     // CRITICAL: If we have a pending section, NEVER run the watcher logic - it will override our selection
     // Also skip if user is typing in question settings inputs
-    if (isSyncing || isAddingSection || pendingSectionIdToSelect.value || focusedQuestionSettingsInput.value) {
+    if (isSyncing || isAddingSection || pendingSectionIdToSelect.value || pendingQuestionIdToSelect.value || focusedQuestionSettingsInput.value) {
       // Skipping: syncing, adding section, pending section exists, or user is typing in question settings
       return;
     }
@@ -2275,7 +2349,10 @@ watch(() => props.form, (newForm) => {
         }
       }
       
-      setTimeout(() => { isSyncing = false; }, 100);
+      setTimeout(() => {
+        isSyncing = false;
+        ensureSelectionWhenVisible();
+      }, 100);
     } else {
       // If structure hasn't changed, just sync property updates without reinitializing
       // This preserves expanded state and selection when editing names
@@ -2304,6 +2381,10 @@ watch(() => props.form, (newForm) => {
             if (localSection.order !== newSection.order) {
               localSection.order = newSection.order;
             }
+
+            if (Array.isArray(newSection.questions)) {
+              localSection.questions = JSON.parse(JSON.stringify(newSection.questions));
+            }
             
             // Update subsections properties
             if (newSection.subsections && localSection.subsections) {
@@ -2322,13 +2403,16 @@ watch(() => props.form, (newForm) => {
                   if (localSubsection.order !== newSubsection.order) {
                     localSubsection.order = newSubsection.order;
                   }
+                  if (Array.isArray(newSubsection.questions)) {
+                    localSubsection.questions = JSON.parse(JSON.stringify(newSubsection.questions));
+                  }
                 }
               });
             }
           }
         });
-        
-        // Restore focus and cursor position after updates (if needed)
+
+        ensureSelectionWhenVisible();
         if (wasFocusedSectionId) {
           setTimeout(() => {
             const inputRef = sectionInputRefs.value[wasFocusedSectionId];
@@ -2365,6 +2449,8 @@ const cleanFormDataForEmit = (formData) => {
     // Empty sections will be filtered out when submitting to backend
     cleaned.sections = cleaned.sections
       .filter(section => {
+        // In flat mode, keep root section so parent form state retains questions
+        if (section._isRootSection && isFlatMode.value) return true;
         // Remove root sections (frontend-only concept)
         if (section._isRootSection) return false;
         // Keep sections even with empty names - they're needed for UI state
@@ -2373,7 +2459,10 @@ const cleanFormDataForEmit = (formData) => {
       })
       .map(section => {
         const cleanedSection = { ...section };
-        delete cleanedSection._isRootSection; // Remove frontend-only marker (just in case)
+        // Keep _isRootSection in parent form state; backend submit strips it separately.
+        if (!cleanedSection._isRootSection) {
+          delete cleanedSection._isRootSection;
+        }
         
         // Keep draft questions with empty text so placeholder-driven UX works.
         // Remove only non-object entries from unexpected malformed payloads.
@@ -2481,6 +2570,20 @@ const ensureSelectionWhenVisible = () => {
       return;
     }
     
+    // Don't run ensureSelection if we recently added a question (within 5 seconds)
+    const timeSinceQuestionAdd = Date.now() - lastQuestionAddTime;
+    if (lastQuestionAddTime > 0 && timeSinceQuestionAdd < 5000) {
+      return;
+    }
+
+    if (pendingQuestionIdToSelect.value) {
+      const location = findQuestionLocation(pendingQuestionIdToSelect.value);
+      if (location) {
+        applyQuestionSelection(location);
+      }
+      return;
+    }
+    
     ensureSelection();
     
     // Expand all sections by default for better UX
@@ -2506,7 +2609,7 @@ const handleDocumentClick = (e) => {
   // If a question is selected and user clicks outside question surfaces,
   // unselect question and fall back to its parent section settings.
   if (selectedQuestionIndex.value !== null) {
-    const clickedInsideQuestionSurface = !!clickedElement.closest('[data-question-card], [data-question-settings-panel]');
+    const clickedInsideQuestionSurface = !!clickedElement.closest('[data-question-card], [data-question-settings-panel], [data-question-palette]');
     if (!clickedInsideQuestionSurface) {
       selectedQuestionIndex.value = null;
     }
@@ -2659,6 +2762,21 @@ const ensureSelection = () => {
       return;
     }
   }
+
+  if (lastQuestionAddTime > 0) {
+    const timeSinceQuestionAddCheck = Date.now() - lastQuestionAddTime;
+    if (timeSinceQuestionAddCheck < 5000) {
+      return;
+    }
+  }
+
+  if (pendingQuestionIdToSelect.value) {
+    const location = findQuestionLocation(pendingQuestionIdToSelect.value);
+    if (location) {
+      applyQuestionSelection(location);
+    }
+    return;
+  }
   
   // ABSOLUTE SECOND CHECK: If ensureSelection is disabled, return immediately
   if (ensureSelectionDisabled) {
@@ -2721,13 +2839,25 @@ const ensureSelection = () => {
   }
   
   const visibleSectionsList = isFlatMode.value ? sections.filter(s => !s._isRootSection) : sections;
+  const isRootSectionAtIndex = (idx) => {
+    if (idx === null || idx < 0 || idx >= sections.length) return false;
+    return !!sections[idx]?._isRootSection;
+  };
+  const isVisibleSectionAtIndex = (idx) => {
+    if (idx === null || idx < 0 || idx >= sections.length) return false;
+    return visibleSectionsList.includes(sections[idx]);
+  };
   
   if (!visibleSectionsList.length) {
     // Don't reset if we have a pending section
     if (!pendingSectionIdToSelect.value) {
       selectedSectionIndex.value = null;
       selectedSubsectionIndex.value = null;
-      selectedQuestionIndex.value = null;
+      const hasFlatModeQuestions = isFlatMode.value && rootQuestions.value.length > 0;
+      const hasRecentQuestionAdd = lastQuestionAddTime > 0 && Date.now() - lastQuestionAddTime < 5000;
+      if (!hasFlatModeQuestions && !pendingQuestionIdToSelect.value && !hasRecentQuestionAdd) {
+        selectedQuestionIndex.value = null;
+      }
     }
     return;
   }
@@ -2838,8 +2968,8 @@ const ensureSelection = () => {
     }
     targetSectionIndex = foundIndex;
     
-    // NEVER default to 0 if we have multiple sections - find a non-zero section instead
-    if (targetSectionIndex === 0 && sections.length > 1) {
+    // NEVER default to root section index when multiple sections exist
+    if (targetSectionIndex === 0 && sections.length > 1 && isRootSectionAtIndex(0)) {
       // CRITICAL: If we have a pending section, use that instead of finding a non-zero section
       if (pendingSectionIdToSelect.value) {
         const pendingIndex = sections.findIndex(s => s && s.sectionId === pendingSectionIdToSelect.value);
@@ -2945,8 +3075,8 @@ const ensureSelection = () => {
       console.warn('ensureSelection: No visible section found, returning');
       return;
     }
-    // NEVER default to 0 if we have multiple sections
-    if (targetSectionIndex === 0 && sections.length > 1) {
+    // NEVER default to root section index when multiple sections exist
+    if (targetSectionIndex === 0 && sections.length > 1 && isRootSectionAtIndex(0)) {
       const nonZeroIndex = sections.findIndex((s, idx) => idx > 0 && visibleSectionsList.includes(s));
       if (nonZeroIndex !== -1) {
         console.log('ensureSelection: Found non-zero visible section at index', nonZeroIndex, 'instead of using 0 (flat mode)');
@@ -2972,58 +3102,56 @@ const ensureSelection = () => {
     return;
   }
   
-  // CRITICAL: Never change from a valid non-zero selection to 0 if we recently added a section
-  // This is a simpler, more direct check that doesn't rely on flags
-  if (targetSectionIndex === 0 && selectedSectionIndex.value !== null && selectedSectionIndex.value > 0) {
+  // CRITICAL: Never change from a valid non-root selection to root if we recently added a section
+  if (
+    isRootSectionAtIndex(targetSectionIndex) &&
+    selectedSectionIndex.value !== null &&
+    selectedSectionIndex.value > 0 &&
+    isVisibleSectionAtIndex(selectedSectionIndex.value)
+  ) {
     const timeSinceAdd = Date.now() - lastSectionAddTime;
     if (lastSectionAddTime > 0 && timeSinceAdd < 5000) { // 5 second window
-      console.warn('ensureSelection: BLOCKED - Attempted to change selection from', selectedSectionIndex.value, 'to 0 after recently adding section (', timeSinceAdd, 'ms ago)');
+      console.warn('ensureSelection: BLOCKED - Attempted to change selection from', selectedSectionIndex.value, 'to root after recently adding section (', timeSinceAdd, 'ms ago)');
       return;
     }
   }
   
-  // CRITICAL: Never set to 0 if we recently added a section - check BEFORE any other logic
-  // This must happen before the skipAutoSelectSubsection check
-  // ALWAYS block setting to 0 if we recently added a section, regardless of current selection
-  if (targetSectionIndex === 0) {
+  // CRITICAL: Never set to root section if we recently added a visible section
+  if (isRootSectionAtIndex(targetSectionIndex)) {
     const timeSinceAdd = Date.now() - lastSectionAddTime;
     if (lastSectionAddTime > 0 && timeSinceAdd < 10000) { // 10 second window
-      console.warn('ensureSelection: BLOCKED - Attempted to set selection to 0, but section was added', timeSinceAdd, 'ms ago. BLOCKING!');
-      return; // Never set to 0 if we recently added a section
-    }
-    // Also block if we have a pending section or are adding a section
-    if (pendingSectionIdToSelect.value || isAddingSection) {
-      console.warn('ensureSelection: BLOCKED - Attempted to set selection to 0 while pending section exists or adding section');
+      console.warn('ensureSelection: BLOCKED - Attempted to set selection to root, but section was added', timeSinceAdd, 'ms ago. BLOCKING!');
       return;
     }
-    // Also block if current selection is valid and non-zero (don't override valid selections)
-    if (selectedSectionIndex.value !== null && selectedSectionIndex.value > 0) {
-      const sections = localForm.value.sections || [];
-      if (selectedSectionIndex.value < sections.length) {
-        console.warn('ensureSelection: BLOCKED - Attempted to set selection to 0, but current selection', selectedSectionIndex.value, 'is valid. BLOCKING!');
-        return;
-      }
+    if (pendingSectionIdToSelect.value || isAddingSection) {
+      console.warn('ensureSelection: BLOCKED - Attempted to set selection to root while pending section exists or adding section');
+      return;
+    }
+    if (
+      selectedSectionIndex.value !== null &&
+      selectedSectionIndex.value > 0 &&
+      isVisibleSectionAtIndex(selectedSectionIndex.value)
+    ) {
+      console.warn('ensureSelection: BLOCKED - Attempted to set selection to root, but current selection', selectedSectionIndex.value, 'is valid. BLOCKING!');
+      return;
     }
   }
   
   // Only update if we're not skipping auto-select (i.e., not adding a new section)
   if (!skipAutoSelectSubsection || targetSectionIndex === selectedSectionIndex.value) {
-    // FINAL ABSOLUTE CHECK: Never set to 0 if we have multiple sections
-    // This is the absolute last line of defense
-    if (targetSectionIndex === 0 && sections.length > 1) {
-      // Check if we recently added a section
+    // FINAL ABSOLUTE CHECK: Never set to root section when a visible section should be selected
+    if (isRootSectionAtIndex(targetSectionIndex) && sections.length > 1) {
       const timeSinceAdd = Date.now() - lastSectionAddTime;
       if (lastSectionAddTime > 0 && timeSinceAdd < 10000) {
-        console.warn('ensureSelection: FINAL BLOCK - Attempted to set selection to 0, but section was added', timeSinceAdd, 'ms ago. BLOCKING!');
+        console.warn('ensureSelection: FINAL BLOCK - Attempted to set selection to root, but section was added', timeSinceAdd, 'ms ago. BLOCKING!');
         return;
       }
-      // If we have multiple sections, never set to 0 - use the first visible section instead
       const firstVisibleIndex = sections.findIndex(s => visibleSectionsList.includes(s));
-      if (firstVisibleIndex > 0) {
-        console.warn('ensureSelection: Would set to 0, but we have', sections.length, 'sections. Using first visible section at index', firstVisibleIndex, 'instead.');
+      if (firstVisibleIndex !== -1 && !isRootSectionAtIndex(firstVisibleIndex)) {
+        console.warn('ensureSelection: Would set to root, but we have', sections.length, 'sections. Using first visible section at index', firstVisibleIndex, 'instead.');
         targetSectionIndex = firstVisibleIndex;
       } else {
-        console.warn('ensureSelection: FINAL BLOCK - Attempted to set selection to 0, but we have', sections.length, 'sections. BLOCKING!');
+        console.warn('ensureSelection: FINAL BLOCK - Attempted to set selection to root, but we have', sections.length, 'sections. BLOCKING!');
         return;
       }
     }
@@ -3056,9 +3184,15 @@ const ensureSelection = () => {
   
   // Priority: section questions > first subsection > nothing
   if (section.questions && section.questions.length > 0) {
-    // Section has questions, select first section-level question
+    // Section has questions, select first section-level question when none is selected
     selectedSubsectionIndex.value = null;
-    selectedQuestionIndex.value = 0;
+    if (
+      selectedQuestionIndex.value === null ||
+      selectedQuestionIndex.value < 0 ||
+      selectedQuestionIndex.value >= section.questions.length
+    ) {
+      selectedQuestionIndex.value = 0;
+    }
     // Ensure section is expanded
     if (section.sectionId) {
       expandedSections.value[section.sectionId] = true;
@@ -3325,31 +3459,111 @@ const selectQuestion = (qIndex) => {
   scrollToQuestion(qIndex);
 };
 
+const findQuestionLocation = (questionId) => {
+  if (!questionId || !localForm.value.sections) return null;
+
+  if (isFlatMode.value) {
+    const rootSection = localForm.value.sections.find(s => s._isRootSection);
+    const rootSubsection = rootSection?.subsections?.[0];
+    const rootQs = rootSubsection?.questions || [];
+    const rootIndex = rootQs.findIndex(q => q?.questionId === questionId);
+    if (rootIndex !== -1) {
+      return { sectionIndex: null, subsectionIndex: null, questionIndex: rootIndex, isRoot: true };
+    }
+  }
+
+  for (let sectionIndex = 0; sectionIndex < localForm.value.sections.length; sectionIndex += 1) {
+    const section = localForm.value.sections[sectionIndex];
+    if (section._isRootSection) continue;
+
+    const sectionQuestions = section.questions || [];
+    const sectionQuestionIndex = sectionQuestions.findIndex(q => q?.questionId === questionId);
+    if (sectionQuestionIndex !== -1) {
+      return { sectionIndex, subsectionIndex: null, questionIndex: sectionQuestionIndex, isRoot: false };
+    }
+
+    const subsections = section.subsections || [];
+    for (let subsectionIndex = 0; subsectionIndex < subsections.length; subsectionIndex += 1) {
+      const subsectionQuestions = subsections[subsectionIndex]?.questions || [];
+      const subsectionQuestionIndex = subsectionQuestions.findIndex(q => q?.questionId === questionId);
+      if (subsectionQuestionIndex !== -1) {
+        return { sectionIndex, subsectionIndex, questionIndex: subsectionQuestionIndex, isRoot: false };
+      }
+    }
+  }
+
+  return null;
+};
+
+const applyQuestionSelection = (location) => {
+  if (!location) return false;
+
+  if (location.isRoot) {
+    selectedSectionIndex.value = null;
+    selectedSubsectionIndex.value = null;
+  } else {
+    selectedSectionIndex.value = location.sectionIndex;
+    selectedSubsectionIndex.value = location.subsectionIndex;
+    const section = localForm.value.sections?.[location.sectionIndex];
+    if (section?.sectionId) {
+      expandedSections.value[section.sectionId] = true;
+    }
+  }
+
+  selectedQuestionIndex.value = location.questionIndex;
+  return true;
+};
+
+const focusAddedQuestion = (questionId, questionIndex) => {
+  pendingQuestionIdToSelect.value = questionId;
+  lastQuestionAddTime = Date.now();
+
+  nextTick(() => {
+    selectedQuestionIndex.value = questionIndex;
+    scrollToQuestion(questionIndex);
+    focusQuestionSettingsTextInput();
+
+    setTimeout(() => scrollToQuestion(questionIndex), 150);
+    setTimeout(() => scrollToQuestion(questionIndex), 350);
+
+    setTimeout(() => {
+      if (pendingQuestionIdToSelect.value === questionId) {
+        pendingQuestionIdToSelect.value = null;
+      }
+    }, 2000);
+  });
+};
+
 // Scroll to a specific question in the scrollable container
-const scrollToQuestion = (qIndex) => {
+const scrollToQuestion = (qIndex, attempt = 0) => {
+  if (attempt > 30) return;
+
   nextTick(() => {
     const questionElement = questionRefs.value[qIndex];
     const scrollContainer = questionsScrollContainer.value;
     
-    if (questionElement && scrollContainer) {
-      // Calculate the position relative to the scroll container
-      const containerRect = scrollContainer.getBoundingClientRect();
-      const elementRect = questionElement.getBoundingClientRect();
-      
-      // Calculate scroll position to center the question in view
-      const scrollTop = scrollContainer.scrollTop;
-      const elementTop = elementRect.top - containerRect.top + scrollTop;
-      const elementHeight = elementRect.height;
-      const containerHeight = scrollContainer.clientHeight;
-      
-      // Scroll to show the question, with some padding
-      const targetScroll = elementTop - (containerHeight / 2) + (elementHeight / 2);
-      
-      scrollContainer.scrollTo({
-        top: Math.max(0, targetScroll),
-        behavior: 'smooth'
-      });
+    if (!scrollContainer || !questionElement) {
+      setTimeout(() => scrollToQuestion(qIndex, attempt + 1), 100);
+      return;
     }
+
+    // Calculate the position relative to the scroll container
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const elementRect = questionElement.getBoundingClientRect();
+    
+    // Calculate scroll position to center the question in view
+    const scrollTop = scrollContainer.scrollTop;
+    const elementTop = elementRect.top - containerRect.top + scrollTop;
+    const elementHeight = elementRect.height;
+    const containerHeight = scrollContainer.clientHeight;
+    
+    // Scroll to show the question, with some padding
+    const targetScroll = elementTop - (containerHeight / 2) + (elementHeight / 2);
+    
+    scrollContainer.scrollTo({
+      top: Math.max(0, targetScroll),
+      behavior: 'smooth'
+    });
   });
 };
 
@@ -3542,7 +3756,13 @@ const currentSectionSummary = computed(() => {
   if (!currentSection.value) return '';
   const subs = currentSection.value.subsections || [];
   const qCount = subs.reduce((acc, s) => acc + (s.questions ? s.questions.length : 0), 0);
-  return t('forms.builderSectionSummary', { subsectionCount: subs.length, questionCount: qCount });
+  const subKey = subs.length === 1
+    ? 'forms.builderSectionSubsectionCountOne'
+    : 'forms.builderSectionSubsectionCountOther';
+  const qKey = qCount === 1
+    ? 'forms.builderSectionQuestionCountOne'
+    : 'forms.builderSectionQuestionCountOther';
+  return `${t(subKey, { subsectionCount: subs.length })} • ${t(qKey, { questionCount: qCount })}`;
 });
 
 const questionPalette = computed(() => [
@@ -3559,6 +3779,8 @@ const questionPalette = computed(() => [
 ]);
 
 const addSection = () => {
+  if (isFeedbackMode.value) return;
+
   // Check edit permissions
   if (!canModifyFormStructure.value) {
     if (isLocked.value) {
@@ -3617,9 +3839,13 @@ const addSection = () => {
   
   // All flags set to prevent ensureSelection interference
   
+  const isFirstVisibleSurveySection = isSurveyMode.value && visibleSections.value.length === 0;
+
   const newSection = {
     sectionId: generateId('SEC'),
-    name: '',
+    name: isFirstVisibleSurveySection
+      ? ((localForm.value.name || props.form?.name || '').trim() || t('forms.engagementDefaultSectionName'))
+      : '',
     weightage: 0,
     subsections: [],
     questions: [],
@@ -3629,6 +3855,18 @@ const addSection = () => {
       threshold: 100
     }
   };
+
+  if (isFirstVisibleSurveySection) {
+    const rootSection = localForm.value.sections.find(s => s._isRootSection);
+    const rootQuestions = (rootSection?.subsections?.[0]?.questions || [])
+      .filter(q => q && typeof q === 'object');
+    if (rootQuestions.length > 0) {
+      newSection.questions = rootQuestions.map((q, index) => ({ ...q, order: index }));
+      if (rootSection?.subsections?.[0]) {
+        rootSection.subsections[0].questions = [];
+      }
+    }
+  }
   
   const sectionIdToSelect = newSection.sectionId;
   pendingSectionFocusId.value = sectionIdToSelect;
@@ -3651,8 +3889,10 @@ const addSection = () => {
   // This ensures we're selecting the correct index
   selectedSectionIndex.value = actualIndex;
   selectedSubsectionIndex.value = null;
-  selectedQuestionIndex.value = null;
-  focusSectionNameInputById(sectionIdToSelect);
+  selectedQuestionIndex.value = isFirstVisibleSurveySection && newSection.questions.length > 0 ? 0 : null;
+  if (!isFirstVisibleSurveySection) {
+    focusSectionNameInputById(sectionIdToSelect);
+  }
   
   // Expand and select IMMEDIATELY - synchronously, before any async operations
   expandedSections.value[newSection.sectionId] = true;
@@ -3863,7 +4103,7 @@ const removeSection = (index) => {
     return;
   }
   
-  // Prevent deletion of the only section in Audit mode
+  // Prevent deletion of the only visible section in Audit forms
   if (isAuditMode.value) {
     const visibleSectionsList = localForm.value.sections.filter(s => !s._isRootSection);
     if (visibleSectionsList.length <= 1) {
@@ -4142,13 +4382,7 @@ const addQuestion = (sectionIndex, subsectionIndex, explicitType) => {
     selectedSectionIndex.value = sectionIndex;
     selectedSubsectionIndex.value = null;
     selectedQuestionIndex.value = newQuestionIndex;
-    
-    // Use nextTick to ensure selection persists after DOM updates and scroll to question
-    nextTick(() => {
-      selectedQuestionIndex.value = newQuestionIndex;
-      scrollToQuestion(newQuestionIndex);
-      focusQuestionSettingsTextInput();
-    });
+    focusAddedQuestion(newQuestion.questionId, newQuestionIndex);
   } else {
     // Add question to subsection (existing behavior)
   // Ensure subsections array exists
@@ -4177,13 +4411,7 @@ const addQuestion = (sectionIndex, subsectionIndex, explicitType) => {
     selectedSectionIndex.value = sectionIndex;
     selectedSubsectionIndex.value = subsectionIndex;
     selectedQuestionIndex.value = newQuestionIndex;
-    
-    // Use nextTick to ensure selection persists after DOM updates and scroll to question
-    nextTick(() => {
-      selectedQuestionIndex.value = newQuestionIndex;
-      scrollToQuestion(newQuestionIndex);
-      focusQuestionSettingsTextInput();
-    });
+    focusAddedQuestion(newQuestion.questionId, newQuestionIndex);
   }
 };
 
@@ -4266,6 +4494,7 @@ const duplicateQuestion = (sectionIndex, subsectionIndex, questionIndex) => {
   selectedSectionIndex.value = sectionIndex;
   selectedSubsectionIndex.value = subsectionIndex;
   selectedQuestionIndex.value = questionIndex + 1;
+  focusAddedQuestion(clone.questionId, questionIndex + 1);
 };
 
 // Root question functions for flat mode
@@ -4283,10 +4512,11 @@ const addRootQuestion = (explicitType) => {
   
   rootSubsection.questions.push(newQuestion);
   
-  selectedQuestionIndex.value = rootSubsection.questions.length - 1;
+  const newQuestionIndex = rootSubsection.questions.length - 1;
+  selectedQuestionIndex.value = newQuestionIndex;
   selectedSectionIndex.value = null;
   selectedSubsectionIndex.value = null;
-  focusQuestionSettingsTextInput();
+  focusAddedQuestion(newQuestion.questionId, newQuestionIndex);
 };
 
 const removeRootQuestion = (questionIndex) => {
@@ -4328,12 +4558,14 @@ const duplicateRootQuestion = (questionIndex) => {
   });
   
   selectedQuestionIndex.value = questionIndex + 1;
+  focusAddedQuestion(clone.questionId, questionIndex + 1);
 };
 
 const selectRootQuestion = (qIndex) => {
   selectedQuestionIndex.value = qIndex;
   selectedSectionIndex.value = null;
   selectedSubsectionIndex.value = null;
+  scrollToQuestion(qIndex);
 };
 
 const addRootQuestionOption = () => {
@@ -4615,7 +4847,7 @@ const hasRequiredEvidenceWithoutType = computed(() => {
 });
 
 // Handle visibility question selection change
-const handleVisibilityQuestionChange = (e) => {
+const handleVisibilityQuestionChange = (selectedValue) => {
   // Preserve selection indices and question reference before making changes
   const preservedSectionIndex = selectedSectionIndex.value;
   const preservedSubsectionIndex = selectedSubsectionIndex.value;
@@ -4628,7 +4860,6 @@ const handleVisibilityQuestionChange = (e) => {
   // Ensure conditionalLogic structure exists
   ensureConditionalLogic(currentQ);
   
-  const selectedValue = e.target.value;
   let finalQuestionId = selectedValue;
   
   // If a question was selected, ensure it has a questionId

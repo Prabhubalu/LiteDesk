@@ -21,7 +21,7 @@
 
     <!-- Delete Button - Only if user has delete permission -->
     <button 
-      v-if="authStore.can(module, 'delete')"
+      v-if="authStore.can(module, 'delete') && canDeleteRow(row)"
       @click.stop="$emit('delete', row)"
       class="inline-flex items-center h-8 gap-1.5 px-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-sm" 
       :title="t('actions.delete')"
@@ -41,7 +41,7 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-defineProps({
+const props = defineProps({
   row: {
     type: Object,
     required: true
@@ -49,8 +49,16 @@ defineProps({
   module: {
     type: String,
     required: true
+  },
+  canDeleteRow: {
+    type: Function,
+    default: () => true
   }
 });
+
+function canDeleteRow(row) {
+  return props.canDeleteRow(row);
+}
 
 defineEmits(['view', 'edit', 'delete']);
 

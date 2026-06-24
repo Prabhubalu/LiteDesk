@@ -957,8 +957,8 @@ async function getRecordContext(organizationId, appKey, moduleKey, recordId, opt
 
     // Phase 0I.3: Include review actions metadata for Response records
     // ⚠️ SAFETY: This is descriptive metadata only, not actionable.
-    // All actions are Sales-owned. Audit App and Portal are read-only.
-    if (appKey.toLowerCase() === 'sales' && moduleKey.toLowerCase() === 'responses') {
+    // Platform owns execution. Audit App and Portal are read-only.
+    if (moduleKey.toLowerCase() === 'responses') {
       const response = await FormResponse.findOne({
         _id: recordId,
         organizationId

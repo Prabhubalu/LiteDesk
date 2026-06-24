@@ -287,10 +287,6 @@
     "message": "Toile",
     "description": "Canvas panel heading"
   },
-  "builderCanvasQuestionCount": {
-    "message": "{count, plural, one {# question} other {# questions}}",
-    "description": "Canvas subtitle question count"
-  },
   "builderCondContains": {
     "message": "contient",
     "description": "Conditional operator contains"
@@ -599,10 +595,6 @@
     "message": "Oui-Non",
     "description": "Question type display: Yes-No"
   },
-  "builderQuestionCount": {
-    "message": "{count, plural, one {# question} other {# questions}}",
-    "description": "Question count label"
-  },
   "builderQuestionFallback": {
     "message": "Question __USI_0__",
     "description": "Fallback label for unnamed question in dropdown"
@@ -682,10 +674,6 @@
   "builderSectionSettings": {
     "message": "Paramètres des sections",
     "description": "Inspector title when editing section"
-  },
-  "builderSectionSummary": {
-    "message": "{subsectionCount, plural, one {# subsection} other {# subsections}} • {questionCount, plural, one {# question} other {# questions}}",
-    "description": "Section summary in structure panel"
   },
   "builderSectionThresholdHint": {
     "message": "La section réussit si son pourcentage de score est ≥ ce seuil. La valeur par défaut est 100 %.",
@@ -1690,10 +1678,6 @@
   "hubSearchPlaceholder": {
     "message": "Formulaires de recherche...",
     "description": "Forms list search placeholder"
-  },
-  "hubSectionCount": {
-    "message": "{count, plural, one {# section} other {# sections}}",
-    "description": "Score cell section count"
   },
   "hubStatApproved": {
     "message": "Approuvé",
@@ -3719,10 +3703,6 @@
     "message": "Erreur lors de la soumission du formulaire",
     "description": "Form fill submit error heading"
   },
-  "hubFillRequiredRemaining": {
-    "message": "{count, plural, one {# required question remaining} other {# required questions remaining}}",
-    "description": "Form fill required questions remaining"
-  },
   "hubFillAllRequiredAnswered": {
     "message": "✓ Réponses à toutes les questions requises",
     "description": "Form fill all required complete"
@@ -3774,5 +3754,565 @@
   "hubPublicSubmitFailed": {
     "message": "Échec de l'envoi du formulaire. Veuillez réessayer.",
     "description": "Public form submit error"
+  },
+  "builderCanvasQuestionCountOne": {
+    "message": "{count} question",
+    "description": "Canvas subtitle question count (singular)"
+  },
+  "builderCanvasQuestionCountOther": {
+    "message": "{count} questions",
+    "description": "Canvas subtitle question count (plural)"
+  },
+  "builderQuestionCountOne": {
+    "message": "{count} question",
+    "description": "Question count label (singular)"
+  },
+  "builderQuestionCountOther": {
+    "message": "{count} questions",
+    "description": "Question count label (plural)"
+  },
+  "hubSectionCountOne": {
+    "message": "{count} section",
+    "description": "Score cell section count (singular)"
+  },
+  "hubSectionCountOther": {
+    "message": "{count} sections",
+    "description": "Score cell section count (plural)"
+  },
+  "hubFillRequiredRemainingOne": {
+    "message": "{count} required question remaining",
+    "description": "Form fill required questions remaining (singular)"
+  },
+  "hubFillRequiredRemainingOther": {
+    "message": "{count} required questions remaining",
+    "description": "Form fill required questions remaining (plural)"
+  },
+  "builderSectionSubsectionCountOne": {
+    "message": "{subsectionCount} subsection",
+    "description": "Section subsection count (singular)"
+  },
+  "builderSectionSubsectionCountOther": {
+    "message": "{subsectionCount} subsections",
+    "description": "Section subsection count (plural)"
+  },
+  "builderSectionQuestionCountOne": {
+    "message": "{questionCount} question",
+    "description": "Section question count (singular)"
+  },
+  "builderSectionQuestionCountOther": {
+    "message": "{questionCount} questions",
+    "description": "Section question count (plural)"
+  },
+  "engagementDetailsSurveyTitle": {
+    "message": "Design your survey",
+    "description": "Survey create step 1 hero title"
+  },
+  "engagementDetailsSurveyDesc": {
+    "message": "Collect structured responses with ratings, choices, and open feedback.",
+    "description": "Survey create step 1 hero description"
+  },
+  "engagementDetailsFeedbackTitle": {
+    "message": "Capture quick feedback",
+    "description": "Feedback create step 1 hero title"
+  },
+  "engagementDetailsFeedbackDesc": {
+    "message": "Get fast ratings and comments from customers, partners, or your team.",
+    "description": "Feedback create step 1 hero description"
+  },
+  "engagementNamePhSurvey": {
+    "message": "e.g. Customer satisfaction survey",
+    "description": "Survey name placeholder"
+  },
+  "engagementNamePhFeedback": {
+    "message": "e.g. Product feedback form",
+    "description": "Feedback name placeholder"
+  },
+  "engagementIntroLabelSurvey": {
+    "message": "Introduction message",
+    "description": "Survey intro field label"
+  },
+  "engagementIntroLabelFeedback": {
+    "message": "Welcome message",
+    "description": "Feedback intro field label"
+  },
+  "engagementIntroPhSurvey": {
+    "message": "Tell respondents what this survey is about and how long it takes…",
+    "description": "Survey intro placeholder"
+  },
+  "engagementIntroPhFeedback": {
+    "message": "A short welcome shown before respondents share feedback…",
+    "description": "Feedback intro placeholder"
+  },
+  "engagementIntroHintSurvey": {
+    "message": "Shown at the top of the survey when respondents open it.",
+    "description": "Survey intro hint"
+  },
+  "engagementIntroHintFeedback": {
+    "message": "Keep it brief — one or two sentences works best.",
+    "description": "Feedback intro hint"
+  },
+  "engagementExpiryHint": {
+    "message": "Optional. The survey closes automatically after this date.",
+    "description": "Survey expiry hint"
+  },
+  "engagementVisibilityPublicDesc": {
+    "message": "Anyone with the link can respond. Best for surveys and public feedback.",
+    "description": "Public visibility card description"
+  },
+  "engagementVisibilityPartnerDesc": {
+    "message": "Shared with partner organizations in your network.",
+    "description": "Partner visibility card description"
+  },
+  "engagementVisibilityInternalDesc": {
+    "message": "Only people in your organization can access this form.",
+    "description": "Internal visibility card description"
+  },
+  "engagementWizardStepQuestions": {
+    "message": "Questions",
+    "description": "Engagement wizard step: questions"
+  },
+  "engagementWizardStepSettings": {
+    "message": "Settings & Share",
+    "description": "Engagement wizard step: settings"
+  },
+  "engagementWizardStepPublish": {
+    "message": "Preview & Publish",
+    "description": "Engagement wizard step: publish"
+  },
+  "engagementSettingsHeading": {
+    "message": "Settings & sharing",
+    "description": "Engagement settings step heading"
+  },
+  "engagementSettingsIntroSurvey": {
+    "message": "Choose how people access your survey and what you track when responses arrive.",
+    "description": "Engagement settings intro for survey"
+  },
+  "engagementSettingsIntroFeedback": {
+    "message": "Configure sharing and notifications so feedback reaches the right people.",
+    "description": "Engagement settings intro for feedback"
+  },
+  "engagementSettingsDistribution": {
+    "message": "Distribution",
+    "description": "Engagement settings distribution section"
+  },
+  "engagementSettingsDistributionDesc": {
+    "message": "Control who can respond and how they reach your form.",
+    "description": "Engagement settings distribution description"
+  },
+  "engagementSettingsPublicLink": {
+    "message": "Enable public link",
+    "description": "Public link toggle label"
+  },
+  "engagementSettingsPublicLinkDesc": {
+    "message": "Generate a shareable URL. Recommended for surveys and customer feedback.",
+    "description": "Public link toggle description"
+  },
+  "engagementSettingsLinkPreview": {
+    "message": "Link preview",
+    "description": "Public link preview label"
+  },
+  "engagementSettingsLinkPlaceholder": {
+    "message": "your-form-slug",
+    "description": "Public link slug placeholder"
+  },
+  "engagementSettingsLinkSlugHint": {
+    "message": "A unique slug is generated when you publish.",
+    "description": "Public link slug hint"
+  },
+  "engagementSettingsAnalytics": {
+    "message": "Analytics",
+    "description": "Engagement settings analytics section"
+  },
+  "engagementSettingsAnalyticsDesc": {
+    "message": "Track aggregate metrics on the form record and in reports.",
+    "description": "Engagement settings analytics description"
+  },
+  "engagementSettingsTrackRating": {
+    "message": "Track average rating",
+    "description": "Track rating KPI label"
+  },
+  "engagementSettingsTrackRatingDesc": {
+    "message": "Aggregate star or numeric ratings across responses.",
+    "description": "Track rating KPI description"
+  },
+  "engagementSettingsTrackSatisfaction": {
+    "message": "Track satisfaction score",
+    "description": "Track satisfaction KPI label"
+  },
+  "engagementSettingsTrackSatisfactionDesc": {
+    "message": "Calculate satisfaction percentage from rating questions.",
+    "description": "Track satisfaction KPI description"
+  },
+  "engagementSettingsNotifications": {
+    "message": "Notifications",
+    "description": "Engagement settings notifications section"
+  },
+  "engagementSettingsNotificationsDesc": {
+    "message": "Get notified when someone submits a response.",
+    "description": "Engagement settings notifications description"
+  },
+  "engagementSettingsNotifyUsers": {
+    "message": "Notify team members",
+    "description": "Notify users label"
+  },
+  "engagementSettingsSelectUser": {
+    "message": "Add a team member…",
+    "description": "Notify user select placeholder"
+  },
+  "engagementSettingsReadyTitle": {
+    "message": "Ready to publish",
+    "description": "Engagement settings ready title"
+  },
+  "engagementSettingsReadyDesc": {
+    "message": "Your form has a name and at least one question. Continue to preview and publish.",
+    "description": "Engagement settings ready description"
+  },
+  "engagementSettingsNotReadyTitle": {
+    "message": "Almost there",
+    "description": "Engagement settings not ready title"
+  },
+  "engagementSettingsNotReadyName": {
+    "message": "Add a form name on the first step before publishing.",
+    "description": "Engagement settings missing name"
+  },
+  "engagementSettingsNotReadyQuestions": {
+    "message": "Add at least one question before publishing.",
+    "description": "Engagement settings missing questions"
+  },
+  "engagementStartersHeading": {
+    "message": "Start from a template",
+    "description": "Question starter templates heading"
+  },
+  "engagementStartersSurveyDesc": {
+    "message": "Pick a common pattern or add your own questions below.",
+    "description": "Survey starter templates description"
+  },
+  "engagementStartersFeedbackDesc": {
+    "message": "Use a quick template or build your own question set.",
+    "description": "Feedback starter templates description"
+  },
+  "engagementStarterFeedbackQuick": {
+    "message": "Rating + comment",
+    "description": "Quick feedback starter label"
+  },
+  "engagementStarterSurveySatisfaction": {
+    "message": "Satisfaction survey",
+    "description": "Satisfaction survey starter label"
+  },
+  "engagementStarterSurveyNps": {
+    "message": "NPS (0–10)",
+    "description": "NPS survey starter label"
+  },
+  "engagementStarterFeedbackRating": {
+    "message": "How would you rate your experience?",
+    "description": "Feedback starter rating question"
+  },
+  "engagementStarterFeedbackComment": {
+    "message": "What could we improve?",
+    "description": "Feedback starter comment question"
+  },
+  "engagementStarterSurveyRating": {
+    "message": "How satisfied are you overall?",
+    "description": "Survey starter rating question"
+  },
+  "engagementStarterSurveyEase": {
+    "message": "How easy was it to complete your request?",
+    "description": "Survey starter ease question"
+  },
+  "engagementStarterSurveyEaseOpt1": {
+    "message": "Very easy",
+    "description": "Survey ease option 1"
+  },
+  "engagementStarterSurveyEaseOpt2": {
+    "message": "Easy",
+    "description": "Survey ease option 2"
+  },
+  "engagementStarterSurveyEaseOpt3": {
+    "message": "Neutral",
+    "description": "Survey ease option 3"
+  },
+  "engagementStarterSurveyEaseOpt4": {
+    "message": "Difficult",
+    "description": "Survey ease option 4"
+  },
+  "engagementStarterSurveyEaseOpt5": {
+    "message": "Very difficult",
+    "description": "Survey ease option 5"
+  },
+  "engagementStarterSurveyImprove": {
+    "message": "What would make your experience better?",
+    "description": "Survey starter improve question"
+  },
+  "engagementStarterNpsQuestion": {
+    "message": "How likely are you to recommend us? (0–10)",
+    "description": "NPS starter question"
+  },
+  "engagementStarterNpsFollowUp": {
+    "message": "What is the main reason for your score?",
+    "description": "NPS follow-up question"
+  },
+  "engagementQuestionsRequiredAlert": {
+    "message": "Add at least one question with text before continuing.",
+    "description": "Engagement questions step validation alert"
+  },
+  "engagementDefaultSectionName": {
+    "message": "Questions",
+    "description": "Default section name for engagement forms on submit"
+  },
+  "engagementPublishAction": {
+    "message": "Publish form",
+    "description": "Engagement wizard final save button"
+  },
+  "engagementPreviewIntro": {
+    "message": "Review how respondents will experience your form, then publish.",
+    "description": "Engagement preview step intro"
+  },
+  "engagementPreviewReadyDesc": {
+    "message": "Publishing saves the form and makes it available based on your sharing settings.",
+    "description": "Engagement preview ready description"
+  },
+  "engagementPreviewChecklistDistribution": {
+    "message": "Sharing configured",
+    "description": "Engagement preview checklist distribution"
+  },
+  "engagementPreviewChecklistDistributionOk": {
+    "message": "Public link or public visibility is enabled.",
+    "description": "Engagement preview distribution ok"
+  },
+  "engagementPreviewChecklistDistributionMissing": {
+    "message": "Enable a public link or set visibility to Public to collect external responses.",
+    "description": "Engagement preview distribution missing"
+  },
+  "engagementPreviewChecklistAnalytics": {
+    "message": "Analytics tracking",
+    "description": "Engagement preview analytics checklist"
+  },
+  "engagementPreviewChecklistAnalyticsOk": {
+    "message": "Rating or satisfaction metrics will be tracked.",
+    "description": "Engagement preview analytics ok"
+  },
+  "recordShareLinkTitle": {
+    "message": "Share link",
+    "description": "Form record share link section title"
+  },
+  "recordShareLinkHint": {
+    "message": "Share this URL to collect responses outside of events.",
+    "description": "Form record share link section hint"
+  },
+  "recordShareLinkEnable": {
+    "message": "Enable public link",
+    "description": "Form record enable public link button"
+  },
+  "recordShareLinkEnabling": {
+    "message": "Enabling…",
+    "description": "Form record enable public link in progress"
+  },
+  "recordShareLinkEnabled": {
+    "message": "Public link enabled.",
+    "description": "Form record enable public link success"
+  },
+  "recordShareLinkNotEnabled": {
+    "message": "No public link yet",
+    "description": "Form record no public link title"
+  },
+  "recordShareLinkNotEnabledHint": {
+    "message": "Enable a public link to share this form, or edit the form to turn it on in Settings & Share.",
+    "description": "Form record no public link hint"
+  },
+  "recordShareLinkOpen": {
+    "message": "Open",
+    "description": "Form record open public link button"
+  },
+  "recordNotActiveEngagementHint": {
+    "message": "Enable a public link above to start collecting responses, or assign this form via events.",
+    "description": "Engagement form not active banner hint"
+  },
+  "recordPreviewReadOnly": {
+    "message": "Preview",
+    "description": "Form record preview read-only badge"
+  },
+  "recordPreviewDesktop": {
+    "message": "Desktop",
+    "description": "Form record preview desktop width toggle"
+  },
+  "recordPreviewMobile": {
+    "message": "Mobile",
+    "description": "Form record preview mobile width toggle"
+  },
+  "recordPreviewOpenTab": {
+    "message": "Open live",
+    "description": "Form record preview open in new tab"
+  },
+  "engagementBrandingTitle": {
+    "message": "Branding",
+    "description": "Engagement form branding section title"
+  },
+  "engagementBrandingHint": {
+    "message": "Logo, colors, and font apply to the public link and live preview.",
+    "description": "Engagement form branding section hint"
+  },
+  "hubEngagementAnswersTitle": {
+    "message": "Answers",
+    "description": "Engagement response detail answers section heading"
+  },
+  "hubEngagementResponseAnswer": {
+    "message": "Answer",
+    "description": "Engagement response detail answer label"
+  },
+  "hubEngagementResponseAttachment": {
+    "message": "Attachment",
+    "description": "Engagement response file attachment fallback name"
+  },
+  "hubEngagementResponseNo": {
+    "message": "No",
+    "description": "Yes-No question answer: No"
+  },
+  "hubEngagementResponseProgress": {
+    "message": "Completion",
+    "description": "Engagement response completion KPI label"
+  },
+  "hubEngagementResponseQuestionsAnswered": {
+    "message": "{answered} of {total} answered",
+    "description": "Engagement response answered question count"
+  },
+  "hubEngagementResponseSignatureAlt": {
+    "message": "Signature",
+    "description": "Alt text for signature answer image"
+  },
+  "hubEngagementResponseYes": {
+    "message": "Yes",
+    "description": "Yes-No question answer: Yes"
+  },
+  "resultsSummaryTabSummary": {
+    "message": "Summary",
+    "description": "Consolidated response summary tab label"
+  },
+  "resultsSummaryTabIndividual": {
+    "message": "Individual responses",
+    "description": "Individual responses tab label"
+  },
+  "resultsSummaryViewToggle": {
+    "message": "Response view",
+    "description": "Response summary vs individual toggle aria label"
+  },
+  "resultsSummaryLoading": {
+    "message": "Loading response summary…",
+    "description": "Response summary loading state"
+  },
+  "resultsSummaryUnsupported": {
+    "message": "Consolidated summaries are available for surveys and feedback forms.",
+    "description": "Unsupported form type for response summary"
+  },
+  "resultsSummaryEmptyTitle": {
+    "message": "No responses yet",
+    "description": "Empty response summary title"
+  },
+  "resultsSummaryEmptyHint": {
+    "message": "Share your form link to start collecting answers. Results will appear here automatically.",
+    "description": "Empty response summary hint"
+  },
+  "resultsSummaryCompletionRate": {
+    "message": "Completion rate",
+    "description": "Survey completion rate KPI label"
+  },
+  "resultsSummaryCompletionHint": {
+    "message": "Avg. questions answered per response",
+    "description": "Survey completion rate hint"
+  },
+  "resultsSummaryQuestions": {
+    "message": "Questions",
+    "description": "Total questions KPI label"
+  },
+  "resultsSummaryQuestionsHint": {
+    "message": "In this form",
+    "description": "Total questions KPI hint"
+  },
+  "resultsSummaryAnsweredCount": {
+    "message": "{answered} of {total} answered",
+    "description": "Question answered count label"
+  },
+  "resultsSummaryResponseRate": {
+    "message": "{rate}% response rate",
+    "description": "Question response rate label"
+  },
+  "resultsSummaryNoAnswers": {
+    "message": "No answers for this question yet",
+    "description": "Empty question summary state"
+  },
+  "resultsSummaryChoiceCount": {
+    "message": "{count} ({percentage}%)",
+    "description": "Choice option count and percentage"
+  },
+  "resultsSummaryOtherOption": {
+    "message": "Other",
+    "description": "Other choice bucket label"
+  },
+  "resultsSummaryAvgRating": {
+    "message": "Average",
+    "description": "Average rating label"
+  },
+  "resultsSummaryShowAllText": {
+    "message": "Show all {count} responses",
+    "description": "Expand text responses button"
+  },
+  "resultsSummaryShowLess": {
+    "message": "Show less",
+    "description": "Collapse text responses button"
+  },
+  "resultsSummaryMediaCount": {
+    "message": "{count, plural, one {# upload} other {# uploads}}",
+    "description": "File/signature upload count"
+  },
+  "resultsSummaryMediaHint": {
+    "message": "View individual responses to open files",
+    "description": "File/signature summary hint"
+  },
+  "resultsSummaryTypeDropdown": {
+    "message": "Multiple choice",
+    "description": "Dropdown question type label"
+  },
+  "resultsSummaryTypeYesNo": {
+    "message": "Yes / No",
+    "description": "Yes-No question type label"
+  },
+  "resultsSummaryTypeRating": {
+    "message": "Rating",
+    "description": "Rating question type label"
+  },
+  "resultsSummaryTypeText": {
+    "message": "Short text",
+    "description": "Text question type label"
+  },
+  "resultsSummaryTypeTextarea": {
+    "message": "Long text",
+    "description": "Textarea question type label"
+  },
+  "resultsSummaryTypeNumber": {
+    "message": "Number",
+    "description": "Number question type label"
+  },
+  "resultsSummaryTypeFile": {
+    "message": "File upload",
+    "description": "File question type label"
+  },
+  "resultsSummaryTypeSignature": {
+    "message": "Signature",
+    "description": "Signature question type label"
+  },
+  "statusLive": {
+    "message": "Live",
+    "description": "Engagement form status label when collecting responses"
+  },
+  "deleteBlockedSubmittedResponses": {
+    "message": "This form has submitted responses and cannot be deleted. Archive it instead.",
+    "description": "Error when deleting form with submitted responses"
+  },
+  "hubDeleteBlockedSubmittedCount": {
+    "message": "{count, plural, one {# form was skipped because it has submitted responses. Archive it instead.} other {# forms were skipped because they have submitted responses. Archive them instead.}}",
+    "description": "Bulk delete skip message for forms with submitted responses"
+  },
+  "hubPublicFormExpired": {
+    "message": "This form has expired.",
+    "description": "Public form fetch expired (410)"
   }
 }

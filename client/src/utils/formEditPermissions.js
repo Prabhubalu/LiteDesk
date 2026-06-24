@@ -1,120 +1,88 @@
 import { i18n } from '@/i18n';
+import { isEngagementFormType } from '@/utils/engagementFormDisplay';
 
 /**
  * Form Edit Permissions Utility
  *
- * Enforces edit permissions based on form status:
- * - Draft & Ready: Full editing allowed
- * - Active: Only cosmetic changes (titles, labels, help text)
- * - Archived: Read-only
+ * Enforces edit permissions based on form status and type:
+ * - Draft: full editing (all types)
+ * - Ready: full editing (audits only)
+ * - Active / live engagement: cosmetic changes only
+ * - Archived: read-only
  */
 
+function isLiveEngagementForm(status, formType) {
+  return isEngagementFormType(formType) && (status === 'Active' || status === 'Ready');
+}
+
 /**
- * Check if a form can be edited
- * @param {string} status - Form status
- * @returns {boolean}
+ * @param {string} status
+ * @param {string} [formType]
  */
-export const canEditForm = (status) => {
+export const canEditForm = (status, formType) => {
+  if (isEngagementFormType(formType)) {
+    return status === 'Draft';
+  }
   return ['Draft', 'Ready'].includes(status);
 };
 
 /**
- * Check if a form is read-only
- * @param {string} status - Form status
- * @returns {boolean}
+ * @param {string} status
+ * @param {string} [formType]
  */
 export const isFormReadOnly = (status) => {
   return status === 'Archived';
 };
 
 /**
- * Check if a form is locked (Active status - limited edits)
- * @param {string} status - Form status
- * @returns {boolean}
+ * @param {string} status
+ * @param {string} [formType]
  */
-export const isFormLocked = (status) => {
+export const isFormLocked = (status, formType) => {
+  if (isLiveEngagementForm(status, formType)) {
+    return true;
+  }
   return status === 'Active';
 };
 
 /**
- * Check if structural changes are allowed
- * @param {string} status - Form status
- * @returns {boolean}
+ * @param {string} status
+ * @param {string} [formType]
  */
-export const canModifyStructure = (status) => {
+export const canModifyStructure = (status, formType) => {
+  if (isEngagementFormType(formType)) {
+    return status === 'Draft';
+  }
+  return ['Draft', 'Ready'].includes(status);
+};
+
+export const canModifyQuestions = (status, formType) => canModifyStructure(status, formType);
+export const canChangeQuestionType = (status, formType) => canModifyStructure(status, formType);
+export const canModifyScoring = (status, formType) => canModifyStructure(status, formType);
+export const canModifyEvidenceRules = (status, formType) => canModifyStructure(status, formType);
+export const canModifyOutcomeRules = (status, formType) => canModifyStructure(status, formType);
+export const canEditResponseTemplate = (status, formType) => canModifyStructure(status, formType);
+
+/**
+ * @param {string} status
+ * @param {string} [formType]
+ */
+export const canMakeCosmeticChanges = (status, formType) => {
+  if (status === 'Archived') {
+    return false;
+  }
+  if (isLiveEngagementForm(status, formType) || status === 'Active') {
+    return true;
+  }
   return ['Draft', 'Ready'].includes(status);
 };
 
 /**
- * Check if questions can be added/removed
- * @param {string} status - Form status
- * @returns {boolean}
+ * @param {string} status
+ * @param {string} [formType]
  */
-export const canModifyQuestions = (status) => {
-  return ['Draft', 'Ready'].includes(status);
-};
-
-/**
- * Check if question type can be changed
- * @param {string} status - Form status
- * @returns {boolean}
- */
-export const canChangeQuestionType = (status) => {
-  return ['Draft', 'Ready'].includes(status);
-};
-
-/**
- * Check if scoring logic can be modified
- * @param {string} status - Form status
- * @returns {boolean}
- */
-export const canModifyScoring = (status) => {
-  return ['Draft', 'Ready'].includes(status);
-};
-
-/**
- * Check if evidence rules can be modified
- * @param {string} status - Form status
- * @returns {boolean}
- */
-export const canModifyEvidenceRules = (status) => {
-  return ['Draft', 'Ready'].includes(status);
-};
-
-/**
- * Check if outcome rules can be modified
- * @param {string} status - Form status
- * @returns {boolean}
- */
-export const canModifyOutcomeRules = (status) => {
-  return ['Draft', 'Ready'].includes(status);
-};
-
-/**
- * Check if response template can be edited
- * @param {string} status - Form status
- * @returns {boolean}
- */
-export const canEditResponseTemplate = (status) => {
-  return ['Draft', 'Ready'].includes(status);
-};
-
-/**
- * Check if cosmetic changes are allowed (titles, labels, help text)
- * @param {string} status - Form status
- * @returns {boolean}
- */
-export const canMakeCosmeticChanges = (status) => {
-  return ['Draft', 'Ready', 'Active'].includes(status);
-};
-
-/**
- * Get the blocking message for a form status
- * @param {string} status - Form status
- * @returns {string|null}
- */
-export const getBlockingMessage = (status) => {
-  if (status === 'Active') {
+export const getBlockingMessage = (status, formType) => {
+  if (isLiveEngagementForm(status, formType) || status === 'Active') {
     return i18n.global.t('forms.permBlockingActive');
   }
   if (status === 'Archived') {
@@ -124,30 +92,22 @@ export const getBlockingMessage = (status) => {
 };
 
 /**
- * Check if a specific edit action is allowed
- * @param {string} status - Form status
- * @param {string} action - Action type: 'addSection', 'removeSection', 'addQuestion', 'removeQuestion', 'changeQuestionType', 'modifyScoring', 'modifyEvidence', 'modifyOutcomes', 'editTemplate', 'cosmetic'
- * @returns {boolean}
+ * @param {string} status
+ * @param {string} action
+ * @param {string} [formType]
  */
-export const isEditAllowed = (status, action) => {
+export const isEditAllowed = (status, action, formType) => {
   if (status === 'Archived') {
     return false;
   }
-  
-  if (status === 'Active') {
-    // Only cosmetic changes allowed
+
+  if (isLiveEngagementForm(status, formType) || status === 'Active') {
     return action === 'cosmetic';
   }
-  
-  // Draft and Ready: all edits allowed
-  return true;
+
+  return ['Draft', 'Ready'].includes(status);
 };
 
-/**
- * Get status display information
- * @param {string} status - Form status
- * @returns {{label: string, color: string, icon: string}}
- */
 const STATUS_LABEL_KEYS = {
   Draft: 'forms.statusDraft',
   Ready: 'forms.statusReady',
@@ -155,7 +115,30 @@ const STATUS_LABEL_KEYS = {
   Archived: 'forms.statusArchived',
 };
 
-export const getStatusInfo = (status) => {
+function resolveSubmittedResponseCount(form, responseSummary) {
+  if (!form) return 0;
+  if (typeof form.submittedResponseCount === 'number') {
+    return form.submittedResponseCount;
+  }
+  const summaryTotal = typeof responseSummary === 'object' && responseSummary
+    ? (responseSummary.overview?.totalResponses ?? responseSummary.totalResponses)
+    : undefined;
+  if (typeof summaryTotal === 'number') {
+    return summaryTotal;
+  }
+  return form.lastSubmission ? 1 : 0;
+}
+
+export function hasSubmittedFormResponses(form, responseSummary) {
+  return resolveSubmittedResponseCount(form, responseSummary) > 0;
+}
+
+export function canHardDeleteForm(form, responseSummary) {
+  if (!form) return false;
+  return !hasSubmittedFormResponses(form, responseSummary);
+}
+
+export const getStatusInfo = (status, formType) => {
   const statusMap = {
     Draft: {
       color: 'gray',
@@ -179,10 +162,12 @@ export const getStatusInfo = (status) => {
 
   const resolved = statusMap[status] || statusMap.Draft;
   const labelKey = STATUS_LABEL_KEYS[status] || STATUS_LABEL_KEYS.Draft;
+  const label = isLiveEngagementForm(status, formType)
+    ? i18n.global.t('forms.statusLive')
+    : i18n.global.t(labelKey);
 
   return {
     ...resolved,
-    label: i18n.global.t(labelKey),
+    label,
   };
 };
-

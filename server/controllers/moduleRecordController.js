@@ -95,6 +95,7 @@ const MODEL_BY_KEY = {
   organizations: () => require('../models/Organization'),
   events: () => require('../models/Event'),
   items: () => require('../models/Item'),
+  forms: () => require('../models/Form'),
   responses: () => require('../models/FormResponse'),
   quotes: () => require('../models/Quote'),
   sales_orders: () => require('../models/SalesOrder')

@@ -54,7 +54,13 @@ const FORBIDDEN_RAW_ENTITY_MODULE_KEYS = new Set([
 ]);
 
 function hasPermission(permission: string | undefined, snapshot: PermissionSnapshot): boolean {
-  return checkPermission(snapshot, permission);
+  if (!permission) return true;
+  if (checkPermission(snapshot, permission)) return true;
+  // Responses inherits Forms access until roles explicitly grant responses.*
+  if (permission === 'responses.view' || permission === 'responses.read') {
+    return checkPermission(snapshot, 'forms.view');
+  }
+  return false;
 }
 
 function getCurrentPathname(): string {

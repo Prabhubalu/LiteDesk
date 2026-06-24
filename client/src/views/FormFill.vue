@@ -136,7 +136,10 @@
             class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-xl"
           >
             <!-- Section Header -->
-            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+            <div
+              v-if="shouldShowEngagementSectionTitle(form, section)"
+              class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 px-6 py-5 border-b border-gray-200 dark:border-gray-700"
+            >
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 bg-indigo-600 dark:bg-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">
@@ -244,16 +247,24 @@
                       ></textarea>
                       
                       <!-- Dropdown -->
-                      <select
+                      <DropdownQuestion
                         v-else-if="question.type === 'Dropdown'"
-                        v-model="formData[question.questionId]"
-                        @change="handleInputChange"
-                        :required="question.mandatory"
-                        class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22%3E%3C/polyline%3E%3C/svg%3E')] bg-no-repeat bg-right-4 pr-10"
-                      >
-                        <option value="">{{ t('forms.hubFillDropdownPh') }}</option>
-                        <option v-for="option in question.options" :key="option" :value="option">{{ option }}</option>
-                      </select>
+                        :question="question"
+                        :value="formData[question.questionId]"
+                        :form="form"
+                        :form-type="form?.formType"
+                        @update="(val) => { formData[question.questionId] = val; handleInputChange(); }"
+                      />
+
+                      <!-- Rating -->
+                      <RatingQuestion
+                        v-else-if="question.type === 'Rating'"
+                        :question="question"
+                        :value="formData[question.questionId]"
+                        :form="form"
+                        :form-type="form?.formType"
+                        @update="(val) => { formData[question.questionId] = val; handleInputChange(); }"
+                      />
                       
                       <!-- Radio / Yes-No -->
                       <div v-else-if="question.type === 'Radio' || question.type === 'Yes-No'" class="space-y-3">
@@ -363,7 +374,7 @@
               <div v-if="section.subsections && section.subsections.length > 0" class="space-y-8">
                 <div v-for="(subsection, subIndex) in section.subsections" :key="subsection.subsectionId || subIndex" class="space-y-6">
                   <!-- Subsection Header -->
-                  <div v-if="subsection.name" class="border-l-4 border-indigo-500 dark:border-indigo-400 pl-4">
+                  <div v-if="shouldShowEngagementSubsectionTitle(form, section, subsection)" class="border-l-4 border-indigo-500 dark:border-indigo-400 pl-4">
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">{{ subsection.name }}</h3>
                   </div>
                   
@@ -440,16 +451,24 @@
                       ></textarea>
                       
                       <!-- Dropdown -->
-                      <select
+                      <DropdownQuestion
                         v-else-if="question.type === 'Dropdown'"
-                        v-model="formData[question.questionId]"
-                        @change="handleInputChange"
-                        :required="question.mandatory"
-                        class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22%3E%3C/polyline%3E%3C/svg%3E')] bg-no-repeat bg-right-4 pr-10"
-                      >
-                        <option value="">{{ t('forms.hubFillDropdownPh') }}</option>
-                        <option v-for="option in question.options" :key="option" :value="option">{{ option }}</option>
-                      </select>
+                        :question="question"
+                        :value="formData[question.questionId]"
+                        :form="form"
+                        :form-type="form?.formType"
+                        @update="(val) => { formData[question.questionId] = val; handleInputChange(); }"
+                      />
+
+                      <!-- Rating -->
+                      <RatingQuestion
+                        v-else-if="question.type === 'Rating'"
+                        :question="question"
+                        :value="formData[question.questionId]"
+                        :form="form"
+                        :form-type="form?.formType"
+                        @update="(val) => { formData[question.questionId] = val; handleInputChange(); }"
+                      />
                       
                       <!-- Radio / Yes-No -->
                       <div v-else-if="question.type === 'Radio' || question.type === 'Yes-No'" class="space-y-3">
@@ -576,7 +595,7 @@
             <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
               <div class="text-sm text-gray-600 dark:text-gray-400">
                 <span v-if="hasUnansweredRequired" class="text-red-600 dark:text-red-400 font-medium">
-                  {{ t('forms.hubFillRequiredRemaining', { count: unansweredRequiredCount }) }}
+                  {{ formatHubFillRequiredRemaining(unansweredRequiredCount) }}
                 </span>
                 <span v-else class="text-green-600 dark:text-green-400 font-medium">
                   {{ t('forms.hubFillAllRequiredAnswered') }}
@@ -617,8 +636,19 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import DatePicker from '@/components/common/DatePicker.vue';
+import RatingQuestion from '@/components/forms/question-types/RatingQuestion.vue';
+import DropdownQuestion from '@/components/forms/question-types/DropdownQuestion.vue';
+import {
+  shouldShowEngagementSectionTitle,
+  shouldShowEngagementSubsectionTitle
+} from '@/utils/engagementFormDisplay';
 
 const { t } = useI18n();
+
+function formatHubFillRequiredRemaining(count) {
+  return t(count === 1 ? 'forms.hubFillRequiredRemainingOne' : 'forms.hubFillRequiredRemainingOther', { count });
+}
+
 const route = useRoute();
 const router = useRouter();
 

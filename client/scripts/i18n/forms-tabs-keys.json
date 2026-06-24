@@ -9,7 +9,7 @@
   "statusReady": { "message": "Ready", "description": "Form status option" },
   "statusActive": { "message": "Active", "description": "Form status option" },
   "statusArchived": { "message": "Archived", "description": "Form status option" },
-  "fieldExpiryDate": { "message": "Expiry Date", "description": "Survey expiry date label" },
+  "fieldExpiryDate": { "message": "Expiry Date & Time", "description": "Survey expiry date and time label" },
   "fieldTags": { "message": "Tags", "description": "Form tags field label" },
   "fieldAddTagPh": { "message": "Add tag…", "description": "Add tag input placeholder" },
   "fieldApprovalRequired": { "message": "Approval Required", "description": "Approval required checkbox" },

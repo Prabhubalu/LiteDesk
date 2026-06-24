@@ -111,20 +111,27 @@ export const validateFormStructure = (form, strict = false) => {
       }
     }
 
-    // For flat mode: check for root questions or visible sections
+    // For flat mode: check for root questions (feedback) or root questions / sections (survey)
     if (isFlatMode) {
+      const isFeedback = formType === 'feedback';
       let hasRootQuestions = false;
       const rootSection = sections.find(s => s._isRootSection);
       if (rootSection && rootSection.subsections && rootSection.subsections.length > 0) {
         const rootQuestions = rootSection.subsections[0].questions || [];
-        hasRootQuestions = rootQuestions.length > 0;
+        hasRootQuestions = rootQuestions.some(q => q?.questionText?.trim());
       }
-      
-      const visibleSectionsForFlat = sections.filter(s => !s._isRootSection);
-      const hasVisibleSections = visibleSectionsForFlat.length > 0;
-      
-      if (!hasRootQuestions && !hasVisibleSections) {
-        errors.push('Survey/Feedback forms must have at least one question or section');
+
+      if (isFeedback) {
+        if (!hasRootQuestions) {
+          errors.push('Feedback forms must have at least one question');
+        }
+      } else {
+        const visibleSectionsForFlat = sections.filter(s => !s._isRootSection);
+        const hasVisibleSections = visibleSectionsForFlat.length > 0;
+
+        if (!hasRootQuestions && !hasVisibleSections) {
+          errors.push('Survey forms must have at least one question or section');
+        }
       }
     }
 

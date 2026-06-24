@@ -1420,11 +1420,7 @@ exports.getPersonLiveChatSession = async (req, res) => {
       personRecord: row,
     });
 
-    if (!summary) {
-      return res.status(404).json({ success: false, message: 'No live chat session linked to this person' });
-    }
-
-    return res.json({ success: true, data: summary });
+    return res.json({ success: true, data: summary ?? null });
   } catch (error) {
     console.error('[peopleController] getPersonLiveChatSession error', error);
     return res.status(500).json({ success: false, message: 'Failed to load live chat session summary' });

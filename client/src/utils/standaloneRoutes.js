@@ -37,12 +37,11 @@ export function isOnPublicShellRoute() {
   return isStandalonePublicRoute(window.location.pathname);
 }
 
-/** Routes the tab bar must not track (public, auth, audit shell, landing). */
+/** Routes the tab bar must not track (public, auth, landing). */
 export function shouldSkipTabRoute(path) {
   const p = resolveRoutePathname(path);
   return (
     p === '/'
-    || p.startsWith('/audit/')
     || isStandalonePublicRoute(path)
     || isAuthLifecyclePublicRoute(path)
   );

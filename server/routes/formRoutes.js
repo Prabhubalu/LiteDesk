@@ -8,6 +8,7 @@ const {
     duplicateForm,
     getFormBySlug,
     getFormAnalytics,
+    getFormResponseSummary,
     getFormKPIs,
     linkFormToEvent,
     enablePublicLink,
@@ -17,6 +18,7 @@ const {
 const {
     submitForm,
     getAllResponses,
+    getResponseMeta,
     getResponses,
     getResponseById,
     updateResponseStatus,
@@ -74,6 +76,7 @@ protectedRouter.get('/organization/:organizationId/audits', checkPermission('for
 
 // Form Analytics (must come before /:id routes)
 protectedRouter.get('/:id/analytics', checkPermission('forms', 'view'), getFormAnalytics);
+protectedRouter.get('/:id/response-summary', checkPermission('forms', 'view'), getFormResponseSummary);
 protectedRouter.get('/:id/kpis', checkPermission('forms', 'view'), getFormKPIs);
 protectedRouter.post('/:id/link-event', checkPermission('forms', 'edit'), linkFormToEvent);
 protectedRouter.post('/:id/enable-public', checkPermission('forms', 'edit'), enablePublicLink);
@@ -96,6 +99,7 @@ protectedRouter.post('/:id/submit', checkPermission('forms', 'create'), submitFo
 
 // All responses route (must come before /:id/responses)
 protectedRouter.get('/responses/all', checkPermission('forms', 'view'), getAllResponses);
+protectedRouter.get('/responses/:responseId/meta', checkPermission('forms', 'view'), getResponseMeta);
 
 // Form responses routes
 protectedRouter.route('/:id/responses')

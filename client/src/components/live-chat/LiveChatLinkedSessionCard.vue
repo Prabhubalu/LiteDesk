@@ -80,14 +80,12 @@ function applySessionRef(ref) {
 
 async function loadSummary() {
   const path = String(props.fetchPath || '').trim();
-  if (!path) {
+  if (!path || !props.sessionRef?.sessionId) {
     summary.value = null;
     return;
   }
 
-  if (props.sessionRef?.sessionId) {
-    applySessionRef(props.sessionRef);
-  }
+  applySessionRef(props.sessionRef);
 
   try {
     const res = await apiClient.getOptional(path, {
@@ -98,12 +96,10 @@ async function loadSummary() {
       summary.value = res.data;
       return;
     }
+    summary.value = null;
   } catch (err) {
     console.warn('[LiveChatLinkedSessionCard] load failed:', err?.message || err);
-  }
-
-  if (!props.sessionRef?.sessionId) {
-    summary.value = null;
+    summary.value = props.sessionRef?.sessionId ? summary.value : null;
   }
 }
 

@@ -1,6 +1,47 @@
 <template>
-  <div class="mx-auto w-full">
+  <div class="mx-auto w-full space-y-4">
+    <div
+      v-if="isEngagementForm"
+      class="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1 dark:border-gray-700 dark:bg-gray-900/60"
+      role="tablist"
+      :aria-label="t('forms.resultsSummaryViewToggle')"
+    >
+      <button
+        type="button"
+        role="tab"
+        class="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+        :class="activeView === 'summary'
+          ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
+          : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'"
+        :aria-selected="activeView === 'summary'"
+        @click="activeView = 'summary'"
+      >
+        {{ t('forms.resultsSummaryTabSummary') }}
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+        :class="activeView === 'individual'
+          ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
+          : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'"
+        :aria-selected="activeView === 'individual'"
+        @click="activeView = 'individual'"
+      >
+        {{ t('forms.resultsSummaryTabIndividual') }}
+      </button>
+    </div>
+
+    <FormRecordResultsSummarySection
+      v-if="isEngagementForm && activeView === 'summary'"
+      :summary="responseSummary"
+      :loading="summaryLoading"
+      :form-name="form?.name || ''"
+      @expand-text="() => fetchResponseSummary(route.params.id, { textPreviewLimit: 200 })"
+    />
+
     <ListView
+      v-else
       :title="listTitle"
       :description="listDescription"
       module-key="forms"
@@ -80,7 +121,7 @@
             {{ calculateOverallScore(row.sectionScores) }}%
           </div>
           <div class="text-xs text-gray-500 dark:text-gray-400">
-            {{ t('forms.hubSectionCount', { count: Object.keys(row.sectionScores).length }) }}
+            {{ formatHubSectionCount(Object.keys(row.sectionScores).length) }}
           </div>
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
@@ -168,16 +209,27 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useTabs } from '@/composables/useTabs';
 import { useAuthStore } from '@/stores/authRegistry';
+import { useFormResponseSummary } from '@/composables/useFormResponseSummary';
+import { isEngagementFormType } from '@/utils/engagementFormDisplay';
 import apiClient from '@/utils/apiClient';
 import ListView from '@/components/common/ListView.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
+import FormRecordResultsSummarySection from '@/components/forms/results/FormRecordResultsSummarySection.vue';
 
 const { t } = useI18n();
+
+function formatHubSectionCount(count) {
+  return t(count === 1 ? 'forms.hubSectionCountOne' : 'forms.hubSectionCountOther', { count });
+}
 const route = useRoute();
 const router = useRouter();
 const { openTab } = useTabs();
+const { summary: responseSummary, loading: summaryLoading, fetchSummary: fetchResponseSummary } = useFormResponseSummary();
+
+const activeView = ref('summary');
+const isEngagementForm = computed(() => isEngagementFormType(form.value?.formType));
 
 const EXECUTION_STATUS_VARIANTS = {
   'Not Started': 'default',
@@ -550,13 +602,30 @@ const exportResponses = async () => {
   }
 };
 
-onMounted(() => {
-  fetchForm();
+onMounted(async () => {
+  await fetchForm();
   fetchResponses();
+  if (route.params.id) {
+    await fetchResponseSummary(route.params.id, { textPreviewLimit: 10 });
+  }
 });
 
-watch(() => route.params.id, () => {
-  fetchForm();
+watch(() => route.params.id, async (formId) => {
+  await fetchForm();
   fetchResponses();
+  if (formId) {
+    await fetchResponseSummary(formId, { textPreviewLimit: 10 });
+  }
 });
+
+watch(
+  () => responseSummary.value?.overview?.totalResponses,
+  (total) => {
+    if (!isEngagementForm.value) {
+      activeView.value = 'individual';
+      return;
+    }
+    activeView.value = total > 0 ? 'summary' : 'individual';
+  }
+);
 </script>

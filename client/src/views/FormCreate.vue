@@ -1,182 +1,205 @@
 <template>
-  <div class="bg-gray-50 dark:bg-gray-900">
-    <div class="w-full mx-auto">
-      <!-- Progress Stepper -->
-      <div
-        class="fixed z-30 shadow-sm transition-[left] duration-150 ease-out"
-        :style="{
-          top: 'var(--tabbar-offset, 64px)',
-          left: `${sidebarOffset}px`,
-          right: '0px'
-        }"
-      >
-        <div class="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          <div class="w-full mx-auto">
-            <nav :aria-label="t('forms.wizardProgressAria')">
-              <ol role="list" class="divide-y divide-gray-300 dark:divide-gray-700 rounded-md border border-gray-300 dark:border-gray-700 md:flex md:divide-y-0">
-                <li
-                  v-for="(step, stepIdx) in steps"
-                  :key="step.id"
-                  class="relative md:flex md:flex-1"
-                >
-                  <a
-                    v-if="step.status === 'complete'"
-                    href="#"
-                    @click.prevent="goToStep(stepIdx)"
-                    class="group flex w-full items-center cursor-pointer"
-                  >
-                    <span class="flex items-center px-6 py-4 text-sm font-medium">
-                      <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 group-hover:bg-indigo-800">
-                        <CheckIcon class="size-6 text-white" aria-hidden="true" />
-                      </span>
-                      <span class="ml-4 text-sm font-medium text-gray-900 dark:text-white">{{ step.name }}</span>
-                    </span>
-                  </a>
-                  <a
-                    v-else-if="step.status === 'current'"
-                    href="#"
-                    @click.prevent
-                    class="flex items-center px-6 py-4 text-sm font-medium cursor-default"
-                    aria-current="step"
-                  >
-                    <span class="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-indigo-600">
-                      <span class="text-indigo-600 dark:text-indigo-400">{{ step.id }}</span>
-                    </span>
-                    <span class="ml-4 text-sm font-medium text-indigo-600 dark:text-indigo-400">{{ step.name }}</span>
-                  </a>
-                  <a
-                    v-else
-                    href="#"
-                    @click.prevent="goToStep(stepIdx)"
-                    class="group flex items-center cursor-pointer"
-                  >
-                    <span class="flex items-center px-6 py-4 text-sm font-medium">
-                      <span class="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 dark:border-gray-600 group-hover:border-gray-400 dark:group-hover:border-gray-500">
-                        <span class="text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-100">{{ step.id }}</span>
-                      </span>
-                      <span class="ml-4 text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-100">{{ step.name }}</span>
-                    </span>
-                  </a>
-                  <template v-if="stepIdx !== steps.length - 1">
-                    <!-- Arrow separator for lg screens and up -->
-                    <div class="absolute top-0 right-0 hidden h-full w-5 md:block" aria-hidden="true">
-                      <svg class="size-full text-gray-300 dark:text-gray-700" viewBox="0 0 22 80" fill="none" preserveAspectRatio="none">
-                        <path d="M0 -2L20 40L0 82" vector-effect="non-scaling-stroke" stroke="currentcolor" stroke-linejoin="round" />
-                      </svg>
-                    </div>
-                  </template>
-                </li>
-              </ol>
-            </nav>
-          </div>
-        </div>
-      </div>
+  <div class="flex h-full min-h-0 flex-col overflow-hidden bg-white dark:bg-gray-800">
+    <!-- Progress Stepper -->
+    <div class="shrink-0 px-4 pt-4 pb-2 lg:px-6 lg:pt-5">
+      <nav :aria-label="t('forms.wizardProgressAria')">
+        <ol
+          role="list"
+          class="w-full overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm md:flex"
+        >
+          <li
+            v-for="(step, stepIdx) in steps"
+            :key="step.id"
+            class="relative md:flex md:flex-1"
+          >
+            <a
+              v-if="step.status === 'complete'"
+              href="#"
+              @click.prevent="goToStep(stepIdx)"
+              class="group flex w-full items-center cursor-pointer"
+            >
+              <span class="flex items-center px-4 py-2.5 text-sm font-medium">
+                <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 group-hover:bg-indigo-800">
+                  <CheckIcon class="size-4 text-white" aria-hidden="true" />
+                </span>
+                <span class="ml-3 text-sm font-medium text-gray-900 dark:text-white">{{ step.name }}</span>
+              </span>
+            </a>
+            <a
+              v-else-if="step.status === 'current'"
+              href="#"
+              @click.prevent
+              class="flex items-center px-4 py-2.5 text-sm font-medium cursor-default"
+              aria-current="step"
+            >
+              <span class="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-indigo-600 text-xs font-semibold">
+                <span class="text-indigo-600 dark:text-indigo-400">{{ step.id }}</span>
+              </span>
+              <span class="ml-3 text-sm font-medium text-indigo-600 dark:text-indigo-400">{{ step.name }}</span>
+            </a>
+            <a
+              v-else
+              href="#"
+              @click.prevent="goToStep(stepIdx)"
+              class="group flex items-center cursor-pointer"
+            >
+              <span class="flex items-center px-4 py-2.5 text-sm font-medium">
+                <span class="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-gray-300 dark:border-gray-600 text-xs font-semibold group-hover:border-gray-400 dark:group-hover:border-gray-500">
+                  <span class="text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-100">{{ step.id }}</span>
+                </span>
+                <span class="ml-3 text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-100">{{ step.name }}</span>
+              </span>
+            </a>
+            <template v-if="stepIdx !== steps.length - 1">
+              <div class="absolute top-0 right-0 hidden h-full w-4 md:block" aria-hidden="true">
+                <svg class="size-full text-gray-200 dark:text-gray-700" viewBox="0 0 22 80" fill="none" preserveAspectRatio="none">
+                  <path d="M0 -2L20 40L0 82" vector-effect="non-scaling-stroke" stroke="currentcolor" stroke-linejoin="round" />
+                </svg>
+              </div>
+            </template>
+          </li>
+        </ol>
+      </nav>
+    </div>
 
-      <!-- Step Content -->
-      <div
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col"
-        :class="currentStepIndex === 1 ? 'overflow-hidden' : 'overflow-y-auto'"
-        :style="{
-          marginTop: `calc(var(--tabbar-offset, 64px) + 8px + 0px)`,
-          minHeight: `calc(100vh - var(--tabbar-offset, 64px) - 72px - 72px - 32px)`,
-          maxHeight: `calc(100vh - var(--tabbar-offset, 64px) - 72px - 72px - 32px)`,
-          height: currentStepIndex === 1 ? `calc(100vh - var(--tabbar-offset, 64px) - 72px - 72px - 32px)` : 'auto',
-          marginBottom: '64px'
-        }"
-      >
-        <!-- Step 1: Form Details -->
-        <div v-if="currentStepIndex === 0" class="space-y-6 flex-1">
+    <!-- Step Content -->
+    <div
+      class="flex flex-1 min-h-0 flex-col bg-white dark:bg-gray-800"
+      :class="currentStepKey === 'questions' ? 'overflow-hidden' : 'overflow-y-auto'"
+    >
+        <!-- Step: Form Details -->
+        <div v-if="currentStepKey === 'details'" class="space-y-6 flex-1">
           <div class="max-w-2xl mx-auto space-y-6 w-full p-6">
-            <div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('forms.tabDetailsHeading') }}</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                {{ t('forms.wizardFormDetailsIntro') }}
-              </p>
-            </div>
-
-            <div class="space-y-4">
-              <!-- Form Name -->
+            <EngagementFormDetailsStep
+              v-if="isEngagementForm"
+              :form="formData"
+              @update="handleEngagementDetailsUpdate"
+            />
+            <template v-else>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {{ t('forms.fieldFormName') }} <span class="text-red-500">*</span>
-                </label>
-                <input
-                  ref="formNameInput"
-                  v-model="formData.name"
-                  type="text"
-                  required
-                  maxlength="255"
-                  :placeholder="t('forms.fieldFormNamePh')"
-                  class="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-indigo-500 transition-all"
-                />
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('forms.tabDetailsHeading') }}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                  {{ t('forms.wizardFormDetailsIntro') }}
+                </p>
               </div>
 
-              <!-- Description -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {{ t('forms.fieldDescription') }}
-                </label>
-                <textarea
-                  v-model="formData.description"
-                  rows="3"
-                  maxlength="1000"
-                  :placeholder="t('forms.fieldDescriptionPh')"
-                  class="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-indigo-500 transition-all"
-                ></textarea>
-              </div>
+              <div class="space-y-4">
+                <div>
+                  <label :class="FORM_FIELD_LABEL_CLASS" for="audit-form-name">
+                    {{ t('forms.fieldFormName') }} <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="audit-form-name"
+                    ref="formNameInput"
+                    v-model="formData.name"
+                    type="text"
+                    required
+                    maxlength="255"
+                    :placeholder="t('forms.fieldFormNamePh')"
+                    :class="FORM_FIELD_INPUT_CLASS"
+                  />
+                </div>
 
-              <!-- Visibility -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {{ t('forms.fieldVisibility') }}
-                </label>
-                <select
-                  v-model="formData.visibility"
-                  class="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-indigo-500 transition-all cursor-pointer"
-                >
-                  <option value="Internal">{{ t('forms.visibilityInternal') }}</option>
-                  <option value="External">{{ t('forms.hubCreateVisibilityExternal') }}</option>
-                </select>
+                <div>
+                  <label :class="FORM_FIELD_LABEL_CLASS" for="audit-form-description">
+                    {{ t('forms.fieldDescription') }}
+                  </label>
+                  <textarea
+                    id="audit-form-description"
+                    v-model="formData.description"
+                    rows="3"
+                    maxlength="1000"
+                    :placeholder="t('forms.fieldDescriptionPh')"
+                    :class="FORM_FIELD_TEXTAREA_CLASS"
+                  />
+                </div>
+
+                <div>
+                  <label :class="FORM_FIELD_LABEL_CLASS" for="audit-form-visibility">
+                    {{ t('forms.fieldVisibility') }}
+                  </label>
+                  <HeadlessSelect
+                    id="audit-form-visibility"
+                    v-model="formData.visibility"
+                    :options="auditVisibilityOptions"
+                    wrapper-class="mt-2"
+                  />
+                </div>
               </div>
-            </div>
+            </template>
           </div>
         </div>
 
-        <!-- Step 2: Sections & Questions -->
-        <div v-else-if="currentStepIndex === 1" class="flex-1 flex flex-col min-h-0">
-          <!-- Sections Builder -->
+        <!-- Step: Questions -->
+        <div v-else-if="currentStepKey === 'questions'" class="flex-1 flex flex-col min-h-0">
+          <div
+            v-if="showEngagementStarters"
+            class="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-4"
+          >
+            <p class="text-sm font-medium text-gray-900 dark:text-white">
+              {{ t('forms.engagementStartersHeading') }}
+            </p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              {{ isSurveyForm ? t('forms.engagementStartersSurveyDesc') : t('forms.engagementStartersFeedbackDesc') }}
+            </p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button
+                v-if="!isSurveyForm"
+                type="button"
+                class="px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                @click="applyEngagementStarter('feedback_quick')"
+              >
+                {{ t('forms.engagementStarterFeedbackQuick') }}
+              </button>
+              <template v-else>
+                <button
+                  type="button"
+                  class="px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                  @click="applyEngagementStarter('survey_satisfaction')"
+                >
+                  {{ t('forms.engagementStarterSurveySatisfaction') }}
+                </button>
+                <button
+                  type="button"
+                  class="px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                  @click="applyEngagementStarter('survey_nps')"
+                >
+                  {{ t('forms.engagementStarterSurveyNps') }}
+                </button>
+              </template>
+            </div>
+          </div>
           <SectionsBuilder
-            :key="`sections-${currentStepIndex}-${(formData.sections || []).length}`"
+            :key="`sections-${currentStepIndex}-${formData.formType}-${(formData.sections || []).length}`"
+            class="flex-1 min-h-0"
             :form="formData"
             @update="handleSectionsUpdate"
           />
         </div>
 
-        <!-- Step 3: Outcomes & Rules -->
-        <div v-else-if="currentStepIndex === 2" class="space-y-6 flex-1">
+        <!-- Step: Outcomes (Audit only) -->
+        <div v-else-if="currentStepKey === 'outcomes'" class="space-y-6 flex-1">
           <div class="max-w-4xl mx-auto space-y-6 w-full p-6">
-            <!-- Show Outcomes & Rules only for Audit forms -->
             <OutcomesAndRules
-              v-if="isAuditForm"
               :key="`outcomes-${currentStepIndex}`"
               :form="formData"
               @update="handleOutcomesUpdate"
             />
-            
-            <!-- Show message for non-Audit forms -->
-            <div v-else class="text-center py-12">
-              <p class="text-gray-600 dark:text-gray-400 mb-2">
-                {{ t('forms.hubCreateOutcomesAuditOnly') }}
-              </p>
-              <p class="text-sm text-gray-500 dark:text-gray-500">
-                {{ t('forms.hubCreateOutcomesSkipped') }}
-              </p>
-            </div>
           </div>
         </div>
 
-        <!-- Step 4: Response Template -->
-        <div v-else-if="currentStepIndex === 3" class="space-y-6 flex-1 overflow-hidden flex flex-col">
+        <!-- Step: Settings (Survey / Feedback) -->
+        <div v-else-if="currentStepKey === 'settings'" class="space-y-6 flex-1">
+          <div class="max-w-3xl mx-auto w-full p-6">
+            <EngagementFormSettingsStep
+              :form="formData"
+              @update="handleEngagementSettingsUpdate"
+            />
+          </div>
+        </div>
+
+        <!-- Step: Response Template (Audit only) -->
+        <div v-else-if="currentStepKey === 'template'" class="space-y-6 flex-1 overflow-hidden flex flex-col">
           <div class="flex-1 overflow-y-auto p-6">
             <ResponseTemplateBuilder
               :key="`template-${currentStepIndex}`"
@@ -186,23 +209,21 @@
           </div>
         </div>
 
-        <!-- Step 5: Preview & Save -->
-        <div v-else-if="currentStepIndex === 4" class="flex-1 flex flex-col min-h-0">
+        <!-- Step: Preview & Save / Publish -->
+        <div v-else-if="currentStepKey === 'preview'" class="flex-1 flex flex-col min-h-0">
           <PreviewAndSave
             :key="`preview-save-${currentStepIndex}`"
             ref="previewAndSaveRef"
             :form="formData"
+            :engagement-mode="isEngagementForm"
           />
         </div>
       </div>
 
-      <!-- Footer Actions -->
-      <div
-        class="fixed bottom-0 z-30 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition-[left] duration-150 ease-out"
-        :style="{ left: `${sidebarOffset}px`, right: '0px' }"
-      >
-        <div class="flex items-center justify-between px-6 py-4">
-          <div class="flex items-center gap-3">
+    <!-- Footer Actions -->
+    <div class="shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div class="flex items-center justify-between px-6 py-4">
+        <div class="flex items-center gap-3">
             <!-- Draft saved indicator (subtle, non-intrusive) -->
             <Transition
               enter-active-class="transition ease-out duration-200"
@@ -227,9 +248,9 @@
               class="px-4 py-2 text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               {{ t('actions.cancel') }}
-            </button>
-          </div>
-          <div class="flex items-center gap-3">
+          </button>
+        </div>
+        <div class="flex items-center gap-3">
             <button
               v-if="currentStepIndex > 0"
               @click="previousStep"
@@ -253,9 +274,8 @@
               class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <span v-if="saving">{{ t('states.saving') }}</span>
-              <span v-else>{{ t('actions.save') }}</span>
-            </button>
-          </div>
+              <span v-else>{{ isEngagementForm ? t('forms.engagementPublishAction') : t('actions.save') }}</span>
+          </button>
         </div>
       </div>
     </div>
@@ -293,7 +313,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount, onActivated, onDeactivated, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount, onActivated, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { CheckIcon } from '@heroicons/vue/24/solid';
@@ -301,12 +321,25 @@ import apiClient from '@/utils/apiClient';
 import { useTabs } from '@/composables/useTabs';
 import { useNotifications, showGlobalNotification } from '@/composables/useNotifications';
 import { useAuthStore } from '@/stores/authRegistry';
+import EngagementFormDetailsStep from '@/components/forms/EngagementFormDetailsStep.vue';
+import EngagementFormSettingsStep from '@/components/forms/EngagementFormSettingsStep.vue';
 import SectionsBuilder from '@/components/forms/SectionsBuilder.vue';
 import FormSettingsTab from '@/components/forms/FormSettingsTab.vue';
 import OutcomesAndRules from '@/components/forms/OutcomesAndRules.vue';
 import ResponseTemplateBuilder from '@/components/forms/ResponseTemplateBuilder.vue';
 import FormPreview from '@/components/forms/FormPreview.vue';
 import PreviewAndSave from '@/components/forms/PreviewAndSave.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import { PROCESS_INPUT_CLASS } from '@/utils/processDesignerConstants';
+import { defaultWebformBranding, mergeWebformBranding } from '@/utils/webformBranding';
+import {
+  normalizeEngagementExpiryForInput,
+  serializeEngagementExpiryForApi
+} from '@/utils/engagementFormDisplay';
+
+const FORM_FIELD_LABEL_CLASS = 'block text-sm/6 font-medium text-gray-900 dark:text-white';
+const FORM_FIELD_INPUT_CLASS = PROCESS_INPUT_CLASS.replace('block w-full', 'block w-full mt-2');
+const FORM_FIELD_TEXTAREA_CLASS = `${FORM_FIELD_INPUT_CLASS} resize-none`;
 
 const { t } = useI18n();
 const router = useRouter();
@@ -332,45 +365,18 @@ const draftSavedMessage = ref('');
 const lastSavedDraft = ref(null);
 const draftSaveInProgress = ref(false);
 const isInternalNavigation = ref(false);
-const getSidebarOffset = () => {
-  if (typeof localStorage === 'undefined') return 256;
-  return localStorage.getItem('arivu-sidebar-collapsed') === 'true' ? 64 : 256;
-};
-const sidebarOffset = ref(getSidebarOffset());
-const refreshSidebarOffset = () => {
-  const next = getSidebarOffset();
-  if (next !== sidebarOffset.value) {
-    sidebarOffset.value = next;
-  }
-};
-let sidebarOffsetInterval = null;
-let sidebarOffsetSyncActive = false;
 
-const startSidebarOffsetSync = () => {
-  if (sidebarOffsetSyncActive) return;
-  sidebarOffsetSyncActive = true;
-  refreshSidebarOffset();
-  window.addEventListener('storage', refreshSidebarOffset);
-  window.addEventListener('resize', refreshSidebarOffset);
-  sidebarOffsetInterval = window.setInterval(refreshSidebarOffset, 200);
-};
+const buildInitialFormData = (formType = 'Audit') => {
+  const normalized = String(formType || 'Audit').toLowerCase();
+  const isSurvey = normalized === 'survey';
+  const isFeedback = normalized === 'feedback';
+  const isEngagement = isSurvey || isFeedback;
 
-const stopSidebarOffsetSync = () => {
-  if (!sidebarOffsetSyncActive) return;
-  sidebarOffsetSyncActive = false;
-  window.removeEventListener('storage', refreshSidebarOffset);
-  window.removeEventListener('resize', refreshSidebarOffset);
-  if (sidebarOffsetInterval) {
-    clearInterval(sidebarOffsetInterval);
-    sidebarOffsetInterval = null;
-  }
-};
-
-const formData = ref({
+  return {
   name: '',
   description: '',
-  formType: 'Audit',
-  visibility: 'Internal',
+  formType: isSurvey ? 'Survey' : isFeedback ? 'Feedback' : 'Audit',
+  visibility: isEngagement ? 'Public' : 'Internal',
   status: 'Draft',
   assignedTo: getDefaultAssignedTo(),
   expiryDate: null,
@@ -379,8 +385,8 @@ const formData = ref({
   sections: [],
   kpiMetrics: {
     compliancePercentage: false,
-    satisfactionPercentage: false,
-    rating: false
+    satisfactionPercentage: isFeedback || isSurvey,
+    rating: isFeedback || isSurvey
   },
   scoringFormula: '(Passed / Total) × 100',
   thresholds: {
@@ -402,9 +408,10 @@ const formData = ref({
   },
   formVersion: 1,
   publicLink: {
-    enabled: false,
+    enabled: isFeedback,
     slug: ''
   },
+  branding: defaultWebformBranding(),
   outcomesAndRules: {
     auditResultRule: 'any_section_fails',
     reportingMetrics: {
@@ -424,51 +431,101 @@ const formData = ref({
     templates: [],
     activeTemplateId: null
   }
-});
+  };
+};
 
-const steps = computed(() => [
-  {
-    id: '01',
-    name: t('forms.wizardStepFormDetails'),
-    status: currentStepIndex.value > 0 ? 'complete' : currentStepIndex.value === 0 ? 'current' : 'upcoming'
-  },
-  {
-    id: '02',
-    name: t('forms.wizardStepSectionsQuestions'),
-    status: currentStepIndex.value > 1 ? 'complete' : currentStepIndex.value === 1 ? 'current' : 'upcoming'
-  },
-  {
-    id: '03',
-    name: t('forms.outcomesHeading'),
-    status: currentStepIndex.value > 2 ? 'complete' : currentStepIndex.value === 2 ? 'current' : 'upcoming'
-  },
-  {
-    id: '04',
-    name: t('forms.tabTemplateHeading'),
-    status: currentStepIndex.value > 3 ? 'complete' : currentStepIndex.value === 3 ? 'current' : 'upcoming'
-  },
-  {
-    id: '05',
-    name: t('forms.previewSaveHeading'),
-    status: currentStepIndex.value === 4 ? 'current' : currentStepIndex.value > 4 ? 'complete' : 'upcoming'
-  }
-]);
+const formData = ref(buildInitialFormData('Audit'));
+
+const resetFormDataForNewForm = (formType = 'Audit') => {
+  formData.value = buildInitialFormData(formType);
+  lastSavedDraft.value = null;
+  draftSaveInProgress.value = false;
+  currentStepIndex.value = 0;
+};
 
 const isAuditForm = computed(() => {
   const formType = (formData.value.formType || 'audit').toLowerCase();
   return formType === 'audit';
 });
 
+const isEngagementForm = computed(() => {
+  const formType = (formData.value.formType || '').toLowerCase();
+  return formType === 'survey' || formType === 'feedback';
+});
+
+const isSurveyForm = computed(() => (formData.value.formType || '').toLowerCase() === 'survey');
+
+const auditVisibilityOptions = computed(() => [
+  { value: 'Internal', label: t('forms.visibilityInternal') },
+  { value: 'External', label: t('forms.hubCreateVisibilityExternal') }
+]);
+
+const wizardStepKeys = computed(() => {
+  if (isEngagementForm.value) {
+    return ['details', 'questions', 'settings', 'preview'];
+  }
+  return ['details', 'questions', 'outcomes', 'template', 'preview'];
+});
+
+const currentStepKey = computed(() => wizardStepKeys.value[currentStepIndex.value] || 'details');
+
+const stepLabels = computed(() => ({
+  details: t('forms.wizardStepFormDetails'),
+  questions: isEngagementForm.value
+    ? t('forms.engagementWizardStepQuestions')
+    : t('forms.wizardStepSectionsQuestions'),
+  outcomes: t('forms.outcomesHeading'),
+  template: t('forms.tabTemplateHeading'),
+  settings: t('forms.engagementWizardStepSettings'),
+  preview: isEngagementForm.value
+    ? t('forms.engagementWizardStepPublish')
+    : t('forms.previewSaveHeading')
+}));
+
+const steps = computed(() =>
+  wizardStepKeys.value.map((key, index) => ({
+    id: String(index + 1).padStart(2, '0'),
+    key,
+    name: stepLabels.value[key] || key,
+    status:
+      currentStepIndex.value > index
+        ? 'complete'
+        : currentStepIndex.value === index
+          ? 'current'
+          : 'upcoming'
+  }))
+);
+
+const engagementQuestionCount = computed(() => {
+  const sections = formData.value.sections || [];
+  let count = 0;
+  for (const section of sections) {
+    if (section._isRootSection) {
+      count += (section.subsections?.[0]?.questions || []).length;
+      continue;
+    }
+    count += (section.questions || []).length;
+    for (const sub of section.subsections || []) {
+      count += (sub.questions || []).length;
+    }
+  }
+  return count;
+});
+
+const showEngagementStarters = computed(() => {
+  return isEngagementForm.value && currentStepKey.value === 'questions' && engagementQuestionCount.value === 0;
+});
+
 const canProceed = computed(() => {
   // Step 0: Form Details - validate mandatory fields
-  if (currentStepIndex.value === 0) {
+  if (currentStepKey.value === 'details') {
     const hasName = formData.value.name && formData.value.name.trim().length > 0;
     const hasFormType = formData.value.formType && formData.value.formType.trim().length > 0;
     return hasName && hasFormType;
   }
   
   // Step 1: Sections & Questions - validate that sections exist and have valid structure
-  if (currentStepIndex.value === 1) {
+  if (currentStepKey.value === 'questions') {
     const sections = formData.value.sections || [];
     const formType = (formData.value.formType || 'audit').toLowerCase();
     const isAudit = formType === 'audit';
@@ -562,22 +619,42 @@ const canProceed = computed(() => {
       }
     }
     
-    // For Survey/Feedback: check for root-level questions or visible sections
-    let hasRootQuestions = false;
+    // For Survey/Feedback: root questions (feedback) or root questions / optional sections (survey)
     if (isFlatMode) {
+      const formType = (formData.value.formType || '').toLowerCase();
+      const isFeedback = formType === 'feedback';
+      let hasRootQuestions = false;
       const rootSection = sections.find(s => s._isRootSection);
-      if (rootSection && rootSection.subsections && rootSection.subsections.length > 0) {
-        const rootQuestions = rootSection.subsections[0].questions || [];
-        hasRootQuestions = rootQuestions.length > 0;
+      if (rootSection?.subsections?.[0]?.questions) {
+        hasRootQuestions = rootSection.subsections[0].questions.some(q => q?.questionText?.trim());
       }
-    }
-    
-    const visibleSectionsForFlat = sections.filter(s => !s._isRootSection);
-    const hasVisibleSections = visibleSectionsForFlat.length > 0;
-    
-    // For flat mode: must have either root questions or visible sections
-    if (isFlatMode && !hasRootQuestions && !hasVisibleSections) {
-      return false;
+
+      if (isFeedback) {
+        if (!hasRootQuestions) {
+          return false;
+        }
+      } else {
+        const visibleSectionsForFlat = sections.filter(s => !s._isRootSection);
+        const hasVisibleSections = visibleSectionsForFlat.length > 0;
+
+        if (!hasRootQuestions && !hasVisibleSections) {
+          return false;
+        }
+
+        if (hasVisibleSections && !hasRootQuestions) {
+          const hasAnyQuestion = visibleSectionsForFlat.some((section) => {
+            if ((section.questions || []).some(q => q?.questionText?.trim())) {
+              return true;
+            }
+            return (section.subsections || []).some(
+              sub => (sub.questions || []).some(q => q?.questionText?.trim())
+            );
+          });
+          if (!hasAnyQuestion) {
+            return false;
+          }
+        }
+      }
     }
     
     // Validate all sections (including root section for flat mode)
@@ -650,23 +727,23 @@ const canProceed = computed(() => {
   }
   
   // Step 2: Outcomes & Rules - validate audit result rule for Audit forms
-  if (currentStepIndex.value === 2) {
-    // For Audit forms, require an audit result rule to be selected
+  if (currentStepKey.value === 'outcomes') {
     if (isAuditForm.value) {
       const outcomes = formData.value.outcomesAndRules || {};
       return !!outcomes.auditResultRule;
     }
-    // For non-Audit forms, this step is skipped, so always allow proceeding
     return true;
   }
-  
-  // Step 3: Response Template - no validation needed (default template is always available)
-  if (currentStepIndex.value === 3) {
+
+  if (currentStepKey.value === 'settings') {
     return true;
   }
-  
-  // Step 4: Preview & Save - validate using PreviewAndSave component
-  if (currentStepIndex.value === 4) {
+
+  if (currentStepKey.value === 'template') {
+    return true;
+  }
+
+  if (currentStepKey.value === 'preview') {
     // Check if PreviewAndSave component is ready
     if (previewAndSaveRef.value && previewAndSaveRef.value.isReady !== undefined) {
       return previewAndSaveRef.value.isReady;
@@ -685,14 +762,17 @@ const canSubmit = computed(() => {
     return false;
   }
   
-  // For Step 5, use PreviewAndSave validation
-  if (currentStepIndex.value === 4) {
+  // For preview step, use PreviewAndSave validation
+  if (currentStepKey.value === 'preview') {
     if (previewAndSaveRef.value && previewAndSaveRef.value.isReady !== undefined) {
       return previewAndSaveRef.value.isReady;
     }
   }
-  
-  // For other steps, check sections exist
+
+  if (isEngagementForm.value) {
+    return engagementQuestionCount.value > 0;
+  }
+
   return formData.value.sections.length > 0;
 });
 
@@ -760,6 +840,10 @@ const applyFormTypeFromQuery = () => {
   if (route.query?.formType) {
     formData.value.formType = String(route.query.formType);
   }
+};
+
+const isNewFormCreateFlow = () => {
+  return !isEditing.value && !route.query?.duplicateFrom && !route.query?.editFrom;
 };
 
 // Function to auto-save as Draft (silent, non-blocking)
@@ -885,43 +969,48 @@ const saveDraft = async (dataToSave = formData.value, showNotification = false) 
     
     // Only include optional fields if they have values
     if (dataToSave.assignedTo) cleanedData.assignedTo = dataToSave.assignedTo;
-    if (dataToSave.expiryDate) cleanedData.expiryDate = dataToSave.expiryDate;
+    if (dataToSave.expiryDate) {
+      cleanedData.expiryDate = serializeEngagementExpiryForApi(dataToSave.expiryDate);
+    }
     if (dataToSave.tags && dataToSave.tags.length > 0) cleanedData.tags = dataToSave.tags;
     if (dataToSave.approvalRequired !== undefined) cleanedData.approvalRequired = dataToSave.approvalRequired;
     if (dataToSave.autoAssignment) cleanedData.autoAssignment = dataToSave.autoAssignment;
     if (dataToSave.workflowOnSubmit) cleanedData.workflowOnSubmit = dataToSave.workflowOnSubmit;
     if (dataToSave.approvalWorkflow) cleanedData.approvalWorkflow = dataToSave.approvalWorkflow;
     
-    // Handle publicLink - only include slug if enabled and not empty
-    // Empty slug strings can cause unique index issues
+    // Handle publicLink — preserve intent; server generates slug when enabled without one
     if (dataToSave.publicLink) {
-      if (dataToSave.publicLink.enabled && dataToSave.publicLink.slug && dataToSave.publicLink.slug.trim()) {
+      const wantsPublicLink = dataToSave.publicLink.enabled === true
+        || (isEngagementForm.value && dataToSave.visibility === 'Public');
+      if (wantsPublicLink) {
         cleanedData.publicLink = {
           enabled: true,
-          slug: dataToSave.publicLink.slug.trim()
+          ...(dataToSave.publicLink.slug?.trim()
+            ? { slug: dataToSave.publicLink.slug.trim() }
+            : {})
         };
       } else {
-        // If not enabled or slug is empty, only include enabled flag
-        cleanedData.publicLink = {
-          enabled: false
-          // Don't include slug if not enabled or empty (avoids unique index conflicts)
-        };
+        cleanedData.publicLink = { enabled: false };
       }
     }
 
+    if (dataToSave.branding) {
+      cleanedData.branding = mergeWebformBranding(dataToSave.branding);
+    }
+
     let response;
-    // Check if we're editing (via route params or query parameter)
-    const formId = route.params.id || formData.value._id || route.query?.editFrom;
-    if (isEditing.value && formId) {
+    const existingFormId = formData.value._id || route.params.id || route.query?.editFrom;
+    if (existingFormId) {
       // Update existing form as Draft
-      console.log('💾 saveDraft: Updating existing form', formId);
-      response = await apiClient.put(`/forms/${formId}`, cleanedData);
+      console.log('💾 saveDraft: Updating existing form', existingFormId);
+      response = await apiClient.put(`/forms/${existingFormId}`, cleanedData);
       console.log('💾 saveDraft: Update response', response);
       
-      // Update formData._id if it wasn't set (for editFrom query parameter)
-      if (response.success && response.data && !formData.value._id) {
+      if (response.success && response.data) {
         formData.value._id = response.data._id;
-        formData.value.formId = response.data._id;
+        if (response.data.formId) {
+          formData.value.formId = response.data.formId;
+        }
       }
     } else if (hasName) {
       // Create new form as Draft (only if has name)
@@ -943,6 +1032,9 @@ const saveDraft = async (dataToSave = formData.value, showNotification = false) 
         
         // Update formData with new ID first
         formData.value._id = formId;
+        if (response.data.formId) {
+          formData.value.formId = response.data.formId;
+        }
         
         // Update the current tab's path directly BEFORE route change
         // This prevents the route watcher from creating a new tab
@@ -1212,82 +1304,16 @@ onMounted(async () => {
   window.addEventListener('beforeunload', handleBeforeUnload);
 
   // If a formType is provided via query (from the picker), prefill it
-  applyFormTypeFromQuery();
+  const queryFormType = route.query?.formType ? String(route.query.formType) : null;
 
   // Check if we're duplicating or editing a form via query parameter
   const duplicateFromId = route.query?.duplicateFrom;
   const editFromId = route.query?.editFrom;
   
   // Reset state for new forms (when not editing and not duplicating)
-  // CRITICAL: Always reset for new forms to ensure clean state
   if (!isEditing.value && !duplicateFromId && !editFromId) {
     console.log('🔵 onMounted: Resetting state for new form');
-    // Reset form data to initial state
-    formData.value = {
-      name: '',
-      description: '',
-      formType: formData.value.formType || 'Audit', // Keep formType if set via query
-      visibility: 'Internal',
-      status: 'Draft',
-      assignedTo: getDefaultAssignedTo(),
-      expiryDate: null,
-      tags: [],
-      approvalRequired: false,
-      sections: [],
-      kpiMetrics: {
-        compliancePercentage: false,
-        satisfactionPercentage: false,
-        rating: false
-      },
-      scoringFormula: '(Passed / Total) × 100',
-      thresholds: {
-        pass: 80,
-        partial: 50
-      },
-      autoAssignment: {
-        enabled: false,
-        linkTo: 'org'
-      },
-      workflowOnSubmit: {
-        notify: [],
-        createTask: false,
-        updateField: null
-      },
-      approvalWorkflow: {
-        enabled: false,
-        approver: null
-      },
-      formVersion: 1,
-      publicLink: {
-        enabled: false,
-        slug: ''
-      },
-      outcomesAndRules: {
-        auditResultRule: 'any_section_fails',
-        reportingMetrics: {
-          overallCompliance: true,
-          sectionWiseCompliance: true,
-          evidenceCompletion: false,
-          averageRating: false
-        },
-        postSubmissionSignals: {
-          emitOnAuditFail: false,
-          emitOnSectionFail: false,
-          emitOnCriticalQuestionFail: false,
-          emitOnMissingEvidence: false
-        }
-      },
-      responseTemplate: {
-        templates: [],
-        activeTemplateId: null
-      }
-    };
-    // Reset last saved draft for new forms
-    lastSavedDraft.value = null;
-    // Reset draft save flag
-    draftSaveInProgress.value = false;
-    // Reset step to first step
-    currentStepIndex.value = 0;
+    resetFormDataForNewForm(queryFormType || 'Audit');
     
     console.log('🔵 onMounted: State reset complete for new form', {
       formName: formData.value.name,
@@ -1326,7 +1352,7 @@ onMounted(async () => {
           // If form is Draft, ensure it stays Draft
           status: loadedForm.status || 'Draft',
           assignedTo: response.data.assignedTo || null,
-          expiryDate: response.data.expiryDate || null,
+          expiryDate: normalizeEngagementExpiryForInput(response.data.expiryDate),
           tags: response.data.tags || [],
           approvalRequired: response.data.approvalRequired || false,
           sections: response.data.sections || [],
@@ -1351,7 +1377,17 @@ onMounted(async () => {
               emitOnCriticalQuestionFail: false,
               emitOnMissingEvidence: false
             }
-          }
+          },
+          publicLink: response.data.publicLink ? { ...response.data.publicLink } : {
+            enabled: false,
+            slug: ''
+          },
+          workflowOnSubmit: response.data.workflowOnSubmit ? { ...response.data.workflowOnSubmit } : {
+            notify: [],
+            createTask: false,
+            updateField: null
+          },
+          branding: mergeWebformBranding(response.data.branding)
         });
         
         // Initialize last saved draft for comparison
@@ -1376,7 +1412,7 @@ onMounted(async () => {
           // Keep the original status
           status: loadedForm.status || 'Draft',
           assignedTo: response.data.assignedTo || null,
-          expiryDate: response.data.expiryDate || null,
+          expiryDate: normalizeEngagementExpiryForInput(response.data.expiryDate),
           tags: response.data.tags ? [...response.data.tags] : [],
           approvalRequired: response.data.approvalRequired || false,
           sections: response.data.sections ? JSON.parse(JSON.stringify(response.data.sections)) : [],
@@ -1405,6 +1441,7 @@ onMounted(async () => {
             enabled: false,
             slug: ''
           },
+          branding: mergeWebformBranding(response.data.branding),
           outcomesAndRules: response.data.outcomesAndRules ? {
             auditResultRule: response.data.outcomesAndRules.auditResultRule || 'any_section_fails',
             reportingMetrics: response.data.outcomesAndRules.reportingMetrics ? { ...response.data.outcomesAndRules.reportingMetrics } : {
@@ -1477,7 +1514,7 @@ onMounted(async () => {
           visibility: sourceForm.visibility || 'Internal',
           status: 'Draft', // Always set to Draft for duplicated forms
           assignedTo: sourceForm.assignedTo || null,
-          expiryDate: sourceForm.expiryDate || null,
+          expiryDate: normalizeEngagementExpiryForInput(sourceForm.expiryDate),
           tags: sourceForm.tags ? [...sourceForm.tags] : [],
           approvalRequired: sourceForm.approvalRequired || false,
           sections: sourceForm.sections ? JSON.parse(JSON.stringify(sourceForm.sections)) : [],
@@ -1506,6 +1543,7 @@ onMounted(async () => {
             enabled: false,
             slug: '' // Don't copy public link
           },
+          branding: mergeWebformBranding(sourceForm.branding),
           outcomesAndRules: sourceForm.outcomesAndRules ? {
             auditResultRule: sourceForm.outcomesAndRules.auditResultRule || 'any_section_fails',
             reportingMetrics: sourceForm.outcomesAndRules.reportingMetrics ? { ...sourceForm.outcomesAndRules.reportingMetrics } : {
@@ -1577,16 +1615,17 @@ onMounted(async () => {
 // Handle keep-alive component activation
 // This is called when a cached component is activated (switched to)
 onActivated(() => {
-  startSidebarOffsetSync();
+  if (isNewFormCreateFlow() && route.query?.formType) {
+    const queryType = String(route.query.formType);
+    if (formData.value.formType !== queryType) {
+      resetFormDataForNewForm(queryType);
+    }
+  }
 
   // Re-setup tab close handler when component is activated
   setTimeout(() => {
     setupTabCloseHandler();
   }, 300);
-});
-
-onDeactivated(() => {
-  stopSidebarOffsetSync();
 });
 
 onBeforeUnmount(() => {
@@ -1620,7 +1659,6 @@ onBeforeUnmount(() => {
   if (typeof autoSaveTimer !== 'undefined' && autoSaveTimer !== null) {
     clearTimeout(autoSaveTimer);
   }
-  stopSidebarOffsetSync();
   window.removeEventListener('beforeunload', handleBeforeUnload);
   
   // Final save attempt before component unmounts (critical fallback)
@@ -1697,7 +1735,15 @@ onBeforeUnmount(() => {
 });
 
 // Keep form type in sync if query changes (e.g., opened with a different type)
-watch(() => route.query.formType, () => {
+watch(() => route.query.formType, (newType, oldType) => {
+  if (!newType) return;
+
+  const nextType = String(newType);
+  if (isNewFormCreateFlow() && oldType && String(oldType) !== nextType) {
+    resetFormDataForNewForm(nextType);
+    return;
+  }
+
   applyFormTypeFromQuery();
 });
 
@@ -1736,72 +1782,8 @@ watch(() => route.path, () => {
 watch(() => route.params.id, (newId, oldId) => {
   // If route changed from editing (has ID) to new form (no ID), reset state
   if (oldId && !newId) {
-    // Reset form data to initial state for new form
-    formData.value = {
-      name: '',
-      description: '',
-      formType: formData.value.formType || 'Audit', // Keep formType if set
-      visibility: 'Internal',
-      status: 'Draft',
-      assignedTo: getDefaultAssignedTo(),
-      expiryDate: null,
-      tags: [],
-      approvalRequired: false,
-      sections: [],
-      kpiMetrics: {
-        compliancePercentage: false,
-        satisfactionPercentage: false,
-        rating: false
-      },
-      scoringFormula: '(Passed / Total) × 100',
-      thresholds: {
-        pass: 80,
-        partial: 50
-      },
-      autoAssignment: {
-        enabled: false,
-        linkTo: 'org'
-      },
-      workflowOnSubmit: {
-        notify: [],
-        createTask: false,
-        updateField: null
-      },
-      approvalWorkflow: {
-        enabled: false,
-        approver: null
-      },
-      formVersion: 1,
-      publicLink: {
-        enabled: false,
-        slug: ''
-      },
-      outcomesAndRules: {
-        auditResultRule: 'any_section_fails',
-        reportingMetrics: {
-          overallCompliance: true,
-          sectionWiseCompliance: true,
-          evidenceCompletion: false,
-          averageRating: false
-        },
-        postSubmissionSignals: {
-          emitOnAuditFail: false,
-          emitOnSectionFail: false,
-          emitOnCriticalQuestionFail: false,
-          emitOnMissingEvidence: false
-        }
-      },
-      responseTemplate: {
-        templates: [],
-        activeTemplateId: null
-      }
-    };
-    // Reset last saved draft for new form
-    lastSavedDraft.value = null;
-    // Reset draft save flag
-    draftSaveInProgress.value = false;
-    // Reset step to first step
-    currentStepIndex.value = 0;
+    const queryFormType = route.query?.formType ? String(route.query.formType) : formData.value.formType || 'Audit';
+    resetFormDataForNewForm(queryFormType);
   }
   // If route changed from new form (no ID) to editing (has ID), update lastSavedDraft
   else if (!oldId && newId) {
@@ -1815,39 +1797,22 @@ watch(() => route.params.id, (newId, oldId) => {
 
 
 const goToStep = (index) => {
-  // Only allow going to completed steps
-  // Before allowing navigation to next step, validate current step
   if (index > currentStepIndex.value && !canProceed.value) {
-    if (currentStepIndex.value === 0) {
-      alert(t('forms.wizardStep0RequiredAlert'));
-    } else if (currentStepIndex.value === 1) {
-      alert(t('forms.hubCreateStep1RequiredAlert'));
-    } else if (currentStepIndex.value === 2 && isAuditForm.value) {
-      alert(t('forms.hubCreateAuditRuleRequired'));
-    }
+    showStepValidationAlert();
     return;
   }
-  
-  // Allow going to any previous step or next step (if validation passes)
+
   if (index <= currentStepIndex.value || (index === currentStepIndex.value + 1 && canProceed.value)) {
     currentStepIndex.value = index;
   }
 };
 
 const nextStep = () => {
-  // Validate before proceeding
   if (!canProceed.value) {
-    // Show a message to the user about what's missing
-    if (currentStepIndex.value === 0) {
-      alert(t('forms.wizardStep0RequiredAlert'));
-    } else if (currentStepIndex.value === 1) {
-      alert(t('forms.hubCreateStep1RequiredAlert'));
-    } else if (currentStepIndex.value === 2 && isAuditForm.value) {
-      alert(t('forms.hubCreateAuditRuleRequired'));
-    }
+    showStepValidationAlert();
     return;
   }
-  
+
   if (currentStepIndex.value < steps.value.length - 1) {
     currentStepIndex.value++;
   }
@@ -1859,17 +1824,159 @@ const previousStep = () => {
   }
 };
 
+const generateEngagementId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+const buildEngagementQuestion = (type, questionText, extra = {}) => ({
+  questionId: generateEngagementId('Q'),
+  type,
+  questionText,
+  helpText: '',
+  required: extra.required ?? false,
+  options: extra.options || [],
+  order: extra.order ?? 0,
+  ...extra
+});
+
+const ensureEngagementTargetQuestions = () => {
+  if (!formData.value.sections) {
+    formData.value.sections = [];
+  }
+
+  let rootSection = formData.value.sections.find((s) => s._isRootSection);
+  if (!rootSection) {
+    rootSection = {
+      sectionId: generateEngagementId('SEC'),
+      name: '',
+      weightage: 0,
+      subsections: [{
+        subsectionId: generateEngagementId('SUB'),
+        name: '',
+        weightage: 0,
+        questions: [],
+        order: 0
+      }],
+      questions: [],
+      order: 0,
+      _isRootSection: true
+    };
+    formData.value.sections.unshift(rootSection);
+  }
+
+  const isFeedback = formData.value.formType?.toLowerCase() === 'feedback';
+  const visibleSection = !isFeedback
+    ? formData.value.sections.find((s) => !s._isRootSection)
+    : null;
+  if (visibleSection) {
+    if (!visibleSection.subsections?.length) {
+      visibleSection.subsections = [{
+        subsectionId: generateEngagementId('SUB'),
+        name: t('forms.hubCreateSubsectionDefault', { number: 1 }),
+        weightage: 0,
+        questions: [],
+        order: 0
+      }];
+    }
+    if (!visibleSection.subsections[0].questions) {
+      visibleSection.subsections[0].questions = [];
+    }
+    return visibleSection.subsections[0].questions;
+  }
+
+  if (!rootSection.subsections?.[0]) {
+    rootSection.subsections = [{
+      subsectionId: generateEngagementId('SUB'),
+      name: '',
+      weightage: 0,
+      questions: [],
+      order: 0
+    }];
+  }
+  if (!rootSection.subsections[0].questions) {
+    rootSection.subsections[0].questions = [];
+  }
+  return rootSection.subsections[0].questions;
+};
+
+const applyEngagementStarter = (starterKey) => {
+  const questions = ensureEngagementTargetQuestions();
+  const isFeedback = formData.value.formType?.toLowerCase() === 'feedback';
+
+  const starterSets = {
+    feedback_quick: [
+      buildEngagementQuestion('Rating', t('forms.engagementStarterFeedbackRating'), { required: true, order: 0 }),
+      buildEngagementQuestion('Textarea', t('forms.engagementStarterFeedbackComment'), { order: 1 })
+    ],
+    survey_satisfaction: [
+      buildEngagementQuestion('Rating', t('forms.engagementStarterSurveyRating'), { required: true, order: 0 }),
+      buildEngagementQuestion('Dropdown', t('forms.engagementStarterSurveyEase'), {
+        required: true,
+        order: 1,
+        options: [
+          t('forms.engagementStarterSurveyEaseOpt1'),
+          t('forms.engagementStarterSurveyEaseOpt2'),
+          t('forms.engagementStarterSurveyEaseOpt3'),
+          t('forms.engagementStarterSurveyEaseOpt4'),
+          t('forms.engagementStarterSurveyEaseOpt5')
+        ]
+      }),
+      buildEngagementQuestion('Textarea', t('forms.engagementStarterSurveyImprove'), { order: 2 })
+    ],
+    survey_nps: [
+      buildEngagementQuestion('Dropdown', t('forms.engagementStarterNpsQuestion'), {
+        required: true,
+        order: 0,
+        options: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+      }),
+      buildEngagementQuestion('Textarea', t('forms.engagementStarterNpsFollowUp'), { order: 1 })
+    ]
+  };
+
+  const selected = starterSets[starterKey];
+  if (!selected) return;
+
+  if (isFeedback && starterKey !== 'feedback_quick') return;
+
+  questions.splice(0, questions.length, ...selected.map((q, index) => ({
+    ...q,
+    order: index
+  })));
+
+  // Trigger SectionsBuilder sync when structure markers are intact.
+  formData.value.sections = [...formData.value.sections];
+};
+
+const handleEngagementDetailsUpdate = (updatedForm) => {
+  Object.assign(formData.value, updatedForm);
+};
+
+const handleEngagementSettingsUpdate = (updatedForm) => {
+  Object.assign(formData.value, updatedForm);
+};
+
+const showStepValidationAlert = () => {
+  if (currentStepKey.value === 'details') {
+    alert(t('forms.wizardStep0RequiredAlert'));
+    return;
+  }
+  if (currentStepKey.value === 'questions') {
+    alert(isEngagementForm.value
+      ? t('forms.engagementQuestionsRequiredAlert')
+      : t('forms.hubCreateStep1RequiredAlert'));
+    return;
+  }
+  if (currentStepKey.value === 'outcomes' && isAuditForm.value) {
+    alert(t('forms.hubCreateAuditRuleRequired'));
+  }
+};
+
 const handleSectionsUpdate = (updatedForm) => {
-  // Merge all form updates from sections builder
   if (updatedForm.sections) {
     formData.value.sections = updatedForm.sections;
   }
-  // Merge any other fields that might have been updated
   Object.assign(formData.value, updatedForm);
 };
 
 const handleSettingsUpdate = (updatedForm) => {
-  // Merge all settings updates
   Object.assign(formData.value, updatedForm);
 };
 
@@ -1884,19 +1991,74 @@ const handleTemplateUpdate = (updatedForm) => {
 };
 
 // Clean form data before submission (remove empty subsections)
+const getEngagementPersistSectionName = (formName) => {
+  const trimmed = String(formName || '').trim();
+  return trimmed || t('forms.engagementDefaultSectionName');
+};
+
+const getEngagementPersistSubsectionName = (index = 0) => {
+  return t('forms.hubCreateSubsectionDefault', { number: index + 1 });
+};
+
+const normalizeEngagementSectionsForSubmit = (cleaned) => {
+  const formType = (cleaned.formType || '').toLowerCase();
+  if (formType !== 'survey' && formType !== 'feedback') return;
+
+  const sections = cleaned.sections || [];
+  const rootSection = sections.find((s) => s._isRootSection);
+  const rootQuestions = (rootSection?.subsections?.[0]?.questions || [])
+    .filter((q) => q?.questionText?.trim());
+  const visibleSections = sections.filter((s) => !s._isRootSection);
+
+  const visibleHasQuestions = visibleSections.some((section) => {
+    if (section.questions?.length) return true;
+    return (section.subsections || []).some((sub) => sub.questions?.length);
+  });
+
+  if (rootQuestions.length > 0 && !visibleHasQuestions) {
+    cleaned.sections = [{
+      sectionId: rootSection?.sectionId || generateEngagementId('SEC'),
+      name: getEngagementPersistSectionName(cleaned.name),
+      weightage: 0,
+      subsections: [{
+        subsectionId: rootSection?.subsections?.[0]?.subsectionId || generateEngagementId('SUB'),
+        name: getEngagementPersistSubsectionName(0),
+        weightage: 0,
+        questions: rootQuestions,
+        order: 0
+      }],
+      questions: [],
+      order: 0
+    }];
+  } else {
+    cleaned.sections = visibleSections;
+  }
+};
+
 const cleanFormDataForSubmit = (data) => {
-  const cleaned = JSON.parse(JSON.stringify(data)); // Deep clone
+  const cleaned = JSON.parse(JSON.stringify(data));
+  const isEngagementForm = ['survey', 'feedback'].includes(String(cleaned.formType || '').toLowerCase());
+  normalizeEngagementSectionsForSubmit(cleaned);
   if (cleaned.sections && Array.isArray(cleaned.sections)) {
     cleaned.sections = cleaned.sections
       .filter(section => {
-        // Remove root sections and sections with empty names
         if (section._isRootSection) return false;
+        if (isEngagementForm) {
+          if (section.questions?.some(q => q?.questionText?.trim())) return true;
+          return (section.subsections || []).some(
+            sub => (sub.questions || []).some(q => q?.questionText?.trim())
+          );
+        }
         if (!section.name || !section.name.trim()) return false;
         return true;
       })
       .map(section => {
         const cleanedSection = { ...section };
         delete cleanedSection._isRootSection;
+
+        if (isEngagementForm && (!cleanedSection.name || !cleanedSection.name.trim())) {
+          cleanedSection.name = getEngagementPersistSectionName(cleaned.name);
+        }
         
         // Clean section-level questions
         if (cleanedSection.questions && Array.isArray(cleanedSection.questions)) {
@@ -1918,9 +2080,10 @@ const cleanFormDataForSubmit = (data) => {
                 });
               }
               
-              // Assign default name if empty
               if (!cleanedSubsection.name || !cleanedSubsection.name.trim()) {
-                cleanedSubsection.name = t('forms.hubCreateSubsectionDefault', { number: index + 1 });
+                cleanedSubsection.name = isEngagementForm
+                  ? getEngagementPersistSubsectionName(index)
+                  : t('forms.hubCreateSubsectionDefault', { number: index + 1 });
               }
               
               return cleanedSubsection;
@@ -1934,6 +2097,9 @@ const cleanFormDataForSubmit = (data) => {
         
         return cleanedSection;
       });
+  }
+  if (cleaned.expiryDate) {
+    cleaned.expiryDate = serializeEngagementExpiryForApi(cleaned.expiryDate);
   }
   return cleaned;
 };
@@ -1966,20 +2132,30 @@ const handleSubmit = async () => {
   try {
     // Clean form data before submission (remove empty subsections)
     const cleanedFormData = cleanFormDataForSubmit(formData.value);
+
+    if (isEngagementForm.value) {
+      const wantsPublicLink = cleanedFormData.publicLink?.enabled === true
+        || cleanedFormData.visibility === 'Public';
+      if (wantsPublicLink) {
+        cleanedFormData.publicLink = {
+          enabled: true,
+          ...(cleanedFormData.publicLink?.slug?.trim()
+            ? { slug: cleanedFormData.publicLink.slug.trim() }
+            : {})
+        };
+      }
+    }
     
     // EXPLICIT transition: Draft → Ready
     // This is the ONLY place where status changes from Draft
     // Auto-save never changes status, only explicit Save does
-    cleanedFormData.status = 'Ready';
+    cleanedFormData.status = isEngagementForm.value ? 'Active' : 'Ready';
     
     let response;
-    if (isEditing.value) {
-      const formId = getFormId();
-      if (!formId) {
-        throw new Error(t('forms.hubCreateFormIdRequired'));
-      }
-      console.log('💾 saveForm: Updating form:', formId);
-      response = await apiClient.put(`/forms/${formId}`, cleanedFormData);
+    const existingFormId = getFormId();
+    if (existingFormId) {
+      console.log('💾 saveForm: Updating form:', existingFormId);
+      response = await apiClient.put(`/forms/${existingFormId}`, cleanedFormData);
     } else {
       console.log('💾 saveForm: Creating new form');
       response = await apiClient.post('/forms', cleanedFormData);

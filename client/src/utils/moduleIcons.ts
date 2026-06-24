@@ -1,4 +1,5 @@
 import {
+  ClipboardDocumentListIcon,
   CreditCardIcon,
   CubeIcon,
   DocumentCurrencyDollarIcon,
@@ -13,7 +14,8 @@ export const MODULE_ICON_IDS: Record<string, string> = {
   sales_orders: 'shopping-cart',
   invoices: 'document-currency-dollar',
   payments: 'credit-card',
-  inventory: 'cube'
+  inventory: 'cube',
+  responses: 'clipboard-document-list'
 };
 
 export const MODULE_ICON_COMPONENTS: Record<string, Component> = {
@@ -21,7 +23,8 @@ export const MODULE_ICON_COMPONENTS: Record<string, Component> = {
   sales_orders: ShoppingCartIcon,
   invoices: DocumentCurrencyDollarIcon,
   payments: CreditCardIcon,
-  inventory: CubeIcon
+  inventory: CubeIcon,
+  responses: ClipboardDocumentListIcon
 };
 
 const ROUTE_SLUG_TO_MODULE_KEY: Record<string, string> = {
@@ -36,7 +39,8 @@ const LEGACY_EMOJI_BY_MODULE: Record<string, Record<string, string>> = {
   quotes: { '🧾': 'document-text' },
   sales_orders: { '📦': 'shopping-cart' },
   invoices: { '🧾': 'document-currency-dollar' },
-  payments: { '💳': 'credit-card' }
+  payments: { '💳': 'credit-card' },
+  responses: { '📋': 'clipboard-document-list' }
 };
 
 export function normalizeModuleKey(key?: string): string {

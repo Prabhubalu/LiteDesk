@@ -19,6 +19,13 @@
       :case-id="effectiveRecordId"
       @close="$emit('close')"
     />
+    <ResponseRecordPage
+      v-else-if="adapterKey === 'response'"
+      :embed="embed"
+      :record-id="effectiveRecordId"
+      :form-id="effectiveFormId"
+      @close="$emit('close')"
+    />
     <GenericRecordContent
       v-else
       :module-key="effectiveModuleKey"
@@ -39,6 +46,7 @@ import { getRecordAdapterKey } from '@/components/record-page/adapters/adapterRe
 const DealRecordPage = defineAsyncComponent(() => import('@/pages/deals/DealRecordPage.vue'));
 const TaskRecordPage = defineAsyncComponent(() => import('@/pages/tasks/TaskRecordPage.vue'));
 const CaseRecordPage = defineAsyncComponent(() => import('@/pages/cases/CaseRecordPage.vue'));
+const ResponseRecordPage = defineAsyncComponent(() => import('@/pages/responses/ResponseRecordPage.vue'));
 const GenericRecordContent = defineAsyncComponent(
   () => import('@/components/record-page/GenericRecordContent.vue')
 );
@@ -63,6 +71,7 @@ const effectiveModuleKey = computed(() => {
   if (meta) return String(meta).toLowerCase().trim();
   if (route.name === 'deal-detail') return 'deals';
   if (route.name === 'task-detail') return 'tasks';
+  if (route.name === 'form-detail') return 'forms';
   const fromParams = route.params?.moduleKey;
   if (fromParams) return String(fromParams).toLowerCase().trim();
   const segment = route.path.split('/').filter(Boolean)[0];
@@ -71,7 +80,17 @@ const effectiveModuleKey = computed(() => {
 
 const effectiveRecordId = computed(() => {
   if (props.embed && props.recordId) return props.recordId;
-  return route.params?.id ?? route.params?.recordId ?? '';
+  return route.params?.responseId ?? route.params?.id ?? route.params?.recordId ?? '';
+});
+
+const effectiveFormId = computed(() => {
+  const name = String(route.name || '');
+  if (name === 'form-response-detail' || name === 'audit-form-response-detail') {
+    return route.params?.id ?? null;
+  }
+  const queryFormId = route.query?.formId;
+  if (queryFormId) return String(queryFormId);
+  return null;
 });
 
 const adapterKey = computed(() => getRecordAdapterKey(effectiveModuleKey.value));

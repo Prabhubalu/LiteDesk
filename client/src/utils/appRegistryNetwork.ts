@@ -229,11 +229,14 @@ function injectPortalKnowledgeModule(registry: AppRegistry): void {
 function addPlatformModulesToRegistry(registry: AppRegistry, entityModules: any[] | undefined): void {
   if (!entityModules?.length) return;
 
-  const moduleKeysInApps = new Set<string>();
+  // App-scoped projections (Audit /audit/responses, etc.) must not suppress platform entity nav.
+  const moduleKeysOwnedByBusinessApps = new Set<string>();
   for (const app of Object.values(registry)) {
     if (!app || app.appKey === 'PLATFORM') continue;
+    const appKeyUpper = String(app.appKey).toUpperCase();
+    if (appKeyUpper === 'AUDIT' || appKeyUpper === 'PORTAL') continue;
     for (const module of app.modules || []) {
-      if (module.moduleKey) moduleKeysInApps.add(module.moduleKey);
+      if (module.moduleKey) moduleKeysOwnedByBusinessApps.add(module.moduleKey);
     }
   }
 
@@ -254,7 +257,7 @@ function addPlatformModulesToRegistry(registry: AppRegistry, entityModules: any[
   }));
 
   const platformModules = platformModulesRaw.filter(
-    (module: { moduleKey: string }) => !moduleKeysInApps.has(module.moduleKey)
+    (module: { moduleKey: string }) => !moduleKeysOwnedByBusinessApps.has(module.moduleKey)
   );
 
   registry['PLATFORM'] = {
