@@ -896,8 +896,8 @@ const routes = [
   {
     path: '/forms/:id/detail',
     name: 'form-detail',
-    component: () => import('@/views/FormDetail.vue'),
-    meta: { requiresAuth: true, requiresPermission: { module: 'forms', action: 'view' } }
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'forms', action: 'view' }, moduleKey: 'forms' }
   },
   {
     path: '/forms/:id/responses',
@@ -908,8 +908,13 @@ const routes = [
   {
     path: '/forms/:id/responses/:responseId',
     name: 'form-response-detail',
-    component: () => import('@/views/FormResponseDetail.vue'),
-    meta: { requiresAuth: true, requiresPermission: { module: 'forms', action: 'view' } }
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'responses', action: 'view' },
+      moduleKey: 'responses',
+      appKey: 'PLATFORM'
+    }
   },
   {
     path: '/forms/:id/fill',
@@ -921,14 +926,24 @@ const routes = [
     path: '/responses',
     name: 'responses',
     component: () => import('@/views/Responses.vue'),
-    meta: { requiresAuth: true, requiresPermission: { module: 'forms', action: 'view' } }
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'responses', action: 'view' },
+      moduleKey: 'responses',
+      appKey: 'PLATFORM'
+    }
   },
-  // Phase 0I.2: Response Detail (Read-Only)
+  // Response Detail (Read-Only)
   {
     path: '/responses/:id',
     name: 'response-detail',
-    component: () => import('@/views/ResponseDetail.vue'),
-    meta: { requiresAuth: true, requiresPermission: { module: 'forms', action: 'view' } }
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'responses', action: 'view' },
+      moduleKey: 'responses',
+      appKey: 'PLATFORM'
+    }
   },
   // Audit App routes
   ...auditRoutes,

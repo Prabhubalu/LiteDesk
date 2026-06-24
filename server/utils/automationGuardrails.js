@@ -14,8 +14,8 @@
  * Phase 0I.1: Responses can be used as triggers and in conditions later,
  * but no executable automation is introduced now.
  * 
- * Phase 0I.3: Response review actions are Sales-owned. Only Sales can execute
- * review actions. Audit App and Portal are read-only.
+ * Phase 0I.3: Response review actions are Platform-owned. Only Platform execution
+ * controllers may execute review actions. Audit App and Portal are read-only.
  * 
  * ============================================================================
  */
@@ -42,12 +42,7 @@ async function canUseModuleInAutomation(appKey, moduleKey) {
         }
 
         // Phase 0I.1: Responses can be used as triggers and in conditions (future)
-        // For now, Responses themselves are not automated, but they trigger automation
-        // This guardrail ensures Responses are properly registered for future use
-        if (appKey.toLowerCase() === 'sales' && moduleKey.toLowerCase() === 'responses') {
-            // Responses can be used as triggers (form submission triggers)
-            // Responses can be used in conditions (check reviewStatus, executionStatus)
-            // But Responses themselves are not automated entities
+        if (moduleKey.toLowerCase() === 'responses') {
             return {
                 allowed: true,
                 reason: 'RESPONSES_CAN_BE_USED_AS_TRIGGERS_AND_IN_CONDITIONS',
@@ -255,16 +250,16 @@ function getResponsesAutomationMetadata() {
  * Phase 0I.3: Check if a Response review action is allowed
  * 
  * ⚠️ SAFETY: This is a guardrail function. It checks metadata only.
- * Actual execution must occur via Sales execution controllers.
- * 
+ * Actual execution must occur via Platform execution controllers.
+ *
  * Rules enforced:
  * - Process Designer may discover actions (metadata)
- * - Only Sales can ever execute them
+ * - Only Platform execution controllers may execute them
  * - Audit App / Portal cannot invoke
- * 
+ *
  * @param {Object} context - Execution context
  * @param {string} context.executionDomain - Execution domain (should be 'RESPONSE')
- * @param {string} context.appKey - Application key (should be 'Sales' for execution)
+ * @param {string} context.appKey - Application key of the request context
  * @param {string} context.intent - Intent ('DISCOVER' or 'EXECUTE')
  * @param {string} actionKey - Review action key (APPROVE, REJECT, CLOSE)
  * @returns {boolean} - Whether action is allowed in this context
@@ -286,9 +281,10 @@ function isResponseReviewActionAllowed(context, actionKey) {
         return true;
     }
 
-    // For execution, ONLY Sales can execute
+    // For execution, read-only apps cannot invoke Platform-owned actions
     if (intent === 'EXECUTE') {
-        return appKey === 'SALES';
+        const readOnlyApps = new Set(['AUDIT', 'PORTAL']);
+        return !readOnlyApps.has(String(appKey || '').toUpperCase());
     }
 
     // Unknown intent, deny by default

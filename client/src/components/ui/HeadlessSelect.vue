@@ -143,10 +143,9 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, computed, watch, onBeforeUnmount, nextTick } from 'vue';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import { ChevronUpDownIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
-
 const props = defineProps({
   modelValue: { type: [String, Number, null], default: null },
   /** Options: { value: string|number, label: string }[] */
@@ -239,6 +238,7 @@ function clearSearch() {
 }
 
 function syncListboxOpenState(open) {
+  if (listboxOpen.value === open && listboxWasOpen === open) return '';
   if (listboxWasOpen && !open) {
     clearSearch();
   }

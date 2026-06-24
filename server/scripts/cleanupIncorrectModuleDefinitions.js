@@ -17,7 +17,7 @@ const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || process.en
 const DRY_RUN = process.argv.includes('--dry-run');
 
 // Core entity module keys that should ONLY have appKey: 'platform'
-const CORE_ENTITY_KEYS = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes'];
+const CORE_ENTITY_KEYS = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'responses', 'quotes'];
 
 async function cleanupIncorrectModuleDefinitions() {
     try {

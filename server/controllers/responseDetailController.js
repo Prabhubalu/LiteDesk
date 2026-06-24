@@ -15,7 +15,17 @@ const FormResponse = require('../models/FormResponse');
 const Form = require('../models/Form');
 const Event = require('../models/Event');
 const User = require('../models/User');
+const { APP_KEYS } = require('../constants/appKeys');
 const executionDomains = require('../constants/executionDomains');
+
+/** Tenant apps with org-scoped read access to responses (platform execution domain). */
+const TENANT_RESPONSE_READ_APPS = new Set([
+  APP_KEYS.SALES,
+  APP_KEYS.HELPDESK,
+  APP_KEYS.PROJECTS,
+  APP_KEYS.LMS,
+  APP_KEYS.INVENTORY
+]);
 
 /**
  * Get response detail (read-only)
@@ -156,7 +166,7 @@ exports.getResponseDetail = async (req, res) => {
     const responseDetail = {
       id: response._id.toString(),
       responseId: response.responseId,
-      formId: response.formId.toString(),
+      formId: response.formId ? response.formId.toString() : null,
       formName: form?.name || 'Unknown Form',
       eventId: eventReference?.id?.toString(),
       eventReference,
@@ -198,10 +208,10 @@ exports.getResponseDetail = async (req, res) => {
  * Phase 0I.2: App boundary enforcement (ownership and app context only, no role checks)
  */
 function checkAppBoundaryAccess(appKey, response, currentUser) {
-  const normalizedAppKey = (appKey || 'Sales').toUpperCase();
+  const normalizedAppKey = (appKey || APP_KEYS.SALES).toUpperCase();
 
-  // Sales: Full read-only access
-  if (normalizedAppKey === 'Sales') {
+  // Tenant apps: org isolation is enforced in the query; allow read within tenant.
+  if (TENANT_RESPONSE_READ_APPS.has(normalizedAppKey)) {
     return { allowed: true };
   }
 

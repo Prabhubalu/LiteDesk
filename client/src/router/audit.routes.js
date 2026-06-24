@@ -53,8 +53,13 @@ const auditRoutes = [
       {
         path: 'forms/:id/responses/:responseId',
         name: 'audit-form-response-detail',
-        component: () => import('@/views/FormResponseDetail.vue'),
-        meta: { requiresAuth: true, requiresAuditApp: true }
+        component: () => import('@/pages/ModuleRecordPage.vue'),
+        meta: {
+          requiresAuth: true,
+          requiresAuditApp: true,
+          moduleKey: 'responses',
+          appKey: 'AUDIT'
+        }
       },
       {
         path: 'settings/notifications',

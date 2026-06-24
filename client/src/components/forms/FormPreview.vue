@@ -1,9 +1,19 @@
 <template>
   <div class="space-y-6">
 
-    <div v-if="form" class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+    <div
+      v-if="form"
+      :class="formSurfaceClass"
+      :style="brandingStyle"
+    >
       <!-- Form Header -->
-      <div class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+      <div v-if="!hideHeader" class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+        <img
+          v-if="isEngagementForm && branding.logoUrl"
+          :src="resolveLogoUrl(branding.logoUrl)"
+          alt=""
+          class="mx-auto mb-4 max-h-12 w-auto object-contain"
+        />
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ form.name }}</h1>
         <p v-if="form.description" class="text-gray-600 dark:text-gray-400">{{ form.description }}</p>
         <div class="flex items-center gap-4 mt-2">
@@ -33,7 +43,7 @@
           class="space-y-4"
         >
           <!-- Section Header (only show if section has a name) -->
-          <h2 v-if="section.name && section.name.trim()" class="text-xl font-semibold text-gray-900 dark:text-white border-b pb-2">
+          <h2 v-if="shouldShowEngagementSectionTitle(form, section)" class="text-xl font-semibold text-gray-900 dark:text-white border-b pb-2">
             {{ section.name }}
           </h2>
 
@@ -134,7 +144,7 @@
             class="ml-4 space-y-3"
           >
             <!-- Subsection Header (only show if subsection has a name) -->
-            <h3 v-if="subsection.name && subsection.name.trim()" class="text-lg font-medium text-gray-800 dark:text-gray-200">
+            <h3 v-if="shouldShowEngagementSubsectionTitle(form, section, subsection)" class="text-lg font-medium text-gray-800 dark:text-gray-200">
               {{ subsection.name }}
             </h3>
 
@@ -232,7 +242,9 @@
         <div v-if="!readOnly" class="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
           <button
             type="submit"
-            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-all"
+            :class="isEngagementForm
+              ? 'px-6 py-2 text-white rounded-lg font-medium transition-all bg-[var(--wf-accent)] hover:opacity-90'
+              : 'px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-all'"
           >
             {{ t('forms.previewSubmitForm') }}
           </button>
@@ -257,6 +269,16 @@ import RatingQuestion from './question-types/RatingQuestion.vue';
 import YesNoQuestion from './question-types/YesNoQuestion.vue';
 import FileQuestion from './question-types/FileQuestion.vue';
 import SignatureQuestion from './question-types/SignatureQuestion.vue';
+import {
+  shouldShowEngagementSectionTitle,
+  shouldShowEngagementSubsectionTitle
+} from '@/utils/engagementFormDisplay';
+import {
+  mergeWebformBranding,
+  webformBrandingCssVars,
+  webformBrandingSurfaceClasses
+} from '@/utils/webformBranding';
+import { resolveWebformImageUrl } from '@/utils/webformFormatters';
 
 const { t } = useI18n();
 
@@ -268,6 +290,14 @@ const props = defineProps({
   readOnly: {
     type: Boolean,
     default: false
+  },
+  hideHeader: {
+    type: Boolean,
+    default: false
+  },
+  embedded: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -276,10 +306,49 @@ const emit = defineEmits(['close', 'submit']);
 const previewData = ref({});
 const evidenceData = ref({});
 
-// Get visible sections (filter out root sections for flat mode)
+const isEngagementForm = computed(() => {
+  const formType = String(props.form?.formType || '').toLowerCase();
+  return formType === 'survey' || formType === 'feedback';
+});
+
+const branding = computed(() => mergeWebformBranding(props.form?.branding));
+const brandingStyle = computed(() => (
+  isEngagementForm.value ? webformBrandingCssVars(branding.value) : {}
+));
+
+const formSurfaceClass = computed(() => {
+  if (props.embedded) {
+    return isEngagementForm.value
+      ? ['p-4 sm:p-6', webformBrandingSurfaceClasses(branding.value)].join(' ')
+      : 'p-4 sm:p-6';
+  }
+  if (isEngagementForm.value) {
+    return ['bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6', webformBrandingSurfaceClasses(branding.value)].join(' ');
+  }
+  return 'bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6';
+});
+
+const resolveLogoUrl = (url) => resolveWebformImageUrl(url);
+
+// Get visible sections (filter out root sections for flat mode, unless they hold all questions)
 const visibleSections = computed(() => {
   if (!props.form?.sections) return [];
-  return props.form.sections.filter(section => !section._isRootSection);
+
+  const sections = props.form.sections;
+  const nonRootSections = sections.filter((section) => !section._isRootSection);
+
+  if (nonRootSections.length > 0) {
+    return nonRootSections;
+  }
+
+  const rootSection = sections.find((section) => section._isRootSection);
+  if (!rootSection) return [];
+
+  const hasRootQuestions =
+    (rootSection.questions || []).length > 0 ||
+    (rootSection.subsections || []).some((sub) => (sub.questions || []).length > 0);
+
+  return hasRootQuestions ? [rootSection] : [];
 });
 
 // Check if a question should be visible based on conditional logic

@@ -72,6 +72,7 @@ export const ROUTE_TITLE_KEYS = {
   '/tasks': 'navigation.moduleTasks',
   '/events': 'navigation.moduleEvents',
   '/forms': 'navigation.moduleForms',
+  '/responses': 'navigation.moduleResponses',
   '/calendar': 'navigation.moduleEvents',
   '/imports': 'navigation.moduleImports',
   '/documents': 'navigation.moduleDocuments',
@@ -92,6 +93,7 @@ export const ROUTE_TITLE_KEYS = {
   '/settings/automation/flows': 'navigation.tabBusinessFlows',
   '/audit/dashboard': 'navigation.auditDashboard',
   '/audit/audits': 'navigation.tabMyAudits',
+  '/audit/responses': 'navigation.moduleResponses',
   '/platform/attention': 'navigation.attention',
   '/platform/apps': 'navigation.apps',
 };

@@ -154,7 +154,7 @@ const correctiveActionSchema = new Schema({
  * - Closed
  *
  * NOTE:
- * - SALES is the sole authority for state transitions
+ * - Platform is the sole authority for FormResponse state transitions
  * - Audit App and Portal consume this state read-only
  * - Response lifecycle logic lives only inside FormResponse model
  * - No logic duplication - all state transitions handled here

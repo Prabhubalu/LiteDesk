@@ -118,7 +118,16 @@ export function hasPermission(
   }
   
   // Check specific permission
-  return snapshot.permissions[permission] === true;
+  if (snapshot.permissions[permission] === true) {
+    return true;
+  }
+
+  // Responses inherits Forms access until roles explicitly grant responses.*
+  if (permission === 'responses.view' || permission === 'responses.read') {
+    return snapshot.permissions['forms.view'] === true;
+  }
+
+  return false;
 }
 
 /**

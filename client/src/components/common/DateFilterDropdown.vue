@@ -26,15 +26,7 @@
         </span>
       </PopoverButton>
 
-      <Transition
-        enter-active-class="transition duration-100 ease-out"
-        enter-from-class="opacity-0"
-        enter-to-class="opacity-100"
-        leave-active-class="transition duration-100 ease-in"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
-        <Teleport to="body" :disabled="!teleportOptions">
+      <Teleport to="body" :disabled="!teleportOptions">
           <PopoverPanel
             v-if="!teleportOptions || open"
             ref="panelRef"
@@ -139,7 +131,6 @@
           </div>
           </PopoverPanel>
         </Teleport>
-      </Transition>
     </Popover>
   </div>
 </template>
@@ -147,7 +138,6 @@
 <script setup>
 import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
-
 const { t } = useI18n();
 import { resolveFilterAllLabel } from '@/platform/filters/filterAllLabelResolver';
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue';
@@ -227,6 +217,7 @@ function syncTeleportPosition() {
 }
 
 function syncOpenState(open) {
+  if (popoverOpen.value === open) return '';
   popoverOpen.value = open;
   return '';
 }

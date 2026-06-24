@@ -254,7 +254,7 @@
 
               <!-- Record Edit Button (Desktop only) - For forms: only show for Draft/Ready status -->
               <button
-                v-if="props.recordType !== 'forms' || (props.record?.status === 'Draft' || props.record?.status === 'Ready')"
+                v-if="props.recordType !== 'forms' || canEditForm(props.record?.status, props.record?.formType)"
                 @click="openEditDrawer"
                 class="hidden lg:inline-flex px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors items-center border border-gray-200 dark:border-gray-600"
               >
@@ -288,7 +288,7 @@
                 >
                   <MenuItems class="absolute right-0 mt-2 w-48 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10">
                     <!-- Edit (Mobile/Tablet only) - For forms: only show for Draft/Ready status -->
-                    <MenuItem v-if="props.recordType !== 'forms' || (props.record?.status === 'Draft' || props.record?.status === 'Ready')" v-slot="{ active }" class="lg:hidden">
+                    <MenuItem v-if="props.recordType !== 'forms' || canEditForm(props.record?.status, props.record?.formType)" v-slot="{ active }" class="lg:hidden">
                       <button
                         @click="openEditDrawer"
                         :class="[
@@ -1650,6 +1650,7 @@ import LifecycleStageWidget from '@/components/common/metrics/LifecycleStageWidg
 import KeyFieldsWidget from '@/components/common/metrics/KeyFieldsWidget.vue';
 import FormAnalyticsWidget from '@/components/forms/widgets/FormAnalyticsWidget.vue';
 import FormPreview from '@/components/forms/FormPreview.vue';
+import { canEditForm } from '@/utils/formEditPermissions';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import apiClient from '@/utils/apiClient';

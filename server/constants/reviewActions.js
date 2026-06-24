@@ -13,13 +13,13 @@
  * 
  * Purpose:
  * - Teach the platform what review actions exist
- * - Declare who owns execution (SALES)
+ * - Declare who owns execution (PLATFORM)
  * - Declare which apps can observe
  * - Enable Process Designer discovery (future)
  * - Enable UI rendering without guessing (future)
  * 
  * Rules:
- * - All actions are SALES-owned
+ * - All actions are Platform-owned
  * - Audit App and Portal are read-only
  * - Actions can only be executed from specific review states
  * - Process Designer can discover but not execute
@@ -34,7 +34,7 @@
  * during the review phase (after executionStatus = 'Submitted').
  * 
  * ⚠️ SAFETY: These are declarations only, not executable logic.
- * Any execution must occur via SALES execution controllers only.
+ * Any execution must occur via Platform execution controllers only.
  */
 const RESPONSE_REVIEW_ACTIONS = {
   APPROVE: {
@@ -48,9 +48,9 @@ const RESPONSE_REVIEW_ACTIONS = {
     // Whether ownership of the record is required
     requiresOwnership: true,
     // Which execution domain owns this action
-    executionDomain: 'SALES',
-    // Which apps can see this action (but SALES is the only executor)
-    exposedToApps: ['SALES'],
+    executionDomain: 'PLATFORM',
+    // Which apps can see this action (Platform is the executor)
+    exposedToApps: ['PLATFORM'],
     // Whether Process Designer can automate this action
     automationAllowed: true,
     // UI hints (for future use)
@@ -69,8 +69,8 @@ const RESPONSE_REVIEW_ACTIONS = {
     allowedFrom: ['Needs Auditor Review'],
     resultsIn: 'Rejected',
     requiresOwnership: true,
-    executionDomain: 'CRM',
-    exposedToApps: ['CRM'],
+    executionDomain: 'PLATFORM',
+    exposedToApps: ['PLATFORM'],
     automationAllowed: true,
     ui: {
       icon: 'x-circle',
@@ -88,8 +88,8 @@ const RESPONSE_REVIEW_ACTIONS = {
     allowedFrom: ['Approved'],
     resultsIn: 'Closed',
     requiresOwnership: true,
-    executionDomain: 'CRM',
-    exposedToApps: ['CRM'],
+    executionDomain: 'PLATFORM',
+    exposedToApps: ['PLATFORM'],
     automationAllowed: true,
     ui: {
       icon: 'lock-closed',

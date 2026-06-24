@@ -48,11 +48,20 @@
               {{ t('documents.openEditor') }}
             </button>
             <button
+              v-if="canViewFormResponses"
+              type="button"
+              class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+              @click="viewFormResponses"
+            >
+              {{ t('common.summaryViewResponses') }}
+            </button>
+            <button
+              v-if="canEditFormRecord"
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               :aria-label="t('actions.edit')"
               :title="t('actions.edit')"
-              @click="showEditModal = true"
+              @click="handleEditRecord"
             >
               <PencilSquareIcon class="w-5 h-5" />
             </button>
@@ -143,8 +152,21 @@
                       <span>{{ t('records.genericSendEmail') }}</span>
                     </button>
                   </MenuItem>
+                  <MenuItem v-if="canArchiveFormRecord" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
+                      ]"
+                      @click="handleArchiveForm"
+                    >
+                      <ArchiveBoxIcon class="w-4 h-4" />
+                      <span>{{ t('actions.archive') }}</span>
+                    </button>
+                  </MenuItem>
                   <hr class="my-1 border-gray-200 dark:border-gray-700" />
-                  <MenuItem v-slot="{ active }">
+                  <MenuItem v-if="canDeleteFormRecord" v-slot="{ active }">
                     <button
                       type="button"
                       :class="[
@@ -248,11 +270,20 @@
             class="shrink-0"
           />
           <div class="min-w-0 flex-1">
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2 min-w-0">
               <EditableTitle
                 :title="recordTitle"
-                :can-edit="canEditRecord"
+                :can-edit="canEditRecordTitle"
                 @save="handleTitleSave"
+              />
+              <template v-if="isFormsModule && formRecordSubtitle">
+                <span class="text-gray-300 dark:text-gray-600" aria-hidden="true">·</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400 truncate">{{ formRecordSubtitle }}</span>
+              </template>
+              <BadgeCell
+                v-if="isFormsModule && record?.status"
+                :value="record.status"
+                :variant-map="formStatusBadgeVariantMap"
               />
               <BadgeCell
                 v-if="isEventsModule && eventLifecycleStatus"
@@ -285,7 +316,7 @@
         />
 
         <LiveChatLinkedSessionCard
-          v-if="isPeopleModule && record && !expandedLeftSection"
+          v-if="isPeopleModule && record?.liveChat?.sessionId && !expandedLeftSection"
           :fetch-path="peopleLiveChatSessionPath"
           :session-ref="record.liveChat"
           class="mt-4"
@@ -420,9 +451,36 @@
           @rescheduled="onAppointmentRescheduled"
         />
 
+        <FormRecordShareLinkPanel
+          v-if="isFormsModule && !expandedLeftSection && record && isEngagementForm"
+          class="mt-4"
+          :record="record"
+          :can-manage="canManageEngagementShareLink"
+          @updated="handleFormShareLinkUpdated"
+        />
+
+        <div
+          v-if="isFormsModule && !expandedLeftSection && record && showFormNotActiveBanner"
+          class="mt-4 rounded-xl border border-gray-200 bg-white p-8 text-center dark:border-gray-700 dark:bg-gray-800"
+        >
+          <DocumentTextIcon class="mx-auto mb-4 h-10 w-10 text-gray-400 dark:text-gray-500" />
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('common.summaryFormNotActive') }}</h3>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ formNotActiveHint }}</p>
+        </div>
+
+        <FormRecordAnalyticsStrip
+          v-if="canViewFormResponses && !expandedLeftSection"
+          class="mt-4"
+          :loading="formAnalyticsLoading || formResponseSummaryLoading"
+          :statistics="formAnalytics?.statistics"
+          :form-meta="formAnalytics?.form"
+          :summary-overview="formResponseSummary?.overview"
+          :is-engagement-form="isEngagementForm"
+        />
+
         <!-- Section stack: show when collapsed, or when expanded to details/related (adapter returns only that section) -->
         <section
-          v-if="record && genericSections.length && (!expandedLeftSection || ['description', 'catalog', 'details', 'related', 'lines', 'revisions', 'conversion'].includes(expandedLeftSection))"
+          v-if="record && genericSections.length && (!expandedLeftSection || ['description', 'catalog', 'details', 'related', 'lines', 'revisions', 'conversion', 'preview', 'responses'].includes(expandedLeftSection))"
           :class="[
             expandedLeftSection === 'lines'
               ? 'flex-1 min-h-0 flex flex-col overflow-hidden mt-2'
@@ -490,11 +548,12 @@
               <ArrowTopRightOnSquareIcon class="w-5 h-5" />
             </button>
             <button
+              v-if="canEditFormRecord"
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               :aria-label="t('actions.edit')"
               :title="t('actions.edit')"
-              @click="showEditModal = true"
+              @click="handleEditRecord"
             >
               <PencilSquareIcon class="w-5 h-5" />
             </button>
@@ -585,8 +644,21 @@
                       <span>{{ t('records.genericSendEmail') }}</span>
                     </button>
                   </MenuItem>
+                  <MenuItem v-if="canArchiveFormRecord" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
+                      ]"
+                      @click="handleArchiveForm"
+                    >
+                      <ArchiveBoxIcon class="w-4 h-4" />
+                      <span>{{ t('actions.archive') }}</span>
+                    </button>
+                  </MenuItem>
                   <hr class="my-1 border-gray-200 dark:border-gray-700" />
-                  <MenuItem v-slot="{ active }">
+                  <MenuItem v-if="canDeleteFormRecord" v-slot="{ active }">
                     <button
                       type="button"
                       :class="[
@@ -636,6 +708,33 @@
               @update:activityFilterUntagged="activityFilterUntagged = $event"
               @update:newCommentText="newCommentText = $event"
             />
+          </template>
+          <template v-if="isFormsModule" #tab-preview>
+            <div class="flex h-full flex-col">
+              <div class="record-context-panel__header flex flex-shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.tabPreview') }}</h2>
+              </div>
+              <div class="min-h-0 flex-1 overflow-y-auto p-4">
+                <FormRecordPreviewSection :record="record" :adapter="genericAdapter" :context="sectionContext" />
+              </div>
+            </div>
+          </template>
+          <template v-if="canViewFormResponses" #tab-responses>
+            <div class="flex h-full flex-col">
+              <div class="record-context-panel__header flex flex-shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.tabResponses') }}</h2>
+                <button
+                  type="button"
+                  class="text-sm font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+                  @click="viewFormResponses"
+                >
+                  {{ t('common.summaryViewAllResponses') }}
+                </button>
+              </div>
+              <div class="min-h-0 flex-1 overflow-y-auto p-4">
+                <FormRecordResponsesHub :record="record" :adapter="genericAdapter" :context="sectionContext" />
+              </div>
+            </div>
           </template>
           <template #tab-related>
             <div class="flex flex-col h-full">
@@ -957,7 +1056,9 @@ import { getInvoiceActivityMessage } from '@/components/activity/adapters/invoic
 import { getPaymentActivityMessage } from '@/components/activity/adapters/paymentActivityUiAdapter';
 import { getDocumentActivityMessage } from '@/components/activity/adapters/documentActivityUiAdapter';
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
-import { getModuleRecordCrudPathBase, getModuleRecordRoutePathBase } from '@/utils/moduleRecordApiPath';
+import { getModuleRecordCrudPathBase, getModuleRecordDetailPath } from '@/utils/moduleRecordApiPath';
+import { canShowFormResponses } from '@/utils/engagementFormDisplay';
+import { canEditForm, canHardDeleteForm } from '@/utils/formEditPermissions';
 import {
   extractIdFromFormValue,
   getOrgContactCoordinatedPatches,
@@ -1004,6 +1105,11 @@ import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.v
 import AutomationContext from '@/components/automation/AutomationContext.vue';
 import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import { createGenericRecordAdapter } from '@/components/record-page/adapters/genericRecordAdapter';
+import { createFormRecordAdapter } from '@/components/record-page/adapters/formRecordAdapter';
+import FormRecordAnalyticsStrip from '@/components/record-page/sections/FormRecordAnalyticsStrip.vue';
+import FormRecordPreviewSection from '@/components/record-page/sections/FormRecordPreviewSection.vue';
+import FormRecordShareLinkPanel from '@/components/record-page/sections/FormRecordShareLinkPanel.vue';
+import FormRecordResponsesHub from '@/components/record-page/sections/FormRecordResponsesHub.vue';
 import { createItemsRecordAdapter } from '@/components/record-page/adapters/itemsRecordAdapter';
 import { createQuotesRecordAdapter } from '@/components/record-page/adapters/quotesRecordAdapter';
 import { createSalesOrdersRecordAdapter } from '@/components/record-page/adapters/salesOrdersRecordAdapter';
@@ -1044,6 +1150,7 @@ import {
   TagIcon,
   EllipsisVerticalIcon,
   DocumentDuplicateIcon,
+  ArchiveBoxIcon,
   ArrowDownTrayIcon,
   EnvelopeIcon,
   LinkIcon,
@@ -1053,7 +1160,12 @@ import {
   ArrowsPointingInIcon,
   ArrowTopRightOnSquareIcon,
   ArrowRightCircleIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  ClockIcon,
+  EyeIcon,
+  ClipboardDocumentListIcon,
+  PuzzlePieceIcon,
+  Bars3BottomLeftIcon
 } from '@heroicons/vue/24/outline';
 import { getModuleIconComponent } from '@/utils/moduleIcons';
 import Avatar from '@/components/common/Avatar.vue';
@@ -1110,7 +1222,7 @@ const {
 } = useDocuments();
 const notifications = useNotifications();
 const { guardAndOpenEmailCompose } = useOpenEmailCompose();
-const { openTab, activeTabId, findTabById, updateTabTitle, replaceActiveTab } = useTabs();
+const { openTab, activeTabId, findTabById, findTabByPath, switchToTab, updateTabTitle, replaceActiveTab } = useTabs();
 const recordLayoutIsMobile = inject('recordLayoutIsMobile', ref(false));
 const quickPreviewNav = inject('quickPreviewNav', null);
 
@@ -1337,6 +1449,79 @@ const recordCrudPathBase = computed(() =>
     routePath: route.path
   })
 );
+const recordRouteOptions = computed(() => ({
+  appKey: route.meta?.appKey,
+  routePath: route.path
+}));
+function recordDetailPathForId(recordId) {
+  return getModuleRecordDetailPath(props.moduleKey, recordId, recordRouteOptions.value);
+}
+const isFormsModule = computed(() => moduleKeyLower.value === 'forms');
+const isFormActive = computed(() => isFormsModule.value && record.value?.status === 'Active');
+const isEngagementForm = computed(() => {
+  if (!isFormsModule.value || !record.value) return false;
+  const type = String(record.value.formType || '').toLowerCase();
+  return type === 'survey' || type === 'feedback';
+});
+const hasFormPublicLink = computed(() => {
+  const link = record.value?.publicLink;
+  return Boolean(link?.enabled && link?.slug);
+});
+const showFormNotActiveBanner = computed(() => {
+  if (!isFormsModule.value || isFormActive.value) return false;
+  if (isEngagementForm.value && hasFormPublicLink.value) return false;
+  return true;
+});
+const formNotActiveHint = computed(() => {
+  if (isEngagementForm.value) {
+    return t('forms.recordNotActiveEngagementHint');
+  }
+  return t('common.summaryFormNotActiveHint');
+});
+const canEditFormRecord = computed(() => {
+  if (!isFormsModule.value || !record.value) return true;
+  return canEditForm(record.value.status, record.value.formType);
+});
+const canManageEngagementShareLink = computed(() => {
+  if (!isFormsModule.value || !isEngagementForm.value || !record.value) return false;
+  if (String(record.value.status || '') === 'Archived') return false;
+  return canEditRecord.value;
+});
+const canArchiveFormRecord = computed(() => {
+  if (!isFormsModule.value || !record.value) return false;
+  return String(record.value.status || '') !== 'Archived';
+});
+const canViewFormResponses = computed(() => {
+  if (!isFormsModule.value || !record.value) return false;
+  return canShowFormResponses(record.value);
+});
+const canDeleteFormRecord = computed(() => {
+  if (!isFormsModule.value) return true;
+  return canHardDeleteForm(record.value, formResponseSummary.value);
+});
+const formRecordSubtitle = computed(() => {
+  if (!isFormsModule.value || !record.value) return '';
+  return record.value.formType || '';
+});
+const formStatusBadgeVariantMap = {
+  Draft: 'default',
+  Ready: 'info',
+  Active: 'success',
+  Archived: 'default'
+};
+
+const formAnalyticsLoading = ref(false);
+const formAnalytics = ref(null);
+const formResponseSummary = ref(null);
+const formResponseSummaryLoading = ref(false);
+const formResponses = ref([]);
+const formResponsesLoading = ref(false);
+const formResponsesPagination = ref({
+  currentPage: 1,
+  limit: 10,
+  total: 0,
+  totalPages: 1
+});
 
 async function updateRecordFields(payload) {
   const path = `${recordCrudPathBase.value}/${props.recordId}`;
@@ -1524,7 +1709,7 @@ const closeAddRelatedRecordDrawer = () => {
   pendingAddRelatedLinkPayload.value = null;
 };
 
-const canLinkRecords = computed(() => authStore.can(props.moduleKey, 'edit'));
+const canLinkRecords = computed(() => !isFormsModule.value && authStore.can(props.moduleKey, 'edit'));
 
 const { context: genericRecordContext, contextRevision, load: loadGenericRecordContext, canUnlink: genericRecordContextCanUnlink } = useRecordContext(
   () => recordContextAppKey.value,
@@ -1586,7 +1771,7 @@ const genericRelatedGroupsFromContext = computed(() => {
         const moduleKey = (r.moduleKey || '').toLowerCase();
         const appKey = (r.appKey || 'SALES').toUpperCase();
         const path = moduleKey && id
-          ? `${getModuleRecordRoutePathBase(moduleKey, { appKey: r.appKey })}/${id}`
+          ? getModuleRecordDetailPath(moduleKey, id, { appKey: r.appKey })
           : null;
         const personName = [r.first_name || r.firstName || '', r.last_name || r.lastName || '']
           .filter(Boolean)
@@ -1724,6 +1909,10 @@ const recordAvatarIcon = computed(() => {
 });
 
 const canEditRecord = computed(() => authStore.can?.(props.moduleKey, 'edit') ?? false);
+const canEditRecordTitle = computed(() => {
+  if (isFormsModule.value) return canEditFormRecord.value && canEditRecord.value;
+  return canEditRecord.value;
+});
 const canViewDocuments = computed(() => authStore.can?.('documents', 'view') ?? false);
 const canCreateDocuments = computed(() => authStore.can?.('documents', 'create') ?? false);
 const canEditDocuments = computed(() => authStore.can?.('documents', 'edit') ?? false);
@@ -1919,15 +2108,21 @@ async function handleUnlinkGenericRelated(item, group, rec) {
 
 const rightPaneTabs = computed(() => {
   const tabs = [
-    { id: 'activity', name: t('records.genericTabActivity') },
-    { id: 'related', name: t('records.relatedTitle') }
+    { id: 'activity', name: t('records.genericTabActivity'), icon: ClockIcon },
+    { id: 'related', name: t('records.relatedTitle'), icon: LinkIcon }
   ];
+  if (isFormsModule.value) {
+    tabs.splice(1, 0, { id: 'preview', name: t('records.tabPreview'), icon: EyeIcon });
+    if (canViewFormResponses.value) {
+      tabs.splice(2, 0, { id: 'responses', name: t('records.tabResponses'), icon: ClipboardDocumentListIcon });
+    }
+  }
   if (showRecordDocumentsTab.value) {
-    tabs.push({ id: 'documents', name: t('records.genericTabDocuments') });
+    tabs.push({ id: 'documents', name: t('records.genericTabDocuments'), icon: DocumentDuplicateIcon });
   }
   tabs.push(
-    { id: 'details', name: t('records.detailsTitle') },
-    { id: 'integrations', name: t('records.genericIntegrations') }
+    { id: 'details', name: t('records.detailsTitle'), icon: Bars3BottomLeftIcon },
+    { id: 'integrations', name: t('records.genericIntegrations'), icon: PuzzlePieceIcon }
   );
   return tabs;
 });
@@ -2188,7 +2383,9 @@ const genericAdapter = computed(() => {
   // Track related-record context so main-area RelatedSection re-renders on link/unlink.
   genericRelatedGroupsFromContext.value;
   contextRevision.value;
-  const adapterFactory = moduleKeyLower.value === 'items'
+  const adapterFactory = moduleKeyLower.value === 'forms'
+    ? createFormRecordAdapter
+    : moduleKeyLower.value === 'items'
     ? createItemsRecordAdapter
     : moduleKeyLower.value === 'documents'
       ? createDocumentsRecordAdapter
@@ -2206,15 +2403,16 @@ const genericAdapter = computed(() => {
     formatDate: (d) => (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
     moduleDefinition: moduleDefinition.value,
     inventoryEnabled: authStore.inventoryEnabled,
-    canEditDetails: (record, fieldKey) => {
+    canEditDetails: (rec, fieldKey) => {
       if (!canEditRecord.value) return false;
+      if (moduleKeyLower.value === 'forms') return canEditFormRecord.value;
       if (moduleKeyLower.value !== 'invoices') return true;
       const key = normalizeFieldKeyLoose(fieldKey);
-      const status = String(record?.status || 'Draft');
+      const status = String(rec?.status || 'Draft');
       if (status === 'Draft') return true;
       if (['Posted', 'Partially Paid'].includes(status)) {
-        if (key === 'organizationrefid') return !extractIdFromFormValue(record?.organizationRefId);
-        if (key === 'contactid') return !extractIdFromFormValue(record?.contactId);
+        if (key === 'organizationrefid') return !extractIdFromFormValue(rec?.organizationRefId);
+        if (key === 'contactid') return !extractIdFromFormValue(rec?.contactId);
       }
       return false;
     },
@@ -2339,7 +2537,7 @@ const genericAdapter = computed(() => {
     openRelatedItem: (item) => {
       const path = item?.recordPath
         || (item?.moduleKey && item?.id
-          ? `${getModuleRecordRoutePathBase(item.moduleKey, { appKey: item.appKey })}/${item.id}`
+          ? getModuleRecordDetailPath(item.moduleKey, item.id, { appKey: item.appKey })
           : null);
       if (path) openTab(path, { background: false, insertAdjacent: true });
     },
@@ -2356,7 +2554,7 @@ const genericAdapter = computed(() => {
         console.error('Save description error:', e);
       }
     },
-    canEditDescription: canEditRecord.value,
+    canEditDescription: canEditRecordTitle.value,
     expandedLeftSection,
     openLeftSection: (key) => { expandedLeftSection.value = key; },
     canViewDescriptionHistory,
@@ -2541,6 +2739,17 @@ const sectionContext = computed(() => {
       await refreshRecordActivity();
     };
     base.registerRichContentFlush = registerRichContentFlush;
+  }
+  if (isFormsModule.value) {
+    base.formResponses = formResponses.value;
+    base.formResponsesLoading = formResponsesLoading.value;
+    base.formResponsesPagination = formResponsesPagination.value;
+    base.fetchFormResponses = fetchFormResponses;
+    base.viewFormResponseDetail = viewFormResponseDetail;
+    base.viewAllFormResponses = viewFormResponses;
+    base.formResponseSummary = formResponseSummary.value;
+    base.formResponseSummaryLoading = formResponseSummaryLoading.value;
+    base.fetchFormResponseSummary = fetchFormResponseSummary;
   }
   if (moduleKeyLower.value === 'sales_orders') {
     base.billingRefreshToken = salesOrderBillingRefreshToken.value;
@@ -3445,10 +3654,29 @@ async function loadDeferredRecordData(runId, loadedRecord) {
     loadCaseLookups(lowerModuleKey, isCurrentRun),
     loadQuoteLookups(lowerModuleKey, isCurrentRun),
     loadDocumentFolderLookups(lowerModuleKey, isCurrentRun),
-    loadUserLookup(isCurrentRun)
+    loadUserLookup(isCurrentRun),
+    loadFormRecordDeferredData(lowerModuleKey, isCurrentRun)
   ];
 
   await Promise.allSettled(deferredLoads);
+}
+
+async function loadFormRecordDeferredData(lowerModuleKey, isCurrentRun) {
+  if (lowerModuleKey !== 'forms') {
+    if (isCurrentRun()) {
+      formAnalytics.value = null;
+      formResponseSummary.value = null;
+      formResponses.value = [];
+    }
+    return;
+  }
+  formResponsesPagination.value.currentPage = 1;
+  await Promise.allSettled([
+    fetchFormAnalytics(),
+    fetchFormResponses(1),
+    fetchFormResponseSummary()
+  ]);
+  if (!isCurrentRun()) return;
 }
 
 async function loadActivityForRecord(isCurrentRun) {
@@ -4039,12 +4267,12 @@ function handleTitleSave(value) {
 
 function goToPrevious() {
   if (!neighbors.value.previousId) return;
-  const path = `${recordCrudPathBase.value}/${neighbors.value.previousId}`;
+  const path = recordDetailPathForId(neighbors.value.previousId);
   replaceActiveTab(path, { title: moduleLabelSingular.value || 'Record' });
 }
 function goToNext() {
   if (!neighbors.value.nextId) return;
-  const path = `${recordCrudPathBase.value}/${neighbors.value.nextId}`;
+  const path = recordDetailPathForId(neighbors.value.nextId);
   replaceActiveTab(path, { title: moduleLabelSingular.value || 'Record' });
 }
 
@@ -4074,7 +4302,7 @@ function copyUrl() {
 
 function getRecordPageUrl() {
   if (!record.value?._id) return '';
-  const path = `${recordCrudPathBase.value}/${record.value._id}`;
+  const path = recordDetailPathForId(record.value._id);
   const resolved = router.resolve(path);
   const href = resolved.href.startsWith('http') ? resolved.href : new URL(resolved.href, window.location.origin).href;
   return href;
@@ -4082,7 +4310,7 @@ function getRecordPageUrl() {
 
 function openRecordInNewTab() {
   if (!record.value?._id) return;
-  const path = `${recordCrudPathBase.value}/${record.value._id}`;
+  const path = recordDetailPathForId(record.value._id);
   openTab(path, { title: moduleLabelSingular.value || 'Record', background: false, insertAdjacent: true });
   emit('close');
 }
@@ -4113,8 +4341,162 @@ const DUPLICATE_OMIT_KEYS = new Set([
   'deletedAt', 'deletedBy', 'deletionReason', 'activityLogs', 'organizationId'
 ]);
 
+function handleFormShareLinkUpdated(updatedForm) {
+  if (!updatedForm || !record.value) return;
+  record.value = { ...record.value, ...updatedForm };
+}
+
+function handleEditRecord() {
+  if (!record.value) return;
+  if (isFormsModule.value) {
+    if (!canEditForm(record.value.status, record.value.formType)) return;
+    const editPath = `/forms/create?editFrom=${record.value._id}`;
+    const existingTab = findTabByPath(editPath);
+    if (existingTab) {
+      switchToTab(existingTab.id);
+    } else {
+      openTab(editPath, {
+        title: t('forms.hubTabEditForm', { name: record.value.name || t('forms.hubUntitledForm') }),
+        icon: 'clipboard-document',
+        insertAdjacent: true
+      });
+    }
+    return;
+  }
+  showEditModal.value = true;
+}
+
+function viewFormResponses() {
+  if (!record.value?._id || !canShowFormResponses(record.value)) return;
+  const formId = record.value._id;
+  openTab(`/forms/${formId}/responses`, {
+    name: `form-responses-${formId}`,
+    title: `${record.value.name || t('forms.hubUntitledForm')} - ${t('records.tabResponses')}`,
+    insertAdjacent: true,
+    params: { formId }
+  });
+  router.push(`/forms/${formId}/responses`);
+}
+
+async function fetchFormResponseSummary(options = {}) {
+  if (!canViewFormResponses.value || !props.recordId || !isEngagementForm.value) {
+    formResponseSummary.value = null;
+    return;
+  }
+  formResponseSummaryLoading.value = true;
+  try {
+    const response = await apiClient.get(`/forms/${props.recordId}/response-summary`, {
+      params: {
+        textPreviewLimit: options.textPreviewLimit ?? 10
+      }
+    });
+    if (response?.success) {
+      formResponseSummary.value = response.data || null;
+    } else {
+      formResponseSummary.value = null;
+    }
+  } catch (err) {
+    console.error('Error fetching form response summary:', err);
+    formResponseSummary.value = null;
+  } finally {
+    formResponseSummaryLoading.value = false;
+  }
+}
+
+async function fetchFormAnalytics() {
+  if (!canViewFormResponses.value || !props.recordId) {
+    formAnalytics.value = null;
+    return;
+  }
+  formAnalyticsLoading.value = true;
+  try {
+    const response = await apiClient.get(`/forms/${props.recordId}/analytics`);
+    if (response?.success) {
+      formAnalytics.value = response.data || null;
+    } else {
+      formAnalytics.value = null;
+    }
+  } catch (err) {
+    console.error('Error fetching form analytics:', err);
+    formAnalytics.value = null;
+  } finally {
+    formAnalyticsLoading.value = false;
+  }
+}
+
+async function fetchFormResponses(page = formResponsesPagination.value.currentPage) {
+  if (!canViewFormResponses.value || !props.recordId) {
+    formResponses.value = [];
+    return;
+  }
+  formResponsesLoading.value = true;
+  try {
+    const response = await apiClient.get(`/forms/${props.recordId}/responses`, {
+      params: {
+        page,
+        limit: formResponsesPagination.value.limit,
+        sortBy: 'submittedAt',
+        sortOrder: 'desc'
+      }
+    });
+    if (response?.success) {
+      formResponses.value = Array.isArray(response.data) ? response.data : [];
+      if (response.pagination) {
+        formResponsesPagination.value.total = response.pagination.totalResponses || 0;
+        formResponsesPagination.value.totalPages = response.pagination.totalPages || 1;
+        formResponsesPagination.value.currentPage = response.pagination.currentPage || page;
+      }
+    } else {
+      formResponses.value = [];
+    }
+  } catch (err) {
+    console.error('Error fetching form responses:', err);
+    formResponses.value = [];
+  } finally {
+    formResponsesLoading.value = false;
+  }
+}
+
+function viewFormResponseDetail(responseItem) {
+  if (!record.value?._id || !responseItem?._id) return;
+  const formId = record.value._id;
+  const responseId = responseItem._id;
+  openTab(`/forms/${formId}/responses/${responseId}`, {
+    name: `form-response-${responseId}`,
+    title: `${t('navigation.moduleResponses')} - ${new Date(responseItem.submittedAt).toLocaleDateString()}`,
+    insertAdjacent: true,
+    params: { formId, responseId }
+  });
+  router.push(`/forms/${formId}/responses/${responseId}`);
+}
+
+async function handleArchiveForm() {
+  if (!canArchiveFormRecord.value || !record.value?._id) return;
+  try {
+    const response = await apiClient.put(`/forms/${record.value._id}`, { status: 'Archived' });
+    if (response?.success && response.data) {
+      record.value = { ...record.value, ...response.data };
+    } else if (record.value) {
+      record.value.status = 'Archived';
+    }
+    formAnalytics.value = null;
+    formResponses.value = [];
+  } catch (err) {
+    console.error('Error archiving form:', err);
+    alert(err?.response?.data?.message || err?.message || t('records.genericErrorTitle', { module: t('navigation.moduleForms') }));
+  }
+}
+
 async function handleDuplicate() {
   if (!record.value) return;
+  if (isFormsModule.value) {
+    openTab(`/forms/create?duplicateFrom=${record.value._id}`, {
+      title: t('forms.hubTabDuplicateForm', { name: record.value.name || t('forms.hubUntitledForm') }),
+      icon: 'clipboard-document',
+      insertAdjacent: true
+    });
+    return;
+  }
   try {
     const r = record.value;
     const payload = {};
@@ -4131,7 +4513,7 @@ async function handleDuplicate() {
     const data = res?.data ?? res;
     const newId = data?._id ?? data?.id;
     if (newId) {
-      router.push(`${recordCrudPathBase.value}/${newId}`);
+      router.push(recordDetailPathForId(newId));
     }
   } catch (e) {
     console.error('Duplicate record error:', e);
@@ -4320,7 +4702,11 @@ async function confirmDelete() {
     router.push(recordCrudPathBase.value);
     emit('close');
   } catch (e) {
-    error.value = e?.message || 'Failed to delete';
+    if (e?.response?.data?.code === 'FORM_HAS_SUBMITTED_RESPONSES') {
+      alert(t('forms.deleteBlockedSubmittedResponses.message'));
+    } else {
+      error.value = e?.message || 'Failed to delete';
+    }
   } finally {
     deleting.value = false;
     showDeleteModal.value = false;

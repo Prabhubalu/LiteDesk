@@ -39,7 +39,7 @@
     >
       <PopoverPanel
         :class="[
-          'absolute left-0 top-full mt-1.5 w-[min(100vw-2rem,20rem)] origin-top-left rounded-xl bg-white p-3 shadow-xl ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10',
+          'absolute left-0 top-full mt-1.5 w-[min(100vw-2rem,22rem)] origin-top-left rounded-xl bg-white p-3 shadow-xl ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10',
           panelClass || 'z-50',
         ]"
         @keydown.esc.stop="close(); $emit('escape')"
@@ -172,27 +172,43 @@
           </button>
         </div>
 
-        <div class="mt-3 flex items-center gap-2 border-t border-gray-100 pt-3 dark:border-gray-700">
-          <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ t('common.dateTimePickerTime') }}</span>
-          <select
-            v-model.number="draftHour"
-            class="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            :aria-label="t('common.dateTimePickerTime')"
-          >
-            <option v-for="hour in hourOptions" :key="hour" :value="hour" :disabled="!isHourEnabled(hour)">
-              {{ pad2(hour) }}
-            </option>
-          </select>
-          <span class="text-gray-400">:</span>
-          <select
-            v-model.number="draftMinute"
-            class="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            :aria-label="t('common.dateTimePickerTime')"
-          >
-            <option v-for="minute in minuteOptions" :key="minute" :value="minute" :disabled="!isMinuteEnabled(minute)">
-              {{ pad2(minute) }}
-            </option>
-          </select>
+        <div class="mt-3 border-t border-gray-100 pt-3 dark:border-gray-700">
+          <p class="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+            {{ t('common.dateTimePickerTime') }}
+          </p>
+          <div class="flex items-center gap-2">
+            <HeadlessSelect
+              v-model="draftHour12"
+              :options="hour12SelectOptions"
+              :searchable="false"
+              teleport
+              :truncate-button-label="false"
+              :button-class="TIME_SELECT_BUTTON_CLASS"
+              :options-class="TIME_SELECT_OPTIONS_CLASS"
+              wrapper-class="min-w-[4.5rem] flex-1"
+            />
+            <span class="shrink-0 text-gray-400">:</span>
+            <HeadlessSelect
+              v-model="draftMinute"
+              :options="minuteSelectOptions"
+              :searchable="false"
+              teleport
+              :truncate-button-label="false"
+              :button-class="TIME_SELECT_BUTTON_CLASS"
+              :options-class="TIME_SELECT_OPTIONS_CLASS"
+              wrapper-class="min-w-[4.5rem] flex-1"
+            />
+            <HeadlessSelect
+              v-model="draftPeriod"
+              :options="periodSelectOptions"
+              :searchable="false"
+              teleport
+              :truncate-button-label="false"
+              :button-class="TIME_SELECT_BUTTON_CLASS"
+              :options-class="TIME_SELECT_OPTIONS_CLASS"
+              wrapper-class="min-w-[5rem] flex-1"
+            />
+          </div>
         </div>
 
         <div class="mt-3 flex items-center justify-between border-t border-gray-100 pt-2 dark:border-gray-700">
@@ -250,6 +266,7 @@ import {
   ClockIcon,
 } from '@heroicons/vue/24/outline';
 import { formatDate } from '@/utils/localeFormat';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import {
   buildCalendarGrid,
   isDateTimeLocalDisabled,
@@ -329,6 +346,7 @@ const displayText = computed(() => {
       year: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
+      hour12: true,
       timeZone: localTimeZone,
     },
     { locale: locale.value }
@@ -368,8 +386,38 @@ const yearOptions = computed(() => {
 
 const calendarDays = computed(() => buildCalendarGrid(viewYear.value, viewMonth.value, draftDate.value));
 
-const hourOptions = computed(() => Array.from({ length: 24 }, (_, index) => index));
+const hour12Options = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 const minuteOptions = computed(() => Array.from({ length: 60 }, (_, index) => index));
+
+const TIME_SELECT_BUTTON_CLASS =
+  'w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm tabular-nums text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white';
+const TIME_SELECT_OPTIONS_CLASS = 'z-[10060]';
+
+function toHour12(hour24) {
+  const hour = hour24 % 12;
+  return hour === 0 ? 12 : hour;
+}
+
+function toHour24(hour12, period) {
+  if (period === 'AM') {
+    return hour12 === 12 ? 0 : hour12;
+  }
+  return hour12 === 12 ? 12 : hour12 + 12;
+}
+
+const draftHour12 = computed({
+  get: () => toHour12(draftHour.value),
+  set: (hour12) => {
+    draftHour.value = toHour24(hour12, draftPeriod.value);
+  },
+});
+
+const draftPeriod = computed({
+  get: () => (draftHour.value >= 12 ? 'PM' : 'AM'),
+  set: (period) => {
+    draftHour.value = toHour24(draftHour12.value, period);
+  },
+});
 
 const draftDateTime = computed(() =>
   `${draftDate.value}T${pad2(draftHour.value)}:${pad2(draftMinute.value)}`
@@ -430,7 +478,15 @@ function isHourEnabled(hour) {
   if (hour < minHour || hour > maxHour) return false;
   if (hour === minHour && minMinute > 59) return false;
   if (hour === maxHour && maxMinute < 0) return false;
-  return hourOptions.value.some((minute) => isMinuteEnabledForHour(hour, minute));
+  return minuteOptions.value.some((minute) => isMinuteEnabledForHour(hour, minute));
+}
+
+function isHour12Enabled(hour12) {
+  return isHourEnabled(toHour24(hour12, draftPeriod.value));
+}
+
+function isPeriodEnabled(period) {
+  return isHourEnabled(toHour24(draftHour12.value, period));
 }
 
 function isMinuteEnabledForHour(hour, minute) {
@@ -441,6 +497,29 @@ function isMinuteEnabledForHour(hour, minute) {
 function isMinuteEnabled(minute) {
   return isMinuteEnabledForHour(draftHour.value, minute);
 }
+
+const hour12SelectOptions = computed(() =>
+  hour12Options
+    .filter((hour) => isHour12Enabled(hour))
+    .map((hour) => ({ value: hour, label: String(hour) }))
+);
+
+const minuteSelectOptions = computed(() =>
+  minuteOptions.value
+    .filter((minute) => isMinuteEnabled(minute))
+    .map((minute) => ({ value: minute, label: pad2(minute) }))
+);
+
+const periodSelectOptions = computed(() => {
+  const options = [];
+  if (isPeriodEnabled('AM')) {
+    options.push({ value: 'AM', label: t('common.dateTimePickerAm') });
+  }
+  if (isPeriodEnabled('PM')) {
+    options.push({ value: 'PM', label: t('common.dateTimePickerPm') });
+  }
+  return options;
+});
 
 function syncDraftFromValue() {
   const parts = splitDateTimeLocal(normalizedValue.value);
@@ -460,9 +539,13 @@ watch([draftDate, draftHour], () => {
     const next = minuteOptions.value.find((minute) => isMinuteEnabled(minute));
     if (next !== undefined) draftMinute.value = next;
   }
-  if (!isHourEnabled(draftHour.value)) {
-    const next = hourOptions.value.find((hour) => isHourEnabled(hour));
-    if (next !== undefined) draftHour.value = next;
+  if (!isHour12Enabled(draftHour12.value)) {
+    const next = hour12Options.find((hour) => isHour12Enabled(hour));
+    if (next !== undefined) draftHour12.value = next;
+  }
+  if (!isPeriodEnabled(draftPeriod.value)) {
+    const next = ['AM', 'PM'].find((period) => isPeriodEnabled(period));
+    if (next) draftPeriod.value = next;
   }
 });
 

@@ -65,7 +65,7 @@ const MODULE_ICON_MAP: Record<string, any> = {
   case: TicketIcon,
   projects: FolderIcon,
   project: FolderIcon,
-  responses: InboxIcon,
+  responses: ClipboardDocumentListIcon,
   import: ArchiveBoxIcon,
   dashboard: DocumentChartBarIcon,
   audits: DocumentMagnifyingGlassIcon,
@@ -172,7 +172,7 @@ export function getNavigationIconComponent(item: IconLookupItem): any {
 
   const label = String(item.label || '').toLowerCase();
   if (label.includes('deal')) return BriefcaseIcon;
-  if (label.includes('response')) return InboxIcon;
+  if (label.includes('response')) return ClipboardDocumentListIcon;
   if (label.includes('import')) return ArchiveBoxIcon;
   if (label.includes('dashboard')) return DocumentChartBarIcon;
 

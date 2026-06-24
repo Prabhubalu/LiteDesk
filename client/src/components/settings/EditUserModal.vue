@@ -170,6 +170,36 @@
                             <p v-else class="text-sm font-medium text-gray-900 dark:text-white">
                               {{ displayRoleName }}
                             </p>
+                            <p v-if="rbacV2Enabled && !user.isOwner" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                              {{ t('settings.inviteRbacV2RoleHint') }}
+                            </p>
+                          </div>
+
+                          <div
+                            v-if="rbacV2Enabled && selectedRole"
+                            class="rounded-lg border border-indigo-200 bg-indigo-50/60 p-4 space-y-3 dark:border-indigo-800 dark:bg-indigo-900/20"
+                          >
+                            <p class="text-xs font-semibold uppercase tracking-wider text-indigo-800 dark:text-indigo-200">
+                              {{ t('settings.inviteRbacV2PreviewTitle') }}
+                            </p>
+                            <p v-if="selectedRole.description" class="text-sm text-gray-700 dark:text-gray-300">
+                              {{ selectedRole.description }}
+                            </p>
+                            <p v-if="selectedRoleProfileName" class="text-xs text-gray-600 dark:text-gray-400">
+                              {{ t('settings.inviteRbacV2Profile', { profile: selectedRoleProfileName }) }}
+                            </p>
+                            <div v-if="selectedRoleAppPreview.length" class="flex flex-wrap gap-2">
+                              <span
+                                v-for="chip in selectedRoleAppPreview"
+                                :key="chip.appKey"
+                                class="inline-flex items-center rounded-full border border-indigo-200 bg-white px-2.5 py-1 text-xs font-medium text-indigo-800 dark:border-indigo-700 dark:bg-gray-800 dark:text-indigo-200"
+                              >
+                                {{ chip.label }}
+                              </span>
+                            </div>
+                            <p v-else class="text-xs text-gray-500 dark:text-gray-400">
+                              {{ t('settings.inviteRbacV2NoApps') }}
+                            </p>
                           </div>
 
                           <div class="space-y-1">
@@ -188,7 +218,7 @@
                             </p>
                           </div>
 
-                          <div class="space-y-3">
+                          <div v-if="!rbacV2Enabled" class="space-y-3">
                             <span class="block text-sm/6 font-medium text-gray-900 dark:text-white">
                               {{ t('settings.inviteAppAccess') }} <span class="text-red-500">*</span>
                             </span>
@@ -372,6 +402,7 @@
                           {{ t('actions.cancel') }}
                         </button>
                         <button
+                          v-if="!user.isOwner || !rbacV2Enabled"
                           type="submit"
                           :disabled="saving"
                           class="inline-flex cursor-pointer items-center gap-2 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
@@ -407,12 +438,14 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useAppShellStore } from '@/stores/appShell';
 import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
 import { useNotifications } from '@/composables/useNotifications';
+import { isRbacV2Enabled } from '@/utils/rbacFeatureFlags';
 
 const { t } = useI18n();
 const { success: notifySuccess, error: notifyError } = useNotifications();
 
 const authStore = useAuthStore();
 const appShellStore = useAppShellStore();
+const rbacV2Enabled = computed(() => isRbacV2Enabled(authStore.organization));
 
 const props = defineProps({
   isOpen: Boolean,
@@ -477,9 +510,35 @@ const roleSelectOptions = computed(() => [
   { value: '', label: t('settings.inviteSelectRole') },
   ...availableRoles.value.map((role) => ({
     value: role._id,
-    label: `${role.name} — ${role.description}`
+    label: rbacV2Enabled.value ? role.name : `${role.name} — ${role.description}`
   }))
 ]);
+
+const selectedRole = computed(() => {
+  const roleId = props.user?.isOwner
+    ? resolveRoleIdFromUser(props.user)
+    : form.value.roleId;
+  return availableRoles.value.find((role) => String(role._id) === String(roleId)) || null;
+});
+
+const selectedRoleAppPreview = computed(() => {
+  const role = selectedRole.value;
+  if (!role || !Array.isArray(role.appEntitlements)) return [];
+  return role.appEntitlements
+    .filter((entry) => entry.enabled !== false)
+    .map((entry) => ({
+      appKey: entry.appKey,
+      label: `${getAppDisplayName(entry.appKey)} · ${getRoleDisplayName(entry.appKey, entry.appRoleKey)}`
+    }));
+});
+
+const selectedRoleProfileName = computed(() => {
+  const role = selectedRole.value;
+  if (!role || role.privilegeMode !== 'profile') return '';
+  const profile = role.profileId;
+  if (profile && typeof profile === 'object') return profile.name;
+  return '';
+});
 
 const statusSelectOptions = computed(() => [
   { value: 'active', label: t('settings.editUserStatusActive') },
@@ -615,7 +674,9 @@ watch(() => props.isOpen, (newVal) => {
     error.value = '';
     validationErrors.value = {};
     fetchRoles();
-    fetchCapabilities();
+    if (!rbacV2Enabled.value) {
+      fetchCapabilities();
+    }
     if (props.user) {
       form.value = {
         firstName: props.user.firstName || '',
@@ -688,6 +749,9 @@ const getRoleDisplayName = (appKey, roleKey) => roleDisplayNames[appKey]?.[roleK
 
 const validateForm = () => {
   validationErrors.value = {};
+  if (rbacV2Enabled.value) {
+    return true;
+  }
   if (selectedApps.value.length === 0) {
     validationErrors.value.appAccess = t('settings.editUserAppAccessRemain');
     return false;
@@ -719,20 +783,31 @@ const handleSubmit = async () => {
   }
 
   try {
-    const appAccessPayload = selectedApps.value.map((appKey) => ({
-      appKey,
-      roleKey: selectedAppRoles.value[appKey]
-    }));
-    const payload = props.user?.isOwner
-      ? { appAccess: appAccessPayload }
-      : {
-          firstName: form.value.firstName,
-          lastName: form.value.lastName,
-          phoneNumber: form.value.phoneNumber,
-          roleId: form.value.roleId,
-          status: form.value.status,
-          appAccess: appAccessPayload
-        };
+    let payload;
+    if (rbacV2Enabled.value) {
+      payload = {
+        firstName: form.value.firstName,
+        lastName: form.value.lastName,
+        phoneNumber: form.value.phoneNumber,
+        roleId: form.value.roleId,
+        status: form.value.status
+      };
+    } else {
+      const appAccessPayload = selectedApps.value.map((appKey) => ({
+        appKey,
+        roleKey: selectedAppRoles.value[appKey]
+      }));
+      payload = props.user?.isOwner
+        ? { appAccess: appAccessPayload }
+        : {
+            firstName: form.value.firstName,
+            lastName: form.value.lastName,
+            phoneNumber: form.value.phoneNumber,
+            roleId: form.value.roleId,
+            status: form.value.status,
+            appAccess: appAccessPayload
+          };
+    }
     const response = await apiClient.put(`/users/${props.user._id}`, payload);
 
     if (response.success) {

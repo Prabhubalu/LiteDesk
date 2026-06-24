@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto w-full px-4 sm:px-6 lg:px-8 py-4">
+  <div class="mx-auto w-full">
     <!-- Info Banner -->
     <div class="mb-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
       <div class="flex items-start gap-3">
@@ -58,25 +58,24 @@
       @export="exportResponses"
       :hide-delete="isAuditScoped"
     >
-      <!-- Custom Form Name Cell - Name + Type Badge -->
+      <!-- Form: name + type badge inline -->
       <template #cell-formName="{ row }">
-        <div v-if="row.formId && typeof row.formId === 'object'" class="flex flex-col gap-1.5">
-          <span class="text-sm font-semibold text-gray-900 dark:text-white leading-tight">
+        <div v-if="row.formId && typeof row.formId === 'object'" class="flex min-w-0 items-center gap-2">
+          <span class="truncate text-sm font-medium text-gray-900 dark:text-white">
             {{ row.formId.name || row.formId.formId || 'Unknown Form' }}
           </span>
-          <div class="flex items-center gap-1.5">
-            <BadgeCell 
-              v-if="row.formId.formType"
-              :value="row.formId.formType" 
-              :variant-map="{
-                'Audit': 'warning',
-                'Survey': 'info',
-                'Feedback': 'success',
-                'Inspection': 'danger',
-                'Custom': 'default'
-              }"
-            />
-          </div>
+          <BadgeCell
+            v-if="row.formId.formType"
+            class="shrink-0"
+            :value="row.formId.formType"
+            :variant-map="{
+              'Audit': 'warning',
+              'Survey': 'info',
+              'Feedback': 'success',
+              'Inspection': 'danger',
+              'Custom': 'default'
+            }"
+          />
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
       </template>
@@ -88,12 +87,7 @@
 
       <!-- Custom Submitted At Cell -->
       <template #cell-submittedAt="{ value }">
-        <div v-if="value" class="flex flex-col gap-0.5">
-          <DateCell :value="value" format="short" />
-          <span class="text-xs text-gray-500 dark:text-gray-400">
-            {{ getRelativeTime(value) }}
-          </span>
-        </div>
+        <DateCell v-if="value" :value="value" format="short" />
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
       </template>
 
@@ -116,67 +110,67 @@
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('forms.hubAnonymous') }}</span>
       </template>
 
-      <!-- Custom Execution Status Cell - Clearly separated and visually distinct -->
+      <!-- Execution status -->
       <template #cell-executionStatus="{ row }">
-        <div class="flex flex-col gap-1">
-          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('settings.modFieldsSourceExecution') }}</span>
-          <BadgeCell 
-            :value="row.executionStatus || 'Not Started'" 
-            :variant-map="{
-              'Not Started': 'default',
-              'In Progress': 'info',
-              'Submitted': 'success',
-              'Abandoned': 'danger'
-            }"
-          />
-        </div>
+        <BadgeCell
+          :value="row.executionStatus || 'Not Started'"
+          :variant-map="{
+            'Not Started': 'default',
+            'In Progress': 'info',
+            'Submitted': 'success',
+            'Abandoned': 'danger'
+          }"
+        />
       </template>
 
-      <!-- Custom Review Status Cell - Clearly separated and visually distinct -->
+      <!-- Review status -->
       <template #cell-reviewStatus="{ row }">
-        <div class="flex flex-col gap-1">
-          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t('settings.roleDrawerPermReview') }}</span>
-          <div v-if="row.executionStatus === 'Submitted' && row.reviewStatus" class="flex items-center">
-            <BadgeCell 
-              :value="row.reviewStatus" 
-              :variant-map="{
-                'Pending Corrective Action': 'warning',
-                'Needs Auditor Review': 'info',
-                'Approved': 'success',
-                'Rejected': 'danger',
-                'Closed': 'default'
-              }"
-            />
-          </div>
-          <span v-else class="text-xs text-gray-400 dark:text-gray-500 italic">{{ t('audit.responsesNotApplicable') }}</span>
-        </div>
+        <BadgeCell
+          v-if="row.executionStatus === 'Submitted' && row.reviewStatus"
+          :value="row.reviewStatus"
+          :variant-map="{
+            'Pending Corrective Action': 'warning',
+            'Needs Auditor Review': 'info',
+            'Approved': 'success',
+            'Rejected': 'danger',
+            'Closed': 'default'
+          }"
+        />
+        <span v-else class="text-sm text-gray-400 dark:text-gray-500">—</span>
       </template>
 
-      <!-- Custom Final Score Cell - Decision-focused display -->
+      <!-- Final score: score + compliance on one line -->
       <template #cell-finalScore="{ row }">
-        <div v-if="row.kpis && row.kpis.finalScore !== undefined" class="flex flex-col gap-1">
-          <div class="flex items-baseline gap-1.5">
-            <span class="text-lg font-bold text-gray-900 dark:text-white">
-              {{ Math.round(row.kpis.finalScore) }}%
+        <div
+          v-if="row.kpis && row.kpis.finalScore !== undefined"
+          class="flex min-w-0 items-center gap-1.5 text-sm tabular-nums"
+        >
+          <span class="font-semibold text-gray-900 dark:text-white">
+            {{ Math.round(row.kpis.finalScore) }}%
+          </span>
+          <template v-if="row.kpis.compliancePercentage !== undefined">
+            <span class="text-gray-300 dark:text-gray-600" aria-hidden="true">·</span>
+            <span
+              class="truncate"
+              :class="[
+                row.kpis.compliancePercentage >= 80 ? 'text-green-600 dark:text-green-400' :
+                row.kpis.compliancePercentage >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
+                'text-red-600 dark:text-red-400'
+              ]"
+            >
+              {{ t('forms.hubKpiCompliance', { value: Math.round(row.kpis.compliancePercentage) }) }}
             </span>
-            <span class="text-xs text-gray-500 dark:text-gray-400">score</span>
-          </div>
-          <div v-if="row.kpis.compliancePercentage !== undefined" class="text-xs font-medium" :class="[
-            row.kpis.compliancePercentage >= 80 ? 'text-green-600 dark:text-green-400' :
-            row.kpis.compliancePercentage >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
-            'text-red-600 dark:text-red-400'
-          ]">
-            {{ Math.round(row.kpis.compliancePercentage) }}% compliant
-          </div>
+          </template>
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
       </template>
 
-      <!-- Custom Linked To Cell - Event / Entity -->
+      <!-- Linked entity -->
       <template #cell-linkedTo="{ row }">
-        <div v-if="row.linkedTo && row.linkedTo.type" class="flex items-center gap-2">
-          <BadgeCell 
-            :value="row.linkedTo.type" 
+        <div v-if="row.linkedTo && row.linkedTo.type" class="flex min-w-0 items-center gap-2">
+          <BadgeCell
+            class="shrink-0"
+            :value="row.linkedTo.type"
             :variant-map="{
               'Organization': 'info',
               'Deal': 'success',
@@ -186,7 +180,10 @@
               'Contact': 'default'
             }"
           />
-          <span v-if="row.linkedTo.id && typeof row.linkedTo.id === 'object' && row.linkedTo.id.eventName" class="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[100px]">
+          <span
+            v-if="row.linkedTo.id && typeof row.linkedTo.id === 'object' && row.linkedTo.id.eventName"
+            class="truncate text-sm text-gray-600 dark:text-gray-400"
+          >
             {{ row.linkedTo.id.eventName }}
           </span>
         </div>
@@ -429,9 +426,7 @@ const selectedResponse = ref(null);
 const archiveInvalidateReason = ref('');
 const archiveInvalidateAction = ref(null); // 'archive' or 'invalidate'
 
-// Columns configuration - Decision-focused, world-class design
-// All columns are visible by default (visible: true ensures they show even if backend config says otherwise)
-// Note: visibility.list: true ensures backend module config doesn't hide these
+// Columns configuration
 const columns = [
   { key: 'responseId', label: 'Response ID', sortable: true, minWidth: '120px', visible: true, showInTable: true, visibility: { list: true } },
   { key: 'formName', label: 'Form', sortable: false, minWidth: '200px', visible: true, showInTable: true, visibility: { list: true } },
@@ -561,109 +556,49 @@ const handleSort = ({ key, order }) => {
   fetchResponses();
 };
 
-// Helper function to extract formId from response object
 const getFormId = (response) => {
-  if (!response) {
-    console.error('getFormId: response is null/undefined');
+  if (!response) return null;
+
+  const formIdValue = response.formId;
+  if (formIdValue == null) return null;
+
+  if (typeof formIdValue === 'object') {
+    if (formIdValue._id != null) return String(formIdValue._id);
+    if (formIdValue.$oid != null) return String(formIdValue.$oid);
+    if (typeof formIdValue.toString === 'function') {
+      const asString = formIdValue.toString();
+      if (asString && asString !== '[object Object]') return asString;
+    }
     return null;
   }
-  
-  // Check if formId key exists (even if value might be null/undefined)
-  const hasFormIdKey = 'formId' in response;
-  
-  if (!hasFormIdKey) {
-    console.error('getFormId: formId key does not exist in response object');
-    console.error('Response keys:', Object.keys(response || {}));
-    return null;
-  }
-  
-  // Try to get formId value - handle Vue Proxy objects
-  let formIdValue;
-  try {
-    formIdValue = response.formId;
-  } catch (e) {
-    // If direct access fails (e.g., Proxy issue), try via JSON
-    try {
-      const json = JSON.parse(JSON.stringify(response));
-      formIdValue = json.formId;
-    } catch (e2) {
-      console.error('getFormId: Could not access formId value:', e2);
-      return null;
-    }
-  }
-  
-  // Debug: Log the actual value to understand what we're dealing with
-  console.log('getFormId: formIdValue type:', typeof formIdValue, 'value:', formIdValue);
-  console.log('getFormId: formIdValue constructor:', formIdValue?.constructor?.name);
-  
-  // Handle different formId value types
-  if (formIdValue === null || formIdValue === undefined) {
-    console.error('getFormId: formId exists but is null/undefined');
-    return null;
-  }
-  
-  // Method 1: Populated object with _id
-  if (typeof formIdValue === 'object' && formIdValue !== null) {
-    // Check for _id property
-    if (formIdValue._id !== undefined && formIdValue._id !== null) {
-      return String(formIdValue._id);
-    }
-    // Check for $oid (MongoDB format)
-    if (formIdValue.$oid !== undefined && formIdValue.$oid !== null) {
-      return String(formIdValue.$oid);
-    }
-    // Check if the object itself is an ObjectId-like object
-    if (formIdValue.toString && typeof formIdValue.toString === 'function') {
-      const str = formIdValue.toString();
-      if (str && str !== '[object Object]') {
-        return str;
-      }
-    }
-    // If it's an object but no _id, log and return null
-    console.error('getFormId: formId is object but missing _id or toString:', formIdValue);
-    console.error('getFormId: Object keys:', Object.keys(formIdValue));
-    return null;
-  }
-  
-  // Method 2: String/ObjectId
-  if (typeof formIdValue === 'string') {
-    const trimmed = formIdValue.trim();
-    if (trimmed !== '') {
-      return trimmed;
-    }
-    console.error('getFormId: formId is empty string');
-    return null;
-  }
-  
-  // Method 3: Number (unlikely but possible)
-  if (typeof formIdValue === 'number') {
-    return String(formIdValue);
-  }
-  
-  // If we get here, formId exists but is in an unexpected format
-  console.error('getFormId: formId exists but in unexpected format:', typeof formIdValue, formIdValue);
-  return null;
+
+  const asString = String(formIdValue).trim();
+  return asString || null;
 };
 
-const responseDetailPath = (formId, responseId) =>
-  (isAuditScoped.value ? `/audit/forms/${formId}/responses/${responseId}` : `/forms/${formId}/responses/${responseId}`);
+const responseDetailPath = (formId, responseId) => {
+  if (isAuditScoped.value) return `/audit/forms/${formId}/responses/${responseId}`;
+  return `/responses/${responseId}`;
+};
 
 const viewResponseDetail = (response) => {
+  if (!response?._id) return;
+
   const formId = getFormId(response);
-  if (!formId) {
-    console.error('Form ID not found in response:', response);
-    return;
-  }
+  if (isAuditScoped.value && !formId) return;
 
   const path = responseDetailPath(formId, response._id);
+  const tabParams = { responseId: response._id };
+  if (formId) tabParams.formId = formId;
+
   openTab(path, {
     name: `form-response-${response._id}`,
     title: `Response - ${response.responseId || new Date(response.submittedAt).toLocaleDateString()}`,
-    component: 'FormResponseDetail',
-    params: { formId, responseId: response._id },
+    component: 'ModuleRecordPage',
+    params: tabParams,
     insertAdjacent: true
   });
-  router.push(path);
+  router.push(formId && !isAuditScoped.value ? `${path}?formId=${formId}` : path);
 };
 
 const approveResponse = async (response) => {
@@ -860,23 +795,6 @@ const exportResponses = async () => {
 // Format date helper
 const formatDate = (date) => {
   if (!date) return '';
-  return new Date(date).toLocaleDateString();
-};
-
-// Get relative time helper
-const getRelativeTime = (date) => {
-  if (!date) return '';
-  const now = new Date();
-  const then = new Date(date);
-  const diffMs = now - then;
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-  
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
   return new Date(date).toLocaleDateString();
 };
 

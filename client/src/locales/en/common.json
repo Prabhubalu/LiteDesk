@@ -311,6 +311,26 @@
     "message": "Now",
     "description": "Date-time picker footer: set to current date and time"
   },
+  "dateTimePickerAm": {
+    "message": "AM",
+    "description": "Date-time picker morning period"
+  },
+  "dateTimePickerPm": {
+    "message": "PM",
+    "description": "Date-time picker afternoon/evening period"
+  },
+  "dateTimePickerHour": {
+    "message": "Hour",
+    "description": "Date-time picker hour select aria-label"
+  },
+  "dateTimePickerMinute": {
+    "message": "Minute",
+    "description": "Date-time picker minute select aria-label"
+  },
+  "dateTimePickerPeriod": {
+    "message": "AM or PM",
+    "description": "Date-time picker period select aria-label"
+  },
   "listViewName": {
     "message": "View name",
     "description": "Saved view name field label"

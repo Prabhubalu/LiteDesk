@@ -118,12 +118,7 @@
         >
           <XMarkIcon class="h-3.5 w-3.5" />
         </button>
-        <Transition
-          leave-active-class="transition duration-100 ease-in"
-          leave-from-class="opacity-100"
-          leave-to-class="opacity-0"
-        >
-          <Teleport to="body" :disabled="!teleportOptions">
+        <Teleport to="body" :disabled="!teleportOptions">
             <ListboxOptions
               v-if="!teleportOptions || open"
               :style="teleportOptions ? teleportMenuStyle : undefined"
@@ -208,7 +203,6 @@
             </div>
             </ListboxOptions>
           </Teleport>
-        </Transition>
       </div>
     </Listbox>
   </div>
@@ -220,7 +214,7 @@ import { useI18n } from 'vue-i18n';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import { CheckIcon, XMarkIcon } from '@heroicons/vue/20/solid';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
-import { Transition, Teleport } from 'vue';
+import { Teleport } from 'vue';
 import DateFilterDropdown from '@/components/common/DateFilterDropdown.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import type { FilterConfig } from '@/platform/filters/filterResolver';
@@ -278,6 +272,7 @@ function syncTeleportPosition() {
 }
 
 function syncListboxOpenState(open: boolean) {
+  if (listboxOpen.value === open) return '';
   if (!open && listboxOpen.value) {
     listboxSearchQuery.value = '';
   }

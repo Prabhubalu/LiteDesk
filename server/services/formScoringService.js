@@ -1,5 +1,11 @@
 const Form = require('../models/Form');
 
+function isScoringActive(question) {
+    if (question.scoring?.enabled === true) return true;
+    const passValue = question.scoringLogic?.passValue;
+    return passValue != null && passValue !== '';
+}
+
 /**
  * Score entire response
  * @param {Form} form - Form document
@@ -49,12 +55,13 @@ exports.scoreQuestion = (form, responseDetail) => {
     let score = 0;
     let passFail = 'N/A';
     
-    // Only score if question has scoring logic
-    if (question.scoringLogic && question.scoringLogic.passValue !== undefined) {
+    // Only score when scoring is enabled or legacy passValue is configured
+    if (isScoringActive(question) && question.scoringLogic) {
         const answer = responseDetail.answer;
         const passValue = question.scoringLogic.passValue;
         const failValue = question.scoringLogic.failValue;
         const weightage = question.scoringLogic.weightage || 0;
+        const numericPassValue = passValue != null && passValue !== '' ? parseFloat(passValue) : NaN;
         
         // Determine pass/fail based on answer
         if (question.type === 'Yes-No') {
@@ -67,13 +74,15 @@ exports.scoreQuestion = (form, responseDetail) => {
             }
         } else if (question.type === 'Rating') {
             const rating = parseFloat(answer);
-            if (!isNaN(rating)) {
-                if (rating >= parseFloat(passValue)) {
+            if (!Number.isNaN(rating)) {
+                if (!Number.isNaN(numericPassValue) && rating >= numericPassValue) {
                     passFail = 'Pass';
                     score = weightage > 0 ? weightage : (rating / 5) * 100;
-                } else {
+                } else if (!Number.isNaN(numericPassValue)) {
                     passFail = 'Fail';
-                    score = weightage > 0 ? (rating / parseFloat(passValue)) * weightage : (rating / 5) * 100;
+                    score = weightage > 0 ? (rating / numericPassValue) * weightage : (rating / 5) * 100;
+                } else {
+                    score = (rating / 5) * 100;
                 }
             }
         } else if (question.type === 'Dropdown') {
@@ -100,7 +109,7 @@ exports.scoreQuestion = (form, responseDetail) => {
     
     return {
         ...responseDetail,
-        score,
+        score: Number.isFinite(score) ? score : 0,
         passFail
     };
 };
@@ -120,8 +129,21 @@ exports.calculateSectionScores = (form, scoredDetails) => {
         let sectionTotal = 0;
         let sectionScore = 0;
         
-        section.subsections.forEach(subsection => {
-            subsection.questions.forEach(question => {
+        (section.questions || []).forEach(question => {
+            const detail = scoredDetails.find(d => d.questionId === question.questionId);
+            if (detail) {
+                sectionTotal++;
+                if (detail.passFail === 'Pass') {
+                    sectionPassed++;
+                } else if (detail.passFail === 'Fail') {
+                    sectionFailed++;
+                }
+                sectionScore += detail.score || 0;
+            }
+        });
+
+        (section.subsections || []).forEach(subsection => {
+            (subsection.questions || []).forEach(question => {
                 const detail = scoredDetails.find(d => d.questionId === question.questionId);
                 if (detail) {
                     sectionTotal++;
@@ -236,8 +258,13 @@ exports.calculateCompliance = (passed, total) => {
  */
 function findQuestionInForm(form, questionId) {
     for (const section of form.sections) {
-        for (const subsection of section.subsections) {
-            for (const question of subsection.questions) {
+        for (const question of section.questions || []) {
+            if (question.questionId === questionId) {
+                return question;
+            }
+        }
+        for (const subsection of section.subsections || []) {
+            for (const question of subsection.questions || []) {
                 if (question.questionId === questionId) {
                     return question;
                 }

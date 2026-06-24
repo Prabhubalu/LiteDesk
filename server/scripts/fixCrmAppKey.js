@@ -4,7 +4,7 @@
  * Fix CRM AppKey Migration
  * 
  * This script updates modules with appKey: 'crm' to the correct appKey:
- * - deals, responses → 'sales'
+ * - deals → 'sales'
  * - tasks, events → 'platform' (if they should be entities)
  * 
  * It also removes duplicate modules if they exist.
@@ -18,7 +18,7 @@ const ModuleDefinition = require('../models/ModuleDefinition');
 const getMasterDatabaseUri = require('../utils/getMasterDatabaseUri');
 
 // Mapping of modules that should be migrated from 'crm' to their correct appKey
-const CRM_TO_SALES_MODULES = ['deals', 'responses'];
+const CRM_TO_SALES_MODULES = ['deals'];
 const CRM_TO_PLATFORM_MODULES = []; // tasks and events should already be platform, but check
 
 async function fixCrmAppKey() {

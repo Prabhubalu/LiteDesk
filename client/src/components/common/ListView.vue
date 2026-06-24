@@ -188,17 +188,17 @@
             </button>
 
             <slot name="header-actions">
-              <ModuleActions 
-                :module="moduleKey"
-                :create-label="createLabel"
-                :show-create="showCreate !== false"
-                :show-import="showImport !== false"
-                :show-export="showExport !== false"
-                @create="$emit('create')"
-                @import="$emit('import')"
-                @export="$emit('export')"
-              />
-            </slot>
+                <ModuleActions 
+                  :module="moduleKey"
+                  :create-label="createLabel"
+                  :show-create="showCreate !== false"
+                  :show-import="showImport !== false"
+                  :show-export="showExport !== false"
+                  @create="$emit('create')"
+                  @import="$emit('import')"
+                  @export="$emit('export')"
+                />
+              </slot>
           </div>
           
           <!-- Stats Toggle Button (Tablet) -->
@@ -212,7 +212,10 @@
             <XMarkIcon v-else class="w-4 h-4" />
           </button>
         </div>
-        <p class="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-400 mt-1 sm:mt-2">{{ description }}</p>
+        <p
+          v-if="description"
+          class="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-400 mt-1 sm:mt-2"
+        >{{ description }}</p>
       </div>
       <div class="hidden sm:flex items-center gap-2.5 flex-shrink-0">
         <!-- Stats Toggle Button (Desktop) -->
@@ -240,17 +243,17 @@
         </button>
 
         <slot name="header-actions">
-          <ModuleActions 
-            :module="moduleKey"
-            :create-label="createLabel"
-            :show-create="showCreate !== false"
-            :show-import="showImport !== false"
-            :show-export="showExport !== false"
-            @create="$emit('create')"
-            @import="$emit('import')"
-            @export="$emit('export')"
-          />
-        </slot>
+            <ModuleActions 
+              :module="moduleKey"
+              :create-label="createLabel"
+              :show-create="showCreate !== false"
+              :show-import="showImport !== false"
+              :show-export="showExport !== false"
+              @create="$emit('create')"
+              @import="$emit('import')"
+              @export="$emit('export')"
+            />
+          </slot>
       </div>
     </div>
 
@@ -593,7 +596,7 @@
     <div class="mt-4 px-4 sm:px-6 lg:px-8" style="isolation: auto;">
       <!-- Stable key: must not depend on row data or count — remounting resets scroll and inline filter focus. -->
       <TableView
-          v-if="columnsInitialized"
+          v-if="computedColumns.length > 0"
           :key="`table-${tableId}`"
           internal-scroll
           :data="data"
@@ -652,6 +655,7 @@
                 v-if="hasActions"
                 :row="row"
                 :module="moduleKey"
+                :can-delete-row="props.rowCanDelete"
                 @view="handleView(row)"
                 @edit="handleEdit(row)"
                 @delete="handleDeleteClick(row)"
@@ -930,8 +934,8 @@
       </Transition>
     </Teleport>
 
-    <!-- Customize View / Kanban drawers -->
-    <Teleport :to="workspaceDrawerHost">
+    <!-- Customize View / Kanban drawers (v-if avoids disabled→enabled moveTeleport crash) -->
+    <Teleport v-if="workspaceDrawerHostReady" :to="workspaceDrawerHost">
       <div
         v-if="showColumnSettings || showKanbanSettings"
         class="absolute inset-x-0 bottom-0 z-40"
@@ -1103,7 +1107,7 @@
                       <div class="space-y-0.5 px-2">
                         <template v-for="(field, index) in shownFields" :key="field.key">
                           <div
-                            :draggable="!(props.moduleKey === 'forms' && field.key?.toLowerCase() === 'name') || field.locked === true"
+                            :draggable="!field.locked && !(props.moduleKey === 'forms' && field.key?.toLowerCase() === 'name')"
                             @dragstart="handleDragStart($event, index)"
                             @dragover.prevent="handleDragOver"
                             @dragenter.prevent="handleDragEnter($event, index)"
@@ -1111,9 +1115,11 @@
                             @drop.prevent="handleDrop($event, index)"
                             @dragend="handleDragEnd"
                             :class="[
-                              'flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors cursor-move',
+                              'flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors',
                               dragOverIndex === index ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'hover:bg-neutral-100 dark:hover:bg-neutral-800',
-                              field.locked ? 'cursor-not-allowed opacity-70' : ''
+                              field.locked || (props.moduleKey === 'forms' && field.key?.toLowerCase() === 'name')
+                                ? 'cursor-not-allowed opacity-70'
+                                : 'cursor-move'
                             ]"
                           >
                           <!-- Grip handle icon (6 dots vertical) -->
@@ -1449,7 +1455,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onUnmounted, onDeactivated, nextTick, useSlots } from 'vue';
+import { ref, reactive, computed, watch, onBeforeMount, onMounted, onUnmounted, onDeactivated, nextTick, useSlots } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   resolveListViewLabel,
@@ -1529,6 +1535,26 @@ import { PLATFORM_WORKSPACE_DRAWER_HOST_ID } from '@/utils/sidebarLayout';
 
 const workspaceDrawerHost = `#${PLATFORM_WORKSPACE_DRAWER_HOST_ID}`;
 
+/** PlatformShell is async-loaded; defer drawer Teleport until the host node exists. */
+const workspaceDrawerHostReady = ref(false);
+
+function refreshWorkspaceDrawerHostReady() {
+  if (typeof document === 'undefined') return;
+  workspaceDrawerHostReady.value = Boolean(
+    document.getElementById(PLATFORM_WORKSPACE_DRAWER_HOST_ID),
+  );
+}
+
+onBeforeMount(() => {
+  refreshWorkspaceDrawerHostReady();
+});
+
+onMounted(() => {
+  if (!workspaceDrawerHostReady.value) {
+    refreshWorkspaceDrawerHostReady();
+  }
+});
+
 const authStore = useAuthStore();
 const notifications = useNotifications();
 const { activeTabId } = useTabs();
@@ -1577,6 +1603,11 @@ const props = defineProps({
   columnHeaderFilters: {
     type: Boolean,
     default: undefined
+  },
+  /** Optional per-row delete guard; return false to hide row delete action */
+  rowCanDelete: {
+    type: Function,
+    default: () => true
   },
   /** When false, hides filter builder / filter toolbar controls (search remains) */
   showFilters: {
@@ -1766,9 +1797,10 @@ const emit = defineEmits([
 ]);
 
 const slots = useSlots();
-const forwardedSlotNames = computed(() =>
-  Object.keys(slots).filter((name) => name !== 'actions').sort(),
-);
+/** Slot names frozen on first setup — dynamic v-for over reactive slot keys causes patch races on refresh. */
+const forwardedSlotNames = Object.keys(slots)
+  .filter((name) => name !== 'actions')
+  .sort();
 
 // Use bulk actions composable
 const { bulkActions: massActions } = useBulkActions(props.moduleKey);
@@ -1801,6 +1833,8 @@ const showColumnSettings = ref(false);
 const showKanbanSettings = ref(false);
 const visibleColumns = ref([]);
 const columnsInitialized = ref(false);
+/** Single gate for first TableView mount — after columns + persisted session restore. */
+const listSessionReady = ref(false);
 const layoutOptionsExpanded = ref(true);
 const manageFieldsExpanded = ref(true);
 const fieldSearchQuery = ref('');
@@ -2654,6 +2688,26 @@ const normalizeColumnOrder = (columns) => {
     return orderedColumns;
   }
 
+  // Forms: 'name' is always first and locked (required list + detail title column)
+  if (props.moduleKey === 'forms') {
+    const orderedColumns = [];
+    const processedKeys = new Set();
+
+    const nameColumn = columns.find((col) => col.key?.toLowerCase() === 'name');
+    if (nameColumn) {
+      orderedColumns.push({ ...nameColumn, locked: true, visible: nameColumn.visible !== false });
+      processedKeys.add(nameColumn.key);
+    }
+
+    columns.forEach((col) => {
+      if (!processedKeys.has(col.key)) {
+        orderedColumns.push(col);
+      }
+    });
+
+    return orderedColumns;
+  }
+
   // Handle specific ordering for the 'people' module
   if (props.moduleKey === 'people') {
     const peopleSpecificOrder = ['name', 'organization', 'sales_type', 'email', 'phone', 'assignedTo'];
@@ -2688,18 +2742,16 @@ const normalizeColumnOrder = (columns) => {
     return orderedColumns;
   }
 
-  // Default behavior: move 'name' to the top for non-forms modules if not explicitly handled
-  if (props.moduleKey !== 'forms') {
-    const nameFieldIndex = columns.findIndex(col => col.key?.toLowerCase() === 'name');
-    if (nameFieldIndex > 0) {
-      const nameField = columns[nameFieldIndex];
-      const reordered = [...columns];
-      reordered.splice(nameFieldIndex, 1);
-      reordered.unshift(nameField);
-      return reordered;
-    }
+  // Default behavior: move 'name' to the top if not explicitly handled above
+  const nameFieldIndex = columns.findIndex(col => col.key?.toLowerCase() === 'name');
+  if (nameFieldIndex > 0) {
+    const nameField = columns[nameFieldIndex];
+    const reordered = [...columns];
+    reordered.splice(nameFieldIndex, 1);
+    reordered.unshift(nameField);
+    return reordered;
   }
-  
+
   return columns;
 };
 
@@ -3228,12 +3280,7 @@ const computedColumns = computed(() => {
     .filter(col => col.visible)
     .map((col) => mergeVisibleColumnWithProps(col));
   if (mapped.length > 0) return mapped;
-  // Fallback only before column init seeds visibleColumns (first paint).
-  if (
-    !columnsInitialized.value
-    && Array.isArray(props.columns)
-    && props.columns.length > 0
-  ) {
+  if (Array.isArray(props.columns) && props.columns.length > 0) {
     return props.columns.map((c) => ({ ...c }));
   }
   return [];
@@ -3298,7 +3345,7 @@ const {
 });
 
 const resolvedColumnHeaderFilters = computed(
-  () => props.columnHeaderFilters !== false && showInlineColumnFilters.value,
+  () => listSessionReady.value && props.columnHeaderFilters !== false && showInlineColumnFilters.value,
 );
 const resolvedShowFilterBuilder = computed(
   () => props.showFilters && showFilterBuilder.value,
@@ -4063,7 +4110,7 @@ watch(
 watch(
   enrichedColumnFilterConfigByKey,
   (configMap) => {
-    if (!columnFiltersFeatureEnabled) return;
+    if (!columnFiltersFeatureEnabled || !listSessionReady.value) return;
     ensureFilterKeys(configMap);
   },
   { immediate: true, deep: true }
@@ -4071,7 +4118,10 @@ watch(
 
 onMounted(async () => {
   let shouldRefetch = false;
+  let pendingSortEmit = null;
+  let pendingSearchEmit = null;
 
+  try {
   // Initialize columns (async - fetches from backend if needed)
   await initializeColumns();
   
@@ -4109,7 +4159,9 @@ onMounted(async () => {
         Object.keys(filters).forEach(key => {
           if (savedValues[key] !== undefined) {
             filters[key] = savedValues[key];
-            changed = true;
+            if (isFilterValueActive(savedValues[key])) {
+              changed = true;
+            }
           }
         });
         Object.entries(savedOperators).forEach(([key, operator]) => {
@@ -4120,10 +4172,11 @@ onMounted(async () => {
         });
         if (parsed?.query) {
           filterBuilderQuery.value = parsed.query;
-          changed = true;
+          if (countActiveFilterRules(savedValues, savedOperators)) {
+            changed = true;
+          }
         }
         if (changed) {
-          emitCompiledFilters();
           shouldRefetch = true;
         }
       } catch (error) {
@@ -4137,8 +4190,8 @@ onMounted(async () => {
         const parsed = JSON.parse(savedSort);
         const field = typeof parsed?.field === 'string' ? parsed.field : '';
         const order = parsed?.order === 'desc' ? 'desc' : 'asc';
-        emit('update:sort', { sortField: field, sortOrder: order });
         if (field) {
+          pendingSortEmit = { sortField: field, sortOrder: order };
           shouldRefetch = true;
         }
       } catch (error) {
@@ -4151,9 +4204,7 @@ onMounted(async () => {
   const savedSearch = localStorage.getItem(searchStorageKey.value);
   if (savedSearch !== null && savedSearch.trim() !== '') {
     searchQuery.value = savedSearch;
-    emitSearchToParent(savedSearch);
-  } else if (shouldRefetch) {
-    nextTick(() => emit('fetch'));
+    pendingSearchEmit = savedSearch;
   }
 
   if (shouldApplyActiveSavedView) {
@@ -4162,6 +4213,30 @@ onMounted(async () => {
     isActiveViewHydrating.value = false;
   } else {
     isActiveViewHydrating.value = false;
+  }
+
+  if (!shouldApplyActiveSavedView) {
+    if (pendingSortEmit) {
+      emit('update:sort', pendingSortEmit);
+    }
+    if (shouldRefetch) {
+      emitCompiledFilters();
+    } else if (pendingSearchEmit) {
+      emitSearchToParent(pendingSearchEmit);
+    }
+    emit('fetch');
+  } else {
+    if (pendingSearchEmit) {
+      emitSearchToParent(pendingSearchEmit);
+    }
+    emit('fetch');
+  }
+  } finally {
+    await nextTick();
+    listSessionReady.value = true;
+    if (columnFiltersFeatureEnabled) {
+      ensureFilterKeys(enrichedColumnFilterConfigByKey.value);
+    }
   }
 });
 
@@ -4184,6 +4259,7 @@ watch(
 );
 
 watch(searchQuery, (value) => {
+  if (!listSessionReady.value) return;
   try {
     if (value) {
       localStorage.setItem(searchStorageKey.value, value);
@@ -4198,6 +4274,7 @@ watch(searchQuery, (value) => {
 watch(
   [filters, filterRuleMeta],
   () => {
+    if (!listSessionReady.value) return;
     safePersistFilterBuilderSession();
   },
   { deep: true }
@@ -4470,7 +4547,8 @@ const shownFields = computed(() => {
       visible: true,
       sortable: col.sortable !== false,
       dataType: col.dataType || 'Text',
-      showInTable: col.showInTable !== false
+      showInTable: col.showInTable !== false,
+      locked: col.locked === true
     };
   });
   
@@ -4812,6 +4890,12 @@ const openNewCustomField = () => {
 const dragStartIndex = ref(null);
 
 const handleDragStart = (event, index) => {
+  const field = shownFields.value[index];
+  if (field?.locked || (props.moduleKey === 'forms' && field?.key?.toLowerCase() === 'name')) {
+    event.preventDefault();
+    return;
+  }
+
   // Store the index in shownFields array
   dragStartIndex.value = index;
   event.dataTransfer.effectAllowed = 'move';

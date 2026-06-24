@@ -30,3 +30,17 @@ export function getModuleRecordRoutePathBase(moduleKey, options = {}) {
   }
   return getModuleRecordCrudPathBase(moduleKey, options);
 }
+
+/**
+ * Full in-app path to a record detail page (Vue router path, not REST).
+ */
+export function getModuleRecordDetailPath(moduleKey, recordId, options = {}) {
+  const id = String(recordId || '').trim();
+  const base = getModuleRecordRoutePathBase(moduleKey, options);
+  if (!id) return base;
+  const mk = String(moduleKey || '').toLowerCase().trim();
+  if (mk === 'forms') {
+    return `${base}/${id}/detail`;
+  }
+  return `${base}/${id}`;
+}

@@ -43,7 +43,7 @@
               'box-border flex min-h-0 flex-1 flex-col overflow-x-hidden',
               useFillHeightContent ? 'relative' : '',
               useViewportLock
-                ? isProcessDesignerRoute || isInboxRoute
+                ? isProcessDesignerRoute || isInboxRoute || isFormCreateRoute
                   ? 'min-h-0 overflow-hidden pt-16 md:pt-[7.5rem] lg:pt-0 lg:px-0 lg:pb-0 lg:bg-white lg:dark:bg-neutral-900'
                   : [
                       'min-h-0 overflow-hidden px-4 pb-4 pt-16 md:pt-[7.5rem]',
@@ -58,7 +58,7 @@
             :style="{ '--table-sticky-offset': tableStickyOffset }"
           >
             <EmailVerificationBanner
-              v-if="!isRecordDetailRoute && !isProcessDesignerRoute && !isInboxRoute"
+              v-if="!isRecordDetailRoute && !isProcessDesignerRoute && !isInboxRoute && !isFormCreateRoute"
               class="-mx-4 mb-2 lg:-mx-6"
             />
 
@@ -72,6 +72,7 @@
               <RouterView v-slot="{ Component }">
                 <keep-alive :max="5">
                   <component
+                    v-if="Component"
                     :is="Component"
                     :key="routerViewKey"
                     :class="routerViewClass"
@@ -98,16 +99,12 @@ const { t } = useI18n();
  * App layouts must NEVER own global surfaces - see GlobalSurfacesProvider.vue.
  */
 
-import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Nav from '@/components/Nav.vue';
 import TabBar from '@/components/TabBar.vue';
-const EmailVerificationBanner = defineAsyncComponent(() =>
-  import('@/components/auth/EmailVerificationBanner.vue')
-);
-const OnboardingCoachmarks = defineAsyncComponent(() =>
-  import('@/components/onboarding/OnboardingCoachmarks.vue')
-);
+import EmailVerificationBanner from '@/components/auth/EmailVerificationBanner.vue';
+import OnboardingCoachmarks from '@/components/onboarding/OnboardingCoachmarks.vue';
 import { useAppShellStore } from '@/stores/appShell';
 import { useTabs } from '@/composables/useTabs';
 import { useSidebarState } from '@/composables/useSidebarState';
@@ -132,12 +129,14 @@ const routerViewKey = computed(() => {
   }
   if (route.path.startsWith('/live-chat/')) return route.path;
   if (route.path.startsWith('/settings')) return route.path;
+  if (route.path.startsWith('/forms/create')) return 'form-create';
   const recordId = route.params?.id ?? route.params?.recordId;
   if (recordId && typeof recordId === 'string') {
     if (
       name === 'helpdesk-cases-detail' ||
       name === 'deal-detail' ||
-      name === 'task-detail'
+      name === 'task-detail' ||
+      name === 'form-detail'
     ) {
       return `${name}:${recordId}`;
     }
@@ -155,11 +154,16 @@ const isProcessDesignerRoute = computed(() => {
   const name = typeof route.name === 'string' ? route.name : '';
   return name === 'process-designer' || name === 'process-designer-new';
 });
+const isFormCreateRoute = computed(() => {
+  const name = typeof route.name === 'string' ? route.name : '';
+  return name === 'form-create' || route.path.startsWith('/forms/create');
+});
 const useViewportLock = computed(
   () => isInboxRoute.value
     || (isLiveChatRoute.value && !isLiveChatClosedListRoute.value)
     || isSettingsRoute.value
     || isProcessDesignerRoute.value
+    || isFormCreateRoute.value
 );
 
 const isRecordDetailRoute = computed(() => {
@@ -168,6 +172,7 @@ const isRecordDetailRoute = computed(() => {
 
   const path = route.path || '';
   return /^\/(people|deals|tasks|events|items|imports|documents|organizations|groups|responses)\/[^/]+$/.test(path)
+    || /^\/forms\/[^/]+\/detail$/.test(path)
     || /^\/forms\/[^/]+\/responses\/[^/]+$/.test(path);
 });
 
@@ -204,6 +209,7 @@ const RECORD_DETAIL_ROUTE_NAMES = new Set([
   'document-detail',
   'group-detail',
   'response-detail',
+  'form-detail',
   'form-response-detail',
   'helpdesk-cases-detail',
   'quote-detail',

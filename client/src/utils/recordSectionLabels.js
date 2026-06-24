@@ -26,6 +26,8 @@ export function createRecordSectionLabels(t) {
     signatures: t('documents.signaturesSectionTitle'),
     collaboration: t('documents.collaborationSectionTitle'),
     details: t('records.detailsTitle'),
+    preview: t('records.tabPreview'),
+    responses: t('records.tabResponses'),
     related: t('records.relatedRecordsTitle'),
     stageHistory: t('records.stageHistoryTitle'),
     stagePlaybook: t('records.stagePlaybookTitle'),
