@@ -1,0 +1,1502 @@
+{
+  "listTitle": {
+    "message": "Templates",
+    "description": "Templates module list page title"
+  },
+  "listDescription": {
+    "message": "Design and manage print, PDF, and email templates for your organization.",
+    "description": "Templates module list page description"
+  },
+  "listDescriptionFiltered": {
+    "message": "Showing {status} templates.",
+    "description": "Templates list description when filtered by status"
+  },
+  "newTemplate": {
+    "message": "New template",
+    "description": "Create template button label"
+  },
+  "searchPlaceholder": {
+    "message": "Search templates…",
+    "description": "Templates list search placeholder"
+  },
+  "emptyTitle": {
+    "message": "No templates yet",
+    "description": "Empty templates list title"
+  },
+  "emptyMessage": {
+    "message": "Create a template to generate quotes, invoices, letters, and other documents.",
+    "description": "Empty templates list message"
+  },
+  "colName": {
+    "message": "Name",
+    "description": "Template name column"
+  },
+  "colPurpose": {
+    "message": "Purpose",
+    "description": "Template purpose column"
+  },
+  "colModuleScope": {
+    "message": "Module",
+    "description": "Template module scope column"
+  },
+  "colStatus": {
+    "message": "Status",
+    "description": "Template status column"
+  },
+  "colOutputFormat": {
+    "message": "Format",
+    "description": "Template output format column"
+  },
+  "colVersion": {
+    "message": "Version",
+    "description": "Template version column"
+  },
+  "colUpdated": {
+    "message": "Updated",
+    "description": "Template updated column"
+  },
+  "createTitle": {
+    "message": "Create template",
+    "description": "Create template drawer title"
+  },
+  "fieldName": {
+    "message": "Name",
+    "description": "Template name field"
+  },
+  "fieldPurpose": {
+    "message": "Purpose",
+    "description": "Template purpose field"
+  },
+  "fieldCategory": {
+    "message": "Category",
+    "description": "Template category field"
+  },
+  "fieldModuleScope": {
+    "message": "Module scope",
+    "description": "Template module scope field"
+  },
+  "fieldOutputFormat": {
+    "message": "Output format",
+    "description": "Template output format field"
+  },
+  "moduleScopeAny": {
+    "message": "Any module",
+    "description": "No module scope selected"
+  },
+  "formatEmail": {
+    "message": "Email",
+    "description": "Email output format option"
+  },
+  "detailTitle": {
+    "message": "Template",
+    "description": "Template detail page fallback title"
+  },
+  "publish": {
+    "message": "Publish",
+    "description": "Publish template action"
+  },
+  "archive": {
+    "message": "Archive",
+    "description": "Archive template action"
+  },
+  "versions": {
+    "message": "Versions",
+    "description": "Template versions section title"
+  },
+  "publishedVersion": {
+    "message": "Published version",
+    "description": "Published version label"
+  },
+  "draftAvailable": {
+    "message": "Draft in progress",
+    "description": "Draft status hint on detail page"
+  },
+  "loadFailed": {
+    "message": "Failed to load template",
+    "description": "Template load error toast"
+  },
+  "createSuccess": {
+    "message": "Template created",
+    "description": "Template create success toast"
+  },
+  "publishSuccess": {
+    "message": "Template published",
+    "description": "Template publish success toast"
+  },
+  "stateDraft": {
+    "message": "Draft",
+    "description": "Draft version label"
+  },
+  "statePublished": {
+    "message": "Published",
+    "description": "Published version label"
+  },
+  "previewPdf": {
+    "message": "Preview PDF",
+    "description": "Generate and open a PDF preview for the template"
+  },
+  "rendering": {
+    "message": "Rendering…",
+    "description": "Template render in progress"
+  },
+  "previewSection": {
+    "message": "Preview",
+    "description": "Template preview section title"
+  },
+  "previewDescription": {
+    "message": "Generate a PDF using the published template version.",
+    "description": "Template preview section description"
+  },
+  "fieldRecordId": {
+    "message": "Record ID",
+    "description": "Record ID field for template preview render"
+  },
+  "recordIdPlaceholder": {
+    "message": "Paste a record ID…",
+    "description": "Record ID input placeholder"
+  },
+  "recordIdHint": {
+    "message": "Required for {module} templates — use an existing record ID from that module.",
+    "description": "Record ID hint for scoped templates"
+  },
+  "recordIdRequired": {
+    "message": "Enter a record ID to preview this template.",
+    "description": "Validation when record ID is required"
+  },
+  "renderSuccess": {
+    "message": "PDF generated",
+    "description": "Template render success toast"
+  },
+  "renderFailed": {
+    "message": "Failed to render template",
+    "description": "Template render error toast"
+  },
+  "validate": {
+    "message": "Validate",
+    "description": "Validate template action"
+  },
+  "validating": {
+    "message": "Validating…",
+    "description": "Template validation in progress"
+  },
+  "validationSection": {
+    "message": "Validation",
+    "description": "Template validation section title"
+  },
+  "validationPassed": {
+    "message": "No blocking issues found",
+    "description": "Template validation passed message"
+  },
+  "validationFailed": {
+    "message": "Fix validation errors before publishing",
+    "description": "Template validation failed summary"
+  },
+  "validationErrors": {
+    "message": "Errors",
+    "description": "Validation errors heading"
+  },
+  "validationWarnings": {
+    "message": "Warnings",
+    "description": "Validation warnings heading"
+  },
+  "restoreVersion": {
+    "message": "Restore",
+    "description": "Restore template version action"
+  },
+  "restoreSuccess": {
+    "message": "Version restored to draft",
+    "description": "Template version restore success toast"
+  },
+  "restoreFailed": {
+    "message": "Failed to restore version",
+    "description": "Template version restore error toast"
+  },
+  "publishBlocked": {
+    "message": "Publish blocked by validation errors",
+    "description": "Publish blocked toast title"
+  },
+  "navTemplates": {
+    "message": "Templates",
+    "description": "Templates module sub-navigation"
+  },
+  "navThemes": {
+    "message": "Themes",
+    "description": "Themes sub-navigation"
+  },
+  "navAssets": {
+    "message": "Assets",
+    "description": "Assets sub-navigation"
+  },
+  "themesListTitle": {
+    "message": "Themes",
+    "description": "Content themes list title"
+  },
+  "themesListDescription": {
+    "message": "Manage organization branding for documents and templates.",
+    "description": "Content themes list description"
+  },
+  "newTheme": {
+    "message": "New theme",
+    "description": "Create theme button"
+  },
+  "themesSearchPlaceholder": {
+    "message": "Search themes…",
+    "description": "Themes search placeholder"
+  },
+  "themesEmptyTitle": {
+    "message": "No themes yet",
+    "description": "Empty themes list title"
+  },
+  "themesEmptyMessage": {
+    "message": "Create a theme to apply consistent colors, typography, and watermarks.",
+    "description": "Empty themes list message"
+  },
+  "themeColColors": {
+    "message": "Colors",
+    "description": "Theme colors column"
+  },
+  "themeCreateTitle": {
+    "message": "Create theme",
+    "description": "Create theme drawer title"
+  },
+  "themeFieldDescription": {
+    "message": "Description",
+    "description": "Theme description field"
+  },
+  "themeCreateSuccess": {
+    "message": "Theme created",
+    "description": "Theme create success toast"
+  },
+  "themeLoadFailed": {
+    "message": "Failed to load theme",
+    "description": "Theme load error"
+  },
+  "themeSaveSuccess": {
+    "message": "Theme saved",
+    "description": "Theme save success toast"
+  },
+  "themePublishSuccess": {
+    "message": "Theme published",
+    "description": "Theme publish success toast"
+  },
+  "themeSectionGeneral": {
+    "message": "General",
+    "description": "Theme general section"
+  },
+  "themeSectionColors": {
+    "message": "Colors",
+    "description": "Theme colors section"
+  },
+  "themeSectionTypography": {
+    "message": "Typography",
+    "description": "Theme typography section"
+  },
+  "themeSectionWatermark": {
+    "message": "Watermark",
+    "description": "Theme watermark section"
+  },
+  "themeFieldBodyFont": {
+    "message": "Body font",
+    "description": "Theme body font field"
+  },
+  "themeFieldHeadingFont": {
+    "message": "Heading font",
+    "description": "Theme heading font field"
+  },
+  "themeFieldBaseFontSize": {
+    "message": "Base font size",
+    "description": "Theme base font size field"
+  },
+  "themeFieldWatermarkText": {
+    "message": "Watermark text",
+    "description": "Theme watermark text field"
+  },
+  "themeFieldWatermarkOpacity": {
+    "message": "Opacity",
+    "description": "Theme watermark opacity field"
+  },
+  "themeColorPrimary": {
+    "message": "Primary",
+    "description": "Theme primary color"
+  },
+  "themeColorSecondary": {
+    "message": "Secondary",
+    "description": "Theme secondary color"
+  },
+  "themeColorText": {
+    "message": "Text",
+    "description": "Theme text color"
+  },
+  "themeColorMuted": {
+    "message": "Muted",
+    "description": "Theme muted color"
+  },
+  "themeColorBorder": {
+    "message": "Border",
+    "description": "Theme border color"
+  },
+  "themeColorBackground": {
+    "message": "Background",
+    "description": "Theme background color"
+  },
+  "assetsListTitle": {
+    "message": "Assets",
+    "description": "Content assets list title"
+  },
+  "assetsListDescription": {
+    "message": "Upload logos, images, and other media for use in templates.",
+    "description": "Content assets list description"
+  },
+  "uploadAsset": {
+    "message": "Upload asset",
+    "description": "Upload asset button"
+  },
+  "assetsSearchPlaceholder": {
+    "message": "Search assets…",
+    "description": "Assets search placeholder"
+  },
+  "assetsEmptyTitle": {
+    "message": "No assets yet",
+    "description": "Empty assets list title"
+  },
+  "assetsEmptyMessage": {
+    "message": "Upload images and logos to reuse across your templates.",
+    "description": "Empty assets list message"
+  },
+  "assetsColPreview": {
+    "message": "Preview",
+    "description": "Asset preview column"
+  },
+  "assetsColFilename": {
+    "message": "Filename",
+    "description": "Asset filename column"
+  },
+  "assetsColType": {
+    "message": "Type",
+    "description": "Asset type column"
+  },
+  "assetsColDimensions": {
+    "message": "Dimensions",
+    "description": "Asset dimensions column"
+  },
+  "assetsColActions": {
+    "message": "Actions",
+    "description": "Asset actions column"
+  },
+  "assetUploadSuccess": {
+    "message": "Asset uploaded",
+    "description": "Asset upload success toast"
+  },
+  "assetUploadFailed": {
+    "message": "Failed to upload asset",
+    "description": "Asset upload error toast"
+  },
+  "assetDeleteSuccess": {
+    "message": "Asset deleted",
+    "description": "Asset delete success toast"
+  },
+  "assetDeleteFailed": {
+    "message": "Failed to delete asset",
+    "description": "Asset delete error toast"
+  },
+  "openBuilder": {
+    "message": "Open builder",
+    "description": "Open visual template builder"
+  },
+  "builderBack": {
+    "message": "Back to template",
+    "description": "Return from builder to template detail"
+  },
+  "builderUndo": {
+    "message": "Undo",
+    "description": "Undo builder change"
+  },
+  "builderRedo": {
+    "message": "Redo",
+    "description": "Redo builder change"
+  },
+  "builderSaveStatusSaved": {
+    "message": "All changes saved",
+    "description": "Builder autosave saved state"
+  },
+  "builderSaveStatusSaving": {
+    "message": "Saving…",
+    "description": "Builder autosave in progress"
+  },
+  "builderSaveStatusDirty": {
+    "message": "Unsaved changes",
+    "description": "Builder has unsaved changes"
+  },
+  "builderSaveStatusError": {
+    "message": "Save failed — retry with Save",
+    "description": "Builder save error state"
+  },
+  "builderNoEditPermission": {
+    "message": "You do not have permission to edit templates",
+    "description": "Builder permission denied"
+  },
+  "builderComponentLibrary": {
+    "message": "Components",
+    "description": "Builder component library title"
+  },
+  "builderGroupTypography": {
+    "message": "Typography",
+    "description": "Builder typography component group"
+  },
+  "builderGroupText": {
+    "message": "Text",
+    "description": "Builder text component group"
+  },
+  "builderGroupData": {
+    "message": "Data",
+    "description": "Builder data component group"
+  },
+  "builderGroupMedia": {
+    "message": "Media",
+    "description": "Builder media component group"
+  },
+  "builderGroupLayout": {
+    "message": "Layout",
+    "description": "Builder layout component group"
+  },
+  "builderGroupCollections": {
+    "message": "Collections",
+    "description": "Builder collections component group"
+  },
+  "builderGroupFinancial": {
+    "message": "Financial",
+    "description": "Builder financial component group"
+  },
+  "builderGroupCrm": {
+    "message": "CRM",
+    "description": "Builder CRM component group"
+  },
+  "builderGroupInteractive": {
+    "message": "Interactive",
+    "description": "Builder interactive component group"
+  },
+  "builderGroupPrint": {
+    "message": "Print",
+    "description": "Builder print component group"
+  },
+  "builderGroupLogic": {
+    "message": "Logic",
+    "description": "Builder logic component group"
+  },
+  "builderComponentHeading": {
+    "message": "Heading",
+    "description": "Builder heading component"
+  },
+  "builderComponentParagraph": {
+    "message": "Paragraph",
+    "description": "Builder paragraph component"
+  },
+  "builderComponentText": {
+    "message": "Text",
+    "description": "Builder text component"
+  },
+  "builderComponentRichText": {
+    "message": "Rich text",
+    "description": "Builder rich text component"
+  },
+  "builderComponentLink": {
+    "message": "Link",
+    "description": "Builder link component"
+  },
+  "builderComponentList": {
+    "message": "List",
+    "description": "Builder list component"
+  },
+  "builderComponentMergeTag": {
+    "message": "Merge tag",
+    "description": "Builder merge tag component"
+  },
+  "builderComponentMergeField": {
+    "message": "Merge field",
+    "description": "Builder merge field component"
+  },
+  "builderComponentVariable": {
+    "message": "Variable",
+    "description": "Builder variable component"
+  },
+  "builderComponentFormula": {
+    "message": "Formula",
+    "description": "Builder formula component"
+  },
+  "builderComponentTable": {
+    "message": "Table",
+    "description": "Builder table component"
+  },
+  "builderComponentRepeater": {
+    "message": "Repeater",
+    "description": "Builder repeater component"
+  },
+  "builderComponentRelatedRecords": {
+    "message": "Related records",
+    "description": "Builder related records component"
+  },
+  "builderComponentLineItem": {
+    "message": "Line items",
+    "description": "Builder line items block component"
+  },
+  "builderLineItemHint": {
+    "message": "Line items block — sections, lines, and totals resolve from the live record at render time.",
+    "description": "Builder line item preview hint"
+  },
+  "builderLineItemShowSections": {
+    "message": "Show sections",
+    "description": "Line item block toggle for section headers"
+  },
+  "builderLineItemShowSectionTotals": {
+    "message": "Show section totals",
+    "description": "Line item block toggle for section subtotals"
+  },
+  "builderLineItemShowDocumentTotals": {
+    "message": "Show document totals",
+    "description": "Line item block toggle for quote/invoice totals"
+  },
+  "builderLineItemColumns": {
+    "message": "Columns",
+    "description": "Line item block column visibility toggles"
+  },
+  "builderComponentImage": {
+    "message": "Image",
+    "description": "Builder image component"
+  },
+  "builderComponentLogo": {
+    "message": "Logo",
+    "description": "Builder logo component"
+  },
+  "builderComponentIcon": {
+    "message": "Icon",
+    "description": "Builder icon component"
+  },
+  "builderComponentQrCode": {
+    "message": "QR code",
+    "description": "Builder QR code component"
+  },
+  "builderComponentBarcode": {
+    "message": "Barcode",
+    "description": "Builder barcode component"
+  },
+  "builderComponentSignature": {
+    "message": "Signature",
+    "description": "Builder signature component"
+  },
+  "builderComponentDivider": {
+    "message": "Divider",
+    "description": "Builder divider component"
+  },
+  "builderComponentSpacer": {
+    "message": "Spacer",
+    "description": "Builder spacer component"
+  },
+  "builderCanvasTitle": {
+    "message": "Page canvas",
+    "description": "Builder canvas section title"
+  },
+  "builderCanvasEmpty": {
+    "message": "Add components from the library to start building.",
+    "description": "Builder empty canvas message"
+  },
+  "builderDragHandle": {
+    "message": "Drag to reorder",
+    "description": "Builder drag handle aria label"
+  },
+  "builderTabProperties": {
+    "message": "Properties",
+    "description": "Builder properties tab"
+  },
+  "builderTabLayers": {
+    "message": "Layers",
+    "description": "Builder layers tab"
+  },
+  "builderTabMergeTags": {
+    "message": "Merge tags",
+    "description": "Builder merge tags tab"
+  },
+  "builderPropertiesEmpty": {
+    "message": "Select a component to edit its properties.",
+    "description": "Builder properties empty state"
+  },
+  "builderFieldText": {
+    "message": "Text",
+    "description": "Builder text binding field"
+  },
+  "builderFieldHeadingLevel": {
+    "message": "Heading level",
+    "description": "Builder heading level field"
+  },
+  "builderFieldMergePath": {
+    "message": "Merge path",
+    "description": "Builder merge tag path field"
+  },
+  "builderFieldFormat": {
+    "message": "Format",
+    "description": "Builder merge tag format field"
+  },
+  "builderFormatText": {
+    "message": "Text",
+    "description": "Builder text format option"
+  },
+  "builderFormatCurrency": {
+    "message": "Currency",
+    "description": "Builder currency format option"
+  },
+  "builderFormatDate": {
+    "message": "Date",
+    "description": "Builder date format option"
+  },
+  "builderFieldImageSrc": {
+    "message": "Image URL",
+    "description": "Builder image source field"
+  },
+  "builderFieldImageAlt": {
+    "message": "Alt text",
+    "description": "Builder image alt field"
+  },
+  "builderFieldCollection": {
+    "message": "Collection",
+    "description": "Builder table collection field"
+  },
+  "builderFieldSpacerHeight": {
+    "message": "Height (px)",
+    "description": "Builder spacer height field"
+  },
+  "builderFieldHtml": {
+    "message": "HTML",
+    "description": "Builder HTML content field"
+  },
+  "builderFieldHref": {
+    "message": "Link URL",
+    "description": "Builder hyperlink URL field"
+  },
+  "builderFieldListItems": {
+    "message": "List items (one per line)",
+    "description": "Builder list items field"
+  },
+  "builderFieldListOrdered": {
+    "message": "Numbered list",
+    "description": "Builder ordered list toggle"
+  },
+  "builderFieldVariableName": {
+    "message": "Variable name",
+    "description": "Builder variable name field"
+  },
+  "builderFieldDefaultValue": {
+    "message": "Default value",
+    "description": "Builder variable default value field"
+  },
+  "builderFieldExpression": {
+    "message": "Expression",
+    "description": "Builder formula expression field"
+  },
+  "builderFieldValue": {
+    "message": "Value",
+    "description": "Builder generic value field"
+  },
+  "builderFieldBarcodeFormat": {
+    "message": "Barcode format",
+    "description": "Builder barcode format field"
+  },
+  "builderFieldIconName": {
+    "message": "Icon name",
+    "description": "Builder icon name field"
+  },
+  "builderFieldIconSize": {
+    "message": "Icon size (px)",
+    "description": "Builder icon size field"
+  },
+  "builderFieldLabel": {
+    "message": "Label",
+    "description": "Builder generic label field"
+  },
+  "builderFieldSignerName": {
+    "message": "Signer name",
+    "description": "Builder signature signer name field"
+  },
+  "builderFieldItemAlias": {
+    "message": "Item alias",
+    "description": "Builder repeater item alias field"
+  },
+  "builderFieldCondition": {
+    "message": "Condition",
+    "description": "Builder conditional block expression field"
+  },
+  "builderFieldPageNumberFormat": {
+    "message": "Page number format",
+    "description": "Builder page number format field"
+  },
+  "builderFieldRelation": {
+    "message": "Relation",
+    "description": "Builder related records relation field"
+  },
+  "builderFieldModuleScope": {
+    "message": "Module scope",
+    "description": "Builder related records module scope field"
+  },
+  "builderFieldRecordPath": {
+    "message": "Record path",
+    "description": "Builder CRM block record path field"
+  },
+  "builderFieldShowSubtotal": {
+    "message": "Show subtotal",
+    "description": "Builder totals subtotal toggle"
+  },
+  "builderFieldShowTax": {
+    "message": "Show tax",
+    "description": "Builder totals tax toggle"
+  },
+  "builderFieldShowGrandTotal": {
+    "message": "Show grand total",
+    "description": "Builder totals grand total toggle"
+  },
+  "builderFieldShowTaxBreakdown": {
+    "message": "Show tax breakdown",
+    "description": "Builder tax summary breakdown toggle"
+  },
+  "builderCanvasEditHint": {
+    "message": "Click the block on the canvas to edit text.",
+    "description": "Hint that text is edited inline on canvas"
+  },
+  "builderRichTextPlaceholder": {
+    "message": "Click to add rich text…",
+    "description": "Rich text block canvas placeholder"
+  },
+  "builderHtmlPlaceholder": {
+    "message": "Click to add HTML…",
+    "description": "HTML block canvas placeholder"
+  },
+  "builderLinkPlaceholder": {
+    "message": "Link text",
+    "description": "Link block canvas placeholder"
+  },
+  "builderButtonPlaceholder": {
+    "message": "Button label",
+    "description": "Button block canvas placeholder"
+  },
+  "builderListPlaceholder": {
+    "message": "One list item per line",
+    "description": "List block canvas placeholder"
+  },
+  "builderVariablePlaceholder": {
+    "message": "variable_name",
+    "description": "Variable block canvas placeholder"
+  },
+  "builderFormulaPlaceholder": {
+    "message": "Enter formula…",
+    "description": "Formula block canvas placeholder"
+  },
+  "builderPageNumberPlaceholder": {
+    "message": "Page {{System.PageNumber}} of {{System.PageCount}}",
+    "description": "Page number block canvas placeholder"
+  },
+  "builderWatermarkPlaceholder": {
+    "message": "DRAFT",
+    "description": "Watermark block canvas placeholder"
+  },
+  "builderValuePlaceholder": {
+    "message": "Value or merge tag",
+    "description": "Generic value canvas placeholder"
+  },
+  "builderSignaturePlaceholder": {
+    "message": "Signature",
+    "description": "Signature block canvas placeholder"
+  },
+  "builderMergeTagsHint": {
+    "message": "Click a field to insert a merge tag into the selected component.",
+    "description": "Builder merge tag panel hint"
+  },
+  "builderMergeGroupSystem": {
+    "message": "System",
+    "description": "Builder system merge tag group"
+  },
+  "builderMergeGroupOrganization": {
+    "message": "Organization",
+    "description": "Builder organization merge tag group"
+  },
+  "builderMergeGroupModule": {
+    "message": "Record fields",
+    "description": "Builder module merge tag group"
+  },
+  "builderComponentSection": {
+    "message": "Section",
+    "description": "Builder section component"
+  },
+  "builderComponentContainer": {
+    "message": "Container",
+    "description": "Builder container component"
+  },
+  "builderComponentRow": {
+    "message": "Row",
+    "description": "Builder row component"
+  },
+  "builderComponentColumn": {
+    "message": "Column",
+    "description": "Builder column component"
+  },
+  "builderComponentTotals": {
+    "message": "Totals",
+    "description": "Builder totals component"
+  },
+  "builderComponentTaxSummary": {
+    "message": "Tax summary",
+    "description": "Builder tax summary component"
+  },
+  "builderComponentAddressBlock": {
+    "message": "Address block",
+    "description": "Builder address block component"
+  },
+  "builderComponentContactCard": {
+    "message": "Contact card",
+    "description": "Builder contact card component"
+  },
+  "builderComponentOrganizationBlock": {
+    "message": "Organization block",
+    "description": "Builder organization block component"
+  },
+  "builderComponentButton": {
+    "message": "Button",
+    "description": "Builder button component"
+  },
+  "builderComponentSocialIcons": {
+    "message": "Social icons",
+    "description": "Builder social icons component"
+  },
+  "builderComponentHeader": {
+    "message": "Header",
+    "description": "Builder header component"
+  },
+  "builderComponentFooter": {
+    "message": "Footer",
+    "description": "Builder footer component"
+  },
+  "builderComponentPageNumber": {
+    "message": "Page number",
+    "description": "Builder page number component"
+  },
+  "builderComponentWatermark": {
+    "message": "Watermark",
+    "description": "Builder watermark component"
+  },
+  "builderComponentConditionalBlock": {
+    "message": "Conditional block",
+    "description": "Builder conditional block component"
+  },
+  "builderComponentLoop": {
+    "message": "Loop",
+    "description": "Builder loop component"
+  },
+  "builderComponentHtml": {
+    "message": "HTML",
+    "description": "Builder HTML component"
+  },
+  "builderLivePreview": {
+    "message": "Live preview",
+    "description": "Builder live HTML preview panel title"
+  },
+  "builderTogglePreview": {
+    "message": "Preview",
+    "description": "Open print preview modal"
+  },
+  "builderPreviewUpdating": {
+    "message": "Updating preview…",
+    "description": "Live preview loading state"
+  },
+  "builderDuplicate": {
+    "message": "Duplicate",
+    "description": "Duplicate canvas component"
+  },
+  "builderNestedCount": {
+    "message": "{count} nested components",
+    "description": "Nested component count on section"
+  },
+  "builderStatusComponents": {
+    "message": "{count} components",
+    "description": "Builder status bar component count"
+  },
+  "builderStatusInsertTarget": {
+    "message": "New components insert into: {target}",
+    "description": "Builder insert target hint"
+  },
+  "galleryTitle": {
+    "message": "Start from",
+    "description": "Template gallery section title in create drawer"
+  },
+  "galleryBlank": {
+    "message": "Blank template",
+    "description": "Blank template gallery option"
+  },
+  "dashboardTitle": {
+    "message": "Overview",
+    "description": "Templates dashboard section title"
+  },
+  "dashboardDescription": {
+    "message": "Track template status and jump back into recent work.",
+    "description": "Templates dashboard section description"
+  },
+  "dashboardStatTotal": {
+    "message": "Total",
+    "description": "Total templates stat label"
+  },
+  "dashboardStatDraft": {
+    "message": "Draft",
+    "description": "Draft templates stat label"
+  },
+  "dashboardStatPublished": {
+    "message": "Published",
+    "description": "Published templates stat label"
+  },
+  "dashboardStatReview": {
+    "message": "In review",
+    "description": "Review templates stat label"
+  },
+  "dashboardStatArchived": {
+    "message": "Archived",
+    "description": "Archived templates stat label"
+  },
+  "dashboardRecentTitle": {
+    "message": "Recently updated",
+    "description": "Recent templates panel title"
+  },
+  "dashboardRecentEmpty": {
+    "message": "No templates yet. Create one to get started.",
+    "description": "Recent templates empty state"
+  },
+  "dashboardClearFilter": {
+    "message": "Clear filter",
+    "description": "Clear templates list status filter"
+  },
+  "builderToggleSection": {
+    "message": "Expand or collapse section",
+    "description": "Section expand toggle aria label"
+  },
+  "builderTableColumns": {
+    "message": "Columns",
+    "description": "Table columns editor label"
+  },
+  "builderAddColumn": {
+    "message": "Add column",
+    "description": "Add table column button"
+  },
+  "builderColumnHeader": {
+    "message": "Header",
+    "description": "Table column header placeholder"
+  },
+  "builderColumnPath": {
+    "message": "Field path",
+    "description": "Table column path placeholder"
+  },
+  "builderTabData": {
+    "message": "Data",
+    "description": "Builder data schema panel title"
+  },
+  "builderSearchComponents": {
+    "message": "Search components…",
+    "description": "Component library search placeholder"
+  },
+  "builderSearchNoResults": {
+    "message": "No components match your search",
+    "description": "Empty component library search state"
+  },
+  "builderCanvasEmptyHint": {
+    "message": "Add components from the library on the left",
+    "description": "Canvas empty state hint"
+  },
+  "builderSectionEmpty": {
+    "message": "Drop components here",
+    "description": "Empty section placeholder in canvas"
+  },
+  "builderRowEmpty": {
+    "message": "Drop columns or content here",
+    "description": "Empty row placeholder in canvas"
+  },
+  "builderColumnEmpty": {
+    "message": "Drop content here",
+    "description": "Empty column placeholder in canvas"
+  },
+  "builderFieldRowGap": {
+    "message": "Column gap",
+    "description": "Row gap between columns in pixels"
+  },
+  "builderFieldRowGapHint": {
+    "message": "Space between columns in this row.",
+    "description": "Hint for row gap field"
+  },
+  "builderFieldColumnSpan": {
+    "message": "Column width",
+    "description": "Bootstrap-style 12-column span"
+  },
+  "builderFieldColumnSpanOption": {
+    "message": "{span} of {total}",
+    "description": "Column span option label"
+  },
+  "builderFieldColumnSpanHint": {
+    "message": "Width as a fraction of the row (12-column grid).",
+    "description": "Hint for column span field"
+  },
+  "builderDragHint": {
+    "message": "Drag components onto the canvas",
+    "description": "Component library drag hint"
+  },
+  "builderDataDragHint": {
+    "message": "Drag fields onto text or the canvas",
+    "description": "Data panel drag hint"
+  },
+  "builderSampleRecordSelect": {
+    "message": "Sample record",
+    "description": "Sample record picker button"
+  },
+  "builderSampleRecordTitle": {
+    "message": "Choose sample record",
+    "description": "Sample record picker dialog title"
+  },
+  "builderSampleRecordSearch": {
+    "message": "Search records…",
+    "description": "Sample record search placeholder"
+  },
+  "builderSampleRecordEmpty": {
+    "message": "No records found for this module",
+    "description": "Sample record picker empty state"
+  },
+  "builderSampleRecordClear": {
+    "message": "Clear",
+    "description": "Clear sample record selection"
+  },
+  "builderZoom": {
+    "message": "Canvas zoom",
+    "description": "Canvas zoom control label"
+  },
+  "builderFieldVisible": {
+    "message": "Visible",
+    "description": "Component visibility toggle label"
+  },
+  "builderFieldLocked": {
+    "message": "Locked",
+    "description": "Component lock toggle label"
+  },
+  "builderHideLayer": {
+    "message": "Hide layer",
+    "description": "Hide layer action title"
+  },
+  "builderShowLayer": {
+    "message": "Show layer",
+    "description": "Show layer action title"
+  },
+  "builderLockLayer": {
+    "message": "Lock layer",
+    "description": "Lock layer action title"
+  },
+  "builderUnlockLayer": {
+    "message": "Unlock layer",
+    "description": "Unlock layer action title"
+  },
+  "builderDataSelectModule": {
+    "message": "Select a module to load merge fields",
+    "description": "Builder data panel empty module scope hint"
+  },
+  "builderMergeGroupLines": {
+    "message": "Line items",
+    "description": "Merge tag group for line item collection fields"
+  },
+  "builderMergeGroupCurrentContext": {
+    "message": "Current context",
+    "description": "Merge tag group for current user and tenant"
+  },
+  "builderDocStartTyping": {
+    "message": "Start typing your document…",
+    "description": "Empty document canvas placeholder"
+  },
+  "builderDocContinueTyping": {
+    "message": "Continue typing…",
+    "description": "Append text placeholder at document end"
+  },
+  "builderHeadingPlaceholder": {
+    "message": "Heading",
+    "description": "Inline heading placeholder"
+  },
+  "builderParagraphPlaceholder": {
+    "message": "Type here…",
+    "description": "Inline paragraph placeholder"
+  },
+  "builderImageDropHint": {
+    "message": "Add image URL in properties",
+    "description": "Image block empty hint"
+  },
+  "builderPageSize": {
+    "message": "Page size",
+    "description": "Template page size selector label"
+  },
+  "builderPageOrientation": {
+    "message": "Orientation",
+    "description": "Template page orientation selector label"
+  },
+  "builderPageOrientationPortrait": {
+    "message": "Portrait",
+    "description": "Portrait page orientation"
+  },
+  "builderPageOrientationLandscape": {
+    "message": "Landscape",
+    "description": "Landscape page orientation"
+  },
+  "builderPageCustom": {
+    "message": "Custom",
+    "description": "Custom page size option"
+  },
+  "builderPageWidth": {
+    "message": "Width",
+    "description": "Custom page width in millimeters"
+  },
+  "builderPageHeight": {
+    "message": "Height",
+    "description": "Custom page height in millimeters"
+  },
+  "builderPageGroupisoA": {
+    "message": "ISO A",
+    "description": "ISO A paper size group"
+  },
+  "builderPageGroupisoB": {
+    "message": "ISO B",
+    "description": "ISO B paper size group"
+  },
+  "builderPageGroupus": {
+    "message": "US",
+    "description": "US paper size group"
+  },
+  "builderPageGroupcustom": {
+    "message": "Custom",
+    "description": "Custom paper size group"
+  },
+  "builderFormatBold": {
+    "message": "Bold",
+    "description": "Bold text formatting"
+  },
+  "builderFormatItalic": {
+    "message": "Italic",
+    "description": "Italic text formatting"
+  },
+  "builderFormatAlignLeft": {
+    "message": "Align left",
+    "description": "Align text left"
+  },
+  "builderFormatAlignCenter": {
+    "message": "Align center",
+    "description": "Align text center"
+  },
+  "builderFormatAlignRight": {
+    "message": "Align right",
+    "description": "Align text right"
+  },
+  "builderFormatHeading1": {
+    "message": "Heading 1",
+    "description": "Heading level 1"
+  },
+  "builderFormatHeading2": {
+    "message": "Heading 2",
+    "description": "Heading level 2"
+  },
+  "builderFormatHeading3": {
+    "message": "Heading 3",
+    "description": "Heading level 3"
+  },
+  "builderFormatHeading4": {
+    "message": "Heading 4",
+    "description": "Heading level 4"
+  },
+  "builderTableDropField": {
+    "message": "Drop field here",
+    "description": "Table column field drop placeholder"
+  },
+  "builderTableInsertColLeft": {
+    "message": "Insert column left",
+    "description": "Insert table column to the left of selection"
+  },
+  "builderTableInsertColRight": {
+    "message": "Insert column right",
+    "description": "Insert table column to the right of selection"
+  },
+  "builderTableDeleteCol": {
+    "message": "Delete column",
+    "description": "Delete selected table column"
+  },
+  "builderTableMergeCells": {
+    "message": "Merge cells",
+    "description": "Merge selected table header or footer cells"
+  },
+  "builderTableUnmergeCells": {
+    "message": "Unmerge cells",
+    "description": "Split merged table cells"
+  },
+  "builderTableFooterRow": {
+    "message": "Footer row",
+    "description": "Toggle totals footer row on table"
+  },
+  "builderTableDoubleClickEdit": {
+    "message": "Double-click to edit",
+    "description": "Placeholder hint for editable table cells"
+  },
+  "builderTableCellSection": {
+    "message": "Selected cell",
+    "description": "Table cell properties section title in builder sidebar"
+  },
+  "builderTableCellPosition": {
+    "message": "Row {row}, column {col}",
+    "description": "Selected table cell coordinates in properties panel"
+  },
+  "builderTableCellAlign": {
+    "message": "Cell alignment",
+    "description": "Table cell text alignment field label"
+  },
+  "builderTableSetDataRow": {
+    "message": "Use as data row",
+    "description": "Mark table row as repeating data row"
+  },
+  "builderTableClearDataRow": {
+    "message": "Clear data row",
+    "description": "Remove repeating data row marker from table"
+  },
+  "builderTableInsertTitle": {
+    "message": "Insert table",
+    "description": "Title for table size dialog when inserting a table"
+  },
+  "builderTableInsertHint": {
+    "message": "Choose how many rows and columns to start with. Cells start empty — type any text, or insert merge tags from the Data panel.",
+    "description": "Hint text for table insert dialog; avoid literal curly braces (vue-i18n reserved)"
+  },
+  "builderTableInsertRows": {
+    "message": "Rows",
+    "description": "Row count field label in table insert dialog"
+  },
+  "builderTableInsertCols": {
+    "message": "Columns",
+    "description": "Column count field label in table insert dialog"
+  },
+  "builderTableInsertCreate": {
+    "message": "Create table",
+    "description": "Confirm button in table insert dialog"
+  },
+  "builderTableInsertRowAbove": {
+    "message": "Insert row above",
+    "description": "Context menu action to insert a table row above selection"
+  },
+  "builderTableInsertRowBelow": {
+    "message": "Insert row below",
+    "description": "Context menu action to insert a table row below selection"
+  },
+  "builderTableCopyCell": {
+    "message": "Copy cell",
+    "description": "Context menu action to copy table cell content"
+  },
+  "builderTablePasteCell": {
+    "message": "Paste cell",
+    "description": "Context menu action to paste into table cell"
+  },
+  "builderTableMarkDataRow": {
+    "message": "Mark as data row (repeat)",
+    "description": "Context menu action to mark row as repeating data row"
+  },
+  "builderTableClearDataRow": {
+    "message": "Clear data row",
+    "description": "Context menu action to unmark repeating data row"
+  },
+  "builderTableDeleteRow": {
+    "message": "Delete row",
+    "description": "Context menu action to delete table row"
+  },
+  "builderTableDeleteTable": {
+    "message": "Delete table",
+    "description": "Context menu action to remove entire table"
+  },
+  "builderTableCollectionPlaceholder": {
+    "message": "Optional — e.g. lines",
+    "description": "Placeholder for table collection binding when a row repeats"
+  },
+  "builderTableCollectionLabel": {
+    "message": "Repeat from collection",
+    "description": "Collection field label shown only when a table row is marked to repeat"
+  },
+  "builderTableCollectionUnset": {
+    "message": "Set a collection name so the marked row repeats for each item.",
+    "description": "Hint when data row is marked but collection is empty"
+  },
+  "builderTableDataRowLabel": {
+    "message": "Row {row}",
+    "description": "Label showing which row is the repeating data row"
+  },
+  "builderTableGridHint": {
+    "message": "A simple static table by default. Edit cells on the canvas; right-click for row and column actions. To repeat a row from record data, right-click that row and choose Mark as data row.",
+    "description": "Hint in properties panel for grid-based tables"
+  },
+  "builderPrintAreaLabel": {
+    "message": "Print area",
+    "description": "Label above printable content area on builder canvas"
+  },
+  "builderPrintMarginHint": {
+    "message": "Shaded areas match the 12 mm print margins. Place content inside the dashed box — preview and PDF use the same layout.",
+    "description": "Hint explaining margin guides on builder canvas"
+  },
+  "builderTableWidthPercent": {
+    "message": "Table width",
+    "description": "Table width as percentage of printable area"
+  },
+  "builderTableWidthPercentHint": {
+    "message": "Percentage of the printable page width (inside margins).",
+    "description": "Hint for table width percentage field"
+  },
+  "builderTableFrameWidthHint": {
+    "message": "Frame width follows table width %. Drag the canvas handles or change table width %.",
+    "description": "Hint when table frame width is derived from percent"
+  },
+  "builderTableColumnPercents": {
+    "message": "Column widths",
+    "description": "Column width percentages for table"
+  },
+  "builderTableColumnLabel": {
+    "message": "Col {index}",
+    "description": "Column label in table width editor"
+  },
+  "builderTableDataRowHint": {
+    "message": "Data rows repeat from {collection}",
+    "description": "Hint that body rows come from collection binding"
+  },
+  "builderComponentPageBreak": {
+    "message": "Page break",
+    "description": "Page break component in builder library"
+  },
+  "builderPageBreakLabel": {
+    "message": "Page break",
+    "description": "Page break visual label on canvas"
+  },
+  "builderChooseAsset": {
+    "message": "Choose from library",
+    "description": "Open asset library picker for image block"
+  },
+  "builderAssetPickerTitle": {
+    "message": "Image library",
+    "description": "Asset picker modal title"
+  },
+  "builderAssetPickerEmpty": {
+    "message": "No images uploaded yet. Upload assets in Templates → Assets.",
+    "description": "Empty asset picker state"
+  },
+  "builderFieldFontSize": {
+    "message": "Font size",
+    "description": "Typography font size field"
+  },
+  "builderFieldFontWeight": {
+    "message": "Font weight",
+    "description": "Typography font weight field"
+  },
+  "builderFontWeightRegular": {
+    "message": "Regular",
+    "description": "Regular font weight option"
+  },
+  "builderFontWeightSemibold": {
+    "message": "Semibold",
+    "description": "Semibold font weight option"
+  },
+  "builderFontWeightBold": {
+    "message": "Bold",
+    "description": "Bold font weight option"
+  },
+  "builderFieldMarginTop": {
+    "message": "Margin top",
+    "description": "Block margin top spacing"
+  },
+  "builderFieldMarginBottom": {
+    "message": "Margin bottom",
+    "description": "Block margin bottom spacing"
+  },
+  "builderFieldPaddingTop": {
+    "message": "Padding top",
+    "description": "Block padding top spacing"
+  },
+  "builderFieldPaddingBottom": {
+    "message": "Padding bottom",
+    "description": "Block padding bottom spacing"
+  },
+  "builderPrintPreview": {
+    "message": "Print preview",
+    "description": "Print preview modal title"
+  },
+  "builderModuleScopeChangeConfirm": {
+    "message": "Changing the module scope may invalidate merge tags in this template. Continue?",
+    "description": "Confirm dialog when changing module scope with existing content"
+  },
+  "builderMultiSelectHint": {
+    "message": "{count} selected — Shift+click to multi-select",
+    "description": "Status bar hint when multiple blocks are selected"
+  },
+  "builderPanHint": {
+    "message": "Hold Space and drag to pan",
+    "description": "Canvas pan shortcut hint"
+  },
+  "builderLayoutMode": {
+    "message": "Layout mode",
+    "description": "Builder canvas layout mode selector label"
+  },
+  "builderLayoutModeFreeform": {
+    "message": "Freeform",
+    "description": "Figma-like absolute-position canvas mode"
+  },
+  "builderLayoutModeFlow": {
+    "message": "Flow",
+    "description": "Vertical stack document flow mode"
+  },
+  "builderTemplateDetails": {
+    "message": "Template details",
+    "description": "Collapsible template metadata section in builder sidebar"
+  },
+  "builderTemplateDetailsPage": {
+    "message": "Page",
+    "description": "Page settings subsection inside template details"
+  },
+  "builderTemplateDetailsPreview": {
+    "message": "Preview data",
+    "description": "Sample record subsection inside template details"
+  },
+  "builderTemplateDescriptionPh": {
+    "message": "Optional description for this template",
+    "description": "Template description field placeholder in builder"
+  },
+  "builderSampleRecordHint": {
+    "message": "Pick a record to preview merge tags with live data.",
+    "description": "Hint for sample record picker in template details"
+  },
+  "fieldDescription": {
+    "message": "Description",
+    "description": "Template description field"
+  },
+  "fieldStatus": {
+    "message": "Status",
+    "description": "Template status field"
+  },
+  "statusDraft": {
+    "message": "Draft",
+    "description": "Template draft status"
+  },
+  "statusPublished": {
+    "message": "Published",
+    "description": "Template published status"
+  },
+  "statusArchived": {
+    "message": "Archived",
+    "description": "Template archived status"
+  },
+  "builderFieldPosX": {
+    "message": "X",
+    "description": "Block horizontal position on freeform canvas"
+  },
+  "builderFieldPosY": {
+    "message": "Y",
+    "description": "Block vertical position on freeform canvas"
+  },
+  "builderFieldWidth": {
+    "message": "Width",
+    "description": "Block width on freeform canvas"
+  },
+  "builderFieldHeight": {
+    "message": "Height",
+    "description": "Block height on freeform canvas"
+  }
+}
