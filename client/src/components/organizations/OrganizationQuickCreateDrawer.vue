@@ -253,9 +253,12 @@ import { XMarkIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from '@/components/common/DynamicForm.vue';
 import apiClient from '@/utils/apiClient';
 import { useTabs } from '@/composables/useTabs';
-import { getOrganizationParticipationFields } from '@/platform/fields/organizationFieldModel';
+import {
+  getOrganizationParticipationFields,
+  isTenantPlatformOrganizationFieldKey,
+  ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS,
+} from '@/platform/fields/organizationFieldModel';
 import { getGlobalSystemFieldKeys, isSystemField } from '@/platform/fields/fieldCapabilityEngine';
-import { normalizeFieldKeyForMetadataLookup } from '@/platform/fields/BaseFieldModel';
 import { getWebsiteValidationMessage, isValidWebsiteInput } from '@/utils/urlInputValidation';
 
 const props = defineProps({
@@ -333,52 +336,9 @@ const QUICK_CREATE_FIELDS = computed(() => {
   });
 });
 
-/**
- * Tenant / workspace / platform infrastructure fields on Organization (isTenant workflows).
- * CRM business org creation must never surface these. Aligned with mapOrganizationToSurface exclusions.
- */
-const TENANT_PLATFORM_ORG_FIELD_KEYS = [
-  'isTenant',
-  'slug',
-  'subscription',
-  'limits',
-  'enabledApps',
-  'enabledModules',
-  'moduleOverrides',
-  'crmInitialized',
-  'settings',
-  'dataRegion',
-  'security',
-  'integrations',
-  'database',
-  'billing',
-  'activityLogs',
-  'legacyOrganizationId',
-  'descriptionVersions'
-];
-
-/** Normalized top-level roots (same helper as registry) for prefix matching nested module paths, e.g. subscription.stripeCustomerId */
-const TENANT_PLATFORM_ROOTS_NORM = TENANT_PLATFORM_ORG_FIELD_KEYS.map((k) =>
-  normalizeFieldKeyForMetadataLookup(k)
-);
-
-/**
- * Tenant/workspace fields and ANY nested path under them (module definitions often flatten mongoose paths).
- * DynamicForm exclude list uses exact key match only, so we must filter field lists in the drawer.
- */
-function isTenantPlatformOrgFieldKey(fieldKey) {
-  const n = normalizeFieldKeyForMetadataLookup(String(fieldKey || ''));
-  for (const root of TENANT_PLATFORM_ROOTS_NORM) {
-    if (n === root) return true;
-    if (n.startsWith(`${root}.`)) return true;
-    if (n.startsWith(`${root}[`)) return true;
-  }
-  return false;
-}
-
 const FULL_MODE_STATIC_EXCLUDE_FIELDS = [
   'organizationId',
-  ...TENANT_PLATFORM_ORG_FIELD_KEYS,
+  ...ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS,
   'createdBy',
   'createdAt',
   'updatedAt',
@@ -414,7 +374,7 @@ const fullQuickCreateFields = computed(() =>
   QUICK_CREATE_FIELDS.value.filter((fieldKey) => {
     const keyLower = String(fieldKey).toLowerCase();
     return !PARTICIPATION_FIELD_KEYS.has(keyLower)
-      && !isTenantPlatformOrgFieldKey(fieldKey)
+      && !isTenantPlatformOrganizationFieldKey(fieldKey)
       && !fullModeExcludeFields.value.some((excluded) => excluded.toLowerCase() === keyLower)
       && !moduleSystemFieldKeySet.value.has(keyLower);
   })
@@ -433,7 +393,7 @@ const fullOtherFields = computed(() => {
       if (excludedSet.has(keyLower)) return false;
       if (quickSet.has(keyLower)) return false;
       if (PARTICIPATION_FIELD_KEYS.has(keyLower)) return false;
-      if (isTenantPlatformOrgFieldKey(key)) return false;
+      if (isTenantPlatformOrganizationFieldKey(key)) return false;
       if (moduleSystemFieldKeySet.value.has(keyLower)) return false;
       return true;
     });
@@ -447,7 +407,7 @@ const fullParticipationFields = computed(() => {
       if (!key) return false;
       const keyLower = String(key).toLowerCase();
       return PARTICIPATION_FIELD_KEYS.has(keyLower)
-        && !isTenantPlatformOrgFieldKey(key)
+        && !isTenantPlatformOrganizationFieldKey(key)
         && !moduleSystemFieldKeySet.value.has(keyLower);
     });
 });
@@ -460,7 +420,7 @@ const FULL_CREATE_FIELDS = computed(() => [
 
 /** Quick create keys with tenant/nested tenant paths removed (module API can expose subscription.* etc.) */
 const sanitizedQuickCreateFieldKeys = computed(() =>
-  QUICK_CREATE_FIELDS.value.filter((fieldKey) => !isTenantPlatformOrgFieldKey(fieldKey))
+  QUICK_CREATE_FIELDS.value.filter((fieldKey) => !isTenantPlatformOrganizationFieldKey(fieldKey))
 );
 
 /**

@@ -83,6 +83,13 @@ declare module '@/components/activity/activityUiContract' {
   export function normalizeActivityUiContract(moduleUi?: Record<string, any>): Record<string, any>;
 }
 
+declare module '@/utils/builderMergeTagHtml' {
+  export const BUILDER_MERGE_CHIP_CLASS: string;
+  export function mergeTokensToChipHtml(html: string): string;
+  export function normalizeCellMergeTokenHtml(html: string): string;
+  export function chipHtmlToMergeTokens(html: string): string;
+}
+
 declare module '@/components/record-page/slashCommands' {
   // JS TipTap extension; tests introspect `.config` — keep loose until migrated to TS
   export const SlashCommands: {

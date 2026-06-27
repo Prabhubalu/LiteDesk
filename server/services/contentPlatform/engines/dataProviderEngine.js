@@ -1,0 +1,697 @@
+'use strict';
+
+const mongoose = require('mongoose');
+const Organization = require('../../../models/Organization');
+const User = require('../../../models/User');
+const People = require('../../../models/People');
+const Quote = require('../../../models/Quote');
+const QuoteLine = require('../../../models/QuoteLine');
+const QuoteSection = require('../../../models/QuoteSection');
+const Invoice = require('../../../models/Invoice');
+const InvoiceLine = require('../../../models/InvoiceLine');
+const InvoiceSection = require('../../../models/InvoiceSection');
+const Item = require('../../../models/Item');
+const ItemVariant = require('../../../models/ItemVariant');
+
+const RECORD_LOADERS = {
+  quotes: loadQuoteContext,
+  invoices: loadInvoiceContext,
+  people: loadPeopleContext
+};
+
+/** Fields exposed on Organization.* merge tags for related CRM companies. */
+const ORGANIZATION_MERGE_SELECT = 'name industry website phone address annualRevenue numberOfEmployees types slug';
+
+function capitalizeModuleKey(moduleKey) {
+  const key = String(moduleKey || '').trim();
+  if (!key) return 'Record';
+  return key
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+}
+
+function pickCustomerOrganization(record) {
+  const ref = record?.organizationRefId;
+  if (ref && typeof ref === 'object' && ref.name) {
+    return ref;
+  }
+  return null;
+}
+
+/**
+ * Load a CRM business organization (isTenant: false) for merge tags.
+ * @param {string} tenantOrganizationId
+ * @param {unknown} crmOrganizationId
+ */
+async function loadCrmOrganizationById(tenantOrganizationId, crmOrganizationId) {
+  const id = normalizeObjectIdString(crmOrganizationId);
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+
+  const { buildTenantAccessibleCrmOrganizationQuery } = require('../../../utils/crmOrganizationAccess');
+  const query = await buildTenantAccessibleCrmOrganizationQuery(tenantOrganizationId, {
+    recordIds: [id]
+  });
+
+  return Organization.findOne(query).select(ORGANIZATION_MERGE_SELECT).lean();
+}
+
+/**
+ * Resolve populated or ID-only CRM organization refs on commercial / people records.
+ * @param {unknown} orgRef
+ * @param {string} tenantOrganizationId
+ */
+async function resolveCrmOrganizationRef(orgRef, tenantOrganizationId) {
+  if (!orgRef) return null;
+  if (typeof orgRef === 'object' && orgRef._id) {
+    if (orgRef.name) return orgRef;
+    return loadCrmOrganizationById(tenantOrganizationId, orgRef._id);
+  }
+  return loadCrmOrganizationById(tenantOrganizationId, orgRef);
+}
+
+function normalizeObjectIdString(value) {
+  if (!value) return '';
+  if (typeof value === 'object' && value._id) return String(value._id);
+  return String(value);
+}
+
+function toObjectId(value) {
+  const id = normalizeObjectIdString(value);
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+  return new mongoose.Types.ObjectId(id);
+}
+
+/**
+ * Convert catalog rich-text description HTML into plain text for PDF merge tags.
+ * @param {unknown} value
+ */
+function plainTextFromRichDescription(value) {
+  const raw = String(value ?? '');
+  if (!raw.trim()) return '';
+  return raw
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
+ * @param {object | null | undefined} item
+ */
+function resolveCatalogItemDescription(item) {
+  if (!item || typeof item !== 'object') return '';
+
+  const direct = plainTextFromRichDescription(item.description);
+  if (direct) return direct;
+
+  const custom = plainTextFromRichDescription(item.customFields?.description);
+  if (custom) return custom;
+
+  const versions = Array.isArray(item.descriptionVersions) ? item.descriptionVersions : [];
+  const sorted = versions
+    .slice()
+    .sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0));
+  for (const version of sorted) {
+    const text = plainTextFromRichDescription(version?.content);
+    if (text) return text;
+  }
+
+  return '';
+}
+
+function normalizeLine(line) {
+  const doc = line && typeof line.toObject === 'function' ? line.toObject() : line;
+  const unitPrice = doc.unitPrice ?? doc.unitPriceSnapshot ?? doc.listPriceSnapshot ?? 0;
+  const liveDescription = plainTextFromRichDescription(doc.liveItemDescription || '');
+  const snapshotDescription = plainTextFromRichDescription(doc.descriptionSnapshot || doc.description || '');
+
+  return {
+    ...doc,
+    description: liveDescription || snapshotDescription || '',
+    name: doc.itemNameSnapshot || doc.nameSnapshot || doc.name || '',
+    skuSnapshot: doc.skuSnapshot || doc.sku || '',
+    unitPrice,
+    quantity: doc.quantity ?? 0,
+    lineTotal: doc.lineTotal ?? doc.lineSubtotal ?? 0,
+    lineSubtotal: doc.lineSubtotal ?? doc.lineTotal ?? 0
+  };
+}
+
+/**
+ * Resolve current catalog Item.description for document lines at render time.
+ * @param {string} organizationId
+ * @param {Array<object>} lines
+ */
+async function enrichLinesWithLiveItemCatalog(organizationId, lines) {
+  if (!organizationId || !Array.isArray(lines) || lines.length === 0) {
+    return Array.isArray(lines) ? lines : [];
+  }
+
+  const variantObjectIds = [
+    ...new Set(
+      lines
+        .map((line) => toObjectId(line?.variantId))
+        .filter(Boolean)
+        .map((id) => String(id))
+    )
+  ].map((id) => toObjectId(id)).filter(Boolean);
+
+  if (!variantObjectIds.length) return lines;
+
+  const orgObjectId = toObjectId(organizationId) || organizationId;
+
+  const variants = await ItemVariant.find({
+    _id: { $in: variantObjectIds },
+    organizationId: orgObjectId
+  })
+    .select('_id itemId')
+    .lean();
+
+  if (!variants.length) return lines;
+
+  const variantToItemId = new Map(
+    variants.map((variant) => [String(variant._id), normalizeObjectIdString(variant.itemId)])
+  );
+
+  const itemObjectIds = [...new Set([...variantToItemId.values()].filter(Boolean))]
+    .map((id) => toObjectId(id))
+    .filter(Boolean);
+  if (!itemObjectIds.length) return lines;
+
+  const items = await Item.find({
+    _id: { $in: itemObjectIds },
+    organizationId: orgObjectId,
+    deletedAt: null
+  })
+    .select('description customFields.description descriptionVersions')
+    .lean();
+
+  const itemById = new Map(items.map((item) => [String(item._id), item]));
+
+  return lines.map((line) => {
+    const variantId = normalizeObjectIdString(line?.variantId);
+    const itemId = variantToItemId.get(variantId);
+    const item = itemId ? itemById.get(itemId) : null;
+    if (!item) return line;
+
+    const liveDescription = resolveCatalogItemDescription(item);
+    if (!liveDescription) return line;
+
+    return {
+      ...line,
+      liveItemDescription: liveDescription
+    };
+  });
+}
+
+async function normalizeLinesForRender(organizationId, lines) {
+  if (!Array.isArray(lines) || lines.length === 0) return [];
+  const enriched = await enrichLinesWithLiveItemCatalog(organizationId, lines);
+  return enriched.map(normalizeLine);
+}
+
+function normalizeQuoteRecord(quote) {
+  if (!quote) return null;
+  const customerOrganization = pickCustomerOrganization(quote);
+
+  return {
+    ...quote,
+    quoteNumber: quote.quoteNumber ?? '',
+    grandTotal: quote.grandTotal ?? 0,
+    subtotal: quote.subtotal ?? 0,
+    taxTotal: quote.taxTotal ?? 0,
+    currency: quote.currency ?? 'USD',
+    customerName: customerOrganization?.name ?? quote.customerName ?? '',
+    customerOrganization
+  };
+}
+
+function normalizeInvoiceRecord(invoice) {
+  if (!invoice) return null;
+  const customerOrganization = pickCustomerOrganization(invoice);
+
+  return {
+    ...invoice,
+    invoiceNumber: invoice.invoiceNumber ?? '',
+    amountDue: invoice.amountDue ?? invoice.grandTotal ?? 0,
+    grandTotal: invoice.grandTotal ?? 0,
+    dueDate: invoice.dueDate ?? null,
+    currency: invoice.currency ?? 'USD',
+    customerName: customerOrganization?.name ?? invoice.customerName ?? '',
+    customerOrganization
+  };
+}
+
+async function loadQuoteContext({ organizationId, recordId }) {
+  const quote = await Quote.findOne({ _id: recordId, organizationId })
+    .populate({ path: 'organizationRefId', select: ORGANIZATION_MERGE_SELECT })
+    .populate({
+      path: 'contactId',
+      select: 'first_name last_name email phone mobile title organization',
+      populate: { path: 'organization', select: ORGANIZATION_MERGE_SELECT }
+    })
+    .lean();
+  if (!quote) return null;
+
+  const lines = await QuoteLine.find({ organizationId, quoteId: recordId })
+    .sort({ lineOrder: 1, createdAt: 1 })
+    .lean();
+
+  const sections = await QuoteSection.find({ organizationId, quoteId: recordId, hiddenSection: { $ne: true } })
+    .sort({ sectionOrder: 1, createdAt: 1 })
+    .lean();
+
+  return {
+    record: normalizeQuoteRecord(quote),
+    lines,
+    sections,
+    moduleKey: 'quotes'
+  };
+}
+
+async function loadInvoiceContext({ organizationId, recordId }) {
+  const invoice = await Invoice.findOne({ _id: recordId, organizationId, deletedAt: null })
+    .populate({ path: 'organizationRefId', select: ORGANIZATION_MERGE_SELECT })
+    .populate({
+      path: 'contactId',
+      select: 'first_name last_name email phone mobile title organization',
+      populate: { path: 'organization', select: ORGANIZATION_MERGE_SELECT }
+    })
+    .lean();
+  if (!invoice) return null;
+
+  const lines = await InvoiceLine.find({ organizationId, invoiceId: recordId })
+    .sort({ lineOrder: 1, createdAt: 1 })
+    .lean();
+
+  const sections = await InvoiceSection.find({ organizationId, invoiceId: recordId, hiddenSection: { $ne: true } })
+    .sort({ sectionOrder: 1, createdAt: 1 })
+    .lean();
+
+  return {
+    record: normalizeInvoiceRecord(invoice),
+    lines,
+    sections,
+    moduleKey: 'invoices'
+  };
+}
+
+async function loadPeopleContext({ organizationId, recordId }) {
+  const person = await People.findOne({ _id: recordId, organizationId, deletedAt: null })
+    .populate({ path: 'organization', select: ORGANIZATION_MERGE_SELECT })
+    .select('first_name last_name email phone mobile title organization')
+    .lean();
+  if (!person) return null;
+
+  return {
+    record: person,
+    lines: [],
+    moduleKey: 'people'
+  };
+}
+
+const PREVIEW_LINE_COLLECTION_MODULES = new Set(['quotes', 'invoices', 'sales_orders']);
+
+const PREVIEW_SAMPLE_LINES = [
+  {
+    description: 'Professional services',
+    quantity: 10,
+    unitPrice: 100,
+    lineTotal: 1000,
+    lineSubtotal: 1000,
+    name: 'Professional services',
+    skuSnapshot: 'SKU-001',
+    quoteSectionId: 'preview-s1'
+  },
+  {
+    description: 'Support package',
+    quantity: 1,
+    unitPrice: 250,
+    lineTotal: 250,
+    lineSubtotal: 250,
+    name: 'Support package',
+    skuSnapshot: 'SKU-002',
+    quoteSectionId: 'preview-s2'
+  }
+];
+
+const PREVIEW_SAMPLE_SECTIONS = [
+  {
+    _id: 'preview-s1',
+    sectionTitle: 'Products',
+    sectionType: 'standard',
+    sectionOrder: 0,
+    showSectionTotal: true,
+    sectionSubtotal: 1000,
+    sectionTotal: 1000,
+    sectionDiscountTotal: 0
+  },
+  {
+    _id: 'preview-s2',
+    sectionTitle: 'Services',
+    sectionType: 'standard',
+    sectionOrder: 1,
+    showSectionTotal: true,
+    sectionSubtotal: 250,
+    sectionTotal: 250,
+    sectionDiscountTotal: 0
+  }
+];
+
+function buildPreviewSampleRecord(moduleKey, tenantOrganization) {
+  const key = String(moduleKey || '').trim().toLowerCase();
+  const orgName = tenantOrganization?.name || 'Sample Organization';
+
+  const byModule = {
+    quotes: {
+      quoteNumber: 'QT-PREVIEW-001',
+      grandTotal: 1250,
+      subtotal: 1000,
+      taxTotal: 250,
+      currency: 'USD',
+      customerName: orgName,
+      status: 'Draft'
+    },
+    invoices: {
+      invoiceNumber: 'INV-PREVIEW-001',
+      amountDue: 1250,
+      grandTotal: 1250,
+      subtotal: 1000,
+      taxTotal: 250,
+      currency: 'USD',
+      customerName: orgName,
+      dueDate: new Date().toISOString(),
+      status: 'Sent'
+    },
+    sales_orders: {
+      orderNumber: 'SO-PREVIEW-001',
+      grandTotal: 850,
+      subtotal: 750,
+      taxTotal: 100,
+      currency: 'USD',
+      customerName: orgName,
+      status: 'Draft'
+    },
+    deals: {
+      name: 'Sample Deal',
+      amount: 50000,
+      stage: 'Proposal',
+      status: 'Open'
+    },
+    people: {
+      first_name: 'Sample',
+      last_name: 'Contact',
+      email: 'contact@example.com',
+      full_name: 'Sample Contact'
+    },
+    organizations: {
+      name: orgName,
+      industry: tenantOrganization?.industry || 'Technology',
+      email: 'billing@example.com'
+    },
+    cases: {
+      subject: 'Sample case',
+      status: 'Open',
+      case_number: 'CASE-PREVIEW-001'
+    },
+    tasks: {
+      title: 'Sample task',
+      status: 'Open',
+      priority: 'Normal'
+    }
+  };
+
+  return byModule[key] || {
+    name: 'Sample Record',
+    title: 'Sample Record',
+    status: 'Draft'
+  };
+}
+
+/**
+ * Resolve related contact (People) from a commercial document record.
+ * @param {object} params
+ * @param {string} params.organizationId
+ * @param {object | null} params.record
+ */
+async function resolveRelatedPeople({ organizationId, record }) {
+  if (!record) return null;
+
+  const tenantOrgObjectId = toObjectId(organizationId) || organizationId;
+
+  const contactRef = record.contactId;
+  if (contactRef && typeof contactRef === 'object' && contactRef._id) {
+    if (Object.prototype.hasOwnProperty.call(contactRef, 'organization')) {
+      return contactRef;
+    }
+    if (!toObjectId(organizationId)) {
+      return contactRef;
+    }
+    return People.findOne({ _id: contactRef._id, organizationId: tenantOrgObjectId, deletedAt: null })
+      .populate({ path: 'organization', select: ORGANIZATION_MERGE_SELECT })
+      .select('first_name last_name email phone mobile title organization')
+      .lean();
+  }
+
+  const contactId = contactRef || record.contact?._id;
+  if (!contactId) return null;
+  if (!toObjectId(organizationId)) {
+    return null;
+  }
+
+  return People.findOne({ _id: contactId, organizationId: tenantOrgObjectId, deletedAt: null })
+    .populate({ path: 'organization', select: ORGANIZATION_MERGE_SELECT })
+    .select('first_name last_name email phone mobile title organization')
+    .lean();
+}
+
+/**
+ * Resolve the customer / related CRM organization for merge tags.
+ * Priority: document organizationRefId → contact.organization → person.organization.
+ * @param {object} params
+ */
+async function resolveRelatedOrganization({ organizationId, record, relatedPeople = null }) {
+  if (!record) return null;
+
+  const fromCustomer = pickCustomerOrganization(record);
+  if (fromCustomer) return fromCustomer;
+
+  const fromDocumentRef = await resolveCrmOrganizationRef(record.organizationRefId, organizationId);
+  if (fromDocumentRef) return fromDocumentRef;
+
+  const personOrgRef = record.organization ?? relatedPeople?.organization ?? null;
+  return resolveCrmOrganizationRef(personOrgRef, organizationId);
+}
+
+/**
+ * @param {object} params
+ */
+async function assembleRuntimeContext(params) {
+  const {
+    organizationId,
+    userId = null,
+    moduleScope = '',
+    preview = false,
+    runtimeContext = {}
+  } = params;
+
+  const parameters = runtimeContext.parameters && typeof runtimeContext.parameters === 'object'
+    ? { ...runtimeContext.parameters }
+    : {};
+
+  let record = runtimeContext.record || null;
+  let lines = Array.isArray(runtimeContext.lines) ? runtimeContext.lines : [];
+  let sections = Array.isArray(runtimeContext.sections) ? runtimeContext.sections : [];
+  let recordLoadAttempted = false;
+  const recordModuleKey = String(
+    runtimeContext.recordModuleKey || moduleScope || ''
+  ).toLowerCase();
+
+  if (!record && runtimeContext.recordId && RECORD_LOADERS[recordModuleKey]) {
+    recordLoadAttempted = true;
+    const loaded = await RECORD_LOADERS[recordModuleKey]({
+      organizationId,
+      recordId: runtimeContext.recordId
+    });
+    if (loaded) {
+      record = loaded.record;
+      lines = loaded.lines;
+      sections = loaded.sections || [];
+    }
+  }
+
+  if (Array.isArray(lines) && lines.length) {
+    lines = await normalizeLinesForRender(organizationId, lines);
+  }
+
+  if (
+    preview
+    && !sections.length
+    && PREVIEW_LINE_COLLECTION_MODULES.has(recordModuleKey)
+    && (runtimeContext.usePreviewSample === true || !runtimeContext.recordId)
+  ) {
+    sections = PREVIEW_SAMPLE_SECTIONS.map((section) => ({ ...section }));
+  }
+
+  const [tenantOrganization, currentUser] = await Promise.all([
+    runtimeContext.organization
+      ? Promise.resolve(runtimeContext.organization)
+      : Organization.findById(organizationId).select('name industry slug email').lean(),
+    userId && !runtimeContext.currentUser
+      ? User.findById(userId).select('firstName lastName email username').lean()
+      : Promise.resolve(runtimeContext.currentUser || null)
+  ]);
+
+  if (
+    !record
+    && recordModuleKey
+    && (runtimeContext.usePreviewSample === true || (preview && !runtimeContext.recordId))
+  ) {
+    record = buildPreviewSampleRecord(recordModuleKey, tenantOrganization);
+    if (!lines.length && PREVIEW_LINE_COLLECTION_MODULES.has(recordModuleKey)) {
+      lines = PREVIEW_SAMPLE_LINES.map(normalizeLine);
+    }
+    if (!sections.length && PREVIEW_LINE_COLLECTION_MODULES.has(recordModuleKey)) {
+      sections = PREVIEW_SAMPLE_SECTIONS.map((section) => ({ ...section }));
+    }
+  }
+
+  if (
+    preview
+    && recordModuleKey
+    && PREVIEW_LINE_COLLECTION_MODULES.has(recordModuleKey)
+    && !lines.length
+    && (runtimeContext.usePreviewSample === true || !runtimeContext.recordId)
+  ) {
+    lines = PREVIEW_SAMPLE_LINES.map(normalizeLine);
+  }
+
+  if (
+    preview
+    && recordModuleKey
+    && PREVIEW_LINE_COLLECTION_MODULES.has(recordModuleKey)
+    && !sections.length
+    && (runtimeContext.usePreviewSample === true || !runtimeContext.recordId)
+  ) {
+    sections = PREVIEW_SAMPLE_SECTIONS.map((section) => ({ ...section }));
+  }
+
+  if (
+    preview
+    && runtimeContext.recordId
+    && !record
+    && recordModuleKey
+    && !RECORD_LOADERS[recordModuleKey]
+  ) {
+    record = buildPreviewSampleRecord(recordModuleKey, tenantOrganization);
+  }
+
+  if (recordModuleKey === 'quotes' && record) {
+    record = normalizeQuoteRecord(record);
+  } else if (recordModuleKey === 'invoices' && record) {
+    record = normalizeInvoiceRecord(record);
+  }
+
+  const relatedPeople = await resolveRelatedPeople({ organizationId, record });
+
+  let relatedOrganization = await resolveRelatedOrganization({
+    organizationId,
+    record,
+    relatedPeople
+  });
+
+  if (
+    !relatedOrganization
+    && preview
+    && recordModuleKey === 'people'
+    && (runtimeContext.usePreviewSample === true || !runtimeContext.recordId)
+  ) {
+    relatedOrganization = buildPreviewSampleRecord('organizations', tenantOrganization);
+  }
+
+  if (relatedOrganization && record && (recordModuleKey === 'quotes' || recordModuleKey === 'invoices')) {
+    if (recordModuleKey === 'quotes') {
+      record = normalizeQuoteRecord({ ...record, organizationRefId: relatedOrganization });
+    } else {
+      record = normalizeInvoiceRecord({ ...record, organizationRefId: relatedOrganization });
+    }
+  }
+
+  const customerOrganization = relatedOrganization || record?.customerOrganization || null;
+  const documentOrganization =
+    recordModuleKey === 'people'
+      ? (relatedOrganization || {})
+      : (customerOrganization || tenantOrganization || {});
+
+  if (record?.currency && !parameters.currency) {
+    parameters.currency = record.currency;
+  }
+
+  const moduleAlias = capitalizeModuleKey(recordModuleKey || moduleScope);
+  const now = new Date();
+
+  const scope = {
+    Record: record || {},
+    Organization: documentOrganization,
+    CustomerOrganization: customerOrganization || {},
+    CurrentUser: currentUser || {},
+    CurrentOrganization: tenantOrganization || {},
+    CurrentTenant: tenantOrganization || {},
+    System: {
+      Today: now.toISOString().slice(0, 10),
+      Now: now.toISOString(),
+      PageCount: 1
+    },
+    lines,
+    sections,
+    parameters,
+    recordModuleKey,
+    record: record || {},
+    organization: documentOrganization,
+    currentUser: currentUser || {},
+    recordLoadAttempted,
+    recordLoadSucceeded: Boolean(record && record._id)
+  };
+
+  if (moduleAlias && record) {
+    scope[moduleAlias] = record;
+  }
+
+  if (recordModuleKey === 'quotes' && record) scope.Quote = record;
+  if (recordModuleKey === 'invoices' && record) scope.Invoice = record;
+  if (recordModuleKey === 'people' && record) scope.People = record;
+
+  if (relatedPeople) {
+    scope.People = relatedPeople;
+  } else if (runtimeContext.usePreviewSample === true && recordModuleKey && recordModuleKey !== 'people') {
+    scope.People = buildPreviewSampleRecord('people', tenantOrganization);
+  }
+
+  return scope;
+}
+
+module.exports = {
+  assembleRuntimeContext,
+  capitalizeModuleKey,
+  normalizeLine,
+  normalizeQuoteRecord,
+  normalizeInvoiceRecord,
+  buildPreviewSampleRecord,
+  enrichLinesWithLiveItemCatalog,
+  normalizeLinesForRender,
+  plainTextFromRichDescription,
+  resolveCatalogItemDescription,
+  resolveRelatedOrganization,
+  resolveCrmOrganizationRef,
+  loadCrmOrganizationById,
+  ORGANIZATION_MERGE_SELECT,
+  RECORD_LOADERS
+};

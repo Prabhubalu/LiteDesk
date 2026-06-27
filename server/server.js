@@ -339,6 +339,10 @@ app.use('/api/webforms', webformRoutes.protected); // Protected webform routes
 app.use('/api/reports', reportRoutes);
 app.use('/api/documents', require('./routes/documentRoutes'));
 app.use('/api/document-folders', require('./routes/documentFolderRoutes'));
+app.use('/api/templates', require('./routes/contentTemplateRoutes'));
+app.use('/api/content-themes', require('./routes/contentThemeRoutes'));
+app.use('/api/content-assets', require('./routes/contentAssetRoutes'));
+app.use('/api/content-fonts', require('./routes/contentFontRoutes'));
 app.use('/api/items', itemRoutes);
 app.use('/api/catalog', require('./routes/catalogRoutes'));
 app.use('/api/trash', trashRoutes);
