@@ -332,6 +332,7 @@
                       <p class="text-xs text-gray-500 dark:text-gray-500 mt-0.5">{{ t('forms.hubFillEvidenceAttachHint') }}</p>
                     </div>
                   </div>
+                </div>
               </div>
 
               <!-- If section has subsections, render them after direct questions -->
