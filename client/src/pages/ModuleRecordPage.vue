@@ -40,7 +40,7 @@
 import { useI18n } from 'vue-i18n';
 import { computed, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
-import { getRecordAdapterKey } from '@/components/record-page/adapters/adapterRegistry';
+import { getRecordAdapterKey } from '@/utils/recordAdapterRegistry';
 
 /** One async chunk per adapter — avoids loading all three for every record route. */
 const DealRecordPage = defineAsyncComponent(() => import('@/pages/deals/DealRecordPage.vue'));

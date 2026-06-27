@@ -1666,7 +1666,7 @@ import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
 import Avatar from '@/components/common/Avatar.vue';
-import { getDefaultTagChipClass, getDefaultTagDotClass } from '@/components/record-page/composables/useRecordTags';
+import { getDefaultTagChipClass, getDefaultTagDotClass } from '@/composables/useRecordTags';
 import { getFieldDependencyState, evaluateDependency } from '@/utils/dependencyEvaluation';
 import { mergeOrgContactLookupForField } from '@/utils/orgContactFormPairing';
 import { useRouter, useRoute } from 'vue-router';

@@ -180,7 +180,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, nextTick } from 'vue';
+import { ref, watch, computed, nextTick, defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -188,7 +188,11 @@ import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } fro
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from './DynamicForm.vue';
 import DealRelationshipEditor from '@/components/deals/DealRelationshipEditor.vue';
-import QuoteLinesRecordSection from '@/components/record-page/sections/QuoteLinesRecordSection.vue';
+
+// Lazy-load to avoid circular chunk-settings ↔ record-activity init (production TDZ on _export_sfc).
+const QuoteLinesRecordSection = defineAsyncComponent(
+  () => import('@/components/record-page/sections/QuoteLinesRecordSection.vue')
+);
 import apiClient from '@/utils/apiClient';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import {

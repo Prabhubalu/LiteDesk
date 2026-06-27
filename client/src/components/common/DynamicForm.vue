@@ -382,12 +382,16 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 import DynamicFormField from './DynamicFormField.vue';
-import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
+
+// Lazy-load to avoid circular chunk-settings ↔ record-activity init (production TDZ on _export_sfc).
+const TaskDescriptionEditor = defineAsyncComponent(
+  () => import('@/components/record-page/TaskDescriptionEditor.vue')
+);
 import TaskRelatedToField from '@/components/tasks/TaskRelatedToField.vue';
 import TaskSubtasksField from '@/components/tasks/TaskSubtasksField.vue';
 import apiClient from '@/utils/apiClient';
