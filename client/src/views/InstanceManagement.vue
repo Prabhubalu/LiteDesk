@@ -453,9 +453,18 @@ const viewInstance = (instance) => {
   selectedInstance.value = instance;
 };
 
-const manageInstance = (instance) => {
+const manageInstance = async (instance) => {
   selectedInstance.value = null;
   managingInstance.value = instance;
+
+  try {
+    const data = await apiClient(`/instances/${instance._id}`, { method: 'GET' });
+    if (data.success && data.data) {
+      managingInstance.value = data.data;
+    }
+  } catch (error) {
+    console.error('Error fetching instance details:', error);
+  }
 };
 
 const closeManageModal = () => {

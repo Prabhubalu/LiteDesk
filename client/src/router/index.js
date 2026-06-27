@@ -56,7 +56,7 @@ const routes = [
     path: '/trial-expired',
     name: 'trial-expired',
     component: () => import('@/views/TrialExpiredPage.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, hideShell: true }
   },
   {
     path: '/pay/checkout/razorpay',
@@ -1067,6 +1067,17 @@ router.beforeEach(async (to, from, next) => {
     }
     next({ name: 'login' })
     return
+  }
+
+  // Refresh trial subscription from server before redirecting (handles extension by another user)
+  if (authStore.isAuthenticated) {
+    const onTrial = authStore.organization?.subscription?.status === 'trial';
+    const trialLooksExpired = isOrganizationTrialExpired(authStore.organization);
+    if (onTrial || trialLooksExpired || to.name === 'trial-expired') {
+      await authStore.syncTrialSubscription({
+        force: trialLooksExpired || to.name === 'trial-expired'
+      });
+    }
   }
 
   // Trial expired takes precedence over onboarding and normal navigation

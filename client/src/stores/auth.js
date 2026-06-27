@@ -8,6 +8,7 @@ import { registerUseAuthStore } from './authRegistry';
 
 const PROFILE_REFRESHED_AT_KEY = 'arivu:user-profile-refreshed-at';
 const PROFILE_REFRESH_FRESH_MS = 5 * 60 * 1000;
+const TRIAL_SYNC_FRESH_MS = 30 * 1000;
 const PROD_LOGOUT_REDIRECT_ORIGIN = (import.meta.env.VITE_MAIN_APP_ORIGIN || 'https://app.arivusystems.com').replace(/\/$/, '');
 
 export const useAuthStore = defineStore('auth', {
@@ -15,6 +16,7 @@ export const useAuthStore = defineStore('auth', {
         user: JSON.parse(localStorage.getItem('user')) || null,
         organization: JSON.parse(localStorage.getItem('organization')) || null,
         lastLoginResult: null,
+        lastTrialSyncAt: 0,
         loading: false,
         error: null,
     }),
@@ -567,6 +569,46 @@ export const useAuthStore = defineStore('auth', {
                 }
             } catch (error) {
                 console.error('Error refreshing organization:', error);
+            }
+        },
+
+        async syncTrialSubscription(options = {}) {
+            if (!this.user?.token) return false;
+
+            const force = options.force === true;
+            if (!force && this.lastTrialSyncAt && Date.now() - this.lastTrialSyncAt < TRIAL_SYNC_FRESH_MS) {
+                return true;
+            }
+
+            try {
+                const response = await fetch(getApiUrlForFetch('/api/settings/subscriptions/trial-status'), {
+                    headers: {
+                        Authorization: `Bearer ${this.user.token}`,
+                        Accept: 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) return false;
+
+                const snapshot = data.data || {};
+                if (this.organization) {
+                    this.organization = {
+                        ...this.organization,
+                        subscription: {
+                            ...this.organization.subscription,
+                            status: this.organization.subscription?.status === 'trial' ? 'trial' : this.organization.subscription?.status,
+                            trialEndDate: snapshot.trialEndDate ?? this.organization.subscription?.trialEndDate,
+                            trialExtensionUsed: snapshot.extensionUsed === true
+                        }
+                    };
+                    localStorage.setItem('organization', JSON.stringify(this.organization));
+                }
+
+                this.lastTrialSyncAt = Date.now();
+                return snapshot;
+            } catch (error) {
+                console.error('Error syncing trial subscription:', error);
+                return false;
             }
         },
         

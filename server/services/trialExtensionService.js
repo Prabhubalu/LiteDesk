@@ -1,8 +1,58 @@
 const Organization = require('../models/Organization');
 const OrganizationSubscription = require('../models/OrganizationSubscription');
+const InstanceRegistry = require('../models/InstanceRegistry');
 
 const TRIAL_EXTENSION_DAYS = 7;
 const MIN_EXTENSION_REASON_LENGTH = 10;
+
+/**
+ * Align app and addon trial windows with the organization trial end date.
+ * Reactivates SUSPENDED trial apps when the new end date is in the future.
+ */
+function applyTrialEndDateToOrgSubscription(orgSubscription, trialEndDate) {
+    if (!orgSubscription || !trialEndDate) return false;
+
+    let changed = false;
+    const trialStillActive = trialEndDate > new Date();
+
+    for (const app of orgSubscription.apps) {
+        if (app.status === 'TRIAL' || app.status === 'SUSPENDED' || app.trialEndsAt) {
+            app.trialEndsAt = trialEndDate;
+            if (app.status === 'SUSPENDED' && trialStillActive) {
+                app.status = 'TRIAL';
+            }
+            changed = true;
+        }
+    }
+
+    for (const addon of orgSubscription.addons || []) {
+        if (addon.status === 'TRIAL' || addon.status === 'SUSPENDED' || addon.trialEndsAt) {
+            addon.trialEndsAt = trialEndDate;
+            if (addon.status === 'SUSPENDED' && trialStillActive) {
+                addon.status = 'TRIAL';
+            }
+            changed = true;
+        }
+    }
+
+    return changed;
+}
+
+/**
+ * When the organization trial is still active, align per-app/addon trials with it.
+ * Repairs stale SUSPENDED/expired app rows after org-level trial extension.
+ */
+function reconcileOrgSubscriptionWithOrganizationTrial(organization, orgSubscription) {
+    if (!organization || !orgSubscription) return false;
+
+    const subscription = organization.subscription || {};
+    if (subscription.status !== 'trial' || !subscription.trialEndDate) return false;
+
+    const trialEndDate = new Date(subscription.trialEndDate);
+    if (trialEndDate <= new Date()) return false;
+
+    return applyTrialEndDateToOrgSubscription(orgSubscription, trialEndDate);
+}
 
 /**
  * Extend an expired organization trial once for TRIAL_EXTENSION_DAYS from today.
@@ -69,19 +119,21 @@ async function extendOrganizationTrial({ organizationId, userId, reason }) {
 
     await organization.save();
 
-    const orgSubscription = await OrganizationSubscription.findOne({ organizationId });
-    if (orgSubscription) {
-        let changed = false;
-        for (const app of orgSubscription.apps) {
-            if (app.status === 'SUSPENDED' && app.trialEndsAt) {
-                app.status = 'TRIAL';
-                app.trialEndsAt = newTrialEndDate;
-                changed = true;
+    const dbName = organization.database?.name;
+    if (dbName) {
+        const instance = await InstanceRegistry.findOne({ 'databaseConnection.database': dbName });
+        if (instance) {
+            instance.subscription.trialEndDate = newTrialEndDate;
+            if (instance.subscription.status === 'trial' || instance.subscription.tier === 'trial') {
+                instance.subscription.status = 'trial';
             }
+            await instance.save();
         }
-        if (changed) {
-            await orgSubscription.save();
-        }
+    }
+
+    const orgSubscription = await OrganizationSubscription.findOne({ organizationId });
+    if (orgSubscription && applyTrialEndDateToOrgSubscription(orgSubscription, newTrialEndDate)) {
+        await orgSubscription.save();
     }
 
     console.info('[TrialExtension] Trial extended', {
@@ -128,6 +180,8 @@ function buildTrialStatusSnapshot(organization) {
 module.exports = {
     TRIAL_EXTENSION_DAYS,
     MIN_EXTENSION_REASON_LENGTH,
+    applyTrialEndDateToOrgSubscription,
+    reconcileOrgSubscriptionWithOrganizationTrial,
     extendOrganizationTrial,
     buildTrialStatusSnapshot
 };
