@@ -111,13 +111,13 @@
             <div class="flex items-center justify-between mb-1">
               <span class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubsUsageUsers') }}</span>
               <span class="text-xs text-gray-500 dark:text-gray-500">
-                {{ subscription.usage.users.current }} / {{ subscription.usage.users.limit }}
+                {{ subscription.usage.users.current }} / {{ formatSubscriptionLimitLabel(subscription.usage.users.limit, t) }}
               </span>
             </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div v-if="isFiniteSubscriptionLimit(subscription.usage.users.limit)" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
                 class="bg-indigo-600 h-2 rounded-full transition-all"
-                :style="{ width: `${Math.min(100, (subscription.usage.users.current / subscription.usage.users.limit) * 100)}%` }"
+                :style="{ width: usageBarWidthPercent(subscription.usage.users.current, subscription.usage.users.limit) }"
               ></div>
             </div>
           </div>
@@ -127,13 +127,13 @@
             <div class="flex items-center justify-between mb-1">
               <span class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubsUsageContacts') }}</span>
               <span class="text-xs text-gray-500 dark:text-gray-500">
-                {{ subscription.usage.contacts.current }} / {{ subscription.usage.contacts.limit }}
+                {{ subscription.usage.contacts.current }} / {{ formatSubscriptionLimitLabel(subscription.usage.contacts.limit, t) }}
               </span>
             </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div v-if="isFiniteSubscriptionLimit(subscription.usage.contacts.limit)" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
                 class="bg-indigo-600 h-2 rounded-full transition-all"
-                :style="{ width: `${Math.min(100, (subscription.usage.contacts.current / subscription.usage.contacts.limit) * 100)}%` }"
+                :style="{ width: usageBarWidthPercent(subscription.usage.contacts.current, subscription.usage.contacts.limit) }"
               ></div>
             </div>
           </div>
@@ -143,10 +143,12 @@
             <div class="flex items-center justify-between mb-1">
               <span class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubsUsageStorage') }}</span>
               <span class="text-xs text-gray-500 dark:text-gray-500">
-                {{ t('settings.settingsSubsStorageGb', { amount: subscription.limits.storage }) }}
+                {{ isFiniteSubscriptionLimit(subscription.limits.storage)
+                  ? t('settings.settingsSubsStorageGb', { amount: subscription.limits.storage })
+                  : t('settings.addonsUnlimited') }}
               </span>
             </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div v-if="isFiniteSubscriptionLimit(subscription.limits.storage)" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
                 class="bg-indigo-600 h-2 rounded-full transition-all"
                 :style="{ width: '0%' }"
@@ -186,6 +188,11 @@ import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
+import {
+  formatSubscriptionLimitLabel,
+  isFiniteSubscriptionLimit,
+  usageBarWidthPercent,
+} from '@/utils/subscriptionLimits';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -239,10 +246,7 @@ const handleUpgrade = (appKey) => {
 };
 
 function agentUsageWidth(agents) {
-  const current = Number(agents?.current) || 0;
-  const limit = Number(agents?.limit);
-  if (!Number.isFinite(limit) || limit <= 0) return '0%';
-  return `${Math.min(100, (current / limit) * 100)}%`;
+  return usageBarWidthPercent(agents?.current, agents?.limit);
 }
 
 function formatDate(value) {

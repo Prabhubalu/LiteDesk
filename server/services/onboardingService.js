@@ -6,6 +6,7 @@ const Organization = require('../models/Organization');
 const People = require('../models/People');
 const Mailbox = require('../models/Mailbox');
 const ImportHistory = require('../models/ImportHistory');
+const { normalizeSubscriptionLimit } = require('../utils/subscriptionLimits');
 
 const ONBOARDING_VERSION = 1;
 
@@ -691,10 +692,12 @@ async function computeTrialSummary(organization) {
     contactsUsed = 0;
   }
 
+  const contactsLimit = normalizeSubscriptionLimit(organization?.limits?.maxContacts);
+
   return {
     daysRemaining,
     contactsUsed,
-    contactsLimit: organization?.limits?.maxContacts ?? null
+    contactsLimit
   };
 }
 

@@ -437,6 +437,7 @@ export const useAuthStore = defineStore('auth', {
                     email: this.user?.email,
                     organizationId: this.organization?._id ? String(this.organization._id) : undefined,
                 });
+                void this.syncI18nFromOrganization();
                 return true;
             } catch (_error) {
                 return false;

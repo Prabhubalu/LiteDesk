@@ -82,9 +82,22 @@ void (async () => {
     const org = orgRaw ? JSON.parse(orgRaw) : null
     const onAuthRoute =
       typeof window !== 'undefined' && isAuthLifecyclePublicRoute(window.location.pathname)
+    let hasPersistedSession = false
+    try {
+      const userRaw = localStorage.getItem('user')
+      const user = userRaw ? JSON.parse(userRaw) : null
+      const token = user?.token
+      hasPersistedSession = Boolean(
+        token
+        && token !== 'undefined'
+        && token !== 'null'
+      )
+    } catch (_e) {
+      hasPersistedSession = false
+    }
     await initI18n({
       orgLanguage: org?.settings?.language,
-      scope: onAuthRoute ? 'public' : 'core',
+      scope: onAuthRoute && !hasPersistedSession ? 'public' : 'core',
     })
   } catch (e) {
     console.error('[i18n] init failed', e)

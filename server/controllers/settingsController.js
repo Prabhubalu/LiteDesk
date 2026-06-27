@@ -76,6 +76,7 @@ const {
 } = require('../constants/contentTemplateModuleDefaults');
 const { buildAddonSubscriptionLineItems } = require('../services/subscriptionAddonLineItemsService');
 const { normalizeAddonKey } = require('../constants/addonKeys');
+const { normalizeSubscriptionLimit } = require('../utils/subscriptionLimits');
 
 function applyCommercialUiIconPatch(existing, moduleKey, patch) {
     if (existing && shouldNormalizeCommercialIcon(existing.ui?.icon, moduleKey)) {
@@ -1661,22 +1662,22 @@ exports.getSubscriptions = async (req, res) => {
             const usage = {
                 users: {
                     current: userCount,
-                    limit: organization.limits?.maxUsers || 0
+                    limit: normalizeSubscriptionLimit(organization.limits?.maxUsers)
                 },
                 contacts: {
                     current: contactCount,
-                    limit: organization.limits?.maxContacts || 0
+                    limit: normalizeSubscriptionLimit(organization.limits?.maxContacts)
                 },
                 deals: {
                     current: dealCount,
-                    limit: organization.limits?.maxDeals || 0
+                    limit: normalizeSubscriptionLimit(organization.limits?.maxDeals)
                 }
             };
 
             // App-specific limits
             const limits = {
-                users: organization.limits?.maxUsers || 0,
-                storage: organization.limits?.maxStorageGB || 0
+                users: normalizeSubscriptionLimit(organization.limits?.maxUsers),
+                storage: normalizeSubscriptionLimit(organization.limits?.maxStorageGB)
             };
 
             return {
@@ -1893,32 +1894,32 @@ exports.getSubscription = async (req, res) => {
         const usage = {
             users: {
                 current: userCount,
-                limit: organization.limits?.maxUsers || 0,
+                limit: normalizeSubscriptionLimit(organization.limits?.maxUsers),
                 unit: 'users'
             },
             contacts: {
                 current: contactCount,
-                limit: organization.limits?.maxContacts || 0,
+                limit: normalizeSubscriptionLimit(organization.limits?.maxContacts),
                 unit: 'contacts'
             },
             deals: {
                 current: dealCount,
-                limit: organization.limits?.maxDeals || 0,
+                limit: normalizeSubscriptionLimit(organization.limits?.maxDeals),
                 unit: 'deals'
             },
             storage: {
                 current: 0, // Would come from actual storage tracking
-                limit: organization.limits?.maxStorageGB || 0,
+                limit: normalizeSubscriptionLimit(organization.limits?.maxStorageGB),
                 unit: 'GB'
             }
         };
 
         // Limits
         const limits = {
-            users: organization.limits?.maxUsers || 0,
-            contacts: organization.limits?.maxContacts || 0,
-            deals: organization.limits?.maxDeals || 0,
-            storage: organization.limits?.maxStorageGB || 0
+            users: normalizeSubscriptionLimit(organization.limits?.maxUsers),
+            contacts: normalizeSubscriptionLimit(organization.limits?.maxContacts),
+            deals: normalizeSubscriptionLimit(organization.limits?.maxDeals),
+            storage: normalizeSubscriptionLimit(organization.limits?.maxStorageGB)
         };
 
         const metadata = appMetadata[appKeyUpper] || {};

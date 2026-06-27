@@ -123,16 +123,16 @@
             <div class="flex items-center justify-between mb-2">
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.settingsSubsUsageUsers') }}</span>
               <span class="text-sm text-gray-600 dark:text-gray-400">
-                {{ subscription.usage.users.current }} / {{ subscription.usage.users.limit }} {{ subscription.usage.users.unit || '' }}
+                {{ subscription.usage.users.current }} / {{ formatSubscriptionLimitLabel(subscription.usage.users.limit, t) }} {{ subscription.usage.users.unit || '' }}
               </span>
             </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+            <div v-if="isFiniteSubscriptionLimit(subscription.usage.users.limit)" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
               <div
                 class="bg-indigo-600 h-3 rounded-full transition-all"
-                :style="{ width: `${Math.min(100, (subscription.usage.users.current / subscription.usage.users.limit) * 100)}%` }"
+                :style="{ width: usageBarWidthPercent(subscription.usage.users.current, subscription.usage.users.limit) }"
               ></div>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+            <p v-if="isFiniteSubscriptionLimit(subscription.usage.users.limit)" class="text-xs text-gray-500 dark:text-gray-500 mt-2">
               {{ t('settings.settingsSubDetailUsagePercent', { percent: getUsagePercentage(subscription.usage.users.current, subscription.usage.users.limit) }) }}
             </p>
           </div>
@@ -142,16 +142,16 @@
             <div class="flex items-center justify-between mb-2">
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.settingsSubsUsageContacts') }}</span>
               <span class="text-sm text-gray-600 dark:text-gray-400">
-                {{ subscription.usage.contacts.current }} / {{ subscription.usage.contacts.limit }} {{ subscription.usage.contacts.unit || '' }}
+                {{ subscription.usage.contacts.current }} / {{ formatSubscriptionLimitLabel(subscription.usage.contacts.limit, t) }} {{ subscription.usage.contacts.unit || '' }}
               </span>
             </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+            <div v-if="isFiniteSubscriptionLimit(subscription.usage.contacts.limit)" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
               <div
                 class="bg-indigo-600 h-3 rounded-full transition-all"
-                :style="{ width: `${Math.min(100, (subscription.usage.contacts.current / subscription.usage.contacts.limit) * 100)}%` }"
+                :style="{ width: usageBarWidthPercent(subscription.usage.contacts.current, subscription.usage.contacts.limit) }"
               ></div>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+            <p v-if="isFiniteSubscriptionLimit(subscription.usage.contacts.limit)" class="text-xs text-gray-500 dark:text-gray-500 mt-2">
               {{ t('settings.settingsSubDetailUsagePercent', { percent: getUsagePercentage(subscription.usage.contacts.current, subscription.usage.contacts.limit) }) }}
             </p>
           </div>
@@ -161,16 +161,16 @@
             <div class="flex items-center justify-between mb-2">
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.settingsSubDetailUsageDeals') }}</span>
               <span class="text-sm text-gray-600 dark:text-gray-400">
-                {{ subscription.usage.deals.current }} / {{ subscription.usage.deals.limit }} {{ subscription.usage.deals.unit || '' }}
+                {{ subscription.usage.deals.current }} / {{ formatSubscriptionLimitLabel(subscription.usage.deals.limit, t) }} {{ subscription.usage.deals.unit || '' }}
               </span>
             </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+            <div v-if="isFiniteSubscriptionLimit(subscription.usage.deals.limit)" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
               <div
                 class="bg-indigo-600 h-3 rounded-full transition-all"
-                :style="{ width: `${Math.min(100, (subscription.usage.deals.current / subscription.usage.deals.limit) * 100)}%` }"
+                :style="{ width: usageBarWidthPercent(subscription.usage.deals.current, subscription.usage.deals.limit) }"
               ></div>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+            <p v-if="isFiniteSubscriptionLimit(subscription.usage.deals.limit)" class="text-xs text-gray-500 dark:text-gray-500 mt-2">
               {{ t('settings.settingsSubDetailUsagePercent', { percent: getUsagePercentage(subscription.usage.deals.current, subscription.usage.deals.limit) }) }}
             </p>
           </div>
@@ -180,16 +180,16 @@
             <div class="flex items-center justify-between mb-2">
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.settingsSubsUsageStorage') }}</span>
               <span class="text-sm text-gray-600 dark:text-gray-400">
-                {{ subscription.usage.storage.current }} / {{ subscription.usage.storage.limit }} {{ subscription.usage.storage.unit || 'GB' }}
+                {{ subscription.usage.storage.current }} / {{ formatSubscriptionLimitLabel(subscription.usage.storage.limit, t) }} {{ subscription.usage.storage.unit || 'GB' }}
               </span>
             </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+            <div v-if="isFiniteSubscriptionLimit(subscription.usage.storage.limit)" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
               <div
                 class="bg-indigo-600 h-3 rounded-full transition-all"
-                :style="{ width: `${Math.min(100, (subscription.usage.storage.current / subscription.usage.storage.limit) * 100)}%` }"
+                :style="{ width: usageBarWidthPercent(subscription.usage.storage.current, subscription.usage.storage.limit) }"
               ></div>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+            <p v-if="isFiniteSubscriptionLimit(subscription.usage.storage.limit)" class="text-xs text-gray-500 dark:text-gray-500 mt-2">
               {{ t('settings.settingsSubDetailUsagePercent', { percent: getUsagePercentage(subscription.usage.storage.current, subscription.usage.storage.limit) }) }}
             </p>
           </div>
@@ -203,19 +203,23 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div v-if="subscription.limits?.users !== undefined" class="flex items-center justify-between">
               <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubDetailMaxUsers') }}</span>
-              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ subscription.limits.users }}</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ formatSubscriptionLimitLabel(subscription.limits.users, t) }}</span>
             </div>
             <div v-if="subscription.limits?.contacts !== undefined" class="flex items-center justify-between">
               <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubDetailMaxContacts') }}</span>
-              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ subscription.limits.contacts }}</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ formatSubscriptionLimitLabel(subscription.limits.contacts, t) }}</span>
             </div>
             <div v-if="subscription.limits?.deals !== undefined" class="flex items-center justify-between">
               <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubDetailMaxDeals') }}</span>
-              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ subscription.limits.deals }}</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ formatSubscriptionLimitLabel(subscription.limits.deals, t) }}</span>
             </div>
             <div v-if="subscription.limits?.storage !== undefined" class="flex items-center justify-between">
               <span class="text-sm text-gray-600 dark:text-gray-400">{{ t('settings.settingsSubDetailMaxStorage') }}</span>
-              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.settingsSubsStorageGb', { amount: subscription.limits.storage }) }}</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">
+                {{ isFiniteSubscriptionLimit(subscription.limits.storage)
+                  ? t('settings.settingsSubsStorageGb', { amount: subscription.limits.storage })
+                  : t('settings.addonsUnlimited') }}
+              </span>
             </div>
           </div>
         </div>
@@ -255,6 +259,12 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useLocale } from '@/composables/useLocale';
+import {
+  formatSubscriptionLimitLabel,
+  getUsagePercentage,
+  isFiniteSubscriptionLimit,
+  usageBarWidthPercent,
+} from '@/utils/subscriptionLimits';
 
 const { t } = useI18n();
 
@@ -338,11 +348,6 @@ const formatSubscriptionDate = (dateString) => {
     month: 'long',
     day: 'numeric'
   }) || '-';
-};
-
-const getUsagePercentage = (current, limit) => {
-  if (!limit || limit === 0) return 0;
-  return Math.min(100, Math.round((current / limit) * 100));
 };
 
 const getPlanBadgeClass = (plan) => {
