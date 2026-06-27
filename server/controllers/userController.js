@@ -548,6 +548,15 @@ exports.inviteUser = async (req, res) => {
             });
         }
 
+        // Get organization for validation (required before RBAC v2 format checks)
+        const organization = req.organization || await Organization.findById(req.user.organizationId);
+        if (!organization) {
+            return res.status(404).json({
+                success: false,
+                message: 'Organization not found'
+            });
+        }
+
         // Determine if using new unified format or legacy format
         const { isRbacV2Enabled } = require('../utils/rbacFeatureFlags');
         const rbacV2 = isRbacV2Enabled(organization);
@@ -570,15 +579,6 @@ exports.inviteUser = async (req, res) => {
                     ? 'roleId is required when RBAC v2 is enabled'
                     : 'Either appAccess array (unified format) or roleId (legacy format) is required',
                 code: rbacV2 ? 'RBAC_V2_ROLE_REQUIRED' : 'MISSING_APP_ACCESS_OR_ROLE'
-            });
-        }
-
-        // Get organization for validation
-        const organization = req.organization || await Organization.findById(req.user.organizationId);
-        if (!organization) {
-            return res.status(404).json({
-                success: false,
-                message: 'Organization not found'
             });
         }
 

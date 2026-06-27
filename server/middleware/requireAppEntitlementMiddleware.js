@@ -512,6 +512,14 @@ const requireAppEntitlement = async (req, res, next) => {
 
         try {
             let subscription = await getOrgSubscription(organizationId);
+
+            if (subscription) {
+                const { reconcileOrgSubscriptionWithOrganizationTrial } = require('../services/trialExtensionService');
+                if (reconcileOrgSubscriptionWithOrganizationTrial(organization, subscription)) {
+                    await subscription.save();
+                }
+            }
+
             let appSubscription = subscription?.apps.find(app => app.appKey === req.appKey);
 
             // Special handling for CRM: Auto-create subscription if missing but app is enabled

@@ -177,34 +177,17 @@ const handleLogout = () => {
 };
 
 const refreshTrialStatus = async () => {
-  if (!authStore.user?.token) return;
-
-  try {
-    const response = await fetch(getApiUrlForFetch('/api/settings/subscriptions/trial-status'), {
-      headers: {
-        Authorization: `Bearer ${authStore.user.token}`,
-        Accept: 'application/json'
-      }
-    });
-    const data = await response.json();
-    if (!response.ok || !data.success) return;
-
-    extensionDays.value = Number(data.data?.extensionDays) || 7;
-    canExtendFromApi.value = data.data?.canExtend === true;
-
-    if (authStore.organization) {
-      authStore.organization = {
-        ...authStore.organization,
-        subscription: {
-          ...authStore.organization.subscription,
-          trialExtensionUsed: data.data?.extensionUsed === true,
-          trialEndDate: data.data?.trialEndDate || authStore.organization.subscription?.trialEndDate
-        }
-      };
-      localStorage.setItem('organization', JSON.stringify(authStore.organization));
-    }
-  } catch (_error) {
+  const snapshot = await authStore.syncTrialSubscription({ force: true });
+  if (!snapshot) {
     canExtendFromApi.value = canManageBilling.value;
+    return;
+  }
+
+  extensionDays.value = Number(snapshot.extensionDays) || 7;
+  canExtendFromApi.value = snapshot.canExtend === true;
+
+  if (!isOrganizationTrialExpired(authStore.organization)) {
+    await router.replace('/platform/home');
   }
 };
 
@@ -254,11 +237,10 @@ onMounted(async () => {
     return;
   }
 
+  await refreshTrialStatus();
+
   if (!isOrganizationTrialExpired(authStore.organization)) {
-    await router.replace('/platform/home');
     return;
   }
-
-  await refreshTrialStatus();
 });
 </script>

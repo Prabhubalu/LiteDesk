@@ -37,18 +37,8 @@ async function syncTrialEndDateToTenant(organization, trialEndDate) {
     });
     if (!orgSubscription) return;
 
-    let changed = false;
-    for (const app of orgSubscription.apps) {
-        if (app.status === 'TRIAL' || app.status === 'SUSPENDED' || app.trialEndsAt) {
-            app.trialEndsAt = trialEndDate;
-            if (app.status === 'SUSPENDED' && trialEndDate > new Date()) {
-                app.status = 'TRIAL';
-            }
-            changed = true;
-        }
-    }
-
-    if (changed) {
+    const { applyTrialEndDateToOrgSubscription } = require('../services/trialExtensionService');
+    if (applyTrialEndDateToOrgSubscription(orgSubscription, trialEndDate)) {
         await orgSubscription.save();
     }
 }

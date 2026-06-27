@@ -122,6 +122,7 @@ const hideShell = computed(() => {
   return false;
 });
 const isStandaloneShelllessRoute = computed(() => {
+  if (route.meta.hideShell) return true;
   if (route.meta.requiresAuth === false) return true;
   const routePath = String(route.path || '').split('?')[0];
   if (isStandaloneShelllessPath(routePath)) return true;
