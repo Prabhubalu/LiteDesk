@@ -1283,6 +1283,10 @@ exports.addCaseActivity = async (req, res) => {
       activityType: String(activityType).trim()
     });
 
+    const lastActivity = row.activities[row.activities.length - 1];
+    const { notifyPortalCaseCustomerActivity } = require('../services/portalCaseNotificationService');
+    await notifyPortalCaseCustomerActivity(row, lastActivity, { actorId: req.user._id });
+
     return res.status(201).json({
       success: true,
       data: await toPopulatedSafeObject(row),

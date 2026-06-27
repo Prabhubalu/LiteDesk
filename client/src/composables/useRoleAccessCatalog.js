@@ -14,13 +14,26 @@ export function getEntitledAppKeys(appEntitlements) {
  * @param {string[]} entitledAppKeys
  * @param {string} userType
  */
-export function isModuleVisibleForRoleAccess(module, entitledAppKeys, userType) {
+export function isModuleVisibleForRoleAccess(module, entitledAppKeys, userType, options = {}) {
   if (!module) return false;
+  const type = String(userType || 'INTERNAL').toUpperCase();
   const scope = module.scope || 'app';
   const entitled = entitledAppKeys || [];
 
   if (scope === 'platform') {
-    return userType !== 'EXTERNAL';
+    return type !== 'EXTERNAL';
+  }
+
+  // External roles: tenant catalog is already scoped server-side; module grants are configured here.
+  if (type === 'EXTERNAL') {
+    if (options.profileScoped === true) {
+      return true;
+    }
+    return scope === 'core' || scope === 'app';
+  }
+
+  if (options.profileScoped === true) {
+    return true;
   }
 
   if (scope === 'core') {
@@ -73,7 +86,8 @@ export function useRoleAccessCatalog({
   appEntitlements,
   permissions,
   userType,
-  rbacV2
+  rbacV2,
+  profileScoped
 }) {
   const entitledAppKeys = computed(() => getEntitledAppKeys(unref(appEntitlements)));
 
@@ -83,7 +97,10 @@ export function useRoleAccessCatalog({
 
     const entitled = entitledAppKeys.value;
     const type = unref(userType) || 'INTERNAL';
-    return all.filter((mod) => isModuleVisibleForRoleAccess(mod, entitled, type));
+    const scoped = unref(profileScoped) === true;
+    return all.filter((mod) =>
+      isModuleVisibleForRoleAccess(mod, entitled, type, { profileScoped: scoped })
+    );
   });
 
   const accessVisibleSections = computed(() => {

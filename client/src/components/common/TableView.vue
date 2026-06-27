@@ -272,6 +272,7 @@
                   :style="[{ top: columnFilterRowTop }, columnHeaderStyle(column)]"
                 >
                   <ListColumnFilter
+                    v-if="isColumnFilterable(column)"
                     :filter="filterConfigForColumn(column)"
                     :model-value="filterValueForColumn(column)"
                     inline
@@ -599,6 +600,7 @@ type ColumnObjectDef = {
   dataType?: string
   filterType?: FilterConfig['filterType']
   options?: Array<{ value: string; label: string }>
+  filterable?: boolean
 }
 type ColumnDef = ColumnObjectDef | string
 type RowData = Record<string, unknown>
@@ -945,6 +947,11 @@ const isColumnSortable = (column: ColumnDef) => {
   if (typeof column === 'string') return false
   if (column.sortable === false) return false
   return Boolean(sortKeyForColumn(column))
+}
+
+const isColumnFilterable = (column: ColumnDef) => {
+  if (typeof column === 'string') return true
+  return column.filterable !== false
 }
 
 // Title/frozen column: first in list or explicitly locked (by key so it works with merged column objects)

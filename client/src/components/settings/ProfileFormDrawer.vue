@@ -111,6 +111,12 @@
                         </div>
 
                         <div v-show="activeTab === 'permissions'" class="space-y-4">
+                          <p
+                            v-if="profileCatalogExternal"
+                            class="text-xs text-indigo-700 dark:text-indigo-300 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/30 px-3 py-2"
+                          >
+                            {{ t('settings.profileDrawerExternalScopeHint') }}
+                          </p>
                           <div class="relative flex-1">
                             <MagnifyingGlassIcon class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
@@ -130,6 +136,21 @@
                           </div>
 
                           <div v-else class="space-y-5 pb-2">
+                            <div
+                              v-if="!isSystemProfile && !loadingModules && permissionModules.length"
+                              class="flex flex-wrap gap-2"
+                            >
+                              <button
+                                v-for="preset in accessBulkPresets"
+                                :key="preset.id"
+                                type="button"
+                                class="rounded-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 dark:hover:border-indigo-700 transition-colors"
+                                @click="applyAccessPreset(preset.id)"
+                              >
+                                {{ preset.label }}
+                              </button>
+                            </div>
+
                             <section
                               v-for="section in filteredSections"
                               :key="section.id"
@@ -152,17 +173,34 @@
                                       {{ opt.label }}
                                     </button>
                                   </div>
-                                  <div v-if="showCrudEditor(module)" class="mt-2 flex flex-wrap gap-1.5">
-                                    <PermissionChip
-                                      v-for="action in getCrudActionsForModule(module)"
-                                      :key="`${module.key}-${action}`"
-                                      :label="getCrudLabel(action)"
-                                      :variant="chipVariantForAction(action)"
-                                      :active="!!form.permissions[module.key]?.[action]"
-                                      :disabled="isCrudDisabled(module, action)"
-                                      size="sm"
-                                      @toggle="togglePermission(module.key, action)"
-                                    />
+                                  <div v-if="showCrudEditor(module)" class="mt-2 space-y-2">
+                                    <div class="flex flex-wrap gap-1.5">
+                                      <PermissionChip
+                                        v-for="action in getCrudActionsForModule(module)"
+                                        :key="`${module.key}-${action}`"
+                                        :label="getCrudLabel(action)"
+                                        :variant="chipVariantForAction(action)"
+                                        :active="!!form.permissions[module.key]?.[action]"
+                                        :disabled="isCrudDisabled(module, action)"
+                                        size="sm"
+                                        @toggle="togglePermission(module.key, action)"
+                                      />
+                                    </div>
+                                    <div
+                                      v-if="getAdvancedActionsForModule(module).length"
+                                      class="flex flex-wrap gap-1.5"
+                                    >
+                                      <PermissionChip
+                                        v-for="action in getAdvancedActionsForModule(module)"
+                                        :key="`${module.key}-adv-${action}`"
+                                        :label="advancedActionLabel(action)"
+                                        :variant="chipVariantForAction(action)"
+                                        :active="!!form.permissions[module.key]?.[action]"
+                                        :disabled="isAdvancedDisabled(module, action)"
+                                        size="sm"
+                                        @toggle="togglePermission(module.key, action)"
+                                      />
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -218,12 +256,19 @@ import apiClient from '@/utils/apiClient';
 import FieldPermissionsEditor from './FieldPermissionsEditor.vue';
 import { modulesWithFieldCatalog } from '@/utils/fieldRbacPermission';
 import {
+  applyAccessPresetToAllModules,
   applyModuleAccessMode,
   applyPermissionSideEffects,
   applyPermissionUncheck,
+  buildAccessBulkPresets,
+  buildAccessModeOptions,
+  buildCrudActionLabels,
   chipVariantForAction,
+  getAdvancedActionsForModule,
   getCrudActionsForModule,
-  getModuleAccessMode
+  getModuleAccessMode,
+  resolveDisplayAccessMode,
+  shouldShowModuleActionEditor
 } from '@/utils/rolePermissionEditorUtils';
 
 const { t } = useI18n();
@@ -284,6 +329,7 @@ const activeTab = ref('overview');
 const permissionSearch = ref('');
 const permissionModules = ref([]);
 const permissionSections = ref([]);
+const profileCatalogExternal = ref(false);
 const loadingModules = ref(false);
 const customEditModules = ref(new Set());
 
@@ -303,24 +349,27 @@ const editorTabs = computed(() => {
 const isEditing = computed(() => Boolean(props.profile?._id));
 const isSystemProfile = computed(() => Boolean(props.profile?.isSystemProfile));
 
-const crudLabels = computed(() => ({
-  read: t('settings.roleDrawerPermRead'),
-  create: t('settings.roleDrawerPermCreate'),
-  update: t('settings.roleDrawerPermUpdate'),
-  delete: t('settings.roleDrawerPermDelete')
-}));
+const crudLabels = computed(() => buildCrudActionLabels(t));
 
-const accessModeOptions = computed(() => [
-  { value: 'none', label: t('settings.roleDrawerAccessModeNone') },
-  { value: 'readOnly', label: t('settings.roleDrawerAccessModeReadOnly') },
-  { value: 'full', label: t('settings.roleDrawerAccessModeFull') },
-  { value: 'custom', label: t('settings.roleDrawerAccessModeCustom') }
-]);
+const accessModeOptions = computed(() => buildAccessModeOptions(t));
+
+const accessBulkPresets = computed(() => buildAccessBulkPresets(t));
+
+const ADVANCED_ACTION_I18N = {
+  export: 'roleDrawerPermExport',
+  import: 'roleDrawerPermImport',
+  viewAll: 'roleDrawerPermViewAll',
+  execution: 'roleDrawerPermExecution',
+  review: 'roleDrawerPermReview',
+  approve: 'roleDrawerPermApprove',
+  manageRoles: 'roleDrawerPermManageRoles',
+  manageBilling: 'roleDrawerPermManageBilling'
+};
 
 const modulesBySection = computed(() => {
   const map = {};
   for (const mod of permissionModules.value) {
-    const sid = mod.section || 'other';
+    const sid = mod.sectionId || 'other';
     if (!map[sid]) map[sid] = [];
     map[sid].push(mod);
   }
@@ -344,15 +393,61 @@ function getCrudLabel(action) {
   return crudLabels.value[action] ?? action;
 }
 
+function advancedActionLabel(action) {
+  const key = ADVANCED_ACTION_I18N[action];
+  return key ? t(`settings.${key}`) : action;
+}
+
 function initializePermissions() {
   const permissions = {};
   permissionModules.value.forEach((module) => {
-    const actions = Array.isArray(module.actions) ? module.actions : [];
     permissions[module.key] = {};
-    actions.forEach((action) => { permissions[module.key][action] = false; });
+    getCrudActionsForModule(module).forEach((action) => {
+      permissions[module.key][action] = false;
+    });
+    getAdvancedActionsForModule(module).forEach((action) => {
+      permissions[module.key][action] = false;
+    });
     if (module.hasScope) permissions[module.key].scope = 'own';
   });
   return permissions;
+}
+
+function ensureModulePermissions(module) {
+  if (form.value.permissions[module.key]) {
+    return form.value.permissions[module.key];
+  }
+  const init = initializePermissions();
+  const next = init[module.key] || {
+    read: false,
+    create: false,
+    update: false,
+    delete: false,
+    scope: 'own'
+  };
+  form.value.permissions = {
+    ...form.value.permissions,
+    [module.key]: next
+  };
+  return next;
+}
+
+function applyAccessPreset(mode) {
+  if (isSystemProfile.value) return;
+  form.value.permissions = applyAccessPresetToAllModules(
+    form.value.permissions,
+    permissionModules.value,
+    mode
+  );
+  customEditModules.value = new Set();
+}
+
+function getModeForDisplay(module) {
+  return resolveDisplayAccessMode(
+    module,
+    form.value.permissions[module.key] || {},
+    customEditModules.value
+  );
 }
 
 function getMode(module) {
@@ -360,27 +455,30 @@ function getMode(module) {
 }
 
 function showCrudEditor(module) {
-  return getMode(module) === 'custom' || customEditModules.value.has(module.key);
+  return shouldShowModuleActionEditor(
+    module,
+    form.value.permissions[module.key] || {},
+    customEditModules.value
+  );
 }
 
 function setModuleMode(module, mode) {
-  const perms = form.value.permissions[module.key];
-  if (!perms) return;
+  const perms = { ...ensureModulePermissions(module) };
   if (mode === 'custom') {
     customEditModules.value = new Set([...customEditModules.value, module.key]);
+    form.value.permissions = { ...form.value.permissions, [module.key]: perms };
     return;
   }
   customEditModules.value.delete(module.key);
   customEditModules.value = new Set(customEditModules.value);
   applyModuleAccessMode(module, perms, mode);
+  form.value.permissions = { ...form.value.permissions, [module.key]: perms };
 }
 
 function accessModeButtonClass(module, modeValue) {
-  const current = getMode(module);
-  const inCustomUi = customEditModules.value.has(module.key);
-  const isActive = modeValue === 'custom' ? current === 'custom' || inCustomUi : current === modeValue && !inCustomUi;
+  const current = getModeForDisplay(module);
   const base = 'px-2 py-1 text-[11px] font-medium rounded-md transition-colors';
-  return isActive ? `${base} bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200` : `${base} text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700`;
+  return current === modeValue ? `${base} bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200` : `${base} text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700`;
 }
 
 function isCrudDisabled(module, action) {
@@ -391,21 +489,32 @@ function isCrudDisabled(module, action) {
   return false;
 }
 
+function isAdvancedDisabled(module, action) {
+  const perms = form.value.permissions[module.key] || {};
+  if (action === 'import') return !perms.create;
+  if (action === 'viewAll') return !perms.read;
+  return false;
+}
+
 function togglePermission(moduleKey, action) {
-  const perms = form.value.permissions[moduleKey];
-  if (!perms) return;
+  const module = permissionModules.value.find((m) => m.key === moduleKey);
+  const perms = { ...(module ? ensureModulePermissions(module) : form.value.permissions[moduleKey] || {}) };
+  if (!module) return;
   perms[action] = !perms[action];
   if (perms[action]) applyPermissionSideEffects(perms, action);
   else applyPermissionUncheck(perms, action);
+  form.value.permissions = { ...form.value.permissions, [moduleKey]: perms };
 }
 
-const fetchPermissionModules = async () => {
+const fetchPermissionModules = async (profileKey = null) => {
   loadingModules.value = true;
   try {
-    const response = await apiClient.get('/roles/modules');
+    const params = profileKey ? { profileKey } : {};
+    const response = await apiClient.get('/roles/modules', { params });
     if (response.success) {
       permissionModules.value = response.data || [];
       permissionSections.value = response.sections || [];
+      profileCatalogExternal.value = response.externalProfile === true;
       if (!props.profile) form.value.permissions = initializePermissions();
     }
   } catch (err) {
@@ -415,17 +524,33 @@ const fetchPermissionModules = async () => {
   }
 };
 
-const loadProfileIntoForm = () => {
+const loadProfileIntoForm = (profileData = props.profile) => {
   const basePerms = initializePermissions();
-  const existingPerms = JSON.parse(JSON.stringify(props.profile.permissions || {}));
+  const existingPerms = JSON.parse(
+    JSON.stringify(profileData?.permissionsUi || profileData?.permissions || {})
+  );
   Object.keys(basePerms).forEach((m) => {
-    basePerms[m] = { ...basePerms[m], ...existingPerms[m] };
+    if (existingPerms[m]) {
+      basePerms[m] = { ...basePerms[m], ...existingPerms[m] };
+    }
+  });
+  Object.entries(existingPerms).forEach(([m, grant]) => {
+    if (!basePerms[m] && grant && typeof grant === 'object') {
+      basePerms[m] = {
+        read: false,
+        create: false,
+        update: false,
+        delete: false,
+        scope: 'own',
+        ...grant
+      };
+    }
   });
   form.value = {
-    name: props.profile.name || '',
-    description: props.profile.description || '',
+    name: profileData?.name || '',
+    description: profileData?.description || '',
     permissions: basePerms,
-    fieldPermissions: toPlainFieldPerms(props.profile.fieldPermissions)
+    fieldPermissions: toPlainFieldPerms(profileData?.fieldPermissions)
   };
 };
 
@@ -446,9 +571,22 @@ watch(
     activeTab.value = 'overview';
     error.value = '';
     customEditModules.value = new Set();
-    await fetchPermissionModules();
-    if (props.profile) loadProfileIntoForm();
-    else form.value = { name: '', description: '', permissions: initializePermissions(), fieldPermissions: {} };
+    const profileKey = props.profile?.profileKey || null;
+    await fetchPermissionModules(profileKey);
+    if (props.profile?._id) {
+      try {
+        const response = await apiClient.get(`/profiles/${props.profile._id}`);
+        if (response.success && response.data) {
+          loadProfileIntoForm(response.data);
+        } else {
+          loadProfileIntoForm();
+        }
+      } catch (_err) {
+        loadProfileIntoForm();
+      }
+    } else {
+      form.value = { name: '', description: '', permissions: initializePermissions(), fieldPermissions: {} };
+    }
   }
 );
 

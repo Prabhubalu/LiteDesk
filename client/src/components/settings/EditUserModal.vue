@@ -155,7 +155,7 @@
                             {{ t('settings.inviteSectionAccess') }}
                           </h4>
 
-                          <div class="space-y-1">
+                          <div v-if="!isExternalUser" class="space-y-1">
                             <label for="edit-user-role" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
                               {{ t('settings.inviteRole') }}
                             </label>
@@ -175,8 +175,88 @@
                             </p>
                           </div>
 
+                          <div v-else class="space-y-4">
+                            <div class="rounded-lg border border-sky-200 bg-sky-50/60 px-4 py-3 dark:border-sky-800 dark:bg-sky-900/20">
+                              <p class="text-sm text-sky-900 dark:text-sky-200">
+                                {{ t('settings.editUserPortalRolesHint') }}
+                              </p>
+                              <p class="mt-2 text-xs text-sky-800/80 dark:text-sky-300/80">
+                                {{ t('settings.editUserPortalManageOnPeople') }}
+                              </p>
+                              <RouterLink
+                                v-if="peopleRecordLink"
+                                :to="peopleRecordLink"
+                                class="mt-3 inline-flex items-center text-sm font-medium text-sky-700 hover:text-sky-900 dark:text-sky-300 dark:hover:text-sky-100"
+                              >
+                                {{ t('settings.editUserPortalOpenPeople') }}
+                              </RouterLink>
+                            </div>
+
+                            <div v-if="portalRolesLoading" class="text-sm text-gray-500 dark:text-gray-400">
+                              {{ t('states.loading') }}
+                            </div>
+
+                            <template v-else>
+                              <div v-if="defaultPortalName" class="space-y-1">
+                                <span class="block text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                  {{ t('settings.editUserPortalDefaultRole') }}
+                                </span>
+                                <p class="text-sm text-gray-900 dark:text-white">{{ defaultPortalName }}</p>
+                              </div>
+
+                              <div>
+                                <span class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                                  {{ t('settings.editUserPortalRoles') }}
+                                </span>
+                                <ul v-if="assignedPortalRoles.length" class="mt-2 space-y-2">
+                                  <li
+                                    v-for="role in assignedPortalRoles"
+                                    :key="String(role._id)"
+                                    class="flex items-center justify-between gap-3 rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-700"
+                                  >
+                                    <div class="min-w-0">
+                                      <p class="text-sm font-medium text-gray-900 dark:text-white">{{ role.name }}</p>
+                                      <p v-if="role.description" class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                        {{ role.description }}
+                                      </p>
+                                    </div>
+                                    <button
+                                      v-if="canManagePortalRoles"
+                                      type="button"
+                                      class="shrink-0 text-xs font-medium text-red-600 hover:text-red-500 disabled:opacity-50 dark:text-red-400"
+                                      :disabled="portalActionLoading || assignedPortalRoles.length <= 1"
+                                      @click="removePortalRole(role._id)"
+                                    >
+                                      {{ t('settings.editUserPortalRemoveRole') }}
+                                    </button>
+                                  </li>
+                                </ul>
+                                <p v-else class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                  {{ t('settings.editUserPortalRolesEmpty') }}
+                                </p>
+                              </div>
+
+                              <div
+                                v-if="!canManagePortalRoles"
+                                class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-100"
+                              >
+                                {{ t('settings.editUserPortalNoPeopleLink') }}
+                              </div>
+
+                              <button
+                                v-else
+                                type="button"
+                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+                                :disabled="portalActionLoading || !unassignedPortalRoles.length"
+                                @click="openPortalAssignModal"
+                              >
+                                {{ t('settings.editUserPortalAssignRoles') }}
+                              </button>
+                            </template>
+                          </div>
+
                           <div
-                            v-if="rbacV2Enabled && selectedRole"
+                            v-if="rbacV2Enabled && selectedRole && !isExternalUser"
                             class="rounded-lg border border-indigo-200 bg-indigo-50/60 p-4 space-y-3 dark:border-indigo-800 dark:bg-indigo-900/20"
                           >
                             <p class="text-xs font-semibold uppercase tracking-wider text-indigo-800 dark:text-indigo-200">
@@ -218,7 +298,7 @@
                             </p>
                           </div>
 
-                          <div v-if="!rbacV2Enabled" class="space-y-3">
+                          <div v-if="!rbacV2Enabled && !isExternalUser" class="space-y-3">
                             <span class="block text-sm/6 font-medium text-gray-900 dark:text-white">
                               {{ t('settings.inviteAppAccess') }} <span class="text-red-500">*</span>
                             </span>
@@ -424,6 +504,62 @@
       </div>
     </Dialog>
   </TransitionRoot>
+
+  <Teleport to="body">
+    <div
+      v-if="showPortalAssignModal"
+      class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+      @click.self="showPortalAssignModal = false"
+    >
+      <div class="w-full max-w-md rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
+        <div class="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ t('settings.editUserPortalAssignRoles') }}
+          </h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {{ t('settings.editUserPortalSelectRolesHint') }}
+          </p>
+        </div>
+        <div class="max-h-72 space-y-2 overflow-y-auto px-5 py-4">
+          <label
+            v-for="role in unassignedPortalRoles"
+            :key="String(role._id)"
+            class="flex cursor-pointer items-start gap-3 rounded-md border border-gray-200 px-3 py-2 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900/40"
+          >
+            <HeadlessCheckbox
+              :checked="selectedPortalRoleIds.includes(String(role._id))"
+              checkbox-class="mt-0.5"
+              @change="togglePortalRoleSelection(role._id)"
+            />
+            <span class="min-w-0">
+              <span class="block text-sm font-medium text-gray-900 dark:text-white">{{ role.name }}</span>
+              <span v-if="role.description" class="block text-xs text-gray-500 dark:text-gray-400">{{ role.description }}</span>
+            </span>
+          </label>
+          <p v-if="!unassignedPortalRoles.length" class="text-sm text-gray-500 dark:text-gray-400">
+            {{ t('settings.editUserPortalNoAvailableRoles') }}
+          </p>
+        </div>
+        <div class="flex justify-end gap-3 border-t border-gray-200 px-5 py-4 dark:border-gray-700">
+          <button
+            type="button"
+            class="rounded-md px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700"
+            @click="showPortalAssignModal = false"
+          >
+            {{ t('actions.cancel') }}
+          </button>
+          <button
+            type="button"
+            class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 dark:bg-indigo-500"
+            :disabled="portalActionLoading || !selectedPortalRoleIds.length"
+            @click="confirmAssignPortalRoles"
+          >
+            {{ t('actions.save') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -431,6 +567,7 @@ import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { RouterLink } from 'vue-router';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
@@ -452,7 +589,7 @@ const props = defineProps({
   user: Object
 });
 
-const emit = defineEmits(['close', 'user-updated']);
+const emit = defineEmits(['close', 'user-updated', 'portal-roles-updated']);
 
 const form = ref({
   firstName: '',
@@ -469,6 +606,58 @@ const capabilities = ref([]);
 const loadingCapabilities = ref(false);
 const selectedAppRoles = ref({});
 const validationErrors = ref({});
+const portalRolesLoading = ref(false);
+const portalActionLoading = ref(false);
+const portalState = ref(null);
+const showPortalAssignModal = ref(false);
+const selectedPortalRoleIds = ref([]);
+
+const isExternalUser = computed(() =>
+  String(props.user?.userType || '').toUpperCase() === 'EXTERNAL'
+);
+
+const peopleId = computed(() => {
+  const raw = props.user?.peopleId;
+  if (!raw) return '';
+  if (typeof raw === 'object') return String(raw._id || raw.id || '');
+  return String(raw);
+});
+
+const canManagePortalRoles = computed(() =>
+  Boolean(peopleId.value) && (
+    authStore.isAdminLike || authStore.can('settings', 'manageUsers')
+  )
+);
+
+const peopleRecordLink = computed(() =>
+  peopleId.value ? { name: 'person-detail', params: { id: peopleId.value } } : null
+);
+
+const assignedPortalRoles = computed(() => {
+  if (portalState.value?.roles?.length) {
+    return portalState.value.roles;
+  }
+  return Array.isArray(props.user?.externalRoles) ? props.user.externalRoles : [];
+});
+
+const availablePortalRoles = computed(() =>
+  portalState.value?.availableExternalRoles || []
+);
+
+const unassignedPortalRoles = computed(() => {
+  const assignedIds = new Set(assignedPortalRoles.value.map((role) => String(role._id)));
+  return availablePortalRoles.value.filter((role) => {
+    const roleId = String(role.roleId || role._id);
+    return !assignedIds.has(roleId);
+  });
+});
+
+const defaultPortalName = computed(() => {
+  const defaultId = portalState.value?.user?.defaultExternalRoleId || props.user?.defaultExternalRoleId;
+  if (!defaultId) return '';
+  const match = assignedPortalRoles.value.find((role) => String(role._id) === String(defaultId));
+  return match?.name || '';
+});
 
 const appDisplayNames = {
   SALES: 'SALES',
@@ -611,6 +800,7 @@ const userInitials = (user) => {
 
 const resolveRoleIdFromUser = (candidateUser) => {
   if (!candidateUser) return '';
+  if (String(candidateUser.userType || '').toUpperCase() === 'EXTERNAL') return '';
 
   const rawRoleId = candidateUser.roleId;
 
@@ -636,10 +826,89 @@ const fetchRoles = async () => {
   try {
     const response = await apiClient.get('/roles');
     if (response.success) {
-      availableRoles.value = response.data;
+      availableRoles.value = (response.data || []).filter(
+        (role) => String(role.userType || 'INTERNAL').toUpperCase() !== 'EXTERNAL'
+      );
     }
   } catch (err) {
     console.error('Error fetching roles:', err);
+  }
+};
+
+const loadExternalPortalState = async () => {
+  if (!isExternalUser.value || !peopleId.value) {
+    portalState.value = null;
+    return;
+  }
+
+  portalRolesLoading.value = true;
+  try {
+    const response = await apiClient.get(`/people/${peopleId.value}/portal`);
+    portalState.value = response?.data ?? response;
+  } catch (err) {
+    const code = err?.response?.data?.code;
+    if (code !== 'PORTAL_FRAMEWORK_DISABLED') {
+      console.error('Error loading portal state:', err);
+    }
+    portalState.value = null;
+  } finally {
+    portalRolesLoading.value = false;
+  }
+};
+
+const openPortalAssignModal = () => {
+  selectedPortalRoleIds.value = [];
+  showPortalAssignModal.value = true;
+};
+
+const togglePortalRoleSelection = (roleId) => {
+  const id = String(roleId);
+  const next = new Set(selectedPortalRoleIds.value.map(String));
+  if (next.has(id)) {
+    next.delete(id);
+  } else {
+    next.add(id);
+  }
+  selectedPortalRoleIds.value = [...next];
+};
+
+const confirmAssignPortalRoles = async () => {
+  if (!peopleId.value || !selectedPortalRoleIds.value.length) return;
+
+  portalActionLoading.value = true;
+  error.value = '';
+  try {
+    await apiClient.post(`/people/${peopleId.value}/portal/roles`, {
+      roleIds: selectedPortalRoleIds.value
+    });
+    notifySuccess(t('settings.editUserPortalRolesAssigned'));
+    showPortalAssignModal.value = false;
+    await loadExternalPortalState();
+    emit('portal-roles-updated');
+  } catch (err) {
+    console.error('Error assigning portal roles:', err);
+    error.value = err.message || t('settings.editUserUpdateFailed');
+  } finally {
+    portalActionLoading.value = false;
+  }
+};
+
+const removePortalRole = async (roleId) => {
+  if (!peopleId.value) return;
+  if (!confirm(t('settings.editUserPortalRemoveConfirm'))) return;
+
+  portalActionLoading.value = true;
+  error.value = '';
+  try {
+    await apiClient.delete(`/people/${peopleId.value}/portal/roles/${roleId}`);
+    notifySuccess(t('settings.editUserPortalRoleRemoved'));
+    await loadExternalPortalState();
+    emit('portal-roles-updated');
+  } catch (err) {
+    console.error('Error removing portal role:', err);
+    error.value = err.message || t('settings.editUserUpdateFailed');
+  } finally {
+    portalActionLoading.value = false;
   }
 };
 
@@ -673,6 +942,7 @@ watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     error.value = '';
     validationErrors.value = {};
+    showPortalAssignModal.value = false;
     fetchRoles();
     if (!rbacV2Enabled.value) {
       fetchCapabilities();
@@ -686,6 +956,11 @@ watch(() => props.isOpen, (newVal) => {
         status: props.user.status || 'active'
       };
       initSelectedAppRoles();
+    }
+    if (isExternalUser.value) {
+      void loadExternalPortalState();
+    } else {
+      portalState.value = null;
     }
   }
 });
@@ -704,7 +979,7 @@ watch(() => props.user, (newUser) => {
 });
 
 watch(availableRoles, (roles) => {
-  if (!props.isOpen || !props.user || !Array.isArray(roles) || roles.length === 0) return;
+  if (!props.isOpen || !props.user || isExternalUser.value || !Array.isArray(roles) || roles.length === 0) return;
   if (form.value.roleId) return;
 
   const resolvedRoleId = resolveRoleIdFromUser(props.user);
@@ -789,9 +1064,11 @@ const handleSubmit = async () => {
         firstName: form.value.firstName,
         lastName: form.value.lastName,
         phoneNumber: form.value.phoneNumber,
-        roleId: form.value.roleId,
         status: form.value.status
       };
+      if (!isExternalUser.value) {
+        payload.roleId = form.value.roleId;
+      }
     } else {
       const appAccessPayload = selectedApps.value.map((appKey) => ({
         appKey,
@@ -803,8 +1080,8 @@ const handleSubmit = async () => {
             firstName: form.value.firstName,
             lastName: form.value.lastName,
             phoneNumber: form.value.phoneNumber,
-            roleId: form.value.roleId,
             status: form.value.status,
+            ...(isExternalUser.value ? {} : { roleId: form.value.roleId }),
             appAccess: appAccessPayload
           };
     }

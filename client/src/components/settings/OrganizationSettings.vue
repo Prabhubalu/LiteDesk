@@ -178,6 +178,31 @@
             <p class="text-xs text-gray-500 dark:text-gray-400">
               {{ t('settings.orgCompanyNameHint') }}
             </p>
+
+            <div class="space-y-2 pt-2">
+              <label for="primary-color" class="block text-sm font-medium text-gray-900 dark:text-gray-200">
+                {{ t('settings.orgPrimaryColor') }}
+              </label>
+              <div class="flex items-center gap-3">
+                <input
+                  id="primary-color"
+                  v-model="form.primaryColor"
+                  type="text"
+                  maxlength="7"
+                  class="flex-1 px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white font-mono text-sm focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all outline-none"
+                  placeholder="#3a1f8a"
+                />
+                <input
+                  v-model="form.primaryColor"
+                  type="color"
+                  class="h-11 w-12 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer bg-white dark:bg-gray-900"
+                  :aria-label="t('settings.orgPrimaryColor')"
+                />
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ t('settings.orgPrimaryColorHint') }}
+              </p>
+            </div>
           </div>
 
           <!-- Logo Upload -->
@@ -509,6 +534,7 @@ try {
 const form = ref({
   name: '',
   logoUrl: '',
+  primaryColor: '#3a1f8a',
   timeZone: 'UTC',
   currency: 'USD',
   locale: 'en-US',
@@ -799,6 +825,7 @@ const fetchOrganizationSettings = async () => {
       form.value = {
         name: data.data.name || '',
         logoUrl: data.data.logoUrl || '',
+        primaryColor: data.data.primaryColor || '#3a1f8a',
         timeZone: savedTimeZone,
         currency: data.data.currency || 'USD',
         locale: data.data.locale || 'en-US',
@@ -850,6 +877,7 @@ const handleSubmit = async () => {
       body: JSON.stringify({
         name: form.value.name,
         logoUrl: form.value.logoUrl,
+        primaryColor: form.value.primaryColor,
         timeZone: form.value.timeZone,
         currency: form.value.currency,
         locale: form.value.locale,

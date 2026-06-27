@@ -62,7 +62,7 @@ export type EventSourceApp = 'Audit' | 'Sales' | 'Calendar';
  * Route target for Inbox navigation
  * 
  * Where clicking this Inbox item navigates. Format:
- * - '/audit/events/:eventId' - Navigate to event detail in Audit App
+ * - '/audit/audits/:eventId' - Navigate to event detail in Audit App
  * - '/sales/events/:eventId' - Navigate to event detail in Sales App
  * - '/events/:eventId' - Navigate to event detail in Calendar/Events module
  * 
@@ -278,7 +278,7 @@ export interface InboxEventItem {
    * Route target
    * 
    * Navigation path where clicking this Inbox item leads.
-   * Format: '/audit/events/:eventId' or '/sales/events/:eventId' or '/events/:eventId'
+   * Format: '/audit/audits/:eventId' or '/events/:eventId'
    * 
    * This is a navigation path, not an internal reference.
    * Inbox items must clearly communicate where they lead.

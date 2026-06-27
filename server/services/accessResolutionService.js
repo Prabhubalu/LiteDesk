@@ -338,11 +338,11 @@ async function resolveAppAccess({ user, organization, appKey, intent }) {
      * - Applies to all apps
      * - Applies to all intents (VIEW, CONFIGURE, EXECUTE)
      * - Always non-billable
-     * - Always ADMIN mode (god-mode execution)
+     * - EXECUTE intent uses EXECUTION mode; VIEW/CONFIGURE use ADMIN
      */
     if (instance?.isInternal === true) {
         result.allowed = true;
-        result.mode = 'ADMIN';
+        result.mode = intent === 'EXECUTE' ? 'EXECUTION' : 'ADMIN';
         result.billable = false;
         result.roleKey = 'PLATFORM_INTERNAL';
         result.reason = 'INTERNAL_INSTANCE_OVERRIDE';

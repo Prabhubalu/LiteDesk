@@ -430,6 +430,10 @@
           @clear-all="clearFilters"
         />
         </div>
+
+        <div class="ml-auto flex shrink-0 items-center gap-2">
+          <slot name="toolbar-trailing" />
+        </div>
       </div>
 
       <!-- Large Desktop: Search and Filters in a row -->
@@ -589,6 +593,10 @@
               </button>
             </div>
           </div>
+        </div>
+
+        <div class="ml-auto flex shrink-0 items-center gap-2">
+          <slot name="toolbar-trailing" />
         </div>
       </div>
     </div>
@@ -2947,7 +2955,7 @@ const initializeColumns = async () => {
       const defaultColumns = buildDefaultColumns(allAvailableColumns, moduleListConfig.defaultColumns);
       visibleColumns.value = normalizeColumnOrder(defaultColumns);
       saveColumnSettings();
-    } else if (moduleConfig && Array.isArray(moduleConfig.fields)) {
+    } else if (moduleConfig && Array.isArray(moduleConfig.fields) && moduleConfig.fields.length > 0) {
       // Existing logic for other modules with backend config
       const fieldVisibilityMap = new Map();
       moduleConfig.fields.forEach(field => {
@@ -3949,16 +3957,25 @@ const handleStatClick = (item) => {
 // Get count of active filters for mobile badge
 const getActiveFiltersCount = () => countActiveFilterRules(filters, filterOperatorsMap.value);
 
-const emitCompiledFilters = () => {
+function syncFilterBuilderFromActiveFilters() {
   filterBuilderQuery.value = syncRootGroupFromActiveFilters(
     filterBuilderQuery.value,
     Object.values(mergedFilterByKey.value),
     filters,
     filterOperatorsMap.value
   );
+}
+
+function emitFiltersToParent(explicitClears = null) {
+  syncFilterBuilderFromActiveFilters();
   const { apiPayload } = buildCompiledListFilters();
-  lastEmittedFiltersSignature = JSON.stringify(apiPayload);
-  emit('update:filters', apiPayload);
+  const payload = explicitClears ? { ...apiPayload, ...explicitClears } : apiPayload;
+  lastEmittedFiltersSignature = JSON.stringify(payload);
+  emit('update:filters', payload);
+}
+
+const emitCompiledFilters = () => {
+  emitFiltersToParent();
 };
 
 // Handle filter change
@@ -3980,11 +3997,19 @@ const trackFilterRuleMeta = (key, source, operator = 'is') => {
 };
 
 const handleFilterInput = (key, value, filterType, source = 'column') => {
+  const previousValue = filters[key];
   filters[key] = value;
   if (!isFilterValueActive(value)) {
     delete filterRuleMeta[key];
     clearTimeout(filterDebounceTimers[key]);
-    handleFilterChange(key, value);
+    if (
+      isFilterValueActive(previousValue)
+      && enrichedColumnFilterConfigByKey.value[key]
+    ) {
+      emitFiltersToParent({ [key]: '' });
+    } else {
+      handleFilterChange(key, value);
+    }
     return;
   }
   const filter = mergedFilterByKey.value[key];
@@ -4019,7 +4044,7 @@ const handleBuilderFilterApply = ({ key, value, operator }) => {
 const handleBuilderClearField = (key) => {
   filters[key] = '';
   delete filterRuleMeta[key];
-  emitCompiledFilters();
+  emitFiltersToParent({ [key]: '' });
 };
 
 const handleFilterOpened = async (key) => {
@@ -4048,16 +4073,19 @@ const handleActiveFilterChipRemove = (id) => {
     return;
   }
   delete filterRuleMeta[id];
-  handleFilterChange(id, '');
+  filters[id] = '';
+  emitFiltersToParent({ [id]: '' });
 };
 
 const clearColumnFilters = () => {
+  const cleared = {};
   Object.keys(enrichedColumnFilterConfigByKey.value).forEach((key) => {
     filters[key] = '';
     delete filterRuleMeta[key];
+    cleared[key] = '';
   });
   filterBuilderQuery.value = createDefaultRootGroup();
-  emitCompiledFilters();
+  emitFiltersToParent(cleared);
 };
 
 // Update filters (kept for backward compatibility if needed)
@@ -4392,15 +4420,18 @@ const clearFilters = () => {
   lastAppliedSavedViewSignature.value = '';
   viewCleanBaseline.value = null;
   searchQuery.value = '';
+  const cleared = {};
   Object.keys(filters).forEach(key => {
+    if (key === 'filterQuery') return;
     filters[key] = '';
+    cleared[key] = '';
   });
   Object.keys(filterRuleMeta).forEach((key) => {
     delete filterRuleMeta[key];
   });
   filterBuilderQuery.value = createDefaultRootGroup();
   emitSearchToParent('');
-  emitCompiledFilters();
+  emitFiltersToParent(cleared);
   localStorage.removeItem(searchStorageKey.value);
   localStorage.removeItem(filterStorageKey.value);
   localStorage.removeItem(sortStorageKey.value);

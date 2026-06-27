@@ -122,9 +122,34 @@ export function hasPermission(
     return true;
   }
 
+  const [moduleKey, action] = permission.split('.');
+  if (moduleKey && action) {
+    if (moduleKey === 'people') {
+      if (snapshot.permissions[`contacts.${action}`] === true) return true;
+    } else if (moduleKey === 'contacts') {
+      if (snapshot.permissions[`people.${action}`] === true) return true;
+    }
+  }
+
+  // RBAC v2 uses read; legacy nav metadata uses view
+  if (permission.endsWith('.read')) {
+    const viewKey = permission.replace(/\.read$/, '.view');
+    if (snapshot.permissions[viewKey] === true) {
+      return true;
+    }
+  } else if (permission.endsWith('.view')) {
+    const readKey = permission.replace(/\.view$/, '.read');
+    if (snapshot.permissions[readKey] === true) {
+      return true;
+    }
+  }
+
   // Responses inherits Forms access until roles explicitly grant responses.*
   if (permission === 'responses.view' || permission === 'responses.read') {
-    return snapshot.permissions['forms.view'] === true;
+    return (
+      snapshot.permissions['forms.view'] === true ||
+      snapshot.permissions['forms.read'] === true
+    );
   }
 
   return false;

@@ -16,6 +16,7 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const Organization = require('../models/Organization');
 const dbConnectionManager = require('../utils/databaseConnectionManager');
+const { validateAuthSession } = require('../services/sessionService');
 
 function getOrgUserModel(orgDbConnection) {
   if (orgDbConnection.models.User) {
@@ -151,6 +152,25 @@ async function resolveUserFromToken(token, options = {}) {
 
   if (!isActiveUser(user)) {
     return null;
+  }
+
+  const sessionCheck = await validateAuthSession(user, decoded);
+  if (!sessionCheck.ok) {
+    return null;
+  }
+
+  if (decoded.jti) {
+    user._sessionJti = decoded.jti;
+  }
+  if (decoded.sv != null) {
+    user._authSessionVersion = Number(decoded.sv);
+  }
+
+  if (decoded.userType) {
+    user.userType = String(decoded.userType).toUpperCase();
+  }
+  if (decoded.activeExternalRoleId) {
+    user.activeExternalRoleId = decoded.activeExternalRoleId;
   }
 
   return user;

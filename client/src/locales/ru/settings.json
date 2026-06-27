@@ -13994,5 +13994,89 @@
   "chatWidgetTermsUrl": {
     "message": "Terms URL",
     "description": "Chat widget terms URL label"
+  },
+  "roleDrawerExternalProfileScopeHint": {
+    "message": "Showing portal-relevant modules only. CRM and admin modules are intentionally excluded for external profiles.",
+    "description": "Hint when external profile scopes the permission grid"
+  },
+  "profileDrawerExternalScopeHint": {
+    "message": "This external profile controls portal self-service modules only—not internal Sales or platform administration.",
+    "description": "Profile drawer scope hint for portal profiles"
+  },
+  "orgPrimaryColor": {
+    "message": "Brand color",
+    "description": "Organization primary brand color label"
+  },
+  "orgPrimaryColorHint": {
+    "message": "Used for the customer portal sidebar and accents. Hex format, e.g. #3a1f8a.",
+    "description": "Organization primary brand color hint"
+  },
+  "editUserPortalRoles": {
+    "message": "Portal roles",
+    "description": "External user portal roles section label"
+  },
+  "editUserPortalRolesHint": {
+    "message": "External users are authorized through portal roles — not internal staff roles like Sales Executive.",
+    "description": "External user portal roles helper text"
+  },
+  "editUserPortalRolesEmpty": {
+    "message": "No portal roles assigned",
+    "description": "External user with no portal roles"
+  },
+  "editUserPortalAssignRoles": {
+    "message": "Assign portal roles",
+    "description": "Assign portal roles button"
+  },
+  "editUserPortalRemoveRole": {
+    "message": "Remove",
+    "description": "Remove portal role button"
+  },
+  "editUserPortalRemoveConfirm": {
+    "message": "Remove this portal role from the user?",
+    "description": "Confirm remove portal role"
+  },
+  "editUserPortalRolesAssigned": {
+    "message": "Portal roles updated",
+    "description": "Portal roles assign success toast"
+  },
+  "editUserPortalRoleRemoved": {
+    "message": "Portal role removed",
+    "description": "Portal role remove success toast"
+  },
+  "editUserPortalManageOnPeople": {
+    "message": "Invites, password resets, session termination, and audit history are managed on the linked People record.",
+    "description": "External user portal management hint"
+  },
+  "editUserPortalOpenPeople": {
+    "message": "Open People record",
+    "description": "Link to linked People record from user edit"
+  },
+  "editUserPortalNoPeopleLink": {
+    "message": "This user is not linked to a People record. Portal roles cannot be edited here.",
+    "description": "External user missing People link"
+  },
+  "editUserPortalDefaultRole": {
+    "message": "Default portal",
+    "description": "Default external portal role label"
+  },
+  "editUserPortalSelectRolesHint": {
+    "message": "Select one or more portal roles to assign.",
+    "description": "Portal role assign modal hint"
+  },
+  "editUserPortalNoAvailableRoles": {
+    "message": "All portal roles are already assigned.",
+    "description": "No unassigned portal roles"
+  },
+  "externalUserNoPortalRoles": {
+    "message": "No portal roles",
+    "description": "Users list badge when external user has no portal roles"
+  },
+  "roleDrawerPresetEdit": {
+    "message": "All edit",
+    "description": "Apply edit access preset to all modules"
+  },
+  "usersStatusSuspended": {
+    "message": "Suspended",
+    "description": "Short suspended status label for users table"
   }
 }

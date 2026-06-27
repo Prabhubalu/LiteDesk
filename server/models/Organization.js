@@ -113,6 +113,14 @@ const OrganizationSchema = new mongoose.Schema({
             default: 1 
         }
     },
+
+    // Usage counters (V1 external users — collect only; seat enforcement in V1.5)
+    usage: {
+        externalUsers: {
+            active: { type: Number, default: 0 },
+            lastUpdatedAt: { type: Date, default: null }
+        }
+    },
     
     // Enabled Apps (app-level enablement for tenant organizations)
     // Controls which applications are available to the organization
@@ -197,7 +205,7 @@ const OrganizationSchema = new mongoose.Schema({
         logoUrl: String,
         primaryColor: { 
             type: String, 
-            default: '#7f56d9' 
+            default: '#3a1f8a' 
         },
         rbacV2Enabled: {
             type: Boolean,

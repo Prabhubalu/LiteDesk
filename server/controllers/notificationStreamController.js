@@ -2,6 +2,8 @@ const notificationSSEHub = require('../services/notificationSSEHub');
 const { applySseCors } = require('../utils/sseCors');
 const { resolveUserFromToken } = require('../utils/resolveUserFromToken');
 const { canAccessLiveChatNotifications } = require('../utils/liveChatNotificationAccess');
+const Organization = require('../models/Organization');
+const { materializeEffectiveCRMEnvelopeOnUser } = require('../utils/rolePermissionProjection');
 
 const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK', 'PLATFORM'];
 
@@ -30,6 +32,31 @@ async function validateTokenFromQuery(req) {
     return null;
   }
   return resolveUserFromToken(token, { lean: true });
+}
+
+function resolveAllowedAppsForStream(user) {
+  if (Array.isArray(user.allowedApps) && user.allowedApps.length > 0) {
+    return user.allowedApps.map((app) => String(app).toUpperCase());
+  }
+  if (Array.isArray(user.appAccess) && user.appAccess.length > 0) {
+    return user.appAccess
+      .filter((access) => String(access?.status || 'ACTIVE').toUpperCase() === 'ACTIVE')
+      .map((access) => String(access.appKey || '').toUpperCase())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+async function hydrateUserForStream(user) {
+  if (!user?.organizationId) return user;
+  const organization = await Organization.findById(user.organizationId)
+    .select('enabledApps moduleOverrides settings subscription')
+    .lean();
+  await materializeEffectiveCRMEnvelopeOnUser(user, {
+    organization,
+    activeExternalRoleId: user.activeExternalRoleId || null
+  });
+  return user;
 }
 
 /**
@@ -72,8 +99,10 @@ exports.streamNotifications = async (req, res) => {
     return;
   }
 
+  await hydrateUserForStream(user);
+
   // Validate app entitlement (user must have access to this app)
-  const allowedApps = user.allowedApps || [];
+  const allowedApps = resolveAllowedAppsForStream(user);
   if (appKey === 'PLATFORM') {
     const canPlatform = await canAccessLiveChatNotifications(user, user.organizationId);
     if (!canPlatform) {

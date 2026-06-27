@@ -33,6 +33,7 @@ export const MODULE_LABEL_KEYS = {
   responses: 'navigation.moduleResponses',
   imports: 'navigation.moduleImports',
   documents: 'navigation.moduleDocuments',
+  portal_knowledge: 'navigation.portalKnowledge',
   templates: 'navigation.moduleTemplates',
   import: 'navigation.moduleImports',
   cases: 'navigation.moduleCases',
@@ -98,6 +99,17 @@ export const ROUTE_TITLE_KEYS = {
   '/audit/responses': 'navigation.moduleResponses',
   '/platform/attention': 'navigation.attention',
   '/platform/apps': 'navigation.apps',
+  '/portal/dashboard': 'navigation.home',
+  '/portal/cases': 'cases.portalCasesTitle',
+  '/portal/invoices': 'navigation.portalInvoices',
+  '/portal/knowledge': 'navigation.portalKnowledge',
+  '/portal/audits': 'navigation.portalAudits',
+  '/portal/actions': 'navigation.portalActions',
+  '/portal/organization': 'navigation.portalOrganization',
+  '/portal/people': 'navigation.portalPeople',
+  '/portal/deals': 'navigation.portalDeals',
+  '/portal/forms': 'navigation.portalForms',
+  '/portal/responses': 'navigation.portalResponses',
 };
 
 /**
@@ -215,6 +227,37 @@ export function getTabTitleMetaForPath(path, params = {}) {
     return { titleKey: 'navigation.tabCaseDetail' };
   }
 
+  if (pathOnly.startsWith('/portal/')) {
+    if (pathOnly.startsWith('/portal/dashboard')) {
+      return { titleKey: 'navigation.home' };
+    }
+    if (pathOnly.startsWith('/portal/cases')) {
+      if (segments.length > 2) {
+        return { titleKey: 'navigation.tabCaseDetail' };
+      }
+      return { titleKey: 'cases.portalCasesTitle' };
+    }
+    if (pathOnly.startsWith('/portal/invoices')) {
+      return { titleKey: 'navigation.portalInvoices' };
+    }
+    if (pathOnly.startsWith('/portal/knowledge')) {
+      if (segments.length > 2) {
+        return { titleKey: 'navigation.tabPortalArticle' };
+      }
+      return { titleKey: 'navigation.portalKnowledge' };
+    }
+    if (pathOnly.startsWith('/portal/audits')) {
+      if (segments.length > 2) {
+        return { titleKey: 'navigation.tabAuditDetail' };
+      }
+      return { titleKey: 'navigation.portalAudits' };
+    }
+    if (pathOnly.startsWith('/portal/actions')) {
+      return { titleKey: 'navigation.portalActions' };
+    }
+    return { titleKey: 'navigation.appPortal' };
+  }
+
   if (pathOnly.startsWith('/live-chat/sessions')) {
     return { titleKey: 'navigation.liveChat' };
   }
@@ -308,6 +351,7 @@ export function isRecordDetailTabPath(path) {
   if (segments[0] === 'dashboard') return false;
   if (pathOnly.startsWith('/control/')) return false;
   if (pathOnly.startsWith('/settings/automation/')) return false;
+  if (pathOnly.startsWith('/portal/')) return false;
 
   if (segments[0] === 'forms' && segments[2] === 'responses' && segments[3]) {
     return isRecordIdSegment(segments[3]);

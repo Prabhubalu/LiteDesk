@@ -13,8 +13,13 @@ const {
   syncAutomaticCompletions,
   buildLoginOnboardingSummary
 } = require('./onboardingService');
+const { buildClientSessionEntitlements } = require('../utils/clientSessionEntitlements');
+const {
+  serializePortalsForClient
+} = require('./externalRoleSessionService');
+const { normalizeSessionVersion } = require('./sessionService');
 
-function generateToken(id, organizationId = null) {
+function generateToken(id, organizationId = null, sessionClaims = {}) {
   if (!process.env.JWT_SECRET) {
     throw new Error('CRITICAL: JWT_SECRET environment variable is not set!');
   }
@@ -22,7 +27,26 @@ function generateToken(id, organizationId = null) {
   if (organizationId) {
     payload.organizationId = organizationId.toString();
   }
+  if (sessionClaims.userType) {
+    payload.userType = String(sessionClaims.userType).toUpperCase();
+  }
+  if (sessionClaims.activeExternalRoleId) {
+    payload.activeExternalRoleId = String(sessionClaims.activeExternalRoleId);
+  }
+  if (sessionClaims.jti) {
+    payload.jti = String(sessionClaims.jti);
+  }
+  if (sessionClaims.sessionVersion != null) {
+    payload.sv = normalizeSessionVersion(sessionClaims.sessionVersion);
+  }
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+}
+
+/**
+ * @deprecated Use generateToken with sessionClaims — kept for callers passing org id only.
+ */
+function generateSessionToken({ userId, organizationId, userType, activeExternalRoleId }) {
+  return generateToken(userId, organizationId, { userType, activeExternalRoleId });
 }
 
 async function resolveInstanceForLogin(organizationId, email) {
@@ -110,25 +134,55 @@ function deriveAllowedApps(user) {
 }
 
 /**
- * Build the same auth payload returned by POST /api/auth/login.
+ * Build login/select/switch response payload (shared shape with POST /api/auth/login).
  */
-async function buildAuthSessionPayload(user, organization, options = {}) {
-  const orgUser = user;
-  const organizationForLogin = organization;
+async function buildAuthenticatedSessionResponse(orgUser, organizationForLogin, options = {}) {
+  const {
+    activeExternalRoleId = orgUser.activeExternalRoleId || null,
+    requiresPortalSelection = false,
+    portals = [],
+    activePortal = null,
+    markLogin = false,
+    sessionMeta = {},
+    sessionIds = null,
+    issueSession = true
+  } = options;
 
-  if (options.markLogin !== false) {
+  if (markLogin) {
     orgUser.lastLogin = new Date();
   }
 
-  await materializeEffectiveCRMEnvelopeOnUser(orgUser);
-  await ensureOnboardingStarted(orgUser);
-  await syncAutomaticCompletions(orgUser, organizationForLogin);
+  const userType = String(orgUser.userType || 'INTERNAL').toUpperCase();
+  if (userType === 'EXTERNAL' && activeExternalRoleId) {
+    orgUser.activeExternalRoleId = activeExternalRoleId;
+    await materializeEffectiveCRMEnvelopeOnUser(orgUser, {
+      organization: organizationForLogin,
+      activeExternalRoleId
+    });
+  } else if (userType !== 'EXTERNAL') {
+    await materializeEffectiveCRMEnvelopeOnUser(orgUser, { organization: organizationForLogin });
+  }
+
+  if (markLogin) {
+    await ensureOnboardingStarted(orgUser);
+    await syncAutomaticCompletions(orgUser, organizationForLogin);
+  }
 
   const allowedApps = deriveAllowedApps(orgUser);
   const instanceContext = await resolveInstanceForLogin(
     organizationForLogin?._id,
     orgUser.email
   );
+  const entitledAddons = await buildClientSessionEntitlements(orgUser, organizationForLogin._id);
+
+  let issuedSession = sessionIds;
+  if (issueSession && !issuedSession) {
+    const { issueAuthSession } = require('./sessionService');
+    issuedSession = await issueAuthSession(orgUser, organizationForLogin, sessionMeta);
+  } else if (issuedSession?.jti) {
+    const { touchAuthSession } = require('./sessionService');
+    void touchAuthSession(issuedSession.jti);
+  }
 
   return {
     _id: orgUser._id,
@@ -137,10 +191,12 @@ async function buildAuthSessionPayload(user, organization, options = {}) {
     firstName: orgUser.firstName,
     lastName: orgUser.lastName,
     role: orgUser.role,
+    userType,
     isOwner: orgUser.isOwner,
     isPlatformAdmin: orgUser.isPlatformAdmin === true,
     permissions: userPermissionsEnvelopeToPlain(orgUser),
     allowedApps,
+    entitledAddons,
     appAccess: orgUser.appAccess,
     organization: {
       _id: organizationForLogin._id,
@@ -151,24 +207,49 @@ async function buildAuthSessionPayload(user, organization, options = {}) {
       enabledApps: organizationForLogin.enabledApps || [],
       enabledModules: organizationForLogin.enabledModules,
       settings: organizationForLogin.settings,
-      database: organizationForLogin.database ? {
-        name: organizationForLogin.database.name,
-        initialized: organizationForLogin.database.initialized
-      } : null,
+      database: organizationForLogin.database
+        ? {
+            name: organizationForLogin.database.name,
+            initialized: organizationForLogin.database.initialized
+          }
+        : null,
       capabilities: buildOrgCapabilities(organizationForLogin)
     },
     instance: instanceContext,
-    token: generateToken(orgUser._id, organizationForLogin._id),
+    token: generateToken(orgUser._id, organizationForLogin._id, {
+      userType,
+      activeExternalRoleId: activeExternalRoleId || undefined,
+      jti: issuedSession?.jti,
+      sessionVersion: issuedSession?.sessionVersion
+    }),
     emailVerifiedAt: orgUser.emailVerifiedAt || null,
     requiresEmailVerification: !orgUser.emailVerifiedAt,
     mustChangePassword: orgUser.mustChangePassword === true,
-    onboarding: buildLoginOnboardingSummary(orgUser)
+    onboarding: buildLoginOnboardingSummary(orgUser),
+    requiresPortalSelection: requiresPortalSelection === true,
+    portals: serializePortalsForClient(portals),
+    activeExternalRoleId: activeExternalRoleId || null,
+    activePortal: activePortal
+      ? {
+          roleId: activePortal.roleId,
+          name: activePortal.name
+        }
+      : null
   };
+}
+
+/**
+ * Build the same auth payload returned by POST /api/auth/login.
+ */
+async function buildAuthSessionPayload(user, organization, options = {}) {
+  return buildAuthenticatedSessionResponse(user, organization, options);
 }
 
 module.exports = {
   generateToken,
+  generateSessionToken,
   buildAuthSessionPayload,
+  buildAuthenticatedSessionResponse,
   deriveAllowedApps,
   resolveInstanceForLogin
 };

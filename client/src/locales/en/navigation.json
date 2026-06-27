@@ -71,6 +71,26 @@
     "message": "Invoices",
     "description": "Portal bottom nav invoices tab"
   },
+  "portalOrganization": {
+    "message": "Company",
+    "description": "Portal company profile navigation label"
+  },
+  "portalPeople": {
+    "message": "Contact",
+    "description": "Portal contact profile navigation label"
+  },
+  "portalDeals": {
+    "message": "Deals",
+    "description": "Portal deals navigation label"
+  },
+  "portalForms": {
+    "message": "Forms",
+    "description": "Portal forms navigation label"
+  },
+  "portalResponses": {
+    "message": "Responses",
+    "description": "Portal form responses navigation label"
+  },
   "collapseSidebar": {
     "message": "Collapse sidebar",
     "description": "Collapse app sidebar tooltip"
@@ -574,6 +594,10 @@
   "tabCaseDetail": {
     "message": "Case Detail",
     "description": "Helpdesk case detail tab title"
+  },
+  "tabPortalArticle": {
+    "message": "Article",
+    "description": "Portal knowledge article tab title"
   },
   "tabFormResponseDetail": {
     "message": "({id}) Details",

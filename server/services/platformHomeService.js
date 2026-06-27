@@ -17,6 +17,7 @@ const { buildFocus, buildGreetingPayload } = require('./platformHomeFocusService
 const { getPlatformHomeOnboarding } = require('./onboardingService');
 const { resolveRuntimePermission } = require('./runtimePermissionResolver');
 const { getUserGroupIds, applyDocumentVisibilityFilter } = require('../utils/documentVisibility');
+const { resolveEventRouteTarget } = require('../utils/eventUtils');
 
 const DOCUMENTS_PREVIEW_LIMIT = 3;
 
@@ -443,7 +444,7 @@ async function getNextEvent(userId, organizationId) {
     id: String(row._id),
     title: row.eventName || 'Event',
     startAt: new Date(row.startDateTime).toISOString(),
-    route: `/events/${row._id}`,
+    route: resolveEventRouteTarget(row._id, row.eventType),
     sourceApp: resolveEventSourceApp(row.eventType),
     kind: 'event'
   };

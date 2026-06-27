@@ -133,7 +133,7 @@
                 </div>
               </div>
               <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                {{ calculateOverallScore(response.sectionScores) }}%
+                {{ calculateOverallScoreFromSections(response.sectionScores, form) }}%
               </p>
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('forms.hubResponseDetailOverallScoreHint') }}</p>
             </div>
@@ -274,8 +274,49 @@
                   >
                     <div class="border-b border-gray-200 pb-2 dark:border-gray-700">
                       <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ section.name }}</h3>
-                      <div v-if="response.sectionScores?.[section.sectionId]" class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        {{ t('forms.hubResponseDetailSectionScore', { score: response.sectionScores[section.sectionId] }) }}
+                      <div v-if="getSectionScore(section.sectionId) !== null" class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        {{ t('forms.hubResponseDetailSectionScore', { score: getSectionScore(section.sectionId) }) }}
+                      </div>
+                    </div>
+
+                    <div
+                      v-for="(question, qIndex) in (section.questions || [])"
+                      :key="question.questionId || qIndex"
+                      class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700/30"
+                    >
+                      <p class="mb-1 text-sm font-medium text-gray-900 dark:text-white">{{ question.questionText }}</p>
+                      <div class="mt-2 flex items-center gap-2">
+                        <BadgeCell
+                          v-if="getQuestionResponse(question.questionId)"
+                          :value="passFailLabel(getQuestionResponse(question.questionId).passFail || 'N/A')"
+                          :variant="passFailVariant(getQuestionResponse(question.questionId).passFail || 'N/A')"
+                        />
+                        <span
+                          v-if="getQuestionResponse(question.questionId)?.score !== undefined"
+                          class="text-xs text-gray-600 dark:text-gray-400"
+                        >
+                          {{ t('forms.hubResponseDetailQuestionScore', { score: getQuestionResponse(question.questionId).score }) }}
+                        </span>
+                      </div>
+                      <div class="mt-3">
+                        <p class="mb-1 text-sm text-gray-600 dark:text-gray-400">{{ t('forms.correctiveAnswerLabel') }}</p>
+                        <div class="rounded border border-gray-200 bg-white p-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+                          {{ formatAnswer(getQuestionResponse(question.questionId)?.answer) }}
+                        </div>
+                      </div>
+                      <div v-if="getQuestionResponse(question.questionId)?.attachments?.length" class="mt-3">
+                        <p class="mb-1 text-sm text-gray-600 dark:text-gray-400">{{ t('forms.hubResponseDetailAttachments') }}</p>
+                        <div class="flex flex-wrap gap-2">
+                          <a
+                            v-for="(attachment, aIndex) in getQuestionResponse(question.questionId).attachments"
+                            :key="aIndex"
+                            :href="attachment"
+                            target="_blank"
+                            class="inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-1 text-xs text-indigo-600 hover:text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400"
+                          >
+                            {{ attachment.split('/').pop() }}
+                          </a>
+                        </div>
                       </div>
                     </div>
 
@@ -288,7 +329,7 @@
                       <h4 class="text-md font-medium text-gray-800 dark:text-gray-200">{{ subsection.name }}</h4>
 
                       <div
-                        v-for="(question, qIndex) in subsection.questions"
+                        v-for="(question, qIndex) in (subsection.questions || [])"
                         :key="question.questionId || qIndex"
                         class="ml-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-700/30"
                       >
@@ -440,6 +481,10 @@ import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import CorrectiveActionPanel from '@/components/forms/CorrectiveActionPanel.vue';
 import AuditorVerificationPanel from '@/components/forms/AuditorVerificationPanel.vue';
 import FormReportView from '@/components/forms/FormReportView.vue';
+import {
+  normalizeSectionScores,
+  calculateOverallScoreFromSections,
+} from '@/utils/formScoringUtils';
 import FormComparisonView from '@/components/forms/FormComparisonView.vue';
 import RecordPageShell from '@/components/record-page/RecordPageShell.vue';
 import RecordHeader from '@/components/record-page/RecordHeader.vue';
@@ -836,12 +881,10 @@ const formatAnswer = (answer) => {
   return String(answer);
 };
 
-const calculateOverallScore = (sectionScores) => {
-  if (!sectionScores || typeof sectionScores !== 'object') return 0;
-  const scores = Object.values(sectionScores).filter((s) => typeof s === 'number');
-  if (scores.length === 0) return 0;
-  const sum = scores.reduce((acc, score) => acc + score, 0);
-  return Math.round(sum / scores.length);
+const getSectionScore = (sectionId) => {
+  const sections = normalizeSectionScores(response.value?.sectionScores, form.value);
+  const match = sections.find((s) => s.sectionId === sectionId);
+  return match?.percentage ?? null;
 };
 
 const calculatePassRate = (resp) => {

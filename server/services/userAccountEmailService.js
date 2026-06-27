@@ -282,9 +282,92 @@ async function sendVerificationEmail({
   });
 }
 
+function buildPortalInviteEmailContent({
+  invitee,
+  organizationName,
+  portalUrl,
+  username,
+  temporaryPassword,
+  inviterName
+}) {
+  const name = displayName(invitee);
+  const org = organizationName || 'Arivu';
+  const subject = `Your ${org} portal access`;
+
+  const bodyHtml = `
+    <p style="margin:0 0 16px;font-size:15px;color:#3f3f46;line-height:1.6;">
+      Hi ${escapeHtml(name)}, ${escapeHtml(inviterName)} has enabled portal access for you on ${escapeHtml(org)}.
+    </p>
+    <p style="margin:0 0 12px;font-size:14px;color:#52525b;line-height:1.6;">
+      <strong>Portal URL:</strong> <a href="${escapeHtml(portalUrl)}">${escapeHtml(portalUrl)}</a><br/>
+      <strong>Username:</strong> ${escapeHtml(username)}<br/>
+      <strong>Temporary password:</strong> ${escapeHtml(temporaryPassword)}
+    </p>
+    <p style="margin:0 0 24px;">
+      <a href="${escapeHtml(portalUrl)}" style="display:inline-block;background:#4f46e5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:8px;">
+        Sign in to portal
+      </a>
+    </p>
+    <p style="margin:0;font-size:13px;color:#71717a;line-height:1.5;">
+      You will be asked to set a new password on first sign-in. This temporary password expires after first use.
+    </p>`;
+
+  const text = [
+    `Hi ${name},`,
+    '',
+    `${inviterName} has enabled portal access for you on ${org}.`,
+    '',
+    `Portal URL: ${portalUrl}`,
+    `Username: ${username}`,
+    `Temporary password: ${temporaryPassword}`,
+    '',
+    'You will be asked to set a new password on first sign-in.'
+  ].join('\n');
+
+  return {
+    subject,
+    text,
+    html: buildEmailShell({
+      title: 'Portal access',
+      bodyHtml,
+      accentColor: '#4f46e5'
+    })
+  };
+}
+
+async function sendPortalInviteEmail({
+  to,
+  invitee,
+  organizationId,
+  organizationName,
+  inviterName,
+  portalUrl,
+  username,
+  temporaryPassword
+}) {
+  const content = buildPortalInviteEmailContent({
+    invitee,
+    organizationName,
+    portalUrl,
+    username,
+    temporaryPassword,
+    inviterName
+  });
+
+  return sendAccountEmail({
+    organizationId,
+    to,
+    subject: content.subject,
+    text: content.text,
+    html: content.html,
+    replyTo: process.env.SYSTEM_EMAIL_REPLY_TO || process.env.EMAIL_REPLY_TO
+  });
+}
+
 module.exports = {
   sendAccountEmail,
   sendInviteEmail,
+  sendPortalInviteEmail,
   sendVerificationEmail,
   sendPasswordResetEmail,
   buildInviteEmailContent,

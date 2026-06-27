@@ -200,7 +200,7 @@ import {
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import { useAuthStore } from '@/stores/authRegistry';
-import { isAuditEventType } from '@/utils/eventUtils';
+import { isAuditEventType, isEventLocationGeoValid, resolveEventGeoRequired } from '@/utils/eventUtils';
 import { getEventTypeByKey, getEventTypeByLabel, EVENT_TYPE_DEFINITIONS } from '@/metadata/eventTypes';
 import { useTabs } from '@/composables/useTabs';
 import { useRoute } from 'vue-router';
@@ -1432,6 +1432,19 @@ const handleSubmit = async () => {
         return;
       }
     }
+
+    if (props.moduleKey === 'events') {
+      const geoRequired = resolveEventGeoRequired(
+        formData.value?.eventType,
+        formData.value?.geoRequired
+      );
+      if (!isEventLocationGeoValid(formData.value?.location, formData.value?.geoLocation, geoRequired)) {
+        errors.value.location = t('events.eventLocationGeoRequiredHint');
+        scrollToFirstErrorField();
+        saving.value = false;
+        return;
+      }
+    }
     
     drawerDbg('[CreateRecordDrawer] ✅ Validation passed, proceeding with submission...');
     
@@ -1476,6 +1489,10 @@ const handleSubmit = async () => {
       });
       
       submitData = filteredData;
+    }
+
+    if (props.moduleKey === 'events' && formData.value?.geoLocation) {
+      submitData.geoLocation = formData.value.geoLocation;
     }
     
     // Debug: Log formData for events before cleaning

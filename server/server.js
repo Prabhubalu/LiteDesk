@@ -268,6 +268,7 @@ app.use('/api/csv', csvRoutes);
 app.use('/api/imports', require('./routes/importHistoryRoutes'));
 app.use('/api/execution', require('./routes/executionRoutes'));
 app.use('/api/search', require('./routes/searchRoutes'));
+app.use('/api/geocode', require('./routes/geocodeRoutes'));
 app.use('/api/demo', demoRoutes);
 app.use('/api/instances', instanceRoutes);
 app.use('/api/metrics', metricsRoutes);

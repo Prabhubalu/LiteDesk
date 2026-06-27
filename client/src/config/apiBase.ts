@@ -143,5 +143,9 @@ export function getPortalApiUrl(url: string): string {
   if (!path.startsWith('/portal/')) {
     path = `/portal${path.startsWith('/') ? path : `/${path}`}`
   }
+  const directOrigin = getDevDirectFetchOrigin()
+  if (directOrigin) {
+    return `${directOrigin}${path}`
+  }
   return withApiOrigin(path)
 }

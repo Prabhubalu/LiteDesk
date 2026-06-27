@@ -18,6 +18,11 @@ function validateEnv() {
         '⚠️  RBAC_V2 and/or SHARING_V1 are enabled globally. Prefer per-org flags until migration is complete.'
       );
     }
+    if (process.env.PORTAL_FRAMEWORK_V1 === 'true') {
+      console.warn(
+        '⚠️  PORTAL_FRAMEWORK_V1 is enabled globally. Prefer per-org portalFrameworkV1Enabled until cutover.'
+      );
+    }
   }
 }
 

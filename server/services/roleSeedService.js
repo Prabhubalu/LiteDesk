@@ -7,7 +7,11 @@ const Role = require('../models/Role');
 const { SYSTEM_PROFILE_DEFINITIONS } = require('./profileMatrixBuilders');
 const { SYSTEM_PROFILE_KEYS } = require('../permissions/profileKeys');
 const { buildAppEntitlementsForOrg } = require('./roleEntitlementService');
-const { isAppEnabledForOrg } = require('../utils/appAccessUtils');
+const {
+  isAppEnabledForOrg,
+  validateAppRole,
+  getDefaultRoleForApp
+} = require('../utils/appAccessUtils');
 const { APP_KEYS } = require('../constants/appKeys');
 
 const PRIVILEGED_FLAGS = {
@@ -23,14 +27,17 @@ async function seedSystemProfiles(organizationId, ProfileModel = Profile) {
 
   for (const def of SYSTEM_PROFILE_DEFINITIONS) {
     if (existingKeys.has(def.profileKey)) continue;
-    const perms = typeof def.permissions === 'function' ? def.permissions() : def.permissions;
+    const payload = typeof def.permissions === 'function' ? def.permissions() : def.permissions;
+    const permissions = payload?.permissions ?? payload;
+    const appPermissions = payload?.appPermissions;
     const doc = await ProfileModel.create({
       organizationId,
       profileKey: def.profileKey,
       name: def.name,
       description: def.description,
       isSystemProfile: def.isSystemProfile,
-      permissions: perms
+      permissions,
+      ...(appPermissions ? { appPermissions } : {})
     });
     created.push(doc);
   }
@@ -38,9 +45,43 @@ async function seedSystemProfiles(organizationId, ProfileModel = Profile) {
   return { created, skipped: existing.length };
 }
 
+async function syncSystemProfilePermissions(organizationId, ProfileModel = Profile) {
+  let updated = 0;
+  for (const def of SYSTEM_PROFILE_DEFINITIONS) {
+    if (!def.isSystemProfile || !def.profileKey) continue;
+    const payload = typeof def.permissions === 'function' ? def.permissions() : def.permissions;
+    const permissions = payload?.permissions ?? payload;
+    const appPermissions = payload?.appPermissions;
+    const result = await ProfileModel.updateOne(
+      {
+        organizationId,
+        profileKey: def.profileKey,
+        updatedBy: { $in: [null, undefined] }
+      },
+      {
+        $set: {
+          permissions,
+          ...(appPermissions ? { appPermissions } : {})
+        }
+      }
+    );
+    if (result.modifiedCount) updated += 1;
+  }
+  return { updated };
+}
+
 async function getProfileIdByKey(organizationId, profileKey, ProfileModel = Profile) {
   const p = await ProfileModel.findOne({ organizationId, profileKey }).select('_id').lean();
   return p?._id || null;
+}
+
+function resolveAppRoleKeyForEntitlement(appKey, preferredRoleKey) {
+  const normalizedAppKey = String(appKey || '').toUpperCase();
+  const preferred = String(preferredRoleKey || '').toUpperCase();
+  if (preferred && validateAppRole(normalizedAppKey, preferred)) {
+    return preferred;
+  }
+  return getDefaultRoleForApp(normalizedAppKey) || preferred || 'USER';
 }
 
 function buildEntitlementsAllApps(organization, appRoleKey, seatConsuming = true) {
@@ -55,7 +96,7 @@ function buildEntitlementsAllApps(organization, appRoleKey, seatConsuming = true
       appKey: String(appKey).toUpperCase(),
       enabled: true,
       seatConsuming,
-      appRoleKey: String(appRoleKey).toUpperCase()
+      appRoleKey: resolveAppRoleKeyForEntitlement(appKey, appRoleKey)
     });
   }
   if (entitlements.length === 0 && isAppEnabledForOrg(organization, APP_KEYS.SALES)) {
@@ -63,10 +104,48 @@ function buildEntitlementsAllApps(organization, appRoleKey, seatConsuming = true
       appKey: APP_KEYS.SALES,
       enabled: true,
       seatConsuming,
-      appRoleKey: 'ADMIN'
+      appRoleKey: resolveAppRoleKeyForEntitlement(APP_KEYS.SALES, appRoleKey)
     });
   }
   return entitlements;
+}
+
+/**
+ * Ensure Owner / Administrator system roles include entitlement for a newly enabled app.
+ * @param {import('mongoose').Types.ObjectId|string} organizationId
+ * @param {string} appKey
+ */
+async function syncPrivilegedRoleEntitlementsForApp(organizationId, appKey, options = {}) {
+  const RoleModel = options.RoleModel || Role;
+  const normalizedAppKey = String(appKey || '').trim().toUpperCase();
+  if (!organizationId || !normalizedAppKey) return { updated: 0 };
+
+  const privilegedRoles = await RoleModel.find({
+    organizationId,
+    isSystemRole: true,
+    name: { $in: ['Owner', 'Administrator'] }
+  });
+
+  let updated = 0;
+  for (const role of privilegedRoles) {
+    const entitlements = Array.isArray(role.appEntitlements) ? [...role.appEntitlements] : [];
+    const alreadyPresent = entitlements.some(
+      (entry) => String(entry?.appKey || '').toUpperCase() === normalizedAppKey && entry?.enabled !== false
+    );
+    if (alreadyPresent) continue;
+
+    entitlements.push({
+      appKey: normalizedAppKey,
+      enabled: true,
+      seatConsuming: role.name !== 'Owner',
+      appRoleKey: resolveAppRoleKeyForEntitlement(normalizedAppKey, 'ADMIN')
+    });
+    role.appEntitlements = entitlements;
+    await role.save();
+    updated += 1;
+  }
+
+  return { updated };
 }
 
 /**
@@ -204,7 +283,10 @@ async function seedRolesAndProfilesForOrganization(organizationId, organization,
 
 module.exports = {
   seedSystemProfiles,
+  syncSystemProfilePermissions,
   seedRolesAndProfilesForOrganization,
   getProfileIdByKey,
-  buildEntitlementsAllApps
+  buildEntitlementsAllApps,
+  resolveAppRoleKeyForEntitlement,
+  syncPrivilegedRoleEntitlementsForApp
 };

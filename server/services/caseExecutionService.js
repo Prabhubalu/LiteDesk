@@ -239,6 +239,9 @@ async function onCaseStatusChanged({ caseRecord, actorId, fromStatus, toStatus }
       actorId,
       changedFields: ['status']
     });
+
+    const { notifyPortalCaseStatusUpdate } = require('./portalCaseNotificationService');
+    await notifyPortalCaseStatusUpdate(caseRecord, { actorId, toStatus });
   } catch (error) {
     console.error('[caseExecutionService] onCaseStatusChanged failed:', error.message);
   }

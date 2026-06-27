@@ -68,6 +68,9 @@ router.put('/:id/update-core', protect, resolverController.updateCore);
 // Guard: Edit Participation Details - check edit participation permission
 router.put('/:id/update-app-fields', protect, requireEditParticipationPermission, resolverController.updateAppFields);
 
+// External User / Portal framework (requires manageUsers + PORTAL_FRAMEWORK_V1)
+router.use('/:id/portal', require('./peoplePortalRoutes'));
+
 // Standard CRUD routes
 router.use(protect);
 router.use(resolveAppContext); // After auth, resolve appKey from URL

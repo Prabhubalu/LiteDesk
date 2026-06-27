@@ -1446,7 +1446,7 @@ exports.getOrganizationAudits = async (req, res) => {
             status: response.status,
             hasCorrectiveActions: response.correctiveActions && response.correctiveActions.length > 0,
             correctiveActionsCount: response.correctiveActions?.length || 0,
-            reportUrl: response.reportUrl || null
+            reportUrl: response.finalReport?.reportUrl || response.reportUrl || null
         }));
         
         // Calculate summary KPIs

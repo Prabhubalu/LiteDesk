@@ -1,6 +1,8 @@
 import {
   ArchiveBoxIcon,
   ArrowDownTrayIcon,
+  BanknotesIcon,
+  BookOpenIcon,
   BriefcaseIcon,
   BuildingOfficeIcon,
   CalendarDaysIcon,
@@ -70,6 +72,11 @@ const MODULE_ICON_MAP: Record<string, any> = {
   dashboard: DocumentChartBarIcon,
   audits: DocumentMagnifyingGlassIcon,
   findings: ExclamationTriangleIcon,
+  portal_support: LifebuoyIcon,
+  support: LifebuoyIcon,
+  portal_invoices: BanknotesIcon,
+  portal_knowledge: BookOpenIcon,
+  knowledge: BookOpenIcon,
   ...MODULE_ICON_COMPONENTS
 };
 
@@ -100,6 +107,8 @@ const RAW_ICON_MAP: Record<string, any> = {
   folder: FolderIcon,
   search: MagnifyingGlassIcon,
   lifebuoy: LifebuoyIcon,
+  banknotes: BanknotesIcon,
+  'book-open': BookOpenIcon,
   ticket: TicketIcon,
   support: LifebuoyIcon,
   'shield-check': ShieldCheckIcon,
@@ -162,6 +171,27 @@ export function getNavigationIconComponent(item: IconLookupItem): any {
     return ExclamationTriangleIcon;
   }
   if (route.includes('/audit/responses')) {
+    return ClipboardDocumentListIcon;
+  }
+  if (route.startsWith('/portal/cases')) {
+    return LifebuoyIcon;
+  }
+  if (route.startsWith('/portal/invoices')) {
+    return BanknotesIcon;
+  }
+  if (route.startsWith('/portal/knowledge')) {
+    return BookOpenIcon;
+  }
+  if (route.startsWith('/portal/organization')) {
+    return BuildingOfficeIcon;
+  }
+  if (route.startsWith('/portal/deals')) {
+    return BriefcaseIcon;
+  }
+  if (route.startsWith('/portal/forms')) {
+    return ClipboardDocumentListIcon;
+  }
+  if (route.startsWith('/portal/responses')) {
     return ClipboardDocumentListIcon;
   }
 

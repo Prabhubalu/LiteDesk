@@ -654,6 +654,55 @@ roleSchema.statics.upgradePrivilegedSystemRoles = async function(organizationId)
     );
 };
 
+async function assertExternalRoleParentIsValid(roleDoc) {
+    if (String(roleDoc.userType || 'INTERNAL').toUpperCase() !== 'EXTERNAL') {
+        return;
+    }
+    const parentId = roleDoc.parentRole;
+    if (!parentId) {
+        return;
+    }
+    const RoleModel = roleDoc.constructor;
+    const parent = await RoleModel.findById(parentId).select('userType organizationId').lean();
+    if (!parent) {
+        return;
+    }
+    if (String(parent.organizationId) !== String(roleDoc.organizationId)) {
+        const err = new Error('External role parent must belong to the same organization');
+        err.name = 'ValidationError';
+        throw err;
+    }
+    if (String(parent.userType || 'INTERNAL').toUpperCase() !== 'EXTERNAL') {
+        const err = new Error('External roles cannot report to internal roles');
+        err.name = 'ValidationError';
+        throw err;
+    }
+}
+
+roleSchema.pre('save', async function externalRoleParentGuard() {
+    await assertExternalRoleParentIsValid(this);
+});
+
+roleSchema.pre('findOneAndUpdate', async function externalRoleParentGuardUpdate() {
+    const update = this.getUpdate() || {};
+    const set = update.$set || update;
+    const nextUserType = set.userType;
+    const nextParentRole = set.parentRole;
+    if (nextUserType === undefined && nextParentRole === undefined) {
+        return;
+    }
+    const existing = await this.model.findOne(this.getQuery()).select('userType parentRole organizationId').lean();
+    if (!existing) {
+        return;
+    }
+    await assertExternalRoleParentIsValid({
+        constructor: this.model,
+        userType: nextUserType !== undefined ? nextUserType : existing.userType,
+        parentRole: nextParentRole !== undefined ? nextParentRole : existing.parentRole,
+        organizationId: existing.organizationId
+    });
+});
+
 const Role = mongoose.model('Role', roleSchema);
 
 module.exports = wrapTenantModel(Role);

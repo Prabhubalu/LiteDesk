@@ -235,6 +235,19 @@ const CaseSchema = new Schema(
     suggestedResolution: { type: String, trim: true, default: null },
     categoryConfidenceScore: { type: Number, default: null, min: 0, max: 1 },
     autoClassification: { type: Boolean, default: false },
+    portalReadReceipts: {
+      type: [{
+        userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        readAt: { type: Date, default: Date.now }
+      }],
+      default: []
+    },
+    portalCsat: {
+      score: { type: Number, min: 1, max: 5, default: null },
+      comment: { type: String, trim: true, maxlength: 2000, default: null },
+      submittedAt: { type: Date, default: null },
+      submittedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null }
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'User'

@@ -1,6 +1,23 @@
 const FormResponse = require('../models/FormResponse');
 const Form = require('../models/Form');
 
+function getSectionScoreEntries(sectionScores) {
+    if (!sectionScores) return [];
+    if (Array.isArray(sectionScores)) {
+        return sectionScores.map((section) => ({
+            name: section.sectionName || section.sectionId,
+            percentage: section.percentage ?? section.score ?? 0,
+        }));
+    }
+    if (typeof sectionScores === 'object') {
+        return Object.entries(sectionScores).map(([sectionId, score]) => ({
+            name: sectionId,
+            percentage: typeof score === 'number' ? score : (score?.percentage ?? score?.score ?? 0),
+        }));
+    }
+    return [];
+}
+
 /**
  * Generate final report using template
  * @param {ObjectId} responseId - Response ID
@@ -17,9 +34,15 @@ exports.generateReport = async (responseId, templateId = null) => {
             throw new Error('Response not found');
         }
         
-        // Calculate overall score from section scores
+        // Calculate overall score from section scores (array or legacy object map)
         let overallScore = 0;
-        if (response.sectionScores && typeof response.sectionScores === 'object') {
+        if (Array.isArray(response.sectionScores) && response.sectionScores.length > 0) {
+            const sum = response.sectionScores.reduce(
+                (acc, section) => acc + (section.percentage ?? section.score ?? 0),
+                0
+            );
+            overallScore = Math.round((sum / response.sectionScores.length) * 10) / 10;
+        } else if (response.sectionScores && typeof response.sectionScores === 'object') {
             const scores = Object.values(response.sectionScores).filter(s => typeof s === 'number');
             if (scores.length > 0) {
                 const sum = scores.reduce((acc, score) => acc + score, 0);
@@ -193,12 +216,13 @@ const fileStorage = require('./fileStorageService');
         }
         
         // Section Scores
-        if (reportData.sectionScores) {
+        const sectionEntries = getSectionScoreEntries(reportData.sectionScores);
+        if (sectionEntries.length > 0) {
             doc.fontSize(16).text('Section Scores', { underline: true });
             doc.moveDown(0.5);
             doc.fontSize(12);
-            Object.entries(reportData.sectionScores).forEach(([sectionId, score]) => {
-                doc.text(`${sectionId}: ${score}%`);
+            sectionEntries.forEach(({ name, percentage }) => {
+                doc.text(`${name}: ${percentage}%`);
             });
             doc.moveDown();
         }
@@ -302,7 +326,8 @@ exports.exportToExcel = async (reportData, organizationId) => {
         }
         
         // Section Scores section
-        if (reportData.sectionScores && Object.keys(reportData.sectionScores).length > 0) {
+        const sectionEntries = getSectionScoreEntries(reportData.sectionScores);
+        if (sectionEntries.length > 0) {
             const sectionRow = worksheet.addRow(['Section Scores', '']);
             sectionRow.getCell(1).font = { size: 14, bold: true };
             sectionRow.getCell(1).fill = {
@@ -312,8 +337,8 @@ exports.exportToExcel = async (reportData, organizationId) => {
             };
             worksheet.mergeCells(`A${sectionRow.number}:B${sectionRow.number}`);
             
-            Object.entries(reportData.sectionScores).forEach(([sectionId, score]) => {
-                worksheet.addRow([sectionId, `${score}%`]);
+            sectionEntries.forEach(({ name, percentage }) => {
+                worksheet.addRow([name, `${percentage}%`]);
             });
             worksheet.addRow([]);
         }

@@ -11,10 +11,37 @@
  * - Data access events
  * 
  * See PLATFORM_CORE_ANALYSIS.md for details.
+ * Persists to SecurityEvent when organizationId is present (non-blocking).
  * ============================================================================
  */
 
+const AUTH_EVENT_TO_SECURITY_TYPE = {
+    LOGIN_SUCCESS: 'login_success',
+    LOGIN_FAILED: 'login_failed',
+    LOGOUT: 'logout',
+    PASSWORD_RESET_REQUESTED: 'password_reset_requested',
+    PASSWORD_RESET_COMPLETED: 'password_reset_completed'
+};
+
+function persistSecurityEventAsync(payload) {
+    if (!payload?.organizationId || !payload?.type) {
+        return;
+    }
+    setImmediate(() => {
+        try {
+            const { recordSecurityEvent } = require('../services/securityAuditService');
+            recordSecurityEvent(payload).catch((err) => {
+                console.error('[securityLogger] persist failed:', err.message);
+            });
+        } catch (err) {
+            console.error('[securityLogger] persist unavailable:', err.message);
+        }
+    });
+}
+
 const securityLogger = {
+    persistSecurityEventAsync,
+
     /**
      * Log authentication events
      */
@@ -28,6 +55,24 @@ const securityLogger = {
         };
         
         console.log(`[SECURITY] ${JSON.stringify(logEntry)}`);
+
+        const securityType = AUTH_EVENT_TO_SECURITY_TYPE[event];
+        if (securityType && details?.organizationId) {
+            persistSecurityEventAsync({
+                organizationId: details.organizationId,
+                type: securityType,
+                description: String(event),
+                userId: details.userId || null,
+                actorUserId: details.userId || null,
+                userEmail: details.email || null,
+                ipAddress: details.ip || null,
+                userAgent: details.userAgent || null,
+                metadata: {
+                    success: details.success === true,
+                    code: details.code || null
+                }
+            });
+        }
         
         // In production, send to logging service (e.g., CloudWatch, Datadog, etc.)
         if (process.env.NODE_ENV === 'production' && process.env.SECURITY_LOG_ENDPOINT) {

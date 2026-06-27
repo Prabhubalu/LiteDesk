@@ -11,12 +11,15 @@
  * ============================================================================
  */
 
-import { 
-  getAuditEventTypes, 
-  isAuditEventTypeKey, 
+import {
+  getAuditEventTypes,
+  isAuditEventTypeKey,
   isAuditEventTypeLabel,
-  EVENT_TYPES 
+  EVENT_TYPES,
+  EVENT_TYPE_DEFINITIONS,
 } from '@/metadata/eventTypes';
+import type { EventGeoLocation } from '@/types/eventLocation.types';
+import { hasGeoCoordinates } from '@/types/eventLocation.types';
 
 /**
  * Audit Event Type Labels (for backward compatibility)
@@ -108,6 +111,122 @@ export function deriveEventExecutionState(
   if (event.executionStartTime || event.executionStartedAt) return 'IN_PROGRESS';
 
   return 'NOT_STARTED';
+}
+
+function normalizeEventTypeToken(value: string): string {
+  return String(value || '')
+    .trim()
+    .toUpperCase()
+    .replace(/[\s—–-]+/g, '_');
+}
+
+/** True when location is a virtual meeting URL (geo pin not required). */
+export function isMeetingUrlLocation(location: string | null | undefined): boolean {
+  return /^https?:\/\//i.test(String(location || '').trim());
+}
+
+/** Resolve whether geo check-in is required for the current event type + form value. */
+export function resolveEventGeoRequired(
+  eventType: string | null | undefined,
+  geoRequiredField?: boolean | null
+): boolean {
+  if (!eventType) return Boolean(geoRequiredField);
+
+  const token = normalizeEventTypeToken(eventType);
+  const definition = EVENT_TYPE_DEFINITIONS.find(
+    (entry) =>
+      normalizeEventTypeToken(entry.key) === token
+      || normalizeEventTypeToken(entry.label) === token
+      || entry.label === eventType
+  );
+
+  if (definition && definition.geoRequired && !definition.geoConfigurable) {
+    return true;
+  }
+
+  if (geoRequiredField != null) return Boolean(geoRequiredField);
+  return definition?.geoRequired ?? false;
+}
+
+/** Client-side guard before save when geo is required. */
+export function isEventLocationGeoValid(
+  location: string | null | undefined,
+  geoLocation: EventGeoLocation | null | undefined,
+  geoRequired: boolean
+): boolean {
+  if (!geoRequired) return true;
+  if (isMeetingUrlLocation(location)) return true;
+  return hasGeoCoordinates(geoLocation);
+}
+
+export type EventLinkedFormCandidate = {
+  _id?: string;
+  name?: string;
+  formType?: string;
+  status?: string;
+  tags?: string[];
+};
+
+const EVENT_TYPE_FORM_NAME_TOKENS: Record<string, string> = {
+  INTERNAL_AUDIT: 'internal audit',
+  EXTERNAL_AUDIT_SINGLE: 'external audit',
+  EXTERNAL_AUDIT_BEAT: 'external audit',
+};
+
+function isAuditFormType(formType: string | null | undefined): boolean {
+  const normalized = String(formType || '').trim().toLowerCase();
+  return normalized === 'audit' || normalized.includes('audit');
+}
+
+function formMatchesNameToken(form: EventLinkedFormCandidate, token: string): boolean {
+  const normalizedToken = token.toLowerCase();
+  const name = String(form.name || '').toLowerCase();
+  if (name.includes(normalizedToken)) return true;
+  const tags = Array.isArray(form.tags) ? form.tags : [];
+  return tags.some((tag) => String(tag || '').toLowerCase().includes(normalizedToken));
+}
+
+/**
+ * Filter forms eligible for event linkedFormId based on audit event type.
+ * Audit events require Audit formType (Ready/Active). When possible, narrow by event-type name/tag token.
+ */
+export function filterFormsForEventLinkedForm<T extends EventLinkedFormCandidate>(
+  forms: T[],
+  eventType: string | null | undefined
+): T[] {
+  if (!eventType || !isAuditEventType(eventType)) {
+    return forms;
+  }
+
+  const token = normalizeEventTypeToken(eventType);
+  const nameToken = EVENT_TYPE_FORM_NAME_TOKENS[token] ?? null;
+
+  const readyAndActive = forms.filter((form) => {
+    const status = String(form.status || '');
+    return status === 'Ready' || status === 'Active';
+  });
+
+  let auditForms = readyAndActive.filter((form) => {
+    if (!form.formType) return true;
+    return isAuditFormType(form.formType);
+  });
+
+  if (auditForms.length === 0 && readyAndActive.length > 0) {
+    auditForms = readyAndActive;
+  }
+
+  if (nameToken) {
+    const narrowed = auditForms.filter((form) => formMatchesNameToken(form, nameToken));
+    if (narrowed.length > 0) {
+      auditForms = narrowed;
+    }
+  }
+
+  return auditForms.sort((a, b) => {
+    if (a.status === 'Active' && b.status === 'Ready') return -1;
+    if (a.status === 'Ready' && b.status === 'Active') return 1;
+    return 0;
+  });
 }
 
 /** Badge variant for system event status (Planned, Completed, Cancelled). */

@@ -36,6 +36,22 @@
       />
     </div>
     
+    <!-- Event location: address search + geo pin -->
+    <div v-if="isEventLocationField" class="mt-2">
+      <EventLocationField
+        :location="String(value || '')"
+        :geo-location="eventFormGeoLocation"
+        :geo-required="eventGeoRequired"
+        :related-to-id="eventRelatedToId"
+        :disabled="isReadOnly"
+        :error="localValidationError || errors[field.key] || null"
+        :input-id="field.key"
+        :placeholder="field.placeholder || t('events.eventLocationSearchPlaceholder')"
+        @update:location="updateValue($event)"
+        @update:geo-location="onEventGeoLocationUpdate"
+      />
+    </div>
+
     <!-- Text -->
     <input 
       v-else-if="field.dataType === 'Text'"
@@ -1025,6 +1041,7 @@ import { Transition } from 'vue';
 import Avatar from '@/components/common/Avatar.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import FormTagsField from '@/components/common/FormTagsField.vue';
+import EventLocationField from '@/components/events/EventLocationField.vue';
 import PhoneInput from '@/components/common/PhoneInput.vue';
 import DatePicker from '@/components/common/DatePicker.vue';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
@@ -1048,6 +1065,8 @@ import {
   picklistOptionExists,
 } from '@/utils/picklistInlineOptionCreate';
 import { canEditField } from '@/platform/fields/fieldCapabilityEngine';
+import { filterFormsForEventLinkedForm, resolveEventGeoRequired } from '@/utils/eventUtils';
+import { createEmptyGeoLocation } from '@/types/eventLocation.types';
 import { isModuleRegistered } from '@/platform/fields/FieldRegistry';
 
 const { t } = useI18n();
@@ -1127,10 +1146,14 @@ const props = defineProps({
   currencyCodeEditable: {
     type: Boolean,
     default: false
+  },
+  formContext: {
+    type: Object,
+    default: null
   }
 });
 
-const emit = defineEmits(['update:value', 'validation-error', 'blur', 'update:currency-code', 'picklist-option-created']);
+const emit = defineEmits(['update:value', 'validation-error', 'blur', 'update:currency-code', 'picklist-option-created', 'update:form-context']);
 
 const displayLabel = computed(() => getFieldDisplayLabel(props.field));
 const effectiveLabel = computed(() => {
@@ -1147,6 +1170,57 @@ const isAuditRoleLookupField = computed(() => {
 });
 
 const isValidObjectId = (value) => typeof value === 'string' && /^[0-9a-fA-F]{24}$/.test(value);
+
+const isEventLocationField = computed(() => {
+  if (props.moduleKey !== 'events') return false;
+  return String(props.field?.key || '').toLowerCase() === 'location';
+});
+
+const isEventLinkedFormField = computed(() => {
+  if (props.moduleKey !== 'events') return false;
+  return String(props.field?.key || '').toLowerCase() === 'linkedformid';
+});
+
+const eventLinkedFormEventType = computed(() => props.formContext?.eventType ?? null);
+
+const applyEventLinkedFormFilter = (forms) => {
+  if (!isEventLinkedFormField.value) return forms;
+  return filterFormsForEventLinkedForm(Array.isArray(forms) ? forms : [], eventLinkedFormEventType.value);
+};
+
+const syncLinkedFormSelection = () => {
+  if (!isEventLinkedFormField.value) return;
+  const selectedId = normalizedLookupValue.value;
+  if (selectedId == null || selectedId === '') return;
+  const stillValid = lookupOptions.value.some((opt) => String(opt?._id) === String(selectedId));
+  if (!stillValid) {
+    emit('update:value', '');
+  }
+};
+
+const eventFormGeoLocation = computed(() => {
+  const raw = props.formContext?.geoLocation;
+  if (raw && typeof raw === 'object') return raw;
+  return createEmptyGeoLocation();
+});
+
+const eventGeoRequired = computed(() =>
+  resolveEventGeoRequired(
+    props.formContext?.eventType,
+    props.formContext?.geoRequired
+  )
+);
+
+const eventRelatedToId = computed(() => {
+  const raw = props.formContext?.relatedToId;
+  if (!raw) return null;
+  if (typeof raw === 'object' && raw._id) return String(raw._id);
+  return String(raw);
+});
+
+function onEventGeoLocationUpdate(geoLocation) {
+  emit('update:form-context', { geoLocation });
+}
 
 /** When Settings omits lookupSettings, map known field keys to /people or /v2/organization list APIs. */
 function inferLookupTargetFromFieldKey(fieldKey) {
@@ -2232,18 +2306,19 @@ const fetchLookupOptions = async () => {
         const payload = response.data?.data ?? response.data;
         lookupOptions.value = flattenCatalogCategoryTree(payload);
       } else if (Array.isArray(response.data)) {
-        lookupOptions.value = response.data;
+        lookupOptions.value = applyEventLinkedFormFilter(response.data);
       } else if (response.data?.data && Array.isArray(response.data.data)) {
-        lookupOptions.value = response.data.data;
+        lookupOptions.value = applyEventLinkedFormFilter(response.data.data);
         // Also check for pagination info
         if (response.data.total) {
           // If there are more records, we might want to fetch all or handle pagination
           fieldDbg('Total records:', response.data.total, 'Loaded:', response.data.data.length);
         }
       } else if (Array.isArray(response.data)) {
-        lookupOptions.value = response.data;
+        lookupOptions.value = applyEventLinkedFormFilter(response.data);
       }
       
+      syncLinkedFormSelection();
       fieldDbg('Loaded lookup options:', lookupOptions.value.length, 'for', props.field.key);
     } else {
       console.warn('Lookup fetch unsuccessful:', response);
@@ -2430,7 +2505,7 @@ const fetchLookupModalData = async () => {
         lookupModalTotal.value = response.data.total || response.data.data.length;
       }
       
-      lookupModalData.value = data;
+      lookupModalData.value = applyEventLinkedFormFilter(data);
       
       // Generate columns if not already set
       if (lookupModalColumns.value.length === 0) {
@@ -2585,6 +2660,15 @@ watch(orgListRestrictIds, async (next, prev) => {
   await fetchLookupOptions();
   handlePopulatedValue();
   await ensureLookupLabelHydrated();
+});
+
+watch(eventLinkedFormEventType, async (next, prev) => {
+  if (next === prev) return;
+  if (!isEventLinkedFormField.value) return;
+  await fetchLookupOptions();
+  handlePopulatedValue();
+  await ensureLookupLabelHydrated();
+  syncLinkedFormSelection();
 });
 
 watch(() => props.field?.key, () => {

@@ -16,6 +16,11 @@ const {
     normalizeParentRoleId,
     syncRoleUserCounts
 } = require('../services/roleHierarchyService');
+const { validateExternalRolePayload } = require('../utils/externalRoleValidation');
+const {
+    listExternalRolesForOrganization,
+    ensureExternalPortalRolesForOrganization
+} = require('../services/portalExternalRoleSeedService');
 
 const upgradedPrivilegedRolesOrgs = new Set();
 
@@ -31,6 +36,54 @@ async function ensurePrivilegedSystemRolesUpgraded(organizationId) {
     await Role.upgradePrivilegedSystemRoles(organizationId);
     upgradedPrivilegedRolesOrgs.add(orgKey);
 }
+
+// Get external portal roles for assignment UI
+exports.getExternalRoles = async (req, res) => {
+    try {
+        const organization = await Organization.findById(req.user.organizationId)
+            .select('enabledApps settings')
+            .lean();
+        const roles = await listExternalRolesForOrganization(req.user.organizationId, organization);
+        res.json({
+            success: true,
+            data: roles,
+            total: roles.length
+        });
+    } catch (error) {
+        console.error('Get external roles error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching external roles',
+            error: error.message
+        });
+    }
+};
+
+// Ensure external portal role templates exist (admin action)
+exports.seedExternalRoles = async (req, res) => {
+    try {
+        const organization = await Organization.findById(req.user.organizationId)
+            .select('enabledApps settings')
+            .lean();
+        const result = await ensureExternalPortalRolesForOrganization(
+            req.user.organizationId,
+            organization
+        );
+        res.json({
+            success: true,
+            data: result.roles,
+            created: result.created,
+            skipped: result.skipped
+        });
+    } catch (error) {
+        console.error('Seed external roles error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error seeding external roles',
+            error: error.message
+        });
+    }
+};
 
 // Get all roles for organization
 exports.getRoles = async (req, res) => {
@@ -152,7 +205,23 @@ exports.createRole = async (req, res) => {
             });
         }
 
-        const { permissions: normalizedPermissions, appPermissions } = normalizeRolePermissions(permissions);
+        const externalValidationError = await validateExternalRolePayload(
+            { userType, parentRole, appEntitlements },
+            req.user.organizationId
+        );
+        if (externalValidationError) {
+            return res.status(400).json({
+                success: false,
+                message: externalValidationError,
+                code: 'INVALID_EXTERNAL_ROLE'
+            });
+        }
+
+        const usesProfilePrivileges =
+            String(privilegeMode || 'inline').toLowerCase() === 'profile' && profileId;
+        const { permissions: normalizedPermissions, appPermissions } = usesProfilePrivileges
+            ? { permissions: {}, appPermissions: undefined }
+            : normalizeRolePermissions(permissions);
 
         const organization = await Organization.findById(req.user.organizationId).select('settings').lean();
         const legacyCaps = legacyRoleCapabilitiesForPersistence(organization);
@@ -257,12 +326,39 @@ exports.updateRole = async (req, res) => {
             allowedUpdates.push('name');
         }
 
-        if (req.body.permissions) {
+        const effectivePrivilegeMode =
+            req.body.privilegeMode !== undefined ? req.body.privilegeMode : role.privilegeMode;
+        const usesProfilePrivileges =
+            String(effectivePrivilegeMode || 'inline').toLowerCase() === 'profile'
+            && (req.body.profileId !== undefined ? req.body.profileId : role.profileId);
+
+        if (usesProfilePrivileges) {
+            req.body.permissions = {};
+            req.body.appPermissions = {};
+        } else if (req.body.permissions) {
             const merged = mergeIncomingRolePermissions(role, req.body.permissions);
             req.body.permissions = merged.permissions;
             if (merged.appPermissions) {
                 req.body.appPermissions = merged.appPermissions;
             }
+        }
+
+        const externalValidationError = await validateExternalRolePayload(
+            {
+                userType: req.body.userType !== undefined ? req.body.userType : role.userType,
+                parentRole: req.body.parentRole !== undefined ? req.body.parentRole : role.parentRole,
+                appEntitlements: req.body.appEntitlements !== undefined
+                    ? req.body.appEntitlements
+                    : role.appEntitlements
+            },
+            req.user.organizationId
+        );
+        if (externalValidationError) {
+            return res.status(400).json({
+                success: false,
+                message: externalValidationError,
+                code: 'INVALID_EXTERNAL_ROLE'
+            });
         }
 
         const organization = await Organization.findById(req.user.organizationId).select('settings').lean();
@@ -373,13 +469,28 @@ exports.deleteRole = async (req, res) => {
 // Get available permission modules (tenant-aware catalog)
 exports.getPermissionModules = async (req, res) => {
     try {
-        const catalog = await getRolePermissionCatalog(req.user.organizationId);
+        let catalog = await getRolePermissionCatalog(req.user.organizationId);
+        const profileKey = req.query.profileKey ? String(req.query.profileKey).trim() : null;
+        const userType = req.query.userType ? String(req.query.userType).trim().toUpperCase() : null;
+        const {
+            isExternalSystemProfileKey,
+            filterCatalogForExternalAccess
+        } = require('../constants/externalProfileCatalog');
+
+        if (profileKey && isExternalSystemProfileKey(profileKey)) {
+            catalog = filterCatalogForExternalAccess(catalog, { profileKey });
+        } else if (userType === 'EXTERNAL') {
+            catalog = filterCatalogForExternalAccess(catalog);
+        }
 
         res.json({
             success: true,
             data: catalog.modules,
             sections: catalog.sections,
-            enabledApps: catalog.enabledApps
+            enabledApps: catalog.enabledApps,
+            profileScoped: catalog.profileScoped === true,
+            externalProfile: catalog.externalProfile === true,
+            profileKey: catalog.profileKey || null
         });
     } catch (error) {
         console.error('Get permission modules error:', error);

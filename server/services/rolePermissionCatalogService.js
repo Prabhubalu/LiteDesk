@@ -62,6 +62,24 @@ const LEGACY_FLAT_STORAGE_KEYS = new Set([
 
 const HELPDESK_CASE_MODULE_KEYS = new Set(['cases', 'ticket', 'tickets', 'ticklets']);
 
+/** Trashable / record-removal modules — always expose delete in the RBAC editor. */
+const RBAC_DELETE_MODULE_KEYS = new Set([
+  'people',
+  'organizations',
+  'deals',
+  'quotes',
+  'sales_orders',
+  'invoices',
+  'payments',
+  'tasks',
+  'events',
+  'forms',
+  'responses',
+  'items',
+  'documents',
+  'cases'
+]);
+
 const APP_DISPLAY_NAMES = {
   sales: 'Sales',
   helpdesk: 'Helpdesk',
@@ -144,7 +162,11 @@ function buildActionsFromDefinition(moduleDefPermissions = {}, moduleKey, kind) 
   if (p.view !== false) actions.push('read');
   if (p.create !== false) actions.push('create');
   if (p.edit !== false) actions.push('update');
-  if (p.delete === true) actions.push('delete');
+  // RBAC delete = trash/remove; include for standard entity modules even when
+  // ModuleDefinition.permissions.delete is false (hard-delete flag).
+  if (p.delete === true || RBAC_DELETE_MODULE_KEYS.has(moduleKey)) {
+    actions.push('delete');
+  }
 
   if (
     [
@@ -1016,10 +1038,37 @@ function expandRolePermissionsForUI(rolePlain) {
   return out;
 }
 
+/**
+ * Expand stored profile permissions into UI catalog keys (incl. AUDIT:audits).
+ * @param {object|null|undefined} profilePlain
+ */
+function expandProfilePermissionsForUI(profilePlain) {
+  const out = {};
+  const legacy = toPlainObject(profilePlain?.permissions);
+
+  for (const [mod, perms] of Object.entries(legacy)) {
+    if (!perms || typeof perms !== 'object') continue;
+    const uiKey = mod === 'contacts' ? 'people' : mod;
+    out[uiKey] = { ...toPlainObject(perms) };
+  }
+
+  const appPerms = toPlainAppPermissionsMap(profilePlain?.appPermissions);
+  for (const [appKey, modules] of Object.entries(appPerms)) {
+    for (const [mod, perms] of Object.entries(modules)) {
+      if (!perms || typeof perms !== 'object') continue;
+      const catalogKey = resolveCatalogKey(appKey, mod);
+      out[catalogKey] = { ...toPlainObject(perms) };
+    }
+  }
+
+  return out;
+}
+
 module.exports = {
   getRolePermissionCatalog,
   buildRolePermissionCatalog,
   expandRolePermissionsForUI,
+  expandProfilePermissionsForUI,
   normalizeRolePermissions,
   mergeIncomingRolePermissions,
   invalidateRolePermissionCatalogCache,

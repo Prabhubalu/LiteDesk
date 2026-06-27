@@ -49,20 +49,14 @@ const applyTransferredSessionFromHash = async () => {
     await authStore.syncI18nFromOrganization();
 
     window.history.replaceState({}, '', window.location.pathname + window.location.search);
-    const redirectTo = isOrganizationTrialExpired(authStore.organization)
-        ? '/trial-expired'
-        : '/platform/home';
-    await router.replace(redirectTo);
+    await router.replace(resolvePostLoginRoute());
 };
 
 const resolvePostLoginRoute = () => {
     if (isOrganizationTrialExpired(authStore.organization)) {
-        return '/trial-expired';
+        return { name: 'trial-expired' };
     }
-
-    return authStore.user?.onboarding?.redirectTo
-        || authStore.lastLoginResult?.onboarding?.redirectTo
-        || '/platform/home';
+    return authStore.resolvePostLoginRoute();
 };
 
 const handleLogin = async () => {
@@ -96,8 +90,8 @@ const handleLogin = async () => {
         }
 
         await authStore.syncI18nFromOrganization();
-        const redirectTo = resolvePostLoginRoute();
-        await router.replace(redirectTo);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await router.replace(resolvePostLoginRoute());
     } else {
         redirecting.value = false;
     }

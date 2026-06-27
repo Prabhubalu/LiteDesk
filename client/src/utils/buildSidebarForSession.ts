@@ -8,6 +8,7 @@ import {
   isCommercialPlatformModuleKey
 } from '@/utils/commercialPlatformParticipation';
 import { validateUserTypeForApp } from '@/utils/appUserTypeAccess';
+import { buildAppAccessProfile } from '@/router/appAccessGuards';
 
 type PermissionSnapshotUserLike = Parameters<typeof createPermissionSnapshot>[0];
 type UserLike = PermissionSnapshotUserLike & {
@@ -92,6 +93,21 @@ function applyCoreModuleEntitlementFilters(
   });
 }
 
+function applyPortalOnlySidebarFilters(
+  structure: SidebarStructure,
+  userType: string,
+  allowedAppKeys: Set<string>,
+): void {
+  if (String(userType).toUpperCase() !== 'EXTERNAL') return;
+  const profile = buildAppAccessProfile((appKey) => allowedAppKeys.has(String(appKey).toUpperCase()));
+  if (!profile.hasOnlyPortalAccess) return;
+
+  structure.coreModules = [];
+  // Platform shell surfaces are not part of the customer portal experience.
+  const portalHiddenShellIds = new Set(['home', 'inbox', 'approvals', 'attention']);
+  structure.shell = structure.shell.filter((item) => !portalHiddenShellIds.has(item.id));
+}
+
 /**
  * Builds the locked SidebarStructure for the current session:
  * - Filters app registry by app entitlement (hasAppAccess)
@@ -130,6 +146,8 @@ export async function buildSidebarStructureForSession(
     hasExplicitUserAppAccessData,
     hasAppAccess
   );
+
+  applyPortalOnlySidebarFilters(structure, userType, allowedAppKeys);
 
   return { structure, entitlementScopedRegistry };
 }

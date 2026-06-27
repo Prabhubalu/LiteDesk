@@ -855,6 +855,25 @@ exports.update = async (req, res) => {
       const appKey = req.appKey || req.query.appKey || 'SALES';
       
       await org.save();
+
+      const portalSyncFields = new Set([
+        'types',
+        'customerStatus',
+        'partnerStatus',
+        'vendorStatus'
+      ]);
+      const shouldSyncPortalAccess = updatedKeys.some((key) => portalSyncFields.has(key));
+      if (shouldSyncPortalAccess) {
+        try {
+          const { syncFromOrganizationChange } = require('../services/portalAccessService');
+          await syncFromOrganizationChange(org._id, {
+            adminUser: req.user,
+            reqMeta: { ip: req.ip, userAgent: req.get('user-agent') }
+          });
+        } catch (portalSyncErr) {
+          console.warn('[organizationV2] portal eligibility sync failed:', portalSyncErr.message);
+        }
+      }
       
       // Compute derived status if lifecycle/type fields changed
       if (shouldComputeDerivedStatus) {

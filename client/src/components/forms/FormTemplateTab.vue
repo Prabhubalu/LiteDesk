@@ -19,11 +19,15 @@
         {{ t('forms.templateSelect') }}
       </label>
       <select
-        v-model="localForm.responseTemplate.templateId"
+        v-model="selectedTemplateId"
         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
       >
         <option :value="null">{{ t('forms.templateUseDefault') }}</option>
-        <option v-for="template in templates" :key="template._id" :value="template._id">
+        <option
+          v-for="template in selectableTemplates"
+          :key="template.id"
+          :value="template.id"
+        >
           {{ template.name }}
         </option>
       </select>
@@ -115,10 +119,17 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
+
+const getDefaultTemplate = () => ({
+  id: 'default',
+  name: t('forms.previewDefaultTemplateName'),
+  isDefault: true,
+  blocks: []
+});
 
 const props = defineProps({
   form: {
@@ -129,31 +140,56 @@ const props = defineProps({
 
 const emit = defineEmits(['update']);
 
-const templates = ref([]);
 const showTemplateModal = ref(false);
 const showPreview = ref(false);
+
+const normalizeResponseTemplate = (existing) => {
+  const rt = existing || {};
+  const templates = Array.isArray(rt.templates) && rt.templates.length > 0
+    ? rt.templates
+    : [getDefaultTemplate()];
+
+  let activeTemplateId = rt.activeTemplateId ?? rt.templateId ?? null;
+  if (activeTemplateId === 'default') {
+    activeTemplateId = null;
+  }
+
+  return { templates, activeTemplateId };
+};
 
 // Initialize localForm with proper defaults
 const initializeLocalForm = () => {
   const formData = props.form || {};
   return {
     ...formData,
-    responseTemplate: formData.responseTemplate || {
-      templateId: null,
-      customTemplate: {
-        layout: null,
-        includeComparison: false,
-        includeTrends: false,
-        includeCharts: false,
-        includeCorrectiveActions: false
-      }
-    }
+    responseTemplate: normalizeResponseTemplate(formData.responseTemplate)
   };
 };
 
 const localForm = ref(initializeLocalForm());
 let isSyncing = false;
 let lastEmittedForm = null;
+
+const selectableTemplates = computed(() => {
+  const templates = localForm.value.responseTemplate?.templates || [];
+  return templates.filter((template) => !template.isDefault);
+});
+
+const selectedTemplateId = computed({
+  get() {
+    const activeTemplateId = localForm.value.responseTemplate?.activeTemplateId;
+    if (activeTemplateId == null || activeTemplateId === 'default') {
+      return null;
+    }
+    return activeTemplateId;
+  },
+  set(value) {
+    if (!localForm.value.responseTemplate) {
+      localForm.value.responseTemplate = normalizeResponseTemplate(null);
+    }
+    localForm.value.responseTemplate.activeTemplateId = value;
+  }
+});
 
 // Only sync when form ID changes (new form loaded)
 watch(() => props.form?._id, (newId) => {
@@ -176,19 +212,4 @@ watch(() => localForm.value, (newForm) => {
     }
   }
 }, { deep: true });
-
-const fetchTemplates = async () => {
-  try {
-    // TODO: Implement API endpoint for fetching response templates
-    // For now, use empty array
-    templates.value = [];
-  } catch (error) {
-    console.error('Error fetching templates:', error);
-    templates.value = [];
-  }
-};
-
-onMounted(() => {
-  fetchTemplates();
-});
 </script>

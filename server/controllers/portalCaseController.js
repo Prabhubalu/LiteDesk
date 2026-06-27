@@ -14,7 +14,10 @@ const {
   buildPortalCaseAccessQuery,
   findPortalAccessibleCase,
   shapePortalCaseSummary,
-  shapePortalCaseDetail
+  enrichPortalCaseSummary,
+  enrichPortalCaseDetail,
+  markPortalCaseRead,
+  submitPortalCaseCsat
 } = require('../services/portalCaseAccessService');
 const { replyToCaseFromPortal } = require('./portalMailroomController');
 const { validateCaseRecordId } = require('../utils/caseApiValidators');
@@ -39,7 +42,7 @@ async function listPortalCases(req, res) {
 
     const [rows, total] = await Promise.all([
       Case.find(query)
-        .select('caseId title description status priority channel createdAt updatedAt requesterEmail')
+        .select('caseId title description status priority channel createdAt updatedAt requesterEmail portalReadReceipts portalCsat')
         .sort({ updatedAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -49,7 +52,7 @@ async function listPortalCases(req, res) {
 
     return res.json({
       success: true,
-      data: rows.map(shapePortalCaseSummary),
+      data: rows.map((row) => enrichPortalCaseSummary(row, req.user._id)),
       meta: { total, limit, skip }
     });
   } catch (error) {
@@ -91,7 +94,7 @@ async function getPortalCase(req, res) {
 
     return res.json({
       success: true,
-      data: shapePortalCaseDetail(row, merged)
+      data: enrichPortalCaseDetail(row, merged, req.user._id)
     });
   } catch (error) {
     console.error('[portalCaseController] getPortalCase', error);
@@ -265,6 +268,83 @@ async function createPortalCase(req, res) {
   }
 }
 
+async function replyPortalCaseDirect(req, res, { portalCapabilities, caseId, organizationId }) {
+  const input = req.body?.message || {};
+  const body = String(input.body || '').trim();
+  if (!body) {
+    return res.status(400).json({ success: false, message: 'message body is required' });
+  }
+
+  const attachments = Array.isArray(input.attachments) ? input.attachments : [];
+  if (attachments.length) {
+    return res.status(400).json({
+      success: false,
+      message: 'Attachments require Mailroom to be enabled for the Portal connector'
+    });
+  }
+
+  const row = await Case.findOne({ _id: caseId, organizationId, deletedAt: null });
+  if (!row) {
+    return res.status(404).json({ success: false, message: 'Case not found' });
+  }
+
+  const now = new Date();
+  const displayName = [req.user?.firstName, req.user?.lastName].filter(Boolean).join(' ').trim()
+    || req.user?.username
+    || req.user?.email
+    || 'Portal User';
+  const portalChannel = portalCapabilities.channel;
+
+  row.activities.push({
+    activityType: 'channel_message_received',
+    message: body,
+    channel: portalChannel,
+    internal: false,
+    metadata: {
+      source: 'portal',
+      portalUserId: String(req.user._id || ''),
+      portalAudience: portalCapabilities.audience
+    },
+    actorId: req.user._id,
+    actorName: displayName,
+    createdAt: now
+  });
+
+  const { statusResult } = await applyCaseActivitySideEffects(row, {
+    activityType: 'channel_message_received',
+    internal: false,
+    actorId: req.user._id,
+    actorName: displayName,
+    channel: portalChannel
+  });
+
+  row.updatedBy = req.user._id;
+  await row.save();
+
+  if (statusResult?.changed) {
+    await caseExecutionService.onCaseStatusChanged({
+      caseRecord: row,
+      actorId: req.user._id,
+      fromStatus: statusResult.fromStatus,
+      toStatus: statusResult.toStatus
+    });
+  }
+
+  await caseExecutionService.onCaseActivityLogged({
+    caseRecord: row,
+    actorId: req.user._id,
+    activityType: 'channel_message_received'
+  });
+
+  return res.json({
+    success: true,
+    data: {
+      caseId: String(row._id),
+      status: row.status
+    }
+  });
+}
+
 async function replyPortalCase(req, res) {
   try {
     const organizationId = req.user?.organizationId;
@@ -276,9 +356,13 @@ async function replyPortalCase(req, res) {
     const portalCapabilities = await getPortalRulesForUser(req.user, config);
     assertPortalActionAllowed(portalCapabilities, 'reply');
     await assertPortalUserCanAccessCase({ organizationId, caseId, user: req.user });
-    req.portalCapabilities = portalCapabilities;
-    req.params.caseId = caseId;
-    return replyToCaseFromPortal(req, res);
+    const mailroomActive = config?.enabled && config?.connectors?.portal?.enabled;
+    if (mailroomActive) {
+      req.portalCapabilities = portalCapabilities;
+      req.params.caseId = caseId;
+      return replyToCaseFromPortal(req, res);
+    }
+    return replyPortalCaseDirect(req, res, { portalCapabilities, caseId, organizationId });
   } catch (error) {
     const status = error.statusCode || 500;
     if (status !== 500) {
@@ -289,9 +373,92 @@ async function replyPortalCase(req, res) {
   }
 }
 
+async function markPortalCaseReadHandler(req, res) {
+  try {
+    const organizationId = req.user?.organizationId;
+    const caseId = req.params.id;
+    if (!organizationId) {
+      return res.status(400).json({ success: false, message: 'Organization context missing' });
+    }
+
+    const caseIdValidation = validateCaseRecordId(caseId);
+    if (!caseIdValidation.valid) {
+      return res.status(400).json({ success: false, message: caseIdValidation.error });
+    }
+
+    const mailroomConfig = await mailroomConfigService.getOrCreateConfig(organizationId);
+    const readAt = await markPortalCaseRead(organizationId, caseId, req.user._id, {
+      user: req.user,
+      portalConfig: mailroomConfig?.connectors?.portal
+    });
+    if (!readAt) {
+      return res.status(404).json({ success: false, message: 'Case not found' });
+    }
+
+    return res.json({ success: true, data: { readAt } });
+  } catch (error) {
+    console.error('[portalCaseController] markPortalCaseRead', error);
+    return res.status(500).json({ success: false, message: 'Failed to mark case read' });
+  }
+}
+
+async function submitPortalCaseCsatHandler(req, res) {
+  try {
+    const organizationId = req.user?.organizationId;
+    const caseId = req.params.id;
+    if (!organizationId) {
+      return res.status(400).json({ success: false, message: 'Organization context missing' });
+    }
+
+    const caseIdValidation = validateCaseRecordId(caseId);
+    if (!caseIdValidation.valid) {
+      return res.status(400).json({ success: false, message: caseIdValidation.error });
+    }
+
+    const mailroomConfig = await mailroomConfigService.getOrCreateConfig(organizationId);
+    const result = await submitPortalCaseCsat(
+      organizationId,
+      caseId,
+      req.user._id,
+      req.body || {},
+      {
+        user: req.user,
+        portalConfig: mailroomConfig?.connectors?.portal
+      }
+    );
+
+    if (!result.ok) {
+      const statusMap = {
+        NOT_FOUND: 404,
+        NOT_CLOSED: 400,
+        ALREADY_SUBMITTED: 409,
+        INVALID_SCORE: 400
+      };
+      const messageMap = {
+        NOT_FOUND: 'Case not found',
+        NOT_CLOSED: 'Feedback is only available for closed cases',
+        ALREADY_SUBMITTED: 'Feedback already submitted for this case',
+        INVALID_SCORE: 'Score must be an integer from 1 to 5'
+      };
+      return res.status(statusMap[result.code] || 400).json({
+        success: false,
+        message: messageMap[result.code] || 'Unable to submit feedback',
+        code: result.code
+      });
+    }
+
+    return res.json({ success: true, data: result });
+  } catch (error) {
+    console.error('[portalCaseController] submitPortalCaseCsat', error);
+    return res.status(500).json({ success: false, message: 'Failed to submit feedback' });
+  }
+}
+
 module.exports = {
   listPortalCases,
   getPortalCase,
   createPortalCase,
-  replyPortalCase
+  replyPortalCase,
+  markPortalCaseReadHandler,
+  submitPortalCaseCsatHandler
 };

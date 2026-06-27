@@ -150,7 +150,7 @@ function getAppDeepLink(appKey, entity) {
   // Entity-specific deep links
   switch (entity.type) {
     case 'Event':
-      return `${baseUrl}/audit/events/${entity.id}`;
+      return `${baseUrl}/audit/audits/${entity.id}`;
     case 'CorrectiveAction':
       return `${baseUrl}/portal/actions/${entity.id}`;
     default:

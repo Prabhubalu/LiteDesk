@@ -3642,5 +3642,161 @@
   "presenceActivityIdle": {
     "message": "Idle",
     "description": "Presence activity label when user is idle"
+  },
+  "portalOrganizationTitle": {
+    "message": "Company",
+    "description": "Portal organization page title"
+  },
+  "portalOrganizationHint": {
+    "message": "Your linked business organization.",
+    "description": "Portal organization page hint"
+  },
+  "portalOrganizationAddress": {
+    "message": "Address",
+    "description": "Portal organization address label"
+  },
+  "portalOrganizationWebsite": {
+    "message": "Website",
+    "description": "Portal organization website label"
+  },
+  "portalOrganizationLoadFailed": {
+    "message": "Failed to load company profile",
+    "description": "Portal organization load error"
+  },
+  "portalOrganizationIndustry": {
+    "message": "Industry",
+    "description": "Portal organization industry label"
+  },
+  "portalPeopleTitle": {
+    "message": "Contact",
+    "description": "Portal people page title"
+  },
+  "portalPeopleHint": {
+    "message": "Your contact profile linked to this portal account.",
+    "description": "Portal people page hint"
+  },
+  "portalPeopleMobile": {
+    "message": "Mobile",
+    "description": "Portal people mobile label"
+  },
+  "portalPeopleLoadFailed": {
+    "message": "Failed to load contact profile",
+    "description": "Portal people load error"
+  },
+  "portalDealsTitle": {
+    "message": "Deals",
+    "description": "Portal deals list title"
+  },
+  "portalDealsHint": {
+    "message": "Opportunities linked to your account.",
+    "description": "Portal deals list hint"
+  },
+  "portalDealsEmpty": {
+    "message": "No deals are shared with your account yet.",
+    "description": "Portal deals empty state"
+  },
+  "portalDealsLoadFailed": {
+    "message": "Failed to load deals",
+    "description": "Portal deals load error"
+  },
+  "portalDealsCloseDate": {
+    "message": "Expected close: {date}",
+    "description": "Portal deal list close date"
+  },
+  "portalDealsDetailHint": {
+    "message": "Deal summary",
+    "description": "Portal deal detail hint"
+  },
+  "portalDealsBack": {
+    "message": "Back to deals",
+    "description": "Portal deal detail back link"
+  },
+  "portalDealsAmount": {
+    "message": "Amount",
+    "description": "Portal deal amount label"
+  },
+  "portalDealsStage": {
+    "message": "Stage",
+    "description": "Portal deal stage label"
+  },
+  "portalDealsProbability": {
+    "message": "Probability",
+    "description": "Portal deal probability label"
+  },
+  "portalDealsCloseDateLabel": {
+    "message": "Expected close",
+    "description": "Portal deal close date label"
+  },
+  "portalDealsPipeline": {
+    "message": "Pipeline",
+    "description": "Portal deal pipeline label"
+  },
+  "portalFormsTitle": {
+    "message": "Forms",
+    "description": "Portal forms list title"
+  },
+  "portalFormsHint": {
+    "message": "Complete forms shared with your portal account.",
+    "description": "Portal forms list hint"
+  },
+  "portalFormsEmpty": {
+    "message": "No forms are available right now.",
+    "description": "Portal forms empty state"
+  },
+  "portalFormsLoadFailed": {
+    "message": "Failed to load forms",
+    "description": "Portal forms load error"
+  },
+  "portalResponsesTitle": {
+    "message": "Responses",
+    "description": "Portal responses list title"
+  },
+  "portalResponsesHint": {
+    "message": "Form submissions linked to your portal account.",
+    "description": "Portal responses list hint"
+  },
+  "portalResponsesEmpty": {
+    "message": "No form responses yet.",
+    "description": "Portal responses empty state"
+  },
+  "portalResponsesLoadFailed": {
+    "message": "Failed to load responses",
+    "description": "Portal responses load error"
+  },
+  "portalResponsesSubmittedAt": {
+    "message": "Submitted {date}",
+    "description": "Portal response list submitted date"
+  },
+  "portalResponsesSubmittedAtLabel": {
+    "message": "Submitted",
+    "description": "Portal response detail submitted label"
+  },
+  "portalResponsesReviewStatus": {
+    "message": "Review status",
+    "description": "Portal response review status label"
+  },
+  "portalResponsesFinalScore": {
+    "message": "Final score",
+    "description": "Portal response final score label"
+  },
+  "portalResponsesCompliance": {
+    "message": "Compliance",
+    "description": "Portal response compliance label"
+  },
+  "portalResponsesQuestions": {
+    "message": "Questions",
+    "description": "Portal response questions label"
+  },
+  "portalResponsesPassFail": {
+    "message": "{passed} passed · {failed} failed · {total} total",
+    "description": "Portal response pass fail summary"
+  },
+  "portalResponsesBack": {
+    "message": "Back to responses",
+    "description": "Portal response detail back link"
+  },
+  "portalResponsesContinueForm": {
+    "message": "Continue form",
+    "description": "Portal response continue form CTA"
   }
 }

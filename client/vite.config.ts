@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const sentryEnabled = Boolean(env.VITE_SENTRY_DSN)
   const posthogEnabled = Boolean(env.VITE_POSTHOG_KEY)
+  const isVercelBuild = process.env.VERCEL === '1'
 
   // Prefer explicit origin. Fall back to legacy VITE_API_URL and normalize trailing /api.
   // Default API port should match current server default.
@@ -67,7 +68,7 @@ export default defineConfig(({ mode }) => {
         // Proxy portal REST only when the client sends Bearer auth (fetch/XHR).
         // Full page refresh hits the same paths as Vue routes (e.g. /portal/cases) without
         // Authorization — those must be served by the SPA, not the API.
-        '^/portal/(me|org|health|audits|actions|cases|mailroom)(/|$)': {
+        '^/portal/(me|org|health|dashboard|audits|actions|cases|invoices|knowledge-base|payment-sessions|mailroom)(/|$)': {
           target: apiProxyTarget,
           changeOrigin: true,
           bypass(req) {
@@ -97,7 +98,9 @@ export default defineConfig(({ mode }) => {
     // App includes very large views (e.g. settings); 500 kB is easy to exceed.
     chunkSizeWarningLimit: 900,
     // Hidden maps support Sentry upload without browsers fetching .map on every script.
-    sourcemap: mode === 'production' ? 'hidden' : true,
+    // Skip on Vercel — sourcemap generation doubles peak heap during Rollup.
+    sourcemap: isVercelBuild ? false : mode === 'production' ? 'hidden' : true,
+    reportCompressedSize: !isVercelBuild,
     rollupOptions: {
       output: {
         manualChunks(id) {

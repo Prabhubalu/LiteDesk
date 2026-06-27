@@ -28,7 +28,7 @@ test('resolveCatalogKey uses app prefix for non-legacy app modules', () => {
   assert.equal(resolveCatalogKey('AUDIT', 'findings'), 'AUDIT:findings');
 });
 
-test('buildActionsFromDefinition respects module definition flags', () => {
+test('buildActionsFromDefinition includes delete for trashable modules', () => {
   const actions = buildActionsFromDefinition(
     { view: true, create: true, edit: true, delete: false, execution: true },
     'forms',
@@ -36,8 +36,26 @@ test('buildActionsFromDefinition respects module definition flags', () => {
   );
   assert.ok(actions.includes('read'));
   assert.ok(actions.includes('create'));
-  assert.ok(!actions.includes('delete'));
+  assert.ok(actions.includes('delete'));
   assert.ok(actions.includes('execution'));
+});
+
+test('buildActionsFromDefinition omits delete for non-trashable modules when definition delete is false', () => {
+  const actions = buildActionsFromDefinition(
+    { view: true, create: true, edit: true, delete: false },
+    'custom_widget',
+    'crud'
+  );
+  assert.ok(!actions.includes('delete'));
+});
+
+test('buildActionsFromDefinition includes delete for people when definition delete is false', () => {
+  const actions = buildActionsFromDefinition(
+    { view: true, create: true, edit: true, delete: false },
+    'people',
+    'crud'
+  );
+  assert.ok(actions.includes('delete'));
 });
 
 test('expandRolePermissionsForUI mirrors contacts to people and app-scoped keys', () => {

@@ -2180,6 +2180,63 @@ const hasStructureChanged = (oldSections, newSections) => {
   return false;
 };
 
+// Ensure selection is valid on mount and when component becomes visible
+const ensureSelectionWhenVisible = () => {
+  // Wait for localForm to be initialized, then ensure selection
+  setTimeout(() => {
+    // If we have a pending section to select, prioritize that
+    if (pendingSectionIdToSelect.value) {
+      const sections = localForm.value.sections || [];
+      const pendingIndex = sections.findIndex(s => s.sectionId === pendingSectionIdToSelect.value);
+      if (pendingIndex !== -1) {
+        selectedSectionIndex.value = pendingIndex;
+        selectedSubsectionIndex.value = null;
+        selectedQuestionIndex.value = null;
+        expandedSections.value[pendingSectionIdToSelect.value] = true;
+        return; // Don't run normal ensureSelection
+      }
+    }
+    
+    // Don't run ensureSelection if we're currently adding a section
+    if (isAddingSection) {
+      // Skipping: currently adding section
+      return;
+    }
+    
+    // Don't run ensureSelection if we recently added a section (within 5 seconds)
+    const timeSinceAdd = Date.now() - lastSectionAddTime;
+    if (lastSectionAddTime > 0 && timeSinceAdd < 5000) {
+      // Skipping: section was recently added
+      return;
+    }
+    
+    // Don't run ensureSelection if we recently added a question (within 5 seconds)
+    const timeSinceQuestionAdd = Date.now() - lastQuestionAddTime;
+    if (lastQuestionAddTime > 0 && timeSinceQuestionAdd < 5000) {
+      return;
+    }
+
+    if (pendingQuestionIdToSelect.value) {
+      const location = findQuestionLocation(pendingQuestionIdToSelect.value);
+      if (location) {
+        applyQuestionSelection(location);
+      }
+      return;
+    }
+    
+    ensureSelection();
+    
+    // Expand all sections by default for better UX
+    if (localForm.value.sections) {
+      localForm.value.sections.forEach(section => {
+        if (section.sectionId && !section._isRootSection) {
+          expandedSections.value[section.sectionId] = true;
+        }
+      });
+    }
+  }, 100);
+};
+
 // Watch for form changes (both ID changes and form data updates)
 watch(() => props.form, (newForm) => {
   if (newForm) {
@@ -2539,63 +2596,6 @@ watch(() => localForm.value, (newForm) => {
     }
   }
 }, { deep: true });
-
-// Ensure selection is valid on mount and when component becomes visible
-const ensureSelectionWhenVisible = () => {
-  // Wait for localForm to be initialized, then ensure selection
-  setTimeout(() => {
-    // If we have a pending section to select, prioritize that
-    if (pendingSectionIdToSelect.value) {
-      const sections = localForm.value.sections || [];
-      const pendingIndex = sections.findIndex(s => s.sectionId === pendingSectionIdToSelect.value);
-      if (pendingIndex !== -1) {
-        selectedSectionIndex.value = pendingIndex;
-        selectedSubsectionIndex.value = null;
-        selectedQuestionIndex.value = null;
-        expandedSections.value[pendingSectionIdToSelect.value] = true;
-        return; // Don't run normal ensureSelection
-      }
-    }
-    
-    // Don't run ensureSelection if we're currently adding a section
-    if (isAddingSection) {
-      // Skipping: currently adding section
-      return;
-    }
-    
-    // Don't run ensureSelection if we recently added a section (within 5 seconds)
-    const timeSinceAdd = Date.now() - lastSectionAddTime;
-    if (lastSectionAddTime > 0 && timeSinceAdd < 5000) {
-      // Skipping: section was recently added
-      return;
-    }
-    
-    // Don't run ensureSelection if we recently added a question (within 5 seconds)
-    const timeSinceQuestionAdd = Date.now() - lastQuestionAddTime;
-    if (lastQuestionAddTime > 0 && timeSinceQuestionAdd < 5000) {
-      return;
-    }
-
-    if (pendingQuestionIdToSelect.value) {
-      const location = findQuestionLocation(pendingQuestionIdToSelect.value);
-      if (location) {
-        applyQuestionSelection(location);
-      }
-      return;
-    }
-    
-    ensureSelection();
-    
-    // Expand all sections by default for better UX
-    if (localForm.value.sections) {
-      localForm.value.sections.forEach(section => {
-        if (section.sectionId && !section._isRootSection) {
-          expandedSections.value[section.sectionId] = true;
-        }
-      });
-    }
-  }, 100);
-};
 
 // Handle clicks outside to blur focused inputs
 const handleDocumentClick = (e) => {

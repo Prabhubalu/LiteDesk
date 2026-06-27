@@ -390,7 +390,7 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onActivated, onUnmounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   ArrowPathIcon,
@@ -457,6 +457,7 @@ const executionAccess = computed(() => executionStatus.value?.executionAccess ||
 const hasExecutionAccessBlock = computed(() => executionAccess.value && executionAccess.value.allowed === false);
 const AUTO_SUBMIT_MARKER_TTL_MS = 2 * 60 * 1000;
 const autoSubmitMarkerTs = ref(0);
+const skipNextActivatedRefresh = ref(true);
 
 const getAuditEventIdForMarker = () => {
   const value = route.params.eventId;
@@ -1423,14 +1424,39 @@ const getTimelineIcon = (action) => {
   return ClockIcon;
 };
 
+const refreshAfterFormSubmission = async () => {
+  autoSubmitMarkerTs.value = readAutoSubmitMarker();
+  await fetchAuditDetail();
+};
+
+const handleAuditFormSubmitted = (event) => {
+  const submittedEventId = event?.detail?.eventId;
+  if (!submittedEventId || String(submittedEventId) !== String(route.params.eventId)) return;
+  void refreshAfterFormSubmission();
+};
+
 onMounted(async () => {
+  window.addEventListener('audit-form-submitted', handleAuditFormSubmitted);
   autoSubmitMarkerTs.value = readAutoSubmitMarker();
   await initOfflineDb();
   await fetchAuditDetail();
   await updateQueuedActions();
-  
+
   // Initialize offline state tracking
   wasOffline.value = !isOnline.value;
+});
+
+onActivated(async () => {
+  autoSubmitMarkerTs.value = readAutoSubmitMarker();
+  if (skipNextActivatedRefresh.value) {
+    skipNextActivatedRefresh.value = false;
+    return;
+  }
+  await fetchAuditDetail();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('audit-form-submitted', handleAuditFormSubmitted);
 });
 </script>
 

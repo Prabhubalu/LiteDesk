@@ -24,6 +24,23 @@ function mergeFieldPermissionMaps(profileMap, roleMap) {
   return { ...base, ...overrides };
 }
 
+function mergeModulePermissionMaps(profilePermissions, rolePermissions) {
+  const profile = toPlainMap(profilePermissions);
+  const role = toPlainMap(rolePermissions);
+  if (!Object.keys(profile).length) return role;
+  if (!Object.keys(role).length) return profile;
+
+  const merged = { ...profile };
+  for (const [moduleKey, roleGrant] of Object.entries(role)) {
+    if (!roleGrant || typeof roleGrant !== 'object') continue;
+    merged[moduleKey] = {
+      ...(profile[moduleKey] || {}),
+      ...roleGrant
+    };
+  }
+  return merged;
+}
+
 /**
  * @param {object|null} roleLean
  * @param {object|null|undefined} organization
@@ -49,12 +66,14 @@ async function resolveRoleLeanWithProfile(roleLean, organization = null) {
   const roleFieldOverrides = toPlainMap(roleLean.fieldPermissions);
   const profileFieldPermissions = toPlainMap(profile.fieldPermissions);
 
+  // Profile mode: module matrix comes from Profile only. Stale Role.permissions copies
+  // (e.g. from the role editor preview) must not override saved profile changes.
   return {
     ...roleLean,
-    permissions: profile.permissions || roleLean.permissions,
+    permissions: toPlainMap(profile.permissions),
     appPermissions: profile.appPermissions
       ? toPlainMap(profile.appPermissions)
-      : roleLean.appPermissions,
+      : toPlainMap(roleLean.appPermissions),
     fieldPermissions: roleFieldOverrides,
     _fieldPermissions: mergeFieldPermissionMaps(profileFieldPermissions, roleFieldOverrides),
     _profileFieldPermissions: profileFieldPermissions,
@@ -65,5 +84,6 @@ async function resolveRoleLeanWithProfile(roleLean, organization = null) {
 
 module.exports = {
   resolveRoleLeanWithProfile,
-  mergeFieldPermissionMaps
+  mergeFieldPermissionMaps,
+  mergeModulePermissionMaps
 };

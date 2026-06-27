@@ -285,6 +285,20 @@ async function processSendJobInner(communicationId) {
           toStatus: statusResult.toStatus
         });
       }
+      const { isPortalChannelCase, notifyPortalCaseAgentReply } = require('./portalCaseNotificationService');
+      if (isPortalChannelCase(caseRow)) {
+        const requester = String(caseRow.requesterEmail || '').toLowerCase();
+        const sentToRequester = !requester || (toAddresses || []).some(
+          (addr) => String(addr || '').toLowerCase() === requester
+        );
+        if (sentToRequester) {
+          await notifyPortalCaseAgentReply(caseRow, {
+            actorId: doc.sentByUserId,
+            preview: (subject || '').trim(),
+            subject: (subject || '').trim()
+          });
+        }
+      }
     }
   }
 }

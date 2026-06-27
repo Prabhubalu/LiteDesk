@@ -35,6 +35,10 @@ function buildInviteUrl(rawToken) {
   return buildClientUrl(`/accept-invite?token=${encodeURIComponent(rawToken)}`);
 }
 
+function buildPortalLoginUrl() {
+  return buildClientUrl('/login');
+}
+
 function buildVerifyEmailUrl(rawToken) {
   return buildClientUrl(`/verify-email?token=${encodeURIComponent(rawToken)}`);
 }
@@ -58,6 +62,7 @@ module.exports = {
   getVerificationExpiry,
   getPasswordResetExpiry,
   buildInviteUrl,
+  buildPortalLoginUrl,
   buildVerifyEmailUrl,
   buildResetPasswordUrl,
   buildClientUrl,

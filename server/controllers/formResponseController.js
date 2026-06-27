@@ -2350,9 +2350,12 @@ exports.generateReport = async (req, res) => {
             // Continue without PDF if generation fails
         }
         
-        // Update response with report URL
-        response.reportGenerated = true;
-        response.reportUrl = reportUrl;
+        // Persist report URL in finalReport (schema-backed; root reportUrl is legacy)
+        if (!response.finalReport) {
+            response.finalReport = {};
+        }
+        response.finalReport.reportUrl = reportUrl;
+        response.finalReport.generatedAt = new Date();
         await response.save();
         
         res.status(200).json({
@@ -2528,13 +2531,20 @@ exports.generateComprehensiveReport = async (req, res) => {
             });
         }
         
-        // Validate that form has a responseTemplate with templates
-        if (!form.responseTemplate || !form.responseTemplate.templates || !Array.isArray(form.responseTemplate.templates) || form.responseTemplate.templates.length === 0) {
-            console.error('Form missing responseTemplate or templates array. Form ID:', form._id);
-            return res.status(400).json({
-                success: false,
-                message: 'No active template found. Please create a response template in the Response Template Builder.'
-            });
+        // Persist default template when none configured (matches client ResponseTemplateBuilder defaults)
+        const hadNoTemplates =
+            !form.responseTemplate?.templates ||
+            !Array.isArray(form.responseTemplate.templates) ||
+            form.responseTemplate.templates.length === 0;
+
+        if (hadNoTemplates) {
+            const { buildDefaultResponseTemplate } = require('../utils/defaultResponseTemplate');
+            const { responseTemplate } = buildDefaultResponseTemplate();
+            await Form.updateOne(
+                { _id: form._id, organizationId: req.user.organizationId },
+                { $set: { responseTemplate } }
+            );
+            form.responseTemplate = responseTemplate;
         }
 
         // Get template configuration from request body (legacy support, merged into template if needed)

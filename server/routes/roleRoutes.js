@@ -7,13 +7,15 @@ const {
     getRoles,
     getRole,
     getRoleHierarchy,
+    getExternalRoles,
     createRole,
     updateRole,
     moveRole,
     deleteRole,
     getPermissionModules,
     initializeDefaultRoles,
-    seedRolesForOrganization
+    seedRolesForOrganization,
+    seedExternalRoles
 } = require('../controllers/roleController');
 
 // Apply auth and organization middleware to all routes
@@ -25,6 +27,7 @@ router.use(checkTrialStatus);
 
 // Public routes (any authenticated user can view roles)
 router.get('/modules', getPermissionModules);
+router.get('/external', getExternalRoles);
 router.get('/hierarchy', getRoleHierarchy);
 router.get('/', getRoles);
 router.get('/:id', getRole);
@@ -33,6 +36,7 @@ router.get('/:id', getRole);
 router.post('/', canManageRoles(), createRole);
 router.post('/initialize', canManageRoles(), initializeDefaultRoles);
 router.post('/seed', canManageRoles(), seedRolesForOrganization);
+router.post('/seed-external', canManageRoles(), seedExternalRoles);
 router.patch('/:id/move', canManageRoles(), moveRole);
 router.put('/:id', canManageRoles(), updateRole);
 router.delete('/:id', canManageRoles(), deleteRole);

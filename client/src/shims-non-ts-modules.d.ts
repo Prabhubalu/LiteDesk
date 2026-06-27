@@ -64,6 +64,25 @@ declare module '@/composables/useColorMode' {
   };
 }
 
+declare module '@/composables/usePortalBranding' {
+  export const PORTAL_DEFAULT_PRIMARY_COLOR: string;
+  export function usePortalBranding(): {
+    branding: import('vue').Ref<{
+      orgName: string;
+      logoUrl: string | null;
+      primaryColor: string;
+      supportEmail: string | null;
+    } | null>;
+    loading: import('vue').Ref<boolean>;
+    loadBranding: (force?: boolean) => Promise<{
+      orgName: string;
+      logoUrl: string | null;
+      primaryColor: string;
+      supportEmail: string | null;
+    } | null>;
+  };
+}
+
 declare module '@/components/activity/useRecordActivityAdapter' {
   export function createActivityTimelineRefSetter(timelineRef: any): (instance: any) => void;
   export function buildRecordActivityUi(moduleUi?: Record<string, any>): Record<string, any>;

@@ -10,25 +10,25 @@
       <div class="space-y-2">
         <label class="flex items-center">
           <HeadlessCheckbox
-            :checked="isKpiMetricSelected('Compliance %')"
+            :checked="isKpiMetricSelected('compliancePercentage')"
             checkbox-class="w-4 h-4"
-            @change="toggleKpiMetric('Compliance %', $event.target.checked)"
+            @change="toggleKpiMetric('compliancePercentage', $event.target.checked)"
           />
           <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ t('forms.settingsKpiCompliance') }}</span>
         </label>
         <label class="flex items-center">
           <HeadlessCheckbox
-            :checked="isKpiMetricSelected('Satisfaction %')"
+            :checked="isKpiMetricSelected('satisfactionPercentage')"
             checkbox-class="w-4 h-4"
-            @change="toggleKpiMetric('Satisfaction %', $event.target.checked)"
+            @change="toggleKpiMetric('satisfactionPercentage', $event.target.checked)"
           />
           <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ t('forms.settingsKpiSatisfaction') }}</span>
         </label>
         <label class="flex items-center">
           <HeadlessCheckbox
-            :checked="isKpiMetricSelected('Avg Rating')"
+            :checked="isKpiMetricSelected('rating')"
             checkbox-class="w-4 h-4"
-            @change="toggleKpiMetric('Avg Rating', $event.target.checked)"
+            @change="toggleKpiMetric('rating', $event.target.checked)"
           />
           <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ t('forms.settingsKpiAvgRating') }}</span>
         </label>
@@ -207,7 +207,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 
@@ -225,10 +225,27 @@ const emit = defineEmits(['update']);
 const users = ref([]);
 
 // Initialize localForm with proper defaults
+const normalizeKpiMetrics = (kpiMetrics) => {
+  if (Array.isArray(kpiMetrics)) {
+    return {
+      compliancePercentage: kpiMetrics.includes('Compliance %'),
+      satisfactionPercentage: kpiMetrics.includes('Satisfaction %'),
+      rating: kpiMetrics.includes('Avg Rating') || kpiMetrics.includes('Rating'),
+    };
+  }
+  return {
+    compliancePercentage: false,
+    satisfactionPercentage: false,
+    rating: false,
+    ...(kpiMetrics && typeof kpiMetrics === 'object' ? kpiMetrics : {}),
+  };
+};
+
 const initializeLocalForm = () => {
   const formData = props.form || {};
   return {
     ...formData,
+    kpiMetrics: normalizeKpiMetrics(formData.kpiMetrics),
     autoAssignment: formData.autoAssignment || { enabled: false, linkTo: 'org' },
     workflowOnSubmit: formData.workflowOnSubmit || { createTask: false, updateField: null, notify: [] },
     approvalWorkflow: formData.approvalWorkflow || { enabled: false, approver: null },
@@ -240,25 +257,17 @@ const localForm = ref(initializeLocalForm());
 let isSyncing = false;
 let lastEmittedForm = null;
 
-const kpiMetrics = computed({
-  get: () => localForm.value.kpiMetrics || [],
-  set: (value) => {
-    localForm.value.kpiMetrics = value;
-  }
-});
+const isKpiMetricSelected = (key) => Boolean(localForm.value.kpiMetrics?.[key]);
 
-const isKpiMetricSelected = (metric) => kpiMetrics.value.includes(metric);
-
-const toggleKpiMetric = (metric, checked) => {
-  const current = Array.isArray(kpiMetrics.value) ? [...kpiMetrics.value] : [];
-  if (checked) {
-    if (!current.includes(metric)) current.push(metric);
-  } else {
-    const next = current.filter((entry) => entry !== metric);
-    kpiMetrics.value = next;
-    return;
+const toggleKpiMetric = (key, checked) => {
+  if (!localForm.value.kpiMetrics) {
+    localForm.value.kpiMetrics = {
+      compliancePercentage: false,
+      satisfactionPercentage: false,
+      rating: false,
+    };
   }
-  kpiMetrics.value = current;
+  localForm.value.kpiMetrics[key] = checked;
 };
 
 // Only sync when form ID changes (new form loaded)
