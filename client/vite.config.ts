@@ -96,7 +96,8 @@ export default defineConfig(({ mode }) => {
     build: {
     // App includes very large views (e.g. settings); 500 kB is easy to exceed.
     chunkSizeWarningLimit: 900,
-    sourcemap: true,
+    // Hidden maps support Sentry upload without browsers fetching .map on every script.
+    sourcemap: mode === 'production' ? 'hidden' : true,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -179,6 +180,17 @@ export default defineConfig(({ mode }) => {
             }
 
             return 'vendor-misc'
+          }
+
+          // Core app shell — keep router/auth/i18n out of chunk-settings (login critical path).
+          if (
+            id.includes('/src/router/')
+            || id.includes('/src/stores/auth')
+            || id.includes('/src/stores/authRegistry')
+            || id.includes('/src/i18n/')
+            || id.includes('/src/stores/appShell')
+          ) {
+            return 'chunk-core'
           }
 
           // Heavy settings UI — keep it out of the main entry chunk when possible

@@ -4,7 +4,6 @@
  * avoid router → apiClient → auth → router ESM TDZ in production.
  */
 import { createRouter, createWebHistory } from 'vue-router'
-import WebformStaffPreviewView from '@/views/WebformStaffPreviewView.vue';
 import { hasAnySettingsAccess } from '@/utils/settingsTabAccess'
 import { useAuthStore } from '@/stores/authRegistry'
 import auditRoutes from './audit.routes'
@@ -16,6 +15,7 @@ import {
   canAccessWhileTrialExpired,
   isOrganizationTrialExpired
 } from '@/utils/trialStatus'
+import { isAuthLifecyclePublicRoute } from '@/utils/standaloneRoutes'
 
 const routes = [
   {
@@ -870,7 +870,7 @@ const routes = [
   {
     path: '/webforms/staff-preview/:slug',
     name: 'staff-webform-preview',
-    component: WebformStaffPreviewView,
+    component: () => import('@/views/WebformStaffPreviewView.vue'),
     meta: { requiresAuth: false, hideShell: true }
   },
   {
@@ -1041,6 +1041,8 @@ router.beforeEach(async (to, from, next) => {
     next({ name: 'login', query: {} })
     return
   }
+
+  // Locale upgrade runs from authStore.setUser → syncI18nFromOrganization (single owner).
   logNavDebug('Navigation guard:', {
     to: to.path,
     isAuthenticated: authStore.isAuthenticated,

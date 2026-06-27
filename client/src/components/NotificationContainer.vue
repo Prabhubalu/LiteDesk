@@ -27,8 +27,6 @@
 import { onMounted } from 'vue';
 import ToastNotificationCard from '@/components/notifications/ToastNotificationCard.vue';
 import { useNotifications, setGlobalNotificationFn } from '@/composables/useNotifications';
-import { useNotificationStore } from '@/stores/notifications';
-import { useTabs } from '@/composables/useTabs';
 import {
   buildNotificationOpenTabOptions,
   canNavigateFromNotification,
@@ -36,8 +34,6 @@ import {
 } from '@/utils/navigateFromNotification';
 
 const { notifications, remove, show } = useNotifications();
-const notificationStore = useNotificationStore();
-const { openTab } = useTabs();
 
 function isToastClickable(notification) {
   if (!notification) return false;
@@ -56,9 +52,13 @@ async function handleToastClick(notification) {
   if (!path) return;
 
   if (notification.notificationId) {
+    const { useNotificationStore } = await import('@/stores/notifications');
+    const notificationStore = useNotificationStore();
     await notificationStore.markRead(notification.notificationId);
   }
 
+  const { useTabs } = await import('@/composables/useTabs');
+  const { openTab } = useTabs();
   openTab(path, buildNotificationOpenTabOptions(notification.entity));
   remove(notification.id);
 }

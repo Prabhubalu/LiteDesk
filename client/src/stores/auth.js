@@ -341,9 +341,9 @@ export const useAuthStore = defineStore('auth', {
 
         async syncI18nFromOrganization() {
             try {
-                const { initI18n } = await import('@/i18n');
+                const { upgradeI18nAfterLogin } = await import('@/i18n');
                 const orgLang = this.organization?.settings?.language ?? null;
-                await initI18n({ orgLanguage: orgLang, userLanguage: null });
+                await upgradeI18nAfterLogin({ orgLanguage: orgLang, userLanguage: null });
             } catch (_e) {
                 /* i18n optional at bootstrap */
             }

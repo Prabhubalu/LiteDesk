@@ -2,6 +2,12 @@ import { ref, computed, watch, unref, inject } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
+import {
+  fetchUsersListCached,
+  fetchOrganizationsListCached,
+  fetchPeopleListCached,
+} from '@/utils/recordLookupCache';
 import { createGenericRecordAdapter } from '@/components/record-page/adapters/genericRecordAdapter';
 import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
@@ -264,11 +270,7 @@ export function useCaseRecordDetailFields({ caseRecord, caseId, canEdit, isClose
 
   async function loadModuleDefinition() {
     try {
-      const modulesRes = await apiClient.get('/modules');
-      const modules = Array.isArray(modulesRes)
-        ? modulesRes
-        : modulesRes?.data ?? modulesRes?.data?.data ?? modulesRes?.modules ?? [];
-      moduleDefinition.value = modules.find((m) => String(m?.key || '').toLowerCase() === 'cases') || null;
+      moduleDefinition.value = await fetchModuleDefinitionCached('cases');
     } catch (e) {
       console.error('Fetch cases module definition error:', e);
       moduleDefinition.value = null;
@@ -278,9 +280,9 @@ export function useCaseRecordDetailFields({ caseRecord, caseId, canEdit, isClose
   async function loadLookups() {
     try {
       const [contactRes, caseOrgRes, usersRes] = await Promise.all([
-        apiClient.get('/people', { params: { limit: 500, sortBy: 'firstName', sortOrder: 'asc' } }),
-        apiClient.get('/v2/organization', { params: { limit: 500 } }),
-        apiClient.get('/users/list', { params: { limit: 500 } })
+        fetchPeopleListCached({ limit: 500, sortBy: 'firstName', sortOrder: 'asc' }),
+        fetchOrganizationsListCached({ limit: 500 }),
+        fetchUsersListCached({ limit: 500 }),
       ]);
       const contactRows = Array.isArray(contactRes?.data)
         ? contactRes.data

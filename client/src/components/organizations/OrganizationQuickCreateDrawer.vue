@@ -485,7 +485,7 @@ const QUICK_MODE_STATIC_EXCLUDE_FIELDS = [
   'createdBy',
   'assignedTo',
   'accountManager',
-  ...TENANT_PLATFORM_ORG_FIELD_KEYS,
+  ...ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS,
   'customerStatus',
   'partnerStatus',
   'vendorStatus',

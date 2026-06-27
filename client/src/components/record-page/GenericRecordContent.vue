@@ -1049,6 +1049,11 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import { fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
+import {
+  fetchUsersListCached,
+  fetchOrganizationsListCached,
+  fetchPeopleListCached,
+} from '@/utils/recordLookupCache';
 import { getProcessActivityMessage } from '@/utils/processActivityMessages';
 import { getQuoteActivityMessage, getQuoteActivityActorLabel } from '@/components/activity/adapters/quoteActivityUiAdapter';
 import { getSalesOrderActivityMessage } from '@/components/activity/adapters/salesOrderActivityUiAdapter';
@@ -3654,11 +3659,44 @@ async function loadDeferredRecordData(runId, loadedRecord) {
     loadCaseLookups(lowerModuleKey, isCurrentRun),
     loadQuoteLookups(lowerModuleKey, isCurrentRun),
     loadDocumentFolderLookups(lowerModuleKey, isCurrentRun),
-    loadUserLookup(isCurrentRun),
     loadFormRecordDeferredData(lowerModuleKey, isCurrentRun)
   ];
 
+  if (moduleNeedsUserLookup(moduleDefinition.value)) {
+    deferredLoads.push(loadUserLookup(isCurrentRun));
+  } else if (isCurrentRun()) {
+    userLookupList.value = [];
+  }
+
   await Promise.allSettled(deferredLoads);
+}
+
+function moduleNeedsUserLookup(mod) {
+  const fields = mod?.fields;
+  if (!Array.isArray(fields) || fields.length === 0) return false;
+
+  return fields.some((field) => {
+    const key = String(field?.key || '').toLowerCase();
+    const dataType = String(field?.dataType || field?.type || '').toLowerCase();
+    const lookupModule = String(field?.lookupModule || field?.targetModule || '').toLowerCase();
+
+    if (dataType === 'user' || dataType === 'users') return true;
+    if (lookupModule === 'users' || lookupModule === 'user') return true;
+    if (dataType.includes('user') && dataType.includes('lookup')) return true;
+
+    return (
+      key === 'assignedto'
+      || key === 'owner_id'
+      || key === 'ownerid'
+      || key === 'owner'
+      || key === 'caseownerid'
+      || key === 'createdby'
+      || key === 'updatedby'
+      || key === 'modifiedby'
+      || key === 'deletedby'
+      || key.endsWith('userid')
+    );
+  });
 }
 
 async function loadFormRecordDeferredData(lowerModuleKey, isCurrentRun) {
@@ -3727,7 +3765,7 @@ async function loadPeopleOrganizationLookup(lowerModuleKey, isCurrentRun) {
   }
 
   try {
-    const orgRes = await apiClient.get('/v2/organization', { params: { limit: 500 } });
+    const orgRes = await fetchOrganizationsListCached({ limit: 500 });
     if (!isCurrentRun()) return;
     const data = orgRes?.data ?? orgRes;
     peopleOrganizationList.value = Array.isArray(data) ? data : (data?.data ? (Array.isArray(data.data) ? data.data : []) : []);
@@ -3748,8 +3786,8 @@ async function loadCaseLookups(lowerModuleKey, isCurrentRun) {
 
   try {
     const [contactRes, caseOrgRes] = await Promise.all([
-      apiClient.get('/people', { params: { limit: 500, sortBy: 'firstName', sortOrder: 'asc' } }),
-      apiClient.get('/v2/organization', { params: { limit: 500 } })
+      fetchPeopleListCached({ limit: 500, sortBy: 'firstName', sortOrder: 'asc' }),
+      fetchOrganizationsListCached({ limit: 500 }),
     ]);
     if (!isCurrentRun()) return;
     const contactRows = Array.isArray(contactRes?.data) ? contactRes.data : (contactRes?.data?.data && Array.isArray(contactRes.data.data) ? contactRes.data.data : []);
@@ -3867,7 +3905,7 @@ async function loadDocumentFolderLookups(lowerModuleKey, isCurrentRun) {
 
 async function loadUserLookup(isCurrentRun) {
   try {
-    const usersRes = await apiClient.get('/users/list', { params: { limit: 500 } });
+    const usersRes = await fetchUsersListCached({ limit: 500 });
     if (!isCurrentRun()) return;
     const usersData = usersRes?.data ?? usersRes;
     const users = Array.isArray(usersData)

@@ -56,7 +56,7 @@ const modulesInflight = new Map();
 
 function modulesCacheKey(params) {
   if (!params || typeof params !== 'object' || !Object.keys(params).length) {
-    return '';
+    return 'context=all';
   }
   return Object.keys(params)
     .sort()
@@ -64,13 +64,62 @@ function modulesCacheKey(params) {
     .join('&');
 }
 
+function normalizeModulesListParams(params = {}) {
+  const normalized = { ...(params || {}) };
+  if (!Object.keys(normalized).length) {
+    return { context: 'all' };
+  }
+  if (normalized.key && normalized.context == null) {
+    normalized.context = 'all';
+  }
+  return normalized;
+}
+
+export function parseModulesListResponse(response) {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.data?.data)) return response.data.data;
+  if (Array.isArray(response?.modules)) return response.modules;
+  if (Array.isArray(response?.data?.modules)) return response.data.modules;
+  return [];
+}
+
+/**
+ * Resolve a single module definition; prefers full-list cache over keyed fetches.
+ */
+export async function fetchModuleDefinitionCached(moduleKey, options = {}) {
+  const key = String(moduleKey || '').toLowerCase().trim();
+  if (!key) return null;
+
+  const context = options.context ?? 'all';
+  const sk = sessionKey();
+  const fullParams = { context };
+  const fullCacheKey = `${sk}|${modulesCacheKey(fullParams)}`;
+
+  if (modulesCache.has(fullCacheKey)) {
+    const found = parseModulesListResponse(modulesCache.get(fullCacheKey)).find(
+      (module) => String(module?.key || '').toLowerCase() === key
+    );
+    if (found) return found;
+  }
+
+  const keyedRes = await fetchModulesListCached({ key: moduleKey, context });
+  const keyedList = parseModulesListResponse(keyedRes);
+  return (
+    keyedList.find((module) => String(module?.key || '').toLowerCase() === key) ||
+    keyedList[0] ||
+    null
+  );
+}
+
 /**
  * Cached GET /modules. Pass same shape as apiClient.get second arg `params`.
  * For calls that use a raw query string, normalize to params first.
  */
 export async function fetchModulesListCached(params = {}) {
+  const normalizedParams = normalizeModulesListParams(params);
   const sk = sessionKey();
-  const pk = modulesCacheKey(params);
+  const pk = modulesCacheKey(normalizedParams);
   const cacheKey = `${sk}|${pk}`;
 
   if (modulesCache.has(cacheKey)) {
@@ -81,7 +130,7 @@ export async function fetchModulesListCached(params = {}) {
   }
 
   const p = apiClient
-    .get('/modules', { params: Object.keys(params).length ? params : undefined })
+    .get('/modules', { params: normalizedParams })
     .then((res) => {
       modulesCache.set(cacheKey, res);
       return res;
@@ -100,6 +149,9 @@ export function invalidateTenantSchemaCaches() {
   coreModulesInflight = null;
   modulesCache.clear();
   modulesInflight.clear();
+  import('@/utils/recordLookupCache')
+    .then(({ invalidateRecordLookupCaches }) => invalidateRecordLookupCaches())
+    .catch(() => {});
   import('@/utils/recordDisplay')
     .then(({ clearRelatedModuleDefinitionsCache }) => clearRelatedModuleDefinitionsCache())
     .catch(() => {});

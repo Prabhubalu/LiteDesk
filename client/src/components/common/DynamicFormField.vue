@@ -1030,6 +1030,11 @@ import DatePicker from '@/components/common/DatePicker.vue';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
 import { normalizeDateTimeInput } from '@/utils/datePickerUtils';
 import apiClient from '@/utils/apiClient';
+import {
+  fetchUsersListCached,
+  fetchOrganizationsListCached,
+  fetchPeopleListCached,
+} from '@/utils/recordLookupCache';
 import { validateField } from '@/utils/fieldValidation';
 import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInput';
 import { getWebsiteValidationMessage } from '@/utils/urlInputValidation';
@@ -2118,7 +2123,7 @@ const fetchUsers = async ({ autoDefault = false } = {}) => {
     const params = (props.dependencyState && typeof props.dependencyState.lookupQuery === 'object' && props.dependencyState.lookupQuery)
       ? props.dependencyState.lookupQuery
       : undefined;
-    const response = await apiClient.get('/users/list', params ? { params } : undefined);
+    const response = await fetchUsersListCached(params || { limit: 500 });
     
     if (response.success && Array.isArray(response.data)) {
       // Keep only valid user rows; this avoids showing malformed placeholder values.
@@ -2198,16 +2203,7 @@ const fetchLookupOptions = async () => {
   try {
     const moduleKey = targetModule;
     fieldDbg('Fetching lookup options for module:', moduleKey, 'field:', props.field.key);
-    
-    // Handle special module key mappings
-    let endpoint = `/${moduleKey}`;
-    if (moduleKey === 'organization' || moduleKey === 'organizations') {
-      // Try v2 endpoint first, fallback to v1
-      endpoint = '/v2/organization';
-    }
-    if (String(moduleKey).toLowerCase() === 'catalog/categories') {
-      endpoint = '/catalog/categories/tree';
-    }
+
     const depParams =
       props.dependencyState?.lookupQuery && typeof props.dependencyState.lookupQuery === 'object'
         ? { ...props.dependencyState.lookupQuery }
@@ -2215,9 +2211,19 @@ const fetchLookupOptions = async () => {
     const mk = String(moduleKey || '').toLowerCase();
     const isPeopleList =
       mk === 'people' || mk === 'person' || mk === 'contact';
-    const params = isPeopleList ? { limit: 1000, ...depParams } : { limit: 1000 };
-    
-    const response = await apiClient.get(endpoint, { params });
+    const isOrganizationList = mk === 'organization' || mk === 'organizations';
+
+    let response;
+    if (isOrganizationList) {
+      response = await fetchOrganizationsListCached({ limit: 1000, ...depParams });
+    } else if (isPeopleList) {
+      response = await fetchPeopleListCached({ limit: 1000, sortBy: 'firstName', sortOrder: 'asc', ...depParams });
+    } else if (String(moduleKey).toLowerCase() === 'catalog/categories') {
+      response = await apiClient.get('/catalog/categories/tree');
+    } else {
+      const params = { limit: 1000 };
+      response = await apiClient.get(`/${moduleKey}`, { params });
+    }
     
     fieldDbg('Lookup response for', moduleKey, ':', response);
     

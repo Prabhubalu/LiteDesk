@@ -79,6 +79,13 @@ export const CORE_LOCALE_NAMESPACES = SHARED_NAMESPACES.filter(
   (ns): ns is SharedNamespace => !(DEFERRED_LOCALE_NAMESPACES as readonly string[]).includes(ns)
 );
 
+/** Minimal catalogs for /login and other auth lifecycle routes (avoid loading full core on sign-in). */
+export const PUBLIC_AUTH_LOCALE_NAMESPACES = [
+  'auth',
+  'errors',
+  'onboarding',
+] as const satisfies readonly SharedNamespace[];
+
 /** Maximum dot-separated segments for any full message key (e.g. actions.save.confirm). */
 export const MAX_KEY_DEPTH = 3;
 

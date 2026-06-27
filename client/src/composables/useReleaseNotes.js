@@ -36,6 +36,10 @@ let autoSurfacePresented = false;
 let userDismissedAutoSurface = false;
 let surfaceTimerPending = false;
 const presentedReleaseIds = new Set();
+/** Coalesce concurrent unseen fetches (initializeIfReady + refreshOnFocus on first nav). */
+let fetchUnseenInflight = null;
+let unseenFetchedAt = 0;
+const UNSEEN_FETCH_TTL_MS = 10_000;
 
 function clearDeferTimer() {
   if (deferTimer) {
@@ -128,21 +132,41 @@ export function useReleaseNotes() {
     notifyError(t('releaseNotes.actionFailed'));
   }
 
-  async function fetchUnseen() {
+  async function fetchUnseen(options = {}) {
     if (!authStore.isAuthenticated) return;
-    loading.value = true;
-    error.value = null;
-    try {
-      const response = await releaseNotesApi.getUnseen();
-      if (response?.success) {
-        applyUnseenPayload(response.data);
-      }
-    } catch (err) {
-      console.error('[useReleaseNotes] fetchUnseen failed:', err);
-      error.value = 'load_failed';
-    } finally {
-      loading.value = false;
+    const force = options.force === true;
+    if (
+      !force
+      && unseenFetchedAt
+      && Date.now() - unseenFetchedAt < UNSEEN_FETCH_TTL_MS
+    ) {
+      return;
     }
+    if (fetchUnseenInflight) {
+      return fetchUnseenInflight;
+    }
+
+    const run = async () => {
+      loading.value = true;
+      error.value = null;
+      try {
+        const response = await releaseNotesApi.getUnseen();
+        if (response?.success) {
+          applyUnseenPayload(response.data);
+        }
+        unseenFetchedAt = Date.now();
+      } catch (err) {
+        console.error('[useReleaseNotes] fetchUnseen failed:', err);
+        error.value = 'load_failed';
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    fetchUnseenInflight = run().finally(() => {
+      fetchUnseenInflight = null;
+    });
+    return fetchUnseenInflight;
   }
 
   async function fetchBadge() {
@@ -292,6 +316,8 @@ export function useReleaseNotes() {
     autoSurfacePresented = false;
     userDismissedAutoSurface = false;
     presentedReleaseIds.clear();
+    fetchUnseenInflight = null;
+    unseenFetchedAt = 0;
     unseenReleases.value = [];
     surface.value = 'badge_only';
     combinedImportance.value = 'patch';

@@ -10,10 +10,13 @@ import {
   ensureFullLocaleLoaded,
   loadCoreLocaleMessages,
   loadFullLocaleMessages,
+  loadPublicAuthLocaleMessages,
 } from './loadLocale';
 import { trackI18nEvent } from './telemetry';
 
 export type { I18nLanguage };
+
+export type I18nLoadScope = 'public' | 'core' | 'full';
 
 function readDevPseudoLanguage(): I18nLanguage | null {
   try {
@@ -61,10 +64,18 @@ export const i18n = createI18n({
 });
 
 let activeLoad: Promise<void> | null = null;
+let loadedScope: I18nLoadScope | null = null;
+
+const scopeRank: Record<I18nLoadScope, number> = {
+  public: 1,
+  core: 2,
+  full: 3,
+};
 
 export type SetI18nLanguageOptions = {
   /** When false, load core messages first and merge the full bundle in the background. */
   waitForFull?: boolean;
+  scope?: I18nLoadScope;
 };
 
 export async function setI18nLanguage(
@@ -72,33 +83,76 @@ export async function setI18nLanguage(
   options: SetI18nLanguageOptions = {}
 ): Promise<void> {
   const waitForFull = options.waitForFull ?? true;
+  const scope = options.scope ?? 'core';
+
+  if (scope === 'public') {
+    const messages = await loadPublicAuthLocaleMessages(language);
+    i18n.global.setLocaleMessage(language, messages);
+    i18n.global.locale.value = language;
+    loadedScope = 'public';
+    return;
+  }
+
   const core = await loadCoreLocaleMessages(language);
   i18n.global.setLocaleMessage(language, core);
   i18n.global.locale.value = language;
+  loadedScope = 'core';
 
   if (waitForFull) {
     const full = await loadFullLocaleMessages(language);
     i18n.global.setLocaleMessage(language, full);
+    loadedScope = 'full';
     return;
   }
 
   void loadFullLocaleMessages(language).then((full) => {
     if (i18n.global.locale.value === language) {
       i18n.global.setLocaleMessage(language, full);
+      loadedScope = 'full';
     }
   });
+}
+
+/** After sign-in: load shell namespaces without blocking navigation. */
+export async function upgradeI18nAfterLogin(options: {
+  orgLanguage?: string | null;
+  userLanguage?: string | null;
+} = {}): Promise<void> {
+  const language = resolveInitialLanguage(options.orgLanguage, options.userLanguage);
+  if (loadedScope && scopeRank[loadedScope] >= scopeRank.core && i18n.global.locale.value === language) {
+    return;
+  }
+  if (activeLoad) {
+    await activeLoad;
+    if (loadedScope && scopeRank[loadedScope] >= scopeRank.core && i18n.global.locale.value === language) {
+      return;
+    }
+  }
+  activeLoad = setI18nLanguage(language, { scope: 'core', waitForFull: false }).finally(() => {
+    activeLoad = null;
+  });
+  await activeLoad;
 }
 
 export async function initI18n(options: {
   orgLanguage?: string | null;
   userLanguage?: string | null;
+  scope?: I18nLoadScope;
 } = {}): Promise<void> {
+  const scope = options.scope ?? 'core';
   const language = resolveInitialLanguage(options.orgLanguage, options.userLanguage);
   if (activeLoad) {
     await activeLoad;
+    if (loadedScope && scopeRank[loadedScope] >= scopeRank[scope] && i18n.global.locale.value === language) {
+      return;
+    }
+  } else if (loadedScope && scopeRank[loadedScope] >= scopeRank[scope] && i18n.global.locale.value === language) {
     return;
   }
-  activeLoad = setI18nLanguage(language, { waitForFull: false }).finally(() => {
+  activeLoad = setI18nLanguage(language, {
+    scope,
+    waitForFull: scope === 'full',
+  }).finally(() => {
     activeLoad = null;
   });
   await activeLoad;
@@ -112,6 +166,7 @@ export {
   loadLocaleMessages,
   loadCoreLocaleMessages,
   loadFullLocaleMessages,
+  loadPublicAuthLocaleMessages,
   ensureFullLocaleLoaded,
   ensureWebformsNamespaceLoaded,
   prefetchLocale,
