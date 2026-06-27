@@ -164,8 +164,9 @@ if (!SECURITY_DISABLED && process.env.RATE_LIMIT_IP_DEBUG === 'true') {
 
 // General API Rate Limiting (skip if security disabled)
 if (!SECURITY_DISABLED) {
-    const { apiLimiter } = require('./middleware/rateLimitMiddleware');
+    const { apiLimiter, routeRateLimitMiddleware } = require('./middleware/rateLimitMiddleware');
     app.use('/api', apiLimiter);
+    app.use('/api', routeRateLimitMiddleware);
 } else {
     console.warn('⚠️  [DEV] API rate limiting disabled');
 }

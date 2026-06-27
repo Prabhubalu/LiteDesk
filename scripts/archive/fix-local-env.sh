@@ -118,8 +118,9 @@ DEBUG_DNS=false
 # -----------------------------------------------------------------------------
 # RATE LIMITING
 # -----------------------------------------------------------------------------
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
+RATE_LIMIT_WINDOW_MS=60000
+AUTHENTICATED_API_RATE_LIMIT_MAX_REQUESTS=300
+ANONYMOUS_API_RATE_LIMIT_MAX_REQUESTS=60
 EOF
 
 echo -e "${GREEN}✅ Created clean .env for local development${NC}"
