@@ -16,11 +16,6 @@ import {
   liveChatAlertKindFromNotification,
   sessionIdFromLiveChatNotification,
 } from '@/utils/liveChatTabAlerts';
-import {
-  markHelpdeskTabAlertForCase,
-  markHelpdeskTabAlertForNewCase,
-  markLiveChatTabAlert,
-} from '@/composables/useTabs';
 
 export const useNotificationStore = defineStore('notifications', () => {
   const items = ref([]);
@@ -757,17 +752,21 @@ export const useNotificationStore = defineStore('notifications', () => {
     const helpdeskAlertKind = helpdeskAlertKindFromNotification(notification);
     const caseId = caseIdFromHelpdeskNotification(notification);
     if (helpdeskAlertKind && caseId) {
-      if (helpdeskAlertKind === 'case') {
-        markHelpdeskTabAlertForNewCase(caseId, helpdeskAlertKind);
-      } else {
-        markHelpdeskTabAlertForCase(caseId, helpdeskAlertKind);
-      }
+      void import('@/composables/useTabs').then(({ markHelpdeskTabAlertForCase, markHelpdeskTabAlertForNewCase }) => {
+        if (helpdeskAlertKind === 'case') {
+          markHelpdeskTabAlertForNewCase(caseId, helpdeskAlertKind);
+        } else {
+          markHelpdeskTabAlertForCase(caseId, helpdeskAlertKind);
+        }
+      });
     }
 
     const liveChatAlertKind = liveChatAlertKindFromNotification(notification);
     const sessionId = sessionIdFromLiveChatNotification(notification);
     if (liveChatAlertKind) {
-      markLiveChatTabAlert(liveChatAlertKind);
+      void import('@/composables/useTabs').then(({ markLiveChatTabAlert }) => {
+        markLiveChatTabAlert(liveChatAlertKind);
+      });
       dispatchLiveChatWorkspaceEvent({
         eventType: notification.eventType,
         sessionId,

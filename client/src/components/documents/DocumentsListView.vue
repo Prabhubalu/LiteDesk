@@ -1,6 +1,7 @@
 <template>
   <ListView
     ref="listViewRef"
+    skip-mount-fetch
     :title="title"
     module-key="documents"
     :search-placeholder="searchPlaceholder"

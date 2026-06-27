@@ -6,6 +6,7 @@ import {
   LOCALE_CORE_BUDGET_BYTES,
   LOCALE_FULL_BUDGET_BYTES,
   LOCALE_NAMESPACE_BUDGET_BYTES,
+  PUBLIC_AUTH_LOCALE_NAMESPACES,
   PSEUDO_BASE_LANGUAGE,
   PSEUDO_LANGUAGES,
   SHARED_NAMESPACES,
@@ -87,12 +88,33 @@ async function loadNamespaceGroup(
   language: I18nLanguage,
   namespaces: readonly SharedNamespace[]
 ): Promise<FlatMessages> {
-  const merged: FlatMessages = {};
-  for (const namespace of namespaces) {
-    const messages = await loadNamespace(language, namespace);
-    Object.assign(merged, messages);
+  const parts = await Promise.all(
+    namespaces.map((namespace) => loadNamespace(language, namespace))
+  );
+  return Object.assign({}, ...parts);
+}
+
+/**
+ * Auth lifecycle routes only (/login, forgot-password, etc.).
+ */
+export async function loadPublicAuthLocaleMessages(language: I18nLanguage): Promise<FlatMessages> {
+  const cacheKey = `${language}::public-auth`;
+  const cached = localeCache.get(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const merged = await loadNamespaceGroup(language, PUBLIC_AUTH_LOCALE_NAMESPACES);
+    const finalMessages = applyPseudo(language, merged);
+    localeCache.set(cacheKey, finalMessages);
+    return finalMessages;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    trackI18nEvent({ type: 'locale_load_failed', locale: language, error: message });
+    if (language !== FALLBACK_LANGUAGE) {
+      return loadPublicAuthLocaleMessages(DEFAULT_LANGUAGE);
+    }
+    throw error;
   }
-  return merged;
 }
 
 function coreCacheKey(language: string): string {

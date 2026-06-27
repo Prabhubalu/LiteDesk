@@ -80,7 +80,7 @@ const { t } = useI18n();
 import { computed, ref, onMounted, onBeforeUnmount, defineAsyncComponent, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
-import { isStandalonePublicRoute, isTrialExpiredShelllessRoute } from '@/utils/standaloneRoutes';
+import { isStandalonePublicRoute, isTrialExpiredShelllessRoute, isAuthLifecyclePublicRoute } from '@/utils/standaloneRoutes';
 import { useConnectMailboxPrompt } from '@/composables/useConnectMailboxPrompt';
 import { useMailboxConnection } from '@/composables/useMailboxConnection';
 import { useReleaseNotes } from '@/composables/useReleaseNotes';
@@ -112,7 +112,10 @@ const { refreshMailboxes } = useMailboxConnection();
 const authStore = useAuthStore();
 const route = useRoute();
 const surfacesEnabled = computed(() =>
-  !isStandalonePublicRoute(route.path) && !isTrialExpiredShelllessRoute(route.path)
+  authStore.isAuthenticated
+  && !isStandalonePublicRoute(route.path)
+  && !isTrialExpiredShelllessRoute(route.path)
+  && !isAuthLifecyclePublicRoute(route.path)
 );
 const {
   unseenReleases,

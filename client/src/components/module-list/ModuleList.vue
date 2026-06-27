@@ -26,6 +26,7 @@
     <!-- List View -->
     <ListView
       v-else
+      skip-mount-fetch
       :title="listPageTitle"
       :description="listDefinition.description"
       :module-key="listDefinition.moduleKey"
@@ -215,6 +216,16 @@ const parentHandlesDelete = typeof setupInstance?.vnode?.props?.onDelete === 'fu
 const route = useRoute();
 const router = useRouter();
 
+/** Paginated list GET runs only in list view — kanban/calendar parents fetch their own dataset. */
+function shouldFetchListDataForMode(mode) {
+  if (mode == null || mode === '') return true;
+  return String(mode).toLowerCase() === 'list';
+}
+
+function shouldFetchListData() {
+  return shouldFetchListDataForMode(props.viewMode);
+}
+
 /** Only block the whole page on first load — not when returning from another tab */
 const showListShellSkeleton = computed(
   () => loading.value && !listDefinition.value
@@ -353,17 +364,6 @@ onDeactivated(() => {
   appendAbortController = null;
   loadingMore.value = false;
   dataLoading.value = false;
-
-  // Release table VNodes while keep-alive caches this route; session restores on activate.
-  if (data.value.length > 0) {
-    listDataEpoch.value += 1;
-    data.value = [];
-    pagination.value = {
-      ...pagination.value,
-      currentPage: 1,
-      page: 1
-    };
-  }
 });
 
 async function restoreListSessionAfterFetch() {
@@ -399,6 +399,23 @@ async function initialListFetch() {
   await restoreListSessionAfterFetch();
 }
 
+/** Dedupe buildList + onActivated both calling initialListFetch on first keep-alive mount. */
+let initialListFetchPromise = null;
+
+function scheduleInitialListFetch() {
+  if (initialListFetchPromise) {
+    return initialListFetchPromise;
+  }
+  initialListFetchPromise = initialListFetch()
+    .catch((error) => {
+      console.error('[ModuleList] Initial data fetch failed:', error);
+    })
+    .finally(() => {
+      initialListFetchPromise = null;
+    });
+  return initialListFetchPromise;
+}
+
 onActivated(async () => {
   // Aborted in-flight fetch when the tab was hidden can leave dataLoading stuck true.
   if (data.value.length > 0) {
@@ -422,7 +439,9 @@ onActivated(async () => {
     if (data.value.length === 0 && sessionNeedsScrollConceal(session)) {
       beginListSessionRestore();
     }
-    await initialListFetch();
+    if (shouldFetchListData()) {
+      await scheduleInitialListFetch();
+    }
     if (!listSessionPagesReady.value) {
       completeListSessionRestore();
     }
@@ -437,8 +456,8 @@ onActivated(async () => {
       pagination.value?.totalRecords ??
       0
   );
-  if (statsTotal > 0 && data.value.length === 0) {
-    await initialListFetch();
+  if (statsTotal > 0 && data.value.length === 0 && shouldFetchListData()) {
+    await scheduleInitialListFetch();
   }
 });
 const authStore = useAuthStore();
@@ -706,9 +725,11 @@ const buildList = async () => {
       loading.value = false;
 
       if (definition && definition.emptyState?.type !== 'NOT_CONFIGURED') {
-        initialListFetch().catch((error) => {
-          console.error('[ModuleList] Initial data fetch failed:', error);
-        });
+        if (shouldFetchListData()) {
+          scheduleInitialListFetch();
+        } else {
+          emit('filters-changed', { ...filters.value });
+        }
       }
 
       if (props.moduleKey === 'people') {
@@ -1441,6 +1462,7 @@ async function fetchListAppend() {
  */
 const fetchData = async (opts = {}) => {
   if (opts.append === true) {
+    if (!shouldFetchListData()) return;
     return fetchListAppend();
   }
   if (opts.reactivate) {
@@ -1448,6 +1470,7 @@ const fetchData = async (opts = {}) => {
     bumpSessionRestoreTick();
     return;
   }
+  if (!shouldFetchListData()) return;
   if (!opts.preserveSession) {
     clearListSessionState();
   }
@@ -1632,7 +1655,9 @@ const handleFiltersUpdate = async (newFilters, options = {}) => {
     pagination.value.totalPages = 0;
     clearListSessionState();
     emit('filters-changed', filters.value);
-    fetchData();
+    if (shouldFetchListData()) {
+      fetchData();
+    }
   }
 
   // Wait for next tick to ensure filters are properly set before checking saved views
@@ -2247,6 +2272,19 @@ watch(() => [props.moduleKey, props.appKey], () => {
     buildList();
   }
 });
+
+// Fetch list rows when parent switches from kanban/calendar back to list view
+watch(
+  () => props.viewMode,
+  (mode, prevMode) => {
+    if (!listDefinition.value || prevMode == null) return;
+    const toList = shouldFetchListDataForMode(mode);
+    const fromList = shouldFetchListDataForMode(prevMode);
+    if (toList && !fromList) {
+      scheduleInitialListFetch();
+    }
+  }
+);
 
 // Persist active saved view to localStorage
 watch(() => activeSavedViewId.value, (newValue) => {

@@ -497,6 +497,7 @@
                   <div class="relative w-full">
                     <ListboxButton
                       class="flex items-center gap-2 w-full min-h-8 text-left cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded px-2 py-1 -mx-2 -my-1 transition-colors focus:outline-none focus:ring-0"
+                      @mousedown="ensureDealLookups"
                     >
                       <Avatar
                         v-if="dealOwnerAvatarUser"
@@ -569,6 +570,7 @@
                   <div class="relative w-full">
                     <ListboxButton
                       class="flex items-center gap-2 w-full min-h-8 text-left cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded px-2 py-1 -mx-2 -my-1 transition-colors focus:outline-none focus:ring-0"
+                      @mousedown="ensureDealLookups"
                     >
                       <span
                         v-if="selectedDealOrganizationId && formatDealOrganizationName(deal)"
@@ -653,6 +655,7 @@
                   <div class="relative w-full">
                     <ListboxButton
                       class="flex items-center gap-2 w-full min-h-8 text-left cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded px-2 py-1 -mx-2 -my-1 transition-colors focus:outline-none focus:ring-0"
+                      @mousedown="ensureDealLookups"
                     >
                       <span
                         v-if="selectedDealContactId && formatDealContactName(deal)"
@@ -1030,6 +1033,7 @@
       :isOpen="showEditModal"
       moduleKey="deals"
       :record="deal"
+      :module-definition-prefetch="dealModuleDefinition"
       @close="showEditModal = false"
       @saved="handleDealUpdated"
     />
@@ -1245,6 +1249,15 @@ import Avatar from '@/components/common/Avatar.vue';
 import { useTabs } from '@/composables/useTabs';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
+import {
+  fetchUsersListCached,
+  fetchOrganizationsListCached,
+  fetchPeopleListCached,
+  DEAL_RELATIONSHIP_PEOPLE_PARAMS,
+  DEAL_RELATIONSHIP_ORG_PARAMS,
+  DEAL_RELATIONSHIP_USERS_PARAMS,
+} from '@/utils/recordLookupCache';
 import { getProcessActivityMessage } from '@/utils/processActivityMessages';
 import { useNotifications } from '@/composables/useNotifications';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
@@ -1354,6 +1367,9 @@ const SLOT_RENDERED_KEY_FIELDS = Object.freeze(new Set(['stage', 'amount', 'prob
 const dealUsers = ref([]);
 const dealOrganizationsList = ref([]);
 const dealPeopleList = ref([]);
+const dealLookupsLoaded = ref(false);
+let dealLookupsInflight = null;
+let dealNavigationIdsScheduled = false;
 
 const isEditingAmount = ref(false);
 const isEditingProbability = ref(false);
@@ -1522,12 +1538,18 @@ const navigateToDealById = (dealId) => {
   replaceActiveTab(path, { title: dealModuleLabel.value });
 };
 
-const goToPreviousDeal = () => {
+const goToPreviousDeal = async () => {
+  if (!previousDealId.value) {
+    await fetchDealNavigationIds();
+  }
   if (!canNavigatePreviousDeal.value) return;
   navigateToDealById(previousDealId.value);
 };
 
-const goToNextDeal = () => {
+const goToNextDeal = async () => {
+  if (!nextDealId.value) {
+    await fetchDealNavigationIds();
+  }
   if (!canNavigateNextDeal.value) return;
   navigateToDealById(nextDealId.value);
 };
@@ -1563,6 +1585,16 @@ onMounted(() => {
 });
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleHeaderKeydown);
+});
+
+watch(showEditModal, (open) => {
+  if (open) ensureDealLookups();
+});
+
+watch(effectiveDealId, (nextId, prevId) => {
+  if (nextId && nextId !== prevId) {
+    resetDealRelationshipState();
+  }
 });
 
 // Keep tab title in sync with deal name when deal loads or name changes.
@@ -2054,7 +2086,7 @@ const dealStageOptions = computed(() => {
 
 const canEditDealStage = computed(() => authStore.can('deals', 'edit') && dealStageOptions.value.length > 0);
 const canEditDealKeyFields = computed(() => authStore.can('deals', 'edit'));
-const canInlineEditDealOwner = computed(() => canEditDealKeyFields.value && dealUsers.value.length > 0);
+const canInlineEditDealOwner = computed(() => canEditDealKeyFields.value);
 const dealOrganizationOptions = computed(() => {
   const merged = [];
   const seen = new Set();
@@ -2089,7 +2121,7 @@ const dealOrganizationOptions = computed(() => {
 
   return merged;
 });
-const canInlineEditDealOrganization = computed(() => canEditDealKeyFields.value && dealOrganizationOptions.value.length > 0);
+const canInlineEditDealOrganization = computed(() => canEditDealKeyFields.value);
 
 const dealPeopleOptions = computed(() => {
   const merged = [];
@@ -2122,7 +2154,7 @@ const dealPeopleOptions = computed(() => {
   }
   return merged;
 });
-const canInlineEditDealContact = computed(() => canEditDealKeyFields.value && dealPeopleOptions.value.length > 0);
+const canInlineEditDealContact = computed(() => canEditDealKeyFields.value);
 
 const dealStateValues = computed(() => {
   const values = dealRecordAdapter.value.getStateValues?.(deal.value, dealSectionContext.value);
@@ -2859,7 +2891,7 @@ const fetchDealNavigationIds = async () => {
 
 const fetchDealUsers = async () => {
   try {
-    const response = await apiClient.get('/users/list');
+    const response = await fetchUsersListCached(DEAL_RELATIONSHIP_USERS_PARAMS);
     if (response?.success && Array.isArray(response.data)) {
       dealUsers.value = response.data;
       return;
@@ -2893,15 +2925,7 @@ const fetchDealOrganizations = async () => {
       return [];
     };
 
-    const primary = await apiClient.get('/v2/organization', {
-      params: {
-        page: 1,
-        limit: 200,
-        sortBy: 'name',
-        sortOrder: 'asc'
-      }
-    });
-
+    const primary = await fetchOrganizationsListCached(DEAL_RELATIONSHIP_ORG_PARAMS);
     const primaryList = normalizeCandidates(primary);
     if (primaryList.length > 0) {
       dealOrganizationsList.value = primaryList;
@@ -2933,7 +2957,7 @@ const fetchDealPeople = async () => {
       }
       return [];
     };
-    const response = await apiClient.get('/people', { params: { limit: 200, sortBy: 'firstName', sortOrder: 'asc' } });
+    const response = await fetchPeopleListCached(DEAL_RELATIONSHIP_PEOPLE_PARAMS);
     dealPeopleList.value = normalizeCandidates(response);
   } catch (err) {
     console.error('Error fetching people for deal key fields:', err);
@@ -2941,22 +2965,56 @@ const fetchDealPeople = async () => {
   }
 };
 
+async function ensureDealLookups() {
+  if (!authStore.can('deals', 'edit')) return;
+  if (dealLookupsLoaded.value) return;
+  if (dealLookupsInflight) {
+    await dealLookupsInflight;
+    return;
+  }
+  dealLookupsInflight = Promise.all([
+    fetchDealUsers(),
+    fetchDealOrganizations(),
+    fetchDealPeople(),
+  ])
+    .catch((err) => {
+      console.error('Error loading deal relationship lookups:', err);
+    })
+    .finally(() => {
+      dealLookupsInflight = null;
+      dealLookupsLoaded.value = true;
+    });
+  await dealLookupsInflight;
+}
+
+function scheduleDealNavigationIdsFetch() {
+  if (props.embed || dealNavigationIdsScheduled) return;
+  dealNavigationIdsScheduled = true;
+  const run = () => {
+    fetchDealNavigationIds().finally(() => {
+      dealNavigationIdsScheduled = false;
+    });
+  };
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(run, { timeout: 2000 });
+  } else {
+    setTimeout(run, 100);
+  }
+}
+
+function resetDealRelationshipState() {
+  dealLookupsLoaded.value = false;
+  dealLookupsInflight = null;
+  dealUsers.value = [];
+  dealOrganizationsList.value = [];
+  dealPeopleList.value = [];
+  dealNavigationIds.value = [];
+  dealNavigationIdsScheduled = false;
+}
+
 const fetchDealModuleDefinition = async () => {
   try {
-    const response = await apiClient.get('/modules');
-    const modules = Array.isArray(response)
-      ? response
-      : Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response?.data?.data)
-          ? response.data.data
-          : Array.isArray(response?.modules)
-            ? response.modules
-            : Array.isArray(response?.data?.modules)
-              ? response.data.modules
-              : [];
-    const dealsModule = modules.find(module => String(module?.key || '').toLowerCase() === 'deals');
-    dealModuleDefinition.value = dealsModule || null;
+    dealModuleDefinition.value = await fetchModuleDefinitionCached('deals');
   } catch (err) {
     console.error('Error fetching deal module definition:', err);
     dealModuleDefinition.value = null;
@@ -2979,16 +3037,14 @@ const fetchDeal = async () => {
     if (data.success) {
       deal.value = data.data;
     }
-    await Promise.all([
+    const secondaryTasks = [
       fetchActivityLogs(),
       fetchComments(),
       fetchEmailThreads(),
-      fetchDealNavigationIds(),
-      fetchDealModuleDefinition(),
-      fetchDealUsers(),
-      fetchDealOrganizations(),
-      fetchDealPeople()
-    ]);
+      fetchDealModuleDefinition()
+    ];
+    await Promise.all(secondaryTasks);
+    scheduleDealNavigationIdsFetch();
   } catch (err) {
     if (err?.status === 404 || err?.is404) {
       error.value = err?.response?.data?.message || err?.message || 'Deal not found or access denied.';

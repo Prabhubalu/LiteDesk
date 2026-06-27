@@ -1,6 +1,7 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import { fetchUsersListCached } from '@/utils/recordLookupCache';
 import { useNotifications } from '@/composables/useNotifications';
 import { getAllowedCaseStatusTransitions, CASE_PRIORITIES } from '@/constants/caseLifecycle';
 import { resolveCaseReplyToEmail } from '@/utils/caseEmailReply';
@@ -120,7 +121,7 @@ export function useCaseRecord(caseIdRef) {
 
   async function loadUsers() {
     try {
-      const res = await apiClient.get('/users/list', { params: { limit: 500 } });
+      const res = await fetchUsersListCached({ limit: 500 });
       const rows = res?.data ?? res;
       const list = Array.isArray(rows) ? rows : Array.isArray(rows?.data) ? rows.data : [];
       users.value = list

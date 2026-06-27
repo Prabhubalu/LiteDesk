@@ -6,12 +6,12 @@ import './stores/auth'
 // @ts-ignore: no declaration file for './router'
 import router, { initializeDynamicRoutes } from './router'
 import App from './App.vue'
-import HeadlessCheckbox from './components/ui/HeadlessCheckbox.vue'
-import HeadlessSwitch from './components/ui/HeadlessSwitch.vue'
 // @ts-ignore: no declaration file for './composables/useColorMode'
 import { useColorMode } from './composables/useColorMode'
 import { installFetchApiBase } from './config/installFetchApiBase'
 import { i18n, initI18n } from './i18n'
+// @ts-ignore: no declaration file for './utils/standaloneRoutes'
+import { isAuthLifecyclePublicRoute } from './utils/standaloneRoutes'
 
 const shouldEnableVerboseConsole = () => {
   if (import.meta.env.PROD) {
@@ -43,8 +43,6 @@ app.provide('arivuInitializeDynamicRoutes', initializeDynamicRoutes)
 app.use(createPinia())
 app.use(i18n)
 app.use(router)
-app.component('HeadlessCheckbox', HeadlessCheckbox)
-app.component('HeadlessSwitch', HeadlessSwitch)
 
 // Platform Permissions Contract Guard (DEV-only)
 // CONTRACT-LOCKED: See docs/architecture/platform-permission-contract.md
@@ -82,7 +80,12 @@ void (async () => {
   try {
     const orgRaw = localStorage.getItem('organization')
     const org = orgRaw ? JSON.parse(orgRaw) : null
-    await initI18n({ orgLanguage: org?.settings?.language })
+    const onAuthRoute =
+      typeof window !== 'undefined' && isAuthLifecyclePublicRoute(window.location.pathname)
+    await initI18n({
+      orgLanguage: org?.settings?.language,
+      scope: onAuthRoute ? 'public' : 'core',
+    })
   } catch (e) {
     console.error('[i18n] init failed', e)
     await initI18n()

@@ -31,6 +31,10 @@ const emptyState = () => ({
 const loading = ref(false);
 const error = ref(null);
 const state = ref(emptyState());
+/** Coalesce concurrent GET /onboarding/me (GlobalSurfacesProvider + OnboardingCoachmarks). */
+let fetchOnboardingInflight = null;
+let onboardingFetchedAt = 0;
+const ONBOARDING_FETCH_TTL_MS = 10_000;
 
 function resolveOrganizationId(authStore) {
   return authStore.user?.organizationId || authStore.user?.organization?._id || null;
@@ -47,26 +51,46 @@ export function useOnboarding() {
   const needsOnboardingRedirect = computed(() => state.value.redirectTo === '/onboarding');
   const isComplete = computed(() => Boolean(state.value.completedAt));
 
-  const fetchOnboarding = async () => {
-    loading.value = true;
-    error.value = null;
-    try {
-      const prev = { ...state.value };
-      const response = await apiClient('/onboarding/me', { method: 'GET' });
-      if (response.success && response.data) {
-        const next = { ...emptyState(), ...response.data };
-        trackOnboardingStateTransition(prev, next, resolveOrganizationId(authStore));
-        state.value = next;
-      } else {
-        state.value = emptyState();
-      }
-    } catch (err) {
-      console.error('[Onboarding] fetch error:', err);
-      error.value = 'Unable to load onboarding';
-      state.value = emptyState();
-    } finally {
-      loading.value = false;
+  const fetchOnboarding = async (options = {}) => {
+    const force = options.force === true;
+    if (
+      !force
+      && onboardingFetchedAt
+      && Date.now() - onboardingFetchedAt < ONBOARDING_FETCH_TTL_MS
+    ) {
+      return;
     }
+    if (fetchOnboardingInflight) {
+      return fetchOnboardingInflight;
+    }
+
+    const run = async () => {
+      loading.value = true;
+      error.value = null;
+      try {
+        const prev = { ...state.value };
+        const response = await apiClient('/onboarding/me', { method: 'GET' });
+        if (response.success && response.data) {
+          const next = { ...emptyState(), ...response.data };
+          trackOnboardingStateTransition(prev, next, resolveOrganizationId(authStore));
+          state.value = next;
+        } else {
+          state.value = emptyState();
+        }
+        onboardingFetchedAt = Date.now();
+      } catch (err) {
+        console.error('[Onboarding] fetch error:', err);
+        error.value = 'Unable to load onboarding';
+        state.value = emptyState();
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    fetchOnboardingInflight = run().finally(() => {
+      fetchOnboardingInflight = null;
+    });
+    return fetchOnboardingInflight;
   };
 
   const patchOnboarding = async (payload) => {

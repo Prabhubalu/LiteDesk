@@ -5,6 +5,7 @@
       ref="moduleListRef"
       module-key="events"
       app-key="PLATFORM"
+      :view-mode="currentView"
       @create="openEventModal"
       @export="exportEvents"
       @row-click="handleRowClick"
@@ -255,6 +256,20 @@ const showAppointmentsScope = ref(false);
 // Calendar data state
 const calendarEvents = ref([]);
 const calendarLoading = ref(false);
+let calendarFetchPromise = null;
+
+function scheduleCalendarFetch() {
+  if (currentView.value !== 'calendar') {
+    return Promise.resolve();
+  }
+  if (calendarFetchPromise) {
+    return calendarFetchPromise;
+  }
+  calendarFetchPromise = fetchCalendarEvents().finally(() => {
+    calendarFetchPromise = null;
+  });
+  return calendarFetchPromise;
+}
 
 // Event creation modal state
 const showEventQuickCreate = ref(false);
@@ -289,9 +304,6 @@ function applyView(view, { updateRoute = false } = {}) {
 
   nextTick(() => {
     toggleTableView(isListView(view));
-    if (view === 'calendar') {
-      fetchCalendarEvents();
-    }
   });
 }
 
@@ -447,6 +459,12 @@ const fetchCalendarEvents = async () => {
 
 // Store current search query from ModuleList
 const currentSearchQuery = ref('');
+let lastCalendarFilterSignature = '';
+
+function calendarFiltersSignature(filters) {
+  const moduleListSearch = currentSearchQuery.value || moduleListRef.value?.getSearchQuery?.() || '';
+  return JSON.stringify({ filters: filters ?? {}, search: moduleListSearch });
+}
 
 // Handle filter/search changes from ModuleList
 function syncAppointmentsScopeFromFilters(filters) {
@@ -457,9 +475,11 @@ function syncAppointmentsScopeFromFilters(filters) {
 
 const handleFiltersChanged = (filters) => {
   syncAppointmentsScopeFromFilters(filters);
-  if (currentView.value === 'calendar') {
-    fetchCalendarEvents();
-  }
+  if (currentView.value !== 'calendar') return;
+  const signature = calendarFiltersSignature(filters);
+  if (signature === lastCalendarFilterSignature) return;
+  lastCalendarFilterSignature = signature;
+  scheduleCalendarFetch();
 };
 
 function toggleAppointmentsOnly() {
@@ -477,24 +497,22 @@ function toggleAppointmentsOnly() {
 
 const handleSearchChanged = (searchQuery) => {
   currentSearchQuery.value = searchQuery || '';
-  if (currentView.value === 'calendar') {
-    fetchCalendarEvents();
-  }
+  if (currentView.value !== 'calendar') return;
+  lastCalendarFilterSignature = '';
+  scheduleCalendarFetch();
 };
 
-// Watch currentView to fetch calendar data and toggle table visibility
-watch(currentView, (newView) => {
-  if (newView === 'calendar') {
-    // Sync search query from ModuleList when switching to calendar
+// View switches after mount — initial calendar load is owned by initializeView → applyView
+watch(currentView, (newView, oldView) => {
+  if (newView === 'calendar' && oldView !== undefined) {
     currentSearchQuery.value = moduleListRef.value?.getSearchQuery?.() || '';
-    fetchCalendarEvents();
+    scheduleCalendarFetch();
   }
-  
-  // Toggle table visibility using DOM manipulation
+
   nextTick(() => {
     toggleTableView(isListView(newView));
   });
-}, { immediate: true });
+});
 
 // Check dark mode
 const checkDarkMode = () => {
@@ -789,12 +807,9 @@ const handleRecordCreated = (event) => {
   
   // Only refresh if it's an events record
   if (moduleKey === 'events') {
-    // Refresh calendar view if active
     if (currentView.value === 'calendar') {
-      fetchCalendarEvents();
-    }
-    // Refresh list view
-    if (moduleListRef.value && moduleListRef.value.refresh) {
+      scheduleCalendarFetch();
+    } else if (moduleListRef.value?.refresh) {
       moduleListRef.value.refresh();
     }
   }
@@ -802,12 +817,9 @@ const handleRecordCreated = (event) => {
 
 // Handle legacy event-created event
 const handleEventCreated = () => {
-  // Refresh calendar view if active
   if (currentView.value === 'calendar') {
-    fetchCalendarEvents();
-  }
-  // Refresh list view
-  if (moduleListRef.value && moduleListRef.value.refresh) {
+    scheduleCalendarFetch();
+  } else if (moduleListRef.value?.refresh) {
     moduleListRef.value.refresh();
   }
 };
@@ -815,15 +827,9 @@ const handleEventCreated = () => {
 onMounted(() => {
   checkDarkMode();
   initializeView();
-  
-  // Initial view setup - fetch calendar data if calendar view is active
-  if (currentView.value === 'calendar') {
-    fetchCalendarEvents();
-  }
-  
+
   // Apply view state after ModuleList renders
   nextTick(() => {
-    // Small delay to ensure ModuleList has fully rendered its table
     setTimeout(() => {
       toggleTableView(isListView(currentView.value));
       syncAppointmentsScopeFromFilters();
@@ -854,9 +860,6 @@ onMounted(() => {
 // When returning to Events tab (keep-alive), re-sync view and refetch so UI loads correctly
 onActivated(() => {
   initializeView();
-  if (currentView.value === 'calendar') {
-    fetchCalendarEvents();
-  }
   nextTick(() => {
     setTimeout(() => {
       toggleTableView(isListView(currentView.value));

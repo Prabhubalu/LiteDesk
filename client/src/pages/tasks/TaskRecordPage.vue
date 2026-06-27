@@ -1708,6 +1708,7 @@ import DateCell from '@/components/common/table/DateCell.vue';
 import { getKeyFields } from '@/utils/fieldDisplay';
 import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import DatePicker from '@/components/common/DatePicker.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
@@ -3428,50 +3429,49 @@ const fetchTask = async () => {
   }, 'Failed to load task');
 };
 
+const TASK_RELATIONSHIP_CONTEXTS = [
+  { appKey: 'platform', moduleKey: 'tasks' },
+  { appKey: 'sales', moduleKey: 'tasks' },
+  { appKey: 'crm', moduleKey: 'tasks' }
+];
+
+async function fetchTaskRelationshipBundle(appKey, moduleKey, recordId) {
+  const [linksRes, contextRes] = await Promise.all([
+    apiClient.get('/relationships/links', {
+      params: { appKey, moduleKey, recordId }
+    }).catch(() => null),
+    apiClient.get('/relationships/record-context', {
+      params: { appKey, moduleKey, recordId }
+    }).catch(() => null)
+  ]);
+
+  const links = linksRes?.success && Array.isArray(linksRes.data) ? linksRes.data : [];
+  const contextRelationships = contextRes?.success && Array.isArray(contextRes.data?.relationships)
+    ? contextRes.data.relationships
+    : [];
+
+  return { links, contextRelationships };
+}
+
 const fetchRelatedRecords = async () => {
   if (!task.value) return;
   try {
-    const contextCandidates = [
-      { appKey: 'platform', moduleKey: 'tasks' },
-      { appKey: 'sales', moduleKey: 'tasks' },
-      { appKey: 'crm', moduleKey: 'tasks' }
-    ];
+    const recordId = task.value._id;
+    let links = [];
+    let contextRelationships = [];
 
-    const linkResponses = await Promise.all(
-      contextCandidates.map(candidate =>
-        apiClient.get('/relationships/links', {
-          params: {
-            appKey: candidate.appKey,
-            moduleKey: candidate.moduleKey,
-            recordId: task.value._id
-          }
-        }).catch(() => null)
-      )
-    );
-
-    const links = linkResponses.flatMap((response) => (
-      response?.success && Array.isArray(response.data)
-        ? response.data
-        : []
-    ));
-
-    const contextResponses = await Promise.all(
-      contextCandidates.map(candidate =>
-        apiClient.get('/relationships/record-context', {
-          params: {
-            appKey: candidate.appKey,
-            moduleKey: candidate.moduleKey,
-            recordId: task.value._id
-          }
-        }).catch(() => null)
-      )
-    );
-
-    const contextRelationships = contextResponses.flatMap((response) => (
-      response?.success && Array.isArray(response.data?.relationships)
-        ? response.data.relationships
-        : []
-    ));
+    for (const candidate of TASK_RELATIONSHIP_CONTEXTS) {
+      const bundle = await fetchTaskRelationshipBundle(
+        candidate.appKey,
+        candidate.moduleKey,
+        recordId
+      );
+      links = links.concat(bundle.links);
+      contextRelationships = contextRelationships.concat(bundle.contextRelationships);
+      if (bundle.links.length > 0 || bundle.contextRelationships.length > 0) {
+        break;
+      }
+    }
 
     const toRow = (record) => {
       const id = record?.recordId || record?.id || record?._id;
@@ -3924,19 +3924,7 @@ const normalizePriorityOption = (option) => {
 
 const fetchTaskLifecycleFieldOptions = async () => {
   try {
-    const response = await apiClient.get('/modules');
-    const modules = Array.isArray(response)
-      ? response
-      : Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response?.data?.data)
-          ? response.data.data
-          : Array.isArray(response?.modules)
-            ? response.modules
-            : Array.isArray(response?.data?.modules)
-              ? response.data.modules
-              : [];
-    const tasksModule = modules.find(module => String(module?.key || '').toLowerCase() === 'tasks');
+    const tasksModule = await fetchModuleDefinitionCached('tasks');
     taskModuleDefinition.value = tasksModule || null;
     const taskFields = Array.isArray(tasksModule?.fields) ? tasksModule.fields : [];
 

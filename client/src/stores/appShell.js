@@ -93,89 +93,45 @@ export const useAppShellStore = defineStore('appShell', {
 
       try {
         const cacheKey = `ui-metadata:${authStore.user?._id || ''}`;
-        const cachedData = sessionStorage.getItem(cacheKey);
         const noStore = { cache: 'no-store' };
-        
+
+        // App/module composition for the shell sidebar comes from /ui/registry (see ensureCachedAppRegistry).
+        // This loader only hydrates dynamic routes — avoids redundant /ui/sidebar alongside Nav registry build.
+        await this.ensureCachedAppRegistry();
+
+        const cachedData = sessionStorage.getItem(cacheKey);
         if (cachedData) {
           try {
-            const { sidebar, routes } = JSON.parse(cachedData);
-            console.log('[AppShell] Using cached sidebar and routes from sessionStorage');
-            
-            if (sidebar?.success) {
-              const apps = sidebar.data?.apps || [];
-              this.availableApps = apps.filter(app => {
-                const appKeyUpper = app.appKey?.toUpperCase();
-                return appKeyUpper !== 'CONTROL_PLANE' && appKeyUpper !== 'CONTROL PLANE';
-              });
-
-              if (!this.activeApp && this.availableApps.length > 0) {
-                this.activeApp = this.availableApps[0].appKey;
-              }
-
-              this.updateSidebarModules();
+            const parsed = JSON.parse(cachedData);
+            const routesPayload = parsed?.routes ?? null;
+            if (routesPayload?.success) {
+              this.routes = routesPayload.data || [];
+              this.lastLoaded = new Date();
+              console.log('[AppShell] Using cached routes from sessionStorage');
+              return;
             }
-            
-            if (routes?.success) {
-              this.routes = routes.data || [];
-            }
-            
-            this.lastLoaded = new Date();
-            this.loading = false;
-            return;
           } catch (e) {
-            console.warn('[AppShell] Failed to parse cached metadata, fetching fresh:', e);
+            console.warn('[AppShell] Failed to parse cached routes, fetching fresh:', e);
             sessionStorage.removeItem(cacheKey);
           }
         }
 
-        const [sidebarData, routesData] = await Promise.all([
-          apiClient('/ui/sidebar', noStore),
-          apiClient('/ui/routes', noStore)
-        ]);
-
-        if (!sidebarData?.success) {
-          throw new Error(sidebarData?.message || 'Failed to load sidebar');
-        }
-
-        console.log('[AppShell] Sidebar API response:', {
-          success: sidebarData.success,
-          hasData: !!sidebarData.data,
-          appsCount: sidebarData.data?.apps?.length || 0,
-          dataStructure: sidebarData.data ? Object.keys(sidebarData.data) : []
-        });
-
-        const apps = sidebarData.data?.apps || [];
-        this.availableApps = apps.filter(app => {
-          const appKeyUpper = app.appKey?.toUpperCase();
-          return appKeyUpper !== 'CONTROL_PLANE' && appKeyUpper !== 'CONTROL PLANE';
-        });
-
-        console.log('[AppShell] Available apps after assignment:', this.availableApps.length);
-
-        if (!this.activeApp && this.availableApps.length > 0) {
-          this.activeApp = this.availableApps[0].appKey;
-          console.log('[AppShell] Set active app:', this.activeApp);
-        }
-
-        this.updateSidebarModules();
-        console.log('[AppShell] Sidebar modules updated:', this.sidebarModules.length);
+        const routesData = await apiClient('/ui/routes', noStore);
 
         if (routesData?.success) {
           this.routes = routesData.data || [];
+        } else {
+          this.routes = [];
         }
 
-        // Cache the response for future page loads within the session
         try {
-          sessionStorage.setItem(cacheKey, JSON.stringify({
-            sidebar: sidebarData,
-            routes: routesData
-          }));
+          sessionStorage.setItem(cacheKey, JSON.stringify({ routes: routesData }));
         } catch (e) {
-          console.warn('[AppShell] Failed to cache UI metadata:', e);
+          console.warn('[AppShell] Failed to cache UI routes:', e);
         }
 
         this.lastLoaded = new Date();
-        console.log('[AppShell] ✅ UI metadata loaded successfully:', {
+        console.log('[AppShell] ✅ UI routes loaded:', {
           apps: this.availableApps.length,
           modules: this.sidebarModules.length,
           routes: this.routes.length
@@ -190,7 +146,6 @@ export const useAppShellStore = defineStore('appShell', {
           organizationId: authStore.user?.organizationId
         });
         this.error = error.message;
-        this.availableApps = [];
         this.routes = [];
       } finally {
         this.loading = false;

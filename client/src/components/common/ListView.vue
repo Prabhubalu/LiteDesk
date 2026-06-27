@@ -1767,6 +1767,11 @@ const props = defineProps({
   parentSearchQuery: {
     type: String,
     default: undefined
+  },
+  /** ModuleList schedules initialListFetch — skip redundant mount emit('fetch') */
+  skipMountFetch: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -4223,13 +4228,15 @@ onMounted(async () => {
       emitCompiledFilters();
     } else if (pendingSearchEmit) {
       emitSearchToParent(pendingSearchEmit);
+    } else if (!props.skipMountFetch) {
+      emit('fetch');
     }
-    emit('fetch');
   } else {
     if (pendingSearchEmit) {
       emitSearchToParent(pendingSearchEmit);
+    } else if (!props.skipMountFetch) {
+      emit('fetch');
     }
-    emit('fetch');
   }
   } finally {
     await nextTick();
@@ -5152,7 +5159,6 @@ const handleViewFull = (row) => {
 
 const handlePageChange = (page) => {
   emit('update:pagination', { ...props.pagination, currentPage: page });
-  emit('fetch');
 };
 
 const handleSort = ({ key, order }) => {
@@ -5160,7 +5166,6 @@ const handleSort = ({ key, order }) => {
   const sortOrder = order || 'asc';
 
   emit('update:sort', { sortField, sortOrder });
-  emit('fetch');
 
   if (order) {
     localStorage.setItem(

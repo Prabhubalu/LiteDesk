@@ -1966,6 +1966,7 @@ onMounted(async () => {
       </div>
 
       <ListView
+        skip-mount-fetch
         :title="t('documents.knowledgeBaseTitle')"
         module-key="documents"
         :search-placeholder="t('documents.searchPlaceholder')"

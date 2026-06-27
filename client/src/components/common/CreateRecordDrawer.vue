@@ -190,6 +190,13 @@ import DynamicForm from './DynamicForm.vue';
 import DealRelationshipEditor from '@/components/deals/DealRelationshipEditor.vue';
 import QuoteLinesRecordSection from '@/components/record-page/sections/QuoteLinesRecordSection.vue';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
+import {
+  fetchPeopleListCached,
+  fetchOrganizationsListCached,
+  DEAL_RELATIONSHIP_PEOPLE_PARAMS,
+  DEAL_RELATIONSHIP_ORG_PARAMS,
+} from '@/utils/recordLookupCache';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -285,6 +292,11 @@ const props = defineProps({
   lockedFields: {
     type: Array,
     default: () => [] // Fields that should be readonly/locked (e.g., ['accountId'])
+  },
+  /** When provided (and key matches moduleKey), skips /modules fetch on drawer open. */
+  moduleDefinitionPrefetch: {
+    type: Object,
+    default: null
   },
   quickCreateMode: {
     type: Boolean,
@@ -492,15 +504,20 @@ const effectiveExcludeFields = computed(() => {
 // Fetch module (including Quick Create from Settings) when drawer opens
 async function fetchModuleForDrawer() {
   if (!props.moduleKey) return;
-  moduleOverrideLoading.value = true;
+  const keyLower = (props.moduleKey || '').toLowerCase().trim();
+  const prefetched =
+    props.moduleDefinitionPrefetch &&
+    String(props.moduleDefinitionPrefetch?.key || '').toLowerCase().trim() === keyLower
+      ? props.moduleDefinitionPrefetch
+      : null;
+  if (!prefetched) {
+    moduleOverrideLoading.value = true;
+  }
   moduleOverrideFromSettings.value = null;
   try {
-    const data = await apiClient.get('/modules');
-    const modulesList = Array.isArray(data)
-      ? data
-      : (Array.isArray(data?.data) ? data.data : (Array.isArray(data?.modules) ? data.modules : []));
-    if (!modulesList.length) return;
-    const keyLower = (props.moduleKey || '').toLowerCase().trim();
+    const moduleDefinition = prefetched || (await fetchModuleDefinitionCached(props.moduleKey));
+    if (!moduleDefinition) return;
+    const modulesList = [moduleDefinition];
     const currentPath = String(
       route.path ||
         activeTab.value?.path ||
@@ -1236,8 +1253,8 @@ watch(() => [props.isOpen, props.moduleKey], async ([open, key]) => {
   }
   try {
     const [peopleRes, orgRes] = await Promise.all([
-      apiClient.get('/people', { params: { limit: 200 } }),
-      apiClient.get('/v2/organization', { params: { limit: 200 } })
+      fetchPeopleListCached(DEAL_RELATIONSHIP_PEOPLE_PARAMS),
+      fetchOrganizationsListCached(DEAL_RELATIONSHIP_ORG_PARAMS),
     ]);
     const normalizeList = (response) => {
       if (Array.isArray(response)) return response;
