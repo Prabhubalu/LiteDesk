@@ -64,6 +64,12 @@ import { useI18n } from 'vue-i18n';
 import { ref, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
 import DynamicForm from '@/components/common/DynamicForm.vue';
+import { useAuthStore } from '@/stores/auth';
+import {
+  applyCreateOwnerDefaultsToForm,
+  applyCreateOwnerDefaultsToPayload,
+  resolveCurrentUserId
+} from '@/utils/recordCreateOwnerDefaults';
 
 const props = defineProps({
   organization: {
@@ -73,6 +79,7 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const authStore = useAuthStore();
 
 const emit = defineEmits(['close', 'saved']);
 
@@ -98,11 +105,11 @@ const initializeForm = (module) => {
   // For edit mode, initialize all fields
   let fieldsToInitialize = module.fields || [];
   if (!isEditing.value && module.quickCreate && Array.isArray(module.quickCreate) && module.quickCreate.length > 0) {
-    // Create mode: Only initialize quickCreate fields
     const quickCreateKeys = new Set(module.quickCreate.map(k => k?.toLowerCase()));
     fieldsToInitialize = (module.fields || []).filter(f => {
       if (!f.key) return false;
-      return quickCreateKeys.has(f.key.toLowerCase());
+      const keyLower = f.key.toLowerCase();
+      return quickCreateKeys.has(keyLower) || f.required === true;
     });
     console.log('[OrganizationFormModal] Create mode - initializing only quickCreate fields:', {
       quickCreate: module.quickCreate,
@@ -171,7 +178,11 @@ const initializeForm = (module) => {
     // Merge organization data with form defaults
     form.value = { ...initialForm, ...orgData };
   } else {
-    form.value = initialForm;
+    form.value = applyCreateOwnerDefaultsToForm(
+      initialForm,
+      'organizations',
+      resolveCurrentUserId(authStore.user)
+    );
   }
 };
 
@@ -225,7 +236,12 @@ const handleSubmit = async (formData) => {
       data = await apiClient.put(`/v2/organization/${props.organization._id}`, submitData);
     } else {
       // Create organization - use v2 API route
-      data = await apiClient.post('/v2/organization', submitData);
+      const createPayload = applyCreateOwnerDefaultsToPayload(
+        submitData,
+        'organizations',
+        resolveCurrentUserId(authStore.user)
+      );
+      data = await apiClient.post('/v2/organization', createPayload);
     }
     
     if (data.success) {

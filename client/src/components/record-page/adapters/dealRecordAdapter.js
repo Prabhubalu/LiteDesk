@@ -23,7 +23,7 @@ import {
 } from '@heroicons/vue/24/outline';
 import { getDealFieldMetadata, getDealSystemFields } from '@/platform/fields/dealFieldModel';
 import { getGlobalSystemFieldKeys } from '@/platform/fields/fieldCapabilityEngine';
-import { getKeyFields, getFieldDisplayLabel } from '@/utils/fieldDisplay';
+import { getKeyFields, getFieldDisplayLabel, stripHtmlForDetailDisplay } from '@/utils/fieldDisplay';
 import { i18n } from '@/i18n/index';
 import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
 import { resolvePipelineLabel, resolveStageOrPicklistLabel } from '@/utils/configurableLabelResolver';
@@ -243,19 +243,28 @@ const resolveDetailDisplayValue = (record, fieldKey, fieldType, formatDate) => {
 
   if (typeof rawValue === 'object') {
     if (fieldKey === 'ownerId') {
-      return [rawValue.firstName, rawValue.lastName].filter(Boolean).join(' ') || rawValue.email || '';
+      return stripHtmlForDetailDisplay(
+        [rawValue.firstName, rawValue.lastName].filter(Boolean).join(' ') || rawValue.email || '',
+        { key: fieldKey }
+      );
     }
     // People/contact: prefer first_name + last_name (server) or firstName + lastName, then name, then email
     if (fieldKey === 'contactId') {
       const first = rawValue.first_name ?? rawValue.firstName ?? '';
       const last = rawValue.last_name ?? rawValue.lastName ?? '';
       const name = [first, last].filter(Boolean).join(' ').trim();
-      return name || rawValue.name || rawValue.label || rawValue.title || rawValue.email || '';
+      return stripHtmlForDetailDisplay(
+        name || rawValue.name || rawValue.label || rawValue.title || rawValue.email || '',
+        { key: fieldKey }
+      );
     }
-    return rawValue.name || rawValue.label || rawValue.title || rawValue.email || rawValue._id || '';
+    return stripHtmlForDetailDisplay(
+      rawValue.name || rawValue.label || rawValue.title || rawValue.email || rawValue._id || '',
+      { key: fieldKey }
+    );
   }
 
-  return String(rawValue);
+  return stripHtmlForDetailDisplay(String(rawValue), { key: fieldKey });
 };
 
 const isLookupField = (configuredField) => {

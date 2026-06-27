@@ -103,7 +103,13 @@ export const useRecordPageLifecycle = (options = {}) => {
     if (freshness && recordId && typeof options.fetchRecord === 'function') {
       const decision = await resolveRecordDetailRefreshOnActivate(freshness, recordId);
       if (decision === 'refresh') {
-        await options.fetchRecord({ reason: decision });
+        const hasCachedRecord = typeof freshness.getUpdatedAtMs === 'function'
+          && freshness.getUpdatedAtMs() != null;
+        await options.fetchRecord(
+          hasCachedRecord
+            ? { soft: true, silent: true, reason: decision }
+            : { reason: decision }
+        );
       }
     }
 

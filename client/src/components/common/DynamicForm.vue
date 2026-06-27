@@ -850,8 +850,6 @@ const orderedFields = computed(() => {
   const ordered = [];
   const seen = new Set(); // Use Set with lowercase keys for case-insensitive deduplication
   
-  // CRITICAL: In quickCreateMode, ONLY process fields from quickCreate array
-  // Do NOT add any other fields, even required ones
   const quickCreateKeysSet = new Set(quickCreate.map(k => k?.toLowerCase().trim()).filter(Boolean));
   
   formDbg('🔍 Processing quickCreate fields:', {
@@ -970,37 +968,30 @@ const orderedFields = computed(() => {
     strictMode: props.quickCreateMode ? 'ONLY quickCreate fields (no fallback)' : 'May include fallback fields'
   });
   
-  // CRITICAL: In quickCreateMode, ONLY show fields from quickCreate array
-  // Do NOT fall back to required fields - strictly respect admin's configuration
-  // Only if quickCreate array is empty AND we're NOT in strict quickCreateMode, fall back to required fields
-  // In quickCreateMode, we strictly respect the admin's configuration (even if empty)
-  if (quickCreate.length === 0 && !props.quickCreateMode) {
-    formDbg('⚠️ quickCreate is empty and quickCreateMode is false - falling back to required fields');
-    for (const field of allFields) {
-      const fieldKeyNorm = normalizeFieldKeyForSystemMatch(field.key);
-      const isSystem = isFormSystemField(field);
-      
-      // Check dependency visibility for required fields too
-      let isVisible = true;
-      if (field.dependencies && Array.isArray(field.dependencies) && field.dependencies.length > 0) {
-        const depState = getFieldDependencyState(field, currentFormData, allFields, {
-          moduleKey: props.moduleKey,
-        });
-        isVisible = depState.visible !== false;
-      }
-      
-      if (field.required && 
-          !seen.has(fieldKeyNorm) && 
-          !isSystem &&
-          isVisible) {
-        ordered.push(field);
-        seen.add(fieldKeyNorm);
-      }
+  // Always include mandatory fields in quick create, even when not in quickCreate config
+  for (const field of allFields) {
+    const fieldKeyNorm = normalizeFieldKeyForSystemMatch(field.key);
+    const isSystem = isFormSystemField(field);
+    const isExcluded = props.excludeFields.some(
+      excluded => normalizeFieldKeyForSystemMatch(excluded) === fieldKeyNorm
+    );
+
+    let isVisible = true;
+    if (field.dependencies && Array.isArray(field.dependencies) && field.dependencies.length > 0) {
+      const depState = getFieldDependencyState(field, currentFormData, allFields, {
+        moduleKey: props.moduleKey,
+      });
+      isVisible = depState.visible !== false;
     }
-  } else if (props.quickCreateMode && quickCreate.length === 0) {
-    // In strict quickCreateMode with empty config, return empty array (respect admin's choice)
-    formDbg('⚠️ quickCreateMode is true but quickCreate is empty - returning empty fields array (respecting admin configuration)');
-    return [];
+
+    if (field.required &&
+        !seen.has(fieldKeyNorm) &&
+        !isSystem &&
+        !isExcluded &&
+        isVisible) {
+      ordered.push(field);
+      seen.add(fieldKeyNorm);
+    }
   }
   
   // Prioritize quickCreate order - only use field.order as tiebreaker for fields not in quickCreate
@@ -1034,23 +1025,14 @@ const orderedFields = computed(() => {
     strictMode: props.quickCreateMode ? 'ONLY showing quickCreate fields' : 'May include fallback fields'
   });
   
-  // CRITICAL: In quickCreateMode, return ONLY fields from quickCreate (even if empty)
-  // This ensures create forms strictly respect Settings configuration
   if (props.quickCreateMode) {
-    // Double-check: Filter ordered to ONLY include fields that are in quickCreate array
-    // Use the same quickCreateKeysSet we created earlier for consistency
     const filtered = ordered.filter(f => {
-      const inQuickCreate = f.key && quickCreateKeysSet.has(f.key.toLowerCase());
-      if (!inQuickCreate) {
-        formWarn(`⚠️ Filtering out field "${f.key}" - not in quickCreate array`, {
-          fieldKey: f.key,
-          quickCreateArray: quickCreate,
-          quickCreateKeysSet: Array.from(quickCreateKeysSet)
-        });
-      }
-      return inQuickCreate;
+      const fieldKeyLower = f.key?.toLowerCase();
+      const inQuickCreate = fieldKeyLower && quickCreateKeysSet.has(fieldKeyLower);
+      const isRequired = f.required === true;
+      return inQuickCreate || isRequired;
     });
-    formDbg('✅ quickCreateMode enabled - filtered to ONLY quickCreate fields:', {
+    formDbg('✅ quickCreateMode enabled - filtered to quickCreate + required fields:', {
       before: ordered.length,
       after: filtered.length,
       fields: filtered.map(f => ({ 

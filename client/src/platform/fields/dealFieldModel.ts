@@ -32,7 +32,7 @@
  *    - fieldScope: 'CORE' indicates platform-level ownership
  * 
  * 4. Quick Create eligibility
- *    - Essential fields: name (required), amount, stage, expectedCloseDate, ownerId
+ *    - Essential fields: name (required), amount, stage, expectedCloseDate, ownerId, status
  *    - Excluded: description, notes, lineItems, tracking fields, system fields
  * 
  * ============================================================================
@@ -580,7 +580,7 @@ export function getDealParticipationFields(appKey: string): string[] {
 
 /**
  * Get all fields eligible for Quick Create
- * Essential fields: name (required), amount, stage, expectedCloseDate, ownerId
+ * Essential fields: name (required), amount, stage, expectedCloseDate, ownerId, status
  */
 export function getDealQuickCreateFields(): string[] {
   return Object.entries(DEAL_FIELD_METADATA)

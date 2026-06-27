@@ -1032,5 +1032,34 @@
   "importDuplicateInFileHandlingDesc": {
     "message": "{count} repeated rows will be skipped automatically. The first occurrence of each value is kept.",
     "description": "Info block description for in-file duplicate handling"
+  },
+  "importRequiredFieldsLegend": {
+    "message": "Required fields are marked with * in the dropdown."
+  },
+  "importRequiredFieldsList": {
+    "message": "Required fields: {fields}"
+  },
+  "importUnmappedRequiredFields": {
+    "message": "Map these required fields to continue: {fields}"
+  },
+  "importDefaultValueHeader": {
+    "message": "Default value",
+    "description": "Import mapping table header for CSV override value"
+  },
+  "importDefaultValuePlaceholder": {
+    "message": "Override CSV value",
+    "description": "Placeholder for import default value text input"
+  },
+  "importDefaultValueNone": {
+    "message": "None",
+    "description": "Empty option for import default picklist value"
+  },
+  "importDefaultValueMultiPicklistPlaceholder": {
+    "message": "Option 1, Option 2",
+    "description": "Placeholder for multi-picklist import default value"
+  },
+  "importDefaultValueUnsupportedHint": {
+    "message": "Default values are not supported for this field type",
+    "description": "Tooltip for unsupported import default value field types"
   }
 }

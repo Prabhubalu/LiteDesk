@@ -1011,6 +1011,14 @@
             </div>
           </template>
 
+          <template #tab-details>
+            <RecordDetailsTabPanel
+              :record="deal"
+              :adapter="dealDetailsPaneAdapter"
+              :context="dealDetailsPaneContext"
+            />
+          </template>
+
           <template #tab-integrations>
             <div class="flex flex-col h-full">
               <div class="record-context-panel__header flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
@@ -1212,7 +1220,10 @@ import { useRecordPresence } from '@/composables/useRecordPresence';
 import { createActivityTimelineRefSetter } from '@/components/activity/useRecordActivityAdapter';
 import { createDealActivityUi } from '@/components/activity/adapters/dealActivityUiAdapter';
 import { createDealRecordAdapter } from '@/components/record-page/adapters/dealRecordAdapter';
+import { createGenericRecordAdapter } from '@/components/record-page/adapters/genericRecordAdapter';
+import RecordDetailsTabPanel from '@/components/record-page/RecordDetailsTabPanel.vue';
 import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
+import { resolveFieldContext } from '@/utils/fieldContextFilter';
 import { formatRelativeTime } from '@/utils/relativeTime';
 import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
 import { resolveStageOrPicklistLabel } from '@/utils/configurableLabelResolver';
@@ -1246,7 +1257,8 @@ import {
   LinkIcon,
   PuzzlePieceIcon,
   TagIcon,
-  DocumentDuplicateIcon
+  DocumentDuplicateIcon,
+  Bars3BottomLeftIcon
 } from '@heroicons/vue/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid';
 import Avatar from '@/components/common/Avatar.vue';
@@ -1495,7 +1507,10 @@ const rightPaneTabs = computed(() => {
   if (showRecordDocumentsTab.value) {
     tabs.push({ id: 'documents', name: t('records.genericTabDocuments'), icon: DocumentDuplicateIcon });
   }
-  tabs.push({ id: 'integrations', name: t('records.genericIntegrations'), icon: PuzzlePieceIcon });
+  tabs.push(
+    { id: 'details', name: t('records.detailsTitle'), icon: Bars3BottomLeftIcon },
+    { id: 'integrations', name: t('records.genericIntegrations'), icon: PuzzlePieceIcon }
+  );
   return tabs;
 });
 
@@ -1824,6 +1839,42 @@ const dealSectionContext = computed(() => ({
     return [];
   }
 }));
+
+const dealDetailsPaneContext = computed(() => ({
+  expandedLeftSection: '',
+  module: 'deal',
+  moduleKey: 'deals',
+  openTab,
+  fieldContext: resolveFieldContext(route.path, route.query),
+  hideHeader: true
+}));
+
+const dealDetailsPaneAdapter = computed(() => {
+  if (!deal.value?._id || !dealModuleDefinition.value) return null;
+  return createGenericRecordAdapter({
+    sectionLabels: createRecordSectionLabels(t),
+    formatDate: (d) =>
+      (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
+    moduleDefinition: dealModuleDefinition.value,
+    canEditDetails: () => canEditDeal.value,
+    saveDetailField: handleDealDetailFieldSave,
+    getEntityOptions: (fieldKey) => {
+      const key = String(fieldKey || '').toLowerCase().trim();
+      if (key === 'contactid') return dealPeopleOptions.value;
+      if (key === 'accountid' || key === 'organizationrefid') return dealOrganizationOptions.value;
+      if (
+        key === 'ownerid' ||
+        key === 'assignedto' ||
+        key === 'createdby' ||
+        key === 'updatedby' ||
+        key === 'modifiedby'
+      ) {
+        return dealUsers.value;
+      }
+      return [];
+    }
+  });
+});
 
 const handleEmbedClose = () => {
   if (props.embed) emit('close');

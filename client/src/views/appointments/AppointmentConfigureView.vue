@@ -91,18 +91,24 @@
                   type="text"
                   class="min-w-0 flex-1 border-0 bg-white px-3 py-2.5 text-gray-900 focus:ring-0 dark:bg-gray-900 dark:text-white"
                   @input="onSlugInput"
+                  @blur="onSlugBlur"
                 />
               </div>
               <p v-if="!slugAvailable" class="mt-1 text-xs text-amber-600 dark:text-amber-400">{{ t('appointments.slugTaken') }}</p>
             </div>
-            <div v-if="bookingUrl" class="mt-4 flex items-center gap-2 rounded-xl bg-indigo-50/80 p-3 dark:bg-indigo-950/40">
+            <div v-if="liveBookingUrl" class="mt-4 flex items-center gap-2 rounded-xl bg-indigo-50/80 p-3 dark:bg-indigo-950/40">
               <LinkIcon class="h-5 w-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
-              <a :href="bookingUrl" target="_blank" rel="noopener" class="min-w-0 truncate text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300">{{ bookingUrl }}</a>
+              <a :href="liveBookingUrl" target="_blank" rel="noopener" class="min-w-0 truncate text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300">{{ liveBookingUrl }}</a>
               <button type="button" class="shrink-0 rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-indigo-600 shadow-sm transition hover:bg-indigo-50 dark:bg-gray-800" @click="copyLink">{{ t('actions.copy') }}</button>
             </div>
           </section>
 
-          <AppointmentEmbedSnippet v-if="form.slug" :slug="form.slug" />
+          <AppointmentEmbedSnippet
+            v-if="embedSlug"
+            :slug="embedSlug"
+            :preview-ready="embedPreviewReady"
+            :preview-loading="draftSaving"
+          />
 
           <AppointmentBookingScheduleSection
             v-model:schedule-source="form.scheduleSource"
@@ -328,7 +334,6 @@ const {
   saving,
   error,
   slugAvailable,
-  bookingUrl,
   fetchMyConfig,
   fetchUserConfig,
   saveUserConfig,
@@ -359,6 +364,22 @@ const calendarStatus = ref({
 });
 const calendarConnecting = ref(false);
 const microsoftCalendarConnecting = ref(false);
+const draftSaving = ref(false);
+
+const embedSlug = computed(() => {
+  if (!slugAvailable.value || !form.slug) return '';
+  return config.value?.slug || form.slug;
+});
+
+const embedPreviewReady = computed(() => Boolean(config.value?._id && config.value?.slug));
+
+const liveBookingUrl = computed(() => {
+  const slug = embedSlug.value;
+  if (!slug) return '';
+  if (config.value?.bookingUrl && config.value.slug === slug) return config.value.bookingUrl;
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  return `${origin}/book/${slug}`;
+});
 
 const googleCalendarConnected = computed(
   () => calendarStatus.value.google?.connected || calendarStatus.value.connected
@@ -401,10 +422,35 @@ function onSlugInput() {
   slugDebounce = setTimeout(() => checkSlug(form.slug, config.value?._id), 400);
 }
 
-function maybeAutoSlug() {
+async function maybeAutoSlug() {
   if (!form.slug && form.displayName) {
     form.slug = slugifyClient(form.displayName);
-    checkSlug(form.slug);
+    await checkSlug(form.slug, config.value?._id);
+  }
+  await autoSaveIfNeeded();
+}
+
+async function onSlugBlur() {
+  await checkSlug(form.slug, config.value?._id);
+  await autoSaveIfNeeded();
+}
+
+async function autoSaveIfNeeded() {
+  if (!form.slug || !slugAvailable.value || saving.value || draftSaving.value) return;
+
+  const needsSave = !config.value?._id
+    || form.slug !== config.value.slug
+    || form.displayName !== config.value.displayName;
+
+  if (!needsSave) return;
+
+  draftSaving.value = true;
+  try {
+    await persistConfig({ silent: true });
+  } catch {
+    /* preview stays pending until explicit save */
+  } finally {
+    draftSaving.value = false;
   }
 }
 
@@ -413,7 +459,7 @@ function previewSlot(i) {
   return `${h}:00 ${h < 12 ? 'AM' : 'PM'}`;
 }
 
-async function handleSave() {
+async function persistConfig({ silent = false } = {}) {
   if (form.scheduleSource === 'legacy') {
     form.workingHours.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || form.workingHours.timezone;
   }
@@ -422,8 +468,14 @@ async function handleSave() {
   } else {
     await saveConfig({ ...form });
   }
-  notifySuccess(t('appointments.pageSaved'));
-  await refreshCalendarStatus();
+  if (!silent) {
+    notifySuccess(t('appointments.pageSaved'));
+    await refreshCalendarStatus();
+  }
+}
+
+async function handleSave() {
+  await persistConfig();
 }
 
 async function refreshCalendarStatus() {
@@ -543,8 +595,8 @@ function goToPagesHub() {
 }
 
 async function copyLink() {
-  if (!bookingUrl.value) return;
-  await navigator.clipboard.writeText(bookingUrl.value);
+  if (!liveBookingUrl.value) return;
+  await navigator.clipboard.writeText(liveBookingUrl.value);
   notifySuccess(t('appointments.linkCopied'));
 }
 

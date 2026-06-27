@@ -58,6 +58,7 @@
                   type="text"
                   class="min-w-0 flex-1 border-0 bg-white px-3 py-2.5 dark:bg-gray-900 dark:text-white"
                   @input="onSlugInput"
+                  @blur="onSlugBlur"
                 />
               </div>
               <p v-if="!slugAvailable" class="mt-1 text-xs text-amber-600">{{ t('appointments.urlTaken') }}</p>
@@ -130,18 +131,23 @@
           </div>
         </section>
 
-        <div v-if="bookingUrl" class="rounded-xl bg-indigo-50 p-4 dark:bg-indigo-950/40">
+        <div v-if="liveBookingUrl" class="rounded-xl bg-indigo-50 p-4 dark:bg-indigo-950/40">
           <p class="text-sm font-medium text-indigo-900 dark:text-indigo-200">{{ t('appointments.teamBookingLink') }}</p>
-          <a :href="bookingUrl" target="_blank" rel="noopener" class="mt-1 block truncate text-sm text-indigo-600 hover:underline dark:text-indigo-400">{{ bookingUrl }}</a>
+          <a :href="liveBookingUrl" target="_blank" rel="noopener" class="mt-1 block truncate text-sm text-indigo-600 hover:underline dark:text-indigo-400">{{ liveBookingUrl }}</a>
         </div>
 
-        <AppointmentEmbedSnippet v-if="form.slug" :slug="form.slug" />
+        <AppointmentEmbedSnippet
+          v-if="embedSlug"
+          :slug="embedSlug"
+          :preview-ready="embedPreviewReady"
+          :preview-loading="draftSaving"
+        />
       </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref, computed, onMounted } from 'vue';
+import { reactive, ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
@@ -172,6 +178,7 @@ const isEdit = computed(() => !!teamId.value);
 
 const loading = ref(false);
 const saving = ref(false);
+const draftSaving = ref(false);
 const error = ref(null);
 const slugAvailable = ref(true);
 const savedConfig = ref(null);
@@ -196,10 +203,17 @@ const form = reactive({
   branding: { themeColor: '#4f46e5', welcomeNote: '', logoUrl: '' }
 });
 
-const bookingUrl = computed(() => {
-  const slug = savedConfig.value?.slug || form.slug;
+const embedSlug = computed(() => {
+  if (!slugAvailable.value || !form.slug) return '';
+  return savedConfig.value?.slug || form.slug;
+});
+
+const embedPreviewReady = computed(() => Boolean(savedConfig.value?._id && savedConfig.value?.slug));
+
+const liveBookingUrl = computed(() => {
+  const slug = embedSlug.value;
   if (!slug) return '';
-  if (savedConfig.value?.bookingUrl) return savedConfig.value.bookingUrl;
+  if (savedConfig.value?.bookingUrl && savedConfig.value.slug === slug) return savedConfig.value.bookingUrl;
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   return `${origin}/book/${slug}`;
 });
@@ -223,10 +237,36 @@ async function checkSlug(slug) {
   slugAvailable.value = res.success && res.available;
 }
 
-function maybeAutoSlug() {
+async function maybeAutoSlug() {
   if (!form.slug && form.displayName) {
     form.slug = slugifyClient(form.displayName);
-    checkSlug(form.slug);
+    await checkSlug(form.slug);
+  }
+  await autoSaveIfNeeded();
+}
+
+async function onSlugBlur() {
+  await checkSlug(form.slug);
+  await autoSaveIfNeeded();
+}
+
+async function autoSaveIfNeeded() {
+  if (!form.slug || !slugAvailable.value || saving.value || draftSaving.value) return;
+  if (!isEdit.value && form.memberUserIds.length === 0) return;
+
+  const needsSave = !savedConfig.value?._id
+    || form.slug !== savedConfig.value.slug
+    || form.displayName !== savedConfig.value.displayName;
+
+  if (!needsSave) return;
+
+  draftSaving.value = true;
+  try {
+    await persistTeamConfig({ silent: true });
+  } catch {
+    /* preview stays pending until explicit save */
+  } finally {
+    draftSaving.value = false;
   }
 }
 
@@ -278,26 +318,31 @@ async function loadTeam() {
   }
 }
 
-async function handleSave() {
-  saving.value = true;
-  error.value = null;
+async function persistTeamConfig({ silent = false } = {}) {
   if (form.scheduleSource === 'legacy') {
     form.workingHours.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || form.workingHours.timezone;
   }
+  const payload = { ...form };
+  const res = isEdit.value
+    ? await apiClient.put(`/appointments/config/team/${teamId.value}`, payload)
+    : await apiClient.post('/appointments/config/team', payload);
+  if (!res.success) {
+    throw new Error(res.message || t('appointments.saveFailed'));
+  }
+  savedConfig.value = res.data;
+  if (!silent) {
+    notifySuccess(t('appointments.teamPageSaved'));
+  }
+  if (!isEdit.value && res.data._id) {
+    router.replace({ name: 'appointments-team-configure', params: { id: res.data._id } });
+  }
+}
+
+async function handleSave() {
+  saving.value = true;
+  error.value = null;
   try {
-    const payload = { ...form };
-    const res = isEdit.value
-      ? await apiClient.put(`/appointments/config/team/${teamId.value}`, payload)
-      : await apiClient.post('/appointments/config/team', payload);
-    if (res.success) {
-      savedConfig.value = res.data;
-      notifySuccess(t('appointments.teamPageSaved'));
-      if (!isEdit.value && res.data._id) {
-        router.replace({ name: 'appointments-team-configure', params: { id: res.data._id } });
-      }
-    } else {
-      throw new Error(res.message || t('appointments.saveFailed'));
-    }
+    await persistTeamConfig();
   } catch (e) {
     error.value = e.message || t('appointments.saveFailed');
   } finally {
@@ -309,4 +354,13 @@ onMounted(async () => {
   await fetchUsers();
   if (isEdit.value) await loadTeam();
 });
+
+watch(
+  () => form.memberUserIds.length,
+  async (len, prevLen) => {
+    if (len > 0 && prevLen === 0) {
+      await autoSaveIfNeeded();
+    }
+  }
+);
 </script>

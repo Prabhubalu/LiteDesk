@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue';
+import { stripHtmlForDetailDisplay } from '@/utils/fieldDisplay';
 
 const TASK_DEFAULT_KEY_FIELDS = Object.freeze(['status', 'priority', 'startDate', 'dueDate', 'assignedTo', 'estimatedHours']);
 const DETAIL_RENDERABLE_KEYS = Object.freeze(new Set([
@@ -153,7 +154,8 @@ export const useTaskSectionDataProviders = (context = {}) => {
     if (customField) {
       const value = record[fieldKey] ?? customField.value;
       if (Array.isArray(value)) return value.join(', ');
-      return value == null || value === '' ? '' : String(value);
+      if (value == null || value === '') return '';
+      return stripHtmlForDetailDisplay(String(value), customField);
     }
 
     const rawValue = record[fieldKey];
@@ -162,7 +164,7 @@ export const useTaskSectionDataProviders = (context = {}) => {
     if (typeof rawValue === 'object') {
       return rawValue.name || rawValue.label || rawValue.title || rawValue._id || '';
     }
-    return String(rawValue);
+    return stripHtmlForDetailDisplay(String(rawValue), { key: fieldKey });
   };
 
   const getTaskDetailFieldRawValue = (record, fieldKey) => {

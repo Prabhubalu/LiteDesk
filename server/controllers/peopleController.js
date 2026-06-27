@@ -187,13 +187,15 @@ exports.create = async (req, res) => {
     
     const { extractCustomFields } = require('../utils/customFieldsExtractor');
     const { assignResolvedSource } = require('../services/sourceResolver');
+    const { applyCreateOwnerDefaults } = require('../utils/recordCreateOwnerDefaults');
     const { standardPayload, customFieldsSet } = extractCustomFields(strippedBody, People);
+    const payloadWithOwnerDefaults = applyCreateOwnerDefaults(standardPayload, 'people', req.user._id);
 
     const body = {
-      ...standardPayload,
+      ...payloadWithOwnerDefaults,
       organizationId: req.user.organizationId,
       createdBy: req.user._id,
-      assignedTo: standardPayload.assignedTo || req.user._id,
+      assignedTo: payloadWithOwnerDefaults.assignedTo || req.user._id,
       ...(Object.keys(customFieldsSet).length > 0 && { customFields: customFieldsSet }),
       // Add initial activity log for record creation
       activityLogs: [{

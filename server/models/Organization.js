@@ -391,9 +391,11 @@ const OrganizationSchema = new mongoose.Schema({
         ref: 'User', 
         index: true 
     },
-    assignedTo: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User' 
+    assignedTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true
     },
     primaryContact: { 
         type: mongoose.Schema.Types.ObjectId, 

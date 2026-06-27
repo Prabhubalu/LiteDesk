@@ -43,6 +43,10 @@ const {
 } = require('../constants/defaultDocumentRelationships');
 const { DEFAULT_TASK_TYPE_OPTIONS } = require('../constants/taskTypes');
 const { filterFieldsByContext } = require('../utils/fieldContextFilter');
+const {
+    isModuleOwnerField,
+    applyOwnerFieldRequiredToModuleFields
+} = require('../utils/recordCreateOwnerDefaults');
 
 const MODULE_APP_KEY_BY_KEY = Object.freeze({
     people: 'sales',
@@ -1616,15 +1620,17 @@ function getBaseFieldsForKey(key) {
                     // For dependency-driven required fields (like events.reviewerId), the module definition must NOT mark them required globally.
                     required: (key === 'events' && name === 'reviewerId')
                         ? false
-                        : (key === 'quotes' && isInitialQuoteRequiredField(name))
+                        : isModuleOwnerField(key, name)
                             ? true
-                            : (key === 'sales_orders' && isInitialSalesOrderRequiredField(name))
+                            : (key === 'quotes' && isInitialQuoteRequiredField(name))
                                 ? true
-                                : (key === 'invoices' && isInitialInvoiceRequiredField(name))
+                                : (key === 'sales_orders' && isInitialSalesOrderRequiredField(name))
                                     ? true
-                                    : (key === 'payments' && isInitialPaymentRequiredField(name))
+                                    : (key === 'invoices' && isInitialInvoiceRequiredField(name))
                                         ? true
-                                        : !!path.isRequired,
+                                        : (key === 'payments' && isInitialPaymentRequiredField(name))
+                                            ? true
+                                            : !!path.isRequired,
                     options: eventTypeOptions,
                     defaultValue: eventTypeDefaultValue,
                     // Use placeholder as helper text for Lookup fields (shown under label in UI); never show technical IDs.
@@ -2867,6 +2873,9 @@ exports.listModules = async (req, res) => {
                         if (savedField.required === undefined) {
                             savedField.required = baseField.required;
                         }
+                        if (isModuleOwnerField(sys.key, savedField.key)) {
+                            savedField.required = true;
+                        }
                         // Default keyField from base so default key fields (e.g. people: organization, email, phone, assignedTo) show in field configuration
                         if (savedField.keyField === undefined) {
                             savedField.keyField = !!baseField.keyField;
@@ -3619,6 +3628,7 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'cases') {
                     finalFields = enrichCasesModuleFields(finalFields);
                 }
+                finalFields = applyOwnerFieldRequiredToModuleFields(finalFields, sys.key);
                 let resolvedRelationships = shouldUseOverrideRelationships(override, sys)
                     ? override.relationships
                     : (sys.relationships || []);
@@ -3734,6 +3744,7 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'events') {
                     fieldsToPush = (Array.isArray(fieldsToPush) ? fieldsToPush : []).map(normalizeEventFieldConfig);
                 }
+                fieldsToPush = applyOwnerFieldRequiredToModuleFields(fieldsToPush, sys.key);
                 const defaultRelationships = sys.key === 'quotes'
                     ? cloneQuoteDefaultRelationships()
                     : sys.key === 'documents'

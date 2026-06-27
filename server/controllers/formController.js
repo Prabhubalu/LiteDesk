@@ -172,8 +172,11 @@ exports.createForm = async (req, res) => {
             }
         }
 
+        const { applyCreateOwnerDefaults } = require('../utils/recordCreateOwnerDefaults');
+        const bodyWithOwnerDefaults = applyCreateOwnerDefaults(req.body, 'forms', req.user._id);
+
         const payload = {
-            ...req.body,
+            ...bodyWithOwnerDefaults,
             organizationId: req.user.organizationId,
             createdBy: req.user._id,
             modifiedBy: req.user._id

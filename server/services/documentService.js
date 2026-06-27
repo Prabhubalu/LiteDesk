@@ -38,6 +38,7 @@ const { indexDocumentSemanticEmbedding } = require('./documentSemanticIndexServi
 const {
   listContentVersions
 } = require('../utils/descriptionVersionHelper');
+const { applyCreateOwnerDefaults } = require('../utils/recordCreateOwnerDefaults');
 const User = require('../models/User');
 
 const USER_POPULATE = 'firstName lastName email avatar username';
@@ -125,6 +126,30 @@ function normalizeRecordObjectId(recordId) {
     return new mongoose.Types.ObjectId(id);
   }
   return recordId;
+}
+
+function resolveDocumentOwnerId(payload, userId) {
+  const withDefaults = applyCreateOwnerDefaults(
+    { ownerId: payload?.ownerId },
+    'documents',
+    userId
+  );
+  const ownerId = withDefaults.ownerId || userId;
+  if (!ownerId) {
+    const error = new Error('Document owner is required');
+    error.statusCode = 400;
+    error.code = 'DOCUMENT_OWNER_REQUIRED';
+    throw error;
+  }
+  return ownerId;
+}
+
+function normalizeDocumentFolderId(folderId) {
+  if (folderId == null || folderId === '' || folderId === 'root') return null;
+  const id = String(folderId).trim();
+  const mongoose = require('mongoose');
+  if (!mongoose.Types.ObjectId.isValid(id) || id.length !== 24) return null;
+  return id;
 }
 
 async function findTrashedUploadMatch({ organizationId, checksum, title }) {
@@ -627,7 +652,7 @@ async function createDocument({
     description: payload.description || '',
     documentType: isExternalLink ? 'external_link' : (payload.documentType || 'rich_document'),
     category: payload.category || null,
-    folderId: payload.folderId || null,
+    folderId: normalizeDocumentFolderId(payload.folderId),
     tags: Array.isArray(payload.tags) ? payload.tags : [],
     sourceType: isExternalLink ? 'external' : (payload.sourceType || 'internal'),
     sourceProvider: isExternalLink ? sourceProvider : (payload.sourceProvider || null),
@@ -635,7 +660,7 @@ async function createDocument({
     externalLinkStatus: isExternalLink ? 'available' : null,
     richContent: payload.richContent || null,
     richContentText: extractRichContentSearchText(payload.richContent) || null,
-    ownerId: payload.ownerId || userId,
+    ownerId: resolveDocumentOwnerId(payload, userId),
     createdBy: userId,
     modifiedBy: userId,
     status: payload.status || 'draft'
@@ -693,7 +718,7 @@ async function createDocumentFromUpload({
     description: payload.description || '',
     documentType: 'file',
     category: payload.category || null,
-    folderId: payload.folderId || null,
+    folderId: normalizeDocumentFolderId(payload.folderId),
     tags: Array.isArray(payload.tags) ? payload.tags : [],
     sourceType: 'internal',
     fileType: inferFileType(file?.originalname, file?.mimetype),
@@ -703,7 +728,7 @@ async function createDocumentFromUpload({
     storageProvider: 'oci',
     storagePath: uploadResult.storagePath,
     versionNumber: 1,
-    ownerId: payload.ownerId || userId,
+    ownerId: resolveDocumentOwnerId(payload, userId),
     createdBy: userId,
     modifiedBy: userId,
     status: payload.status || 'published'
@@ -806,7 +831,7 @@ async function registerStoredFileAsDocument({
     storageProvider: 'oci',
     storagePath,
     versionNumber: 1,
-    ownerId: userId,
+    ownerId: resolveDocumentOwnerId({}, userId),
     createdBy: userId,
     modifiedBy: userId,
     status: 'published',

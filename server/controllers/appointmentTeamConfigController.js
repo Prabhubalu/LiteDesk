@@ -2,6 +2,10 @@ const AppointmentBookingConfig = require('../models/AppointmentBookingConfig');
 const User = require('../models/User');
 const { slugifyBase, ensureUniqueSlug } = require('../utils/appointmentSlug');
 const { normalizeCustomFields } = require('../utils/appointmentCustomFields');
+const {
+  syncBookingPublicRegistry,
+  removePublicRegistryEntry
+} = require('../services/appointmentBookingPublicRegistryService');
 
 function sanitizeTeamBody(body) {
   const allowed = [
@@ -132,6 +136,8 @@ exports.createTeamConfig = async (req, res) => {
       ...updates
     });
 
+    await syncBookingPublicRegistry(config);
+
     res.status(201).json({ success: true, data: toPublicConfig(config, req) });
   } catch (error) {
     if (error.code === 11000) {
@@ -170,6 +176,7 @@ exports.updateTeamConfig = async (req, res) => {
       }
     }
 
+    const previousSlug = config.slug;
     if (updates.slug && updates.slug !== config.slug) {
       const taken = await AppointmentBookingConfig.findOne({
         organizationId,
@@ -183,6 +190,7 @@ exports.updateTeamConfig = async (req, res) => {
 
     Object.assign(config, updates, { modifiedBy: req.user._id });
     await config.save();
+    await syncBookingPublicRegistry(config, { previousSlug });
 
     res.status(200).json({ success: true, data: toPublicConfig(config, req) });
   } catch (error) {
@@ -201,6 +209,7 @@ exports.deleteTeamConfig = async (req, res) => {
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'Team page not found' });
     }
+    await removePublicRegistryEntry(deleted.slug);
     res.status(200).json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

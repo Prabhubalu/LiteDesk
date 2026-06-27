@@ -262,7 +262,18 @@ async function processOrganizationsRow(ctx) {
     orgContext,
   } = ctx;
 
-  const allowedOrgFields = new Set(['name', 'industry', 'website', 'phone', 'address']);
+  const orgSkipFields = new Set([
+    'createdby', 'modifiedby', 'createdat', 'updatedat', 'organizationid',
+    'derivedstatus', 'deletedat', 'deletedby', 'deletionreason', 'importhistoryid',
+    'activitylogs', 'source', 'istenant', 'legacyorganizationid',
+  ]);
+  const orgMultiValueFields = new Set(['types', 'tags', 'territory', 'distributionterritory']);
+  const orgDateFields = new Set(['partnersince']);
+  const orgNumberFields = new Set([
+    'creditlimit', 'annualrevenue', 'numberofemployees', 'discountrate',
+    'vendorrating', 'distributioncapacitymonthly',
+  ]);
+
   const orgData = {
     isTenant: false,
     createdBy: userId,
@@ -276,10 +287,20 @@ async function processOrganizationsRow(ctx) {
     }],
   };
 
-  Object.keys(fieldMapping).forEach((csvField) => {
-    const orgField = fieldMapping[csvField];
-    if (orgField && allowedOrgFields.has(orgField) && row[csvField]) {
-      orgData[orgField] = String(row[csvField]).trim();
+  Object.entries(fieldMapping).forEach(([csvField, orgField]) => {
+    if (!orgField || row[csvField] === undefined || row[csvField] === '') return;
+    const norm = String(orgField).toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (orgSkipFields.has(norm)) return;
+
+    const raw = row[csvField];
+    if (orgMultiValueFields.has(norm)) {
+      orgData[orgField] = String(raw).split(',').map((value) => value.trim()).filter(Boolean);
+    } else if (orgDateFields.has(norm)) {
+      orgData[orgField] = new Date(raw);
+    } else if (orgNumberFields.has(norm)) {
+      orgData[orgField] = parseFloat(String(raw).replace(/[^0-9.-]+/g, '')) || 0;
+    } else {
+      orgData[orgField] = String(raw).trim();
     }
   });
 

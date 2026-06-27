@@ -1002,5 +1002,9 @@
   "providerMicrosoft": {
     "message": "Microsoft",
     "description": "Calendar provider name"
+  },
+  "embedPreviewPending": {
+    "message": "Preview will appear once your booking link is ready.",
+    "description": "Embed iframe placeholder while booking page is being saved"
   }
 }
