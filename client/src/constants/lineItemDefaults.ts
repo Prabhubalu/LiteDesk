@@ -16,6 +16,7 @@ export interface LineItemColumn {
 export type CurrencyDisplayMode = 'code' | 'symbol';
 
 export interface LineItemBindings {
+  [key: string]: unknown;
   collection: string;
   moduleScope: string;
   showSections: boolean;

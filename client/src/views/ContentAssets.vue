@@ -32,6 +32,7 @@
       @update:pagination="onPaginationChange"
       @fetch="loadAssets"
     >
+      <template #cell-preview="{ row }">
         <img
           v-if="row.downloadUrl && isImageMime(row.mimeType)"
           :src="assetImageUrl(row.downloadUrl)"

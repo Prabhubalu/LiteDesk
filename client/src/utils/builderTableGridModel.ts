@@ -20,6 +20,7 @@ export interface TableGridCell {
 }
 
 export interface TableGridBindings {
+  [key: string]: unknown;
   grid: TableGridCell[][];
   columnWidths: number[];
   columnWidthPercents: number[];
@@ -96,19 +97,23 @@ export function updateColumnWidthPercent(
   const clamped = Math.max(MIN_COL_PERCENT, Math.min(100 - MIN_COL_PERCENT, Math.round(nextPercent)));
   const remaining = 100 - clamped;
   const otherIndexes = percents.map((_, index) => index).filter((index) => index !== col);
-  const otherTotal = otherIndexes.reduce((sum, index) => sum + percents[index], 0);
+  const otherTotal = otherIndexes.reduce((sum, index) => sum + (percents[index] ?? 0), 0);
   const nextPercents = [...percents];
   nextPercents[col] = clamped;
   if (otherTotal > 0) {
     for (const index of otherIndexes) {
-      nextPercents[index] = Math.round((percents[index] / otherTotal) * remaining * 100) / 100;
+      const current = percents[index] ?? 0;
+      nextPercents[index] = Math.round((current / otherTotal) * remaining * 100) / 100;
     }
   } else if (otherIndexes.length) {
     const share = Math.round((remaining / otherIndexes.length) * 100) / 100;
     for (const index of otherIndexes) nextPercents[index] = share;
   }
   const drift = 100 - nextPercents.reduce((sum, value) => sum + value, 0);
-  if (otherIndexes.length) nextPercents[otherIndexes[otherIndexes.length - 1]] += drift;
+  const lastOtherIndex = otherIndexes[otherIndexes.length - 1];
+  if (lastOtherIndex !== undefined) {
+    nextPercents[lastOtherIndex] = (nextPercents[lastOtherIndex] ?? 0) + drift;
+  }
   return { ...bindings, widthUnit: 'percent', columnWidthPercents: nextPercents };
 }
 
@@ -174,7 +179,8 @@ function migrateLegacyColumns(bindings: Record<string, unknown>): TableGridBindi
 
   for (let i = 0; i < colCount; i += 1) {
     const source = columns[i] as Record<string, unknown>;
-    if (source.headerSkip) headerRow[i] = { ...headerRow[i], skip: true };
+    const cell = headerRow[i];
+    if (source.headerSkip && cell) headerRow[i] = { ...cell, skip: true };
   }
 
   const bodyRow = columns.map((col) => {
@@ -472,7 +478,7 @@ export function resolveSyncedTableLayout(
   );
   const current = node.layout || {};
   const height = Math.max(32, Number(current.height) || 200);
-  const zIndex = current.zIndex;
+  const zIndex = typeof current.zIndex === 'number' ? current.zIndex : undefined;
   const y = Math.max(contentArea.y, Number(current.y) || contentArea.y);
 
   if (bindings.widthUnit === 'percent') {
@@ -528,7 +534,7 @@ export function applySyncedTableLayouts(
           y: Number(current.y) || contentArea.y,
           width: Math.max(32, Number(current.width) || 240),
           height: Math.max(32, Number(current.height) || 80),
-          zIndex: current.zIndex
+          zIndex: typeof current.zIndex === 'number' ? current.zIndex : undefined
         }, contentArea)
       };
     }

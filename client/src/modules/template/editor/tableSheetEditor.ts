@@ -258,8 +258,9 @@ function handleSheetKeydown(editor: Editor, event: KeyboardEvent): void {
   event.preventDefault();
   event.stopPropagation();
   startSheetEdit(editor, cell);
-  if (activeEditor) {
-    insertTextInElement(activeEditor.element, event.key);
+  const editEl = cell.view?.el as HTMLElement | undefined;
+  if (editEl) {
+    insertTextInElement(editEl, event.key);
   }
 }
 

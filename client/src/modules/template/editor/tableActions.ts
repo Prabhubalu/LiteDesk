@@ -266,6 +266,7 @@ function insertRowAt(table: Component, rowIndex: number, position: 'above' | 'be
 
   if (targetRow >= grid.rows.length) {
     const last = grid.rows[grid.rows.length - 1];
+    if (!last) return;
     const section = last.component.parent?.();
     if (!section) return;
     const isHeader = last.section === 'thead';
@@ -274,6 +275,7 @@ function insertRowAt(table: Component, rowIndex: number, position: 'above' | 'be
   }
 
   const targetRowRef = grid.rows[targetRow];
+  if (!targetRowRef) return;
   const section = targetRowRef.component.parent?.();
   if (!section) return;
   const isHeader = targetRowRef.section === 'thead';
@@ -519,7 +521,7 @@ export function toggleTableFooter(cell: Component): boolean {
 export function hasTableFooter(cell: Component): boolean {
   const table = findTableRoot(cell);
   if (!table) return false;
-  return table.components().some((child) => String(child.get('tagName') || '').toLowerCase() === 'tfoot');
+  return table.components().some((child: Component) => String(child.get('tagName') || '').toLowerCase() === 'tfoot');
 }
 
 export function toggleDataRow(cell: Component): boolean {

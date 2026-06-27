@@ -63,7 +63,7 @@ export function getContentDropTarget(editor: Editor | null | undefined): Compone
 export function canAppendToComponent(component: Component | null | undefined): boolean {
   if (!component) return false;
   const droppable = component.get('droppable');
-  if (droppable === false || droppable === 0) return false;
+  if (droppable === false) return false;
   // Rows only accept drops into cells (selector string), not arbitrary content.
   if (typeof droppable === 'string') return false;
   return true;
@@ -73,7 +73,7 @@ export function resolveInsertTarget(editor: Editor | null | undefined): Componen
   if (!editor) return null;
   const selected = editor.getSelected();
   if (canAppendToComponent(selected)) {
-    return selected;
+    return selected ?? null;
   }
   return getContentDropTarget(editor);
 }
@@ -139,7 +139,7 @@ export function ensurePrintArea(editor: Editor): Component | null {
 
   let printArea = getPrintAreaComponent(wrapper);
   if (!printArea) {
-    const existingChildren = wrapper.components().filter((child) => {
+    const existingChildren = wrapper.components().filter((child: Component) => {
       const attrs = child.getAttributes?.() || {};
       return attrs[PRINT_AREA_ATTR] !== 'true' && child.get('type') !== PRINT_AREA_TYPE;
     });
@@ -396,7 +396,7 @@ function normalizeLayoutGridCellChild(component: Component): void {
 
 function walkLayoutGridCells(root: Component, visit: (component: Component) => void): void {
   visit(root);
-  root.components().forEach((child) => walkLayoutGridCells(child, visit));
+  root.components().forEach((child: Component) => walkLayoutGridCells(child, visit));
 }
 
 export function bindLayoutGridGuards(editor: Editor): void {
@@ -427,7 +427,7 @@ export function bindLayoutGridGuards(editor: Editor): void {
 
     normalizeLayoutGridRow(component);
     normalizeLayoutGridCell(component);
-    component.components().forEach((child) => {
+    component.components().forEach((child: Component) => {
       normalizeLayoutGridRow(child);
       normalizeLayoutGridCell(child);
     });

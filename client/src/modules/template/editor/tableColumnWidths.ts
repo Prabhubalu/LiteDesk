@@ -28,7 +28,10 @@ function equalPercents(colCount: number): number[] {
   const each = 100 / colCount;
   const values = Array.from({ length: colCount }, () => each);
   const sum = values.reduce((acc, value) => acc + value, 0);
-  values[values.length - 1] += 100 - sum;
+  const lastIndex = values.length - 1;
+  if (lastIndex >= 0) {
+    values[lastIndex] = (values[lastIndex] ?? 0) + (100 - sum);
+  }
   return values;
 }
 
@@ -62,7 +65,10 @@ export function weightsToPercents(weights: number[]): number[] {
   const total = weights.reduce((sum, weight) => sum + weight, 0) || 1;
   const percents = weights.map((weight) => (weight / total) * 100);
   const sum = percents.reduce((acc, value) => acc + value, 0);
-  percents[percents.length - 1] += 100 - sum;
+  const lastIndex = percents.length - 1;
+  if (lastIndex >= 0) {
+    percents[lastIndex] = (percents[lastIndex] ?? 0) + (100 - sum);
+  }
   return percents;
 }
 
@@ -88,7 +94,7 @@ export function writeTableColumnWidths(table: Component, percents: number[]): vo
 function findColgroupComponent(table: Component): Component | null {
   return (
     listComponents(table).find(
-      (child) => String(child.get('tagName') || '').toLowerCase() === 'colgroup'
+      (child: Component) => String(child.get('tagName') || '').toLowerCase() === 'colgroup'
     ) ?? null
   );
 }
@@ -240,7 +246,11 @@ export function resizeColumnPairPercents(
   const next = [...percents];
   if (colIndex < 0 || colIndex >= next.length - 1) return next;
 
-  const pairTotal = next[colIndex] + next[colIndex + 1];
+  const left = next[colIndex];
+  const right = next[colIndex + 1];
+  if (left === undefined || right === undefined) return next;
+
+  const pairTotal = left + right;
   const clamped = Math.max(MIN_COL_PERCENT, Math.min(leftPercent, pairTotal - MIN_COL_PERCENT));
 
   next[colIndex] = clamped;

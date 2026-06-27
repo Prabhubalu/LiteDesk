@@ -25,6 +25,8 @@ export function stripDefaultPanels(editor: Editor): void {
   editor.Panels.getPanels().reset([]);
 
   const root = editor.getContainer();
+  if (!root) return;
+
   root.querySelectorAll('.gjs-pn-panels, .gjs-pn-panel, #views-container').forEach((el) => {
     if (el instanceof HTMLElement) {
       el.style.display = 'none';

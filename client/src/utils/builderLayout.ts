@@ -18,6 +18,7 @@ export const BUILDER_GRID_SIZE = 8;
 export const BUILDER_CONTENT_INSET = resolvePageMarginsPx();
 
 export interface BuilderBlockLayout {
+  [key: string]: unknown;
   x: number;
   y: number;
   width: number;
@@ -197,17 +198,17 @@ export function sortNodesByZIndex(nodes: ContentComponentNode[]): ContentCompone
 
 export function applyZIndexFromOrder(orderedIds: string[], nodes: ContentComponentNode[]): ContentComponentNode[] {
   const byId = new Map(nodes.map((node) => [node.id, node]));
-  return orderedIds
-    .map((id, index) => {
-      const node = byId.get(id);
-      if (!node) return null;
-      return {
-        ...node,
-        layout: {
-          ...(node.layout || {}),
-          zIndex: index + 1
-        }
-      };
-    })
-    .filter((node): node is ContentComponentNode => Boolean(node));
+  const result: ContentComponentNode[] = [];
+  orderedIds.forEach((id, index) => {
+    const node = byId.get(id);
+    if (!node) return;
+    result.push({
+      ...node,
+      layout: {
+        ...(node.layout || {}),
+        zIndex: index + 1
+      }
+    });
+  });
+  return result;
 }

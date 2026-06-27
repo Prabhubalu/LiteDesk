@@ -350,6 +350,7 @@ export function resolveMergeTargetTableCell(
   const direct = resolveTableCellComponent(selected);
   if (direct) return direct;
 
+  const table = findTableRoot(selected) ?? findTableRoot(lastSelectedCell);
   if (table) {
     if (lastSelectedCell && isTableCellComponent(lastSelectedCell) && lastSelectedCell.parent?.()) {
       const lastTable = findTableRoot(lastSelectedCell);
@@ -368,7 +369,7 @@ export function isSelectionInTableContext(component: Component | null | undefine
 }
 
 export function listRowCells(row: Component): Component[] {
-  return row.components().filter((child) => isTableCellComponent(child));
+  return row.components().filter((child: Component) => isTableCellComponent(child));
 }
 
 export function buildRowDefinition(colCount: number, isHeader: boolean): Record<string, unknown> {
@@ -410,7 +411,7 @@ export function readCellText(cell: Component): string {
     }
   }
 
-  const parts = cell.components().map((child) => {
+  const parts = cell.components().map((child: Component) => {
     const childContent = child.get('content');
     if (typeof childContent === 'string' && childContent.trim()) {
       return chipHtmlToMergeTokens(childContent);

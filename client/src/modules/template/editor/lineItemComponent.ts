@@ -59,7 +59,7 @@ export function renderLineItemTable(component: Component, bindings: Partial<Line
   component.components(tableHtml);
 
   const table = component.components().find(
-    (child) => String(child.get('tagName') || '').toLowerCase() === 'table'
+    (child: Component) => String(child.get('tagName') || '').toLowerCase() === 'table'
   );
   if (table) {
     configureLineItemTable(table);

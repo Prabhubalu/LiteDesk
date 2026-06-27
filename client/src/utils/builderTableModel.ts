@@ -81,7 +81,7 @@ export function parseBodyCellValue(raw: string, collection: string): { path: str
   const text = String(raw || '').trim();
   const mergeMatch = text.match(/^\{\{\s*([^}]+?)\s*\}\}$/);
   if (mergeMatch) {
-    let path = mergeMatch[1].trim();
+    let path = mergeMatch[1]?.trim() ?? '';
     const prefix = `${collection}.`;
     if (path.startsWith(prefix)) path = path.slice(prefix.length);
     return { path, previewText: '' };
@@ -98,7 +98,7 @@ export function parseFooterCellValue(raw: string): { path: string; text: string 
   const text = String(raw || '').trim();
   const mergeMatch = text.match(/^\{\{\s*([^}]+?)\s*\}\}$/);
   if (mergeMatch) {
-    return { path: mergeMatch[1].trim(), text: '' };
+    return { path: mergeMatch[1]?.trim() ?? '', text: '' };
   }
   return { path: '', text };
 }

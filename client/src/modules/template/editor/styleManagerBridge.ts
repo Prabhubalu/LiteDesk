@@ -20,7 +20,7 @@ export function mountGrapesStyleUi(editor: Editor, hosts: GrapesStyleUiHosts): b
 
   if (needsMount) {
     traits.replaceChildren(editor.TraitManager.render());
-    selectors.replaceChildren(editor.SelectorManager.render());
+    selectors.replaceChildren(editor.SelectorManager.render([]));
     styles.replaceChildren(editor.StyleManager.render());
     mounted.add(editor);
   }

@@ -40,10 +40,10 @@ export function initGrapesEditor(container: HTMLElement, options: GrapesEditorOp
     traitManager: { custom: true },
     plugins,
     pluginsOpts,
+    canvasCss: GRAPES_CANVAS_FRAME_CSS,
     canvas: {
       styles: [],
-      allowExternalDrop: true,
-      canvasCss: GRAPES_CANVAS_FRAME_CSS
+      allowExternalDrop: true
     },
     deviceManager: {
       devices: [

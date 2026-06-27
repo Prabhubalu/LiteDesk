@@ -23,7 +23,7 @@ export function isLineItemInnerTable(component: Component | null | undefined): b
 export function findLineItemInnerTableComponent(lineItemRoot: Component | null | undefined): Component | null {
   if (!lineItemRoot || !isLineItemComponent(lineItemRoot)) return null;
   return (
-    lineItemRoot.components().find((child) => isLineItemInnerTable(child)) ?? null
+    lineItemRoot.components().find((child: Component) => isLineItemInnerTable(child)) ?? null
   );
 }
 

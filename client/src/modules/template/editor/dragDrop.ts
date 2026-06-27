@@ -1,4 +1,4 @@
-import type { Editor } from 'grapesjs';
+import type { CanvasDragDataResult, Editor } from 'grapesjs';
 import { buildLineItemBlockHtml } from './lineItemHtml';
 import { getLineItemTemplateModuleScope } from './lineItemComponent';
 
@@ -37,8 +37,9 @@ export function endLibraryBlockDrag(editor: Editor, cancelled = false): void {
 }
 
 export function setupExternalBlockDrop(editor: Editor): void {
-  editor.on('canvas:dragdata', (dataTransfer: DataTransfer, result: { content: unknown; setContent: (c: unknown) => void }) => {
+  editor.on('canvas:dragdata', (dataTransfer: DataTransfer | null | undefined, result: CanvasDragDataResult) => {
     const types = dataTransfer?.types || [];
+    if (!dataTransfer) return;
     if (!types.includes(GRAPES_BLOCK_DRAG_MIME) && !types.includes('text/plain')) return;
 
     const blockId = dataTransfer.getData(GRAPES_BLOCK_DRAG_MIME) || dataTransfer.getData('text/plain');
