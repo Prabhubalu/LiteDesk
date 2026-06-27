@@ -42,6 +42,13 @@ router.patch(
 );
 
 router.get(
+  '/:moduleKey/records/:recordId/meta',
+  sessionBootstrapLimiter,
+  checkPermissionFromParam('moduleKey', 'view'),
+  controller.getRecordMeta
+);
+
+router.get(
   '/:moduleKey/records/:recordId/activity',
   sessionBootstrapLimiter,
   checkPermissionFromParam('moduleKey', 'view'),

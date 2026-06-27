@@ -1,3 +1,5 @@
+import { markModuleListDirty } from '@/utils/moduleListFreshness';
+
 /** Map CSV import API module keys to list module keys. */
 const IMPORT_MODULE_ALIASES = {
   contacts: 'people',
@@ -22,7 +24,10 @@ export function importModuleMatchesListModule(importModule, listModuleKey) {
 
 export function markImportListRefreshPending(listModuleKey) {
   const key = resolveImportListModuleKey(listModuleKey);
-  if (key) pendingListRefreshModules.add(key);
+  if (key) {
+    pendingListRefreshModules.add(key);
+    markModuleListDirty(key);
+  }
 }
 
 export function consumeImportListRefreshPending(listModuleKey) {
@@ -35,7 +40,10 @@ export function consumeImportListRefreshPending(listModuleKey) {
 /** Notify module lists to reload after import (background job or inline). */
 export function dispatchImportListRefresh(record = {}) {
   const listKey = resolveImportListModuleKey(record.module);
-  if (listKey) pendingListRefreshModules.add(listKey);
+  if (listKey) {
+    pendingListRefreshModules.add(listKey);
+    markModuleListDirty(listKey);
+  }
 
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new CustomEvent('litedesk:import-complete', {

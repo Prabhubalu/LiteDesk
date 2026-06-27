@@ -17,6 +17,9 @@ const NotificationSheet = defineAsyncComponent(() =>
 const PermissionSyncHost = defineAsyncComponent(() =>
   import('@/components/shell/PermissionSyncHost.vue')
 );
+const ModuleListFreshnessHost = defineAsyncComponent(() =>
+  import('@/components/shell/ModuleListFreshnessHost.vue')
+);
 const SyncDrawer = defineAsyncComponent(() =>
   import('@/components/audit/SyncDrawer.vue')
 );
@@ -64,6 +67,9 @@ const appLog = (...args) => {
 function resetTabsStateFromModule() {
   resetTabsSessionInit();
   void import('@/composables/useTabs').then((m) => m.resetTabsState());
+  void import('@/utils/moduleListFreshness').then((m) => m.resetModuleListFreshnessState());
+  void import('@/utils/recordDetailFreshness').then((m) => m.resetRecordDetailFreshnessState());
+  void import('@/services/dataChangeRealtimeService').then((m) => m.stopDataChangeRealtimeService());
 }
 
 let shellModulesPromise = null;
@@ -95,6 +101,30 @@ function getNotificationRealtime() {
 function stopNotificationRealtimeIfLoaded() {
   if (!notificationRealtimePromise) return;
   void notificationRealtimePromise.then((m) => m.stopNotificationRealtime());
+}
+
+let dataChangeRealtimePromise = null;
+
+function getDataChangeRealtime() {
+  if (!dataChangeRealtimePromise) {
+    dataChangeRealtimePromise = import('@/services/dataChangeRealtimeService');
+  }
+  return dataChangeRealtimePromise;
+}
+
+function stopDataChangeRealtimeIfLoaded() {
+  if (!dataChangeRealtimePromise) return;
+  void dataChangeRealtimePromise.then((m) => m.stopDataChangeRealtimeService());
+}
+
+function refreshDataChangeRealtime(token) {
+  void getDataChangeRealtime().then((m) => {
+    if (token) {
+      m.startDataChangeRealtimeService(token);
+    } else {
+      m.stopDataChangeRealtimeService();
+    }
+  });
 }
 
 async function showAuthSessionWarning(message, duration) {
@@ -474,6 +504,7 @@ watch(
   async (isAuthed, wasAuthed) => {
     if (wasAuthed && !isAuthed) {
       stopNotificationRealtimeIfLoaded();
+      stopDataChangeRealtimeIfLoaded();
       void ensureShellModules().then(({ activeImportsStore }) => activeImportsStore.reset());
       resetTabsStateFromModule();
       shellTabsReady.value = false;
@@ -510,6 +541,7 @@ watch(
   ([isAuthed, path]) => {
     if (!isAuthed) {
       stopNotificationRealtimeIfLoaded();
+      stopDataChangeRealtimeIfLoaded();
       return;
     }
     void getNotificationRealtime().then((m) => {
@@ -519,6 +551,7 @@ watch(
         m.stopNotificationRealtime();
       }
     });
+    refreshDataChangeRealtime(authStore.user?.token);
   },
   { immediate: true }
 );
@@ -546,6 +579,7 @@ watch(
   (token, prev) => {
     if (token && token !== prev && authStore.isAuthenticated) {
       void getNotificationRealtime().then((m) => m.refreshNotificationRealtimeConnections());
+      refreshDataChangeRealtime(token);
     }
   }
 );
@@ -595,6 +629,7 @@ watch(
   <BulkDeleteProgressBanner v-if="isAuthenticated" />
 
   <PermissionSyncHost v-if="isAuthenticated" />
+  <ModuleListFreshnessHost v-if="isAuthenticated" />
 
   <!-- Mobile notification sheet -->
   <NotificationSheet

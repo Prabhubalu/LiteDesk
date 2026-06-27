@@ -1219,6 +1219,10 @@ import { resolveStageOrPicklistLabel } from '@/utils/configurableLabelResolver';
 import { i18n } from '@/i18n/index';
 import { useRecordPageLifecycle } from '@/components/record-page/composables/useRecordPageLifecycle';
 import {
+  extractRecordUpdatedAtMs,
+  recordRecordDetailFingerprint,
+} from '@/utils/recordDetailFreshness';
+import {
   normalizeSystemActivityEvent,
   normalizeCommentActivityEvent,
   normalizeEmailThreadActivityEvent,
@@ -3036,6 +3040,9 @@ const fetchDeal = async () => {
     const data = await apiClient.get(`/deals/${effectiveDealId.value}`);
     if (data.success) {
       deal.value = data.data;
+      recordRecordDetailFingerprint('deals', effectiveDealId.value, '', {
+        updatedAtMs: extractRecordUpdatedAtMs(deal.value),
+      });
     }
     const secondaryTasks = [
       fetchActivityLogs(),
@@ -4013,6 +4020,10 @@ useRecordPageLifecycle({
   embed: () => props.embed,
   routePrefix: '/deals',
   embedRecordIdSource: () => props.dealId,
+  freshness: {
+    moduleKey: 'deals',
+    getUpdatedAtMs: () => extractRecordUpdatedAtMs(deal.value),
+  },
   fetchRecord: async () => {
     if (!props.embed && !isDealDetailRoute()) return;
     await fetchDeal();

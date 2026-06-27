@@ -269,6 +269,21 @@ exports.createForm = async (req, res) => {
     }
 };
 
+// @desc    List meta fingerprint for forms
+// @route   GET /api/forms/meta
+exports.getFormsListMeta = async (req, res) => {
+    try {
+        const { buildFormsListQuery } = require('../utils/listQueryBuilders/formsListQuery');
+        const { fetchListMeta, sendListMetaResponse } = require('../utils/listMetaService');
+        const query = buildFormsListQuery(req);
+        const meta = await fetchListMeta(Form, query);
+        sendListMetaResponse(res, meta);
+    } catch (error) {
+        console.error('[getFormsListMeta] error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch forms list meta' });
+    }
+};
+
 // @desc    Get all forms
 // @route   GET /api/forms
 // @access  Private

@@ -8,7 +8,9 @@ const { checkPermission, applySharingFilter } = require('../middleware/permissio
 const {
   createCase,
   getCases,
+  getCasesListMeta,
   getCaseById,
+  getCaseRecordMeta,
   updateCase,
   deleteCase,
   updateCaseStatus,
@@ -35,6 +37,8 @@ router.use(requireHelpdeskApp);
 router.use(organizationIsolation);
 router.use(checkTrialStatus);
 
+router.get('/meta', applySharingFilter('cases'), checkPermission('cases', 'view'), getCasesListMeta);
+
 router.route('/')
   .post(checkPermission('cases', 'create'), createCase)
   .get(applySharingFilter('cases'), checkPermission('cases', 'view'), getCases);
@@ -48,6 +52,7 @@ router.get('/analytics/distribution', applySharingFilter('cases'), checkPermissi
 router.get('/analytics/audit-export', applySharingFilter('cases'), checkPermission('cases', 'view'), getCaseAuditExport);
 router.get('/canned-responses', checkPermission('cases', 'view'), listCaseCannedResponses);
 router.get('/:id/live-chat-session', checkPermission('cases', 'view'), getCaseLiveChatSession);
+router.get('/:id/meta', checkPermission('cases', 'view'), getCaseRecordMeta);
 router.get('/:id', checkPermission('cases', 'view'), getCaseById);
 router.put('/:id', checkPermission('cases', 'edit'), updateCase);
 router.delete('/:id', checkPermission('cases', 'delete'), deleteCase);

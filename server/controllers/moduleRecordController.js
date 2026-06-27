@@ -1553,6 +1553,13 @@ exports.bulkUpdateRecords = async (req, res) => {
       afterId: req.body?.afterId || null,
     });
 
+    const { publishDataChange } = require('../services/dataChangeService');
+    publishDataChange({
+      organizationId: req.user.organizationId,
+      moduleKey,
+      op: 'bulk',
+    });
+
     return res.json({
       success: true,
       message: `Updated ${result.updatedCount} record(s)`,
@@ -1690,6 +1697,13 @@ exports.bulkDeleteRecords = async (req, res) => {
       return res.status(400).json({ success: false, message: result.message });
     }
 
+    const { publishDataChange } = require('../services/dataChangeService');
+    publishDataChange({
+      organizationId: req.user.organizationId,
+      moduleKey,
+      op: 'bulk',
+    });
+
     return res.json({
       success: true,
       message: `Moved ${result.movedCount} record(s) to trash`,
@@ -1798,5 +1812,28 @@ exports.clearRecordPresence = async (req, res) => {
   } catch (error) {
     console.error('[moduleRecordController] clearRecordPresence error:', error);
     return res.status(400).json({ success: false, message: error.message || 'Failed to clear presence' });
+  }
+};
+
+exports.getRecordMeta = async (req, res) => {
+  try {
+    const moduleKey = getModuleKey(req);
+    const recordId = getRecordId(req);
+    const { getModelForModuleKey } = require('../utils/assignmentRecordLoader');
+    const { fetchRecordUpdatedAtMeta, sendRecordMetaResponse } = require('../utils/recordMetaService');
+
+    const Model = getModelForModuleKey(moduleKey);
+    if (!Model) {
+      return res.status(400).json({ success: false, message: `Unknown module: ${moduleKey}` });
+    }
+
+    const meta = await fetchRecordUpdatedAtMeta(Model, {
+      organizationId: req.user.organizationId,
+      recordId,
+    });
+    sendRecordMetaResponse(res, meta);
+  } catch (error) {
+    console.error('[moduleRecordController.getRecordMeta] error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch record meta' });
   }
 };

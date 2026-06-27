@@ -11,6 +11,7 @@ router.use(organizationIsolation);
 router.use(checkTrialStatus);
 
 router.get('/summary', checkPermission('documents', 'view'), controller.getDocumentSummary);
+router.get('/meta', checkPermission('documents', 'view'), controller.getDocumentsListMeta);
 router.get('/knowledge-base', checkPermission('documents', 'view'), controller.getKnowledgeBaseDocuments);
 router.get('/activity', checkPermission('documents', 'view'), controller.getDocumentActivity);
 router.get('/favorites', checkPermission('documents', 'view'), controller.getFavoriteDocumentIds);

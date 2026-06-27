@@ -1639,6 +1639,10 @@ import { useTaskSectionDataProviders } from '@/components/record-page/composable
 import { useRecordLoading } from '@/components/record-page/composables/useRecordLoading';
 import { useRecordHeaderActions } from '@/components/record-page/composables/useRecordHeaderActions';
 import { useRecordPageLifecycle } from '@/components/record-page/composables/useRecordPageLifecycle';
+import {
+  extractRecordUpdatedAtMs,
+  recordRecordDetailFingerprint,
+} from '@/utils/recordDetailFreshness';
 import { useStickyTitleRow } from '@/components/record-page/composables/useStickyTitleRow';
 import RecordPageTitleRow from '@/components/record-page/RecordPageTitleRow.vue';
 import EditableTitle from '@/components/record-page/EditableTitle.vue';
@@ -3418,6 +3422,9 @@ const fetchTask = async () => {
     if (!response?.success) return;
 
     task.value = response.data;
+    recordRecordDetailFingerprint('tasks', effectiveTaskId.value, '', {
+      updatedAtMs: extractRecordUpdatedAtMs(task.value),
+    });
     await Promise.all([
       fetchRelatedRecords(),
       fetchActivityEvents(),
@@ -5745,6 +5752,10 @@ useRecordPageLifecycle({
   recordId: effectiveTaskId,
   embed: () => props.embed,
   routePrefix: '/tasks',
+  freshness: {
+    moduleKey: 'tasks',
+    getUpdatedAtMs: () => extractRecordUpdatedAtMs(task.value),
+  },
   fetchRecord: fetchTask,
   embedRecordIdSource: () => props.taskId,
   contentReadySources: [() => activityEvents.value, () => emailThreads.value],

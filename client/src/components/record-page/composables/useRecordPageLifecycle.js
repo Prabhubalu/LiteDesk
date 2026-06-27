@@ -1,4 +1,5 @@
 import { ref, watch, onMounted, onActivated, onUnmounted } from 'vue';
+import { resolveRecordDetailRefreshOnActivate } from '@/utils/recordDetailRefreshPolicy';
 
 const resolveValue = (value) => {
   if (typeof value === 'function') return value();
@@ -96,6 +97,16 @@ export const useRecordPageLifecycle = (options = {}) => {
     if (!isEmbed()) {
       activationTick.value += 1;
     }
+
+    const freshness = options.freshness;
+    const recordId = getRecordId();
+    if (freshness && recordId && typeof options.fetchRecord === 'function') {
+      const decision = await resolveRecordDetailRefreshOnActivate(freshness, recordId);
+      if (decision === 'refresh') {
+        await options.fetchRecord({ reason: decision });
+      }
+    }
+
     await runCallbacks(onActivatedCallbacks, { route, recordId: getRecordId(), activationTick: activationTick.value });
   });
 

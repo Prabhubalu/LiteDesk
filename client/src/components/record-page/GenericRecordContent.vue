@@ -1062,6 +1062,8 @@ import { getPaymentActivityMessage } from '@/components/activity/adapters/paymen
 import { getDocumentActivityMessage } from '@/components/activity/adapters/documentActivityUiAdapter';
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 import { getModuleRecordCrudPathBase, getModuleRecordDetailPath } from '@/utils/moduleRecordApiPath';
+import { resolveRecordDetailRefreshOnActivate } from '@/utils/recordDetailRefreshPolicy';
+import { extractRecordUpdatedAtMs, recordRecordDetailFingerprint } from '@/utils/recordDetailFreshness';
 import { canShowFormResponses } from '@/utils/engagementFormDisplay';
 import { canEditForm, canHardDeleteForm } from '@/utils/formEditPermissions';
 import {
@@ -3623,6 +3625,12 @@ async function fetchRecord(options = {}) {
       record.value = data && !Array.isArray(data) ? data : null;
     }
 
+    if (record.value?._id) {
+      recordRecordDetailFingerprint(props.moduleKey, props.recordId, route.meta?.appKey || '', {
+        updatedAtMs: extractRecordUpdatedAtMs(record.value),
+      });
+    }
+
     const modules = Array.isArray(modulesRes) ? modulesRes : modulesRes?.data ?? modulesRes?.data?.data ?? modulesRes?.modules ?? [];
     moduleDefinition.value = modules.find((m) => String(m?.key || '').toLowerCase() === props.moduleKey.toLowerCase()) || null;
   } catch (e) {
@@ -4838,7 +4846,18 @@ onMounted(() => {
   }
 });
 
-onActivated(() => {
+onActivated(async () => {
+  const recordId = props.recordId;
+  if (recordId && recordId !== 'new') {
+    const decision = await resolveRecordDetailRefreshOnActivate({
+      moduleKey: props.moduleKey,
+      appKey: route.meta?.appKey || '',
+      getUpdatedAtMs: () => extractRecordUpdatedAtMs(record.value),
+    }, recordId);
+    if (decision === 'refresh') {
+      await fetchRecord({ soft: true });
+    }
+  }
   attachRecordGlobalListeners();
 });
 
