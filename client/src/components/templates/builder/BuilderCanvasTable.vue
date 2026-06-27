@@ -578,6 +578,7 @@ function onToolbarAction(action, value) {
 }
 
 function onMenuAction(action) {
+  closeMenu();
   const { row, col } = menu.value;
   let next = gridBindings.value;
 

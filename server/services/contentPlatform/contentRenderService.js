@@ -17,7 +17,9 @@ const { normalizeDefinitionMergeTokens } = require('./engines/definitionMergeTok
 const { buildLayoutTree } = require('./engines/layoutTreeBuilder');
 const { resolvePageConfig } = require('./engines/layoutEngine');
 const { renderLayoutTreeToHtml } = require('./renderers/htmlRenderer');
+const { renderGrapesDefinitionToHtml } = require('./renderers/grapesHtmlRenderer');
 const { renderHtmlToPdf } = require('./renderers/puppeteerPdfRenderer');
+const { isGrapesTemplateDefinition } = require('../../constants/grapesTemplateDefinition');
 const {
   CONTENT_PLATFORM_EVENT_TYPES,
   emitContentPlatformEvent,
@@ -148,6 +150,19 @@ async function renderTemplate(params) {
     }
   });
 
+  const theme = await resolveTheme({ organizationId, template });
+  const templateForLayout = pageSettings && typeof pageSettings === 'object'
+    ? { ...template, ...pageSettings }
+    : template;
+
+  const templateCurrencyDisplay = templateForLayout.currencyDisplay || template.currencyDisplay;
+  if (templateCurrencyDisplay) {
+    scope.parameters = {
+      ...(scope.parameters && typeof scope.parameters === 'object' ? scope.parameters : {}),
+      currencyDisplay: templateCurrencyDisplay
+    };
+  }
+
   const recordModuleKey = String(
     runtimeContext.recordModuleKey || template.moduleScope || ''
   ).toLowerCase();
@@ -173,11 +188,35 @@ async function renderTemplate(params) {
   const normalizedFormat = String(outputFormat || 'pdf').toLowerCase();
   const lenientMergeTags = preview || (normalizedFormat === 'html' && persistOutput === false);
 
-  const definitionForRender = normalizeDefinitionMergeTokens(version.jsonDefinition);
+  let html = '';
+  let issues = [];
 
-  const { root, issues } = resolveComponentTree(definitionForRender, scope, {
-    lenient: lenientMergeTags
-  });
+  if (isGrapesTemplateDefinition(version.jsonDefinition)) {
+    const grapesRender = renderGrapesDefinitionToHtml({
+      definition: version.jsonDefinition,
+      template: templateForLayout,
+      theme,
+      scope,
+      lenient: lenientMergeTags
+    });
+    html = grapesRender.html;
+    issues = grapesRender.issues;
+  } else {
+    const definitionForRender = normalizeDefinitionMergeTokens(version.jsonDefinition);
+
+    const resolved = resolveComponentTree(definitionForRender, scope, {
+      lenient: lenientMergeTags
+    });
+    issues = resolved.issues;
+
+    const layoutTree = buildLayoutTree({
+      template: templateForLayout,
+      resolvedRoot: resolved.root,
+      theme
+    });
+    html = renderLayoutTreeToHtml(layoutTree);
+  }
+
   const blockingIssues = lenientMergeTags
     ? []
     : issues.filter((issue) => issue.severity === 'error');
@@ -196,17 +235,6 @@ async function renderTemplate(params) {
       { statusCode: 400, details: blockingIssues }
     );
   }
-
-  const theme = await resolveTheme({ organizationId, template });
-  const templateForLayout = pageSettings && typeof pageSettings === 'object'
-    ? { ...template, ...pageSettings }
-    : template;
-  const layoutTree = buildLayoutTree({
-    template: templateForLayout,
-    resolvedRoot: root,
-    theme
-  });
-  const html = renderLayoutTreeToHtml(layoutTree);
 
   let buffer = null;
   let mimeType = 'text/html';

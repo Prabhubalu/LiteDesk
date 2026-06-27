@@ -13,9 +13,9 @@ function authHeaders() {
 }
 
 async function fetchRenderedOutputBlob(renderResult) {
-  const path = renderResult?.previewUrl || renderResult?.downloadUrl;
+  const path = renderResult?.previewUrl;
   if (!path) {
-    throw new Error('Render output URL missing');
+    throw new Error('Preview URL missing');
   }
 
   const response = await fetch(getApiUrlForFetch(path), { headers: authHeaders() });
@@ -28,14 +28,23 @@ async function fetchRenderedOutputBlob(renderResult) {
   return { blob, contentType };
 }
 
-function openBlobInNewTab(blob, contentType, fileName = 'template-preview.pdf') {
+function pdfBlobFromRenderResult(renderResult) {
+  const mimeType = renderResult?.mimeType || 'application/pdf';
+  const buffer = renderResult?.buffer;
+  if (buffer?.type === 'Buffer' && Array.isArray(buffer.data)) {
+    return new Blob([new Uint8Array(buffer.data)], { type: mimeType });
+  }
+  return null;
+}
+
+function openBlobInNewTab(blob, contentType) {
   const blobUrl = URL.createObjectURL(new Blob([blob], { type: contentType }));
   const opened = window.open(blobUrl, '_blank', 'noopener,noreferrer');
 
   if (!opened) {
     const anchor = document.createElement('a');
     anchor.href = blobUrl;
-    anchor.download = fileName;
+    anchor.target = '_blank';
     anchor.rel = 'noopener noreferrer';
     document.body.appendChild(anchor);
     anchor.click();
@@ -187,6 +196,7 @@ export function useTemplates() {
     const response = await apiClient.post(`/templates/${id}/render`, {
       outputFormat: options.outputFormat || 'pdf',
       preview: options.preview === true,
+      persistOutput: false,
       runtimeContext
     });
 
@@ -198,9 +208,16 @@ export function useTemplates() {
 
   async function previewRenderedTemplate(id, options = {}) {
     const renderResult = await renderTemplate(id, { ...options, preview: true });
+    const inlineBlob = pdfBlobFromRenderResult(renderResult);
+    const mimeType = renderResult?.mimeType || 'application/pdf';
+
+    if (inlineBlob) {
+      openBlobInNewTab(inlineBlob, mimeType);
+      return renderResult;
+    }
+
     const { blob, contentType } = await fetchRenderedOutputBlob(renderResult);
-    const fileName = options.fileName || 'template-preview.pdf';
-    openBlobInNewTab(blob, contentType, fileName);
+    openBlobInNewTab(blob, contentType);
     return renderResult;
   }
 

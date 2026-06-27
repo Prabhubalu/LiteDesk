@@ -80,6 +80,11 @@ const ContentTemplateSchema = new Schema(
     locale: { type: String, trim: true, default: 'en' },
     timezone: { type: String, trim: true, default: 'UTC' },
     currency: { type: String, trim: true, default: null },
+    currencyDisplay: {
+      type: String,
+      enum: ['code', 'symbol'],
+      default: 'code'
+    },
     ownerId: {
       type: Schema.Types.ObjectId,
       ref: 'User',

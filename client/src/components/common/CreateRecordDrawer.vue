@@ -212,6 +212,10 @@ import {
 import { shouldFilterPayloadByQuickCreate } from '@/utils/quickCreatePayloadFilter';
 import { useCreationContext } from '@/utils/creationContext';
 import { getParticipationFields, getCoreIdentityFields, mergePeopleVirtualFieldDefinitions } from '@/platform/fields/peopleFieldModel';
+import {
+  normalizeOrganizationEditSubmitPayload,
+  stripOrganizationRecordForEditForm,
+} from '@/platform/fields/organizationFieldModel';
 import { getFormFieldValue, syncPeopleVirtualFieldKeys, applyVirtualFieldDefault } from '@/utils/getFieldValue';
 import {
   applyCreateOwnerDefaultsToForm,
@@ -1098,7 +1102,9 @@ const initializeForm = (module) => {
     const recordData =
       props.moduleKey === 'cases'
         ? stripCaseRecordForEditForm(props.record)
-        : { ...props.record };
+        : props.moduleKey === 'organizations'
+          ? stripOrganizationRecordForEditForm(props.record)
+          : { ...props.record };
     
     // Handle populated relationships - convert objects to IDs
     Object.keys(recordData).forEach(key => {
@@ -1645,10 +1651,12 @@ const handleSubmit = async () => {
       });
     }
     
-    // Remove slug field for CRM organizations (not needed - only tenants use slugs)
-    // The backend pre-save hook only generates slugs for tenant organizations
+    // CRM organizations: strip tenant/system fields and normalize lookup refs
     if (props.moduleKey === 'organizations') {
-      delete submitData.slug;
+      submitData = normalizeOrganizationEditSubmitPayload(
+        submitData,
+        moduleDefinition.value?.fields
+      );
     }
 
     // Deal role-based relationships: use dealPeople/dealOrganizations, remove legacy contactId/accountId

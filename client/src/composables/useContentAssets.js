@@ -52,7 +52,7 @@ export function useContentAssets() {
     try {
       const page = options.page ?? pagination.currentPage;
       const limit = options.limit ?? pagination.limit;
-      const response = await apiClient.get('/content/assets', {
+      const response = await apiClient.get('/content-assets', {
         params: {
           page,
           limit,
@@ -88,11 +88,11 @@ export function useContentAssets() {
     if (Array.isArray(metadata.tags) && metadata.tags.length) {
       formData.append('tags', metadata.tags.join(','));
     }
-    return uploadFormData('/content/assets', formData);
+    return uploadFormData('/content-assets', formData);
   }
 
   async function deleteAsset(id) {
-    const response = await apiClient.delete(`/content/assets/${id}`);
+    const response = await apiClient.delete(`/content-assets/${id}`);
     if (!response?.success) {
       throw new Error(response?.message || 'Failed to delete asset');
     }

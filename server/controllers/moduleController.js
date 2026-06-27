@@ -3,6 +3,7 @@ const RelationshipDefinition = require('../models/RelationshipDefinition');
 const relationshipRegistry = require('../utils/relationshipRegistry');
 const { getOutgoingRelationships, getIncomingRelationships } = require('../utils/relationshipRegistry');
 const { filterFieldsByReadAccess, filterFieldsByWriteAccess, validateFieldWrite } = require('../utils/fieldAccessControl');
+const { mergeFieldsForMergeTags } = require('../utils/mergeTagModuleFields');
 const {
     normalizePeopleModuleFields,
     migratePeopleQuickCreateKeys,
@@ -3850,6 +3851,14 @@ exports.listModules = async (req, res) => {
             ...module,
             fields: ensurePhoneFieldDefaultValidations(module.fields || [])
         }));
+
+        const forMergeTags = String(req.query.purpose || '').toLowerCase() === 'merge-tags';
+        if (forMergeTags) {
+            filteredMerged = filteredMerged.map((module) => ({
+                ...module,
+                fields: mergeFieldsForMergeTags(module.fields || [], module.key)
+            }));
+        }
 
         // Filter by key if provided in query parameter (supports single key or comma-separated list)
         if (req.query.key || req.query.keys) {

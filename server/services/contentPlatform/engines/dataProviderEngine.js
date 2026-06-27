@@ -1,5 +1,6 @@
 'use strict';
 
+const mongoose = require('mongoose');
 const Organization = require('../../../models/Organization');
 const User = require('../../../models/User');
 const People = require('../../../models/People');
@@ -9,12 +10,17 @@ const QuoteSection = require('../../../models/QuoteSection');
 const Invoice = require('../../../models/Invoice');
 const InvoiceLine = require('../../../models/InvoiceLine');
 const InvoiceSection = require('../../../models/InvoiceSection');
+const Item = require('../../../models/Item');
+const ItemVariant = require('../../../models/ItemVariant');
 
 const RECORD_LOADERS = {
   quotes: loadQuoteContext,
   invoices: loadInvoiceContext,
   people: loadPeopleContext
 };
+
+/** Fields exposed on Organization.* merge tags for related CRM companies. */
+const ORGANIZATION_MERGE_SELECT = 'name industry website phone address annualRevenue numberOfEmployees types slug';
 
 function capitalizeModuleKey(moduleKey) {
   const key = String(moduleKey || '').trim();
@@ -33,20 +39,183 @@ function pickCustomerOrganization(record) {
   return null;
 }
 
+/**
+ * Load a CRM business organization (isTenant: false) for merge tags.
+ * @param {string} tenantOrganizationId
+ * @param {unknown} crmOrganizationId
+ */
+async function loadCrmOrganizationById(tenantOrganizationId, crmOrganizationId) {
+  const id = normalizeObjectIdString(crmOrganizationId);
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+
+  const { buildTenantAccessibleCrmOrganizationQuery } = require('../../../utils/crmOrganizationAccess');
+  const query = await buildTenantAccessibleCrmOrganizationQuery(tenantOrganizationId, {
+    recordIds: [id]
+  });
+
+  return Organization.findOne(query).select(ORGANIZATION_MERGE_SELECT).lean();
+}
+
+/**
+ * Resolve populated or ID-only CRM organization refs on commercial / people records.
+ * @param {unknown} orgRef
+ * @param {string} tenantOrganizationId
+ */
+async function resolveCrmOrganizationRef(orgRef, tenantOrganizationId) {
+  if (!orgRef) return null;
+  if (typeof orgRef === 'object' && orgRef._id) {
+    if (orgRef.name) return orgRef;
+    return loadCrmOrganizationById(tenantOrganizationId, orgRef._id);
+  }
+  return loadCrmOrganizationById(tenantOrganizationId, orgRef);
+}
+
+function normalizeObjectIdString(value) {
+  if (!value) return '';
+  if (typeof value === 'object' && value._id) return String(value._id);
+  return String(value);
+}
+
+function toObjectId(value) {
+  const id = normalizeObjectIdString(value);
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+  return new mongoose.Types.ObjectId(id);
+}
+
+/**
+ * Convert catalog rich-text description HTML into plain text for PDF merge tags.
+ * @param {unknown} value
+ */
+function plainTextFromRichDescription(value) {
+  const raw = String(value ?? '');
+  if (!raw.trim()) return '';
+  return raw
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
+ * @param {object | null | undefined} item
+ */
+function resolveCatalogItemDescription(item) {
+  if (!item || typeof item !== 'object') return '';
+
+  const direct = plainTextFromRichDescription(item.description);
+  if (direct) return direct;
+
+  const custom = plainTextFromRichDescription(item.customFields?.description);
+  if (custom) return custom;
+
+  const versions = Array.isArray(item.descriptionVersions) ? item.descriptionVersions : [];
+  const sorted = versions
+    .slice()
+    .sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0));
+  for (const version of sorted) {
+    const text = plainTextFromRichDescription(version?.content);
+    if (text) return text;
+  }
+
+  return '';
+}
+
 function normalizeLine(line) {
   const doc = line && typeof line.toObject === 'function' ? line.toObject() : line;
   const unitPrice = doc.unitPrice ?? doc.unitPriceSnapshot ?? doc.listPriceSnapshot ?? 0;
+  const liveDescription = plainTextFromRichDescription(doc.liveItemDescription || '');
+  const snapshotDescription = plainTextFromRichDescription(doc.descriptionSnapshot || doc.description || '');
 
   return {
     ...doc,
-    description: doc.descriptionSnapshot || doc.description || doc.itemNameSnapshot || doc.nameSnapshot || doc.name || '',
-    name: doc.itemNameSnapshot || doc.nameSnapshot || doc.name || doc.descriptionSnapshot || '',
+    description: liveDescription || snapshotDescription || '',
+    name: doc.itemNameSnapshot || doc.nameSnapshot || doc.name || '',
     skuSnapshot: doc.skuSnapshot || doc.sku || '',
     unitPrice,
     quantity: doc.quantity ?? 0,
     lineTotal: doc.lineTotal ?? doc.lineSubtotal ?? 0,
     lineSubtotal: doc.lineSubtotal ?? doc.lineTotal ?? 0
   };
+}
+
+/**
+ * Resolve current catalog Item.description for document lines at render time.
+ * @param {string} organizationId
+ * @param {Array<object>} lines
+ */
+async function enrichLinesWithLiveItemCatalog(organizationId, lines) {
+  if (!organizationId || !Array.isArray(lines) || lines.length === 0) {
+    return Array.isArray(lines) ? lines : [];
+  }
+
+  const variantObjectIds = [
+    ...new Set(
+      lines
+        .map((line) => toObjectId(line?.variantId))
+        .filter(Boolean)
+        .map((id) => String(id))
+    )
+  ].map((id) => toObjectId(id)).filter(Boolean);
+
+  if (!variantObjectIds.length) return lines;
+
+  const orgObjectId = toObjectId(organizationId) || organizationId;
+
+  const variants = await ItemVariant.find({
+    _id: { $in: variantObjectIds },
+    organizationId: orgObjectId
+  })
+    .select('_id itemId')
+    .lean();
+
+  if (!variants.length) return lines;
+
+  const variantToItemId = new Map(
+    variants.map((variant) => [String(variant._id), normalizeObjectIdString(variant.itemId)])
+  );
+
+  const itemObjectIds = [...new Set([...variantToItemId.values()].filter(Boolean))]
+    .map((id) => toObjectId(id))
+    .filter(Boolean);
+  if (!itemObjectIds.length) return lines;
+
+  const items = await Item.find({
+    _id: { $in: itemObjectIds },
+    organizationId: orgObjectId,
+    deletedAt: null
+  })
+    .select('description customFields.description descriptionVersions')
+    .lean();
+
+  const itemById = new Map(items.map((item) => [String(item._id), item]));
+
+  return lines.map((line) => {
+    const variantId = normalizeObjectIdString(line?.variantId);
+    const itemId = variantToItemId.get(variantId);
+    const item = itemId ? itemById.get(itemId) : null;
+    if (!item) return line;
+
+    const liveDescription = resolveCatalogItemDescription(item);
+    if (!liveDescription) return line;
+
+    return {
+      ...line,
+      liveItemDescription: liveDescription
+    };
+  });
+}
+
+async function normalizeLinesForRender(organizationId, lines) {
+  if (!Array.isArray(lines) || lines.length === 0) return [];
+  const enriched = await enrichLinesWithLiveItemCatalog(organizationId, lines);
+  return enriched.map(normalizeLine);
 }
 
 function normalizeQuoteRecord(quote) {
@@ -83,8 +252,12 @@ function normalizeInvoiceRecord(invoice) {
 
 async function loadQuoteContext({ organizationId, recordId }) {
   const quote = await Quote.findOne({ _id: recordId, organizationId })
-    .populate({ path: 'organizationRefId', select: 'name industry slug' })
-    .populate({ path: 'contactId', select: 'first_name last_name email phone mobile title' })
+    .populate({ path: 'organizationRefId', select: ORGANIZATION_MERGE_SELECT })
+    .populate({
+      path: 'contactId',
+      select: 'first_name last_name email phone mobile title organization',
+      populate: { path: 'organization', select: ORGANIZATION_MERGE_SELECT }
+    })
     .lean();
   if (!quote) return null;
 
@@ -98,7 +271,7 @@ async function loadQuoteContext({ organizationId, recordId }) {
 
   return {
     record: normalizeQuoteRecord(quote),
-    lines: lines.map(normalizeLine),
+    lines,
     sections,
     moduleKey: 'quotes'
   };
@@ -106,8 +279,12 @@ async function loadQuoteContext({ organizationId, recordId }) {
 
 async function loadInvoiceContext({ organizationId, recordId }) {
   const invoice = await Invoice.findOne({ _id: recordId, organizationId, deletedAt: null })
-    .populate({ path: 'organizationRefId', select: 'name industry slug' })
-    .populate({ path: 'contactId', select: 'first_name last_name email phone mobile title' })
+    .populate({ path: 'organizationRefId', select: ORGANIZATION_MERGE_SELECT })
+    .populate({
+      path: 'contactId',
+      select: 'first_name last_name email phone mobile title organization',
+      populate: { path: 'organization', select: ORGANIZATION_MERGE_SELECT }
+    })
     .lean();
   if (!invoice) return null;
 
@@ -121,7 +298,7 @@ async function loadInvoiceContext({ organizationId, recordId }) {
 
   return {
     record: normalizeInvoiceRecord(invoice),
-    lines: lines.map(normalizeLine),
+    lines,
     sections,
     moduleKey: 'invoices'
   };
@@ -129,7 +306,8 @@ async function loadInvoiceContext({ organizationId, recordId }) {
 
 async function loadPeopleContext({ organizationId, recordId }) {
   const person = await People.findOne({ _id: recordId, organizationId, deletedAt: null })
-    .select('first_name last_name email phone mobile title organizationId')
+    .populate({ path: 'organization', select: ORGANIZATION_MERGE_SELECT })
+    .select('first_name last_name email phone mobile title organization')
     .lean();
   if (!person) return null;
 
@@ -267,17 +445,50 @@ function buildPreviewSampleRecord(moduleKey, tenantOrganization) {
 async function resolveRelatedPeople({ organizationId, record }) {
   if (!record) return null;
 
+  const tenantOrgObjectId = toObjectId(organizationId) || organizationId;
+
   const contactRef = record.contactId;
   if (contactRef && typeof contactRef === 'object' && contactRef._id) {
-    return contactRef;
+    if (Object.prototype.hasOwnProperty.call(contactRef, 'organization')) {
+      return contactRef;
+    }
+    if (!toObjectId(organizationId)) {
+      return contactRef;
+    }
+    return People.findOne({ _id: contactRef._id, organizationId: tenantOrgObjectId, deletedAt: null })
+      .populate({ path: 'organization', select: ORGANIZATION_MERGE_SELECT })
+      .select('first_name last_name email phone mobile title organization')
+      .lean();
   }
 
   const contactId = contactRef || record.contact?._id;
   if (!contactId) return null;
+  if (!toObjectId(organizationId)) {
+    return null;
+  }
 
-  return People.findOne({ _id: contactId, organizationId, deletedAt: null })
-    .select('first_name last_name email phone mobile title')
+  return People.findOne({ _id: contactId, organizationId: tenantOrgObjectId, deletedAt: null })
+    .populate({ path: 'organization', select: ORGANIZATION_MERGE_SELECT })
+    .select('first_name last_name email phone mobile title organization')
     .lean();
+}
+
+/**
+ * Resolve the customer / related CRM organization for merge tags.
+ * Priority: document organizationRefId → contact.organization → person.organization.
+ * @param {object} params
+ */
+async function resolveRelatedOrganization({ organizationId, record, relatedPeople = null }) {
+  if (!record) return null;
+
+  const fromCustomer = pickCustomerOrganization(record);
+  if (fromCustomer) return fromCustomer;
+
+  const fromDocumentRef = await resolveCrmOrganizationRef(record.organizationRefId, organizationId);
+  if (fromDocumentRef) return fromDocumentRef;
+
+  const personOrgRef = record.organization ?? relatedPeople?.organization ?? null;
+  return resolveCrmOrganizationRef(personOrgRef, organizationId);
 }
 
 /**
@@ -318,7 +529,7 @@ async function assembleRuntimeContext(params) {
   }
 
   if (Array.isArray(lines) && lines.length) {
-    lines = lines.map(normalizeLine);
+    lines = await normalizeLinesForRender(organizationId, lines);
   }
 
   if (
@@ -358,6 +569,7 @@ async function assembleRuntimeContext(params) {
     && recordModuleKey
     && PREVIEW_LINE_COLLECTION_MODULES.has(recordModuleKey)
     && !lines.length
+    && (runtimeContext.usePreviewSample === true || !runtimeContext.recordId)
   ) {
     lines = PREVIEW_SAMPLE_LINES.map(normalizeLine);
   }
@@ -367,6 +579,7 @@ async function assembleRuntimeContext(params) {
     && recordModuleKey
     && PREVIEW_LINE_COLLECTION_MODULES.has(recordModuleKey)
     && !sections.length
+    && (runtimeContext.usePreviewSample === true || !runtimeContext.recordId)
   ) {
     sections = PREVIEW_SAMPLE_SECTIONS.map((section) => ({ ...section }));
   }
@@ -387,8 +600,36 @@ async function assembleRuntimeContext(params) {
     record = normalizeInvoiceRecord(record);
   }
 
-  const customerOrganization = record?.customerOrganization || null;
-  const documentOrganization = customerOrganization || tenantOrganization || {};
+  const relatedPeople = await resolveRelatedPeople({ organizationId, record });
+
+  let relatedOrganization = await resolveRelatedOrganization({
+    organizationId,
+    record,
+    relatedPeople
+  });
+
+  if (
+    !relatedOrganization
+    && preview
+    && recordModuleKey === 'people'
+    && (runtimeContext.usePreviewSample === true || !runtimeContext.recordId)
+  ) {
+    relatedOrganization = buildPreviewSampleRecord('organizations', tenantOrganization);
+  }
+
+  if (relatedOrganization && record && (recordModuleKey === 'quotes' || recordModuleKey === 'invoices')) {
+    if (recordModuleKey === 'quotes') {
+      record = normalizeQuoteRecord({ ...record, organizationRefId: relatedOrganization });
+    } else {
+      record = normalizeInvoiceRecord({ ...record, organizationRefId: relatedOrganization });
+    }
+  }
+
+  const customerOrganization = relatedOrganization || record?.customerOrganization || null;
+  const documentOrganization =
+    recordModuleKey === 'people'
+      ? (relatedOrganization || {})
+      : (customerOrganization || tenantOrganization || {});
 
   if (record?.currency && !parameters.currency) {
     parameters.currency = record.currency;
@@ -412,6 +653,7 @@ async function assembleRuntimeContext(params) {
     lines,
     sections,
     parameters,
+    recordModuleKey,
     record: record || {},
     organization: documentOrganization,
     currentUser: currentUser || {},
@@ -427,7 +669,6 @@ async function assembleRuntimeContext(params) {
   if (recordModuleKey === 'invoices' && record) scope.Invoice = record;
   if (recordModuleKey === 'people' && record) scope.People = record;
 
-  const relatedPeople = await resolveRelatedPeople({ organizationId, record });
   if (relatedPeople) {
     scope.People = relatedPeople;
   } else if (runtimeContext.usePreviewSample === true && recordModuleKey && recordModuleKey !== 'people') {
@@ -444,5 +685,13 @@ module.exports = {
   normalizeQuoteRecord,
   normalizeInvoiceRecord,
   buildPreviewSampleRecord,
+  enrichLinesWithLiveItemCatalog,
+  normalizeLinesForRender,
+  plainTextFromRichDescription,
+  resolveCatalogItemDescription,
+  resolveRelatedOrganization,
+  resolveCrmOrganizationRef,
+  loadCrmOrganizationById,
+  ORGANIZATION_MERGE_SELECT,
   RECORD_LOADERS
 };

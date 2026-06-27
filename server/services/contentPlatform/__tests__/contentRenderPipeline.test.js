@@ -10,6 +10,7 @@ const {
 const { resolveComponentTree } = require('../engines/componentResolver');
 const { buildLayoutTree } = require('../engines/layoutTreeBuilder');
 const { renderLayoutTreeToHtml } = require('../renderers/htmlRenderer');
+const { renderGrapesDefinitionToHtml } = require('../renderers/grapesHtmlRenderer');
 const { buildQuoteTemplateDefinition } = require('../../../constants/contentTemplateSeeds');
 const { CONTENT_COMPONENT_TYPES } = require('../../../constants/contentComponentRegistry');
 
@@ -31,6 +32,16 @@ describe('mergeTagEngine', () => {
     assert.match(text, /1,200.50 USD/);
   });
 
+  it('formats currency with symbol when parameters.currencyDisplay is symbol', () => {
+    const scope = {
+      Quote: { grandTotal: 1200.5 },
+      parameters: { currency: 'USD', currencyDisplay: 'symbol' }
+    };
+
+    const text = resolveMergeTagsInString('{{Quote.grandTotal|currency}}', scope);
+    assert.match(text, /\$1,200\.50/);
+  });
+
   it('reports unresolved merge tags', () => {
     const issues = [];
     const text = resolveMergeTagsInString('Hello {{Missing.field}}', {}, { collectIssues: issues });
@@ -46,6 +57,28 @@ describe('mergeTagEngine', () => {
     );
     assert.equal(result.resolved, true);
     assert.match(String(result.value), /99.00/);
+  });
+
+  it('auto-formats currency fields without an explicit format pipe', () => {
+    const result = resolveMergeExpression(
+      { Quote: { grandTotal: 1500, currency: 'EUR' } },
+      'Quote.grandTotal'
+    );
+    assert.equal(result.resolved, true);
+    assert.match(String(result.value), /1,500.00 EUR/);
+  });
+
+  it('resolves lines.description inside line item row scope', () => {
+    const result = resolveMergeExpression(
+      {
+        line: { name: 'Phone', description: '256GB model' },
+        item: { name: 'Phone', description: '256GB model' },
+        description: '256GB model'
+      },
+      'lines.description'
+    );
+    assert.equal(result.resolved, true);
+    assert.equal(result.value, '256GB model');
   });
 });
 
@@ -529,6 +562,161 @@ describe('content render pipeline (html)', () => {
     assert.match(html, /grid-template-columns:repeat\(12,minmax\(0,1fr\)\)/);
     assert.match(html, /grid-column:span 4/);
     assert.match(html, /grid-column:span 8/);
+    assert.match(html, /Left column/);
+    assert.match(html, /Right column/);
+  });
+});
+
+describe('grapesHtmlRenderer', () => {
+  it('renders grapes html/css definitions with merge tags and page settings', () => {
+    const scope = {
+      Organization: { name: 'Acme Corp' }
+    };
+
+    const { html, issues } = renderGrapesDefinitionToHtml({
+      definition: {
+        engine: 'grapesjs',
+        html: '<div id="i1"><p>Hello {{Organization.name}}</p></div>',
+        css: '#i1 { color: navy; }'
+      },
+      template: { paperSize: 'A4', orientation: 'portrait' },
+      scope,
+      lenient: true
+    });
+
+    assert.equal(issues.length, 0);
+    assert.match(html, /Hello Acme Corp/);
+    assert.match(html, /#i1 \{ color: navy; \}/);
+    assert.match(html, /@page/);
+    assert.match(html, /size: A4 portrait/);
+  });
+
+  it('resolves grapes line-item blocks from runtime scope lines', () => {
+    const bindings = encodeURIComponent(JSON.stringify({
+      moduleScope: 'quotes',
+      showSections: false,
+      showSectionTotals: false,
+      showDocumentTotals: false,
+      columns: [
+        { key: 'name', header: 'Item', path: 'name', align: 'left', visible: true },
+        { key: 'lineTotal', header: 'Total', path: 'lineTotal', align: 'right', format: 'currency', visible: true }
+      ]
+    }));
+
+    const scope = {
+      recordModuleKey: 'quotes',
+      Quote: { quoteNumber: 'QT-42', grandTotal: 500, currency: 'USD' },
+      lines: [
+        { name: 'Live consulting', lineTotal: 500, quantity: 1, unitPrice: 500 }
+      ],
+      sections: [],
+      parameters: { currency: 'USD' }
+    };
+
+    const { html } = renderGrapesDefinitionToHtml({
+      definition: {
+        engine: 'grapesjs',
+        html: `<div data-line-item="true" data-line-item-bindings="${bindings}"><table data-line-item-table="true" data-col-widths="50,50"><colgroup><col style="width:50%"><col style="width:50%"></colgroup><tbody><tr><th>Item</th><th>Total</th></tr><tr data-line-item-row="line"><td>{{line.name}}</td><td>{{line.lineTotal}}</td></tr></tbody></table></div>`,
+        css: ''
+      },
+      template: { paperSize: 'A4', orientation: 'portrait', moduleScope: 'quotes' },
+      scope,
+      lenient: true
+    });
+
+    assert.match(html, /Live consulting/);
+    assert.match(html, /500\.00 USD/);
+  });
+
+  it('renders grapes line-item currency with symbol when bindings request symbol', () => {
+    const bindings = encodeURIComponent(JSON.stringify({
+      moduleScope: 'quotes',
+      showSections: false,
+      showSectionTotals: false,
+      showDocumentTotals: false,
+      currencyDisplay: 'symbol',
+      columns: [
+        { key: 'name', header: 'Item', path: 'name', align: 'left', visible: true },
+        { key: 'lineTotal', header: 'Total', path: 'lineTotal', align: 'right', format: 'currency', visible: true }
+      ]
+    }));
+
+    const scope = {
+      recordModuleKey: 'quotes',
+      Quote: { quoteNumber: 'QT-42', grandTotal: 500, currency: 'USD' },
+      lines: [
+        { name: 'Live consulting', lineTotal: 500, quantity: 1, unitPrice: 500 }
+      ],
+      sections: [],
+      parameters: { currency: 'USD', currencyDisplay: 'code' }
+    };
+
+    const { html } = renderGrapesDefinitionToHtml({
+      definition: {
+        engine: 'grapesjs',
+        html: `<div data-line-item="true" data-line-item-bindings="${bindings}"><table data-line-item-table="true" data-col-widths="50,50"><colgroup><col style="width:50%"><col style="width:50%"></colgroup><tbody><tr><th>Item</th><th>Total</th></tr><tr data-line-item-row="line"><td>{{line.name}}</td><td>{{line.lineTotal}}</td></tr></tbody></table></div>`,
+        css: ''
+      },
+      template: { paperSize: 'A4', orientation: 'portrait', moduleScope: 'quotes', currencyDisplay: 'code' },
+      scope,
+      lenient: true
+    });
+
+    assert.match(html, /\$500\.00/);
+    assert.doesNotMatch(html, /500\.00 USD/);
+  });
+
+  it('resolves lines.description merge chips as plain text in grapes line items', () => {
+    const bindings = encodeURIComponent(JSON.stringify({
+      moduleScope: 'quotes',
+      showSections: false,
+      showSectionTotals: false,
+      showDocumentTotals: false,
+      columns: [
+        { key: 'name', header: 'Item', path: 'name', align: 'left', visible: true },
+        { key: 'quantity', header: 'Qty', path: 'quantity', align: 'right', visible: true }
+      ]
+    }));
+
+    const scope = {
+      recordModuleKey: 'quotes',
+      lines: [
+        { name: 'iPhone 17 Pro Max', description: '256GB Blue Titanium', quantity: 1 }
+      ],
+      sections: []
+    };
+
+    const { html } = renderGrapesDefinitionToHtml({
+      definition: {
+        engine: 'grapesjs',
+        html: `<div data-line-item="true" data-line-item-bindings="${bindings}"><table data-line-item-table="true"><tbody><tr><th>Item</th><th>Qty</th></tr><tr data-line-item-row="line"><td><span class="builder-merge-chip" contenteditable="false" data-merge-path="line.name">line.name</span><br><span class="builder-merge-chip" contenteditable="false" data-merge-path="lines.description">lines.description</span></td><td>{{line.quantity}}</td></tr></tbody></table></div>`,
+        css: ''
+      },
+      template: { paperSize: 'A4', orientation: 'portrait', moduleScope: 'quotes' },
+      scope,
+      lenient: true
+    });
+
+    assert.match(html, /iPhone 17 Pro Max/);
+    assert.match(html, /256GB Blue Titanium/);
+    assert.doesNotMatch(html, /class="builder-merge-chip"/);
+    assert.doesNotMatch(html, /data-merge-path=/);
+  });
+
+  it('includes layout grid css so gjs-row columns render side by side', () => {
+    const { html } = renderGrapesDefinitionToHtml({
+      definition: {
+        engine: 'grapesjs',
+        html: '<div class="gjs-row"><div class="gjs-cell">Left column</div><div class="gjs-cell">Right column</div></div>',
+        css: ''
+      },
+      template: { paperSize: 'A4', orientation: 'portrait' },
+      scope: {},
+      lenient: true
+    });
+
+    assert.match(html, /arivu-layout-grid/);
+    assert.match(html, /\.gjs-row\s*\{[^}]*display:\s*flex/);
     assert.match(html, /Left column/);
     assert.match(html, /Right column/);
   });

@@ -1,6 +1,54 @@
 'use strict';
 
+const {
+  formatCurrencyAmount,
+  resolveCurrencyDisplayMode
+} = require('../../../utils/currencyFormat');
+
 const MERGE_TAG_PATTERN = /\{\{\s*([^}]+?)\s*\}\}/g;
+
+const CURRENCY_LEAF_FIELDS = new Set([
+  'unitprice',
+  'linetotal',
+  'linesubtotal',
+  'subtotal',
+  'taxtotal',
+  'grandtotal',
+  'sectiontotal',
+  'sectionsubtotal',
+  'sectiondiscounttotal',
+  'amountdue',
+  'unitpricesnapshot',
+  'linediscounttotal',
+  'globaldiscounttotal',
+  'adjustmenttotal',
+  'discountamount',
+  'discounttotal'
+]);
+
+/**
+ * @param {Record<string, unknown>} scope
+ */
+function resolveCurrencyCode(scope) {
+  return String(
+    scope?.parameters?.currency
+    || scope?.Quote?.currency
+    || scope?.Invoice?.currency
+    || scope?.Record?.currency
+    || scope?.record?.currency
+    || scope?.line?.currencySnapshot
+    || scope?.currencySnapshot
+    || ''
+  ).trim();
+}
+
+/**
+ * @param {string} pathPart
+ */
+function inferCurrencyFormat(pathPart) {
+  const leaf = String(pathPart || '').split('.').pop()?.toLowerCase() || '';
+  return CURRENCY_LEAF_FIELDS.has(leaf) ? 'currency' : '';
+}
 
 /**
  * @param {unknown} value
@@ -10,11 +58,11 @@ function formatValue(value, formatSpec, context) {
   if (value == null || value === '') return '';
 
   const format = String(formatSpec || '').trim().toLowerCase();
-  const currency = context?.parameters?.currency || context?.record?.currency || '';
+  const currency = resolveCurrencyCode(context);
 
   switch (format) {
     case 'currency':
-      return formatCurrency(value, currency);
+      return formatCurrency(value, currency, context);
     case 'date':
       return formatDate(value);
     case 'uppercase':
@@ -26,14 +74,14 @@ function formatValue(value, formatSpec, context) {
   }
 }
 
-function formatCurrency(value, currency) {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return String(value ?? '');
-  const formatted = num.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-  return currency ? `${formatted} ${currency}`.trim() : formatted;
+function formatCurrency(value, currency, context) {
+  const locale = String(context?.parameters?.locale || context?.locale || 'en-US');
+  return formatCurrencyAmount(
+    value,
+    currency,
+    resolveCurrencyDisplayMode(context),
+    locale
+  );
 }
 
 function formatDate(value) {
@@ -78,7 +126,14 @@ function normalizeLineItemPath(scope, pathPart) {
   const path = String(pathPart || '').trim();
   if (!path.toLowerCase().startsWith('lines.')) return path;
   if (!scope?.line && !scope?.item) return path;
-  return path.slice('lines.'.length);
+  const field = path.slice('lines.'.length);
+  if (scope?.line && Object.prototype.hasOwnProperty.call(scope.line, field)) {
+    return `line.${field}`;
+  }
+  if (scope?.item && Object.prototype.hasOwnProperty.call(scope.item, field)) {
+    return `line.${field}`;
+  }
+  return field;
 }
 
 /**
@@ -92,7 +147,8 @@ function resolveMergeExpression(rootScope, expression) {
   }
 
   const [pathPart, ...formatParts] = raw.split('|').map((part) => part.trim());
-  const formatSpec = formatParts.join('|');
+  const explicitFormat = formatParts.join('|').replace(/^format:/i, '');
+  const formatSpec = explicitFormat || inferCurrencyFormat(pathPart);
   const normalizedPath = normalizeLineItemPath(rootScope, pathPart);
 
   const { found, value } = resolvePath(rootScope, normalizedPath);
@@ -101,7 +157,7 @@ function resolveMergeExpression(rootScope, expression) {
   }
 
   return {
-    value: formatValue(value, formatSpec.replace(/^format:/i, ''), rootScope),
+    value: formatValue(value, formatSpec, rootScope),
     resolved: true,
     path: pathPart
   };
@@ -139,5 +195,7 @@ module.exports = {
   normalizeLineItemPath,
   resolveMergeExpression,
   resolveMergeTagsInString,
-  formatValue
+  formatValue,
+  resolveCurrencyCode,
+  inferCurrencyFormat
 };

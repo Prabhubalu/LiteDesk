@@ -710,6 +710,42 @@ const routes = [
     meta: { requiresAuth: true, requiresPermission: { module: 'documents', action: 'view' }, moduleKey: 'documents' }
   },
   {
+    path: '/templates',
+    name: 'templates',
+    component: () => import('@/views/Templates.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'view' } }
+  },
+  {
+    path: '/templates/:id',
+    name: 'template-detail',
+    component: () => import('@/views/TemplateDetail.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'view' } }
+  },
+  {
+    path: '/templates/:id/builder',
+    name: 'template-builder',
+    component: () => import('@/views/TemplateBuilder.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'edit' } }
+  },
+  {
+    path: '/content-themes',
+    name: 'content-themes',
+    component: () => import('@/views/ContentThemes.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'view' } }
+  },
+  {
+    path: '/content-themes/:id',
+    name: 'content-theme-detail',
+    component: () => import('@/views/ContentThemeDetail.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'view' } }
+  },
+  {
+    path: '/content-assets',
+    name: 'content-assets',
+    component: () => import('@/views/ContentAssets.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'view' } }
+  },
+  {
     path: '/organizations',
     name: 'organizations',
     component: () => import('@/views/Organizations.vue'),
@@ -1043,7 +1079,10 @@ router.beforeEach(async (to, from, next) => {
   // Settings / legacy audit forms need deferred locale namespaces in the guard.
   const needsFullLocale =
     to.path.startsWith('/settings')
-    || to.path.startsWith('/forms');
+    || to.path.startsWith('/forms')
+    || to.path.startsWith('/templates')
+    || to.path.startsWith('/content-themes')
+    || to.path.startsWith('/content-assets');
 
   const needsWebformsLocale =
     to.path.startsWith('/webforms/public/')

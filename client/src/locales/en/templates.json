@@ -559,6 +559,22 @@
     "message": "Columns",
     "description": "Line item block column visibility toggles"
   },
+  "builderCurrencyDisplay": {
+    "message": "Currency display",
+    "description": "How currency amounts are shown in merge tags and line items"
+  },
+  "builderCurrencyDisplayInherit": {
+    "message": "Use template default",
+    "description": "Line item block inherits template currency display setting"
+  },
+  "builderCurrencyDisplayCode": {
+    "message": "Code (1,234.56 USD)",
+    "description": "Show currency code after the amount"
+  },
+  "builderCurrencyDisplaySymbol": {
+    "message": "Symbol ($1,234.56)",
+    "description": "Show currency symbol with the amount"
+  },
   "builderComponentImage": {
     "message": "Image",
     "description": "Builder image component"
@@ -607,6 +623,10 @@
     "message": "Properties",
     "description": "Builder properties tab"
   },
+  "builderTabPage": {
+    "message": "Page",
+    "description": "Builder page settings tab"
+  },
   "builderTabLayers": {
     "message": "Layers",
     "description": "Builder layers tab"
@@ -615,9 +635,117 @@
     "message": "Merge tags",
     "description": "Builder merge tags tab"
   },
+  "builderTabAssets": {
+    "message": "Assets",
+    "description": "Builder assets tab"
+  },
+  "grapesBlockColumn1": {
+    "message": "1 column",
+    "description": "GrapesJS basic block: single column row"
+  },
+  "grapesBlockColumn2": {
+    "message": "2 columns",
+    "description": "GrapesJS basic block: two column row"
+  },
+  "grapesBlockColumn3": {
+    "message": "3 columns",
+    "description": "GrapesJS basic block: three column row"
+  },
+  "grapesBlockColumn37": {
+    "message": "2 columns (30/70)",
+    "description": "GrapesJS basic block: 30/70 column row"
+  },
+  "grapesBlockText": {
+    "message": "Text",
+    "description": "GrapesJS text block"
+  },
+  "grapesBlockTextBasic": {
+    "message": "Text section",
+    "description": "GrapesJS webpage preset text-basic block"
+  },
+  "grapesBlockLinkBlock": {
+    "message": "Link block",
+    "description": "GrapesJS webpage preset link-block"
+  },
+  "grapesBlockQuote": {
+    "message": "Quote",
+    "description": "GrapesJS quote block"
+  },
+  "grapesBlockVideo": {
+    "message": "Video",
+    "description": "GrapesJS basic video block"
+  },
+  "grapesBlockMap": {
+    "message": "Map",
+    "description": "GrapesJS basic map block"
+  },
+  "grapesBlockSect100": {
+    "message": "1 section (100%)",
+    "description": "GrapesJS newsletter full-width section"
+  },
+  "grapesBlockSect50": {
+    "message": "2 sections (50/50)",
+    "description": "GrapesJS newsletter half-width sections"
+  },
+  "grapesBlockSect30": {
+    "message": "3 sections (33%)",
+    "description": "GrapesJS newsletter three-column sections"
+  },
+  "grapesBlockSect37": {
+    "message": "2 sections (30/70)",
+    "description": "GrapesJS newsletter 30/70 sections"
+  },
+  "grapesBlockTextSect": {
+    "message": "Heading + text",
+    "description": "GrapesJS newsletter heading and paragraph section"
+  },
+  "grapesBlockGridItems": {
+    "message": "Grid items",
+    "description": "GrapesJS newsletter grid items block"
+  },
+  "grapesBlockListItems": {
+    "message": "List items",
+    "description": "GrapesJS newsletter list items block"
+  },
+  "builderLayersEmpty": {
+    "message": "No layers yet. Add components to the canvas.",
+    "description": "Builder layers panel empty state"
+  },
   "builderPropertiesEmpty": {
     "message": "Select a component to edit its properties.",
     "description": "Builder properties empty state"
+  },
+  "builderFieldType": {
+    "message": "Type",
+    "description": "Selected component tag or type in GrapesJS builder"
+  },
+  "builderFieldClasses": {
+    "message": "CSS classes",
+    "description": "Selected component CSS classes in GrapesJS builder"
+  },
+  "builderGroupTraits": {
+    "message": "Settings",
+    "description": "GrapesJS component trait settings section in properties panel"
+  },
+  "builderGroupStyles": {
+    "message": "Styles",
+    "description": "GrapesJS style manager section in properties panel"
+  },
+  "builderActionSelectParent": {
+    "message": "Select parent",
+    "description": "Template builder action to select the parent component"
+  },
+  "builderActionDuplicate": {
+    "message": "Duplicate",
+    "description": "Template builder action to duplicate the selected component"
+  },
+  "builderActionDelete": {
+    "message": "Delete",
+    "description": "Template builder action to delete the selected component"
+  },
+  "builderPublishing": {
+    "message": "Publishing…",
+    "description": "Template publish in progress in GrapesJS builder toolbar"
   },
   "builderFieldText": {
     "message": "Text",
@@ -806,6 +934,18 @@
   "builderMergeTagsHint": {
     "message": "Click a field to insert a merge tag into the selected component.",
     "description": "Builder merge tag panel hint"
+  },
+  "builderMergeTagsSearchPlaceholder": {
+    "message": "Search fields…",
+    "description": "Merge tag panel search placeholder"
+  },
+  "builderMergeTagsFilterAll": {
+    "message": "All modules",
+    "description": "Merge tag panel module filter — show every group"
+  },
+  "builderMergeTagsNoResults": {
+    "message": "No fields match your search",
+    "description": "Merge tag panel empty search state"
   },
   "builderMergeGroupSystem": {
     "message": "System",
@@ -1187,6 +1327,46 @@
     "message": "Align right",
     "description": "Align text right"
   },
+  "builderFormatAlignTop": {
+    "message": "Align top",
+    "description": "Vertical align top for layout row or cell"
+  },
+  "builderFormatAlignMiddle": {
+    "message": "Align middle",
+    "description": "Vertical align middle for layout row or cell"
+  },
+  "builderFormatAlignBottom": {
+    "message": "Align bottom",
+    "description": "Vertical align bottom for layout row or cell"
+  },
+  "builderFormatAlignStretch": {
+    "message": "Stretch",
+    "description": "Stretch layout cells to equal height in a row"
+  },
+  "builderFieldRowCellAlign": {
+    "message": "Cell vertical alignment",
+    "description": "Vertical alignment of cells within a layout row"
+  },
+  "builderFieldRowDirection": {
+    "message": "Column direction",
+    "description": "Flex direction for layout row — side by side or stacked"
+  },
+  "builderRowDirectionRow": {
+    "message": "Side by side",
+    "description": "Place row cells horizontally next to each other"
+  },
+  "builderRowDirectionColumn": {
+    "message": "Stacked",
+    "description": "Stack row cells vertically"
+  },
+  "builderFieldCellContentAlign": {
+    "message": "Content vertical alignment",
+    "description": "Vertical alignment of content within a layout cell"
+  },
+  "builderFieldCellHorizontalAlign": {
+    "message": "Content horizontal alignment",
+    "description": "Horizontal alignment of content within a layout cell (left, center, right)"
+  },
   "builderFormatHeading1": {
     "message": "Heading 1",
     "description": "Heading level 1"
@@ -1306,6 +1486,10 @@
   "builderTableDeleteTable": {
     "message": "Delete table",
     "description": "Context menu action to remove entire table"
+  },
+  "builderTableResizeColumn": {
+    "message": "Resize column",
+    "description": "Accessible label for table column resize drag handle"
   },
   "builderTableCollectionPlaceholder": {
     "message": "Optional — e.g. lines",
@@ -1498,5 +1682,49 @@
   "builderFieldHeight": {
     "message": "Height",
     "description": "Block height on freeform canvas"
+  },
+  "builderFieldMaxWidth": {
+    "message": "Max width",
+    "description": "Template builder max width style field"
+  },
+  "builderFieldMinHeight": {
+    "message": "Min height",
+    "description": "Template builder min height style field"
+  },
+  "builderFieldPadding": {
+    "message": "Padding",
+    "description": "Template builder padding group label"
+  },
+  "builderFieldPaddingRight": {
+    "message": "Padding right",
+    "description": "Template builder padding right field"
+  },
+  "builderFieldPaddingLeft": {
+    "message": "Padding left",
+    "description": "Template builder padding left field"
+  },
+  "builderFieldMargin": {
+    "message": "Margin",
+    "description": "Template builder margin group label"
+  },
+  "builderFieldMarginRight": {
+    "message": "Margin right",
+    "description": "Template builder margin right field"
+  },
+  "builderFieldMarginLeft": {
+    "message": "Margin left",
+    "description": "Template builder margin left field"
+  },
+  "builderFieldLineHeight": {
+    "message": "Line height",
+    "description": "Template builder line height field"
+  },
+  "builderFieldBorderRadius": {
+    "message": "Border radius",
+    "description": "Template builder border radius field"
+  },
+  "builderGroupAppearance": {
+    "message": "Appearance",
+    "description": "Template builder appearance style group"
   }
 }

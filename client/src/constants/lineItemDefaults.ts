@@ -13,12 +13,15 @@ export interface LineItemColumn {
   visible?: boolean;
 }
 
+export type CurrencyDisplayMode = 'code' | 'symbol';
+
 export interface LineItemBindings {
   collection: string;
   moduleScope: string;
   showSections: boolean;
   showSectionTotals: boolean;
   showDocumentTotals: boolean;
+  currencyDisplay?: CurrencyDisplayMode | '';
   columns: LineItemColumn[];
   tableWidthPercent: number;
   widthUnit: 'percent' | 'px';
@@ -34,7 +37,7 @@ export const DEFAULT_LINE_ITEM_COLUMNS: LineItemColumn[] = [
   { key: 'lineTotal', header: 'Total', path: 'lineTotal', align: 'right', format: 'currency' }
 ];
 
-const DEFAULT_COLUMN_WIDTHS = [92, 220, 48, 74, 86];
+const DEFAULT_COLUMN_WIDTHS = [72, 180, 48, 74, 86];
 
 const PREVIEW_LINE_ROW_ONE: Record<string, string> = {
   sku: 'SKU-001',
@@ -55,7 +58,7 @@ const PREVIEW_LINE_ROW_TWO: Record<string, string> = {
 export function normalizeLineItemColumnList(raw?: LineItemColumn[]): LineItemColumn[] {
   const byKey = new Map(DEFAULT_LINE_ITEM_COLUMNS.map((column) => [
     column.key,
-    { ...column, visible: true }
+    { ...column, visible: column.visible !== false }
   ]));
   if (Array.isArray(raw)) {
     for (const column of raw) {
@@ -74,6 +77,17 @@ export function normalizeLineItemColumnList(raw?: LineItemColumn[]): LineItemCol
 
 export function visibleLineItemColumns(raw?: LineItemColumn[]): LineItemColumn[] {
   return normalizeLineItemColumnList(raw).filter((column) => column.visible !== false);
+}
+
+/** Fingerprint of row/column structure — used to avoid restoring stale cells after layout changes. */
+export function lineItemLayoutSignature(bindings: Partial<LineItemBindings> = {}): string {
+  const visibleKeys = visibleLineItemColumns(bindings.columns).map((column) => column.key);
+  return JSON.stringify({
+    columns: visibleKeys,
+    showSections: bindings.showSections !== false,
+    showSectionTotals: bindings.showSectionTotals !== false,
+    showDocumentTotals: bindings.showDocumentTotals !== false
+  });
 }
 
 export function resolveLineItemLayoutColumns(raw?: LineItemColumn[]) {
@@ -145,7 +159,120 @@ function totalRow(label: string, value: string, colCount: number): TableGridCell
   return row.slice(0, colCount);
 }
 
-/** Builder preview grid mirroring the server LineItem layout. */
+export type LineItemTemplateRowKind =
+  | 'header'
+  | 'section'
+  | 'line'
+  | 'section-total'
+  | 'document-total';
+
+export interface LineItemTemplateRow {
+  kind: LineItemTemplateRowKind;
+  cells: TableGridCell[];
+}
+
+function recordMergeAlias(moduleScope: string): string {
+  const scope = String(moduleScope || '').toLowerCase();
+  if (scope === 'invoices') return 'Invoice';
+  if (scope === 'quotes') return 'Quote';
+  return 'Record';
+}
+
+function templateTotalCells(label: string, valueToken: string, colCount: number): TableGridCell[] {
+  const labelSpan = Math.max(1, colCount - 1);
+  return [
+    mergedLabelCell(label, labelSpan, 'right'),
+    ...Array.from({ length: labelSpan - 1 }, () => ({ ...createEmptyCell(), skip: true })),
+    {
+      text: valueToken,
+      align: 'right',
+      colSpan: 1,
+      rowSpan: 1,
+      skip: false,
+      format: 'currency'
+    }
+  ];
+}
+
+function templateLineCells(columns: LineItemColumn[]): TableGridCell[] {
+  return columns.map((column) => ({
+    text: column.key === 'name' ? 'line.name\nline.description' : `line.${column.path}`,
+    align: column.align,
+    colSpan: 1,
+    rowSpan: 1,
+    skip: false,
+    format: column.format || 'text'
+  }));
+}
+
+/** Builder canvas grid — merge tags only, no sample business data. */
+export function buildLineItemTemplateGrid(bindings: Partial<LineItemBindings> = {}): LineItemTemplateRow[] {
+  const visibleColumns = visibleLineItemColumns(bindings.columns);
+  const colCount = visibleColumns.length;
+  const showSections = bindings.showSections !== false;
+  const showSectionTotals = bindings.showSectionTotals !== false;
+  const showDocumentTotals = bindings.showDocumentTotals !== false;
+  const moduleScope = String(bindings.moduleScope || 'quotes').toLowerCase();
+  const record = recordMergeAlias(moduleScope);
+  const grandLabel = moduleScope === 'invoices' ? 'Amount Due' : 'Grand Total';
+
+  if (colCount <= 0) return [];
+
+  const rows: LineItemTemplateRow[] = [
+    {
+      kind: 'header',
+      cells: visibleColumns.map((column) => ({
+        text: column.header,
+        align: column.align,
+        colSpan: 1,
+        rowSpan: 1,
+        skip: false,
+        format: 'text' as const
+      }))
+    }
+  ];
+
+  if (showSections) {
+    rows.push({
+      kind: 'section',
+      cells: [
+        mergedLabelCell('{{section.sectionTitle}}', colCount),
+        ...Array.from({ length: colCount - 1 }, () => ({ ...createEmptyCell(), skip: true }))
+      ]
+    });
+  }
+
+  rows.push({
+    kind: 'line',
+    cells: templateLineCells(visibleColumns)
+  });
+
+  if (showSections && showSectionTotals) {
+    rows.push({
+      kind: 'section-total',
+      cells: templateTotalCells('Section total', '{{section.sectionTotal|currency}}', colCount)
+    });
+  }
+
+  if (showDocumentTotals) {
+    rows.push({
+      kind: 'document-total',
+      cells: templateTotalCells('Subtotal', `{{${record}.subtotal|currency}}`, colCount)
+    });
+    rows.push({
+      kind: 'document-total',
+      cells: templateTotalCells('Tax', `{{${record}.taxTotal|currency}}`, colCount)
+    });
+    rows.push({
+      kind: 'document-total',
+      cells: templateTotalCells(grandLabel, `{{${record}.grandTotal|currency}}`, colCount)
+    });
+  }
+
+  return rows;
+}
+
+/** @deprecated Canvas uses buildLineItemTemplateGrid; kept for legacy tree preview tables. */
 export function buildLineItemPreviewGrid(bindings: Partial<LineItemBindings> = {}): TableGridBindings['grid'] {
   const visibleColumns = visibleLineItemColumns(bindings.columns);
   const colCount = visibleColumns.length;

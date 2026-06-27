@@ -16,7 +16,7 @@ export function useContentThemes() {
     try {
       const page = options.page ?? pagination.currentPage;
       const limit = options.limit ?? pagination.limit;
-      const response = await apiClient.get('/content/themes', {
+      const response = await apiClient.get('/content-themes', {
         params: {
           page,
           limit,
@@ -44,7 +44,7 @@ export function useContentThemes() {
   }
 
   async function fetchTheme(id) {
-    const response = await apiClient.get(`/content/themes/${id}`, { cache: 'no-store' });
+    const response = await apiClient.get(`/content-themes/${id}`, { cache: 'no-store' });
     if (!response?.success) {
       throw new Error(response?.message || 'Failed to load theme');
     }
@@ -52,7 +52,7 @@ export function useContentThemes() {
   }
 
   async function createTheme(payload) {
-    const response = await apiClient.post('/content/themes', payload);
+    const response = await apiClient.post('/content-themes', payload);
     if (!response?.success) {
       throw new Error(response?.message || 'Failed to create theme');
     }
@@ -60,7 +60,7 @@ export function useContentThemes() {
   }
 
   async function updateTheme(id, payload) {
-    const response = await apiClient.put(`/content/themes/${id}`, payload);
+    const response = await apiClient.put(`/content-themes/${id}`, payload);
     if (!response?.success) {
       throw new Error(response?.message || 'Failed to update theme');
     }
@@ -68,7 +68,7 @@ export function useContentThemes() {
   }
 
   async function publishTheme(id) {
-    const response = await apiClient.post(`/content/themes/${id}/publish`);
+    const response = await apiClient.post(`/content-themes/${id}/publish`);
     if (!response?.success) {
       throw new Error(response?.message || 'Failed to publish theme');
     }
@@ -76,7 +76,7 @@ export function useContentThemes() {
   }
 
   async function archiveTheme(id) {
-    const response = await apiClient.post(`/content/themes/${id}/archive`);
+    const response = await apiClient.post(`/content-themes/${id}/archive`);
     if (!response?.success) {
       throw new Error(response?.message || 'Failed to archive theme');
     }
@@ -84,7 +84,7 @@ export function useContentThemes() {
   }
 
   async function deleteTheme(id) {
-    const response = await apiClient.delete(`/content/themes/${id}`);
+    const response = await apiClient.delete(`/content-themes/${id}`);
     if (!response?.success) {
       throw new Error(response?.message || 'Failed to delete theme');
     }

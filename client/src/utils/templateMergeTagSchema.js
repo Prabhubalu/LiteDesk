@@ -7,7 +7,14 @@ const EXCLUDED_FIELD_KEYS = new Set([
   'descriptionversions',
   'derivedstatus',
   'legacycontactid',
-  'organizationid'
+  'organizationid',
+  'publicsharetoken',
+  'customfields',
+  '_id',
+  '__v',
+  'deletedat',
+  'deletedby',
+  'deletionreason'
 ]);
 
 const LINE_ITEM_FIELDS = [
@@ -20,6 +27,25 @@ const LINE_ITEM_FIELDS = [
 ];
 
 const LINE_COLLECTION_MODULES = new Set(['quotes', 'invoices', 'sales_orders']);
+
+/** Runtime scope aliases — keep aligned with dataProviderEngine. */
+const MODULE_MERGE_ALIASES = {
+  quotes: 'Quote',
+  invoices: 'Invoice',
+  sales_orders: 'SalesOrder',
+  people: 'People',
+  organizations: 'Organization'
+};
+
+/**
+ * @param {string} moduleKey
+ * @returns {string}
+ */
+export function resolveMergeTagModuleAlias(moduleKey) {
+  const key = String(moduleKey || '').trim().toLowerCase();
+  if (MODULE_MERGE_ALIASES[key]) return MODULE_MERGE_ALIASES[key];
+  return capitalizeModuleAlias(moduleKey);
+}
 
 /**
  * @param {string} moduleKey
@@ -47,16 +73,26 @@ export function resolveModuleOptionLabel(t, te, getModuleLabelKey, module) {
 }
 
 /**
+ * @param {string} key
+ * @returns {string}
+ */
+export function humanizeFieldKey(key) {
+  return String(key || '')
+    .replace(/_/g, ' ')
+    .replace(/([a-z\d])([A-Z])/g, '$1 $2')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+/**
  * @param {object} field
  * @param {string} moduleKey
  */
 export function isMergeTagEligibleField(field, moduleKey) {
   const key = String(field?.key || '').trim();
   if (!key) return false;
-  if (field?.system === true) return false;
   if (EXCLUDED_FIELD_KEYS.has(key.toLowerCase())) return false;
-  if (field?.isVisibleInConfig === false) return false;
-  if (field?.owner === 'system' && field?.editable === false) return false;
   if (field?.type === 'participation') return false;
   if (moduleKey === 'users' && !key) return false;
   return true;
@@ -93,7 +129,7 @@ export async function fetchModuleDefinition(moduleKey) {
   if (!key) return null;
 
   const response = await apiClient.get('/modules', {
-    params: { key, context: 'all' },
+    params: { key, context: 'all', purpose: 'merge-tags' },
     cache: 'no-store'
   });
 
@@ -123,22 +159,28 @@ export async function fetchAllModuleOptions(t, te, getModuleLabelKey) {
     .sort((a, b) => a.label.localeCompare(b.label));
 }
 
+function resolveFieldLabel(field) {
+  return field.label || field.displayName || field.name || humanizeFieldKey(field.key);
+}
+
 function buildFieldNodes(moduleKey, fields) {
-  const alias = capitalizeModuleAlias(moduleKey);
+  const alias = resolveMergeTagModuleAlias(moduleKey);
   return fields.map((field) => ({
     id: `${moduleKey}-${field.key}`,
     path: `${alias}.${field.key}`,
-    label: field.label || field.key
+    label: resolveFieldLabel(field),
+    moduleKey
   }));
 }
 
 function buildLineItemsGroup(moduleKey) {
   return {
     id: `lines-${moduleKey}`,
+    moduleKey: 'lines',
     labelKey: 'templates.builderMergeGroupLines',
     children: LINE_ITEM_FIELDS.map((field) => ({
-      id: `lines-${moduleKey}-${field.key}`,
-      path: `lines.${field.key}`,
+      id: `line-${moduleKey}-${field.key}`,
+      path: `line.${field.key}`,
       label: field.label
     }))
   };
@@ -151,6 +193,7 @@ function buildLineItemsGroup(moduleKey) {
 export async function buildMergeTagTreeGroups(moduleScope) {
   const systemGroup = {
     id: 'system',
+    moduleKey: 'system',
     labelKey: 'templates.builderMergeGroupSystem',
     children: [
       { id: 'system-today', path: 'System.Today', label: 'Today' },
@@ -161,6 +204,7 @@ export async function buildMergeTagTreeGroups(moduleScope) {
 
   const organizationGroup = {
     id: 'organization',
+    moduleKey: 'organization',
     labelKey: 'templates.builderMergeGroupOrganization',
     children: [
       { id: 'org-name', path: 'Organization.name', label: 'name' },
@@ -171,6 +215,7 @@ export async function buildMergeTagTreeGroups(moduleScope) {
 
   const currentContextGroup = {
     id: 'current-context',
+    moduleKey: 'current-context',
     labelKey: 'templates.builderMergeGroupCurrentContext',
     children: [
       { id: 'current-user-email', path: 'CurrentUser.email', label: 'email' },
@@ -193,6 +238,7 @@ export async function buildMergeTagTreeGroups(moduleScope) {
   if (primaryFields.length) {
     groups.push({
       id: `module-${moduleKey}`,
+      moduleKey,
       label: primaryModule.name || capitalizeModuleAlias(moduleKey),
       children: buildFieldNodes(moduleKey, primaryFields)
     });
@@ -221,6 +267,7 @@ export async function buildMergeTagTreeGroups(moduleScope) {
 
     groups.push({
       id: `related-${moduleKey}-${relatedKey}`,
+      moduleKey: relatedKey,
       label: relationship?.label || relationship?.name || definition.name || capitalizeModuleAlias(relatedKey),
       children: buildFieldNodes(relatedKey, relatedFields)
     });
@@ -228,6 +275,47 @@ export async function buildMergeTagTreeGroups(moduleScope) {
 
   if (LINE_COLLECTION_MODULES.has(moduleKey)) {
     groups.push(buildLineItemsGroup(moduleKey));
+  }
+
+  return groups;
+}
+
+/**
+ * @param {Array<object>} nodes
+ * @param {import('vue-i18n').Composer['t']} t
+ * @returns {Array<{ id: string, label: string, moduleKey: string, fields: Array<object> }>}
+ */
+export function flattenMergeTagTreeGroups(nodes, t) {
+  const groups = [];
+
+  for (const node of nodes || []) {
+    if (!Array.isArray(node.children) || !node.children.length) continue;
+
+    const leafFields = node.children.filter((child) => child.path && !child.children?.length);
+    const nestedGroups = node.children.filter((child) => child.children?.length);
+    const groupLabel = node.labelKey ? t(node.labelKey) : (node.label || '');
+
+    if (leafFields.length) {
+      groups.push({
+        id: node.id,
+        label: groupLabel,
+        moduleKey: String(node.moduleKey || '').toLowerCase(),
+        fields: leafFields.map((field) => {
+          const label = field.label || field.path;
+          const path = field.path || '';
+          const key = String(field.key || path.split('.').pop() || '');
+          const searchText = `${groupLabel} ${label} ${path} ${humanizeFieldKey(key)}`.toLowerCase();
+          return {
+            ...field,
+            groupId: node.id,
+            groupLabel,
+            searchText
+          };
+        })
+      });
+    }
+
+    groups.push(...flattenMergeTagTreeGroups(nestedGroups, t));
   }
 
   return groups;

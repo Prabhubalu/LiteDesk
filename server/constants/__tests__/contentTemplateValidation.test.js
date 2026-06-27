@@ -43,4 +43,17 @@ describe('contentTemplateValidationService', () => {
       (error) => error instanceof ContentPlatformError
     );
   });
+
+  it('accepts a GrapesJS project definition', () => {
+    const result = validateTemplateDefinition({
+      engine: 'grapesjs',
+      version: 1,
+      project: { pages: [] },
+      html: '<div></div>',
+      css: 'body { margin: 0; }'
+    });
+
+    assert.equal(result.valid, true);
+    assert.equal(result.errors.length, 0);
+  });
 });

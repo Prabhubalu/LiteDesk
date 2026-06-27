@@ -7,8 +7,8 @@
       @contextmenu.prevent="emit('close')"
     >
       <div
-        class="fixed min-w-[11rem] rounded-lg border bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900"
-        :style="{ left: `${x}px`, top: `${y}px` }"
+        class="fixed min-w-[11rem] max-w-[16rem] rounded-lg border bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900"
+        :style="menuStyle"
         @mousedown.stop
         @contextmenu.prevent
       >
@@ -19,7 +19,7 @@
           class="flex w-full items-center px-3 py-1.5 text-left text-sm hover:bg-neutral-100 disabled:opacity-40 dark:hover:bg-neutral-800"
           :class="item.danger ? 'text-danger-600' : 'text-neutral-700 dark:text-neutral-200'"
           :disabled="item.disabled"
-          @click="onSelect(item.id)"
+          @click.stop="emit('action', item.id)"
         >
           {{ item.label }}
         </button>
@@ -63,8 +63,19 @@ const items = computed(() => [
   { id: 'delete-table', label: t('templates.builderTableDeleteTable'), danger: true }
 ]);
 
-function onSelect(id) {
-  emit('action', id);
-  emit('close');
-}
+const menuStyle = computed(() => {
+  const padding = 8;
+  const offset = 4;
+  const menuWidth = 176;
+  const menuHeight = items.value.length * 36 + 8;
+  const left = Math.min(
+    Math.max(props.x + offset, padding),
+    Math.max(padding, window.innerWidth - menuWidth - padding)
+  );
+  const top = Math.min(
+    Math.max(props.y + offset, padding),
+    Math.max(padding, window.innerHeight - menuHeight - padding)
+  );
+  return { left: `${left}px`, top: `${top}px` };
+});
 </script>

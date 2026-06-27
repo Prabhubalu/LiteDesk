@@ -44,12 +44,16 @@ import { resolveContentAreaPx, resolvePageMarginsPx } from '@/constants/contentP
 
 const props = defineProps({
   pageWidthPx: { type: Number, required: true },
-  pageHeightPx: { type: Number, required: true }
+  pageHeightPx: { type: Number, required: true },
+  marginsMm: {
+    type: Object,
+    default: () => ({ top: 12, right: 12, bottom: 12, left: 12 })
+  }
 });
 
 const { t } = useI18n();
 
-const margins = computed(() => resolvePageMarginsPx());
+const margins = computed(() => resolvePageMarginsPx(props.marginsMm));
 
 const contentArea = computed(() =>
   resolveContentAreaPx(props.pageWidthPx, props.pageHeightPx, margins.value)

@@ -6,6 +6,7 @@ const {
   visibleLineItemColumns,
   resolveLineItemLayoutColumns
 } = require('../../../constants/lineItemDefaults');
+const { formatCurrencyAmount, resolveCurrencyDisplayMode } = require('../../../utils/currencyFormat');
 const { resolveMergeTagsInString, resolveMergeExpression } = require('./mergeTagEngine');
 
 function sectionTypeSuffix(section) {
@@ -86,18 +87,18 @@ function resolveLineField(line, path, scope, options) {
 }
 
 function formatMoneyValue(value, scope) {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return String(value ?? '');
   const currency = scope.parameters?.currency
     || scope.Quote?.currency
     || scope.Invoice?.currency
     || scope.Record?.currency
     || '';
-  const formatted = num.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-  return currency ? `${formatted} ${currency}`.trim() : formatted;
+  const locale = String(scope?.parameters?.locale || scope?.locale || 'en-US');
+  return formatCurrencyAmount(
+    value,
+    currency,
+    resolveCurrencyDisplayMode(scope),
+    locale
+  );
 }
 
 function resolveRecordTotals(scope, moduleScope) {

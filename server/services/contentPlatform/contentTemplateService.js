@@ -4,6 +4,10 @@ const ContentTemplate = require('../../models/ContentTemplate');
 const ContentTemplateVersion = require('../../models/ContentTemplateVersion');
 const ContentValidationReport = require('../../models/ContentValidationReport');
 const { createBlankTemplateDefinition } = require('../../constants/contentTemplateModuleDefaults');
+const {
+  createBlankGrapesTemplateDefinition,
+  isGrapesTemplateDefinition
+} = require('../../constants/grapesTemplateDefinition');
 const { normalizeTemplatePageSettings } = require('../../constants/contentPaperSizes');
 const {
   CONTENT_PLATFORM_ERROR_CODES,
@@ -178,7 +182,8 @@ async function createTemplate(params) {
     ipAddress = null
   } = params;
 
-  const jsonDefinition = payload.jsonDefinition || createBlankTemplateDefinition();
+  const jsonDefinition = payload.jsonDefinition
+    || createBlankGrapesTemplateDefinition();
   assertValidTemplateDefinition(jsonDefinition);
 
   const pageSettings = normalizeTemplatePageSettings(payload);
@@ -280,10 +285,12 @@ async function updateTemplate(params) {
     'orientation',
     'customPageWidth',
     'customPageHeight',
+    'margins',
     'defaultThemeId',
     'locale',
     'timezone',
     'currency',
+    'currencyDisplay',
     'tags',
     'ownerId',
     'visibility',
@@ -308,6 +315,20 @@ async function updateTemplate(params) {
       },
       { $set: { isDefault: false } }
     );
+  }
+
+  if (Object.prototype.hasOwnProperty.call(payload, 'margins') && payload.margins && typeof payload.margins === 'object') {
+    const clampMargin = (value, fallback) => {
+      const parsed = Number(value);
+      if (!Number.isFinite(parsed)) return fallback;
+      return Math.min(100, Math.max(0, Math.round(parsed)));
+    };
+    template.margins = {
+      top: clampMargin(payload.margins.top, template.margins?.top ?? 12),
+      right: clampMargin(payload.margins.right, template.margins?.right ?? 12),
+      bottom: clampMargin(payload.margins.bottom, template.margins?.bottom ?? 12),
+      left: clampMargin(payload.margins.left, template.margins?.left ?? 12)
+    };
   }
 
   if (
@@ -632,6 +653,7 @@ async function cloneTemplate(params) {
       locale: source.locale,
       timezone: source.timezone,
       currency: source.currency,
+      currencyDisplay: source.currencyDisplay,
       tags: source.tags,
       jsonDefinition: source.draftDefinition || createBlankTemplateDefinition()
     }

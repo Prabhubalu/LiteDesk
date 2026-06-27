@@ -8,13 +8,13 @@ const DEFAULT_LINE_ITEM_COLUMNS = Object.freeze([
   { key: 'lineTotal', header: 'Total', path: 'lineTotal', align: 'right', format: 'currency' }
 ]);
 
-const DEFAULT_COLUMN_WIDTHS = Object.freeze([92, 220, 48, 74, 86]);
-const DEFAULT_COLUMN_WIDTH_PERCENTS = Object.freeze([14, 34, 8, 22, 22]);
+const DEFAULT_COLUMN_WIDTHS = Object.freeze([72, 180, 48, 74, 86]);
+const DEFAULT_COLUMN_WIDTH_PERCENTS = Object.freeze([14, 30, 12, 17, 27]);
 
 function normalizeLineItemColumns(raw) {
   const byKey = new Map(DEFAULT_LINE_ITEM_COLUMNS.map((column) => [
     column.key,
-    { ...column, visible: true }
+    { ...column, visible: column.visible !== false }
   ]));
   if (Array.isArray(raw)) {
     for (const column of raw) {
@@ -57,12 +57,16 @@ function resolveLineItemLayoutColumns(raw) {
 }
 
 function createLineItemBindings(options = {}) {
+  const currencyDisplay = options.currencyDisplay === 'symbol' ? 'symbol' : 'code';
   return {
     collection: 'lines',
     moduleScope: options.moduleScope ? String(options.moduleScope) : '',
     showSections: options.showSections !== false,
     showSectionTotals: options.showSectionTotals !== false,
     showDocumentTotals: options.showDocumentTotals !== false,
+    currencyDisplay: options.currencyDisplay === '' || options.currencyDisplay == null
+      ? undefined
+      : currencyDisplay,
     columns: normalizeLineItemColumns(options.columns),
     tableWidthPercent: 100,
     widthUnit: 'percent',

@@ -1,5 +1,6 @@
 'use strict';
 
+const { isGrapesTemplateDefinition } = require('../../constants/grapesTemplateDefinition');
 const {
   isRegisteredContentComponentType,
   isRootContentComponentType
@@ -131,10 +132,65 @@ function validateComponentNode(component, path, issues) {
 
 /**
  * @param {unknown} jsonDefinition
+ * @param {ValidationIssue[]} issues
+ */
+function validateGrapesTemplateDefinition(jsonDefinition, issues) {
+  const node = /** @type {Record<string, unknown>} */ (jsonDefinition);
+
+  if (node.version != null && typeof node.version !== 'number') {
+    issues.push({
+      severity: 'error',
+      code: CONTENT_PLATFORM_ERROR_CODES.INVALID_COMPONENT,
+      message: 'GrapesJS definition version must be a number',
+      path: 'jsonDefinition.version'
+    });
+  }
+
+  if (
+    node.project != null
+    && (typeof node.project !== 'object' || Array.isArray(node.project))
+  ) {
+    issues.push({
+      severity: 'error',
+      code: CONTENT_PLATFORM_ERROR_CODES.INVALID_COMPONENT,
+      message: 'GrapesJS project must be an object or null',
+      path: 'jsonDefinition.project'
+    });
+  }
+
+  if (node.html != null && typeof node.html !== 'string') {
+    issues.push({
+      severity: 'error',
+      code: CONTENT_PLATFORM_ERROR_CODES.INVALID_COMPONENT,
+      message: 'GrapesJS html must be a string',
+      path: 'jsonDefinition.html'
+    });
+  }
+
+  if (node.css != null && typeof node.css !== 'string') {
+    issues.push({
+      severity: 'error',
+      code: CONTENT_PLATFORM_ERROR_CODES.INVALID_COMPONENT,
+      message: 'GrapesJS css must be a string',
+      path: 'jsonDefinition.css'
+    });
+  }
+}
+
+/**
+ * @param {unknown} jsonDefinition
  * @returns {{ valid: boolean, errors: ValidationIssue[], warnings: ValidationIssue[], suggestions: ValidationIssue[] }}
  */
 function validateTemplateDefinition(jsonDefinition) {
   const issues = /** @type {ValidationIssue[]} */ ([]);
+
+  if (isGrapesTemplateDefinition(jsonDefinition)) {
+    validateGrapesTemplateDefinition(jsonDefinition, issues);
+    const errors = issues.filter((issue) => issue.severity === 'error');
+    const warnings = issues.filter((issue) => issue.severity === 'warning');
+    const suggestions = issues.filter((issue) => issue.severity === 'suggestion');
+    return { valid: errors.length === 0, errors, warnings, suggestions };
+  }
 
   if (!jsonDefinition || typeof jsonDefinition !== 'object' || Array.isArray(jsonDefinition)) {
     issues.push({

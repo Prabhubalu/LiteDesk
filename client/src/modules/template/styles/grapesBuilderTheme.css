@@ -1,0 +1,876 @@
+/**
+ * GrapesJS skin — Arivu design tokens (primary/neutral).
+ * Scope with `.arivu-gjs-theme` on canvas host and properties hosts.
+ */
+
+.arivu-gjs-theme {
+  --gjs-main-color: #ffffff;
+  --gjs-primary-color: #ffffff;
+  --gjs-secondary-color: #f5f5f5;
+  --gjs-tertiary-color: #6049e7;
+  --gjs-quaternary-color: #ede9fe;
+  --gjs-font-color: #525252;
+  --gjs-font-color-active: #171717;
+  --gjs-main-dark-color: #e5e5e5;
+  --gjs-secondary-dark-color: transparent;
+  --gjs-main-light-color: #fafafa;
+  --gjs-secondary-light-color: #737373;
+  --gjs-soft-light-color: #fafafa;
+  --gjs-color-blue: #6049e7;
+  --gjs-color-highlight: #6049e7;
+  --gjs-light-border: #e5e5e5;
+  --gjs-arrow-color: #737373;
+  --gjs-dark-text-shadow: none;
+  --gjs-font-size: 13px;
+  --gjs-main-font: inherit;
+  color: #171717;
+}
+
+.dark .arivu-gjs-theme {
+  --gjs-main-color: #171717;
+  --gjs-primary-color: #171717;
+  --gjs-secondary-color: #262626;
+  --gjs-tertiary-color: #6049e7;
+  --gjs-quaternary-color: #2e1872;
+  --gjs-font-color: #d4d4d4;
+  --gjs-font-color-active: #f5f5f5;
+  --gjs-main-dark-color: #404040;
+  --gjs-secondary-dark-color: transparent;
+  --gjs-main-light-color: #262626;
+  --gjs-secondary-light-color: #a3a3a3;
+  --gjs-soft-light-color: #262626;
+  --gjs-light-border: #404040;
+  --gjs-arrow-color: #a3a3a3;
+  color: #f5f5f5;
+}
+
+/* Strip default dark panel backgrounds */
+.arivu-gjs-theme .gjs-one-bg,
+.arivu-gjs-theme .gjs-two-bg,
+.arivu-gjs-theme .gjs-three-bg,
+.arivu-gjs-theme .gjs-four-bg {
+  background-color: transparent !important;
+}
+
+/* Style manager sectors */
+.arivu-gjs-theme .gjs-sm-sectors,
+.arivu-gjs-theme .gjs-sm-properties,
+.arivu-gjs-theme .gjs-clm-tags,
+.arivu-gjs-theme .gjs-trt-traits {
+  background: transparent !important;
+}
+
+/* Properties panel — single-column stack (override Grapes 50% float grid) */
+.arivu-gjs-theme .grapes-props-host .gjs-sm-properties {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-sm-property {
+  box-sizing: border-box;
+  clear: both;
+  float: none !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-sm-label-wrp {
+  margin-bottom: 0.375rem;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-fields {
+  align-items: stretch;
+  gap: 0.375rem;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-field-wrp {
+  min-width: 0;
+}
+
+.arivu-gjs-theme .gjs-sm-sector {
+  border: none;
+  border-bottom: 1px solid #e5e5e5;
+  clear: both;
+  margin: 0;
+  padding-bottom: 0.75rem;
+}
+
+.dark .arivu-gjs-theme .gjs-sm-sector {
+  border-bottom-color: #404040;
+}
+
+.arivu-gjs-theme .gjs-sm-sector:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.arivu-gjs-theme .gjs-sm-sector-title,
+.arivu-gjs-theme .gjs-trait-category .gjs-title {
+  background: transparent !important;
+  border: none !important;
+  color: #737373 !important;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  padding: 0.5rem 0;
+  text-transform: uppercase;
+}
+
+.dark .arivu-gjs-theme .gjs-sm-sector-title,
+.dark .arivu-gjs-theme .gjs-trait-category .gjs-title {
+  color: #a3a3a3 !important;
+}
+
+.arivu-gjs-theme .gjs-sm-sector.gjs-sm-open {
+  border-bottom-color: #e5e5e5;
+}
+
+.arivu-gjs-theme .gjs-sm-sector-c,
+.arivu-gjs-theme .gjs-sm-properties {
+  padding: 0.25rem 0 0;
+}
+
+.arivu-gjs-theme .gjs-sm-sector.gjs-sm-open .gjs-sm-sector-title {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.arivu-gjs-theme .gjs-sm-sector-caret,
+.arivu-gjs-theme .gjs-sm-sel-arrow,
+.arivu-gjs-theme .gjs-sm-d-arrow,
+.arivu-gjs-theme .gjs-sm-u-arrow {
+  fill: #737373;
+  opacity: 0.8;
+}
+
+/* Property rows */
+.arivu-gjs-theme .gjs-sm-property,
+.arivu-gjs-theme .gjs-trt-trait {
+  font-size: 0.8125rem;
+  margin-bottom: 0.625rem;
+}
+
+.arivu-gjs-theme .gjs-sm-label,
+.arivu-gjs-theme .gjs-clm-label,
+.arivu-gjs-theme .gjs-trt-label {
+  color: #525252 !important;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.dark .arivu-gjs-theme .gjs-sm-label,
+.dark .arivu-gjs-theme .gjs-clm-label,
+.dark .arivu-gjs-theme .gjs-trt-label {
+  color: #d4d4d4 !important;
+}
+
+/* Inputs — match useBuilderUi.input */
+.arivu-gjs-theme .gjs-field,
+.arivu-gjs-theme .gjs-clm-select,
+.arivu-gjs-theme .gjs-clm-tag,
+.arivu-gjs-theme .gjs-sm-field select,
+.arivu-gjs-theme .gjs-sm-field input,
+.arivu-gjs-theme .gjs-sm-field textarea,
+.arivu-gjs-theme .gjs-trt-trait input,
+.arivu-gjs-theme .gjs-trt-trait select,
+.arivu-gjs-theme .gjs-trt-trait textarea {
+  background: #ffffff !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: none !important;
+  color: #171717 !important;
+  font-size: 0.8125rem;
+  min-height: 2.25rem;
+  padding: 0.375rem 0.625rem;
+}
+
+.dark .arivu-gjs-theme .gjs-field,
+.dark .arivu-gjs-theme .gjs-clm-select,
+.dark .arivu-gjs-theme .gjs-clm-tag,
+.dark .arivu-gjs-theme .gjs-sm-field select,
+.dark .arivu-gjs-theme .gjs-sm-field input,
+.dark .arivu-gjs-theme .gjs-sm-field textarea,
+.dark .arivu-gjs-theme .gjs-trt-trait input,
+.dark .arivu-gjs-theme .gjs-trt-trait select,
+.dark .arivu-gjs-theme .gjs-trt-trait textarea {
+  background: #0a0a0a !important;
+  border-color: #404040 !important;
+  color: #f5f5f5 !important;
+}
+
+.arivu-gjs-theme .gjs-field:focus-within,
+.arivu-gjs-theme .gjs-sm-field input:focus,
+.arivu-gjs-theme .gjs-sm-field select:focus,
+.arivu-gjs-theme .gjs-trt-trait input:focus,
+.arivu-gjs-theme .gjs-trt-trait select:focus {
+  border-color: #6049e7 !important;
+  box-shadow: 0 0 0 2px rgb(96 73 231 / 0.2) !important;
+  outline: none;
+}
+
+/* Composite groups (margin, padding, border-radius) */
+.arivu-gjs-theme .grapes-props-host .gjs-sm-composite,
+.arivu-gjs-theme .grapes-props-host .gjs-sm-composite.gjs-clm-field,
+.arivu-gjs-theme .grapes-props-host .gjs-sm-composite.gjs-clm-select {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-sizing: border-box;
+  display: grid !important;
+  gap: 0.625rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-sm-property.gjs-sm-composite {
+  display: block !important;
+  width: 100% !important;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-sm-composite > .gjs-sm-label,
+.arivu-gjs-theme .grapes-props-host .gjs-sm-property.gjs-sm-composite > .gjs-sm-label-wrp {
+  grid-column: 1 / -1;
+  margin-bottom: 0.25rem;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-sm-composite .gjs-sm-property {
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-sm-composite .gjs-sm-label {
+  color: #a3a3a3 !important;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.dark .arivu-gjs-theme .grapes-props-host .gjs-sm-composite .gjs-sm-label {
+  color: #737373 !important;
+}
+
+/* Radio / icon button groups (display, float, position, etc.) */
+.arivu-gjs-theme .grapes-props-host .gjs-sm-property.gjs-sm-list {
+  width: 100% !important;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-sm-list.gjs-clm-select {
+  background: #fafafa !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.5rem !important;
+  display: flex !important;
+  float: none !important;
+  overflow: hidden;
+  width: 100% !important;
+}
+
+.dark .arivu-gjs-theme .grapes-props-host .gjs-sm-list.gjs-clm-select {
+  background: #262626 !important;
+  border-color: #404040 !important;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-sm-list .gjs-sm-el {
+  border-left: 1px solid #e5e5e5 !important;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.dark .arivu-gjs-theme .grapes-props-host .gjs-sm-list .gjs-sm-el {
+  border-left-color: #404040 !important;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-sm-list .gjs-sm-el:first-child {
+  border-left: none !important;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-sm-list .gjs-sm-el:hover {
+  background: #f5f5f5 !important;
+}
+
+.dark .arivu-gjs-theme .grapes-props-host .gjs-sm-list .gjs-sm-el:hover {
+  background: #404040 !important;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-sm-list.gjs-clm-select label {
+  color: #525252 !important;
+  display: block;
+  font-size: 0.6875rem;
+  padding: 0.5rem 0.375rem;
+  text-align: center;
+}
+
+.dark .arivu-gjs-theme .grapes-props-host .gjs-sm-list.gjs-clm-select label {
+  color: #d4d4d4 !important;
+}
+
+.arivu-gjs-theme .grapes-props-host .gjs-sm-radio:checked + label,
+.arivu-gjs-theme .grapes-props-host .gjs-sm-list .gjs-sm-radio:checked + label {
+  background: #ede9fe !important;
+  color: #5037d9 !important;
+  font-weight: 600;
+}
+
+.dark .arivu-gjs-theme .grapes-props-host .gjs-sm-radio:checked + label,
+.dark .arivu-gjs-theme .grapes-props-host .gjs-sm-list .gjs-sm-radio:checked + label {
+  background: rgb(96 73 231 / 0.25) !important;
+  color: #c4b5fd !important;
+}
+
+/* Buttons */
+.arivu-gjs-theme .gjs-sm-btn,
+.arivu-gjs-theme .gjs-clm-add,
+.arivu-gjs-theme .gjs-clm-sel-state,
+.arivu-gjs-theme .gjs-sm-stack #gjs-sm-add {
+  background: #fafafa !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.375rem !important;
+  box-shadow: none !important;
+  color: #525252 !important;
+  fill: #525252 !important;
+}
+
+.dark .arivu-gjs-theme .gjs-sm-btn,
+.dark .arivu-gjs-theme .gjs-clm-add,
+.dark .arivu-gjs-theme .gjs-clm-sel-state,
+.dark .arivu-gjs-theme .gjs-sm-stack #gjs-sm-add {
+  background: #262626 !important;
+  border-color: #404040 !important;
+  color: #d4d4d4 !important;
+  fill: #d4d4d4 !important;
+}
+
+.arivu-gjs-theme .gjs-sm-btn:hover,
+.arivu-gjs-theme .gjs-clm-add:hover,
+.arivu-gjs-theme .gjs-clm-sel-state:hover {
+  background: #f5f5f5 !important;
+  color: #171717 !important;
+}
+
+/* Class manager tags */
+.arivu-gjs-theme .gjs-clm-tag {
+  background: #f5f3ff !important;
+  border-color: #ddd6fe !important;
+  color: #5037d9 !important;
+}
+
+.dark .arivu-gjs-theme .gjs-clm-tag {
+  background: rgb(96 73 231 / 0.15) !important;
+  border-color: rgb(96 73 231 / 0.35) !important;
+  color: #c4b5fd !important;
+}
+
+.arivu-gjs-theme .gjs-clm-header,
+.arivu-gjs-theme .gjs-trt-header {
+  background: transparent !important;
+  border: none !important;
+  color: #737373 !important;
+}
+
+/* Color picker */
+.arivu-gjs-theme .gjs-field-colorp-c,
+.arivu-gjs-theme .gjs-sm-colorp-c {
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.375rem !important;
+}
+
+.arivu-gjs-theme .gjs-sm-layer {
+  background: #fafafa !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.375rem !important;
+}
+
+.arivu-gjs-theme .gjs-sm-layer.gjs-sm-active {
+  background: #f5f3ff !important;
+  border-color: #c4b5fd !important;
+}
+
+/* Canvas — component badge (drag handle) + compact toolbar */
+.gjs-canvas-host.arivu-gjs-theme .gjs-badge {
+  display: block !important;
+  background: #6049e7 !important;
+  color: #fff !important;
+  border: 1px solid #4f3ac4 !important;
+  border-radius: 4px 4px 0 0 !important;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.12) !important;
+  cursor: grab !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1.3 !important;
+  max-width: 220px !important;
+  overflow: hidden !important;
+  padding: 3px 8px !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  z-index: 12 !important;
+}
+
+.gjs-canvas-host.arivu-gjs-theme .gjs-badge:active {
+  cursor: grabbing !important;
+}
+
+.gjs-canvas-host.arivu-gjs-theme .gjs-toolbar {
+  display: flex !important;
+  align-items: center !important;
+  background: #fff !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.1) !important;
+  gap: 2px !important;
+  padding: 2px !important;
+  z-index: 12 !important;
+}
+
+.dark .gjs-canvas-host.arivu-gjs-theme .gjs-toolbar {
+  background: #262626 !important;
+  border-color: #404040 !important;
+}
+
+.gjs-canvas-host.arivu-gjs-theme .gjs-toolbar-item {
+  border-radius: 4px !important;
+  color: #525252 !important;
+  opacity: 1 !important;
+  padding: 4px 6px !important;
+}
+
+.dark .gjs-canvas-host.arivu-gjs-theme .gjs-toolbar-item {
+  color: #d4d4d4 !important;
+}
+
+.gjs-canvas-host.arivu-gjs-theme .gjs-toolbar-item:hover {
+  background: #f5f3ff !important;
+  color: #6049e7 !important;
+}
+
+.dark .gjs-canvas-host.arivu-gjs-theme .gjs-toolbar-item:hover {
+  background: #2e1872 !important;
+  color: #ede9fe !important;
+}
+
+/* Canvas selection chrome — single clean ring */
+.arivu-gjs-theme .gjs-highlighter,
+.arivu-gjs-theme .gjs-highlighter-sel,
+.arivu-gjs-theme .gjs-cv-canvas .gjs-highlighter-sel {
+  outline: 2px solid #6049e7 !important;
+  outline-offset: -1px;
+}
+
+.arivu-gjs-theme .gjs-offset-v,
+.arivu-gjs-theme .gjs-offset-fixed-v {
+  display: none !important;
+}
+
+.arivu-gjs-theme .gjs-resizer-h {
+  border-color: #6049e7 !important;
+}
+
+.arivu-gjs-theme .gjs-com-placeholder,
+.arivu-gjs-theme .gjs-placeholder {
+  border-color: #6049e7 !important;
+}
+
+.arivu-gjs-theme .gjs-com-placeholder-int,
+.arivu-gjs-theme .gjs-placeholder-int {
+  background: rgb(96 73 231 / 0.08) !important;
+}
+
+/* Inline RTE toolbar — solid surface (gjs-one-bg is transparent in canvas theme) */
+.arivu-gjs-theme .gjs-rte-toolbar {
+  filter: drop-shadow(0 4px 14px rgb(0 0 0 / 0.12));
+  z-index: 20;
+}
+
+.arivu-gjs-theme .gjs-rte-toolbar-ui,
+.arivu-gjs-theme .gjs-rte-toolbar.gjs-one-bg {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.08);
+  overflow: hidden;
+}
+
+.dark .arivu-gjs-theme .gjs-rte-toolbar-ui,
+.dark .arivu-gjs-theme .gjs-rte-toolbar.gjs-one-bg {
+  background-color: #171717 !important;
+  border-color: #404040 !important;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.35);
+}
+
+.arivu-gjs-theme .gjs-rte-action {
+  background: transparent !important;
+  border-right-color: #e5e5e5 !important;
+  color: #525252 !important;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  height: 2rem;
+  line-height: 1;
+  padding: 0 !important;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  width: 2rem;
+}
+
+.dark .arivu-gjs-theme .gjs-rte-action {
+  border-right-color: #404040 !important;
+  color: #d4d4d4 !important;
+}
+
+.arivu-gjs-theme .gjs-rte-action:last-child {
+  border-right: none !important;
+}
+
+.arivu-gjs-theme .gjs-rte-action:hover {
+  background-color: #f5f5f5 !important;
+  color: #171717 !important;
+}
+
+.dark .arivu-gjs-theme .gjs-rte-action:hover {
+  background-color: #262626 !important;
+  color: #f5f5f5 !important;
+}
+
+.arivu-gjs-theme .gjs-rte-action.gjs-rte-active {
+  background-color: #ede9fe !important;
+  color: #5037d9 !important;
+}
+
+.dark .arivu-gjs-theme .gjs-rte-action.gjs-rte-active {
+  background-color: rgb(96 73 231 / 0.25) !important;
+  color: #c4b5fd !important;
+}
+
+.arivu-gjs-theme .gjs-rte-action.gjs-rte-disabled {
+  color: #d4d4d4 !important;
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.dark .arivu-gjs-theme .gjs-rte-action.gjs-rte-disabled {
+  color: #525252 !important;
+}
+
+.arivu-gjs-theme .gjs-rte-action.gjs-rte-disabled:hover {
+  background-color: transparent !important;
+  color: #d4d4d4 !important;
+}
+
+.arivu-gjs-theme .gjs-rte-action svg {
+  fill: currentColor;
+  height: 1rem;
+  width: 1rem;
+}
+
+.arivu-gjs-theme .gjs-rte-action b,
+.arivu-gjs-theme .gjs-rte-action i,
+.arivu-gjs-theme .gjs-rte-action u,
+.arivu-gjs-theme .gjs-rte-action s {
+  color: inherit;
+  font-size: inherit;
+  font-style: normal;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.arivu-gjs-theme .gjs-rte-action u {
+  text-decoration: underline;
+}
+
+.arivu-gjs-theme .gjs-rte-action s {
+  text-decoration: line-through;
+}
+
+.arivu-gjs-theme .gjs-rte-action i {
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* GrapesJS modal + asset manager — Arivu light surfaces (canvas theme vars break modals) */
+.arivu-gjs-theme .gjs-mdl-container {
+  z-index: 200;
+}
+
+.arivu-gjs-theme .gjs-mdl-dialog {
+  --gjs-main-color: #ffffff;
+  --gjs-primary-color: #ffffff;
+  --gjs-secondary-color: #f5f5f5;
+  --gjs-font-color: #525252;
+  --gjs-font-color-active: #171717;
+  --gjs-main-dark-color: #e5e5e5;
+  --gjs-secondary-dark-color: #fafafa;
+  --gjs-main-light-color: rgb(96 73 231 / 0.12);
+  --gjs-secondary-light-color: #737373;
+  --gjs-soft-light-color: #fafafa;
+  --gjs-light-border: #e5e5e5;
+  --gjs-color-green: #16a34a;
+  background-color: #ffffff !important;
+  border: 1px solid #e5e5e5;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  color: #171717 !important;
+  font-weight: 400;
+  overflow: hidden;
+  text-shadow: none !important;
+}
+
+.dark .arivu-gjs-theme .gjs-mdl-dialog {
+  --gjs-main-color: #171717;
+  --gjs-primary-color: #171717;
+  --gjs-secondary-color: #262626;
+  --gjs-font-color: #d4d4d4;
+  --gjs-font-color-active: #f5f5f5;
+  --gjs-main-dark-color: #404040;
+  --gjs-secondary-dark-color: #262626;
+  --gjs-main-light-color: rgb(96 73 231 / 0.25);
+  --gjs-secondary-light-color: #a3a3a3;
+  --gjs-soft-light-color: #262626;
+  --gjs-light-border: #404040;
+  background-color: #171717 !important;
+  border-color: #404040;
+  color: #f5f5f5 !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-container .gjs-one-bg,
+.arivu-gjs-theme .gjs-mdl-container .gjs-two-bg,
+.arivu-gjs-theme .gjs-mdl-container .gjs-three-bg,
+.arivu-gjs-theme .gjs-mdl-container .gjs-four-bg {
+  background-color: var(--gjs-main-color) !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-header {
+  border-bottom-color: #e5e5e5 !important;
+  padding: 1rem 1.25rem 0.75rem !important;
+}
+
+.dark .arivu-gjs-theme .gjs-mdl-header {
+  border-bottom-color: #404040 !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-title {
+  color: #171717 !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+}
+
+.dark .arivu-gjs-theme .gjs-mdl-title {
+  color: #f5f5f5 !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-btn-close {
+  color: #525252 !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+.dark .arivu-gjs-theme .gjs-mdl-btn-close {
+  color: #a3a3a3 !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-btn-close:hover {
+  color: #171717 !important;
+  opacity: 1 !important;
+}
+
+.dark .arivu-gjs-theme .gjs-mdl-btn-close:hover {
+  color: #f5f5f5 !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-content {
+  color: #171717 !important;
+  padding: 1rem 1.25rem 1.25rem !important;
+}
+
+.dark .arivu-gjs-theme .gjs-mdl-content {
+  color: #f5f5f5 !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-dialog .gjs-btn-prim {
+  background-color: #6049e7 !important;
+  border: none !important;
+  border-radius: 0.375rem !important;
+  color: #ffffff !important;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 0.375rem 0.75rem !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-dialog .gjs-btn-prim:hover {
+  background-color: #5037d9 !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-dialog .gjs-field input,
+.arivu-gjs-theme .gjs-mdl-dialog .gjs-am-add-field input {
+  background: #ffffff !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: none !important;
+  color: #171717 !important;
+  font-size: 0.8125rem;
+  min-height: 2.25rem;
+  padding: 0.375rem 0.625rem;
+}
+
+.dark .arivu-gjs-theme .gjs-mdl-dialog .gjs-field input,
+.dark .arivu-gjs-theme .gjs-mdl-dialog .gjs-am-add-field input {
+  background: #0a0a0a !important;
+  border-color: #404040 !important;
+  color: #f5f5f5 !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-dialog .gjs-am-assets-cont,
+.arivu-gjs-theme .gjs-mdl-dialog .gjs-am-file-uploader > form {
+  background-color: #fafafa !important;
+  border-color: #e5e5e5 !important;
+  border-radius: 0.5rem !important;
+  color: #525252 !important;
+}
+
+.dark .arivu-gjs-theme .gjs-mdl-dialog .gjs-am-assets-cont,
+.dark .arivu-gjs-theme .gjs-mdl-dialog .gjs-am-file-uploader > form {
+  background-color: #262626 !important;
+  border-color: #404040 !important;
+  color: #d4d4d4 !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-dialog .gjs-am-file-uploader #gjs-am-title {
+  color: #525252 !important;
+}
+
+.dark .arivu-gjs-theme .gjs-mdl-dialog .gjs-am-file-uploader #gjs-am-title {
+  color: #d4d4d4 !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-dialog .gjs-am-asset {
+  border-bottom-color: #e5e5e5 !important;
+  color: #171717 !important;
+}
+
+.dark .arivu-gjs-theme .gjs-mdl-dialog .gjs-am-asset {
+  border-bottom-color: #404040 !important;
+  color: #f5f5f5 !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-dialog .gjs-am-highlight {
+  background-color: rgb(96 73 231 / 0.12) !important;
+}
+
+.dark .arivu-gjs-theme .gjs-mdl-dialog .gjs-am-highlight {
+  background-color: rgb(96 73 231 / 0.25) !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-dialog .gjs-am-meta,
+.arivu-gjs-theme .gjs-mdl-dialog .gjs-am-dimensions {
+  color: #737373 !important;
+  opacity: 1 !important;
+}
+
+.dark .arivu-gjs-theme .gjs-mdl-dialog .gjs-am-meta,
+.dark .arivu-gjs-theme .gjs-mdl-dialog .gjs-am-dimensions {
+  color: #a3a3a3 !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-dialog .gjs-am-close {
+  color: #737373 !important;
+  opacity: 1 !important;
+}
+
+.arivu-gjs-theme .gjs-mdl-dialog .gjs-am-close:hover {
+  color: #171717 !important;
+}
+
+.dark .arivu-gjs-theme .gjs-mdl-dialog .gjs-am-close:hover {
+  color: #f5f5f5 !important;
+}
+
+.arivu-gjs-theme ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.arivu-gjs-theme ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.arivu-gjs-theme ::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 999px;
+}
+
+.dark .arivu-gjs-theme ::-webkit-scrollbar-thumb {
+  background: #525252;
+}
+
+.arivu-table-col-resize-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.arivu-table-col-resize-grip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.arivu-table-col-resize-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: rgb(96 73 231 / 0.35);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.arivu-table-col-resize-pill {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgb(96 73 231 / 0.35);
+  background: #fff;
+  color: #6049e7;
+  box-shadow: 0 1px 4px rgb(15 23 42 / 0.12);
+  pointer-events: none;
+}
+
+.arivu-table-col-resize-overlay:hover .arivu-table-col-resize-line,
+.arivu-table-col-resize-overlay:hover .arivu-table-col-resize-pill {
+  background: #f5f3ff;
+  border-color: #6049e7;
+}
+
+.arivu-table-col-resize-overlay:hover .arivu-table-col-resize-line {
+  background: #6049e7;
+}
+
+body.arivu-table-col-resizing {
+  cursor: col-resize !important;
+  user-select: none;
+}
+
+body.arivu-table-col-resizing * {
+  cursor: col-resize !important;
+}

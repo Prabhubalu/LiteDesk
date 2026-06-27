@@ -7,6 +7,22 @@ const websiteHostnamePattern = /^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
 
 const { isMasterLikeRequest } = require('../utils/organizationsListQuery');
 
+const ORGANIZATION_REFERENCE_FIELDS = new Set([
+  'assignedTo',
+  'primaryContact',
+  'accountManager',
+  'vendorContract',
+  'logisticsPartner'
+]);
+
+function normalizeOrganizationReferenceValue(fieldValue) {
+  if (fieldValue == null || fieldValue === '') return null;
+  if (typeof fieldValue === 'object') {
+    return fieldValue._id ?? fieldValue.id ?? null;
+  }
+  return fieldValue;
+}
+
 function organizationQueryAnd(baseQuery, clause) {
   if (!baseQuery || Object.keys(baseQuery).length === 0) {
     return clause;
@@ -578,7 +594,8 @@ exports.update = async (req, res) => {
       '_id', '__v', 'organizationId', 'createdAt', 'updatedAt', 'createdBy', 'modifiedBy',
       'deletedAt', 'deletedBy', 'deletionReason', 'activityLogs', 'legacyOrganizationId',
       'subscription', 'limits', 'enabledApps', 'enabledModules', 'slug', 'settings', 'security',
-      'billing', 'isTenant', 'database', 'integrations', 'moduleOverrides', 'crmInitialized', 'dataRegion'
+      'billing', 'isTenant', 'database', 'integrations', 'moduleOverrides', 'crmInitialized', 'dataRegion',
+      'importHistoryId'
     ]);
 
     const updatePayload = {};
@@ -737,15 +754,8 @@ exports.update = async (req, res) => {
             hasChanges = true;
             updatedKeys.push(field);
           }
-        } else if (['assignedTo', 'primaryContact', 'accountManager'].includes(field)) {
-          let nextRef = null;
-          if (fieldValue != null && fieldValue !== '') {
-            if (typeof fieldValue === 'object') {
-              nextRef = fieldValue._id ?? fieldValue.id ?? null;
-            } else {
-              nextRef = fieldValue;
-            }
-          }
+        } else if (ORGANIZATION_REFERENCE_FIELDS.has(field)) {
+          const nextRef = normalizeOrganizationReferenceValue(fieldValue);
           const currentRef = org[field] ? String(org[field]) : null;
           const nextRefStr = nextRef ? String(nextRef) : null;
           if (currentRef !== nextRefStr) {
