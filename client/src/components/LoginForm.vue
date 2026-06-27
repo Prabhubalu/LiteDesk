@@ -46,6 +46,8 @@ const applyTransferredSessionFromHash = async () => {
         return;
     }
 
+    await authStore.syncI18nFromOrganization();
+
     window.history.replaceState({}, '', window.location.pathname + window.location.search);
     const redirectTo = isOrganizationTrialExpired(authStore.organization)
         ? '/trial-expired'
@@ -93,6 +95,7 @@ const handleLogin = async () => {
             }
         }
 
+        await authStore.syncI18nFromOrganization();
         const redirectTo = resolvePostLoginRoute();
         await router.replace(redirectTo);
     } else {
