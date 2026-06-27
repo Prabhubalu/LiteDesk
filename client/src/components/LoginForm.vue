@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
+import { isOrganizationTrialExpired } from '@/utils/trialStatus';
 
 const { t } = useI18n();
 
@@ -41,7 +42,20 @@ const applyTransferredSessionFromHash = async () => {
     if (!applied) return;
 
     window.history.replaceState({}, '', window.location.pathname + window.location.search);
-    await router.replace('/platform/home');
+    const redirectTo = isOrganizationTrialExpired(authStore.organization)
+        ? '/trial-expired'
+        : '/platform/home';
+    await router.replace(redirectTo);
+};
+
+const resolvePostLoginRoute = () => {
+    if (isOrganizationTrialExpired(authStore.organization)) {
+        return '/trial-expired';
+    }
+
+    return authStore.user?.onboarding?.redirectTo
+        || authStore.lastLoginResult?.onboarding?.redirectTo
+        || '/platform/home';
 };
 
 const handleLogin = async () => {
@@ -73,9 +87,7 @@ const handleLogin = async () => {
 
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        const redirectTo = authStore.user?.onboarding?.redirectTo
-            || authStore.lastLoginResult?.onboarding?.redirectTo
-            || '/platform/home';
+        const redirectTo = resolvePostLoginRoute();
         router.push(redirectTo);
     }
 };

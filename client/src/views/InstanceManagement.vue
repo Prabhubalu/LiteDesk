@@ -225,6 +225,12 @@
       >{{ t('actions.next') }}</button>
     </div>
 
+    <InstanceManageModal
+      :instance="managingInstance"
+      @close="closeManageModal"
+      @saved="handleInstanceUpdated"
+    />
+
     <!-- Instance Details Modal -->
     <div v-if="selectedInstance" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" @click="closeModal">
       <div class="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" @click.stop>
@@ -354,6 +360,7 @@
 
 <script setup>
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
+import InstanceManageModal from '@/components/platform/InstanceManageModal.vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -376,6 +383,7 @@ const pagination = ref({
   limit: 20
 });
 const selectedInstance = ref(null);
+const managingInstance = ref(null);
 
 // Check if any filters are active
 const hasActiveFilters = computed(() => {
@@ -446,9 +454,25 @@ const viewInstance = (instance) => {
 };
 
 const manageInstance = (instance) => {
-  // TODO: Implement instance management modal
-  console.log('Manage instance:', instance);
-  alert(t('records.instanceManagementToastInstanceManagementUiComingSoon'));
+  selectedInstance.value = null;
+  managingInstance.value = instance;
+};
+
+const closeManageModal = () => {
+  managingInstance.value = null;
+};
+
+const handleInstanceUpdated = (updatedInstance) => {
+  const index = instances.value.findIndex((item) => item._id === updatedInstance._id);
+  if (index !== -1) {
+    instances.value[index] = updatedInstance;
+  }
+
+  if (selectedInstance.value?._id === updatedInstance._id) {
+    selectedInstance.value = updatedInstance;
+  }
+
+  fetchInstances();
 };
 
 const closeModal = () => {

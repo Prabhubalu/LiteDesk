@@ -43,6 +43,13 @@ export const useAuthStore = defineStore('auth', {
             };
         },
         isTrialActive: (state) => state.organization?.subscription?.status === 'trial',
+        isTrialExpired: (state) => {
+            const subscription = state.organization?.subscription;
+            if (!subscription || subscription.status !== 'trial') return false;
+            if (!subscription.trialEndDate) return false;
+            return new Date() > new Date(subscription.trialEndDate);
+        },
+        hasUsedTrialExtension: (state) => state.organization?.subscription?.trialExtensionUsed === true,
         subscriptionTier: (state) => state.organization?.subscription?.tier || 'trial',
         enabledModules: (state) => state.organization?.enabledModules || [],
         inventoryEnabled: (state) => state.organization?.capabilities?.inventory === true,

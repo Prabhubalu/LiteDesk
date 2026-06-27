@@ -617,6 +617,8 @@ exports.loginUser = async (req, res) => {
 
         const instanceContext = await resolveInstanceForLogin(organizationForLogin?._id, normalizedEmail);
         const entitledAddons = await buildClientSessionEntitlements(orgUser, organizationForLogin._id);
+        const { buildTrialStatusSnapshot } = require('../services/trialExtensionService');
+        const trialStatus = buildTrialStatusSnapshot(organizationForLogin);
         // Respond with Token and Organization Info (use orgUser data)
         res.json({
             _id: orgUser._id,
@@ -650,7 +652,8 @@ exports.loginUser = async (req, res) => {
             emailVerifiedAt: orgUser.emailVerifiedAt || null,
             requiresEmailVerification: !orgUser.emailVerifiedAt,
             mustChangePassword: orgUser.mustChangePassword === true,
-            onboarding: buildLoginOnboardingSummary(orgUser)
+            onboarding: buildLoginOnboardingSummary(orgUser),
+            trial: trialStatus
         });
         
     } catch (error) {

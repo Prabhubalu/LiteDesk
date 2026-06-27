@@ -1,5 +1,57 @@
 const InstanceRegistry = require('../models/InstanceRegistry');
 const DemoRequest = require('../models/DemoRequest');
+const Organization = require('../models/Organization');
+const OrganizationSubscription = require('../models/OrganizationSubscription');
+
+async function resolveOrganizationForInstance(instance) {
+    if (instance.demoRequestId) {
+        const demo = await DemoRequest.findById(instance.demoRequestId)
+            .select('organizationId')
+            .lean();
+        if (demo?.organizationId) {
+            return Organization.findById(demo.organizationId);
+        }
+    }
+
+    const dbName = instance.databaseConnection?.database;
+    if (dbName) {
+        return Organization.findOne({ 'database.name': dbName });
+    }
+
+    return null;
+}
+
+async function syncTrialEndDateToTenant(organization, trialEndDate) {
+    if (!organization || !trialEndDate) return;
+
+    organization.subscription.trialEndDate = trialEndDate;
+
+    if (organization.subscription.tier === 'trial' && trialEndDate > new Date()) {
+        organization.subscription.status = 'trial';
+    }
+
+    await organization.save();
+
+    const orgSubscription = await OrganizationSubscription.findOne({
+        organizationId: organization._id
+    });
+    if (!orgSubscription) return;
+
+    let changed = false;
+    for (const app of orgSubscription.apps) {
+        if (app.status === 'TRIAL' || app.status === 'SUSPENDED' || app.trialEndsAt) {
+            app.trialEndsAt = trialEndDate;
+            if (app.status === 'SUSPENDED' && trialEndDate > new Date()) {
+                app.status = 'TRIAL';
+            }
+            changed = true;
+        }
+    }
+
+    if (changed) {
+        await orgSubscription.save();
+    }
+}
 
 // @desc    Get all instances (with filters and pagination)
 // @route   GET /api/instances
@@ -187,7 +239,7 @@ const updateInstanceStatus = async (req, res) => {
 // @access  Private (Owner/Admin only)
 const updateInstanceSubscription = async (req, res) => {
     try {
-        const { tier, status, mrr } = req.body;
+        const { tier, status, mrr, trialEndDate } = req.body;
         
         const instance = await InstanceRegistry.findById(req.params.id);
         if (!instance) {
@@ -201,7 +253,28 @@ const updateInstanceSubscription = async (req, res) => {
         if (status) instance.subscription.status = status;
         if (mrr !== undefined) instance.subscription.mrr = mrr;
 
+        let parsedTrialEndDate;
+        if (trialEndDate !== undefined) {
+            if (trialEndDate === null || trialEndDate === '') {
+                parsedTrialEndDate = null;
+            } else {
+                parsedTrialEndDate = new Date(trialEndDate);
+                if (Number.isNaN(parsedTrialEndDate.getTime())) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Invalid trial end date'
+                    });
+                }
+            }
+            instance.subscription.trialEndDate = parsedTrialEndDate;
+        }
+
         await instance.save();
+
+        if (parsedTrialEndDate) {
+            const organization = await resolveOrganizationForInstance(instance);
+            await syncTrialEndDateToTenant(organization, parsedTrialEndDate);
+        }
 
         res.status(200).json({
             success: true,
