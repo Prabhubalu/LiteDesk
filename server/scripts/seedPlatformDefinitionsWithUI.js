@@ -616,6 +616,51 @@ const MODULE_DEFINITIONS = [
     }
   },
   {
+    moduleKey: 'templates',
+    appKey: 'platform',
+    label: 'Template',
+    pluralLabel: 'Templates',
+    entityType: 'CORE',
+    primaryField: 'name',
+    peopleConstraints: {
+      allowedTypes: [],
+      required: false
+    },
+    organizationConstraints: {
+      required: false
+    },
+    lifecycle: {
+      statusField: 'status',
+      allowedStatuses: ['draft', 'published', 'archived']
+    },
+    supports: {
+      ownership: true,
+      assignment: false,
+      comments: false,
+      attachments: false,
+      automation: false
+    },
+    permissions: {
+      create: true,
+      edit: true,
+      delete: true,
+      view: true,
+      publish: true,
+      archive: true,
+      render: true
+    },
+    ui: {
+      routeBase: '/templates',
+      icon: 'rectangle-stack',
+      showInSidebar: true,
+      sidebarOrder: 10,
+      createLabel: 'New Template',
+      listLabel: 'Templates',
+      navigationEntity: true,
+      excludeFromApps: true
+    }
+  },
+  {
     moduleKey: 'imports',
     appKey: 'platform', // Cross-functional capability — shared across apps
     label: 'Import',

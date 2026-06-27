@@ -103,6 +103,12 @@ router.get('/automation/mailroom/search', mailroomSettingsController.searchMailr
 router.post('/automation/mailroom/failures/:rawPayloadId/replay', mailroomSettingsController.replayMailroomProcessingFailure);
 
 // Subscriptions endpoints
+router.get('/subscriptions/trial-status', controller.getTrialStatus);
+router.post(
+    '/subscriptions/extend-trial',
+    invalidateCacheOnSuccessfulMutation({ namespace: 'settings:subscriptions:v2' }),
+    controller.extendTrial
+);
 router.get('/subscriptions', cacheJsonResponse({ namespace: 'settings:subscriptions:v2' }), controller.getSubscriptions);
 router.get('/subscriptions/:appKey', controller.getSubscription);
 

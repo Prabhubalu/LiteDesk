@@ -12,6 +12,10 @@ import portalRoutes from './portal.routes'
 import { loadAndRegisterRoutes } from '@/utils/dynamicRouteLoader'
 import { logNavDebug } from '@/config/arivuDebug.js'
 import { buildAppAccessProfile, getSalesDashboardRedirect, getSalesModuleRedirect } from '@/router/appAccessGuards'
+import {
+  canAccessWhileTrialExpired,
+  isOrganizationTrialExpired
+} from '@/utils/trialStatus'
 
 const routes = [
   {
@@ -47,6 +51,12 @@ const routes = [
     name: 'reset-password',
     component: () => import('@/views/ResetPasswordPage.vue'),
     meta: { requiresAuth: false }
+  },
+  {
+    path: '/trial-expired',
+    name: 'trial-expired',
+    component: () => import('@/views/TrialExpiredPage.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/pay/checkout/razorpay',
@@ -1005,7 +1015,11 @@ const getDefaultRoute = (authStore) => {
   if (!authStore.isAuthenticated) {
     return { name: 'login' };
   }
-  
+
+  if (isOrganizationTrialExpired(authStore.organization)) {
+    return { name: 'trial-expired' };
+  }
+
   // Phase 1G: Default to platform landing
   logNavDebug('Default route: platform-home')
   return { name: 'platform-home' }
@@ -1053,6 +1067,15 @@ router.beforeEach(async (to, from, next) => {
     }
     next({ name: 'login' })
     return
+  }
+
+  // Trial expired takes precedence over onboarding and normal navigation
+  if (authStore.isAuthenticated && isOrganizationTrialExpired(authStore.organization)) {
+    if (!canAccessWhileTrialExpired(to)) {
+      logNavDebug('Redirecting: Trial expired')
+      next({ name: 'trial-expired' })
+      return
+    }
   }
 
   // Onboarding redirect for founders with incomplete wizard
@@ -1169,7 +1192,13 @@ router.beforeEach(async (to, from, next) => {
     next(getDefaultRoute(authStore))
     return
   }
-  
+
+  if (to.name === 'trial-expired' && authStore.isAuthenticated && !isOrganizationTrialExpired(authStore.organization)) {
+    logNavDebug('Redirecting: Trial no longer expired')
+    next(getDefaultRoute(authStore))
+    return
+  }
+
   // Phase 1G: Platform landing route guard
   // /platform is accessible if:
   // - User is authenticated

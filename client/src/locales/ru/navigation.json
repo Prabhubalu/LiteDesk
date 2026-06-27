@@ -586,5 +586,9 @@
   "liveChat": {
     "message": "Live Chat",
     "description": "Live Chat addon sessions navigation label"
+  },
+  "moduleTemplates": {
+    "message": "Templates",
+    "description": "Content templates module navigation label"
   }
 }

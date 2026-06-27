@@ -82,7 +82,16 @@ const OrganizationSchema = new mongoose.Schema({
             default: true 
         },
         stripeCustomerId: String,
-        stripeSubscriptionId: String
+        stripeSubscriptionId: String,
+        trialExtensionUsed: {
+            type: Boolean,
+            default: false
+        },
+        trialExtendedAt: Date,
+        trialExtensionReason: {
+            type: String,
+            trim: true
+        }
     },
     
     // Limits & Features based on subscription tier (only for tenant organizations)
