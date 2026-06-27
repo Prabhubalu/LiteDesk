@@ -4,30 +4,20 @@ const fileStorage = require('../services/fileStorageService');
 
 const uploadsDir = path.join(__dirname, '../uploads');
 
-const allowedMimes = [
-  'image/jpeg',
-  'image/jpg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/svg+xml',
-  'application/pdf',
-  'application/x-pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'text/plain',
-  'text/csv',
-  'application/octet-stream'
-];
-
 const fileFilter = (req, file, cb) => {
-  if (allowedMimes.includes(file.mimetype)) {
+  const resolvedMime = fileStorage.resolveUploadMimeType(file);
+  if (fileStorage.isAllowedUploadMime(resolvedMime)) {
+    file.mimetype = resolvedMime;
     cb(null, true);
-  } else {
-    cb(new Error(`File type ${file.mimetype} is not allowed. Allowed types: images, PDF, Word, Excel, CSV`), false);
+    return;
   }
+
+  cb(
+    new Error(
+      `File type ${file.mimetype || resolvedMime || 'unknown'} is not allowed. Allowed types: images, PDF, Word, Excel, PowerPoint, CSV, ZIP`
+    ),
+    false
+  );
 };
 
 const upload = multer({

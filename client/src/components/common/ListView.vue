@@ -3149,38 +3149,8 @@ watch(
   { deep: true, immediate: true }
 );
 
-/** Stats cards must reflect the filtered result set, not tenant-wide aggregates. */
-const statsSource = computed(() => {
-  if (!props.statsConfig?.length) return props.statistics ?? {};
-
-  if (hasActiveFilters.value && dataLength.value === 0) {
-    const zeroed = {};
-    for (const cfg of props.statsConfig) {
-      zeroed[cfg.key] = 0;
-    }
-    return zeroed;
-  }
-
-  if (!hasActiveFilters.value) return props.statistics ?? {};
-
-  const filteredTotal = Number(
-    props.pagination?.totalRecords ?? props.pagination?.total ?? dataLength.value ?? 0
-  ) || 0;
-  const raw = props.statistics ?? {};
-  const reportedTotal = Number(
-    raw.totalOrganizations ?? raw.totalPeople ?? raw.totalRecords ?? 0
-  ) || 0;
-
-  if (reportedTotal !== filteredTotal) {
-    return {
-      ...raw,
-      totalOrganizations: filteredTotal,
-      totalPeople: filteredTotal,
-    };
-  }
-
-  return raw;
-});
+/** Stats cards show scope-level aggregates; list filters do not change card values. */
+const statsSource = computed(() => props.statistics ?? {});
 
 // Computed stats for HeadlessUI template
 const computedStats = computed(() => {

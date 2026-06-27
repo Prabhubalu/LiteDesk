@@ -9,9 +9,16 @@ const MODULE_CREATE_OWNER_FIELDS: Readonly<Record<string, readonly string[]>> = 
   cases: ['caseOwnerId'],
   events: ['eventOwnerId'],
   quotes: ['ownerId'],
+  sales_orders: ['ownerId'],
+  invoices: ['ownerId'],
+  documents: ['ownerId'],
   forms: ['assignedTo'],
   targets: ['ownerId']
 };
+
+function normalizeFieldKey(fieldKey: unknown): string {
+  return String(fieldKey ?? '').trim().toLowerCase();
+}
 
 export function resolveCurrentUserId(
   user: { _id?: unknown; id?: unknown } | null | undefined
@@ -28,6 +35,23 @@ export function resolveCurrentUserId(
 
 export function getCreateOwnerFieldKeys(moduleKey: string): readonly string[] {
   return MODULE_CREATE_OWNER_FIELDS[moduleKey] ?? [];
+}
+
+export function isModuleOwnerField(moduleKey: string, fieldKey: unknown): boolean {
+  const ownerKeys = getCreateOwnerFieldKeys(moduleKey);
+  const normalized = normalizeFieldKey(fieldKey);
+  return ownerKeys.some((key) => normalizeFieldKey(key) === normalized);
+}
+
+export function applyOwnerFieldRequiredToModuleFields<T extends { key?: string; required?: boolean }>(
+  fields: T[] | null | undefined,
+  moduleKey: string
+): T[] {
+  if (!Array.isArray(fields)) return [];
+  return fields.map((field) => {
+    if (!isModuleOwnerField(moduleKey, field?.key)) return field;
+    return { ...field, required: true };
+  });
 }
 
 export function isOwnerFieldValueEmpty(value: unknown): boolean {

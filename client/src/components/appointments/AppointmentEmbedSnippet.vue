@@ -26,12 +26,27 @@
     <div class="mt-3">
       <label class="text-xs font-medium uppercase tracking-wide text-gray-500">{{ t('appointments.embedPreview') }}</label>
       <div class="mt-2 overflow-hidden rounded-xl border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-900">
+        <div
+          v-if="previewLoading"
+          class="mx-auto flex max-w-[480px] items-center justify-center rounded-lg bg-gray-50 dark:bg-gray-800/50"
+          :style="{ height: `${previewHeight}px` }"
+        >
+          <div class="h-9 w-9 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" />
+        </div>
         <iframe
+          v-else-if="previewReady"
           :src="embedUrl"
           :title="t('appointments.embedPreviewTitle')"
           class="mx-auto block w-full max-w-[480px] rounded-lg border-0 bg-gray-50"
           :style="{ height: `${previewHeight}px` }"
         />
+        <div
+          v-else
+          class="mx-auto flex max-w-[480px] items-center justify-center rounded-lg bg-gray-50 px-4 text-center text-sm text-gray-500 dark:bg-gray-800/50 dark:text-gray-400"
+          :style="{ height: `${previewHeight}px` }"
+        >
+          {{ t('appointments.embedPreviewPending') }}
+        </div>
       </div>
     </div>
 
@@ -53,7 +68,14 @@
 
     <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
       {{ t('appointments.embedUrlLabel') }}
-      <a :href="embedUrl" target="_blank" rel="noopener" class="text-indigo-600 underline dark:text-indigo-400">{{ embedUrl }}</a>
+      <a
+        v-if="previewReady"
+        :href="embedUrl"
+        target="_blank"
+        rel="noopener"
+        class="text-indigo-600 underline dark:text-indigo-400"
+      >{{ embedUrl }}</a>
+      <span v-else class="text-gray-400">{{ embedUrl }}</span>
     </p>
   </section>
 </template>
@@ -70,7 +92,9 @@ import { useNotifications } from '@/composables/useNotifications';
 
 const props = defineProps({
   slug: { type: String, default: '' },
-  previewHeight: { type: Number, default: 640 }
+  previewHeight: { type: Number, default: 640 },
+  previewReady: { type: Boolean, default: true },
+  previewLoading: { type: Boolean, default: false }
 });
 
 const { t } = useI18n();

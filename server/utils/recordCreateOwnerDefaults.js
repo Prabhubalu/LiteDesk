@@ -9,9 +9,34 @@ const MODULE_CREATE_OWNER_FIELDS = {
   cases: ['caseOwnerId'],
   events: ['eventOwnerId'],
   quotes: ['ownerId'],
+  sales_orders: ['ownerId'],
+  invoices: ['ownerId'],
+  documents: ['ownerId'],
   forms: ['assignedTo'],
   targets: ['ownerId']
 };
+
+function normalizeFieldKey(fieldKey) {
+  return String(fieldKey || '').trim().toLowerCase();
+}
+
+function getModuleOwnerFieldKeys(moduleKey) {
+  return MODULE_CREATE_OWNER_FIELDS[String(moduleKey || '').trim().toLowerCase()] || [];
+}
+
+function isModuleOwnerField(moduleKey, fieldKey) {
+  const ownerKeys = getModuleOwnerFieldKeys(moduleKey);
+  const normalized = normalizeFieldKey(fieldKey);
+  return ownerKeys.some((key) => normalizeFieldKey(key) === normalized);
+}
+
+function applyOwnerFieldRequiredToModuleFields(fields, moduleKey) {
+  if (!Array.isArray(fields)) return fields;
+  return fields.map((field) => {
+    if (!isModuleOwnerField(moduleKey, field?.key)) return field;
+    return { ...field, required: true };
+  });
+}
 
 function isOwnerFieldValueEmpty(value) {
   return value === null || value === undefined || value === '';
@@ -25,8 +50,8 @@ function isOwnerFieldValueEmpty(value) {
  */
 function applyCreateOwnerDefaults(body, moduleKey, userId) {
   if (!userId || !body || typeof body !== 'object') return body;
-  const ownerKeys = MODULE_CREATE_OWNER_FIELDS[moduleKey];
-  if (!ownerKeys?.length) return body;
+  const ownerKeys = getModuleOwnerFieldKeys(moduleKey);
+  if (!ownerKeys.length) return body;
 
   const next = { ...body };
   for (const key of ownerKeys) {
@@ -39,5 +64,8 @@ function applyCreateOwnerDefaults(body, moduleKey, userId) {
 
 module.exports = {
   MODULE_CREATE_OWNER_FIELDS,
+  getModuleOwnerFieldKeys,
+  isModuleOwnerField,
+  applyOwnerFieldRequiredToModuleFields,
   applyCreateOwnerDefaults
 };

@@ -1,6 +1,10 @@
 const { resolveImportRowsSource } = require('./importCsvReader');
 const { buildCrmOrganizationQuery } = require('./importRowProcessors');
 const { MODULE_HANDLERS, countImportDuplicates } = require('./importDuplicateQuery');
+const {
+  applyImportFieldDefaults,
+  sanitizeImportFieldDefaultValues,
+} = require('../../utils/importFieldDefaults');
 
 async function runDuplicateCheck(req, res, module) {
   try {
@@ -13,8 +17,10 @@ async function runDuplicateCheck(req, res, module) {
       csvData,
       stagingId,
       fieldMapping,
+      fieldDefaultValues: rawFieldDefaultValues,
       checkFields = handler.defaultCheckFields,
     } = req.body;
+    const fieldDefaultValues = sanitizeImportFieldDefaultValues(rawFieldDefaultValues);
 
     if (!fieldMapping) {
       return res.status(400).json({
@@ -36,9 +42,18 @@ async function runDuplicateCheck(req, res, module) {
       ? await buildCrmOrganizationQuery(organizationId)
       : null;
 
+    const rowsWithDefaults = async function* rowsWithDefaults() {
+      for await (const entry of source.rows()) {
+        yield {
+          ...entry,
+          row: applyImportFieldDefaults(entry.row, fieldMapping, fieldDefaultValues),
+        };
+      }
+    };
+
     const result = await countImportDuplicates({
       module,
-      rows: source.rows(),
+      rows: rowsWithDefaults(),
       fieldMapping,
       checkFields,
       organizationId,

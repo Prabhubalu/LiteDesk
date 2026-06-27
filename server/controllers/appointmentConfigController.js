@@ -2,6 +2,7 @@ const AppointmentBookingConfig = require('../models/AppointmentBookingConfig');
 const User = require('../models/User');
 const { slugifyBase, ensureUniqueSlug } = require('../utils/appointmentSlug');
 const { normalizeCustomFields } = require('../utils/appointmentCustomFields');
+const { syncBookingPublicRegistry } = require('../services/appointmentBookingPublicRegistryService');
 
 function sanitizeConfigBody(body) {
   const allowed = [
@@ -115,7 +116,9 @@ exports.upsertMyConfig = async (req, res) => {
         modifiedBy: ownerId,
         ...updates
       });
+      await syncBookingPublicRegistry(config);
     } else {
+      const previousSlug = config.slug;
       if (updates.slug && updates.slug !== config.slug) {
         const taken = await AppointmentBookingConfig.findOne({
           organizationId,
@@ -128,6 +131,7 @@ exports.upsertMyConfig = async (req, res) => {
       }
       Object.assign(config, updates, { modifiedBy: ownerId });
       await config.save();
+      await syncBookingPublicRegistry(config, { previousSlug });
     }
 
     res.status(200).json({ success: true, data: toPublicConfig(config, req) });
@@ -228,7 +232,9 @@ exports.upsertUserConfig = async (req, res) => {
         modifiedBy: req.user._id,
         ...updates
       });
+      await syncBookingPublicRegistry(config);
     } else {
+      const previousSlug = config.slug;
       if (updates.slug && updates.slug !== config.slug) {
         const taken = await AppointmentBookingConfig.findOne({
           organizationId,
@@ -241,6 +247,7 @@ exports.upsertUserConfig = async (req, res) => {
       }
       Object.assign(config, updates, { modifiedBy: req.user._id });
       await config.save();
+      await syncBookingPublicRegistry(config, { previousSlug });
     }
 
     res.status(200).json({ success: true, data: toPublicConfig(config, req) });

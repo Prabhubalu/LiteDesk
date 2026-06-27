@@ -2,6 +2,10 @@ export function formatKeyToLabel(key: string | null | undefined): string;
 export function formatRelatedToForDisplay(value: unknown): string | null;
 export function getFieldDisplayLabel(field: { key?: string; label?: string } | null): string;
 export const getPlainTextFromHtml: (html: string) => string;
+export function stripHtmlForDetailDisplay(
+  value: unknown,
+  field?: { key?: string; dataType?: string } | null
+): string;
 export const getKeyFields: (moduleDefinition: { fields?: unknown[] }) => unknown[];
 export function formatDateForDisplay(
   value: string | Date | number,

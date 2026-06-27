@@ -52,6 +52,31 @@ export const getPlainTextFromHtml = (html) => {
   return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 };
 
+/**
+ * Plain-text display for record detail panes — never show raw HTML tags in field rows.
+ * @param {*} value
+ * @param {{ key?: string, dataType?: string }|null} [field]
+ * @returns {string}
+ */
+export function stripHtmlForDetailDisplay(value, field) {
+  if (value == null || value === '') return '';
+  const str = String(value);
+  const dt = String(field?.dataType || '').toLowerCase();
+  const key = String(field?.key || '').toLowerCase();
+  const isRichField =
+    dt.includes('rich') ||
+    dt.includes('text-area') ||
+    dt.includes('textarea') ||
+    key === 'description' ||
+    key === 'body' ||
+    key === 'notes' ||
+    key === 'resolutionsummary';
+  if (isRichField || /<[^>]+>/.test(str)) {
+    return getPlainTextFromHtml(str) || '';
+  }
+  return str;
+}
+
 /** ISO date/datetime regex - matches 2026-02-16 or 2026-02-16T18:30:00.000Z */
 const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/;
 

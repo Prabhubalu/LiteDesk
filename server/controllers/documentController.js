@@ -14,6 +14,35 @@ const {
   beginDocumentUploadIdempotency,
   completeDocumentUploadIdempotency
 } = require('../utils/documentUploadIdempotency');
+const mongoose = require('mongoose');
+
+function resolveRequestUserId(req) {
+  return req.user?._id || req.user?.id || null;
+}
+
+function normalizeUploadFolderId(value) {
+  if (value == null || value === '' || value === 'root') return null;
+  const id = String(value).trim();
+  if (!mongoose.Types.ObjectId.isValid(id) || id.length !== 24) return null;
+  return id;
+}
+
+function parseDocumentLinkTo(body) {
+  const linkModuleKey = body?.linkModuleKey ? String(body.linkModuleKey).trim() : '';
+  const linkRecordId = body?.linkRecordId ? String(body.linkRecordId).trim() : '';
+  if (!linkModuleKey || !linkRecordId) return undefined;
+  if (!mongoose.Types.ObjectId.isValid(linkRecordId) || linkRecordId.length !== 24) {
+    const error = new Error('Invalid record ID for document link');
+    error.statusCode = 400;
+    error.code = 'INVALID_LINK_RECORD_ID';
+    throw error;
+  }
+  return {
+    moduleKey: linkModuleKey,
+    recordId: linkRecordId,
+    appKey: body?.linkAppKey || null
+  };
+}
 
 function handleDocumentMutationError(res, error, fallbackMessage) {
   const status = error?.statusCode || 400;
@@ -271,9 +300,18 @@ exports.getDocumentById = async (req, res) => {
 
 exports.createDocument = async (req, res) => {
   try {
+    const userId = resolveRequestUserId(req);
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User context is required',
+        code: 'USER_CONTEXT_REQUIRED'
+      });
+    }
+
     const doc = await documentService.createDocument({
       organizationId: req.user.organizationId,
-      userId: req.user._id,
+      userId,
       payload: req.body || {}
     });
     return res.status(201).json({ success: true, data: formatDocument(doc) });
@@ -289,6 +327,15 @@ exports.uploadDocument = async (req, res) => {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
+    const userId = resolveRequestUserId(req);
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User context is required',
+        code: 'USER_CONTEXT_REQUIRED'
+      });
+    }
+
     const { idempotencyKey, replay } = await beginDocumentUploadIdempotency(req, UPLOAD_CAPABILITY);
     if (replay?.body) {
       return res.status(replay.statusCode || 201).json(replay.body);
@@ -296,21 +343,15 @@ exports.uploadDocument = async (req, res) => {
 
     const doc = await documentService.createDocumentFromUpload({
       organizationId: req.user.organizationId,
-      userId: req.user._id,
+      userId,
       req,
       payload: {
         title: req.body?.title,
         description: req.body?.description,
-        folderId: req.body?.folderId || null,
+        folderId: normalizeUploadFolderId(req.body?.folderId),
         tags: req.body?.tags ? String(req.body.tags).split(',').map((t) => t.trim()).filter(Boolean) : [],
         status: req.body?.status,
-        linkTo: req.body?.linkModuleKey && req.body?.linkRecordId
-          ? {
-              moduleKey: req.body.linkModuleKey,
-              recordId: req.body.linkRecordId,
-              appKey: req.body.linkAppKey || null
-            }
-          : undefined,
+        linkTo: parseDocumentLinkTo(req.body),
         duplicateAction: req.body?.duplicateAction || null
       }
     });

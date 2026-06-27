@@ -216,7 +216,10 @@ import {
   isSystemField,
   normalizeFieldKeyForSystemMatch,
 } from '@/platform/fields/fieldCapabilityEngine';
-import { shouldFilterPayloadByQuickCreate } from '@/utils/quickCreatePayloadFilter';
+import {
+  getQuickCreateAllowedFieldKeys,
+  shouldFilterPayloadByQuickCreate
+} from '@/utils/quickCreatePayloadFilter';
 import { useCreationContext } from '@/utils/creationContext';
 import { getParticipationFields, getCoreIdentityFields, mergePeopleVirtualFieldDefinitions } from '@/platform/fields/peopleFieldModel';
 import {
@@ -1437,10 +1440,11 @@ const handleSubmit = async () => {
     
     const qcList = moduleDefinition.value?.quickCreate;
     if (shouldFilterPayloadByQuickCreate(effectiveQuickCreateMode.value, fullMode.value, qcList)) {
-      const quickCreateKeys = new Set(
-        qcList.map(k => k?.toLowerCase().trim()).filter(Boolean)
+      const allowedFieldKeys = getQuickCreateAllowedFieldKeys(
+        qcList,
+        moduleDefinition.value?.fields
       );
-      
+
       // Fields that are always required by the API (even if not in quickCreate)
       // These are API-level requirements, not user-facing fields
       const apiRequiredFields = new Set([
@@ -1450,25 +1454,24 @@ const handleSubmit = async () => {
         'ownerpersonid',  // May be set from assignedTo mapping
         'assignedto'      // Required by Task API - auto-assigned to current user
       ]);
-      
-      // Filter submitData to only include fields in quickCreate configuration + API required fields
+
+      // Filter submitData to quickCreate + module-required + API-required fields
       const filteredData = {};
       for (const [key, value] of Object.entries(submitData)) {
         const keyLower = key.toLowerCase();
-        // Include if in quickCreate OR if it's an API-required field
-        if (quickCreateKeys.has(keyLower) || apiRequiredFields.has(keyLower)) {
+        if (allowedFieldKeys.has(keyLower) || apiRequiredFields.has(keyLower)) {
           filteredData[key] = value;
         }
       }
-      
+
       drawerDbg('[CreateRecordDrawer] 🔍 Quick Create mode - filtering fields:', {
         before: Object.keys(submitData),
         after: Object.keys(filteredData),
-        quickCreateKeys: Array.from(quickCreateKeys),
+        allowedFieldKeys: Array.from(allowedFieldKeys),
         apiRequiredFields: Array.from(apiRequiredFields),
         filteredOut: Object.keys(submitData).filter(k => {
           const keyLower = k.toLowerCase();
-          return !quickCreateKeys.has(keyLower) && !apiRequiredFields.has(keyLower);
+          return !allowedFieldKeys.has(keyLower) && !apiRequiredFields.has(keyLower);
         })
       });
       

@@ -740,16 +740,23 @@ export const useAuthStore = defineStore('auth', {
                         // Ensure newly added modules exist so the sidebar can render them immediately.
                         if (!ensuredPermissions.forms) ensuredPermissions.forms = { view: false, create: false, edit: false, delete: false, viewAll: false, exportData: false };
                         if (!ensuredPermissions.items) ensuredPermissions.items = { view: false, create: false, edit: false, delete: false, viewAll: false, exportData: false };
+                        const incomingOrgObject = typeof incoming.organizationId === 'object' && incoming.organizationId?._id
+                            ? incoming.organizationId
+                            : null;
+                        const incomingOrgId = incomingOrgObject?._id
+                            ? String(incomingOrgObject._id)
+                            : (incoming.organizationId ? String(incoming.organizationId) : this.user.organizationId);
                         // Update user data while preserving token and allowedApps
                         const token = this.user.token;
                         const existingAllowedApps = this.user.allowedApps;
                         this.user = {
                             ...incoming,
+                            organizationId: incomingOrgId,
                             permissions: ensuredPermissions,
                             token: token,
                             allowedApps: this.resolveAllowedApps(incoming, {
                                 fallbackAllowedApps: existingAllowedApps,
-                                organization: incoming.organizationId || this.organization
+                                organization: incomingOrgObject || this.organization
                             }),
                             entitledAddons: incoming.entitledAddons ?? this.user?.entitledAddons ?? null,
                         };
@@ -757,8 +764,8 @@ export const useAuthStore = defineStore('auth', {
                         localStorage.setItem(PROFILE_REFRESHED_AT_KEY, String(Date.now()));
                         
                         // Update organization if included in response (for enabledApps)
-                        if (incoming.organizationId && typeof incoming.organizationId === 'object') {
-                            this.organization = incoming.organizationId;
+                        if (incomingOrgObject) {
+                            this.organization = incomingOrgObject;
                             localStorage.setItem('organization', JSON.stringify(this.organization));
                         }
                         identifyProductUser({

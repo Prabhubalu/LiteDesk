@@ -54,6 +54,17 @@ function coreGroupLabel(t, moduleKey) {
   return t('import.importFieldGroupGeneral');
 }
 
+function buildImportFieldOption(field) {
+  const baseLabel = field.label || field.key;
+  const required = field.required === true;
+  return {
+    label: baseLabel,
+    displayLabel: required ? `${baseLabel} *` : baseLabel,
+    value: field.key,
+    required,
+  };
+}
+
 /**
  * Loads importable module fields from the module API and groups them for HeadlessSelect.
  * @param {import('vue').Ref<string>|import('vue').ComputedRef<string>} entityTypeRef
@@ -102,10 +113,11 @@ export function useImportModuleFields(entityTypeRef) {
   watch(moduleKey, load, { immediate: true });
 
   const availableFields = computed(() =>
-    moduleFields.value.map((f) => ({
-      label: f.label || f.key,
-      value: f.key,
-    }))
+    moduleFields.value.map((f) => buildImportFieldOption(f))
+  );
+
+  const requiredImportFields = computed(() =>
+    availableFields.value.filter((f) => f.required)
   );
 
   const fieldOptionGroups = computed(() => {
@@ -118,7 +130,7 @@ export function useImportModuleFields(entityTypeRef) {
 
     for (const f of moduleFields.value) {
       const fieldKey = f.key;
-      const option = { label: f.label || fieldKey, value: fieldKey };
+      const option = buildImportFieldOption(f);
       const metadata = isModuleRegistered(key)
         ? getFieldMetadataFromRegistry(key, fieldKey)
         : undefined;
@@ -153,12 +165,34 @@ export function useImportModuleFields(entityTypeRef) {
     return groups;
   });
 
+  const displayFieldOptionGroups = computed(() =>
+    fieldOptionGroups.value.map((group) => ({
+      ...group,
+      options: group.options.map((option) => ({
+        ...option,
+        label: option.displayLabel,
+      })),
+    }))
+  );
+
+  const fieldsByKey = computed(() => {
+    const map = {};
+    for (const field of moduleFields.value) {
+      if (field?.key) map[field.key] = field;
+    }
+    return map;
+  });
+
   return {
     loading,
     loadError,
     moduleKey,
+    moduleFields,
     availableFields,
+    requiredImportFields,
     fieldOptionGroups,
+    displayFieldOptionGroups,
+    fieldsByKey,
     load,
   };
 }

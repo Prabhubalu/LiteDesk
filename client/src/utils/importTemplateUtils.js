@@ -9,12 +9,20 @@ const RECOMMENDED_HEADERS = {
 /**
  * Build a minimal CSV template string for the given entity and available fields.
  * @param {string} entityType
- * @param {{ value: string, label: string }[]} fields
+ * @param {{ value: string, label?: string, required?: boolean }[]} fields
  */
 export function buildImportTemplateCsv(entityType, fields = []) {
   const fieldKeys = new Set(fields.map((f) => f.value));
+  const requiredKeys = fields.filter((f) => f.required).map((f) => f.value);
   const recommended = (RECOMMENDED_HEADERS[entityType] || []).filter((key) => fieldKeys.has(key));
-  const headers = recommended.length > 0 ? recommended : fields.slice(0, 8).map((f) => f.value);
+  const requiredInRecommended = recommended.filter((key) => requiredKeys.includes(key));
+  const headers = requiredInRecommended.length > 0
+    ? [...new Set([...requiredInRecommended, ...recommended])]
+    : requiredKeys.length > 0
+      ? requiredKeys
+      : recommended.length > 0
+        ? recommended
+        : fields.slice(0, 8).map((f) => f.value);
   if (!headers.length) return 'column_1,column_2\n';
   return `${headers.join(',')}\n`;
 }

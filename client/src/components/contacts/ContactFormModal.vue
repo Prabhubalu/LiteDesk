@@ -73,6 +73,10 @@ import apiClient from '@/utils/apiClient';
 import DynamicForm from '@/components/common/DynamicForm.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useProjectionCreate } from '@/composables/useProjectionCreate';
+import {
+  applyCreateOwnerDefaultsToForm,
+  resolveCurrentUserId
+} from '@/utils/recordCreateOwnerDefaults';
 
 const props = defineProps({
   contact: {
@@ -176,7 +180,11 @@ const initializeForm = (module) => {
     
     // Phase 2B: Apply projection defaults
     const payloadWithDefaults = resolveInitialCreatePayload(newFormData);
-    form.value = payloadWithDefaults;
+    form.value = applyCreateOwnerDefaultsToForm(
+      payloadWithDefaults,
+      'people',
+      resolveCurrentUserId(authStore.user)
+    );
     
     console.log('📝 Form initialized (new):', {
       keys: Object.keys(form.value),

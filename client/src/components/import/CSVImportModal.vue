@@ -300,6 +300,12 @@
               <ArrowDownTrayIcon class="h-4 w-4" aria-hidden="true" />
               {{ t('import.importDownloadTemplate') }}
             </button>
+            <p
+              v-if="requiredImportFields.length"
+              class="text-xs text-gray-500 dark:text-gray-400"
+            >
+              {{ t('import.importRequiredFieldsList', { fields: requiredImportFieldNames }) }}
+            </p>
           </div>
 
           <!-- Step 2: Map fields -->
@@ -489,25 +495,43 @@
               {{ t('import.importAutoMappedCount', { count: autoMappedCount }) }}
             </p>
             <p v-if="fieldsLoading" class="text-sm text-gray-500">{{ t('import.importFieldsLoading') }}</p>
+            <p
+              v-else-if="requiredImportFields.length"
+              class="text-xs text-gray-500 dark:text-gray-400"
+            >
+              {{ t('import.importRequiredFieldsLegend') }}
+            </p>
+            <div
+              v-if="unmappedRequiredImportFields.length"
+              class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-800/60 dark:bg-amber-900/20 dark:text-amber-200"
+              role="status"
+            >
+              {{ t('import.importUnmappedRequiredFields', {
+                fields: unmappedRequiredImportFields.map((field) => field.displayLabel).join(', '),
+              }) }}
+            </div>
 
             <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
               <table class="w-full table-fixed text-sm">
                 <colgroup>
-                  <col class="w-[42%]">
-                  <col class="w-[58%]">
+                  <col class="w-[30%]">
+                  <col class="w-[35%]">
+                  <col class="w-[35%]">
                 </colgroup>
                 <thead class="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
                   <tr>
                     <th scope="col" class="px-3 py-2">{{ t('import.importCsvColumnHeader') }}</th>
                     <th scope="col" class="px-3 py-2">{{ t('import.importModuleFieldHeader') }}</th>
+                    <th scope="col" class="px-3 py-2">{{ t('import.importDefaultValueHeader') }}</th>
                   </tr>
                 </thead>
               </table>
               <div class="custom-scrollbar max-h-[min(58vh,560px)] overflow-y-auto">
                 <table class="w-full table-fixed text-sm">
                   <colgroup>
-                    <col class="w-[42%]">
-                    <col class="w-[58%]">
+                    <col class="w-[30%]">
+                    <col class="w-[35%]">
+                    <col class="w-[35%]">
                   </colgroup>
                   <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                     <tr v-for="header in csvHeaders" :key="header" class="bg-white dark:bg-gray-900">
@@ -523,8 +547,8 @@
                       <td class="px-3 py-2 align-top">
                         <HeadlessSelect
                           :model-value="fieldMapping[header]"
-                          :option-groups="fieldOptionGroups.length ? fieldOptionGroups : undefined"
-                          :options="fieldOptionGroups.length ? [] : availableFields"
+                          :option-groups="displayFieldOptionGroups.length ? displayFieldOptionGroups : undefined"
+                          :options="displayFieldOptionGroups.length ? [] : availableFields.map((field) => ({ ...field, label: field.displayLabel }))"
                           allow-empty
                           :empty-label="`⊘ ${t('import.cSVImportModalSkipField')}`"
                           teleport
@@ -532,6 +556,14 @@
                           button-class="!w-full !px-3 !py-2 !text-sm !bg-white dark:!bg-gray-950 border border-gray-300 dark:border-gray-600 rounded-lg !shadow-none"
                           options-class="z-[10050]"
                           @update:model-value="(value) => setFieldMapping(header, value)"
+                        />
+                      </td>
+                      <td class="px-3 py-2 align-top">
+                        <ImportFieldDefaultValueInput
+                          :field="fieldsByKey[fieldMapping[header]]"
+                          :model-value="fieldDefaultValues[header]"
+                          :disabled="fieldsLoading || !fieldMapping[header]"
+                          @update:model-value="(value) => setFieldDefaultValue(header, value)"
                         />
                       </td>
                     </tr>
@@ -1008,6 +1040,7 @@ import {
 import { CheckIcon } from '@heroicons/vue/24/solid';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import ImportFieldDefaultValueInput from '@/components/import/ImportFieldDefaultValueInput.vue';
 import { useImportModuleFields } from '@/composables/useImportModuleFields';
 import { downloadImportTemplate, formatImportFileSize } from '@/utils/importTemplateUtils';
 import {
@@ -1058,7 +1091,9 @@ const activeImportsStore = useActiveImportsStore();
 
 const {
   availableFields,
-  fieldOptionGroups,
+  requiredImportFields,
+  displayFieldOptionGroups,
+  fieldsByKey,
   loading: fieldsLoading,
 } = useImportModuleFields(toRef(props, 'entityType'));
 
@@ -1075,6 +1110,7 @@ const csvHeaders = ref([]);
 const preview = ref([]);
 const totalRows = ref(0);
 const fieldMapping = reactive({});
+const fieldDefaultValues = reactive({});
 const isDragOver = ref(false);
 const bannerError = ref('');
 const showDiscardConfirm = ref(false);
@@ -1210,8 +1246,21 @@ function captureAppliedTemplateContext(template) {
 }
 
 function importFieldLabel(fieldKey) {
-  return availableFields.value.find((f) => f.value === fieldKey)?.label || fieldKey;
+  const field = availableFields.value.find((f) => f.value === fieldKey);
+  return field?.displayLabel || field?.label || fieldKey;
 }
+
+const mappedFieldValues = computed(() =>
+  new Set(Object.values(fieldMapping).filter(Boolean))
+);
+
+const unmappedRequiredImportFields = computed(() =>
+  requiredImportFields.value.filter((field) => !mappedFieldValues.value.has(field.value))
+);
+
+const requiredImportFieldNames = computed(() =>
+  requiredImportFields.value.map((field) => field.displayLabel).join(', ')
+);
 
 async function loadMappingTemplates() {
   const module = importModuleKey.value;
@@ -1233,10 +1282,24 @@ async function loadMappingTemplates() {
 
 function mergeFieldMappingResult(nextMapping) {
   Object.keys(fieldMapping).forEach((k) => delete fieldMapping[k]);
+  Object.keys(fieldDefaultValues).forEach((k) => delete fieldDefaultValues[k]);
   for (const header of csvHeaders.value) {
     fieldMapping[header] = nextMapping[header] ?? '';
+    fieldDefaultValues[header] = '';
   }
   autoMappedCount.value = csvHeaders.value.filter((h) => !!fieldMapping[h]).length;
+}
+
+function buildFieldDefaultValuesPayload() {
+  const payload = {};
+  for (const header of csvHeaders.value) {
+    const mappedField = fieldMapping[header];
+    const value = fieldDefaultValues[header];
+    if (!mappedField) continue;
+    if (value === '' || value === null || value === undefined) continue;
+    payload[header] = value;
+  }
+  return payload;
 }
 
 function applyDuplicatePolicyFromTemplate(policy) {
@@ -1538,14 +1601,22 @@ const importResultSummary = computed(() => {
 });
 
 function setFieldMapping(header, value) {
+  if (fieldMapping[header] !== value) {
+    fieldDefaultValues[header] = '';
+  }
   if (value) {
     for (const otherHeader of csvHeaders.value) {
       if (otherHeader !== header && fieldMapping[otherHeader] === value) {
         fieldMapping[otherHeader] = '';
+        fieldDefaultValues[otherHeader] = '';
       }
     }
   }
   fieldMapping[header] = value;
+}
+
+function setFieldDefaultValue(header, value) {
+  fieldDefaultValues[header] = value;
 }
 
 const updateExisting = ref(false);
@@ -1886,7 +1957,7 @@ const duplicateCheckableFields = computed(() => {
   const extraFields = availableFields.value
     .filter((field) => mapped.has(field.value) && !presetValues.has(field.value))
     .map((field) => ({
-      label: field.label,
+      label: field.displayLabel,
       value: field.value,
       description: t('import.importDupDescMappedField'),
       recommended: false,
@@ -1907,7 +1978,10 @@ const canProceed = computed(() => {
   if (step.value === 0) {
     return (csvData.value || stagingId.value) && csvHeaders.value.length > 0 && !stagingUploading.value;
   }
-  if (step.value === 1) return Object.values(fieldMapping).some(v => v);
+  if (step.value === 1) {
+    if (!Object.values(fieldMapping).some((v) => v)) return false;
+    return unmappedRequiredImportFields.value.length === 0;
+  }
   if (step.value === 2) {
     // If checking duplicates, must have fields selected and data checked
     if (shouldCheckDuplicates.value) {
@@ -2061,6 +2135,7 @@ function applyAutoFieldMappingOnly() {
   const fields = availableFields.value;
   if (!csvHeaders.value.length || !fields.length) {
     Object.keys(fieldMapping).forEach((k) => delete fieldMapping[k]);
+    Object.keys(fieldDefaultValues).forEach((k) => delete fieldDefaultValues[k]);
     autoMappedCount.value = 0;
     return;
   }
@@ -2121,6 +2196,7 @@ const clearFile = () => {
   autoMappedCount.value = 0;
   bannerError.value = '';
   Object.keys(fieldMapping).forEach((k) => delete fieldMapping[k]);
+  Object.keys(fieldDefaultValues).forEach((k) => delete fieldDefaultValues[k]);
   clearTemplateAssociation();
 };
 
@@ -2238,6 +2314,7 @@ const checkDuplicates = async () => {
     
     const response = await apiClient.post(endpoint, {
       fieldMapping: fieldMapping,
+      fieldDefaultValues: buildFieldDefaultValuesPayload(),
       checkFields: duplicateCheckFields.value,
       ...(stagingId.value
         ? { stagingId: stagingId.value }
@@ -2297,6 +2374,7 @@ const performImport = async () => {
 
     const config = {
       fieldMapping: fieldMapping,
+      fieldDefaultValues: buildFieldDefaultValuesPayload(),
       duplicateAction: resolvedDuplicateAction,
       fileName: fileName.value,
       shouldCheckDuplicates: importWithDuplicateCheck,

@@ -20,16 +20,70 @@ const ALLOWED_MIME_TYPES = [
   'image/gif',
   'image/webp',
   'image/svg+xml',
+  'image/heic',
+  'image/heif',
   'application/pdf',
   'application/x-pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/zip',
+  'application/x-zip-compressed',
   'text/plain',
   'text/csv',
+  'text/markdown',
+  'application/json',
   'application/octet-stream'
 ];
+
+const EXTENSION_MIME_TYPES = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.svg': 'image/svg+xml',
+  '.heic': 'image/heic',
+  '.heif': 'image/heif',
+  '.pdf': 'application/pdf',
+  '.doc': 'application/msword',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.xls': 'application/vnd.ms-excel',
+  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.ppt': 'application/vnd.ms-powerpoint',
+  '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  '.txt': 'text/plain',
+  '.csv': 'text/csv',
+  '.md': 'text/markdown',
+  '.json': 'application/json',
+  '.zip': 'application/zip'
+};
+
+function resolveUploadMimeType(file) {
+  const raw = String(file?.mimetype || '').trim().toLowerCase();
+  if (raw && ALLOWED_MIME_TYPES.includes(raw)) {
+    return raw;
+  }
+
+  const ext = path.extname(String(file?.originalname || '')).toLowerCase();
+  const inferred = EXTENSION_MIME_TYPES[ext];
+  if (inferred && ALLOWED_MIME_TYPES.includes(inferred)) {
+    return inferred;
+  }
+
+  if (!raw || raw === 'application/octet-stream') {
+    return 'application/octet-stream';
+  }
+
+  return raw;
+}
+
+function isAllowedUploadMime(mimeType) {
+  return ALLOWED_MIME_TYPES.includes(String(mimeType || '').trim().toLowerCase());
+}
 
 function isOciStoragePath(storagePath) {
   return String(storagePath || '').startsWith(OCI_PREFIX);
@@ -130,8 +184,12 @@ function validateFile(file) {
   if (file.size > MAX_FILE_SIZE) {
     throw new Error(`File size exceeds maximum allowed size of ${MAX_FILE_SIZE} bytes`);
   }
-  if (file.mimetype && !ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-    throw new Error(`File type ${file.mimetype} is not allowed`);
+  const mimeType = resolveUploadMimeType(file);
+  if (!isAllowedUploadMime(mimeType)) {
+    throw new Error(`File type ${mimeType || file.mimetype || 'unknown'} is not allowed`);
+  }
+  if (file && mimeType) {
+    file.mimetype = mimeType;
   }
 }
 
@@ -262,6 +320,8 @@ module.exports = {
   UPLOADS_KEY_PREFIX,
   MAX_FILE_SIZE,
   ALLOWED_MIME_TYPES,
+  resolveUploadMimeType,
+  isAllowedUploadMime,
   isOciStoragePath,
   safeOrgId,
   safeFileName,

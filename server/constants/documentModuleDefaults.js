@@ -43,7 +43,7 @@ const INITIAL_DOCUMENT_FIELDS = [
   { key: 'category', label: 'Category', type: 'text' },
   { key: 'folderId', label: 'Folder', type: 'lookup', lookupModule: 'document_folders' },
   { key: 'tags', label: 'Tags', type: 'multi-select' },
-  { key: 'ownerId', label: 'Owner', type: 'lookup', lookupModule: 'users' },
+  { key: 'ownerId', label: 'Owner', type: 'lookup', lookupModule: 'users', required: true },
   { key: 'versionNumber', label: 'Version', type: 'number', system: true },
   { key: 'fileType', label: 'File Type', type: 'text', system: true },
   { key: 'effectiveDate', label: 'Effective Date', type: 'date' },

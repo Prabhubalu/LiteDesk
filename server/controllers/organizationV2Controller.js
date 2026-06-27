@@ -111,14 +111,16 @@ exports.create = async (req, res) => {
     }
     
     const { extractCustomFields, flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
+    const { applyCreateOwnerDefaults } = require('../utils/recordCreateOwnerDefaults');
     const { standardPayload, customFieldsSet } = extractCustomFields(req.body, Organization);
+    const payloadWithOwnerDefaults = applyCreateOwnerDefaults(standardPayload, 'organizations', req.user?._id);
 
     const body = {
-      ...standardPayload,
+      ...payloadWithOwnerDefaults,
       // Set createdBy from authenticated user
       createdBy: req.user?._id || null,
       // Default assignedTo to creator if not provided (similar to tasks)
-      assignedTo: standardPayload.assignedTo || req.user?._id || null,
+      assignedTo: payloadWithOwnerDefaults.assignedTo || req.user?._id || null,
       // Mark as Sales organization (not tenant)
       isTenant: false,
       ...(Object.keys(customFieldsSet).length > 0 && { customFields: customFieldsSet }),

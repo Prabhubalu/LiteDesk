@@ -1371,6 +1371,13 @@
             </div>
           </div>
         </template>
+        <template #tab-details>
+          <RecordDetailsTabPanel
+            :record="task"
+            :adapter="taskDetailsPaneAdapter"
+            :context="taskDetailsPaneContext"
+          />
+        </template>
         <template #tab-integrations>
           <div class="flex flex-col h-full">
             <!-- Integrations header -->
@@ -1636,6 +1643,9 @@ import {
 import { useTaskSections } from '@/components/record-page/composables/useTaskSections';
 import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
 import { useTaskSectionDataProviders } from '@/components/record-page/composables/useTaskSectionDataProviders';
+import { createGenericRecordAdapter } from '@/components/record-page/adapters/genericRecordAdapter';
+import RecordDetailsTabPanel from '@/components/record-page/RecordDetailsTabPanel.vue';
+import { resolveFieldContext } from '@/utils/fieldContextFilter';
 import { useRecordLoading } from '@/components/record-page/composables/useRecordLoading';
 import { useRecordHeaderActions } from '@/components/record-page/composables/useRecordHeaderActions';
 import { useRecordPageLifecycle } from '@/components/record-page/composables/useRecordPageLifecycle';
@@ -1700,7 +1710,8 @@ import {
   EnvelopeIcon,
   DocumentTextIcon,
   CurrencyDollarIcon,
-  DocumentDuplicateIcon
+  DocumentDuplicateIcon,
+  Bars3BottomLeftIcon
 } from '@heroicons/vue/24/outline';
 import {
   StarIcon as StarIconSolid,
@@ -3230,8 +3241,45 @@ const rightPaneTabs = computed(() => {
   if (showRecordDocumentsTab.value) {
     tabs.push({ id: 'documents', name: t('records.genericTabDocuments'), icon: DocumentDuplicateIcon });
   }
-  tabs.push({ id: 'integrations', name: t('records.genericIntegrations'), icon: PuzzlePieceIcon });
+  tabs.push(
+    { id: 'details', name: t('records.detailsTitle'), icon: Bars3BottomLeftIcon },
+    { id: 'integrations', name: t('records.genericIntegrations'), icon: PuzzlePieceIcon }
+  );
   return tabs;
+});
+
+const taskDetailsPaneContext = computed(() => ({
+  expandedLeftSection: '',
+  module: 'task',
+  moduleKey: 'tasks',
+  openTab,
+  fieldContext: resolveFieldContext(route.path, route.query),
+  hideHeader: true
+}));
+
+const taskDetailsPaneAdapter = computed(() => {
+  if (!task.value?._id || !taskModuleDefinition.value) return null;
+  return createGenericRecordAdapter({
+    sectionLabels: createRecordSectionLabels(t),
+    formatDate: (d) =>
+      (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
+    moduleDefinition: taskModuleDefinition.value,
+    canEditDetails: () => canEditTask.value,
+    saveDetailField: (fieldKey, value) => handleFieldSave(fieldKey, value),
+    getEntityOptions: (fieldKey) => {
+      const key = String(fieldKey || '').toLowerCase().trim();
+      if (
+        key === 'assignedto' ||
+        key === 'ownerid' ||
+        key === 'createdby' ||
+        key === 'updatedby' ||
+        key === 'modifiedby'
+      ) {
+        return users.value;
+      }
+      return [];
+    }
+  });
 });
 
 const contextRelatedGroups = computed(() => {
@@ -3414,7 +3462,7 @@ const resolveRelatedToDisplayName = async () => {
   }
 };
 
-const fetchTask = async () => {
+const fetchTask = async (options = {}) => {
   const id = effectiveTaskId.value;
   if (!id) return;
   await runWithLoading(async () => {
@@ -3433,7 +3481,7 @@ const fetchTask = async () => {
       fetchTaskNavigationIds()
     ]);
     await resolveRelatedToDisplayName();
-  }, 'Failed to load task');
+  }, 'Failed to load task', options);
 };
 
 const TASK_RELATIONSHIP_CONTEXTS = [

@@ -28,7 +28,18 @@ export function useRecordDocuments() {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData
     });
-    return response.json();
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      return {
+        success: false,
+        message: data?.message || data?.error || `Upload failed (${response.status})`,
+        code: data?.code,
+        documentId: data?.documentId,
+        documentNumber: data?.documentNumber,
+        title: data?.title
+      };
+    }
+    return data;
   }
 
   async function linkDocument(documentId, { moduleKey, recordId, appKey } = {}) {

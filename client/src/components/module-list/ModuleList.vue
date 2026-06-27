@@ -36,7 +36,7 @@
       :data="data"
       :columns="adaptedColumns"
       :filter-fields="adaptedFilterFields"
-      :loading="dataLoading"
+      :loading="listViewLoading"
       :loading-more="loadingMore"
       infinite-scroll
       :selection-column-variant="selectionColumnVariant"
@@ -238,6 +238,31 @@ function shouldFetchListData() {
   return shouldFetchListDataForMode(props.viewMode);
 }
 
+/** Stats sample size when list rows are not loaded (kanban/calendar). */
+const KANBAN_STATS_SAMPLE_LIMIT = 500;
+
+function statisticsFetchLimit(moduleConfig) {
+  if (moduleConfig?.statistics?.computeFunction) return KANBAN_STATS_SAMPLE_LIMIT;
+  return 1;
+}
+
+/** True after the first list replace fetch completes (success or failure). */
+const listInitialFetchComplete = ref(false);
+
+/** Keep table in loading state until first fetch starts and finishes — avoids empty-state flash. */
+const listViewLoading = computed(() => {
+  if (dataLoading.value) return true;
+  if (statisticsLoading.value && !shouldFetchListData()) return true;
+  if (
+    !listInitialFetchComplete.value
+    && shouldFetchListData()
+    && listDefinition.value
+  ) {
+    return true;
+  }
+  return false;
+});
+
 /** Only block the whole page on first load — not when returning from another tab */
 const showListShellSkeleton = computed(
   () => loading.value && !listDefinition.value
@@ -428,6 +453,23 @@ function scheduleInitialListFetch() {
   return initialListFetchPromise;
 }
 
+/** Dedupe concurrent statistics-only fetches for kanban/calendar modes. */
+let initialStatisticsFetchPromise = null;
+
+function scheduleInitialStatisticsFetch() {
+  if (initialStatisticsFetchPromise) {
+    return initialStatisticsFetchPromise;
+  }
+  initialStatisticsFetchPromise = fetchListStatistics()
+    .catch((error) => {
+      console.error('[ModuleList] Initial statistics fetch failed:', error);
+    })
+    .finally(() => {
+      initialStatisticsFetchPromise = null;
+    });
+  return initialStatisticsFetchPromise;
+}
+
 function recordListFingerprintFromState() {
   recordModuleListFingerprint(props.moduleKey, props.appKey, {
     totalRecords: Number(pagination.value.totalRecords ?? 0) || 0,
@@ -483,10 +525,16 @@ async function probeListDataChanged() {
 }
 
 async function maybeRefreshListOnActivate() {
-  if (!shouldFetchListData()) return false;
+  if (!shouldFetchListData()) {
+    if (consumeModuleListDirty(props.moduleKey, props.appKey)) {
+      await fetchListStatistics();
+      return true;
+    }
+    return false;
+  }
 
   if (consumeModuleListDirty(props.moduleKey, props.appKey)) {
-    await fetchData();
+    await fetchData({ preserveSession: true, soft: true });
     return true;
   }
 
@@ -538,13 +586,23 @@ onActivated(async () => {
     return;
   }
 
+  if (!shouldFetchListData() && listDefinition.value) {
+    if (await maybeRefreshListOnActivate()) {
+      finishListSessionPageRestore();
+      return;
+    }
+  }
+
   if (listDefinition.value) {
     const session = getListSession(listSessionKey.value);
     if (data.value.length === 0 && sessionNeedsScrollConceal(session)) {
       beginListSessionRestore();
     }
     if (shouldFetchListData()) {
+      dataLoading.value = true;
       await scheduleInitialListFetch();
+    } else {
+      await scheduleInitialStatisticsFetch();
     }
     if (!listSessionPagesReady.value) {
       completeListSessionRestore();
@@ -561,6 +619,7 @@ onActivated(async () => {
       0
   );
   if (statsTotal > 0 && data.value.length === 0 && shouldFetchListData()) {
+    dataLoading.value = true;
     await scheduleInitialListFetch();
   }
 });
@@ -584,6 +643,7 @@ const dataLoading = ref(false);
 const listDefinition = ref(null);
 const data = ref([]);
 const statistics = ref({});
+const statisticsLoading = ref(false);
 const statsConfig = ref([]);
 const sortField = ref('');
 const sortOrder = ref('desc'); // Default to newest first so new records appear on page 1
@@ -830,10 +890,16 @@ const buildList = async () => {
 
       if (definition && definition.emptyState?.type !== 'NOT_CONFIGURED') {
         if (shouldFetchListData()) {
+          listInitialFetchComplete.value = false;
+          dataLoading.value = true;
           scheduleInitialListFetch();
         } else {
+          listInitialFetchComplete.value = true;
           emit('filters-changed', { ...filters.value });
+          scheduleInitialStatisticsFetch();
         }
+      } else {
+        listInitialFetchComplete.value = true;
       }
 
       if (props.moduleKey === 'people') {
@@ -1050,8 +1116,15 @@ const shouldShowEmptyState = computed(() => {
     return false;
   }
 
-  // DISABLED or FIRST_TIME: Show full-page always
-  if (emptyStateType === EmptyStateType.DISABLED || emptyStateType === EmptyStateType.FIRST_TIME) {
+  if (emptyStateType === EmptyStateType.DISABLED) {
+    return true;
+  }
+
+  // FIRST_TIME: wait for list fetch — user may already have imported data
+  if (emptyStateType === EmptyStateType.FIRST_TIME) {
+    if (listViewLoading.value) return false;
+    const total = Number(pagination.value.totalRecords ?? 0);
+    if (data.value.length > 0 || total > 0) return false;
     return true;
   }
 
@@ -1104,6 +1177,25 @@ function zeroListStatistics(ctx, totalRecords = 0) {
   out.totalPeople = totalRecords;
   out.totalOrganizations = totalRecords;
   return out;
+}
+
+function filtersPayloadSignature(payload) {
+  return JSON.stringify(payload ?? {});
+}
+
+/** Refresh stat cards only for saved-view scope — not drill-down filters from stat clicks or filter bar. */
+function shouldRefreshStatisticsFromListFetch(ctx) {
+  const params = ctx?.params ?? {};
+  if (params.search && String(params.search).trim()) return false;
+  if (params.filterQuery && String(params.filterQuery).trim()) return false;
+
+  const activeView = savedViews.value.find((v) => v.id === activeSavedViewId.value);
+  const viewFilters = activeView
+    ? resolveSavedViewFilters(activeView, authStore.user?._id)
+    : {};
+  const currentFilters = ctx.normalizedFilters ?? {};
+
+  return filtersPayloadSignature(currentFilters) === filtersPayloadSignature(viewFilters);
 }
 
 function applyListStatisticsFromResponse(response, totalRecords, ctx) {
@@ -1398,6 +1490,46 @@ function applyPaginationFromResponse(response, fetchedRowCountForTotal, requeste
   }
 }
 
+async function fetchListStatistics(opts = {}) {
+  if (!listDefinition.value) return;
+  const moduleConfig = resolveModuleListConfig(props.moduleKey);
+  if (!moduleConfig?.statistics && !statsConfig.value.length) return;
+
+  statisticsLoading.value = true;
+  try {
+    const ctx = buildListFetchContext(1, { searchOverride: opts.searchOverride });
+    const params = {
+      ...ctx.params,
+      page: 1,
+      limit: statisticsFetchLimit(ctx.moduleConfig)
+    };
+
+    const response = await apiClient.get(ctx.endpoint, {
+      params,
+      cache: 'no-store'
+    });
+
+    if (!response?.success) return;
+
+    const fetchedData = applyClientSideListTransforms(response.data || [], ctx);
+    applyPaginationFromResponse(response, fetchedData.length, 1);
+    const totalRecords = Number(pagination.value.totalRecords ?? 0) || 0;
+
+    const prevData = data.value;
+    if (!shouldFetchListData()) {
+      data.value = fetchedData;
+    }
+    applyListStatisticsFromResponse(response, totalRecords, ctx);
+    if (!shouldFetchListData()) {
+      data.value = prevData;
+    }
+  } catch (error) {
+    console.error('[ModuleList] Error fetching statistics:', error);
+  } finally {
+    statisticsLoading.value = false;
+  }
+}
+
 async function fetchListReplace(opts = {}) {
   if (!listDefinition.value) return;
 
@@ -1416,18 +1548,22 @@ async function fetchListReplace(opts = {}) {
   replaceAbortController = new AbortController();
   const signal = replaceAbortController.signal;
 
+  const ctx = buildListFetchContext(
+    normalizeListPagination(pagination.value).currentPage,
+    { searchOverride: opts.searchOverride }
+  );
+  const refreshStats = shouldRefreshStatisticsFromListFetch(ctx);
+
   dataLoading.value = true;
-  statistics.value = {};
+  if (refreshStats && hardClear) {
+    statistics.value = {};
+  }
   if (hardClear) {
     data.value = [];
   }
 
   const run = async () => {
     try {
-      const ctx = buildListFetchContext(
-        normalizeListPagination(pagination.value).currentPage,
-        { searchOverride: opts.searchOverride }
-      );
       const response = await apiClient.get(ctx.endpoint, {
         params: ctx.params,
         signal,
@@ -1442,7 +1578,9 @@ async function fetchListReplace(opts = {}) {
         data.value = [...fetchedData];
         applyPaginationFromResponse(response, fetchedData.length, ctx.params.page);
         const totalRecords = Number(pagination.value.totalRecords ?? 0) || 0;
-        applyListStatisticsFromResponse(response, totalRecords, ctx);
+        if (refreshStats || !Object.keys(statistics.value).length) {
+          applyListStatisticsFromResponse(response, totalRecords, ctx);
+        }
         recordListFingerprintFromState();
       } else {
         console.warn('[ModuleList] API response not successful:', {
@@ -1477,6 +1615,7 @@ async function fetchListReplace(opts = {}) {
     } finally {
       if (myReplaceSeq === replaceSeq) {
         dataLoading.value = false;
+        listInitialFetchComplete.value = true;
         if (preserveSession) {
           bumpSessionRestoreTick();
         }
@@ -1635,13 +1774,12 @@ const handleSearchQueryUpdate = (query) => {
   pagination.value.currentPage = 1;
   clearListSessionState();
   emit('search-changed', term);
-  // soft: keep rows visible; searchOverride guarantees the term is on this fetch
-  fetchData({ searchOverride: term, soft: true });
+  if (shouldFetchListData()) {
+    fetchData({ searchOverride: term, soft: true });
+  } else {
+    fetchListStatistics({ searchOverride: term });
+  }
 };
-
-function filtersPayloadSignature(payload) {
-  return JSON.stringify(payload ?? {});
-}
 
 // Helper function to check if filters match a saved view (with normalization)
 // Shared between handleFiltersUpdate and handleStatClick
@@ -1762,6 +1900,8 @@ const handleFiltersUpdate = async (newFilters, options = {}) => {
     emit('filters-changed', filters.value);
     if (shouldFetchListData()) {
       fetchData();
+    } else if (filtersChanged || options.forceFetch) {
+      fetchListStatistics();
     }
   }
 
@@ -2374,6 +2514,8 @@ watch(
 // Watch for moduleKey/appKey changes
 watch(() => [props.moduleKey, props.appKey], () => {
   if (authStore.user && authStore.isAuthenticated) {
+    listInitialFetchComplete.value = false;
+    data.value = [];
     buildList();
   }
 });
@@ -2387,6 +2529,8 @@ watch(
     const fromList = shouldFetchListDataForMode(prevMode);
     if (toList && !fromList) {
       scheduleInitialListFetch();
+    } else if (!toList && fromList) {
+      scheduleInitialStatisticsFetch();
     }
   }
 );
