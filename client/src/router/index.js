@@ -49,6 +49,18 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/portal/select',
+    name: 'portal-select',
+    component: () => import('@/views/auth/PortalSelection.vue'),
+    meta: { requiresAuth: true, allowWithoutActivePortal: true }
+  },
+  {
+    path: '/portal/set-password',
+    name: 'portal-set-password',
+    component: () => import('@/views/auth/PortalSetPassword.vue'),
+    meta: { requiresAuth: true, allowWithoutActivePortal: true }
+  },
+  {
     path: '/pay/checkout/razorpay',
     name: 'public-razorpay-checkout',
     component: () => import('@/views/payments/PublicRazorpayCheckoutPage.vue'),
@@ -969,10 +981,8 @@ const getDefaultRoute = (authStore) => {
   if (!authStore.isAuthenticated) {
     return { name: 'login' };
   }
-  
-  // Phase 1G: Default to platform landing
-  logNavDebug('Default route: platform-home')
-  return { name: 'platform-home' }
+
+  return authStore.resolvePostLoginRoute();
 }
 
 // Add debug logging and permission checks
@@ -1017,6 +1027,23 @@ router.beforeEach(async (to, from, next) => {
     }
     next({ name: 'login' })
     return
+  }
+
+  // External portal session guards (E3)
+  if (authStore.isAuthenticated && authStore.isExternalUser) {
+    const allowWithoutActivePortal = to.meta.allowWithoutActivePortal === true;
+
+    if (authStore.user?.mustChangePassword && to.name !== 'portal-set-password') {
+      logNavDebug('Redirecting: External user must change password');
+      next({ name: 'portal-set-password' });
+      return;
+    }
+
+    if (authStore.needsPortalSelection && !allowWithoutActivePortal && to.name !== 'portal-select') {
+      logNavDebug('Redirecting: External user must select portal');
+      next({ name: 'portal-select' });
+      return;
+    }
   }
 
   // Onboarding redirect for founders with incomplete wizard
@@ -1146,8 +1173,27 @@ router.beforeEach(async (to, from, next) => {
     const org = authStore.organization;
     if (org && org.subscription?.status === 'terminated') {
       logNavDebug('Blocked: Instance is terminated')
-      alert('This instance has been terminated. Please contact support.')
+      alert('This instance has been terminated. Please contact your administrator.')
       next({ name: 'login' })
+      return
+    }
+
+    const profile = buildAppAccessProfile(authStore.hasAssignedAppAccess);
+    if (authStore.isExternalUser) {
+      if (authStore.needsPortalSelection) {
+        logNavDebug('Redirecting external user to portal role selection')
+        next({ name: 'portal-select' })
+        return
+      }
+      if (profile.hasOnlyPortalAccess || authStore.hasAssignedAppAccess('PORTAL')) {
+        logNavDebug('Redirecting external portal user away from platform home')
+        next({ name: 'portal-dashboard' })
+        return
+      }
+    }
+    if (profile.hasOnlyPortalAccess) {
+      logNavDebug('Redirecting portal-only user away from platform home')
+      next({ name: 'portal-dashboard' })
       return
     }
     
@@ -1273,6 +1319,11 @@ router.beforeEach(async (to, from, next) => {
     
     if (!hasPermission) {
       logNavDebug('Blocked: Insufficient permissions')
+      if (to.meta.requiresPortalApp) {
+        alert(`You don't have permission to access this portal area. Please contact your administrator.`)
+        next({ name: 'portal-dashboard' })
+        return
+      }
       alert(`You don't have permission to access ${module}. Please contact your administrator.`)
       next(getDefaultRoute(authStore))
       return

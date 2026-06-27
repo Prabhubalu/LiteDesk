@@ -54,7 +54,7 @@ module.exports = {
   ORGANIZATION: {
     platformOwned: true,
     baseModuleKey: 'organizations',
-    types: ['CUSTOMER', 'PARTNER', 'VENDOR'],
+    types: ['CUSTOMER', 'PARTNER', 'VENDOR', 'DEALER', 'CONTRACTOR', 'AUDITOR'],
     apps: {
       SALES: {
         allowedTypes: ['CUSTOMER', 'PARTNER']
@@ -68,7 +68,7 @@ module.exports = {
       },
       PORTAL: {
         readOnly: true,
-        allowedTypes: ['CUSTOMER']
+        allowedTypes: ['CUSTOMER', 'PARTNER', 'VENDOR', 'DEALER', 'CONTRACTOR', 'AUDITOR']
       }
     }
   },

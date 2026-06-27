@@ -32,5 +32,9 @@ export function getNotificationStreamAppKeysForUser(user) {
     }
     return allowed.has(key);
   });
-  return keys.length ? keys : ['SALES'];
+  if (keys.length) return keys;
+  if (String(user?.userType || '').toUpperCase() === 'EXTERNAL') {
+    return ['PORTAL'];
+  }
+  return ['SALES'];
 }

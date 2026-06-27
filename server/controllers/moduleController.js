@@ -869,7 +869,9 @@ function getBaseFieldsForKey(key) {
             'currentSlaCycle',
             'assignmentControl',
             'reopenCount',
-            'customFields'
+            'customFields',
+            'portalReadReceipts',
+            'portalCsat'
         ]);
         const modelByKey = {
             people: require('../models/People'),
@@ -914,6 +916,8 @@ function getBaseFieldsForKey(key) {
             'playbookState',
             // Import job linkage - set by import pipeline only
             'importHistoryId',
+            // People portal access — system-managed
+            'portalAccess',
             // Form-specific nested objects that shouldn't be fields
             'sections',       // Nested structure
             'kpiMetrics',    // Nested object

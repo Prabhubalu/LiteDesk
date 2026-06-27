@@ -292,8 +292,7 @@ async function waitForPostLoginNavigation() {
 async function initializeTabsForSession() {
   await waitForPostLoginNavigation();
 
-  const isPortalRoute = route.path.startsWith('/portal/');
-  const skipTabsInit = isPortalRoute || shouldSkipTabRoute(route.path);
+  const skipTabsInit = shouldSkipTabRoute(route.path);
   if (skipTabsInit) {
     appLog('📋 Skipping tabs initialization for route:', route.path);
     return;

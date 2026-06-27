@@ -34,11 +34,42 @@ export const ADVANCED_LABELS = {
 
 export const ACCESS_MODE_OPTIONS = [
   { value: 'none', label: 'None' },
-  { value: 'readOnly', label: 'Read only' },
-  { value: 'edit', label: 'Can edit' },
-  { value: 'full', label: 'Full' },
+  { value: 'readOnly', label: 'View' },
+  { value: 'edit', label: 'Edit' },
+  { value: 'full', label: 'Full access' },
   { value: 'custom', label: 'Custom' }
 ];
+
+/** @param {(key: string) => string} t — i18n `t` bound to settings namespace keys */
+export function buildAccessModeOptions(t) {
+  return [
+    { value: 'none', label: t('settings.roleDrawerAccessModeNone') },
+    { value: 'readOnly', label: t('settings.roleDrawerAccessModeReadOnly') },
+    { value: 'edit', label: t('settings.roleDrawerAccessModeEdit') },
+    { value: 'full', label: t('settings.roleDrawerAccessModeFull') },
+    { value: 'custom', label: t('settings.roleDrawerAccessModeCustom') }
+  ];
+}
+
+/** Bulk-apply presets for all visible modules in role/profile editors. */
+export function buildAccessBulkPresets(t) {
+  return [
+    { id: 'readOnly', label: t('settings.roleDrawerPresetReadOnly') },
+    { id: 'edit', label: t('settings.roleDrawerPresetEdit') },
+    { id: 'full', label: t('settings.roleDrawerPresetFull') },
+    { id: 'none', label: t('settings.roleDrawerPresetNone') }
+  ];
+}
+
+/** @param {(key: string) => string} t */
+export function buildCrudActionLabels(t) {
+  return {
+    read: t('settings.roleDrawerPermRead'),
+    create: t('settings.roleDrawerPermCreate'),
+    update: t('settings.roleDrawerPermUpdate'),
+    delete: t('settings.roleDrawerPermDelete')
+  };
+}
 
 export function hasAction(module, action) {
   if (!Array.isArray(module?.actions)) return false;
@@ -69,7 +100,8 @@ export function getModuleAccessMode(module, perms = {}) {
   if (!perms || typeof perms !== 'object') return 'none';
 
   const crud = getCrudActionsForModule(module);
-  const readOn = hasAction(module, 'read') && perms.read === true;
+  const readOn =
+    hasAction(module, 'read') && (perms.read === true || perms.view === true);
   const anyCrudBesidesRead = crud
     .filter((a) => a !== 'read')
     .some((a) => perms[a] === true);
@@ -84,17 +116,34 @@ export function getModuleAccessMode(module, perms = {}) {
   const onlyRead =
     readOn && crud.filter((a) => a !== 'read').every((a) => perms[a] !== true);
 
+  const supportsDelete = hasAction(module, 'delete');
   const editMode =
     readOn &&
     perms.create === true &&
     perms.update === true &&
-    (!hasAction(module, 'delete') || perms.delete !== true) &&
-    crud.filter((a) => !['read', 'create', 'update'].includes(a)).every((a) => perms[a] !== true);
+    supportsDelete &&
+    perms.delete !== true &&
+    !hasAnyAdvancedEnabled(perms, module);
 
   if (onlyRead) return 'readOnly';
-  if (editMode) return 'edit';
   if (allCrudOn && crud.length > 0) return 'full';
+  if (editMode) return 'edit';
   return 'custom';
+}
+
+/**
+ * Dropdown / preset label — keeps "Custom" selected while the user fine-tunes actions.
+ * @param {Set<string>|undefined} customEditModuleKeys
+ */
+export function resolveDisplayAccessMode(module, perms = {}, customEditModuleKeys = undefined) {
+  if (customEditModuleKeys?.has?.(module.key)) return 'custom';
+  return getModuleAccessMode(module, perms);
+}
+
+/** Show per-action chips when module has access or user opened custom tuning. */
+export function shouldShowModuleActionEditor(module, perms = {}, customEditModuleKeys = undefined) {
+  if (customEditModuleKeys?.has?.(module.key)) return true;
+  return getModuleAccessMode(module, perms) !== 'none';
 }
 
 export function applyModuleAccessMode(module, perms, mode) {
@@ -105,13 +154,13 @@ export function applyModuleAccessMode(module, perms, mode) {
 
   const clearAdvanced = () => {
     advanced.forEach((a) => {
-      if (perms[a] !== undefined) perms[a] = false;
+      perms[a] = false;
     });
   };
 
   if (mode === 'none') {
     crud.forEach((a) => {
-      if (perms[a] !== undefined) perms[a] = false;
+      perms[a] = false;
     });
     clearAdvanced();
     return;
@@ -119,7 +168,7 @@ export function applyModuleAccessMode(module, perms, mode) {
 
   if (mode === 'readOnly') {
     crud.forEach((a) => {
-      if (perms[a] !== undefined) perms[a] = a === 'read';
+      perms[a] = a === 'read';
     });
     clearAdvanced();
     return;
@@ -127,9 +176,7 @@ export function applyModuleAccessMode(module, perms, mode) {
 
   if (mode === 'edit') {
     crud.forEach((a) => {
-      if (perms[a] !== undefined) {
-        perms[a] = ['read', 'create', 'update'].includes(a);
-      }
+      perms[a] = ['read', 'create', 'update'].includes(a);
     });
     clearAdvanced();
     return;
@@ -137,7 +184,7 @@ export function applyModuleAccessMode(module, perms, mode) {
 
   if (mode === 'full') {
     crud.forEach((a) => {
-      if (perms[a] !== undefined) perms[a] = true;
+      perms[a] = true;
     });
     clearAdvanced();
     return;
@@ -176,7 +223,7 @@ export function applyPermissionUncheck(perms, action) {
 function moduleAccessLabel(module, perms) {
   const mode = getModuleAccessMode(module, perms);
   if (mode === 'full') return 'full';
-  if (mode === 'readOnly') return 'read-only';
+  if (mode === 'readOnly') return 'view';
   if (mode === 'none') return 'none';
   return 'partial';
 }
@@ -235,15 +282,16 @@ export function applyFullAccessToAllModules(permissions, modules) {
   return permissions;
 }
 
-/** Apply the same access mode to every module in the catalog. */
+/** Apply the same access mode to every module in the catalog. Returns a new permissions map. */
 export function applyAccessPresetToAllModules(permissions, modules, mode) {
   if (!permissions || !Array.isArray(modules)) return permissions;
+  const next = { ...permissions };
   for (const module of modules) {
-    const perms = permissions[module.key];
-    if (!perms) continue;
+    const perms = { ...(next[module.key] || {}) };
     applyModuleAccessMode(module, perms, mode);
+    next[module.key] = perms;
   }
-  return permissions;
+  return next;
 }
 
 export function isFullyPrivilegedSystemRoleName(roleName) {

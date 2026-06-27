@@ -377,6 +377,21 @@ exports.enableApp = async (req, res) => {
         await organization.save();
         invalidatePermissionCachesForOrg(organization._id);
 
+        try {
+            const { syncPrivilegedRoleEntitlementsForApp } = require('../services/roleSeedService');
+            await syncPrivilegedRoleEntitlementsForApp(organization._id, normalizedAppKey);
+            if (normalizedAppKey === 'PORTAL' || normalizedAppKey === 'AUDIT') {
+                const { ensureExternalPortalRolesForOrganization } = require('../services/portalExternalRoleSeedService');
+                await ensureExternalPortalRolesForOrganization(organization._id, organization.toObject?.() || organization);
+            }
+        } catch (entitlementSyncError) {
+            console.error('[EnableApp] Privileged role entitlement sync failed (non-fatal)', {
+                orgId: organization._id,
+                appKey: normalizedAppKey,
+                error: entitlementSyncError.message
+            });
+        }
+
         // Bootstrap trial subscription if needed (after app is enabled)
         try {
             await ensureSubscriptionForApp({

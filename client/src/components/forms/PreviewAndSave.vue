@@ -257,7 +257,7 @@ const auditResultRule = computed(() => {
 const auditResultRuleLabel = computed(() => {
   const rules = {
     any_section_fails: t('forms.previewAuditFailAnySection'),
-    overall_score_only: t('forms.previewAuditOverallScoreOnly')
+    overall_score_below_threshold: t('forms.previewAuditOverallScoreOnly')
   };
   return rules[auditResultRule.value] || auditResultRule.value;
 });
@@ -265,7 +265,7 @@ const auditResultRuleLabel = computed(() => {
 const auditResultRuleDescription = computed(() => {
   const descriptions = {
     any_section_fails: t('forms.previewAuditFailAnySectionDesc'),
-    overall_score_only: t('forms.previewAuditOverallScoreOnlyDesc')
+    overall_score_below_threshold: t('forms.previewAuditOverallScoreOnlyDesc')
   };
   return descriptions[auditResultRule.value] || '';
 });

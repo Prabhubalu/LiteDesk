@@ -16,7 +16,8 @@ const RESERVED_KEYS = new Set([
   '_id', '__v', 'organizationId', 'createdAt', 'updatedAt', 'createdBy',
   'modifiedBy', 'deletedAt', 'deletedBy', 'deletionReason',
   'source', // System-managed creation channel; set only via sourceResolver on the server
-  'playbookState'
+  'playbookState',
+  'portalAccess'
 ]);
 
 /**

@@ -217,68 +217,25 @@
       @close="notificationSheetOpen = false"
     />
 
-    <!-- Mobile Bottom Tab Navigation -->
-    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 lg:hidden">
+    <!-- Mobile Bottom Tab Navigation (permission-filtered, matches desktop sidebar) -->
+    <nav
+      v-if="mobileNavItems.length"
+      class="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 lg:hidden"
+    >
       <div class="flex items-center justify-around h-16">
         <router-link
-          to="/portal/dashboard"
-          class="flex flex-col items-center justify-center flex-1 min-h-[44px] transition-colors"
+          v-for="item in mobileNavItems"
+          :key="item.route"
+          :to="item.route"
+          class="flex flex-col items-center justify-center flex-1 min-h-[44px] min-w-0 px-1 transition-colors"
           :class="[
-            $route.path === '/portal/dashboard' || $route.path.startsWith('/portal/dashboard/')
-              ? 'text-blue-600 dark:text-blue-400'
+            item.isActive
+              ? 'text-[var(--portal-brand-primary,#3a1f8a)] dark:text-[var(--portal-brand-primary,#3a1f8a)]'
               : 'text-gray-500 dark:text-gray-400'
           ]"
         >
-          <component :is="$route.path === '/portal/dashboard' ? HomeIconSolid : HomeIcon" class="w-6 h-6 mb-1" />
-          <span class="text-xs font-medium">{{ t('navigation.home') }}</span>
-        </router-link>
-        <router-link
-          to="/portal/audits"
-          class="flex flex-col items-center justify-center flex-1 min-h-[44px] transition-colors"
-          :class="[
-            $route.path.startsWith('/portal/audits')
-              ? 'text-blue-600 dark:text-blue-400'
-              : 'text-gray-500 dark:text-gray-400'
-          ]"
-        >
-          <component :is="$route.path.startsWith('/portal/audits') ? DocumentTextIconSolid : DocumentTextIcon" class="w-6 h-6 mb-1" />
-          <span class="text-xs font-medium">{{ t('navigation.portalAudits') }}</span>
-        </router-link>
-        <router-link
-          to="/portal/cases"
-          class="flex flex-col items-center justify-center flex-1 min-h-[44px] transition-colors"
-          :class="[
-            $route.path.startsWith('/portal/cases')
-              ? 'text-blue-600 dark:text-blue-400'
-              : 'text-gray-500 dark:text-gray-400'
-          ]"
-        >
-          <component :is="$route.path.startsWith('/portal/cases') ? LifebuoyIconSolid : LifebuoyIcon" class="w-6 h-6 mb-1" />
-          <span class="text-xs font-medium">{{ t('navigation.portalCases') }}</span>
-        </router-link>
-        <router-link
-          to="/portal/knowledge"
-          class="flex flex-col items-center justify-center flex-1 min-h-[44px] transition-colors"
-          :class="[
-            $route.path.startsWith('/portal/knowledge')
-              ? 'text-blue-600 dark:text-blue-400'
-              : 'text-gray-500 dark:text-gray-400'
-          ]"
-        >
-          <component :is="$route.path.startsWith('/portal/knowledge') ? BookOpenIconSolid : BookOpenIcon" class="w-6 h-6 mb-1" />
-          <span class="text-xs font-medium">{{ t('navigation.portalKnowledge') }}</span>
-        </router-link>
-        <router-link
-          to="/portal/actions"
-          class="flex flex-col items-center justify-center flex-1 min-h-[44px] transition-colors"
-          :class="[
-            $route.path.startsWith('/portal/actions')
-              ? 'text-blue-600 dark:text-blue-400'
-              : 'text-gray-500 dark:text-gray-400'
-          ]"
-        >
-          <component :is="$route.path.startsWith('/portal/actions') ? ClipboardDocumentCheckIconSolid : ClipboardDocumentCheckIcon" class="w-6 h-6 mb-1" />
-          <span class="text-xs font-medium">{{ t('navigation.portalActions') }}</span>
+          <component :is="item.isActive ? item.iconActive : item.icon" class="w-6 h-6 mb-1 shrink-0" />
+          <span class="text-xs font-medium truncate max-w-full">{{ item.label }}</span>
         </router-link>
       </div>
     </nav>
@@ -297,6 +254,7 @@ import { useColorMode } from '@/composables/useColorMode';
 import { useSidebarState } from '@/composables/useSidebarState';
 import { buildSidebarStructureForSession } from '@/utils/buildSidebarForSession';
 import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
+import { getNavigationIconComponent } from '@/utils/navigationIcons';
 import { 
   HomeIcon, 
   DocumentTextIcon, 
@@ -322,12 +280,14 @@ import NotificationSheet from '@/components/notifications/NotificationSheet.vue'
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarSkeleton from '@/components/AppSidebarSkeleton.vue';
 import AvatarInitials from '@/components/ui/AvatarInitials.vue';
+import { usePortalBranding } from '@/composables/usePortalBranding';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const appShellStore = useAppShellStore();
 const { colorMode, toggleColorMode } = useColorMode();
+const { loadBranding } = usePortalBranding();
 const { collapsed } = useSidebarState();
 const showUserMenu = ref(false);
 const notificationDrawerOpen = ref(false);
@@ -393,12 +353,20 @@ const onCoreModulesUpdated = () => {
   }
 };
 
+watch(
+  () => JSON.stringify(authStore.user?.permissions || {}),
+  () => {
+    buildSidebar();
+  }
+);
+
 onMounted(async () => {
   // Phase 2D: Load UI metadata if not already loaded (App.vue also does this, but safe to check)
   if (!appShellStore.isLoaded && authStore.isAuthenticated) {
     await appShellStore.loadUIMetadata();
   }
-  await buildSidebar();
+  await authStore.refreshUser({ force: true });
+  await Promise.all([buildSidebar(), loadBranding()]);
   window.addEventListener('arivu:core-modules-updated', onCoreModulesUpdated);
 });
 
@@ -416,6 +384,49 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('arivu:core-modules-updated', onCoreModulesUpdated);
   document.removeEventListener('click', handleClickOutside);
+});
+
+const MOBILE_NAV_SOLID_BY_ROUTE = {
+  '/portal/dashboard': HomeIconSolid,
+  '/portal/audits': DocumentTextIconSolid,
+  '/portal/cases': LifebuoyIconSolid,
+  '/portal/knowledge': BookOpenIconSolid,
+  '/portal/actions': ClipboardDocumentCheckIconSolid
+};
+
+function isMobileNavRouteActive(navRoute, path) {
+  if (navRoute === '/portal/dashboard') {
+    return path === '/portal/dashboard' || path.startsWith('/portal/dashboard/');
+  }
+  return path.startsWith(navRoute);
+}
+
+const mobileNavItems = computed(() => {
+  const path = route.path;
+  const items = [
+    {
+      route: '/portal/dashboard',
+      label: t('navigation.home'),
+      icon: HomeIcon,
+      iconActive: HomeIconSolid,
+      isActive: isMobileNavRouteActive('/portal/dashboard', path)
+    }
+  ];
+
+  const modules = sidebarStructure.value?.appNav?.modules ?? [];
+  for (const mod of modules) {
+    if (!mod.route || mod.route === '/portal/dashboard') continue;
+    const outline = getNavigationIconComponent(mod);
+    items.push({
+      route: mod.route,
+      label: mod.label,
+      icon: outline,
+      iconActive: MOBILE_NAV_SOLID_BY_ROUTE[mod.route] || outline,
+      isActive: isMobileNavRouteActive(mod.route, path)
+    });
+  }
+
+  return items;
 });
 
 const organizationName = computed(() => {

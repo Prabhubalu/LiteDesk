@@ -433,6 +433,45 @@ function roleAllowsPlatformOwnedFieldEdits(rolePlain) {
 }
 
 /**
+ * Derive execution appAccess for Owner / Administrator users under RBAC v2.
+ * Merges role entitlements with any enabled org apps missing from the role (e.g. Audit enabled later).
+ * @private
+ */
+function resolvePrivilegedAppAccess(user, organization, roleLean = null) {
+  const { deriveAppAccessFromRole } = require('../services/roleEntitlementService');
+  const { buildEntitlementsAllApps } = require('../services/roleSeedService');
+
+  if (!organization) {
+    return {
+      appAccess: Array.isArray(user?.appAccess) ? user.appAccess : [],
+      allowedApps: Array.isArray(user?.allowedApps) ? user.allowedApps : []
+    };
+  }
+
+  const isOwnerRole = user?.isOwner === true || roleLean?.name === 'Owner';
+  const seatConsuming = !isOwnerRole;
+  const baselineEntitlements = buildEntitlementsAllApps(organization, 'ADMIN', seatConsuming);
+  const roleEntitlements = Array.isArray(roleLean?.appEntitlements) ? roleLean.appEntitlements : [];
+
+  if (roleEntitlements.length === 0) {
+    return deriveAppAccessFromRole({ appEntitlements: baselineEntitlements }, organization);
+  }
+
+  const mergedEntitlements = [...roleEntitlements];
+  for (const baseline of baselineEntitlements) {
+    const appKey = String(baseline?.appKey || '').toUpperCase();
+    const hasActive = mergedEntitlements.some(
+      (entry) => String(entry?.appKey || '').toUpperCase() === appKey && entry?.enabled !== false
+    );
+    if (!hasActive) {
+      mergedEntitlements.push(baseline);
+    }
+  }
+
+  return deriveAppAccessFromRole({ appEntitlements: mergedEntitlements }, organization);
+}
+
+/**
  * Materialize full tenant-admin envelope (Owner / Admin system roles and isOwner users).
  * @param {import('mongoose').Document|object} user
  * @param {object|null} [organization]
@@ -449,6 +488,12 @@ async function applyFullPrivilegedEnvelopeToUser(user, organization = null, opti
   user._roleAllowsPlatformOwnedFieldEdit = true;
   user._isTenantPrivileged = true;
 
+  let appAccess = user.appAccess;
+  const derived = resolvePrivilegedAppAccess(user, organization, options.roleLean || null);
+  appAccess = derived.appAccess;
+  user.appAccess = derived.appAccess;
+  user.allowedApps = derived.allowedApps;
+
   const plain = userPermissionsEnvelopeToPlain(user);
   plain.cases = { view: true, create: true, edit: true, delete: true, viewAll: true };
   plain.webforms = {
@@ -464,7 +509,7 @@ async function applyFullPrivilegedEnvelopeToUser(user, organization = null, opti
   await materializeRuntimePermissionsOnUser(user, {
     roleLean: options.roleLean || null,
     organization,
-    appAccess: user.appAccess
+    appAccess
   });
 
   user.permissions = plain;
@@ -532,6 +577,37 @@ async function applyProjectionToUser(user, roleLean, organization = null) {
   user._isTenantPrivileged = false;
 }
 
+function resolveExternalRoleIdForSession(user, explicitRoleId) {
+  if (explicitRoleId && mongoose.Types.ObjectId.isValid(String(explicitRoleId))) {
+    return explicitRoleId;
+  }
+  const defaultId = user?.defaultExternalRoleId;
+  if (defaultId && mongoose.Types.ObjectId.isValid(String(defaultId))) {
+    return defaultId;
+  }
+  const activeAssignments = (user?.externalRoleAssignments || []).filter(
+    (assignment) => String(assignment?.status || 'ACTIVE').toUpperCase() === 'ACTIVE'
+  );
+  if (activeAssignments.length === 1 && activeAssignments[0]?.roleId) {
+    return activeAssignments[0].roleId;
+  }
+  return null;
+}
+
+function clearExternalUserStaleEnvelope(user) {
+  delete user._roleAllowsPlatformOwnedFieldEdit;
+  user.roleId = null;
+  if (typeof user.set === 'function') {
+    user.set('permissions', {});
+    user.set('appAccess', []);
+    user.set('allowedApps', []);
+    return;
+  }
+  user.permissions = {};
+  user.appAccess = [];
+  user.allowedApps = [];
+}
+
 /**
  * Single entry: assign user.permissions + elevation flags from Role, appAccess, or owner defaults.
  * Mutates Mongoose User docs in place (JWT user, profile, login cache, etc.).
@@ -549,12 +625,40 @@ async function materializeEffectiveCRMEnvelopeOnUser(user, options = {}) {
     let organization = options.organization || null;
     if (!organization && user.organizationId) {
       organization = await Organization.findById(user.organizationId)
-        .select('enabledApps moduleOverrides')
+        .select('enabledApps moduleOverrides settings subscription')
         .lean();
     }
 
+    const userType = String(user.userType || 'INTERNAL').toUpperCase();
+    const activeExternalRoleId =
+      options.activeExternalRoleId ||
+      user.activeExternalRoleId ||
+      user._activeExternalRoleId ||
+      null;
+
+    if (userType === 'EXTERNAL') {
+      const resolvedExternalRoleId = resolveExternalRoleIdForSession(user, activeExternalRoleId);
+      if (resolvedExternalRoleId) {
+        const { hydrateExternalUserSession } = require('../services/externalRoleSessionService');
+        await hydrateExternalUserSession(user, resolvedExternalRoleId, organization);
+        return;
+      }
+      clearExternalUserStaleEnvelope(user);
+      return;
+    }
+
     if (user.isOwner === true || isTenantPrivilegedUser(user)) {
-      await applyFullPrivilegedEnvelopeToUser(user, organization);
+      let roleLean = null;
+      const rid = user.roleId?._id || user.roleId;
+      if (rid && mongoose.Types.ObjectId.isValid(rid)) {
+        const Role = require('../models/Role');
+        const map = options.prefetchedRoleLeanById;
+        roleLean = map instanceof Map ? map.get(String(rid)) : undefined;
+        if (!roleLean) {
+          roleLean = await Role.findById(rid).lean();
+        }
+      }
+      await applyFullPrivilegedEnvelopeToUser(user, organization, { roleLean });
       return;
     }
 
@@ -675,6 +779,8 @@ module.exports = {
   applyProjectionToUser,
   applyFullPrivilegedEnvelopeToUser,
   materializeEffectiveCRMEnvelopeOnUser,
+  resolveExternalRoleIdForSession,
+  clearExternalUserStaleEnvelope,
   isTenantPrivilegedUser,
   ensurePermissionEnvelopeDefaults,
   buildCasesEnvelopeFromAppAccess,

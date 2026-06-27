@@ -265,6 +265,20 @@ module.exports = {
     defaultChannels: ['IN_APP'],
     channels: { inApp: true, email: false, push: true, whatsapp: false, sms: false }
   },
+  [domainEvents.CASE_PORTAL_AGENT_REPLY]: {
+    appKey: 'PORTAL',
+    recipients: ['PORTAL_CASE_REQUESTER'],
+    priority: 'HIGH',
+    defaultChannels: ['IN_APP', 'EMAIL', 'PUSH'],
+    channels: { inApp: true, email: true, push: true, whatsapp: false, sms: false }
+  },
+  [domainEvents.CASE_PORTAL_STATUS_UPDATE]: {
+    appKey: 'PORTAL',
+    recipients: ['PORTAL_CASE_REQUESTER'],
+    priority: 'NORMAL',
+    defaultChannels: ['IN_APP', 'EMAIL'],
+    channels: { inApp: true, email: true, push: false, whatsapp: false, sms: false }
+  },
   [domainEvents.LIVE_CHAT_MESSAGE_RECEIVED]: {
     appKey: 'PLATFORM',
     recipients: ['LIVE_CHAT_NOTIFY_TARGETS'],

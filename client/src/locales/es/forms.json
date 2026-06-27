@@ -4314,5 +4314,13 @@
   "hubPublicFormExpired": {
     "message": "This form has expired.",
     "description": "Public form fetch expired (410)"
+  },
+  "reportSectionPassFail": {
+    "message": "{passed} passed · {failed} failed · {total} questions",
+    "description": "Section pass/fail breakdown in report"
+  },
+  "reportResponseId": {
+    "message": "Response ID: {id}",
+    "description": "Report response identifier label"
   }
 }

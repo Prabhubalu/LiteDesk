@@ -10,225 +10,167 @@
       </p>
     </div>
 
-    <div class="flex min-h-0 flex-1 flex-col gap-5 overflow-hidden">
-      <!-- Stats -->
-      <div class="grid shrink-0 grid-cols-2 gap-3 lg:grid-cols-5">
-        <button
-          v-for="card in statCards"
-          :key="card.id"
-          type="button"
-          :class="[
-            'group rounded-xl border p-4 text-left transition-colors duration-200',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
-            activeStatFilter === card.id
-              ? 'border-indigo-500 bg-indigo-50/60 shadow-sm dark:border-indigo-400 dark:bg-indigo-950/40'
-              : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/80 dark:border-gray-700 dark:bg-gray-800/80 dark:hover:border-gray-600 dark:hover:bg-gray-800'
-          ]"
-          @click="applyStatFilter(card.id)"
+    <ListView
+      :hide-page-header="embedded"
+      :title="t('settings.usersTabManagement')"
+      module-key="settings-users"
+      :create-label="t('settings.usersInvite')"
+      :search-placeholder="t('settings.usersSearchPlaceholder')"
+      :data="users"
+      :columns="columns"
+      :filter-fields="filterFields"
+      :loading="loading"
+      :statistics="stats"
+      :stats-config="statsConfig"
+      :pagination="pagination"
+      :sort-field="sortField"
+      :sort-order="sortOrder"
+      :external-filters="externalFilters"
+      :parent-search-query="searchQuery"
+      table-id="settings-users-table"
+      row-key="_id"
+      :show-import="false"
+      :show-export="false"
+      :has-actions="false"
+      :empty-title="hasActiveFilters ? t('settings.usersEmptyFilteredTitle') : t('settings.usersEmptyTitle')"
+      :empty-message="hasActiveFilters ? t('settings.usersEmptyFilteredBody') : t('settings.usersEmptyBody')"
+      selection-column-variant="numbered-hover"
+      @create="openInviteModal"
+      @search-submit="handleSearch"
+      @update:search-query="handleSearch"
+      @update:filters="handleFiltersUpdate"
+      @update:sort="handleSortUpdate"
+      @update:pagination="handlePaginationUpdate"
+      @stat-click="handleStatClick"
+      @fetch="fetchUsers"
+      @row-click="handleRowClick"
+      @bulk-action="handleBulkAction"
+    >
+      <template v-if="embedded" #toolbar-trailing>
+        <PermissionButton
+          module="settings-users"
+          action="create"
+          variant="primary"
+          size="compact"
+          icon="plus"
+          icon-only-mobile
+          :title="t('settings.usersInvite')"
+          @click="openInviteModal"
         >
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                {{ card.label }}
-              </p>
-              <p
-                class="mt-1 text-2xl font-bold tabular-nums"
-                :class="card.valueClass"
-              >
-                {{ statsLoading ? '—' : card.value }}
-              </p>
-            </div>
-            <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors"
-              :class="card.iconWrapClass"
-            >
-              <component :is="card.icon" class="h-5 w-5" :class="card.iconClass" aria-hidden="true" />
-            </div>
-          </div>
-        </button>
-      </div>
+          <span class="hidden sm:inline">{{ t('settings.usersInvite') }}</span>
+        </PermissionButton>
+      </template>
 
-      <!-- Users table -->
-      <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <DataTable
-          :columns="tableColumns"
-          :data="users"
-          :loading="loading"
-          :server-side="true"
-          :searchable="true"
-          :total-records="totalUsers"
-          :current-page="currentPage"
-          :per-page="perPage"
-          :search-placeholder="t('settings.usersSearchPlaceholder')"
-          :empty-title="hasActiveFilters ? t('settings.usersEmptyFilteredTitle') : t('settings.usersEmptyTitle')"
-          :empty-message="hasActiveFilters ? t('settings.usersEmptyFilteredBody') : t('settings.usersEmptyBody')"
-          :selectable="true"
-          :column-settings="true"
-          :resizable="true"
-          :mass-actions="massActions"
-          :selection-bar-title="t('settings.usersMassBarTitle')"
-          table-id="users-table"
-          row-key="_id"
-          @update:page="handlePageChange"
-          @update:per-page="handlePerPageChange"
-          @update:search="handleSearch"
-          @update:sort="handleSort"
-          @edit="openEditModal"
-          @delete="handleDeleteUser"
-          @bulk-action="handleBulkAction"
-          @row-click="handleRowClick"
-        >
-          <template #toolbar-actions>
-            <HeadlessSelect
-              v-model="roleFilter"
-              :options="roleFilterOptions"
-              allow-empty
-              :empty-label="t('settings.usersFilterRole')"
-              empty-value=""
-              teleport
-              wrapper-class="w-44"
-              button-class="!rounded-xl !border !border-gray-300 !bg-white !px-3 !py-2.5 !text-sm !shadow-sm focus:!outline-none focus-visible:!ring-2 focus-visible:!ring-indigo-500/30 focus-visible:!ring-offset-1 dark:!border-gray-600 dark:!bg-gray-800 dark:focus-visible:!ring-offset-gray-900"
-              @update:model-value="handleRoleFilterChange"
+      <template #cell-user="{ row }">
+        <div class="flex items-center gap-3">
+          <div class="relative shrink-0">
+            <img
+              v-if="row.avatar"
+              :src="row.avatar"
+              :alt="userDisplayName(row)"
+              class="h-9 w-9 rounded-full object-cover ring-2 ring-white dark:ring-gray-800"
             />
-
-            <button
-              v-if="hasActiveFilters"
-              type="button"
-              class="inline-flex items-center gap-1.5 rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus-visible:ring-offset-gray-900"
-              @click="clearFilters"
-            >
-              <XMarkIcon class="h-4 w-4" aria-hidden="true" />
-              {{ t('settings.usersClearFilters') }}
-            </button>
-
-            <button
-              type="button"
-              class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-              @click="openInviteModal"
-            >
-              <UserPlusIcon class="h-5 w-5" aria-hidden="true" />
-              {{ t('settings.usersInvite') }}
-            </button>
-          </template>
-
-          <template #empty>
-            <UserGroupIcon class="mb-5 h-20 w-20 text-gray-300 dark:text-gray-600" aria-hidden="true" />
-            <h3 class="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
-              {{ hasActiveFilters ? t('settings.usersEmptyFilteredTitle') : t('settings.usersEmptyTitle') }}
-            </h3>
-            <p class="mb-6 max-w-md text-center text-base text-gray-500 dark:text-gray-400">
-              {{ hasActiveFilters ? t('settings.usersEmptyFilteredBody') : t('settings.usersEmptyBody') }}
-            </p>
-            <button
-              v-if="!hasActiveFilters"
-              type="button"
-              class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700"
-              @click="openInviteModal"
-            >
-              <UserPlusIcon class="h-5 w-5" aria-hidden="true" />
-              {{ t('settings.usersEmptyCta') }}
-            </button>
-            <button
+            <div
               v-else
-              type="button"
-              class="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-              @click="clearFilters"
+              class="flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold text-white ring-2 ring-white dark:ring-gray-800"
+              :style="{ backgroundColor: avatarColor(row.email) }"
             >
-              {{ t('settings.usersClearFilters') }}
-            </button>
-          </template>
-
-          <template #cell-user="{ row }">
-            <div class="flex items-center gap-3 py-0.5">
-              <div class="relative shrink-0">
-                <img
-                  v-if="row.avatar"
-                  :src="row.avatar"
-                  :alt="userDisplayName(row)"
-                  class="h-10 w-10 rounded-full object-cover ring-2 ring-white dark:ring-gray-800"
-                />
-                <div
-                  v-else
-                  class="flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white ring-2 ring-white dark:ring-gray-800"
-                  :style="{ backgroundColor: avatarColor(row.email) }"
-                >
-                  {{ userInitials(row) }}
-                </div>
-                <span
-                  v-if="isUserOnline(row)"
-                  class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500 dark:border-gray-800"
-                  :title="t('settings.usersStatusActive')"
-                />
-              </div>
-              <div class="min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                  <p class="truncate font-semibold text-gray-900 dark:text-white">
-                    {{ userDisplayName(row) }}
-                  </p>
-                  <span
-                    v-if="row.isOwner"
-                    class="inline-flex items-center rounded-md bg-purple-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
-                  >
-                    {{ t('settings.usersStatAdmins') }}
-                  </span>
-                  <span
-                    v-if="!row.emailVerifiedAt && row.status !== 'invited'"
-                    class="inline-flex items-center rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
-                  >
-                    {{ t('settings.usersEmailUnverified') }}
-                  </span>
-                </div>
-                <p class="truncate text-sm text-gray-500 dark:text-gray-400">{{ row.email }}</p>
-              </div>
+              {{ userInitials(row) }}
             </div>
-          </template>
-
-          <template #cell-role="{ row }">
             <span
-              v-if="row.roleId"
-              class="inline-flex max-w-full items-center gap-1.5 truncate rounded-full px-3 py-1 text-xs font-medium text-white"
-              :style="{ backgroundColor: row.roleId.color || '#6049E7' }"
-            >
-              {{ row.roleId.name }}
-            </span>
-            <span v-else :class="getRoleBadgeClass(row.role)">
-              {{ formatRoleLabel(row.role) }}
-            </span>
-          </template>
+              v-if="isUserOnline(row)"
+              class="absolute bottom-0 right-0 h-2 w-2 rounded-full border-2 border-white bg-green-500 dark:border-gray-800"
+              :title="t('settings.usersStatActive')"
+            />
+          </div>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <p class="truncate font-medium text-gray-900 dark:text-white">
+                {{ userDisplayName(row) }}
+              </p>
+              <span
+                v-if="row.isOwner"
+                class="inline-flex items-center rounded-md bg-purple-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
+              >
+                {{ t('settings.usersStatAdmins') }}
+              </span>
+              <span
+                v-if="!row.emailVerifiedAt && row.status !== 'invited'"
+                class="inline-flex items-center rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+              >
+                {{ t('settings.usersEmailUnverified') }}
+              </span>
+            </div>
+            <p class="truncate text-sm text-gray-500 dark:text-gray-400">{{ row.email }}</p>
+          </div>
+        </div>
+      </template>
 
-          <template #cell-status="{ row }">
-            <span :class="getStatusBadgeClass(row.status)">
-              <span class="inline-block h-1.5 w-1.5 rounded-full" :class="getStatusDotClass(row.status)" />
-              {{ formatStatusLabel(row.status) }}
-            </span>
-          </template>
+      <template #cell-roleId="{ row }">
+        <div v-if="isExternalUserRow(row)" class="flex flex-wrap gap-1">
+          <span
+            v-for="role in row.externalRoles || []"
+            :key="String(role._id)"
+            class="inline-flex max-w-full items-center truncate rounded-full px-2 py-0.5 text-xs font-medium text-white"
+            :style="{ backgroundColor: role.color || '#0ea5e9' }"
+          >
+            {{ role.name }}
+          </span>
+          <span
+            v-if="!row.externalRoles?.length"
+            class="text-xs text-gray-500 dark:text-gray-400"
+          >
+            {{ t('settings.externalUserNoPortalRoles') }}
+          </span>
+        </div>
+        <template v-else>
+          <span
+            v-if="row.roleId"
+            class="inline-flex max-w-full items-center truncate rounded-full px-2.5 py-0.5 text-xs font-medium text-white"
+            :style="{ backgroundColor: row.roleId.color || '#6049E7' }"
+          >
+            {{ row.roleId.name }}
+          </span>
+          <BadgeCell
+            v-else
+            :value="formatRoleLabel(row.role)"
+            :variant="roleVariant(row.role)"
+          />
+        </template>
+      </template>
 
-          <template #cell-userType="{ row }">
-            <span :class="getUserTypeBadgeClass(row.userType)">
-              {{ formatUserTypeLabel(row.userType) }}
-            </span>
-          </template>
+      <template #cell-status="{ row }">
+        <BadgeCell
+          :value="formatStatusLabel(row.status)"
+          :variant="statusVariant(row.status)"
+        />
+      </template>
 
-          <template #cell-lastLogin="{ row }">
-            <span
-              class="text-sm text-gray-600 dark:text-gray-400"
-              :title="formatAbsoluteDate(row.lastLogin)"
-            >
-              {{ formatLastLogin(row.lastLogin) }}
-            </span>
-          </template>
+      <template #cell-userType="{ row }">
+        <BadgeCell
+          :value="formatUserTypeLabel(row.userType)"
+          :variant="row.userType === 'EXTERNAL' ? 'warning' : 'info'"
+        />
+      </template>
 
-          <template #cell-createdAt="{ row }">
-            <span
-              class="text-sm text-gray-600 dark:text-gray-400"
-              :title="formatAbsoluteDate(row.createdAt)"
-            >
-              {{ formatAbsoluteDate(row.createdAt) }}
-            </span>
-          </template>
-        </DataTable>
-      </div>
-    </div>
+      <template #cell-lastLogin="{ row }">
+        <span
+          class="text-sm text-gray-600 dark:text-gray-400"
+          :title="formatAbsoluteDate(row.lastLogin)"
+        >
+          {{ formatLastLogin(row.lastLogin) }}
+        </span>
+      </template>
+
+      <template #cell-createdAt="{ row }">
+        <span
+          class="text-sm text-gray-600 dark:text-gray-400"
+          :title="formatAbsoluteDate(row.createdAt)"
+        >
+          {{ formatAbsoluteDate(row.createdAt) }}
+        </span>
+      </template>
+    </ListView>
 
     <InviteUserDrawer
       :is-open="showInviteModal"
@@ -241,6 +183,7 @@
       :user="selectedUser"
       @close="showEditModal = false"
       @user-updated="handleUserUpdated"
+      @portal-roles-updated="fetchUsers"
     />
   </div>
 </template>
@@ -255,32 +198,24 @@ defineProps({
 
 import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-  UserGroupIcon,
-  UserPlusIcon,
-  CheckCircleIcon,
-  NoSymbolIcon,
-  ShieldCheckIcon,
-  EnvelopeIcon,
-  XMarkIcon
-} from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
-import DataTable from '@/components/common/DataTable.vue';
-import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import ListView from '@/components/common/ListView.vue';
+import PermissionButton from '@/components/common/PermissionButton.vue';
+import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import InviteUserDrawer from './InviteUserDrawer.vue';
 import EditUserModal from './EditUserModal.vue';
 import { useNotifications } from '@/composables/useNotifications';
 import { formatRelativeTime } from '@/utils/relativeTime';
+import { dateFilterValueToParams, parseDateFilterValue } from '@/utils/dateFilterOptions';
 
 const { t } = useI18n();
 const { success: notifySuccess, error: notifyError } = useNotifications();
 
 const users = ref([]);
 const loading = ref(false);
-const statsLoading = ref(false);
 const totalUsers = ref(0);
 const currentPage = ref(1);
-const perPage = ref(20);
+const perPage = ref(25);
 const searchQuery = ref('');
 const sortField = ref('createdAt');
 const sortOrder = ref('desc');
@@ -292,43 +227,51 @@ const stats = ref({
   admins: 0
 });
 
-const activeStatFilter = ref('all');
-const roleFilter = ref('');
+const filters = ref({
+  user: '',
+  roleId: '',
+  status: '',
+  userType: '',
+  lastLogin: '',
+  createdAt: ''
+});
+const adminOnlyFilter = ref(false);
+
+function resolveListFilters(newFilters) {
+  const resolved = { ...(newFilters || {}) };
+
+  if (resolved.filterQuery) {
+    try {
+      const parsed = typeof resolved.filterQuery === 'string'
+        ? JSON.parse(resolved.filterQuery)
+        : resolved.filterQuery;
+
+      const walk = (node) => {
+        if (!node || typeof node !== 'object') return;
+        if (node.fieldKey) {
+          resolved[node.fieldKey] = node.value;
+          return;
+        }
+        if (Array.isArray(node.children)) {
+          node.children.forEach(walk);
+        }
+      };
+
+      walk(parsed);
+    } catch {
+      // ignore malformed filterQuery payloads
+    }
+    delete resolved.filterQuery;
+  }
+
+  return resolved;
+}
+
 const availableRoles = ref([]);
 
 const showInviteModal = ref(false);
 const showEditModal = ref(false);
 const selectedUser = ref(null);
-
-const tableColumns = computed(() => [
-  { key: 'user', label: t('settings.usersColUser'), sortable: true, minWidth: '16rem' },
-  { key: 'role', label: t('settings.usersColRole'), sortable: true },
-  { key: 'status', label: t('settings.usersColStatus'), sortable: true },
-  { key: 'userType', label: t('settings.usersColType'), sortable: false },
-  { key: 'lastLogin', label: t('settings.usersColLastLogin'), sortable: true },
-  { key: 'createdAt', label: t('settings.usersColJoined'), sortable: true }
-]);
-
-const massActions = computed(() => [
-  {
-    label: t('settings.usersBulkActivate'),
-    action: 'bulk-activate',
-    variant: 'success',
-    icon: 'activate'
-  },
-  {
-    label: t('settings.usersBulkDeactivate'),
-    action: 'bulk-deactivate',
-    variant: 'warning',
-    icon: 'deactivate'
-  },
-  {
-    label: t('actions.delete'),
-    icon: 'trash',
-    action: 'bulk-delete',
-    variant: 'danger'
-  }
-]);
 
 const roleFilterOptions = computed(() =>
   availableRoles.value.map((role) => ({
@@ -337,61 +280,173 @@ const roleFilterOptions = computed(() =>
   }))
 );
 
-const statCards = computed(() => [
+const statusFilterOptions = computed(() => [
+  { value: 'active', label: t('settings.usersStatActive') },
+  { value: 'inactive', label: t('settings.usersStatInactive') },
+  { value: 'invited', label: t('settings.usersStatusInvited') },
+  { value: 'suspended', label: t('settings.usersStatusSuspended') }
+]);
+
+const userTypeFilterOptions = computed(() => [
+  { value: 'INTERNAL', label: t('settings.inviteInternal') },
+  { value: 'EXTERNAL', label: t('settings.inviteExternal') }
+]);
+
+const columns = computed(() => [
   {
-    id: 'all',
-    label: t('settings.usersStatTotal'),
-    value: stats.value.total || 0,
-    valueClass: 'text-gray-900 dark:text-white',
-    icon: UserGroupIcon,
-    iconWrapClass: 'bg-blue-100 dark:bg-blue-900/30 group-hover:bg-blue-200/80 dark:group-hover:bg-blue-900/50',
-    iconClass: 'text-blue-600 dark:text-blue-400'
+    key: 'user',
+    label: t('settings.usersColUser'),
+    sortable: true,
+    visible: true,
+    showInTable: true,
+    visibility: { list: true },
+    minWidth: '16rem',
+    locked: true,
+    filterType: 'text',
+    dataType: 'text'
   },
   {
-    id: 'active',
-    label: t('settings.usersStatActive'),
-    value: stats.value.active || 0,
-    valueClass: 'text-green-600 dark:text-green-400',
-    icon: CheckCircleIcon,
-    iconWrapClass: 'bg-green-100 dark:bg-green-900/30 group-hover:bg-green-200/80 dark:group-hover:bg-green-900/50',
-    iconClass: 'text-green-600 dark:text-green-400'
+    key: 'roleId',
+    label: t('settings.usersColRole'),
+    sortable: true,
+    visible: true,
+    showInTable: true,
+    visibility: { list: true },
+    dataType: 'select',
+    filterType: 'select',
+    options: roleFilterOptions.value
   },
   {
-    id: 'invited',
-    label: t('settings.usersStatPending'),
-    value: stats.value.invited || 0,
-    valueClass: 'text-amber-600 dark:text-amber-400',
-    icon: EnvelopeIcon,
-    iconWrapClass: 'bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200/80 dark:group-hover:bg-amber-900/50',
-    iconClass: 'text-amber-600 dark:text-amber-400'
+    key: 'status',
+    label: t('settings.usersColStatus'),
+    sortable: true,
+    visible: true,
+    showInTable: true,
+    visibility: { list: true },
+    dataType: 'select',
+    filterType: 'select',
+    options: statusFilterOptions.value
   },
   {
-    id: 'inactive',
-    label: t('settings.usersStatInactive'),
-    value: stats.value.inactive || 0,
-    valueClass: 'text-gray-600 dark:text-gray-400',
-    icon: NoSymbolIcon,
-    iconWrapClass: 'bg-gray-100 dark:bg-gray-700 group-hover:bg-gray-200 dark:group-hover:bg-gray-600',
-    iconClass: 'text-gray-600 dark:text-gray-400'
+    key: 'userType',
+    label: t('settings.usersColType'),
+    sortable: false,
+    visible: true,
+    showInTable: true,
+    visibility: { list: true },
+    dataType: 'select',
+    filterType: 'select',
+    options: userTypeFilterOptions.value
   },
   {
-    id: 'admins',
-    label: t('settings.usersStatAdmins'),
-    value: stats.value.admins || 0,
-    valueClass: 'text-purple-600 dark:text-purple-400',
-    icon: ShieldCheckIcon,
-    iconWrapClass: 'bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200/80 dark:group-hover:bg-purple-900/50',
-    iconClass: 'text-purple-600 dark:text-purple-400'
+    key: 'lastLogin',
+    label: t('settings.usersColLastLogin'),
+    sortable: true,
+    visible: true,
+    showInTable: true,
+    visibility: { list: true },
+    dataType: 'date',
+    filterType: 'date'
+  },
+  {
+    key: 'createdAt',
+    label: t('settings.usersColJoined'),
+    sortable: true,
+    visible: true,
+    showInTable: true,
+    visibility: { list: true },
+    dataType: 'date',
+    filterType: 'date'
   }
 ]);
+
+const filterFields = computed(() => [
+  {
+    key: 'user',
+    label: t('settings.usersColUser'),
+    type: 'text',
+    filterType: 'text'
+  },
+  {
+    key: 'roleId',
+    label: t('settings.usersFilterRoleLabel'),
+    type: 'select',
+    filterType: 'select',
+    options: roleFilterOptions.value
+  },
+  {
+    key: 'status',
+    label: t('settings.usersColStatus'),
+    type: 'select',
+    filterType: 'select',
+    dataType: 'select',
+    options: statusFilterOptions.value
+  },
+  {
+    key: 'userType',
+    label: t('settings.usersColType'),
+    type: 'select',
+    filterType: 'select',
+    options: userTypeFilterOptions.value
+  },
+  {
+    key: 'lastLogin',
+    label: t('settings.usersColLastLogin'),
+    type: 'date',
+    filterType: 'date',
+    dataType: 'date'
+  },
+  {
+    key: 'createdAt',
+    label: t('settings.usersColJoined'),
+    type: 'date',
+    filterType: 'date',
+    dataType: 'date'
+  }
+]);
+
+const statsConfig = computed(() => [
+  { name: t('settings.usersStatTotal'), key: 'total', formatter: 'number' },
+  { name: t('settings.usersStatActive'), key: 'active', formatter: 'number' },
+  { name: t('settings.usersStatPending'), key: 'invited', formatter: 'number' },
+  { name: t('settings.usersStatInactive'), key: 'inactive', formatter: 'number' },
+  { name: t('settings.usersStatAdmins'), key: 'admins', formatter: 'number' }
+]);
+
+const pagination = computed(() => ({
+  currentPage: currentPage.value,
+  totalPages: Math.max(1, Math.ceil(totalUsers.value / perPage.value)),
+  totalRecords: totalUsers.value,
+  limit: perPage.value
+}));
+
+const externalFilters = computed(() => ({
+  user: filters.value.user,
+  ...filters.value,
+  ...(adminOnlyFilter.value ? { adminOnly: 'true' } : {})
+}));
 
 const hasActiveFilters = computed(() =>
   Boolean(
     searchQuery.value
-    || roleFilter.value
-    || (activeStatFilter.value && activeStatFilter.value !== 'all')
+    || filters.value.user
+    || filters.value.roleId
+    || filters.value.status
+    || filters.value.userType
+    || filters.value.lastLogin
+    || filters.value.createdAt
+    || adminOnlyFilter.value
   )
 );
+
+const appendDateFilterParams = (params, fieldKey, rawValue) => {
+  const parsed = dateFilterValueToParams(fieldKey, parseDateFilterValue(rawValue));
+  Object.entries(parsed).forEach(([key, value]) => {
+    if (value !== undefined && value !== '') {
+      params.append(key, String(value));
+    }
+  });
+};
 
 const userDisplayName = (user) => `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || '';
 
@@ -426,21 +481,27 @@ const buildListParams = () => {
     sortOrder: sortOrder.value
   });
 
-  if (searchQuery.value) {
-    params.append('search', searchQuery.value);
+  const term = String(searchQuery.value || filters.value.user || '').trim();
+  if (term) {
+    params.append('search', term);
   }
 
-  if (roleFilter.value) {
-    params.append('roleId', roleFilter.value);
+  if (filters.value.roleId) {
+    params.append('roleId', filters.value.roleId);
   }
 
-  if (activeStatFilter.value === 'active') {
-    params.append('status', 'active');
-  } else if (activeStatFilter.value === 'inactive') {
-    params.append('status', 'inactive');
-  } else if (activeStatFilter.value === 'invited') {
-    params.append('status', 'invited');
-  } else if (activeStatFilter.value === 'admins') {
+  if (filters.value.status) {
+    params.append('status', filters.value.status);
+  }
+
+  if (filters.value.userType) {
+    params.append('userType', filters.value.userType);
+  }
+
+  appendDateFilterParams(params, 'lastLogin', filters.value.lastLogin);
+  appendDateFilterParams(params, 'createdAt', filters.value.createdAt);
+
+  if (adminOnlyFilter.value) {
     params.append('adminOnly', 'true');
   }
 
@@ -448,7 +509,6 @@ const buildListParams = () => {
 };
 
 const fetchStats = async () => {
-  statsLoading.value = true;
   try {
     const response = await apiClient.get('/users?limit=500&page=1&sortBy=createdAt&sortOrder=desc');
     if (response.success) {
@@ -463,8 +523,6 @@ const fetchStats = async () => {
     }
   } catch (error) {
     console.error('Error fetching user stats:', error);
-  } finally {
-    statsLoading.value = false;
   }
 };
 
@@ -499,43 +557,74 @@ const refreshAll = async () => {
   await Promise.all([fetchUsers(), fetchStats()]);
 };
 
-const applyStatFilter = (filterId) => {
-  activeStatFilter.value = filterId;
+const handleStatClick = (statItem) => {
+  adminOnlyFilter.value = false;
+
+  switch (statItem.key) {
+    case 'total':
+      filters.value = { user: '', roleId: '', status: '', userType: '', lastLogin: '', createdAt: '' };
+      searchQuery.value = '';
+      break;
+    case 'active':
+      filters.value = { ...filters.value, status: 'active' };
+      break;
+    case 'inactive':
+      filters.value = { ...filters.value, status: 'inactive' };
+      break;
+    case 'invited':
+      filters.value = { ...filters.value, status: 'invited' };
+      break;
+    case 'admins':
+      filters.value = { ...filters.value, status: '' };
+      adminOnlyFilter.value = true;
+      break;
+    default:
+      break;
+  }
+
   currentPage.value = 1;
   fetchUsers();
 };
 
-const handleRoleFilterChange = () => {
-  currentPage.value = 1;
-  fetchUsers();
-};
+const ALL_FILTER_KEYS = ['user', 'roleId', 'status', 'userType', 'lastLogin', 'createdAt'];
 
-const clearFilters = () => {
-  searchQuery.value = '';
-  roleFilter.value = '';
-  activeStatFilter.value = 'all';
-  currentPage.value = 1;
-  fetchUsers();
-};
+const handleFiltersUpdate = (newFilters) => {
+  const resolved = resolveListFilters(newFilters ?? {});
+  const next = { ...filters.value };
 
-const handlePageChange = (page) => {
-  currentPage.value = page;
-  fetchUsers();
-};
+  for (const key of ALL_FILTER_KEYS) {
+    if (Object.prototype.hasOwnProperty.call(resolved, key)) {
+      next[key] = resolved[key] ?? '';
+    }
+  }
 
-const handlePerPageChange = (limit) => {
-  perPage.value = limit;
+  const clearedAllFilters = ALL_FILTER_KEYS.every(
+    (key) => Object.prototype.hasOwnProperty.call(resolved, key) && !resolved[key]
+  );
+  if (clearedAllFilters) {
+    adminOnlyFilter.value = false;
+  } else if (Object.prototype.hasOwnProperty.call(resolved, 'adminOnly')) {
+    adminOnlyFilter.value = Boolean(resolved.adminOnly);
+  }
+
+  filters.value = next;
   currentPage.value = 1;
   fetchUsers();
 };
 
 const handleSearch = (query) => {
-  searchQuery.value = query;
+  searchQuery.value = typeof query === 'string' ? query : '';
   currentPage.value = 1;
   fetchUsers();
 };
 
-const handleSort = ({ field, order }) => {
+const handlePaginationUpdate = (p) => {
+  if (p.currentPage) currentPage.value = p.currentPage;
+  if (p.limit) perPage.value = p.limit;
+  fetchUsers();
+};
+
+const handleSortUpdate = ({ sortField: field, sortOrder: order }) => {
   sortField.value = field;
   sortOrder.value = order;
   fetchUsers();
@@ -570,37 +659,20 @@ const handleUserUpdated = () => {
   refreshAll();
 };
 
-const handleDeleteUser = async (user) => {
-  if (!confirm(t('settings.usersDeleteConfirm', { name: userDisplayName(user) }))) return;
-
-  try {
-    const response = await apiClient.delete(`/users/${user._id}`);
-
-    if (response.success) {
-      notifySuccess(t('settings.usersDeletedSuccess'));
-      refreshAll();
-    } else {
-      notifyError(t('settings.usersDeleteFailed'));
-    }
-  } catch (error) {
-    console.error('Error deleting user:', error);
-    notifyError(t('settings.usersDeleteFailed'));
-  }
-};
-
-const handleBulkAction = ({ action, selectedRows }) => {
-  switch (action) {
+const handleBulkAction = async (actionId, selectedRows) => {
+  switch (actionId) {
     case 'bulk-activate':
-      bulkActivate(selectedRows);
+      await bulkActivate(selectedRows);
       break;
     case 'bulk-deactivate':
-      bulkDeactivate(selectedRows);
+      await bulkDeactivate(selectedRows);
       break;
     case 'bulk-delete':
-      bulkDelete(selectedRows);
+    case 'delete':
+      await bulkDelete(selectedRows);
       break;
     default:
-      console.warn('Unknown bulk action:', action);
+      console.warn('Unknown bulk action:', actionId);
   }
 };
 
@@ -652,12 +724,23 @@ const bulkDelete = async (selectedRows) => {
 const formatStatusLabel = (status) => {
   const normalized = status || 'active';
   const labels = {
-    active: t('settings.editUserStatusActive'),
-    inactive: t('settings.editUserStatusInactive'),
-    suspended: t('settings.editUserStatusSuspended'),
+    active: t('settings.usersStatActive'),
+    inactive: t('settings.usersStatInactive'),
+    suspended: t('settings.usersStatusSuspended'),
     invited: t('settings.usersStatusInvited')
   };
   return labels[normalized] || normalized;
+};
+
+const statusVariant = (status) => {
+  const normalized = status || 'active';
+  const variants = {
+    active: 'success',
+    inactive: 'default',
+    suspended: 'danger',
+    invited: 'warning'
+  };
+  return variants[normalized] || 'default';
 };
 
 const formatRoleLabel = (role) => {
@@ -665,50 +748,24 @@ const formatRoleLabel = (role) => {
   return role.charAt(0).toUpperCase() + role.slice(1);
 };
 
+const roleVariant = (role) => {
+  const variants = {
+    owner: 'primary',
+    admin: 'danger',
+    manager: 'info',
+    user: 'success',
+    viewer: 'default'
+  };
+  return variants[role?.toLowerCase()] || 'default';
+};
+
+const isExternalUserRow = (row) =>
+  String(row?.userType || '').toUpperCase() === 'EXTERNAL';
+
 const formatUserTypeLabel = (userType) => {
   if (userType === 'EXTERNAL') return t('settings.inviteExternal');
   if (userType === 'INTERNAL') return t('settings.inviteInternal');
   return userType || t('settings.inviteInternal');
-};
-
-const getRoleBadgeClass = (role) => {
-  const classes = {
-    owner: 'inline-flex items-center rounded-full bg-purple-100 px-2.5 py-1 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-    admin: 'inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300',
-    manager: 'inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-    user: 'inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300',
-    viewer: 'inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-  };
-  return classes[role?.toLowerCase()] || classes.user;
-};
-
-const getStatusBadgeClass = (status) => {
-  const normalized = status || 'active';
-  const classes = {
-    active: 'inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300',
-    inactive: 'inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-    suspended: 'inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300',
-    invited: 'inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-  };
-  return classes[normalized] || classes.active;
-};
-
-const getStatusDotClass = (status) => {
-  const normalized = status || 'active';
-  const classes = {
-    active: 'bg-green-500',
-    inactive: 'bg-gray-400',
-    suspended: 'bg-red-500',
-    invited: 'bg-amber-500'
-  };
-  return classes[normalized] || classes.active;
-};
-
-const getUserTypeBadgeClass = (userType) => {
-  if (userType === 'EXTERNAL') {
-    return 'inline-flex items-center rounded-md bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
-  }
-  return 'inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-300';
 };
 
 const formatAbsoluteDate = (date) => {

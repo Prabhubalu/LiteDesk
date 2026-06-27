@@ -136,6 +136,17 @@ const PeopleSchema = new Schema({
     default: {}
   },
 
+  // External User / Portal access (platform capability — not app participation)
+  portalAccess: {
+    enabled: { type: Boolean, default: false, index: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    enabledAt: { type: Date, default: null },
+    enabledBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    disabledAt: { type: Date, default: null },
+    disabledBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    lastSyncedAt: { type: Date, default: null }
+  },
+
   // Multi-app participation structure (appKey -> { role, lead_status, contact_status, ... })
   // SALES: role (Lead/Contact), lead_status, contact_status. Sole source of truth.
   participations: {

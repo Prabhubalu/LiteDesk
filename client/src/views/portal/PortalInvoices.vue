@@ -1,48 +1,46 @@
 <template>
-  <div class="space-y-4">
-    <div>
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ t('records.portalInvoicesTitle') }}</h2>
-      <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.portalInvoicesHint') }}</p>
+  <PortalPageShell
+    :title="t('records.portalInvoicesTitle')"
+    :subtitle="t('records.portalInvoicesHint')"
+  >
+    <div v-if="loading" class="space-y-3">
+      <div v-for="i in 3" :key="i" class="h-24" :class="PLATFORM_HOME_SKELETON_CLASS" />
     </div>
 
-    <div v-if="loading" class="text-sm text-gray-500">{{ t('records.portalInvoicesLoading') }}</div>
-
-    <div v-else-if="!invoices.length" class="text-sm text-gray-500">{{ t('records.portalInvoicesEmpty') }}</div>
-
-    <div v-else class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-      <table class="min-w-full text-sm">
-        <thead class="bg-gray-50 dark:bg-gray-800/60 text-xs uppercase text-gray-500">
-          <tr>
-            <th class="px-3 py-2 text-left">{{ t('records.portalInvoiceNumber') }}</th>
-            <th class="px-3 py-2 text-left">{{ t('records.portalInvoiceDue') }}</th>
-            <th class="px-3 py-2 text-right">{{ t('records.invoiceAmountDue') }}</th>
-            <th class="px-3 py-2 text-right">{{ t('records.portalPayNow') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="row in invoices"
-            :key="row._id"
-            class="border-t border-gray-100 dark:border-gray-800"
-          >
-            <td class="px-3 py-2 font-medium">{{ row.invoiceNumber }}</td>
-            <td class="px-3 py-2">{{ formatDate(row.dueDate) }}</td>
-            <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(row.amountDue, row.currency) }}</td>
-            <td class="px-3 py-2 text-right">
-              <button
-                type="button"
-                class="rounded-md bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 text-xs disabled:opacity-50"
-                :disabled="busyId === row._id"
-                @click="payNow(row)"
-              >
-                {{ t('records.portalPayNow') }}
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div
+      v-else-if="!invoices.length"
+      :class="['p-10 text-center sm:p-12', PLATFORM_HOME_CARD_CLASS]"
+    >
+      <h3 class="text-lg font-medium text-neutral-900 dark:text-white">{{ t('records.portalInvoicesEmpty') }}</h3>
     </div>
-  </div>
+
+    <div v-else class="space-y-3">
+      <div
+        v-for="row in invoices"
+        :key="row._id"
+        class="flex flex-col gap-4 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between"
+        :class="PLATFORM_HOME_CARD_CLASS"
+      >
+        <div class="min-w-0">
+          <p class="text-xs font-mono text-neutral-500 dark:text-neutral-400">{{ row.invoiceNumber }}</p>
+          <p class="mt-1 text-lg font-semibold tabular-nums text-neutral-900 dark:text-white">
+            {{ formatMoney(row.amountDue, row.currency) }}
+          </p>
+          <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+            {{ t('cases.portalDashboardDueDate', { date: formatDate(row.dueDate) }) }}
+          </p>
+        </div>
+        <button
+          type="button"
+          class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+          :disabled="busyId === row._id"
+          @click="payNow(row)"
+        >
+          {{ t('records.portalPayNow') }}
+        </button>
+      </div>
+    </div>
+  </PortalPageShell>
 </template>
 
 <script setup>
@@ -50,6 +48,8 @@ import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import portalApiClient from '@/utils/portalApiClient';
 import { useNotifications } from '@/composables/useNotifications';
+import PortalPageShell from '@/components/portal/PortalPageShell.vue';
+import { PLATFORM_HOME_CARD_CLASS, PLATFORM_HOME_SKELETON_CLASS } from '@/utils/platformHomeLayout';
 
 const { t } = useI18n();
 const notifications = useNotifications();
@@ -59,7 +59,11 @@ const busyId = ref('');
 
 function formatDate(v) {
   if (!v) return '—';
-  return new Date(v).toLocaleDateString();
+  return new Date(v).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
 }
 
 function formatMoney(amount, currency = 'USD') {

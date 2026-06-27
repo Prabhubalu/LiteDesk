@@ -69,6 +69,7 @@ export const useNotificationStore = defineStore('notifications', () => {
   function resolveIncomingNotificationAppKey(notification) {
     if (notification?.appKey) return String(notification.appKey);
     const eventType = String(notification?.eventType || '');
+    if (eventType.startsWith('CASE_PORTAL_')) return 'PORTAL';
     if (eventType.startsWith('CASE_')) return 'HELPDESK';
     if (eventType.startsWith('LIVE_CHAT_')) return 'PLATFORM';
     return currentAppKey();

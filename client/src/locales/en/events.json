@@ -1158,5 +1158,45 @@
   "sysFieldAppointmentMeetingLink": {
     "message": "Meeting link",
     "description": "Events list appointment field label"
+  },
+  "eventLocationSearchPlaceholder": {
+    "message": "Search address or paste meeting link",
+    "description": "Event location field search placeholder"
+  },
+  "eventLocationUseOrgAddress": {
+    "message": "Use organization address",
+    "description": "Prefill event location from linked organization"
+  },
+  "eventLocationLoadingSuggestions": {
+    "message": "Searching…",
+    "description": "Location autocomplete loading state"
+  },
+  "eventLocationNoResults": {
+    "message": "No places found — try a more specific address",
+    "description": "Location autocomplete empty state"
+  },
+  "eventLocationGeofenceRadius": {
+    "message": "Check-in radius: {meters}m",
+    "description": "Geofence radius slider label"
+  },
+  "eventLocationPinSet": {
+    "message": "Location pinned on map — drag to adjust",
+    "description": "Map pin confirmation hint"
+  },
+  "eventLocationSelectOrSearch": {
+    "message": "Select a place from search results to set the visit location",
+    "description": "Hint when geo is required but coordinates missing"
+  },
+  "eventLocationGeoRequiredHint": {
+    "message": "Geo is required — search for an address or use the organization address",
+    "description": "Validation error when geo required without coordinates"
+  },
+  "eventLocationVerified": {
+    "message": "Visit location set",
+    "description": "Success hint when coordinates are configured"
+  },
+  "eventLocationMapLoadError": {
+    "message": "Map preview unavailable — location will still be saved",
+    "description": "Leaflet load failure hint"
   }
 }

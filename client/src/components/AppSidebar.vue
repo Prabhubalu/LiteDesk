@@ -1,6 +1,7 @@
 <template>
   <nav
     class="sidebar-nav sidebar-nav--brand flex grow flex-col h-full overflow-hidden bg-primary-800 dark:bg-neutral-950"
+    :style="portalSidebarStyle"
     :class="[
       // Compact, stable widths: expanded 220px, collapsed 56px at a 16px root.
       collapsed ? 'w-[3.5rem]' : 'w-[13.75rem]',
@@ -190,8 +191,11 @@
         </div>
       </div>
 
-      <!-- Divider (12px ÷ 12 = 1rem gap above) -->
-      <div class="mt-[0.75rem] h-px bg-white/20 dark:bg-neutral-800" />
+      <!-- Divider between shell/core and app navigation (skip when shell section is empty) -->
+      <div
+        v-if="shellNavItems.length > 0 || sidebarStructure.coreModules.length > 0"
+        class="mt-[0.75rem] h-px bg-white/20 dark:bg-neutral-800"
+      />
     </div>
 
     <!-- App switcher + app navigation -->
@@ -358,7 +362,7 @@
  * ============================================================================
  */
 
-import { computed, h, ref, onMounted, onUnmounted } from 'vue';
+import { computed, h, ref, onMounted, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useColorMode } from '@/composables/useColorMode';
 
@@ -375,12 +379,15 @@ function appDisplayName(app: AppSummary) {
 }
 import { useRoute, useRouter } from 'vue-router';
 import { useSidebarState } from '@/composables/useSidebarState';
+import { usePortalBranding, PORTAL_DEFAULT_PRIMARY_COLOR } from '@/composables/usePortalBranding';
 import type { SidebarStructure, AppSummary } from '@/types/sidebar.types';
 import { useTabs } from '@/composables/useTabs';
 import clickOutside from '@/directives/clickOutside';
 import logoWordmarkLightUrl from '/assets/logo/Logo_word_light.svg';
 import logoLightUrl from '/assets/logo/Logo_light.svg';
 import {
+  BanknotesIcon,
+  BookOpenIcon,
   ChatBubbleLeftRightIcon,
   DocumentChartBarIcon,
   ExclamationTriangleIcon,
@@ -402,6 +409,8 @@ const props = defineProps<{
 // Router
 const route = useRoute();
 const router = useRouter();
+const { branding, loadBranding } = usePortalBranding();
+const isPortalRoute = computed(() => route.path.startsWith('/portal/'));
 const { openTab } = useTabs();
 
 // Sidebar state management
@@ -413,11 +422,25 @@ const appSwitcherDropdownRef = ref<HTMLElement | null>(null);
 
 // Logo in sidebar header: mark when expanded, glyph when collapsed (matches `html.dark`, including system + OS dark)
 const sidebarLogoUrl = computed(() => {
+  if (isPortalRoute.value && branding.value?.logoUrl) {
+    return branding.value.logoUrl;
+  }
   if (props.collapsed) {
     return logoLightUrl;
   }
   return logoWordmarkLightUrl;
 });
+
+const portalSidebarStyle = computed(() => {
+  if (!isPortalRoute.value) return undefined;
+  return { backgroundColor: branding.value?.primaryColor || PORTAL_DEFAULT_PRIMARY_COLOR };
+});
+
+watch(isPortalRoute, (active) => {
+  if (active) {
+    void loadBranding();
+  }
+}, { immediate: true });
 
 // Icon fills — light: brand primary-800 surface; dark: neutral shell with primary active accent
 const iconColors = computed(() => {
@@ -592,6 +615,11 @@ function getFigmaNavIcon(item: any) {
     const label = String(item.label || '').toLowerCase();
     const rawId = String(item.id || '');
 
+    if (route.startsWith('/portal/dashboard')) return FigmaHomeIcon;
+    if (route.startsWith('/portal/cases')) return wrapHeroIcon(LifebuoyIcon);
+    if (route.startsWith('/portal/invoices')) return wrapHeroIcon(BanknotesIcon);
+    if (route.startsWith('/portal/knowledge')) return wrapHeroIcon(BookOpenIcon);
+
     // App dashboard row (no moduleKey): route-specific analytics icons
     if (!item.moduleKey && label === 'dashboard') {
       if (route.startsWith('/audit/') || rawId.toUpperCase() === 'AUDIT') {
@@ -658,8 +686,14 @@ const searchSurface = computed(() => {
   return props.sidebarStructure.shell.find((i) => i.kind === 'surface' && i.id === 'search');
 });
 
+const PORTAL_HIDDEN_SHELL_IDS = new Set(['home', 'inbox', 'approvals', 'attention']);
+
 const shellNavItems = computed(() => {
-  return props.sidebarStructure.shell.filter((i) => !(i.kind === 'surface' && i.id === 'search'));
+  let items = props.sidebarStructure.shell.filter((i) => !(i.kind === 'surface' && i.id === 'search'));
+  if (isPortalRoute.value) {
+    items = items.filter((i) => !PORTAL_HIDDEN_SHELL_IDS.has(i.id));
+  }
+  return items;
 });
 
 function switchAppLens(nextAppId: string): void {

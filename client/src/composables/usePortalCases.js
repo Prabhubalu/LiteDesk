@@ -30,10 +30,23 @@ export function usePortalCases() {
     });
   }
 
+  async function markCaseRead(caseId) {
+    return portalApiClient.post(`/portal/cases/${encodeURIComponent(caseId)}/read`);
+  }
+
+  async function submitCsat(caseId, { score, comment } = {}) {
+    return portalApiClient.post(`/portal/cases/${encodeURIComponent(caseId)}/csat`, {
+      score,
+      comment
+    });
+  }
+
   return {
     listCases,
     getCase,
     createCase,
-    replyToCase
+    replyToCase,
+    markCaseRead,
+    submitCsat
   };
 }

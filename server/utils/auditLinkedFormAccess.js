@@ -14,12 +14,19 @@ const AUDIT_EVENT_TYPES = [
     'External Audit Beat'
 ];
 
+function toRefIdString(value) {
+    if (value == null) return null;
+    if (typeof value === 'string') return value;
+    if (value._id != null) return String(value._id);
+    return value.toString ? value.toString() : String(value);
+}
+
 function assertUserIsAuditEventStakeholder(event, userId) {
     if (!event || !userId) return false;
-    const uid = userId.toString ? userId.toString() : String(userId);
+    const uid = toRefIdString(userId);
     const ids = [event.eventOwnerId, event.auditorId, event.reviewerId, event.correctiveOwnerId]
-        .filter(Boolean)
-        .map((id) => (id && id.toString ? id.toString() : String(id)));
+        .map(toRefIdString)
+        .filter(Boolean);
     return ids.includes(uid);
 }
 

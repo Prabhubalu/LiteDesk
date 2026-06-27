@@ -16,6 +16,13 @@ const {
     passwordResetLimiter 
 } = require('../middleware/rateLimitMiddleware');
 const { progressiveAuthThrottle } = require('../middleware/progressiveAuthThrottleMiddleware');
+const { protect } = require('../middleware/authMiddleware');
+const {
+    selectPortal,
+    switchPortal,
+    setDefaultExternalRole,
+    listPortals
+} = require('../controllers/portalAuthController');
 const router = express.Router();
 
 // Test endpoint to verify code version
@@ -39,5 +46,10 @@ router.post('/verify-email/confirm', passwordResetLimiter, confirmEmailVerificat
 router.post('/forgot-password', passwordResetLimiter, forgotPassword);
 router.get('/reset-password/validate', passwordResetLimiter, validateResetPassword);
 router.post('/reset-password', passwordResetLimiter, resetPassword);
+
+router.get('/portal/list', protect, listPortals);
+router.post('/portal/select', protect, selectPortal);
+router.post('/portal/switch', protect, switchPortal);
+router.patch('/portal/default-role', protect, setDefaultExternalRole);
 
 module.exports = router;

@@ -96,12 +96,141 @@ function buildMasterUserListQuery(organizationId, scopedQuery) {
     return masterQuery;
 }
 
+function buildDateFieldQuery(fieldPrefix, queryParams) {
+    const now = new Date();
+    const preset = queryParams[`${fieldPrefix}Preset`];
+    const op = queryParams[`${fieldPrefix}Op`];
+    const rawSingle = queryParams[fieldPrefix];
+    const singleDate = (rawSingle && String(rawSingle) !== 'null') ? rawSingle : null;
+    const from = (queryParams[`${fieldPrefix}From`] && String(queryParams[`${fieldPrefix}From`]) !== 'null')
+        ? queryParams[`${fieldPrefix}From`]
+        : null;
+    const to = (queryParams[`${fieldPrefix}To`] && String(queryParams[`${fieldPrefix}To`]) !== 'null')
+        ? queryParams[`${fieldPrefix}To`]
+        : null;
+    const days = parseInt(queryParams[`${fieldPrefix}Days`], 10);
+
+    if (preset) {
+        let start;
+        let end;
+        if (preset === 'today') {
+            start = new Date(now);
+            start.setHours(0, 0, 0, 0);
+            end = new Date(start);
+            end.setDate(end.getDate() + 1);
+            end.setMilliseconds(-1);
+        } else if (preset === 'thisWeek') {
+            const day = now.getDay();
+            start = new Date(now);
+            start.setDate(now.getDate() - day);
+            start.setHours(0, 0, 0, 0);
+            end = new Date(start);
+            end.setDate(start.getDate() + 7);
+            end.setMilliseconds(-1);
+        } else if (preset === 'thisMonth') {
+            start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+            end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        } else if (preset === 'thisQuarter') {
+            const q = Math.floor(now.getMonth() / 3) + 1;
+            start = new Date(now.getFullYear(), (q - 1) * 3, 1, 0, 0, 0, 0);
+            end = new Date(now.getFullYear(), q * 3, 0, 23, 59, 59, 999);
+        } else if (preset === 'thisYear') {
+            start = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+            end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+        } else {
+            return null;
+        }
+        return { $gte: start, $lte: end };
+    }
+
+    if (op === 'empty') {
+        return 'EMPTY';
+    }
+    if (op === 'notEmpty') {
+        return { $exists: true, $ne: null };
+    }
+    if (op === 'lastDays' && !Number.isNaN(days) && days >= 1) {
+        const end = new Date(now);
+        const start = new Date(now);
+        start.setDate(start.getDate() - days);
+        start.setHours(0, 0, 0, 0);
+        return { $gte: start, $lte: end };
+    }
+    if (op === 'nextDays' && !Number.isNaN(days) && days >= 1) {
+        const start = new Date(now);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(now);
+        end.setDate(end.getDate() + days);
+        end.setHours(23, 59, 59, 999);
+        return { $gte: start, $lte: end };
+    }
+    if (op === 'on' && singleDate) {
+        const d = new Date(singleDate);
+        const start = new Date(d);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(d);
+        end.setHours(23, 59, 59, 999);
+        return { $gte: start, $lte: end };
+    }
+    if (op === 'before' && (singleDate || to)) {
+        const dateStr = singleDate || to;
+        const d = new Date(dateStr);
+        d.setHours(23, 59, 59, 999);
+        return { $lte: d };
+    }
+    if (op === 'after' && (singleDate || from)) {
+        const dateStr = singleDate || from;
+        const d = new Date(dateStr);
+        d.setHours(0, 0, 0, 0);
+        return { $gte: d };
+    }
+    if (op === 'between' && from && to) {
+        const start = new Date(from);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(to);
+        end.setHours(23, 59, 59, 999);
+        return { $gte: start, $lte: end };
+    }
+
+    if (singleDate && !op) {
+        const date = new Date(singleDate);
+        if (Number.isNaN(date.getTime())) return null;
+        const start = new Date(date);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(date);
+        end.setHours(23, 59, 59, 999);
+        return { $gte: start, $lte: end };
+    }
+    return null;
+}
+
+function appendDateFieldCondition(andConditions, fieldName, queryParams, fieldPrefix) {
+    const condition = buildDateFieldQuery(fieldPrefix, queryParams);
+    if (condition === 'EMPTY') {
+        andConditions.push({
+            $or: [
+                { [fieldName]: { $exists: false } },
+                { [fieldName]: null }
+            ]
+        });
+        return;
+    }
+    if (condition) {
+        andConditions.push({ [fieldName]: condition });
+    }
+}
+
+function isExternalUserType(userType) {
+    return String(userType || '').toUpperCase() === 'EXTERNAL';
+}
+
 async function attachRoleSummaries(users = []) {
     const list = Array.isArray(users) ? users : [];
     if (list.length === 0) return list;
 
     const roleIds = Array.from(new Set(
         list
+            .filter((u) => !isExternalUserType(u?.userType))
             .map((u) => u?.roleId?._id || u?.roleId)
             .filter((id) => id && mongoose.Types.ObjectId.isValid(id))
             .map((id) => String(id))
@@ -110,16 +239,93 @@ async function attachRoleSummaries(users = []) {
     if (roleIds.length === 0) return list;
 
     const roles = await Role.find({ _id: { $in: roleIds } })
-        .select('_id name description color icon level permissions')
+        .select('_id name description color icon level permissions userType')
         .lean();
     const roleMap = new Map(roles.map((r) => [String(r._id), r]));
 
     return list.map((u) => {
+        if (isExternalUserType(u?.userType)) {
+            return u;
+        }
         const rid = u?.roleId?._id || u?.roleId;
         if (!rid) return u;
         const role = roleMap.get(String(rid));
         if (!role) return u;
         return { ...u, roleId: role };
+    });
+}
+
+async function attachExternalRoleSummaries(users = [], organization = null) {
+    let list = Array.isArray(users) ? users : [];
+    const externalUsers = list.filter((u) => isExternalUserType(u?.userType));
+    if (externalUsers.length === 0) return list;
+
+    const externalsMissingAssignments = externalUsers.filter((user) =>
+        !(user.externalRoleAssignments || []).some(
+            (assignment) => String(assignment?.status || 'ACTIVE').toUpperCase() === 'ACTIVE'
+        )
+    );
+
+    if (organization && externalsMissingAssignments.length > 0) {
+        const ScopedUser = await getScopedUserModel(organization);
+        const freshRows = await ScopedUser.find({
+            _id: { $in: externalsMissingAssignments.map((user) => user._id) }
+        })
+            .select('externalRoleAssignments')
+            .lean();
+        const freshById = new Map(freshRows.map((row) => [String(row._id), row]));
+        list = list.map((user) => {
+            if (!isExternalUserType(user?.userType)) return user;
+            const fresh = freshById.get(String(user._id));
+            if (!fresh?.externalRoleAssignments?.length) return user;
+            return { ...user, externalRoleAssignments: fresh.externalRoleAssignments };
+        });
+    }
+
+    const organizationId = organization?._id || organization;
+    const roleIdSet = new Set();
+    for (const user of list.filter((u) => isExternalUserType(u?.userType))) {
+        for (const assignment of user.externalRoleAssignments || []) {
+            if (String(assignment?.status || 'ACTIVE').toUpperCase() !== 'ACTIVE') continue;
+            const roleId = assignment?.roleId?._id || assignment?.roleId;
+            if (roleId && mongoose.Types.ObjectId.isValid(String(roleId))) {
+                roleIdSet.add(String(roleId));
+            }
+        }
+    }
+
+    /** @type {Map<string, object>} */
+    const roleMap = new Map();
+    if (roleIdSet.size > 0) {
+        const roleQuery = { _id: { $in: [...roleIdSet] } };
+        if (organizationId) {
+            roleQuery.organizationId = organizationId;
+        }
+        const roles = await Role.find(roleQuery)
+            .select('_id name description color icon userType appEntitlements profileId')
+            .populate('profileId', 'name')
+            .lean();
+        for (const role of roles) {
+            roleMap.set(String(role._id), role);
+        }
+    }
+
+    return list.map((user) => {
+        if (!isExternalUserType(user?.userType)) return user;
+
+        const externalRoles = (user.externalRoleAssignments || [])
+            .filter((assignment) => String(assignment?.status || 'ACTIVE').toUpperCase() === 'ACTIVE')
+            .map((assignment) => {
+                const roleId = assignment?.roleId?._id || assignment?.roleId;
+                return roleMap.get(String(roleId));
+            })
+            .filter(Boolean);
+
+        return {
+            ...user,
+            externalRoles,
+            roleId: null
+        };
     });
 }
 
@@ -134,6 +340,7 @@ exports.getUsers = async (req, res) => {
             sortOrder = 'desc',
             roleId = '',
             status = '',
+            userType = '',
             adminOnly = ''
         } = req.query;
 
@@ -175,6 +382,24 @@ exports.getUsers = async (req, res) => {
                 andConditions.push({ status });
             }
         }
+
+        if (userType) {
+            const normalizedType = String(userType).toUpperCase();
+            if (normalizedType === 'INTERNAL') {
+                andConditions.push({
+                    $or: [
+                        { userType: 'INTERNAL' },
+                        { userType: { $exists: false } },
+                        { userType: null }
+                    ]
+                });
+            } else {
+                andConditions.push({ userType: normalizedType });
+            }
+        }
+
+        appendDateFieldCondition(andConditions, 'lastLogin', req.query, 'lastLogin');
+        appendDateFieldCondition(andConditions, 'createdAt', req.query, 'createdAt');
 
         if (adminOnly === 'true') {
             andConditions.push({
@@ -220,7 +445,11 @@ exports.getUsers = async (req, res) => {
             dedupedUsers.push(row);
         });
 
-        const skipEmptyListFallback = Boolean(roleId || search || status || adminOnly);
+        const skipEmptyListFallback = Boolean(
+            roleId || search || status || userType || adminOnly
+            || req.query.lastLoginPreset || req.query.lastLoginOp || req.query.lastLogin
+            || req.query.createdAtPreset || req.query.createdAtOp || req.query.createdAt
+        );
 
         // Safety fallback: ensure currently-authenticated user is visible in Users list.
         // Skip for filtered queries (e.g. roleId) — empty results are valid.
@@ -246,9 +475,10 @@ exports.getUsers = async (req, res) => {
         const end = start + Number(limit);
         const pagedUsers = dedupedUsers.slice(start, end);
         const usersWithRoles = await attachRoleSummaries(pagedUsers);
-        let usersWithEffectivePermissions = usersWithRoles;
+        const usersWithExternalRoles = await attachExternalRoleSummaries(usersWithRoles, organization);
+        let usersWithEffectivePermissions = usersWithExternalRoles;
         try {
-            usersWithEffectivePermissions = await enrichLeanUsersWithEffectiveCRMPermissions(usersWithRoles);
+            usersWithEffectivePermissions = await enrichLeanUsersWithEffectiveCRMPermissions(usersWithExternalRoles);
         } catch (permissionProjectionError) {
             console.warn('[getUsers] Permission enrichment failed, returning raw users:', permissionProjectionError.message);
         }
@@ -484,7 +714,10 @@ exports.getUser = async (req, res) => {
             });
         }
 
-        const [userWithRole] = await attachRoleSummaries([user]);
+        const [userWithRole] = await attachExternalRoleSummaries(
+            await attachRoleSummaries([user]),
+            organization
+        );
         const hydratedUser = new User(userWithRole);
         hydratedUser.isNew = false;
         await materializeEffectiveCRMEnvelopeOnUser(hydratedUser);
@@ -1177,8 +1410,24 @@ exports.updateUser = async (req, res) => {
             if (status !== undefined) user.status = status;
         }
         
+        const externalUser = isExternalUserType(user.userType);
+        if (externalUser && roleId !== undefined && roleId !== null && String(roleId).trim() !== '') {
+            return res.status(400).json({
+                success: false,
+                message: 'External portal users use portal roles managed from the linked People record',
+                code: 'EXTERNAL_USER_ROLE_READONLY'
+            });
+        }
+        if (externalUser && appAccess !== undefined) {
+            return res.status(400).json({
+                success: false,
+                message: 'External portal app access is derived from portal roles',
+                code: 'EXTERNAL_USER_APP_ACCESS_READONLY'
+            });
+        }
+
         // Update role if roleId is provided (new dynamic role system)
-        if (!user.isOwner && roleId !== undefined && roleId !== user.roleId?.toString()) {
+        if (!user.isOwner && !externalUser && roleId !== undefined && roleId !== user.roleId?.toString()) {
             const Role = require('../models/Role');
             const roleDoc = await Role.findById(roleId);
             
@@ -1467,7 +1716,10 @@ exports.getProfile = async (req, res) => {
             });
         }
 
-        await materializeEffectiveCRMEnvelopeOnUser(user);
+        await materializeEffectiveCRMEnvelopeOnUser(user, {
+            organization,
+            activeExternalRoleId: req.user.activeExternalRoleId || req.user._activeExternalRoleId || null
+        });
         const sanitizedUser = sanitizeUserResponsePayload(user);
         const [userWithRole] = await attachRoleSummaries([sanitizedUser]);
 
@@ -1581,6 +1833,7 @@ exports.changePassword = async (req, res) => {
         // Hash new password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedPassword;
+        user.mustChangePassword = false;
         await user.save();
 
         res.json({

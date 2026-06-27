@@ -42,33 +42,24 @@
             :class="[
               'box-border flex min-h-0 flex-1 flex-col overflow-x-hidden',
               useFillHeightContent ? 'relative' : '',
-              useViewportLock
-                ? isProcessDesignerRoute || isInboxRoute || isFormCreateRoute
-                  ? 'min-h-0 overflow-hidden pt-16 md:pt-[7.5rem] lg:pt-0 lg:px-0 lg:pb-0 lg:bg-white lg:dark:bg-neutral-900'
-                  : [
-                      'min-h-0 overflow-hidden px-4 pb-4 pt-16 md:pt-[7.5rem]',
-                      isSettingsRoute
-                        ? 'lg:px-0 lg:pb-0 lg:pt-0 lg:bg-white lg:dark:bg-neutral-900'
-                        : 'lg:px-6 lg:pb-6 lg:pt-0 lg:bg-white lg:dark:bg-neutral-900',
-                    ]
-                : isRecordDetailRoute
-                  ? 'min-h-0 overflow-hidden pt-16 md:pt-[7.5rem] lg:pt-0 lg:bg-white lg:dark:bg-neutral-900'
-                  : 'mt-16 overflow-y-auto p-4 md:mt-30 lg:mt-0 lg:overflow-y-auto lg:p-6 lg:bg-white lg:dark:bg-neutral-900'
+              useFillHeightContent
+                ? 'min-h-0 overflow-hidden pt-16 md:pt-[7.5rem] lg:pt-0 lg:bg-white lg:dark:bg-neutral-900'
+                : 'mt-16 overflow-y-auto md:mt-30 lg:mt-0 lg:overflow-y-auto lg:bg-white lg:dark:bg-neutral-900'
             ]"
             :style="{ '--table-sticky-offset': tableStickyOffset }"
           >
-            <EmailVerificationBanner
-              v-if="!isRecordDetailRoute && !isProcessDesignerRoute && !isInboxRoute && !isFormCreateRoute"
-              class="-mx-4 mb-2 lg:-mx-6"
-            />
-
             <div
               :class="[
                 useFillHeightContent
                   ? 'relative flex h-full min-h-0 flex-1 flex-col overflow-hidden'
-                  : 'block w-full flex-none'
+                  : 'block w-full flex-none p-4 lg:p-6'
               ]"
             >
+              <EmailVerificationBanner
+                v-if="!isRecordDetailRoute && !isProcessDesignerRoute && !isInboxRoute && !isFormCreateRoute"
+                class="mb-2"
+              />
+
               <RouterView v-slot="{ Component }">
                 <keep-alive :max="5">
                   <component
@@ -134,6 +125,7 @@ const routerViewKey = computed(() => {
   if (recordId && typeof recordId === 'string') {
     if (
       name === 'helpdesk-cases-detail' ||
+      name === 'portal-case-detail' ||
       name === 'deal-detail' ||
       name === 'task-detail' ||
       name === 'form-detail'
@@ -173,7 +165,8 @@ const isRecordDetailRoute = computed(() => {
   const path = route.path || '';
   return /^\/(people|deals|tasks|events|items|imports|documents|organizations|groups|responses)\/[^/]+$/.test(path)
     || /^\/forms\/[^/]+\/detail$/.test(path)
-    || /^\/forms\/[^/]+\/responses\/[^/]+$/.test(path);
+    || /^\/forms\/[^/]+\/responses\/[^/]+$/.test(path)
+    || /^\/audit\/forms\/[^/]+\/responses\/[^/]+$/.test(path);
 });
 
 const useFillHeightContent = computed(
@@ -192,8 +185,8 @@ const { collapsed: sidebarCollapsed } = useSidebarState();
 watch(sidebarCollapsed, () => queueContentOffsetUpdate());
 
 const DEFAULT_CONTENT_OFFSET = 0;
-const EXTRA_OFFSET_LIGHT = '2rem';
-const EXTRA_OFFSET_LARGE = '2rem';
+const EXTRA_OFFSET_LIGHT = '0px';
+const EXTRA_OFFSET_LARGE = '0px';
 const contentWrapperRef = ref(null);
 const tableStickyOffset = ref(`calc(${DEFAULT_CONTENT_OFFSET}px + ${EXTRA_OFFSET_LIGHT})`);
 const TABLET_RECORD_COLLAPSE_MAX_WIDTH = 1024;
@@ -211,7 +204,9 @@ const RECORD_DETAIL_ROUTE_NAMES = new Set([
   'response-detail',
   'form-detail',
   'form-response-detail',
+  'audit-form-response-detail',
   'helpdesk-cases-detail',
+  'portal-case-detail',
   'quote-detail',
   'sales-order-detail',
   'invoice-detail',

@@ -914,5 +914,421 @@
   "portalCasesNotFound": {
     "message": "Case not found or you do not have access.",
     "description": "404 message"
+  },
+  "portalDashboardWelcome": {
+    "message": "Welcome back, {name}!",
+    "description": "Portal customer dashboard greeting"
+  },
+  "portalDashboardSubtitle": {
+    "message": "View your support cases, invoices, and help resources in one place.",
+    "description": "Portal customer dashboard subtitle"
+  },
+  "portalDashboardOpenCases": {
+    "message": "Open support cases",
+    "description": "Portal dashboard stat label"
+  },
+  "portalDashboardTotalCases": {
+    "message": "Total support cases",
+    "description": "Portal dashboard stat label"
+  },
+  "portalDashboardOpenInvoices": {
+    "message": "Open invoices",
+    "description": "Portal dashboard stat label"
+  },
+  "portalDashboardSupportHint": {
+    "message": "Open or track a support request with your team.",
+    "description": "Portal dashboard quick link hint"
+  },
+  "portalDashboardInvoicesLink": {
+    "message": "Invoices",
+    "description": "Portal dashboard invoices link title"
+  },
+  "portalDashboardInvoicesHint": {
+    "message": "Review balances and pay outstanding invoices.",
+    "description": "Portal dashboard invoices link hint"
+  },
+  "portalDashboardKnowledgeLink": {
+    "message": "Help Center",
+    "description": "Portal dashboard knowledge link title"
+  },
+  "portalDashboardKnowledgeHint": {
+    "message": "Browse articles and self-service guides.",
+    "description": "Portal dashboard knowledge link hint"
+  },
+  "portalDashboardRecentCases": {
+    "message": "Recent support cases",
+    "description": "Portal dashboard recent activity heading"
+  },
+  "portalDashboardViewAllCases": {
+    "message": "View all cases",
+    "description": "Portal dashboard view all link"
+  },
+  "portalDashboardNoCasesYet": {
+    "message": "No support cases yet",
+    "description": "Portal dashboard empty state title"
+  },
+  "portalDashboardNoCasesHint": {
+    "message": "When you contact support, your cases will appear here.",
+    "description": "Portal dashboard empty state hint"
+  },
+  "portalDashboardLoadFailed": {
+    "message": "Failed to load your portal dashboard. Please try again later.",
+    "description": "Portal dashboard load error"
+  },
+  "portalDashboardSearchHelpPlaceholder": {
+    "message": "Search help articles…",
+    "description": "Portal dashboard help search placeholder"
+  },
+  "portalDashboardBrowseHelp": {
+    "message": "Browse help center",
+    "description": "Portal dashboard empty state secondary CTA"
+  },
+  "portalDashboardOpenCasesClear": {
+    "message": "All clear",
+    "description": "Portal dashboard stat when no open cases"
+  },
+  "portalDashboardOpenInvoicesClear": {
+    "message": "Nothing due",
+    "description": "Portal dashboard stat when no open invoices"
+  },
+  "portalDashboardSignalOpenCases": {
+    "message": "{count} open support case | {count} open support cases",
+    "description": "Portal dashboard brief signal for open cases"
+  },
+  "portalDashboardSignalOpenInvoices": {
+    "message": "{count} open invoice | {count} open invoices",
+    "description": "Portal dashboard brief signal for open invoices"
+  },
+  "portalDashboardSignalAwaitingReply": {
+    "message": "{count} case needs your reply | {count} cases need your reply",
+    "description": "Portal dashboard signal when support is waiting on the customer"
+  },
+  "portalDashboardSignalOpenActions": {
+    "message": "{count} open corrective action | {count} open corrective actions",
+    "description": "Portal dashboard signal for open audit corrective actions"
+  },
+  "portalDashboardSignalOpenAudits": {
+    "message": "{count} open audit | {count} open audits",
+    "description": "Portal dashboard signal for open audits"
+  },
+  "portalDashboardSubtitleAuditor": {
+    "message": "Track assigned audits, corrective actions, and compliance work in one place.",
+    "description": "Portal dashboard subtitle for audit-focused external roles"
+  },
+  "portalDashboardOpenActions": {
+    "message": "Open corrective actions",
+    "description": "Portal dashboard stat label for open corrective actions"
+  },
+  "portalDashboardOpenActionsClear": {
+    "message": "All complete",
+    "description": "Portal dashboard stat when no open corrective actions"
+  },
+  "portalDashboardOpenAudits": {
+    "message": "Open audits",
+    "description": "Portal dashboard stat label for open audits"
+  },
+  "portalDashboardOpenAuditsClear": {
+    "message": "All closed",
+    "description": "Portal dashboard stat when no open audits"
+  },
+  "portalDashboardRecentInvoices": {
+    "message": "Recent invoices",
+    "description": "Portal dashboard recent invoices heading"
+  },
+  "portalDashboardViewAllInvoices": {
+    "message": "View all invoices",
+    "description": "Portal dashboard view all invoices link"
+  },
+  "portalDashboardRecentAudits": {
+    "message": "Recent audits",
+    "description": "Portal dashboard recent audits heading"
+  },
+  "portalDashboardViewAllAudits": {
+    "message": "View all audits",
+    "description": "Portal dashboard view all audits link"
+  },
+  "portalDashboardNoAuditsYet": {
+    "message": "No audits yet",
+    "description": "Portal dashboard empty audits title"
+  },
+  "portalDashboardNoAuditsHint": {
+    "message": "When an audit is assigned to your organization, it will appear here.",
+    "description": "Portal dashboard empty audits hint"
+  },
+  "portalDashboardNoInvoicesYet": {
+    "message": "No invoices due",
+    "description": "Portal dashboard empty invoices title"
+  },
+  "portalDashboardNoInvoicesHint": {
+    "message": "Outstanding invoices will appear here when they are issued.",
+    "description": "Portal dashboard empty invoices hint"
+  },
+  "portalDashboardAuditsLink": {
+    "message": "Audits",
+    "description": "Portal dashboard audits quick link title"
+  },
+  "portalDashboardAuditsHint": {
+    "message": "Review audit status and findings for your organization.",
+    "description": "Portal dashboard audits quick link hint"
+  },
+  "portalDashboardActionsLink": {
+    "message": "Corrective actions",
+    "description": "Portal dashboard actions quick link title"
+  },
+  "portalDashboardActionsHint": {
+    "message": "Complete assigned corrective actions and upload evidence.",
+    "description": "Portal dashboard actions quick link hint"
+  },
+  "portalDashboardNeedsReply": {
+    "message": "Needs reply",
+    "description": "Portal dashboard case row badge when waiting for customer"
+  },
+  "portalDashboardDueDate": {
+    "message": "Due {date}",
+    "description": "Portal dashboard invoice due date label"
+  },
+  "portalDashboardChecklistTitle": {
+    "message": "Get started with your portal",
+    "description": "Portal dashboard first-time checklist title"
+  },
+  "portalDashboardChecklistTitleAuditor": {
+    "message": "Get started with audits",
+    "description": "Portal dashboard auditor checklist title"
+  },
+  "portalDashboardChecklistProgress": {
+    "message": "{completed} of {total} complete",
+    "description": "Portal dashboard checklist progress label"
+  },
+  "portalDashboardChecklistDismiss": {
+    "message": "Dismiss",
+    "description": "Portal dashboard checklist dismiss action"
+  },
+  "portalDashboardChecklistCreateCase": {
+    "message": "Create your first support case",
+    "description": "Portal checklist step — create case"
+  },
+  "portalDashboardChecklistBrowseHelp": {
+    "message": "Browse the help center",
+    "description": "Portal checklist step — browse help"
+  },
+  "portalDashboardChecklistViewInvoices": {
+    "message": "Review your invoices",
+    "description": "Portal checklist step — view invoices"
+  },
+  "portalDashboardChecklistViewAudits": {
+    "message": "Review assigned audits",
+    "description": "Portal checklist step — view audits"
+  },
+  "portalDashboardChecklistReviewActions": {
+    "message": "Open corrective actions",
+    "description": "Portal checklist step — corrective actions"
+  },
+  "portalDashboardSuggestedArticles": {
+    "message": "Suggested help articles",
+    "description": "Portal dashboard suggested articles section title"
+  },
+  "portalDashboardSuggestedArticlesHint": {
+    "message": "Popular guides to help you get started quickly.",
+    "description": "Portal dashboard suggested articles subtitle"
+  },
+  "portalDashboardViewHelpCenter": {
+    "message": "View all articles",
+    "description": "Portal dashboard link to full help center"
+  },
+  "portalCasesSearchPlaceholder": {
+    "message": "Search cases…",
+    "description": "Portal cases list search placeholder"
+  },
+  "portalCasesFilterAll": {
+    "message": "All",
+    "description": "Portal cases filter — all"
+  },
+  "portalCasesFilterOpen": {
+    "message": "Open",
+    "description": "Portal cases filter — open"
+  },
+  "portalCasesFilterClosed": {
+    "message": "Closed",
+    "description": "Portal cases filter — closed"
+  },
+  "portalCasesFilterAction": {
+    "message": "Needs reply",
+    "description": "Portal cases filter — waiting on customer"
+  },
+  "portalCasesNoMatches": {
+    "message": "No cases match your search or filter.",
+    "description": "Portal cases empty filter result"
+  },
+  "portalCasesUnread": {
+    "message": "Unread",
+    "description": "Portal case unread indicator label"
+  },
+  "portalCasesCreateIntro": {
+    "message": "Describe your issue and we will route it to the right team.",
+    "description": "Portal create case drawer intro"
+  },
+  "portalCasesKbSuggestionsTitle": {
+    "message": "These articles may help",
+    "description": "KB deflection section title in create case drawer"
+  },
+  "portalCasesKbSuggestionsHint": {
+    "message": "Check the help center before opening a case — you may find an instant answer.",
+    "description": "KB deflection section hint"
+  },
+  "portalCasesDropFiles": {
+    "message": "Drag and drop files here",
+    "description": "Portal reply attachment drop zone"
+  },
+  "portalCasesChooseFiles": {
+    "message": "Choose files",
+    "description": "Portal reply attachment picker"
+  },
+  "portalCasesReplyHint": {
+    "message": "Press ⌘+Enter or Ctrl+Enter to send quickly.",
+    "description": "Portal reply keyboard shortcut hint"
+  },
+  "portalCaseStatusNew": {
+    "message": "Submitted",
+    "description": "Portal-friendly case status label"
+  },
+  "portalCaseStatusInProgress": {
+    "message": "In progress",
+    "description": "Portal-friendly case status label"
+  },
+  "portalCaseStatusWaitingOnYou": {
+    "message": "Waiting on you",
+    "description": "Portal-friendly case status label"
+  },
+  "portalCaseStatusResolved": {
+    "message": "Resolved",
+    "description": "Portal-friendly case status label"
+  },
+  "portalCaseStatusClosed": {
+    "message": "Closed",
+    "description": "Portal-friendly case status label"
+  },
+  "portalCaseHintNew": {
+    "message": "Your request has been received. Our team will review it shortly.",
+    "description": "Portal case detail status hint"
+  },
+  "portalCaseHintInProgress": {
+    "message": "Our team is working on your request.",
+    "description": "Portal case detail status hint"
+  },
+  "portalCaseHintWaitingOnYou": {
+    "message": "We need a reply from you to continue.",
+    "description": "Portal case detail status hint"
+  },
+  "portalCaseHintClosed": {
+    "message": "This case is closed. Open a new case if you need further help.",
+    "description": "Portal case detail status hint"
+  },
+  "portalCasePriorityLow": {
+    "message": "Low",
+    "description": "Portal create case priority option"
+  },
+  "portalCasePriorityMedium": {
+    "message": "Medium",
+    "description": "Portal create case priority option"
+  },
+  "portalCasePriorityHigh": {
+    "message": "High",
+    "description": "Portal create case priority option"
+  },
+  "portalCasePriorityCritical": {
+    "message": "Critical",
+    "description": "Portal create case priority option"
+  },
+  "portalBrandingSupport": {
+    "message": "Support: {email}",
+    "description": "Portal branding bar support contact"
+  },
+  "portalCaseCsatTitle": {
+    "message": "How did we do?",
+    "description": "Portal CSAT section title"
+  },
+  "portalCaseCsatHint": {
+    "message": "Your feedback helps us improve support.",
+    "description": "Portal CSAT section hint"
+  },
+  "portalCaseCsatRate": {
+    "message": "Rate {score} out of 5",
+    "description": "Portal CSAT star button aria label"
+  },
+  "portalCaseCsatCommentPlaceholder": {
+    "message": "Tell us more (optional)",
+    "description": "Portal CSAT comment placeholder"
+  },
+  "portalCaseCsatSubmit": {
+    "message": "Submit feedback",
+    "description": "Portal CSAT submit button"
+  },
+  "portalCaseCsatSubmitting": {
+    "message": "Submitting…",
+    "description": "Portal CSAT submitting state"
+  },
+  "portalCaseCsatFailed": {
+    "message": "Could not submit feedback. Please try again.",
+    "description": "Portal CSAT error"
+  },
+  "portalCaseCsatThanks": {
+    "message": "Thank you for rating us {score}/5.",
+    "description": "Portal CSAT thank you message"
+  },
+  "portalCasesNoMessagesHint": {
+    "message": "Send a reply below when you need to share more details with support.",
+    "description": "Portal case conversation empty state hint"
+  },
+  "portalCasesToday": {
+    "message": "Today",
+    "description": "Portal conversation day separator"
+  },
+  "portalCasesYesterday": {
+    "message": "Yesterday",
+    "description": "Portal conversation day separator"
+  },
+  "portalCasesMessageCount": {
+    "message": "{count} message | {count} messages",
+    "description": "Portal case conversation message count"
+  },
+  "portalCasesYou": {
+    "message": "You",
+    "description": "Portal conversation customer sender label"
+  },
+  "portalCasesReplyHintShort": {
+    "message": "Enter to send · Shift+Enter for a new line",
+    "description": "Portal docked reply shortcut hint"
+  },
+  "portalDashboardOpenDeals": {
+    "message": "Open deals",
+    "description": "Portal dashboard stat label for open deals"
+  },
+  "portalDashboardOpenDealsClear": {
+    "message": "All clear",
+    "description": "Portal dashboard stat clear state for open deals"
+  },
+  "portalDashboardAvailableForms": {
+    "message": "Available forms",
+    "description": "Portal dashboard stat label for available forms"
+  },
+  "portalDashboardAvailableFormsClear": {
+    "message": "None available",
+    "description": "Portal dashboard stat clear state for available forms"
+  },
+  "portalDashboardInProgressResponses": {
+    "message": "Forms in progress",
+    "description": "Portal dashboard stat label for in-progress form responses"
+  },
+  "portalDashboardInProgressResponsesClear": {
+    "message": "All complete",
+    "description": "Portal dashboard stat clear state for in-progress responses"
+  },
+  "portalDashboardSignalOpenDeals": {
+    "message": "You have {count} open deal | You have {count} open deals",
+    "description": "Portal dashboard brief signal for open deals"
+  },
+  "portalDashboardSignalInProgressResponses": {
+    "message": "You have {count} form in progress | You have {count} forms in progress",
+    "description": "Portal dashboard brief signal for in-progress form responses"
   }
 }

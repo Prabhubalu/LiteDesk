@@ -60,6 +60,10 @@ import {
   liveChatMainTabOwnsRoute,
 } from '@/utils/liveChatTabPaths';
 import { resolveLiveChatSessionsNavigationPath } from '@/utils/liveChatSessionSelection';
+import { useAuthStore } from '@/stores/authRegistry';
+
+const PORTAL_HOME_TAB_ID = 'portal-home';
+const PORTAL_HOME_TAB_PATH = '/portal/dashboard';
 
 const tabsDebugEnabled = () => {
   if (!import.meta.env.DEV) return false;
@@ -150,6 +154,62 @@ function getInitialRoutePath(routeToWatch) {
     }
   }
   return String(routeToWatch?.path || '/').split('?')[0];
+}
+
+function isPortalOnlySession() {
+  try {
+    const authStore = useAuthStore();
+    if (!authStore?.isAuthenticated) return false;
+    const hasPortal = authStore.hasAssignedAppAccess('PORTAL');
+    const hasSales = authStore.hasAssignedAppAccess('SALES');
+    const hasAudit = authStore.hasAssignedAppAccess('AUDIT');
+    return hasPortal && !hasSales && !hasAudit;
+  } catch {
+    return false;
+  }
+}
+
+function isPlatformHomeTab(tab) {
+  if (!tab) return false;
+  return tab.id === 'home' || tab.path === '/platform/home';
+}
+
+function isPortalHomeTab(tab) {
+  if (!tab) return false;
+  return tab.id === PORTAL_HOME_TAB_ID || tab.path === PORTAL_HOME_TAB_PATH;
+}
+
+/** Portal-only users must not keep the internal Platform Home tab alongside Portal dashboard. */
+function purgePlatformHomeTabsForPortalSession() {
+  if (!isPortalOnlySession()) return;
+
+  tabs.value = tabs.value.filter((tab) => !isPlatformHomeTab(tab));
+
+  const portalDashboardTabs = tabs.value.filter(
+    (tab) => tab.path === PORTAL_HOME_TAB_PATH || tab.path?.startsWith(`${PORTAL_HOME_TAB_PATH}/`)
+  );
+  if (portalDashboardTabs.length > 1) {
+    const keep = portalDashboardTabs.find(isPortalHomeTab) || portalDashboardTabs[0];
+    keep.id = PORTAL_HOME_TAB_ID;
+    keep.path = PORTAL_HOME_TAB_PATH;
+    keep.closable = false;
+    const keepId = keep.id;
+    tabs.value = tabs.value.filter((tab) => {
+      const isDashboardTab =
+        tab.path === PORTAL_HOME_TAB_PATH || tab.path?.startsWith(`${PORTAL_HOME_TAB_PATH}/`);
+      return !isDashboardTab || tab.id === keepId;
+    });
+  }
+
+  const removedActive = !tabs.value.some((tab) => tab.id === activeTabId.value);
+  if (removedActive) {
+    const portalHome = tabs.value.find(isPortalHomeTab);
+    activeTabId.value = portalHome?.id || tabs.value[0]?.id || null;
+  }
+
+  if (storageConfigured && storageKey) {
+    saveTabsToStorage();
+  }
 }
 
 /** Public booking / manage / webform fill URLs must not be overridden by persisted CRM tabs. */
@@ -729,6 +789,9 @@ watch([tabs, activeTabId], () => {
 
 // Create default home tab (platform home)
 const createDefaultTab = () => {
+  if (isPortalOnlySession()) {
+    return createPortalDefaultTab();
+  }
   // Prevent concurrent calls
   if (isCreatingHomeTab) {
     console.log('🔒 [createDefaultTab] Already creating home tab, skipping concurrent call');
@@ -810,6 +873,50 @@ const createDefaultTab = () => {
   });
 };
 
+function createPortalDefaultTab() {
+  if (isCreatingHomeTab) {
+    return;
+  }
+
+  purgePlatformHomeTabsForPortalSession();
+
+  const existing = tabs.value.find(isPortalHomeTab);
+  if (existing) {
+    existing.id = PORTAL_HOME_TAB_ID;
+    existing.path = PORTAL_HOME_TAB_PATH;
+    existing.title = getTitleForPath(PORTAL_HOME_TAB_PATH);
+    existing.titleKey = 'navigation.home';
+    existing.icon = getIconComponent(getIconForPath(PORTAL_HOME_TAB_PATH));
+    existing.closable = false;
+    activeTabId.value = existing.id;
+    tabs.value = [...tabs.value];
+    return;
+  }
+
+  isCreatingHomeTab = true;
+  const portalHomeTab = {
+    id: PORTAL_HOME_TAB_ID,
+    title: getTitleForPath(PORTAL_HOME_TAB_PATH),
+    titleKey: 'navigation.home',
+    path: PORTAL_HOME_TAB_PATH,
+    icon: getIconComponent(getIconForPath(PORTAL_HOME_TAB_PATH)),
+    closable: false
+  };
+
+  if (tabs.value.length === 0) {
+    tabs.value = [portalHomeTab];
+  } else {
+    tabs.value.unshift(portalHomeTab);
+    tabs.value = [...tabs.value];
+  }
+  activeTabId.value = PORTAL_HOME_TAB_ID;
+  isCreatingHomeTab = false;
+
+  if (storageConfigured && storageKey) {
+    saveTabsToStorage();
+  }
+}
+
 // Generate unique tab ID
 const generateTabId = () => {
   return `tab-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -854,6 +961,10 @@ const getIconForPath = (path) => {
   if (pathOnly === '/audit/audits' || pathOnly.startsWith('/audit/audits')) return 'document-magnifying-glass';
   if (pathOnly === '/audit/findings' || pathOnly.startsWith('/audit/findings')) return 'exclamation-triangle';
   if (pathOnly === '/audit/responses' || pathOnly.startsWith('/audit/responses')) return 'clipboard-document-list';
+  if (pathOnly === '/portal/dashboard' || pathOnly.startsWith('/portal/dashboard')) return 'home';
+  if (pathOnly === '/portal/cases' || pathOnly.startsWith('/portal/cases/')) return 'lifebuoy';
+  if (pathOnly === '/portal/invoices' || pathOnly.startsWith('/portal/invoices')) return 'banknotes';
+  if (pathOnly === '/portal/knowledge' || pathOnly.startsWith('/portal/knowledge')) return 'book-open';
   if (pathOnly === '/helpdesk/cases' || pathOnly.startsWith('/helpdesk/cases/')) return 'cases';
   if (pathOnly === '/helpdesk/dashboard' || pathOnly.startsWith('/helpdesk/')) return 'lifebuoy';
   if (isLiveChatSessionsRoute(pathOnly)) return 'chat-bubble-left-right';
@@ -917,7 +1028,12 @@ const getTitleForPath = (path, params = {}) => {
     // Audit app routes
     '/audit/dashboard': 'Audit Dashboard',
     '/audit/audits': 'My Audits',
-    '/audit/responses': 'Responses'
+    '/audit/responses': 'Responses',
+    // Portal app routes
+    '/portal/dashboard': 'Home',
+    '/portal/cases': 'Support',
+    '/portal/invoices': 'Invoices',
+    '/portal/knowledge': 'Help Center'
   };
   
   // Check for exact path match FIRST (before any other logic)
@@ -970,6 +1086,28 @@ const getTitleForPath = (path, params = {}) => {
       return 'My Audits';
     }
     return 'Audit';
+  }
+
+  if (path.startsWith('/portal/')) {
+    if (path === '/portal/dashboard' || path.startsWith('/portal/dashboard')) {
+      return 'Home';
+    }
+    if (path.startsWith('/portal/cases')) {
+      if (segments.length > 3) {
+        return 'Case Detail';
+      }
+      return 'Support';
+    }
+    if (path.startsWith('/portal/invoices')) {
+      return 'Invoices';
+    }
+    if (path.startsWith('/portal/knowledge')) {
+      if (segments.length > 3) {
+        return 'Article';
+      }
+      return 'Help Center';
+    }
+    return 'Portal';
   }
 
   // Appointment booking pages
@@ -1459,6 +1597,10 @@ export function useTabs() {
   // Sync active tab with current route (for browser navigation ONLY)
   const syncTabWithRoute = (path) => {
     logTabsDebug('🔄 syncTabWithRoute called with path:', path);
+
+    if (isPortalOnlySession() && String(path || '').startsWith('/portal/')) {
+      purgePlatformHomeTabsForPortalSession();
+    }
     
     // Skip on mobile
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -1518,6 +1660,24 @@ export function useTabs() {
       // Tab doesn't exist, create one
       logTabsDebug('✨ Creating tab for browser navigation:', path);
       const isHome = path === '/platform/home';
+      const isPortalHome =
+        isPortalOnlySession()
+        && (path === PORTAL_HOME_TAB_PATH || path.startsWith(`${PORTAL_HOME_TAB_PATH}/`));
+
+      if (isPortalHome) {
+        purgePlatformHomeTabsForPortalSession();
+        const existingPortalHome = tabs.value.find(isPortalHomeTab);
+        if (existingPortalHome) {
+          existingPortalHome.id = PORTAL_HOME_TAB_ID;
+          existingPortalHome.path = path;
+          existingPortalHome.title = getTitleForPath(path);
+          existingPortalHome.titleKey = undefined;
+          existingPortalHome.icon = getIconComponent(getIconForPath(path));
+          existingPortalHome.closable = false;
+          activeTabId.value = existingPortalHome.id;
+          return;
+        }
+      }
 
       if (isLiveChatSessionsRoute(pathWithoutQuery)) {
         navigateLiveChatSessions(pathWithoutQuery);
@@ -1552,11 +1712,11 @@ export function useTabs() {
       }
       
       const newTab = {
-        id: isHome ? 'home' : generateTabId(),
+        id: isHome ? 'home' : (isPortalHome ? PORTAL_HOME_TAB_ID : generateTabId()),
         title: getTitleForPath(path),
         path: path,
         icon: getIconComponent(getIconForPath(path)),
-        closable: !isHome,
+        closable: !(isHome || isPortalHome),
         params: {}
       };
       tabs.value.push(newTab);
@@ -1579,6 +1739,7 @@ export function useTabs() {
     
     console.log('🔄 [initTabs] Starting tab initialization...');
     loadTabsFromStorage();
+    purgePlatformHomeTabsForPortalSession();
     
     // Don't create home tab here - let setupRouteWatcher decide based on current route
     // This prevents creating unnecessary home tabs when on dashboard routes
@@ -1674,7 +1835,16 @@ export function useTabs() {
     let tabWasRestored = false;
 
     // Deep-link routes: always sync tab to current URL (even when activeTabId is missing).
-    if (!shouldSkipTabRoute(currentPath) && currentPath.startsWith('/settings')) {
+    if (!shouldSkipTabRoute(currentPath) && currentPath.startsWith('/portal/')) {
+      console.log('🔄 [setupRouteWatcher] Deep-link portal route on load, syncing tab:', currentPath);
+      purgePlatformHomeTabsForPortalSession();
+      if (currentPath === PORTAL_HOME_TAB_PATH || currentPath.startsWith(`${PORTAL_HOME_TAB_PATH}/`)) {
+        createPortalDefaultTab();
+      } else {
+        syncTabWithRoute(currentPath);
+      }
+      tabWasRestored = true;
+    } else if (!shouldSkipTabRoute(currentPath) && currentPath.startsWith('/settings')) {
       console.log('🔄 [setupRouteWatcher] Deep-link settings route on load, syncing tab:', currentPath);
       syncTabWithRoute(currentPath);
       tabWasRestored = true;

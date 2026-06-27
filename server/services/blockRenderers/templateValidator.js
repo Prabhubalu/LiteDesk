@@ -6,6 +6,7 @@
  */
 
 const { ReportBlockType } = require('../../types/reportBlockContract');
+const { buildDefaultResponseTemplate } = require('../../utils/defaultResponseTemplate');
 
 /**
  * Core block types that must be present in every template
@@ -107,33 +108,45 @@ function validateTemplate(template) {
     };
 }
 
+function findTemplateById(templates, templateId) {
+    if (!templateId || !templates?.length) {
+        return null;
+    }
+    const idStr = templateId.toString();
+    return templates.find(
+        (t) =>
+            (t._id && t._id.toString() === idStr) ||
+            (t.id && t.id.toString() === idStr)
+    );
+}
+
 /**
  * Get active template from form
  * @param {Object} form - Form object with responseTemplate field
+ * @param {Object} [options]
+ * @param {boolean} [options.useDefaultFallback=true] - Use built-in default when no templates exist
  * @returns {Object|null} Active template or null
  */
-function getActiveTemplate(form) {
-    if (!form || !form.responseTemplate) {
+function getActiveTemplate(form, options = {}) {
+    const { useDefaultFallback = true } = options;
+
+    if (!form) {
         return null;
     }
 
-    const { templates, activeTemplateId } = form.responseTemplate;
+    const { templates, activeTemplateId } = form.responseTemplate || {};
 
     if (!templates || !Array.isArray(templates) || templates.length === 0) {
-        return null;
+        return useDefaultFallback ? buildDefaultResponseTemplate().template : null;
     }
 
-    // If activeTemplateId is specified, find that template
     if (activeTemplateId) {
-        const activeTemplate = templates.find(
-            t => t._id && t._id.toString() === activeTemplateId.toString()
-        );
+        const activeTemplate = findTemplateById(templates, activeTemplateId);
         if (activeTemplate) {
             return activeTemplate;
         }
     }
 
-    // Otherwise, return the first template
     return templates[0];
 }
 

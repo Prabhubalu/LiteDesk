@@ -40,6 +40,7 @@ function viewAllForModule(mod, rolePlain) {
 
 const SALES_NATIVE_MODULES = new Set(['deals', 'projects']);
 const INVENTORY_NATIVE_MODULES = new Set(['inventory']);
+const AUDIT_APP_MODULES = new Set(['audits', 'schedule', 'findings']);
 const PLATFORM_ADMIN_MODULES = new Set(PLATFORM_ADMIN_KEYS);
 const {
   isCommercialPlatformModuleKey,
@@ -206,6 +207,7 @@ function resolveLegacyModuleAppKey(storageModuleKey) {
   if (SALES_NATIVE_MODULES.has(mod)) return APP_KEYS.SALES;
   if (INVENTORY_NATIVE_MODULES.has(mod)) return APP_KEYS.INVENTORY;
   if (mod === 'cases') return APP_KEYS.HELPDESK;
+  if (AUDIT_APP_MODULES.has(mod)) return APP_KEYS.AUDIT;
   if (mod === 'contacts' || CORE_ENTITY_KEYS.has(mod)) {
     return null;
   }

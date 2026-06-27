@@ -35,6 +35,10 @@ import {
   getAddonSurfaceLabelKey,
 } from '@/utils/navigationLabels';
 import type { AddonNavItem } from '@/utils/addonNavigation';
+import {
+  hasPortalModuleAccess,
+  resolvePortalModulePermission
+} from '@/utils/portalModulePermissions';
 
 const LAST_ACTIVE_APP_ID_KEY = 'arivu-sidebar-last-active-app-id';
 
@@ -58,7 +62,10 @@ function hasPermission(permission: string | undefined, snapshot: PermissionSnaps
   if (checkPermission(snapshot, permission)) return true;
   // Responses inherits Forms access until roles explicitly grant responses.*
   if (permission === 'responses.view' || permission === 'responses.read') {
-    return checkPermission(snapshot, 'forms.view');
+    return (
+      checkPermission(snapshot, 'forms.view') ||
+      checkPermission(snapshot, 'forms.read')
+    );
   }
   return false;
 }
@@ -416,6 +423,9 @@ function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: Pe
   // Enforce: ONLY one app lens is ever built.
   const dashboardRoute = String(app.dashboardRoute || '').replace(/\/+$/, '');
 
+  const normalizedAppId = String(activeAppId || '').toUpperCase();
+  const isPortalApp = normalizedAppId === 'PORTAL';
+
   const modules: SidebarItem[] = (app.modules || [])
     .filter((m) => {
       if (m.showInSidebar === false) return false;
@@ -426,13 +436,17 @@ function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: Pe
       if (FORBIDDEN_RAW_ENTITY_MODULE_KEYS.has(m.moduleKey)) return false;
       // Inventory app: Dashboard is the only lens until stock workbench UI ships.
       if (
-        String(activeAppId || '').toUpperCase() === 'INVENTORY' &&
+        normalizedAppId === 'INVENTORY' &&
         String(m.moduleKey || '').toLowerCase() === 'inventory'
       ) {
         return false;
       }
       const moduleRoute = String(m.route || '').replace(/\/+$/, '');
       if (dashboardRoute && moduleRoute && moduleRoute === dashboardRoute) return false;
+      if (isPortalApp) {
+        if (!resolvePortalModulePermission(m.moduleKey)) return false;
+        return hasPortalModuleAccess(snapshot, m.moduleKey);
+      }
       return hasPermission(m.permission, snapshot);
     })
     .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
@@ -456,14 +470,17 @@ function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: Pe
     kind: 'app',
     id: activeAppId,
     // The first app-nav entry is always the app dashboard.
-    // Displayed as "Dashboard" to avoid duplicating the app name in the nav list.
-    ...sidebarLabel(getModuleLabelKey('dashboard'), 'Dashboard'),
+    // Portal uses "Home"; other apps use "Dashboard" to avoid duplicating the app name.
+    ...(isPortalApp
+      ? sidebarLabel(getSurfaceLabelKey('home'), 'Home')
+      : sidebarLabel(getModuleLabelKey('dashboard'), 'Dashboard')),
     route: app.dashboardRoute,
     // Use route-context-aware dashboard icons so tab and sidebar stay visually aligned.
-    icon:
-      String(activeAppId || '').toUpperCase() === 'AUDIT'
+    icon: isPortalApp
+      ? 'home'
+      : normalizedAppId === 'AUDIT'
         ? 'presentation-chart'
-        : String(activeAppId || '').toUpperCase() === 'SALES'
+        : normalizedAppId === 'SALES'
           ? 'document-chart-bar'
           : 'squares',
   };

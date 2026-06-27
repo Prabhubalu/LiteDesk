@@ -4,6 +4,11 @@ import { getApiUrlForFetch } from '@/config/apiBase';
 import { isOnPublicShellRoute } from '@/utils/standaloneRoutes';
 import { validateUserTypeForApp } from '@/utils/appUserTypeAccess';
 import { identifyProductUser, captureUserLoggedIn, resetPosthog } from '@/config/posthogUser';
+import {
+    capturePortalLogin,
+    capturePortalSelected,
+    capturePortalSwitched
+} from '@/config/posthogPortal';
 import { registerUseAuthStore } from './authRegistry';
 
 const PROFILE_REFRESHED_AT_KEY = 'arivu:user-profile-refreshed-at';
@@ -55,6 +60,22 @@ export const useAuthStore = defineStore('auth', {
             const internalDomains = ['arivusystems.com', 'arivu.com', 'arivu.io'];
             return internalDomains.some(domain => email.toLowerCase().includes(`@${domain}`));
         },
+        isExternalUser: (state) => String(state.user?.userType || 'INTERNAL').toUpperCase() === 'EXTERNAL',
+        needsPortalSelection: (state) => {
+            if (String(state.user?.userType || 'INTERNAL').toUpperCase() !== 'EXTERNAL') {
+                return false;
+            }
+            if (state.user?.requiresPortalSelection === true) {
+                return true;
+            }
+            const portals = Array.isArray(state.user?.portals) ? state.user.portals : [];
+            return portals.length > 1 && !state.user?.activeExternalRoleId;
+        },
+        hasMultiplePortals: (state) => {
+            const portals = Array.isArray(state.user?.portals) ? state.user.portals : [];
+            return portals.length > 1;
+        },
+        activePortalLabel: (state) => state.user?.activePortal?.name || null,
         requiresEmailVerification: (state) => Boolean(state.user && !state.user.emailVerifiedAt),
         hasAppAccess: (state) => {
             return (appKey) => {
@@ -281,6 +302,11 @@ export const useAuthStore = defineStore('auth', {
                 requiresEmailVerification: userData.requiresEmailVerification === true,
                 mustChangePassword: userData.mustChangePassword === true,
                 onboarding: userData.onboarding || null,
+                requiresPortalSelection: userData.requiresPortalSelection === true,
+                portals: Array.isArray(userData.portals) ? userData.portals : [],
+                activeExternalRoleId: userData.activeExternalRoleId || null,
+                activePortal: userData.activePortal || null,
+                defaultExternalRoleId: userData.defaultExternalRoleId || null,
                 firstName: userData.firstName,
                 lastName: userData.lastName,
                 avatar: userData.avatar || '',
@@ -468,6 +494,12 @@ export const useAuthStore = defineStore('auth', {
                 }
                 try {
                     captureUserLoggedIn({ method: 'password' });
+                    if (data.userType === 'EXTERNAL') {
+                        capturePortalLogin({
+                            requires_portal_selection: data.requiresPortalSelection === true,
+                            active_external_role_id: data.activeExternalRoleId || undefined
+                        });
+                    }
                 } catch (_e) {
                     /* optional */
                 }
@@ -495,6 +527,130 @@ export const useAuthStore = defineStore('auth', {
         },
         async login(credentials) {
             return this.authenticate('login', credentials);
+        },
+
+        resolvePostLoginRoute() {
+            const user = this.user;
+            if (!user) {
+                return { name: 'login' };
+            }
+            if (user.mustChangePassword) {
+                return { name: 'portal-set-password' };
+            }
+            if (this.isExternalUser) {
+                if (this.needsPortalSelection) {
+                    return { name: 'portal-select' };
+                }
+                if (this.hasAssignedAppAccess('PORTAL')) {
+                    return { name: 'portal-dashboard' };
+                }
+                return { name: 'portal-select' };
+            }
+            const onboardingRedirect = user.onboarding?.redirectTo
+                || this.lastLoginResult?.onboarding?.redirectTo;
+            if (onboardingRedirect && typeof onboardingRedirect === 'string') {
+                return onboardingRedirect;
+            }
+            return { name: 'platform-home' };
+        },
+
+        applyPortalSession(data) {
+            if (!data || typeof data !== 'object') return;
+            const { success: _success, ...session } = data;
+            this.setUser({
+                ...this.user,
+                ...session,
+                organization: session.organization || this.organization
+            });
+            import('@/stores/appShell').then(({ useAppShellStore }) => {
+                const appShellStore = useAppShellStore();
+                appShellStore.loadUIMetadata().catch(() => {});
+            }).catch(() => {});
+        },
+
+        async portalSessionRequest(method, path, body = null) {
+            if (!this.user?.token) {
+                throw new Error('Not authenticated');
+            }
+            const init = {
+                method,
+                headers: {
+                    Authorization: `Bearer ${this.user.token}`,
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json'
+                }
+            };
+            if (body != null) {
+                init.body = JSON.stringify(body);
+            }
+            const response = await fetch(getApiUrlForFetch(`/api/auth/portal/${path}`), init);
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || `HTTP ${response.status}`);
+            }
+            return data;
+        },
+
+        async selectPortal(roleId) {
+            this.loading = true;
+            this.error = null;
+            try {
+                const data = await this.portalSessionRequest('POST', 'select', { roleId });
+                this.applyPortalSession(data);
+                try {
+                    capturePortalSelected(String(roleId));
+                } catch (_e) {
+                    /* optional */
+                }
+                return true;
+            } catch (err) {
+                this.error = err.message || 'Portal selection failed';
+                return false;
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async switchPortal(roleId) {
+            this.loading = true;
+            this.error = null;
+            try {
+                const data = await this.portalSessionRequest('POST', 'switch', { roleId });
+                this.applyPortalSession(data);
+                try {
+                    capturePortalSwitched(String(roleId));
+                } catch (_e) {
+                    /* optional */
+                }
+                return true;
+            } catch (err) {
+                this.error = err.message || 'Portal switch failed';
+                return false;
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async setDefaultExternalRole(roleId) {
+            await this.portalSessionRequest('PATCH', 'default-role', { roleId });
+            if (this.user) {
+                this.user = { ...this.user, defaultExternalRoleId: roleId };
+                localStorage.setItem('user', JSON.stringify(this.user));
+            }
+        },
+
+        async refreshPortals() {
+            const data = await this.portalSessionRequest('GET', 'list');
+            if (this.user) {
+                this.user = {
+                    ...this.user,
+                    portals: data.portals || [],
+                    defaultExternalRoleId: data.defaultExternalRoleId || null,
+                    activeExternalRoleId: data.activeExternalRoleId || this.user.activeExternalRoleId
+                };
+                localStorage.setItem('user', JSON.stringify(this.user));
+            }
+            return data.portals || [];
         },
         
         logout() {
@@ -528,9 +684,15 @@ export const useAuthStore = defineStore('auth', {
         can(module, action) {
             const role = this.user?.role || '';
             if (this.user?.isOwner || role.toLowerCase() === 'admin' || role.toLowerCase() === 'owner') return true;
-            const normalized = module === 'people' ? 'contacts' : module;
+            const normalized = module === 'people'
+                ? 'contacts'
+                : module === 'settings-users'
+                    ? 'users'
+                    : module;
             const perms = this.user?.permissions?.[normalized];
             if (perms?.[action]) return true;
+            if (action === 'read' && perms?.view) return true;
+            if (action === 'view' && perms?.read) return true;
             // Responses inherits Forms access until roles are explicitly configured
             if (normalized === 'responses') {
                 return this.user?.permissions?.forms?.[action] || false;

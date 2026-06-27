@@ -15,7 +15,12 @@ export const MODULE_ICON_IDS: Record<string, string> = {
   invoices: 'document-currency-dollar',
   payments: 'credit-card',
   inventory: 'cube',
-  responses: 'clipboard-document-list'
+  responses: 'clipboard-document-list',
+  portal_support: 'lifebuoy',
+  support: 'lifebuoy',
+  portal_invoices: 'banknotes',
+  portal_knowledge: 'book-open',
+  knowledge: 'book-open'
 };
 
 export const MODULE_ICON_COMPONENTS: Record<string, Component> = {
@@ -74,6 +79,9 @@ export function resolveStoredModuleIconId(icon?: string, moduleKey?: string): st
   const iconIdFromLower = MODULE_ICON_IDS[normalizedLower];
   if (iconIdFromLower) {
     return iconIdFromLower;
+  }
+  if (/^[a-z0-9-]+$/.test(lower)) {
+    return lower;
   }
   return getModuleIconId(moduleKey);
 }

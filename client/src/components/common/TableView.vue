@@ -272,6 +272,7 @@
                   :style="[{ top: columnFilterRowTop }, columnHeaderStyle(column)]"
                 >
                   <ListColumnFilter
+                    v-if="column.filterable !== false"
                     :filter="filterConfigForColumn(column)"
                     :model-value="filterValueForColumn(column)"
                     inline

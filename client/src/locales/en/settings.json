@@ -300,7 +300,7 @@
     "description": "Profile-linked permissions notice title"
   },
   "roleDrawerPermsFromProfileBody": {
-    "message": "Module permissions come from \"{profile}\". Expand a module below to override field access for this role.",
+    "message": "Starts from profile \"{profile}\". Adjust module access below — saved changes apply to this role only.",
     "description": "Profile-linked permissions notice body"
   },
   "roleDrawerAppsIntro": {
@@ -332,8 +332,16 @@
     "description": "Hint under core modules section"
   },
   "roleDrawerAccessProfilePreviewHint": {
-    "message": "Module access comes from profile “{profile}”. Expand a module to override field access for this role.",
+    "message": "Defaults from profile “{profile}”. Module access below applies to this role; field access can be overridden per module.",
     "description": "Hint when role uses linked profile"
+  },
+  "roleDrawerExternalProfileScopeHint": {
+    "message": "Configure module access for this external role. Platform administration modules are not available to external users.",
+    "description": "Hint when external profile scopes the permission grid"
+  },
+  "profileDrawerExternalScopeHint": {
+    "message": "Configure portal module access below. Platform administration modules are not available to external profiles.",
+    "description": "Profile drawer scope hint for portal profiles"
   },
   "roleDrawerAccessProfileLoadingFailed": {
     "message": "Could not load profile permissions for preview.",
@@ -352,11 +360,11 @@
     "description": "Toggle label for inline field permissions under a module"
   },
   "roleDrawerModuleFieldsRequiresRead": {
-    "message": "Set module access to Read or higher to configure field permissions.",
-    "description": "Hint when module has no read access for field configuration"
+    "message": "Set module access to View or higher to configure field permissions.",
+    "description": "Hint when module has no view access for field configuration"
   },
   "roleDrawerFieldModulesHint": {
-    "message": "Expand Field permissions on any module below after granting read access.",
+    "message": "Expand Field permissions on any module below after granting view access.",
     "description": "Hint for field-level permissions in role drawer"
   },
   "fieldPermsInheritFromProfile": {
@@ -376,7 +384,7 @@
     "description": "Field permission shared core scope badge"
   },
   "fieldPermsEmptyModules": {
-    "message": "Grant read access to a module above to configure its fields.",
+    "message": "Grant view access to a module above to configure its fields.",
     "description": "Empty field permissions when no readable modules"
   },
   "roleDrawerAppsEmpty": {
@@ -3120,7 +3128,7 @@
     "description": "Org section"
   },
   "orgBrandingDesc": {
-    "message": "Your company name and logo that appear throughout the app",
+    "message": "Company name, logo, and brand color — used in emails, PDFs, and the customer portal",
     "description": "Org section desc"
   },
   "orgCompanyName": {
@@ -3134,6 +3142,14 @@
   "orgCompanyNameHint": {
     "message": "Shown to users, on emails, and in PDF exports.",
     "description": "Field hint"
+  },
+  "orgPrimaryColor": {
+    "message": "Brand color",
+    "description": "Organization primary brand color label"
+  },
+  "orgPrimaryColorHint": {
+    "message": "Used for the customer portal sidebar and accents. Hex format, e.g. #3a1f8a.",
+    "description": "Organization primary brand color hint"
   },
   "orgLogo": {
     "message": "Company logo",
@@ -3506,6 +3522,10 @@
   "usersStatusInvited": {
     "message": "Invited",
     "description": "User status invited"
+  },
+  "usersStatusSuspended": {
+    "message": "Suspended",
+    "description": "Short suspended status label for users table"
   },
   "usersEmailUnverified": {
     "message": "Unverified",
@@ -4212,16 +4232,20 @@
     "description": "Collapsible appearance section"
   },
   "roleDrawerPresetReadOnly": {
-    "message": "All read only",
-    "description": "Apply read-only to all modules"
+    "message": "All view",
+    "description": "Apply view-only to all modules"
+  },
+  "roleDrawerPresetEdit": {
+    "message": "All edit",
+    "description": "Apply edit access preset to all modules"
   },
   "roleDrawerPresetStandard": {
-    "message": "Standard user",
+    "message": "All edit",
     "description": "Apply standard edit access preset"
   },
   "roleDrawerPresetFull": {
-    "message": "Full access",
-    "description": "Apply full access preset"
+    "message": "All full access",
+    "description": "Apply full access preset to all modules"
   },
   "roleDrawerPresetNone": {
     "message": "Clear all",
@@ -4314,6 +4338,66 @@
   "editUserAppAccessRemain": {
     "message": "At least one app must remain assigned.",
     "description": "App access validation edit"
+  },
+  "editUserPortalRoles": {
+    "message": "Portal roles",
+    "description": "External user portal roles section label"
+  },
+  "editUserPortalRolesHint": {
+    "message": "External users are authorized through portal roles — not internal staff roles like Sales Executive.",
+    "description": "External user portal roles helper text"
+  },
+  "editUserPortalRolesEmpty": {
+    "message": "No portal roles assigned",
+    "description": "External user with no portal roles"
+  },
+  "editUserPortalAssignRoles": {
+    "message": "Assign portal roles",
+    "description": "Assign portal roles button"
+  },
+  "editUserPortalRemoveRole": {
+    "message": "Remove",
+    "description": "Remove portal role button"
+  },
+  "editUserPortalRemoveConfirm": {
+    "message": "Remove this portal role from the user?",
+    "description": "Confirm remove portal role"
+  },
+  "editUserPortalRolesAssigned": {
+    "message": "Portal roles updated",
+    "description": "Portal roles assign success toast"
+  },
+  "editUserPortalRoleRemoved": {
+    "message": "Portal role removed",
+    "description": "Portal role remove success toast"
+  },
+  "editUserPortalManageOnPeople": {
+    "message": "Invites, password resets, session termination, and audit history are managed on the linked People record.",
+    "description": "External user portal management hint"
+  },
+  "editUserPortalOpenPeople": {
+    "message": "Open People record",
+    "description": "Link to linked People record from user edit"
+  },
+  "editUserPortalNoPeopleLink": {
+    "message": "This user is not linked to a People record. Portal roles cannot be edited here.",
+    "description": "External user missing People link"
+  },
+  "editUserPortalDefaultRole": {
+    "message": "Default portal",
+    "description": "Default external portal role label"
+  },
+  "editUserPortalSelectRolesHint": {
+    "message": "Select one or more portal roles to assign.",
+    "description": "Portal role assign modal hint"
+  },
+  "editUserPortalNoAvailableRoles": {
+    "message": "All portal roles are already assigned.",
+    "description": "No unassigned portal roles"
+  },
+  "externalUserNoPortalRoles": {
+    "message": "No portal roles",
+    "description": "Users list badge when external user has no portal roles"
   },
   "roleUsersRoleFallback": {
     "message": "Role",
@@ -4460,8 +4544,8 @@
     "description": "No search results"
   },
   "roleDrawerGrantReadSection": {
-    "message": "Grant read access to this section",
-    "description": "Grant read section action"
+    "message": "Grant view access to this section",
+    "description": "Grant view section action"
   },
   "roleDrawerClearSection": {
     "message": "Clear section permissions",
@@ -4488,7 +4572,7 @@
     "description": "Dependency rules title"
   },
   "roleDrawerDependencyRulesBody": {
-    "message": "Read is required for module access. Update requires Create. Delete requires Update. Import requires Create.",
+    "message": "View is required for module access. Edit requires Create. Delete requires Edit. Import requires Create.",
     "description": "Dependency rules body"
   },
   "roleDrawerCapabilitiesSystemFixed": {
@@ -4548,32 +4632,32 @@
     "description": "Access mode none"
   },
   "roleDrawerAccessModeReadOnly": {
-    "message": "Read only",
-    "description": "Access mode read only"
+    "message": "View",
+    "description": "Access mode view only"
   },
   "roleDrawerAccessModeEdit": {
-    "message": "Can edit",
-    "description": "Access mode can edit without delete"
+    "message": "Edit",
+    "description": "Access mode view create and update without delete"
   },
   "roleDrawerAccessModeFull": {
-    "message": "Full",
-    "description": "Access mode full"
+    "message": "Full access",
+    "description": "Access mode full CRUD"
   },
   "roleDrawerAccessModeCustom": {
     "message": "Custom",
     "description": "Access mode custom"
   },
   "roleDrawerPermRead": {
-    "message": "Read",
-    "description": "CRUD read"
+    "message": "View",
+    "description": "CRUD view/read"
   },
   "roleDrawerPermCreate": {
     "message": "Create",
     "description": "CRUD create"
   },
   "roleDrawerPermUpdate": {
-    "message": "Update",
-    "description": "CRUD update"
+    "message": "Edit",
+    "description": "CRUD edit/update"
   },
   "roleDrawerPermDelete": {
     "message": "Delete",
@@ -4656,16 +4740,16 @@
     "description": "Access summary section full"
   },
   "roleDrawerSummaryReadOnlyAccess": {
-    "message": "Read-only {section} access",
-    "description": "Access summary section read only"
+    "message": "View-only {section} access",
+    "description": "Access summary section view only"
   },
   "roleDrawerSummaryFullAccessTo": {
     "message": "Full access to {section}",
     "description": "Access summary partial full"
   },
   "roleDrawerSummaryReadOnlyAccessTo": {
-    "message": "Read-only access to {section}",
-    "description": "Access summary partial read only"
+    "message": "View-only access to {section}",
+    "description": "Access summary partial view only"
   },
   "roleDrawerSummaryLimitedAccess": {
     "message": "Limited {section} access ({active} of {total} modules)",

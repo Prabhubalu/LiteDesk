@@ -4,35 +4,17 @@
 
 const mongoose = require('mongoose');
 const Invoice = require('../models/Invoice');
-const People = require('../models/People');
 const { roundMoney, PAYABLE_INVOICE_STATUSES } = require('../constants/paymentLifecycle');
 const { getOrCreateSettings } = require('./gatewayCredentialHealthService');
 const { createGatewayCheckoutSession, getSessionById } = require('./paymentGatewaySessionService');
-const { getPortalUserEmail } = require('../platform/mailroom/connectors/portal/portalSafety');
-
-function escapeRegex(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+const { resolvePortalPersonContext } = require('./portalUserScopeService');
 
 async function resolvePortalOrganizationRefIds(organizationId, user) {
-  const email = getPortalUserEmail(user);
-  const refs = new Set();
-
-  if (email) {
-    const people = await People.find({
-      organizationId,
-      deletedAt: null,
-      email: new RegExp(`^${escapeRegex(email)}$`, 'i')
-    })
-      .select('_id organizationId')
-      .lean();
-
-    for (const person of people) {
-      if (person.organizationId) refs.add(String(person.organizationId));
-    }
+  const { businessOrganizationId } = await resolvePortalPersonContext(organizationId, user);
+  if (!businessOrganizationId) {
+    return [];
   }
-
-  return [...refs];
+  return [String(businessOrganizationId)];
 }
 
 async function findPortalAccessibleInvoice(organizationId, invoiceId, user) {

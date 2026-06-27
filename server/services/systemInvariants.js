@@ -553,6 +553,26 @@ async function validateDelete(context) {
   try {
     // Observe status mismatch (read-only, non-blocking)
     await observeStatusMismatch(context);
+
+    if (moduleKey === 'people') {
+      const person = await People.findOne({ _id: recordId, organizationId })
+        .select('portalAccess')
+        .lean();
+      if (person?.portalAccess?.enabled === true) {
+        return {
+          valid: false,
+          code: 'DELETE_BLOCKED_BY_PORTAL_ACCESS',
+          message: 'Cannot delete this person while portal access is enabled. Disable portal access first.',
+          errors: [{
+            moduleKey: 'portal',
+            relationship: 'portalAccess',
+            count: 1,
+            recordIds: [String(recordId)],
+            recordNames: 'Portal access enabled'
+          }]
+        };
+      }
+    }
     
     const references = await findActiveReferences(moduleKey, recordId, organizationId);
     

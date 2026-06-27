@@ -47,6 +47,8 @@
             :dependency-state="getFieldState(getFieldByKey(col.fieldKey))"
             :locked="props.lockedFields.includes(col.fieldKey)"
             :module-key="props.moduleKey"
+            :form-context="props.moduleKey === 'events' ? localFormData : null"
+            @update:form-context="applyFormContextPatch"
           />
         </div>
       </div>
@@ -115,6 +117,8 @@
                 :dependency-state="getFieldState(field)"
                 :locked="props.lockedFields.includes(field.key)"
                 :module-key="props.moduleKey"
+                :form-context="props.moduleKey === 'events' ? localFormData : null"
+                @update:form-context="applyFormContextPatch"
               />
             </div>
           </div>
@@ -184,6 +188,8 @@
                 :dependency-state="getFieldState(field)"
                 :locked="props.lockedFields.includes(field.key)"
                 :module-key="props.moduleKey"
+                :form-context="props.moduleKey === 'events' ? localFormData : null"
+                @update:form-context="applyFormContextPatch"
               />
             </div>
           </div>
@@ -244,6 +250,8 @@
               :dependency-state="getFieldState(field)"
               :locked="props.lockedFields.includes(field.key)"
               :module-key="props.moduleKey"
+              :form-context="props.moduleKey === 'events' ? localFormData : null"
+              @update:form-context="applyFormContextPatch"
             />
           </div>
         </div>
@@ -303,6 +311,8 @@
               :dependency-state="getFieldState(field)"
               :locked="props.lockedFields.includes(field.key)"
               :module-key="props.moduleKey"
+              :form-context="props.moduleKey === 'events' ? localFormData : null"
+              @update:form-context="applyFormContextPatch"
             />
           </div>
         </div>
@@ -361,6 +371,8 @@
             :dependency-state="getFieldState(field)"
             :locked="props.lockedFields.includes(field.key)"
             :module-key="props.moduleKey"
+            :form-context="props.moduleKey === 'events' ? localFormData : null"
+            @update:form-context="applyFormContextPatch"
           />
         </div>
       </div>
@@ -1282,6 +1294,12 @@ function normalizedRelatedTo(val) {
   const id = val.id != null && typeof val.id === 'object' && val.id._id != null ? val.id._id : (val.id ?? null);
   return { type: val.type || 'none', id };
 }
+
+const applyFormContextPatch = (patch) => {
+  if (!patch || typeof patch !== 'object') return;
+  localFormData.value = { ...localFormData.value, ...patch };
+  emit('update:formData', { ...localFormData.value });
+};
 
 const updateField = async (key, value) => {
   const afterPrimary = (() => {

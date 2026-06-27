@@ -40,7 +40,10 @@ test('mailroom portal audience', async (t) => {
   await t.test('getPortalRulesForUser applies partner defaults', async () => {
     const user = {
       email: 'rep@partner.com',
-      appAccess: [{ appKey: 'PORTAL', status: 'ACTIVE', roleKey: 'partner' }]
+      appAccess: [{ appKey: 'PORTAL', status: 'ACTIVE', roleKey: 'partner' }],
+      permissions: {
+        cases: { read: true, create: false, update: true }
+      }
     };
     const config = {
       connectors: {
@@ -82,5 +85,59 @@ test('mailroom portal audience', async (t) => {
       }),
       (err) => err.statusCode === 400
     );
+  });
+
+  await t.test('getPortalRulesForUser gates create/reply on cases RBAC', async () => {
+    const user = {
+      email: 'user@example.com',
+      appAccess: [{ appKey: 'PORTAL', status: 'ACTIVE', roleKey: 'customer' }],
+      permissions: {
+        cases: { read: true, create: false, update: false }
+      }
+    };
+    const config = {
+      enabled: true,
+      connectors: { portal: mergePortalConnector({ enabled: true }) }
+    };
+    const caps = await getPortalRulesForUser(user, config);
+    assert.equal(caps.allowCreateCase, false);
+    assert.equal(caps.allowReply, false);
+  });
+
+  await t.test('getPortalRulesForUser allows create when mailroom and RBAC grant it', async () => {
+    const user = {
+      email: 'user@example.com',
+      appAccess: [{ appKey: 'PORTAL', status: 'ACTIVE', roleKey: 'customer' }],
+      permissions: {
+        cases: { read: true, create: true, update: true }
+      }
+    };
+    const config = {
+      enabled: true,
+      connectors: { portal: mergePortalConnector({ enabled: true }) }
+    };
+    const caps = await getPortalRulesForUser(user, config);
+    assert.equal(caps.allowCreateCase, true);
+    assert.equal(caps.allowReply, true);
+  });
+
+  await t.test('getPortalRulesForUser exposes mailroom attachment capability', async () => {
+    const user = {
+      email: 'user@example.com',
+      appAccess: [{ appKey: 'PORTAL', status: 'ACTIVE', roleKey: 'customer' }]
+    };
+    const enabled = await getPortalRulesForUser(user, {
+      enabled: true,
+      connectors: { portal: mergePortalConnector({ enabled: true }) }
+    });
+    assert.equal(enabled.mailroomEnabled, true);
+    assert.equal(enabled.allowAttachments, true);
+
+    const disabled = await getPortalRulesForUser(user, {
+      enabled: true,
+      connectors: { portal: mergePortalConnector({ enabled: false }) }
+    });
+    assert.equal(disabled.mailroomEnabled, false);
+    assert.equal(disabled.allowAttachments, false);
   });
 });

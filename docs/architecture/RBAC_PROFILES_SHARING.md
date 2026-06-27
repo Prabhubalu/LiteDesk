@@ -420,7 +420,9 @@ Administrator
 
 #### User assignment rule
 
-**One role per user.** Invite = pick role. Role carries: `userType`, `appEntitlements[]`, `profileId`(s), `parentRole`.
+**One role per internal user.** Invite = pick role. Role carries: `userType`, `appEntitlements[]`, `profileId`(s), `parentRole`.
+
+**External users (exception):** `userType: EXTERNAL` users may hold **multiple external roles** via `User.externalRoleAssignments[]`. Session uses JWT claim `activeExternalRoleId`; permissions hydrated in memory on each request — **external users do not persist `roleId`**. See [`EXTERNAL_USER_PORTAL_FRAMEWORK.md`](./EXTERNAL_USER_PORTAL_FRAMEWORK.md) §4.
 
 #### Legacy compatibility
 

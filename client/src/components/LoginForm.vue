@@ -41,7 +41,7 @@ const applyTransferredSessionFromHash = async () => {
     if (!applied) return;
 
     window.history.replaceState({}, '', window.location.pathname + window.location.search);
-    await router.replace('/platform/home');
+    await router.replace(authStore.resolvePostLoginRoute());
 };
 
 const handleLogin = async () => {
@@ -72,11 +72,7 @@ const handleLogin = async () => {
         }
 
         await new Promise(resolve => setTimeout(resolve, 100));
-
-        const redirectTo = authStore.user?.onboarding?.redirectTo
-            || authStore.lastLoginResult?.onboarding?.redirectTo
-            || '/platform/home';
-        router.push(redirectTo);
+        router.push(authStore.resolvePostLoginRoute());
     }
 };
 

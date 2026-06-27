@@ -164,22 +164,20 @@
     </ModuleList>
 
     <!-- Calendar View (shown when Calendar tab is selected, replaces table) -->
-    <div 
-      v-if="currentView === 'calendar'" 
-      class="calendar-view-container mt-4"
-      style="min-height: 400px;"
+    <div
+      v-if="currentView === 'calendar'"
+      class="calendar-view-container mt-4 w-full"
     >
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="p-6">
-          <div v-if="calendarLoading" class="flex items-center justify-center h-64">
-            <div class="text-gray-500 dark:text-gray-400">{{ t('events.eventsLoadingCalendar') }}</div>
-          </div>
-          <FullCalendar 
-            v-else
-            ref="calendarRef"
-            :options="calendarOptions"
-          />
+      <div class="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+        <div v-if="calendarLoading" class="flex h-64 items-center justify-center">
+          <div class="text-sm text-gray-500 dark:text-gray-400">{{ t('events.eventsLoadingCalendar') }}</div>
         </div>
+        <FullCalendar
+          v-else
+          ref="calendarRef"
+          class="events-calendar w-full"
+          :options="calendarOptions"
+        />
       </div>
     </div>
 
@@ -501,6 +499,58 @@ const checkDarkMode = () => {
   isDarkMode.value = document.documentElement.classList.contains('dark');
 };
 
+const getEventCalendarStatusClass = (status) => {
+  const normalized = String(status || '').toLowerCase();
+  if (normalized === 'completed') return 'fc-event-status-completed';
+  if (normalized === 'cancelled' || normalized === 'canceled') return 'fc-event-status-cancelled';
+  if (normalized === 'in-progress' || normalized === 'in progress') return 'fc-event-status-in-progress';
+  return 'fc-event-status-scheduled';
+};
+
+const getEventCalendarColors = (status) => {
+  const isDark = document.documentElement.classList.contains('dark');
+  const normalized = String(status || '').toLowerCase();
+
+  if (normalized === 'completed') {
+    return isDark
+      ? { text: 'rgb(167 243 208)', bg: 'rgb(16 185 129 / 0.16)', border: 'rgb(52 211 153)' }
+      : { text: 'rgb(6 95 70)', bg: 'rgb(236 253 245)', border: 'rgb(16 185 129)' };
+  }
+  if (normalized === 'cancelled' || normalized === 'canceled') {
+    return isDark
+      ? { text: 'rgb(203 213 225)', bg: 'rgb(148 163 184 / 0.14)', border: 'rgb(148 163 184)' }
+      : { text: 'rgb(71 85 105)', bg: 'rgb(241 245 249)', border: 'rgb(148 163 184)' };
+  }
+  if (normalized === 'in-progress' || normalized === 'in progress') {
+    return isDark
+      ? { text: 'rgb(253 230 138)', bg: 'rgb(245 158 11 / 0.14)', border: 'rgb(251 191 36)' }
+      : { text: 'rgb(146 64 14)', bg: 'rgb(255 251 235)', border: 'rgb(245 158 11)' };
+  }
+  return isDark
+    ? { text: 'rgb(199 210 254)', bg: 'rgb(99 102 241 / 0.18)', border: 'rgb(129 140 248)' }
+    : { text: 'rgb(55 48 163)', bg: 'rgb(238 242 255)', border: 'rgb(99 102 241)' };
+};
+
+const handleEventDidMount = (info) => {
+  // FullCalendar sets inline --fc-event-text-color (often white) which breaks
+  // our light tinted backgrounds on multi-day continuation segments.
+  info.el.style.removeProperty('--fc-event-text-color');
+  info.el.style.removeProperty('--fc-event-bg-color');
+  info.el.style.removeProperty('--fc-event-border-color');
+  info.el.style.removeProperty('color');
+  info.el.style.removeProperty('background-color');
+  info.el.style.removeProperty('border-color');
+
+  const status = info.event.extendedProps.status;
+  info.el.dataset.eventStatus = String(status || '');
+
+  const colors = getEventCalendarColors(status);
+  info.el.style.setProperty('--fc-event-text-color', colors.text);
+  info.el.querySelectorAll('.fc-event-main, .fc-event-title, .fc-event-time').forEach((node) => {
+    node.style.color = colors.text;
+  });
+};
+
 // Convert events to FullCalendar format
 const convertEventsToCalendarFormat = (events) => {
   const formatAppContext = (appContext) => {
@@ -516,9 +566,7 @@ const convertEventsToCalendarFormat = (events) => {
       title: `${appLabel}${event.eventName || event.title}`,
       start: event.startDateTime || event.startDate,
       end: event.endDateTime || event.endDate,
-      backgroundColor: '#3b82f6',
-      borderColor: '#3b82f6',
-      textColor: '#ffffff',
+      classNames: [getEventCalendarStatusClass(event.status)],
       extendedProps: {
         eventId: event.eventId || event._id,
         appContext: event.appContext,
@@ -535,8 +583,7 @@ const convertEventsToCalendarFormat = (events) => {
 // FullCalendar Options
 const calendarOptions = computed(() => {
   const events = convertEventsToCalendarFormat(calendarEvents.value);
-  console.log('[Events] Calendar options - events count:', events.length);
-  
+
   return {
     plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
     initialView: 'dayGridMonth',
@@ -561,17 +608,13 @@ const calendarOptions = computed(() => {
     weekends: true,
     nowIndicator: true,
     eventMaxStack: 3,
-    
-    // Events from calendar data
-    events: events,
-    
-    // Event handlers
+    moreLinkClick: 'popover',
+    events,
     eventClick: handleEventClick,
+    eventDidMount: handleEventDidMount,
     select: handleDateSelect,
     eventDrop: handleEventDrop,
     eventResize: handleEventResize,
-    
-    // Styling
     themeSystem: 'standard',
   };
 });
@@ -781,6 +824,16 @@ const handleEditDrawerSaved = async () => {
 // Watch for dark mode changes
 watch(() => document.documentElement.classList.contains('dark'), (newVal) => {
   isDarkMode.value = newVal;
+  nextTick(() => {
+    document.querySelectorAll('.calendar-view-container .fc-event[data-event-status]').forEach((el) => {
+      el.style.removeProperty('--fc-event-text-color');
+      const colors = getEventCalendarColors(el.dataset.eventStatus);
+      el.style.setProperty('--fc-event-text-color', colors.text);
+      el.querySelectorAll('.fc-event-main, .fc-event-title, .fc-event-time').forEach((node) => {
+        node.style.color = colors.text;
+      });
+    });
+  });
 }, { immediate: true });
 
 // Handle record creation events to refresh views
@@ -876,251 +929,357 @@ onUnmounted(() => {
 
 <style>
 /* Hide table container when in calendar view - use JavaScript for more reliable control */
-/* CSS is a fallback, JavaScript toggleTableView handles the actual hiding */
 [data-view="calendar"] .mt-4.px-4.sm\:px-6.lg\:px-8:not(.calendar-view-container) {
   display: none;
 }
 
-/* Show table container when in list view */
 [data-view="list"] .mt-4.px-4.sm\:px-6.lg\:px-8:not(.calendar-view-container) {
   display: block;
 }
 
-/* Calendar view container should always be visible when rendered */
 .calendar-view-container {
   display: block;
+  width: 100%;
 }
 
-/* FullCalendar Custom Styling */
-.fc {
+/* ------------------------------------------------------------------ */
+/* Events calendar — full width, product-aligned typography/spacing   */
+/* ------------------------------------------------------------------ */
+
+.calendar-view-container .events-calendar.fc {
+  --fc-border-color: rgb(229 231 235);
+  --fc-today-bg-color: rgb(238 242 255 / 0.55);
+  --fc-neutral-bg-color: rgb(249 250 251);
+  --fc-page-bg-color: transparent;
+  width: 100%;
   font-family: inherit;
 }
 
-.fc .fc-button {
-  background-color: #4f46e5;
-  border-color: #4f46e5;
-  color: white;
+.dark .calendar-view-container .events-calendar.fc {
+  --fc-border-color: rgb(55 65 81);
+  --fc-today-bg-color: rgb(67 56 202 / 0.12);
+  --fc-neutral-bg-color: rgb(17 24 39);
+}
+
+.calendar-view-container .fc .fc-header-toolbar {
+  margin-bottom: 0 !important;
+  padding: 1rem 1rem 0.875rem;
+  border-bottom: 1px solid rgb(243 244 246);
+}
+
+@media (min-width: 640px) {
+  .calendar-view-container .fc .fc-header-toolbar {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .calendar-view-container .fc .fc-header-toolbar {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.dark .calendar-view-container .fc .fc-header-toolbar {
+  border-bottom-color: rgb(31 41 55);
+}
+
+.calendar-view-container .fc .fc-toolbar {
+  gap: 0.5rem !important;
+}
+
+.calendar-view-container .fc .fc-toolbar-title {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em;
+  color: rgb(17 24 39);
+}
+
+@media (min-width: 640px) {
+  .calendar-view-container .fc .fc-toolbar-title {
+    font-size: 1.5rem !important;
+  }
+}
+
+.dark .calendar-view-container .fc .fc-toolbar-title {
+  color: rgb(249 250 251);
+}
+
+.calendar-view-container .fc-theme-standard .fc-scrollgrid {
+  border: none;
+  border-radius: 0;
+}
+
+.calendar-view-container .fc .fc-col-header-cell {
+  background: rgb(249 250 251);
+}
+
+.dark .calendar-view-container .fc .fc-col-header-cell {
+  background: rgb(17 24 39);
+}
+
+.calendar-view-container .fc .fc-col-header-cell-cushion {
+  padding: 0.625rem 0;
+  font-size: 0.75rem;
   font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  transition: all 0.2s;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgb(107 114 128);
 }
 
-.fc .fc-button:hover {
-  background-color: #4338ca;
-  border-color: #4338ca;
+.dark .calendar-view-container .fc .fc-col-header-cell-cushion {
+  color: rgb(156 163 175);
 }
 
-.fc .fc-button:disabled {
-  background-color: #9ca3af;
-  border-color: #9ca3af;
-  opacity: 0.5;
+.calendar-view-container .fc .fc-daygrid-day-frame {
+  min-height: 5.5rem;
 }
 
-.fc .fc-button-primary:not(:disabled):active,
-.fc .fc-button-primary:not(:disabled).fc-button-active {
-  background-color: #4338ca;
-  border-color: #4338ca;
-}
-
-.fc .fc-toolbar-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #111827;
-}
-
-.fc-theme-standard .fc-scrollgrid {
-  border-color: #e5e7eb;
-}
-
-.fc-theme-standard td,
-.fc-theme-standard th {
-  border-color: #e5e7eb;
-}
-
-.fc .fc-daygrid-day-number {
-  color: #374151;
-  font-weight: 500;
-  padding: 0.5rem;
-}
-
-.fc .fc-col-header-cell-cushion {
-  color: #6b7280;
-  font-weight: 600;
-  padding: 0.75rem 0;
-}
-
-.fc .fc-daygrid-day.fc-day-today {
-  background-color: #eff6ff !important;
-}
-
-.fc .fc-event {
-  border-radius: 0.375rem;
-  padding: 2px 4px;
+.calendar-view-container .fc .fc-daygrid-day-number {
+  float: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0.375rem 0.5rem;
+  padding: 0;
   font-size: 0.875rem;
   font-weight: 500;
+  color: rgb(55 65 81);
+  border-radius: 9999px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.dark .calendar-view-container .fc .fc-daygrid-day-number {
+  color: rgb(209 213 219);
+}
+
+.calendar-view-container .fc .fc-daygrid-day.fc-day-today {
+  background-color: var(--fc-today-bg-color) !important;
+}
+
+.calendar-view-container .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  background: rgb(79 70 229);
+  color: rgb(255 255 255);
+  font-weight: 600;
+}
+
+.dark .calendar-view-container .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  background: rgb(99 102 241);
+}
+
+.calendar-view-container .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
+  color: rgb(156 163 175);
+}
+
+.dark .calendar-view-container .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
+  color: rgb(107 114 128);
+}
+
+.calendar-view-container .fc .fc-daygrid-day.fc-day-other {
+  background: var(--fc-neutral-bg-color);
+}
+
+.dark .calendar-view-container .fc .fc-daygrid-day {
+  background: rgb(31 41 55);
+}
+
+.dark .calendar-view-container .fc .fc-daygrid-day.fc-day-other {
+  background: rgb(17 24 39);
+}
+
+/* Status-tinted event chips */
+.calendar-view-container .fc .fc-event {
+  margin: 2px 4px;
+  padding: 2px 6px;
   border: none;
+  border-radius: 0.375rem;
+  border-left: 3px solid transparent;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25rem;
   cursor: pointer;
+  box-shadow: none;
+  transition: filter 0.15s ease;
 }
 
-.fc .fc-event:hover {
-  opacity: 0.85;
+@media (min-width: 640px) {
+  .calendar-view-container .fc .fc-event {
+    font-size: 0.8125rem;
+  }
 }
 
-.fc .fc-daygrid-event-dot {
+.calendar-view-container .fc .fc-event:hover {
+  filter: brightness(0.97);
+}
+
+.calendar-view-container .fc .fc-daygrid-event-dot {
   display: none;
 }
 
-/* Dark Mode Styles */
-.dark .fc .fc-button {
-  background-color: #4f46e5;
-  border-color: #4f46e5;
-  color: white;
+.calendar-view-container .fc .fc-event-status-scheduled {
+  --fc-event-text-color: rgb(55 48 163);
+  --fc-event-bg-color: rgb(238 242 255);
+  --fc-event-border-color: rgb(99 102 241);
+  background: rgb(238 242 255) !important;
+  border-left-color: rgb(99 102 241) !important;
+  color: rgb(55 48 163) !important;
 }
 
-.dark .fc .fc-button:hover {
-  background-color: #4338ca;
-  border-color: #4338ca;
+.calendar-view-container .fc .fc-event-status-completed {
+  --fc-event-text-color: rgb(6 95 70);
+  --fc-event-bg-color: rgb(236 253 245);
+  --fc-event-border-color: rgb(16 185 129);
+  background: rgb(236 253 245) !important;
+  border-left-color: rgb(16 185 129) !important;
+  color: rgb(6 95 70) !important;
 }
 
-.dark .fc .fc-button:disabled {
-  background-color: #4b5563;
-  border-color: #4b5563;
-  opacity: 0.5;
+.calendar-view-container .fc .fc-event-status-cancelled {
+  --fc-event-text-color: rgb(71 85 105);
+  --fc-event-bg-color: rgb(241 245 249);
+  --fc-event-border-color: rgb(148 163 184);
+  background: rgb(241 245 249) !important;
+  border-left-color: rgb(148 163 184) !important;
+  color: rgb(71 85 105) !important;
 }
 
-.dark .fc .fc-button-primary:not(:disabled):active,
-.dark .fc .fc-button-primary:not(:disabled).fc-button-active {
-  background-color: #3730a3;
-  border-color: #3730a3;
+.calendar-view-container .fc .fc-event-status-in-progress {
+  --fc-event-text-color: rgb(146 64 14);
+  --fc-event-bg-color: rgb(255 251 235);
+  --fc-event-border-color: rgb(245 158 11);
+  background: rgb(255 251 235) !important;
+  border-left-color: rgb(245 158 11) !important;
+  color: rgb(146 64 14) !important;
 }
 
-.dark .fc .fc-toolbar-title {
-  color: #f9fafb;
+.calendar-view-container .fc .fc-event[class*='fc-event-status-'] .fc-event-main,
+.calendar-view-container .fc .fc-event[class*='fc-event-status-'] .fc-event-title,
+.calendar-view-container .fc .fc-event[class*='fc-event-status-'] .fc-event-time {
+  color: var(--fc-event-text-color) !important;
 }
 
-.dark .fc .fc-toolbar-chunk {
-  color: #f9fafb;
+.dark .calendar-view-container .fc .fc-event-status-scheduled {
+  --fc-event-text-color: rgb(199 210 254);
+  --fc-event-bg-color: rgb(99 102 241 / 0.18);
+  --fc-event-border-color: rgb(129 140 248);
+  background: rgb(99 102 241 / 0.18) !important;
+  border-left-color: rgb(129 140 248) !important;
+  color: rgb(199 210 254) !important;
 }
 
-.dark .fc .fc-col-header {
-  background-color: #111827;
+.dark .calendar-view-container .fc .fc-event-status-completed {
+  --fc-event-text-color: rgb(167 243 208);
+  --fc-event-bg-color: rgb(16 185 129 / 0.16);
+  --fc-event-border-color: rgb(52 211 153);
+  background: rgb(16 185 129 / 0.16) !important;
+  border-left-color: rgb(52 211 153) !important;
+  color: rgb(167 243 208) !important;
 }
 
-.dark .fc .fc-col-header-cell {
-  background-color: #111827;
-  border-color: #374151;
+.dark .calendar-view-container .fc .fc-event-status-cancelled {
+  --fc-event-text-color: rgb(203 213 225);
+  --fc-event-bg-color: rgb(148 163 184 / 0.14);
+  --fc-event-border-color: rgb(148 163 184);
+  background: rgb(148 163 184 / 0.14) !important;
+  border-left-color: rgb(148 163 184) !important;
+  color: rgb(203 213 225) !important;
 }
 
-.dark .fc-theme-standard .fc-scrollgrid {
-  border-color: #374151;
-  background-color: #1f2937;
+.dark .calendar-view-container .fc .fc-event-status-in-progress {
+  --fc-event-text-color: rgb(253 230 138);
+  --fc-event-bg-color: rgb(245 158 11 / 0.14);
+  --fc-event-border-color: rgb(251 191 36);
+  background: rgb(245 158 11 / 0.14) !important;
+  border-left-color: rgb(251 191 36) !important;
+  color: rgb(253 230 138) !important;
 }
 
-.dark .fc-theme-standard td,
-.dark .fc-theme-standard th {
-  border-color: #374151;
+.calendar-view-container .fc .fc-daygrid-more-link {
+  margin: 2px 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(79 70 229);
 }
 
-.dark .fc .fc-daygrid-day-number {
-  color: #d1d5db;
+.dark .calendar-view-container .fc .fc-daygrid-more-link {
+  color: rgb(165 180 252);
 }
 
-.dark .fc .fc-col-header-cell-cushion {
-  color: #9ca3af;
+.calendar-view-container .fc .fc-highlight {
+  background: rgb(99 102 241 / 0.08);
 }
 
-.dark .fc .fc-daygrid-day.fc-day-today {
-  background-color: #1e3a8a !important;
-}
-
-.dark .fc .fc-daygrid-day {
-  background-color: #1f2937;
-}
-
-.dark .fc .fc-daygrid-day.fc-day-other {
-  background-color: #111827;
-}
-
-.dark .fc .fc-timegrid-col {
-  background-color: #1f2937;
-}
-
-.dark .fc .fc-timegrid-axis {
-  background-color: #111827;
-}
-
-.dark .fc-theme-standard .fc-list {
-  border-color: #374151;
-  background-color: #1f2937;
-}
-
-.dark .fc .fc-list-day-cushion {
-  background-color: #1f2937;
-  color: #f9fafb;
-}
-
-.dark .fc .fc-list-event:hover td {
-  background-color: #374151;
-}
-
-.dark .fc .fc-list-event-dot {
-  border-color: inherit;
-}
-
-.dark .fc .fc-list-event-time,
-.dark .fc .fc-list-event-title {
-  color: #d1d5db;
-}
-
-/* Time Grid Styles */
-.fc .fc-timegrid-slot {
+/* Time grid */
+.calendar-view-container .fc .fc-timegrid-slot {
   height: 3rem;
 }
 
-.fc .fc-timegrid-slot-label {
-  color: #6b7280;
+.calendar-view-container .fc .fc-timegrid-slot-label {
   font-size: 0.75rem;
+  color: rgb(107 114 128);
 }
 
-.dark .fc .fc-timegrid-slot-label {
-  color: #9ca3af;
+.dark .calendar-view-container .fc .fc-timegrid-slot-label {
+  color: rgb(156 163 175);
 }
 
-.fc .fc-timegrid-event {
+.calendar-view-container .fc .fc-timegrid-event {
   border-radius: 0.375rem;
-  border: none;
+  border-left-width: 3px;
 }
 
-.fc .fc-timegrid-now-indicator-line {
-  border-color: #ef4444;
+.calendar-view-container .fc .fc-timegrid-now-indicator-line {
+  border-color: rgb(239 68 68);
   border-width: 2px;
 }
 
-/* List View Styles */
-.fc .fc-list-day-cushion {
-  background-color: #f3f4f6;
+.dark .calendar-view-container .fc .fc-timegrid-col,
+.dark .calendar-view-container .fc .fc-timegrid-axis {
+  background: rgb(31 41 55);
+}
+
+.dark .calendar-view-container .fc .fc-timegrid-axis {
+  background: rgb(17 24 39);
+}
+
+/* List view */
+.calendar-view-container .fc .fc-list-day-cushion {
+  padding: 0.5rem 1rem;
+  background: rgb(249 250 251);
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
-.fc .fc-list-event:hover td {
-  background-color: #f9fafb;
+.dark .calendar-view-container .fc .fc-list-day-cushion {
+  background: rgb(17 24 39);
+  color: rgb(249 250 251);
 }
 
-/* Responsive */
+.calendar-view-container .fc .fc-list-event:hover td {
+  background: rgb(249 250 251);
+}
+
+.dark .calendar-view-container .fc .fc-list-event:hover td {
+  background: rgb(55 65 81);
+}
+
+.dark .calendar-view-container .fc .fc-list-event-time,
+.dark .calendar-view-container .fc .fc-list-event-title {
+  color: rgb(209 213 219);
+}
+
 @media (max-width: 768px) {
-  .fc .fc-toolbar {
+  .calendar-view-container .fc .fc-toolbar {
     flex-direction: column;
-    gap: 0.5rem;
+    align-items: stretch;
   }
-  
-  .fc .fc-toolbar-title {
-    font-size: 1.25rem;
-  }
-  
-  .fc .fc-button {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.875rem;
+
+  .calendar-view-container .fc .fc-toolbar-title {
+    font-size: 1.125rem !important;
+    text-align: center;
   }
 }
 </style>

@@ -16,6 +16,51 @@ const { APP_KEYS } = require('../constants/appKeys');
 const { deriveEventActionPermission } = require('../domain/events/eventPermissions');
 const { assignResolvedSource } = require('../services/sourceResolver');
 
+const GEO_REQUIRED_EVENT_TYPES = new Set([
+    'Internal Audit',
+    'External Audit — Single Org',
+    'External Audit Beat'
+]);
+
+function isMeetingUrlLocation(location) {
+    return /^https?:\/\//i.test(String(location || '').trim());
+}
+
+function eventRequiresGeoPin(eventData) {
+    if (eventData?.geoRequired === true) return true;
+    return GEO_REQUIRED_EVENT_TYPES.has(eventData?.eventType);
+}
+
+function normalizeEventGeoLocation(eventData) {
+    if (!eventData?.geoLocation || typeof eventData.geoLocation !== 'object') return;
+
+    const lat = eventData.geoLocation.latitude;
+    const lng = eventData.geoLocation.longitude;
+    if (lat == null || lng == null) {
+        delete eventData.geoLocation;
+        return;
+    }
+
+    if (eventData.location) {
+        eventData.geoLocation.address = eventData.location;
+    }
+}
+
+function validateEventGeoLocationPayload(eventData) {
+    if (!eventRequiresGeoPin(eventData)) return null;
+    if (isMeetingUrlLocation(eventData.location)) return null;
+
+    const lat = eventData.geoLocation?.latitude;
+    const lng = eventData.geoLocation?.longitude;
+    if (lat != null && lng != null) return null;
+
+    return {
+        success: false,
+        message: 'Visit location is required for geo-enabled events. Search for an address or use the organization address.',
+        code: 'GEO_LOCATION_REQUIRED'
+    };
+}
+
 async function validateAuditUserRoleScopes({
     eventType,
     requesterOrgId,
@@ -806,6 +851,12 @@ exports.createEvent = async (req, res) => {
         }
         
         console.log('[createEvent] Final eventData.linkedFormId:', eventData.linkedFormId);
+
+        normalizeEventGeoLocation(eventData);
+        const geoValidationError = validateEventGeoLocationPayload(eventData);
+        if (geoValidationError) {
+            return res.status(400).json(geoValidationError);
+        }
         
         // Extract custom fields into customFields bucket for persistence
         const { extractCustomFields, flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
@@ -1131,6 +1182,15 @@ exports.updateEvent = async (req, res) => {
                 correctiveOwnerUserId: validationData.correctiveOwnerId,
                 allowSelfReview: inferredAllowSelfReview
             });
+        }
+
+        normalizeEventGeoLocation(validationData);
+        const geoValidationError = validateEventGeoLocationPayload(validationData);
+        if (geoValidationError) {
+            return res.status(400).json(geoValidationError);
+        }
+        if (Object.prototype.hasOwnProperty.call(updateData, 'geoLocation')) {
+            updateData.geoLocation = validationData.geoLocation;
         }
         
         // Generic description versioning: store previous description before update.

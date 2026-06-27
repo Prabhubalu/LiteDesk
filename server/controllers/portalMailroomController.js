@@ -14,6 +14,7 @@ const {
 } = require('../platform/mailroom/connectors/portal/portalSafety');
 const {
   getPortalRulesForUser,
+  assertPortalActionAllowed,
   assertPortalAttachmentAllowed
 } = require('../platform/mailroom/connectors/portal/portalRules');
 const {
@@ -119,6 +120,7 @@ async function replyToCaseFromPortal(req, res) {
 
     const portalCapabilities = req.portalCapabilities
       || await getPortalRulesForUser(req.user, config);
+    assertPortalActionAllowed(portalCapabilities, 'reply');
     const input = req.body?.message || {};
     const attachments = Array.isArray(input.attachments) ? input.attachments : [];
     if (attachments.length > portalCapabilities.maxAttachmentsPerMessage) {

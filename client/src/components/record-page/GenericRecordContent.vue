@@ -322,6 +322,12 @@
           class="mt-4"
         />
 
+        <PeopleExternalAccessPanel
+          v-if="isPeopleModule && recordId && !expandedLeftSection"
+          :people-id="recordId"
+          class="mt-4"
+        />
+
         <div
           v-if="genericStateFields.length && (!expandedLeftSection || expandedLeftSection === 'key-fields')"
           :class="['group/left-section', expandedLeftSection ? 'mt-8' : 'mt-4']"
@@ -1193,6 +1199,7 @@ import { typeDefsToBadgeOptions } from '@/utils/peopleTypeColors';
 import AttachToAppModal from '@/components/people/AttachToAppModal.vue';
 import ParticipationEditModal from '@/components/people/ParticipationEditModal.vue';
 import SalesConvertLeadModal from '@/components/people/SalesConvertLeadModal.vue';
+import PeopleExternalAccessPanel from '@/components/people/PeopleExternalAccessPanel.vue';
 import { getParticipationFields } from '@/platform/fields/peopleFieldModel';
 import { hasPeoplePermission } from '@/platform/permissions/peoplePermissionHelper';
 import { PEOPLE_PERMISSIONS } from '@/platform/permissions/peoplePermissions';

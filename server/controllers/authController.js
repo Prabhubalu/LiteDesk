@@ -33,6 +33,15 @@ const {
     materializeEffectiveCRMEnvelopeOnUser,
     userPermissionsEnvelopeToPlain
 } = require('../utils/rolePermissionProjection');
+const {
+    buildAuthenticatedSessionResponse
+} = require('../services/authSessionService');
+const { isPortalFrameworkV1Enabled } = require('../utils/portalFeatureFlags');
+const {
+    resolveExternalLoginSession,
+    isExternalUser
+} = require('../services/externalRoleSessionService');
+const { recordPortalEvent } = require('../services/securityAuditService');
 const securityLogger = require('../middleware/securityLoggingMiddleware');
 const { getDefaultRoleForApp } = require('../utils/appAccessUtils');
 const { ensureDefaultCommunicationSettingsForOrganization } = require('../services/communicationDefaultsSeeder');
@@ -572,13 +581,35 @@ exports.loginUser = async (req, res) => {
         }
         console.log('✅ Organization is active');
 
-        // 6. Last login + denormalized permission snapshot (one save)
+        // 6. Last login + session payload
         orgUser.lastLogin = new Date();
-        await materializeEffectiveCRMEnvelopeOnUser(orgUser);
+
+        const userType = String(orgUser.userType || 'INTERNAL').toUpperCase();
+        let portalSession = null;
+
+        if (isExternalUser(orgUser) && isPortalFrameworkV1Enabled(organizationForLogin)) {
+            portalSession = await resolveExternalLoginSession(orgUser, organizationForLogin);
+            if (!portalSession.ok) {
+                securityLogger.logAuthEvent('LOGIN_FAILED', {
+                    email: normalizedEmail,
+                    userId: orgUser._id,
+                    organizationId: organizationForLogin._id,
+                    reason: portalSession.code,
+                    ip: req.ip,
+                    userAgent: req.get('user-agent')
+                });
+                return res.status(portalSession.status || 403).json({
+                    message: portalSession.message,
+                    code: portalSession.code
+                });
+            }
+        } else {
+            await materializeEffectiveCRMEnvelopeOnUser(orgUser);
+        }
+
         const {
           ensureOnboardingStarted,
-          syncAutomaticCompletions,
-          buildLoginOnboardingSummary
+          syncAutomaticCompletions
         } = require('../services/onboardingService');
         await ensureOnboardingStarted(orgUser);
         await syncAutomaticCompletions(orgUser, organizationForLogin);
@@ -591,7 +622,6 @@ exports.loginUser = async (req, res) => {
 
         console.log('✅ Login successful for:', email);
 
-        // Log successful login
         securityLogger.logAuthEvent('LOGIN_SUCCESS', {
             email: normalizedEmail,
             userId: orgUser._id,
@@ -601,57 +631,41 @@ exports.loginUser = async (req, res) => {
             success: true
         });
 
-        // Derive allowedApps from appAccess if not set (for backward compatibility)
-        let allowedApps = orgUser.allowedApps;
-        if (!allowedApps || allowedApps.length === 0) {
-            // Derive from appAccess array
-            if (orgUser.appAccess && orgUser.appAccess.length > 0) {
-                allowedApps = orgUser.appAccess
-                    .filter(access => access.status === 'ACTIVE')
-                    .map(access => access.appKey);
-            } else {
-                // Default to Sales if nothing is set
-                allowedApps = ['SALES'];
-            }
+        if (isExternalUser(orgUser) && portalSession?.ok) {
+            await recordPortalEvent({
+                organizationId: organizationForLogin._id,
+                type: 'portal_login',
+                description: 'External user login',
+                userId: orgUser._id,
+                peopleId: orgUser.peopleId || null,
+                actorUserId: orgUser._id,
+                ipAddress: req.ip || null,
+                userAgent: req.get('user-agent') || null,
+                metadata: {
+                    requiresPortalSelection: portalSession.requiresPortalSelection,
+                    activeExternalRoleId: portalSession.activeExternalRoleId
+                }
+            });
         }
 
-        const instanceContext = await resolveInstanceForLogin(organizationForLogin?._id, normalizedEmail);
-        const entitledAddons = await buildClientSessionEntitlements(orgUser, organizationForLogin._id);
-        // Respond with Token and Organization Info (use orgUser data)
-        res.json({
-            _id: orgUser._id,
-            username: orgUser.username,
-            email: orgUser.email,
-            role: orgUser.role,
-            userType: orgUser.userType || 'INTERNAL',
-            isOwner: orgUser.isOwner,
-            isPlatformAdmin: orgUser.isPlatformAdmin === true,
-            permissions: userPermissionsEnvelopeToPlain(orgUser),
-            allowedApps: allowedApps, // Include app access
-            entitledAddons,
-            appAccess: orgUser.appAccess,
-            organization: {
-                _id: organizationForLogin._id,
-                name: organizationForLogin.name,
-                industry: organizationForLogin.industry,
-                subscription: organizationForLogin.subscription,
-                limits: organizationForLogin.limits,
-                enabledApps: organizationForLogin.enabledApps || [], // App-level enablement (required for owner access check)
-                enabledModules: organizationForLogin.enabledModules,
-                settings: organizationForLogin.settings,
-                database: organizationForLogin.database ? {
-                    name: organizationForLogin.database.name,
-                    initialized: organizationForLogin.database.initialized
-                } : null,
-                capabilities: buildOrgCapabilities(organizationForLogin)
-            },
-            instance: instanceContext,
-            token: generateToken(orgUser._id, organizationForLogin._id),
-            emailVerifiedAt: orgUser.emailVerifiedAt || null,
-            requiresEmailVerification: !orgUser.emailVerifiedAt,
-            mustChangePassword: orgUser.mustChangePassword === true,
-            onboarding: buildLoginOnboardingSummary(orgUser)
+        const activePortal = portalSession?.portals?.find(
+            (p) => portalSession.activeExternalRoleId
+                && String(p.roleId) === String(portalSession.activeExternalRoleId)
+        ) || null;
+
+        const sessionPayload = await buildAuthenticatedSessionResponse(orgUser, organizationForLogin, {
+            activeExternalRoleId: portalSession?.activeExternalRoleId || null,
+            requiresPortalSelection: portalSession?.requiresPortalSelection === true,
+            portals: portalSession?.portals || [],
+            activePortal,
+            markLogin: false,
+            sessionMeta: {
+                ip: req.ip || null,
+                userAgent: req.get('user-agent') || null
+            }
         });
+
+        res.json(sessionPayload);
         
     } catch (error) {
         console.error('❌ Login error:', error);

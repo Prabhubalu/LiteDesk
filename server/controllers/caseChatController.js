@@ -150,6 +150,9 @@ exports.sendCaseChatMessage = async (req, res) => {
         actorId: req.user._id,
         activityType: 'agent_message'
       });
+      const lastActivity = row.activities[row.activities.length - 1];
+      const { notifyPortalCaseCustomerActivity } = require('../services/portalCaseNotificationService');
+      await notifyPortalCaseCustomerActivity(row, lastActivity, { actorId: req.user._id });
     }
     return res.status(201).json({ success: true, data: msg, meta: { sessionId: session._id } });
   } catch (err) {

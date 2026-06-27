@@ -135,6 +135,9 @@ router.get('/security', controller.getSecuritySettings);
 router.put('/security', controller.updateSecuritySettings);
 router.get('/security/activity', controller.getSecurityActivity);
 
+// Billing / usage (V1 external users — collect only)
+router.get('/billing/external-user-usage', controller.getExternalUserUsage);
+
 // Integrations settings endpoints
 router.get('/integrations', controller.getIntegrations);
 router.get('/integrations/:key', controller.getIntegration);

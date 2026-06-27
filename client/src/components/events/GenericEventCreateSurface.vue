@@ -114,12 +114,13 @@
             <!-- Location -->
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('events.genericEventCreateSurfaceLocation') }}</label>
-              <input
-                v-model="form.location"
-                type="text"
-                maxlength="500"
+              <EventLocationField
+                :location="form.location"
+                :geo-location="null"
+                :geo-required="false"
                 :placeholder="t('events.genericEventCreateSurfaceAddressOrLocationNameOptional')"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                @update:location="form.location = $event"
+                @update:geo-location="() => {}"
               />
             </div>
           </form>
@@ -191,6 +192,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
+import EventLocationField from '@/components/events/EventLocationField.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import { getEventTypesForApp, EVENT_TYPES, getEventTypeByKey, getEventTypeDefinitionByKey } from '@/metadata/eventTypes';

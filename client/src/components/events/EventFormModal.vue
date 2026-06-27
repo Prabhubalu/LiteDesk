@@ -141,12 +141,13 @@
             
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('events.eventFormModalLocationAddressOrUrl') }}</label>
-              <input
-                v-model="form.location"
-                type="text"
-                maxlength="1024"
-                :placeholder="t('events.eventFormModalPhysicalAddressOrMeetingUrl')"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              <EventLocationField
+                :location="form.location"
+                :geo-location="form.geoLocation"
+                :geo-required="effectiveGeoRequired"
+                :related-to-id="form.relatedToId"
+                @update:location="form.location = $event"
+                @update:geo-location="form.geoLocation = $event"
               />
             </div>
           </div>
@@ -415,11 +416,12 @@ import apiClient from '@/utils/apiClient';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import dateUtils from '@/utils/dateUtils';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
+import EventLocationField from '@/components/events/EventLocationField.vue';
 import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import { useProjectionCreate } from '@/composables/useProjectionCreate';
-import { isAuditEventType, filterNonAuditEventTypes, NON_AUDIT_EVENT_TYPES } from '@/utils/eventUtils';
+import { isAuditEventType, filterNonAuditEventTypes, filterFormsForEventLinkedForm, NON_AUDIT_EVENT_TYPES, isEventLocationGeoValid, resolveEventGeoRequired } from '@/utils/eventUtils';
 
 const props = defineProps({
   isOpen: {
@@ -541,6 +543,10 @@ const geoRequiredForced = computed(() => {
   return form.value.eventType === 'Internal Audit' || 
          form.value.eventType === 'External Audit Beat';
 });
+
+const effectiveGeoRequired = computed(() =>
+  resolveEventGeoRequired(form.value.eventType, form.value.geoRequired)
+);
 
 const canToggleGeo = computed(() => {
   // Admin permission check would go here
@@ -765,31 +771,7 @@ const fetchForms = async () => {
     const response = await apiClient.get('/forms', { params: { limit: 100 } });
     if (response.success) {
       const allForms = response.data || [];
-      
-      // Filter to show only Ready and Active forms
-      const readyAndActiveForms = allForms.filter(form => 
-        form.status === 'Ready' || form.status === 'Active'
-      );
-      
-      // Further filter to show audit-related forms if formType exists
-      auditForms.value = readyAndActiveForms.filter(form => {
-        // If formType exists, prefer Audit types; otherwise include all Ready/Active forms
-        return !form.formType || 
-               form.formType === 'Audit' || 
-               form.formType.toLowerCase().includes('audit');
-      });
-      
-      // If no audit-type forms found, show all Ready/Active forms as fallback
-      if (auditForms.value.length === 0 && readyAndActiveForms.length > 0) {
-        auditForms.value = readyAndActiveForms;
-      }
-      
-      // Sort: Active forms first, then Ready forms
-      auditForms.value.sort((a, b) => {
-        if (a.status === 'Active' && b.status === 'Ready') return -1;
-        if (a.status === 'Ready' && b.status === 'Active') return 1;
-        return 0;
-      });
+      auditForms.value = filterFormsForEventLinkedForm(allForms, form.value.eventType);
     }
   } catch (error) {
     console.error('Error fetching forms:', error);
@@ -981,6 +963,15 @@ const handleSubmit = async (e) => {
   
   if (!form.value.eventOwnerId && !currentUser.value._id) {
     alert(t('events.eventFormModalToastEventOwnerIsRequired'));
+    return;
+  }
+
+  if (!isEventLocationGeoValid(
+    form.value.location,
+    form.value.geoLocation,
+    effectiveGeoRequired.value
+  )) {
+    alert(t('events.eventLocationGeoRequiredHint'));
     return;
   }
   

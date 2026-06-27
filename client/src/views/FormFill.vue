@@ -1,48 +1,51 @@
 <template>
-  <div class="bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-    <!-- Sticky Header with Progress -->
-    <div v-if="form && !submitted" class="sticky top-0 z-20 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-lg -mx-4 lg:-mx-6 px-4 lg:px-6">
-      <div class="max-w-5xl mx-auto py-4">
-        <div class="flex items-center justify-between gap-4">
+  <div class="min-h-full bg-gray-50 dark:bg-gray-950">
+    <!-- Sticky Header -->
+    <div v-if="form && !submitted" class="sticky top-0 z-20 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-gray-800 -mx-4 lg:-mx-6 px-4 lg:px-6">
+      <div class="max-w-3xl mx-auto py-3 sm:py-4">
+        <div class="flex items-start gap-3">
+          <button
+            v-if="eventId"
+            @click="goBackToEvent"
+            class="mt-0.5 flex-shrink-0 p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+            :title="t('forms.hubFillBackToEventTitle')"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
           <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-3 mb-2">
-              <button
-                v-if="eventId"
-                @click="goBackToEvent"
-                class="flex-shrink-0 p-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-                :title="t('forms.hubFillBackToEventTitle')"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-              </button>
-              <h1 class="text-xl font-bold text-gray-900 dark:text-white truncate">{{ form.name }}</h1>
-              <span v-if="eventId" class="flex-shrink-0 px-2.5 py-1 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 rounded-full">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h1 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white truncate">{{ form.name }}</h1>
+              <span v-if="eventId" class="flex-shrink-0 px-2 py-0.5 text-[11px] font-medium bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-md">
                 {{ t('forms.hubFillEventLinked') }}
               </span>
             </div>
-            <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-              <span class="font-medium">{{ form.formId }}</span>
-              <span v-if="form.formType" class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ form.formType }}</span>
-              <span v-if="totalQuestions > 0" class="text-gray-400 dark:text-gray-500">
-                {{ t('forms.hubFillQuestionsProgress', { answered: answeredQuestions, total: totalQuestions }) }}
+            <div class="mt-1 flex items-center gap-x-3 gap-y-1 flex-wrap text-xs text-gray-500 dark:text-gray-400">
+              <span>{{ form.formId }}</span>
+              <span v-if="form.formType" class="text-gray-400 dark:text-gray-500">{{ form.formType }}</span>
+              <span v-if="totalQuestions > 0">{{ t('forms.hubFillQuestionsProgress', { answered: answeredQuestions, total: totalQuestions }) }}</span>
+              <span v-if="autoSaveStatus" class="inline-flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full" :class="autoSaveStatus === 'saving' ? 'bg-amber-400 animate-pulse' : 'bg-emerald-500'"></span>
+                {{ autoSaveStatus === 'saving' ? t('states.saving') : t('forms.hubFillAutoSaveSaved') }}
               </span>
             </div>
           </div>
-          <div class="flex-shrink-0">
-            <div class="w-32 sm:w-48 bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-              <div 
-                class="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-500 ease-out"
+          <div class="flex-shrink-0 text-right">
+            <span class="text-sm font-medium tabular-nums text-gray-900 dark:text-white">{{ Math.round(completionPercentage) }}%</span>
+            <div class="mt-1 w-20 sm:w-28 bg-gray-200 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden">
+              <div
+                class="h-full bg-indigo-500 transition-all duration-300 ease-out"
                 :style="{ width: `${completionPercentage}%` }"
               ></div>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">{{ t('forms.hubFillPercentComplete', { percent: Math.round(completionPercentage) }) }}</p>
           </div>
         </div>
+        <p v-if="form.description" class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed pl-9 sm:pl-10">{{ form.description }}</p>
       </div>
     </div>
 
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-20">
         <div class="w-20 h-20 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-6"></div>
@@ -103,76 +106,35 @@
       </div>
 
       <!-- Form Display -->
-      <div v-else-if="form" class="space-y-6">
-        <!-- Form Header Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 sm:p-8">
-          <div class="mb-4">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">{{ form.name }}</h1>
-            <p v-if="form.description" class="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">{{ form.description }}</p>
-          </div>
-          <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span class="font-medium">{{ form.formId }}</span>
-            </div>
-            <div v-if="form.formType" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 rounded-full text-sm font-medium">
-              {{ form.formType }}
-            </div>
-            <div v-if="autoSaveStatus" class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-              <div class="w-2 h-2 rounded-full" :class="autoSaveStatus === 'saving' ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'"></div>
-              <span>{{ autoSaveStatus === 'saving' ? t('states.saving') : t('forms.hubFillAutoSaveSaved') }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Form Sections -->
-        <form @submit.prevent="submitForm" class="space-y-6">
-          <div 
-            v-for="(section, sectionIndex) in form.sections" 
-            :key="section.sectionId || sectionIndex" 
+      <div v-else-if="form" class="space-y-8">
+        <form @submit.prevent="submitForm" class="space-y-8">
+          <div
+            v-for="(section, sectionIndex) in form.sections"
+            :key="section.sectionId || sectionIndex"
             :id="`section-${sectionIndex}`"
-            class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-xl"
+            class="space-y-4"
           >
             <!-- Section Header -->
             <div
               v-if="shouldShowEngagementSectionTitle(form, section)"
-              class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 px-6 py-5 border-b border-gray-200 dark:border-gray-700"
+              class="flex items-end justify-between gap-4 pb-3 border-b border-gray-200 dark:border-gray-800"
             >
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 bg-indigo-600 dark:bg-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">
-                    {{ sectionIndex + 1 }}
-                  </div>
-                  <div>
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ sectionTitle(section, sectionIndex) }}</h2>
-                    <p v-if="getSectionQuestionCount(section) > 0" class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {{ t('forms.hubFillSectionQuestions', { answered: getSectionAnsweredCount(section), total: getSectionQuestionCount(section) }) }}
-                    </p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <div 
-                    v-if="getSectionQuestionCount(section) > 0"
-                    class="w-16 h-16 rounded-full border-4 border-gray-200 dark:border-gray-700 flex items-center justify-center relative"
-                    :class="getSectionCompletionPercentage(section) === 100 ? 'border-green-500' : ''"
-                  >
-                    <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div 
-                      v-if="getSectionCompletionPercentage(section) < 100"
-                      class="absolute inset-0 rounded-full border-4 border-transparent border-t-indigo-600 dark:border-t-indigo-400 transition-all duration-500"
-                      :style="{ transform: `rotate(${(getSectionCompletionPercentage(section) / 100) * 360 - 90}deg)` }"
-                    ></div>
-                  </div>
-                </div>
+              <div>
+                <p class="text-[11px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-0.5">
+                  {{ t('forms.hubFillSectionFallback', { number: sectionIndex + 1 }) }}
+                </p>
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ sectionTitle(section, sectionIndex) }}</h2>
               </div>
+              <span
+                v-if="getSectionQuestionCount(section) > 0"
+                class="text-xs tabular-nums text-gray-500 dark:text-gray-400 flex-shrink-0"
+              >
+                {{ t('forms.hubFillSectionQuestions', { answered: getSectionAnsweredCount(section), total: getSectionQuestionCount(section) }) }}
+              </span>
             </div>
 
             <!-- Section Content -->
-            <div class="p-6 sm:p-8 space-y-8">
+            <div class="space-y-3">
               <!-- If section has questions directly, render them first -->
               <div v-if="section.questions && section.questions.length > 0" class="space-y-8">
                 <div class="space-y-6">
@@ -221,7 +183,7 @@
                         type="text"
                         :required="question.mandatory"
                         :placeholder="question.placeholder || t('forms.textAnswerPh')"
-                        class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base"
+                        class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-950 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-colors text-sm"
                       />
                       
                       <!-- Number Input -->
@@ -232,7 +194,7 @@
                         type="number"
                         :required="question.mandatory"
                         :placeholder="question.placeholder || t('forms.hubFillNumberPh')"
-                        class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base"
+                        class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-950 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-colors text-sm"
                       />
                       
                       <!-- Textarea -->
@@ -242,8 +204,8 @@
                         @input="handleInputChange"
                         :required="question.mandatory"
                         :placeholder="question.placeholder || t('forms.textAnswerPh')"
-                        rows="5"
-                        class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base resize-y"
+                        rows="4"
+                        class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-950 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-colors text-sm resize-y"
                       ></textarea>
                       
                       <!-- Dropdown -->
@@ -267,14 +229,20 @@
                       />
                       
                       <!-- Radio / Yes-No -->
-                      <div v-else-if="question.type === 'Radio' || question.type === 'Yes-No'" class="space-y-3">
-                        <label 
-                          v-for="option in question.options" 
-                          :key="option" 
-                          class="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200"
-                          :class="formData[question.questionId] === option 
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
-                            : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600 bg-white dark:bg-gray-800'"
+                      <div
+                        v-else-if="question.type === 'Radio' || question.type === 'Yes-No'"
+                        :class="(question.options?.length || 0) <= 2 ? 'grid grid-cols-2 gap-2' : 'space-y-2'"
+                      >
+                        <label
+                          v-for="option in question.options"
+                          :key="option"
+                          class="relative flex cursor-pointer items-center rounded-lg border transition-colors"
+                          :class="[
+                            (question.options?.length || 0) <= 2 ? 'justify-center px-4 py-2.5' : 'gap-3 px-4 py-2.5',
+                            formData[question.questionId] === option
+                              ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-500/60'
+                              : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                          ]"
                         >
                           <input
                             type="radio"
@@ -283,38 +251,38 @@
                             v-model="formData[question.questionId]"
                             @change="handleInputChange"
                             :required="question.mandatory"
-                            class="w-5 h-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 cursor-pointer"
+                            class="sr-only"
                           />
-                          <span class="flex-1 text-gray-900 dark:text-white font-medium">{{ formatFillOptionLabel(option) }}</span>
-                          <div v-if="formData[question.questionId] === option" class="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <span :class="(question.options?.length || 0) <= 2 ? 'text-sm font-medium' : 'flex-1 text-sm font-medium'">
+                            {{ formatFillOptionLabel(option) }}
+                          </span>
+                          <span
+                            v-if="(question.options?.length || 0) > 2 && formData[question.questionId] === option"
+                            class="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500 text-white"
+                          >
+                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                             </svg>
-                          </div>
+                          </span>
                         </label>
                       </div>
                       
                       <!-- Checkbox -->
-                      <div v-else-if="question.type === 'Checkbox'" class="space-y-3">
-                        <label 
-                          v-for="option in question.options" 
-                          :key="option" 
-                          class="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200"
+                      <div v-else-if="question.type === 'Checkbox'" class="space-y-2">
+                        <label
+                          v-for="option in question.options"
+                          :key="option"
+                          class="flex items-center gap-3 px-4 py-2.5 rounded-lg border cursor-pointer transition-colors"
                           :class="(formData[question.questionId] || []).includes(option)
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
-                            : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600 bg-white dark:bg-gray-800'"
+                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 dark:border-indigo-500/60'
+                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 hover:border-gray-300 dark:hover:border-gray-600'"
                         >
                           <HeadlessCheckbox
                             :checked="(formData[question.questionId] || []).includes(option)"
                             @change="toggleQuestionCheckboxOption(question.questionId, option, $event)"
-                            checkbox-class="w-5 h-5 cursor-pointer"
+                            checkbox-class="w-4 h-4 cursor-pointer"
                           />
-                          <span class="flex-1 text-gray-900 dark:text-white font-medium">{{ option }}</span>
-                          <div v-if="(formData[question.questionId] || []).includes(option)" class="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                            </svg>
-                          </div>
+                          <span class="flex-1 text-sm text-gray-900 dark:text-white">{{ option }}</span>
                         </label>
                       </div>
                       
@@ -322,7 +290,7 @@
                       <DatePicker
                         v-else-if="question.type === 'Date'"
                         v-model="formData[question.questionId]"
-                        input-class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base cursor-pointer"
+                        input-class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-950 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-colors text-sm cursor-pointer"
                         @blur="handleInputChange"
                       />
                       
@@ -357,66 +325,55 @@
                     </div>
 
                     <!-- Evidence Section -->
-                    <div v-if="question.evidence?.enabled" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-                        <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
+                    <div v-if="question.evidence?.enabled" class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                      <p class="text-xs font-medium text-gray-600 dark:text-gray-400">
                         {{ t('forms.evidenceRequiredHeading') }}
                       </p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('forms.hubFillEvidenceAttachHint') }}</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-500 mt-0.5">{{ t('forms.hubFillEvidenceAttachHint') }}</p>
                     </div>
                   </div>
-                </div>
               </div>
-              
+
               <!-- If section has subsections, render them after direct questions -->
-              <div v-if="section.subsections && section.subsections.length > 0" class="space-y-8">
-                <div v-for="(subsection, subIndex) in section.subsections" :key="subsection.subsectionId || subIndex" class="space-y-6">
+              <div v-if="section.subsections && section.subsections.length > 0" class="space-y-4">
+                <div v-for="(subsection, subIndex) in section.subsections" :key="subsection.subsectionId || subIndex" class="space-y-3">
                   <!-- Subsection Header -->
-                  <div v-if="shouldShowEngagementSubsectionTitle(form, section, subsection)" class="border-l-4 border-indigo-500 dark:border-indigo-400 pl-4">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">{{ subsection.name }}</h3>
+                  <div v-if="shouldShowEngagementSubsectionTitle(form, section, subsection)" class="pt-2">
+                    <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ subsection.name }}</h3>
                   </div>
-                  
+
                   <!-- Questions -->
-                  <div class="space-y-6">
-                  <div 
-                    v-for="(question, qIndex) in subsection.questions" 
-                    :key="question.questionId || qIndex" 
-                    class="question-card p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 transition-all duration-200 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md"
-                    :class="{ 'border-red-300 dark:border-red-700 bg-red-50/50 dark:bg-red-900/20': question.mandatory && !isQuestionAnswered(question) }"
+                  <div
+                    v-for="(question, qIndex) in subsection.questions"
+                    :key="question.questionId || qIndex"
+                    class="rounded-xl border bg-white dark:bg-gray-900 p-4 sm:p-5 transition-colors"
+                    :class="question.mandatory && !isQuestionAnswered(question)
+                      ? 'border-red-300/70 dark:border-red-800/70'
+                      : 'border-gray-200 dark:border-gray-800'"
                   >
                     <!-- Question Header -->
-                    <div class="mb-4">
-                      <div class="flex items-start justify-between gap-3 mb-2">
-                        <label class="flex-1 text-base font-semibold text-gray-900 dark:text-white leading-relaxed">
-                          <span class="inline-flex items-center gap-2">
+                    <div class="mb-3">
+                      <div class="flex items-start justify-between gap-3">
+                        <label class="flex-1 text-sm font-medium text-gray-900 dark:text-white leading-snug">
+                          <span class="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1">
                             <span>{{ question.questionText }}</span>
-                            <span v-if="question.mandatory" class="text-red-500 font-bold" :title="t('forms.hubFillRequiredTitle')">*</span>
-                            <span v-if="question.scoring?.critical" class="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-bold rounded-full" :title="t('forms.hubFillCriticalTitle')">
+                            <span v-if="question.mandatory" class="text-red-500" :title="t('forms.hubFillRequiredTitle')">*</span>
+                            <span v-if="question.scoring?.critical" class="px-1.5 py-0.5 bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-semibold uppercase tracking-wide rounded" :title="t('forms.hubFillCriticalTitle')">
                               {{ t('forms.hubFillCriticalBadge') }}
                             </span>
                           </span>
                         </label>
-                        <div v-if="question.scoring?.enabled" class="flex-shrink-0 flex items-center gap-2 px-2.5 py-1 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                          <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                          </svg>
-                          <span class="text-xs font-semibold text-indigo-700 dark:text-indigo-300">{{ t('forms.hubFillScoringPts', { points: question.scoring.weight || 0 }) }}</span>
-                        </div>
+                        <span v-if="question.scoring?.enabled" class="flex-shrink-0 text-[11px] font-medium tabular-nums text-gray-400 dark:text-gray-500">
+                          {{ t('forms.hubFillScoringPts', { points: question.scoring.weight || 0 }) }}
+                        </span>
                       </div>
-                      
-                      <!-- Help Text -->
-                      <p v-if="question.helpText" class="text-sm text-gray-600 dark:text-gray-400 mt-2 flex items-start gap-2">
-                        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{{ question.helpText }}</span>
+                      <p v-if="question.helpText" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                        {{ question.helpText }}
                       </p>
                     </div>
-                    
+
                     <!-- Question Input -->
-                    <div class="mt-4">
+                    <div>
                       <!-- Text Input -->
                       <input
                         v-if="question.type === 'Text'"
@@ -425,7 +382,7 @@
                         type="text"
                         :required="question.mandatory"
                         :placeholder="question.placeholder || t('forms.textAnswerPh')"
-                        class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base"
+                        class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-950 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-colors text-sm"
                       />
                       
                       <!-- Number Input -->
@@ -436,7 +393,7 @@
                         type="number"
                         :required="question.mandatory"
                         :placeholder="question.placeholder || t('forms.hubFillNumberPh')"
-                        class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base"
+                        class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-950 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-colors text-sm"
                       />
                       
                       <!-- Textarea -->
@@ -446,8 +403,8 @@
                         @input="handleInputChange"
                         :required="question.mandatory"
                         :placeholder="question.placeholder || t('forms.textAnswerPh')"
-                        rows="5"
-                        class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base resize-y"
+                        rows="4"
+                        class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-950 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-colors text-sm resize-y"
                       ></textarea>
                       
                       <!-- Dropdown -->
@@ -471,14 +428,20 @@
                       />
                       
                       <!-- Radio / Yes-No -->
-                      <div v-else-if="question.type === 'Radio' || question.type === 'Yes-No'" class="space-y-3">
-                        <label 
-                          v-for="option in question.options" 
-                          :key="option" 
-                          class="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200"
-                          :class="formData[question.questionId] === option 
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
-                            : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600 bg-white dark:bg-gray-800'"
+                      <div
+                        v-else-if="question.type === 'Radio' || question.type === 'Yes-No'"
+                        :class="(question.options?.length || 0) <= 2 ? 'grid grid-cols-2 gap-2' : 'space-y-2'"
+                      >
+                        <label
+                          v-for="option in question.options"
+                          :key="option"
+                          class="relative flex cursor-pointer items-center rounded-lg border transition-colors"
+                          :class="[
+                            (question.options?.length || 0) <= 2 ? 'justify-center px-4 py-2.5' : 'gap-3 px-4 py-2.5',
+                            formData[question.questionId] === option
+                              ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-500/60'
+                              : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                          ]"
                         >
                           <input
                             type="radio"
@@ -487,38 +450,38 @@
                             v-model="formData[question.questionId]"
                             @change="handleInputChange"
                             :required="question.mandatory"
-                            class="w-5 h-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 cursor-pointer"
+                            class="sr-only"
                           />
-                          <span class="flex-1 text-gray-900 dark:text-white font-medium">{{ formatFillOptionLabel(option) }}</span>
-                          <div v-if="formData[question.questionId] === option" class="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <span :class="(question.options?.length || 0) <= 2 ? 'text-sm font-medium' : 'flex-1 text-sm font-medium'">
+                            {{ formatFillOptionLabel(option) }}
+                          </span>
+                          <span
+                            v-if="(question.options?.length || 0) > 2 && formData[question.questionId] === option"
+                            class="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500 text-white"
+                          >
+                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                             </svg>
-                          </div>
+                          </span>
                         </label>
                       </div>
                       
                       <!-- Checkbox -->
-                      <div v-else-if="question.type === 'Checkbox'" class="space-y-3">
-                        <label 
-                          v-for="option in question.options" 
-                          :key="option" 
-                          class="flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200"
+                      <div v-else-if="question.type === 'Checkbox'" class="space-y-2">
+                        <label
+                          v-for="option in question.options"
+                          :key="option"
+                          class="flex items-center gap-3 px-4 py-2.5 rounded-lg border cursor-pointer transition-colors"
                           :class="(formData[question.questionId] || []).includes(option)
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
-                            : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600 bg-white dark:bg-gray-800'"
+                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 dark:border-indigo-500/60'
+                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 hover:border-gray-300 dark:hover:border-gray-600'"
                         >
                           <HeadlessCheckbox
                             :checked="(formData[question.questionId] || []).includes(option)"
                             @change="toggleQuestionCheckboxOption(question.questionId, option, $event)"
-                            checkbox-class="w-5 h-5 cursor-pointer"
+                            checkbox-class="w-4 h-4 cursor-pointer"
                           />
-                          <span class="flex-1 text-gray-900 dark:text-white font-medium">{{ option }}</span>
-                          <div v-if="(formData[question.questionId] || []).includes(option)" class="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                            </svg>
-                          </div>
+                          <span class="flex-1 text-sm text-gray-900 dark:text-white">{{ option }}</span>
                         </label>
                       </div>
                       
@@ -526,7 +489,7 @@
                       <DatePicker
                         v-else-if="question.type === 'Date'"
                         v-model="formData[question.questionId]"
-                        input-class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base cursor-pointer"
+                        input-class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-950 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-colors text-sm cursor-pointer"
                         @blur="handleInputChange"
                       />
                       
@@ -561,16 +524,12 @@
                     </div>
 
                     <!-- Evidence Section -->
-                    <div v-if="question.evidence?.enabled" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-                        <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
+                    <div v-if="question.evidence?.enabled" class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                      <p class="text-xs font-medium text-gray-600 dark:text-gray-400">
                         {{ t('forms.evidenceRequiredHeading') }}
                       </p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('forms.hubFillEvidenceAttachHint') }}</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-500 mt-0.5">{{ t('forms.hubFillEvidenceAttachHint') }}</p>
                     </div>
-                  </div>
                   </div>
                 </div>
               </div>
@@ -578,43 +537,43 @@
           </div>
 
           <!-- Error Message -->
-          <div v-if="error" class="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-6">
+          <div v-if="error" class="rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 p-4">
             <div class="flex items-start gap-3">
-              <svg class="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
-                <h3 class="font-semibold text-red-800 dark:text-red-200 mb-1">{{ t('forms.hubFillSubmitErrorHeading') }}</h3>
-                <p class="text-red-700 dark:text-red-300">{{ error }}</p>
+                <h3 class="text-sm font-medium text-red-800 dark:text-red-200 mb-0.5">{{ t('forms.hubFillSubmitErrorHeading') }}</h3>
+                <p class="text-sm text-red-700 dark:text-red-300">{{ error }}</p>
               </div>
             </div>
           </div>
 
-          <!-- Submit Button -->
-          <div class="sticky bottom-0 bg-white dark:bg-gray-800 border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 rounded-t-2xl">
-            <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div class="text-sm text-gray-600 dark:text-gray-400">
-                <span v-if="hasUnansweredRequired" class="text-red-600 dark:text-red-400 font-medium">
+          <!-- Submit Bar -->
+          <div class="sticky bottom-0 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 border-t border-gray-200/80 dark:border-gray-800 bg-gray-50/95 dark:bg-gray-950/95 backdrop-blur-md rounded-t-xl">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+              <p class="text-xs sm:text-sm">
+                <span v-if="hasUnansweredRequired" class="text-red-600 dark:text-red-400">
                   {{ formatHubFillRequiredRemaining(unansweredRequiredCount) }}
                 </span>
-                <span v-else class="text-green-600 dark:text-green-400 font-medium">
+                <span v-else class="text-emerald-600 dark:text-emerald-400">
                   {{ t('forms.hubFillAllRequiredAnswered') }}
                 </span>
-              </div>
-              <div class="flex items-center gap-3">
+              </p>
+              <div class="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   type="button"
                   @click="goBack"
-                  class="px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl font-medium transition-colors"
+                  class="flex-1 sm:flex-none px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
                   {{ t('actions.cancel') }}
                 </button>
                 <button
                   type="submit"
                   :disabled="submitting || hasUnansweredRequired"
-                  class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
+                  class="flex-1 sm:flex-none px-5 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
                 >
-                  <svg v-if="submitting" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <svg v-if="submitting" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -631,10 +590,12 @@
 
 <script setup>
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useTabs } from '@/composables/useTabs';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import portalApiClient from '@/utils/portalApiClient';
 import DatePicker from '@/components/common/DatePicker.vue';
 import RatingQuestion from '@/components/forms/question-types/RatingQuestion.vue';
 import DropdownQuestion from '@/components/forms/question-types/DropdownQuestion.vue';
@@ -651,6 +612,7 @@ function formatHubFillRequiredRemaining(count) {
 
 const route = useRoute();
 const router = useRouter();
+const { openTab, closeTab, findTabByPath, findTabById, activeTabId } = useTabs();
 
 const sectionTitle = (section, index) =>
   section.name || t('forms.hubFillSectionFallback', { number: index + 1 });
@@ -686,10 +648,34 @@ const isAuditReturnFlow = computed(() => {
   return Boolean(returnToFromQuery.value && returnToFromQuery.value.startsWith('/audit/audits'));
 });
 
+const isPortalFormFlow = computed(() => String(route.path || '').startsWith('/portal/forms/'));
+
 /** Sales `/api/forms/*` requires Sales app context; audit-linked fills use `/api/audit/forms/*`. */
-const getFormsApiBase = () => (isAuditReturnFlow.value ? '/audit/forms' : '/forms');
+const getFormsApiBase = () => {
+  if (isPortalFormFlow.value) return null;
+  return isAuditReturnFlow.value ? '/audit/forms' : '/forms';
+};
+
+function buildPortalFormPath(suffix = '') {
+  return `/forms/${route.params.id}${suffix}`;
+}
+
+async function formsApiGet(path) {
+  if (isPortalFormFlow.value) {
+    return portalApiClient.get(path.startsWith('/') ? path.slice(1) : path);
+  }
+  return apiClient.get(path);
+}
+
+async function formsApiPost(path, body) {
+  if (isPortalFormFlow.value) {
+    return portalApiClient.post(path.startsWith('/') ? path.slice(1) : path, body);
+  }
+  return apiClient.post(path, body);
+}
 
 const getPreferredReturnRoute = () => {
+  if (isPortalFormFlow.value) return '/portal/forms';
   if (returnToFromQuery.value) return returnToFromQuery.value;
   try {
     const formScopedReturn = sessionStorage.getItem(`audit-form-return:form:${route.params.id}`);
@@ -708,6 +694,44 @@ const getPreferredReturnRoute = () => {
     return `/events/${eventId.value}`;
   }
   return '/forms';
+};
+
+const shouldAutoSubmitAuditForEvent = (eventIdValue) => {
+  if (!eventIdValue) return false;
+  if (isAuditReturnFlow.value) return true;
+  return getPreferredReturnRoute().startsWith('/audit/audits/');
+};
+
+const finalizeAfterSubmit = async (eventIdForAudit) => {
+  const returnRoute = getPreferredReturnRoute();
+  const isAuditReturn = returnRoute.startsWith('/audit/audits/');
+
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+
+  if (!isAuditReturn) {
+    router.push(returnRoute);
+    return;
+  }
+
+  const formTab = findTabByPath(route.fullPath) || findTabByPath(route.path);
+  const formTabId = formTab?.id ?? null;
+
+  openTab(returnRoute);
+
+  window.dispatchEvent(new CustomEvent('audit-form-submitted', {
+    detail: { eventId: eventIdForAudit }
+  }));
+
+  await nextTick();
+  await new Promise((resolve) => setTimeout(resolve, 150));
+
+  if (formTabId && formTabId !== activeTabId.value) {
+    const tabToClose = findTabById(formTabId);
+    if (tabToClose) {
+      tabToClose.beforeClose = null;
+      await closeTab(formTabId);
+    }
+  }
 };
 
 // Computed properties
@@ -877,7 +901,9 @@ const fetchForm = async () => {
   error.value = null;
   
   try {
-    const response = await apiClient.get(`${getFormsApiBase()}/${route.params.id}`);
+    const response = isPortalFormFlow.value
+      ? await formsApiGet(buildPortalFormPath())
+      : await apiClient.get(`${getFormsApiBase()}/${route.params.id}`);
     if (response.success) {
       form.value = response.data;
       
@@ -925,6 +951,32 @@ const fetchForm = async () => {
 };
 
 // Check if the form response has already been submitted
+const applyResponseDetailsToFormData = (details) => {
+  if (!Array.isArray(details)) return;
+  details.forEach((detail) => {
+    if (!detail?.questionId) return;
+    const answer = detail.answer;
+    if (answer === undefined || answer === null) return;
+    formData.value[detail.questionId] = answer;
+  });
+};
+
+const loadPortalFormResponseState = async (responseId) => {
+  if (responseId) {
+    const response = await formsApiGet(buildPortalFormPath(`/responses/${responseId}`));
+    if (response.success && response.data) {
+      return response.data;
+    }
+    return null;
+  }
+
+  const inProgress = await formsApiGet(buildPortalFormPath('/responses/in-progress'));
+  if (inProgress.success && inProgress.data) {
+    return inProgress.data;
+  }
+  return null;
+};
+
 const checkIfAlreadySubmitted = async () => {
   try {
     // Get responseId from various sources
@@ -955,6 +1007,21 @@ const checkIfAlreadySubmitted = async () => {
       }
     }
     
+    if (isPortalFormFlow.value) {
+      const formResponse = await loadPortalFormResponseState(responseId);
+      if (!formResponse?._id) return;
+
+      formResponseId.value = formResponse._id;
+      if (formResponse.executionStatus === 'Submitted') {
+        submitted.value = true;
+        formData.value = {};
+        return;
+      }
+
+      applyResponseDetailsToFormData(formResponse.responseDetails);
+      return;
+    }
+
     // If we have a responseId, check if it's already submitted
     if (responseId) {
       console.log('[FormFill] Checking if response is already submitted:', responseId);
@@ -971,8 +1038,8 @@ const checkIfAlreadySubmitted = async () => {
             formData.value = {};
           } else {
             console.log('[FormFill] Response exists but not submitted yet, status:', formResponse.executionStatus);
-            // If response exists but not submitted, we can optionally load the existing data
-            // For now, just continue with the form
+            formResponseId.value = responseId;
+            applyResponseDetailsToFormData(formResponse.responseDetails);
           }
         }
       } catch (err) {
@@ -1138,39 +1205,43 @@ const submitForm = async () => {
       submissionDataKeys: Object.keys(submissionData)
     });
 
-    const response = await apiClient.post(`${getFormsApiBase()}/${route.params.id}/submit`, submissionData);
+    const response = isPortalFormFlow.value
+      ? await formsApiPost(buildPortalFormPath('/submit'), submissionData)
+      : await apiClient.post(`${getFormsApiBase()}/${route.params.id}/submit`, submissionData);
 
     if (response.success && response.data) {
       submitted.value = true;
       formResponseId.value = response.data._id || response.data.responseId;
       
-      if (eventId.value) {
-        notifyEventExecution(eventId.value, formResponseId.value);
+      const linkedEventId = currentEventId || eventId.value;
+      if (linkedEventId) {
+        notifyEventExecution(linkedEventId, formResponseId.value);
       }
 
-      if (currentEventId && isAuditReturnFlow.value) {
+      if (linkedEventId && shouldAutoSubmitAuditForEvent(linkedEventId)) {
+        try {
+          sessionStorage.setItem(`audit-auto-submit:${linkedEventId}`, String(Date.now()));
+          sessionStorage.setItem(`audit-form-response:${linkedEventId}`, String(formResponseId.value));
+        } catch (_) {}
+
         try {
           await apiClient.post(
-            `/audit/execute/${currentEventId}/submit`,
+            `/audit/execute/${linkedEventId}/submit`,
             formResponseId.value ? { formResponseId: String(formResponseId.value) } : {}
           );
-          try {
-            sessionStorage.setItem(`audit-auto-submit:${currentEventId}`, String(Date.now()));
-          } catch (_) {}
           console.log('[FormFill] ✅ Auto-submitted audit after form submission', {
-            eventId: currentEventId,
+            eventId: linkedEventId,
             formResponseId: formResponseId.value
           });
         } catch (autoSubmitErr) {
+          try {
+            sessionStorage.removeItem(`audit-auto-submit:${linkedEventId}`);
+          } catch (_) {}
           console.warn('[FormFill] ⚠️ Auto-submit audit failed (non-blocking):', autoSubmitErr);
         }
       }
-      
-      // Navigate away after a brief delay to show success message (1.5 seconds).
-      // Do not close tab before redirect because that can trigger route fallbacks.
-      setTimeout(() => {
-        router.push(getPreferredReturnRoute());
-      }, 1500);
+
+      void finalizeAfterSubmit(linkedEventId);
     } else {
       error.value = response.message || t('forms.hubFillSubmitFailed');
     }
@@ -1273,13 +1344,5 @@ watch(() => route.params.id, () => {
 
 .animate-scale-in {
   animation: scale-in 0.3s ease-out;
-}
-
-.question-card {
-  transition: all 0.2s ease;
-}
-
-.question-card:hover {
-  transform: translateY(-2px);
 }
 </style>

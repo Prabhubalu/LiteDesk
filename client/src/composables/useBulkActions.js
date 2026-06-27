@@ -13,6 +13,19 @@ export function useBulkActions(module) {
   const bulkActions = computed(() => {
     const actions = [];
 
+    if (module === 'users' || module === 'settings-users') {
+      if (authStore.can('users', 'update')) {
+        actions.push(
+          { label: 'Activate', icon: 'activate', action: 'bulk-activate', variant: 'success' },
+          { label: 'Deactivate', icon: 'deactivate', action: 'bulk-deactivate', variant: 'warning' }
+        );
+      }
+      if (authStore.can('users', 'delete')) {
+        actions.push({ label: 'Delete', icon: 'trash', action: 'bulk-delete', variant: 'danger' });
+      }
+      return actions;
+    }
+
     if (module === 'cases' && authStore.can(module, 'edit')) {
       actions.push(
         { label: 'Assign owner', icon: 'user', action: 'bulk-assign-owner', variant: 'secondary' },

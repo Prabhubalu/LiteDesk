@@ -480,24 +480,17 @@ const saveForm = async (isAutoSave = false) => {
       publicLink: formData.publicLink?.enabled && formData.publicLink?.slug
         ? { enabled: true, slug: formData.publicLink.slug }
         : { enabled: false },
-      responseTemplate: formData.responseTemplate?.templateId
+      responseTemplate: formData.responseTemplate
         ? {
-            templateId: formData.responseTemplate.templateId,
-            customTemplate: formData.responseTemplate.customTemplate || null
+            templates: Array.isArray(formData.responseTemplate.templates)
+              ? formData.responseTemplate.templates
+              : [],
+            activeTemplateId: formData.responseTemplate.activeTemplateId === 'default'
+              ? null
+              : (formData.responseTemplate.activeTemplateId ?? null)
           }
-        : formData.responseTemplate?.customTemplate
-          ? { customTemplate: formData.responseTemplate.customTemplate }
-          : undefined
+        : undefined
     };
-
-    // Clean up null/empty values that shouldn't be sent
-    // Remove responseTemplate if it's empty
-    if (!payload.responseTemplate || (!payload.responseTemplate.templateId && (!payload.responseTemplate.customTemplate || !payload.responseTemplate.customTemplate.layout))) {
-      delete payload.responseTemplate;
-    } else if (payload.responseTemplate.customTemplate && payload.responseTemplate.customTemplate.layout === null) {
-      // Remove layout if it's null
-      delete payload.responseTemplate.customTemplate.layout;
-    }
     
     // Remove updateField if null
     if (payload.workflowOnSubmit && payload.workflowOnSubmit.updateField === null) {

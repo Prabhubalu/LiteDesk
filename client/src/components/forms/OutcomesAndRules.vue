@@ -40,7 +40,7 @@
         <label class="flex items-start gap-3 cursor-pointer group">
           <input
             type="radio"
-            :value="'overall_score_only'"
+            :value="'overall_score_below_threshold'"
             v-model="localOutcomes.auditResultRule"
             class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 dark:border-gray-600 focus:ring-indigo-500 focus:ring-2"
           />

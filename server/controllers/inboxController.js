@@ -25,6 +25,7 @@ const People = require('../models/People');
 const Deal = require('../models/Deal');
 const FormResponse = require('../models/FormResponse');
 const mongoose = require('mongoose');
+const { resolveEventRouteTarget } = require('../utils/eventUtils');
 
 /** Map relatedTo.type → model (refPath uses type as model name; "none" must not be populated). */
 const TASK_RELATED_TO_MODEL_MAP = {
@@ -616,16 +617,8 @@ async function mapEventToInboxItem(event) {
   // Get organization for related label
   const organization = event.relatedToId || event.organizationId;
 
-  // Determine route based on source app
   const sourceApp = determineEventSourceApp(event);
-  let routeTarget;
-  if (sourceApp === 'Audit') {
-    routeTarget = `/audit/events/${event._id}`;
-  } else if (sourceApp === 'Sales') {
-    routeTarget = `/sales/events/${event._id}`;
-  } else {
-    routeTarget = `/events/${event._id}`;
-  }
+  const routeTarget = resolveEventRouteTarget(event._id, event.eventType);
 
   return {
     kind: 'event',

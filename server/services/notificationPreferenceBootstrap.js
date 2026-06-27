@@ -56,6 +56,19 @@ function buildDefaultMap(appKey) {
     correctiveEvents.forEach(evt => {
       defaults[evt] = createEventPref(true, false, false, false, true, true, true, true);
     });
+
+    defaults[domainEvents.CASE_PORTAL_AGENT_REPLY] = createEventPref(
+      true, true, true, true, false, false, false, false
+    );
+    defaults[domainEvents.CASE_PORTAL_STATUS_UPDATE] = createEventPref(
+      true, true, false, false, false, false, false, false
+    );
+    defaults[domainEvents.PORTAL_ACCOUNT_CREATED] = createEventPref(
+      true, true, false, false, false, false, false, false
+    );
+    defaults[domainEvents.EVIDENCE_UPLOADED] = createEventPref(
+      true, false, false, false, false, false, false, false
+    );
   }
 
   // Digest defaults - all OFF by default, users can enable them if they want
@@ -107,6 +120,19 @@ function buildDefaultMap(appKey) {
   return defaults;
 }
 
+/** Events that were incorrectly bootstrapped as all-off before portal case notifications shipped. */
+const PORTAL_LEGACY_UPGRADE_EVENTS = [
+  domainEvents.CASE_PORTAL_AGENT_REPLY,
+  domainEvents.CASE_PORTAL_STATUS_UPDATE,
+  domainEvents.PORTAL_ACCOUNT_CREATED,
+  domainEvents.EVIDENCE_UPLOADED
+];
+
+function isLegacyDisabledPortalPref(current) {
+  if (!current) return false;
+  return current.inApp === false && current.email === false;
+}
+
 async function ensureDefaultPreferences(userId, appKey) {
   if (!userId || !appKey || !APP_KEYS.includes(appKey)) return null;
 
@@ -133,6 +159,17 @@ async function ensureDefaultPreferences(userId, appKey) {
         modified = true;
       }
     });
+
+    if (appKey === 'PORTAL') {
+      PORTAL_LEGACY_UPGRADE_EVENTS.forEach((evt) => {
+        const current = pref.events.get(evt);
+        const next = defaults[evt];
+        if (next?.inApp && isLegacyDisabledPortalPref(current)) {
+          pref.events.set(evt, next);
+          modified = true;
+        }
+      });
+    }
 
     if (modified) {
       await pref.save();

@@ -5,10 +5,16 @@
 
 import type { AppRegistry } from '@/types/sidebar.types';
 import apiClient from '@/utils/apiClient';
+import { resolvePortalModulePermission, isPortalKnowledgeModuleKey } from '@/utils/portalModulePermissions';
 
 function resolveModulePermission(appKey: string, moduleKey: string): string | undefined {
   const normalizedAppKey = String(appKey || '').toUpperCase();
   const normalizedModuleKey = String(moduleKey || '').toLowerCase();
+
+  if (normalizedAppKey === 'PORTAL') {
+    const portalPermission = resolvePortalModulePermission(normalizedModuleKey);
+    if (portalPermission) return portalPermission;
+  }
 
   if (normalizedAppKey === 'AUDIT') {
     if (normalizedModuleKey === 'audits' || normalizedModuleKey === 'cases' || normalizedModuleKey === 'responses') {
@@ -61,6 +67,14 @@ function mapRawModulesToRegistryModules(app: { appKey: string }, modulesData: an
       if (normalizedModuleKey === 'portal_knowledge' || normalizedModuleKey === 'knowledge') {
         route = '/portal/knowledge';
       }
+      if (
+        normalizedModuleKey === 'documents' ||
+        normalizedModuleKey === 'portal_documents' ||
+        normalizedModuleKey === 'knowledge-base' ||
+        normalizedModuleKey === 'knowledge_base'
+      ) {
+        route = '/portal/knowledge';
+      }
       if (normalizedModuleKey === 'portal_audits') {
         route = '/portal/audits';
       }
@@ -69,6 +83,21 @@ function mapRawModulesToRegistryModules(app: { appKey: string }, modulesData: an
       }
       if (normalizedModuleKey === 'portal_invoices' || normalizedModuleKey === 'invoices') {
         route = '/portal/invoices';
+      }
+      if (normalizedModuleKey === 'portal_organization' || normalizedModuleKey === 'organization') {
+        route = '/portal/organization';
+      }
+      if (normalizedModuleKey === 'portal_people' || normalizedModuleKey === 'people') {
+        route = '/portal/people';
+      }
+      if (normalizedModuleKey === 'portal_deals' || normalizedModuleKey === 'deals') {
+        route = '/portal/deals';
+      }
+      if (normalizedModuleKey === 'portal_forms' || normalizedModuleKey === 'forms') {
+        route = '/portal/forms';
+      }
+      if (normalizedModuleKey === 'portal_responses' || normalizedModuleKey === 'responses') {
+        route = '/portal/responses';
       }
     }
 
@@ -132,9 +161,7 @@ function ensureAuditAppNavigationModules(registry: AppRegistry): void {
 }
 
 /**
- * Portal app sidebar: only customer-native surfaces (not Audit/Helpdesk module clones).
- * - Support cases live here (Helpdesk Phase 1D customer path at /portal/cases).
- * - Audits and corrective actions stay on the portal dashboard + mobile nav (/portal/audits, /portal/actions).
+ * Portal app sidebar modules — each gated by the matching core module permission.
  */
 function injectPortalCustomerSupportModule(registry: AppRegistry): void {
   const portalKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'PORTAL');
@@ -153,7 +180,7 @@ function injectPortalCustomerSupportModule(registry: AppRegistry): void {
     moduleKey: 'portal_support',
     label: 'Support',
     route: '/portal/cases',
-    permission: undefined,
+    permission: resolvePortalModulePermission('portal_support'),
     icon: 'lifebuoy',
     order: 1,
     appKey: portalKey,
@@ -183,7 +210,7 @@ function injectPortalInvoicesModule(registry: AppRegistry): void {
     moduleKey: 'portal_invoices',
     label: 'Invoices',
     route: '/portal/invoices',
-    permission: undefined,
+    permission: resolvePortalModulePermission('portal_invoices'),
     icon: 'banknotes',
     order: 2,
     appKey: portalKey,
@@ -202,20 +229,235 @@ function injectPortalKnowledgeModule(registry: AppRegistry): void {
   const app = registry[portalKey];
   if (!app) return;
 
-  const hasKnowledge = (app.modules || []).some((m) => {
-    const key = String(m.moduleKey || '').toLowerCase();
-    return key === 'portal_knowledge' || key === 'knowledge' || m.route === '/portal/knowledge';
-  });
-  if (hasKnowledge) return;
+  const isKnowledgeSurface = (m: { moduleKey?: string; route?: string }) =>
+    isPortalKnowledgeModuleKey(String(m.moduleKey || '')) || m.route === '/portal/knowledge';
 
   app.modules = app.modules || [];
-  app.modules.push({
+  const knowledgeModules = app.modules.filter(isKnowledgeSurface);
+  const otherModules = app.modules.filter((m) => !isKnowledgeSurface(m));
+
+  const normalizedModule = {
     moduleKey: 'portal_knowledge',
     label: 'Help Center',
     route: '/portal/knowledge',
-    permission: undefined,
+    permission: resolvePortalModulePermission('portal_knowledge'),
     icon: 'book-open',
+    order: knowledgeModules.length
+      ? Math.min(...knowledgeModules.map((m) => m.order ?? 3))
+      : 3,
+    appKey: portalKey,
+    navigationCore: false,
+    navigationEntity: false,
+    excludeFromApps: false,
+    system: false,
+    coreEntity: false,
+    showInSidebar: true
+  };
+
+  app.modules = [...otherModules, { ...(knowledgeModules[0] || {}), ...normalizedModule }];
+  app.modules.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+}
+
+function injectPortalAuditsModule(registry: AppRegistry): void {
+  const portalKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'PORTAL');
+  if (!portalKey) return;
+  const app = registry[portalKey];
+  if (!app) return;
+
+  const hasAudits = (app.modules || []).some((m) => {
+    const key = String(m.moduleKey || '').toLowerCase();
+    return key === 'portal_audits' || key === 'audits' || m.route === '/portal/audits';
+  });
+  if (hasAudits) return;
+
+  app.modules = app.modules || [];
+  app.modules.push({
+    moduleKey: 'portal_audits',
+    label: 'Audits',
+    route: '/portal/audits',
+    permission: resolvePortalModulePermission('portal_audits'),
+    icon: 'clipboard-document-check',
+    order: 7,
+    appKey: portalKey,
+    navigationCore: false,
+    navigationEntity: false,
+    excludeFromApps: false,
+    system: false,
+    coreEntity: false
+  });
+  app.modules.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+}
+
+function injectPortalActionsModule(registry: AppRegistry): void {
+  const portalKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'PORTAL');
+  if (!portalKey) return;
+  const app = registry[portalKey];
+  if (!app) return;
+
+  const hasActions = (app.modules || []).some((m) => {
+    const key = String(m.moduleKey || '').toLowerCase();
+    return key === 'portal_actions' || key === 'actions' || m.route === '/portal/actions';
+  });
+  if (hasActions) return;
+
+  app.modules = app.modules || [];
+  app.modules.push({
+    moduleKey: 'portal_actions',
+    label: 'Actions',
+    route: '/portal/actions',
+    permission: resolvePortalModulePermission('portal_actions'),
+    icon: 'clipboard-document-list',
+    order: 8,
+    appKey: portalKey,
+    navigationCore: false,
+    navigationEntity: false,
+    excludeFromApps: false,
+    system: false,
+    coreEntity: false
+  });
+  app.modules.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+}
+
+function injectPortalPeopleModule(registry: AppRegistry): void {
+  const portalKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'PORTAL');
+  if (!portalKey) return;
+  const app = registry[portalKey];
+  if (!app) return;
+
+  const hasPeople = (app.modules || []).some((m) => {
+    const key = String(m.moduleKey || '').toLowerCase();
+    return key === 'portal_people' || key === 'people' || m.route === '/portal/people';
+  });
+  if (hasPeople) return;
+
+  app.modules = app.modules || [];
+  app.modules.push({
+    moduleKey: 'portal_people',
+    label: 'Contact',
+    route: '/portal/people',
+    permission: resolvePortalModulePermission('portal_people'),
+    icon: 'user',
     order: 3,
+    appKey: portalKey,
+    navigationCore: false,
+    navigationEntity: false,
+    excludeFromApps: false,
+    system: false,
+    coreEntity: false
+  });
+  app.modules.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+}
+
+function injectPortalOrganizationModule(registry: AppRegistry): void {
+  const portalKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'PORTAL');
+  if (!portalKey) return;
+  const app = registry[portalKey];
+  if (!app) return;
+
+  const hasOrg = (app.modules || []).some((m) => {
+    const key = String(m.moduleKey || '').toLowerCase();
+    return key === 'portal_organization' || key === 'organization' || m.route === '/portal/organization';
+  });
+  if (hasOrg) return;
+
+  app.modules = app.modules || [];
+  app.modules.push({
+    moduleKey: 'portal_organization',
+    label: 'Company',
+    route: '/portal/organization',
+    permission: resolvePortalModulePermission('portal_organization'),
+    icon: 'building-office',
+    order: 4,
+    appKey: portalKey,
+    navigationCore: false,
+    navigationEntity: false,
+    excludeFromApps: false,
+    system: false,
+    coreEntity: false
+  });
+  app.modules.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+}
+
+function injectPortalDealsModule(registry: AppRegistry): void {
+  const portalKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'PORTAL');
+  if (!portalKey) return;
+  const app = registry[portalKey];
+  if (!app) return;
+
+  const hasDeals = (app.modules || []).some((m) => {
+    const key = String(m.moduleKey || '').toLowerCase();
+    return key === 'portal_deals' || key === 'deals' || m.route === '/portal/deals';
+  });
+  if (hasDeals) return;
+
+  app.modules = app.modules || [];
+  app.modules.push({
+    moduleKey: 'portal_deals',
+    label: 'Deals',
+    route: '/portal/deals',
+    permission: resolvePortalModulePermission('portal_deals'),
+    icon: 'briefcase',
+    order: 5,
+    appKey: portalKey,
+    navigationCore: false,
+    navigationEntity: false,
+    excludeFromApps: false,
+    system: false,
+    coreEntity: false
+  });
+  app.modules.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+}
+
+function injectPortalFormsModule(registry: AppRegistry): void {
+  const portalKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'PORTAL');
+  if (!portalKey) return;
+  const app = registry[portalKey];
+  if (!app) return;
+
+  const hasForms = (app.modules || []).some((m) => {
+    const key = String(m.moduleKey || '').toLowerCase();
+    return key === 'portal_forms' || key === 'forms' || m.route === '/portal/forms';
+  });
+  if (hasForms) return;
+
+  app.modules = app.modules || [];
+  app.modules.push({
+    moduleKey: 'portal_forms',
+    label: 'Forms',
+    route: '/portal/forms',
+    permission: resolvePortalModulePermission('portal_forms'),
+    icon: 'clipboard-document-list',
+    order: 6,
+    appKey: portalKey,
+    navigationCore: false,
+    navigationEntity: false,
+    excludeFromApps: false,
+    system: false,
+    coreEntity: false
+  });
+  app.modules.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+}
+
+function injectPortalResponsesModule(registry: AppRegistry): void {
+  const portalKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'PORTAL');
+  if (!portalKey) return;
+  const app = registry[portalKey];
+  if (!app) return;
+
+  const hasResponses = (app.modules || []).some((m) => {
+    const key = String(m.moduleKey || '').toLowerCase();
+    return key === 'portal_responses' || key === 'responses' || m.route === '/portal/responses';
+  });
+  if (hasResponses) return;
+
+  app.modules = app.modules || [];
+  app.modules.push({
+    moduleKey: 'portal_responses',
+    label: 'Responses',
+    route: '/portal/responses',
+    permission: resolvePortalModulePermission('portal_responses'),
+    icon: 'clipboard-document-list',
+    order: 7,
     appKey: portalKey,
     navigationCore: false,
     navigationEntity: false,
@@ -268,6 +510,19 @@ function addPlatformModulesToRegistry(registry: AppRegistry, entityModules: any[
     icon: '⚙️',
     order: 0
   };
+}
+
+function applyPortalModulePermissions(registry: AppRegistry): void {
+  const portalKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'PORTAL');
+  if (!portalKey) return;
+  const app = registry[portalKey];
+  if (!app?.modules?.length) return;
+
+  app.modules = app.modules.map((mod) => {
+    const permission = resolvePortalModulePermission(mod.moduleKey);
+    if (!permission) return mod;
+    return { ...mod, permission };
+  });
 }
 
 function buildRegistryFromPayload(payload: {
@@ -341,6 +596,14 @@ function buildRegistryFromPayload(payload: {
   injectPortalCustomerSupportModule(registry);
   injectPortalInvoicesModule(registry);
   injectPortalKnowledgeModule(registry);
+  injectPortalAuditsModule(registry);
+  injectPortalActionsModule(registry);
+  injectPortalPeopleModule(registry);
+  injectPortalOrganizationModule(registry);
+  injectPortalDealsModule(registry);
+  injectPortalFormsModule(registry);
+  injectPortalResponsesModule(registry);
+  applyPortalModulePermissions(registry);
   return registry;
 }
 

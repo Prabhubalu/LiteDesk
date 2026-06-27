@@ -710,5 +710,181 @@
   "peopleQuickCreateDrawerEditPerson": {
     "message": "Edit Person",
     "description": "People quick create drawer title in edit mode"
+  },
+  "externalAccessBadge": {
+    "message": "Portal",
+    "description": "Badge label for external access widget on person record"
+  },
+  "externalAccessTitle": {
+    "message": "External access",
+    "description": "Title for external portal access widget on person record"
+  },
+  "externalAccessSubtitle": {
+    "message": "Manage portal login, roles, and session access for this person.",
+    "description": "Subtitle for external portal access widget"
+  },
+  "externalAccessLoading": {
+    "message": "Loading portal access…",
+    "description": "Loading state for external access widget"
+  },
+  "externalAccessLoadFailed": {
+    "message": "Could not load portal access for this person.",
+    "description": "Load failure for external access widget"
+  },
+  "externalAccessActionSuccess": {
+    "message": "Portal access updated.",
+    "description": "Generic success after portal admin action"
+  },
+  "externalAccessActionFailed": {
+    "message": "Portal action failed. Try again.",
+    "description": "Generic failure for portal admin action"
+  },
+  "externalAccessEnabled": {
+    "message": "Enabled",
+    "description": "Portal access enabled badge"
+  },
+  "externalAccessDisabledHint": {
+    "message": "Portal access is not enabled for this person.",
+    "description": "Hint when portal is disabled"
+  },
+  "externalAccessIneligible": {
+    "message": "This person's organization is not eligible for portal access.",
+    "description": "Eligibility warning on external access widget"
+  },
+  "externalAccessEnable": {
+    "message": "Enable portal access",
+    "description": "Enable portal access button"
+  },
+  "externalAccessDisable": {
+    "message": "Disable portal access",
+    "description": "Disable portal access button"
+  },
+  "externalAccessDisableConfirm": {
+    "message": "Disable portal access for this person? They will not be able to sign in until access is enabled again.",
+    "description": "Confirm disable portal access"
+  },
+  "externalAccessUserId": {
+    "message": "External user ID",
+    "description": "Linked portal user id label"
+  },
+  "externalAccessUserStatus": {
+    "message": "User status",
+    "description": "Linked portal user status label"
+  },
+  "externalAccessLastLogin": {
+    "message": "Last login",
+    "description": "Portal user last login label"
+  },
+  "externalAccessDefaultPortal": {
+    "message": "Default portal",
+    "description": "Default external portal role label"
+  },
+  "externalAccessAssignedRoles": {
+    "message": "Assigned portal roles",
+    "description": "Assigned external roles section title"
+  },
+  "externalAccessNoRoles": {
+    "message": "No portal roles assigned.",
+    "description": "Empty assigned roles state"
+  },
+  "externalAccessAssignRoles": {
+    "message": "Assign roles",
+    "description": "Assign portal roles button"
+  },
+  "externalAccessRemoveRole": {
+    "message": "Remove",
+    "description": "Remove portal role button"
+  },
+  "externalAccessRemoveRoleConfirm": {
+    "message": "Remove this portal role from the user?",
+    "description": "Confirm remove portal role"
+  },
+  "externalAccessRolesRequired": {
+    "message": "Select at least one portal role.",
+    "description": "Validation when no roles selected"
+  },
+  "externalAccessSelectRolesHint": {
+    "message": "Select one or more external portal roles.",
+    "description": "Role picker hint in modal"
+  },
+  "externalAccessNoAvailableRoles": {
+    "message": "No external portal roles are configured for this organization.",
+    "description": "Empty available roles in modal"
+  },
+  "externalAccessCancel": {
+    "message": "Cancel",
+    "description": "Cancel button in external access modal"
+  },
+  "externalAccessEnabledSuccess": {
+    "message": "Portal access enabled and invitation sent.",
+    "description": "Success after enabling portal"
+  },
+  "externalAccessDisabledSuccess": {
+    "message": "Portal access disabled.",
+    "description": "Success after disabling portal"
+  },
+  "externalAccessRolesAssignedSuccess": {
+    "message": "Portal roles assigned.",
+    "description": "Success after assigning roles"
+  },
+  "externalAccessRoleRemovedSuccess": {
+    "message": "Portal role removed.",
+    "description": "Success after removing role"
+  },
+  "externalAccessResendInvite": {
+    "message": "Resend invitation",
+    "description": "Resend portal invite button"
+  },
+  "externalAccessInviteSentSuccess": {
+    "message": "Invitation email sent.",
+    "description": "Success after resending invite"
+  },
+  "externalAccessResetPassword": {
+    "message": "Reset password",
+    "description": "Reset portal password button"
+  },
+  "externalAccessResetPasswordConfirm": {
+    "message": "Reset this user's portal password and send them a new temporary password?",
+    "description": "Confirm reset portal password"
+  },
+  "externalAccessPasswordResetSuccess": {
+    "message": "Password reset email sent.",
+    "description": "Success after password reset"
+  },
+  "externalAccessTerminateSessions": {
+    "message": "Terminate sessions",
+    "description": "Terminate portal sessions button"
+  },
+  "externalAccessTerminateSessionsConfirm": {
+    "message": "Terminate all active portal sessions for this user?",
+    "description": "Confirm terminate sessions"
+  },
+  "externalAccessSessionsTerminatedSuccess": {
+    "message": "Portal sessions terminated.",
+    "description": "Success after terminating sessions"
+  },
+  "externalAccessViewHistory": {
+    "message": "View login history",
+    "description": "Toggle login history visibility"
+  },
+  "externalAccessHideHistory": {
+    "message": "Hide login history",
+    "description": "Hide login history"
+  },
+  "externalAccessLoginHistory": {
+    "message": "Portal activity",
+    "description": "Login history section title"
+  },
+  "externalAccessAuditLoadFailed": {
+    "message": "Could not load portal activity.",
+    "description": "Audit history load failure"
+  },
+  "externalAccessNoHistory": {
+    "message": "No portal activity recorded yet.",
+    "description": "Empty audit history"
+  },
+  "externalAccessUsageActive": {
+    "message": "Active external users in your organization: {count}",
+    "description": "Org-wide external user usage counter (V1)"
   }
 }

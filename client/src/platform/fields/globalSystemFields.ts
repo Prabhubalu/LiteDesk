@@ -12,6 +12,9 @@ const GLOBAL_SYSTEM_FIELD_KEYS = new Set([
   'source',
   'appointment',
   'playbookstate',
+  'portalaccess',
+  'portalreadreceipts',
+  'portalcsat',
 ]);
 
 /** @internal Used by fieldCapabilityEngine with pre-normalized keys. */

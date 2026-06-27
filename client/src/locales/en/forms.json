@@ -2963,6 +2963,14 @@
     "message": "Section Scores",
     "description": "Report section scores heading"
   },
+  "reportSectionPassFail": {
+    "message": "{passed} passed · {failed} failed · {total} questions",
+    "description": "Section pass/fail breakdown in report"
+  },
+  "reportResponseId": {
+    "message": "Response ID: {id}",
+    "description": "Report response identifier label"
+  },
   "rtAlignCenter": {
     "message": "Center",
     "description": "Alignment option"

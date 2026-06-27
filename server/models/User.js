@@ -315,6 +315,55 @@ const UserSchema = new mongoose.Schema({
     // Activity Tracking
     lastLogin: Date,
 
+    /** Bumped on global session revocation; JWT sv must match. */
+    authSessionVersion: {
+        type: Number,
+        default: 0
+    },
+
+    // --- External User / Portal (userType=EXTERNAL) ---
+    peopleId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'People',
+        default: null
+    },
+    externalRoleAssignments: [{
+        roleId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Role',
+            required: true
+        },
+        status: {
+            type: String,
+            enum: ['ACTIVE', 'INACTIVE'],
+            default: 'ACTIVE'
+        },
+        assignedAt: { type: Date, default: Date.now },
+        assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+        removedAt: { type: Date, default: null },
+        removedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }
+    }],
+    defaultExternalRoleId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Role',
+        default: null
+    },
+    portalInvite: {
+        inviteVersion: { type: Number, default: 0 },
+        tempPasswordIssuedAt: { type: Date, default: null },
+        tempPasswordUsedAt: { type: Date, default: null }
+    },
+    authProvider: {
+        type: {
+            type: String,
+            enum: ['local', 'oidc', 'saml'],
+            default: 'local'
+        },
+        externalSubjectId: { type: String, default: null },
+        idpConnectionId: { type: mongoose.Schema.Types.ObjectId, default: null },
+        lastSsoLoginAt: { type: Date, default: null }
+    },
+
     // User onboarding (invited member + founder wizard state)
     onboarding: {
         version: { type: Number, default: 1 },
@@ -378,6 +427,11 @@ const UserSchema = new mongoose.Schema({
 
 // Compound index for organization + email (unique within organization)
 UserSchema.index({ organizationId: 1, email: 1 }, { unique: true });
+UserSchema.index(
+  { organizationId: 1, peopleId: 1 },
+  { unique: true, sparse: true, partialFilterExpression: { peopleId: { $type: 'objectId' } } }
+);
+UserSchema.index({ organizationId: 1, userType: 1, status: 1 });
 
 // Helper method to set default permissions based on role
 UserSchema.methods.setPermissionsByRole = function(role) {
@@ -549,5 +603,12 @@ UserSchema.methods.getFullName = function() {
     }
     return this.username;
 };
+
+UserSchema.pre('save', function enforceExternalUserRoleInvariant(next) {
+    if (String(this.userType || '').toUpperCase() === 'EXTERNAL') {
+        this.roleId = null;
+    }
+    next();
+});
 
 module.exports = wrapTenantModel(mongoose.model('User', UserSchema));

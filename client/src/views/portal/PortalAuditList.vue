@@ -1,20 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 lg:p-6">
-    <!-- Error Banner -->
-    <div v-if="error" class="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-      <div class="flex items-center">
-        <svg class="w-5 h-5 text-red-600 dark:text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p class="text-sm text-red-800 dark:text-red-200">{{ error }}</p>
-      </div>
-    </div>
-
-    <!-- Page Header -->
-    <div class="mb-6">
-      <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ t('navigation.portalAudits') }}</h1>
-      <p class="text-gray-600 dark:text-gray-400">{{ t('audit.portalAuditListViewAuditsConductedOnYourOrganization') }}</p>
-    </div>
+  <PortalPageShell
+    :title="t('navigation.portalAudits')"
+    :subtitle="t('audit.portalAuditListViewAuditsConductedOnYourOrganization')"
+    :error="error"
+  >
 
     <!-- Filters (Desktop) -->
     <div class="hidden lg:flex gap-4 mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
@@ -175,11 +164,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </PortalPageShell>
 </template>
 
 <script setup>
 import { useI18n } from 'vue-i18n';
+import PortalPageShell from '@/components/portal/PortalPageShell.vue';
 
 const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';

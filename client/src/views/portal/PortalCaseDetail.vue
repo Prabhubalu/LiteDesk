@@ -1,135 +1,120 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 lg:p-6">
-    <div v-if="error" class="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-      <p class="text-sm text-red-800 dark:text-red-200">{{ error }}</p>
-    </div>
-
-    <button
-      type="button"
-      class="mb-4 inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-      @click="router.push({ name: 'portal-case-list' })"
-    >
-      ← {{ t('cases.portalCasesBack') }}
-    </button>
-
-    <div v-if="loading" class="h-48 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 animate-pulse" />
-
-    <template v-else-if="caseRecord">
-      <header class="mb-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-        <p class="text-xs font-mono text-gray-500 dark:text-gray-400">{{ caseRecord.caseId }}</p>
-        <h1 class="mt-1 text-xl font-bold text-gray-900 dark:text-white">{{ caseRecord.title }}</h1>
-        <div class="mt-3 flex flex-wrap items-center gap-2">
-          <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium" :class="statusClass(caseRecord.status)">
-            {{ caseRecord.status }}
-          </span>
-          <span class="text-xs text-gray-500 dark:text-gray-400">{{ caseRecord.priority }}</span>
-        </div>
-        <p v-if="caseRecord.description" class="mt-4 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-          {{ caseRecord.description }}
-        </p>
-      </header>
-
-      <section class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3">
-          <h2 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('cases.portalCasesConversation') }}</h2>
-        </div>
-
-        <div class="max-h-[50vh] overflow-y-auto p-4 space-y-4">
-          <p v-if="!activities.length" class="text-sm text-gray-500 dark:text-gray-400 text-center py-8">
-            {{ t('cases.portalCasesNoMessages') }}
-          </p>
-          <div
-            v-for="(act, idx) in activities"
-            :key="act._id || idx"
-            class="flex"
-            :class="isFromCustomer(act) ? '' : 'justify-end'"
-          >
-            <div
-              class="max-w-[85%] rounded-2xl px-4 py-2.5 text-sm"
-              :class="isFromCustomer(act)
-                ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
-                : 'bg-blue-600 text-white'"
-            >
-              <p class="text-xs font-medium opacity-80 mb-1">{{ act.actorName || t('cases.portalCasesSupport') }}</p>
-              <p class="whitespace-pre-wrap break-words">{{ act.message || '—' }}</p>
-              <p class="mt-1 text-[10px] opacity-70">{{ formatDate(act.createdAt) }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          v-if="canReply"
-          class="border-t border-gray-200 dark:border-gray-700 p-4"
-        >
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('cases.portalCasesReplyLabel') }}</label>
-          <textarea
-            v-model="replyBody"
-            rows="3"
-            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white"
-            :placeholder="t('cases.portalCasesReplyPlaceholder')"
-          />
-          <div class="mt-3 flex flex-col gap-2">
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {{ t('cases.portalCasesAttachmentsLabel') }}
-            </label>
-            <input
-              type="file"
-              multiple
-              class="block w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-800 hover:file:bg-gray-200 dark:file:bg-gray-700 dark:file:text-gray-100 dark:hover:file:bg-gray-600"
-              :disabled="replying || uploading"
-              @change="handleFileSelect"
-            />
-            <p v-if="uploadError" class="text-sm text-red-600 dark:text-red-400">{{ uploadError }}</p>
-            <div v-if="uploadedAttachments.length" class="flex flex-wrap gap-2">
-              <span
-                v-for="att in uploadedAttachments"
-                :key="att.attachmentId"
-                class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
-              >
-                <span class="max-w-[220px] truncate" :title="att.originalFileName">{{ att.originalFileName }}</span>
-                <button
-                  type="button"
-                  class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-                  :disabled="replying || uploading"
-                  @click="removeUploaded(att.attachmentId)"
-                >
-                  ✕
-                </button>
-              </span>
-            </div>
-          </div>
-          <p v-if="replyError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ replyError }}</p>
-          <button
-            type="button"
-            :disabled="replying || uploading || (!replyBody.trim() && uploadedAttachments.length === 0)"
-            class="mt-3 inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-            @click="submitReply"
-          >
-            {{ replying ? t('cases.portalCasesReplySending') : t('cases.portalCasesReplySend') }}
-          </button>
-        </div>
-        <p v-else class="border-t border-gray-200 dark:border-gray-700 p-4 text-sm text-gray-500 dark:text-gray-400">
-          {{ t('cases.portalCasesClosedNoReply') }}
-        </p>
-      </section>
+  <PortalRecordShell
+    :error="error"
+    :loading="loading"
+    :back-label="t('cases.portalCasesBack')"
+    :eyebrow="caseRecord?.caseId"
+    :title="caseRecord?.title || ''"
+    :compact="true"
+    :split-layout="true"
+    :wide="true"
+    :show-branding="false"
+    @back="router.push({ name: 'portal-case-list' })"
+  >
+    <template v-if="caseRecord" #badges>
+      <PortalCaseStatusBadge :status="caseRecord.status" />
+      <span
+        v-if="caseRecord.priority"
+        class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium"
+        :class="portalCasePriorityClass(caseRecord.priority)"
+      >
+        {{ caseRecord.priority }}
+      </span>
     </template>
-  </div>
+
+    <template v-if="caseRecord" #header-extra>
+      <div
+        v-if="statusBanner"
+        class="flex items-start gap-3 rounded-xl px-3.5 py-3 text-sm"
+        :class="statusBanner.className"
+      >
+        <component :is="statusBanner.icon" class="mt-0.5 h-5 w-5 shrink-0" />
+        <div class="min-w-0">
+          <p class="font-medium">{{ statusBanner.title }}</p>
+          <p class="mt-0.5 text-[13px] leading-relaxed opacity-90">{{ statusBanner.message }}</p>
+        </div>
+      </div>
+      <p v-if="updatedLabel" class="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
+        {{ updatedLabel }}
+      </p>
+    </template>
+
+    <template v-if="caseRecord">
+      <div
+        :class="[
+          'flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl ring-1 ring-neutral-200/80 dark:ring-neutral-700/80',
+          PLATFORM_HOME_CARD_CLASS
+        ]"
+      >
+        <PortalCaseConversation
+          ref="conversationRef"
+          :activities="activities"
+          flex-fill
+        />
+
+        <PortalCaseReplyComposer
+          v-if="canReply"
+          v-model="replyBody"
+          :attachments="uploadedAttachments"
+          :allow-attachments="allowAttachments"
+          :disabled="replying || uploading"
+          :sending="replying"
+          :upload-error="uploadError"
+          :send-error="replyError"
+          docked
+          @send="submitReply"
+          @files-selected="handleFilesSelected"
+          @remove-attachment="removeUploaded"
+        />
+
+        <section
+          v-else
+          class="shrink-0 border-t border-neutral-200 bg-neutral-50 px-5 py-4 text-sm text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900/50 dark:text-neutral-400"
+        >
+          {{ t('cases.portalCasesClosedNoReply') }}
+        </section>
+      </div>
+
+    </template>
+
+    <template v-if="caseRecord?.isClosed" #sidebar>
+      <PortalCaseCsat
+        :case-id="String(caseRecord._id)"
+        :csat-submitted="caseRecord.csatSubmitted"
+        :csat-score="caseRecord.csatScore"
+        @submitted="handleCsatSubmitted"
+      />
+    </template>
+  </PortalRecordShell>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { useAuthStore } from '@/stores/authRegistry';
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  ExclamationTriangleIcon,
+  SparklesIcon
+} from '@heroicons/vue/24/outline';
 import { usePortalCases } from '@/composables/usePortalCases';
+import { usePortalCasePolling } from '@/composables/usePortalCasePolling';
 import { uploadPortalAttachment } from '@/utils/portalAttachmentUpload';
 import portalApiClient from '@/utils/portalApiClient';
+import { isPortalCaseClosed, portalCasePriorityClass } from '@/utils/portalCaseUtils';
+import { capturePortalCaseReplySent } from '@/config/posthogPortal';
+import PortalRecordShell from '@/components/portal/PortalRecordShell.vue';
+import PortalCaseStatusBadge from '@/components/portal/PortalCaseStatusBadge.vue';
+import PortalCaseConversation from '@/components/portal/PortalCaseConversation.vue';
+import PortalCaseReplyComposer from '@/components/portal/PortalCaseReplyComposer.vue';
+import PortalCaseCsat from '@/components/portal/PortalCaseCsat.vue';
+import { PLATFORM_HOME_CARD_CLASS } from '@/utils/platformHomeLayout';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const authStore = useAuthStore();
-const { getCase, replyToCase } = usePortalCases();
+const { getCase, replyToCase, markCaseRead } = usePortalCases();
 
 const loading = ref(true);
 const error = ref(null);
@@ -141,6 +126,8 @@ const uploading = ref(false);
 const uploadError = ref(null);
 const uploadedAttachments = ref([]);
 const allowReplyByCapability = ref(true);
+const allowAttachments = ref(false);
+const conversationRef = ref(null);
 
 const activities = computed(() => {
   const list = caseRecord.value?.activities;
@@ -148,58 +135,101 @@ const activities = computed(() => {
 });
 
 const canReply = computed(() => {
-  const s = String(caseRecord.value?.status || '');
-  return s !== 'Closed' && s !== 'Resolved' && allowReplyByCapability.value !== false;
+  const status = caseRecord.value?.status;
+  return !isPortalCaseClosed(status) && allowReplyByCapability.value !== false;
 });
 
-function formatDate(value) {
+const updatedLabel = computed(() => {
+  const value = caseRecord.value?.updatedAt;
   if (!value) return '';
-  return new Date(value).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  return t('cases.portalCasesUpdated', {
+    date: new Date(value).toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
   });
-}
+});
 
-function statusClass(status) {
-  const s = String(status || '').toLowerCase();
-  if (s === 'closed' || s === 'resolved') {
-    return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+const statusBanner = computed(() => {
+  const status = String(caseRecord.value?.status || '');
+  if (status === 'Waiting for Customer') {
+    return {
+      icon: ExclamationTriangleIcon,
+      title: t('cases.portalCaseStatusWaitingOnYou'),
+      message: t('cases.portalCaseHintWaitingOnYou'),
+      className: 'bg-warning-50 text-warning-900 ring-1 ring-warning-200 dark:bg-warning-900/20 dark:text-warning-100 dark:ring-warning-500/30'
+    };
   }
-  return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-}
+  if (status === 'In Progress') {
+    return {
+      icon: ClockIcon,
+      title: t('cases.portalCaseStatusInProgress'),
+      message: t('cases.portalCaseHintInProgress'),
+      className: 'bg-primary-50 text-primary-900 ring-1 ring-primary-200 dark:bg-primary-900/20 dark:text-primary-100 dark:ring-primary-500/30'
+    };
+  }
+  if (status === 'New') {
+    return {
+      icon: SparklesIcon,
+      title: t('cases.portalCaseStatusNew'),
+      message: t('cases.portalCaseHintNew'),
+      className: 'bg-neutral-50 text-neutral-800 ring-1 ring-neutral-200 dark:bg-neutral-800/60 dark:text-neutral-100 dark:ring-neutral-700'
+    };
+  }
+  if (isPortalCaseClosed(status)) {
+    return {
+      icon: CheckCircleIcon,
+      title: t('cases.portalCaseStatusClosed'),
+      message: t('cases.portalCaseHintClosed'),
+      className: 'bg-success-50 text-success-900 ring-1 ring-success-200 dark:bg-success-900/20 dark:text-success-100 dark:ring-success-500/30'
+    };
+  }
+  return null;
+});
 
-function isFromCustomer(act) {
-  const type = String(act?.activityType || '');
-  if (type === 'channel_message_received' || type === 'email_received') return true;
-  const email = String(authStore.user?.email || '').toLowerCase();
-  const actor = String(act?.actorName || '').toLowerCase();
-  return email && actor.includes(email);
-}
-
-async function loadCase() {
-  loading.value = true;
-  error.value = null;
+async function loadCase(options = {}) {
+  const silent = options.silent === true;
+  if (!silent) {
+    loading.value = true;
+    error.value = null;
+  }
   try {
     const res = await getCase(route.params.id);
     if (res.success) {
+      const prevCount = activities.value.length;
       caseRecord.value = res.data;
-    } else {
+      void markCaseRead(route.params.id);
+      if (!silent || activities.value.length > prevCount) {
+        conversationRef.value?.scrollToBottom?.();
+      }
+    } else if (!silent) {
       error.value = res.message || t('cases.portalCasesLoadFailed');
     }
   } catch (err) {
-    error.value = err.message || t('cases.portalCasesLoadFailed');
-    if (err.status === 404) {
-      error.value = t('cases.portalCasesNotFound');
+    if (!silent) {
+      error.value = err.message || t('cases.portalCasesLoadFailed');
+      if (err.status === 404) {
+        error.value = t('cases.portalCasesNotFound');
+      }
     }
   } finally {
-    loading.value = false;
+    if (!silent) loading.value = false;
   }
 }
 
+function handleCsatSubmitted({ score }) {
+  if (!caseRecord.value) return;
+  caseRecord.value = {
+    ...caseRecord.value,
+    csatSubmitted: true,
+    csatScore: score
+  };
+}
+
 async function submitReply() {
-  if (!replyBody.value.trim() || !caseRecord.value?._id) return;
+  if ((!replyBody.value.trim() && !uploadedAttachments.value.length) || !caseRecord.value?._id) return;
   replying.value = true;
   replyError.value = null;
   try {
@@ -209,6 +239,7 @@ async function submitReply() {
       attachments: uploadedAttachments.value.map((a) => ({ attachmentId: a.attachmentId }))
     });
     if (res.success) {
+      capturePortalCaseReplySent({ case_id: String(caseRecord.value._id) });
       replyBody.value = '';
       uploadedAttachments.value = [];
       await loadCase();
@@ -226,12 +257,8 @@ function removeUploaded(attachmentId) {
   uploadedAttachments.value = uploadedAttachments.value.filter((a) => a.attachmentId !== attachmentId);
 }
 
-async function handleFileSelect(e) {
-  const files = Array.from(e?.target?.files || []);
-  // Reset input so selecting the same file again works.
-  try { e.target.value = ''; } catch (_) {}
-  if (!files.length) return;
-
+async function handleFilesSelected(files) {
+  if (!allowAttachments.value) return;
   uploading.value = true;
   uploadError.value = null;
   try {
@@ -252,13 +279,16 @@ async function loadPortalCapabilities() {
     const res = await portalApiClient.get('/me');
     if (res.success && res.data?.portalCapabilities) {
       allowReplyByCapability.value = res.data.portalCapabilities.allowReply !== false;
+      allowAttachments.value = res.data.portalCapabilities.allowAttachments === true;
     }
   } catch {
     allowReplyByCapability.value = true;
   }
 }
 
-watch(() => route.params.id, loadCase);
+usePortalCasePolling(() => loadCase({ silent: true }), 30000);
+
+watch(() => route.params.id, () => loadCase());
 onMounted(async () => {
   await Promise.all([loadPortalCapabilities(), loadCase()]);
 });

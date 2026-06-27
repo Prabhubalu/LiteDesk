@@ -58,6 +58,10 @@ async function resolveKey(key, context) {
       return resolvePlaybookAlertRecipients(context);
     case 'WEBFORM_NOTIFY_RECIPIENTS':
       return resolveWebformNotifyRecipients(context);
+    case 'PORTAL_CUSTOMER':
+      return resolvePortalCustomer(context);
+    case 'PORTAL_CASE_REQUESTER':
+      return resolvePortalCaseRequester(context);
     default:
       console.warn('[notificationRecipientResolver] Unhandled recipient key:', key);
       return [];
@@ -404,6 +408,70 @@ async function resolveEventAuditor({ entity, organizationId }) {
     title: 'Audit Assigned',
     body: `You have been assigned to audit "${event.eventName || event.title || 'Audit'}".`
   }];
+}
+
+const {
+  resolvePortalCaseRequesterUserIds,
+  isPortalChannelCase
+} = require('./portalCaseAccessService');
+
+function portalCaseCustomerNotificationCopy(eventType, caseRecord, entity = {}) {
+  const caseLabel = caseRecord?.caseId || caseRecord?.title || 'your case';
+  if (eventType === domainEvents.CASE_PORTAL_AGENT_REPLY) {
+    const preview = String(entity.preview || '').trim();
+    return {
+      title: 'New reply on your support case',
+      body: preview
+        ? `Support replied on ${caseLabel}: ${preview}`
+        : `Support replied on ${caseLabel}.`
+    };
+  }
+  if (eventType === domainEvents.CASE_PORTAL_STATUS_UPDATE) {
+    const status = String(entity.toStatus || caseRecord?.status || '').trim();
+    return {
+      title: 'Support case update',
+      body: `${caseLabel} is now ${status}.`
+    };
+  }
+  return {
+    title: 'Support case update',
+    body: `There is an update on ${caseLabel}.`
+  };
+}
+
+async function resolvePortalCaseRequester({ entity, organizationId, eventType }) {
+  if (!entity || entity.type !== 'Case' || !entity.id || !organizationId) return [];
+  const row = await Case.findOne({ _id: entity.id, organizationId, deletedAt: null })
+    .select('caseId title channel requesterEmail contactId status')
+    .lean();
+  if (!row || !isPortalChannelCase(row)) return [];
+
+  const userIds = await resolvePortalCaseRequesterUserIds(organizationId, row);
+  if (!userIds.length) return [];
+
+  const copy = portalCaseCustomerNotificationCopy(eventType, row, entity);
+  return userIds.map((userId) => ({
+    userId,
+    title: copy.title,
+    body: copy.body
+  }));
+}
+
+async function resolvePortalCustomer({ entity, organizationId, eventType }) {
+  const userId = entity?.userId || entity?.portalUserId;
+  if (userId && organizationId) {
+    return [{
+      userId,
+      title: eventType === domainEvents.PORTAL_ACCOUNT_CREATED ? 'Welcome to your portal' : 'Portal notification',
+      body: eventType === domainEvents.PORTAL_ACCOUNT_CREATED
+        ? 'Your portal account is ready. Sign in to get started.'
+        : 'You have a new portal notification.'
+    }];
+  }
+  if (entity?.type === 'Case' && entity?.id) {
+    return resolvePortalCaseRequester({ entity, organizationId, eventType });
+  }
+  return [];
 }
 
 async function resolveOrgAdmins({ organizationId }) {

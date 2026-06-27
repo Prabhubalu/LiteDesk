@@ -52,7 +52,24 @@ function isAuditEventType(eventType) {
     return AUDIT_EVENT_TYPES.includes(eventType);
 }
 
+/**
+ * Client route for an event detail view.
+ *
+ * @param {string} eventId
+ * @param {string} [eventType]
+ * @returns {string|null}
+ */
+function resolveEventRouteTarget(eventId, eventType) {
+    const id = String(eventId || '').trim();
+    if (!id) return null;
+    if (isAuditEventType(eventType)) {
+        return `/audit/audits/${id}`;
+    }
+    return `/events/${id}`;
+}
+
 module.exports = {
     isAuditEventType,
+    resolveEventRouteTarget,
     AUDIT_EVENT_TYPES
 };

@@ -1,56 +1,30 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 lg:p-6">
-    <!-- Error Banner -->
-    <div v-if="error" class="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-      <div class="flex items-center">
-        <svg class="w-5 h-5 text-red-600 dark:text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p class="text-sm text-red-800 dark:text-red-200">{{ error }}</p>
+  <PortalRecordShell
+    :loading="loading"
+    :error="error"
+    :back-label="t('navigation.portalAudits')"
+    :title="audit?.name || audit?.title || ''"
+    @back="router.push({ name: 'portal-audit-list' })"
+  >
+    <template v-if="audit" #badges>
+      <span
+        class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
+        :class="getStatusBadgeClass(audit.status || audit.auditState)"
+      >
+        {{ formatStatus(audit.status || audit.auditState) }}
+      </span>
+    </template>
+
+    <template v-if="audit" #header-extra>
+      <div class="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400">
+        <span>{{ audit.type || audit.auditType || 'Audit' }}</span>
+        <span v-if="audit.period">{{ audit.period }}</span>
       </div>
-    </div>
+    </template>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="space-y-6">
-      <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-1/3"></div>
-      <div class="h-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-    </div>
-
-    <!-- Audit Detail -->
-    <div v-else-if="audit" class="space-y-6">
-      <!-- Header -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
-          <div class="flex-1">
-            <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              {{ audit.name || audit.title || 'Untitled Audit' }}
-            </h1>
-            <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-              <span class="flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                </svg>
-                {{ audit.type || audit.auditType || 'Audit' }}
-              </span>
-              <span v-if="audit.period" class="flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                {{ audit.period }}
-              </span>
-            </div>
-          </div>
-          <span
-            class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium"
-            :class="getStatusBadgeClass(audit.status || audit.auditState)"
-          >
-            {{ formatStatus(audit.status || audit.auditState) }}
-          </span>
-        </div>
-      </div>
-
+    <template v-if="audit">
       <!-- Findings Summary -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div :class="['p-6', PLATFORM_HOME_CARD_CLASS]">
         <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ t('audit.portalAuditDetailFindingsSummary') }}</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
@@ -69,7 +43,7 @@
       </div>
 
       <!-- Corrective Actions -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div :class="['p-6', PLATFORM_HOME_CARD_CLASS]">
         <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ t('forms.reportCorrectiveActions') }}</h2>
         
         <!-- Empty State -->
@@ -186,7 +160,7 @@
       </div>
 
       <!-- Timeline (Read-Only) -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div :class="['p-6', PLATFORM_HOME_CARD_CLASS]">
         <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ t('audit.portalAuditDetailTimeline') }}</h2>
         
         <!-- Empty State -->
@@ -222,12 +196,14 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </template>
+  </PortalRecordShell>
 </template>
 
 <script setup>
 import { useI18n } from 'vue-i18n';
+import PortalRecordShell from '@/components/portal/PortalRecordShell.vue';
+import { PLATFORM_HOME_CARD_CLASS } from '@/utils/platformHomeLayout';
 
 const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';

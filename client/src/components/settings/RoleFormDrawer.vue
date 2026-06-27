@@ -250,7 +250,7 @@
                                     </p>
                                     <HeadlessSelect
                                       v-if="isAppEntitlementEnabled(app.appKey)"
-                                      :model-value="getEntitlement(app.appKey)?.appRoleKey"
+                                      :model-value="getResolvedEntitlementRoleKey(app)"
                                       :options="getAppRoleOptions(app)"
                                       :disabled="isSystemRole"
                                       :button-class="drawerSelectButtonClass"
@@ -277,6 +277,12 @@
                               </p>
                               <p v-if="isPermissionsFromProfile" class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                 {{ t('settings.roleDrawerAccessProfilePreviewHint', { profile: linkedProfileName || t('settings.roleDrawerProfileNone') }) }}
+                              </p>
+                              <p
+                                v-if="catalogMeta.externalProfile"
+                                class="mt-1 text-xs text-gray-500 dark:text-gray-400"
+                              >
+                                {{ t('settings.roleDrawerExternalProfileScopeHint') }}
                               </p>
                             </div>
 
@@ -310,7 +316,6 @@
                                     v-model="permissionSearch"
                                     type="search"
                                     :placeholder="t('settings.roleDrawerSearchModulesPh')"
-                                    :disabled="isPermissionsFromProfile"
                                     class="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700/50 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
                                   />
                                 </div>
@@ -324,7 +329,7 @@
                               </div>
 
                               <div
-                                v-if="!isPermissionsLocked && !isPermissionsFromProfile && !loadingModules && accessVisibleModules.length"
+                                v-if="!isPermissionsLocked && !loadingModules && accessVisibleModules.length"
                                 class="flex flex-wrap gap-2"
                               >
                                 <button
@@ -386,7 +391,7 @@
                                           <HeadlessSelect
                                             :model-value="getModeForDisplay(module)"
                                             :options="accessModeOptions"
-                                            :disabled="isPermissionsLocked || isPermissionsFromProfile"
+                                            :disabled="isPermissionsLocked"
                                             :button-class="drawerSelectButtonClass"
                                             teleport
                                             @update:model-value="setModuleMode(module, $event)"
@@ -394,19 +399,39 @@
                                         </div>
                                       </div>
                                       <div
-                                        v-if="!isPermissionsFromProfile && showCrudEditor(module) && getCrudActionsForModule(module).length"
-                                        class="mt-2 flex flex-wrap gap-1.5 pl-0 sm:pl-2"
+                                        v-if="showCrudEditor(module) && (getCrudActionsForModule(module).length || getAdvancedActionsForModule(module).length)"
+                                        class="mt-2 space-y-2 pl-0 sm:pl-2"
                                       >
-                                        <PermissionChip
-                                          v-for="action in getCrudActionsForModule(module)"
-                                          :key="`${module.key}-${action}`"
-                                          :label="getCrudLabel(action)"
-                                          :variant="chipVariantForAction(action)"
-                                          :active="!!effectivePermissions[module.key]?.[action]"
-                                          :disabled="isPermissionsLocked || isCrudDisabled(module, action)"
-                                          size="sm"
-                                          @toggle="togglePermission(module.key, action)"
-                                        />
+                                        <div
+                                          v-if="getCrudActionsForModule(module).length"
+                                          class="flex flex-wrap gap-1.5"
+                                        >
+                                          <PermissionChip
+                                            v-for="action in getCrudActionsForModule(module)"
+                                            :key="`${module.key}-${action}`"
+                                            :label="getCrudLabel(action)"
+                                            :variant="chipVariantForAction(action)"
+                                            :active="!!effectivePermissions[module.key]?.[action]"
+                                            :disabled="isPermissionsLocked || isCrudDisabled(module, action)"
+                                            size="sm"
+                                            @toggle="togglePermission(module.key, action)"
+                                          />
+                                        </div>
+                                        <div
+                                          v-if="getAdvancedActionsForModule(module).length"
+                                          class="flex flex-wrap gap-1.5"
+                                        >
+                                          <PermissionChip
+                                            v-for="action in getAdvancedActionsForModule(module)"
+                                            :key="`${module.key}-adv-${action}`"
+                                            :label="advancedActionLabel(action)"
+                                            :variant="chipVariantForAction(action)"
+                                            :active="!!effectivePermissions[module.key]?.[action]"
+                                            :disabled="isPermissionsLocked || isAdvancedDisabled(module, action)"
+                                            size="sm"
+                                            @toggle="togglePermission(module.key, action)"
+                                          />
+                                        </div>
                                       </div>
                                       <div
                                         v-if="moduleShowsFieldPermissions(module)"
@@ -623,6 +648,9 @@ import {
   applyPermissionUncheck,
   applyFullAccessToAllModules,
   applyAccessPresetToAllModules,
+  buildAccessBulkPresets,
+  buildAccessModeOptions,
+  buildCrudActionLabels,
   buildRoleAccessSummary,
   chipVariantForAction,
   getAdvancedActionsForModule,
@@ -630,7 +658,9 @@ import {
   getModuleAccessMode,
   hasAction,
   hasAnyAdvancedEnabled,
-  isFullyPrivilegedSystemRoleName
+  isFullyPrivilegedSystemRoleName,
+  resolveDisplayAccessMode,
+  shouldShowModuleActionEditor
 } from '@/utils/rolePermissionEditorUtils';
 
 const { t } = useI18n();
@@ -721,7 +751,7 @@ const activeTab = ref('general');
 const permissionSearch = ref('');
 const permissionModules = ref([]);
 const permissionSections = ref([]);
-const catalogMeta = ref({ enabledApps: [] });
+const catalogMeta = ref({ enabledApps: [], profileScoped: false, externalProfile: false, profileKey: null });
 const loadingModules = ref(false);
 const availableParentRoles = ref([]);
 const availableProfiles = ref([]);
@@ -753,11 +783,13 @@ const {
   appEntitlements: computed(() => form.value.appEntitlements),
   permissions: computed(() => form.value.permissions),
   userType: computed(() => form.value.userType),
-  rbacV2
+  rbacV2,
+  profileScoped: computed(() => catalogMeta.value.profileScoped === true)
 });
 
 const linkedProfilePermissions = ref(null);
 const linkedProfileFieldPermissions = ref({});
+const linkedProfileKey = ref(null);
 const loadingProfilePreview = ref(false);
 
 function normalizeDrawerTab(tab) {
@@ -780,11 +812,7 @@ const editorTabs = computed(() => {
   return tabs;
 });
 
-const effectivePermissions = computed(() =>
-  isPermissionsFromProfile.value && linkedProfilePermissions.value
-    ? linkedProfilePermissions.value
-    : form.value.permissions
-);
+const effectivePermissions = computed(() => form.value.permissions);
 
 function moduleHasFieldCatalog(module) {
   if (!rbacV2.value) return false;
@@ -832,35 +860,23 @@ const iconOptions = computed(() => [
   { value: 'eye', label: t('settings.roleDrawerIconEye') }
 ]);
 
-const crudLabels = computed(() => ({
-  read: t('settings.roleDrawerPermRead'),
-  create: t('settings.roleDrawerPermCreate'),
-  update: t('settings.roleDrawerPermUpdate'),
-  delete: t('settings.roleDrawerPermDelete')
-}));
+const crudLabels = computed(() => buildCrudActionLabels(t));
 
 function getCrudLabel(action) {
   return crudLabels.value[action] ?? action;
 }
 
-const accessModeOptions = computed(() => [
-  { value: 'none', label: t('settings.roleDrawerAccessModeNone') },
-  { value: 'readOnly', label: t('settings.roleDrawerAccessModeReadOnly') },
-  { value: 'edit', label: t('settings.roleDrawerAccessModeEdit') },
-  { value: 'full', label: t('settings.roleDrawerAccessModeFull') },
-  { value: 'custom', label: t('settings.roleDrawerAccessModeCustom') }
-]);
+const accessModeOptions = computed(() => buildAccessModeOptions(t));
 
-const accessPresets = computed(() => [
-  { id: 'readOnly', label: t('settings.roleDrawerPresetReadOnly') },
-  { id: 'edit', label: t('settings.roleDrawerPresetStandard') },
-  { id: 'full', label: t('settings.roleDrawerPresetFull') },
-  { id: 'none', label: t('settings.roleDrawerPresetNone') }
-]);
+const accessPresets = computed(() => buildAccessBulkPresets(t));
 
 function applyAccessPreset(mode) {
   if (isPermissionsLocked.value) return;
-  applyAccessPresetToAllModules(form.value.permissions, accessVisibleModules.value, mode);
+  form.value.permissions = applyAccessPresetToAllModules(
+    form.value.permissions,
+    accessVisibleModules.value,
+    mode
+  );
   customEditModules.value = new Set();
 }
 
@@ -906,7 +922,7 @@ const isSystemRole = computed(() => Boolean(props.role?.isSystemRole));
 const isPermissionsFromProfile = computed(
   () => rbacV2.value && form.value.privilegeMode === 'profile' && Boolean(form.value.profileId)
 );
-const isPermissionsLocked = computed(() => isSystemRole.value || isPermissionsFromProfile.value);
+const isPermissionsLocked = computed(() => isSystemRole.value);
 const privilegeModeOptions = computed(() => [
   { value: 'inline', label: t('settings.roleDrawerPrivilegeInline') },
   { value: 'profile', label: t('settings.roleDrawerPrivilegeProfile') }
@@ -1016,6 +1032,15 @@ function updateAppEntitlementRole(appKey, appRoleKey) {
   if (ent) ent.appRoleKey = appRoleKey;
 }
 
+function getResolvedEntitlementRoleKey(app) {
+  const ent = getEntitlement(app.appKey);
+  const raw = ent?.appRoleKey;
+  if (raw && (app.roles || []).includes(raw)) {
+    return raw;
+  }
+  return app.defaultRole || app.roles?.[0] || raw || '';
+}
+
 function getAppRoleOptions(app) {
   return (app.roles || []).map((roleKey) => ({
     value: roleKey,
@@ -1101,7 +1126,7 @@ watch(
 
 watch(
   () => form.value.userType,
-  (userType) => {
+  (userType, previousUserType) => {
     if (!rbacV2.value) return;
     const allowedKeys = new Set(
       allAppCapabilities.value
@@ -1117,6 +1142,15 @@ watch(
       nextEntitlements.push(ent);
     }
     form.value.appEntitlements = nextEntitlements;
+
+    const nextType = String(userType || 'INTERNAL').toUpperCase();
+    const prevType = String(previousUserType || 'INTERNAL').toUpperCase();
+    if (nextType !== prevType && (nextType === 'EXTERNAL' || prevType === 'EXTERNAL')) {
+      const profileKey = linkedProfileKey.value || null;
+      if (!profileKey) {
+        fetchPermissionModules(null, userType);
+      }
+    }
   }
 );
 
@@ -1185,9 +1219,11 @@ function summaryTextClass(tone) {
 const initializePermissions = () => {
   const permissions = {};
   permissionModules.value.forEach((module) => {
-    const actions = Array.isArray(module.actions) ? module.actions : [];
     permissions[module.key] = {};
-    actions.forEach((action) => {
+    getCrudActionsForModule(module).forEach((action) => {
+      permissions[module.key][action] = false;
+    });
+    getAdvancedActionsForModule(module).forEach((action) => {
       permissions[module.key][action] = false;
     });
     if (module.hasScope) permissions[module.key].scope = 'own';
@@ -1195,14 +1231,47 @@ const initializePermissions = () => {
   return permissions;
 };
 
-const fetchPermissionModules = async () => {
+function ensureModulePermissions(module) {
+  if (form.value.permissions[module.key]) {
+    return form.value.permissions[module.key];
+  }
+  const init = initializePermissions();
+  const next = init[module.key] || {
+    read: false,
+    create: false,
+    update: false,
+    delete: false,
+    scope: 'own'
+  };
+  form.value.permissions = {
+    ...form.value.permissions,
+    [module.key]: next
+  };
+  return next;
+}
+
+const fetchPermissionModules = async (profileKey = null, userType = null) => {
   loadingModules.value = true;
   try {
-    const response = await apiClient.get('/roles/modules');
+    const params = {};
+    if (profileKey) {
+      params.profileKey = profileKey;
+    } else {
+      const resolvedUserType = userType || form.value.userType || props.role?.userType || null;
+      if (String(resolvedUserType || '').toUpperCase() === 'EXTERNAL') {
+        params.userType = 'EXTERNAL';
+      }
+    }
+    const response = await apiClient.get('/roles/modules', { params });
     if (response.success) {
       permissionModules.value = response.data || [];
       permissionSections.value = response.sections || [];
-      catalogMeta.value = { enabledApps: response.enabledApps || [] };
+      catalogMeta.value = {
+        enabledApps: response.enabledApps || [],
+        profileScoped: response.profileScoped === true,
+        externalProfile: response.externalProfile === true,
+        profileKey: response.profileKey || profileKey || null
+      };
       if (!props.role) form.value.permissions = initializePermissions();
     }
   } catch (err) {
@@ -1252,6 +1321,18 @@ const loadRoleIntoForm = () => {
   const existingPerms = JSON.parse(JSON.stringify(props.role.permissions || {}));
   Object.keys(basePerms).forEach((m) => {
     basePerms[m] = { ...basePerms[m], ...existingPerms[m] };
+  });
+  Object.entries(existingPerms).forEach(([m, grant]) => {
+    if (!basePerms[m] && grant && typeof grant === 'object') {
+      basePerms[m] = {
+        read: false,
+        create: false,
+        update: false,
+        delete: false,
+        scope: 'own',
+        ...grant
+      };
+    }
   });
   if (isFullyPrivilegedSystemRole.value) {
     applyFullAccessToAllModules(basePerms, permissionModules.value);
@@ -1308,7 +1389,7 @@ watch(
     error.value = '';
     expandedAdvanced.value = {};
     customEditModules.value = new Set();
-    await fetchPermissionModules();
+    await fetchPermissionModules(null, props.role?.userType);
     fetchParentRoles();
     await Promise.all([fetchProfiles(), fetchAppCapabilities()]);
     if (props.role) loadRoleIntoForm();
@@ -1329,7 +1410,11 @@ watch(
 );
 
 function getModeForDisplay(module) {
-  return getModuleAccessMode(module, effectivePermissions.value[module.key] || {});
+  return resolveDisplayAccessMode(
+    module,
+    effectivePermissions.value[module.key] || {},
+    customEditModules.value
+  );
 }
 
 function getMode(module) {
@@ -1337,20 +1422,25 @@ function getMode(module) {
 }
 
 function showCrudEditor(module) {
-  return getMode(module) === 'custom' || customEditModules.value.has(module.key);
+  return shouldShowModuleActionEditor(
+    module,
+    form.value.permissions[module.key] || {},
+    customEditModules.value
+  );
 }
 
 function setModuleMode(module, mode) {
   if (isPermissionsLocked.value) return;
-  const perms = form.value.permissions[module.key];
-  if (!perms) return;
+  const perms = { ...ensureModulePermissions(module) };
   if (mode === 'custom') {
     customEditModules.value = new Set([...customEditModules.value, module.key]);
+    form.value.permissions = { ...form.value.permissions, [module.key]: perms };
     return;
   }
   customEditModules.value.delete(module.key);
   customEditModules.value = new Set(customEditModules.value);
   applyModuleAccessMode(module, perms, mode);
+  form.value.permissions = { ...form.value.permissions, [module.key]: perms };
   if (mode !== 'none' && moduleHasFieldCatalog(module)) {
     expandedFieldModules.value = new Set([...expandedFieldModules.value, module.key]);
   }
@@ -1389,13 +1479,14 @@ function toggleAdvancedExpanded(moduleKey) {
 
 const togglePermission = (moduleKey, action) => {
   if (isPermissionsLocked.value) return;
-  const perms = form.value.permissions[moduleKey];
-  if (!perms) return;
+  const module = permissionModules.value.find((m) => m.key === moduleKey);
+  const perms = { ...(module ? ensureModulePermissions(module) : form.value.permissions[moduleKey] || {}) };
+  if (!module) return;
   perms[action] = !perms[action];
   if (perms[action]) applyPermissionSideEffects(perms, action);
   else applyPermissionUncheck(perms, action);
-  const mod = permissionModules.value.find((m) => m.key === moduleKey);
-  if (mod && getModuleAccessMode(mod, perms) === 'custom') {
+  form.value.permissions = { ...form.value.permissions, [moduleKey]: perms };
+  if (getModuleAccessMode(module, perms) === 'custom') {
     customEditModules.value = new Set([...customEditModules.value, moduleKey]);
   }
 };
@@ -1404,28 +1495,52 @@ async function fetchLinkedProfilePreview(profileId) {
   if (!profileId || !rbacV2.value) {
     linkedProfilePermissions.value = null;
     linkedProfileFieldPermissions.value = {};
+    linkedProfileKey.value = null;
     return;
   }
   loadingProfilePreview.value = true;
   try {
     const response = await apiClient.get(`/profiles/${profileId}`);
     if (response.success && response.data) {
+      linkedProfileKey.value = response.data.profileKey || null;
+      if (linkedProfileKey.value) {
+        await fetchPermissionModules(linkedProfileKey.value);
+      }
       const basePerms = initializePermissions();
-      const profilePerms = JSON.parse(JSON.stringify(response.data.permissions || {}));
+      const profilePerms = JSON.parse(
+        JSON.stringify(response.data.permissionsUi || response.data.permissions || {})
+      );
       Object.keys(basePerms).forEach((m) => {
-        basePerms[m] = { ...basePerms[m], ...profilePerms[m] };
+        if (profilePerms[m]) {
+          basePerms[m] = { ...basePerms[m], ...profilePerms[m] };
+        }
+      });
+      Object.entries(profilePerms).forEach(([m, grant]) => {
+        if (!basePerms[m] && grant && typeof grant === 'object') {
+          basePerms[m] = {
+            read: false,
+            create: false,
+            update: false,
+            delete: false,
+            scope: 'own',
+            ...grant
+          };
+        }
       });
       linkedProfilePermissions.value = basePerms;
       linkedProfileFieldPermissions.value = toPlainFieldPerms(response.data.fieldPermissions);
+      form.value.permissions = JSON.parse(JSON.stringify(basePerms));
       syncExpandedFieldModulesFromOverrides();
     } else {
       linkedProfilePermissions.value = null;
       linkedProfileFieldPermissions.value = {};
+      linkedProfileKey.value = null;
     }
   } catch (err) {
     console.error('Error loading profile preview:', err);
     linkedProfilePermissions.value = null;
     linkedProfileFieldPermissions.value = {};
+    linkedProfileKey.value = null;
   } finally {
     loadingProfilePreview.value = false;
   }
@@ -1462,6 +1577,10 @@ const handleSubmit = async () => {
       payload.canViewAllData = false;
       payload.canManageTeam = false;
       payload.canExportData = false;
+    }
+    if (rbacV2.value && payload.privilegeMode === 'profile' && payload.profileId) {
+      delete payload.permissions;
+      delete payload.appPermissions;
     }
     const response = isEditing.value
       ? await apiClient.put(`/roles/${props.role._id}`, payload)

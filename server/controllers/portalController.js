@@ -34,6 +34,11 @@ const FormResponse = require('../models/FormResponse');
 const CorrectiveActionEvidence = require('../models/CorrectiveActionEvidence');
 const fileStorage = require('../services/fileStorageService');
 const multer = require('multer');
+const {
+  buildPortalAuditAccessQuery,
+  findPortalAccessibleEvent,
+  countOpenCorrectiveActionsForUser
+} = require('../services/portalAuditAccessService');
 
 // Configure multer for file uploads (memory storage)
 const upload = multer({
@@ -105,6 +110,8 @@ exports.getMe = async (req, res) => {
                         channel: portalCapabilities.channel,
                         allowCreateCase: portalCapabilities.allowCreateCase,
                         allowReply: portalCapabilities.allowReply,
+                        allowAttachments: portalCapabilities.allowAttachments === true,
+                        mailroomEnabled: portalCapabilities.mailroomEnabled === true,
                         maxAttachmentsPerMessage: portalCapabilities.maxAttachmentsPerMessage,
                         maxAttachmentBytes: portalCapabilities.maxAttachmentBytes
                     }
@@ -145,6 +152,11 @@ exports.getOrg = async (req, res) => {
                 name: organization.name,
                 industry: organization.industry,
                 isActive: organization.isActive,
+                branding: {
+                    logoUrl: organization.settings?.logoUrl || null,
+                    primaryColor: organization.settings?.primaryColor || '#3a1f8a',
+                    supportEmail: organization.settings?.supportEmail || null
+                },
                 settings: {
                     dateFormat: organization.settings?.dateFormat || 'MM/DD/YYYY',
                     timeZone: organization.settings?.timeZone || 'UTC',
@@ -210,70 +222,32 @@ exports.listAudits = async (req, res) => {
     try {
         const { auditState, auditType, page = 1, limit = 20, summary } = req.query;
         const organizationId = req.user.organizationId;
-        
-        // Build query - only audits where relatedToId matches user's organization
-        const query = {
-            relatedToId: organizationId,
-            eventType: { $in: ['Internal Audit', 'External Audit — Single Org', 'External Audit Beat'] }
-        };
-        
-        // Apply filters
+
+        const baseQuery = await buildPortalAuditAccessQuery(organizationId, req.user);
+        const query = { ...baseQuery };
+
         if (auditState) {
             query.auditState = auditState;
         }
         if (auditType) {
             query.eventType = auditType;
         }
-        
-        // If summary is requested, return dashboard summary
+
         if (summary === 'true') {
             const totalAudits = await Event.countDocuments(query);
             const closedAudits = await Event.countDocuments({
                 ...query,
                 auditState: 'closed'
             });
-            
-            // Get open corrective actions count
-            const userId = req.user._id;
-            const eventsWithActions = await Event.find({
-                correctiveOwnerId: userId,
-                relatedToId: organizationId,
-                eventType: { $in: ['Internal Audit', 'External Audit — Single Org', 'External Audit Beat'] }
-            })
-            .select('_id')
-            .lean();
-            
-            const eventIds = eventsWithActions.map(e => e._id);
-            let openActions = 0;
-            
-            if (eventIds.length > 0) {
-                const formResponses = await FormResponse.find({
-                    'linkedTo.type': 'Event',
-                    'linkedTo.id': { $in: eventIds },
-                    organizationId: organizationId
-                })
-                .select('correctiveActions')
-                .lean();
-                
-                formResponses.forEach(response => {
-                    if (response.correctiveActions) {
-                        response.correctiveActions.forEach(action => {
-                            const status = action.managerAction?.status?.toLowerCase() || 'open';
-                            if (status === 'open' || status === 'in_progress') {
-                                openActions++;
-                            }
-                        });
-                    }
-                });
-            }
-            
-            // Get recent activity (last 5 audits)
+
+            const openActions = await countOpenCorrectiveActionsForUser(organizationId, req.user);
+
             const recentEvents = await Event.find(query)
                 .select('eventId eventName eventType auditState createdAt updatedAt')
                 .sort({ updatedAt: -1 })
                 .limit(5)
                 .lean();
-            
+
             const recentActivity = recentEvents.map(event => ({
                 _id: event.eventId,
                 eventId: event.eventId,
@@ -284,7 +258,7 @@ exports.listAudits = async (req, res) => {
                 createdAt: event.createdAt,
                 updatedAt: event.updatedAt
             }));
-            
+
             return res.json({
                 success: true,
                 data: {
@@ -295,12 +269,9 @@ exports.listAudits = async (req, res) => {
                 }
             });
         }
-        
-        // Regular list endpoint
-        // Pagination
+
         const skip = (parseInt(page) - 1) * parseInt(limit);
-        
-        // Fetch events (audits)
+
         const events = await Event.find(query)
             .select('eventId eventName eventType auditState startDateTime endDateTime eventOwnerId createdAt')
             .populate({ path: 'eventOwnerId', select: 'firstName lastName', strictPopulate: false })
@@ -308,7 +279,7 @@ exports.listAudits = async (req, res) => {
             .limit(parseInt(limit))
             .skip(skip)
             .lean();
-        
+
         const total = await Event.countDocuments(query);
         
         // Format response with customer-safe fields only
@@ -358,36 +329,20 @@ exports.getAuditDetail = async (req, res) => {
     try {
         const { eventId } = req.params;
         const organizationId = req.user.organizationId;
-        
-        // Find event - must belong to user's organization
-        let event = null;
-        
-        // Check if eventId is MongoDB _id or UUID eventId
-        if (eventId.match(/^[0-9a-f]{24}$/i)) {
-            event = await Event.findOne({
-                _id: eventId,
-                relatedToId: organizationId
-            })
-            .select('eventId eventName eventType auditState startDateTime endDateTime eventOwnerId createdAt auditHistory')
-            .populate({ path: 'eventOwnerId', select: 'firstName lastName', strictPopulate: false })
-            .lean();
-        } else {
-            event = await Event.findOne({
-                eventId: eventId,
-                relatedToId: organizationId
-            })
-            .select('eventId eventName eventType auditState startDateTime endDateTime eventOwnerId createdAt auditHistory')
-            .populate({ path: 'eventOwnerId', select: 'firstName lastName', strictPopulate: false })
-            .lean();
-        }
-        
+
+        let event = await findPortalAccessibleEvent(organizationId, eventId, req.user);
         if (!event) {
             return res.status(404).json({
                 success: false,
                 message: 'Audit not found'
             });
         }
-        
+
+        const populatedEvent = await Event.findById(event._id)
+            .select('eventId eventName eventType auditState startDateTime endDateTime eventOwnerId createdAt auditHistory')
+            .populate({ path: 'eventOwnerId', select: 'firstName lastName', strictPopulate: false })
+            .lean();
+        event = populatedEvent || event;
         // Find form response for this event
         // FormResponse is linked to Event via linkedTo
         const formResponse = await FormResponse.findOne({
@@ -507,16 +462,11 @@ function sanitizeActionName(action) {
 exports.listCorrectiveActions = async (req, res) => {
     try {
         const { status, page = 1, limit = 20 } = req.query;
-        const userId = req.user._id;
         const organizationId = req.user.organizationId;
-        
-        // Find all events for the user's organization (audits only)
-        const events = await Event.find({
-            relatedToId: organizationId,
-            eventType: { $in: ['Internal Audit', 'External Audit — Single Org', 'External Audit Beat'] }
-        })
-        .select('_id eventId eventName auditState')
-        .lean();
+
+        const events = await Event.find(await buildPortalAuditAccessQuery(organizationId, req.user))
+            .select('_id eventId eventName auditState')
+            .lean();
         
         const eventIds = events.map(e => e._id);
         
@@ -545,10 +495,7 @@ exports.listCorrectiveActions = async (req, res) => {
         .select('linkedTo.id correctiveActions')
         .lean();
         
-        // Build actions list
-        // Note: Since correctiveOwnerId doesn't exist in the schema yet,
-        // we return all corrective actions for the user's organization.
-        // Future: Add correctiveOwnerId field to schema and filter by it.
+        // Build actions list from audits the portal user can access.
         const actions = [];
         formResponses.forEach(response => {
             const eventId = response.linkedTo?.id;
@@ -620,9 +567,8 @@ exports.listCorrectiveActions = async (req, res) => {
 exports.uploadEvidence = async (req, res) => {
     try {
         const { actionId } = req.params;
-        const userId = req.user._id;
         const organizationId = req.user.organizationId;
-        
+
         if (!req.file) {
             return res.status(400).json({
                 success: false,
@@ -636,46 +582,43 @@ exports.uploadEvidence = async (req, res) => {
             organizationId: organizationId,
             'correctiveActions.questionId': actionId
         })
-        .populate('linkedTo.id', 'correctiveOwnerId auditState relatedToId')
+        .select('linkedTo correctiveActions')
         .lean();
-        
+
         if (!formResponse) {
             return res.status(404).json({
                 success: false,
                 message: 'Corrective action not found'
             });
         }
-        
-        // Verify event exists and get it
-        // FormResponse is linked to Event via linkedTo
+
         if (formResponse.linkedTo?.type !== 'Event' || !formResponse.linkedTo?.id) {
             return res.status(404).json({
                 success: false,
                 message: 'Audit not found'
             });
         }
-        
-        const event = formResponse.linkedTo.id;
-        
-        // Authorization checks
-        // 1. User must be corrective owner
-        if (String(event.correctiveOwnerId) !== String(userId)) {
-            return res.status(403).json({
-                success: false,
-                message: 'Not authorized to upload evidence for this action'
-            });
-        }
-        
-        // 2. User must belong to related organization
-        if (String(event.relatedToId) !== String(organizationId)) {
+
+        const event = await findPortalAccessibleEvent(
+            organizationId,
+            formResponse.linkedTo.id,
+            req.user
+        );
+        if (!event) {
             return res.status(403).json({
                 success: false,
                 message: 'Not authorized'
             });
         }
-        
-        // 3. Action must be OPEN or IN_PROGRESS
-        const action = formResponse.correctiveActions.find(ca => ca.questionId === actionId);
+
+        if (String(event.correctiveOwnerId) !== String(req.user._id)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to upload evidence for this action'
+            });
+        }
+
+        const action = formResponse.correctiveActions.find((ca) => ca.questionId === actionId);
         if (!action) {
             return res.status(404).json({
                 success: false,
@@ -691,7 +634,6 @@ exports.uploadEvidence = async (req, res) => {
             });
         }
         
-        // 4. Audit must not be closed
         if (event.auditState === 'closed') {
             return res.status(409).json({
                 success: false,

@@ -40,7 +40,7 @@ export type SourceApp = string;
  * 
  * Where clicking this Inbox item navigates. Format:
  * - '/sales/tasks/:taskId' - Navigate to task detail in Sales App
- * - '/audit/events/:eventId' - Navigate to event detail in Audit App
+ * - '/audit/audits/:eventId' - Navigate to event detail in Audit App
  * - '/events/:eventId' - Navigate to event detail in Calendar/Events module
  * 
  * This is a navigation path, not an internal reference. Inbox items must
@@ -318,7 +318,7 @@ interface InboxItemBase {
    * Route target
    * 
    * Navigation path where clicking this Inbox item leads.
-   * Format: '/sales/tasks/:taskId' or '/audit/events/:eventId' or '/events/:eventId'
+   * Format: '/sales/tasks/:taskId' or '/audit/audits/:eventId' or '/events/:eventId'
    * 
    * This is a navigation path, not an internal reference.
    * Inbox items must clearly communicate where they lead.

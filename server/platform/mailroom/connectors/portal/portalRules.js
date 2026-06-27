@@ -2,19 +2,25 @@
 
 const { mergePortalConnector } = require('./portalConnectorDefaults');
 const { resolvePortalAudience, getPortalChannelLabel, getMailroomChannelKey } = require('./portalAudience');
+const { userPortalModuleGranted } = require('../../../../utils/portalModuleAccess');
 
 async function getPortalRulesForUser(user, mailroomConfig) {
   const portal = mergePortalConnector(mailroomConfig?.connectors?.portal || {});
+  const mailroomEnabled = mailroomConfig?.enabled === true && portal.enabled === true;
   const audience = await resolvePortalAudience(user, portal);
   const rules = audience === 'partner' ? portal.partner : portal.customer;
+  const mailroomAllowsCreate = rules.allowCreateCase === true;
+  const mailroomAllowsReply = rules.allowReply !== false;
 
   return {
     audience,
     portalEnabled: portal.enabled === true,
+    mailroomEnabled,
+    allowAttachments: mailroomEnabled,
     channel: getPortalChannelLabel(audience),
     mailroomChannelKey: getMailroomChannelKey(audience),
-    allowCreateCase: rules.allowCreateCase === true,
-    allowReply: rules.allowReply !== false,
+    allowCreateCase: mailroomAllowsCreate && userPortalModuleGranted(user, 'cases', 'create'),
+    allowReply: mailroomAllowsReply && userPortalModuleGranted(user, 'cases', 'update'),
     maxAttachmentsPerMessage: Number(rules.maxAttachmentsPerMessage) || 10,
     maxAttachmentBytes: Number(rules.maxAttachmentBytes) || (25 * 1024 * 1024),
     allowedMimeTypes: Array.isArray(rules.allowedMimeTypes) ? rules.allowedMimeTypes : null

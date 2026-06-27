@@ -17,7 +17,7 @@
  * - Requires authentication
  * - Enforces Portal app context (appKey = PORTAL)
  * - Enforces organization isolation
- * - No CRM permissions required
+ * - Module permissions from active external role (cases.read, documents.read, …)
  * 
  * ============================================================================
  */
@@ -52,7 +52,9 @@ const {
   listPortalCases,
   getPortalCase,
   createPortalCase,
-  replyPortalCase
+  replyPortalCase,
+  markPortalCaseReadHandler,
+  submitPortalCaseCsatHandler
 } = require('../controllers/portalCaseController');
 const {
   listPortalInvoicesHandler,
@@ -64,7 +66,28 @@ const {
   listPortalKnowledgeArticles,
   getPortalKnowledgeArticle
 } = require('../controllers/portalDocumentController');
+const { getPortalDashboard } = require('../controllers/portalDashboardController');
+const {
+  getPortalOrganization
+} = require('../controllers/portalOrganizationController');
+const {
+  listPortalDealsHandler,
+  getPortalDealHandler
+} = require('../controllers/portalDealController');
+const {
+  listPortalFormsHandler,
+  getPortalFormHandler,
+  submitPortalFormHandler,
+  getPortalFormResponseHandler,
+  getPortalInProgressFormResponseHandler
+} = require('../controllers/portalFormController');
+const {
+  listPortalResponsesHandler,
+  getPortalResponseHandler
+} = require('../controllers/portalResponseController');
+const { getPortalPerson } = require('../controllers/portalPeopleController');
 const { mailroomPortalIngestLimiter } = require('../middleware/rateLimitMiddleware');
+const requirePortalModuleAccess = require('../middleware/requirePortalModuleAccess');
 
 // Apply middleware to all Portal routes
 // Order: auth → app context → app entitlement → organization isolation → portal enforcement
@@ -78,39 +101,87 @@ router.use(requirePortalApp); // Enforce Portal-only access
 router.get('/me', getMe); // User profile
 router.get('/org', getOrg); // Organization summary
 router.get('/health', getHealth); // Health check
+router.get('/dashboard', getPortalDashboard);
+
+// Business organization linked to the signed-in portal user
+router.get('/organization', requirePortalModuleAccess('organizations', 'read'), getPortalOrganization);
+
+// Contact profile linked to the signed-in portal user
+router.get('/people/me', requirePortalModuleAccess('people', 'read'), getPortalPerson);
+
+// Deals scoped to portal user's person / business organization
+router.get('/deals', requirePortalModuleAccess('deals', 'read'), listPortalDealsHandler);
+router.get('/deals/:id', requirePortalModuleAccess('deals', 'read'), getPortalDealHandler);
+
+// Partner/Public forms available in portal
+router.get('/forms', requirePortalModuleAccess('forms', 'read'), listPortalFormsHandler);
+router.get('/forms/:formId/responses/in-progress', requirePortalModuleAccess('forms', 'read'), getPortalInProgressFormResponseHandler);
+router.get('/forms/:formId/responses/:responseId', requirePortalModuleAccess('forms', 'read'), getPortalFormResponseHandler);
+router.get('/forms/:formId', requirePortalModuleAccess('forms', 'read'), getPortalFormHandler);
+router.post('/forms/:formId/submit', requirePortalModuleAccess('forms', 'create'), submitPortalFormHandler);
+
+router.get('/responses', requirePortalModuleAccess('responses', 'read'), listPortalResponsesHandler);
+router.get('/responses/:id', requirePortalModuleAccess('responses', 'read'), getPortalResponseHandler);
 
 // Audit endpoints (customer-safe)
-router.get('/audits', listAudits); // List audits
-router.get('/audits/:eventId', getAuditDetail); // Audit detail
+router.get('/audits', requirePortalModuleAccess('events', 'read'), listAudits);
+router.get('/audits/:eventId', requirePortalModuleAccess('events', 'read'), getAuditDetail);
 
 // Corrective actions endpoints
-router.get('/actions', listCorrectiveActions); // List corrective actions
-router.post('/actions/:actionId/evidence', uploadMiddleware, uploadEvidence); // Upload evidence
+router.get('/actions', requirePortalModuleAccess('events', 'read'), listCorrectiveActions);
+router.post('/actions/:actionId/evidence', requirePortalModuleAccess('events', 'update'), uploadMiddleware, uploadEvidence);
 
 // Helpdesk cases (Phase 1D) — customer-scoped case APIs
-router.get('/cases', listPortalCases);
-router.post('/cases', createPortalCase);
-router.get('/cases/:id', getPortalCase);
-router.post('/cases/:id/reply', mailroomPortalIngestLimiter, replyPortalCase);
+router.get('/cases', requirePortalModuleAccess('cases', 'read'), listPortalCases);
+router.post('/cases', requirePortalModuleAccess('cases', 'create'), createPortalCase);
+router.get('/cases/:id', requirePortalModuleAccess('cases', 'read'), getPortalCase);
+router.post('/cases/:id/read', requirePortalModuleAccess('cases', 'read'), markPortalCaseReadHandler);
+router.post('/cases/:id/csat', requirePortalModuleAccess('cases', 'update'), submitPortalCaseCsatHandler);
+router.post('/cases/:id/reply', requirePortalModuleAccess('cases', 'update'), mailroomPortalIngestLimiter, replyPortalCase);
 
 // Online payments (PAY3.1) — reuses PaymentGatewaySession
-router.get('/invoices', listPortalInvoicesHandler);
-router.get('/invoices/:id/pay-eligibility', getPortalPayEligibilityHandler);
-router.post('/invoices/:id/pay', startPortalPayHandler);
-router.get('/payment-sessions/:id/status', getPortalPaymentSessionStatusHandler);
+router.get('/invoices', requirePortalModuleAccess('invoices', 'read'), listPortalInvoicesHandler);
+router.get('/invoices/:id/pay-eligibility', requirePortalModuleAccess('invoices', 'read'), getPortalPayEligibilityHandler);
+router.post('/invoices/:id/pay', requirePortalModuleAccess('invoices', 'read'), startPortalPayHandler);
+router.get('/payment-sessions/:id/status', requirePortalModuleAccess('invoices', 'read'), getPortalPaymentSessionStatusHandler);
 
 // Knowledge base (portal-visible published articles)
-router.get('/knowledge-base', listPortalKnowledgeArticles);
-router.get('/knowledge-base/:id', getPortalKnowledgeArticle);
+router.get('/knowledge-base', requirePortalModuleAccess('documents', 'read'), listPortalKnowledgeArticles);
+router.get('/knowledge-base/:id', requirePortalModuleAccess('documents', 'read'), getPortalKnowledgeArticle);
 
 // Mailroom connector (M5) — portal-originated messages into the Mailroom pipeline
 router.use('/mailroom', mailroomPortalIngestLimiter);
-router.post('/mailroom/ingest', ingestPortalMessage);
-router.post('/mailroom/cases/:caseId/reply', replyToCaseFromPortal);
-router.post('/mailroom/attachments', portalMailroomUploadMiddleware, uploadPortalAttachment);
-router.get('/mailroom/conversations/:conversationId/attachments', listPortalConversationAttachments);
-router.get('/mailroom/messages/:messageId/attachments', listPortalMessageAttachments);
-router.get('/mailroom/attachments/:id/download', downloadMailroomAttachmentForPortal);
+router.post(
+  '/mailroom/ingest',
+  requirePortalModuleAccess.any('cases', ['create', 'update']),
+  ingestPortalMessage
+);
+router.post(
+  '/mailroom/cases/:caseId/reply',
+  requirePortalModuleAccess('cases', 'update'),
+  replyToCaseFromPortal
+);
+router.post(
+  '/mailroom/attachments',
+  requirePortalModuleAccess('cases', 'update'),
+  portalMailroomUploadMiddleware,
+  uploadPortalAttachment
+);
+router.get(
+  '/mailroom/conversations/:conversationId/attachments',
+  requirePortalModuleAccess('cases', 'read'),
+  listPortalConversationAttachments
+);
+router.get(
+  '/mailroom/messages/:messageId/attachments',
+  requirePortalModuleAccess('cases', 'read'),
+  listPortalMessageAttachments
+);
+router.get(
+  '/mailroom/attachments/:id/download',
+  requirePortalModuleAccess('cases', 'read'),
+  downloadMailroomAttachmentForPortal
+);
 
 // Catch-all handler for unknown portal routes (return 404, not 403)
 // This prevents frontend routes like /portal/dashboard from being blocked by middleware

@@ -67,7 +67,7 @@ export default defineConfig(({ mode }) => {
         // Proxy portal REST only when the client sends Bearer auth (fetch/XHR).
         // Full page refresh hits the same paths as Vue routes (e.g. /portal/cases) without
         // Authorization — those must be served by the SPA, not the API.
-        '^/portal/(me|org|health|audits|actions|cases|mailroom)(/|$)': {
+        '^/portal/(me|org|health|dashboard|audits|actions|cases|invoices|knowledge-base|payment-sessions|mailroom)(/|$)': {
           target: apiProxyTarget,
           changeOrigin: true,
           bypass(req) {

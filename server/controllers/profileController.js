@@ -4,7 +4,8 @@ const Organization = require('../models/Organization');
 const { isRbacV2Enabled } = require('../utils/rbacFeatureFlags');
 const {
   normalizeRolePermissions,
-  invalidateTenantPermissionCaches
+  invalidateTenantPermissionCaches,
+  expandProfilePermissionsForUI
 } = require('../services/rolePermissionCatalogService');
 const { seedSystemProfiles } = require('../services/roleSeedService');
 
@@ -69,7 +70,13 @@ exports.getProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Profile not found' });
     }
 
-    res.json({ success: true, data: profile });
+    res.json({
+      success: true,
+      data: {
+        ...profile,
+        permissionsUi: expandProfilePermissionsForUI(profile)
+      }
+    });
   } catch (error) {
     console.error('Get profile error:', error);
     res.status(500).json({
@@ -173,6 +180,17 @@ exports.updateProfile = async (req, res) => {
 
     profile.updatedBy = req.user._id;
     await profile.save();
+
+    // Drop stale module matrices copied onto profile-linked roles so profile edits take effect.
+    await Role.updateMany(
+      {
+        organizationId: req.user.organizationId,
+        profileId: profile._id,
+        privilegeMode: 'profile'
+      },
+      { $set: { permissions: {}, appPermissions: {} } }
+    );
+
     invalidateTenantPermissionCaches(req.user.organizationId);
 
     res.json({

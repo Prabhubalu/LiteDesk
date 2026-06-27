@@ -586,5 +586,29 @@
   "liveChat": {
     "message": "Live Chat",
     "description": "Live Chat addon sessions navigation label"
+  },
+  "tabPortalArticle": {
+    "message": "Article",
+    "description": "Portal knowledge article tab title"
+  },
+  "portalOrganization": {
+    "message": "Company",
+    "description": "Portal company profile navigation label"
+  },
+  "portalPeople": {
+    "message": "Contact",
+    "description": "Portal contact profile navigation label"
+  },
+  "portalDeals": {
+    "message": "Deals",
+    "description": "Portal deals navigation label"
+  },
+  "portalForms": {
+    "message": "Forms",
+    "description": "Portal forms navigation label"
+  },
+  "portalResponses": {
+    "message": "Responses",
+    "description": "Portal form responses navigation label"
   }
 }

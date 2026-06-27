@@ -1856,6 +1856,7 @@ exports.getOrganizationSettings = async (req, res) => {
             data: {
                 name: organization.name,
                 logoUrl: organization.settings?.logoUrl || null,
+                primaryColor: organization.settings?.primaryColor || '#3a1f8a',
                 timeZone: organization.settings?.timeZone || 'UTC',
                 currency: organization.settings?.currency || 'USD',
                 locale: organization.settings?.locale || 'en-US',
@@ -1888,7 +1889,8 @@ exports.updateOrganizationSettings = async (req, res) => {
             });
         }
 
-        const { name, logoUrl, timeZone, currency, locale, language } = req.body;
+        const { name, logoUrl, primaryColor, timeZone, currency, locale, language } = req.body;
+        const { sanitizeBrandColor } = require('../services/quoteOrgSettingsService');
 
         // Validate and update only allowed fields
         if (name !== undefined) {
@@ -1908,6 +1910,11 @@ exports.updateOrganizationSettings = async (req, res) => {
 
         if (logoUrl !== undefined) {
             organization.settings.logoUrl = logoUrl || null;
+        }
+
+        if (primaryColor !== undefined) {
+            const sanitized = sanitizeBrandColor(primaryColor);
+            organization.settings.primaryColor = sanitized || '#3a1f8a';
         }
 
         if (timeZone !== undefined) {
@@ -1957,6 +1964,7 @@ exports.updateOrganizationSettings = async (req, res) => {
             data: {
                 name: organization.name,
                 logoUrl: organization.settings?.logoUrl || null,
+                primaryColor: organization.settings?.primaryColor || '#3a1f8a',
                 timeZone: organization.settings?.timeZone || 'UTC',
                 currency: organization.settings?.currency || 'USD',
                 locale: organization.settings?.locale || 'en-US',
@@ -3436,6 +3444,24 @@ exports.updatePeopleTypes = async (req, res) => {
             success: false,
             message: 'Failed to update people types',
             error: error.message
+        });
+    }
+};
+
+/**
+ * GET /api/settings/billing/external-user-usage
+ * V1 usage collection — no seat blocking.
+ */
+exports.getExternalUserUsage = async (req, res) => {
+    try {
+        const { getExternalUserUsage } = require('../services/externalUserUsageService');
+        const data = await getExternalUserUsage(req.user.organizationId);
+        res.json({ success: true, data });
+    } catch (error) {
+        console.error('getExternalUserUsage error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to load external user usage'
         });
     }
 };
