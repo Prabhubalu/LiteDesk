@@ -17,6 +17,7 @@ router.use(requireSalesApp); // Enforce CRM-only access
 router.use(organizationIsolation); // Ensure tenant DB context for converted instances
 
 router.post('/', controller.create);
+router.get('/meta', sessionBootstrapLimiter, controller.listMeta);
 router.get('/', sessionBootstrapLimiter, controller.list);
 
 // OrganizationSurface endpoint (must be before /:id route)

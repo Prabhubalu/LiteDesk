@@ -5,6 +5,7 @@ import { fetchUsersListCached } from '@/utils/recordLookupCache';
 import { useNotifications } from '@/composables/useNotifications';
 import { getAllowedCaseStatusTransitions, CASE_PRIORITIES } from '@/constants/caseLifecycle';
 import { resolveCaseReplyToEmail } from '@/utils/caseEmailReply';
+import { extractRecordUpdatedAtMs, recordRecordDetailFingerprint } from '@/utils/recordDetailFreshness';
 
 const CASE_REF_KEYS = ['caseOwnerId', 'contactId', 'organizationRefId'];
 
@@ -68,6 +69,9 @@ export function useCaseRecord(caseIdRef) {
       }
       applyCaseRecordUpdate(caseRecord.value, res.data);
       loadedCaseId.value = id;
+      recordRecordDetailFingerprint('cases', id, 'HELPDESK', {
+        updatedAtMs: extractRecordUpdatedAtMs(caseRecord.value),
+      });
       await Promise.all([loadNeighbors(), loadEmailThreads()]);
     } catch (err) {
       if (!silent) {

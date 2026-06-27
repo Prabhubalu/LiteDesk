@@ -46,6 +46,8 @@ import { i18n } from '@/i18n/index';
 import { createHelpdeskTabAlertController } from '@/utils/helpdeskTabAlerts';
 import { createLiveChatTabAlertController } from '@/utils/liveChatTabAlerts';
 import { clearListSessionsForRoutePath } from '@/utils/listScrollSession';
+import { markModuleListRecheckForRoutePath } from '@/utils/moduleListFreshness';
+import { markRecordDetailRecheckForRoutePath } from '@/utils/recordDetailFreshness';
 import {
   normalizeLiveChatPath,
   isLiveChatSessionsRoute,
@@ -2432,6 +2434,8 @@ export function useTabs() {
     }
     
     clearListSessionsForRoutePath(tab.path);
+    markModuleListRecheckForRoutePath(tab.path);
+    markRecordDetailRecheckForRoutePath(tab.path);
 
     // Remove tab
     tabs.value.splice(index, 1);

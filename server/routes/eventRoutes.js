@@ -17,6 +17,7 @@ router.use(requireSalesApp); // Enforce Sales-only access
 
 // Event CRUD routes
 router.get('/summary', checkPermission('events', 'view'), eventController.getEventSummary);
+router.get('/meta', checkPermission('events', 'view'), eventController.getEventsListMeta);
 router.get('/', eventController.getEvents);
 router.get('/stats', eventController.getEventStats);
 router.get('/export', eventController.exportEvents);

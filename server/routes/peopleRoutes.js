@@ -98,6 +98,7 @@ router.use((req, res, next) => {
 });
 
 router.post('/', controller.create);
+router.get('/meta', applySharingFilter('people'), controller.listMeta);
 router.get('/', applySharingFilter('people'), controller.list);
 
 // Activity logs (must be before /:id route)

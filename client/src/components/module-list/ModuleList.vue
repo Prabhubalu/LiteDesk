@@ -109,6 +109,18 @@ import {
   consumeImportListRefreshPending,
   importModuleMatchesListModule,
 } from '@/utils/importListModuleMatch';
+import {
+  MODULE_LIST_QUICK_TRUST_MS,
+  MODULE_LIST_STALE_TTL_MS,
+  clearModuleListRecheck,
+  compareModuleListProbe,
+  consumeModuleListDirty,
+  extractMaxUpdatedAtMs,
+  getModuleListFingerprint,
+  peekModuleListRecheck,
+  recordModuleListFingerprint,
+} from '@/utils/moduleListFreshness';
+import { fetchModuleListMeta, supportsServerListMeta } from '@/utils/moduleListMetaApi';
 import { useI18n } from 'vue-i18n';
 import {
   resolveListColumnLabel,
@@ -416,6 +428,94 @@ function scheduleInitialListFetch() {
   return initialListFetchPromise;
 }
 
+function recordListFingerprintFromState() {
+  recordModuleListFingerprint(props.moduleKey, props.appKey, {
+    totalRecords: Number(pagination.value.totalRecords ?? 0) || 0,
+    maxUpdatedAt: extractMaxUpdatedAtMs(data.value),
+  });
+}
+
+async function probeListDataChanged() {
+  try {
+    const ctx = buildListFetchContext(1);
+    const metaParams = { ...ctx.params };
+    delete metaParams.page;
+    delete metaParams.limit;
+
+    if (supportsServerListMeta(props.moduleKey)) {
+      const probe = await fetchModuleListMeta(props.moduleKey, metaParams);
+      if (probe) {
+        const fingerprint = getModuleListFingerprint(props.moduleKey, props.appKey);
+        return compareModuleListProbe(fingerprint, probe) !== 'unchanged';
+      }
+    }
+
+    const response = await apiClient.get(ctx.endpoint, {
+      params: {
+        ...ctx.params,
+        page: 1,
+        limit: 1,
+        sortBy: 'updatedAt',
+        sortOrder: 'desc',
+      },
+      cache: 'no-store',
+    });
+    if (!response?.success) return true;
+
+    const rows = applyClientSideListTransforms(response.data || [], ctx);
+    const probeTotal = Number(
+      response.pagination?.totalRecords
+      ?? response.meta?.totalRecords
+      ?? response.meta?.total
+      ?? 0
+    );
+    const probe = {
+      totalRecords: Number.isFinite(probeTotal) ? probeTotal : 0,
+      maxUpdatedAt: extractMaxUpdatedAtMs(rows),
+    };
+
+    const fingerprint = getModuleListFingerprint(props.moduleKey, props.appKey);
+    return compareModuleListProbe(fingerprint, probe) !== 'unchanged';
+  } catch (error) {
+    console.warn('[ModuleList] Freshness probe failed:', error);
+    return false;
+  }
+}
+
+async function maybeRefreshListOnActivate() {
+  if (!shouldFetchListData()) return false;
+
+  if (consumeModuleListDirty(props.moduleKey, props.appKey)) {
+    await fetchData();
+    return true;
+  }
+
+  if (!peekModuleListRecheck(props.moduleKey, props.appKey)) {
+    return false;
+  }
+
+  const fingerprint = getModuleListFingerprint(props.moduleKey, props.appKey);
+  const age = Date.now() - (fingerprint?.fetchedAt ?? 0);
+
+  if (age < MODULE_LIST_QUICK_TRUST_MS) {
+    clearModuleListRecheck(props.moduleKey, props.appKey);
+    return false;
+  }
+
+  if (!fingerprint || age >= MODULE_LIST_STALE_TTL_MS) {
+    clearModuleListRecheck(props.moduleKey, props.appKey);
+    await fetchData({ preserveSession: true, soft: true });
+    return true;
+  }
+
+  const changed = await probeListDataChanged();
+  clearModuleListRecheck(props.moduleKey, props.appKey);
+  if (!changed) return false;
+
+  await fetchData({ preserveSession: true, soft: true });
+  return true;
+}
+
 onActivated(async () => {
   // Aborted in-flight fetch when the tab was hidden can leave dataLoading stuck true.
   if (data.value.length > 0) {
@@ -429,6 +529,10 @@ onActivated(async () => {
   }
 
   if (data.value.length > 0 && listDefinition.value) {
+    if (await maybeRefreshListOnActivate()) {
+      finishListSessionPageRestore();
+      return;
+    }
     await applyListSessionOnActivate();
     finishListSessionPageRestore();
     return;
@@ -1339,6 +1443,7 @@ async function fetchListReplace(opts = {}) {
         applyPaginationFromResponse(response, fetchedData.length, ctx.params.page);
         const totalRecords = Number(pagination.value.totalRecords ?? 0) || 0;
         applyListStatisticsFromResponse(response, totalRecords, ctx);
+        recordListFingerprintFromState();
       } else {
         console.warn('[ModuleList] API response not successful:', {
           success: response.success,

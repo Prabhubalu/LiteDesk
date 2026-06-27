@@ -60,6 +60,43 @@ function formatDocument(doc) {
   };
 }
 
+exports.getDocumentsListMeta = async (req, res) => {
+  try {
+    const organizationId = req.user.organizationId;
+    const visibilityContext = await buildVisibilityContext(req);
+    const { sendListMetaResponse } = require('../utils/listMetaService');
+    const meta = await documentService.getDocumentsListMeta({
+      organizationId,
+      filters: {
+        search: req.query.search,
+        filterQuery: req.query.filterQuery,
+        status: req.query.status,
+        documentType: req.query.documentType,
+        folderId: req.query.folderId,
+        ownerId: req.query.ownerId,
+        fileType: req.query.fileType,
+        tag: req.query.tag,
+        linkedModuleKey: req.query.linkedModuleKey,
+        linkedRecordId: req.query.linkedRecordId,
+        linkedAppKey: req.query.linkedAppKey,
+        relatedToDocumentId: req.query.relatedToDocumentId,
+        favoritesOnly: req.query.favoritesOnly === '1' || req.query.favoritesOnly === 'true',
+        recentOnly: req.query.recentOnly === '1' || req.query.recentOnly === 'true',
+        sharedWithMe: req.query.sharedWithMe === '1' || req.query.sharedWithMe === 'true',
+        expiringOnly: req.query.expiringOnly === '1' || req.query.expiringOnly === 'true',
+        userId: req.user._id,
+        userRoleId: req.user.roleId || null,
+        userGroupIds: visibilityContext.userGroupIds,
+      },
+      visibilityContext,
+    });
+    sendListMetaResponse(res, meta);
+  } catch (error) {
+    console.error('[documents] getDocumentsListMeta error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch documents list meta', error: error.message });
+  }
+};
+
 exports.getDocuments = async (req, res) => {
   try {
     const organizationId = req.user.organizationId;

@@ -6,6 +6,9 @@ const ImportHistory = require('../models/ImportHistory');
 const FormResponse = require('../models/FormResponse');
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const { buildDealsListQuery } = require('../utils/listQueryBuilders/dealsListQuery');
+const { fetchListMeta, sendListMetaResponse } = require('../utils/listMetaService');
+const { fetchRecordUpdatedAtMeta, sendRecordMetaResponse } = require('../utils/recordMetaService');
 const { persistMulterUpload } = require('../middleware/uploadMiddleware');
 const { processCommentMentions } = require('../services/commentMentionNotifications');
 const {
@@ -407,65 +410,12 @@ exports.createDeal = async (req, res) => {
 // @access  Private
 exports.getDeals = async (req, res) => {
     try {
-        let query = { organizationId: req.user.organizationId, deletedAt: null };
-        
-        const { applyListSharingToQuery } = require('../utils/sharingQueryUtils');
-        applyListSharingToQuery(query, req, 'deals');
+        const query = buildDealsListQuery(req);
         
         // Get pagination params
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
         const skip = (page - 1) * limit;
-        
-        // Get filters
-        if (req.query.stage) {
-            query.stage = req.query.stage;
-        }
-        if (req.query.status) {
-            query.status = req.query.status;
-        }
-        if (req.query.priority) {
-            query.priority = req.query.priority;
-        }
-        if (req.query.ownerId) {
-            query.ownerId = req.query.ownerId;
-        }
-        if (req.query.contactId) {
-            query.contactId = req.query.contactId;
-        }
-        if (req.query.accountId) {
-            // Convert accountId to ObjectId if it's a valid ObjectId string
-            if (mongoose.Types.ObjectId.isValid(req.query.accountId)) {
-                query.accountId = new mongoose.Types.ObjectId(req.query.accountId);
-            } else {
-                query.accountId = req.query.accountId;
-            }
-        }
-        if (req.query.pipeline) {
-            query.pipeline = req.query.pipeline;
-        }
-        
-        const { buildSearchOrConditions, resolveListSearchTerm, fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
-        const directSearchTerm = req.query.search ? String(req.query.search).trim() : '';
-        if (directSearchTerm) {
-            query.$or = buildSearchOrConditions(directSearchTerm, ['name', 'description']);
-        }
-        
-        // Date range filter
-        if (req.query.fromDate || req.query.toDate) {
-            query.expectedCloseDate = {};
-            if (req.query.fromDate) {
-                query.expectedCloseDate.$gte = new Date(req.query.fromDate);
-            }
-            if (req.query.toDate) {
-                query.expectedCloseDate.$lte = new Date(req.query.toDate);
-            }
-        }
-        
-        const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
-        query = applyListFilterQueryParam(query, req.query, 'deals', { userId: req.user?._id });
-
-        // Sorting (use stage + stageOrder for pipeline/Kanban order)
         const sortBy = req.query.sortBy || 'createdAt';
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
         const sort = sortBy === 'stage'
@@ -479,6 +429,7 @@ exports.getDeals = async (req, res) => {
             { path: 'dealPeople.personId', select: 'first_name last_name email' },
             { path: 'dealOrganizations.organizationId', select: 'name' }
         ];
+        const { resolveListSearchTerm, fetchRankedSearchPage, isSearchActive, SEARCH_FIELD_PRESETS } = require('../utils/searchRelevance');
         const searchTerm = resolveListSearchTerm(req.query, 'deals');
         const deals = isSearchActive(searchTerm)
             ? await fetchRankedSearchPage(Deal, {
@@ -3019,6 +2970,30 @@ exports.deleteDealComment = async (req, res) => {
       message: 'Error deleting comment',
       error: error.message
     });
+  }
+};
+
+exports.getDealsListMeta = async (req, res) => {
+  try {
+    const query = buildDealsListQuery(req);
+    const meta = await fetchListMeta(Deal, query);
+    sendListMetaResponse(res, meta);
+  } catch (error) {
+    console.error('[getDealsListMeta] error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch deal list meta' });
+  }
+};
+
+exports.getDealRecordMeta = async (req, res) => {
+  try {
+    const meta = await fetchRecordUpdatedAtMeta(Deal, {
+      organizationId: req.user.organizationId,
+      recordId: req.params.id,
+    });
+    sendRecordMetaResponse(res, meta);
+  } catch (error) {
+    console.error('[getDealRecordMeta] error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch deal record meta' });
   }
 };
 

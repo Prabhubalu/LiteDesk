@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Organization = require('../models/Organization');
 const { buildOrganizationListMongoQuery } = require('../utils/organizationsListQuery');
+const { fetchListMeta, sendListMetaResponse } = require('../utils/listMetaService');
 const { mapOrganizationToSurface } = require('../utils/mappers/mapOrganizationToSurface');
 
 const websiteHostnamePattern = /^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
@@ -1169,6 +1170,27 @@ exports.getSurface = async (req, res) => {
       message: 'Error fetching organization surface', 
       error: error.message 
     });
+  }
+};
+
+exports.listMeta = async (req, res) => {
+  try {
+    const tenantOrganizationId = req.user?.organizationId;
+    if (!tenantOrganizationId) {
+      return res.status(400).json({ success: false, message: 'Organization context required' });
+    }
+
+    const query = await buildOrganizationListMongoQuery({
+      tenantOrganizationId,
+      params: req.query,
+      user: req.user,
+      appKey: req.appKey || 'SALES',
+    });
+    const meta = await fetchListMeta(Organization, query);
+    sendListMetaResponse(res, meta);
+  } catch (error) {
+    console.error('[organizationV2Controller.listMeta] error', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch organization list meta' });
   }
 };
 

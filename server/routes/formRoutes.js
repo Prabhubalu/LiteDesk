@@ -2,6 +2,7 @@ const express = require('express');
 const {
     createForm,
     getForms,
+    getFormsListMeta,
     getFormById,
     updateForm,
     deleteForm,
@@ -70,6 +71,8 @@ protectedRouter.use(requireSalesApp); // Enforce CRM-only access
 protectedRouter.use(organizationIsolation);
 protectedRouter.use(checkTrialStatus);
 protectedRouter.use(checkFeatureAccess('forms'));
+
+protectedRouter.get('/meta', checkPermission('forms', 'view'), getFormsListMeta);
 
 // Organization Audits (must come before /:id routes)
 protectedRouter.get('/organization/:organizationId/audits', checkPermission('forms', 'view'), getOrganizationAudits);

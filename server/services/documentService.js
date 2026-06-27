@@ -397,16 +397,12 @@ async function getRelatedDocumentIds(organizationId, documentId) {
   return [...new Set(relatedIds)];
 }
 
-async function listDocuments({
+async function resolveDocumentsListQuery({
   organizationId,
   filters = {},
-  page = 1,
-  limit = 20,
-  sort = '-updatedAt',
-  visibilityContext = null
+  visibilityContext = null,
 }) {
   let query = buildListQuery(organizationId, filters);
-  let effectiveSort = sort;
   let searchTerm = String(filters.search || '').trim();
 
   const { extractSearchTermFromFilterQuery } = require('../utils/searchRelevance');
@@ -448,7 +444,7 @@ async function listDocuments({
   if (filters.filterQuery) {
     const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
     query = applyListFilterQueryParam(query, { filterQuery: filters.filterQuery }, 'documents', {
-      userId: filters.userId
+      userId: filters.userId,
     });
   }
 
@@ -456,9 +452,6 @@ async function listDocuments({
     const useTextSearch = searchTerm.length >= 2 && !/["\\]/.test(searchTerm);
     if (useTextSearch) {
       query.$text = { $search: searchTerm };
-      if (effectiveSort === '-updatedAt') {
-        effectiveSort = { score: { $meta: 'textScore' }, updatedAt: -1 };
-      }
     } else {
       const searchClause = buildRegexSearchClause(searchTerm);
       if (query.$and) {
@@ -475,7 +468,7 @@ async function listDocuments({
   if (filters.favoritesOnly && filters.userId) {
     const favoriteIds = await DocumentFavorite.find({
       organizationId,
-      userId: filters.userId
+      userId: filters.userId,
     }).distinct('documentId');
     query._id = favoriteIds.length ? { $in: favoriteIds } : { $in: [] };
   }
@@ -483,7 +476,7 @@ async function listDocuments({
   if (filters.recentOnly && filters.userId) {
     const recentRows = await DocumentRecent.find({
       organizationId,
-      userId: filters.userId
+      userId: filters.userId,
     })
       .sort({ lastViewedAt: -1 })
       .limit(MAX_RECENT_DOCUMENTS_PER_USER)
@@ -498,7 +491,7 @@ async function listDocuments({
       organizationId,
       moduleKey: filters.linkedModuleKey,
       recordId: filters.linkedRecordId,
-      appKey: filters.linkedAppKey
+      appKey: filters.linkedAppKey,
     });
     const ids = linkedDocs.map((doc) => doc._id).filter(Boolean);
     query._id = ids.length ? { $in: ids } : { $in: [] };
@@ -507,6 +500,34 @@ async function listDocuments({
   if (filters.relatedToDocumentId) {
     const relatedIds = await getRelatedDocumentIds(organizationId, filters.relatedToDocumentId);
     query._id = relatedIds.length ? { $in: relatedIds } : { $in: [] };
+  }
+
+  return query;
+}
+
+async function getDocumentsListMeta({
+  organizationId,
+  filters = {},
+  visibilityContext = null,
+}) {
+  const { fetchListMeta } = require('../utils/listMetaService');
+  const query = await resolveDocumentsListQuery({ organizationId, filters, visibilityContext });
+  return fetchListMeta(Document, query);
+}
+
+async function listDocuments({
+  organizationId,
+  filters = {},
+  page = 1,
+  limit = 20,
+  sort = '-updatedAt',
+  visibilityContext = null
+}) {
+  let query = await resolveDocumentsListQuery({ organizationId, filters, visibilityContext });
+  let effectiveSort = sort;
+  const searchTerm = String(filters.search || '').trim();
+  if (searchTerm.length >= 2 && !/["\\]/.test(searchTerm) && query.$text && effectiveSort === '-updatedAt') {
+    effectiveSort = { score: { $meta: 'textScore' }, updatedAt: -1 };
   }
 
   const skip = (Math.max(1, page) - 1) * limit;
@@ -1861,6 +1882,7 @@ module.exports = {
   generateDocumentNumber,
   logAuditEvent,
   listDocuments,
+  getDocumentsListMeta,
   listKnowledgeBaseDocuments,
   listPortalKnowledgeDocuments,
   getPortalKnowledgeDocument,

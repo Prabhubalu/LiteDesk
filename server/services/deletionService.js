@@ -18,6 +18,12 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 const TrashSnapshot = require('../models/TrashSnapshot');
 const User = require('../models/User');
+const { publishDataChange } = require('./dataChangeService');
+
+function notifyListAndRecordChange(organizationId, moduleKey, recordId, op = 'update') {
+  publishDataChange({ organizationId, moduleKey, recordId, op });
+  publishDataChange({ organizationId, moduleKey: 'trash', op: 'update' });
+}
 const { validateMoveToTrash, validateMoveToTrashBulk } = require('./dependencyPolicy');
 
 const DEFAULT_RETENTION_DAYS = parseInt(process.env.TRASH_RETENTION_DAYS || '30', 10);
@@ -238,6 +244,8 @@ async function moveToTrash(params) {
       }
     );
 
+    notifyListAndRecordChange(organizationId, moduleKey, recordId, 'delete');
+
     return {
       ok: true,
       snapshotId: snapshotDoc._id.toString(),
@@ -315,6 +323,8 @@ async function restore(params) {
 
     await TrashSnapshot.deleteOne({ _id: snapshot._id });
 
+    notifyListAndRecordChange(organizationId, moduleKey, recordId, 'update');
+
     return {
       ok: true,
       restored: true,
@@ -364,6 +374,8 @@ async function purge(params) {
 
     await Model.deleteOne(deleteQuery);
     await TrashSnapshot.deleteOne({ _id: snapshot._id });
+
+    publishDataChange({ organizationId, moduleKey: 'trash', op: 'delete' });
 
     return { ok: true };
   } catch (error) {

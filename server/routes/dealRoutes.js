@@ -1,7 +1,9 @@
 const express = require('express');
 const { 
     createDeal, 
-    getDeals, 
+    getDeals,
+    getDealsListMeta,
+    getDealRecordMeta,
     getDealById, 
     updateDeal, 
     updateDealTags,
@@ -50,6 +52,8 @@ router.get('/dashboard/metrics', checkPermission('deals', 'view'), getDashboardM
 router.get('/pipeline/summary', checkPermission('deals', 'view'), getPipelineSummary);
 router.get('/playbooks/analytics', checkPermission('deals', 'view'), getPlaybookAnalytics);
 
+router.get('/meta', applySharingFilter('deals'), checkPermission('deals', 'view'), getDealsListMeta);
+
 // Routes that handle collections (GET all, POST new)
 router.route('/')
     .get(applySharingFilter('deals'), checkPermission('deals', 'view'), getDeals)
@@ -74,6 +78,7 @@ router.post('/:id/notes', checkPermission('deals', 'edit'), addNote);
 router.put('/:id/notes/:noteId', checkPermission('deals', 'edit'), updateDealNote);
 
 // Activity logs
+router.get('/:id/meta', checkPermission('deals', 'view'), getDealRecordMeta);
 router.get('/:id/activity-logs', checkPermission('deals', 'view'), getActivityLogs);
 router.post('/:id/activity-logs', checkPermission('deals', 'edit'), addActivityLog);
 router.get('/:id/description-versions', checkPermission('deals', 'view'), getDescriptionVersions);

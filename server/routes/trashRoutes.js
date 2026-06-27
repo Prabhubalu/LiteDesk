@@ -17,6 +17,9 @@ router.use(organizationIsolation);
 // Stats (no module/record in path)
 router.get('/stats', checkPermission('settings', 'view'), trashController.stats);
 
+// List meta (before list)
+router.get('/meta', checkPermission('settings', 'view'), trashController.listMeta);
+
 // List trash
 router.get('/', checkPermission('settings', 'view'), trashController.list);
 

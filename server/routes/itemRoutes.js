@@ -1,7 +1,8 @@
 const express = require('express');
 const { 
     createItem, 
-    getItems, 
+    getItems,
+    getItemsListMeta,
     getItemById, 
     updateItem, 
     deleteItem,
@@ -50,6 +51,8 @@ router.get('/low-stock', checkPermission('items', 'view'), getLowStockItems);
 
 // Items by type route (must come before /:id routes)
 router.get('/type/:type', checkPermission('items', 'view'), getItemsByType);
+
+router.get('/meta', filterByOwnership('items'), checkPermission('items', 'view'), getItemsListMeta);
 
 // Catalog media (C1 — before /:id)
 router.get('/:id/media', checkPermission('items', 'view'), getItemMedia);

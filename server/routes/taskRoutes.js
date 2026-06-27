@@ -12,6 +12,8 @@ const { uploadSingle } = require('../middleware/uploadMiddleware');
 const {
   createTask,
   getTasks,
+  getTasksListMeta,
+  getTaskRecordMeta,
   getTaskSummary,
   getTaskById,
   updateTask,
@@ -94,12 +96,15 @@ router.use(timeSummaryMiddleware('mw_feature_tasks', checkFeatureAccess('tasks')
 router.get('/stats/summary', checkPermission('tasks', 'view'), getTaskStats);
 router.get('/summary', timeSummaryMiddleware('mw_permission_tasks_view', checkPermission('tasks', 'view')), getTaskSummary);
 
+router.get('/meta', filterByOwnership('tasks'), checkPermission('tasks', 'view'), getTasksListMeta);
+
 // Task CRUD routes
 router.route('/')
   .post(checkPermission('tasks', 'create'), createTask)
   .get(filterByOwnership('tasks'), checkPermission('tasks', 'view'), getTasks);
 
 // Comment, activity, and custom fields routes (more specific - must be before /:id)
+router.get('/:id/meta', checkPermission('tasks', 'view'), getTaskRecordMeta);
 router.get('/:id/activity-logs', checkPermission('tasks', 'view'), getTaskActivityLogs);
 router.get('/:id/description-versions', checkPermission('tasks', 'view'), getDescriptionVersions);
 router.post('/:id/description-versions/restore', checkPermission('tasks', 'edit'), restoreDescriptionVersion);

@@ -285,6 +285,7 @@ app.use('/api/user-preferences', userPreferencesRoutes);
 app.use('/api/notification-preferences', notificationPreferenceRoutes);
 app.use('/api/notification-rules', notificationRuleRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/data-changes', require('./routes/dataChangeStreamRoutes'));
 app.use('/api/helpdesk/cases', caseRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/sales-orders', salesOrderRoutes);
