@@ -792,3 +792,18 @@ exports.unlinkDeal = async (req, res) => {
     }
 };
 
+// @desc    List meta fingerprint for items
+// @route   GET /api/items/meta
+exports.getItemsListMeta = async (req, res) => {
+    try {
+        const { buildItemsListQuery } = require('../utils/listQueryBuilders/itemsListQuery');
+        const { fetchListMeta, sendListMetaResponse } = require('../utils/listMetaService');
+        const query = buildItemsListQuery(req);
+        const meta = await fetchListMeta(Item, query);
+        sendListMetaResponse(res, meta);
+    } catch (error) {
+        console.error('[getItemsListMeta] error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch items list meta' });
+    }
+};
+

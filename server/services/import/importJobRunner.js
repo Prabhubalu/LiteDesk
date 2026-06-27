@@ -18,6 +18,7 @@ const {
   ensurePicklistOptionsForImportRow,
 } = require('./importPicklistOptionService');
 const { IMPORT_BATCH_SIZE } = require('./importConstants');
+const { applyImportFieldDefaults } = require('../../utils/importFieldDefaults');
 
 async function buildProcessorContext(importRecord) {
   const organizationId = importRecord.organizationId;
@@ -27,6 +28,7 @@ async function buildProcessorContext(importRecord) {
   const shouldCheckDuplicates = importRecord.duplicateCheckEnabled !== false
     && duplicateAction !== 'import-all';
   const fieldMapping = importRecord.metadata?.fieldMapping || {};
+  const fieldDefaultValues = importRecord.metadata?.fieldDefaultValues || {};
   const duplicateCheckFields = importRecord.duplicateCheckFields?.length
     ? importRecord.duplicateCheckFields
     : null;
@@ -38,6 +40,7 @@ async function buildProcessorContext(importRecord) {
     updateExisting,
     shouldCheckDuplicates,
     fieldMapping,
+    fieldDefaultValues,
     duplicateCheckFields,
   };
 
@@ -94,9 +97,14 @@ async function runImportJob(importHistoryId) {
   try {
     for await (const { dataRowIndex, rowNumber, row } of iterateCsvRows(importRecord.storagePath, { skipDataRows })) {
       try {
+        const rowWithDefaults = applyImportFieldDefaults(
+          row,
+          processorContext.fieldMapping,
+          processorContext.fieldDefaultValues
+        );
         const normalizedRow = await ensurePicklistOptionsForImportRow({
           fieldMapping: processorContext.fieldMapping,
-          row,
+          row: rowWithDefaults,
           picklistContext,
         });
         await processor({

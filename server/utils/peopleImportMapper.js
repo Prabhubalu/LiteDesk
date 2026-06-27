@@ -84,7 +84,8 @@ function buildPeopleCreatePayload(rawPayload, { organizationId, userId }) {
   const doc = processPeopleImportPayload(rawPayload);
   doc.organizationId = organizationId;
   if (userId) doc.createdBy = userId;
-  return doc;
+  const { applyCreateOwnerDefaults } = require('./recordCreateOwnerDefaults');
+  return applyCreateOwnerDefaults(doc, 'people', userId);
 }
 
 function buildPeopleUpdateSet(rawPayload, existingPerson) {

@@ -111,6 +111,10 @@
     "message": "{days} days left in trial · {used}/{limit} contacts",
     "description": "Trial banner on platform home"
   },
+  "trialBannerUnlimited": {
+    "message": "{days} days left in trial · {used} contacts",
+    "description": "Trial banner when contact limit is unlimited"
+  },
   "stepCompleteProfile": {
     "message": "Complete your profile",
     "description": "Member step: profile"

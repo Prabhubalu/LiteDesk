@@ -27,6 +27,10 @@ export function isAuthLifecyclePublicRoute(path) {
   );
 }
 
+export function isTrialExpiredShelllessRoute(path) {
+  return resolveRoutePathname(path) === '/trial-expired';
+}
+
 export function isStandaloneShelllessPath(path) {
   return isStandalonePublicRoute(path);
 }
@@ -37,12 +41,13 @@ export function isOnPublicShellRoute() {
   return isStandalonePublicRoute(window.location.pathname);
 }
 
-/** Routes the tab bar must not track (public, auth, landing). */
+/** Routes the tab bar must not track (public, auth, landing, trial expired). */
 export function shouldSkipTabRoute(path) {
   const p = resolveRoutePathname(path);
   return (
     p === '/'
     || isStandalonePublicRoute(path)
     || isAuthLifecyclePublicRoute(path)
+    || isTrialExpiredShelllessRoute(path)
   );
 }

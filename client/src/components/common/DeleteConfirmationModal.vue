@@ -143,7 +143,8 @@ const recordTypeLabel = computed(() => {
     'item': 'Item',
     'trash item': 'Trash item',
     'quote line': 'Quote line',
-    'folder': 'Folder'
+    'folder': 'Folder',
+    'instance': 'Instance'
   };
   return labels[type] || type.charAt(0).toUpperCase() + type.slice(1);
 });
@@ -188,7 +189,8 @@ const recordTypeLabelPlural = computed(() => {
     'events': 'Events',
     'item': 'Items',
     'trash item': 'Trash items',
-    'quote line': 'Quote lines'
+    'quote line': 'Quote lines',
+    'instance': 'Instances'
   };
   return labels[type] || (recordTypeLabel.value + 's');
 });

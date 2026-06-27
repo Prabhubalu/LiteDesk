@@ -2,22 +2,27 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { computed, defineAsyncComponent, inject, nextTick, onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, getCurrentInstance, inject, nextTick, onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
 import { useAuthStore } from '@/stores/authRegistry';
-import { useAppShellStore } from '@/stores/appShell';
-import { usePermissionSync } from '@/composables/usePermissionSync';
 import { useColorMode } from '@/composables/useColorMode';
-import { useNotifications } from '@/composables/useNotifications';
 const PlatformShell = defineAsyncComponent(() => import('@/components/PlatformShell.vue'));
+const NotificationContainer = defineAsyncComponent(() =>
+  import('@/components/NotificationContainer.vue')
+);
 const NotificationSheet = defineAsyncComponent(() =>
   import('@/components/notifications/NotificationSheet.vue')
+);
+const PermissionSyncHost = defineAsyncComponent(() =>
+  import('@/components/shell/PermissionSyncHost.vue')
+);
+const ModuleListFreshnessHost = defineAsyncComponent(() =>
+  import('@/components/shell/ModuleListFreshnessHost.vue')
 );
 const SyncDrawer = defineAsyncComponent(() =>
   import('@/components/audit/SyncDrawer.vue')
 );
-import NotificationContainer from '@/components/NotificationContainer.vue';
 const GlobalSurfacesProvider = defineAsyncComponent(() =>
   import('@/components/global/GlobalSurfacesProvider.vue')
 );
@@ -37,7 +42,6 @@ const HelpdeskNotificationDevPanel = defineAsyncComponent(() =>
 const showHelpdeskNotificationDevPanel =
   import.meta.env.DEV &&
   import.meta.env.VITE_ENABLE_HELPDESK_NOTIFICATION_DEV_PANEL === 'true';
-import { useSidebarState } from '@/composables/useSidebarState';
 import {
   isAuthLifecyclePublicRoute,
   isStandalonePublicRoute,
@@ -45,13 +49,6 @@ import {
   isStandaloneShelllessPath
 } from '@/utils/standaloneRoutes';
 import { identifyProductUser } from '@/config/posthogUser';
-import {
-  startNotificationRealtime,
-  stopNotificationRealtime,
-  refreshNotificationRealtimeConnections,
-  onNotificationRouteChange
-} from '@/services/notificationRealtimeService';
-import { useActiveImportsStore } from '@/stores/activeImports';
 
 const appDebugEnabled = () => {
   if (!import.meta.env.DEV) return false;
@@ -70,16 +67,86 @@ const appLog = (...args) => {
 function resetTabsStateFromModule() {
   resetTabsSessionInit();
   void import('@/composables/useTabs').then((m) => m.resetTabsState());
+  void import('@/utils/moduleListFreshness').then((m) => m.resetModuleListFreshnessState());
+  void import('@/utils/recordDetailFreshness').then((m) => m.resetRecordDetailFreshnessState());
+  void import('@/services/dataChangeRealtimeService').then((m) => m.stopDataChangeRealtimeService());
+}
+
+let shellModulesPromise = null;
+
+function ensureShellModules() {
+  if (!shellModulesPromise) {
+    shellModulesPromise = Promise.all([
+      import('@/stores/appShell'),
+      import('@/stores/activeImports'),
+      import('@/composables/useSidebarState'),
+    ]).then(([appShellMod, activeImportsMod, sidebarMod]) => ({
+      appShellStore: appShellMod.useAppShellStore(),
+      activeImportsStore: activeImportsMod.useActiveImportsStore(),
+      lastActiveAppId: sidebarMod.useSidebarState().lastActiveAppId,
+    }));
+  }
+  return shellModulesPromise;
+}
+
+let notificationRealtimePromise = null;
+
+function getNotificationRealtime() {
+  if (!notificationRealtimePromise) {
+    notificationRealtimePromise = import('@/services/notificationRealtimeService');
+  }
+  return notificationRealtimePromise;
+}
+
+function stopNotificationRealtimeIfLoaded() {
+  if (!notificationRealtimePromise) return;
+  void notificationRealtimePromise.then((m) => m.stopNotificationRealtime());
+}
+
+let dataChangeRealtimePromise = null;
+
+function getDataChangeRealtime() {
+  if (!dataChangeRealtimePromise) {
+    dataChangeRealtimePromise = import('@/services/dataChangeRealtimeService');
+  }
+  return dataChangeRealtimePromise;
+}
+
+function stopDataChangeRealtimeIfLoaded() {
+  if (!dataChangeRealtimePromise) return;
+  void dataChangeRealtimePromise.then((m) => m.stopDataChangeRealtimeService());
+}
+
+function refreshDataChangeRealtime(token) {
+  void getDataChangeRealtime().then((m) => {
+    if (token) {
+      m.startDataChangeRealtimeService(token);
+    } else {
+      m.stopDataChangeRealtimeService();
+    }
+  });
+}
+
+async function showAuthSessionWarning(message, duration) {
+  const { useNotifications } = await import('@/composables/useNotifications');
+  useNotifications().warning(message, duration);
+}
+
+let headlessControlsRegistered = false;
+
+async function ensureHeadlessFormControls() {
+  if (headlessControlsRegistered) return;
+  const app = getCurrentInstance()?.appContext.app;
+  if (!app) return;
+  const { registerHeadlessFormControls } = await import('@/plugins/headlessFormControls');
+  await registerHeadlessFormControls(app);
+  headlessControlsRegistered = true;
 }
 
 const initDynamicRoutes = inject('arivuInitializeDynamicRoutes');
 const authStore = useAuthStore();
-const appShellStore = useAppShellStore();
-const activeImportsStore = useActiveImportsStore();
 const router = useRouter();
 const route = useRoute();
-const { warning } = useNotifications();
-const { lastActiveAppId } = useSidebarState();
 
 const recoverUnmatchedDynamicRoute = async () => {
   const currentPath = route.fullPath || route.path;
@@ -122,8 +189,10 @@ const hideShell = computed(() => {
   return false;
 });
 const isStandaloneShelllessRoute = computed(() => {
+  if (route.meta.hideShell) return true;
   if (route.meta.requiresAuth === false) return true;
   const routePath = String(route.path || '').split('?')[0];
+  if (isAuthLifecyclePublicRoute(routePath)) return true;
   if (isStandaloneShelllessPath(routePath)) return true;
   if (typeof window !== 'undefined') {
     return isStandaloneShelllessPath(window.location.pathname);
@@ -206,7 +275,7 @@ const handleStorageEvent = (e) => {
 
   // User removed (logout in another tab)
   if (!e.newValue) {
-    warning('You were signed out because your session changed in another tab.', 6000);
+    void showAuthSessionWarning('You were signed out because your session changed in another tab.', 6000);
     authStore.logout();
     resetTabsStateFromModule();
     router.replace('/login');
@@ -217,7 +286,7 @@ const handleStorageEvent = (e) => {
     const incoming = JSON.parse(e.newValue);
     const incomingId = incoming?._id;
     if (incomingId && String(incomingId) !== String(authStore.user._id)) {
-      warning('You were signed out because you logged into a different account in another tab.', 6500);
+      void showAuthSessionWarning('You were signed out because you logged into a different account in another tab.', 6500);
       authStore.logout();
       resetTabsStateFromModule();
       router.replace('/login');
@@ -225,7 +294,7 @@ const handleStorageEvent = (e) => {
   } catch (err) {
     console.warn('Failed to parse localStorage user in storage event:', err);
     // Safe fallback: logout rather than risk inconsistent state
-    warning('You were signed out due to a session change in another tab.', 6000);
+    void showAuthSessionWarning('You were signed out due to a session change in another tab.', 6000);
     authStore.logout();
     resetTabsStateFromModule();
     router.replace('/login');
@@ -252,7 +321,10 @@ const isAuditRoute = computed(() => route.path.startsWith('/audit/'));
 
 // Phase 2D: Watch route changes and update activeApp
 watch(() => route.path, async (newPath) => {
-  if (authStore.isAuthenticated && appShellStore.isLoaded) {
+  if (!authStore.isAuthenticated) return;
+
+  const { appShellStore, lastActiveAppId } = await ensureShellModules();
+  if (appShellStore.isLoaded) {
     const detectedApp = detectActiveAppFromRoute(newPath);
     if (appShellStore.activeApp !== detectedApp) {
       appLog(`[App] Route changed to ${newPath}, setting activeApp to ${detectedApp}`);
@@ -362,6 +434,7 @@ onBeforeMount(async () => {
 // Refresh permissions on app mount (page refresh)
 onMounted(async () => {
   if (authStore.isAuthenticated && !isStandaloneShelllessRoute.value) {
+    const { appShellStore, activeImportsStore } = await ensureShellModules();
     activeImportsStore.init();
 
     const neededMetadata = !appShellStore.isLoaded;
@@ -429,8 +502,9 @@ watch(
   () => authStore.isAuthenticated,
   async (isAuthed, wasAuthed) => {
     if (wasAuthed && !isAuthed) {
-      stopNotificationRealtime();
-      activeImportsStore.reset();
+      stopNotificationRealtimeIfLoaded();
+      stopDataChangeRealtimeIfLoaded();
+      void ensureShellModules().then(({ activeImportsStore }) => activeImportsStore.reset());
       resetTabsStateFromModule();
       shellTabsReady.value = false;
       // Cleanup route watcher when logging out
@@ -453,17 +527,30 @@ watch(
   { immediate: false }
 );
 
-// Enable automatic permission sync every 2 minutes for real-time updates
-usePermissionSync(2);
+watch(
+  isAuthenticated,
+  (authed) => {
+    if (authed) void ensureHeadlessFormControls();
+  },
+  { immediate: true }
+);
 
 watch(
   () => [authStore.isAuthenticated, route.path],
   ([isAuthed, path]) => {
-    if (isAuthed && !isStandalonePublicRoute(path)) {
-      startNotificationRealtime();
-    } else {
-      stopNotificationRealtime();
+    if (!isAuthed) {
+      stopNotificationRealtimeIfLoaded();
+      stopDataChangeRealtimeIfLoaded();
+      return;
     }
+    void getNotificationRealtime().then((m) => {
+      if (!isStandalonePublicRoute(path)) {
+        m.startNotificationRealtime();
+      } else {
+        m.stopNotificationRealtime();
+      }
+    });
+    refreshDataChangeRealtime(authStore.user?.token);
   },
   { immediate: true }
 );
@@ -471,7 +558,8 @@ watch(
 watch(
   () => authStore.user?.allowedApps,
   () => {
-    refreshNotificationRealtimeConnections();
+    if (!authStore.isAuthenticated) return;
+    void getNotificationRealtime().then((m) => m.refreshNotificationRealtimeConnections());
   },
   { deep: true }
 );
@@ -479,7 +567,8 @@ watch(
 watch(
   () => authStore.user?.entitledAddons,
   () => {
-    refreshNotificationRealtimeConnections();
+    if (!authStore.isAuthenticated) return;
+    void getNotificationRealtime().then((m) => m.refreshNotificationRealtimeConnections());
   },
   { deep: true }
 );
@@ -488,7 +577,8 @@ watch(
   () => authStore.user?.token,
   (token, prev) => {
     if (token && token !== prev && authStore.isAuthenticated) {
-      refreshNotificationRealtimeConnections();
+      void getNotificationRealtime().then((m) => m.refreshNotificationRealtimeConnections());
+      refreshDataChangeRealtime(token);
     }
   }
 );
@@ -496,7 +586,8 @@ watch(
 watch(
   () => route.path,
   () => {
-    onNotificationRouteChange();
+    if (!authStore.isAuthenticated) return;
+    void getNotificationRealtime().then((m) => m.onNotificationRouteChange());
     if (shouldSkipTabRoute(route.path) && typeof cleanupRouteWatcher === 'function') {
       cleanupRouteWatcher();
       cleanupRouteWatcher = null;
@@ -530,14 +621,18 @@ watch(
     <RouterView />
   </div>
 
-  <!-- Global Notification Container -->
-  <NotificationContainer />
+  <!-- Global Notification Container (authenticated only — keeps login lean) -->
+  <NotificationContainer v-if="isAuthenticated" />
 
   <ImportProgressBanner v-if="isAuthenticated" />
   <BulkDeleteProgressBanner v-if="isAuthenticated" />
 
+  <PermissionSyncHost v-if="isAuthenticated" />
+  <ModuleListFreshnessHost v-if="isAuthenticated" />
+
   <!-- Mobile notification sheet -->
   <NotificationSheet
+    v-if="isAuthenticated"
     :open="notificationSheetOpen"
     :app-key="notificationAppKey"
     :mark-all-disabled="false"
@@ -547,10 +642,8 @@ watch(
   <!-- Audit offline sync drawer -->
   <SyncDrawer v-if="isAuditRoute" v-model="auditSyncDrawerOpen" />
 
-  <!-- Global Surfaces Provider -->
-  <!-- ARCHITECTURE NOTE: Mounted once at root level, app-agnostic -->
-  <!-- Provides GlobalSearch and CommandPalette to all layouts (Sales, Audit, Portal, etc.) -->
-  <GlobalSurfacesProvider />
+  <!-- Global Surfaces Provider (authenticated app only — avoids loading GlobalSearch/CRM on /login) -->
+  <GlobalSurfacesProvider v-if="isAuthenticated" />
 
   <!-- Dev-only: simulate helpdesk bell / toast / sound on /helpdesk/ routes -->
   <HelpdeskNotificationDevPanel v-if="showHelpdeskNotificationDevPanel" />

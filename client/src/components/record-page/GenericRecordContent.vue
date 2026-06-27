@@ -777,65 +777,11 @@
             </div>
           </template>
           <template #tab-details>
-            <div class="flex flex-col h-full min-h-0">
-              <div class="record-context-panel__header flex flex-shrink-0 flex-col gap-2.5 border-b border-gray-200/90 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
-                <div class="flex items-center justify-between gap-2">
-                  <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.detailsTitle') }}</h2>
-                  <span
-                    v-if="detailsTabFieldCountLabel"
-                    class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium tabular-nums text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-                  >
-                    {{ detailsTabFieldCountLabel }}
-                  </span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <DetailsTabFieldFilter
-                    v-model="detailsTabSearchQuery"
-                    :placeholder="t('records.genericFilterFieldsPh')"
-                  />
-                  <button
-                    type="button"
-                    :class="[
-                      DETAILS_TAB_TOOLBAR_HEIGHT_CLASS,
-                      'inline-flex shrink-0 items-center rounded-lg border px-2.5 py-0 text-xs font-medium leading-none transition-colors',
-                      detailsShowEmptyFields
-                        ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/35 dark:bg-indigo-950/40 dark:text-indigo-200'
-                        : 'border-gray-200/90 bg-white text-gray-600 hover:border-gray-300 dark:border-gray-600/70 dark:bg-gray-800/50 dark:text-gray-400 dark:hover:border-gray-500'
-                    ]"
-                    @click="detailsShowEmptyFields = !detailsShowEmptyFields"
-                  >
-                    {{ t('records.genericShowEmptyFields') }}
-                  </button>
-                </div>
-              </div>
-              <div class="min-h-0 flex-1 overflow-y-auto px-4 pb-6 pt-4">
-                <template v-if="record?._id && genericAdapter">
-                  <p
-                    v-if="rightPaneAllModuleFields.length && !rightPaneDetailsFilteredFields.length && (detailsTabSearchQuery || '').trim()"
-                    class="px-1 py-10 text-center text-sm text-gray-500 dark:text-gray-400"
-                  >
-                    {{ t('records.genericNoFieldsMatch') }}
-                  </p>
-                  <p
-                    v-else-if="rightPaneAllModuleFields.length && !rightPaneDetailsFilteredFields.length"
-                    class="px-1 py-10 text-center text-sm text-gray-500 dark:text-gray-400"
-                  >
-                    {{ t('records.genericDetailsEmptyValuesHint') }}
-                  </p>
-                  <DetailsSection
-                    v-else-if="rightPaneDetailsFilteredFields.length"
-                    :record="record"
-                    :adapter="genericAdapter"
-                    :context="recordDetailsTabContext"
-                    :field-rows-override="rightPaneDetailsFilteredFields"
-                    :show-all-fields="true"
-                    variant="compact"
-                  />
-                  <p v-else class="px-1 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{{ t('records.genericNoFieldsToShow') }}</p>
-                </template>
-                <p v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.genericNoRecordLoaded') }}</p>
-              </div>
-            </div>
+            <RecordDetailsTabPanel
+              :record="record"
+              :adapter="genericAdapter"
+              :context="recordDetailsTabContext"
+            />
           </template>
           <template v-if="showRecordDocumentsTab" #tab-documents>
             <div class="flex h-full flex-col">
@@ -1055,6 +1001,11 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import { fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
+import {
+  fetchUsersListCached,
+  fetchOrganizationsListCached,
+  fetchPeopleListCached,
+} from '@/utils/recordLookupCache';
 import { getProcessActivityMessage } from '@/utils/processActivityMessages';
 import { getQuoteActivityMessage, getQuoteActivityActorLabel } from '@/components/activity/adapters/quoteActivityUiAdapter';
 import { getSalesOrderActivityMessage } from '@/components/activity/adapters/salesOrderActivityUiAdapter';
@@ -1063,6 +1014,8 @@ import { getPaymentActivityMessage } from '@/components/activity/adapters/paymen
 import { getDocumentActivityMessage } from '@/components/activity/adapters/documentActivityUiAdapter';
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 import { getModuleRecordCrudPathBase, getModuleRecordDetailPath } from '@/utils/moduleRecordApiPath';
+import { resolveRecordDetailRefreshOnActivate } from '@/utils/recordDetailRefreshPolicy';
+import { extractRecordUpdatedAtMs, recordRecordDetailFingerprint } from '@/utils/recordDetailFreshness';
 import { canShowFormResponses } from '@/utils/engagementFormDisplay';
 import { canEditForm, canHardDeleteForm } from '@/utils/formEditPermissions';
 import {
@@ -1085,9 +1038,7 @@ import LiveChatLinkedSessionCard from '@/components/live-chat/LiveChatLinkedSess
 import QuoteRecordStatusBanner from '@/components/record-page/sections/QuoteRecordStatusBanner.vue';
 import QuoteCustomerResponseBanner from '@/components/record-page/sections/QuoteCustomerResponseBanner.vue';
 import RelatedSection from '@/components/record-page/sections/RelatedSection.vue';
-import DetailsSection from '@/components/record-page/sections/DetailsSection.vue';
-import DetailsTabFieldFilter from '@/components/record-page/DetailsTabFieldFilter.vue';
-import { DETAILS_TAB_TOOLBAR_HEIGHT_CLASS } from '@/components/record-page/detailsTabToolbar';
+import RecordDetailsTabPanel from '@/components/record-page/RecordDetailsTabPanel.vue';
 import RecordRightPane from '@/components/record-page/RecordRightPane.vue';
 import RecordDocumentsPanel from '@/components/record-page/RecordDocumentsPanel.vue';
 import EditableTitle from '@/components/record-page/EditableTitle.vue';
@@ -1265,8 +1216,6 @@ const activityRaw = ref([]);
   const activityFilterAssignedToMe = ref(false);
   const activityFilterTagged = ref(false);
   const activityFilterUntagged = ref(false);
-  const detailsTabSearchQuery = ref('');
-  const detailsShowEmptyFields = ref(true);
   const expandedTaskEmailThreads = ref(new Set());
   const showDeleteModal = ref(false);
 const showEditModal = ref(false);
@@ -2769,60 +2718,6 @@ const recordDetailsTabContext = computed(() => ({
   hideHeader: true
 }));
 
-const rightPaneAllModuleFields = computed(() => {
-  if (!genericAdapter.value || !record.value) return [];
-  const rows = genericAdapter.value.getAllModuleFields?.(record.value, sectionContext.value);
-  return Array.isArray(rows) ? rows : [];
-});
-
-function isGenericDetailRowEmpty(row) {
-  if (!row || row.key === 'source') return false;
-  if (row.type === 'tags') {
-    const v = row.value;
-    return !Array.isArray(v) || v.length === 0;
-  }
-  const v = row.value;
-  if (v != null && typeof v === 'object' && !Array.isArray(v)) {
-    const dv = row.displayValue;
-    return dv == null || String(dv).trim() === '';
-  }
-  if (v === false || v === 0) return false;
-  if (v == null || v === '') return true;
-  if (typeof v === 'string' && !String(v).trim()) return true;
-  if (Array.isArray(v) && v.length === 0) return true;
-  const dv = row.displayValue;
-  if (dv == null || String(dv).trim() === '') return true;
-  return false;
-}
-
-const rightPaneDetailsFilteredFields = computed(() => {
-  const q = (detailsTabSearchQuery.value || '').trim().toLowerCase();
-  let rows = rightPaneAllModuleFields.value;
-  if (q) {
-    rows = rows.filter((f) => {
-      const label = String(f.label || '').toLowerCase();
-      const key = String(f.key || '').toLowerCase();
-      const dv = String(f.displayValue || '').toLowerCase();
-      return label.includes(q) || key.includes(q) || dv.includes(q);
-    });
-  }
-  if (!detailsShowEmptyFields.value) {
-    rows = rows.filter((r) => !isGenericDetailRowEmpty(r));
-  }
-  return rows;
-});
-
-const detailsTabFieldCountLabel = computed(() => {
-  const total = rightPaneAllModuleFields.value.length;
-  const shown = rightPaneDetailsFilteredFields.value.length;
-  const q = (detailsTabSearchQuery.value || '').trim();
-  const hidingEmpty = !detailsShowEmptyFields.value;
-  if (!total) return '';
-  if (q && shown !== total) return `${shown} of ${total}`;
-  if (hidingEmpty && shown !== total) return `${shown} shown · ${total} total`;
-  return `${total} field${total === 1 ? '' : 's'}`;
-});
-
 const genericStateFields = computed(() => (genericAdapter.value ? genericAdapter.value.getStateFields(record.value, sectionContext.value) : []));
 const genericStateValues = computed(() => (genericAdapter.value ? genericAdapter.value.getStateValues(record.value, sectionContext.value) : []));
 const genericSections = computed(() => (genericAdapter.value ? genericAdapter.value.getSections(record.value) : []));
@@ -3625,6 +3520,12 @@ async function fetchRecord(options = {}) {
       record.value = data && !Array.isArray(data) ? data : null;
     }
 
+    if (record.value?._id) {
+      recordRecordDetailFingerprint(props.moduleKey, props.recordId, route.meta?.appKey || '', {
+        updatedAtMs: extractRecordUpdatedAtMs(record.value),
+      });
+    }
+
     const modules = Array.isArray(modulesRes) ? modulesRes : modulesRes?.data ?? modulesRes?.data?.data ?? modulesRes?.modules ?? [];
     moduleDefinition.value = modules.find((m) => String(m?.key || '').toLowerCase() === props.moduleKey.toLowerCase()) || null;
   } catch (e) {
@@ -3661,11 +3562,44 @@ async function loadDeferredRecordData(runId, loadedRecord) {
     loadCaseLookups(lowerModuleKey, isCurrentRun),
     loadQuoteLookups(lowerModuleKey, isCurrentRun),
     loadDocumentFolderLookups(lowerModuleKey, isCurrentRun),
-    loadUserLookup(isCurrentRun),
     loadFormRecordDeferredData(lowerModuleKey, isCurrentRun)
   ];
 
+  if (moduleNeedsUserLookup(moduleDefinition.value)) {
+    deferredLoads.push(loadUserLookup(isCurrentRun));
+  } else if (isCurrentRun()) {
+    userLookupList.value = [];
+  }
+
   await Promise.allSettled(deferredLoads);
+}
+
+function moduleNeedsUserLookup(mod) {
+  const fields = mod?.fields;
+  if (!Array.isArray(fields) || fields.length === 0) return false;
+
+  return fields.some((field) => {
+    const key = String(field?.key || '').toLowerCase();
+    const dataType = String(field?.dataType || field?.type || '').toLowerCase();
+    const lookupModule = String(field?.lookupModule || field?.targetModule || '').toLowerCase();
+
+    if (dataType === 'user' || dataType === 'users') return true;
+    if (lookupModule === 'users' || lookupModule === 'user') return true;
+    if (dataType.includes('user') && dataType.includes('lookup')) return true;
+
+    return (
+      key === 'assignedto'
+      || key === 'owner_id'
+      || key === 'ownerid'
+      || key === 'owner'
+      || key === 'caseownerid'
+      || key === 'createdby'
+      || key === 'updatedby'
+      || key === 'modifiedby'
+      || key === 'deletedby'
+      || key.endsWith('userid')
+    );
+  });
 }
 
 async function loadFormRecordDeferredData(lowerModuleKey, isCurrentRun) {
@@ -3734,7 +3668,7 @@ async function loadPeopleOrganizationLookup(lowerModuleKey, isCurrentRun) {
   }
 
   try {
-    const orgRes = await apiClient.get('/v2/organization', { params: { limit: 500 } });
+    const orgRes = await fetchOrganizationsListCached({ limit: 500 });
     if (!isCurrentRun()) return;
     const data = orgRes?.data ?? orgRes;
     peopleOrganizationList.value = Array.isArray(data) ? data : (data?.data ? (Array.isArray(data.data) ? data.data : []) : []);
@@ -3755,8 +3689,8 @@ async function loadCaseLookups(lowerModuleKey, isCurrentRun) {
 
   try {
     const [contactRes, caseOrgRes] = await Promise.all([
-      apiClient.get('/people', { params: { limit: 500, sortBy: 'firstName', sortOrder: 'asc' } }),
-      apiClient.get('/v2/organization', { params: { limit: 500 } })
+      fetchPeopleListCached({ limit: 500, sortBy: 'firstName', sortOrder: 'asc' }),
+      fetchOrganizationsListCached({ limit: 500 }),
     ]);
     if (!isCurrentRun()) return;
     const contactRows = Array.isArray(contactRes?.data) ? contactRes.data : (contactRes?.data?.data && Array.isArray(contactRes.data.data) ? contactRes.data.data : []);
@@ -3874,7 +3808,7 @@ async function loadDocumentFolderLookups(lowerModuleKey, isCurrentRun) {
 
 async function loadUserLookup(isCurrentRun) {
   try {
-    const usersRes = await apiClient.get('/users/list', { params: { limit: 500 } });
+    const usersRes = await fetchUsersListCached({ limit: 500 });
     if (!isCurrentRun()) return;
     const usersData = usersRes?.data ?? usersRes;
     const users = Array.isArray(usersData)
@@ -4807,7 +4741,18 @@ onMounted(() => {
   }
 });
 
-onActivated(() => {
+onActivated(async () => {
+  const recordId = props.recordId;
+  if (recordId && recordId !== 'new') {
+    const decision = await resolveRecordDetailRefreshOnActivate({
+      moduleKey: props.moduleKey,
+      appKey: route.meta?.appKey || '',
+      getUpdatedAtMs: () => extractRecordUpdatedAtMs(record.value),
+    }, recordId);
+    if (decision === 'refresh') {
+      await fetchRecord({ soft: true });
+    }
+  }
   attachRecordGlobalListeners();
 });
 

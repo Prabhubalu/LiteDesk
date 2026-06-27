@@ -2,6 +2,11 @@ import { ref, computed, watch, unref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
+import {
+  fetchUsersListCached,
+  fetchOrganizationsListCached,
+} from '@/utils/recordLookupCache';
 import { createGenericRecordAdapter } from '@/components/record-page/adapters/genericRecordAdapter';
 import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
@@ -166,11 +171,7 @@ export function usePersonRecordDetailFields({ personRecord, personId, canEdit, o
 
   async function loadModuleDefinition() {
     try {
-      const modulesRes = await apiClient.get('/modules', { params: { context: 'all' } });
-      const modules = Array.isArray(modulesRes)
-        ? modulesRes
-        : modulesRes?.data ?? modulesRes?.data?.data ?? modulesRes?.modules ?? [];
-      moduleDefinition.value = modules.find((m) => String(m?.key || '').toLowerCase() === 'people') || null;
+      moduleDefinition.value = await fetchModuleDefinitionCached('people');
     } catch (e) {
       console.error('Fetch people module definition error:', e);
       moduleDefinition.value = null;
@@ -180,8 +181,8 @@ export function usePersonRecordDetailFields({ personRecord, personId, canEdit, o
   async function loadLookups() {
     try {
       const [orgRes, usersRes] = await Promise.all([
-        apiClient.get('/v2/organization', { params: { limit: 500 } }),
-        apiClient.get('/users/list', { params: { limit: 500 } })
+        fetchOrganizationsListCached({ limit: 500 }),
+        fetchUsersListCached({ limit: 500 }),
       ]);
       const orgData = orgRes?.data ?? orgRes;
       peopleOrganizationList.value = Array.isArray(orgData)

@@ -610,5 +610,9 @@
   "portalResponses": {
     "message": "Responses",
     "description": "Portal form responses navigation label"
+  },
+"moduleTemplates": {
+    "message": "Templates",
+    "description": "Content templates module navigation label"
   }
 }

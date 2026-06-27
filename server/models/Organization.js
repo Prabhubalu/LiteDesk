@@ -82,7 +82,16 @@ const OrganizationSchema = new mongoose.Schema({
             default: true 
         },
         stripeCustomerId: String,
-        stripeSubscriptionId: String
+        stripeSubscriptionId: String,
+        trialExtensionUsed: {
+            type: Boolean,
+            default: false
+        },
+        trialExtendedAt: Date,
+        trialExtensionReason: {
+            type: String,
+            trim: true
+        }
     },
     
     // Limits & Features based on subscription tier (only for tenant organizations)
@@ -390,9 +399,11 @@ const OrganizationSchema = new mongoose.Schema({
         ref: 'User', 
         index: true 
     },
-    assignedTo: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User' 
+    assignedTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true
     },
     primaryContact: { 
         type: mongoose.Schema.Types.ObjectId, 

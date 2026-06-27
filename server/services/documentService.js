@@ -38,6 +38,7 @@ const { indexDocumentSemanticEmbedding } = require('./documentSemanticIndexServi
 const {
   listContentVersions
 } = require('../utils/descriptionVersionHelper');
+const { applyCreateOwnerDefaults } = require('../utils/recordCreateOwnerDefaults');
 const User = require('../models/User');
 
 const USER_POPULATE = 'firstName lastName email avatar username';
@@ -125,6 +126,30 @@ function normalizeRecordObjectId(recordId) {
     return new mongoose.Types.ObjectId(id);
   }
   return recordId;
+}
+
+function resolveDocumentOwnerId(payload, userId) {
+  const withDefaults = applyCreateOwnerDefaults(
+    { ownerId: payload?.ownerId },
+    'documents',
+    userId
+  );
+  const ownerId = withDefaults.ownerId || userId;
+  if (!ownerId) {
+    const error = new Error('Document owner is required');
+    error.statusCode = 400;
+    error.code = 'DOCUMENT_OWNER_REQUIRED';
+    throw error;
+  }
+  return ownerId;
+}
+
+function normalizeDocumentFolderId(folderId) {
+  if (folderId == null || folderId === '' || folderId === 'root') return null;
+  const id = String(folderId).trim();
+  const mongoose = require('mongoose');
+  if (!mongoose.Types.ObjectId.isValid(id) || id.length !== 24) return null;
+  return id;
 }
 
 async function findTrashedUploadMatch({ organizationId, checksum, title }) {
@@ -397,16 +422,12 @@ async function getRelatedDocumentIds(organizationId, documentId) {
   return [...new Set(relatedIds)];
 }
 
-async function listDocuments({
+async function resolveDocumentsListQuery({
   organizationId,
   filters = {},
-  page = 1,
-  limit = 20,
-  sort = '-updatedAt',
-  visibilityContext = null
+  visibilityContext = null,
 }) {
   let query = buildListQuery(organizationId, filters);
-  let effectiveSort = sort;
   let searchTerm = String(filters.search || '').trim();
 
   const { extractSearchTermFromFilterQuery } = require('../utils/searchRelevance');
@@ -448,7 +469,7 @@ async function listDocuments({
   if (filters.filterQuery) {
     const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
     query = applyListFilterQueryParam(query, { filterQuery: filters.filterQuery }, 'documents', {
-      userId: filters.userId
+      userId: filters.userId,
     });
   }
 
@@ -456,9 +477,6 @@ async function listDocuments({
     const useTextSearch = searchTerm.length >= 2 && !/["\\]/.test(searchTerm);
     if (useTextSearch) {
       query.$text = { $search: searchTerm };
-      if (effectiveSort === '-updatedAt') {
-        effectiveSort = { score: { $meta: 'textScore' }, updatedAt: -1 };
-      }
     } else {
       const searchClause = buildRegexSearchClause(searchTerm);
       if (query.$and) {
@@ -475,7 +493,7 @@ async function listDocuments({
   if (filters.favoritesOnly && filters.userId) {
     const favoriteIds = await DocumentFavorite.find({
       organizationId,
-      userId: filters.userId
+      userId: filters.userId,
     }).distinct('documentId');
     query._id = favoriteIds.length ? { $in: favoriteIds } : { $in: [] };
   }
@@ -483,7 +501,7 @@ async function listDocuments({
   if (filters.recentOnly && filters.userId) {
     const recentRows = await DocumentRecent.find({
       organizationId,
-      userId: filters.userId
+      userId: filters.userId,
     })
       .sort({ lastViewedAt: -1 })
       .limit(MAX_RECENT_DOCUMENTS_PER_USER)
@@ -498,7 +516,7 @@ async function listDocuments({
       organizationId,
       moduleKey: filters.linkedModuleKey,
       recordId: filters.linkedRecordId,
-      appKey: filters.linkedAppKey
+      appKey: filters.linkedAppKey,
     });
     const ids = linkedDocs.map((doc) => doc._id).filter(Boolean);
     query._id = ids.length ? { $in: ids } : { $in: [] };
@@ -507,6 +525,34 @@ async function listDocuments({
   if (filters.relatedToDocumentId) {
     const relatedIds = await getRelatedDocumentIds(organizationId, filters.relatedToDocumentId);
     query._id = relatedIds.length ? { $in: relatedIds } : { $in: [] };
+  }
+
+  return query;
+}
+
+async function getDocumentsListMeta({
+  organizationId,
+  filters = {},
+  visibilityContext = null,
+}) {
+  const { fetchListMeta } = require('../utils/listMetaService');
+  const query = await resolveDocumentsListQuery({ organizationId, filters, visibilityContext });
+  return fetchListMeta(Document, query);
+}
+
+async function listDocuments({
+  organizationId,
+  filters = {},
+  page = 1,
+  limit = 20,
+  sort = '-updatedAt',
+  visibilityContext = null
+}) {
+  let query = await resolveDocumentsListQuery({ organizationId, filters, visibilityContext });
+  let effectiveSort = sort;
+  const searchTerm = String(filters.search || '').trim();
+  if (searchTerm.length >= 2 && !/["\\]/.test(searchTerm) && query.$text && effectiveSort === '-updatedAt') {
+    effectiveSort = { score: { $meta: 'textScore' }, updatedAt: -1 };
   }
 
   const skip = (Math.max(1, page) - 1) * limit;
@@ -606,7 +652,7 @@ async function createDocument({
     description: payload.description || '',
     documentType: isExternalLink ? 'external_link' : (payload.documentType || 'rich_document'),
     category: payload.category || null,
-    folderId: payload.folderId || null,
+    folderId: normalizeDocumentFolderId(payload.folderId),
     tags: Array.isArray(payload.tags) ? payload.tags : [],
     sourceType: isExternalLink ? 'external' : (payload.sourceType || 'internal'),
     sourceProvider: isExternalLink ? sourceProvider : (payload.sourceProvider || null),
@@ -614,7 +660,7 @@ async function createDocument({
     externalLinkStatus: isExternalLink ? 'available' : null,
     richContent: payload.richContent || null,
     richContentText: extractRichContentSearchText(payload.richContent) || null,
-    ownerId: payload.ownerId || userId,
+    ownerId: resolveDocumentOwnerId(payload, userId),
     createdBy: userId,
     modifiedBy: userId,
     status: payload.status || 'draft'
@@ -672,7 +718,7 @@ async function createDocumentFromUpload({
     description: payload.description || '',
     documentType: 'file',
     category: payload.category || null,
-    folderId: payload.folderId || null,
+    folderId: normalizeDocumentFolderId(payload.folderId),
     tags: Array.isArray(payload.tags) ? payload.tags : [],
     sourceType: 'internal',
     fileType: inferFileType(file?.originalname, file?.mimetype),
@@ -682,7 +728,7 @@ async function createDocumentFromUpload({
     storageProvider: 'oci',
     storagePath: uploadResult.storagePath,
     versionNumber: 1,
-    ownerId: payload.ownerId || userId,
+    ownerId: resolveDocumentOwnerId(payload, userId),
     createdBy: userId,
     modifiedBy: userId,
     status: payload.status || 'published'
@@ -785,7 +831,7 @@ async function registerStoredFileAsDocument({
     storageProvider: 'oci',
     storagePath,
     versionNumber: 1,
-    ownerId: userId,
+    ownerId: resolveDocumentOwnerId({}, userId),
     createdBy: userId,
     modifiedBy: userId,
     status: 'published',
@@ -1861,6 +1907,7 @@ module.exports = {
   generateDocumentNumber,
   logAuditEvent,
   listDocuments,
+  getDocumentsListMeta,
   listKnowledgeBaseDocuments,
   listPortalKnowledgeDocuments,
   getPortalKnowledgeDocument,

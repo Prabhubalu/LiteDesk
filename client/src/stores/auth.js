@@ -13,6 +13,7 @@ import { registerUseAuthStore } from './authRegistry';
 
 const PROFILE_REFRESHED_AT_KEY = 'arivu:user-profile-refreshed-at';
 const PROFILE_REFRESH_FRESH_MS = 5 * 60 * 1000;
+const TRIAL_SYNC_FRESH_MS = 30 * 1000;
 const PROD_LOGOUT_REDIRECT_ORIGIN = (import.meta.env.VITE_MAIN_APP_ORIGIN || 'https://app.arivusystems.com').replace(/\/$/, '');
 
 export const useAuthStore = defineStore('auth', {
@@ -20,6 +21,7 @@ export const useAuthStore = defineStore('auth', {
         user: JSON.parse(localStorage.getItem('user')) || null,
         organization: JSON.parse(localStorage.getItem('organization')) || null,
         lastLoginResult: null,
+        lastTrialSyncAt: 0,
         loading: false,
         error: null,
     }),
@@ -48,6 +50,13 @@ export const useAuthStore = defineStore('auth', {
             };
         },
         isTrialActive: (state) => state.organization?.subscription?.status === 'trial',
+        isTrialExpired: (state) => {
+            const subscription = state.organization?.subscription;
+            if (!subscription || subscription.status !== 'trial') return false;
+            if (!subscription.trialEndDate) return false;
+            return new Date() > new Date(subscription.trialEndDate);
+        },
+        hasUsedTrialExtension: (state) => state.organization?.subscription?.trialExtensionUsed === true,
         subscriptionTier: (state) => state.organization?.subscription?.tier || 'trial',
         enabledModules: (state) => state.organization?.enabledModules || [],
         inventoryEnabled: (state) => state.organization?.capabilities?.inventory === true,
@@ -358,9 +367,9 @@ export const useAuthStore = defineStore('auth', {
 
         async syncI18nFromOrganization() {
             try {
-                const { initI18n } = await import('@/i18n');
+                const { upgradeI18nAfterLogin } = await import('@/i18n');
                 const orgLang = this.organization?.settings?.language ?? null;
-                await initI18n({ orgLanguage: orgLang, userLanguage: null });
+                await upgradeI18nAfterLogin({ orgLanguage: orgLang, userLanguage: null });
             } catch (_e) {
                 /* i18n optional at bootstrap */
             }
@@ -454,6 +463,7 @@ export const useAuthStore = defineStore('auth', {
                     email: this.user?.email,
                     organizationId: this.organization?._id ? String(this.organization._id) : undefined,
                 });
+                void this.syncI18nFromOrganization();
                 return true;
             } catch (_error) {
                 return false;
@@ -724,6 +734,46 @@ export const useAuthStore = defineStore('auth', {
                 console.error('Error refreshing organization:', error);
             }
         },
+
+        async syncTrialSubscription(options = {}) {
+            if (!this.user?.token) return false;
+
+            const force = options.force === true;
+            if (!force && this.lastTrialSyncAt && Date.now() - this.lastTrialSyncAt < TRIAL_SYNC_FRESH_MS) {
+                return true;
+            }
+
+            try {
+                const response = await fetch(getApiUrlForFetch('/api/settings/subscriptions/trial-status'), {
+                    headers: {
+                        Authorization: `Bearer ${this.user.token}`,
+                        Accept: 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) return false;
+
+                const snapshot = data.data || {};
+                if (this.organization) {
+                    this.organization = {
+                        ...this.organization,
+                        subscription: {
+                            ...this.organization.subscription,
+                            status: this.organization.subscription?.status === 'trial' ? 'trial' : this.organization.subscription?.status,
+                            trialEndDate: snapshot.trialEndDate ?? this.organization.subscription?.trialEndDate,
+                            trialExtensionUsed: snapshot.extensionUsed === true
+                        }
+                    };
+                    localStorage.setItem('organization', JSON.stringify(this.organization));
+                }
+
+                this.lastTrialSyncAt = Date.now();
+                return snapshot;
+            } catch (error) {
+                console.error('Error syncing trial subscription:', error);
+                return false;
+            }
+        },
         
         // Refresh user profile and permissions
         async refreshUser(options = {}) {
@@ -853,16 +903,23 @@ export const useAuthStore = defineStore('auth', {
                         // Ensure newly added modules exist so the sidebar can render them immediately.
                         if (!ensuredPermissions.forms) ensuredPermissions.forms = { view: false, create: false, edit: false, delete: false, viewAll: false, exportData: false };
                         if (!ensuredPermissions.items) ensuredPermissions.items = { view: false, create: false, edit: false, delete: false, viewAll: false, exportData: false };
+                        const incomingOrgObject = typeof incoming.organizationId === 'object' && incoming.organizationId?._id
+                            ? incoming.organizationId
+                            : null;
+                        const incomingOrgId = incomingOrgObject?._id
+                            ? String(incomingOrgObject._id)
+                            : (incoming.organizationId ? String(incoming.organizationId) : this.user.organizationId);
                         // Update user data while preserving token and allowedApps
                         const token = this.user.token;
                         const existingAllowedApps = this.user.allowedApps;
                         this.user = {
                             ...incoming,
+                            organizationId: incomingOrgId,
                             permissions: ensuredPermissions,
                             token: token,
                             allowedApps: this.resolveAllowedApps(incoming, {
                                 fallbackAllowedApps: existingAllowedApps,
-                                organization: incoming.organizationId || this.organization
+                                organization: incomingOrgObject || this.organization
                             }),
                             entitledAddons: incoming.entitledAddons ?? this.user?.entitledAddons ?? null,
                         };
@@ -870,8 +927,8 @@ export const useAuthStore = defineStore('auth', {
                         localStorage.setItem(PROFILE_REFRESHED_AT_KEY, String(Date.now()));
                         
                         // Update organization if included in response (for enabledApps)
-                        if (incoming.organizationId && typeof incoming.organizationId === 'object') {
-                            this.organization = incoming.organizationId;
+                        if (incomingOrgObject) {
+                            this.organization = incomingOrgObject;
                             localStorage.setItem('organization', JSON.stringify(this.organization));
                         }
                         identifyProductUser({

@@ -471,6 +471,10 @@
     "message": "Documents",
     "description": "Documents module navigation label"
   },
+  "moduleTemplates": {
+    "message": "Templates",
+    "description": "Content templates module navigation label"
+  },
   "moduleCases": {
     "message": "Cases",
     "description": "Helpdesk cases module navigation label"

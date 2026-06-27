@@ -1,11 +1,28 @@
 const mongoose = require('mongoose');
 const Organization = require('../models/Organization');
 const { buildOrganizationListMongoQuery } = require('../utils/organizationsListQuery');
+const { fetchListMeta, sendListMetaResponse } = require('../utils/listMetaService');
 const { mapOrganizationToSurface } = require('../utils/mappers/mapOrganizationToSurface');
 
 const websiteHostnamePattern = /^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
 
 const { isMasterLikeRequest } = require('../utils/organizationsListQuery');
+
+const ORGANIZATION_REFERENCE_FIELDS = new Set([
+  'assignedTo',
+  'primaryContact',
+  'accountManager',
+  'vendorContract',
+  'logisticsPartner'
+]);
+
+function normalizeOrganizationReferenceValue(fieldValue) {
+  if (fieldValue == null || fieldValue === '') return null;
+  if (typeof fieldValue === 'object') {
+    return fieldValue._id ?? fieldValue.id ?? null;
+  }
+  return fieldValue;
+}
 
 function organizationQueryAnd(baseQuery, clause) {
   if (!baseQuery || Object.keys(baseQuery).length === 0) {
@@ -94,14 +111,16 @@ exports.create = async (req, res) => {
     }
     
     const { extractCustomFields, flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
+    const { applyCreateOwnerDefaults } = require('../utils/recordCreateOwnerDefaults');
     const { standardPayload, customFieldsSet } = extractCustomFields(req.body, Organization);
+    const payloadWithOwnerDefaults = applyCreateOwnerDefaults(standardPayload, 'organizations', req.user?._id);
 
     const body = {
-      ...standardPayload,
+      ...payloadWithOwnerDefaults,
       // Set createdBy from authenticated user
       createdBy: req.user?._id || null,
       // Default assignedTo to creator if not provided (similar to tasks)
-      assignedTo: standardPayload.assignedTo || req.user?._id || null,
+      assignedTo: payloadWithOwnerDefaults.assignedTo || req.user?._id || null,
       // Mark as Sales organization (not tenant)
       isTenant: false,
       ...(Object.keys(customFieldsSet).length > 0 && { customFields: customFieldsSet }),
@@ -578,7 +597,8 @@ exports.update = async (req, res) => {
       '_id', '__v', 'organizationId', 'createdAt', 'updatedAt', 'createdBy', 'modifiedBy',
       'deletedAt', 'deletedBy', 'deletionReason', 'activityLogs', 'legacyOrganizationId',
       'subscription', 'limits', 'enabledApps', 'enabledModules', 'slug', 'settings', 'security',
-      'billing', 'isTenant', 'database', 'integrations', 'moduleOverrides', 'crmInitialized', 'dataRegion'
+      'billing', 'isTenant', 'database', 'integrations', 'moduleOverrides', 'crmInitialized', 'dataRegion',
+      'importHistoryId'
     ]);
 
     const updatePayload = {};
@@ -737,15 +757,8 @@ exports.update = async (req, res) => {
             hasChanges = true;
             updatedKeys.push(field);
           }
-        } else if (['assignedTo', 'primaryContact', 'accountManager'].includes(field)) {
-          let nextRef = null;
-          if (fieldValue != null && fieldValue !== '') {
-            if (typeof fieldValue === 'object') {
-              nextRef = fieldValue._id ?? fieldValue.id ?? null;
-            } else {
-              nextRef = fieldValue;
-            }
-          }
+        } else if (ORGANIZATION_REFERENCE_FIELDS.has(field)) {
+          const nextRef = normalizeOrganizationReferenceValue(fieldValue);
           const currentRef = org[field] ? String(org[field]) : null;
           const nextRefStr = nextRef ? String(nextRef) : null;
           if (currentRef !== nextRefStr) {
@@ -1178,6 +1191,27 @@ exports.getSurface = async (req, res) => {
       message: 'Error fetching organization surface', 
       error: error.message 
     });
+  }
+};
+
+exports.listMeta = async (req, res) => {
+  try {
+    const tenantOrganizationId = req.user?.organizationId;
+    if (!tenantOrganizationId) {
+      return res.status(400).json({ success: false, message: 'Organization context required' });
+    }
+
+    const query = await buildOrganizationListMongoQuery({
+      tenantOrganizationId,
+      params: req.query,
+      user: req.user,
+      appKey: req.appKey || 'SALES',
+    });
+    const meta = await fetchListMeta(Organization, query);
+    sendListMetaResponse(res, meta);
+  } catch (error) {
+    console.error('[organizationV2Controller.listMeta] error', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch organization list meta' });
   }
 };
 

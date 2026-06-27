@@ -172,8 +172,11 @@ exports.createForm = async (req, res) => {
             }
         }
 
+        const { applyCreateOwnerDefaults } = require('../utils/recordCreateOwnerDefaults');
+        const bodyWithOwnerDefaults = applyCreateOwnerDefaults(req.body, 'forms', req.user._id);
+
         const payload = {
-            ...req.body,
+            ...bodyWithOwnerDefaults,
             organizationId: req.user.organizationId,
             createdBy: req.user._id,
             modifiedBy: req.user._id
@@ -266,6 +269,21 @@ exports.createForm = async (req, res) => {
             error: error.message,
             details: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
+    }
+};
+
+// @desc    List meta fingerprint for forms
+// @route   GET /api/forms/meta
+exports.getFormsListMeta = async (req, res) => {
+    try {
+        const { buildFormsListQuery } = require('../utils/listQueryBuilders/formsListQuery');
+        const { fetchListMeta, sendListMetaResponse } = require('../utils/listMetaService');
+        const query = buildFormsListQuery(req);
+        const meta = await fetchListMeta(Form, query);
+        sendListMetaResponse(res, meta);
+    } catch (error) {
+        console.error('[getFormsListMeta] error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch forms list meta' });
     }
 };
 

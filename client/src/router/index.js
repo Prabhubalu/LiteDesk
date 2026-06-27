@@ -4,7 +4,6 @@
  * avoid router → apiClient → auth → router ESM TDZ in production.
  */
 import { createRouter, createWebHistory } from 'vue-router'
-import WebformStaffPreviewView from '@/views/WebformStaffPreviewView.vue';
 import { hasAnySettingsAccess } from '@/utils/settingsTabAccess'
 import { useAuthStore } from '@/stores/authRegistry'
 import auditRoutes from './audit.routes'
@@ -12,6 +11,11 @@ import portalRoutes from './portal.routes'
 import { loadAndRegisterRoutes } from '@/utils/dynamicRouteLoader'
 import { logNavDebug } from '@/config/arivuDebug.js'
 import { buildAppAccessProfile, getSalesDashboardRedirect, getSalesModuleRedirect } from '@/router/appAccessGuards'
+import {
+  canAccessWhileTrialExpired,
+  isOrganizationTrialExpired
+} from '@/utils/trialStatus'
+import { isAuthLifecyclePublicRoute } from '@/utils/standaloneRoutes'
 
 const routes = [
   {
@@ -59,6 +63,12 @@ const routes = [
     name: 'portal-set-password',
     component: () => import('@/views/auth/PortalSetPassword.vue'),
     meta: { requiresAuth: true, allowWithoutActivePortal: true }
+  },
+  {
+    path: '/trial-expired',
+    name: 'trial-expired',
+    component: () => import('@/views/TrialExpiredPage.vue'),
+    meta: { requiresAuth: true, hideShell: true }
   },
   {
     path: '/pay/checkout/razorpay',
@@ -722,6 +732,42 @@ const routes = [
     meta: { requiresAuth: true, requiresPermission: { module: 'documents', action: 'view' }, moduleKey: 'documents' }
   },
   {
+    path: '/templates',
+    name: 'templates',
+    component: () => import('@/views/Templates.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'view' } }
+  },
+  {
+    path: '/templates/:id',
+    name: 'template-detail',
+    component: () => import('@/views/TemplateDetail.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'view' } }
+  },
+  {
+    path: '/templates/:id/builder',
+    name: 'template-builder',
+    component: () => import('@/views/TemplateBuilder.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'edit' } }
+  },
+  {
+    path: '/content-themes',
+    name: 'content-themes',
+    component: () => import('@/views/ContentThemes.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'view' } }
+  },
+  {
+    path: '/content-themes/:id',
+    name: 'content-theme-detail',
+    component: () => import('@/views/ContentThemeDetail.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'view' } }
+  },
+  {
+    path: '/content-assets',
+    name: 'content-assets',
+    component: () => import('@/views/ContentAssets.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'view' } }
+  },
+  {
     path: '/organizations',
     name: 'organizations',
     component: () => import('@/views/Organizations.vue'),
@@ -836,7 +882,7 @@ const routes = [
   {
     path: '/webforms/staff-preview/:slug',
     name: 'staff-webform-preview',
-    component: WebformStaffPreviewView,
+    component: () => import('@/views/WebformStaffPreviewView.vue'),
     meta: { requiresAuth: false, hideShell: true }
   },
   {
@@ -982,6 +1028,10 @@ const getDefaultRoute = (authStore) => {
     return { name: 'login' };
   }
 
+  if (isOrganizationTrialExpired(authStore.organization)) {
+    return { name: 'trial-expired' };
+  }
+
   return authStore.resolvePostLoginRoute();
 }
 
@@ -1001,6 +1051,8 @@ router.beforeEach(async (to, from, next) => {
     next({ name: 'login', query: {} })
     return
   }
+
+  // Locale upgrade runs from authStore.setUser → syncI18nFromOrganization (single owner).
   logNavDebug('Navigation guard:', {
     to: to.path,
     isAuthenticated: authStore.isAuthenticated,
@@ -1027,6 +1079,26 @@ router.beforeEach(async (to, from, next) => {
     }
     next({ name: 'login' })
     return
+  }
+
+  // Refresh trial subscription from server before redirecting (handles extension by another user)
+  if (authStore.isAuthenticated) {
+    const onTrial = authStore.organization?.subscription?.status === 'trial';
+    const trialLooksExpired = isOrganizationTrialExpired(authStore.organization);
+    if (onTrial || trialLooksExpired || to.name === 'trial-expired') {
+      await authStore.syncTrialSubscription({
+        force: trialLooksExpired || to.name === 'trial-expired'
+      });
+    }
+  }
+
+  // Trial expired takes precedence over onboarding and normal navigation
+  if (authStore.isAuthenticated && isOrganizationTrialExpired(authStore.organization)) {
+    if (!canAccessWhileTrialExpired(to)) {
+      logNavDebug('Redirecting: Trial expired')
+      next({ name: 'trial-expired' })
+      return
+    }
   }
 
   // External portal session guards (E3)
@@ -1070,7 +1142,10 @@ router.beforeEach(async (to, from, next) => {
   // Settings / legacy audit forms need deferred locale namespaces in the guard.
   const needsFullLocale =
     to.path.startsWith('/settings')
-    || to.path.startsWith('/forms');
+    || to.path.startsWith('/forms')
+    || to.path.startsWith('/templates')
+    || to.path.startsWith('/content-themes')
+    || to.path.startsWith('/content-assets');
 
   const needsWebformsLocale =
     to.path.startsWith('/webforms/public/')
@@ -1157,7 +1232,13 @@ router.beforeEach(async (to, from, next) => {
     next(getDefaultRoute(authStore))
     return
   }
-  
+
+  if (to.name === 'trial-expired' && authStore.isAuthenticated && !isOrganizationTrialExpired(authStore.organization)) {
+    logNavDebug('Redirecting: Trial no longer expired')
+    next(getDefaultRoute(authStore))
+    return
+  }
+
   // Phase 1G: Platform landing route guard
   // /platform is accessible if:
   // - User is authenticated

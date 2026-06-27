@@ -164,8 +164,9 @@ if (!SECURITY_DISABLED && process.env.RATE_LIMIT_IP_DEBUG === 'true') {
 
 // General API Rate Limiting (skip if security disabled)
 if (!SECURITY_DISABLED) {
-    const { apiLimiter } = require('./middleware/rateLimitMiddleware');
+    const { apiLimiter, routeRateLimitMiddleware } = require('./middleware/rateLimitMiddleware');
     app.use('/api', apiLimiter);
+    app.use('/api', routeRateLimitMiddleware);
 } else {
     console.warn('⚠️  [DEV] API rate limiting disabled');
 }
@@ -285,6 +286,7 @@ app.use('/api/user-preferences', userPreferencesRoutes);
 app.use('/api/notification-preferences', notificationPreferenceRoutes);
 app.use('/api/notification-rules', notificationRuleRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/data-changes', require('./routes/dataChangeStreamRoutes'));
 app.use('/api/helpdesk/cases', caseRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/sales-orders', salesOrderRoutes);
@@ -340,6 +342,10 @@ app.use('/api/webforms', webformRoutes.protected); // Protected webform routes
 app.use('/api/reports', reportRoutes);
 app.use('/api/documents', require('./routes/documentRoutes'));
 app.use('/api/document-folders', require('./routes/documentFolderRoutes'));
+app.use('/api/templates', require('./routes/contentTemplateRoutes'));
+app.use('/api/content-themes', require('./routes/contentThemeRoutes'));
+app.use('/api/content-assets', require('./routes/contentAssetRoutes'));
+app.use('/api/content-fonts', require('./routes/contentFontRoutes'));
 app.use('/api/items', itemRoutes);
 app.use('/api/catalog', require('./routes/catalogRoutes'));
 app.use('/api/trash', trashRoutes);

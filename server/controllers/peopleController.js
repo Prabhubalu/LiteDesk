@@ -33,6 +33,8 @@ const {
 } = require('../utils/warnDeprecatedPeopleTypeAlias');
 const { isOptionalEmailWellFormed } = require('../utils/defaultFieldValidations');
 const { performance } = require('perf_hooks');
+const { buildPeopleListQuery } = require('../utils/listQueryBuilders/peopleListQuery');
+const { fetchListMeta, sendListMetaResponse } = require('../utils/listMetaService');
 
 const DEBUG_PEOPLE_LIST = process.env.DEBUG_PEOPLE_LIST === 'true';
 
@@ -185,13 +187,15 @@ exports.create = async (req, res) => {
     
     const { extractCustomFields } = require('../utils/customFieldsExtractor');
     const { assignResolvedSource } = require('../services/sourceResolver');
+    const { applyCreateOwnerDefaults } = require('../utils/recordCreateOwnerDefaults');
     const { standardPayload, customFieldsSet } = extractCustomFields(strippedBody, People);
+    const payloadWithOwnerDefaults = applyCreateOwnerDefaults(standardPayload, 'people', req.user._id);
 
     const body = {
-      ...standardPayload,
+      ...payloadWithOwnerDefaults,
       organizationId: req.user.organizationId,
       createdBy: req.user._id,
-      assignedTo: standardPayload.assignedTo || req.user._id,
+      assignedTo: payloadWithOwnerDefaults.assignedTo || req.user._id,
       ...(Object.keys(customFieldsSet).length > 0 && { customFields: customFieldsSet }),
       // Add initial activity log for record creation
       activityLogs: [{
@@ -1424,5 +1428,20 @@ exports.getPersonLiveChatSession = async (req, res) => {
   } catch (error) {
     console.error('[peopleController] getPersonLiveChatSession error', error);
     return res.status(500).json({ success: false, message: 'Failed to load live chat session summary' });
+  }
+};
+
+exports.listMeta = async (req, res) => {
+  try {
+    const query = await buildPeopleListQuery(req);
+    const meta = await fetchListMeta(People, query);
+    sendListMetaResponse(res, meta);
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    console.error('[peopleController.listMeta] error', error);
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || 'Failed to fetch people list meta',
+    });
   }
 };

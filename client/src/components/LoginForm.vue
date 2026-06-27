@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
+import { isOrganizationTrialExpired } from '@/utils/trialStatus';
 
 const { t } = useI18n();
 
@@ -13,6 +14,7 @@ const router = useRouter();
 const route = useRoute();
 const SESSION_TRANSFER_HASH_KEY = 'ld_session';
 const loginNotice = ref('');
+const redirecting = ref(false);
 
 const resolveInstanceLoginTarget = (instance) => {
     if (!instance?.subdomain) return null;
@@ -37,20 +39,36 @@ const applyTransferredSessionFromHash = async () => {
     const encoded = hashParams.get(SESSION_TRANSFER_HASH_KEY);
     if (!encoded) return;
 
+    redirecting.value = true;
     const applied = authStore.applySessionTransferPayload(encoded);
-    if (!applied) return;
+    if (!applied) {
+        redirecting.value = false;
+        return;
+    }
+
+    await authStore.syncI18nFromOrganization();
 
     window.history.replaceState({}, '', window.location.pathname + window.location.search);
-    await router.replace(authStore.resolvePostLoginRoute());
+    await router.replace(resolvePostLoginRoute());
+};
+
+const resolvePostLoginRoute = () => {
+    if (isOrganizationTrialExpired(authStore.organization)) {
+        return { name: 'trial-expired' };
+    }
+    return authStore.resolvePostLoginRoute();
 };
 
 const handleLogin = async () => {
+    redirecting.value = false;
     const success = await authStore.login({
         email: email.value,
         password: password.value
     });
 
     if (success) {
+        redirecting.value = true;
+
         const instance = authStore.lastLoginResult?.instance;
         const targetBaseUrl = resolveInstanceLoginTarget(instance);
         if (targetBaseUrl) {
@@ -71,8 +89,11 @@ const handleLogin = async () => {
             }
         }
 
+        await authStore.syncI18nFromOrganization();
         await new Promise(resolve => setTimeout(resolve, 100));
-        router.push(authStore.resolvePostLoginRoute());
+        await router.replace(resolvePostLoginRoute());
+    } else {
+        redirecting.value = false;
     }
 };
 
@@ -89,7 +110,10 @@ onMounted(() => {
 </script>
 
 <template>
-    <form class="space-y-6" @submit.prevent="handleLogin">
+    <div v-if="redirecting" class="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+      {{ t('auth.signingIn') }}
+    </div>
+    <form v-else class="space-y-6" @submit.prevent="handleLogin">
         <div
           v-if="loginNotice"
           class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-200"

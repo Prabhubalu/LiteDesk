@@ -150,7 +150,7 @@ const DocumentSchema = new Schema(
     ownerId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      default: null,
+      required: true,
       index: true
     },
     createdBy: {

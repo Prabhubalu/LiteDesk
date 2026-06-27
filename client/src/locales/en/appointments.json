@@ -563,6 +563,10 @@
     "message": "Save this page first, then connect Microsoft Calendar.",
     "description": "Microsoft connect prerequisite"
   },
+  "embedPreviewPending": {
+    "message": "Preview will appear once your booking link is ready.",
+    "description": "Embed iframe placeholder while booking page is being saved"
+  },
   "connectedAs": {
     "message": "Connected as {email}",
     "description": "Calendar connected status"

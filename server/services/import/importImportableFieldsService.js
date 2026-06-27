@@ -1,4 +1,5 @@
 const ModuleDefinition = require('../../models/ModuleDefinition');
+const { getBaseFieldsForKey } = require('../../controllers/moduleController');
 const { normalizePeopleModuleFields } = require('../../utils/normalizePeopleModuleConfig');
 const { SUPPORTED_MODULES } = require('./importConstants');
 
@@ -42,40 +43,73 @@ function isImportableField(field, moduleKey) {
   if (IMPORT_EXCLUDED_KEYS.has(norm)) return false;
   if (GLOBAL_SYSTEM_FIELD_KEYS.has(norm)) return false;
   if (field.isVisibleInConfig === false) return false;
+  if (field.isTenantField === true) return false;
   if (field.owner === 'system' && field.editable === false) return false;
   if (moduleKey === 'people' && norm === 'organizationid') return false;
   return true;
+}
+
+function resolvePlatformAppKey(moduleKey) {
+  const key = String(moduleKey || '').toLowerCase();
+  if (key === 'deals') return 'sales';
+  return 'platform';
+}
+
+/** Align import field resolution with module API: saved overrides + missing schema base fields. */
+function mergeSavedFieldsWithBase(baseFields, savedFields) {
+  if (!Array.isArray(savedFields) || savedFields.length === 0) {
+    return Array.isArray(baseFields) ? [...baseFields] : [];
+  }
+  const seen = new Set(
+    savedFields.map((field) => String(field?.key || '').trim().toLowerCase()).filter(Boolean)
+  );
+  const merged = [...savedFields];
+  for (const baseField of baseFields || []) {
+    const key = String(baseField?.key || '').trim();
+    if (!key) continue;
+    if (!seen.has(key.toLowerCase())) {
+      merged.push(baseField);
+    }
+  }
+  return merged;
 }
 
 async function loadModuleFields(organizationId, definitionKey) {
   const moduleLower = String(definitionKey || '').toLowerCase();
   if (!moduleLower) return [];
 
-  let fields = [];
+  const baseFields = getBaseFieldsForKey(moduleLower) || [];
+  let savedFields = [];
+
   const tenant = await ModuleDefinition.findOne({
     organizationId,
     $or: [{ key: moduleLower }, { moduleKey: moduleLower }],
   })
     .select('fields')
     .lean();
-  if (tenant?.fields?.length) {
-    fields = tenant.fields;
+
+  if (Array.isArray(tenant?.fields) && tenant.fields.length > 0) {
+    savedFields = tenant.fields;
   } else {
     const platform = await ModuleDefinition.findOne({
-      appKey: 'SALES',
+      appKey: resolvePlatformAppKey(moduleLower),
       moduleKey: moduleLower,
       $or: [{ organizationId: null }, { organizationId: { $exists: false } }],
     })
       .select('fields')
       .lean();
-    fields = platform?.fields || [];
+    if (Array.isArray(platform?.fields) && platform.fields.length > 0) {
+      savedFields = platform.fields;
+    }
   }
+
+  let fields = mergeSavedFieldsWithBase(baseFields, savedFields);
 
   if (moduleLower === 'people') {
     fields = normalizePeopleModuleFields(fields);
   }
 
-  return fields.filter((f) => isImportableField(f, moduleLower));
+  return fields.filter((field) => isImportableField(field, moduleLower));
 }
 
 /**
@@ -109,5 +143,8 @@ module.exports = {
   loadModuleFields,
   getImportableFieldsForModule,
   getImportableFieldKeySet,
+  mergeSavedFieldsWithBase,
+  resolvePlatformAppKey,
+  isImportableField,
   IMPORT_MODULE_TO_DEFINITION_KEY,
 };

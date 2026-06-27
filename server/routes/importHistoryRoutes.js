@@ -9,6 +9,7 @@ const { lazySalesInitialization } = require('../middleware/lazySalesInitializati
 const { requireSalesApp } = require('../middleware/requireSalesAppMiddleware');
 const {
   getImportHistory,
+  getImportHistoryListMeta,
   getImportById,
   getImportStats,
   deleteImportHistory,
@@ -41,6 +42,7 @@ router.delete('/mapping-templates/:id', checkPermission('imports', 'delete'), de
 router.post('/mapping-templates/:id/apply', checkPermission('imports', 'view'), applyImportMappingTemplate);
 
 // Import history routes
+router.get('/meta', checkPermission('imports', 'view'), getImportHistoryListMeta);
 router.get('/', checkPermission('imports', 'view'), getImportHistory);
 router.get('/stats/summary', checkPermission('imports', 'view'), getImportStats);
 router.get('/:id', checkPermission('imports', 'view'), getImportById);

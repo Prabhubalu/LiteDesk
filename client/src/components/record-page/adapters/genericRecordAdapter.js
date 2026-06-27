@@ -16,7 +16,7 @@ import {
   CurrencyDollarIcon,
   ClockIcon
 } from '@heroicons/vue/24/outline';
-import { getKeyFields, getFieldDisplayLabel } from '@/utils/fieldDisplay';
+import { getKeyFields, getFieldDisplayLabel, stripHtmlForDetailDisplay } from '@/utils/fieldDisplay';
 import { getGlobalSystemFieldKeys } from '@/platform/fields/fieldCapabilityEngine';
 import { getDefaultTagChipClass } from '@/components/record-page/composables/useRecordTags';
 import { shouldHideDetailField, shouldHideRecordPaneDetailField } from '@/components/record-page/fieldVisibilityGuards';
@@ -493,6 +493,15 @@ export function createGenericRecordAdapter(opts = {}) {
           displayValue = formatObjectIdForDisplay(idStr);
         }
       }
+      const isRichTextField =
+        String(field?.dataType || '').toLowerCase().includes('rich') ||
+        String(field?.dataType || '').toLowerCase().includes('text-area') ||
+        String(field?.dataType || '').toLowerCase().includes('textarea') ||
+        normalizedFieldKey === 'description' ||
+        normalizedFieldKey === 'body';
+      if (displayValue != null && displayValue !== '') {
+        displayValue = stripHtmlForDetailDisplay(displayValue, field || { key: fieldKey });
+      }
       const isTags = fieldType === 'tags';
       const registryMk = normalizeModuleKeyForRegistry(moduleKeyStr);
       let engineAllowsEdit = true;
@@ -531,6 +540,8 @@ export function createGenericRecordAdapter(opts = {}) {
         value: fieldKey === 'tags' ? (Array.isArray(rawValue) ? rawValue : (rawValue != null && rawValue !== '' ? [].concat(rawValue) : [])) : rawValue,
         displayValue: displayValue == null || String(displayValue).trim() === '' ? '' : String(displayValue),
         type: fieldType,
+        multiline: isRichTextField || undefined,
+        rows: isRichTextField ? (Number(field?.rows) || 3) : undefined,
         options,
         recordPath: recordPathForEntity,
         canEdit,

@@ -83,6 +83,26 @@
     "message": "Module field",
     "description": "Import mapping table header"
   },
+  "importDefaultValueHeader": {
+    "message": "Default value",
+    "description": "Import mapping table header for CSV override value"
+  },
+  "importDefaultValuePlaceholder": {
+    "message": "Override CSV value",
+    "description": "Placeholder for import default value text input"
+  },
+  "importDefaultValueNone": {
+    "message": "None",
+    "description": "Empty option for import default picklist value"
+  },
+  "importDefaultValueMultiPicklistPlaceholder": {
+    "message": "Option 1, Option 2",
+    "description": "Placeholder for multi-picklist import default value"
+  },
+  "importDefaultValueUnsupportedHint": {
+    "message": "Default values are not supported for this field type",
+    "description": "Tooltip for unsupported import default value field types"
+  },
   "importDuplicateFieldsHint": {
     "message": "Select one or more fields. A row is a duplicate when all selected fields match an existing record or an earlier row in the file.",
     "description": "Hint below duplicate field checklist"
@@ -799,7 +819,48 @@
     "message": "Scan again"
   },
   "importRequiredMappingHint": {
-    "message": "Map at least one column to continue."
+    "message": "Map all required fields (marked with *) to continue."
+  },
+  "importRequiredFieldsLegend": {
+    "message": "Required fields are marked with * in the dropdown."
+  },
+  "importRequiredFieldsList": {
+    "message": "Required fields: {fields}"
+  },
+  "importUnmappedRequiredFields": {
+    "message": "Map these required fields to continue: {fields}"
+  },
+  "importAddColumnForField": {
+    "message": "Add column for {field}",
+    "description": "Create a generated import column mapped to a required field"
+  },
+  "importVirtualColumnLabel": {
+    "message": "Default: {field}",
+    "description": "Label for a generated import column"
+  },
+  "importVirtualColumnHint": {
+    "message": "Generated column — uses the default value for every row",
+    "description": "Hint under generated import column name"
+  },
+  "importVirtualColumnMissingDefault": {
+    "message": "Set a default value for generated columns: {fields}",
+    "description": "Validation when generated column has no default value"
+  },
+  "importRemoveVirtualColumn": {
+    "message": "Remove generated column",
+    "description": "Remove generated import column button title"
+  },
+  "importRequiredFieldsFoundInCsv": {
+    "message": "Required fields found in your CSV: {fields}",
+    "description": "Banner listing required fields detected in uploaded CSV headers"
+  },
+  "importRequiredFieldCsvMatch": {
+    "message": "{field} (column \"{column}\")",
+    "description": "Single required field match in CSV headers"
+  },
+  "importRequiredFieldsNotInCsv": {
+    "message": "Not found in CSV: {fields}. Add a generated column or map an existing column.",
+    "description": "Banner listing required fields missing from CSV headers"
   },
   "universalImportModalStepHint": {
     "message": "Choose where your data should go. You can upload your CSV file in the next step."

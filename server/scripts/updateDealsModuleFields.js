@@ -237,7 +237,7 @@ const baseFields = [
   })
 ];
 
-const quickCreateDefault = ['name', 'type', 'pipeline', 'stage', 'ownerId', 'accountId', 'amount', 'expectedCloseDate', 'probability'];
+const quickCreateDefault = ['name', 'type', 'pipeline', 'stage', 'ownerId', 'accountId', 'amount', 'expectedCloseDate', 'probability', 'status'];
 
 const defaultDealRelationships = Object.freeze([
   { name: 'Related Projects', type: 'one_to_many', isLookup: false, targetModuleKey: 'projects', relationshipKey: 'deal_projects' },

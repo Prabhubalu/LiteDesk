@@ -191,8 +191,22 @@ const deleteImportHistory = async (req, res) => {
 // @access  Private
 const getImportedRecords = getImportedRecordsPaginated;
 
+const getImportHistoryListMeta = async (req, res) => {
+  try {
+    const { buildImportsListQuery } = require('../utils/listQueryBuilders/importsListQuery');
+    const { fetchListMeta, sendListMetaResponse } = require('../utils/listMetaService');
+    const query = buildImportsListQuery(req);
+    const meta = await fetchListMeta(ImportHistory, query, { updatedAtField: 'createdAt' });
+    sendListMetaResponse(res, meta);
+  } catch (error) {
+    console.error('[getImportHistoryListMeta] error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch import list meta' });
+  }
+};
+
 module.exports = {
   getImportHistory,
+  getImportHistoryListMeta,
   getImportById,
   getImportStats,
   deleteImportHistory,

@@ -33,7 +33,7 @@ const PeopleSchema = new Schema({
 
   // System fields
   createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-  assignedTo: { type: Schema.Types.ObjectId, ref: 'User', required: false, index: true }, // Default: optional (can be configured by admin)
+  assignedTo: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   legacyContactId: { type: Schema.Types.ObjectId, index: true },
 
   // Core — system-managed creation channel (set server-side only)

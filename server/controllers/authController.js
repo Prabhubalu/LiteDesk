@@ -653,6 +653,7 @@ exports.loginUser = async (req, res) => {
                 && String(p.roleId) === String(portalSession.activeExternalRoleId)
         ) || null;
 
+        const { buildTrialStatusSnapshot } = require('../services/trialExtensionService');
         const sessionPayload = await buildAuthenticatedSessionResponse(orgUser, organizationForLogin, {
             activeExternalRoleId: portalSession?.activeExternalRoleId || null,
             requiresPortalSelection: portalSession?.requiresPortalSelection === true,
@@ -664,6 +665,7 @@ exports.loginUser = async (req, res) => {
                 userAgent: req.get('user-agent') || null
             }
         });
+        sessionPayload.trial = buildTrialStatusSnapshot(organizationForLogin);
 
         res.json(sessionPayload);
         

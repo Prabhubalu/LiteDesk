@@ -1371,6 +1371,13 @@
             </div>
           </div>
         </template>
+        <template #tab-details>
+          <RecordDetailsTabPanel
+            :record="task"
+            :adapter="taskDetailsPaneAdapter"
+            :context="taskDetailsPaneContext"
+          />
+        </template>
         <template #tab-integrations>
           <div class="flex flex-col h-full">
             <!-- Integrations header -->
@@ -1636,9 +1643,16 @@ import {
 import { useTaskSections } from '@/components/record-page/composables/useTaskSections';
 import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
 import { useTaskSectionDataProviders } from '@/components/record-page/composables/useTaskSectionDataProviders';
+import { createGenericRecordAdapter } from '@/components/record-page/adapters/genericRecordAdapter';
+import RecordDetailsTabPanel from '@/components/record-page/RecordDetailsTabPanel.vue';
+import { resolveFieldContext } from '@/utils/fieldContextFilter';
 import { useRecordLoading } from '@/components/record-page/composables/useRecordLoading';
 import { useRecordHeaderActions } from '@/components/record-page/composables/useRecordHeaderActions';
 import { useRecordPageLifecycle } from '@/components/record-page/composables/useRecordPageLifecycle';
+import {
+  extractRecordUpdatedAtMs,
+  recordRecordDetailFingerprint,
+} from '@/utils/recordDetailFreshness';
 import { useStickyTitleRow } from '@/components/record-page/composables/useStickyTitleRow';
 import RecordPageTitleRow from '@/components/record-page/RecordPageTitleRow.vue';
 import EditableTitle from '@/components/record-page/EditableTitle.vue';
@@ -1696,7 +1710,8 @@ import {
   EnvelopeIcon,
   DocumentTextIcon,
   CurrencyDollarIcon,
-  DocumentDuplicateIcon
+  DocumentDuplicateIcon,
+  Bars3BottomLeftIcon
 } from '@heroicons/vue/24/outline';
 import {
   StarIcon as StarIconSolid,
@@ -1708,6 +1723,7 @@ import DateCell from '@/components/common/table/DateCell.vue';
 import { getKeyFields } from '@/utils/fieldDisplay';
 import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import DatePicker from '@/components/common/DatePicker.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
@@ -3225,8 +3241,45 @@ const rightPaneTabs = computed(() => {
   if (showRecordDocumentsTab.value) {
     tabs.push({ id: 'documents', name: t('records.genericTabDocuments'), icon: DocumentDuplicateIcon });
   }
-  tabs.push({ id: 'integrations', name: t('records.genericIntegrations'), icon: PuzzlePieceIcon });
+  tabs.push(
+    { id: 'details', name: t('records.detailsTitle'), icon: Bars3BottomLeftIcon },
+    { id: 'integrations', name: t('records.genericIntegrations'), icon: PuzzlePieceIcon }
+  );
   return tabs;
+});
+
+const taskDetailsPaneContext = computed(() => ({
+  expandedLeftSection: '',
+  module: 'task',
+  moduleKey: 'tasks',
+  openTab,
+  fieldContext: resolveFieldContext(route.path, route.query),
+  hideHeader: true
+}));
+
+const taskDetailsPaneAdapter = computed(() => {
+  if (!task.value?._id || !taskModuleDefinition.value) return null;
+  return createGenericRecordAdapter({
+    sectionLabels: createRecordSectionLabels(t),
+    formatDate: (d) =>
+      (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
+    moduleDefinition: taskModuleDefinition.value,
+    canEditDetails: () => canEditTask.value,
+    saveDetailField: (fieldKey, value) => handleFieldSave(fieldKey, value),
+    getEntityOptions: (fieldKey) => {
+      const key = String(fieldKey || '').toLowerCase().trim();
+      if (
+        key === 'assignedto' ||
+        key === 'ownerid' ||
+        key === 'createdby' ||
+        key === 'updatedby' ||
+        key === 'modifiedby'
+      ) {
+        return users.value;
+      }
+      return [];
+    }
+  });
 });
 
 const contextRelatedGroups = computed(() => {
@@ -3409,7 +3462,7 @@ const resolveRelatedToDisplayName = async () => {
   }
 };
 
-const fetchTask = async () => {
+const fetchTask = async (options = {}) => {
   const id = effectiveTaskId.value;
   if (!id) return;
   await runWithLoading(async () => {
@@ -3417,6 +3470,9 @@ const fetchTask = async () => {
     if (!response?.success) return;
 
     task.value = response.data;
+    recordRecordDetailFingerprint('tasks', effectiveTaskId.value, '', {
+      updatedAtMs: extractRecordUpdatedAtMs(task.value),
+    });
     await Promise.all([
       fetchRelatedRecords(),
       fetchActivityEvents(),
@@ -3425,53 +3481,52 @@ const fetchTask = async () => {
       fetchTaskNavigationIds()
     ]);
     await resolveRelatedToDisplayName();
-  }, 'Failed to load task');
+  }, 'Failed to load task', options);
 };
+
+const TASK_RELATIONSHIP_CONTEXTS = [
+  { appKey: 'platform', moduleKey: 'tasks' },
+  { appKey: 'sales', moduleKey: 'tasks' },
+  { appKey: 'crm', moduleKey: 'tasks' }
+];
+
+async function fetchTaskRelationshipBundle(appKey, moduleKey, recordId) {
+  const [linksRes, contextRes] = await Promise.all([
+    apiClient.get('/relationships/links', {
+      params: { appKey, moduleKey, recordId }
+    }).catch(() => null),
+    apiClient.get('/relationships/record-context', {
+      params: { appKey, moduleKey, recordId }
+    }).catch(() => null)
+  ]);
+
+  const links = linksRes?.success && Array.isArray(linksRes.data) ? linksRes.data : [];
+  const contextRelationships = contextRes?.success && Array.isArray(contextRes.data?.relationships)
+    ? contextRes.data.relationships
+    : [];
+
+  return { links, contextRelationships };
+}
 
 const fetchRelatedRecords = async () => {
   if (!task.value) return;
   try {
-    const contextCandidates = [
-      { appKey: 'platform', moduleKey: 'tasks' },
-      { appKey: 'sales', moduleKey: 'tasks' },
-      { appKey: 'crm', moduleKey: 'tasks' }
-    ];
+    const recordId = task.value._id;
+    let links = [];
+    let contextRelationships = [];
 
-    const linkResponses = await Promise.all(
-      contextCandidates.map(candidate =>
-        apiClient.get('/relationships/links', {
-          params: {
-            appKey: candidate.appKey,
-            moduleKey: candidate.moduleKey,
-            recordId: task.value._id
-          }
-        }).catch(() => null)
-      )
-    );
-
-    const links = linkResponses.flatMap((response) => (
-      response?.success && Array.isArray(response.data)
-        ? response.data
-        : []
-    ));
-
-    const contextResponses = await Promise.all(
-      contextCandidates.map(candidate =>
-        apiClient.get('/relationships/record-context', {
-          params: {
-            appKey: candidate.appKey,
-            moduleKey: candidate.moduleKey,
-            recordId: task.value._id
-          }
-        }).catch(() => null)
-      )
-    );
-
-    const contextRelationships = contextResponses.flatMap((response) => (
-      response?.success && Array.isArray(response.data?.relationships)
-        ? response.data.relationships
-        : []
-    ));
+    for (const candidate of TASK_RELATIONSHIP_CONTEXTS) {
+      const bundle = await fetchTaskRelationshipBundle(
+        candidate.appKey,
+        candidate.moduleKey,
+        recordId
+      );
+      links = links.concat(bundle.links);
+      contextRelationships = contextRelationships.concat(bundle.contextRelationships);
+      if (bundle.links.length > 0 || bundle.contextRelationships.length > 0) {
+        break;
+      }
+    }
 
     const toRow = (record) => {
       const id = record?.recordId || record?.id || record?._id;
@@ -3924,19 +3979,7 @@ const normalizePriorityOption = (option) => {
 
 const fetchTaskLifecycleFieldOptions = async () => {
   try {
-    const response = await apiClient.get('/modules');
-    const modules = Array.isArray(response)
-      ? response
-      : Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response?.data?.data)
-          ? response.data.data
-          : Array.isArray(response?.modules)
-            ? response.modules
-            : Array.isArray(response?.data?.modules)
-              ? response.data.modules
-              : [];
-    const tasksModule = modules.find(module => String(module?.key || '').toLowerCase() === 'tasks');
+    const tasksModule = await fetchModuleDefinitionCached('tasks');
     taskModuleDefinition.value = tasksModule || null;
     const taskFields = Array.isArray(tasksModule?.fields) ? tasksModule.fields : [];
 
@@ -5757,6 +5800,10 @@ useRecordPageLifecycle({
   recordId: effectiveTaskId,
   embed: () => props.embed,
   routePrefix: '/tasks',
+  freshness: {
+    moduleKey: 'tasks',
+    getUpdatedAtMs: () => extractRecordUpdatedAtMs(task.value),
+  },
   fetchRecord: fetchTask,
   embedRecordIdSource: () => props.taskId,
   contentReadySources: [() => activityEvents.value, () => emailThreads.value],

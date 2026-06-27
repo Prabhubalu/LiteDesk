@@ -1,0 +1,144 @@
+'use strict';
+
+/**
+ * MVP component types for the Content & Document Platform (C0 contract).
+ * Extended in C1+ as renderers add support.
+ */
+
+const CONTENT_COMPONENT_TYPES = Object.freeze({
+  PAGE: 'Page',
+  SECTION: 'Section',
+  CONTAINER: 'Container',
+  GRID: 'Grid',
+  FLEX: 'Flex',
+  ROW: 'Row',
+  COLUMN: 'Column',
+  DIVIDER: 'Divider',
+  SPACER: 'Spacer',
+  PAGE_BREAK: 'PageBreak',
+  HEADING: 'Heading',
+  PARAGRAPH: 'Paragraph',
+  RICH_TEXT: 'RichText',
+  LIST: 'List',
+  LINK: 'Link',
+  IMAGE: 'Image',
+  LOGO: 'Logo',
+  ICON: 'Icon',
+  QR_CODE: 'QrCode',
+  BARCODE: 'Barcode',
+  SIGNATURE: 'Signature',
+  MERGE_TAG: 'MergeTag',
+  VARIABLE: 'Variable',
+  FORMULA: 'Formula',
+  TABLE: 'Table',
+  LINE_ITEM: 'LineItem',
+  REPEATER: 'Repeater',
+  RELATED_RECORDS: 'RelatedRecords',
+  TOTALS: 'Totals',
+  TAX_SUMMARY: 'TaxSummary',
+  ADDRESS_BLOCK: 'AddressBlock',
+  CONTACT_CARD: 'ContactCard',
+  ORGANIZATION_BLOCK: 'OrganizationBlock',
+  BUTTON: 'Button',
+  SOCIAL_ICONS: 'SocialIcons',
+  HEADER: 'Header',
+  FOOTER: 'Footer',
+  PAGE_NUMBER: 'PageNumber',
+  WATERMARK: 'Watermark',
+  CONDITIONAL_BLOCK: 'ConditionalBlock',
+  LOOP: 'Loop',
+  HTML: 'Html'
+});
+
+const CONTENT_COMPONENT_TYPE_SET = new Set(Object.values(CONTENT_COMPONENT_TYPES));
+
+const CONTENT_ROOT_COMPONENT_TYPES = new Set([
+  CONTENT_COMPONENT_TYPES.PAGE
+]);
+
+const CONTENT_COMPONENT_CATEGORIES = Object.freeze({
+  layout: [
+    CONTENT_COMPONENT_TYPES.SECTION,
+    CONTENT_COMPONENT_TYPES.CONTAINER,
+    CONTENT_COMPONENT_TYPES.ROW,
+    CONTENT_COMPONENT_TYPES.COLUMN,
+    CONTENT_COMPONENT_TYPES.DIVIDER,
+    CONTENT_COMPONENT_TYPES.SPACER,
+    CONTENT_COMPONENT_TYPES.PAGE_BREAK
+  ],
+  typography: [
+    CONTENT_COMPONENT_TYPES.HEADING,
+    CONTENT_COMPONENT_TYPES.PARAGRAPH,
+    CONTENT_COMPONENT_TYPES.RICH_TEXT,
+    CONTENT_COMPONENT_TYPES.LIST,
+    CONTENT_COMPONENT_TYPES.LINK
+  ],
+  media: [
+    CONTENT_COMPONENT_TYPES.IMAGE,
+    CONTENT_COMPONENT_TYPES.LOGO,
+    CONTENT_COMPONENT_TYPES.ICON,
+    CONTENT_COMPONENT_TYPES.QR_CODE,
+    CONTENT_COMPONENT_TYPES.BARCODE,
+    CONTENT_COMPONENT_TYPES.SIGNATURE
+  ],
+  data: [
+    CONTENT_COMPONENT_TYPES.MERGE_TAG,
+    CONTENT_COMPONENT_TYPES.VARIABLE,
+    CONTENT_COMPONENT_TYPES.FORMULA
+  ],
+  collections: [
+    CONTENT_COMPONENT_TYPES.TABLE,
+    CONTENT_COMPONENT_TYPES.REPEATER,
+    CONTENT_COMPONENT_TYPES.LINE_ITEM,
+    CONTENT_COMPONENT_TYPES.RELATED_RECORDS
+  ],
+  financial: [
+    CONTENT_COMPONENT_TYPES.TOTALS,
+    CONTENT_COMPONENT_TYPES.TAX_SUMMARY
+  ],
+  crm: [
+    CONTENT_COMPONENT_TYPES.ADDRESS_BLOCK,
+    CONTENT_COMPONENT_TYPES.CONTACT_CARD,
+    CONTENT_COMPONENT_TYPES.ORGANIZATION_BLOCK
+  ],
+  interactive: [
+    CONTENT_COMPONENT_TYPES.BUTTON,
+    CONTENT_COMPONENT_TYPES.SOCIAL_ICONS
+  ],
+  print: [
+    CONTENT_COMPONENT_TYPES.HEADER,
+    CONTENT_COMPONENT_TYPES.FOOTER,
+    CONTENT_COMPONENT_TYPES.PAGE_NUMBER,
+    CONTENT_COMPONENT_TYPES.WATERMARK
+  ],
+  logic: [
+    CONTENT_COMPONENT_TYPES.CONDITIONAL_BLOCK,
+    CONTENT_COMPONENT_TYPES.LOOP,
+    CONTENT_COMPONENT_TYPES.HTML
+  ]
+});
+
+/**
+ * @param {string} type
+ * @returns {boolean}
+ */
+function isRegisteredContentComponentType(type) {
+  return CONTENT_COMPONENT_TYPE_SET.has(String(type || '').trim());
+}
+
+/**
+ * @param {string} type
+ * @returns {boolean}
+ */
+function isRootContentComponentType(type) {
+  return CONTENT_ROOT_COMPONENT_TYPES.has(String(type || '').trim());
+}
+
+module.exports = {
+  CONTENT_COMPONENT_TYPES,
+  CONTENT_COMPONENT_TYPE_SET,
+  CONTENT_ROOT_COMPONENT_TYPES,
+  CONTENT_COMPONENT_CATEGORIES,
+  isRegisteredContentComponentType,
+  isRootContentComponentType
+};

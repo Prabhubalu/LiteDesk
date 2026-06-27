@@ -53,7 +53,7 @@ const TargetSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   targetTypeKey: { type: String, required: true, trim: true, lowercase: true },
   metricKind: { type: String, enum: METRIC_KINDS, default: 'count' },
-  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
+  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   teamId: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', default: null },
   sourceModules: { type: [SourceModuleSchema], default: [] },
   contributionRules: { type: [ContributionRuleSchema], default: [] },

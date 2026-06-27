@@ -300,6 +300,12 @@
               <ArrowDownTrayIcon class="h-4 w-4" aria-hidden="true" />
               {{ t('import.importDownloadTemplate') }}
             </button>
+            <p
+              v-if="requiredImportFields.length"
+              class="text-xs text-gray-500 dark:text-gray-400"
+            >
+              {{ t('import.importRequiredFieldsList', { fields: requiredImportFieldNames }) }}
+            </p>
           </div>
 
           <!-- Step 2: Map fields -->
@@ -489,42 +495,134 @@
               {{ t('import.importAutoMappedCount', { count: autoMappedCount }) }}
             </p>
             <p v-if="fieldsLoading" class="text-sm text-gray-500">{{ t('import.importFieldsLoading') }}</p>
+            <p
+              v-else-if="requiredImportFields.length"
+              class="text-xs text-gray-500 dark:text-gray-400"
+            >
+              {{ t('import.importRequiredFieldsLegend') }}
+            </p>
+            <div
+              v-if="unmappedRequiredImportFields.length"
+              class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-800/60 dark:bg-amber-900/20 dark:text-amber-200"
+              role="status"
+            >
+              <p>
+                {{ t('import.importUnmappedRequiredFields', {
+                  fields: unmappedRequiredImportFields.map((field) => field.displayLabel).join(', '),
+                }) }}
+              </p>
+              <div class="mt-2 flex flex-wrap gap-2">
+                <button
+                  v-for="field in unmappedRequiredImportFields"
+                  :key="`add-col-${field.value}`"
+                  type="button"
+                  class="rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-xs font-medium text-amber-900 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100 dark:hover:bg-amber-900/40"
+                  @click="addVirtualColumnForField(field.value)"
+                >
+                  {{ t('import.importAddColumnForField', { field: field.displayLabel }) }}
+                </button>
+              </div>
+            </div>
+            <div
+              v-if="detectedRequiredFieldsInCsv.length"
+              class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:border-emerald-800/60 dark:bg-emerald-900/20 dark:text-emerald-200"
+              role="status"
+            >
+              {{ t('import.importRequiredFieldsFoundInCsv', {
+                fields: detectedRequiredFieldsInCsv
+                  .map((entry) => t('import.importRequiredFieldCsvMatch', {
+                    field: entry.field.displayLabel,
+                    column: entry.csvHeader,
+                  }))
+                  .join(', '),
+              }) }}
+            </div>
+            <div
+              v-if="requiredFieldsNotInCsv.length"
+              class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900 dark:border-blue-800/60 dark:bg-blue-900/20 dark:text-blue-200"
+              role="status"
+            >
+              {{ t('import.importRequiredFieldsNotInCsv', {
+                fields: requiredFieldsNotInCsv.map((entry) => entry.field.displayLabel).join(', '),
+              }) }}
+            </div>
+            <div
+              v-if="virtualColumnsMissingDefault.length"
+              class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-800/60 dark:bg-amber-900/20 dark:text-amber-200"
+              role="status"
+            >
+              {{ t('import.importVirtualColumnMissingDefault', {
+                fields: virtualColumnsMissingDefault
+                  .map((column) => importFieldLabel(fieldMapping[column.key]))
+                  .join(', '),
+              }) }}
+            </div>
 
             <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
               <table class="w-full table-fixed text-sm">
                 <colgroup>
-                  <col class="w-[42%]">
-                  <col class="w-[58%]">
+                  <col class="w-[30%]">
+                  <col class="w-[35%]">
+                  <col class="w-[35%]">
                 </colgroup>
                 <thead class="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
                   <tr>
                     <th scope="col" class="px-3 py-2">{{ t('import.importCsvColumnHeader') }}</th>
                     <th scope="col" class="px-3 py-2">{{ t('import.importModuleFieldHeader') }}</th>
+                    <th scope="col" class="px-3 py-2">{{ t('import.importDefaultValueHeader') }}</th>
                   </tr>
                 </thead>
               </table>
               <div class="custom-scrollbar max-h-[min(58vh,560px)] overflow-y-auto">
                 <table class="w-full table-fixed text-sm">
                   <colgroup>
-                    <col class="w-[42%]">
-                    <col class="w-[58%]">
+                    <col class="w-[30%]">
+                    <col class="w-[35%]">
+                    <col class="w-[35%]">
                   </colgroup>
                   <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                    <tr v-for="header in csvHeaders" :key="header" class="bg-white dark:bg-gray-900">
+                    <tr
+                      v-for="header in allMappingHeaders"
+                      :key="header"
+                      :class="isVirtualImportColumn(header)
+                        ? 'bg-indigo-50/40 dark:bg-indigo-950/20'
+                        : 'bg-white dark:bg-gray-900'"
+                    >
                       <td class="px-3 py-2 align-top">
-                        <p class="font-medium text-gray-900 dark:text-white">{{ header }}</p>
-                        <p
-                          v-if="preview[0]?.[header]"
-                          class="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400"
-                        >
-                          {{ preview[0][header] }}
-                        </p>
+                        <div class="flex items-start justify-between gap-2">
+                          <div class="min-w-0">
+                            <p class="font-medium text-gray-900 dark:text-white">
+                              {{ getMappingColumnLabel(header) }}
+                            </p>
+                            <p
+                              v-if="isVirtualImportColumn(header)"
+                              class="mt-0.5 text-xs text-indigo-600 dark:text-indigo-300"
+                            >
+                              {{ t('import.importVirtualColumnHint') }}
+                            </p>
+                            <p
+                              v-else-if="preview[0]?.[header]"
+                              class="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400"
+                            >
+                              {{ preview[0][header] }}
+                            </p>
+                          </div>
+                          <button
+                            v-if="isVirtualImportColumn(header)"
+                            type="button"
+                            class="shrink-0 rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                            :title="t('import.importRemoveVirtualColumn')"
+                            @click="removeVirtualColumn(header)"
+                          >
+                            <XMarkIcon class="h-4 w-4" aria-hidden="true" />
+                          </button>
+                        </div>
                       </td>
                       <td class="px-3 py-2 align-top">
                         <HeadlessSelect
                           :model-value="fieldMapping[header]"
-                          :option-groups="fieldOptionGroups.length ? fieldOptionGroups : undefined"
-                          :options="fieldOptionGroups.length ? [] : availableFields"
+                          :option-groups="displayFieldOptionGroups.length ? displayFieldOptionGroups : undefined"
+                          :options="displayFieldOptionGroups.length ? [] : availableFields.map((field) => ({ ...field, label: field.displayLabel }))"
                           allow-empty
                           :empty-label="`⊘ ${t('import.cSVImportModalSkipField')}`"
                           teleport
@@ -532,6 +630,14 @@
                           button-class="!w-full !px-3 !py-2 !text-sm !bg-white dark:!bg-gray-950 border border-gray-300 dark:border-gray-600 rounded-lg !shadow-none"
                           options-class="z-[10050]"
                           @update:model-value="(value) => setFieldMapping(header, value)"
+                        />
+                      </td>
+                      <td class="px-3 py-2 align-top">
+                        <ImportFieldDefaultValueInput
+                          :field="fieldsByKey[fieldMapping[header]]"
+                          :model-value="fieldDefaultValues[header]"
+                          :disabled="fieldsLoading || !fieldMapping[header]"
+                          @update:model-value="(value) => setFieldDefaultValue(header, value)"
                         />
                       </td>
                     </tr>
@@ -1008,6 +1114,7 @@ import {
 import { CheckIcon } from '@heroicons/vue/24/solid';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import ImportFieldDefaultValueInput from '@/components/import/ImportFieldDefaultValueInput.vue';
 import { useImportModuleFields } from '@/composables/useImportModuleFields';
 import { downloadImportTemplate, formatImportFileSize } from '@/utils/importTemplateUtils';
 import {
@@ -1023,6 +1130,7 @@ import {
   buildColumnRulesFromFieldMapping,
   buildFieldMappingSnapshot,
   importModuleForEntityType,
+  normalizeImportFieldToken,
 } from '@/utils/importMappingTemplate';
 import { useAuthStore } from '@/stores/auth';
 import { ref, reactive, computed, watch, toRef, onMounted, onBeforeUnmount, nextTick } from 'vue';
@@ -1032,6 +1140,7 @@ const authStore = useAuthStore();
 
 const IMPORT_MAX_ROWS = Number(import.meta.env.VITE_IMPORT_MAX_ROWS || 1000000);
 const DISPLAYED_IMPORT_ERROR_LIMIT = 100;
+const VIRTUAL_COLUMN_PREFIX = '__import_virtual__:';
 
 const props = defineProps({
   entityType: {
@@ -1058,7 +1167,9 @@ const activeImportsStore = useActiveImportsStore();
 
 const {
   availableFields,
-  fieldOptionGroups,
+  requiredImportFields,
+  displayFieldOptionGroups,
+  fieldsByKey,
   loading: fieldsLoading,
 } = useImportModuleFields(toRef(props, 'entityType'));
 
@@ -1075,6 +1186,8 @@ const csvHeaders = ref([]);
 const preview = ref([]);
 const totalRows = ref(0);
 const fieldMapping = reactive({});
+const fieldDefaultValues = reactive({});
+const virtualColumns = ref([]);
 const isDragOver = ref(false);
 const bannerError = ref('');
 const showDiscardConfirm = ref(false);
@@ -1210,8 +1323,108 @@ function captureAppliedTemplateContext(template) {
 }
 
 function importFieldLabel(fieldKey) {
-  return availableFields.value.find((f) => f.value === fieldKey)?.label || fieldKey;
+  const field = availableFields.value.find((f) => f.value === fieldKey);
+  return field?.displayLabel || field?.label || fieldKey;
 }
+
+function getCsvOnlyFieldMapping() {
+  const mapping = {};
+  for (const header of csvHeaders.value) {
+    const target = fieldMapping[header];
+    if (target) mapping[header] = target;
+  }
+  return mapping;
+}
+
+const mappedFieldValues = computed(() =>
+  new Set(Object.values(fieldMapping).filter(Boolean))
+);
+
+const unmappedRequiredImportFields = computed(() =>
+  requiredImportFields.value.filter((field) => !mappedFieldValues.value.has(field.value))
+);
+
+function headerMatchesImportField(header, field) {
+  const hNorm = normalizeImportFieldToken(header);
+  if (!hNorm) return false;
+  const keyNorm = normalizeImportFieldToken(field.value);
+  const labelNorm = normalizeImportFieldToken(field.label);
+  return hNorm === keyNorm || hNorm === labelNorm;
+}
+
+function findCsvHeaderForField(field) {
+  return csvHeaders.value.find((header) => headerMatchesImportField(header, field)) || null;
+}
+
+const requiredFieldCsvDetection = computed(() =>
+  requiredImportFields.value.map((field) => ({
+    field,
+    csvHeader: findCsvHeaderForField(field),
+  }))
+);
+
+const detectedRequiredFieldsInCsv = computed(() =>
+  requiredFieldCsvDetection.value.filter((entry) => entry.csvHeader)
+);
+
+const requiredFieldsNotInCsv = computed(() =>
+  requiredFieldCsvDetection.value.filter(
+    (entry) => !entry.csvHeader && !mappedFieldValues.value.has(entry.field.value)
+  )
+);
+
+const allMappingHeaders = computed(() => [
+  ...csvHeaders.value,
+  ...virtualColumns.value.map((column) => column.key),
+]);
+
+const virtualColumnsMissingDefault = computed(() =>
+  virtualColumns.value.filter((column) => {
+    const mappedField = fieldMapping[column.key];
+    if (!mappedField) return false;
+    const value = fieldDefaultValues[column.key];
+    return value === '' || value === null || value === undefined;
+  })
+);
+
+function isVirtualImportColumn(header) {
+  return String(header || '').startsWith(VIRTUAL_COLUMN_PREFIX);
+}
+
+function getMappingColumnLabel(header) {
+  const virtual = virtualColumns.value.find((column) => column.key === header);
+  return virtual?.label || header;
+}
+
+function addVirtualColumnForField(fieldKey) {
+  if (!fieldKey) return;
+  const alreadyMapped = Object.values(fieldMapping).includes(fieldKey);
+  if (alreadyMapped) return;
+
+  const seq = virtualColumns.value.length + 1;
+  const key = `${VIRTUAL_COLUMN_PREFIX}${seq}_${fieldKey}`;
+  virtualColumns.value.push({
+    key,
+    label: t('import.importVirtualColumnLabel', { field: importFieldLabel(fieldKey) }),
+    targetFieldKey: fieldKey,
+  });
+  fieldMapping[key] = fieldKey;
+  fieldDefaultValues[key] = '';
+}
+
+function removeVirtualColumn(key) {
+  virtualColumns.value = virtualColumns.value.filter((column) => column.key !== key);
+  delete fieldMapping[key];
+  delete fieldDefaultValues[key];
+}
+
+function clearVirtualColumns() {
+  virtualColumns.value = [];
+}
+
+const requiredImportFieldNames = computed(() =>
+  requiredImportFields.value.map((field) => field.displayLabel).join(', ')
+);
 
 async function loadMappingTemplates() {
   const module = importModuleKey.value;
@@ -1232,11 +1445,42 @@ async function loadMappingTemplates() {
 }
 
 function mergeFieldMappingResult(nextMapping) {
+  const preservedVirtual = virtualColumns.value.map((column) => ({
+    key: column.key,
+    label: column.label,
+    targetFieldKey: column.targetFieldKey,
+    mapping: fieldMapping[column.key],
+    defaultValue: fieldDefaultValues[column.key],
+  }));
+
   Object.keys(fieldMapping).forEach((k) => delete fieldMapping[k]);
+  Object.keys(fieldDefaultValues).forEach((k) => delete fieldDefaultValues[k]);
   for (const header of csvHeaders.value) {
     fieldMapping[header] = nextMapping[header] ?? '';
+    fieldDefaultValues[header] = '';
+  }
+  virtualColumns.value = preservedVirtual.map((entry) => ({
+    key: entry.key,
+    label: entry.label,
+    targetFieldKey: entry.targetFieldKey,
+  }));
+  for (const column of preservedVirtual) {
+    fieldMapping[column.key] = column.mapping ?? column.targetFieldKey ?? '';
+    fieldDefaultValues[column.key] = column.defaultValue ?? '';
   }
   autoMappedCount.value = csvHeaders.value.filter((h) => !!fieldMapping[h]).length;
+}
+
+function buildFieldDefaultValuesPayload() {
+  const payload = {};
+  for (const header of allMappingHeaders.value) {
+    const mappedField = fieldMapping[header];
+    const value = fieldDefaultValues[header];
+    if (!mappedField) continue;
+    if (value === '' || value === null || value === undefined) continue;
+    payload[header] = value;
+  }
+  return payload;
 }
 
 function applyDuplicatePolicyFromTemplate(policy) {
@@ -1354,7 +1598,7 @@ async function updateAppliedTemplate() {
   if (!id || !canSaveMappingTemplate.value) return;
 
   const allowedKeys = new Set(availableFields.value.map((f) => f.value));
-  const columnRules = buildColumnRulesFromFieldMapping(fieldMapping, allowedKeys);
+  const columnRules = buildColumnRulesFromFieldMapping(getCsvOnlyFieldMapping(), allowedKeys);
   if (!columnRules.length) {
     showBannerError(t('import.savedMappingNoMappedFields'));
     return;
@@ -1399,7 +1643,7 @@ async function submitSaveMappingTemplate() {
   if (!module) return;
 
   const allowedKeys = new Set(availableFields.value.map((f) => f.value));
-  const columnRules = buildColumnRulesFromFieldMapping(fieldMapping, allowedKeys);
+  const columnRules = buildColumnRulesFromFieldMapping(getCsvOnlyFieldMapping(), allowedKeys);
   if (!columnRules.length) {
     saveTemplateError.value = t('import.savedMappingNoMappedFields');
     return;
@@ -1538,14 +1782,30 @@ const importResultSummary = computed(() => {
 });
 
 function setFieldMapping(header, value) {
+  if (fieldMapping[header] !== value) {
+    fieldDefaultValues[header] = '';
+  }
   if (value) {
-    for (const otherHeader of csvHeaders.value) {
+    for (const otherHeader of allMappingHeaders.value) {
       if (otherHeader !== header && fieldMapping[otherHeader] === value) {
         fieldMapping[otherHeader] = '';
+        fieldDefaultValues[otherHeader] = '';
       }
     }
   }
   fieldMapping[header] = value;
+
+  if (isVirtualImportColumn(header) && value) {
+    const column = virtualColumns.value.find((entry) => entry.key === header);
+    if (column) {
+      column.targetFieldKey = value;
+      column.label = t('import.importVirtualColumnLabel', { field: importFieldLabel(value) });
+    }
+  }
+}
+
+function setFieldDefaultValue(header, value) {
+  fieldDefaultValues[header] = value;
 }
 
 const updateExisting = ref(false);
@@ -1886,7 +2146,7 @@ const duplicateCheckableFields = computed(() => {
   const extraFields = availableFields.value
     .filter((field) => mapped.has(field.value) && !presetValues.has(field.value))
     .map((field) => ({
-      label: field.label,
+      label: field.displayLabel,
       value: field.value,
       description: t('import.importDupDescMappedField'),
       recommended: false,
@@ -1907,7 +2167,11 @@ const canProceed = computed(() => {
   if (step.value === 0) {
     return (csvData.value || stagingId.value) && csvHeaders.value.length > 0 && !stagingUploading.value;
   }
-  if (step.value === 1) return Object.values(fieldMapping).some(v => v);
+  if (step.value === 1) {
+    if (!Object.values(fieldMapping).some((v) => v)) return false;
+    if (virtualColumnsMissingDefault.value.length > 0) return false;
+    return unmappedRequiredImportFields.value.length === 0;
+  }
   if (step.value === 2) {
     // If checking duplicates, must have fields selected and data checked
     if (shouldCheckDuplicates.value) {
@@ -2061,6 +2325,7 @@ function applyAutoFieldMappingOnly() {
   const fields = availableFields.value;
   if (!csvHeaders.value.length || !fields.length) {
     Object.keys(fieldMapping).forEach((k) => delete fieldMapping[k]);
+    Object.keys(fieldDefaultValues).forEach((k) => delete fieldDefaultValues[k]);
     autoMappedCount.value = 0;
     return;
   }
@@ -2121,6 +2386,8 @@ const clearFile = () => {
   autoMappedCount.value = 0;
   bannerError.value = '';
   Object.keys(fieldMapping).forEach((k) => delete fieldMapping[k]);
+  Object.keys(fieldDefaultValues).forEach((k) => delete fieldDefaultValues[k]);
+  clearVirtualColumns();
   clearTemplateAssociation();
 };
 
@@ -2238,6 +2505,7 @@ const checkDuplicates = async () => {
     
     const response = await apiClient.post(endpoint, {
       fieldMapping: fieldMapping,
+      fieldDefaultValues: buildFieldDefaultValuesPayload(),
       checkFields: duplicateCheckFields.value,
       ...(stagingId.value
         ? { stagingId: stagingId.value }
@@ -2297,6 +2565,7 @@ const performImport = async () => {
 
     const config = {
       fieldMapping: fieldMapping,
+      fieldDefaultValues: buildFieldDefaultValuesPayload(),
       duplicateAction: resolvedDuplicateAction,
       fileName: fileName.value,
       shouldCheckDuplicates: importWithDuplicateCheck,

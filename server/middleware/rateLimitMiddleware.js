@@ -23,18 +23,76 @@ const parsePositiveInteger = (value, fallback) => {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
-const RATE_LIMIT_WINDOW_MS = parsePositiveInteger(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000);
-const GENERAL_API_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
-    process.env.GENERAL_API_RATE_LIMIT_MAX_REQUESTS ?? process.env.RATE_LIMIT_MAX_REQUESTS,
-    1000
+const ONE_MINUTE_MS = 60 * 1000;
+const ONE_HOUR_MS = 60 * 60 * 1000;
+const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
+
+const RATE_LIMIT_WINDOW_MS = parsePositiveInteger(process.env.RATE_LIMIT_WINDOW_MS, ONE_MINUTE_MS);
+const AUTHENTICATED_API_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
+    process.env.AUTHENTICATED_API_RATE_LIMIT_MAX_REQUESTS
+        ?? process.env.GENERAL_API_RATE_LIMIT_MAX_REQUESTS
+        ?? process.env.RATE_LIMIT_MAX_REQUESTS,
+    300
+);
+const ANONYMOUS_API_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
+    process.env.ANONYMOUS_API_RATE_LIMIT_MAX_REQUESTS,
+    60
+);
+const ORGANIZATION_SETTINGS_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
+    process.env.ORGANIZATION_SETTINGS_RATE_LIMIT_WINDOW_MS,
+    FIFTEEN_MINUTES_MS
 );
 const ORGANIZATION_SETTINGS_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
     process.env.ORGANIZATION_SETTINGS_RATE_LIMIT_MAX_REQUESTS,
     600
 );
+const SESSION_BOOTSTRAP_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
+    process.env.SESSION_BOOTSTRAP_RATE_LIMIT_WINDOW_MS,
+    FIFTEEN_MINUTES_MS
+);
 const SESSION_BOOTSTRAP_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
     process.env.SESSION_BOOTSTRAP_RATE_LIMIT_MAX_REQUESTS,
     600
+);
+const SEARCH_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
+    process.env.SEARCH_RATE_LIMIT_WINDOW_MS,
+    ONE_MINUTE_MS
+);
+const SEARCH_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
+    process.env.SEARCH_RATE_LIMIT_MAX_REQUESTS,
+    60
+);
+const FILE_UPLOAD_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
+    process.env.FILE_UPLOAD_RATE_LIMIT_WINDOW_MS,
+    ONE_HOUR_MS
+);
+const FILE_UPLOAD_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
+    process.env.FILE_UPLOAD_RATE_LIMIT_MAX_REQUESTS,
+    20
+);
+const EXPORT_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
+    process.env.EXPORT_RATE_LIMIT_WINDOW_MS,
+    ONE_HOUR_MS
+);
+const EXPORT_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
+    process.env.EXPORT_RATE_LIMIT_MAX_REQUESTS,
+    5
+);
+const IMPORT_CREATION_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
+    process.env.IMPORT_CREATION_RATE_LIMIT_WINDOW_MS,
+    ONE_HOUR_MS
+);
+const IMPORT_CREATION_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
+    process.env.IMPORT_CREATION_RATE_LIMIT_MAX_REQUESTS,
+    10
+);
+const PASSWORD_RESET_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
+    process.env.PASSWORD_RESET_RATE_LIMIT_WINDOW_MS,
+    ONE_HOUR_MS
+);
+const PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
+    process.env.PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS,
+    3
 );
 const AUTH_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
     process.env.AUTH_RATE_LIMIT_WINDOW_MS,
@@ -140,20 +198,89 @@ const getBearerToken = (req) => {
 
 const getClientIp = (req) => req.ip || req.socket?.remoteAddress || 'unknown';
 
-const getRateLimitKey = (req, namespace = 'api') => {
+const getAuthenticatedUserIdFromRequest = (req) => {
+    if (req.user?._id) {
+        return String(req.user._id);
+    }
+
     const token = getBearerToken(req);
-    if (token && process.env.JWT_SECRET) {
-        try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            if (decoded?.id) {
-                return `${namespace}:user:${decoded.id}`;
-            }
-        } catch (_error) {
-            // Invalid tokens fall back to the network identity and are rejected by auth later.
-        }
+    if (!token || !process.env.JWT_SECRET) {
+        return null;
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded?.id ? String(decoded.id) : null;
+    } catch (_error) {
+        // Invalid tokens fall back to the network identity and are rejected by auth later.
+        return null;
+    }
+};
+
+const getRateLimitKey = (req, namespace = 'api') => {
+    const userId = getAuthenticatedUserIdFromRequest(req);
+    if (userId) {
+        return `${namespace}:user:${userId}`;
     }
 
     return `${namespace}:ip:${getClientIp(req)}`;
+};
+
+const resolveGeneralApiMaxRequests = (req) => (
+    getAuthenticatedUserIdFromRequest(req)
+        ? AUTHENTICATED_API_RATE_LIMIT_MAX_REQUESTS
+        : ANONYMOUS_API_RATE_LIMIT_MAX_REQUESTS
+);
+
+const normalizeApiPath = (req) => (req.originalUrl || req.path || '').split('?')[0];
+
+const isSearchPath = (req) => {
+    if (req.method !== 'GET') {
+        return false;
+    }
+
+    const pathOnly = normalizeApiPath(req);
+    return pathOnly === '/api/search'
+        || pathOnly.startsWith('/api/search/')
+        || pathOnly.includes('/search');
+};
+
+const isFileUploadPath = (req) => {
+    if (req.method !== 'POST') {
+        return false;
+    }
+
+    const pathOnly = normalizeApiPath(req);
+    if (pathOnly === '/api/upload' || pathOnly === '/api/csv/staging') {
+        return true;
+    }
+    if (pathOnly === '/api/communications/upload' || pathOnly === '/api/communications/upload-oci') {
+        return true;
+    }
+    if (pathOnly === '/api/documents/upload' || pathOnly === '/api/content-fonts/upload') {
+        return true;
+    }
+    if (/^\/api\/documents\/[^/]+\/versions$/.test(pathOnly)) {
+        return true;
+    }
+
+    return /^\/api\/files\/[^/]+\/[^/]+$/.test(pathOnly);
+};
+
+const isExportPath = (req) => {
+    if (req.method !== 'GET' && req.method !== 'POST') {
+        return false;
+    }
+
+    return normalizeApiPath(req).includes('/export');
+};
+
+const isImportCreationPath = (req) => {
+    if (req.method !== 'POST') {
+        return false;
+    }
+
+    return /^\/api\/csv\/import\//.test(normalizeApiPath(req));
 };
 
 const logRateLimitHit = (limiterName, req) => {
@@ -203,7 +330,7 @@ const shouldBypassRateLimit = (req, { logContext } = {}) => {
 // General API rate limiter
 const apiLimiter = rateLimit({
     windowMs: RATE_LIMIT_WINDOW_MS,
-    max: GENERAL_API_RATE_LIMIT_MAX_REQUESTS,
+    max: (req) => resolveGeneralApiMaxRequests(req),
     ...rateLimitHeadersAndStore('api', RATE_LIMIT_WINDOW_MS, GENERAL_RATE_LIMIT_REDIS_FAILURE_MODE),
     message: {
         error: 'Too many requests from this IP, please try again later.',
@@ -233,7 +360,11 @@ const apiLimiter = rateLimit({
             isAuthPath(req) ||
             isOrganizationSettingsReadPath(req) ||
             isNotificationReadPath(req) ||
-            isSessionBootstrapReadPath(req)
+            isSessionBootstrapReadPath(req) ||
+            isSearchPath(req) ||
+            isFileUploadPath(req) ||
+            isExportPath(req) ||
+            isImportCreationPath(req)
         );
     }
 });
@@ -274,9 +405,9 @@ const authLimiter = rateLimit({
 
 // Strict rate limiter for password reset
 const passwordResetLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 3, // Limit to 3 password reset attempts per hour
-    ...rateLimitHeadersAndStore('password-reset', 60 * 60 * 1000, AUTH_RATE_LIMIT_REDIS_FAILURE_MODE),
+    windowMs: PASSWORD_RESET_RATE_LIMIT_WINDOW_MS,
+    max: PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS,
+    ...rateLimitHeadersAndStore('password-reset', PASSWORD_RESET_RATE_LIMIT_WINDOW_MS, AUTH_RATE_LIMIT_REDIS_FAILURE_MODE),
     message: {
         error: 'Too many password reset attempts, please try again later.',
         code: 'PASSWORD_RESET_LIMIT_EXCEEDED'
@@ -339,12 +470,97 @@ const sensitiveOperationLimiter = rateLimit({
     }
 });
 
+const createUserScopedRouteLimiter = ({
+    limiterName,
+    windowMs,
+    max,
+    failureMode,
+    message,
+    code,
+}) => rateLimit({
+    windowMs,
+    max,
+    ...rateLimitHeadersAndStore(limiterName, windowMs, failureMode),
+    message: {
+        error: message,
+        code,
+    },
+    keyGenerator: (req) => getRateLimitKey(req, limiterName),
+    handler: makeRateLimitHandler(limiterName, {
+        error: message,
+        code,
+    }),
+    skip: (req) => {
+        if (SECURITY_DISABLED) {
+            return true;
+        }
+        return shouldBypassRateLimit(req);
+    },
+});
+
+const searchLimiter = createUserScopedRouteLimiter({
+    limiterName: 'search',
+    windowMs: SEARCH_RATE_LIMIT_WINDOW_MS,
+    max: SEARCH_RATE_LIMIT_MAX_REQUESTS,
+    failureMode: ROUTE_RATE_LIMIT_REDIS_FAILURE_MODE,
+    message: 'Too many search requests, please try again later.',
+    code: 'SEARCH_RATE_LIMIT_EXCEEDED',
+});
+
+const fileUploadLimiter = createUserScopedRouteLimiter({
+    limiterName: 'file-upload',
+    windowMs: FILE_UPLOAD_RATE_LIMIT_WINDOW_MS,
+    max: FILE_UPLOAD_RATE_LIMIT_MAX_REQUESTS,
+    failureMode: SENSITIVE_RATE_LIMIT_REDIS_FAILURE_MODE,
+    message: 'Too many file uploads, please try again later.',
+    code: 'FILE_UPLOAD_RATE_LIMIT_EXCEEDED',
+});
+
+const exportLimiter = createUserScopedRouteLimiter({
+    limiterName: 'export',
+    windowMs: EXPORT_RATE_LIMIT_WINDOW_MS,
+    max: EXPORT_RATE_LIMIT_MAX_REQUESTS,
+    failureMode: SENSITIVE_RATE_LIMIT_REDIS_FAILURE_MODE,
+    message: 'Too many export requests, please try again later.',
+    code: 'EXPORT_RATE_LIMIT_EXCEEDED',
+});
+
+const importCreationLimiter = createUserScopedRouteLimiter({
+    limiterName: 'import-creation',
+    windowMs: IMPORT_CREATION_RATE_LIMIT_WINDOW_MS,
+    max: IMPORT_CREATION_RATE_LIMIT_MAX_REQUESTS,
+    failureMode: SENSITIVE_RATE_LIMIT_REDIS_FAILURE_MODE,
+    message: 'Too many import jobs created, please try again later.',
+    code: 'IMPORT_CREATION_RATE_LIMIT_EXCEEDED',
+});
+
+const routeRateLimitMiddleware = (req, res, next) => {
+    if (SECURITY_DISABLED || shouldBypassRateLimit(req)) {
+        return next();
+    }
+
+    if (isSearchPath(req)) {
+        return searchLimiter(req, res, next);
+    }
+    if (isFileUploadPath(req)) {
+        return fileUploadLimiter(req, res, next);
+    }
+    if (isExportPath(req)) {
+        return exportLimiter(req, res, next);
+    }
+    if (isImportCreationPath(req)) {
+        return importCreationLimiter(req, res, next);
+    }
+
+    return next();
+};
+
 // Relaxed limiter for session bootstrap reads (UI shell, profile, core modules).
 // Mounted after auth on dedicated routes so page loads do not exhaust the general API bucket.
 const sessionBootstrapLimiter = rateLimit({
-    windowMs: RATE_LIMIT_WINDOW_MS,
+    windowMs: SESSION_BOOTSTRAP_RATE_LIMIT_WINDOW_MS,
     max: SESSION_BOOTSTRAP_RATE_LIMIT_MAX_REQUESTS,
-    ...rateLimitHeadersAndStore('session-bootstrap', RATE_LIMIT_WINDOW_MS, ROUTE_RATE_LIMIT_REDIS_FAILURE_MODE),
+    ...rateLimitHeadersAndStore('session-bootstrap', SESSION_BOOTSTRAP_RATE_LIMIT_WINDOW_MS, ROUTE_RATE_LIMIT_REDIS_FAILURE_MODE),
     message: {
         error: 'Too many session bootstrap requests, please try again later.',
         code: 'SESSION_BOOTSTRAP_RATE_LIMIT_EXCEEDED'
@@ -371,9 +587,9 @@ const sessionBootstrapLimiter = rateLimit({
 // Mounted after auth, so req.user is available and tenants/users do not share
 // one bucket just because a proxy presents the same network IP.
 const organizationSettingsLimiter = rateLimit({
-    windowMs: RATE_LIMIT_WINDOW_MS,
+    windowMs: ORGANIZATION_SETTINGS_RATE_LIMIT_WINDOW_MS,
     max: ORGANIZATION_SETTINGS_RATE_LIMIT_MAX_REQUESTS,
-    ...rateLimitHeadersAndStore('organization-settings', RATE_LIMIT_WINDOW_MS, ROUTE_RATE_LIMIT_REDIS_FAILURE_MODE),
+    ...rateLimitHeadersAndStore('organization-settings', ORGANIZATION_SETTINGS_RATE_LIMIT_WINDOW_MS, ROUTE_RATE_LIMIT_REDIS_FAILURE_MODE),
     message: {
         error: 'Too many organization settings requests, please try again later.',
         code: 'ORGANIZATION_SETTINGS_RATE_LIMIT_EXCEEDED'
@@ -545,6 +761,11 @@ module.exports = {
     passwordResetLimiter,
     registrationLimiter,
     sensitiveOperationLimiter,
+    searchLimiter,
+    fileUploadLimiter,
+    exportLimiter,
+    importCreationLimiter,
+    routeRateLimitMiddleware,
     sessionBootstrapLimiter,
     organizationSettingsLimiter,
     mailroomPublicIngestLimiter,

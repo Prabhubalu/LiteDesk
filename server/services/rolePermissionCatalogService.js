@@ -53,6 +53,7 @@ const LEGACY_FLAT_STORAGE_KEYS = new Set([
   'webforms',
   'items',
   'documents',
+  'templates',
   'reports',
   'users',
   'settings',
@@ -153,6 +154,7 @@ function buildActionsFromDefinition(moduleDefPermissions = {}, moduleKey, kind) 
   if (kind === 'reports') return [...DEFAULT_ACTIONS_BY_KIND.reports];
   if (moduleKey === 'imports') return ['read', 'create', 'delete'];
   if (moduleKey === 'documents') return ['read', 'create', 'update', 'delete'];
+  if (moduleKey === 'templates') return ['read', 'create', 'update', 'delete', 'publish', 'archive', 'render'];
 
   const actions = [];
   const p = moduleDefPermissions || {};
@@ -256,6 +258,18 @@ async function resolveAppDisplayName(appKey) {
 
 function buildPlatformAdminCatalogEntries() {
   const entries = [
+    {
+      key: 'templates',
+      moduleKey: 'templates',
+      label: 'Templates',
+      description: 'Content and document templates',
+      kind: 'crud',
+      scope: 'platform',
+      appKey: null,
+      order: 198,
+      hasScope: false,
+      supportsViewAll: false
+    },
     {
       key: 'imports',
       moduleKey: 'imports',
@@ -525,6 +539,7 @@ async function loadModuleDefinitionsForPairs(pairs) {
 }
 
 const PLATFORM_ADMIN_MODULE_KEYS = new Set([
+  'templates',
   'imports',
   'reports',
   'users',
@@ -740,8 +755,12 @@ async function loadModuleFieldCatalog(organizationId, moduleKey, options = {}) {
  */
 async function buildRolePermissionCatalog(organizationId) {
   try {
-    const { ensurePlatformDocumentsModuleDefinition } = require('../controllers/settingsController');
+    const {
+      ensurePlatformDocumentsModuleDefinition,
+      ensurePlatformTemplatesModuleDefinition
+    } = require('../controllers/settingsController');
     await ensurePlatformDocumentsModuleDefinition();
+    await ensurePlatformTemplatesModuleDefinition();
   } catch (_) { /* non-fatal */ }
 
   const organization = await Organization.findById(organizationId).lean();

@@ -716,6 +716,133 @@ export function groupOrganizationFields(fieldKeys: string[]): {
   return { coreIdentity, participation, system };
 }
 
+/** ObjectId reference fields on CRM organizations — empty values must be null, not "". */
+export const ORGANIZATION_REFERENCE_FIELD_KEYS = [
+  'assignedTo',
+  'primaryContact',
+  'accountManager',
+  'vendorContract',
+  'logisticsPartner',
+] as const;
+
+/** System / audit fields that must never be sent on organization create/update. */
+export const ORGANIZATION_SYSTEM_NON_EDITABLE_FIELD_KEYS = [
+  'importHistoryId',
+  'derivedStatus',
+  'createdBy',
+  'modifiedBy',
+  'createdAt',
+  'updatedAt',
+  '_id',
+  '__v',
+  'organizationId',
+  'deletedAt',
+  'deletedBy',
+  'deletionReason',
+  'activityLogs',
+  'source',
+] as const;
+
+/**
+ * Tenant/workspace infrastructure fields on Organization documents.
+ * CRM business org create/update must never send these (aligned with mapOrganizationToSurface).
+ */
+export const ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS = [
+  'isTenant',
+  'slug',
+  'subscription',
+  'limits',
+  'enabledApps',
+  'enabledModules',
+  'moduleOverrides',
+  'crmInitialized',
+  'settings',
+  'dataRegion',
+  'security',
+  'integrations',
+  'database',
+  'billing',
+  'activityLogs',
+  'legacyOrganizationId',
+  'descriptionVersions',
+] as const;
+
+const ORGANIZATION_TENANT_PLATFORM_ROOTS_NORM = ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS.map((key) =>
+  normalizeFieldKeyForMetadataLookup(key)
+);
+
+/** Tenant/workspace fields and nested paths under them (e.g. subscription.stripeCustomerId). */
+export function isTenantPlatformOrganizationFieldKey(fieldKey: string): boolean {
+  const normalized = normalizeFieldKeyForMetadataLookup(String(fieldKey || ''));
+  for (const root of ORGANIZATION_TENANT_PLATFORM_ROOTS_NORM) {
+    if (normalized === root) return true;
+    if (normalized.startsWith(`${root}.`)) return true;
+    if (normalized.startsWith(`${root}[`)) return true;
+  }
+  return false;
+}
+
+/** Remove tenant/platform fields from organization create/update payloads. */
+export function stripOrganizationTenantPlatformFields(
+  payload: Record<string, unknown> | null | undefined
+): Record<string, unknown> {
+  if (!payload || typeof payload !== 'object') return {};
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(payload)) {
+    if (!isTenantPlatformOrganizationFieldKey(key)) {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+function normalizeOrganizationReferenceValue(value: unknown): string | null {
+  if (value == null || value === '') return null;
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    const obj = value as Record<string, unknown>;
+    const id = obj._id ?? obj.id;
+    if (id == null || id === '') return null;
+    return String(id);
+  }
+  return String(value);
+}
+
+/** Sanitize organization edit/create payloads before API submission. */
+export function normalizeOrganizationEditSubmitPayload(
+  payload: Record<string, unknown> | null | undefined,
+  moduleFields?: Array<{ key?: string; dataType?: string }>
+): Record<string, unknown> {
+  const out = stripOrganizationTenantPlatformFields(payload);
+
+  for (const key of ORGANIZATION_SYSTEM_NON_EDITABLE_FIELD_KEYS) {
+    delete out[key];
+  }
+
+  const referenceKeys = new Set<string>(ORGANIZATION_REFERENCE_FIELD_KEYS);
+  for (const field of moduleFields || []) {
+    const key = field?.key;
+    if (!key) continue;
+    const dataType = field.dataType || '';
+    if (dataType === 'Lookup (Relationship)' || dataType === 'Lookup' || dataType === 'User') {
+      referenceKeys.add(key);
+    }
+  }
+
+  for (const key of referenceKeys) {
+    if (!(key in out)) continue;
+    out[key] = normalizeOrganizationReferenceValue(out[key]);
+  }
+
+  return out;
+}
+
+/** Seed edit forms without tenant/system/reference noise from loaded records. */
+export function stripOrganizationRecordForEditForm(
+  record: Record<string, unknown> | null | undefined
+): Record<string, unknown> {
+  return normalizeOrganizationEditSubmitPayload(record);
+}
+
 /**
  * Check if a field should be excluded from Quick Create
  * Based on architecture: only core business fields are eligible

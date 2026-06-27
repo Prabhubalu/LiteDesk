@@ -390,5 +390,9 @@
   "firstTimeDocumentsAction": {
     "message": "Upload a document",
     "description": "First visit CTA for Documents"
+  },
+  "trialBannerUnlimited": {
+    "message": "{days} days left in trial · {used} contacts",
+    "description": "Trial banner when contact limit is unlimited"
   }
 }

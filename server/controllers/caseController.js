@@ -24,6 +24,8 @@ const {
   CASE_PRIORITIES,
   CASE_CHANNELS
 } = require('../constants/caseLifecycle');
+const { buildCasesListQuery } = require('../utils/listQueryBuilders/casesListQuery');
+const { fetchListMeta, sendListMetaResponse } = require('../utils/listMetaService');
 const {
   isValidCaseStatus,
   canTransitionCaseStatus,
@@ -1729,6 +1731,40 @@ exports.getCaseLiveChatSession = async (req, res) => {
   } catch (error) {
     console.error('[caseController] getCaseLiveChatSession error', error);
     return res.status(500).json({ success: false, message: 'Failed to load live chat session summary' });
+  }
+};
+
+exports.getCasesListMeta = async (req, res) => {
+  try {
+    const query = buildCasesListQuery(req);
+    const meta = await fetchListMeta(Case, query);
+    sendListMetaResponse(res, meta);
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    console.error('[caseController.getCasesListMeta] error', error);
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || 'Failed to fetch cases list meta',
+    });
+  }
+};
+
+exports.getCaseRecordMeta = async (req, res) => {
+  try {
+    const caseIdValidation = validateCaseRecordId(req.params.id);
+    if (!caseIdValidation.valid) {
+      return res.status(400).json({ success: false, message: caseIdValidation.error });
+    }
+
+    const { fetchRecordUpdatedAtMeta, sendRecordMetaResponse } = require('../utils/recordMetaService');
+    const meta = await fetchRecordUpdatedAtMeta(Case, {
+      organizationId: req.user.organizationId,
+      recordId: req.params.id,
+    });
+    sendRecordMetaResponse(res, meta);
+  } catch (error) {
+    console.error('[caseController.getCaseRecordMeta] error', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch case record meta' });
   }
 };
 

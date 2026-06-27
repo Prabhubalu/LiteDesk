@@ -17,6 +17,7 @@ const {
   SUPPORTED_MODULES,
 } = require('./importConstants');
 const { validateFieldMappingForImport } = require('./importMappingTemplateService');
+const { sanitizeImportFieldDefaultValues } = require('../../utils/importFieldDefaults');
 
 function assertSupportedModule(module) {
   if (!SUPPORTED_MODULES.includes(module)) {
@@ -65,6 +66,7 @@ function parseImportConfig(body = {}) {
 
   return {
     fieldMapping,
+    fieldDefaultValues: sanitizeImportFieldDefaultValues(body.fieldDefaultValues),
     duplicateAction,
     fileName: body.fileName || 'import.csv',
     shouldCheckDuplicates: body.shouldCheckDuplicates !== false,
@@ -221,6 +223,7 @@ async function submitImportJob({ req, res, module }) {
       },
       metadata: {
         fieldMapping: config.fieldMapping,
+        fieldDefaultValues: config.fieldDefaultValues,
         source: config.stagingId ? 'staging' : (req.file ? 'upload' : 'inline'),
       },
     });
@@ -246,6 +249,7 @@ async function submitImportJob({ req, res, module }) {
         'stats.total': source.totalRows,
         'metadata.csvHeaders': source.headers,
         'metadata.fieldMapping': config.fieldMapping,
+        'metadata.fieldDefaultValues': config.fieldDefaultValues,
         'metadata.totalRows': source.totalRows,
         'metadata.source': source.source,
       },

@@ -76,6 +76,30 @@ async function getScopedUserModel(organization) {
     return User;
 }
 
+async function getScopedRoleModel(organization) {
+    if (organization?.database?.name && organization.database.initialized) {
+        const dbConnectionManager = require('../utils/databaseConnectionManager');
+        const orgDbConnection = await dbConnectionManager.getOrganizationConnection(organization.database.name);
+        return getTenantModel(orgDbConnection, 'Role', Role);
+    }
+    return Role;
+}
+
+async function findOrganizationRoleById(organization, roleId) {
+    if (!roleId || !mongoose.Types.ObjectId.isValid(String(roleId))) {
+        return null;
+    }
+
+    const ScopedRole = await getScopedRoleModel(organization);
+    const orgId = organization._id;
+    let roleDoc = await ScopedRole.findOne({ _id: roleId, organizationId: orgId });
+    if (!roleDoc && organization?.database?.name && organization.database.initialized) {
+        // Older tenant records may omit organizationId; the DB itself is org-scoped.
+        roleDoc = await ScopedRole.findById(roleId);
+    }
+    return roleDoc;
+}
+
 function buildUserScopeQuery(req, organization) {
     // In dedicated tenant DB mode, the DB itself is already organization-scoped.
     // Do not require organizationId match because older converted records may miss it.
@@ -522,7 +546,7 @@ exports.getAddCapabilities = async (req, res) => {
         }
 
         // Get organization with enabledApps
-        const organization = await Organization.findById(user.organizationId);
+        const organization = req.organization || await Organization.findById(user.organizationId);
         if (!organization) {
             return res.status(404).json({
                 success: false,
@@ -781,6 +805,15 @@ exports.inviteUser = async (req, res) => {
             });
         }
 
+        // Get organization for validation (required before RBAC v2 format checks)
+        const organization = req.organization || await Organization.findById(req.user.organizationId);
+        if (!organization) {
+            return res.status(404).json({
+                success: false,
+                message: 'Organization not found'
+            });
+        }
+
         // Determine if using new unified format or legacy format
         const { isRbacV2Enabled } = require('../utils/rbacFeatureFlags');
         const rbacV2 = isRbacV2Enabled(organization);
@@ -803,15 +836,6 @@ exports.inviteUser = async (req, res) => {
                     ? 'roleId is required when RBAC v2 is enabled'
                     : 'Either appAccess array (unified format) or roleId (legacy format) is required',
                 code: rbacV2 ? 'RBAC_V2_ROLE_REQUIRED' : 'MISSING_APP_ACCESS_OR_ROLE'
-            });
-        }
-
-        // Get organization for validation
-        const organization = req.organization || await Organization.findById(req.user.organizationId);
-        if (!organization) {
-            return res.status(404).json({
-                success: false,
-                message: 'Organization not found'
             });
         }
 
@@ -959,8 +983,7 @@ exports.inviteUser = async (req, res) => {
             // For backward compatibility, try to find Sales role for legacy roleId/role fields
             // This allows UI to still send roleId for Sales while using unified format
             if (roleId) {
-                const Role = require('../models/Role');
-                roleDoc = await Role.findById(roleId);
+                roleDoc = await findOrganizationRoleById(organization, roleId);
                 if (roleDoc) {
                     legacyRole = roleDoc.name.toLowerCase();
                     isOwner = roleDoc.name === 'Owner';
@@ -978,9 +1001,8 @@ exports.inviteUser = async (req, res) => {
         // LEGACY FORMAT PROCESSING (Backward Compatibility)
         // ============================================
         else if (isLegacyFormat) {
-            // Fetch the Role document to get role details
-            const Role = require('../models/Role');
-            roleDoc = await Role.findById(roleId);
+            // Fetch the Role document to get role details (tenant DB when org has dedicated DB)
+            roleDoc = await findOrganizationRoleById(organization, roleId);
             
             if (!roleDoc) {
                 return res.status(404).json({
@@ -1252,8 +1274,8 @@ exports.inviteUser = async (req, res) => {
         
         // Increment the role's user count (if roleId provided)
         if (roleId && (!reinviteUser || wasInactive)) {
-            const Role = require('../models/Role');
-            await Role.findByIdAndUpdate(roleId, { $inc: { userCount: 1 } });
+            const ScopedRole = await getScopedRoleModel(organization);
+            await ScopedRole.findByIdAndUpdate(roleId, { $inc: { userCount: 1 } });
         }
 
         let emailSent = false;
@@ -1428,8 +1450,7 @@ exports.updateUser = async (req, res) => {
 
         // Update role if roleId is provided (new dynamic role system)
         if (!user.isOwner && !externalUser && roleId !== undefined && roleId !== user.roleId?.toString()) {
-            const Role = require('../models/Role');
-            const roleDoc = await Role.findById(roleId);
+            const roleDoc = await findOrganizationRoleById(organization, roleId);
             
             if (!roleDoc) {
                 return res.status(404).json({
@@ -1438,18 +1459,20 @@ exports.updateUser = async (req, res) => {
                 });
             }
 
+            const ScopedRole = await getScopedRoleModel(organization);
+
             // Decrement old role's user count
             if (user.roleId) {
-                await Role.findByIdAndUpdate(user.roleId, { $inc: { userCount: -1 } });
+                await ScopedRole.findByIdAndUpdate(user.roleId, { $inc: { userCount: -1 } });
             }
 
             // Update user's role (permission snapshot rebuilt from Role below, after appAccess)
             user.roleId = roleId;
             user.role = roleDoc.name.toLowerCase(); // Update legacy role field
             user.isOwner = roleDoc.name === 'Owner';
-
+            
             // Increment new role's user count
-            await Role.findByIdAndUpdate(roleId, { $inc: { userCount: 1 } });
+            await ScopedRole.findByIdAndUpdate(roleId, { $inc: { userCount: 1 } });
         }
         // Fallback to legacy role update (for backward compatibility)
         else if (!user.isOwner && role !== undefined && role !== user.role) {
@@ -1664,8 +1687,8 @@ exports.deleteUser = async (req, res) => {
 
         // Decrement role's user count if roleId exists
         if (user.roleId) {
-            const Role = require('../models/Role');
-            await Role.findByIdAndUpdate(user.roleId, { $inc: { userCount: -1 } });
+            const ScopedRole = await getScopedRoleModel(organization);
+            await ScopedRole.findByIdAndUpdate(user.roleId, { $inc: { userCount: -1 } });
         }
 
         // Soft delete: just deactivate the user

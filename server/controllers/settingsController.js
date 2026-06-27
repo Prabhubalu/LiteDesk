@@ -69,8 +69,14 @@ const {
     cloneDocumentDefaultRelationships,
     applyDocumentModuleFieldDefaults
 } = require('../constants/documentModuleDefaults');
+const {
+    INITIAL_TEMPLATE_MODULE_FIELDS,
+    INITIAL_TEMPLATE_QUICK_CREATE,
+    applyTemplateModuleFieldDefaults
+} = require('../constants/contentTemplateModuleDefaults');
 const { buildAddonSubscriptionLineItems } = require('../services/subscriptionAddonLineItemsService');
 const { normalizeAddonKey } = require('../constants/addonKeys');
+const { normalizeSubscriptionLimit } = require('../utils/subscriptionLimits');
 
 function applyCommercialUiIconPatch(existing, moduleKey, patch) {
     if (existing && shouldNormalizeCommercialIcon(existing.ui?.icon, moduleKey)) {
@@ -251,6 +257,7 @@ exports.getCoreModules = async (req, res) => {
         await ensurePlatformInvoicesModuleDefinition();
         await ensurePlatformPaymentsModuleDefinition();
         await ensurePlatformDocumentsModuleDefinition();
+        await ensurePlatformTemplatesModuleDefinition();
 
         const organization = await Organization.findById(req.user.organizationId);
         if (!organization) {
@@ -272,7 +279,7 @@ exports.getCoreModules = async (req, res) => {
 
         // Core platform modules with explicit ordering
         // Order: People, Organization, Task, Event, Item, Form (new modules added at the bottom)
-        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents'];
+        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents', 'templates'];
         const coreModuleKeys = [...coreModuleOrder, 'reports']; // reports and any future modules go at the end
 
         // Get all platform-owned modules (appKey: 'platform')
@@ -418,6 +425,9 @@ exports.getCoreModule = async (req, res) => {
         }
         if (String(moduleKey || '').toLowerCase() === 'documents') {
             await ensurePlatformDocumentsModuleDefinition();
+        }
+        if (String(moduleKey || '').toLowerCase() === 'templates') {
+            await ensurePlatformTemplatesModuleDefinition();
         }
 
         const organization = await Organization.findById(req.user.organizationId);
@@ -834,6 +844,105 @@ async function ensurePlatformPaymentsModuleDefinition() {
     });
 }
 
+/** Bootstrap platform templates core module when missing (Settings + sidebar registry path). */
+async function ensurePlatformTemplatesModuleDefinition() {
+    try {
+        const templatesUi = {
+            routeBase: '/templates',
+            icon: 'rectangle-stack',
+            showInSidebar: true,
+            sidebarOrder: 10,
+            createLabel: 'New Template',
+            listLabel: 'Templates',
+            navigationEntity: true,
+            excludeFromApps: true
+        };
+
+        let existing = await ModuleDefinition.findOne({
+            appKey: 'platform',
+            moduleKey: 'templates',
+            organizationId: null
+        })
+            .select('_id ui label pluralLabel fields quickCreate quickCreateLayout')
+            .lean();
+
+        if (!existing) {
+            existing = await ModuleDefinition.findOne({
+                appKey: 'platform',
+                moduleKey: 'templates',
+                organizationId: { $exists: false }
+            })
+                .select('_id ui label pluralLabel fields quickCreate quickCreateLayout')
+                .lean();
+        }
+
+        if (existing) {
+            const patch = {};
+            if (!existing.label) patch.label = 'Template';
+            if (!existing.pluralLabel) patch.pluralLabel = 'Templates';
+            patch.ui = { ...(existing.ui || {}), ...templatesUi };
+            if (!Array.isArray(existing.fields) || existing.fields.length === 0) {
+                patch.fields = applyTemplateModuleFieldDefaults(INITIAL_TEMPLATE_MODULE_FIELDS);
+            }
+            if (!Array.isArray(existing.quickCreate) || existing.quickCreate.length === 0) {
+                patch.quickCreate = [...INITIAL_TEMPLATE_QUICK_CREATE];
+                patch.quickCreateLayout = { version: 1, rows: [] };
+            }
+            if (Object.keys(patch).length) {
+                await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
+            }
+            return;
+        }
+
+        await ModuleDefinition.create({
+            appKey: 'platform',
+            moduleKey: 'templates',
+            key: 'templates',
+            name: 'Templates',
+            organizationId: null,
+            label: 'Template',
+            pluralLabel: 'Templates',
+            entityType: 'CORE',
+            primaryField: 'name',
+            type: 'system',
+            enabled: true,
+            fields: applyTemplateModuleFieldDefaults(INITIAL_TEMPLATE_MODULE_FIELDS),
+            quickCreate: [...INITIAL_TEMPLATE_QUICK_CREATE],
+            quickCreateLayout: { version: 1, rows: [] },
+            peopleConstraints: {
+                allowedTypes: [],
+                required: false
+            },
+            organizationConstraints: {
+                required: false
+            },
+            lifecycle: {
+                statusField: 'status',
+                allowedStatuses: ['draft', 'published', 'archived']
+            },
+            supports: {
+                ownership: true,
+                assignment: false,
+                comments: false,
+                attachments: false,
+                automation: false
+            },
+            permissions: {
+                create: true,
+                edit: true,
+                delete: true,
+                view: true,
+                publish: true,
+                archive: true,
+                render: true
+            },
+            ui: templatesUi
+        });
+    } catch (error) {
+        console.warn('[settings] ensurePlatformTemplatesModuleDefinition failed:', error.message);
+    }
+}
+
 /** Bootstrap platform documents core module when missing (Settings + sidebar registry path). */
 async function ensurePlatformDocumentsModuleDefinition() {
     try {
@@ -940,12 +1049,14 @@ async function ensurePlatformDocumentsModuleDefinition() {
 
 /** Bootstrap platform quote-to-cash core modules when missing (sidebar registry path). */
 exports.ensurePlatformDocumentsModuleDefinition = ensurePlatformDocumentsModuleDefinition;
+exports.ensurePlatformTemplatesModuleDefinition = ensurePlatformTemplatesModuleDefinition;
 exports.ensurePlatformCommercialCoreModules = async () => {
     await ensurePlatformQuotesModuleDefinition();
     await ensurePlatformSalesOrdersModuleDefinition();
     await ensurePlatformInvoicesModuleDefinition();
     await ensurePlatformPaymentsModuleDefinition();
     await ensurePlatformDocumentsModuleDefinition();
+    await ensurePlatformTemplatesModuleDefinition();
 };
 
 // Helper function to get module usage description
@@ -1551,22 +1662,22 @@ exports.getSubscriptions = async (req, res) => {
             const usage = {
                 users: {
                     current: userCount,
-                    limit: organization.limits?.maxUsers || 0
+                    limit: normalizeSubscriptionLimit(organization.limits?.maxUsers)
                 },
                 contacts: {
                     current: contactCount,
-                    limit: organization.limits?.maxContacts || 0
+                    limit: normalizeSubscriptionLimit(organization.limits?.maxContacts)
                 },
                 deals: {
                     current: dealCount,
-                    limit: organization.limits?.maxDeals || 0
+                    limit: normalizeSubscriptionLimit(organization.limits?.maxDeals)
                 }
             };
 
             // App-specific limits
             const limits = {
-                users: organization.limits?.maxUsers || 0,
-                storage: organization.limits?.maxStorageGB || 0
+                users: normalizeSubscriptionLimit(organization.limits?.maxUsers),
+                storage: normalizeSubscriptionLimit(organization.limits?.maxStorageGB)
             };
 
             return {
@@ -1783,32 +1894,32 @@ exports.getSubscription = async (req, res) => {
         const usage = {
             users: {
                 current: userCount,
-                limit: organization.limits?.maxUsers || 0,
+                limit: normalizeSubscriptionLimit(organization.limits?.maxUsers),
                 unit: 'users'
             },
             contacts: {
                 current: contactCount,
-                limit: organization.limits?.maxContacts || 0,
+                limit: normalizeSubscriptionLimit(organization.limits?.maxContacts),
                 unit: 'contacts'
             },
             deals: {
                 current: dealCount,
-                limit: organization.limits?.maxDeals || 0,
+                limit: normalizeSubscriptionLimit(organization.limits?.maxDeals),
                 unit: 'deals'
             },
             storage: {
                 current: 0, // Would come from actual storage tracking
-                limit: organization.limits?.maxStorageGB || 0,
+                limit: normalizeSubscriptionLimit(organization.limits?.maxStorageGB),
                 unit: 'GB'
             }
         };
 
         // Limits
         const limits = {
-            users: organization.limits?.maxUsers || 0,
-            contacts: organization.limits?.maxContacts || 0,
-            deals: organization.limits?.maxDeals || 0,
-            storage: organization.limits?.maxStorageGB || 0
+            users: normalizeSubscriptionLimit(organization.limits?.maxUsers),
+            contacts: normalizeSubscriptionLimit(organization.limits?.maxContacts),
+            deals: normalizeSubscriptionLimit(organization.limits?.maxDeals),
+            storage: normalizeSubscriptionLimit(organization.limits?.maxStorageGB)
         };
 
         const metadata = appMetadata[appKeyUpper] || {};
@@ -3462,6 +3573,95 @@ exports.getExternalUserUsage = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to load external user usage'
+        });
+    }
+};
+
+function canManageTrialExtension(user) {
+    if (!user) return false;
+    if (user.isOwner) return true;
+    const role = String(user.role || '').toLowerCase();
+    if (role === 'admin' || role === 'owner') return true;
+    return Boolean(user.permissions?.settings?.manageBilling);
+}
+
+exports.getTrialStatus = async (req, res) => {
+    try {
+        const organization = await Organization.findById(req.user.organizationId);
+        if (!organization) {
+            return res.status(404).json({
+                success: false,
+                message: 'Organization not found'
+            });
+        }
+
+        const {
+            buildTrialStatusSnapshot,
+            TRIAL_EXTENSION_DAYS
+        } = require('../services/trialExtensionService');
+
+        res.json({
+            success: true,
+            data: {
+                ...buildTrialStatusSnapshot(organization),
+                extensionDays: TRIAL_EXTENSION_DAYS,
+                canExtend: canManageTrialExtension(req.user)
+            }
+        });
+    } catch (error) {
+        console.error('[getTrialStatus] Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to load trial status'
+        });
+    }
+};
+
+exports.extendTrial = async (req, res) => {
+    try {
+        if (!canManageTrialExtension(req.user)) {
+            return res.status(403).json({
+                success: false,
+                code: 'FORBIDDEN',
+                message: 'You do not have permission to extend the trial.'
+            });
+        }
+
+        const { extendOrganizationTrial } = require('../services/trialExtensionService');
+        const result = await extendOrganizationTrial({
+            organizationId: req.user.organizationId,
+            userId: req.user._id,
+            reason: req.body?.reason
+        });
+
+        if (!result.ok) {
+            const statusByCode = {
+                REASON_REQUIRED: 400,
+                NOT_ON_TRIAL: 400,
+                TRIAL_NOT_EXPIRED: 400,
+                EXTENSION_ALREADY_USED: 409
+            };
+            return res.status(statusByCode[result.code] || 400).json({
+                success: false,
+                code: result.code,
+                message: result.message
+            });
+        }
+
+        res.json({
+            success: true,
+            data: {
+                subscription: result.subscription,
+                trialDaysRemaining: result.trialDaysRemaining,
+                trialEndDate: result.trialEndDate
+            },
+            message: 'Trial extended successfully.'
+        });
+    } catch (error) {
+        console.error('[extendTrial] Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to extend trial'
         });
     }
 };

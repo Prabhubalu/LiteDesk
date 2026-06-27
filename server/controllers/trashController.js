@@ -11,68 +11,8 @@
 const deletionService = require('../services/deletionService');
 const TrashSnapshot = require('../models/TrashSnapshot');
 const User = require('../models/User');
-
-/**
- * Build TrashSnapshot list/purge filter from query or body filters.
- * @param {string|import('mongoose').Types.ObjectId} organizationId
- * @param {Object} source
- * @param {{ purgeableOnly?: boolean, retentionExpiringSoon?: boolean }} [options]
- */
-function buildTrashSnapshotFilter(organizationId, source = {}, options = {}) {
-  const {
-    moduleKey,
-    deletedBy,
-    search,
-    deletedFrom,
-    deletedTo
-  } = source;
-
-  const clauses = [{ organizationId }];
-
-  if (moduleKey) clauses.push({ moduleKey });
-  if (deletedBy) clauses.push({ deletedBy });
-
-  if (deletedFrom || deletedTo) {
-    const deletedAt = {};
-    if (deletedFrom) deletedAt.$gte = new Date(deletedFrom);
-    if (deletedTo) {
-      const to = new Date(deletedTo);
-      to.setHours(23, 59, 59, 999);
-      deletedAt.$lte = to;
-    }
-    clauses.push({ deletedAt });
-  }
-
-  if (search && typeof search === 'string' && search.trim().length > 0) {
-    const term = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(term, 'i');
-    clauses.push({
-      $or: [
-        { displayName: regex },
-        { 'snapshot.name': regex },
-        { 'snapshot.title': regex },
-        { 'snapshot.eventName': regex },
-        { 'snapshot.first_name': regex },
-        { 'snapshot.last_name': regex },
-        { 'snapshot.email': regex },
-        { 'snapshot.item_name': regex }
-      ]
-    });
-  }
-
-  if (options.retentionExpiringSoon) {
-    const now = new Date();
-    const sevenDaysFromNow = new Date(now);
-    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-    clauses.push({ retentionExpiresAt: { $gte: now, $lte: sevenDaysFromNow } });
-  }
-
-  if (options.purgeableOnly) {
-    clauses.push({ $or: [{ isLegalHold: { $ne: true } }, { isLegalHold: null }] });
-  }
-
-  return clauses.length === 1 ? clauses[0] : { $and: clauses };
-}
+const { buildTrashSnapshotFilter } = require('../utils/listQueryBuilders/trashListQuery');
+const { fetchListMeta, sendListMetaResponse } = require('../utils/listMetaService');
 
 /**
  * Move record to trash
@@ -234,6 +174,20 @@ exports.purge = async (req, res) => {
  * List trash items
  * GET /api/trash?moduleKey=&deletedBy=&search=&deletedFrom=&deletedTo=&page=1&limit=20&sort=deletedAt|retentionExpiresAt|displayName&order=desc|asc
  */
+exports.listMeta = async (req, res) => {
+  try {
+    const organizationId = req.user.organizationId;
+    const query = buildTrashSnapshotFilter(organizationId, req.query, {
+      retentionExpiringSoon: req.query.sort === 'retentionExpiresAt' && req.query.order === 'asc',
+    });
+    const meta = await fetchListMeta(TrashSnapshot, query, { updatedAtField: 'deletedAt' });
+    sendListMetaResponse(res, meta);
+  } catch (error) {
+    console.error('[trashController.listMeta] error', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch trash list meta' });
+  }
+};
+
 exports.list = async (req, res) => {
   try {
     const { page = 1, limit = 20, sort = 'deletedAt', order = 'desc' } = req.query;

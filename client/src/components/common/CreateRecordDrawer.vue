@@ -190,6 +190,13 @@ import DynamicForm from './DynamicForm.vue';
 import DealRelationshipEditor from '@/components/deals/DealRelationshipEditor.vue';
 import QuoteLinesRecordSection from '@/components/record-page/sections/QuoteLinesRecordSection.vue';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
+import {
+  fetchPeopleListCached,
+  fetchOrganizationsListCached,
+  DEAL_RELATIONSHIP_PEOPLE_PARAMS,
+  DEAL_RELATIONSHIP_ORG_PARAMS,
+} from '@/utils/recordLookupCache';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -209,9 +216,16 @@ import {
   isSystemField,
   normalizeFieldKeyForSystemMatch,
 } from '@/platform/fields/fieldCapabilityEngine';
-import { shouldFilterPayloadByQuickCreate } from '@/utils/quickCreatePayloadFilter';
+import {
+  getQuickCreateAllowedFieldKeys,
+  shouldFilterPayloadByQuickCreate
+} from '@/utils/quickCreatePayloadFilter';
 import { useCreationContext } from '@/utils/creationContext';
 import { getParticipationFields, getCoreIdentityFields, mergePeopleVirtualFieldDefinitions } from '@/platform/fields/peopleFieldModel';
+import {
+  normalizeOrganizationEditSubmitPayload,
+  stripOrganizationRecordForEditForm,
+} from '@/platform/fields/organizationFieldModel';
 import { getFormFieldValue, syncPeopleVirtualFieldKeys, applyVirtualFieldDefault } from '@/utils/getFieldValue';
 import {
   applyCreateOwnerDefaultsToForm,
@@ -281,6 +295,11 @@ const props = defineProps({
   lockedFields: {
     type: Array,
     default: () => [] // Fields that should be readonly/locked (e.g., ['accountId'])
+  },
+  /** When provided (and key matches moduleKey), skips /modules fetch on drawer open. */
+  moduleDefinitionPrefetch: {
+    type: Object,
+    default: null
   },
   quickCreateMode: {
     type: Boolean,
@@ -488,15 +507,20 @@ const effectiveExcludeFields = computed(() => {
 // Fetch module (including Quick Create from Settings) when drawer opens
 async function fetchModuleForDrawer() {
   if (!props.moduleKey) return;
-  moduleOverrideLoading.value = true;
+  const keyLower = (props.moduleKey || '').toLowerCase().trim();
+  const prefetched =
+    props.moduleDefinitionPrefetch &&
+    String(props.moduleDefinitionPrefetch?.key || '').toLowerCase().trim() === keyLower
+      ? props.moduleDefinitionPrefetch
+      : null;
+  if (!prefetched) {
+    moduleOverrideLoading.value = true;
+  }
   moduleOverrideFromSettings.value = null;
   try {
-    const data = await apiClient.get('/modules');
-    const modulesList = Array.isArray(data)
-      ? data
-      : (Array.isArray(data?.data) ? data.data : (Array.isArray(data?.modules) ? data.modules : []));
-    if (!modulesList.length) return;
-    const keyLower = (props.moduleKey || '').toLowerCase().trim();
+    const moduleDefinition = prefetched || (await fetchModuleDefinitionCached(props.moduleKey));
+    if (!moduleDefinition) return;
+    const modulesList = [moduleDefinition];
     const currentPath = String(
       route.path ||
         activeTab.value?.path ||
@@ -1098,7 +1122,9 @@ const initializeForm = (module) => {
     const recordData =
       props.moduleKey === 'cases'
         ? stripCaseRecordForEditForm(props.record)
-        : { ...props.record };
+        : props.moduleKey === 'organizations'
+          ? stripOrganizationRecordForEditForm(props.record)
+          : { ...props.record };
     
     // Handle populated relationships - convert objects to IDs
     Object.keys(recordData).forEach(key => {
@@ -1230,8 +1256,8 @@ watch(() => [props.isOpen, props.moduleKey], async ([open, key]) => {
   }
   try {
     const [peopleRes, orgRes] = await Promise.all([
-      apiClient.get('/people', { params: { limit: 200 } }),
-      apiClient.get('/v2/organization', { params: { limit: 200 } })
+      fetchPeopleListCached(DEAL_RELATIONSHIP_PEOPLE_PARAMS),
+      fetchOrganizationsListCached(DEAL_RELATIONSHIP_ORG_PARAMS),
     ]);
     const normalizeList = (response) => {
       if (Array.isArray(response)) return response;
@@ -1427,10 +1453,11 @@ const handleSubmit = async () => {
     
     const qcList = moduleDefinition.value?.quickCreate;
     if (shouldFilterPayloadByQuickCreate(effectiveQuickCreateMode.value, fullMode.value, qcList)) {
-      const quickCreateKeys = new Set(
-        qcList.map(k => k?.toLowerCase().trim()).filter(Boolean)
+      const allowedFieldKeys = getQuickCreateAllowedFieldKeys(
+        qcList,
+        moduleDefinition.value?.fields
       );
-      
+
       // Fields that are always required by the API (even if not in quickCreate)
       // These are API-level requirements, not user-facing fields
       const apiRequiredFields = new Set([
@@ -1440,25 +1467,24 @@ const handleSubmit = async () => {
         'ownerpersonid',  // May be set from assignedTo mapping
         'assignedto'      // Required by Task API - auto-assigned to current user
       ]);
-      
-      // Filter submitData to only include fields in quickCreate configuration + API required fields
+
+      // Filter submitData to quickCreate + module-required + API-required fields
       const filteredData = {};
       for (const [key, value] of Object.entries(submitData)) {
         const keyLower = key.toLowerCase();
-        // Include if in quickCreate OR if it's an API-required field
-        if (quickCreateKeys.has(keyLower) || apiRequiredFields.has(keyLower)) {
+        if (allowedFieldKeys.has(keyLower) || apiRequiredFields.has(keyLower)) {
           filteredData[key] = value;
         }
       }
-      
+
       drawerDbg('[CreateRecordDrawer] 🔍 Quick Create mode - filtering fields:', {
         before: Object.keys(submitData),
         after: Object.keys(filteredData),
-        quickCreateKeys: Array.from(quickCreateKeys),
+        allowedFieldKeys: Array.from(allowedFieldKeys),
         apiRequiredFields: Array.from(apiRequiredFields),
         filteredOut: Object.keys(submitData).filter(k => {
           const keyLower = k.toLowerCase();
-          return !quickCreateKeys.has(keyLower) && !apiRequiredFields.has(keyLower);
+          return !allowedFieldKeys.has(keyLower) && !apiRequiredFields.has(keyLower);
         })
       });
       
@@ -1662,10 +1688,12 @@ const handleSubmit = async () => {
       });
     }
     
-    // Remove slug field for CRM organizations (not needed - only tenants use slugs)
-    // The backend pre-save hook only generates slugs for tenant organizations
+    // CRM organizations: strip tenant/system fields and normalize lookup refs
     if (props.moduleKey === 'organizations') {
-      delete submitData.slug;
+      submitData = normalizeOrganizationEditSubmitPayload(
+        submitData,
+        moduleDefinition.value?.fields
+      );
     }
 
     // Deal role-based relationships: use dealPeople/dealOrganizations, remove legacy contactId/accountId

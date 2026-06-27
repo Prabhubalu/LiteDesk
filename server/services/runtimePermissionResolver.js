@@ -49,7 +49,7 @@ const {
 } = require('../constants/commercialPlatformParticipation');
 const { isInventoryEnabledForOrg } = require('./inventoryCapabilityService');
 /** Cross-app capabilities that are not owned by a single business app. */
-const CROSS_FUNCTIONAL_MODULES = new Set(['imports', 'documents']);
+const CROSS_FUNCTIONAL_MODULES = new Set(['imports', 'documents', 'templates']);
 
 /** In-memory org context cache for a single request materialization burst */
 const orgContextCache = new Map();

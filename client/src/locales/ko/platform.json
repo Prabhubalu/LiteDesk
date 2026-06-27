@@ -982,5 +982,41 @@
   "platformHomeDocumentsExpiringSoonMany": {
     "message": "{count} documents expiring soon",
     "description": "Platform home documents expiring soon count"
+  },
+  "instanceManagementInstanceStatus": {
+    "message": "Instance Status",
+    "description": "Manage instance modal section title"
+  },
+  "instanceManagementMrr": {
+    "message": "Monthly Recurring Revenue",
+    "description": "Manage instance modal MRR field label"
+  },
+  "instanceManagementTierPaid": {
+    "message": "Paid",
+    "description": "Subscription tier option"
+  },
+  "instanceManagementSaveFailed": {
+    "message": "Failed to save instance changes. Please try again.",
+    "description": "Manage instance save error toast"
+  },
+  "instanceManagementDangerZone": {
+    "message": "Danger Zone",
+    "description": "Manage instance destructive actions section"
+  },
+  "instanceManagementTerminateDescription": {
+    "message": "Permanently mark this instance as terminated. This action cannot be undone.",
+    "description": "Terminate instance warning"
+  },
+  "instanceManagementTerminateInstance": {
+    "message": "Terminate Instance",
+    "description": "Terminate instance button"
+  },
+  "instanceManagementTerminateFailed": {
+    "message": "Failed to terminate instance. Please try again.",
+    "description": "Terminate instance error toast"
+  },
+  "instanceManagementTrialEndHint": {
+    "message": "Updates the instance registry and syncs to the tenant organization.",
+    "description": "Trial end date field helper text"
   }
 }

@@ -440,6 +440,8 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { filterActivitiesForTab } from '@/utils/caseTimeline';
 import apiClient from '@/utils/apiClient';
 import { invalidateRecordContext } from '@/composables/useRecordContext';
+import { resolveRecordDetailRefreshOnActivate } from '@/utils/recordDetailRefreshPolicy';
+import { extractRecordUpdatedAtMs } from '@/utils/recordDetailFreshness';
 
 const props = defineProps({
   embed: { type: Boolean, default: false },
@@ -529,9 +531,16 @@ function onChatUpdated() {
   }, 600);
 }
 
-onActivated(() => {
-  if (effectiveCaseId.value && caseRecord.value) {
-    refreshCaseSilently();
+onActivated(async () => {
+  const id = effectiveCaseId.value;
+  if (!id) return;
+  const decision = await resolveRecordDetailRefreshOnActivate({
+    moduleKey: 'cases',
+    appKey: 'HELPDESK',
+    getUpdatedAtMs: () => extractRecordUpdatedAtMs(caseRecord.value),
+  }, id);
+  if (decision === 'refresh') {
+    await refreshCaseSilently();
   }
 });
 

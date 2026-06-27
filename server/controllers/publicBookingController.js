@@ -6,6 +6,10 @@ const { describeDayAvailability } = require('../services/businessHoursEngine');
 const { getTeamSlotsForDate, loadTeamMembersPublic, pickTeamAssignee } = require('../services/appointmentTeamService');
 const { bookAppointment } = require('../services/appointmentBookingService');
 const { buildManageUrl } = require('../utils/appointmentManageToken');
+const {
+  findPublicBookingConfigBySlug,
+  withPublicBookingTenantContext
+} = require('../services/appointmentBookingPublicService');
 
 function publicConfigPayload(config, host, extras = {}) {
   return {
@@ -36,16 +40,23 @@ function publicConfigPayload(config, host, extras = {}) {
   };
 }
 
-async function resolveConfig(slug) {
-  return AppointmentBookingConfig.findOne({
-    slug: slug.toLowerCase(),
-    enabled: true
-  });
+async function resolvePublicBookingConfig(slug) {
+  const match = await findPublicBookingConfigBySlug(slug);
+  if (!match) return null;
+
+  return withPublicBookingTenantContext(match, () =>
+    AppointmentBookingConfig.findOne({
+      _id: match._id,
+      organizationId: match.organizationId,
+      slug: String(slug).trim().toLowerCase(),
+      enabled: true
+    })
+  );
 }
 
 exports.getPublicPage = async (req, res) => {
   try {
-    const config = await resolveConfig(req.params.slug);
+    const config = await resolvePublicBookingConfig(req.params.slug);
     if (!config) {
       return res.status(404).json({ success: false, message: 'Booking page not found.' });
     }
@@ -85,7 +96,7 @@ exports.getPublicSlots = async (req, res) => {
       return res.status(400).json({ success: false, message: 'date query param required (YYYY-MM-DD)' });
     }
 
-    const config = await resolveConfig(req.params.slug);
+    const config = await resolvePublicBookingConfig(req.params.slug);
     if (!config) {
       return res.status(404).json({ success: false, message: 'Booking page not found.' });
     }
@@ -135,7 +146,7 @@ exports.getPublicSlots = async (req, res) => {
 
 exports.submitBooking = async (req, res) => {
   try {
-    const config = await resolveConfig(req.params.slug);
+    const config = await resolvePublicBookingConfig(req.params.slug);
     if (!config) {
       return res.status(404).json({ success: false, message: 'Booking page not found.' });
     }

@@ -13,6 +13,8 @@ const { getProjection } = require('../utils/moduleProjectionResolver');
 const { resolveCreateType, getTypeFieldName } = require('../utils/appProjectionCreateResolver');
 const { isAuditEventType, AUDIT_EVENT_TYPES } = require('../utils/eventUtils');
 const { APP_KEYS } = require('../constants/appKeys');
+const { buildEventsListQuery } = require('../utils/listQueryBuilders/eventsListQuery');
+const { fetchListMeta, sendListMetaResponse } = require('../utils/listMetaService');
 const { deriveEventActionPermission } = require('../domain/events/eventPermissions');
 const { assignResolvedSource } = require('../services/sourceResolver');
 
@@ -3090,5 +3092,16 @@ exports.cancelEvent = async (req, res) => {
             message: 'Error cancelling event.',
             error: error.message
         });
+    }
+};
+
+exports.getEventsListMeta = async (req, res) => {
+    try {
+        const query = buildEventsListQuery(req);
+        const meta = await fetchListMeta(Event, query, { updatedAtField: 'modifiedTime' });
+        sendListMetaResponse(res, meta);
+    } catch (error) {
+        console.error('[getEventsListMeta] error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch events list meta' });
     }
 };
