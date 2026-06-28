@@ -907,7 +907,7 @@
         v-if="supportsTags && record && showTagPopover"
         ref="tagPopoverRef"
         :style="tagPopoverStyle"
-        class="fixed z-[120] w-[360px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl"
+        :class="['fixed', FLOATING_OVERLAY_Z_CLASS, 'w-[360px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl']"
       >
         <RecordTagPopover
           :record="record"
@@ -925,7 +925,7 @@
         v-if="showCommentReactionPicker"
         ref="commentReactionPickerRef"
         :style="commentReactionPickerStyle"
-        class="fixed z-[120] rounded-xl border border-gray-200 bg-white p-1 shadow-xl dark:border-gray-700 dark:bg-gray-900"
+        :class="['fixed', FLOATING_OVERLAY_Z_CLASS, 'rounded-xl border border-gray-200 bg-white p-1 shadow-xl dark:border-gray-700 dark:bg-gray-900']"
       >
         <emoji-picker
           :class="['comment-reaction-emoji-picker', isDarkTheme ? 'dark' : 'light']"
@@ -940,7 +940,7 @@
         v-if="showCommentReactionTooltip && commentReactionTooltipData"
         ref="commentReactionTooltipRef"
         :class="[
-          'fixed z-[125] rounded-lg bg-slate-950 px-3 py-2 text-white shadow-2xl',
+          'fixed', FLOATING_OVERLAY_Z_CLASS, 'rounded-lg bg-slate-950 px-3 py-2 text-white shadow-2xl',
           getReactionTooltipMode(commentReactionTooltipData) === 'single' ? 'w-[10rem]' : 'w-[17rem]'
         ]"
         :style="commentReactionTooltipStyle"
@@ -1031,6 +1031,7 @@ import RecordHeader from '@/components/record-page/RecordHeader.vue';
 import RecordStateSection from '@/components/record-page/RecordStateSection.vue';
 import RecordPageTitleRow from '@/components/record-page/RecordPageTitleRow.vue';
 import { useStickyTitleRow } from '@/components/record-page/composables/useStickyTitleRow';
+import { FLOATING_OVERLAY_Z_CLASS } from '@/constants/zIndexLayers';
 import SectionStack from '@/components/record-page/sections/SectionStack.vue';
 import AppointmentDetailCard from '@/components/appointments/AppointmentDetailCard.vue';
 import CaseSlaContextBanner from '@/components/helpdesk/CaseSlaContextBanner.vue';
@@ -1131,7 +1132,12 @@ import { toRichContentPayload, isRichDocument, getRichContentHtml } from '@/util
 import { useDocuments } from '@/composables/useDocuments';
 import DocumentEditorPage from '@/components/documents/DocumentEditorPage.vue';
 import ContentVersionHistoryView from '@/components/record-page/ContentVersionHistoryView.vue';
-import { buildContentVersionHistoryList } from '@/utils/contentVersionHistory';
+import {
+  buildContentVersionHistoryList,
+  buildDescriptionActivityDiffHtml,
+  getPlainTextFromHtml,
+  isDescriptionActivityFieldChange
+} from '@/utils/contentVersionHistory';
 import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
 import { useRecordPresence } from '@/composables/useRecordPresence';
 import { resolveFieldContext } from '@/utils/fieldContextFilter';
@@ -2885,12 +2891,24 @@ const activityUi = computed(() => {
       return String(raw ?? '').trim() || 'field';
     },
     getSystemEventFromValue: (event) => {
-      const v = event?.details?.from ?? event?.details?.oldValue ?? event?.payload?.details?.from ?? event?.payload?.details?.oldValue;
-      return v === undefined || v === null || v === '' ? 'Empty' : String(v);
+      const details = event?.details || event?.payload?.details || {};
+      const v = details.from ?? details.oldValue;
+      if (v === undefined || v === null || v === '') return 'Empty';
+      if (isDescriptionActivityFieldChange(event?.action || event?.payload?.action, details)) {
+        const plain = getPlainTextFromHtml(String(v));
+        return plain || 'Empty';
+      }
+      return String(v);
     },
     getSystemEventToValue: (event) => {
-      const v = event?.details?.to ?? event?.details?.newValue ?? event?.payload?.details?.to ?? event?.payload?.details?.newValue;
-      return v === undefined || v === null || v === '' ? 'Empty' : String(v);
+      const details = event?.details || event?.payload?.details || {};
+      const v = details.to ?? details.newValue;
+      if (v === undefined || v === null || v === '') return 'Empty';
+      if (isDescriptionActivityFieldChange(event?.action || event?.payload?.action, details)) {
+        const plain = getPlainTextFromHtml(String(v));
+        return plain || 'Empty';
+      }
+      return String(v);
     },
     getSystemEventMessage: (event) => {
       if (!event) return 'Updated this record';
@@ -3047,14 +3065,19 @@ const activityEvents = computed(() => {
   const recordRef = { module: props.moduleKey, id: String(props.recordId) };
   const events = raw.map((e) => {
     if (e.type === 'system') {
+      const details = e.payload?.details || {};
+      const action = e.payload?.action;
+      const descriptionDiffHtml = isDescriptionActivityFieldChange(action, details)
+        ? buildDescriptionActivityDiffHtml(details.from ?? details.oldValue, details.to ?? details.newValue)
+        : null;
       return normalizeSystemActivityEvent({
         _id: e.id,
-        action: e.payload?.action,
+        action,
         message: e.payload?.message,
-        details: e.payload?.details,
+        details,
         user: e.actorProfile || e.actor,
         timestamp: e.createdAt
-      }, { recordRef });
+      }, { recordRef, descriptionDiffHtml });
     }
     if (e.type === 'comment') {
       const author = e.actorProfile && typeof e.actorProfile === 'object' ? e.actorProfile : e.actor;

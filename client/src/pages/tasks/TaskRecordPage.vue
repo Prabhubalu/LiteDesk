@@ -1397,7 +1397,7 @@
     <div
       v-if="showCommentReactionPicker"
       ref="commentReactionPickerRef"
-      class="fixed z-[110] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
+      :class="['fixed', FLOATING_OVERLAY_Z_CLASS, 'overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800']"
       :style="commentReactionPickerStyle"
     >
       <emoji-picker
@@ -1413,7 +1413,7 @@
       v-if="showCommentReactionTooltip && commentReactionTooltipData"
       ref="commentReactionTooltipRef"
       :class="[
-        'fixed z-[115] rounded-lg bg-slate-950 px-3 py-2 text-white shadow-2xl',
+        'fixed', FLOATING_OVERLAY_Z_CLASS, 'rounded-lg bg-slate-950 px-3 py-2 text-white shadow-2xl',
         getReactionTooltipMode(commentReactionTooltipData) === 'single' ? 'w-[10rem]' : 'w-[17rem]'
       ]"
       :style="commentReactionTooltipStyle"
@@ -1492,7 +1492,7 @@
       v-if="showTagPopover"
       ref="tagPopoverRef"
       :style="tagPopoverStyle"
-      class="fixed z-[120] w-[360px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl"
+      :class="['fixed', FLOATING_OVERLAY_Z_CLASS, 'w-[360px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl']"
     >
       <RecordTagPopover
         :record="task"
@@ -1512,7 +1512,7 @@
       v-if="showRelatedToPopover"
       ref="relatedToPopoverRef"
       :style="relatedToPopoverStyle"
-      class="fixed z-[120] w-[min(440px,calc(100vw-24px))] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl"
+      :class="['fixed', FLOATING_OVERLAY_Z_CLASS, 'w-[min(440px,calc(100vw-24px))] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl']"
     >
       <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
         <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('common.taskRelatedToFallback') }}</h3>
@@ -1654,6 +1654,7 @@ import {
   recordRecordDetailFingerprint,
 } from '@/utils/recordDetailFreshness';
 import { useStickyTitleRow } from '@/components/record-page/composables/useStickyTitleRow';
+import { FLOATING_OVERLAY_Z_CLASS } from '@/constants/zIndexLayers';
 import RecordPageTitleRow from '@/components/record-page/RecordPageTitleRow.vue';
 import EditableTitle from '@/components/record-page/EditableTitle.vue';
 import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';

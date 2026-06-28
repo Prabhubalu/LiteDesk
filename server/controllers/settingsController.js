@@ -226,24 +226,34 @@ async function deriveEmailDomainVerification(config = {}) {
     };
 }
 
-async function writeIntegrationAuditLog(organization, req, event, details) {
-    try {
-        const userLabel = req.user?.username || req.user?.email || 'Unknown';
-        const auditEntry = {
-            user: userLabel,
-            userId: req.user?._id || null,
-            action: event,
-            details,
-            timestamp: new Date()
-        };
-        if (!Array.isArray(organization.activityLogs)) {
-            organization.activityLogs = [];
+function buildIntegrationAuditEntry(req, event, details) {
+    const userLabel = req.user?.username || req.user?.email || 'Unknown';
+    return {
+        user: userLabel,
+        userId: req.user?._id || null,
+        action: event,
+        details,
+        timestamp: new Date()
+    };
+}
+
+/**
+ * Persist a single integration key without full Organization.save() validation.
+ * Tenant org records may predate required CRM fields (e.g. assignedTo); partial
+ * $set avoids blocking integration settings updates on unrelated schema paths.
+ */
+async function persistOrganizationIntegrationUpdate(organizationId, integrationKey, nextState, auditEntries = []) {
+    const update = {
+        $set: {
+            [`integrations.${integrationKey}`]: nextState
         }
-        organization.activityLogs.push(auditEntry);
-        organization.markModified('activityLogs');
-    } catch (err) {
-        console.error('[settings] Failed to append integration audit log:', err.message);
+    };
+    if (auditEntries.length > 0) {
+        update.$push = {
+            activityLogs: { $each: auditEntries }
+        };
     }
+    await Organization.findByIdAndUpdate(organizationId, update, { runValidators: false });
 }
 
 /**
@@ -2889,26 +2899,35 @@ exports.updateIntegrationConfig = async (req, res) => {
             updatedAt: new Date()
         };
 
-        organization.integrations = {
-            ...current,
-            [key]: nextState
-        };
-        await writeIntegrationAuditLog(organization, req, 'integration_email_config_updated', {
-            integrationKey: key,
-            changedCriticalFields,
-            changedNonCriticalFields: ['fromName', 'replyTo', 'smtpSecure'].filter(
-                (fieldKey) => toComparable(nextConfig[fieldKey]) !== toComparable(baselineConfig[fieldKey])
-            )
-        });
+        await persistOrganizationIntegrationUpdate(
+            req.user.organizationId,
+            key,
+            nextState,
+            [
+                buildIntegrationAuditEntry(req, 'integration_email_config_updated', {
+                    integrationKey: key,
+                    changedCriticalFields,
+                    changedNonCriticalFields: ['fromName', 'replyTo', 'smtpSecure'].filter(
+                        (fieldKey) => toComparable(nextConfig[fieldKey]) !== toComparable(baselineConfig[fieldKey])
+                    )
+                })
+            ]
+        );
         if (hasPolicyUpdate) {
             await upsertCommunicationConfigForOrganization(req.user.organizationId, communicationPolicy);
-            await writeIntegrationAuditLog(organization, req, 'integration_communication_policy_updated', {
-                integrationKey: key,
-                outboundEmail: communicationPolicy.outboundEmail || {}
-            });
+            await Organization.findByIdAndUpdate(
+                req.user.organizationId,
+                {
+                    $push: {
+                        activityLogs: buildIntegrationAuditEntry(req, 'integration_communication_policy_updated', {
+                            integrationKey: key,
+                            outboundEmail: communicationPolicy.outboundEmail || {}
+                        })
+                    }
+                },
+                { runValidators: false }
+            );
         }
-        organization.markModified('integrations');
-        await organization.save();
 
         return res.json({
             success: true,
@@ -2960,12 +2979,7 @@ exports.enableIntegration = async (req, res) => {
             disconnectedAt: state.disconnectedAt || null
         };
 
-        organization.integrations = {
-            ...current,
-            [key]: nextState
-        };
-
-        await organization.save();
+        await persistOrganizationIntegrationUpdate(req.user.organizationId, key, nextState);
 
         res.json({
             success: true,
@@ -3080,12 +3094,7 @@ exports.disableIntegration = async (req, res) => {
             disconnectedAt: now
         };
 
-        organization.integrations = {
-            ...current,
-            [key]: nextState
-        };
-
-        await organization.save();
+        await persistOrganizationIntegrationUpdate(req.user.organizationId, key, nextState);
 
         res.json({
             success: true,

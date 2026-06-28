@@ -1006,5 +1006,33 @@
   "embedPreviewPending": {
     "message": "Preview will appear once your booking link is ready.",
     "description": "Embed iframe placeholder while booking page is being saved"
+  },
+  "defaultQuestionsHeading": {
+    "message": "Always included",
+    "description": "Built-in booking guest fields section title"
+  },
+  "defaultQuestionBadge": {
+    "message": "Default",
+    "description": "Badge on built-in booking guest fields"
+  },
+  "defaultFieldFirstName": {
+    "message": "First name",
+    "description": "Built-in booking field label"
+  },
+  "defaultFieldLastName": {
+    "message": "Last name",
+    "description": "Built-in booking field label"
+  },
+  "defaultFieldEmail": {
+    "message": "Email",
+    "description": "Built-in booking field label"
+  },
+  "defaultFieldPhone": {
+    "message": "Phone",
+    "description": "Built-in booking field label"
+  },
+  "additionalQuestionsHeading": {
+    "message": "Additional questions",
+    "description": "Custom booking fields section title"
   }
 }

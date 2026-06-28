@@ -92,3 +92,34 @@ export function getVersionDiffHtml(historyList, selectedIndex) {
   const diffHtml = diffWordsToHtml(oldPlain, newPlain);
   return DOMPurify.sanitize(diffHtml, { ALLOWED_TAGS: ['ins', 'del'], ALLOWED_ATTR: ['class'] });
 }
+
+/** Activity logs use "Empty" for null values — normalize before plain-text diff. */
+function normalizeActivityLogDisplayValue(value) {
+  if (value === undefined || value === null || value === '') return '';
+  const str = String(value).trim();
+  if (str === 'Empty') return '';
+  return str;
+}
+
+/**
+ * Word-level diff HTML for description (and other rich-text) field changes in activity feeds.
+ * @param {*} fromValue
+ * @param {*} toValue
+ * @returns {string|null}
+ */
+export function buildDescriptionActivityDiffHtml(fromValue, toValue) {
+  const fromPlain = getPlainTextFromHtml(normalizeActivityLogDisplayValue(fromValue));
+  const toPlain = getPlainTextFromHtml(normalizeActivityLogDisplayValue(toValue));
+  const diffHtml = diffWordsToHtml(fromPlain, toPlain);
+  if (!diffHtml) return null;
+  return DOMPurify.sanitize(diffHtml, { ALLOWED_TAGS: ['ins', 'del'], ALLOWED_ATTR: ['class'] });
+}
+
+/**
+ * @param {string} action
+ * @param {{ field?: string }|null|undefined} details
+ * @returns {boolean}
+ */
+export function isDescriptionActivityFieldChange(action, details) {
+  return action === 'field_changed' && String(details?.field || '').toLowerCase() === 'description';
+}

@@ -254,7 +254,6 @@ import DynamicForm from '@/components/common/DynamicForm.vue';
 import apiClient from '@/utils/apiClient';
 import { useTabs } from '@/composables/useTabs';
 import {
-  getOrganizationParticipationFields,
   isTenantPlatformOrganizationFieldKey,
   ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS,
 } from '@/platform/fields/organizationFieldModel';
@@ -346,10 +345,6 @@ const FULL_MODE_STATIC_EXCLUDE_FIELDS = [
   '__v'
 ];
 
-const PARTICIPATION_FIELD_KEYS = new Set(
-  getOrganizationParticipationFields('SALES').map((fieldKey) => String(fieldKey).toLowerCase())
-);
-
 const moduleSystemFieldKeys = computed(() => {
   const moduleFields = Array.isArray(moduleDefinition.value?.fields) ? moduleDefinition.value.fields : [];
   return moduleFields
@@ -373,8 +368,7 @@ const fullModeExcludeFields = computed(() => {
 const fullQuickCreateFields = computed(() =>
   QUICK_CREATE_FIELDS.value.filter((fieldKey) => {
     const keyLower = String(fieldKey).toLowerCase();
-    return !PARTICIPATION_FIELD_KEYS.has(keyLower)
-      && !isTenantPlatformOrganizationFieldKey(fieldKey)
+    return !isTenantPlatformOrganizationFieldKey(fieldKey)
       && !fullModeExcludeFields.value.some((excluded) => excluded.toLowerCase() === keyLower)
       && !moduleSystemFieldKeySet.value.has(keyLower);
   })
@@ -392,30 +386,15 @@ const fullOtherFields = computed(() => {
       const keyLower = String(key).toLowerCase();
       if (excludedSet.has(keyLower)) return false;
       if (quickSet.has(keyLower)) return false;
-      if (PARTICIPATION_FIELD_KEYS.has(keyLower)) return false;
       if (isTenantPlatformOrganizationFieldKey(key)) return false;
       if (moduleSystemFieldKeySet.value.has(keyLower)) return false;
       return true;
     });
 });
 
-const fullParticipationFields = computed(() => {
-  const moduleFields = Array.isArray(moduleDefinition.value?.fields) ? moduleDefinition.value.fields : [];
-  return moduleFields
-    .map((field) => field?.key)
-    .filter((key) => {
-      if (!key) return false;
-      const keyLower = String(key).toLowerCase();
-      return PARTICIPATION_FIELD_KEYS.has(keyLower)
-        && !isTenantPlatformOrganizationFieldKey(key)
-        && !moduleSystemFieldKeySet.value.has(keyLower);
-    });
-});
-
 const FULL_CREATE_FIELDS = computed(() => [
   ...fullQuickCreateFields.value,
   ...fullOtherFields.value,
-  ...fullParticipationFields.value
 ]);
 
 /** Quick create keys with tenant/nested tenant paths removed (module API can expose subscription.* etc.) */
@@ -424,13 +403,10 @@ const sanitizedQuickCreateFieldKeys = computed(() =>
 );
 
 /**
- * When the organizations module includes flattened tenant paths in quickCreate, override with the filtered list.
- * If nothing was stripped, omit override so DynamicForm uses its default quick-create path.
+ * When quick create is settings-driven, pass the configured field list explicitly.
  */
 const quickCreateFieldsOverrideProp = computed(() => {
-  const full = QUICK_CREATE_FIELDS.value;
   const sanitized = sanitizedQuickCreateFieldKeys.value;
-  if (!full.length || full.length === sanitized.length) return null;
   return sanitized.length ? sanitized : null;
 });
 
@@ -478,17 +454,11 @@ const drawerWidthClass = computed(() => {
   return mode.value === 'full' ? 'w-[60rem]' : 'w-[30rem]';
 });
 
-// Fields to exclude from Quick Create
-// ARCHITECTURAL INTENT: Only core business fields are eligible for Quick Create
-// Exclude: app participation fields, system fields, tenant fields, ownership/assignment fields
+// Exclude only system and tenant fields from Quick Create rendering.
+// Field selection is settings-driven (Settings → Organizations → Quick Create).
 const QUICK_MODE_STATIC_EXCLUDE_FIELDS = [
   'createdBy',
-  'assignedTo',
-  'accountManager',
   ...ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS,
-  'customerStatus',
-  'partnerStatus',
-  'vendorStatus',
   'organizationId',
   'createdAt',
   'updatedAt',

@@ -3999,14 +3999,8 @@
                   <div v-if="quickCreateAvailableFields.length === 0" class="p-3 text-xs text-gray-500 dark:text-gray-400 text-center">{{ t('settings.modFieldsNoQuickCreateFields') }}</div>
                 </template>
                 
-                <!-- Organizations module: grouped by core business fields (similar to People) -->
-                <!-- 
-                  PLATFORM-LEVEL CANONICAL DEFAULT: Organizations Quick Create
-                  Name field MUST always be present, required, and non-removable.
-                  Default Quick Create shows ONLY "name". Other eligible fields are optional.
-                  This is intentionally minimal - Organizations are contextual business entities, not primary workflow objects.
-                  Changes require updating: module-settings-doctrine.md, organization-settings.md
-                -->
+                <!-- Organizations module: all core fields configurable in Quick Create -->
+                <!-- Name field MUST always be present, required, and non-removable. -->
                 <template v-else-if="isOrganizationsModule">
                   <div v-if="quickCreateAvailableFields.length > 0" class="mb-4">
                     <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreBusinessFields') }}</div>
@@ -4037,13 +4031,6 @@
                   
                   <!-- Info message if no fields -->
                   <div v-if="quickCreateAvailableFields.length === 0" class="p-3 text-xs text-gray-500 dark:text-gray-400 text-center">{{ t('settings.modFieldsNoQuickCreateFields') }}</div>
-                  
-                  <!-- Helper text for Organizations -->
-                  <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <p class="text-xs text-blue-800 dark:text-blue-400">
-                      <strong>{{ t('settings.modFieldsOrgsQuickCreateHint') }}</strong>
-                    </p>
-                  </div>
                 </template>
                 
                 <!-- Tasks module: grouped by core task fields -->
@@ -4226,7 +4213,6 @@
               <div class="p-3 border-t border-gray-200 dark:border-white/10">
                 <div class="text-xs text-gray-500 dark:text-gray-400">
                   <span v-if="isPeopleModule">{{ t('settings.modFieldsQuickCreatePeopleHint') }}</span>
-                  <span v-else-if="isOrganizationsModule">{{ t('settings.modFieldsQuickCreateOrgsFooter') }}</span>
                   <span v-else-if="isTasksModule">{{ t('settings.modFieldsQuickCreateTasksFooter') }}</span>
                   <span v-else-if="isEventsModule">{{ t('settings.modFieldsQuickCreateEventsFooter') }}</span>
                   <span v-else>{{ t('settings.modFieldsQuickCreateGenericFooter') }}</span>
@@ -4933,7 +4919,6 @@ import {
   getCoreOrganizationFields,
   getOrganizationSystemFields,
   getOrganizationParticipationFields,
-  getOrganizationQuickCreateFields,
   isOrganizationCoreField,
   isOrganizationProtectedField,
   groupOrganizationFields,
@@ -6789,13 +6774,10 @@ const quickCreateAvailableFields = computed(() => {
     return [...coreFields, ...participationFields];
   }
 
-  // For Organizations: only metadata-declared quick-create eligible fields
-  // (excludes system and participation fields by design)
+  // For Organizations: all core fields (platform + custom), excluding system and tenant fields
   if (isOrganizationsModule.value) {
-    const eligibleKeys = new Set(getOrganizationQuickCreateFields());
     return editFields.value.filter(f => {
       if (!f.key) return false;
-      if (!eligibleKeys.has(f.key)) return false;
       if (isSystemField(f)) return false;
       if (!showTenantFields.value) {
         const keyLower = f.key.toLowerCase();
@@ -6804,7 +6786,8 @@ const quickCreateAvailableFields = computed(() => {
           return false;
         }
       }
-      return true;
+      if (f.owner === 'org') return true;
+      return classifyOrganizationField(f.key) === 'core';
     });
   }
 

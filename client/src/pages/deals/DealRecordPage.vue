@@ -291,7 +291,7 @@
             :class="[
               'mb-6 sticky z-10 border-b transition-[padding,background-color,border-color,backdrop-filter] duration-200 ease-out',
               props.embed ? 'top-0 py-2 lg:py-4 lg:mb-0 mb-0' : 'top-0 lg:-top-6',
-              isLeftTitleSticky
+              isLeftTitleSticky || props.embed
                 ? 'border-b border-gray-200/80 dark:border-gray-700/80 bg-white/95 dark:bg-gray-900/95 supports-[backdrop-filter]:bg-white/90 supports-[backdrop-filter]:dark:bg-gray-900/90 backdrop-blur py-4'
                 : 'border-b border-gray-200/80 dark:border-gray-700/80 bg-white/95 dark:bg-gray-900/95 supports-[backdrop-filter]:bg-white/90 supports-[backdrop-filter]:dark:bg-gray-900/90 backdrop-blur py-4 lg:border-transparent lg:dark:border-transparent lg:bg-transparent lg:dark:bg-transparent lg:supports-[backdrop-filter]:dark:bg-transparent lg:backdrop-blur-none lg:shadow-none lg:py-0'
             ]"
@@ -1089,7 +1089,7 @@
       <div
         v-if="showCommentReactionPicker"
         ref="commentReactionPickerRef"
-        class="fixed z-[110] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
+        :class="['fixed', FLOATING_OVERLAY_Z_CLASS, 'overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800']"
         :style="commentReactionPickerStyle"
       >
         <emoji-picker
@@ -1105,7 +1105,7 @@
         v-if="showCommentReactionTooltip && commentReactionTooltipData"
         ref="commentReactionTooltipRef"
         :class="[
-          'fixed z-[115] rounded-lg bg-slate-950 px-3 py-2 text-white shadow-2xl',
+          'fixed', FLOATING_OVERLAY_Z_CLASS, 'rounded-lg bg-slate-950 px-3 py-2 text-white shadow-2xl',
           getReactionTooltipMode(commentReactionTooltipData) === 'single' ? 'w-[10rem]' : 'w-[17rem]'
         ]"
         :style="commentReactionTooltipStyle"
@@ -1160,7 +1160,7 @@
         v-if="showTagPopover"
         ref="tagPopoverRef"
         :style="tagPopoverStyle"
-        class="fixed z-[120] w-[360px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl"
+        :class="['fixed', FLOATING_OVERLAY_Z_CLASS, 'w-[360px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl']"
       >
         <RecordTagPopover
           :record="deal"
@@ -1213,6 +1213,8 @@ import {
 import SectionStack from '@/components/record-page/sections/SectionStack.vue';
 import RelatedSection from '@/components/record-page/sections/RelatedSection.vue';
 import { useRecordTagPopoverPosition } from '@/components/record-page/composables/useRecordTagPopoverPosition';
+import { findTitleScrollContainer } from '@/components/record-page/composables/useStickyTitleRow';
+import { FLOATING_OVERLAY_Z_CLASS } from '@/constants/zIndexLayers';
 import { useRecordTags } from '@/components/record-page/composables/useRecordTags';
 import EditableTitle from '@/components/record-page/EditableTitle.vue';
 import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
@@ -4032,20 +4034,18 @@ const detachLeftPaneScrollListener = () => {
 
 const attachLeftPaneScrollListener = () => {
   const rootEl = dealRecordPageRootRef.value;
-  const leftPaneEl = rootEl instanceof HTMLElement
-    ? rootEl.querySelector('.record-page-layout__left')
-    : null;
-  if (!leftPaneEl) return false;
-  if (leftPaneScrollElement.value === leftPaneEl) {
-    const nextScrollTop = leftPaneEl.scrollTop || 0;
+  const scrollEl = findTitleScrollContainer(rootEl);
+  if (!scrollEl) return false;
+  if (leftPaneScrollElement.value === scrollEl) {
+    const nextScrollTop = scrollEl.scrollTop || 0;
     updateStickyTitleState(nextScrollTop);
     return true;
   }
   detachLeftPaneScrollListener();
-  leftPaneScrollElement.value = leftPaneEl;
-  const nextScrollTop = leftPaneEl.scrollTop || 0;
+  leftPaneScrollElement.value = scrollEl;
+  const nextScrollTop = scrollEl.scrollTop || 0;
   updateStickyTitleState(nextScrollTop);
-  leftPaneEl.addEventListener('scroll', handleLeftPaneScrollForStickyTitle, { passive: true });
+  scrollEl.addEventListener('scroll', handleLeftPaneScrollForStickyTitle, { passive: true });
   return true;
 };
 
@@ -4060,7 +4060,9 @@ watch(loading, (isLoading) => {
   nextTick(() => {
     if (attachLeftPaneScrollListener()) return;
     requestAnimationFrame(() => {
-      attachLeftPaneScrollListener();
+      if (attachLeftPaneScrollListener()) return;
+      setTimeout(attachLeftPaneScrollListener, 150);
+      setTimeout(attachLeftPaneScrollListener, 400);
     });
   });
 });

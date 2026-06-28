@@ -28,6 +28,14 @@ export const MEETING_TYPE_OPTIONS = [
   { value: 'ms_teams', label: 'Microsoft Teams', icon: 'video' }
 ];
 
+/** Guest fields always collected on the public booking form (not stored in customFields). */
+export const DEFAULT_BOOKING_GUEST_FIELDS = [
+  { key: 'firstName', labelKey: 'appointments.defaultFieldFirstName', type: 'text', required: true },
+  { key: 'lastName', labelKey: 'appointments.defaultFieldLastName', type: 'text', required: false },
+  { key: 'email', labelKey: 'appointments.defaultFieldEmail', type: 'email', required: true },
+  { key: 'phone', labelKey: 'appointments.defaultFieldPhone', type: 'phone', required: false }
+];
+
 export function formatSlotTime(iso, locale = undefined) {
   const d = new Date(iso);
   return d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
