@@ -30,14 +30,14 @@ const SUPPLEMENTAL_BY_SCOPE = {
     field('caseId', 'Case ID', 'text'),
     field('contactId', 'Contact', 'lookup'),
     field('organizationRefId', 'Organization', 'lookup'),
-    field('caseOwnerId', 'Case owner', 'lookup'),
+    field('assignedTo', 'Assigned To', 'lookup'),
     field('source', 'Source', 'text'),
     field('severity', 'Severity', 'picklist'),
     field('impact', 'Impact', 'picklist')
   ],
   // People exists in multiple apps; expose the same assignment-relevant fields for HELPDESK too.
   'helpdesk:people': [
-    field('assignedTo', 'Assigned to', 'lookup'),
+    field('assignedTo', 'Assigned To', 'lookup'),
     field('lead_owner', 'Lead owner', 'lookup'),
     field('organization', 'Organization', 'lookup'),
     field('derivedStatus', 'Status', 'text'),
@@ -56,7 +56,7 @@ const SUPPLEMENTAL_BY_SCOPE = {
   ],
   // PLATFORM → people should behave like SALES/HELPDESK people for condition fields.
   'platform:people': [
-    field('assignedTo', 'Assigned to', 'lookup'),
+    field('assignedTo', 'Assigned To', 'lookup'),
     field('lead_owner', 'Lead owner', 'lookup'),
     field('organization', 'Organization', 'lookup'),
     field('derivedStatus', 'Status', 'text'),
@@ -74,7 +74,7 @@ const SUPPLEMENTAL_BY_SCOPE = {
     field('tags', 'Tags', 'multi-picklist')
   ],
   'sales:people': [
-    field('assignedTo', 'Assigned to', 'lookup'),
+    field('assignedTo', 'Assigned To', 'lookup'),
     field('lead_owner', 'Lead owner', 'lookup'),
     field('organization', 'Organization', 'lookup'),
     field('derivedStatus', 'Status', 'text'),
@@ -93,7 +93,7 @@ const SUPPLEMENTAL_BY_SCOPE = {
   ],
   'sales:organizations': [
     field('name', 'Name', 'text'),
-    field('assignedTo', 'Assigned to', 'lookup'),
+    field('assignedTo', 'Assigned To', 'lookup'),
     field('types', 'Types', 'multi-picklist'),
     field('customerStatus', 'Customer status', 'picklist', picklistOptions(['Active', 'Prospect', 'Churned', 'Lead Customer'])),
     field('partnerStatus', 'Partner status', 'picklist', picklistOptions(['Active', 'Onboarding', 'Inactive'])),
@@ -106,7 +106,7 @@ const SUPPLEMENTAL_BY_SCOPE = {
   ],
   'sales:deals': [
     field('name', 'Name', 'text'),
-    field('ownerId', 'Owner', 'lookup'),
+    field('assignedTo', 'Assigned To', 'lookup'),
     field('stage', 'Stage', 'picklist'),
     field('pipeline', 'Pipeline', 'picklist'),
     field('status', 'Status', 'picklist', picklistOptions(['Open', 'Won', 'Lost', 'Stalled', 'Active', 'Abandoned'])),
@@ -122,7 +122,7 @@ const SUPPLEMENTAL_BY_SCOPE = {
   ],
   'sales:tasks': [
     field('title', 'Title', 'text'),
-    field('assignedTo', 'Assigned to', 'lookup'),
+    field('assignedTo', 'Assigned To', 'lookup'),
     field('status', 'Status', 'picklist', picklistOptions(['todo', 'in_progress', 'waiting', 'completed', 'cancelled'])),
     field('priority', 'Priority', 'picklist', picklistOptions(['low', 'medium', 'high', 'urgent'])),
     field('dueDate', 'Due date', 'date'),
@@ -162,7 +162,7 @@ const GENERIC_FALLBACK = [
   field('priority', 'Priority', 'picklist'),
   field('title', 'Title', 'text'),
   field('name', 'Name', 'text'),
-  field('assignedTo', 'Assigned to', 'lookup')
+  field('assignedTo', 'Assigned To', 'lookup')
 ];
 
 function scopeKey(appKey, moduleKey) {

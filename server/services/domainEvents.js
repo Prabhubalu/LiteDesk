@@ -33,7 +33,7 @@ const subscribers = [];
  * @property {string} [appKey] - App context (e.g. 'SALES')
  * @property {string|Object|null} [triggeredBy] - User ID or 'system'
  * @property {string} [organizationId] - Tenant organization ID
- * @property {string|Object|null} [ownerId] - Record owner (User ID) for action resolution
+ * @property {string|Object|null} [assignedTo] - Record owner (User ID) for action resolution
  */
 
 /**
@@ -72,7 +72,7 @@ function emit(event) {
     appKey: event.appKey || null,
     triggeredBy: event.triggeredBy ?? null,
     organizationId: event.organizationId ? (event.organizationId.toString ? event.organizationId.toString() : String(event.organizationId)) : null,
-    ownerId: event.ownerId != null ? (event.ownerId.toString ? event.ownerId.toString() : String(event.ownerId)) : null,
+    assignedTo: event.assignedTo != null ? (event.assignedTo.toString ? event.assignedTo.toString() : String(event.assignedTo)) : null,
     timestamp: new Date().toISOString()
   };
 

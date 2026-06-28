@@ -2428,7 +2428,7 @@ const genericAdapter = computed(() => {
 
       const fieldLoose = String(fieldKey || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
       const commercialCanonical = { contactid: 'contactId', organizationrefid: 'organizationRefId', dealid: 'dealId' }[fieldLoose];
-      const caseCanonical = { contactid: 'contactId', organizationrefid: 'organizationRefId', caseownerid: 'caseOwnerId' }[fieldLoose];
+      const caseCanonical = { contactid: 'contactId', organizationrefid: 'organizationRefId', assignedto: 'assignedTo' }[fieldLoose];
       let payloadKey = fieldKey;
       if (moduleKeyLower === 'cases' && caseCanonical) {
         payloadKey = caseCanonical;
@@ -2552,7 +2552,7 @@ const genericAdapter = computed(() => {
         key === 'assignedto' ||
         key === 'ownerid' ||
         key === 'owner' ||
-        key === 'caseownerid' ||
+        key === 'assignedto' ||
         key === 'createdby' ||
         key === 'updatedby' ||
         key === 'modifiedby' ||
@@ -3592,7 +3592,7 @@ function moduleNeedsUserLookup(mod) {
       || key === 'owner_id'
       || key === 'ownerid'
       || key === 'owner'
-      || key === 'caseownerid'
+      || key === 'assignedto'
       || key === 'createdby'
       || key === 'updatedby'
       || key === 'modifiedby'

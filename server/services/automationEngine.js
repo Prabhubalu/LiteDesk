@@ -58,7 +58,7 @@ function buildContext(event) {
     entityId: event.entityId || null,
     organizationId: event.organizationId || null,
     triggeredBy: event.triggeredBy || null,
-    ownerId: event.ownerId || null,
+    assignedTo: event.assignedTo || null,
     appKey: event.appKey || 'SALES'
   };
 }
@@ -116,7 +116,7 @@ async function persistExecution(opts) {
 /**
  * Process a domain event: resolve rules, build plan, execute actions (idempotent).
  *
- * @param {Object} event - Domain event from domainEvents.emit (includes eventId, ownerId)
+ * @param {Object} event - Domain event from domainEvents.emit (includes eventId, assignedTo)
  * @returns {Promise<{ eventId: string, eventType: string, rulesMatched: number, plan: Array<Object>, executed: number, skipped: number, failed: number }>}
  */
 async function processEvent(event) {
@@ -128,7 +128,7 @@ async function processEvent(event) {
     appKey,
     organizationId,
     triggeredBy,
-    ownerId
+    assignedTo
   } = event;
 
   // Workflow isolation: skip automation for trashed records

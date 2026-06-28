@@ -107,7 +107,7 @@ async function getSalesPulse(organizationId, userId, roleContext) {
     status: { $in: ['Open', 'Active'] }
   };
   if (!teamView) {
-    openDealFilter.ownerId = userId;
+    openDealFilter.assignedTo = userId;
   }
 
   const [closingSoon, staleCount, overdueFollowUps] = await Promise.all([
@@ -167,7 +167,7 @@ async function getHelpdeskPulse(organizationId, userId, roleContext) {
     status: { $in: OPEN_CASE_STATUSES }
   };
   if (!teamView) {
-    openBase.caseOwnerId = userId;
+    openBase.assignedTo = userId;
   }
 
   const [openAssigned, slaAtRisk] = await Promise.all([
@@ -220,7 +220,7 @@ async function getAuditPulse(organizationId, userId, roleContext) {
     auditState: { $in: ['Ready to start', 'Planned', null] }
   };
   if (!teamView) {
-    startingSoonQuery.$or = [{ auditorId: userId }, { eventOwnerId: userId }];
+    startingSoonQuery.$or = [{ auditorId: userId }, { assignedTo: userId }];
   }
 
   const reviewQuery = {

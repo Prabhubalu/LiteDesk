@@ -1,19 +1,20 @@
 /**
- * Default assigned-to / owner fields to the current user on record create.
+ * Default assigned-to fields to the current user on record create.
  */
 const MODULE_CREATE_OWNER_FIELDS: Readonly<Record<string, readonly string[]>> = {
   people: ['assignedTo'],
   organizations: ['assignedTo'],
   tasks: ['assignedTo'],
-  deals: ['ownerId'],
-  cases: ['caseOwnerId'],
-  events: ['eventOwnerId'],
-  quotes: ['ownerId'],
-  sales_orders: ['ownerId'],
-  invoices: ['ownerId'],
-  documents: ['ownerId'],
+  deals: ['assignedTo'],
+  cases: ['assignedTo'],
+  events: ['assignedTo'],
+  quotes: ['assignedTo'],
+  sales_orders: ['assignedTo'],
+  invoices: ['assignedTo'],
+  documents: ['assignedTo'],
   forms: ['assignedTo'],
-  targets: ['ownerId']
+  targets: ['assignedTo'],
+  templates: ['assignedTo']
 };
 
 function normalizeFieldKey(fieldKey: unknown): string {

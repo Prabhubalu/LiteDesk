@@ -20,7 +20,7 @@ function buildBaseEventPayload(caseRecord, actorId, eventType) {
     appKey: 'HELPDESK',
     organizationId: caseRecord?.organizationId || null,
     triggeredBy: actorId || null,
-    ownerId: caseRecord?.caseOwnerId || null
+    assignedTo: caseRecord?.assignedTo || null
   };
 }
 
@@ -70,7 +70,7 @@ async function onCaseCreated({ caseRecord, actorId }) {
       {
         status: caseRecord?.status || null,
         priority: caseRecord?.priority || null,
-        caseOwnerId: toIdString(caseRecord?.caseOwnerId)
+        assignedTo: toIdString(caseRecord?.assignedTo)
       }
     );
     await emitCaseNotification(caseRecord, actorId, notificationDomainEvents.CASE_CREATED);
@@ -80,9 +80,9 @@ async function onCaseCreated({ caseRecord, actorId }) {
         caseRecord,
         actorId,
         'case.assigned',
-        { caseOwnerId: assignmentResult.previousOwnerId },
+        { assignedTo: assignmentResult.previousOwnerId },
         {
-          caseOwnerId: assignmentResult.newOwnerId,
+          assignedTo: assignmentResult.newOwnerId,
           assignedGroupId: assignmentResult.assignedGroupId,
           ruleId: assignmentResult.ruleId
         }
@@ -96,9 +96,9 @@ async function onCaseCreated({ caseRecord, actorId }) {
           caseRecord,
           actorId,
           'case.escalated',
-          { caseOwnerId: assignmentResult.previousOwnerId },
+          { assignedTo: assignmentResult.previousOwnerId },
           {
-            caseOwnerId: assignmentResult.newOwnerId,
+            assignedTo: assignmentResult.newOwnerId,
             assignedGroupId: assignmentResult.assignedGroupId,
             ruleId: assignmentResult.ruleId
           }
@@ -122,17 +122,17 @@ async function onCaseCreated({ caseRecord, actorId }) {
 
 async function onCaseUpdated({ caseRecord, actorId, previousState = {}, changedFields = [] }) {
   try {
-    const manuallyChangedOwner = changedFields.includes('caseOwnerId');
+    const manuallyChangedOwner = changedFields.includes('assignedTo');
     if (manuallyChangedOwner) {
       await registerManualOwnerOverride({
         caseRecord,
         actorId,
-        previousOwnerId: toIdString(previousState.caseOwnerId)
+        previousOwnerId: toIdString(previousState.assignedTo)
       });
     }
 
     const assignmentResult = manuallyChangedOwner
-      ? { ownerChanged: false, previousOwnerId: toIdString(previousState.caseOwnerId) }
+      ? { ownerChanged: false, previousOwnerId: toIdString(previousState.assignedTo) }
       : await runImmediateAssignmentForCase({
           caseRecord,
           actorId,
@@ -141,7 +141,7 @@ async function onCaseUpdated({ caseRecord, actorId, previousState = {}, changedF
         });
 
     const ownerChanged =
-      toIdString(previousState.caseOwnerId) !== toIdString(caseRecord?.caseOwnerId) ||
+      toIdString(previousState.assignedTo) !== toIdString(caseRecord?.assignedTo) ||
       Boolean(assignmentResult?.ownerChanged);
 
     emitCaseDomainEvent(
@@ -152,29 +152,29 @@ async function onCaseUpdated({ caseRecord, actorId, previousState = {}, changedF
       {
         status: caseRecord?.status || null,
         priority: caseRecord?.priority || null,
-        caseOwnerId: toIdString(caseRecord?.caseOwnerId),
+        assignedTo: toIdString(caseRecord?.assignedTo),
         changedFields
       }
     );
 
     if (ownerChanged) {
       await emitCaseNotification(caseRecord, actorId, notificationDomainEvents.CASE_ASSIGNED, {
-        previousOwnerId: assignmentResult?.previousOwnerId || toIdString(previousState.caseOwnerId)
+        previousOwnerId: assignmentResult?.previousOwnerId || toIdString(previousState.assignedTo)
       });
       if (assignmentResult?.escalated) {
         emitCaseDomainEvent(
           caseRecord,
           actorId,
           'case.escalated',
-          { caseOwnerId: assignmentResult.previousOwnerId || toIdString(previousState.caseOwnerId) },
+          { assignedTo: assignmentResult.previousOwnerId || toIdString(previousState.assignedTo) },
           {
-            caseOwnerId: assignmentResult.newOwnerId,
+            assignedTo: assignmentResult.newOwnerId,
             assignedGroupId: assignmentResult.assignedGroupId,
             ruleId: assignmentResult.ruleId
           }
         );
         await emitCaseNotification(caseRecord, actorId, notificationDomainEvents.CASE_ESCALATED, {
-          previousOwnerId: assignmentResult.previousOwnerId || toIdString(previousState.caseOwnerId),
+          previousOwnerId: assignmentResult.previousOwnerId || toIdString(previousState.assignedTo),
           assignedGroupId: assignmentResult.assignedGroupId
         });
       }
@@ -220,9 +220,9 @@ async function onCaseStatusChanged({ caseRecord, actorId, fromStatus, toStatus }
           caseRecord,
           actorId,
           'case.escalated',
-          { caseOwnerId: assignmentResult.previousOwnerId },
+          { assignedTo: assignmentResult.previousOwnerId },
           {
-            caseOwnerId: assignmentResult.newOwnerId,
+            assignedTo: assignmentResult.newOwnerId,
             assignedGroupId: assignmentResult.assignedGroupId,
             ruleId: assignmentResult.ruleId
           }

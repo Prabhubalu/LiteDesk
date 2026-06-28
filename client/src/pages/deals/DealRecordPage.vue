@@ -488,11 +488,11 @@
                 </span>
               </template>
 
-              <template #ownerId>
+              <template #assignedTo>
                 <Listbox
                   v-if="canInlineEditDealOwner"
                   :model-value="selectedDealOwnerId"
-                  @update:model-value="(v) => handleDealDetailFieldSave('ownerId', v || null)"
+                  @update:model-value="(v) => handleDealDetailFieldSave('assignedTo', v || null)"
                 >
                   <div class="relative w-full">
                     <ListboxButton
@@ -1379,7 +1379,7 @@ const dealErrorTitle = computed(() => t('records.dealErrorTitle'));
 const dealNavPreviousLabel = computed(() => t('records.dealNavPrevious'));
 const dealNavNextLabel = computed(() => t('records.dealNavNext'));
 const keyFieldsEmptyLabel = computed(() => t('common.keyFieldsEmptyValue'));
-const SLOT_RENDERED_KEY_FIELDS = Object.freeze(new Set(['stage', 'amount', 'probability', 'expectedCloseDate', 'ownerId', 'accountId', 'contactId']));
+const SLOT_RENDERED_KEY_FIELDS = Object.freeze(new Set(['stage', 'amount', 'probability', 'expectedCloseDate', 'assignedTo', 'accountId', 'contactId']));
 const dealUsers = ref([]);
 const dealOrganizationsList = ref([]);
 const dealPeopleList = ref([]);
@@ -1863,7 +1863,7 @@ const dealDetailsPaneAdapter = computed(() => {
       if (key === 'contactid') return dealPeopleOptions.value;
       if (key === 'accountid' || key === 'organizationrefid') return dealOrganizationOptions.value;
       if (
-        key === 'ownerid' ||
+        key === 'assignedto' ||
         key === 'assignedto' ||
         key === 'createdby' ||
         key === 'updatedby' ||
@@ -1940,7 +1940,7 @@ const handleDealDetailFieldSave = async (fieldKey, value) => {
     if ((nextValue || null) === (currentDateValue || null)) {
       return;
     }
-  } else if (fieldKey === 'ownerId' || fieldKey === 'accountId' || fieldKey === 'contactId') {
+  } else if (fieldKey === 'assignedTo' || fieldKey === 'accountId' || fieldKey === 'contactId') {
     const currentComparable = resolveReferenceId(currentRawValue);
     const nextComparable = resolveReferenceId(value);
     if ((currentComparable || null) === (nextComparable || null)) {
@@ -2093,7 +2093,7 @@ const dealStateFields = computed(() => {
 });
 
 const selectedDealOwnerId = computed(() => {
-  const owner = deal.value?.ownerId;
+  const owner = deal.value?.assignedTo;
   if (!owner) return null;
   if (typeof owner === 'object') return owner._id || owner.id || null;
   return owner;
@@ -2315,7 +2315,7 @@ const formatDealCloseDate = (dateValue) => {
 };
 
 const formatDealOwnerName = (dealValue) => {
-  const owner = dealValue?.ownerId;
+  const owner = dealValue?.assignedTo;
   if (!owner) return null;
   if (typeof owner === 'string') return owner;
   return [owner.firstName, owner.lastName].filter(Boolean).join(' ') || owner.email || null;
@@ -2330,7 +2330,7 @@ const getDealUserDisplayName = (user) => {
 };
 
 const dealOwnerAvatarUser = computed(() => {
-  const owner = deal.value?.ownerId;
+  const owner = deal.value?.assignedTo;
   if (!owner || typeof owner !== 'object') return null;
   return {
     firstName: owner.firstName || owner.first_name || '',

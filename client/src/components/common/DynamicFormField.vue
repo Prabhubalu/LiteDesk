@@ -1155,7 +1155,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:value', 'validation-error', 'blur', 'update:currency-code', 'picklist-option-created', 'update:form-context']);
 
-const displayLabel = computed(() => getFieldDisplayLabel(props.field));
+const displayLabel = computed(() => getFieldDisplayLabel(props.field, props.moduleKey));
 const effectiveLabel = computed(() => {
   return props.dependencyState?.label || displayLabel.value || props.field?.key || '';
 });
@@ -1163,7 +1163,7 @@ const effectiveLabel = computed(() => {
 const isAuditRoleLookupField = computed(() => {
   const key = String(props.field?.key || '').toLowerCase();
   const isUserLookup = props.field?.lookupSettings?.targetModule === 'users';
-  // Treat eventOwnerId as an audit role when dependencies relabel it to "Auditor" (dependency-driven, not hardcoded per module).
+  // Treat assignedTo as an audit role when dependencies relabel it to "Auditor" (dependency-driven, not hardcoded per module).
   const labelLower = String(props.dependencyState?.label || '').toLowerCase();
   const isAuditorLabel = labelLower === 'auditor';
   return isUserLookup && (isAuditorLabel || key === 'auditorid' || key === 'reviewerid' || key === 'correctiveownerid');
@@ -1606,10 +1606,10 @@ const isAssignedToField = computed(() => {
   // Check by key
   if (key === 'assignedto' || 
       key === 'assigned_to' || 
-      key === 'eventownerid' ||
+      key === 'assignedto' ||
       key === 'ownerid' ||
       key === 'owner_id' ||
-      key === 'caseownerid' ||
+      key === 'assignedto' ||
       key === 'accountmanager' ||
       key === 'account_manager') {
     return true;
@@ -1634,7 +1634,7 @@ const isUserLookupField = computed(() => {
   if (String(props.field?.lookupSettings?.targetModule || '').toLowerCase() === 'users') {
     return true;
   }
-  if (String(props.field?.key || '').toLowerCase() === 'caseownerid') {
+  if (String(props.field?.key || '').toLowerCase() === 'assignedto') {
     return true;
   }
   const dt = String(props.field?.dataType || '').toLowerCase();
@@ -2187,7 +2187,7 @@ const getLookupSelectedLabel = () => {
   return v;
 };
 
-// Fetch users for any users-lookup field (assignedTo, eventOwnerId, caseOwnerId, auditorId, etc.)
+// Fetch users for any users-lookup field (assignedTo, assignedTo, assignedTo, auditorId, etc.)
 const fetchUsers = async ({ autoDefault = false } = {}) => {
   if (!isUserLookupField.value) return;
   
@@ -2213,7 +2213,7 @@ const fetchUsers = async ({ autoDefault = false } = {}) => {
           keyLower === 'assignedto' ||
           keyLower === 'ownerid' ||
           keyLower === 'owner_id' ||
-          keyLower === 'eventownerid' ||
+          keyLower === 'assignedto' ||
           keyLower === 'accountmanager' ||
           keyLower === 'account_manager'
         );
@@ -2243,7 +2243,7 @@ const fetchLookupOptions = async () => {
   
   // Users lookup: always use /users/list. Only auto-default for assignee/owner fields (never audit roles).
   if (isUserLookupField.value) {
-    await fetchUsers({ autoDefault: isAssignedToField.value || String(props.field?.key || '').toLowerCase() === 'eventownerid' });
+    await fetchUsers({ autoDefault: isAssignedToField.value || String(props.field?.key || '').toLowerCase() === 'assignedto' });
     return;
   }
   

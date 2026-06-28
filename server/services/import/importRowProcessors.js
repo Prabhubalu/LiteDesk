@@ -130,7 +130,7 @@ async function processDealsRow(ctx) {
     results,
   } = ctx;
 
-  const dealData = { organizationId, ownerId: userId };
+  const dealData = { organizationId, assignedTo: userId };
 
   Object.keys(fieldMapping).forEach((csvField) => {
     const dealField = fieldMapping[csvField];

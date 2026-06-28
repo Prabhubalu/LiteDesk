@@ -52,7 +52,7 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
     ],
     lockedFields: [
       'status',
-      'eventOwnerId',
+      'assignedTo',
       'eventId',
       '_id',
       'organizationId',
@@ -92,7 +92,7 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
       'status',
       'auditState',
       'geoRequired', // Always true for audit events
-      'eventOwnerId',
+      'assignedTo',
       'eventId',
       '_id',
       'organizationId',
@@ -138,7 +138,7 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
       'status',
       'auditState',
       'geoRequired', // Always true for audit events
-      'eventOwnerId',
+      'assignedTo',
       'eventId',
       '_id',
       'organizationId',
@@ -186,7 +186,7 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
       'orgList',
       'routeSequence',
       'currentOrgIndex',
-      'eventOwnerId',
+      'assignedTo',
       'eventId',
       '_id',
       'organizationId',
@@ -230,7 +230,7 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
       'routeSequence',
       'currentOrgIndex',
       'kpiActuals', // Read-only, computed from execution
-      'eventOwnerId',
+      'assignedTo',
       'eventId',
       '_id',
       'organizationId',

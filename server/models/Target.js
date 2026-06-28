@@ -53,7 +53,7 @@ const TargetSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   targetTypeKey: { type: String, required: true, trim: true, lowercase: true },
   metricKind: { type: String, enum: METRIC_KINDS, default: 'count' },
-  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   teamId: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', default: null },
   sourceModules: { type: [SourceModuleSchema], default: [] },
   contributionRules: { type: [ContributionRuleSchema], default: [] },
@@ -86,6 +86,6 @@ const TargetSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 TargetSchema.index({ organizationId: 1, lifecycleStatus: 1, periodEnd: 1 });
-TargetSchema.index({ organizationId: 1, ownerId: 1, lifecycleStatus: 1 });
+TargetSchema.index({ organizationId: 1, assignedTo: 1, lifecycleStatus: 1 });
 
 module.exports = wrapTenantModel(mongoose.model('Target', TargetSchema));

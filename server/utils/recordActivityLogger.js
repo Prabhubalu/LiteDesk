@@ -335,7 +335,7 @@ async function appendFieldChangeLogs({
     const caseOrgIds = new Set();
     for (const fieldKey of keys) {
       if (SYSTEM_KEYS.has(fieldKey)) continue;
-      if (fieldKey === 'caseOwnerId') {
+      if (fieldKey === 'assignedTo') {
         for (const val of [prev[fieldKey], updated[fieldKey]]) {
           const id = extractObjectIdRef(val);
           if (id) caseUserIds.add(id.toString());
@@ -416,7 +416,7 @@ async function appendFieldChangeLogs({
       fromStr = formatPeopleOrganizationForLog(fromVal, crmOrgNameMap);
       toStr = formatPeopleOrganizationForLog(toVal, crmOrgNameMap);
       fieldLabel = getFieldLabel(fieldKey, fieldLabels);
-    } else if (mod === 'cases' && fieldKey === 'caseOwnerId') {
+    } else if (mod === 'cases' && fieldKey === 'assignedTo') {
       fromStr = formatCaseUserRefForLog(fromVal, caseUserNameMap);
       toStr = formatCaseUserRefForLog(toVal, caseUserNameMap);
       fieldLabel = getFieldLabel(fieldKey, fieldLabels);

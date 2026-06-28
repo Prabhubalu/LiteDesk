@@ -95,11 +95,11 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
         <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.helpdeskAnalyticsOwnerTitle') }}</h4>
         <div class="space-y-3 max-h-96 overflow-y-auto">
-          <div v-for="owner in owners" :key="owner.ownerId" class="p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+          <div v-for="owner in owners" :key="owner.assignedTo" class="p-3 rounded-lg border border-gray-100 dark:border-gray-700">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm font-medium text-gray-900 dark:text-white">{{ ownerName(owner) }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">{{ owner.owner?.email || owner.ownerId }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ owner.owner?.email || owner.assignedTo }}</p>
               </div>
               <span class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                 {{ t('settings.helpdeskAnalyticsOpenBadge', { count: owner.openCases }) }}

@@ -147,7 +147,7 @@ const DocumentSchema = new Schema(
       ref: 'DocumentVersion',
       default: null
     },
-    ownerId: {
+    assignedTo: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,

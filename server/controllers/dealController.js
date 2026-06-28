@@ -103,7 +103,7 @@ const DEAL_FIELD_LABELS = {
     actualCloseDate: 'actual close date',
     contactId: 'contact',
     accountId: 'organization',
-    ownerId: 'owner',
+    assignedTo: 'owner',
     description: 'description',
     type: 'type',
     source: 'source',
@@ -192,7 +192,7 @@ const formatDealFieldValueForLog = (field, value, userNameById = {}) => {
         case 'actualCloseDate':
         case 'nextFollowUpDate':
             return formatDealDateForLog(value);
-        case 'ownerId': {
+        case 'assignedTo': {
             const rawId = typeof value === 'object' ? (value._id || value.id) : value;
             const id = rawId ? String(rawId) : '';
             if (id && userNameById[id]) return userNameById[id];
@@ -241,7 +241,7 @@ exports.createDeal = async (req, res) => {
         const payload = {
             ...req.body,
             organizationId: req.user.organizationId,
-            ownerId: req.body.ownerId || req.user._id,
+            assignedTo: req.body.assignedTo || req.user._id,
             createdBy: req.user._id,
             modifiedBy: req.user._id,
             activityLogs: [{
@@ -254,7 +254,7 @@ exports.createDeal = async (req, res) => {
         };
 
         const { validateRecordAssignmentRequest } = require('../services/recordAssignmentService');
-        const ownerAssignCheck = await validateRecordAssignmentRequest(req, payload.ownerId, { skipSelf: true });
+        const ownerAssignCheck = await validateRecordAssignmentRequest(req, payload.assignedTo, { skipSelf: true });
         if (ownerAssignCheck) {
             return res.status(ownerAssignCheck.status).json(ownerAssignCheck.body);
         }
@@ -381,7 +381,7 @@ exports.createDeal = async (req, res) => {
 
         const deal = await Deal.findById(newDeal._id)
             .populate('contactId', 'first_name last_name email')
-            .populate('ownerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('dealPeople.personId', 'first_name last_name email')
             .populate('dealOrganizations.organizationId', 'name');
 
@@ -424,7 +424,7 @@ exports.getDeals = async (req, res) => {
         
         const dealPopulate = [
             { path: 'contactId', select: 'first_name last_name email' },
-            { path: 'ownerId', select: 'firstName lastName email' },
+            { path: 'assignedTo', select: 'firstName lastName email' },
             { path: 'accountId', select: 'name' },
             { path: 'dealPeople.personId', select: 'first_name last_name email' },
             { path: 'dealOrganizations.organizationId', select: 'name' }
@@ -444,7 +444,7 @@ exports.getDeals = async (req, res) => {
             })
             : await Deal.find(query)
                 .populate('contactId', 'first_name last_name email')
-                .populate('ownerId', 'firstName lastName email')
+                .populate('assignedTo', 'firstName lastName email')
                 .populate('accountId', 'name')
                 .populate('dealPeople.personId', 'first_name last_name email')
                 .populate('dealOrganizations.organizationId', 'name')
@@ -532,7 +532,7 @@ exports.getDealById = async (req, res) => {
             deletedAt: null
         })
         .populate('contactId', 'first_name last_name email phone')
-        .populate('ownerId', 'firstName lastName email')
+        .populate('assignedTo', 'firstName lastName email')
         .populate('accountId', 'name industry')
         .populate('dealPeople.personId', 'first_name last_name email phone')
         .populate('dealOrganizations.organizationId', 'name industry')
@@ -643,7 +643,7 @@ exports.updateDeal = async (req, res) => {
                 { new: true, runValidators: true }
             )
                 .populate('contactId', 'first_name last_name email')
-                .populate('ownerId', 'firstName lastName email')
+                .populate('assignedTo', 'firstName lastName email')
                 .populate('accountId', 'name industry')
                 .populate('dealPeople.personId', 'first_name last_name email')
                 .populate('dealOrganizations.organizationId', 'name');
@@ -718,7 +718,7 @@ exports.updateDeal = async (req, res) => {
             { _id: req.params.id, organizationId: req.user.organizationId, deletedAt: null }
         )
             .populate('contactId', 'first_name last_name email')
-            .populate('ownerId', 'firstName lastName username email')
+            .populate('assignedTo', 'firstName lastName username email')
             .populate('accountId', 'name')
             .lean();
         if (!existingDealForChanges) {
@@ -733,13 +733,13 @@ exports.updateDeal = async (req, res) => {
             return acc;
         }, {});
 
-        if (Object.prototype.hasOwnProperty.call(req.body || {}, 'ownerId')) {
+        if (Object.prototype.hasOwnProperty.call(req.body || {}, 'assignedTo')) {
             const { validateRecordAssignmentRequest } = require('../services/recordAssignmentService');
-            const newOwnerRaw = req.body.ownerId;
+            const newOwnerRaw = req.body.assignedTo;
             const newOwnerId = typeof newOwnerRaw === 'object'
                 ? (newOwnerRaw._id || newOwnerRaw.id)
                 : newOwnerRaw;
-            const oldOwnerRaw = existingDealForChanges.ownerId;
+            const oldOwnerRaw = existingDealForChanges.assignedTo;
             const oldOwnerId = typeof oldOwnerRaw === 'object'
                 ? (oldOwnerRaw._id || oldOwnerRaw.id)
                 : oldOwnerRaw;
@@ -760,7 +760,7 @@ exports.updateDeal = async (req, res) => {
             { new: true, runValidators: true }
         )
             .populate('contactId', 'first_name last_name email')
-            .populate('ownerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('accountId', 'name');
 
         if (!updatedDeal) {
@@ -797,16 +797,16 @@ exports.updateDeal = async (req, res) => {
 
         const actorName = getActorDisplayName(req.user);
         const userIdsToResolve = new Set();
-        if (oldValuesByField.ownerId) {
-            const oldOwnerId = typeof oldValuesByField.ownerId === 'object'
-                ? (oldValuesByField.ownerId._id || oldValuesByField.ownerId.id)
-                : oldValuesByField.ownerId;
+        if (oldValuesByField.assignedTo) {
+            const oldOwnerId = typeof oldValuesByField.assignedTo === 'object'
+                ? (oldValuesByField.assignedTo._id || oldValuesByField.assignedTo.id)
+                : oldValuesByField.assignedTo;
             if (oldOwnerId) userIdsToResolve.add(String(oldOwnerId));
         }
-        if (updatedDeal.ownerId) {
-            const newOwnerId = typeof updatedDeal.ownerId === 'object'
-                ? (updatedDeal.ownerId._id || updatedDeal.ownerId.id)
-                : updatedDeal.ownerId;
+        if (updatedDeal.assignedTo) {
+            const newOwnerId = typeof updatedDeal.assignedTo === 'object'
+                ? (updatedDeal.assignedTo._id || updatedDeal.assignedTo.id)
+                : updatedDeal.assignedTo;
             if (newOwnerId) userIdsToResolve.add(String(newOwnerId));
         }
 
@@ -941,7 +941,7 @@ exports.updateDeal = async (req, res) => {
 
         const populatedDeal = await Deal.findById(updatedDeal._id)
             .populate('contactId', 'first_name last_name email')
-            .populate('ownerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('accountId', 'name industry')
             .populate('dealPeople.personId', 'first_name last_name email')
             .populate('dealOrganizations.organizationId', 'name');
@@ -976,7 +976,7 @@ exports.updateDealTags = async (req, res) => {
             { new: true, runValidators: true }
         )
             .populate('contactId', 'first_name last_name email')
-            .populate('ownerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('accountId', 'name industry')
             .populate('dealPeople.personId', 'first_name last_name email')
             .populate('dealOrganizations.organizationId', 'name');
@@ -1081,7 +1081,7 @@ exports.addNote = async (req, res) => {
             { new: true, runValidators: true }
         )
         .populate('contactId', 'first_name last_name email')
-        .populate('ownerId', 'firstName lastName email')
+        .populate('assignedTo', 'firstName lastName email')
         .populate('notes.createdBy', 'firstName lastName');
         
         if (!deal) {
@@ -1194,7 +1194,7 @@ exports.updateDealNote = async (req, res) => {
 
         const populatedDeal = await Deal.findById(deal._id)
             .populate('contactId', 'first_name last_name email')
-            .populate('ownerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('notes.createdBy', 'firstName lastName email');
 
         res.status(200).json({
@@ -1417,7 +1417,7 @@ exports.restoreDescriptionVersion = async (req, res) => {
 
         const populatedDeal = await Deal.findById(deal._id)
             .populate('contactId', 'first_name last_name email')
-            .populate('ownerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('accountId', 'name industry')
             .populate('dealPeople.personId', 'first_name last_name email')
             .populate('dealOrganizations.organizationId', 'name');
@@ -1612,7 +1612,7 @@ exports.getDashboardMetrics = async (req, res) => {
             deletedAt: null
         };
         if (selectedRepIds.length > 0) {
-            commonDealFilter.ownerId = { $in: selectedRepIds };
+            commonDealFilter.assignedTo = { $in: selectedRepIds };
         }
         if (selectedPipelines.length > 0) {
             commonDealFilter.pipeline = { $in: selectedPipelines };
@@ -1751,7 +1751,7 @@ exports.getDashboardMetrics = async (req, res) => {
                 },
                 {
                     $group: {
-                        _id: '$ownerId',
+                        _id: '$assignedTo',
                         commit: {
                             $sum: {
                                 $cond: [{ $gte: ['$probability', 70] }, '$amount', 0]
@@ -1817,7 +1817,7 @@ exports.getDashboardMetrics = async (req, res) => {
             ]),
             Deal.aggregate([
                 { $match: { ...commonDealFilter, createdAt: { $gte: weekStart } } },
-                { $group: { _id: '$ownerId', pipelineCreated: { $sum: '$amount' } } }
+                { $group: { _id: '$assignedTo', pipelineCreated: { $sum: '$amount' } } }
             ]),
             Deal.aggregate([
                 {
@@ -1827,13 +1827,13 @@ exports.getDashboardMetrics = async (req, res) => {
                         actualCloseDate: { $gte: currentPeriodStart, $lte: now }
                     }
                 },
-                { $group: { _id: '$ownerId', revenueClosed: { $sum: '$amount' }, wins: { $sum: 1 } } }
+                { $group: { _id: '$assignedTo', revenueClosed: { $sum: '$amount' }, wins: { $sum: 1 } } }
             ]),
             Deal.aggregate([
                 { $match: commonDealFilter },
                 { $unwind: { path: '$activityLogs', preserveNullAndEmptyArrays: false } },
                 { $match: { 'activityLogs.timestamp': { $gte: currentPeriodStart, $lte: now } } },
-                { $group: { _id: '$ownerId', activityCount: { $sum: 1 } } }
+                { $group: { _id: '$assignedTo', activityCount: { $sum: 1 } } }
             ]),
             Deal.aggregate([
                 { $match: commonDealFilter },
@@ -2440,7 +2440,7 @@ exports.updateStage = async (req, res) => {
 
         const updatedDeal = await Deal.findById(deal._id)
             .populate('contactId', 'first_name last_name email')
-            .populate('ownerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('dealPeople.personId', 'first_name last_name email')
             .populate('dealOrganizations.organizationId', 'name');
 

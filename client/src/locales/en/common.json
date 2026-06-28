@@ -15,6 +15,10 @@
     "message": "Assigned to {gender, select, female {her} male {him} other {them}}",
     "description": "ICU select example for gendered copy (platform chrome only)"
   },
+  "assignedTo": {
+    "message": "Assigned To",
+    "description": "Standard record ownership field label across CRM modules"
+  },
   "localeDevTitle": {
     "message": "Localization QA",
     "description": "Developer settings section for i18n tools"

@@ -449,7 +449,7 @@ exports.generateDocument = async (req, res) => {
     const quoteId = req.params.id;
 
     const quote = await Quote.findOne({ _id: quoteId, organizationId })
-      .populate({ path: 'ownerId', select: 'firstName lastName email username' })
+      .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
       .populate({ path: 'organizationRefId', select: 'name' })
       .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' })
       .lean();

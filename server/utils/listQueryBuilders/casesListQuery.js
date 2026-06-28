@@ -19,8 +19,8 @@ function buildCasesListQuery(req) {
     error.statusCode = 400;
     throw error;
   }
-  if (parsedQuery.filters.caseOwnerId && !mongoose.Types.ObjectId.isValid(parsedQuery.filters.caseOwnerId)) {
-    const error = new Error('Invalid caseOwnerId filter');
+  if (parsedQuery.filters.assignedTo && !mongoose.Types.ObjectId.isValid(parsedQuery.filters.assignedTo)) {
+    const error = new Error('Invalid assignedTo filter');
     error.statusCode = 400;
     throw error;
   }

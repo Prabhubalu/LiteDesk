@@ -2363,7 +2363,7 @@ const getSyntheticColumnLabel = (moduleKey, key) =>
   resolveListColumnLabel(moduleKey, key, key, t, te);
 
 // Default Kanban card field order for deals: Title, Amount, Expected Close Date, Probability, Priority, Organization, Deal Owner
-const DEALS_KANBAN_DEFAULT_VISIBLE_KEYS = ['name', 'amount', 'expectedCloseDate', 'probability', 'priority', 'accountId', 'ownerId'];
+const DEALS_KANBAN_DEFAULT_VISIBLE_KEYS = ['name', 'amount', 'expectedCloseDate', 'probability', 'priority', 'accountId', 'assignedTo'];
 
 // Default Kanban card field order for tasks: Title, Assigned to, Due Date, Priority
 const TASKS_KANBAN_DEFAULT_VISIBLE_KEYS = ['title', 'assignedTo', 'dueDate', 'priority'];

@@ -47,7 +47,7 @@ test('userBypassesSharing ignores canViewAllData when RBAC v2 enabled', () => {
 });
 
 test('getOwnerFieldForModule maps deals and people', () => {
-  assert.equal(getOwnerFieldForModule('deals'), 'ownerId');
+  assert.equal(getOwnerFieldForModule('deals'), 'assignedTo');
   assert.equal(getOwnerFieldForModule('people'), 'assignedTo');
-  assert.equal(getOwnerFieldForModule('cases'), 'caseOwnerId');
+  assert.equal(getOwnerFieldForModule('cases'), 'assignedTo');
 });

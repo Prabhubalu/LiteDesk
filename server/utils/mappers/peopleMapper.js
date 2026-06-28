@@ -5,8 +5,8 @@ const { setSalesParticipationIn } = require('../syncSalesParticipation');
 
 exports.contactToPeopleDoc = function(contactDoc, context) {
   const orgId = contactDoc.organizationId || context?.organizationId;
-  const ownerId = contactDoc.owner_id || context?.assignedTo;
-  const createdBy = context?.createdBy || ownerId;
+  const assignedTo = contactDoc.owner_id || context?.assignedTo;
+  const createdBy = context?.createdBy || assignedTo;
 
   const role = contactDoc.lifecycle_stage === 'Lead' ? 'Lead' : 'Contact';
   const lead_status = mapLeadStatus(contactDoc.lifecycle_stage);
@@ -15,7 +15,7 @@ exports.contactToPeopleDoc = function(contactDoc, context) {
   return {
     organizationId: orgId,
     createdBy: createdBy,
-    assignedTo: ownerId,
+    assignedTo: assignedTo,
     legacyContactId: contactDoc._id,
 
     // core

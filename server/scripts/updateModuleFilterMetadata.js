@@ -108,7 +108,7 @@ const moduleFilterMetadata = {
     }
   },
   events: {
-    'eventOwnerId': {
+    'assignedTo': {
       filterable: true,
       filterType: 'user',
       filterPriority: 1

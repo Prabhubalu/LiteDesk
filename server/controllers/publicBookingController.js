@@ -75,7 +75,7 @@ exports.getPublicPage = async (req, res) => {
       });
     }
 
-    const host = await User.findById(lean.ownerId)
+    const host = await User.findById(lean.assignedTo)
       .select('firstName lastName username avatar')
       .lean();
 
@@ -111,7 +111,7 @@ exports.getPublicSlots = async (req, res) => {
       const resolved = await resolveScheduleForBookingConfig(
         lean,
         lean.organizationId,
-        lean.ownerId
+        lean.assignedTo
       );
       scheduleTimezone = getDisplayTimezone(lean, resolved);
       dayMeta = describeDayAvailability(resolved.schedule, date);
@@ -119,7 +119,7 @@ exports.getPublicSlots = async (req, res) => {
       const result = await getSlotsForDate(
         lean,
         date,
-        lean.ownerId,
+        lean.assignedTo,
         lean.organizationId
       );
       slots = result.slots;

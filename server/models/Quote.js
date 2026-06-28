@@ -70,7 +70,7 @@ const QuoteSchema = new Schema(
     currency: { type: String, trim: true, default: 'USD', index: true },
     exchangeRateSnapshot: { type: Number, default: 1 },
 
-    ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    assignedTo: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
 
     // Optional links (module-agnostic; do not require Sales)
     customerId: { type: Schema.Types.ObjectId, default: null, index: true },

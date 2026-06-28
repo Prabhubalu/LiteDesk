@@ -142,7 +142,7 @@ export const QUOTE_FIELD_METADATA: Record<string, QuoteFieldMetadata> = {
     editable: true,
     allowOnCreate: true,
   },
-  ownerId: {
+  assignedTo: {
     owner: 'core',
     intent: 'detail',
     fieldScope: 'CORE',

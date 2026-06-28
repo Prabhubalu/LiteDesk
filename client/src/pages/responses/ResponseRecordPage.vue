@@ -640,7 +640,7 @@ const normalizeEventUserId = (user) => {
 };
 
 const reviewerId = computed(() => normalizeEventUserId(linkedEvent.value?.reviewerId));
-const auditorId = computed(() => normalizeEventUserId(linkedEvent.value?.auditorId || linkedEvent.value?.eventOwnerId));
+const auditorId = computed(() => normalizeEventUserId(linkedEvent.value?.auditorId || linkedEvent.value?.assignedTo));
 const submittedById = computed(() => normalizeEventUserId(response.value?.submittedBy));
 
 const allowSelfReview = computed(() => {

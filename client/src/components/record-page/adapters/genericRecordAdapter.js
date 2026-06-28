@@ -123,14 +123,14 @@ function fieldTypeFromDef(field, fieldKey) {
   if (key === 'tags') return 'tags';
   if (!field) {
     if (/(created|updated|modified|deleted|closed|start|end).*(at|date)/i.test(key) || ['duedate', 'birthday'].includes(key)) return 'date';
-    if (key === 'caseownerid') return 'user';
+    if (key === 'assignedto') return 'user';
     if (/(createdby|modifiedby|updatedby|assignedto)$/i.test(key) || /(owner|userid|caseowner)$/i.test(key)) return 'user';
     if (/(website|url|link)$/i.test(key)) return 'url';
     if (key === 'phone' || key === 'mobile') return 'phone';
     if (key === '_id' || key === 'id' || key === '__v') return 'text';
   }
   const dt = String(field?.dataType || '').toLowerCase();
-  if (key === 'caseownerid' || (field && String(field.key || '').toLowerCase() === 'caseownerid')) {
+  if (key === 'assignedto' || (field && String(field.key || '').toLowerCase() === 'assignedto')) {
     return 'user';
   }
   if (['createdby', 'updatedby', 'modifiedby', 'deletedby'].includes(key)) {
@@ -186,7 +186,7 @@ function filterFieldKeysByDependencies(keys, fields, record, moduleKey) {
 function iconForKey(key, field) {
   const k = String(key || '').toLowerCase();
   const dt = String(field?.dataType || '').toLowerCase();
-  if (['ownerid', 'owner_id', 'assignedto', 'caseownerid', 'createdby', 'updatedby', 'modifiedby', 'user'].includes(k) || dt.includes('user')) return UserIcon;
+  if (['ownerid', 'owner_id', 'assignedto', 'assignedto', 'createdby', 'updatedby', 'modifiedby', 'user'].includes(k) || dt.includes('user')) return UserIcon;
   if (['date', 'createdat', 'updatedat', 'closedate'].some((x) => k.includes(x)) || dt.includes('date')) return CalendarIcon;
   if (['amount', 'currency', 'number'].some((x) => k.includes(x)) || dt.includes('currency')) return CurrencyDollarIcon;
   const isSelectLikeTypeKey =
@@ -393,7 +393,7 @@ export function createGenericRecordAdapter(opts = {}) {
       const caseLoose = String(fieldKey || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
       const caseCanonicalByLoose =
         moduleKeyStr === 'cases'
-          ? { contactid: 'contactId', organizationrefid: 'organizationRefId', caseownerid: 'caseOwnerId' }
+          ? { contactid: 'contactId', organizationrefid: 'organizationRefId', assignedto: 'assignedTo' }
           : null;
       const canonicalKey = caseCanonicalByLoose?.[caseLoose];
       let rawValue = record[fieldKey];

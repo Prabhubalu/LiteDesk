@@ -7,13 +7,13 @@ const DEFAULT_RULE_TEMPLATES = {
     metricField: 'amount',
     metricKind: 'currency',
     filters: [{ field: 'status', operator: 'equals', value: 'Won' }],
-    attribution: { type: 'owner', field: 'ownerId' }
+    attribution: { type: 'owner', field: 'assignedTo' }
   },
   'HELPDESK:cases': {
     metricField: null,
     metricKind: 'count',
     filters: [{ field: 'status', operator: 'equals', value: 'Resolved' }],
-    attribution: { type: 'owner', field: 'caseOwnerId' }
+    attribution: { type: 'owner', field: 'assignedTo' }
   },
   'PLATFORM:tasks': {
     metricField: null,

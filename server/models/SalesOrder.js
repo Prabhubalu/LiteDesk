@@ -80,7 +80,7 @@ const SalesOrderSchema = new Schema(
     adjustmentTotal: { type: Number, default: 0 },
     grandTotal: { type: Number, default: 0 },
 
-    ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    assignedTo: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
 
     customerId: { type: Schema.Types.ObjectId, default: null, index: true },
     organizationRefId: { type: Schema.Types.ObjectId, ref: 'Organization', default: null, index: true },

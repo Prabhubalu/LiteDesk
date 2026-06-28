@@ -71,7 +71,7 @@ test('resolvePlaybookAssigneeId resolves deal_owner and specific_user', async ()
 
   const deal = {
     organizationId: org._id,
-    ownerId: dealOwner._id,
+    assignedTo: dealOwner._id,
     stage: 'Qualification'
   };
 
@@ -113,7 +113,7 @@ test('resolvePlaybookAssigneeId resolves role by name and prefers deal owner in 
 
   const deal = {
     organizationId: org._id,
-    ownerId: dealOwner._id,
+    assignedTo: dealOwner._id,
     stage: 'Qualification'
   };
 
@@ -151,7 +151,7 @@ test('resolvePlaybookAssigneeId resolves team by name using lead', async () => {
 
   const deal = {
     organizationId: org._id,
-    ownerId: new mongoose.Types.ObjectId(),
+    assignedTo: new mongoose.Types.ObjectId(),
     stage: 'Qualification'
   };
 
@@ -167,7 +167,7 @@ test('resolvePlaybookAssigneeId resolves stage_owner from stage history', async 
   const stageOwner = new mongoose.Types.ObjectId();
   const deal = {
     organizationId: org._id,
-    ownerId: new mongoose.Types.ObjectId(),
+    assignedTo: new mongoose.Types.ObjectId(),
     stage: 'Proposal',
     stageHistory: [
       { stage: 'Qualification', changedBy: new mongoose.Types.ObjectId() },

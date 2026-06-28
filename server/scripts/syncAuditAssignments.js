@@ -68,10 +68,10 @@ async function syncAuditAssignments(organizationId = null) {
         }
 
         // Get auditorId (required for assignment)
-        const auditorId = event.auditorId || event.eventOwnerId;
+        const auditorId = event.auditorId || event.assignedTo;
         
         if (!auditorId) {
-          console.warn(`⚠️  Skipping event ${event._id} - missing auditorId/eventOwnerId`);
+          console.warn(`⚠️  Skipping event ${event._id} - missing auditorId/assignedTo`);
           skipped++;
           continue;
         }

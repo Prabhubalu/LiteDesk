@@ -43,7 +43,7 @@ const MODULE_METADATA = {
     model: Deal,
     modelName: 'Deal',
     fields: {
-      assignedTo: 'ownerId',
+      assignedTo: 'assignedTo',
       status: 'status',
       priority: 'priority',
       title: 'name'
@@ -72,7 +72,7 @@ const MODULE_METADATA = {
     model: Event,
     modelName: 'Event',
     fields: {
-      assignedTo: null, // Uses formAssignment.assignedAuditor or auditorId or eventOwnerId
+      assignedTo: null, // Uses formAssignment.assignedAuditor or auditorId or assignedTo
       status: 'auditState',
       priority: null,
       title: 'eventName'
@@ -150,7 +150,7 @@ async function loadEntity(moduleMetadata, entityId, organizationId) {
     }
 
     if (moduleMetadata.modelName === 'Event') {
-      fieldsToSelect.push('formAssignment', 'auditorId', 'eventOwnerId');
+      fieldsToSelect.push('formAssignment', 'auditorId', 'assignedTo');
     }
 
     if (moduleMetadata.loadByCreatedByTenant) {
@@ -203,7 +203,7 @@ function getAssignedUserId(entity, moduleMetadata) {
 
   if (moduleMetadata.modelName === 'Event') {
     // Special handling for audit/event
-    return entity.formAssignment?.assignedAuditor || entity.auditorId || entity.eventOwnerId;
+    return entity.formAssignment?.assignedAuditor || entity.auditorId || entity.assignedTo;
   }
 
   if (assignedToField && entity[assignedToField]) {

@@ -81,8 +81,8 @@ async function createCaseFromInboundEmail({
   parentCaseId = null,
   defaults = {}
 }) {
-  const ownerId = await resolveDefaultOwner(organizationId, defaults.defaultOwnerId || null);
-  if (!ownerId) {
+  const assignedTo = await resolveDefaultOwner(organizationId, defaults.defaultOwnerId || null);
+  if (!assignedTo) {
     throw new Error('No active helpdesk owner available for inbound email');
   }
 
@@ -98,7 +98,7 @@ async function createCaseFromInboundEmail({
     caseType: defaults.defaultCaseType || defaults.caseType || 'Support Ticket',
     priority: defaults.defaultPriority || defaults.priority || 'Medium',
     status,
-    caseOwnerId: ownerId,
+    assignedTo: assignedTo,
     channel: defaults.defaultChannel || defaults.channel || 'Email',
     queue: defaults.defaultQueue || defaults.queue || null,
     caseNotes: String(body || '').trim() || '',
@@ -132,18 +132,18 @@ async function createCaseFromInboundEmail({
         createdAt: now
       }
     ],
-    createdBy: actorId || ownerId,
-    updatedBy: actorId || ownerId
+    createdBy: actorId || assignedTo,
+    updatedBy: actorId || assignedTo
   });
 
   created.currentSlaCycle = await finalizeCaseSlaOnCreate({
     organizationId,
     caseRecord: created,
-    actorId: actorId || ownerId
+    actorId: actorId || assignedTo
   });
   await created.save();
 
-  await caseExecutionService.onCaseCreated({ caseRecord: created, actorId: actorId || ownerId });
+  await caseExecutionService.onCaseCreated({ caseRecord: created, actorId: actorId || assignedTo });
   return created;
 }
 
@@ -157,8 +157,8 @@ async function createCaseFromChannelInteraction({
   defaults = {},
   links = {}
 }) {
-  const ownerId = await resolveDefaultOwner(organizationId, defaults.defaultOwnerId || null);
-  if (!ownerId) {
+  const assignedTo = await resolveDefaultOwner(organizationId, defaults.defaultOwnerId || null);
+  if (!assignedTo) {
     throw new Error('No active helpdesk owner available for inbound channel interaction');
   }
 
@@ -174,7 +174,7 @@ async function createCaseFromChannelInteraction({
     caseType: defaults.defaultCaseType || 'Support Ticket',
     priority: defaults.defaultPriority || 'Medium',
     status,
-    caseOwnerId: ownerId,
+    assignedTo: assignedTo,
     channel,
     contactId: links.contactId || null,
     organizationRefId: links.organizationRefId || null,
@@ -206,18 +206,18 @@ async function createCaseFromChannelInteraction({
         createdAt: now
       }
     ],
-    createdBy: actorId || ownerId,
-    updatedBy: actorId || ownerId
+    createdBy: actorId || assignedTo,
+    updatedBy: actorId || assignedTo
   });
 
   created.currentSlaCycle = await finalizeCaseSlaOnCreate({
     organizationId,
     caseRecord: created,
-    actorId: actorId || ownerId
+    actorId: actorId || assignedTo
   });
   await created.save();
 
-  await caseExecutionService.onCaseCreated({ caseRecord: created, actorId: actorId || ownerId });
+  await caseExecutionService.onCaseCreated({ caseRecord: created, actorId: actorId || assignedTo });
   return created;
 }
 

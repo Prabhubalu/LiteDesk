@@ -215,7 +215,7 @@ async function runSmoke(org) {
         entityType: 'cases',
         entityId: recordId,
         organizationId: orgId,
-        ownerId: memberIds[0],
+        assignedTo: memberIds[0],
         triggeredBy: memberIds[0],
         appKey: 'HELPDESK'
       };

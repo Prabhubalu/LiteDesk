@@ -245,7 +245,7 @@ async function getResumeItems(userId, organizationId, req = null) {
       .lean(),
     Deal.find({
       organizationId,
-      ownerId: userId,
+      assignedTo: userId,
       deletedAt: null
     })
       .sort({ updatedAt: -1 })
@@ -254,7 +254,7 @@ async function getResumeItems(userId, organizationId, req = null) {
       .lean(),
     Case.find({
       ...orgFilter,
-      caseOwnerId: userId,
+      assignedTo: userId,
       status: { $nin: CLOSED_CASE_STATUSES }
     })
       .sort({ updatedAt: -1 })
@@ -398,7 +398,7 @@ async function getResumeDocumentItems(userId, organizationId) {
   const rows = await Document.find({
     organizationId,
     deletedAt: null,
-    $or: [{ ownerId: userId }, { modifiedBy: userId }, { createdBy: userId }]
+    $or: [{ assignedTo: userId }, { modifiedBy: userId }, { createdBy: userId }]
   })
     .sort({ updatedAt: -1 })
     .limit(RESUME_PER_MODULE)
@@ -429,7 +429,7 @@ async function getNextEvent(userId, organizationId) {
     status: { $nin: ['Completed', 'Cancelled'] },
     startDateTime: { $gte: now },
     $or: [
-      { eventOwnerId: userId },
+      { assignedTo: userId },
       { auditorId: userId },
       { reviewerId: userId }
     ]

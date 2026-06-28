@@ -217,12 +217,12 @@ const hasPersonalPage = computed(() =>
 );
 
 function isOwnedByMe(page) {
-  const ownerId = page.ownerId?._id || page.ownerId;
-  return String(ownerId) === String(authStore.user?._id);
+  const assignedTo = page.assignedTo?._id || page.assignedTo;
+  return String(assignedTo) === String(authStore.user?._id);
 }
 
 function ownerName(page) {
-  const u = page.ownerId;
+  const u = page.assignedTo;
   if (u && typeof u === 'object') {
     const name = [u.firstName, u.lastName].filter(Boolean).join(' ');
     return name || u.email || u.username || t('appointments.userFallback');
@@ -261,7 +261,7 @@ function editPage(page) {
     router.push({ name: 'appointments-team-configure', params: { id: page._id } });
     return;
   }
-  const userId = page.ownerId?._id || page.ownerId;
+  const userId = page.assignedTo?._id || page.assignedTo;
   if (isOwnedByMe(page)) {
     openTab('/appointments/configure', { title: page.displayName || t('appointments.tabPersonalShort'), icon: '📅' });
     router.push({ name: 'appointments-configure' });

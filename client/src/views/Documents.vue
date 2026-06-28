@@ -171,7 +171,7 @@ const listActiveFilterChips = computed(() => {
     if (ownerFilter.value) {
       const user = ownerOptions.value.find((entry) => String(entry._id) === String(ownerFilter.value));
       chips.push({
-        id: 'ownerId',
+        id: 'assignedTo',
         label: t('documents.activeFilterOwner', { value: user ? getUserDisplayName(user) : '—' })
       });
     }
@@ -459,7 +459,7 @@ const columns = computed(() => [
     filterType: 'number'
   },
   {
-    key: 'ownerId',
+    key: 'assignedTo',
     label: t('documents.columnOwner'),
     sortable: false,
     dataType: 'User',
@@ -529,10 +529,10 @@ function normalizeColumnTagsValue(value) {
 
 function toListViewFilterUi(viewFilters = {}) {
   const ui = {};
-  if (viewFilters.ownerId) {
-    ui.ownerId = authStore.user?._id && String(viewFilters.ownerId) === String(authStore.user._id)
+  if (viewFilters.assignedTo) {
+    ui.assignedTo = authStore.user?._id && String(viewFilters.assignedTo) === String(authStore.user._id)
       ? 'me'
-      : viewFilters.ownerId;
+      : viewFilters.assignedTo;
   }
   if (viewFilters.status) ui.status = viewFilters.status;
   if (viewFilters.documentType) ui.documentType = viewFilters.documentType;
@@ -551,7 +551,7 @@ function applyColumnFiltersToDocumentState(apiFilters = {}) {
   statusFilter.value = apiFilters.status || '';
   documentTypeFilter.value = apiFilters.documentType || '';
 
-  const owner = apiFilters.ownerId;
+  const owner = apiFilters.assignedTo;
   if (!owner) {
     ownerFilter.value = '';
   } else if (owner === 'me' && authStore.user?._id) {
@@ -593,7 +593,7 @@ function handleListFiltersUpdate(newFilters, options = {}) {
 }
 
 function formatOwner(row) {
-  const owner = row?.ownerId;
+  const owner = row?.assignedTo;
   if (!owner || typeof owner !== 'object') return '—';
   return [owner.firstName, owner.lastName].filter(Boolean).join(' ') || owner.email || '—';
 }
@@ -707,7 +707,7 @@ function getListFilters(overrides = {}) {
     status: statusFilter.value || '',
     documentType: documentTypeFilter.value || '',
     fileType: fileTypeFilter.value || '',
-    ownerId: ownerFilter.value || '',
+    assignedTo: ownerFilter.value || '',
     tag: tagFilter.value || '',
     linkedModuleKey: linkedModuleFilter.value || '',
     linkedRecordId: linkedRecordIdFilter.value.trim() || '',
@@ -1274,7 +1274,7 @@ function getDocumentSystemViews() {
     views.push({
       id: 'assigned-to-me',
       label: resolveListViewLabel('documents', 'assigned-to-me', `My ${moduleLabel}`, t, te),
-      filters: { ownerId: 'me' }
+      filters: { assignedTo: 'me' }
     });
   }
   return views;
@@ -1292,8 +1292,8 @@ function resolveDocumentSavedViewFilters(view) {
     viewFilters = { ...view.filters };
   }
 
-  if (viewFilters.ownerId === 'me' && authStore.user?._id) {
-    viewFilters = { ...viewFilters, ownerId: authStore.user._id };
+  if (viewFilters.assignedTo === 'me' && authStore.user?._id) {
+    viewFilters = { ...viewFilters, assignedTo: authStore.user._id };
   }
 
   return viewFilters;
@@ -1305,7 +1305,7 @@ function applySavedViewFilters(viewFilters = {}) {
   statusFilter.value = viewFilters.status || '';
   documentTypeFilter.value = viewFilters.documentType || '';
   fileTypeFilter.value = viewFilters.fileType || '';
-  ownerFilter.value = viewFilters.ownerId || '';
+  ownerFilter.value = viewFilters.assignedTo || '';
   tagFilter.value = viewFilters.tag || '';
   selectedFolderId.value = viewFilters.folderId ? String(viewFilters.folderId) : null;
   linkedModuleFilter.value = viewFilters.linkedModuleKey || '';
@@ -1402,11 +1402,11 @@ function handleRemoveListActiveFilter(filterId) {
     case 'fileType':
       fileTypeFilter.value = '';
       break;
-    case 'ownerId':
+    case 'assignedTo':
       ownerFilter.value = '';
       {
         const next = { ...listColumnFilters.value };
-        delete next.ownerId;
+        delete next.assignedTo;
         listColumnFilters.value = next;
       }
       break;

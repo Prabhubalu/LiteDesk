@@ -35,7 +35,7 @@ async function seedContext() {
     isTenant: true,
     isActive: true
   });
-  const ownerId = new mongoose.Types.ObjectId();
+  const assignedTo = new mongoose.Types.ObjectId();
 
   const deal = await Deal.create({
     organizationId: org._id,
@@ -44,7 +44,7 @@ async function seedContext() {
     stage: STAGE_NAME,
     pipeline: PIPELINE_KEY,
     expectedCloseDate: new Date('2026-12-31'),
-    ownerId
+    assignedTo
   });
 
   const pipelineSettings = [{
@@ -86,7 +86,7 @@ async function seedContext() {
     pipelineSettings
   });
 
-  return { org, deal, ownerId, pipelineSettings };
+  return { org, deal, assignedTo, pipelineSettings };
 }
 
 test.before(async () => {
@@ -125,10 +125,10 @@ test('computeTriggerDelayRunAt supports minutes, hours, and days', () => {
 });
 
 test('executePlaybookForDeal enqueues delayed auto-create jobs', async () => {
-  const { org, deal, ownerId, pipelineSettings } = await seedContext();
+  const { org, deal, assignedTo, pipelineSettings } = await seedContext();
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -149,10 +149,10 @@ test('executePlaybookForDeal enqueues delayed auto-create jobs', async () => {
 });
 
 test('processDuePlaybookDelayJobs creates linked task when delay elapses', async () => {
-  const { org, deal, ownerId, pipelineSettings } = await seedContext();
+  const { org, deal, assignedTo, pipelineSettings } = await seedContext();
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -170,10 +170,10 @@ test('processDuePlaybookDelayJobs creates linked task when delay elapses', async
 });
 
 test('pending delay jobs are cancelled when deal leaves stage playbook', async () => {
-  const { org, deal, ownerId, pipelineSettings } = await seedContext();
+  const { org, deal, assignedTo, pipelineSettings } = await seedContext();
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -185,13 +185,13 @@ test('pending delay jobs are cancelled when deal leaves stage playbook', async (
   assert.equal(cancelResult.cancelled, 1);
 
   const resolvedPlaybook = resolveStagePlaybook(pipelineSettings, deal.pipeline, deal.stage);
-  const syncResult = await syncPlaybookDelayJobsForDeal(deal, resolvedPlaybook, ownerId);
+  const syncResult = await syncPlaybookDelayJobsForDeal(deal, resolvedPlaybook, assignedTo);
   assert.equal(syncResult.queued, 1);
 
   deal.stage = 'Proposal';
   deal.playbookState = { executionLog: deal.playbookState.executionLog };
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings: [{
       ...pipelineSettings[0],

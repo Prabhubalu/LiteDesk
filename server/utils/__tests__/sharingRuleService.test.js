@@ -50,8 +50,8 @@ test('validateRuleParty requires role for role source', () => {
 });
 
 test('unionVisibilityFilters merges base and grants', () => {
-  const base = { ownerId: 'self' };
-  const grants = [{ ownerId: { $in: ['director-user'] } }];
+  const base = { assignedTo: 'self' };
+  const grants = [{ assignedTo: { $in: ['director-user'] } }];
   const merged = unionVisibilityFilters(base, grants);
   assert.deepEqual(merged, {
     $or: [base, grants[0]]

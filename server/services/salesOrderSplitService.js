@@ -177,7 +177,7 @@ async function splitSalesOrder({ organizationId, salesOrderRef, userId, body = {
     globalDiscountValue: parentOrder.globalDiscountValue,
     globalDiscountAmount: parentOrder.globalDiscountAmount,
     adjustmentTotal: parentOrder.adjustmentTotal,
-    ownerId: parentOrder.ownerId,
+    assignedTo: parentOrder.assignedTo,
     customerId: parentOrder.customerId,
     organizationRefId: parentOrder.organizationRefId,
     contactId: parentOrder.contactId,

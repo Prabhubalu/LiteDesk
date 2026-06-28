@@ -56,7 +56,7 @@ function collectProcessingEvents({
       eventType: 'case.created',
       data: {
         action,
-        caseOwnerId: caseResult?.caseRecord?.caseOwnerId || null,
+        assignedTo: caseResult?.caseRecord?.assignedTo || null,
         currentState: { status: caseResult?.caseRecord?.status || null }
       }
     });

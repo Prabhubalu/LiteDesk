@@ -15,7 +15,7 @@ const {
 describe('parserIdCodec ids', () => {
   const orgId = new mongoose.Types.ObjectId('6a087af980b15fe2b592e891');
   const mbId = new mongoose.Types.ObjectId('6a12f2846e76f240199b96d6');
-  const ownerId = new mongoose.Types.ObjectId('6a087af980b15fe2b592e892');
+  const assignedTo = new mongoose.Types.ObjectId('6a087af980b15fe2b592e892');
 
   it('uses full ObjectId hex for unique parser ids per mailbox', () => {
     assert.equal(toParserTenantId(orgId), 't_6a087af980b15fe2b592e891');
@@ -40,7 +40,7 @@ describe('parserIdCodec ids', () => {
     const a = routingLocalPartFromMailbox({
       label: 'My work inbox',
       kind: 'personal',
-      ownerUserId: ownerId
+      ownerUserId: assignedTo
     });
     const b = routingLocalPartFromMailbox({
       label: 'My work inbox',

@@ -322,7 +322,7 @@ const priorityChipStyle = computed(() => caseChipSurfaceStyle(priorityColor.valu
 const unassignedLabel = computed(() => t('cases.recordDetailsUnassigned'));
 
 const assigneeUser = computed(() => {
-  const owner = props.caseRecord?.caseOwnerId;
+  const owner = props.caseRecord?.assignedTo;
   if (owner && typeof owner === 'object') return owner;
   return null;
 });

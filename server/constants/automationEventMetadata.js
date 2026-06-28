@@ -170,7 +170,7 @@ function buildPreviewTestEvent(rule, { organizationId, userId } = {}) {
     appKey: rule.appKey || 'SALES',
     organizationId: organizationId || null,
     triggeredBy: userId || null,
-    ownerId: userId || null,
+    assignedTo: userId || null,
     previousState: null,
     currentState: {}
   };

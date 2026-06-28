@@ -172,7 +172,7 @@ async function convertMultipleSalesOrdersToInvoice({
     globalDiscountType: body.globalDiscountType ?? primaryOrder.globalDiscountType ?? null,
     globalDiscountValue: Number(body.globalDiscountValue ?? primaryOrder.globalDiscountValue) || 0,
     globalDiscountAmount: Number(body.globalDiscountAmount ?? primaryOrder.globalDiscountAmount) || 0,
-    ownerId: primaryOrder.ownerId ?? userId ?? null,
+    assignedTo: primaryOrder.assignedTo ?? userId ?? null,
     customerId: primaryOrder.customerId ?? null,
     organizationRefId: primaryOrder.organizationRefId ?? null,
     contactId: primaryOrder.contactId ?? null,

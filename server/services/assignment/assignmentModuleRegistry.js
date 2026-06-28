@@ -8,12 +8,19 @@ const adapters = new Map();
 
 const KNOWN_OWNER_PATHS = {
   people: 'assignedTo',
-  deals: 'ownerId',
+  deals: 'assignedTo',
   organizations: 'assignedTo',
   tasks: 'assignedTo',
-  events: 'eventOwnerId',
+  events: 'assignedTo',
   items: 'assignedTo',
-  forms: 'assignedTo'
+  forms: 'assignedTo',
+  cases: 'assignedTo',
+  quotes: 'assignedTo',
+  sales_orders: 'assignedTo',
+  invoices: 'assignedTo',
+  documents: 'assignedTo',
+  targets: 'assignedTo',
+  templates: 'assignedTo'
 };
 
 function registerAdapter(moduleKey, adapter) {

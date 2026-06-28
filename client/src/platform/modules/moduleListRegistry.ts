@@ -530,10 +530,10 @@ function computeEventsStatistics(
     }
 
     // My Events
-    const ownerId = typeof event.eventOwnerId === 'object' && event.eventOwnerId?._id
-      ? event.eventOwnerId._id
-      : event.eventOwnerId;
-    if (ownerId === currentUserId) {
+    const assignedTo = typeof event.assignedTo === 'object' && event.assignedTo?._id
+      ? event.assignedTo._id
+      : event.assignedTo;
+    if (assignedTo === currentUserId) {
       stats.myEvents++;
     }
 
@@ -560,12 +560,12 @@ function computeEventsStatistics(
 function normalizeEventsFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
 
-  // Normalize eventOwnerId (similar to assignedTo)
-  if ('eventOwnerId' in normalized) {
-    if (normalized.eventOwnerId === 'me' && currentUserId) {
-      normalized.eventOwnerId = currentUserId;
-    } else if (normalized.eventOwnerId === 'unassigned') {
-      normalized.eventOwnerId = null;
+  // Normalize assignedTo (similar to assignedTo)
+  if ('assignedTo' in normalized) {
+    if (normalized.assignedTo === 'me' && currentUserId) {
+      normalized.assignedTo = currentUserId;
+    } else if (normalized.assignedTo === 'unassigned') {
+      normalized.assignedTo = null;
     }
   }
 
@@ -596,12 +596,12 @@ function normalizeEventsFilters(filters: Record<string, any>, currentUserId?: st
 function normalizeEventsViewFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
 
-  // Normalize eventOwnerId for UI display
-  if ('eventOwnerId' in normalized) {
-    if (normalized.eventOwnerId === currentUserId) {
-      normalized.eventOwnerId = 'me';
-    } else if (normalized.eventOwnerId === null) {
-      normalized.eventOwnerId = 'unassigned';
+  // Normalize assignedTo for UI display
+  if ('assignedTo' in normalized) {
+    if (normalized.assignedTo === currentUserId) {
+      normalized.assignedTo = 'me';
+    } else if (normalized.assignedTo === null) {
+      normalized.assignedTo = 'unassigned';
     }
   }
 
@@ -639,8 +639,8 @@ function computeDealsStatistics(
   let lostCount = 0;
 
   data.forEach(deal => {
-    const ownerId = typeof deal.ownerId === 'object' && deal.ownerId?._id ? deal.ownerId._id : deal.ownerId;
-    if (ownerId === currentUserId) {
+    const assignedTo = typeof deal.assignedTo === 'object' && deal.assignedTo?._id ? deal.assignedTo._id : deal.assignedTo;
+    if (assignedTo === currentUserId) {
       stats.myDeals++;
     }
     if (deal.status !== 'Won' && deal.status !== 'Lost') {
@@ -665,11 +665,11 @@ function computeDealsStatistics(
 function normalizeDealsFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
 
-  if ('ownerId' in normalized) {
-    if (normalized.ownerId === 'me' && currentUserId) {
-      normalized.ownerId = currentUserId;
-    } else if (normalized.ownerId === 'unassigned') {
-      normalized.ownerId = null;
+  if ('assignedTo' in normalized) {
+    if (normalized.assignedTo === 'me' && currentUserId) {
+      normalized.assignedTo = currentUserId;
+    } else if (normalized.assignedTo === 'unassigned') {
+      normalized.assignedTo = null;
     }
   }
 
@@ -688,11 +688,11 @@ function normalizeDealsFilters(filters: Record<string, any>, currentUserId?: str
 function normalizeDealsViewFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
 
-  if ('ownerId' in normalized) {
-    if (normalized.ownerId === currentUserId) {
-      normalized.ownerId = 'me';
-    } else if (normalized.ownerId === null) {
-      normalized.ownerId = 'unassigned';
+  if ('assignedTo' in normalized) {
+    if (normalized.assignedTo === currentUserId) {
+      normalized.assignedTo = 'me';
+    } else if (normalized.assignedTo === null) {
+      normalized.assignedTo = 'unassigned';
     }
   }
 
@@ -719,9 +719,9 @@ function computeQuotesStatistics(
   };
 
   data.forEach((quote) => {
-    const ownerId =
-      typeof quote.ownerId === 'object' && quote.ownerId?._id ? quote.ownerId._id : quote.ownerId;
-    if (ownerId === currentUserId) {
+    const assignedTo =
+      typeof quote.assignedTo === 'object' && quote.assignedTo?._id ? quote.assignedTo._id : quote.assignedTo;
+    if (assignedTo === currentUserId) {
       stats.myQuotes++;
     }
 
@@ -747,11 +747,11 @@ function computeQuotesStatistics(
 function normalizeQuotesFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
 
-  if ('ownerId' in normalized) {
-    if (normalized.ownerId === 'me' && currentUserId) {
-      normalized.ownerId = currentUserId;
-    } else if (normalized.ownerId === 'unassigned') {
-      normalized.ownerId = null;
+  if ('assignedTo' in normalized) {
+    if (normalized.assignedTo === 'me' && currentUserId) {
+      normalized.assignedTo = currentUserId;
+    } else if (normalized.assignedTo === 'unassigned') {
+      normalized.assignedTo = null;
     }
   }
 
@@ -764,11 +764,11 @@ function normalizeQuotesFilters(filters: Record<string, any>, currentUserId?: st
 
 function normalizeSalesOrdersFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
-  if ('ownerId' in normalized) {
-    if (normalized.ownerId === 'me' && currentUserId) {
-      normalized.ownerId = currentUserId;
-    } else if (normalized.ownerId === 'unassigned') {
-      normalized.ownerId = null;
+  if ('assignedTo' in normalized) {
+    if (normalized.assignedTo === 'me' && currentUserId) {
+      normalized.assignedTo = currentUserId;
+    } else if (normalized.assignedTo === 'unassigned') {
+      normalized.assignedTo = null;
     }
   }
   if ('status' in normalized && normalized.status === '') {
@@ -779,11 +779,11 @@ function normalizeSalesOrdersFilters(filters: Record<string, any>, currentUserId
 
 function normalizeSalesOrdersViewFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
-  if ('ownerId' in normalized) {
-    if (normalized.ownerId === currentUserId) {
-      normalized.ownerId = 'me';
-    } else if (normalized.ownerId === null) {
-      normalized.ownerId = 'unassigned';
+  if ('assignedTo' in normalized) {
+    if (normalized.assignedTo === currentUserId) {
+      normalized.assignedTo = 'me';
+    } else if (normalized.assignedTo === null) {
+      normalized.assignedTo = 'unassigned';
     }
   }
   return normalized;
@@ -822,11 +822,11 @@ function computeSalesOrdersStatistics(
 
 function normalizeInvoicesFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
-  if ('ownerId' in normalized) {
-    if (normalized.ownerId === 'me' && currentUserId) {
-      normalized.ownerId = currentUserId;
-    } else if (normalized.ownerId === 'unassigned') {
-      normalized.ownerId = null;
+  if ('assignedTo' in normalized) {
+    if (normalized.assignedTo === 'me' && currentUserId) {
+      normalized.assignedTo = currentUserId;
+    } else if (normalized.assignedTo === 'unassigned') {
+      normalized.assignedTo = null;
     }
   }
   if ('status' in normalized && normalized.status === '') {
@@ -837,11 +837,11 @@ function normalizeInvoicesFilters(filters: Record<string, any>, currentUserId?: 
 
 function normalizeInvoicesViewFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
-  if ('ownerId' in normalized) {
-    if (normalized.ownerId === currentUserId) {
-      normalized.ownerId = 'me';
-    } else if (normalized.ownerId === null) {
-      normalized.ownerId = 'unassigned';
+  if ('assignedTo' in normalized) {
+    if (normalized.assignedTo === currentUserId) {
+      normalized.assignedTo = 'me';
+    } else if (normalized.assignedTo === null) {
+      normalized.assignedTo = 'unassigned';
     }
   }
   return normalized;
@@ -879,11 +879,11 @@ function computeInvoicesStatistics(
 function normalizeQuotesViewFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
 
-  if ('ownerId' in normalized) {
-    if (normalized.ownerId === currentUserId) {
-      normalized.ownerId = 'me';
-    } else if (normalized.ownerId === null) {
-      normalized.ownerId = 'unassigned';
+  if ('assignedTo' in normalized) {
+    if (normalized.assignedTo === currentUserId) {
+      normalized.assignedTo = 'me';
+    } else if (normalized.assignedTo === null) {
+      normalized.assignedTo = 'unassigned';
     }
   }
 
@@ -1120,7 +1120,7 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
 
   events: {
     defaultColumns: {
-      defaultVisibleColumns: ['eventName', 'eventType', 'startDateTime', 'endDateTime', 'status', 'eventOwnerId'],
+      defaultVisibleColumns: ['eventName', 'eventType', 'startDateTime', 'endDateTime', 'status', 'assignedTo'],
       lockedColumn: 'eventName',
       excludedFromDefault: [
         'appointmentBookedBy',
@@ -1166,7 +1166,7 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       {
         id: 'my-events',
         name: 'My Events',
-        filters: { eventOwnerId: 'me' }
+        filters: { assignedTo: 'me' }
       },
       {
         id: 'appointments',
@@ -1187,7 +1187,7 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
   deals: {
     defaultColumns: {
       // Title, Organization, Amount, Probability, Expected Close Date, Priority, Deal Owner
-      defaultVisibleColumns: ['name', 'accountId', 'amount', 'probability', 'expectedCloseDate', 'priority', 'ownerId'],
+      defaultVisibleColumns: ['name', 'accountId', 'amount', 'probability', 'expectedCloseDate', 'priority', 'assignedTo'],
       lockedColumn: 'name',
       excludedFromDefault: []
     },
@@ -1202,7 +1202,7 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
     },
     systemViews: [
       { id: 'all', name: 'All Deals', filters: {}, isDefault: true },
-      { id: 'my-deals', name: 'My Deals', filters: { ownerId: 'me' } },
+      { id: 'my-deals', name: 'My Deals', filters: { assignedTo: 'me' } },
       { id: 'open', name: 'Open', filters: { status: 'Open' } },
       { id: 'won', name: 'Won', filters: { status: 'Won' } },
       { id: 'lost', name: 'Lost', filters: { status: 'Lost' } }
@@ -1229,7 +1229,7 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
     },
     systemViews: [
       { id: 'all', name: 'All Quotes', filters: {}, isDefault: true },
-      { id: 'my-quotes', name: 'My Quotes', filters: { ownerId: 'me' } },
+      { id: 'my-quotes', name: 'My Quotes', filters: { assignedTo: 'me' } },
       { id: 'draft', name: 'Draft', filters: { status: 'Draft' } },
       { id: 'pending-approval', name: 'Pending Approval', filters: { status: 'Pending Approval' } },
       { id: 'approved', name: 'Approved', filters: { status: 'Approved' } },
@@ -1268,7 +1268,7 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
     },
     systemViews: [
       { id: 'all', name: 'All Sales Orders', filters: {}, isDefault: true },
-      { id: 'my-orders', name: 'My Orders', filters: { ownerId: 'me' } },
+      { id: 'my-orders', name: 'My Orders', filters: { assignedTo: 'me' } },
       { id: 'draft', name: 'Draft', filters: { status: 'Draft' } },
       { id: 'confirmed', name: 'Confirmed', filters: { status: 'Confirmed' } },
       { id: 'in-fulfillment', name: 'In Fulfillment', filters: { status: 'In Fulfillment' } },
@@ -1308,7 +1308,7 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
     },
     systemViews: [
       { id: 'all', name: 'All Invoices', filters: {}, isDefault: true },
-      { id: 'my-invoices', name: 'My Invoices', filters: { ownerId: 'me' } },
+      { id: 'my-invoices', name: 'My Invoices', filters: { assignedTo: 'me' } },
       { id: 'draft', name: 'Draft', filters: { status: 'Draft' } },
       { id: 'pending-approval', name: 'Pending Approval', filters: { status: 'Pending Approval' } },
       { id: 'approved', name: 'Approved', filters: { status: 'Approved' } },
@@ -1324,7 +1324,7 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
   cases: {
     defaultColumns: {
       // Case ID, Subject, Status, Priority, Channel, Owner
-      defaultVisibleColumns: ['caseId', 'title', 'status', 'priority', 'responseMetAt', 'channel', 'caseOwnerId'],
+      defaultVisibleColumns: ['caseId', 'title', 'status', 'priority', 'responseMetAt', 'channel', 'assignedTo'],
       lockedColumn: 'title',
       excludedFromDefault: [
         // Hide internal/system and high-noise fields from default list view
@@ -1342,8 +1342,8 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
     },
     systemViews: [
       { id: 'all', name: 'All Cases', filters: {}, isDefault: true },
-      { id: 'my-cases', name: 'My Cases', filters: { caseOwnerId: 'me' } },
-      { id: 'unassigned', name: 'Unassigned', filters: { caseOwnerId: null } },
+      { id: 'my-cases', name: 'My Cases', filters: { assignedTo: 'me' } },
+      { id: 'unassigned', name: 'Unassigned', filters: { assignedTo: null } },
       { id: 'open', name: 'Open', filters: { status: ['New', 'Assigned', 'In Progress', 'On Hold', 'Waiting for Customer'] } },
       { id: 'team', name: 'Team', filters: { status: ['Assigned', 'In Progress', 'On Hold', 'Waiting for Customer'] } },
       { id: 'sla-at-risk', name: 'SLA at risk', filters: { slaBreached: true, status: ['New', 'Assigned', 'In Progress', 'On Hold', 'Waiting for Customer'] } },

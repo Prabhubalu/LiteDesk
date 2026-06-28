@@ -4,7 +4,7 @@ function buildDocumentVisibilityConditions({ userId, userRoleId, userGroupIds = 
   const conditions = [
     { 'visibility.private': { $ne: true } },
     { 'visibility.private': { $exists: false } },
-    { ownerId: userId },
+    { assignedTo: userId },
     { createdBy: userId }
   ];
 
@@ -52,7 +52,7 @@ function userCanAccessDocument(doc, { hasViewAll, userId, userRoleId, userGroupI
   if (!visibility.private) return true;
 
   const uid = String(userId || '');
-  if (uid && (String(doc.ownerId || '') === uid || String(doc.createdBy || '') === uid)) {
+  if (uid && (String(doc.assignedTo || '') === uid || String(doc.createdBy || '') === uid)) {
     return true;
   }
 

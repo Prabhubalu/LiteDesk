@@ -55,7 +55,7 @@ function normalizeNumber(value, { defaultValue = 0 } = {}) {
 async function createQuote(req, res) {
   try {
     const organizationId = req.user.organizationId;
-    const ownerId = req.body?.ownerId ?? req.user._id;
+    const assignedTo = req.body?.assignedTo ?? req.user._id;
 
     const status = req.body?.status ?? undefined;
     if (status !== undefined) assertValidStatus(status);
@@ -66,7 +66,7 @@ async function createQuote(req, res) {
 
     const quote = await Quote.create({
       organizationId,
-      ownerId,
+      assignedTo,
       quoteTitle: req.body?.quoteTitle ?? null,
       quoteDate: req.body?.quoteDate ?? new Date(),
       validUntil: req.body?.validUntil ?? null,
@@ -132,7 +132,7 @@ async function getQuotes(req, res) {
   try {
     const organizationId = req.user.organizationId;
     const status = req.query?.status;
-    const ownerId = req.query?.ownerId;
+    const assignedTo = req.query?.assignedTo;
 
     const q = { organizationId, deletedAt: null };
     const includeAllRevisions =
@@ -145,7 +145,7 @@ async function getQuotes(req, res) {
       assertValidStatus(status);
       q.status = status;
     }
-    if (ownerId) q.ownerId = ownerId;
+    if (assignedTo) q.assignedTo = assignedTo;
 
     const searchTerm = req.query?.search != null ? String(req.query.search).trim() : '';
     if (searchTerm) {
@@ -210,7 +210,7 @@ async function getQuoteById(req, res) {
     const quoteId = req.params.id;
 
     const quoteDoc = await Quote.findOne({ _id: quoteId, organizationId, deletedAt: null })
-      .populate({ path: 'ownerId', select: 'firstName lastName email username' })
+      .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
       .populate({ path: 'organizationRefId', select: 'name' })
       .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' })
       .populate({ path: 'dealId', select: 'name stage pipeline amount value currency' })
@@ -306,7 +306,7 @@ async function updateQuote(req, res) {
       'validUntil',
       'currency',
       'exchangeRateSnapshot',
-      'ownerId',
+      'assignedTo',
       'customerId',
       'organizationRefId',
       'contactId',
@@ -1393,7 +1393,7 @@ async function reviseQuote(req, res) {
       status: 'Draft',
       currency: quote.currency || 'USD',
       exchangeRateSnapshot: Number(quote.exchangeRateSnapshot) || 1,
-      ownerId: quote.ownerId ?? req.user._id,
+      assignedTo: quote.assignedTo ?? req.user._id,
 
       customerId: quote.customerId ?? null,
       organizationRefId: quote.organizationRefId ?? null,

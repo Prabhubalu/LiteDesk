@@ -316,7 +316,7 @@ async function createCreditNoteFromInvoice({
     globalDiscountType: sourceInvoice.globalDiscountType ?? null,
     globalDiscountValue: Number(sourceInvoice.globalDiscountValue) || 0,
     globalDiscountAmount: Number(sourceInvoice.globalDiscountAmount) || 0,
-    ownerId: sourceInvoice.ownerId ?? userId ?? null,
+    assignedTo: sourceInvoice.assignedTo ?? userId ?? null,
     customerId: sourceInvoice.customerId ?? null,
     organizationRefId: sourceInvoice.organizationRefId ?? null,
     contactId: sourceInvoice.contactId ?? null,

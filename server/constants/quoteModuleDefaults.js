@@ -17,7 +17,7 @@ const INITIAL_QUOTE_QUICK_CREATE = [
   'contactId',
   'organizationRefId',
   'dealId',
-  'ownerId'
+  'assignedTo'
 ];
 
 /**

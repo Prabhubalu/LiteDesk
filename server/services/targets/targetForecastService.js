@@ -56,7 +56,7 @@ async function sumOpenPipeline(organizationId, ownerIds) {
   };
 
   if (!ownerObjectIds.length) return 0;
-  query.ownerId = ownerObjectIds.length === 1 ? ownerObjectIds[0] : { $in: ownerObjectIds };
+  query.assignedTo = ownerObjectIds.length === 1 ? ownerObjectIds[0] : { $in: ownerObjectIds };
 
   const deals = await Deal.find(query)
     .select('amount probability status derivedStatus stage pipeline')
@@ -75,7 +75,7 @@ async function sumOpenPipeline(organizationId, ownerIds) {
 
 async function resolvePipelineOwnerIds(target) {
   const ids = new Set();
-  if (target.ownerId) ids.add(String(target.ownerId));
+  if (target.assignedTo) ids.add(String(target.assignedTo));
   const rows = await TargetAssignment.find({ targetId: target._id }).select('userId').lean();
   for (const row of rows) {
     if (row.userId) ids.add(String(row.userId));

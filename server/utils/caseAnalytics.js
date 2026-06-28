@@ -130,11 +130,11 @@ function computeOwnerPerformance(cases) {
   const buckets = new Map();
 
   for (const row of cases) {
-    const ownerId = row.caseOwnerId ? String(row.caseOwnerId) : null;
-    if (!ownerId) continue;
-    if (!buckets.has(ownerId)) {
-      buckets.set(ownerId, {
-        ownerId,
+    const assignedTo = row.assignedTo ? String(row.assignedTo) : null;
+    if (!assignedTo) continue;
+    if (!buckets.has(assignedTo)) {
+      buckets.set(assignedTo, {
+        assignedTo,
         totalCases: 0,
         openCases: 0,
         reopenedCases: 0,
@@ -143,7 +143,7 @@ function computeOwnerPerformance(cases) {
         totalResolutionMinutes: 0
       });
     }
-    const bucket = buckets.get(ownerId);
+    const bucket = buckets.get(assignedTo);
     bucket.totalCases += 1;
     if (!['Resolved', 'Closed'].includes(row.status)) {
       bucket.openCases += 1;
@@ -168,7 +168,7 @@ function computeOwnerPerformance(cases) {
   }
 
   return Array.from(buckets.values()).map((bucket) => ({
-    ownerId: bucket.ownerId,
+    assignedTo: bucket.assignedTo,
     totalCases: bucket.totalCases,
     openCases: bucket.openCases,
     reopenRatePercent: bucket.totalCases > 0 ? Math.round((bucket.reopenedCases / bucket.totalCases) * 100) : 0,

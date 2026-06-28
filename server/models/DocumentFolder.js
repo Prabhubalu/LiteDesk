@@ -28,7 +28,7 @@ const DocumentFolderSchema = new Schema(
       default: '/',
       index: true
     },
-    ownerId: {
+    assignedTo: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       default: null

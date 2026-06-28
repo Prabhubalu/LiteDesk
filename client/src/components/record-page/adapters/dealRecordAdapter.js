@@ -54,7 +54,7 @@ function resolveDealsFieldLabel(fieldKey, configuredLabel) {
 }
 
 const getOwnerDisplayName = (record) => {
-  const owner = record?.ownerId;
+  const owner = record?.assignedTo;
   if (!owner || typeof owner !== 'object') return '—';
   return [owner.firstName, owner.lastName].filter(Boolean).join(' ') || owner.email || '—';
 };
@@ -129,7 +129,7 @@ const normalizeSelectOptions = (options) => {
 const resolveStateFieldType = (fieldKey, configuredField) => {
   const normalizedKey = String(fieldKey || '').trim().toLowerCase();
   if (normalizedKey === 'tags') return 'tags';
-  if (fieldKey === 'ownerId') return 'user';
+  if (fieldKey === 'assignedTo') return 'user';
   const explicitDataType = String(configuredField?.dataType || '').toLowerCase();
   const metadata = getDealFieldMetadata(fieldKey);
   const filterType = String(metadata?.filterType || '').toLowerCase();
@@ -242,7 +242,7 @@ const resolveDetailDisplayValue = (record, fieldKey, fieldType, formatDate) => {
   }
 
   if (typeof rawValue === 'object') {
-    if (fieldKey === 'ownerId') {
+    if (fieldKey === 'assignedTo') {
       return stripHtmlForDetailDisplay(
         [rawValue.firstName, rawValue.lastName].filter(Boolean).join(' ') || rawValue.email || '',
         { key: fieldKey }
@@ -309,7 +309,7 @@ const resolveStateFieldIcon = (fieldKey, configuredField) => {
     expectedclosedate: CalendarIcon,
     actualclosedate: CalendarIcon,
     nextfollowupdate: CalendarIcon,
-    ownerid: UserIcon,
+    assignedto: UserIcon,
     contactid: UserIcon,
     accountid: BuildingOfficeIcon,
     organizationid: BuildingOfficeIcon,
@@ -335,7 +335,7 @@ const resolveStateFieldIcon = (fieldKey, configuredField) => {
     return keyIconMap[normalizedLowerKey];
   }
 
-  if (['ownerid', 'contactid', 'accountid', 'createdby', 'modifiedby'].includes(normalizedLowerKey) || filterType === 'user') {
+  if (['assignedto', 'contactid', 'accountid', 'createdby', 'modifiedby'].includes(normalizedLowerKey) || filterType === 'user') {
     return UserIcon;
   }
 
@@ -516,11 +516,11 @@ export const createDealRecordAdapter = ({
         const configuredField = configuredByKey.get(fieldKey);
         const fallbackLabel = getStateFieldLabel(fieldKey, toReadableFieldLabel(fieldKey));
         const fieldType = resolveStateFieldType(fieldKey, configuredField);
-        const canEditField = fieldKey !== 'ownerId'
+        const canEditField = fieldKey !== 'assignedTo'
           && fieldKey !== 'stage'
           && canEditDetails?.(null, fieldKey) === true
           && KEY_SECTION_EDITABLE_TYPES.has(fieldType);
-        const canOpenEditor = fieldKey === 'ownerId' && canEditDetails?.(null, fieldKey) === true;
+        const canOpenEditor = fieldKey === 'assignedTo' && canEditDetails?.(null, fieldKey) === true;
         const entityOptions = fieldType === 'entity' && context?.getStateFieldOptions
           ? (context.getStateFieldOptions(fieldKey) || [])
           : [];
@@ -553,7 +553,7 @@ export const createDealRecordAdapter = ({
     getStateValues(record) {
       const values = {};
       for (const fieldKey of resolveDealStateKeys(moduleDefinition)) {
-        if (fieldKey === 'ownerId') {
+        if (fieldKey === 'assignedTo') {
           values[fieldKey] = getOwnerDisplayName(record);
           continue;
         }
@@ -599,7 +599,7 @@ export const createDealRecordAdapter = ({
           ? (context.getDetailFieldOptions(fieldKey) || [])
           : [];
         const hasEntityOptions = entityOptions.length > 0;
-        const canOpenLookupEditor = isLookup && fieldKey !== 'ownerId' && canEditDetails?.(record, fieldKey) === true && !hasEntityOptions;
+        const canOpenLookupEditor = isLookup && fieldKey !== 'assignedTo' && canEditDetails?.(record, fieldKey) === true && !hasEntityOptions;
 
         let label = resolveDealsFieldLabel(
           fieldKey,

@@ -21,7 +21,7 @@ const ENTITY_TYPE_TO_MODULE = {
 };
 
 function resolveAuthorId(context = {}) {
-  for (const id of [context.triggeredBy, context.ownerId]) {
+  for (const id of [context.triggeredBy, context.assignedTo]) {
     if (id && mongoose.Types.ObjectId.isValid(id)) {
       return new mongoose.Types.ObjectId(id);
     }
@@ -76,7 +76,7 @@ function buildDetails(process, execution, context, status, error) {
  * @param {{
  *   process: { _id?: unknown, name?: string, appKey?: string },
  *   execution?: { _id?: unknown, executionId?: string, entityType?: string, entityId?: string, organizationId?: unknown },
- *   context: { entityType?: string, entityId?: string, organizationId?: string, executionId?: string, triggeredBy?: string, ownerId?: string, appKey?: string },
+ *   context: { entityType?: string, entityId?: string, organizationId?: string, executionId?: string, triggeredBy?: string, assignedTo?: string, appKey?: string },
  *   status: 'completed' | 'failed' | 'waiting_for_approval' | 'waiting_until',
  *   error?: string | null
  * }} params
