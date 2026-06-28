@@ -1,34 +1,21 @@
 <template>
   <div
-    :class="[WEBFORM_CARD_CLASS, webformBrandingSurfaceClasses(branding), 'overflow-visible']"
+    :class="[WEBFORM_CARD_CLASS, webformBrandingFontClasses(), 'overflow-visible']"
     :style="brandingStyle"
   >
+    <WebformHeaderSection
+      :webform="webform"
+      :title="webform.name || t('webforms.defaultName')"
+      :description="webform.description"
+      :preview-badge="preview ? t('webforms.builderPreviewMode') : ''"
+    />
+
     <div
-      v-if="webform.headerImageUrl"
-      :class="WEBFORM_CARD_HEADER_IMAGE_WRAP_CLASS"
+      :class="[
+        'overflow-visible rounded-b-xl px-6 pb-6 sm:px-8 sm:pb-8',
+        webformBodySurfaceClasses(branding)
+      ]"
     >
-      <img
-        :src="resolveWebformImageUrl(webform.headerImageUrl)"
-        alt=""
-        class="h-36 w-full object-cover"
-      >
-    </div>
-
-    <div class="overflow-visible p-6 sm:p-8">
-      <header class="mb-6">
-        <img
-          v-if="branding.logoUrl"
-          :src="resolveWebformImageUrl(branding.logoUrl)"
-          alt=""
-          class="mx-auto mb-4 max-h-12 w-auto object-contain"
-        >
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ webform.name || t('webforms.defaultName') }}</h1>
-        <p v-if="webform.description" class="mt-2 text-gray-600 dark:text-gray-400">{{ webform.description }}</p>
-        <p v-if="preview" class="mt-3 text-xs font-medium uppercase tracking-wide text-amber-600 dark:text-amber-400">
-          {{ t('webforms.builderPreviewMode') }}
-        </p>
-      </header>
-
         <div v-if="!sortedFields.length" class="rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400">
           {{ t('webforms.builderPreviewNoFields') }}
         </div>
@@ -229,18 +216,17 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { resolveWebformImageUrl } from '@/utils/webformFormatters';
-import { mergeWebformBranding, webformBrandingCssVars, webformBrandingSurfaceClasses } from '@/utils/webformBranding';
+import { mergeWebformBranding, webformBrandingCssVars, webformBrandingFontClasses, webformBodySurfaceClasses } from '@/utils/webformBranding';
 import {
   WEBFORM_ACCENT_BG_CLASS,
   WEBFORM_ACCENT_CONTROL_CLASS,
   WEBFORM_CARD_CLASS,
-  WEBFORM_CARD_HEADER_IMAGE_WRAP_CLASS,
   WEBFORM_FIELD_INPUT_CLASS,
   WEBFORM_FIELD_INPUT_ERROR_CLASS,
   WEBFORM_FIELD_INPUT_FOCUS_CLASS,
   WEBFORM_MULTI_STEP_CHIP_ACTIVE_CLASS
 } from '@/utils/webformUiClasses';
+import WebformHeaderSection from '@/components/webforms/WebformHeaderSection.vue';
 import WebformFormActionsBar from '@/components/webforms/WebformFormActionsBar.vue';
 import TagMultiPicklistField from '@/components/common/TagMultiPicklistField.vue';
 import PicklistComboboxField from '@/components/common/PicklistComboboxField.vue';

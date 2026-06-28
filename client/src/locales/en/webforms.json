@@ -264,8 +264,8 @@
     "description": "Canvas drop hint"
   },
   "builderHeaderImage": {
-    "message": "Header image (optional)",
-    "description": "Header image label"
+    "message": "Background image (optional)",
+    "description": "Header background image label"
   },
   "builderHeaderImageEmpty": {
     "message": "No header image yet",
@@ -288,8 +288,72 @@
     "description": "Header image URL placeholder"
   },
   "builderHeaderImageHint": {
-    "message": "Shown at the top of the hosted form. Leave blank for no banner.",
+    "message": "Used as the header background. Overrides header background color when set.",
     "description": "Header image hint"
+  },
+  "builderHeaderTitle": {
+    "message": "Header",
+    "description": "Header section title in builder form settings"
+  },
+  "builderHeaderHint": {
+    "message": "Logo, heading, and description appear inside the header area.",
+    "description": "Header section hint in builder form settings"
+  },
+  "builderHeaderBackground": {
+    "message": "Header background color",
+    "description": "Header background color label"
+  },
+  "builderHeaderBackgroundPh": {
+    "message": "Default (transparent)",
+    "description": "Header background color placeholder"
+  },
+  "builderHeaderBackgroundHint": {
+    "message": "Used when no background image is set.",
+    "description": "Header background color hint"
+  },
+  "builderHeaderHeadingColor": {
+    "message": "Heading color",
+    "description": "Header heading text color label"
+  },
+  "builderHeaderHeadingColorPh": {
+    "message": "Default",
+    "description": "Header heading text color placeholder"
+  },
+  "builderHeaderLogoPosition": {
+    "message": "Logo position",
+    "description": "Header logo position label"
+  },
+  "builderHeaderLogoPositionLeft": {
+    "message": "Left",
+    "description": "Header logo position left option"
+  },
+  "builderHeaderLogoPositionCenter": {
+    "message": "Center",
+    "description": "Header logo position center option"
+  },
+  "builderHeaderLogoPositionRight": {
+    "message": "Right",
+    "description": "Header logo position right option"
+  },
+  "builderHeaderLogoSize": {
+    "message": "Logo size",
+    "description": "Header logo size label"
+  },
+  "builderHeaderLogoSizeSm": {
+    "message": "Small",
+    "description": "Header logo size small option"
+  },
+  "builderHeaderLogoSizeMd": {
+    "message": "Medium",
+    "description": "Header logo size medium option"
+  },
+  "builderHeaderLogoSizeLg": {
+    "message": "Large",
+    "description": "Header logo size large option"
+  },
+  "builderHeaderLogoSizeXl": {
+    "message": "Extra large",
+    "description": "Header logo size extra large option"
   },
   "builderHeaderImageRemove": {
     "message": "Remove image",
@@ -928,7 +992,7 @@
     "description": "Branding section title in builder form settings"
   },
   "builderBrandingHint": {
-    "message": "Logo, colors, and font apply to hosted, embed, and live preview surfaces.",
+    "message": "Form body, page background, accent color, and font apply to hosted, embed, and live preview surfaces.",
     "description": "Branding section hint"
   },
   "builderBrandingLogo": {
@@ -958,6 +1022,14 @@
   "builderBrandingBackground": {
     "message": "Page background",
     "description": "Branding page background label"
+  },
+  "builderBrandingFormBodyBackground": {
+    "message": "Form body background",
+    "description": "Branding form body background label"
+  },
+  "builderBrandingFormBodyBackgroundPh": {
+    "message": "Default (white)",
+    "description": "Branding form body background placeholder"
   },
   "builderBrandingBackgroundPh": {
     "message": "Default (gray)",

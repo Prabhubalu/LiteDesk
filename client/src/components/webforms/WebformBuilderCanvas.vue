@@ -39,36 +39,21 @@
     <div class="flex flex-1 items-start justify-center overflow-y-auto p-5 sm:p-8">
       <div class="w-full transition-all duration-200" :class="deviceWidthClass">
         <div
-          :class="[WEBFORM_CARD_CLASS, webformBrandingSurfaceClasses(branding), 'overflow-visible']"
+          :class="[WEBFORM_CARD_CLASS, webformBrandingFontClasses(), 'overflow-visible']"
           :style="brandingStyle"
         >
+          <WebformHeaderSection
+            :webform="webform"
+            :title="webform.name || t('webforms.defaultName')"
+            :description="webform.description"
+          />
+
           <div
-            v-if="headerImageUrl"
-            :class="WEBFORM_CARD_HEADER_IMAGE_WRAP_CLASS"
+            :class="[
+              'rounded-b-xl px-6 pb-6 sm:px-8 sm:pb-8',
+              webformBodySurfaceClasses(branding)
+            ]"
           >
-            <img
-              :src="resolveWebformImageUrl(headerImageUrl)"
-              alt=""
-              class="h-36 w-full object-cover"
-            >
-          </div>
-
-          <div class="p-6 sm:p-8">
-            <header class="mb-6">
-              <img
-                v-if="branding.logoUrl"
-                :src="resolveWebformImageUrl(branding.logoUrl)"
-                alt=""
-                class="mx-auto mb-4 max-h-12 w-auto object-contain"
-              >
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                {{ webform.name || t('webforms.defaultName') }}
-              </h1>
-              <p v-if="webform.description" class="mt-2 text-gray-600 dark:text-gray-400">
-                {{ webform.description }}
-              </p>
-            </header>
-
             <draggable
               :model-value="fields"
               item-key="fieldId"
@@ -161,16 +146,15 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import draggable from 'vuedraggable';
-import { resolveWebformImageUrl } from '@/utils/webformFormatters';
-import { mergeWebformBranding, webformBrandingCssVars, webformBrandingSurfaceClasses } from '@/utils/webformBranding';
+import { mergeWebformBranding, webformBrandingCssVars, webformBrandingFontClasses, webformBodySurfaceClasses } from '@/utils/webformBranding';
 import {
   WEBFORM_BUILDER_CANVAS_BG,
   WEBFORM_CARD_CLASS,
-  WEBFORM_CARD_HEADER_IMAGE_WRAP_CLASS,
   WEBFORM_DEVICE_TAB_ACTIVE_CLASS,
   WEBFORM_FIELD_SELECTED_CLASS,
   WEBFORM_STEP_ACTIVE_CLASS
 } from '@/utils/webformUiClasses';
+import WebformHeaderSection from '@/components/webforms/WebformHeaderSection.vue';
 import { isMultiStepFormActive } from '@/utils/webformMultiStep';
 import WebformFormActionsBar from '@/components/webforms/WebformFormActionsBar.vue';
 import {
@@ -194,7 +178,6 @@ const props = defineProps({
   selectedFieldId: { type: String, default: '' },
   selectedButtonKey: { type: String, default: '' },
   previewDevice: { type: String, default: 'desktop' },
-  headerImageUrl: { type: String, default: '' },
   activeStepId: { type: String, default: '' },
   orderedSteps: { type: Array, default: () => [] }
 });

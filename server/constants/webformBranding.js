@@ -1,6 +1,8 @@
 'use strict';
 
 const WEBFORM_FONT_FAMILIES = ['system', 'serif', 'mono'];
+const WEBFORM_LOGO_POSITIONS = ['center', 'left', 'right'];
+const WEBFORM_LOGO_SIZES = ['sm', 'md', 'lg', 'xl'];
 const DEFAULT_WEBFORM_THEME_COLOR = '#2563eb';
 
 function expandShortHex(hex) {
@@ -19,18 +21,30 @@ function sanitizeWebformBranding(raw) {
   const source = raw && typeof raw === 'object' ? raw : {};
   const themeColor = sanitizeHexColor(source.themeColor, DEFAULT_WEBFORM_THEME_COLOR);
   const backgroundColor = sanitizeHexColor(source.backgroundColor, '');
+  const headingColor = sanitizeHexColor(source.headingColor, '');
+  const formBodyBackgroundColor = sanitizeHexColor(source.formBodyBackgroundColor, '');
   return {
     logoUrl: String(source.logoUrl || '').trim(),
     themeColor,
     backgroundColor,
     fontFamily: WEBFORM_FONT_FAMILIES.includes(source.fontFamily)
       ? source.fontFamily
-      : 'system'
+      : 'system',
+    headingColor,
+    logoPosition: WEBFORM_LOGO_POSITIONS.includes(source.logoPosition)
+      ? source.logoPosition
+      : 'center',
+    logoSize: WEBFORM_LOGO_SIZES.includes(source.logoSize)
+      ? source.logoSize
+      : 'md',
+    formBodyBackgroundColor
   };
 }
 
 module.exports = {
   WEBFORM_FONT_FAMILIES,
+  WEBFORM_LOGO_POSITIONS,
+  WEBFORM_LOGO_SIZES,
   DEFAULT_WEBFORM_THEME_COLOR,
   sanitizeHexColor,
   sanitizeWebformBranding

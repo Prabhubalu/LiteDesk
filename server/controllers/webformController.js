@@ -24,7 +24,7 @@ const {
   listWebformBuilderFieldTypes
 } = require('../constants/webformFields');
 const { sanitizeFormActions } = require('../constants/webformFormActions');
-const { sanitizeWebformBranding } = require('../constants/webformBranding');
+const { sanitizeWebformBranding, sanitizeHexColor } = require('../constants/webformBranding');
 const { sanitizeFieldVisibility, defaultFieldVisibility } = require('../constants/webformConditionalLogic');
 const {
   isMultiStepEnabled,
@@ -102,6 +102,7 @@ async function buildPublicWebformPayload(webform) {
     targetModuleKey: webform.targetModuleKey || '',
     targetAppKey: webform.targetAppKey || '',
     headerImageUrl: webform.headerImageUrl || '',
+    headerBackgroundColor: sanitizeHexColor(webform.headerBackgroundColor, ''),
     branding: sanitizeWebformBranding(webform.branding),
     multiStep: sanitizeMultiStepConfig(webform.multiStep),
     steps: sanitizeWebformSteps(webform.steps, isMultiStepEnabled(webform)),
@@ -133,6 +134,7 @@ async function buildWebformFillPreviewPayloadFromBody(organizationId, body) {
     targetModuleKey: body?.targetModuleKey || '',
     targetAppKey: body?.targetAppKey || '',
     headerImageUrl: String(body?.headerImageUrl || '').trim(),
+    headerBackgroundColor: sanitizeHexColor(body?.headerBackgroundColor, ''),
     branding: sanitizeWebformBranding(body?.branding),
     multiStep,
     steps,
@@ -211,6 +213,7 @@ async function sanitizeWebformPayload(body, organizationId, userId) {
     fields: Array.isArray(body.fields) ? body.fields.map((field, index) => sanitizeField(field, index, webformShape)) : [],
     recordAction: body.recordAction || 'create',
     headerImageUrl: String(body.headerImageUrl || '').trim(),
+    headerBackgroundColor: sanitizeHexColor(body.headerBackgroundColor, ''),
     branding: sanitizeWebformBranding(body.branding),
     multiStep,
     steps,
@@ -577,6 +580,7 @@ exports.duplicateWebform = async (req, res) => {
       thankYouMessage: source.thankYouMessage,
       redirectUrl: source.redirectUrl,
       headerImageUrl: source.headerImageUrl || '',
+      headerBackgroundColor: sanitizeHexColor(source.headerBackgroundColor, ''),
       branding: sanitizeWebformBranding(source.branding),
       formActions: sanitizeFormActions(source.formActions),
       publicLink: { enabled: false },
