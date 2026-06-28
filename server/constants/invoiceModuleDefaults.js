@@ -6,7 +6,7 @@ const INITIAL_INVOICE_QUICK_CREATE = [
   'contactId',
   'organizationRefId',
   'dealId',
-  'ownerId'
+  'assignedTo'
 ];
 
 const INITIAL_INVOICE_REQUIRED_FIELDS = ['invoiceTitle'];

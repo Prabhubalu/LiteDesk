@@ -287,9 +287,9 @@ const canUpdateCorrectiveActions = computed(() => {
     (linkedEvent.value._id || linkedEvent.value.correctiveOwnerId);
   if (!isPopulatedEventDoc) return null;
 
-  const ownerId = String(linkedEvent.value?.correctiveOwnerId?._id || linkedEvent.value?.correctiveOwnerId || '');
-  if (!ownerId) return false;
-  return ownerId === String(currentUserId);
+  const assignedTo = String(linkedEvent.value?.correctiveOwnerId?._id || linkedEvent.value?.correctiveOwnerId || '');
+  if (!assignedTo) return false;
+  return assignedTo === String(currentUserId);
 });
 
 // Computed

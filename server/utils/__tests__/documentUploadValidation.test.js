@@ -25,8 +25,8 @@ test('resolveUploadMimeType infers common document extensions when browser omits
   assert.ok(isAllowedUploadMime(resolveUploadMimeType({ originalname: 'notes.md', mimetype: '' })));
 });
 
-test('applyCreateOwnerDefaults sets documents ownerId from current user', () => {
+test('applyCreateOwnerDefaults sets documents assignedTo from current user', () => {
   const userId = new mongoose.Types.ObjectId();
   const body = applyCreateOwnerDefaults({}, 'documents', userId);
-  assert.equal(String(body.ownerId), String(userId));
+  assert.equal(String(body.assignedTo), String(userId));
 });

@@ -472,11 +472,11 @@ function renderInvoicePdf({
 async function loadInvoiceForDocument({ organizationId, invoiceRef }) {
   return (
     (await Invoice.findOne({ organizationId, invoiceId: invoiceRef, deletedAt: null })
-      .populate({ path: 'ownerId', select: 'firstName lastName email username' })
+      .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
       .populate({ path: 'organizationRefId', select: 'name' })
       .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' })) ||
     (await Invoice.findOne({ organizationId, _id: invoiceRef, deletedAt: null })
-      .populate({ path: 'ownerId', select: 'firstName lastName email username' })
+      .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
       .populate({ path: 'organizationRefId', select: 'name' })
       .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' }))
   );

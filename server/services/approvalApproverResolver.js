@@ -23,7 +23,7 @@ const log = createLogger('approvalApproverResolver');
  * @param {string} params.organizationId - Org scope
  * @param {string} [params.entityType] - Entity type (people|organization|deal)
  * @param {string} [params.entityId] - Entity ID
- * @param {string} [params.ownerId] - Record owner (for rule: owner)
+ * @param {string} [params.assignedTo] - Record owner (for rule: owner)
  * @param {string} [params.triggeredBy] - User who triggered (for rule: triggeredBy)
  * @returns {Promise<{ ok: boolean, userIds?: string[], error?: string }>}
  */
@@ -33,7 +33,7 @@ async function resolveApprovers(params) {
     organizationId,
     entityType,
     entityId,
-    ownerId,
+    assignedTo,
     triggeredBy
   } = params;
 
@@ -65,8 +65,8 @@ async function resolveApprovers(params) {
         users.forEach(u => userIds.add(u._id.toString()));
       } else if (type === 'rule') {
         const rule = String(value).toLowerCase();
-        if (rule === 'owner' && ownerId) {
-          const id = mongoose.Types.ObjectId.isValid(ownerId) ? new mongoose.Types.ObjectId(ownerId) : null;
+        if (rule === 'owner' && assignedTo) {
+          const id = mongoose.Types.ObjectId.isValid(assignedTo) ? new mongoose.Types.ObjectId(assignedTo) : null;
           if (id) {
             const u = await User.findOne({ _id: id, organizationId: orgId }).lean();
             if (u) userIds.add(u._id.toString());

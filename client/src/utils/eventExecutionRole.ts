@@ -18,8 +18,8 @@ export function determineEventExecutionRole(event: {
   auditorId?: unknown;
   reviewerId?: unknown;
   correctiveOwnerId?: unknown;
-  ownerId?: unknown;
-  eventOwnerId?: unknown;
+  assignedTo?: unknown;
+  assignedTo?: unknown;
   createdBy?: unknown;
 } | null | undefined): ExecutionUserRole {
   const authStore = useAuthStore();
@@ -39,8 +39,8 @@ export function determineEventExecutionRole(event: {
     return 'CORRECTIVE_OWNER';
   }
   if (
-    normalizeUserId(event.ownerId) === currentUserId
-    || normalizeUserId(event.eventOwnerId) === currentUserId
+    normalizeUserId(event.assignedTo) === currentUserId
+    || normalizeUserId(event.assignedTo) === currentUserId
     || normalizeUserId(event.createdBy) === currentUserId
   ) {
     return 'OWNER';

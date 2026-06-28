@@ -5834,7 +5834,7 @@ const handleCreateDrawerSaved = async (newRecord) => {
       
       // Handle populated relationship objects
       if (value && typeof value === 'object' && !(value instanceof Date)) {
-        // For User objects (accountmanager, ownerId, assignedTo, etc.)
+        // For User objects (accountmanager, assignedTo, assignedTo, etc.)
         if (value.firstName && value.lastName) {
           return `${value.firstName} ${value.lastName}`;
         }

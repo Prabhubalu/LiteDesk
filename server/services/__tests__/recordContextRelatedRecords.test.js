@@ -262,7 +262,7 @@ async function createDeal(tenantId, userId, name) {
     amount: 5000,
     stage: 'Qualification',
     expectedCloseDate: new Date('2026-12-31'),
-    ownerId: userId
+    assignedTo: userId
   });
 }
 
@@ -272,7 +272,7 @@ async function createCase(tenantId, userId, { title, contactId, organizationRefI
     organizationId: tenantId,
     caseId: `CASE-${crypto.randomUUID().slice(0, 8)}`,
     title,
-    caseOwnerId: userId,
+    assignedTo: userId,
     contactId: contactId || null,
     organizationRefId: organizationRefId || null,
     currentSlaCycle: createInitialSlaCycle(1, now)
@@ -283,7 +283,7 @@ async function createQuote(tenantId, userId, fields = {}) {
   return Quote.create({
     organizationId: tenantId,
     quoteNumber: `QT-${crypto.randomUUID().slice(0, 8)}`,
-    ownerId: userId,
+    assignedTo: userId,
     ...fields
   });
 }
@@ -306,7 +306,7 @@ async function createEvent(tenantId, userId, name) {
     endDateTime: new Date('2026-06-01T11:00:00Z'),
     createdBy: userId,
     modifiedBy: userId,
-    eventOwnerId: userId
+    assignedTo: userId
   });
 }
 
@@ -429,7 +429,7 @@ test('deal dealPeople/dealOrganizations sync updates related records when fields
     amount: 10000,
     stage: 'Qualification',
     expectedCloseDate: new Date('2026-12-31'),
-    ownerId: userId,
+    assignedTo: userId,
     dealPeople: [{
       personId: personA._id,
       role: 'primary_contact',
@@ -568,7 +568,7 @@ test('deal related records dedupe instance link with synced dealPeople', async (
     amount: 1000,
     stage: 'Qualification',
     expectedCloseDate: new Date('2026-12-31'),
-    ownerId: userId,
+    assignedTo: userId,
     dealPeople: [{
       personId: person._id,
       role: 'primary_contact',

@@ -177,7 +177,7 @@ async function sendAppointmentConfirmationEmails({ event, config, guest }) {
   if (!guest?.email) return;
 
   const organizationId = event.organizationId;
-  const hostUserId = event.eventOwnerId;
+  const hostUserId = event.assignedTo;
   const timezone =
     event.appointment?.customerTimezone || config.workingHours?.timezone || 'UTC';
   const { orgName, hostName, hostEmail } = await loadEmailContext(organizationId, hostUserId);

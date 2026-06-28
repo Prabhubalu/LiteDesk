@@ -81,7 +81,7 @@ const DOCUMENT_FIELD_METADATA: Record<string, DocumentFieldMetadata> = {
     filterType: 'multi-select',
     allowOnCreate: true,
   },
-  ownerId: {
+  assignedTo: {
     owner: 'core',
     intent: 'detail',
     fieldScope: 'CORE',

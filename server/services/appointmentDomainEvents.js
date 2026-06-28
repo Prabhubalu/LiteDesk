@@ -23,7 +23,7 @@ function emitAppointmentDomainEvent(eventType, event, opts = {}) {
     appKey: opts.appKey || 'SALES',
     triggeredBy: opts.triggeredBy ?? doc.modifiedBy ?? doc.createdBy,
     organizationId: doc.organizationId,
-    ownerId: doc.eventOwnerId
+    assignedTo: doc.assignedTo
   });
 }
 

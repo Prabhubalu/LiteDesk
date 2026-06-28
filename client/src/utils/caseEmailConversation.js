@@ -124,7 +124,7 @@ export function getCaseEmailMessageAvatarUser(message, caseRecord = null) {
   if (inbound) {
     return resolveCaseContactProfile(caseRecord, message);
   }
-  const owner = caseRecord?.caseOwnerId;
+  const owner = caseRecord?.assignedTo;
   if (owner && typeof owner === 'object') {
     return enrichPersonForAvatar(owner);
   }

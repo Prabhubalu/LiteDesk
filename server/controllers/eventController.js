@@ -354,7 +354,7 @@ exports.getEvents = async (req, res) => {
         if (scope === 'mine') {
             const currentUserId = req.user._id;
             query.$or = [
-                { eventOwnerId: currentUserId },
+                { assignedTo: currentUserId },
                 { auditorId: currentUserId },
                 { reviewerId: currentUserId },
                 { correctiveOwnerId: currentUserId },
@@ -419,7 +419,7 @@ exports.getEvents = async (req, res) => {
         
         const eventSkip = (pageNum - 1) * limitNum;
         const eventPopulate = [
-          { path: 'eventOwnerId', select: 'firstName lastName email' },
+          { path: 'assignedTo', select: 'firstName lastName email' },
           { path: 'auditorId', select: 'firstName lastName email' },
           { path: 'reviewerId', select: 'firstName lastName email' },
           { path: 'correctiveOwnerId', select: 'firstName lastName email' },
@@ -441,7 +441,7 @@ exports.getEvents = async (req, res) => {
               lean: true
             })
           : Event.find(query)
-              .populate('eventOwnerId', 'firstName lastName email')
+              .populate('assignedTo', 'firstName lastName email')
               .populate('auditorId', 'firstName lastName email')
               .populate('reviewerId', 'firstName lastName email')
               .populate('correctiveOwnerId', 'firstName lastName email')
@@ -498,7 +498,7 @@ exports.getEventSummary = async (req, res) => {
         if (scope === 'mine') {
             const currentUserId = req.user._id;
             query.$or = [
-                { eventOwnerId: currentUserId },
+                { assignedTo: currentUserId },
                 { auditorId: currentUserId },
                 { reviewerId: currentUserId },
                 { correctiveOwnerId: currentUserId },
@@ -541,7 +541,7 @@ exports.getEventById = async (req, res) => {
         }
         
         let event = await Event.findOne(query)
-            .populate('eventOwnerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('auditorId', 'firstName lastName email')
             .populate('reviewerId', 'firstName lastName email')
             .populate('correctiveOwnerId', 'firstName lastName email')
@@ -650,15 +650,15 @@ exports.createEvent = async (req, res) => {
         const isAuditType = isAuditEventType(incomingEventType);
 
         // For audit events, use explicit `auditorId` as the source of truth.
-        // (eventOwnerId is hidden in audit UX; we still mirror auditorId into eventOwnerId for ownership.)
+        // (assignedTo is hidden in audit UX; we still mirror auditorId into assignedTo for ownership.)
         const auditorSelection = isAuditType ? (req.body.auditorId || null) : null;
 
         const eventData = {
             ...req.body,
             organizationId: req.user.organizationId,
             // IMPORTANT: do not auto-assign audit roles.
-            // For non-audit events, we keep the convenience default for eventOwnerId.
-            eventOwnerId: isAuditType ? auditorSelection : (req.body.eventOwnerId || req.user._id),
+            // For non-audit events, we keep the convenience default for assignedTo.
+            assignedTo: isAuditType ? auditorSelection : (req.body.assignedTo || req.user._id),
             // Keep explicit auditorId stored for audit events (no defaults).
             auditorId: isAuditType ? auditorSelection : (req.body.auditorId || null),
             createdBy: req.user._id,
@@ -839,7 +839,7 @@ exports.createEvent = async (req, res) => {
             // Default: assign to event owner, due date is event end date
             if (!eventData.formAssignment || !eventData.formAssignment.assignedAuditor) {
                 eventData.formAssignment = {
-                    assignedAuditor: eventData.eventOwnerId || req.user._id,
+                    assignedAuditor: eventData.assignedTo || req.user._id,
                     dueDate: eventData.endDateTime || null,
                     assignedAt: new Date()
                 };
@@ -893,7 +893,7 @@ exports.createEvent = async (req, res) => {
         });
         
         const populatedEvent = await Event.findById(event._id)
-            .populate('eventOwnerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('relatedToId', 'name')
             .populate('createdBy', 'firstName lastName')
             .populate('modifiedBy', 'firstName lastName')
@@ -1073,7 +1073,7 @@ exports.updateEvent = async (req, res) => {
                 // Set formAssignment if not already provided and form is being linked
                 if (!req.body.formAssignment || !req.body.formAssignment.assignedAuditor) {
                     req.body.formAssignment = {
-                        assignedAuditor: currentEvent.auditorId || currentEvent.eventOwnerId || req.user._id,
+                        assignedAuditor: currentEvent.auditorId || currentEvent.assignedTo || req.user._id,
                         dueDate: req.body.endDateTime ? new Date(req.body.endDateTime) : (currentEvent.endDateTime || null),
                         assignedAt: new Date()
                     };
@@ -1108,18 +1108,18 @@ exports.updateEvent = async (req, res) => {
             auditHistory: currentEvent.auditHistory
         };
 
-        // Keep audit auditor selection consistent: auditorId is source of truth; mirror to eventOwnerId for ownership.
+        // Keep audit auditor selection consistent: auditorId is source of truth; mirror to assignedTo for ownership.
         const effectiveEventType = updateData.eventType || currentEvent.eventType;
         const isAuditType = isAuditEventType(effectiveEventType);
         if (isAuditType) {
-            const auditorSelection = updateData.auditorId || currentEvent.auditorId || currentEvent.eventOwnerId;
+            const auditorSelection = updateData.auditorId || currentEvent.auditorId || currentEvent.assignedTo;
             if (auditorSelection) {
                 updateData.auditorId = auditorSelection;
-                updateData.eventOwnerId = auditorSelection;
+                updateData.assignedTo = auditorSelection;
             }
-            // Ignore any client attempt to set eventOwnerId directly in audit events.
-            if (updateData.eventOwnerId && updateData.auditorId && String(updateData.eventOwnerId) !== String(updateData.auditorId)) {
-                updateData.eventOwnerId = updateData.auditorId;
+            // Ignore any client attempt to set assignedTo directly in audit events.
+            if (updateData.assignedTo && updateData.auditorId && String(updateData.assignedTo) !== String(updateData.auditorId)) {
+                updateData.assignedTo = updateData.auditorId;
             }
         }
         
@@ -1179,7 +1179,7 @@ exports.updateEvent = async (req, res) => {
                 eventType: effectiveEventType,
                 requesterOrgId: req.user.organizationId,
                 relatedToId: validationData.relatedToId,
-                auditorUserId: validationData.eventOwnerId || validationData.auditorId,
+                auditorUserId: validationData.assignedTo || validationData.auditorId,
                 reviewerUserId: validationData.reviewerId,
                 correctiveOwnerUserId: validationData.correctiveOwnerId,
                 allowSelfReview: inferredAllowSelfReview
@@ -1227,7 +1227,7 @@ exports.updateEvent = async (req, res) => {
             { $set },
             { new: true, runValidators: true }
         )
-            .populate('eventOwnerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('auditorId', 'firstName lastName email')
             .populate('reviewerId', 'firstName lastName email')
             .populate('correctiveOwnerId', 'firstName lastName email')
@@ -1422,7 +1422,7 @@ exports.updateEventStatus = async (req, res) => {
             },
             { new: true }
         )
-            .populate('eventOwnerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('modifiedBy', 'firstName lastName');
         
         if (oldStatus !== status && updatedEvent?._id) {
@@ -1576,7 +1576,7 @@ exports.addNote = async (req, res) => {
         await event.save();
         
         const populatedEvent = await Event.findById(event._id)
-            .populate('eventOwnerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('relatedToId', 'name')
             .populate('modifiedBy', 'firstName lastName');
         
@@ -1601,7 +1601,7 @@ exports.exportEvents = async (req, res) => {
         const events = await Event.find({ 
             organizationId: req.user.organizationId 
         })
-            .populate('eventOwnerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('relatedToId', 'name')
             .sort({ startDateTime: -1 })
             .lean();
@@ -1615,8 +1615,8 @@ exports.exportEvents = async (req, res) => {
             endDateTime: event.endDateTime,
             location: event.location,
             notes: event.notes || '',
-            eventOwner: event.eventOwnerId ? 
-                `${event.eventOwnerId.firstName} ${event.eventOwnerId.lastName}` : '',
+            eventOwner: event.assignedTo ? 
+                `${event.assignedTo.firstName} ${event.assignedTo.lastName}` : '',
             relatedOrganization: event.relatedToId ? event.relatedToId.name : '',
             recurrence: event.recurrence || '',
             visibility: event.visibility || 'Internal',
@@ -1757,7 +1757,7 @@ exports.startEvent = async (req, res) => {
         }
         
         const populatedEvent = await Event.findById(event._id)
-            .populate('eventOwnerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('linkedFormId', 'name formId formType status');
         
         res.status(200).json({
@@ -2501,7 +2501,7 @@ exports.approveAudit = async (req, res) => {
         }
         
         // Authorization: Only event owner (auditor) can approve
-        if (event.eventOwnerId.toString() !== req.user._id.toString()) {
+        if (event.assignedTo.toString() !== req.user._id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: 'Only the event owner (auditor) can approve this audit.'
@@ -2573,7 +2573,7 @@ exports.approveAudit = async (req, res) => {
         await event.save();
         
         const populatedEvent = await Event.findById(event._id)
-            .populate('eventOwnerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('relatedToId', 'name')
             .populate('modifiedBy', 'firstName lastName');
         
@@ -2630,7 +2630,7 @@ exports.rejectAudit = async (req, res) => {
         }
         
         // Authorization: Only event owner (auditor) can reject
-        if (event.eventOwnerId.toString() !== req.user._id.toString()) {
+        if (event.assignedTo.toString() !== req.user._id.toString()) {
             return res.status(403).json({
                 success: false,
                 message: 'Only the event owner (auditor) can reject this audit.'
@@ -2713,7 +2713,7 @@ exports.rejectAudit = async (req, res) => {
         }
         
         const populatedEvent = await Event.findById(event._id)
-            .populate('eventOwnerId', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('relatedToId', 'name')
             .populate('modifiedBy', 'firstName lastName');
         
@@ -3020,7 +3020,7 @@ exports.cancelEvent = async (req, res) => {
         }
         
         // Authorization: Only event owner or admin can cancel
-        const isOwner = event.eventOwnerId.toString() === req.user._id.toString();
+        const isOwner = event.assignedTo.toString() === req.user._id.toString();
         const isAdmin = req.user.role === 'admin' || req.user.role === 'Admin';
         
         if (!isOwner && !isAdmin) {

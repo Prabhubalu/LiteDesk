@@ -91,7 +91,7 @@ async function updateEventsModuleFields(organizationId = null) {
       'status': 'Picklist',
       'relatedToId': 'Lookup (Relationship)',
       'relatedToType': 'Picklist',
-      'eventOwnerId': 'Lookup (Relationship)',
+      'assignedTo': 'Lookup (Relationship)',
       'startDateTime': 'Date-Time',
       'endDateTime': 'Date-Time',
       'location': 'Text-Area',
@@ -237,16 +237,16 @@ async function updateEventsModuleFields(organizationId = null) {
           }
         }
         
-        // Custom label for eventOwnerId
+        // Custom label for assignedTo
         let fieldLabel = fieldKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
-        if (fieldKey === 'eventOwnerId') {
+        if (fieldKey === 'assignedTo') {
           fieldLabel = 'Event Owner';
         }
         
         // Add lookupSettings for User lookup fields
         let lookupSettings = null;
         if (dataType === 'Lookup (Relationship)') {
-          if (fieldKey === 'eventOwnerId' || fieldKey === 'createdBy' || fieldKey === 'modifiedBy') {
+          if (fieldKey === 'assignedTo' || fieldKey === 'createdBy' || fieldKey === 'modifiedBy') {
             lookupSettings = {
               targetModule: 'users'
             };
@@ -290,15 +290,15 @@ async function updateEventsModuleFields(organizationId = null) {
             console.log(`    Updated ${fieldKey}: ${existingField.dataType} → ${dataType}`);
           }
           
-          // Update label if different (always update for eventOwnerId to ensure correct label)
+          // Update label if different (always update for assignedTo to ensure correct label)
           const oldLabel = existingField.label || '';
-          // Check if this is eventOwnerId (case-insensitive) and label needs updating
-          const isEventOwnerId = fieldKey.toLowerCase() === 'eventownerid';
+          // Check if this is assignedTo (case-insensitive) and label needs updating
+          const isEventOwnerId = fieldKey.toLowerCase() === 'assignedto';
           const targetLabel = isEventOwnerId ? 'Event Owner' : fieldLabel;
           
-          // Always update label for eventOwnerId, or if label doesn't match
+          // Always update label for assignedTo, or if label doesn't match
           if (isEventOwnerId) {
-            // Force update label for eventOwnerId - check various possible current values
+            // Force update label for assignedTo - check various possible current values
             const needsUpdate = oldLabel !== 'Event Owner' && 
                                oldLabel !== 'Event owner' && 
                                oldLabel.toLowerCase() !== 'event owner' &&
@@ -332,7 +332,7 @@ async function updateEventsModuleFields(organizationId = null) {
           }
           
           // Update lookupSettings for User lookup fields
-          const isUserLookupField = fieldKey.toLowerCase() === 'eventownerid' || 
+          const isUserLookupField = fieldKey.toLowerCase() === 'assignedto' || 
                                     fieldKey.toLowerCase() === 'createdby' || 
                                     fieldKey.toLowerCase() === 'modifiedby';
           
@@ -401,7 +401,7 @@ async function updateEventsModuleFields(organizationId = null) {
           
           // Apply filter metadata for default filters (max 3 per module)
           const eventsFilterMetadata = {
-            'eventOwnerId': {
+            'assignedTo': {
               filterable: true,
               filterType: 'user',
               filterPriority: 1
@@ -460,7 +460,7 @@ async function updateEventsModuleFields(organizationId = null) {
           
           // Apply filter metadata for default filters (max 3 per module)
           const eventsFilterMetadata = {
-            'eventOwnerId': {
+            'assignedTo': {
               filterable: true,
               filterType: 'user',
               filterPriority: 1
@@ -502,7 +502,7 @@ async function updateEventsModuleFields(organizationId = null) {
         'eventName',
         'eventType',
         'status',
-        'eventOwnerId',
+        'assignedTo',
         'startDateTime',
         'endDateTime',
         'location',
@@ -525,7 +525,7 @@ async function updateEventsModuleFields(organizationId = null) {
         'eventname': 'eventName',
         'eventtype': 'eventType',
         'status': 'status',
-        'eventownerid': 'eventOwnerId',
+        'assignedto': 'assignedTo',
         'startdatetime': 'startDateTime',
         'enddatetime': 'endDateTime',
         'location': 'location',
@@ -635,10 +635,10 @@ async function updateEventsModuleFields(organizationId = null) {
         if (fieldsUpdated && fields.length > 0) {
           // Deep clone fields to ensure all updates are included
           updateDoc.fields = JSON.parse(JSON.stringify(fields));
-          // Debug: Check eventOwnerId fields before saving
-          const eventOwnerFields = fields.filter(f => f.key && f.key.toLowerCase() === 'eventownerid');
-          const camelCaseFields = fields.filter(f => f.key === 'eventOwnerId');
-          console.log(`    Before save - Found ${eventOwnerFields.length} lowercase eventOwnerId field(s) and ${camelCaseFields.length} camelCase eventOwnerId field(s)`);
+          // Debug: Check assignedTo fields before saving
+          const eventOwnerFields = fields.filter(f => f.key && f.key.toLowerCase() === 'assignedto');
+          const camelCaseFields = fields.filter(f => f.key === 'assignedTo');
+          console.log(`    Before save - Found ${eventOwnerFields.length} lowercase assignedTo field(s) and ${camelCaseFields.length} camelCase assignedTo field(s)`);
           if (eventOwnerFields.length > 0) {
             eventOwnerFields.forEach((f, i) => {
               console.log(`      Lowercase field ${i}: key="${f.key}", label="${f.label}", lookupSettings=`, f.lookupSettings);
@@ -664,13 +664,13 @@ async function updateEventsModuleFields(organizationId = null) {
           );
           if (fieldsUpdated) {
             console.log(`    Explicitly updated fields via raw MongoDB (${fields.length} fields)`);
-            // Verify eventOwnerId field was saved correctly
+            // Verify assignedTo field was saved correctly
             const verifyDoc = await mongoose.connection.db.collection('moduledefinitions').findOne({ _id: moduleDef._id });
-            const verifyEventOwner = verifyDoc?.fields?.find(f => f.key && f.key.toLowerCase() === 'eventownerid');
+            const verifyEventOwner = verifyDoc?.fields?.find(f => f.key && f.key.toLowerCase() === 'assignedto');
             if (verifyEventOwner) {
-              console.log(`    ✅ Verified eventOwnerId in DB: key="${verifyEventOwner.key}", label="${verifyEventOwner.label}", lookupSettings=`, verifyEventOwner.lookupSettings);
+              console.log(`    ✅ Verified assignedTo in DB: key="${verifyEventOwner.key}", label="${verifyEventOwner.label}", lookupSettings=`, verifyEventOwner.lookupSettings);
             } else {
-              console.log(`    ⚠️  eventOwnerId field not found in saved document`);
+              console.log(`    ⚠️  assignedTo field not found in saved document`);
             }
           }
           if (quickCreateUpdated) {

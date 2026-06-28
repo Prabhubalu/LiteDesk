@@ -6,7 +6,7 @@ const INITIAL_SALES_ORDER_QUICK_CREATE = [
   'contactId',
   'organizationRefId',
   'dealId',
-  'ownerId',
+  'assignedTo',
   'fulfillmentMode'
 ];
 

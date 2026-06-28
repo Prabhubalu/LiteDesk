@@ -22,7 +22,7 @@ describe('mailroom events publisher', () => {
       caseResult: {
         action: 'created_case',
         caseId: 'case123',
-        caseRecord: { status: 'New', caseOwnerId: 'owner1' }
+        caseRecord: { status: 'New', assignedTo: 'owner1' }
       },
       conversationResult: {
         conversation: { _id: 'conv1' },

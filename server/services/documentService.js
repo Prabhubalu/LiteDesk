@@ -130,18 +130,18 @@ function normalizeRecordObjectId(recordId) {
 
 function resolveDocumentOwnerId(payload, userId) {
   const withDefaults = applyCreateOwnerDefaults(
-    { ownerId: payload?.ownerId },
+    { assignedTo: payload?.assignedTo },
     'documents',
     userId
   );
-  const ownerId = withDefaults.ownerId || userId;
-  if (!ownerId) {
+  const assignedTo = withDefaults.assignedTo || userId;
+  if (!assignedTo) {
     const error = new Error('Document owner is required');
     error.statusCode = 400;
     error.code = 'DOCUMENT_OWNER_REQUIRED';
     throw error;
   }
-  return ownerId;
+  return assignedTo;
 }
 
 function normalizeDocumentFolderId(folderId) {
@@ -278,7 +278,7 @@ function buildListQuery(organizationId, filters = {}) {
 
   if (filters.status) query.status = filters.status;
   if (filters.documentType) query.documentType = filters.documentType;
-  if (filters.ownerId) query.ownerId = filters.ownerId;
+  if (filters.assignedTo) query.assignedTo = filters.assignedTo;
   if (filters.fileType) query.fileType = filters.fileType;
   if (filters.tag) {
     const tag = String(filters.tag).trim();
@@ -369,7 +369,7 @@ function buildSharedWithMeClause(userId, userRoleId, userGroupIds = []) {
 
   return {
     'visibility.private': true,
-    ownerId: { $ne: userId },
+    assignedTo: { $ne: userId },
     createdBy: { $ne: userId },
     $or: accessConditions
   };
@@ -559,7 +559,7 @@ async function listDocuments({
 
   const runQuery = async (activeQuery, activeSort) => Promise.all([
     Document.find(activeQuery)
-      .populate('ownerId', USER_POPULATE)
+      .populate('assignedTo', USER_POPULATE)
       .populate('createdBy', USER_POPULATE)
       .populate('modifiedBy', USER_POPULATE)
       .populate('reservedBy', USER_POPULATE)
@@ -607,7 +607,7 @@ async function listDocuments({
 
 async function getDocumentById({ organizationId, documentId, visibilityContext = null }) {
   const doc = await Document.findOne({ _id: documentId, organizationId, deletedAt: null })
-    .populate('ownerId', USER_POPULATE)
+    .populate('assignedTo', USER_POPULATE)
     .populate('createdBy', USER_POPULATE)
     .populate('modifiedBy', USER_POPULATE)
     .populate('reservedBy', USER_POPULATE)
@@ -660,7 +660,7 @@ async function createDocument({
     externalLinkStatus: isExternalLink ? 'available' : null,
     richContent: payload.richContent || null,
     richContentText: extractRichContentSearchText(payload.richContent) || null,
-    ownerId: resolveDocumentOwnerId(payload, userId),
+    assignedTo: resolveDocumentOwnerId(payload, userId),
     createdBy: userId,
     modifiedBy: userId,
     status: payload.status || 'draft'
@@ -728,7 +728,7 @@ async function createDocumentFromUpload({
     storageProvider: 'oci',
     storagePath: uploadResult.storagePath,
     versionNumber: 1,
-    ownerId: resolveDocumentOwnerId(payload, userId),
+    assignedTo: resolveDocumentOwnerId(payload, userId),
     createdBy: userId,
     modifiedBy: userId,
     status: payload.status || 'published'
@@ -831,7 +831,7 @@ async function registerStoredFileAsDocument({
     storageProvider: 'oci',
     storagePath,
     versionNumber: 1,
-    ownerId: resolveDocumentOwnerId({}, userId),
+    assignedTo: resolveDocumentOwnerId({}, userId),
     createdBy: userId,
     modifiedBy: userId,
     status: 'published',
@@ -931,7 +931,7 @@ async function updateDocument({ organizationId, documentId, userId, payload = {}
     'expiryDate',
     'renewalDate',
     'retentionPolicy',
-    'ownerId',
+    'assignedTo',
     'richContent',
     'visibility'
   ];
@@ -979,15 +979,15 @@ async function updateDocument({ organizationId, documentId, userId, payload = {}
     }
   }
 
-  const ownerChanged = payload.ownerId !== undefined
-    && String(payload.ownerId || '') !== String(existing.ownerId || '');
+  const ownerChanged = payload.assignedTo !== undefined
+    && String(payload.assignedTo || '') !== String(existing.assignedTo || '');
 
   const doc = await Document.findOneAndUpdate(
     { _id: documentId, organizationId, deletedAt: null },
     update,
     { new: true }
   )
-    .populate('ownerId', USER_POPULATE)
+    .populate('assignedTo', USER_POPULATE)
     .populate('createdBy', USER_POPULATE)
     .populate('modifiedBy', USER_POPULATE)
     .populate('folderId', 'name path')
@@ -1002,8 +1002,8 @@ async function updateDocument({ organizationId, documentId, userId, payload = {}
       action: 'ownership_change',
       actorId: userId,
       metadata: {
-        previousOwnerId: existing.ownerId ? String(existing.ownerId) : null,
-        nextOwnerId: payload.ownerId ? String(payload.ownerId) : null
+        previousOwnerId: existing.assignedTo ? String(existing.assignedTo) : null,
+        nextOwnerId: payload.assignedTo ? String(payload.assignedTo) : null
       }
     });
   }
@@ -1176,7 +1176,7 @@ async function listRecentDocuments({ organizationId, userId, limit = 8 }) {
     organizationId,
     deletedAt: null
   })
-    .populate('ownerId', USER_POPULATE)
+    .populate('assignedTo', USER_POPULATE)
     .populate('folderId', 'name path')
     .lean();
 
@@ -1217,7 +1217,7 @@ async function createFolder({ organizationId, userId, payload = {} }) {
     name,
     parentFolderId: payload.parentFolderId || null,
     path,
-    ownerId: payload.ownerId || userId,
+    assignedTo: payload.assignedTo || userId,
     sortOrder: payload.sortOrder || 0
   });
 }
@@ -1802,7 +1802,7 @@ async function listDocumentsForRecord({
     organizationId,
     deletedAt: null
   })
-    .populate('ownerId', USER_POPULATE)
+    .populate('assignedTo', USER_POPULATE)
     .populate('folderId', 'name path')
     .sort('-updatedAt')
     .lean();

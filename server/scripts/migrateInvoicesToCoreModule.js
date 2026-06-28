@@ -40,7 +40,7 @@ const INITIAL_INVOICE_FIELDS = [
   { key: 'contactId', label: 'Contact', type: 'lookup', lookupModule: 'people' },
   { key: 'organizationRefId', label: 'Account', type: 'lookup', lookupModule: 'organizations' },
   { key: 'dealId', label: 'Deal', type: 'lookup', lookupModule: 'deals' },
-  { key: 'ownerId', label: 'Owner', type: 'lookup', lookupModule: 'users' },
+  { key: 'assignedTo', label: 'Assigned To', type: 'lookup', lookupModule: 'users' },
   { key: 'sourceContext', label: 'Source Context', type: 'text', system: true }
 ];
 

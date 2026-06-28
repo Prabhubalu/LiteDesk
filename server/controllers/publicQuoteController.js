@@ -34,7 +34,7 @@ async function resolveQuoteByToken(token) {
   const t = String(token || '').trim();
   if (!t) return null;
   return Quote.findOne({ publicShareToken: t })
-    .populate({ path: 'ownerId', select: 'firstName lastName email username' })
+    .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
     .populate({ path: 'organizationRefId', select: 'name' })
     .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' })
     .lean();
@@ -44,7 +44,7 @@ async function resolveQuoteDocByToken(token) {
   const t = String(token || '').trim();
   if (!t) return null;
   return Quote.findOne({ publicShareToken: t })
-    .populate({ path: 'ownerId', select: 'firstName lastName email username' })
+    .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
     .populate({ path: 'organizationRefId', select: 'name' })
     .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' });
 }

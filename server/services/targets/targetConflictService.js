@@ -3,12 +3,12 @@
 const Target = require('../../models/Target');
 
 async function detectConflicts(targetPayload, organizationId, excludeTargetId = null) {
-  const { ownerId, periodStart, periodEnd, sourceModules = [] } = targetPayload;
-  if (!ownerId || !periodStart || !periodEnd) return [];
+  const { assignedTo, periodStart, periodEnd, sourceModules = [] } = targetPayload;
+  if (!assignedTo || !periodStart || !periodEnd) return [];
 
   const query = {
     organizationId,
-    ownerId,
+    assignedTo,
     lifecycleStatus: { $in: ['active', 'locked', 'draft'] },
     periodStart: { $lt: new Date(periodEnd) },
     periodEnd: { $gt: new Date(periodStart) }

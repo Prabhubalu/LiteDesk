@@ -259,11 +259,11 @@ class DatabaseConnectionManager {
       
       // ===== DEALS INDEXES =====
       await db.collection('deals').createIndex({ organizationId: 1, stage: 1 });
-      await db.collection('deals').createIndex({ organizationId: 1, ownerId: 1 });
+      await db.collection('deals').createIndex({ organizationId: 1, assignedTo: 1 });
       await db.collection('deals').createIndex({ organizationId: 1, status: 1 });
       await db.collection('deals').createIndex({ organizationId: 1, expectedCloseDate: 1 });
       await db.collection('deals').createIndex({ organizationId: 1 });
-      await db.collection('deals').createIndex({ ownerId: 1 });
+      await db.collection('deals').createIndex({ assignedTo: 1 });
       await db.collection('deals').createIndex({ stage: 1 });
       console.log(`    ✅ Deals indexes created`);
       

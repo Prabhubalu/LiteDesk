@@ -1,6 +1,9 @@
 export function formatKeyToLabel(key: string | null | undefined): string;
 export function formatRelatedToForDisplay(value: unknown): string | null;
-export function getFieldDisplayLabel(field: { key?: string; label?: string } | null): string;
+export function getFieldDisplayLabel(
+  field: { key?: string; label?: string; moduleKey?: string } | null,
+  moduleKey?: string | null
+): string;
 export const getPlainTextFromHtml: (html: string) => string;
 export function stripHtmlForDetailDisplay(
   value: unknown,

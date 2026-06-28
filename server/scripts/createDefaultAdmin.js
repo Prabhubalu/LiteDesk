@@ -80,11 +80,19 @@ async function createDefaultAdmin() {
             return;
         }
 
+        const adminUserId = new mongoose.Types.ObjectId();
+
         if (organization) {
             console.log('\n📋 Reusing existing tenant organization...');
             console.log(`   Name: ${organization.name}`);
             console.log(`   ID: ${organization._id}`);
             console.log(`   Slug: ${organization.slug || expectedSlug}`);
+            if (!organization.assignedTo) {
+                organization.assignedTo = adminUserId;
+            }
+            if (!organization.createdBy) {
+                organization.createdBy = adminUserId;
+            }
         } else {
             console.log('\n📋 Creating tenant organization...');
             organization = new Organization({
@@ -92,6 +100,8 @@ async function createDefaultAdmin() {
             industry: DEFAULT_ADMIN.industry,
             isActive: true,
             isTenant: true, // Mark as tenant organization (required for feature checks)
+            createdBy: adminUserId,
+            assignedTo: adminUserId,
             subscription: {
                 status: 'active',
                 tier: 'paid', // Updated to match new subscription tiers
@@ -139,8 +149,6 @@ async function createDefaultAdmin() {
 
         await ensureDefaultCommunicationSettingsForOrganization(organization._id);
 
-        // CRM organization will be created after admin user is created (to set assignedTo/accountManager)
-
         // Create Default Roles
         console.log('\n🔐 Creating default roles...');
         try {
@@ -162,6 +170,10 @@ async function createDefaultAdmin() {
         const { APP_KEYS } = require('../constants/appKeys');
         const { validateAppRole } = require('../utils/appAccessUtils');
         
+        if (organization.isModified('assignedTo') || organization.isModified('createdBy')) {
+            await organization.save();
+        }
+
         // Ensure Sales app is present in enabledApps (preserve any other enabled apps like AUDIT/PORTAL)
         if (!organization.enabledApps || !organization.enabledApps.some(app => {
             const appKey = typeof app === 'string' ? app : app.appKey;
@@ -187,6 +199,7 @@ async function createDefaultAdmin() {
         }
 
         const adminUser = new User({
+            _id: adminUserId,
             username: DEFAULT_ADMIN.username,
             email: DEFAULT_ADMIN.email,
             password: hashedPassword,
@@ -216,6 +229,14 @@ async function createDefaultAdmin() {
         }
 
         await adminUser.save();
+
+        if (!organization.assignedTo) {
+            organization.assignedTo = adminUser._id;
+        }
+        if (!organization.createdBy) {
+            organization.createdBy = adminUser._id;
+        }
+
         console.log('✅ Admin User created');
         console.log(`   Name: ${adminUser.firstName} ${adminUser.lastName}`);
         console.log(`   Email: ${adminUser.email}`);

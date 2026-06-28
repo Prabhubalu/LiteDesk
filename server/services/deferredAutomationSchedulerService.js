@@ -16,7 +16,7 @@ function buildContext(event) {
     entityId: event.entityId || null,
     organizationId: event.organizationId || null,
     triggeredBy: event.triggeredBy || null,
-    ownerId: event.ownerId || null,
+    assignedTo: event.assignedTo || null,
     appKey: event.appKey || 'SALES'
   };
 }

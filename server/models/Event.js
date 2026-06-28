@@ -109,7 +109,7 @@ const eventSchema = new Schema({
   },
   
   // Event Owner
-  eventOwnerId: { 
+  assignedTo: { 
     type: Schema.Types.ObjectId, 
     ref: 'User',
     required: true
@@ -487,7 +487,7 @@ const eventSchema = new Schema({
 });
 
 // Indexes as per specification
-eventSchema.index({ eventOwnerId: 1, startDateTime: 1 }, { name: 'idx_events_owner_start' });
+eventSchema.index({ assignedTo: 1, startDateTime: 1 }, { name: 'idx_events_owner_start' });
 eventSchema.index({ relatedToId: 1 }, { name: 'idx_events_relatedTo' });
 eventSchema.index({ organizationId: 1, startDateTime: 1 });
 eventSchema.index({ organizationId: 1, status: 1 });
@@ -654,8 +654,8 @@ eventSchema.pre('save', function(next) {
 
 // ===== AUDIT SELF-REVIEW CONSTRAINTS =====
 // Enforce:
-// - If reviewerId === auditor (eventOwnerId), allowSelfReview MUST be true
-// - If allowSelfReview = false, reviewerId MUST be different from auditor (eventOwnerId)
+// - If reviewerId === auditor (assignedTo), allowSelfReview MUST be true
+// - If allowSelfReview = false, reviewerId MUST be different from auditor (assignedTo)
 eventSchema.pre('validate', function (next) {
   try {
     // Canonicalize legacy eventType label before enum validation.
@@ -675,7 +675,7 @@ eventSchema.pre('validate', function (next) {
       this.allowSelfReview = this.eventType === 'Internal Audit';
     }
 
-    const auditor = this.eventOwnerId || this.auditorId;
+    const auditor = this.assignedTo || this.auditorId;
     const reviewer = this.reviewerId;
     if (!auditor || !reviewer) return next();
 

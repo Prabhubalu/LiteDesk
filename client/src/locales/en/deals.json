@@ -288,8 +288,8 @@
     "description": "System deal field label"
   },
   "sysFieldOwnerId": {
-    "message": "Deal Owner",
-    "description": "System deal field label"
+    "message": "Assigned To",
+    "description": "Legacy system deal field label (ownerId renamed to assignedTo)"
   },
   "sysFieldAccountId": {
     "message": "Organization",

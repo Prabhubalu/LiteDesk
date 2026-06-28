@@ -51,7 +51,7 @@ function isArivuInternalEmail(email) {
  * 
  * @param {Object} params - Access resolution parameters
  * @param {Object} params.user - User object (must have _id, organizationId, appAccess)
- * @param {Object} params.organization - Organization object (must have ownerId, enabledApps)
+ * @param {Object} params.organization - Organization object (must have assignedTo, enabledApps)
  * @param {string} params.appKey - Application key (SALES, AUDIT, PORTAL, LMS)
  * @param {string} params.intent - Intent: 'VIEW' | 'CONFIGURE' | 'EXECUTE'
  * @returns {Promise<Object>} Access resolution result
@@ -425,10 +425,10 @@ async function resolveAppAccess({ user, organization, appKey, intent }) {
     // STEP 3: Owner Override (Legacy - handled by execution entitlement for EXECUTE)
     // ============================================================================
     // If user is organization owner, grant ADMIN access (implicit, non-billable)
-    // Check isOwner flag (primary) or ownerId match (if organization has ownerId field)
+    // Check isOwner flag (primary) or assignedTo match (if organization has assignedTo field)
 
     const isOwner = user.isOwner === true || 
-                    (user._id && org.ownerId && user._id.toString() === org.ownerId.toString());
+                    (user._id && org.assignedTo && user._id.toString() === org.assignedTo.toString());
 
     // Owner override for VIEW and CONFIGURE (execution entitlement handles EXECUTE)
     // Only apply if execution entitlement didn't already handle it

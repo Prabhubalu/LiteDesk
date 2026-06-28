@@ -60,7 +60,7 @@ async function semanticSearchDocuments({
   }
 
   const candidates = await Document.find(baseQuery)
-    .select('_id title documentNumber documentType status updatedAt searchEmbedding folderId ownerId')
+    .select('_id title documentNumber documentType status updatedAt searchEmbedding folderId assignedTo')
     .populate('folderId', 'name path')
     .sort({ updatedAt: -1 })
     .limit(MAX_CANDIDATES)

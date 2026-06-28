@@ -64,7 +64,7 @@ exports.getMyConfig = async (req, res) => {
     const config = await AppointmentBookingConfig.findOne({
       organizationId: req.user.organizationId,
       ownerType: 'user',
-      ownerId: req.user._id
+      assignedTo: req.user._id
     }).lean();
 
     if (!config) {
@@ -81,16 +81,16 @@ exports.upsertMyConfig = async (req, res) => {
   try {
     const updates = sanitizeConfigBody(req.body);
     const organizationId = req.user.organizationId;
-    const ownerId = req.user._id;
+    const assignedTo = req.user._id;
 
     let config = await AppointmentBookingConfig.findOne({
       organizationId,
       ownerType: 'user',
-      ownerId
+      assignedTo
     });
 
     if (!config) {
-      const user = await User.findById(ownerId).select('firstName lastName username email').lean();
+      const user = await User.findById(assignedTo).select('firstName lastName username email').lean();
       const baseName = updates.displayName || user?.firstName || user?.username || 'meet';
       const slug = updates.slug || await ensureUniqueSlug(baseName, async (s) => {
         const taken = await AppointmentBookingConfig.findOne({ organizationId, slug: s }).lean();
@@ -100,7 +100,7 @@ exports.upsertMyConfig = async (req, res) => {
       config = await AppointmentBookingConfig.create({
         organizationId,
         ownerType: 'user',
-        ownerId,
+        assignedTo,
         slug,
         displayName: updates.displayName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'My calendar',
         enabled: updates.enabled !== false,
@@ -112,8 +112,8 @@ exports.upsertMyConfig = async (req, res) => {
         appointmentTypes: updates.appointmentTypes ?? ['demo', 'consultation'],
         customFields: updates.customFields ?? [],
         branding: updates.branding ?? { themeColor: '#4f46e5', welcomeNote: '', logoUrl: '' },
-        createdBy: ownerId,
-        modifiedBy: ownerId,
+        createdBy: assignedTo,
+        modifiedBy: assignedTo,
         ...updates
       });
       await syncBookingPublicRegistry(config);
@@ -129,7 +129,7 @@ exports.upsertMyConfig = async (req, res) => {
           return res.status(409).json({ success: false, message: 'This booking URL is already taken.' });
         }
       }
-      Object.assign(config, updates, { modifiedBy: ownerId });
+      Object.assign(config, updates, { modifiedBy: assignedTo });
       await config.save();
       await syncBookingPublicRegistry(config, { previousSlug });
     }
@@ -160,7 +160,7 @@ exports.checkSlugAvailable = async (req, res) => {
     } else {
       query.$or = [
         { ownerType: 'team' },
-        { ownerType: 'user', ownerId: { $ne: req.user._id } }
+        { ownerType: 'user', assignedTo: { $ne: req.user._id } }
       ];
     }
     const existing = await AppointmentBookingConfig.findOne(query).lean();
@@ -176,7 +176,7 @@ exports.getUserConfig = async (req, res) => {
     const config = await AppointmentBookingConfig.findOne({
       organizationId: req.user.organizationId,
       ownerType: 'user',
-      ownerId: req.params.userId
+      assignedTo: req.params.userId
     }).lean();
 
     if (!config) {
@@ -193,9 +193,9 @@ exports.upsertUserConfig = async (req, res) => {
     if (!requireAdmin(req, res)) return;
     const updates = sanitizeConfigBody(req.body);
     const organizationId = req.user.organizationId;
-    const ownerId = req.params.userId;
+    const assignedTo = req.params.userId;
 
-    const owner = await User.findOne({ _id: ownerId, organizationId }).select('firstName lastName username').lean();
+    const owner = await User.findOne({ _id: assignedTo, organizationId }).select('firstName lastName username').lean();
     if (!owner) {
       return res.status(404).json({ success: false, message: 'User not found in organization' });
     }
@@ -203,7 +203,7 @@ exports.upsertUserConfig = async (req, res) => {
     let config = await AppointmentBookingConfig.findOne({
       organizationId,
       ownerType: 'user',
-      ownerId
+      assignedTo
     });
 
     if (!config) {
@@ -216,7 +216,7 @@ exports.upsertUserConfig = async (req, res) => {
       config = await AppointmentBookingConfig.create({
         organizationId,
         ownerType: 'user',
-        ownerId,
+        assignedTo,
         slug,
         displayName: updates.displayName || `${owner.firstName || ''} ${owner.lastName || ''}`.trim() || 'Booking',
         enabled: updates.enabled !== false,
@@ -265,7 +265,7 @@ exports.listAllConfigs = async (req, res) => {
     const configs = await AppointmentBookingConfig.find({
       organizationId: req.user.organizationId
     })
-      .populate('ownerId', 'firstName lastName email username avatar')
+      .populate('assignedTo', 'firstName lastName email username avatar')
       .populate('memberUserIds', 'firstName lastName email username avatar')
       .sort({ updatedAt: -1 })
       .lean();
@@ -290,13 +290,13 @@ exports.listMyPages = async (req, res) => {
     const query = { organizationId };
     if (!isAdmin) {
       query.$or = [
-        { ownerType: 'user', ownerId: userId },
+        { ownerType: 'user', assignedTo: userId },
         { ownerType: 'team', memberUserIds: userId }
       ];
     }
 
     const configs = await AppointmentBookingConfig.find(query)
-      .populate('ownerId', 'firstName lastName email username avatar')
+      .populate('assignedTo', 'firstName lastName email username avatar')
       .populate('memberUserIds', 'firstName lastName email username avatar')
       .sort({ updatedAt: -1 })
       .lean();

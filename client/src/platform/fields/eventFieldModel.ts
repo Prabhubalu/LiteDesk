@@ -309,7 +309,7 @@ export const EVENT_FIELD_METADATA: Record<string, EventFieldMetadata> = {
   },
   
   // Assignment field
-  eventOwnerId: {
+  assignedTo: {
     owner: 'core',
     intent: 'detail',
     fieldScope: 'CORE',

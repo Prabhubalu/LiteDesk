@@ -20,7 +20,7 @@ function requireConfigAccess(req, config) {
   if (isAdmin) return true;
   return (
     config.ownerType === 'user' &&
-    String(config.ownerId) === String(req.user._id)
+    String(config.assignedTo) === String(req.user._id)
   );
 }
 

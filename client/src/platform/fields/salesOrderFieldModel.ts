@@ -159,7 +159,7 @@ export const SALES_ORDER_FIELD_METADATA: Record<string, SalesOrderFieldMetadata>
     filterable: true,
     filterType: 'entity',
   },
-  ownerId: {
+  assignedTo: {
     owner: 'core',
     intent: 'detail',
     fieldScope: 'CORE',

@@ -35,11 +35,11 @@ async function resolveEventBookingConfig(event) {
   let config = await loadBookingConfig(event, { requireEnabled: false });
   if (config) return config;
 
-  if (event.eventOwnerId) {
+  if (event.assignedTo) {
     config = await AppointmentBookingConfig.findOne({
       organizationId: event.organizationId,
       ownerType: 'user',
-      ownerId: event.eventOwnerId
+      assignedTo: event.assignedTo
     }).sort({ updatedAt: -1 });
   }
   return config;
@@ -67,11 +67,11 @@ function publicManagePayload(event, config) {
 }
 
 async function getRescheduleSlots(event, config, dateStr) {
-  const ownerId = event.eventOwnerId;
+  const assignedTo = event.assignedTo;
   const organizationId = event.organizationId;
   const excludeEventId = event._id;
 
-  const { slots: rawSlots } = await getSlotsForDate(config, dateStr, ownerId, organizationId);
+  const { slots: rawSlots } = await getSlotsForDate(config, dateStr, assignedTo, organizationId);
   const results = [];
 
   for (const slot of rawSlots) {
@@ -79,7 +79,7 @@ async function getRescheduleSlots(event, config, dateStr) {
     const end = new Date(slot.end);
     const busy = await memberHasConflict(
       organizationId,
-      ownerId,
+      assignedTo,
       start,
       end,
       null,
@@ -93,7 +93,7 @@ async function getRescheduleSlots(event, config, dateStr) {
 
 async function rescheduleAppointment(event, config, startISO, options = {}) {
   const {
-    actorUserId = event.eventOwnerId,
+    actorUserId = event.assignedTo,
     source = 'guest_manage',
     notifyGuest = true
   } = options;
@@ -115,7 +115,7 @@ async function rescheduleAppointment(event, config, startISO, options = {}) {
 
   await assertSlotAvailable(
     config,
-    event.eventOwnerId,
+    event.assignedTo,
     event.organizationId,
     startDateTime,
     endDateTime,
@@ -217,7 +217,7 @@ async function cancelAppointmentByGuest(event, reason) {
   event.auditHistory = event.auditHistory || [];
   event.auditHistory.push({
     timestamp: new Date(),
-    actorUserId: event.eventOwnerId,
+    actorUserId: event.assignedTo,
     action: 'status_changed',
     from: previousStatus,
     to: 'Cancelled',
@@ -235,7 +235,7 @@ async function cancelAppointmentByGuest(event, reason) {
 
   try {
     emitAppointmentDomainEvent('appointment.cancelled', event, {
-      triggeredBy: event.eventOwnerId,
+      triggeredBy: event.assignedTo,
       previousState: { status: previousStatus },
       appKey: 'SALES'
     });

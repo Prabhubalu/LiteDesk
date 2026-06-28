@@ -224,7 +224,7 @@ async function executeProcess(params) {
       entityId: manualParams.entityId,
       organizationId: manualParams.organizationId || event?.organizationId,
       triggeredBy: manualParams.triggeredBy || event?.triggeredBy,
-      ownerId: manualParams.ownerId || event?.ownerId
+      assignedTo: manualParams.assignedTo || event?.assignedTo
     });
 
     // Check idempotency
@@ -447,11 +447,11 @@ async function executeByEvent(event) {
  * @param {string} params.entityId - Entity ID
  * @param {string} params.organizationId - Organization ID
  * @param {string} params.triggeredBy - User ID
- * @param {string} [params.ownerId] - Owner ID
+ * @param {string} [params.assignedTo] - Owner ID
  * @returns {Promise<{ ok: boolean, executionId?: string, error?: string }>}
  */
 async function executeManually(params) {
-  const { processId, entityType, entityId, organizationId, triggeredBy, ownerId } = params;
+  const { processId, entityType, entityId, organizationId, triggeredBy, assignedTo } = params;
 
   if (!processId || !entityType || !entityId || !organizationId || !triggeredBy) {
     return { ok: false, error: 'Missing required parameters for manual execution' };
@@ -464,7 +464,7 @@ async function executeManually(params) {
       entityId,
       organizationId,
       triggeredBy,
-      ownerId
+      assignedTo
     }
   });
 }

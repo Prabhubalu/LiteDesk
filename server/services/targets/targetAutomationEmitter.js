@@ -22,7 +22,7 @@ async function emitTargetAutomationEvents(target, context = {}) {
     entityId: targetId,
     organizationId: target.organizationId,
     appKey: 'PLATFORM',
-    ownerId: target.ownerId,
+    assignedTo: target.assignedTo,
     triggeredBy: 'system',
     previousState: { achievedValue: context.previousAchieved ?? 0, status: context.statusResult?.previousStatus },
     currentState: {
@@ -72,7 +72,7 @@ function emitTargetActivated(target, userId) {
     eventType: 'target.lifecycle.activated',
     organizationId: target.organizationId,
     appKey: 'PLATFORM',
-    ownerId: target.ownerId,
+    assignedTo: target.assignedTo,
     triggeredBy: userId || 'system',
     previousState: { lifecycleStatus: 'draft' },
     currentState: { lifecycleStatus: 'active', targetValue: target.targetValue }

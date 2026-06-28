@@ -60,7 +60,7 @@ function buildEventsListQuery(req) {
   if (scope === 'mine') {
     const currentUserId = req.user._id;
     query.$or = [
-      { eventOwnerId: currentUserId },
+      { assignedTo: currentUserId },
       { auditorId: currentUserId },
       { reviewerId: currentUserId },
       { correctiveOwnerId: currentUserId },

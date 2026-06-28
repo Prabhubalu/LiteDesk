@@ -739,12 +739,12 @@ const assignmentModules = ref([...FALLBACK_MODULES]);
 const moduleFields = ref([]);
 
 const ASSIGNMENT_CONDITION_FIELD_OPTIONS = {
-  'HELPDESK:cases': ['priority', 'status', 'caseType', 'channel', 'title', 'caseId', 'contactId', 'organizationRefId', 'caseOwnerId', 'source'],
+  'HELPDESK:cases': ['priority', 'status', 'caseType', 'channel', 'title', 'caseId', 'contactId', 'organizationRefId', 'assignedTo', 'source'],
   'HELPDESK:people': ['assignedTo', 'lead_owner', 'organization', 'derivedStatus', 'first_name', 'last_name', 'email', 'type', 'sales_type', 'lead_status', 'contact_status', 'helpdesk_role', 'role', 'preferred_contact_method', 'do_not_contact', 'tags'],
   'PLATFORM:people': ['assignedTo', 'lead_owner', 'organization', 'derivedStatus', 'first_name', 'last_name', 'email', 'type', 'sales_type', 'lead_status', 'contact_status', 'helpdesk_role', 'role', 'preferred_contact_method', 'do_not_contact', 'tags'],
   'SALES:people': ['assignedTo', 'lead_owner', 'organization', 'derivedStatus', 'first_name', 'last_name', 'email', 'type', 'sales_type', 'lead_status', 'contact_status', 'helpdesk_role', 'role', 'preferred_contact_method', 'do_not_contact', 'tags'],
   'SALES:organizations': ['name', 'assignedTo', 'types', 'customerStatus', 'partnerStatus', 'vendorStatus', 'derivedStatus', 'territory', 'industry', 'accountManager', 'tags'],
-  'SALES:deals': ['name', 'ownerId', 'stage', 'pipeline', 'status', 'priority', 'amount', 'probability', 'accountId', 'contactId', 'type', 'derivedStatus', 'currency', 'tags'],
+  'SALES:deals': ['name', 'assignedTo', 'stage', 'pipeline', 'status', 'priority', 'amount', 'probability', 'accountId', 'contactId', 'type', 'derivedStatus', 'currency', 'tags'],
   'SALES:tasks': ['title', 'assignedTo', 'status', 'priority', 'dueDate', 'projectId', 'relatedTo.type', 'tags'],
   'SALES:events': ['title', 'status', 'name'], 'SALES:items': ['name', 'status'], 'SALES:forms': ['name', 'status'],
   'PLATFORM:live_chat_sessions': ['queueKey', 'queueId', 'lifecycleStatus', 'channel', 'pageUrl', 'sessionKey', 'assignedAgentId', 'visitor.email', 'visitor.name', 'status'],

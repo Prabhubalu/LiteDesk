@@ -31,11 +31,11 @@ async function loadConfigWithCalendar(config) {
  * @param {import('../models/AppointmentBookingConfig')} config
  * @param {Date} rangeStart
  * @param {Date} rangeEnd
- * @param {ObjectId} ownerId
+ * @param {ObjectId} assignedTo
  * @param {ObjectId} organizationId
  */
-async function getAvailableSlots(config, rangeStart, rangeEnd, ownerId, organizationId) {
-  const resolved = await resolveScheduleForBookingConfig(config, organizationId, ownerId);
+async function getAvailableSlots(config, rangeStart, rangeEnd, assignedTo, organizationId) {
+  const resolved = await resolveScheduleForBookingConfig(config, organizationId, assignedTo);
   const timezone = getDisplayTimezone(config, resolved);
   const now = new Date();
 
@@ -48,7 +48,7 @@ async function getAvailableSlots(config, rangeStart, rangeEnd, ownerId, organiza
 
   const existing = await Event.find({
     organizationId,
-    eventOwnerId: ownerId,
+    assignedTo: assignedTo,
     deletedAt: null,
     status: { $ne: 'Cancelled' },
     startDateTime: { $lt: rangeEnd },
@@ -99,8 +99,8 @@ async function getAvailableSlots(config, rangeStart, rangeEnd, ownerId, organiza
 /**
  * Metadata for a single booking day (holidays, closed weekdays).
  */
-async function getDayAvailabilityMeta(config, dateStr, ownerId, organizationId) {
-  const resolved = await resolveScheduleForBookingConfig(config, organizationId, ownerId);
+async function getDayAvailabilityMeta(config, dateStr, assignedTo, organizationId) {
+  const resolved = await resolveScheduleForBookingConfig(config, organizationId, assignedTo);
   const meta = describeDayAvailability(resolved.schedule, dateStr);
   return {
     ...meta,
@@ -112,8 +112,8 @@ async function getDayAvailabilityMeta(config, dateStr, ownerId, organizationId) 
 /**
  * Single-day slots for public API (date interpreted in schedule timezone).
  */
-async function getSlotsForDate(config, dateStr, ownerId, organizationId) {
-  const resolved = await resolveScheduleForBookingConfig(config, organizationId, ownerId);
+async function getSlotsForDate(config, dateStr, assignedTo, organizationId) {
+  const resolved = await resolveScheduleForBookingConfig(config, organizationId, assignedTo);
   const timezone = getDisplayTimezone(config, resolved);
   const dayStart = DateTime.fromISO(dateStr, { zone: timezone }).startOf('day');
   if (!dayStart.isValid) {
@@ -122,7 +122,7 @@ async function getSlotsForDate(config, dateStr, ownerId, organizationId) {
 
   const rangeStart = dayStart.toJSDate();
   const rangeEnd = dayStart.plus({ days: 1 }).toJSDate();
-  const slots = await getAvailableSlots(config, rangeStart, rangeEnd, ownerId, organizationId);
+  const slots = await getAvailableSlots(config, rangeStart, rangeEnd, assignedTo, organizationId);
   const dayMeta = describeDayAvailability(resolved.schedule, dateStr);
 
   return { slots, dayMeta, timezone, scheduleSource: resolved.source };

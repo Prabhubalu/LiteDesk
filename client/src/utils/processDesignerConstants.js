@@ -125,14 +125,14 @@ function watchFieldsForModule(t, entityType) {
       { value: 'stage', label: t('process.designerWatchStage') },
       { value: 'pipeline', label: t('process.designerWatchPipeline') },
       { value: 'amount', label: t('process.designerWatchAmount') },
-      { value: 'ownerId', label: t('process.designerWatchOwner') }
+      { value: 'assignedTo', label: t('process.designerWatchOwner') }
     ],
     quote: [
       any,
       { value: 'status', label: t('process.designerWatchQuoteStatus') },
       { value: 'grandTotal', label: t('process.designerWatchGrandTotal') },
       { value: 'globalDiscountTotal', label: t('process.designerWatchGlobalDiscount') },
-      { value: 'ownerId', label: t('process.designerWatchOwner') }
+      { value: 'assignedTo', label: t('process.designerWatchOwner') }
     ]
   };
   return byModule[entityType] || [any];
@@ -188,7 +188,7 @@ export function getConditionFieldsByModule(t, entityType) {
       { value: 'stage', label: t('process.designerWatchStage') },
       { value: 'amount', label: t('process.designerWatchAmount') },
       { value: 'pipeline', label: t('process.designerWatchPipeline') },
-      { value: 'ownerId', label: t('process.designerWatchOwner') },
+      { value: 'assignedTo', label: t('process.designerWatchOwner') },
       { value: 'status', label: t('process.designerCondStatus') }
     ],
     quote: [
@@ -196,7 +196,7 @@ export function getConditionFieldsByModule(t, entityType) {
       { value: 'grandTotal', label: t('process.designerWatchGrandTotal') },
       { value: 'globalDiscountTotal', label: t('process.designerWatchGlobalDiscount') },
       { value: 'subtotal', label: t('process.designerWatchSubtotal') },
-      { value: 'ownerId', label: t('process.designerWatchOwner') }
+      { value: 'assignedTo', label: t('process.designerWatchOwner') }
     ]
   };
   return byModule[entityType] || [];

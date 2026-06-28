@@ -62,7 +62,7 @@ function resolveEffectiveReviewerId(linkedEvent) {
     const explicit = toUserIdString(linkedEvent.reviewerId);
     if (explicit) return explicit;
     if (!inferAllowSelfReview(linkedEvent)) return null;
-    return toUserIdString(linkedEvent.auditorId) || toUserIdString(linkedEvent.eventOwnerId);
+    return toUserIdString(linkedEvent.auditorId) || toUserIdString(linkedEvent.assignedTo);
 }
 
 function assertAuditReviewAuthority(linkedEvent, response, currentUserId) {
@@ -811,7 +811,7 @@ exports.getAllResponses = async (req, res) => {
             const auditEventTypes = ['Internal Audit', 'External Audit — Single Org', 'External Audit Beat'];
             const ownedEvents = await Event.find({
                 organizationId: req.user.organizationId,
-                eventOwnerId: req.user._id,
+                assignedTo: req.user._id,
                 eventType: { $in: auditEventTypes }
             }).select('_id').lean();
 
@@ -1301,8 +1301,8 @@ exports.addCorrectiveAction = async (req, res) => {
 
             // Authorization: only the single corrective owner can add/update corrective actions
             if (event) {
-                const ownerId = event.correctiveOwnerId ? String(event.correctiveOwnerId) : '';
-                if (!ownerId || ownerId !== String(req.user._id)) {
+                const assignedTo = event.correctiveOwnerId ? String(event.correctiveOwnerId) : '';
+                if (!assignedTo || assignedTo !== String(req.user._id)) {
                     return res.status(403).json({
                         success: false,
                         message: 'Only the assigned corrective owner can update this action.'

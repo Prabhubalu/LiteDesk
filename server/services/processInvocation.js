@@ -416,7 +416,7 @@ async function startProcess(params) {
       entityId: manualParams.entityId,
       organizationId: manualParams.organizationId || event?.organizationId,
       triggeredBy: manualParams.triggeredBy || event?.triggeredBy,
-      ownerId: manualParams.ownerId || event?.ownerId,
+      assignedTo: manualParams.assignedTo || event?.assignedTo,
       webhookInvocation,
       webhookDeliveryId
     });
@@ -546,7 +546,7 @@ function buildContextFromPausedExecution(execution, process) {
     entityId: execution.entityId,
     organizationId: orgId,
     triggeredBy: execution.triggeredBy,
-    ownerId: null,
+    assignedTo: null,
     event,
     dataBag: execution.dataBag || {},
     behaviorProposals: execution.behaviorProposals || {

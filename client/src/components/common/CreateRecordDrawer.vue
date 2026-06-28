@@ -1516,7 +1516,7 @@ const handleSubmit = async () => {
       const keyMappings = {
         'linked-form-id': 'linkedFormId',
         'related-to-id': 'relatedToId',
-        'event-owner-id': 'eventOwnerId',
+        'event-owner-id': 'assignedTo',
         'auditor-id': 'auditorId',
         'reviewer-id': 'reviewerId',
         'corrective-owner-id': 'correctiveOwnerId',
@@ -1527,7 +1527,7 @@ const handleSubmit = async () => {
 
       // Also normalize lowercased keys that can come from saved module definitions (defensive)
       const lowercaseMappings = {
-        eventownerid: 'eventOwnerId',
+        assignedto: 'assignedTo',
         auditorid: 'auditorId',
         reviewerid: 'reviewerId',
         correctiveownerid: 'correctiveOwnerId',

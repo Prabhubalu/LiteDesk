@@ -143,7 +143,7 @@ async function resolveEscalationOwner({ organizationId, chainGroupIds = [], curr
     const members = Array.isArray(row?.members) ? row.members.map((id) => id.toString()) : [];
     const selected = members.find((id) => id !== currentOwnerId) || members[0];
     if (selected) {
-      return { ownerId: selected, groupId: groupId.toString() };
+      return { assignedTo: selected, groupId: groupId.toString() };
     }
   }
   return null;
@@ -293,7 +293,7 @@ async function enqueueAssignmentJobsForSalesRecord({
 }
 
 async function applyScheduledAssignmentForCase(job, record, rule, ruleSetVersion) {
-  const previousOwnerId = toIdString(record.caseOwnerId);
+  const previousOwnerId = toIdString(record.assignedTo);
   const assignmentControl = getAssignmentControl(record);
   if (assignmentControl.isLocked) {
     return { ownerChanged: false, state: 'skipped', reason: 'assignment_locked' };
@@ -340,7 +340,7 @@ async function applyScheduledAssignmentForCase(job, record, rule, ruleSetVersion
         .lean();
       const fallbackOwnerId = toIdString(previousLog?.previousOwnerId);
       if (fallbackOwnerId && fallbackOwnerId !== previousOwnerId && isValidObjectId(fallbackOwnerId)) {
-        record.caseOwnerId = fallbackOwnerId;
+        record.assignedTo = fallbackOwnerId;
         record.activities = Array.isArray(record.activities) ? record.activities : [];
         record.activities.push({
           activityType: 'assignment_reverted',
@@ -357,7 +357,7 @@ async function applyScheduledAssignmentForCase(job, record, rule, ruleSetVersion
   }
 
   if (ownerChanged) {
-    record.caseOwnerId = assignedUserId;
+    record.assignedTo = assignedUserId;
     record.activities = Array.isArray(record.activities) ? record.activities : [];
     record.activities.push({
       activityType: 'assignment_scheduled_applied',
@@ -382,10 +382,10 @@ async function applyScheduledAssignmentForCase(job, record, rule, ruleSetVersion
     const escalationTarget = await resolveEscalationOwner({
       organizationId: job.organizationId,
       chainGroupIds: rule.escalation.chainGroupIds || [],
-      currentOwnerId: toIdString(record.caseOwnerId)
+      currentOwnerId: toIdString(record.assignedTo)
     });
-    if (escalationTarget?.ownerId && escalationTarget.ownerId !== toIdString(record.caseOwnerId)) {
-      record.caseOwnerId = escalationTarget.ownerId;
+    if (escalationTarget?.assignedTo && escalationTarget.assignedTo !== toIdString(record.assignedTo)) {
+      record.assignedTo = escalationTarget.assignedTo;
       record.activities = Array.isArray(record.activities) ? record.activities : [];
       record.activities.push({
         activityType: 'assignment_escalated',
@@ -405,7 +405,7 @@ async function applyScheduledAssignmentForCase(job, record, rule, ruleSetVersion
     }
   }
 
-  const finalOwnerId = escalatedOwner?.ownerId || (ownerChanged ? assignedUserId : previousOwnerId);
+  const finalOwnerId = escalatedOwner?.assignedTo || (ownerChanged ? assignedUserId : previousOwnerId);
   const finalGroupId = escalatedOwner?.groupId || assignedGroupId;
   const finalStatus =
     state === 'queued'

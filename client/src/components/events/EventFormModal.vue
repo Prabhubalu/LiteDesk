@@ -94,7 +94,7 @@
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('events.eventFormModalEventOwner') }}<span class="text-red-500">*</span>
               </label>
               <select
-                v-model="form.eventOwnerId"
+                v-model="form.assignedTo"
                 required
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
@@ -491,7 +491,7 @@ const form = ref({
   notes: '',
   eventType: 'Meeting',
   // status is system-controlled, not user-editable
-  eventOwnerId: '',
+  assignedTo: '',
   auditorId: '',
   reviewerId: '',
   correctiveOwnerId: '',
@@ -796,7 +796,7 @@ watch(() => props.isOpen, (newVal) => {
       notes: props.event.notes || '',
       eventType: props.event.eventType || 'Meeting',
       // status is system-controlled, not user-editable
-      eventOwnerId: props.event.eventOwnerId?._id || props.event.eventOwnerId || currentUser.value._id || '',
+      assignedTo: props.event.assignedTo?._id || props.event.assignedTo || currentUser.value._id || '',
       auditorId: props.event.auditorId?._id || props.event.auditorId || '',
       reviewerId: props.event.reviewerId?._id || props.event.reviewerId || '',
       correctiveOwnerId: props.event.correctiveOwnerId?._id || props.event.correctiveOwnerId || '',
@@ -866,7 +866,7 @@ const resetForm = () => {
     notes: '',
     eventType: 'Meeting',
     // status is system-controlled, defaults to 'Planned' on creation
-    eventOwnerId: currentUser.value._id || '',
+    assignedTo: currentUser.value._id || '',
     auditorId: '',
     reviewerId: '',
     correctiveOwnerId: '',
@@ -961,7 +961,7 @@ const handleSubmit = async (e) => {
     return;
   }
   
-  if (!form.value.eventOwnerId && !currentUser.value._id) {
+  if (!form.value.assignedTo && !currentUser.value._id) {
     alert(t('events.eventFormModalToastEventOwnerIsRequired'));
     return;
   }
@@ -1013,7 +1013,7 @@ const handleSubmit = async (e) => {
       notes: form.value.notes || '',
       eventType: form.value.eventType,
       // status is system-controlled - backend will set to 'Planned' on creation
-      eventOwnerId: form.value.eventOwnerId || currentUser.value._id,
+      assignedTo: form.value.assignedTo || currentUser.value._id,
       startDateTime: startDate.toISOString(),
       endDateTime: endDate.toISOString(),
       location: form.value.location || '',

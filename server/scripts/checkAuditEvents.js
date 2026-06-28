@@ -60,14 +60,14 @@ async function checkAuditEvents() {
       if (count > 0) {
         // Show sample events
         const samples = await Event.find({ eventType: auditType })
-          .select('_id eventId eventName eventType auditorId eventOwnerId organizationId auditState')
+          .select('_id eventId eventName eventType auditorId assignedTo organizationId auditState')
           .limit(3)
           .lean();
         
         samples.forEach(event => {
           console.log(`      - ${event.eventName || 'Unnamed'} (ID: ${event._id})`);
           console.log(`        auditorId: ${event.auditorId || 'MISSING'}`);
-          console.log(`        eventOwnerId: ${event.eventOwnerId || 'MISSING'}`);
+          console.log(`        assignedTo: ${event.assignedTo || 'MISSING'}`);
           console.log(`        auditState: ${event.auditState || 'MISSING'}`);
         });
       }

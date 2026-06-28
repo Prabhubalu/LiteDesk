@@ -481,7 +481,7 @@ function getDefaultNotificationMetadata(moduleKey) {
     cases: {
       ruleEligible: true,
       supportedEvents: ['ASSIGNED', 'STATUS_CHANGED'],
-      supportedConditions: ['caseOwnerId', 'priority', 'status']
+      supportedConditions: ['assignedTo', 'priority', 'status']
     }
     // Other modules (forms, items, imports, reports, users) are not rule-eligible by default
   };
@@ -588,7 +588,7 @@ function getFieldDataType(key, fieldName, path) {
         'pipeline': 'Picklist',
         'stage': 'Picklist',
         'type': 'Picklist',
-        'ownerId': 'Lookup (Relationship)',
+        'assignedTo': 'Lookup (Relationship)',
         'accountId': 'Lookup (Relationship)',
         'contactId': 'Lookup (Relationship)',
         'lineItems': 'Rich Text',
@@ -615,7 +615,7 @@ function getFieldDataType(key, fieldName, path) {
         'status': 'Picklist',
         'relatedToId': 'Lookup (Relationship)',
         'relatedToType': 'Picklist',
-        'eventOwnerId': 'Lookup (Relationship)', // Label: "Event Owner"
+        'assignedTo': 'Lookup (Relationship)', // Label: "Event Owner"
         'startDateTime': 'Date-Time',
         'endDateTime': 'Date-Time',
         'location': 'Text-Area',
@@ -687,7 +687,7 @@ function getFieldDataType(key, fieldName, path) {
         caseType: 'Picklist',
         priority: 'Picklist',
         status: 'Picklist',
-        caseOwnerId: 'Lookup (Relationship)',
+        assignedTo: 'Lookup (Relationship)',
         contactId: 'Lookup (Relationship)',
         organizationRefId: 'Lookup (Relationship)',
         resolutionSummary: 'Text-Area',
@@ -753,7 +753,7 @@ function getFieldDataType(key, fieldName, path) {
         validUntil: 'Date',
         status: 'Picklist',
         currency: 'Picklist',
-        ownerId: 'Lookup (Relationship)',
+        assignedTo: 'Lookup (Relationship)',
         contactId: 'Lookup (Relationship)',
         organizationRefId: 'Lookup (Relationship)',
         dealId: 'Lookup (Relationship)',
@@ -852,7 +852,7 @@ function getBaseFieldsForKey(key) {
             'status',
             'priority',
             'caseType',
-            'caseOwnerId',
+            'assignedTo',
             'contactId',
             'organizationRefId',
             'channel',
@@ -1229,7 +1229,7 @@ function getBaseFieldsForKey(key) {
                     .replace(/\s+/g, ' ')
                     .trim()
                     .replace(/\b\w/g, c => c.toUpperCase());
-                if (name === 'eventOwnerId') fieldLabel = 'Event Owner';
+                if (name === 'assignedTo') fieldLabel = 'Assigned To';
                 // UX normalization: hide technical relationship naming in Events module UI
                 if (key === 'events' && name === 'relatedToId') fieldLabel = 'Organization';
                 if (key === 'events' && name === 'linkedFormId') fieldLabel = 'Form';
@@ -1243,7 +1243,7 @@ function getBaseFieldsForKey(key) {
                 
                 if (dataType === 'Lookup (Relationship)') {
                     // Check if this is a User lookup field
-                    if (name === 'eventOwnerId' || name === 'createdBy' || name === 'modifiedBy' || 
+                    if (name === 'assignedTo' || name === 'createdBy' || name === 'modifiedBy' || 
                         (path.options && path.options.ref === 'User') ||
                         (path.caster && path.caster.options && path.caster.options.ref === 'User')) {
                         lookupSettings = {
@@ -1362,8 +1362,8 @@ function getBaseFieldsForKey(key) {
                 }
 
                 // Events: audit UX uses explicit audit role field `auditorId`.
-                // Hide `eventOwnerId` for audit event types to prevent duplicate "Event Owner" vs "Auditor" confusion.
-                if (key === 'events' && name === 'eventOwnerId') {
+                // Hide `assignedTo` for audit event types to prevent duplicate "Event Owner" vs "Auditor" confusion.
+                if (key === 'events' && name === 'assignedTo') {
                     dependencies = [
                         ...(dependencies || []),
                         {
@@ -2721,7 +2721,7 @@ exports.listModules = async (req, res) => {
                 relatedorg: 'relatedToId',
                 relatedorgid: 'relatedToId',
                 relatedorganization: 'relatedToId',
-                eventownerid: 'eventOwnerId',
+                assignedto: 'assignedTo',
                 startdatetime: 'startDateTime',
                 enddatetime: 'endDateTime',
                 allowselfreview: 'allowSelfReview',
@@ -2890,7 +2890,7 @@ exports.listModules = async (req, res) => {
                             const savedLabelLower = String(savedField.label || '').toLowerCase().trim();
                             const isTechnicalDefault = [
                                 'event owner id',
-                                'eventownerid',
+                                'assignedto',
                                 'linked form id',
                                 'linkedformid',
                                 'related to id',
@@ -2900,10 +2900,20 @@ exports.listModules = async (req, res) => {
                                 'organization id',
                                 'organizationid'
                             ].includes(savedLabelLower);
+                            const isLegacyAssignedToOwnerLabel =
+                                String(savedField.key || '').toLowerCase() === 'assignedto' &&
+                                [
+                                    'owner',
+                                    'deal owner',
+                                    'event owner',
+                                    'case owner',
+                                    'case owner id',
+                                    'assigned to (owner)'
+                                ].includes(savedLabelLower);
                             const keyNorm = String(savedField.key || '').replace(/\s+/g, '').toLowerCase();
                             const labelNorm = String(savedField.label || '').replace(/\s+/g, '').toLowerCase();
                             const isLabelSameAsKey = keyNorm && labelNorm === keyNorm;
-                            if (!savedField.label || isTechnicalDefault || isLabelSameAsKey) {
+                            if (!savedField.label || isTechnicalDefault || isLabelSameAsKey || isLegacyAssignedToOwnerLabel) {
                                 savedField.label = baseField.label;
                             }
                         }
@@ -2926,12 +2936,12 @@ exports.listModules = async (req, res) => {
                             }
                         }
 
-                        // Events: normalize eventOwnerId audit UX (even if org has older saved deps):
-                        // - Hide eventOwnerId for audit event types (auditorId is used)
-                        if (sys.key === 'events' && savedField.key === 'eventOwnerId') {
+                        // Events: normalize assignedTo audit UX (even if org has older saved deps):
+                        // - Hide assignedTo for audit event types (auditorId is used)
+                        if (sys.key === 'events' && savedField.key === 'assignedTo') {
                             const deps = Array.isArray(savedField.dependencies) ? savedField.dependencies : [];
 
-                            // Remove any legacy label override that rebrands eventOwnerId as "Auditor"
+                            // Remove any legacy label override that rebrands assignedTo as "Auditor"
                             const cleaned = deps.filter(d => !(d && d.type === 'label' && String(d.labelValue || '').toLowerCase() === 'auditor'));
 
                             const hasHideForAudits = cleaned.some(d =>
@@ -3347,10 +3357,10 @@ exports.listModules = async (req, res) => {
                     finalQuickCreate = ['item_name', 'item_type', 'categoryId', 'selling_price'];
                     console.log('📋 Items: Applying canonical default Quick Create:', finalQuickCreate);
                 }
-                // ARCHITECTURE NOTE: Deals Quick Create default: name, amount, stage, expectedCloseDate, ownerId
+                // ARCHITECTURE NOTE: Deals Quick Create default: name, amount, stage, expectedCloseDate, assignedTo
                 // See: client/src/platform/fields/dealFieldModel.ts getDealQuickCreateFields()
                 if (sys.key === 'deals' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
-                    finalQuickCreate = ['name', 'amount', 'stage', 'expectedCloseDate', 'ownerId'];
+                    finalQuickCreate = ['name', 'amount', 'stage', 'expectedCloseDate', 'assignedTo'];
                     console.log('📋 Deals: Applying canonical default Quick Create:', finalQuickCreate);
                 }
                 if (sys.key === 'quotes' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
@@ -3427,7 +3437,7 @@ exports.listModules = async (req, res) => {
                     const eventsDefaultQuickCreate = [
                         'eventName',
                         'eventType',
-                        'eventOwnerId',
+                        'assignedTo',
                         'geoRequired',
                         'startDateTime',
                         'endDateTime',
@@ -3453,7 +3463,7 @@ exports.listModules = async (req, res) => {
                     const hasCore =
                         qcLower.includes('eventname') &&
                         qcLower.includes('eventtype') &&
-                        qcLower.includes('eventownerid') &&
+                        qcLower.includes('assignedto') &&
                         qcLower.includes('startdatetime') &&
                         qcLower.includes('enddatetime');
                     const looksLegacy =
@@ -3667,7 +3677,7 @@ exports.listModules = async (req, res) => {
                     defaultQuickCreate = [
                         'eventName',
                         'eventType',
-                        'eventOwnerId',
+                        'assignedTo',
                         'geoRequired',
                         'startDateTime',
                         'endDateTime',
@@ -3702,10 +3712,10 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'items') {
                     defaultQuickCreate = ['item_name', 'item_type', 'categoryId', 'selling_price'];
                 }
-                // ARCHITECTURE NOTE: Deals Quick Create default: name, amount, stage, expectedCloseDate, ownerId
+                // ARCHITECTURE NOTE: Deals Quick Create default: name, amount, stage, expectedCloseDate, assignedTo
                 // See: client/src/platform/fields/dealFieldModel.ts getDealQuickCreateFields()
                 if (sys.key === 'deals') {
-                    defaultQuickCreate = ['name', 'amount', 'stage', 'expectedCloseDate', 'ownerId'];
+                    defaultQuickCreate = ['name', 'amount', 'stage', 'expectedCloseDate', 'assignedTo'];
                 }
                 if (sys.key === 'quotes') {
                     defaultQuickCreate = [...INITIAL_QUOTE_QUICK_CREATE];

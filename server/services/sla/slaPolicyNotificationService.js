@@ -119,7 +119,7 @@ async function loadCaseForInstance(instance) {
     organizationId: instance.organizationId,
     deletedAt: null
   })
-    .select('_id organizationId title status priority caseOwnerId')
+    .select('_id organizationId title status priority assignedTo')
     .lean();
 }
 

@@ -1894,7 +1894,7 @@ exports.createCaseFromEmail = async (req, res) => {
       status: 'New',
       channel: 'Email',
       caseNotes: notes,
-      caseOwnerId: req.user._id,
+      assignedTo: req.user._id,
       currentSlaCycle: cycle,
       activities: [
         {

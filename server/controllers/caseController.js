@@ -74,7 +74,7 @@ function looseCaseFieldName(key) {
 const CASE_REF_LOOSE_TO_CANONICAL = {
   contactid: 'contactId',
   organizationrefid: 'organizationRefId',
-  caseownerid: 'caseOwnerId'
+  assignedto: 'assignedTo'
 };
 
 /**
@@ -145,7 +145,7 @@ function toSafeObject(record) {
 }
 
 const CASE_REFERENCE_POPULATE = [
-  { path: 'caseOwnerId', select: 'firstName lastName email username' },
+  { path: 'assignedTo', select: 'firstName lastName email username' },
   { path: 'contactId', select: 'first_name last_name email' },
   { path: 'organizationRefId', select: 'name' }
 ];
@@ -160,9 +160,9 @@ async function toPopulatedSafeObject(row) {
   return toSafeObject(row);
 }
 
-async function ensureOwnerInOrg(ownerId, organizationId) {
-  if (!ownerId || !mongoose.Types.ObjectId.isValid(ownerId)) return false;
-  const user = await User.findOne({ _id: ownerId, organizationId }).select('_id').lean();
+async function ensureOwnerInOrg(assignedTo, organizationId) {
+  if (!assignedTo || !mongoose.Types.ObjectId.isValid(assignedTo)) return false;
+  const user = await User.findOne({ _id: assignedTo, organizationId }).select('_id').lean();
   return Boolean(user);
 }
 
@@ -193,7 +193,7 @@ const MUTABLE_CASE_FIELDS = new Set([
   'preferredLanguage',
   'customerTier',
   'vipCustomer',
-  'caseOwnerId',
+  'assignedTo',
   'team',
   'queue',
   'escalationLevel',
@@ -262,7 +262,7 @@ exports.createCase = async (req, res) => {
       preferredLanguage,
       customerTier,
       vipCustomer,
-      caseOwnerId,
+      assignedTo,
       channel,
       relatedItemIds,
       serialNumber,
@@ -335,17 +335,17 @@ exports.createCase = async (req, res) => {
       ? [...new Set(ccEmails.map((t) => String(t || '').trim()).filter(Boolean))].slice(0, 50)
       : [];
 
-    const ownerId = caseOwnerId || req.user._id;
-    const ownerExists = await ensureOwnerInOrg(ownerId, req.user.organizationId);
+    const resolvedAssignedTo = assignedTo || req.user._id;
+    const ownerExists = await ensureOwnerInOrg(resolvedAssignedTo, req.user.organizationId);
     if (!ownerExists) {
       return res.status(400).json({
         success: false,
-        message: 'caseOwnerId must be an active user in your organization'
+        message: 'assignedTo must be an active user in your organization'
       });
     }
 
     const { validateRecordAssignmentRequest } = require('../services/recordAssignmentService');
-    const ownerAssignCheck = await validateRecordAssignmentRequest(req, ownerId, { skipSelf: true });
+    const ownerAssignCheck = await validateRecordAssignmentRequest(req, resolvedAssignedTo, { skipSelf: true });
     if (ownerAssignCheck) {
       return res.status(ownerAssignCheck.status).json(ownerAssignCheck.body);
     }
@@ -387,7 +387,7 @@ exports.createCase = async (req, res) => {
       preferredLanguage: preferredLanguage ? String(preferredLanguage).trim() : null,
       customerTier: customerTier ? String(customerTier).trim() : null,
       vipCustomer: Boolean(vipCustomer),
-      caseOwnerId: ownerId,
+      assignedTo: resolvedAssignedTo,
       team: team ? String(team).trim() : null,
       queue: queue ? String(queue).trim() : null,
       escalationLevel: escalationLevel ? String(escalationLevel).trim() : null,
@@ -472,8 +472,8 @@ exports.getCases = async (req, res) => {
         message: parsedQuery.errors[0]
       });
     }
-    if (parsedQuery.filters.caseOwnerId && !mongoose.Types.ObjectId.isValid(parsedQuery.filters.caseOwnerId)) {
-      return res.status(400).json({ success: false, message: 'Invalid caseOwnerId filter' });
+    if (parsedQuery.filters.assignedTo && !mongoose.Types.ObjectId.isValid(parsedQuery.filters.assignedTo)) {
+      return res.status(400).json({ success: false, message: 'Invalid assignedTo filter' });
     }
 
     const query = {
@@ -494,7 +494,7 @@ exports.getCases = async (req, res) => {
       promoteCaseReferenceIdsFromCustomFields(row);
     }
     await Case.populate(rows, [
-      { path: 'caseOwnerId', select: 'firstName lastName email username' },
+      { path: 'assignedTo', select: 'firstName lastName email username' },
       { path: 'contactId', select: 'first_name last_name name email' },
       { path: 'organizationRefId', select: 'name' }
     ]);
@@ -540,7 +540,7 @@ exports.getCaseById = async (req, res) => {
 
     promoteCaseReferenceIdsFromCustomFields(row);
     await Case.populate(row, [
-      { path: 'caseOwnerId', select: 'firstName lastName email' },
+      { path: 'assignedTo', select: 'firstName lastName email' },
       { path: 'contactId', select: 'first_name last_name email' },
       { path: 'organizationRefId', select: 'name' },
       { path: 'relatedItemIds', select: 'name sku' }
@@ -652,7 +652,7 @@ exports.updateCase = async (req, res) => {
     const { standardPayload, customFieldsSet } = extractCustomFields(incomingRaw, Case);
     const incoming = {};
     const previousState = {
-      caseOwnerId: row.caseOwnerId,
+      assignedTo: row.assignedTo,
       status: row.status,
       priority: row.priority,
       caseType: row.caseType,
@@ -747,17 +747,17 @@ exports.updateCase = async (req, res) => {
         : [];
     }
 
-    if (incoming.caseOwnerId && String(incoming.caseOwnerId) !== String(row.caseOwnerId)) {
-      const ownerExists = await ensureOwnerInOrg(incoming.caseOwnerId, req.user.organizationId);
+    if (incoming.assignedTo && String(incoming.assignedTo) !== String(row.assignedTo)) {
+      const ownerExists = await ensureOwnerInOrg(incoming.assignedTo, req.user.organizationId);
       if (!ownerExists) {
         return res.status(400).json({
           success: false,
-          message: 'caseOwnerId must be an active user in your organization'
+          message: 'assignedTo must be an active user in your organization'
         });
       }
 
       const { validateRecordAssignmentRequest } = require('../services/recordAssignmentService');
-      const ownerAssignCheck = await validateRecordAssignmentRequest(req, incoming.caseOwnerId, { skipSelf: true });
+      const ownerAssignCheck = await validateRecordAssignmentRequest(req, incoming.assignedTo, { skipSelf: true });
       if (ownerAssignCheck) {
         return res.status(ownerAssignCheck.status).json(ownerAssignCheck.body);
       }
@@ -1017,11 +1017,11 @@ exports.bulkUpdateCases = async (req, res) => {
       return res.status(400).json({ success: false, message: 'All ids must be valid case ids' });
     }
 
-    const allowedBulkFields = new Set(['caseOwnerId', 'priority', 'status']);
+    const allowedBulkFields = new Set(['assignedTo', 'priority', 'status']);
     const incoming = req.body?.updates && typeof req.body.updates === 'object' ? req.body.updates : {};
     const updateKeys = Object.keys(incoming).filter((key) => allowedBulkFields.has(key));
     if (updateKeys.length === 0) {
-      return res.status(400).json({ success: false, message: 'updates must include one of: caseOwnerId, priority, status' });
+      return res.status(400).json({ success: false, message: 'updates must include one of: assignedTo, priority, status' });
     }
 
     if (updateKeys.includes('priority') && !isAllowedEnumValue(incoming.priority, CASE_PRIORITIES)) {
@@ -1030,12 +1030,12 @@ exports.bulkUpdateCases = async (req, res) => {
     if (updateKeys.includes('status') && !isValidCaseStatus(incoming.status)) {
       return res.status(400).json({ success: false, message: 'Invalid status value' });
     }
-    if (updateKeys.includes('caseOwnerId')) {
-      const ownerExists = await ensureOwnerInOrg(incoming.caseOwnerId, req.user.organizationId);
+    if (updateKeys.includes('assignedTo')) {
+      const ownerExists = await ensureOwnerInOrg(incoming.assignedTo, req.user.organizationId);
       if (!ownerExists) {
         return res.status(400).json({
           success: false,
-          message: 'caseOwnerId must be an active user in your organization'
+          message: 'assignedTo must be an active user in your organization'
         });
       }
     }
@@ -1065,8 +1065,8 @@ exports.bulkUpdateCases = async (req, res) => {
       const fromStatus = row.status;
       let changed = false;
 
-      if (updateKeys.includes('caseOwnerId') && String(row.caseOwnerId || '') !== String(incoming.caseOwnerId || '')) {
-        row.caseOwnerId = incoming.caseOwnerId;
+      if (updateKeys.includes('assignedTo') && String(row.assignedTo || '') !== String(incoming.assignedTo || '')) {
+        row.assignedTo = incoming.assignedTo;
         changed = true;
       }
       if (updateKeys.includes('priority') && String(row.priority || '') !== String(incoming.priority || '')) {
@@ -1327,7 +1327,7 @@ exports.getCaseAnalyticsSummary = async (req, res) => {
 
     const [cases, statusCounts, ownerLoads] = await Promise.all([
       Case.find(baseQuery)
-        .select('status createdAt activities currentSlaCycle slaCycles caseOwnerId')
+        .select('status createdAt activities currentSlaCycle slaCycles assignedTo')
         .lean(),
       Case.aggregate([
         { $match: baseQuery },
@@ -1340,7 +1340,7 @@ exports.getCaseAnalyticsSummary = async (req, res) => {
             status: { $nin: ['Resolved', 'Closed'] }
           }
         },
-        { $group: { _id: '$caseOwnerId', openCases: { $sum: 1 } } },
+        { $group: { _id: '$assignedTo', openCases: { $sum: 1 } } },
         { $sort: { openCases: -1 } },
         { $limit: 20 }
       ])
@@ -1365,7 +1365,7 @@ exports.getCaseAnalyticsSummary = async (req, res) => {
         response,
         statusBreakdown: statusMap,
         workloadByOwner: ownerLoads.map((row) => ({
-          ownerId: row._id,
+          assignedTo: row._id,
           openCases: row.openCases
         }))
       },
@@ -1460,9 +1460,9 @@ exports.getCaseAnalyticsOwners = async (req, res) => {
       organizationId: req.user.organizationId,
       deletedAt: null,
       createdAt: { $gte: from, $lte: to },
-      caseOwnerId: { $ne: null }
+      assignedTo: { $ne: null }
     })
-      .select('caseOwnerId status currentSlaCycle slaCycles')
+      .select('assignedTo status currentSlaCycle slaCycles')
       .lean();
 
     const metrics = computeOwnerPerformance(rows)
@@ -1470,7 +1470,7 @@ exports.getCaseAnalyticsOwners = async (req, res) => {
       .slice(0, 50);
 
     const ownerIds = metrics
-      .map((row) => row.ownerId)
+      .map((row) => row.assignedTo)
       .filter((id) => mongoose.Types.ObjectId.isValid(id));
     const owners = await User.find({
       _id: { $in: ownerIds },
@@ -1481,7 +1481,7 @@ exports.getCaseAnalyticsOwners = async (req, res) => {
     const ownerMap = new Map(owners.map((row) => [String(row._id), row]));
 
     const data = metrics.map((row) => {
-      const owner = ownerMap.get(String(row.ownerId));
+      const owner = ownerMap.get(String(row.assignedTo));
       return {
         ...row,
         owner: owner
@@ -1592,7 +1592,7 @@ exports.getCaseAuditExport = async (req, res) => {
     }
 
     const rows = await Case.find(baseQuery)
-      .select('caseId title status priority caseOwnerId currentSlaCycle slaCycles activities updatedAt')
+      .select('caseId title status priority assignedTo currentSlaCycle slaCycles activities updatedAt')
       .lean();
 
     const data = rows.map((row) => {
@@ -1613,7 +1613,7 @@ exports.getCaseAuditExport = async (req, res) => {
         title: row.title,
         status: row.status,
         priority: row.priority,
-        ownerId: row.caseOwnerId || null,
+        assignedTo: row.assignedTo || null,
         updatedAt: row.updatedAt || null,
         currentSlaCycle: row.currentSlaCycle || null,
         historicalSlaCycles: Array.isArray(row.slaCycles) ? row.slaCycles : [],

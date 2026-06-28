@@ -449,8 +449,8 @@ const handleSubmit = async () => {
       startDateTime: new Date(form.value.startDateTime).toISOString(),
       endDateTime: new Date(form.value.endDateTime).toISOString(),
       location: form.value.location?.trim() || null,
-      // Set eventOwnerId to current user (system will handle this if not provided)
-      eventOwnerId: authStore.user?._id || null
+      // Set assignedTo to current user (system will handle this if not provided)
+      assignedTo: authStore.user?._id || null
     };
     
     // ARCHITECTURE NOTE: Status is included for UI guidance, but backend may override it.

@@ -2886,5 +2886,9 @@
   "dateTimePickerPeriod": {
     "message": "AM or PM",
     "description": "Date-time picker period select aria-label"
+  },
+  "assignedTo": {
+    "message": "Assigned To",
+    "description": "Standard record ownership field label across CRM modules"
   }
 }

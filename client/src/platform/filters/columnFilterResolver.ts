@@ -43,8 +43,8 @@ function normalizeKey(key: string): string {
 const USER_FIELD_KEYS = new Set([
   'assignedto',
   'ownerid',
-  'eventownerid',
-  'caseownerid',
+  'assignedto',
+  'assignedto',
   'createdby',
 ]);
 

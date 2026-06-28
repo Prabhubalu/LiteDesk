@@ -31,7 +31,7 @@ async function getMemberExternalBusy(organizationId, memberId, rangeStart, range
   const userConfig = await AppointmentBookingConfig.findOne({
     organizationId,
     ownerType: 'user',
-    ownerId: memberId
+    assignedTo: memberId
   }).lean();
 
   if (!userConfig) return [];

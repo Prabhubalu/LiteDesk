@@ -141,7 +141,7 @@ const DealSchema = new Schema({
         }
     }],
     
-    ownerId: {
+    assignedTo: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true,
@@ -325,7 +325,7 @@ const DealSchema = new Schema({
 
 // Compound index for organization
 DealSchema.index({ organizationId: 1, stage: 1 });
-DealSchema.index({ organizationId: 1, ownerId: 1 });
+DealSchema.index({ organizationId: 1, assignedTo: 1 });
 DealSchema.index({ organizationId: 1, status: 1 });
 DealSchema.index({ organizationId: 1, expectedCloseDate: 1 });
 DealSchema.index({ organizationId: 1, deletedAt: 1 });

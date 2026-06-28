@@ -7,11 +7,11 @@ async function syncAssignmentsFromDistribution(target, assignees = []) {
   await TargetAssignment.deleteMany({ targetId: target._id });
 
   if (!assignees.length) {
-    if (target.ownerId) {
+    if (target.assignedTo) {
       await TargetAssignment.create({
         organizationId: target.organizationId,
         targetId: target._id,
-        userId: target.ownerId,
+        userId: target.assignedTo,
         weight: 1,
         allocatedValue: target.targetValue
       });

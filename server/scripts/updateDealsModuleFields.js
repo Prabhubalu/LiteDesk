@@ -86,8 +86,8 @@ const baseFields = [
     options: makeOptions(['Qualification', 'Proposal', 'Negotiation', 'Contract Sent', 'Closed Won', 'Closed Lost'])
   }),
   buildField({
-    key: 'ownerId',
-    label: 'Deal Owner',
+    key: 'assignedTo',
+    label: 'Assigned To',
     dataType: 'Lookup (Relationship)',
     required: true,
     keyField: true,
@@ -237,7 +237,7 @@ const baseFields = [
   })
 ];
 
-const quickCreateDefault = ['name', 'type', 'pipeline', 'stage', 'ownerId', 'accountId', 'amount', 'expectedCloseDate', 'probability', 'status'];
+const quickCreateDefault = ['name', 'type', 'pipeline', 'stage', 'assignedTo', 'accountId', 'amount', 'expectedCloseDate', 'probability', 'status'];
 
 const defaultDealRelationships = Object.freeze([
   { name: 'Related Projects', type: 'one_to_many', isLookup: false, targetModuleKey: 'projects', relationshipKey: 'deal_projects' },

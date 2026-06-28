@@ -143,7 +143,7 @@ function chooseUserFromGroup({ mode, group, userWeights = [], context = {} }) {
   }
 
   if (mode === 'round_robin') {
-    const prevRaw = context.previousOwnerId != null ? context.previousOwnerId : context.caseOwnerId;
+    const prevRaw = context.previousOwnerId != null ? context.previousOwnerId : context.assignedTo;
     const prevStr = prevRaw != null ? String(prevRaw) : null;
     if (members.length === 1) {
       return {

@@ -241,7 +241,7 @@ const exportDeals = async (req, res) => {
     const deals = await Deal.find({
       organizationId: req.user.organizationId
     })
-      .populate('ownerId', 'firstName lastName email')
+      .populate('assignedTo', 'firstName lastName email')
       .populate('contactId', 'first_name last_name email')
       .lean();
 
@@ -269,7 +269,7 @@ const exportDeals = async (req, res) => {
       expected_close_date: deal.expectedCloseDate ? new Date(deal.expectedCloseDate).toISOString().split('T')[0] : '',
       contact_name: deal.contactId ? `${deal.contactId.first_name} ${deal.contactId.last_name}` : '',
       contact_email: deal.contactId?.email || '',
-      owner_name: deal.ownerId ? `${deal.ownerId.firstName} ${deal.ownerId.lastName}` : '',
+      owner_name: deal.assignedTo ? `${deal.assignedTo.firstName} ${deal.assignedTo.lastName}` : '',
       created_at: deal.createdAt ? new Date(deal.createdAt).toISOString() : ''
     }));
 

@@ -47,7 +47,7 @@ async function findOrCreatePerson({ organizationId, ownerUserId, email, firstNam
 
 async function assertSlotAvailable(
   config,
-  ownerId,
+  assignedTo,
   organizationId,
   startDateTime,
   endDateTime,
@@ -55,7 +55,7 @@ async function assertSlotAvailable(
 ) {
   const conflictQuery = {
     organizationId,
-    eventOwnerId: ownerId,
+    assignedTo: assignedTo,
     deletedAt: null,
     status: { $ne: 'Cancelled' },
     startDateTime: { $lt: endDateTime },
@@ -78,7 +78,7 @@ async function assertSlotAvailable(
     getExternalBusyIntervals,
     slotOverlapsBusyIntervals
   } = require('./appointmentExternalCalendarService');
-  const hostConfig = await resolveHostCalendarConfig(organizationId, ownerId);
+  const hostConfig = await resolveHostCalendarConfig(organizationId, assignedTo);
   const busyConfig = hostConfig
     ? { ...hostConfig.toObject?.() || hostConfig, meetingType: config.meetingType }
     : { ...config.toObject?.() || config, meetingType: config.meetingType };
@@ -130,11 +130,11 @@ async function bookAppointment({
     throw err;
   }
 
-  const eventOwnerId = assigneeUserId || config.ownerId;
+  const assignedTo = assigneeUserId || config.assignedTo;
 
   await assertSlotAvailable(
     config,
-    eventOwnerId,
+    assignedTo,
     config.organizationId,
     startDateTime,
     endDateTime
@@ -143,7 +143,7 @@ async function bookAppointment({
   const guestName = [guest.firstName, guest.lastName].filter(Boolean).join(' ').trim() || guest.email;
   const personId = await findOrCreatePerson({
     organizationId: config.organizationId,
-    ownerUserId: eventOwnerId,
+    ownerUserId: assignedTo,
     email: guest.email,
     firstName: guest.firstName,
     lastName: guest.lastName,
@@ -156,10 +156,10 @@ async function bookAppointment({
     eventType: 'Meeting',
     startDateTime,
     endDateTime,
-    eventOwnerId,
+    assignedTo,
     organizationId: config.organizationId,
-    createdBy: eventOwnerId,
-    modifiedBy: eventOwnerId,
+    createdBy: assignedTo,
+    modifiedBy: assignedTo,
     location: meetingTypeOnline ? '' : 'In person',
     source: 'Web Form',
     appointment: {
@@ -183,7 +183,7 @@ async function bookAppointment({
     },
     auditHistory: [{
       timestamp: new Date(),
-      actorUserId: eventOwnerId,
+      actorUserId: assignedTo,
       action: 'created',
       to: { source: 'public_booking', slug: config.slug, team: config.ownerType === 'team' },
       metadata: { appointmentType, guestEmail: guest.email }
@@ -199,7 +199,7 @@ async function bookAppointment({
         resolveHostCalendarConfig
       } = require('./appointmentCalendarService');
       const hostConfig =
-        (await resolveHostCalendarConfig(config.organizationId, eventOwnerId)) || config;
+        (await resolveHostCalendarConfig(config.organizationId, assignedTo)) || config;
       const meetResult = await createGoogleMeetForAppointment({
         bookingConfig: hostConfig,
         title: eventPayload.eventName,
@@ -228,7 +228,7 @@ async function bookAppointment({
       const { resolveHostCalendarConfig } = require('./appointmentCalendarService');
       const { createTeamsMeetingForAppointment } = require('./appointmentMicrosoftCalendarService');
       const hostConfig =
-        (await resolveHostCalendarConfig(config.organizationId, eventOwnerId)) || config;
+        (await resolveHostCalendarConfig(config.organizationId, assignedTo)) || config;
       const teamsResult = await createTeamsMeetingForAppointment({
         bookingConfig: hostConfig,
         title: eventPayload.eventName,
@@ -257,7 +257,7 @@ async function bookAppointment({
   try {
     const { emitAppointmentDomainEvent } = require('./appointmentDomainEvents');
     emitAppointmentDomainEvent('appointment.created', event, {
-      triggeredBy: eventOwnerId,
+      triggeredBy: assignedTo,
       appKey: 'SALES'
     });
   } catch (err) {

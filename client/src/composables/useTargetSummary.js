@@ -11,7 +11,7 @@ export function useTargetSummary(options = {}) {
     error.value = null;
     try {
       const params = {};
-      if (options.ownerId?.value) params.ownerId = options.ownerId.value;
+      if (options.assignedTo?.value) params.assignedTo = options.assignedTo.value;
       if (options.appKey?.value) params.appKey = options.appKey.value;
       if (options.moduleKey?.value) params.moduleKey = options.moduleKey.value;
       const res = await apiClient.get('/targets/summary', { params });
@@ -26,7 +26,7 @@ export function useTargetSummary(options = {}) {
 
   if (options.immediate !== false) {
     watch(
-      () => [options.ownerId?.value, options.appKey?.value, options.moduleKey?.value],
+      () => [options.assignedTo?.value, options.appKey?.value, options.moduleKey?.value],
       () => fetchSummary(),
       { immediate: true }
     );

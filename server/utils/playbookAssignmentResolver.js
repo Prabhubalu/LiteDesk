@@ -10,7 +10,7 @@ function escapeRegex(value) {
 }
 
 function resolveDealOwnerId(deal) {
-  return deal?.ownerId?._id || deal?.ownerId || null;
+  return deal?.assignedTo?._id || deal?.assignedTo || null;
 }
 
 function resolveStageOwnerFromDeal(deal, actorId) {

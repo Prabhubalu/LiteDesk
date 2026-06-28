@@ -11,7 +11,7 @@
  * 
  * Core Principles:
  * - SALES remains single source of truth
- * - Ownership-based access only (eventOwnerId === req.user._id)
+ * - Ownership-based access only (assignedTo === req.user._id)
  * - Use Audit App models only
  * - Reference SALES models via IDs
  * - No SALES permissions required
@@ -217,7 +217,7 @@ exports.getAssignmentDetail = async (req, res) => {
         if (eventObjectId) {
             event = await Event.findById(eventObjectId)
                 .select('_id eventId eventName auditState eventType startDateTime endDateTime relatedToId location geoRequired linkedFormId metadata formAssignment')
-                .populate({ path: 'eventOwnerId', select: 'firstName lastName', strictPopulate: false })
+                .populate({ path: 'assignedTo', select: 'firstName lastName', strictPopulate: false })
                 .lean();
         }
 

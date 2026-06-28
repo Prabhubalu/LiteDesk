@@ -11,7 +11,7 @@ function providerForMeetingType(meetingType) {
 
 async function loadHostConfigForEvent(event) {
   const organizationId = event.organizationId;
-  const hostUserId = event.eventOwnerId;
+  const hostUserId = event.assignedTo;
   let hostConfig = await resolveHostCalendarConfig(organizationId, hostUserId);
 
   if (!hostConfig && event.appointment?.bookingConfigId) {

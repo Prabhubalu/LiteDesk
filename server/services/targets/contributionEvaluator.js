@@ -79,7 +79,7 @@ async function loadRecordState(event) {
       status: doc.status,
       derivedStatus: doc.derivedStatus,
       amount: doc.amount,
-      ownerId: doc.ownerId,
+      assignedTo: doc.assignedTo,
       pipeline: doc.pipeline,
       organizationId: doc.organizationId
     };
@@ -91,7 +91,7 @@ async function loadRecordState(event) {
     if (!doc) return null;
     return {
       status: doc.status,
-      caseOwnerId: doc.caseOwnerId,
+      assignedTo: doc.assignedTo,
       priority: doc.priority,
       organizationId: doc.organizationId
     };
@@ -162,7 +162,7 @@ function resolveAttribution(rule, state) {
   const attr = rule.attribution || { type: 'owner' };
   if (attr.type === 'field' && attr.field) return state[attr.field] || null;
   if (attr.type === 'owner') {
-    return state.ownerId || state.caseOwnerId || state.assignedTo || null;
+    return state.assignedTo || state.assignedTo || state.assignedTo || null;
   }
   return null;
 }
@@ -196,7 +196,7 @@ async function findCandidateTargets(event) {
 async function targetAcceptsAttribution(target, attributedUserId) {
   if (!attributedUserId) return false;
   const uid = String(attributedUserId);
-  if (target.ownerId && String(target.ownerId) === uid) return true;
+  if (target.assignedTo && String(target.assignedTo) === uid) return true;
   const assignment = await TargetAssignment.findOne({
     targetId: target._id,
     userId: attributedUserId
@@ -323,7 +323,7 @@ async function backfillDealContributionsForTarget(target) {
   if (!rules.length) return 0;
 
   const userIds = new Set();
-  if (target.ownerId) userIds.add(String(target.ownerId));
+  if (target.assignedTo) userIds.add(String(target.assignedTo));
   const assigns = await TargetAssignment.find({ targetId: target._id }).select('userId').lean();
   for (const row of assigns) {
     if (row.userId) userIds.add(String(row.userId));
@@ -336,7 +336,7 @@ async function backfillDealContributionsForTarget(target) {
 
   const deals = await Deal.find({
     organizationId: target.organizationId,
-    ownerId: { $in: [...userIds] },
+    assignedTo: { $in: [...userIds] },
     $or: [
       { status: { $regex: /^won$/i } },
       { derivedStatus: { $regex: /^won$/i } },
@@ -344,7 +344,7 @@ async function backfillDealContributionsForTarget(target) {
     ],
     updatedAt: { $gte: periodStart, $lte: periodEnd }
   })
-    .select('_id ownerId stage status derivedStatus amount updatedAt actualCloseDate')
+    .select('_id assignedTo stage status derivedStatus amount updatedAt actualCloseDate')
     .lean();
 
   const version = target.currentVersionNumber || 1;
@@ -356,7 +356,7 @@ async function backfillDealContributionsForTarget(target) {
       status: deal.status,
       derivedStatus: deal.derivedStatus,
       amount: deal.amount,
-      ownerId: deal.ownerId
+      assignedTo: deal.assignedTo
     };
 
     for (const rule of rules) {

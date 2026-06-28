@@ -203,7 +203,7 @@
             <div class="flex flex-col">
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.roleUsersOwner') }}</label>
               <select 
-                v-model="form.ownerId"
+                v-model="form.assignedTo"
                 class="px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
               >
                 <option v-for="user in users" :key="user._id" :value="user._id">
@@ -306,7 +306,7 @@ const form = ref({
   type: '',
   priority: 'Medium',
   contactId: '',
-  ownerId: authStore.user?._id || '',
+  assignedTo: authStore.user?._id || '',
   description: '',
   nextFollowUpDate: '',
   tags: [],
@@ -331,7 +331,7 @@ if (props.deal) {
     ...form.value,
     ...props.deal,
     contactId: props.deal.contactId?._id || '',
-    ownerId: props.deal.ownerId?._id || authStore.user?._id,
+    assignedTo: props.deal.assignedTo?._id || authStore.user?._id,
     expectedCloseDate: props.deal.expectedCloseDate ? new Date(props.deal.expectedCloseDate).toISOString().split('T')[0] : '',
     nextFollowUpDate: props.deal.nextFollowUpDate ? new Date(props.deal.nextFollowUpDate).toISOString().split('T')[0] : '',
     status: props.deal.status || 'Open',

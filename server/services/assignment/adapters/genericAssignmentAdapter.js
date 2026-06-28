@@ -2,16 +2,16 @@
 
 const OWNER_FIELD_CANDIDATES = [
   'assignedTo',
-  'ownerId',
-  'caseOwnerId',
+  'assignedTo',
+  'assignedTo',
   'assigned_to',
   'owner_id'
 ];
 
 const DEFAULT_REEVALUATE_FIELDS = [
   'assignedTo',
-  'ownerId',
-  'caseOwnerId',
+  'assignedTo',
+  'assignedTo',
   'status',
   'priority',
   'stage',

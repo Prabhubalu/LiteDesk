@@ -25,7 +25,7 @@ const RISK_THRESHOLDS = {
 
 const HEADER_FIELDS = [
   { field: 'quoteTitle', label: 'Quote title', impactArea: 'customer', customerVisible: true },
-  { field: 'ownerId', label: 'Owner', impactArea: 'metadata', customerVisible: false },
+  { field: 'assignedTo', label: 'Assigned To', impactArea: 'metadata', customerVisible: false },
   { field: 'customerId', label: 'Customer', impactArea: 'customer', customerVisible: true },
   { field: 'organizationRefId', label: 'Organization', impactArea: 'customer', customerVisible: true },
   { field: 'contactId', label: 'Contact', impactArea: 'customer', customerVisible: true },

@@ -329,7 +329,7 @@ async function convertQuoteToSalesOrder({
     globalDiscountType: quote.globalDiscountType ?? null,
     globalDiscountValue: Number(quote.globalDiscountValue) || 0,
     globalDiscountAmount: Number(quote.globalDiscountAmount) || 0,
-    ownerId: quote.ownerId ?? userId ?? null,
+    assignedTo: quote.assignedTo ?? userId ?? null,
     customerId: quote.customerId ?? null,
     organizationRefId: quote.organizationRefId ?? null,
     contactId: quote.contactId ?? null,

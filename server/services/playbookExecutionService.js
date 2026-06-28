@@ -492,7 +492,7 @@ async function createPlaybookEvent({ deal, action, assigneeId, actorId, dueAt })
     eventName: action.title || 'Playbook event',
     eventType: 'Meeting',
     status: 'Planned',
-    eventOwnerId: assigneeId,
+    assignedTo: assigneeId,
     startDateTime,
     endDateTime,
     location: '',
@@ -1022,14 +1022,14 @@ async function updatePlaybookActionStatus(deal, actionKey, status, organizationI
         $set: {
           status: 'completed',
           completedDate: new Date(),
-          modifiedBy: deal.modifiedBy || deal.ownerId || null
+          modifiedBy: deal.modifiedBy || deal.assignedTo || null
         }
       }
     );
   }
 
   await reconcilePlaybookForDeal(deal, {
-    actorId: deal.modifiedBy || deal.ownerId || null,
+    actorId: deal.modifiedBy || deal.assignedTo || null,
     organizationId
   });
 

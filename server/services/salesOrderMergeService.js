@@ -142,7 +142,7 @@ async function mergeSalesOrders({ organizationId, userId, body = {} }) {
     globalDiscountValue: primary.globalDiscountValue,
     globalDiscountAmount: primary.globalDiscountAmount,
     adjustmentTotal: primary.adjustmentTotal,
-    ownerId: primary.ownerId,
+    assignedTo: primary.assignedTo,
     customerId: primary.customerId,
     organizationRefId: primary.organizationRefId,
     contactId: primary.contactId,

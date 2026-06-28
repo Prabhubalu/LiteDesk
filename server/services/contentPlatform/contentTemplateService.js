@@ -205,7 +205,7 @@ async function createTemplate(params) {
     timezone: payload.timezone || 'UTC',
     currency: payload.currency || null,
     tags: Array.isArray(payload.tags) ? payload.tags : [],
-    ownerId: payload.ownerId || userId,
+    assignedTo: payload.assignedTo || userId,
     createdBy: userId,
     modifiedBy: userId,
     status: 'draft',
@@ -292,7 +292,7 @@ async function updateTemplate(params) {
     'currency',
     'currencyDisplay',
     'tags',
-    'ownerId',
+    'assignedTo',
     'visibility',
     'isDefault'
   ];

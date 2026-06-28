@@ -48,7 +48,7 @@ function emitRecordLifecycle(opts) {
     appKey,
     triggeredBy,
     organizationId,
-    ownerId
+    assignedTo
   } = opts;
   const prevSnap = previous
     ? Object.fromEntries(snapshotKeys.map((k) => [k, previous[k]]))
@@ -66,7 +66,7 @@ function emitRecordLifecycle(opts) {
       appKey,
       triggeredBy,
       organizationId,
-      ownerId
+      assignedTo
     });
     return;
   }
@@ -84,7 +84,7 @@ function emitRecordLifecycle(opts) {
     appKey,
     triggeredBy,
     organizationId,
-    ownerId
+    assignedTo
   });
 }
 
@@ -93,8 +93,8 @@ function resolveOwner(entityType, current) {
   let ref = null;
   if (entityType === 'people') ref = current.assignedTo || current.lead_owner || null;
   else if (entityType === 'organization') ref = current.assignedTo || null;
-  else if (entityType === 'deal') ref = current.ownerId || null;
-  else if (entityType === 'quote') ref = current.ownerId || null;
+  else if (entityType === 'deal') ref = current.assignedTo || null;
+  else if (entityType === 'quote') ref = current.assignedTo || null;
   if (!ref) return null;
   return toId(ref && ref._id ? ref._id : ref);
 }
@@ -106,7 +106,7 @@ function quoteSnapshot(quote) {
     grandTotal: Number(quote.grandTotal) || 0,
     subtotal: Number(quote.subtotal) || 0,
     globalDiscountTotal: Number(quote.globalDiscountTotal) || 0,
-    ownerId: toId(quote.ownerId),
+    assignedTo: toId(quote.assignedTo),
     approvalRequired: quote.approvalRequired === true,
     approvalStatus: quote.approvalStatus || null
   };
@@ -117,7 +117,7 @@ const QUOTE_SNAPSHOT_KEYS = [
   'grandTotal',
   'subtotal',
   'globalDiscountTotal',
-  'ownerId',
+  'assignedTo',
   'approvalRequired',
   'approvalStatus'
 ];
@@ -145,7 +145,7 @@ function emitQuoteEvents({
 
   const entityId = toId(current._id);
   const orgId = organizationId ? toId(organizationId) : toId(current.organizationId);
-  const ownerId = resolveOwner('quote', current);
+  const assignedTo = resolveOwner('quote', current);
   const prevSnap = previous ? quoteSnapshot(previous) : null;
   const currSnap = quoteSnapshot(current);
 
@@ -158,7 +158,7 @@ function emitQuoteEvents({
     appKey,
     triggeredBy,
     organizationId: orgId,
-    ownerId
+    assignedTo
   });
 
   if (submittedForApproval) {
@@ -172,7 +172,7 @@ function emitQuoteEvents({
       appKey,
       triggeredBy,
       organizationId: orgId,
-      ownerId
+      assignedTo
     });
   }
 }
@@ -191,7 +191,7 @@ function emitPeopleEvents({ previous, current, appKey = 'SALES', triggeredBy = n
   if (!current) return;
   const entityId = toId(current._id);
   const orgId = organizationId ? toId(organizationId) : null;
-  const ownerId = resolveOwner('people', current);
+  const assignedTo = resolveOwner('people', current);
 
   const { getSalesParticipationValues } = require('../utils/getSalesParticipationValues');
   const prevSales = previous ? getSalesParticipationValues(previous) : {};
@@ -237,7 +237,7 @@ function emitPeopleEvents({ previous, current, appKey = 'SALES', triggeredBy = n
     appKey,
     triggeredBy,
     organizationId: orgId,
-    ownerId
+    assignedTo
   });
 
   if (prevType !== undefined && !eq(prevType, currType)) {
@@ -252,7 +252,7 @@ function emitPeopleEvents({ previous, current, appKey = 'SALES', triggeredBy = n
       appKey,
       triggeredBy,
       organizationId: orgId,
-      ownerId
+      assignedTo
     });
   }
 
@@ -269,7 +269,7 @@ function emitPeopleEvents({ previous, current, appKey = 'SALES', triggeredBy = n
       appKey,
       triggeredBy,
       organizationId: orgId,
-      ownerId
+      assignedTo
     });
   }
 }
@@ -298,7 +298,7 @@ function emitOrganizationEvents({ previous, current, appKey = 'SALES', triggered
   const prevVendor = previous?.vendorStatus;
   const currVendor = current?.vendorStatus;
 
-  const ownerId = resolveOwner('organization', current);
+  const assignedTo = resolveOwner('organization', current);
 
   const orgSnap = (o) => {
     if (!o) return null;
@@ -320,7 +320,7 @@ function emitOrganizationEvents({ previous, current, appKey = 'SALES', triggered
     appKey,
     triggeredBy,
     organizationId: orgId,
-    ownerId
+    assignedTo
   });
 
   if (!eq(prevTypes, currTypes)) {
@@ -333,7 +333,7 @@ function emitOrganizationEvents({ previous, current, appKey = 'SALES', triggered
       appKey,
       triggeredBy,
       organizationId: orgId,
-      ownerId
+      assignedTo
     });
   }
 
@@ -348,7 +348,7 @@ function emitOrganizationEvents({ previous, current, appKey = 'SALES', triggered
       appKey,
       triggeredBy,
       organizationId: orgId,
-      ownerId
+      assignedTo
     });
   }
 }
@@ -393,14 +393,14 @@ async function emitDealEvents({ previous, current, appKey = 'SALES', triggeredBy
   if (!current) return;
   const entityId = toId(current._id);
   const orgId = organizationId ? toId(organizationId) : (current.organizationId ? toId(current.organizationId) : null);
-  const ownerId = resolveOwner('deal', current);
+  const assignedTo = resolveOwner('deal', current);
 
   const prevStage = previous?.stage;
   const currStage = current?.stage;
   const prevPipeline = previous?.pipeline;
   const currPipeline = current?.pipeline;
-  const prevOwner = toId(previous?.ownerId);
-  const currOwner = toId(current?.ownerId);
+  const prevOwner = toId(previous?.assignedTo);
+  const currOwner = toId(current?.assignedTo);
 
   emitRecordLifecycle({
     entityType: 'deal',
@@ -411,7 +411,7 @@ async function emitDealEvents({ previous, current, appKey = 'SALES', triggeredBy
           stage: prevStage,
           pipeline: prevPipeline,
           amount: previous?.amount,
-          ownerId: prevOwner
+          assignedTo: prevOwner
         }
       : null,
     current: {
@@ -419,13 +419,13 @@ async function emitDealEvents({ previous, current, appKey = 'SALES', triggeredBy
       stage: currStage,
       pipeline: currPipeline,
       amount: current?.amount,
-      ownerId: currOwner
+      assignedTo: currOwner
     },
-    snapshotKeys: ['name', 'stage', 'pipeline', 'amount', 'ownerId'],
+    snapshotKeys: ['name', 'stage', 'pipeline', 'amount', 'assignedTo'],
     appKey,
     triggeredBy,
     organizationId: orgId,
-    ownerId
+    assignedTo
   });
 
   if (prevStage !== undefined && prevStage !== currStage) {
@@ -438,7 +438,7 @@ async function emitDealEvents({ previous, current, appKey = 'SALES', triggeredBy
       appKey,
       triggeredBy,
       organizationId: orgId,
-      ownerId
+      assignedTo
     });
   }
 
@@ -452,7 +452,7 @@ async function emitDealEvents({ previous, current, appKey = 'SALES', triggeredBy
       appKey,
       triggeredBy,
       organizationId: orgId,
-      ownerId
+      assignedTo
     });
   }
 
@@ -468,7 +468,7 @@ async function emitDealEvents({ previous, current, appKey = 'SALES', triggeredBy
       appKey,
       triggeredBy,
       organizationId: orgId,
-      ownerId
+      assignedTo
     });
   }
   if (currWonLost === 'lost' && prevWonLost !== 'lost') {
@@ -481,7 +481,7 @@ async function emitDealEvents({ previous, current, appKey = 'SALES', triggeredBy
       appKey,
       triggeredBy,
       organizationId: orgId,
-      ownerId
+      assignedTo
     });
   }
 }

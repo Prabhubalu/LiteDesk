@@ -24,7 +24,7 @@ async function evaluateAutomationDeferral(event, rule) {
   }
 
   const at = new Date();
-  const userId = event.ownerId || event.triggeredBy || null;
+  const userId = event.assignedTo || event.triggeredBy || null;
   const resolved = await resolveBusinessSchedule({
     organizationId,
     userId: userId ? String(userId) : null,

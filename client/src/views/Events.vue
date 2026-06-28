@@ -144,20 +144,20 @@
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">—</span>
       </template>
 
-      <template #cell-eventOwnerId="{ row }">
-        <div v-if="row.eventOwnerId" class="flex items-center gap-2">
+      <template #cell-assignedTo="{ row }">
+        <div v-if="row.assignedTo" class="flex items-center gap-2">
           <Avatar
-            v-if="typeof row.eventOwnerId === 'object'"
+            v-if="typeof row.assignedTo === 'object'"
             :user="{
-              firstName: row.eventOwnerId.firstName || row.eventOwnerId.first_name,
-              lastName: row.eventOwnerId.lastName || row.eventOwnerId.last_name,
-              email: row.eventOwnerId.email,
-              avatar: row.eventOwnerId.avatar
+              firstName: row.assignedTo.firstName || row.assignedTo.first_name,
+              lastName: row.assignedTo.lastName || row.assignedTo.last_name,
+              email: row.assignedTo.email,
+              avatar: row.assignedTo.avatar
             }"
             size="sm"
           />
           <span class="text-sm text-gray-700 dark:text-gray-300">
-            {{ getUserDisplayName(row.eventOwnerId) }}
+            {{ getUserDisplayName(row.assignedTo) }}
           </span>
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.editableUnassigned') }}</span>
@@ -440,8 +440,8 @@ const fetchCalendarEvents = async () => {
         endDate: item.endDateTime,
         title: item.eventName,
         eventName: item.eventName,
-        owner: item.eventOwnerId,
-        ownerPersonId: item.eventOwnerId,
+        owner: item.assignedTo,
+        ownerPersonId: item.assignedTo,
         appContext: item.appContext || (item.eventType && ['Internal Audit', 'External Audit — Single Org', 'External Audit Beat'].includes(item.eventType) ? 'AUDIT' : 'SALES')
       }));
     } else {

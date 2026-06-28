@@ -101,7 +101,7 @@ async function runForOrg(user) {
     priority: 'Critical',
     status: 'New',
     channel: 'Internal',
-    caseOwnerId: user._id,
+    assignedTo: user._id,
     currentSlaCycle: cycle,
     createdBy: user._id,
     updatedBy: user._id

@@ -88,11 +88,11 @@ function buildInvoiceListQuery(req) {
     assertValidInvoiceStatus(String(req.query.status));
     q.status = String(req.query.status);
   }
-  if (req.query?.ownerId) q.ownerId = req.query.ownerId;
+  if (req.query?.assignedTo) q.assignedTo = req.query.assignedTo;
   if (req.query?.sourceType) q.sourceType = String(req.query.sourceType).trim();
 
   if (req.filterByUser && !req.viewAll) {
-    q.ownerId = req.filterByUser;
+    q.assignedTo = req.filterByUser;
   }
 
   const searchTerm = req.query?.search != null ? String(req.query.search).trim() : '';
@@ -196,12 +196,12 @@ async function getInvoiceById(req, res) {
 
     const invoiceDoc =
       (await Invoice.findOne({ organizationId, invoiceId: id, deletedAt: null })
-        .populate({ path: 'ownerId', select: 'firstName lastName email username' })
+        .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
         .populate({ path: 'organizationRefId', select: 'name' })
         .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' })
         .populate({ path: 'dealId', select: 'name stage pipeline amount value currency' })) ||
       (await Invoice.findOne({ organizationId, _id: id, deletedAt: null })
-        .populate({ path: 'ownerId', select: 'firstName lastName email username' })
+        .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
         .populate({ path: 'organizationRefId', select: 'name' })
         .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' })
         .populate({ path: 'dealId', select: 'name stage pipeline amount value currency' }));

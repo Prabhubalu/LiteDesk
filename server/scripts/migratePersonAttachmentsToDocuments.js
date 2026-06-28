@@ -81,7 +81,7 @@ async function migrateAttachments({
       storageProvider: 'oci',
       storagePath: attachment.storagePath,
       versionNumber: 1,
-      ownerId: attachment.uploaded_by,
+      assignedTo: attachment.uploaded_by,
       createdBy: attachment.uploaded_by,
       modifiedBy: attachment.uploaded_by,
       status: 'published',

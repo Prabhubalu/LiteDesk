@@ -19,7 +19,7 @@ module.exports = {
       priority: row.priority,
       caseType: row.caseType,
       channel: row.channel,
-      caseOwnerId: row.caseOwnerId,
+      assignedTo: row.assignedTo,
       recordType: row.caseType || null,
       customFields: row.customFields || {}
     };

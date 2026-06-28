@@ -294,7 +294,7 @@ function determineEventAttentionType(event, userId) {
   // Check if user is auditor or owner (can start event)
   const isAuditorOrOwner = 
     (event.auditorId && event.auditorId.toString() === userIdStr) ||
-    (event.eventOwnerId && event.eventOwnerId.toString() === userIdStr);
+    (event.assignedTo && event.assignedTo.toString() === userIdStr);
 
   // Check if user is reviewer
   const isReviewer = event.reviewerId && event.reviewerId.toString() === userIdStr;
@@ -559,7 +559,7 @@ async function fetchInboxEvents(userId, organizationId) {
     $and: [
       {
         $or: [
-          { eventOwnerId: userId },
+          { assignedTo: userId },
           { auditorId: userId },
           { reviewerId: userId },
           { correctiveOwnerId: userId }

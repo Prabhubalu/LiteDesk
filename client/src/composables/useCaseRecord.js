@@ -7,7 +7,7 @@ import { getAllowedCaseStatusTransitions, CASE_PRIORITIES } from '@/constants/ca
 import { resolveCaseReplyToEmail } from '@/utils/caseEmailReply';
 import { extractRecordUpdatedAtMs, recordRecordDetailFingerprint } from '@/utils/recordDetailFreshness';
 
-const CASE_REF_KEYS = ['caseOwnerId', 'contactId', 'organizationRefId'];
+const CASE_REF_KEYS = ['assignedTo', 'contactId', 'organizationRefId'];
 
 /** Keep populated refs when mutation APIs return only ObjectIds. */
 function mergeCaseRecordFromApi(previous, next) {
@@ -167,12 +167,12 @@ export function useCaseRecord(caseIdRef) {
     }
   }
 
-  async function updateOwner(caseOwnerId) {
+  async function updateOwner(assignedTo) {
     const id = caseIdRef.value;
     if (!id || isClosed.value) return false;
     try {
       const res = await apiClient.put(`/helpdesk/cases/${id}`, {
-        caseOwnerId: caseOwnerId || null
+        assignedTo: assignedTo || null
       });
       if (!res?.success) throw new Error(res?.message || 'Failed to update owner');
       applyCaseRecordUpdate(caseRecord.value, res.data);

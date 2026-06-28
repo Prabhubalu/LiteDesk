@@ -102,7 +102,7 @@ router.get('/linked-events/:eventId', async (req, res) => {
             deletedAt: null,
             eventType: { $in: AUDIT_EVENT_TYPES }
         })
-            .populate('auditorId reviewerId correctiveOwnerId eventOwnerId', 'firstName lastName email')
+            .populate('auditorId reviewerId correctiveOwnerId assignedTo', 'firstName lastName email')
             .lean();
 
         if (!event) {
