@@ -3,6 +3,46 @@ import { ref, nextTick } from 'vue';
 const STICKY_TITLE_ENABLE_OFFSET = 10;
 const STICKY_TITLE_DISABLE_OFFSET = 2;
 const LEFT_PANE_SELECTOR = '.record-page-layout__left';
+const EMBED_SUMMARY_CONTENT_SELECTOR = '.record-page-layout__summary-content';
+
+function isVisibleScrollPane(el) {
+  if (!(el instanceof HTMLElement)) return false;
+  const style = getComputedStyle(el);
+  return style.display !== 'none' && style.visibility !== 'hidden' && el.clientHeight > 0;
+}
+
+function findEmbedSummaryScrollContainer(rootEl) {
+  const summaryContent =
+    (rootEl instanceof HTMLElement ? rootEl.querySelector(EMBED_SUMMARY_CONTENT_SELECTOR) : null)
+    || document.querySelector(`.record-right-pane-drawer ${EMBED_SUMMARY_CONTENT_SELECTOR}`);
+  if (summaryContent instanceof HTMLElement) {
+    let el = summaryContent.parentElement;
+    while (el) {
+      const { overflowY } = getComputedStyle(el);
+      if ((overflowY === 'auto' || overflowY === 'scroll') && isVisibleScrollPane(el)) {
+        return el;
+      }
+      if (el.classList?.contains('record-right-pane')) break;
+      el = el.parentElement;
+    }
+  }
+
+  const paneScoped =
+    (rootEl instanceof HTMLElement ? rootEl.querySelector('.record-right-pane .overflow-y-auto') : null)
+    || document.querySelector('.record-right-pane-drawer .record-right-pane .overflow-y-auto');
+  return isVisibleScrollPane(paneScoped) ? paneScoped : null;
+}
+
+export function findTitleScrollContainer(rootEl) {
+  if (!(rootEl instanceof HTMLElement)) return null;
+
+  const leftPaneEl = rootEl.querySelector(LEFT_PANE_SELECTOR);
+  if (leftPaneEl && isVisibleScrollPane(leftPaneEl)) {
+    return leftPaneEl;
+  }
+
+  return findEmbedSummaryScrollContainer(rootEl);
+}
 
 /**
  * Composable for record page sticky title row: tracks scroll on the left pane
@@ -44,17 +84,16 @@ export function useStickyTitleRow(pageRootRef) {
 
   const attach = () => {
     const rootEl = pageRootRef?.value ?? pageRootRef;
-    const leftPaneEl =
-      rootEl instanceof HTMLElement ? rootEl.querySelector(LEFT_PANE_SELECTOR) : null;
-    if (!leftPaneEl) return false;
-    if (leftPaneScrollElement.value === leftPaneEl) {
-      updateStickyTitleState(leftPaneEl.scrollTop ?? 0);
+    const scrollEl = findTitleScrollContainer(rootEl);
+    if (!scrollEl) return false;
+    if (leftPaneScrollElement.value === scrollEl) {
+      updateStickyTitleState(scrollEl.scrollTop ?? 0);
       return true;
     }
     detach();
-    leftPaneScrollElement.value = leftPaneEl;
-    updateStickyTitleState(leftPaneEl.scrollTop ?? 0);
-    leftPaneEl.addEventListener('scroll', handleLeftPaneScroll, { passive: true });
+    leftPaneScrollElement.value = scrollEl;
+    updateStickyTitleState(scrollEl.scrollTop ?? 0);
+    scrollEl.addEventListener('scroll', handleLeftPaneScroll, { passive: true });
     return true;
   };
 
@@ -63,7 +102,9 @@ export function useStickyTitleRow(pageRootRef) {
     nextTick(() => {
       if (attach()) return;
       requestAnimationFrame(() => {
-        attach();
+        if (attach()) return;
+        setTimeout(attach, 150);
+        setTimeout(attach, 400);
       });
     });
   };

@@ -117,7 +117,7 @@
             <div
               v-if="showEmojiPicker"
               ref="emojiPickerRef"
-              class="fixed z-[100] rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg p-1"
+              :class="['fixed', FLOATING_OVERLAY_Z_CLASS, 'rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg p-1']"
               :style="emojiPickerStyle"
             >
               <emoji-picker
@@ -153,7 +153,7 @@
       <div
         v-if="showMentionDropdown"
         ref="dropdownRef"
-        class="fixed z-50 max-h-48 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg py-1 min-w-[200px]"
+        :class="['fixed', FLOATING_OVERLAY_Z_CLASS, 'max-h-48 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg py-1 min-w-[200px]']"
         :style="dropdownStyle"
       >
         <div v-if="mentionLoading" class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
@@ -199,6 +199,7 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { FLOATING_OVERLAY_Z_CLASS } from '@/constants/zIndexLayers';
 import {
   UserGroupIcon,
   PaperClipIcon,

@@ -10,9 +10,9 @@
  * are excluded as they are platform infrastructure, not CRM entity fields.
  * 
  * ⚠️ IMPORTANT:
- * - Field ownership, intent, and scope are FINALIZED
- * - Do NOT infer, reinterpret, or reclassify any field
- * - This is DATA-MEANING encoding, not UI or schema redesign
+ * - Field ownership, intent, and scope are FINALIZED for this module
+ * - Organizations do NOT use app participation (unlike People)
+ * - All CRM organization attributes are platform-core, scoped by org type via `types`
  * 
  * ============================================================================
  * 
@@ -24,23 +24,21 @@
  *    - This field model covers CRM organization fields only
  * 
  * 2. Core business fields are platform-scoped
- *    - `name`, `industry`, `website`, `phone`, `address`, `types`, `tags`
- *    - These exist independently of any app participation
+ *    - Identity: `name`, `industry`, `website`, `phone`, `address`, `types`, `tags`
+ *    - Relationships: `assignedTo`, `accountManager`, `primaryContact`
+ *    - Type status: `customerStatus`, `partnerStatus`, `vendorStatus`, etc.
+ *    - Business detail: `creditLimit`, `paymentTerms`, `annualRevenue`, etc.
  *    - fieldScope: 'CORE' indicates platform-level ownership
  * 
- * 3. App participation fields are SALES-scoped
- *    - `customerStatus`, `partnerStatus`, `vendorStatus`, etc.
- *    - These fields exist only because of SALES app participation
- *    - fieldScope: 'SALES' indicates SALES app ownership
- * 
- * 4. System fields are infrastructure-scoped
+ * 3. System fields are infrastructure-scoped
  *    - `createdBy`, `createdAt`, `updatedAt`, `organizationId`, etc.
  *    - Managed by the platform, never user-editable
  *    - fieldScope: 'CORE' indicates platform-level ownership
  * 
- * 5. Quick Create eligibility
- *    - Only core business fields: name (required), industry, website, phone, address, types
- *    - Excluded: status fields, assignment fields, system fields, tenant fields
+ * 4. Quick Create eligibility
+ *    - All platform-core fields are configurable in Quick Create settings
+ *    - Default runtime Quick Create is minimal (name only); admins opt in to more fields
+ *    - System and tenant fields are excluded
  *    - See: docs/architecture/organization-settings.md
  * 
  * ============================================================================
@@ -271,260 +269,252 @@ export const ORGANIZATION_FIELD_METADATA: Record<string, OrganizationFieldMetada
     filterType: 'multi-select',
     filterPriority: 4,
   },
-  
-  // ==========================================================================
-  // SALES APP PARTICIPATION FIELDS
-  // ==========================================================================
-  
-  // Assignment fields
+
+  // Core relationship fields
   assignedTo: {
-    owner: 'participation',
-    intent: 'detail',
-    fieldScope: 'SALES',
+    owner: 'core',
+    intent: 'identity',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
     filterable: true,
     filterType: 'user',
     filterPriority: 4,
   },
   accountManager: {
-    owner: 'participation',
-    intent: 'detail',
-    fieldScope: 'SALES',
+    owner: 'core',
+    intent: 'identity',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
     filterable: true,
     filterType: 'user',
     filterPriority: 5,
   },
   primaryContact: {
-    owner: 'participation',
-    intent: 'detail',
-    fieldScope: 'SALES',
+    owner: 'core',
+    intent: 'identity',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
     filterable: true,
     filterType: 'entity',
     filterPriority: 6,
   },
-  
-  // Customer-specific fields
+
+  // Type-scoped status fields (governed by `types`, not app participation)
   customerStatus: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'state',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
     filterable: true,
     filterType: 'select',
     filterPriority: 7,
   },
   customerTier: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'state',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
     filterable: true,
     filterType: 'select',
     filterPriority: 8,
   },
-  slaLevel: {
-    owner: 'participation',
-    intent: 'detail',
-    fieldScope: 'SALES',
-    editable: true,
-    requiredFor: ['SALES'],
-  },
-  paymentTerms: {
-    owner: 'participation',
-    intent: 'detail',
-    fieldScope: 'SALES',
-    editable: true,
-    requiredFor: ['SALES'],
-  },
-  creditLimit: {
-    owner: 'participation',
-    intent: 'detail',
-    fieldScope: 'SALES',
-    editable: true,
-    requiredFor: ['SALES'],
-  },
-  annualRevenue: {
-    owner: 'participation',
-    intent: 'detail',
-    fieldScope: 'SALES',
-    editable: true,
-    requiredFor: ['SALES'],
-    filterable: true,
-    filterType: 'number',
-    filterPriority: 9,
-  },
-  numberOfEmployees: {
-    owner: 'participation',
-    intent: 'detail',
-    fieldScope: 'SALES',
-    editable: true,
-    requiredFor: ['SALES'],
-    filterable: true,
-    filterType: 'number',
-    filterPriority: 10,
-  },
-  
-  // Partner-specific fields
   partnerStatus: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'state',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
     filterable: true,
     filterType: 'select',
     filterPriority: 11,
   },
   partnerTier: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'state',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
     filterable: true,
     filterType: 'select',
     filterPriority: 12,
   },
   partnerType: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'state',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
     filterable: true,
     filterType: 'select',
     filterPriority: 13,
   },
-  partnerSince: {
-    owner: 'participation',
-    intent: 'detail',
-    fieldScope: 'SALES',
+  vendorStatus: {
+    owner: 'core',
+    intent: 'state',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'select',
+    filterPriority: 15,
+  },
+  dealerLevel: {
+    owner: 'core',
+    intent: 'state',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'select',
+    filterPriority: 18,
+  },
+
+  // Core business detail fields
+  slaLevel: {
+    owner: 'core',
+    intent: 'detail',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: false,
+  },
+  paymentTerms: {
+    owner: 'core',
+    intent: 'detail',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: false,
+  },
+  creditLimit: {
+    owner: 'core',
+    intent: 'detail',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: false,
+  },
+  annualRevenue: {
+    owner: 'core',
+    intent: 'detail',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'number',
+    filterPriority: 9,
+  },
+  numberOfEmployees: {
+    owner: 'core',
+    intent: 'detail',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'number',
+    filterPriority: 10,
+  },
+  partnerSince: {
+    owner: 'core',
+    intent: 'detail',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: false,
     filterable: true,
     filterType: 'date',
     filterPriority: 14,
   },
   territory: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
   },
   discountRate: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
-  },
-  
-  // Vendor-specific fields
-  vendorStatus: {
-    owner: 'participation',
-    intent: 'state',
-    fieldScope: 'SALES',
-    editable: true,
-    requiredFor: ['SALES'],
-    filterable: true,
-    filterType: 'select',
-    filterPriority: 15,
+    allowOnCreate: false,
   },
   vendorRating: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
     filterable: true,
     filterType: 'number',
     filterPriority: 16,
   },
   vendorContract: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
     filterable: true,
     filterType: 'entity',
     filterPriority: 17,
   },
   preferredPaymentMethod: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
   },
   taxId: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
   },
-  
-  // Distributor/Dealer-specific fields
   channelRegion: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
   },
   distributionTerritory: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
   },
   distributionCapacityMonthly: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
-  },
-  dealerLevel: {
-    owner: 'participation',
-    intent: 'state',
-    fieldScope: 'SALES',
-    editable: true,
-    requiredFor: ['SALES'],
-    filterable: true,
-    filterType: 'select',
-    filterPriority: 18,
+    allowOnCreate: false,
   },
   terms: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
   },
   shippingAddress: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
   },
   logisticsPartner: {
-    owner: 'participation',
+    owner: 'core',
     intent: 'detail',
-    fieldScope: 'SALES',
+    fieldScope: 'CORE',
     editable: true,
-    requiredFor: ['SALES'],
+    allowOnCreate: false,
     filterable: true,
     filterType: 'entity',
     filterPriority: 19,
@@ -546,17 +536,10 @@ function validateOrganizationFieldMetadata(fieldName: string, metadata: Organiza
 
   const { owner, intent } = metadata;
 
-  // Organization-specific: Core fields must have intent: 'identity' or 'state'
-  if (owner === 'core' && intent !== 'identity' && intent !== 'state') {
+  // Organization-specific: Core fields must have intent: 'identity', 'state', or 'detail'
+  if (owner === 'core' && intent !== 'identity' && intent !== 'state' && intent !== 'detail') {
     throw new Error(
-      `Field "${fieldName}": Organization core fields must have intent: 'identity' or 'state'. Found: ${intent}`
-    );
-  }
-
-  // Organization-specific: Participation fields must have intent: 'state' or 'detail'
-  if (owner === 'participation' && intent !== 'state' && intent !== 'detail') {
-    throw new Error(
-      `Field "${fieldName}": Organization participation fields must have intent: 'state' or 'detail'. Found: ${intent}`
+      `Field "${fieldName}": Organization core fields must have intent: 'identity', 'state', or 'detail'. Found: ${intent}`
     );
   }
 }
@@ -652,15 +635,12 @@ export function getOrganizationParticipationFields(appKey: string): string[] {
 }
 
 /**
- * Get all fields eligible for Quick Create
- * Only core business fields: name (required), industry, website, phone, address, types
+ * Get all fields eligible for Quick Create configuration.
+ * All platform-core organization fields (excludes system fields).
  */
 export function getOrganizationQuickCreateFields(): string[] {
   return Object.entries(ORGANIZATION_FIELD_METADATA)
-    .filter(([_, metadata]) => 
-      metadata.allowOnCreate === true || 
-      (metadata.owner === 'core' && metadata.intent === 'identity')
-    )
+    .filter(([_, metadata]) => metadata.owner === 'core')
     .map(([fieldName]) => fieldName);
 }
 
@@ -851,26 +831,10 @@ export function isExcludedFromOrganizationQuickCreate(fieldName: string): boolea
   const metadata = getOrganizationFieldMetadata(fieldName);
   
   if (!metadata) {
-    // Unknown fields are excluded
     return true;
   }
   
-  // System fields are always excluded
-  if (metadata.owner === 'system') {
-    return true;
-  }
-  
-  // Participation fields are excluded
-  if (metadata.owner === 'participation') {
-    return true;
-  }
-  
-  // Core fields with allowOnCreate: false are excluded
-  if (metadata.owner === 'core' && metadata.allowOnCreate === false) {
-    return true;
-  }
-  
-  return false;
+  return metadata.owner === 'system';
 }
 
 // =============================================================================

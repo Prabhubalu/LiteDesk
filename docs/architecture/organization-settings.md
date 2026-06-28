@@ -269,43 +269,25 @@ Organization fields follow a three-tier ownership model:
 ### 5.1 Core Business Fields
 
 **Owner:** Platform Core  
-**Intent:** Business identity and context
+**Intent:** Business identity, relationships, type-scoped status, and contextual attributes
 
 **Fields Include:**
-- `name` (organization name)
-- `industry` (industry classification)
-- `website` (website URL)
-- `phone` (phone number)
-- `address` (physical address)
-- `types` (organization types array)
+- **Identity:** `name`, `industry`, `website`, `phone`, `address`, `types`, `tags`
+- **Relationships:** `assignedTo`, `accountManager`, `primaryContact`
+- **Type status:** `customerStatus`, `customerTier`, `partnerStatus`, `partnerTier`, `partnerType`, `vendorStatus`, `dealerLevel`
+- **Business detail:** `slaLevel`, `paymentTerms`, `creditLimit`, `annualRevenue`, `numberOfEmployees`, and other type-specific attributes
 
 **Characteristics:**
 - Platform-owned and shared across all applications
+- Unlike People, Organizations do **not** use app participation for field ownership
+- Type-specific fields are governed by the `types` array, not by Sales app scope
 - Cannot be deleted or renamed
 - Visibility and requirements can be configured
 - Appear in all apps that use Organizations
 
 ### 5.2 App Participation Fields
 
-**Owner:** Applications (Sales, Helpdesk, etc.)  
-**Intent:** App-specific business attributes
-
-**Fields Include:**
-- **Sales App:**
-  - `customerStatus`, `customerTier` (customer-specific)
-  - `partnerStatus`, `partnerTier`, `partnerType` (partner-specific)
-  - `vendorStatus`, `vendorRating` (vendor-specific)
-  - `assignedTo`, `accountManager` (ownership)
-  - `annualRevenue`, `numberOfEmployees` (business metrics)
-- **Helpdesk App:**
-  - `slaLevel` (service level agreement)
-  - Additional helpdesk-specific fields
-
-**Characteristics:**
-- Owned by specific applications
-- Governed by field model (owner + intent + fieldScope)
-- Visibility controlled by app participation
-- Can be configured but not deleted (app-owned)
+**Not applicable.** Organization CRM fields are platform-core. App participation applies to People (e.g. `lead_status`) where fields live in `participations.SALES`, not to Organizations.
 
 ### 5.3 System-Managed Fields
 
@@ -328,8 +310,7 @@ Organization fields follow a three-tier ownership model:
 ### Field Configuration Rules
 
 1. **Core fields:** Can configure visibility, requirements, default values. Cannot delete or rename.
-2. **App participation fields:** Can configure visibility and requirements. Cannot delete (app-owned).
-3. **System fields:** Can configure visibility only. Cannot edit, delete, or modify behavior.
+2. **System fields:** Can configure visibility only. Cannot edit, delete, or modify behavior.
 
 ---
 
