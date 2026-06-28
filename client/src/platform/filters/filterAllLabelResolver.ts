@@ -18,8 +18,6 @@ const CANONICAL_FILTER_ALL_I18N_KEYS: Record<string, string> = {
   fulfillmentstatus: 'common.filterAllStatuses',
   assignedto: 'common.filterAllAssignees',
   ownerid: 'common.filterAllAssignees',
-  eventownerid: 'common.filterAllAssignees',
-  caseownerid: 'common.filterAllAssignees',
   priority: 'common.filterAllPriorities',
   category: 'common.filterAllCategories',
 };

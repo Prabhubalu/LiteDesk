@@ -8,10 +8,12 @@ describe('webformBranding', () => {
   });
 
   it('merges branding defaults', () => {
-    const merged = mergeWebformBranding({ themeColor: '#ff0000', fontFamily: 'serif' });
+    const merged = mergeWebformBranding({ themeColor: '#ff0000', fontFamily: 'serif', logoPosition: 'left', logoSize: 'lg' });
     expect(merged.themeColor).toBe('#ff0000');
     expect(merged.fontFamily).toBe('serif');
     expect(merged.logoUrl).toBe('');
+    expect(merged.logoPosition).toBe('left');
+    expect(merged.logoSize).toBe('lg');
   });
 
   it('exposes css vars for accent and font', () => {

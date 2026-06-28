@@ -112,9 +112,9 @@
                   <FlagIcon class="w-3.5 h-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" />
                   <span class="truncate">{{ row.priority || '—' }}</span>
                 </div>
-                <div v-else-if="key === 'caseOwnerId'" class="flex items-center gap-1.5 min-w-0">
+                <div v-else-if="key === 'assignedTo'" class="flex items-center gap-1.5 min-w-0">
                   <UserIcon class="w-3.5 h-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" />
-                  <span class="truncate">{{ getUserDisplayName(row.caseOwnerId) }}</span>
+                  <span class="truncate">{{ getUserDisplayName(row.assignedTo) }}</span>
                 </div>
                 <div v-else-if="key === 'responseMetAt'" class="flex items-center gap-1.5 min-w-0">
                   <CaseResponseSlaListCell :row="row" />
@@ -210,7 +210,7 @@ const statsOpen = ref(true);
 // Kanban options (from localStorage, same keys as ListView Customize Kanban for cases)
 const KANBAN_OPTIONS_KEY = 'arivu-listview-cases-kanban-options';
 const KANBAN_FIELDS_KEY = 'arivu-listview-cases-kanban-fields';
-const DEFAULT_CASE_KANBAN_KEYS = ['title', 'caseId', 'priority', 'caseOwnerId'];
+const DEFAULT_CASE_KANBAN_KEYS = ['title', 'caseId', 'priority', 'assignedTo'];
 const kanbanSettingsVersion = ref(0);
 const refreshKanbanSettings = () => { kanbanSettingsVersion.value++; };
 
@@ -339,8 +339,8 @@ function isCaseFieldEmpty(row, key) {
       return row.caseId == null || row.caseId === '';
     case 'priority':
       return !row.priority;
-    case 'caseOwnerId':
-      return !row.caseOwnerId;
+    case 'assignedTo':
+      return !row.assignedTo;
     case 'status':
       return !row.status;
     default:
@@ -508,7 +508,7 @@ async function handleBulkAction(action, rows) {
   } else if (action === 'bulk-assign-owner') {
     const value = window.prompt('Enter owner user ID');
     if (!String(value || '').trim()) return;
-    updates = { caseOwnerId: String(value).trim() };
+    updates = { assignedTo: String(value).trim() };
   } else {
     return;
   }

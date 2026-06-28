@@ -54,9 +54,9 @@ const SYSTEM_FIELD_LABEL_KEYS = {
     expectedclosedate: 'deals.sysFieldExpectedCloseDate',
     expected_close_date: 'deals.sysFieldExpectedCloseDate',
     close_date: 'deals.sysFieldExpectedCloseDate',
-    ownerid: 'deals.sysFieldOwnerId',
-    owner_id: 'deals.sysFieldOwnerId',
-    dealowner: 'deals.sysFieldOwnerId',
+    ownerid: 'deals.sysFieldAssignedTo',
+    owner_id: 'deals.sysFieldAssignedTo',
+    dealowner: 'deals.sysFieldAssignedTo',
     accountid: 'deals.sysFieldAccountId',
     account_id: 'deals.sysFieldAccountId',
     organization: 'deals.sysFieldAccountId',
@@ -84,12 +84,16 @@ const SYSTEM_FIELD_LABEL_KEYS = {
     description: 'tasks.sysFieldDescription',
   },
   events: {
+    assignedto: 'common.assignedTo',
+    assigned_to: 'common.assignedTo',
     appointmentbookedby: 'events.sysFieldAppointmentBookedBy',
     appointmentbookingsource: 'events.sysFieldAppointmentBookingSource',
     appointmenttype: 'events.sysFieldAppointmentType',
     appointmentmeetinglink: 'events.sysFieldAppointmentMeetingLink',
   },
   cases: {
+    assignedto: 'common.assignedTo',
+    assigned_to: 'common.assignedTo',
     responsemetat: 'cases.listColumnResponseSla',
     firstresponsedueat: 'cases.recordSlaResponse',
   },
@@ -111,6 +115,9 @@ function normalizeFieldKey(fieldKey) {
 export function resolveFieldLabel(moduleKey, field, t, te) {
   const mod = String(moduleKey || '').toLowerCase();
   const fk = normalizeFieldKey(field?.key);
+  if ((fk === 'assignedto' || fk === 'assigned_to') && te('common.assignedTo')) {
+    return t('common.assignedTo');
+  }
   const catalog = SYSTEM_FIELD_LABEL_KEYS[mod];
   const i18nKey = catalog?.[fk];
   if (i18nKey && te(i18nKey)) {

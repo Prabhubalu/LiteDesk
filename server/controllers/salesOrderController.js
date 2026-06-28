@@ -37,7 +37,7 @@ const SALES_ORDER_LIST_STATUSES = [
 function buildSalesOrderListQuery(req) {
   const organizationId = req.user.organizationId;
   const status = req.query?.status;
-  const ownerId = req.query?.ownerId;
+  const assignedTo = req.query?.assignedTo;
   const sourceQuoteId = req.query?.sourceQuoteId;
   const sourceType = req.query?.sourceType;
 
@@ -46,12 +46,12 @@ function buildSalesOrderListQuery(req) {
     assertValidSalesOrderStatus(status);
     q.status = status;
   }
-  if (ownerId) q.ownerId = ownerId;
+  if (assignedTo) q.assignedTo = assignedTo;
   if (sourceQuoteId) q.sourceQuoteId = sourceQuoteId;
   if (sourceType) q.sourceType = String(sourceType).trim();
 
   if (req.filterByUser && !req.viewAll) {
-    q.ownerId = req.filterByUser;
+    q.assignedTo = req.filterByUser;
   }
 
   const searchTerm = req.query?.search != null ? String(req.query.search).trim() : '';
@@ -212,13 +212,13 @@ async function getSalesOrderById(req, res) {
 
     const orderDoc =
       (await SalesOrder.findOne({ organizationId, salesOrderId: id, deletedAt: null })
-        .populate({ path: 'ownerId', select: 'firstName lastName email username' })
+        .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
         .populate({ path: 'organizationRefId', select: 'name' })
         .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' })
         .populate({ path: 'dealId', select: 'name stage pipeline amount value currency' })
         .populate({ path: 'sourceQuoteId', select: 'quoteNumber quoteTitle status revisionNumber' })) ||
       (await SalesOrder.findOne({ organizationId, _id: id, deletedAt: null })
-        .populate({ path: 'ownerId', select: 'firstName lastName email username' })
+        .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
         .populate({ path: 'organizationRefId', select: 'name' })
         .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' })
         .populate({ path: 'dealId', select: 'name stage pipeline amount value currency' })

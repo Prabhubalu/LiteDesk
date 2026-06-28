@@ -261,7 +261,7 @@ async function convertSalesOrderToInvoice({
     globalDiscountType: order.globalDiscountType ?? null,
     globalDiscountValue: Number(order.globalDiscountValue) || 0,
     globalDiscountAmount: Number(order.globalDiscountAmount) || 0,
-    ownerId: order.ownerId ?? userId ?? null,
+    assignedTo: order.assignedTo ?? userId ?? null,
     customerId: order.customerId ?? null,
     organizationRefId: order.organizationRefId ?? null,
     contactId: order.contactId ?? null,

@@ -273,8 +273,8 @@ exports.listAudits = async (req, res) => {
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
         const events = await Event.find(query)
-            .select('eventId eventName eventType auditState startDateTime endDateTime eventOwnerId createdAt')
-            .populate({ path: 'eventOwnerId', select: 'firstName lastName', strictPopulate: false })
+            .select('eventId eventName eventType auditState startDateTime endDateTime assignedTo createdAt')
+            .populate({ path: 'assignedTo', select: 'firstName lastName', strictPopulate: false })
             .sort({ createdAt: -1 })
             .limit(parseInt(limit))
             .skip(skip)
@@ -293,8 +293,8 @@ exports.listAudits = async (req, res) => {
             status: event.auditState, // Alias for compatibility
             dueAt: event.endDateTime,
             dueDate: event.endDateTime, // Alias for compatibility
-            auditorName: event.eventOwnerId 
-                ? `${event.eventOwnerId.firstName || ''} ${event.eventOwnerId.lastName || ''}`.trim()
+            auditorName: event.assignedTo 
+                ? `${event.assignedTo.firstName || ''} ${event.assignedTo.lastName || ''}`.trim()
                 : null,
             createdAt: event.createdAt
         }));
@@ -339,8 +339,8 @@ exports.getAuditDetail = async (req, res) => {
         }
 
         const populatedEvent = await Event.findById(event._id)
-            .select('eventId eventName eventType auditState startDateTime endDateTime eventOwnerId createdAt auditHistory')
-            .populate({ path: 'eventOwnerId', select: 'firstName lastName', strictPopulate: false })
+            .select('eventId eventName eventType auditState startDateTime endDateTime assignedTo createdAt auditHistory')
+            .populate({ path: 'assignedTo', select: 'firstName lastName', strictPopulate: false })
             .lean();
         event = populatedEvent || event;
         // Find form response for this event
@@ -417,8 +417,8 @@ exports.getAuditDetail = async (req, res) => {
             dueAt: event.endDateTime,
             dueDate: event.endDateTime, // Alias for compatibility
             scheduledAt: event.startDateTime,
-            auditorName: event.eventOwnerId 
-                ? `${event.eventOwnerId.firstName || ''} ${event.eventOwnerId.lastName || ''}`.trim()
+            auditorName: event.assignedTo 
+                ? `${event.assignedTo.firstName || ''} ${event.assignedTo.lastName || ''}`.trim()
                 : null
         };
         

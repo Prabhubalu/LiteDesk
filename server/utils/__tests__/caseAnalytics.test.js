@@ -86,7 +86,7 @@ test('computeOwnerPerformance computes per-owner metrics', () => {
   const ownerB = 'owner-b';
   const data = [
     {
-      caseOwnerId: ownerA,
+      assignedTo: ownerA,
       status: 'In Progress',
       currentSlaCycle: {
         startedAt: new Date('2026-01-01T00:00:00Z'),
@@ -96,7 +96,7 @@ test('computeOwnerPerformance computes per-owner metrics', () => {
       slaCycles: []
     },
     {
-      caseOwnerId: ownerA,
+      assignedTo: ownerA,
       status: 'Resolved',
       currentSlaCycle: {
         startedAt: new Date('2026-01-02T00:00:00Z'),
@@ -106,7 +106,7 @@ test('computeOwnerPerformance computes per-owner metrics', () => {
       slaCycles: [{ cycleNo: 1 }]
     },
     {
-      caseOwnerId: ownerB,
+      assignedTo: ownerB,
       status: 'Closed',
       currentSlaCycle: {
         startedAt: new Date('2026-01-03T00:00:00Z'),
@@ -118,8 +118,8 @@ test('computeOwnerPerformance computes per-owner metrics', () => {
   ];
 
   const result = computeOwnerPerformance(data);
-  const a = result.find((row) => row.ownerId === ownerA);
-  const b = result.find((row) => row.ownerId === ownerB);
+  const a = result.find((row) => row.assignedTo === ownerA);
+  const b = result.find((row) => row.assignedTo === ownerB);
   assert.equal(a.totalCases, 2);
   assert.equal(a.openCases, 1);
   assert.equal(a.reopenRatePercent, 50);

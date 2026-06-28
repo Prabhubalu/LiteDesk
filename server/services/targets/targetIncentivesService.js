@@ -23,7 +23,7 @@ async function onTargetIncentiveEligible(target, kind) {
     eventType: kind === 'overachievement' ? 'target.incentive.overachieved' : 'target.incentive.achieved',
     organizationId: target.organizationId,
     appKey: 'PLATFORM',
-    ownerId: target.ownerId,
+    assignedTo: target.assignedTo,
     triggeredBy: 'system',
     currentState: {
       achievedValue: target.achievedValue,

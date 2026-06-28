@@ -80,7 +80,7 @@
                 {{ t('cases.recordDetailsOwner') }}
               </label>
               <select
-                :value="ownerId"
+                :value="assignedTo"
                 :disabled="isClosed"
                 class="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
                 @change="$emit('owner-change', $event.target.value)"
@@ -143,8 +143,8 @@ const { load } = useRecordContext(
   () => props.caseRecord?._id
 );
 
-const ownerId = computed(() => {
-  const o = props.caseRecord?.caseOwnerId;
+const assignedTo = computed(() => {
+  const o = props.caseRecord?.assignedTo;
   if (!o) return '';
   return typeof o === 'object' ? String(o._id || '') : String(o);
 });

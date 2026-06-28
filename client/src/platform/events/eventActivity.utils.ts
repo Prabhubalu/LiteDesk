@@ -44,7 +44,7 @@ export function normalizeEventActivities(event: any): EventActivity[] {
       type: 'EVENT_CREATED',
       source: 'SYSTEM',
       timestamp: new Date(createdAt).toISOString(),
-      actor: extractActor(event.createdBy || event.eventOwnerId),
+      actor: extractActor(event.createdBy || event.assignedTo),
       metadata: {}
     });
   }

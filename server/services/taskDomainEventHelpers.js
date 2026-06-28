@@ -21,7 +21,7 @@ function emitTaskDomainEvent({ task, eventType, previousState, currentState, tri
     appKey,
     organizationId: task.organizationId?.toString?.() || task.organizationId,
     triggeredBy: triggeredBy || null,
-    ownerId: toId(task.assignedTo)
+    assignedTo: toId(task.assignedTo)
   });
 }
 

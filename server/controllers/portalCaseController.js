@@ -123,7 +123,7 @@ async function createPortalCase(req, res) {
     assertPortalActionAllowed(portalCapabilities, 'create_case');
     const portalChannel = portalCapabilities.channel;
     const defaults = config?.policies?.caseLink?.defaults || {};
-    const ownerId = defaults.defaultOwnerId && mongoose.Types.ObjectId.isValid(String(defaults.defaultOwnerId))
+    const assignedTo = defaults.defaultOwnerId && mongoose.Types.ObjectId.isValid(String(defaults.defaultOwnerId))
       ? defaults.defaultOwnerId
       : req.user._id;
 
@@ -146,7 +146,7 @@ async function createPortalCase(req, res) {
       caseType: defaults.defaultCaseType || 'Support Ticket',
       priority: priority || defaults.defaultPriority || 'Medium',
       status: 'New',
-      caseOwnerId: ownerId,
+      assignedTo: assignedTo,
       channel: portalChannel,
       requesterEmail: userEmail,
       currentSlaCycle: adjustedCycle,

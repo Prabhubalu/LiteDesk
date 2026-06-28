@@ -239,7 +239,7 @@ const fromLine = computed(() => {
 const toLine = computed(() => {
   const list = props.message?.toAddresses || [];
   if (!list.length && isInbound.value) {
-    const owner = props.caseRecord?.caseOwnerId;
+    const owner = props.caseRecord?.assignedTo;
     if (owner?.email) return owner.email;
   }
   return list.join(', ');

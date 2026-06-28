@@ -41,7 +41,7 @@ function setAssignmentLock(caseRecord, { lockReason, lockRuleId = null, actorId 
     lockRuleId: lockRuleId || null,
     lockedAt: new Date(),
     lockedBy: actorId || null,
-    previousOwnerId: previousOwnerId || current.previousOwnerId || caseRecord.caseOwnerId || null
+    previousOwnerId: previousOwnerId || current.previousOwnerId || caseRecord.assignedTo || null
   };
 }
 
@@ -160,7 +160,7 @@ async function resolveEscalationOwner({ organizationId, chainGroupIds = [], curr
     const members = Array.isArray(row?.members) ? row.members.map((id) => id.toString()) : [];
     const selected = members.find((id) => id !== currentOwnerId) || members[0];
     if (selected) {
-      return { ownerId: selected, groupId: groupId.toString() };
+      return { assignedTo: selected, groupId: groupId.toString() };
     }
   }
   return null;
@@ -202,18 +202,18 @@ async function maybeApplyEscalation({
   const escalationTarget = await resolveEscalationOwner({
     organizationId,
     chainGroupIds: rule.escalation.chainGroupIds || [],
-    currentOwnerId: toIdString(caseRecord.caseOwnerId)
+    currentOwnerId: toIdString(caseRecord.assignedTo)
   });
-  if (!escalationTarget?.ownerId) {
+  if (!escalationTarget?.assignedTo) {
     return { escalated: false };
   }
 
-  const previousOwnerId = toIdString(caseRecord.caseOwnerId);
-  if (previousOwnerId === escalationTarget.ownerId) {
+  const previousOwnerId = toIdString(caseRecord.assignedTo);
+  if (previousOwnerId === escalationTarget.assignedTo) {
     return { escalated: false };
   }
 
-  caseRecord.caseOwnerId = escalationTarget.ownerId;
+  caseRecord.assignedTo = escalationTarget.assignedTo;
   caseRecord.updatedBy = actorId || caseRecord.updatedBy || null;
   caseRecord.activities = Array.isArray(caseRecord.activities) ? caseRecord.activities : [];
   caseRecord.activities.push({
@@ -239,7 +239,7 @@ async function maybeApplyEscalation({
     triggerSource: 'immediate',
     ruleId: rule.ruleId,
     previousOwnerId,
-    newOwnerId: escalationTarget.ownerId,
+    newOwnerId: escalationTarget.assignedTo,
     assignedGroupId: escalationTarget.groupId,
     status: 'assigned',
     idempotencyKey: `${idempotencyKey}:escalation`,
@@ -253,7 +253,7 @@ async function maybeApplyEscalation({
   return {
     escalated: true,
     previousOwnerId,
-    newOwnerId: escalationTarget.ownerId,
+    newOwnerId: escalationTarget.assignedTo,
     assignedGroupId: escalationTarget.groupId
   };
 }
@@ -305,7 +305,7 @@ async function registerManualOwnerOverride({ caseRecord, actorId, previousOwnerI
     triggerSource: 'manual_override',
     ruleId: null,
     previousOwnerId,
-    newOwnerId: toIdString(caseRecord.caseOwnerId),
+    newOwnerId: toIdString(caseRecord.assignedTo),
     assignedGroupId: null,
     status: hasLockOnManualOverride ? 'skipped' : 'assigned',
     idempotencyKey: `manual_override:${recordId}:${Date.now()}`,
@@ -398,9 +398,9 @@ const SALES_MODULE_ASSIGNMENT_PROFILES = {
     ])
   },
   deals: {
-    ownerPath: 'ownerId',
+    ownerPath: 'assignedTo',
     reevaluateFields: new Set([
-      'ownerId',
+      'assignedTo',
       'stage',
       'pipeline',
       'status',
@@ -756,7 +756,7 @@ async function runImmediateAssignmentForCase({
     return { executed: false, reason: 'idempotent_replay' };
   }
 
-  const previousOwnerId = toIdString(caseRecord.caseOwnerId);
+  const previousOwnerId = toIdString(caseRecord.assignedTo);
   const simulation = await simulateAssignment({
     organizationId,
     appKey,
@@ -774,7 +774,7 @@ async function runImmediateAssignmentForCase({
 
   if (ownerChanged) {
     clearAssignmentLock(caseRecord);
-    caseRecord.caseOwnerId = nextOwnerId;
+    caseRecord.assignedTo = nextOwnerId;
     caseRecord.updatedBy = actorId || caseRecord.updatedBy || null;
     caseRecord.activities = Array.isArray(caseRecord.activities) ? caseRecord.activities : [];
     caseRecord.activities.push({
@@ -796,7 +796,7 @@ async function runImmediateAssignmentForCase({
     state === 'queued' &&
     mongoose.Types.ObjectId.isValid(assignedGroupId)
   ) {
-    // Queue distribution does not set caseOwnerId; still record so the case timeline / activity UI reflects the rule.
+    // Queue distribution does not set assignedTo; still record so the case timeline / activity UI reflects the rule.
     caseRecord.activities = Array.isArray(caseRecord.activities) ? caseRecord.activities : [];
     const groupLabel = simulation?.outcome?.groupName || 'group queue';
     caseRecord.activities.push({
@@ -880,7 +880,7 @@ async function runImmediateAssignmentForCase({
     if (revertMode === 'revert_previous_owner' && mongoose.Types.ObjectId.isValid(previousRuleLog?.previousOwnerId)) {
       const fallbackOwnerId = toIdString(previousRuleLog.previousOwnerId);
       if (fallbackOwnerId && fallbackOwnerId !== previousOwnerId) {
-        caseRecord.caseOwnerId = fallbackOwnerId;
+        caseRecord.assignedTo = fallbackOwnerId;
         caseRecord.updatedBy = actorId || caseRecord.updatedBy || null;
         caseRecord.activities = Array.isArray(caseRecord.activities) ? caseRecord.activities : [];
         caseRecord.activities.push({

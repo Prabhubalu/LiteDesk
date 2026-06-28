@@ -40,7 +40,7 @@ function dispatchMailroomEvent(envelope, { caseResult = null } = {}) {
     organizationId: envelope.organizationId,
     triggeredBy: 'mailroom',
     appKey: 'HELPDESK',
-    ownerId: envelope.data?.caseOwnerId || null,
+    assignedTo: envelope.data?.assignedTo || null,
     previousState: envelope.data?.previousState || null,
     currentState: envelope.data?.currentState || null
   });

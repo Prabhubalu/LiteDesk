@@ -116,7 +116,7 @@ exports.createTeamConfig = async (req, res) => {
     const config = await AppointmentBookingConfig.create({
       organizationId,
       ownerType: 'team',
-      ownerId: managerId,
+      assignedTo: managerId,
       memberUserIds: updates.memberUserIds,
       assignmentStrategy: updates.assignmentStrategy || 'round_robin',
       roundRobinIndex: 0,

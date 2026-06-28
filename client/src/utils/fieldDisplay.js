@@ -8,6 +8,22 @@ import {
   formatCurrencyValue,
   getCurrencySymbolFromCode,
 } from './currencyOptions';
+import { i18n } from '@/i18n';
+import { resolveFieldLabel } from './fieldLabelResolver';
+
+function normalizeAssignedToKey(key) {
+  const fk = String(key || '').trim().toLowerCase().replace(/-/g, '_');
+  return fk === 'assignedto' || fk === 'assigned_to';
+}
+
+const LEGACY_ASSIGNED_TO_LABELS = new Set([
+  'owner',
+  'deal owner',
+  'event owner',
+  'case owner',
+  'case owner id',
+  'assigned to (owner)',
+]);
 
 /**
  * Format a field key (camelCase or snake_case) to a human-readable label (Title Case with spaces).
@@ -28,13 +44,28 @@ export function formatKeyToLabel(key) {
  * Get display label for a field from its configuration.
  * Uses field.label when present and not the same as the key (e.g. not raw camelCase);
  * otherwise formats field.key to a readable label. Use everywhere we show field labels.
- * @param {{ key?: string, label?: string }|null} field - Field definition with key and optional label
+ * @param {{ key?: string, label?: string, moduleKey?: string }|null} field - Field definition with key and optional label
+ * @param {string} [moduleKey] - Optional module key for i18n catalog resolution
  * @returns {string} Human-readable label to show in UI
  */
-export function getFieldDisplayLabel(field) {
+export function getFieldDisplayLabel(field, moduleKey = null) {
   if (!field) return '';
-  const label = String(field.label || '').trim();
+  const mk = moduleKey || field.moduleKey || '';
+  const t = i18n.global.t.bind(i18n.global);
+  const te = i18n.global.te.bind(i18n.global);
   const key = String(field.key || '').trim();
+  const label = String(field.label || '').trim();
+
+  if (normalizeAssignedToKey(key) && LEGACY_ASSIGNED_TO_LABELS.has(label.toLowerCase())) {
+    const resolved = resolveFieldLabel(mk, field, t, te);
+    if (resolved) return resolved;
+  }
+
+  if (mk || normalizeAssignedToKey(key)) {
+    const resolved = resolveFieldLabel(mk, field, t, te);
+    if (resolved) return resolved;
+  }
+
   if (!label) return formatKeyToLabel(key);
   const keyNorm = key.replace(/\s+/g, '').toLowerCase();
   const labelNorm = label.replace(/\s+/g, '').toLowerCase();

@@ -137,7 +137,7 @@ const CaseSchema = new Schema(
     preferredLanguage: { type: String, trim: true, default: null },
     customerTier: { type: String, trim: true, default: null },
     vipCustomer: { type: Boolean, default: false },
-    caseOwnerId: {
+    assignedTo: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
@@ -264,7 +264,7 @@ const CaseSchema = new Schema(
 );
 
 CaseSchema.index({ organizationId: 1, status: 1, priority: 1 });
-CaseSchema.index({ organizationId: 1, caseOwnerId: 1, status: 1 });
+CaseSchema.index({ organizationId: 1, assignedTo: 1, status: 1 });
 
 CaseSchema.statics.CASE_TYPES = CASE_TYPES;
 CaseSchema.statics.CASE_PRIORITIES = CASE_PRIORITIES;

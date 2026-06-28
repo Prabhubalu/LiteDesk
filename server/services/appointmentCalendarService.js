@@ -241,7 +241,7 @@ async function resolveHostCalendarConfig(organizationId, hostUserId) {
   return AppointmentBookingConfig.findOne({
     organizationId,
     ownerType: 'user',
-    ownerId: hostUserId
+    assignedTo: hostUserId
   });
 }
 

@@ -51,7 +51,7 @@ async function seedSampleDataForOrganization(organization, user) {
       deal = await Deal.create({
         organizationId: organization._id,
         name: 'Sample opportunity',
-        ownerId: user._id,
+        assignedTo: user._id,
         contactId: createdPeople[0]._id,
         stage: 'Prospecting',
         amount: 5000,

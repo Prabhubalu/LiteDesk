@@ -42,7 +42,7 @@ async function memberHasConflict(
 ) {
   const conflictQuery = {
     organizationId,
-    eventOwnerId: memberId,
+    assignedTo: memberId,
     deletedAt: null,
     status: { $ne: 'Cancelled' },
     startDateTime: { $lt: end },
@@ -97,7 +97,7 @@ async function getTeamSlotsForDate(teamConfig, dateStr) {
   const resolved = await resolveScheduleForBookingConfig(
     teamConfig,
     teamConfig.organizationId,
-    teamConfig.ownerId
+    teamConfig.assignedTo
   );
   const timezone = getDisplayTimezone(teamConfig, resolved);
   const dayStart = DateTime.fromISO(dateStr, { zone: timezone }).startOf('day');

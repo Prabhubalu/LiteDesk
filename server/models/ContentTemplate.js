@@ -85,7 +85,7 @@ const ContentTemplateSchema = new Schema(
       enum: ['code', 'symbol'],
       default: 'code'
     },
-    ownerId: {
+    assignedTo: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       default: null,

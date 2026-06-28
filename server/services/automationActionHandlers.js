@@ -28,14 +28,14 @@ const ENTITY_TO_RELATED_TO = {
  * Resolve assignee/recipient: 'owner' | 'triggeredBy' -> User id.
  * Returns null if unresolved (log and caller should skip).
  *
- * @param {Object} ctx - { ownerId, triggeredBy, organizationId }
+ * @param {Object} ctx - { assignedTo, triggeredBy, organizationId }
  * @param {string} kind - 'owner' | 'triggeredBy'
  * @returns {Promise<string|null>} User id string or null
  */
 async function resolveAssignee(ctx, kind) {
   const orgId = ctx.organizationId;
   if (!orgId) return null;
-  const raw = kind === 'owner' ? ctx.ownerId : ctx.triggeredBy;
+  const raw = kind === 'owner' ? ctx.assignedTo : ctx.triggeredBy;
   const id = raw != null ? (raw.toString ? raw.toString() : String(raw)) : null;
   if (!id || id === 'system') return null;
   try {
@@ -56,7 +56,7 @@ async function resolveAssignee(ctx, kind) {
  * Params: title (required), description?, dueInDays?, assignee ('owner'|'triggeredBy'),
  *         relatedEntity: { entityType, entityId }.
  *
- * @param {Object} ctx - Event context { eventId, entityType, entityId, organizationId, triggeredBy, ownerId, appKey }
+ * @param {Object} ctx - Event context { eventId, entityType, entityId, organizationId, triggeredBy, assignedTo, appKey }
  * @param {Object} params - Action params
  * @returns {Promise<{ ok: boolean, taskId?: string, error?: string }>}
  */
@@ -177,7 +177,7 @@ async function notifyUser(ctx, params) {
  * Starts a Process Execution from an Automation Rule.
  * Params: processId (required), inputMapping (optional).
  *
- * @param {Object} ctx - Event context { eventId, entityType, entityId, organizationId, triggeredBy, ownerId, appKey }
+ * @param {Object} ctx - Event context { eventId, entityType, entityId, organizationId, triggeredBy, assignedTo, appKey }
  * @param {Object} params - Action params { processId, inputMapping? }
  * @param {string} [automationExecutionId] - Automation execution ID (for linking)
  * @returns {Promise<{ ok: boolean, processExecutionId?: string, error?: string }>}
@@ -205,7 +205,7 @@ async function startProcessAction(ctx, params, automationExecutionId = null) {
     eventType: ctx.eventType || null,
     organizationId: ctx.organizationId,
     triggeredBy: ctx.triggeredBy,
-    ownerId: ctx.ownerId,
+    assignedTo: ctx.assignedTo,
     appKey: ctx.appKey
   } : null;
 
@@ -218,7 +218,7 @@ async function startProcessAction(ctx, params, automationExecutionId = null) {
         entityId: ctx.entityId,
         organizationId: ctx.organizationId,
         triggeredBy: ctx.triggeredBy,
-        ownerId: ctx.ownerId
+        assignedTo: ctx.assignedTo
       },
       inputMapping,
       automationExecutionId

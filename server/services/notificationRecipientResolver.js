@@ -165,8 +165,8 @@ async function resolveWebformNotifyRecipients({ entity, organizationId, eventTyp
 
 async function resolveDealOwnerNotify({ entity, organizationId, eventType }) {
   if (!entity || entity.type !== 'Deal' || !entity.id || !organizationId) return [];
-  const row = await Deal.findOne({ _id: entity.id, organizationId }).select('ownerId name');
-  if (!row || !row.ownerId) return [];
+  const row = await Deal.findOne({ _id: entity.id, organizationId }).select('assignedTo name');
+  if (!row || !row.assignedTo) return [];
 
   const label = row.name || 'Deal';
   const title = eventType === domainEvents.DEAL_ASSIGNED ? 'Deal assigned' : 'Deal update';
@@ -175,7 +175,7 @@ async function resolveDealOwnerNotify({ entity, organizationId, eventType }) {
       ? `You are now the owner of "${label}".`
       : `Update on deal "${label}".`;
 
-  return [{ userId: row.ownerId, title, body }];
+  return [{ userId: row.assignedTo, title, body }];
 }
 
 async function resolveSalesOrganizationAssignee({ entity, organizationId, eventType }) {
@@ -335,14 +335,14 @@ async function resolveLiveChatNotifyTargets({ entity, organizationId, eventType 
 async function resolveCaseOwner({ entity, organizationId, eventType }) {
   if (!entity || entity.type !== 'Case' || !entity.id) return [];
   const row = await Case.findOne({ _id: entity.id, organizationId })
-    .select('caseOwnerId caseId title');
-  if (!row || !row.caseOwnerId) return [];
+    .select('assignedTo caseId title');
+  if (!row || !row.assignedTo) return [];
 
   const caseLabel = row.caseId || row.title || 'Case';
   const copy = caseNotificationCopy(eventType, caseLabel, entity);
 
   return [{
-    userId: row.caseOwnerId,
+    userId: row.assignedTo,
     title: copy.title,
     body: copy.body
   }];
@@ -352,7 +352,7 @@ async function resolveCaseNotifyTargets({ entity, organizationId, eventType }) {
   if (!entity || entity.type !== 'Case' || !entity.id || !organizationId) return [];
 
   const row = await Case.findOne({ _id: entity.id, organizationId })
-    .select('caseOwnerId caseId title');
+    .select('assignedTo caseId title');
   if (!row) return [];
 
   const caseLabel = row.caseId || row.title || 'Case';
@@ -364,9 +364,9 @@ async function resolveCaseNotifyTargets({ entity, organizationId, eventType }) {
     eventType === domainEvents.CASE_CHAT_MESSAGE_RECEIVED ||
     eventType === domainEvents.CASE_EMAIL_RECEIVED;
 
-  if (row.caseOwnerId && !broadcastToAllHelpdeskAgents) {
+  if (row.assignedTo && !broadcastToAllHelpdeskAgents) {
     return [{
-      userId: row.caseOwnerId,
+      userId: row.assignedTo,
       title: copy.title,
       body: copy.body
     }];
@@ -397,10 +397,10 @@ async function resolveCaseNotifyTargets({ entity, organizationId, eventType }) {
 async function resolveEventAuditor({ entity, organizationId }) {
   if (!entity || entity.type !== 'Audit' || !entity.id) return [];
   const event = await Event.findOne({ _id: entity.id, organizationId })
-    .select('formAssignment auditorId eventOwnerId eventName title');
+    .select('formAssignment auditorId assignedTo eventName title');
   if (!event) return [];
 
-  const userId = event.formAssignment?.assignedAuditor || event.auditorId || event.eventOwnerId;
+  const userId = event.formAssignment?.assignedAuditor || event.auditorId || event.assignedTo;
   if (!userId) return [];
 
   return [{

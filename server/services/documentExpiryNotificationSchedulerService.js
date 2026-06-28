@@ -60,23 +60,23 @@ async function tickDocumentExpiryNotifications() {
           const candidates = await Document.find({
             organizationId: tenant._id,
             deletedAt: null,
-            ownerId: { $ne: null },
+            assignedTo: { $ne: null },
             expiryDate: { $gte: now, $lte: horizon },
             expiryNotifiedAt: null
           })
-            .select('_id title documentNumber expiryDate ownerId')
+            .select('_id title documentNumber expiryDate assignedTo')
             .limit(BATCH_LIMIT)
             .lean();
 
           for (const doc of candidates) {
             scanned += 1;
-            if (!doc.ownerId) continue;
+            if (!doc.assignedTo) continue;
             try {
               const expiryLabel = doc.expiryDate
                 ? new Date(doc.expiryDate).toLocaleDateString('en-US', { dateStyle: 'medium' })
                 : 'soon';
               await Notification.create({
-                userId: doc.ownerId,
+                userId: doc.assignedTo,
                 organizationId: tenant._id,
                 appKey: 'PLATFORM',
                 sourceAppKey: 'PLATFORM',

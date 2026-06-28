@@ -22,7 +22,7 @@
  *    - fieldScope: 'CORE' for core fields indicates platform-level ownership
  * 
  * 2. Core deal fields are platform-scoped (same pattern as Tasks, People)
- *    - `name`, `amount`, `stage`, `pipeline`, `expectedCloseDate`, `ownerId`, etc.
+ *    - `name`, `amount`, `stage`, `pipeline`, `expectedCloseDate`, `assignedTo`, etc.
  *    - These are the primary deal identity and workflow fields
  *    - owner: 'core', fieldScope: 'CORE'
  * 
@@ -32,7 +32,7 @@
  *    - fieldScope: 'CORE' indicates platform-level ownership
  * 
  * 4. Quick Create eligibility
- *    - Essential fields: name (required), amount, stage, expectedCloseDate, ownerId, status
+ *    - Essential fields: name (required), amount, stage, expectedCloseDate, assignedTo, status
  *    - Excluded: description, notes, lineItems, tracking fields, system fields
  * 
  * ============================================================================
@@ -347,7 +347,7 @@ export const DEAL_FIELD_METADATA: Record<string, DealFieldMetadata> = {
   },
 
   // Assignment
-  ownerId: {
+  assignedTo: {
     owner: 'core',
     intent: 'detail',
     fieldScope: 'CORE',
@@ -580,7 +580,7 @@ export function getDealParticipationFields(appKey: string): string[] {
 
 /**
  * Get all fields eligible for Quick Create
- * Essential fields: name (required), amount, stage, expectedCloseDate, ownerId, status
+ * Essential fields: name (required), amount, stage, expectedCloseDate, assignedTo, status
  */
 export function getDealQuickCreateFields(): string[] {
   return Object.entries(DEAL_FIELD_METADATA)

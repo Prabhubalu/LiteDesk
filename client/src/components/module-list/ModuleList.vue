@@ -2105,9 +2105,9 @@ const handleStatClick = (statItem) => {
         break;
         
       case 'myEvents':
-        // Filter: eventOwnerId = currentUser
+        // Filter: assignedTo = currentUser
         // Use 'me' string so it matches the filter dropdown option
-        newFilters.eventOwnerId = 'me';
+        newFilters.assignedTo = 'me';
         break;
         
       case 'today':
@@ -2145,7 +2145,7 @@ const handleStatClick = (statItem) => {
         break;
 
       case 'myQuotes':
-        newFilters.ownerId = 'me';
+        newFilters.assignedTo = 'me';
         break;
     }
   }

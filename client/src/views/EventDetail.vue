@@ -1195,8 +1195,8 @@ const isAuditor = computed(() => {
   const currentUser = authStore.user;
   if (!currentUser) return false;
   
-  // Prefer explicit auditorId; fall back to eventOwnerId for legacy records
-  const auditorId = event.value.auditorId?._id || event.value.auditorId || event.value.eventOwnerId?._id || event.value.eventOwnerId;
+  // Prefer explicit auditorId; fall back to assignedTo for legacy records
+  const auditorId = event.value.auditorId?._id || event.value.auditorId || event.value.assignedTo?._id || event.value.assignedTo;
   return auditorId && auditorId.toString() === currentUser._id.toString();
 });
 
@@ -1207,10 +1207,10 @@ const isAuditEventType = computed(() => {
 
 const primaryOwnerUser = computed(() => {
   if (!event.value) return null;
-  // For audits: show auditorId (fallback to eventOwnerId for legacy)
-  if (isAuditEventType.value) return event.value.auditorId || event.value.eventOwnerId || event.value.organizer || null;
-  // For non-audits: show eventOwnerId
-  return event.value.eventOwnerId || event.value.organizer || null;
+  // For audits: show auditorId (fallback to assignedTo for legacy)
+  if (isAuditEventType.value) return event.value.auditorId || event.value.assignedTo || event.value.organizer || null;
+  // For non-audits: show assignedTo
+  return event.value.assignedTo || event.value.organizer || null;
 });
 
 const primaryOwnerLabel = computed(() => (isAuditEventType.value ? 'Auditor' : 'Event Owner'));

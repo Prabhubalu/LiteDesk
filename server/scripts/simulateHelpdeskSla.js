@@ -267,7 +267,7 @@ async function createSimCase(user, args) {
     priority: args.priority,
     status: 'New',
     channel: 'Internal',
-    caseOwnerId: user._id,
+    assignedTo: user._id,
     currentSlaCycle: targetAware,
     activities: [{
       activityType: 'case_created',
@@ -291,7 +291,7 @@ async function printStatus(caseRow) {
   console.log('  Title:', caseRow.title);
   console.log('  Status:', caseRow.status);
   console.log('  Priority:', caseRow.priority);
-  console.log('  Owner:', String(caseRow.caseOwnerId));
+  console.log('  Owner:', String(caseRow.assignedTo));
   console.log('  Cycle status:', cycle.status);
   console.log('  Response target:', cycle.responseTargetAt?.toISOString() || '-');
   console.log('  Response met:', cycle.responseMetAt?.toISOString() || '-');

@@ -18,7 +18,7 @@
  * @property {string|null} entityId - Entity ID
  * @property {string|null} organizationId - Tenant organization ID
  * @property {string|null} triggeredBy - User ID or 'system'
- * @property {string|null} ownerId - Record owner (User ID)
+ * @property {string|null} assignedTo - Record owner (User ID)
  * @property {Object|null} event - Full domain event payload if triggered by event
  * @property {Object} dataBag - Mutable key-value store shared across nodes
  * @property {Object} behaviorProposals - Accumulated behavior proposals
@@ -38,7 +38,7 @@
  * @param {string|null} params.entityId - Entity ID (if manual)
  * @param {string|null} params.organizationId - Organization ID
  * @param {string|null} params.triggeredBy - User ID or 'system'
- * @param {string|null} params.ownerId - Owner ID
+ * @param {string|null} params.assignedTo - Owner ID
  * @returns {ProcessExecutionContext}
  */
 function buildExecutionContext(params) {
@@ -50,7 +50,7 @@ function buildExecutionContext(params) {
     entityId = null,
     organizationId = null,
     triggeredBy = null,
-    ownerId = null
+    assignedTo = null
   } = params;
 
   // Generate deterministic execution ID
@@ -70,7 +70,7 @@ function buildExecutionContext(params) {
     entityId: event ? event.entityId : entityId,
     organizationId: event ? event.organizationId : organizationId,
     triggeredBy: event ? event.triggeredBy : triggeredBy,
-    ownerId: event ? event.ownerId : ownerId,
+    assignedTo: event ? event.assignedTo : assignedTo,
     event,
     dataBag: {},
     behaviorProposals: {

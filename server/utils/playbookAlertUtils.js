@@ -69,9 +69,9 @@ async function resolvePlaybookAlertRecipientUsers(organizationId, recipients, de
     }
   }
 
-  if (resolved.size === 0 && deal?.ownerId) {
+  if (resolved.size === 0 && deal?.assignedTo) {
     const owner = await User.findOne({
-      _id: deal.ownerId._id || deal.ownerId,
+      _id: deal.assignedTo._id || deal.assignedTo,
       organizationId,
       status: { $in: ['active', null] }
     }).select('_id').lean();

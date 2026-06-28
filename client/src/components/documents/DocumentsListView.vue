@@ -109,7 +109,7 @@
       <span class="text-sm text-gray-600 dark:text-gray-300">{{ formatVersion(value) }}</span>
     </template>
 
-    <template #cell-ownerId="{ row }">
+    <template #cell-assignedTo="{ row }">
       <span class="text-sm text-gray-700 dark:text-gray-300">{{ formatOwner(row) }}</span>
     </template>
 

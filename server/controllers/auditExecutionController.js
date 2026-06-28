@@ -16,7 +16,7 @@
  * - No workflow state management
  * 
  * Authorization:
- * - Ownership-based: eventOwnerId === req.user._id
+ * - Ownership-based: assignedTo === req.user._id
  * - No CRM permissions required
  * - No role-based checks
  * 
@@ -70,7 +70,7 @@ async function validateEventOwnership(eventId, userId, organizationId) {
     }
     
     // Ownership validation (MANDATORY)
-    if (event.eventOwnerId.toString() !== userId.toString()) {
+    if (event.assignedTo.toString() !== userId.toString()) {
         return {
             valid: false,
             error: {
@@ -104,7 +104,7 @@ async function getOrCreateExecutionContext(eventId, auditAssignmentId, userId, o
             const event = await Event.findById(eventId);
             if (event) {
                 assignment = await AuditAssignment.create({
-                    auditorId: event.eventOwnerId,
+                    auditorId: event.assignedTo,
                     organizationId: event.organizationId,
                     eventId: event._id,
                     auditType: event.eventType,

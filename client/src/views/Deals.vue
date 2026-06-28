@@ -181,18 +181,18 @@
       </template>
 
       <!-- Custom Owner Cell -->
-      <template #cell-ownerId="{ row }">
-        <div v-if="row.ownerId" class="flex items-center gap-2">
+      <template #cell-assignedTo="{ row }">
+        <div v-if="row.assignedTo" class="flex items-center gap-2">
           <Avatar
             :user="{
-              firstName: row.ownerId?.firstName,
-              lastName: row.ownerId?.lastName,
-              avatar: row.ownerId?.avatar
+              firstName: row.assignedTo?.firstName,
+              lastName: row.assignedTo?.lastName,
+              avatar: row.assignedTo?.avatar
             }"
             size="sm"
           />
           <span class="text-sm text-gray-700 dark:text-gray-300">
-            {{ getUserDisplayName(row.ownerId) }}
+            {{ getUserDisplayName(row.assignedTo) }}
           </span>
         </div>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">{{ t('records.editableUnassigned') }}</span>
@@ -349,16 +349,16 @@
                   <BuildingOfficeIcon class="w-3.5 h-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" />
                   <span class="truncate">{{ deal.accountId?.name ?? deal.account?.name ?? '—' }}</span>
                 </div>
-                <div v-else-if="key === 'ownerId'" class="flex items-center gap-1.5 min-w-0">
+                <div v-else-if="key === 'assignedTo'" class="flex items-center gap-1.5 min-w-0">
                   <Avatar
                     :user="{
-                      firstName: deal.ownerId?.firstName,
-                      lastName: deal.ownerId?.lastName,
-                      avatar: deal.ownerId?.avatar
+                      firstName: deal.assignedTo?.firstName,
+                      lastName: deal.assignedTo?.lastName,
+                      avatar: deal.assignedTo?.avatar
                     }"
                     size="sm"
                   />
-                  <span class="truncate text-xs">{{ getUserDisplayName(deal.ownerId) }}</span>
+                  <span class="truncate text-xs">{{ getUserDisplayName(deal.assignedTo) }}</span>
                 </div>
                 <div v-else-if="key === 'contactId'" class="flex items-center gap-1 truncate">
                   <UserIcon class="w-3.5 h-3.5 flex-shrink-0" />
@@ -487,7 +487,7 @@ const selectedPipelineKey = ref(getStoredPipelineKey());
 const KANBAN_OPTIONS_KEY = 'arivu-listview-deals-kanban-options';
 const KANBAN_FIELDS_KEY = 'arivu-listview-deals-kanban-fields';
 // Default card fields (Kanban only): Title, Amount, Expected Close Date, Probability, Priority, Organization, Deal Owner
-const DEFAULT_KANBAN_SHOWN_KEYS = ['name', 'amount', 'expectedCloseDate', 'probability', 'priority', 'accountId', 'ownerId'];
+const DEFAULT_KANBAN_SHOWN_KEYS = ['name', 'amount', 'expectedCloseDate', 'probability', 'priority', 'accountId', 'assignedTo'];
 
 // Keys for meta row (all shown keys except name), in same order as Customize Kanban
 const kanbanMetaFieldKeys = computed(() =>
@@ -1067,8 +1067,8 @@ const isDealFieldEmpty = (deal, key) => {
       return !deal.priority;
     case 'accountId':
       return !(deal.accountId?.name ?? deal.account?.name);
-    case 'ownerId':
-      return !deal.ownerId;
+    case 'assignedTo':
+      return !deal.assignedTo;
     case 'contactId':
       return !deal.contactId;
     default:

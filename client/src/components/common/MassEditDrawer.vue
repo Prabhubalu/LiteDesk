@@ -237,7 +237,7 @@ function resolveFieldLabel(field) {
 
 function isHighImpactField(key) {
   const normalized = String(key || '').toLowerCase();
-  return ['owner', 'assignedto', 'caseownerid', 'assigned_to', 'case_owner_id'].includes(normalized);
+  return ['owner', 'assignedto', 'assignedto', 'assigned_to', 'case_owner_id'].includes(normalized);
 }
 
 function resetState() {

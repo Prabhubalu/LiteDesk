@@ -40,7 +40,7 @@ async function createManualSalesOrder({ organizationId, userId, body = {} }) {
     fulfillmentMode,
     currency: body.currency ?? 'USD',
     exchangeRateSnapshot: normalizeNumber(body.exchangeRateSnapshot, { defaultValue: 1 }),
-    ownerId: body.ownerId ?? userId ?? null,
+    assignedTo: body.assignedTo ?? userId ?? null,
     customerId: body.customerId ?? null,
     organizationRefId: body.organizationRefId ?? null,
     contactId: body.contactId ?? null,

@@ -82,7 +82,7 @@ export const INVOICE_FIELD_METADATA: Record<string, InvoiceFieldMetadata> = {
     isSystem: true,
     isVisibleInConfig: true
   },
-  ownerId: {
+  assignedTo: {
     owner: 'core',
     intent: 'tracking',
     fieldScope: 'CORE',

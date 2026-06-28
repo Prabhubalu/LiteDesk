@@ -28,7 +28,7 @@ const appointmentBookingConfigSchema = new Schema({
     required: true
   },
   /** User owner for personal pages; team manager (createdBy) for team pages */
-  ownerId: {
+  assignedTo: {
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true,
@@ -119,7 +119,7 @@ const appointmentBookingConfigSchema = new Schema({
 
 appointmentBookingConfigSchema.index({ organizationId: 1, slug: 1 }, { unique: true });
 appointmentBookingConfigSchema.index(
-  { organizationId: 1, ownerType: 1, ownerId: 1 },
+  { organizationId: 1, ownerType: 1, assignedTo: 1 },
   { unique: true, partialFilterExpression: { ownerType: 'user' } }
 );
 

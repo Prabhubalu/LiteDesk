@@ -36,9 +36,9 @@ async function seedContext() {
     isTenant: true,
     isActive: true
   });
-  const ownerId = new mongoose.Types.ObjectId();
+  const assignedTo = new mongoose.Types.ObjectId();
   await User.create({
-    _id: ownerId,
+    _id: assignedTo,
     organizationId: org._id,
     username: `owner-${suffix}`,
     email: `owner-${suffix}@example.com`,
@@ -100,10 +100,10 @@ async function seedContext() {
     stage: STAGE_NAME,
     pipeline: PIPELINE_KEY,
     expectedCloseDate: new Date('2026-12-31'),
-    ownerId
+    assignedTo
   });
 
-  return { org, deal, ownerId, pipelineSettings };
+  return { org, deal, assignedTo, pipelineSettings };
 }
 
 test.before(async () => {
@@ -137,10 +137,10 @@ test('computeAlertRunAt anchors to action dueAt when present', () => {
 });
 
 test('executePlaybookForDeal enqueues alert jobs for configured alerts', async () => {
-  const { org, deal, ownerId, pipelineSettings } = await seedContext();
+  const { org, deal, assignedTo, pipelineSettings } = await seedContext();
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -158,10 +158,10 @@ test('executePlaybookForDeal enqueues alert jobs for configured alerts', async (
 });
 
 test('processDuePlaybookAlertJobs delivers in-app notification to deal owner', async () => {
-  const { org, deal, ownerId, pipelineSettings } = await seedContext();
+  const { org, deal, assignedTo, pipelineSettings } = await seedContext();
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -172,7 +172,7 @@ test('processDuePlaybookAlertJobs delivers in-app notification to deal owner', a
 
   const notifications = await Notification.find({
     organizationId: org._id,
-    userId: ownerId
+    userId: assignedTo
   }).lean();
 
   assert.equal(notifications.length, 1);
@@ -181,10 +181,10 @@ test('processDuePlaybookAlertJobs delivers in-app notification to deal owner', a
 });
 
 test('alert jobs are skipped when playbook action is already completed', async () => {
-  const { org, deal, ownerId, pipelineSettings } = await seedContext();
+  const { org, deal, assignedTo, pipelineSettings } = await seedContext();
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -193,7 +193,7 @@ test('alert jobs are skipped when playbook action is already completed', async (
   await deal.save();
 
   const resolvedPlaybook = resolveStagePlaybook(pipelineSettings, deal.pipeline, deal.stage);
-  await syncPlaybookAlertJobsForDeal(deal, resolvedPlaybook, ownerId);
+  await syncPlaybookAlertJobsForDeal(deal, resolvedPlaybook, assignedTo);
 
   const result = await processDuePlaybookAlertJobs();
   assert.equal(result.skipped, 1);

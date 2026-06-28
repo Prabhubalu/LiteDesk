@@ -197,7 +197,7 @@ export function getCaseActivityDisplayName(activity, caseRecord) {
   if (isCaseInboundMessage(activity)) {
     return formatCaseContactDisplayName(resolveCaseContactProfile(caseRecord));
   }
-  const owner = caseRecord?.caseOwnerId;
+  const owner = caseRecord?.assignedTo;
   if (owner && typeof owner === 'object') {
     const name = [owner.firstName, owner.lastName].filter(Boolean).join(' ').trim();
     return name || owner.email || 'Agent';
@@ -209,12 +209,12 @@ export function getCaseActivityAvatarUser(activity, caseRecord) {
   if (isCaseInboundMessage(activity)) {
     return resolveCaseContactProfile(caseRecord);
   }
-  if (activity?.actorId && caseRecord?.caseOwnerId && typeof caseRecord.caseOwnerId === 'object') {
-    return enrichPersonForAvatar(caseRecord.caseOwnerId);
+  if (activity?.actorId && caseRecord?.assignedTo && typeof caseRecord.assignedTo === 'object') {
+    return enrichPersonForAvatar(caseRecord.assignedTo);
   }
   const parts = splitPersonName(activity?.actorName);
   if (parts.firstName || parts.lastName) return enrichPersonForAvatar(parts);
-  return enrichPersonForAvatar({ email: caseRecord?.caseOwnerId?.email });
+  return enrichPersonForAvatar({ email: caseRecord?.assignedTo?.email });
 }
 
 export function formatCaseChannelLabel(channel) {

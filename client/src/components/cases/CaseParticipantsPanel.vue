@@ -47,7 +47,7 @@ const participants = computed(() => {
   const row = props.caseRecord;
   if (!row) return list;
 
-  const owner = row.caseOwnerId;
+  const owner = row.assignedTo;
   if (owner && typeof owner === 'object') {
     list.push({
       id: `owner-${owner._id}`,

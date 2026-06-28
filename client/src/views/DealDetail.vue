@@ -208,14 +208,14 @@
 
             <!-- Quick Info -->
             <div class="space-y-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div v-if="deal.ownerId" class="flex items-start gap-2">
+              <div v-if="deal.assignedTo" class="flex items-start gap-2">
                 <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 <div class="flex-1">
                   <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.roleUsersOwner') }}</p>
                   <p class="text-xs font-medium text-gray-900 dark:text-white">
-                    {{ deal.ownerId.firstName }} {{ deal.ownerId.lastName }}
+                    {{ deal.assignedTo.firstName }} {{ deal.assignedTo.lastName }}
                   </p>
                 </div>
               </div>

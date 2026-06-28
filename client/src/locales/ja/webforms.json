@@ -1310,5 +1310,77 @@
   "builderVisibilityFromModule": {
     "message": "Visibility, required rules, and picklist dependencies for this field are managed in module settings.",
     "description": "Shown for CRM-bound webform fields instead of webform-level Show when rules"
+  },
+  "builderHeaderTitle": {
+    "message": "Header",
+    "description": "Header section title in builder form settings"
+  },
+  "builderHeaderHint": {
+    "message": "Logo, heading, and description appear inside the header area.",
+    "description": "Header section hint in builder form settings"
+  },
+  "builderHeaderBackground": {
+    "message": "Header background color",
+    "description": "Header background color label"
+  },
+  "builderHeaderBackgroundPh": {
+    "message": "Default (transparent)",
+    "description": "Header background color placeholder"
+  },
+  "builderHeaderBackgroundHint": {
+    "message": "Used when no background image is set.",
+    "description": "Header background color hint"
+  },
+  "builderHeaderHeadingColor": {
+    "message": "Heading color",
+    "description": "Header heading text color label"
+  },
+  "builderHeaderHeadingColorPh": {
+    "message": "Default",
+    "description": "Header heading text color placeholder"
+  },
+  "builderHeaderLogoPosition": {
+    "message": "Logo position",
+    "description": "Header logo position label"
+  },
+  "builderHeaderLogoPositionLeft": {
+    "message": "Left",
+    "description": "Header logo position left option"
+  },
+  "builderHeaderLogoPositionCenter": {
+    "message": "Center",
+    "description": "Header logo position center option"
+  },
+  "builderHeaderLogoPositionRight": {
+    "message": "Right",
+    "description": "Header logo position right option"
+  },
+  "builderHeaderLogoSize": {
+    "message": "Logo size",
+    "description": "Header logo size label"
+  },
+  "builderHeaderLogoSizeSm": {
+    "message": "Small",
+    "description": "Header logo size small option"
+  },
+  "builderHeaderLogoSizeMd": {
+    "message": "Medium",
+    "description": "Header logo size medium option"
+  },
+  "builderHeaderLogoSizeLg": {
+    "message": "Large",
+    "description": "Header logo size large option"
+  },
+  "builderHeaderLogoSizeXl": {
+    "message": "Extra large",
+    "description": "Header logo size extra large option"
+  },
+  "builderBrandingFormBodyBackground": {
+    "message": "Form body background",
+    "description": "Branding form body background label"
+  },
+  "builderBrandingFormBodyBackgroundPh": {
+    "message": "Default (white)",
+    "description": "Branding form body background placeholder"
   }
 }

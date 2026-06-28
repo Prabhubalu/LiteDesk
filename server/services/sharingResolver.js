@@ -15,15 +15,15 @@ const {
 const { buildCustomGrantClauses } = require('./sharingRuleService');
 
 const OWNER_FIELD_BY_MODULE = {
-  deals: 'ownerId',
+  deals: 'assignedTo',
   people: 'assignedTo',
   contacts: 'assignedTo',
-  cases: 'caseOwnerId',
+  cases: 'assignedTo',
   tasks: 'assignedTo',
   events: 'assignedTo',
-  quotes: 'ownerId',
-  sales_orders: 'ownerId',
-  invoices: 'ownerId'
+  quotes: 'assignedTo',
+  sales_orders: 'assignedTo',
+  invoices: 'assignedTo'
 };
 
 const PUBLIC_MODES = new Set([

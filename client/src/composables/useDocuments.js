@@ -27,7 +27,7 @@ export function useDocuments() {
     documentType = '',
     folderId = '',
     fileType = '',
-    ownerId = '',
+    assignedTo = '',
     tag = '',
     linkedModuleKey = '',
     linkedRecordId = '',
@@ -49,7 +49,7 @@ export function useDocuments() {
       if (documentType) params.set('documentType', documentType);
       if (folderId) params.set('folderId', folderId);
       if (fileType) params.set('fileType', fileType);
-      if (ownerId) params.set('ownerId', ownerId);
+      if (assignedTo) params.set('assignedTo', assignedTo);
       if (tag) params.set('tag', tag);
       if (linkedModuleKey) params.set('linkedModuleKey', linkedModuleKey);
       if (linkedRecordId) params.set('linkedRecordId', linkedRecordId);

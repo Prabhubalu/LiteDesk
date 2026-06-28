@@ -75,7 +75,7 @@ async function seedContext() {
     isTenant: true,
     isActive: true
   });
-  const ownerId = new mongoose.Types.ObjectId();
+  const assignedTo = new mongoose.Types.ObjectId();
 
   const deal = await Deal.create({
     organizationId: org._id,
@@ -84,10 +84,10 @@ async function seedContext() {
     stage: STAGE_NAME,
     pipeline: PIPELINE_KEY,
     expectedCloseDate: new Date('2026-12-31'),
-    ownerId
+    assignedTo
   });
 
-  return { org, deal, ownerId, pipelineSettings: buildPipelineSettings() };
+  return { org, deal, assignedTo, pipelineSettings: buildPipelineSettings() };
 }
 
 test.before(async () => {
@@ -101,10 +101,10 @@ test.after(async () => {
 });
 
 test('stage entry creates linked task and persists playbookState', async () => {
-  const { org, deal, ownerId, pipelineSettings } = await seedContext();
+  const { org, deal, assignedTo, pipelineSettings } = await seedContext();
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -136,10 +136,10 @@ test('stage entry creates linked task and persists playbookState', async () => {
 });
 
 test('re-entering the same stage does not duplicate activities', async () => {
-  const { org, deal, ownerId, pipelineSettings } = await seedContext();
+  const { org, deal, assignedTo, pipelineSettings } = await seedContext();
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -148,14 +148,14 @@ test('re-entering the same stage does not duplicate activities', async () => {
 
   deal.stage = 'Proposal';
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
 
   deal.stage = STAGE_NAME;
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -168,10 +168,10 @@ test('re-entering the same stage does not duplicate activities', async () => {
 });
 
 test('completing linked task syncs deal playbook action status', async () => {
-  const { org, deal, ownerId, pipelineSettings } = await seedContext();
+  const { org, deal, assignedTo, pipelineSettings } = await seedContext();
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -196,7 +196,7 @@ test('completing linked task syncs deal playbook action status', async () => {
 });
 
 test('sequential mode blocks later actions and defers auto-create', async () => {
-  const { org, deal, ownerId } = await seedContext();
+  const { org, deal, assignedTo } = await seedContext();
   const pipelineSettings = [{
     key: PIPELINE_KEY,
     name: 'Default',
@@ -232,7 +232,7 @@ test('sequential mode blocks later actions and defers auto-create', async () => 
   }];
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -247,7 +247,7 @@ test('sequential mode blocks later actions and defers auto-create', async () => 
 });
 
 test('dependency unlock auto-creates the next activity', async () => {
-  const { org, deal, ownerId } = await seedContext();
+  const { org, deal, assignedTo } = await seedContext();
   const pipelineSettings = [{
     key: PIPELINE_KEY,
     name: 'Default',
@@ -284,7 +284,7 @@ test('dependency unlock auto-creates the next activity', async () => {
   }];
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -318,7 +318,7 @@ test('dependency unlock auto-creates the next activity', async () => {
 });
 
 test('after_action trigger unlocks and auto-creates when source action completes', async () => {
-  const { org, deal, ownerId } = await seedContext();
+  const { org, deal, assignedTo } = await seedContext();
   const pipelineSettings = [{
     key: PIPELINE_KEY,
     name: 'Default',
@@ -354,7 +354,7 @@ test('after_action trigger unlocks and auto-creates when source action completes
   }];
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -420,7 +420,7 @@ test('computeActionGating blocks after_action until source action completes', ()
 });
 
 test('blocked playbook actions cannot be manually completed', async () => {
-  const { org, deal, ownerId } = await seedContext();
+  const { org, deal, assignedTo } = await seedContext();
   const pipelineSettings = [{
     key: PIPELINE_KEY,
     name: 'Default',
@@ -456,7 +456,7 @@ test('blocked playbook actions cannot be manually completed', async () => {
   }];
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -514,7 +514,7 @@ test('evaluatePlaybookExitCriteria supports all and any completion modes', () =>
 });
 
 test('auto-advance moves deal to configured next stage when exit criteria met', async () => {
-  const { org, deal, ownerId } = await seedContext();
+  const { org, deal, assignedTo } = await seedContext();
   const pipelineSettings = [{
     key: PIPELINE_KEY,
     name: 'Default',
@@ -555,7 +555,7 @@ test('auto-advance moves deal to configured next stage when exit criteria met', 
   }];
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -563,10 +563,10 @@ test('auto-advance moves deal to configured next stage when exit criteria met', 
 
   await updatePlaybookActionStatus(deal, 'only-step', 'completed', org._id);
   await reconcilePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     pipelineSettings
   });
-  deal.modifiedBy = ownerId;
+  deal.modifiedBy = assignedTo;
   await deal.save();
 
   const reloaded = await Deal.findById(deal._id).lean();
@@ -576,7 +576,7 @@ test('auto-advance moves deal to configured next stage when exit criteria met', 
 });
 
 test('auto-advance does not run when exit criteria are not met', async () => {
-  const { org, deal, ownerId } = await seedContext();
+  const { org, deal, assignedTo } = await seedContext();
   const pipelineSettings = [{
     key: PIPELINE_KEY,
     name: 'Default',
@@ -626,13 +626,13 @@ test('auto-advance does not run when exit criteria are not met', async () => {
   }];
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
   await updatePlaybookActionStatus(deal, 'step-one', 'completed', org._id);
   await reconcilePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -644,7 +644,7 @@ test('auto-advance does not run when exit criteria are not met', async () => {
 });
 
 test('skipSideEffects reconcile does not auto-advance deal stage', async () => {
-  const { org, deal, ownerId } = await seedContext();
+  const { org, deal, assignedTo } = await seedContext();
   const pipelineSettings = [{
     key: PIPELINE_KEY,
     name: 'Default',
@@ -685,7 +685,7 @@ test('skipSideEffects reconcile does not auto-advance deal stage', async () => {
   }];
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -693,7 +693,7 @@ test('skipSideEffects reconcile does not auto-advance deal stage', async () => {
 
   await updatePlaybookActionStatus(deal, 'only-step', 'completed', org._id);
   await reconcilePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     pipelineSettings,
     skipSideEffects: true
   });
@@ -705,10 +705,10 @@ test('skipSideEffects reconcile does not auto-advance deal stage', async () => {
 });
 
 test('list refresh syncs linked task completion without auto-advance', async () => {
-  const { org, deal, ownerId, pipelineSettings } = await seedContext();
+  const { org, deal, assignedTo, pipelineSettings } = await seedContext();
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -751,7 +751,7 @@ test('buildActionState copies configured resources onto runtime state', () => {
 });
 
 test('reconcile syncs resources from latest playbook definition', async () => {
-  const { org, deal, ownerId } = await seedContext();
+  const { org, deal, assignedTo } = await seedContext();
   const pipelineSettings = [{
     key: PIPELINE_KEY,
     name: 'Default',
@@ -778,7 +778,7 @@ test('reconcile syncs resources from latest playbook definition', async () => {
   }];
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });
@@ -794,10 +794,10 @@ test('reconcile syncs resources from latest playbook definition', async () => {
 });
 
 test('playbook state is persisted on deal document', async () => {
-  const { org, deal, ownerId, pipelineSettings } = await seedContext();
+  const { org, deal, assignedTo, pipelineSettings } = await seedContext();
 
   await executePlaybookForDeal(deal, {
-    actorId: ownerId,
+    actorId: assignedTo,
     organizationId: org._id,
     pipelineSettings
   });

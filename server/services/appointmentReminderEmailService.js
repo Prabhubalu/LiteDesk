@@ -103,7 +103,7 @@ async function sendAppointmentReminderEmail(event, { hoursBefore = 24 } = {}) {
   const timezone = appt.customerTimezone || 'UTC';
   const { orgName, hostName, hostEmail } = await loadEmailContext(
     organizationId,
-    event.eventOwnerId
+    event.assignedTo
   );
   const when = formatWhen(event.startDateTime, event.endDateTime, timezone);
   const guestName = appt.bookedByName || guestEmail;

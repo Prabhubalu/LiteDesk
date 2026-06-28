@@ -369,7 +369,7 @@ async function createCaseRecord({ payload, organizationId, actorUserId, webformN
     ...standardPayload,
     organizationId,
     caseId,
-    caseOwnerId: actorUserId,
+    assignedTo: actorUserId,
     ...(Object.keys(customFieldsSet).length > 0 && { customFields: customFieldsSet }),
     activities: [
       {
@@ -392,7 +392,7 @@ async function updateCaseRecord({ existingRecord, payload, organizationId, actor
   const $set = buildUpdateWithCustomFields(normalized, Case);
   delete $set.createdBy;
   delete $set.caseId;
-  delete $set.caseOwnerId;
+  delete $set.assignedTo;
 
   const record = await Case.findOneAndUpdate(
     { _id: existingRecord._id, organizationId, deletedAt: null },
@@ -417,7 +417,7 @@ async function createDealRecord({ payload, organizationId, actorUserId, appKey, 
   const createPayload = {
     ...standardPayload,
     organizationId,
-    ownerId: standardPayload.ownerId || actorUserId,
+    assignedTo: standardPayload.assignedTo || actorUserId,
     createdBy: actorUserId,
     modifiedBy: actorUserId,
     ...(Object.keys(customFieldsSet).length > 0 && { customFields: customFieldsSet })

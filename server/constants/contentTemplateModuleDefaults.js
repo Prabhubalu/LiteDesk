@@ -20,7 +20,7 @@ const INITIAL_TEMPLATE_MODULE_FIELDS = [
   { key: 'paperSize', label: 'Paper Size', type: 'select', options: CONTENT_PAPER_SIZES },
   { key: 'orientation', label: 'Orientation', type: 'select', options: CONTENT_ORIENTATIONS },
   { key: 'defaultThemeId', label: 'Default Theme', type: 'lookup', lookupModule: 'content_themes' },
-  { key: 'ownerId', label: 'Owner', type: 'lookup', lookupModule: 'users' },
+  { key: 'assignedTo', label: 'Assigned To', type: 'lookup', lookupModule: 'users' },
   { key: 'tags', label: 'Tags', type: 'multi-select' },
   { key: 'isDefault', label: 'Default Template', type: 'checkbox', system: true }
 ];

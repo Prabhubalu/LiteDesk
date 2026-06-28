@@ -6,7 +6,7 @@
  * - description → agendaNotes
  * - startDate → startDateTime
  * - endDate → endDateTime
- * - organizer → eventOwnerId
+ * - organizer → assignedTo
  * - type → eventType (with value mapping)
  * - relatedTo.{type, id} → relatedToType, relatedToId
  * - Adds eventId UUID for existing events
@@ -96,9 +96,9 @@ async function migrateEvents() {
           needsUpdate = true;
         }
 
-        // Map organizer → eventOwnerId
-        if (event.organizer && !event.eventOwnerId) {
-          update.eventOwnerId = event.organizer;
+        // Map organizer → assignedTo
+        if (event.organizer && !event.assignedTo) {
+          update.assignedTo = event.organizer;
           needsUpdate = true;
         }
 
@@ -299,7 +299,7 @@ async function migrateEvents() {
     const collection = db.collection('events');
     
     try {
-      await collection.createIndex({ eventOwnerId: 1, startDateTime: 1 }, { name: 'idx_events_owner_start' });
+      await collection.createIndex({ assignedTo: 1, startDateTime: 1 }, { name: 'idx_events_owner_start' });
       await collection.createIndex({ relatedToId: 1, relatedToType: 1 }, { name: 'idx_events_relatedTo' });
       await collection.createIndex({ organizationId: 1, startDateTime: 1 });
       await collection.createIndex({ organizationId: 1, status: 1 });

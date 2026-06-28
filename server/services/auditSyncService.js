@@ -79,10 +79,10 @@ async function syncAuditAssignmentFromEvent(event) {
             return;
         }
         
-        // Safeguard: Must have auditorId (eventOwnerId mirrors auditorId for audit events)
-        const auditorId = event.auditorId || event.eventOwnerId;
+        // Safeguard: Must have auditorId (assignedTo mirrors auditorId for audit events)
+        const auditorId = event.auditorId || event.assignedTo;
         if (!auditorId) {
-            console.warn('[AuditSync] Skipping sync: Event missing auditorId/eventOwnerId', {
+            console.warn('[AuditSync] Skipping sync: Event missing auditorId/assignedTo', {
                 eventId: event._id,
                 eventIdField: event.eventId
             });

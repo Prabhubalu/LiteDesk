@@ -141,11 +141,20 @@ const WebformSchema = new Schema(
       trim: true,
       default: ''
     },
+    headerBackgroundColor: {
+      type: String,
+      trim: true,
+      default: ''
+    },
     branding: {
       logoUrl: { type: String, trim: true, default: '' },
       themeColor: { type: String, trim: true, default: '#2563eb' },
       backgroundColor: { type: String, trim: true, default: '' },
-      fontFamily: { type: String, trim: true, default: 'system' }
+      fontFamily: { type: String, trim: true, default: 'system' },
+      headingColor: { type: String, trim: true, default: '' },
+      logoPosition: { type: String, trim: true, default: 'center' },
+      logoSize: { type: String, trim: true, default: 'md' },
+      formBodyBackgroundColor: { type: String, trim: true, default: '' }
     },
     multiStep: {
       enabled: { type: Boolean, default: false },

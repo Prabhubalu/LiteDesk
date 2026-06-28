@@ -163,7 +163,7 @@ async function executeCondition(node, context, edges) {
  */
 async function executeActionNode(node, context) {
   const { config } = node;
-  const { event, entityType, entityId, organizationId, triggeredBy, ownerId, appKey } = context;
+  const { event, entityType, entityId, organizationId, triggeredBy, assignedTo, appKey } = context;
 
   const actionType = config.actionType;
   if (!actionType) {
@@ -177,7 +177,7 @@ async function executeActionNode(node, context) {
     entityId,
     organizationId,
     triggeredBy,
-    ownerId,
+    assignedTo,
     appKey: appKey || 'SALES'
   };
 
@@ -633,7 +633,7 @@ async function executeEnd(node, context) {
  */
 async function executeApprovalGate(node, context) {
   const { config, id: nodeId } = node;
-  const { entityType, entityId, organizationId, ownerId, triggeredBy } = context;
+  const { entityType, entityId, organizationId, assignedTo, triggeredBy } = context;
 
   if (!config || !Array.isArray(config.approvers) || config.approvers.length === 0) {
     return { ok: false, error: 'approval_gate requires approvers' };
@@ -648,7 +648,7 @@ async function executeApprovalGate(node, context) {
     organizationId: organizationId.toString ? organizationId.toString() : organizationId,
     entityType,
     entityId,
-    ownerId: ownerId?.toString ? ownerId.toString() : ownerId,
+    assignedTo: assignedTo?.toString ? assignedTo.toString() : assignedTo,
     triggeredBy: triggeredBy?.toString ? triggeredBy.toString() : triggeredBy
   });
 

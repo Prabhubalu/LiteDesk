@@ -105,7 +105,7 @@ async function persistShadowParityResult({
 
 async function loadQuoteDocumentContext({ organizationId, recordId }) {
   const quote = await Quote.findOne({ _id: recordId, organizationId })
-    .populate({ path: 'ownerId', select: 'firstName lastName email username' })
+    .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
     .populate({ path: 'organizationRefId', select: 'name' })
     .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' })
     .lean();
@@ -136,11 +136,11 @@ async function loadQuoteDocumentContext({ organizationId, recordId }) {
 async function loadInvoiceDocumentContext({ organizationId, recordId }) {
   const invoiceDoc =
     (await Invoice.findOne({ organizationId, invoiceId: recordId, deletedAt: null })
-      .populate({ path: 'ownerId', select: 'firstName lastName email username' })
+      .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
       .populate({ path: 'organizationRefId', select: 'name' })
       .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' })) ||
     (await Invoice.findOne({ organizationId, _id: recordId, deletedAt: null })
-      .populate({ path: 'ownerId', select: 'firstName lastName email username' })
+      .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
       .populate({ path: 'organizationRefId', select: 'name' })
       .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' }));
 

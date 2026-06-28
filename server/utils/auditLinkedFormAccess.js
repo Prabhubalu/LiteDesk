@@ -24,7 +24,7 @@ function toRefIdString(value) {
 function assertUserIsAuditEventStakeholder(event, userId) {
     if (!event || !userId) return false;
     const uid = toRefIdString(userId);
-    const ids = [event.eventOwnerId, event.auditorId, event.reviewerId, event.correctiveOwnerId]
+    const ids = [event.assignedTo, event.auditorId, event.reviewerId, event.correctiveOwnerId]
         .map(toRefIdString)
         .filter(Boolean);
     return ids.includes(uid);
@@ -46,7 +46,7 @@ async function assertAuditorLinkedFormAccess({ userId, organizationId, formId })
 
     const exists = await Event.exists({
         organizationId,
-        eventOwnerId: userId,
+        assignedTo: userId,
         linkedFormId: fid,
         eventType: { $in: AUDIT_EVENT_TYPES },
         deletedAt: null
@@ -82,7 +82,7 @@ async function assertAuditorFormResponseStakeholderAccess({ userId, organization
         eventType: { $in: AUDIT_EVENT_TYPES },
         deletedAt: null
     })
-        .select('eventOwnerId auditorId reviewerId correctiveOwnerId eventType')
+        .select('assignedTo auditorId reviewerId correctiveOwnerId eventType')
         .lean();
 
     if (!event) return false;
@@ -114,7 +114,7 @@ async function assertAuditorFormResponseAccess({ userId, organizationId, formId,
     const exists = await Event.exists({
         _id: eventId,
         organizationId,
-        eventOwnerId: userId,
+        assignedTo: userId,
         eventType: { $in: AUDIT_EVENT_TYPES },
         deletedAt: null
     });

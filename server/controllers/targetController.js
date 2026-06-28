@@ -47,7 +47,7 @@ function pickTargetPayload(body) {
     description: body.description,
     targetTypeKey: body.targetTypeKey,
     metricKind: body.metricKind,
-    ownerId: body.ownerId,
+    assignedTo: body.assignedTo,
     teamId: body.teamId,
     sourceModules: body.sourceModules,
     contributionRules: body.contributionRules,
@@ -72,10 +72,10 @@ async function reconcileTargetAchieved(target) {
 exports.listTargets = async (req, res) => {
   try {
     assertTargetPermission(req.user, 'view');
-    const { lifecycleStatus, ownerId, limit = 50, skip = 0 } = req.query;
+    const { lifecycleStatus, assignedTo, limit = 50, skip = 0 } = req.query;
     const filter = { organizationId: req.user.organizationId };
     if (lifecycleStatus) filter.lifecycleStatus = lifecycleStatus;
-    if (ownerId) filter.ownerId = ownerId;
+    if (assignedTo) filter.assignedTo = assignedTo;
 
     const [items, total] = await Promise.all([
       Target.find(filter).sort({ updatedAt: -1 }).skip(Number(skip)).limit(Math.min(Number(limit), 100)).lean(),
@@ -95,13 +95,13 @@ exports.listTargets = async (req, res) => {
 exports.getTargetSummary = async (req, res) => {
   try {
     assertTargetPermission(req.user, 'view');
-    const ownerId = req.query.ownerId || req.user._id;
+    const assignedTo = req.query.assignedTo || req.user._id;
     const appKey = req.query.appKey ? String(req.query.appKey).toUpperCase() : null;
     const moduleKey = req.query.moduleKey ? String(req.query.moduleKey).toLowerCase() : null;
 
     const assignmentRows = await TargetAssignment.find({
       organizationId: req.user.organizationId,
-      userId: ownerId
+      userId: assignedTo
     })
       .select('targetId')
       .lean();
@@ -110,7 +110,7 @@ exports.getTargetSummary = async (req, res) => {
     let targets = await Target.find({
       organizationId: req.user.organizationId,
       lifecycleStatus: { $in: ['active', 'locked'] },
-      $or: [{ ownerId }, { _id: { $in: assignedTargetIds } }]
+      $or: [{ assignedTo }, { _id: { $in: assignedTargetIds } }]
     })
       .sort({ periodEnd: 1 })
       .limit(20)
@@ -181,7 +181,7 @@ exports.createTarget = async (req, res) => {
       lifecycleStatus: 'draft',
       createdBy: req.user._id,
       updatedBy: req.user._id,
-      ownerId: payload.ownerId || req.user._id
+      assignedTo: payload.assignedTo || req.user._id
     });
 
     return res.status(201).json({ success: true, data: target });

@@ -25,8 +25,8 @@ const RELATED_TO_BY_MODULE = {
 const SNAPSHOT_KEYS_BY_MODULE = {
   people: ['first_name', 'last_name', 'email', 'assignedTo'],
   organizations: ['name', 'assignedTo'],
-  cases: ['title', 'caseOwnerId', 'status'],
-  deals: ['name', 'ownerId', 'stage']
+  cases: ['title', 'assignedTo', 'status'],
+  deals: ['name', 'assignedTo', 'stage']
 };
 
 function mapModuleEntityType(moduleKey) {
@@ -38,8 +38,8 @@ function resolveRecordOwnerId(record, moduleKey) {
   const key = String(moduleKey || '').toLowerCase();
   if (key === 'people') return record.assignedTo || null;
   if (key === 'organizations') return record.assignedTo || null;
-  if (key === 'cases') return record.caseOwnerId || null;
-  if (key === 'deals') return record.ownerId || null;
+  if (key === 'cases') return record.assignedTo || null;
+  if (key === 'deals') return record.assignedTo || null;
   return null;
 }
 
@@ -79,7 +79,7 @@ function emitCrmDomainEvent({ record, moduleKey, crmAction, organizationId, acto
 
   const entityType = mapModuleEntityType(moduleKey);
   const snapshotKeys = SNAPSHOT_KEYS_BY_MODULE[String(moduleKey).toLowerCase()] || ['name'];
-  const ownerId = record.assignedTo || record.ownerId || record.caseOwnerId || actorUserId;
+  const assignedTo = record.assignedTo || actorUserId;
 
   emitRecordLifecycle({
     entityType,
@@ -90,7 +90,7 @@ function emitCrmDomainEvent({ record, moduleKey, crmAction, organizationId, acto
     appKey,
     triggeredBy: actorUserId,
     organizationId,
-    ownerId
+    assignedTo
   });
 }
 
@@ -103,7 +103,7 @@ function emitWebformSubmissionProcessed({
   organizationId
 }) {
   const moduleKey = String(crmOutcome?.moduleKey || webform.targetModuleKey || 'people').toLowerCase();
-  const ownerId =
+  const assignedTo =
     resolveRecordOwnerId(record, moduleKey)
     || webform.createdBy
     || actorUserId;
@@ -128,7 +128,7 @@ function emitWebformSubmissionProcessed({
     appKey: webform.targetAppKey || 'SALES',
     triggeredBy: actorUserId,
     organizationId,
-    ownerId
+    assignedTo
   });
 }
 

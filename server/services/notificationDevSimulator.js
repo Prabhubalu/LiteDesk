@@ -69,7 +69,7 @@ function copyForEvent(eventType, entity) {
 async function loadCase(caseId, organizationId) {
   if (!caseId || !mongoose.isValidObjectId(caseId)) return null;
   return Case.findOne({ _id: caseId, organizationId })
-    .select('caseId title status priority caseOwnerId organizationId')
+    .select('caseId title status priority assignedTo organizationId')
     .lean();
 }
 

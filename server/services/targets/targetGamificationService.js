@@ -25,7 +25,7 @@ async function getLeaderboard(organizationId, { limit = 10 } = {}) {
 async function getStreakSummary(userId, organizationId) {
   const count = await Target.countDocuments({
     organizationId,
-    ownerId: userId,
+    assignedTo: userId,
     status: { $in: ['achieved', 'overachieved'] }
   });
   return { achievedTargets: count, streakDays: 0 };

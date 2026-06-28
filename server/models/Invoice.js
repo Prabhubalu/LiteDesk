@@ -63,7 +63,7 @@ const InvoiceSchema = new Schema(
     contactId: { type: Schema.Types.ObjectId, ref: 'People', default: null, index: true },
     dealId: { type: Schema.Types.ObjectId, ref: 'Deal', default: null, index: true },
     caseId: { type: Schema.Types.ObjectId, ref: 'Case', default: null, index: true },
-    ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    assignedTo: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
 
     billToAddressSnapshot: { type: Schema.Types.Mixed, default: null },
     shipToAddressSnapshot: { type: Schema.Types.Mixed, default: null },

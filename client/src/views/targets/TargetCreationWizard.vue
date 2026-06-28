@@ -209,7 +209,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{{ t('performance.ownerLabel') }}</label>
             <select
-              v-model="ownerId"
+              v-model="assignedTo"
               class="w-full rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 px-3 py-2.5 text-sm"
               :disabled="loadingUsers"
             >
@@ -342,7 +342,7 @@
             </div>
             <div class="flex justify-between py-3 gap-4">
               <dt class="text-gray-500">{{ t('performance.reviewOwner') }}</dt>
-              <dd class="text-right text-gray-900 dark:text-white">{{ userDisplayName(usersById[ownerId]) || '—' }}</dd>
+              <dd class="text-right text-gray-900 dark:text-white">{{ userDisplayName(usersById[assignedTo]) || '—' }}</dd>
             </div>
             <div class="flex justify-between py-3 gap-4">
               <dt class="text-gray-500">{{ t('performance.reviewTeamSize') }}</dt>
@@ -465,7 +465,7 @@ const periodPreset = ref('quarter');
 const periodYear = ref(new Date().getFullYear());
 const periodMonth = ref(new Date().getMonth());
 const selectedQuarter = ref(currentCalendarQuarter());
-const ownerId = ref('');
+const assignedTo = ref('');
 const orgUsers = ref([]);
 const loadingUsers = ref(false);
 const quotaRows = ref([]);
@@ -514,7 +514,7 @@ const canContinue = computed(() => {
   if (step.value === 1) return selectedModuleKeys.value.length > 0;
   if (step.value === 3) return form.value.name?.trim() && form.value.targetValue > 0;
   if (step.value === 4) return form.value.periodStart && form.value.periodEnd;
-  if (step.value === 6) return Boolean(ownerId.value);
+  if (step.value === 6) return Boolean(assignedTo.value);
   if (step.value === 7) return quotaRows.value.length > 0;
   return true;
 });
@@ -615,8 +615,8 @@ function defaultQuotaRow(userId) {
 }
 
 function ensureOwnerInQuotas() {
-  if (!ownerId.value) return;
-  const owner = String(ownerId.value);
+  if (!assignedTo.value) return;
+  const owner = String(assignedTo.value);
   if (!quotaRows.value.some((r) => String(r.userId) === owner)) {
     quotaRows.value = [defaultQuotaRow(owner), ...quotaRows.value];
   }
@@ -677,7 +677,7 @@ async function nextStep() {
   if (step.value === 4) {
     try {
       const res = await apiClient.post('/targets/conflicts/check', {
-        ownerId: ownerId.value || authStore.user?._id,
+        assignedTo: assignedTo.value || authStore.user?._id,
         periodStart: form.value.periodStart,
         periodEnd: form.value.periodEnd,
         sourceModules: parseModules(),
@@ -700,7 +700,7 @@ async function submit() {
     const thresholds = thresholdPercents.value.map((percent) => ({ percent, notify: true }));
     const createRes = await apiClient.post('/targets', {
       ...form.value,
-      ownerId: ownerId.value || authStore.user?._id,
+      assignedTo: assignedTo.value || authStore.user?._id,
       sourceModules: parseModules(),
       thresholds,
       periodStart: new Date(form.value.periodStart).toISOString(),
@@ -723,7 +723,7 @@ function cancel() {
   router.push('/settings?tab=performance&view=targets');
 }
 
-watch(ownerId, (id) => {
+watch(assignedTo, (id) => {
   if (!id) return;
   const owner = String(id);
   const existing = quotaRows.value.find((r) => String(r.userId) === owner);
@@ -733,11 +733,11 @@ watch(ownerId, (id) => {
 });
 
 onMounted(async () => {
-  ownerId.value = authStore.user?._id ? String(authStore.user._id) : '';
+  assignedTo.value = authStore.user?._id ? String(authStore.user._id) : '';
   await loadOrgUsers();
   applyPeriodPreset('quarter');
-  if (ownerId.value) {
-    quotaRows.value = [defaultQuotaRow(ownerId.value)];
+  if (assignedTo.value) {
+    quotaRows.value = [defaultQuotaRow(assignedTo.value)];
   }
   const res = await apiClient.get('/targets/types');
   targetTypes.value = res?.data || [];

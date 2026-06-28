@@ -150,7 +150,7 @@ export function useCaseRecordDetailFields({ caseRecord, caseId, canEdit, isClose
           }
 
           const caseLoose = String(fieldKey || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
-          const caseCanonical = { contactid: 'contactId', organizationrefid: 'organizationRefId', caseownerid: 'caseOwnerId' }[caseLoose];
+          const caseCanonical = { contactid: 'contactId', organizationrefid: 'organizationRefId', assignedto: 'assignedTo' }[caseLoose];
           const payloadKey = caseCanonical || fieldKey;
           const payload = { [payloadKey]: value };
 
@@ -220,7 +220,7 @@ export function useCaseRecordDetailFields({ caseRecord, caseId, canEdit, isClose
           key === 'assignedto' ||
           key === 'ownerid' ||
           key === 'owner' ||
-          key === 'caseownerid' ||
+          key === 'assignedto' ||
           key === 'createdby' ||
           key === 'updatedby' ||
           key === 'modifiedby' ||

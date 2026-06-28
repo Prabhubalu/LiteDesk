@@ -56,8 +56,8 @@ function parseCaseListQuery(query, { CASE_STATUSES, CASE_PRIORITIES, CASE_TYPES,
     }
   }
 
-  if (query.caseOwnerId != null && query.caseOwnerId !== '') {
-    filters.caseOwnerId = query.caseOwnerId;
+  if (query.assignedTo != null && query.assignedTo !== '') {
+    filters.assignedTo = query.assignedTo;
   }
   if (query.slaBreached != null && query.slaBreached !== '') {
     const normalizedSlaBreached = String(query.slaBreached).trim().toLowerCase();

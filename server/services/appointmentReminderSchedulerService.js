@@ -94,7 +94,7 @@ async function tickAppointmentReminders() {
               startDateTime: { $gte: start, $lte: end }
             })
               .select(
-                'eventName startDateTime endDateTime status location eventOwnerId organizationId appointment'
+                'eventName startDateTime endDateTime status location assignedTo organizationId appointment'
               )
               .lean();
 

@@ -53,7 +53,7 @@ function getFallbackColumns(moduleKey: string): Array<{
       { key: 'phone', label: 'Phone', dataType: 'text', sortable: false, order: 3 },
       { key: 'organization', label: 'Organization', dataType: 'text', sortable: true, order: 4 },
       { key: 'sales_type', label: 'Type', dataType: 'status', sortable: true, order: 5 },
-      { key: 'assignedTo', label: 'Owner', dataType: 'user', sortable: true, order: 6 }, // Use 'assignedTo' instead of 'owner_id'
+      { key: 'assignedTo', label: 'Assigned To', dataType: 'user', sortable: true, order: 6 },
     ],
     deals: [
       { key: 'name', label: 'Deal Name', dataType: 'text', sortable: true, order: 1 },

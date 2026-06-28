@@ -7,7 +7,7 @@ const CASE_REEVALUATE_FIELDS = new Set([
   'status',
   'contactId',
   'organizationRefId',
-  'caseOwnerId',
+  'assignedTo',
   'title',
   'source'
 ]);
@@ -26,7 +26,7 @@ function getAssignmentControl(caseRecord) {
 module.exports = {
   moduleKey: 'cases',
   appKey: 'HELPDESK',
-  ownerPath: 'caseOwnerId',
+  ownerPath: 'assignedTo',
   reevaluateFields: CASE_REEVALUATE_FIELDS,
   generic: false,
   supportsEscalation: true,
@@ -39,16 +39,16 @@ module.exports = {
 
   getOwner(record) {
     const row = this.normalizeRecord(record);
-    const value = row.caseOwnerId;
+    const value = row.assignedTo;
     if (value == null) return null;
     if (typeof value === 'object' && value._id) return String(value._id);
     return String(value);
   },
 
   setOwner(record, userId) {
-    record.caseOwnerId = userId;
+    record.assignedTo = userId;
     if (typeof record.markModified === 'function') {
-      record.markModified('caseOwnerId');
+      record.markModified('assignedTo');
     }
   },
 
