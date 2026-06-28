@@ -1,4 +1,6 @@
 export const WEBFORM_FONT_FAMILIES = ['system', 'serif', 'mono'];
+export const WEBFORM_LOGO_POSITIONS = ['center', 'left', 'right'];
+export const WEBFORM_LOGO_SIZES = ['sm', 'md', 'lg', 'xl'];
 export const DEFAULT_WEBFORM_THEME_COLOR = '#2563eb';
 
 const FONT_STACKS = Object.freeze({
@@ -24,7 +26,11 @@ export function defaultWebformBranding() {
     logoUrl: '',
     themeColor: DEFAULT_WEBFORM_THEME_COLOR,
     backgroundColor: '',
-    fontFamily: 'system'
+    fontFamily: 'system',
+    headingColor: '',
+    logoPosition: 'center',
+    logoSize: 'md',
+    formBodyBackgroundColor: ''
   };
 }
 
@@ -33,13 +39,23 @@ export function mergeWebformBranding(raw) {
   const source = raw && typeof raw === 'object' ? raw : {};
   const themeColor = sanitizeHexColor(source.themeColor, defaults.themeColor);
   const backgroundColor = sanitizeHexColor(source.backgroundColor, '');
+  const headingColor = sanitizeHexColor(source.headingColor, '');
+  const formBodyBackgroundColor = sanitizeHexColor(source.formBodyBackgroundColor, '');
   return {
     logoUrl: String(source.logoUrl || '').trim(),
     themeColor,
     backgroundColor,
     fontFamily: WEBFORM_FONT_FAMILIES.includes(source.fontFamily)
       ? source.fontFamily
-      : defaults.fontFamily
+      : defaults.fontFamily,
+    headingColor,
+    logoPosition: WEBFORM_LOGO_POSITIONS.includes(source.logoPosition)
+      ? source.logoPosition
+      : defaults.logoPosition,
+    logoSize: WEBFORM_LOGO_SIZES.includes(source.logoSize)
+      ? source.logoSize
+      : defaults.logoSize,
+    formBodyBackgroundColor
   };
 }
 
@@ -56,17 +72,38 @@ export function webformBrandingCssVars(branding) {
   if (merged.backgroundColor) {
     vars['--wf-surface-bg'] = merged.backgroundColor;
   }
+  if (merged.formBodyBackgroundColor) {
+    vars['--wf-body-bg'] = merged.formBodyBackgroundColor;
+  }
   return vars;
 }
 
-/** Tailwind classes for branded form surfaces; pair with webformBrandingCssVars() for CSS variables. */
-export function webformBrandingSurfaceClasses(branding) {
+export function webformBrandingFontClasses() {
+  return '[font-family:var(--wf-font-family)]';
+}
+
+/** Page / outer wrapper background (branding.backgroundColor). */
+export function webformPageSurfaceClasses(branding) {
   const merged = mergeWebformBranding(branding);
   const classes = ['[font-family:var(--wf-font-family)]'];
   if (merged.backgroundColor) {
     classes.push('bg-[var(--wf-surface-bg)]');
   }
   return classes.join(' ');
+}
+
+/** Form fields area background (branding.formBodyBackgroundColor). */
+export function webformBodySurfaceClasses(branding) {
+  const merged = mergeWebformBranding(branding);
+  if (merged.formBodyBackgroundColor) {
+    return 'bg-[var(--wf-body-bg)]';
+  }
+  return '';
+}
+
+/** Tailwind classes for branded form surfaces; pair with webformBrandingCssVars() for CSS variables. */
+export function webformBrandingSurfaceClasses(branding) {
+  return webformPageSurfaceClasses(branding);
 }
 
 export function webformSurfaceStyle(branding, { embed = false } = {}) {

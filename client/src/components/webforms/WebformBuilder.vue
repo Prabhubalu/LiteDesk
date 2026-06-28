@@ -119,7 +119,6 @@
       <WebformBuilderCanvas
         :webform="draft"
         :fields="canvasFields"
-        :header-image-url="draft.headerImageUrl"
         :selected-field-id="selectedFieldId"
         :selected-button-key="selectedButtonKey"
         :preview-device="previewDevice"
@@ -152,6 +151,11 @@
 
         <div v-show="formSettingsOpen" class="space-y-4 border-b border-gray-200 p-4 dark:border-gray-700">
           <div>
+            <h4 class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              {{ t('webforms.builderHeaderTitle') }}
+            </h4>
+            <p class="mb-3 text-xs text-gray-500 dark:text-gray-400">{{ t('webforms.builderHeaderHint') }}</p>
+
             <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderHeaderImage') }}</label>
             <div class="space-y-3">
               <div
@@ -205,15 +209,45 @@
               </details>
               <p class="text-xs text-gray-400">{{ t('webforms.builderHeaderImageHint') }}</p>
             </div>
-          </div>
 
-          <div class="border-t border-gray-100 pt-4 dark:border-gray-800">
-            <h4 class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-              {{ t('webforms.builderBrandingTitle') }}
-            </h4>
-            <p class="mb-3 text-xs text-gray-500 dark:text-gray-400">{{ t('webforms.builderBrandingHint') }}</p>
+            <div class="mt-4">
+              <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderHeaderBackground') }}</label>
+              <div class="flex items-center gap-2">
+                <input
+                  :value="draft.headerBackgroundColor || '#f3f4f6'"
+                  type="color"
+                  class="h-9 w-12 shrink-0 cursor-pointer rounded border border-gray-200 dark:border-gray-600"
+                  @input="draft.headerBackgroundColor = $event.target.value === '#f3f4f6' ? '' : $event.target.value"
+                />
+                <input
+                  v-model="draft.headerBackgroundColor"
+                  type="text"
+                  :class="inputClass"
+                  :placeholder="t('webforms.builderHeaderBackgroundPh')"
+                />
+              </div>
+              <p class="mt-1 text-xs text-gray-400">{{ t('webforms.builderHeaderBackgroundHint') }}</p>
+            </div>
 
-            <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderBrandingLogo') }}</label>
+            <div class="mt-4">
+              <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderHeaderHeadingColor') }}</label>
+              <div class="flex items-center gap-2">
+                <input
+                  :value="draft.branding.headingColor || '#111827'"
+                  type="color"
+                  class="h-9 w-12 shrink-0 cursor-pointer rounded border border-gray-200 dark:border-gray-600"
+                  @input="draft.branding.headingColor = $event.target.value === '#111827' ? '' : $event.target.value"
+                />
+                <input
+                  v-model="draft.branding.headingColor"
+                  type="text"
+                  :class="inputClass"
+                  :placeholder="t('webforms.builderHeaderHeadingColorPh')"
+                />
+              </div>
+            </div>
+
+            <label class="mb-1 mt-4 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderBrandingLogo') }}</label>
             <div class="space-y-3">
               <div class="rounded-lg border border-dashed border-gray-200 p-3 dark:border-gray-600">
                 <img
@@ -255,12 +289,56 @@
               />
             </div>
 
-            <div class="mt-4 grid gap-3 sm:grid-cols-1">
+            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+              <div>
+                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderHeaderLogoPosition') }}</label>
+                <select v-model="draft.branding.logoPosition" :class="inputClass">
+                  <option value="left">{{ t('webforms.builderHeaderLogoPositionLeft') }}</option>
+                  <option value="center">{{ t('webforms.builderHeaderLogoPositionCenter') }}</option>
+                  <option value="right">{{ t('webforms.builderHeaderLogoPositionRight') }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderHeaderLogoSize') }}</label>
+                <select v-model="draft.branding.logoSize" :class="inputClass">
+                  <option value="sm">{{ t('webforms.builderHeaderLogoSizeSm') }}</option>
+                  <option value="md">{{ t('webforms.builderHeaderLogoSizeMd') }}</option>
+                  <option value="lg">{{ t('webforms.builderHeaderLogoSizeLg') }}</option>
+                  <option value="xl">{{ t('webforms.builderHeaderLogoSizeXl') }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-gray-100 pt-4 dark:border-gray-800">
+            <h4 class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              {{ t('webforms.builderBrandingTitle') }}
+            </h4>
+            <p class="mb-3 text-xs text-gray-500 dark:text-gray-400">{{ t('webforms.builderBrandingHint') }}</p>
+
+            <div class="grid gap-3 sm:grid-cols-1">
               <div>
                 <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderBrandingThemeColor') }}</label>
                 <div class="flex items-center gap-2">
                   <input v-model="draft.branding.themeColor" type="color" class="h-9 w-12 shrink-0 cursor-pointer rounded border border-gray-200 dark:border-gray-600" />
                   <input v-model="draft.branding.themeColor" type="text" :class="inputClass" />
+                </div>
+              </div>
+              <div>
+                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{{ t('webforms.builderBrandingFormBodyBackground') }}</label>
+                <div class="flex items-center gap-2">
+                  <input
+                    :value="draft.branding.formBodyBackgroundColor || '#ffffff'"
+                    type="color"
+                    class="h-9 w-12 shrink-0 cursor-pointer rounded border border-gray-200 dark:border-gray-600"
+                    @input="draft.branding.formBodyBackgroundColor = $event.target.value === '#ffffff' ? '' : $event.target.value"
+                  />
+                  <input
+                    v-model="draft.branding.formBodyBackgroundColor"
+                    type="text"
+                    :class="inputClass"
+                    :placeholder="t('webforms.builderBrandingFormBodyBackgroundPh')"
+                  />
                 </div>
               </div>
               <div>
@@ -1083,6 +1161,7 @@ async function refreshFillPreviewPayload() {
       steps: draft.steps,
       fields: draft.fields,
       headerImageUrl: draft.headerImageUrl,
+      headerBackgroundColor: draft.headerBackgroundColor,
       branding: draft.branding,
       formActions: draft.formActions,
       thankYouMessage: draft.thankYouMessage,
@@ -1126,6 +1205,7 @@ const draft = reactive({
   thankYouMessage: '',
   redirectUrl: '',
   headerImageUrl: '',
+  headerBackgroundColor: '',
   branding: defaultWebformBranding(),
   multiStep: defaultMultiStepConfig(),
   steps: [],
@@ -1366,6 +1446,7 @@ function applyWebform(data) {
   draft.thankYouMessage = data.thankYouMessage || '';
   draft.redirectUrl = data.redirectUrl || '';
   draft.headerImageUrl = data.headerImageUrl || '';
+  draft.headerBackgroundColor = data.headerBackgroundColor || '';
   draft.branding = mergeWebformBranding(data.branding);
   draft.formActions = mergeFormActions(data.formActions);
   draft.publicLink = {
@@ -1500,6 +1581,7 @@ function buildPayload() {
         : {})
     },
     headerImageUrl: String(draft.headerImageUrl || '').trim(),
+    headerBackgroundColor: String(draft.headerBackgroundColor || '').trim(),
     branding: mergeWebformBranding(draft.branding),
     multiStep: sanitizeMultiStepConfig(draft.multiStep),
     steps: sanitizeWebformSteps(draft.steps, draft.multiStep.enabled),
@@ -1865,6 +1947,7 @@ watch(
     formActions: draft.formActions,
     thankYouMessage: draft.thankYouMessage,
     headerImageUrl: draft.headerImageUrl,
+    headerBackgroundColor: draft.headerBackgroundColor,
     name: draft.name,
     description: draft.description,
     captchaEnabled: draft.captcha?.enabled
