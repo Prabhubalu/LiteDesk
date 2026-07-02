@@ -1,6 +1,7 @@
 const Organization = require('../models/Organization');
 const emailService = require('./emailService');
 const { applyResendDefaults } = require('../constants/resendDefaults');
+const amdsEmailDelivery = require('./emailProviders/amdsEmailDelivery');
 const {
   upsertCommunicationConfigForOrganization
 } = require('../platform/communication/config/communicationConfigService');
@@ -9,7 +10,11 @@ function defaultEmailConfigFromEnv() {
   const smtpPortRaw = process.env.SMTP_PORT;
   const smtpPort = smtpPortRaw ? Number(smtpPortRaw) || 587 : 587;
   return applyResendDefaults({
-    provider: String(process.env.EMAIL_PROVIDER || 'resend').trim().toLowerCase(),
+    provider: String(
+      process.env.EMAIL_PROVIDER || amdsEmailDelivery.defaultProviderWhenUnset() || 'resend'
+    )
+      .trim()
+      .toLowerCase(),
     fromEmail: String(process.env.EMAIL_FROM || '').trim(),
     fromName: String(process.env.EMAIL_FROM_NAME || 'Arivu Systems').trim(),
     replyTo: String(process.env.EMAIL_REPLY_TO || '').trim(),

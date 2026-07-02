@@ -9,6 +9,7 @@ const APP_USER_TYPES_ALLOWED: Record<string, readonly string[]> = {
   AUDIT: ['INTERNAL', 'EXTERNAL'],
   PORTAL: ['EXTERNAL'],
   INVENTORY: ['INTERNAL'],
+  MARKETING: ['INTERNAL'],
 };
 
 function normalizeAppKey(appKey: string): string {

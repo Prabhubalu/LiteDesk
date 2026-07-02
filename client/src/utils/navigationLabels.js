@@ -40,6 +40,9 @@ export const MODULE_LABEL_KEYS = {
   findings: 'navigation.moduleFindings',
   audits: 'navigation.moduleAudits',
   dashboard: 'navigation.dashboard',
+  campaigns: 'navigation.moduleCampaigns',
+  audiences: 'navigation.moduleAudiences',
+  segments: 'navigation.moduleSegments',
 };
 
 /** App registry appKey → navigation.* */
@@ -51,6 +54,7 @@ export const APP_NAME_KEYS = {
   PROJECTS: 'navigation.appProjects',
   PORTAL: 'navigation.appPortal',
   INVENTORY: 'navigation.appInventory',
+  MARKETING: 'navigation.appMarketing',
 };
 
 /** Exact path → titleKey (optional titleParams in resolver) */
@@ -110,6 +114,10 @@ export const ROUTE_TITLE_KEYS = {
   '/portal/deals': 'navigation.portalDeals',
   '/portal/forms': 'navigation.portalForms',
   '/portal/responses': 'navigation.portalResponses',
+  '/dashboard/marketing': 'navigation.appMarketing',
+  '/marketing/campaigns': 'navigation.moduleCampaigns',
+  '/marketing/audiences': 'navigation.moduleAudiences',
+  '/marketing/segments': 'navigation.moduleSegments',
 };
 
 /**

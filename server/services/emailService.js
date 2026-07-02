@@ -7,6 +7,7 @@
 
 const EMAIL_PROVIDER_KEY = 'email-provider';
 const ociEmailDelivery = require('./emailProviders/ociEmailDelivery');
+const amdsEmailDelivery = require('./emailProviders/amdsEmailDelivery');
 const {
   resolveSystemRuntimeConfig,
   resolveCrmRuntimeConfig
@@ -29,8 +30,22 @@ async function resolveRuntimeConfigForChannel(channel = 'crm', organizationId = 
   return resolveCrmRuntimeConfig(orgConfig || {});
 }
 
+function shouldUseAmds(runtimeConfig = {}) {
+  return amdsEmailDelivery.isAmdsProvider(runtimeConfig);
+}
+
+function isSmtpFallbackReady(runtimeConfig) {
+  if (shouldUseOciSmtp(runtimeConfig) && ociEmailDelivery.isOciEmailDeliveryConfigured(runtimeConfig)) {
+    return true;
+  }
+  return !!createSmtpTransport(runtimeConfig);
+}
+
 function isRuntimeConfigReady(runtimeConfig) {
   if (!runtimeConfig?.fromEmail) return false;
+  if (shouldUseAmds(runtimeConfig) && amdsEmailDelivery.isAmdsConfigured(runtimeConfig)) {
+    return true;
+  }
   if (shouldUseOciSmtp(runtimeConfig) && ociEmailDelivery.isOciEmailDeliveryConfigured(runtimeConfig)) {
     return true;
   }
@@ -155,6 +170,11 @@ async function isConfiguredForOrganization(organizationId) {
   return isRuntimeConfigReady(runtimeConfig);
 }
 
+function isConfiguredFromResolvedConfig(resolvedConfig = {}) {
+  if (process.env.ENABLE_EMAIL_NOTIFICATIONS === 'false') return false;
+  return isRuntimeConfigReady(resolveCrmRuntimeConfig(resolvedConfig));
+}
+
 /**
  * Get from address. Uses EMAIL_FROM and optionally EMAIL_FROM_NAME.
  */
@@ -198,19 +218,26 @@ async function sendViaResendApi(runtimeConfig, payload) {
 
 /**
  * Send an email.
- * @param {Object} opts - { to, subject, text, html?, replyTo?, attachments?, organizationId?, channel?: 'crm'|'system' }
- * @returns {Promise<{ success: boolean, messageId?: string, error?: string }>}
+ * @param {Object} opts - { to, cc?, bcc?, subject, text, html?, replyTo?, attachments?, organizationId?, channel?: 'crm'|'system', metadata?, idempotencyKey?, tags?, communicationId?, moduleKey? }
+ * @returns {Promise<{ success: boolean, messageId?: string, error?: string, provider?: string, deliveryStatus?: string }>}
  */
 async function sendEmail(opts) {
   const {
     to,
+    cc,
+    bcc,
     subject,
     text,
     html,
     replyTo,
     attachments = [],
     organizationId,
-    channel = 'crm'
+    channel = 'crm',
+    metadata,
+    idempotencyKey,
+    tags,
+    communicationId,
+    moduleKey
   } = opts || {};
   if (!to || !subject) {
     return { success: false, error: 'Missing to or subject' };
@@ -232,7 +259,7 @@ async function sendEmail(opts) {
     ? ociEmailDelivery.PROVIDER_KEY
     : 'smtp';
 
-  const sendViaSmtp = async (transport) => {
+  const sendViaSmtpTransport = async (transport) => {
     const info = await transport.sendMail({
       from,
       to: toList,
@@ -252,6 +279,59 @@ async function sendEmail(opts) {
     return { success: true, messageId: info.messageId, provider: smtpProviderTag };
   };
 
+  if (shouldUseAmds(runtimeConfig)) {
+    if (hasAttachments && !isSmtpFallbackReady(runtimeConfig)) {
+      return {
+        success: false,
+        error:
+          'Attachments require SMTP until AMDS attachment support is available. Configure SMTP or remove attachments.'
+      };
+    }
+    if (hasAttachments && isSmtpFallbackReady(runtimeConfig)) {
+      const transport = createSmtpTransport(runtimeConfig);
+      if (transport) {
+        try {
+          return await sendViaSmtpTransport(transport);
+        } catch (err) {
+          console.error('[emailService] AMDS attachment SMTP fallback failed:', err.message);
+          return { success: false, error: err.message };
+        }
+      }
+    }
+
+    const resolvedIdempotencyKey =
+      idempotencyKey
+      || (communicationId && organizationId
+        ? amdsEmailDelivery.buildCommunicationIdempotencyKey({
+            moduleKey,
+            organizationId: String(organizationId),
+            communicationId: String(communicationId)
+          })
+        : `litedesk-${channel}-${String(organizationId || 'system')}-${Date.now()}`);
+
+    const amdsMetadata = {
+      ...(metadata && typeof metadata === 'object' ? metadata : {}),
+      ...(organizationId ? { litedesk_org_id: String(organizationId) } : {}),
+      ...(communicationId ? { litedesk_entity_id: String(communicationId) } : {}),
+      ...(communicationId ? { litedesk_communication_id: String(communicationId) } : {}),
+      ...(moduleKey ? { litedesk_module: String(moduleKey) } : {})
+    };
+
+    return amdsEmailDelivery.sendViaAmds({
+      from,
+      to: toList,
+      cc,
+      bcc,
+      subject,
+      text: text || (html ? html.replace(/<[^>]+>/g, '') : ''),
+      html: html || undefined,
+      organizationId,
+      idempotencyKey: resolvedIdempotencyKey,
+      metadata: amdsMetadata,
+      tags
+    });
+  }
+
   if (hasAttachments) {
     const transport = createSmtpTransport(runtimeConfig);
     if (!transport) {
@@ -261,7 +341,7 @@ async function sendEmail(opts) {
       };
     }
     try {
-      return await sendViaSmtp(transport);
+      return await sendViaSmtpTransport(transport);
     } catch (err) {
       console.error('[emailService] SMTP send failed:', err.message);
       return { success: false, error: err.message };
@@ -278,7 +358,7 @@ async function sendEmail(opts) {
       };
     }
     try {
-      return await sendViaSmtp(transport);
+      return await sendViaSmtpTransport(transport);
     } catch (err) {
       console.error('[emailService] OCI Email Delivery SMTP send failed:', err.message);
       return { success: false, error: err.message };
@@ -312,7 +392,7 @@ async function sendEmail(opts) {
   const transport = createSmtpTransport(runtimeConfig);
   if (transport) {
     try {
-      return await sendViaSmtp(transport);
+      return await sendViaSmtpTransport(transport);
     } catch (err) {
       console.error('[emailService] SMTP send failed:', err.message);
       const isDnsLookupError = /ENOTFOUND|EAI_AGAIN|getaddrinfo/i.test(String(err?.message || ''));
@@ -353,6 +433,7 @@ module.exports = {
   isConfigured,
   isSystemEmailConfigured,
   isConfiguredForOrganization,
+  isConfiguredFromResolvedConfig,
   getOrganizationEmailConfig,
   resolveRuntimeConfigForChannel,
   sendEmail,

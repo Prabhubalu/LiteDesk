@@ -7,7 +7,16 @@
  */
 
 const ociEmailDelivery = require('../../../services/emailProviders/ociEmailDelivery');
+const amdsEmailDelivery = require('../../../services/emailProviders/amdsEmailDelivery');
 const { applyResendDefaults, RESEND_PROVIDER } = require('../../../constants/resendDefaults');
+
+function defaultCrmProvider() {
+  return amdsEmailDelivery.defaultProviderWhenUnset() || RESEND_PROVIDER;
+}
+
+function defaultSystemProvider() {
+  return amdsEmailDelivery.defaultProviderWhenUnset() || 'oci-email-delivery';
+}
 
 function isTruthy(value) {
   return String(value || '').toLowerCase() === 'true';
@@ -42,8 +51,8 @@ function resolveSystemRuntimeConfig() {
   }
 
   const provider =
-    String(process.env.SYSTEM_EMAIL_PROVIDER || 'oci-email-delivery').trim().toLowerCase() ||
-    'oci-email-delivery';
+    String(process.env.SYSTEM_EMAIL_PROVIDER || defaultSystemProvider()).trim().toLowerCase() ||
+    defaultSystemProvider();
 
   const cfg = {
     ...baseEnvFields(),
@@ -67,6 +76,9 @@ function resolveSystemRuntimeConfig() {
   cfg.smtpPort = Number.isNaN(smtpPort) ? ociEmailDelivery.DEFAULT_SMTP_PORT : smtpPort;
   cfg.smtpSecure = cfg.smtpPort === 465 || isTruthy(process.env.SYSTEM_SMTP_SECURE);
 
+  if (amdsEmailDelivery.isAmdsProvider(cfg)) {
+    return amdsEmailDelivery.applyAmdsDefaults(cfg);
+  }
   return ociEmailDelivery.applyOciEmailDeliveryDefaults(cfg);
 }
 
@@ -78,8 +90,8 @@ function resolveCrmRuntimeConfig(orgIntegrationConfig = null) {
   const org = orgIntegrationConfig || {};
   const smtpPort = parseInt(org.smtpPort || process.env.SMTP_PORT || '0', 10);
   const provider =
-    String(org.provider || process.env.EMAIL_PROVIDER || RESEND_PROVIDER).trim().toLowerCase() ||
-    RESEND_PROVIDER;
+    String(org.provider || process.env.EMAIL_PROVIDER || defaultCrmProvider()).trim().toLowerCase() ||
+    defaultCrmProvider();
 
   const cfg = {
     ...baseEnvFields(),
@@ -101,6 +113,9 @@ function resolveCrmRuntimeConfig(orgIntegrationConfig = null) {
       org.awsSecretAccessKey || process.env.AWS_SES_SECRET_ACCESS_KEY || ''
   };
 
+  if (amdsEmailDelivery.isAmdsProvider(cfg)) {
+    return amdsEmailDelivery.applyAmdsDefaults(cfg);
+  }
   return applyResendDefaults(ociEmailDelivery.applyOciEmailDeliveryDefaults(cfg));
 }
 

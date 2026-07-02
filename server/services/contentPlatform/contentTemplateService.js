@@ -46,6 +46,9 @@ async function listTemplates(params) {
     limit = 20,
     status,
     moduleScope,
+    outputFormat,
+    category,
+    purpose,
     search
   } = params;
 
@@ -62,6 +65,9 @@ async function listTemplates(params) {
     query.status = status;
   }
   if (moduleScope) query.moduleScope = moduleScope;
+  if (outputFormat) query.outputFormat = String(outputFormat).trim().toLowerCase();
+  if (category) query.category = String(category).trim();
+  if (purpose) query.purpose = String(purpose).trim();
   if (search) {
     query.$or = [
       { name: { $regex: search, $options: 'i' } },

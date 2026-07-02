@@ -61,8 +61,8 @@ export function useBulkActions(module) {
       });
     }
     
-    // Delete action - requires delete permission
-    if (authStore.can(module, 'delete')) {
+    // Delete action - campaigns use edit permission (same as archive/cancel)
+    if (module === 'campaigns' ? authStore.can(module, 'edit') : authStore.can(module, 'delete')) {
       actions.push({ 
         label: 'Delete', 
         icon: 'trash', 

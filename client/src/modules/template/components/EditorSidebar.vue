@@ -30,6 +30,7 @@
         :preview-record-id="previewRecordId"
         :preview-record-label="previewRecordLabel"
         :currency-display="currencyDisplay"
+        :output-format="outputFormat"
         @update:name="emit('update-name', $event)"
         @update:description="emit('update-description', $event)"
         @update:module-scope="emit('update-module-scope', $event)"
@@ -44,6 +45,7 @@
         :component="selectedComponent"
         :editor="editor"
         :module-scope="moduleScope"
+        :asset-library="assetLibrary"
         @change="emit('change')"
         @pick-asset="emit('insert-image', $event)"
       />
@@ -54,6 +56,7 @@
       />
       <AssetsPanel
         v-show="activeTab === 'assets'"
+        :library="assetLibrary"
         @insert="emit('insert-image', $event)"
       />
       <LayersPanel
@@ -94,7 +97,13 @@ defineProps({
   currencyDisplay: { type: String, default: 'code' },
   layerTree: { type: Object, default: null },
   editor: { type: Object, default: null },
-  pageMargins: { type: Object, default: () => ({ top: 12, right: 12, bottom: 12, left: 12 }) }
+  pageMargins: { type: Object, default: () => ({ top: 12, right: 12, bottom: 12, left: 12 }) },
+  outputFormat: { type: String, default: 'pdf' },
+  assetLibrary: {
+    type: String,
+    default: 'content',
+    validator: (value) => ['content', 'marketing'].includes(value)
+  }
 });
 
 const emit = defineEmits([

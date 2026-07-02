@@ -54,7 +54,7 @@
       </select>
     </section>
 
-    <section class="space-y-3 border-t pt-4" :class="ui.border">
+    <section v-if="!isEmailFormat" class="space-y-3 border-t pt-4" :class="ui.border">
       <h3 class="text-sm font-semibold" :class="ui.text">{{ t('templates.builderTemplateDetailsPage') }}</h3>
       <BuilderPageSettings
         layout="stacked"
@@ -67,6 +67,7 @@
     </section>
 
     <PageMarginsPanel
+      v-if="!isEmailFormat"
       :margins="margins"
       @change="emit('update:margins', $event)"
     />
@@ -92,7 +93,8 @@ import BuilderPageSettings from '@/components/templates/builder/BuilderPageSetti
 import BuilderRecordPicker from '@/components/templates/builder/BuilderRecordPicker.vue';
 import {
   DEFAULT_CUSTOM_PAGE_HEIGHT_MM,
-  DEFAULT_CUSTOM_PAGE_WIDTH_MM
+  DEFAULT_CUSTOM_PAGE_WIDTH_MM,
+  isEmailOutputFormat
 } from '@/constants/contentPageSettings';
 import { useBuilderUi } from '@/composables/useBuilderUi';
 import { useTemplateModuleOptions } from '@/composables/useTemplateMergeTagSchema';
@@ -109,7 +111,8 @@ const props = defineProps({
   margins: { type: Object, default: () => ({}) },
   previewRecordId: { type: String, default: '' },
   previewRecordLabel: { type: String, default: '' },
-  currencyDisplay: { type: String, default: 'code' }
+  currencyDisplay: { type: String, default: 'code' },
+  outputFormat: { type: String, default: 'pdf' }
 });
 
 const emit = defineEmits([
@@ -135,6 +138,7 @@ const customPageHeight = computed(() => Number(props.customPageHeight) || DEFAUL
 const currencyDisplay = computed(() => (
   props.currencyDisplay === 'symbol' ? 'symbol' : 'code'
 ));
+const isEmailFormat = computed(() => isEmailOutputFormat(props.outputFormat));
 
 onMounted(() => {
   void loadModuleOptions();

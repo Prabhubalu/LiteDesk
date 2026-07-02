@@ -175,6 +175,14 @@ export default defineConfig(({ mode }) => {
               return 'vendor-dompurify'
             }
 
+            if (id.includes('/node_modules/monaco-editor/')) {
+              return 'vendor-monaco'
+            }
+
+            if (id.includes('/node_modules/jszip/')) {
+              return 'vendor-jszip'
+            }
+
             if (
               id.includes('/node_modules/sortablejs/') ||
               id.includes('/node_modules/vuedraggable/')

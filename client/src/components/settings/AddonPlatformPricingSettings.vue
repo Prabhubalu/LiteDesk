@@ -132,6 +132,7 @@ const planKeys = ['BASIC', 'PRO', 'ENTERPRISE'];
 
 function addonTitle(addonKey) {
   if (addonKey === 'live_chat') return t('settings.addonsLiveChatName');
+  if (addonKey === 'email_credits') return t('settings.addonsEmailCreditsTitle');
   return addonKey;
 }
 

@@ -24,6 +24,7 @@ const {
     buildEnterpriseAppSubscription,
     normalizeExistingEntryForInternalOrg
 } = require('../utils/internalOrganization');
+const { onSubscriptionActivated } = require('./billing/email-credits');
 
 /**
  * Ensure a subscription exists for an app
@@ -188,6 +189,12 @@ async function ensureSubscriptionForApp({ organizationId, appKey, initiatedByUse
             ...logShape,
             initiatedByUserId: initiatedByUserId
         });
+
+        try {
+            await onSubscriptionActivated(organizationId, { planKey: appSubscription.planKey });
+        } catch (creditErr) {
+            console.warn('[SubscriptionBootstrap] email policy sync failed:', creditErr?.message || creditErr);
+        }
 
         return { created: true, subscription: appSubscription };
 

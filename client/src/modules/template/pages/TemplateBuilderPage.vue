@@ -12,10 +12,15 @@
         :can-redo="canRedo"
         :preview-busy="previewBusy"
         :publish-busy="publishBusy"
+        :is-email-format="isEmailFormat"
+        :has-import-snapshot="hasImportSnapshot"
         @back="goBack"
         @undo="undo"
         @redo="redo"
         @preview="handlePreview"
+        @preview-email="openEmailPreview"
+        @preview-email-clients="openClientPreview"
+        @advanced="handleAdvancedAction"
         @save="handleSave"
         @publish="handlePublish"
       />
@@ -37,6 +42,7 @@
             :page-width-px="pageDimensionsPx.width"
             :page-height-px="pageDimensionsPx.height"
             :margins-mm="pageMarginsMm"
+            :show-margin-guides="!isEmailFormat"
             @container-ready="onContainerReady"
           />
         </div>
@@ -57,6 +63,8 @@
           :layer-tree="layerTree"
           :editor="editor"
           :page-margins="pageMarginsMm"
+          :output-format="outputFormat"
+          :asset-library="assetLibrary"
           @change="markDirty"
           @update-margins="handleMarginsChange"
           @update-name="handleNameChange"
@@ -71,6 +79,74 @@
           @select-layer="selectLayer"
         />
       </div>
+
+      <EmailPreviewModal
+        :open="showEmailPreview"
+        :html="emailPreviewBodyHtml"
+        :css="emailPreviewCss"
+        :initial-viewport="emailPreviewViewport"
+        @close="showEmailPreview = false"
+      />
+
+      <EmailClientPreviewModal
+        :open="showClientPreview"
+        :html="currentEmailDocument"
+        :subject="templateName"
+        @close="showClientPreview = false"
+      />
+
+      <HtmlDocumentModal
+        :open="showViewHtml"
+        :html="currentEmailDocument"
+        :read-only="true"
+        :title="t('templates.htmlImport.actionViewHtml')"
+        @close="showViewHtml = false"
+      />
+
+      <HtmlDocumentModal
+        :open="showEditHtml"
+        :html="currentEmailDocument"
+        :read-only="false"
+        :title="t('templates.htmlImport.actionEditHtml')"
+        @close="showEditHtml = false"
+        @apply="handleApplyEditedHtml"
+      />
+
+      <HtmlValidationModal
+        :open="showValidation"
+        :validating="validationValidating"
+        :error="validationError"
+        :result="validationResult"
+        @close="showValidation = false"
+      />
+
+      <HtmlExportModal
+        :open="showExport"
+        @close="showExport = false"
+        @export="handleExportHtml"
+      />
+
+      <IrreversibleHtmlWarningModal
+        :open="showEditWarning"
+        @cancel="showEditWarning = false"
+        @confirm="confirmEditHtml"
+      />
+
+      <HtmlRestoreSnapshotModal
+        :open="showRestoreSnapshot"
+        :captured-at="importSnapshot?.capturedAt || ''"
+        @cancel="showRestoreSnapshot = false"
+        @confirm="confirmRestoreSnapshot"
+      />
+
+      <HtmlImportWizard
+        :open="showReplaceImport"
+        mode="replace"
+        :initial-name="templateName"
+        :initial-metadata="{ moduleScope: moduleScope }"
+        @close="showReplaceImport = false"
+        @apply="handleReplaceImport"
+      />
     </template>
   </div>
 </template>
@@ -82,15 +158,40 @@ import { useI18n } from 'vue-i18n';
 import { useBuilderUi } from '@/composables/useBuilderUi';
 import { useNotifications } from '@/composables/useNotifications';
 import { useAuthStore } from '@/stores/authRegistry';
-import { resolvePageDimensionsPx, DEFAULT_PAGE_MARGINS_MM } from '@/constants/contentPageSettings';
+import { resolvePageDimensionsPx, DEFAULT_PAGE_MARGINS_MM, isEmailOutputFormat, resolveEmailCanvasDimensionsPx } from '@/constants/contentPageSettings';
 import { resolveTemplateMarginsMm } from '../editor/pageDimensions';
 import EditorToolbar from '../components/EditorToolbar.vue';
 import ComponentLibraryPanel from '../components/ComponentLibraryPanel.vue';
 import EditorSidebar from '../components/EditorSidebar.vue';
 import EditorCanvas from '../components/EditorCanvas.vue';
+import EmailPreviewModal from '../components/html/EmailPreviewModal.vue';
+import EmailClientPreviewModal from '../components/html/EmailClientPreviewModal.vue';
+import HtmlDocumentModal from '../components/html/HtmlDocumentModal.vue';
+import HtmlValidationModal from '../components/html/HtmlValidationModal.vue';
+import HtmlExportModal from '../components/html/HtmlExportModal.vue';
+import IrreversibleHtmlWarningModal from '../components/html/IrreversibleHtmlWarningModal.vue';
+import HtmlRestoreSnapshotModal from '../components/html/HtmlRestoreSnapshotModal.vue';
+import HtmlImportWizard from '../components/html/HtmlImportWizard.vue';
 import { useGrapesEditor } from '../composables/useGrapesEditor';
 import { useTemplateEditor } from '../composables/useTemplateEditor';
+import { useEmailHtmlValidation } from '../composables/useEmailHtmlValidation';
 import { previewTemplatePdf } from '../services/templateApi';
+import { createBlankGrapesDefinition } from '../editor/storage';
+import {
+  attachImportSnapshot,
+  buildSnapshotFromParts,
+  readImportSnapshot
+} from '../utils/emailImportSnapshot';
+import {
+  buildEmailHtmlDocument,
+  copyTextToClipboard,
+  downloadTextFile,
+  getEmailHtmlParts,
+  slugifyFilename
+} from '../utils/emailHtmlExport';
+import { downloadEmailHtmlZip } from '../utils/emailHtmlZipExport';
+import { isEmailHtmlWarningDismissed } from '../utils/emailHtmlWarning';
+import { captureEmailTemplateExported, captureEmailTemplateHtmlModeEntered } from '@/config/posthogTemplates';
 
 const route = useRoute();
 const router = useRouter();
@@ -127,7 +228,12 @@ const {
   setPreviewRecord
 } = useTemplateEditor(() => templateId.value);
 
+const isEmailFormat = computed(() => isEmailOutputFormat(outputFormat.value));
+
 const pageDimensionsPx = computed(() => {
+  if (isEmailFormat.value) {
+    return resolveEmailCanvasDimensionsPx();
+  }
   const meta = templateMeta.value;
   return resolvePageDimensionsPx({
     paperSize: String(meta?.paperSize || 'A4'),
@@ -157,6 +263,15 @@ const pageMarginsMm = computed(() =>
 );
 
 const moduleScope = computed(() => String(templateMeta.value?.moduleScope || ''));
+
+const assetLibrary = computed(() => {
+  const meta = templateMeta.value || {};
+  if (String(meta.purpose || '').toLowerCase() === 'marketing') return 'marketing';
+  if (String(meta.category || '').toLowerCase() === 'marketing') return 'marketing';
+  if (moduleScope.value === 'campaigns') return 'marketing';
+  return 'content';
+});
+
 const paperSize = computed(() => String(templateMeta.value?.paperSize || 'A4'));
 const orientation = computed(() => (
   templateMeta.value?.orientation === 'landscape' ? 'landscape' : 'portrait'
@@ -190,7 +305,9 @@ const {
   insertMerge,
   insertImage,
   selectLayer,
-  layerTree
+  layerTree,
+  applyEmailHtml,
+  loadDefinitionIntoEditor
 } = useGrapesEditor({
   containerRef,
   outputFormat,
@@ -203,7 +320,48 @@ const {
 
 const selectedId = computed(() => String(selectedComponent.value?.getId?.() || ''));
 
-registerSerializer(serializeProject);
+const showEmailPreview = ref(false);
+const showClientPreview = ref(false);
+const showViewHtml = ref(false);
+const showEditHtml = ref(false);
+const showEditWarning = ref(false);
+const showValidation = ref(false);
+const showExport = ref(false);
+const showReplaceImport = ref(false);
+const showRestoreSnapshot = ref(false);
+const importSnapshot = ref(null);
+const emailPreviewBodyHtml = ref('');
+const emailPreviewCss = ref('');
+const emailPreviewViewport = ref('desktop');
+
+const {
+  validating: validationValidating,
+  result: validationResult,
+  error: validationError,
+  validateHtml,
+  reset: resetValidation
+} = useEmailHtmlValidation();
+
+const currentEmailDocument = computed(() => {
+  if (!editor.value) return '';
+  return buildEmailHtmlDocument(editor.value);
+});
+
+const hasImportSnapshot = computed(() => Boolean(importSnapshot.value?.html?.trim()));
+
+function serializeProjectWithSnapshot() {
+  const definition = serializeProject();
+  return attachImportSnapshot(definition, importSnapshot.value);
+}
+
+function captureImportSnapshot(reason) {
+  if (!editor.value) return;
+  const parts = getEmailHtmlParts(editor.value);
+  if (!String(parts.html || '').trim()) return;
+  importSnapshot.value = buildSnapshotFromParts(parts.html, parts.css, reason);
+}
+
+registerSerializer(serializeProjectWithSnapshot);
 
 onMounted(async () => {
   try {
@@ -220,14 +378,17 @@ watch(
     const id = String(meta._id || templateId.value);
     if (projectLoadedFor.value === id) return;
     projectLoadedFor.value = id;
+    const definition = resolveDraftDefinition(meta);
+    importSnapshot.value = readImportSnapshot(definition);
     withAutosaveSuppressed(() => {
-      loadProject(resolveDraftDefinition(meta));
+      loadProject(definition);
     });
   }
 );
 
 watch(templateId, () => {
   projectLoadedFor.value = '';
+  importSnapshot.value = null;
 });
 
 function goBack() {
@@ -251,6 +412,19 @@ async function handlePublish() {
   if (!authStore.can('templates', 'publish')) {
     notifications.error(t('templates.builderNoEditPermission'));
     return;
+  }
+  if (isEmailFormat.value) {
+    const validation = await validateHtml(currentEmailDocument.value);
+    if (!validation) return;
+    if (validation.errors.length > 0) {
+      showValidation.value = true;
+      notifications.error(t('templates.htmlImport.publishBlocked'));
+      return;
+    }
+    if (validation.warnings.length > 0) {
+      const proceed = window.confirm(t('templates.htmlImport.publishWarningsConfirm'));
+      if (!proceed) return;
+    }
   }
   try {
     await runPublish();
@@ -334,7 +508,7 @@ async function handlePreview() {
       recordModuleKey: moduleScope.value || meta?.moduleScope,
       recordId: previewRecordId.value || undefined,
       jsonDefinition: serializeProject(),
-      pageSettings: {
+      pageSettings: isEmailFormat.value ? undefined : {
         paperSize: paperSize.value,
         orientation: orientation.value,
         customPageWidth: customPageWidth.value,
@@ -347,6 +521,155 @@ async function handlePreview() {
     notifications.error(error?.message || t('templates.renderFailed'));
   } finally {
     setPreviewBusy(false);
+  }
+}
+
+function openEmailPreview(viewport) {
+  if (!editor.value) return;
+  const parts = getEmailHtmlParts(editor.value);
+  emailPreviewBodyHtml.value = parts.html;
+  emailPreviewCss.value = parts.css;
+  emailPreviewViewport.value = viewport === 'mobile' ? 'mobile' : 'desktop';
+  showEmailPreview.value = true;
+}
+
+function openClientPreview() {
+  if (!editor.value) return;
+  showClientPreview.value = true;
+}
+
+function handleAdvancedAction(action) {
+  switch (action) {
+    case 'view-html':
+      showViewHtml.value = true;
+      break;
+    case 'edit-html':
+      if (isEmailHtmlWarningDismissed()) {
+        showEditHtml.value = true;
+        captureEmailTemplateHtmlModeEntered({ action: 'edit-html' });
+      } else {
+        showEditWarning.value = true;
+      }
+      break;
+    case 'validate-html':
+      void runValidation();
+      break;
+    case 'import-html':
+      showReplaceImport.value = true;
+      break;
+    case 'export-html':
+      showExport.value = true;
+      break;
+    case 'restore-snapshot':
+      showRestoreSnapshot.value = true;
+      break;
+    default:
+      break;
+  }
+}
+
+function confirmEditHtml() {
+  showEditWarning.value = false;
+  showEditHtml.value = true;
+  captureEmailTemplateHtmlModeEntered({ action: 'edit-html' });
+}
+
+async function handleApplyEditedHtml(rawHtml) {
+  try {
+    captureImportSnapshot('html-edit');
+    applyEmailHtml(rawHtml);
+    showEditHtml.value = false;
+    await saveDraft({ force: true });
+    notifications.success(t('templates.htmlImport.applySuccess'));
+  } catch (error) {
+    notifications.error(error?.message || t('templates.htmlImport.errorApplyFailed'));
+  }
+}
+
+async function runValidation() {
+  resetValidation();
+  showValidation.value = true;
+  await validateHtml(currentEmailDocument.value);
+}
+
+async function handleExportHtml(mode) {
+  const documentHtml = currentEmailDocument.value;
+  const baseName = slugifyFilename(templateName.value);
+  showExport.value = false;
+
+  if (mode === 'copy') {
+    const copied = await copyTextToClipboard(documentHtml);
+    captureEmailTemplateExported({ format: 'copy', success: copied });
+    notifications.success(
+      copied
+        ? t('templates.htmlImport.copySuccess')
+        : t('templates.htmlImport.copyFailed')
+    );
+    return;
+  }
+
+  if (mode === 'zip') {
+    try {
+      const result = await downloadEmailHtmlZip(documentHtml, baseName);
+      captureEmailTemplateExported({
+        format: 'zip',
+        includedAssets: result.includedCount,
+        failedAssets: result.failedCount
+      });
+      if (result.failedCount > 0 || result.skippedCount > 0) {
+        notifications.success(t('templates.htmlImport.zipPartialSuccess'));
+      } else {
+        notifications.success(t('templates.htmlImport.zipSuccess'));
+      }
+    } catch (error) {
+      notifications.error(error?.message || t('templates.htmlImport.zipFailed'));
+    }
+    return;
+  }
+
+  downloadTextFile(`${baseName}.html`, documentHtml, 'text/html;charset=utf-8');
+  captureEmailTemplateExported({ format: 'download' });
+  notifications.success(t('templates.htmlImport.downloadSuccess'));
+}
+
+async function handleReplaceImport(payload) {
+  if (!payload?.jsonDefinition) return;
+  try {
+    captureImportSnapshot('html-replace');
+    withAutosaveSuppressed(() => {
+      loadDefinitionIntoEditor(payload.jsonDefinition);
+    });
+    showReplaceImport.value = false;
+    markDirty();
+    await saveDraft({ force: true });
+    notifications.success(t('templates.htmlImport.applySuccess'));
+  } catch (error) {
+    notifications.error(error?.message || t('templates.htmlImport.errorApplyFailed'));
+  }
+}
+
+async function confirmRestoreSnapshot() {
+  const snapshot = importSnapshot.value;
+  if (!snapshot) {
+    showRestoreSnapshot.value = false;
+    return;
+  }
+
+  try {
+    withAutosaveSuppressed(() => {
+      loadDefinitionIntoEditor({
+        ...createBlankGrapesDefinition(),
+        html: snapshot.html,
+        css: snapshot.css
+      });
+    });
+    importSnapshot.value = null;
+    showRestoreSnapshot.value = false;
+    markDirty();
+    await saveDraft({ force: true });
+    notifications.success(t('templates.htmlImport.restoreSnapshotSuccess'));
+  } catch (error) {
+    notifications.error(error?.message || t('templates.htmlImport.restoreSnapshotFailed'));
   }
 }
 </script>

@@ -36,6 +36,7 @@ const URL_NAMESPACE_MAP = {
     '/api/portal': APP_KEYS.PORTAL, // Must come before /api
     '/api/lms': APP_KEYS.LMS,       // Must come before /api
     '/api/inventory': APP_KEYS.INVENTORY, // Must come before /api
+    '/api/marketing': APP_KEYS.MARKETING, // Must come before /api
     '/api/control': APP_KEYS.CONTROL_PLANE, // Must come before /api
     '/app/crm': APP_KEYS.SALES,
     '/helpdesk': APP_KEYS.HELPDESK,
@@ -43,6 +44,7 @@ const URL_NAMESPACE_MAP = {
     '/portal': APP_KEYS.PORTAL,
     '/audit': APP_KEYS.AUDIT,
     '/lms': APP_KEYS.LMS,
+    '/marketing': APP_KEYS.MARKETING,
     '/control': APP_KEYS.CONTROL_PLANE,
     // Legacy support: /api routes default to CRM (must be last)
     '/api': APP_KEYS.SALES

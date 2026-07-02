@@ -125,6 +125,7 @@ function resolveActiveAppId(
     ['/audit/', 'AUDIT'],
     ['/helpdesk/', 'HELPDESK'],
     ['/inventory/', 'INVENTORY'],
+    ['/marketing/', 'MARKETING'],
   ];
   for (const [prefix, appKey] of pathPrefixToAppKey) {
     if (!normalizedPath.startsWith(prefix)) continue;
@@ -451,19 +452,21 @@ function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: Pe
     })
     .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
     .map(
-      (m) =>
-        ({
+      (m) => {
+        const moduleKeyLower = String(m.moduleKey || '').toLowerCase();
+        return {
           kind: 'app',
           id: `${activeAppId}:${m.moduleKey}`,
           ...sidebarLabel(getModuleLabelKey(m.moduleKey) || undefined, m.label),
           route: m.route,
           icon:
             String(activeAppId || '').toUpperCase() === 'HELPDESK' &&
-            String(m.moduleKey || '').toLowerCase() === 'cases'
+            moduleKeyLower === 'cases'
               ? 'ticket'
               : m.icon,
           moduleKey: m.moduleKey,
-        }) satisfies SidebarItem
+        } satisfies SidebarItem;
+      }
     );
 
   const dashboard: SidebarItem = {
@@ -482,7 +485,9 @@ function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: Pe
         ? 'presentation-chart'
         : normalizedAppId === 'SALES'
           ? 'document-chart-bar'
-          : 'squares',
+          : normalizedAppId === 'MARKETING'
+            ? 'chart-bar'
+            : 'squares',
   };
 
   return { appId: activeAppId, dashboard, modules };

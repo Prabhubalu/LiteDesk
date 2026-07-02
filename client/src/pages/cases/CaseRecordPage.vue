@@ -438,6 +438,7 @@ import { useNotifications } from '@/composables/useNotifications';
 import { useTabs } from '@/composables/useTabs';
 import { useAuthStore } from '@/stores/authRegistry';
 import { filterActivitiesForTab } from '@/utils/caseTimeline';
+import { buildCaseEmailReplyDraft } from '@/utils/caseEmailReply';
 import apiClient from '@/utils/apiClient';
 import { invalidateRecordContext } from '@/composables/useRecordContext';
 import { resolveRecordDetailRefreshOnActivate } from '@/utils/recordDetailRefreshPolicy';
@@ -646,9 +647,7 @@ async function onSendEmail(payload) {
 }
 
 async function onSendMessage(payload) {
-  const channel = String(caseRecord.value?.channel || '').toLowerCase();
-  const isEmail = channel === 'email';
-  if (isEmail && payload.internal) {
+  if (payload.internal) {
     const ok = await postActivity({
       ...payload,
       activityType: 'comment',
@@ -657,9 +656,32 @@ async function onSendMessage(payload) {
     if (ok) mainWorkspaceRef.value?.clearReplyComposer?.();
     return;
   }
-  if (isEmail && !payload.internal) {
+
+  const viaChannel = String(payload.channel || '').trim().toLowerCase();
+  if (viaChannel === 'email') {
+    if (!contactEmail.value) {
+      notifications.error(t('cases.recordNoContactEmail'));
+      return;
+    }
+    const draft = buildCaseEmailReplyDraft({
+      caseRecord: caseRecord.value,
+      contactEmail: contactEmail.value,
+      emailThreads: emailThreads.value
+    });
+    const escaped = String(payload.message || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    await onSendEmail({
+      relatedTo: emailRelatedTo.value,
+      to: [contactEmail.value],
+      subject: draft.subject || `Re: ${caseRecord.value?.title || 'Case'}`,
+      body: `<p>${escaped.replace(/\n/g, '<br>')}</p>`,
+      ...(draft.parentCommunicationId ? { parentCommunicationId: draft.parentCommunicationId } : {})
+    });
     return;
   }
+
   await postActivity({
     ...payload,
     activityType: payload.internal ? 'comment' : 'agent_message',

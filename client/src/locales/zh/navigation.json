@@ -611,8 +611,32 @@
     "message": "Responses",
     "description": "Portal form responses navigation label"
   },
-"moduleTemplates": {
+  "moduleTemplates": {
     "message": "Templates",
     "description": "Content templates module navigation label"
+  },
+  "appMarketing": {
+    "message": "Marketing",
+    "description": "Marketing app name in app switcher"
+  },
+  "marketingDashboardBlurb": {
+    "message": "Create email campaigns, manage audiences and templates, and measure engagement — delivery is handled by AMDS.",
+    "description": "Short description on Marketing app dashboard"
+  },
+  "moduleCampaigns": {
+    "message": "Campaigns",
+    "description": "Marketing campaigns module navigation label"
+  },
+  "moduleAudiences": {
+    "message": "Audiences",
+    "description": "Marketing audiences module navigation label"
+  },
+  "moduleSegments": {
+    "message": "Segments",
+    "description": "Marketing segments module navigation label"
+  },
+  "moduleMarketingTemplates": {
+    "message": "Email Templates",
+    "description": "Marketing email templates module navigation label (distinct from platform templates)"
   }
 }

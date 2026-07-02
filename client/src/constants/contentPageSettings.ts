@@ -67,7 +67,23 @@ export const CUSTOM_PAGE_MAX_MM = 2000;
 export const DEFAULT_CUSTOM_PAGE_WIDTH_MM = 210;
 export const DEFAULT_CUSTOM_PAGE_HEIGHT_MM = 297;
 
+/** Standard email template canvas width (px). */
+export const EMAIL_CANVAS_WIDTH_PX = 600;
+/** Minimum email canvas height in the builder (px). */
+export const EMAIL_CANVAS_MIN_HEIGHT_PX = 800;
+
 const MM_TO_PX = 96 / 25.4;
+
+export function isEmailOutputFormat(format: string | undefined | null): boolean {
+  return String(format || '').toLowerCase() === 'email';
+}
+
+export function resolveEmailCanvasDimensionsPx(): PageDimensionsMm {
+  return {
+    width: EMAIL_CANVAS_WIDTH_PX,
+    height: EMAIL_CANVAS_MIN_HEIGHT_PX
+  };
+}
 
 export interface TemplatePageSettings {
   paperSize: ContentPaperSize | string;

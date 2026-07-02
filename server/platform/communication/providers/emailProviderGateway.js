@@ -1,11 +1,14 @@
 const emailService = require('../../../services/emailService');
 const ociEmailDelivery = require('../../../services/emailProviders/ociEmailDelivery');
+const amdsEmailDelivery = require('../../../services/emailProviders/amdsEmailDelivery');
 const EMAIL_PROVIDER_KEY = emailService.EMAIL_PROVIDER_KEY || 'email-provider';
 
 function getActiveProviderKey() {
   if (!emailService.isConfigured()) return 'none';
   const explicitProvider = (process.env.EMAIL_PROVIDER || '').trim().toLowerCase();
   if (explicitProvider) return explicitProvider;
+
+  if (amdsEmailDelivery.isAmdsEnvConfigured()) return amdsEmailDelivery.PROVIDER_KEY;
 
   if (process.env.OCI_EMAIL_REGION || process.env.OCI_REGION) return ociEmailDelivery.PROVIDER_KEY;
 
@@ -20,7 +23,11 @@ function getActiveProviderKey() {
 
 function getSystemProviderKey() {
   if (!emailService.isSystemEmailConfigured()) return 'none';
-  const explicit = (process.env.SYSTEM_EMAIL_PROVIDER || 'oci-email-delivery').trim().toLowerCase();
+  const explicit = (
+    process.env.SYSTEM_EMAIL_PROVIDER || amdsEmailDelivery.defaultProviderWhenUnset() || 'oci-email-delivery'
+  )
+    .trim()
+    .toLowerCase();
   return explicit || ociEmailDelivery.PROVIDER_KEY;
 }
 

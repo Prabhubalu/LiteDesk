@@ -37,7 +37,7 @@ async function checkRedis() {
   try {
     await client.connect();
     const pong = await client.ping();
-    await client.quit().catch(() => {});
+    await client.disconnect().catch(() => {});
     return { ok: pong === 'PONG' || pong === 'pong' };
   } catch (e) {
     return { ok: false, error: e.message || String(e) };

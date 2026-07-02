@@ -45,6 +45,7 @@ const { recordPortalEvent } = require('../services/securityAuditService');
 const securityLogger = require('../middleware/securityLoggingMiddleware');
 const { getDefaultRoleForApp } = require('../utils/appAccessUtils');
 const { ensureDefaultCommunicationSettingsForOrganization } = require('../services/communicationDefaultsSeeder');
+const { ensureOrgEmailPolicy } = require('../services/orgEmailPolicyService');
 
 function getOrgUserModel(orgDbConnection) {
     if (orgDbConnection.models.User) {
@@ -230,6 +231,11 @@ exports.registerUser = async (req, res) => {
             }
         });
         await ensureDefaultCommunicationSettingsForOrganization(organization._id);
+        try {
+            await ensureOrgEmailPolicy(organization._id, 'TRIAL');
+        } catch (policyErr) {
+            console.warn('[authController] OrgEmailPolicy seed failed:', policyErr?.message || policyErr);
+        }
         console.log('✅ ✅ ✅ ORGANIZATION CREATED SUCCESSFULLY! ✅ ✅ ✅');
         console.log('   ID:', organization._id);
         console.log('   Name:', organization.name);

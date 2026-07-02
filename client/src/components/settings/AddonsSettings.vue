@@ -65,11 +65,24 @@
                   limit: addon.subscription.agentLimit ?? t('settings.addonsUnlimited'),
                 }) }}
               </p>
+              <p v-if="addon.emailPolicy">
+                {{ t('settings.addonsEmailCreditsBalanceShort', {
+                  count: Number(addon.emailPolicy.creditsRemaining || 0).toLocaleString(),
+                }) }}
+              </p>
               <p v-if="addon.subscription.trialEndsAt && addon.subscription.status === 'TRIAL'">
                 {{ t('settings.addonsTrialEnds', { date: formatDate(addon.subscription.trialEndsAt) }) }}
               </p>
             </div>
             <div class="mt-4 flex flex-wrap gap-2">
+              <button
+                v-if="addon.addonKey === 'email_credits'"
+                type="button"
+                class="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
+                @click="openEmailCreditsSettings"
+              >
+                {{ t('settings.addonsEmailCreditsBuy') }}
+              </button>
               <button
                 v-if="addon.addonKey === 'live_chat'"
                 type="button"
@@ -134,7 +147,7 @@
           >
             <div class="flex items-start gap-4">
               <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
-                <ChatIcon class="h-6 w-6" />
+                <component :is="addonIconComponent(addon.addonKey)" class="h-6 w-6" />
               </div>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2">
@@ -146,6 +159,9 @@
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-3">{{ addon.description }}</p>
                 <p v-if="addon.pricing?.billingType === 'PER_AGENT'" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                   {{ t('settings.addonsPerAgentBilling') }}
+                </p>
+                <p v-else-if="addon.pricing?.billingType === 'USAGE'" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  {{ t('settings.addonsUsageBilling') }}
                 </p>
               </div>
             </div>
@@ -172,6 +188,12 @@
 
   <AddonPlatformPricingSettings
     v-else-if="currentView === 'platform-pricing'"
+    class="flex min-h-0 flex-1 flex-col overflow-hidden"
+    @back="navigateToOverview"
+  />
+
+  <EmailCreditsAddonSettings
+    v-else-if="currentView === 'email-credits-settings'"
     class="flex min-h-0 flex-1 flex-col overflow-hidden"
     @back="navigateToOverview"
   />
@@ -212,6 +234,7 @@ import { useRoute, useRouter } from 'vue-router';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import AddonPlatformPricingSettings from '@/components/settings/AddonPlatformPricingSettings.vue';
 import LiveChatAddonSettings from '@/components/settings/LiveChatAddonSettings.vue';
+import EmailCreditsAddonSettings from '@/components/settings/EmailCreditsAddonSettings.vue';
 import LiveChatQueuesSettings from '@/components/settings/LiveChatQueuesSettings.vue';
 import LiveChatBotsSettings from '@/components/settings/LiveChatBotsSettings.vue';
 import LiveChatWebsiteContentSettings from '@/components/settings/LiveChatWebsiteContentSettings.vue';
@@ -253,6 +276,24 @@ const ChatIcon = () => h('svg', {
   }),
 ]);
 
+const MailIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+  }),
+]);
+
+function addonIconComponent(addonKey) {
+  if (addonKey === 'email_credits') return MailIcon;
+  return ChatIcon;
+}
+
 const PricingIcon = () => h('svg', {
   fill: 'none',
   stroke: 'currentColor',
@@ -288,6 +329,7 @@ const currentView = computed(() => {
   if (view === 'live-chat' && route.query.liveChatView === 'queues') return 'live-chat-queues';
   if (view === 'live-chat' && route.query.liveChatView === 'bots') return 'live-chat-bots';
   if (view === 'live-chat' && route.query.liveChatView === 'website-content') return 'live-chat-website-content';
+  if (view === 'email-credits') return 'email-credits-settings';
   return 'overview';
 });
 
@@ -299,6 +341,13 @@ function navigateToOption(option) {
   router.push({
     path: '/settings',
     query: { ...route.query, tab: 'addons', addonView: option.id },
+  });
+}
+
+function openEmailCreditsSettings() {
+  router.push({
+    path: '/settings',
+    query: { tab: 'addons', addonView: 'email-credits' },
   });
 }
 

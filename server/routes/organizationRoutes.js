@@ -41,7 +41,7 @@ router.post('/subscription/cancel', canManageBilling(), cancelSubscription);
 
 // --- App Management Routes (Admin only) ---
 const invalidateApplicationsSettingsCache = invalidateCacheOnSuccessfulMutation({
-    namespace: 'settings:applications',
+    namespace: 'settings:applications:v2',
 });
 
 router.post('/apps/enable', requireOwner(), invalidateApplicationsSettingsCache, enableApp);

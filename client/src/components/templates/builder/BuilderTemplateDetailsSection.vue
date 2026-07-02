@@ -68,7 +68,7 @@
         </div>
       </div>
 
-      <div class="space-y-3 border-t pt-4" :class="ui.border">
+      <div v-if="!isEmailFormat" class="space-y-3 border-t pt-4" :class="ui.border">
         <p class="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
           {{ t('templates.builderTemplateDetailsPage') }}
         </p>
@@ -120,6 +120,7 @@ import BuilderPageSettings from '@/components/templates/builder/BuilderPageSetti
 import BuilderRecordPicker from '@/components/templates/builder/BuilderRecordPicker.vue';
 import { useBuilderUi } from '@/composables/useBuilderUi';
 import { useTemplateModuleOptions } from '@/composables/useTemplateMergeTagSchema';
+import { isEmailOutputFormat } from '@/constants/contentPageSettings';
 
 const props = defineProps({
   name: { type: String, default: '' },
@@ -132,7 +133,8 @@ const props = defineProps({
   customPageHeight: { type: Number, default: 297 },
   layoutMode: { type: String, default: 'absolute' },
   previewRecordId: { type: String, default: '' },
-  previewRecordLabel: { type: String, default: '' }
+  previewRecordLabel: { type: String, default: '' },
+  outputFormat: { type: String, default: 'pdf' }
 });
 
 const emit = defineEmits([
@@ -150,6 +152,8 @@ const ui = useBuilderUi();
 const open = ref(true);
 
 const { loading: moduleOptionsLoading, moduleOptions, loadModuleOptions } = useTemplateModuleOptions();
+
+const isEmailFormat = computed(() => isEmailOutputFormat(props.outputFormat));
 
 const statusLabel = computed(() => {
   const normalized = String(props.status || 'draft').toLowerCase();

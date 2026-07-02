@@ -1,6 +1,7 @@
 const AddonPricingDefinition = require('../models/AddonPricingDefinition');
 const addonPricingRegistry = require('../constants/addonPricingRegistry');
 const { normalizeAddonKey } = require('../constants/addonKeys');
+const { normalizeCreditPacks } = require('../constants/emailCreditPackConstants');
 
 function mergePlan(defaultPlan = {}, overridePlan = {}) {
   return {
@@ -27,6 +28,7 @@ function normalizePricingShape(raw, addonKey) {
     defaultPlan,
     trialDays,
     plans,
+    creditPacks: normalizeCreditPacks(raw?.creditPacks ?? fallback.creditPacks),
     enabled: raw?.enabled !== false,
     source: raw?.source || 'registry',
   };

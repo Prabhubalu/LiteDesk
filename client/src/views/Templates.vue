@@ -34,6 +34,8 @@
       @update:pagination="onPaginationChange"
       @fetch="loadTemplates"
       @row-click="openTemplate"
+      @delete="handleDelete"
+      @bulk-action="handleBulkAction"
     >
       <template #cell-status="{ value }">
         <BadgeCell
@@ -59,6 +61,15 @@
       :is-open="showCreateDrawer"
       @close="showCreateDrawer = false"
       @create="handleCreate"
+      @import-html="handleImportHtmlStart"
+    />
+
+    <HtmlImportWizard
+      :open="showImportWizard"
+      :initial-name="importMetadata.name || ''"
+      :initial-metadata="importMetadata"
+      @close="showImportWizard = false"
+      @import="handleImportHtmlComplete"
     />
   </div>
 </template>
@@ -72,6 +83,7 @@ import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import TemplatesModuleNav from '@/components/templates/TemplatesModuleNav.vue';
 import TemplatesDashboardPanel from '@/components/templates/TemplatesDashboardPanel.vue';
 import CreateTemplateDrawer from '@/components/templates/CreateTemplateDrawer.vue';
+import HtmlImportWizard from '@/modules/template/components/html/HtmlImportWizard.vue';
 import { useTemplates } from '@/composables/useTemplates';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
@@ -89,10 +101,13 @@ const {
   pagination,
   fetchTemplates,
   fetchTemplateSummary,
-  createTemplate
+  createTemplate,
+  deleteTemplate
 } = useTemplates();
 
 const showCreateDrawer = ref(false);
+const showImportWizard = ref(false);
+const importMetadata = ref({});
 const searchQuery = ref('');
 const statusFilter = ref('');
 
@@ -192,7 +207,7 @@ async function handleCreate(payload) {
     await refreshPage();
     const id = created?._id || created?.id;
     if (id) {
-      const openBuilder = Boolean(payload?.jsonDefinition);
+      const openBuilder = Boolean(payload?.jsonDefinition) || payload?.outputFormat === 'email';
       router.push(
         openBuilder
           ? { name: 'template-builder', params: { id } }
@@ -201,6 +216,79 @@ async function handleCreate(payload) {
     }
   } catch (error) {
     notifications.error(error?.message || t('templates.loadFailed'));
+  }
+}
+
+function handleImportHtmlStart(metadata) {
+  importMetadata.value = { ...metadata };
+  showCreateDrawer.value = false;
+  showImportWizard.value = true;
+}
+
+async function handleDelete(row) {
+  const id = row?._id || row?.id;
+  if (!id) return;
+  try {
+    await deleteTemplate(id);
+    notifications.success(t('templates.deleteSuccess'));
+    await refreshPage();
+  } catch (error) {
+    notifications.error(error?.message || t('templates.deleteFailed'));
+  }
+}
+
+function resolveBulkDeleteIds(payload) {
+  if (!payload) return [];
+  if (Array.isArray(payload)) {
+    return payload.map((row) => row?._id || row?.id).filter(Boolean);
+  }
+  if (Array.isArray(payload.selectedIds) && payload.selectedIds.length) {
+    return payload.selectedIds;
+  }
+  return [];
+}
+
+async function handleBulkAction(actionId, payload) {
+  if (actionId !== 'bulk-delete' && actionId !== 'delete') return;
+  const ids = resolveBulkDeleteIds(payload);
+  if (!ids.length) return;
+
+  try {
+    const results = await Promise.allSettled(ids.map((id) => deleteTemplate(id)));
+    const failed = results.filter((result) => result.status === 'rejected').length;
+    if (failed > 0) {
+      notifications.error(t('templates.deleteFailed'));
+    } else {
+      notifications.success(t('templates.deleteSuccess'));
+    }
+    await refreshPage();
+  } catch (error) {
+    notifications.error(error?.message || t('templates.deleteFailed'));
+  }
+}
+
+async function handleImportHtmlComplete(payload) {
+  if (!String(payload?.name || '').trim()) {
+    notifications.error(t('templates.htmlImport.errorNameRequired'));
+    return;
+  }
+  try {
+    const created = await createTemplate(payload);
+    showImportWizard.value = false;
+    notifications.success(t('templates.htmlImport.createSuccess'));
+    await refreshPage();
+    const id = created?._id || created?.id;
+    if (id) {
+      router.push({ name: 'template-builder', params: { id } });
+    }
+  } catch (error) {
+    const details = error?.response?.data?.details;
+    const detailMessage = Array.isArray(details) && details.length
+      ? details.map((item) => item?.message).filter(Boolean).join(' ')
+      : '';
+    notifications.error(
+      detailMessage || error?.message || t('templates.htmlImport.errorAnalyzeFailed')
+    );
   }
 }
 

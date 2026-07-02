@@ -95,6 +95,35 @@ const APP_DEFINITIONS = [
     }
   },
   {
+    appKey: 'marketing',
+    name: 'Marketing',
+    description: 'Email campaigns, audiences, templates, and marketing analytics',
+    icon: 'megaphone',
+    category: 'BUSINESS',
+    owner: 'PLATFORM',
+    enabled: true,
+    order: 4,
+    capabilities: {
+      usesPeople: true,
+      usesOrganization: true,
+      usesTransactions: false,
+      usesAutomation: true
+    },
+    settingsSchema: null,
+    ui: {
+      sidebarOrder: 4,
+      icon: 'megaphone',
+      defaultRoute: '/dashboard/marketing',
+      showInAppSwitcher: true
+    },
+    marketplace: {
+      category: 'Sales',
+      beta: true,
+      comingSoon: false,
+      shortDescription: 'Create email campaigns, manage audiences, and measure engagement via AMDS delivery'
+    }
+  },
+  {
     appKey: 'inventory',
     name: 'Inventory',
     description: 'Stock ledger, locations, reservations, and fulfillment operations',
@@ -782,6 +811,159 @@ const MODULE_DEFINITIONS = [
       sidebarOrder: 1,
       createLabel: 'Create Case',
       listLabel: 'All Cases'
+    }
+  },
+  {
+    moduleKey: 'campaigns',
+    appKey: 'marketing',
+    label: 'Campaign',
+    pluralLabel: 'Campaigns',
+    entityType: 'TRANSACTION',
+    primaryField: 'name',
+    peopleConstraints: {
+      allowedTypes: ['Contact'],
+      required: false
+    },
+    organizationConstraints: {
+      required: false
+    },
+    lifecycle: {
+      statusField: 'status',
+      allowedStatuses: ['draft', 'scheduled', 'running', 'paused', 'completed', 'cancelled', 'archived', 'sending', 'sent', 'failed']
+    },
+    supports: {
+      ownership: true,
+      assignment: false,
+      comments: true,
+      attachments: false,
+      automation: true
+    },
+    permissions: {
+      create: true,
+      edit: true,
+      delete: true,
+      view: true
+    },
+    ui: {
+      routeBase: '/marketing/campaigns',
+      icon: 'megaphone',
+      showInSidebar: true,
+      sidebarOrder: 1,
+      createLabel: 'Create Campaign',
+      listLabel: 'Campaigns'
+    }
+  },
+  {
+    moduleKey: 'audiences',
+    appKey: 'marketing',
+    label: 'Audience',
+    pluralLabel: 'Audiences',
+    entityType: 'CORE',
+    primaryField: 'name',
+    peopleConstraints: {
+      allowedTypes: ['Contact'],
+      required: false
+    },
+    organizationConstraints: {
+      required: false
+    },
+    lifecycle: null,
+    supports: {
+      ownership: true,
+      assignment: false,
+      comments: false,
+      attachments: false,
+      automation: false
+    },
+    permissions: {
+      create: true,
+      edit: true,
+      delete: true,
+      view: true,
+      import: true,
+      export: true
+    },
+    ui: {
+      routeBase: '/marketing/audiences',
+      icon: 'users',
+      showInSidebar: true,
+      sidebarOrder: 2,
+      createLabel: 'Create Audience',
+      listLabel: 'Audiences'
+    }
+  },
+  {
+    moduleKey: 'segments',
+    appKey: 'marketing',
+    label: 'Segment',
+    pluralLabel: 'Segments',
+    entityType: 'CORE',
+    primaryField: 'name',
+    peopleConstraints: {
+      allowedTypes: ['Contact'],
+      required: false
+    },
+    organizationConstraints: {
+      required: false
+    },
+    lifecycle: null,
+    supports: {
+      ownership: true,
+      assignment: false,
+      comments: false,
+      attachments: false,
+      automation: false
+    },
+    permissions: {
+      create: true,
+      edit: true,
+      delete: true,
+      view: true
+    },
+    ui: {
+      routeBase: '/marketing/segments',
+      icon: 'funnel',
+      showInSidebar: true,
+      sidebarOrder: 3,
+      createLabel: 'Create Segment',
+      listLabel: 'Segments'
+    }
+  },
+  {
+    moduleKey: 'assets',
+    appKey: 'marketing',
+    label: 'Asset',
+    pluralLabel: 'Assets',
+    entityType: 'CORE',
+    primaryField: 'filename',
+    peopleConstraints: {
+      allowedTypes: [],
+      required: false
+    },
+    organizationConstraints: {
+      required: false
+    },
+    lifecycle: null,
+    supports: {
+      ownership: true,
+      assignment: false,
+      comments: false,
+      attachments: false,
+      automation: false
+    },
+    permissions: {
+      create: true,
+      edit: true,
+      delete: true,
+      view: true
+    },
+    ui: {
+      routeBase: '/marketing/assets',
+      icon: 'photo',
+      showInSidebar: true,
+      sidebarOrder: 4,
+      createLabel: 'Upload Asset',
+      listLabel: 'Assets'
     }
   },
   // Responses: Platform execution domain + entity (paired with Forms)

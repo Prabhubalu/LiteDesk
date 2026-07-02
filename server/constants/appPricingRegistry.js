@@ -120,6 +120,24 @@ module.exports = {
                 seatLimit: null
             }
         }
+    },
+
+    MARKETING: {
+        billingType: 'PER_USER',
+        defaultSeatLimit: null,
+        defaultPlan: 'BASIC',
+        trialDays: 14,
+        plans: {
+            BASIC: {
+                seatLimit: 5
+            },
+            PRO: {
+                seatLimit: 25
+            },
+            ENTERPRISE: {
+                seatLimit: null
+            }
+        }
     }
 };
 

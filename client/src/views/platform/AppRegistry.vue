@@ -44,7 +44,8 @@ const APP_NAME_KEYS = {
   PORTAL: 'settings.appsNamePortal',
   AUDIT: 'settings.appsNameAudit',
   LMS: 'settings.appsNameLms',
-  INVENTORY: 'settings.appsNameInventory'
+  INVENTORY: 'settings.appsNameInventory',
+  MARKETING: 'settings.appsNameMarketing'
 };
 
 const APP_DESC_KEYS = {
@@ -54,7 +55,8 @@ const APP_DESC_KEYS = {
   PORTAL: 'settings.appsDescPortal',
   AUDIT: 'settings.appsDescAudit',
   LMS: 'settings.appsDescLms',
-  INVENTORY: 'settings.appsDescInventory'
+  INVENTORY: 'settings.appsDescInventory',
+  MARKETING: 'settings.appsDescMarketing'
 };
 
 const CATEGORY_KEYS = {
@@ -126,6 +128,7 @@ function getCategoryFromAppKey(appKey) {
   if (upper === 'AUDIT') return 'Audit';
   if (upper === 'PORTAL') return 'Platform';
   if (upper === 'INVENTORY') return 'Operations';
+  if (upper === 'MARKETING') return 'Sales';
   return 'Operations';
 }
 
@@ -284,6 +287,7 @@ function handleAppClick(app) {
       && !route.startsWith('/audit')
       && !route.startsWith('/portal')
       && !route.startsWith('/helpdesk')
+      && !route.startsWith('/marketing')
       && !route.startsWith('/projects')
     ) {
       const appKeyLower = app.appKey?.toLowerCase();
@@ -322,6 +326,10 @@ function getDefaultRouteForApp(appKey) {
       return '/audit/dashboard';
     case 'PORTAL':
       return '/portal/dashboard';
+    case 'INVENTORY':
+      return '/dashboard/inventory';
+    case 'MARKETING':
+      return '/dashboard/marketing';
     default:
       return '/sales/dashboard';
   }

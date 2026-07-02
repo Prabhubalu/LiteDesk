@@ -8,7 +8,7 @@ import { registerCommands } from './commands';
 import { registerTraits } from './traits';
 import { setupExternalBlockDrop } from './dragDrop';
 import { resolveEditorPlugins } from './plugins';
-import { GRAPES_CANVAS_FRAME_CSS } from './canvasFrameCss';
+import { resolveCanvasFrameCss } from './canvasFrameCss';
 import { configureComponentToolbar } from './componentActions';
 import { applyPageDimensions, parseDimensionPx, setupPageLayout } from './pageDimensions';
 import { registerLineItemComponent } from './lineItemComponent';
@@ -40,7 +40,7 @@ export function initGrapesEditor(container: HTMLElement, options: GrapesEditorOp
     traitManager: { custom: true },
     plugins,
     pluginsOpts,
-    canvasCss: GRAPES_CANVAS_FRAME_CSS,
+    canvasCss: resolveCanvasFrameCss(outputFormat),
     canvas: {
       styles: [],
       allowExternalDrop: true
@@ -55,10 +55,13 @@ export function initGrapesEditor(container: HTMLElement, options: GrapesEditorOp
   });
 
   applyHeadlessEditor(editor);
-  setupPageLayout(editor);
+  const isEmail = outputFormat === 'email';
+  setupPageLayout(editor, { isEmail });
   configureComponentToolbar(editor);
   registerArivuBlocks(editor);
-  registerLineItemComponent(editor);
+  if (!isEmail) {
+    registerLineItemComponent(editor);
+  }
   registerCommands(editor);
   registerTraits(editor);
   setupExternalBlockDrop(editor);
@@ -68,7 +71,8 @@ export function initGrapesEditor(container: HTMLElement, options: GrapesEditorOp
   if (pageWidth && pageHeight) {
     editor.on('load', () => {
       applyPageDimensions(editor, {
-        dimensions: { width: pageWidth, height: pageHeight }
+        dimensions: { width: pageWidth, height: pageHeight },
+        isEmail: outputFormat === 'email'
       });
     });
   }

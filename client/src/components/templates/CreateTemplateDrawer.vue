@@ -29,12 +29,33 @@
                 <form class="flex h-full flex-col" @submit.prevent="submit">
                   <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
                     <DialogTitle class="text-lg font-semibold text-gray-900 dark:text-white">
-                      {{ t('templates.createTitle') }}
+                      {{ drawerTitle }}
                     </DialogTitle>
                   </div>
 
                   <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-                    <section>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {{ t('templates.fieldOutputFormat') }}
+                      </label>
+                      <select
+                        v-model="form.outputFormat"
+                        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm"
+                        @change="onOutputFormatChange"
+                      >
+                        <option value="pdf">PDF</option>
+                        <option value="html">HTML</option>
+                        <option value="email">{{ t('templates.formatEmail') }}</option>
+                      </select>
+                    </div>
+
+                    <EmailTemplateStartCards
+                      v-if="isEmailFormat"
+                      v-model="emailStartMode"
+                      :disabled="saving"
+                    />
+
+                    <section v-else>
                       <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">
                         {{ t('templates.galleryTitle') }}
                       </h3>
@@ -70,18 +91,38 @@
                       </div>
                     </section>
 
-                    <div>
+                    <section v-if="isEmailFormat && emailStartMode === 'gallery' && emailGalleryItems.length">
+                      <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">
+                        {{ t('templates.galleryTitle') }}
+                      </h3>
+                      <div class="grid gap-2">
+                        <button
+                          v-for="item in emailGalleryItems"
+                          :key="item.key"
+                          type="button"
+                          class="rounded-lg border px-3 py-2 text-left text-sm transition-colors"
+                          :class="selectedGalleryKey === item.key
+                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30'
+                            : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300'"
+                          @click="selectGallery(item.key)"
+                        >
+                          <span class="font-medium">{{ item.name }}</span>
+                        </button>
+                      </div>
+                    </section>
+
+                    <div v-if="showMetadataFields">
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         {{ t('templates.fieldName') }}
                       </label>
                       <input
                         v-model="form.name"
                         type="text"
-                        required
+                        :required="requiresName"
                         class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm"
                       />
                     </div>
-                    <div>
+                    <div v-if="showMetadataFields">
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         {{ t('templates.fieldPurpose') }}
                       </label>
@@ -91,7 +132,7 @@
                         class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm"
                       />
                     </div>
-                    <div>
+                    <div v-if="showMetadataFields">
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         {{ t('templates.fieldCategory') }}
                       </label>
@@ -101,7 +142,7 @@
                         class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm"
                       />
                     </div>
-                    <div>
+                    <div v-if="showMetadataFields || isImportMode">
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         {{ t('templates.fieldModuleScope') }}
                       </label>
@@ -120,21 +161,8 @@
                         </option>
                       </select>
                     </div>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        {{ t('templates.fieldOutputFormat') }}
-                      </label>
-                      <select
-                        v-model="form.outputFormat"
-                        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm"
-                      >
-                        <option value="pdf">PDF</option>
-                        <option value="html">HTML</option>
-                        <option value="email">{{ t('templates.formatEmail') }}</option>
-                      </select>
-                    </div>
 
-                    <div class="grid gap-4 sm:grid-cols-2">
+                    <div v-if="!isEmailFormat" class="grid gap-4 sm:grid-cols-2">
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           {{ t('templates.builderPageSize') }}
@@ -168,7 +196,7 @@
                       </div>
                     </div>
 
-                    <div v-if="form.paperSize === 'Custom'" class="grid gap-4 sm:grid-cols-2">
+                    <div v-if="!isEmailFormat && form.paperSize === 'Custom'" class="grid gap-4 sm:grid-cols-2">
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           {{ t('templates.builderPageWidth') }} (mm)
@@ -207,9 +235,9 @@
                     <button
                       type="submit"
                       class="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-                      :disabled="saving || !form.name.trim()"
+                      :disabled="saving || (requiresName && !form.name.trim())"
                     >
-                      {{ t('actions.create') }}
+                      {{ primaryActionLabel }}
                     </button>
                   </div>
                 </form>
@@ -223,7 +251,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import apiClient from '@/utils/apiClient';
@@ -234,18 +262,20 @@ import {
   PAPER_SIZE_GROUPS
 } from '@/constants/contentPageSettings';
 import { useTemplateModuleOptions } from '@/composables/useTemplateMergeTagSchema';
+import EmailTemplateStartCards from '@/modules/template/components/html/EmailTemplateStartCards.vue';
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false }
 });
 
-const emit = defineEmits(['close', 'create']);
+const emit = defineEmits(['close', 'create', 'import-html']);
 
 const { t } = useI18n();
 const saving = ref(false);
 const galleryItems = ref([]);
 const selectedGalleryKey = ref('blank');
 const galleryByKey = ref({});
+const emailStartMode = ref('blank');
 const { loading: moduleOptionsLoading, moduleOptions, loadModuleOptions } = useTemplateModuleOptions();
 const paperSizeGroups = PAPER_SIZE_GROUPS;
 
@@ -259,6 +289,19 @@ const form = reactive({
   orientation: 'portrait',
   customPageWidth: DEFAULT_CUSTOM_PAGE_WIDTH_MM,
   customPageHeight: DEFAULT_CUSTOM_PAGE_HEIGHT_MM
+});
+
+const isEmailFormat = computed(() => form.outputFormat === 'email');
+const emailGalleryItems = computed(() => galleryItems.value.filter((item) => item.outputFormat === 'email'));
+const isImportMode = computed(() => isEmailFormat.value && emailStartMode.value === 'import');
+const showMetadataFields = computed(() => !isImportMode.value);
+const requiresName = computed(() => !isImportMode.value);
+const drawerTitle = computed(() => (
+  isEmailFormat.value ? t('templates.htmlImport.createEmailTitle') : t('templates.createTitle')
+));
+const primaryActionLabel = computed(() => {
+  if (isImportMode.value) return t('templates.htmlImport.continue');
+  return t('actions.create');
 });
 
 async function loadGallery() {
@@ -281,8 +324,26 @@ function selectGallery(key) {
   form.purpose = item.purpose || '';
   form.category = item.category || '';
   form.moduleScope = item.moduleScope || '';
-  form.outputFormat = item.outputFormat || 'pdf';
+  form.outputFormat = item.outputFormat || form.outputFormat;
 }
+
+function onOutputFormatChange() {
+  if (form.outputFormat === 'email') {
+    emailStartMode.value = 'blank';
+    selectedGalleryKey.value = 'blank';
+    return;
+  }
+  selectedGalleryKey.value = 'blank';
+}
+
+watch(emailStartMode, (mode) => {
+  if (mode === 'blank') {
+    selectedGalleryKey.value = 'blank';
+  }
+  if (mode === 'gallery' && emailGalleryItems.value.length === 1) {
+    selectGallery(emailGalleryItems.value[0].key);
+  }
+});
 
 watch(
   () => props.isOpen,
@@ -298,6 +359,7 @@ watch(
     form.customPageWidth = DEFAULT_CUSTOM_PAGE_WIDTH_MM;
     form.customPageHeight = DEFAULT_CUSTOM_PAGE_HEIGHT_MM;
     selectedGalleryKey.value = 'blank';
+    emailStartMode.value = 'blank';
     saving.value = false;
     void loadGallery();
   }
@@ -308,27 +370,45 @@ onMounted(() => {
   void loadModuleOptions();
 });
 
+function buildMetadataPayload() {
+  return {
+    purpose: form.purpose.trim(),
+    category: form.category.trim(),
+    moduleScope: form.moduleScope,
+    outputFormat: form.outputFormat
+  };
+}
+
 async function submit() {
+  if (isImportMode.value) {
+    emit('import-html', buildMetadataPayload());
+    return;
+  }
+
   if (!form.name.trim()) return;
   saving.value = true;
   try {
     const payload = {
       name: form.name.trim(),
-      purpose: form.purpose.trim(),
-      category: form.category.trim(),
-      moduleScope: form.moduleScope,
-      outputFormat: form.outputFormat,
-      paperSize: form.paperSize,
-      orientation: form.orientation
+      ...buildMetadataPayload()
     };
 
-    if (form.paperSize === 'Custom') {
-      payload.customPageWidth = form.customPageWidth;
-      payload.customPageHeight = form.customPageHeight;
+    if (!isEmailFormat.value) {
+      payload.paperSize = form.paperSize;
+      payload.orientation = form.orientation;
+
+      if (form.paperSize === 'Custom') {
+        payload.customPageWidth = form.customPageWidth;
+        payload.customPageHeight = form.customPageHeight;
+      }
     }
 
-    if (selectedGalleryKey.value !== 'blank') {
-      const item = galleryByKey.value[selectedGalleryKey.value];
+    const galleryKey = isEmailFormat.value
+      ? (emailStartMode.value === 'gallery' ? selectedGalleryKey.value : 'blank')
+      : selectedGalleryKey.value;
+
+    if (galleryKey !== 'blank') {
+      const item = galleryByKey.value[galleryKey];
       if (item?.jsonDefinition) {
         payload.jsonDefinition = remapDefinitionIds(item.jsonDefinition);
       }

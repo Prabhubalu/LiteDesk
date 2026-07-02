@@ -10,6 +10,7 @@ const updateOrganizationsModuleFields = require('../scripts/updateOrganizationsM
 const updateDealsModuleFields = require('../scripts/updateDealsModuleFields');
 const UserDirectory = require('../models/UserDirectory');
 const { ensureDefaultCommunicationSettingsForOrganization } = require('../services/communicationDefaultsSeeder');
+const { ensureOrgEmailPolicy } = require('../services/orgEmailPolicyService');
 const InstanceRegistry = require('../models/InstanceRegistry');
 const { generateUniqueSlug } = require('../services/provisioning/utils/slugGenerator');
 const { seedTenantDatabase } = require('../services/provisioning/tenantSeeder');
@@ -415,10 +416,16 @@ exports.convertToOrganization = async (req, res) => {
             console.log('✅ Tenant workspace organization found:', tenantOrganization.name);
         }
         await ensureDefaultCommunicationSettingsForOrganization(tenantOrganization._id);
-        
-        // Validate subscription tier (only 'trial' or 'paid' allowed)
+
         const validTiers = ['trial', 'paid'];
         const tier = validTiers.includes(subscriptionTier) ? subscriptionTier : 'trial';
+
+        try {
+            await ensureOrgEmailPolicy(tenantOrganization._id, tier === 'trial' ? 'TRIAL' : 'PRO');
+        } catch (policyErr) {
+            console.warn('[demoController] OrgEmailPolicy seed failed:', policyErr?.message || policyErr);
+        }
+
         console.log('✅ Subscription tier:', tier);
 
         const activeOrgAppKeys = Array.isArray(tenantOrganization.enabledApps)

@@ -25,6 +25,14 @@
               >
                 {{ roleLabel }}
               </span>
+              <span
+                v-if="deliveryBadge"
+                class="inline-flex rounded px-1.5 py-0.5 text-[11px] font-semibold leading-tight"
+                :class="deliveryBadge.className"
+                :title="deliveryBadge.title"
+              >
+                {{ deliveryBadge.label }}
+              </span>
               <span v-if="expanded" class="text-sm text-gray-500 dark:text-gray-400">
                 {{ t('cases.recordActivitySentEmail') }}
               </span>
@@ -220,6 +228,37 @@ const roleBadgeClass = computed(() =>
     ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
     : 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200'
 );
+
+const deliveryBadge = computed(() => {
+  if (isInbound.value) return null;
+  const status = String(props.message?.deliveryStatus || '').toLowerCase();
+  if (!status || status === 'queued' || status === 'processing' || status === 'sent') return null;
+
+  if (status === 'delivered') {
+    return {
+      label: t('cases.recordEmailDeliveryDelivered'),
+      title: '',
+      className: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+    };
+  }
+  if (status === 'bounced') {
+    const diagnostic = String(props.message?.bounceDiagnostic || props.message?.deliveryError || '').trim();
+    return {
+      label: t('cases.recordEmailDeliveryBounced'),
+      title: diagnostic || t('cases.recordEmailDeliveryBouncedHint'),
+      className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+    };
+  }
+  if (status === 'failed') {
+    const err = String(props.message?.deliveryError || '').trim();
+    return {
+      label: t('cases.recordEmailDeliveryFailed'),
+      title: err || t('cases.recordEmailDeliveryFailedHint'),
+      className: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'
+    };
+  }
+  return null;
+});
 
 const relativeTime = computed(() => formatRelativeTime(props.createdAt, t));
 const isoTime = computed(() => {

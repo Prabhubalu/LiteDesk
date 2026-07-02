@@ -7,6 +7,7 @@ import {
   BuildingOfficeIcon,
   CalendarDaysIcon,
   CalendarIcon,
+  ChartBarIcon,
   CheckCircleIcon,
   ClipboardDocumentIcon,
   ClipboardDocumentListIcon,
@@ -19,9 +20,12 @@ import {
   DocumentTextIcon,
   ExclamationTriangleIcon,
   FolderIcon,
+  FunnelIcon,
   InboxIcon,
   LifebuoyIcon,
   MagnifyingGlassIcon,
+  MegaphoneIcon,
+  PhotoIcon,
   PresentationChartLineIcon,
   ShieldCheckIcon,
   ShoppingCartIcon,
@@ -77,6 +81,10 @@ const MODULE_ICON_MAP: Record<string, any> = {
   portal_invoices: BanknotesIcon,
   portal_knowledge: BookOpenIcon,
   knowledge: BookOpenIcon,
+  campaigns: MegaphoneIcon,
+  audiences: UserGroupIcon,
+  segments: FunnelIcon,
+  assets: PhotoIcon,
   ...MODULE_ICON_COMPONENTS
 };
 
@@ -117,6 +125,10 @@ const RAW_ICON_MAP: Record<string, any> = {
   'shopping-cart': ShoppingCartIcon,
   'document-currency-dollar': DocumentCurrencyDollarIcon,
   'credit-card': CreditCardIcon,
+  megaphone: MegaphoneIcon,
+  funnel: FunnelIcon,
+  photo: PhotoIcon,
+  'chart-bar': ChartBarIcon,
   ...Object.fromEntries(
     Object.entries(MODULE_ICON_IDS).map(([moduleKey, iconId]) => [moduleKey, MODULE_ICON_COMPONENTS[moduleKey]])
   )
@@ -193,6 +205,21 @@ export function getNavigationIconComponent(item: IconLookupItem): any {
   }
   if (route.startsWith('/portal/responses')) {
     return ClipboardDocumentListIcon;
+  }
+  if (route.startsWith('/dashboard/marketing') || route === '/marketing/reports') {
+    return ChartBarIcon;
+  }
+  if (route.startsWith('/marketing/campaigns')) {
+    return MegaphoneIcon;
+  }
+  if (route.startsWith('/marketing/audiences')) {
+    return UserGroupIcon;
+  }
+  if (route.startsWith('/marketing/segments')) {
+    return FunnelIcon;
+  }
+  if (route.startsWith('/marketing/assets')) {
+    return PhotoIcon;
   }
 
   const iconComponent = getIconComponent(item.icon, moduleKey);

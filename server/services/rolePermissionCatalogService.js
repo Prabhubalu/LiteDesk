@@ -77,7 +77,11 @@ const RBAC_DELETE_MODULE_KEYS = new Set([
   'responses',
   'items',
   'documents',
-  'cases'
+  'cases',
+  'campaigns',
+  'audiences',
+  'segments',
+  'assets'
 ]);
 
 const APP_DISPLAY_NAMES = {
@@ -87,7 +91,8 @@ const APP_DISPLAY_NAMES = {
   portal: 'Portal',
   audit: 'Audit',
   lms: 'Learning',
-  inventory: 'Inventory'
+  inventory: 'Inventory',
+  marketing: 'Marketing'
 };
 
 /** @type {Map<string, { at: number, data: object }>} */

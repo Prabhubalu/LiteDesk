@@ -219,6 +219,64 @@ export const PEOPLE_FIELD_METADATA: Record<string, FieldMetadata> = {
     isVisibleInConfig: true,
   },
 
+  // External User / Portal access — platform-managed via portalAccessService
+  'portalAccess.enabled': {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
+  },
+  'portalAccess.userId': {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
+  },
+  'portalAccess.enabledAt': {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
+  },
+  'portalAccess.enabledBy': {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
+  },
+  'portalAccess.disabledAt': {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
+  },
+  'portalAccess.disabledBy': {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
+  },
+  'portalAccess.lastSyncedAt': {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
+  },
+
   // ==========================================================================
   // CORE IDENTITY FIELDS (platform-scoped, app-agnostic)
   // ==========================================================================

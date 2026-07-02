@@ -23,6 +23,7 @@
  * - AUDIT: Audit management application
  * - LMS: Learning Management System application
  * - INVENTORY: Inventory & fulfillment operations (stock ledger)
+ * - MARKETING: Email campaigns, audiences, and marketing analytics
  * - CONTROL_PLANE: Platform internal operations (non-tenant, non-billable)
  */
 const APP_KEYS = {
@@ -33,6 +34,7 @@ const APP_KEYS = {
     AUDIT: 'AUDIT',
     LMS: 'LMS',
     INVENTORY: 'INVENTORY',
+    MARKETING: 'MARKETING',
     CONTROL_PLANE: 'CONTROL_PLANE'
 };
 

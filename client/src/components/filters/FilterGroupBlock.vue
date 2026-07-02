@@ -32,7 +32,7 @@
           :filter-config="filterConfig"
           :filter-by-key="filterByKey"
           :filter-operators="filterOperators"
-          :used-field-keys="usedFieldKeys"
+          :used-field-keys="usedFieldKeysForRule(child.id)"
           @update:rule="(rule) => onRuleUpdate(child.id, rule)"
           @add-nested="onAddNestedToRule(child.id)"
           @remove-rule="onRemoveRule(child.id)"
@@ -61,7 +61,9 @@ import {
   appendNestedRuleToRule,
   createEmptyRuleRef,
   isFilterRuleRef,
+  isFilterGroupNode,
 } from '@/platform/filters/filterQueryAst';
+import type { FilterQueryNode } from '@/platform/filters/filterQueryAst';
 
 const props = defineProps<{
   group: FilterGroupNode;
@@ -109,6 +111,31 @@ function collectNestedFieldKeys(rule: { nested?: FilterGroupNode }): string[] {
   for (const child of rule.nested.children) {
     if (child.kind === 'rule' && child.fieldKey) keys.push(child.fieldKey);
   }
+  return keys;
+}
+
+function collectFieldKeysFromNodes(nodes: FilterQueryNode[], skipRuleId: string, keys: Set<string>) {
+  for (const node of nodes) {
+    if (isFilterRuleRef(node)) {
+      if (node.id !== skipRuleId && node.fieldKey) keys.add(node.fieldKey);
+      if (node.nested) {
+        for (const nested of node.nested.children) {
+          if (nested.kind === 'rule' && nested.id !== skipRuleId && nested.fieldKey) {
+            keys.add(nested.fieldKey);
+          }
+        }
+      }
+      continue;
+    }
+    if (isFilterGroupNode(node)) {
+      collectFieldKeysFromNodes(node.children, skipRuleId, keys);
+    }
+  }
+}
+
+function usedFieldKeysForRule(ruleId: string): Set<string> {
+  const keys = new Set<string>();
+  collectFieldKeysFromNodes(props.group.children, ruleId, keys);
   return keys;
 }
 

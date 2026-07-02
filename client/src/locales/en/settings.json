@@ -711,6 +711,58 @@
     "message": "Per-agent licensing",
     "description": "Addon per-agent billing hint"
   },
+  "addonsUsageBilling": {
+    "message": "Pay-as-you-go credit packs",
+    "description": "Usage-based addon billing hint"
+  },
+  "addonsEmailCreditsTitle": {
+    "message": "Email credit packs",
+    "description": "Email credits addon settings title"
+  },
+  "addonsEmailCreditsDesc": {
+    "message": "Purchase additional outbound email credits. Credits apply immediately to your organization balance.",
+    "description": "Email credits addon settings description"
+  },
+  "addonsEmailCreditsBalanceTitle": {
+    "message": "Current balance",
+    "description": "Email credits balance section title"
+  },
+  "addonsEmailCreditsPacksTitle": {
+    "message": "Available packs",
+    "description": "Email credit packs list title"
+  },
+  "addonsEmailCreditsPackCredits": {
+    "message": "{count} email credits",
+    "description": "Email credit pack size label"
+  },
+  "addonsEmailCreditsPurchase": {
+    "message": "Purchase",
+    "description": "Purchase credit pack button"
+  },
+  "addonsEmailCreditsPurchaseSuccess": {
+    "message": "Credit pack applied to your account",
+    "description": "Credit pack purchase success toast"
+  },
+  "addonsEmailCreditsPurchaseFailed": {
+    "message": "Failed to purchase credit pack",
+    "description": "Credit pack purchase failure toast"
+  },
+  "addonsEmailCreditsNotInstalled": {
+    "message": "Install the Email Credit Packs addon from the marketplace first.",
+    "description": "Email credits settings when addon not installed"
+  },
+  "addonsEmailCreditsBuy": {
+    "message": "Buy credits",
+    "description": "Open email credits purchase panel"
+  },
+  "addonsEmailCreditsBalanceShort": {
+    "message": "{count} credits remaining",
+    "description": "Installed addon email credits summary"
+  },
+  "addonsEmailCreditsBillingNote": {
+    "message": "Purchases are applied immediately. Stripe checkout integration can be wired to this flow later.",
+    "description": "Email credits billing disclaimer"
+  },
   "addonsAgentsUsage": {
     "message": "{used} / {limit} agents",
     "description": "Addon agent seat usage"
@@ -7743,6 +7795,10 @@
     "message": "Inventory",
     "description": "Inventory app display name"
   },
+  "appsNameMarketing": {
+    "message": "Marketing",
+    "description": "Marketing app display name"
+  },
   "appsDescSales": {
     "message": "Manage your sales pipeline, deals, and customer relationships",
     "description": "App description"
@@ -7770,6 +7826,10 @@
   "appsDescInventory": {
     "message": "Stock ledger, locations, reservations, and fulfillment",
     "description": "Inventory app description"
+  },
+  "appsDescMarketing": {
+    "message": "Email campaigns, audiences, templates, and marketing analytics",
+    "description": "Marketing app description"
   },
   "appsSchema": {
     "message": "Schema",
@@ -11743,6 +11803,10 @@
     "message": "Stock ledger, locations, reservations, and fulfillment operations.",
     "description": "App management Inventory description"
   },
+  "settingsAppMgmtDescMarketing": {
+    "message": "Email campaigns, audiences, templates, and marketing analytics.",
+    "description": "App management Marketing description"
+  },
   "settingsAppMgmtEnableConfirm": {
     "message": "Enable {app}? Users will be able to access this app.",
     "description": "Enable app confirmation"
@@ -12639,6 +12703,126 @@
     "message": "Diagnostics",
     "description": "Email integration diagnostics tab"
   },
+  "integrationsTabCredits": {
+    "message": "Credits",
+    "description": "Email credits and send limits tab"
+  },
+  "emailPolicyCreditsTitle": {
+    "message": "Email credits & limits",
+    "description": "Email policy panel title"
+  },
+  "emailPolicyCreditsSubtitle": {
+    "message": "LiteDesk is the source of truth for email entitlements. AMDS enforces these limits at send time.",
+    "description": "Email policy panel subtitle"
+  },
+  "emailPolicyCreditsRemaining": {
+    "message": "Credits remaining",
+    "description": "Remaining email credits label"
+  },
+  "emailPolicyCreditsReserved": {
+    "message": "In flight (reserved)",
+    "description": "Reserved email credits label"
+  },
+  "emailPolicyMonthlyCredits": {
+    "message": "Monthly allocation",
+    "description": "Monthly email credits label"
+  },
+  "emailPolicyDailySendLimit": {
+    "message": "Daily send limit",
+    "description": "Daily send limit label"
+  },
+  "emailPolicyMaxHourlyRate": {
+    "message": "Max hourly rate",
+    "description": "Max hourly send rate label"
+  },
+  "emailPolicyMaxCampaignSize": {
+    "message": "Max campaign size",
+    "description": "Max campaign recipient count label"
+  },
+  "emailPolicyUnlimited": {
+    "message": "Unlimited",
+    "description": "Unlimited limit display"
+  },
+  "emailPolicySyncError": {
+    "message": "Sync issue: {message}",
+    "description": "AMDS policy sync error banner"
+  },
+  "emailPolicyForceSync": {
+    "message": "Re-sync to AMDS",
+    "description": "Force AMDS policy sync button"
+  },
+  "emailPolicyLoadFailed": {
+    "message": "Failed to load email policy",
+    "description": "Email policy load error"
+  },
+  "emailPolicySyncSuccess": {
+    "message": "Email policy synced to AMDS",
+    "description": "Email policy sync success toast"
+  },
+  "emailPolicySyncFailed": {
+    "message": "Failed to sync email policy to AMDS",
+    "description": "Email policy sync failure toast"
+  },
+  "emailPolicyReputationTitle": {
+    "message": "Sender reputation",
+    "description": "Sender reputation card title"
+  },
+  "emailPolicyReputationDelta": {
+    "message": "{delta} since last update",
+    "description": "Sender reputation delta label"
+  },
+  "emailPolicyReputationHint": {
+    "message": "Reputation affects delivery speed, not your credit balance.",
+    "description": "Sender reputation helper text"
+  },
+  "emailPolicyReputationRecoveryBanner": {
+    "message": "Reputation can rise up to {remaining} more points today. Consistent good sending improves your score over time.",
+    "description": "Banner when daily reputation recovery headroom is low"
+  },
+  "emailPolicyInfraLoadBanner": {
+    "message": "Platform is under heavy load. Effective send rate temporarily reduced.",
+    "description": "Banner when AMDS infrastructure multiplier is below 1"
+  },
+  "emailPolicyGuidanceTitle": {
+    "message": "Reputation guidance",
+    "description": "Reputation guidance panel title"
+  },
+  "emailPolicyGuidanceHint": {
+    "message": "Guidance updates after bounces, complaints, and other delivery signals.",
+    "description": "Reputation guidance helper text"
+  },
+  "emailPolicyGuidanceHighPriorityAlert": {
+    "message": "Sender reputation is critically low. Address high-priority recommendations before sending more campaigns.",
+    "description": "Alert when reputation is below threshold with high-priority guidance"
+  },
+  "emailPolicyGuidancePriorityHigh": {
+    "message": "High priority",
+    "description": "High-priority recommendation group label"
+  },
+  "emailPolicyGuidancePriorityMedium": {
+    "message": "Medium priority",
+    "description": "Medium-priority recommendation group label"
+  },
+  "emailPolicyGuidancePriorityLow": {
+    "message": "Low priority",
+    "description": "Low-priority recommendation group label"
+  },
+  "emailPolicyThroughputTitle": {
+    "message": "Send throughput",
+    "description": "Email policy throughput card title"
+  },
+  "emailPolicyEffectiveHourlyRate": {
+    "message": "Effective hourly rate",
+    "description": "Effective hourly send rate label"
+  },
+  "emailPolicyWarmupStage": {
+    "message": "Warm-up stage",
+    "description": "Email warm-up stage label"
+  },
+  "emailPolicyThroughputHint": {
+    "message": "Effective rate = max rate × reputation × warm-up × infrastructure.",
+    "description": "Email throughput helper text"
+  },
   "integrationsTabGeneral": {
     "message": "General",
     "description": "Non-email integration detail tab"
@@ -12786,6 +12970,98 @@
   "integrationsProviderOptionResend": {
     "message": "resend",
     "description": "Resend provider option"
+  },
+  "integrationsProviderOptionAmds": {
+    "message": "amds (Arivu Mail Delivery System)",
+    "description": "AMDS platform email provider option"
+  },
+  "integrationsAmdsHintTitle": {
+    "message": "AMDS — platform mail API.",
+    "description": "AMDS provider hint title"
+  },
+  "integrationsAmdsHintBody": {
+    "message": "CRM sends go through the Arivu Mail Delivery System HTTP API (not SMTP). Configure From Email below; API credentials live on the server (AMDS_BASE_URL, AMDS_API_KEY). Server status:",
+    "description": "AMDS provider hint body"
+  },
+  "integrationsAmdsServerConfigured": {
+    "message": "API server connected",
+    "description": "AMDS env configured badge"
+  },
+  "integrationsAmdsServerNotConfigured": {
+    "message": "API server not configured",
+    "description": "AMDS env missing badge"
+  },
+  "integrationsNotifyAmdsSelected": {
+    "message": "AMDS selected — SMTP fields are not used for CRM sends.",
+    "description": "Toast when AMDS provider selected"
+  },
+  "integrationsAmdsDomainsTitle": {
+    "message": "Sending domains",
+    "description": "AMDS domain registration section title"
+  },
+  "integrationsAmdsDomainsDesc": {
+    "message": "Register and verify DNS for the domain used in From Email. LiteDesk proxies AMDS domain APIs.",
+    "description": "AMDS domain section description"
+  },
+  "integrationsAmdsDomainLabel": {
+    "message": "Domain",
+    "description": "AMDS domain input label"
+  },
+  "integrationsAmdsDomainPlaceholder": {
+    "message": "mail.example.com",
+    "description": "AMDS domain input placeholder"
+  },
+  "integrationsAmdsDomainRegister": {
+    "message": "Register domain",
+    "description": "AMDS register domain button"
+  },
+  "integrationsAmdsDomainVerify": {
+    "message": "Verify DNS",
+    "description": "AMDS verify domain button"
+  },
+  "integrationsAmdsDomainVerified": {
+    "message": "Verified",
+    "description": "AMDS domain verified badge"
+  },
+  "integrationsAmdsDomainPending": {
+    "message": "Pending",
+    "description": "AMDS domain pending badge"
+  },
+  "integrationsAmdsDnsCopy": {
+    "message": "Copy value",
+    "description": "Copy DNS record value button"
+  },
+  "integrationsAmdsDnsCopied": {
+    "message": "DNS value copied",
+    "description": "Toast after copying DNS value"
+  },
+  "integrationsAmdsDnsCopyFailed": {
+    "message": "Could not copy to clipboard",
+    "description": "Toast when DNS copy fails"
+  },
+  "integrationsAmdsDomainRegistered": {
+    "message": "Domain registered — add DNS records below",
+    "description": "Toast after AMDS domain registration"
+  },
+  "integrationsAmdsDomainRegisterFailed": {
+    "message": "Failed to register domain",
+    "description": "Toast when AMDS domain registration fails"
+  },
+  "integrationsAmdsDomainVerifySuccess": {
+    "message": "Domain verified",
+    "description": "Toast when AMDS domain verification succeeds"
+  },
+  "integrationsAmdsDomainVerifyPending": {
+    "message": "DNS not fully verified yet",
+    "description": "Toast when AMDS verify returns pending"
+  },
+  "integrationsAmdsDomainVerifyFailed": {
+    "message": "Domain verification failed",
+    "description": "Toast when AMDS domain verification fails"
+  },
+  "integrationsNotifyTestEmailProvider": {
+    "message": "Delivery provider: {provider}",
+    "description": "Toast showing which provider sent the test email"
   },
   "integrationsProviderOptionSmtp": {
     "message": "smtp",

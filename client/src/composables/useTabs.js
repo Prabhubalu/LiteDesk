@@ -30,7 +30,11 @@ import {
   DocumentChartBarIcon,
   ShoppingCartIcon,
   CubeIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  MegaphoneIcon,
+  FunnelIcon,
+  PhotoIcon,
+  ChartBarIcon
 } from '@heroicons/vue/24/outline';
 import { MODULE_ICON_IDS, resolveStoredModuleIconId } from '@/utils/moduleIcons';
 import {
@@ -264,7 +268,11 @@ const iconMap = {
   sales_orders: ShoppingCartIcon,
   invoices: DocumentCurrencyDollarIcon,
   payments: CreditCardIcon,
-  cube: CubeIcon
+  cube: CubeIcon,
+  megaphone: MegaphoneIcon,
+  funnel: FunnelIcon,
+  photo: PhotoIcon,
+  'chart-bar': ChartBarIcon
 };
 
 const GENERIC_TAB_ICON_IDS = new Set(['document', 'document-text']);
@@ -976,6 +984,12 @@ const getIconForPath = (path) => {
   if (pathOnly === '/dashboard/helpdesk' || pathOnly.startsWith('/dashboard/helpdesk')) return 'lifebuoy';
   if (pathOnly === '/dashboard/audit' || pathOnly.startsWith('/dashboard/audit')) return 'shield-check';
   if (pathOnly === '/dashboard/sales' || pathOnly.startsWith('/dashboard/sales')) return 'document-chart-bar';
+  if (pathOnly === '/dashboard/marketing' || pathOnly.startsWith('/dashboard/marketing')) return 'chart-bar';
+  if (pathOnly.startsWith('/marketing/campaigns')) return 'megaphone';
+  if (pathOnly.startsWith('/marketing/audiences')) return 'users';
+  if (pathOnly.startsWith('/marketing/segments')) return 'funnel';
+  if (pathOnly.startsWith('/marketing/assets')) return 'photo';
+  if (pathOnly.startsWith('/marketing/reports')) return 'chart-bar';
   if (pathOnly.startsWith('/dashboard/')) return 'home';
   
   // Check for exact match first

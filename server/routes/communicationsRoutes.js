@@ -46,6 +46,7 @@ router.patch('/threads/:threadId/done', controller.markThreadDone);
 router.patch('/threads/:threadId/snooze', controller.markThreadSnooze);
 router.patch('/threads/:threadId/assign', controller.assignThreadOwner);
 router.patch('/threads/:threadId/tags', controller.updateThreadTags);
+router.get('/:communicationId/delivery-status', controller.getCommunicationDeliveryStatus);
 router.post('/:communicationId/create-task', controller.createTaskFromEmail);
 router.post('/:communicationId/create-case', controller.createCaseFromEmail);
 

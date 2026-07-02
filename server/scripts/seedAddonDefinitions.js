@@ -30,6 +30,24 @@ const LIVE_CHAT_ADDON = {
   },
 };
 
+const EMAIL_CREDITS_ADDON = {
+  addonKey: ADDON_KEYS.EMAIL_CREDITS,
+  name: 'Email Credit Packs',
+  description: 'Purchase additional outbound email credits for campaigns and transactional sends via AMDS.',
+  icon: 'envelope',
+  category: 'COMMUNICATION',
+  enabled: true,
+  order: 20,
+  optionalApps: ['SALES', 'HELPDESK', 'MARKETING'],
+  marketplace: {
+    category: 'Communication',
+    comingSoon: false,
+    beta: false,
+    shortDescription: 'Top up email credits when you need more sending capacity.',
+    docsUrl: '',
+  },
+};
+
 async function upsertAddonDefinition(doc) {
   const existing = await AddonDefinition.findOne({ addonKey: doc.addonKey });
   if (existing) {
@@ -54,12 +72,17 @@ async function upsertAddonPricing(addonKey) {
     enabled: true,
   };
 
+  if (Array.isArray(fallback.creditPacks) && fallback.creditPacks.length > 0) {
+    payload.creditPacks = fallback.creditPacks;
+  }
+
   const existing = await AddonPricingDefinition.findOne({ addonKey });
   if (existing) {
     existing.billingType = payload.billingType;
     existing.defaultPlan = payload.defaultPlan;
     existing.trialDays = payload.trialDays;
     existing.plans = payload.plans;
+    if (payload.creditPacks) existing.creditPacks = payload.creditPacks;
     existing.enabled = true;
     await existing.save();
     return 'updated';
@@ -82,24 +105,33 @@ async function ensureAddonCatalogSeeded(options = {}) {
     console.log(`Connected to MongoDB (${masterDbName})`);
   }
 
-  const defResult = await upsertAddonDefinition(LIVE_CHAT_ADDON);
-  const pricingResult = await upsertAddonPricing(ADDON_KEYS.LIVE_CHAT);
+  const defResultLiveChat = await upsertAddonDefinition(LIVE_CHAT_ADDON);
+  const defResultEmailCredits = await upsertAddonDefinition(EMAIL_CREDITS_ADDON);
+  const pricingResultLiveChat = await upsertAddonPricing(ADDON_KEYS.LIVE_CHAT);
+  const pricingResultEmailCredits = await upsertAddonPricing(ADDON_KEYS.EMAIL_CREDITS);
 
   if (!useExistingConnection) {
     await mongoose.disconnect();
   }
 
-  return { defResult, pricingResult };
+  return {
+    defResultLiveChat,
+    defResultEmailCredits,
+    pricingResultLiveChat,
+    pricingResultEmailCredits
+  };
 }
 
 async function main() {
-  const { defResult, pricingResult } = await ensureAddonCatalogSeeded();
-  console.log(`AddonDefinition live_chat: ${defResult}`);
-  console.log(`AddonPricingDefinition live_chat: ${pricingResult}`);
+  const result = await ensureAddonCatalogSeeded();
+  console.log(`AddonDefinition live_chat: ${result.defResultLiveChat}`);
+  console.log(`AddonDefinition email_credits: ${result.defResultEmailCredits}`);
+  console.log(`AddonPricingDefinition live_chat: ${result.pricingResultLiveChat}`);
+  console.log(`AddonPricingDefinition email_credits: ${result.pricingResultEmailCredits}`);
   console.log('Done.');
 }
 
-module.exports = { ensureAddonCatalogSeeded, LIVE_CHAT_ADDON };
+module.exports = { ensureAddonCatalogSeeded, LIVE_CHAT_ADDON, EMAIL_CREDITS_ADDON };
 
 if (require.main === module) {
   main().catch((err) => {

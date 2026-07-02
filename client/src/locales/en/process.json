@@ -2119,6 +2119,34 @@
     "message": "The Control Plane is only accessible to platform administrators. These modules are not visible to tenant users and cannot be automated.",
     "description": "Platform only notice body"
   },
+  "controlPlaneAmdsInfraTitle": {
+    "message": "AMDS Infrastructure",
+    "description": "Control plane AMDS infra status module title"
+  },
+  "controlPlaneAmdsInfraDesc": {
+    "message": "Platform-level mail delivery load and throttling status from AMDS.",
+    "description": "Control plane AMDS infra status module description"
+  },
+  "controlPlaneAmdsInfraMultiplier": {
+    "message": "Infrastructure multiplier",
+    "description": "AMDS infra status infrastructure multiplier label"
+  },
+  "controlPlaneAmdsInfraLoadLevel": {
+    "message": "Load level",
+    "description": "AMDS infra status load level label"
+  },
+  "controlPlaneAmdsInfraQueueDepth": {
+    "message": "Queue depth",
+    "description": "AMDS infra status queue depth label"
+  },
+  "controlPlaneAmdsInfraUpdatedAt": {
+    "message": "Last updated",
+    "description": "AMDS infra status updated timestamp label"
+  },
+  "controlPlaneAmdsInfraLoadFailed": {
+    "message": "Failed to load AMDS infrastructure status",
+    "description": "AMDS infra status load error"
+  },
   "controlPlaneDocTitle": {
     "message": "Control Plane | Arivu",
     "description": "Control plane document title"

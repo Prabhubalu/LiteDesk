@@ -50,6 +50,12 @@ module.exports = {
     roles: ['ADMIN', 'MANAGER', 'USER'],
     userTypesAllowed: ['INTERNAL'],
     defaultRole: 'USER'
+  },
+
+  MARKETING: {
+    roles: ['ADMIN', 'MANAGER', 'USER'],
+    userTypesAllowed: ['INTERNAL'],
+    defaultRole: 'USER'
   }
 };
 

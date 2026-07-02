@@ -163,9 +163,178 @@ const routes = [
     }
   },
   {
+    path: '/dashboard/marketing',
+    name: 'marketing-dashboard',
+    component: () => import('@/views/marketing/MarketingDashboard.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'campaigns', action: 'view' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/preferences/:token',
+    name: 'marketing-preferences',
+    component: () => import('@/views/marketing/PreferenceCenter.vue'),
+    meta: { requiresAuth: false, hideShell: true }
+  },
+  {
+    path: '/marketing/campaigns',
+    name: 'marketing-campaigns',
+    component: () => import('@/views/marketing/CampaignsList.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'campaigns', action: 'view' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/campaigns/approvals',
+    name: 'marketing-campaign-approvals',
+    component: () => import('@/views/marketing/CampaignApprovalsList.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'campaigns', action: 'view' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/campaigns/new',
+    name: 'marketing-campaign-new',
+    component: () => import('@/views/marketing/CampaignEditor.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'campaigns', action: 'create' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/campaigns/:id/edit',
+    name: 'marketing-campaign-edit',
+    component: () => import('@/views/marketing/CampaignEditor.vue'),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'campaigns', action: 'edit' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/campaigns/:id',
+    name: 'marketing-campaign-detail',
+    component: () => import('@/views/marketing/CampaignDetail.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'campaigns', action: 'view' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/audiences',
+    name: 'marketing-audiences',
+    component: () => import('@/views/marketing/AudiencesList.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'audiences', action: 'view' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/audiences/new',
+    name: 'marketing-audience-new',
+    component: () => import('@/views/marketing/AudienceDetail.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'audiences', action: 'create' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/audiences/:id',
+    name: 'marketing-audience-detail',
+    component: () => import('@/views/marketing/AudienceDetail.vue'),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'audiences', action: 'view' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/segments',
+    name: 'marketing-segments',
+    component: () => import('@/views/marketing/SegmentsList.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'segments', action: 'view' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/segments/new',
+    name: 'marketing-segment-new',
+    component: () => import('@/views/marketing/SegmentBuilder.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'segments', action: 'create' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/segments/:id',
+    name: 'marketing-segment-detail',
+    component: () => import('@/views/marketing/SegmentBuilder.vue'),
+    props: true,
+    beforeEnter: (to) => {
+      const reserved = new Set(['new', 'metadata', 'preview', 'explain']);
+      if (reserved.has(String(to.params.id || '').toLowerCase())) {
+        return { name: 'marketing-segments' };
+      }
+      return true;
+    },
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'segments', action: 'edit' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/assets',
+    name: 'marketing-assets',
+    component: () => import('@/views/marketing/AssetsLibrary.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'assets', action: 'view' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/reports',
+    name: 'marketing-reports',
+    component: () => import('@/views/marketing/MarketingReports.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'campaigns', action: 'view' },
+      appKey: 'MARKETING'
+    }
+  },
+  {
+    path: '/marketing/templates',
+    redirect: '/templates'
+  },
+  {
+    path: '/marketing/templates/:id',
+    redirect: (to) => ({ name: 'template-builder', params: { id: to.params.id } })
+  },
+  {
     path: '/inventory',
     name: 'inventory-home',
     redirect: '/dashboard/inventory'
+  },
+  {
+    path: '/marketing',
+    name: 'marketing-home',
+    redirect: '/dashboard/marketing'
   },
   // Backward compatibility: redirect /dashboard to /sales/dashboard
   {
@@ -401,6 +570,15 @@ const routes = [
     path: '/control/inbound-parser',
     name: 'control-inbound-parser',
     component: () => import('@/views/ControlPlaneInboundParser.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPlatformAdmin: true
+    }
+  },
+  {
+    path: '/control/amds-infra',
+    name: 'control-amds-infra',
+    component: () => import('@/views/ControlPlaneAmdsInfra.vue'),
     meta: {
       requiresAuth: true,
       requiresPlatformAdmin: true
@@ -765,6 +943,12 @@ const routes = [
     path: '/content-assets',
     name: 'content-assets',
     component: () => import('@/views/ContentAssets.vue'),
+    meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'view' } }
+  },
+  {
+    path: '/templates/email-merge-mappings',
+    name: 'email-merge-mappings',
+    component: () => import('@/views/EmailMergeTagMappings.vue'),
     meta: { requiresAuth: true, requiresPermission: { module: 'templates', action: 'view' } }
   },
   {

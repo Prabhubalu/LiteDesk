@@ -26,6 +26,7 @@ export interface PageDimensionsPx {
 export interface PageLayoutOptions {
   dimensions: PageDimensionsPx;
   marginsMm?: Partial<PageMarginsMm>;
+  isEmail?: boolean;
 }
 
 export function parseDimensionPx(value: string | number | undefined | null): number {
@@ -71,13 +72,56 @@ export function applyPageDimensions(editor: Editor, options: PageLayoutOptions):
     frame.set({ width: widthPx, height: heightPx }, { noUndo: true });
   }
 
+  if (options.isEmail) {
+    injectEmailCanvasCss(editor, width, height);
+    return;
+  }
+
   ensurePrintArea(editor);
   applyPrintAreaLayout(editor, options.dimensions, options.marginsMm);
 
   injectPageDimensionCss(editor, height);
 }
 
-export function setupPageLayout(editor: Editor): void {
+function injectEmailCanvasCss(editor: Editor, width: number, height: number): void {
+  const doc = editor.Canvas.getFrameEl()?.contentDocument;
+  if (!doc) return;
+
+  let styleEl = doc.getElementById(PAGE_DIMENSIONS_STYLE_ID);
+  if (!styleEl) {
+    styleEl = doc.createElement('style');
+    styleEl.id = PAGE_DIMENSIONS_STYLE_ID;
+    doc.head.appendChild(styleEl);
+  }
+
+  styleEl.textContent = `
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: ${height}px;
+      background: #f3f4f6;
+    }
+
+    [data-gjs-type="wrapper"] {
+      width: ${width}px !important;
+      max-width: ${width}px !important;
+      min-height: ${height}px !important;
+      margin: 0 auto !important;
+      box-sizing: border-box !important;
+      background: #ffffff;
+    }
+  `;
+}
+
+export interface PageLayoutSetupOptions {
+  isEmail?: boolean;
+}
+
+export function setupPageLayout(editor: Editor, options: PageLayoutSetupOptions = {}): void {
+  if (options.isEmail) {
+    return;
+  }
+
   registerPrintAreaComponent(editor);
   registerLayoutGridComponents(editor);
   bindLayoutGridGuards(editor);
@@ -95,7 +139,9 @@ export function bindPageDimensionFrameCss(
   const apply = () => {
     const layout = getLayout();
     if (layout.dimensions.width && layout.dimensions.height) {
-      injectPageDimensionCss(editor, layout.dimensions.height);
+      if (!layout.isEmail) {
+        injectPageDimensionCss(editor, layout.dimensions.height);
+      }
       applyPageDimensions(editor, layout);
     }
   };

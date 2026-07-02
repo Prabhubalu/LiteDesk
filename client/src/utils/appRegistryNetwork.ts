@@ -532,7 +532,7 @@ function buildRegistryFromPayload(payload: {
 }): AppRegistry {
   const apps = payload.apps || [];
   const registry: AppRegistry = {};
-  const specialAppRoutes = ['/audit/', '/portal/', '/helpdesk/', '/projects/'];
+  const specialAppRoutes = ['/audit/', '/portal/', '/helpdesk/', '/projects/', '/marketing/'];
 
   for (const app of apps) {
     const rawModules = payload.modulesByAppKey?.[app.appKey] || [];

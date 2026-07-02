@@ -244,7 +244,7 @@ const UserSchema = new mongoose.Schema({
         appKey: {
             type: String,
             // Keep in sync with Organization.enabledApps / TenantAppConfiguration
-            enum: ['SALES', 'HELPDESK', 'PROJECTS', 'AUDIT', 'PORTAL', 'LMS', 'INVENTORY'],
+            enum: ['SALES', 'HELPDESK', 'PROJECTS', 'AUDIT', 'PORTAL', 'LMS', 'INVENTORY', 'MARKETING'],
             required: true
         },
         roleKey: {
@@ -270,7 +270,7 @@ const UserSchema = new mongoose.Schema({
     // Phase 2D: Added SALES, HELPDESK, PROJECTS
     allowedApps: {
         type: [String],
-        enum: ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'],
+        enum: ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY', 'MARKETING'],
         default: ['SALES'] // Default existing users to SALES access
     },
     

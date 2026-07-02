@@ -19,6 +19,10 @@ const { tickDocumentOcrIndex } = require('./documentOcrIndexSchedulerService');
 const { tickDocumentReservationExpiration } = require('./documentReservationExpirationSchedulerService');
 const { processDuePlaybookDelayJobs } = require('./playbookSchedulingService');
 const { processDuePlaybookAlertJobs } = require('./playbookAlertSchedulingService');
+const { tickMarketingSegmentRefresh } = require('./marketing/marketingSegmentRefreshScheduler');
+const { tickMarketingCampaignSchedule } = require('./marketing/marketingCampaignScheduleScheduler');
+const { tickMarketingAbTests } = require('./marketing/marketingAbTestScheduler');
+const { tickAmdsPolicySyncRetry } = require('./amds/amdsPolicySyncScheduler');
 
 const NOTIFICATION_DEBUG = process.env.NOTIFICATION_DEBUG === 'true';
 const ENABLE_DIGEST_SCHEDULER = process.env.ENABLE_DIGEST_SCHEDULER !== 'false'; // Default: enabled
@@ -63,6 +67,14 @@ const ENABLE_ADDON_TRIAL_EXPIRY_SCHEDULER =
   process.env.ENABLE_ADDON_TRIAL_EXPIRY_SCHEDULER !== 'false';
 const ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER =
   process.env.ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER !== 'false';
+const ENABLE_MARKETING_SEGMENT_REFRESH_SCHEDULER =
+  process.env.ENABLE_MARKETING_SEGMENT_REFRESH_SCHEDULER !== 'false';
+const ENABLE_MARKETING_CAMPAIGN_SCHEDULE_SCHEDULER =
+  process.env.ENABLE_MARKETING_CAMPAIGN_SCHEDULE_SCHEDULER !== 'false';
+const ENABLE_MARKETING_AB_TEST_SCHEDULER =
+  process.env.ENABLE_MARKETING_AB_TEST_SCHEDULER !== 'false';
+const ENABLE_AMDS_POLICY_SYNC_SCHEDULER =
+  process.env.ENABLE_AMDS_POLICY_SYNC_SCHEDULER !== 'false';
 
 let dailyDigestJob = null;
 let weeklyDigestJob = null;
@@ -89,6 +101,10 @@ let stalledInviteJob = null;
 let trialNudgeJob = null;
 let addonTrialExpiryJob = null;
 let releaseNotePublishJob = null;
+let marketingSegmentRefreshJob = null;
+let marketingCampaignScheduleJob = null;
+let marketingAbTestJob = null;
+let amdsPolicySyncJob = null;
 
 /**
  * Initialize and start scheduled jobs (node-cron).
@@ -285,6 +301,90 @@ function startScheduledJobs() {
       console.log(`[scheduledJobs]   - Target recalc fallback: ${targetCron}`);
     } else {
       console.error(`[scheduledJobs] Invalid TARGET_RECALC_CRON="${targetCron}"`);
+    }
+  }
+
+  if (ENABLE_MARKETING_SEGMENT_REFRESH_SCHEDULER) {
+    const segmentCron = String(process.env.MARKETING_SEGMENT_REFRESH_CRON || '*/15 * * * *').trim();
+    if (cron.validate(segmentCron)) {
+      marketingSegmentRefreshJob = cron.schedule(segmentCron, async () => {
+        try {
+          const result = await tickMarketingSegmentRefresh();
+          if (result?.skipped) return;
+          console.log(
+            `[scheduledJobs] Marketing segment refresh: total=${result.total} refreshed=${result.refreshed} failed=${result.failed}`
+          );
+        } catch (err) {
+          console.error('[scheduledJobs] Marketing segment refresh failed:', err.message);
+        }
+      }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+      console.log(`[scheduledJobs]   - Marketing segment refresh: ${segmentCron}`);
+    } else {
+      console.error(`[scheduledJobs] Invalid MARKETING_SEGMENT_REFRESH_CRON="${segmentCron}"`);
+    }
+  }
+
+  if (ENABLE_MARKETING_CAMPAIGN_SCHEDULE_SCHEDULER) {
+    const campaignScheduleCron = String(process.env.MARKETING_CAMPAIGN_SCHEDULE_CRON || '* * * * *').trim();
+    if (cron.validate(campaignScheduleCron)) {
+      marketingCampaignScheduleJob = cron.schedule(campaignScheduleCron, async () => {
+        try {
+          const result = await tickMarketingCampaignSchedule();
+          if (result?.skipped) return;
+          if (result.due > 0 || result.sent > 0 || result.failed > 0) {
+            console.log(
+              `[scheduledJobs] Marketing campaign schedule: due=${result.due} sent=${result.sent} skipped=${result.skipped} failed=${result.failed}`
+            );
+          }
+        } catch (err) {
+          console.error('[scheduledJobs] Marketing campaign schedule failed:', err.message);
+        }
+      }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+      console.log(`[scheduledJobs]   - Marketing campaign schedule: ${campaignScheduleCron}`);
+    } else {
+      console.error(`[scheduledJobs] Invalid MARKETING_CAMPAIGN_SCHEDULE_CRON="${campaignScheduleCron}"`);
+    }
+  }
+
+  if (ENABLE_MARKETING_AB_TEST_SCHEDULER) {
+    const abTestCron = String(process.env.MARKETING_AB_TEST_CRON || '*/5 * * * *').trim();
+    if (cron.validate(abTestCron)) {
+      marketingAbTestJob = cron.schedule(abTestCron, async () => {
+        try {
+          const result = await tickMarketingAbTests();
+          if (result?.skipped) return;
+          if (result.processed > 0 || result.finalized > 0 || result.failed > 0) {
+            console.log(
+              `[scheduledJobs] Marketing A/B tests: processed=${result.processed} finalized=${result.finalized} failed=${result.failed}`
+            );
+          }
+        } catch (err) {
+          console.error('[scheduledJobs] Marketing A/B test tick failed:', err.message);
+        }
+      }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+      console.log(`[scheduledJobs]   - Marketing A/B tests: ${abTestCron}`);
+    } else {
+      console.error(`[scheduledJobs] Invalid MARKETING_AB_TEST_CRON="${abTestCron}"`);
+    }
+  }
+
+  if (ENABLE_AMDS_POLICY_SYNC_SCHEDULER) {
+    const policySyncCron = String(process.env.AMDS_POLICY_SYNC_CRON || '*/5 * * * *').trim();
+    if (cron.validate(policySyncCron)) {
+      amdsPolicySyncJob = cron.schedule(policySyncCron, async () => {
+        try {
+          const result = await tickAmdsPolicySyncRetry();
+          if (!result || result.attempted === 0) return;
+          console.log(
+            `[scheduledJobs] AMDS policy sync retry: attempted=${result.attempted} succeeded=${result.succeeded} failed=${result.failed}`
+          );
+        } catch (err) {
+          console.error('[scheduledJobs] AMDS policy sync retry failed:', err.message);
+        }
+      }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+      console.log(`[scheduledJobs]   - AMDS policy sync retry: ${policySyncCron}`);
+    } else {
+      console.error(`[scheduledJobs] Invalid AMDS_POLICY_SYNC_CRON="${policySyncCron}"`);
     }
   }
 
@@ -804,6 +904,26 @@ function stopScheduledJobs() {
     releaseNotePublishJob.stop();
     releaseNotePublishJob = null;
     console.log('[scheduledJobs] Release note publish job stopped');
+  }
+  if (marketingSegmentRefreshJob) {
+    marketingSegmentRefreshJob.stop();
+    marketingSegmentRefreshJob = null;
+    console.log('[scheduledJobs] Marketing segment refresh job stopped');
+  }
+  if (marketingCampaignScheduleJob) {
+    marketingCampaignScheduleJob.stop();
+    marketingCampaignScheduleJob = null;
+    console.log('[scheduledJobs] Marketing campaign schedule job stopped');
+  }
+  if (marketingAbTestJob) {
+    marketingAbTestJob.stop();
+    marketingAbTestJob = null;
+    console.log('[scheduledJobs] Marketing A/B test job stopped');
+  }
+  if (amdsPolicySyncJob) {
+    amdsPolicySyncJob.stop();
+    amdsPolicySyncJob = null;
+    console.log('[scheduledJobs] AMDS policy sync retry job stopped');
   }
 }
 

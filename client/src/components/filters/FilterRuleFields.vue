@@ -153,6 +153,7 @@ function onFieldChange(key: string | null) {
   if (key) {
     const filter = props.filterByKey[key] ?? props.fieldOptions.find((f) => f.key === key);
     emit('update:operator', getDefaultOperatorForFilter(filter ?? null));
+    emit('filter-opened', key);
   }
 }
 

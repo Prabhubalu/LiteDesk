@@ -25,7 +25,12 @@ const route = useRoute();
 const items = computed(() => [
   { to: { name: 'templates' }, label: t('templates.navTemplates'), match: ['templates', 'template-detail'] },
   { to: { name: 'content-themes' }, label: t('templates.navThemes'), match: ['content-themes', 'content-theme-detail'] },
-  { to: { name: 'content-assets' }, label: t('templates.navAssets'), match: ['content-assets'] }
+  { to: { name: 'content-assets' }, label: t('templates.navAssets'), match: ['content-assets'] },
+  {
+    to: { name: 'email-merge-mappings' },
+    label: t('templates.navMergeMappings'),
+    match: ['email-merge-mappings']
+  }
 ]);
 
 function isActive(item) {

@@ -1,0 +1,1958 @@
+{
+  "moduleComingSoon": {
+    "message": "This module is being built. Campaign management arrives in the next release.",
+    "description": "Placeholder copy for marketing module routes before M1–M4 ship"
+  },
+  "campaignsListTitle": {
+    "message": "Campaigns",
+    "description": "Marketing campaigns list page title"
+  },
+  "campaignsTenantStatsTitle": {
+    "message": "Email sending capacity",
+    "description": "Tenant email stats section title on campaigns list"
+  },
+  "campaignsTenantStatsSubtitle": {
+    "message": "Organization-wide credits, reputation, and throughput for planning campaigns.",
+    "description": "Tenant email stats section subtitle on campaigns list"
+  },
+  "campaignsTenantStatsLoadFailed": {
+    "message": "Failed to load email sending stats",
+    "description": "Error when tenant stats fail to load on campaigns list"
+  },
+  "campaignsListDescription": {
+    "message": "Create and send email campaigns to your contacts.",
+    "description": "Marketing campaigns list page description"
+  },
+  "campaignsListDescriptionFiltered": {
+    "message": "Showing {status} campaigns.",
+    "description": "Campaigns list description when filtered by status"
+  },
+  "campaignsNew": {
+    "message": "New campaign",
+    "description": "Create campaign button label"
+  },
+  "campaignsSearchPlaceholder": {
+    "message": "Search campaigns…",
+    "description": "Campaigns list search placeholder"
+  },
+  "campaignsEmptyTitle": {
+    "message": "No campaigns yet",
+    "description": "Empty campaigns list title for first-time users"
+  },
+  "campaignsEmptyMessage": {
+    "message": "Create your first campaign to reach contacts with tracked email.",
+    "description": "Empty campaigns list message for first-time users"
+  },
+  "campaignsNoResultsTitle": {
+    "message": "No matching campaigns",
+    "description": "Empty campaigns list title when filters return nothing"
+  },
+  "campaignsNoResultsMessage": {
+    "message": "Try a different search or clear your filters.",
+    "description": "Empty campaigns list message when filters return nothing"
+  },
+  "campaignsColName": {
+    "message": "Name",
+    "description": "Campaign name column"
+  },
+  "campaignsColSubject": {
+    "message": "Subject",
+    "description": "Campaign subject column"
+  },
+  "campaignsColStatus": {
+    "message": "Status",
+    "description": "Campaign status column"
+  },
+  "campaignsColRecipients": {
+    "message": "Recipients",
+    "description": "Campaign recipient count column"
+  },
+  "campaignsColSentRecipients": {
+    "message": "Sent",
+    "description": "Campaign list sent recipient count column header"
+  },
+  "campaignsListColPlannedRecipients": {
+    "message": "Planned",
+    "description": "Campaign list planned audience recipient count"
+  },
+  "campaignsListColCreditsNeeded": {
+    "message": "Credits needed",
+    "description": "Campaign list credits required column"
+  },
+  "campaignsListColCreditsRemaining": {
+    "message": "Credits left",
+    "description": "Campaign list credits remaining column"
+  },
+  "campaignsListColReputation": {
+    "message": "Reputation",
+    "description": "Campaign list sender reputation column"
+  },
+  "campaignsListColEffectiveRate": {
+    "message": "Effective rate",
+    "description": "Campaign list effective hourly send rate column"
+  },
+  "campaignsListColEstimate": {
+    "message": "Est. completion",
+    "description": "Campaign list estimated send completion column"
+  },
+  "campaignsListColSendReady": {
+    "message": "Send ready",
+    "description": "Campaign list send readiness column"
+  },
+  "campaignsListPlanningReady": {
+    "message": "Ready",
+    "description": "Campaign list send ready badge"
+  },
+  "campaignsListPlanningBlocked": {
+    "message": "Blocked",
+    "description": "Campaign list send blocked badge"
+  },
+  "campaignsColUpdated": {
+    "message": "Updated",
+    "description": "Campaign updated column"
+  },
+  "campaignsFilterAll": {
+    "message": "All",
+    "description": "Campaign status filter — all statuses"
+  },
+  "campaignsStatusDraft": {
+    "message": "Draft",
+    "description": "Campaign status draft"
+  },
+  "campaignsStatusScheduled": {
+    "message": "Scheduled",
+    "description": "Campaign status scheduled"
+  },
+  "campaignsStatusRunning": {
+    "message": "Running",
+    "description": "Campaign status running"
+  },
+  "campaignsStatusPaused": {
+    "message": "Paused",
+    "description": "Campaign status paused"
+  },
+  "campaignsStatusCompleted": {
+    "message": "Completed",
+    "description": "Campaign status completed"
+  },
+  "campaignsStatusCancelled": {
+    "message": "Cancelled",
+    "description": "Campaign status cancelled"
+  },
+  "campaignsStatusArchived": {
+    "message": "Archived",
+    "description": "Campaign status archived"
+  },
+  "campaignsStatusFailed": {
+    "message": "Failed",
+    "description": "Campaign status failed"
+  },
+  "campaignsCreateTitle": {
+    "message": "New campaign",
+    "description": "Create campaign page title"
+  },
+  "campaignsEditTitle": {
+    "message": "Edit campaign",
+    "description": "Edit campaign page title"
+  },
+  "campaignsFieldName": {
+    "message": "Campaign name",
+    "description": "Campaign name field label"
+  },
+  "campaignsFieldSubject": {
+    "message": "Subject line",
+    "description": "Campaign subject field label"
+  },
+  "campaignsFieldFromEmail": {
+    "message": "From email",
+    "description": "Campaign from email field label"
+  },
+  "campaignsFieldFromName": {
+    "message": "From name",
+    "description": "Campaign from name field label"
+  },
+  "campaignsFieldBodyHtml": {
+    "message": "Email body (HTML)",
+    "description": "Campaign HTML body field label"
+  },
+  "campaignsFieldTrackOpens": {
+    "message": "Track opens",
+    "description": "Campaign track opens toggle label"
+  },
+  "campaignsFieldTrackClicks": {
+    "message": "Track clicks",
+    "description": "Campaign track clicks toggle label"
+  },
+  "campaignsCreateSuccess": {
+    "message": "Campaign created",
+    "description": "Toast after campaign creation"
+  },
+  "campaignsUpdateSuccess": {
+    "message": "Campaign saved",
+    "description": "Toast after campaign update"
+  },
+  "campaignsDeleteSuccess": {
+    "message": "Campaign deleted",
+    "description": "Toast after campaign deletion"
+  },
+  "campaignsDeleteNotAllowed": {
+    "message": "This campaign cannot be deleted. Cancel it first if it is still running or scheduled.",
+    "description": "Error when campaign status blocks deletion from list view"
+  },
+  "campaignsDuplicateSuccess": {
+    "message": "Campaign duplicated",
+    "description": "Toast after campaign duplication"
+  },
+  "campaignsSendSuccess": {
+    "message": "Campaign send started",
+    "description": "Toast after campaign send accepted"
+  },
+  "campaignsSendStartedHint": {
+    "message": "Track preparation progress on this page.",
+    "description": "Hint after send accepted — progress shown on campaign detail"
+  },
+  "campaignSendProgressTitle": {
+    "message": "Send in progress",
+    "description": "Campaign detail — live send progress section title"
+  },
+  "campaignSendProgressPhaseQueued": {
+    "message": "Queued",
+    "description": "Campaign send phase label — queued"
+  },
+  "campaignSendProgressPhaseResolving": {
+    "message": "Resolving recipients",
+    "description": "Campaign send phase label — resolving audience"
+  },
+  "campaignSendProgressPhasePreparing": {
+    "message": "Preparing messages",
+    "description": "Campaign send phase label — preparing merge/render"
+  },
+  "campaignSendProgressPhaseRunning": {
+    "message": "Sending",
+    "description": "Campaign send phase label — active send"
+  },
+  "campaignSendProgressPhaseSubmitting": {
+    "message": "Submitting to delivery",
+    "description": "Campaign send phase label — AMDS submit"
+  },
+  "campaignSendProgressPhaseCompleted": {
+    "message": "Completed",
+    "description": "Campaign send phase label — completed"
+  },
+  "campaignSendProgressPhaseFailed": {
+    "message": "Failed",
+    "description": "Campaign send phase label — failed"
+  },
+  "campaignSendProgressPrepared": {
+    "message": "{prepared} of {total} prepared ({percent}%)",
+    "description": "Campaign send progress — prepared count"
+  },
+  "campaignSendProgressQueued": {
+    "message": "{count} queued for delivery",
+    "description": "Campaign send progress — queued count"
+  },
+  "campaignSendProgressSkipped": {
+    "message": "{count} skipped (unsubscribed)",
+    "description": "Campaign send progress — skipped unsubscribed"
+  },
+  "campaignSendProgressCredits": {
+    "message": "{count} credits reserved for this send",
+    "description": "Campaign send progress — credits reserved"
+  },
+  "campaignSendProgressEstimate": {
+    "message": "Estimated completion in about {duration}",
+    "description": "Campaign send progress — time estimate"
+  },
+  "campaignSendProgressFailed": {
+    "message": "Send failed: {error}",
+    "description": "Campaign send progress — error message"
+  },
+  "campaignsSendFailedGeneric": {
+    "message": "Campaign send failed. Open Send to retry after fixing the issue.",
+    "description": "Generic failed campaign banner on detail page"
+  },
+  "campaignsSendFailedBurstLimit": {
+    "message": "Send failed: burst sending limit reached. Wait about a minute after recent sends, then use Send to retry.",
+    "description": "Failed campaign banner when AMDS burst limit is exceeded"
+  },
+  "campaignsSendFailedHourlyLimit": {
+    "message": "Send failed: hourly sending limit reached. Try again later.",
+    "description": "Failed campaign banner when AMDS hourly limit is exceeded"
+  },
+  "campaignsSendFailedDailyLimit": {
+    "message": "Send failed: daily sending limit reached. Try again tomorrow.",
+    "description": "Failed campaign banner when AMDS daily limit is exceeded"
+  },
+  "campaignsArchiveSuccess": {
+    "message": "Campaign archived",
+    "description": "Toast after campaign archived"
+  },
+  "campaignsCancelSuccess": {
+    "message": "Campaign cancelled",
+    "description": "Toast after campaign cancelled"
+  },
+  "campaignsDetailLoading": {
+    "message": "Loading campaign…",
+    "description": "Campaign detail loading message"
+  },
+  "campaignsDetailError": {
+    "message": "Unable to load campaign",
+    "description": "Campaign detail error title"
+  },
+  "campaignsDetailPerformanceTitle": {
+    "message": "Performance",
+    "description": "Campaign detail primary metrics section title"
+  },
+  "campaignsDetailDeliveryTitle": {
+    "message": "Delivery pipeline",
+    "description": "Campaign detail delivery metrics section title"
+  },
+  "campaignsDetailIssuesTitle": {
+    "message": "Deliverability issues",
+    "description": "Campaign detail bounce and complaint metrics section title"
+  },
+  "campaignsDetailOverviewTitle": {
+    "message": "Overview",
+    "description": "Campaign detail sidebar overview card title"
+  },
+  "campaignsDetailMoreActions": {
+    "message": "More actions",
+    "description": "Campaign detail overflow menu aria label"
+  },
+  "campaignsDetailFromLabel": {
+    "message": "From",
+    "description": "Campaign detail from email label"
+  },
+  "campaignsDetailAudienceLabel": {
+    "message": "Audience",
+    "description": "Campaign detail linked audience label"
+  },
+  "campaignsDetailTypeLabel": {
+    "message": "Type",
+    "description": "Campaign detail campaign type label"
+  },
+  "campaignsDetailTypeStandard": {
+    "message": "Standard campaign",
+    "description": "Campaign detail standard type label"
+  },
+  "campaignsDetailTypeAbTest": {
+    "message": "A/B test",
+    "description": "Campaign detail A/B test type label"
+  },
+  "campaignsDetailTrackingLabel": {
+    "message": "Tracking",
+    "description": "Campaign detail open/click tracking label"
+  },
+  "campaignsDetailTrackingOn": {
+    "message": "Opens & clicks",
+    "description": "Campaign detail tracking enabled label"
+  },
+  "campaignsDetailTrackingOff": {
+    "message": "Disabled",
+    "description": "Campaign detail tracking disabled label"
+  },
+  "campaignsDetailRecipientsSearch": {
+    "message": "Search recipients…",
+    "description": "Campaign detail recipient table search placeholder"
+  },
+  "campaignsDetailRecipientsShowing": {
+    "message": "Showing {shown} of {total}",
+    "description": "Campaign detail filtered recipient count"
+  },
+  "campaignsDetailRecipientsFilterAll": {
+    "message": "All statuses",
+    "description": "Campaign detail recipient status filter — all"
+  },
+  "campaignsStatsRecipients": {
+    "message": "Recipients",
+    "description": "Campaign stats card — recipients"
+  },
+  "campaignsStatsDelivered": {
+    "message": "Delivered",
+    "description": "Campaign stats card — delivered"
+  },
+  "campaignsStatsOpenRate": {
+    "message": "Open rate",
+    "description": "Campaign stats card — open rate"
+  },
+  "campaignsStatsClickRate": {
+    "message": "Click rate",
+    "description": "Campaign stats card — click rate"
+  },
+  "campaignsStatsQueued": {
+    "message": "Queued",
+    "description": "Campaign detail queued stat label"
+  },
+  "campaignsStatsFailed": {
+    "message": "Failed",
+    "description": "Campaign detail failed delivery stat label"
+  },
+  "campaignsStatsHardBounced": {
+    "message": "Hard bounces",
+    "description": "Campaign detail hard bounce stat label"
+  },
+  "campaignsStatsSoftBounced": {
+    "message": "Soft bounces",
+    "description": "Campaign detail soft bounce stat label"
+  },
+  "campaignsStatsComplaints": {
+    "message": "Spam complaints",
+    "description": "Campaign detail spam complaint stat label"
+  },
+  "campaignsStatsUnsubscribed": {
+    "message": "Unsubscribed (skipped)",
+    "description": "Campaign detail unsubscribed-at-send stat label"
+  },
+  "campaignsStatsSuppressed": {
+    "message": "Suppressed",
+    "description": "Campaign detail suppressed recipient stat label"
+  },
+  "campaignsStatsRejected": {
+    "message": "Rejected",
+    "description": "Campaign detail AMDS rejected stat label"
+  },
+  "campaignsMaxSendableRecipients": {
+    "message": "Deliverable today",
+    "description": "Tenant-level max recipients deliverable today under current warm-up and policy limits"
+  },
+  "campaignsMaxSendableLimitedByCredits": {
+    "message": "Limited by available credits",
+    "description": "Hint when send capacity is credit-bound"
+  },
+  "campaignsMaxSendableLimitedByCampaignSize": {
+    "message": "Limited by max campaign size",
+    "description": "Hint when send capacity is limited by max campaign size"
+  },
+  "campaignsMaxSendableLimitedByDaily": {
+    "message": "Limited by daily send limit",
+    "description": "Hint when send capacity is daily-limit-bound"
+  },
+  "campaignsMaxSendableLimitedByThroughput": {
+    "message": "Warm-up throttle — ~{count} recipients today (paced, not instant)",
+    "description": "Hint when send capacity is warm-up throughput-bound"
+  },
+  "campaignsMaxSendableLimitedByReputation": {
+    "message": "Blocked — sender reputation below minimum",
+    "description": "Hint when send capacity is zero due to reputation"
+  },
+  "campaignsMaxSendableSuspended": {
+    "message": "Blocked — email sending is suspended",
+    "description": "Hint when send capacity is zero due to suspension"
+  },
+  "campaignsSendCapacitySummary": {
+    "message": "You can send up to {count} recipients in this campaign",
+    "description": "Send drawer max capacity summary"
+  },
+  "campaignsSendCapacityExceeded": {
+    "message": "Selected {selected} recipients exceeds your limit of {max}",
+    "description": "Send drawer capacity exceeded error"
+  },
+  "campaignsDeliverabilityTitle": {
+    "message": "Deliverability",
+    "description": "Campaign deliverability section title"
+  },
+  "campaignsDeliverabilitySubtitle": {
+    "message": "Sender reputation reflects your tenant; campaign health reflects this send only.",
+    "description": "Campaign deliverability section subtitle"
+  },
+  "campaignsDeliverabilitySenderHint": {
+    "message": "Tenant-wide score from AMDS. Affects send speed and marketing eligibility.",
+    "description": "Sender reputation hint on campaign detail"
+  },
+  "campaignsHealthTitle": {
+    "message": "Campaign health",
+    "description": "Campaign health score card title"
+  },
+  "campaignsHealthNoFactors": {
+    "message": "No significant delivery signals yet for this campaign.",
+    "description": "Empty campaign health factors message"
+  },
+  "campaignsHealthUnavailable": {
+    "message": "Campaign health is not available yet.",
+    "description": "Campaign health unavailable message"
+  },
+  "campaignsRecipientsTitle": {
+    "message": "Recipients",
+    "description": "Campaign recipients section title"
+  },
+  "campaignsRecipientsEmpty": {
+    "message": "No sends yet. Send the campaign to see delivery and engagement here.",
+    "description": "Empty recipients table message"
+  },
+  "campaignsColEmail": {
+    "message": "Email",
+    "description": "Recipient email column"
+  },
+  "campaignsColDeliveryStatus": {
+    "message": "Delivery",
+    "description": "Recipient delivery status column"
+  },
+  "campaignsColOpens": {
+    "message": "Opens",
+    "description": "Recipient opens column"
+  },
+  "campaignsColClicks": {
+    "message": "Clicks",
+    "description": "Recipient clicks column"
+  },
+  "campaignsActionSend": {
+    "message": "Send campaign",
+    "description": "Send campaign action button"
+  },
+  "campaignsActionSchedule": {
+    "message": "Schedule",
+    "description": "Schedule campaign action button"
+  },
+  "campaignsActionEdit": {
+    "message": "Edit",
+    "description": "Edit campaign action button"
+  },
+  "campaignsActionDuplicate": {
+    "message": "Duplicate",
+    "description": "Duplicate campaign action button"
+  },
+  "campaignsActionDelete": {
+    "message": "Delete",
+    "description": "Delete campaign action button"
+  },
+  "campaignsActionArchive": {
+    "message": "Archive",
+    "description": "Archive campaign action button"
+  },
+  "campaignsActionCancel": {
+    "message": "Cancel campaign",
+    "description": "Cancel campaign action button"
+  },
+  "campaignsActionRefreshStats": {
+    "message": "Refresh stats",
+    "description": "Refresh campaign analytics button"
+  },
+  "campaignsSendDrawerTitle": {
+    "message": "Send campaign",
+    "description": "Send campaign drawer title"
+  },
+  "campaignsSendDrawerDescription": {
+    "message": "Select people to receive this campaign. Sends are delivered through AMDS.",
+    "description": "Send campaign drawer description"
+  },
+  "campaignsSendSearchPlaceholder": {
+    "message": "Search people by name or email…",
+    "description": "Send drawer people search placeholder"
+  },
+  "campaignsSendSelectedCount": {
+    "message": "{count} selected",
+    "description": "Send drawer selected recipient count"
+  },
+  "campaignsSendConfirm": {
+    "message": "Send now",
+    "description": "Confirm send button in send drawer"
+  },
+  "campaignsSendScheduleConfirm": {
+    "message": "Schedule send",
+    "description": "Confirm schedule button in send drawer"
+  },
+  "campaignsSendTimingNow": {
+    "message": "Send now",
+    "description": "Send drawer delivery timing — immediate"
+  },
+  "campaignsSendTimingSchedule": {
+    "message": "Schedule",
+    "description": "Send drawer delivery timing — later"
+  },
+  "campaignsSendScheduleAtLabel": {
+    "message": "Send date & time",
+    "description": "Schedule send datetime label"
+  },
+  "campaignsSendTimezoneLabel": {
+    "message": "Timezone",
+    "description": "Schedule send timezone label"
+  },
+  "campaignsSendQuietHoursLabel": {
+    "message": "Respect quiet hours (10 PM – 8 AM)",
+    "description": "Quiet hours toggle label in send drawer"
+  },
+  "campaignsSendQuietHoursHelp": {
+    "message": "If the scheduled time falls in quiet hours, delivery waits until quiet hours end.",
+    "description": "Quiet hours help text in send drawer"
+  },
+  "campaignsSendScheduleInvalid": {
+    "message": "Choose a future date and time.",
+    "description": "Validation when schedule datetime is invalid"
+  },
+  "campaignsScheduleSuccess": {
+    "message": "Campaign scheduled.",
+    "description": "Toast after campaign is scheduled"
+  },
+  "campaignsScheduledFor": {
+    "message": "Scheduled for {date}",
+    "description": "Campaign detail scheduled send label"
+  },
+  "campaignsPrecheckTitle": {
+    "message": "Pre-send checklist",
+    "description": "Pre-send validation section title"
+  },
+  "campaignsCreditSummaryRecipients": {
+    "message": "Recipients: {count}",
+    "description": "Campaign send credit summary recipients line"
+  },
+  "campaignsCreditSummaryNeeded": {
+    "message": "Credits needed: {count}",
+    "description": "Campaign send credit summary needed line"
+  },
+  "campaignsCreditSummaryRemaining": {
+    "message": "Credits left: {count}",
+    "description": "Campaign send credit summary remaining line"
+  },
+  "campaignsThroughputReputation": {
+    "message": "Sender reputation: {score} / 100",
+    "description": "Campaign send throughput reputation line"
+  },
+  "campaignsThroughputMaxHourly": {
+    "message": "Max hourly rate: {rate} / hour",
+    "description": "Campaign send max hourly throughput line"
+  },
+  "campaignsThroughputEffectiveHourly": {
+    "message": "Current effective rate: {rate} / hour",
+    "description": "Campaign send effective hourly throughput line"
+  },
+  "campaignsThroughputEffectiveBurst": {
+    "message": "Burst pace: {rate} / minute (sends are batched to this limit)",
+    "description": "Campaign send effective burst throughput line"
+  },
+  "campaignsInfraLoadBanner": {
+    "message": "Platform is under heavy load. Effective send rate temporarily reduced.",
+    "description": "Banner in campaign send drawer when infrastructure multiplier is below 1"
+  },
+  "campaignsEstimateCompletion": {
+    "message": "Estimated completion: {duration}",
+    "description": "Campaign send estimated completion line"
+  },
+  "campaignsEstimateDurationHoursMinutes": {
+    "message": "{hours} hours {minutes} minutes",
+    "description": "Campaign send ETA duration with hours and minutes"
+  },
+  "campaignsEstimateDurationHours": {
+    "message": "{hours} hours",
+    "description": "Campaign send ETA duration hours only"
+  },
+  "campaignsEstimateDurationMinutes": {
+    "message": "{minutes} minutes",
+    "description": "Campaign send ETA duration minutes only"
+  },
+  "campaignsReputationBlocked": {
+    "message": "Marketing campaigns require sender reputation of at least 40.",
+    "description": "Campaign send blocked due to low sender reputation"
+  },
+  "campaignsSendPlanningTitle": {
+    "message": "Send planning",
+    "description": "Campaign detail send planning section title"
+  },
+  "campaignsSendPlanningSubtitle": {
+    "message": "Review credits, throughput, and delivery time before you send.",
+    "description": "Campaign detail send planning section subtitle"
+  },
+  "campaignsSendPlanningRecipients": {
+    "message": "Planned recipients",
+    "description": "Send planning recipient count label"
+  },
+  "campaignsSendPlanningAudienceRecipients": {
+    "message": "Audience recipients ({name})",
+    "description": "Send planning audience recipient count label"
+  },
+  "campaignsSendPlanningCreditsNeeded": {
+    "message": "Credits required",
+    "description": "Send planning credits needed label"
+  },
+  "campaignsSendPlanningCreditsRemaining": {
+    "message": "Credits remaining",
+    "description": "Send planning credits remaining label"
+  },
+  "campaignsSendPlanningReputation": {
+    "message": "Sender reputation",
+    "description": "Send planning sender reputation label"
+  },
+  "campaignsSendPlanningMaxHourly": {
+    "message": "Max hourly rate",
+    "description": "Send planning max hourly rate label"
+  },
+  "campaignsSendPlanningEffectiveHourly": {
+    "message": "Effective hourly rate",
+    "description": "Send planning effective hourly rate label"
+  },
+  "campaignsSendPlanningEstimatedCompletion": {
+    "message": "Estimated completion",
+    "description": "Send planning estimated completion label"
+  },
+  "campaignsSendPlanningNoRecipients": {
+    "message": "Link an audience to this campaign to estimate credits and delivery time.",
+    "description": "Send planning hint when no audience is linked"
+  },
+  "campaignsSendPlanningBlocked": {
+    "message": "Resolve the issues above before sending this campaign.",
+    "description": "Send planning blocked banner"
+  },
+  "campaignsTestSendAction": {
+    "message": "Send test email",
+    "description": "Open test send modal action"
+  },
+  "campaignsTestSendTitle": {
+    "message": "Send test email",
+    "description": "Test send modal title"
+  },
+  "campaignsTestSendDescription": {
+    "message": "Send a one-off preview to your inbox. Merge fields use sample data.",
+    "description": "Test send modal description"
+  },
+  "campaignsTestSendEmailLabel": {
+    "message": "Recipient email",
+    "description": "Test send email field label"
+  },
+  "campaignsTestSendEmailPlaceholder": {
+    "message": "you{'@'}company.com",
+    "description": "Test send email placeholder"
+  },
+  "campaignsTestSendNameLabel": {
+    "message": "Display name (optional)",
+    "description": "Test send name field label"
+  },
+  "campaignsTestSendNamePlaceholder": {
+    "message": "Test User",
+    "description": "Test send name placeholder"
+  },
+  "campaignsTestSendConfirm": {
+    "message": "Send test",
+    "description": "Test send modal confirm button"
+  },
+  "campaignsTestSendSuccess": {
+    "message": "Test email queued.",
+    "description": "Toast after test email is sent"
+  },
+  "campaignsSendNoRecipients": {
+    "message": "Select at least one person with an email address.",
+    "description": "Validation when no recipients selected for send"
+  },
+  "campaignsSendNoEmail": {
+    "message": "No email",
+    "description": "People list row when contact has no email"
+  },
+  "campaignsDeleteConfirm": {
+    "message": "Delete this campaign? This cannot be undone.",
+    "description": "Confirm delete campaign"
+  },
+  "campaignsValidationNameRequired": {
+    "message": "Campaign name is required",
+    "description": "Validation error for missing campaign name"
+  },
+  "campaignsValidationFromRequired": {
+    "message": "From email is required before sending",
+    "description": "Validation error for missing from email"
+  },
+  "campaignsValidationBodyRequired": {
+    "message": "Email body is required before sending",
+    "description": "Validation error for missing email body"
+  },
+  "campaignsFieldAudience": {
+    "message": "Audience",
+    "description": "Campaign audience field label"
+  },
+  "campaignsFieldAudienceNone": {
+    "message": "No audience — pick recipients at send time",
+    "description": "Campaign audience empty option"
+  },
+  "campaignsFieldAudienceHelp": {
+    "message": "Optional. Static and dynamic audiences are supported; dynamic lists resolve from their segment at send time.",
+    "description": "Campaign audience field help text"
+  },
+  "campaignsSendModeAudience": {
+    "message": "Use audience",
+    "description": "Send drawer mode — use linked audience"
+  },
+  "campaignsSendModeManual": {
+    "message": "Pick people",
+    "description": "Send drawer mode — manual people picker"
+  },
+  "campaignsSendDrawerDescriptionAudience": {
+    "message": "Send to the linked audience or switch to manual people selection.",
+    "description": "Send drawer description when campaign has audience"
+  },
+  "campaignsSendAudienceCount": {
+    "message": "{count} members with email",
+    "description": "Send drawer audience member count"
+  },
+  "dashboardActionCampaigns": {
+    "message": "View campaigns",
+    "description": "Marketing dashboard quick action — campaigns"
+  },
+  "dashboardActionAudiences": {
+    "message": "View audiences",
+    "description": "Marketing dashboard quick action — audiences"
+  },
+  "audiencesListTitle": {
+    "message": "Audiences",
+    "description": "Marketing audiences list page title"
+  },
+  "audiencesListDescription": {
+    "message": "Build static recipient lists for campaigns. Import CSV or add people directly.",
+    "description": "Marketing audiences list page description"
+  },
+  "audiencesNew": {
+    "message": "New audience",
+    "description": "Create audience button label"
+  },
+  "audiencesSearchPlaceholder": {
+    "message": "Search audiences…",
+    "description": "Audiences list search placeholder"
+  },
+  "audiencesEmptyTitle": {
+    "message": "No audiences yet",
+    "description": "Empty audiences list title for first-time users"
+  },
+  "audiencesEmptyMessage": {
+    "message": "Create an audience to reuse recipient lists across campaigns.",
+    "description": "Empty audiences list message for first-time users"
+  },
+  "audiencesNoResultsTitle": {
+    "message": "No matching audiences",
+    "description": "Empty audiences list title when search returns nothing"
+  },
+  "audiencesNoResultsMessage": {
+    "message": "Try a different search term.",
+    "description": "Empty audiences list message when search returns nothing"
+  },
+  "audiencesColName": {
+    "message": "Name",
+    "description": "Audience name column"
+  },
+  "audiencesColType": {
+    "message": "Type",
+    "description": "Audience type column"
+  },
+  "audiencesColMembers": {
+    "message": "Members",
+    "description": "Audience member count column"
+  },
+  "audiencesColUpdated": {
+    "message": "Updated",
+    "description": "Audience updated column"
+  },
+  "audiencesColSource": {
+    "message": "Source",
+    "description": "Audience member source column"
+  },
+  "audiencesColActions": {
+    "message": "Actions",
+    "description": "Audience member actions column"
+  },
+  "audiencesTypeStatic": {
+    "message": "Static",
+    "description": "Static audience type label"
+  },
+  "audiencesTypeDynamic": {
+    "message": "Dynamic",
+    "description": "Dynamic audience type label"
+  },
+  "audiencesCreateTitle": {
+    "message": "New audience",
+    "description": "Create audience page title"
+  },
+  "audiencesFieldName": {
+    "message": "Audience name",
+    "description": "Audience name field label"
+  },
+  "audiencesFieldDescription": {
+    "message": "Description",
+    "description": "Audience description field label"
+  },
+  "audiencesCreateSuccess": {
+    "message": "Audience created",
+    "description": "Toast after audience creation"
+  },
+  "audiencesUpdateSuccess": {
+    "message": "Audience saved",
+    "description": "Toast after audience update"
+  },
+  "audiencesDeleteSuccess": {
+    "message": "Audience deleted",
+    "description": "Toast after audience deletion"
+  },
+  "audiencesDeleteConfirm": {
+    "message": "Delete this audience? Campaigns linked to it will lose the audience reference.",
+    "description": "Confirm delete audience"
+  },
+  "audiencesDetailError": {
+    "message": "Unable to load audience",
+    "description": "Audience detail error title"
+  },
+  "audiencesMemberCount": {
+    "message": "{count} members",
+    "description": "Audience member count summary"
+  },
+  "audiencesActionImport": {
+    "message": "Import CSV",
+    "description": "Import audience members action"
+  },
+  "audiencesActionExport": {
+    "message": "Export CSV",
+    "description": "Export audience members action"
+  },
+  "audiencesImportSuccess": {
+    "message": "Import complete — {added} added, {duplicates} duplicates skipped",
+    "description": "Toast after audience CSV import"
+  },
+  "audiencesMembersTitle": {
+    "message": "Members",
+    "description": "Audience members section title"
+  },
+  "audiencesMembersSearch": {
+    "message": "Search members…",
+    "description": "Audience members search placeholder"
+  },
+  "audiencesMembersEmpty": {
+    "message": "No members yet. Import a CSV or add people below.",
+    "description": "Empty audience members message"
+  },
+  "audiencesAddMembersTitle": {
+    "message": "Add from people",
+    "description": "Add members from people section title"
+  },
+  "audiencesAddMembersSearch": {
+    "message": "Search people by name or email…",
+    "description": "Add members people search placeholder"
+  },
+  "audiencesMemberAdded": {
+    "message": "Member added",
+    "description": "Toast after adding audience member"
+  },
+  "audiencesMemberRemoved": {
+    "message": "Member removed",
+    "description": "Toast after removing audience member"
+  },
+  "audiencesValidationNameRequired": {
+    "message": "Audience name is required",
+    "description": "Validation error for missing audience name"
+  },
+  "audiencesFieldType": {
+    "message": "Audience type",
+    "description": "Audience type field label"
+  },
+  "audiencesFieldSegment": {
+    "message": "Segment",
+    "description": "Linked segment for dynamic audiences"
+  },
+  "audiencesFieldSegmentNone": {
+    "message": "Select a segment…",
+    "description": "Empty segment option"
+  },
+  "audiencesDynamicHint": {
+    "message": "Members are resolved from the linked segment.",
+    "description": "Hint for dynamic audience member list"
+  },
+  "dashboardActionSegments": {
+    "message": "View segments",
+    "description": "Marketing dashboard quick action — segments"
+  },
+  "dashboardActionNewCampaign": {
+    "message": "New campaign",
+    "description": "Marketing dashboard quick action — create campaign"
+  },
+  "dashboardActionNewAudience": {
+    "message": "New audience",
+    "description": "Marketing dashboard quick action — create audience"
+  },
+  "dashboardKpiDelivered": {
+    "message": "Delivered",
+    "description": "Marketing dashboard KPI — delivered count"
+  },
+  "dashboardKpiDeliveredHint": {
+    "message": "{rate} delivery rate",
+    "description": "Marketing dashboard KPI — delivery rate hint"
+  },
+  "dashboardKpiOpens": {
+    "message": "Unique opens",
+    "description": "Marketing dashboard KPI — opens count"
+  },
+  "dashboardKpiOpensHint": {
+    "message": "{rate} avg open rate",
+    "description": "Marketing dashboard KPI — open rate hint"
+  },
+  "dashboardKpiClicks": {
+    "message": "Unique clicks",
+    "description": "Marketing dashboard KPI — clicks count"
+  },
+  "dashboardKpiClicksHint": {
+    "message": "{rate} avg click rate",
+    "description": "Marketing dashboard KPI — click rate hint"
+  },
+  "dashboardKpiAudienceMembers": {
+    "message": "Audience members",
+    "description": "Marketing dashboard KPI — total audience members"
+  },
+  "dashboardKpiAudienceMembersHint": {
+    "message": "Across {count} audiences",
+    "description": "Marketing dashboard KPI — audience count hint"
+  },
+  "dashboardStatusActive": {
+    "message": "Active campaigns",
+    "description": "Marketing dashboard status card — active campaigns"
+  },
+  "dashboardRecentCampaignsTitle": {
+    "message": "Recent campaigns",
+    "description": "Marketing dashboard recent campaigns section title"
+  },
+  "dashboardRecentCampaignsEmpty": {
+    "message": "No campaigns yet. Create your first campaign to get started.",
+    "description": "Marketing dashboard recent campaigns empty state"
+  },
+  "dashboardTopCampaignsTitle": {
+    "message": "Top performing campaigns",
+    "description": "Marketing dashboard top campaigns section title"
+  },
+  "dashboardTopCampaignsEmpty": {
+    "message": "Send a campaign to see performance rankings here.",
+    "description": "Marketing dashboard top campaigns empty state"
+  },
+  "dashboardLinkPerformanceTitle": {
+    "message": "Link performance",
+    "description": "Marketing dashboard link performance section title"
+  },
+  "dashboardLinkPerformanceEmpty": {
+    "message": "No link clicks recorded yet.",
+    "description": "Marketing dashboard link performance empty state"
+  },
+  "dashboardUnknownLink": {
+    "message": "Unknown link",
+    "description": "Marketing dashboard link row without URL"
+  },
+  "dashboardLinkCampaignCount": {
+    "message": "Used in {count} campaigns",
+    "description": "Marketing dashboard link campaign count"
+  },
+  "dashboardLinkClicks": {
+    "message": "{count} clicks",
+    "description": "Marketing dashboard link click count"
+  },
+  "dashboardLinkRecipients": {
+    "message": "{count} recipients",
+    "description": "Marketing dashboard link unique recipient count"
+  },
+  "dashboardActivityTitle": {
+    "message": "Recent activity",
+    "description": "Marketing dashboard activity feed title"
+  },
+  "dashboardActivityEmpty": {
+    "message": "Campaign activity will appear here.",
+    "description": "Marketing dashboard activity empty state"
+  },
+  "dashboardActivitySent": {
+    "message": "Campaign sent: {name}",
+    "description": "Marketing dashboard activity — campaign sent"
+  },
+  "dashboardActivityScheduled": {
+    "message": "Campaign scheduled: {name}",
+    "description": "Marketing dashboard activity — campaign scheduled"
+  },
+  "dashboardActivityDraft": {
+    "message": "Draft updated: {name}",
+    "description": "Marketing dashboard activity — draft updated"
+  },
+  "dashboardActivityUpdated": {
+    "message": "Campaign updated: {name}",
+    "description": "Marketing dashboard activity — campaign updated"
+  },
+  "dashboardAudienceGrowthTitle": {
+    "message": "Audience growth",
+    "description": "Marketing dashboard audience growth section title"
+  },
+  "dashboardAudienceGrowthSummary": {
+    "message": "{audiences} audiences · {members} members · {newAudiences} new in last 30 days",
+    "description": "Marketing dashboard audience growth summary"
+  },
+  "dashboardQuickLinksTitle": {
+    "message": "Quick links",
+    "description": "Marketing dashboard quick links section title"
+  },
+  "dashboardColRecipients": {
+    "message": "Recipients",
+    "description": "Marketing dashboard table column — recipients"
+  },
+  "dashboardNoSubject": {
+    "message": "No subject",
+    "description": "Marketing dashboard fallback when campaign has no subject"
+  },
+  "preferencesTitle": {
+    "message": "Email preferences",
+    "description": "Public preference center page title"
+  },
+  "preferencesDescription": {
+    "message": "Manage how {org} contacts you at {email}.",
+    "description": "Public preference center description"
+  },
+  "preferencesSave": {
+    "message": "Save preferences",
+    "description": "Public preference center save button"
+  },
+  "preferencesUnsubscribeAll": {
+    "message": "Unsubscribe from all",
+    "description": "Public preference center unsubscribe all button"
+  },
+  "preferencesSavedTitle": {
+    "message": "Preferences saved",
+    "description": "Public preference center success title"
+  },
+  "preferencesSavedMessage": {
+    "message": "Your email preferences have been updated.",
+    "description": "Public preference center success message"
+  },
+  "preferencesLoadError": {
+    "message": "This preference link is invalid or has expired.",
+    "description": "Public preference center load error"
+  },
+  "preferencesCategoryMarketing": {
+    "message": "Marketing emails",
+    "description": "Preference center marketing category label"
+  },
+  "preferencesCategoryMarketingHint": {
+    "message": "Campaigns, promotions, and announcements.",
+    "description": "Preference center marketing category hint"
+  },
+  "preferencesCategoryNewsletter": {
+    "message": "Newsletter",
+    "description": "Preference center newsletter category label"
+  },
+  "preferencesCategoryNewsletterHint": {
+    "message": "Periodic updates and curated content.",
+    "description": "Preference center newsletter category hint"
+  },
+  "preferencesCategoryProductUpdates": {
+    "message": "Product updates",
+    "description": "Preference center product updates category label"
+  },
+  "preferencesCategoryProductUpdatesHint": {
+    "message": "Release notes and feature announcements.",
+    "description": "Preference center product updates category hint"
+  },
+  "personSubscriptionsTitle": {
+    "message": "Marketing subscriptions",
+    "description": "People record marketing subscriptions panel title"
+  },
+  "personSubscriptionsDescription": {
+    "message": "Consent history and current marketing email preferences.",
+    "description": "People record marketing subscriptions panel description"
+  },
+  "personSubscriptionsEmpty": {
+    "message": "No marketing subscription history for this person yet.",
+    "description": "People record marketing subscriptions empty state"
+  },
+  "personSubscriptionsEmail": {
+    "message": "Email",
+    "description": "People record marketing subscriptions email label"
+  },
+  "personSubscriptionsStatus": {
+    "message": "Status",
+    "description": "People record marketing subscriptions status label"
+  },
+  "personSubscriptionsStatusSubscribed": {
+    "message": "Subscribed",
+    "description": "People record marketing subscriptions subscribed status"
+  },
+  "personSubscriptionsStatusUnsubscribed": {
+    "message": "Unsubscribed",
+    "description": "People record marketing subscriptions unsubscribed status"
+  },
+  "personSubscriptionsUpdated": {
+    "message": "Last updated",
+    "description": "People record marketing subscriptions updated label"
+  },
+  "personSubscriptionsHistoryTitle": {
+    "message": "Consent history",
+    "description": "People record marketing subscriptions history title"
+  },
+  "personSubscriptionsHistorySubscribed": {
+    "message": "Subscribed to {category}",
+    "description": "People record marketing subscriptions history subscribe entry"
+  },
+  "personSubscriptionsHistoryUnsubscribed": {
+    "message": "Unsubscribed from {category}",
+    "description": "People record marketing subscriptions history unsubscribe entry"
+  },
+  "personSubscriptionsHistoryUpdated": {
+    "message": "Updated {category} preferences",
+    "description": "People record marketing subscriptions history update entry"
+  },
+  "personSubscriptionsLoadError": {
+    "message": "Failed to load marketing subscription history.",
+    "description": "People record marketing subscriptions load error"
+  },
+  "segmentsListTitle": {
+    "message": "Segments",
+    "description": "Marketing segments list page title"
+  },
+  "segmentsListDescription": {
+    "message": "Build reusable people filters for dynamic audiences.",
+    "description": "Marketing segments list page description"
+  },
+  "segmentsNew": {
+    "message": "New segment",
+    "description": "Create segment button label"
+  },
+  "segmentsSearchPlaceholder": {
+    "message": "Search segments…",
+    "description": "Segments list search placeholder"
+  },
+  "segmentsEmptyTitle": {
+    "message": "No segments yet",
+    "description": "Empty segments list title"
+  },
+  "segmentsEmptyMessage": {
+    "message": "Create a segment to filter people by CRM fields for dynamic audiences.",
+    "description": "Empty segments list message"
+  },
+  "segmentsNoResultsTitle": {
+    "message": "No matching segments",
+    "description": "Empty segments list title when search returns nothing"
+  },
+  "segmentsNoResultsMessage": {
+    "message": "Try a different search term.",
+    "description": "Empty segments list message when search returns nothing"
+  },
+  "segmentsColName": {
+    "message": "Name",
+    "description": "Segment name column"
+  },
+  "segmentsColMembers": {
+    "message": "Matches",
+    "description": "Segment member count column"
+  },
+  "segmentsColRefreshed": {
+    "message": "Last refreshed",
+    "description": "Segment last refreshed column"
+  },
+  "segmentsColUpdated": {
+    "message": "Updated",
+    "description": "Segment updated column"
+  },
+  "segmentsCreateTitle": {
+    "message": "New segment",
+    "description": "Create segment page title"
+  },
+  "segmentsEditTitle": {
+    "message": "Edit segment",
+    "description": "Edit segment page title"
+  },
+  "segmentsBuilderDescription": {
+    "message": "Combine CRM field filters with AND/OR logic. Matching people must have an email to count toward campaigns.",
+    "description": "Segment builder page description"
+  },
+  "segmentsFieldName": {
+    "message": "Segment name",
+    "description": "Segment name field label"
+  },
+  "segmentsFieldDescription": {
+    "message": "Description",
+    "description": "Segment description field label"
+  },
+  "segmentsPreviewTitle": {
+    "message": "Live preview",
+    "description": "Segment preview section title"
+  },
+  "segmentsPreviewCount": {
+    "message": "{count} matching people",
+    "description": "Segment preview match count"
+  },
+  "segmentsPreviewRefresh": {
+    "message": "Refresh count",
+    "description": "Refresh segment preview button"
+  },
+  "segmentsPreviewError": {
+    "message": "Could not load segment preview. Try refreshing the count again.",
+    "description": "Toast when segment preview API fails"
+  },
+  "segmentsCreateSuccess": {
+    "message": "Segment created",
+    "description": "Toast after segment creation"
+  },
+  "segmentsUpdateSuccess": {
+    "message": "Segment saved",
+    "description": "Toast after segment update"
+  },
+  "segmentsDeleteSuccess": {
+    "message": "Segment deleted",
+    "description": "Toast after segment deletion"
+  },
+  "segmentsDeleteConfirm": {
+    "message": "Delete this segment? Dynamic audiences linked to it will lose their filter.",
+    "description": "Confirm delete segment"
+  },
+  "segmentsDetailError": {
+    "message": "Unable to load segment",
+    "description": "Segment detail error title"
+  },
+  "segmentsValidationNameRequired": {
+    "message": "Segment name is required",
+    "description": "Validation error for missing segment name"
+  },
+  "segmentsValidationFilterRequired": {
+    "message": "Add at least one filter rule",
+    "description": "Validation error when segment has no filters"
+  },
+  "segmentsFilterSalesType": {
+    "message": "Sales role",
+    "description": "Segment filter field — sales type"
+  },
+  "segmentsFilterHelpdeskRole": {
+    "message": "Helpdesk role",
+    "description": "Segment filter field — helpdesk role"
+  },
+  "segmentsPrimaryEntity": {
+    "message": "Primary entity",
+    "description": "Primary entity selector label for dynamic segment builder"
+  },
+  "segmentsPrimaryRulesTitle": {
+    "message": "Rules on primary entity",
+    "description": "Section title for filters applied directly to primary entity"
+  },
+  "segmentsRelationshipRulesTitle": {
+    "message": "Related record rules",
+    "description": "Section title for relationship-based segment rules"
+  },
+  "segmentsRelationshipRulesDescription": {
+    "message": "Filter contacts using related organizations, deals, cases, and other linked records.",
+    "description": "Section description for relationship-based segment rules"
+  },
+  "segmentsRelationshipRulesEmpty": {
+    "message": "No relationship rules yet. Add one to filter via linked CRM records.",
+    "description": "Empty state for relationship rules section"
+  },
+  "segmentsAddRelationshipRule": {
+    "message": "Add relationship rule",
+    "description": "Button to add a relationship-based rule"
+  },
+  "segmentsRelationshipRuleLabel": {
+    "message": "Relationship rule {index}",
+    "description": "Label for a relationship rule row"
+  },
+  "segmentsRelationshipPath": {
+    "message": "Relationship path",
+    "description": "Label for relationship path picker"
+  },
+  "segmentsRelationshipSelect": {
+    "message": "Select relationship…",
+    "description": "Placeholder for relationship hop select"
+  },
+  "segmentsAddRelationshipHop": {
+    "message": "Add hop",
+    "description": "Button to add another relationship hop"
+  },
+  "segmentsPreviewReachable": {
+    "message": "{count} reachable recipients (valid email, not suppressed)",
+    "description": "Preview insight for reachable recipient count"
+  },
+  "segmentsPreviewMissingEmail": {
+    "message": "{count} matches without a valid email",
+    "description": "Preview insight for people missing email"
+  },
+  "segmentsPreviewSuppressed": {
+    "message": "{count} suppressed email addresses",
+    "description": "Preview insight for suppressed recipients"
+  },
+  "segmentsPreviewDuplicates": {
+    "message": "{count} duplicate email addresses",
+    "description": "Preview insight for duplicate emails in matched set"
+  },
+  "segmentsPreviewOrganizations": {
+    "message": "{count} organizations represented",
+    "description": "Preview breakdown for distinct organizations"
+  },
+  "segmentsRelationshipMatchMode": {
+    "message": "Match mode",
+    "description": "Label for relationship rule match mode selector"
+  },
+  "segmentsRelationshipMatchExists": {
+    "message": "Has related records matching filters",
+    "description": "Relationship rule mode — related records exist"
+  },
+  "segmentsRelationshipMatchNotExists": {
+    "message": "Does not have related records matching filters",
+    "description": "Relationship rule mode — related records do not exist"
+  },
+  "segmentsAggregateCount": {
+    "message": "Count of related records",
+    "description": "Aggregate rule — count related records"
+  },
+  "segmentsAggregateSum": {
+    "message": "Sum of related field",
+    "description": "Aggregate rule — sum numeric field on related records"
+  },
+  "segmentsAggregateAvg": {
+    "message": "Average of related field",
+    "description": "Aggregate rule — average numeric field on related records"
+  },
+  "segmentsAggregateField": {
+    "message": "Numeric field",
+    "description": "Field to aggregate on related records"
+  },
+  "segmentsAggregateFieldSelect": {
+    "message": "Select field…",
+    "description": "Placeholder for aggregate field selector"
+  },
+  "segmentsAggregateOperator": {
+    "message": "Comparison",
+    "description": "Aggregate threshold comparison operator"
+  },
+  "segmentsAggregateValue": {
+    "message": "Threshold",
+    "description": "Aggregate comparison threshold value"
+  },
+  "segmentsAggregateOpEq": {
+    "message": "Equals",
+    "description": "Aggregate operator equals"
+  },
+  "segmentsAggregateOpNeq": {
+    "message": "Not equals",
+    "description": "Aggregate operator not equals"
+  },
+  "segmentsAggregateOpGt": {
+    "message": "Greater than",
+    "description": "Aggregate operator greater than"
+  },
+  "segmentsAggregateOpGte": {
+    "message": "Greater than or equal",
+    "description": "Aggregate operator greater than or equal"
+  },
+  "segmentsAggregateOpLt": {
+    "message": "Less than",
+    "description": "Aggregate operator less than"
+  },
+  "segmentsAggregateOpLte": {
+    "message": "Less than or equal",
+    "description": "Aggregate operator less than or equal"
+  },
+  "templatesListTitle": {
+    "message": "Email templates",
+    "description": "Marketing email templates list page title"
+  },
+  "templatesListDescription": {
+    "message": "Design reusable email templates and apply them to campaigns.",
+    "description": "Marketing email templates list page description"
+  },
+  "templatesListDescriptionCore": {
+    "message": "Email templates from the core Templates library. Designs are shared across the platform.",
+    "description": "Marketing templates list — backed by ContentTemplate"
+  },
+  "templatesNew": {
+    "message": "New template",
+    "description": "Create email template button label"
+  },
+  "templatesSearchPlaceholder": {
+    "message": "Search templates…",
+    "description": "Templates list search placeholder"
+  },
+  "templatesEmptyTitle": {
+    "message": "No templates yet",
+    "description": "Empty templates list title"
+  },
+  "templatesEmptyMessage": {
+    "message": "Create your first email template with the drag-and-drop builder.",
+    "description": "Empty templates list message"
+  },
+  "templatesEmptyMessageCore": {
+    "message": "Create an email-format template in the core builder. It will appear here for campaigns.",
+    "description": "Empty marketing templates list — core backing"
+  },
+  "templatesNoResultsTitle": {
+    "message": "No matching templates",
+    "description": "Templates list empty when filtered"
+  },
+  "templatesNoResultsMessage": {
+    "message": "Try a different search or clear your filters.",
+    "description": "Templates list empty filter message"
+  },
+  "templatesColName": {
+    "message": "Name",
+    "description": "Template name column"
+  },
+  "templatesColCategory": {
+    "message": "Category",
+    "description": "Template category column"
+  },
+  "templatesColStatus": {
+    "message": "Status",
+    "description": "Template status column"
+  },
+  "templatesColUpdated": {
+    "message": "Updated",
+    "description": "Template updated column"
+  },
+  "templatesFilterAll": {
+    "message": "All",
+    "description": "Templates category filter all"
+  },
+  "templatesFilterFavorites": {
+    "message": "Favorites",
+    "description": "Templates favorites filter"
+  },
+  "templatesCategoryNewsletter": {
+    "message": "Newsletter",
+    "description": "Template category newsletter"
+  },
+  "templatesCategoryPromotional": {
+    "message": "Promotional",
+    "description": "Template category promotional"
+  },
+  "templatesCategoryTransactional": {
+    "message": "Transactional",
+    "description": "Template category transactional"
+  },
+  "templatesCategoryAnnouncement": {
+    "message": "Announcement",
+    "description": "Template category announcement"
+  },
+  "templatesCategoryOther": {
+    "message": "Other",
+    "description": "Template category other"
+  },
+  "templatesStatusDraft": {
+    "message": "Draft",
+    "description": "Template status draft"
+  },
+  "templatesStatusActive": {
+    "message": "Active",
+    "description": "Template status active"
+  },
+  "templatesStatusPublished": {
+    "message": "Published",
+    "description": "Template status published (core Templates)"
+  },
+  "templatesStatusArchived": {
+    "message": "Archived",
+    "description": "Template status archived"
+  },
+  "templatesFavorite": {
+    "message": "Add to favorites",
+    "description": "Favorite template action"
+  },
+  "templatesUnfavorite": {
+    "message": "Remove from favorites",
+    "description": "Unfavorite template action"
+  },
+  "templatesUntitled": {
+    "message": "Untitled template",
+    "description": "Default name for new templates"
+  },
+  "templatesFieldName": {
+    "message": "Template name",
+    "description": "Template editor name field"
+  },
+  "templatesFieldDescription": {
+    "message": "Description",
+    "description": "Template editor description field"
+  },
+  "templatesFieldCategory": {
+    "message": "Category",
+    "description": "Template editor category field"
+  },
+  "templatesFieldShared": {
+    "message": "Shared with organization",
+    "description": "Template shared toggle"
+  },
+  "templatesEditorTabSettings": {
+    "message": "Settings",
+    "description": "Template editor settings tab"
+  },
+  "templatesPreviewLight": {
+    "message": "Preview",
+    "description": "Light mode email preview"
+  },
+  "templatesPreviewDark": {
+    "message": "Dark preview",
+    "description": "Dark mode email preview"
+  },
+  "templatesDeviceDesktop": {
+    "message": "Desktop",
+    "description": "Desktop preview device"
+  },
+  "templatesDeviceMobile": {
+    "message": "Mobile",
+    "description": "Mobile preview device"
+  },
+  "templatesSaveSuccess": {
+    "message": "Template saved",
+    "description": "Template save success toast"
+  },
+  "templatesLoadError": {
+    "message": "Could not load template",
+    "description": "Template load error"
+  },
+  "campaignsFieldTemplate": {
+    "message": "Email template",
+    "description": "Campaign editor template field label"
+  },
+  "campaignsFieldTemplateNone": {
+    "message": "No template",
+    "description": "Campaign editor no template option"
+  },
+  "campaignsFieldTemplateHelp": {
+    "message": "Email templates are managed in the core Templates module (format: Email). Selecting one replaces the HTML body.",
+    "description": "Campaign editor template help text"
+  },
+  "campaignsFieldTemplateManage": {
+    "message": "Open Templates",
+    "description": "Link to core Templates module from campaign editor"
+  },
+  "campaignsFieldTemplateEmpty": {
+    "message": "No email templates yet. Create one in Templates with output format set to Email.",
+    "description": "Campaign editor when no email templates exist"
+  },
+  "campaignsEditTemplate": {
+    "message": "Edit template",
+    "description": "Open template editor from campaign"
+  },
+  "campaignsPreviewEmail": {
+    "message": "Preview email",
+    "description": "Preview campaign email HTML"
+  },
+  "campaignsPreviewEmailEmpty": {
+    "message": "Attach a template or add HTML body content to preview.",
+    "description": "Shown when campaign email preview has no content"
+  },
+  "campaignsDetailTemplateLabel": {
+    "message": "Template",
+    "description": "Linked email template label on campaign detail"
+  },
+  "campaignsTemplateApplyError": {
+    "message": "Could not apply template",
+    "description": "Campaign template apply error"
+  },
+  "assetsListTitle": {
+    "message": "Marketing assets",
+    "description": "Marketing assets library page title"
+  },
+  "assetsListDescription": {
+    "message": "Upload images and logos for email campaigns. Assets are stored in your organization library.",
+    "description": "Marketing assets library page description"
+  },
+  "assetsUpload": {
+    "message": "Upload image",
+    "description": "Upload marketing asset button"
+  },
+  "assetsSearchPlaceholder": {
+    "message": "Search assets…",
+    "description": "Marketing assets search placeholder"
+  },
+  "assetsEmptyTitle": {
+    "message": "No assets yet",
+    "description": "Empty marketing assets library title"
+  },
+  "assetsEmptyMessage": {
+    "message": "Upload images and logos to reuse them across email templates and campaigns.",
+    "description": "Empty marketing assets library message"
+  },
+  "assetsNoResultsTitle": {
+    "message": "No matching assets",
+    "description": "Marketing assets empty search title"
+  },
+  "assetsNoResultsMessage": {
+    "message": "Try a different search term.",
+    "description": "Marketing assets empty search message"
+  },
+  "assetsUploadSuccess": {
+    "message": "Asset uploaded",
+    "description": "Marketing asset upload success toast"
+  },
+  "assetsUploadFailed": {
+    "message": "Could not upload asset",
+    "description": "Marketing asset upload error toast"
+  },
+  "assetsDeleteConfirm": {
+    "message": "Delete this asset? Templates already using it will keep the image URL.",
+    "description": "Marketing asset delete confirmation"
+  },
+  "assetsDeleteSuccess": {
+    "message": "Asset deleted",
+    "description": "Marketing asset delete success toast"
+  },
+  "assetsDeleteFailed": {
+    "message": "Could not delete asset",
+    "description": "Marketing asset delete error toast"
+  },
+  "assetsPagination": {
+    "message": "Page {page} of {total}",
+    "description": "Marketing assets pagination label"
+  },
+  "campaignsApprovalTitle": {
+    "message": "Approval",
+    "description": "Campaign approval panel title"
+  },
+  "campaignsApprovalDescription": {
+    "message": "Submit for review, track approval history, and unlock send once approved.",
+    "description": "Campaign approval panel description"
+  },
+  "campaignsApprovalReviewersLabel": {
+    "message": "Reviewers",
+    "description": "Campaign approval reviewers field label"
+  },
+  "campaignsApprovalCommentPlaceholder": {
+    "message": "Optional note for reviewers…",
+    "description": "Campaign submit-for-review comment placeholder"
+  },
+  "campaignsApprovalReviewCommentPlaceholder": {
+    "message": "Optional review comment…",
+    "description": "Campaign approve/reject comment placeholder"
+  },
+  "campaignsApprovalSubmitAction": {
+    "message": "Submit for review",
+    "description": "Submit campaign for approval button"
+  },
+  "campaignsApprovalApproveAction": {
+    "message": "Approve",
+    "description": "Approve campaign button"
+  },
+  "campaignsApprovalRejectAction": {
+    "message": "Reject",
+    "description": "Reject campaign button"
+  },
+  "campaignsApprovalSendBlocked": {
+    "message": "This campaign must be approved before you can send or schedule it.",
+    "description": "Campaign send blocked until approved message"
+  },
+  "campaignsApprovalHistoryTitle": {
+    "message": "Approval history",
+    "description": "Campaign approval history section title"
+  },
+  "campaignsApprovalStatusNone": {
+    "message": "Not submitted",
+    "description": "Campaign approval status none"
+  },
+  "campaignsApprovalStatusPending": {
+    "message": "Pending review",
+    "description": "Campaign approval status pending"
+  },
+  "campaignsApprovalStatusApproved": {
+    "message": "Approved",
+    "description": "Campaign approval status approved"
+  },
+  "campaignsApprovalStatusRejected": {
+    "message": "Rejected",
+    "description": "Campaign approval status rejected"
+  },
+  "campaignsApprovalActionSubmitted": {
+    "message": "Submitted for review",
+    "description": "Campaign approval history submitted action"
+  },
+  "campaignsApprovalActionApproved": {
+    "message": "Approved",
+    "description": "Campaign approval history approved action"
+  },
+  "campaignsApprovalActionRejected": {
+    "message": "Rejected",
+    "description": "Campaign approval history rejected action"
+  },
+  "campaignsApprovalActionContentUpdated": {
+    "message": "Approval reset after edit",
+    "description": "Campaign approval history content updated action"
+  },
+  "campaignsApprovalSubmitSuccess": {
+    "message": "Campaign submitted for review",
+    "description": "Campaign submit for review success toast"
+  },
+  "campaignsApprovalApproveSuccess": {
+    "message": "Campaign approved",
+    "description": "Campaign approve success toast"
+  },
+  "campaignsApprovalRejectSuccess": {
+    "message": "Campaign rejected",
+    "description": "Campaign reject success toast"
+  },
+  "campaignsApprovalsNav": {
+    "message": "Pending approvals",
+    "description": "Link to pending campaign approvals inbox"
+  },
+  "campaignsApprovalsTitle": {
+    "message": "Pending approvals",
+    "description": "Pending campaign approvals page title"
+  },
+  "campaignsApprovalsDescription": {
+    "message": "Review campaigns awaiting approval before send.",
+    "description": "Pending campaign approvals page description"
+  },
+  "campaignsApprovalsEmptyTitle": {
+    "message": "No pending approvals",
+    "description": "Empty pending approvals title"
+  },
+  "campaignsApprovalsEmptyMessage": {
+    "message": "Campaigns assigned to you for review will appear here.",
+    "description": "Empty pending approvals message"
+  },
+  "reportsTitle": {
+    "message": "Reports",
+    "description": "Marketing reports page title"
+  },
+  "reportsDescription": {
+    "message": "Export campaign performance and review engagement trends.",
+    "description": "Marketing reports page description"
+  },
+  "reportsPeriodLabel": {
+    "message": "Period",
+    "description": "Reports date period filter label"
+  },
+  "reportsPeriod7Days": {
+    "message": "Last 7 days",
+    "description": "Reports period option"
+  },
+  "reportsPeriod30Days": {
+    "message": "Last 30 days",
+    "description": "Reports period option"
+  },
+  "reportsPeriod90Days": {
+    "message": "Last 90 days",
+    "description": "Reports period option"
+  },
+  "reportsExportCsv": {
+    "message": "Export CSV",
+    "description": "Export reports as CSV"
+  },
+  "reportsExportExcel": {
+    "message": "Export Excel",
+    "description": "Export reports as Excel"
+  },
+  "reportsExportPdf": {
+    "message": "Export PDF",
+    "description": "Export reports as PDF"
+  },
+  "reportsKpiCampaigns": {
+    "message": "Campaigns",
+    "description": "Reports KPI label"
+  },
+  "reportsKpiRecipients": {
+    "message": "Recipients",
+    "description": "Reports KPI label"
+  },
+  "reportsKpiOpenRate": {
+    "message": "Avg. open rate",
+    "description": "Reports KPI label"
+  },
+  "reportsKpiClickRate": {
+    "message": "Avg. click rate",
+    "description": "Reports KPI label"
+  },
+  "reportsKpiComplaintRate": {
+    "message": "Complaint rate",
+    "description": "Reports KPI label for complaint rate from AMDS analytics"
+  },
+  "reportsKpiHardBounceRate": {
+    "message": "Hard bounce rate",
+    "description": "Reports KPI label for hard bounce rate from AMDS analytics"
+  },
+  "reportsCampaignPerformanceTitle": {
+    "message": "Campaign performance",
+    "description": "Reports campaign table title"
+  },
+  "reportsCampaignPerformanceEmpty": {
+    "message": "No campaign sends in this period.",
+    "description": "Reports campaign table empty state"
+  },
+  "reportsEngagementTrendTitle": {
+    "message": "Engagement trend",
+    "description": "Reports engagement trend section title"
+  },
+  "reportsEngagementTrendEmpty": {
+    "message": "No engagement data for this period.",
+    "description": "Reports engagement trend empty state"
+  },
+  "reportsTrendLine": {
+    "message": "{campaigns} campaigns · {openRate} opens",
+    "description": "Reports engagement trend row"
+  },
+  "campaignsAbTitle": {
+    "message": "A/B subject test",
+    "description": "Campaign editor A/B section title"
+  },
+  "campaignsAbDescription": {
+    "message": "Test subject lines on a sample of your audience, then send the winner to the rest.",
+    "description": "Campaign editor A/B section description"
+  },
+  "campaignsAbEnable": {
+    "message": "Enable A/B test",
+    "description": "Toggle A/B test"
+  },
+  "campaignsAbWinnerMetric": {
+    "message": "Winner metric",
+    "description": "A/B winner metric label"
+  },
+  "campaignsAbMetricOpenRate": {
+    "message": "Open rate",
+    "description": "A/B metric option"
+  },
+  "campaignsAbMetricClickRate": {
+    "message": "Click rate",
+    "description": "A/B metric option"
+  },
+  "campaignsAbSamplePercent": {
+    "message": "Test sample (%)",
+    "description": "A/B sample size label"
+  },
+  "campaignsAbTestDuration": {
+    "message": "Test duration (hours)",
+    "description": "A/B test duration label"
+  },
+  "campaignsAbSplitPercent": {
+    "message": "Split (%)",
+    "description": "A/B variant split label"
+  },
+  "campaignsAbAddVariant": {
+    "message": "Add variant",
+    "description": "Add A/B variant button"
+  },
+  "campaignsAbSplitWarning": {
+    "message": "Variant splits must total 100% (currently {total}%).",
+    "description": "A/B split validation warning"
+  },
+  "campaignsAbResultsTitle": {
+    "message": "A/B test results",
+    "description": "Campaign detail A/B results title"
+  },
+  "campaignsAbResultsStatus": {
+    "message": "Status: {status}",
+    "description": "Campaign A/B status line"
+  },
+  "campaignsAbSelectWinner": {
+    "message": "Send winner now",
+    "description": "Manual A/B winner selection button"
+  },
+  "campaignsAbSelectWinnerSuccess": {
+    "message": "Winner selected and rollout started",
+    "description": "A/B winner selection success toast"
+  },
+  "campaignsAbColVariant": {
+    "message": "Variant",
+    "description": "A/B results table column"
+  },
+  "campaignsAbWinnerBadge": {
+    "message": "Winner",
+    "description": "A/B winner badge"
+  },
+  "campaignsAbHeldBackHint": {
+    "message": "{count} recipients waiting for the winning subject after the test window.",
+    "description": "A/B held-back recipients hint"
+  },
+  "campaignsAbStatusNone": {
+    "message": "Not started",
+    "description": "A/B status label"
+  },
+  "campaignsAbStatusTesting": {
+    "message": "Testing",
+    "description": "A/B status label"
+  },
+  "campaignsAbStatusWinnerSelected": {
+    "message": "Winner selected",
+    "description": "A/B status label"
+  },
+  "campaignsAbStatusCompleted": {
+    "message": "Completed",
+    "description": "A/B status label"
+  },
+  "dashboardActionReports": {
+    "message": "Reports",
+    "description": "Dashboard link to marketing reports"
+  }
+}

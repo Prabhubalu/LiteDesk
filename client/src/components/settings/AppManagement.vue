@@ -190,7 +190,8 @@ const APP_NAME_KEYS = {
   PORTAL: 'settings.appsNamePortal',
   AUDIT: 'settings.appsNameAudit',
   LMS: 'settings.appsNameLms',
-  INVENTORY: 'settings.appsNameInventory'
+  INVENTORY: 'settings.appsNameInventory',
+  MARKETING: 'settings.appsNameMarketing',
 };
 
 const APP_DESC_KEYS = {
@@ -200,7 +201,8 @@ const APP_DESC_KEYS = {
   PORTAL: 'settings.settingsAppMgmtDescPortal',
   AUDIT: 'settings.settingsAppMgmtDescAudit',
   LMS: 'settings.settingsAppMgmtDescLms',
-  INVENTORY: 'settings.settingsAppMgmtDescInventory'
+  INVENTORY: 'settings.settingsAppMgmtDescInventory',
+  MARKETING: 'settings.settingsAppMgmtDescMarketing',
 };
 
 const STATUS_KEYS = {

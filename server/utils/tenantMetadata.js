@@ -337,7 +337,8 @@ async function isModuleEnabledForTenant(organizationId, appKey, moduleKey) {
 /** Defaults when tenant has no peopleTypes for that app key */
 const DEFAULT_PEOPLE_TYPES = {
   SALES: ['Lead', 'Contact'],
-  HELPDESK: ['Customer', 'Agent']
+  HELPDESK: ['Customer', 'Agent'],
+  MARKETING: ['Customer', 'Subscriber']
 };
 
 const PEOPLE_TYPE_COLOR_ROTATION = [

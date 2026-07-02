@@ -134,11 +134,17 @@ function resolveOperator(rule: { fieldKey: string | null }) {
 }
 
 function availableFieldsForRule(rule: { id: string; fieldKey: string | null }) {
-  const selfKey = rule.fieldKey;
-  return props.filterConfig.filter((filter) => {
-    if (selfKey === filter.key) return true;
-    return !props.usedFieldKeys.has(filter.key);
-  });
+  const blocked = new Set(props.usedFieldKeys);
+  if (props.rule.nested) {
+    for (const child of props.rule.nested.children) {
+      if (child.kind === 'rule' && child.id !== rule.id && child.fieldKey) {
+        blocked.add(child.fieldKey);
+      }
+    }
+  }
+  return props.filterConfig
+    .filter((filter) => !blocked.has(filter.key))
+    .map((filter) => props.filterByKey[filter.key] ?? filter);
 }
 
 function getNestedRuleIndex(ruleId: string): number {
@@ -171,19 +177,20 @@ function onParentRemove() {
 
 function onParentFieldChange(fieldKey: string | null) {
   const next = cloneRule();
-  if (next.fieldKey && next.fieldKey !== fieldKey) {
-    emit('clear-field', next.fieldKey);
+  const previousKey = next.fieldKey;
+  if (previousKey && previousKey !== fieldKey) {
+    emit('clear-field', previousKey);
   }
   next.fieldKey = fieldKey;
+  emit('update:rule', next);
   if (fieldKey) {
-    const filter = props.filterByKey[fieldKey];
+    const filter = props.filterByKey[fieldKey] ?? props.filterConfig.find((f) => f.key === fieldKey);
     emit('apply', {
       key: fieldKey,
       value: props.filters[fieldKey] ?? '',
       operator: getDefaultOperatorForFilter(filter ?? null),
     });
   }
-  emit('update:rule', next);
 }
 
 function onParentOperatorChange(operator: FilterOperatorId) {

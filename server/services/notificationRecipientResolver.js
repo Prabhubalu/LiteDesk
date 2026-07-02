@@ -58,6 +58,10 @@ async function resolveKey(key, context) {
       return resolvePlaybookAlertRecipients(context);
     case 'WEBFORM_NOTIFY_RECIPIENTS':
       return resolveWebformNotifyRecipients(context);
+    case 'MARKETING_CAMPAIGN_REVIEWERS':
+      return resolveMarketingCampaignReviewers(context);
+    case 'MARKETING_CAMPAIGN_CREATOR':
+      return resolveMarketingCampaignCreator(context);
     case 'PORTAL_CUSTOMER':
       return resolvePortalCustomer(context);
     case 'PORTAL_CASE_REQUESTER':
@@ -134,6 +138,92 @@ async function resolvePlaybookAlertRecipients({ entity, organizationId }) {
     title,
     body
   }));
+}
+
+function marketingCampaignNotificationCopy(eventType, campaignName, entity = {}) {
+  const label = campaignName || 'Campaign';
+  const comment = String(entity.comment || '').trim();
+
+  if (eventType === domainEvents.MARKETING_CAMPAIGN_SUBMITTED_FOR_REVIEW) {
+    return {
+      title: 'Campaign pending review',
+      body: comment
+        ? `"${label}" was submitted for your review: ${comment}`
+        : `"${label}" was submitted for your review.`
+    };
+  }
+  if (eventType === domainEvents.MARKETING_CAMPAIGN_APPROVED) {
+    return {
+      title: 'Campaign approved',
+      body: comment
+        ? `"${label}" was approved: ${comment}`
+        : `"${label}" was approved and can be sent.`
+    };
+  }
+  if (eventType === domainEvents.MARKETING_CAMPAIGN_REJECTED) {
+    return {
+      title: 'Campaign rejected',
+      body: comment
+        ? `"${label}" was rejected: ${comment}`
+        : `"${label}" was rejected. Update it and resubmit for review.`
+    };
+  }
+
+  return {
+    title: 'Campaign update',
+    body: `Update on "${label}".`
+  };
+}
+
+async function resolveMarketingCampaignReviewers({ entity, organizationId, eventType }) {
+  const recipientUserIds = Array.isArray(entity?.reviewerUserIds)
+    ? entity.reviewerUserIds
+    : [];
+  if (!recipientUserIds.length || !organizationId) {
+    return [];
+  }
+
+  const users = await User.find({
+    _id: { $in: recipientUserIds },
+    organizationId,
+    status: { $in: ['active', null] }
+  }).select('_id');
+
+  const copy = marketingCampaignNotificationCopy(
+    eventType,
+    entity?.title || entity?.name,
+    entity
+  );
+
+  return users.map((user) => ({
+    userId: user._id,
+    title: copy.title,
+    body: copy.body
+  }));
+}
+
+async function resolveMarketingCampaignCreator({ entity, organizationId, eventType }) {
+  const creatorId = entity?.createdByUserId;
+  if (!creatorId || !organizationId) return [];
+
+  const exists = await User.exists({
+    _id: creatorId,
+    organizationId,
+    status: { $in: ['active', null] }
+  });
+  if (!exists) return [];
+
+  const copy = marketingCampaignNotificationCopy(
+    eventType,
+    entity?.title || entity?.name,
+    entity
+  );
+
+  return [{
+    userId: creatorId,
+    title: copy.title,
+    body: copy.body
+  }];
 }
 
 async function resolveWebformNotifyRecipients({ entity, organizationId, eventType }) {

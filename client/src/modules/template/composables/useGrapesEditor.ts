@@ -33,6 +33,8 @@ import {
   serializeEditor,
   type GrapesTemplateDefinition
 } from '../editor/storage';
+import { parseEmailHtmlInput, extractEmailBodyHtml, encodeMsoConditionals } from '../utils/emailHtmlExport';
+import { setEditorMsoChunks } from '../editor/msoChunksStore';
 import {
   applyPageDimensions,
   bindPageDimensionFrameCss,
@@ -132,7 +134,8 @@ export function useGrapesEditor(options: UseGrapesEditorOptions) {
     const height = parseDimensionPx(options.canvasHeight?.value);
     return {
       dimensions: { width, height },
-      marginsMm: resolveTemplateMarginsMm(options.pageMarginsMm?.value)
+      marginsMm: resolveTemplateMarginsMm(options.pageMarginsMm?.value),
+      isEmail: options.outputFormat?.value === 'email'
     };
   }
 
@@ -240,7 +243,9 @@ export function useGrapesEditor(options: UseGrapesEditorOptions) {
   function loadProject(definition: GrapesTemplateDefinition | null | undefined) {
     if (!editor.value) return;
     suppressDirty = true;
-    loadDefinition(editor.value, definition);
+    loadDefinition(editor.value, definition, {
+      isEmail: options.outputFormat?.value === 'email'
+    });
     nextTick(() => {
       syncPageDimensions();
       refreshLayerTree();
@@ -253,7 +258,9 @@ export function useGrapesEditor(options: UseGrapesEditorOptions) {
 
   function serializeProject(): GrapesTemplateDefinition {
     if (!editor.value) return createBlankGrapesDefinition();
-    return serializeEditor(editor.value);
+    return serializeEditor(editor.value, {
+      isEmail: options.outputFormat?.value === 'email'
+    });
   }
 
   function preview() {
@@ -277,6 +284,28 @@ export function useGrapesEditor(options: UseGrapesEditorOptions) {
     selectComponentById(editor.value, componentId);
   }
 
+  function applyEmailHtml(raw: string) {
+    if (!editor.value) return;
+    const { html, css } = parseEmailHtmlInput(raw);
+    const bodyHtml = extractEmailBodyHtml(html);
+    const { html: canvasHtml, chunks } = encodeMsoConditionals(bodyHtml);
+    suppressDirty = true;
+    editor.value.select(undefined);
+    editor.value.setComponents(canvasHtml);
+    editor.value.setStyle(css);
+    setEditorMsoChunks(editor.value, chunks);
+    nextTick(() => {
+      syncPageDimensions();
+      refreshLayerTree();
+      suppressDirty = false;
+      options.onDirty?.();
+    });
+  }
+
+  function loadDefinitionIntoEditor(definition: GrapesTemplateDefinition | null | undefined) {
+    loadProject(definition);
+  }
+
   return {
     editor,
     selectedComponent,
@@ -296,6 +325,8 @@ export function useGrapesEditor(options: UseGrapesEditorOptions) {
     insertImage,
     selectLayer,
     layerTree,
+    applyEmailHtml,
+    loadDefinitionIntoEditor,
     isGrapesDefinition
   };
 }

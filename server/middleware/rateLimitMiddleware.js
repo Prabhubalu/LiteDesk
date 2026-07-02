@@ -755,6 +755,29 @@ const mailroomPortalIngestLimiter = rateLimit({
     skip: (req) => SECURITY_DISABLED || shouldBypassRateLimit(req)
 });
 
+const publicMarketingPreferenceLimiter = rateLimit({
+    windowMs: parsePositiveInteger(process.env.PUBLIC_MARKETING_PREFERENCE_RATE_LIMIT_WINDOW_MS, ONE_HOUR_MS),
+    max: parsePositiveInteger(process.env.PUBLIC_MARKETING_PREFERENCE_RATE_LIMIT_MAX, 30),
+    ...rateLimitHeadersAndStore(
+        'public-marketing-preference',
+        parsePositiveInteger(process.env.PUBLIC_MARKETING_PREFERENCE_RATE_LIMIT_WINDOW_MS, ONE_HOUR_MS),
+        SENSITIVE_RATE_LIMIT_REDIS_FAILURE_MODE
+    ),
+    message: {
+        error: 'Too many preference center requests. Please try again later.',
+        code: 'PUBLIC_MARKETING_PREFERENCE_RATE_LIMIT_EXCEEDED'
+    },
+    keyGenerator: (req) => {
+        const token = String(req.params?.token || req.body?.token || 'unknown').slice(0, 64);
+        return `public-marketing-preference:${token}:${getClientIp(req)}`;
+    },
+    handler: makeRateLimitHandler('public-marketing-preference', {
+        error: 'Too many preference center requests. Please try again later.',
+        code: 'PUBLIC_MARKETING_PREFERENCE_RATE_LIMIT_EXCEEDED'
+    }),
+    skip: (req) => SECURITY_DISABLED || shouldBypassRateLimit(req)
+});
+
 module.exports = {
     apiLimiter,
     authLimiter,
@@ -772,6 +795,7 @@ module.exports = {
     mailroomPortalIngestLimiter,
     publicQuoteViewLimiter,
     publicQuoteActionLimiter,
+    publicMarketingPreferenceLimiter,
     publicWebformViewLimiter,
     publicWebformSubmitLimiter
 };

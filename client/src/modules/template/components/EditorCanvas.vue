@@ -10,6 +10,7 @@
         :style="hostStyle"
       />
       <BuilderPageMarginGuides
+        v-if="showMarginGuides"
         :page-width-px="pageWidthPx"
         :page-height-px="pageHeightPx"
         :margins-mm="marginsMm"
@@ -31,7 +32,8 @@ const props = defineProps({
   marginsMm: {
     type: Object,
     default: () => ({ top: 12, right: 12, bottom: 12, left: 12 })
-  }
+  },
+  showMarginGuides: { type: Boolean, default: true }
 });
 
 const emit = defineEmits(['container-ready']);
