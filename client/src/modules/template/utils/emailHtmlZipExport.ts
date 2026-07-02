@@ -26,14 +26,15 @@ export function extractAssetReferences(html: string): string[] {
   const imgRegex = /<img\b[^>]*\ssrc\s*=\s*["']([^"']+)["']/gi;
   let match = imgRegex.exec(source);
   while (match) {
-    urls.add(match[1].trim());
+    const src = match[1]?.trim();
+    if (src) urls.add(src);
     match = imgRegex.exec(source);
   }
 
   const cssUrlRegex = /url\(\s*['"]?([^'")]+)['"]?\s*\)/gi;
   match = cssUrlRegex.exec(source);
   while (match) {
-    const candidate = match[1].trim();
+    const candidate = match[1]?.trim() ?? '';
     if (candidate && !candidate.startsWith('#')) {
       urls.add(candidate);
     }

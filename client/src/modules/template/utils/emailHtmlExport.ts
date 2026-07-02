@@ -65,7 +65,7 @@ export function extractEmailBodyHtml(html: string): string {
   if (!source) return '';
 
   const bodyMatch = source.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-  if (bodyMatch) {
+  if (bodyMatch?.[1]) {
     return bodyMatch[1].trim();
   }
 
