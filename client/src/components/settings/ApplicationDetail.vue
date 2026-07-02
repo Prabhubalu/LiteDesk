@@ -339,6 +339,7 @@ const APP_NAME_KEYS = {
   AUDIT: 'settings.appsNameAudit',
   LMS: 'settings.appsNameLms',
   INVENTORY: 'settings.appsNameInventory',
+  MARKETING: 'settings.appsNameMarketing',
 };
 
 const APP_DESC_KEYS = {
@@ -349,6 +350,7 @@ const APP_DESC_KEYS = {
   AUDIT: 'settings.appsDescAudit',
   LMS: 'settings.appsDescLms',
   INVENTORY: 'settings.appsDescInventory',
+  MARKETING: 'settings.appsDescMarketing',
 };
 
 const appDisplayName = computed(() => {

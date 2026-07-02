@@ -19,6 +19,7 @@ const Role = require('../models/Role');
 const Instance = require('../models/Instance');
 const { INSTANCE_STATUS } = require('../constants/instanceLifecycle');
 const { ensureDefaultCommunicationSettingsForOrganization } = require('../services/communicationDefaultsSeeder');
+const { ensureOrgEmailPolicy } = require('../services/orgEmailPolicyService');
 const { getMongoUris, connectMasterWithRetry } = require('../lib/mongoConnect');
 
 function slugFromOrganizationName(name) {
@@ -69,6 +70,11 @@ async function createDefaultAdmin() {
                 console.log('✅ Set isPlatformAdmin=true on existing default admin');
             }
             await ensureDefaultCommunicationSettingsForOrganization(organization._id);
+            try {
+                await ensureOrgEmailPolicy(organization._id, 'ENTERPRISE');
+            } catch (policyErr) {
+                console.warn('[createDefaultAdmin] OrgEmailPolicy seed failed:', policyErr?.message || policyErr);
+            }
             await mongoose.connection.close();
             return;
         }
@@ -148,6 +154,11 @@ async function createDefaultAdmin() {
         }
 
         await ensureDefaultCommunicationSettingsForOrganization(organization._id);
+        try {
+            await ensureOrgEmailPolicy(organization._id, 'ENTERPRISE');
+        } catch (policyErr) {
+            console.warn('[createDefaultAdmin] OrgEmailPolicy seed failed:', policyErr?.message || policyErr);
+        }
 
         // Create Default Roles
         console.log('\n🔐 Creating default roles...');

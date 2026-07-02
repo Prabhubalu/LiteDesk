@@ -61,6 +61,24 @@ export function capitalizeModuleAlias(moduleKey) {
 }
 
 /**
+ * Resolve module key (e.g. people) from a merge path alias (e.g. People.firstName).
+ * @param {string} path
+ * @returns {string}
+ */
+export function resolveMergeTagModuleKeyFromPath(path) {
+  const alias = String(path || '').split('.')[0]?.trim();
+  if (!alias) return '';
+
+  for (const [moduleKey, moduleAlias] of Object.entries(MODULE_MERGE_ALIASES)) {
+    if (moduleAlias === alias) return moduleKey;
+  }
+
+  return alias
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .toLowerCase();
+}
+
+/**
  * @param {import('vue-i18n').Composer['t']} t
  * @param {import('vue-i18n').Composer['te']} te
  * @param {(moduleKey: string) => string | undefined} getModuleLabelKey

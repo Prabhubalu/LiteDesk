@@ -5,6 +5,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation, checkTrialStatus } = require('../middleware/organizationMiddleware');
 const { checkPermission } = require('../middleware/permissionMiddleware');
 const controller = require('../controllers/contentTemplateController');
+const htmlController = require('../controllers/templateHtmlController');
 
 const router = express.Router();
 
@@ -17,6 +18,14 @@ router.post('/render/preview', checkPermission('templates', 'render'), controlle
 
 router.get('/gallery', checkPermission('templates', 'view'), controller.listTemplateGallery);
 router.get('/summary', checkPermission('templates', 'view'), controller.getTemplateSummary);
+router.get('/html/merge-mappings', checkPermission('templates', 'view'), htmlController.getMergeMappings);
+router.put('/html/merge-mappings', checkPermission('templates', 'edit'), htmlController.saveMergeMappings);
+router.get('/html/css-allowlist', checkPermission('templates', 'view'), htmlController.getCssAllowlist);
+router.put('/html/css-allowlist', checkPermission('templates', 'edit'), htmlController.saveCssAllowlist);
+router.get('/html/client-preview/status', checkPermission('templates', 'view'), htmlController.getClientPreviewStatus);
+router.post('/html/client-preview', checkPermission('templates', 'view'), htmlController.createClientPreview);
+router.get('/html/client-preview/:emailGuid/:client', checkPermission('templates', 'view'), htmlController.getClientPreviewImage);
+router.post('/html/analyze', checkPermission('templates', 'create'), htmlController.analyzeHtml);
 
 router
   .route('/')

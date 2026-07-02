@@ -963,6 +963,8 @@ function getBaseFieldsForKey(key) {
                 if (excluded.has(name)) return false;
                 // Tasks: expose only the single "relatedTo" field, not nested relatedTo.type / relatedTo.id
                 if (key === 'tasks' && (name === 'relatedTo.type' || name === 'relatedTo.id')) return false;
+                // People: portalAccess is system-managed — exclude nested mongoose paths
+                if (key === 'people' && name.startsWith('portalAccess.')) return false;
                 if (key === 'cases') {
                     if (casesSchemaExcluded.has(name)) return false;
                     for (const excludedField of casesSchemaExcluded) {

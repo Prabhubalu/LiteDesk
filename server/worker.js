@@ -53,6 +53,10 @@ async function run() {
 
   importQueueService.startWorker();
   console.log(`[worker] Import CSV worker is running (Bull: ${importQueueService.IMPORT_QUEUE_NAME})`);
+
+  const campaignSendQueueService = require('./services/marketing/campaignSendQueueService');
+  campaignSendQueueService.startWorker();
+  console.log(`[worker] Campaign send worker is running (Bull: ${campaignSendQueueService.CAMPAIGN_SEND_QUEUE_NAME})`);
 }
 
 async function stop(signal) {
@@ -73,6 +77,12 @@ async function stop(signal) {
     await importQueueService.closeQueue();
   } catch (e) {
     console.error('[worker] import queue close', e.message);
+  }
+  try {
+    const campaignSendQueueService = require('./services/marketing/campaignSendQueueService');
+    await campaignSendQueueService.closeQueue();
+  } catch (e) {
+    console.error('[worker] campaign send queue close', e.message);
   }
   try {
     await mongoose.connection.close();

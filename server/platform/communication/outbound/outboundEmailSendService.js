@@ -22,6 +22,8 @@ const {
 const { getCommunicationConfigForOrganization } = require('../config/communicationConfigService');
 const { isGmailIntegrationEnabled } = require('../../../config/emailFeatureFlags');
 const emailProviderGateway = require('../providers/emailProviderGateway');
+const amdsEmailDelivery = require('../../../services/emailProviders/amdsEmailDelivery');
+const { buildCaseAmdsMetadata } = require('../../../services/helpdesk/sendCaseReplyEmail');
 const gmailSendProvider = require('../providers/gmailSendProvider');
 const fileStorage = require('../../../services/fileStorageService');
 const { uploadsDir } = require('../../../middleware/uploadMiddleware');
@@ -241,6 +243,24 @@ async function sendViaSmtp(doc) {
   const emailAttachments = await loadAttachmentsFromDoc(doc);
   const textBody = (doc.body || '').replace(/<[^>]+>/g, '');
 
+  const moduleKey = doc.relatedTo?.moduleKey;
+  const baseMetadata = {
+    litedesk_entity_id: String(doc._id),
+    litedesk_communication_id: String(doc._id),
+    litedesk_org_id: String(doc.organizationId)
+  };
+  const metadata =
+    moduleKey === 'cases' && doc.relatedTo?.recordId
+      ? buildCaseAmdsMetadata({
+          organizationId: String(doc.organizationId),
+          caseId: String(doc.relatedTo.recordId),
+          communicationId: String(doc._id)
+        })
+      : {
+          ...baseMetadata,
+          litedesk_module: moduleKey
+        };
+
   return emailProviderGateway.sendEmail({
     organizationId: doc.organizationId,
     to: doc.toAddresses,
@@ -250,7 +270,18 @@ async function sendViaSmtp(doc) {
     text: textBody || undefined,
     html: doc.body || undefined,
     replyTo,
-    attachments: emailAttachments.length ? emailAttachments : undefined
+    attachments: emailAttachments.length ? emailAttachments : undefined,
+    communicationId: String(doc._id),
+    moduleKey,
+    idempotencyKey:
+      doc.idempotencyKey
+      || amdsEmailDelivery.buildCommunicationIdempotencyKey({
+        moduleKey,
+        organizationId: String(doc.organizationId),
+        communicationId: String(doc._id)
+      }),
+    metadata,
+    tags: moduleKey === 'cases' ? ['helpdesk', 'transactional'] : ['crm', moduleKey].filter(Boolean)
   });
 }
 
@@ -335,6 +366,18 @@ function buildCommunicationUpdateFromSendResult(result) {
     ...(result.success && { 'metadata.provider': result.provider || 'unknown' })
   };
 
+  if (!result.success) {
+    update['metadata.deliveryError'] = String(result.error || 'send_failed').slice(0, 2000);
+    update['metadata.sendErrorCode'] = result.code ? String(result.code).slice(0, 64) : null;
+    update['metadata.sendErrorDomain'] = result.domain ? String(result.domain).slice(0, 253) : null;
+  } else {
+    update['metadata.sendErrorCode'] = null;
+    update['metadata.sendErrorDomain'] = null;
+    if (finalStatus === 'sent') {
+      update['metadata.deliveryError'] = null;
+    }
+  }
+
   if (result.provider === 'gmail') {
     if (result.messageId) {
       update.externalMessageId = result.messageId;
@@ -342,6 +385,12 @@ function buildCommunicationUpdateFromSendResult(result) {
     }
     if (result.threadId) {
       update.providerThreadId = String(result.threadId).slice(0, 128);
+    }
+  } else if (result.provider === amdsEmailDelivery.PROVIDER_KEY) {
+    if (result.messageId) {
+      update.externalMessageId = result.messageId;
+      update.providerMessageKey = `amds:${result.messageId}`;
+      update['metadata.amdsMessageId'] = result.messageId;
     }
   } else if (result.messageId) {
     update.externalMessageId = result.messageId;

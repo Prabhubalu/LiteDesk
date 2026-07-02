@@ -1,8 +1,10 @@
 import type { Editor } from 'grapesjs';
 import { ensurePrintArea, stripPrintAreaLayoutFromProject } from './printArea';
-import { appendLayoutGridCss } from './layoutGridCss';
 import { flushTableSheetEdits } from './tableSheetEditor';
 import { syncTableCellsForSerialize } from './tableModel';
+import { extractRenderedOutput } from './renderer';
+import { extractEmailBodyHtml, isFullHtmlDocument, encodeMsoConditionals } from '../utils/emailHtmlExport';
+import { setEditorMsoChunks, clearEditorMsoChunks } from './msoChunksStore';
 
 export const GRAPES_ENGINE = 'grapesjs' as const;
 export const GRAPES_DEFINITION_VERSION = 1;
@@ -13,6 +15,10 @@ export interface GrapesTemplateDefinition {
   project: Record<string, unknown> | null;
   html: string;
   css: string;
+}
+
+export interface LoadDefinitionOptions {
+  isEmail?: boolean;
 }
 
 export function createBlankGrapesDefinition(): GrapesTemplateDefinition {
@@ -72,47 +78,119 @@ export function isEmptyGrapesDefinition(definition: GrapesTemplateDefinition | n
   return !hasGrapesDefinitionContent(definition);
 }
 
-export function serializeEditor(editor: Editor): GrapesTemplateDefinition {
-  flushTableSheetEdits(editor);
-  syncTableCellsForSerialize(editor);
+export interface SerializeEditorOptions {
+  isEmail?: boolean;
+}
+
+function runWhenEditorCanvasReady(editor: Editor, fn: () => void): void {
+  if (editor.getWrapper()) {
+    fn();
+    return;
+  }
+  editor.once('load', fn);
+}
+
+function applyCanvasHtml(
+  editor: Editor,
+  html: string,
+  css: string,
+  msoChunks: string[],
+  isEmail: boolean
+): void {
+  runWhenEditorCanvasReady(editor, () => {
+    editor.select(undefined);
+    editor.setComponents(html);
+    editor.setStyle(css);
+    if (isEmail && msoChunks.length) {
+      setEditorMsoChunks(editor, msoChunks);
+    } else {
+      clearEditorMsoChunks(editor);
+    }
+    queueMicrotask(() => {
+      if (!isEmail) {
+        ensurePrintArea(editor);
+      }
+    });
+  });
+}
+
+export function serializeEditor(
+  editor: Editor,
+  options: SerializeEditorOptions = {}
+): GrapesTemplateDefinition {
+  if (!options.isEmail) {
+    flushTableSheetEdits(editor);
+    syncTableCellsForSerialize(editor);
+  }
 
   const project = editor.getProjectData() as Record<string, unknown>;
-  stripPrintAreaLayoutFromProject(project);
+  if (!options.isEmail) {
+    stripPrintAreaLayoutFromProject(project);
+  }
+
+  const rendered = extractRenderedOutput(editor, {
+    appendLayoutGrid: !options.isEmail
+  });
 
   return {
     engine: GRAPES_ENGINE,
     version: GRAPES_DEFINITION_VERSION,
-    project,
-    html: editor.getHtml() || '',
-    css: appendLayoutGridCss(editor.getCss() || '')
+    project: options.isEmail ? null : project,
+    html: rendered.html,
+    css: rendered.css
   };
 }
 
-export function loadDefinition(editor: Editor, definition: GrapesTemplateDefinition | null | undefined): void {
-  const html = String(definition?.html || '').trim();
+export function loadDefinition(
+  editor: Editor,
+  definition: GrapesTemplateDefinition | null | undefined,
+  options: LoadDefinitionOptions = {}
+): void {
+  const isEmail = Boolean(options.isEmail);
+  let html = String(definition?.html || '').trim();
   const css = String(definition?.css || '').trim();
   const project = definition?.project;
 
-  if (project && hasGrapesProjectContent(project)) {
+  if (isEmail && html && isFullHtmlDocument(html)) {
+    html = extractEmailBodyHtml(html);
+  }
+
+  // Email templates use html/css as source of truth — PDF table-sheet hooks flatten layout tables.
+  const preferHtmlSource = isEmail && Boolean(html);
+
+  if (project && hasGrapesProjectContent(project) && !preferHtmlSource) {
     const cloned = structuredClone(project) as Record<string, unknown>;
     stripPrintAreaLayoutFromProject(cloned);
-    editor.loadProjectData(cloned);
-    if (css) editor.setStyle(css);
-    queueMicrotask(() => {
-      ensurePrintArea(editor);
+    runWhenEditorCanvasReady(editor, () => {
+      editor.loadProjectData(cloned);
+      if (css) editor.setStyle(css);
+      clearEditorMsoChunks(editor);
+      queueMicrotask(() => {
+        if (!isEmail) {
+          ensurePrintArea(editor);
+        }
+      });
     });
     return;
   }
 
   if (html) {
-    editor.setComponents(html);
-    editor.setStyle(css);
-    queueMicrotask(() => {
-      ensurePrintArea(editor);
-    });
+    let canvasHtml = html;
+    let msoChunks: string[] = [];
+
+    if (isEmail) {
+      const encoded = encodeMsoConditionals(canvasHtml);
+      canvasHtml = encoded.html;
+      msoChunks = encoded.chunks;
+    }
+
+    applyCanvasHtml(editor, canvasHtml, css, msoChunks, isEmail);
     return;
   }
 
-  editor.setComponents('');
-  editor.setStyle('');
+  runWhenEditorCanvasReady(editor, () => {
+    editor.setComponents('');
+    editor.setStyle('');
+    clearEditorMsoChunks(editor);
+  });
 }

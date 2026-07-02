@@ -19,9 +19,9 @@
       <PencilSquareIcon class="w-4 h-4" />
     </button>
 
-    <!-- Delete Button - Only if user has delete permission -->
+    <!-- Delete Button - edit permission is sufficient for marketing campaigns -->
     <button 
-      v-if="authStore.can(module, 'delete') && canDeleteRow(row)"
+      v-if="canDeleteModule(module) && canDeleteRow(row)"
       @click.stop="$emit('delete', row)"
       class="inline-flex items-center h-8 gap-1.5 px-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-sm" 
       :title="t('actions.delete')"
@@ -58,6 +58,13 @@ const props = defineProps({
 
 function canDeleteRow(row) {
   return props.canDeleteRow(row);
+}
+
+function canDeleteModule(moduleKey) {
+  if (moduleKey === 'campaigns') {
+    return authStore.can('campaigns', 'edit');
+  }
+  return authStore.can(moduleKey, 'delete');
 }
 
 defineEmits(['view', 'edit', 'delete']);

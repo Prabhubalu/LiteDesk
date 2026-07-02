@@ -439,6 +439,27 @@ module.exports = {
       whatsapp: false,
       sms: false
     }
+  },
+  [domainEvents.MARKETING_CAMPAIGN_SUBMITTED_FOR_REVIEW]: {
+    appKey: 'MARKETING',
+    recipients: ['MARKETING_CAMPAIGN_REVIEWERS'],
+    priority: 'HIGH',
+    defaultChannels: ['IN_APP', 'EMAIL'],
+    channels: { inApp: true, email: true, push: true, whatsapp: false, sms: false }
+  },
+  [domainEvents.MARKETING_CAMPAIGN_APPROVED]: {
+    appKey: 'MARKETING',
+    recipients: ['MARKETING_CAMPAIGN_CREATOR'],
+    priority: 'NORMAL',
+    defaultChannels: ['IN_APP'],
+    channels: { inApp: true, email: false, push: false, whatsapp: false, sms: false }
+  },
+  [domainEvents.MARKETING_CAMPAIGN_REJECTED]: {
+    appKey: 'MARKETING',
+    recipients: ['MARKETING_CAMPAIGN_CREATOR'],
+    priority: 'HIGH',
+    defaultChannels: ['IN_APP', 'EMAIL'],
+    channels: { inApp: true, email: true, push: true, whatsapp: false, sms: false }
   }
 };
 

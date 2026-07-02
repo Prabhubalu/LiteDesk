@@ -1,0 +1,65 @@
+'use strict';
+
+const CAMPAIGN_SEND_QUEUE_NAME = String(
+  process.env.MARKETING_CAMPAIGN_SEND_QUEUE_NAME || 'marketing:campaign:send'
+).trim();
+
+const CAMPAIGN_SEND_CHUNK_SIZE = Math.max(
+  100,
+  parseInt(String(process.env.MARKETING_CAMPAIGN_SEND_CHUNK_SIZE || '500'), 10) || 500
+);
+
+const CAMPAIGN_SEND_INLINE_MAX = Math.max(
+  1,
+  parseInt(String(process.env.MARKETING_CAMPAIGN_SEND_INLINE_MAX || '100'), 10) || 100
+);
+
+const CAMPAIGN_SEND_WORKER_CONCURRENCY = Math.max(
+  1,
+  parseInt(String(process.env.MARKETING_CAMPAIGN_SEND_WORKER_CONCURRENCY || '2'), 10) || 2
+);
+
+const CAMPAIGN_SEND_SNAPSHOT_BATCH_SIZE = Math.max(
+  100,
+  parseInt(String(process.env.MARKETING_CAMPAIGN_SEND_SNAPSHOT_BATCH_SIZE || '1000'), 10) || 1000
+);
+
+const CAMPAIGN_SEND_MAX_CONCURRENT_PER_ORG = Math.max(
+  1,
+  parseInt(String(process.env.MARKETING_CAMPAIGN_SEND_MAX_CONCURRENT_PER_ORG || '1'), 10) || 1
+);
+
+const CAMPAIGN_SEND_REDIS_REQUIRED_ABOVE = Math.max(
+  1,
+  parseInt(String(process.env.MARKETING_CAMPAIGN_SEND_REDIS_REQUIRED_ABOVE || '5000'), 10) || 5000
+);
+
+const CAMPAIGN_SEND_QUEUE_LAG_ALERT_MS = Math.max(
+  60_000,
+  parseInt(String(process.env.MARKETING_CAMPAIGN_SEND_QUEUE_LAG_ALERT_MS || '300000'), 10) || 300_000
+);
+
+const CAMPAIGN_SEND_ALERT_INTERVAL_MS = Math.max(
+  60_000,
+  parseInt(String(process.env.MARKETING_CAMPAIGN_SEND_ALERT_INTERVAL_MS || '300000'), 10) || 300_000
+);
+
+const CAMPAIGN_SEND_RETRY_PROFILE = Object.freeze({
+  attempts: 3,
+  backoff: { type: 'exponential', delay: 5000 },
+  removeOnComplete: 100,
+  removeOnFail: 200
+});
+
+module.exports = {
+  CAMPAIGN_SEND_QUEUE_NAME,
+  CAMPAIGN_SEND_CHUNK_SIZE,
+  CAMPAIGN_SEND_INLINE_MAX,
+  CAMPAIGN_SEND_WORKER_CONCURRENCY,
+  CAMPAIGN_SEND_SNAPSHOT_BATCH_SIZE,
+  CAMPAIGN_SEND_MAX_CONCURRENT_PER_ORG,
+  CAMPAIGN_SEND_REDIS_REQUIRED_ABOVE,
+  CAMPAIGN_SEND_QUEUE_LAG_ALERT_MS,
+  CAMPAIGN_SEND_ALERT_INTERVAL_MS,
+  CAMPAIGN_SEND_RETRY_PROFILE
+};

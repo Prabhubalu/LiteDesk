@@ -6,25 +6,24 @@
  */
 
 const { createClient } = require('redis');
-const { buildRedisUrl, isRedisConfigured } = require('../lib/redisClient');
+const {
+  buildRedisUrl,
+  defaultReconnectStrategy,
+  forceCloseClient,
+  getRedisClient,
+  isRedisConfigured,
+  registerManagedClient,
+} = require('../lib/redisClient');
 
 const CHANNEL = 'arivu:notification:sse';
 const INSTANCE_ID = `inst_${process.pid}_${Date.now()}`;
 
 let subscriberClient = null;
-let publisherClient = null;
 let subscriberStarted = false;
 
 async function getPublisher() {
   if (!isRedisConfigured()) return null;
-  if (publisherClient?.isOpen) return publisherClient;
-  const url = buildRedisUrl();
-  publisherClient = createClient({ url });
-  publisherClient.on('error', (err) => {
-    console.error('[notificationSSEPubSub] publisher error:', err.message);
-  });
-  await publisherClient.connect();
-  return publisherClient;
+  return getRedisClient({ component: 'notification-sse-pub' });
 }
 
 /**
@@ -61,7 +60,13 @@ async function startNotificationSSESubscriber() {
   const notificationSSEHub = require('./notificationSSEHub');
   const url = buildRedisUrl();
 
-  subscriberClient = createClient({ url });
+  subscriberClient = createClient({
+    url,
+    socket: {
+      reconnectStrategy: defaultReconnectStrategy,
+    },
+  });
+  registerManagedClient(subscriberClient);
   subscriberClient.on('error', (err) => {
     console.error('[notificationSSEPubSub] subscriber error:', err.message);
   });
@@ -89,25 +94,11 @@ async function startNotificationSSESubscriber() {
 
 async function stopNotificationSSESubscriber() {
   subscriberStarted = false;
-  try {
-    if (subscriberClient?.isOpen) {
-      await subscriberClient.unsubscribe(CHANNEL);
-      await subscriberClient.quit();
-    }
-  } catch (_err) {
-    // ignore shutdown errors
-  } finally {
-    subscriberClient = null;
-  }
-  try {
-    if (publisherClient?.isOpen) {
-      await publisherClient.quit();
-    }
-  } catch (_err) {
-    // ignore
-  } finally {
-    publisherClient = null;
-  }
+
+  const sub = subscriberClient;
+  subscriberClient = null;
+
+  await forceCloseClient(sub);
 }
 
 module.exports = {

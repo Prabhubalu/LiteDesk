@@ -92,6 +92,9 @@ export function useTemplates() {
           limit,
           status: options.status || undefined,
           moduleScope: options.moduleScope || undefined,
+          outputFormat: options.outputFormat || undefined,
+          category: options.category || undefined,
+          purpose: options.purpose || undefined,
           search: options.search || undefined
         },
         cache: 'no-store'

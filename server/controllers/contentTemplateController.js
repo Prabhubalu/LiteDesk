@@ -53,6 +53,9 @@ exports.listTemplates = async (req, res) => {
       limit: req.query.limit,
       status: req.query.status,
       moduleScope: req.query.moduleScope,
+      outputFormat: req.query.outputFormat,
+      category: req.query.category,
+      purpose: req.query.purpose,
       search: req.query.search
     });
     return res.json({ success: true, data: result.items, pagination: result.pagination });

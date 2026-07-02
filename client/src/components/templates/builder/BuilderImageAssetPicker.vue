@@ -62,11 +62,17 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PhotoIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { useContentAssets } from '@/composables/useContentAssets';
+import { useMarketingAssets } from '@/composables/useMarketingAssets';
 import { getApiUrlForFetch } from '@/config/apiBase';
 import { useBuilderUi } from '@/composables/useBuilderUi';
 
 const props = defineProps({
-  open: { type: Boolean, default: undefined }
+  open: { type: Boolean, default: undefined },
+  library: {
+    type: String,
+    default: 'content',
+    validator: (value) => ['content', 'marketing'].includes(value)
+  }
 });
 
 const emit = defineEmits(['select', 'update:open']);
@@ -74,7 +80,10 @@ const emit = defineEmits(['select', 'update:open']);
 const { t } = useI18n();
 const ui = useBuilderUi();
 const internalOpen = ref(false);
-const { assets, loading, fetchAssets } = useContentAssets();
+const contentAssets = useContentAssets();
+const marketingAssets = useMarketingAssets();
+
+const activeLibrary = computed(() => (props.library === 'marketing' ? marketingAssets : contentAssets));
 
 const isOpen = computed({
   get() {
@@ -87,8 +96,10 @@ const isOpen = computed({
 });
 
 const imageAssets = computed(() =>
-  assets.value.filter((asset) => String(asset.mimeType || '').startsWith('image/'))
+  activeLibrary.value.assets.value.filter((asset) => String(asset.mimeType || '').startsWith('image/'))
 );
+
+const loading = computed(() => activeLibrary.value.loading.value);
 
 function openPicker() {
   isOpen.value = true;
@@ -115,6 +126,6 @@ function selectAsset(asset) {
 }
 
 watch(isOpen, (open) => {
-  if (open) void fetchAssets({ type: 'image', limit: 60 });
+  if (open) void activeLibrary.value.fetchAssets({ type: 'image', limit: 60 });
 });
 </script>

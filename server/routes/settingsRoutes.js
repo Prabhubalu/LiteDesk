@@ -10,6 +10,8 @@ const mailroomSettingsController = require('../controllers/mailroomSettingsContr
 const quoteSettingsController = require('../controllers/quoteSettingsController');
 const webformController = require('../controllers/webformController');
 const addonSettingsController = require('../controllers/addonSettingsController');
+const amdsDomainsController = require('../controllers/amdsDomainsController');
+const emailPolicyController = require('../controllers/emailPolicyController');
 const { organizationSettingsLimiter, sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
 const {
@@ -36,7 +38,7 @@ router.get('/core-modules/people/people-types', sessionBootstrapLimiter, control
 router.put('/core-modules/people/people-types', controller.updatePeopleTypes);
 
 // Applications endpoints
-router.get('/applications', cacheJsonResponse({ namespace: 'settings:applications' }), controller.getApplications);
+router.get('/applications', cacheJsonResponse({ namespace: 'settings:applications:v2' }), controller.getApplications);
 router.get('/applications/helpdesk/execution-settings', helpdeskSettingsController.getHelpdeskExecutionSettings);
 router.put('/applications/helpdesk/execution-settings', helpdeskSettingsController.updateHelpdeskExecutionSettings);
 router.post('/applications/helpdesk/recalculate-slas', helpdeskSettingsController.recalculateOpenCaseSlas);
@@ -52,6 +54,7 @@ router.get('/addons/live_chat/outcomes', addonSettingsController.getLiveChatOutc
 router.put('/addons/live_chat/outcomes', addonSettingsController.updateLiveChatOutcomeSettings);
 router.get('/addons/live_chat/session-fields', addonSettingsController.getLiveChatSessionFieldSettings);
 router.put('/addons/live_chat/session-fields', addonSettingsController.updateLiveChatSessionFieldSettings);
+router.post('/addons/email_credits/purchase', invalidateCacheOnSuccessfulMutation({ namespace: 'settings:subscriptions:v2' }), addonSettingsController.purchaseEmailCreditPack);
 router.get('/addons/:addonKey', addonSettingsController.getAddon);
 router.post('/addons/:addonKey/install', invalidateCacheOnSuccessfulMutation({ namespace: 'settings:subscriptions:v2' }), addonSettingsController.installAddon);
 router.post('/addons/:addonKey/enable', invalidateCacheOnSuccessfulMutation({ namespace: 'settings:subscriptions:v2' }), addonSettingsController.enableAddon);
@@ -151,5 +154,20 @@ router.post('/integrations/:key/enable', controller.enableIntegration);
 router.post('/integrations/:key/disable', controller.disableIntegration);
 router.post('/integrations/:key/test', controller.testIntegration);
 router.put('/integrations/:key/config', controller.updateIntegrationConfig);
+
+// AMDS sending domains (proxy to AMDS API)
+router.post('/email/domains', amdsDomainsController.registerEmailDomain);
+router.get('/email/domains/:domain', amdsDomainsController.getEmailDomain);
+router.post('/email/domains/:domain/verify', amdsDomainsController.verifyEmailDomain);
+
+// Org email credits & limits (Track 6 Phase 1)
+router.get('/email-policy', emailPolicyController.getEmailPolicy);
+router.put('/email-policy/limits', emailPolicyController.updateEmailPolicyLimits);
+router.get('/email-policy/sync', emailPolicyController.forceEmailPolicySync);
+router.post('/email-policy/credits', emailPolicyController.allocateEmailCredits);
+router.post('/email-policy/suspend', emailPolicyController.suspendEmailPolicy);
+router.post('/email-policy/reactivate', emailPolicyController.reactivateEmailPolicy);
+router.get('/email-policy/reputation/history', emailPolicyController.getEmailReputationHistory);
+router.get('/email-policy/reputation/guidance', emailPolicyController.getEmailReputationGuidance);
 
 module.exports = router;

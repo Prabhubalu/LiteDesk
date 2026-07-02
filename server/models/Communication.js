@@ -65,7 +65,24 @@ const CommunicationSchema = new Schema({
   }],
 
   metadata: {
-    provider: { type: String }
+    provider: { type: String },
+    amdsMessageId: { type: String, trim: true, default: null },
+    deliveryError: { type: String, trim: true, default: null },
+    deliveryUpdatedAt: { type: Date, default: null },
+    bounceClassification: { type: String, trim: true, default: null },
+    bounceDiagnostic: { type: String, trim: true, default: null },
+    bounceRecipient: { type: String, trim: true, default: null },
+    lastAmdsEvent: { type: String, trim: true, default: null },
+    sendErrorCode: { type: String, trim: true, default: null },
+    sendErrorDomain: { type: String, trim: true, default: null },
+    amdsQueue: { type: String, trim: true, default: null },
+    campaignId: { type: String, trim: true, default: null },
+    recipientId: { type: String, trim: true, default: null },
+    openedAt: { type: Date, default: null },
+    openCount: { type: Number, default: null },
+    clickedAt: { type: Date, default: null },
+    clickedUrl: { type: String, trim: true, default: null },
+    clickCount: { type: Number, default: null }
   },
 
   idempotencyKey: { type: String, trim: true },

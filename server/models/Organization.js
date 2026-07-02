@@ -133,12 +133,13 @@ const OrganizationSchema = new mongoose.Schema({
     // - 'AUDIT': Audit management application
     // - 'LMS': Learning Management System application
     // - 'INVENTORY': Stock ledger, locations, reservations, fulfillment
+    // - 'MARKETING': Email campaigns, audiences, templates, marketing analytics
     enabledApps: [
         {
             appKey: { 
                 type: String, 
                 required: true,
-                enum: ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY']
+                enum: ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY', 'MARKETING']
             },
             status: { 
                 type: String, 
@@ -527,6 +528,18 @@ const OrganizationSchema = new mongoose.Schema({
     customFields: {
         type: mongoose.Schema.Types.Mixed,
         default: {}
+    },
+
+    /** Org-level HTML import merge tag memory (Templates email builder). */
+    emailMergeTagMappings: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
+    },
+
+    /** Hostnames allowed for external CSS fetch during email HTML import. */
+    emailExternalCssAllowlist: {
+        type: [String],
+        default: []
     },
 
     // Trash (soft delete) - See docs/TRASH_IMPLEMENTATION_SPEC.md

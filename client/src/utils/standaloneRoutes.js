@@ -13,6 +13,7 @@ export function isStandalonePublicRoute(path) {
     || p.startsWith('/webforms/staff-preview/')
     || p.startsWith('/forms/public/')
     || p.startsWith('/public/quotes/')
+    || p.startsWith('/marketing/preferences/')
   );
 }
 

@@ -45,21 +45,34 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useBuilderUi } from '@/composables/useBuilderUi';
 import { useContentAssets } from '@/composables/useContentAssets';
+import { useMarketingAssets } from '@/composables/useMarketingAssets';
 import { useNotifications } from '@/composables/useNotifications';
 import { getApiUrlForFetch } from '@/config/apiBase';
 
 const emit = defineEmits(['insert']);
+
+const props = defineProps({
+  library: {
+    type: String,
+    default: 'content',
+    validator: (value) => ['content', 'marketing'].includes(value)
+  }
+});
 
 const { t } = useI18n();
 const ui = useBuilderUi();
 const notifications = useNotifications();
 const searchQuery = ref('');
 const uploadBusy = ref(false);
-const { assets, loading, fetchAssets, uploadAsset } = useContentAssets();
+const contentAssets = useContentAssets();
+const marketingAssets = useMarketingAssets();
+const activeLibrary = computed(() => (props.library === 'marketing' ? marketingAssets : contentAssets));
 
 const imageAssets = computed(() =>
-  assets.value.filter((asset) => String(asset.mimeType || '').startsWith('image/'))
+  activeLibrary.value.assets.value.filter((asset) => String(asset.mimeType || '').startsWith('image/'))
 );
+
+const loading = computed(() => activeLibrary.value.loading.value);
 
 function assetImageUrl(downloadUrl) {
   if (!downloadUrl) return '';
@@ -68,7 +81,7 @@ function assetImageUrl(downloadUrl) {
 }
 
 async function loadAssets() {
-  await fetchAssets({
+  await activeLibrary.value.fetchAssets({
     type: 'image',
     limit: 60,
     search: searchQuery.value.trim() || undefined
@@ -91,7 +104,7 @@ async function onUpload(event) {
 
   uploadBusy.value = true;
   try {
-    const created = await uploadAsset(file, {
+    const created = await activeLibrary.value.uploadAsset(file, {
       type: 'image',
       accessibilityAltText: file.name
     });

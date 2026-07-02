@@ -144,6 +144,7 @@ app.use((req, res, next) => {
 
 // Arivu Inbound Parser webhook (raw body for HMAC — must be before express.json)
 app.use('/api/webhooks/arivu', require('./routes/arivuInboundWebhookRoutes'));
+app.use('/api/internal/webhooks/amds', require('./routes/internal/amdsWebhookRoutes'));
 app.use('/api/payment-gateways/webhooks', require('./routes/paymentGatewayWebhookRoutes'));
 app.use('/api/public/pay', require('./routes/publicPaymentLinkRoutes'));
 
@@ -252,6 +253,14 @@ const paymentLinkRoutes = require('./routes/paymentLinkRoutes');
 const paymentGatewayRoutes = require('./routes/paymentGatewayRoutes');
 const webformRoutes = require('./routes/webformRoutes');
 const liveChatRoutes = require('./routes/liveChatRoutes');
+const marketingCampaignRoutes = require('./routes/marketingCampaignRoutes');
+const marketingAudienceRoutes = require('./routes/marketingAudienceRoutes');
+const marketingSegmentRoutes = require('./routes/marketingSegmentRoutes');
+const marketingDashboardRoutes = require('./routes/marketingDashboardRoutes');
+const marketingReportsRoutes = require('./routes/marketingReportsRoutes');
+const marketingSubscriptionRoutes = require('./routes/marketingSubscriptionRoutes');
+const marketingAssetRoutes = require('./routes/marketingAssetRoutes');
+const publicMarketingRoutes = require('./routes/publicMarketingRoutes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
@@ -288,6 +297,13 @@ app.use('/api/notification-rules', notificationRuleRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/data-changes', require('./routes/dataChangeStreamRoutes'));
 app.use('/api/helpdesk/cases', caseRoutes);
+app.use('/api/marketing/campaigns', marketingCampaignRoutes);
+app.use('/api/marketing/audiences', marketingAudienceRoutes);
+app.use('/api/marketing/segments', marketingSegmentRoutes);
+app.use('/api/marketing/dashboard', marketingDashboardRoutes);
+app.use('/api/marketing/reports', marketingReportsRoutes);
+app.use('/api/marketing/subscriptions', marketingSubscriptionRoutes);
+app.use('/api/marketing/assets', marketingAssetRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/sales-orders', salesOrderRoutes);
 app.use('/api/invoices', invoiceRoutes);
@@ -323,6 +339,7 @@ app.use('/api/public/book', require('./routes/publicBookingRoutes'));
 app.use('/api/public/appointments/manage', require('./routes/publicAppointmentManageRoutes'));
 app.use('/api/public/quotes', require('./routes/publicQuoteRoutes'));
 app.use('/api/public/mailroom', require('./routes/publicMailroomRoutes'));
+app.use('/api/public/marketing', publicMarketingRoutes);
 // Public embeddable live chat widget APIs (M6)
 app.use('/embed/chat', embedChatRoutes);
 // Some deployments only proxy /api/* to the Node server (frontend serves all other paths).
@@ -359,6 +376,7 @@ app.use('/api/live-chat', liveChatRoutes);
 app.use('/api/platform', require('./routes/platformHomeRoutes'));
 app.use('/api/onboarding', require('./routes/onboardingRoutes'));
 app.use('/api/platform/inbound-parser', require('./routes/platformInboundParserRoutes'));
+app.use('/api/platform/amds', require('./routes/platformAmdsRoutes'));
 app.use('/api/platform/release-notes', require('./routes/platformReleaseNoteRoutes'));
 app.use('/api/release-notes', require('./routes/releaseNoteRoutes'));
 
@@ -573,6 +591,8 @@ connectMasterWithRetry(masterUri)
         inboundEmailQueueService.startWorker();
         const importQueueService = require('./services/import/importQueueService');
         importQueueService.startWorker();
+        const campaignSendQueueService = require('./services/marketing/campaignSendQueueService');
+        campaignSendQueueService.startWorker();
         const {
           startMailroomFailureRetryWorker
         } = require('./platform/mailroom/workers/processingFailureRetryWorker');
@@ -629,7 +649,26 @@ app.get('/', (req, res) => {
 installExpressSentryErrorHandler(app);
 
 // Graceful shutdown handler
+let isGracefulShutdown = false;
+
+function isRedisOrphanReplyError(err) {
+  if (!err || err.name !== 'TypeError') return false;
+  const message = String(err.message || '');
+  return message.includes("'resolve'") && message.includes('shift');
+}
+
+process.on('uncaughtException', (err) => {
+  if (isGracefulShutdown && isRedisOrphanReplyError(err)) {
+    console.warn('[server] Ignoring node-redis orphan reply during shutdown');
+    return;
+  }
+  console.error('[server] Uncaught exception:', err);
+  process.exit(1);
+});
+
 const gracefulShutdown = async (signal) => {
+  if (isGracefulShutdown) return;
+  isGracefulShutdown = true;
   console.log(`\n[server] Received ${signal}, starting graceful shutdown...`);
   
   // Shutdown SSE hub
@@ -668,8 +707,8 @@ const gracefulShutdown = async (signal) => {
   }
 
   try {
-    const { closeRedisClient } = require('./lib/redisClient');
-    await closeRedisClient();
+    const { closeAllRedisConnections } = require('./lib/redisClient');
+    await closeAllRedisConnections();
     console.log('[server] Redis client closed');
   } catch (err) {
     console.error('[server] Error closing Redis client:', err.message);
@@ -677,6 +716,9 @@ const gracefulShutdown = async (signal) => {
   
   // Close server
   if (server) {
+    if (typeof server.closeAllConnections === 'function') {
+      server.closeAllConnections();
+    }
     server.close(async () => {
       console.log('[server] HTTP server closed');
       

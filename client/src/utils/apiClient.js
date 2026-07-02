@@ -14,6 +14,7 @@ const IDEMPOTENCY_KEY_TTL_MS = 30 * 1000;
 const CACHEABLE_GET_PATHS = [
     /^\/modules(?:$|\?)/,
     /^\/settings\/core-modules(?:$|\/|\?)/,
+    /^\/settings\/integrations(?:$|\/|\?)/,
     /^\/ui\/apps(?:$|\/|\?)/,
     /^\/ui\/entities(?:$|\?)/,
     /^\/ui\/routes(?:$|\?)/,
@@ -32,6 +33,7 @@ const CACHEABLE_GET_PATHS = [
 const INVALIDATING_PATHS = [
     /^\/modules(?:$|\/|\?)/,
     /^\/settings\/core-modules(?:$|\/|\?)/,
+    /^\/settings\/integrations(?:$|\/|\?)/,
     /^\/ui(?:$|\/|\?)/,
     /^\/people(?:$|\/|\?)/,
     /^\/activity(?:$|\/|\?)/,
@@ -82,6 +84,9 @@ function isCacheableMetadataGet(pathWithSearch) {
 }
 
 function cacheTtlForGet(pathWithSearch) {
+    if (/^\/settings\/integrations(?:$|\/|\?)/.test(pathWithSearch)) {
+        return 30 * 1000;
+    }
     if (isPersistentShortCacheGet(pathWithSearch)) {
         if (/^\/people(?:$|\?)/.test(pathWithSearch)) {
             return PEOPLE_LIST_CACHE_TTL_MS;

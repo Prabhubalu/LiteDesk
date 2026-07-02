@@ -1,7 +1,8 @@
 import { LAYOUT_GRID_FRAME_CSS } from './layoutGridCss';
+import type { TemplateOutputFormat } from './plugins';
 
-/** Injected into the GrapesJS canvas iframe — clean edit chrome, no structural noise. */
-export const GRAPES_CANVAS_FRAME_CSS = `
+/** Shared GrapesJS canvas chrome (selection, placeholders, merge chips). */
+export const GRAPES_CANVAS_CHROME_CSS = `
   [data-gjs-highlightable],
   .gjs-dashed [data-gjs-highlightable] {
     outline: none !important;
@@ -28,6 +29,23 @@ export const GRAPES_CANVAS_FRAME_CSS = `
     color: inherit;
   }
 
+  .builder-merge-chip {
+    display: inline-block;
+    padding: 1px 6px;
+    margin: 0 1px;
+    border-radius: 4px;
+    background: #eef2ff;
+    color: #4338ca;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    vertical-align: baseline;
+    user-select: none;
+  }
+`;
+
+/** PDF builder table/sheet editing rules — must not leak into email canvas. */
+export const GRAPES_PDF_BUILDER_CANVAS_CSS = `
   ${LAYOUT_GRID_FRAME_CSS}
 
   table {
@@ -65,20 +83,6 @@ export const GRAPES_CANVAS_FRAME_CSS = `
     background: rgb(96 73 231 / 0.14);
   }
 
-  .builder-merge-chip {
-    display: inline-block;
-    padding: 1px 6px;
-    margin: 0 1px;
-    border-radius: 4px;
-    background: #eef2ff;
-    color: #4338ca;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 12px;
-    line-height: 1.4;
-    vertical-align: baseline;
-    user-select: none;
-  }
-
   body.arivu-table-col-resizing {
     cursor: col-resize !important;
     user-select: none;
@@ -92,3 +96,25 @@ export const GRAPES_CANVAS_FRAME_CSS = `
     width: 100%;
   }
 `;
+
+/** Minimal email canvas helpers — no structural overrides on tables/cells. */
+export const GRAPES_EMAIL_CANVAS_CSS = `
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  table {
+    max-width: 100%;
+  }
+`;
+
+/** @deprecated Use resolveCanvasFrameCss — kept for tests referencing the PDF default. */
+export const GRAPES_CANVAS_FRAME_CSS = `${GRAPES_CANVAS_CHROME_CSS}${GRAPES_PDF_BUILDER_CANVAS_CSS}`;
+
+export function resolveCanvasFrameCss(outputFormat: TemplateOutputFormat = 'pdf'): string {
+  if (outputFormat === 'email') {
+    return `${GRAPES_CANVAS_CHROME_CSS}${GRAPES_EMAIL_CANVAS_CSS}`;
+  }
+  return GRAPES_CANVAS_FRAME_CSS;
+}

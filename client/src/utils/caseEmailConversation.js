@@ -91,6 +91,10 @@ export function caseActivityToEmailMessage(activity, caseRecord) {
     toAddresses: Array.isArray(meta.toAddresses) ? meta.toAddresses : [],
     sentAt: inbound ? null : activityTimestamp(activity),
     receivedAt: inbound ? activityTimestamp(activity) : null,
+    deliveryStatus: meta.deliveryStatus || meta.status || null,
+    deliveryError: meta.deliveryError || null,
+    bounceDiagnostic: meta.bounceDiagnostic || null,
+    bounceClassification: meta.bounceClassification || null,
     attachments: (Array.isArray(meta.mailroomAttachments) ? meta.mailroomAttachments : []).map((a, idx) =>
       normalizeCaseEmailAttachment(a, idx)
     )

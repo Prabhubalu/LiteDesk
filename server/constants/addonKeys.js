@@ -4,6 +4,7 @@
 
 const ADDON_KEYS = {
   LIVE_CHAT: 'live_chat',
+  EMAIL_CREDITS: 'email_credits',
 };
 
 const VALID_ADDON_KEYS = Object.values(ADDON_KEYS);

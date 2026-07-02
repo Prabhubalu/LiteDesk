@@ -15,7 +15,9 @@ describe('runtimeConfigResolver (R0)', () => {
       'SYSTEM_EMAIL_FROM',
       'EMAIL_FROM',
       'OCI_EMAIL_REGION',
-      'SMTP_HOST'
+      'SMTP_HOST',
+      'AMDS_BASE_URL',
+      'AMDS_API_KEY'
     ]) {
       saved[key] = process.env[key];
     }
@@ -28,9 +30,11 @@ describe('runtimeConfigResolver (R0)', () => {
     }
   });
 
-  it('defaults system channel to oci-email-delivery', () => {
+  it('defaults system channel to oci-email-delivery when AMDS unset', () => {
     delete process.env.SYSTEM_EMAIL_PROVIDER;
     delete process.env.EMAIL_PROVIDER;
+    delete process.env.AMDS_BASE_URL;
+    delete process.env.AMDS_API_KEY;
     process.env.SYSTEM_EMAIL_FROM = 'system@example.com';
     process.env.OCI_EMAIL_REGION = 'us-phoenix-1';
     process.env.SYSTEM_SMTP_USER = 'oci-user';
@@ -42,8 +46,21 @@ describe('runtimeConfigResolver (R0)', () => {
     assert.match(cfg.smtpHost, /oci\.oraclecloud\.com/);
   });
 
-  it('CRM channel defaults to resend when provider unset', () => {
+  it('defaults system channel to amds when AMDS env is configured', () => {
+    delete process.env.SYSTEM_EMAIL_PROVIDER;
+    process.env.AMDS_BASE_URL = 'http://localhost:8080';
+    process.env.AMDS_API_KEY = 'test-key';
+    process.env.SYSTEM_EMAIL_FROM = 'system@example.com';
+
+    const cfg = resolveSystemRuntimeConfig();
+    assert.equal(cfg.provider, 'amds');
+    assert.equal(cfg.fromEmail, 'system@example.com');
+  });
+
+  it('CRM channel defaults to resend when AMDS unset', () => {
     delete process.env.EMAIL_PROVIDER;
+    delete process.env.AMDS_BASE_URL;
+    delete process.env.AMDS_API_KEY;
     process.env.EMAIL_FROM = 'crm@example.com';
     process.env.RESEND_API_KEY = 're_test_key';
     const cfg = resolveCrmRuntimeConfig(null);
@@ -51,6 +68,17 @@ describe('runtimeConfigResolver (R0)', () => {
     assert.equal(cfg.smtpHost, 'smtp.resend.com');
     assert.equal(cfg.smtpUser, 'resend');
     assert.equal(cfg.smtpPass, 're_test_key');
+    assert.equal(cfg.fromEmail, 'crm@example.com');
+  });
+
+  it('CRM channel defaults to amds when AMDS env is configured', () => {
+    delete process.env.EMAIL_PROVIDER;
+    process.env.AMDS_BASE_URL = 'http://localhost:8080';
+    process.env.AMDS_API_KEY = 'test-key';
+    process.env.EMAIL_FROM = 'crm@example.com';
+
+    const cfg = resolveCrmRuntimeConfig(null);
+    assert.equal(cfg.provider, 'amds');
     assert.equal(cfg.fromEmail, 'crm@example.com');
   });
 

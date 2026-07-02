@@ -21,6 +21,7 @@ const User = require('../models/User');
 const ModuleDefinition = require('../models/ModuleDefinition');
 const { getAppConfig, isAppEnabledForOrg } = require('../utils/appAccessUtils');
 const { ensureSubscriptionForApp } = require('../services/subscriptionBootstrapService');
+const { onSubscriptionActivated, mapTierOrPlanKey } = require('../services/billing/email-credits');
 const { invalidateTenantPermissionCaches } = require('../services/rolePermissionCatalogService');
 
 function invalidatePermissionCachesForOrg(organizationId) {
@@ -182,6 +183,12 @@ exports.upgradeSubscription = async (req, res) => {
         organization.enabledModules = organization.getModulesForTier(tier);
 
         await organization.save();
+
+        try {
+            await onSubscriptionActivated(organization._id, { planKey: mapTierOrPlanKey(tier) });
+        } catch (policyErr) {
+            console.warn('[organizationController] email policy sync failed:', policyErr?.message || policyErr);
+        }
 
         // TODO: Integrate with Stripe for actual payment processing
 

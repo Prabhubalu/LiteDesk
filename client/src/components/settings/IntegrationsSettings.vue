@@ -152,11 +152,7 @@
       </nav>
     </template>
 
-    <div v-if="detailLoading || !selectedIntegration" class="flex items-center justify-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-    </div>
-
-    <div v-else class="space-y-5">
+    <div v-if="selectedIntegration" class="space-y-5">
       <!-- Non-email integrations -->
       <div v-if="selectedIntegration.key !== 'email-provider' && activeDetailTab === 'general'" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
         <details v-if="selectedIntegration.dataSharedSummary" class="group">
@@ -192,6 +188,7 @@
                   <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">{{ t('settings.integrationsOwnerOnlyBadge') }}</span>
                 </span>
                 <select v-model="emailConfig.provider" :disabled="emailCriticalFieldsLocked" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                  <option value="amds">{{ t('settings.integrationsProviderOptionAmds') }}</option>
                   <option value="resend">{{ t('settings.integrationsProviderOptionResend') }}</option>
                   <option value="smtp">{{ t('settings.integrationsProviderOptionSmtp') }}</option>
                   <option value="gmail-smtp">{{ t('settings.integrationsProviderOptionGmailSmtp') }}</option>
@@ -199,6 +196,28 @@
                   <option value="oci-email-delivery">{{ t('settings.integrationsProviderOptionOci') }}</option>
                 </select>
               </label>
+
+              <p
+                v-if="emailConfig.provider === 'amds'"
+                class="md:col-span-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-950 dark:border-indigo-900 dark:bg-indigo-950/30 dark:text-indigo-100"
+              >
+                <strong>{{ t('settings.integrationsAmdsHintTitle') }}</strong>
+                {{ t('settings.integrationsAmdsHintBody') }}
+                <span
+                  :class="[
+                    'ml-1 inline-flex items-center rounded-full px-2 py-0.5 font-medium',
+                    amdsServerConfigured
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                      : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+                  ]"
+                >
+                  {{
+                    amdsServerConfigured
+                      ? t('settings.integrationsAmdsServerConfigured')
+                      : t('settings.integrationsAmdsServerNotConfigured')
+                  }}
+                </span>
+              </p>
 
               <p
                 v-if="emailConfig.provider === 'resend'"
@@ -264,7 +283,7 @@
                 <strong>{{ t('settings.integrationsAwsSesHintTitle') }}</strong>{{ t('settings.integrationsAwsSesHintBody') }}
               </p>
 
-              <label v-if="emailConfig.provider !== 'aws-ses'" class="text-sm">
+              <label v-if="emailProviderUsesSmtp" class="text-sm">
                 <span class="block mb-1 text-gray-700 dark:text-gray-300">
                   {{ t('settings.integrationsSmtpHost') }}
                   <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-1">{{ t('settings.integrationsOwnerOnlyBadge') }}</span>
@@ -278,7 +297,7 @@
                 />
               </label>
 
-              <template v-if="emailConfig.provider !== 'aws-ses'">
+              <template v-if="emailProviderUsesSmtp">
                 <label class="text-sm">
                   <span class="block mb-1 text-gray-700 dark:text-gray-300">
                     {{ t('settings.integrationsSmtpPort') }}
@@ -362,7 +381,10 @@
               </template>
             </div>
 
-            <label class="mt-3 inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <label
+              v-if="emailProviderUsesSmtp"
+              class="mt-3 inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+            >
               <input
                 v-model="emailConfig.smtpSecure"
                 type="checkbox"
@@ -378,7 +400,14 @@
         </div>
 
         <div v-else-if="activeDetailTab === 'policy'" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
-            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.integrationsOutboundPolicyTitle') }}</h4>
+          <div
+            v-if="!emailPolicyLoaded && loadingEmailPolicy"
+            class="mb-3 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"
+          >
+            <div class="h-4 w-4 animate-spin rounded-full border-b-2 border-indigo-600"></div>
+            {{ t('settings.integrationsRefreshing') }}
+          </div>
+          <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('settings.integrationsOutboundPolicyTitle') }}</h4>
             <p
               v-if="communicationPolicyLocked"
               class="mb-3 text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2"
@@ -575,15 +604,100 @@
             </div>
         </div>
 
+        <div v-else-if="activeDetailTab === 'credits'" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+          <EmailPolicyCreditsPanel :can-manage="!communicationPolicyLocked" />
+        </div>
+
         <div
-          v-else-if="activeDetailTab === 'domain' && selectedIntegration.emailDomainVerification"
+          v-else-if="activeDetailTab === 'domain'"
           class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800"
         >
+          <template v-if="emailConfig.provider === 'amds'">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
+              {{ t('settings.integrationsAmdsDomainsTitle') }}
+            </h3>
+            <p class="text-xs text-gray-600 dark:text-gray-400 mb-4">
+              {{ t('settings.integrationsAmdsDomainsDesc') }}
+            </p>
+            <p
+              v-if="!amdsServerConfigured"
+              class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-100"
+            >
+              {{ t('settings.integrationsAmdsServerNotConfigured') }}
+            </p>
+            <div class="flex flex-wrap items-end gap-2">
+              <label class="min-w-[220px] flex-1 text-sm">
+                <span class="mb-1 block text-gray-700 dark:text-gray-300">{{ t('settings.integrationsAmdsDomainLabel') }}</span>
+                <input
+                  v-model.trim="amdsDomainInput"
+                  type="text"
+                  :disabled="emailCriticalFieldsLocked || amdsDomainLoading || !amdsServerConfigured"
+                  :placeholder="t('settings.integrationsAmdsDomainPlaceholder')"
+                  class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 dark:border-gray-600 dark:bg-gray-900 disabled:opacity-60"
+                />
+              </label>
+              <button
+                type="button"
+                :disabled="emailCriticalFieldsLocked || amdsDomainLoading || !amdsServerConfigured || !amdsDomainInput"
+                class="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-medium text-indigo-800 hover:bg-indigo-100 disabled:opacity-50 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-200"
+                @click="registerAmdsDomain"
+              >
+                {{ amdsDomainLoading ? t('states.saving') : t('settings.integrationsAmdsDomainRegister') }}
+              </button>
+              <button
+                v-if="amdsDomainResult?.domain || amdsDomainInput"
+                type="button"
+                :disabled="emailCriticalFieldsLocked || amdsDomainLoading || !amdsServerConfigured"
+                class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-800 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200"
+                @click="verifyAmdsDomain"
+              >
+                {{ t('settings.integrationsAmdsDomainVerify') }}
+              </button>
+            </div>
+            <div v-if="amdsDomainResult" class="mt-4 space-y-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-xs font-medium text-gray-900 dark:text-white">{{ amdsDomainResult.domain }}</span>
+                <span
+                  class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                  :class="amdsDomainResult.status === 'verified'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                    : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'"
+                >
+                  {{ amdsDomainResult.status === 'verified'
+                    ? t('settings.integrationsAmdsDomainVerified')
+                    : t('settings.integrationsAmdsDomainPending') }}
+                </span>
+                <span v-if="amdsDomainResult.spf_verified" class="text-[10px] text-green-700 dark:text-green-400">SPF ✓</span>
+                <span v-if="amdsDomainResult.dkim_verified" class="text-[10px] text-green-700 dark:text-green-400">DKIM ✓</span>
+                <span v-if="amdsDomainResult.dmarc_verified" class="text-[10px] text-green-700 dark:text-green-400">DMARC ✓</span>
+              </div>
+              <div
+                v-for="(rec, idx) in amdsDomainResult.dns_records || []"
+                :key="`${rec.purpose}-${idx}`"
+                class="rounded border border-gray-200 bg-white px-3 py-2 text-[11px] dark:border-gray-700 dark:bg-gray-900"
+              >
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-semibold uppercase text-gray-700 dark:text-gray-300">{{ rec.purpose }} ({{ rec.type }})</span>
+                  <button
+                    type="button"
+                    class="shrink-0 text-indigo-600 hover:underline dark:text-indigo-400"
+                    @click="copyAmdsDnsValue(rec.value)"
+                  >
+                    {{ t('settings.integrationsAmdsDnsCopy') }}
+                  </button>
+                </div>
+                <p class="mt-1 break-all text-gray-600 dark:text-gray-400"><span class="text-gray-500">Name:</span> {{ rec.name }}</p>
+                <p class="mt-0.5 break-all font-mono text-gray-800 dark:text-gray-200">{{ rec.value }}</p>
+              </div>
+            </div>
+          </template>
+
+          <template v-else>
           <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ t('settings.integrationsSenderDomainTitle') }}</h3>
             <div class="flex items-center justify-between gap-3 mb-3">
               <p class="text-xs text-gray-600 dark:text-gray-300">
                 {{ t('settings.integrationsDomainLabel') }}
-                <span class="font-medium">{{ selectedIntegration.emailDomainVerification.domain || t('settings.integrationsDomainNotSet') }}</span>
+                <span class="font-medium">{{ displayEmailDomainVerification.domain || t('settings.integrationsDomainNotSet') }}</span>
               </p>
               <button
                 type="button"
@@ -595,47 +709,48 @@
               </button>
             </div>
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.integrationsSenderDomainDnsHint') }}</p>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-3" v-if="selectedIntegration.emailDomainVerification.checkedAt">
-              {{ t('settings.integrationsLastChecked') }} {{ formatCheckedAt(selectedIntegration.emailDomainVerification.checkedAt) }}
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-3" v-if="displayEmailDomainVerification.checkedAt">
+              {{ t('settings.integrationsLastChecked') }} {{ formatCheckedAt(displayEmailDomainVerification.checkedAt) }}
             </p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div class="rounded-md border border-blue-200 dark:border-blue-700 px-3 py-2 bg-white dark:bg-gray-900/30">
                 <div class="flex items-center justify-between gap-2">
                   <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsSenderIdentity') }}</p>
-                  <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium', verificationStatusClass(selectedIntegration.emailDomainVerification.senderIdentity?.status)]">
-                    {{ selectedIntegration.emailDomainVerification.senderIdentity?.status || 'not_checked' }}
+                  <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium', verificationStatusClass(displayEmailDomainVerification.senderIdentity?.status)]">
+                    {{ displayEmailDomainVerification.senderIdentity?.status || 'not_checked' }}
                   </span>
                 </div>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{{ selectedIntegration.emailDomainVerification.senderIdentity?.note }}</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{{ displayEmailDomainVerification.senderIdentity?.note }}</p>
               </div>
               <div class="rounded-md border border-blue-200 dark:border-blue-700 px-3 py-2 bg-white dark:bg-gray-900/30">
                 <div class="flex items-center justify-between gap-2">
                   <p class="text-xs font-semibold text-gray-900 dark:text-white">SPF</p>
-                  <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium', verificationStatusClass(selectedIntegration.emailDomainVerification.spf?.status)]">
-                    {{ selectedIntegration.emailDomainVerification.spf?.status || 'not_checked' }}
+                  <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium', verificationStatusClass(displayEmailDomainVerification.spf?.status)]">
+                    {{ displayEmailDomainVerification.spf?.status || 'not_checked' }}
                   </span>
                 </div>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{{ selectedIntegration.emailDomainVerification.spf?.note }}</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{{ displayEmailDomainVerification.spf?.note }}</p>
               </div>
               <div class="rounded-md border border-blue-200 dark:border-blue-700 px-3 py-2 bg-white dark:bg-gray-900/30">
                 <div class="flex items-center justify-between gap-2">
                   <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsDkim') }}</p>
-                  <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium', verificationStatusClass(selectedIntegration.emailDomainVerification.dkim?.status)]">
-                    {{ selectedIntegration.emailDomainVerification.dkim?.status || 'not_checked' }}
+                  <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium', verificationStatusClass(displayEmailDomainVerification.dkim?.status)]">
+                    {{ displayEmailDomainVerification.dkim?.status || 'not_checked' }}
                   </span>
                 </div>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{{ selectedIntegration.emailDomainVerification.dkim?.note }}</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{{ displayEmailDomainVerification.dkim?.note }}</p>
               </div>
               <div class="rounded-md border border-blue-200 dark:border-blue-700 px-3 py-2 bg-white dark:bg-gray-900/30">
                 <div class="flex items-center justify-between gap-2">
                   <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ t('settings.integrationsDmarc') }}</p>
-                  <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium', verificationStatusClass(selectedIntegration.emailDomainVerification.dmarc?.status)]">
-                    {{ selectedIntegration.emailDomainVerification.dmarc?.status || 'not_checked' }}
+                  <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium', verificationStatusClass(displayEmailDomainVerification.dmarc?.status)]">
+                    {{ displayEmailDomainVerification.dmarc?.status || 'not_checked' }}
                   </span>
                 </div>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{{ selectedIntegration.emailDomainVerification.dmarc?.note }}</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{{ displayEmailDomainVerification.dmarc?.note }}</p>
               </div>
             </div>
+          </template>
         </div>
 
         <div v-else-if="activeDetailTab === 'diagnostics'" class="space-y-4">
@@ -1079,6 +1194,7 @@
 <script setup>
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
+import EmailPolicyCreditsPanel from '@/components/settings/EmailPolicyCreditsPanel.vue';
 import { computed, ref, onBeforeUnmount, watch, nextTick, h } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
@@ -1214,6 +1330,20 @@ const smtpHostPlaceholder = computed(() =>
     : t('settings.integrationsPlaceholderSmtpHostResend')
 );
 
+const emailProviderUsesSmtp = computed(
+  () => !['aws-ses', 'amds'].includes(String(emailConfig.value.provider || '').toLowerCase())
+);
+
+const amdsDomainInput = ref('');
+const amdsDomainLoading = ref(false);
+const amdsDomainResult = ref(null);
+
+const amdsServerConfigured = computed(() => {
+  if (selectedIntegration.value?.amdsServerConfigured === true) return true;
+  const fromList = integrations.value.find((item) => item.key === 'email-provider');
+  return fromList?.amdsServerConfigured === true;
+});
+
 const smtpPortPlaceholder = computed(() =>
   emailConfig.value.provider === 'oci-email-delivery'
     ? t('settings.integrationsPlaceholderSmtpPortOci')
@@ -1246,20 +1376,77 @@ const activeDetailTab = ref('setup');
 const EMAIL_DETAIL_TABS = [
   { id: 'setup', labelKey: 'settings.integrationsTabSetup' },
   { id: 'policy', labelKey: 'settings.integrationsTabPolicy' },
-  { id: 'domain', labelKey: 'settings.integrationsTabDomain', requiresDomain: true },
+  { id: 'credits', labelKey: 'settings.integrationsTabCredits' },
+  { id: 'domain', labelKey: 'settings.integrationsTabDomain' },
   { id: 'diagnostics', labelKey: 'settings.integrationsTabDiagnostics' },
 ];
+
+function extractDomainFromEmail(email) {
+  const normalized = String(email || '').trim().toLowerCase();
+  return normalized.includes('@') ? normalized.split('@')[1] : '';
+}
+
+function resolveEmailProvider(cfg, integration = {}) {
+  const normalized = String(cfg?.provider || '').trim().toLowerCase();
+  if (normalized) return normalized;
+  if (integration.amdsServerConfigured === true) return 'amds';
+  if (integration.emailPlatformDefaults?.crmOutboundProvider === 'amds') return 'amds';
+  return 'amds';
+}
+
+const EMPTY_EMAIL_DOMAIN_VERIFICATION = {
+  domain: '',
+  checkedAt: null,
+  senderIdentity: {
+    status: 'missing_sender',
+    note: 'Set a valid From Email to evaluate sender domain.',
+  },
+  spf: { status: 'missing_sender', note: 'No sender domain available.' },
+  dkim: { status: 'missing_sender', note: 'No sender domain available.' },
+  dmarc: { status: 'missing_sender', note: 'No sender domain available.' },
+};
+
+function patchEmailDomainVerification(integration = {}) {
+  if (integration.emailDomainVerification) return integration;
+  const domain = extractDomainFromEmail(integration.emailConfig?.fromEmail);
+  if (!domain) {
+    return {
+      ...integration,
+      emailDomainVerification: { ...EMPTY_EMAIL_DOMAIN_VERIFICATION },
+    };
+  }
+  return {
+    ...integration,
+    emailDomainVerification: {
+      domain,
+      checkedAt: null,
+      senderIdentity: { status: 'not_checked', note: '' },
+      spf: { status: 'not_checked', note: '' },
+      dkim: { status: 'not_checked', note: '' },
+      dmarc: { status: 'not_checked', note: '' },
+    },
+  };
+}
 
 const detailTabs = computed(() => {
   const integration = selectedIntegration.value;
   if (!integration) return [];
   if (integration.key === 'email-provider') {
-    return EMAIL_DETAIL_TABS.filter((tab) => {
-      if (tab.requiresDomain) return !!integration.emailDomainVerification;
-      return true;
-    });
+    return EMAIL_DETAIL_TABS;
   }
   return [{ id: 'general', labelKey: 'settings.integrationsTabGeneral' }];
+});
+
+const displayEmailDomainVerification = computed(() => {
+  const integration = selectedIntegration.value;
+  const patched = patchEmailDomainVerification({
+    ...(integration || {}),
+    emailConfig: {
+      ...(integration?.emailConfig || {}),
+      fromEmail: integration?.emailConfig?.fromEmail || emailConfig.value.fromEmail,
+    },
+  });
+  return patched.emailDomainVerification || EMPTY_EMAIL_DOMAIN_VERIFICATION;
 });
 
 watch(
@@ -1284,6 +1471,10 @@ const savingConfig = ref(false);
 const savingGmailOAuthConfig = ref(false);
 const emailSettingsSnapshot = ref('');
 const checkingDomainStatus = ref(false);
+const emailDiagnosticsLoaded = ref(false);
+const emailPolicyLoaded = ref(false);
+const emailSetupHydrated = ref(false);
+const loadingEmailPolicy = ref(false);
 const loadingDiagnostics = ref(false);
 const diagnostics = ref({
   failureBreakdown: [],
@@ -1329,7 +1520,7 @@ const suppressionStats = ref({
   byReason: { bounced: 0, complained: 0 }
 });
 const emailConfig = ref({
-  provider: 'resend',
+  provider: 'amds',
   fromEmail: '',
   fromName: '',
   replyTo: '',
@@ -1363,6 +1554,78 @@ const isResendLikeSmtpConfig = (cfg) => {
   const host = String(cfg?.smtpHost || '').toLowerCase();
   const user = String(cfg?.smtpUser || '').toLowerCase();
   return host.includes('resend.com') || user === 'resend';
+};
+
+const applyAmdsDefaults = ({ providerJustChanged = false } = {}) => {
+  if (emailConfig.value.provider !== 'amds') return;
+  if (providerJustChanged) {
+    notifications.info(t('settings.integrationsNotifyAmdsSelected'));
+  }
+};
+
+const copyAmdsDnsValue = async (value) => {
+  try {
+    await navigator.clipboard.writeText(String(value || ''));
+    notifications.success(t('settings.integrationsAmdsDnsCopied'));
+  } catch {
+    notifications.error(t('settings.integrationsAmdsDnsCopyFailed'));
+  }
+};
+
+const registerAmdsDomain = async () => {
+  const domain = String(amdsDomainInput.value || '').trim().toLowerCase();
+  if (!domain) return;
+  amdsDomainLoading.value = true;
+  try {
+    const data = await apiClient('/settings/email/domains', {
+      method: 'POST',
+      body: JSON.stringify({ domain })
+    });
+    amdsDomainResult.value = data?.data || null;
+    notifications.success(t('settings.integrationsAmdsDomainRegistered'));
+  } catch (err) {
+    notifications.error(err?.message || t('settings.integrationsAmdsDomainRegisterFailed'));
+  } finally {
+    amdsDomainLoading.value = false;
+  }
+};
+
+const loadAmdsDomain = async (domain) => {
+  const normalized = String(domain || '').trim().toLowerCase();
+  if (!normalized) return;
+  amdsDomainLoading.value = true;
+  try {
+    const data = await apiClient(`/settings/email/domains/${encodeURIComponent(normalized)}`, {
+      method: 'GET'
+    });
+    amdsDomainResult.value = data?.data || null;
+  } catch (err) {
+    amdsDomainResult.value = null;
+    console.warn('[IntegrationsSettings] loadAmdsDomain', err);
+  } finally {
+    amdsDomainLoading.value = false;
+  }
+};
+
+const verifyAmdsDomain = async () => {
+  const domain = String(amdsDomainResult.value?.domain || amdsDomainInput.value || '').trim().toLowerCase();
+  if (!domain) return;
+  amdsDomainLoading.value = true;
+  try {
+    const data = await apiClient(`/settings/email/domains/${encodeURIComponent(domain)}/verify`, {
+      method: 'POST'
+    });
+    amdsDomainResult.value = data?.data || amdsDomainResult.value;
+    if (amdsDomainResult.value?.status === 'verified') {
+      notifications.success(t('settings.integrationsAmdsDomainVerifySuccess'));
+    } else {
+      notifications.info(t('settings.integrationsAmdsDomainVerifyPending'));
+    }
+  } catch (err) {
+    notifications.error(err?.message || t('settings.integrationsAmdsDomainVerifyFailed'));
+  } finally {
+    amdsDomainLoading.value = false;
+  }
 };
 
 const applyResendDefaults = ({ providerJustChanged = false } = {}) => {
@@ -1483,11 +1746,111 @@ const verificationStatusClass = (status) => {
   return 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
 };
 
+const needsDomainVerification = () => {
+  const verification = selectedIntegration.value?.emailDomainVerification;
+  if (!verification?.domain) return false;
+  return !verification.checkedAt || verification.spf?.status === 'not_checked';
+};
+
+function suggestedSenderDomain() {
+  return extractDomainFromEmail(emailConfig.value.fromEmail)
+    || displayEmailDomainVerification.value?.domain
+    || '';
+}
+
+function prepareDomainTab() {
+  if (emailConfig.value.provider === 'amds') {
+    const suggested = suggestedSenderDomain();
+    if (!amdsDomainInput.value && suggested) {
+      amdsDomainInput.value = suggested;
+    }
+    const loadDomain = String(amdsDomainResult.value?.domain || amdsDomainInput.value || '').trim();
+    if (loadDomain && amdsServerConfigured.value) {
+      void loadAmdsDomain(loadDomain);
+    }
+    return;
+  }
+  if (needsDomainVerification()) {
+    void checkEmailDomainStatus();
+  }
+}
+
+function applyEmailProviderIntegration(integration) {
+  const patched = patchEmailDomainVerification(integration);
+  selectedIntegration.value = {
+    ...(selectedIntegration.value || { key: 'email-provider' }),
+    ...patched,
+    amdsServerConfigured: integration.amdsServerConfigured === true,
+  };
+  applyEmailSetupFromIntegration(patched);
+  applyEmailPolicyFromIntegration(patched);
+  emailSetupHydrated.value = true;
+  emailPolicyLoaded.value = true;
+  captureEmailSettingsSnapshot();
+  const idx = integrations.value.findIndex((i) => i.key === 'email-provider');
+  if (idx !== -1) {
+    integrations.value[idx] = { ...integrations.value[idx], ...patched };
+  }
+  return patched;
+}
+
+const loadEmailPolicyData = async () => {
+  if (emailPolicyLoaded.value || loadingEmailPolicy.value) return;
+  if (selectedIntegration.value?.communicationPolicy) {
+    applyEmailPolicyFromIntegration(selectedIntegration.value);
+    emailPolicyLoaded.value = true;
+    return;
+  }
+  loadingEmailPolicy.value = true;
+  try {
+    const data = await apiClient('/settings/integrations/email-provider', {
+      method: 'GET',
+      cache: 'no-store',
+      params: { scope: 'policy', _t: Date.now() },
+    });
+    if (data?.success && data.integration) {
+      applyEmailPolicyFromIntegration(data.integration);
+      selectedIntegration.value = {
+        ...(selectedIntegration.value || { key: 'email-provider' }),
+        ...data.integration,
+      };
+      emailPolicyLoaded.value = true;
+      captureEmailSettingsSnapshot();
+    }
+  } catch (err) {
+    console.error('Failed to load email policy settings:', err);
+  } finally {
+    loadingEmailPolicy.value = false;
+  }
+};
+
+const loadEmailDiagnosticsData = async () => {
+  if (!selectedIntegration.value || selectedIntegration.value.key !== 'email-provider') return;
+  await Promise.all([
+    loadWebhookTemplates(),
+    loadPipelineDiagnostics(),
+    loadInboundDiagnostics(),
+    loadInboundDeadLetters(),
+    loadSuppressions(),
+  ]);
+  emailDiagnosticsLoaded.value = true;
+};
+
 const checkEmailDomainStatus = async () => {
   if (!selectedIntegration.value || selectedIntegration.value.key !== 'email-provider') return;
   checkingDomainStatus.value = true;
   try {
-    await fetchIntegrationDetail('email-provider', { forceRefresh: true });
+    const data = await apiClient('/settings/integrations/email-provider', {
+      method: 'GET',
+      cache: 'no-store',
+      params: { _t: Date.now(), verifyDomain: '1', scope: 'setup' },
+    });
+    if (data?.success && data.integration?.emailDomainVerification) {
+      selectedIntegration.value = {
+        ...selectedIntegration.value,
+        emailDomainVerification: data.integration.emailDomainVerification,
+      };
+    }
   } catch (err) {
     console.error('Failed to refresh email domain verification status:', err);
     notifications.error(t('settings.integrationsNotifyDomainRefreshFailed'));
@@ -1834,17 +2197,88 @@ const formatCheckedAt = (value) => {
   });
 };
 
-const fetchIntegrations = async () => {
-  loading.value = true;
+function hydrateEmailSetupFromList() {
+  const item = integrations.value.find((entry) => entry.key === 'email-provider');
+  if (!item?.emailConfig) return false;
+  const patched = patchEmailDomainVerification(item);
+  selectedIntegration.value = {
+    ...(selectedIntegration.value || {}),
+    ...patched,
+  };
+  applyEmailSetupFromIntegration(patched);
+  emailSetupHydrated.value = true;
+  captureEmailSettingsSnapshot();
+  return true;
+}
+
+const loadEmailProviderData = async () => {
+  primeSelectedIntegration('email-provider');
+  emailPolicyLoaded.value = false;
+  emailSetupHydrated.value = false;
+  loadingEmailPolicy.value = true;
   error.value = null;
   try {
-    const data = await apiClient('/settings/integrations', { method: 'GET' });
+    await loadIntegrationsList({ forceRefresh: true, silent: true });
+    const item = integrations.value.find((entry) => entry.key === 'email-provider');
+    if (item) {
+      applyEmailProviderIntegration(item);
+    } else {
+      hydrateEmailSetupFromList();
+    }
+  } catch (err) {
+    console.error('Failed to load email provider settings:', err);
+    error.value = err;
+    hydrateEmailSetupFromList();
+  } finally {
+    loadingEmailPolicy.value = false;
+  }
+};
+
+const fetchIntegrations = async () => {
+  await loadIntegrationsList();
+  if (currentView.value !== 'overview') {
+    await fetchIntegrationDetail(currentView.value);
+  } else {
+    selectedIntegration.value = null;
+  }
+};
+
+const primeSelectedIntegration = (key) => {
+  const fromList = integrations.value.find((item) => item.key === key);
+  if (fromList) {
+    selectedIntegration.value = patchEmailDomainVerification({ ...fromList });
+    return;
+  }
+  if (key === 'email-provider') {
+    selectedIntegration.value = patchEmailDomainVerification({
+      key: 'email-provider',
+      enabled: true,
+      emailConfig: emailConfig.value,
+    });
+  }
+};
+
+const loadIntegrationsList = async ({ forceRefresh = false, silent = false } = {}) => {
+  if (!silent) loading.value = true;
+  error.value = null;
+  try {
+    const data = await apiClient('/settings/integrations', {
+      method: 'GET',
+      cache: forceRefresh ? 'no-store' : undefined,
+      params: forceRefresh ? { _t: Date.now() } : undefined,
+    });
     if (data && data.success && data.integrations) {
       integrations.value = data.integrations;
       if (currentView.value !== 'overview') {
-        await fetchIntegrationDetail(currentView.value);
-      } else {
-        selectedIntegration.value = null;
+        primeSelectedIntegration(currentView.value);
+        if (currentView.value === 'email-provider' && !emailSetupHydrated.value) {
+          const item = integrations.value.find((entry) => entry.key === 'email-provider');
+          if (item?.emailConfig || item?.amdsServerConfigured === true) {
+            applyEmailProviderIntegration(item);
+          } else {
+            hydrateEmailSetupFromList();
+          }
+        }
       }
     } else {
       integrations.value = [];
@@ -1853,94 +2287,130 @@ const fetchIntegrations = async () => {
     console.error('Failed to fetch integrations:', err);
     error.value = err;
   } finally {
-    loading.value = false;
+    if (!silent) loading.value = false;
   }
 };
 
+function applyEmailSetupFromIntegration(integration) {
+  const cfg = integration.emailConfig || {};
+  const resolved = resolveEmailProvider(cfg, integration);
+  const previousProvider = String(emailConfig.value.provider || '').trim().toLowerCase();
+  const provider = resolved || previousProvider || 'amds';
+  emailConfig.value = {
+    provider,
+    fromEmail: cfg.fromEmail || '',
+    fromName: cfg.fromName || '',
+    replyTo: cfg.replyTo || '',
+    ociRegion: cfg.ociRegion || '',
+    smtpHost: cfg.smtpHost || '',
+    smtpPort: cfg.smtpPort || 587,
+    smtpUser: cfg.smtpUser || '',
+    smtpPass: '',
+    smtpSecure: cfg.smtpSecure === true,
+    smtpPassMasked: cfg.smtpPassMasked || '',
+    hasSmtpPass: cfg.hasSmtpPass === true,
+    awsRegion: cfg.awsRegion || '',
+    awsAccessKeyId: cfg.awsAccessKeyId || '',
+    awsSecretAccessKey: '',
+    awsSecretAccessKeyMasked: cfg.awsSecretAccessKeyMasked || '',
+    hasAwsSecretAccessKey: cfg.hasAwsSecretAccessKey === true
+  };
+  applyAmdsDefaults();
+  applyOciEmailDefaults();
+  applyResendDefaults();
+  const patched = patchEmailDomainVerification({
+    ...integration,
+    emailConfig: { ...cfg, provider },
+  });
+  selectedIntegration.value = {
+    ...(selectedIntegration.value || {}),
+    ...patched,
+    amdsServerConfigured: integration.amdsServerConfigured === true,
+  };
+}
+
+function applyEmailPolicyFromIntegration(integration) {
+  const policy = integration.communicationPolicy || {};
+  communicationPolicy.value = {
+    outboundEmail: {
+      enabled: policy.outboundEmail?.enabled !== false,
+      maxRecipientsPerMessage: Number(policy.outboundEmail?.maxRecipientsPerMessage) || 50,
+      allowWorkspaceEmail: policy.outboundEmail?.allowWorkspaceEmail !== false,
+      disallowPlatformSmtpForWorkspace:
+        policy.outboundEmail?.disallowPlatformSmtpForWorkspace === true,
+      requireMailboxProviderForAgentSend:
+        policy.outboundEmail?.requireMailboxProviderForAgentSend === true,
+      requireIdempotencyKey: policy.outboundEmail?.requireIdempotencyKey === true,
+      allowedModuleKeys: Array.isArray(policy.outboundEmail?.allowedModuleKeys) && policy.outboundEmail.allowedModuleKeys.length > 0
+        ? policy.outboundEmail.allowedModuleKeys
+        : ['people', 'organizations', 'deals', 'tasks', 'cases', 'workspace'],
+      suppression: {
+        autoSuppressOnBounce: policy.outboundEmail?.suppression?.autoSuppressOnBounce !== false,
+        autoSuppressOnComplaint: policy.outboundEmail?.suppression?.autoSuppressOnComplaint !== false
+      }
+    },
+    supportedModuleKeys: Array.isArray(policy.supportedModuleKeys) && policy.supportedModuleKeys.length > 0
+      ? policy.supportedModuleKeys
+      : ['people', 'organizations', 'deals', 'tasks', 'cases', 'workspace'],
+    gmailInboxSync: {
+      clientId: policy.gmailInboxSync?.clientId || '',
+      redirectUri: policy.gmailInboxSync?.redirectUri || '',
+      hasClientSecret: policy.gmailInboxSync?.hasClientSecret === true,
+      clientSecret: ''
+    }
+  };
+}
+
 const fetchIntegrationDetail = async (key, options = {}) => {
-  detailLoading.value = true;
+  const silent = options.silent === true;
+  const scope = options.scope || 'full';
+  const blocksUi = !silent && key !== 'email-provider';
+  if (blocksUi) {
+    detailLoading.value = true;
+    primeSelectedIntegration(key);
+  }
   try {
     const forceRefresh = options.forceRefresh === true;
+    const verifyDomain = options.verifyDomain === true;
+    const params = {};
+    if (forceRefresh) params._t = Date.now();
+    if (verifyDomain) params.verifyDomain = '1';
+    if (key === 'email-provider') params.scope = scope;
     const data = await apiClient(`/settings/integrations/${key}`, {
       method: 'GET',
       cache: forceRefresh ? 'no-store' : undefined,
-      params: forceRefresh ? { _t: Date.now() } : undefined
+      params: Object.keys(params).length > 0 ? params : undefined,
     });
     if (data && data.success && data.integration) {
-      selectedIntegration.value = data.integration;
+      const integrationPayload = data.integration.key === 'email-provider'
+        ? patchEmailDomainVerification(data.integration)
+        : data.integration;
+      selectedIntegration.value = {
+        ...selectedIntegration.value,
+        ...integrationPayload,
+      };
       if (data.integration.key === 'email-provider') {
-        const cfg = data.integration.emailConfig || {};
-        emailConfig.value = {
-          provider: cfg.provider || 'resend',
-          fromEmail: cfg.fromEmail || '',
-          fromName: cfg.fromName || '',
-          replyTo: cfg.replyTo || '',
-          ociRegion: cfg.ociRegion || '',
-          smtpHost: cfg.smtpHost || '',
-          smtpPort: cfg.smtpPort || 587,
-          smtpUser: cfg.smtpUser || '',
-          smtpPass: '',
-          smtpSecure: cfg.smtpSecure === true,
-          smtpPassMasked: cfg.smtpPassMasked || '',
-          hasSmtpPass: cfg.hasSmtpPass === true,
-          awsRegion: cfg.awsRegion || '',
-          awsAccessKeyId: cfg.awsAccessKeyId || '',
-          awsSecretAccessKey: '',
-          awsSecretAccessKeyMasked: cfg.awsSecretAccessKeyMasked || '',
-          hasAwsSecretAccessKey: cfg.hasAwsSecretAccessKey === true
-        };
-        applyOciEmailDefaults();
-        applyResendDefaults();
-        const policy = data.integration.communicationPolicy || {};
-        communicationPolicy.value = {
-          outboundEmail: {
-            enabled: policy.outboundEmail?.enabled !== false,
-            maxRecipientsPerMessage: Number(policy.outboundEmail?.maxRecipientsPerMessage) || 50,
-            allowWorkspaceEmail: policy.outboundEmail?.allowWorkspaceEmail !== false,
-            disallowPlatformSmtpForWorkspace:
-              policy.outboundEmail?.disallowPlatformSmtpForWorkspace === true,
-            requireMailboxProviderForAgentSend:
-              policy.outboundEmail?.requireMailboxProviderForAgentSend === true,
-            requireIdempotencyKey: policy.outboundEmail?.requireIdempotencyKey === true,
-            allowedModuleKeys: Array.isArray(policy.outboundEmail?.allowedModuleKeys) && policy.outboundEmail.allowedModuleKeys.length > 0
-              ? policy.outboundEmail.allowedModuleKeys
-              : ['people', 'organizations', 'deals', 'tasks', 'cases', 'workspace'],
-            suppression: {
-              autoSuppressOnBounce: policy.outboundEmail?.suppression?.autoSuppressOnBounce !== false,
-              autoSuppressOnComplaint: policy.outboundEmail?.suppression?.autoSuppressOnComplaint !== false
-            }
-          },
-          supportedModuleKeys: Array.isArray(policy.supportedModuleKeys) && policy.supportedModuleKeys.length > 0
-            ? policy.supportedModuleKeys
-            : ['people', 'organizations', 'deals', 'tasks', 'cases', 'workspace'],
-          gmailInboxSync: {
-            clientId: policy.gmailInboxSync?.clientId || '',
-            redirectUri: policy.gmailInboxSync?.redirectUri || '',
-            hasClientSecret: policy.gmailInboxSync?.hasClientSecret === true,
-            clientSecret: ''
-          }
-        };
-        await loadWebhookTemplates();
-        await loadPipelineDiagnostics();
-        await loadInboundDiagnostics();
-        await loadInboundDeadLetters();
-        await loadSuppressions();
-        captureEmailSettingsSnapshot();
+        if (scope === 'full' || scope === 'policy') {
+          applyEmailProviderIntegration(integrationPayload);
+        } else {
+          applyEmailSetupFromIntegration(integrationPayload);
+          emailSetupHydrated.value = true;
+          captureEmailSettingsSnapshot();
+        }
+        emailDiagnosticsLoaded.value = false;
       }
-      // Update list entry to keep states in sync
       const idx = integrations.value.findIndex((i) => i.key === key);
       if (idx !== -1) {
         integrations.value[idx] = {
           ...integrations.value[idx],
-          enabled: data.integration.enabled,
-          status: data.integration.status
+          ...integrationPayload,
         };
       }
     }
   } catch (err) {
     console.error('Failed to fetch integration detail:', err);
   } finally {
-    detailLoading.value = false;
+    if (blocksUi) detailLoading.value = false;
   }
 };
 
@@ -2013,7 +2483,7 @@ function shouldIncludeGmailOAuthOnSave() {
 
 async function resetEmailSettings() {
   if (selectedIntegration.value?.key !== 'email-provider') return;
-  await fetchIntegrationDetail('email-provider');
+  await fetchIntegrationDetail('email-provider', { scope: 'full', skipPolicyPrefetch: true });
 }
 
 async function handleEmailSettingsSave() {
@@ -2057,7 +2527,7 @@ const saveEmailConfig = async (includeGmailOAuthApp = false) => {
     applyOciEmailDefaults();
 
     const payload = {
-      provider: emailConfig.value.provider,
+      provider: String(emailConfig.value.provider || 'amds').trim().toLowerCase(),
       fromEmail: emailConfig.value.fromEmail,
       fromName: emailConfig.value.fromName,
       replyTo: emailConfig.value.replyTo,
@@ -2085,8 +2555,21 @@ const saveEmailConfig = async (includeGmailOAuthApp = false) => {
       emailConfig.value.smtpPass = '';
       emailConfig.value.awsSecretAccessKey = '';
       communicationPolicy.value.gmailInboxSync.clientSecret = '';
-      await fetchIntegrationDetail('email-provider');
-      await fetchIntegrations();
+      if (data.data) {
+        applyEmailSetupFromIntegration({
+          ...(selectedIntegration.value || { key: 'email-provider' }),
+          emailConfig: data.data,
+        });
+        emailSetupHydrated.value = true;
+        captureEmailSettingsSnapshot();
+        const idx = integrations.value.findIndex((i) => i.key === 'email-provider');
+        if (idx !== -1) {
+          integrations.value[idx] = {
+            ...integrations.value[idx],
+            emailConfig: { ...data.data },
+          };
+        }
+      }
     } else {
       notifications.error(data?.message || t('settings.integrationsNotifySaveEmailFailed'));
     }
@@ -2156,6 +2639,9 @@ const sendTestEmail = async () => {
     const data = await apiClient(`/settings/integrations/email-provider/test`, { method: 'POST' });
     if (data && data.success) {
       notifications.success(data.message || t('settings.integrationsNotifyTestEmailSent'));
+      if (data.provider) {
+        notifications.info(t('settings.integrationsNotifyTestEmailProvider', { provider: data.provider }));
+      }
     } else {
       notifications.error(data.message || data.error || t('settings.integrationsNotifyTestEmailFailed'));
     }
@@ -2171,17 +2657,39 @@ watch(
   () => [route.query.tab, route.query.integrationView],
   async () => {
     if (route.query.tab !== 'integrations') return;
-    if (integrations.value.length === 0) {
-      await fetchIntegrations();
-      return;
-    }
-    if (currentView.value === 'overview') {
+
+    const view = currentView.value;
+
+    if (view === 'overview') {
       selectedIntegration.value = null;
+      emailSetupHydrated.value = false;
+      emailPolicyLoaded.value = false;
+      if (integrations.value.length === 0) {
+        await loadIntegrationsList();
+      }
       return;
     }
-    if (selectedIntegration.value?.key !== currentView.value) {
-      await fetchIntegrationDetail(currentView.value);
+
+    primeSelectedIntegration(view);
+
+    if (view === 'email-provider') {
+      await loadEmailProviderData();
+      return;
     }
+
+    if (selectedIntegration.value?.key === view && !detailLoading.value) {
+      return;
+    }
+
+    if (integrations.value.length === 0) {
+      await Promise.all([
+        loadIntegrationsList(),
+        fetchIntegrationDetail(view),
+      ]);
+      return;
+    }
+
+    await fetchIntegrationDetail(view);
   },
   { immediate: true },
 );
@@ -2195,9 +2703,23 @@ watch(inboundIncludeResolved, () => {
   loadInboundDeadLetters();
 });
 
+watch(activeDetailTab, (tab) => {
+  if (selectedIntegration.value?.key !== 'email-provider') return;
+  if (tab === 'policy' && !emailPolicyLoaded.value) {
+    void loadEmailPolicyData();
+  }
+  if (tab === 'diagnostics' && !emailDiagnosticsLoaded.value) {
+    void loadEmailDiagnosticsData();
+  }
+  if (tab === 'domain') {
+    prepareDomainTab();
+  }
+});
+
 watch(
   () => emailConfig.value.provider,
   (next, prev) => {
+    applyAmdsDefaults({ providerJustChanged: next === 'amds' && prev !== 'amds' });
     applyResendDefaults({ providerJustChanged: next === 'resend' && prev !== 'resend' });
     applyOciEmailDefaults({ providerJustChanged: next === 'oci-email-delivery' && prev !== 'oci-email-delivery' });
     applyGmailSmtpDefaults({ providerJustChanged: next === 'gmail-smtp' && prev !== 'gmail-smtp' });

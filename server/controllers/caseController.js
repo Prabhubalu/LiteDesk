@@ -573,9 +573,18 @@ exports.getCaseById = async (req, res) => {
     } catch (attachErr) {
       console.error('[caseController] getCaseById attachment enrich failed', attachErr);
     }
+    let activitiesWithDelivery = activitiesWithAttachments;
+    try {
+      activitiesWithDelivery = await enrichCaseActivitiesWithEmailDelivery(
+        req.user.organizationId,
+        activitiesWithAttachments
+      );
+    } catch (deliveryErr) {
+      console.error('[caseController] getCaseById delivery enrich failed', deliveryErr);
+    }
     const shaped = {
       ...row,
-      activities: activitiesWithAttachments
+      activities: activitiesWithDelivery
     };
 
     const flat = flattenCustomFieldsForResponse(shaped, shaped.customFields);

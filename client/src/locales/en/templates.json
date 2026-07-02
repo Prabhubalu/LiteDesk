@@ -119,6 +119,18 @@
     "message": "Template created",
     "description": "Template create success toast"
   },
+  "deleteSuccess": {
+    "message": "Template deleted",
+    "description": "Template delete success toast"
+  },
+  "deleteFailed": {
+    "message": "Failed to delete template",
+    "description": "Template delete error toast"
+  },
+  "confirmDelete": {
+    "message": "Delete \"{name}\"? This cannot be undone.",
+    "description": "Confirm template delete on detail page"
+  },
   "publishSuccess": {
     "message": "Template published",
     "description": "Template publish success toast"
@@ -226,6 +238,10 @@
   "navAssets": {
     "message": "Assets",
     "description": "Assets sub-navigation"
+  },
+  "navMergeMappings": {
+    "message": "Merge mappings",
+    "description": "Email merge tag mappings sub-navigation"
   },
   "themesListTitle": {
     "message": "Themes",
@@ -1726,5 +1742,573 @@
   "builderGroupAppearance": {
     "message": "Appearance",
     "description": "Template builder appearance style group"
+  },
+  "htmlImport.createEmailTitle": {
+    "message": "New email template",
+    "description": "Create email template drawer title"
+  },
+  "htmlImport.startFromTitle": {
+    "message": "Start from",
+    "description": "Email template creation start options label"
+  },
+  "htmlImport.startBlank": {
+    "message": "Blank template",
+    "description": "Start from blank email template"
+  },
+  "htmlImport.startBlankDescription": {
+    "message": "Start from scratch in the visual editor",
+    "description": "Blank email template option description"
+  },
+  "htmlImport.startGallery": {
+    "message": "Choose template",
+    "description": "Start from gallery email template"
+  },
+  "htmlImport.startGalleryDescription": {
+    "message": "Use a starter from the gallery",
+    "description": "Gallery email template option description"
+  },
+  "htmlImport.startImport": {
+    "message": "Import HTML",
+    "description": "Import HTML email template option"
+  },
+  "htmlImport.startImportDescription": {
+    "message": "Paste or upload an existing .html email",
+    "description": "Import HTML email template option description"
+  },
+  "htmlImport.wizardTitle": {
+    "message": "Import HTML",
+    "description": "HTML import wizard title"
+  },
+  "htmlImport.stepSource": {
+    "message": "Step 1 of 3 — Paste or upload HTML",
+    "description": "HTML import wizard step 1 label"
+  },
+  "htmlImport.stepAnalysis": {
+    "message": "Step 2 of 3 — Review analysis and map merge tags",
+    "description": "HTML import wizard step 2 label"
+  },
+  "htmlImport.stepConfirm": {
+    "message": "Step 3 of 3 — Confirm import",
+    "description": "HTML import wizard step 3 label"
+  },
+  "htmlImport.tabPaste": {
+    "message": "Paste HTML",
+    "description": "HTML import paste tab"
+  },
+  "htmlImport.tabUpload": {
+    "message": "Upload file",
+    "description": "HTML import upload tab"
+  },
+  "htmlImport.pastePlaceholder": {
+    "message": "Paste your HTML email here…",
+    "description": "HTML import code editor placeholder"
+  },
+  "htmlImport.uploadPrompt": {
+    "message": "Drop an .html file here or click to browse",
+    "description": "HTML import upload prompt"
+  },
+  "htmlImport.uploadHint": {
+    "message": "Maximum file size 2 MB",
+    "description": "HTML import upload size hint"
+  },
+  "htmlImport.analyze": {
+    "message": "Analyze HTML",
+    "description": "Analyze HTML button"
+  },
+  "htmlImport.analyzing": {
+    "message": "Analyzing…",
+    "description": "Analyze HTML in progress"
+  },
+  "htmlImport.continue": {
+    "message": "Continue",
+    "description": "Continue to next wizard step"
+  },
+  "htmlImport.back": {
+    "message": "Back",
+    "description": "Go back in HTML import wizard"
+  },
+  "htmlImport.importOpen": {
+    "message": "Import and open editor",
+    "description": "Confirm HTML import and open builder"
+  },
+  "htmlImport.createSuccess": {
+    "message": "Email template imported",
+    "description": "HTML import create success toast"
+  },
+  "htmlImport.analysisTitle": {
+    "message": "Analysis report",
+    "description": "HTML analysis report section title"
+  },
+  "htmlImport.expandDetails": {
+    "message": "Expand details",
+    "description": "Expand HTML analysis warnings"
+  },
+  "htmlImport.collapseDetails": {
+    "message": "Collapse details",
+    "description": "Collapse HTML analysis warnings"
+  },
+  "htmlImport.checkHtmlValid": {
+    "message": "HTML valid",
+    "description": "HTML analysis check passed"
+  },
+  "htmlImport.checkHtmlInvalid": {
+    "message": "HTML may be invalid",
+    "description": "HTML analysis check failed"
+  },
+  "htmlImport.checkInlineCss": {
+    "message": "Inline CSS found",
+    "description": "Inline CSS detected in HTML"
+  },
+  "htmlImport.checkNoInlineCss": {
+    "message": "No inline CSS detected",
+    "description": "No inline CSS in HTML"
+  },
+  "htmlImport.checkImages": {
+    "message": "Images detected ({count})",
+    "description": "Image count in HTML analysis"
+  },
+  "htmlImport.checkTables": {
+    "message": "Tables detected ({count})",
+    "description": "Table count in HTML analysis"
+  },
+  "htmlImport.checkLinks": {
+    "message": "Links found ({count})",
+    "description": "Link count in HTML analysis"
+  },
+  "htmlImport.checkMergeTags": {
+    "message": "Merge tags found ({count})",
+    "description": "Merge tag count in HTML analysis"
+  },
+  "htmlImport.lineNumber": {
+    "message": "line {line}",
+    "description": "Line number in HTML analysis warning"
+  },
+  "htmlImport.mergeMappingTitle": {
+    "message": "Merge tag mapping ({count})",
+    "description": "Merge tag mapping section title"
+  },
+  "htmlImport.mergeMappingEmpty": {
+    "message": "No merge tags detected. You can add LiteDesk fields from the Variables panel later.",
+    "description": "Empty merge tag mapping state"
+  },
+  "htmlImport.orgMappingsApplied": {
+    "message": "Applied {count} saved organization mapping(s). Review and adjust if needed.",
+    "description": "Banner when org-level merge mappings were auto-filled"
+  },
+  "htmlImport.orgMappingsTitle": {
+    "message": "Email merge tag mappings",
+    "description": "Org merge mappings settings page title"
+  },
+  "htmlImport.orgMappingsDescription": {
+    "message": "Map external ESP merge tags (Mailchimp, HubSpot, etc.) to LiteDesk fields. Saved mappings auto-fill during HTML import.",
+    "description": "Org merge mappings settings page description"
+  },
+  "htmlImport.orgMappingsEmpty": {
+    "message": "No saved mappings yet. Add mappings here or save them from the import wizard.",
+    "description": "Empty org merge mappings state"
+  },
+  "htmlImport.orgMappingsAdd": {
+    "message": "Add mapping",
+    "description": "Add org merge mapping row button"
+  },
+  "htmlImport.orgMappingsActions": {
+    "message": "Actions",
+    "description": "Org merge mappings table actions column"
+  },
+  "htmlImport.orgMappingsTagPlaceholder": {
+    "message": "e.g. *|FNAME|* or {{first_name}}",
+    "description": "ESP merge tag input placeholder"
+  },
+  "htmlImport.orgMappingsSaved": {
+    "message": "Merge mappings saved",
+    "description": "Org merge mappings save success toast"
+  },
+  "htmlImport.orgMappingsLoadFailed": {
+    "message": "Could not load merge mappings",
+    "description": "Org merge mappings load error"
+  },
+  "htmlImport.orgMappingsSaveFailed": {
+    "message": "Could not save merge mappings",
+    "description": "Org merge mappings save error"
+  },
+  "htmlImport.orgMappingsDuplicateTag": {
+    "message": "Each ESP tag must be unique",
+    "description": "Duplicate merge tag validation error"
+  },
+  "htmlImport.orgMappingsIncompleteRow": {
+    "message": "Select a LiteDesk field or choose Keep as text for {tag}",
+    "description": "Incomplete merge mapping row validation"
+  },
+  "htmlImport.hubspotConditionalTitle": {
+    "message": "HubSpot logic blocks ({count})",
+    "description": "HubSpot conditional panel title"
+  },
+  "htmlImport.hubspotConditionalDescription": {
+    "message": "HubSpot {% if %} blocks are not supported in campaigns. Choose how to handle them before import.",
+    "description": "HubSpot conditional panel description"
+  },
+  "htmlImport.hubspotConditionalKeep": {
+    "message": "Keep logic tags as text",
+    "description": "Keep HubSpot conditional tags option"
+  },
+  "htmlImport.hubspotConditionalKeepHint": {
+    "message": "Tags remain in HTML and appear as warnings. Use for manual cleanup later.",
+    "description": "Keep HubSpot conditionals hint"
+  },
+  "htmlImport.hubspotConditionalStrip": {
+    "message": "Strip logic and keep primary content",
+    "description": "Strip HubSpot conditionals option"
+  },
+  "htmlImport.hubspotConditionalStripHint": {
+    "message": "Removes {% if %}/{% else %} tags and keeps the first branch content only.",
+    "description": "Strip HubSpot conditionals hint"
+  },
+  "htmlImport.warningHubspotConditional": {
+    "message": "HubSpot logic block",
+    "description": "HubSpot conditional warning label"
+  },
+  "htmlImport.warningHubspotConditionalStripped": {
+    "message": "HubSpot logic stripped",
+    "description": "HubSpot conditional stripped warning label"
+  },
+  "htmlImport.warningExternalCssFailed": {
+    "message": "External CSS fetch failed",
+    "description": "External CSS fetch failure warning label"
+  },
+  "htmlImport.cssAllowlistTitle": {
+    "message": "External CSS allowlist",
+    "description": "CSS allowlist settings title"
+  },
+  "htmlImport.cssAllowlistDescription": {
+    "message": "Stylesheet URLs on these hostnames are fetched and inlined during HTML import. All other external CSS links are ignored.",
+    "description": "CSS allowlist settings description"
+  },
+  "htmlImport.cssAllowlistLabel": {
+    "message": "Allowed hostnames",
+    "description": "CSS allowlist field label"
+  },
+  "htmlImport.cssAllowlistPlaceholder": {
+    "message": "fonts.googleapis.com\ncdn.example.com",
+    "description": "CSS allowlist textarea placeholder"
+  },
+  "htmlImport.cssAllowlistHint": {
+    "message": "One hostname per line. Subdomains are allowed automatically.",
+    "description": "CSS allowlist helper text"
+  },
+  "htmlImport.cssAllowlistSaved": {
+    "message": "CSS allowlist saved",
+    "description": "CSS allowlist save success toast"
+  },
+  "htmlImport.cssAllowlistLoadFailed": {
+    "message": "Could not load CSS allowlist",
+    "description": "CSS allowlist load error"
+  },
+  "htmlImport.cssAllowlistSaveFailed": {
+    "message": "Could not save CSS allowlist",
+    "description": "CSS allowlist save error"
+  },
+  "htmlImport.previewClients": {
+    "message": "Email clients (Litmus)",
+    "description": "Litmus client preview menu item"
+  },
+  "htmlImport.clientPreviewTitle": {
+    "message": "Email client previews",
+    "description": "Litmus client preview modal title"
+  },
+  "htmlImport.clientPreviewDescription": {
+    "message": "Real rendering snapshots from Litmus Instant API.",
+    "description": "Litmus client preview modal description"
+  },
+  "htmlImport.clientPreviewNotConfigured": {
+    "message": "Litmus is not configured",
+    "description": "Litmus not configured message"
+  },
+  "htmlImport.clientPreviewNotConfiguredHint": {
+    "message": "Set LITMUS_API_KEY on the server to enable Gmail, Outlook, and mobile client previews.",
+    "description": "Litmus not configured hint"
+  },
+  "htmlImport.clientPreviewFailed": {
+    "message": "Could not load client previews",
+    "description": "Litmus client preview failure"
+  },
+  "htmlImport.emptySourceValidation": {
+    "message": "Paste or upload HTML to continue.",
+    "description": "Import wizard empty source validation message"
+  },
+  "htmlImport.mergeDetected": {
+    "message": "Detected",
+    "description": "Detected merge tag column header"
+  },
+  "htmlImport.mergeMapTo": {
+    "message": "Map to LiteDesk field",
+    "description": "Merge tag mapping column header"
+  },
+  "htmlImport.mergeSkip": {
+    "message": "Keep as text",
+    "description": "Skip merge tag mapping"
+  },
+  "htmlImport.mergeSelectModule": {
+    "message": "Select module",
+    "description": "Merge tag module select placeholder"
+  },
+  "htmlImport.mergeSelectField": {
+    "message": "Select field",
+    "description": "Merge tag field select placeholder"
+  },
+  "htmlImport.confirmReady": {
+    "message": "Ready to import. {warnings} warning(s) — review optional before continuing.",
+    "description": "HTML import confirm ready message"
+  },
+  "htmlImport.confirmReview": {
+    "message": "HTML may need review. {warnings} warning(s) found.",
+    "description": "HTML import confirm review message"
+  },
+  "htmlImport.previewFrameTitle": {
+    "message": "Email preview",
+    "description": "Email preview iframe title"
+  },
+  "htmlImport.mobilePreview": {
+    "message": "Mobile preview",
+    "description": "Mobile preview chrome label"
+  },
+  "htmlImport.errorEmptyHtml": {
+    "message": "Paste or upload HTML to continue.",
+    "description": "Empty HTML validation error"
+  },
+  "htmlImport.errorAnalyzeFailed": {
+    "message": "Analysis failed. Try again.",
+    "description": "HTML analyze API error"
+  },
+  "htmlImport.errorFileTooLarge": {
+    "message": "File exceeds 2 MB limit.",
+    "description": "HTML upload file size error"
+  },
+  "htmlImport.warningJavascriptRemoved": {
+    "message": "JavaScript removed",
+    "description": "JavaScript removed warning type"
+  },
+  "htmlImport.warningExternalCssIgnored": {
+    "message": "External CSS ignored",
+    "description": "External CSS ignored warning type"
+  },
+  "htmlImport.warningExternalCss": {
+    "message": "External CSS ignored",
+    "description": "External CSS warning type"
+  },
+  "htmlImport.warningUnsupportedCss": {
+    "message": "Unsupported CSS",
+    "description": "Unsupported CSS warning type"
+  },
+  "htmlImport.warningForm": {
+    "message": "Form removed",
+    "description": "Form removed warning type"
+  },
+  "htmlImport.previewMenu": {
+    "message": "Preview",
+    "description": "Email preview menu button"
+  },
+  "htmlImport.previewTitle": {
+    "message": "Email preview",
+    "description": "Email preview modal title"
+  },
+  "htmlImport.previewDesktop": {
+    "message": "Desktop",
+    "description": "Desktop email preview option"
+  },
+  "htmlImport.previewMobile": {
+    "message": "Mobile",
+    "description": "Mobile email preview option"
+  },
+  "htmlImport.previewLight": {
+    "message": "Light",
+    "description": "Light color scheme for email preview"
+  },
+  "htmlImport.previewDark": {
+    "message": "Dark",
+    "description": "Dark color scheme for email preview shell"
+  },
+  "htmlImport.advancedMenu": {
+    "message": "Advanced",
+    "description": "Advanced HTML menu button"
+  },
+  "htmlImport.actionViewHtml": {
+    "message": "View HTML",
+    "description": "View HTML menu action"
+  },
+  "htmlImport.actionEditHtml": {
+    "message": "Edit HTML",
+    "description": "Edit HTML menu action"
+  },
+  "htmlImport.actionValidateHtml": {
+    "message": "Validate HTML",
+    "description": "Validate HTML menu action"
+  },
+  "htmlImport.actionImportHtml": {
+    "message": "Import HTML",
+    "description": "Import HTML menu action in builder"
+  },
+  "htmlImport.actionExportHtml": {
+    "message": "Export HTML",
+    "description": "Export HTML menu action"
+  },
+  "htmlImport.actionRestoreSnapshot": {
+    "message": "Restore previous HTML",
+    "description": "Restore pre-edit HTML snapshot menu action"
+  },
+  "htmlImport.restoreSnapshotTitle": {
+    "message": "Restore previous HTML?",
+    "description": "Restore snapshot confirmation modal title"
+  },
+  "htmlImport.restoreSnapshotBody": {
+    "message": "This replaces the current template with the HTML saved before your last edit or import. Visual changes made since then will be lost.",
+    "description": "Restore snapshot confirmation modal body"
+  },
+  "htmlImport.restoreSnapshotCapturedAt": {
+    "message": "Snapshot from {date}",
+    "description": "Restore snapshot captured timestamp label"
+  },
+  "htmlImport.restoreSnapshotConfirm": {
+    "message": "Restore",
+    "description": "Restore snapshot confirm button"
+  },
+  "htmlImport.restoreSnapshotSuccess": {
+    "message": "Previous HTML restored",
+    "description": "Restore snapshot success toast"
+  },
+  "htmlImport.restoreSnapshotFailed": {
+    "message": "Failed to restore previous HTML",
+    "description": "Restore snapshot error toast"
+  },
+  "htmlImport.editWarningTitle": {
+    "message": "Edit HTML",
+    "description": "HTML edit warning modal title"
+  },
+  "htmlImport.editWarningBody": {
+    "message": "Changes made in HTML may not be fully reversible in the visual editor.",
+    "description": "HTML edit irreversibility warning"
+  },
+  "htmlImport.editWarningDismiss": {
+    "message": "Don't show again",
+    "description": "Dismiss HTML edit warning permanently"
+  },
+  "htmlImport.editWarningConfirm": {
+    "message": "Continue to HTML editor",
+    "description": "Confirm entering HTML edit mode"
+  },
+  "htmlImport.applyHtml": {
+    "message": "Apply HTML",
+    "description": "Apply HTML changes to template"
+  },
+  "htmlImport.applySuccess": {
+    "message": "HTML updated",
+    "description": "HTML apply success toast"
+  },
+  "htmlImport.errorApplyFailed": {
+    "message": "HTML could not be applied.",
+    "description": "HTML apply failure toast"
+  },
+  "htmlImport.validationTitle": {
+    "message": "Validate HTML",
+    "description": "HTML validation modal title"
+  },
+  "htmlImport.validating": {
+    "message": "Validating…",
+    "description": "HTML validation in progress"
+  },
+  "htmlImport.validationErrors": {
+    "message": "Errors",
+    "description": "Validation errors group title"
+  },
+  "htmlImport.validationWarnings": {
+    "message": "Warnings",
+    "description": "Validation warnings group title"
+  },
+  "htmlImport.validationSuggestions": {
+    "message": "Suggestions",
+    "description": "Validation suggestions group title"
+  },
+  "htmlImport.validationNone": {
+    "message": "None",
+    "description": "Empty validation group label"
+  },
+  "htmlImport.validationInvalidHtml": {
+    "message": "HTML may be invalid or missing body content",
+    "description": "Invalid HTML validation error"
+  },
+  "htmlImport.validationSuggestInlineCss": {
+    "message": "No inline CSS detected — email clients prefer inline styles",
+    "description": "Inline CSS validation suggestion"
+  },
+  "htmlImport.validationSuggestTables": {
+    "message": "No tables detected — table-based layout improves Outlook compatibility",
+    "description": "Table layout validation suggestion"
+  },
+  "htmlImport.validationMissingAlt": {
+    "message": "{count} image(s) missing alt text",
+    "description": "Missing alt text validation warning"
+  },
+  "htmlImport.validationMissingTableWidth": {
+    "message": "{count} table(s) missing width attribute",
+    "description": "Missing table width validation warning"
+  },
+  "htmlImport.exportTitle": {
+    "message": "Export HTML",
+    "description": "Export HTML modal title"
+  },
+  "htmlImport.exportDownload": {
+    "message": "Download .html file",
+    "description": "Download HTML export option"
+  },
+  "htmlImport.exportCopy": {
+    "message": "Copy to clipboard",
+    "description": "Copy HTML export option"
+  },
+  "htmlImport.exportZip": {
+    "message": "Download .zip with assets",
+    "description": "ZIP export option including bundled image assets"
+  },
+  "htmlImport.exportAction": {
+    "message": "Export",
+    "description": "Export HTML confirm button"
+  },
+  "htmlImport.downloadSuccess": {
+    "message": "HTML downloaded",
+    "description": "HTML download success toast"
+  },
+  "htmlImport.copySuccess": {
+    "message": "Copied to clipboard",
+    "description": "HTML copy success toast"
+  },
+  "htmlImport.copyFailed": {
+    "message": "Could not copy to clipboard",
+    "description": "HTML copy failure toast"
+  },
+  "htmlImport.zipSuccess": {
+    "message": "ZIP downloaded with bundled assets",
+    "description": "ZIP export success toast when all assets included"
+  },
+  "htmlImport.zipPartialSuccess": {
+    "message": "ZIP downloaded — some assets could not be bundled (see export-log.txt)",
+    "description": "ZIP export success toast when some assets failed or were skipped"
+  },
+  "htmlImport.zipFailed": {
+    "message": "Could not create ZIP export",
+    "description": "ZIP export failure toast"
+  },
+  "htmlImport.codeEditorLabel": {
+    "message": "HTML source editor",
+    "description": "Accessible label for Monaco HTML code editor"
+  },
+  "htmlImport.errorNameRequired": {
+    "message": "Enter a template name to continue.",
+    "description": "Import wizard missing template name"
+  },
+  "htmlImport.publishBlocked": {
+    "message": "Fix HTML errors before publishing",
+    "description": "Publish blocked by validation errors"
+  },
+  "htmlImport.publishWarningsConfirm": {
+    "message": "This template has HTML warnings. Publish anyway?",
+    "description": "Publish confirmation when warnings exist"
   }
 }

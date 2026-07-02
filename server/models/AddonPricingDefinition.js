@@ -12,6 +12,14 @@ const AddonPlanSchema = new mongoose.Schema({
   currency: { type: String, trim: true, default: 'USD' },
 }, { _id: false });
 
+const CreditPackSchema = new mongoose.Schema({
+  packKey: { type: String, required: true, trim: true },
+  name: { type: String, required: true, trim: true },
+  credits: { type: Number, required: true, min: 1 },
+  priceCents: { type: Number, required: true, min: 0 },
+  currency: { type: String, trim: true, default: 'USD' },
+}, { _id: false });
+
 const AddonPricingDefinitionSchema = new mongoose.Schema({
   addonKey: {
     type: String,
@@ -39,6 +47,10 @@ const AddonPricingDefinitionSchema = new mongoose.Schema({
     BASIC: { type: AddonPlanSchema, default: () => ({}) },
     PRO: { type: AddonPlanSchema, default: () => ({}) },
     ENTERPRISE: { type: AddonPlanSchema, default: () => ({}) },
+  },
+  creditPacks: {
+    type: [CreditPackSchema],
+    default: undefined,
   },
   enabled: {
     type: Boolean,

@@ -39,6 +39,9 @@ const caseExecutionService = require('../services/caseExecutionService');
 const { applyCaseActivitySideEffects } = require('../services/caseAutoStatusService');
 const communicationPlatformService = require('../platform/communication/api/communicationPlatformService');
 const outboundEmailSendService = require('../platform/communication/outbound/outboundEmailSendService');
+const { mapCommunicationDeliveryFields } = require('../services/amds/deliveryFields');
+const { getAmdsClient } = require('../config/amds');
+const { enrichCaseActivitiesWithEmailDelivery } = require('../services/helpdesk/caseEmailDeliveryService');
 const { resolveDefaultGmailMailboxForUser } = require('../services/mailboxGmailInboxSyncService');
 const emailQueueService = require('../services/emailQueueService');
 const { appendCommunicationEvent } = require('../services/communicationEventWriter');
@@ -561,7 +564,15 @@ exports.sendEmail = async (req, res) => {
           metadata: {
             communicationId: doc._id,
             to: toList[0],
-            status: finalStatus
+            status: finalStatus,
+            deliveryStatus:
+              result.success && result.messageId
+                ? 'queued'
+                : finalStatus === 'failed'
+                  ? 'failed'
+                  : 'processing',
+            amdsMessageId: result.messageId || null,
+            deliveryError: result.success ? null : result.error || null
           },
           actorId: req.user._id,
           actorName: userName,
@@ -600,10 +611,18 @@ exports.sendEmail = async (req, res) => {
 
     const updated = await Communication.findById(doc._id).lean();
     if (!result.success) {
-      return res.status(502).json({
+      const statusCode =
+        result.code === 'AMDS_SUPPRESSED_RECIPIENT'
+          ? 422
+          : result.code === 'AMDS_DOMAIN_NOT_VERIFIED'
+            ? 403
+            : 502;
+      return res.status(statusCode).json({
         success: false,
         message: result.error || 'Failed to send email',
         code: result.code || 'SEND_FAILED',
+        ...(result.suppressed ? { suppressedRecipients: result.suppressed } : {}),
+        ...(result.domain ? { domain: result.domain } : {}),
         data: updated
       });
     }
@@ -817,7 +836,8 @@ exports.getThreads = async (req, res) => {
           attachments: m.attachments || [],
           sentAt: m.sentAt,
           receivedAt: m.receivedAt,
-          status: m.status
+          status: m.status,
+          ...mapCommunicationDeliveryFields(m)
         }))
       };
     });
@@ -1510,6 +1530,83 @@ exports.bulkThreadActions = async (req, res) => {
  *   3. If the thread has no mailbox (legacy record-only thread), org isolation
  *      is sufficient — record-level access is enforced at the record page.
  */
+/**
+ * GET /api/communications/:communicationId/delivery-status
+ * Returns AMDS delivery fields; polls AMDS when webhook may have been missed.
+ */
+exports.getCommunicationDeliveryStatus = async (req, res) => {
+  try {
+    const { communicationId } = req.params;
+    const orgId = req.user.organizationId;
+
+    if (!communicationId || !mongoose.Types.ObjectId.isValid(String(communicationId))) {
+      return res.status(400).json({ success: false, message: 'Invalid communicationId' });
+    }
+
+    const comm = await Communication.findOne({
+      _id: communicationId,
+      organizationId: orgId
+    }).lean();
+
+    if (!comm) {
+      return res.status(404).json({ success: false, message: 'Communication not found' });
+    }
+
+    let delivery = mapCommunicationDeliveryFields(comm);
+    const amdsMessageId = delivery?.amdsMessageId;
+    const shouldPoll =
+      amdsMessageId
+      && ['sending', 'sent'].includes(String(comm.status || '').toLowerCase())
+      && delivery.deliveryStatus !== 'delivered';
+
+    if (shouldPoll) {
+      const client = getAmdsClient();
+      if (client) {
+        try {
+          const remote = await client.getMessageStatus(amdsMessageId);
+          if (remote?.status === 'delivered' || remote?.status === 'failed') {
+            const update = {
+              status: remote.status,
+              'metadata.amdsMessageId': amdsMessageId,
+              'metadata.deliveryUpdatedAt': new Date()
+            };
+            if (remote.status === 'failed') {
+              update['metadata.deliveryError'] = String(remote.error_message || 'Delivery failed').slice(0, 2000);
+            } else {
+              update['metadata.deliveryError'] = null;
+            }
+            const updated = await Communication.findOneAndUpdate(
+              { _id: communicationId, organizationId: orgId },
+              { $set: update },
+              { new: true }
+            ).lean();
+            if (updated) {
+              delivery = mapCommunicationDeliveryFields(updated);
+            }
+          }
+        } catch (pollErr) {
+          console.warn('[communicationsController] AMDS delivery poll failed:', pollErr.message);
+        }
+      }
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        communicationId: String(comm._id),
+        ...delivery
+      }
+    });
+  } catch (err) {
+    console.error('[communicationsController] getCommunicationDeliveryStatus error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to load delivery status',
+      error: err.message
+    });
+  }
+};
+
 exports.getThreadMessages = async (req, res) => {
   try {
     const { threadId } = req.params;
@@ -1581,7 +1678,8 @@ exports.getThreadMessages = async (req, res) => {
           attachments: m.attachments || [],
           sentAt: m.sentAt,
           receivedAt: m.receivedAt,
-          status: m.status
+          status: m.status,
+          ...mapCommunicationDeliveryFields(m)
         }))
       }
     });

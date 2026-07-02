@@ -28,6 +28,13 @@ const Organization = require('../models/Organization');
 const dbConnectionManager = require('../utils/databaseConnectionManager');
 const { enterTenantContext } = require('../utils/tenantContext');
 
+/** Omit large arrays from every request-scoped org load. */
+const ORG_CONTEXT_OMIT = '-activityLogs -descriptionVersions';
+
+async function loadOrganizationForRequest(organizationId) {
+    return Organization.findById(organizationId).select(ORG_CONTEXT_OMIT);
+}
+
 /**
  * Open the tenant database connection (if the org has a dedicated DB) and
  * run the rest of the middleware chain inside that tenant's AsyncLocalStorage
@@ -95,7 +102,7 @@ const organizationIsolation = async (req, res, next) => {
                 });
             }
             
-            const org = await Organization.findById(userOrgId).lean();
+            const org = await loadOrganizationForRequest(userOrgId);
             if (org) {
                 req.organization = org;
                 console.log('[OrganizationIsolation] Using organization:', {
@@ -140,7 +147,7 @@ const organizationIsolation = async (req, res, next) => {
         }
 
         // Get organization from user (fresh from database to ensure latest state)
-        const organization = await Organization.findById(req.user.organizationId);
+        const organization = await loadOrganizationForRequest(req.user.organizationId);
         
         if (!organization) {
             return res.status(404).json({ message: 'Organization not found' });

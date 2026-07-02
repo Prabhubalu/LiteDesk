@@ -29,9 +29,11 @@ const {
     buildOciSmtpHost,
     applyOciEmailDeliveryDefaults
 } = require('../services/emailProviders/ociEmailDelivery');
+const amdsEmailDelivery = require('../services/emailProviders/amdsEmailDelivery');
 const communicationPlatformService = require('../platform/communication/api/communicationPlatformService');
 const {
     getCommunicationConfigForOrganization,
+    getEmailIntegrationPolicyBundleForOrganization,
     upsertCommunicationConfigForOrganization,
     getGmailOAuthAppCredentialsForServer
 } = require('../platform/communication/config/communicationConfigService');
@@ -91,10 +93,24 @@ function maskSecret(value) {
     return `${raw.slice(0, 4)}****${raw.slice(-2)}`;
 }
 
+function resolveEmailProviderKey(config = {}) {
+    const normalized = String(config.provider || '').trim().toLowerCase();
+    if (normalized) return normalized;
+    if (amdsEmailDelivery.isAmdsEnvConfigured()) return amdsEmailDelivery.PROVIDER_KEY;
+    const envProvider = String(process.env.EMAIL_PROVIDER || '').trim().toLowerCase();
+    if (envProvider) return envProvider;
+    return amdsEmailDelivery.PROVIDER_KEY;
+}
+
 function sanitizeEmailConfigForResponse(config = {}) {
-    const normalized = applyOciEmailDeliveryDefaults(config);
+    let normalized = config;
+    if (amdsEmailDelivery.isAmdsProvider(config)) {
+        normalized = amdsEmailDelivery.applyAmdsDefaults(config);
+    } else {
+        normalized = applyOciEmailDeliveryDefaults(config);
+    }
     return {
-        provider: normalized.provider || '',
+        provider: resolveEmailProviderKey(normalized),
         fromEmail: normalized.fromEmail || '',
         fromName: normalized.fromName || '',
         replyTo: normalized.replyTo || '',
@@ -118,8 +134,8 @@ function getEnvEmailConfigFallback() {
     const { applyResendDefaults } = require('../constants/resendDefaults');
     const smtpPortRaw = process.env.SMTP_PORT;
     const smtpPort = smtpPortRaw ? Number(smtpPortRaw) || 587 : 587;
-    return applyResendDefaults({
-        provider: process.env.EMAIL_PROVIDER || 'resend',
+    const base = {
+        provider: process.env.EMAIL_PROVIDER || amdsEmailDelivery.defaultProviderWhenUnset() || 'resend',
         fromEmail: process.env.EMAIL_FROM || '',
         fromName: process.env.EMAIL_FROM_NAME || '',
         replyTo: process.env.EMAIL_REPLY_TO || '',
@@ -129,12 +145,68 @@ function getEnvEmailConfigFallback() {
         smtpUser: process.env.SMTP_USER || '',
         smtpSecure: String(smtpPort) === '465',
         smtpPass: process.env.SMTP_PASS || process.env.RESEND_API_KEY || ''
-    });
+    };
+    if (amdsEmailDelivery.isAmdsProvider(base) && amdsEmailDelivery.isAmdsEnvConfigured()) {
+        return amdsEmailDelivery.applyAmdsDefaults(base);
+    }
+    return applyResendDefaults(applyOciEmailDeliveryDefaults(base));
 }
 
 function toComparable(value) {
     if (value === undefined || value === null) return '';
     return String(value).trim();
+}
+
+function buildEmailProviderListExtras(state = {}) {
+    const tenantConfig = state.config && typeof state.config === 'object' ? state.config : null;
+    const resolvedConfig = tenantConfig && Object.keys(tenantConfig).length > 0
+        ? tenantConfig
+        : getEnvEmailConfigFallback();
+    const amdsServerConfigured = amdsEmailDelivery.isAmdsEnvConfigured();
+    return {
+        configStatus: emailService.isConfiguredFromResolvedConfig(resolvedConfig)
+            ? 'configured'
+            : 'not_configured',
+        emailConfig: sanitizeEmailConfigForResponse(resolvedConfig),
+        amdsServerConfigured,
+        emailDomainVerification: buildEmailDomainVerificationStub(resolvedConfig),
+        emailPlatformDefaults: {
+            crmOutboundProvider: amdsServerConfigured ? 'amds' : amdsEmailDelivery.PROVIDER_KEY,
+            notificationProvider: amdsServerConfigured ? 'amds' : 'oci-email-delivery'
+        }
+    };
+}
+
+function canManageGmailOAuthRead(req) {
+    const isOwnerLikeRead = req.user?.isOwner === true || String(req.user?.role || '').toLowerCase() === 'owner';
+    const emailLowerRead = String(req.user?.email || '').toLowerCase();
+    const internalStaffRead =
+        emailLowerRead.endsWith('@arivusystems.com') ||
+        emailLowerRead.endsWith('@arivu.com') ||
+        emailLowerRead.endsWith('@arivu.io');
+    return isOwnerLikeRead || req.user?.isPlatformAdmin === true || internalStaffRead;
+}
+
+function buildEmailCommunicationPolicyPayload(req, communicationConfig = {}) {
+    const rawGmailPolicy = communicationConfig.gmailInboxSync || {
+        clientId: '',
+        redirectUri: '',
+        hasClientSecret: false
+    };
+    return {
+        outboundEmail: communicationConfig.outboundEmail,
+        supportedModuleKeys: communicationPlatformService.getSupportedModules(),
+        gmailInboxSync: canManageGmailOAuthRead(req)
+            ? rawGmailPolicy
+            : { clientId: '', redirectUri: '', hasClientSecret: false }
+    };
+}
+
+async function attachEmailIntegrationPolicy(req, payload) {
+    const { communicationConfig, gmailOAuthAppConfigured } =
+        await getEmailIntegrationPolicyBundleForOrganization(req.user.organizationId);
+    payload.gmailOAuthAppConfigured = gmailOAuthAppConfigured;
+    payload.communicationPolicy = buildEmailCommunicationPolicyPayload(req, communicationConfig);
 }
 
 function classifyDnsError(error) {
@@ -154,13 +226,13 @@ async function resolveTxtRecords(hostname) {
     }
 }
 
-async function deriveEmailDomainVerification(config = {}) {
+function buildEmailDomainVerificationStub(config = {}) {
     const email = String(config.fromEmail || '').trim().toLowerCase();
     const domain = email.includes('@') ? email.split('@')[1] : '';
     if (!domain) {
         return {
             domain: '',
-            checkedAt: new Date().toISOString(),
+            checkedAt: null,
             senderIdentity: {
                 status: 'missing_sender',
                 note: 'Set a valid From Email to evaluate sender domain.'
@@ -169,6 +241,26 @@ async function deriveEmailDomainVerification(config = {}) {
             dkim: { status: 'missing_sender', note: 'No sender domain available.' },
             dmarc: { status: 'missing_sender', note: 'No sender domain available.' }
         };
+    }
+
+    return {
+        domain,
+        checkedAt: null,
+        senderIdentity: {
+            status: 'not_checked',
+            note: 'Open the Domain tab or click Check Status to verify DNS records.'
+        },
+        spf: { status: 'not_checked', note: 'Not verified yet.' },
+        dkim: { status: 'not_checked', note: 'Not verified yet.' },
+        dmarc: { status: 'not_checked', note: 'Not verified yet.' }
+    };
+}
+
+async function deriveEmailDomainVerification(config = {}) {
+    const email = String(config.fromEmail || '').trim().toLowerCase();
+    const domain = email.includes('@') ? email.split('@')[1] : '';
+    if (!domain) {
+        return buildEmailDomainVerificationStub(config);
     }
 
     const [rootTxt, dmarcTxt, selector1Txt, selector2Txt, resendDkimTxt] = await Promise.all([
@@ -278,7 +370,7 @@ exports.getCoreModules = async (req, res) => {
         }
 
         // Get enabled apps for this organization (defensive: handle null/undefined entries and legacy shapes)
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY', 'MARKETING'];
         const rawApps = Array.isArray(organization.enabledApps) ? organization.enabledApps : [];
         const enabledAppKeys = rawApps
             .filter(app => app != null && (typeof app === 'object' ? app.status === 'ACTIVE' : typeof app === 'string' && app.length > 0))
@@ -475,7 +567,7 @@ exports.getCoreModule = async (req, res) => {
             : (module.label || capitalizeFirst(module.moduleKey));
 
         // Get enabled apps (defensive: handle null/undefined entries and legacy shapes)
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY', 'MARKETING'];
         const rawApps = Array.isArray(organization.enabledApps) ? organization.enabledApps : [];
         const enabledAppKeys = rawApps
             .filter(app => app != null && (typeof app === 'object' ? app.status === 'ACTIVE' : typeof app === 'string' && app.length > 0))
@@ -561,7 +653,8 @@ function getRequiredModulesForApp(appKey) {
         'audit': ['people'], // Audit requires People
         'portal': ['people'], // Portal requires People
         'lms': [], // LMS might not require any
-        'inventory': ['people', 'items']
+        'inventory': ['people', 'items'],
+        'marketing': ['people']
     };
     return requiredModulesMap[appKeyLower] || [];
 }
@@ -1175,7 +1268,7 @@ exports.toggleAppParticipation = async (req, res) => {
         }
 
         // Validate app key
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY', 'MARKETING'];
         const appKeyUpper = appKey.toUpperCase();
         if (!VALID_APPS.includes(appKeyUpper)) {
             return res.status(400).json({
@@ -1284,9 +1377,21 @@ exports.getApplications = async (req, res) => {
         // Valid apps registry (platform apps currently supported for tenants)
         // NOTE: Helpdesk, Projects, and LMS have been removed from the platform
         // for this deployment. Keep this list in sync with AppDefinition seeds.
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY', 'MARKETING'];
+
+        const AppDefinition = require('../models/AppDefinition');
+        const platformApps = await AppDefinition.find({
+            category: 'BUSINESS',
+            enabled: true,
+            appKey: { $ne: 'control_plane' }
+        })
+            .select('appKey name description icon ui marketplace')
+            .lean();
+        const platformAppByKey = new Map(
+            platformApps.map((app) => [String(app.appKey).toUpperCase(), app])
+        );
         
-        // App metadata (in a real implementation, this would come from AppDefinition model)
+        // App metadata fallback when AppDefinition row is missing
         const appMetadata = {
             'SALES': {
                 name: 'Sales',
@@ -1322,6 +1427,11 @@ exports.getApplications = async (req, res) => {
                 name: 'Inventory',
                 description: 'Stock ledger, locations, reservations, and fulfillment',
                 icon: 'cube'
+            },
+            'MARKETING': {
+                name: 'Marketing',
+                description: 'Email campaigns, audiences, templates, and marketing analytics',
+                icon: 'megaphone'
             }
         };
 
@@ -1330,7 +1440,17 @@ exports.getApplications = async (req, res) => {
         // Build applications list with status and dependencies
         const applications = VALID_APPS.map(appKey => {
             const appEntry = findEnabledAppEntryForOrg(organization, appKey);
-            const metadata = appMetadata[appKey];
+            const platformApp = platformAppByKey.get(appKey);
+            const metadata = platformApp
+                ? {
+                    name: platformApp.name,
+                    description:
+                        platformApp.marketplace?.shortDescription ||
+                        platformApp.description ||
+                        `${platformApp.name} application`,
+                    icon: platformApp.ui?.icon || platformApp.icon || 'app'
+                }
+                : appMetadata[appKey];
 
             let status = 'DISABLED';
             if (appEntry) {
@@ -1409,7 +1529,7 @@ exports.getApplication = async (req, res) => {
 
         // Validate app key
         // Keep in sync with getApplications VALID_APPS
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY', 'MARKETING'];
         const appKeyUpper = appKey.toUpperCase();
         if (!VALID_APPS.includes(appKeyUpper)) {
             return res.status(400).json({
@@ -1454,6 +1574,11 @@ exports.getApplication = async (req, res) => {
                 name: 'Inventory',
                 description: 'Stock ledger, locations, reservations, and fulfillment',
                 icon: 'cube'
+            },
+            'MARKETING': {
+                name: 'Marketing',
+                description: 'Email campaigns, audiences, templates, and marketing analytics',
+                icon: 'megaphone'
             }
         };
 
@@ -1567,7 +1692,7 @@ exports.getSubscriptions = async (req, res) => {
             });
         }
 
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY', 'MARKETING'];
         
         // App metadata
         const appMetadata = {
@@ -1787,7 +1912,7 @@ exports.getSubscription = async (req, res) => {
         }
 
         // Validate app key
-        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY'];
+        const VALID_APPS = ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY', 'MARKETING'];
         const appKeyUpper = appKey.toUpperCase();
         if (!VALID_APPS.includes(appKeyUpper)) {
             return res.status(400).json({
@@ -2538,15 +2663,7 @@ exports.getSecurityActivity = async (req, res) => {
  */
 exports.getIntegrations = async (req, res) => {
     try {
-        const organization = await Organization.findById(req.user.organizationId);
-        if (!organization) {
-            return res.status(404).json({
-                success: false,
-                message: 'Organization not found'
-            });
-        }
-
-        const orgIntegrations = organization.integrations || {};
+        const orgIntegrations = req.organization?.integrations || {};
 
         const integrations = integrationRegistry.map((integration) => {
             const state = orgIntegrations[integration.key] || {};
@@ -2554,7 +2671,7 @@ exports.getIntegrations = async (req, res) => {
             const status = enabled ? (state.status || 'connected') : 'disconnected';
             const scopeLabel = integration.scope === 'platform' ? 'Platform-wide' : 'App-specific';
 
-            return {
+            const base = {
                 key: integration.key,
                 name: integration.name,
                 description: integration.description,
@@ -2569,7 +2686,16 @@ exports.getIntegrations = async (req, res) => {
                 connectedAt: state.connectedAt || null,
                 disconnectedAt: state.disconnectedAt || null
             };
+            if (integration.key === emailService.EMAIL_PROVIDER_KEY) {
+                return { ...base, ...buildEmailProviderListExtras(state) };
+            }
+            return base;
         });
+
+        const emailIntegration = integrations.find((item) => item.key === emailService.EMAIL_PROVIDER_KEY);
+        if (emailIntegration) {
+            await attachEmailIntegrationPolicy(req, emailIntegration);
+        }
 
         res.json({
             success: true,
@@ -2600,15 +2726,8 @@ exports.getIntegration = async (req, res) => {
             });
         }
 
-        const organization = await Organization.findById(req.user.organizationId);
-        if (!organization) {
-            return res.status(404).json({
-                success: false,
-                message: 'Organization not found'
-            });
-        }
-
-        const state = (organization.integrations || {})[integration.key] || {};
+        const orgIntegrations = req.organization?.integrations || {};
+        const state = orgIntegrations[integration.key] || {};
         const enabled = state.enabled === true;
         const status = enabled ? (state.status || 'connected') : 'disconnected';
 
@@ -2629,46 +2748,26 @@ exports.getIntegration = async (req, res) => {
         };
 
         if (integration.key === emailService.EMAIL_PROVIDER_KEY) {
-            const tenantConfig = await emailService.getOrganizationEmailConfig(req.user.organizationId);
-            const resolvedConfig = tenantConfig && Object.keys(tenantConfig).length > 0
-                ? tenantConfig
-                : getEnvEmailConfigFallback();
-            payload.configStatus = (await emailService.isConfiguredForOrganization(req.user.organizationId))
-                ? 'configured'
-                : 'not_configured';
-            payload.emailConfig = sanitizeEmailConfigForResponse(resolvedConfig);
-            payload.emailDomainVerification = await deriveEmailDomainVerification(resolvedConfig);
-            const communicationConfig = await getCommunicationConfigForOrganization(req.user.organizationId);
-            const gmailCreds = await getGmailOAuthAppCredentialsForServer(req.user.organizationId);
-            payload.gmailOAuthAppConfigured = !gmailCreds.error;
-            // Gmail OAuth client config: only show clientId / redirect to users who may edit it
-            // (workspace owner, platform admin flag, or internal staff — same rule as PUT).
-            const isOwnerLikeRead = req.user?.isOwner === true || String(req.user?.role || '').toLowerCase() === 'owner';
-            const emailLowerRead = String(req.user?.email || '').toLowerCase();
-            const internalStaffRead =
-                emailLowerRead.endsWith('@arivusystems.com') ||
-                emailLowerRead.endsWith('@arivu.com') ||
-                emailLowerRead.endsWith('@arivu.io');
-            const canManageGmailOAuthRead =
-                isOwnerLikeRead || req.user?.isPlatformAdmin === true || internalStaffRead;
-            const rawGmailPolicy = communicationConfig.gmailInboxSync || {
-                clientId: '',
-                redirectUri: '',
-                hasClientSecret: false
-            };
-            payload.communicationPolicy = {
-                outboundEmail: communicationConfig.outboundEmail,
-                supportedModuleKeys: communicationPlatformService.getSupportedModules(),
-                gmailInboxSync: canManageGmailOAuthRead
-                    ? rawGmailPolicy
-                    : { clientId: '', redirectUri: '', hasClientSecret: false }
-            };
+            Object.assign(payload, buildEmailProviderListExtras(state));
+            const verifyDomain = req.query.verifyDomain === '1' || req.query.verifyDomain === 'true';
+            if (verifyDomain) {
+                const tenantConfig = state.config && typeof state.config === 'object' ? state.config : null;
+                const resolvedConfig = tenantConfig && Object.keys(tenantConfig).length > 0
+                    ? tenantConfig
+                    : getEnvEmailConfigFallback();
+                payload.emailDomainVerification = await deriveEmailDomainVerification(resolvedConfig);
+            }
             payload.emailPlatformDefaults = {
-                crmOutboundProvider: 'resend',
-                notificationProvider: 'oci-email-delivery',
+                crmOutboundProvider: amdsEmailDelivery.isAmdsEnvConfigured() ? 'amds' : 'resend',
+                notificationProvider: amdsEmailDelivery.isAmdsEnvConfigured() ? 'amds' : 'oci-email-delivery',
                 notificationChannelNote:
-                    'In-app notification emails use the platform system mailer (OCI). CRM sends use the provider configured below unless a user connects their own Gmail mailbox.'
+                    'In-app notification emails use the platform system mailer. CRM sends use the provider configured below unless a user connects their own Gmail mailbox.'
             };
+
+            const scope = String(req.query.scope || 'full').toLowerCase();
+            if (scope === 'full' || scope === 'policy') {
+                await attachEmailIntegrationPolicy(req, payload);
+            }
         }
 
         res.json({
@@ -2740,7 +2839,9 @@ exports.updateIntegrationConfig = async (req, res) => {
         const prev = current[key] || {};
         const prevConfig = prev.config || {};
 
-        const providerKey = String(provider || 'resend').trim().toLowerCase();
+        const providerKey = String(
+            provider || prevConfig.provider || resolveEmailProviderKey(prevConfig) || amdsEmailDelivery.PROVIDER_KEY
+        ).trim().toLowerCase();
         const resolvedOciRegion = String(
             ociRegion || prevConfig.ociRegion || process.env.OCI_EMAIL_REGION || ''
         ).trim().toLowerCase();
@@ -2762,6 +2863,15 @@ exports.updateIntegrationConfig = async (req, res) => {
             }
         } else if (providerKey === 'aws-ses') {
             resolvedSmtpHost = resolvedSmtpHost || '';
+        } else if (providerKey === 'amds') {
+            if (!amdsEmailDelivery.isAmdsEnvConfigured()) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        'AMDS requires AMDS_BASE_URL and AMDS_API_KEY on the API server. Set them in server .env and restart the API.'
+                });
+            }
+            resolvedSmtpHost = '';
         } else if (!resolvedSmtpHost || !smtpPort || !smtpUser) {
             return res.status(400).json({
                 success: false,
@@ -2772,6 +2882,7 @@ exports.updateIntegrationConfig = async (req, res) => {
         if (
             providerKey !== 'gmail-smtp'
             && providerKey !== 'aws-ses'
+            && providerKey !== 'amds'
             && (!smtpPort || !smtpUser)
         ) {
             return res.status(400).json({
@@ -2831,6 +2942,9 @@ exports.updateIntegrationConfig = async (req, res) => {
             awsSecretAccessKey: resolvedAwsSecret
         });
         nextConfig = applyGmailSmtpDefaults(nextConfig);
+        if (providerKey === 'amds') {
+            nextConfig = amdsEmailDelivery.applyAmdsDefaults(nextConfig);
+        }
 
         const criticalFields = [
             'provider',
@@ -3046,9 +3160,11 @@ exports.testIntegration = async (req, res) => {
             });
         }
 
+        const providerLabel = result.provider || 'unknown';
         res.json({
             success: true,
-            message: `Test email sent to ${userEmail}. Check your inbox (or Mailtrap if in dev).`
+            message: `Test email sent via ${providerLabel} to ${userEmail}. Check your inbox (or Mailpit if using local SMTP).`,
+            provider: providerLabel
         });
     } catch (error) {
         console.error('Test integration error:', error);

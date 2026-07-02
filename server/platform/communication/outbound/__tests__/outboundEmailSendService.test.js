@@ -28,4 +28,41 @@ describe('outboundEmailSendService.buildCommunicationUpdateFromSendResult (R2)',
     assert.equal(update.providerMessageKey, undefined);
     assert.equal(update.providerThreadId, undefined);
   });
+
+  it('maps AMDS message id onto Communication fields', () => {
+    const update = buildCommunicationUpdateFromSendResult({
+      success: true,
+      provider: 'amds',
+      messageId: '550e8400-e29b-41d4-a716-446655440000'
+    });
+    assert.equal(update.status, 'sent');
+    assert.equal(update.externalMessageId, '550e8400-e29b-41d4-a716-446655440000');
+    assert.equal(update.providerMessageKey, 'amds:550e8400-e29b-41d4-a716-446655440000');
+    assert.equal(update['metadata.amdsMessageId'], '550e8400-e29b-41d4-a716-446655440000');
+    assert.equal(update['metadata.provider'], 'amds');
+  });
+
+  it('persists AMDS send error codes on queue/sync failure', () => {
+    const update = buildCommunicationUpdateFromSendResult({
+      success: false,
+      provider: 'amds',
+      error: 'Cannot send — recipient is suppressed: bad@example.com',
+      code: 'AMDS_SUPPRESSED_RECIPIENT'
+    });
+    assert.equal(update.status, 'failed');
+    assert.equal(update['metadata.sendErrorCode'], 'AMDS_SUPPRESSED_RECIPIENT');
+    assert.match(update['metadata.deliveryError'], /suppressed/i);
+  });
+
+  it('persists AMDS domain-not-verified metadata', () => {
+    const update = buildCommunicationUpdateFromSendResult({
+      success: false,
+      provider: 'amds',
+      error: 'Sending domain not verified: example.com',
+      code: 'AMDS_DOMAIN_NOT_VERIFIED',
+      domain: 'example.com'
+    });
+    assert.equal(update['metadata.sendErrorCode'], 'AMDS_DOMAIN_NOT_VERIFIED');
+    assert.equal(update['metadata.sendErrorDomain'], 'example.com');
+  });
 });

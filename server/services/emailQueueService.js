@@ -205,6 +205,9 @@ async function processSendJobInner(communicationId) {
       provider: result.provider || null,
       externalMessageId: result.messageId || null,
       error: result.success ? null : (result.error || 'send_failed'),
+      code: result.success ? null : (result.code || null),
+      domain: result.domain || null,
+      suppressed: result.suppressed || null,
       failureCategory: result.success ? null : classifyCommunicationFailure(result.error)
     }
   });
@@ -251,7 +254,16 @@ async function processSendJobInner(communicationId) {
         metadata: {
           communicationId: String(doc._id),
           to: toAddresses?.[0],
-          status: finalStatus
+          status: finalStatus,
+          deliveryStatus:
+            result.success && result.messageId
+              ? 'queued'
+              : finalStatus === 'failed'
+                ? 'failed'
+                : 'processing',
+          amdsMessageId: result.messageId || null,
+          deliveryError: result.success ? null : result.error || null,
+          sendErrorCode: result.success ? null : result.code || null
         },
         actorId: doc.sentByUserId,
         actorName: userName,

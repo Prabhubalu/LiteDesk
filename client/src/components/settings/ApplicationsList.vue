@@ -125,6 +125,7 @@ import {
   ClipboardDocumentCheckIcon,
   AcademicCapIcon,
   CubeIcon,
+  MegaphoneIcon,
 } from '@heroicons/vue/24/outline';
 
 const { t } = useI18n();
@@ -138,6 +139,7 @@ const appIconMap = {
   audit: ClipboardDocumentCheckIcon,
   lms: AcademicCapIcon,
   inventory: CubeIcon,
+  marketing: MegaphoneIcon,
 };
 
 function getAppIcon(appKey) {
@@ -156,6 +158,7 @@ const APP_NAME_KEYS = {
   AUDIT: 'settings.appsNameAudit',
   LMS: 'settings.appsNameLms',
   INVENTORY: 'settings.appsNameInventory',
+  MARKETING: 'settings.appsNameMarketing',
 };
 
 const APP_DESC_KEYS = {
@@ -166,6 +169,7 @@ const APP_DESC_KEYS = {
   AUDIT: 'settings.appsDescAudit',
   LMS: 'settings.appsDescLms',
   INVENTORY: 'settings.appsDescInventory',
+  MARKETING: 'settings.appsDescMarketing',
 };
 
 const STATUS_LABEL_KEYS = {
@@ -194,7 +198,8 @@ const fetchApplications = async () => {
 
   try {
     const data = await apiClient('/settings/applications', {
-      method: 'GET'
+      method: 'GET',
+      params: { noCache: 'true' },
     });
 
     if (data && data.applications) {

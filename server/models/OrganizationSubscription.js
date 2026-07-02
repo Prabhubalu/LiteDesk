@@ -122,7 +122,18 @@ const OrganizationSubscriptionSchema = new mongoose.Schema({
 // Update updatedAt on save
 OrganizationSubscriptionSchema.pre('save', function(next) {
     this.updatedAt = new Date();
+    this._appsChanged = this.isModified('apps');
     next();
+});
+
+OrganizationSubscriptionSchema.post('save', function(doc) {
+    if (!this._appsChanged && !this.isNew) return;
+    setImmediate(() => {
+        const { syncEmailPolicyFromOrganizationSubscription } = require('../services/billing/email-credits');
+        syncEmailPolicyFromOrganizationSubscription(doc.organizationId).catch((err) => {
+            console.warn('[OrganizationSubscription] email policy sync failed:', err?.message || err);
+        });
+    });
 });
 
 // Index for app lookups

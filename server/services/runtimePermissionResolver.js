@@ -40,6 +40,7 @@ function viewAllForModule(mod, rolePlain) {
 
 const SALES_NATIVE_MODULES = new Set(['deals', 'projects']);
 const INVENTORY_NATIVE_MODULES = new Set(['inventory']);
+const MARKETING_NATIVE_MODULES = new Set(['campaigns', 'audiences', 'segments', 'assets']);
 const AUDIT_APP_MODULES = new Set(['audits', 'schedule', 'findings']);
 const PLATFORM_ADMIN_MODULES = new Set(PLATFORM_ADMIN_KEYS);
 const {
@@ -206,6 +207,7 @@ function resolveLegacyModuleAppKey(storageModuleKey) {
   if (PLATFORM_ADMIN_MODULES.has(mod)) return null;
   if (SALES_NATIVE_MODULES.has(mod)) return APP_KEYS.SALES;
   if (INVENTORY_NATIVE_MODULES.has(mod)) return APP_KEYS.INVENTORY;
+  if (MARKETING_NATIVE_MODULES.has(mod)) return APP_KEYS.MARKETING;
   if (mod === 'cases') return APP_KEYS.HELPDESK;
   if (AUDIT_APP_MODULES.has(mod)) return APP_KEYS.AUDIT;
   if (mod === 'contacts' || CORE_ENTITY_KEYS.has(mod)) {
@@ -281,6 +283,7 @@ function resolveEffectiveAppKey(storageModuleKey, requestAppKey) {
 
   if (SALES_NATIVE_MODULES.has(mod)) return APP_KEYS.SALES;
   if (INVENTORY_NATIVE_MODULES.has(mod)) return APP_KEYS.INVENTORY;
+  if (MARKETING_NATIVE_MODULES.has(mod)) return APP_KEYS.MARKETING;
   if (mod === 'cases') return APP_KEYS.HELPDESK;
 
   if (isCommercialPlatformModuleKey(mod)) {
@@ -321,6 +324,11 @@ function passesOrgAuthorizationGuards(orgContext, storageModuleKey, effectiveApp
   if (INVENTORY_NATIVE_MODULES.has(orgMod)) {
     if (!orgContext.isAppEnabled(APP_KEYS.INVENTORY)) return false;
     return orgContext.isModuleEnabledForApp(storageModuleKey, APP_KEYS.INVENTORY);
+  }
+
+  if (MARKETING_NATIVE_MODULES.has(orgMod)) {
+    if (!orgContext.isAppEnabled(APP_KEYS.MARKETING)) return false;
+    return orgContext.isModuleEnabledForApp(storageModuleKey, APP_KEYS.MARKETING);
   }
 
   if (effectiveAppKey && !orgContext.isAppEnabled(effectiveAppKey)) {
@@ -393,6 +401,7 @@ function resolveRuntimePermission(user, module, action, options = {}) {
     if (
       SALES_NATIVE_MODULES.has(storageModule) ||
       INVENTORY_NATIVE_MODULES.has(storageModule) ||
+      MARKETING_NATIVE_MODULES.has(storageModule) ||
       storageModule === 'cases'
     ) {
       return false;
@@ -402,6 +411,7 @@ function resolveRuntimePermission(user, module, action, options = {}) {
   if (
     SALES_NATIVE_MODULES.has(storageModule) ||
     INVENTORY_NATIVE_MODULES.has(storageModule) ||
+    MARKETING_NATIVE_MODULES.has(storageModule) ||
     storageModule === 'cases'
   ) {
     if (requestAppKey && String(requestAppKey).toUpperCase() !== effectiveAppKey) {

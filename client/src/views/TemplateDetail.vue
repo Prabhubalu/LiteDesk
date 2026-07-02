@@ -76,6 +76,15 @@
           >
             {{ t('templates.archive') }}
           </button>
+          <button
+            v-if="canDelete"
+            type="button"
+            class="rounded-lg border border-red-300 dark:border-red-700 px-4 py-2 text-sm text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+            :disabled="deleteBusy"
+            @click="handleDelete"
+          >
+            {{ deleteBusy ? t('states.loading') : t('actions.delete') }}
+          </button>
         </div>
       </div>
 
@@ -223,6 +232,7 @@ const {
   fetchTemplate,
   publishTemplate,
   archiveTemplate,
+  deleteTemplate,
   listVersions,
   validateTemplate,
   restoreVersion,
@@ -231,6 +241,7 @@ const {
 
 const loading = ref(true);
 const validateBusy = ref(false);
+const deleteBusy = ref(false);
 const restoreBusy = ref(null);
 const renderBusy = ref(false);
 const template = ref(null);
@@ -243,6 +254,7 @@ const templateId = computed(() => props.id || route.params.id);
 const canEdit = computed(() => authStore.can('templates', 'edit'));
 const canPublish = computed(() => authStore.can('templates', 'publish'));
 const canArchive = computed(() => authStore.can('templates', 'archive'));
+const canDelete = computed(() => authStore.can('templates', 'delete'));
 const canRender = computed(() => authStore.can('templates', 'render'));
 
 const needsRecordContext = computed(() => {
@@ -334,6 +346,23 @@ async function handleArchive() {
     await loadTemplate();
   } catch (error) {
     notifications.error(error?.message || t('templates.loadFailed'));
+  }
+}
+
+async function handleDelete() {
+  if (!template.value) return;
+  const name = String(template.value.name || '').trim() || t('templates.detailTitle');
+  if (!window.confirm(t('templates.confirmDelete', { name }))) return;
+
+  deleteBusy.value = true;
+  try {
+    await deleteTemplate(templateId.value);
+    notifications.success(t('templates.deleteSuccess'));
+    router.push({ name: 'templates' });
+  } catch (error) {
+    notifications.error(error?.message || t('templates.deleteFailed'));
+  } finally {
+    deleteBusy.value = false;
   }
 }
 

@@ -26,6 +26,10 @@ type DocumentFolderRow = {
 
 type FilterSelectOption = NonNullable<FilterConfig['options']>[number];
 
+function cacheKey(moduleKey: string, fieldKey: string) {
+  return `${moduleKey}:${fieldKey}`;
+}
+
 export function useFilterFieldOptions(
   moduleKey: Ref<string> | ComputedRef<string>,
   currentUserId: Ref<string | undefined>
@@ -33,9 +37,18 @@ export function useFilterFieldOptions(
   const optionsByKey = reactive<Record<string, FilterConfig['options']>>({});
   const loadingKeys = new Set<string>();
 
-  async function loadUserOptions(key: string) {
-    if (loadingKeys.has(key) || (optionsByKey[key]?.length ?? 0) > 0) return;
-    loadingKeys.add(key);
+  function resolveCacheKey(fieldKey: string, moduleKeyOverride?: string) {
+    return cacheKey(moduleKeyOverride || moduleKey.value, fieldKey);
+  }
+
+  function getCachedOptions(fieldKey: string, moduleKeyOverride?: string) {
+    return optionsByKey[resolveCacheKey(fieldKey, moduleKeyOverride)];
+  }
+
+  async function loadUserOptions(key: string, moduleKeyOverride?: string) {
+    const scopedKey = resolveCacheKey(key, moduleKeyOverride);
+    if (loadingKeys.has(scopedKey) || (getCachedOptions(key, moduleKeyOverride)?.length ?? 0) > 0) return;
+    loadingKeys.add(scopedKey);
     try {
       const response = await apiClient.get('/users/list');
       const users = response.success && Array.isArray(response.data) ? response.data : [];
@@ -50,20 +63,21 @@ export function useFilterFieldOptions(
         if (currentUserIdStr && userIdStr === currentUserIdStr) continue;
         userOptions.push({ value: userIdStr, label: getUserDisplayName(user) });
       }
-      optionsByKey[key] = userOptions;
+      optionsByKey[scopedKey] = userOptions;
     } catch {
-      optionsByKey[key] = [
+      optionsByKey[scopedKey] = [
         { value: 'me', label: 'Me' },
         { value: 'unassigned', label: 'Unassigned' },
       ];
     } finally {
-      loadingKeys.delete(key);
+      loadingKeys.delete(scopedKey);
     }
   }
 
-  async function loadOrganizationOptions(key: string) {
-    if (loadingKeys.has(key) || (optionsByKey[key]?.length ?? 0) > 0) return;
-    loadingKeys.add(key);
+  async function loadOrganizationOptions(key: string, moduleKeyOverride?: string) {
+    const scopedKey = resolveCacheKey(key, moduleKeyOverride);
+    if (loadingKeys.has(scopedKey) || (getCachedOptions(key, moduleKeyOverride)?.length ?? 0) > 0) return;
+    loadingKeys.add(scopedKey);
     try {
       const response = await apiClient.get('/v2/organization', { params: { limit: 1000 } });
       let orgs: Array<Record<string, unknown>> = [];
@@ -83,88 +97,196 @@ export function useFilterFieldOptions(
           label: String(org.name || 'Unnamed Organization'),
         });
       }
-      optionsByKey[key] = entityOptions;
+      optionsByKey[scopedKey] = entityOptions;
     } catch {
-      optionsByKey[key] = [
+      optionsByKey[scopedKey] = [
         { value: 'has', label: 'Has Organization' },
         { value: '', label: 'No Organization' },
       ];
     } finally {
-      loadingKeys.delete(key);
+      loadingKeys.delete(scopedKey);
     }
   }
 
-  async function handleFilterOpened(key: string, filter: FilterConfig | null | undefined) {
-    if (!key || !filter) return;
-    if (filter.filterType === 'user') {
-      await loadUserOptions(key);
+  async function loadPeopleRecordOptions(key: string, moduleKeyOverride?: string) {
+    const scopedKey = resolveCacheKey(key, moduleKeyOverride);
+    if (loadingKeys.has(scopedKey) || (getCachedOptions(key, moduleKeyOverride)?.length ?? 0) > 0) return;
+    loadingKeys.add(scopedKey);
+    try {
+      const response = await apiClient.get('/people', {
+        params: { limit: 500, sortBy: 'firstName', sortOrder: 'asc' }
+      });
+      const rows = response.success && Array.isArray(response.data) ? response.data : [];
+      optionsByKey[scopedKey] = rows.map((person: Record<string, unknown>) => {
+        const id = String(person._id || person.id || '');
+        const name = [person.first_name || person.firstName, person.last_name || person.lastName]
+          .filter(Boolean)
+          .join(' ');
+        const label = name || String(person.email || id);
+        return { value: id, label };
+      }).filter((option: FilterSelectOption) => Boolean(option.value));
+    } catch {
+      optionsByKey[scopedKey] = [];
+    } finally {
+      loadingKeys.delete(scopedKey);
+    }
+  }
+
+  async function loadMarketingSelectOptions(
+    key: string,
+    filter: FilterConfig,
+    moduleKeyOverride?: string
+  ) {
+    const scopedKey = resolveCacheKey(key, moduleKeyOverride);
+    if (loadingKeys.has(scopedKey)) return;
+    if ((filter.options?.length ?? 0) > 0 || (getCachedOptions(key, moduleKeyOverride)?.length ?? 0) > 0) {
       return;
     }
-    if (filter.filterType === 'entity' && key === 'organization' && moduleKey.value === 'people') {
-      await loadOrganizationOptions(key);
+
+    loadingKeys.add(scopedKey);
+    try {
+      const mod = moduleKeyOverride || moduleKey.value;
+      const response = await apiClient.get('/marketing/segments/field-options', {
+        params: { moduleKey: mod, fieldKey: key },
+        cache: 'no-store'
+      });
+      const options = Array.isArray(response?.data?.options) ? response.data.options : [];
+      optionsByKey[scopedKey] = options;
+    } catch {
+      optionsByKey[scopedKey] = [];
+    } finally {
+      loadingKeys.delete(scopedKey);
+    }
+  }
+
+function isUserAssignmentField(key: string, filter: FilterConfig | null | undefined) {
+  if (!key) return false;
+  const norm = key.toLowerCase();
+  if (filter?.filterType === 'user') return true;
+  return (
+    norm === 'assignedto' ||
+    norm === 'lead_owner' ||
+    norm === 'createdby' ||
+    norm === 'modifiedby' ||
+    norm === 'owner'
+  );
+}
+
+  async function handleFilterOpened(
+    key: string,
+    filter: FilterConfig | null | undefined,
+    moduleKeyOverride?: string
+  ) {
+    if (!key || !filter) return;
+    const mod = moduleKeyOverride || moduleKey.value;
+    if (filter.filterType === 'user' || isUserAssignmentField(key, filter)) {
+      await loadUserOptions(key, moduleKeyOverride);
       return;
+    }
+    if (filter.filterType === 'entity') {
+      if (key === 'organization' || key === 'organizationId') {
+        await loadOrganizationOptions(key, moduleKeyOverride);
+        return;
+      }
+      if (
+        key === 'contactId' ||
+        key === 'lead_owner' ||
+        key === 'createdBy' ||
+        (mod !== 'people' && key.toLowerCase().includes('contact'))
+      ) {
+        await loadPeopleRecordOptions(key, moduleKeyOverride);
+        return;
+      }
     }
     if (
       filter.filterType === 'select' &&
       (key === 'folderId' || key === 'folderName') &&
-      moduleKey.value === 'documents'
+      mod === 'documents'
     ) {
       await loadDocumentFolderOptions(key);
+      return;
+    }
+    if (filter.filterType === 'select' || filter.filterType === 'multi-select') {
+      await loadMarketingSelectOptions(key, filter, moduleKeyOverride);
     }
   }
 
   async function loadDocumentFolderOptions(key: string) {
-    if (loadingKeys.has(key) || (optionsByKey[key]?.length ?? 0) > 0) return;
-    loadingKeys.add(key);
+    const scopedKey = resolveCacheKey(key, 'documents');
+    if (loadingKeys.has(scopedKey) || (optionsByKey[scopedKey]?.length ?? 0) > 0) return;
+    loadingKeys.add(scopedKey);
     try {
       const response = await apiClient.get('/document-folders', { params: { all: '1' } });
       const rows = response?.success && Array.isArray(response?.data) ? response.data : [];
-      optionsByKey[key] = rows.map((folder: DocumentFolderRow) => {
+      optionsByKey[scopedKey] = rows.map((folder: DocumentFolderRow) => {
         const id = String(folder?._id ?? folder?.id ?? '');
         const name = String(folder?.name || '').trim() || id;
         const path = String(folder?.path || '').trim();
         const label = path && path !== `/${name}` ? `${name} (${path})` : name;
         return { value: id, label };
       }).filter((option: FilterSelectOption) => Boolean(option.value));
-      if (key === 'folderId' || key === 'folderName') {
-        optionsByKey.folderId = optionsByKey[key];
-        optionsByKey.folderName = optionsByKey[key];
-      }
+      optionsByKey[resolveCacheKey('folderId', 'documents')] = optionsByKey[scopedKey];
+      optionsByKey[resolveCacheKey('folderName', 'documents')] = optionsByKey[scopedKey];
     } catch {
-      optionsByKey[key] = [];
+      optionsByKey[scopedKey] = [];
     } finally {
-      loadingKeys.delete(key);
+      loadingKeys.delete(scopedKey);
     }
   }
 
-  function enrichFilterConfig(config: FilterConfig): FilterConfig {
-    if (config.options?.length) {
-      return config;
+  function enrichFilterConfig(config: FilterConfig, moduleKeyOverride?: string): FilterConfig {
+    const normalizedConfig =
+      isUserAssignmentField(config.key, config) && config.filterType !== 'user'
+        ? { ...config, filterType: 'user' as const }
+        : config;
+    if (normalizedConfig.options?.length) {
+      return normalizedConfig;
     }
+    const mod = moduleKeyOverride || moduleKey.value;
     const peerKey =
-      config.key === 'folderId' ? 'folderName'
-        : config.key === 'folderName' ? 'folderId'
+      normalizedConfig.key === 'folderId' ? 'folderName'
+        : normalizedConfig.key === 'folderName' ? 'folderId'
           : null;
-    const loaded = optionsByKey[config.key] ?? (peerKey ? optionsByKey[peerKey] : undefined);
+    const loaded =
+      getCachedOptions(normalizedConfig.key, mod) ??
+      (peerKey ? getCachedOptions(peerKey, mod) : undefined);
     if (loaded?.length) {
-      return { ...config, options: loaded };
+      return { ...normalizedConfig, options: loaded };
     }
-    if (config.filterType === 'boolean' && !config.options?.length) {
-      return { ...config, options: BOOLEAN_OPTIONS };
+    if (normalizedConfig.filterType === 'boolean' && !normalizedConfig.options?.length) {
+      return { ...normalizedConfig, options: BOOLEAN_OPTIONS };
     }
-    return config;
+    return normalizedConfig;
   }
 
-  function enrichFilterMap(map: Record<string, FilterConfig>): Record<string, FilterConfig> {
+  function enrichFilterMap(
+    map: Record<string, FilterConfig>,
+    moduleKeyOverride?: string
+  ): Record<string, FilterConfig> {
     const next: Record<string, FilterConfig> = {};
     for (const [key, config] of Object.entries(map)) {
-      next[key] = enrichFilterConfig(config);
+      next[key] = enrichFilterConfig(config, moduleKeyOverride);
     }
     return next;
+  }
+
+  function seedOptionsFromMetadata(
+    modules: Record<string, { fields?: Array<{ key: string; options?: FilterConfig['options'] }> }> | null | undefined
+  ) {
+    if (!modules) return;
+    for (const [modKey, modMeta] of Object.entries(modules)) {
+      for (const field of modMeta?.fields || []) {
+        if (!field?.key || !field.options?.length) continue;
+        const scopedKey = cacheKey(modKey, field.key);
+        if ((optionsByKey[scopedKey]?.length ?? 0) > 0) continue;
+        optionsByKey[scopedKey] = field.options;
+      }
+    }
   }
 
   return {
     handleFilterOpened,
     enrichFilterMap,
+    seedOptionsFromMetadata,
   };
 }

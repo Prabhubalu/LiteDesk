@@ -1330,5 +1330,25 @@
   "portalDashboardSignalInProgressResponses": {
     "message": "You have {count} form in progress | You have {count} forms in progress",
     "description": "Portal dashboard brief signal for in-progress form responses"
+  },
+  "recordEmailDeliveryDelivered": {
+    "message": "Delivered",
+    "description": "Outbound email delivery status badge"
+  },
+  "recordEmailDeliveryBounced": {
+    "message": "Bounced",
+    "description": "Outbound email bounced status badge"
+  },
+  "recordEmailDeliveryBouncedHint": {
+    "message": "Recipient address bounced",
+    "description": "Tooltip when bounce diagnostic missing"
+  },
+  "recordEmailDeliveryFailed": {
+    "message": "Failed",
+    "description": "Outbound email delivery failed badge"
+  },
+  "recordEmailDeliveryFailedHint": {
+    "message": "Email could not be delivered",
+    "description": "Tooltip when delivery error missing"
   }
 }

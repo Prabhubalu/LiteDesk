@@ -22,6 +22,12 @@ const {
   updateCustomOutcomes,
 } = require('../services/liveChatOutcomeService');
 const { ADDON_KEYS } = require('../constants/addonKeys');
+const { purchaseEmailCreditPack } = require('../services/emailCreditPackService');
+const {
+  getOrgEmailPolicy,
+  serializeOrgEmailPolicy,
+  ensureOrgEmailPolicy
+} = require('../services/orgEmailPolicyService');
 
 function canManageAddons(req) {
   if (req.user?.isOwner) return true;
@@ -31,7 +37,7 @@ function canManageAddons(req) {
   return Boolean(settings.edit || settings.manageBilling);
 }
 
-function mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing) {
+function mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing, emailPolicy) {
   const normalized = normalizeAddonKey(definition.addonKey);
   const installed = !!tenantConfig;
   let status = 'AVAILABLE';
@@ -68,8 +74,13 @@ function mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing) {
           defaultPlan: pricing.defaultPlan,
           trialDays: pricing.trialDays,
           plans: pricing.plans,
+          creditPacks: pricing.creditPacks || [],
         }
       : null,
+    emailPolicy:
+      normalized === ADDON_KEYS.EMAIL_CREDITS && emailPolicy
+        ? serializeOrgEmailPolicy(emailPolicy)
+        : null,
   };
 }
 
@@ -84,6 +95,7 @@ exports.listAddons = async (req, res) => {
     const subscription = await OrganizationSubscription.findOne({ organizationId }).lean();
     const tenantConfigs = await TenantAddonConfiguration.find({ organizationId }).lean();
     const configByKey = new Map(tenantConfigs.map((row) => [normalizeAddonKey(row.addonKey), row]));
+    let emailPolicy = null;
 
     const addons = [];
     for (const definition of definitions) {
@@ -91,7 +103,10 @@ exports.listAddons = async (req, res) => {
       const pricing = await getAddonPricing(normalized);
       const tenantConfig = configByKey.get(normalized) || null;
       const subscriptionEntry = findAddonSubscriptionEntry(subscription, normalized);
-      addons.push(mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing));
+      if (normalized === ADDON_KEYS.EMAIL_CREDITS) {
+        emailPolicy = await getOrgEmailPolicy(organizationId);
+      }
+      addons.push(mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing, emailPolicy));
     }
 
     const installed = addons.filter((row) => row.installed);
@@ -130,10 +145,14 @@ exports.getAddon = async (req, res) => {
     const subscription = await OrganizationSubscription.findOne({ organizationId }).lean();
     const subscriptionEntry = findAddonSubscriptionEntry(subscription, addonKey);
     const pricing = await getAddonPricing(addonKey);
+    let emailPolicy = null;
+    if (addonKey === ADDON_KEYS.EMAIL_CREDITS) {
+      emailPolicy = await getOrgEmailPolicy(organizationId);
+    }
 
     return res.json({
       success: true,
-      addon: mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing),
+      addon: mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing, emailPolicy),
       configuration: tenantConfig,
     });
   } catch (error) {
@@ -182,6 +201,10 @@ exports.installAddon = async (req, res) => {
         { _id: organizationId },
         { $set: { 'embed.chat.enabled': true } },
       );
+    }
+
+    if (addonKey === ADDON_KEYS.EMAIL_CREDITS) {
+      await ensureOrgEmailPolicy(organizationId);
     }
 
     return res.status(201).json({
@@ -465,5 +488,40 @@ exports.updateLiveChatSessionFieldSettings = async (req, res) => {
     }
     console.error('[addonSettingsController] updateLiveChatSessionFieldSettings', error);
     return res.status(500).json({ success: false, message: 'Failed to update session field settings' });
+  }
+};
+
+exports.purchaseEmailCreditPack = async (req, res) => {
+  try {
+    if (!canManageAddons(req)) {
+      return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
+    }
+
+    const packKey = String(req.body?.packKey || '').trim();
+    if (!packKey) {
+      return res.status(400).json({ success: false, message: 'packKey is required', code: 'INVALID_PACK' });
+    }
+
+    const result = await purchaseEmailCreditPack({
+      organizationId: req.user.organizationId,
+      packKey,
+      initiatedByUserId: req.user._id
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Credit pack purchased',
+      data: result
+    });
+  } catch (error) {
+    const code = error?.code;
+    if (code === 'ADDON_NOT_INSTALLED') {
+      return res.status(404).json({ success: false, message: error.message, code });
+    }
+    if (code === 'INVALID_PACK' || code === 'PRICING_NOT_FOUND') {
+      return res.status(400).json({ success: false, message: error.message, code });
+    }
+    console.error('[addonSettingsController] purchaseEmailCreditPack', error);
+    return res.status(500).json({ success: false, message: 'Failed to purchase credit pack' });
   }
 };

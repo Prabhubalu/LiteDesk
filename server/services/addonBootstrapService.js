@@ -16,6 +16,7 @@ const { seedLiveChatProcessRecipesForOrganization } = require('./liveChatProcess
 const {
   seedDefaultLiveChatAssignmentRulesForOrganization,
 } = require('./liveChatAssignmentRuleSeedService');
+const { ensureOrgEmailPolicy } = require('./orgEmailPolicyService');
 
 const ENTERPRISE_PLAN_KEY = 'ENTERPRISE';
 
@@ -69,6 +70,17 @@ async function ensureSubscriptionForAddon({ organizationId, addonKey, initiatedB
       if (internal) {
         existing = buildEnterpriseAddonSubscription(normalized);
         existing.installedBy = initiatedByUserId || null;
+      } else if (normalized === ADDON_KEYS.EMAIL_CREDITS) {
+        existing = {
+          addonKey: normalized,
+          planKey: pricing.defaultPlan || 'BASIC',
+          agentLimit: null,
+          agentsUsed: 0,
+          status: 'ACTIVE',
+          trialEndsAt: null,
+          startedAt: new Date(),
+          installedBy: initiatedByUserId || null,
+        };
       } else {
         const planKey = pricing.defaultPlan || 'BASIC';
         const trialDays = pricing.trialDays ?? 14;
@@ -126,6 +138,10 @@ async function ensureSubscriptionForAddon({ organizationId, addonKey, initiatedB
           initiatedByUserId: initiatedByUserId || null,
         });
       });
+    }
+
+    if (normalized === ADDON_KEYS.EMAIL_CREDITS) {
+      await ensureOrgEmailPolicy(organizationId);
     }
 
     return {

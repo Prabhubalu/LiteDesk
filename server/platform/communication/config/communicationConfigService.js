@@ -86,11 +86,7 @@ async function getGmailOAuthAppCredentialsForServer(organizationId) {
   return { clientId, clientSecret, redirectUri };
 }
 
-async function getCommunicationConfigForOrganization(organizationId) {
-  if (!organizationId) {
-    return { ...DEFAULT_CONFIG, gmailInboxSync: { ...DEFAULT_GMAIL_PUBLIC } };
-  }
-  const configDoc = await CommunicationConfig.findOne({ organizationId }).lean();
+function buildCommunicationConfigFromDoc(configDoc) {
   if (!configDoc) {
     return { ...DEFAULT_CONFIG, gmailInboxSync: { ...DEFAULT_GMAIL_PUBLIC } };
   }
@@ -115,6 +111,62 @@ async function getCommunicationConfigForOrganization(organizationId) {
     },
     gmailInboxSync: publicGmailInboxSyncFromDoc(configDoc)
   };
+}
+
+function isGmailOAuthAppConfiguredFromDoc(configDoc) {
+  const g = configDoc?.gmailInboxSync || {};
+  let clientSecret = '';
+  if (g.clientSecretEnc) {
+    clientSecret = decryptTenantSecret(g.clientSecretEnc);
+  }
+  if (!clientSecret) {
+    clientSecret = String(process.env.GOOGLE_GMAIL_CLIENT_SECRET || '').trim();
+  }
+  const clientId = String(g.clientId || process.env.GOOGLE_GMAIL_CLIENT_ID || '').trim();
+  const redirectUri = String(g.redirectUri || process.env.GOOGLE_GMAIL_REDIRECT_URI || '').trim();
+  return Boolean(clientId && clientSecret && redirectUri);
+}
+
+const POLICY_BUNDLE_CACHE_TTL_MS = 30_000;
+/** @type {Map<string, { expiresAt: number, value: { communicationConfig: object, gmailOAuthAppConfigured: boolean } }>} */
+const policyBundleCache = new Map();
+
+function invalidateEmailIntegrationPolicyCache(organizationId) {
+  if (organizationId) {
+    policyBundleCache.delete(String(organizationId));
+  }
+}
+
+async function getEmailIntegrationPolicyBundleForOrganization(organizationId) {
+  if (!organizationId) {
+    return {
+      communicationConfig: { ...DEFAULT_CONFIG, gmailInboxSync: { ...DEFAULT_GMAIL_PUBLIC } },
+      gmailOAuthAppConfigured: false
+    };
+  }
+  const cacheKey = String(organizationId);
+  const cached = policyBundleCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.value;
+  }
+  const configDoc = await CommunicationConfig.findOne({ organizationId }).lean();
+  const value = {
+    communicationConfig: buildCommunicationConfigFromDoc(configDoc),
+    gmailOAuthAppConfigured: isGmailOAuthAppConfiguredFromDoc(configDoc)
+  };
+  policyBundleCache.set(cacheKey, {
+    expiresAt: Date.now() + POLICY_BUNDLE_CACHE_TTL_MS,
+    value
+  });
+  return value;
+}
+
+async function getCommunicationConfigForOrganization(organizationId) {
+  if (!organizationId) {
+    return { ...DEFAULT_CONFIG, gmailInboxSync: { ...DEFAULT_GMAIL_PUBLIC } };
+  }
+  const configDoc = await CommunicationConfig.findOne({ organizationId }).lean();
+  return buildCommunicationConfigFromDoc(configDoc);
 }
 
 async function upsertCommunicationConfigForOrganization(organizationId, policyInput = {}) {
@@ -169,12 +221,16 @@ async function upsertCommunicationConfigForOrganization(organizationId, policyIn
     { upsert: true, new: true, runValidators: true }
   );
 
+  invalidateEmailIntegrationPolicyCache(organizationId);
+
   return getCommunicationConfigForOrganization(organizationId);
 }
 
 module.exports = {
   getCommunicationConfigForOrganization,
+  getEmailIntegrationPolicyBundleForOrganization,
   upsertCommunicationConfigForOrganization,
+  invalidateEmailIntegrationPolicyCache,
   getGmailOAuthAppCredentialsForServer,
   DEFAULT_CONFIG
 };

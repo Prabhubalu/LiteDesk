@@ -8,6 +8,9 @@ const User = require('../models/User');
 const Event = require('../models/Event');
 const Form = require('../models/Form');
 const Item = require('../models/Item');
+const Quote = require('../models/Quote');
+const Invoice = require('../models/Invoice');
+const SalesOrder = require('../models/SalesOrder');
 
 function getModelForModuleKey(moduleKey) {
   const key = String(moduleKey || '').toLowerCase();
@@ -35,6 +38,15 @@ function getModelForModuleKey(moduleKey) {
     case 'items':
     case 'item':
       return Item;
+    case 'quotes':
+    case 'quote':
+      return Quote;
+    case 'invoices':
+    case 'invoice':
+      return Invoice;
+    case 'sales_orders':
+    case 'sales_order':
+      return SalesOrder;
     default:
       return null;
   }

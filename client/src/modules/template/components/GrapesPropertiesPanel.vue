@@ -69,7 +69,7 @@
       </template>
 
       <template v-if="isImage">
-        <BuilderImageAssetPicker @select="onAssetPicked" />
+        <BuilderImageAssetPicker :library="assetLibrary" @select="onAssetPicked" />
         <div>
           <label class="mb-1 block" :class="ui.label">{{ t('templates.builderFieldImageSrc') }}</label>
           <input
@@ -391,7 +391,12 @@ import {
 const props = defineProps({
   component: { type: Object, default: null },
   editor: { type: Object, default: null },
-  moduleScope: { type: String, default: '' }
+  moduleScope: { type: String, default: '' },
+  assetLibrary: {
+    type: String,
+    default: 'content',
+    validator: (value) => ['content', 'marketing'].includes(value)
+  }
 });
 
 const emit = defineEmits(['change', 'pick-asset']);
