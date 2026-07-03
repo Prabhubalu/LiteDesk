@@ -91,7 +91,7 @@ export function normalizePlatformHomeLayout(raw: unknown): PlatformHomeLayout {
     return { ...createDefaultPlatformHomeLayout(), widthMode };
   }
 
-  const builtinTypes = new Set(PLATFORM_HOME_BUILTIN_WIDGETS.map((def) => def.type));
+  const builtinTypes = new Set<string>(PLATFORM_HOME_BUILTIN_WIDGETS.map((def) => def.type));
   const items: PlatformHomeLayoutItem[] = [];
 
   for (const entry of itemsRaw) {
@@ -99,7 +99,7 @@ export function normalizePlatformHomeLayout(raw: unknown): PlatformHomeLayout {
     const type = String(entry.type || '');
     if (!type) continue;
 
-    if (type !== 'analytics' && !builtinTypes.has(type as PlatformHomeLayoutItem['type'])) {
+    if (type !== 'analytics' && !builtinTypes.has(type)) {
       continue;
     }
 
