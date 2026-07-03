@@ -32,6 +32,19 @@ function invalidatePermissionCachesForOrg(organizationId) {
     }
 }
 
+/** Legacy signup orgs omitted isTenant; classify workspace orgs before save. */
+function ensureTenantWorkspaceFlag(organization) {
+    if (organization.isTenant === true) return;
+    const hasEnabledApps =
+        Array.isArray(organization.enabledApps) && organization.enabledApps.length > 0;
+    const hasSubscription =
+        organization.subscription &&
+        (organization.subscription.status || organization.subscription.tier);
+    if (hasEnabledApps && hasSubscription) {
+        organization.isTenant = true;
+    }
+}
+
 // --- Get organization details ---
 exports.getOrganization = async (req, res) => {
     try {
@@ -80,6 +93,7 @@ exports.updateOrganization = async (req, res) => {
         const { name, settings } = req.body;
         if (name) organization.name = name;
         if (settings) organization.settings = { ...organization.settings, ...settings };
+        ensureTenantWorkspaceFlag(organization);
         await organization.save();
 
         res.json({ success: true, data: organization, message: 'Organization updated successfully' });
@@ -381,6 +395,7 @@ exports.enableApp = async (req, res) => {
             enabledAt: new Date()
         });
 
+        ensureTenantWorkspaceFlag(organization);
         await organization.save();
         invalidatePermissionCachesForOrg(organization._id);
 
@@ -533,6 +548,7 @@ exports.disableApp = async (req, res) => {
             });
         }
 
+        ensureTenantWorkspaceFlag(organization);
         await organization.save();
         invalidatePermissionCachesForOrg(organization._id);
 
