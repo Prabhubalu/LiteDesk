@@ -995,6 +995,82 @@
     "message": "Workspace",
     "description": "Platform home workspace section title"
   },
+  "platformHomeCustomizeHome": {
+    "message": "Customize home",
+    "description": "Platform home layout customize entry button"
+  },
+  "platformHomeCustomizeTitle": {
+    "message": "Customize home",
+    "description": "Platform home customize panel title"
+  },
+  "platformHomeCustomizeDone": {
+    "message": "Done",
+    "description": "Platform home customize panel save button"
+  },
+  "platformHomeCustomizeBuiltIn": {
+    "message": "Home widgets",
+    "description": "Platform home customize built-in widgets section"
+  },
+  "platformHomeCustomizeWidth": {
+    "message": "Home width",
+    "description": "Platform home customize page width section"
+  },
+  "platformHomeWidthCompact": {
+    "message": "Compact",
+    "description": "Platform home compact width option"
+  },
+  "platformHomeWidthWide": {
+    "message": "Wide",
+    "description": "Platform home wide width option"
+  },
+  "platformHomeSaveDefaultView": {
+    "message": "Set default for new users",
+    "description": "Save current platform home layout as organization default for new users on first login"
+  },
+  "platformHomeSaveDefaultViewSuccess": {
+    "message": "Default home saved — new users will see this layout on first login",
+    "description": "Confirmation after saving organization default platform home layout"
+  },
+  "platformHomeSaveDefaultViewHint": {
+    "message": "Saves widget arrangement, sizes, and width to the organization default in the database.",
+    "description": "Hint for organization default platform home layout action"
+  },
+  "platformHomeCustomizeReportWidgets": {
+    "message": "Report widgets",
+    "description": "Platform home customize analytics widgets section"
+  },
+  "platformHomeWidgetIntentBar": {
+    "message": "Quick create",
+    "description": "Platform home intent bar widget label"
+  },
+  "platformHomeWidgetTodayBrief": {
+    "message": "Today",
+    "description": "Platform home today brief widget label"
+  },
+  "platformHomeWidgetAlerts": {
+    "message": "Alerts",
+    "description": "Platform home subscription alerts widget label"
+  },
+  "platformHomeWidgetAlertsEmpty": {
+    "message": "No alerts right now.",
+    "description": "Platform home alerts widget empty state"
+  },
+  "platformHomeWidgetAppsEmpty": {
+    "message": "No apps to show yet.",
+    "description": "Platform home apps widget empty state"
+  },
+  "platformHomeWidgetAlreadyAdded": {
+    "message": "Added",
+    "description": "Report widget already on platform home"
+  },
+  "platformHomeWidgetDragHint": {
+    "message": "Drag to reposition",
+    "description": "Platform home widget drag handle tooltip"
+  },
+  "platformHomeCustomizeAddedReportWidgets": {
+    "message": "Added report widgets",
+    "description": "Platform home customize panel added analytics widgets section"
+  },
   "platformHomeExploreApps": {
     "message": "Explore apps",
     "description": "Platform home link to app registry"

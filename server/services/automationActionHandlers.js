@@ -15,6 +15,7 @@ const Notification = require('../models/Notification');
 const User = require('../models/User');
 const { createLogger } = require('./automationLogger');
 const { startProcess } = require('./processInvocation');
+const { runAnalyticsReportForAutomation } = require('./analytics/analyticsAutomationService');
 
 const log = createLogger('automationActionHandlers');
 
@@ -326,10 +327,46 @@ async function liveChatLinkPerson(ctx, params) {
   }
 }
 
+async function runAnalyticsReportAction(ctx, params) {
+  const reportId = params?.reportId != null ? String(params.reportId).trim() : '';
+  if (!reportId) {
+    return { ok: false, error: 'run_analytics_report requires reportId' };
+  }
+
+  const orgId = ctx.organizationId;
+  if (!orgId) {
+    return { ok: false, error: 'run_analytics_report requires organizationId' };
+  }
+
+  const attachRaw = params?.attachToRecord;
+  const attachToRecord = attachRaw === false || attachRaw === 'false' ? false : true;
+
+  const userId =
+    (await resolveAssignee(ctx, 'triggeredBy')) || (await resolveAssignee(ctx, 'owner'));
+  if (!userId) {
+    return { ok: false, error: 'run_analytics_report: could not resolve executing user' };
+  }
+
+  try {
+    return await runAnalyticsReportForAutomation({
+      organizationId: orgId,
+      userId,
+      reportId,
+      entityType: ctx.entityType,
+      entityId: ctx.entityId,
+      appKey: ctx.appKey,
+      attachToRecord,
+    });
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+}
+
 const handlers = {
   create_task: createTask,
   notify_user: notifyUser,
   start_process: startProcessAction,
+  run_analytics_report: runAnalyticsReportAction,
   live_chat_create_case: liveChatCreateCase,
   live_chat_link_case: liveChatLinkCase,
   live_chat_create_lead: liveChatCreateLead,

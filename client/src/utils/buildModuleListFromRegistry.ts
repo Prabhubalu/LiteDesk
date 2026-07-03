@@ -482,6 +482,11 @@ function determineListEmptyState(
       descriptionKey: 'onboarding.firstTimeDocumentsDescription',
       actionLabelKey: 'onboarding.firstTimeDocumentsAction',
     },
+    reports: {
+      titleKey: 'onboarding.firstTimeReportsTitle',
+      descriptionKey: 'onboarding.firstTimeReportsDescription',
+      actionLabelKey: 'onboarding.firstTimeReportsAction',
+    },
   };
 
   if (options?.isFirstModuleVisit && firstTimeByModule[moduleKey]) {

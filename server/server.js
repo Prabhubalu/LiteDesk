@@ -356,7 +356,22 @@ app.get(
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/forms', formRoutes.protected); // Protected form routes (Audit / Survey)
 app.use('/api/webforms', webformRoutes.protected); // Protected webform routes
-app.use('/api/reports', reportRoutes);
+app.use('/api/reports', (req, res, next) => {
+  res.set('Deprecation', 'true');
+  res.set('Link', '</api/analytics/reports>; rel="successor-version"');
+  res.set('X-Analytics-Migration', 'Use /api/analytics/reports for new integrations');
+  next();
+}, reportRoutes);
+app.use('/api/analytics/reports', require('./routes/analyticsReportRoutes'));
+app.use('/api/analytics/widgets', require('./routes/analyticsWidgetRoutes'));
+app.use('/api/analytics/dashboards', require('./routes/analyticsDashboardRoutes'));
+app.use('/api/analytics/schedules', require('./routes/analyticsScheduleRoutes'));
+app.use('/api/analytics/snapshots', require('./routes/analyticsSnapshotRoutes'));
+app.use('/api/analytics/alerts', require('./routes/analyticsAlertRoutes'));
+app.use('/api/analytics/api-tokens', require('./routes/analyticsApiTokenRoutes'));
+app.use('/api/analytics/v1', require('./routes/analyticsV1Routes'));
+app.use('/api/analytics/embed', require('./routes/analyticsEmbedRoutes'));
+app.use('/api/analytics', require('./routes/analyticsMetaRoutes'));
 app.use('/api/documents', require('./routes/documentRoutes'));
 app.use('/api/document-folders', require('./routes/documentFolderRoutes'));
 app.use('/api/templates', require('./routes/contentTemplateRoutes'));
@@ -593,6 +608,10 @@ connectMasterWithRetry(masterUri)
         importQueueService.startWorker();
         const campaignSendQueueService = require('./services/marketing/campaignSendQueueService');
         campaignSendQueueService.startWorker();
+        const analyticsScheduleQueueService = require('./services/analytics/analyticsScheduleQueueService');
+        analyticsScheduleQueueService.startWorker();
+        const { startAnalyticsAlertScheduler } = require('./services/analytics/analyticsAlertScheduler');
+        startAnalyticsAlertScheduler();
         const {
           startMailroomFailureRetryWorker
         } = require('./platform/mailroom/workers/processingFailureRetryWorker');

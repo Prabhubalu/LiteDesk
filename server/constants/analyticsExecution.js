@@ -1,0 +1,26 @@
+const ANALYTICS_EXECUTE_QUEUE_NAME = 'analytics-execute';
+const ANALYTICS_WORKER_CONCURRENCY = 2;
+
+const ANALYTICS_ASYNC_RUNTIME_MS = 3000;
+const ANALYTICS_ASYNC_ROW_THRESHOLD = 5000;
+
+const ANALYTICS_DEFAULT_CACHE_TTL_SECONDS = 900;
+
+const ANALYTICS_EXECUTION_STATUSES = Object.freeze(['running', 'success', 'failed']);
+
+const ANALYTICS_QUEUE_RETRY = Object.freeze({
+  attempts: 2,
+  backoff: { type: 'exponential', delay: 3000 },
+  removeOnComplete: 100,
+  removeOnFail: 50,
+});
+
+module.exports = {
+  ANALYTICS_EXECUTE_QUEUE_NAME,
+  ANALYTICS_WORKER_CONCURRENCY,
+  ANALYTICS_ASYNC_RUNTIME_MS,
+  ANALYTICS_ASYNC_ROW_THRESHOLD,
+  ANALYTICS_DEFAULT_CACHE_TTL_SECONDS,
+  ANALYTICS_EXECUTION_STATUSES,
+  ANALYTICS_QUEUE_RETRY,
+};

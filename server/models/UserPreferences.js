@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { wrapTenantModel } = require('../utils/tenantModelProxy');
+const { PlatformHomeLayoutItemSchema } = require('../constants/platformHomeLayout');
 
 const WidgetLayoutSchema = new mongoose.Schema({
     type: {
@@ -73,6 +74,19 @@ const UserPreferencesSchema = new mongoose.Schema({
         type: Map,
         of: [mongoose.Schema.Types.Mixed],
         default: new Map()
+    },
+
+    // Platform Home dashboard layout (GridStack items)
+    platformHomeLayout: {
+        items: {
+            type: [PlatformHomeLayoutItemSchema],
+            default: []
+        },
+        widthMode: {
+            type: String,
+            enum: ['compact', 'wide'],
+            default: 'wide'
+        }
     }
 }, {
     timestamps: true
@@ -82,4 +96,3 @@ const UserPreferencesSchema = new mongoose.Schema({
 UserPreferencesSchema.index({ organizationId: 1, userId: 1 }, { unique: true });
 
 module.exports = wrapTenantModel(mongoose.model('UserPreferences', UserPreferencesSchema));
-

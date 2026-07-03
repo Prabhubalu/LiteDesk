@@ -260,6 +260,23 @@ const OrganizationSchema = new mongoose.Schema({
                 maxlength: 80,
                 default: ''
             }
+        },
+        analytics: {
+            cacheTtlSeconds: { type: Number, default: 300, min: 0 },
+            exportRowLimit: { type: Number, default: 10000, min: 1 },
+            fiscalYearStartMonth: { type: Number, default: 1, min: 1, max: 12 },
+            defaultDatePreset: { type: String, default: 'last30days', trim: true },
+        },
+        platformHomeDefaultLayout: {
+            items: {
+                type: [require('../constants/platformHomeLayout').PlatformHomeLayoutItemSchema],
+                default: []
+            },
+            widthMode: {
+                type: String,
+                enum: ['compact', 'wide'],
+                default: 'wide'
+            }
         }
     },
 

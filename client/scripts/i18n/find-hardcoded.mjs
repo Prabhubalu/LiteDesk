@@ -159,7 +159,7 @@ const PHASE_PATHS = {
   'settings-app-panels': [
     'src/components/settings/SalesSchema.vue',
     'src/components/settings/HelpdeskSchema.vue',
-    'src/components/settings/HelpdeskAnalyticsDashboard.vue',
+    'src/components/analytics/PlatformAnalyticsDashboardEmbed.vue',
     'src/components/settings/SalesPipelines.vue',
     'src/components/settings/SalesPlaybooks.vue',
   ],

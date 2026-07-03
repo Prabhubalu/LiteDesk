@@ -990,6 +990,8 @@ const getIconForPath = (path) => {
   if (pathOnly.startsWith('/marketing/segments')) return 'funnel';
   if (pathOnly.startsWith('/marketing/assets')) return 'photo';
   if (pathOnly.startsWith('/marketing/reports')) return 'chart-bar';
+  if (pathOnly.startsWith('/analytics/reports')) return 'chart-bar';
+  if (pathOnly.startsWith('/analytics/widgets')) return 'chart-bar';
   if (pathOnly.startsWith('/dashboard/')) return 'home';
   
   // Check for exact match first

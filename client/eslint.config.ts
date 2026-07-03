@@ -67,7 +67,7 @@ export default defineConfigWithVueTs(
       'src/components/settings/AppsSettings.vue',
       'src/components/settings/SalesSchema.vue',
       'src/components/settings/HelpdeskSchema.vue',
-      'src/components/settings/HelpdeskAnalyticsDashboard.vue',
+      'src/components/analytics/PlatformAnalyticsDashboardEmbed.vue',
       'src/components/settings/SalesPipelines.vue',
       'src/components/settings/SalesPlaybooks.vue',
       'src/components/settings/ModulesAndFields.vue',

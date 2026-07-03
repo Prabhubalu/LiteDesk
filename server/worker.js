@@ -54,6 +54,14 @@ async function run() {
   importQueueService.startWorker();
   console.log(`[worker] Import CSV worker is running (Bull: ${importQueueService.IMPORT_QUEUE_NAME})`);
 
+  const analyticsQueueService = require('./services/analytics/analyticsQueueService');
+  analyticsQueueService.startWorker();
+  console.log(`[worker] Analytics execute worker is running (Bull: ${analyticsQueueService.ANALYTICS_EXECUTE_QUEUE_NAME})`);
+
+  const analyticsScheduleQueueService = require('./services/analytics/analyticsScheduleQueueService');
+  analyticsScheduleQueueService.startWorker();
+  console.log(`[worker] Analytics schedule worker is running (Bull: ${analyticsScheduleQueueService.ANALYTICS_SCHEDULE_QUEUE_NAME})`);
+
   const campaignSendQueueService = require('./services/marketing/campaignSendQueueService');
   campaignSendQueueService.startWorker();
   console.log(`[worker] Campaign send worker is running (Bull: ${campaignSendQueueService.CAMPAIGN_SEND_QUEUE_NAME})`);
@@ -77,6 +85,18 @@ async function stop(signal) {
     await importQueueService.closeQueue();
   } catch (e) {
     console.error('[worker] import queue close', e.message);
+  }
+  try {
+    const analyticsQueueService = require('./services/analytics/analyticsQueueService');
+    await analyticsQueueService.closeQueue();
+  } catch (e) {
+    console.error('[worker] analytics queue close', e.message);
+  }
+  try {
+    const analyticsScheduleQueueService = require('./services/analytics/analyticsScheduleQueueService');
+    await analyticsScheduleQueueService.closeQueue();
+  } catch (e) {
+    console.error('[worker] analytics schedule queue close', e.message);
   }
   try {
     const campaignSendQueueService = require('./services/marketing/campaignSendQueueService');

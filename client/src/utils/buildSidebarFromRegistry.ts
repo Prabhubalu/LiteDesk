@@ -231,6 +231,7 @@ function buildCoreModulesFromRegistry(appRegistry: AppRegistry, snapshot: Permis
     .filter((module) => {
       const moduleKey = module.moduleKey?.toLowerCase();
       if (!moduleKey) return false;
+      if (module.showInSidebar === false) return false;
       if (module.navigationEntity !== true && module.navigationCore !== true && module.appKey?.toLowerCase() !== 'platform') {
         return false;
       }
@@ -306,8 +307,7 @@ async function fetchCoreModulesFromSettings(snapshot: PermissionSnapshot): Promi
       .map((module: any) => {
         const moduleKey = module.moduleKey?.toLowerCase() || '';
         
-        // Construct route from moduleKey (e.g., 'people' -> '/people')
-        const route = `/${moduleKey}`;
+        const route = CORE_MODULE_ROUTE_OVERRIDES[moduleKey] || `/${moduleKey}`;
         
         // Determine icon - use module icon if available, otherwise use moduleKey
         // The API returns icon as 'module', so we'll use moduleKey for icon lookup
@@ -335,6 +335,12 @@ async function fetchCoreModulesFromSettings(snapshot: PermissionSnapshot): Promi
 }
 
 const IMPORTS_MODULE_KEY = 'imports';
+
+const CORE_MODULE_ROUTE_OVERRIDES: Record<string, string> = {
+  analytics: '/analytics',
+  reports: '/analytics/reports',
+  dashboards: '/analytics/dashboards',
+};
 
 function pinImportsLast(coreModules: SidebarItem[]): SidebarItem[] {
   const importsIndex = coreModules.findIndex(

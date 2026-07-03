@@ -638,5 +638,17 @@
   "moduleMarketingTemplates": {
     "message": "Email Templates",
     "description": "Marketing email templates module navigation label (distinct from platform templates)"
+  },
+  "moduleReports": {
+    "message": "Reports",
+    "description": "Analytics reports module navigation label"
+  },
+  "moduleAnalytics": {
+    "message": "Analytics",
+    "description": "Analytics platform home navigation label"
+  },
+  "moduleDashboards": {
+    "message": "Dashboards",
+    "description": "Analytics dashboards module navigation label"
   }
 }

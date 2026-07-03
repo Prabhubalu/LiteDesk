@@ -130,6 +130,31 @@ const PROCESS_DESIGNER_ACTIONS = [
         placeholder: 'MongoDB process _id'
       }
     ]
+  },
+  {
+    actionType: 'run_analytics_report',
+    label: 'Run analytics report',
+    description: 'Executes a published analytics report and attaches a CSV export to the triggering record.',
+    params: [
+      {
+        key: 'reportId',
+        label: 'Report ID',
+        type: 'text',
+        required: true,
+        placeholder: 'MongoDB analytics report _id'
+      },
+      {
+        key: 'attachToRecord',
+        label: 'Attach CSV to record',
+        type: 'select',
+        required: false,
+        defaultValue: 'true',
+        options: [
+          { value: 'true', label: 'Yes' },
+          { value: 'false', label: 'No — execute only' }
+        ]
+      }
+    ]
   }
 ];
 

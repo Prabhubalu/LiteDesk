@@ -221,6 +221,9 @@ export function getNavigationIconComponent(item: IconLookupItem): any {
   if (route.startsWith('/marketing/assets')) {
     return PhotoIcon;
   }
+  if (route.startsWith('/analytics/reports')) {
+    return ChartBarIcon;
+  }
 
   const iconComponent = getIconComponent(item.icon, moduleKey);
   if (iconComponent !== Squares2X2Icon) {

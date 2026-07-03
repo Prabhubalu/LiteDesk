@@ -178,8 +178,16 @@ class UICompositionService {
 
       // Quote-to-cash core modules are lazy-seeded on Settings; ensure they exist for sidebar/registry too.
       if (appKeyLower === 'platform') {
-        const { ensurePlatformCommercialCoreModules } = require('../controllers/settingsController');
+        const {
+          ensurePlatformCommercialCoreModules,
+          ensurePlatformReportsModuleDefinition,
+          ensurePlatformAnalyticsModuleDefinition,
+          ensurePlatformDashboardsModuleDefinition,
+        } = require('../controllers/settingsController');
         await ensurePlatformCommercialCoreModules();
+        await ensurePlatformReportsModuleDefinition();
+        await ensurePlatformAnalyticsModuleDefinition();
+        await ensurePlatformDashboardsModuleDefinition();
       }
 
       // Get module definitions for this app
@@ -278,7 +286,7 @@ class UICompositionService {
 
           // Skip core platform entities - these should never appear in app navigation
           // Core entities: people, organizations, tasks, events, items, forms
-          const coreEntityKeys = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'responses', 'quotes', 'imports', 'documents', 'templates'];
+          const coreEntityKeys = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'responses', 'quotes', 'imports', 'documents', 'templates', 'reports'];
           if (coreEntityKeys.includes(moduleDef.moduleKey?.toLowerCase())) {
             console.warn(`[UIComposition] Skipping core entity ${moduleDef.moduleKey} from app ${appKey} - it belongs in Core Modules section`);
             continue;
@@ -366,6 +374,14 @@ class UICompositionService {
           system: moduleDef.system || false,
           coreEntity: moduleDef.coreEntity || false
         };
+
+        // Analytics IA: only Reports in platform core sidebar
+        const platformNavKey = String(moduleDef.moduleKey || '').toLowerCase();
+        if (platformNavKey === 'analytics' || platformNavKey === 'dashboards') {
+          uiModule.showInSidebar = false;
+        } else if (platformNavKey === 'reports') {
+          uiModule.showInSidebar = true;
+        }
 
         uiModules.push(uiModule);
         seenModuleKeys.add(moduleDef.moduleKey); // Mark as seen

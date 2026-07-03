@@ -1902,5 +1902,57 @@
   "campaignsDetailRecipientsFilterAll": {
     "message": "All statuses",
     "description": "Campaign detail recipient status filter — all"
+  },
+  "campaignsDeleteNotAllowed": {
+    "message": "This campaign cannot be deleted. Cancel it first if it is still running or scheduled.",
+    "description": "Error when campaign status blocks deletion from list view"
+  },
+  "campaignsSendFailedGeneric": {
+    "message": "Campaign send failed. Open Send to retry after fixing the issue.",
+    "description": "Generic failed campaign banner on detail page"
+  },
+  "campaignsSendFailedBurstLimit": {
+    "message": "Send failed: burst sending limit reached. Wait about a minute after recent sends, then use Send to retry.",
+    "description": "Failed campaign banner when AMDS burst limit is exceeded"
+  },
+  "campaignsSendFailedHourlyLimit": {
+    "message": "Send failed: hourly sending limit reached. Try again later.",
+    "description": "Failed campaign banner when AMDS hourly limit is exceeded"
+  },
+  "campaignsSendFailedDailyLimit": {
+    "message": "Send failed: daily sending limit reached. Try again tomorrow.",
+    "description": "Failed campaign banner when AMDS daily limit is exceeded"
+  },
+  "campaignsMaxSendableLimitedByDaily": {
+    "message": "Limited by daily send limit",
+    "description": "Hint when send capacity is daily-limit-bound"
+  },
+  "campaignsMaxSendableLimitedByThroughput": {
+    "message": "Warm-up throttle — ~{count} recipients today (paced, not instant)",
+    "description": "Hint when send capacity is warm-up throughput-bound"
+  },
+  "campaignsMaxSendableLimitedByReputation": {
+    "message": "Blocked — sender reputation below minimum",
+    "description": "Hint when send capacity is zero due to reputation"
+  },
+  "campaignsMaxSendableSuspended": {
+    "message": "Blocked — email sending is suspended",
+    "description": "Hint when send capacity is zero due to suspension"
+  },
+  "campaignsThroughputEffectiveBurst": {
+    "message": "Burst pace: {rate} / minute (sends are batched to this limit)",
+    "description": "Campaign send effective burst throughput line"
+  },
+  "campaignsPreviewEmail": {
+    "message": "Preview email",
+    "description": "Preview campaign email HTML"
+  },
+  "campaignsPreviewEmailEmpty": {
+    "message": "Attach a template or add HTML body content to preview.",
+    "description": "Shown when campaign email preview has no content"
+  },
+  "campaignsDetailTemplateLabel": {
+    "message": "Template",
+    "description": "Linked email template label on campaign detail"
   }
 }

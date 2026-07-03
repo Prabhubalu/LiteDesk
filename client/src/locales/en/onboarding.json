@@ -311,6 +311,18 @@
     "message": "Upload a document",
     "description": "First visit CTA for Documents"
   },
+  "firstTimeReportsTitle": {
+    "message": "Turn your CRM data into insights",
+    "description": "First visit empty state for Analytics Reports"
+  },
+  "firstTimeReportsDescription": {
+    "message": "Build reports on deals, people, cases, and more — then publish and export results.",
+    "description": "First visit empty state description for Analytics Reports"
+  },
+  "firstTimeReportsAction": {
+    "message": "Create your first report",
+    "description": "First visit CTA for Analytics Reports"
+  },
   "coachmarkSidebarTitle": {
     "message": "Your apps live here",
     "description": "Sidebar coachmark title"
