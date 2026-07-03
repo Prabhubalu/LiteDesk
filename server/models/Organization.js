@@ -420,7 +420,10 @@ const OrganizationSchema = new mongoose.Schema({
     assignedTo: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        // CRM company records only — tenant workspaces must not require assignedTo
+        required: function requiredAssignedToForCrmOrg() {
+            return this.isTenant === false;
+        },
         index: true
     },
     primaryContact: { 

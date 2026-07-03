@@ -208,6 +208,7 @@ exports.registerUser = async (req, res) => {
         const organization = await Organization.create({
             name: organizationName || `${username}'s Organization`,
             industry: vertical,
+            isTenant: true,
             subscription: {
                 status: 'trial',
                 tier: 'trial',
