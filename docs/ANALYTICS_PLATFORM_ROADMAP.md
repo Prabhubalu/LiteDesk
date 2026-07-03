@@ -6,6 +6,7 @@
 
 **Prerequisite:** Existing platform contracts — `ModuleDefinition`, field metadata, `filterQueryAstCompiler`, `/api/relationships`, tenant isolation, RBAC.
 
+**Out of scope (initial releases):** AI Analytics (Phase 8), embedded analytics SDK, real-time streaming dashboards.
 
 **Field specs:** [`Analytics Fields.md`](./Analytics%20Fields.md) · [`Analytics Widget Fields.md`](./Analytics%20Widget%20Fields.md) · [`Analytics Dashboard Fields.md`](./Analytics%20Dashboard%20Fields.md)
 
