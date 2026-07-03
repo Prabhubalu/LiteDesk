@@ -340,11 +340,7 @@ html.dark body {
   --gs-item-margin-right: 16px !important; */
 }
 
-/* Prevent GridStack resize handles from appearing above fixed headers */
-.ui-resizable-handle,
-.grid-stack-item > .ui-resizable-handle {
-  z-index: 1 !important;
-}
+/* Prevent GridStack resize handles from appearing above fixed headers — z-index set in handle block below */
 
 /* TableView shell + grid borders — token switches with color mode */
 .table-view-shell {
@@ -366,23 +362,51 @@ html.dark body {
   background-image: none !important; /* Remove any gradient backgrounds */
 }
 
-/* Position resize handles to align with visible content edges */
-/* .grid-stack-item { --gs-content-pad: 0px; }
-.grid-stack-item > .ui-resizable-handle { background: transparent !important; }
-.grid-stack-item > .ui-resizable-handle { background-image: none !important; border: none !important; outline: none !important; }
+/* GridStack — invisible resize hit areas (Summary View pattern; no jQuery grip icon) */
+.grid-stack-item {
+  overflow: visible !important;
+}
+
+.grid-stack-item > .ui-resizable-handle {
+  background: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  outline: none !important;
+  opacity: 0 !important;
+  z-index: 20 !important;
+}
+
+.grid-stack-item:hover > .ui-resizable-handle {
+  opacity: 0 !important;
+}
+
 .grid-stack-item > .ui-resizable-se,
 .grid-stack-item > .ui-resizable-sw,
 .grid-stack-item > .ui-resizable-ne,
-.grid-stack-item > .ui-resizable-nw { background-image: none !important; }
-/* Ensure no pseudo-element icons render on handles */
+.grid-stack-item > .ui-resizable-nw,
+.grid-stack-item > .ui-resizable-n,
+.grid-stack-item > .ui-resizable-s,
+.grid-stack-item > .ui-resizable-e,
+.grid-stack-item > .ui-resizable-w {
+  background-image: none !important;
+}
+
 .grid-stack-item > .ui-resizable-handle::before,
-.grid-stack-item > .ui-resizable-handle::after { content: none !important; background: none !important; box-shadow: none !important; }
-/* Completely hide handle visuals even on hover while retaining hit areas */
-.grid-stack-item > .ui-resizable-handle { opacity: 0 !important; }
-.grid-stack-item:hover > .ui-resizable-handle { opacity: 0 !important; }
-/* Hide any jQuery UI icon classes that might render */
+.grid-stack-item > .ui-resizable-handle::after {
+  content: none !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
 .grid-stack-item > .ui-resizable-handle .ui-icon,
-.grid-stack-item > .ui-resizable-handle .ui-icon-gripsmall-diagonal-se { display: none !important; background: none !important; }
+.grid-stack-item > .ui-resizable-handle .ui-icon-gripsmall-diagonal-se {
+  display: none !important;
+  background: none !important;
+}
+
+body.grid-stack-resizing {
+  user-select: none !important;
+}
 
 
 /* FullCalendar toolbar — match list view action + segmented controls */

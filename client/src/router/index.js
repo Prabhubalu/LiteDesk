@@ -770,6 +770,259 @@ const routes = [
     }
   },
   {
+    path: '/analytics',
+    name: 'analytics-home',
+    component: () => import('@/views/analytics/AnalyticsHome.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'view' },
+      moduleKey: 'analytics',
+      appKey: 'PLATFORM',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/analytics/settings',
+    name: 'analytics-settings',
+    component: () => import('@/views/analytics/AnalyticsSettings.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'edit' },
+      moduleKey: 'analytics',
+      appKey: 'PLATFORM',
+      routeType: 'edit'
+    }
+  },
+  {
+    path: '/analytics/folders',
+    name: 'analytics-folders',
+    component: () => import('@/views/analytics/AnalyticsFolders.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'view' },
+      moduleKey: 'analytics',
+      appKey: 'PLATFORM',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/analytics/trash',
+    name: 'analytics-trash',
+    component: () => import('@/views/analytics/AnalyticsTrash.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'view' },
+      moduleKey: 'analytics',
+      appKey: 'PLATFORM',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/analytics/schedules',
+    name: 'analytics-schedules',
+    component: () => import('@/views/analytics/AnalyticsScheduleList.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'view' },
+      moduleKey: 'analytics',
+      appKey: 'PLATFORM',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/analytics/snapshots',
+    name: 'analytics-snapshots',
+    component: () => import('@/views/analytics/AnalyticsSnapshotList.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'view' },
+      moduleKey: 'analytics',
+      appKey: 'PLATFORM',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/analytics/alerts',
+    name: 'analytics-alerts',
+    component: () => import('@/views/analytics/AnalyticsAlertList.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'view' },
+      moduleKey: 'analytics',
+      appKey: 'PLATFORM',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/analytics/snapshots/:id',
+    name: 'analytics-snapshot-detail',
+    component: () => import('@/views/analytics/AnalyticsSnapshotList.vue'),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'view' },
+      moduleKey: 'analytics',
+      appKey: 'PLATFORM',
+      routeType: 'detail'
+    }
+  },
+  {
+    path: '/analytics/reports',
+    name: 'analytics-reports',
+    component: () => import('@/views/analytics/AnalyticsReportList.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'view' },
+      moduleKey: 'reports',
+      appKey: 'PLATFORM',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/analytics/reports/new',
+    name: 'analytics-report-create',
+    component: () => import('@/views/analytics/AnalyticsReportBuilder.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'create' },
+      moduleKey: 'reports',
+      appKey: 'PLATFORM',
+      routeType: 'create'
+    }
+  },
+  {
+    path: '/analytics/reports/:id/edit',
+    name: 'analytics-report-edit',
+    component: () => import('@/views/analytics/AnalyticsReportBuilder.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'edit' },
+      moduleKey: 'reports',
+      appKey: 'PLATFORM',
+      routeType: 'edit'
+    }
+  },
+  {
+    path: '/analytics/reports/:id',
+    name: 'analytics-report-detail',
+    component: () => import('@/views/analytics/AnalyticsReportDetail.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'view' },
+      moduleKey: 'reports',
+      appKey: 'PLATFORM',
+      routeType: 'detail'
+    }
+  },
+  {
+    path: '/analytics/widgets',
+    name: 'analytics-widgets',
+    component: () => import('@/views/analytics/AnalyticsWidgetList.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'view' },
+      moduleKey: 'reports',
+      appKey: 'PLATFORM',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/analytics/widgets/new',
+    name: 'analytics-widget-create',
+    component: () => import('@/views/analytics/AnalyticsWidgetBuilder.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'create' },
+      moduleKey: 'reports',
+      appKey: 'PLATFORM',
+      routeType: 'create'
+    }
+  },
+  {
+    path: '/analytics/widgets/:id/edit',
+    name: 'analytics-widget-edit',
+    component: () => import('@/views/analytics/AnalyticsWidgetBuilder.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'edit' },
+      moduleKey: 'reports',
+      appKey: 'PLATFORM',
+      routeType: 'edit'
+    }
+  },
+  {
+    path: '/analytics/widgets/:id',
+    name: 'analytics-widget-detail',
+    component: () => import('@/views/analytics/AnalyticsWidgetDetail.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'view' },
+      moduleKey: 'reports',
+      appKey: 'PLATFORM',
+      routeType: 'detail'
+    }
+  },
+  {
+    path: '/analytics/dashboards',
+    name: 'analytics-dashboards',
+    component: () => import('@/views/analytics/AnalyticsDashboardList.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'view' },
+      moduleKey: 'reports',
+      appKey: 'PLATFORM',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/analytics/dashboards/new',
+    name: 'analytics-dashboard-create',
+    component: () => import('@/views/analytics/AnalyticsDashboardDesigner.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'create' },
+      moduleKey: 'reports',
+      appKey: 'PLATFORM',
+      routeType: 'create'
+    }
+  },
+  {
+    path: '/analytics/dashboards/:id/edit',
+    name: 'analytics-dashboard-edit',
+    component: () => import('@/views/analytics/AnalyticsDashboardDesigner.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'edit' },
+      moduleKey: 'reports',
+      appKey: 'PLATFORM',
+      routeType: 'edit'
+    }
+  },
+  {
+    path: '/analytics/embed/dashboard',
+    name: 'analytics-embed-dashboard',
+    component: () => import('@/views/analytics/AnalyticsEmbedDashboardView.vue'),
+    meta: {
+      requiresAuth: false,
+      hideShell: true,
+      embed: true,
+      moduleKey: 'analytics',
+      appKey: 'PLATFORM',
+    },
+  },
+  {
+    path: '/analytics/dashboards/:id',
+    name: 'analytics-dashboard-view',
+    component: () => import('@/views/analytics/AnalyticsDashboardView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'reports', action: 'view' },
+      moduleKey: 'reports',
+      appKey: 'PLATFORM',
+      routeType: 'detail'
+    }
+  },
+  {
     path: '/sales-orders',
     name: 'sales-orders',
     component: () => import('@/views/GenericModule.vue'),

@@ -137,6 +137,7 @@
       <component
         v-else-if="selectedApp && !isSalesApp && currentAppTabComponent"
         :is="currentAppTabComponent"
+        :app-key="String(selectedApp || '').toUpperCase()"
         class="min-h-0 flex-1"
       />
     </div>
@@ -153,7 +154,7 @@ import SalesSchema from './SalesSchema.vue';
 import SalesPipelines from './SalesPipelines.vue';
 import SalesPlaybooks from './SalesPlaybooks.vue';
 import HelpdeskSchema from './HelpdeskSchema.vue';
-import HelpdeskAnalyticsDashboard from './HelpdeskAnalyticsDashboard.vue';
+import PlatformAnalyticsDashboardEmbed from '@/components/analytics/PlatformAnalyticsDashboardEmbed.vue';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -471,7 +472,7 @@ const getAppOptions = (app) => {
 const appSettingsComponents = {
   helpdesk: {
     schema: HelpdeskSchema,
-    analytics: HelpdeskAnalyticsDashboard
+    analytics: PlatformAnalyticsDashboardEmbed
   }
 };
 

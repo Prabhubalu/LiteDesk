@@ -37,7 +37,7 @@ const ENFORCEMENT_PATH_MARKERS = [
   'components/settings/AppsSettings.vue',
   'components/settings/SalesSchema.vue',
   'components/settings/HelpdeskSchema.vue',
-  'components/settings/HelpdeskAnalyticsDashboard.vue',
+  'components/analytics/PlatformAnalyticsDashboardEmbed.vue',
   'components/settings/SalesPipelines.vue',
   'components/settings/SalesPlaybooks.vue',
   'components/settings/ModulesAndFields.vue',

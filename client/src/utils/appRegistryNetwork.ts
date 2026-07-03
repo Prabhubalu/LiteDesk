@@ -490,6 +490,7 @@ function addPlatformModulesToRegistry(registry: AppRegistry, entityModules: any[
     icon: module.icon,
     order: module.sidebarOrder || 0,
     appKey: module.appKey,
+    showInSidebar: module.showInSidebar !== false,
     navigationCore: module.navigationCore || false,
     navigationEntity: module.navigationEntity || false,
     excludeFromApps: module.excludeFromApps || false,
@@ -499,7 +500,9 @@ function addPlatformModulesToRegistry(registry: AppRegistry, entityModules: any[
   }));
 
   const platformModules = platformModulesRaw.filter(
-    (module: { moduleKey: string }) => !moduleKeysOwnedByBusinessApps.has(module.moduleKey)
+    (module: { moduleKey: string; showInSidebar?: boolean }) =>
+      module.showInSidebar !== false &&
+      !moduleKeysOwnedByBusinessApps.has(module.moduleKey)
   );
 
   registry['PLATFORM'] = {

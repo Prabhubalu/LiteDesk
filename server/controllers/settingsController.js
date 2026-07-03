@@ -360,6 +360,9 @@ exports.getCoreModules = async (req, res) => {
         await ensurePlatformPaymentsModuleDefinition();
         await ensurePlatformDocumentsModuleDefinition();
         await ensurePlatformTemplatesModuleDefinition();
+        await ensurePlatformReportsModuleDefinition();
+        await ensurePlatformDashboardsModuleDefinition();
+        await ensurePlatformAnalyticsModuleDefinition();
 
         const organization = await Organization.findById(req.user.organizationId);
         if (!organization) {
@@ -381,8 +384,8 @@ exports.getCoreModules = async (req, res) => {
 
         // Core platform modules with explicit ordering
         // Order: People, Organization, Task, Event, Item, Form (new modules added at the bottom)
-        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents', 'templates'];
-        const coreModuleKeys = [...coreModuleOrder, 'reports']; // reports and any future modules go at the end
+        const coreModuleOrder = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents', 'templates', 'reports'];
+        const coreModuleKeys = [...coreModuleOrder];
 
         // Get all platform-owned modules (appKey: 'platform')
         const platformModulesRaw = await ModuleDefinition.find({
@@ -530,6 +533,15 @@ exports.getCoreModule = async (req, res) => {
         }
         if (String(moduleKey || '').toLowerCase() === 'templates') {
             await ensurePlatformTemplatesModuleDefinition();
+        }
+        if (String(moduleKey || '').toLowerCase() === 'reports') {
+            await ensurePlatformReportsModuleDefinition();
+        }
+        if (String(moduleKey || '').toLowerCase() === 'dashboards') {
+            await ensurePlatformDashboardsModuleDefinition();
+        }
+        if (String(moduleKey || '').toLowerCase() === 'analytics') {
+            await ensurePlatformAnalyticsModuleDefinition();
         }
 
         const organization = await Organization.findById(req.user.organizationId);
@@ -1046,6 +1058,257 @@ async function ensurePlatformTemplatesModuleDefinition() {
     }
 }
 
+/** Bootstrap platform analytics reports nav module when missing (Settings + sidebar registry path). */
+async function ensurePlatformReportsModuleDefinition() {
+    try {
+        const reportsUi = {
+            routeBase: '/analytics/reports',
+            icon: 'chart-bar',
+            showInSidebar: true,
+            sidebarOrder: 210,
+            createLabel: 'New Report',
+            listLabel: 'Reports',
+            navigationEntity: true,
+            excludeFromApps: true
+        };
+
+        let existing = await ModuleDefinition.findOne({
+            appKey: 'platform',
+            moduleKey: 'reports',
+            organizationId: null
+        })
+            .select('_id ui label pluralLabel')
+            .lean();
+
+        if (!existing) {
+            existing = await ModuleDefinition.findOne({
+                appKey: 'platform',
+                moduleKey: 'reports',
+                organizationId: { $exists: false }
+            })
+                .select('_id ui label pluralLabel')
+                .lean();
+        }
+
+        if (existing) {
+            const patch = {};
+            if (!existing.label) patch.label = 'Report';
+            if (!existing.pluralLabel) patch.pluralLabel = 'Reports';
+            patch.ui = { ...(existing.ui || {}), ...reportsUi, showInSidebar: true };
+            if (Object.keys(patch).length) {
+                await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
+            }
+            return;
+        }
+
+        await ModuleDefinition.create({
+            appKey: 'platform',
+            moduleKey: 'reports',
+            key: 'reports',
+            name: 'Reports',
+            organizationId: null,
+            label: 'Report',
+            pluralLabel: 'Reports',
+            entityType: 'ACTIVITY',
+            primaryField: 'name',
+            type: 'system',
+            enabled: true,
+            peopleConstraints: {
+                allowedTypes: [],
+                required: false
+            },
+            organizationConstraints: {
+                required: false
+            },
+            lifecycle: {
+                statusField: 'status',
+                allowedStatuses: ['draft', 'published', 'archived']
+            },
+            supports: {
+                ownership: true,
+                assignment: false,
+                comments: false,
+                attachments: false,
+                automation: false
+            },
+            permissions: {
+                create: true,
+                edit: true,
+                delete: true,
+                view: true
+            },
+            fields: [],
+            ui: reportsUi
+        });
+    } catch (error) {
+        console.warn('[settings] ensurePlatformReportsModuleDefinition failed:', error.message);
+    }
+}
+
+/** Bootstrap platform analytics dashboards nav module when missing (Settings + sidebar registry path). */
+async function ensurePlatformDashboardsModuleDefinition() {
+    try {
+        const dashboardsUi = {
+            routeBase: '/analytics/dashboards',
+            icon: 'squares-2x2',
+            showInSidebar: false,
+            sidebarOrder: 211,
+            createLabel: 'New Dashboard',
+            listLabel: 'Dashboards',
+            navigationEntity: true,
+            excludeFromApps: true
+        };
+
+        let existing = await ModuleDefinition.findOne({
+            appKey: 'platform',
+            moduleKey: 'dashboards',
+            organizationId: null
+        })
+            .select('_id ui label pluralLabel')
+            .lean();
+
+        if (!existing) {
+            existing = await ModuleDefinition.findOne({
+                appKey: 'platform',
+                moduleKey: 'dashboards',
+                organizationId: { $exists: false }
+            })
+                .select('_id ui label pluralLabel')
+                .lean();
+        }
+
+        if (existing) {
+            const patch = {};
+            if (!existing.label) patch.label = 'Dashboard';
+            if (!existing.pluralLabel) patch.pluralLabel = 'Dashboards';
+            patch.ui = { ...(existing.ui || {}), ...dashboardsUi, showInSidebar: false };
+            if (Object.keys(patch).length) {
+                await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
+            }
+            return;
+        }
+
+        await ModuleDefinition.create({
+            appKey: 'platform',
+            moduleKey: 'dashboards',
+            key: 'dashboards',
+            name: 'Dashboards',
+            organizationId: null,
+            label: 'Dashboard',
+            pluralLabel: 'Dashboards',
+            entityType: 'ACTIVITY',
+            primaryField: 'name',
+            type: 'system',
+            enabled: true,
+            peopleConstraints: {
+                allowedTypes: [],
+                required: false
+            },
+            organizationConstraints: {
+                required: false
+            },
+            lifecycle: {
+                statusField: 'status',
+                allowedStatuses: ['draft', 'published', 'archived']
+            },
+            supports: {
+                ownership: true,
+                assignment: false,
+                comments: false,
+                attachments: false,
+                automation: false
+            },
+            permissions: {
+                create: true,
+                edit: true,
+                delete: true,
+                view: true
+            },
+            fields: [],
+            ui: dashboardsUi
+        });
+    } catch (error) {
+        console.warn('[settings] ensurePlatformDashboardsModuleDefinition failed:', error.message);
+    }
+}
+
+/** Bootstrap platform analytics home nav module when missing. */
+async function ensurePlatformAnalyticsModuleDefinition() {
+    try {
+        const analyticsUi = {
+            routeBase: '/analytics',
+            icon: 'chart-pie',
+            showInSidebar: false,
+            sidebarOrder: 209,
+            createLabel: 'New Report',
+            listLabel: 'Analytics',
+            navigationEntity: true,
+            excludeFromApps: true
+        };
+
+        let existing = await ModuleDefinition.findOne({
+            appKey: 'platform',
+            moduleKey: 'analytics',
+            organizationId: null
+        })
+            .select('_id ui label pluralLabel')
+            .lean();
+
+        if (!existing) {
+            existing = await ModuleDefinition.findOne({
+                appKey: 'platform',
+                moduleKey: 'analytics',
+                organizationId: { $exists: false }
+            })
+                .select('_id ui label pluralLabel')
+                .lean();
+        }
+
+        if (existing) {
+            const patch = {};
+            if (!existing.label) patch.label = 'Analytics';
+            if (!existing.pluralLabel) patch.pluralLabel = 'Analytics';
+            patch.ui = { ...(existing.ui || {}), ...analyticsUi, showInSidebar: false };
+            if (Object.keys(patch).length) {
+                await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
+            }
+            return;
+        }
+
+        await ModuleDefinition.create({
+            appKey: 'platform',
+            moduleKey: 'analytics',
+            key: 'analytics',
+            name: 'Analytics',
+            organizationId: null,
+            label: 'Analytics',
+            pluralLabel: 'Analytics',
+            entityType: 'ACTIVITY',
+            primaryField: 'name',
+            type: 'system',
+            enabled: true,
+            peopleConstraints: { allowedTypes: [], required: false },
+            organizationConstraints: { required: false },
+            lifecycle: {
+                statusField: 'status',
+                allowedStatuses: ['draft', 'published', 'archived']
+            },
+            supports: {
+                ownership: true,
+                assignment: false,
+                comments: false,
+                attachments: false,
+                automation: false
+            },
+            permissions: { create: true, edit: true, delete: true, view: true },
+            fields: [],
+            ui: analyticsUi
+        });
+    } catch (error) {
+        console.warn('[settings] ensurePlatformAnalyticsModuleDefinition failed:', error.message);
+    }
+}
+
 /** Bootstrap platform documents core module when missing (Settings + sidebar registry path). */
 async function ensurePlatformDocumentsModuleDefinition() {
     try {
@@ -1152,6 +1415,9 @@ async function ensurePlatformDocumentsModuleDefinition() {
 
 /** Bootstrap platform quote-to-cash core modules when missing (sidebar registry path). */
 exports.ensurePlatformDocumentsModuleDefinition = ensurePlatformDocumentsModuleDefinition;
+exports.ensurePlatformReportsModuleDefinition = ensurePlatformReportsModuleDefinition;
+exports.ensurePlatformDashboardsModuleDefinition = ensurePlatformDashboardsModuleDefinition;
+exports.ensurePlatformAnalyticsModuleDefinition = ensurePlatformAnalyticsModuleDefinition;
 exports.ensurePlatformTemplatesModuleDefinition = ensurePlatformTemplatesModuleDefinition;
 exports.ensurePlatformCommercialCoreModules = async () => {
     await ensurePlatformQuotesModuleDefinition();
@@ -1160,6 +1426,9 @@ exports.ensurePlatformCommercialCoreModules = async () => {
     await ensurePlatformPaymentsModuleDefinition();
     await ensurePlatformDocumentsModuleDefinition();
     await ensurePlatformTemplatesModuleDefinition();
+    await ensurePlatformReportsModuleDefinition();
+    await ensurePlatformDashboardsModuleDefinition();
+    await ensurePlatformAnalyticsModuleDefinition();
 };
 
 // Helper function to get module usage description

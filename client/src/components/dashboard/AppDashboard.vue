@@ -84,6 +84,12 @@
       </template>
 
       <template v-else>
+        <PlatformAnalyticsDashboardEmbed
+          v-if="isHelpdeskApp"
+          app-key="HELPDESK"
+          class="mb-6"
+        />
+
         <section class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <h2 class="text-sm font-semibold text-slate-900 dark:text-white">{{ t('dashboard.appDashboardQuickAccess') }}</h2>
           <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -114,7 +120,7 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { toRef } from 'vue';
+import { computed, toRef } from 'vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import { useSalesDashboardMetrics } from '@/composables/useSalesDashboardMetrics';
@@ -125,6 +131,7 @@ import PipelineForecast from '@/components/dashboard/widgets/PipelineForecast.vu
 import RepPerformanceLeaderboard from '@/components/dashboard/widgets/RepPerformanceLeaderboard.vue';
 import ActivityAlerts from '@/components/dashboard/widgets/ActivityAlerts.vue';
 import AiInsightsStrip from '@/components/dashboard/widgets/AiInsightsStrip.vue';
+import PlatformAnalyticsDashboardEmbed from '@/components/analytics/PlatformAnalyticsDashboardEmbed.vue';
 
 const props = defineProps({
   appKey: {
@@ -171,6 +178,8 @@ const {
   appKey: toRef(props, 'appKey'),
   authStore
 });
+
+const isHelpdeskApp = computed(() => String(props.appKey || '').toUpperCase() === 'HELPDESK');
 
 const handleAction = (route) => {
   if (!route) return;

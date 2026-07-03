@@ -32,6 +32,9 @@ export const MODULE_LABEL_KEYS = {
   payments: 'navigation.modulePayments',
   responses: 'navigation.moduleResponses',
   imports: 'navigation.moduleImports',
+  analytics: 'navigation.moduleAnalytics',
+  reports: 'navigation.moduleReports',
+  dashboards: 'navigation.moduleDashboards',
   documents: 'navigation.moduleDocuments',
   portal_knowledge: 'navigation.portalKnowledge',
   templates: 'navigation.moduleTemplates',
@@ -118,6 +121,7 @@ export const ROUTE_TITLE_KEYS = {
   '/marketing/campaigns': 'navigation.moduleCampaigns',
   '/marketing/audiences': 'navigation.moduleAudiences',
   '/marketing/segments': 'navigation.moduleSegments',
+  '/analytics/reports': 'navigation.moduleReports',
 };
 
 /**
@@ -277,6 +281,69 @@ export function getTabTitleMetaForPath(path, params = {}) {
   }
   if (pathOnly.startsWith('/live-chat/reports')) {
     return { titleKey: 'liveChat.navReports' };
+  }
+
+  if (pathOnly === '/analytics' || pathOnly === '/analytics/') {
+    return { titleKey: 'analytics.homeTitle' };
+  }
+
+  if (pathOnly.startsWith('/analytics/trash')) {
+    return { titleKey: 'analytics.trashTitle' };
+  }
+
+  if (pathOnly.startsWith('/analytics/folders')) {
+    return { titleKey: 'analytics.foldersTitle' };
+  }
+
+  if (pathOnly.startsWith('/analytics/settings')) {
+    return { titleKey: 'analytics.settingsTitle' };
+  }
+
+  if (pathOnly.startsWith('/analytics/schedules')) {
+    return { titleKey: 'analytics.schedulesTitle' };
+  }
+
+  if (pathOnly.startsWith('/analytics/snapshots')) {
+    return { titleKey: 'analytics.snapshotsTitle' };
+  }
+
+  if (pathOnly.startsWith('/analytics/reports')) {
+    if (pathOnly.endsWith('/new')) {
+      return { titleKey: 'analytics.builderTitle' };
+    }
+    if (pathOnly.includes('/edit')) {
+      return { titleKey: 'analytics.builderEditTitle' };
+    }
+    if (segments.length >= 3) {
+      return { titleKey: 'analytics.detailTitle' };
+    }
+    return { titleKey: 'navigation.moduleReports' };
+  }
+
+  if (pathOnly.startsWith('/analytics/widgets')) {
+    if (pathOnly.endsWith('/new')) {
+      return { titleKey: 'analytics.widgetBuilderTitle' };
+    }
+    if (pathOnly.includes('/edit')) {
+      return { titleKey: 'analytics.widgetBuilderEditTitle' };
+    }
+    if (segments.length >= 3) {
+      return { titleKey: 'analytics.widgetsListTitle' };
+    }
+    return { titleKey: 'analytics.widgetsListTitle' };
+  }
+
+  if (pathOnly.startsWith('/analytics/dashboards')) {
+    if (pathOnly.endsWith('/new')) {
+      return { titleKey: 'analytics.dashboardDesignerTitle' };
+    }
+    if (pathOnly.includes('/edit')) {
+      return { titleKey: 'analytics.dashboardDesignerEditTitle' };
+    }
+    if (segments.length >= 3) {
+      return { titleKey: 'analytics.dashboardsListTitle' };
+    }
+    return { titleKey: 'analytics.dashboardsListTitle' };
   }
 
   if (segments[0] === 'dashboard' && segments[1]) {

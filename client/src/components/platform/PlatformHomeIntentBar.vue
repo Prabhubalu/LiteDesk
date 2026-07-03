@@ -3,12 +3,15 @@
     :class="[
       PLATFORM_HOME_CARD_CLASS,
       PLATFORM_HOME_INTENT_GRADIENT_CLASS,
-      'p-4 sm:p-5'
+      'flex h-full min-h-0 flex-col p-4 sm:p-5'
     ]"
   >
-    <p class="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-200">
-      {{ t('platform.platformHomeIntentPrompt') }}
-    </p>
+    <div class="platform-home-widget-header mb-3 flex items-stretch gap-2">
+      <p class="flex min-w-0 shrink items-center select-text text-sm font-medium text-neutral-700 dark:text-neutral-200">
+        {{ t('platform.platformHomeIntentPrompt') }}
+      </p>
+      <PlatformHomeWidgetHeaderDragPad />
+    </div>
 
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
       <button
@@ -85,7 +88,6 @@ import {
   UserGroupIcon,
   CheckCircleIcon
 } from '@heroicons/vue/24/outline';
-
 import {
   PLATFORM_HOME_CARD_CLASS,
   PLATFORM_HOME_DROPDOWN_CLASS,
@@ -93,6 +95,7 @@ import {
   PLATFORM_HOME_INTENT_GRADIENT_CLASS,
   PLATFORM_HOME_PRIMARY_BUTTON_CLASS
 } from '@/utils/platformHomeLayout';
+import PlatformHomeWidgetHeaderDragPad from '@/components/platform/PlatformHomeWidgetHeaderDragPad.vue';
 import {
   capturePlatformHomeCreateAction,
   capturePlatformHomeIntentSearchClick

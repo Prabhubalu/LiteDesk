@@ -38,8 +38,24 @@ const {
   commercialParticipationActive,
   COMMERCIAL_PARTICIPATION_APP_KEYS
 } = require('../constants/commercialPlatformParticipation');
+const {
+  ANALYTICS_REPORT_ACTIONS,
+  ANALYTICS_WIDGET_ACTIONS,
+  ANALYTICS_DASHBOARD_ACTIONS,
+  ANALYTICS_ADMIN_ACTIONS,
+} = require('../permissions/analyticsPermissions');
 const CORE_ENTITY_KEYS = new Set(CORE_MODULE_ORDER);
-const PLATFORM_ADMIN_KEYS = ['reports', 'users', 'settings', 'performance', 'webforms'];
+const PLATFORM_ADMIN_KEYS = [
+  'reports',
+  'analytics_reports',
+  'analytics_widgets',
+  'analytics_dashboards',
+  'analytics_admin',
+  'users',
+  'settings',
+  'performance',
+  'webforms',
+];
 
 /** Modules stored on Role.permissions (flat legacy envelope). */
 const LEGACY_FLAT_STORAGE_KEYS = new Set([
@@ -55,6 +71,10 @@ const LEGACY_FLAT_STORAGE_KEYS = new Set([
   'documents',
   'templates',
   'reports',
+  'analytics_reports',
+  'analytics_widgets',
+  'analytics_dashboards',
+  'analytics_admin',
   'users',
   'settings',
   'cases'
@@ -104,6 +124,10 @@ const DEFAULT_ACTIONS_BY_KIND = {
   crudExport: ['read', 'create', 'update', 'delete', 'export'],
   crudImport: ['read', 'create', 'update', 'delete', 'export', 'import'],
   reports: ['read', 'create', 'update', 'delete', 'export'],
+  analytics_reports: [...ANALYTICS_REPORT_ACTIONS],
+  analytics_widgets: [...ANALYTICS_WIDGET_ACTIONS],
+  analytics_dashboards: [...ANALYTICS_DASHBOARD_ACTIONS],
+  analytics_admin: [...ANALYTICS_ADMIN_ACTIONS],
   users: ['read', 'create', 'update', 'delete', 'manageRoles'],
   settings: ['read', 'edit', 'manageRoles', 'manageBilling']
 };
@@ -157,6 +181,10 @@ function buildActionsFromDefinition(moduleDefPermissions = {}, moduleKey, kind) 
   if (kind === 'settings') return ['read', 'update', 'manageRoles', 'manageBilling'];
   if (kind === 'performance') return ['view', 'create', 'edit', 'activate', 'manageTypes', 'manageOrgSettings'];
   if (kind === 'reports') return [...DEFAULT_ACTIONS_BY_KIND.reports];
+  if (kind === 'analytics_reports') return [...DEFAULT_ACTIONS_BY_KIND.analytics_reports];
+  if (kind === 'analytics_widgets') return [...DEFAULT_ACTIONS_BY_KIND.analytics_widgets];
+  if (kind === 'analytics_dashboards') return [...DEFAULT_ACTIONS_BY_KIND.analytics_dashboards];
+  if (kind === 'analytics_admin') return [...DEFAULT_ACTIONS_BY_KIND.analytics_admin];
   if (moduleKey === 'imports') return ['read', 'create', 'delete'];
   if (moduleKey === 'documents') return ['read', 'create', 'update', 'delete'];
   if (moduleKey === 'templates') return ['read', 'create', 'update', 'delete', 'publish', 'archive', 'render'];
@@ -209,6 +237,10 @@ function moduleKindForKey(moduleKey) {
   if (moduleKey === 'settings') return 'settings';
   if (moduleKey === 'performance') return 'performance';
   if (moduleKey === 'reports') return 'reports';
+  if (moduleKey === 'analytics_reports') return 'analytics_reports';
+  if (moduleKey === 'analytics_widgets') return 'analytics_widgets';
+  if (moduleKey === 'analytics_dashboards') return 'analytics_dashboards';
+  if (moduleKey === 'analytics_admin') return 'analytics_admin';
   return 'crud';
 }
 
@@ -290,12 +322,60 @@ function buildPlatformAdminCatalogEntries() {
     {
       key: 'reports',
       moduleKey: 'reports',
-      label: 'Reports',
-      description: 'View and create reports',
+      label: 'Reports (Legacy)',
+      description: 'Legacy reports envelope — prefer Analytics Reports for new grants',
       kind: 'reports',
       scope: 'platform',
       appKey: null,
       order: 200,
+      hasScope: false,
+      supportsViewAll: false
+    },
+    {
+      key: 'analytics_reports',
+      moduleKey: 'analytics_reports',
+      label: 'Analytics Reports',
+      description: 'Build, run, publish, and export analytics reports',
+      kind: 'analytics_reports',
+      scope: 'platform',
+      appKey: null,
+      order: 201,
+      hasScope: false,
+      supportsViewAll: false
+    },
+    {
+      key: 'analytics_widgets',
+      moduleKey: 'analytics_widgets',
+      label: 'Analytics Widgets',
+      description: 'Chart and KPI widgets bound to reports',
+      kind: 'analytics_widgets',
+      scope: 'platform',
+      appKey: null,
+      order: 202,
+      hasScope: false,
+      supportsViewAll: false
+    },
+    {
+      key: 'analytics_dashboards',
+      moduleKey: 'analytics_dashboards',
+      label: 'Analytics Dashboards',
+      description: 'Dashboard layouts and shared analytics views',
+      kind: 'analytics_dashboards',
+      scope: 'platform',
+      appKey: null,
+      order: 203,
+      hasScope: false,
+      supportsViewAll: false
+    },
+    {
+      key: 'analytics_admin',
+      moduleKey: 'analytics_admin',
+      label: 'Analytics Administration',
+      description: 'Certify assets and manage analytics platform settings',
+      kind: 'analytics_admin',
+      scope: 'platform',
+      appKey: null,
+      order: 204,
       hasScope: false,
       supportsViewAll: false
     },
@@ -307,7 +387,7 @@ function buildPlatformAdminCatalogEntries() {
       kind: 'users',
       scope: 'platform',
       appKey: null,
-      order: 201,
+      order: 205,
       hasScope: false,
       supportsViewAll: false
     },
@@ -319,7 +399,7 @@ function buildPlatformAdminCatalogEntries() {
       kind: 'settings',
       scope: 'platform',
       appKey: null,
-      order: 202,
+      order: 206,
       hasScope: false,
       supportsViewAll: false
     },
@@ -331,7 +411,7 @@ function buildPlatformAdminCatalogEntries() {
       kind: 'performance',
       scope: 'platform',
       appKey: null,
-      order: 203,
+      order: 207,
       hasScope: false,
       supportsViewAll: false
     },
@@ -343,7 +423,7 @@ function buildPlatformAdminCatalogEntries() {
       kind: 'crud',
       scope: 'platform',
       appKey: null,
-      order: 204,
+      order: 208,
       hasScope: false,
       supportsViewAll: false
     }
@@ -390,6 +470,47 @@ function normalizeModulePerms(mod, raw = {}) {
 
   if (mod === 'reports') {
     return { create, read, update, delete: del, export: exp };
+  }
+  if (mod === 'analytics_reports') {
+    return {
+      read,
+      create,
+      update,
+      delete: del,
+      publish: !!raw.publish,
+      execute: !!raw.execute,
+      export: exp,
+      schedule: !!raw.schedule,
+      share: !!raw.share,
+    };
+  }
+  if (mod === 'analytics_widgets') {
+    return {
+      read,
+      create,
+      update,
+      delete: del,
+      publish: !!raw.publish,
+      share: !!raw.share,
+    };
+  }
+  if (mod === 'analytics_dashboards') {
+    return {
+      read,
+      create,
+      update,
+      delete: del,
+      publish: !!raw.publish,
+      share: !!raw.share,
+      export: exp,
+    };
+  }
+  if (mod === 'analytics_admin') {
+    return {
+      certify: !!raw.certify,
+      manageSettings: !!raw.manageSettings,
+      viewMetrics: !!raw.viewMetrics,
+    };
   }
   if (mod === 'users') {
     return { create, read, update, delete: del, manageRoles: !!raw.manageRoles };
@@ -547,6 +668,10 @@ const PLATFORM_ADMIN_MODULE_KEYS = new Set([
   'templates',
   'imports',
   'reports',
+  'analytics_reports',
+  'analytics_widgets',
+  'analytics_dashboards',
+  'analytics_admin',
   'users',
   'settings',
   'performance',
@@ -933,8 +1058,8 @@ async function buildRolePermissionCatalog(organizationId) {
           scope: 'app',
           appKey,
           order: uiMod.sidebarOrder ?? 999,
-          hasScope: !['reports', 'users', 'settings'].includes(moduleKey),
-          supportsViewAll: !['reports', 'users', 'settings'].includes(moduleKey),
+          hasScope: !['reports', 'analytics_reports', 'analytics_widgets', 'analytics_dashboards', 'analytics_admin', 'users', 'settings'].includes(moduleKey),
+          supportsViewAll: !['reports', 'analytics_reports', 'analytics_widgets', 'analytics_dashboards', 'analytics_admin', 'users', 'settings'].includes(moduleKey),
           actions: buildActionsFromDefinition(def?.permissions, moduleKey, moduleKindForKey(moduleKey))
         },
         section.id
