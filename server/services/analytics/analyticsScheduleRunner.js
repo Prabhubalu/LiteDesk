@@ -179,6 +179,34 @@ async function runAnalyticsSchedule({
       return { skipped: true, reason: 'not_active' };
     }
 
+    const now = new Date();
+    if (schedule.startDate && now < new Date(schedule.startDate)) {
+      await AnalyticsSchedule.updateOne(
+        { _id: schedule._id, organizationId },
+        {
+          $set: {
+            lastRunAt: now,
+            lastRunStatus: 'skipped',
+            lastError: null,
+          },
+        }
+      );
+      return { skipped: true, reason: 'before_start' };
+    }
+    if (schedule.endDate && now > new Date(schedule.endDate)) {
+      await AnalyticsSchedule.updateOne(
+        { _id: schedule._id, organizationId },
+        {
+          $set: {
+            lastRunAt: now,
+            lastRunStatus: 'skipped',
+            lastError: null,
+          },
+        }
+      );
+      return { skipped: true, reason: 'after_end' };
+    }
+
     const actorId = userId || schedule.ownerId;
     const user = await User.findById(actorId);
     if (!user) {

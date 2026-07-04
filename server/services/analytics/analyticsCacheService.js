@@ -47,7 +47,15 @@ async function getRedisClient() {
 }
 
 function stableSerialize(value) {
-  return JSON.stringify(value, Object.keys(value || {}).sort());
+  if (value === null || value === undefined) return 'null';
+  if (Array.isArray(value)) {
+    return `[${value.map((entry) => stableSerialize(entry)).join(',')}]`;
+  }
+  if (typeof value === 'object') {
+    const keys = Object.keys(value).sort();
+    return `{${keys.map((key) => `${JSON.stringify(key)}:${stableSerialize(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
 }
 
 /**
@@ -60,11 +68,17 @@ function buildCacheKey(params) {
     reportVersion,
     userId,
     runtimeFilters,
+    matrixDrill,
   } = params;
 
   const filterHash = crypto
     .createHash('sha256')
-    .update(stableSerialize(runtimeFilters || {}))
+    .update(
+      stableSerialize({
+        runtimeFilters: runtimeFilters || {},
+        matrixDrill: matrixDrill || {},
+      }),
+    )
     .digest('hex')
     .slice(0, 16);
 

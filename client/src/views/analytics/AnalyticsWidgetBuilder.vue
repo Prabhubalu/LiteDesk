@@ -1,18 +1,27 @@
 <template>
-  <div class="mx-auto w-full px-6 py-8">
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <button type="button" class="mb-2 text-sm text-primary-600 hover:underline" @click="goList">
-          ← {{ t('analytics.widgetsListTitle') }}
-        </button>
-        <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">
+  <div class="mx-auto w-full max-w-7xl px-6 py-8">
+    <button
+      type="button"
+      class="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200"
+      @click="goBack"
+    >
+      <ArrowLeftIcon class="h-4 w-4" aria-hidden="true" />
+      {{ backLabel }}
+    </button>
+
+    <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div class="min-w-0">
+        <h1 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
           {{ isNew ? t('analytics.widgetBuilderTitle') : form.name || t('analytics.widgetBuilderEditTitle') }}
         </h1>
+        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          {{ t('analytics.widgetBuilderHint') }}
+        </p>
       </div>
-      <div class="flex flex-wrap gap-2">
+      <div class="flex shrink-0 flex-wrap items-center gap-2">
         <button
           type="button"
-          class="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium dark:border-neutral-600"
+          class="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
           :disabled="saving"
           @click="saveDraft"
         >
@@ -20,17 +29,22 @@
         </button>
         <button
           type="button"
-          class="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium dark:border-neutral-600"
-          :disabled="executing"
+          class="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
+          :disabled="executing || !form.reportId"
           @click="runPreview"
         >
+          <ArrowPathIcon
+            class="h-4 w-4"
+            :class="{ 'animate-spin': executing }"
+            aria-hidden="true"
+          />
           {{ t('analytics.preview') }}
         </button>
         <button
           v-if="!isNew"
           type="button"
-          class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-          :disabled="saving"
+          class="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-500 disabled:cursor-not-allowed disabled:opacity-50"
+          :disabled="saving || !form.reportId"
           @click="publish"
         >
           {{ t('analytics.publish') }}
@@ -38,164 +52,274 @@
       </div>
     </div>
 
+    <div
+      v-if="boundReportName"
+      class="mb-6 flex items-center gap-2 rounded-xl border border-primary-200 bg-primary-50/60 px-4 py-3 text-sm text-primary-800 dark:border-primary-800/50 dark:bg-primary-950/30 dark:text-primary-200"
+    >
+      <DocumentChartBarIcon class="h-5 w-5 shrink-0" aria-hidden="true" />
+      {{ t('analytics.widgetBuilderFromReport', { name: boundReportName }) }}
+    </div>
+
     <section
       v-if="isNew && templates.length"
-      class="mb-6 rounded-xl border border-neutral-200 p-4 dark:border-neutral-700"
+      class="mb-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-900"
     >
-      <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-        {{ t('analytics.templatesSectionTitle') }}
-      </h2>
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="border-b border-neutral-100 px-5 py-4 dark:border-neutral-800">
+        <h2 class="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+          {{ t('analytics.templatesSectionTitle') }}
+        </h2>
+      </div>
+      <div class="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3">
         <button
           v-for="template in templates"
           :key="template.templateKey"
           type="button"
-          class="rounded-lg border p-3 text-left transition-colors hover:border-primary-400 dark:border-neutral-600"
+          class="rounded-xl border p-4 text-left transition-all hover:border-primary-300 hover:shadow-sm dark:hover:border-primary-700"
           :class="
             form.templateKey === template.templateKey
-              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-              : 'border-neutral-200'
+              ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500/20 dark:border-primary-600 dark:bg-primary-950/40'
+              : 'border-neutral-200 dark:border-neutral-700'
           "
           @click="applyTemplate(template)"
         >
-          <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ template.name }}</p>
-          <p class="mt-1 text-xs text-neutral-500">{{ template.description }}</p>
+          <p class="text-sm font-semibold text-neutral-900 dark:text-white">{{ template.name }}</p>
+          <p class="mt-1 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
+            {{ template.description }}
+          </p>
+          <span
+            class="mt-3 inline-flex rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
+          >
+            {{ t(`analytics.chartType_${template.chartType}`, template.chartType) }}
+          </span>
         </button>
       </div>
-      <p v-if="templateApplying" class="mt-2 text-xs text-neutral-500">{{ t('states.loading') }}</p>
+      <p v-if="templateApplying" class="border-t border-neutral-100 px-5 py-3 text-xs text-neutral-500 dark:border-neutral-800">
+        {{ t('states.loading') }}
+      </p>
     </section>
 
     <div class="grid gap-6 xl:grid-cols-2">
-      <section class="space-y-4 rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-        <label class="block text-sm">
-          <span class="mb-1 block font-medium">{{ t('analytics.fieldName') }}</span>
-          <input v-model="form.name" type="text" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900" />
-        </label>
-        <label class="block text-sm">
-          <span class="mb-1 block font-medium">{{ t('analytics.fieldReport') }}</span>
-          <select v-model="form.reportId" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900">
-            <option value="">{{ t('analytics.selectReport') }}</option>
-            <option v-for="report in publishedReports" :key="report._id" :value="report._id">
-              {{ report.name }}
-            </option>
-          </select>
-        </label>
-        <label class="block text-sm">
-          <span class="mb-1 block font-medium">{{ t('analytics.fieldChartType') }}</span>
-          <select v-model="form.chartType" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900">
-            <option v-for="type in chartTypes" :key="type" :value="type">
-              {{ t(`analytics.chartType_${type}`) }}
-            </option>
-          </select>
-        </label>
-        <template v-if="form.chartType !== 'kpi' && form.chartType !== 'table'">
-          <label class="block text-sm">
-            <span class="mb-1 block font-medium">{{ t('analytics.fieldDimension') }}</span>
-            <select v-model="dimensionField" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900">
-              <option v-for="col in previewColumns" :key="col" :value="col">{{ col }}</option>
-            </select>
-          </label>
-        </template>
-        <label v-if="form.chartType !== 'table'" class="block text-sm">
-          <span class="mb-1 block font-medium">{{ t('analytics.fieldMetric') }}</span>
-          <select v-model="metricField" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900">
-            <option v-for="col in previewColumns" :key="col" :value="col">{{ col }}</option>
-          </select>
-        </label>
-        <label v-if="form.chartType === 'kpi'" class="block text-sm">
-          <span class="mb-1 block font-medium">{{ t('analytics.kpiLabelField') }}</span>
-          <input v-model="form.kpiLabel" type="text" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900" />
-        </label>
-
-        <div v-if="form.chartType === 'kpi'" class="space-y-3 border-t border-neutral-200 pt-4 dark:border-neutral-700">
-          <h3 class="text-sm font-semibold">{{ t('analytics.sectionKpiThresholds') }}</h3>
-          <label class="block text-sm">
-            <span class="mb-1 block text-neutral-600 dark:text-neutral-400">
-              {{ t('analytics.kpiThresholdWarningBelow') }}
-            </span>
-            <input
-              v-model.number="kpiWarningMax"
-              type="number"
-              min="0"
-              class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900"
-            />
-          </label>
-          <label class="block text-sm">
-            <span class="mb-1 block text-neutral-600 dark:text-neutral-400">
-              {{ t('analytics.kpiThresholdGoodAbove') }}
-            </span>
-            <input
-              v-model.number="kpiGoodMin"
-              type="number"
-              min="0"
-              class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900"
-            />
-          </label>
+      <section class="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-900">
+        <div class="border-b border-neutral-100 px-5 py-4 dark:border-neutral-800">
+          <h2 class="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+            {{ t('analytics.widgetBuilderConfig') }}
+          </h2>
         </div>
+        <div class="space-y-5 p-5">
+          <label class="block">
+            <span :class="labelClass">{{ t('analytics.fieldName') }}</span>
+            <input v-model="form.name" type="text" :class="inputClass" />
+          </label>
 
-        <div
-          v-if="showChartOptions"
-          class="space-y-2 border-t border-neutral-200 pt-4 dark:border-neutral-700"
-        >
-          <h3 class="text-sm font-semibold">{{ t('analytics.sectionChartOptions') }}</h3>
-          <label v-if="form.chartType === 'bar'" class="flex items-center gap-2 text-sm">
-            <input v-model="form.orientation" type="checkbox" true-value="horizontal" false-value="vertical" />
-            {{ t('analytics.optionHorizontal') }}
+          <div>
+            <span :class="labelClass">{{ t('analytics.fieldReport') }}</span>
+            <HeadlessSelect
+              v-model="form.reportId"
+              :options="reportOptions"
+              :placeholder="t('analytics.selectReport')"
+              wrapper-class="mt-0"
+              teleport
+            />
+          </div>
+
+          <div>
+            <span :class="labelClass">{{ t('analytics.fieldChartType') }}</span>
+            <HeadlessSelect
+              v-model="form.chartType"
+              :options="chartTypeOptions"
+              wrapper-class="mt-0"
+              teleport
+            />
+          </div>
+
+          <template v-if="form.chartType !== 'kpi' && form.chartType !== 'table'">
+            <div>
+              <span :class="labelClass">{{ t('analytics.fieldDimension') }}</span>
+              <HeadlessSelect
+                v-model="dimensionField"
+                :options="columnOptions"
+                wrapper-class="mt-0"
+                teleport
+              />
+            </div>
+          </template>
+
+          <div v-if="form.chartType !== 'table'">
+            <span :class="labelClass">{{ t('analytics.fieldMetric') }}</span>
+            <HeadlessSelect
+              v-model="metricField"
+              :options="columnOptions"
+              wrapper-class="mt-0"
+              teleport
+            />
+          </div>
+
+          <label v-if="form.chartType === 'kpi'" class="block">
+            <span :class="labelClass">{{ t('analytics.kpiLabelField') }}</span>
+            <input v-model="form.kpiLabel" type="text" :class="inputClass" />
           </label>
-          <label v-if="form.chartType === 'bar'" class="flex items-center gap-2 text-sm">
-            <input v-model="form.stacked" type="checkbox" />
-            {{ t('analytics.optionStacked') }}
-          </label>
-          <label v-if="form.chartType === 'bar'" class="flex items-center gap-2 text-sm">
-            <input v-model="form.showDataLabels" type="checkbox" />
-            {{ t('analytics.optionShowDataLabels') }}
-          </label>
-          <label v-if="form.chartType === 'line' || form.chartType === 'area'" class="flex items-center gap-2 text-sm">
-            <input v-model="form.smooth" type="checkbox" />
-            {{ t('analytics.optionSmooth') }}
-          </label>
-          <label v-if="form.chartType !== 'funnel'" class="flex items-center gap-2 text-sm">
-            <input v-model="form.showLegend" type="checkbox" />
-            {{ t('analytics.optionShowLegend') }}
-          </label>
+
+          <div
+            v-if="form.chartType === 'kpi'"
+            class="space-y-4 rounded-xl border border-neutral-100 bg-neutral-50/60 p-4 dark:border-neutral-800 dark:bg-neutral-800/40"
+          >
+            <h3 class="text-sm font-semibold text-neutral-900 dark:text-white">
+              {{ t('analytics.sectionKpiThresholds') }}
+            </h3>
+            <label class="block">
+              <span class="mb-1.5 block text-xs text-neutral-500 dark:text-neutral-400">
+                {{ t('analytics.kpiThresholdWarningBelow') }}
+              </span>
+              <input
+                v-model.number="kpiWarningMax"
+                type="number"
+                min="0"
+                :class="inputClass"
+              />
+            </label>
+            <label class="block">
+              <span class="mb-1.5 block text-xs text-neutral-500 dark:text-neutral-400">
+                {{ t('analytics.kpiThresholdGoodAbove') }}
+              </span>
+              <input
+                v-model.number="kpiGoodMin"
+                type="number"
+                min="0"
+                :class="inputClass"
+              />
+            </label>
+          </div>
+
+          <div
+            v-if="showChartOptions"
+            class="space-y-3 rounded-xl border border-neutral-100 bg-neutral-50/60 p-4 dark:border-neutral-800 dark:bg-neutral-800/40"
+          >
+            <h3 class="text-sm font-semibold text-neutral-900 dark:text-white">
+              {{ t('analytics.sectionChartOptions') }}
+            </h3>
+
+            <div v-if="form.chartType === 'bar'" class="space-y-2">
+              <span class="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                {{ t('analytics.optionHorizontal') }}
+              </span>
+              <div class="inline-flex rounded-lg bg-neutral-100 p-0.5 dark:bg-neutral-800">
+                <button
+                  type="button"
+                  class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+                  :class="form.orientation === 'vertical'
+                    ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white'
+                    : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400'"
+                  @click="form.orientation = 'vertical'"
+                >
+                  {{ t('analytics.widgetOrientationVertical') }}
+                </button>
+                <button
+                  type="button"
+                  class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+                  :class="form.orientation === 'horizontal'
+                    ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white'
+                    : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400'"
+                  @click="form.orientation = 'horizontal'"
+                >
+                  {{ t('analytics.widgetOrientationHorizontal') }}
+                </button>
+              </div>
+            </div>
+
+            <div
+              v-for="toggle in chartOptionToggles"
+              :key="toggle.key"
+              class="flex items-center justify-between gap-3"
+            >
+              <span class="text-sm text-neutral-700 dark:text-neutral-300">{{ toggle.label }}</span>
+              <HeadlessSwitch v-model="form[toggle.key]" />
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-        <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          {{ t('analytics.sectionPreview') }}
-        </h2>
-        <AnalyticsKpiCard
-          v-if="form.chartType === 'kpi'"
-          :result="previewResult"
-          :value-field="metricField"
-          :label="form.kpiLabel || form.name"
-          :thresholds="kpiThresholds"
-        />
-        <ReportPreviewPanel
-          v-else-if="form.chartType === 'table'"
-          :result="previewResult"
-          :empty-message="t('analytics.previewEmpty')"
-        />
-        <AnalyticsChartView
-          v-else
-          :result="previewResult"
-          :config="chartConfig"
-          :theme-mode="themeMode"
-          :loading="executing"
-        />
+      <section class="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-900">
+        <div
+          class="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-100 px-5 py-4 dark:border-neutral-800"
+        >
+          <h2 class="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+            {{ t('analytics.sectionPreview') }}
+          </h2>
+          <p
+            v-if="previewResult?.meta"
+            class="text-xs tabular-nums text-neutral-400 dark:text-neutral-500"
+          >
+            {{
+              t('analytics.previewRows', {
+                count: previewResult.meta.totalRows ?? 0,
+                ms: previewResult.meta.executionMs ?? 0,
+              })
+            }}
+          </p>
+        </div>
+
+        <div class="relative min-h-[20rem] p-5">
+          <div
+            v-if="executing"
+            class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 backdrop-blur-[1px] dark:bg-neutral-900/70"
+          >
+            <div class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300">
+              <ArrowPathIcon class="h-5 w-5 animate-spin text-primary-600" aria-hidden="true" />
+              {{ t('analytics.detailRunning') }}
+            </div>
+          </div>
+
+          <div
+            v-if="!form.reportId"
+            class="flex h-64 flex-col items-center justify-center rounded-xl border border-dashed border-neutral-300 text-center dark:border-neutral-600"
+          >
+            <ChartBarIcon class="h-10 w-10 text-neutral-300 dark:text-neutral-600" aria-hidden="true" />
+            <p class="mt-3 text-sm text-neutral-500 dark:text-neutral-400">
+              {{ t('analytics.widgetPreviewSelectReport') }}
+            </p>
+          </div>
+          <template v-else>
+            <AnalyticsKpiCard
+              v-if="form.chartType === 'kpi'"
+              :result="previewResult"
+              :value-field="metricField"
+              :label="form.kpiLabel || form.name"
+              :thresholds="kpiThresholds"
+            />
+            <ReportPreviewPanel
+              v-else-if="form.chartType === 'table'"
+              :result="previewResult"
+              :empty-message="t('analytics.previewEmpty')"
+            />
+            <AnalyticsChartView
+              v-else
+              :result="previewResult"
+              :config="chartConfig"
+              :theme-mode="themeMode"
+              :loading="executing"
+            />
+          </template>
+        </div>
       </section>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import {
+  ArrowLeftIcon,
+  ArrowPathIcon,
+  ChartBarIcon,
+  DocumentChartBarIcon,
+} from '@heroicons/vue/24/outline';
 import AnalyticsChartView from '@/components/analytics/AnalyticsChartView.vue';
 import AnalyticsKpiCard from '@/components/analytics/AnalyticsKpiCard.vue';
 import ReportPreviewPanel from '@/components/analytics/ReportPreviewPanel.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import HeadlessSwitch from '@/components/ui/HeadlessSwitch.vue';
 import { useAnalyticsWidgets } from '@/composables/useAnalyticsWidgets';
 import { useAnalyticsReports } from '@/composables/useAnalyticsReports';
 import { useColorMode } from '@/composables/useColorMode';
@@ -203,6 +327,7 @@ import {
   captureAnalyticsWidgetCreated,
   captureAnalyticsWidgetPublished,
 } from '@/config/posthogAnalytics';
+import type { AnalyticsChartType } from '@/types/analytics.types';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -224,17 +349,22 @@ const {
 
 const { reports, fetchReports, createReport, publishReport } = useAnalyticsReports();
 
+const labelClass = 'mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300';
+const inputClass =
+  'w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-900 dark:text-white';
+
+const chartTypes: AnalyticsChartType[] = ['bar', 'line', 'area', 'pie', 'donut', 'funnel', 'gauge', 'heatmap', 'scatter', 'combo', 'kpi', 'table'];
+
 const isNew = computed(() => route.name === 'analytics-widget-create');
-const chartTypes = ['bar', 'line', 'area', 'pie', 'donut', 'funnel', 'gauge', 'heatmap', 'scatter', 'combo', 'kpi', 'table'];
 
 const form = reactive({
   name: '',
   apiName: '',
   reportId: '',
-  chartType: 'bar',
+  chartType: 'bar' as AnalyticsChartType,
   kpiLabel: '',
   templateKey: '',
-  orientation: 'vertical',
+  orientation: 'vertical' as 'vertical' | 'horizontal',
   stacked: false,
   smooth: true,
   showLegend: true,
@@ -245,23 +375,65 @@ const dimensionField = ref('stage');
 const metricField = ref('count');
 const kpiWarningMax = ref(30);
 const kpiGoodMin = ref(70);
-const widgetId = ref(null);
+const widgetId = ref<string | null>(null);
 const templateApplying = ref(false);
 
 const publishedReports = computed(() =>
-  reports.value.filter((r) => r.status === 'published')
+  reports.value.filter((entry) => entry.status === 'published'),
 );
+
+const reportOptions = computed(() =>
+  publishedReports.value.map((entry) => ({ value: entry._id, label: entry.name })),
+);
+
+const chartTypeOptions = computed(() =>
+  chartTypes.map((type) => ({
+    value: type,
+    label: t(`analytics.chartType_${type}`, type),
+  })),
+);
+
+const boundReportName = computed(() => {
+  if (!route.query.reportId) return '';
+  const match = publishedReports.value.find((entry) => entry._id === String(route.query.reportId));
+  return match?.name || '';
+});
+
+const backLabel = computed(() => (
+  route.query.reportId
+    ? t('analytics.schedulesBackToReport')
+    : t('analytics.widgetsListTitle')
+));
 
 const previewResult = computed(() => executePayload.value?.result || null);
 
 const previewColumns = computed(() =>
-  (previewResult.value?.columns || []).map((col) => col.key)
+  (previewResult.value?.columns || []).map((col) => col.key),
+);
+
+const columnOptions = computed(() =>
+  previewColumns.value.map((col) => ({ value: col, label: col })),
 );
 
 const themeMode = computed(() => (effectiveDark.value ? 'dark' : 'light'));
 
-const showChartOptions = computed(() => {
-  return ['bar', 'line', 'area', 'pie', 'donut'].includes(form.chartType);
+const showChartOptions = computed(() =>
+  ['bar', 'line', 'area', 'pie', 'donut'].includes(form.chartType),
+);
+
+const chartOptionToggles = computed(() => {
+  const toggles: Array<{ key: 'stacked' | 'smooth' | 'showLegend' | 'showDataLabels'; label: string }> = [];
+  if (form.chartType === 'bar') {
+    toggles.push({ key: 'stacked', label: t('analytics.optionStacked') });
+    toggles.push({ key: 'showDataLabels', label: t('analytics.optionShowDataLabels') });
+  }
+  if (form.chartType === 'line' || form.chartType === 'area') {
+    toggles.push({ key: 'smooth', label: t('analytics.optionSmooth') });
+  }
+  if (form.chartType !== 'funnel') {
+    toggles.push({ key: 'showLegend', label: t('analytics.optionShowLegend') });
+  }
+  return toggles;
 });
 
 const kpiThresholds = computed(() => [
@@ -283,7 +455,7 @@ const chartConfig = computed(() => ({
   showDataLabels: form.showDataLabels,
 }));
 
-function slugify(name) {
+function slugify(name: string) {
   return String(name || 'widget')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '_')
@@ -303,7 +475,7 @@ function buildPayload() {
     },
     kpiValueField: form.chartType === 'kpi' ? metricField.value : null,
     kpiLabel: form.kpiLabel || form.name,
-    thresholds: form.chartType === 'kpi' ? kpiThresholds.value : null,
+    thresholds: form.chartType === 'kpi' ? kpiThresholds.value : undefined,
     templateKey: form.templateKey || null,
     orientation: form.orientation,
     stacked: form.stacked,
@@ -313,7 +485,7 @@ function buildPayload() {
   };
 }
 
-function loadThresholdsFromWidget(thresholds) {
+function loadThresholdsFromWidget(thresholds: Array<{ min: number | null; max: number | null }> | null | undefined) {
   if (!thresholds?.length) return;
   const warning = thresholds.find((band) => band.max !== null && band.min === null);
   const good = thresholds.find((band) => band.min !== null && band.max === null);
@@ -321,10 +493,10 @@ function loadThresholdsFromWidget(thresholds) {
   if (good?.min != null) kpiGoodMin.value = good.min;
 }
 
-async function resolveReportForTemplate(preset) {
+async function resolveReportForTemplate(preset: Record<string, unknown>) {
   const presetName = String(preset.name || '');
   let report = publishedReports.value.find(
-    (r) => r.name === presetName || r.apiName === slugify(presetName)
+    (entry) => entry.name === presetName || entry.apiName === slugify(presetName),
   );
 
   if (!report) {
@@ -337,7 +509,7 @@ async function resolveReportForTemplate(preset) {
       const pubRes = await publishReport(String(createRes.data._id));
       await fetchReports({ status: 'published', limit: 200 });
       report =
-        publishedReports.value.find((r) => r._id === createRes.data._id) ||
+        publishedReports.value.find((entry) => entry._id === createRes.data._id) ||
         pubRes?.data ||
         createRes.data;
     }
@@ -346,12 +518,20 @@ async function resolveReportForTemplate(preset) {
   return report;
 }
 
-async function applyTemplate(template) {
+async function applyTemplate(template: {
+  templateKey: string;
+  name: string;
+  chartType: string;
+  kpiLabel?: string;
+  columnMapping?: { dimension?: string; metric?: string };
+  kpiValueField?: string;
+  reportPreset?: Record<string, unknown>;
+}) {
   templateApplying.value = true;
   try {
     form.templateKey = template.templateKey;
     form.name = template.name;
-    form.chartType = template.chartType;
+    form.chartType = template.chartType as AnalyticsChartType;
     form.kpiLabel = template.kpiLabel || template.name;
 
     if (template.columnMapping?.dimension) {
@@ -413,7 +593,11 @@ async function publish() {
   }
 }
 
-function goList() {
+function goBack() {
+  if (route.query.reportId) {
+    router.push({ name: 'analytics-report-detail', params: { id: String(route.query.reportId) } });
+    return;
+  }
   router.push({ name: 'analytics-widgets' });
 }
 
@@ -421,13 +605,14 @@ watch(
   () => form.name,
   (name) => {
     if (isNew.value && !form.apiName) form.apiName = slugify(name);
-  }
+  },
 );
 
 watch(previewColumns, (cols) => {
-  if (cols.length && !cols.includes(dimensionField.value)) dimensionField.value = cols[0];
-  if (cols.length && !cols.includes(metricField.value)) {
-    metricField.value = cols.find((c) => c !== dimensionField.value) || cols[0];
+  const first = cols[0];
+  if (first && !cols.includes(dimensionField.value)) dimensionField.value = first;
+  if (first && !cols.includes(metricField.value)) {
+    metricField.value = cols.find((col) => col !== dimensionField.value) || first;
   }
 });
 
@@ -454,21 +639,21 @@ onMounted(async () => {
     widgetId.value = String(id);
     const res = await fetchWidget(String(id));
     if (res?.success && res.data) {
-      const w = res.data;
-      form.name = w.name;
-      form.apiName = w.apiName;
-      form.reportId = typeof w.reportId === 'object' ? w.reportId._id : w.reportId;
-      form.chartType = w.chartType;
-      form.kpiLabel = w.kpiLabel || '';
-      form.templateKey = w.templateKey || '';
-      form.orientation = w.orientation || 'vertical';
-      form.stacked = Boolean(w.stacked);
-      form.smooth = w.smooth !== false;
-      form.showLegend = w.showLegend !== false;
-      form.showDataLabels = Boolean(w.showDataLabels);
-      dimensionField.value = w.columnMapping?.dimension || dimensionField.value;
-      metricField.value = w.columnMapping?.metric || w.kpiValueField || metricField.value;
-      loadThresholdsFromWidget(w.thresholds);
+      const widget = res.data;
+      form.name = widget.name;
+      form.apiName = widget.apiName;
+      form.reportId = typeof widget.reportId === 'object' ? widget.reportId._id : widget.reportId;
+      form.chartType = widget.chartType;
+      form.kpiLabel = widget.kpiLabel || '';
+      form.templateKey = widget.templateKey || '';
+      form.orientation = widget.orientation || 'vertical';
+      form.stacked = Boolean(widget.stacked);
+      form.smooth = widget.smooth !== false;
+      form.showLegend = widget.showLegend !== false;
+      form.showDataLabels = Boolean(widget.showDataLabels);
+      dimensionField.value = widget.columnMapping?.dimension || dimensionField.value;
+      metricField.value = widget.columnMapping?.metric || widget.kpiValueField || metricField.value;
+      loadThresholdsFromWidget(widget.thresholds);
       await runPreview();
     }
   }

@@ -7,9 +7,20 @@ const {
   buildJoinStages,
   remapRows,
   remapColumns,
+  partitionMatrixDrillFilters,
+  buildPostJoinDrillMatchStage,
 } = require('./analyticsJoinPipeline');
 const { applyCalculatedFields } = require('./analyticsFormulaService');
 const { applyFieldLevelSecurityToResult } = require('./analyticsFieldAccess');
+const { resolveReferenceDisplayValues } = require('./analyticsReferenceResolver');
+const {
+  buildMatrixAggregatePipeline,
+  pivotMatrixResult,
+  isMatrixReport,
+  hasMatrixDrillFilters,
+  buildMatrixDrillFilterAst,
+  resolveDrillSelectedFields,
+} = require('./analyticsMatrixPivot');
 
 const REPORT_TYPE_ALIASES = Object.freeze({
   joined: 'tabular',
@@ -101,16 +112,22 @@ function buildBaseMatch(report, context) {
     throw err;
   }
 
-  let match = {
-    organizationId: new mongoose.Types.ObjectId(String(context.organizationId)),
-  };
+  let match;
+  const normalizedModule = String(moduleKey || '').toLowerCase();
+
+  if (normalizedModule === 'organizations') {
+    match = { isTenant: { $ne: true } };
+  } else {
+    match = {
+      organizationId: new mongoose.Types.ObjectId(String(context.organizationId)),
+    };
+    if (config.tenantScopeMatch) {
+      match = { ...match, ...config.tenantScopeMatch };
+    }
+  }
 
   if (config.excludeTrash) {
     match.deletedAt = null;
-  }
-
-  if (config.tenantScopeMatch) {
-    match = { ...match, ...config.tenantScopeMatch };
   }
 
   if (access.ownershipMatch) {
@@ -166,6 +183,12 @@ function outputKeyForAggregation(agg) {
   const field = agg.field || 'rows';
   return agg.label || `${field}_${fn}`;
 }
+
+const matrixPipelineHelpers = {
+  normalizeGroupFields,
+  normalizeAggregations,
+  buildSortStage,
+};
 
 function buildSummaryPipeline(report, match, primaryModule) {
   const groupFields = normalizeGroupFields(report.rowGroups).map((f) =>
@@ -265,6 +288,20 @@ function rowsToColumnMeta(columns, moduleKey) {
 }
 
 function inferColumnType(key) {
+  const bareKey = String(key || '').includes('.')
+    ? key.slice(key.indexOf('.') + 1)
+    : String(key || '');
+  const normalized = bareKey.toLowerCase();
+  if (
+    normalized === 'assignedto' ||
+    normalized === 'createdby' ||
+    normalized === 'updatedby' ||
+    normalized === 'modifiedby' ||
+    normalized === 'ownerid' ||
+    normalized === 'submittedby'
+  ) {
+    return 'user';
+  }
   if (key.includes('Date') || key.endsWith('At')) return 'date';
   if (['amount', 'probability', 'version', 'count'].some((k) => key.includes(k))) return 'number';
   return 'string';
@@ -288,6 +325,13 @@ function applyExceptionFilter(result) {
     stats[key] = { mean, threshold: mean + 2 * Math.sqrt(variance) };
   }
 
+  const filtered = rows.filter((row) =>
+    numericKeys.some((key) => {
+      const value = Number(row[key]);
+      return Number.isFinite(value) && value > stats[key].threshold;
+    }),
+  );
+
   return {
     ...result,
     rows: filtered,
@@ -303,6 +347,109 @@ function flattenSummaryRows(rows, groupFields) {
   });
 }
 
+async function executeMatrixDrillReport(report, context, rawType, started) {
+  const rowLimit = Math.min(
+    Number(context.rowLimit ?? report.rowLimit ?? 100) || 100,
+    context.preview ? 100 : 500,
+  );
+
+  const { match, config, moduleKey } = buildBaseMatch(report, context);
+  const Model = config.model;
+  const { stages: joinStages, aliasToQualified } = await buildJoinStages(report, context);
+
+  let drillMatch = match;
+  const partitionedDrill = partitionMatrixDrillFilters(context.matrixDrill, moduleKey);
+  const primaryDrill = {
+    rowFilters: partitionedDrill.primaryRowFilters,
+    columnFilters: partitionedDrill.primaryColumnFilters,
+  };
+  const joinedDrill = {
+    ...partitionedDrill.joinedRowFilters,
+    ...partitionedDrill.joinedColumnFilters,
+  };
+  const drillAst = buildMatrixDrillFilterAst(primaryDrill);
+  if (drillAst) {
+    drillMatch = applyFilterQueryToMongoQuery(drillMatch, drillAst, moduleKey, {
+      userId: context.user?._id,
+    });
+  }
+  if (context.runtimeFilters) {
+    drillMatch = applyFilterQueryToMongoQuery(drillMatch, context.runtimeFilters, moduleKey, {
+      userId: context.user?._id,
+    });
+  }
+
+  const drillReport = {
+    ...report,
+    type: 'tabular',
+    selectedFields: resolveDrillSelectedFields(
+      report,
+      config,
+      normalizeSelectedFields,
+      normalizeGroupFields,
+    ),
+  };
+
+  const { pipeline: corePipeline, columns: tabularColumns } = buildTabularPipeline(
+    drillReport,
+    drillMatch,
+    rowLimit,
+    config,
+    moduleKey,
+  );
+  const postJoinDrillStage = buildPostJoinDrillMatchStage(joinedDrill, moduleKey);
+  const pipeline = [
+    corePipeline[0],
+    ...joinStages,
+    ...(postJoinDrillStage ? [postJoinDrillStage] : []),
+    ...corePipeline.slice(1),
+  ];
+  let rows = await Model.aggregate(pipeline);
+  let columns = tabularColumns;
+  rows = remapRows(rows, aliasToQualified);
+  columns = remapColumns(columns, moduleKey, aliasToQualified);
+
+  const columnMeta = rowsToColumnMeta(columns, moduleKey);
+  const executionMs = Date.now() - started;
+
+  let result = {
+    columns: columnMeta,
+    rows,
+    meta: {
+      totalRows: rows.length,
+      truncated: rows.length >= rowLimit,
+      executionMs,
+      reportId: String(report._id || ''),
+      reportVersion: report.version || 1,
+      moduleKey,
+      type: rawType,
+      drillDown: true,
+      drillContext: context.matrixDrill,
+      joinedModules: Object.values(aliasToQualified).map((q) => q.split('.')[0]).filter(Boolean),
+    },
+  };
+
+  if (Array.isArray(report.calculatedFields) && report.calculatedFields.length) {
+    result = applyCalculatedFields(result, report.calculatedFields);
+  }
+
+  if (context.organizationId) {
+    result = await resolveReferenceDisplayValues(result, report, context.organizationId);
+  }
+
+  if (context.user && context.organizationId) {
+    result = await applyFieldLevelSecurityToResult(
+      result,
+      context.user,
+      moduleKey,
+      report.relatedModules || [],
+      context.organizationId,
+    );
+  }
+
+  return result;
+}
+
 /**
  * Execute an analytics report definition.
  * @param {object} report - AnalyticsReport document or lean object
@@ -311,6 +458,11 @@ function flattenSummaryRows(rows, groupFields) {
 async function executeAnalyticsReport(report, context = {}) {
   const started = Date.now();
   const rawType = String(report.type || 'tabular').toLowerCase();
+
+  if (hasMatrixDrillFilters(context.matrixDrill)) {
+    return executeMatrixDrillReport(report, context, rawType, started);
+  }
+
   const reportType = rawType === 'exception' ? 'exception' : (REPORT_TYPE_ALIASES[rawType] || rawType);
   const rowLimit = Math.min(
     Number(context.rowLimit ?? report.rowLimit ?? 1000) || 1000,
@@ -319,12 +471,39 @@ async function executeAnalyticsReport(report, context = {}) {
 
   const { match, config, moduleKey } = buildBaseMatch(report, context);
   const Model = config.model;
-  const { stages: joinStages, aliasToQualified } = buildJoinStages(report, context);
+  const { stages: joinStages, aliasToQualified } = await buildJoinStages(report, context);
 
   let columns = [];
   let rows = [];
+  let matrixMeta = null;
+  let grandTotalRow = null;
+  let pivotedColumnDefs = null;
 
-  if (reportType === 'summary' || reportType === 'kpi') {
+  const matrixPlan = isMatrixReport(report)
+    ? buildMatrixAggregatePipeline(report, match, moduleKey, matrixPipelineHelpers)
+    : null;
+
+  if (matrixPlan) {
+    const pipeline = [matrixPlan.pipeline[0], ...joinStages, ...matrixPlan.pipeline.slice(1)];
+    pipeline.push({ $limit: rowLimit });
+    const flatRows = await Model.aggregate(pipeline);
+    const remappedFlatRows = remapRows(flattenSummaryRows(flatRows, matrixPlan.rowFieldKeys), aliasToQualified);
+
+    const pivoted = pivotMatrixResult(remappedFlatRows, {
+      rowFields: remapColumns(matrixPlan.rowFieldKeys, moduleKey, aliasToQualified),
+      columnFields: remapColumns(matrixPlan.colFieldKeys, moduleKey, aliasToQualified),
+      metricKeys: matrixPlan.metricKeys,
+      showGrandTotal: report.showGrandTotal !== false,
+    });
+
+    if (pivoted) {
+      pivotedColumnDefs = pivoted.columns;
+      columns = pivoted.columns.map((col) => col.key);
+      rows = pivoted.rows;
+      matrixMeta = pivoted.matrixLayout;
+      grandTotalRow = pivoted.grandTotalRow;
+    }
+  } else if (reportType === 'summary' || reportType === 'kpi') {
     const { pipeline: corePipeline, columns: summaryColumns } = buildSummaryPipeline(
       report,
       match,
@@ -352,7 +531,15 @@ async function executeAnalyticsReport(report, context = {}) {
     columns = remapColumns(columns, moduleKey, aliasToQualified);
   }
 
-  const columnMeta = rowsToColumnMeta(columns, moduleKey);
+  const columnMeta = pivotedColumnDefs
+    ? pivotedColumnDefs.map((col) => ({
+        key: col.key,
+        label: col.label || col.key,
+        type: inferColumnType(col.key),
+        moduleKey,
+        ...(col.role ? { role: col.role } : {}),
+      }))
+    : rowsToColumnMeta(columns, moduleKey);
   const executionMs = Date.now() - started;
 
   let result = {
@@ -367,6 +554,8 @@ async function executeAnalyticsReport(report, context = {}) {
       moduleKey,
       type: rawType,
       joinedModules: Object.values(aliasToQualified).map((q) => q.split('.')[0]).filter(Boolean),
+      ...(matrixMeta ? { matrixLayout: matrixMeta } : {}),
+      ...(grandTotalRow ? { grandTotalRow } : {}),
     },
   };
 
@@ -376,6 +565,10 @@ async function executeAnalyticsReport(report, context = {}) {
 
   if (Array.isArray(report.calculatedFields) && report.calculatedFields.length) {
     result = applyCalculatedFields(result, report.calculatedFields);
+  }
+
+  if (context.organizationId) {
+    result = await resolveReferenceDisplayValues(result, report, context.organizationId);
   }
 
   if (context.user && context.organizationId) {
@@ -397,4 +590,6 @@ module.exports = {
   normalizeAggregations,
   normalizeSelectedFields,
   buildBaseMatch,
+  outputKeyForAggregation,
+  buildSortStage,
 };

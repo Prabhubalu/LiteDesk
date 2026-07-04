@@ -14,6 +14,17 @@ const {
 } = require('./analytics/analyticsScheduleQueueService');
 const { normalizeRecipients } = require('./analytics/analyticsScheduleRunner');
 
+function parseOptionalScheduleDate(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    const err = new Error('Invalid schedule date');
+    err.statusCode = 400;
+    throw err;
+  }
+  return parsed;
+}
+
 function parseSchedulePayload(body = {}) {
   const frequency = String(body.frequency || 'weekly').toLowerCase();
   if (!ANALYTICS_SCHEDULE_FREQUENCIES.includes(frequency)) {
@@ -43,6 +54,14 @@ function parseSchedulePayload(body = {}) {
     throw err;
   }
 
+  const startDate = parseOptionalScheduleDate(body.startDate);
+  const endDate = parseOptionalScheduleDate(body.endDate);
+  if (startDate && endDate && endDate < startDate) {
+    const err = new Error('endDate must be on or after startDate');
+    err.statusCode = 400;
+    throw err;
+  }
+
   return {
     name: String(body.name || '').trim(),
     assetType,
@@ -58,6 +77,8 @@ function parseSchedulePayload(body = {}) {
     exportFormat,
     emailSubject: body.emailSubject ? String(body.emailSubject).trim() : null,
     status: body.status && ANALYTICS_SCHEDULE_STATUSES.includes(body.status) ? body.status : 'active',
+    startDate,
+    endDate,
   };
 }
 

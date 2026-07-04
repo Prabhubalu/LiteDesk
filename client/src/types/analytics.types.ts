@@ -16,6 +16,31 @@ export type AnalyticsReportType =
 
 export type AnalyticsAssetStatus = 'draft' | 'published' | 'archived';
 
+export interface AnalyticsUserRef {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
+export interface AnalyticsReportRef {
+  _id: string;
+  name: string;
+  apiName?: string;
+  status?: AnalyticsAssetStatus;
+  type?: AnalyticsReportType;
+  primaryModule?: string;
+  version?: number;
+}
+
+export interface AnalyticsDashboardRef {
+  _id: string;
+  name: string;
+  apiName?: string;
+  status?: AnalyticsAssetStatus;
+  category?: AnalyticsDashboardCategory;
+}
+
 export type AnalyticsReportCategory =
   | 'sales'
   | 'support'
@@ -47,6 +72,17 @@ export interface AnalyticsShareTarget {
   id: string;
 }
 
+export type AnalyticsReportPermissionLevel = 'owner' | 'editors' | 'viewers';
+
+export interface AnalyticsReportPermissions {
+  view?: AnalyticsReportPermissionLevel;
+  edit?: AnalyticsReportPermissionLevel;
+  clone?: AnalyticsReportPermissionLevel;
+  export?: AnalyticsReportPermissionLevel;
+  share?: AnalyticsReportPermissionLevel;
+}
+
+/** @deprecated use AnalyticsReportPermissions with level strings */
 export interface AnalyticsAssetPermissions {
   view?: boolean;
   edit?: boolean;
@@ -67,6 +103,7 @@ export interface AnalyticsReportRecord {
   status: AnalyticsAssetStatus;
   version: number;
   tags: string[];
+  listedInHome?: boolean;
   icon?: string | null;
   color?: string | null;
   primaryModule: string;
@@ -102,6 +139,7 @@ export interface AnalyticsReportRecord {
   pageSize: number;
   rowLimit: number;
   showRecordCount: boolean;
+  drillDownEnabled?: boolean;
   cacheEnabled: boolean;
   cacheDuration: number;
   executionMode: AnalyticsExecutionMode;
@@ -114,10 +152,10 @@ export interface AnalyticsReportRecord {
   exportFormats: AnalyticsExportFormat[];
   defaultExport: AnalyticsExportFormat;
   printSettings?: unknown;
-  ownerId: string;
+  ownerId: string | AnalyticsUserRef;
   visibility: AnalyticsVisibility;
   sharedWith?: AnalyticsShareTarget[] | null;
-  permissions?: AnalyticsAssetPermissions | null;
+  permissions?: AnalyticsReportPermissions | null;
   widgetCount: number;
   dashboardCount: number;
   apiUsage: number;
@@ -188,7 +226,7 @@ export interface AnalyticsWidgetRecord {
   templateKey?: string | null;
   icon?: string | null;
   color?: string | null;
-  reportId: string;
+  reportId: string | AnalyticsReportRef;
   reportVersion?: number | null;
   reportApiName?: string | null;
   columnMapping: AnalyticsWidgetColumnMapping;
@@ -333,7 +371,7 @@ export interface AnalyticsDashboardRecord {
 }
 
 export interface AnalyticsExecuteResult {
-  columns: Array<{ key: string; label: string; type?: string }>;
+  columns: Array<{ key: string; label: string; type?: string; role?: 'row' | 'pivot' | 'total' }>;
   rows: Record<string, unknown>[];
   meta: {
     totalRows: number;
@@ -341,6 +379,18 @@ export interface AnalyticsExecuteResult {
     executionMs: number;
     reportId: string;
     reportVersion: number;
+    matrixLayout?: {
+      rowFields: string[];
+      columnFields: string[];
+      metricKeys: string[];
+      pivotColumns: Array<{ key: string; label: string; filterValues?: Record<string, unknown> }>;
+    };
+    grandTotalRow?: Record<string, unknown>;
+    drillDown?: boolean;
+    drillContext?: {
+      rowFilters?: Record<string, unknown>;
+      columnFilters?: Record<string, unknown>;
+    };
   };
 }
 
@@ -388,11 +438,14 @@ export interface AnalyticsHomePayload {
 export type AnalyticsScheduleFrequency = 'daily' | 'weekly' | 'monthly';
 export type AnalyticsScheduleStatus = 'active' | 'paused' | 'archived';
 
+export type AnalyticsScheduleAssetType = 'report' | 'dashboard';
+
 export interface AnalyticsScheduleRecord {
   _id: string;
   name: string;
-  reportId: string | AnalyticsReportRecord;
-  assetType: 'report';
+  reportId?: string | AnalyticsReportRef | null;
+  dashboardId?: string | AnalyticsDashboardRef | null;
+  assetType: AnalyticsScheduleAssetType;
   frequency: AnalyticsScheduleFrequency;
   timezone: string;
   hour: number;
@@ -400,8 +453,10 @@ export interface AnalyticsScheduleRecord {
   dayOfWeek: number;
   dayOfMonth: number;
   recipients: string[];
-  exportFormat: 'csv';
+  exportFormat: AnalyticsExportFormat;
   emailSubject?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
   status: AnalyticsScheduleStatus;
   cronExpression?: string | null;
   ownerId: string;

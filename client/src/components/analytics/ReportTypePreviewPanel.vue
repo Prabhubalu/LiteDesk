@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p v-if="previewModeLabel" class="mb-3 text-xs font-medium uppercase tracking-wide text-neutral-500">
+    <p v-if="showModeLabel && previewModeLabel" class="mb-3 text-xs font-medium uppercase tracking-wide text-neutral-500">
       {{ previewModeLabel }}
     </p>
     <AnalyticsKpiCard
@@ -9,13 +9,12 @@
       :value-field="metricField"
       :label="label"
     />
-    <AnalyticsChartView
-      v-else-if="isChartType"
+    <ReportMatrixPreviewPanel
+      v-else-if="isMatrixPreview"
       :result="result"
-      :config="chartConfig"
-      :theme-mode="themeMode"
-      :loading="loading"
+      :expanded-rows="expandedRows"
       :empty-message="emptyMessage"
+      @toggle-row="$emit('toggle-row', $event)"
     />
     <ReportPreviewPanel
       v-else
@@ -29,10 +28,10 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { AnalyticsExecuteResult } from '@/types/analytics.types';
-import type { AnalyticsChartThemeMode } from '@/platform/analytics/echarts/analyticsChartTheme';
-import type { WidgetChartConfig } from '@/platform/analytics/echarts/buildChartOption';
-import AnalyticsChartView from '@/components/analytics/AnalyticsChartView.vue';
 import AnalyticsKpiCard from '@/components/analytics/AnalyticsKpiCard.vue';
+import ReportMatrixPreviewPanel, {
+  type MatrixExpandedRowState,
+} from '@/components/analytics/ReportMatrixPreviewPanel.vue';
 import ReportPreviewPanel from '@/components/analytics/ReportPreviewPanel.vue';
 
 const props = withDefaults(
@@ -43,45 +42,44 @@ const props = withDefaults(
     dimensionField?: string;
     label?: string;
     loading?: boolean;
-    themeMode?: AnalyticsChartThemeMode;
     emptyMessage: string;
+    expandedRows?: Record<string, MatrixExpandedRowState>;
+    showModeLabel?: boolean;
   }>(),
   {
     metricField: 'count',
     dimensionField: '',
     label: '',
     loading: false,
-    themeMode: 'light',
+    expandedRows: () => ({}),
+    showModeLabel: true,
   },
 );
 
+defineEmits<{
+  (
+    e: 'toggle-row',
+    payload: {
+      key: string;
+      rowFilters: Record<string, unknown>;
+      label: string;
+    },
+  ): void;
+}>();
+
 const { t } = useI18n();
 
-const isChartType = computed(() =>
-  ['summary', 'trend', 'matrix'].includes(String(props.reportType || '').toLowerCase()),
-);
-
-const chartConfig = computed((): WidgetChartConfig => {
-  const type = String(props.reportType || 'summary').toLowerCase();
-  const chartType = type === 'trend' ? 'line' : type === 'matrix' ? 'bar' : 'bar';
-  return {
-    chartType,
-    columnMapping: {
-      dimension: props.dimensionField || undefined,
-      metric: props.metricField || 'count',
-    },
-    showLegend: type === 'summary',
-    smooth: type === 'trend',
-  };
+const isMatrixPreview = computed(() => {
+  const type = String(props.reportType || '').toLowerCase();
+  return (type === 'matrix' || type === 'pivot') && Boolean(props.result?.meta?.matrixLayout);
 });
 
 const previewModeLabel = computed(() => {
   const type = String(props.reportType || '').toLowerCase();
   const keyMap: Record<string, string> = {
     kpi: 'previewModeKpi',
-    summary: 'previewModeChart',
-    trend: 'previewModeTrend',
-    matrix: 'previewModeMatrix',
+    summary: 'previewModeGroupedTable',
+    matrix: 'previewModeMatrixTable',
     tabular: 'previewModeTable',
     joined: 'previewModeTable',
     exception: 'previewModeException',

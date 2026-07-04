@@ -54,6 +54,7 @@ const AnalyticsReportSchema = new Schema(
     tags: { type: [String], default: [] },
     icon: { type: String, trim: true, default: null },
     color: { type: String, trim: true, default: null },
+    listedInHome: { type: Boolean, default: true },
 
     // --- Data source ---
     primaryModule: { type: String, required: true, trim: true, index: true },
@@ -107,6 +108,7 @@ const AnalyticsReportSchema = new Schema(
     pageSize: { type: Number, default: 50, min: 1 },
     rowLimit: { type: Number, default: 1000, min: 1 },
     showRecordCount: { type: Boolean, default: true },
+    drillDownEnabled: { type: Boolean, default: true },
 
     // --- Performance ---
     cacheEnabled: { type: Boolean, default: true },

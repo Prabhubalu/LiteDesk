@@ -1,158 +1,158 @@
 {
   "listTitle": {
-    "message": "Reports",
+    "message": "Informes",
     "description": "Analytics reports list page title"
   },
   "listDescription": {
-    "message": "Build and run reports on your CRM data.",
+    "message": "Cree y ejecute informes sobre sus datos de CRM.",
     "description": "Analytics reports list subtitle"
   },
   "newReport": {
-    "message": "New report",
+    "message": "Nuevo informe",
     "description": "Create report button"
   },
   "searchPlaceholder": {
-    "message": "Search reports…",
+    "message": "Informes de búsqueda...",
     "description": "Reports list search placeholder"
   },
   "tabAll": {
-    "message": "All",
+    "message": "Todo",
     "description": "Reports list tab — all"
   },
   "tabMine": {
-    "message": "My reports",
+    "message": "Mis informes",
     "description": "Reports list tab — owned by user"
   },
   "tabDrafts": {
-    "message": "Drafts",
+    "message": "Damas",
     "description": "Reports list tab — drafts"
   },
   "tabPublished": {
-    "message": "Published",
+    "message": "Publicado",
     "description": "Reports list tab — published"
   },
   "tabArchived": {
-    "message": "Archived",
+    "message": "Archivado",
     "description": "Reports list tab — archived"
   },
   "colName": {
-    "message": "Name",
+    "message": "Nombre",
     "description": "Reports table column — name"
   },
   "colType": {
-    "message": "Type",
+    "message": "Tipo",
     "description": "Reports table column — type"
   },
   "colModule": {
-    "message": "Module",
+    "message": "Módulo",
     "description": "Reports table column — primary module"
   },
   "colStatus": {
-    "message": "Status",
+    "message": "Estado",
     "description": "Reports table column — status"
   },
   "colUpdated": {
-    "message": "Updated",
+    "message": "Actualizado",
     "description": "Reports table column — updated at"
   },
   "emptyTitle": {
-    "message": "No reports yet",
+    "message": "Aún no hay informes",
     "description": "Empty reports list — first time"
   },
   "emptyDescription": {
-    "message": "Create a report to explore deals, people, cases, and more.",
+    "message": "Cree un informe para explorar ofertas, personas, casos y más.",
     "description": "Empty reports list description"
   },
   "builderTitle": {
-    "message": "Report builder",
+    "message": "Generador de informes",
     "description": "Report builder page title for new report"
   },
   "builderEditTitle": {
-    "message": "Edit report",
+    "message": "Editar informe",
     "description": "Report builder page title for existing report"
   },
   "detailTitle": {
-    "message": "Report",
+    "message": "Informe",
     "description": "Report detail page tab title"
   },
   "fieldName": {
-    "message": "Report name",
+    "message": "Nombre del informe",
     "description": "Report name field label"
   },
   "fieldApiName": {
-    "message": "API name",
+    "message": "nombre de API",
     "description": "Report API name field label"
   },
   "fieldModule": {
-    "message": "Primary module",
+    "message": "módulo primario",
     "description": "Report primary module field label"
   },
   "fieldType": {
-    "message": "Report type",
+    "message": "Tipo de informe",
     "description": "Report type field label"
   },
   "fieldGroupBy": {
-    "message": "Group by",
+    "message": "Agrupar por",
     "description": "Report group by field label"
   },
   "fieldMetrics": {
-    "message": "Metrics",
+    "message": "Métrica",
     "description": "Report metrics section label"
   },
   "metricSumAmount": {
-    "message": "Sum of amount",
+    "message": "Suma de cantidad",
     "description": "Preset metric — sum amount"
   },
   "metricCount": {
-    "message": "Record count",
+    "message": "Recuento de registros",
     "description": "Preset metric — count"
   },
   "sectionData": {
-    "message": "Data source",
+    "message": "fuente de datos",
     "description": "Builder section — data source"
   },
   "sectionConfigure": {
-    "message": "Configure",
+    "message": "Configurar",
     "description": "Builder section — configure"
   },
   "sectionPreview": {
-    "message": "Preview",
+    "message": "Avance",
     "description": "Builder section — preview"
   },
   "saveDraft": {
-    "message": "Save draft",
+    "message": "Guardar borrador",
     "description": "Save draft button"
   },
   "preview": {
-    "message": "Preview",
+    "message": "Avance",
     "description": "Preview report button"
   },
   "publish": {
-    "message": "Publish",
+    "message": "Publicar",
     "description": "Publish report button"
   },
   "runReport": {
-    "message": "Run",
+    "message": "Correr",
     "description": "Run published report button"
   },
   "exportCsv": {
-    "message": "Export CSV",
+    "message": "Exportar CSV",
     "description": "Export report CSV button"
   },
   "detailLastRun": {
-    "message": "Last run",
+    "message": "última ejecución",
     "description": "Report detail — last run label"
   },
   "detailExecutions": {
-    "message": "Executions",
+    "message": "Ejecuciones",
     "description": "Report detail — execution count label"
   },
   "previewEmpty": {
-    "message": "Run preview to see results",
+    "message": "Ejecute la vista previa para ver los resultados",
     "description": "Preview panel empty state"
   },
   "previewRows": {
-    "message": "{count} rows · {ms}ms",
+    "message": "{count} filas · {ms}ms",
     "description": "Preview result meta"
   },
   "typeTabular": {
@@ -160,7 +160,7 @@
     "description": "Report type label — tabular"
   },
   "typeSummary": {
-    "message": "Summary",
+    "message": "Resumen",
     "description": "Report type label — summary"
   },
   "typeKpi": {
@@ -168,171 +168,171 @@
     "description": "Report type label — kpi"
   },
   "statusDraft": {
-    "message": "Draft",
+    "message": "Borrador",
     "description": "Report status — draft"
   },
   "statusPublished": {
-    "message": "Published",
+    "message": "Publicado",
     "description": "Report status — published"
   },
   "statusArchived": {
-    "message": "Archived",
+    "message": "Archivado",
     "description": "Report status — archived"
   },
   "savedSuccess": {
-    "message": "Report saved",
+    "message": "Informe guardado",
     "description": "Toast — report saved"
   },
   "publishedSuccess": {
-    "message": "Report published",
+    "message": "Informe publicado",
     "description": "Toast — report published"
   },
   "loadFailed": {
-    "message": "Failed to load reports",
+    "message": "No se pudieron cargar los informes",
     "description": "Error loading reports list"
   },
   "chartLoading": {
-    "message": "Loading chart…",
+    "message": "Cargando gráfico…",
     "description": "Chart loading state"
   },
   "chartEmpty": {
-    "message": "No data for this report",
+    "message": "No hay datos para este informe",
     "description": "Chart empty state"
   },
   "chartEmptyFiltered": {
-    "message": "No data matches your filters",
+    "message": "Ningún dato coincide con tus filtros",
     "description": "Chart empty with filters"
   },
   "chartError": {
-    "message": "Could not load chart data",
+    "message": "No se pudieron cargar los datos del gráfico",
     "description": "Chart error state"
   },
   "sectionFilters": {
-    "message": "Filters",
+    "message": "Filtros",
     "description": "Builder section — filters"
   },
   "fieldColumns": {
-    "message": "Columns",
+    "message": "columnas",
     "description": "Tabular report column picker label"
   },
   "previewUpdating": {
-    "message": "Updating preview…",
+    "message": "Actualizando vista previa…",
     "description": "Debounced preview in progress"
   },
   "emptyNoAccessTitle": {
-    "message": "You don't have access to reports",
+    "message": "No tienes acceso a los informes.",
     "description": "Reports list — no permission"
   },
   "emptyNoAccessDescription": {
-    "message": "Your role doesn't include report permissions. Contact your administrator if you need access.",
+    "message": "Su función no incluye permisos de informes. Póngase en contacto con su administrador si necesita acceso.",
     "description": "Reports list — no permission description"
   },
   "emptyNoResultsTitle": {
-    "message": "No matching reports",
+    "message": "No hay informes coincidentes",
     "description": "Reports list — search/filter empty"
   },
   "emptyNoResultsDescription": {
-    "message": "Try a different search or tab filter.",
+    "message": "Pruebe con una búsqueda diferente o un filtro de pestañas.",
     "description": "Reports list — search/filter empty description"
   },
   "emptyNoDataTitle": {
-    "message": "No reports found",
+    "message": "No se encontraron informes",
     "description": "Reports list — no data after first visit"
   },
   "emptyNoDataDescription": {
-    "message": "Create a report to analyze deals, people, cases, and more.",
+    "message": "Cree un informe para analizar acuerdos, personas, casos y más.",
     "description": "Reports list — no data description"
   },
   "filterAllTypes": {
-    "message": "All types",
+    "message": "Todos los tipos",
     "description": "Reports list type filter — all"
   },
   "filterAllModules": {
-    "message": "All modules",
+    "message": "Todos los módulos",
     "description": "Reports list module filter — all"
   },
   "colActions": {
-    "message": "Actions",
+    "message": "Comportamiento",
     "description": "Reports table column — row actions"
   },
   "rowActionsLabel": {
-    "message": "Report actions",
+    "message": "Informar acciones",
     "description": "Reports row actions menu aria label"
   },
   "actionRun": {
-    "message": "Run",
+    "message": "Correr",
     "description": "Report row action — run"
   },
   "actionDuplicate": {
-    "message": "Duplicate",
+    "message": "Duplicado",
     "description": "Report row action — duplicate"
   },
   "actionArchive": {
-    "message": "Archive",
+    "message": "Archivo",
     "description": "Report row action — archive"
   },
   "archiveConfirm": {
-    "message": "Archive “{name}”? This report will be hidden from active lists.",
+    "message": "¿Archivar “{name}”? Este informe estará oculto de las listas activas.",
     "description": "Confirm archive report dialog"
   },
   "widgetsListTitle": {
-    "message": "Widgets",
+    "message": "widgets",
     "description": "Analytics widgets list title"
   },
   "widgetsListDescription": {
-    "message": "Visualize report data with charts and KPIs.",
+    "message": "Visualice datos de informes con gráficos y KPI.",
     "description": "Analytics widgets list subtitle"
   },
   "widgetsSearchPlaceholder": {
-    "message": "Search widgets…",
+    "message": "Buscar widgets...",
     "description": "Widgets list search placeholder"
   },
   "widgetsEmptyTitle": {
-    "message": "No widgets yet",
+    "message": "Aún no hay widgets",
     "description": "Empty widgets list title"
   },
   "widgetsEmptyDescription": {
-    "message": "Create a widget from a published report to add charts to dashboards.",
+    "message": "Cree un widget a partir de un informe publicado para agregar gráficos a los paneles.",
     "description": "Empty widgets list description"
   },
   "newWidget": {
-    "message": "New widget",
+    "message": "Nuevo widget",
     "description": "Create widget button"
   },
   "widgetBuilderTitle": {
-    "message": "Widget builder",
+    "message": "Constructor de widgets",
     "description": "Widget builder page title"
   },
   "widgetBuilderEditTitle": {
-    "message": "Edit widget",
+    "message": "Editar widget",
     "description": "Widget builder edit title"
   },
   "fieldReport": {
-    "message": "Source report",
+    "message": "Informe fuente",
     "description": "Widget bound report field"
   },
   "fieldChartType": {
-    "message": "Chart type",
+    "message": "Tipo de gráfico",
     "description": "Widget chart type field"
   },
   "fieldDimension": {
-    "message": "Dimension",
+    "message": "Dimensión",
     "description": "Widget dimension field mapping"
   },
   "selectReport": {
-    "message": "Select a report…",
+    "message": "Seleccione un informe...",
     "description": "Widget report picker placeholder"
   },
   "colChartType": {
-    "message": "Chart",
+    "message": "Cuadro",
     "description": "Widgets table chart type column"
   },
   "colReport": {
-    "message": "Report",
+    "message": "Informe",
     "description": "Widgets table report column"
   },
   "filterAllChartTypes": {
-    "message": "All chart types",
+    "message": "Todos los tipos de gráficos",
     "description": "Widget list chart type filter"
   },
   "chartType_bar": {
@@ -340,15 +340,15 @@
     "description": "Chart type bar"
   },
   "chartType_line": {
-    "message": "Line",
+    "message": "Línea",
     "description": "Chart type line"
   },
   "chartType_pie": {
-    "message": "Pie",
+    "message": "Pastel",
     "description": "Chart type pie"
   },
   "chartType_funnel": {
-    "message": "Funnel",
+    "message": "Embudo",
     "description": "Chart type funnel"
   },
   "chartType_kpi": {
@@ -356,359 +356,359 @@
     "description": "Chart type kpi"
   },
   "chartType_table": {
-    "message": "Table",
+    "message": "Mesa",
     "description": "Chart type table"
   },
   "kpiLabelField": {
-    "message": "KPI label",
+    "message": "etiqueta KPI",
     "description": "KPI display label field"
   },
   "refreshWidget": {
-    "message": "Refresh",
+    "message": "Refrescar",
     "description": "Refresh widget data button"
   },
   "boundReport": {
-    "message": "Report",
+    "message": "Informe",
     "description": "Bound report label on widget detail"
   },
   "createWidgetFromReport": {
-    "message": "Create widget",
+    "message": "Crear widget",
     "description": "Create widget from report detail"
   },
   "homeTitle": {
-    "message": "Analytics",
+    "message": "Analítica",
     "description": "Analytics home page title"
   },
   "homeDescription": {
-    "message": "Reports, widgets, and dashboards in one place.",
+    "message": "Informes, widgets y paneles en un solo lugar.",
     "description": "Analytics home subtitle"
   },
   "homeSearchPlaceholder": {
-    "message": "Search reports, widgets, and dashboards…",
+    "message": "Busque informes, widgets y paneles...",
     "description": "Analytics home global search placeholder"
   },
   "homeKpiExecutions": {
-    "message": "Runs this week",
+    "message": "Se ejecuta esta semana",
     "description": "Analytics home KPI executions label"
   },
   "homeRecentTitle": {
-    "message": "Recent",
+    "message": "Reciente",
     "description": "Analytics home recent activity section"
   },
   "homeRecentEmpty": {
-    "message": "No recent activity yet.",
+    "message": "Aún no hay actividad reciente.",
     "description": "Analytics home recent empty state"
   },
   "homeQuickStartTitle": {
-    "message": "Quick start",
+    "message": "Inicio rápido",
     "description": "Analytics home quick start section"
   },
   "homeBlankReport": {
-    "message": "Blank report",
+    "message": "Informe en blanco",
     "description": "Analytics home blank report quick action"
   },
   "homeFirstTimeTitle": {
-    "message": "Welcome to Analytics",
+    "message": "Bienvenido a Análisis",
     "description": "First-time analytics home title"
   },
   "homeFirstTimeDescription": {
-    "message": "Create a report to explore your CRM data, then build widgets and dashboards.",
+    "message": "Cree un informe para explorar sus datos de CRM y luego cree widgets y paneles.",
     "description": "First-time analytics home description"
   },
   "homeFirstTimeAction": {
-    "message": "Create your first report",
+    "message": "Crea tu primer informe",
     "description": "First-time analytics home CTA"
   },
   "homeJustNow": {
-    "message": "Just now",
+    "message": "En este momento",
     "description": "Recent activity just now label"
   },
   "homeHoursAgo": {
-    "message": "{count}h ago",
+    "message": "Hace __UCI_0__h",
     "description": "Recent activity hours ago label"
   },
   "homeDaysAgo": {
-    "message": "{count}d ago",
+    "message": "Hace __UCI_0__d",
     "description": "Recent activity days ago label"
   },
   "assetType_report": {
-    "message": "Report",
+    "message": "Informe",
     "description": "Search result asset type report"
   },
   "assetType_widget": {
-    "message": "Widget",
+    "message": "widget",
     "description": "Search result asset type widget"
   },
   "assetType_dashboard": {
-    "message": "Dashboard",
+    "message": "Panel",
     "description": "Search result asset type dashboard"
   },
   "metricAdd": {
-    "message": "Add metric",
+    "message": "Agregar métrica",
     "description": "Add another aggregation metric"
   },
   "metricPrimary": {
-    "message": "KPI metric",
+    "message": "Métrica KPI",
     "description": "Primary KPI aggregation"
   },
   "metricIndex": {
-    "message": "Metric {index}",
+    "message": "Métrica {index}",
     "description": "Summary report metric row label"
   },
   "metricFn": {
-    "message": "Aggregation",
+    "message": "Agregación",
     "description": "Metric aggregation function label"
   },
   "metricField": {
-    "message": "Field",
+    "message": "Campo",
     "description": "Numeric field to aggregate"
   },
   "metricLabel": {
-    "message": "Result column label",
+    "message": "Etiqueta de la columna de resultados",
     "description": "Output column name for this metric"
   },
   "metricKpiHint": {
-    "message": "KPI shows one aggregated value — use Count, Sum, Average, Min, or Max on any numeric field. Rates often use Average on a percentage field.",
+    "message": "KPI muestra un valor agregado: use Recuento, Suma, Promedio, Mínimo o Máximo en cualquier campo numérico. Las tarifas suelen utilizar el promedio en un campo de porcentaje.",
     "description": "Hint under KPI metric config"
   },
   "metricFn_count": {
-    "message": "Count",
+    "message": "Contar",
     "description": "Aggregation — count"
   },
   "metricFn_sum": {
-    "message": "Sum",
+    "message": "Suma",
     "description": "Aggregation — sum"
   },
   "metricFn_avg": {
-    "message": "Average",
+    "message": "Promedio",
     "description": "Aggregation — average"
   },
   "metricFn_min": {
-    "message": "Minimum",
+    "message": "Mínimo",
     "description": "Aggregation — min"
   },
   "metricFn_max": {
-    "message": "Maximum",
+    "message": "Máximo",
     "description": "Aggregation — max"
   },
   "previewModeKpi": {
-    "message": "KPI preview",
+    "message": "Vista previa de KPI",
     "description": "Report builder preview mode label — KPI"
   },
   "previewModeChart": {
-    "message": "Chart preview",
+    "message": "Vista previa del gráfico",
     "description": "Report builder preview mode label — summary chart"
   },
   "previewModeTrend": {
-    "message": "Trend preview",
+    "message": "Vista previa de tendencias",
     "description": "Report builder preview mode label — line trend"
   },
   "previewModeMatrix": {
-    "message": "Matrix preview",
+    "message": "Vista previa de la matriz",
     "description": "Report builder preview mode label — matrix chart"
   },
   "previewModeTable": {
-    "message": "Table preview",
+    "message": "Vista previa de la tabla",
     "description": "Report builder preview mode label — tabular"
   },
   "previewModeException": {
-    "message": "Exception preview",
+    "message": "Vista previa de excepción",
     "description": "Report builder preview mode label — exception rows"
   },
   "typeJoined": {
-    "message": "Joined",
+    "message": "Unido",
     "description": "Report type label — joined"
   },
   "typeTrend": {
-    "message": "Trend",
+    "message": "Tendencia",
     "description": "Report type label — trend"
   },
   "typeMatrix": {
-    "message": "Matrix",
+    "message": "Matriz",
     "description": "Report type label — matrix"
   },
   "typeException": {
-    "message": "Exception",
+    "message": "Excepción",
     "description": "Report type label — exception"
   },
   "fieldRelatedModules": {
-    "message": "Related modules",
+    "message": "Módulos relacionados",
     "description": "Report builder — cross-module joins"
   },
   "schedulesAssetType": {
-    "message": "Delivery target",
+    "message": "Objetivo de entrega",
     "description": "Schedule form — report vs dashboard"
   },
   "schedulesAssetReport": {
-    "message": "Report",
+    "message": "Informe",
     "description": "Schedule asset type — report"
   },
   "schedulesAssetDashboard": {
-    "message": "Dashboard",
+    "message": "Panel",
     "description": "Schedule asset type — dashboard"
   },
   "schedulesDashboard": {
-    "message": "Dashboard",
+    "message": "Panel",
     "description": "Schedule form — dashboard picker"
   },
   "schedulesSelectDashboard": {
-    "message": "Select dashboard…",
+    "message": "Seleccione el panel...",
     "description": "Schedule form — dashboard placeholder"
   },
   "schedulesExportFormat": {
-    "message": "Export format",
+    "message": "Formato de exportación",
     "description": "Schedule form — attachment format"
   },
   "exportXlsx": {
-    "message": "Export Excel",
+    "message": "Exportar Excel",
     "description": "Report export — xlsx"
   },
   "exportPdf": {
-    "message": "Export PDF",
+    "message": "Exportar PDF",
     "description": "Report export — pdf"
   },
   "chartType_gauge": {
-    "message": "Gauge",
+    "message": "Indicador",
     "description": "Widget chart type — gauge"
   },
   "chartType_heatmap": {
-    "message": "Heatmap",
+    "message": "Mapa de calor",
     "description": "Widget chart type — heatmap"
   },
   "chartType_scatter": {
-    "message": "Scatter",
+    "message": "Dispersión",
     "description": "Widget chart type — scatter"
   },
   "chartType_combo": {
-    "message": "Combo",
+    "message": "combinado",
     "description": "Widget chart type — combo"
   },
   "tabTemplates": {
-    "message": "Templates",
+    "message": "Plantillas",
     "description": "Widgets list templates tab"
   },
   "templatesSectionTitle": {
-    "message": "Start from a template",
+    "message": "Empezar desde una plantilla",
     "description": "Widget builder templates section title"
   },
   "templateUseButton": {
-    "message": "Use template",
+    "message": "Usar plantilla",
     "description": "Apply widget template button"
   },
   "sectionChartOptions": {
-    "message": "Chart options",
+    "message": "Opciones de gráfico",
     "description": "Widget builder chart options section"
   },
   "sectionKpiThresholds": {
-    "message": "KPI thresholds",
+    "message": "Umbrales de KPI",
     "description": "Widget builder KPI thresholds section"
   },
   "optionShowLegend": {
-    "message": "Show legend",
+    "message": "Mostrar leyenda",
     "description": "Chart option show legend"
   },
   "optionStacked": {
-    "message": "Stacked bars",
+    "message": "barras apiladas",
     "description": "Chart option stacked bars"
   },
   "optionSmooth": {
-    "message": "Smooth line",
+    "message": "linea suave",
     "description": "Chart option smooth line"
   },
   "optionHorizontal": {
-    "message": "Horizontal bars",
+    "message": "barras horizontales",
     "description": "Chart option horizontal orientation"
   },
   "optionShowDataLabels": {
-    "message": "Data labels",
+    "message": "Etiquetas de datos",
     "description": "Chart option show data labels"
   },
   "kpiThresholdWarningBelow": {
-    "message": "Warning below",
+    "message": "Advertencia a continuación",
     "description": "KPI threshold warning band upper bound"
   },
   "kpiThresholdGoodAbove": {
-    "message": "Good above",
+    "message": "Bueno arriba",
     "description": "KPI threshold good band lower bound"
   },
   "chartType_area": {
-    "message": "Area",
+    "message": "Área",
     "description": "Chart type area"
   },
   "chartType_donut": {
-    "message": "Donut",
+    "message": "Rosquilla",
     "description": "Chart type donut"
   },
   "widgetArchiveConfirm": {
-    "message": "Archive widget \"{name}\"?",
+    "message": "¿Widget de archivo \"{name}\"?",
     "description": "Confirm archive widget dialog"
   },
   "widgetsFirstTimeTitle": {
-    "message": "Turn reports into visuals",
+    "message": "Convierta los informes en imágenes",
     "description": "First-time widgets empty state title"
   },
   "widgetsFirstTimeDescription": {
-    "message": "Create charts and KPI cards from published reports, or start from a template.",
+    "message": "Cree gráficos y tarjetas KPI a partir de informes publicados o comience desde una plantilla.",
     "description": "First-time widgets empty state description"
   },
   "widgetsFirstTimeAction": {
-    "message": "Create your first widget",
+    "message": "Crea tu primer widget",
     "description": "First-time widgets empty state CTA"
   },
   "dashboardsListTitle": {
-    "message": "Dashboards",
+    "message": "Paneles de control",
     "description": "Analytics dashboards list title"
   },
   "dashboardsListDescription": {
-    "message": "Compose widgets into shareable dashboards.",
+    "message": "Redacte widgets en paneles que se puedan compartir.",
     "description": "Analytics dashboards list subtitle"
   },
   "dashboardsSearchPlaceholder": {
-    "message": "Search dashboards…",
+    "message": "Buscar paneles…",
     "description": "Dashboards list search placeholder"
   },
   "dashboardsEmptyTitle": {
-    "message": "No dashboards yet",
+    "message": "Aún no hay paneles",
     "description": "Empty dashboards list title"
   },
   "dashboardsEmptyDescription": {
-    "message": "Build a dashboard from published widgets to share insights with your team.",
+    "message": "Cree un panel a partir de widgets publicados para compartir información con su equipo.",
     "description": "Empty dashboards list description"
   },
   "dashboardsFirstTimeTitle": {
-    "message": "Bring your widgets together",
+    "message": "Reúne tus widgets",
     "description": "First-time dashboards empty state title"
   },
   "dashboardsFirstTimeDescription": {
-    "message": "Arrange charts and KPIs on a grid, apply a date range, and share with your team.",
+    "message": "Organice gráficos y KPI en una cuadrícula, aplique un rango de fechas y compártalos con su equipo.",
     "description": "First-time dashboards empty state description"
   },
   "dashboardsFirstTimeAction": {
-    "message": "Create your first dashboard",
+    "message": "Crea tu primer panel",
     "description": "First-time dashboards empty state CTA"
   },
   "newDashboard": {
-    "message": "New dashboard",
+    "message": "Nuevo tablero",
     "description": "Create dashboard button"
   },
   "dashboardDesignerTitle": {
-    "message": "Dashboard designer",
+    "message": "Diseñador de tableros",
     "description": "Dashboard designer page title"
   },
   "dashboardDesignerEditTitle": {
-    "message": "Edit dashboard",
+    "message": "Editar panel",
     "description": "Dashboard designer edit title"
   },
   "dashboardFieldName": {
-    "message": "Dashboard name",
+    "message": "Nombre del panel",
     "description": "Dashboard name field"
   },
   "dashboardFieldCategory": {
-    "message": "Category",
+    "message": "Categoría",
     "description": "Dashboard category field"
   },
   "dashboardFieldVisibility": {
-    "message": "Visibility",
+    "message": "Visibilidad",
     "description": "Dashboard visibility field"
   },
   "dashboardCategory_personal": {
@@ -716,399 +716,399 @@
     "description": "Dashboard category personal"
   },
   "dashboardCategory_team": {
-    "message": "Team",
+    "message": "Equipo",
     "description": "Dashboard category team"
   },
   "dashboardCategory_executive": {
-    "message": "Executive",
+    "message": "Ejecutivo",
     "description": "Dashboard category executive"
   },
   "dashboardCategory_app": {
-    "message": "App",
+    "message": "Aplicación",
     "description": "Dashboard category app"
   },
   "filterAllCategories": {
-    "message": "All categories",
+    "message": "Todas las categorias",
     "description": "Dashboard list category filter"
   },
   "colCategory": {
-    "message": "Category",
+    "message": "Categoría",
     "description": "Table column category"
   },
   "colWidgets": {
-    "message": "Widgets",
+    "message": "widgets",
     "description": "Table column widget count"
   },
   "visibilityPrivate": {
-    "message": "Private",
+    "message": "Privado",
     "description": "Dashboard visibility private"
   },
   "visibilityTeam": {
-    "message": "Team",
+    "message": "Equipo",
     "description": "Dashboard visibility team"
   },
   "visibilityOrganization": {
-    "message": "Organization",
+    "message": "Organización",
     "description": "Dashboard visibility organization"
   },
   "dashboardWidgetPalette": {
-    "message": "Widget library",
+    "message": "biblioteca de widgets",
     "description": "Dashboard designer widget palette title"
   },
   "dashboardWidgetSearch": {
-    "message": "Search widgets…",
+    "message": "Buscar widgets...",
     "description": "Dashboard designer widget search"
   },
   "dashboardNoPublishedWidgets": {
-    "message": "No published widgets available",
+    "message": "No hay widgets publicados disponibles",
     "description": "Empty widget palette in designer"
   },
   "dashboardEmptyCanvas": {
-    "message": "Add widgets from the library to build your dashboard",
+    "message": "Agregue widgets de la biblioteca para crear su panel",
     "description": "Empty dashboard canvas hint"
   },
   "dashboardWidgetPlaceholder": {
-    "message": "Widget",
+    "message": "widget",
     "description": "Dashboard widget placeholder title"
   },
   "dashboardDateRangeLabel": {
-    "message": "Date range",
+    "message": "Rango de fechas",
     "description": "Dashboard global date range label"
   },
   "dateFrom": {
-    "message": "From",
+    "message": "De",
     "description": "Date range from label"
   },
   "dateTo": {
-    "message": "To",
+    "message": "A",
     "description": "Date range to label"
   },
   "datePresetLast7": {
-    "message": "Last 7 days",
+    "message": "últimos 7 días",
     "description": "Date preset last 7 days"
   },
   "datePresetLast30": {
-    "message": "Last 30 days",
+    "message": "últimos 30 días",
     "description": "Date preset last 30 days"
   },
   "datePresetThisMonth": {
-    "message": "This month",
+    "message": "este mes",
     "description": "Date preset this month"
   },
   "datePresetCustom": {
-    "message": "Custom",
+    "message": "Costumbre",
     "description": "Date preset custom"
   },
   "refreshDashboard": {
-    "message": "Refresh",
+    "message": "Refrescar",
     "description": "Refresh dashboard button"
   },
   "dashboardArchiveConfirm": {
-    "message": "Archive dashboard \"{name}\"?",
+    "message": "¿Panel de archivo \"{name}\"?",
     "description": "Confirm archive dashboard dialog"
   },
   "dashboardShareTitle": {
-    "message": "Sharing",
+    "message": "Intercambio",
     "description": "Dashboard share panel title"
   },
   "dashboardShareTeams": {
-    "message": "Share with teams",
+    "message": "Compartir con equipos",
     "description": "Dashboard team share picker"
   },
   "dashboardShareRoles": {
-    "message": "Share with roles",
+    "message": "Compartir con roles",
     "description": "Dashboard role share picker"
   },
   "visibilityRole": {
-    "message": "Specific roles",
+    "message": "Roles específicos",
     "description": "Dashboard visibility role-based"
   },
   "dashboardFieldAppKey": {
-    "message": "App",
+    "message": "Aplicación",
     "description": "Dashboard app key field for app category"
   },
   "dashboardSelectApp": {
-    "message": "Select an app…",
+    "message": "Seleccione una aplicación...",
     "description": "Dashboard app picker placeholder"
   },
   "dashboardIsDefault": {
-    "message": "Default app dashboard",
+    "message": "Panel de aplicación predeterminado",
     "description": "Mark dashboard as default for app"
   },
   "dashboardDrillDownEnabled": {
-    "message": "Enable drill-down on chart click",
+    "message": "Habilitar desglose al hacer clic en el gráfico",
     "description": "Dashboard drill-down toggle"
   },
   "dashboardDrillActive": {
-    "message": "Filtered by: {label}",
+    "message": "Filtrado por: {label}",
     "description": "Active drill-down filter chip"
   },
   "dashboardClearDrill": {
-    "message": "Clear filter",
+    "message": "Limpiar filtro",
     "description": "Clear drill-down filter button"
   },
   "dashboardEmbedDescription": {
-    "message": "Platform analytics dashboard for this app.",
+    "message": "Panel de análisis de plataforma para esta aplicación.",
     "description": "Embedded dashboard description"
   },
   "dashboardOpenFull": {
-    "message": "Open full dashboard",
+    "message": "Abrir panel completo",
     "description": "Link to full dashboard view"
   },
   "homeFavoritesTitle": {
-    "message": "Favorites",
+    "message": "Favoritos",
     "description": "Analytics home favorites section"
   },
   "homeFavoritesEmpty": {
-    "message": "Star an asset from Recent to add it here.",
+    "message": "Destaca un recurso de Recientes para agregarlo aquí.",
     "description": "Analytics home favorites empty state"
   },
   "favoriteAdd": {
-    "message": "Add to favorites",
+    "message": "Añadir a favoritos",
     "description": "Favorite button add label"
   },
   "favoriteRemove": {
-    "message": "Remove from favorites",
+    "message": "Quitar de favoritos",
     "description": "Favorite button remove label"
   },
   "foldersTitle": {
-    "message": "Folders",
+    "message": "Carpetas",
     "description": "Analytics folders page title"
   },
   "foldersDescription": {
-    "message": "Organize reports, widgets, and dashboards into folders.",
+    "message": "Organice informes, widgets y paneles en carpetas.",
     "description": "Analytics folders page description"
   },
   "foldersNamePlaceholder": {
-    "message": "New folder name…",
+    "message": "Nuevo nombre de carpeta…",
     "description": "Analytics folder name input placeholder"
   },
   "foldersCreate": {
-    "message": "Create folder",
+    "message": "Crear carpeta",
     "description": "Create folder button"
   },
   "foldersEmpty": {
-    "message": "No folders yet.",
+    "message": "Aún no hay carpetas.",
     "description": "Empty folders list"
   },
   "foldersDeleteConfirm": {
-    "message": "Delete folder \"{name}\"? Assets will be unassigned.",
+    "message": "¿Eliminar la carpeta \"{name}\"? Los activos serán desasignados.",
     "description": "Confirm delete folder"
   },
   "trashTitle": {
-    "message": "Recycle bin",
+    "message": "papelera de reciclaje",
     "description": "Analytics trash page title"
   },
   "trashDescription": {
-    "message": "Restore archived reports, widgets, and dashboards.",
+    "message": "Restaure informes, widgets y paneles archivados.",
     "description": "Analytics trash page description"
   },
   "trashEmpty": {
-    "message": "Nothing in the recycle bin.",
+    "message": "Nada en la papelera de reciclaje.",
     "description": "Empty analytics trash"
   },
   "trashRestore": {
-    "message": "Restore",
+    "message": "Restaurar",
     "description": "Restore archived asset button"
   },
   "colArchived": {
-    "message": "Archived",
+    "message": "Archivado",
     "description": "Table column archived at"
   },
   "settingsTitle": {
-    "message": "Analytics settings",
+    "message": "Configuración de análisis",
     "description": "Org analytics settings page title"
   },
   "settingsDescription": {
-    "message": "Organization defaults for cache, exports, and date ranges.",
+    "message": "Valores predeterminados de la organización para caché, exportaciones y rangos de fechas.",
     "description": "Analytics settings description"
   },
   "settingsCacheTtl": {
-    "message": "Cache TTL (seconds)",
+    "message": "TTL de caché (segundos)",
     "description": "Analytics cache TTL setting"
   },
   "settingsExportLimit": {
-    "message": "Export row limit",
+    "message": "Límite de filas de exportación",
     "description": "Analytics export row limit setting"
   },
   "settingsFiscalMonth": {
-    "message": "Fiscal year starts (month)",
+    "message": "Inicio del año fiscal (mes)",
     "description": "Fiscal year start month setting"
   },
   "settingsDefaultDatePreset": {
-    "message": "Default date range",
+    "message": "Intervalo de fechas predeterminado",
     "description": "Default dashboard date preset"
   },
   "fieldFolder": {
-    "message": "Folder",
+    "message": "Carpeta",
     "description": "Analytics asset folder field"
   },
   "filterAllFolders": {
-    "message": "All folders",
+    "message": "Todas las carpetas",
     "description": "Report list folder filter — all"
   },
   "filterUnfiled": {
-    "message": "Unfiled",
+    "message": "Sin archivar",
     "description": "Report list folder filter — no folder"
   },
   "schedulesTitle": {
-    "message": "Schedules",
+    "message": "Horarios",
     "description": "Analytics schedules page title"
   },
   "schedulesDescription": {
-    "message": "Automate report delivery with CSV email and point-in-time snapshots.",
+    "message": "Automatice la entrega de informes con correo electrónico CSV e instantáneas de un momento dado.",
     "description": "Analytics schedules page description"
   },
   "schedulesCreate": {
-    "message": "New schedule",
+    "message": "Nuevo horario",
     "description": "Create analytics schedule button"
   },
   "schedulesEdit": {
-    "message": "Edit schedule",
+    "message": "Editar horario",
     "description": "Edit analytics schedule form title"
   },
   "schedulesEmpty": {
-    "message": "No schedules yet.",
+    "message": "Aún no hay horarios.",
     "description": "Empty analytics schedules list"
   },
   "schedulesReport": {
-    "message": "Report",
+    "message": "Informe",
     "description": "Schedule linked report column"
   },
   "schedulesSelectReport": {
-    "message": "Select a published report…",
+    "message": "Seleccione un informe publicado...",
     "description": "Schedule report select placeholder"
   },
   "schedulesFrequency": {
-    "message": "Frequency",
+    "message": "Frecuencia",
     "description": "Schedule frequency field"
   },
   "schedulesTimezone": {
-    "message": "Timezone",
+    "message": "Zona horaria",
     "description": "Schedule timezone field"
   },
   "schedulesDaily": {
-    "message": "Daily",
+    "message": "A diario",
     "description": "Daily schedule frequency"
   },
   "schedulesWeekly": {
-    "message": "Weekly",
+    "message": "Semanalmente",
     "description": "Weekly schedule frequency"
   },
   "schedulesMonthly": {
-    "message": "Monthly",
+    "message": "Mensual",
     "description": "Monthly schedule frequency"
   },
   "schedulesHour": {
-    "message": "Hour",
+    "message": "Hora",
     "description": "Schedule hour field"
   },
   "schedulesMinute": {
-    "message": "Minute",
+    "message": "Minuto",
     "description": "Schedule minute field"
   },
   "schedulesDayOfWeek": {
-    "message": "Day of week",
+    "message": "dia de la semana",
     "description": "Weekly schedule day field"
   },
   "schedulesDayOfMonth": {
-    "message": "Day of month",
+    "message": "Día del mes",
     "description": "Monthly schedule day field"
   },
   "schedulesRecipients": {
-    "message": "Recipients",
+    "message": "Destinatarios",
     "description": "Schedule email recipients field"
   },
   "schedulesRecipientsPlaceholder": {
-    "message": "email1@company.com, email2@company.com",
+    "message": "correo electrónico1{'@'}empresa.com, correo electrónico2{'@'}empresa.com",
     "description": "Schedule recipients placeholder"
   },
   "schedulesEmailSubject": {
-    "message": "Email subject",
+    "message": "Asunto del correo electrónico",
     "description": "Schedule email subject field"
   },
   "schedulesEmailSubjectPlaceholder": {
-    "message": "Optional — defaults to report name",
+    "message": "Opcional: por defecto el nombre del informe",
     "description": "Schedule email subject placeholder"
   },
   "schedulesDeleteConfirm": {
-    "message": "Delete schedule \"{name}\"?",
+    "message": "¿Eliminar horario \"{name}\"?",
     "description": "Confirm delete schedule"
   },
   "schedulesLastRun": {
-    "message": "Last run",
+    "message": "última ejecución",
     "description": "Schedule last run column"
   },
   "schedulesRunNow": {
-    "message": "Run now",
+    "message": "Corre ahora",
     "description": "Run schedule immediately"
   },
   "schedulesPause": {
-    "message": "Pause",
+    "message": "Pausa",
     "description": "Pause schedule"
   },
   "schedulesResume": {
-    "message": "Resume",
+    "message": "Reanudar",
     "description": "Resume schedule"
   },
   "schedulesSnapshots": {
-    "message": "Snapshots",
+    "message": "Instantáneas",
     "description": "View schedule snapshots"
   },
   "schedulesSunday": {
-    "message": "Sunday",
+    "message": "Domingo",
     "description": "Weekday label"
   },
   "schedulesMonday": {
-    "message": "Monday",
+    "message": "Lunes",
     "description": "Weekday label"
   },
   "schedulesTuesday": {
-    "message": "Tuesday",
+    "message": "Martes",
     "description": "Weekday label"
   },
   "schedulesWednesday": {
-    "message": "Wednesday",
+    "message": "Miércoles",
     "description": "Weekday label"
   },
   "schedulesThursday": {
-    "message": "Thursday",
+    "message": "Jueves",
     "description": "Weekday label"
   },
   "schedulesFriday": {
-    "message": "Friday",
+    "message": "Viernes",
     "description": "Weekday label"
   },
   "schedulesSaturday": {
-    "message": "Saturday",
+    "message": "Sábado",
     "description": "Weekday label"
   },
   "snapshotsTitle": {
-    "message": "Snapshots",
+    "message": "Instantáneas",
     "description": "Analytics snapshots page title"
   },
   "snapshotsDescription": {
-    "message": "Point-in-time report results captured by schedules.",
+    "message": "Resultados de informes de un momento dado capturados por programaciones.",
     "description": "Analytics snapshots page description"
   },
   "snapshotsEmpty": {
-    "message": "No snapshots yet.",
+    "message": "Aún no hay instantáneas.",
     "description": "Empty analytics snapshots list"
   },
   "snapshotsCapturedAt": {
-    "message": "Captured",
+    "message": "capturado",
     "description": "Snapshot captured at column"
   },
   "snapshotsRowCount": {
-    "message": "Rows",
+    "message": "Filas",
     "description": "Snapshot row count column"
   },
   "snapshotsEmailSent": {
-    "message": "Email sent",
+    "message": "Correo electrónico enviado",
     "description": "Snapshot email delivery indicator"
   },
   "snapshotsEmailYes": {
-    "message": "Yes",
+    "message": "Sí",
     "description": "Snapshot email was sent"
   },
   "snapshotsEmailNo": {
@@ -1116,171 +1116,919 @@
     "description": "Snapshot email was not sent"
   },
   "alertsTitle": {
-    "message": "Alerts",
+    "message": "Alertas",
     "description": "Analytics alerts page title"
   },
   "alertsDescription": {
-    "message": "Notify when widget metrics cross thresholds (in-app and optional email).",
+    "message": "Notificar cuando las métricas del widget crucen los umbrales (en la aplicación y correo electrónico opcional).",
     "description": "Analytics alerts page description"
   },
   "alertsCreate": {
-    "message": "New alert",
+    "message": "Nueva alerta",
     "description": "Create analytics alert button"
   },
   "alertsEdit": {
-    "message": "Edit alert",
+    "message": "Editar alerta",
     "description": "Edit analytics alert form title"
   },
   "alertsEmpty": {
-    "message": "No alerts yet.",
+    "message": "Aún no hay alertas.",
     "description": "Empty analytics alerts list"
   },
   "alertsWidget": {
-    "message": "Widget",
+    "message": "widget",
     "description": "Alert linked widget column"
   },
   "alertsSelectWidget": {
-    "message": "Select a published widget…",
+    "message": "Seleccione un widget publicado...",
     "description": "Alert widget select placeholder"
   },
   "alertsMetricField": {
-    "message": "Metric field",
+    "message": "Campo métrico",
     "description": "Alert metric field label"
   },
   "alertsMetricFieldHint": {
-    "message": "Optional — defaults to widget KPI / metric mapping",
+    "message": "Opcional: por defecto se utiliza el widget KPI/asignación de métricas.",
     "description": "Alert metric field placeholder"
   },
   "alertsOperator": {
-    "message": "Operator",
+    "message": "Operador",
     "description": "Alert comparison operator"
   },
   "alertsOpLt": {
-    "message": "Less than",
+    "message": "Menos que",
     "description": "Alert operator less than"
   },
   "alertsOpLte": {
-    "message": "Less than or equal",
+    "message": "Menor o igual",
     "description": "Alert operator lte"
   },
   "alertsOpGt": {
-    "message": "Greater than",
+    "message": "Más que",
     "description": "Alert operator greater than"
   },
   "alertsOpGte": {
-    "message": "Greater than or equal",
+    "message": "Mayor o igual que",
     "description": "Alert operator gte"
   },
   "alertsOpEq": {
-    "message": "Equal to",
+    "message": "igual a",
     "description": "Alert operator equal"
   },
   "alertsThreshold": {
-    "message": "Threshold",
+    "message": "Límite",
     "description": "Alert threshold value"
   },
   "alertsCondition": {
-    "message": "Condition",
+    "message": "Condición",
     "description": "Alert condition column"
   },
   "alertsNotifyInApp": {
-    "message": "In-app notification",
+    "message": "Notificación en la aplicación",
     "description": "Alert in-app notify toggle"
   },
   "alertsNotifyEmail": {
-    "message": "Email notification",
+    "message": "Notificación por correo electrónico",
     "description": "Alert email notify toggle"
   },
   "alertsLastTriggered": {
-    "message": "Last triggered",
+    "message": "Última activación",
     "description": "Alert last triggered column"
   },
   "alertsPause": {
-    "message": "Pause",
+    "message": "Pausa",
     "description": "Pause analytics alert"
   },
   "alertsResume": {
-    "message": "Resume",
+    "message": "Reanudar",
     "description": "Resume analytics alert"
   },
   "alertsDeleteConfirm": {
-    "message": "Delete this alert?",
+    "message": "¿Eliminar esta alerta?",
     "description": "Alert delete confirmation"
   },
   "certifiedBadge": {
-    "message": "Certified",
+    "message": "Certificado",
     "description": "Certified analytics asset badge"
   },
   "certifyReport": {
-    "message": "Certify",
+    "message": "Certificar",
     "description": "Certify analytics report action"
   },
   "uncertifyReport": {
-    "message": "Remove certification",
+    "message": "Quitar certificación",
     "description": "Uncertify analytics report action"
   },
   "detailViews": {
-    "message": "Views",
+    "message": "Vistas",
     "description": "Report detail view count label"
   },
   "apiTokensTitle": {
-    "message": "API tokens",
+    "message": "tokens API",
     "description": "Analytics API tokens section title"
   },
   "apiTokensDescription": {
-    "message": "Machine tokens for /api/analytics/v1 (scoped execute, export, list).",
+    "message": "Tokens de máquina para /api/analytics/v1 (ejecución, exportación y lista con alcance).",
     "description": "Analytics API tokens section description"
   },
   "apiTokensCreate": {
-    "message": "Create token",
+    "message": "Crear token",
     "description": "Create analytics API token button"
   },
   "apiTokensEmpty": {
-    "message": "No API tokens yet.",
+    "message": "Aún no hay tokens API.",
     "description": "Empty analytics API tokens list"
   },
   "apiTokensCopyNow": {
-    "message": "Copy this token now — it won't be shown again.",
+    "message": "Copie este token ahora; no se volverá a mostrar.",
     "description": "One-time token display warning"
   },
   "apiTokensDismiss": {
-    "message": "Dismiss",
+    "message": "Despedir",
     "description": "Dismiss one-time token display"
   },
   "apiTokensRevoke": {
-    "message": "Revoke",
+    "message": "Revocar",
     "description": "Revoke analytics API token"
   },
   "apiTokensRevokeConfirm": {
-    "message": "Revoke this API token?",
+    "message": "¿Revocar este token API?",
     "description": "Revoke token confirmation"
   },
   "apiTokensLastUsed": {
-    "message": "Last used",
+    "message": "último usado",
     "description": "API token last used label"
   },
   "apiTokensV1Hint": {
-    "message": "Use Authorization: Bearer ld_analytics_… or X-Analytics-Api-Key against /api/analytics/v1/reports.",
+    "message": "Autorización de uso: Portador ld_analytics_… o X-Analytics-Api-Key contra /api/analytics/v1/reports.",
     "description": "API token usage hint"
   },
   "embedCreateLink": {
-    "message": "Copy embed link",
+    "message": "Copiar enlace para insertar",
     "description": "Create read-only dashboard embed link"
   },
   "embedLinkCopied": {
-    "message": "Embed link copied to clipboard.",
+    "message": "Insertar enlace copiado al portapapeles.",
     "description": "Embed link copy confirmation"
   },
   "embedMissingToken": {
-    "message": "Embed token is missing.",
+    "message": "Falta el token de inserción.",
     "description": "Embed view missing token error"
   },
   "embedInvalidToken": {
-    "message": "This embed link is invalid or expired.",
+    "message": "Este enlace para insertar no es válido o ha caducado.",
     "description": "Embed view invalid token error"
   },
   "dashboardWidgetLoadError": {
-    "message": "Unable to load this widget. Its report may be missing or unpublished.",
+    "message": "No se puede cargar este widget. Su informe puede faltar o no estar publicado.",
     "description": "Error when a dashboard or home analytics widget fails to execute"
+  },
+  "builderColumnSearchPlaceholder": {
+    "message": "Buscar columnas…",
+    "description": "Report builder column picker search placeholder"
+  },
+  "builderSelectAllColumns": {
+    "message": "Seleccionar todo",
+    "description": "Report builder column picker select all action"
+  },
+  "builderClearColumns": {
+    "message": "Claro",
+    "description": "Report builder column picker clear selection action"
+  },
+  "builderColumnsSelectedCount": {
+    "message": "__UCI_0__ seleccionado",
+    "description": "Report builder column picker selected count label"
+  },
+  "builderStepLabel": {
+    "message": "Paso __UCI_0__",
+    "description": "Report builder panel step label"
+  },
+  "builderBackToReports": {
+    "message": "Volver a informes",
+    "description": "Report builder back navigation label"
+  },
+  "builderStepperLabel": {
+    "message": "Progreso de la creación del informe",
+    "description": "Report builder stepper aria label"
+  },
+  "builderStepProgress": {
+    "message": "Paso {current} de {total}",
+    "description": "Report builder mobile step progress"
+  },
+  "builderStep_selectModule": {
+    "message": "Seleccionar módulo",
+    "description": "Report builder step 1 label"
+  },
+  "builderStep_selectFields": {
+    "message": "Seleccionar campos",
+    "description": "Report builder step 2 label"
+  },
+  "builderStep_addFilters": {
+    "message": "Agregar filtros",
+    "description": "Report builder step 3 label"
+  },
+  "builderStep_groupAggregate": {
+    "message": "Grupo y agregado",
+    "description": "Report builder step 4 label"
+  },
+  "builderStep_previewSave": {
+    "message": "Preview & save",
+    "description": "Report builder step 5 label"
+  },
+  "builderStepHeading_selectModule": {
+    "message": "Paso 1: seleccione el módulo principal",
+    "description": "Report builder step 1 heading"
+  },
+  "builderStepHint_selectModule": {
+    "message": "Elija el módulo principal de CRM en el que se basa su informe.",
+    "description": "Report builder step 1 hint"
+  },
+  "builderStepHeading_groupAggregate": {
+    "message": "Paso 4: Agrupar y agregar",
+    "description": "Report builder step 4 heading"
+  },
+  "builderStepHint_groupAggregate": {
+    "message": "Agrupe sus datos y elija funciones agregadas para campos numéricos.",
+    "description": "Report builder step 4 hint"
+  },
+  "builderCreateNewReport": {
+    "message": "Crear nuevo informe",
+    "description": "Default report name in builder header"
+  },
+  "builderUntitledReport": {
+    "message": "Informe sin título",
+    "description": "Fallback report name when saving without a title"
+  },
+  "builderChangeModule": {
+    "message": "Cambiar módulo",
+    "description": "Link to go back to module selection"
+  },
+  "builderChangeType": {
+    "message": "Cambiar",
+    "description": "Link to change report type in summary panel"
+  },
+  "builderPublishReport": {
+    "message": "Publicar informe",
+    "description": "Publish report button in builder"
+  },
+  "builderSearchModules": {
+    "message": "Módulos de búsqueda…",
+    "description": "Module search placeholder in step 1"
+  },
+  "builderPopularModules": {
+    "message": "Módulos populares",
+    "description": "Popular modules section title"
+  },
+  "builderAllModules": {
+    "message": "Todos los módulos",
+    "description": "All modules section title"
+  },
+  "builderWhatsNext": {
+    "message": "¿Qué sigue?",
+    "description": "Info box title after module selection"
+  },
+  "builderWhatsNextHint": {
+    "message": "Después de seleccionar un módulo, elegirá campos, filtros, agrupaciones y obtendrá una vista previa de su informe.",
+    "description": "Info box body after module selection"
+  },
+  "builderAboutModules": {
+    "message": "Acerca de los módulos",
+    "description": "Step 1 sidebar about modules title"
+  },
+  "builderAboutModulesBody": {
+    "message": "Los módulos son los objetos comerciales de su CRM: acuerdos, personas, casos y más.",
+    "description": "Step 1 sidebar about modules body"
+  },
+  "builderAboutModulesTip1": {
+    "message": "Comience con el módulo que contiene los datos que desea analizar.",
+    "description": "Step 1 sidebar tip 1"
+  },
+  "builderAboutModulesTip2": {
+    "message": "Puede unirse a módulos relacionados en el siguiente paso.",
+    "description": "Step 1 sidebar tip 2"
+  },
+  "builderAboutModulesTip3": {
+    "message": "Puede cambiar el módulo principal más adelante si es necesario.",
+    "description": "Step 1 sidebar tip 3"
+  },
+  "builderModuleExamples": {
+    "message": "Ejemplos",
+    "description": "Step 1 sidebar examples title"
+  },
+  "builderExampleDeals": {
+    "message": "Ofertas",
+    "description": "Example module name — deals"
+  },
+  "builderExampleDealsDesc": {
+    "message": "Análisis de canalización, ingresos y etapas.",
+    "description": "Example module description — deals"
+  },
+  "builderExamplePeople": {
+    "message": "Gente",
+    "description": "Example module name — people"
+  },
+  "builderExamplePeopleDesc": {
+    "message": "Listas de contactos y participación",
+    "description": "Example module description — people"
+  },
+  "builderExampleOrgs": {
+    "message": "Organizaciones",
+    "description": "Example module name — organizations"
+  },
+  "builderExampleOrgsDesc": {
+    "message": "Estado de la cuenta y averías de la industria",
+    "description": "Example module description — organizations"
+  },
+  "builderProTip": {
+    "message": "Consejo profesional",
+    "description": "Step 1 sidebar pro tip label"
+  },
+  "builderProTipBody": {
+    "message": "¿No estás seguro de por dónde empezar? Elija Ofertas para informes de ventas o Casos para informes de soporte.",
+    "description": "Step 1 sidebar pro tip body"
+  },
+  "builderModuleDescDefault": {
+    "message": "Analice registros y tendencias en este módulo.",
+    "description": "Default module card description"
+  },
+  "builderModuleDesc_deals": {
+    "message": "Realice un seguimiento y analice el flujo de ventas y los ingresos.",
+    "description": "Module card description — deals"
+  },
+  "builderModuleDesc_people": {
+    "message": "Ver y analizar información de contacto.",
+    "description": "Module card description — people"
+  },
+  "builderModuleDesc_organizations": {
+    "message": "Analizar datos de clientes y cuentas.",
+    "description": "Module card description — organizations"
+  },
+  "builderModuleDesc_cases": {
+    "message": "Realice un seguimiento y analice casos y tickets de soporte.",
+    "description": "Module card description — cases"
+  },
+  "builderModuleDesc_quotes": {
+    "message": "Analizar cotizaciones y métricas de conversión.",
+    "description": "Module card description — quotes"
+  },
+  "builderModuleDesc_tasks": {
+    "message": "Seguimiento y análisis de actividades y tareas.",
+    "description": "Module card description — tasks"
+  },
+  "builderModuleDesc_events": {
+    "message": "Analizar eventos y actividad del calendario.",
+    "description": "Module card description — events"
+  },
+  "builderModuleDesc_items": {
+    "message": "Analizar el rendimiento y el inventario del producto.",
+    "description": "Module card description — items"
+  },
+  "builderFieldSearchPlaceholder": {
+    "message": "Campos de búsqueda…",
+    "description": "Field explorer search placeholder"
+  },
+  "builderPrimaryBadge": {
+    "message": "Primario",
+    "description": "Primary module badge in field explorer"
+  },
+  "builderSelectedFieldsTitle": {
+    "message": "Campos seleccionados ({count})",
+    "description": "Selected fields panel title"
+  },
+  "builderClearAll": {
+    "message": "Borrar todo",
+    "description": "Clear all selected fields action"
+  },
+  "builderNoFieldsSelected": {
+    "message": "Seleccione campos del explorador para incluirlos en su informe.",
+    "description": "Empty selected fields state"
+  },
+  "builderJoinHint": {
+    "message": "Relacionado con {module} vía {target}",
+    "description": "Related module join hint"
+  },
+  "builderAdded": {
+    "message": "Agregado",
+    "description": "Related module already added badge"
+  },
+  "builderFieldsPerformanceTip": {
+    "message": "Consejo: seleccione solo los campos que necesita para una ejecución más rápida del informe.",
+    "description": "Performance tip on fields step"
+  },
+  "builderFiltersOptional": {
+    "message": "Opcional",
+    "description": "Filters step optional badge"
+  },
+  "builderFiltersTip": {
+    "message": "Utilice grupos Y/O para crear una lógica de filtro compleja.",
+    "description": "Filters step tip"
+  },
+  "builderRowGrouping": {
+    "message": "Agrupación de filas",
+    "description": "Row grouping section label"
+  },
+  "builderColumnGrouping": {
+    "message": "Agrupación de columnas (opcional)",
+    "description": "Column grouping section label"
+  },
+  "builderAddRowGroup": {
+    "message": "Agregar grupo de filas…",
+    "description": "Add row group placeholder"
+  },
+  "builderAddColumnGroup": {
+    "message": "Agregar grupo de columnas…",
+    "description": "Add column group placeholder"
+  },
+  "builderGroupSettings": {
+    "message": "Configuración de grupo",
+    "description": "Group settings section title"
+  },
+  "builderShowGrandTotal": {
+    "message": "Mostrar total general",
+    "description": "Show grand total checkbox"
+  },
+  "builderShowSubtotals": {
+    "message": "Mostrar subtotales",
+    "description": "Show subtotals checkbox"
+  },
+  "builderShowRecordCount": {
+    "message": "Mostrar recuento de registros",
+    "description": "Show record count checkbox"
+  },
+  "builderCollapseGroups": {
+    "message": "Collapse all groups by default",
+    "description": "Collapse groups checkbox"
+  },
+  "builderSorting": {
+    "message": "Clasificación",
+    "description": "Sorting section title"
+  },
+  "builderAddSort": {
+    "message": "Agregar clasificación",
+    "description": "Add sort button"
+  },
+  "builderNoSorting": {
+    "message": "No hay orden de clasificación configurado.",
+    "description": "Empty sorting state"
+  },
+  "builderSortAsc": {
+    "message": "Ascendente",
+    "description": "Ascending sort direction"
+  },
+  "builderSortDesc": {
+    "message": "Descendente",
+    "description": "Descending sort direction"
+  },
+  "builderGroupLimitTip": {
+    "message": "Puede agregar hasta 3 grupos de filas y 3 grupos de columnas.",
+    "description": "Group limit tip"
+  },
+  "builderReportSummary": {
+    "message": "Resumen del informe",
+    "description": "Summary panel title"
+  },
+  "builderSelectedFieldsCount": {
+    "message": "Campos seleccionados ({count})",
+    "description": "Summary panel selected fields count"
+  },
+  "builderEditFields": {
+    "message": "Editar campos",
+    "description": "Summary panel edit fields link"
+  },
+  "builderFiltersCount": {
+    "message": "Filtros ({count})",
+    "description": "Summary panel filters count"
+  },
+  "builderEditFilters": {
+    "message": "Editar filtros",
+    "description": "Summary panel edit filters link"
+  },
+  "builderFiltersConfigured": {
+    "message": "Condiciones de filtro configuradas",
+    "description": "Summary panel filters configured text"
+  },
+  "builderGrouping": {
+    "message": "Agrupamiento",
+    "description": "Summary panel grouping section"
+  },
+  "builderEditGrouping": {
+    "message": "Editar agrupación",
+    "description": "Summary panel edit grouping link"
+  },
+  "builderRowGroups": {
+    "message": "Filas",
+    "description": "Summary panel row groups label"
+  },
+  "builderColumnGroups": {
+    "message": "columnas",
+    "description": "Summary panel column groups label"
+  },
+  "builderEditSorting": {
+    "message": "Editar clasificación",
+    "description": "Summary panel edit sorting link"
+  },
+  "builderNeedHelp": {
+    "message": "¿Necesita ayuda para crear informes?",
+    "description": "Summary panel help text"
+  },
+  "builderTabPreview": {
+    "message": "Avance",
+    "description": "Preview tab on final step"
+  },
+  "builderTabSavePublish": {
+    "message": "Guardar y publicar",
+    "description": "Save and publish tab on final step"
+  },
+  "builderReportInformation": {
+    "message": "Informar información",
+    "description": "Save step report info card title"
+  },
+  "builderDescription": {
+    "message": "Descripción",
+    "description": "Report description field label"
+  },
+  "builderOtherSettings": {
+    "message": "Otras configuraciones",
+    "description": "Save step other settings card title"
+  },
+  "builderSaveHint": {
+    "message": "Guárdelo como borrador para continuar editándolo más tarde o publíquelo para que el informe esté disponible para su equipo.",
+    "description": "Save step hint text"
+  },
+  "builderReadyToPublish": {
+    "message": "Listo para publicar. Todas las configuraciones se ven bien.",
+    "description": "Ready to publish status message"
+  },
+  "builderFieldExplorer": {
+    "message": "Explorador de campo",
+    "description": "Field explorer panel title"
+  },
+  "builderStepHint_selectFields": {
+    "message": "Elija columnas y módulos relacionados para su informe.",
+    "description": "Report builder step 2 hint"
+  },
+  "builderStepHint_addFilters": {
+    "message": "Resultados limitados con condiciones de filtro visual.",
+    "description": "Report builder step 3 hint"
+  },
+  "builderStepHint_previewSave": {
+    "message": "Review results, then save or publish your report.",
+    "description": "Report builder step 5 hint"
+  },
+  "builderRelatedModulesHint": {
+    "message": "Únase a módulos CRM relacionados para incluir sus campos.",
+    "description": "Related modules section subtitle"
+  },
+  "builderTypeDesc_tabular": {
+    "message": "Listar registros individuales con columnas seleccionadas",
+    "description": "Report type option description — tabular"
+  },
+  "builderTypeDesc_summary": {
+    "message": "Agrupar datos y mostrar métricas agregadas",
+    "description": "Report type option description — summary"
+  },
+  "builderTypeDesc_kpi": {
+    "message": "Tarjeta métrica única o puntaje",
+    "description": "Report type option description — KPI"
+  },
+  "builderTypeDesc_matrix": {
+    "message": "Tabulación cruzada con grupos de filas y columnas",
+    "description": "Report type option description — matrix"
+  },
+  "previewModeGroupedTable": {
+    "message": "Vista previa de tabla agrupada",
+    "description": "Report builder preview mode label — summary grouped table"
+  },
+  "previewModeMatrixTable": {
+    "message": "Vista previa de la tabla de matrices",
+    "description": "Report builder preview mode label — matrix pivot table"
+  },
+  "matrixDrillDownTitle": {
+    "message": "Registros desglosados",
+    "description": "Matrix pivot drill-down panel title"
+  },
+  "matrixDrillDownClear": {
+    "message": "Borrar desglose",
+    "description": "Clear matrix drill-down filter"
+  },
+  "matrixDrillDownLoading": {
+    "message": "Cargando registros…",
+    "description": "Matrix drill-down loading state"
+  },
+  "matrixDrillDownEmpty": {
+    "message": "Ningún registro coincide con esta celda",
+    "description": "Matrix drill-down empty state"
+  },
+  "matrixRowExpand": {
+    "message": "Expandir fila",
+    "description": "Expand matrix row to show underlying records"
+  },
+  "matrixRowCollapse": {
+    "message": "Contraer fila",
+    "description": "Collapse expanded matrix row"
+  },
+  "matrixRowRecords": {
+    "message": "__UCI_0__ registros",
+    "description": "Record count in expanded matrix row"
+  },
+  "builderNamePlaceholder": {
+    "message": "p.ej. Acuerdos abiertos por etapa",
+    "description": "Report name placeholder on step 1"
+  },
+  "builderDescriptionPlaceholder": {
+    "message": "Opcional: qué muestra este informe y para quién es",
+    "description": "Report description placeholder on step 1"
+  },
+  "builderNameRequired": {
+    "message": "Ingrese un nombre de informe antes de guardarlo.",
+    "description": "Validation when saving without a name"
+  },
+  "builderSaveSuccess": {
+    "message": "Informe guardado.",
+    "description": "Toast after successful save"
+  },
+  "builderSaveFailed": {
+    "message": "No se pudo guardar el informe. Intentar otra vez.",
+    "description": "Toast when save fails"
+  },
+  "builderStep_preview": {
+    "message": "Avance",
+    "description": "Report builder step 5 label"
+  },
+  "builderStep_savePublish": {
+    "message": "Guardar y publicar",
+    "description": "Report builder step 6 label"
+  },
+  "builderStepHint_preview": {
+    "message": "Revise el aspecto de su informe antes de guardarlo.",
+    "description": "Report builder step 5 hint"
+  },
+  "builderStepHint_savePublish": {
+    "message": "Configure los ajustes de uso compartido, carpetas y rendimiento y luego publique.",
+    "description": "Report builder step 6 hint"
+  },
+  "builderNotReadyToPublish": {
+    "message": "Agregue un nombre de informe y al menos un campo antes de publicarlo.",
+    "description": "Validation message when publish is blocked"
+  },
+  "builderSharingTitle": {
+    "message": "Compartir y permisos",
+    "description": "Save step sharing card title"
+  },
+  "builderTags": {
+    "message": "Etiquetas",
+    "description": "Report tags field label"
+  },
+  "builderTagsPlaceholder": {
+    "message": "canalización, acuerdos, ventas",
+    "description": "Report tags input placeholder"
+  },
+  "builderCacheEnabled": {
+    "message": "Habilitar el almacenamiento en caché de resultados",
+    "description": "Report cache toggle label"
+  },
+  "builderCacheDuration": {
+    "message": "Duración del caché",
+    "description": "Report cache duration label"
+  },
+  "builderRuntimeFilters": {
+    "message": "Solicitar filtros de tiempo de ejecución cuando se ejecuta",
+    "description": "Runtime filters toggle label"
+  },
+  "builderScheduleOptional": {
+    "message": "Horario (opcional)",
+    "description": "Save step schedule card title"
+  },
+  "builderScheduleDeferredHint": {
+    "message": "Los horarios están disponibles después de la publicación del informe. Configure la entrega automática desde la página Horarios.",
+    "description": "Schedule deferred hint on save step"
+  },
+  "builderOpenSchedules": {
+    "message": "Horarios abiertos",
+    "description": "Link to schedules from save step"
+  },
+  "builderDataPreview": {
+    "message": "Vista previa de datos",
+    "description": "Summary sidebar mini preview title"
+  },
+  "builderRunFullReport": {
+    "message": "Ejecutar informe completo",
+    "description": "Summary sidebar run preview button"
+  },
+  "builderWhatsNextPublish": {
+    "message": "Guárdelo como borrador para seguir editando o publíquelo para compartir el informe con su equipo.",
+    "description": "Summary sidebar hint on save step"
+  },
+  "builderPermissionMatrix": {
+    "message": "Permisos",
+    "description": "Permission matrix section title"
+  },
+  "builderPermView": {
+    "message": "Vista",
+    "description": "Report permission matrix view row"
+  },
+  "builderPermEdit": {
+    "message": "Editar",
+    "description": "Report permission matrix edit row"
+  },
+  "builderPermClone": {
+    "message": "Clon",
+    "description": "Report permission matrix clone row"
+  },
+  "builderPermExport": {
+    "message": "Exportar",
+    "description": "Report permission matrix export row"
+  },
+  "builderPermShare": {
+    "message": "Compartir",
+    "description": "Report permission matrix share row"
+  },
+  "builderPermLevelViewers": {
+    "message": "puede ver",
+    "description": "Permission level for viewers with access"
+  },
+  "builderPermLevelEditors": {
+    "message": "Editores y superiores",
+    "description": "Permission level for editors"
+  },
+  "builderPermLevelOwner": {
+    "message": "Sólo propietario",
+    "description": "Permission level for owner only"
+  },
+  "builderShareUsers": {
+    "message": "Usuarios específicos",
+    "description": "Share with specific users label"
+  },
+  "builderListedInHome": {
+    "message": "Habilitar en Inicio de Informes",
+    "description": "Toggle report visibility on analytics home"
+  },
+  "builderAddToFavorites": {
+    "message": "Añadir a favoritos",
+    "description": "Favorite toggle on save step footer"
+  },
+  "builderScheduleEnable": {
+    "message": "Habilitar entrega programada",
+    "description": "Schedule toggle on save step"
+  },
+  "builderScheduleRecipients": {
+    "message": "Entregar a",
+    "description": "Schedule recipients label"
+  },
+  "builderScheduleRecipientsPlaceholder": {
+    "message": "correo electrónico{'@'}company.com, compañero de equipo{'@'}company.com",
+    "description": "Schedule recipients placeholder"
+  },
+  "builderScheduleSendCopy": {
+    "message": "envíame una copia",
+    "description": "Schedule send copy to owner checkbox"
+  },
+  "builderSchedulePublishHint": {
+    "message": "El cronograma se crea cuando publica el informe.",
+    "description": "Hint that schedule runs after publish"
+  },
+  "builderScheduleCreateFailed": {
+    "message": "Informe publicado, pero no se pudo crear el cronograma.",
+    "description": "Toast when schedule creation fails after publish"
+  },
+  "builderPublishSuccess": {
+    "message": "Informe publicado.",
+    "description": "Toast after successful publish"
+  },
+  "tabShared": {
+    "message": "Compartido conmigo",
+    "description": "Reports list tab — shared with current user"
+  },
+  "tabScheduled": {
+    "message": "Programado",
+    "description": "Reports list tab — reports with active schedules"
+  },
+  "builderPublishWithSchedule": {
+    "message": "Publicar y programar",
+    "description": "Publish report and create delivery schedule"
+  },
+  "builderPublishOptions": {
+    "message": "Opciones de publicación",
+    "description": "Accessible label for publish split button menu"
+  },
+  "builderDrillDownEnabled": {
+    "message": "Permitir desglose en filas de matriz",
+    "description": "Toggle matrix row drill-down in report builder"
+  },
+  "builderScheduleStartDate": {
+    "message": "Fecha de inicio",
+    "description": "Optional schedule start date"
+  },
+  "builderScheduleEndDate": {
+    "message": "Fecha de finalización",
+    "description": "Optional schedule end date"
+  },
+  "builderScheduleFormats": {
+    "message": "Formatos de entrega",
+    "description": "Schedule export format checkboxes"
+  },
+  "builderScheduleRecipientsRequired": {
+    "message": "Agregue al menos un correo electrónico de destinatario para programar la entrega.",
+    "description": "Validation when publishing with schedule without recipients"
+  },
+  "builderModuleComingSoon": {
+    "message": "Reporting for this module is not available yet.",
+    "description": "Module card hint when module is listed but not reportable"
+  },
+  "detailExportMenu": {
+    "message": "Export",
+    "description": "Report detail — export dropdown trigger"
+  },
+  "detailDraftHint": {
+    "message": "This report is a draft. Publish it to run and export results.",
+    "description": "Report detail — draft status hint"
+  },
+  "detailRunning": {
+    "message": "Running report…",
+    "description": "Report detail — execution in progress"
+  },
+  "schedulesEmptyDescription": {
+    "message": "Create a schedule to email report exports automatically and capture snapshots.",
+    "description": "Empty analytics schedules list description"
+  },
+  "schedulesFormHint": {
+    "message": "Choose when to run, who receives the export, and which format to deliver.",
+    "description": "Schedule create/edit dialog subtitle"
+  },
+  "schedulesFilteredReport": {
+    "message": "Showing schedules for “{name}”",
+    "description": "Report filter banner on schedules page"
+  },
+  "schedulesClearFilter": {
+    "message": "Show all schedules",
+    "description": "Clear report filter on schedules page"
+  },
+  "schedulesBackToReport": {
+    "message": "Back to report",
+    "description": "Back link when schedules opened from report detail"
+  },
+  "schedulesCountSummary": {
+    "message": "{count} schedule(s)",
+    "description": "Schedule list count subtitle"
+  },
+  "schedulesStatusActive": {
+    "message": "Active",
+    "description": "Schedule status — active"
+  },
+  "schedulesStatusPaused": {
+    "message": "Paused",
+    "description": "Schedule status — paused"
+  },
+  "schedulesStatusArchived": {
+    "message": "Archived",
+    "description": "Schedule status — archived"
+  },
+  "schedulesLastRunSuccess": {
+    "message": "Last run succeeded",
+    "description": "Schedule last run status — success"
+  },
+  "schedulesLastRunFailed": {
+    "message": "Last run failed",
+    "description": "Schedule last run status — failed"
+  },
+  "schedulesLastRunSkipped": {
+    "message": "Last run skipped",
+    "description": "Schedule last run status — skipped"
+  },
+  "widgetBuilderHint": {
+    "message": "Bind a published report, choose a visualization, and preview before publishing.",
+    "description": "Widget builder page subtitle"
+  },
+  "widgetBuilderConfig": {
+    "message": "Configuration",
+    "description": "Widget builder config panel title"
+  },
+  "widgetBuilderFromReport": {
+    "message": "Creating widget from “{name}”",
+    "description": "Widget builder context banner when opened from report"
+  },
+  "widgetPreviewSelectReport": {
+    "message": "Select a source report to preview this widget.",
+    "description": "Widget builder preview empty state"
+  },
+  "widgetOrientationVertical": {
+    "message": "Vertical",
+    "description": "Bar chart vertical orientation"
+  },
+  "widgetOrientationHorizontal": {
+    "message": "Horizontal",
+    "description": "Bar chart horizontal orientation"
+  },
+  "widgetDetailDraftHint": {
+    "message": "This widget is a draft. Publish it to refresh with live report data.",
+    "description": "Widget detail draft status hint"
+  },
+  "widgetDetailUpdated": {
+    "message": "Last updated",
+    "description": "Widget detail last updated label"
+  },
+  "widgetDetailDashboards": {
+    "message": "Dashboards",
+    "description": "Widget detail dashboard count label"
   }
 }

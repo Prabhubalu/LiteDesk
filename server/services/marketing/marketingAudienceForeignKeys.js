@@ -18,7 +18,9 @@ const MODULE_PARENT_FOREIGN_KEYS = Object.freeze({
   'sales_orders:people': 'contactId',
   'sales_orders:organizations': 'organizationRefId',
   'sales_orders:deals': 'dealId',
-  'sales_orders:cases': 'caseId'
+  'sales_orders:cases': 'caseId',
+  'payments:people': 'contactId',
+  'payments:organizations': 'organizationRefId',
 });
 
 /** Primary module -> relationship key used to map record IDs back to people. */

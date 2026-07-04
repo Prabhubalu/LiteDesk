@@ -47,6 +47,7 @@ const applyTransferredSessionFromHash = async () => {
     }
 
     await authStore.syncI18nFromOrganization();
+    await syncTrialBeforeRoute();
 
     window.history.replaceState({}, '', window.location.pathname + window.location.search);
     await router.replace(resolvePostLoginRoute());
@@ -59,6 +60,10 @@ const resolvePostLoginRoute = () => {
     return authStore.resolvePostLoginRoute();
 };
 
+const syncTrialBeforeRoute = async () => {
+    await authStore.syncTrialSubscription({ force: true });
+};
+
 const handleLogin = async () => {
     redirecting.value = false;
     const success = await authStore.login({
@@ -68,6 +73,7 @@ const handleLogin = async () => {
 
     if (success) {
         redirecting.value = true;
+        await syncTrialBeforeRoute();
 
         const instance = authStore.lastLoginResult?.instance;
         const targetBaseUrl = resolveInstanceLoginTarget(instance);
