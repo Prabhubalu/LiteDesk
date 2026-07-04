@@ -1390,8 +1390,7 @@ function resolveEmailProvider(cfg, integration = {}) {
   const normalized = String(cfg?.provider || '').trim().toLowerCase();
   if (normalized) return normalized;
   if (integration.amdsServerConfigured === true) return 'amds';
-  if (integration.emailPlatformDefaults?.crmOutboundProvider === 'amds') return 'amds';
-  return 'amds';
+  return integration.emailPlatformDefaults?.crmOutboundProvider || 'resend';
 }
 
 const EMPTY_EMAIL_DOMAIN_VERIFICATION = {
@@ -2525,6 +2524,7 @@ const saveEmailConfig = async (includeGmailOAuthApp = false) => {
     }
 
     applyOciEmailDefaults();
+    applyResendDefaults();
 
     const payload = {
       provider: String(emailConfig.value.provider || 'amds').trim().toLowerCase(),

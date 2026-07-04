@@ -29,6 +29,7 @@ const {
     buildOciSmtpHost,
     applyOciEmailDeliveryDefaults
 } = require('../services/emailProviders/ociEmailDelivery');
+const { applyResendDefaults, RESEND_PROVIDER } = require('../constants/resendDefaults');
 const amdsEmailDelivery = require('../services/emailProviders/amdsEmailDelivery');
 const communicationPlatformService = require('../platform/communication/api/communicationPlatformService');
 const {
@@ -99,16 +100,18 @@ function resolveEmailProviderKey(config = {}) {
     if (amdsEmailDelivery.isAmdsEnvConfigured()) return amdsEmailDelivery.PROVIDER_KEY;
     const envProvider = String(process.env.EMAIL_PROVIDER || '').trim().toLowerCase();
     if (envProvider) return envProvider;
-    return amdsEmailDelivery.PROVIDER_KEY;
+    return RESEND_PROVIDER;
+}
+
+function normalizeEmailIntegrationConfig(config = {}) {
+    if (amdsEmailDelivery.isAmdsProvider(config)) {
+        return amdsEmailDelivery.applyAmdsDefaults(config);
+    }
+    return applyResendDefaults(applyOciEmailDeliveryDefaults(config));
 }
 
 function sanitizeEmailConfigForResponse(config = {}) {
-    let normalized = config;
-    if (amdsEmailDelivery.isAmdsProvider(config)) {
-        normalized = amdsEmailDelivery.applyAmdsDefaults(config);
-    } else {
-        normalized = applyOciEmailDeliveryDefaults(config);
-    }
+    const normalized = normalizeEmailIntegrationConfig(config);
     return {
         provider: resolveEmailProviderKey(normalized),
         fromEmail: normalized.fromEmail || '',
@@ -171,7 +174,7 @@ function buildEmailProviderListExtras(state = {}) {
         amdsServerConfigured,
         emailDomainVerification: buildEmailDomainVerificationStub(resolvedConfig),
         emailPlatformDefaults: {
-            crmOutboundProvider: amdsServerConfigured ? 'amds' : amdsEmailDelivery.PROVIDER_KEY,
+            crmOutboundProvider: amdsServerConfigured ? 'amds' : RESEND_PROVIDER,
             notificationProvider: amdsServerConfigured ? 'amds' : 'oci-email-delivery'
         }
     };
@@ -3114,7 +3117,9 @@ exports.updateIntegrationConfig = async (req, res) => {
         const resolvedOciRegion = String(
             ociRegion || prevConfig.ociRegion || process.env.OCI_EMAIL_REGION || ''
         ).trim().toLowerCase();
-        let resolvedSmtpHost = String(smtpHost || '').trim();
+        let resolvedSmtpHost = String(smtpHost || prevConfig.smtpHost || '').trim();
+        const resolvedSmtpPort = Number(smtpPort) || Number(prevConfig.smtpPort) || 587;
+        const resolvedSmtpUser = String(smtpUser || prevConfig.smtpUser || '').trim();
         if (providerKey === 'oci-email-delivery' && !resolvedSmtpHost && resolvedOciRegion) {
             resolvedSmtpHost = buildOciSmtpHost(resolvedOciRegion);
         }
@@ -3130,6 +3135,10 @@ exports.updateIntegrationConfig = async (req, res) => {
             if (!resolvedSmtpHost) {
                 resolvedSmtpHost = 'smtp.gmail.com';
             }
+        } else if (providerKey === 'resend') {
+            if (!resolvedSmtpHost) {
+                resolvedSmtpHost = 'smtp.resend.com';
+            }
         } else if (providerKey === 'aws-ses') {
             resolvedSmtpHost = resolvedSmtpHost || '';
         } else if (providerKey === 'amds') {
@@ -3141,7 +3150,7 @@ exports.updateIntegrationConfig = async (req, res) => {
                 });
             }
             resolvedSmtpHost = '';
-        } else if (!resolvedSmtpHost || !smtpPort || !smtpUser) {
+        } else if (!resolvedSmtpHost || !resolvedSmtpPort || !resolvedSmtpUser) {
             return res.status(400).json({
                 success: false,
                 message: 'smtpHost, smtpPort, and smtpUser are required'
@@ -3152,7 +3161,7 @@ exports.updateIntegrationConfig = async (req, res) => {
             providerKey !== 'gmail-smtp'
             && providerKey !== 'aws-ses'
             && providerKey !== 'amds'
-            && (!smtpPort || !smtpUser)
+            && (!resolvedSmtpPort || !resolvedSmtpUser)
         ) {
             return res.status(400).json({
                 success: false,
@@ -3188,6 +3197,17 @@ exports.updateIntegrationConfig = async (req, res) => {
             resolvedSmtpPass = '';
         }
 
+        if (
+            providerKey === 'resend'
+            && !resolvedSmtpPass
+            && !String(process.env.RESEND_API_KEY || '').trim()
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: 'Resend requires an API key. Enter your Resend API key in the SMTP password field.'
+            });
+        }
+
         const awsSecretProvided =
             awsSecretAccessKey !== undefined && String(awsSecretAccessKey).trim() !== '';
         let resolvedAwsSecret = awsSecretProvided
@@ -3195,15 +3215,15 @@ exports.updateIntegrationConfig = async (req, res) => {
             : (prevConfig.awsSecretAccessKey || '');
 
         const { applyGmailSmtpDefaults } = require('../constants/gmailSmtpDefaults');
-        let nextConfig = applyOciEmailDeliveryDefaults({
+        let nextConfig = normalizeEmailIntegrationConfig({
             provider: providerKey,
             fromEmail: String(fromEmail || '').trim(),
             fromName: String(fromName || '').trim(),
             replyTo: String(replyTo || '').trim(),
             ociRegion: resolvedOciRegion,
             smtpHost: resolvedSmtpHost,
-            smtpPort: Number(smtpPort) || 587,
-            smtpUser: String(smtpUser || '').trim(),
+            smtpPort: resolvedSmtpPort,
+            smtpUser: resolvedSmtpUser,
             smtpSecure: smtpSecure === true || String(smtpSecure).toLowerCase() === 'true',
             smtpPass: resolvedSmtpPass,
             awsRegion: String(awsRegion || prevConfig.awsRegion || '').trim(),
@@ -3211,9 +3231,6 @@ exports.updateIntegrationConfig = async (req, res) => {
             awsSecretAccessKey: resolvedAwsSecret
         });
         nextConfig = applyGmailSmtpDefaults(nextConfig);
-        if (providerKey === 'amds') {
-            nextConfig = amdsEmailDelivery.applyAmdsDefaults(nextConfig);
-        }
 
         const criticalFields = [
             'provider',

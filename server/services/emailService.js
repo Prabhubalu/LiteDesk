@@ -12,6 +12,7 @@ const {
   resolveSystemRuntimeConfig,
   resolveCrmRuntimeConfig
 } = require('../platform/communication/email/runtimeConfigResolver');
+const { isResendProvider } = require('../constants/resendDefaults');
 
 function isTruthy(value) {
   return String(value || '').toLowerCase() === 'true';
@@ -41,16 +42,28 @@ function isSmtpFallbackReady(runtimeConfig) {
   return !!createSmtpTransport(runtimeConfig);
 }
 
+function hasResendApiKey(runtimeConfig = {}) {
+  return !!String(runtimeConfig.smtpPass || process.env.RESEND_API_KEY || '').trim();
+}
+
 function isRuntimeConfigReady(runtimeConfig) {
   if (!runtimeConfig?.fromEmail) return false;
   if (shouldUseAmds(runtimeConfig) && amdsEmailDelivery.isAmdsConfigured(runtimeConfig)) {
     return true;
   }
+  if (isResendProvider(runtimeConfig)) {
+    return hasResendApiKey(runtimeConfig);
+  }
   if (shouldUseOciSmtp(runtimeConfig) && ociEmailDelivery.isOciEmailDeliveryConfigured(runtimeConfig)) {
     return true;
   }
   if (shouldUseSes(runtimeConfig) && createSesClient(runtimeConfig)) return true;
-  return !!createSmtpTransport(runtimeConfig);
+  const transport = createSmtpTransport(runtimeConfig);
+  if (!transport) return false;
+  if (runtimeConfig.smtpUser || runtimeConfig.smtpPass) {
+    return !!(runtimeConfig.smtpUser && runtimeConfig.smtpPass);
+  }
+  return true;
 }
 
 function normalizeProviderKey(runtimeConfig = {}) {
@@ -185,16 +198,13 @@ function getFromAddress() {
 }
 
 function isResendRuntime(runtimeConfig) {
-  const provider = String(runtimeConfig.provider || '').toLowerCase();
-  const host = String(runtimeConfig.smtpHost || '').toLowerCase();
-  const user = String(runtimeConfig.smtpUser || '').toLowerCase();
-  return provider.includes('resend') || host.includes('resend.com') || user === 'resend';
+  return isResendProvider(runtimeConfig);
 }
 
 async function sendViaResendApi(runtimeConfig, payload) {
   const apiKey = String(runtimeConfig.smtpPass || process.env.RESEND_API_KEY || '').trim();
   if (!apiKey) {
-    return { success: false, error: 'Resend API key missing for fallback send' };
+    return { success: false, error: 'Resend API key missing' };
   }
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -363,6 +373,21 @@ async function sendEmail(opts) {
       console.error('[emailService] OCI Email Delivery SMTP send failed:', err.message);
       return { success: false, error: err.message };
     }
+  }
+
+  if (isResendProvider(runtimeConfig) && !hasAttachments) {
+    const apiResult = await sendViaResendApi(runtimeConfig, {
+      from,
+      to: toList,
+      subject,
+      html: html || undefined,
+      text: text || (html ? html.replace(/<[^>]+>/g, '') : ''),
+      reply_to: replyToAddr
+    });
+    if (apiResult.success) {
+      return apiResult;
+    }
+    console.warn('[emailService] Resend API send failed, trying SMTP:', apiResult.error);
   }
 
   const client = shouldUseSes(runtimeConfig) ? createSesClient(runtimeConfig) : null;
