@@ -6,6 +6,10 @@ const AnalyticsFavorite = require('../models/AnalyticsFavorite');
 const AnalyticsFolder = require('../models/AnalyticsFolder');
 const Organization = require('../models/Organization');
 const { invalidateReportCache } = require('../services/analytics/analyticsCacheService');
+const {
+  buildReportListVisibilityFilter,
+  userBypassesReportSharing,
+} = require('../services/analytics/analyticsReportAccessService');
 
 const ANALYTICS_SETTINGS_DEFAULTS = Object.freeze({
   cacheTtlSeconds: 300,
@@ -120,6 +124,23 @@ async function getAnalyticsHome(req, res) {
     const organizationId = req.user.organizationId;
     const baseFilter = { organizationId, status: { $ne: 'archived' } };
     const weekStart = startOfWeek();
+    const userId = req.user._id;
+
+    const reportVisibility =
+      userBypassesReportSharing(req.user)
+        ? baseFilter
+        : { $and: [baseFilter, await buildReportListVisibilityFilter(req.user, organizationId)] };
+
+    const listedInHomeFilter = {
+      $or: [
+        { ownerId: userId },
+        { createdBy: userId },
+        { listedInHome: { $ne: false } },
+        { listedInHome: { $exists: false } },
+      ],
+    };
+
+    const reportFilter = { $and: [reportVisibility, listedInHomeFilter] };
 
     const [
       reportCount,
@@ -132,7 +153,7 @@ async function getAnalyticsHome(req, res) {
       recentDashboards,
       favorites,
     ] = await Promise.all([
-      AnalyticsReport.countDocuments(baseFilter),
+      AnalyticsReport.countDocuments(reportFilter),
       AnalyticsWidget.countDocuments(baseFilter),
       AnalyticsDashboard.countDocuments(baseFilter),
       AnalyticsFolder.countDocuments({ organizationId }),
@@ -142,7 +163,7 @@ async function getAnalyticsHome(req, res) {
         preview: { $ne: true },
         createdAt: { $gte: weekStart },
       }),
-      AnalyticsReport.find(baseFilter)
+      AnalyticsReport.find(reportFilter)
         .sort({ lastExecutedAt: -1, updatedAt: -1 })
         .limit(5)
         .select('name apiName status lastExecutedAt updatedAt')
@@ -201,25 +222,35 @@ async function searchAnalyticsAssets(req, res) {
     }
 
     const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-    const assetFilter = {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 20, 50);
+    const baseAssetFilter = {
       organizationId,
       status: { $ne: 'archived' },
       $or: [{ name: regex }, { apiName: regex }, { tags: regex }],
     };
-    const limit = Math.min(parseInt(req.query.limit, 10) || 20, 50);
+
+    const reportVisibility =
+      userBypassesReportSharing(req.user)
+        ? baseAssetFilter
+        : {
+            $and: [
+              baseAssetFilter,
+              await buildReportListVisibilityFilter(req.user, organizationId),
+            ],
+          };
 
     const [reports, widgets, dashboards] = await Promise.all([
-      AnalyticsReport.find(assetFilter)
+      AnalyticsReport.find(reportVisibility)
         .sort({ updatedAt: -1 })
         .limit(limit)
         .select('name apiName status type primaryModule updatedAt')
         .lean(),
-      AnalyticsWidget.find(assetFilter)
+      AnalyticsWidget.find(baseAssetFilter)
         .sort({ updatedAt: -1 })
         .limit(limit)
         .select('name apiName status chartType updatedAt')
         .lean(),
-      AnalyticsDashboard.find(assetFilter)
+      AnalyticsDashboard.find(baseAssetFilter)
         .sort({ updatedAt: -1 })
         .limit(limit)
         .select('name apiName status category updatedAt')

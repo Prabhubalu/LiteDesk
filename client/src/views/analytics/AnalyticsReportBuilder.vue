@@ -1,607 +1,376 @@
 <template>
-  <div class="mx-auto w-full px-6 py-8">
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <button
-          type="button"
-          class="mb-2 text-sm text-primary-600 hover:underline dark:text-primary-400"
-          @click="goBack"
-        >
-          ← {{ t('analytics.listTitle') }}
-        </button>
-        <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">
-          {{ isNew ? t('analytics.builderTitle') : form.name || t('analytics.builderEditTitle') }}
-        </h1>
-      </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <span v-if="executing && autoPreview" class="text-xs text-neutral-500">
-          {{ t('analytics.previewUpdating') }}
-        </span>
-        <button
-          type="button"
-          class="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium dark:border-neutral-600"
-          :disabled="saving"
-          @click="saveDraft"
-        >
-          {{ t('analytics.saveDraft') }}
-        </button>
-        <button
-          type="button"
-          class="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium dark:border-neutral-600"
-          :disabled="executing"
-          @click="runPreview"
-        >
-          {{ t('analytics.preview') }}
-        </button>
-        <button
-          v-if="!isNew"
-          type="button"
-          class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 disabled:opacity-50"
-          :disabled="saving"
-          @click="publish"
-        >
-          {{ t('analytics.publish') }}
-        </button>
-      </div>
-    </div>
+  <div :class="rbPage">
+    <header :class="rbHeader">
+      <div class="mx-auto max-w-[1600px] px-4 py-2 lg:px-8">
+        <div class="flex items-center justify-between gap-3">
+          <nav class="flex min-w-0 items-center gap-1.5 text-xs">
+            <button type="button" :class="rbBtnGhost" class="!px-1.5 !py-1" @click="goBack">
+              {{ t('analytics.listTitle') }}
+            </button>
+            <ChevronRightIcon class="h-3 w-3 shrink-0 text-zinc-300 dark:text-zinc-600" />
+            <span class="truncate font-medium text-zinc-900 dark:text-zinc-100">
+              {{ form.name.trim() || (isNew ? t('analytics.builderCreateNewReport') : t('analytics.builderEditTitle')) }}
+            </span>
+            <template v-if="currentStep > 0">
+              <span class="text-zinc-300 dark:text-zinc-600">·</span>
+              <span class="truncate text-zinc-500 dark:text-zinc-400">{{ primaryModuleLabel }}</span>
+              <button type="button" :class="[rbLink, '!text-xs']" @click="goToStep(0)">
+                {{ t('analytics.builderChangeModule') }}
+              </button>
+            </template>
+          </nav>
 
-    <div class="grid gap-6 xl:grid-cols-3">
-      <section class="space-y-4 rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-        <h2 class="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          {{ t('analytics.sectionData') }}
-        </h2>
-        <label class="block text-sm">
-          <span class="mb-1 block font-medium">{{ t('analytics.fieldName') }}</span>
-          <input v-model="form.name" type="text" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900" />
-        </label>
-        <label class="block text-sm">
-          <span class="mb-1 block font-medium">{{ t('analytics.fieldApiName') }}</span>
-          <input v-model="form.apiName" type="text" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900" />
-        </label>
-        <label class="block text-sm">
-          <span class="mb-1 block font-medium">{{ t('analytics.fieldModule') }}</span>
-          <select v-model="form.primaryModule" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900">
-            <option v-for="mod in catalogModules" :key="mod.moduleKey" :value="mod.moduleKey">
-              {{ mod.label }}
-            </option>
-          </select>
-        </label>
-        <label class="block text-sm">
-          <span class="mb-1 block font-medium">{{ t('analytics.fieldType') }}</span>
-          <select v-model="form.type" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900">
-            <option value="tabular">{{ t('analytics.typeTabular') }}</option>
-            <option value="summary">{{ t('analytics.typeSummary') }}</option>
-            <option value="kpi">{{ t('analytics.typeKpi') }}</option>
-            <option value="joined">{{ t('analytics.typeJoined') }}</option>
-            <option value="trend">{{ t('analytics.typeTrend') }}</option>
-            <option value="matrix">{{ t('analytics.typeMatrix') }}</option>
-            <option value="exception">{{ t('analytics.typeException') }}</option>
-          </select>
-        </label>
-        <div v-if="joinTargets.length" class="block text-sm">
-          <span class="mb-1 block font-medium">{{ t('analytics.fieldRelatedModules') }}</span>
-          <div class="space-y-1 rounded-lg border px-3 py-2 dark:border-neutral-600">
-            <label
-              v-for="join in joinTargets"
-              :key="join.relationshipKey"
-              class="flex items-center gap-2"
-            >
-              <input
-                v-model="relatedModules"
-                type="checkbox"
-                :value="join.targetModule"
-              />
-              <span>{{ join.targetModule }}</span>
-            </label>
-          </div>
-        </div>
-        <label v-if="folders.length" class="block text-sm">
-          <span class="mb-1 block font-medium">{{ t('analytics.fieldFolder') }}</span>
-          <select v-model="form.folderId" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900">
-            <option value="">{{ t('analytics.filterUnfiled') }}</option>
-            <option v-for="folder in folders" :key="folder._id" :value="folder._id">
-              {{ folder.name }}
-            </option>
-          </select>
-        </label>
-      </section>
-
-      <section class="space-y-4 rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-        <h2 class="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          {{ t('analytics.sectionConfigure') }}
-        </h2>
-        <label v-if="showGroupBy" class="block text-sm">
-          <span class="mb-1 block font-medium">{{ t('analytics.fieldGroupBy') }}</span>
-          <select
-            v-model="groupByField"
-            class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900"
-          >
-            <option v-for="field in moduleFields" :key="field" :value="field">
-              {{ field }}
-            </option>
-          </select>
-        </label>
-        <div v-if="showMetrics" class="space-y-3">
-          <div class="flex items-center justify-between gap-2">
-            <p class="text-sm font-medium">{{ t('analytics.fieldMetrics') }}</p>
+          <div class="flex shrink-0 items-center gap-1.5">
             <button
-              v-if="form.type !== 'kpi' && metrics.length < 3"
+              v-if="currentStep > 0"
               type="button"
-              class="text-xs font-medium text-primary-600 hover:underline"
-              @click="addMetric"
+              :class="rbBtnSecondary"
+              class="!px-2.5 !py-1.5 !text-xs"
+              @click="prevStep"
             >
-              {{ t('analytics.metricAdd') }}
+              {{ t('actions.back') }}
+            </button>
+            <button type="button" :class="rbBtnSecondary" class="!px-2.5 !py-1.5 !text-xs" @click="cancelWizard">
+              {{ t('actions.cancel') }}
+            </button>
+            <button
+              v-if="isSaveStep"
+              type="button"
+              :class="rbBtnSecondary"
+              class="!px-2.5 !py-1.5 !text-xs"
+              :disabled="saving"
+              @click="() => void saveDraft()"
+            >
+              {{ saving ? t('states.saving') : t('analytics.saveDraft') }}
+            </button>
+            <ReportBuilderPublishMenu
+              v-if="isSaveStep"
+              :disabled="saving || !isReadyToPublish"
+              @publish="publish"
+              @publish-with-schedule="publishWithSchedule"
+            />
+            <button
+              v-else-if="currentStep < stepItems.length - 1"
+              type="button"
+              :class="rbBtnPrimary"
+              class="!px-2.5 !py-1.5 !text-xs"
+              :disabled="!canProceed"
+              @click="nextStep"
+            >
+              {{ t('actions.next') }}
             </button>
           </div>
-          <div
-            v-for="(metric, index) in metrics"
-            :key="index"
-            class="space-y-2 rounded-lg border border-neutral-200 p-3 dark:border-neutral-600"
-          >
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                {{ form.type === 'kpi' ? t('analytics.metricPrimary') : t('analytics.metricIndex', { index: index + 1 }) }}
-              </span>
-              <button
-                v-if="form.type !== 'kpi' && metrics.length > 1"
-                type="button"
-                class="text-xs text-neutral-500 hover:text-red-600"
-                @click="removeMetric(index)"
-              >
-                {{ t('actions.remove') }}
-              </button>
-            </div>
-            <label class="block text-sm">
-              <span class="mb-1 block text-neutral-600 dark:text-neutral-400">{{ t('analytics.metricFn') }}</span>
-              <select
-                v-model="metric.fn"
-                class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900"
-                @change="onMetricFnChange(metric)"
-              >
-                <option v-for="fn in aggregationFns" :key="fn" :value="fn">
-                  {{ t(`analytics.metricFn_${fn}`) }}
-                </option>
-              </select>
-            </label>
-            <label v-if="metric.fn !== 'count'" class="block text-sm">
-              <span class="mb-1 block text-neutral-600 dark:text-neutral-400">{{ t('analytics.metricField') }}</span>
-              <select
-                v-model="metric.field"
-                class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900"
-              >
-                <option v-for="field in numericModuleFields" :key="field" :value="field">
-                  {{ field }}
-                </option>
-              </select>
-            </label>
-            <label class="block text-sm">
-              <span class="mb-1 block text-neutral-600 dark:text-neutral-400">{{ t('analytics.metricLabel') }}</span>
-              <input
-                v-model="metric.label"
-                type="text"
-                class="w-full rounded-lg border px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900"
-                :placeholder="defaultMetricLabel(metric)"
-              />
-            </label>
-          </div>
-          <p v-if="form.type === 'kpi'" class="text-xs text-neutral-500">
-            {{ t('analytics.metricKpiHint') }}
-          </p>
-        </div>
-        <div v-else-if="showColumnPicker" class="space-y-2">
-          <p class="text-sm font-medium">{{ t('analytics.fieldColumns') }}</p>
-          <label
-            v-for="field in moduleFields"
-            :key="field"
-            class="flex items-center gap-2 text-sm"
-          >
-            <input v-model="selectedFields" type="checkbox" :value="field" />
-            {{ field }}
-          </label>
         </div>
 
-        <div class="space-y-2">
-          <p class="text-sm font-medium">{{ t('analytics.sectionFilters') }}</p>
-          <ReportFilterSection
-            :key="`${form.primaryModule}-${filterRemountToken}`"
-            :module-key="form.primaryModule"
-            :field-keys="moduleFields"
-            :initial-state="filterInitialState"
-            @update:state="onFilterStateChange"
+        <div class="mt-2">
+          <ReportBuilderStepper :items="stepItems" :current-step="currentStep" @go-to="goToStep" />
+        </div>
+      </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto">
+      <div class="mx-auto max-w-[1600px] px-4 py-4 lg:px-8">
+        <div class="grid gap-6" :class="showSummary ? 'xl:grid-cols-[minmax(0,1fr)_18rem]' : ''">
+          <div :class="rbCard">
+            <ReportBuilderStepModule
+              v-if="currentStep === 0"
+              :popular-modules="popularModules"
+              :other-modules="otherModules"
+              :selected-module="form.primaryModule"
+              :report-name="form.name"
+              :report-description="form.description"
+              @select-module="selectModule"
+              @update:report-name="form.name = $event"
+              @update:report-description="form.description = $event"
+            />
+
+            <div v-else-if="currentStep === 1" class="p-5 lg:p-6">
+              <ReportBuilderStepHeader
+                :title="t('analytics.builderStep_selectFields')"
+                :subtitle="t('analytics.builderStepHint_selectFields')"
+              />
+              <ReportBuilderStepFields
+                :primary-module-label="primaryModuleLabel"
+                :field-options="moduleFieldOptions"
+                :selected-fields="selectedFields"
+                :join-targets="joinTargets"
+                :related-modules="relatedModules"
+                :related-module-groups="relatedModuleGroups"
+                @toggle-field="toggleColumn"
+                @remove-field="removeSelectedField"
+                @clear-fields="clearSelectedFields"
+                @reorder-fields="reorderSelectedFields"
+                @toggle-related="(mod, checked) => toggleRelatedModule(mod, checked)"
+              />
+            </div>
+
+            <div v-else-if="currentStep === 2" class="p-6 lg:p-8">
+              <ReportBuilderStepHeader
+                :title="t('analytics.builderStep_addFilters')"
+                :subtitle="t('analytics.builderStepHint_addFilters')"
+              />
+              <ReportBuilderStepFilters
+                :primary-module="form.primaryModule"
+                :primary-module-label="primaryModuleLabel"
+                :field-options="moduleFieldOptions"
+                :module-fields="moduleFields"
+                :selected-fields="selectedFields"
+                :filter-initial-state="filterInitialState"
+                :filter-remount-token="filterRemountToken"
+                @filter-change="onFilterStateChange"
+              />
+            </div>
+
+            <div v-else-if="currentStep === 3" class="p-6 lg:p-8">
+              <ReportBuilderStepGroupAggregate
+                :field-options="moduleFieldOptions"
+                :selected-fields="selectedFields"
+                v-model:row-groups="rowGroups"
+                v-model:column-groups="columnGroups"
+                v-model:sorting="sorting"
+                v-model:metrics="metrics"
+                v-model:show-grand-total="showGrandTotal"
+                v-model:show-sub-totals="showSubTotals"
+                v-model:show-record-count="showRecordCount"
+                v-model:collapse-groups="collapseGroups"
+                v-model:drill-down-enabled="form.drillDownEnabled"
+                :numeric-field-options="numericFieldOptions"
+                :aggregation-fn-options="aggregationFnOptions"
+              />
+            </div>
+
+            <div v-else-if="currentStep === 4" class="p-6 lg:p-8">
+              <ReportBuilderStepHeader
+                :title="t('analytics.builderStep_preview')"
+                :subtitle="t('analytics.builderStepHint_preview')"
+              />
+              <ReportBuilderStepPreview
+                :preview-result="previewResult"
+                :expanded-matrix-rows="expandedMatrixRows"
+                :effective-report-type="effectiveReportType"
+                :report-type-label="reportTypeLabel"
+                :form-name="form.name"
+                :executing="executing"
+                :theme-mode="themeMode"
+                :preview-metric-field="previewMetricField"
+                :preview-dimension-field="previewDimensionField"
+                @run-preview="runPreview"
+                @toggle-row="toggleMatrixRowExpand"
+              />
+            </div>
+
+            <div v-else class="p-6 lg:p-8">
+              <ReportBuilderStepHeader
+                :title="t('analytics.builderStep_savePublish')"
+                :subtitle="t('analytics.builderStepHint_savePublish')"
+              />
+              <ReportBuilderStepSavePublish
+                :form-name="form.name"
+                :form-description="form.description"
+                :report-type-label="reportTypeLabel"
+                :form-folder-id="form.folderId"
+                :form-tags="form.tags"
+                :folder-options="folderOptions"
+                :visibility="form.visibility"
+                :shared-with="form.sharedWith"
+                :permissions="form.permissions"
+                :cache-enabled="form.cacheEnabled"
+                :cache-duration="form.cacheDuration"
+                :runtime-filters="form.runtimeFilters"
+                :listed-in-home="form.listedInHome"
+                :add-to-favorites="form.addToFavorites"
+                :schedule-enabled="scheduleForm.enabled"
+                :schedule-frequency="scheduleForm.frequency"
+                :schedule-timezone="scheduleForm.timezone"
+                :schedule-hour="scheduleForm.hour"
+                :schedule-minute="scheduleForm.minute"
+                :schedule-day-of-week="scheduleForm.dayOfWeek"
+                :schedule-day-of-month="scheduleForm.dayOfMonth"
+                :schedule-export-formats="scheduleForm.exportFormats"
+                :schedule-start-date="scheduleForm.startDate"
+                :schedule-end-date="scheduleForm.endDate"
+                :schedule-recipients-text="scheduleForm.recipientsText"
+                :schedule-send-copy-to-owner="scheduleForm.sendCopyToOwner"
+                :ready-to-publish="isReadyToPublish"
+                :saving="saving"
+                @update:form-folder-id="form.folderId = $event"
+                @update:form-tags="form.tags = $event"
+                @update:visibility="form.visibility = $event"
+                @update:shared-with="form.sharedWith = $event"
+                @update:permissions="form.permissions = $event"
+                @update:cache-enabled="form.cacheEnabled = $event"
+                @update:cache-duration="form.cacheDuration = $event"
+                @update:runtime-filters="form.runtimeFilters = $event"
+                @update:listed-in-home="form.listedInHome = $event"
+                @update:add-to-favorites="form.addToFavorites = $event"
+                @update:schedule-enabled="scheduleForm.enabled = $event"
+                @update:schedule-frequency="scheduleForm.frequency = $event"
+                @update:schedule-timezone="scheduleForm.timezone = $event"
+                @update:schedule-hour="scheduleForm.hour = $event"
+                @update:schedule-minute="scheduleForm.minute = $event"
+                @update:schedule-day-of-week="scheduleForm.dayOfWeek = $event"
+                @update:schedule-day-of-month="scheduleForm.dayOfMonth = $event"
+                @update:schedule-export-formats="scheduleForm.exportFormats = $event"
+                @update:schedule-start-date="scheduleForm.startDate = $event"
+                @update:schedule-end-date="scheduleForm.endDate = $event"
+                @update:schedule-recipients-text="scheduleForm.recipientsText = $event"
+                @update:schedule-send-copy-to-owner="scheduleForm.sendCopyToOwner = $event"
+                @save-draft="() => void saveDraft()"
+                @publish="publish"
+                @publish-with-schedule="publishWithSchedule"
+              />
+            </div>
+          </div>
+
+          <ReportBuilderSummaryPanel
+            v-if="showSummary"
+            class="xl:sticky xl:top-[4.5rem] xl:self-start"
+            :primary-module-label="primaryModuleLabel"
+            :report-type="form.type"
+            :selected-fields="selectedFieldLabels"
+            :row-groups="rowGroups"
+            :column-groups="columnGroups"
+            :sorting="sorting"
+            :field-options="moduleFieldOptions"
+            :filter-count="filterCount"
+            :filter-summaries="filterSummaries"
+            :sort-summaries="sortSummaries"
+            :preview-result="previewResult"
+            :expanded="isExpandedSummary"
+            :show-run-preview="currentStep === 4"
+            :show-whats-next="isSaveStep"
+            :report-id="loadedReportId"
+            :report-status="loadedReportStatus"
+            :executing="executing"
+            @update:report-type="form.type = $event"
+            @edit-step="goToStep"
+            @run-preview="runPreview"
           />
         </div>
-      </section>
-
-      <section class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-        <div class="mb-3 flex items-center justify-between">
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-            {{ t('analytics.sectionPreview') }}
-          </h2>
-          <span v-if="previewResult?.meta" class="text-xs text-neutral-500">
-            {{ t('analytics.previewRows', { count: previewResult.meta.totalRows, ms: previewResult.meta.executionMs }) }}
-          </span>
-        </div>
-        <ReportTypePreviewPanel
-          :result="previewResult"
-          :report-type="form.type"
-          :metric-field="previewMetricField"
-          :dimension-field="groupByField"
-          :label="previewKpiLabel"
-          :loading="executing"
-          :theme-mode="themeMode"
-          :empty-message="t('analytics.previewEmpty')"
-        />
-      </section>
+      </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useI18n } from 'vue-i18n';
-import ReportTypePreviewPanel from '@/components/analytics/ReportTypePreviewPanel.vue';
-import ReportFilterSection from '@/components/analytics/ReportFilterSection.vue';
-import { useAnalyticsReports } from '@/composables/useAnalyticsReports';
-import { useAnalyticsHome } from '@/composables/useAnalyticsHome';
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { ChevronRightIcon } from '@heroicons/vue/24/outline';
+import {
+  rbBtnGhost,
+  rbBtnPrimary,
+  rbBtnSecondary,
+  rbCard,
+  rbLink,
+  rbPage,
+  rbHeader,
+} from '@/components/analytics/report-builder/reportBuilderUi';
+import ReportBuilderStepHeader from '@/components/analytics/report-builder/ReportBuilderStepHeader.vue';
+import ReportBuilderStepper from '@/components/analytics/report-builder/ReportBuilderStepper.vue';
+import ReportBuilderSummaryPanel from '@/components/analytics/report-builder/ReportBuilderSummaryPanel.vue';
+import ReportBuilderStepModule from '@/components/analytics/report-builder/steps/ReportBuilderStepModule.vue';
+import ReportBuilderStepFields from '@/components/analytics/report-builder/steps/ReportBuilderStepFields.vue';
+import ReportBuilderStepFilters from '@/components/analytics/report-builder/steps/ReportBuilderStepFilters.vue';
+import ReportBuilderStepGroupAggregate from '@/components/analytics/report-builder/steps/ReportBuilderStepGroupAggregate.vue';
+import ReportBuilderStepPreview from '@/components/analytics/report-builder/steps/ReportBuilderStepPreview.vue';
+import ReportBuilderStepSavePublish from '@/components/analytics/report-builder/steps/ReportBuilderStepSavePublish.vue';
+import ReportBuilderPublishMenu from '@/components/analytics/report-builder/ReportBuilderPublishMenu.vue';
+import {
+  REPORT_BUILDER_PREVIEW_STEP,
+  REPORT_BUILDER_SAVE_STEP,
+  useReportBuilder,
+} from '@/composables/useReportBuilder';
 import { useColorMode } from '@/composables/useColorMode';
-import {
-  captureAnalyticsReportCreated,
-  captureAnalyticsReportPublished,
-} from '@/config/posthogAnalytics';
-import { hydrateFilterBuilderFromAst } from '@/utils/marketingAudienceFilterConfig';
-import {
-  buildAnalyticsFilterConfigByKey,
-  buildAnalyticsFilterTree,
-} from '@/utils/analyticsFilterConfig';
 
 const props = defineProps({
   reportId: { type: String, default: null },
 });
 
-const { t } = useI18n();
 const route = useRoute();
-const router = useRouter();
-
+const { effectiveDark } = useColorMode();
 const {
-  catalogModules,
+  t,
+  currentStep,
+  stepItems,
+  isNew,
+  form,
+  scheduleForm,
+  loadedReportStatus,
+  popularModules,
+  otherModules,
+  moduleFieldOptions,
+  moduleFields,
+  folderOptions,
+  aggregationFnOptions,
+  numericFieldOptions,
+  joinTargets,
+  relatedModuleGroups,
+  selectedFields,
+  selectedFieldLabels,
+  relatedModules,
+  rowGroups,
+  columnGroups,
+  sorting,
+  showGrandTotal,
+  showSubTotals,
+  showRecordCount,
+  collapseGroups,
+  metrics,
+  groupByField,
+  filterState,
+  filterInitialState,
+  filterRemountToken,
   previewResult,
+  expandedMatrixRows,
   saving,
   executing,
-  fetchCatalog,
-  fetchReport,
-  createReport,
-  updateReport,
-  publishReport,
-  previewReport,
-} = useAnalyticsReports();
-const { folders, fetchFolders } = useAnalyticsHome();
-const { effectiveDark } = useColorMode();
+  effectiveReportType,
+  reportTypeLabel,
+  primaryModuleLabel,
+  canProceed,
+  isReadyToPublish,
+  filterSummaries,
+  sortSummaries,
+  selectModule,
+  toggleColumn,
+  toggleRelatedModule,
+  clearSelectedFields,
+  reorderSelectedFields,
+  removeSelectedField,
+  onFilterStateChange,
+  goToStep,
+  nextStep,
+  prevStep,
+  saveDraft,
+  runPreview,
+  toggleMatrixRowExpand,
+  publish,
+  publishWithSchedule,
+  goBack,
+  cancelWizard,
+} = useReportBuilder(props.reportId);
 
 const themeMode = computed(() => (effectiveDark.value ? 'dark' : 'light'));
-
-const isNew = computed(() => !props.reportId && route.name === 'analytics-report-create');
-
-const showColumnPicker = computed(() => form.type === 'tabular' || form.type === 'joined');
-const showGroupBy = computed(() =>
-  !showColumnPicker.value && form.type !== 'kpi',
-);
-const showMetrics = computed(() => !showColumnPicker.value);
-
-const form = reactive({
-  name: '',
-  apiName: '',
-  primaryModule: 'deals',
-  type: 'summary',
-  folderId: '',
-});
-
-const aggregationFns = ['count', 'sum', 'avg', 'min', 'max'];
-
-const groupByField = ref('stage');
-const metrics = ref([{ fn: 'count', field: '_id', label: 'count' }]);
-const selectedFields = ref(['name', 'stage', 'amount']);
-const filterState = ref(null);
-const filterInitialState = ref(null);
-const filterRemountToken = ref(0);
-const autoPreview = ref(false);
-let previewTimer = null;
-
-const moduleFields = computed(() => {
-  const mod = catalogModules.value.find((m) => m.moduleKey === form.primaryModule);
-  if (mod?.fields?.length) {
-    return mod.fields.map((field) => field.key);
-  }
-  return mod?.defaultFields?.length ? mod.defaultFields : ['name'];
-});
-
-const joinTargets = computed(() => {
-  const mod = catalogModules.value.find((m) => m.moduleKey === form.primaryModule);
-  return mod?.joinTargets || [];
-});
-
-const relatedModules = ref([]);
-
-const numericModuleFields = computed(() => {
-  const mod = catalogModules.value.find((m) => m.moduleKey === form.primaryModule);
-  if (mod?.fields?.length) {
-    const typed = mod.fields
-      .filter((field) => {
-        const type = String(field.type || '').toLowerCase();
-        return ['number', 'currency', 'percent', 'integer', 'decimal', 'float'].includes(type);
-      })
-      .map((field) => field.key);
-    if (typed.length) return typed;
-  }
-  const heuristic = moduleFields.value.filter((key) =>
-    /amount|total|score|percent|rate|rating|probability|qty|quantity|count|value|price|cost|revenue/i.test(key),
-  );
-  return heuristic.length ? heuristic : moduleFields.value.filter((key) => key !== '_id');
-});
-
-function defaultMetricLabel(metric) {
-  if (metric.fn === 'count') return 'count';
-  return `${metric.field}_${metric.fn}`;
-}
-
-function onMetricFnChange(metric) {
-  if (metric.fn === 'count') {
-    metric.field = '_id';
-    if (!metric.label || metric.label.includes('_')) metric.label = 'count';
-    return;
-  }
-  if (!numericModuleFields.value.includes(metric.field)) {
-    metric.field = numericModuleFields.value[0] || 'amount';
-  }
-  if (!metric.label || metric.label === 'count') {
-    metric.label = defaultMetricLabel(metric);
-  }
-}
-
-function addMetric() {
-  const field = numericModuleFields.value[0] || 'amount';
-  metrics.value.push({ fn: 'sum', field, label: `${field}_sum` });
-}
-
-function removeMetric(index) {
-  metrics.value.splice(index, 1);
-}
-
-function buildAggregations() {
-  return metrics.value.map((metric) => ({
-    field: metric.fn === 'count' ? '_id' : metric.field,
-    fn: metric.fn,
-    label: (metric.label || defaultMetricLabel(metric)).trim(),
-  }));
-}
+const showSummary = computed(() => currentStep.value >= 1);
+const isSaveStep = computed(() => currentStep.value === REPORT_BUILDER_SAVE_STEP);
+const isExpandedSummary = computed(() => currentStep.value >= REPORT_BUILDER_PREVIEW_STEP);
 
 const previewMetricField = computed(() => {
   const primary = metrics.value[0];
   if (!primary) return 'count';
-  return (primary.label || defaultMetricLabel(primary)).trim();
+  return primary.label || `${primary.field}_${primary.fn}`;
 });
 
-const previewKpiLabel = computed(() => {
-  const primary = metrics.value[0];
-  if (!primary) return form.name || t('analytics.typeKpi');
-  const fnLabel = t(`analytics.metricFn_${primary.fn}`);
-  if (primary.fn === 'count') return form.name || fnLabel;
-  return `${fnLabel} (${primary.field})`;
+const previewDimensionField = computed(() => rowGroups.value[0] || groupByField.value);
+
+const filterCount = computed(() => {
+  const filters = filterState.value?.filters;
+  if (!filters) return 0;
+  return Object.values(filters).filter((value) => value !== null && value !== undefined && value !== '').length;
 });
 
-function slugify(name) {
-  return String(name || 'report')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_|_$/g, '')
-    .slice(0, 80);
-}
-
-function onFilterStateChange(nextState) {
-  filterState.value = nextState;
-}
-
-function buildFilterPayload() {
-  if (!filterState.value) {
-    return { filterTree: null, filterLogic: 'AND' };
-  }
-
-  const filterByKey = buildAnalyticsFilterConfigByKey(
-    moduleFields.value.map((field, index) => ({
-      key: field,
-      label: field,
-      filterType: 'text',
-      fieldPath: field,
-      options: [],
-      priority: index + 1,
-    })),
-  );
-
-  const filterTree = buildAnalyticsFilterTree(
-    filterState.value.query,
-    filterState.value.filters,
-    filterState.value.operators,
-    filterByKey,
-  );
-
-  return {
-    filterTree,
-    filterLogic: filterState.value.query?.logic || 'AND',
-  };
-}
-
-function buildPayload() {
-  const payload = {
-    name: form.name.trim(),
-    apiName: form.apiName.trim() || slugify(form.name),
-    primaryModule: form.primaryModule,
-    type: form.type,
-    relatedModules: relatedModules.value,
-    selectedFields: [],
-    rowGroups: [],
-    aggregations: [],
-    folderId: form.folderId || null,
-    ...buildFilterPayload(),
-  };
-
-  if (form.type === 'tabular' || form.type === 'joined') {
-    payload.selectedFields = selectedFields.value.map((field) => ({ field, role: 'dimension' }));
-  } else {
-    if (showGroupBy.value && groupByField.value.trim()) {
-      payload.rowGroups = [{ field: groupByField.value.trim() }];
-    }
-    payload.aggregations = buildAggregations();
-  }
-
-  return payload;
-}
-
-function applyModuleDefaults() {
-  const fields = moduleFields.value;
-  if (!fields.includes(groupByField.value)) {
-    groupByField.value = fields.includes('stage') ? 'stage' : fields[0];
-  }
-  selectedFields.value = fields.slice(0, Math.min(3, fields.length));
-}
-
-function hydrateFiltersFromReport(report) {
-  if (!report?.filterTree) {
-    filterInitialState.value = null;
-    filterState.value = null;
-    return;
-  }
-
-  const hydrated = hydrateFilterBuilderFromAst(report.filterTree, form.primaryModule);
-  filterInitialState.value = {
-    query: hydrated.query,
-    filters: hydrated.filters,
-    operators: hydrated.operators,
-  };
-  filterState.value = filterInitialState.value;
-}
-
-async function saveDraft() {
-  const payload = buildPayload();
-  if (isNew.value) {
-    const res = await createReport(payload);
-    if (res?.success) {
-      captureAnalyticsReportCreated({ module: payload.primaryModule, type: payload.type });
-      router.replace({ name: 'analytics-report-edit', params: { id: res.data._id } });
-    }
-  } else {
-    const id = props.reportId || route.params.id;
-    await updateReport(String(id), payload);
-  }
-}
-
-async function runPreview() {
-  await previewReport(buildPayload());
-}
-
-function schedulePreview() {
-  if (!autoPreview.value) return;
-  clearTimeout(previewTimer);
-  previewTimer = setTimeout(() => {
-    void runPreview();
-  }, 800);
-}
-
-async function publish() {
+const loadedReportId = computed(() => {
   const id = props.reportId || route.params.id;
-  if (!id) return;
-  await saveDraft();
-  const res = await publishReport(String(id));
-  if (res?.success) {
-    captureAnalyticsReportPublished({ report_id: id });
-    router.push({ name: 'analytics-report-detail', params: { id } });
-  }
-}
-
-function goBack() {
-  router.push({ name: 'analytics-reports' });
-}
-
-watch(
-  () => form.name,
-  (name) => {
-    if (isNew.value && !form.apiName) {
-      form.apiName = slugify(name);
-    }
-  },
-);
-
-watch(
-  () => form.primaryModule,
-  (next, prev) => {
-    if (prev && next !== prev) {
-      filterInitialState.value = null;
-      filterState.value = null;
-      filterRemountToken.value += 1;
-    }
-    applyModuleDefaults();
-    schedulePreview();
-  },
-);
-
-watch(
-  [form, groupByField, metrics, selectedFields, filterState],
-  () => {
-    schedulePreview();
-  },
-  { deep: true },
-);
-
-watch(
-  () => form.type,
-  (nextType) => {
-    if (nextType === 'kpi' && metrics.value.length > 1) {
-      metrics.value = [metrics.value[0]];
-    }
-    applyModuleDefaults();
-    schedulePreview();
-  },
-);
-
-onMounted(async () => {
-  await Promise.all([fetchCatalog(), fetchFolders()]);
-  if (catalogModules.value.length && isNew.value) {
-    form.primaryModule = catalogModules.value[0].moduleKey;
-  }
-  applyModuleDefaults();
-
-  const id = props.reportId || route.params.id;
-  if (id) {
-    const res = await fetchReport(String(id));
-    if (res?.success && res.data) {
-      const r = res.data;
-      form.name = r.name;
-      form.apiName = r.apiName;
-      form.primaryModule = r.primaryModule;
-      form.type = r.type;
-      form.folderId = r.folderId ? String(r.folderId) : '';
-      relatedModules.value = Array.isArray(r.relatedModules) ? [...r.relatedModules] : [];
-      if (Array.isArray(r.rowGroups) && r.rowGroups.length) {
-        groupByField.value = r.rowGroups[0].field || r.rowGroups[0];
-      }
-      if (Array.isArray(r.selectedFields)) {
-        selectedFields.value = r.selectedFields.map((f) => f.field || f).filter(Boolean);
-      }
-      if (Array.isArray(r.aggregations) && r.aggregations.length) {
-        metrics.value = r.aggregations.map((agg) => ({
-          fn: String(agg.fn || 'count').toLowerCase(),
-          field: agg.fn === 'count' ? '_id' : String(agg.field || numericModuleFields.value[0] || 'amount'),
-          label: String(agg.label || defaultMetricLabel({ fn: agg.fn, field: agg.field })),
-        }));
-      }
-      hydrateFiltersFromReport(r);
-    }
-  }
-
-  autoPreview.value = true;
-  schedulePreview();
-});
-
-onUnmounted(() => {
-  clearTimeout(previewTimer);
+  return id ? String(id) : null;
 });
 </script>

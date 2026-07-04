@@ -1020,7 +1020,7 @@
     "description": "Schedule email recipients field"
   },
   "schedulesRecipientsPlaceholder": {
-    "message": "email1@company.com, email2@company.com",
+    "message": "email1{'@'}company.com, email2{'@'}company.com",
     "description": "Schedule recipients placeholder"
   },
   "schedulesEmailSubject": {
@@ -1282,5 +1282,753 @@
   "dashboardWidgetLoadError": {
     "message": "Unable to load this widget. Its report may be missing or unpublished.",
     "description": "Error when a dashboard or home analytics widget fails to execute"
+  },
+  "builderColumnSearchPlaceholder": {
+    "message": "Search columns…",
+    "description": "Report builder column picker search placeholder"
+  },
+  "builderSelectAllColumns": {
+    "message": "Select all",
+    "description": "Report builder column picker select all action"
+  },
+  "builderClearColumns": {
+    "message": "Clear",
+    "description": "Report builder column picker clear selection action"
+  },
+  "builderColumnsSelectedCount": {
+    "message": "{count} selected",
+    "description": "Report builder column picker selected count label"
+  },
+  "builderStepLabel": {
+    "message": "Step {step}",
+    "description": "Report builder panel step label"
+  },
+  "builderBackToReports": {
+    "message": "Back to reports",
+    "description": "Report builder back navigation label"
+  },
+  "builderStepperLabel": {
+    "message": "Report creation progress",
+    "description": "Report builder stepper aria label"
+  },
+  "builderStepProgress": {
+    "message": "Step {current} of {total}",
+    "description": "Report builder mobile step progress"
+  },
+  "builderStep_selectModule": {
+    "message": "Select module",
+    "description": "Report builder step 1 label"
+  },
+  "builderStep_selectFields": {
+    "message": "Select fields",
+    "description": "Report builder step 2 label"
+  },
+  "builderStep_addFilters": {
+    "message": "Add filters",
+    "description": "Report builder step 3 label"
+  },
+  "builderStep_groupAggregate": {
+    "message": "Group & aggregate",
+    "description": "Report builder step 4 label"
+  },
+  "builderStep_previewSave": {
+    "message": "Preview & save",
+    "description": "Report builder step 5 label"
+  },
+  "builderStepHeading_selectModule": {
+    "message": "Step 1: Select primary module",
+    "description": "Report builder step 1 heading"
+  },
+  "builderStepHint_selectModule": {
+    "message": "Choose the main CRM module your report is based on.",
+    "description": "Report builder step 1 hint"
+  },
+  "builderStepHeading_groupAggregate": {
+    "message": "Step 4: Group & aggregate",
+    "description": "Report builder step 4 heading"
+  },
+  "builderStepHint_groupAggregate": {
+    "message": "Group your data and choose aggregate functions for numerical fields.",
+    "description": "Report builder step 4 hint"
+  },
+  "builderCreateNewReport": {
+    "message": "Create new report",
+    "description": "Default report name in builder header"
+  },
+  "builderUntitledReport": {
+    "message": "Untitled report",
+    "description": "Fallback report name when saving without a title"
+  },
+  "builderChangeModule": {
+    "message": "Change module",
+    "description": "Link to go back to module selection"
+  },
+  "builderChangeType": {
+    "message": "Change",
+    "description": "Link to change report type in summary panel"
+  },
+  "builderPublishReport": {
+    "message": "Publish report",
+    "description": "Publish report button in builder"
+  },
+  "builderSearchModules": {
+    "message": "Search modules…",
+    "description": "Module search placeholder in step 1"
+  },
+  "builderPopularModules": {
+    "message": "Popular modules",
+    "description": "Popular modules section title"
+  },
+  "builderAllModules": {
+    "message": "All modules",
+    "description": "All modules section title"
+  },
+  "builderWhatsNext": {
+    "message": "What's next?",
+    "description": "Info box title after module selection"
+  },
+  "builderWhatsNextHint": {
+    "message": "After selecting a module, you'll choose fields, filters, grouping, and preview your report.",
+    "description": "Info box body after module selection"
+  },
+  "builderAboutModules": {
+    "message": "About modules",
+    "description": "Step 1 sidebar about modules title"
+  },
+  "builderAboutModulesBody": {
+    "message": "Modules are the business objects in your CRM — deals, people, cases, and more.",
+    "description": "Step 1 sidebar about modules body"
+  },
+  "builderAboutModulesTip1": {
+    "message": "Start with the module that holds the data you want to analyze.",
+    "description": "Step 1 sidebar tip 1"
+  },
+  "builderAboutModulesTip2": {
+    "message": "You can join related modules in the next step.",
+    "description": "Step 1 sidebar tip 2"
+  },
+  "builderAboutModulesTip3": {
+    "message": "You can change the primary module later if needed.",
+    "description": "Step 1 sidebar tip 3"
+  },
+  "builderModuleExamples": {
+    "message": "Examples",
+    "description": "Step 1 sidebar examples title"
+  },
+  "builderExampleDeals": {
+    "message": "Deals",
+    "description": "Example module name — deals"
+  },
+  "builderExampleDealsDesc": {
+    "message": "Pipeline, revenue, and stage analysis",
+    "description": "Example module description — deals"
+  },
+  "builderExamplePeople": {
+    "message": "People",
+    "description": "Example module name — people"
+  },
+  "builderExamplePeopleDesc": {
+    "message": "Contact lists and engagement",
+    "description": "Example module description — people"
+  },
+  "builderExampleOrgs": {
+    "message": "Organizations",
+    "description": "Example module name — organizations"
+  },
+  "builderExampleOrgsDesc": {
+    "message": "Account health and industry breakdowns",
+    "description": "Example module description — organizations"
+  },
+  "builderProTip": {
+    "message": "Pro tip",
+    "description": "Step 1 sidebar pro tip label"
+  },
+  "builderProTipBody": {
+    "message": "Not sure where to start? Pick Deals for sales reports or Cases for support reports.",
+    "description": "Step 1 sidebar pro tip body"
+  },
+  "builderModuleDescDefault": {
+    "message": "Analyze records and trends in this module.",
+    "description": "Default module card description"
+  },
+  "builderModuleDesc_deals": {
+    "message": "Track and analyze sales pipeline and revenue.",
+    "description": "Module card description — deals"
+  },
+  "builderModuleDesc_people": {
+    "message": "View and analyze contact information.",
+    "description": "Module card description — people"
+  },
+  "builderModuleDesc_organizations": {
+    "message": "Analyze customer and account data.",
+    "description": "Module card description — organizations"
+  },
+  "builderModuleDesc_cases": {
+    "message": "Track and analyze support cases and tickets.",
+    "description": "Module card description — cases"
+  },
+  "builderModuleDesc_quotes": {
+    "message": "Analyze quotes and conversion metrics.",
+    "description": "Module card description — quotes"
+  },
+  "builderModuleDesc_tasks": {
+    "message": "Track and analyze activities and tasks.",
+    "description": "Module card description — tasks"
+  },
+  "builderModuleDesc_events": {
+    "message": "Analyze events and calendar activity.",
+    "description": "Module card description — events"
+  },
+  "builderModuleDesc_items": {
+    "message": "Analyze product performance and inventory.",
+    "description": "Module card description — items"
+  },
+  "builderFieldSearchPlaceholder": {
+    "message": "Search fields…",
+    "description": "Field explorer search placeholder"
+  },
+  "builderPrimaryBadge": {
+    "message": "Primary",
+    "description": "Primary module badge in field explorer"
+  },
+  "builderSelectedFieldsTitle": {
+    "message": "Selected fields ({count})",
+    "description": "Selected fields panel title"
+  },
+  "builderClearAll": {
+    "message": "Clear all",
+    "description": "Clear all selected fields action"
+  },
+  "builderNoFieldsSelected": {
+    "message": "Select fields from the explorer to include them in your report.",
+    "description": "Empty selected fields state"
+  },
+  "builderJoinHint": {
+    "message": "Related to {module} via {target}",
+    "description": "Related module join hint"
+  },
+  "builderAdded": {
+    "message": "Added",
+    "description": "Related module already added badge"
+  },
+  "builderFieldsPerformanceTip": {
+    "message": "Tip: Select only the fields you need for faster report execution.",
+    "description": "Performance tip on fields step"
+  },
+  "builderFiltersOptional": {
+    "message": "Optional",
+    "description": "Filters step optional badge"
+  },
+  "builderFiltersTip": {
+    "message": "Use AND/OR groups to build complex filter logic.",
+    "description": "Filters step tip"
+  },
+  "builderRowGrouping": {
+    "message": "Row grouping",
+    "description": "Row grouping section label"
+  },
+  "builderColumnGrouping": {
+    "message": "Column grouping (optional)",
+    "description": "Column grouping section label"
+  },
+  "builderAddRowGroup": {
+    "message": "Add row group…",
+    "description": "Add row group placeholder"
+  },
+  "builderAddColumnGroup": {
+    "message": "Add column group…",
+    "description": "Add column group placeholder"
+  },
+  "builderGroupSettings": {
+    "message": "Group settings",
+    "description": "Group settings section title"
+  },
+  "builderShowGrandTotal": {
+    "message": "Show grand total",
+    "description": "Show grand total checkbox"
+  },
+  "builderShowSubtotals": {
+    "message": "Show subtotals",
+    "description": "Show subtotals checkbox"
+  },
+  "builderShowRecordCount": {
+    "message": "Show count of records",
+    "description": "Show record count checkbox"
+  },
+  "builderCollapseGroups": {
+    "message": "Collapse all groups by default",
+    "description": "Collapse groups checkbox"
+  },
+  "builderSorting": {
+    "message": "Sorting",
+    "description": "Sorting section title"
+  },
+  "builderAddSort": {
+    "message": "Add sort",
+    "description": "Add sort button"
+  },
+  "builderNoSorting": {
+    "message": "No sort order configured.",
+    "description": "Empty sorting state"
+  },
+  "builderSortAsc": {
+    "message": "Ascending",
+    "description": "Ascending sort direction"
+  },
+  "builderSortDesc": {
+    "message": "Descending",
+    "description": "Descending sort direction"
+  },
+  "builderGroupLimitTip": {
+    "message": "You can add up to 3 row groups and 3 column groups.",
+    "description": "Group limit tip"
+  },
+  "builderReportSummary": {
+    "message": "Report summary",
+    "description": "Summary panel title"
+  },
+  "builderSelectedFieldsCount": {
+    "message": "Selected fields ({count})",
+    "description": "Summary panel selected fields count"
+  },
+  "builderEditFields": {
+    "message": "Edit fields",
+    "description": "Summary panel edit fields link"
+  },
+  "builderFiltersCount": {
+    "message": "Filters ({count})",
+    "description": "Summary panel filters count"
+  },
+  "builderEditFilters": {
+    "message": "Edit filters",
+    "description": "Summary panel edit filters link"
+  },
+  "builderFiltersConfigured": {
+    "message": "Filter conditions configured",
+    "description": "Summary panel filters configured text"
+  },
+  "builderGrouping": {
+    "message": "Grouping",
+    "description": "Summary panel grouping section"
+  },
+  "builderEditGrouping": {
+    "message": "Edit grouping",
+    "description": "Summary panel edit grouping link"
+  },
+  "builderRowGroups": {
+    "message": "Rows",
+    "description": "Summary panel row groups label"
+  },
+  "builderColumnGroups": {
+    "message": "Columns",
+    "description": "Summary panel column groups label"
+  },
+  "builderEditSorting": {
+    "message": "Edit sorting",
+    "description": "Summary panel edit sorting link"
+  },
+  "builderNeedHelp": {
+    "message": "Need help building reports?",
+    "description": "Summary panel help text"
+  },
+  "builderTabPreview": {
+    "message": "Preview",
+    "description": "Preview tab on final step"
+  },
+  "builderTabSavePublish": {
+    "message": "Save & publish",
+    "description": "Save and publish tab on final step"
+  },
+  "builderReportInformation": {
+    "message": "Report information",
+    "description": "Save step report info card title"
+  },
+  "builderDescription": {
+    "message": "Description",
+    "description": "Report description field label"
+  },
+  "builderOtherSettings": {
+    "message": "Other settings",
+    "description": "Save step other settings card title"
+  },
+  "builderSaveHint": {
+    "message": "Save as a draft to continue editing later, or publish to make the report available to your team.",
+    "description": "Save step hint text"
+  },
+  "builderReadyToPublish": {
+    "message": "Ready to publish. All settings look good.",
+    "description": "Ready to publish status message"
+  },
+  "builderFieldExplorer": {
+    "message": "Field explorer",
+    "description": "Field explorer panel title"
+  },
+  "builderStepHint_selectFields": {
+    "message": "Choose columns and related modules for your report.",
+    "description": "Report builder step 2 hint"
+  },
+  "builderStepHint_addFilters": {
+    "message": "Narrow results with visual filter conditions.",
+    "description": "Report builder step 3 hint"
+  },
+  "builderStepHint_previewSave": {
+    "message": "Review results, then save or publish your report.",
+    "description": "Report builder step 5 hint"
+  },
+  "builderRelatedModulesHint": {
+    "message": "Join related CRM modules to include their fields.",
+    "description": "Related modules section subtitle"
+  },
+  "builderTypeDesc_tabular": {
+    "message": "List individual records with selected columns",
+    "description": "Report type option description — tabular"
+  },
+  "builderTypeDesc_summary": {
+    "message": "Group data and show aggregated metrics",
+    "description": "Report type option description — summary"
+  },
+  "builderTypeDesc_kpi": {
+    "message": "Single metric card or score",
+    "description": "Report type option description — KPI"
+  },
+  "builderTypeDesc_matrix": {
+    "message": "Cross-tab with row and column groups",
+    "description": "Report type option description — matrix"
+  },
+  "previewModeGroupedTable": {
+    "message": "Grouped table preview",
+    "description": "Report builder preview mode label — summary grouped table"
+  },
+  "previewModeMatrixTable": {
+    "message": "Matrix table preview",
+    "description": "Report builder preview mode label — matrix pivot table"
+  },
+  "matrixDrillDownTitle": {
+    "message": "Drill-down records",
+    "description": "Matrix pivot drill-down panel title"
+  },
+  "matrixDrillDownClear": {
+    "message": "Clear drill-down",
+    "description": "Clear matrix drill-down filter"
+  },
+  "matrixDrillDownLoading": {
+    "message": "Loading records…",
+    "description": "Matrix drill-down loading state"
+  },
+  "matrixDrillDownEmpty": {
+    "message": "No records match this cell",
+    "description": "Matrix drill-down empty state"
+  },
+  "matrixRowExpand": {
+    "message": "Expand row",
+    "description": "Expand matrix row to show underlying records"
+  },
+  "matrixRowCollapse": {
+    "message": "Collapse row",
+    "description": "Collapse expanded matrix row"
+  },
+  "matrixRowRecords": {
+    "message": "{count} records",
+    "description": "Record count in expanded matrix row"
+  },
+  "builderNamePlaceholder": {
+    "message": "e.g. Open deals by stage",
+    "description": "Report name placeholder on step 1"
+  },
+  "builderDescriptionPlaceholder": {
+    "message": "Optional — what this report shows and who it is for",
+    "description": "Report description placeholder on step 1"
+  },
+  "builderNameRequired": {
+    "message": "Enter a report name before saving.",
+    "description": "Validation when saving without a name"
+  },
+  "builderSaveSuccess": {
+    "message": "Report saved.",
+    "description": "Toast after successful save"
+  },
+  "builderSaveFailed": {
+    "message": "Could not save the report. Try again.",
+    "description": "Toast when save fails"
+  },
+  "builderStep_preview": {
+    "message": "Preview",
+    "description": "Report builder step 5 label"
+  },
+  "builderStep_savePublish": {
+    "message": "Save & publish",
+    "description": "Report builder step 6 label"
+  },
+  "builderStepHint_preview": {
+    "message": "Review how your report looks before saving.",
+    "description": "Report builder step 5 hint"
+  },
+  "builderStepHint_savePublish": {
+    "message": "Configure sharing, folder, and performance settings, then publish.",
+    "description": "Report builder step 6 hint"
+  },
+  "builderNotReadyToPublish": {
+    "message": "Add a report name and at least one field before publishing.",
+    "description": "Validation message when publish is blocked"
+  },
+  "builderSharingTitle": {
+    "message": "Sharing & permissions",
+    "description": "Save step sharing card title"
+  },
+  "builderTags": {
+    "message": "Tags",
+    "description": "Report tags field label"
+  },
+  "builderTagsPlaceholder": {
+    "message": "pipeline, deals, sales",
+    "description": "Report tags input placeholder"
+  },
+  "builderCacheEnabled": {
+    "message": "Enable result caching",
+    "description": "Report cache toggle label"
+  },
+  "builderCacheDuration": {
+    "message": "Cache duration",
+    "description": "Report cache duration label"
+  },
+  "builderRuntimeFilters": {
+    "message": "Prompt for runtime filters when running",
+    "description": "Runtime filters toggle label"
+  },
+  "builderScheduleOptional": {
+    "message": "Schedule (optional)",
+    "description": "Save step schedule card title"
+  },
+  "builderScheduleDeferredHint": {
+    "message": "Schedules are available after the report is published. Set up automated delivery from the Schedules page.",
+    "description": "Schedule deferred hint on save step"
+  },
+  "builderOpenSchedules": {
+    "message": "Open schedules",
+    "description": "Link to schedules from save step"
+  },
+  "builderDataPreview": {
+    "message": "Data preview",
+    "description": "Summary sidebar mini preview title"
+  },
+  "builderRunFullReport": {
+    "message": "Run full report",
+    "description": "Summary sidebar run preview button"
+  },
+  "builderWhatsNextPublish": {
+    "message": "Save as draft to keep editing, or publish to share the report with your team.",
+    "description": "Summary sidebar hint on save step"
+  },
+  "builderPermissionMatrix": {
+    "message": "Permissions",
+    "description": "Permission matrix section title"
+  },
+  "builderPermView": {
+    "message": "View",
+    "description": "Report permission matrix view row"
+  },
+  "builderPermEdit": {
+    "message": "Edit",
+    "description": "Report permission matrix edit row"
+  },
+  "builderPermClone": {
+    "message": "Clone",
+    "description": "Report permission matrix clone row"
+  },
+  "builderPermExport": {
+    "message": "Export",
+    "description": "Report permission matrix export row"
+  },
+  "builderPermShare": {
+    "message": "Share",
+    "description": "Report permission matrix share row"
+  },
+  "builderPermLevelViewers": {
+    "message": "Can view",
+    "description": "Permission level for viewers with access"
+  },
+  "builderPermLevelEditors": {
+    "message": "Editors and above",
+    "description": "Permission level for editors"
+  },
+  "builderPermLevelOwner": {
+    "message": "Owner only",
+    "description": "Permission level for owner only"
+  },
+  "builderShareUsers": {
+    "message": "Specific users",
+    "description": "Share with specific users label"
+  },
+  "builderListedInHome": {
+    "message": "Enable in Reports Home",
+    "description": "Toggle report visibility on analytics home"
+  },
+  "builderAddToFavorites": {
+    "message": "Add to favorites",
+    "description": "Favorite toggle on save step footer"
+  },
+  "builderScheduleEnable": {
+    "message": "Enable scheduled delivery",
+    "description": "Schedule toggle on save step"
+  },
+  "builderScheduleRecipients": {
+    "message": "Deliver to",
+    "description": "Schedule recipients label"
+  },
+  "builderScheduleRecipientsPlaceholder": {
+    "message": "email{'@'}company.com, teammate{'@'}company.com",
+    "description": "Schedule recipients placeholder"
+  },
+  "builderScheduleSendCopy": {
+    "message": "Send me a copy",
+    "description": "Schedule send copy to owner checkbox"
+  },
+  "builderSchedulePublishHint": {
+    "message": "Schedule is created when you publish the report.",
+    "description": "Hint that schedule runs after publish"
+  },
+  "builderScheduleCreateFailed": {
+    "message": "Report published, but the schedule could not be created.",
+    "description": "Toast when schedule creation fails after publish"
+  },
+  "builderPublishSuccess": {
+    "message": "Report published.",
+    "description": "Toast after successful publish"
+  },
+  "tabShared": {
+    "message": "Compartilhado comigo",
+    "description": "Reports list tab — shared with current user"
+  },
+  "tabScheduled": {
+    "message": "Agendado",
+    "description": "Reports list tab — reports with active schedules"
+  },
+  "builderPublishWithSchedule": {
+    "message": "Publicar e agendar",
+    "description": "Publish report and create delivery schedule"
+  },
+  "builderPublishOptions": {
+    "message": "Opções de publicação",
+    "description": "Accessible label for publish split button menu"
+  },
+  "builderDrillDownEnabled": {
+    "message": "Permitir detalhamento em linhas da matriz",
+    "description": "Toggle matrix row drill-down in report builder"
+  },
+  "builderScheduleStartDate": {
+    "message": "Data de início",
+    "description": "Optional schedule start date"
+  },
+  "builderScheduleEndDate": {
+    "message": "Data de término",
+    "description": "Optional schedule end date"
+  },
+  "builderScheduleFormats": {
+    "message": "Formatos de entrega",
+    "description": "Schedule export format checkboxes"
+  },
+  "builderScheduleRecipientsRequired": {
+    "message": "Adicione pelo menos um e-mail de destinatário para agendar a entrega.",
+    "description": "Validation when publishing with schedule without recipients"
+  },
+  "builderModuleComingSoon": {
+    "message": "Reporting for this module is not available yet.",
+    "description": "Module card hint when module is listed but not reportable"
+  },
+  "detailExportMenu": {
+    "message": "Export",
+    "description": "Report detail — export dropdown trigger"
+  },
+  "detailDraftHint": {
+    "message": "This report is a draft. Publish it to run and export results.",
+    "description": "Report detail — draft status hint"
+  },
+  "detailRunning": {
+    "message": "Running report…",
+    "description": "Report detail — execution in progress"
+  },
+  "schedulesEmptyDescription": {
+    "message": "Create a schedule to email report exports automatically and capture snapshots.",
+    "description": "Empty analytics schedules list description"
+  },
+  "schedulesFormHint": {
+    "message": "Choose when to run, who receives the export, and which format to deliver.",
+    "description": "Schedule create/edit dialog subtitle"
+  },
+  "schedulesFilteredReport": {
+    "message": "Showing schedules for “{name}”",
+    "description": "Report filter banner on schedules page"
+  },
+  "schedulesClearFilter": {
+    "message": "Show all schedules",
+    "description": "Clear report filter on schedules page"
+  },
+  "schedulesBackToReport": {
+    "message": "Back to report",
+    "description": "Back link when schedules opened from report detail"
+  },
+  "schedulesCountSummary": {
+    "message": "{count} schedule(s)",
+    "description": "Schedule list count subtitle"
+  },
+  "schedulesStatusActive": {
+    "message": "Active",
+    "description": "Schedule status — active"
+  },
+  "schedulesStatusPaused": {
+    "message": "Paused",
+    "description": "Schedule status — paused"
+  },
+  "schedulesStatusArchived": {
+    "message": "Archived",
+    "description": "Schedule status — archived"
+  },
+  "schedulesLastRunSuccess": {
+    "message": "Last run succeeded",
+    "description": "Schedule last run status — success"
+  },
+  "schedulesLastRunFailed": {
+    "message": "Last run failed",
+    "description": "Schedule last run status — failed"
+  },
+  "schedulesLastRunSkipped": {
+    "message": "Last run skipped",
+    "description": "Schedule last run status — skipped"
+  },
+  "widgetBuilderHint": {
+    "message": "Bind a published report, choose a visualization, and preview before publishing.",
+    "description": "Widget builder page subtitle"
+  },
+  "widgetBuilderConfig": {
+    "message": "Configuration",
+    "description": "Widget builder config panel title"
+  },
+  "widgetBuilderFromReport": {
+    "message": "Creating widget from “{name}”",
+    "description": "Widget builder context banner when opened from report"
+  },
+  "widgetPreviewSelectReport": {
+    "message": "Select a source report to preview this widget.",
+    "description": "Widget builder preview empty state"
+  },
+  "widgetOrientationVertical": {
+    "message": "Vertical",
+    "description": "Bar chart vertical orientation"
+  },
+  "widgetOrientationHorizontal": {
+    "message": "Horizontal",
+    "description": "Bar chart horizontal orientation"
+  },
+  "widgetDetailDraftHint": {
+    "message": "This widget is a draft. Publish it to refresh with live report data.",
+    "description": "Widget detail draft status hint"
+  },
+  "widgetDetailUpdated": {
+    "message": "Last updated",
+    "description": "Widget detail last updated label"
+  },
+  "widgetDetailDashboards": {
+    "message": "Dashboards",
+    "description": "Widget detail dashboard count label"
   }
 }

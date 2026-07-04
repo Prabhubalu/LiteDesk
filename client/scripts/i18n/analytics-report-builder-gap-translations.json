@@ -1,0 +1,116 @@
+{
+  "de": {
+    "builderPublishWithSchedule": "Veröffentlichen & planen",
+    "builderPublishOptions": "Veröffentlichungsoptionen",
+    "builderDrillDownEnabled": "Drilldown in Matrixzeilen erlauben",
+    "builderScheduleStartDate": "Startdatum",
+    "builderScheduleEndDate": "Enddatum",
+    "builderScheduleFormats": "Lieferformate",
+    "builderScheduleRecipientsRequired": "Fügen Sie mindestens eine Empfänger-E-Mail hinzu, um die Zustellung zu planen."
+  },
+  "fr": {
+    "builderScheduleRecipientsRequired": "Ajoutez au moins une adresse e-mail de destinataire pour planifier la livraison."
+  },
+  "it": {
+    "tabShared": "Condiviso con me",
+    "tabScheduled": "Pianificato",
+    "builderPublishWithSchedule": "Pubblica e pianifica",
+    "builderPublishOptions": "Opzioni di pubblicazione",
+    "builderDrillDownEnabled": "Consenti drill-down sulle righe della matrice",
+    "builderScheduleStartDate": "Data di inizio",
+    "builderScheduleEndDate": "Data di fine",
+    "builderScheduleFormats": "Formati di consegna",
+    "builderScheduleRecipientsRequired": "Aggiungi almeno un'e-mail del destinatario per pianificare la consegna."
+  },
+  "pt": {
+    "tabShared": "Compartilhado comigo",
+    "tabScheduled": "Agendado",
+    "builderPublishWithSchedule": "Publicar e agendar",
+    "builderPublishOptions": "Opções de publicação",
+    "builderDrillDownEnabled": "Permitir detalhamento em linhas da matriz",
+    "builderScheduleStartDate": "Data de início",
+    "builderScheduleEndDate": "Data de término",
+    "builderScheduleFormats": "Formatos de entrega",
+    "builderScheduleRecipientsRequired": "Adicione pelo menos um e-mail de destinatário para agendar a entrega."
+  },
+  "nl": {
+    "tabShared": "Gedeeld met mij",
+    "tabScheduled": "Gepland",
+    "builderPublishWithSchedule": "Publiceren & plannen",
+    "builderPublishOptions": "Publicatieopties",
+    "builderDrillDownEnabled": "Drill-down op matrixrijen toestaan",
+    "builderScheduleStartDate": "Startdatum",
+    "builderScheduleEndDate": "Einddatum",
+    "builderScheduleFormats": "Leveringsformaten",
+    "builderScheduleRecipientsRequired": "Voeg minimaal één ontvanger-e-mail toe om levering te plannen."
+  },
+  "ru": {
+    "tabShared": "Поделились со мной",
+    "tabScheduled": "По расписанию",
+    "builderPublishWithSchedule": "Опубликовать и запланировать",
+    "builderPublishOptions": "Параметры публикации",
+    "builderDrillDownEnabled": "Разрешить детализацию строк матрицы",
+    "builderScheduleStartDate": "Дата начала",
+    "builderScheduleEndDate": "Дата окончания",
+    "builderScheduleFormats": "Форматы доставки",
+    "builderScheduleRecipientsRequired": "Добавьте хотя бы один email получателя для планирования доставки."
+  },
+  "ar": {
+    "tabShared": "مشترك معي",
+    "tabScheduled": "مجدول",
+    "builderPublishWithSchedule": "نشر وجدولة",
+    "builderPublishOptions": "خيارات النشر",
+    "builderDrillDownEnabled": "السماح بالتفصيل في صفوف المصفوفة",
+    "builderScheduleStartDate": "تاريخ البدء",
+    "builderScheduleEndDate": "تاريخ الانتهاء",
+    "builderScheduleFormats": "صيغ التسليم",
+    "builderScheduleRecipientsRequired": "أضف بريدًا إلكترونيًا واحدًا على الأقل للمستلم لجدولة التسليم."
+  },
+  "hi": {
+    "tabShared": "मेरे साथ साझा",
+    "tabScheduled": "अनुसूचित",
+    "builderPublishWithSchedule": "प्रकाशित करें और अनुसूचित करें",
+    "builderPublishOptions": "प्रकाशन विकल्प",
+    "builderDrillDownEnabled": "मैट्रिक्स पंक्तियों पर ड्रिल-डाउन की अनुमति दें",
+    "builderScheduleStartDate": "प्रारंभ तिथि",
+    "builderScheduleEndDate": "समाप्ति तिथि",
+    "builderScheduleFormats": "डिलीवरी प्रारूप",
+    "builderScheduleRecipientsRequired": "डिलीवरी शेड्यूल करने के लिए कम से कम एक प्राप्तकर्ता ईमेल जोड़ें।"
+  },
+  "ja": {
+    "tabShared": "自分と共有",
+    "tabScheduled": "スケジュール済み",
+    "builderPublishWithSchedule": "公開してスケジュール",
+    "builderPublishOptions": "公開オプション",
+    "builderDrillDownEnabled": "マトリックス行のドリルダウンを許可",
+    "builderScheduleStartDate": "開始日",
+    "builderScheduleEndDate": "終了日",
+    "builderScheduleFormats": "配信形式",
+    "builderScheduleRecipientsRequired": "配信をスケジュールするには、受信者のメールアドレスを1つ以上追加してください。"
+  },
+  "zh": {
+    "tabShared": "与我共享",
+    "tabScheduled": "已计划",
+    "builderPublishWithSchedule": "发布并计划",
+    "builderPublishOptions": "发布选项",
+    "builderDrillDownEnabled": "允许矩阵行下钻",
+    "builderScheduleStartDate": "开始日期",
+    "builderScheduleEndDate": "结束日期",
+    "builderScheduleFormats": "交付格式",
+    "builderScheduleRecipientsRequired": "请至少添加一个收件人电子邮件以安排交付。"
+  },
+  "ko": {
+    "tabShared": "나와 공유됨",
+    "tabScheduled": "예약됨",
+    "builderPublishWithSchedule": "게시 및 예약",
+    "builderPublishOptions": "게시 옵션",
+    "builderDrillDownEnabled": "매트릭스 행 드릴다운 허용",
+    "builderScheduleStartDate": "시작일",
+    "builderScheduleEndDate": "종료일",
+    "builderScheduleFormats": "전달 형식",
+    "builderScheduleRecipientsRequired": "전달 일정을 예약하려면 수신자 이메일을 하나 이상 추가하세요."
+  },
+  "es": {
+    "tabShared": "Compartido conmigo"
+  }
+}

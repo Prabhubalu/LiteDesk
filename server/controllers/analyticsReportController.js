@@ -1,4 +1,5 @@
 const AnalyticsReport = require('../models/AnalyticsReport');
+const AnalyticsSchedule = require('../models/AnalyticsSchedule');
 const { buildOrgPermissionContext } = require('../services/runtimePermissionResolver');
 const {
   runAnalyticsReportWithLogging,
@@ -16,6 +17,14 @@ const {
 } = require('../constants/analyticsExecution');
 const { assertCanEditCertifiedAsset, canCertifyAnalyticsAssets } = require('../services/analytics/analyticsCertificationService');
 const { recordReportView } = require('../services/analytics/analyticsUsageService');
+const {
+  assertReportViewAccess,
+  assertReportEditAccess,
+  assertReportExportAccess,
+  assertReportCloneAccess,
+  buildReportListVisibilityFilter,
+  userBypassesReportSharing,
+} = require('../services/analytics/analyticsReportAccessService');
 
 function slugifyApiName(name) {
   return String(name || 'report')
@@ -37,6 +46,20 @@ async function ensureUniqueApiName(organizationId, apiName, excludeId = null) {
   }
 }
 
+async function resolveUniqueReportApiName(organizationId, baseApiName, excludeId = null) {
+  let apiName = String(baseApiName || 'report').trim() || 'report';
+  let suffix = 1;
+  while (suffix < 50) {
+    const query = { organizationId, apiName, status: { $ne: 'archived' } };
+    if (excludeId) query._id = { $ne: excludeId };
+    const existing = await AnalyticsReport.findOne(query).select('_id').lean();
+    if (!existing) return apiName;
+    apiName = `${baseApiName}_${suffix}`;
+    suffix += 1;
+  }
+  return `${baseApiName}_${Date.now()}`;
+}
+
 function handleError(res, error, fallbackMessage) {
   const status =
     error.statusCode ||
@@ -56,6 +79,7 @@ function buildExecutionContext(req, body = {}) {
     organizationId: req.user.organizationId,
     orgContext: req.organization ? buildOrgPermissionContext(req.organization) : undefined,
     runtimeFilters: body.runtimeFilters,
+    matrixDrill: body.matrixDrill || null,
     rowLimit: body.rowLimit,
     preview: body.preview === true,
   };
@@ -70,23 +94,57 @@ function shouldRunAsync(report, body) {
 async function listReports(req, res) {
   try {
     const organizationId = req.user.organizationId;
-    const query = { organizationId };
+    const filters = {};
 
-    if (req.query.status) query.status = req.query.status;
-    if (req.query.type) query.type = req.query.type;
-    if (req.query.category) query.category = req.query.category;
-    if (req.query.primaryModule) query.primaryModule = req.query.primaryModule;
-    if (req.query.mine === 'true') query.ownerId = req.user._id;
+    if (req.query.status) filters.status = req.query.status;
+    if (req.query.type) filters.type = req.query.type;
+    if (req.query.category) filters.category = req.query.category;
+    if (req.query.primaryModule) filters.primaryModule = req.query.primaryModule;
+    if (req.query.mine === 'true') filters.ownerId = req.user._id;
+    if (req.query.shared === 'true') {
+      filters.ownerId = { $ne: req.user._id };
+      filters.createdBy = { $ne: req.user._id };
+    }
+    if (req.query.scheduled === 'true') {
+      const scheduledReportIds = await AnalyticsSchedule.distinct('reportId', {
+        organizationId,
+        status: 'active',
+        reportId: { $ne: null },
+      });
+      filters._id = { $in: scheduledReportIds.length ? scheduledReportIds : [] };
+    }
     if (req.query.folderId === 'none') {
-      query.folderId = null;
+      filters.folderId = null;
     } else if (req.query.folderId) {
-      query.folderId = req.query.folderId;
+      filters.folderId = req.query.folderId;
     }
 
     if (req.query.search) {
       const regex = new RegExp(String(req.query.search), 'i');
-      query.$or = [{ name: regex }, { apiName: regex }, { tags: regex }];
+      filters.$or = [{ name: regex }, { apiName: regex }, { tags: regex }];
     }
+
+    const userId = req.user._id;
+    const listedInHomeClause =
+      req.query.includeHidden === 'true'
+        ? null
+        : {
+            $or: [
+              { ownerId: userId },
+              { createdBy: userId },
+              { listedInHome: { $ne: false } },
+              { listedInHome: { $exists: false } },
+            ],
+          };
+
+    const visibilityFilter =
+      req.query.all === 'true' && userBypassesReportSharing(req.user)
+        ? { organizationId }
+        : await buildReportListVisibilityFilter(req.user, organizationId);
+
+    const andClauses = [visibilityFilter, filters].filter(Boolean);
+    if (listedInHomeClause) andClauses.push(listedInHomeClause);
+    const query = andClauses.length === 1 ? andClauses[0] : { $and: andClauses };
 
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
@@ -122,8 +180,8 @@ async function createReport(req, res) {
       return res.status(400).json({ success: false, message: 'name is required' });
     }
 
-    const apiName = String(req.body?.apiName || slugifyApiName(name)).trim();
-    await ensureUniqueApiName(organizationId, apiName);
+    const baseApiName = String(req.body?.apiName || slugifyApiName(name)).trim() || slugifyApiName(name);
+    const apiName = await resolveUniqueReportApiName(organizationId, baseApiName);
 
     const report = await AnalyticsReport.create({
       ...req.body,
@@ -160,6 +218,8 @@ async function getReportById(req, res) {
       return res.status(404).json({ success: false, message: 'Report not found' });
     }
 
+    await assertReportViewAccess(req.user, report, req.user.organizationId);
+
     recordReportView(report._id, req.user.organizationId, req.user._id).catch(() => {});
 
     const populated = await AnalyticsReport.findById(report._id)
@@ -189,6 +249,7 @@ async function updateReport(req, res) {
     }
 
     assertCanEditCertifiedAsset(req.user, report);
+    await assertReportEditAccess(req.user, report, req.user.organizationId);
 
     const blocked = [
       '_id',
@@ -210,8 +271,11 @@ async function updateReport(req, res) {
     }
 
     if (req.body?.apiName && req.body.apiName !== report.apiName) {
-      await ensureUniqueApiName(req.user.organizationId, req.body.apiName, report._id);
-      report.apiName = req.body.apiName;
+      report.apiName = await resolveUniqueReportApiName(
+        req.user.organizationId,
+        req.body.apiName,
+        report._id,
+      );
     }
 
     report.updatedBy = req.user._id;
@@ -240,6 +304,7 @@ async function deleteReport(req, res) {
     }
 
     assertCanEditCertifiedAsset(req.user, report);
+    await assertReportEditAccess(req.user, report, req.user.organizationId);
 
     if (report.widgetCount > 0) {
       return res.status(409).json({
@@ -273,6 +338,7 @@ async function publishReport(req, res) {
     }
 
     assertCanEditCertifiedAsset(req.user, report);
+    await assertReportEditAccess(req.user, report, req.user.organizationId);
 
     report.status = 'published';
     report.version = report.publishedAt ? (report.version || 1) + 1 : 1;
@@ -306,6 +372,10 @@ async function executeReport(req, res) {
         message: 'Only published reports can be executed. Use preview: true for drafts.',
         code: 'REPORT_NOT_PUBLISHED',
       });
+    }
+
+    if (!preview) {
+      await assertReportViewAccess(req.user, report, req.user.organizationId);
     }
 
     const context = buildExecutionContext(req, body);
@@ -418,6 +488,16 @@ async function exportReport(req, res) {
       return res.status(404).json({ success: false, message: 'Report not found' });
     }
 
+    if (report.status !== 'published') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only published reports can be exported',
+        code: 'REPORT_NOT_PUBLISHED',
+      });
+    }
+
+    await assertReportExportAccess(req.user, report, req.user.organizationId);
+
     const format = String(req.body?.format || report.defaultExport || 'csv').toLowerCase();
     if (!['csv', 'xlsx', 'pdf'].includes(format)) {
       return res.status(400).json({
@@ -491,6 +571,8 @@ async function duplicateReport(req, res) {
     if (!source) {
       return res.status(404).json({ success: false, message: 'Report not found' });
     }
+
+    await assertReportCloneAccess(req.user, source, req.user.organizationId);
 
     const {
       _id,

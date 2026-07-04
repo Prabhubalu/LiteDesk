@@ -67,6 +67,7 @@
     "test:sla:integration": "node scripts/testSlaRecordApplication.js",
     "test:related-records": "node --test services/__tests__/recordContextRelatedRecords.test.js",
     "seed:internal-beta": "node scripts/seedInternalBetaData.js",
+    "seed:reports-sample": "node scripts/seedReportsSampleData.js",
     "seed:addons": "node scripts/seedAddonDefinitions.js",
     "migrate:live-chat-lc0": "node scripts/migrateLiveChatLc0.js",
     "migrate:live-chat-lc0:dry-run": "node scripts/migrateLiveChatLc0.js --dry-run",

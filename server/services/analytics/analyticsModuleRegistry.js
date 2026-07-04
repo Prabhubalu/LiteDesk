@@ -7,94 +7,154 @@ const Event = require('../../models/Event');
 const Organization = require('../../models/Organization');
 const Item = require('../../models/Item');
 const FormResponse = require('../../models/FormResponse');
+const SalesOrder = require('../../models/SalesOrder');
+const Invoice = require('../../models/Invoice');
+const Payment = require('../../models/Payment');
+const Document = require('../../models/Document');
+
+const DEFAULT_OWNERSHIP_FIELD = 'assignedTo';
+
+function moduleConfigEntry({
+  model,
+  moduleKey,
+  label,
+  appKey,
+  collection,
+  defaultFields,
+  ownershipField = DEFAULT_OWNERSHIP_FIELD,
+  excludeTrash = false,
+  tenantScopeMatch = null,
+}) {
+  return {
+    model,
+    moduleKey,
+    label,
+    appKey,
+    collection: collection || model.collection.name,
+    defaultFields,
+    ownershipField,
+    excludeTrash,
+    tenantScopeMatch,
+  };
+}
 
 /**
  * Maps analytics primaryModule keys to Mongoose models and ownership fields.
  */
 const ANALYTICS_MODULE_REGISTRY = Object.freeze({
-  deals: {
+  deals: moduleConfigEntry({
     model: Deal,
-    ownershipField: 'assignedTo',
-    appKey: 'SALES',
+    moduleKey: 'deals',
     label: 'Deals',
-    collection: 'deals',
+    appKey: 'SALES',
     excludeTrash: true,
     defaultFields: ['name', 'stage', 'amount', 'assignedTo', 'expectedCloseDate'],
-  },
-  people: {
+  }),
+  people: moduleConfigEntry({
     model: People,
-    ownershipField: 'assignedTo',
-    appKey: 'SALES',
+    moduleKey: 'people',
     label: 'People',
-    collection: 'people',
-    defaultFields: ['first_name', 'last_name', 'email', 'assignedTo'],
-  },
-  tasks: {
-    model: Task,
-    ownershipField: 'assignedTo',
     appKey: 'SALES',
+    defaultFields: ['first_name', 'last_name', 'email', 'assignedTo'],
+  }),
+  tasks: moduleConfigEntry({
+    model: Task,
+    moduleKey: 'tasks',
     label: 'Tasks',
-    collection: 'tasks',
+    appKey: 'PLATFORM',
     excludeTrash: true,
     defaultFields: ['title', 'status', 'priority', 'assignedTo', 'dueDate'],
-  },
-  quotes: {
+  }),
+  quotes: moduleConfigEntry({
     model: Quote,
-    ownershipField: 'assignedTo',
-    appKey: 'SALES',
+    moduleKey: 'quotes',
     label: 'Quotes',
-    collection: 'quotes',
-    defaultFields: ['quoteNumber', 'status', 'assignedTo', 'validUntil'],
-  },
-  cases: {
-    model: Case,
-    ownershipField: 'assignedTo',
-    appKey: 'HELPDESK',
-    label: 'Cases',
-    collection: 'cases',
-    defaultFields: ['caseId', 'title', 'status', 'priority', 'assignedTo'],
-  },
-  events: {
-    model: Event,
-    ownershipField: 'assignedTo',
     appKey: 'PLATFORM',
+    defaultFields: ['quoteNumber', 'status', 'assignedTo', 'validUntil'],
+  }),
+  cases: moduleConfigEntry({
+    model: Case,
+    moduleKey: 'cases',
+    label: 'Cases',
+    appKey: 'HELPDESK',
+    defaultFields: ['caseId', 'title', 'status', 'priority', 'assignedTo'],
+  }),
+  events: moduleConfigEntry({
+    model: Event,
+    moduleKey: 'events',
     label: 'Events',
-    collection: 'events',
+    appKey: 'PLATFORM',
     excludeTrash: true,
     defaultFields: ['eventName', 'eventType', 'status', 'assignedTo', 'startDateTime'],
-  },
-  organizations: {
+  }),
+  organizations: moduleConfigEntry({
     model: Organization,
-    ownershipField: 'assignedTo',
-    appKey: 'SALES',
+    moduleKey: 'organizations',
     label: 'Organizations',
-    collection: 'organizations',
+    appKey: 'SALES',
     excludeTrash: true,
     tenantScopeMatch: { isTenant: { $ne: true } },
     defaultFields: ['name', 'industry', 'assignedTo', 'status'],
-  },
-  items: {
+  }),
+  items: moduleConfigEntry({
     model: Item,
-    ownershipField: 'createdBy',
-    appKey: 'PLATFORM',
+    moduleKey: 'items',
     label: 'Items',
-    collection: 'items',
+    appKey: 'PLATFORM',
+    ownershipField: 'createdBy',
     excludeTrash: true,
     defaultFields: ['item_name', 'item_code', 'item_type', 'status', 'createdBy'],
-  },
-  forms: {
+  }),
+  forms: moduleConfigEntry({
     model: FormResponse,
-    ownershipField: 'submittedBy',
-    appKey: 'PLATFORM',
+    moduleKey: 'forms',
     label: 'Form Responses',
-    collection: 'formresponses',
+    appKey: 'PLATFORM',
+    ownershipField: 'submittedBy',
     defaultFields: ['responseId', 'formId', 'executionStatus', 'reviewStatus', 'submittedAt'],
-  },
+  }),
+  sales_orders: moduleConfigEntry({
+    model: SalesOrder,
+    moduleKey: 'sales_orders',
+    label: 'Sales Orders',
+    appKey: 'PLATFORM',
+    excludeTrash: true,
+    defaultFields: ['salesOrderNumber', 'status', 'assignedTo', 'orderDate'],
+  }),
+  invoices: moduleConfigEntry({
+    model: Invoice,
+    moduleKey: 'invoices',
+    label: 'Invoices',
+    appKey: 'PLATFORM',
+    excludeTrash: true,
+    defaultFields: ['invoiceNumber', 'status', 'assignedTo', 'dueDate'],
+  }),
+  payments: moduleConfigEntry({
+    model: Payment,
+    moduleKey: 'payments',
+    label: 'Payments',
+    appKey: 'PLATFORM',
+    ownershipField: 'createdBy',
+    excludeTrash: true,
+    defaultFields: ['paymentNumber', 'status', 'amount', 'paymentDate'],
+  }),
+  documents: moduleConfigEntry({
+    model: Document,
+    moduleKey: 'documents',
+    label: 'Documents',
+    appKey: 'PLATFORM',
+    excludeTrash: true,
+    defaultFields: ['name', 'status', 'assignedTo', 'createdBy'],
+  }),
 });
 
 function getAnalyticsModuleConfig(moduleKey) {
   const key = String(moduleKey || '').trim().toLowerCase();
   return ANALYTICS_MODULE_REGISTRY[key] || null;
+}
+
+function isReportableAnalyticsModule(moduleKey) {
+  return Boolean(getAnalyticsModuleConfig(moduleKey));
 }
 
 function listAnalyticsModules() {
@@ -104,11 +164,13 @@ function listAnalyticsModules() {
     label: cfg.label,
     collection: cfg.collection,
     defaultFields: cfg.defaultFields || [],
+    reportable: true,
   }));
 }
 
 module.exports = {
   ANALYTICS_MODULE_REGISTRY,
   getAnalyticsModuleConfig,
+  isReportableAnalyticsModule,
   listAnalyticsModules,
 };

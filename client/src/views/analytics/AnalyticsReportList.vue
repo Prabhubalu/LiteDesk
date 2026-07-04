@@ -260,6 +260,8 @@ const canArchive = computed(() => authStore.can('reports', 'delete'));
 const tabs = [
   { key: 'all', label: t('analytics.tabAll') },
   { key: 'mine', label: t('analytics.tabMine') },
+  { key: 'shared', label: t('analytics.tabShared') },
+  { key: 'scheduled', label: t('analytics.tabScheduled') },
   { key: 'draft', label: t('analytics.tabDrafts') },
   { key: 'published', label: t('analytics.tabPublished') },
   { key: 'archived', label: t('analytics.tabArchived') },
@@ -310,6 +312,8 @@ function formatDate(value) {
 function listParams() {
   const params = { limit: 100 };
   if (activeTab.value === 'mine') params.mine = true;
+  if (activeTab.value === 'shared') params.shared = true;
+  if (activeTab.value === 'scheduled') params.scheduled = true;
   if (['draft', 'published', 'archived'].includes(activeTab.value)) {
     params.status = activeTab.value;
   }

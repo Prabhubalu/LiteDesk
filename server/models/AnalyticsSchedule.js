@@ -73,6 +73,8 @@ const AnalyticsScheduleSchema = new Schema(
     lastError: { type: String, default: null },
     lastSnapshotId: { type: Schema.Types.ObjectId, ref: 'AnalyticsSnapshot', default: null },
     nextRunAt: { type: Date, default: null },
+    startDate: { type: Date, default: null },
+    endDate: { type: Date, default: null },
   },
   { timestamps: true }
 );

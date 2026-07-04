@@ -18,14 +18,19 @@ export interface AnalyticsCatalogJoinTarget {
   relationshipKey: string;
   targetModule: string;
   joinType: string;
+  requiresJoin?: string | null;
+  label?: string;
+  joinable?: boolean;
 }
 
 export interface AnalyticsCatalogModule {
   moduleKey: string;
   appKey: string;
   label: string;
-  collection: string;
+  collection?: string | null;
   defaultFields: string[];
+  reportable?: boolean;
+  scope?: string | null;
   fields?: AnalyticsCatalogField[];
   joinTargets?: AnalyticsCatalogJoinTarget[];
 }
@@ -142,6 +147,10 @@ export function useAnalyticsReports() {
     }
   }
 
+  async function previewMatrixDrill(body: Record<string, unknown>) {
+    return apiClient.post('/analytics/reports/preview', body);
+  }
+
   async function deleteReport(id: string) {
     return apiClient.delete(`/analytics/reports/${id}`);
   }
@@ -237,6 +246,7 @@ export function useAnalyticsReports() {
     publishReport,
     executeReport,
     previewReport,
+    previewMatrixDrill,
     deleteReport,
     duplicateReport,
     archiveReport,

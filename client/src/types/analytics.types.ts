@@ -47,6 +47,17 @@ export interface AnalyticsShareTarget {
   id: string;
 }
 
+export type AnalyticsReportPermissionLevel = 'owner' | 'editors' | 'viewers';
+
+export interface AnalyticsReportPermissions {
+  view?: AnalyticsReportPermissionLevel;
+  edit?: AnalyticsReportPermissionLevel;
+  clone?: AnalyticsReportPermissionLevel;
+  export?: AnalyticsReportPermissionLevel;
+  share?: AnalyticsReportPermissionLevel;
+}
+
+/** @deprecated use AnalyticsReportPermissions with level strings */
 export interface AnalyticsAssetPermissions {
   view?: boolean;
   edit?: boolean;
@@ -67,6 +78,7 @@ export interface AnalyticsReportRecord {
   status: AnalyticsAssetStatus;
   version: number;
   tags: string[];
+  listedInHome?: boolean;
   icon?: string | null;
   color?: string | null;
   primaryModule: string;
@@ -102,6 +114,7 @@ export interface AnalyticsReportRecord {
   pageSize: number;
   rowLimit: number;
   showRecordCount: boolean;
+  drillDownEnabled?: boolean;
   cacheEnabled: boolean;
   cacheDuration: number;
   executionMode: AnalyticsExecutionMode;
@@ -117,7 +130,7 @@ export interface AnalyticsReportRecord {
   ownerId: string;
   visibility: AnalyticsVisibility;
   sharedWith?: AnalyticsShareTarget[] | null;
-  permissions?: AnalyticsAssetPermissions | null;
+  permissions?: AnalyticsReportPermissions | null;
   widgetCount: number;
   dashboardCount: number;
   apiUsage: number;
@@ -333,7 +346,7 @@ export interface AnalyticsDashboardRecord {
 }
 
 export interface AnalyticsExecuteResult {
-  columns: Array<{ key: string; label: string; type?: string }>;
+  columns: Array<{ key: string; label: string; type?: string; role?: 'row' | 'pivot' | 'total' }>;
   rows: Record<string, unknown>[];
   meta: {
     totalRows: number;
@@ -341,6 +354,18 @@ export interface AnalyticsExecuteResult {
     executionMs: number;
     reportId: string;
     reportVersion: number;
+    matrixLayout?: {
+      rowFields: string[];
+      columnFields: string[];
+      metricKeys: string[];
+      pivotColumns: Array<{ key: string; label: string; filterValues?: Record<string, unknown> }>;
+    };
+    grandTotalRow?: Record<string, unknown>;
+    drillDown?: boolean;
+    drillContext?: {
+      rowFilters?: Record<string, unknown>;
+      columnFilters?: Record<string, unknown>;
+    };
   };
 }
 
@@ -400,8 +425,10 @@ export interface AnalyticsScheduleRecord {
   dayOfWeek: number;
   dayOfMonth: number;
   recipients: string[];
-  exportFormat: 'csv';
+  exportFormat: AnalyticsExportFormat;
   emailSubject?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
   status: AnalyticsScheduleStatus;
   cronExpression?: string | null;
   ownerId: string;

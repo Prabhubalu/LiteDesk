@@ -1,6 +1,7 @@
 const AnalyticsExecution = require('../../models/AnalyticsExecution');
 const AnalyticsReport = require('../../models/AnalyticsReport');
 const { executeAnalyticsReport } = require('./analyticsEngine');
+const { hasMatrixDrillFilters } = require('./analyticsMatrixPivot');
 const {
   buildCacheKey,
   getCachedResult,
@@ -72,7 +73,8 @@ async function updateReportRuntimeStats(reportId, organizationId, { success, exe
  * Core report run with optional cache (published reports only).
  */
 async function runAnalyticsReportCore(report, context = {}) {
-  const cacheEnabled = report.cacheEnabled !== false && !context.preview;
+  const isMatrixDrill = hasMatrixDrillFilters(context.matrixDrill);
+  const cacheEnabled = report.cacheEnabled !== false && !context.preview && !isMatrixDrill;
   const ttlMinutes = Number(report.cacheDuration) || ANALYTICS_DEFAULT_CACHE_TTL_SECONDS / 60;
   const ttlSeconds = Math.max(ttlMinutes * 60, 60);
 
@@ -84,7 +86,7 @@ async function runAnalyticsReportCore(report, context = {}) {
       reportVersion: report.version,
       userId: context.user?._id,
       runtimeFilters: context.runtimeFilters,
-      preview: context.preview,
+      matrixDrill: context.matrixDrill,
     });
 
     const cached = await getCachedResult(cacheKey);
@@ -146,7 +148,7 @@ async function runAnalyticsReportWithLogging(report, context = {}) {
       cached: result.meta?.cached === true,
     });
 
-    if (report._id && !context.preview) {
+    if (report._id && !context.preview && !hasMatrixDrillFilters(context.matrixDrill)) {
       await updateReportRuntimeStats(report._id, context.organizationId, {
         success: true,
         executionMs: result.meta?.executionMs,
@@ -158,7 +160,7 @@ async function runAnalyticsReportWithLogging(report, context = {}) {
   } catch (error) {
     await failExecution(executionId, context.organizationId, error.message);
 
-    if (report._id && !context.preview) {
+    if (report._id && !context.preview && !hasMatrixDrillFilters(context.matrixDrill)) {
       await updateReportRuntimeStats(report._id, context.organizationId, {
         success: false,
         error: error.message,
