@@ -2,8 +2,11 @@ const InstanceRegistry = require('../models/InstanceRegistry');
 const DemoRequest = require('../models/DemoRequest');
 const Organization = require('../models/Organization');
 const OrganizationSubscription = require('../models/OrganizationSubscription');
+const UserDirectory = require('../models/UserDirectory');
 
 async function resolveOrganizationForInstance(instance) {
+    if (!instance) return null;
+
     if (instance.demoRequestId) {
         const demo = await DemoRequest.findById(instance.demoRequestId)
             .select('organizationId')
@@ -15,19 +18,38 @@ async function resolveOrganizationForInstance(instance) {
 
     const dbName = instance.databaseConnection?.database;
     if (dbName) {
-        return Organization.findOne({ 'database.name': dbName });
+        const byDatabase = await Organization.findOne({ 'database.name': dbName });
+        if (byDatabase) return byDatabase;
+    }
+
+    if (instance.ownerEmail) {
+        const directoryEntry = await UserDirectory.findOne({
+            email: String(instance.ownerEmail).toLowerCase().trim(),
+            status: 'active'
+        })
+            .select('organizationId')
+            .lean();
+        if (directoryEntry?.organizationId) {
+            return Organization.findById(directoryEntry.organizationId);
+        }
     }
 
     return null;
 }
 
 async function syncTrialEndDateToTenant(organization, trialEndDate) {
-    if (!organization || !trialEndDate) return;
+    if (!organization || !trialEndDate) return false;
 
     organization.subscription.trialEndDate = trialEndDate;
 
-    if (organization.subscription.tier === 'trial' && trialEndDate > new Date()) {
-        organization.subscription.status = 'trial';
+    const trialStillActive = trialEndDate > new Date();
+    if (trialStillActive) {
+        if (organization.subscription.status !== 'active' && organization.subscription.status !== 'cancelled') {
+            organization.subscription.status = 'trial';
+        }
+        if (!organization.subscription.tier || organization.subscription.tier === 'trial') {
+            organization.subscription.tier = 'trial';
+        }
     }
 
     await organization.save();
@@ -35,12 +57,14 @@ async function syncTrialEndDateToTenant(organization, trialEndDate) {
     const orgSubscription = await OrganizationSubscription.findOne({
         organizationId: organization._id
     });
-    if (!orgSubscription) return;
+    if (!orgSubscription) return true;
 
     const { applyTrialEndDateToOrgSubscription } = require('../services/trialExtensionService');
     if (applyTrialEndDateToOrgSubscription(orgSubscription, trialEndDate)) {
         await orgSubscription.save();
     }
+
+    return true;
 }
 
 // @desc    Get all instances (with filters and pagination)
@@ -261,15 +285,26 @@ const updateInstanceSubscription = async (req, res) => {
 
         await instance.save();
 
+        let tenantTrialSynced = false;
         if (parsedTrialEndDate) {
             const organization = await resolveOrganizationForInstance(instance);
-            await syncTrialEndDateToTenant(organization, parsedTrialEndDate);
+            if (organization) {
+                tenantTrialSynced = await syncTrialEndDateToTenant(organization, parsedTrialEndDate);
+            } else {
+                console.warn('[InstanceSubscription] Tenant organization not found for trial sync', {
+                    instanceId: String(instance._id),
+                    subdomain: instance.subdomain,
+                    database: instance.databaseConnection?.database || null,
+                    ownerEmail: instance.ownerEmail || null
+                });
+            }
         }
 
         res.status(200).json({
             success: true,
             message: 'Instance subscription updated',
-            data: instance
+            data: instance,
+            tenantTrialSynced
         });
     } catch (error) {
         console.error('Update instance subscription error:', error);

@@ -327,6 +327,7 @@ import {
   captureAnalyticsWidgetCreated,
   captureAnalyticsWidgetPublished,
 } from '@/config/posthogAnalytics';
+import type { AnalyticsChartType } from '@/types/analytics.types';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -352,7 +353,7 @@ const labelClass = 'mb-1.5 block text-sm font-medium text-neutral-700 dark:text-
 const inputClass =
   'w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-900 dark:text-white';
 
-const chartTypes = ['bar', 'line', 'area', 'pie', 'donut', 'funnel', 'gauge', 'heatmap', 'scatter', 'combo', 'kpi', 'table'];
+const chartTypes: AnalyticsChartType[] = ['bar', 'line', 'area', 'pie', 'donut', 'funnel', 'gauge', 'heatmap', 'scatter', 'combo', 'kpi', 'table'];
 
 const isNew = computed(() => route.name === 'analytics-widget-create');
 
@@ -360,7 +361,7 @@ const form = reactive({
   name: '',
   apiName: '',
   reportId: '',
-  chartType: 'bar',
+  chartType: 'bar' as AnalyticsChartType,
   kpiLabel: '',
   templateKey: '',
   orientation: 'vertical' as 'vertical' | 'horizontal',
@@ -474,7 +475,7 @@ function buildPayload() {
     },
     kpiValueField: form.chartType === 'kpi' ? metricField.value : null,
     kpiLabel: form.kpiLabel || form.name,
-    thresholds: form.chartType === 'kpi' ? kpiThresholds.value : null,
+    thresholds: form.chartType === 'kpi' ? kpiThresholds.value : undefined,
     templateKey: form.templateKey || null,
     orientation: form.orientation,
     stacked: form.stacked,
@@ -530,7 +531,7 @@ async function applyTemplate(template: {
   try {
     form.templateKey = template.templateKey;
     form.name = template.name;
-    form.chartType = template.chartType;
+    form.chartType = template.chartType as AnalyticsChartType;
     form.kpiLabel = template.kpiLabel || template.name;
 
     if (template.columnMapping?.dimension) {
@@ -608,9 +609,10 @@ watch(
 );
 
 watch(previewColumns, (cols) => {
-  if (cols.length && !cols.includes(dimensionField.value)) dimensionField.value = cols[0];
-  if (cols.length && !cols.includes(metricField.value)) {
-    metricField.value = cols.find((col) => col !== dimensionField.value) || cols[0];
+  const first = cols[0];
+  if (first && !cols.includes(dimensionField.value)) dimensionField.value = first;
+  if (first && !cols.includes(metricField.value)) {
+    metricField.value = cols.find((col) => col !== dimensionField.value) || first;
   }
 });
 

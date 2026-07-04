@@ -250,12 +250,14 @@ export function useReportBuilder(reportId?: string | null) {
         fields.push({
           key,
           label: mod?.label ? `${mod.label}: ${bareKey}` : key,
+          type: undefined,
           moduleKey,
         });
       } else {
         fields.push({
           key,
           label: key,
+          type: undefined,
           moduleKey: form.primaryModule,
         });
       }

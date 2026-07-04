@@ -238,10 +238,11 @@ const reportLabel = computed(() => {
   return widget.value?.reportApiName || '—';
 });
 
-const reportId = computed(() => {
+const reportId = computed((): string | undefined => {
   const report = widget.value?.reportId;
-  if (report && typeof report === 'object') return report._id;
-  return widget.value?.reportId;
+  if (!report) return undefined;
+  if (typeof report === 'object') return report._id;
+  return report;
 });
 
 const statCards = computed(() => {

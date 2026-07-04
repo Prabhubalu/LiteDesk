@@ -16,6 +16,31 @@ export type AnalyticsReportType =
 
 export type AnalyticsAssetStatus = 'draft' | 'published' | 'archived';
 
+export interface AnalyticsUserRef {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
+export interface AnalyticsReportRef {
+  _id: string;
+  name: string;
+  apiName?: string;
+  status?: AnalyticsAssetStatus;
+  type?: AnalyticsReportType;
+  primaryModule?: string;
+  version?: number;
+}
+
+export interface AnalyticsDashboardRef {
+  _id: string;
+  name: string;
+  apiName?: string;
+  status?: AnalyticsAssetStatus;
+  category?: AnalyticsDashboardCategory;
+}
+
 export type AnalyticsReportCategory =
   | 'sales'
   | 'support'
@@ -127,7 +152,7 @@ export interface AnalyticsReportRecord {
   exportFormats: AnalyticsExportFormat[];
   defaultExport: AnalyticsExportFormat;
   printSettings?: unknown;
-  ownerId: string;
+  ownerId: string | AnalyticsUserRef;
   visibility: AnalyticsVisibility;
   sharedWith?: AnalyticsShareTarget[] | null;
   permissions?: AnalyticsReportPermissions | null;
@@ -201,7 +226,7 @@ export interface AnalyticsWidgetRecord {
   templateKey?: string | null;
   icon?: string | null;
   color?: string | null;
-  reportId: string;
+  reportId: string | AnalyticsReportRef;
   reportVersion?: number | null;
   reportApiName?: string | null;
   columnMapping: AnalyticsWidgetColumnMapping;
@@ -413,11 +438,14 @@ export interface AnalyticsHomePayload {
 export type AnalyticsScheduleFrequency = 'daily' | 'weekly' | 'monthly';
 export type AnalyticsScheduleStatus = 'active' | 'paused' | 'archived';
 
+export type AnalyticsScheduleAssetType = 'report' | 'dashboard';
+
 export interface AnalyticsScheduleRecord {
   _id: string;
   name: string;
-  reportId: string | AnalyticsReportRecord;
-  assetType: 'report';
+  reportId?: string | AnalyticsReportRef | null;
+  dashboardId?: string | AnalyticsDashboardRef | null;
+  assetType: AnalyticsScheduleAssetType;
   frequency: AnalyticsScheduleFrequency;
   timezone: string;
   hour: number;

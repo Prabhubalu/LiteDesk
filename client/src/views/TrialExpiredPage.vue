@@ -79,9 +79,17 @@
 
           <div
             v-else-if="extensionUsed"
-            class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-100"
+            class="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-100"
           >
-            {{ t('auth.trialExpiredExtensionUsed') }}
+            <p class="font-semibold">
+              {{ t('auth.trialExpiredTitle') }}
+            </p>
+            <p class="mt-2">
+              {{ t('auth.trialExpiredExtensionUsed') }}
+            </p>
+            <p class="mt-2">
+              {{ t('auth.trialExpiredContactSupport') }}
+            </p>
           </div>
 
           <div

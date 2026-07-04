@@ -947,6 +947,24 @@ export const useAuthStore = defineStore('auth', {
                         this.logout();
                     }
                     return false;
+                } else if (response.status === 403) {
+                    let errorData = null;
+                    try {
+                        errorData = await response.json();
+                    } catch (_parseError) {
+                        return false;
+                    }
+                    if (errorData?.code === 'TRIAL_EXPIRED' && errorData?.trialEndDate && this.organization) {
+                        this.organization = {
+                            ...this.organization,
+                            subscription: {
+                                ...this.organization.subscription,
+                                trialEndDate: errorData.trialEndDate
+                            }
+                        };
+                        localStorage.setItem('organization', JSON.stringify(this.organization));
+                    }
+                    return false;
                 }
             } catch (error) {
                 console.error('Error refreshing user:', error);

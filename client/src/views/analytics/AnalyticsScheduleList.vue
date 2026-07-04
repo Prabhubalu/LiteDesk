@@ -721,8 +721,12 @@ function openEditForm(row: AnalyticsScheduleRecord) {
   editingId.value = String(row._id);
   form.name = row.name;
   form.assetType = row.assetType || 'report';
-  form.reportId = typeof row.reportId === 'object' ? row.reportId?._id : row.reportId || '';
-  form.dashboardId = typeof row.dashboardId === 'object' ? row.dashboardId?._id : row.dashboardId || '';
+  form.reportId = row.reportId && typeof row.reportId === 'object'
+    ? row.reportId._id
+    : (row.reportId ?? '');
+  form.dashboardId = row.dashboardId && typeof row.dashboardId === 'object'
+    ? row.dashboardId._id
+    : (row.dashboardId ?? '');
   form.exportFormat = row.exportFormat || 'csv';
   form.frequency = row.frequency;
   form.timezone = row.timezone || 'UTC';
@@ -784,7 +788,7 @@ async function load() {
 async function submitForm() {
   const payload = buildPayload();
   if (editingId.value) {
-    const res = await updateSchedule(editingId.value, payload);
+    const res = await updateSchedule(editingId.value, payload as Partial<AnalyticsScheduleRecord>);
     if (res?.success) {
       captureAnalyticsScheduleUpdated({ schedule_id: editingId.value });
       cancelForm();

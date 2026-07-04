@@ -3994,12 +3994,16 @@ exports.getTrialStatus = async (req, res) => {
             TRIAL_EXTENSION_DAYS
         } = require('../services/trialExtensionService');
 
+        const snapshot = buildTrialStatusSnapshot(organization);
+
         res.json({
             success: true,
             data: {
-                ...buildTrialStatusSnapshot(organization),
+                ...snapshot,
                 extensionDays: TRIAL_EXTENSION_DAYS,
                 canExtend: canManageTrialExtension(req.user)
+                    && snapshot.expired === true
+                    && snapshot.extensionUsed !== true
             }
         });
     } catch (error) {

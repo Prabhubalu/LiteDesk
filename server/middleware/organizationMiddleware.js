@@ -184,9 +184,20 @@ const organizationIsolation = async (req, res, next) => {
     }
 };
 
+function isTrialExpiredBypassRoute(req) {
+    const method = String(req.method || 'GET').toUpperCase();
+    const path = String(req.originalUrl || req.path || '').split('?')[0];
+
+    if (method === 'GET' && (path.endsWith('/users/profile') || path.endsWith('/profile'))) {
+        return true;
+    }
+
+    return false;
+}
+
 /**
  * Middleware to check if trial has expired
- * Blocks access if trial expired, except for upgrade/billing routes
+ * Blocks access if trial expired, except for profile read and settings/billing routes
  */
 const checkTrialStatus = async (req, res, next) => {
     // 🔓 BYPASS: Skip trial status check if security is disabled
@@ -204,6 +215,10 @@ const checkTrialStatus = async (req, res, next) => {
 
         // Check if trial is expired
         if (organization.isTrialExpired()) {
+            if (isTrialExpiredBypassRoute(req)) {
+                return next();
+            }
+
             return res.status(403).json({ 
                 message: 'Trial period has expired. Please upgrade to continue.',
                 code: 'TRIAL_EXPIRED',
