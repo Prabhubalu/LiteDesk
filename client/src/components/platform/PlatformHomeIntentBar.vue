@@ -31,8 +31,9 @@
         </kbd>
       </button>
 
-      <Menu as="div" class="relative shrink-0">
+      <Menu as="div" v-slot="{ open }" class="relative shrink-0">
         <MenuButton
+          ref="createMenuButtonRef"
           type="button"
           class="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-primary-200 bg-primary-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700 dark:border-primary-700 dark:bg-primary-600 dark:hover:bg-primary-500 sm:w-auto"
           :class="PLATFORM_HOME_PRIMARY_BUTTON_CLASS"
@@ -42,40 +43,48 @@
           <ChevronDownIcon class="h-4 w-4 opacity-80" />
         </MenuButton>
 
-        <Transition
-          enter-active-class="transition duration-100 ease-out"
-          enter-from-class="scale-95 opacity-0"
-          enter-to-class="scale-100 opacity-100"
-          leave-active-class="transition duration-75 ease-in"
-          leave-from-class="scale-100 opacity-100"
-          leave-to-class="scale-95 opacity-0"
-        >
-          <MenuItems
-            class="absolute right-0 z-20 mt-2 w-52 origin-top-right rounded-xl border border-neutral-200/50 bg-white p-1 focus:outline-none dark:border-white/[0.12] dark:bg-neutral-800"
-            :class="PLATFORM_HOME_DROPDOWN_CLASS"
+        <Teleport to="body">
+          <Transition
+            enter-active-class="transition duration-100 ease-out"
+            enter-from-class="scale-95 opacity-0"
+            enter-to-class="scale-100 opacity-100"
+            leave-active-class="transition duration-75 ease-in"
+            leave-from-class="scale-100 opacity-100"
+            leave-to-class="scale-95 opacity-0"
           >
-            <MenuItem v-for="action in createActions" :key="action.id" v-slot="{ active }">
-              <button
-                type="button"
-                :class="[
-                  'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm',
-                  active ? 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white' : 'text-neutral-700 dark:text-neutral-300'
-                ]"
-                @click="action.run"
-              >
-                <component :is="action.icon" class="h-4 w-4 shrink-0 text-neutral-400 dark:text-neutral-500" />
-                {{ action.label }}
-              </button>
-            </MenuItem>
-          </MenuItems>
-        </Transition>
+            <MenuItems
+              v-if="open"
+              :style="createMenuStyle"
+              class="fixed z-[10050] w-52 origin-top-right rounded-xl border border-neutral-200/50 bg-white p-1 focus:outline-none dark:border-white/[0.12] dark:bg-neutral-800"
+              :class="PLATFORM_HOME_DROPDOWN_CLASS"
+              @vue:before-mount="onCreateMenuOpen"
+              @vue:unmounted="onCreateMenuClose"
+              @mousedown.stop
+            >
+              <MenuItem v-for="action in createActions" :key="action.id" v-slot="{ active }">
+                <button
+                  type="button"
+                  :class="[
+                    'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm',
+                    active ? 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white' : 'text-neutral-700 dark:text-neutral-300'
+                  ]"
+                  @click="action.run"
+                >
+                  <component :is="action.icon" class="h-4 w-4 shrink-0 text-neutral-400 dark:text-neutral-500" />
+                  {{ action.label }}
+                </button>
+              </MenuItem>
+            </MenuItems>
+          </Transition>
+        </Teleport>
       </Menu>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
+import { Teleport } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import {
@@ -102,6 +111,59 @@ import {
 } from '@/config/posthogPlatformHome';
 
 const { t } = useI18n();
+
+const CREATE_MENU_WIDTH_PX = 208;
+const createMenuButtonRef = ref(null);
+const createMenuStyle = ref({});
+let createMenuViewportListenersBound = false;
+
+function getCreateMenuButtonElement() {
+  const raw = createMenuButtonRef.value;
+  if (!raw) return null;
+  return raw.$el ?? raw;
+}
+
+function syncCreateMenuPosition() {
+  const el = getCreateMenuButtonElement();
+  if (!el?.getBoundingClientRect) return;
+  const rect = el.getBoundingClientRect();
+  createMenuStyle.value = {
+    top: `${rect.bottom + 8}px`,
+    left: `${Math.max(8, rect.right - CREATE_MENU_WIDTH_PX)}px`,
+    width: `${CREATE_MENU_WIDTH_PX}px`,
+  };
+}
+
+function onCreateMenuViewportChange() {
+  syncCreateMenuPosition();
+}
+
+function bindCreateMenuViewportListeners() {
+  if (createMenuViewportListenersBound) return;
+  createMenuViewportListenersBound = true;
+  window.addEventListener('scroll', onCreateMenuViewportChange, true);
+  window.addEventListener('resize', onCreateMenuViewportChange);
+}
+
+function unbindCreateMenuViewportListeners() {
+  if (!createMenuViewportListenersBound) return;
+  createMenuViewportListenersBound = false;
+  window.removeEventListener('scroll', onCreateMenuViewportChange, true);
+  window.removeEventListener('resize', onCreateMenuViewportChange);
+}
+
+function onCreateMenuOpen() {
+  syncCreateMenuPosition();
+  bindCreateMenuViewportListeners();
+}
+
+function onCreateMenuClose() {
+  unbindCreateMenuViewportListeners();
+}
+
+onBeforeUnmount(() => {
+  unbindCreateMenuViewportListeners();
+});
 
 const searchShortcutLabel = computed(() => {
   if (typeof navigator === 'undefined') return '⌘K';
