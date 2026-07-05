@@ -17,11 +17,13 @@ import type { SaveStatus } from './useGrapesEditor';
 import { isTableMutating } from '../editor/tableActions';
 import { isTableSheetEditing } from '../editor/tableSheetEditor';
 
-const AUTOSAVE_IDLE_MS = 3500;
-const AUTOSAVE_RETRY_MS = 800;
+const AUTOSAVE_IDLE_MS = 10000;
+const AUTOSAVE_RETRY_MS = 1500;
+
+let extraAutosaveBlocked: (() => boolean) | null = null;
 
 function isAutosaveBlocked(): boolean {
-  return isTableSheetEditing() || isTableMutating();
+  return isTableSheetEditing() || isTableMutating() || Boolean(extraAutosaveBlocked?.());
 }
 
 export function useTemplateEditor(getTemplateId: () => string) {
@@ -65,6 +67,10 @@ export function useTemplateEditor(getTemplateId: () => string) {
     serializeFn = fn;
   }
 
+  function setAutosaveBlockedChecker(fn: (() => boolean) | null) {
+    extraAutosaveBlocked = fn;
+  }
+
   function scheduleAutosave() {
     if (suppressAutosave) return;
     if (autosaveTimer) clearTimeout(autosaveTimer);
@@ -90,7 +96,7 @@ export function useTemplateEditor(getTemplateId: () => string) {
       return;
     }
     try {
-      await saveDraft();
+      await saveDraft({ silent: true });
     } catch {
       // saveDraft updates saveStatus
     }
@@ -98,11 +104,13 @@ export function useTemplateEditor(getTemplateId: () => string) {
 
   function markDirty() {
     if (suppressAutosave) return;
-    saveStatus.value = 'dirty';
+    if (saveStatus.value !== 'saving') {
+      saveStatus.value = 'dirty';
+    }
     scheduleAutosave();
   }
 
-  async function saveDraft(options: { force?: boolean } = {}) {
+  async function saveDraft(options: { force?: boolean; silent?: boolean } = {}) {
     const id = getTemplateId();
     if (!id || !serializeFn) return;
 
@@ -111,7 +119,11 @@ export function useTemplateEditor(getTemplateId: () => string) {
       return;
     }
 
-    saveStatus.value = 'saving';
+    const silent = Boolean(options.silent && !options.force);
+    if (!silent) {
+      saveStatus.value = 'saving';
+    }
+
     try {
       const jsonDefinition = serializeFn();
       if (
@@ -124,9 +136,16 @@ export function useTemplateEditor(getTemplateId: () => string) {
       }
 
       const updated = await updateTemplateDefinition(id, { jsonDefinition });
-      templateMeta.value = updated;
       loadedDefinitionHadContent = hasGrapesDefinitionContent(jsonDefinition);
-      saveStatus.value = 'saved';
+
+      if (silent) {
+        if (saveStatus.value === 'dirty' || saveStatus.value === 'saved') {
+          saveStatus.value = 'saved';
+        }
+      } else {
+        templateMeta.value = updated;
+        saveStatus.value = 'saved';
+      }
     } catch (error) {
       saveStatus.value = 'error';
       throw error;
@@ -198,6 +217,7 @@ export function useTemplateEditor(getTemplateId: () => string) {
     previewBusy,
     loadTemplate,
     registerSerializer,
+    setAutosaveBlockedChecker,
     markDirty,
     saveDraft,
     updateTemplateMargins,

@@ -100,7 +100,9 @@ watch(
   () => props.open,
   (isOpen) => {
     if (!isOpen) return;
-    viewport.value = props.initialViewport === 'mobile' ? 'mobile' : 'desktop';
+    viewport.value = ['mobile', 'tablet'].includes(props.initialViewport)
+      ? props.initialViewport
+      : 'desktop';
     colorScheme.value = 'light';
   }
 );
@@ -115,6 +117,7 @@ const colorSchemeOptions = computed(() => [
 
 const viewportOptions = computed(() => [
   { value: 'desktop', label: t('templates.htmlImport.previewDesktop') },
+  { value: 'tablet', label: t('templates.builderDeviceTablet') },
   { value: 'mobile', label: t('templates.htmlImport.previewMobile') }
 ]);
 </script>

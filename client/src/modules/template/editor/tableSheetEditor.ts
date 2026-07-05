@@ -1,9 +1,17 @@
 import type { Component, Editor } from 'grapesjs';
+import { chipHtmlToMergeTokens, elementToMergeTokens, mergeTokensToChipHtml } from '@/utils/builderMergeTagHtml';
 import {
-  BUILDER_MERGE_CHIP_CLASS,
-  chipHtmlToMergeTokens,
-  mergeTokensToChipHtml
-} from '@/utils/builderMergeTagHtml';
+  attachMergeChipEditingToHost,
+  insertMergeTokenAtLogicalOffset,
+  restoreTextCaretAtOffset
+} from './mergeChipEditing';
+import {
+  lockInsertTarget,
+  publishInsertTarget,
+  resolveInsertCaretOffset,
+  snapshotHostTextSelection,
+  unlockInsertTarget
+} from './textInsertTarget';
 import { formatMergeToken } from './mergeTokens';
 import { ensureTableColumnLayout } from './tableColumnWidths';
 import { registerTableCellComponents } from './tableCellComponents';
@@ -28,6 +36,8 @@ interface ActiveSheetEditor {
   editor: Editor;
   cell: Component;
   element: HTMLElement;
+  detachMergeChipEditing?: () => void;
+  detachFocusOut?: (event: FocusEvent) => void;
 }
 
 interface FrameHandlers {
@@ -52,20 +62,31 @@ export function flushTableSheetEdits(editor?: Editor | null): void {
   commitActiveEdit();
 }
 
+/** Sync in-progress sheet cell content to the model without ending the edit session. */
+export function syncActiveSheetEditForSerialize(editor?: Editor | null): void {
+  if (!activeEditor) return;
+  if (editor && activeEditor.editor !== editor) return;
+
+  const { cell, element } = activeEditor;
+  const html = elementToMergeTokens(element);
+  writeCellText(cell, html);
+}
+
 export function getActiveTableSheetCell(): Component | null {
   return activeEditor?.cell ?? null;
 }
 
-function escapeAttr(value: string): string {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;');
+export function getActiveTableSheetEditor(): ActiveSheetEditor | null {
+  return activeEditor;
 }
 
-function mergeChipHtml(path: string): string {
-  const trimmed = path.trim();
-  return `<span class="${BUILDER_MERGE_CHIP_CLASS}" contenteditable="false" data-merge-path="${escapeAttr(trimmed)}">${escapeAttr(trimmed)}</span>`;
+function isMergeSidebarTarget(target: HTMLElement | null): boolean {
+  if (!target) return false;
+  if (target.closest('[data-arivu-merge-insert]')) return true;
+  if (target.closest('[data-arivu-merge-picker]')) return true;
+  if (target.closest('[data-arivu-merge-tab="true"]')) return true;
+  if (target.closest('[data-arivu-builder-sidebar][data-arivu-merge-picker-active="true"]')) return true;
+  return false;
 }
 
 function frameWindow(element: HTMLElement): Window {
@@ -111,15 +132,6 @@ function insertTextInElement(element: HTMLElement, text: string): void {
   element.textContent = `${element.textContent || ''}${text}`;
 }
 
-function insertHtmlInElement(element: HTMLElement, html: string): void {
-  const win = frameWindow(element);
-  element.focus();
-  if (typeof win.document.execCommand === 'function') {
-    win.document.execCommand('insertHTML', false, html);
-    retainCaretInElement(element);
-  }
-}
-
 function isPrintableKey(event: KeyboardEvent): boolean {
   if (event.metaKey || event.ctrlKey || event.altKey) return false;
   return event.key.length === 1;
@@ -140,14 +152,27 @@ function detachEditBlur(element: HTMLElement, handler: () => void): void {
   element.removeEventListener('blur', handler, true);
 }
 
+function detachSheetEditHandlers(element: HTMLElement, session: ActiveSheetEditor): void {
+  session.detachMergeChipEditing?.();
+  session.detachMergeChipEditing = undefined;
+  if (session.detachFocusOut) {
+    element.removeEventListener('focusout', session.detachFocusOut, true);
+    session.detachFocusOut = undefined;
+  }
+  const blurHandler = (element as HTMLElement & { __arivuBlur?: () => void }).__arivuBlur;
+  if (blurHandler) {
+    detachEditBlur(element, blurHandler);
+    delete (element as HTMLElement & { __arivuBlur?: () => void }).__arivuBlur;
+  }
+}
+
 function commitActiveEdit(): void {
   if (!activeEditor) return;
 
   const { cell, element, editor } = activeEditor;
-  const html = chipHtmlToMergeTokens(element.innerHTML);
+  const html = elementToMergeTokens(element);
   writeCellText(cell, html);
-  const blurHandler = (element as HTMLElement & { __arivuBlur?: () => void }).__arivuBlur;
-  if (blurHandler) detachEditBlur(element, blurHandler);
+  detachSheetEditHandlers(element, activeEditor);
   element.removeAttribute('contenteditable');
   element.classList.remove(EDITING_CLASS);
   activeEditor = null;
@@ -158,8 +183,7 @@ function cancelActiveEdit(): void {
   if (!activeEditor) return;
   const { cell, element } = activeEditor;
   element.innerHTML = mergeTokensToChipHtml(readCellText(cell));
-  const blurHandler = (element as HTMLElement & { __arivuBlur?: () => void }).__arivuBlur;
-  if (blurHandler) detachEditBlur(element, blurHandler);
+  detachSheetEditHandlers(element, activeEditor);
   element.removeAttribute('contenteditable');
   element.classList.remove(EDITING_CLASS);
   activeEditor = null;
@@ -206,8 +230,28 @@ function startSheetEdit(editor: Editor, cell: Component): void {
   }
   element.innerHTML = mergeTokensToChipHtml(display);
 
-  activeEditor = { editor, cell, element };
+  const session: ActiveSheetEditor = { editor, cell, element };
+  activeEditor = session;
   editor.select(cell);
+
+  session.detachMergeChipEditing = attachMergeChipEditingToHost(element, {
+    isActive: () => activeEditor?.element === element,
+    onContentChange: (tokenText) => {
+      writeCellText(cell, tokenText);
+    }
+  });
+
+  const onFocusOut = (event: FocusEvent) => {
+    if (activeEditor?.element !== element) return;
+    const related = event.relatedTarget;
+    if (!(related instanceof Node)) return;
+    const sidebar = document.querySelector('[data-arivu-builder-sidebar]');
+    if (!sidebar?.contains(related)) return;
+    snapshotHostTextSelection(editor, cell, element, { mergePickerActive: true });
+    lockInsertTarget();
+  };
+  element.addEventListener('focusout', onFocusOut, true);
+  session.detachFocusOut = onFocusOut;
 
   const onBlur = () => {
     if (!activeEditor || activeEditor.element !== element) return;
@@ -223,7 +267,7 @@ function startSheetEdit(editor: Editor, cell: Component): void {
 
   (element as HTMLElement & { __arivuBlur?: () => void }).__arivuBlur = onBlur;
   element.addEventListener('blur', onBlur, true);
-  focusEditableEnd(element);
+  restoreTextCaretAtOffset(element, elementToMergeTokens(element).length);
   focusCanvas(editor);
 }
 
@@ -267,7 +311,7 @@ function handleSheetKeydown(editor: Editor, event: KeyboardEvent): void {
 function handleDocumentMousedown(editor: Editor, event: MouseEvent): void {
   if (!activeEditor) return;
   const target = event.target as HTMLElement | null;
-  if (target?.closest('[data-arivu-merge-insert]')) return;
+  if (isMergeSidebarTarget(target)) return;
   if (target && activeEditor.element.contains(target)) return;
   commitActiveEdit();
   editor.trigger('arivu:table-column-resize-end');
@@ -349,14 +393,40 @@ function syncAllTableLayouts(editor: Editor): void {
   visit(wrapper);
 }
 
+export function refreshCanvasTablesAfterHtmlApply(editor: Editor): void {
+  syncAllTableLayouts(editor);
+  const wrapper = editor.getWrapper();
+  if (!wrapper) return;
+
+  const visit = (component: Component) => {
+    if (String(component.get('tagName') || '').toLowerCase() === 'table') {
+      repaintTableCells(component);
+    }
+    component.components().forEach(visit);
+  };
+  visit(wrapper);
+}
+
 export function insertMergeIntoTableCell(editor: Editor, path: string): boolean {
   let trimmedPath = path.replace(/^\{\{|\}\}$/g, '').trim() || path.trim();
 
   if (activeEditor && activeEditor.editor === editor) {
-    if (isLineItemDataRow(activeEditor.cell)) {
+    const { cell, element } = activeEditor;
+    if (isLineItemDataRow(cell)) {
       trimmedPath = normalizeLineScopeMergePath(trimmedPath);
     }
-    insertHtmlInElement(activeEditor.element, mergeChipHtml(trimmedPath));
+    const tokenText = readCellText(cell);
+    const caretOffset = resolveInsertCaretOffset(editor, cell, tokenText.length);
+    const nextOffset = insertMergeTokenAtLogicalOffset(
+      element,
+      tokenText,
+      formatMergeToken(trimmedPath),
+      caretOffset,
+      (text) => writeCellText(cell, text)
+    );
+    publishInsertTarget(editor, cell, element, nextOffset);
+    unlockInsertTarget();
+    restoreTextCaretAtOffset(element, nextOffset);
     return true;
   }
 
@@ -382,6 +452,10 @@ export function insertMergeIntoTableCell(editor: Editor, path: string): boolean 
   writeCellText(cell, `${current}${spacer}${nextToken}`);
   lastSelectedTableCell = cell;
   startSheetEdit(editor, cell);
+  const element = cell.view?.el as HTMLElement | undefined;
+  if (element) {
+    restoreTextCaretAtOffset(element, elementToMergeTokens(element).length);
+  }
   return true;
 }
 

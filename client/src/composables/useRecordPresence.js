@@ -6,7 +6,8 @@ import { getApiUrlForFetch } from '@/config/apiBase';
 import {
   PRESENCE_HEARTBEAT_MS,
   PRESENCE_POLL_MS,
-  PRESENCE_STALE_MS
+  PRESENCE_STALE_MS,
+  isRecordPresenceSupported,
 } from '@/utils/recordPresence';
 
 function resolveValue(source) {
@@ -176,6 +177,10 @@ export function useRecordPresence(getModuleKey, getRecordId, getActivityType = (
     stopPresenceTracking({ leave: false });
     const moduleKey = String(resolveValue(getModuleKey) || '').trim().toLowerCase();
     const recordId = String(resolveValue(getRecordId) || '').trim();
+    if (!isRecordPresenceSupported(moduleKey)) {
+      sessions.value = [];
+      return;
+    }
     if (!moduleKey || !recordId || !isRouteShowingRecord(moduleKey, recordId)) {
       sessions.value = [];
       return;
@@ -215,7 +220,7 @@ export function useRecordPresence(getModuleKey, getRecordId, getActivityType = (
       const recordId = value?.[1];
       const previousModuleKey = oldValue?.[0];
       const previousRecordId = oldValue?.[1];
-      if (!moduleKey || !recordId) {
+      if (!moduleKey || !recordId || !isRecordPresenceSupported(moduleKey)) {
         leaveTrackedRecord();
         return;
       }

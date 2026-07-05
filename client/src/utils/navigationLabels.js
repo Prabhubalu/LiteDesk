@@ -34,6 +34,7 @@ export const MODULE_LABEL_KEYS = {
   imports: 'navigation.moduleImports',
   analytics: 'navigation.moduleAnalytics',
   reports: 'navigation.moduleReports',
+  widgets: 'navigation.moduleWidgets',
   dashboards: 'navigation.moduleDashboards',
   documents: 'navigation.moduleDocuments',
   portal_knowledge: 'navigation.portalKnowledge',
@@ -327,8 +328,8 @@ export function getTabTitleMetaForPath(path, params = {}) {
     if (pathOnly.includes('/edit')) {
       return { titleKey: 'analytics.widgetBuilderEditTitle' };
     }
-    if (segments.length >= 3) {
-      return { titleKey: 'analytics.widgetsListTitle' };
+    if (segments.length >= 3 && isRecordIdSegment(segments[2])) {
+      return { titleKey: 'navigation.tabRecordDetail', titleParams: { moduleRoute: 'widgets' } };
     }
     return { titleKey: 'analytics.widgetsListTitle' };
   }
@@ -340,8 +341,8 @@ export function getTabTitleMetaForPath(path, params = {}) {
     if (pathOnly.includes('/edit')) {
       return { titleKey: 'analytics.dashboardDesignerEditTitle' };
     }
-    if (segments.length >= 3) {
-      return { titleKey: 'analytics.dashboardsListTitle' };
+    if (segments.length >= 3 && isRecordIdSegment(segments[2])) {
+      return { titleKey: 'navigation.tabRecordDetail', titleParams: { moduleRoute: 'dashboards' } };
     }
     return { titleKey: 'analytics.dashboardsListTitle' };
   }

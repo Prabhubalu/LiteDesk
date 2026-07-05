@@ -188,6 +188,108 @@ function computePeopleStatistics(
 }
 
 /**
+ * Compute Marketing campaigns statistics
+ */
+function computeCampaignsStatistics(
+  data: any[],
+  _currentUserId?: string,
+  context?: ModuleListStatisticsContext
+): Record<string, number> {
+  const stats = {
+    totalCampaigns: context?.totalRecords ?? data.length,
+    draft: 0,
+    scheduled: 0,
+    running: 0,
+    completed: 0
+  };
+
+  data.forEach((row) => {
+    const status = String(row?.status || '');
+    if (status === 'draft') stats.draft += 1;
+    else if (status === 'scheduled') stats.scheduled += 1;
+    else if (status === 'running') stats.running += 1;
+    else if (status === 'completed') stats.completed += 1;
+  });
+
+  return stats;
+}
+
+/**
+ * Compute Analytics reports statistics
+ */
+function computeReportsStatistics(
+  data: any[],
+  _currentUserId?: string,
+  context?: ModuleListStatisticsContext
+): Record<string, number> {
+  const stats = {
+    totalReports: context?.totalRecords ?? data.length,
+    draft: 0,
+    published: 0,
+    archived: 0,
+  };
+
+  data.forEach((row) => {
+    const status = String(row?.status || '');
+    if (status === 'draft') stats.draft += 1;
+    else if (status === 'published') stats.published += 1;
+    else if (status === 'archived') stats.archived += 1;
+  });
+
+  return stats;
+}
+
+/**
+ * Compute Analytics widgets statistics
+ */
+function computeWidgetsStatistics(
+  data: any[],
+  _currentUserId?: string,
+  context?: ModuleListStatisticsContext
+): Record<string, number> {
+  const stats = {
+    totalWidgets: context?.totalRecords ?? data.length,
+    draft: 0,
+    published: 0,
+    archived: 0,
+  };
+
+  data.forEach((row) => {
+    const status = String(row?.status || '');
+    if (status === 'draft') stats.draft += 1;
+    else if (status === 'published') stats.published += 1;
+    else if (status === 'archived') stats.archived += 1;
+  });
+
+  return stats;
+}
+
+/**
+ * Compute Analytics dashboards statistics
+ */
+function computeDashboardsStatistics(
+  data: any[],
+  _currentUserId?: string,
+  context?: ModuleListStatisticsContext
+): Record<string, number> {
+  const stats = {
+    totalDashboards: context?.totalRecords ?? data.length,
+    draft: 0,
+    published: 0,
+    archived: 0,
+  };
+
+  data.forEach((row) => {
+    const status = String(row?.status || '');
+    if (status === 'draft') stats.draft += 1;
+    else if (status === 'published') stats.published += 1;
+    else if (status === 'archived') stats.archived += 1;
+  });
+
+  return stats;
+}
+
+/**
  * Compute Organizations statistics
  */
 function computeOrganizationsStatistics(
@@ -744,6 +846,89 @@ function computeQuotesStatistics(
 /**
  * Normalize Quotes filters
  */
+function normalizeCampaignsFilters(filters: Record<string, any>): Record<string, any> {
+  const normalized = { ...filters };
+  if ('status' in normalized && (normalized.status === '' || normalized.status == null)) {
+    delete normalized.status;
+  }
+  return normalized;
+}
+
+function normalizeReportsFilters(filters: Record<string, any>): Record<string, any> {
+  const normalized = { ...filters };
+
+  if (normalized.mine === true || normalized.mine === 'true') {
+    normalized.mine = 'true';
+  } else {
+    delete normalized.mine;
+  }
+
+  if (normalized.shared === true || normalized.shared === 'true') {
+    normalized.shared = 'true';
+  } else {
+    delete normalized.shared;
+  }
+
+  if (normalized.scheduled === true || normalized.scheduled === 'true') {
+    normalized.scheduled = 'true';
+  } else {
+    delete normalized.scheduled;
+  }
+
+  if ('status' in normalized && (normalized.status === '' || normalized.status == null)) {
+    delete normalized.status;
+  }
+  if ('type' in normalized && (normalized.type === '' || normalized.type == null)) {
+    delete normalized.type;
+  }
+  if ('primaryModule' in normalized && (normalized.primaryModule === '' || normalized.primaryModule == null)) {
+    delete normalized.primaryModule;
+  }
+  if ('folderId' in normalized && (normalized.folderId === '' || normalized.folderId == null)) {
+    delete normalized.folderId;
+  }
+
+  return normalized;
+}
+
+function normalizeWidgetsFilters(filters: Record<string, any>): Record<string, any> {
+  const normalized = { ...filters };
+
+  if (normalized.mine === true || normalized.mine === 'true') {
+    normalized.mine = 'true';
+  } else {
+    delete normalized.mine;
+  }
+
+  if ('status' in normalized && (normalized.status === '' || normalized.status == null)) {
+    delete normalized.status;
+  }
+  if ('chartType' in normalized && (normalized.chartType === '' || normalized.chartType == null)) {
+    delete normalized.chartType;
+  }
+
+  return normalized;
+}
+
+function normalizeDashboardsFilters(filters: Record<string, any>): Record<string, any> {
+  const normalized = { ...filters };
+
+  if (normalized.mine === true || normalized.mine === 'true') {
+    normalized.mine = 'true';
+  } else {
+    delete normalized.mine;
+  }
+
+  if ('status' in normalized && (normalized.status === '' || normalized.status == null)) {
+    delete normalized.status;
+  }
+  if ('category' in normalized && (normalized.category === '' || normalized.category == null)) {
+    delete normalized.category;
+  }
+
+  return normalized;
+}
+
 function normalizeQuotesFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
 
@@ -1280,6 +1465,117 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
     apiEndpoint: '/sales-orders',
     normalizeFilters: normalizeSalesOrdersFilters,
     normalizeViewFilters: normalizeSalesOrdersViewFilters
+  },
+
+  campaigns: {
+    defaultColumns: {
+      defaultVisibleColumns: ['name', 'subject', 'status', 'recipientCount', 'updatedAt'],
+      lockedColumn: 'name',
+      excludedFromDefault: []
+    },
+    statistics: {
+      stats: [
+        { name: 'Total campaigns', key: 'totalCampaigns', formatter: 'number' },
+        { name: 'Draft', key: 'draft', formatter: 'number' },
+        { name: 'Scheduled', key: 'scheduled', formatter: 'number' },
+        { name: 'Running', key: 'running', formatter: 'number' },
+        { name: 'Completed', key: 'completed', formatter: 'number' }
+      ],
+      computeFunction: computeCampaignsStatistics
+    },
+    systemViews: [
+      { id: 'all', name: 'All campaigns', filters: {}, isDefault: true },
+      { id: 'draft', name: 'Draft', filters: { status: 'draft' } },
+      { id: 'scheduled', name: 'Scheduled', filters: { status: 'scheduled' } },
+      { id: 'running', name: 'Running', filters: { status: 'running' } },
+      { id: 'completed', name: 'Completed', filters: { status: 'completed' } },
+      { id: 'failed', name: 'Failed', filters: { status: 'failed' } },
+      { id: 'archived', name: 'Archived', filters: { status: 'archived' } }
+    ],
+    apiEndpoint: '/marketing/campaigns',
+    normalizeFilters: normalizeCampaignsFilters,
+    normalizeViewFilters: normalizeCampaignsFilters
+  },
+
+  reports: {
+    defaultColumns: {
+      defaultVisibleColumns: ['name', 'type', 'primaryModule', 'status', 'ownerId', 'updatedAt'],
+      lockedColumn: 'name',
+      excludedFromDefault: []
+    },
+    statistics: {
+      stats: [
+        { name: 'Total reports', key: 'totalReports', formatter: 'number' },
+        { name: 'Draft', key: 'draft', formatter: 'number' },
+        { name: 'Published', key: 'published', formatter: 'number' },
+        { name: 'Archived', key: 'archived', formatter: 'number' }
+      ],
+      computeFunction: computeReportsStatistics
+    },
+    systemViews: [
+      { id: 'all', name: 'All', filters: {}, isDefault: true },
+      { id: 'mine', name: 'My reports', filters: { mine: true } },
+      { id: 'shared', name: 'Shared with me', filters: { shared: true } },
+      { id: 'scheduled', name: 'Scheduled', filters: { scheduled: true } },
+      { id: 'draft', name: 'Drafts', filters: { status: 'draft' } },
+      { id: 'published', name: 'Published', filters: { status: 'published' } },
+      { id: 'archived', name: 'Archived', filters: { status: 'archived' } }
+    ],
+    apiEndpoint: '/analytics/reports',
+    normalizeFilters: normalizeReportsFilters,
+    normalizeViewFilters: normalizeReportsFilters
+  },
+
+  widgets: {
+    defaultColumns: {
+      defaultVisibleColumns: ['name', 'chartType', 'reportId', 'status', 'updatedAt'],
+      lockedColumn: 'name',
+      excludedFromDefault: []
+    },
+    statistics: {
+      stats: [
+        { name: 'Total widgets', key: 'totalWidgets', formatter: 'number' },
+        { name: 'Draft', key: 'draft', formatter: 'number' },
+        { name: 'Published', key: 'published', formatter: 'number' },
+        { name: 'Archived', key: 'archived', formatter: 'number' }
+      ],
+      computeFunction: computeWidgetsStatistics
+    },
+    systemViews: [
+      { id: 'all', name: 'All', filters: {}, isDefault: true },
+      { id: 'draft', name: 'Drafts', filters: { status: 'draft' } },
+      { id: 'published', name: 'Published', filters: { status: 'published' } },
+      { id: 'archived', name: 'Archived', filters: { status: 'archived' } }
+    ],
+    apiEndpoint: '/analytics/widgets',
+    normalizeFilters: normalizeWidgetsFilters,
+    normalizeViewFilters: normalizeWidgetsFilters
+  },
+
+  dashboards: {
+    defaultColumns: {
+      defaultVisibleColumns: ['name', 'category', 'widgetCount', 'status', 'updatedAt'],
+      lockedColumn: 'name',
+      excludedFromDefault: []
+    },
+    statistics: {
+      stats: [
+        { name: 'Total dashboards', key: 'totalDashboards', formatter: 'number' },
+        { name: 'Draft', key: 'draft', formatter: 'number' },
+        { name: 'Published', key: 'published', formatter: 'number' },
+        { name: 'Archived', key: 'archived', formatter: 'number' }
+      ],
+      computeFunction: computeDashboardsStatistics
+    },
+    systemViews: [
+      { id: 'all', name: 'All', filters: {}, isDefault: true },
+      { id: 'draft', name: 'Drafts', filters: { status: 'draft' } },
+      { id: 'published', name: 'Published', filters: { status: 'published' } },
+      { id: 'archived', name: 'Archived', filters: { status: 'archived' } }
+    ],
+    apiEndpoint: '/analytics/dashboards',
+    normalizeFilters: normalizeDashboardsFilters,
+    normalizeViewFilters: normalizeDashboardsFilters
   },
 
   invoices: {

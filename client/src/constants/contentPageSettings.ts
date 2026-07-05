@@ -139,10 +139,10 @@ export function resolvePageDimensionsPx(
 }
 
 export const DEFAULT_PAGE_MARGINS_MM = {
-  top: 12,
-  right: 12,
-  bottom: 12,
-  left: 12
+  top: 10,
+  right: 10,
+  bottom: 10,
+  left: 10
 } as const;
 
 export type PageMarginsMm = typeof DEFAULT_PAGE_MARGINS_MM;

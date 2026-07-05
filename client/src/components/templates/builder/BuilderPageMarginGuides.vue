@@ -1,5 +1,5 @@
 <template>
-  <div class="pointer-events-none absolute inset-0 z-[1]" aria-hidden="true">
+  <div class="pointer-events-none absolute inset-0 z-[1]" :style="overlayStyle" aria-hidden="true">
     <div
       class="absolute inset-x-0 top-0 bg-neutral-500/10 dark:bg-neutral-900/25"
       :style="{ height: `${margins.top}px` }"
@@ -40,18 +40,24 @@
 <script setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { resolveContentAreaPx, resolvePageMarginsPx } from '@/constants/contentPageSettings';
+import { DEFAULT_PAGE_MARGINS_MM, resolveContentAreaPx, resolvePageMarginsPx } from '@/constants/contentPageSettings';
 
 const props = defineProps({
   pageWidthPx: { type: Number, required: true },
   pageHeightPx: { type: Number, required: true },
   marginsMm: {
     type: Object,
-    default: () => ({ top: 12, right: 12, bottom: 12, left: 12 })
-  }
+    default: () => ({ ...DEFAULT_PAGE_MARGINS_MM })
+  },
+  zoom: { type: Number, default: 1 }
 });
 
 const { t } = useI18n();
+
+const overlayStyle = computed(() => ({
+  transform: `scale(${props.zoom})`,
+  transformOrigin: 'top center'
+}));
 
 const margins = computed(() => resolvePageMarginsPx(props.marginsMm));
 

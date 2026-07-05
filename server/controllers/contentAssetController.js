@@ -1,6 +1,7 @@
 'use strict';
 
 const contentAssetService = require('../services/contentPlatform/contentAssetService');
+const { ensureCompanyLogoAsset } = require('../services/contentPlatform/organizationLogoAssetService');
 const { sendContentPlatformError } = require('../utils/contentPlatformErrors');
 
 function getRequestContext(req) {
@@ -18,6 +19,19 @@ function parseTags(value) {
   }
   return [];
 }
+
+exports.getCompanyLogoAsset = async (req, res) => {
+  try {
+    const ctx = getRequestContext(req);
+    const result = await ensureCompanyLogoAsset({
+      organizationId: ctx.organizationId,
+      userId: ctx.userId
+    });
+    return res.json({ success: true, data: result });
+  } catch (error) {
+    return sendContentPlatformError(res, error, 'Failed to load company logo asset');
+  }
+};
 
 exports.listAssets = async (req, res) => {
   try {

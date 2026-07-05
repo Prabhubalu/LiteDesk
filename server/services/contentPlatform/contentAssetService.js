@@ -284,7 +284,7 @@ async function replaceAssetFile(params) {
   const uploadResult = await fileStorage.uploadMulterFile(file, {
     organizationId,
     category: 'content-assets',
-    metadata: { assetType: asset.type, replaced: true }
+    metadata: { assetType: asset.type, replaced: 'true' }
   });
 
   const before = formatAsset(asset);
@@ -309,7 +309,7 @@ async function replaceAssetFile(params) {
     userId,
     before,
     after,
-    metadata: { replaced: true },
+    metadata: { replaced: 'true' },
     ipAddress
   });
 
@@ -366,7 +366,7 @@ async function updateAssetMetadata(params) {
     userId,
     before,
     after: formatAsset(asset),
-    metadata: { metadataUpdate: true },
+    metadata: { metadataUpdate: 'true' },
     ipAddress
   });
 

@@ -1,61 +1,56 @@
 <template>
-  <div class="space-y-5">
-    <section class="space-y-3">
-      <h3 class="text-sm font-semibold" :class="ui.text">{{ t('templates.builderTemplateDetails') }}</h3>
-      <div>
-        <label class="mb-1 block" :class="ui.label">{{ t('templates.fieldName') }}</label>
-        <input
-          :value="name"
-          type="text"
-          :class="ui.input"
-          @change="emit('update:name', $event.target.value)"
-        />
+  <div class="space-y-1">
+    <BuilderDisclosureSection
+      :title="t('templates.builderTemplateDetails')"
+      :default-open="true"
+      :bordered="false"
+    >
+      <div class="space-y-3">
+        <div>
+          <label class="mb-1 block" :class="ui.label">{{ t('templates.fieldName') }}</label>
+          <input
+            :value="name"
+            type="text"
+            :class="ui.input"
+            @change="emit('update:name', $event.target.value)"
+          />
+        </div>
+        <div>
+          <label class="mb-1 block" :class="ui.label">{{ t('templates.fieldDescription') }}</label>
+          <textarea
+            :value="description"
+            rows="2"
+            :class="ui.input"
+            :placeholder="t('templates.builderTemplateDescriptionPh')"
+            @change="emit('update:description', $event.target.value)"
+          />
+        </div>
       </div>
-      <div>
-        <label class="mb-1 block" :class="ui.label">{{ t('templates.fieldDescription') }}</label>
-        <textarea
-          :value="description"
-          rows="2"
-          :class="ui.input"
-          :placeholder="t('templates.builderTemplateDescriptionPh')"
-          @change="emit('update:description', $event.target.value)"
-        />
-      </div>
-    </section>
+    </BuilderDisclosureSection>
 
-    <section class="space-y-3 border-t pt-4" :class="ui.border">
-      <h3 class="text-sm font-semibold" :class="ui.text">{{ t('templates.fieldModuleScope') }}</h3>
-      <select
-        :value="moduleScope"
-        :class="ui.input"
+    <BuilderDisclosureSection :title="t('templates.fieldModuleScope')">
+      <BuilderSelect
+        :model-value="moduleScope"
+        :options="moduleSelectOptions"
+        :allow-empty="true"
+        :empty-label="t('templates.moduleScopeAny')"
         :disabled="moduleOptionsLoading"
-        @change="emit('update:module-scope', $event.target.value)"
-      >
-        <option value="">{{ t('templates.moduleScopeAny') }}</option>
-        <option
-          v-for="option in moduleOptions"
-          :key="option.key"
-          :value="option.key"
-        >
-          {{ option.label }}
-        </option>
-      </select>
-    </section>
+        @update:model-value="emit('update:module-scope', $event)"
+      />
+    </BuilderDisclosureSection>
 
-    <section class="space-y-3 border-t pt-4" :class="ui.border">
-      <h3 class="text-sm font-semibold" :class="ui.text">{{ t('templates.builderCurrencyDisplay') }}</h3>
-      <select
-        :value="currencyDisplay"
-        :class="ui.input"
-        @change="emit('update:currency-display', $event.target.value)"
-      >
-        <option value="code">{{ t('templates.builderCurrencyDisplayCode') }}</option>
-        <option value="symbol">{{ t('templates.builderCurrencyDisplaySymbol') }}</option>
-      </select>
-    </section>
+    <BuilderDisclosureSection :title="t('templates.builderCurrencyDisplay')">
+      <BuilderSelect
+        :model-value="currencyDisplay"
+        :options="currencyOptions"
+        @update:model-value="emit('update:currency-display', $event)"
+      />
+    </BuilderDisclosureSection>
 
-    <section v-if="!isEmailFormat" class="space-y-3 border-t pt-4" :class="ui.border">
-      <h3 class="text-sm font-semibold" :class="ui.text">{{ t('templates.builderTemplateDetailsPage') }}</h3>
+    <BuilderDisclosureSection
+      v-if="!isEmailFormat"
+      :title="t('templates.builderTemplateDetailsPage')"
+    >
       <BuilderPageSettings
         layout="stacked"
         :paper-size="paperSize"
@@ -64,25 +59,30 @@
         :custom-page-height="customPageHeight"
         @change="emit('update:page-settings', $event)"
       />
-    </section>
+    </BuilderDisclosureSection>
 
-    <PageMarginsPanel
+    <BuilderDisclosureSection
       v-if="!isEmailFormat"
-      :margins="margins"
-      @change="emit('update:margins', $event)"
-    />
+      :title="t('templates.builderFieldMargin')"
+    >
+      <PageMarginsPanel
+        :margins="margins"
+        :embedded="true"
+        @change="emit('update:margins', $event)"
+      />
+    </BuilderDisclosureSection>
 
-    <section class="space-y-3 border-t pt-4" :class="ui.border">
-      <h3 class="text-sm font-semibold" :class="ui.text">{{ t('templates.builderTemplateDetailsPreview') }}</h3>
+    <BuilderDisclosureSection :title="t('templates.builderTemplateDetailsPreview')">
       <p class="text-xs leading-relaxed" :class="ui.textMuted">{{ t('templates.builderSampleRecordHint') }}</p>
       <BuilderRecordPicker
+        class="mt-2"
         :module-key="moduleScope"
         :model-value="previewRecordId"
         :selected-label="previewRecordLabel"
         @update:model-value="emit('update:preview-record-id', $event)"
         @update:selected-label="emit('update:preview-record-label', $event)"
       />
-    </section>
+    </BuilderDisclosureSection>
   </div>
 </template>
 
@@ -98,6 +98,8 @@ import {
 } from '@/constants/contentPageSettings';
 import { useBuilderUi } from '@/composables/useBuilderUi';
 import { useTemplateModuleOptions } from '@/composables/useTemplateMergeTagSchema';
+import BuilderDisclosureSection from './BuilderDisclosureSection.vue';
+import BuilderSelect from './BuilderSelect.vue';
 import PageMarginsPanel from './PageMarginsPanel.vue';
 
 const props = defineProps({
@@ -139,6 +141,18 @@ const currencyDisplay = computed(() => (
   props.currencyDisplay === 'symbol' ? 'symbol' : 'code'
 ));
 const isEmailFormat = computed(() => isEmailOutputFormat(props.outputFormat));
+
+const moduleSelectOptions = computed(() =>
+  moduleOptions.value.map((option) => ({
+    value: option.key,
+    label: option.label
+  }))
+);
+
+const currencyOptions = computed(() => [
+  { value: 'code', label: t('templates.builderCurrencyDisplayCode') },
+  { value: 'symbol', label: t('templates.builderCurrencyDisplaySymbol') }
+]);
 
 onMounted(() => {
   void loadModuleOptions();

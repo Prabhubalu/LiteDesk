@@ -115,6 +115,14 @@
     "message": "All",
     "description": "Campaign status filter — all statuses"
   },
+  "campaignsListStatTotal": {
+    "message": "Total campaigns",
+    "description": "Campaign list stat — total count"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search campaigns…",
+    "description": "Campaign list search placeholder for ModuleList"
+  },
   "campaignsStatusDraft": {
     "message": "Draft",
     "description": "Campaign status draft"
@@ -154,6 +162,42 @@
   "campaignsEditTitle": {
     "message": "Edit campaign",
     "description": "Edit campaign page title"
+  },
+  "campaignsEditorDescription": {
+    "message": "Set up your email content, audience, and tracking before sending.",
+    "description": "Campaign create/edit page subtitle"
+  },
+  "campaignsEditorSectionBasics": {
+    "message": "Campaign details",
+    "description": "Campaign editor basics section title"
+  },
+  "campaignsEditorSectionBasicsDesc": {
+    "message": "Internal name, subject line, and sender identity.",
+    "description": "Campaign editor basics section description"
+  },
+  "campaignsEditorSectionAudience": {
+    "message": "Audience & template",
+    "description": "Campaign editor audience section title"
+  },
+  "campaignsEditorSectionAudienceDesc": {
+    "message": "Choose who receives this campaign and optionally start from a template.",
+    "description": "Campaign editor audience section description"
+  },
+  "campaignsEditorSectionContent": {
+    "message": "Email content",
+    "description": "Campaign editor content section title"
+  },
+  "campaignsEditorSectionContentDesc": {
+    "message": "HTML body used when the campaign sends. Templates populate this field automatically.",
+    "description": "Campaign editor content section description"
+  },
+  "campaignsEditorSectionTracking": {
+    "message": "Engagement tracking",
+    "description": "Campaign editor tracking section title"
+  },
+  "campaignsEditorSectionTrackingDesc": {
+    "message": "Measure opens and link clicks for this campaign.",
+    "description": "Campaign editor tracking section description"
   },
   "campaignsFieldName": {
     "message": "Campaign name",
@@ -855,6 +899,38 @@
     "message": "New audience",
     "description": "Create audience page title"
   },
+  "audiencesEditorDescription": {
+    "message": "Define who can receive your campaigns — manually or from a segment.",
+    "description": "Audience create page subtitle"
+  },
+  "audiencesEditorSectionDetails": {
+    "message": "Audience details",
+    "description": "Audience create details section title"
+  },
+  "audiencesEditorSectionDetailsDesc": {
+    "message": "Name and optional description for your team.",
+    "description": "Audience create details section description"
+  },
+  "audiencesEditorSectionMembership": {
+    "message": "Membership",
+    "description": "Audience create membership section title"
+  },
+  "audiencesEditorSectionMembershipDesc": {
+    "message": "Choose a fixed list or link a segment that updates automatically.",
+    "description": "Audience create membership section description"
+  },
+  "audiencesEditorTypeStaticHelp": {
+    "message": "Add members manually or import a CSV after creation.",
+    "description": "Help text for static audience type"
+  },
+  "audiencesEditorTypeDynamicHelp": {
+    "message": "Members are resolved from the linked segment at send time.",
+    "description": "Help text for dynamic audience type"
+  },
+  "audiencesValidationSegmentRequired": {
+    "message": "Select a segment for dynamic audiences",
+    "description": "Validation error when dynamic audience has no segment"
+  },
   "audiencesFieldName": {
     "message": "Audience name",
     "description": "Audience name field label"
@@ -1070,6 +1146,30 @@
   "dashboardQuickLinksTitle": {
     "message": "Quick links",
     "description": "Marketing dashboard quick links section title"
+  },
+  "dashboardQuickLinksDesc": {
+    "message": "Jump to related marketing tools.",
+    "description": "Marketing dashboard quick links section description"
+  },
+  "dashboardMetricsTitle": {
+    "message": "Performance",
+    "description": "Marketing dashboard engagement metrics section title"
+  },
+  "dashboardMetricsDesc": {
+    "message": "Engagement and audience metrics from the last 30 days.",
+    "description": "Marketing dashboard engagement metrics section description"
+  },
+  "dashboardPipelineTitle": {
+    "message": "Campaign pipeline",
+    "description": "Marketing dashboard campaign status section title"
+  },
+  "dashboardPipelineDesc": {
+    "message": "Current campaign counts by status.",
+    "description": "Marketing dashboard campaign status section description"
+  },
+  "dashboardViewAllCampaigns": {
+    "message": "View all campaigns",
+    "description": "Marketing dashboard link to campaigns list"
   },
   "dashboardColRecipients": {
     "message": "Recipients",

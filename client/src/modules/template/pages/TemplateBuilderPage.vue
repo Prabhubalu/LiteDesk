@@ -1,7 +1,12 @@
 <template>
   <div :class="ui.shell">
-    <div v-if="loading" class="flex flex-1 items-center justify-center text-sm" :class="ui.textMuted">
-      {{ t('states.loading') }}
+    <div v-if="loading" class="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div class="h-12 shrink-0 animate-pulse border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900" />
+      <div class="flex min-h-0 flex-1 overflow-hidden">
+        <div class="hidden w-[19rem] shrink-0 animate-pulse border-r border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/80 md:flex" />
+        <div class="flex-1 animate-pulse bg-neutral-200/60 dark:bg-neutral-950" />
+        <div class="hidden w-80 shrink-0 animate-pulse border-l border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 lg:block" />
+      </div>
     </div>
 
     <template v-else>
@@ -10,46 +15,33 @@
         :save-status="saveStatus"
         :can-undo="canUndo"
         :can-redo="canRedo"
-        :preview-busy="previewBusy"
         :publish-busy="publishBusy"
         :is-email-format="isEmailFormat"
         :has-import-snapshot="hasImportSnapshot"
+        :output-format="outputFormat"
+        :right-panel-open="rightPanelOpen"
+        :preview-device="previewDevice"
+        :workspace-view="workspaceView"
         @back="goBack"
         @undo="undo"
         @redo="redo"
-        @preview="handlePreview"
-        @preview-email="openEmailPreview"
         @preview-email-clients="openClientPreview"
         @advanced="handleAdvancedAction"
         @save="handleSave"
         @publish="handlePublish"
+        @toggle-right-panel="rightPanelOpen = !rightPanelOpen"
+        @update:preview-device="previewDevice = $event"
+        @update:workspace-view="setWorkspaceView"
       />
 
-      <div class="flex min-h-0 flex-1">
-        <ComponentLibraryPanel
+      <div class="flex min-h-0 flex-1 overflow-hidden">
+        <BuilderLeftDock
+          :open="leftPanelOpen"
           :editor-ready="ready"
           :output-format="outputFormat"
           :drag-start="startBlockDrag"
           :drag-move="moveBlockDrag"
           :drag-end="endBlockDrag"
-          @add="addBlock"
-        />
-
-        <div class="relative flex min-w-0 flex-1 flex-col">
-          <EditorCanvas
-            :canvas-width="canvasWidth"
-            :canvas-height="canvasHeight"
-            :page-width-px="pageDimensionsPx.width"
-            :page-height-px="pageDimensionsPx.height"
-            :margins-mm="pageMarginsMm"
-            :show-margin-guides="!isEmailFormat"
-            @container-ready="onContainerReady"
-          />
-        </div>
-
-        <EditorSidebar
-          :selected-component="selectedComponent"
-          :selected-id="selectedId"
           :name="templateName"
           :description="templateDescription"
           :module-scope="moduleScope"
@@ -63,6 +55,63 @@
           :layer-tree="layerTree"
           :editor="editor"
           :page-margins="pageMarginsMm"
+          :asset-library="assetLibrary"
+          :selected-id="selectedId"
+          @add="addBlock"
+          @insert-merge="insertMerge"
+          @insert-image="insertImage"
+          @select-layer="selectLayer"
+          @update-margins="handleMarginsChange"
+          @update-name="handleNameChange"
+          @update-description="handleDescriptionChange"
+          @update-module-scope="handleModuleScopeChange"
+          @update-page-settings="handlePageSettingsChange"
+          @update-currency-display="handleCurrencyDisplayChange"
+          @update:preview-record-id="handlePreviewRecordIdChange"
+          @update:preview-record-label="handlePreviewRecordLabelChange"
+          @toggle-open="leftPanelOpen = !leftPanelOpen"
+        />
+
+        <BuilderWorkspace
+          v-model:view="workspaceView"
+          v-model:html-document="htmlEditorContent"
+          :editor="editor"
+          :html-syncing="htmlSyncing"
+          :canvas-width="canvasWidth"
+          :canvas-height="canvasHeight"
+          :page-width-px="pageDimensionsPx.width"
+          :page-height-px="pageDimensionsPx.height"
+          :margins-mm="pageMarginsMm"
+          :show-margin-guides="!isEmailFormat"
+          :download-filename="templateName"
+          :is-email-format="isEmailFormat"
+          :email-html="emailPreviewParts.html"
+          :email-css="emailPreviewParts.css"
+          :pdf-preview-url="pdfPreviewBlobUrl"
+          :preview-device="previewDevice"
+          :preview-busy="previewBusy"
+          @container-ready="onContainerReady"
+          @refresh-preview="refreshWorkspacePreview"
+          @apply-html="flushHtmlEditorToCanvas"
+          @html-edit="onHtmlEditorEdit"
+        />
+
+        <EditorSidebar
+          :open="rightPanelOpen"
+          :selected-component="selectedComponent"
+          :selected-id="selectedId"
+          :name="templateName"
+          :description="templateDescription"
+          :module-scope="moduleScope"
+          :paper-size="paperSize"
+          :orientation="orientation"
+          :custom-page-width="customPageWidth"
+          :custom-page-height="customPageHeight"
+          :preview-record-id="previewRecordId"
+          :preview-record-label="previewRecordLabel"
+          :currency-display="currencyDisplay"
+          :editor="editor"
+          :page-margins="pageMarginsMm"
           :output-format="outputFormat"
           :asset-library="assetLibrary"
           @change="markDirty"
@@ -72,41 +121,24 @@
           @update-module-scope="handleModuleScopeChange"
           @update-page-settings="handlePageSettingsChange"
           @update-currency-display="handleCurrencyDisplayChange"
-          @update-preview-record-id="handlePreviewRecordIdChange"
-          @update-preview-record-label="handlePreviewRecordLabelChange"
-          @insert-merge="insertMerge"
+          @update:preview-record-id="handlePreviewRecordIdChange"
+          @update:preview-record-label="handlePreviewRecordLabelChange"
           @insert-image="insertImage"
-          @select-layer="selectLayer"
         />
       </div>
 
-      <EmailPreviewModal
-        :open="showEmailPreview"
-        :html="emailPreviewBodyHtml"
-        :css="emailPreviewCss"
-        :initial-viewport="emailPreviewViewport"
-        @close="showEmailPreview = false"
-      />
-
       <EmailClientPreviewModal
         :open="showClientPreview"
-        :html="currentEmailDocument"
+        :html="currentTemplateDocument"
         :subject="templateName"
         @close="showClientPreview = false"
       />
 
       <HtmlDocumentModal
-        :open="showViewHtml"
-        :html="currentEmailDocument"
-        :read-only="true"
-        :title="t('templates.htmlImport.actionViewHtml')"
-        @close="showViewHtml = false"
-      />
-
-      <HtmlDocumentModal
         :open="showEditHtml"
-        :html="currentEmailDocument"
+        :html="currentTemplateDocument"
         :read-only="false"
+        :download-filename="templateName"
         :title="t('templates.htmlImport.actionEditHtml')"
         @close="showEditHtml = false"
         @apply="handleApplyEditedHtml"
@@ -152,7 +184,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useBuilderUi } from '@/composables/useBuilderUi';
@@ -161,10 +193,9 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { resolvePageDimensionsPx, DEFAULT_PAGE_MARGINS_MM, isEmailOutputFormat, resolveEmailCanvasDimensionsPx } from '@/constants/contentPageSettings';
 import { resolveTemplateMarginsMm } from '../editor/pageDimensions';
 import EditorToolbar from '../components/EditorToolbar.vue';
-import ComponentLibraryPanel from '../components/ComponentLibraryPanel.vue';
+import BuilderLeftDock from '../components/BuilderLeftDock.vue';
+import BuilderWorkspace from '../components/BuilderWorkspace.vue';
 import EditorSidebar from '../components/EditorSidebar.vue';
-import EditorCanvas from '../components/EditorCanvas.vue';
-import EmailPreviewModal from '../components/html/EmailPreviewModal.vue';
 import EmailClientPreviewModal from '../components/html/EmailClientPreviewModal.vue';
 import HtmlDocumentModal from '../components/html/HtmlDocumentModal.vue';
 import HtmlValidationModal from '../components/html/HtmlValidationModal.vue';
@@ -173,9 +204,12 @@ import IrreversibleHtmlWarningModal from '../components/html/IrreversibleHtmlWar
 import HtmlRestoreSnapshotModal from '../components/html/HtmlRestoreSnapshotModal.vue';
 import HtmlImportWizard from '../components/html/HtmlImportWizard.vue';
 import { useGrapesEditor } from '../composables/useGrapesEditor';
+import { useCompanyLogoAsset } from '../composables/useCompanyLogoAsset';
 import { useTemplateEditor } from '../composables/useTemplateEditor';
+import { applyCompanyLogoToEditor, refreshCanvasImageSources, resolveLogoPreviewUrl, setLogoHydrationHandler } from '../editor/logoContent';
 import { useEmailHtmlValidation } from '../composables/useEmailHtmlValidation';
-import { previewTemplatePdf } from '../services/templateApi';
+import { fetchTemplatePreviewBlob } from '../services/templateApi';
+import { buildTemplateHtmlDocument } from '../editor/renderer';
 import { createBlankGrapesDefinition } from '../editor/storage';
 import {
   attachImportSnapshot,
@@ -183,7 +217,6 @@ import {
   readImportSnapshot
 } from '../utils/emailImportSnapshot';
 import {
-  buildEmailHtmlDocument,
   copyTextToClipboard,
   downloadTextFile,
   getEmailHtmlParts,
@@ -202,6 +235,16 @@ const authStore = useAuthStore();
 
 const grapesContainer = ref(null);
 const projectLoadedFor = ref('');
+const leftPanelOpen = ref(true);
+const rightPanelOpen = ref(true);
+const previewDevice = ref('desktop');
+const workspaceView = ref('design');
+const pdfPreviewBlobUrl = ref('');
+const htmlEditorContent = ref('');
+const htmlEditorDirty = ref(false);
+const htmlSyncing = ref(false);
+const canvasContentRevision = ref(0);
+let lastAppliedHtmlSource = '';
 const templateId = computed(() => String(route.params.id || ''));
 
 const {
@@ -215,6 +258,7 @@ const {
   previewBusy,
   loadTemplate,
   registerSerializer,
+  setAutosaveBlockedChecker,
   markDirty,
   saveDraft,
   runPublish,
@@ -227,6 +271,11 @@ const {
   previewRecordLabel,
   setPreviewRecord
 } = useTemplateEditor(() => templateId.value);
+
+setAutosaveBlockedChecker(() =>
+  htmlSyncing.value
+  || (workspaceView.value === 'html' && htmlEditorDirty.value)
+);
 
 const isEmailFormat = computed(() => isEmailOutputFormat(outputFormat.value));
 
@@ -307,7 +356,9 @@ const {
   selectLayer,
   layerTree,
   applyEmailHtml,
-  loadDefinitionIntoEditor
+  applyTemplateHtmlDocument,
+  loadDefinitionIntoEditor,
+  syncPageDimensions
 } = useGrapesEditor({
   containerRef,
   outputFormat,
@@ -315,14 +366,37 @@ const {
   canvasHeight,
   pageMarginsMm,
   moduleScope,
-  onDirty: markDirty
+  onDirty: () => {
+    markDirty();
+    canvasContentRevision.value += 1;
+  }
 });
+
+const {
+  ensureCompanyLogo,
+  companyLogoAssetUrl,
+  organizationName: companyName
+} = useCompanyLogoAsset();
+
+async function syncCompanyLogoToCanvas() {
+  if (!editor.value || isEmailFormat.value) return;
+  refreshCanvasImageSources(editor.value);
+  try {
+    const data = await ensureCompanyLogo();
+    const previewUrl = resolveLogoPreviewUrl(data?.asset?.downloadUrl, data?.organizationLogoUrl);
+    if (!previewUrl) return;
+    applyCompanyLogoToEditor(editor.value, {
+      assetUrl: previewUrl,
+      alt: data?.organizationName || companyName.value || authStore.organization?.name || ''
+    });
+  } catch {
+    // Keep existing canvas logo if sync fails.
+  }
+}
 
 const selectedId = computed(() => String(selectedComponent.value?.getId?.() || ''));
 
-const showEmailPreview = ref(false);
 const showClientPreview = ref(false);
-const showViewHtml = ref(false);
 const showEditHtml = ref(false);
 const showEditWarning = ref(false);
 const showValidation = ref(false);
@@ -330,9 +404,12 @@ const showExport = ref(false);
 const showReplaceImport = ref(false);
 const showRestoreSnapshot = ref(false);
 const importSnapshot = ref(null);
-const emailPreviewBodyHtml = ref('');
-const emailPreviewCss = ref('');
-const emailPreviewViewport = ref('desktop');
+
+const emailPreviewParts = computed(() => {
+  void canvasContentRevision.value;
+  if (!editor.value) return { html: '', css: '' };
+  return getEmailHtmlParts(editor.value);
+});
 
 const {
   validating: validationValidating,
@@ -342,14 +419,88 @@ const {
   reset: resetValidation
 } = useEmailHtmlValidation();
 
-const currentEmailDocument = computed(() => {
+const currentTemplateDocument = computed(() => {
   if (!editor.value) return '';
-  return buildEmailHtmlDocument(editor.value);
+  return buildTemplateHtmlDocument(editor.value, {
+    outputFormat: outputFormat.value,
+    pageSettings: isEmailFormat.value ? undefined : {
+      paperSize: paperSize.value,
+      orientation: orientation.value,
+      customPageWidth: customPageWidth.value,
+      customPageHeight: customPageHeight.value,
+      margins: pageMarginsMm.value
+    }
+  });
 });
+
+const currentEmailDocument = computed(() => currentTemplateDocument.value);
+
+function refreshHtmlEditorFromCanvas() {
+  resyncHtmlEditorFromCanvas();
+}
+
+function resyncHtmlEditorFromCanvas() {
+  if (!editor.value) return;
+  htmlEditorContent.value = buildTemplateHtmlDocument(editor.value, {
+    outputFormat: outputFormat.value,
+    pageSettings: isEmailFormat.value ? undefined : {
+      paperSize: paperSize.value,
+      orientation: orientation.value,
+      customPageWidth: customPageWidth.value,
+      customPageHeight: customPageHeight.value,
+      margins: pageMarginsMm.value
+    }
+  });
+  lastAppliedHtmlSource = String(htmlEditorContent.value || '').trim();
+  htmlEditorDirty.value = false;
+}
+
+function onHtmlEditorEdit() {
+  htmlEditorDirty.value = true;
+  markDirty();
+}
+
+function applyHtmlEditorToCanvas(rawHtml = htmlEditorContent.value, resyncEditor = false) {
+  const source = String(rawHtml || '').trim();
+  if (!editor.value || !source || source === lastAppliedHtmlSource) {
+    htmlEditorDirty.value = false;
+    return false;
+  }
+
+  htmlSyncing.value = true;
+  try {
+    applyTemplateHtmlDocument(source);
+    lastAppliedHtmlSource = source;
+    htmlEditorDirty.value = false;
+    markDirty();
+    if (resyncEditor) {
+      resyncHtmlEditorFromCanvas();
+    }
+    return true;
+  } catch (error) {
+    notifications.error(error?.message || t('templates.htmlImport.errorApplyFailed'));
+    return false;
+  } finally {
+    htmlSyncing.value = false;
+  }
+}
+
+function flushHtmlEditorToCanvas() {
+  applyHtmlEditorToCanvas(htmlEditorContent.value, true);
+}
+
+async function ensureHtmlEditorAppliedToCanvas() {
+  if (!htmlEditorDirty.value && workspaceView.value !== 'html') return;
+  applyHtmlEditorToCanvas(htmlEditorContent.value, false);
+  await nextTick();
+}
 
 const hasImportSnapshot = computed(() => Boolean(importSnapshot.value?.html?.trim()));
 
 function serializeProjectWithSnapshot() {
+  if (htmlEditorDirty.value || workspaceView.value === 'html') {
+    applyHtmlEditorToCanvas(htmlEditorContent.value, false);
+  }
   const definition = serializeProject();
   return attachImportSnapshot(definition, importSnapshot.value);
 }
@@ -361,9 +512,17 @@ function captureImportSnapshot(reason) {
   importSnapshot.value = buildSnapshotFromParts(parts.html, parts.css, reason);
 }
 
+watch(ready, (isReady) => {
+  if (isReady && workspaceView.value === 'html') {
+    refreshHtmlEditorFromCanvas();
+  }
+});
+
 registerSerializer(serializeProjectWithSnapshot);
 
 onMounted(async () => {
+  window.addEventListener('keydown', onBuilderKeydown);
+  setLogoHydrationHandler(syncCompanyLogoToCanvas);
   try {
     await loadTemplate();
   } catch (error) {
@@ -371,9 +530,18 @@ onMounted(async () => {
   }
 });
 
+onBeforeUnmount(() => {
+  setLogoHydrationHandler(null);
+  setAutosaveBlockedChecker(null);
+  window.removeEventListener('keydown', onBuilderKeydown);
+  if (pdfPreviewBlobUrl.value) {
+    URL.revokeObjectURL(pdfPreviewBlobUrl.value);
+  }
+});
+
 watch(
   [ready, templateMeta],
-  ([isReady, meta]) => {
+  async ([isReady, meta]) => {
     if (!isReady || !meta) return;
     const id = String(meta._id || templateId.value);
     if (projectLoadedFor.value === id) return;
@@ -383,6 +551,9 @@ watch(
     withAutosaveSuppressed(() => {
       loadProject(definition);
     });
+    await nextTick();
+    await new Promise((resolve) => queueMicrotask(resolve));
+    await syncCompanyLogoToCanvas();
   }
 );
 
@@ -395,13 +566,47 @@ function goBack() {
   router.push({ name: 'template-detail', params: { id: templateId.value } });
 }
 
+function onBuilderKeydown(event) {
+  const mod = event.metaKey || event.ctrlKey;
+  if (!mod) return;
+
+  const target = event.target;
+  const tag = target instanceof HTMLElement ? target.tagName : '';
+  const isEditable = target instanceof HTMLElement && (
+    target.isContentEditable
+    || tag === 'INPUT'
+    || tag === 'TEXTAREA'
+    || tag === 'SELECT'
+  );
+  if (isEditable) return;
+
+  if (event.key === 's' || event.key === 'S') {
+    event.preventDefault();
+    void handleSave();
+    return;
+  }
+  if (event.key === 'z' && !event.shiftKey) {
+    event.preventDefault();
+    undo();
+    return;
+  }
+  if (event.key === 'y' || (event.key === 'z' && event.shiftKey) || (event.key === 'Z' && event.shiftKey)) {
+    event.preventDefault();
+    redo();
+  }
+}
+
 async function handleSave() {
   if (!authStore.can('templates', 'edit')) {
     notifications.error(t('templates.builderNoEditPermission'));
     return;
   }
   try {
+    await ensureHtmlEditorAppliedToCanvas();
     await saveDraft({ force: true });
+    if (workspaceView.value === 'html') {
+      resyncHtmlEditorFromCanvas();
+    }
     notifications.success(t('templates.builderSaveStatusSaved'));
   } catch (error) {
     notifications.error(error?.message || t('templates.builderSaveStatusError'));
@@ -486,15 +691,16 @@ async function handleCurrencyDisplayChange(value) {
   }
 }
 
-function handlePreviewRecordIdChange(recordId) {
-  setPreviewRecord(recordId, previewRecordLabel.value);
+function setWorkspaceView(view) {
+  workspaceView.value = view;
 }
 
-function handlePreviewRecordLabelChange(label) {
-  setPreviewRecord(previewRecordId.value, label);
-}
+async function refreshWorkspacePreview() {
+  if (!editor.value || isEmailFormat.value) return;
 
-async function handlePreview() {
+  const format = String(outputFormat.value || 'pdf').toLowerCase();
+  if (format !== 'pdf') return;
+
   if (previewRecordId.value && !moduleScope.value) {
     notifications.error(t('templates.builderDataSelectModule'));
     return;
@@ -504,11 +710,11 @@ async function handlePreview() {
   try {
     await saveDraft({ force: true });
     const meta = templateMeta.value;
-    await previewTemplatePdf(templateId.value, {
+    const blob = await fetchTemplatePreviewBlob(templateId.value, {
       recordModuleKey: moduleScope.value || meta?.moduleScope,
       recordId: previewRecordId.value || undefined,
       jsonDefinition: serializeProject(),
-      pageSettings: isEmailFormat.value ? undefined : {
+      pageSettings: {
         paperSize: paperSize.value,
         orientation: orientation.value,
         customPageWidth: customPageWidth.value,
@@ -517,6 +723,10 @@ async function handlePreview() {
         currencyDisplay: currencyDisplay.value
       }
     });
+    if (pdfPreviewBlobUrl.value) {
+      URL.revokeObjectURL(pdfPreviewBlobUrl.value);
+    }
+    pdfPreviewBlobUrl.value = URL.createObjectURL(blob);
   } catch (error) {
     notifications.error(error?.message || t('templates.renderFailed'));
   } finally {
@@ -524,13 +734,12 @@ async function handlePreview() {
   }
 }
 
-function openEmailPreview(viewport) {
-  if (!editor.value) return;
-  const parts = getEmailHtmlParts(editor.value);
-  emailPreviewBodyHtml.value = parts.html;
-  emailPreviewCss.value = parts.css;
-  emailPreviewViewport.value = viewport === 'mobile' ? 'mobile' : 'desktop';
-  showEmailPreview.value = true;
+function handlePreviewRecordIdChange(recordId) {
+  setPreviewRecord(recordId, previewRecordLabel.value);
+}
+
+function handlePreviewRecordLabelChange(label) {
+  setPreviewRecord(previewRecordId.value, label);
 }
 
 function openClientPreview() {
@@ -541,7 +750,7 @@ function openClientPreview() {
 function handleAdvancedAction(action) {
   switch (action) {
     case 'view-html':
-      showViewHtml.value = true;
+      setWorkspaceView('html');
       break;
     case 'edit-html':
       if (isEmailHtmlWarningDismissed()) {
@@ -647,6 +856,30 @@ async function handleReplaceImport(payload) {
     notifications.error(error?.message || t('templates.htmlImport.errorApplyFailed'));
   }
 }
+
+watch(workspaceView, (view, previousView) => {
+  if (view === 'html') {
+    if (!htmlEditorDirty.value) {
+      refreshHtmlEditorFromCanvas();
+    }
+  } else if (previousView === 'html' && htmlEditorDirty.value) {
+    flushHtmlEditorToCanvas();
+  } else if (view === 'design' && !isEmailFormat.value) {
+    syncPageDimensions();
+  }
+
+  if (view !== 'preview') return;
+  if (isEmailFormat.value) return;
+  if (String(outputFormat.value || 'pdf').toLowerCase() !== 'pdf') return;
+  void refreshWorkspacePreview();
+});
+
+watch(previewRecordId, () => {
+  if (workspaceView.value !== 'preview') return;
+  if (isEmailFormat.value) return;
+  if (String(outputFormat.value || 'pdf').toLowerCase() !== 'pdf') return;
+  void refreshWorkspacePreview();
+});
 
 async function confirmRestoreSnapshot() {
   const snapshot = importSnapshot.value;

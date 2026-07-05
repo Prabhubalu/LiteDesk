@@ -29,11 +29,31 @@
             {{ t('states.loading') }}
           </div>
 
-          <div v-else-if="!imageAssets.length" class="p-6 text-sm text-neutral-500 dark:text-neutral-400">
+          <div v-else-if="!companyLogoAsset && !imageAssets.length" class="p-6 text-sm text-neutral-500 dark:text-neutral-400">
             {{ t('templates.builderAssetPickerEmpty') }}
           </div>
 
-          <div v-else class="grid grid-cols-3 gap-2 overflow-y-auto p-4">
+          <div v-else class="overflow-y-auto p-4">
+            <button
+              v-if="companyLogoAsset"
+              type="button"
+              class="mb-3 flex w-full items-center gap-3 overflow-hidden rounded-lg border border-neutral-200 p-2 text-left transition hover:ring-2 hover:ring-primary-400 dark:border-neutral-700"
+              @click="selectAsset(companyLogoAsset)"
+            >
+              <img
+                :src="assetImageUrl(companyLogoAsset.downloadUrl)"
+                :alt="companyLogoAsset.accessibilityAltText || companyLogoAsset.filename"
+                class="h-14 w-14 rounded object-contain"
+              />
+              <span>
+                <span class="block text-xs font-medium">{{ t('templates.builderCompanyLogoAsset') }}</span>
+                <span class="block text-[10px] text-neutral-500 dark:text-neutral-400">
+                  {{ t('templates.builderCompanyLogoHint') }}
+                </span>
+              </span>
+            </button>
+
+            <div v-if="imageAssets.length" class="grid grid-cols-3 gap-2">
             <button
               v-for="asset in imageAssets"
               :key="asset._id || asset.assetId"
@@ -51,6 +71,7 @@
               </span>
             </button>
           </div>
+          </div>
         </div>
       </div>
     </Teleport>
@@ -62,8 +83,8 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PhotoIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { useContentAssets } from '@/composables/useContentAssets';
+import { useCompanyLogoAsset, resolveAssetDownloadUrl } from '@/modules/template/composables/useCompanyLogoAsset';
 import { useMarketingAssets } from '@/composables/useMarketingAssets';
-import { getApiUrlForFetch } from '@/config/apiBase';
 import { useBuilderUi } from '@/composables/useBuilderUi';
 
 const props = defineProps({
@@ -82,6 +103,7 @@ const ui = useBuilderUi();
 const internalOpen = ref(false);
 const contentAssets = useContentAssets();
 const marketingAssets = useMarketingAssets();
+const { asset: companyLogoAsset, ensureCompanyLogo } = useCompanyLogoAsset();
 
 const activeLibrary = computed(() => (props.library === 'marketing' ? marketingAssets : contentAssets));
 
@@ -95,9 +117,16 @@ const isOpen = computed({
   }
 });
 
-const imageAssets = computed(() =>
-  activeLibrary.value.assets.value.filter((asset) => String(asset.mimeType || '').startsWith('image/'))
-);
+const imageAssets = computed(() => {
+  const items = activeLibrary.value.assets.value.filter((asset) => {
+    const mime = String(asset.mimeType || '');
+    return mime.startsWith('image/') || String(asset.type || '') === 'logo';
+  });
+  const pinned = companyLogoAsset.value;
+  if (!pinned) return items;
+  const pinnedId = String(pinned._id || pinned.assetId || '');
+  return items.filter((asset) => String(asset._id || asset.assetId || '') !== pinnedId);
+});
 
 const loading = computed(() => activeLibrary.value.loading.value);
 
@@ -110,9 +139,7 @@ function closePicker() {
 }
 
 function assetImageUrl(downloadUrl) {
-  if (!downloadUrl) return '';
-  if (downloadUrl.startsWith('http')) return downloadUrl;
-  return getApiUrlForFetch(downloadUrl);
+  return resolveAssetDownloadUrl(downloadUrl);
 }
 
 function selectAsset(asset) {
@@ -125,7 +152,11 @@ function selectAsset(asset) {
   closePicker();
 }
 
-watch(isOpen, (open) => {
-  if (open) void activeLibrary.value.fetchAssets({ type: 'image', limit: 60 });
+watch(isOpen, async (open) => {
+  if (!open) return;
+  if (props.library !== 'marketing') {
+    await ensureCompanyLogo();
+  }
+  await activeLibrary.value.fetchAssets({ limit: 60 });
 });
 </script>

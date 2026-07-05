@@ -57,11 +57,30 @@ async function syncTrialEndDateToTenant(organization, trialEndDate) {
     const orgSubscription = await OrganizationSubscription.findOne({
         organizationId: organization._id
     });
-    if (!orgSubscription) return true;
+    if (orgSubscription) {
+        const {
+            applyTrialEndDateToOrgSubscription,
+            reconcileOrgSubscriptionWithOrganizationTrial
+        } = require('../services/trialExtensionService');
+        let orgSubChanged = applyTrialEndDateToOrgSubscription(orgSubscription, trialEndDate);
+        if (trialStillActive && reconcileOrgSubscriptionWithOrganizationTrial(organization, orgSubscription)) {
+            orgSubChanged = true;
+        }
+        if (orgSubChanged) {
+            await orgSubscription.save();
+        }
+    }
 
-    const { applyTrialEndDateToOrgSubscription } = require('../services/trialExtensionService');
-    if (applyTrialEndDateToOrgSubscription(orgSubscription, trialEndDate)) {
-        await orgSubscription.save();
+    if (trialStillActive) {
+        const Instance = require('../models/Instance');
+        const { INSTANCE_STATUS } = require('../constants/instanceLifecycle');
+        await Instance.updateOne(
+            {
+                organizationId: organization._id,
+                status: { $in: [INSTANCE_STATUS.SUSPENDED] }
+            },
+            { $set: { status: INSTANCE_STATUS.TRIAL } }
+        );
     }
 
     return true;
@@ -281,6 +300,16 @@ const updateInstanceSubscription = async (req, res) => {
                 }
             }
             instance.subscription.trialEndDate = parsedTrialEndDate;
+        }
+
+        if (parsedTrialEndDate && parsedTrialEndDate > new Date()) {
+            if (!status) {
+                instance.subscription.status = 'trial';
+            }
+            if (instance.status === 'suspended') {
+                instance.status = 'active';
+                instance.suspendedAt = undefined;
+            }
         }
 
         await instance.save();

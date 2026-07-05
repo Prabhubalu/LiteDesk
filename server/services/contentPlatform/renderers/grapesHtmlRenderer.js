@@ -5,6 +5,8 @@ const { resolvePageConfig } = require('../engines/layoutEngine');
 const { resolveGrapesLineItemsInHtml } = require('./grapesLineItemResolver');
 const { normalizeGrapesHtmlMergeTokens } = require('./grapesHtmlMergeNormalizer');
 const { GRAPES_LAYOUT_GRID_CSS } = require('../../../constants/grapesLayoutGridCss');
+const { DEFAULT_PAGE_MARGINS_MM } = require('../../../constants/contentPaperSizes');
+const { filterGrapesComponentCss } = require('../../../utils/grapesComponentCss');
 
 const GRAPES_RENDER_RESET_CSS = `
   .builder-merge-chip,
@@ -20,6 +22,21 @@ const GRAPES_RENDER_RESET_CSS = `
     font-size: inherit !important;
     line-height: inherit !important;
     font-weight: inherit !important;
+  }
+
+  [data-text-block="true"],
+  [data-paragraph="true"],
+  [data-heading="true"],
+  [data-address-block="true"],
+  [data-organization-block="true"],
+  p,
+  div[data-gjs-type="text"] {
+    display: block;
+    white-space: pre-wrap;
+  }
+
+  br {
+    line-height: 1.5;
   }
 `;
 
@@ -47,10 +64,10 @@ function renderGrapesDefinitionToHtml({
     lenient,
     collectIssues: issues
   });
-  const componentCss = String(definition?.css || '').trim();
+  const componentCss = filterGrapesComponentCss(String(definition?.css || '').trim());
   const pageConfig = resolvePageConfig(template || {});
   const dimensions = pageConfig.dimensions || { width: 210, height: 297 };
-  const margins = pageConfig.margins || { top: 12, right: 12, bottom: 12, left: 12 };
+  const margins = pageConfig.margins || DEFAULT_PAGE_MARGINS_MM;
 
   const pageSizeCss = pageConfig.paperSize === 'Custom'
     ? `${dimensions.width}mm ${dimensions.height}mm`

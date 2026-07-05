@@ -21,6 +21,7 @@ import {
   selectComponentById,
   type LayerNode
 } from '../editor/selection';
+import { getTextInsertTarget, restoreCanvasCaret } from '../editor/canvasInsertion';
 import {
   endLibraryBlockDrag,
   moveLibraryBlockDrag,
@@ -33,8 +34,9 @@ import {
   serializeEditor,
   type GrapesTemplateDefinition
 } from '../editor/storage';
-import { parseEmailHtmlInput, extractEmailBodyHtml, encodeMsoConditionals } from '../utils/emailHtmlExport';
-import { setEditorMsoChunks } from '../editor/msoChunksStore';
+import { parseTemplateHtmlDocumentForCanvas, encodeMsoConditionals } from '../utils/emailHtmlExport';
+import { setEditorMsoChunks, clearEditorMsoChunks } from '../editor/msoChunksStore';
+import { applyHtmlToEditorCanvas } from '../editor/canvasHtmlApply';
 import {
   applyPageDimensions,
   bindPageDimensionFrameCss,
@@ -63,6 +65,7 @@ export interface UseGrapesEditorOptions {
 export function useGrapesEditor(options: UseGrapesEditorOptions) {
   const editor = shallowRef<Editor | null>(null);
   const selectedComponent = shallowRef<Component | null>(null);
+  const lastTextComponent = shallowRef<Component | null>(null);
   const ready = ref(false);
   const layerTree = shallowRef<LayerNode | null>(null);
   let suppressDirty = false;
@@ -72,9 +75,36 @@ export function useGrapesEditor(options: UseGrapesEditorOptions) {
     layerTree.value = getLayerTree(editor.value);
   }
 
+  function isCanvasTextBlock(component: Component | null | undefined): boolean {
+    if (!component) return false;
+    const type = String(component.get('type') || '');
+    if (
+      [
+        'text',
+        'arivu-paragraph',
+        'arivu-heading',
+        'arivu-rich-text',
+        'arivu-list',
+        'arivu-address',
+        'arivu-organization',
+        'arivu-contact-card',
+        'arivu-button',
+        'arivu-watermark',
+        'arivu-html'
+      ].includes(type)
+    ) {
+      return true;
+    }
+    const tag = String(component.get('tagName') || '').toLowerCase();
+    return ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'a', 'li'].includes(tag);
+  }
+
   function bindSelectionHandlers(instance: Editor) {
     instance.on('component:selected', (component: Component) => {
       selectedComponent.value = component;
+      if (isCanvasTextBlock(component)) {
+        lastTextComponent.value = component;
+      }
     });
     instance.on('component:deselected', () => {
       selectedComponent.value = null;
@@ -270,7 +300,11 @@ export function useGrapesEditor(options: UseGrapesEditorOptions) {
 
   function insertMerge(path: string) {
     if (!editor.value) return;
-    insertMergeField(editor.value, path);
+    const hint =
+      getTextInsertTarget(editor.value) ||
+      selectedComponent.value ||
+      lastTextComponent.value;
+    insertMergeField(editor.value, path, hint);
     options.onDirty?.();
   }
 
@@ -284,22 +318,39 @@ export function useGrapesEditor(options: UseGrapesEditorOptions) {
     selectComponentById(editor.value, componentId);
   }
 
-  function applyEmailHtml(raw: string) {
+  function applyTemplateHtmlDocument(raw: string) {
     if (!editor.value) return;
-    const { html, css } = parseEmailHtmlInput(raw);
-    const bodyHtml = extractEmailBodyHtml(html);
-    const { html: canvasHtml, chunks } = encodeMsoConditionals(bodyHtml);
+    const isEmail = options.outputFormat?.value === 'email';
+    const { html: bodyHtml, css } = parseTemplateHtmlDocumentForCanvas(raw, { isEmail });
+
+    let canvasHtml = bodyHtml;
+    let msoChunks: string[] = [];
+    if (isEmail) {
+      const encoded = encodeMsoConditionals(bodyHtml);
+      canvasHtml = encoded.html;
+      msoChunks = encoded.chunks;
+    }
+
     suppressDirty = true;
-    editor.value.select(undefined);
-    editor.value.setComponents(canvasHtml);
-    editor.value.setStyle(css);
-    setEditorMsoChunks(editor.value, chunks);
+    applyHtmlToEditorCanvas(editor.value, canvasHtml, css, {
+      isEmail,
+      pageLayout: isEmail ? undefined : resolvePageLayout()
+    });
+    if (isEmail && msoChunks.length) {
+      setEditorMsoChunks(editor.value, msoChunks);
+    } else {
+      clearEditorMsoChunks(editor.value);
+    }
     nextTick(() => {
       syncPageDimensions();
       refreshLayerTree();
       suppressDirty = false;
       options.onDirty?.();
     });
+  }
+
+  function applyEmailHtml(raw: string) {
+    applyTemplateHtmlDocument(raw);
   }
 
   function loadDefinitionIntoEditor(definition: GrapesTemplateDefinition | null | undefined) {
@@ -326,7 +377,9 @@ export function useGrapesEditor(options: UseGrapesEditorOptions) {
     selectLayer,
     layerTree,
     applyEmailHtml,
+    applyTemplateHtmlDocument,
     loadDefinitionIntoEditor,
+    syncPageDimensions,
     isGrapesDefinition
   };
 }

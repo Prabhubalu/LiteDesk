@@ -2,16 +2,6 @@
   <div class="mx-auto w-full">
     <TemplatesModuleNav />
 
-    <TemplatesDashboardPanel
-      :summary="summary"
-      :loading="summaryLoading"
-      :can-create="canCreate"
-      :active-status="statusFilter"
-      @create="showCreateDrawer = true"
-      @open="openTemplate"
-      @filter-status="onStatusFilter"
-    />
-
     <ListView
       :title="t('templates.listTitle')"
       :description="listDescription"
@@ -21,6 +11,8 @@
       :data="templates"
       :columns="columns"
       :loading="loading"
+      :statistics="statistics"
+      :stats-config="statsConfig"
       :pagination="listPagination"
       table-id="templates-table"
       row-key="_id"
@@ -32,6 +24,7 @@
       @create="showCreateDrawer = true"
       @update:search-query="onSearchChange"
       @update:pagination="onPaginationChange"
+      @stat-click="onStatClick"
       @fetch="loadTemplates"
       @row-click="openTemplate"
       @delete="handleDelete"
@@ -81,7 +74,6 @@ import { useI18n } from 'vue-i18n';
 import ListView from '@/components/common/ListView.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import TemplatesModuleNav from '@/components/templates/TemplatesModuleNav.vue';
-import TemplatesDashboardPanel from '@/components/templates/TemplatesDashboardPanel.vue';
 import CreateTemplateDrawer from '@/components/templates/CreateTemplateDrawer.vue';
 import HtmlImportWizard from '@/modules/template/components/html/HtmlImportWizard.vue';
 import { useTemplates } from '@/composables/useTemplates';
@@ -97,7 +89,6 @@ const {
   templates,
   loading,
   summary,
-  summaryLoading,
   pagination,
   fetchTemplates,
   fetchTemplateSummary,
@@ -117,6 +108,22 @@ const listDescription = computed(() => {
   if (!statusFilter.value) return t('templates.listDescription');
   return t('templates.listDescriptionFiltered', { status: formatStatus(statusFilter.value) });
 });
+
+const statistics = computed(() => ({
+  total: summary.value?.total ?? 0,
+  draft: summary.value?.draft ?? 0,
+  published: summary.value?.published ?? 0,
+  review: summary.value?.review ?? 0,
+  archived: summary.value?.archived ?? 0
+}));
+
+const statsConfig = computed(() => [
+  { name: t('templates.dashboardStatTotal'), key: 'total', formatter: 'number' },
+  { name: t('templates.dashboardStatDraft'), key: 'draft', formatter: 'number' },
+  { name: t('templates.dashboardStatPublished'), key: 'published', formatter: 'number' },
+  { name: t('templates.dashboardStatReview'), key: 'review', formatter: 'number' },
+  { name: t('templates.dashboardStatArchived'), key: 'archived', formatter: 'number' }
+]);
 
 const columns = computed(() => [
   { key: 'name', label: t('templates.colName'), sortable: true },
@@ -187,8 +194,15 @@ function onPaginationChange(next) {
   loadTemplates();
 }
 
-function onStatusFilter(status) {
-  statusFilter.value = status || '';
+function onStatClick(statItem) {
+  const statusMap = {
+    total: '',
+    draft: 'draft',
+    published: 'published',
+    review: 'review',
+    archived: 'archived'
+  };
+  statusFilter.value = statusMap[statItem?.key] ?? '';
   pagination.currentPage = 1;
   loadTemplates();
 }

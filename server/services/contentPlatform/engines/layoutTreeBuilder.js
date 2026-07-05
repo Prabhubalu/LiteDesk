@@ -1,6 +1,7 @@
 'use strict';
 
 const { CONTENT_COMPONENT_TYPES } = require('../../../constants/contentComponentRegistry');
+const { DEFAULT_PAGE_MARGINS_MM } = require('../../../constants/contentPaperSizes');
 const { resolvePageConfig } = require('./layoutEngine');
 const { getBindingText } = require('./componentResolver');
 const { buildComponentLeafBlock } = require('./componentLeafBlocks');
@@ -22,7 +23,7 @@ function mmToPx(mm) {
 }
 
 function resolveMarginsPx(pageConfig) {
-  const margins = pageConfig?.margins || { top: 12, right: 12, bottom: 12, left: 12 };
+  const margins = pageConfig?.margins || DEFAULT_PAGE_MARGINS_MM;
   return {
     top: mmToPx(margins.top),
     right: mmToPx(margins.right),

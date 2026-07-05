@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { logAuthAccessDebug, warnAuthAccessDebug } from '@/config/arivuDebug.js';
 import { getApiUrlForFetch } from '@/config/apiBase';
-import { isOnPublicShellRoute } from '@/utils/standaloneRoutes';
+import { isOnPublicShellRoute, isTrialExpiredShelllessRoute } from '@/utils/standaloneRoutes';
 import { validateUserTypeForApp } from '@/utils/appUserTypeAccess';
 import { identifyProductUser, captureUserLoggedIn, resetPosthog } from '@/config/posthogUser';
 import {
@@ -10,6 +10,7 @@ import {
     capturePortalSwitched
 } from '@/config/posthogPortal';
 import { registerUseAuthStore } from './authRegistry';
+import { applyTrialSnapshotToOrganization } from '@/utils/trialStatus';
 
 const PROFILE_REFRESHED_AT_KEY = 'arivu:user-profile-refreshed-at';
 const PROFILE_REFRESH_FRESH_MS = 5 * 60 * 1000;
@@ -501,6 +502,12 @@ export const useAuthStore = defineStore('auth', {
                 this.setUser(data);
                 if (endpoint === 'login') {
                     this.lastLoginResult = data;
+                    if (data.trial) {
+                        this.organization = applyTrialSnapshotToOrganization(this.organization, data.trial);
+                        if (this.organization) {
+                            localStorage.setItem('organization', JSON.stringify(this.organization));
+                        }
+                    }
                 }
                 try {
                     captureUserLoggedIn({ method: 'password' });
@@ -755,15 +762,7 @@ export const useAuthStore = defineStore('auth', {
 
                 const snapshot = data.data || {};
                 if (this.organization) {
-                    this.organization = {
-                        ...this.organization,
-                        subscription: {
-                            ...this.organization.subscription,
-                            status: this.organization.subscription?.status === 'trial' ? 'trial' : this.organization.subscription?.status,
-                            trialEndDate: snapshot.trialEndDate ?? this.organization.subscription?.trialEndDate,
-                            trialExtensionUsed: snapshot.extensionUsed === true
-                        }
-                    };
+                    this.organization = applyTrialSnapshotToOrganization(this.organization, snapshot);
                     localStorage.setItem('organization', JSON.stringify(this.organization));
                 }
 
@@ -942,7 +941,9 @@ export const useAuthStore = defineStore('auth', {
                         return true;
                     }
                 } else if (response.status === 401) {
-                    if (!isOnPublicShellRoute()) {
+                    const onTrialExpiredShell = typeof window !== 'undefined'
+                        && isTrialExpiredShelllessRoute(window.location.pathname);
+                    if (!isOnPublicShellRoute() && !onTrialExpiredShell) {
                         console.warn('Session expired, logging out');
                         this.logout();
                     }
@@ -954,14 +955,12 @@ export const useAuthStore = defineStore('auth', {
                     } catch (_parseError) {
                         return false;
                     }
-                    if (errorData?.code === 'TRIAL_EXPIRED' && errorData?.trialEndDate && this.organization) {
-                        this.organization = {
-                            ...this.organization,
-                            subscription: {
-                                ...this.organization.subscription,
-                                trialEndDate: errorData.trialEndDate
-                            }
-                        };
+                    if (errorData?.code === 'TRIAL_EXPIRED' && this.organization) {
+                        this.organization = applyTrialSnapshotToOrganization(this.organization, {
+                            expired: true,
+                            trialEndDate: errorData.trialEndDate,
+                            subscriptionStatus: 'trial'
+                        });
                         localStorage.setItem('organization', JSON.stringify(this.organization));
                     }
                     return false;

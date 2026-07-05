@@ -1519,18 +1519,23 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // Refresh trial subscription from server before redirecting (handles extension by another user)
+  let trialSnapshot = null;
   if (authStore.isAuthenticated) {
     const onTrial = authStore.organization?.subscription?.status === 'trial';
     const trialLooksExpired = isOrganizationTrialExpired(authStore.organization);
     if (onTrial || trialLooksExpired || to.name === 'trial-expired') {
-      await authStore.syncTrialSubscription({
+      trialSnapshot = await authStore.syncTrialSubscription({
         force: trialLooksExpired || to.name === 'trial-expired'
       });
     }
   }
 
+  const trialExpired = trialSnapshot && typeof trialSnapshot.expired === 'boolean'
+    ? trialSnapshot.expired
+    : isOrganizationTrialExpired(authStore.organization);
+
   // Trial expired takes precedence over onboarding and normal navigation
-  if (authStore.isAuthenticated && isOrganizationTrialExpired(authStore.organization)) {
+  if (authStore.isAuthenticated && trialExpired) {
     if (!canAccessWhileTrialExpired(to)) {
       logNavDebug('Redirecting: Trial expired')
       next({ name: 'trial-expired' })
@@ -1670,7 +1675,7 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
-  if (to.name === 'trial-expired' && authStore.isAuthenticated && !isOrganizationTrialExpired(authStore.organization)) {
+  if (to.name === 'trial-expired' && authStore.isAuthenticated && !trialExpired) {
     logNavDebug('Redirecting: Trial no longer expired')
     next(getDefaultRoute(authStore))
     return

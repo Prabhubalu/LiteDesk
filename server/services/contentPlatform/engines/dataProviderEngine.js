@@ -12,15 +12,21 @@ const InvoiceLine = require('../../../models/InvoiceLine');
 const InvoiceSection = require('../../../models/InvoiceSection');
 const Item = require('../../../models/Item');
 const ItemVariant = require('../../../models/ItemVariant');
+const { normalizeRecordForMergeTags } = require('../../../utils/mergeTagRecordNormalizer');
+const { ORGANIZATION_MERGE_SELECT, loadCrmOrganizationById } = require('../../../utils/crmOrganizationLoader');
+const { resolveMergeTagModuleAlias } = require('../../../utils/mergeTagModuleAliases');
+const { loadMergeTagRelatedRecords } = require('./mergeTagRelatedRecords');
+const relationshipResolver = require('../../relationshipResolver');
+
+const COMMERCIAL_PREVIEW_MODULES = new Set(['quotes', 'invoices', 'sales_orders']);
+
+const COMMERCIAL_MODULE_KEYS = new Set(['quotes', 'invoices', 'sales_orders']);
 
 const RECORD_LOADERS = {
   quotes: loadQuoteContext,
   invoices: loadInvoiceContext,
   people: loadPeopleContext
 };
-
-/** Fields exposed on Organization.* merge tags for related CRM companies. */
-const ORGANIZATION_MERGE_SELECT = 'name industry website phone address annualRevenue numberOfEmployees types slug';
 
 function capitalizeModuleKey(moduleKey) {
   const key = String(moduleKey || '').trim();
@@ -31,29 +37,16 @@ function capitalizeModuleKey(moduleKey) {
     .join('');
 }
 
+function isTenantOrganization(org) {
+  return Boolean(org && typeof org === 'object' && org.isTenant === true);
+}
+
 function pickCustomerOrganization(record) {
   const ref = record?.organizationRefId;
-  if (ref && typeof ref === 'object' && ref.name) {
+  if (ref && typeof ref === 'object' && ref.name && !isTenantOrganization(ref)) {
     return ref;
   }
   return null;
-}
-
-/**
- * Load a CRM business organization (isTenant: false) for merge tags.
- * @param {string} tenantOrganizationId
- * @param {unknown} crmOrganizationId
- */
-async function loadCrmOrganizationById(tenantOrganizationId, crmOrganizationId) {
-  const id = normalizeObjectIdString(crmOrganizationId);
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
-
-  const { buildTenantAccessibleCrmOrganizationQuery } = require('../../../utils/crmOrganizationAccess');
-  const query = await buildTenantAccessibleCrmOrganizationQuery(tenantOrganizationId, {
-    recordIds: [id]
-  });
-
-  return Organization.findOne(query).select(ORGANIZATION_MERGE_SELECT).lean();
 }
 
 /**
@@ -63,11 +56,25 @@ async function loadCrmOrganizationById(tenantOrganizationId, crmOrganizationId) 
  */
 async function resolveCrmOrganizationRef(orgRef, tenantOrganizationId) {
   if (!orgRef) return null;
-  if (typeof orgRef === 'object' && orgRef._id) {
-    if (orgRef.name) return orgRef;
-    return loadCrmOrganizationById(tenantOrganizationId, orgRef._id);
+  if (typeof orgRef === 'object' && orgRef._id && orgRef.name && !isTenantOrganization(orgRef)) {
+    return orgRef;
   }
-  return loadCrmOrganizationById(tenantOrganizationId, orgRef);
+  const id = typeof orgRef === 'object' && orgRef._id ? orgRef._id : orgRef;
+
+  const accessible = await loadCrmOrganizationById(tenantOrganizationId, id);
+  if (accessible) return accessible;
+
+  // Document-linked CRM org: allow merge resolution when the commercial record already references it.
+  const objectId = toObjectId(id);
+  if (!objectId) return null;
+
+  return Organization.findOne({
+    _id: objectId,
+    isTenant: { $ne: true },
+    deletedAt: null
+  })
+    .select(ORGANIZATION_MERGE_SELECT)
+    .lean();
 }
 
 function normalizeObjectIdString(value) {
@@ -258,6 +265,12 @@ async function loadQuoteContext({ organizationId, recordId }) {
       select: 'first_name last_name email phone mobile title organization',
       populate: { path: 'organization', select: ORGANIZATION_MERGE_SELECT }
     })
+    .populate({
+      path: 'dealId',
+      select: 'name accountId',
+      populate: { path: 'accountId', select: ORGANIZATION_MERGE_SELECT }
+    })
+    .populate({ path: 'caseId', select: 'subject case_number status priority' })
     .lean();
   if (!quote) return null;
 
@@ -406,6 +419,11 @@ function buildPreviewSampleRecord(moduleKey, tenantOrganization) {
       stage: 'Proposal',
       status: 'Open'
     },
+    cases: {
+      subject: 'Sample case',
+      status: 'Open',
+      case_number: 'CASE-PREVIEW-001'
+    },
     people: {
       first_name: 'Sample',
       last_name: 'Contact',
@@ -474,11 +492,52 @@ async function resolveRelatedPeople({ organizationId, record }) {
 }
 
 /**
- * Resolve the customer / related CRM organization for merge tags.
- * Priority: document organizationRefId → contact.organization → person.organization.
+ * Resolve customer CRM organization linked via module relationships.
  * @param {object} params
  */
-async function resolveRelatedOrganization({ organizationId, record, relatedPeople = null }) {
+async function resolveOrganizationViaRelationships({ organizationId, recordModuleKey, record }) {
+  if (!record?._id) return null;
+
+  const moduleKey = String(recordModuleKey || '').trim().toLowerCase();
+  const appKey = moduleKey === 'people' ? 'sales' : 'platform';
+
+  let groups = [];
+  try {
+    groups = await relationshipResolver.getRelatedRecords(
+      organizationId,
+      appKey,
+      moduleKey,
+      record._id
+    );
+  } catch {
+    return null;
+  }
+
+  for (const group of groups) {
+    for (const related of group.records || []) {
+      const relatedModuleKey = String(related?.moduleKey || '').trim().toLowerCase();
+      if (relatedModuleKey !== 'organizations' && relatedModuleKey !== 'organization') continue;
+      // eslint-disable-next-line no-await-in-loop
+      const loaded = await resolveCrmOrganizationRef(related.recordId, organizationId);
+      if (loaded) return loaded;
+    }
+  }
+
+  return null;
+}
+
+function buildPreviewCustomerOrganizationFallback(record) {
+  const name = String(record?.customerName || '').trim();
+  if (!name) return null;
+  return { name };
+}
+
+/**
+ * Resolve the customer / related CRM organization for merge tags.
+ * Priority: document organizationRefId → customerId → deal.accountId → contact.organization → relationships → customerName.
+ * @param {object} params
+ */
+async function resolveRelatedOrganization({ organizationId, record, relatedPeople = null, recordModuleKey = '' }) {
   if (!record) return null;
 
   const fromCustomer = pickCustomerOrganization(record);
@@ -487,8 +546,25 @@ async function resolveRelatedOrganization({ organizationId, record, relatedPeopl
   const fromDocumentRef = await resolveCrmOrganizationRef(record.organizationRefId, organizationId);
   if (fromDocumentRef) return fromDocumentRef;
 
+  const fromCustomerId = await resolveCrmOrganizationRef(record.customerId, organizationId);
+  if (fromCustomerId) return fromCustomerId;
+
+  const dealAccountRef = record.dealId?.accountId ?? record.deal?.accountId ?? null;
+  const fromDealAccount = await resolveCrmOrganizationRef(dealAccountRef, organizationId);
+  if (fromDealAccount) return fromDealAccount;
+
   const personOrgRef = record.organization ?? relatedPeople?.organization ?? null;
-  return resolveCrmOrganizationRef(personOrgRef, organizationId);
+  const fromPerson = await resolveCrmOrganizationRef(personOrgRef, organizationId);
+  if (fromPerson) return fromPerson;
+
+  const fromRelationships = await resolveOrganizationViaRelationships({
+    organizationId,
+    recordModuleKey,
+    record
+  });
+  if (fromRelationships) return fromRelationships;
+
+  return buildPreviewCustomerOrganizationFallback(record);
 }
 
 /**
@@ -517,14 +593,17 @@ async function assembleRuntimeContext(params) {
 
   if (!record && runtimeContext.recordId && RECORD_LOADERS[recordModuleKey]) {
     recordLoadAttempted = true;
-    const loaded = await RECORD_LOADERS[recordModuleKey]({
-      organizationId,
-      recordId: runtimeContext.recordId
-    });
-    if (loaded) {
-      record = loaded.record;
-      lines = loaded.lines;
-      sections = loaded.sections || [];
+    const recordObjectId = toObjectId(runtimeContext.recordId);
+    if (recordObjectId) {
+      const loaded = await RECORD_LOADERS[recordModuleKey]({
+        organizationId,
+        recordId: recordObjectId
+      });
+      if (loaded) {
+        record = loaded.record;
+        lines = loaded.lines;
+        sections = loaded.sections || [];
+      }
     }
   }
 
@@ -544,7 +623,7 @@ async function assembleRuntimeContext(params) {
   const [tenantOrganization, currentUser] = await Promise.all([
     runtimeContext.organization
       ? Promise.resolve(runtimeContext.organization)
-      : Organization.findById(organizationId).select('name industry slug email').lean(),
+      : Organization.findById(organizationId).select(`${ORGANIZATION_MERGE_SELECT} settings.logoUrl`).lean(),
     userId && !runtimeContext.currentUser
       ? User.findById(userId).select('firstName lastName email username').lean()
       : Promise.resolve(runtimeContext.currentUser || null)
@@ -605,7 +684,8 @@ async function assembleRuntimeContext(params) {
   let relatedOrganization = await resolveRelatedOrganization({
     organizationId,
     record,
-    relatedPeople
+    relatedPeople,
+    recordModuleKey
   });
 
   if (
@@ -629,7 +709,9 @@ async function assembleRuntimeContext(params) {
   const documentOrganization =
     recordModuleKey === 'people'
       ? (relatedOrganization || {})
-      : (customerOrganization || tenantOrganization || {});
+      : COMMERCIAL_MODULE_KEYS.has(recordModuleKey)
+        ? (customerOrganization || {})
+        : (customerOrganization || tenantOrganization || {});
 
   if (record?.currency && !parameters.currency) {
     parameters.currency = record.currency;
@@ -673,6 +755,53 @@ async function assembleRuntimeContext(params) {
     scope.People = relatedPeople;
   } else if (runtimeContext.usePreviewSample === true && recordModuleKey && recordModuleKey !== 'people') {
     scope.People = buildPreviewSampleRecord('people', tenantOrganization);
+  }
+
+  const relatedModuleScope = await loadMergeTagRelatedRecords({
+    organizationId,
+    moduleKey: recordModuleKey,
+    record,
+    preview
+  });
+
+  for (const [alias, data] of Object.entries(relatedModuleScope)) {
+    if (scope[alias] && Object.keys(scope[alias]).length > 0) continue;
+    scope[alias] = data;
+  }
+
+  scope.Organization = normalizeRecordForMergeTags(scope.Organization);
+  scope.CustomerOrganization = normalizeRecordForMergeTags(scope.CustomerOrganization);
+  scope.CurrentOrganization = normalizeRecordForMergeTags(scope.CurrentOrganization);
+  if (tenantOrganization?.settings?.logoUrl) {
+    scope.CurrentOrganization.logoUrl = tenantOrganization.settings.logoUrl;
+    scope.CurrentOrganization.settings = {
+      ...(scope.CurrentOrganization.settings && typeof scope.CurrentOrganization.settings === 'object'
+        ? scope.CurrentOrganization.settings
+        : {}),
+      logoUrl: tenantOrganization.settings.logoUrl
+    };
+  }
+  scope.CurrentUser = normalizeRecordForMergeTags(scope.CurrentUser);
+  scope.CurrentTenant = scope.CurrentOrganization;
+
+  if (scope.Quote) scope.Quote = normalizeRecordForMergeTags(scope.Quote);
+  if (scope.Invoice) scope.Invoice = normalizeRecordForMergeTags(scope.Invoice);
+  if (scope.People) scope.People = normalizeRecordForMergeTags(scope.People);
+  if (scope.Record) scope.Record = normalizeRecordForMergeTags(scope.Record);
+  if (moduleAlias && scope[moduleAlias]) {
+    scope[moduleAlias] = normalizeRecordForMergeTags(scope[moduleAlias]);
+  }
+
+  if (
+    (preview || runtimeContext.usePreviewSample === true)
+    && COMMERCIAL_PREVIEW_MODULES.has(recordModuleKey)
+  ) {
+    if (!scope.Deal) {
+      scope.Deal = normalizeRecordForMergeTags(buildPreviewSampleRecord('deals', tenantOrganization));
+    }
+    if (!scope.Case) {
+      scope.Case = normalizeRecordForMergeTags(buildPreviewSampleRecord('cases', tenantOrganization));
+    }
   }
 
   return scope;

@@ -8,7 +8,7 @@ const {
   createBlankGrapesTemplateDefinition,
   isGrapesTemplateDefinition
 } = require('../../constants/grapesTemplateDefinition');
-const { normalizeTemplatePageSettings } = require('../../constants/contentPaperSizes');
+const { normalizeTemplatePageSettings, DEFAULT_PAGE_MARGINS_MM } = require('../../constants/contentPaperSizes');
 const {
   CONTENT_PLATFORM_ERROR_CODES,
   ContentPlatformError
@@ -330,10 +330,10 @@ async function updateTemplate(params) {
       return Math.min(100, Math.max(0, Math.round(parsed)));
     };
     template.margins = {
-      top: clampMargin(payload.margins.top, template.margins?.top ?? 12),
-      right: clampMargin(payload.margins.right, template.margins?.right ?? 12),
-      bottom: clampMargin(payload.margins.bottom, template.margins?.bottom ?? 12),
-      left: clampMargin(payload.margins.left, template.margins?.left ?? 12)
+      top: clampMargin(payload.margins.top, template.margins?.top ?? DEFAULT_PAGE_MARGINS_MM.top),
+      right: clampMargin(payload.margins.right, template.margins?.right ?? DEFAULT_PAGE_MARGINS_MM.right),
+      bottom: clampMargin(payload.margins.bottom, template.margins?.bottom ?? DEFAULT_PAGE_MARGINS_MM.bottom),
+      left: clampMargin(payload.margins.left, template.margins?.left ?? DEFAULT_PAGE_MARGINS_MM.left)
     };
   }
 

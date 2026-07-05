@@ -12,7 +12,7 @@ const {
 } = require('./quoteOrgSettingsService');
 
 const DEFAULT_BRAND_COLOR = '#4f46e5';
-const PDF_LOGO_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp']);
+const PDF_LOGO_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg']);
 
 const uploadsDir = path.join(__dirname, '../uploads');
 

@@ -109,19 +109,38 @@ function pdfBlobFromRenderResult(renderResult: Record<string, unknown>): Blob | 
 
 function openPreviewBlob(blob: Blob, contentType: string): void {
   const blobUrl = URL.createObjectURL(new Blob([blob], { type: contentType }));
-  const opened = window.open(blobUrl, '_blank', 'noopener,noreferrer');
+  // noopener makes window.open return null even when the tab opens — do not fall back to <a click>.
+  window.open(blobUrl, '_blank', 'noopener,noreferrer');
+  window.setTimeout(() => URL.revokeObjectURL(blobUrl), 120000);
+}
 
-  if (!opened) {
-    const anchor = document.createElement('a');
-    anchor.href = blobUrl;
-    anchor.target = '_blank';
-    anchor.rel = 'noopener noreferrer';
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
+async function resolvePreviewBlob(
+  renderResult: Record<string, unknown>
+): Promise<Blob> {
+  const inlineBlob = pdfBlobFromRenderResult(renderResult);
+  const mimeType = String(renderResult.mimeType || 'application/pdf');
+
+  if (inlineBlob) {
+    return inlineBlob;
   }
 
-  window.setTimeout(() => URL.revokeObjectURL(blobUrl), 120000);
+  const { blob, contentType } = await fetchRenderedOutputBlob(
+    renderResult as { previewUrl?: string }
+  );
+  return new Blob([blob], { type: contentType || mimeType });
+}
+
+export async function fetchTemplatePreviewBlob(
+  id: string,
+  options: {
+    recordModuleKey?: string;
+    recordId?: string;
+    jsonDefinition?: GrapesTemplateDefinition;
+    pageSettings?: TemplateMetadataPatch;
+  } = {}
+): Promise<Blob> {
+  const renderResult = await renderTemplatePdf(id, options);
+  return resolvePreviewBlob(renderResult);
 }
 
 export async function renderTemplatePdf(
@@ -163,17 +182,8 @@ export async function previewTemplatePdf(
   } = {}
 ): Promise<Record<string, unknown>> {
   const renderResult = await renderTemplatePdf(id, options);
-  const inlineBlob = pdfBlobFromRenderResult(renderResult);
-  const mimeType = String(renderResult.mimeType || 'application/pdf');
-
-  if (inlineBlob) {
-    openPreviewBlob(inlineBlob, mimeType);
-    return renderResult;
-  }
-
-  const { blob, contentType } = await fetchRenderedOutputBlob(
-    renderResult as { previewUrl?: string }
-  );
-  openPreviewBlob(blob, contentType);
+  const blob = await resolvePreviewBlob(renderResult);
+  const mimeType = String(renderResult.mimeType || blob.type || 'application/pdf');
+  openPreviewBlob(blob, mimeType);
   return renderResult;
 }

@@ -1,5 +1,30 @@
 <template>
   <div class="space-y-3">
+    <div
+      v-if="companyLogoAsset"
+      class="overflow-hidden rounded-lg border"
+      :class="ui.border"
+    >
+      <div class="border-b px-2 py-1 text-[10px] font-semibold uppercase tracking-wide" :class="[ui.border, ui.textMuted]">
+        {{ t('templates.builderCompanyLogoAsset') }}
+      </div>
+      <button
+        type="button"
+        class="flex w-full items-center gap-2 p-2 text-left transition hover:bg-neutral-50 dark:hover:bg-neutral-800/60"
+        @click="selectAsset(companyLogoAsset)"
+      >
+        <img
+          :src="assetImageUrl(companyLogoAsset.downloadUrl)"
+          :alt="companyLogoAsset.accessibilityAltText || companyLogoAsset.filename"
+          class="h-12 w-12 rounded object-contain"
+        />
+        <span class="min-w-0 flex-1">
+          <span class="block truncate text-xs font-medium">{{ companyLogoAsset.filename }}</span>
+          <span class="block text-[10px]" :class="ui.textMuted">{{ t('templates.builderCompanyLogoHint') }}</span>
+        </span>
+      </button>
+    </div>
+
     <div class="flex gap-2">
       <input
         v-model="searchQuery"
@@ -45,9 +70,9 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useBuilderUi } from '@/composables/useBuilderUi';
 import { useContentAssets } from '@/composables/useContentAssets';
+import { useCompanyLogoAsset, resolveAssetDownloadUrl } from '../composables/useCompanyLogoAsset';
 import { useMarketingAssets } from '@/composables/useMarketingAssets';
 import { useNotifications } from '@/composables/useNotifications';
-import { getApiUrlForFetch } from '@/config/apiBase';
 
 const emit = defineEmits(['insert']);
 
@@ -66,23 +91,30 @@ const searchQuery = ref('');
 const uploadBusy = ref(false);
 const contentAssets = useContentAssets();
 const marketingAssets = useMarketingAssets();
+const { asset: companyLogoAsset, ensureCompanyLogo } = useCompanyLogoAsset();
 const activeLibrary = computed(() => (props.library === 'marketing' ? marketingAssets : contentAssets));
 
 const imageAssets = computed(() =>
-  activeLibrary.value.assets.value.filter((asset) => String(asset.mimeType || '').startsWith('image/'))
+  activeLibrary.value.assets.value.filter((asset) => {
+    const mime = String(asset.mimeType || '');
+    return mime.startsWith('image/') || String(asset.type || '') === 'logo';
+  }).filter((asset) => {
+    if (!companyLogoAsset.value) return true;
+    return String(asset._id || asset.assetId || '') !== String(companyLogoAsset.value._id || companyLogoAsset.value.assetId || '');
+  })
 );
 
 const loading = computed(() => activeLibrary.value.loading.value);
 
 function assetImageUrl(downloadUrl) {
-  if (!downloadUrl) return '';
-  if (downloadUrl.startsWith('http')) return downloadUrl;
-  return getApiUrlForFetch(downloadUrl);
+  return resolveAssetDownloadUrl(downloadUrl);
 }
 
 async function loadAssets() {
+  if (props.library !== 'marketing') {
+    await ensureCompanyLogo();
+  }
   await activeLibrary.value.fetchAssets({
-    type: 'image',
     limit: 60,
     search: searchQuery.value.trim() || undefined
   });
@@ -118,7 +150,10 @@ async function onUpload(event) {
   }
 }
 
-onMounted(() => {
-  void loadAssets();
+onMounted(async () => {
+  if (props.library !== 'marketing') {
+    await ensureCompanyLogo();
+  }
+  await loadAssets();
 });
 </script>

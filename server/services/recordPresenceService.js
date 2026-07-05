@@ -43,7 +43,9 @@ async function assertRecordExists({ organizationId, moduleKey, recordId }) {
   const id = normalizeRecordId(recordId);
   const getModel = MODEL_BY_KEY[key];
   if (!getModel) {
-    throw new Error(`Presence is not supported for module: ${moduleKey}`);
+    const err = new Error(`Presence is not supported for module: ${moduleKey}`);
+    err.code = 'PRESENCE_UNSUPPORTED_MODULE';
+    throw err;
   }
 
   const Model = getModel();

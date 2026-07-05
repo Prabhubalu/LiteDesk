@@ -2030,5 +2030,25 @@
   "widgetDetailDashboards": {
     "message": "Dashboards",
     "description": "Widget detail dashboard count label"
+  },
+  "listSearchPlaceholder": {
+    "message": "Search reports…",
+    "description": "Reports list search placeholder (module list)"
+  },
+  "colOwner": {
+    "message": "Owner",
+    "description": "Reports table column — owner"
+  },
+  "listStatTotal": {
+    "message": "Total reports",
+    "description": "Reports list stat — total count"
+  },
+  "widgetsListStatTotal": {
+    "message": "Total widgets",
+    "description": "Widgets list stat — total count"
+  },
+  "dashboardsListStatTotal": {
+    "message": "Total dashboards",
+    "description": "Dashboards list stat — total count"
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <div
     class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
-    :class="viewport === 'mobile' ? 'mx-auto max-w-[375px]' : 'w-full'"
+    :class="viewportClass"
   >
     <div
       v-if="viewport === 'mobile'"
@@ -13,7 +13,7 @@
     </div>
     <div
       class="overflow-auto"
-      :class="viewport === 'mobile' ? 'h-[520px]' : 'h-[480px]'"
+      :class="viewportHeightClass"
       :style="shellStyle"
     >
       <iframe
@@ -42,7 +42,23 @@ const props = defineProps({
 
 const { t } = useI18n();
 
-const previewWidthPx = computed(() => (props.viewport === 'mobile' ? 320 : 600));
+const previewWidthPx = computed(() => {
+  if (props.viewport === 'mobile') return 320;
+  if (props.viewport === 'tablet') return 768;
+  return 600;
+});
+
+const viewportClass = computed(() => {
+  if (props.viewport === 'mobile') return 'mx-auto max-w-[375px]';
+  if (props.viewport === 'tablet') return 'mx-auto max-w-[820px]';
+  return 'w-full';
+});
+
+const viewportHeightClass = computed(() => {
+  if (props.viewport === 'mobile') return 'h-[520px]';
+  if (props.viewport === 'tablet') return 'h-[500px]';
+  return 'h-[480px]';
+});
 
 const previewSrcdoc = computed(() => buildEmailPreviewDocument({
   html: props.html,
@@ -56,7 +72,11 @@ const iframeKey = computed(() => `${props.viewport}:${props.colorScheme}:${previ
 const iframeStyle = computed(() => ({
   width: `${previewWidthPx.value}px`,
   maxWidth: '100%',
-  minHeight: props.viewport === 'mobile' ? '520px' : '480px'
+  minHeight: props.viewport === 'mobile'
+    ? '520px'
+    : props.viewport === 'tablet'
+      ? '500px'
+      : '480px'
 }));
 
 const shellStyle = computed(() => ({

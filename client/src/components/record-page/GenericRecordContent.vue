@@ -1146,6 +1146,7 @@ import {
 } from '@/utils/contentVersionHistory';
 import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
 import { useRecordPresence } from '@/composables/useRecordPresence';
+import { isRecordPresenceSupported } from '@/utils/recordPresence';
 import { resolveFieldContext } from '@/utils/fieldContextFilter';
 import { supportsDocumentAttachments } from '@/constants/documentAttachments';
 import { getParticipation } from '@/utils/getParticipation';
@@ -1904,7 +1905,9 @@ const canOpenDocumentEditor = computed(
 );
 
 const showRecordPresenceAvatars = computed(
-  () => Boolean(props.recordId && record.value && authStore.can(props.moduleKey, 'view'))
+  () =>
+    Boolean(props.recordId && record.value && authStore.can(props.moduleKey, 'view'))
+    && isRecordPresenceSupported(props.moduleKey)
 );
 
 const recordPresenceActivityType = computed(() => {

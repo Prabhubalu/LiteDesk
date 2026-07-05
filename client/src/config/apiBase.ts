@@ -126,6 +126,27 @@ export function getApiUrlForFetch(url: string): string {
   return withApiOrigin(path)
 }
 
+/**
+ * Browser media (img, iframe src) should stay same-origin in local dev so Vite can proxy /api.
+ * Unlike fetch/SSE, do not route these to the direct API port.
+ */
+export function getApiUrlForMedia(url: string): string {
+  if (!url) return url
+  if (url.startsWith('data:') || url.startsWith('blob:')) return url
+
+  let path = url
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    try {
+      const parsed = new URL(url)
+      path = `${parsed.pathname}${parsed.search}`
+    } catch {
+      return url
+    }
+  }
+
+  return withApiOrigin(normalizeToApiPath(path))
+}
+
 /** Long-lived SSE streams; same dev direct-origin routing as fetch. */
 export function getApiUrlForEventSource(url: string): string {
   return getApiUrlForFetch(url)

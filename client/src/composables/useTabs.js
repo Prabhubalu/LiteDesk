@@ -1185,6 +1185,17 @@ const getTitleForPath = (path, params = {}) => {
     return `(${segments[4]}) Details`;
   }
 
+  // Analytics platform routes (list, builder, detail) — before generic /:module/:id fallback
+  if (path.startsWith('/analytics')) {
+    const meta = getTabTitleMetaForPath(path, params);
+    if (meta.titleKey && i18n.global.te(meta.titleKey)) {
+      return i18n.global.t(meta.titleKey, meta.titleParams || {});
+    }
+    if (meta.title) {
+      return meta.title;
+    }
+  }
+
   // If it's a detail page (has ID), customize title
   // But skip if it's an audit route or control route (handled above)
   if (path.split('/').length > 2 && !path.startsWith('/audit/') && !path.startsWith('/control/') && !path.startsWith('/settings/automation/') && segments[1] !== 'dashboard') {
@@ -1670,9 +1681,8 @@ export function useTabs() {
         logTabsDebug('✅ Already on correct tab, no sync needed');
       }
 
-      const newTitle = getTitleForPath(path, existingTab.params || {});
-      if (newTitle && existingTab.title !== newTitle && !shouldPreserveRecordTabTitle(existingTab, path)) {
-        existingTab.title = newTitle;
+      if (!shouldPreserveRecordTabTitle(existingTab, path)) {
+        restoreModuleListTabTitle(existingTab, path.split('?')[0]);
       }
     } else {
       // Tab doesn't exist, create one

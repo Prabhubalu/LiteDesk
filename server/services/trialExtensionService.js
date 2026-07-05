@@ -171,6 +171,7 @@ function buildTrialStatusSnapshot(organization) {
         expired,
         extensionUsed: subscription.trialExtensionUsed === true,
         trialEndDate: subscription.trialEndDate || null,
+        subscriptionStatus: subscription.status || null,
         daysRemaining: onTrial && typeof organization.getTrialDaysRemaining === 'function'
             ? organization.getTrialDaysRemaining()
             : 0

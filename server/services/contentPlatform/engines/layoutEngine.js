@@ -3,15 +3,11 @@
 const {
   PAPER_DIMENSIONS_MM,
   resolvePageDimensions,
-  resolvePageConfig
+  resolvePageConfig,
+  DEFAULT_PAGE_MARGINS_MM
 } = require('../../../constants/contentPaperSizes');
 
-const DEFAULT_MARGINS_MM = Object.freeze({
-  top: 12,
-  right: 12,
-  bottom: 12,
-  left: 12
-});
+const DEFAULT_MARGINS_MM = DEFAULT_PAGE_MARGINS_MM;
 
 /**
  * @param {object} template

@@ -480,7 +480,13 @@
   background: rgb(96 73 231 / 0.08) !important;
 }
 
-/* Inline RTE toolbar — solid surface (gjs-one-bg is transparent in canvas theme) */
+/* Inline RTE toolbar — hidden until text edit mode (rte:enable) */
+.arivu-gjs-theme .gjs-rte-toolbar[data-arivu-rte-visible='false'],
+.arivu-gjs-theme .gjs-rte-toolbar:not([data-arivu-rte-visible='true']) {
+  display: none !important;
+  pointer-events: none !important;
+}
+
 .arivu-gjs-theme .gjs-rte-toolbar {
   filter: drop-shadow(0 4px 14px rgb(0 0 0 / 0.12));
   z-index: 20;

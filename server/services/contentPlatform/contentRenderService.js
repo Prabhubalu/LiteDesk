@@ -19,6 +19,7 @@ const { resolvePageConfig } = require('./engines/layoutEngine');
 const { renderLayoutTreeToHtml } = require('./renderers/htmlRenderer');
 const { renderGrapesDefinitionToHtml } = require('./renderers/grapesHtmlRenderer');
 const { renderHtmlToPdf } = require('./renderers/puppeteerPdfRenderer');
+const { inlineHtmlImages } = require('./renderers/inlineHtmlImages');
 const { isGrapesTemplateDefinition } = require('../../constants/grapesTemplateDefinition');
 const {
   CONTENT_PLATFORM_EVENT_TYPES,
@@ -253,8 +254,9 @@ async function renderTemplate(params) {
   }
 
   if (normalizedFormat === 'pdf') {
-    const pageConfig = resolvePageConfig(template);
-    buffer = await renderHtmlToPdf(html, {
+    const pageConfig = resolvePageConfig(templateForLayout);
+    const htmlForPdf = await inlineHtmlImages(html, { organizationId });
+    buffer = await renderHtmlToPdf(htmlForPdf, {
       paperSize: pageConfig.paperSize,
       orientation: pageConfig.orientation,
       dimensions: pageConfig.dimensions

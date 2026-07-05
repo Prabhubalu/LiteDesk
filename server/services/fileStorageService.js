@@ -101,6 +101,15 @@ function safeCategory(category) {
   return String(category || 'general').replace(/[^a-zA-Z0-9_-]/g, '_');
 }
 
+function normalizeObjectMetadata(metadata = {}) {
+  const normalized = {};
+  for (const [key, value] of Object.entries(metadata || {})) {
+    if (value == null) continue;
+    normalized[String(key)] = typeof value === 'string' ? value : String(value);
+  }
+  return normalized;
+}
+
 function buildObjectKey({ organizationId, category, fileName }) {
   const base = safeFileName(fileName);
   return `${UPLOADS_KEY_PREFIX}${safeOrgId(organizationId)}/${safeCategory(category)}/${Date.now()}-${uuidv4()}-${base}`;
@@ -117,8 +126,16 @@ function buildDownloadUrl(storagePath, { disposition = 'inline', fileName, conte
 }
 
 function parseStoragePath(storagePath) {
-  const raw = String(storagePath || '').trim();
+  let raw = String(storagePath || '').trim();
   if (!raw) return null;
+  if (raw.startsWith('http://') || raw.startsWith('https://')) {
+    try {
+      const url = new URL(raw);
+      raw = `${url.pathname}${url.search}`;
+    } catch {
+      return null;
+    }
+  }
   if (isOciStoragePath(raw)) {
     return { driver: 'oci', key: raw.slice(OCI_PREFIX.length) };
   }
@@ -209,10 +226,10 @@ async function uploadBuffer({
     key,
     buffer,
     contentType: mimeType || 'application/octet-stream',
-    metadata: {
+    metadata: normalizeObjectMetadata({
       originalname: safeFileName(originalName),
       ...metadata
-    }
+    })
   });
   const storagePath = `${OCI_PREFIX}${key}`;
   return {

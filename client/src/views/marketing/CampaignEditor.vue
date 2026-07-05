@@ -1,189 +1,261 @@
 <template>
-  <div class="mx-auto max-w-3xl px-6 py-8">
-    <div class="mb-6 flex items-center justify-between gap-4">
-      <div>
-        <button
-          type="button"
-          class="mb-2 text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
-          @click="goBack"
-        >
-          {{ t('actions.back') }}
-        </button>
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
-          {{ pageTitle }}
-        </h1>
+  <div class="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+    <div v-if="loading" class="flex min-h-[40vh] items-center justify-center">
+      <div class="text-center">
+        <div
+          class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent"
+          aria-hidden="true"
+        />
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          {{ t('states.loading') }}
+        </p>
       </div>
     </div>
 
-    <form class="space-y-5" @submit.prevent="handleSubmit">
-      <div>
-        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          {{ t('marketing.campaignsFieldName') }}
-        </label>
-        <input
-          v-model="form.name"
-          type="text"
-          required
-          class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
-        />
-      </div>
+    <template v-else>
+      <header
+        class="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+      >
+        <div class="border-b border-gray-100 bg-gradient-to-br from-indigo-50/80 via-white to-white px-5 py-5 dark:border-gray-800 dark:from-indigo-950/30 dark:via-gray-900 dark:to-gray-900 sm:px-6">
+          <button
+            type="button"
+            class="mb-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+            @click="goBack"
+          >
+            <ChevronLeftIcon class="h-4 w-4" aria-hidden="true" />
+            {{ t('actions.back') }}
+          </button>
+          <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">
+            {{ pageTitle }}
+          </h1>
+          <p class="mt-2 max-w-2xl text-sm text-gray-600 dark:text-gray-400">
+            {{ t('marketing.campaignsEditorDescription') }}
+          </p>
+        </div>
+      </header>
 
-      <div>
-        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          {{ t('marketing.campaignsFieldSubject') }}
-        </label>
-        <input
-          v-model="form.subject"
-          type="text"
-          class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
-        />
-      </div>
+      <form class="space-y-6 pb-24" @submit.prevent="handleSubmit">
+        <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+          <div class="border-b border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-800/60">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+              {{ t('marketing.campaignsEditorSectionBasics') }}
+            </h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {{ t('marketing.campaignsEditorSectionBasicsDesc') }}
+            </p>
+          </div>
+          <div class="space-y-5 px-5 py-5">
+            <div>
+              <label for="campaign-name" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                {{ t('marketing.campaignsFieldName') }}
+                <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="campaign-name"
+                v-model="form.name"
+                type="text"
+                required
+                :class="fieldInputClass"
+              />
+            </div>
 
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {{ t('marketing.campaignsFieldFromEmail') }}
-          </label>
-          <input
-            v-model="form.fromEmail"
-            type="email"
-            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
+            <div>
+              <label for="campaign-subject" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                {{ t('marketing.campaignsFieldSubject') }}
+              </label>
+              <input
+                id="campaign-subject"
+                v-model="form.subject"
+                type="text"
+                :class="fieldInputClass"
+              />
+            </div>
+
+            <div class="grid gap-5 sm:grid-cols-2">
+              <div>
+                <label for="campaign-from-email" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                  {{ t('marketing.campaignsFieldFromEmail') }}
+                </label>
+                <input
+                  id="campaign-from-email"
+                  v-model="form.fromEmail"
+                  type="email"
+                  :class="fieldInputClass"
+                />
+              </div>
+              <div>
+                <label for="campaign-from-name" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                  {{ t('marketing.campaignsFieldFromName') }}
+                </label>
+                <input
+                  id="campaign-from-name"
+                  v-model="form.fromName"
+                  type="text"
+                  :class="fieldInputClass"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+          <div class="border-b border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-800/60">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+              {{ t('marketing.campaignsEditorSectionAudience') }}
+            </h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {{ t('marketing.campaignsEditorSectionAudienceDesc') }}
+            </p>
+          </div>
+          <div class="space-y-5 px-5 py-5">
+            <div>
+              <label for="campaign-audience" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                {{ t('marketing.campaignsFieldAudience') }}
+              </label>
+              <HeadlessSelect
+                id="campaign-audience"
+                v-model="form.audienceId"
+                :options="audienceSelectOptions"
+                allow-empty
+                :empty-label="t('marketing.campaignsFieldAudienceNone')"
+                teleport
+                wrapper-class="mt-2"
+              />
+              <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                {{ t('marketing.campaignsFieldAudienceHelp') }}
+              </p>
+            </div>
+
+            <div>
+              <label for="campaign-template" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                {{ t('marketing.campaignsFieldTemplate') }}
+              </label>
+              <div class="mt-2 flex flex-wrap items-start gap-2">
+                <HeadlessSelect
+                  id="campaign-template"
+                  v-model="form.templateId"
+                  :options="templateSelectOptions"
+                  allow-empty
+                  :empty-label="t('marketing.campaignsFieldTemplateNone')"
+                  teleport
+                  wrapper-class="min-w-0 flex-1"
+                  @update:model-value="handleTemplateChange"
+                />
+                <button
+                  v-if="form.templateId"
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                  @click="openTemplateEditor"
+                >
+                  {{ t('marketing.campaignsEditTemplate') }}
+                </button>
+                <button
+                  v-if="canPreviewEmail"
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                  @click="openEmailPreview"
+                >
+                  <EyeIcon class="h-4 w-4" aria-hidden="true" />
+                  {{ t('marketing.campaignsPreviewEmail') }}
+                </button>
+              </div>
+              <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                {{ t('marketing.campaignsFieldTemplateHelp') }}
+                <router-link
+                  to="/templates"
+                  class="ml-1 font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                >
+                  {{ t('marketing.campaignsFieldTemplateManage') }}
+                </router-link>
+              </p>
+              <p
+                v-if="templateOptions.length === 0 && !templatesLoading"
+                class="mt-2 text-xs text-amber-600 dark:text-amber-400"
+              >
+                {{ t('marketing.campaignsFieldTemplateEmpty') }}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <CampaignAbTestPanel
+          v-model="form.abTest"
+          v-model:variants="form.variants"
+          :disabled="!isEditableAbTest"
+        />
+
+        <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+          <div class="border-b border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-800/60">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+              {{ t('marketing.campaignsEditorSectionContent') }}
+            </h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {{ t('marketing.campaignsEditorSectionContentDesc') }}
+            </p>
+          </div>
+          <div class="px-5 py-5">
+            <label for="campaign-body-html" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+              {{ t('marketing.campaignsFieldBodyHtml') }}
+            </label>
+            <textarea
+              id="campaign-body-html"
+              v-model="form.bodyHtml"
+              rows="14"
+              :class="[fieldInputClass, 'font-mono']"
+            />
+          </div>
+        </section>
+
+        <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+          <div class="border-b border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-800/60">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+              {{ t('marketing.campaignsEditorSectionTracking') }}
+            </h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {{ t('marketing.campaignsEditorSectionTrackingDesc') }}
+            </p>
+          </div>
+          <div class="divide-y divide-gray-100 dark:divide-gray-800">
+            <div class="flex items-center justify-between gap-4 px-5 py-4">
+              <div>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                  {{ t('marketing.campaignsFieldTrackOpens') }}
+                </p>
+              </div>
+              <HeadlessSwitch v-model="form.trackOpens" />
+            </div>
+            <div class="flex items-center justify-between gap-4 px-5 py-4">
+              <div>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                  {{ t('marketing.campaignsFieldTrackClicks') }}
+                </p>
+              </div>
+              <HeadlessSwitch v-model="form.trackClicks" />
+            </div>
+          </div>
+        </section>
+      </form>
+
+      <div class="pointer-events-none fixed bottom-4 left-1/2 z-40 w-[min(95vw,720px)] -translate-x-1/2">
+        <div class="pointer-events-auto flex flex-wrap items-center justify-end gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-2xl ring-1 ring-black/5 dark:border-gray-700 dark:bg-gray-800 dark:ring-white/10">
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            @click="goBack"
+          >
+            {{ t('actions.cancel') }}
+          </button>
+          <PrimaryActionButton
+            :label="saving ? t('states.saving') : t('actions.save')"
+            type="button"
+            icon="save"
+            :loading="saving"
+            :disabled="saving"
+            @click="handleSubmit"
           />
         </div>
-        <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {{ t('marketing.campaignsFieldFromName') }}
-          </label>
-          <input
-            v-model="form.fromName"
-            type="text"
-            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
-          />
-        </div>
       </div>
-
-      <div>
-        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          {{ t('marketing.campaignsFieldAudience') }}
-        </label>
-        <select
-          v-model="form.audienceId"
-          class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
-        >
-          <option value="">{{ t('marketing.campaignsFieldAudienceNone') }}</option>
-          <option
-            v-for="item in audienceOptions"
-            :key="item._id"
-            :value="item._id"
-          >
-            {{ formatAudienceLabel(item) }}
-          </option>
-        </select>
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-          {{ t('marketing.campaignsFieldAudienceHelp') }}
-        </p>
-      </div>
-
-      <div>
-        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          {{ t('marketing.campaignsFieldTemplate') }}
-        </label>
-        <div class="flex flex-wrap items-center gap-2">
-          <select
-            v-model="form.templateId"
-            class="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
-            @change="handleTemplateChange"
-          >
-            <option value="">{{ t('marketing.campaignsFieldTemplateNone') }}</option>
-            <option
-              v-for="item in templateOptions"
-              :key="item._id"
-              :value="item._id"
-            >
-              {{ item.name }}
-            </option>
-          </select>
-          <button
-            v-if="form.templateId"
-            type="button"
-            class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
-            @click="openTemplateEditor"
-          >
-            {{ t('marketing.campaignsEditTemplate') }}
-          </button>
-          <button
-            v-if="canPreviewEmail"
-            type="button"
-            class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
-            @click="openEmailPreview"
-          >
-            <EyeIcon class="h-4 w-4" aria-hidden="true" />
-            {{ t('marketing.campaignsPreviewEmail') }}
-          </button>
-        </div>
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-          {{ t('marketing.campaignsFieldTemplateHelp') }}
-          <router-link
-            to="/templates"
-            class="ml-1 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
-          >
-            {{ t('marketing.campaignsFieldTemplateManage') }}
-          </router-link>
-        </p>
-        <p
-          v-if="templateOptions.length === 0 && !templatesLoading"
-          class="mt-1 text-xs text-amber-600 dark:text-amber-400"
-        >
-          {{ t('marketing.campaignsFieldTemplateEmpty') }}
-        </p>
-      </div>
-
-      <CampaignAbTestPanel
-        v-model="form.abTest"
-        v-model:variants="form.variants"
-        :disabled="!isEditableAbTest"
-        class="mb-2"
-      />
-
-      <div>
-        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          {{ t('marketing.campaignsFieldBodyHtml') }}
-        </label>
-        <textarea
-          v-model="form.bodyHtml"
-          rows="12"
-          class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-mono text-sm dark:border-gray-600 dark:bg-gray-900"
-        />
-      </div>
-
-      <div class="flex flex-wrap gap-6">
-        <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-          <input v-model="form.trackOpens" type="checkbox" class="rounded border-gray-300" />
-          {{ t('marketing.campaignsFieldTrackOpens') }}
-        </label>
-        <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-          <input v-model="form.trackClicks" type="checkbox" class="rounded border-gray-300" />
-          {{ t('marketing.campaignsFieldTrackClicks') }}
-        </label>
-      </div>
-
-      <div class="flex flex-wrap gap-3 border-t border-gray-200 pt-5 dark:border-gray-700">
-        <button
-          type="submit"
-          class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-          :disabled="saving"
-        >
-          {{ saving ? t('states.saving') : t('actions.save') }}
-        </button>
-        <button
-          type="button"
-          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
-          @click="goBack"
-        >
-          {{ t('actions.cancel') }}
-        </button>
-      </div>
-    </form>
+    </template>
 
     <EmailPreviewModal
       :open="showEmailPreview"
@@ -198,14 +270,18 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { EyeIcon } from '@heroicons/vue/24/outline';
+import { ChevronLeftIcon, EyeIcon } from '@heroicons/vue/24/outline';
 import CampaignAbTestPanel from '@/components/marketing/CampaignAbTestPanel.vue';
 import EmailPreviewModal from '@/modules/template/components/html/EmailPreviewModal.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import HeadlessSwitch from '@/components/ui/HeadlessSwitch.vue';
+import PrimaryActionButton from '@/components/ui/PrimaryActionButton.vue';
 import { useMarketingCampaigns } from '@/composables/useMarketingCampaigns';
 import { useMarketingAudiences } from '@/composables/useMarketingAudiences';
 import { useMarketingTemplates, buildMarketingEmailFromTemplate } from '@/composables/useMarketingTemplates';
 import { useNotifications } from '@/composables/useNotifications';
 import { parseCampaignEmailPreview } from '@/utils/marketingEmailPreview';
+import { PROCESS_INPUT_CLASS } from '@/utils/processDesignerConstants';
 
 const props = defineProps({
   campaignId: {
@@ -228,6 +304,8 @@ const templatesLoading = ref(false);
 const showEmailPreview = ref(false);
 const previewHtml = ref('');
 const previewCss = ref('');
+
+const fieldInputClass = `${PROCESS_INPUT_CLASS} mt-2`;
 
 const form = reactive({
   name: '',
@@ -259,6 +337,13 @@ const audienceOptions = computed(() =>
   })
 );
 
+const audienceSelectOptions = computed(() =>
+  audienceOptions.value.map((item) => ({
+    value: item._id,
+    label: formatAudienceLabel(item)
+  }))
+);
+
 function formatAudienceLabel(item) {
   const count = item.memberCount ?? 0;
   const typeLabel = item.type === 'dynamic'
@@ -269,6 +354,13 @@ function formatAudienceLabel(item) {
 
 const templateOptions = computed(() =>
   templates.value.filter((item) => item.status === 'draft' || item.status === 'published')
+);
+
+const templateSelectOptions = computed(() =>
+  templateOptions.value.map((item) => ({
+    value: item._id,
+    label: item.name
+  }))
 );
 
 const resolvedId = computed(() => props.campaignId || route.params.id || '');
@@ -384,10 +476,10 @@ function goBack() {
   router.push({ name: 'marketing-campaigns' });
 }
 
-async function handleTemplateChange() {
-  if (!form.templateId) return;
+async function handleTemplateChange(templateId) {
+  if (!templateId) return;
   try {
-    const record = await fetchTemplate(form.templateId);
+    const record = await fetchTemplate(templateId);
     form.bodyHtml = buildMarketingEmailFromTemplate(record);
   } catch (err) {
     notifications.error(err?.message || t('marketing.campaignsTemplateApplyError'));

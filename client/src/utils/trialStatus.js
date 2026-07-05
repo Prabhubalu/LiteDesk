@@ -16,6 +16,32 @@ export function hasUsedTrialExtension(organization) {
   return organization?.subscription?.trialExtensionUsed === true;
 }
 
+/**
+ * Merge authoritative trial snapshot from the server into local organization state.
+ */
+export function applyTrialSnapshotToOrganization(organization, snapshot) {
+  if (!organization || !snapshot) return organization;
+
+  const subscription = { ...(organization.subscription || {}) };
+
+  if (snapshot.trialEndDate != null) {
+    subscription.trialEndDate = snapshot.trialEndDate;
+  }
+  if (snapshot.extensionUsed === true) {
+    subscription.trialExtensionUsed = true;
+  }
+  if (snapshot.subscriptionStatus) {
+    subscription.status = snapshot.subscriptionStatus;
+  } else if (snapshot.expired === false) {
+    const currentStatus = subscription.status;
+    if (!currentStatus || currentStatus === 'trial' || currentStatus === 'expired') {
+      subscription.status = 'trial';
+    }
+  }
+
+  return { ...organization, subscription };
+}
+
 export function isTrialExpiredRoute(route) {
   return route?.name === 'trial-expired' || route?.path === '/trial-expired';
 }

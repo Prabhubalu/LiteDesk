@@ -23,6 +23,10 @@ router
   );
 
 router
+  .route('/company-logo')
+  .get(checkPermission('templates', 'read'), controller.getCompanyLogoAsset);
+
+router
   .route('/:id')
   .get(checkPermission('templates', 'read'), controller.getAsset)
   .put(checkPermission('templates', 'update'), controller.updateAsset)

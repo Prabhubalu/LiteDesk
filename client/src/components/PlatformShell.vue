@@ -150,12 +150,15 @@ const isFormCreateRoute = computed(() => {
   const name = typeof route.name === 'string' ? route.name : '';
   return name === 'form-create' || route.path.startsWith('/forms/create');
 });
+const isTemplateBuilderRoute = computed(() => route.name === 'template-builder');
+
 const useViewportLock = computed(
   () => isInboxRoute.value
     || (isLiveChatRoute.value && !isLiveChatClosedListRoute.value)
     || isSettingsRoute.value
     || isProcessDesignerRoute.value
     || isFormCreateRoute.value
+    || isTemplateBuilderRoute.value
 );
 
 const isRecordDetailRoute = computed(() => {

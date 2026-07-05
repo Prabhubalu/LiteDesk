@@ -8,6 +8,7 @@ const {
   CONTENT_PAPER_SIZES,
   CONTENT_ORIENTATIONS
 } = require('../constants/contentPlatformConstants');
+const { DEFAULT_PAGE_MARGINS_MM } = require('../constants/contentPaperSizes');
 
 const { Schema } = mongoose;
 
@@ -66,10 +67,10 @@ const ContentTemplateSchema = new Schema(
       max: 2000
     },
     margins: {
-      top: { type: Number, default: 24 },
-      right: { type: Number, default: 24 },
-      bottom: { type: Number, default: 24 },
-      left: { type: Number, default: 24 }
+      top: { type: Number, default: DEFAULT_PAGE_MARGINS_MM.top },
+      right: { type: Number, default: DEFAULT_PAGE_MARGINS_MM.right },
+      bottom: { type: Number, default: DEFAULT_PAGE_MARGINS_MM.bottom },
+      left: { type: Number, default: DEFAULT_PAGE_MARGINS_MM.left }
     },
     defaultThemeId: {
       type: Schema.Types.ObjectId,

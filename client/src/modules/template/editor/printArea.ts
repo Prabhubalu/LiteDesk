@@ -1,4 +1,5 @@
 import type { Component, Editor } from 'grapesjs';
+import { componentElementMatches } from './componentCanMove';
 import {
   resolveContentAreaPx,
   resolvePageMarginsPx,
@@ -11,6 +12,7 @@ import {
   isEmbeddedLayoutGridStyle,
   stripEmbeddedLayoutGridStyleTags
 } from './layoutGridCss';
+import { getSupplementalCss, injectSupplementalCanvasCss } from './supplementalCssStore';
 
 export const PRINT_AREA_ATTR = 'data-print-area';
 export const PRINT_AREA_TYPE = 'print-area';
@@ -97,7 +99,7 @@ export function registerLayoutGridComponents(editor: Editor): void {
         defaults: {
           tagName: 'div',
           name: 'Row',
-          droppable: `.${LAYOUT_CELL_CLASS}`,
+          droppable: (src: Component) => componentElementMatches(src, `.${LAYOUT_CELL_CLASS}`),
           draggable: true,
           style: {
             display: 'flex',
@@ -119,7 +121,8 @@ export function registerLayoutGridComponents(editor: Editor): void {
           tagName: 'div',
           name: 'Cell',
           droppable: true,
-          draggable: `.${LAYOUT_ROW_CLASS}`,
+          draggable: (_src: Component, target: Component) =>
+            componentElementMatches(target, `.${LAYOUT_ROW_CLASS}`),
           style: {
             display: 'flex',
             'flex-direction': 'column',
@@ -201,7 +204,9 @@ function injectPrintAreaLayoutCss(
 
     [data-gjs-type="wrapper"] {
       position: relative !important;
-      width: 100% !important;
+      width: var(--arivu-page-width) !important;
+      min-width: var(--arivu-page-width) !important;
+      max-width: var(--arivu-page-width) !important;
       min-height: var(--arivu-page-height) !important;
       box-sizing: border-box !important;
       overflow: hidden !important;
@@ -219,9 +224,18 @@ function injectPrintAreaLayoutCss(
       min-height: var(--arivu-content-height) !important;
       max-width: var(--arivu-content-width) !important;
       box-sizing: border-box !important;
-      overflow: visible !important;
+      overflow-x: hidden !important;
+      overflow-y: visible !important;
       margin: 0 !important;
       padding: 0 !important;
+    }
+
+    [${PRINT_AREA_ATTR}="true"] .gjs-row,
+    [data-gjs-type="${PRINT_AREA_TYPE}"] .gjs-row,
+    [${PRINT_AREA_ATTR}="true"] table,
+    [data-gjs-type="${PRINT_AREA_TYPE}"] table {
+      max-width: 100% !important;
+      box-sizing: border-box !important;
     }
   `;
 }
@@ -281,6 +295,10 @@ export function applyPrintAreaLayout(
   clearPersistedLayoutStyles(wrapper, printArea);
   injectPrintAreaLayoutCss(editor, dimensions, margins, contentArea);
   injectLayoutGridFrameCss(editor);
+  const supplementalCss = getSupplementalCss(editor);
+  if (supplementalCss) {
+    injectSupplementalCanvasCss(editor, supplementalCss);
+  }
 
   const frame = editor.Canvas.getFrameEl();
   frame?.contentWindow?.dispatchEvent(new Event('resize'));

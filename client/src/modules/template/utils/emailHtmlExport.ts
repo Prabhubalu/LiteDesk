@@ -1,5 +1,6 @@
 import type { Editor } from 'grapesjs';
-import { extractRenderedOutput } from '../editor/renderer';
+import { extractRenderedOutput, buildTemplateHtmlDocument, exportBodyHtmlFromCanvasFrame } from '../editor/renderer';
+import { stripGrapesDocumentWrapper } from './formatHtmlDocument';
 
 export interface ParsedEmailHtml {
   html: string;
@@ -7,25 +8,63 @@ export interface ParsedEmailHtml {
 }
 
 export function buildEmailHtmlDocument(editor: Editor): string {
-  const { html, css } = getEmailHtmlParts(editor);
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>${css}</style>
-</head>
-<body>${html}</body>
-</html>`;
+  return buildTemplateHtmlDocument(editor, { outputFormat: 'email' });
 }
 
 export function getEmailHtmlParts(editor: Editor): ParsedEmailHtml {
-  return extractRenderedOutput(editor, { appendLayoutGrid: false });
+  const { css } = extractRenderedOutput(editor, { appendLayoutGrid: false });
+  return {
+    html: exportBodyHtmlFromCanvasFrame(editor),
+    css
+  };
 }
 
 /**
  * Parse a full HTML document or fragment into body HTML + CSS for GrapesJS.
  */
+const PRINT_AREA_CSS_SCOPE = '[data-print-area="true"]';
+
+/** Strip export-only rules and scope document selectors onto the print area. */
+export function filterImportedDocumentCss(css: string): string {
+  let source = String(css || '').trim();
+  if (!source) return '';
+
+  source = source.replace(/@page\s*\{[\s\S]*?\}/gi, '');
+  source = source.replace(
+    /\.builder-merge-chip\s*,\s*\[data-merge-field="true"\]\s*\{[\s\S]*?\}/gi,
+    ''
+  );
+  source = source.replace(/\/\*\s*arivu-layout-grid\s*\*\/[\s\S]*$/i, '');
+  source = scopeDocumentSelectorsToPrintArea(source);
+
+  return source.replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function scopeDocumentSelectorsToPrintArea(css: string): string {
+  return String(css || '')
+    .replace(/\bhtml\s*,\s*body\b/gi, PRINT_AREA_CSS_SCOPE)
+    .replace(/(^|[,{}\s])body(\s*\{)/gi, `$1${PRINT_AREA_CSS_SCOPE}$2`);
+}
+
+export interface ParseTemplateHtmlDocumentOptions {
+  isEmail?: boolean;
+}
+
+/** Parse a pasted or edited full HTML document into canvas body HTML + CSS. */
+export function parseTemplateHtmlDocumentForCanvas(
+  raw: string,
+  options: ParseTemplateHtmlDocumentOptions = {}
+): ParsedEmailHtml {
+  const { html, css } = parseEmailHtmlInput(raw);
+  const bodyHtml = stripGrapesDocumentWrapper(extractEmailBodyHtml(html));
+  const isEmail = Boolean(options.isEmail);
+
+  return {
+    html: bodyHtml,
+    css: isEmail ? css : filterImportedDocumentCss(css)
+  };
+}
+
 export function parseEmailHtmlInput(raw: string): ParsedEmailHtml {
   const source = String(raw || '').trim();
   if (!source) {

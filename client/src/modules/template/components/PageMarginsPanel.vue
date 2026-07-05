@@ -1,11 +1,14 @@
 <template>
-  <section class="space-y-4">
-    <div>
-      <h3 class="text-sm font-semibold" :class="ui.text">{{ t('templates.builderFieldMargin') }}</h3>
+  <section :class="embedded ? 'space-y-3' : 'space-y-4'">
+    <div v-if="!embedded">
+      <h3 class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{{ t('templates.builderFieldMargin') }}</h3>
       <p class="mt-1 text-xs leading-relaxed" :class="ui.textMuted">
         {{ t('templates.builderPrintMarginHint') }}
       </p>
     </div>
+    <p v-else class="text-xs leading-relaxed" :class="ui.textMuted">
+      {{ t('templates.builderPrintMarginHint') }}
+    </p>
 
     <div class="grid grid-cols-2 gap-2">
       <div>
@@ -70,7 +73,8 @@ const props = defineProps({
   margins: {
     type: Object,
     default: () => ({ ...DEFAULT_PAGE_MARGINS_MM })
-  }
+  },
+  embedded: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['change']);

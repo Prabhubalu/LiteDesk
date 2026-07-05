@@ -2,35 +2,22 @@
   <div v-if="layout === 'stacked'" class="space-y-3">
     <div>
       <label class="mb-1 block" :class="ui.label">{{ t('templates.builderPageSize') }}</label>
-      <select
-        :value="paperSize"
-        :class="ui.input"
-        :aria-label="t('templates.builderPageSize')"
-        @change="onPaperSizeChange($event.target.value)"
-      >
-        <optgroup
-          v-for="group in paperSizeGroups"
-          :key="group.key"
-          :label="t(`templates.builderPageGroup${group.key}`)"
-        >
-          <option v-for="size in group.sizes" :key="size" :value="size">
-            {{ size === 'Custom' ? t('templates.builderPageCustom') : size }}
-          </option>
-        </optgroup>
-      </select>
+      <BuilderSelect
+        :model-value="paperSize"
+        :option-groups="paperSizeOptionGroups"
+        :options-attrs="{ 'data-arivu-page-size-select': 'true' }"
+        @update:model-value="onPaperSizeChange"
+      />
     </div>
 
     <div>
       <label class="mb-1 block" :class="ui.label">{{ t('templates.builderPageOrientation') }}</label>
-      <select
-        :value="orientation"
-        :class="ui.input"
-        :aria-label="t('templates.builderPageOrientation')"
-        @change="emitChange({ orientation: $event.target.value })"
-      >
-        <option value="portrait">{{ t('templates.builderPageOrientationPortrait') }}</option>
-        <option value="landscape">{{ t('templates.builderPageOrientationLandscape') }}</option>
-      </select>
+      <BuilderSelect
+        :model-value="orientation"
+        :options="orientationOptions"
+        :options-attrs="{ 'data-arivu-page-orientation-select': 'true' }"
+        @update:model-value="onOrientationChange"
+      />
     </div>
 
     <template v-if="paperSize === 'Custom'">
@@ -71,37 +58,26 @@
       <span class="hidden text-meta uppercase tracking-wide lg:inline" :class="ui.textMuted">
         {{ t('templates.builderPageSize') }}
       </span>
-      <select
-        :value="paperSize"
-        :class="[ui.input, 'w-auto min-w-[5.5rem] py-1.5 text-xs']"
-        :aria-label="t('templates.builderPageSize')"
-        @change="onPaperSizeChange($event.target.value)"
-      >
-        <optgroup
-          v-for="group in paperSizeGroups"
-          :key="group.key"
-          :label="t(`templates.builderPageGroup${group.key}`)"
-        >
-          <option v-for="size in group.sizes" :key="size" :value="size">
-            {{ size === 'Custom' ? t('templates.builderPageCustom') : size }}
-          </option>
-        </optgroup>
-      </select>
+      <BuilderSelect
+        :model-value="paperSize"
+        :option-groups="paperSizeOptionGroups"
+        :button-class="[ui.input, 'w-auto min-w-[5.5rem] py-1.5 text-xs']"
+        :options-attrs="{ 'data-arivu-page-size-select': 'true' }"
+        @update:model-value="onPaperSizeChange"
+      />
     </label>
 
     <label class="flex items-center gap-1.5">
       <span class="hidden text-meta uppercase tracking-wide lg:inline" :class="ui.textMuted">
         {{ t('templates.builderPageOrientation') }}
       </span>
-      <select
-        :value="orientation"
-        :class="[ui.input, 'w-auto min-w-[6.5rem] py-1.5 text-xs']"
-        :aria-label="t('templates.builderPageOrientation')"
-        @change="emitChange({ orientation: $event.target.value })"
-      >
-        <option value="portrait">{{ t('templates.builderPageOrientationPortrait') }}</option>
-        <option value="landscape">{{ t('templates.builderPageOrientationLandscape') }}</option>
-      </select>
+      <BuilderSelect
+        :model-value="orientation"
+        :options="orientationOptions"
+        :button-class="[ui.input, 'w-auto min-w-[6.5rem] py-1.5 text-xs']"
+        :options-attrs="{ 'data-arivu-page-orientation-select': 'true' }"
+        @update:model-value="onOrientationChange"
+      />
     </label>
 
     <template v-if="paperSize === 'Custom'">
@@ -148,6 +124,7 @@ import {
   resolvePageDimensionsMm
 } from '@/constants/contentPageSettings';
 import { useBuilderUi } from '@/composables/useBuilderUi';
+import BuilderSelect from '@/modules/template/components/BuilderSelect.vue';
 
 const props = defineProps({
   layout: { type: String, default: 'inline' },
@@ -161,7 +138,21 @@ const emit = defineEmits(['change']);
 
 const { t } = useI18n();
 const ui = useBuilderUi();
-const paperSizeGroups = PAPER_SIZE_GROUPS;
+
+const paperSizeOptionGroups = computed(() =>
+  PAPER_SIZE_GROUPS.map((group) => ({
+    label: t(`templates.builderPageGroup${group.key}`),
+    options: group.sizes.map((size) => ({
+      value: size,
+      label: size === 'Custom' ? t('templates.builderPageCustom') : size
+    }))
+  }))
+);
+
+const orientationOptions = computed(() => [
+  { value: 'portrait', label: t('templates.builderPageOrientationPortrait') },
+  { value: 'landscape', label: t('templates.builderPageOrientationLandscape') }
+]);
 
 const dimensionsLabel = computed(() => {
   const dimensions = resolvePageDimensionsMm(
@@ -186,6 +177,10 @@ function onPaperSizeChange(nextSize) {
     patch.customPageHeight = props.customPageHeight || DEFAULT_CUSTOM_PAGE_HEIGHT_MM;
   }
   emitChange(patch);
+}
+
+function onOrientationChange(nextOrientation) {
+  emitChange({ orientation: nextOrientation });
 }
 
 function onCustomDimensionChange(field, rawValue) {
