@@ -34,8 +34,32 @@ const MODULE_MERGE_ALIASES = {
   invoices: 'Invoice',
   sales_orders: 'SalesOrder',
   people: 'People',
-  organizations: 'Organization'
+  organizations: 'Organization',
+  deals: 'Deal',
+  cases: 'Case',
+  tasks: 'Task',
+  items: 'Item'
 };
+
+const COMMERCIAL_MODULE_KEYS = new Set(['quotes', 'invoices', 'sales_orders']);
+
+const CURRENT_USER_FIELDS = [
+  { key: 'email', label: 'email' },
+  { key: 'firstName', label: 'firstName' },
+  { key: 'lastName', label: 'lastName' },
+  { key: 'username', label: 'username' }
+];
+
+const YOUR_COMPANY_FIELDS = [
+  { key: 'name', label: 'name' },
+  { key: 'logoUrl', label: 'logoUrl' },
+  { key: 'address', label: 'address' },
+  { key: 'city', label: 'city' },
+  { key: 'state', label: 'state' },
+  { key: 'phone', label: 'phone' },
+  { key: 'email', label: 'email' },
+  { key: 'website', label: 'website' }
+];
 
 /**
  * @param {string} moduleKey
@@ -181,14 +205,39 @@ function resolveFieldLabel(field) {
   return field.label || field.displayName || field.name || humanizeFieldKey(field.key);
 }
 
-function buildFieldNodes(moduleKey, fields) {
-  const alias = resolveMergeTagModuleAlias(moduleKey);
+function buildFieldNodes(moduleKey, fields, pathPrefix = null) {
+  const alias = pathPrefix || resolveMergeTagModuleAlias(moduleKey);
   return fields.map((field) => ({
     id: `${moduleKey}-${field.key}`,
     path: `${alias}.${field.key}`,
     label: resolveFieldLabel(field),
     moduleKey
   }));
+}
+
+function buildStaticFieldNodes(prefix, fields, moduleKey) {
+  return fields.map((field) => ({
+    id: `${moduleKey}-${field.key}`,
+    path: `${prefix}.${field.key}`,
+    label: field.label || field.key,
+    moduleKey
+  }));
+}
+
+async function buildOrganizationFieldNodes(pathPrefix, moduleKey = 'organizations') {
+  const definition = await fetchModuleDefinition(moduleKey);
+  const fields = (definition?.fields || []).filter((field) =>
+    isMergeTagEligibleField(field, moduleKey)
+  );
+  return buildFieldNodes(moduleKey, fields, pathPrefix);
+}
+
+function resolveRelationshipLabel(primaryModule, relatedKey, fallbackDefinition) {
+  const relationship = (primaryModule?.relationships || []).find((rel) => {
+    const target = String(rel?.targetModuleKey || rel?.targetModule || '').toLowerCase();
+    return target === relatedKey;
+  });
+  return relationship?.label || relationship?.name || fallbackDefinition?.name || capitalizeModuleAlias(relatedKey);
 }
 
 function buildLineItemsGroup(moduleKey) {
@@ -220,29 +269,26 @@ export async function buildMergeTagTreeGroups(moduleScope) {
     ]
   };
 
-  const organizationGroup = {
-    id: 'organization',
-    moduleKey: 'organization',
-    labelKey: 'templates.builderMergeGroupOrganization',
+  const yourCompanyGroup = {
+    id: 'your-company',
+    moduleKey: 'your-company',
+    labelKey: 'templates.builderMergeGroupYourCompany',
     children: [
-      { id: 'org-name', path: 'Organization.name', label: 'name' },
-      { id: 'org-email', path: 'Organization.email', label: 'email' },
-      { id: 'org-industry', path: 'Organization.industry', label: 'industry' }
+      ...buildStaticFieldNodes('CurrentOrganization', YOUR_COMPANY_FIELDS, 'your-company'),
+      ...(await buildOrganizationFieldNodes('CurrentOrganization')).filter(
+        (node) => !YOUR_COMPANY_FIELDS.some((field) => node.path === `CurrentOrganization.${field.key}`)
+      )
     ]
   };
 
-  const currentContextGroup = {
-    id: 'current-context',
-    moduleKey: 'current-context',
-    labelKey: 'templates.builderMergeGroupCurrentContext',
-    children: [
-      { id: 'current-user-email', path: 'CurrentUser.email', label: 'email' },
-      { id: 'current-user-name', path: 'CurrentUser.firstName', label: 'firstName' },
-      { id: 'current-org-name', path: 'CurrentOrganization.name', label: 'name' }
-    ]
+  const currentUserGroup = {
+    id: 'current-user',
+    moduleKey: 'current-user',
+    labelKey: 'templates.builderMergeGroupCurrentUser',
+    children: buildStaticFieldNodes('CurrentUser', CURRENT_USER_FIELDS, 'current-user')
   };
 
-  const groups = [systemGroup, organizationGroup, currentContextGroup];
+  const groups = [systemGroup, yourCompanyGroup, currentUserGroup];
   const moduleKey = String(moduleScope || '').trim().toLowerCase();
   if (!moduleKey) return groups;
 
@@ -270,23 +316,36 @@ export async function buildMergeTagTreeGroups(moduleScope) {
     }))
   );
 
+  const includesCustomerOrganization =
+    relatedKeys.includes('organizations') || COMMERCIAL_MODULE_KEYS.has(moduleKey);
+
+  if (includesCustomerOrganization) {
+    groups.push({
+      id: 'customer-organization',
+      moduleKey: 'customer-organization',
+      labelKey: 'templates.builderMergeGroupCustomerOrganization',
+      children: await buildOrganizationFieldNodes('Organization')
+    });
+  }
+
   for (const { relatedKey, definition } of relatedDefinitions) {
     if (!definition) continue;
+    if (relatedKey === 'organizations' && includesCustomerOrganization) continue;
 
     const relatedFields = (definition.fields || []).filter((field) =>
       isMergeTagEligibleField(field, relatedKey)
     );
     if (!relatedFields.length) continue;
 
-    const relationship = (primaryModule.relationships || []).find((rel) => {
-      const target = String(rel?.targetModuleKey || rel?.targetModule || '').toLowerCase();
-      return target === relatedKey;
-    });
+    const relationshipLabel = resolveRelationshipLabel(primaryModule, relatedKey, definition);
+    const labelKey =
+      relatedKey === 'people' ? 'templates.builderMergeGroupRelatedContact' : undefined;
 
     groups.push({
       id: `related-${moduleKey}-${relatedKey}`,
       moduleKey: relatedKey,
-      label: relationship?.label || relationship?.name || definition.name || capitalizeModuleAlias(relatedKey),
+      label: labelKey ? undefined : relationshipLabel,
+      labelKey,
       children: buildFieldNodes(relatedKey, relatedFields)
     });
   }

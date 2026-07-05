@@ -3,6 +3,10 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const {
+  CONTENT_PLATFORM_ERROR_CODES,
+  ContentPlatformError
+} = require('../../../utils/contentPlatformErrors');
 
 let browserPromise = null;
 
@@ -27,6 +31,22 @@ const SYSTEM_CHROME_CANDIDATES = [
     : null
 ].filter(Boolean);
 
+function loadPuppeteer() {
+  try {
+    return require('puppeteer-core');
+  } catch (_) {
+    try {
+      return require('puppeteer');
+    } catch (err) {
+      throw new ContentPlatformError(
+        CONTENT_PLATFORM_ERROR_CODES.RENDER_NOT_IMPLEMENTED,
+        'PDF rendering dependency missing. Run `npm install` in the server directory.',
+        { statusCode: 503, cause: err }
+      );
+    }
+  }
+}
+
 function resolveChromeExecutablePath() {
   for (const candidate of SYSTEM_CHROME_CANDIDATES) {
     if (candidate && fs.existsSync(candidate)) {
@@ -35,12 +55,17 @@ function resolveChromeExecutablePath() {
   }
 
   try {
-    const puppeteer = require('puppeteer');
-    const bundled = puppeteer.executablePath();
-    if (bundled && fs.existsSync(bundled)) {
-      return bundled;
+    const puppeteer = loadPuppeteer();
+    if (typeof puppeteer.executablePath === 'function') {
+      const bundled = puppeteer.executablePath();
+      if (bundled && fs.existsSync(bundled)) {
+        return bundled;
+      }
     }
-  } catch (_) {
+  } catch (error) {
+    if (error instanceof ContentPlatformError) {
+      throw error;
+    }
     // bundled browser not installed
   }
 
@@ -51,17 +76,18 @@ function buildChromeNotFoundError() {
   const cacheDir = process.env.PUPPETEER_CACHE_DIR
     || path.join(os.homedir(), '.cache', 'puppeteer');
 
-  return new Error(
+  return new ContentPlatformError(
+    CONTENT_PLATFORM_ERROR_CODES.RENDER_NOT_IMPLEMENTED,
     'Chrome is required for PDF rendering but was not found. '
-    + 'Install Puppeteer Chrome (`cd server && npm run puppeteer:install-chrome`), '
-    + 'or set PUPPETEER_EXECUTABLE_PATH to your Chrome/Chromium binary. '
-    + `Expected cache: ${cacheDir}`
+    + 'Install Google Chrome, or set PUPPETEER_EXECUTABLE_PATH / CHROME_PATH. '
+    + `Expected Puppeteer cache: ${cacheDir}`,
+    { statusCode: 503 }
   );
 }
 
 async function getBrowser() {
   if (!browserPromise) {
-    const puppeteer = require('puppeteer');
+    const puppeteer = loadPuppeteer();
     const executablePath = resolveChromeExecutablePath();
 
     if (!executablePath) {
@@ -72,6 +98,13 @@ async function getBrowser() {
       headless: true,
       executablePath,
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--font-render-hinting=none']
+    }).catch((error) => {
+      browserPromise = null;
+      throw new ContentPlatformError(
+        CONTENT_PLATFORM_ERROR_CODES.RENDER_NOT_IMPLEMENTED,
+        `Failed to launch Chrome for PDF rendering: ${error.message}`,
+        { statusCode: 503, cause: error }
+      );
     });
   }
   return browserPromise;
@@ -104,6 +137,12 @@ async function renderHtmlToPdf(html, options = {}) {
     }
 
     return Buffer.from(await page.pdf(pdfOptions));
+  } catch (error) {
+    throw new ContentPlatformError(
+      CONTENT_PLATFORM_ERROR_CODES.RENDER_NOT_IMPLEMENTED,
+      `PDF rendering failed: ${error.message}`,
+      { statusCode: 503, cause: error }
+    );
   } finally {
     await page.close();
   }

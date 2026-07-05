@@ -1,88 +1,88 @@
 <template>
   <aside
-    class="flex w-80 shrink-0 flex-col border-l xl:w-96"
-    :class="[ui.panel, ui.border]"
+    data-arivu-builder-sidebar="true"
+    class="flex h-full min-h-0 shrink-0 flex-col overflow-hidden border-l transition-[width] duration-200 ease-out"
+    :class="[
+      ui.panel,
+      ui.border,
+      open ? 'w-80 xl:w-[22rem]' : 'w-0 overflow-hidden border-l-0'
+    ]"
+    @mousedown.capture="onSidebarMouseDownCapture"
   >
-    <div class="flex shrink-0 border-b" :class="ui.border">
-      <button
-        v-for="tab in tabs"
-        :key="tab.id"
-        type="button"
-        class="flex-1 px-2 py-2.5 text-xs font-medium transition-colors"
-        :class="activeTab === tab.id ? ui.tabActive : ui.tabIdle"
-        @click="activeTab = tab.id"
+    <div v-show="open" class="flex h-full min-h-0 w-80 flex-col overflow-hidden xl:w-[22rem]">
+      <TabGroup
+        as="div"
+        class="flex h-full min-h-0 flex-col overflow-hidden"
+        :selected-index="selectedTabIndex"
+        @change="onTabChange"
       >
-        {{ t(tab.labelKey) }}
-      </button>
-    </div>
+        <TabList :class="ui.inspectorTabList">
+          <Tab
+            v-for="tab in tabs"
+            :key="tab.id"
+            v-slot="{ selected }"
+            :class="[ui.inspectorTab, selected ? ui.inspectorTabActive : ui.inspectorTabIdle]"
+          >
+            {{ t(tab.labelKey) }}
+          </Tab>
+        </TabList>
 
-    <div class="min-h-0 flex-1 overflow-y-auto p-4">
-      <TemplatePagePanel
-        v-show="activeTab === 'page'"
-        :name="name"
-        :description="description"
-        :module-scope="moduleScope"
-        :paper-size="paperSize"
-        :orientation="orientation"
-        :custom-page-width="customPageWidth"
-        :custom-page-height="customPageHeight"
-        :margins="pageMargins"
-        :preview-record-id="previewRecordId"
-        :preview-record-label="previewRecordLabel"
-        :currency-display="currencyDisplay"
-        :output-format="outputFormat"
-        @update:name="emit('update-name', $event)"
-        @update:description="emit('update-description', $event)"
-        @update:module-scope="emit('update-module-scope', $event)"
-        @update:page-settings="emit('update-page-settings', $event)"
-        @update:margins="emit('update-margins', $event)"
-        @update:preview-record-id="emit('update-preview-record-id', $event)"
-        @update:preview-record-label="emit('update-preview-record-label', $event)"
-        @update:currency-display="emit('update-currency-display', $event)"
-      />
-      <GrapesPropertiesPanel
-        v-show="activeTab === 'properties'"
-        :component="selectedComponent"
-        :editor="editor"
-        :module-scope="moduleScope"
-        :asset-library="assetLibrary"
-        @change="emit('change')"
-        @pick-asset="emit('insert-image', $event)"
-      />
-      <VariablesPanel
-        v-show="activeTab === 'variables'"
-        :module-scope="moduleScope"
-        @insert="emit('insert-merge', $event)"
-      />
-      <AssetsPanel
-        v-show="activeTab === 'assets'"
-        :library="assetLibrary"
-        @insert="emit('insert-image', $event)"
-      />
-      <LayersPanel
-        v-show="activeTab === 'layers'"
-        :root="layerTree"
-        :selected-id="selectedId"
-        @select="emit('select-layer', $event)"
-      />
-    </div>
+        <TabPanels class="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <TabPanel :class="ui.tabPanel" :unmount="false">
+            <TemplatePagePanel
+              :name="name"
+              :description="description"
+              :module-scope="moduleScope"
+              :paper-size="paperSize"
+              :orientation="orientation"
+              :custom-page-width="customPageWidth"
+              :custom-page-height="customPageHeight"
+              :margins="pageMargins"
+              :preview-record-id="previewRecordId"
+              :preview-record-label="previewRecordLabel"
+              :currency-display="currencyDisplay"
+              :output-format="outputFormat"
+              @update:name="emit('update-name', $event)"
+              @update:description="emit('update-description', $event)"
+              @update:module-scope="emit('update-module-scope', $event)"
+              @update:page-settings="emit('update-page-settings', $event)"
+              @update:margins="emit('update-margins', $event)"
+              @update:preview-record-id="emit('update:preview-record-id', $event)"
+              @update:preview-record-label="emit('update:preview-record-label', $event)"
+              @update:currency-display="emit('update-currency-display', $event)"
+            />
+          </TabPanel>
+          <TabPanel :class="ui.tabPanel" :unmount="false">
+            <GrapesPropertiesPanel
+              :component="selectedComponent"
+              :editor="editor"
+              :module-scope="moduleScope"
+              :asset-library="assetLibrary"
+              @change="emit('change')"
+              @pick-asset="emit('insert-image', $event)"
+            />
+          </TabPanel>
+        </TabPanels>
+      </TabGroup>
 
-    <GrapesTableContextMenuHost :editor="editor" />
+      <GrapesTableContextMenuHost :editor="editor" />
+    </div>
   </aside>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue';
 import { useBuilderUi } from '@/composables/useBuilderUi';
+import { DEFAULT_PAGE_MARGINS_MM } from '@/constants/contentPageSettings';
 import TemplatePagePanel from './TemplatePagePanel.vue';
 import GrapesPropertiesPanel from './GrapesPropertiesPanel.vue';
-import VariablesPanel from './VariablesPanel.vue';
-import AssetsPanel from './AssetsPanel.vue';
-import LayersPanel from './LayersPanel.vue';
 import GrapesTableContextMenuHost from './GrapesTableContextMenuHost.vue';
+import { handleSidebarPointerDown } from '../editor/canvasInsertion';
 
-defineProps({
+const props = defineProps({
+  open: { type: Boolean, default: true },
   name: { type: String, default: '' },
   description: { type: String, default: '' },
   selectedComponent: { type: Object, default: null },
@@ -95,9 +95,8 @@ defineProps({
   previewRecordId: { type: String, default: '' },
   previewRecordLabel: { type: String, default: '' },
   currencyDisplay: { type: String, default: 'code' },
-  layerTree: { type: Object, default: null },
   editor: { type: Object, default: null },
-  pageMargins: { type: Object, default: () => ({ top: 12, right: 12, bottom: 12, left: 12 }) },
+  pageMargins: { type: Object, default: () => ({ ...DEFAULT_PAGE_MARGINS_MM }) },
   outputFormat: { type: String, default: 'pdf' },
   assetLibrary: {
     type: String,
@@ -108,28 +107,40 @@ defineProps({
 
 const emit = defineEmits([
   'change',
-  'insert-merge',
   'insert-image',
-  'select-layer',
   'update-margins',
   'update-name',
   'update-description',
   'update-module-scope',
   'update-page-settings',
-  'update-preview-record-id',
-  'update-preview-record-label',
+  'update:preview-record-id',
+  'update:preview-record-label',
   'update-currency-display'
 ]);
 
 const { t } = useI18n();
 const ui = useBuilderUi();
-const activeTab = ref('page');
+const selectedTabIndex = ref(0);
 
 const tabs = [
-  { id: 'page', labelKey: 'templates.builderTabPage' },
-  { id: 'properties', labelKey: 'templates.builderTabProperties' },
-  { id: 'variables', labelKey: 'templates.builderTabMergeTags' },
-  { id: 'assets', labelKey: 'templates.builderTabAssets' },
-  { id: 'layers', labelKey: 'templates.builderTabLayers' }
+  { id: 'document', labelKey: 'templates.builderTabDocument' },
+  { id: 'block', labelKey: 'templates.builderTabBlock' }
 ];
+
+function onTabChange(index) {
+  selectedTabIndex.value = index;
+}
+
+function onSidebarMouseDownCapture(event) {
+  handleSidebarPointerDown(props.editor, event.target, event);
+}
+
+watch(
+  () => props.selectedId,
+  (id, prevId) => {
+    if (id && !prevId) {
+      selectedTabIndex.value = 1;
+    }
+  }
+);
 </script>

@@ -89,6 +89,14 @@ export function appendLayoutGridCss(css: string): string {
   return `${trimmed}\n/* ${LAYOUT_GRID_CSS_MARKER} */${LAYOUT_GRID_FRAME_CSS}`;
 }
 
+/** Remove serialized layout-grid export block before comparing or reinjecting CSS. */
+export function stripLayoutGridExportCss(css: string): string {
+  const marker = `/* ${LAYOUT_GRID_CSS_MARKER} */`;
+  const index = String(css || '').indexOf(marker);
+  if (index === -1) return String(css || '').trim();
+  return String(css || '').slice(0, index).trim();
+}
+
 export function injectLayoutGridFrameCss(editor: Editor): void {
   const doc = editor.Canvas.getFrameEl()?.contentDocument;
   if (!doc) return;

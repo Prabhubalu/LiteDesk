@@ -25,6 +25,14 @@ const PAPER_DIMENSIONS_MM = Object.freeze({
   Custom: { width: 210, height: 297 }
 });
 
+/** Default printable page margins (mm) for new content templates. */
+const DEFAULT_PAGE_MARGINS_MM = Object.freeze({
+  top: 10,
+  right: 10,
+  bottom: 10,
+  left: 10
+});
+
 const CONTENT_PAPER_SIZES = Object.freeze([
   'A0',
   'A1',
@@ -138,6 +146,7 @@ function normalizeTemplatePageSettings(payload = {}) {
 
 module.exports = {
   PAPER_DIMENSIONS_MM,
+  DEFAULT_PAGE_MARGINS_MM,
   CONTENT_PAPER_SIZES,
   CUSTOM_PAGE_MIN_MM,
   CUSTOM_PAGE_MAX_MM,

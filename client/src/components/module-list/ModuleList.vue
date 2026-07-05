@@ -1318,7 +1318,11 @@ function buildListFetchContext(requestedPage, options = {}) {
     if (peopleCtx && peopleCtx !== 'ALL') {
       params.peopleContext = peopleCtx;
     }
-  } else if (props.appKey) {
+  } else if (
+    props.appKey
+    && !['reports', 'widgets', 'dashboards'].includes(props.moduleKey)
+  ) {
+    // Analytics lists are platform-scoped; appKey=PLATFORM would over-filter (e.g. dashboards with null appKey).
     params.appKey = props.appKey;
   }
 

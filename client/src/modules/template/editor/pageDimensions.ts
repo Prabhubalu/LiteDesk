@@ -15,6 +15,7 @@ import { bindTableSelection } from './tableActions';
 import { bindTableCellResizeHandle } from './tableColumnResize';
 import { bindTableSheetEditor } from './tableSheetEditor';
 import { bindCanvasTextInsertion } from './canvasInsertion';
+import { repairAllTextComponents, hydrateEditableTextComponents } from './textContent';
 
 const PAGE_DIMENSIONS_STYLE_ID = 'arivu-page-dimensions';
 
@@ -35,7 +36,7 @@ export function parseDimensionPx(value: string | number | undefined | null): num
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function injectPageDimensionCss(editor: Editor, height: number): void {
+function injectPageDimensionCss(editor: Editor, width: number, height: number): void {
   const doc = editor.Canvas.getFrameEl()?.contentDocument;
   if (!doc) return;
 
@@ -48,12 +49,19 @@ function injectPageDimensionCss(editor: Editor, height: number): void {
 
   styleEl.textContent = `
     html, body {
+      width: ${width}px;
+      max-width: ${width}px;
+      min-width: ${width}px;
       height: 100%;
       margin: 0;
       min-height: ${height}px;
+      overflow-x: hidden;
     }
 
     [data-gjs-type="wrapper"] {
+      width: ${width}px !important;
+      max-width: ${width}px !important;
+      min-width: ${width}px !important;
       min-height: ${height}px !important;
       box-sizing: border-box;
     }
@@ -80,7 +88,7 @@ export function applyPageDimensions(editor: Editor, options: PageLayoutOptions):
   ensurePrintArea(editor);
   applyPrintAreaLayout(editor, options.dimensions, options.marginsMm);
 
-  injectPageDimensionCss(editor, height);
+  injectPageDimensionCss(editor, width, height);
 }
 
 function injectEmailCanvasCss(editor: Editor, width: number, height: number): void {
@@ -129,6 +137,16 @@ export function setupPageLayout(editor: Editor, options: PageLayoutSetupOptions 
   bindTableSelection(editor);
   bindTableSheetEditor(editor);
   bindCanvasTextInsertion(editor);
+
+  const repairText = () => {
+    const wrapper = editor.getWrapper();
+    if (!wrapper) return;
+    repairAllTextComponents(wrapper);
+    hydrateEditableTextComponents(wrapper);
+  };
+  editor.on('load', repairText);
+  editor.on('project:load', repairText);
+
   bindTableCellResizeHandle(editor);
 }
 
@@ -140,7 +158,7 @@ export function bindPageDimensionFrameCss(
     const layout = getLayout();
     if (layout.dimensions.width && layout.dimensions.height) {
       if (!layout.isEmail) {
-        injectPageDimensionCss(editor, layout.dimensions.height);
+        injectPageDimensionCss(editor, layout.dimensions.width, layout.dimensions.height);
       }
       applyPageDimensions(editor, layout);
     }

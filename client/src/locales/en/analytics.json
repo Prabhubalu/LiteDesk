@@ -83,6 +83,10 @@
     "message": "Search reports…",
     "description": "Reports list search placeholder"
   },
+  "listSearchPlaceholder": {
+    "message": "Search reports…",
+    "description": "Reports list search placeholder (module list)"
+  },
   "tabAll": {
     "message": "All",
     "description": "Reports list tab — all"
@@ -130,6 +134,22 @@
   "colUpdated": {
     "message": "Updated",
     "description": "Reports table column — updated at"
+  },
+  "colOwner": {
+    "message": "Owner",
+    "description": "Reports table column — owner"
+  },
+  "listStatTotal": {
+    "message": "Total reports",
+    "description": "Reports list stat — total count"
+  },
+  "widgetsListStatTotal": {
+    "message": "Total widgets",
+    "description": "Widgets list stat — total count"
+  },
+  "dashboardsListStatTotal": {
+    "message": "Total dashboards",
+    "description": "Dashboards list stat — total count"
   },
   "emptyTitle": {
     "message": "No reports yet",

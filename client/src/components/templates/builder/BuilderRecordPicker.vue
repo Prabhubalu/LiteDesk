@@ -21,13 +21,15 @@
       </button>
     </div>
 
-    <Dialog :open="showPicker" class="relative z-50" @close="closePicker">
-      <div class="fixed inset-0 bg-neutral-950/40" aria-hidden="true" />
-      <div class="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel
-          class="flex max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-xl shadow-xl"
-          :class="ui.panel"
-        >
+    <Teleport to="body">
+      <Dialog :open="showPicker" class="relative z-[70]" @close="closePicker">
+        <div class="fixed inset-0 bg-neutral-950/40" aria-hidden="true" />
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel
+            data-arivu-sample-record-picker="true"
+            class="flex max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-xl shadow-xl"
+            :class="ui.panel"
+          >
           <div class="flex items-center justify-between border-b px-4 py-3" :class="ui.border">
             <DialogTitle :class="ui.heading">{{ t('templates.builderSampleRecordTitle') }}</DialogTitle>
             <button type="button" :class="ui.btnIcon" @click="closePicker">
@@ -64,6 +66,7 @@
         </DialogPanel>
       </div>
     </Dialog>
+    </Teleport>
   </div>
 </template>
 

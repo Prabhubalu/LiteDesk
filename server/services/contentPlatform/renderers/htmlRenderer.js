@@ -1,5 +1,7 @@
 'use strict';
 
+const { DEFAULT_PAGE_MARGINS_MM } = require('../../../constants/contentPaperSizes');
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -182,7 +184,7 @@ function renderBlock(block) {
 function renderLayoutTreeToHtml(layoutTree) {
   const page = layoutTree.page || {};
   const dimensions = page.dimensions || { width: 210, height: 297 };
-  const margins = page.margins || { top: 12, right: 12, bottom: 12, left: 12 };
+  const margins = page.margins || DEFAULT_PAGE_MARGINS_MM;
   const theme = layoutTree.theme || {};
   const watermark = layoutTree.watermark
     ? `<div class="watermark">${escapeHtml(layoutTree.watermark)}</div>`

@@ -650,5 +650,9 @@
   "moduleDashboards": {
     "message": "Dashboards",
     "description": "Analytics dashboards module navigation label"
+  },
+  "moduleWidgets": {
+    "message": "Widgets",
+    "description": "Analytics widgets module navigation label"
   }
 }

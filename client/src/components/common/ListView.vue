@@ -658,17 +658,19 @@
 
           <!-- Custom Actions -->
           <template #actions="{ row }">
-            <div class="inline-flex items-center">
-              <RowActions
-                v-if="hasActions"
-                :row="row"
-                :module="moduleKey"
-                :can-delete-row="props.rowCanDelete"
-                @view="handleView(row)"
-                @edit="handleEdit(row)"
-                @delete="handleDeleteClick(row)"
-              />
-            </div>
+            <slot name="actions" :row="row">
+              <div class="inline-flex items-center">
+                <RowActions
+                  v-if="hasActions"
+                  :row="row"
+                  :module="moduleKey"
+                  :can-delete-row="props.rowCanDelete"
+                  @view="handleView(row)"
+                  @edit="handleEdit(row)"
+                  @delete="handleDeleteClick(row)"
+                />
+              </div>
+            </slot>
           </template>
           
           <!-- Empty State Slot -->
@@ -1444,7 +1446,7 @@
 
     <!-- Quick Preview Drawer -->
     <QuickPreviewDrawer
-      v-if="activeTabId"
+      v-if="activeTabId && quickPreviewEnabled"
       :key="`drawer-${activeTabId}`"
       :show="showPreviewDrawer"
       :row="previewRow"
@@ -1473,7 +1475,7 @@ import {
 import { APP_NAME_KEYS } from '@/utils/navigationLabels';
 
 const { t, te } = useI18n();
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/vue/20/solid';
 import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption, Popover, PopoverButton, PopoverPanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
@@ -1500,6 +1502,7 @@ import { useBulkActions } from '@/composables/useBulkActions';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
+import { moduleSupportsGenericRecordPreview } from '@/utils/recordPresence';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
 import { getFieldMetadata, PEOPLE_FIELD_METADATA } from '@/platform/fields/peopleFieldModel';
@@ -4839,6 +4842,9 @@ const autosizeAllColumns = () => {
 };
 
 const router = useRouter();
+const route = useRoute();
+
+const quickPreviewEnabled = computed(() => moduleSupportsGenericRecordPreview(props.moduleKey));
 
 // Core modules are configured in Settings > Core Modules; app modules (e.g. Deals) in Settings > Applications
 const CORE_MODULE_KEYS = ['people', 'organizations', 'tasks', 'events', 'forms', 'items', 'quotes', 'sales_orders', 'invoices', 'payments'];
@@ -5074,12 +5080,28 @@ const handleDelete = (row) => {
   emit('delete', row);
 };
 
+let previewListPath = '';
+
 const handleView = (row) => {
+  if (!quickPreviewEnabled.value) return;
+  previewListPath = String(route.path || '').split('?')[0];
   previewRow.value = row;
   showPreviewDrawer.value = true;
-  // Save state to current tab
   saveDrawerState();
 };
+
+watch(
+  () => route.path,
+  (path) => {
+    if (!showPreviewDrawer.value || !previewListPath) return;
+    const pathOnly = String(path || '').split('?')[0];
+    if (pathOnly !== previewListPath) {
+      showPreviewDrawer.value = false;
+      previewRow.value = null;
+      previewListPath = '';
+    }
+  }
+);
 
 // Quick preview Prev/Next (e.g. tasks): index in current list
 const quickPreviewIndex = computed(() => {

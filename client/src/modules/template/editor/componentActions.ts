@@ -71,12 +71,14 @@ export function configureComponentToolbar(editor: Editor): void {
 
   editor.on('component:selected', (component: Component) => {
     if (shouldUseCanvasToolbar(component)) {
-      component.set({
-        badgable: true,
-        toolbar: [...CANVAS_COMPONENT_TOOLBAR]
-      });
+      component.set(
+        { badgable: true, toolbar: [...CANVAS_COMPONENT_TOOLBAR] },
+        { silent: true }
+      );
       return;
     }
-    component.set('toolbar', []);
+    const toolbar = component.get('toolbar');
+    if (Array.isArray(toolbar) && toolbar.length === 0) return;
+    component.set('toolbar', [], { silent: true });
   });
 }

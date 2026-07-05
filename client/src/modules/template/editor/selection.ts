@@ -1,8 +1,11 @@
 import type { Component, Editor } from 'grapesjs';
 import { getPrintAreaComponent, PRINT_AREA_ATTR, PRINT_AREA_TYPE, resolveInsertTarget } from './printArea';
-import { insertMergeIntoCanvasText } from './canvasInsertion';
+import { insertMergeIntoCanvasText, hasPendingCanvasTextInsert } from './canvasInsertion';
 import { formatMergeToken, parseMergePathFromContent } from './mergeTokens';
+import { isComponentDomFocused, readTextContent, writeTextContent } from './textContent';
 import { insertMergeIntoTableCell } from './tableSheetEditor';
+import { resolveAssetDownloadUrl } from '../composables/useCompanyLogoAsset';
+import { applyImageSrcToComponent } from './canvasImageSrc';
 import {
   findResizableTableRoot,
   isSelectionInTableContext,
@@ -19,6 +22,8 @@ export interface LayerNode {
 }
 
 const TEXT_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'a', 'li', 'td', 'th']);
+
+export { isComponentDomFocused, isCorruptedComponentContent, isEditableTextComponent, normalizeDisplayText, readTextContent, repairAllTextComponents, syncTextContentFromDom, writeTextContent } from './textContent';
 
 export function isTextComponent(component: Component | null): boolean {
   if (!component) return false;
@@ -106,17 +111,6 @@ export function patchComponentAttributes(
     }
   }
   component.setAttributes(current);
-}
-
-export function readTextContent(component: Component): string {
-  const content = component.get('content');
-  if (typeof content === 'string') return content;
-  const el = component.view?.el;
-  return el?.textContent ? String(el.textContent) : '';
-}
-
-export function writeTextContent(component: Component, text: string): void {
-  component.set('content', text);
 }
 
 export { formatMergeToken, parseMergePathFromContent } from './mergeTokens';
@@ -226,11 +220,15 @@ export function selectComponentById(editor: Editor | null, componentId: string):
   if (found) editor.select(found);
 }
 
-export function insertMergeField(editor: Editor, path: string): void {
+export function insertMergeField(
+  editor: Editor,
+  path: string,
+  hintComponent?: Component | null
+): void {
   const token = formatMergeToken(path);
 
   if (insertMergeIntoTableCell(editor, path)) return;
-  if (insertMergeIntoCanvasText(editor, path)) return;
+  if (insertMergeIntoCanvasText(editor, path, hintComponent)) return;
 
   const selected = editor.getSelected();
   const dropTarget = resolveInsertTarget(editor);
@@ -248,33 +246,12 @@ export function insertMergeField(editor: Editor, path: string): void {
   }
 
   if (selected && isTextComponent(selected) && !isTableCellComponent(selected)) {
-    const element = selected.view?.el as HTMLElement | undefined;
-    if (element?.isContentEditable) {
-      element.focus();
-      const doc = element.ownerDocument;
-      const range = doc.createRange();
-      range.selectNodeContents(element);
-      range.collapse(false);
-      const win = doc.defaultView;
-      const selection = win?.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-    }
     const current = readTextContent(selected);
-    writeTextContent(selected, current ? `${current} ${token}` : token);
-    if (element?.isContentEditable) {
-      element.focus();
-      const doc = element.ownerDocument;
-      const range = doc.createRange();
-      range.selectNodeContents(element);
-      range.collapse(false);
-      const win = doc.defaultView;
-      const sel = win?.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-    }
+    writeTextContent(selected, current ? `${current} ${token}` : token, { force: true });
     return;
   }
+
+  if (hasPendingCanvasTextInsert(editor)) return;
 
   dropTarget.append(
     `<span data-gjs-type="text" data-merge-field="true" style="display:inline-block;padding:2px 6px;border-radius:4px;background:#eef2ff;color:#4338ca;font-family:monospace;font-size:13px;">${token}</span>`
@@ -289,15 +266,24 @@ export function insertImageAsset(
   const dropTarget = resolveInsertTarget(editor);
   if (!dropTarget || !payload.src) return;
 
+  const resolvedSrc = resolveAssetDownloadUrl(payload.src);
+
   if (selected && isImageComponent(selected)) {
-    patchComponentAttributes(selected, {
-      src: payload.src,
+    const attrs = selected.getAttributes?.() as Record<string, string> | undefined;
+    const patch: Record<string, string | undefined> = {
       alt: payload.alt || ''
-    });
+    };
+    if (attrs?.['data-logo'] === 'true') {
+      patch['data-company-logo'] = 'false';
+      patch['data-custom-image'] = 'true';
+      patch['data-merge-src'] = undefined;
+    }
+    patchComponentAttributes(selected, patch);
+    applyImageSrcToComponent(selected, resolvedSrc, editor);
     return;
   }
 
   dropTarget.append(
-    `<img src="${payload.src}" alt="${payload.alt || ''}" style="max-width:100%;height:auto;display:block;" />`
+    `<img src="${resolvedSrc}" alt="${payload.alt || ''}" style="max-width:100%;height:auto;display:block;" />`
   );
 }

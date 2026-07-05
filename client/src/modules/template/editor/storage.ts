@@ -1,10 +1,26 @@
 import type { Editor } from 'grapesjs';
 import { ensurePrintArea, stripPrintAreaLayoutFromProject } from './printArea';
-import { flushTableSheetEdits } from './tableSheetEditor';
-import { syncTableCellsForSerialize } from './tableModel';
-import { extractRenderedOutput } from './renderer';
+import { injectLayoutGridFrameCss } from './layoutGridCss';
+import { flushTableSheetEdits, refreshCanvasTablesAfterHtmlApply, syncActiveSheetEditForSerialize, getActiveTableSheetCell } from './tableSheetEditor';
+import { hydrateTableCellsFromDom, syncTableCellsForSerialize } from './tableModel';
+import { hydrateEditableTextComponents } from './textContent';
+import { hydrateCanvasImages, stripAuthTokensFromHtml, stripAuthTokensFromProjectImages } from './logoContent';
+import { extractRenderedOutput, exportBodyHtmlFromCanvasFrame } from './renderer';
 import { extractEmailBodyHtml, isFullHtmlDocument, encodeMsoConditionals } from '../utils/emailHtmlExport';
 import { setEditorMsoChunks, clearEditorMsoChunks } from './msoChunksStore';
+import { applyHtmlToEditorCanvas } from './canvasHtmlApply';
+import {
+  clearSupplementalCss,
+  injectSupplementalCanvasCss,
+  resolveSupplementalCssForProjectLoad,
+  setSupplementalCss
+} from './supplementalCssStore';
+import {
+  captureBuilderUiFocus,
+  restoreBuilderUiFocus,
+  runEditorSerialize
+} from './editorSerializeGuard';
+import { runWithPreservedCanvasEditing } from './canvasInsertion';
 
 export const GRAPES_ENGINE = 'grapesjs' as const;
 export const GRAPES_DEFINITION_VERSION = 1;
@@ -80,6 +96,8 @@ export function isEmptyGrapesDefinition(definition: GrapesTemplateDefinition | n
 
 export interface SerializeEditorOptions {
   isEmail?: boolean;
+  /** When true (default), keep canvas/sidebar focus and in-progress cell edits during serialize. */
+  preserveEditing?: boolean;
 }
 
 function runWhenEditorCanvasReady(editor: Editor, fn: () => void): void {
@@ -98,19 +116,12 @@ function applyCanvasHtml(
   isEmail: boolean
 ): void {
   runWhenEditorCanvasReady(editor, () => {
-    editor.select(undefined);
-    editor.setComponents(html);
-    editor.setStyle(css);
+    applyHtmlToEditorCanvas(editor, html, css, { isEmail });
     if (isEmail && msoChunks.length) {
       setEditorMsoChunks(editor, msoChunks);
     } else {
       clearEditorMsoChunks(editor);
     }
-    queueMicrotask(() => {
-      if (!isEmail) {
-        ensurePrintArea(editor);
-      }
-    });
   });
 }
 
@@ -118,27 +129,44 @@ export function serializeEditor(
   editor: Editor,
   options: SerializeEditorOptions = {}
 ): GrapesTemplateDefinition {
-  if (!options.isEmail) {
-    flushTableSheetEdits(editor);
-    syncTableCellsForSerialize(editor);
-  }
+  const preserveEditing = options.preserveEditing !== false;
+  const uiFocus = captureBuilderUiFocus();
 
-  const project = editor.getProjectData() as Record<string, unknown>;
-  if (!options.isEmail) {
-    stripPrintAreaLayoutFromProject(project);
-  }
+  return runEditorSerialize(() =>
+    runWithPreservedCanvasEditing(editor, () => {
+      if (!options.isEmail) {
+        if (preserveEditing) {
+          syncActiveSheetEditForSerialize(editor);
+        } else {
+          flushTableSheetEdits(editor);
+        }
+        syncTableCellsForSerialize(editor, {
+          skipComponent: preserveEditing ? getActiveTableSheetCell() : null
+        });
+      }
 
-  const rendered = extractRenderedOutput(editor, {
-    appendLayoutGrid: !options.isEmail
-  });
+      const project = editor.getProjectData() as Record<string, unknown>;
+      if (!options.isEmail) {
+        stripPrintAreaLayoutFromProject(project);
+        stripAuthTokensFromProjectImages(project);
+      }
 
-  return {
-    engine: GRAPES_ENGINE,
-    version: GRAPES_DEFINITION_VERSION,
-    project: options.isEmail ? null : project,
-    html: rendered.html,
-    css: rendered.css
-  };
+      const rendered = extractRenderedOutput(editor, {
+        appendLayoutGrid: !options.isEmail
+      });
+
+      const definition = {
+        engine: GRAPES_ENGINE,
+        version: GRAPES_DEFINITION_VERSION,
+        project: options.isEmail ? null : project,
+        html: stripAuthTokensFromHtml(exportBodyHtmlFromCanvasFrame(editor)),
+        css: rendered.css
+      };
+
+      restoreBuilderUiFocus(uiFocus);
+      return definition;
+    })
+  );
 }
 
 export function loadDefinition(
@@ -162,13 +190,27 @@ export function loadDefinition(
     const cloned = structuredClone(project) as Record<string, unknown>;
     stripPrintAreaLayoutFromProject(cloned);
     runWhenEditorCanvasReady(editor, () => {
+      clearSupplementalCss(editor);
       editor.loadProjectData(cloned);
-      if (css) editor.setStyle(css);
       clearEditorMsoChunks(editor);
       queueMicrotask(() => {
+        const supplemental = resolveSupplementalCssForProjectLoad(css, editor.getCss() || '');
+        if (supplemental) {
+          setSupplementalCss(editor, supplemental);
+          injectSupplementalCanvasCss(editor, supplemental);
+        }
         if (!isEmail) {
           ensurePrintArea(editor);
+          injectLayoutGridFrameCss(editor);
         }
+        const wrapper = editor.getWrapper();
+        if (wrapper) {
+          hydrateEditableTextComponents(wrapper);
+        }
+        hydrateTableCellsFromDom(editor);
+        refreshCanvasTablesAfterHtmlApply(editor);
+        hydrateCanvasImages(editor);
+        editor.refresh();
       });
     });
     return;

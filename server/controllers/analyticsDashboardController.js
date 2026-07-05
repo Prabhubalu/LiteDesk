@@ -136,7 +136,10 @@ async function listDashboards(req, res) {
 
     if (req.query.status) query.status = req.query.status;
     if (req.query.category) query.category = req.query.category;
-    if (req.query.appKey) query.appKey = req.query.appKey;
+    const requestedAppKey = req.query.appKey ? String(req.query.appKey).trim() : '';
+    if (requestedAppKey && requestedAppKey.toUpperCase() !== 'PLATFORM') {
+      query.appKey = requestedAppKey;
+    }
     if (req.query.mine === 'true') query.ownerId = req.user._id;
 
     if (req.query.search) {

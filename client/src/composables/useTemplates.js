@@ -39,18 +39,8 @@ function pdfBlobFromRenderResult(renderResult) {
 
 function openBlobInNewTab(blob, contentType) {
   const blobUrl = URL.createObjectURL(new Blob([blob], { type: contentType }));
-  const opened = window.open(blobUrl, '_blank', 'noopener,noreferrer');
-
-  if (!opened) {
-    const anchor = document.createElement('a');
-    anchor.href = blobUrl;
-    anchor.target = '_blank';
-    anchor.rel = 'noopener noreferrer';
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-  }
-
+  // noopener makes window.open return null even when the tab opens — do not fall back to <a click>.
+  window.open(blobUrl, '_blank', 'noopener,noreferrer');
   window.setTimeout(() => URL.revokeObjectURL(blobUrl), 120000);
 }
 

@@ -2,6 +2,7 @@
   <li>
     <button
       type="button"
+      data-arivu-layer-select="true"
       class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors"
       :class="[
         ui.hoverRow,

@@ -12,8 +12,10 @@ const MERGE_FIELD_SPAN =
 const MERGE_FIELD_SPAN_ALT =
   /<span[^>]*data-gjs-type=["']text["'][^>]*data-merge-field=["']true["'][^>]*>([\s\S]*?)<\/span>/gi;
 
+const { normalizeMergeTagExpression } = require('../../../utils/mergeTagPathNormalizer');
+
 function formatMergeToken(path) {
-  const trimmed = String(path || '').trim();
+  const trimmed = normalizeMergeTagExpression(String(path || '').trim());
   if (!trimmed) return '';
   if (trimmed.startsWith('{{') && trimmed.endsWith('}}')) return trimmed;
   return `{{${trimmed}}}`;
@@ -37,6 +39,14 @@ function normalizeGrapesHtmlMergeTokens(html) {
   result = result.replace(MERGE_CHIP_WITH_CLASS_ALT, (_, path) => formatMergeToken(path));
   result = result.replace(MERGE_FIELD_SPAN, (_, content) => tokenFromSpanContent(content));
   result = result.replace(MERGE_FIELD_SPAN_ALT, (_, content) => tokenFromSpanContent(content));
+
+  result = result.replace(
+    /<img\b([^>]*?)\sdata-merge-src=(["'])([^"']+)\2([^>]*)>/gi,
+    (_, before, quote, mergeSrc, after) => {
+      const body = `${before}${after}`.replace(/\ssrc=(["'])[^"']*\1/i, '');
+      return `<img${body} src=${quote}${mergeSrc}${quote}>`;
+    }
+  );
 
   return result;
 }

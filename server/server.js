@@ -506,17 +506,23 @@ connectMasterWithRetry(masterUri)
       // Don't block server startup if seeding fails
     }
 
-    // 1.55. Ensure addon catalog exists in master DB (AddonDefinition lives in arivu_master)
+    // 1.55. Ensure addon catalog is complete in master DB (AddonDefinition lives in arivu_master)
     try {
       const AddonDefinition = require('./models/AddonDefinition');
-      const enabledAddonCount = await AddonDefinition.countDocuments({ enabled: true });
-      if (enabledAddonCount === 0) {
-        console.log('📦 Addon catalog empty, seeding live_chat...');
+      const { VALID_ADDON_KEYS } = require('./constants/addonKeys');
+      const registeredAddonKeys = await AddonDefinition.find({
+        addonKey: { $in: VALID_ADDON_KEYS },
+      }).distinct('addonKey');
+      if (registeredAddonKeys.length < VALID_ADDON_KEYS.length) {
+        const missingAddonKeys = VALID_ADDON_KEYS.filter((key) => !registeredAddonKeys.includes(key));
+        console.log(`📦 Addon catalog incomplete (missing: ${missingAddonKeys.join(', ')}), seeding...`);
         const { ensureAddonCatalogSeeded } = require('./scripts/seedAddonDefinitions');
-        const { defResult, pricingResult } = await ensureAddonCatalogSeeded({ useExistingConnection: true });
-        console.log(`✅ Addon catalog seeded (live_chat: ${defResult}, pricing: ${pricingResult})`);
+        const result = await ensureAddonCatalogSeeded({ useExistingConnection: true });
+        console.log(
+          `✅ Addon catalog seeded (live_chat: ${result.defResultLiveChat}, email_credits: ${result.defResultEmailCredits}, pricing live_chat: ${result.pricingResultLiveChat}, pricing email_credits: ${result.pricingResultEmailCredits})`
+        );
       } else {
-        console.log(`✅ Addon catalog present (${enabledAddonCount} enabled addon(s))`);
+        console.log(`✅ Addon catalog present (${registeredAddonKeys.length} registered addon(s))`);
       }
     } catch (addonSeedError) {
       console.warn('⚠️  Failed to check/seed addon catalog:', addonSeedError.message);

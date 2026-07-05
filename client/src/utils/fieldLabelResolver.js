@@ -97,6 +97,36 @@ const SYSTEM_FIELD_LABEL_KEYS = {
     responsemetat: 'cases.listColumnResponseSla',
     firstresponsedueat: 'cases.recordSlaResponse',
   },
+  reports: {
+    name: 'analytics.colName',
+    type: 'analytics.colType',
+    primarymodule: 'analytics.colModule',
+    primary_module: 'analytics.colModule',
+    status: 'analytics.colStatus',
+    updatedat: 'analytics.colUpdated',
+    updated_at: 'analytics.colUpdated',
+    ownerid: 'analytics.colOwner',
+    owner_id: 'analytics.colOwner',
+  },
+  widgets: {
+    name: 'analytics.colName',
+    charttype: 'analytics.colChartType',
+    chart_type: 'analytics.colChartType',
+    reportid: 'analytics.colReport',
+    report_id: 'analytics.colReport',
+    status: 'analytics.colStatus',
+    updatedat: 'analytics.colUpdated',
+    updated_at: 'analytics.colUpdated',
+  },
+  dashboards: {
+    name: 'analytics.colName',
+    category: 'analytics.colCategory',
+    widgetcount: 'analytics.colWidgets',
+    widget_count: 'analytics.colWidgets',
+    status: 'analytics.colStatus',
+    updatedat: 'analytics.colUpdated',
+    updated_at: 'analytics.colUpdated',
+  },
 };
 
 function normalizeFieldKey(fieldKey) {

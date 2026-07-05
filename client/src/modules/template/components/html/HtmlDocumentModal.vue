@@ -34,6 +34,22 @@
                 <HtmlCodeEditor v-model="localHtml" :read-only="readOnly" :use-monaco="true" />
               </div>
               <div class="flex justify-end gap-2 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+                <button
+                  v-if="readOnly"
+                  type="button"
+                  class="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                  @click="copyHtml"
+                >
+                  {{ t('templates.builderHtmlCopy') }}
+                </button>
+                <button
+                  v-if="readOnly"
+                  type="button"
+                  class="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                  @click="downloadHtml"
+                >
+                  {{ t('templates.builderHtmlDownload') }}
+                </button>
                 <button type="button" class="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600" @click="emit('close')">
                   {{ readOnly ? t('actions.close') : t('actions.cancel') }}
                 </button>
@@ -58,18 +74,22 @@
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
+import { useNotifications } from '@/composables/useNotifications';
 import HtmlCodeEditor from './HtmlCodeEditor.vue';
+import { copyTextToClipboard, downloadTextFile, slugifyFilename } from '../../utils/emailHtmlExport';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
   html: { type: String, default: '' },
   readOnly: { type: Boolean, default: true },
-  title: { type: String, default: '' }
+  title: { type: String, default: '' },
+  downloadFilename: { type: String, default: 'template' }
 });
 
 const emit = defineEmits(['close', 'apply']);
 
 const { t } = useI18n();
+const notifications = useNotifications();
 const localHtml = ref('');
 
 watch(
@@ -80,4 +100,17 @@ watch(
   },
   { immediate: true }
 );
+
+async function copyHtml() {
+  const copied = await copyTextToClipboard(localHtml.value);
+  notifications.success(
+    copied ? t('templates.htmlImport.copySuccess') : t('templates.htmlImport.copyFailed')
+  );
+}
+
+function downloadHtml() {
+  const baseName = slugifyFilename(props.downloadFilename);
+  downloadTextFile(`${baseName}.html`, localHtml.value, 'text/html;charset=utf-8');
+  notifications.success(t('templates.htmlImport.downloadSuccess'));
+}
 </script>

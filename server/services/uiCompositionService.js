@@ -543,11 +543,18 @@ class UICompositionService {
     try {
       const apps = await this.getUIAppsForTenant(organizationId, user);
       const routes = [];
+      /** Dedicated static routes in client router — skip duplicate dynamic injection. */
+      const staticAnalyticsModuleKeys = new Set(['reports', 'dashboards', 'analytics']);
 
       for (const app of apps) {
         const modules = await this.getUIModulesForApp(organizationId, app.appKey);
         
         for (const module of modules) {
+          const moduleKey = String(module.moduleKey || '').toLowerCase();
+          if (staticAnalyticsModuleKeys.has(moduleKey)) {
+            continue;
+          }
+
           const appKeySlug = String(module.appKey || app.appKey || '')
             .toLowerCase()
             .trim();

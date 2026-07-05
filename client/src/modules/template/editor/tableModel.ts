@@ -1,5 +1,5 @@
 import type { Component, Editor } from 'grapesjs';
-import { chipHtmlToMergeTokens, mergeTokensToChipHtml } from '@/utils/builderMergeTagHtml';
+import { chipHtmlToMergeTokens, elementToMergeTokens, mergeTokensToChipHtml } from '@/utils/builderMergeTagHtml';
 import { findLineItemInnerTableComponent, findLineItemRoot, isLineItemInnerTable } from './lineItemModel';
 
 export type TableSection = 'thead' | 'tbody' | 'tfoot';
@@ -423,8 +423,8 @@ export function readCellText(cell: Component): string {
   if (fromChildren) return fromChildren;
 
   const el = cell.view?.el;
-  if (el) {
-    return chipHtmlToMergeTokens(el.innerHTML);
+  if (el instanceof HTMLElement) {
+    return elementToMergeTokens(el);
   }
 
   return '';
@@ -491,13 +491,39 @@ export function restoreLineItemRowCellContent(
   }
 }
 
-export function syncTableCellsForSerialize(editor: Editor): void {
+export function syncTableCellsForSerialize(
+  editor: Editor,
+  options: { skipComponent?: Component | null } = {}
+): void {
+  const wrapper = editor.getWrapper?.();
+  if (!wrapper) return;
+
+  const skipComponent = options.skipComponent ?? null;
+
+  const visit = (component: Component) => {
+    if (isTableCellComponent(component)) {
+      if (skipComponent && component === skipComponent) return;
+      writeCellText(component, readCellText(component));
+    }
+    component.components().forEach(visit);
+  };
+  visit(wrapper);
+}
+
+/** Sync table cell models from rendered DOM after raw HTML is loaded into the canvas. */
+export function hydrateTableCellsFromDom(editor: Editor): void {
   const wrapper = editor.getWrapper?.();
   if (!wrapper) return;
 
   const visit = (component: Component) => {
     if (isTableCellComponent(component)) {
-      writeCellText(component, readCellText(component));
+      const el = component.view?.el;
+      if (el instanceof HTMLElement) {
+        const tokens = elementToMergeTokens(el);
+        if (cellHasVisibleContent(tokens)) {
+          writeCellText(component, tokens);
+        }
+      }
     }
     component.components().forEach(visit);
   };

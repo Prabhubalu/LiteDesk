@@ -1,76 +1,103 @@
 <template>
-  <aside
-    class="flex w-60 shrink-0 flex-col border-r xl:w-64"
-    :class="[ui.panelMuted, ui.border]"
-  >
-    <div class="border-b px-3 py-3" :class="ui.border">
-      <h2 :class="[ui.meta, 'mb-2']">{{ t('templates.builderComponentLibrary') }}</h2>
-      <div class="relative">
-        <MagnifyingGlassIcon
-          class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
-        />
-        <input
-          v-model="query"
-          type="search"
-          :placeholder="t('templates.builderSearchComponents')"
-          :class="[ui.input, 'pl-8 py-1.5 text-sm']"
-        />
-      </div>
-      <p class="mt-2 px-1 text-meta" :class="ui.textMuted">{{ t('templates.builderDragHint') }}</p>
-    </div>
-
-    <div class="flex-1 overflow-y-auto p-3 space-y-5">
-      <section v-for="[groupKey, items] in filteredGroups" :key="groupKey">
-        <h3 :class="[ui.label, 'mb-2 px-1']">{{ t(groupKey) }}</h3>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div
-            v-for="item in items"
-            :key="item.id"
-            role="button"
-            tabindex="0"
-            draggable="true"
-            class="flex flex-col items-center gap-1.5 rounded-lg border px-2 py-3 text-center transition-colors cursor-grab active:cursor-grabbing"
-            :class="[
-              ui.panel,
-              ui.border,
-              editorReady
-                ? 'hover:border-primary-400 hover:bg-primary-50/50 dark:hover:border-primary-600 dark:hover:bg-primary-950/20'
-                : 'opacity-50 cursor-not-allowed'
-            ]"
-            @click="onItemClick(item.id)"
-            @keydown.enter="onItemClick(item.id)"
-            @dragstart="onDragStart(item.id, $event)"
-            @drag="onDrag($event)"
-            @dragend="onDragEnd"
-          >
-            <component
-              :is="resolveBuilderIcon(item.iconType)"
-              class="h-5 w-5 text-primary-600 dark:text-primary-400"
-            />
-            <span class="text-xs leading-tight text-neutral-700 dark:text-neutral-200">
-              {{ t(item.labelKey) }}
-            </span>
-          </div>
+  <component :is="embedded ? 'div' : 'aside'" v-bind="shellAttrs">
+    <div v-show="embedded || open" :class="innerClass">
+      <div v-if="!embedded" class="shrink-0 border-b px-2.5 py-2" :class="ui.border">
+        <h2 class="mb-1.5 text-xs font-semibold text-neutral-800 dark:text-neutral-100">
+          {{ t('templates.builderComponentLibrary') }}
+        </h2>
+        <div class="relative">
+          <MagnifyingGlassIcon
+            class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
+          />
+          <input
+            v-model="query"
+            type="search"
+            :placeholder="t('templates.builderSearchComponents')"
+            :class="[ui.input, 'py-1.5 pl-8 text-sm']"
+          />
         </div>
-      </section>
+        <p class="mt-1.5 text-[11px] leading-relaxed" :class="ui.textMuted">{{ t('templates.builderDragHint') }}</p>
+      </div>
 
-      <p v-if="!filteredGroups.length" class="px-1 text-sm" :class="ui.textMuted">
-        {{ t('templates.builderSearchNoResults') }}
-      </p>
+      <div v-else class="shrink-0 border-b px-3 py-2.5" :class="ui.border">
+        <div class="relative">
+          <MagnifyingGlassIcon
+            class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
+          />
+          <input
+            v-model="query"
+            type="search"
+            :placeholder="t('templates.builderSearchBlocks')"
+            :class="[ui.input, 'py-2 pl-8 text-sm']"
+          />
+        </div>
+      </div>
+
+      <div class="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
+        <Disclosure
+          v-for="[groupKey, items] in filteredGroups"
+          :key="groupKey"
+          v-slot="{ open: groupOpen }"
+          as="section"
+          :default-open="true"
+        >
+          <DisclosureButton :class="ui.disclosureBtn">
+            <span :class="ui.disclosureTitle">{{ t(groupKey) }}</span>
+            <ChevronDownIcon
+              class="h-3.5 w-3.5 text-neutral-400 transition-transform duration-200"
+              :class="groupOpen ? 'rotate-180' : ''"
+            />
+          </DisclosureButton>
+
+          <DisclosurePanel class="grid grid-cols-2 gap-2.5 pb-1">
+            <button
+              v-for="item in items"
+              :key="item.id"
+              type="button"
+              draggable="true"
+              :disabled="!editorReady"
+              :class="[
+                ui.blockCard,
+                ui.panel,
+                ui.border,
+                editorReady ? ui.blockCardEnabled : ui.blockCardDisabled
+              ]"
+              @click="onItemClick(item.id)"
+              @dragstart="onDragStart(item.id, $event)"
+              @drag="onDrag($event)"
+              @dragend="onDragEnd"
+            >
+              <component
+                :is="resolveBuilderIcon(item.iconType)"
+                class="h-6 w-6 text-primary-600 dark:text-primary-400"
+              />
+              <span class="text-[11px] font-medium leading-tight text-neutral-700 dark:text-neutral-200">
+                {{ t(item.labelKey) }}
+              </span>
+            </button>
+          </DisclosurePanel>
+        </Disclosure>
+
+        <p v-if="!filteredGroups.length" class="px-1 text-sm" :class="ui.textMuted">
+          {{ t('templates.builderSearchNoResults') }}
+        </p>
+      </div>
     </div>
-  </aside>
+  </component>
 </template>
 
 <script setup>
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
+import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import { useBuilderUi } from '@/composables/useBuilderUi';
 import { resolveBuilderIcon } from '@/constants/templateBuilderIcons';
 import { getBlockCatalogGroups } from '../editor/blockCatalog';
 
 const props = defineProps({
+  open: { type: Boolean, default: true },
+  embedded: { type: Boolean, default: false },
   editorReady: { type: Boolean, default: false },
   outputFormat: { type: String, default: 'pdf' },
   dragStart: { type: Function, default: null },
@@ -84,6 +111,25 @@ const { t } = useI18n();
 const ui = useBuilderUi();
 const query = ref('');
 const suppressNextClick = ref(false);
+
+const shellAttrs = computed(() => (
+  props.embedded
+    ? { class: 'flex h-full min-h-0 flex-col overflow-hidden' }
+    : {
+      class: [
+        'flex h-full min-h-0 shrink-0 flex-col overflow-hidden border-r transition-[width] duration-200 ease-out',
+        ui.panelMuted,
+        ui.border,
+        props.open ? 'w-60 xl:w-64' : 'w-0 overflow-hidden border-r-0'
+      ]
+    }
+));
+
+const innerClass = computed(() => (
+  props.embedded
+    ? 'flex h-full min-h-0 flex-col overflow-hidden'
+    : 'flex h-full min-h-0 w-60 flex-col overflow-hidden xl:w-64'
+));
 
 const filteredGroups = computed(() => {
   const normalized = query.value.trim().toLowerCase();

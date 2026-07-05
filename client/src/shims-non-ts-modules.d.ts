@@ -104,9 +104,25 @@ declare module '@/components/activity/activityUiContract' {
 
 declare module '@/utils/builderMergeTagHtml' {
   export const BUILDER_MERGE_CHIP_CLASS: string;
+  export const MERGE_CHIP_CARET_ANCHOR: string;
   export function mergeTokensToChipHtml(html: string): string;
   export function normalizeCellMergeTokenHtml(html: string): string;
   export function chipHtmlToMergeTokens(html: string): string;
+  export function elementToMergeTokens(element: HTMLElement): string;
+  export function nodesToMergeTokens(root: ParentNode): string;
+  export function applyMergeChipsToElement(element: HTMLElement, tokenText: string): void;
+  export function applyMergeChipsInPlace(element: HTMLElement): void;
+  export function createMergeChipElement(path: string, doc?: Document): HTMLElement;
+  export function serializeElementHtmlWithMergeTokens(element: HTMLElement): string;
+  export function contentHasHtmlMarkup(text: string): boolean;
+  export function hostHasRichMarkup(element: HTMLElement): boolean;
+  export function hostHasLineBreakMarkup(element: HTMLElement): boolean;
+  export function normalizeGrapesHtmlMergeTokens(html: string): string;
+}
+
+declare module 'js-beautify' {
+  export function html(source: string, options?: Record<string, unknown>): string;
+  export function css(source: string, options?: Record<string, unknown>): string;
 }
 
 declare module '@/components/record-page/slashCommands' {

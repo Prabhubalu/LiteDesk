@@ -23,6 +23,9 @@ describe('preview render sample context', () => {
     assert.equal(scope.Organization.name, 'Acme Corp');
     assert.equal(scope.lines.length, 2);
     assert.equal(scope.People.first_name, 'Sample');
+    assert.equal(scope.Deal.name, 'Sample Deal');
+    assert.equal(scope.Case.subject, 'Sample case');
+    assert.equal(scope.CurrentOrganization.name, 'Acme Corp');
   });
 
   it('allows lenient preview render with unresolved merge tags as placeholders', () => {

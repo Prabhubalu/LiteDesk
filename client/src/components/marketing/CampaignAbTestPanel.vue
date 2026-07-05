@@ -1,44 +1,40 @@
 <template>
-  <section class="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-    <div class="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
+  <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+    <div class="border-b border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-800/60">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
             {{ t('marketing.campaignsAbTitle') }}
           </h2>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {{ t('marketing.campaignsAbDescription') }}
           </p>
         </div>
-        <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-          <input
-            v-model="localEnabled"
-            type="checkbox"
-            class="rounded border-gray-300"
-            :disabled="disabled"
-          />
-          {{ t('marketing.campaignsAbEnable') }}
-        </label>
+        <div class="flex items-center gap-3">
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ t('marketing.campaignsAbEnable') }}
+          </span>
+          <HeadlessSwitch v-model="localEnabled" :disabled="disabled" />
+        </div>
       </div>
     </div>
 
-    <div v-if="localEnabled" class="space-y-4 px-5 py-4">
+    <div v-if="localEnabled" class="space-y-4 px-5 py-5">
       <div class="grid gap-4 sm:grid-cols-3">
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">
             {{ t('marketing.campaignsAbWinnerMetric') }}
           </label>
-          <select
+          <HeadlessSelect
             v-model="localWinnerMetric"
-            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
+            :options="winnerMetricOptions"
             :disabled="disabled"
-          >
-            <option value="open_rate">{{ t('marketing.campaignsAbMetricOpenRate') }}</option>
-            <option value="click_rate">{{ t('marketing.campaignsAbMetricClickRate') }}</option>
-          </select>
+            teleport
+            wrapper-class="mt-2"
+          />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">
             {{ t('marketing.campaignsAbSamplePercent') }}
           </label>
           <input
@@ -46,12 +42,12 @@
             type="number"
             min="5"
             max="50"
-            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
             :disabled="disabled"
+            :class="fieldInputClass"
           />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">
             {{ t('marketing.campaignsAbTestDuration') }}
           </label>
           <input
@@ -59,8 +55,8 @@
             type="number"
             min="1"
             max="168"
-            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
             :disabled="disabled"
+            :class="fieldInputClass"
           />
         </div>
       </div>
@@ -69,7 +65,7 @@
         <div
           v-for="(variant, index) in localVariants"
           :key="variant.key"
-          class="rounded-lg border border-gray-200 p-4 dark:border-gray-700"
+          class="rounded-xl border border-gray-200 bg-gray-50/60 p-4 dark:border-gray-700 dark:bg-gray-800/40"
         >
           <div class="mb-3 flex items-center justify-between gap-2">
             <p class="text-sm font-medium text-gray-900 dark:text-white">
@@ -78,7 +74,7 @@
             <button
               v-if="localVariants.length > 2 && !disabled"
               type="button"
-              class="text-xs text-red-600 hover:text-red-500 dark:text-red-400"
+              class="text-xs font-medium text-red-600 hover:text-red-500 dark:text-red-400"
               @click="removeVariant(index)"
             >
               {{ t('actions.remove') }}
@@ -86,18 +82,18 @@
           </div>
           <div class="grid gap-3 sm:grid-cols-3">
             <div class="sm:col-span-2">
-              <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400">
                 {{ t('marketing.campaignsFieldSubject') }}
               </label>
               <input
                 v-model="variant.subject"
                 type="text"
-                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
                 :disabled="disabled"
+                :class="fieldInputClass"
               />
             </div>
             <div>
-              <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400">
                 {{ t('marketing.campaignsAbSplitPercent') }}
               </label>
               <input
@@ -105,8 +101,8 @@
                 type="number"
                 min="1"
                 max="100"
-                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
                 :disabled="disabled"
+                :class="fieldInputClass"
               />
             </div>
           </div>
@@ -132,6 +128,9 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import HeadlessSwitch from '@/components/ui/HeadlessSwitch.vue';
+import { PROCESS_INPUT_CLASS } from '@/utils/processDesignerConstants';
 
 const props = defineProps({
   modelValue: {
@@ -157,11 +156,18 @@ const emit = defineEmits(['update:modelValue', 'update:variants']);
 
 const { t } = useI18n();
 
+const fieldInputClass = `${PROCESS_INPUT_CLASS} mt-2`;
+
 const localEnabled = ref(props.modelValue?.enabled === true);
 const localWinnerMetric = ref(props.modelValue?.winnerMetric || 'open_rate');
 const localSamplePercent = ref(props.modelValue?.samplePercent ?? 20);
 const localTestDurationHours = ref(props.modelValue?.testDurationHours ?? 4);
 const localVariants = ref(normalizeVariants(props.variants));
+
+const winnerMetricOptions = computed(() => [
+  { value: 'open_rate', label: t('marketing.campaignsAbMetricOpenRate') },
+  { value: 'click_rate', label: t('marketing.campaignsAbMetricClickRate') }
+]);
 
 function normalizeVariants(list) {
   if (Array.isArray(list) && list.length >= 2) {

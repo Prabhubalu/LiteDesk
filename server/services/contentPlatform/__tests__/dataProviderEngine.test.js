@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 
 const Item = require('../../../models/Item');
 const ItemVariant = require('../../../models/ItemVariant');
+const Organization = require('../../../models/Organization');
 const {
   assembleRuntimeContext,
   enrichLinesWithLiveItemCatalog,
@@ -250,7 +251,101 @@ describe('dataProviderEngine live record loading', () => {
     });
 
     assert.equal(scope.Quote.quoteNumber, 'QT-INLINE');
-    assert.equal(scope.Organization.name, 'Inline Org');
+    assert.equal(scope.CurrentOrganization.name, 'Inline Org');
+    assert.equal(scope.Organization.name, undefined);
+  });
+
+  it('does not map tenant organization onto Organization for quotes without a customer org', async () => {
+    const scope = await assembleRuntimeContext({
+      organizationId: 'org-1',
+      moduleScope: 'quotes',
+      runtimeContext: {
+        recordModuleKey: 'quotes',
+        record: { quoteNumber: 'QT-0001', grandTotal: 100 },
+        organization: { name: 'Arivu Systems', isTenant: true }
+      }
+    });
+
+    assert.equal(scope.CurrentOrganization.name, 'Arivu Systems');
+    assert.equal(scope.Organization.name, undefined);
+  });
+
+  it('loads document-linked CRM org when tenant access query would block', async () => {
+    const crmOrgId = new mongoose.Types.ObjectId();
+    RECORD_LOADERS.quotes = async () => ({
+      record: {
+        _id: 'quote-linked-org',
+        quoteNumber: 'QT-9004',
+        organizationRefId: crmOrgId
+      },
+      lines: [],
+      moduleKey: 'quotes'
+    });
+
+    const orgFindOne = mock.method(Organization, 'findOne', (query) => ({
+      select() {
+        return this;
+      },
+      lean: async () => {
+        if (String(query?._id) === String(crmOrgId)) {
+          return {
+            _id: crmOrgId,
+            name: 'Linked Customer Inc',
+            address: '456 Commerce Rd',
+            city: 'Boston',
+            isTenant: false
+          };
+        }
+        return null;
+      }
+    }));
+
+    const scope = await assembleRuntimeContext({
+      organizationId: 'org-1',
+      moduleScope: 'quotes',
+      runtimeContext: {
+        recordId: 'quote-linked-org',
+        recordModuleKey: 'quotes',
+        organization: { name: 'Arivu Systems', isTenant: true }
+      }
+    });
+
+    orgFindOne.mock.restore();
+    assert.equal(scope.Organization.name, 'Linked Customer Inc');
+    assert.equal(scope.Organization.address, '456 Commerce Rd');
+    assert.equal(scope.Organization.city, 'Boston');
+  });
+
+  it('resolves customer org from deal accountId when organizationRefId is missing', async () => {
+    RECORD_LOADERS.quotes = async () => ({
+      record: {
+        _id: 'quote-deal-account',
+        quoteNumber: 'QT-9005',
+        dealId: {
+          _id: 'deal-1',
+          accountId: {
+            _id: 'crm-org-3',
+            name: 'Deal Account Co',
+            address: '789 Market St'
+          }
+        }
+      },
+      lines: [],
+      moduleKey: 'quotes'
+    });
+
+    const scope = await assembleRuntimeContext({
+      organizationId: 'org-1',
+      moduleScope: 'quotes',
+      runtimeContext: {
+        recordId: 'quote-deal-account',
+        recordModuleKey: 'quotes',
+        organization: { name: 'Tenant Workspace' }
+      }
+    });
+
+    assert.equal(scope.Organization.name, 'Deal Account Co');
+    assert.equal(scope.Organization.address, '789 Market St');
   });
 });
 

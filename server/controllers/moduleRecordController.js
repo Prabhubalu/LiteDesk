@@ -1778,6 +1778,9 @@ exports.getRecordPresence = async (req, res) => {
     return res.json({ success: true, data: presence });
   } catch (error) {
     console.error('[moduleRecordController] getRecordPresence error:', error);
+    if (error.code === 'PRESENCE_UNSUPPORTED_MODULE') {
+      return res.json({ success: true, data: [] });
+    }
     const status = error.message === 'Record not found' ? 404 : 400;
     return res.status(status).json({ success: false, message: error.message || 'Failed to load presence' });
   }
@@ -1795,6 +1798,9 @@ exports.heartbeatRecordPresence = async (req, res) => {
     return res.json({ success: true, data: session });
   } catch (error) {
     console.error('[moduleRecordController] heartbeatRecordPresence error:', error);
+    if (error.code === 'PRESENCE_UNSUPPORTED_MODULE') {
+      return res.json({ success: true, data: null });
+    }
     const status = error.message === 'Record not found' ? 404 : 400;
     return res.status(status).json({ success: false, message: error.message || 'Failed to update presence' });
   }
@@ -1811,6 +1817,9 @@ exports.clearRecordPresence = async (req, res) => {
     return res.json({ success: true });
   } catch (error) {
     console.error('[moduleRecordController] clearRecordPresence error:', error);
+    if (error.code === 'PRESENCE_UNSUPPORTED_MODULE') {
+      return res.json({ success: true });
+    }
     return res.status(400).json({ success: false, message: error.message || 'Failed to clear presence' });
   }
 };

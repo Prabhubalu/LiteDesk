@@ -114,6 +114,7 @@
     "nodemailer": "^6.9.8",
     "pdf-parse": "^1.1.4",
     "pdfkit": "^0.15.0",
+    "puppeteer-core": "^24.43.1",
     "razorpay": "^2.9.6",
     "redis": "^4.6.12",
     "stripe": "^22.2.0",

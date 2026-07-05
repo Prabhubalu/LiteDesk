@@ -87,6 +87,14 @@
     "message": "Email",
     "description": "Email output format option"
   },
+  "formatPdf": {
+    "message": "PDF",
+    "description": "PDF output format badge in builder toolbar"
+  },
+  "formatHtml": {
+    "message": "HTML",
+    "description": "HTML output format badge in builder toolbar"
+  },
   "detailTitle": {
     "message": "Template",
     "description": "Template detail page fallback title"
@@ -948,8 +956,12 @@
     "description": "Signature block canvas placeholder"
   },
   "builderMergeTagsHint": {
-    "message": "Click a field to insert a merge tag into the selected component.",
+    "message": "Your text block stays focused. Type to filter fields, then click one to insert at your cursor.",
     "description": "Builder merge tag panel hint"
+  },
+  "builderMergeTagsTypeToFilter": {
+    "message": "Type to filter while your cursor stays in the text block.",
+    "description": "Merge tag panel keyboard filter hint"
   },
   "builderMergeTagsSearchPlaceholder": {
     "message": "Search fields…",
@@ -970,6 +982,22 @@
   "builderMergeGroupOrganization": {
     "message": "Organization",
     "description": "Builder organization merge tag group"
+  },
+  "builderMergeGroupYourCompany": {
+    "message": "Your company",
+    "description": "Tenant organization merge tag group in template builder"
+  },
+  "builderMergeGroupCustomerOrganization": {
+    "message": "Customer organization",
+    "description": "Related CRM organization merge tag group in template builder"
+  },
+  "builderMergeGroupRelatedContact": {
+    "message": "Related contact",
+    "description": "Related people/contact merge tag group in template builder"
+  },
+  "builderMergeGroupCurrentUser": {
+    "message": "Current user",
+    "description": "Current signed-in user merge tag group in template builder"
   },
   "builderMergeGroupModule": {
     "message": "Record fields",
@@ -1088,7 +1116,7 @@
     "description": "Templates dashboard section title"
   },
   "dashboardDescription": {
-    "message": "Track template status and jump back into recent work.",
+    "message": "Filter the list by status. Click a stat to narrow results.",
     "description": "Templates dashboard section description"
   },
   "dashboardStatTotal": {
@@ -1222,6 +1250,146 @@
   "builderZoom": {
     "message": "Canvas zoom",
     "description": "Canvas zoom control label"
+  },
+  "builderZoomIn": {
+    "message": "Zoom in",
+    "description": "Canvas zoom in button"
+  },
+  "builderZoomOut": {
+    "message": "Zoom out",
+    "description": "Canvas zoom out button"
+  },
+  "builderZoomReset": {
+    "message": "Reset zoom to 100%",
+    "description": "Canvas zoom reset button"
+  },
+  "builderZoomFit": {
+    "message": "Fit",
+    "description": "Fit canvas to available width"
+  },
+  "builderViewDesign": {
+    "message": "Design",
+    "description": "Builder workspace design tab"
+  },
+  "builderViewPreview": {
+    "message": "Preview",
+    "description": "Builder workspace preview tab"
+  },
+  "builderWorkspaceViews": {
+    "message": "Builder views",
+    "description": "Accessible label for design/html/preview tabs"
+  },
+  "builderViewHtmlHint": {
+    "message": "Edit the full HTML document, then click Apply to design or switch tabs to update the canvas.",
+    "description": "Hint above editable HTML source panel"
+  },
+  "builderPreviewPdfHint": {
+    "message": "Server-rendered PDF preview using your sample record when selected.",
+    "description": "Hint above PDF preview panel"
+  },
+  "builderPreviewRefresh": {
+    "message": "Refresh preview",
+    "description": "Reload PDF preview from server"
+  },
+  "builderViewHtml": {
+    "message": "HTML",
+    "description": "Builder workspace HTML source tab"
+  },
+  "builderViewHtmlTitle": {
+    "message": "Template HTML",
+    "description": "Modal title for full template HTML source"
+  },
+  "builderHtmlCopy": {
+    "message": "Copy HTML",
+    "description": "Copy full template HTML to clipboard"
+  },
+  "builderHtmlDownload": {
+    "message": "Download HTML",
+    "description": "Download full template HTML file"
+  },
+  "builderHtmlApplyToDesign": {
+    "message": "Apply to design",
+    "description": "Apply edited HTML source to the GrapesJS canvas"
+  },
+  "builderHtmlSyncing": {
+    "message": "Syncing to design…",
+    "description": "Status while HTML edits are applied to the canvas"
+  },
+  "builderToggleComponents": {
+    "message": "Toggle components panel",
+    "description": "Show or hide left component library panel"
+  },
+  "builderLeftRail": {
+    "message": "Builder panels",
+    "description": "Accessible label for left builder icon rail"
+  },
+  "builderRailBlocks": {
+    "message": "Blocks",
+    "description": "Left rail blocks panel"
+  },
+  "builderRailLayers": {
+    "message": "Layers",
+    "description": "Left rail layers panel"
+  },
+  "builderRailVariables": {
+    "message": "Variables",
+    "description": "Left rail merge tags panel"
+  },
+  "builderRailAssets": {
+    "message": "Assets",
+    "description": "Left rail assets panel"
+  },
+  "builderRailPage": {
+    "message": "Page",
+    "description": "Left rail page settings panel"
+  },
+  "builderTabDocument": {
+    "message": "Document",
+    "description": "Right inspector document settings tab"
+  },
+  "builderTabBlock": {
+    "message": "Block",
+    "description": "Right inspector selected block tab"
+  },
+  "builderSaveDraft": {
+    "message": "Save draft",
+    "description": "Toolbar save draft action"
+  },
+  "builderPreview": {
+    "message": "Preview",
+    "description": "Toolbar preview action"
+  },
+  "builderSearchBlocks": {
+    "message": "Search blocks…",
+    "description": "Block library search placeholder"
+  },
+  "builderGroupSpacing": {
+    "message": "Spacing",
+    "description": "Block inspector spacing section"
+  },
+  "builderSpacingAdvanced": {
+    "message": "Advanced spacing",
+    "description": "Expand per-side spacing controls"
+  },
+  "builderDevicePreview": {
+    "message": "Preview device",
+    "description": "Email preview device selector group label"
+  },
+  "builderDeviceDesktop": {
+    "message": "Desktop preview",
+    "description": "Desktop email preview device"
+  },
+  "builderDeviceTablet": {
+    "message": "Tablet preview",
+    "description": "Tablet email preview device"
+  },
+  "builderDeviceMobile": {
+    "message": "Mobile preview",
+    "description": "Mobile email preview device"
+  },
+  "builderToggleInspector": {
+    "message": "Toggle inspector panel",
+    "description": "Show or hide right properties panel"
   },
   "builderFieldVisible": {
     "message": "Visible",
@@ -1559,6 +1727,18 @@
     "message": "Data rows repeat from {collection}",
     "description": "Hint that body rows come from collection binding"
   },
+  "builderPageBreakHint": {
+    "message": "Inserts a page break when exporting to PDF. No content settings required.",
+    "description": "Hint for page break component in builder properties"
+  },
+  "builderConditionalHint": {
+    "message": "Content inside this block renders only when the condition is true.",
+    "description": "Hint for conditional block in builder properties"
+  },
+  "builderLoopHint": {
+    "message": "Repeats inner content for each item in the collection.",
+    "description": "Hint for loop and repeater blocks in builder properties"
+  },
   "builderComponentPageBreak": {
     "message": "Page break",
     "description": "Page break component in builder library"
@@ -1570,6 +1750,18 @@
   "builderChooseAsset": {
     "message": "Choose from library",
     "description": "Open asset library picker for image block"
+  },
+  "builderUseCompanyLogo": {
+    "message": "Use company logo",
+    "description": "Apply synced organization logo to logo block"
+  },
+  "builderCompanyLogoAsset": {
+    "message": "Company logo",
+    "description": "Pinned company logo asset in builder library"
+  },
+  "builderCompanyLogoHint": {
+    "message": "Synced from organization settings",
+    "description": "Hint under pinned company logo asset"
   },
   "builderAssetPickerTitle": {
     "message": "Image library",

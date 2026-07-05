@@ -56,7 +56,16 @@ const props = defineProps({
   }
 });
 
+defineEmits(['view', 'edit', 'delete']);
+
+const authStore = useAuthStore();
+
+const CAMPAIGN_DELETABLE_STATUSES = new Set(['draft', 'completed', 'cancelled', 'failed', 'archived']);
+
 function canDeleteRow(row) {
+  if (props.module === 'campaigns') {
+    return CAMPAIGN_DELETABLE_STATUSES.has(String(row?.status || ''));
+  }
   return props.canDeleteRow(row);
 }
 
@@ -66,9 +75,5 @@ function canDeleteModule(moduleKey) {
   }
   return authStore.can(moduleKey, 'delete');
 }
-
-defineEmits(['view', 'edit', 'delete']);
-
-const authStore = useAuthStore();
 </script>
 

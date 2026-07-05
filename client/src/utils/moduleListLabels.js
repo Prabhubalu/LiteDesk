@@ -15,6 +15,10 @@ const MODULE_I18N_NS = {
   quotes: 'quotes',
   items: 'platform',
   documents: 'documents',
+  campaigns: 'marketing',
+  reports: 'analytics',
+  widgets: 'analytics',
+  dashboards: 'analytics',
 };
 
 /** @type {Record<string, Record<string, string>>} */
@@ -73,6 +77,36 @@ const SYSTEM_VIEW_KEYS = {
     all: 'documents.listViewAll',
     'assigned-to-me': 'documents.listViewMy',
   },
+  campaigns: {
+    all: 'marketing.campaignsFilterAll',
+    draft: 'marketing.campaignsStatusDraft',
+    scheduled: 'marketing.campaignsStatusScheduled',
+    running: 'marketing.campaignsStatusRunning',
+    completed: 'marketing.campaignsStatusCompleted',
+    failed: 'marketing.campaignsStatusFailed',
+    archived: 'marketing.campaignsStatusArchived',
+  },
+  reports: {
+    all: 'analytics.tabAll',
+    mine: 'analytics.tabMine',
+    shared: 'analytics.tabShared',
+    scheduled: 'analytics.tabScheduled',
+    draft: 'analytics.tabDrafts',
+    published: 'analytics.tabPublished',
+    archived: 'analytics.tabArchived',
+  },
+  widgets: {
+    all: 'analytics.tabAll',
+    draft: 'analytics.tabDrafts',
+    published: 'analytics.tabPublished',
+    archived: 'analytics.tabArchived',
+  },
+  dashboards: {
+    all: 'analytics.tabAll',
+    draft: 'analytics.tabDrafts',
+    published: 'analytics.tabPublished',
+    archived: 'analytics.tabArchived',
+  },
 };
 
 /** @type {Record<string, string>} */
@@ -126,6 +160,31 @@ const MODULE_STAT_KEYS = {
     products: 'platform.listStatProducts',
     services: 'platform.listStatServices',
   },
+  campaigns: {
+    totalCampaigns: 'marketing.campaignsListStatTotal',
+    draft: 'marketing.campaignsStatusDraft',
+    scheduled: 'marketing.campaignsStatusScheduled',
+    running: 'marketing.campaignsStatusRunning',
+    completed: 'marketing.campaignsStatusCompleted',
+  },
+  reports: {
+    totalReports: 'analytics.listStatTotal',
+    draft: 'analytics.statusDraft',
+    published: 'analytics.statusPublished',
+    archived: 'analytics.statusArchived',
+  },
+  widgets: {
+    totalWidgets: 'analytics.widgetsListStatTotal',
+    draft: 'analytics.statusDraft',
+    published: 'analytics.statusPublished',
+    archived: 'analytics.statusArchived',
+  },
+  dashboards: {
+    totalDashboards: 'analytics.dashboardsListStatTotal',
+    draft: 'analytics.statusDraft',
+    published: 'analytics.statusPublished',
+    archived: 'analytics.statusArchived',
+  },
 };
 
 /** @type {Record<string, string>} */
@@ -137,6 +196,17 @@ const CREATE_LABEL_KEYS = {
   deals: 'deals.listCreate',
   quotes: 'quotes.listCreate',
   items: 'platform.listCreateItem',
+  campaigns: 'marketing.campaignsNew',
+  reports: 'analytics.newReport',
+  widgets: 'analytics.newWidget',
+  dashboards: 'analytics.newDashboard',
+};
+
+/** @type {Record<string, string>} */
+const MODULE_SEARCH_KEYS = {
+  reports: 'analytics.listSearchPlaceholder',
+  widgets: 'analytics.widgetsSearchPlaceholder',
+  dashboards: 'analytics.dashboardsSearchPlaceholder',
 };
 
 /**
@@ -201,6 +271,9 @@ export function resolveListStatLabel(moduleKey, statKey, fallback, t, te) {
  * @param {(key: string) => boolean} te
  */
 export function resolveListSearchPlaceholder(moduleKey, t, te) {
+  const explicit = MODULE_SEARCH_KEYS[moduleKey];
+  if (explicit && te(explicit)) return t(explicit);
+
   const ns = MODULE_I18N_NS[moduleKey];
   if (ns) {
     const key = `${ns}.listSearchPlaceholder`;
@@ -269,6 +342,15 @@ export function isRegistrySystemView(moduleKey, viewId) {
   }
   if (moduleKey === 'documents') {
     return ['all', 'assigned-to-me'].includes(viewId);
+  }
+  if (moduleKey === 'campaigns') {
+    return ['all', 'draft', 'scheduled', 'running', 'completed', 'failed', 'archived'].includes(viewId);
+  }
+  if (moduleKey === 'reports') {
+    return ['all', 'mine', 'shared', 'scheduled', 'draft', 'published', 'archived'].includes(viewId);
+  }
+  if (moduleKey === 'widgets' || moduleKey === 'dashboards') {
+    return ['all', 'draft', 'published', 'archived'].includes(viewId);
   }
   return ['all', 'assigned-to-me', 'unassigned'].includes(viewId);
 }

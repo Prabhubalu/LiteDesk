@@ -1,9 +1,16 @@
 <template>
   <div
     class="overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-950"
-    :class="readOnly ? 'opacity-90' : ''"
+    :class="[
+      readOnly ? 'opacity-90' : '',
+      fillHeight ? 'flex h-full min-h-0 flex-col' : ''
+    ]"
   >
-    <div v-if="useMonaco && monacoAvailable" class="relative min-h-[320px] w-full">
+    <div
+      v-if="useMonaco && monacoAvailable"
+      class="relative w-full"
+      :class="fillHeight ? 'min-h-0 flex-1' : 'min-h-[320px]'"
+    >
       <div
         v-if="monacoLoading"
         class="absolute inset-0 z-10 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400"
@@ -12,12 +19,17 @@
       </div>
       <div
         ref="monacoContainerRef"
-        class="min-h-[320px] w-full"
+        class="w-full"
+        :class="fillHeight ? 'absolute inset-0' : 'min-h-[320px]'"
         role="textbox"
         :aria-label="t('templates.htmlImport.codeEditorLabel')"
       />
     </div>
-    <div v-else class="grid min-h-[320px] grid-cols-[auto_1fr]">
+    <div
+      v-else
+      class="grid grid-cols-[auto_1fr]"
+      :class="fillHeight ? 'min-h-0 flex-1' : 'min-h-[320px]'"
+    >
       <div
         ref="gutterRef"
         aria-hidden="true"
@@ -30,7 +42,8 @@
         :value="modelValue"
         :readonly="readOnly"
         spellcheck="false"
-        class="min-h-[320px] w-full resize-y bg-transparent px-3 py-3 font-mono text-sm leading-6 text-gray-900 dark:text-gray-100 focus:outline-none"
+        class="w-full bg-transparent px-3 py-3 font-mono text-sm leading-6 text-gray-900 dark:text-gray-100 focus:outline-none"
+        :class="fillHeight ? 'h-full min-h-0 resize-none' : 'min-h-[320px] resize-y'"
         :placeholder="placeholder"
         @input="onInput"
         @scroll="syncScroll"
@@ -55,10 +68,11 @@ const props = defineProps({
   modelValue: { type: String, default: '' },
   readOnly: { type: Boolean, default: false },
   placeholder: { type: String, default: '' },
-  useMonaco: { type: Boolean, default: false }
+  useMonaco: { type: Boolean, default: false },
+  fillHeight: { type: Boolean, default: false }
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'edit']);
 
 const { t } = useI18n();
 
@@ -70,6 +84,8 @@ const monacoAvailable = ref(true);
 let monacoEditor = null;
 let monacoModule = null;
 let themeObserver = null;
+let sizeObserver = null;
+let suppressContentEmit = false;
 
 const lineCount = computed(() => {
   const lines = String(props.modelValue || '').split('\n').length;
@@ -78,6 +94,7 @@ const lineCount = computed(() => {
 
 function onInput(event) {
   emit('update:modelValue', event.target.value);
+  emit('edit');
 }
 
 function syncScroll(event) {
@@ -111,9 +128,12 @@ async function mountMonaco() {
     });
 
     monacoEditor.onDidChangeModelContent(() => {
-      if (props.readOnly || !monacoEditor) return;
+      if (props.readOnly || !monacoEditor || suppressContentEmit) return;
       emit('update:modelValue', monacoEditor.getValue());
+      emit('edit');
     });
+    bindMonacoResizeObserver();
+    monacoEditor.layout();
   } catch {
     monacoAvailable.value = false;
   } finally {
@@ -122,9 +142,22 @@ async function mountMonaco() {
 }
 
 function disposeMonaco() {
+  sizeObserver?.disconnect();
+  sizeObserver = null;
   monacoEditor?.dispose();
   monacoEditor = null;
   monacoModule = null;
+}
+
+function bindMonacoResizeObserver() {
+  sizeObserver?.disconnect();
+  sizeObserver = null;
+  if (!props.fillHeight || !monacoContainerRef.value || typeof ResizeObserver === 'undefined') return;
+
+  sizeObserver = new ResizeObserver(() => {
+    monacoEditor?.layout();
+  });
+  sizeObserver.observe(monacoContainerRef.value);
 }
 
 function syncMonacoTheme() {
@@ -169,7 +202,9 @@ watch(
   () => props.modelValue,
   (next) => {
     if (monacoEditor && monacoEditor.getValue() !== next) {
+      suppressContentEmit = true;
       monacoEditor.setValue(String(next || ''));
+      suppressContentEmit = false;
     }
     if (textareaRef.value && textareaRef.value.scrollTop !== undefined && gutterRef.value) {
       gutterRef.value.scrollTop = textareaRef.value.scrollTop;

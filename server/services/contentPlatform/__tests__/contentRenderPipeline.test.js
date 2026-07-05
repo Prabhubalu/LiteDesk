@@ -50,6 +50,52 @@ describe('mergeTagEngine', () => {
     assert.equal(issues[0].code, 'MERGE_TAG_UNRESOLVED');
   });
 
+  it('resolves uppercase scope and field paths', () => {
+    const scope = {
+      Organization: { name: 'Acme Corp', address: '123 Main St' }
+    };
+
+    const text = resolveMergeTagsInString(
+      '{{ORGANIZATION.NAME}} at {{Organization.ADDRESS}}',
+      scope
+    );
+
+    assert.equal(text, 'Acme Corp at 123 Main St');
+  });
+
+  it('falls back to CurrentOrganization for letterhead fields when customer org is empty', () => {
+    const scope = {
+      Organization: {},
+      CurrentOrganization: {
+        name: 'Arivu Systems',
+        address: '100 Tenant Way',
+        city: 'Austin',
+        phone: '+1 555 0100'
+      }
+    };
+
+    const text = resolveMergeTagsInString(
+      '{{Organization.address}}, {{Organization.city}} | {{Organization.phone}} | {{Organization.name}}',
+      scope,
+      { lenient: true }
+    );
+
+    assert.equal(text, '100 Tenant Way, Austin | +1 555 0100 | {{Organization.name}}');
+  });
+
+  it('resolves CurrentOrganization.settings.logoUrl via logo alias', () => {
+    const scope = {
+      CurrentOrganization: {
+        logoUrl: 'https://cdn.example.com/logo.png',
+        settings: { logoUrl: 'https://cdn.example.com/logo.png' }
+      }
+    };
+
+    const result = resolveMergeExpression(scope, 'CurrentOrganization.settings.logoUrl');
+    assert.equal(result.resolved, true);
+    assert.equal(result.value, 'https://cdn.example.com/logo.png');
+  });
+
   it('resolves line item fields from flattened row scope', () => {
     const result = resolveMergeExpression(
       { description: 'Widget', lineTotal: 99, parameters: { currency: 'USD' } },

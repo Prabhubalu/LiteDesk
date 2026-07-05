@@ -7,11 +7,16 @@ import { registerArivuBlocks } from './blocks';
 import { registerCommands } from './commands';
 import { registerTraits } from './traits';
 import { setupExternalBlockDrop } from './dragDrop';
+import { patchComponentCanMove } from './componentCanMove';
 import { resolveEditorPlugins } from './plugins';
 import { resolveCanvasFrameCss } from './canvasFrameCss';
 import { configureComponentToolbar } from './componentActions';
+import { registerArivuComponents } from './arivuComponents';
 import { applyPageDimensions, parseDimensionPx, setupPageLayout } from './pageDimensions';
 import { registerLineItemComponent } from './lineItemComponent';
+import { configureRteToolbarVisibility } from './rteToolbar';
+import { bindSupplementalCss } from './supplementalCssStore';
+import { bindCanvasImageRefresh } from './canvasImageSrc';
 
 export interface GrapesEditorOptions {
   height?: string;
@@ -58,13 +63,18 @@ export function initGrapesEditor(container: HTMLElement, options: GrapesEditorOp
   const isEmail = outputFormat === 'email';
   setupPageLayout(editor, { isEmail });
   configureComponentToolbar(editor);
-  registerArivuBlocks(editor);
+  registerArivuComponents(editor);
+  registerArivuBlocks(editor, outputFormat);
   if (!isEmail) {
     registerLineItemComponent(editor);
   }
   registerCommands(editor);
   registerTraits(editor);
+  patchComponentCanMove(editor);
   setupExternalBlockDrop(editor);
+  configureRteToolbarVisibility(editor);
+  bindSupplementalCss(editor);
+  bindCanvasImageRefresh(editor);
 
   const pageWidth = parseDimensionPx(options.canvasWidth);
   const pageHeight = parseDimensionPx(options.canvasHeight);

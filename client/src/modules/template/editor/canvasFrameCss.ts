@@ -29,18 +29,51 @@ export const GRAPES_CANVAS_CHROME_CSS = `
     color: inherit;
   }
 
+  [contenteditable='true'],
+  .arivu-inline-text-editing,
+  .arivu-sheet-cell-editing {
+    caret-color: #6049e7 !important;
+    outline: none !important;
+    white-space: pre-wrap;
+  }
+
+  .gjs-selected[contenteditable='true'],
+  .gjs-selected.arivu-inline-text-editing {
+    outline: none !important;
+    box-shadow: inset 0 0 0 1px rgb(96 73 231 / 0.35) !important;
+  }
+
   .builder-merge-chip {
-    display: inline-block;
-    padding: 1px 6px;
+    display: inline;
+    padding: 0 4px;
     margin: 0 1px;
+    border: 1px solid transparent;
     border-radius: 4px;
     background: #eef2ff;
     color: #4338ca;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 12px;
-    line-height: 1.4;
+    line-height: inherit;
     vertical-align: baseline;
     user-select: none;
+    pointer-events: none;
+    -webkit-user-modify: read-only;
+    box-shadow: none;
+  }
+
+  [contenteditable='true'] .builder-merge-chip,
+  .arivu-inline-text-editing .builder-merge-chip,
+  .arivu-sheet-cell-editing .builder-merge-chip {
+    border-color: #c7d2fe;
+  }
+
+  [data-text-block='true'],
+  [data-paragraph='true'],
+  [data-heading='true'],
+  [data-address-block='true'],
+  [data-organization-block='true'] {
+    display: block;
+    white-space: pre-wrap;
   }
 `;
 

@@ -20,6 +20,7 @@ const mongoose = require('mongoose');
 const dns = require('node:dns').promises;
 const ModuleDefinition = require('../models/ModuleDefinition');
 const Organization = require('../models/Organization');
+const OrganizationSubscription = require('../models/OrganizationSubscription');
 const User = require('../models/User');
 const People = require('../models/People');
 const TenantModuleConfiguration = require('../models/TenantModuleConfiguration');
@@ -2551,6 +2552,16 @@ exports.uploadOrganizationLogo = async (req, res) => {
         organization.settings.logoUrl = uploadResult.url;
         await organization.save();
 
+        try {
+            const { ensureCompanyLogoAsset } = require('../services/contentPlatform/organizationLogoAssetService');
+            await ensureCompanyLogoAsset({
+                organizationId: req.user.organizationId,
+                userId: req.user._id
+            });
+        } catch (syncError) {
+            console.warn('[settings] Company logo asset sync failed:', syncError.message);
+        }
+
         return res.json({
             success: true,
             message: 'Logo uploaded successfully',
@@ -4008,8 +4019,16 @@ exports.getTrialStatus = async (req, res) => {
 
         const {
             buildTrialStatusSnapshot,
+            reconcileOrgSubscriptionWithOrganizationTrial,
             TRIAL_EXTENSION_DAYS
         } = require('../services/trialExtensionService');
+
+        const orgSubscription = await OrganizationSubscription.findOne({
+            organizationId: organization._id
+        });
+        if (orgSubscription && reconcileOrgSubscriptionWithOrganizationTrial(organization, orgSubscription)) {
+            await orgSubscription.save();
+        }
 
         const snapshot = buildTrialStatusSnapshot(organization);
 

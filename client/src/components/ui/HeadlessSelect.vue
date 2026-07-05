@@ -41,6 +41,7 @@
       <Teleport to="body" :disabled="!teleport">
         <ListboxOptions
           v-if="!teleport || open"
+          v-bind="optionsAttrs"
           :style="teleport ? teleportMenuStyle : undefined"
           @vue:before-mount="syncTeleportPosition"
           @vue:before-unmount="clearSearch"
@@ -49,7 +50,7 @@
             teleport
               ? 'fixed z-[10050] mt-0 rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm'
               : 'absolute z-10 mt-1 w-full rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm',
-            showSearch ? 'max-h-72 flex flex-col overflow-hidden' : 'max-h-60 overflow-auto py-1',
+            showSearch ? 'flex flex-col overflow-hidden' : 'overflow-auto py-1',
             optionsClass
           ]"
         >
@@ -73,7 +74,7 @@
             />
           </div>
         </div>
-        <div :class="showSearch ? 'min-h-0 max-h-52 overflow-y-auto py-1' : ''">
+        <div :class="showSearch ? 'min-h-0 flex-1 overflow-y-auto py-1' : ''">
         <ListboxOption
           v-if="allowEmpty"
           :value="emptyValue"
@@ -164,6 +165,8 @@ const props = defineProps({
   buttonClass: { type: [String, Array, Object], default: undefined },
   /** Merged into ListboxOptions (e.g. z-index above drawers/modals) */
   optionsClass: { type: [String, Array, Object], default: undefined },
+  /** Extra attributes on ListboxOptions (e.g. data-* for teleported menus) */
+  optionsAttrs: { type: Object, default: () => ({}) },
   /** Root Listbox wrapper (use mt-2 below a label to match DynamicFormField) */
   wrapperClass: { type: [String, Array, Object], default: '' },
   /** Render dropdown in document body (avoids overflow clipping in headers/toolbars) */
@@ -212,22 +215,48 @@ function syncTeleportPosition() {
   if (!el?.getBoundingClientRect) return;
   const rect = el.getBoundingClientRect();
   const minWidth = Math.max(rect.width, props.teleportMinWidthPx || 0);
+  const gap = 4;
+  const viewportPadding = 8;
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const preferredMaxHeight = showSearch.value ? 288 : 240;
+  const spaceBelow = viewportHeight - rect.bottom - viewportPadding;
+  const spaceAbove = rect.top - viewportPadding;
+  const openUpward = spaceBelow < Math.min(preferredMaxHeight, 160) && spaceAbove > spaceBelow;
+  const availableHeight = (openUpward ? spaceAbove : spaceBelow) - gap;
+  const maxHeight = Math.max(96, Math.min(preferredMaxHeight, availableHeight));
+
+  let left = rect.left;
+  const menuWidth = props.teleportMatchWidth ? rect.width : minWidth;
+  if (props.teleportAlign !== 'end') {
+    left = Math.max(viewportPadding, Math.min(left, viewportWidth - menuWidth - viewportPadding));
+  }
+
   const horizontal =
     props.teleportAlign === 'end'
-      ? { left: 'auto', right: `${window.innerWidth - rect.right}px` }
-      : { left: `${rect.left}px`, right: 'auto' };
+      ? {
+          left: 'auto',
+          right: `${Math.max(viewportPadding, viewportWidth - rect.right)}px`
+        }
+      : { left: `${left}px`, right: 'auto' };
+
+  const baseStyle = {
+    ...horizontal,
+    maxHeight: `${maxHeight}px`,
+    ...(openUpward
+      ? { top: `${rect.top - gap}px`, transform: 'translateY(-100%)' }
+      : { top: `${rect.bottom + gap}px`, transform: undefined })
+  };
 
   if (props.teleportMatchWidth) {
     teleportMenuStyle.value = {
-      top: `${rect.bottom + 4}px`,
-      ...horizontal,
+      ...baseStyle,
       width: `${rect.width}px`
     };
     return;
   }
   teleportMenuStyle.value = {
-    top: `${rect.bottom + 4}px`,
-    ...horizontal,
+    ...baseStyle,
     minWidth: `${minWidth}px`,
     width: 'max-content'
   };
@@ -294,6 +323,7 @@ watch([listboxOpen, () => props.teleport], ([open, teleport]) => {
   if (open && teleport) {
     bindViewportListeners();
     syncTeleportPosition();
+    nextTick(syncTeleportPosition);
   } else {
     unbindViewportListeners();
   }

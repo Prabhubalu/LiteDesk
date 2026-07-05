@@ -69,9 +69,26 @@ function getFallbackColumns(moduleKey: string): Array<{
       { key: 'dueDate', label: 'Due Date', dataType: 'date', sortable: true, order: 4 },
       { key: 'assignedTo', label: 'Assigned To', dataType: 'user', sortable: true, order: 5 },
     ],
+    campaigns: [
+      { key: 'name', label: 'Name', dataType: 'text', sortable: true, order: 1 },
+      { key: 'subject', label: 'Subject', dataType: 'text', sortable: true, order: 2 },
+      { key: 'status', label: 'Status', dataType: 'status', sortable: true, order: 3 },
+      { key: 'recipientCount', label: 'Recipients', dataType: 'number', sortable: false, order: 4 },
+      { key: 'updatedAt', label: 'Updated', dataType: 'date', sortable: true, order: 5 },
+    ],
   };
   
   return fallbacks[moduleKey] || [];
+}
+
+/**
+ * Analytics list modules share the reports permission namespace.
+ */
+function resolveListPermissionModule(moduleKey: string): string {
+  if (moduleKey === 'reports' || moduleKey === 'widgets' || moduleKey === 'dashboards') {
+    return 'reports';
+  }
+  return moduleKey;
 }
 
 /**
@@ -87,18 +104,28 @@ function getFallbackActions(moduleKey: string, appKey?: string): Array<{
   variant?: 'primary' | 'secondary' | 'danger' | 'outline';
   order?: number;
 }> {
+  const permissionModule = resolveListPermissionModule(moduleKey);
   const createLabel = moduleKey === 'people' ? 'New Person' : 
                      moduleKey === 'deals' ? 'New Deal' :
                      moduleKey === 'tasks' ? 'New Task' :
                      `New ${moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1)}`;
   
-  return [
+  const actions: Array<{
+    key: string;
+    label: string;
+    type: ActionType;
+    route?: string;
+    permission?: string;
+    icon?: string;
+    variant?: 'primary' | 'secondary' | 'danger' | 'outline';
+    order?: number;
+  }> = [
     {
       key: 'create',
       label: createLabel,
-      type: 'create',
+      type: 'create' as ActionType,
       route: getCreateRoute(moduleKey, appKey),
-      permission: `${moduleKey}.create`,
+      permission: `${permissionModule}.create`,
       variant: 'primary',
       order: 1,
     },
@@ -107,20 +134,24 @@ function getFallbackActions(moduleKey: string, appKey?: string): Array<{
           key: 'import',
           label: 'Import',
           type: 'import' as ActionType,
-          permission: `${moduleKey}.import`,
+          permission: `${permissionModule}.import`,
           variant: 'secondary' as const,
           order: 2,
         }]
       : []),
-    {
-      key: 'export',
-      label: 'Export',
-      type: 'export',
-      permission: `${moduleKey}.exportData`,
-      variant: 'secondary',
-      order: 3,
-    },
+    ...(moduleKey === 'campaigns' || moduleKey === 'reports' || moduleKey === 'widgets' || moduleKey === 'dashboards'
+      ? []
+      : [{
+          key: 'export',
+          label: 'Export',
+          type: 'export' as ActionType,
+          permission: `${permissionModule}.exportData`,
+          variant: 'secondary' as const,
+          order: 3,
+        }]),
   ];
+
+  return actions;
 }
 
 function getCreateRoute(moduleKey: string, appKey?: string): string {
@@ -128,6 +159,18 @@ function getCreateRoute(moduleKey: string, appKey?: string): string {
   const app = String(appKey || '').toUpperCase().trim();
   if (key === 'cases' && app === 'HELPDESK') {
     return '/helpdesk/cases/new';
+  }
+  if (key === 'campaigns') {
+    return '/marketing/campaigns/new';
+  }
+  if (key === 'reports') {
+    return '/analytics/reports/new';
+  }
+  if (key === 'widgets') {
+    return '/analytics/widgets/new';
+  }
+  if (key === 'dashboards') {
+    return '/analytics/dashboards/new';
   }
   return `/${key}/new`;
 }
@@ -408,6 +451,10 @@ function getModuleDisplayName(moduleKey: string): string {
     events: 'Events',
     audits: 'Audits',
     responses: 'Responses',
+    reports: 'Reports',
+    widgets: 'Widgets',
+    dashboards: 'Dashboards',
+    campaigns: 'Campaigns',
   };
   
   return nameMap[moduleKey.toLowerCase()] || moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1);
@@ -559,11 +606,17 @@ export function buildModuleListFromRegistry(
   
   // Find module in app
   const module = app.modules?.find((m) => m.moduleKey === moduleKey);
-  
-  if (!module) {
+
+  if (!module && !hasModuleListConfig(moduleKey)) {
     console.warn(`Module ${moduleKey} not found in app ${appKey}`);
     return null;
   }
+
+  const resolvedModule = module ?? {
+    moduleKey,
+    label: getModuleDisplayName(moduleKey),
+    permission: `${resolveListPermissionModule(moduleKey)}.view`,
+  };
   
   // Use memoization for performance
   return memoizeBuilder(
@@ -575,7 +628,7 @@ export function buildModuleListFromRegistry(
     () => {
       // Get list configuration from module
       // Type assertion needed because AppRegistry module type doesn't include list
-      const moduleWithList = module as AppRegistryModuleEntry;
+      const moduleWithList = resolvedModule as AppRegistryModuleEntry;
       const listConfig = moduleWithList.list;
       
       if (!listConfig) {
@@ -598,27 +651,120 @@ export function buildModuleListFromRegistry(
                         ? 'Add an item'
                         : moduleKey === 'forms'
                           ? 'Create a form'
+                          : moduleKey === 'campaigns'
+                            ? 'Create your first campaign'
+                          : moduleKey === 'reports'
+                            ? 'Create your first report'
                           : `Create ${displayName.toLowerCase()}`;
+
+          const emptyState: EmptyStateDefinition = moduleKey === 'campaigns'
+            ? {
+                type: EmptyStateType.NO_DATA,
+                title: '',
+                description: '',
+                titleKey: 'marketing.campaignsEmptyTitle',
+                descriptionKey: 'marketing.campaignsEmptyMessage',
+                primaryAction: fallbackActions.find((a) => a.type === 'create')
+                  ? {
+                      label: '',
+                      labelKey: 'marketing.campaignsNew',
+                      route: getCreateRoute(moduleKey, appKey)
+                    }
+                  : undefined
+              }
+            : moduleKey === 'reports'
+              ? {
+                  type: options?.isFirstModuleVisit
+                    ? EmptyStateType.FIRST_TIME
+                    : EmptyStateType.NO_DATA,
+                  title: '',
+                  description: '',
+                  titleKey: options?.isFirstModuleVisit
+                    ? 'onboarding.firstTimeReportsTitle'
+                    : 'analytics.emptyNoDataTitle',
+                  descriptionKey: options?.isFirstModuleVisit
+                    ? 'onboarding.firstTimeReportsDescription'
+                    : 'analytics.emptyNoDataDescription',
+                  primaryAction: fallbackActions.find((a) => a.type === 'create')
+                    ? {
+                        label: '',
+                        labelKey: options?.isFirstModuleVisit
+                          ? 'onboarding.firstTimeReportsAction'
+                          : 'analytics.newReport',
+                        route: getCreateRoute(moduleKey, appKey)
+                      }
+                    : undefined
+                }
+            : moduleKey === 'widgets'
+              ? {
+                  type: options?.isFirstModuleVisit
+                    ? EmptyStateType.FIRST_TIME
+                    : EmptyStateType.NO_DATA,
+                  title: '',
+                  description: '',
+                  titleKey: options?.isFirstModuleVisit
+                    ? 'analytics.widgetsFirstTimeTitle'
+                    : 'analytics.widgetsEmptyTitle',
+                  descriptionKey: options?.isFirstModuleVisit
+                    ? 'analytics.widgetsFirstTimeDescription'
+                    : 'analytics.widgetsEmptyDescription',
+                  primaryAction: fallbackActions.find((a) => a.type === 'create')
+                    ? {
+                        label: '',
+                        labelKey: options?.isFirstModuleVisit
+                          ? 'analytics.widgetsFirstTimeAction'
+                          : 'analytics.newWidget',
+                        route: getCreateRoute(moduleKey, appKey)
+                      }
+                    : undefined
+                }
+            : moduleKey === 'dashboards'
+              ? {
+                  type: options?.isFirstModuleVisit
+                    ? EmptyStateType.FIRST_TIME
+                    : EmptyStateType.NO_DATA,
+                  title: '',
+                  description: '',
+                  titleKey: options?.isFirstModuleVisit
+                    ? 'analytics.dashboardsFirstTimeTitle'
+                    : 'analytics.dashboardsEmptyTitle',
+                  descriptionKey: options?.isFirstModuleVisit
+                    ? 'analytics.dashboardsFirstTimeDescription'
+                    : 'analytics.dashboardsEmptyDescription',
+                  primaryAction: fallbackActions.find((a) => a.type === 'create')
+                    ? {
+                        label: '',
+                        labelKey: options?.isFirstModuleVisit
+                          ? 'analytics.dashboardsFirstTimeAction'
+                          : 'analytics.newDashboard',
+                        route: getCreateRoute(moduleKey, appKey)
+                      }
+                    : undefined
+                }
+            : {
+                type: EmptyStateType.NO_DATA,
+                title: `No ${displayName.toLowerCase()} yet`,
+                description: `${displayName} will appear here as you add them. Get started by creating your first one.`,
+                primaryAction: fallbackActions.find((a) => a.type === 'create')
+                  ? {
+                      label: createActionLabel,
+                      route: getCreateRoute(moduleKey, appKey)
+                    }
+                  : undefined
+              };
 
           return {
             version: 1,
             moduleKey,
             appKey,
-            title: module.label,
+            title: resolvedModule.label,
             layout: 'TABLE',
             columns: [],
             primaryActions: buildPrimaryActions(fallbackActions, snapshot, moduleKey, appKey),
-            emptyState: {
-              type: EmptyStateType.NO_DATA,
-              title: `No ${displayName.toLowerCase()} yet`,
-              description: `${displayName} will appear here as you add them. Get started by creating your first one.`,
-              primaryAction: fallbackActions.find((a) => a.type === 'create')
-                ? {
-                    label: createActionLabel,
-                    route: getCreateRoute(moduleKey, appKey)
-                  }
-                : undefined
-            }
+            emptyState,
+            defaultSort: ['campaigns', 'reports', 'widgets', 'dashboards'].includes(moduleKey)
+              ? { column: 'updatedAt', order: 'desc' as const }
+              : undefined
           };
         }
 
@@ -640,7 +786,7 @@ export function buildModuleListFromRegistry(
           version: 1,
           moduleKey,
           appKey,
-          title: module.label,
+          title: resolvedModule.label,
           layout: 'TABLE',
           columns: buildColumns(fallbackColumns, snapshot, moduleKey),
           primaryActions: buildPrimaryActions(fallbackActions, snapshot, moduleKey, appKey),
@@ -670,7 +816,7 @@ export function buildModuleListFromRegistry(
         columns.length > 0,
         primaryActions.length > 0,
         snapshot,
-        module.permission,
+        resolvedModule.permission,
         options
       );
       
@@ -678,7 +824,7 @@ export function buildModuleListFromRegistry(
         version: 1,
         moduleKey,
         appKey,
-        title: module.label,
+        title: resolvedModule.label,
         description: undefined, // Can be added to registry if needed
         layout: listConfig.layout || 'TABLE',
         columns,

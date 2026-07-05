@@ -1,91 +1,172 @@
 <template>
-  <div class="mx-auto w-full px-6 py-8">
-    <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-      <div>
-        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
-          {{ t('navigation.appMarketing') }}
-        </h1>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          {{ t('navigation.marketingDashboardBlurb') }}
-        </p>
-      </div>
+  <div class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+    <header
+      class="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900"
+    >
+      <div class="border-b border-gray-100 bg-gradient-to-br from-indigo-50/80 via-white to-white px-5 py-5 dark:border-gray-800 dark:from-indigo-950/30 dark:via-gray-900 dark:to-gray-900 sm:px-6">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div class="min-w-0">
+            <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">
+              {{ t('navigation.appMarketing') }}
+            </h1>
+            <p class="mt-2 max-w-2xl text-sm text-gray-600 dark:text-gray-400">
+              {{ t('navigation.marketingDashboardBlurb') }}
+            </p>
+          </div>
 
-      <div class="flex flex-wrap gap-2">
-        <router-link
-          v-if="canCreateCampaign"
-          :to="{ name: 'marketing-campaign-new' }"
-          class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
-        >
-          {{ t('marketing.dashboardActionNewCampaign') }}
-        </router-link>
-        <router-link
-          v-if="canCreateAudience"
-          :to="{ name: 'marketing-audience-new' }"
-          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
-        >
-          {{ t('marketing.dashboardActionNewAudience') }}
-        </router-link>
-        <router-link
-          v-if="canViewCampaigns"
-          :to="{ name: 'marketing-reports' }"
-          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
-        >
-          {{ t('marketing.dashboardActionReports') }}
-        </router-link>
-        <router-link
-          v-if="canViewCampaigns"
-          :to="{ name: 'marketing-campaigns' }"
-          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
-        >
-          {{ t('marketing.dashboardActionCampaigns') }}
-        </router-link>
+          <div class="flex shrink-0 flex-wrap items-center gap-2">
+            <router-link
+              v-if="canCreateCampaign"
+              :to="{ name: 'marketing-campaign-new' }"
+              class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+            >
+              <PlusIcon class="h-4 w-4" aria-hidden="true" />
+              {{ t('marketing.dashboardActionNewCampaign') }}
+            </router-link>
+            <router-link
+              v-if="canCreateAudience"
+              :to="{ name: 'marketing-audience-new' }"
+              class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <UserGroupIcon class="h-4 w-4" aria-hidden="true" />
+              {{ t('marketing.dashboardActionNewAudience') }}
+            </router-link>
+            <router-link
+              v-if="canViewCampaigns"
+              :to="{ name: 'marketing-campaigns' }"
+              class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <MegaphoneIcon class="h-4 w-4" aria-hidden="true" />
+              {{ t('marketing.dashboardActionCampaigns') }}
+            </router-link>
+            <router-link
+              v-if="canViewCampaigns"
+              :to="{ name: 'marketing-reports' }"
+              class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <ChartBarIcon class="h-4 w-4" aria-hidden="true" />
+              {{ t('marketing.dashboardActionReports') }}
+            </router-link>
+          </div>
+        </div>
       </div>
-    </div>
+    </header>
 
-    <div v-if="loading" class="py-16 text-center text-sm text-gray-500">
-      {{ t('states.loading') }}
+    <CampaignTenantSendStats class="mb-6" />
+
+    <div v-if="loading" class="space-y-6">
+      <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+        <div class="grid divide-y divide-gray-100 dark:divide-gray-800 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
+          <div v-for="index in 4" :key="index" class="animate-pulse px-5 py-5">
+            <div class="h-2.5 w-20 rounded bg-gray-100 dark:bg-gray-800" />
+            <div class="mt-3 h-8 w-24 rounded bg-gray-100 dark:bg-gray-800" />
+            <div class="mt-2 h-2 w-28 rounded bg-gray-100 dark:bg-gray-800" />
+          </div>
+        </div>
+      </div>
+      <div class="grid gap-6 xl:grid-cols-3">
+        <div class="xl:col-span-2 space-y-6">
+          <div v-for="index in 2" :key="index" class="h-64 animate-pulse rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900" />
+        </div>
+        <div class="space-y-6">
+          <div v-for="index in 2" :key="`aside-${index}`" class="h-48 animate-pulse rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900" />
+        </div>
+      </div>
     </div>
 
     <template v-else-if="dashboard">
-      <div class="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div
-          v-for="card in kpiCards"
-          :key="card.key"
-          class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900"
-        >
-          <p class="text-sm text-gray-500 dark:text-gray-400">{{ card.label }}</p>
-          <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{{ card.value }}</p>
-          <p v-if="card.hint" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ card.hint }}</p>
+      <section class="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+        <div class="border-b border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-800/60">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ t('marketing.dashboardMetricsTitle') }}
+          </h2>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {{ t('marketing.dashboardMetricsDesc') }}
+          </p>
         </div>
-      </div>
+        <div class="grid divide-y divide-gray-100 dark:divide-gray-800 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
+          <div
+            v-for="card in kpiCards"
+            :key="card.key"
+            class="px-5 py-5"
+          >
+            <p class="text-[11px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
+              {{ card.label }}
+            </p>
+            <p class="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-gray-900 dark:text-white">
+              {{ card.value }}
+            </p>
+            <p v-if="card.hint" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+              {{ card.hint }}
+            </p>
+          </div>
+        </div>
+      </section>
 
-      <div class="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div
-          v-for="card in statusCards"
-          :key="card.key"
-          class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900"
-        >
-          <p class="text-sm text-gray-500 dark:text-gray-400">{{ card.label }}</p>
-          <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{{ card.value }}</p>
+      <section class="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+        <div class="border-b border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-800/60">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ t('marketing.dashboardPipelineTitle') }}
+          </h2>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {{ t('marketing.dashboardPipelineDesc') }}
+          </p>
         </div>
-      </div>
+        <div class="grid divide-y divide-gray-100 dark:divide-gray-800 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
+          <div
+            v-for="card in statusCards"
+            :key="card.key"
+            class="px-5 py-5"
+          >
+            <p class="text-[11px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
+              {{ card.label }}
+            </p>
+            <p class="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-gray-900 dark:text-white">
+              {{ card.value }}
+            </p>
+          </div>
+        </div>
+      </section>
 
       <div class="grid gap-6 xl:grid-cols-3">
         <section class="xl:col-span-2 space-y-6">
-          <div class="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-            <div class="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                {{ t('marketing.dashboardRecentCampaignsTitle') }}
-              </h2>
+          <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-800/60">
+              <div>
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+                  {{ t('marketing.dashboardRecentCampaignsTitle') }}
+                </h2>
+              </div>
+              <router-link
+                v-if="canViewCampaigns"
+                :to="{ name: 'marketing-campaigns' }"
+                class="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+              >
+                {{ t('marketing.dashboardViewAllCampaigns') }}
+              </router-link>
             </div>
-            <div v-if="recentCampaigns.length === 0" class="px-5 py-10 text-center text-sm text-gray-500">
-              {{ t('marketing.dashboardRecentCampaignsEmpty') }}
+            <div
+              v-if="recentCampaigns.length === 0"
+              class="border-t border-dashed border-gray-200 px-5 py-12 text-center dark:border-gray-700"
+            >
+              <MegaphoneIcon class="mx-auto h-8 w-8 text-gray-300 dark:text-gray-600" aria-hidden="true" />
+              <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                {{ t('marketing.dashboardRecentCampaignsEmpty') }}
+              </p>
+              <router-link
+                v-if="canCreateCampaign"
+                :to="{ name: 'marketing-campaign-new' }"
+                class="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+              >
+                <PlusIcon class="h-4 w-4" aria-hidden="true" />
+                {{ t('marketing.dashboardActionNewCampaign') }}
+              </router-link>
             </div>
-            <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+            <ul v-else class="divide-y divide-gray-100 dark:divide-gray-800">
               <li
                 v-for="campaign in recentCampaigns"
                 :key="campaign._id"
-                class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/40"
+                class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/40"
                 @click="openCampaign(campaign._id)"
               >
                 <div class="min-w-0">
@@ -107,60 +188,66 @@
             </ul>
           </div>
 
-          <div class="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-            <div class="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            <div class="border-b border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-800/60">
+              <h2 class="text-base font-semibold text-gray-900 dark:text-white">
                 {{ t('marketing.dashboardTopCampaignsTitle') }}
               </h2>
             </div>
-            <div v-if="topCampaigns.length === 0" class="px-5 py-10 text-center text-sm text-gray-500">
+            <div
+              v-if="topCampaigns.length === 0"
+              class="px-5 py-12 text-center text-sm text-gray-500 dark:text-gray-400"
+            >
               {{ t('marketing.dashboardTopCampaignsEmpty') }}
             </div>
             <div v-else class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-800">
+              <table class="min-w-full divide-y divide-gray-100 dark:divide-gray-800">
+                <thead class="bg-gray-50/80 dark:bg-gray-800/60">
                   <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <th class="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
                       {{ t('marketing.campaignsColName') }}
                     </th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <th class="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
                       {{ t('marketing.dashboardColRecipients') }}
                     </th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <th class="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
                       {{ t('marketing.campaignsStatsOpenRate') }}
                     </th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <th class="px-5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
                       {{ t('marketing.campaignsStatsClickRate') }}
                     </th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody class="divide-y divide-gray-100 bg-white dark:divide-gray-800 dark:bg-gray-900">
                   <tr
                     v-for="campaign in topCampaigns"
                     :key="campaign._id"
-                    class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/40"
+                    class="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/40"
                     @click="openCampaign(campaign._id)"
                   >
-                    <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{{ campaign.name }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{{ campaign.totalRecipients }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{{ formatRate(campaign.openRate) }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{{ formatRate(campaign.clickRate) }}</td>
+                    <td class="px-5 py-3.5 text-sm font-medium text-gray-900 dark:text-white">{{ campaign.name }}</td>
+                    <td class="px-5 py-3.5 text-sm tabular-nums text-gray-700 dark:text-gray-300">{{ campaign.totalRecipients }}</td>
+                    <td class="px-5 py-3.5 text-sm tabular-nums text-gray-700 dark:text-gray-300">{{ formatRate(campaign.openRate) }}</td>
+                    <td class="px-5 py-3.5 text-sm tabular-nums text-gray-700 dark:text-gray-300">{{ formatRate(campaign.clickRate) }}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
 
-          <div class="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-            <div class="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            <div class="border-b border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-800/60">
+              <h2 class="text-base font-semibold text-gray-900 dark:text-white">
                 {{ t('marketing.dashboardLinkPerformanceTitle') }}
               </h2>
             </div>
-            <div v-if="linkPerformance.length === 0" class="px-5 py-10 text-center text-sm text-gray-500">
+            <div
+              v-if="linkPerformance.length === 0"
+              class="px-5 py-12 text-center text-sm text-gray-500 dark:text-gray-400"
+            >
               {{ t('marketing.dashboardLinkPerformanceEmpty') }}
             </div>
-            <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+            <ul v-else class="divide-y divide-gray-100 dark:divide-gray-800">
               <li
                 v-for="(link, index) in linkPerformance"
                 :key="`${link.url || 'unknown'}-${index}`"
@@ -176,7 +263,7 @@
                     </p>
                   </div>
                   <div class="shrink-0 text-right text-sm text-gray-700 dark:text-gray-300">
-                    <p>{{ t('marketing.dashboardLinkClicks', { count: link.clicks }) }}</p>
+                    <p class="tabular-nums">{{ t('marketing.dashboardLinkClicks', { count: link.clicks }) }}</p>
                     <p class="text-xs text-gray-500 dark:text-gray-400">
                       {{ t('marketing.dashboardLinkRecipients', { count: link.uniqueRecipients }) }}
                     </p>
@@ -188,20 +275,23 @@
         </section>
 
         <aside class="space-y-6">
-          <div class="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-            <div class="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            <div class="border-b border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-800/60">
+              <h2 class="text-base font-semibold text-gray-900 dark:text-white">
                 {{ t('marketing.dashboardActivityTitle') }}
               </h2>
             </div>
-            <div v-if="recentActivity.length === 0" class="px-5 py-10 text-center text-sm text-gray-500">
+            <div
+              v-if="recentActivity.length === 0"
+              class="px-5 py-12 text-center text-sm text-gray-500 dark:text-gray-400"
+            >
               {{ t('marketing.dashboardActivityEmpty') }}
             </div>
-            <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+            <ul v-else class="divide-y divide-gray-100 dark:divide-gray-800">
               <li
                 v-for="item in recentActivity"
                 :key="item.id"
-                class="cursor-pointer px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/40"
+                class="cursor-pointer px-5 py-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/40"
                 @click="openCampaign(item.campaignId)"
               >
                 <p class="text-sm text-gray-900 dark:text-white">
@@ -214,53 +304,70 @@
             </ul>
           </div>
 
-          <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('marketing.dashboardAudienceGrowthTitle') }}
-            </h2>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              {{ t('marketing.dashboardAudienceGrowthSummary', audienceGrowthSummary) }}
-            </p>
-            <div v-if="audienceGrowthTrend.length > 0" class="mt-4 space-y-2">
-              <div
-                v-for="point in audienceGrowthTrend"
-                :key="point.date"
-                class="flex items-center gap-3"
-              >
-                <span class="w-20 shrink-0 text-xs text-gray-500 dark:text-gray-400">
-                  {{ formatShortDate(point.date) }}
-                </span>
-                <div class="h-2 flex-1 rounded-full bg-gray-100 dark:bg-gray-800">
-                  <div
-                    class="h-2 rounded-full bg-indigo-500"
-                    :style="{ width: `${growthBarWidth(point.audiences)}%` }"
-                  />
+          <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            <div class="border-b border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-800/60">
+              <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+                {{ t('marketing.dashboardAudienceGrowthTitle') }}
+              </h2>
+            </div>
+            <div class="px-5 py-5">
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ t('marketing.dashboardAudienceGrowthSummary', audienceGrowthSummary) }}
+              </p>
+              <div v-if="audienceGrowthTrend.length > 0" class="mt-4 space-y-3">
+                <div
+                  v-for="point in audienceGrowthTrend"
+                  :key="point.date"
+                  class="flex items-center gap-3"
+                >
+                  <span class="w-16 shrink-0 text-xs text-gray-500 dark:text-gray-400">
+                    {{ formatShortDate(point.date) }}
+                  </span>
+                  <div class="h-2 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                    <div
+                      class="h-2 rounded-full bg-indigo-500 transition-all duration-500"
+                      :style="{ width: `${growthBarWidth(point.audiences)}%` }"
+                    />
+                  </div>
+                  <span class="w-8 shrink-0 text-right text-xs tabular-nums text-gray-700 dark:text-gray-300">
+                    {{ point.audiences }}
+                  </span>
                 </div>
-                <span class="w-8 shrink-0 text-right text-xs text-gray-700 dark:text-gray-300">
-                  {{ point.audiences }}
-                </span>
               </div>
             </div>
           </div>
 
-          <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ t('marketing.dashboardQuickLinksTitle') }}
-            </h2>
-            <div class="mt-4 flex flex-col gap-2">
+          <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            <div class="border-b border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-800/60">
+              <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+                {{ t('marketing.dashboardQuickLinksTitle') }}
+              </h2>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {{ t('marketing.dashboardQuickLinksDesc') }}
+              </p>
+            </div>
+            <div class="space-y-2 px-5 py-5">
               <router-link
                 v-if="canViewAudiences"
                 :to="{ name: 'marketing-audiences' }"
-                class="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                class="flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-gray-700 dark:text-gray-200 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/20"
               >
-                {{ t('marketing.dashboardActionAudiences') }}
+                <span class="inline-flex items-center gap-2">
+                  <UserGroupIcon class="h-4 w-4 text-indigo-600 dark:text-indigo-400" aria-hidden="true" />
+                  {{ t('marketing.dashboardActionAudiences') }}
+                </span>
+                <ChevronRightIcon class="h-4 w-4 text-gray-400" aria-hidden="true" />
               </router-link>
               <router-link
                 v-if="canViewSegments"
                 :to="{ name: 'marketing-segments' }"
-                class="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                class="flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-gray-700 dark:text-gray-200 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/20"
               >
-                {{ t('marketing.dashboardActionSegments') }}
+                <span class="inline-flex items-center gap-2">
+                  <FunnelIcon class="h-4 w-4 text-indigo-600 dark:text-indigo-400" aria-hidden="true" />
+                  {{ t('marketing.dashboardActionSegments') }}
+                </span>
+                <ChevronRightIcon class="h-4 w-4 text-gray-400" aria-hidden="true" />
               </router-link>
             </div>
           </div>
@@ -274,7 +381,16 @@
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import {
+  ChartBarIcon,
+  ChevronRightIcon,
+  FunnelIcon,
+  MegaphoneIcon,
+  PlusIcon,
+  UserGroupIcon
+} from '@heroicons/vue/24/outline';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
+import CampaignTenantSendStats from '@/components/marketing/CampaignTenantSendStats.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useOnboarding } from '@/composables/useOnboarding';
 import { useMarketingDashboard } from '@/composables/useMarketingDashboard';
@@ -335,25 +451,25 @@ const kpiCards = computed(() => {
     {
       key: 'delivered',
       label: t('marketing.dashboardKpiDelivered'),
-      value: engagement.delivered || 0,
+      value: (engagement.delivered || 0).toLocaleString(),
       hint: t('marketing.dashboardKpiDeliveredHint', { rate: formatRate(engagement.deliveryRate) })
     },
     {
       key: 'opens',
       label: t('marketing.dashboardKpiOpens'),
-      value: engagement.uniqueOpens || 0,
+      value: (engagement.uniqueOpens || 0).toLocaleString(),
       hint: t('marketing.dashboardKpiOpensHint', { rate: formatRate(engagement.avgOpenRate) })
     },
     {
       key: 'clicks',
       label: t('marketing.dashboardKpiClicks'),
-      value: engagement.uniqueClicks || 0,
+      value: (engagement.uniqueClicks || 0).toLocaleString(),
       hint: t('marketing.dashboardKpiClicksHint', { rate: formatRate(engagement.avgClickRate) })
     },
     {
       key: 'audiences',
       label: t('marketing.dashboardKpiAudienceMembers'),
-      value: dashboard.value?.kpis?.audiences?.totalMembers || 0,
+      value: (dashboard.value?.kpis?.audiences?.totalMembers || 0).toLocaleString(),
       hint: t('marketing.dashboardKpiAudienceMembersHint', {
         count: dashboard.value?.kpis?.audiences?.totalAudiences || 0
       })
