@@ -317,11 +317,16 @@
 
     <!-- Paragraph / Rich text / Address blocks -->
     <template v-else-if="showsContentEditor">
-      <div>
+      <GrapesRichTextField
+        v-if="context.kind === 'rich-text'"
+        :field="richTextContent"
+        :watch-key="targetKey"
+      />
+      <div v-else>
         <label class="mb-1 block" :class="ui.label">{{ t('templates.builderFieldText') }}</label>
         <textarea
           v-model="content.draft"
-          :rows="context.kind === 'rich-text' || context.kind === 'html' ? 5 : 3"
+          :rows="context.kind === 'html' ? 5 : 3"
           :class="[ui.input, context.kind === 'html' ? 'font-mono text-xs' : '']"
           @focus="content.onFocus"
           @input="content.onInput"
@@ -455,6 +460,7 @@ import { buildDefaultLogoAttributes, resolveLogoPreviewUrl } from '../editor/log
 import { applyImageSrcToComponent } from '../editor/canvasImageSrc';
 import BuilderImageAssetPicker from '@/components/templates/builder/BuilderImageAssetPicker.vue';
 import BuilderSelect from './BuilderSelect.vue';
+import GrapesRichTextField from './GrapesRichTextField.vue';
 import {
   inspectorLabelKey,
   resolveInspectorContext
@@ -466,7 +472,9 @@ import {
   patchComponentStyle,
   readComponentAttributes,
   readStyleValue,
+  readRichTextHtml,
   readTextContent,
+  writeRichTextHtml,
   writeTextContent
 } from '../editor/selection';
 
@@ -566,6 +574,13 @@ const content = useComponentTextDraft(
   targetKey,
   readComponentContent,
   writeComponentContent,
+  commitChange
+);
+const richTextContent = useComponentTextDraft(
+  target,
+  targetKey,
+  readRichTextHtml,
+  (model, value) => writeRichTextHtml(model, value, { silent: true, force: true }),
   commitChange
 );
 const mergePathField = useComponentTextDraft(

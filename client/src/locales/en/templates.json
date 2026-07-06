@@ -1285,11 +1285,15 @@
   },
   "builderPreviewPdfHint": {
     "message": "Server-rendered PDF preview using your sample record when selected.",
-    "description": "Hint above PDF preview panel"
+    "description": "Deprecated hint — use builderPreviewHtmlHint"
+  },
+  "builderPreviewHtmlHint": {
+    "message": "HTML preview updates automatically. Use Preview PDF for a server-rendered PDF.",
+    "description": "Hint above HTML preview panel in template builder"
   },
   "builderPreviewRefresh": {
     "message": "Refresh preview",
-    "description": "Reload PDF preview from server"
+    "description": "Reload HTML preview from server with merge data"
   },
   "builderViewHtml": {
     "message": "HTML",
@@ -1498,6 +1502,10 @@
   "builderFormatItalic": {
     "message": "Italic",
     "description": "Italic text formatting"
+  },
+  "builderFormatUnderline": {
+    "message": "Underline",
+    "description": "Underline text formatting"
   },
   "builderFormatAlignLeft": {
     "message": "Align left",

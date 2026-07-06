@@ -45,11 +45,12 @@
         :is-email-format="isEmailFormat"
         :email-html="emailHtml"
         :email-css="emailCss"
-        :html-document="htmlDocument"
-        :pdf-preview-url="pdfPreviewUrl"
+        :html-document="previewDocument"
         :preview-device="previewDevice"
         :preview-busy="previewBusy"
+        :pdf-preview-busy="pdfPreviewBusy"
         @refresh="emit('refresh-preview')"
+        @preview-pdf="emit('preview-pdf')"
       />
     </div>
   </div>
@@ -85,9 +86,10 @@ defineProps({
   isEmailFormat: { type: Boolean, default: false },
   emailHtml: { type: String, default: '' },
   emailCss: { type: String, default: '' },
-  pdfPreviewUrl: { type: String, default: '' },
+  previewDocument: { type: String, default: '' },
   previewDevice: { type: String, default: 'desktop' },
-  previewBusy: { type: Boolean, default: false }
+  previewBusy: { type: Boolean, default: false },
+  pdfPreviewBusy: { type: Boolean, default: false }
 });
 
 const emit = defineEmits([
@@ -95,6 +97,7 @@ const emit = defineEmits([
   'update:htmlDocument',
   'container-ready',
   'refresh-preview',
+  'preview-pdf',
   'apply-html',
   'html-edit'
 ]);

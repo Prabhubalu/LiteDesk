@@ -87,11 +87,13 @@
           :is-email-format="isEmailFormat"
           :email-html="emailPreviewParts.html"
           :email-css="emailPreviewParts.css"
-          :pdf-preview-url="pdfPreviewBlobUrl"
+          :preview-document="workspacePreviewHtml"
           :preview-device="previewDevice"
           :preview-busy="previewBusy"
+          :pdf-preview-busy="pdfPreviewBusy"
           @container-ready="onContainerReady"
-          @refresh-preview="refreshWorkspacePreview"
+          @refresh-preview="refreshWorkspaceHtmlPreview"
+          @preview-pdf="openWorkspacePdfPreview"
           @apply-html="flushHtmlEditorToCanvas"
           @html-edit="onHtmlEditorEdit"
         />
@@ -208,8 +210,9 @@ import { useCompanyLogoAsset } from '../composables/useCompanyLogoAsset';
 import { useTemplateEditor } from '../composables/useTemplateEditor';
 import { applyCompanyLogoToEditor, refreshCanvasImageSources, resolveLogoPreviewUrl, setLogoHydrationHandler } from '../editor/logoContent';
 import { useEmailHtmlValidation } from '../composables/useEmailHtmlValidation';
-import { fetchTemplatePreviewBlob } from '../services/templateApi';
+import { previewTemplatePdf, renderTemplateHtml } from '../services/templateApi';
 import { buildTemplateHtmlDocument } from '../editor/renderer';
+import { resolvePreviewHtmlImageUrls } from '../utils/previewHtmlImages';
 import { createBlankGrapesDefinition } from '../editor/storage';
 import {
   attachImportSnapshot,
@@ -239,7 +242,8 @@ const leftPanelOpen = ref(true);
 const rightPanelOpen = ref(true);
 const previewDevice = ref('desktop');
 const workspaceView = ref('design');
-const pdfPreviewBlobUrl = ref('');
+const serverPreviewHtml = ref('');
+const pdfPreviewBusy = ref(false);
 const htmlEditorContent = ref('');
 const htmlEditorDirty = ref(false);
 const htmlSyncing = ref(false);
@@ -375,6 +379,7 @@ const {
 const {
   ensureCompanyLogo,
   companyLogoAssetUrl,
+  organizationLogoUrl,
   organizationName: companyName
 } = useCompanyLogoAsset();
 
@@ -434,6 +439,55 @@ const currentTemplateDocument = computed(() => {
 });
 
 const currentEmailDocument = computed(() => currentTemplateDocument.value);
+
+const workspacePreviewHtml = computed(() => {
+  void canvasContentRevision.value;
+  const raw = serverPreviewHtml.value || currentTemplateDocument.value;
+  const fallbackLogoUrl = resolveLogoPreviewUrl(
+    companyLogoAssetUrl(),
+    organizationLogoUrl.value
+  );
+  return resolvePreviewHtmlImageUrls(raw, fallbackLogoUrl);
+});
+
+const PREVIEW_DEBOUNCE_MS = 1200;
+let previewRefreshTimer = null;
+
+function buildPreviewRenderOptions() {
+  const meta = templateMeta.value;
+  return {
+    recordModuleKey: moduleScope.value || meta?.moduleScope,
+    recordId: previewRecordId.value || undefined,
+    jsonDefinition: serializeProject(),
+    pageSettings: {
+      paperSize: paperSize.value,
+      orientation: orientation.value,
+      customPageWidth: customPageWidth.value,
+      customPageHeight: customPageHeight.value,
+      margins: pageMarginsMm.value,
+      currencyDisplay: currencyDisplay.value
+    }
+  };
+}
+
+function clearPreviewRefreshTimer() {
+  if (previewRefreshTimer) {
+    clearTimeout(previewRefreshTimer);
+    previewRefreshTimer = null;
+  }
+}
+
+function scheduleWorkspaceHtmlPreview() {
+  if (workspaceView.value !== 'preview') return;
+  if (isEmailFormat.value) return;
+  if (String(outputFormat.value || 'pdf').toLowerCase() !== 'pdf') return;
+
+  clearPreviewRefreshTimer();
+  previewRefreshTimer = window.setTimeout(() => {
+    previewRefreshTimer = null;
+    void refreshWorkspaceHtmlPreview();
+  }, PREVIEW_DEBOUNCE_MS);
+}
 
 function refreshHtmlEditorFromCanvas() {
   resyncHtmlEditorFromCanvas();
@@ -534,9 +588,7 @@ onBeforeUnmount(() => {
   setLogoHydrationHandler(null);
   setAutosaveBlockedChecker(null);
   window.removeEventListener('keydown', onBuilderKeydown);
-  if (pdfPreviewBlobUrl.value) {
-    URL.revokeObjectURL(pdfPreviewBlobUrl.value);
-  }
+  clearPreviewRefreshTimer();
 });
 
 watch(
@@ -695,7 +747,7 @@ function setWorkspaceView(view) {
   workspaceView.value = view;
 }
 
-async function refreshWorkspacePreview() {
+async function refreshWorkspaceHtmlPreview() {
   if (!editor.value || isEmailFormat.value) return;
 
   const format = String(outputFormat.value || 'pdf').toLowerCase();
@@ -709,28 +761,33 @@ async function refreshWorkspacePreview() {
   setPreviewBusy(true);
   try {
     await saveDraft({ force: true });
-    const meta = templateMeta.value;
-    const blob = await fetchTemplatePreviewBlob(templateId.value, {
-      recordModuleKey: moduleScope.value || meta?.moduleScope,
-      recordId: previewRecordId.value || undefined,
-      jsonDefinition: serializeProject(),
-      pageSettings: {
-        paperSize: paperSize.value,
-        orientation: orientation.value,
-        customPageWidth: customPageWidth.value,
-        customPageHeight: customPageHeight.value,
-        margins: pageMarginsMm.value,
-        currencyDisplay: currencyDisplay.value
-      }
-    });
-    if (pdfPreviewBlobUrl.value) {
-      URL.revokeObjectURL(pdfPreviewBlobUrl.value);
-    }
-    pdfPreviewBlobUrl.value = URL.createObjectURL(blob);
+    serverPreviewHtml.value = await renderTemplateHtml(templateId.value, buildPreviewRenderOptions());
   } catch (error) {
     notifications.error(error?.message || t('templates.renderFailed'));
   } finally {
     setPreviewBusy(false);
+  }
+}
+
+async function openWorkspacePdfPreview() {
+  if (!editor.value || isEmailFormat.value) return;
+
+  const format = String(outputFormat.value || 'pdf').toLowerCase();
+  if (format !== 'pdf') return;
+
+  if (previewRecordId.value && !moduleScope.value) {
+    notifications.error(t('templates.builderDataSelectModule'));
+    return;
+  }
+
+  pdfPreviewBusy.value = true;
+  try {
+    await saveDraft({ force: true });
+    await previewTemplatePdf(templateId.value, buildPreviewRenderOptions());
+  } catch (error) {
+    notifications.error(error?.message || t('templates.renderFailed'));
+  } finally {
+    pdfPreviewBusy.value = false;
   }
 }
 
@@ -871,14 +928,20 @@ watch(workspaceView, (view, previousView) => {
   if (view !== 'preview') return;
   if (isEmailFormat.value) return;
   if (String(outputFormat.value || 'pdf').toLowerCase() !== 'pdf') return;
-  void refreshWorkspacePreview();
+  void ensureCompanyLogo();
+  scheduleWorkspaceHtmlPreview();
 });
 
 watch(previewRecordId, () => {
   if (workspaceView.value !== 'preview') return;
   if (isEmailFormat.value) return;
   if (String(outputFormat.value || 'pdf').toLowerCase() !== 'pdf') return;
-  void refreshWorkspacePreview();
+  serverPreviewHtml.value = '';
+  scheduleWorkspaceHtmlPreview();
+});
+
+watch(canvasContentRevision, () => {
+  scheduleWorkspaceHtmlPreview();
 });
 
 async function confirmRestoreSnapshot() {

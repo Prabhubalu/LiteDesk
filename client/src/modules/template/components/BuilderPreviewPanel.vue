@@ -2,22 +2,32 @@
   <div class="flex h-full min-h-0 flex-col overflow-hidden bg-neutral-200/60 dark:bg-neutral-950">
     <div
       v-if="!isEmailFormat"
-      class="flex shrink-0 items-center justify-between gap-2 border-b border-neutral-200 bg-white px-3 py-2 dark:border-neutral-800 dark:bg-neutral-900"
+      class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-neutral-200 bg-white px-3 py-2 dark:border-neutral-800 dark:bg-neutral-900"
     >
-      <p class="text-xs" :class="ui.textMuted">{{ t('templates.builderPreviewPdfHint') }}</p>
-      <button
-        type="button"
-        :class="ui.btnGhost"
-        :disabled="previewBusy"
-        @click="emit('refresh')"
-      >
-        <ArrowPathIcon class="h-3.5 w-3.5" :class="previewBusy ? 'animate-spin' : ''" />
-        {{ previewBusy ? t('templates.rendering') : t('templates.builderPreviewRefresh') }}
-      </button>
+      <p class="text-xs" :class="ui.textMuted">{{ t('templates.builderPreviewHtmlHint') }}</p>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          :class="ui.btnGhost"
+          :disabled="previewBusy"
+          @click="emit('refresh')"
+        >
+          <ArrowPathIcon class="h-3.5 w-3.5" :class="previewBusy ? 'animate-spin' : ''" />
+          {{ previewBusy ? t('templates.rendering') : t('templates.builderPreviewRefresh') }}
+        </button>
+        <button
+          type="button"
+          :class="ui.btnSecondary"
+          :disabled="pdfPreviewBusy"
+          @click="emit('preview-pdf')"
+        >
+          {{ pdfPreviewBusy ? t('templates.rendering') : t('templates.previewPdf') }}
+        </button>
+      </div>
     </div>
 
     <div class="min-h-0 flex-1 overflow-auto p-4">
-      <div v-if="previewBusy && !isEmailFormat" class="flex h-full min-h-[24rem] items-center justify-center">
+      <div v-if="previewBusy && !htmlDocument && !isEmailFormat" class="flex h-full min-h-[24rem] items-center justify-center">
         <p class="text-sm" :class="ui.textMuted">{{ t('templates.rendering') }}</p>
       </div>
 
@@ -28,15 +38,6 @@
         :css="emailCss"
         :viewport="previewDevice"
         :color-scheme="colorScheme"
-      />
-
-      <iframe
-        v-else-if="pdfPreviewUrl"
-        :key="pdfPreviewUrl"
-        :src="pdfPreviewUrl"
-        class="mx-auto block min-h-[calc(100vh-12rem)] w-full max-w-5xl rounded-lg border bg-white shadow-lg"
-        :class="ui.border"
-        :title="t('templates.builderViewPreview')"
       />
 
       <iframe
@@ -64,12 +65,12 @@ defineProps({
   emailHtml: { type: String, default: '' },
   emailCss: { type: String, default: '' },
   htmlDocument: { type: String, default: '' },
-  pdfPreviewUrl: { type: String, default: '' },
   previewDevice: { type: String, default: 'desktop' },
-  previewBusy: { type: Boolean, default: false }
+  previewBusy: { type: Boolean, default: false },
+  pdfPreviewBusy: { type: Boolean, default: false }
 });
 
-const emit = defineEmits(['refresh']);
+const emit = defineEmits(['refresh', 'preview-pdf']);
 
 const { t } = useI18n();
 const ui = useBuilderUi();

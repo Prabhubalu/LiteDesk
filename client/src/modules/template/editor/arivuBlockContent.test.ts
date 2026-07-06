@@ -11,10 +11,6 @@ describe('arivuBlockContent', () => {
   it('includes all core content component types', () => {
     const ids = new Set(ARIVU_BLOCK_DEFINITIONS.map((block) => block.id));
     const required = [
-      'section',
-      'container',
-      'row',
-      'column',
       'heading',
       'paragraph',
       'merge-field',

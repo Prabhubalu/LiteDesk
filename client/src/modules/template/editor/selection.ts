@@ -23,7 +23,7 @@ export interface LayerNode {
 
 const TEXT_TAGS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'a', 'li', 'td', 'th']);
 
-export { isComponentDomFocused, isCorruptedComponentContent, isEditableTextComponent, normalizeDisplayText, readTextContent, repairAllTextComponents, syncTextContentFromDom, writeTextContent } from './textContent';
+export { isComponentDomFocused, isCorruptedComponentContent, isEditableTextComponent, normalizeDisplayText, readRichTextHtml, readTextContent, repairAllTextComponents, syncTextContentFromDom, writeRichTextHtml, writeTextContent } from './textContent';
 
 export function isTextComponent(component: Component | null): boolean {
   if (!component) return false;

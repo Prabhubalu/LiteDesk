@@ -161,74 +161,57 @@
       </div>
       <div>
         <p class="mb-2" :class="ui.label">{{ t('templates.builderGroupSpacing') }}</p>
-        <div class="space-y-3">
-          <BuilderRangeField
+        <div class="grid grid-cols-2 gap-2">
+          <StyleField
             :label="t('templates.builderFieldMarginTop')"
             :value="marginTop"
-            :max="120"
+            placeholder="0"
             @change="patchStyle({ 'margin-top': $event })"
           />
-          <BuilderRangeField
+          <StyleField
             :label="t('templates.builderFieldMarginBottom')"
             :value="marginBottom"
-            :max="120"
+            placeholder="0"
             @change="patchStyle({ 'margin-bottom': $event })"
           />
-          <BuilderRangeField
-            :label="t('templates.builderFieldPadding')"
+          <StyleField
+            :label="t('templates.builderFieldMarginLeft')"
+            :value="marginLeft"
+            placeholder="0"
+            @change="patchStyle({ 'margin-left': $event })"
+          />
+          <StyleField
+            :label="t('templates.builderFieldMarginRight')"
+            :value="marginRight"
+            placeholder="0"
+            @change="patchStyle({ 'margin-right': $event })"
+          />
+          <StyleField
+            :label="t('templates.builderFieldPaddingTop')"
             :value="paddingTop"
-            :max="80"
-            @change="onUniformPaddingChange"
+            placeholder="0"
+            @change="patchStyle({ 'padding-top': $event })"
+          />
+          <StyleField
+            :label="t('templates.builderFieldPaddingRight')"
+            :value="paddingRight"
+            placeholder="0"
+            @change="patchStyle({ 'padding-right': $event })"
+          />
+          <StyleField
+            :label="t('templates.builderFieldPaddingBottom')"
+            :value="paddingBottom"
+            placeholder="0"
+            @change="patchStyle({ 'padding-bottom': $event })"
+          />
+          <StyleField
+            :label="t('templates.builderFieldPaddingLeft')"
+            :value="paddingLeft"
+            placeholder="0"
+            @change="patchStyle({ 'padding-left': $event })"
           />
         </div>
       </div>
-      <details class="group">
-        <summary class="cursor-pointer text-xs font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200">
-          {{ t('templates.builderSpacingAdvanced') }}
-        </summary>
-        <div class="mt-3 space-y-3">
-          <div class="grid grid-cols-2 gap-2">
-            <StyleField
-              :label="t('templates.builderFieldMarginLeft')"
-              :value="marginLeft"
-              placeholder="0"
-              @change="patchStyle({ 'margin-left': $event })"
-            />
-            <StyleField
-              :label="t('templates.builderFieldMarginRight')"
-              :value="marginRight"
-              placeholder="0"
-              @change="patchStyle({ 'margin-right': $event })"
-            />
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <StyleField
-              :label="t('templates.builderFieldPaddingTop')"
-              :value="paddingTop"
-              placeholder="0"
-              @change="patchStyle({ 'padding-top': $event })"
-            />
-            <StyleField
-              :label="t('templates.builderFieldPaddingRight')"
-              :value="paddingRight"
-              placeholder="0"
-              @change="patchStyle({ 'padding-right': $event })"
-            />
-            <StyleField
-              :label="t('templates.builderFieldPaddingBottom')"
-              :value="paddingBottom"
-              placeholder="0"
-              @change="patchStyle({ 'padding-bottom': $event })"
-            />
-            <StyleField
-              :label="t('templates.builderFieldPaddingLeft')"
-              :value="paddingLeft"
-              placeholder="0"
-              @change="patchStyle({ 'padding-left': $event })"
-            />
-          </div>
-        </div>
-      </details>
     </BuilderDisclosureSection>
 
     <BuilderDisclosureSection v-if="showTypographySection" :title="t('templates.builderGroupTypography')">
@@ -332,7 +315,6 @@ import GrapesTablePanel from './GrapesTablePanel.vue';
 import GrapesLineItemPanel from './GrapesLineItemPanel.vue';
 import BuilderDisclosureSection from './BuilderDisclosureSection.vue';
 import BuilderSelect from './BuilderSelect.vue';
-import BuilderRangeField from './BuilderRangeField.vue';
 import BuilderSegmentGroup from './BuilderSegmentGroup.vue';
 import { isLayoutGridCell, isLayoutGridRow } from '../editor/printArea';
 import {
@@ -569,15 +551,6 @@ function onCellHorizontalAlignChange(value) {
   patchStyle({
     'align-items': value,
     'text-align': textAlign
-  });
-}
-
-function onUniformPaddingChange(value) {
-  patchStyle({
-    'padding-top': value,
-    'padding-right': value,
-    'padding-bottom': value,
-    'padding-left': value
   });
 }
 

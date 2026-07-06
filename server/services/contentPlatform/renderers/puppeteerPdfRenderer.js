@@ -119,7 +119,7 @@ async function renderHtmlToPdf(html, options = {}) {
   const page = await browser.newPage();
 
   try {
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.setContent(html, { waitUntil: 'load' });
     const pdfOptions = {
       printBackground: true,
       preferCSSPageSize: true

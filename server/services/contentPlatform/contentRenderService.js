@@ -20,6 +20,11 @@ const { renderLayoutTreeToHtml } = require('./renderers/htmlRenderer');
 const { renderGrapesDefinitionToHtml } = require('./renderers/grapesHtmlRenderer');
 const { renderHtmlToPdf } = require('./renderers/puppeteerPdfRenderer');
 const { inlineHtmlImages } = require('./renderers/inlineHtmlImages');
+const {
+  buildRenderCacheKey,
+  getCachedRender,
+  setCachedRender
+} = require('./renderers/renderPreviewCache');
 const { isGrapesTemplateDefinition } = require('../../constants/grapesTemplateDefinition');
 const {
   CONTENT_PLATFORM_EVENT_TYPES,
@@ -33,6 +38,28 @@ function notDeletedFilter() {
 
 function computeChecksum(buffer) {
   return crypto.createHash('sha256').update(buffer).digest('hex');
+}
+
+function buildInlinePreviewCacheKey({
+  organizationId,
+  templateId,
+  version,
+  outputFormat,
+  pageSettings,
+  runtimeContext
+}) {
+  return buildRenderCacheKey({
+    organizationId: String(organizationId),
+    templateId: String(templateId),
+    templateVersion: version.version,
+    outputFormat,
+    pageSettings: pageSettings || null,
+    runtimeContext: {
+      recordId: runtimeContext?.recordId || null,
+      recordModuleKey: runtimeContext?.recordModuleKey || null
+    },
+    definitionHash: computeChecksum(Buffer.from(JSON.stringify(version.jsonDefinition || {})))
+  });
 }
 
 async function resolveTemplateVersion({ organizationId, template, preview = false }) {
@@ -241,13 +268,39 @@ async function renderTemplate(params) {
   let mimeType = 'text/html';
 
   if (normalizedFormat === 'html' && persistOutput === false) {
+    const cacheKey = buildInlinePreviewCacheKey({
+      organizationId,
+      templateId,
+      version,
+      outputFormat: 'html',
+      pageSettings,
+      runtimeContext
+    });
+    const cached = getCachedRender(cacheKey);
+    if (cached) {
+      return {
+        templateId,
+        templateVersion: version.version,
+        outputFormat: 'html',
+        checksum: computeChecksum(cached.buffer),
+        mimeType: 'text/html',
+        html: cached.buffer.toString('utf8'),
+        issues,
+        inline: true,
+        cached: true
+      };
+    }
+
+    const htmlForPreview = await inlineHtmlImages(html, { organizationId });
+    setCachedRender(cacheKey, Buffer.from(htmlForPreview, 'utf8'), 'text/html');
+
     return {
       templateId,
       templateVersion: version.version,
       outputFormat: 'html',
       checksum: null,
       mimeType: 'text/html',
-      html,
+      html: htmlForPreview,
       issues,
       inline: true
     };
@@ -255,6 +308,35 @@ async function renderTemplate(params) {
 
   if (normalizedFormat === 'pdf') {
     const pageConfig = resolvePageConfig(templateForLayout);
+    let previewCacheKey = null;
+
+    if (persistOutput === false) {
+      previewCacheKey = buildInlinePreviewCacheKey({
+        organizationId,
+        templateId,
+        version,
+        outputFormat: 'pdf',
+        pageSettings,
+        runtimeContext
+      });
+      const cached = getCachedRender(previewCacheKey);
+      if (cached) {
+        return {
+          templateId,
+          templateVersion: version.version,
+          outputFormat: 'pdf',
+          checksum: computeChecksum(cached.buffer),
+          mimeType: cached.mimeType,
+          buffer: cached.buffer,
+          fileSizeBytes: cached.buffer.length,
+          html,
+          issues,
+          inline: true,
+          cached: true
+        };
+      }
+    }
+
     const htmlForPdf = await inlineHtmlImages(html, { organizationId });
     buffer = await renderHtmlToPdf(htmlForPdf, {
       paperSize: pageConfig.paperSize,
@@ -262,6 +344,10 @@ async function renderTemplate(params) {
       dimensions: pageConfig.dimensions
     });
     mimeType = 'application/pdf';
+
+    if (previewCacheKey) {
+      setCachedRender(previewCacheKey, buffer, mimeType);
+    }
 
     if (persistOutput === false) {
       return {
