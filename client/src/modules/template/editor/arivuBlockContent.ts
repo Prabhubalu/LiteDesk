@@ -25,46 +25,6 @@ export interface ArivuBlockDefinition {
 export const ARIVU_BLOCK_DEFINITIONS: ArivuBlockDefinition[] = [
   // Layout
   {
-    id: 'section',
-    label: 'Section',
-    iconType: T.SECTION,
-    labelKey: 'templates.builderComponentSection',
-    groupKey: 'templates.builderGroupLayout',
-    formats: ['all'],
-    content:
-      '<section data-section="true" style="padding:24px 0;"><div style="max-width:720px;margin:0 auto;">Section content</div></section>'
-  },
-  {
-    id: 'container',
-    label: 'Container',
-    iconType: T.CONTAINER,
-    labelKey: 'templates.builderComponentContainer',
-    groupKey: 'templates.builderGroupLayout',
-    formats: ['all'],
-    content:
-      '<div data-container="true" style="max-width:720px;margin:0 auto;padding:16px;">Container content</div>'
-  },
-  {
-    id: 'row',
-    label: 'Row',
-    iconType: T.ROW,
-    labelKey: 'templates.builderComponentRow',
-    groupKey: 'templates.builderGroupLayout',
-    formats: ['all'],
-    content:
-      '<div data-row="true" class="arivu-layout-row" style="display:flex;flex-wrap:wrap;gap:16px;width:100%;"><div data-column="true" class="arivu-layout-col" style="flex:1;min-width:120px;">Column</div><div data-column="true" class="arivu-layout-col" style="flex:1;min-width:120px;">Column</div></div>'
-  },
-  {
-    id: 'column',
-    label: 'Column',
-    iconType: T.COLUMN,
-    labelKey: 'templates.builderComponentColumn',
-    groupKey: 'templates.builderGroupLayout',
-    formats: ['all'],
-    content:
-      '<div data-column="true" class="arivu-layout-col" style="flex:1;min-width:120px;padding:8px;">Column content</div>'
-  },
-  {
     id: 'divider',
     label: 'Divider',
     iconType: T.DIVIDER,

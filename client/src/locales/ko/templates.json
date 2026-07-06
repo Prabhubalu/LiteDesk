@@ -2486,5 +2486,25 @@
   "builderPreviewRefresh": {
     "message": "Refresh preview",
     "description": "Reload PDF preview from server"
+  },
+  "builderFormatUnderline": {
+    "message": "Underline",
+    "description": "Underline text formatting"
+  },
+  "builderUseCompanyLogo": {
+    "message": "Use company logo",
+    "description": "Apply synced organization logo to logo block"
+  },
+  "builderCompanyLogoAsset": {
+    "message": "Company logo",
+    "description": "Pinned company logo asset in builder library"
+  },
+  "builderCompanyLogoHint": {
+    "message": "Synced from organization settings",
+    "description": "Hint under pinned company logo asset"
+  },
+  "builderPreviewHtmlHint": {
+    "message": "HTML preview updates automatically. Use Preview PDF for a server-rendered PDF.",
+    "description": "Hint above HTML preview panel in template builder"
   }
 }

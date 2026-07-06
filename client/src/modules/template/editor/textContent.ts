@@ -3,7 +3,8 @@ import {
   applyMergeChipsInPlace,
   contentHasHtmlMarkup,
   elementToMergeTokens,
-  mergeTokensToChipHtml
+  mergeTokensToChipHtml,
+  serializeElementHtmlWithMergeTokens
 } from '@/utils/builderMergeTagHtml';
 
 function isCorruptedTextValue(value: string): boolean {
@@ -129,6 +130,20 @@ function readLiveTextFromElement(element: HTMLElement): string {
   return isCorruptedTextValue(text) ? (element.textContent || '') : text;
 }
 
+function applyRichTextHtmlToElement(element: HTMLElement, value: string): void {
+  const text = String(value ?? '');
+  if (!text) {
+    element.innerHTML = '';
+    return;
+  }
+  if (text.includes('{{')) {
+    element.innerHTML = text.replace(/\u200B/g, '');
+    applyMergeChipsInPlace(element);
+    return;
+  }
+  element.innerHTML = text;
+}
+
 function applyTextToElement(element: HTMLElement, value: string): void {
   const text = String(value ?? '');
   if (text.includes('{{')) {
@@ -217,6 +232,62 @@ export function readTextContent(component: Component | null | undefined): string
   }
 
   return '';
+}
+
+/** Read rich-text HTML from the live canvas host (preserves inline markup and line breaks). */
+export function readRichTextHtml(component: Component | null | undefined): string {
+  if (!component) return '';
+
+  const el = resolveTextHostElement(component);
+  if (el) {
+    return serializeElementHtmlWithMergeTokens(el);
+  }
+
+  const fromChildren = readChildComponentsText(component);
+  if (fromChildren && contentHasHtmlMarkup(fromChildren)) {
+    return fromChildren;
+  }
+
+  const fromModel = normalizeStoredText(component.get('content'));
+  if (fromModel && contentHasHtmlMarkup(fromModel)) {
+    return fromModel;
+  }
+  if (fromModel.includes('\n')) {
+    return fromModel.replace(/\n/g, '<br>');
+  }
+
+  return fromModel;
+}
+
+function clearComponentChildren(component: Component): void {
+  const children = component.components?.();
+  if (!children?.length) return;
+  if (typeof children.reset === 'function') {
+    children.reset(undefined, { silent: true });
+    return;
+  }
+  while (children.length > 0) {
+    children.at(0)?.remove();
+  }
+}
+
+export function writeRichTextHtml(
+  component: Component,
+  html: string,
+  options: { silent?: boolean; force?: boolean } = {}
+): void {
+  const value = String(html ?? '');
+  if (!options.force && isComponentDomFocused(component)) return;
+
+  // Grapes clears host innerHTML whenever child components exist — keep line breaks
+  // as HTML on the host (see ComponentView.updateContent in grapesjs).
+  clearComponentChildren(component);
+  replaceComponentTextModel(component, value);
+
+  const el = resolveTextHostElement(component);
+  if (el && !isComponentDomFocused(component)) {
+    applyRichTextHtmlToElement(el, value);
+  }
 }
 
 export function writeTextContent(

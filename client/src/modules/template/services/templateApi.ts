@@ -130,6 +130,39 @@ async function resolvePreviewBlob(
   return new Blob([blob], { type: contentType || mimeType });
 }
 
+export async function renderTemplateHtml(
+  id: string,
+  options: {
+    recordModuleKey?: string;
+    recordId?: string;
+    jsonDefinition?: GrapesTemplateDefinition;
+    pageSettings?: TemplateMetadataPatch;
+  } = {}
+): Promise<string> {
+  const runtimeContext: Record<string, string> = {};
+  if (options.recordId) runtimeContext.recordId = options.recordId;
+  if (options.recordModuleKey) runtimeContext.recordModuleKey = options.recordModuleKey;
+
+  const response = await apiClient.post(`/templates/${id}/render`, {
+    outputFormat: 'html',
+    preview: true,
+    persistOutput: false,
+    jsonDefinition: options.jsonDefinition,
+    pageSettings: options.pageSettings,
+    runtimeContext
+  });
+
+  if (!response?.success) {
+    throw new Error(response?.message || 'Failed to render template');
+  }
+
+  const html = String((response.data as { html?: string })?.html || '');
+  if (!html) {
+    throw new Error('Rendered HTML missing from response');
+  }
+  return html;
+}
+
 export async function fetchTemplatePreviewBlob(
   id: string,
   options: {

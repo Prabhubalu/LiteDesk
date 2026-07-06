@@ -70,6 +70,7 @@ export const GRAPES_CANVAS_CHROME_CSS = `
   [data-text-block='true'],
   [data-paragraph='true'],
   [data-heading='true'],
+  [data-rich-text='true'],
   [data-address-block='true'],
   [data-organization-block='true'] {
     display: block;
