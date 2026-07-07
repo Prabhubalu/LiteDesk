@@ -39,6 +39,11 @@ const AddonDefinitionSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  requiredApps: [{
+    type: String,
+    trim: true,
+    uppercase: true,
+  }],
   optionalApps: [{
     type: String,
     trim: true,

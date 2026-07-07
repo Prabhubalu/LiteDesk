@@ -84,6 +84,8 @@ const MODULE_ICON_MAP: Record<string, any> = {
   campaigns: MegaphoneIcon,
   audiences: UserGroupIcon,
   segments: FunnelIcon,
+  articles: BookOpenIcon,
+  blog: DocumentTextIcon,
   assets: PhotoIcon,
   ...MODULE_ICON_COMPONENTS
 };

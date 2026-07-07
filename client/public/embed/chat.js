@@ -12,7 +12,7 @@
 
   var instanceKey = getAttr(currentScript, 'data-instance', '')
   if (!instanceKey) {
-    console.error('[LiteDeskChat] Missing data-instance')
+    console.error('[ArivuChat] Missing data-instance')
     return
   }
 
@@ -70,7 +70,7 @@
 
   var frame = document.createElement('iframe')
   frame.src = widgetUrl
-  frame.title = 'LiteDesk Live Chat'
+  frame.title = 'Arivu Live Chat'
   frame.style.position = 'fixed'
   frame.style.bottom = '92px'
   frame.style.zIndex = '2147483647'

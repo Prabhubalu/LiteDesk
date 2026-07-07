@@ -58,6 +58,7 @@ export const SHARED_NAMESPACES = [
   'import',
   'documents',
   'templates',
+  'contentStudio',
   'marketing',
   'analytics',
   'audit',

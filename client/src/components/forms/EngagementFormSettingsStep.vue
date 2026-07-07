@@ -359,7 +359,7 @@ const visibilityLabel = computed(() => {
 });
 
 const publicLinkPreview = computed(() => {
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://app.litedesk.com';
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://app.arivu.com';
   const slug = localForm.value.publicLink?.slug || t('forms.engagementSettingsLinkPlaceholder');
   return `${origin}/forms/public/${slug}`;
 });

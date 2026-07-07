@@ -3,17 +3,96 @@
     <div class="record-context-panel__header flex shrink-0 items-center border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
       <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('cases.recordRailKnowledge') }}</h2>
     </div>
-    <div class="flex flex-1 flex-col items-center justify-center p-6 text-center">
-      <BookOpenIcon class="h-12 w-12 text-gray-300 dark:text-gray-600" />
-      <p class="mt-4 text-sm font-medium text-gray-900 dark:text-white">{{ t('cases.recordKnowledgeTitle') }}</p>
-      <p class="mt-2 max-w-xs text-xs text-gray-500 dark:text-gray-400">{{ t('cases.recordKnowledgeSoon') }}</p>
+
+    <div class="border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+      <input
+        v-model="search"
+        type="search"
+        class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900"
+        :placeholder="t('cases.recordKnowledgeSearchPlaceholder')"
+        @input="scheduleSearch"
+      />
+    </div>
+
+    <div class="min-h-0 flex-1 overflow-y-auto p-4">
+      <p v-if="loading" class="text-sm text-gray-500">{{ t('states.loading') }}</p>
+      <p v-else-if="!articles.length" class="text-sm text-gray-500">{{ t('cases.recordKnowledgeEmpty') }}</p>
+      <ul v-else class="space-y-2">
+        <li v-for="article in articles" :key="article._id">
+          <button
+            type="button"
+            class="w-full rounded-lg border border-gray-200 px-3 py-2 text-left hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+            @click="openArticle(article)"
+          >
+            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ article.title }}</p>
+            <p v-if="article.description" class="mt-0.5 line-clamp-2 text-xs text-gray-500 dark:text-gray-400">
+              {{ article.description }}
+            </p>
+          </button>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { BookOpenIcon } from '@heroicons/vue/24/outline';
+import { searchArticlesForAgent } from '@/modules/contentStudio/services/contentStudioApi';
+import { captureCaseKnowledgeSuggestionOpened } from '@/config/posthogArticles';
+
+const props = defineProps({
+  caseTitle: { type: String, default: '' },
+  caseDescription: { type: String, default: '' },
+});
 
 const { t } = useI18n();
+const router = useRouter();
+
+const search = ref('');
+const loading = ref(false);
+const articles = ref([]);
+let timer = null;
+
+function buildDefaultQuery() {
+  return [props.caseTitle, props.caseDescription].filter(Boolean).join(' ').trim();
+}
+
+function scheduleSearch() {
+  if (timer) window.clearTimeout(timer);
+  timer = window.setTimeout(() => {
+    void loadArticles();
+  }, 350);
+}
+
+async function loadArticles() {
+  const query = search.value.trim() || buildDefaultQuery();
+  if (query.length < 2) {
+    articles.value = [];
+    return;
+  }
+  loading.value = true;
+  try {
+    articles.value = await searchArticlesForAgent(query, 8);
+  } catch {
+    articles.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+function openArticle(article) {
+  if (!article?._id) return;
+  captureCaseKnowledgeSuggestionOpened({ article_id: article._id, source: 'case_sidebar' });
+  router.push({ name: 'helpdesk-article-edit', params: { id: article._id } });
+}
+
+watch(
+  () => [props.caseTitle, props.caseDescription],
+  () => {
+    if (!search.value.trim()) void loadArticles();
+  },
+  { immediate: true },
+);
 </script>

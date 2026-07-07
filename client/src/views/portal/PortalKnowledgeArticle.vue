@@ -17,7 +17,7 @@
     <section v-if="article" :class="['p-5 sm:p-6', PLATFORM_HOME_CARD_CLASS]">
       <div
         v-if="richHtml"
-        class="prose prose-sm max-w-none dark:prose-invert"
+        class="portal-knowledge-content prose prose-sm max-w-none dark:prose-invert"
         v-html="richHtml"
       />
       <p v-else-if="article.richContentText" class="whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">
@@ -77,3 +77,52 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+@import '@/modules/contentStudio/editor/contentStudioArticleAppearance.css';
+@import '@/modules/contentStudio/editor/contentStudioFaq.css';
+
+:deep(.portal-knowledge-content .content-subtitle) {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: rgb(82 82 82);
+  margin-bottom: 1.5rem;
+}
+
+:deep(.portal-knowledge-content .content-callout) {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(212 212 212);
+}
+
+:deep(.portal-knowledge-content .content-callout--info) {
+  background: rgb(239 246 255);
+  border-color: rgb(147 197 253);
+}
+
+:deep(.portal-knowledge-content .content-callout--tip) {
+  background: rgb(236 253 245);
+  border-color: rgb(52 211 153);
+}
+
+:deep(.portal-knowledge-content .content-callout--warning) {
+  background: rgb(254 252 232);
+  border-color: rgb(250 204 21);
+}
+
+:deep(.portal-knowledge-content pre) {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  background: rgb(245 245 245);
+  padding: 0.75rem 1rem;
+}
+
+:deep(.portal-knowledge-content pre code) {
+  font-size: 0.875rem;
+}
+
+:deep(.dark .portal-knowledge-content pre) {
+  background: rgb(38 38 38);
+}
+</style>

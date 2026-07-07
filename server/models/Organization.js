@@ -320,6 +320,11 @@ const OrganizationSchema = new mongoose.Schema({
             }
         }
     },
+
+    contentPublishing: {
+        publishWebhookUrl: { type: String, default: '' },
+        headlessApiEnabled: { type: Boolean, default: true },
+    },
     
     // Data Region (read-only if fixed, set during organization creation)
     dataRegion: {

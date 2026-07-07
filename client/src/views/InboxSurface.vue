@@ -402,7 +402,7 @@
           </div>
           <div class="space-y-4 px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
             <p>
-              Google requires a registered OAuth app. LiteDesk never puts the client secret in the browser—you add it
+              Google requires a registered OAuth app. Arivu never puts the client secret in the browser—you add it
               <span class="font-medium">once</span>{{ t('inbox.inboxSurfaceToTheApiEnvironmentThenEveryone') }}<span class="font-medium">{{ t('inbox.inboxSurfaceConnectGmail') }}</span>{{ t('inbox.inboxSurfaceHere') }}</p>
             <ol class="list-decimal space-y-3 pl-5 text-sm">
               <li>

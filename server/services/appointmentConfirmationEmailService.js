@@ -117,7 +117,7 @@ function buildHostNotificationContent({
     </table>
     ${
       eventUrl
-        ? `<p style="margin:0;"><a href="${escapeHtml(eventUrl)}" style="display:inline-block;padding:10px 18px;background:#4f46e5;color:#ffffff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;">View in LiteDesk</a></p>`
+        ? `<p style="margin:0;"><a href="${escapeHtml(eventUrl)}" style="display:inline-block;padding:10px 18px;background:#4f46e5;color:#ffffff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;">View in Arivu</a></p>`
         : ''
     }`;
 

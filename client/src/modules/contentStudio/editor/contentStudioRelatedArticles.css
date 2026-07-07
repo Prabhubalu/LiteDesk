@@ -1,0 +1,49 @@
+.content-related-articles {
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgb(229 231 235);
+  border-radius: 0.75rem;
+  background: rgb(249 250 251);
+}
+
+.dark .content-related-articles {
+  border-color: rgb(55 65 81);
+  background: rgb(17 24 39 / 0.5);
+}
+
+.content-related-articles__title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgb(17 24 39);
+}
+
+.dark .content-related-articles__title {
+  color: rgb(243 244 246);
+}
+
+.content-related-articles__list {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.content-related-articles__list li + li {
+  margin-top: 0.35rem;
+}
+
+.content-related-articles__link {
+  color: rgb(79 70 229);
+  text-decoration: none;
+}
+
+.content-related-articles__link:hover {
+  text-decoration: underline;
+}
+
+.content-related-articles__label {
+  color: rgb(55 65 81);
+}
+
+.dark .content-related-articles__label {
+  color: rgb(209 213 219);
+}

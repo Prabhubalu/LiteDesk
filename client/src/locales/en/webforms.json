@@ -904,7 +904,7 @@
     "description": "Webhook secret label"
   },
   "builderWebhookSecretPh": {
-    "message": "Used for X-LiteDesk-Signature HMAC",
+    "message": "Used for X-Arivu-Signature HMAC",
     "description": "Webhook secret placeholder"
   },
   "builderThankYou": {

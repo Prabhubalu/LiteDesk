@@ -13,7 +13,7 @@ async function buildBrandingSnapshot(organizationId) {
   const branding = org?.settings?.branding || {};
 
   return {
-    displayName: branding.displayName || org?.name || 'LiteDesk',
+    displayName: branding.displayName || org?.name || 'Arivu',
     logoUrl: branding.logoUrl || null,
     accentColor: branding.accentColor || null,
     supportEmail: branding.supportEmail || null,

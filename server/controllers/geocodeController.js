@@ -4,7 +4,7 @@
  */
 
 const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org';
-const USER_AGENT = 'LiteDesk/1.0 (event-location; contact@litedesk.com)';
+const USER_AGENT = 'Arivu/1.0 (event-location; contact@arivu.com)';
 
 async function nominatimFetch(path) {
   const response = await fetch(`${NOMINATIM_BASE}${path}`, {

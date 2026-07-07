@@ -64,6 +64,7 @@ const {
 } = require('../controllers/portalPaymentController');
 const {
   listPortalKnowledgeArticles,
+  listPortalKnowledgeCollections,
   getPortalKnowledgeArticle
 } = require('../controllers/portalDocumentController');
 const { getPortalDashboard } = require('../controllers/portalDashboardController');
@@ -146,6 +147,7 @@ router.post('/invoices/:id/pay', requirePortalModuleAccess('invoices', 'read'), 
 router.get('/payment-sessions/:id/status', requirePortalModuleAccess('invoices', 'read'), getPortalPaymentSessionStatusHandler);
 
 // Knowledge base (portal-visible published articles)
+router.get('/knowledge-base/collections', requirePortalModuleAccess('documents', 'read'), listPortalKnowledgeCollections);
 router.get('/knowledge-base', requirePortalModuleAccess('documents', 'read'), listPortalKnowledgeArticles);
 router.get('/knowledge-base/:id', requirePortalModuleAccess('documents', 'read'), getPortalKnowledgeArticle);
 

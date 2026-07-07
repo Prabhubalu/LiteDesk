@@ -160,8 +160,16 @@
     "description": "Knowledge panel title"
   },
   "recordKnowledgeSoon": {
-    "message": "Article search and suggested answers from your knowledge base will appear here in a future release.",
-    "description": "Knowledge panel placeholder"
+    "message": "Search published articles or use case details to surface relevant help content.",
+    "description": "Knowledge panel hint"
+  },
+  "recordKnowledgeSearchPlaceholder": {
+    "message": "Search knowledge articles…",
+    "description": "Knowledge panel search placeholder"
+  },
+  "recordKnowledgeEmpty": {
+    "message": "No matching articles. Try different keywords.",
+    "description": "Knowledge panel empty state"
   },
   "recordTabTasks": {
     "message": "Tasks",

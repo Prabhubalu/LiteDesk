@@ -1187,6 +1187,10 @@
     "message": "Updated {date}",
     "description": "Portal knowledge article updated label"
   },
+  "portalKnowledgeAllCollections": {
+    "message": "All",
+    "description": "Portal knowledge all collections filter"
+  },
   "timelineTitle": {
     "message": "Activity Timeline",
     "description": "Timeline view title"

@@ -13,6 +13,11 @@ export function isStandalonePublicRoute(path) {
     || p.startsWith('/webforms/staff-preview/')
     || p.startsWith('/forms/public/')
     || p.startsWith('/public/quotes/')
+    || p.startsWith('/examples/headless-article')
+    || p.startsWith('/examples/headless-article-list')
+    || p.startsWith('/examples/headless-help-home')
+    || p.startsWith('/examples/headless-help-category')
+    || p.startsWith('/examples/headless-help-section')
     || p.startsWith('/marketing/preferences/')
   );
 }

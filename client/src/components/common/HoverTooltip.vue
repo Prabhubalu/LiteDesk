@@ -15,10 +15,10 @@
       v-if="visible"
       ref="tooltipRef"
       :class="[
-        'pointer-events-none fixed z-[115] rounded-lg bg-slate-950 px-3 py-2 text-white shadow-2xl text-xs leading-4 text-slate-200',
+        'pointer-events-none fixed rounded-lg bg-slate-950 px-3 py-2 text-white shadow-2xl text-xs leading-4 text-slate-200',
         wrap ? 'max-w-xs whitespace-normal break-words' : 'whitespace-nowrap',
       ]"
-      :style="tooltipStyle"
+      :style="{ ...tooltipStyle, zIndex: props.zIndex }"
     >
       <slot name="content">
         {{ content }}
@@ -87,6 +87,11 @@ const props = defineProps({
     type: String,
     default: 'center',
     validator: (v) => ['center', 'start'].includes(v)
+  },
+  /** Stacking order for tooltip layer */
+  zIndex: {
+    type: Number,
+    default: 115
   }
 });
 
