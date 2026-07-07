@@ -630,6 +630,9 @@ exports.updateArticlesAddonSettings = async (req, res) => {
     if (error?.code === 'ADDON_NOT_INSTALLED') {
       return res.status(404).json({ success: false, message: error.message, code: error.code });
     }
+    if (error?.code === 'INVALID_EMBED_WEBSITE_DOMAIN') {
+      return res.status(400).json({ success: false, message: error.message, code: error.code });
+    }
     console.error('[addonSettingsController] updateArticlesAddonSettings', error);
     return res.status(500).json({ success: false, message: 'Failed to save Articles settings' });
   }

@@ -157,6 +157,7 @@
   window.LiteDeskHeadlessHelpSection = {
     mount: mountSection,
   };
+  window.ArivuHeadlessHelpSection = window.LiteDeskHeadlessHelpSection;
 
   if (script) {
     var org = common.getAttr(script, 'data-org', '');

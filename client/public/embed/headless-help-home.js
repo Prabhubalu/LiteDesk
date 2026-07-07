@@ -346,6 +346,7 @@
   window.LiteDeskHeadlessHelpHome = {
     mount: mountHome,
   };
+  window.ArivuHeadlessHelpHome = window.LiteDeskHeadlessHelpHome;
 
   if (script) {
     var org = getAttr(script, 'data-org', '');

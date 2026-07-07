@@ -14,6 +14,15 @@ const {
   buildPopularArticlesApiUrl,
   buildSitemapApiUrl,
 } = require('./contentPublishingService');
+const {
+  invalidateArticlesEmbedOriginCache,
+  normalizeArticlesEmbedWebsiteDomain,
+} = require('./articlesEmbedOriginService');
+const {
+  ensureArticlesHeadlessPublicKey,
+  resolveArticlesHeadlessPublicKey,
+  resolveHeadlessContentOrgKey,
+} = require('./articlesHeadlessPublicKeyService');
 
 function mergeStoredAppearance(stored = {}, organization = {}) {
   const defaults = ADDON_DEFAULT_SETTINGS[ADDON_KEYS.ARTICLES]?.appearance || {};
@@ -41,9 +50,22 @@ function normalizePublishing(raw = {}, legacy = {}) {
     headlessApiEnabled: raw.headlessApiEnabled ?? raw.publishing?.headlessApiEnabled ?? legacy.headlessApiEnabled,
   });
 
+  const embedWebsiteDomain = String(
+    raw.embedWebsiteDomain
+    ?? raw.publishing?.embedWebsiteDomain
+    ?? legacy.embedWebsiteDomain
+    ?? '',
+  ).trim();
+  const storedOrigins = raw.publishing?.embedWebsiteOrigins ?? legacy.embedWebsiteOrigins;
+  const normalizedEmbed = embedWebsiteDomain
+    ? normalizeArticlesEmbedWebsiteDomain(embedWebsiteDomain)
+    : { domain: '', origins: Array.isArray(storedOrigins) ? storedOrigins.filter(Boolean) : [] };
+
   return {
     headlessApiEnabled: merged.headlessApiEnabled,
     publishWebhookUrl: merged.publishWebhookUrl,
+    embedWebsiteDomain: normalizedEmbed.domain,
+    embedWebsiteOrigins: normalizedEmbed.origins,
   };
 }
 
@@ -80,8 +102,11 @@ function resolveRequestPublicOrigin(req) {
 
 function buildArticlesIntegration(organization, options = {}) {
   const headlessApiBase = resolveHeadlessApiBase(organization, options);
+  const headlessPublicKey = resolveArticlesHeadlessPublicKey(organization);
   return {
     headlessApiBase,
+    headlessPublicKey,
+    headlessOrgKey: resolveHeadlessContentOrgKey(organization),
     articlesListApiUrl: buildArticlesListApiUrl(organization, options),
     collectionsApiUrl: buildCollectionsApiUrl(organization, options),
     recentArticlesApiUrl: buildRecentArticlesApiUrl(organization, options),
@@ -95,7 +120,7 @@ async function getArticlesAddonSettings(organizationId, options = {}) {
   const Organization = require('../../models/Organization');
   const config = await getTenantAddonConfiguration(organizationId, ADDON_KEYS.ARTICLES);
   const organization = await Organization.findById(organizationId)
-    .select('slug settings.logoUrl settings.primaryColor contentPublishing')
+    .select('slug embed.articles.publicKey settings.logoUrl settings.primaryColor contentPublishing')
     .lean();
 
   const legacyPublishing = normalizeContentPublishing(organization?.contentPublishing || {});
@@ -107,6 +132,21 @@ async function getArticlesAddonSettings(organizationId, options = {}) {
     },
     { legacyPublishing },
   );
+
+  let organizationForIntegration = organization;
+  if (settings.publishing?.headlessApiEnabled !== false) {
+    const headlessPublicKey = await ensureArticlesHeadlessPublicKey(organizationId);
+    organizationForIntegration = {
+      ...(organization || {}),
+      embed: {
+        ...(organization?.embed || {}),
+        articles: {
+          ...(organization?.embed?.articles || {}),
+          publicKey: headlessPublicKey,
+        },
+      },
+    };
+  }
 
   const ContentCollection = require('../../models/ContentCollection');
   const collections = await ContentCollection.find({
@@ -120,7 +160,7 @@ async function getArticlesAddonSettings(organizationId, options = {}) {
 
   return {
     settings,
-    integration: buildArticlesIntegration(organization, options),
+    integration: buildArticlesIntegration(organizationForIntegration, options),
     collections,
   };
 }
@@ -142,6 +182,7 @@ async function updateArticlesAddonSettings(organizationId, payload = {}, options
       ...(payload.publishing || {}),
       ...(payload.publishWebhookUrl !== undefined ? { publishWebhookUrl: payload.publishWebhookUrl } : {}),
       ...(payload.headlessApiEnabled !== undefined ? { headlessApiEnabled: payload.headlessApiEnabled } : {}),
+      ...(payload.embedWebsiteDomain !== undefined ? { embedWebsiteDomain: payload.embedWebsiteDomain } : {}),
     },
     appearance: normalizeAppearance({
       ...(ADDON_DEFAULT_SETTINGS[ADDON_KEYS.ARTICLES]?.appearance || {}),
@@ -170,6 +211,12 @@ async function updateArticlesAddonSettings(organizationId, payload = {}, options
     { organizationId, addonKey: ADDON_KEYS.ARTICLES },
     { $set: { settings } },
   );
+
+  invalidateArticlesEmbedOriginCache();
+
+  if (settings.publishing?.headlessApiEnabled !== false) {
+    await ensureArticlesHeadlessPublicKey(organizationId);
+  }
 
   return getArticlesAddonSettings(organizationId, options);
 }

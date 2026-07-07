@@ -231,11 +231,29 @@
             <input v-model="form.headlessApiEnabled" type="checkbox" class="rounded border-gray-300 text-indigo-600" @change="syncDirty" />
             {{ t('settings.contentPublishingHeadlessApiEnabled') }}
           </label>
+          <label class="block text-sm text-gray-600 dark:text-gray-300">
+            {{ t('settings.addonsArticlesEmbedWebsiteDomain') }}
+            <input
+              v-model="form.embedWebsiteDomain"
+              type="text"
+              class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm dark:border-gray-600 dark:bg-gray-900"
+              placeholder="www.example.com"
+              @input="syncDirty"
+            />
+            <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesEmbedWebsiteDomainHint') }}</span>
+            <span
+              v-if="embedWebsiteOrigins.length"
+              class="mt-1 block text-xs text-emerald-700 dark:text-emerald-300"
+            >
+              {{ t('settings.addonsArticlesEmbedWebsiteOriginsAllowed', { origins: embedWebsiteOrigins.join(', ') }) }}
+            </span>
+          </label>
         </div>
 
         <div class="mt-6 border-t border-gray-200 pt-5 dark:border-gray-700">
           <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesHelpCenterRoutesTitle') }}</h4>
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesHelpCenterRoutesDesc') }}</p>
+          <p class="mt-2 text-xs font-medium text-indigo-700 dark:text-indigo-300">{{ t('settings.addonsArticlesHelpCenterRoutesNote') }}</p>
           <div class="mt-3 space-y-3">
             <div
               v-for="route in helpCenterRoutes"
@@ -262,82 +280,110 @@
         <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesEmbedTitle') }}</h3>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesEmbedDesc') }}</p>
 
-        <div class="mt-5 space-y-6">
-          <div>
-            <div class="flex items-center justify-between gap-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.addonsArticlesHomeEmbedSnippetLabel') }}</p>
-              <button
-                type="button"
-                class="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                @click="copyText(homeEmbedSnippet, t('settings.addonsArticlesHomeEmbedSnippetLabel'))"
-              >
-                {{ t('settings.addonsArticlesCopyExample') }}
-              </button>
-            </div>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesHomeEmbedDesc') }}</p>
-            <pre class="mt-2 overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ homeEmbedSnippet }}</code></pre>
-          </div>
+        <ol class="mt-4 list-decimal space-y-2 pl-5 text-sm text-gray-700 dark:text-gray-300">
+          <li>{{ t('settings.addonsArticlesEmbedStepEnable') }}</li>
+          <li>{{ t('settings.addonsArticlesEmbedStepDomain') }}</li>
+          <li>{{ t('settings.addonsArticlesEmbedStepCopy') }}</li>
+        </ol>
 
-          <div>
-            <div class="flex items-center justify-between gap-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.addonsArticlesCategoryEmbedSnippetLabel') }}</p>
-              <button
-                type="button"
-                class="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                @click="copyText(categoryEmbedSnippet, t('settings.addonsArticlesCategoryEmbedSnippetLabel'))"
-              >
-                {{ t('settings.addonsArticlesCopyExample') }}
-              </button>
-            </div>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesCategoryEmbedDesc') }}</p>
-            <pre class="mt-2 overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ categoryEmbedSnippet }}</code></pre>
-          </div>
+        <div class="mt-5">
+          <label class="block text-sm text-gray-600 dark:text-gray-300">
+            {{ t('settings.addonsArticlesEmbedPathPrefix') }}
+            <input
+              v-model="embedPathPrefix"
+              type="text"
+              class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm dark:border-gray-600 dark:bg-gray-900 sm:max-w-xs"
+              placeholder="/help/"
+            />
+            <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesEmbedPathPrefixHint') }}</span>
+          </label>
+        </div>
 
-          <div>
-            <div class="flex items-center justify-between gap-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.addonsArticlesSectionEmbedSnippetLabel') }}</p>
-              <button
-                type="button"
-                class="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                @click="copyText(sectionEmbedSnippet, t('settings.addonsArticlesSectionEmbedSnippetLabel'))"
-              >
-                {{ t('settings.addonsArticlesCopyExample') }}
-              </button>
+        <div class="mt-5">
+          <div class="flex items-start justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.addonsArticlesEmbedPublicKeyLabel') }}</p>
+              <p class="mt-1 break-all font-mono text-xs text-gray-600 dark:text-gray-400">{{ embedOrgKey || t('settings.addonsArticlesEmbedPublicKeyPending') }}</p>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesEmbedPublicKeyHint') }}</p>
             </div>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesSectionEmbedDesc') }}</p>
-            <pre class="mt-2 overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ sectionEmbedSnippet }}</code></pre>
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between gap-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.addonsArticlesListEmbedSnippetLabel') }}</p>
-              <button
-                type="button"
-                class="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                @click="copyText(listEmbedSnippet, t('settings.addonsArticlesListEmbedSnippetLabel'))"
-              >
-                {{ t('settings.addonsArticlesCopyExample') }}
-              </button>
-            </div>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesListEmbedDesc') }}</p>
-            <pre class="mt-2 overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ listEmbedSnippet }}</code></pre>
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between gap-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.addonsArticlesEmbedSnippetLabel') }}</p>
-              <button
-                type="button"
-                class="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                @click="copyText(embedSnippet, t('settings.addonsArticlesEmbedSnippetLabel'))"
-              >
-                {{ t('settings.addonsArticlesCopyExample') }}
-              </button>
-            </div>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesArticleEmbedDesc') }}</p>
-            <pre class="mt-2 overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ embedSnippet }}</code></pre>
+            <button
+              v-if="embedOrgKey"
+              type="button"
+              class="shrink-0 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+              @click="copyText(embedOrgKey, t('settings.addonsArticlesEmbedPublicKeyLabel'))"
+            >
+              {{ t('settings.addonsArticlesCopyUrl') }}
+            </button>
           </div>
         </div>
+
+        <div class="mt-6 space-y-3 rounded-lg border border-indigo-200 bg-indigo-50/60 p-4 dark:border-indigo-900/50 dark:bg-indigo-950/20">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesUnifiedPageSnippetLabel') }}</p>
+              <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesUnifiedPageSnippetDesc') }}</p>
+            </div>
+            <button
+              type="button"
+              class="shrink-0 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+              @click="copyText(unifiedPageSnippet, t('settings.addonsArticlesUnifiedPageSnippetLabel'))"
+            >
+              {{ t('settings.addonsArticlesCopySnippet') }}
+            </button>
+          </div>
+          <pre class="overflow-x-auto rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ unifiedPageSnippet }}</code></pre>
+        </div>
+
+        <div class="mt-5 space-y-3">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.addonsArticlesUnifiedEmbedSnippetLabel') }}</p>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesUnifiedEmbedSnippetDesc') }}</p>
+            </div>
+            <button
+              type="button"
+              class="shrink-0 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+              @click="copyText(unifiedEmbedSnippet, t('settings.addonsArticlesUnifiedEmbedSnippetLabel'))"
+            >
+              {{ t('settings.addonsArticlesCopySnippet') }}
+            </button>
+          </div>
+          <pre class="overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ unifiedEmbedSnippet }}</code></pre>
+        </div>
+
+        <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">
+          {{ t('settings.addonsArticlesEmbedDemoHint') }}
+          <a
+            :href="headlessHomeExampleUrl"
+            class="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {{ t('settings.addonsArticlesHelpCenterRouteDemo') }}
+          </a>
+        </p>
+
+        <details class="mt-6 rounded-lg border border-gray-200 dark:border-gray-700">
+          <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+            {{ t('settings.addonsArticlesAdvancedEmbedsTitle') }}
+          </summary>
+          <div class="space-y-6 border-t border-gray-200 px-4 py-4 dark:border-gray-700">
+            <div v-for="snippet in advancedEmbedSnippets" :key="snippet.key">
+              <div class="flex items-center justify-between gap-3">
+                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ snippet.label }}</p>
+                <button
+                  type="button"
+                  class="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                  @click="copyText(snippet.value, snippet.label)"
+                >
+                  {{ t('settings.addonsArticlesCopySnippet') }}
+                </button>
+              </div>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ snippet.description }}</p>
+              <pre class="mt-2 overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ snippet.value }}</code></pre>
+            </div>
+          </div>
+        </details>
       </div>
 
       <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
@@ -480,15 +526,12 @@ import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
-import { useAuthStore } from '@/stores/authRegistry';
-import { buildHeadlessIntegrationUrls } from '@/modules/contentStudio/headless';
 import '@/modules/contentStudio/editor/contentStudioArticleAppearance.css';
 
 const emit = defineEmits(['back']);
 
 const { t } = useI18n();
 const notifications = useNotifications();
-const authStore = useAuthStore();
 
 const loading = ref(true);
 const saving = ref(false);
@@ -498,8 +541,11 @@ const dirty = ref(false);
 const initialSnapshot = ref('');
 const isInitialLoad = ref(true);
 const collections = ref([]);
+const embedPathPrefix = ref('/help/');
+const savedEmbedWebsiteOrigins = ref([]);
 const integration = reactive({
   headlessApiBase: '',
+  headlessPublicKey: '',
   articlesListApiUrl: '',
   collectionsApiUrl: '',
   recentArticlesApiUrl: '',
@@ -527,6 +573,7 @@ const form = reactive({
   portalPublishing: true,
   publishWebhookUrl: '',
   headlessApiEnabled: true,
+  embedWebsiteDomain: '',
   defaultCollectionId: null,
   caseDeflectionEnabled: true,
   staleContentAlertDays: 90,
@@ -602,14 +649,9 @@ const integrationEndpoints = computed(() => {
   ];
 });
 
-const resolvedIntegration = computed(() => {
-  if (integration.headlessApiBase) {
-    return integration;
-  }
-  const orgSlug = authStore.organization?.slug;
-  const clientUrls = orgSlug ? buildHeadlessIntegrationUrls(orgSlug) : null;
-  return clientUrls ? { ...integration, ...clientUrls } : integration;
-});
+const resolvedIntegration = computed(() => integration);
+
+const embedOrgKey = computed(() => integration.headlessPublicKey || '');
 
 const integrationUrlsUnavailable = computed(
   () => !resolvedIntegration.value.headlessApiBase && !loading.value && !error.value,
@@ -621,105 +663,171 @@ const exampleArticleApiUrl = computed(() => {
 });
 
 const headlessExampleUrl = computed(() => {
-  const orgSlug = authStore.organization?.slug;
   const params = new URLSearchParams();
-  if (orgSlug) params.set('org', orgSlug);
+  if (embedOrgKey.value) params.set('org', embedOrgKey.value);
   params.set('slug', 'getting-started');
   const query = params.toString();
   return query ? `/examples/headless-article?${query}` : '/examples/headless-article';
 });
 
 const headlessListExampleUrl = computed(() => {
-  const orgSlug = authStore.organization?.slug;
   const params = new URLSearchParams();
-  if (orgSlug) params.set('org', orgSlug);
+  if (embedOrgKey.value) params.set('org', embedOrgKey.value);
   const query = params.toString();
   return query ? `/examples/headless-article-list?${query}` : '/examples/headless-article-list';
 });
 
 const headlessHomeExampleUrl = computed(() => {
-  const orgSlug = authStore.organization?.slug;
   const params = new URLSearchParams();
-  if (orgSlug) params.set('org', orgSlug);
+  if (embedOrgKey.value) params.set('org', embedOrgKey.value);
   const query = params.toString();
   return query ? `/examples/headless-help-home?${query}` : '/examples/headless-help-home';
 });
 
 const headlessCategoryExampleUrl = computed(() => {
-  const orgSlug = authStore.organization?.slug;
   const params = new URLSearchParams();
-  if (orgSlug) params.set('org', orgSlug);
+  if (embedOrgKey.value) params.set('org', embedOrgKey.value);
   params.set('collection', 'your-category-slug');
   const query = params.toString();
   return query ? `/examples/headless-help-category?${query}` : '/examples/headless-help-category';
 });
 
 const headlessSectionExampleUrl = computed(() => {
-  const orgSlug = authStore.organization?.slug;
   const params = new URLSearchParams();
-  if (orgSlug) params.set('org', orgSlug);
+  if (embedOrgKey.value) params.set('org', embedOrgKey.value);
   params.set('section', 'your-section-slug');
   params.set('parent', 'your-category-slug');
   const query = params.toString();
   return query ? `/examples/headless-help-section?${query}` : '/examples/headless-help-section';
 });
 
+const embedOrigin = computed(() => (
+  typeof window !== 'undefined' ? window.location.origin : 'https://app.arivu.com'
+));
+
+const embedOrgSlug = computed(() => embedOrgKey.value);
+
+const normalizedEmbedPathPrefix = computed(() => {
+  let prefix = String(embedPathPrefix.value || '/help/').trim();
+  if (!prefix.startsWith('/')) prefix = `/${prefix}`;
+  if (!prefix.endsWith('/')) prefix = `${prefix}/`;
+  return prefix;
+});
+
+function buildUnifiedScriptAttrs() {
+  return [
+    `src="${embedOrigin.value}/embed/headless-help.js"`,
+    `data-api-origin="${embedOrigin.value}"`,
+    `data-org="${embedOrgSlug.value}"`,
+    'data-target="#arivu-help"',
+    `data-path-prefix="${normalizedEmbedPathPrefix.value}"`,
+    'data-title="Help Center"',
+  ].join('\n  ');
+}
+
+const unifiedEmbedSnippet = computed(() => (
+  `<div id="arivu-help"></div>\n<script\n  ${buildUnifiedScriptAttrs()}\n><\/script>`
+));
+
+const unifiedPageSnippet = computed(() => (
+  `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="utf-8" />\n  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n  <title>Help Center</title>\n</head>\n<body>\n  <main id="arivu-help"></main>\n  <script\n    ${buildUnifiedScriptAttrs()}\n  ><\/script>\n</body>\n</html>`
+));
+
 const homeEmbedSnippet = computed(() => {
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://your-app.example.com';
-  const orgSlug = authStore.organization?.slug || 'your-org-slug';
-  return `<link rel="stylesheet" href="${origin}/embed/headless-blocks.css" />\n<div id="help-home"></div>\n<script\n  src="${origin}/embed/headless-help-home.js"\n  data-org="${orgSlug}"\n  data-target="#help-home"\n  data-link-prefix="/help/"\n  data-title="Help Center"\n><\/script>`;
+  const pathPrefix = normalizedEmbedPathPrefix.value;
+  return `<div id="help-home"></div>\n<script\n  src="${embedOrigin.value}/embed/headless-help-home.js"\n  data-api-origin="${embedOrigin.value}"\n  data-org="${embedOrgSlug.value}"\n  data-target="#help-home"\n  data-link-prefix="${pathPrefix}"\n  data-title="Help Center"\n><\/script>`;
 });
 
 const categoryEmbedSnippet = computed(() => {
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://your-app.example.com';
-  const orgSlug = authStore.organization?.slug || 'your-org-slug';
-  return `<link rel="stylesheet" href="${origin}/embed/headless-blocks.css" />\n<div id="help-category"></div>\n<script src="${origin}/embed/headless-help-common.js"><\/script>\n<script\n  src="${origin}/embed/headless-help-category.js"\n  data-org="${orgSlug}"\n  data-collection="your-category-slug"\n  data-target="#help-category"\n  data-link-prefix="/help/"\n  data-section-prefix="/help/"\n  data-home-prefix="/help/"\n  data-article-prefix="/help/"\n><\/script>`;
+  const pathPrefix = normalizedEmbedPathPrefix.value;
+  return `<div id="help-category"></div>\n<script src="${embedOrigin.value}/embed/headless-help-common.js"><\/script>\n<script\n  src="${embedOrigin.value}/embed/headless-help-category.js"\n  data-api-origin="${embedOrigin.value}"\n  data-org="${embedOrgSlug.value}"\n  data-collection="your-category-slug"\n  data-target="#help-category"\n  data-link-prefix="${pathPrefix}"\n  data-section-prefix="${pathPrefix}"\n  data-home-prefix="${pathPrefix}"\n  data-article-prefix="${pathPrefix}"\n><\/script>`;
 });
 
 const sectionEmbedSnippet = computed(() => {
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://your-app.example.com';
-  const orgSlug = authStore.organization?.slug || 'your-org-slug';
-  return `<link rel="stylesheet" href="${origin}/embed/headless-blocks.css" />\n<div id="help-section"></div>\n<script src="${origin}/embed/headless-help-common.js"><\/script>\n<script\n  src="${origin}/embed/headless-help-section.js"\n  data-org="${orgSlug}"\n  data-section="your-section-slug"\n  data-parent="your-category-slug"\n  data-target="#help-section"\n  data-link-prefix="/help/"\n  data-category-prefix="/help/"\n  data-section-prefix="/help/"\n  data-home-prefix="/help/"\n  data-article-prefix="/help/"\n><\/script>`;
+  const pathPrefix = normalizedEmbedPathPrefix.value;
+  return `<div id="help-section"></div>\n<script src="${embedOrigin.value}/embed/headless-help-common.js"><\/script>\n<script\n  src="${embedOrigin.value}/embed/headless-help-section.js"\n  data-api-origin="${embedOrigin.value}"\n  data-org="${embedOrgSlug.value}"\n  data-section="your-section-slug"\n  data-parent="your-category-slug"\n  data-target="#help-section"\n  data-link-prefix="${pathPrefix}"\n  data-category-prefix="${pathPrefix}"\n  data-section-prefix="${pathPrefix}"\n  data-home-prefix="${pathPrefix}"\n  data-article-prefix="${pathPrefix}"\n><\/script>`;
 });
 
 const listEmbedSnippet = computed(() => {
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://your-app.example.com';
-  const orgSlug = authStore.organization?.slug || 'your-org-slug';
-  return `<link rel="stylesheet" href="${origin}/embed/headless-blocks.css" />\n<div id="help-list"></div>\n<script\n  src="${origin}/embed/headless-article-list.js"\n  data-org="${orgSlug}"\n  data-target="#help-list"\n  data-link-prefix="/help/"\n><\/script>`;
+  const pathPrefix = normalizedEmbedPathPrefix.value;
+  return `<div id="help-list"></div>\n<script\n  src="${embedOrigin.value}/embed/headless-article-list.js"\n  data-api-origin="${embedOrigin.value}"\n  data-org="${embedOrgSlug.value}"\n  data-target="#help-list"\n  data-link-prefix="${pathPrefix}"\n><\/script>`;
 });
 
 const embedSnippet = computed(() => {
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://your-app.example.com';
-  const orgSlug = authStore.organization?.slug || 'your-org-slug';
-  return `<link rel="stylesheet" href="${origin}/embed/headless-blocks.css" />\n<div id="help-article"></div>\n<script\n  src="${origin}/embed/headless-article.js"\n  data-org="${orgSlug}"\n  data-slug="your-article-slug"\n  data-target="#help-article"\n  data-show-sidebar="true"\n  data-show-breadcrumbs="true"\n  data-link-prefix="/help/"\n  data-home-prefix="/help/"\n  data-category-prefix="/help/"\n  data-section-prefix="/help/"\n  data-article-prefix="/help/"\n  data-collection="your-category-slug"\n  data-section="your-section-slug"\n><\/script>`;
+  const pathPrefix = normalizedEmbedPathPrefix.value;
+  return `<div id="help-article"></div>\n<script\n  src="${embedOrigin.value}/embed/headless-article.js"\n  data-api-origin="${embedOrigin.value}"\n  data-org="${embedOrgSlug.value}"\n  data-slug="your-article-slug"\n  data-target="#help-article"\n  data-show-sidebar="true"\n  data-show-breadcrumbs="true"\n  data-link-prefix="${pathPrefix}"\n  data-home-prefix="${pathPrefix}"\n  data-category-prefix="${pathPrefix}"\n  data-section-prefix="${pathPrefix}"\n  data-article-prefix="${pathPrefix}"\n  data-collection="your-category-slug"\n  data-section="your-section-slug"\n><\/script>`;
 });
 
-const helpCenterRoutes = computed(() => [
+const advancedEmbedSnippets = computed(() => [
   {
     key: 'home',
-    label: t('settings.addonsArticlesHelpRouteHome'),
-    customerUrl: 'https://your-site.com/help/',
-    demoUrl: headlessHomeExampleUrl.value,
+    label: t('settings.addonsArticlesHomeEmbedSnippetLabel'),
+    description: t('settings.addonsArticlesHomeEmbedDesc'),
+    value: homeEmbedSnippet.value,
   },
   {
     key: 'category',
-    label: t('settings.addonsArticlesHelpRouteCategory'),
-    customerUrl: 'https://your-site.com/help/{category}',
-    demoUrl: headlessCategoryExampleUrl.value,
+    label: t('settings.addonsArticlesCategoryEmbedSnippetLabel'),
+    description: t('settings.addonsArticlesCategoryEmbedDesc'),
+    value: categoryEmbedSnippet.value,
   },
   {
     key: 'section',
-    label: t('settings.addonsArticlesHelpRouteSection'),
-    customerUrl: 'https://your-site.com/help/{category}/{section}',
-    demoUrl: headlessSectionExampleUrl.value,
+    label: t('settings.addonsArticlesSectionEmbedSnippetLabel'),
+    description: t('settings.addonsArticlesSectionEmbedDesc'),
+    value: sectionEmbedSnippet.value,
   },
   {
     key: 'article',
-    label: t('settings.addonsArticlesHelpRouteArticle'),
-    customerUrl: 'https://your-site.com/help/{category}/{section}/{article}',
-    demoUrl: headlessExampleUrl.value,
+    label: t('settings.addonsArticlesEmbedSnippetLabel'),
+    description: t('settings.addonsArticlesArticleEmbedDesc'),
+    value: embedSnippet.value,
+  },
+  {
+    key: 'list',
+    label: t('settings.addonsArticlesListEmbedSnippetLabel'),
+    description: t('settings.addonsArticlesListEmbedDesc'),
+    value: listEmbedSnippet.value,
   },
 ]);
+
+const embedWebsiteOrigins = computed(() => (
+  savedEmbedWebsiteOrigins.value.length
+    ? savedEmbedWebsiteOrigins.value
+    : []
+));
+
+const helpCenterRoutes = computed(() => {
+  const siteHost = String(form.embedWebsiteDomain || 'www.example.com').trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '') || 'www.example.com';
+  const siteBase = `https://${siteHost.replace(/\/$/, '')}`;
+  const path = normalizedEmbedPathPrefix.value;
+  return [
+    {
+      key: 'home',
+      label: t('settings.addonsArticlesHelpRouteHome'),
+      customerUrl: `${siteBase}${path}`,
+      demoUrl: headlessHomeExampleUrl.value,
+    },
+    {
+      key: 'category',
+      label: t('settings.addonsArticlesHelpRouteCategory'),
+      customerUrl: `${siteBase}${path}{category}`,
+      demoUrl: headlessCategoryExampleUrl.value,
+    },
+    {
+      key: 'section',
+      label: t('settings.addonsArticlesHelpRouteSection'),
+      customerUrl: `${siteBase}${path}{category}/{section}`,
+      demoUrl: headlessSectionExampleUrl.value,
+    },
+    {
+      key: 'article',
+      label: t('settings.addonsArticlesHelpRouteArticle'),
+      customerUrl: `${siteBase}${path}{category}/{section}/{article}`,
+      demoUrl: headlessExampleUrl.value,
+    },
+  ];
+});
 
 const integrationExamples = computed(() => {
   const articleUrl = exampleArticleApiUrl.value;
@@ -750,7 +858,7 @@ const integrationExamples = computed(() => {
   examples.push({
     key: 'render',
     label: t('settings.addonsArticlesExampleRender'),
-    value: `import { renderBlocksToHtml } from '@/modules/contentStudio/headless';\n\nconst html = renderBlocksToHtml(data.blocks, {\n  title: data.title,\n  subtitle: data.subtitle,\n  articleLinkPrefix: '/help/',\n});\ndocument.querySelector('#article').innerHTML = html;`,
+    value: `import { renderBlocksToHtml } from '@/modules/contentStudio/headless';\n\nconst html = renderBlocksToHtml(data.blocks, {\n  title: data.title,\n  subtitle: data.subtitle,\n  articleLinkPrefix: '${normalizedEmbedPathPrefix.value}',\n});\ndocument.querySelector('#article').innerHTML = html;`,
   });
 
   return examples;
@@ -830,11 +938,16 @@ function applySettings(res) {
   form.portalPublishing = settings.portalPublishing !== false;
   form.publishWebhookUrl = settings.publishing?.publishWebhookUrl || '';
   form.headlessApiEnabled = settings.publishing?.headlessApiEnabled !== false;
+  form.embedWebsiteDomain = settings.publishing?.embedWebsiteDomain || '';
+  savedEmbedWebsiteOrigins.value = Array.isArray(settings.publishing?.embedWebsiteOrigins)
+    ? settings.publishing.embedWebsiteOrigins
+    : [];
   form.defaultCollectionId = settings.defaultCollectionId || null;
   form.caseDeflectionEnabled = settings.caseDeflectionEnabled !== false;
   form.staleContentAlertDays = Number(settings.staleContentAlertDays) || 90;
   applyAppearance(settings.appearance);
   integration.headlessApiBase = res?.integration?.headlessApiBase || '';
+  integration.headlessPublicKey = res?.integration?.headlessPublicKey || '';
   integration.articlesListApiUrl = res?.integration?.articlesListApiUrl || '';
   integration.collectionsApiUrl = res?.integration?.collectionsApiUrl || '';
   integration.recentArticlesApiUrl = res?.integration?.recentArticlesApiUrl || '';
@@ -854,6 +967,7 @@ async function save({ silent = false } = {}) {
       portalPublishing: form.portalPublishing,
       publishWebhookUrl: form.publishWebhookUrl,
       headlessApiEnabled: form.headlessApiEnabled,
+      embedWebsiteDomain: form.embedWebsiteDomain,
       defaultCollectionId: form.defaultCollectionId,
       caseDeflectionEnabled: form.caseDeflectionEnabled,
       staleContentAlertDays: form.staleContentAlertDays,
@@ -885,6 +999,7 @@ watch(
     portalPublishing: form.portalPublishing,
     publishWebhookUrl: form.publishWebhookUrl,
     headlessApiEnabled: form.headlessApiEnabled,
+    embedWebsiteDomain: form.embedWebsiteDomain,
     defaultCollectionId: form.defaultCollectionId,
     caseDeflectionEnabled: form.caseDeflectionEnabled,
     staleContentAlertDays: form.staleContentAlertDays,

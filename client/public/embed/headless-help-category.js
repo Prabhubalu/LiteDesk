@@ -172,6 +172,7 @@
   window.LiteDeskHeadlessHelpCategory = {
     mount: mountCategory,
   };
+  window.ArivuHeadlessHelpCategory = window.LiteDeskHeadlessHelpCategory;
 
   if (script) {
     var org = common.getAttr(script, 'data-org', '');

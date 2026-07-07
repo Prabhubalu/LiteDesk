@@ -116,8 +116,13 @@ const publicEmbedCors = cors({
   credentials: false,
 });
 
+const publicContentCorsMiddleware = require('./middleware/publicContentCorsMiddleware');
+
 app.use((req, res, next) => {
-  const url = String(req.originalUrl || '');
+  const url = String(req.originalUrl || '').split('?')[0];
+  if (url.startsWith('/api/public/v1/content') || url.startsWith('/api/public/content')) {
+    return publicContentCorsMiddleware(req, res, next);
+  }
   if (
     url === '/embed/chat'
     || url.startsWith('/embed/chat/')
