@@ -4,6 +4,8 @@ const publicContentService = require('../services/contentStudio/publicContentSer
 const articleAnalyticsService = require('../services/contentStudio/articleAnalyticsService');
 const { renderBlocksToHtml } = require('../services/contentStudio/contentStudioBlockRenderer');
 const { assertValidBlockDocument } = require('../services/contentStudio/contentBlockValidationService');
+const { absolutizePublicAssetUrlsInHtml } = require('../services/contentStudio/headlessContentShaper');
+const { getPublicAppBaseUrl, resolveRequestOrigin } = require('../services/contentStudio/contentPublishingService');
 
 const PUBLIC_CACHE_CONTROL = 'public, max-age=60, s-maxage=300, stale-while-revalidate=600';
 
@@ -99,6 +101,7 @@ async function getPublicHelpArticle(req, res) {
     const result = await publicContentService.getPublicHelpArticle({
       orgSlug: req.params.orgSlug,
       articleSlug: req.params.slug,
+      requestOrigin: resolveRequestOrigin(req),
     });
 
     if (!result) {
@@ -169,12 +172,16 @@ async function renderPublicBlocks(req, res) {
       return res.status(400).json({ success: false, message: 'blocks are required' });
     }
     assertValidBlockDocument(blocks);
-    const html = renderBlocksToHtml(blocks, {
-      title: req.body?.title || '',
-      subtitle: req.body?.subtitle || '',
-      bodyOnly: Boolean(req.body?.bodyOnly),
-      articleLinkPrefix: req.body?.articleLinkPrefix || '/help/',
-    });
+    const publicAppBaseUrl = getPublicAppBaseUrl({ requestOrigin: resolveRequestOrigin(req) });
+    const html = absolutizePublicAssetUrlsInHtml(
+      renderBlocksToHtml(blocks, {
+        title: req.body?.title || '',
+        subtitle: req.body?.subtitle || '',
+        bodyOnly: Boolean(req.body?.bodyOnly),
+        articleLinkPrefix: req.body?.articleLinkPrefix || '/help/',
+      }),
+      publicAppBaseUrl,
+    );
     res.set('Cache-Control', 'no-store');
     return res.json({ success: true, html });
   } catch (error) {

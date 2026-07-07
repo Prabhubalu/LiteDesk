@@ -7,25 +7,6 @@
     return;
   }
 
-  function buildSectionShell() {
-    return (
-      '<div class="ld-help-page" data-ld-help-section>' +
-        '<div class="ld-help-page__breadcrumbs"></div>' +
-        '<div class="ld-help-page__layout">' +
-          '<main class="ld-help-page__main">' +
-            '<div class="ld-help-page__status" aria-live="polite"></div>' +
-            '<header class="ld-help-page__header" hidden>' +
-              '<h1 class="ld-help-page__title"></h1>' +
-              '<p class="ld-help-page__desc"></p>' +
-            '</header>' +
-            '<ul class="ld-help-list__items"></ul>' +
-          '</main>' +
-          '<aside class="ld-help-page__sidebar"></aside>' +
-        '</div>' +
-      '</div>'
-    );
-  }
-
   function mountSection(options) {
     var org = String(options.org || '').trim();
     var sectionSlug = common.normalizeSlug(options.section);
@@ -57,19 +38,10 @@
 
     var contentBase = apiOrigin + '/api/public/v1/content/' + encodeURIComponent(org);
 
-    mountEl.innerHTML = buildSectionShell();
+    if (!mountEl.querySelector('.ld-help-skeleton')) {
+      mountEl.innerHTML = common.buildMountSkeleton({ type: 'page', showSidebar: true });
+    }
     common.ensureStylesheet(apiOrigin);
-
-    var root = mountEl.querySelector('[data-ld-help-section]');
-    var breadcrumbsEl = root.querySelector('.ld-help-page__breadcrumbs');
-    var statusEl = root.querySelector('.ld-help-page__status');
-    var headerEl = root.querySelector('.ld-help-page__header');
-    var titleEl = root.querySelector('.ld-help-page__title');
-    var descEl = root.querySelector('.ld-help-page__desc');
-    var articlesEl = root.querySelector('.ld-help-list__items');
-    var sidebarEl = root.querySelector('.ld-help-page__sidebar');
-
-    statusEl.textContent = 'Loading…';
 
     return common.fetchCollections(contentBase)
       .then(function (collectionsResult) {
@@ -81,8 +53,19 @@
         var node = entry.node;
         var path = entry.path;
         var rootTree = collectionsResult.tree;
+        var widgetOptions = {
+          collection: node.slug,
+          deep: true,
+          limit: recentLimit,
+          articlePrefix: articlePrefix,
+          sectionContext: node,
+          popularTitle: popularTitle,
+          recentTitle: recentTitle,
+          popularEmptyLabel: popularEmptyLabel,
+          recentEmptyLabel: recentEmptyLabel,
+        };
 
-        breadcrumbsEl.innerHTML = common.buildBreadcrumbHtml({
+        var breadcrumbsHtml = common.buildBreadcrumbHtml({
           path: path,
           homePrefix: homePrefix,
           categoryPrefix: categoryPrefix,
@@ -91,16 +74,17 @@
           breadcrumbLabel: breadcrumbLabel,
         });
 
-        titleEl.textContent = node.name || node.slug;
-        if (node.description) {
-          descEl.textContent = node.description;
-          descEl.hidden = false;
-        } else {
-          descEl.hidden = true;
-        }
-        headerEl.hidden = false;
+        var descText = String(node.description || '').trim();
+        var headerHtml = (
+          '<header class="ld-help-page__header">' +
+            '<h1 class="ld-help-page__title">' + common.escapeHtml(node.name || node.slug) + '</h1>' +
+            (descText
+              ? '<p class="ld-help-page__desc">' + common.escapeHtml(descText) + '</p>'
+              : '') +
+          '</header>'
+        );
 
-        sidebarEl.innerHTML = common.buildSidebarBlock(
+        var sidebarTreeHtml = common.buildSidebarBlock(
           sectionsTitle,
           common.buildSectionTreeHtml(rootTree, {
             currentSlug: node.slug,
@@ -109,38 +93,46 @@
             linkPrefix: sectionPrefix,
           }),
         );
-        common.bindSectionTree(sidebarEl);
 
-        return common.fetchArticles(contentBase, {
-          collection: node.slug,
-          limit: 50,
-        }).then(function (articlesResult) {
-          statusEl.textContent = '';
-          var articles = articlesResult.articles;
-          if (!articles.length) {
-            statusEl.textContent = articlesEmptyLabel;
-          }
-          articlesEl.innerHTML = articles.map(function (article) {
-            return common.buildArticleListItem(article, articlePrefix, node);
-          }).join('');
-
-          return common.appendArticleSidebarWidgets(sidebarEl, contentBase, {
+        return Promise.all([
+          common.fetchArticles(contentBase, {
             collection: node.slug,
-            deep: true,
-            limit: recentLimit,
-            articlePrefix: articlePrefix,
-            sectionContext: node,
-            popularTitle: popularTitle,
-            recentTitle: recentTitle,
-            popularEmptyLabel: popularEmptyLabel,
-            recentEmptyLabel: recentEmptyLabel,
-          }).then(function () {
-            return {
-              section: node,
-              articles: articles,
-              organization: collectionsResult.organization,
-            };
+            limit: 50,
+          }),
+          common.fetchArticleSidebarWidgets(contentBase, widgetOptions),
+        ]).then(function (results) {
+          var articlesResult = results[0];
+          var widgets = results[1];
+          var articles = articlesResult.articles;
+          var statusHtml = articles.length
+            ? ''
+            : '<div class="ld-help-page__status">' + common.escapeHtml(articlesEmptyLabel) + '</div>';
+          var mainHtml = (
+            '<ul class="ld-help-list__items">' +
+              articles.map(function (article) {
+                return common.buildArticleListItem(article, articlePrefix, node);
+              }).join('') +
+            '</ul>'
+          );
+
+          mountEl.innerHTML = common.buildSectionPageHtml({
+            breadcrumbsHtml: breadcrumbsHtml,
+            statusHtml: statusHtml,
+            headerHtml: headerHtml,
+            mainHtml: mainHtml,
+            sidebarHtml: sidebarTreeHtml + common.buildArticleSidebarWidgetsHtml(widgets, widgetOptions),
           });
+
+          var root = mountEl.querySelector('[data-ld-help-section]');
+          if (root) {
+            common.bindSectionTree(root);
+          }
+
+          return {
+            section: node,
+            articles: articles,
+            organization: collectionsResult.organization,
+          };
         });
       })
       .catch(function (error) {

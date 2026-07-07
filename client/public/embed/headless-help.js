@@ -3,6 +3,93 @@
 
   var SCRIPT_MARKER = '/embed/headless-help.js';
 
+  var CRITICAL_SKELETON_CSS = [
+    '.ld-help-skeleton[aria-busy="true"]{pointer-events:none}',
+    '.ld-help-skeleton__search,.ld-help-skeleton__breadcrumbs,.ld-help-skeleton__title,',
+    '.ld-help-skeleton__line,.ld-help-skeleton__block,.ld-help-skeleton__card,',
+    '.ld-help-skeleton__sidebar-block{border-radius:.5rem;background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);background-size:200% 100%;animation:ld-help-skeleton-pulse 1.2s ease-in-out infinite}',
+    '.ld-help-skeleton__search{height:3.25rem;margin-bottom:1rem}',
+    '.ld-help-skeleton__breadcrumbs{height:1rem;width:40%;margin-bottom:.5rem}',
+    '.ld-help-skeleton__title{height:2rem;width:55%;margin-bottom:1rem}',
+    '.ld-help-skeleton__line{height:.85rem;margin-bottom:.55rem}',
+    '.ld-help-skeleton__line--short{width:70%}',
+    '.ld-help-skeleton__block{height:5.5rem;margin-top:1rem}',
+    '.ld-help-skeleton__block--short{height:3.5rem}',
+    '.ld-help-skeleton__card{min-height:8.5rem}',
+    '.ld-help-skeleton__sidebar-block{height:7rem;margin-bottom:1rem}',
+    '.ld-help-page__layout{display:grid;grid-template-columns:minmax(0,1fr);gap:1.5rem}',
+    '.ld-help-home__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(17.5rem,1fr));gap:1rem}',
+    '@keyframes ld-help-skeleton-pulse{0%{background-position:200% 0}100%{background-position:-200% 0}}',
+    '@media(min-width:960px){.ld-help-page__layout{grid-template-columns:minmax(0,1fr) 17.5rem;gap:2.5rem}}',
+  ].join('');
+
+  function ensureCriticalStyles() {
+    if (document.querySelector('style[data-arivu-headless-critical]')) return;
+    var style = document.createElement('style');
+    style.setAttribute('data-arivu-headless-critical', 'true');
+    style.textContent = CRITICAL_SKELETON_CSS;
+    document.head.appendChild(style);
+  }
+
+  function buildBootstrapSkeleton(config) {
+    var pathPrefix = normalizeLinkPrefix(config.pathPrefix);
+    var parsed = parseHelpPath(config.pathname || (typeof window !== 'undefined' ? window.location.pathname : ''), pathPrefix);
+    var showSidebar = parsed.depth === 0 ? false : config.showSidebar !== false;
+
+    if (parsed.depth === 0) {
+      var cards = '';
+      for (var i = 0; i < 6; i++) {
+        cards += '<div class="ld-help-skeleton__card" aria-hidden="true"></div>';
+      }
+      return (
+        '<div class="ld-help-home ld-help-skeleton" aria-busy="true" aria-label="Loading">' +
+          '<div class="ld-help-skeleton__search" aria-hidden="true"></div>' +
+          '<div class="ld-help-home__grid">' + cards + '</div>' +
+        '</div>'
+      );
+    }
+
+    var layoutClass = showSidebar
+      ? 'ld-help-page__layout'
+      : 'ld-help-page__layout ld-help-page__layout--single';
+    var sidebarHtml = showSidebar
+      ? (
+        '<aside class="ld-help-page__sidebar" aria-hidden="true">' +
+          '<div class="ld-help-skeleton__sidebar-block"></div>' +
+          '<div class="ld-help-skeleton__sidebar-block"></div>' +
+          '<div class="ld-help-skeleton__sidebar-block"></div>' +
+        '</aside>'
+      )
+      : '';
+
+    return (
+      '<div class="ld-help-page ld-help-skeleton" aria-busy="true" aria-label="Loading">' +
+        '<div class="ld-help-skeleton__breadcrumbs" aria-hidden="true"></div>' +
+        '<div class="' + layoutClass + '">' +
+          '<main class="ld-help-page__main" aria-hidden="true">' +
+            '<div class="ld-help-skeleton__title"></div>' +
+            '<div class="ld-help-skeleton__line"></div>' +
+            '<div class="ld-help-skeleton__line"></div>' +
+            '<div class="ld-help-skeleton__line"></div>' +
+            '<div class="ld-help-skeleton__line ld-help-skeleton__line--short"></div>' +
+            '<div class="ld-help-skeleton__block"></div>' +
+            '<div class="ld-help-skeleton__block ld-help-skeleton__block--short"></div>' +
+          '</main>' +
+          sidebarHtml +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function injectBootstrapSkeleton(config) {
+    var mountEl = typeof config.target === 'string'
+      ? document.querySelector(config.target)
+      : config.target;
+    if (!mountEl || mountEl.childElementCount > 0) return;
+    ensureCriticalStyles();
+    mountEl.innerHTML = buildBootstrapSkeleton(config);
+  }
+
   function getAttr(el, name, fallback) {
     var value = el.getAttribute(name);
     return value == null || value === '' ? fallback : value;
@@ -69,9 +156,17 @@
     ) {
       return;
     }
+    var href = origin + '/embed/headless-blocks.css';
+    if (!document.querySelector('link[rel="preload"][href="' + href + '"]')) {
+      var preload = document.createElement('link');
+      preload.rel = 'preload';
+      preload.as = 'style';
+      preload.href = href;
+      document.head.appendChild(preload);
+    }
     var link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = origin + '/embed/headless-blocks.css';
+    link.href = href;
     link.setAttribute('data-arivu-headless-blocks-css', 'true');
     document.head.appendChild(link);
   }
@@ -138,6 +233,12 @@
     }
 
     loadStylesheet(origin);
+    injectBootstrapSkeleton({
+      target: target,
+      pathPrefix: pathPrefix,
+      pathname: config.pathname || (typeof window !== 'undefined' ? window.location.pathname : ''),
+      showSidebar: config.showSidebar,
+    });
 
     if (parsed.depth === 0) {
       return loadScript(origin, '/embed/headless-help-home.js', 'data-arivu-headless-help-home-js')
@@ -237,6 +338,8 @@
 
   function autoMount(script) {
     var config = readConfig(script);
+    loadStylesheet(config.apiOrigin);
+    injectBootstrapSkeleton(config);
     return mountHelp(config).catch(function (error) {
       console.error('[ArivuHeadlessHelp]', error);
       showMountError(

@@ -101,7 +101,7 @@
         searchHtml +
         '<div class="ld-help-home__status" aria-live="polite"></div>' +
         categoriesTitleHtml +
-        '<div class="ld-help-home__grid" hidden></div>' +
+        '<div class="ld-help-home__grid" aria-busy="true">' + buildHomeGridSkeleton(6) + '</div>' +
         '<div class="ld-help-home__search-results" hidden>' +
           '<div class="ld-help-home__search-results-header">' +
             '<button type="button" class="ld-help-home__back-btn">' + escapeHtml(options.backLabel) + '</button>' +
@@ -159,12 +159,34 @@
   }
 
   function ensureStylesheet(origin) {
-    if (document.querySelector('link[data-ld-headless-blocks-css]')) return;
+    if (
+      document.querySelector('link[data-arivu-headless-blocks-css]')
+      || document.querySelector('link[data-ld-headless-blocks-css]')
+    ) {
+      return;
+    }
+    var href = origin + '/embed/headless-blocks.css';
+    if (!document.querySelector('link[rel="preload"][href="' + href + '"]')) {
+      var preload = document.createElement('link');
+      preload.rel = 'preload';
+      preload.as = 'style';
+      preload.href = href;
+      document.head.appendChild(preload);
+    }
     var link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = origin + '/embed/headless-blocks.css';
-    link.setAttribute('data-ld-headless-blocks-css', 'true');
+    link.href = href;
+    link.setAttribute('data-arivu-headless-blocks-css', 'true');
     document.head.appendChild(link);
+  }
+
+  function buildHomeGridSkeleton(count) {
+    var html = '';
+    var total = Math.max(Number(count) || 6, 1);
+    for (var i = 0; i < total; i++) {
+      html += '<div class="ld-help-skeleton__card" aria-hidden="true"></div>';
+    }
+    return html;
   }
 
   function mountHome(options) {
@@ -198,18 +220,58 @@
     var contentBase = apiOrigin + '/api/public/v1/content/' + encodeURIComponent(org);
     var collectionsUrl = contentBase + '/collections';
 
-    mountEl.innerHTML = buildHomeShell({
-      searchEnabled: searchEnabled,
-      searchQuery: searchQuery,
-      searchLabel: searchLabel,
-      searchPlaceholder: searchPlaceholder,
-      title: title,
-      categoriesTitle: categoriesTitle,
-      backLabel: backLabel,
-    });
     ensureStylesheet(apiOrigin);
 
-    var root = mountEl.querySelector('[data-ld-help-home]');
+    var root = mountEl.querySelector('.ld-help-home');
+    if (root && root.classList.contains('ld-help-skeleton')) {
+      root.classList.remove('ld-help-skeleton');
+      root.removeAttribute('aria-busy');
+      root.removeAttribute('aria-label');
+      root.setAttribute('data-ld-help-home', '');
+
+      var shellHtml = buildHomeShell({
+        searchEnabled: searchEnabled,
+        searchQuery: searchQuery,
+        searchLabel: searchLabel,
+        searchPlaceholder: searchPlaceholder,
+        title: title,
+        categoriesTitle: categoriesTitle,
+        backLabel: backLabel,
+      });
+      var temp = document.createElement('div');
+      temp.innerHTML = shellHtml;
+      var fresh = temp.firstElementChild;
+      var gridElBootstrap = root.querySelector('.ld-help-home__grid');
+      var skeletonSearch = root.querySelector('.ld-help-skeleton__search');
+      if (skeletonSearch) skeletonSearch.remove();
+
+      ['.ld-help-home__header', '.ld-help-home__search', '.ld-help-home__status', '.ld-help-home__section-title'].forEach(function (selector) {
+        if (root.querySelector(selector)) return;
+        var node = fresh.querySelector(selector);
+        if (node && gridElBootstrap) {
+          root.insertBefore(node, gridElBootstrap);
+        } else if (node) {
+          root.appendChild(node);
+        }
+      });
+
+      if (!root.querySelector('.ld-help-home__search-results')) {
+        var searchResults = fresh.querySelector('.ld-help-home__search-results');
+        if (searchResults) root.appendChild(searchResults);
+      }
+    } else {
+      mountEl.innerHTML = buildHomeShell({
+        searchEnabled: searchEnabled,
+        searchQuery: searchQuery,
+        searchLabel: searchLabel,
+        searchPlaceholder: searchPlaceholder,
+        title: title,
+        categoriesTitle: categoriesTitle,
+        backLabel: backLabel,
+      });
+      root = mountEl.querySelector('[data-ld-help-home]');
+    }
+
     var statusEl = root.querySelector('.ld-help-home__status');
     var gridEl = root.querySelector('.ld-help-home__grid');
     var searchResultsEl = root.querySelector('.ld-help-home__search-results');
@@ -228,10 +290,11 @@
     }
 
     function renderLoading() {
-      statusEl.textContent = 'Loading…';
-      gridEl.hidden = true;
+      statusEl.textContent = '';
       searchResultsEl.hidden = true;
-      gridEl.innerHTML = '';
+      gridEl.hidden = false;
+      gridEl.setAttribute('aria-busy', 'true');
+      gridEl.innerHTML = buildHomeGridSkeleton(6);
       searchItemsEl.innerHTML = '';
     }
 
@@ -304,6 +367,7 @@
           return buildCollectionCard(collection, linkPrefix, labels);
         }).join('');
         gridEl.hidden = false;
+        gridEl.removeAttribute('aria-busy');
 
         var state = {
           org: org,

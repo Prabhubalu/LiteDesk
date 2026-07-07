@@ -5,6 +5,27 @@ const { getAssetById } = require('../contentPlatform/contentAssetService');
 
 const CONTENT_STUDIO_SUBTITLE_SIZES = new Set(['sm', 'md', 'lg', 'xl']);
 
+function absolutizePublicAssetUrl(url, publicAppBaseUrl) {
+  const raw = String(url || '').trim();
+  if (!raw || !publicAppBaseUrl) return raw;
+  if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('data:')) {
+    return raw;
+  }
+  if (raw.startsWith('/')) {
+    return `${String(publicAppBaseUrl).replace(/\/$/, '')}${raw}`;
+  }
+  return raw;
+}
+
+function absolutizePublicAssetUrlsInHtml(html, publicAppBaseUrl) {
+  if (!html || !publicAppBaseUrl) return html;
+  const base = String(publicAppBaseUrl).replace(/\/$/, '');
+  return String(html).replace(
+    /(\s(?:src|href)=["'])(\/api\/(?:files\/download|uploads)[^"']*)(["'])/gi,
+    (_match, prefix, path, suffix) => `${prefix}${base}${path}${suffix}`,
+  );
+}
+
 function normalizeHeadlessPresentation(presentation) {
   const defaults = {
     coverPosition: 'below-title',
@@ -45,7 +66,7 @@ function shapeHeadlessArticleSummary(doc, collectionMeta = null) {
   };
 }
 
-async function resolveCoverImage(doc) {
+async function resolveCoverImage(doc, publicAppBaseUrl = '') {
   if (!doc?.coverAssetId) return null;
   try {
     const asset = await getAssetById({
@@ -54,7 +75,7 @@ async function resolveCoverImage(doc) {
     });
     if (!asset.downloadUrl) return null;
     return {
-      url: asset.downloadUrl,
+      url: absolutizePublicAssetUrl(asset.downloadUrl, publicAppBaseUrl),
       alt: String(asset.accessibilityAltText || '').trim(),
       width: asset.width || null,
       height: asset.height || null,
@@ -64,7 +85,7 @@ async function resolveCoverImage(doc) {
   }
 }
 
-async function shapeHeadlessSeo(seo, organizationId) {
+async function shapeHeadlessSeo(seo, organizationId, publicAppBaseUrl = '') {
   const source = seo && typeof seo === 'object' ? seo : {};
   const shaped = {
     metaTitle: String(source.metaTitle || '').trim(),
@@ -80,7 +101,7 @@ async function shapeHeadlessSeo(seo, organizationId) {
         organizationId,
         assetId: source.ogImageAssetId,
       });
-      shaped.ogImageUrl = asset.downloadUrl || '';
+      shaped.ogImageUrl = absolutizePublicAssetUrl(asset.downloadUrl || '', publicAppBaseUrl);
     } catch {
       shaped.ogImageUrl = '';
     }
@@ -89,7 +110,7 @@ async function shapeHeadlessSeo(seo, organizationId) {
   return shaped;
 }
 
-async function resolveAssetUrlsInBlocks(blocks, organizationId) {
+async function resolveAssetUrlsInBlocks(blocks, organizationId, publicAppBaseUrl = '') {
   if (!blocks || typeof blocks !== 'object') return null;
 
   async function walk(node) {
@@ -114,6 +135,12 @@ async function resolveAssetUrlsInBlocks(blocks, organizationId) {
         } catch {
           // Keep existing attrs when asset lookup fails.
         }
+      }
+      if (attrs.src) {
+        attrs.src = absolutizePublicAssetUrl(attrs.src, publicAppBaseUrl);
+      }
+      if (attrs.imageUrl) {
+        attrs.imageUrl = absolutizePublicAssetUrl(attrs.imageUrl, publicAppBaseUrl);
       }
       delete attrs.assetId;
       delete attrs.contentAssetId;
@@ -140,8 +167,11 @@ async function shapeHeadlessArticleDetail(doc, {
   authorName = '',
   collectionName = '',
   collectionMeta = null,
+  publicAppBaseUrl = '',
 }) {
-  const resolvedBlocks = blocks ? await resolveAssetUrlsInBlocks(blocks, doc.organizationId) : null;
+  const resolvedBlocks = blocks
+    ? await resolveAssetUrlsInBlocks(blocks, doc.organizationId, publicAppBaseUrl)
+    : null;
   const plainText = resolvedBlocks
     ? blocksToPlainText(resolvedBlocks)
     : String(doc.searchText || doc.summary || '');
@@ -151,8 +181,8 @@ async function shapeHeadlessArticleDetail(doc, {
   return {
     ...shapeHeadlessArticleSummary(doc, meta),
     subtitle: doc.subtitle || '',
-    seo: await shapeHeadlessSeo(doc.seo, doc.organizationId),
-    coverImage: await resolveCoverImage(doc),
+    seo: await shapeHeadlessSeo(doc.seo, doc.organizationId, publicAppBaseUrl),
+    coverImage: await resolveCoverImage(doc, publicAppBaseUrl),
     authorName,
     collectionName: collectionName || meta?.name || '',
     readMinutes: estimateReadMinutes(readSource),
@@ -163,6 +193,8 @@ async function shapeHeadlessArticleDetail(doc, {
 }
 
 module.exports = {
+  absolutizePublicAssetUrl,
+  absolutizePublicAssetUrlsInHtml,
   shapeHeadlessArticleSummary,
   shapeHeadlessArticleDetail,
   shapeHeadlessSeo,
