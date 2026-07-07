@@ -474,7 +474,7 @@
     });
   }
 
-  window.LiteDeskHeadlessHelpCommon = {
+  var helpCommonApi = {
     getAttr: getAttr,
     escapeHtml: escapeHtml,
     formatDate: formatDate,
@@ -504,4 +504,6 @@
     appendArticleSidebarWidgets: appendArticleSidebarWidgets,
     fetchArticles: fetchArticles,
   };
+  window.LiteDeskHeadlessHelpCommon = helpCommonApi;
+  window.ArivuHeadlessHelpCommon = helpCommonApi;
 })(typeof window !== 'undefined' ? window : globalThis);

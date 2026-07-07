@@ -1,39 +1,41 @@
 # Headless Help Center — Customer Site Setup (`xyz.com`)
 
 **Audience:** Tenant admins, customer web developers  
-**Scope:** Embed LiteDesk Articles on a **customer-owned** website (e.g. `https://xyz.com/help`)  
+**Scope:** Embed Arivu Articles on a **customer-owned** website (e.g. `https://xyz.com/help`)  
 **Related:** [ARTICLES_HEADLESS_ROADMAP.md](./ARTICLES_HEADLESS_ROADMAP.md) · [ARTICLES_HEADLESS_HELP_CENTER_ROADMAP.md](./ARTICLES_HEADLESS_HELP_CENTER_ROADMAP.md)
 
 ---
 
 ## 1. How it works
 
-LiteDesk does **not** host your help pages. You publish articles in Content Studio; LiteDesk exposes a **public JSON API** and **neutral embed scripts**. Your site owns routing, layout, and branding.
+Arivu does **not** host your help pages. You publish articles in Content Studio; Arivu exposes a **public JSON API** and **neutral embed scripts**. Your site owns routing, layout, and branding.
 
 ```text
-xyz.com/help                    → headless-help-home.js      → GET /collections
-xyz.com/help/{category}         → headless-help-category.js  → collections + sidebars
-xyz.com/help/{cat}/{section}    → headless-help-section.js   → articles + tree
-xyz.com/help/.../{article}      → headless-article.js        → article + render-blocks
+xyz.com/help                    → headless-help.js (auto: home)
+xyz.com/help/{category}         → headless-help.js (auto: category)
+xyz.com/help/{cat}/{section}    → headless-help.js (auto: section)
+xyz.com/help/.../{article}      → headless-help.js (auto: article)
 ```
+
+**Recommended:** use the single **`headless-help.js`** script on every help page. It reads the URL and loads the correct view. Per-page scripts (`headless-help-home.js`, etc.) remain available for advanced setups.
 
 **Data flow**
 
 ```text
 Browser on xyz.com
-  ├── loads /embed/*.js + headless-blocks.css (from LiteDesk app or self-hosted copy)
-  └── fetch JSON → https://{litedesk-app}/api/public/v1/content/{org-slug}/...
+  ├── loads /embed/headless-help.js (+ CSS/deps from Arivu app or self-hosted copy)
+  └── fetch JSON → https://{arivu-app}/api/public/v1/content/{embed-site-id}/...
 ```
 
 ---
 
-## 2. Prerequisites (LiteDesk tenant)
+## 2. Prerequisites (Arivu tenant)
 
 | Requirement | Where |
 |-------------|--------|
 | **Articles addon** installed | Settings → Add-ons |
 | **Headless API enabled** | Settings → Add-ons → Articles → Publishing |
-| **Organization slug** known | e.g. `acme-corp` (used as `{org-slug}` in API URLs) |
+| **Embed site ID** auto-generated | Settings → Add-ons → Articles (e.g. `art_pub_…` in snippets) |
 | **Collections** created | Content Studio → Settings panel → Collections |
 | Articles **published** with **visibility: Public** | Content Studio → Publish |
 
@@ -48,7 +50,7 @@ If any gate fails, the API returns empty lists or 404 — not an auth error.
 
 ---
 
-## 3. Configure LiteDesk
+## 3. Configure Arivu
 
 ### 3.1 Enable headless publishing
 
@@ -56,15 +58,21 @@ If any gate fails, the API returns empty lists or 404 — not an auth error.
 2. Under **Publishing**, ensure **Headless API** is enabled.
 3. Save settings.
 
-### 3.2 Copy your API base URL
+### 3.2 Copy your embed snippet (recommended)
+
+In **Settings → Add-ons → Articles → Website embed**, copy the **Complete HTML page** or **Embed on an existing page** snippet. Values are pre-filled with your org slug and Arivu app origin — paste as-is.
+
+The unified script (`headless-help.js`) handles home, category, section, and article pages from the URL. Use the **same snippet on every help route**.
+
+### 3.3 Copy your API base URL
 
 In the same settings page, under **Integration**, copy:
 
 ```text
-https://{your-litedesk-app}/api/public/v1/content/{org-slug}
+https://{your-arivu-app}/api/public/v1/content/{embed-site-id}
 ```
 
-Example endpoints (replace `{org-slug}` and `{slug}`):
+Example endpoints (replace `{embed-site-id}` and `{slug}`):
 
 | Endpoint | Purpose |
 |----------|---------|
@@ -79,28 +87,16 @@ Example endpoints (replace `{org-slug}` and `{slug}`):
 
 Legacy alias: `/api/public/content/...` (same routes).
 
-### 3.3 Copy embed snippets
+### 3.4 Try Arivu demos first
 
-Still in **Articles addon settings**, use the **Embed** section. Copy the snippet for each page type:
-
-- Help home  
-- Category  
-- Section  
-- Article  
-- Flat list (legacy)
-
-Snippets are pre-filled with your org slug and LiteDesk app origin.
-
-### 3.4 Try LiteDesk demos first
-
-Before wiring `xyz.com`, verify content in LiteDesk examples (replace `org` with your slug):
+Before wiring `xyz.com`, verify content in Arivu examples (replace `org` with your slug):
 
 | Page | Demo URL |
 |------|----------|
-| Home | `/examples/headless-help-home?org={org-slug}` |
-| Category | `/examples/headless-help-category?org={org-slug}&collection={category-slug}` |
-| Section | `/examples/headless-help-section?org={org-slug}&section={section-slug}&parent={category-slug}` |
-| Article | `/examples/headless-article?org={org-slug}&slug={article-slug}` |
+| Home | `/examples/headless-help-home?org={embed-site-id}` |
+| Category | `/examples/headless-help-category?org={embed-site-id}&collection={category-slug}` |
+| Section | `/examples/headless-help-section?org={embed-site-id}&section={section-slug}&parent={category-slug}` |
+| Article | `/examples/headless-article?org={embed-site-id}&slug={article-slug}` |
 
 ---
 
@@ -108,55 +104,114 @@ Before wiring `xyz.com`, verify content in LiteDesk examples (replace `org` with
 
 | Page | URL pattern | Embed script |
 |------|-------------|--------------|
-| Help home | `https://xyz.com/help/` | `headless-help-home.js` |
-| Category | `https://xyz.com/help/{category}` | `headless-help-category.js` |
-| Section | `https://xyz.com/help/{category}/{section}` | `headless-help-section.js` |
-| Article | `https://xyz.com/help/{category}/{section}/{article}` | `headless-article.js` |
+| Help home | `https://xyz.com/help/` | `headless-help.js` (same on all rows) |
+| Category | `https://xyz.com/help/{category}` | `headless-help.js` |
+| Section | `https://xyz.com/help/{category}/{section}` | `headless-help.js` |
+| Article | `https://xyz.com/help/{category}/{section}/{article}` | `headless-help.js` |
 
 Slugs must match **collection slugs** and **article slugs** in Content Studio (lowercase, URL-safe).
 
-You may use a different path (e.g. `/support/`). Set `data-link-prefix`, `data-home-prefix`, `data-category-prefix`, `data-section-prefix`, and `data-article-prefix` accordingly on every embed.
+You may use a different path (e.g. `/support/`). Set `data-path-prefix="/support/"` on the embed script.
 
 ---
 
-## 5. CORS (required for browser embeds)
+## 5. Quick start — one snippet
 
-Embed scripts call the LiteDesk API from the **visitor’s browser**. The customer origin must be allowed by LiteDesk CORS.
+Replace placeholders only if you did not copy from Arivu settings (Settings → Add-ons → Articles → Website embed):
 
-**Production:** add the customer site to the LiteDesk server env:
+- `{ARIVU_ORIGIN}` — e.g. `https://app.arivu.com`  
+- `{ORG_KEY}` — your auto-generated embed site ID (e.g. `art_pub_…`) — prefilled in settings  
 
-```bash
-CORS_ORIGINS=https://xyz.com,https://www.xyz.com
+### Complete HTML page (copy & paste)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Help Center</title>
+</head>
+<body>
+  <main id="arivu-help"></main>
+  <script
+    src="{ARIVU_ORIGIN}/embed/headless-help.js"
+    data-api-origin="{ARIVU_ORIGIN}"
+    data-org="{ORG_KEY}"
+    data-target="#arivu-help"
+    data-path-prefix="/help/"
+    data-title="Help Center"
+  ></script>
+</body>
+</html>
 ```
 
-Wildcard subdomain patterns are supported, e.g. `https://*.xyz.com`.
+CSS and page-specific scripts load automatically. The script picks home / category / section / article from the browser URL.
 
-**Development:** localhost origins are allowed by default.
+### Embed on an existing page
 
-**If CORS is not configured:** browser requests from `xyz.com` to the LiteDesk API will fail. Options:
+```html
+<div id="arivu-help"></div>
+<script
+  src="{ARIVU_ORIGIN}/embed/headless-help.js"
+  data-api-origin="{ARIVU_ORIGIN}"
+  data-org="{ORG_KEY}"
+  data-target="#arivu-help"
+  data-path-prefix="/help/"
+  data-title="Help Center"
+></script>
+```
 
-1. Add the domain to `CORS_ORIGINS` (recommended).  
-2. Build a **server-side proxy** on `xyz.com` that fetches JSON from LiteDesk and injects HTML (custom integration; embed scripts not used).
+**Programmatic mount** (SPA):
+
+```javascript
+await window.ArivuHeadlessHelp.mount({
+  org: '{ORG_KEY}',
+  target: '#arivu-help',
+  apiOrigin: '{ARIVU_ORIGIN}',
+  pathPrefix: '/help/',
+  title: 'Help Center',
+});
+```
+
+(`window.LiteDeskHeadlessHelp` remains as a legacy alias.)
 
 ---
 
-## 6. Page setup on `xyz.com`
+## 6. CORS (automatic)
+
+When you save your **website domain** in **Settings → Add-ons → Articles**, Arivu registers that domain for browser access to the public content API. No manual `CORS_ORIGINS` changes are needed.
+
+Registered automatically for each tenant:
+
+- `https://example.com`
+- `https://www.example.com` (when you enter `example.com` or `www.example.com`)
+
+**Development:** localhost origins remain allowed in non-production environments.
+
+**Legacy override:** platform admins can still extend the global allowlist with `CORS_ORIGINS` if needed.
+
+---
+
+## 7. Advanced: per-page embeds (optional)
+
+Use individual scripts when you need separate HTML files per page type or custom routing. See **Advanced: individual page embeds** in Articles settings, or the sections below.
 
 Replace placeholders:
 
-- `{LITEDESK_ORIGIN}` — e.g. `https://app.litedesk.com`  
-- `{ORG_SLUG}` — your tenant slug  
+- `{ARIVU_ORIGIN}` — e.g. `https://app.arivu.com`  
+- `{ORG_KEY}` — your auto-generated embed site ID from Articles settings  
 - `{CATEGORY}`, `{SECTION}`, `{ARTICLE}` — Content Studio slugs  
 
-When embed **JS/CSS are loaded from LiteDesk** but the page lives on `xyz.com`, add:
+When embed **JS/CSS are loaded from Arivu** but the page lives on `xyz.com`, add:
 
 ```html
-data-api-origin="{LITEDESK_ORIGIN}"
+data-api-origin="{ARIVU_ORIGIN}"
 ```
 
-on each embed `<script>` tag so API calls target LiteDesk, not `xyz.com`.
+on each embed `<script>` tag so API calls target Arivu, not `xyz.com`.
 
-### 6.1 Help home — `https://xyz.com/help/`
+### 7.1 Help home — `https://xyz.com/help/`
 
 ```html
 <!DOCTYPE html>
@@ -164,7 +219,7 @@ on each embed `<script>` tag so API calls target LiteDesk, not `xyz.com`.
 <head>
   <meta charset="utf-8" />
   <title>Help Center</title>
-  <link rel="stylesheet" href="{LITEDESK_ORIGIN}/embed/headless-blocks.css" />
+  <link rel="stylesheet" href="{ARIVU_ORIGIN}/embed/headless-blocks.css" />
 </head>
 <body>
   <header><!-- your site chrome --></header>
@@ -172,9 +227,9 @@ on each embed `<script>` tag so API calls target LiteDesk, not `xyz.com`.
   <footer><!-- your site footer --></footer>
 
   <script
-    src="{LITEDESK_ORIGIN}/embed/headless-help-home.js"
-    data-api-origin="{LITEDESK_ORIGIN}"
-    data-org="{ORG_SLUG}"
+    src="{ARIVU_ORIGIN}/embed/headless-help-home.js"
+    data-api-origin="{ARIVU_ORIGIN}"
+    data-org="{ORG_KEY}"
     data-target="#help-home"
     data-link-prefix="/help/"
     data-title="Help Center"
@@ -187,9 +242,9 @@ on each embed `<script>` tag so API calls target LiteDesk, not `xyz.com`.
 
 ```javascript
 await window.LiteDeskHeadlessHelpHome.mount({
-  org: '{ORG_SLUG}',
+  org: '{ORG_KEY}',
   target: '#help-home',
-  apiOrigin: '{LITEDESK_ORIGIN}',
+  apiOrigin: '{ARIVU_ORIGIN}',
   linkPrefix: '/help/',
   title: 'Help Center',
 });
@@ -200,13 +255,13 @@ Search on the home page queries `GET .../articles?search={q}&limit=20` inline.
 ### 6.2 Category — `https://xyz.com/help/{category}`
 
 ```html
-<link rel="stylesheet" href="{LITEDESK_ORIGIN}/embed/headless-blocks.css" />
+<link rel="stylesheet" href="{ARIVU_ORIGIN}/embed/headless-blocks.css" />
 <div id="help-category"></div>
-<script src="{LITEDESK_ORIGIN}/embed/headless-help-common.js"></script>
+<script src="{ARIVU_ORIGIN}/embed/headless-help-common.js"></script>
 <script
-  src="{LITEDESK_ORIGIN}/embed/headless-help-category.js"
-  data-api-origin="{LITEDESK_ORIGIN}"
-  data-org="{ORG_SLUG}"
+  src="{ARIVU_ORIGIN}/embed/headless-help-category.js"
+  data-api-origin="{ARIVU_ORIGIN}"
+  data-org="{ORG_KEY}"
   data-collection="{CATEGORY}"
   data-target="#help-category"
   data-home-prefix="/help/"
@@ -219,13 +274,13 @@ Search on the home page queries `GET .../articles?search={q}&limit=20` inline.
 ### 6.3 Section — `https://xyz.com/help/{category}/{section}`
 
 ```html
-<link rel="stylesheet" href="{LITEDESK_ORIGIN}/embed/headless-blocks.css" />
+<link rel="stylesheet" href="{ARIVU_ORIGIN}/embed/headless-blocks.css" />
 <div id="help-section"></div>
-<script src="{LITEDESK_ORIGIN}/embed/headless-help-common.js"></script>
+<script src="{ARIVU_ORIGIN}/embed/headless-help-common.js"></script>
 <script
-  src="{LITEDESK_ORIGIN}/embed/headless-help-section.js"
-  data-api-origin="{LITEDESK_ORIGIN}"
-  data-org="{ORG_SLUG}"
+  src="{ARIVU_ORIGIN}/embed/headless-help-section.js"
+  data-api-origin="{ARIVU_ORIGIN}"
+  data-org="{ORG_KEY}"
   data-section="{SECTION}"
   data-parent="{CATEGORY}"
   data-target="#help-section"
@@ -239,12 +294,12 @@ Search on the home page queries `GET .../articles?search={q}&limit=20` inline.
 ### 6.4 Article — `https://xyz.com/help/.../{article}`
 
 ```html
-<link rel="stylesheet" href="{LITEDESK_ORIGIN}/embed/headless-blocks.css" />
+<link rel="stylesheet" href="{ARIVU_ORIGIN}/embed/headless-blocks.css" />
 <div id="help-article"></div>
 <script
-  src="{LITEDESK_ORIGIN}/embed/headless-article.js"
-  data-api-origin="{LITEDESK_ORIGIN}"
-  data-org="{ORG_SLUG}"
+  src="{ARIVU_ORIGIN}/embed/headless-article.js"
+  data-api-origin="{ARIVU_ORIGIN}"
+  data-org="{ORG_KEY}"
   data-slug="{ARTICLE}"
   data-target="#help-article"
   data-show-sidebar="true"
@@ -268,10 +323,10 @@ Article pages include:
 
 ```javascript
 await window.LiteDeskHeadlessArticle.mount({
-  org: '{ORG_SLUG}',
+  org: '{ORG_KEY}',
   slug: '{ARTICLE}',
   target: '#help-article',
-  apiOrigin: '{LITEDESK_ORIGIN}',
+  apiOrigin: '{ARIVU_ORIGIN}',
   showSidebar: true,
   showBreadcrumbs: true,
   homePrefix: '/help/',
@@ -287,78 +342,29 @@ await window.LiteDeskHeadlessArticle.mount({
 
 ---
 
-## 7. SPA / framework routing (React, Next.js, etc.)
+## 8. SPA / framework routing (React, Next.js, etc.)
 
-Use one HTML shell per route. On navigation, call the global `mount()` with slugs parsed from the URL.
-
-**Example (pseudo-code):**
+Use the unified script in your layout, or call `ArivuHeadlessHelp.mount()` on navigation:
 
 ```javascript
-const LITEDESK = 'https://app.litedesk.com';
-const ORG = 'acme-corp';
-
-function parseHelpPath(pathname) {
-  // /help/crm/getting-started/welcome
-  const parts = pathname.replace(/^\/help\/?/, '').split('/').filter(Boolean);
-  return {
-    category: parts[0] || '',
-    section: parts[1] || '',
-    article: parts[2] || '',
-  };
-}
-
-async function renderHelpPage(pathname) {
-  const { category, section, article } = parseHelpPath(pathname);
-  if (article) {
-    return window.LiteDeskHeadlessArticle.mount({
-      org: ORG,
-      slug: article,
-      target: '#help-root',
-      apiOrigin: LITEDESK,
-      showSidebar: true,
-      collection: category,
-      section: section,
-      homePrefix: '/help/',
-      articlePrefix: '/help/',
-    });
-  }
-  if (section) {
-    await loadScript(`${LITEDESK}/embed/headless-help-common.js`);
-    return window.LiteDeskHeadlessHelpSection.mount({
-      org: ORG,
-      section,
-      parent: category,
-      target: '#help-root',
-      apiOrigin: LITEDESK,
-      homePrefix: '/help/',
-    });
-  }
-  if (category) {
-    await loadScript(`${LITEDESK}/embed/headless-help-common.js`);
-    return window.LiteDeskHeadlessHelpCategory.mount({
-      org: ORG,
-      collection: category,
-      target: '#help-root',
-      apiOrigin: LITEDESK,
-      linkPrefix: '/help/',
-    });
-  }
-  return window.LiteDeskHeadlessHelpHome.mount({
-    org: ORG,
-    target: '#help-root',
-    apiOrigin: LITEDESK,
-    linkPrefix: '/help/',
-  });
-}
+await window.ArivuHeadlessHelp.mount({
+  org: 'acme-corp',
+  target: '#arivu-help',
+  apiOrigin: 'https://app.arivu.com',
+  pathPrefix: '/help/',
+  pathname: window.location.pathname,
+});
 ```
 
-Load embed scripts once per page type (or use `<script>` tags in your layout).
+The script parses `/help/{category}/{section}/{article}` and loads the correct view automatically.
+
+For custom routers, use **Advanced: individual page embeds** in Articles settings.
 
 ---
 
-## 8. Self-hosting embed assets (optional)
+## 9. Self-hosting embed assets (optional)
 
-You may copy these files from LiteDesk to `xyz.com` (CDN or static bucket):
+You may copy these files from Arivu to `xyz.com` (CDN or static bucket):
 
 ```text
 /embed/headless-blocks.css
@@ -367,17 +373,18 @@ You may copy these files from LiteDesk to `xyz.com` (CDN or static bucket):
 /embed/headless-help-home.js
 /embed/headless-help-category.js
 /embed/headless-help-section.js
+/embed/headless-help.js             (unified router — recommended)
 /embed/headless-article.js
 /embed/headless-article-list.js     (legacy flat list)
 ```
 
-**Always** set `data-api-origin="{LITEDESK_ORIGIN}"` when JS is served from a different origin than the API.
+**Always** set `data-api-origin="{ARIVU_ORIGIN}"` when JS is served from a different origin than the API.
 
-Re-copy or sync when LiteDesk upgrades embed scripts.
+Re-copy or sync when Arivu upgrades embed scripts.
 
 ---
 
-## 9. Styling
+## 10. Styling
 
 - Base styles: `headless-blocks.css` (typography, help layout, article blocks, feedback footer).
 - Override with your site CSS using classes such as `.ld-help-home`, `.ld-help-page`, `.ld-article`, `.ld-article__footer`.
@@ -393,24 +400,24 @@ Re-copy or sync when LiteDesk upgrades embed scripts.
 }
 ```
 
-Appearance defaults (fonts, colors) are configured in LiteDesk **Articles → Appearance**; block rendering uses article presentation fields.
+Appearance defaults (fonts, colors) are configured in Arivu **Articles → Appearance**; block rendering uses article presentation fields.
 
 ---
 
-## 10. Popular articles sidebar
+## 11. Popular articles sidebar
 
 Mark articles as **Featured** in Content Studio (inspector toggle). Featured public articles appear in the **Popular articles** sidebar on category, section, and article pages via `GET .../articles/popular`.
 
 ---
 
-## 11. Article feedback analytics
+## 12. Article feedback analytics
 
 Article pages show a **Helpful?** footer. Votes and share clicks are stored server-side.
 
 **Public endpoint:**
 
 ```http
-POST /api/public/v1/content/{org-slug}/articles/{article-slug}/feedback
+POST /api/public/v1/content/{embed-site-id}/articles/{article-slug}/feedback
 Content-Type: application/json
 
 { "helpful": true }
@@ -426,20 +433,20 @@ Platforms: `facebook`, `x`, `linkedin`.
 
 ---
 
-## 12. SEO
+## 13. SEO
 
 - Use your own `<title>` / meta tags on each customer page (article JSON includes `seo.metaTitle`, `seo.metaDescription`).
-- LiteDesk sitemap for crawlers that can read API URLs:
+- Arivu sitemap for crawlers that can read API URLs:
 
 ```text
-GET {LITEDESK_ORIGIN}/api/public/v1/content/{org-slug}/sitemap.xml
+GET {ARIVU_ORIGIN}/api/public/v1/content/{embed-site-id}/sitemap.xml
 ```
 
 Point `robots.txt` or your SEO tool at this URL, or merge entries into your main sitemap.
 
 ---
 
-## 13. Webhooks (optional)
+## 14. Webhooks (optional)
 
 Configure **Publish webhook URL** in Articles settings to receive:
 
@@ -452,13 +459,13 @@ Payload includes `content.apiUrl` for the headless article endpoint. Use this to
 
 ---
 
-## 14. Troubleshooting
+## 15. Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
 | Empty category grid | No collections or no public articles in tree | Add collections; publish public articles |
 | 404 on article | Wrong slug or not public/published | Check slug, status, visibility |
-| Blank page, console CORS error | `xyz.com` not in `CORS_ORIGINS` | Add customer domain to LiteDesk env |
+| Blank page, console CORS error | Website domain not saved in Articles settings | Add your domain under Website domain for embed |
 | API returns empty `data` | Headless API disabled | Enable in Articles publishing settings |
 | Links go to wrong paths | Mismatched `data-*-prefix` | Align prefixes with your router |
 | Sidebar empty (popular) | No featured articles | Toggle **Featured** on articles |
@@ -468,32 +475,30 @@ Payload includes `content.apiUrl` for the headless article endpoint. Use this to
 **Quick API test (terminal):**
 
 ```bash
-curl -s "https://{litedesk-app}/api/public/v1/content/{org-slug}/collections" | jq .
-curl -s "https://{litedesk-app}/api/public/v1/content/{org-slug}/articles/{slug}" | jq .
+curl -s "https://{arivu-app}/api/public/v1/content/{embed-site-id}/collections" | jq .
+curl -s "https://{arivu-app}/api/public/v1/content/{embed-site-id}/articles/{slug}" | jq .
 ```
 
 ---
 
-## 15. Checklist — go live on `xyz.com`
+## 16. Checklist — go live on `xyz.com`
 
 - [ ] Articles addon + headless API enabled  
 - [ ] Collections and public published articles ready  
-- [ ] `CORS_ORIGINS` includes `https://xyz.com` (and `www`)  
-- [ ] `/help/` home page with `headless-help-home.js`  
-- [ ] Category / section / article routes with matching embeds  
-- [ ] `data-api-origin` set if scripts loaded cross-origin  
-- [ ] `data-link-prefix` matches your URL scheme  
-- [ ] LiteDesk demos verified with your org slug  
+- [ ] Website domain saved in Articles settings (CORS auto-registered)  
+- [ ] `/help/` routes use one `headless-help.js` snippet (same on every page)  
+- [ ] `data-api-origin` and `data-path-prefix` set correctly  
+- [ ] Arivu demos verified with your org slug  
 - [ ] Article feedback footer tested; analytics visible in Content Studio  
 - [ ] Sitemap or meta strategy for SEO  
 
 ---
 
-## 16. Related files (LiteDesk repo)
+## 17. Related files (Arivu repo)
 
 | Area | Path |
 |------|------|
-| Embed scripts | `client/public/embed/headless-help-*.js`, `headless-article.js` |
+| Embed scripts | `client/public/embed/headless-help.js`, `headless-help-*.js`, `headless-article.js` |
 | Styles | `client/public/embed/headless-blocks.css` |
 | Public API | `server/routes/publicContentRoutes.js` |
 | Settings UI | `client/src/components/settings/ArticlesAddonSettings.vue` |

@@ -14934,5 +14934,93 @@
   "contentPublishingPopularArticlesApi": {
     "message": "Popular articles API",
     "description": "Public popular articles API URL label in Articles settings"
+  },
+  "addonsArticlesEmbedStepEnable": {
+    "message": "Enable Headless API above and publish public articles in Content Studio.",
+    "description": "Website embed setup step 1"
+  },
+  "addonsArticlesEmbedStepCopy": {
+    "message": "Copy a snippet below onto every help page on your website (same snippet everywhere).",
+    "description": "Website embed setup step 2"
+  },
+  "addonsArticlesEmbedStepCors": {
+    "message": "Ask your Arivu admin to add your website domain to CORS_ORIGINS so the browser can load content.",
+    "description": "Website embed setup step 3"
+  },
+  "addonsArticlesEmbedPathPrefix": {
+    "message": "Help center path on your site",
+    "description": "Label for help center URL path prefix used in embed snippets"
+  },
+  "addonsArticlesEmbedPathPrefixHint": {
+    "message": "Example: /help/ — snippets update automatically.",
+    "description": "Hint for help center URL path prefix"
+  },
+  "addonsArticlesEmbedSiteDomain": {
+    "message": "Your website domain",
+    "description": "Label for customer website domain shown in URL examples"
+  },
+  "addonsArticlesEmbedSiteDomainHint": {
+    "message": "Example only — used to preview URL patterns below.",
+    "description": "Hint for customer website domain field"
+  },
+  "addonsArticlesUnifiedPageSnippetLabel": {
+    "message": "Complete HTML page",
+    "description": "Label for unified headless help full HTML page snippet"
+  },
+  "addonsArticlesUnifiedPageSnippetDesc": {
+    "message": "Ready to paste. Works for home, categories, sections, and articles. CSS and scripts load automatically.",
+    "description": "Description for unified headless help full HTML page snippet"
+  },
+  "addonsArticlesUnifiedEmbedSnippetLabel": {
+    "message": "Embed on an existing page",
+    "description": "Label for unified headless help embed-only snippet"
+  },
+  "addonsArticlesUnifiedEmbedSnippetDesc": {
+    "message": "Add the container and script tag inside your site layout or template.",
+    "description": "Description for unified headless help embed-only snippet"
+  },
+  "addonsArticlesCopySnippet": {
+    "message": "Copy snippet",
+    "description": "Copy embed snippet button label"
+  },
+  "addonsArticlesEmbedDemoHint": {
+    "message": "Preview with your org slug before going live:",
+    "description": "Intro text before demo link in website embed section"
+  },
+  "addonsArticlesAdvancedEmbedsTitle": {
+    "message": "Advanced: individual page embeds",
+    "description": "Collapsible section title for per-page embed snippets"
+  },
+  "addonsArticlesHelpCenterRoutesNote": {
+    "message": "You do not need four different HTML files. One page that matches all /help/* URLs is enough.",
+    "description": "Clarifies that help center routes share one embed page"
+  },
+  "addonsArticlesEmbedStepDomain": {
+    "message": "Enter your website domain above — Arivu allows browser requests from that domain automatically.",
+    "description": "Website embed setup step 2"
+  },
+  "addonsArticlesEmbedWebsiteDomain": {
+    "message": "Website domain for embed",
+    "description": "Label for customer website domain registered for headless embed CORS"
+  },
+  "addonsArticlesEmbedWebsiteDomainHint": {
+    "message": "Where your help center lives, e.g. www.example.com. Saved automatically — no manual CORS setup.",
+    "description": "Hint for customer website domain registered for headless embed CORS"
+  },
+  "addonsArticlesEmbedWebsiteOriginsAllowed": {
+    "message": "Browser access allowed from: {origins}",
+    "description": "Shows normalized origins registered for headless embed CORS"
+  },
+  "addonsArticlesEmbedPublicKeyLabel": {
+    "message": "Embed site ID",
+    "description": "Auto-generated public key prefilled in website embed snippets"
+  },
+  "addonsArticlesEmbedPublicKeyHint": {
+    "message": "Auto-generated and prefilled in your snippets. Unguessable — do not share publicly unless embedding on your site.",
+    "description": "Hint for auto-generated embed site ID"
+  },
+  "addonsArticlesEmbedPublicKeyPending": {
+    "message": "Enable Headless API to generate your embed site ID",
+    "description": "Placeholder when embed site ID is not yet available"
   }
 }

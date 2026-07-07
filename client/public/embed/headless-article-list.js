@@ -256,6 +256,7 @@
   window.LiteDeskHeadlessArticleList = {
     mount: mountList,
   };
+  window.ArivuHeadlessArticleList = window.LiteDeskHeadlessArticleList;
 
   if (script) {
     var org = getAttr(script, 'data-org', '');

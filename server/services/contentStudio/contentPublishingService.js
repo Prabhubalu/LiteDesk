@@ -5,6 +5,8 @@ const DEFAULT_CONTENT_PUBLISHING = {
   headlessApiEnabled: true,
 };
 
+const { resolveHeadlessContentOrgKey } = require('./articlesHeadlessPublicKeyService');
+
 function normalizeWebhookUrl(raw) {
   const value = String(raw || '').trim();
   if (!value) return '';
@@ -44,10 +46,10 @@ function getPublicAppBaseUrl(options = {}) {
 }
 
 function resolveHeadlessApiBase(organization, options = {}) {
-  const slug = String(organization?.slug || '').trim();
+  const orgKey = resolveHeadlessContentOrgKey(organization);
   const appBase = getPublicAppBaseUrl(options);
-  if (!slug || !appBase) return '';
-  return `${appBase}/api/public/v1/content/${slug}`;
+  if (!orgKey || !appBase) return '';
+  return `${appBase}/api/public/v1/content/${encodeURIComponent(orgKey)}`;
 }
 
 function buildArticleApiUrl(organization, slug, options = {}) {

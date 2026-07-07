@@ -143,6 +143,8 @@ const ADDON_DEFAULT_SETTINGS = {
     publishing: {
       headlessApiEnabled: true,
       publishWebhookUrl: '',
+      embedWebsiteDomain: '',
+      embedWebsiteOrigins: [],
     },
     appearance: {
       layoutPreset: 'classic',

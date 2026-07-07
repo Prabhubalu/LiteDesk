@@ -600,6 +600,7 @@
   window.LiteDeskHeadlessArticle = {
     mount: mountArticle,
   };
+  window.ArivuHeadlessHelpArticle = window.LiteDeskHeadlessArticle;
 
   if (script) {
     var org = getAttr(script, 'data-org', '');
