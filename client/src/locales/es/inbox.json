@@ -1,6 +1,6 @@
 {
   "connectInboxWizardLitedeskUsesAReadOnlyGmail": {
-    "message": "LiteDesk utiliza un alcance de Gmail de solo lectura para importar mensajes a los que ya tiene acceso.",
+    "message": "Arivu utiliza un alcance de Gmail de solo lectura para importar mensajes a los que ya tiene acceso.",
     "description": "Auto-migrated from connectInboxWizard"
   },
   "connectInboxWizardToProceedIfYouTrustThis": {
@@ -40,7 +40,7 @@
     "description": "Auto-migrated from connectMailboxModal"
   },
   "connectMailboxModalLitedeskImportsMailUsingARead": {
-    "message": "LiteDesk importa correo utilizando un alcance de Gmail de solo lectura (carpetas que usted elija).",
+    "message": "Arivu importa correo utilizando un alcance de Gmail de solo lectura (carpetas que usted elija).",
     "description": "Auto-migrated from connectMailboxModal"
   },
   "connectMailboxModalGoogleOpensInAPopupSo": {
@@ -84,7 +84,7 @@
     "description": "Auto-migrated from connectMailboxModal"
   },
   "connectMailboxModalLitedeskCreatesAPrivate": {
-    "message": "LiteDesk crea un privado",
+    "message": "Arivu crea un privado",
     "description": "Auto-migrated from connectMailboxModal"
   },
   "connectMailboxModalOneQuickStepFirst": {
@@ -168,7 +168,7 @@
     "description": "Auto-migrated from gmailMailboxFolderModal"
   },
   "gmailMailboxFolderModalChooseWhichGmailLabelsLitedeskImports": {
-    "message": "Elija qué etiquetas de Gmail importa LiteDesk. La sincronización se ejecuta según una programación y cuando usas Sync ahora.",
+    "message": "Elija qué etiquetas de Gmail importa Arivu. La sincronización se ejecuta según una programación y cuando usas Sync ahora.",
     "description": "Auto-migrated from gmailMailboxFolderModal"
   },
   "gmailMailboxFolderModalMailboxFolders": {
@@ -192,7 +192,7 @@
     "description": "Auto-migrated from inboxGetStarted"
   },
   "inboxGetStartedGetStartedWithLitedesk": {
-    "message": "Comience con LiteDesk",
+    "message": "Comience con Arivu",
     "description": "Auto-migrated from inboxGetStarted"
   },
   "inboxProviderCardSoon": {
@@ -352,7 +352,7 @@
     "description": "Auto-migrated from inboxSurface"
   },
   "inboxSurfaceOnTheMachineThatRunsThe": {
-    "message": "En la máquina que ejecuta la API LiteDesk, configurada en",
+    "message": "En la máquina que ejecuta la API Arivu, configurada en",
     "description": "Auto-migrated from inboxSurface"
   },
   "inboxSurfaceAuthorizedRedirectUris": {
@@ -516,7 +516,7 @@
     "description": "Auto-migrated from inboxSurface"
   },
   "inboxSurfaceConnectYourInboxToLitedesk": {
-    "message": "Conecte su bandeja de entrada a LiteDesk",
+    "message": "Conecte su bandeja de entrada a Arivu",
     "description": "Auto-migrated from inboxSurface"
   },
   "inboxSurfaceSendingAs": {

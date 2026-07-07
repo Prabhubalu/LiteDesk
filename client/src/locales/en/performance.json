@@ -1,115 +1,450 @@
 {
-  "settingsTitle": { "message": "Performance", "description": "Settings performance section title" },
-  "settingsDescription": { "message": "Set goals, track progress across Sales and Helpdesk, and see how your team is performing.", "description": "Settings performance section description" },
-  "targetsQuotasTitle": { "message": "Targets & Quotas", "description": "Targets hub title" },
-  "targetsQuotasDescription": { "message": "Goals that update automatically from deals, cases, and tasks.", "description": "Targets hub description" },
-  "dashboardsTitle": { "message": "Dashboards", "description": "Dashboards card title" },
-  "dashboardsDescription": { "message": "Progress at a glance and team rankings.", "description": "Dashboards description" },
-  "configure": { "message": "Open", "description": "Card action" },
-  "newTarget": { "message": "Create target", "description": "Primary CTA" },
-  "noTargetsTitle": { "message": "No targets yet", "description": "Empty state title" },
-  "noTargets": { "message": "Create a target to track revenue, resolutions, or completions in real time.", "description": "Empty state body" },
-  "filterAll": { "message": "All", "description": "Filter tab" },
-  "filterActive": { "message": "Active", "description": "Filter tab" },
-  "filterDraft": { "message": "Drafts", "description": "Filter tab" },
-  "searchPlaceholder": { "message": "Search targets…", "description": "Search input" },
-  "lifecycleDraft": { "message": "Draft", "description": "Lifecycle" },
-  "lifecycleActive": { "message": "Active", "description": "Lifecycle" },
-  "lifecycleLocked": { "message": "Locked", "description": "Lifecycle" },
-  "lifecycleCompleted": { "message": "Completed", "description": "Lifecycle" },
-  "lifecycleClosed": { "message": "Closed", "description": "Lifecycle" },
-  "statusNotStarted": { "message": "Not started", "description": "Status" },
-  "statusOnTrack": { "message": "On track", "description": "Status" },
-  "statusAtRisk": { "message": "At risk", "description": "Status" },
-  "statusAchieved": { "message": "Achieved", "description": "Status" },
-  "statusOverachieved": { "message": "Exceeded", "description": "Status" },
-  "achievedOfTarget": { "message": "{achieved} of {target}", "description": "Progress label" },
-  "periodLabel": { "message": "Period", "description": "Period label" },
-  "wizardTitle": { "message": "Create target", "description": "Wizard page title" },
-  "wizardSubtitle": { "message": "A short guided setup — you can edit details anytime before activating.", "description": "Wizard subtitle" },
-  "wizardStepOf": { "message": "Step {current} of {total}", "description": "Step counter" },
-  "wizardStepType": { "message": "What are you measuring?", "description": "Wizard step" },
-  "wizardStepTypeHint": { "message": "Pick a goal type. We'll suggest the right data sources.", "description": "Step hint" },
-  "wizardStepModules": { "message": "Where does data come from?", "description": "Wizard step" },
-  "wizardStepModulesHint": { "message": "Choose which apps feed this target.", "description": "Step hint" },
-  "wizardStepRules": { "message": "How do records count?", "description": "Wizard step" },
-  "wizardStepRulesHint": { "message": "We apply smart defaults (e.g. won deals, resolved cases).", "description": "Step hint" },
-  "wizardStepValue": { "message": "Set your goal", "description": "Wizard step" },
-  "wizardStepValueHint": { "message": "Name your target and enter the number to hit.", "description": "Step hint" },
-  "wizardStepPeriod": { "message": "Time period", "description": "Wizard step" },
-  "wizardStepPeriodHint": { "message": "When should this target start and end?", "description": "Step hint" },
-  "wizardStepDistribution": { "message": "Split across team", "description": "Wizard step" },
-  "wizardStepDistributionHint": { "message": "How should the goal be divided between people?", "description": "Step hint" },
-  "wizardStepAssign": { "message": "Ownership", "description": "Wizard step" },
-  "wizardStepAssignHint": { "message": "Choose who owns this target. Contributions roll up to the owner.", "description": "Step hint" },
-  "wizardStepQuotas": { "message": "Team quotas", "description": "Wizard step" },
-  "wizardStepQuotasHint": { "message": "Add people and set each person's share of the goal.", "description": "Step hint" },
-  "ownerLabel": { "message": "Target owner", "description": "Owner field label" },
-  "ownerSelectPlaceholder": { "message": "Select owner…", "description": "Owner select placeholder" },
-  "ownerMeSuffix": { "message": "you", "description": "Current user suffix in owner list" },
-  "periodYearLabel": { "message": "Year", "description": "Period year" },
-  "periodMonthLabel": { "message": "Month", "description": "Period month" },
-  "periodQuarterOption": { "message": "Q{quarter}", "description": "Quarter button" },
-  "periodRangeSummary": { "message": "{range}", "description": "Computed period range" },
-  "quotasAddMember": { "message": "Add team member", "description": "Add quota row" },
-  "quotasSelectMember": { "message": "Select a person…", "description": "Quota user placeholder" },
-  "quotasWeightLabel": { "message": "Weight", "description": "Weighted quota" },
-  "quotasAmountLabel": { "message": "Quota", "description": "Manual quota amount" },
-  "quotasCapacityLabel": { "message": "Capacity", "description": "Capacity quota" },
-  "quotasPreviewEqual": { "message": "{amount} each ({count} people)", "description": "Equal split preview" },
-  "quotasSoloHint": { "message": "Only the owner is on this target. Add people below to split the goal.", "description": "Solo quotas hint" },
-  "reviewOwner": { "message": "Owner", "description": "Review row" },
-  "reviewTeamSize": { "message": "Team members", "description": "Review row" },
-  "wizardStepThresholds": { "message": "Milestones", "description": "Wizard step" },
-  "wizardStepThresholdsHint": { "message": "Get notified at key progress points.", "description": "Step hint" },
-  "wizardStepForecast": { "message": "Forecasting", "description": "Wizard step" },
-  "wizardStepForecastHint": { "message": "Include pipeline data to predict end-of-period results.", "description": "Step hint" },
-  "wizardStepReview": { "message": "Review", "description": "Wizard step" },
-  "wizardStepReviewHint": { "message": "Confirm everything looks right, then go live.", "description": "Step hint" },
-  "targetNameLabel": { "message": "Target name", "description": "Form label" },
-  "targetNamePlaceholder": { "message": "e.g. Q2 Enterprise Revenue", "description": "Placeholder" },
-  "targetValueLabel": { "message": "Goal amount", "description": "Form label" },
-  "periodStartLabel": { "message": "Starts", "description": "Date label" },
-  "periodEndLabel": { "message": "Ends", "description": "Date label" },
-  "periodThisMonth": { "message": "This month", "description": "Period preset" },
-  "periodThisQuarter": { "message": "This quarter", "description": "Period preset" },
-  "periodCustom": { "message": "Custom dates", "description": "Period preset" },
-  "distributionEqual": { "message": "Equal split", "description": "Distribution" },
-  "distributionEqualDesc": { "message": "Same share for everyone on the target.", "description": "Distribution desc" },
-  "distributionWeighted": { "message": "Weighted", "description": "Distribution" },
-  "distributionWeightedDesc": { "message": "Split by assigned weights.", "description": "Distribution desc" },
-  "distributionManual": { "message": "Manual", "description": "Distribution" },
-  "distributionManualDesc": { "message": "You set each person's amount.", "description": "Distribution desc" },
-  "distributionCapacity": { "message": "By capacity", "description": "Distribution" },
-  "distributionCapacityDesc": { "message": "Based on each person's capacity.", "description": "Distribution desc" },
-  "threshold80": { "message": "80% — heads-up", "description": "Threshold" },
-  "threshold100": { "message": "100% — goal met", "description": "Threshold" },
-  "threshold120": { "message": "120% — exceeded", "description": "Threshold" },
-  "forecastEnable": { "message": "Show achievement probability and risk level", "description": "Forecast toggle" },
-  "activateTarget": { "message": "Activate target", "description": "Activate CTA" },
-  "saveDraft": { "message": "Save as draft", "description": "Save draft CTA" },
-  "back": { "message": "Back", "description": "Back button" },
-  "next": { "message": "Continue", "description": "Next button" },
-  "cancelWizard": { "message": "Cancel", "description": "Cancel wizard" },
-  "conflictWarning": { "message": "Another target overlaps this period and data sources. You can still activate if intentional.", "description": "Conflict warning" },
-  "detailAchieved": { "message": "Achieved", "description": "Metric" },
-  "detailGoal": { "message": "Goal", "description": "Metric" },
-  "detailForecast": { "message": "Forecast", "description": "Metric" },
-  "detailForecastBreakdown": { "message": "{achieved} closed + {pipeline} pipeline", "description": "Forecast components" },
-  "detailForecastNoDealsHint": { "message": "Add Sales · Deals as a data source to include open pipeline.", "description": "Forecast hint" },
-  "detailForecastNoOpenDealsHint": { "message": "No open deals for this target's owner or quota assignees.", "description": "Forecast hint" },
-  "detailForecastProbabilityHint": { "message": "Enable forecast in target settings for achievement probability and risk level.", "description": "Forecast hint" },
-  "detailQuotas": { "message": "Team quotas", "description": "Section" },
-  "detailQuotaAllocated": { "message": "Quota", "description": "Assignment column" },
-  "detailQuotaAchieved": { "message": "Achieved", "description": "Assignment column" },
-  "detailContributions": { "message": "Recent contributions", "description": "Section" },
-  "detailRecalculate": { "message": "Sync totals", "description": "Recalc button" },
-  "detailVersions": { "message": "Version history", "description": "Section" },
-  "detailLock": { "message": "Lock structure", "description": "Lock action" },
-  "detailPartialData": { "message": "Some apps are off — data may be incomplete.", "description": "Warning" },
-  "leaderboard": { "message": "Top performers", "description": "Leaderboard" },
-  "leaderboardEmpty": { "message": "Rankings appear once targets have progress.", "description": "Empty leaderboard" },
-  "widgetSalesTitle": { "message": "Sales targets", "description": "Widget title" },
-  "widgetHelpdeskTitle": { "message": "Resolution targets", "description": "Widget title" },
-  "noTargets": { "message": "Create a target to track revenue, resolutions, or completions in real time.", "description": "Legacy key kept for compat" }
+  "settingsTitle": {
+    "message": "Performance",
+    "description": "Settings performance section title"
+  },
+  "settingsDescription": {
+    "message": "Set goals, track progress across Sales and Helpdesk, and see how your team is performing.",
+    "description": "Settings performance section description"
+  },
+  "targetsQuotasTitle": {
+    "message": "Targets & Quotas",
+    "description": "Targets hub title"
+  },
+  "targetsQuotasDescription": {
+    "message": "Goals that update automatically from deals, cases, and tasks.",
+    "description": "Targets hub description"
+  },
+  "dashboardsTitle": {
+    "message": "Dashboards",
+    "description": "Dashboards card title"
+  },
+  "dashboardsDescription": {
+    "message": "Progress at a glance and team rankings.",
+    "description": "Dashboards description"
+  },
+  "configure": {
+    "message": "Open",
+    "description": "Card action"
+  },
+  "newTarget": {
+    "message": "Create target",
+    "description": "Primary CTA"
+  },
+  "noTargetsTitle": {
+    "message": "No targets yet",
+    "description": "Empty state title"
+  },
+  "noTargets": {
+    "message": "Create a target to track revenue, resolutions, or completions in real time.",
+    "description": "Legacy key kept for compat"
+  },
+  "filterAll": {
+    "message": "All",
+    "description": "Filter tab"
+  },
+  "filterActive": {
+    "message": "Active",
+    "description": "Filter tab"
+  },
+  "filterDraft": {
+    "message": "Drafts",
+    "description": "Filter tab"
+  },
+  "searchPlaceholder": {
+    "message": "Search targets…",
+    "description": "Search input"
+  },
+  "lifecycleDraft": {
+    "message": "Draft",
+    "description": "Lifecycle"
+  },
+  "lifecycleActive": {
+    "message": "Active",
+    "description": "Lifecycle"
+  },
+  "lifecycleLocked": {
+    "message": "Locked",
+    "description": "Lifecycle"
+  },
+  "lifecycleCompleted": {
+    "message": "Completed",
+    "description": "Lifecycle"
+  },
+  "lifecycleClosed": {
+    "message": "Closed",
+    "description": "Lifecycle"
+  },
+  "statusNotStarted": {
+    "message": "Not started",
+    "description": "Status"
+  },
+  "statusOnTrack": {
+    "message": "On track",
+    "description": "Status"
+  },
+  "statusAtRisk": {
+    "message": "At risk",
+    "description": "Status"
+  },
+  "statusAchieved": {
+    "message": "Achieved",
+    "description": "Status"
+  },
+  "statusOverachieved": {
+    "message": "Exceeded",
+    "description": "Status"
+  },
+  "achievedOfTarget": {
+    "message": "{achieved} of {target}",
+    "description": "Progress label"
+  },
+  "periodLabel": {
+    "message": "Period",
+    "description": "Period label"
+  },
+  "wizardTitle": {
+    "message": "Create target",
+    "description": "Wizard page title"
+  },
+  "wizardSubtitle": {
+    "message": "A short guided setup — you can edit details anytime before activating.",
+    "description": "Wizard subtitle"
+  },
+  "wizardStepOf": {
+    "message": "Step {current} of {total}",
+    "description": "Step counter"
+  },
+  "wizardStepType": {
+    "message": "What are you measuring?",
+    "description": "Wizard step"
+  },
+  "wizardStepTypeHint": {
+    "message": "Pick a goal type. We'll suggest the right data sources.",
+    "description": "Step hint"
+  },
+  "wizardStepModules": {
+    "message": "Where does data come from?",
+    "description": "Wizard step"
+  },
+  "wizardStepModulesHint": {
+    "message": "Choose which apps feed this target.",
+    "description": "Step hint"
+  },
+  "wizardStepRules": {
+    "message": "How do records count?",
+    "description": "Wizard step"
+  },
+  "wizardStepRulesHint": {
+    "message": "We apply smart defaults (e.g. won deals, resolved cases).",
+    "description": "Step hint"
+  },
+  "wizardStepValue": {
+    "message": "Set your goal",
+    "description": "Wizard step"
+  },
+  "wizardStepValueHint": {
+    "message": "Name your target and enter the number to hit.",
+    "description": "Step hint"
+  },
+  "wizardStepPeriod": {
+    "message": "Time period",
+    "description": "Wizard step"
+  },
+  "wizardStepPeriodHint": {
+    "message": "When should this target start and end?",
+    "description": "Step hint"
+  },
+  "wizardStepDistribution": {
+    "message": "Split across team",
+    "description": "Wizard step"
+  },
+  "wizardStepDistributionHint": {
+    "message": "How should the goal be divided between people?",
+    "description": "Step hint"
+  },
+  "wizardStepAssign": {
+    "message": "Ownership",
+    "description": "Wizard step"
+  },
+  "wizardStepAssignHint": {
+    "message": "Choose who owns this target. Contributions roll up to the owner.",
+    "description": "Step hint"
+  },
+  "wizardStepQuotas": {
+    "message": "Team quotas",
+    "description": "Wizard step"
+  },
+  "wizardStepQuotasHint": {
+    "message": "Add people and set each person's share of the goal.",
+    "description": "Step hint"
+  },
+  "ownerLabel": {
+    "message": "Target owner",
+    "description": "Owner field label"
+  },
+  "ownerSelectPlaceholder": {
+    "message": "Select owner…",
+    "description": "Owner select placeholder"
+  },
+  "ownerMeSuffix": {
+    "message": "you",
+    "description": "Current user suffix in owner list"
+  },
+  "periodYearLabel": {
+    "message": "Year",
+    "description": "Period year"
+  },
+  "periodMonthLabel": {
+    "message": "Month",
+    "description": "Period month"
+  },
+  "periodQuarterOption": {
+    "message": "Q{quarter}",
+    "description": "Quarter button"
+  },
+  "periodRangeSummary": {
+    "message": "{range}",
+    "description": "Computed period range"
+  },
+  "quotasAddMember": {
+    "message": "Add team member",
+    "description": "Add quota row"
+  },
+  "quotasSelectMember": {
+    "message": "Select a person…",
+    "description": "Quota user placeholder"
+  },
+  "quotasWeightLabel": {
+    "message": "Weight",
+    "description": "Weighted quota"
+  },
+  "quotasAmountLabel": {
+    "message": "Quota",
+    "description": "Manual quota amount"
+  },
+  "quotasCapacityLabel": {
+    "message": "Capacity",
+    "description": "Capacity quota"
+  },
+  "quotasPreviewEqual": {
+    "message": "{amount} each ({count} people)",
+    "description": "Equal split preview"
+  },
+  "quotasSoloHint": {
+    "message": "Only the owner is on this target. Add people below to split the goal.",
+    "description": "Solo quotas hint"
+  },
+  "reviewOwner": {
+    "message": "Owner",
+    "description": "Review row"
+  },
+  "reviewTeamSize": {
+    "message": "Team members",
+    "description": "Review row"
+  },
+  "wizardStepThresholds": {
+    "message": "Milestones",
+    "description": "Wizard step"
+  },
+  "wizardStepThresholdsHint": {
+    "message": "Get notified at key progress points.",
+    "description": "Step hint"
+  },
+  "wizardStepForecast": {
+    "message": "Forecasting",
+    "description": "Wizard step"
+  },
+  "wizardStepForecastHint": {
+    "message": "Include pipeline data to predict end-of-period results.",
+    "description": "Step hint"
+  },
+  "wizardStepReview": {
+    "message": "Review",
+    "description": "Wizard step"
+  },
+  "wizardStepReviewHint": {
+    "message": "Confirm everything looks right, then go live.",
+    "description": "Step hint"
+  },
+  "targetNameLabel": {
+    "message": "Target name",
+    "description": "Form label"
+  },
+  "targetNamePlaceholder": {
+    "message": "e.g. Q2 Enterprise Revenue",
+    "description": "Placeholder"
+  },
+  "targetValueLabel": {
+    "message": "Goal amount",
+    "description": "Form label"
+  },
+  "periodStartLabel": {
+    "message": "Starts",
+    "description": "Date label"
+  },
+  "periodEndLabel": {
+    "message": "Ends",
+    "description": "Date label"
+  },
+  "periodThisMonth": {
+    "message": "This month",
+    "description": "Period preset"
+  },
+  "periodThisQuarter": {
+    "message": "This quarter",
+    "description": "Period preset"
+  },
+  "periodCustom": {
+    "message": "Custom dates",
+    "description": "Period preset"
+  },
+  "distributionEqual": {
+    "message": "Equal split",
+    "description": "Distribution"
+  },
+  "distributionEqualDesc": {
+    "message": "Same share for everyone on the target.",
+    "description": "Distribution desc"
+  },
+  "distributionWeighted": {
+    "message": "Weighted",
+    "description": "Distribution"
+  },
+  "distributionWeightedDesc": {
+    "message": "Split by assigned weights.",
+    "description": "Distribution desc"
+  },
+  "distributionManual": {
+    "message": "Manual",
+    "description": "Distribution"
+  },
+  "distributionManualDesc": {
+    "message": "You set each person's amount.",
+    "description": "Distribution desc"
+  },
+  "distributionCapacity": {
+    "message": "By capacity",
+    "description": "Distribution"
+  },
+  "distributionCapacityDesc": {
+    "message": "Based on each person's capacity.",
+    "description": "Distribution desc"
+  },
+  "threshold80": {
+    "message": "80% — heads-up",
+    "description": "Threshold"
+  },
+  "threshold100": {
+    "message": "100% — goal met",
+    "description": "Threshold"
+  },
+  "threshold120": {
+    "message": "120% — exceeded",
+    "description": "Threshold"
+  },
+  "forecastEnable": {
+    "message": "Show achievement probability and risk level",
+    "description": "Forecast toggle"
+  },
+  "activateTarget": {
+    "message": "Activate target",
+    "description": "Activate CTA"
+  },
+  "saveDraft": {
+    "message": "Save as draft",
+    "description": "Save draft CTA"
+  },
+  "back": {
+    "message": "Back",
+    "description": "Back button"
+  },
+  "next": {
+    "message": "Continue",
+    "description": "Next button"
+  },
+  "cancelWizard": {
+    "message": "Cancel",
+    "description": "Cancel wizard"
+  },
+  "conflictWarning": {
+    "message": "Another target overlaps this period and data sources. You can still activate if intentional.",
+    "description": "Conflict warning"
+  },
+  "detailAchieved": {
+    "message": "Achieved",
+    "description": "Metric"
+  },
+  "detailGoal": {
+    "message": "Goal",
+    "description": "Metric"
+  },
+  "detailForecast": {
+    "message": "Forecast",
+    "description": "Metric"
+  },
+  "detailForecastBreakdown": {
+    "message": "{achieved} closed + {pipeline} pipeline",
+    "description": "Forecast components"
+  },
+  "detailForecastNoDealsHint": {
+    "message": "Add Sales · Deals as a data source to include open pipeline.",
+    "description": "Forecast hint"
+  },
+  "detailForecastNoOpenDealsHint": {
+    "message": "No open deals for this target's owner or quota assignees.",
+    "description": "Forecast hint"
+  },
+  "detailForecastProbabilityHint": {
+    "message": "Enable forecast in target settings for achievement probability and risk level.",
+    "description": "Forecast hint"
+  },
+  "detailQuotas": {
+    "message": "Team quotas",
+    "description": "Section"
+  },
+  "detailQuotaAllocated": {
+    "message": "Quota",
+    "description": "Assignment column"
+  },
+  "detailQuotaAchieved": {
+    "message": "Achieved",
+    "description": "Assignment column"
+  },
+  "detailContributions": {
+    "message": "Recent contributions",
+    "description": "Section"
+  },
+  "detailRecalculate": {
+    "message": "Sync totals",
+    "description": "Recalc button"
+  },
+  "detailVersions": {
+    "message": "Version history",
+    "description": "Section"
+  },
+  "detailLock": {
+    "message": "Lock structure",
+    "description": "Lock action"
+  },
+  "detailPartialData": {
+    "message": "Some apps are off — data may be incomplete.",
+    "description": "Warning"
+  },
+  "leaderboard": {
+    "message": "Top performers",
+    "description": "Leaderboard"
+  },
+  "leaderboardEmpty": {
+    "message": "Rankings appear once targets have progress.",
+    "description": "Empty leaderboard"
+  },
+  "widgetSalesTitle": {
+    "message": "Sales targets",
+    "description": "Widget title"
+  },
+  "widgetHelpdeskTitle": {
+    "message": "Resolution targets",
+    "description": "Widget title"
+  }
 }

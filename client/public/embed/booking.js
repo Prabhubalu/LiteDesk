@@ -1,7 +1,7 @@
 /**
- * LiteDesk booking embed loader.
+ * Arivu booking embed loader.
  * Usage:
- *   <div id="litedesk-booking" data-slug="your-page-slug" data-height="720"></div>
+ *   <div id="arivu-booking" data-slug="your-page-slug" data-height="720"></div>
  *   <script src="https://your-app.example.com/embed/booking.js" async></script>
  */
 (function () {
@@ -9,9 +9,9 @@
   const base = script && script.src ? new URL(script.src).origin : window.location.origin;
 
   function mount() {
-    const nodes = document.querySelectorAll('#litedesk-booking,[data-litedesk-booking]');
+    const nodes = document.querySelectorAll('#arivu-booking,[data-arivu-booking],#litedesk-booking,[data-litedesk-booking]');
     nodes.forEach((el) => {
-      if (el.dataset.litedeskMounted === '1') return;
+      if (el.dataset.arivuMounted === '1' || el.dataset.litedeskMounted === '1') return;
       const slug = el.getAttribute('data-slug');
       if (!slug) return;
 
@@ -25,7 +25,7 @@
       iframe.style.cssText = 'border:0;border-radius:12px;max-width:480px;display:block;width:100%;';
       iframe.allow = 'clipboard-write';
 
-      el.dataset.litedeskMounted = '1';
+      el.dataset.arivuMounted = '1';
       el.innerHTML = '';
       el.appendChild(iframe);
 

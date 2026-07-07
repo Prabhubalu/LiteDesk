@@ -4,7 +4,7 @@
     :subtitle="t('documents.portalKnowledgeSubtitle')"
     :error="error"
   >
-    <div class="mb-4">
+    <div class="mb-4 space-y-3">
       <div class="relative max-w-md">
         <MagnifyingGlassIcon class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
         <input
@@ -15,6 +15,28 @@
           :placeholder="t('cases.portalCasesSearchPlaceholder')"
           @keyup.enter="loadArticles"
         />
+      </div>
+
+      <div v-if="collections.length" class="flex flex-wrap gap-2">
+        <button
+          type="button"
+          class="rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
+          :class="selectedCollectionId ? PLATFORM_HOME_INSET_CONTROL_CLASS : 'bg-primary-600 text-white'"
+          @click="selectCollection(null)"
+        >
+          {{ t('documents.portalKnowledgeAllCollections') }}
+        </button>
+        <button
+          v-for="collection in collections"
+          :key="collection._id"
+          type="button"
+          class="rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
+          :class="selectedCollectionId === collection._id ? 'bg-primary-600 text-white' : PLATFORM_HOME_INSET_CONTROL_CLASS"
+          @click="selectCollection(collection._id)"
+        >
+          {{ collection.name }}
+          <span class="ml-1 opacity-70">({{ collection.articleCount }})</span>
+        </button>
       </div>
     </div>
 
@@ -39,7 +61,15 @@
         :class="PLATFORM_HOME_CARD_CLASS"
         @click="openArticle(article._id)"
       >
-        <p class="text-xs font-mono text-neutral-500 dark:text-neutral-400">{{ article.documentNumber }}</p>
+        <div class="flex flex-wrap items-center gap-2">
+          <p class="text-xs font-mono text-neutral-500 dark:text-neutral-400">{{ article.documentNumber }}</p>
+          <span
+            v-if="article.collectionName"
+            class="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
+          >
+            {{ article.collectionName }}
+          </span>
+        </div>
         <h3 class="mt-0.5 text-base font-semibold text-neutral-900 dark:text-white">{{ article.title }}</h3>
         <p v-if="article.description" class="mt-1 line-clamp-2 text-sm text-neutral-600 dark:text-neutral-400">
           {{ article.description }}
@@ -70,12 +100,14 @@ import {
 const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
-const { listArticles } = usePortalKnowledge();
+const { listArticles, listCollections } = usePortalKnowledge();
 
 const loading = ref(true);
 const error = ref(null);
 const articles = ref([]);
+const collections = ref([]);
 const searchQuery = ref('');
+const selectedCollectionId = ref(null);
 
 function formatDate(value) {
   if (!value) return '';
@@ -86,11 +118,23 @@ function formatDate(value) {
   });
 }
 
+async function loadCollections() {
+  try {
+    const response = await listCollections();
+    collections.value = response?.success ? response.data || [] : [];
+  } catch {
+    collections.value = [];
+  }
+}
+
 async function loadArticles() {
   loading.value = true;
   error.value = null;
   try {
-    const response = await listArticles({ search: searchQuery.value.trim() });
+    const response = await listArticles({
+      search: searchQuery.value.trim(),
+      collectionId: selectedCollectionId.value,
+    });
     if (!response?.success) {
       error.value = response?.message || t('documents.portalKnowledgeLoadFailed');
       articles.value = [];
@@ -105,6 +149,11 @@ async function loadArticles() {
   }
 }
 
+function selectCollection(collectionId) {
+  selectedCollectionId.value = collectionId;
+  void loadArticles();
+}
+
 function openArticle(id) {
   router.push({ name: 'portal-knowledge-article', params: { id } });
 }
@@ -113,6 +162,7 @@ onMounted(() => {
   capturePortalKnowledgeViewed({
     organization_id: authStore.user?.organizationId || authStore.organization?._id || undefined
   });
+  void loadCollections();
   void loadArticles();
 });
 </script>

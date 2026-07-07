@@ -170,7 +170,10 @@
           </template>
 
           <template #tab-knowledge>
-            <CaseKnowledgePanel />
+            <CaseKnowledgePanel
+              :case-title="caseRecord?.title || ''"
+              :case-description="caseRecord?.description || ''"
+            />
           </template>
         </RecordRightPane>
       </div>
@@ -302,7 +305,10 @@
             </template>
 
             <template #tab-knowledge>
-              <CaseKnowledgePanel />
+              <CaseKnowledgePanel
+              :case-title="caseRecord?.title || ''"
+              :case-description="caseRecord?.description || ''"
+            />
             </template>
           </RecordRightPane>
       </template>

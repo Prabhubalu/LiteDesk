@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LiteDesk Headless Article Example</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #f4f4f5;
+        --surface: #ffffff;
+        --text: #18181b;
+        --text-muted: #52525b;
+        --border: #e4e4e7;
+        --primary: #4f46e5;
+        --primary-hover: #4338ca;
+        --error: #b91c1c;
+        --callout-border: #6366f1;
+        font-family: Inter, system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+        color: var(--text);
+        background: var(--bg);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #09090b;
+          --surface: #18181b;
+          --text: #fafafa;
+          --text-muted: #a1a1aa;
+          --border: #3f3f46;
+          --primary: #6366f1;
+          --primary-hover: #818cf8;
+          --error: #f87171;
+        }
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+      }
+
+      .page {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 2.5rem 1.25rem 4rem;
+      }
+
+      .page-header {
+        margin-bottom: 1.5rem;
+      }
+
+      .page-header h1 {
+        margin: 0 0 0.35rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      .page-header p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 0.9375rem;
+      }
+
+      #status {
+        margin: 0 0 1rem;
+        color: var(--text-muted);
+        font-size: 0.9375rem;
+      }
+
+      #status .error {
+        color: var(--error);
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.875rem;
+        padding: 1.25rem 1.5rem;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+
+      .setup p {
+        margin: 0 0 0.75rem;
+        color: var(--text);
+        font-size: 0.9375rem;
+      }
+
+      .setup code {
+        display: inline-block;
+        margin-top: 0.25rem;
+        padding: 0.15rem 0.4rem;
+        border-radius: 0.375rem;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 0.8125rem;
+      }
+
+      .setup label {
+        display: block;
+        margin-top: 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text);
+      }
+
+      .setup input {
+        display: block;
+        width: 100%;
+        margin-top: 0.35rem;
+        padding: 0.625rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        background: var(--surface);
+        color: var(--text);
+        font: inherit;
+      }
+
+      .setup input:focus {
+        outline: 2px solid var(--primary);
+        outline-offset: 1px;
+      }
+
+      .setup button {
+        margin-top: 1.25rem;
+        padding: 0.625rem 1rem;
+        border: 0;
+        border-radius: 0.5rem;
+        background: var(--primary);
+        color: #ffffff;
+        font: inherit;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .setup button:hover {
+        background: var(--primary-hover);
+      }
+
+      .meta {
+        margin: 0 0 1rem;
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        word-break: break-all;
+      }
+
+      #article article h1 {
+        margin: 0 0 0.5rem;
+        font-size: 2rem;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+      }
+
+      #article article > p:first-of-type {
+        margin-top: 0;
+        color: var(--text-muted);
+      }
+
+      #article article aside[role='note'] {
+        border-left: 4px solid var(--callout-border);
+        padding: 0.75rem 1rem;
+        margin: 1.25rem 0;
+        background: var(--bg);
+        border-radius: 0 0.5rem 0.5rem 0;
+      }
+
+      #article article figure img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="page-header">
+        <h1>Headless article example</h1>
+        <p>Fetch published article JSON from LiteDesk and render it with your own styles.</p>
+      </header>
+
+      <main>
+        <p id="status">Loading article…</p>
+        <p id="meta" class="meta" hidden></p>
+        <div id="setup" class="setup card" hidden></div>
+        <div id="article"></div>
+      </main>
+    </div>
+
+    <script type="module">
+      const params = new URLSearchParams(window.location.search);
+
+      function resolveApiBase() {
+        const fromQuery = String(params.get('api') || '').trim().replace(/\/$/, '');
+        if (fromQuery) return fromQuery;
+        return `${window.location.origin}/api/public/v1/content`;
+      }
+
+      function resolveOrgSlug() {
+        return String(params.get('org') || params.get('orgSlug') || '').trim();
+      }
+
+      function resolveArticleSlug() {
+        return String(params.get('slug') || params.get('article') || '').trim();
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function renderMarks(text, marks = []) {
+        let output = escapeHtml(text);
+        for (const mark of marks) {
+          if (mark.type === 'bold') output = `<strong>${output}</strong>`;
+          else if (mark.type === 'italic') output = `<em>${output}</em>`;
+          else if (mark.type === 'link') {
+            output = `<a href="${escapeHtml(mark.attrs?.href || '#')}" rel="noopener noreferrer">${output}</a>`;
+          }
+        }
+        return output;
+      }
+
+      function renderInline(nodes = []) {
+        return nodes
+          .map((node) => {
+            if (node.type === 'text') return renderMarks(node.text || '', node.marks);
+            if (node.type === 'hardBreak') return '<br />';
+            return '';
+          })
+          .join('');
+      }
+
+      function renderBlock(node) {
+        if (!node?.type) return '';
+        switch (node.type) {
+          case 'paragraph':
+            return `<p>${renderInline(node.content)}</p>`;
+          case 'heading': {
+            const level = Math.min(Math.max(Number(node.attrs?.level) || 2, 1), 4);
+            return `<h${level}>${renderInline(node.content)}</h${level}>`;
+          }
+          case 'bulletList':
+            return `<ul>${(node.content || []).map(renderBlock).join('')}</ul>`;
+          case 'listItem':
+            return `<li>${(node.content || []).map(renderBlock).join('')}</li>`;
+          case 'callout':
+            return `<aside role="note" data-variant="${escapeHtml(node.attrs?.variant || 'info')}">${(node.content || []).map(renderBlock).join('')}</aside>`;
+          case 'image': {
+            const src = escapeHtml(node.attrs?.src || '');
+            const alt = escapeHtml(node.attrs?.alt || '');
+            return src ? `<figure><img src="${src}" alt="${alt}" loading="lazy" /></figure>` : '';
+          }
+          default:
+            return (node.content || []).map(renderBlock).join('');
+        }
+      }
+
+      function renderArticle(data) {
+        const blocks = data?.blocks?.content || [];
+        const title = data?.title ? `<h1>${escapeHtml(data.title)}</h1>` : '';
+        const subtitle = data?.subtitle ? `<p>${escapeHtml(data.subtitle)}</p>` : '';
+        const body = blocks.map(renderBlock).join('\n');
+        return `<article>${title}${subtitle}${body}</article>`;
+      }
+
+      function showSetup() {
+        const status = document.getElementById('status');
+        const setup = document.getElementById('setup');
+        status.textContent = 'Enter your organization slug and a published public article slug.';
+        setup.hidden = false;
+        setup.innerHTML = `
+          <p>Use query params <code>?org=YOUR-ORG&amp;slug=YOUR-SLUG</code> or fill in the form below.</p>
+          <form id="setup-form">
+            <label>Organization slug
+              <input name="org" value="${escapeHtml(resolveOrgSlug())}" placeholder="acme" required />
+            </label>
+            <label>Article slug
+              <input name="slug" value="${escapeHtml(resolveArticleSlug())}" placeholder="getting-started" required />
+            </label>
+            <button type="submit">Load article</button>
+          </form>
+        `;
+        document.getElementById('setup-form').addEventListener('submit', (event) => {
+          event.preventDefault();
+          const form = event.currentTarget;
+          const org = String(new FormData(form).get('org') || '').trim();
+          const slug = String(new FormData(form).get('slug') || '').trim();
+          const next = new URL(window.location.href);
+          next.searchParams.set('org', org);
+          next.searchParams.set('slug', slug);
+          window.location.href = next.toString();
+        });
+      }
+
+      async function loadArticle() {
+        const status = document.getElementById('status');
+        const meta = document.getElementById('meta');
+        const mount = document.getElementById('article');
+        const orgSlug = resolveOrgSlug();
+        const articleSlug = resolveArticleSlug();
+
+        if (!orgSlug || !articleSlug) {
+          showSetup();
+          return;
+        }
+
+        const apiBase = resolveApiBase();
+        const requestUrl = `${apiBase}/${encodeURIComponent(orgSlug)}/articles/${encodeURIComponent(articleSlug)}`;
+
+        try {
+          meta.hidden = false;
+          meta.textContent = `Fetching ${requestUrl}`;
+
+          const response = await fetch(requestUrl, { cache: 'no-store' });
+          const payload = await response.json();
+          if (!response.ok || !payload?.success) {
+            throw new Error(payload?.message || `HTTP ${response.status}`);
+          }
+
+          document.title = payload.data?.seo?.metaTitle || payload.data?.title || document.title;
+          mount.innerHTML = renderArticle(payload.data);
+          status.textContent = '';
+        } catch (error) {
+          status.innerHTML = `<span class="error">${escapeHtml(error.message || 'Failed to load article')}</span>`;
+          meta.textContent = `Tried: ${requestUrl}. Ensure the article is published with Public visibility.`;
+        }
+      }
+
+      loadArticle();
+    </script>
+  </body>
+</html>

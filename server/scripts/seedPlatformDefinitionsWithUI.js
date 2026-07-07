@@ -814,6 +814,47 @@ const MODULE_DEFINITIONS = [
     }
   },
   {
+    moduleKey: 'articles',
+    appKey: 'helpdesk',
+    label: 'Articles',
+    pluralLabel: 'Articles',
+    entityType: 'CORE',
+    primaryField: 'title',
+    peopleConstraints: {
+      allowedTypes: ['Contact'],
+      required: false
+    },
+    organizationConstraints: {
+      required: false
+    },
+    lifecycle: {
+      statusField: 'status',
+      allowedStatuses: ['draft', 'review', 'scheduled', 'published', 'archived']
+    },
+    supports: {
+      ownership: true,
+      assignment: false,
+      comments: true,
+      attachments: false,
+      automation: false
+    },
+    permissions: {
+      create: true,
+      edit: true,
+      delete: true,
+      view: true,
+      publish: true,
+    },
+    ui: {
+      routeBase: '/helpdesk/articles',
+      icon: 'book-open',
+      showInSidebar: true,
+      sidebarOrder: 2,
+      createLabel: 'New Article',
+      listLabel: 'Articles'
+    }
+  },
+  {
     moduleKey: 'campaigns',
     appKey: 'marketing',
     label: 'Campaign',
@@ -851,6 +892,46 @@ const MODULE_DEFINITIONS = [
       sidebarOrder: 1,
       createLabel: 'Create Campaign',
       listLabel: 'Campaigns'
+    }
+  },
+  {
+    moduleKey: 'blog',
+    appKey: 'marketing',
+    label: 'Blog',
+    pluralLabel: 'Blog Posts',
+    entityType: 'CORE',
+    primaryField: 'title',
+    peopleConstraints: {
+      allowedTypes: ['Contact'],
+      required: false
+    },
+    organizationConstraints: {
+      required: false
+    },
+    lifecycle: {
+      statusField: 'status',
+      allowedStatuses: ['draft', 'review', 'scheduled', 'published', 'archived']
+    },
+    supports: {
+      ownership: true,
+      assignment: false,
+      comments: true,
+      attachments: false,
+      automation: false
+    },
+    permissions: {
+      create: true,
+      edit: true,
+      delete: true,
+      view: true
+    },
+    ui: {
+      routeBase: '/marketing/blog',
+      icon: 'document-text',
+      showInSidebar: true,
+      sidebarOrder: 2,
+      createLabel: 'New Post',
+      listLabel: 'Blog'
     }
   },
   {

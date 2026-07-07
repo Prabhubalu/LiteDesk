@@ -1,0 +1,82 @@
+.content-studio-article {
+  --cs-primary: #4f46e5;
+  --cs-secondary: #6366f1;
+  --cs-body-font: Inter, system-ui, sans-serif;
+  --cs-heading-font: Inter, system-ui, sans-serif;
+  --cs-heading-color: #111827;
+  --cs-subheading-color: #4b5563;
+  --cs-content-max-width: 768px;
+  --cs-border-radius: 8px;
+  font-family: var(--cs-body-font);
+  color: #111827;
+}
+
+.dark .content-studio-article {
+  color: #f3f4f6;
+}
+
+.content-studio-article__brand {
+  margin-bottom: 1rem;
+}
+
+.content-studio-article__logo {
+  max-height: 40px;
+  width: auto;
+}
+
+.content-studio-article__body {
+  max-width: var(--cs-content-max-width);
+}
+
+.content-studio-article__body :is(h1, h2, h3, h4) {
+  font-family: var(--cs-heading-font);
+  color: var(--cs-heading-color, inherit);
+  font-weight: 600;
+}
+
+.content-studio-article__body .content-studio-tiptap :is(h1, h2, h3, h4) {
+  color: var(--cs-heading-color, inherit);
+}
+
+.content-studio-article--classic .content-studio-article__body a {
+  color: var(--cs-secondary);
+}
+
+.content-studio-article--classic .content-studio-article__body a:hover {
+  color: var(--cs-primary);
+}
+
+.content-studio-article--help_center .content-studio-article__body a {
+  color: var(--cs-secondary);
+}
+
+.content-studio-article--help_center .content-studio-article__body a:hover {
+  color: var(--cs-primary);
+}
+
+.content-studio-article__body :is(.content-callout, .content-steps, .content-faq, .content-related-articles) {
+  border-radius: var(--cs-border-radius);
+}
+
+.content-studio-article--help_center .content-studio-article__body {
+  margin-inline: auto;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid rgb(229 231 235);
+  border-radius: var(--cs-border-radius);
+  background: rgb(255 255 255);
+}
+
+.dark .content-studio-article--help_center .content-studio-article__body {
+  border-color: rgb(55 65 81);
+  background: rgb(17 24 39 / 0.6);
+}
+
+.content-studio-article--minimal .content-studio-article__body :is(h1, h2, h3, h4) {
+  color: inherit;
+  font-weight: 600;
+}
+
+.content-studio-article--minimal .content-studio-article__body a {
+  color: var(--cs-primary);
+  text-decoration: underline;
+}

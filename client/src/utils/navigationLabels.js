@@ -47,6 +47,8 @@ export const MODULE_LABEL_KEYS = {
   campaigns: 'navigation.moduleCampaigns',
   audiences: 'navigation.moduleAudiences',
   segments: 'navigation.moduleSegments',
+  articles: 'navigation.moduleArticles',
+  blog: 'navigation.moduleBlog',
 };
 
 /** App registry appKey → navigation.* */
@@ -90,6 +92,8 @@ export const ROUTE_TITLE_KEYS = {
   '/items': 'navigation.moduleItems',
   '/helpdesk/cases': 'navigation.moduleCases',
   '/helpdesk/cases/': 'navigation.moduleCases',
+  '/helpdesk/articles': 'navigation.moduleArticles',
+  '/helpdesk/articles/': 'navigation.moduleArticles',
   '/trash': 'navigation.userTrash',
   '/demo-requests': 'navigation.tabDemoRequests',
   '/instances': 'navigation.tabInstances',
@@ -120,6 +124,7 @@ export const ROUTE_TITLE_KEYS = {
   '/portal/responses': 'navigation.portalResponses',
   '/dashboard/marketing': 'navigation.appMarketing',
   '/marketing/campaigns': 'navigation.moduleCampaigns',
+  '/marketing/blog': 'navigation.moduleBlog',
   '/marketing/audiences': 'navigation.moduleAudiences',
   '/marketing/segments': 'navigation.moduleSegments',
   '/analytics/reports': 'navigation.moduleReports',
@@ -238,6 +243,38 @@ export function getTabTitleMetaForPath(path, params = {}) {
       return { titleKey: 'navigation.moduleCases' };
     }
     return { titleKey: 'navigation.tabCaseDetail' };
+  }
+
+  if (pathOnly.startsWith('/helpdesk/articles')) {
+    if (segments[2] === 'new') {
+      return { titleKey: 'contentStudio.tabNewArticle' };
+    }
+    if (segments[3] === 'edit' && isRecordIdSegment(segments[2])) {
+      if (params?.name) {
+        return {
+          titleKey: 'navigation.tabRecordNamed',
+          titleParams: { moduleRoute: 'articles', name: params.name },
+        };
+      }
+      return { titleKey: 'contentStudio.tabEditArticle' };
+    }
+    return { titleKey: 'navigation.moduleArticles' };
+  }
+
+  if (pathOnly.startsWith('/marketing/blog')) {
+    if (segments[2] === 'new') {
+      return { titleKey: 'contentStudio.tabNewPost' };
+    }
+    if (segments[3] === 'edit' && isRecordIdSegment(segments[2])) {
+      if (params?.name) {
+        return {
+          titleKey: 'navigation.tabRecordNamed',
+          titleParams: { moduleRoute: 'blog', name: params.name },
+        };
+      }
+      return { titleKey: 'contentStudio.tabEditPost' };
+    }
+    return { titleKey: 'navigation.moduleBlog' };
   }
 
   if (pathOnly.startsWith('/portal/')) {
@@ -435,6 +472,14 @@ export function isRecordDetailTabPath(path) {
 
   if (pathOnly.startsWith('/helpdesk/cases/')) {
     return segments.length >= 3 && segments[2] !== 'new' && isRecordIdSegment(segments[2]);
+  }
+
+  if (pathOnly.startsWith('/helpdesk/articles/')) {
+    return segments.length >= 4 && segments[3] === 'edit' && isRecordIdSegment(segments[2]);
+  }
+
+  if (pathOnly.startsWith('/marketing/blog/')) {
+    return segments.length >= 4 && segments[3] === 'edit' && isRecordIdSegment(segments[2]);
   }
 
   // Standard CRM modules: `/module/:recordId` (two segments — was incorrectly treated as list)

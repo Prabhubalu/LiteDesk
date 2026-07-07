@@ -1362,7 +1362,7 @@ const gmailClientSecretPlaceholder = computed(() =>
     : t('settings.integrationsClientSecretRequired')
 );
 const isOwnerLike = computed(() => authStore.isOwner || String(authStore.userRole || '').toLowerCase() === 'owner');
-// Gmail OAuth client credentials are a LiteDesk-platform concern (they identify the
+// Gmail OAuth client credentials are an Arivu-platform concern (they identify the
 // Google Cloud project that owns the consent screen), not a per-tenant setting.
 // The Advanced override block is therefore visible only to platform admins — customer
 // workspace owners just see the "Ready for users" / "Not enabled" status above it.

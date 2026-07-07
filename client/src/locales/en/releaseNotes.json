@@ -135,64 +135,226 @@
     "message": "Actions",
     "description": "List column: actions"
   },
-  "adminStatus_draft": { "message": "Draft", "description": "Release status draft" },
-  "adminStatus_scheduled": { "message": "Scheduled", "description": "Release status scheduled" },
-  "adminStatus_published": { "message": "Published", "description": "Release status published" },
-  "adminStatus_archived": { "message": "Archived", "description": "Release status archived" },
-  "adminImportance_major": { "message": "Major", "description": "Release importance major" },
-  "adminImportance_minor": { "message": "Minor", "description": "Release importance minor" },
-  "adminImportance_patch": { "message": "Patch", "description": "Release importance patch" },
-  "adminSectionDetails": { "message": "Details", "description": "Editor section: release metadata" },
-  "adminSectionTargeting": { "message": "Targeting", "description": "Editor section: audience targeting" },
-  "adminSectionItems": { "message": "Items", "description": "Editor section: release items" },
-  "adminFieldVersion": { "message": "Version", "description": "Editor field: version" },
-  "adminFieldSlug": { "message": "Slug", "description": "Editor field: URL slug" },
-  "adminFieldTitle": { "message": "Title", "description": "Editor field: title" },
-  "adminFieldSummary": { "message": "Summary", "description": "Editor field: summary" },
-  "adminFieldOptional": { "message": "optional", "description": "Optional field hint" },
-  "adminFieldImportance": { "message": "Importance", "description": "Editor field: importance" },
-  "adminFieldBadgeExpires": { "message": "Badge expires at", "description": "Editor field: in-product badge expiry" },
+  "adminStatus_draft": {
+    "message": "Draft",
+    "description": "Release status draft"
+  },
+  "adminStatus_scheduled": {
+    "message": "Scheduled",
+    "description": "Release status scheduled"
+  },
+  "adminStatus_published": {
+    "message": "Published",
+    "description": "Release status published"
+  },
+  "adminStatus_archived": {
+    "message": "Archived",
+    "description": "Release status archived"
+  },
+  "adminImportance_major": {
+    "message": "Major",
+    "description": "Release importance major"
+  },
+  "adminImportance_minor": {
+    "message": "Minor",
+    "description": "Release importance minor"
+  },
+  "adminImportance_patch": {
+    "message": "Patch",
+    "description": "Release importance patch"
+  },
+  "adminSectionDetails": {
+    "message": "Details",
+    "description": "Editor section: release metadata"
+  },
+  "adminSectionTargeting": {
+    "message": "Targeting",
+    "description": "Editor section: audience targeting"
+  },
+  "adminSectionItems": {
+    "message": "Items",
+    "description": "Editor section: release items"
+  },
+  "adminFieldVersion": {
+    "message": "Version",
+    "description": "Editor field: version"
+  },
+  "adminFieldSlug": {
+    "message": "Slug",
+    "description": "Editor field: URL slug"
+  },
+  "adminFieldTitle": {
+    "message": "Title",
+    "description": "Editor field: title"
+  },
+  "adminFieldSummary": {
+    "message": "Summary",
+    "description": "Editor field: summary"
+  },
+  "adminFieldOptional": {
+    "message": "optional",
+    "description": "Optional field hint"
+  },
+  "adminFieldImportance": {
+    "message": "Importance",
+    "description": "Editor field: importance"
+  },
+  "adminFieldBadgeExpires": {
+    "message": "Badge expires at",
+    "description": "Editor field: in-product badge expiry"
+  },
   "adminTargetingHint": {
     "message": "Leave empty to target all apps or plans.",
     "description": "Hint for targeting checkboxes"
   },
-  "adminTargetApps": { "message": "Target apps", "description": "Targeting label for apps" },
-  "adminTargetPlans": { "message": "Target plans", "description": "Targeting label for plans" },
-  "adminPlan_trial": { "message": "Trial", "description": "Plan targeting trial" },
-  "adminPlan_paid": { "message": "Paid", "description": "Plan targeting paid" },
-  "adminAddItem": { "message": "Add item", "description": "Add release note item button" },
-  "adminItemIndex": { "message": "Item {index}", "description": "Release item index label" },
-  "adminItemType": { "message": "Type", "description": "Release item type field" },
-  "adminItemType_feature": { "message": "Feature", "description": "Item type feature" },
-  "adminItemType_improvement": { "message": "Improvement", "description": "Item type improvement" },
-  "adminItemType_bugfix": { "message": "Bug fix", "description": "Item type bugfix" },
-  "adminItemTitle": { "message": "Title", "description": "Release item title field" },
-  "adminItemDescription": { "message": "Description (Markdown)", "description": "Release item description field" },
-  "adminItemImage": { "message": "Image", "description": "Release item image field" },
-  "adminItemImageEmpty": { "message": "No image yet. Upload a screenshot or paste a URL.", "description": "Empty image state hint" },
-  "adminItemUploadImage": { "message": "Upload image", "description": "Upload image button" },
-  "adminItemRemoveImage": { "message": "Remove", "description": "Remove uploaded image" },
-  "adminItemPasteImageUrl": { "message": "Or paste image URL", "description": "Expandable URL input label" },
-  "adminItemImageUrlPh": { "message": "https://…", "description": "Image URL placeholder" },
-  "adminItemCtaLabel": { "message": "CTA label", "description": "Release item CTA label" },
-  "adminItemCtaUrl": { "message": "CTA URL", "description": "Release item CTA URL" },
-  "adminSaveDraft": { "message": "Save draft", "description": "Save release note draft" },
-  "adminPublishNow": { "message": "Publish now", "description": "Publish release immediately" },
-  "adminSchedule": { "message": "Schedule", "description": "Schedule release for later" },
-  "adminArchive": { "message": "Archive", "description": "Archive published release" },
-  "adminAudiencePreview": { "message": "Audience preview", "description": "Sidebar audience preview title" },
-  "adminAudienceHint": { "message": "Estimated active users who match targeting today.", "description": "Audience preview hint" },
-  "adminStatsTitle": { "message": "Adoption", "description": "Stats panel title" },
-  "adminStatsViewed": { "message": "Viewed", "description": "Stats viewed users" },
-  "adminStatsTargeted": { "message": "Targeted", "description": "Stats targeted users" },
-  "adminStatsViewRate": { "message": "View rate", "description": "Stats view rate" },
-  "adminPublishedAt": { "message": "Published {date}", "description": "Published timestamp label" },
-  "adminLoadFailed": { "message": "Failed to load release notes.", "description": "Load error" },
-  "adminSaveFailed": { "message": "Failed to save release note.", "description": "Save error" },
-  "adminPublishFailed": { "message": "Failed to publish release note.", "description": "Publish error" },
-  "adminScheduleFailed": { "message": "Failed to schedule release note.", "description": "Schedule error" },
-  "adminArchiveFailed": { "message": "Failed to archive release note.", "description": "Archive error" },
-  "adminUploadFailed": { "message": "Image upload failed.", "description": "Upload error" },
+  "adminTargetApps": {
+    "message": "Target apps",
+    "description": "Targeting label for apps"
+  },
+  "adminTargetPlans": {
+    "message": "Target plans",
+    "description": "Targeting label for plans"
+  },
+  "adminPlan_trial": {
+    "message": "Trial",
+    "description": "Plan targeting trial"
+  },
+  "adminPlan_paid": {
+    "message": "Paid",
+    "description": "Plan targeting paid"
+  },
+  "adminAddItem": {
+    "message": "Add item",
+    "description": "Add release note item button"
+  },
+  "adminItemIndex": {
+    "message": "Item {index}",
+    "description": "Release item index label"
+  },
+  "adminItemType": {
+    "message": "Type",
+    "description": "Release item type field"
+  },
+  "adminItemType_feature": {
+    "message": "Feature",
+    "description": "Item type feature"
+  },
+  "adminItemType_improvement": {
+    "message": "Improvement",
+    "description": "Item type improvement"
+  },
+  "adminItemType_bugfix": {
+    "message": "Bug fix",
+    "description": "Item type bugfix"
+  },
+  "adminItemTitle": {
+    "message": "Title",
+    "description": "Release item title field"
+  },
+  "adminItemDescription": {
+    "message": "Description (Markdown)",
+    "description": "Release item description field"
+  },
+  "adminItemImage": {
+    "message": "Image",
+    "description": "Release item image field"
+  },
+  "adminItemImageEmpty": {
+    "message": "No image yet. Upload a screenshot or paste a URL.",
+    "description": "Empty image state hint"
+  },
+  "adminItemUploadImage": {
+    "message": "Upload image",
+    "description": "Upload image button"
+  },
+  "adminItemRemoveImage": {
+    "message": "Remove",
+    "description": "Remove uploaded image"
+  },
+  "adminItemPasteImageUrl": {
+    "message": "Or paste image URL",
+    "description": "Expandable URL input label"
+  },
+  "adminItemImageUrlPh": {
+    "message": "https://…",
+    "description": "Image URL placeholder"
+  },
+  "adminItemCtaLabel": {
+    "message": "CTA label",
+    "description": "Release item CTA label"
+  },
+  "adminItemCtaUrl": {
+    "message": "CTA URL",
+    "description": "Release item CTA URL"
+  },
+  "adminSaveDraft": {
+    "message": "Save draft",
+    "description": "Save release note draft"
+  },
+  "adminPublishNow": {
+    "message": "Publish now",
+    "description": "Publish release immediately"
+  },
+  "adminSchedule": {
+    "message": "Schedule",
+    "description": "Schedule release for later"
+  },
+  "adminArchive": {
+    "message": "Archive",
+    "description": "Archive published release"
+  },
+  "adminAudiencePreview": {
+    "message": "Audience preview",
+    "description": "Sidebar audience preview title"
+  },
+  "adminAudienceHint": {
+    "message": "Estimated active users who match targeting today.",
+    "description": "Audience preview hint"
+  },
+  "adminStatsTitle": {
+    "message": "Adoption",
+    "description": "Stats panel title"
+  },
+  "adminStatsViewed": {
+    "message": "Viewed",
+    "description": "Stats viewed users"
+  },
+  "adminStatsTargeted": {
+    "message": "Targeted",
+    "description": "Stats targeted users"
+  },
+  "adminStatsViewRate": {
+    "message": "View rate",
+    "description": "Stats view rate"
+  },
+  "adminPublishedAt": {
+    "message": "Published {date}",
+    "description": "Published timestamp label"
+  },
+  "adminLoadFailed": {
+    "message": "Failed to load release notes.",
+    "description": "Load error"
+  },
+  "adminSaveFailed": {
+    "message": "Failed to save release note.",
+    "description": "Save error"
+  },
+  "adminPublishFailed": {
+    "message": "Failed to publish release note.",
+    "description": "Publish error"
+  },
+  "adminScheduleFailed": {
+    "message": "Failed to schedule release note.",
+    "description": "Schedule error"
+  },
+  "adminArchiveFailed": {
+    "message": "Failed to archive release note.",
+    "description": "Archive error"
+  },
+  "adminUploadFailed": {
+    "message": "Image upload failed.",
+    "description": "Upload error"
+  },
   "adminPublishConfirm": {
     "message": "Publish this release? Published releases cannot be edited.",
     "description": "Publish confirmation"

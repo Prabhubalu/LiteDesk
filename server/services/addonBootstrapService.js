@@ -17,6 +17,8 @@ const {
   seedDefaultLiveChatAssignmentRulesForOrganization,
 } = require('./liveChatAssignmentRuleSeedService');
 const { ensureOrgEmailPolicy } = require('./orgEmailPolicyService');
+const { assertAddonParentAppsEntitled } = require('./addonParentAppService');
+const { ADDON_DEFAULT_SETTINGS } = require('../constants/contentStudioConstants');
 
 const ENTERPRISE_PLAN_KEY = 'ENTERPRISE';
 
@@ -46,6 +48,20 @@ async function ensureSubscriptionForAddon({ organizationId, addonKey, initiatedB
     const definition = await getAddonDefinition(normalized);
     if (!definition) {
       return { created: false, subscription: null, error: 'ADDON_NOT_FOUND' };
+    }
+
+    const parentAppCheck = await assertAddonParentAppsEntitled({
+      organizationId,
+      addonDefinition: definition,
+    });
+    if (!parentAppCheck.ok) {
+      return {
+        created: false,
+        subscription: null,
+        error: parentAppCheck.message,
+        code: parentAppCheck.code,
+        missingApps: parentAppCheck.missingApps,
+      };
     }
 
     const pricing = await getAddonPricing(normalized);
@@ -114,7 +130,7 @@ async function ensureSubscriptionForAddon({ organizationId, addonKey, initiatedB
         organizationId,
         addonKey: normalized,
         enabled: true,
-        settings: {},
+        settings: ADDON_DEFAULT_SETTINGS[normalized] || {},
         installedBy: initiatedByUserId || null,
         installedAt: new Date(),
       });

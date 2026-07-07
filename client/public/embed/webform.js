@@ -1,7 +1,7 @@
 /**
- * LiteDesk webform embed loader.
+ * Arivu webform embed loader.
  * Usage:
- *   <div id="litedesk-webform" data-slug="your-form-slug" data-height="640"></div>
+ *   <div id="arivu-webform" data-slug="your-form-slug" data-height="640"></div>
  *   <script src="https://your-app.example.com/embed/webform.js" async></script>
  *
  * Optional: data-prefill='{"email":"user@example.com"}' or parent-page query params are forwarded.
@@ -43,9 +43,9 @@
   }
 
   function mount() {
-    const nodes = document.querySelectorAll('#litedesk-webform,[data-litedesk-webform]');
+    const nodes = document.querySelectorAll('#arivu-webform,[data-arivu-webform],#litedesk-webform,[data-litedesk-webform]');
     nodes.forEach((el) => {
-      if (el.dataset.litedeskMounted === '1') return;
+      if (el.dataset.arivuMounted === '1' || el.dataset.litedeskMounted === '1') return;
       const slug = el.getAttribute('data-slug');
       if (!slug) return;
 
@@ -59,7 +59,7 @@
       iframe.style.cssText = 'border:0;border-radius:12px;max-width:720px;display:block;width:100%;';
       iframe.allow = 'clipboard-write';
 
-      el.dataset.litedeskMounted = '1';
+      el.dataset.arivuMounted = '1';
       el.innerHTML = '';
       el.appendChild(iframe);
 
