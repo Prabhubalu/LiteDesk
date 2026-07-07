@@ -45,6 +45,16 @@ function getPublicAppBaseUrl(options = {}) {
   return normalizePublicOrigin(options.requestOrigin);
 }
 
+function resolveRequestOrigin(req) {
+  if (!req) return '';
+  const forwardedProto = String(req.get('x-forwarded-proto') || '').split(',')[0].trim();
+  const forwardedHost = String(req.get('x-forwarded-host') || '').split(',')[0].trim();
+  const proto = forwardedProto || req.protocol || 'https';
+  const host = forwardedHost || req.get('host') || '';
+  if (!host) return '';
+  return `${proto}://${host}`;
+}
+
 function resolveHeadlessApiBase(organization, options = {}) {
   const orgKey = resolveHeadlessContentOrgKey(organization);
   const appBase = getPublicAppBaseUrl(options);
@@ -96,6 +106,7 @@ module.exports = {
   normalizeContentPublishing,
   normalizeWebhookUrl,
   getPublicAppBaseUrl,
+  resolveRequestOrigin,
   resolveHeadlessApiBase,
   buildArticleApiUrl,
   buildArticlesListApiUrl,

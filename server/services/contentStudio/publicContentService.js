@@ -17,6 +17,7 @@ const {
   buildArticlesListApiUrl,
   buildCollectionsApiUrl,
   buildCollectionArticlesApiUrl,
+  getPublicAppBaseUrl,
 } = require('./contentPublishingService');
 
 function normalizeCollectionSlug(value) {
@@ -415,6 +416,7 @@ async function listPublicHelpCollections({ orgSlug }) {
 async function getPublicHelpArticle({
   orgSlug,
   articleSlug,
+  requestOrigin = '',
 }) {
   const org = await resolveOrganizationForPublic(orgSlug);
   if (!org) return null;
@@ -432,12 +434,14 @@ async function getPublicHelpArticle({
   const blocks = await loadPublishedBlocks(doc);
   const collectionMap = await loadCollectionMap(org._id, [doc]);
   const collectionMeta = doc.collectionId ? collectionMap[String(doc.collectionId)] : null;
+  const publicAppBaseUrl = getPublicAppBaseUrl({ requestOrigin });
   return buildPublicContentEnvelope(org, {
     data: await shapeHeadlessArticleDetail(doc, {
       blocks,
       authorName: await resolveAuthorName(doc.authorId),
       collectionName: collectionMeta?.name || '',
       collectionMeta,
+      publicAppBaseUrl,
     }),
   }, context.publishing);
 }

@@ -95,18 +95,50 @@
     return '<p class="' + classes + '"' + colorStyleAttr(options.color) + '>' + escapeHtml(text) + '</p>';
   }
 
-  function buildCover(coverImage) {
-    if (!coverImage || !coverImage.url) return '';
-    return (
-      '<img class="ld-article__cover" src="' + escapeHtml(coverImage.url) + '" alt="' + escapeHtml(coverImage.alt || '') + '" loading="lazy" />'
+  function absolutizeEmbedAssetUrl(url, apiOrigin) {
+    var common = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
+    if (common && common.absolutizeEmbedAssetUrl) {
+      return common.absolutizeEmbedAssetUrl(url, apiOrigin);
+    }
+    var raw = String(url || '').trim();
+    var origin = String(apiOrigin || '').replace(/\/$/, '');
+    if (!raw || !origin) return raw;
+    if (raw.indexOf('://') >= 0 || raw.indexOf('data:') === 0) return raw;
+    if (raw.indexOf('/api/files/download') === 0 || raw.indexOf('/api/uploads/') === 0) {
+      return origin + raw;
+    }
+    return raw;
+  }
+
+  function absolutizeEmbedHtml(html, apiOrigin) {
+    var common = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
+    if (common && common.absolutizeEmbedHtml) {
+      return common.absolutizeEmbedHtml(html, apiOrigin);
+    }
+    if (!html || !apiOrigin) return html;
+    var origin = String(apiOrigin).replace(/\/$/, '');
+    return String(html).replace(
+      /(\s(?:src|href)=["'])(\/api\/(?:files\/download|uploads)[^"']*)(["'])/gi,
+      function (_match, prefix, path, suffix) {
+        return prefix + origin + path + suffix;
+      },
     );
   }
 
-  function buildHeroOverlap(data, colors, presentation) {
+  function buildCover(coverImage, apiOrigin) {
+    if (!coverImage || !coverImage.url) return '';
+    var src = absolutizeEmbedAssetUrl(coverImage.url, apiOrigin);
+    return (
+      '<img class="ld-article__cover" src="' + escapeHtml(src) + '" alt="' + escapeHtml(coverImage.alt || '') + '" loading="lazy" />'
+    );
+  }
+
+  function buildHeroOverlap(data, colors, presentation, apiOrigin) {
     var coverImage = data.coverImage;
+    var src = absolutizeEmbedAssetUrl(coverImage.url, apiOrigin);
     return (
       '<div class="ld-article__hero">' +
-        '<img class="ld-article__hero-cover" src="' + escapeHtml(coverImage.url) + '" alt="' + escapeHtml(coverImage.alt || '') + '" loading="lazy" />' +
+        '<img class="ld-article__hero-cover" src="' + escapeHtml(src) + '" alt="' + escapeHtml(coverImage.alt || '') + '" loading="lazy" />' +
         '<div class="ld-article__hero-gradient" aria-hidden="true"></div>' +
         '<div class="ld-article__hero-text">' +
           buildTitle(data.title, { overlap: true, color: colors.heading }) +
@@ -116,18 +148,18 @@
     );
   }
 
-  function buildArticleHeader(data, presentation, colors) {
+  function buildArticleHeader(data, presentation, colors, apiOrigin) {
     var coverImage = data.coverImage && data.coverImage.url ? data.coverImage : null;
     var useHeroOverlap = presentation.useHeroOverlap && coverImage;
 
     if (useHeroOverlap) {
-      return buildHeroOverlap(data, colors, presentation);
+      return buildHeroOverlap(data, colors, presentation, apiOrigin);
     }
 
     var titleOptions = { color: colors.heading, afterCover: presentation.coverFirst };
     var subtitleOptions = { size: presentation.subtitleSize, color: colors.subheading };
     var title = buildTitle(data.title, titleOptions);
-    var cover = buildCover(coverImage);
+    var cover = buildCover(coverImage, apiOrigin);
     var subtitle = buildSubtitle(data.subtitle, subtitleOptions);
 
     if (presentation.coverFirst) {
@@ -136,7 +168,7 @@
     return title + cover + subtitle;
   }
 
-  function buildArticleShell(data, bodyHtml, footerHtml) {
+  function buildArticleShell(data, bodyHtml, footerHtml, apiOrigin) {
     var presentation = normalizePresentation(data.presentation);
     var colors = resolveChromeColors(presentation, presentation.useHeroOverlap && Boolean(data.coverImage && data.coverImage.url));
     var metaParts = [];
@@ -150,7 +182,7 @@
     return (
       '<article class="ld-article">' +
         '<header class="ld-article__header">' +
-          buildArticleHeader(data, presentation, colors) +
+          buildArticleHeader(data, presentation, colors, apiOrigin) +
           meta +
         '</header>' +
         '<div class="ld-article__body">' + bodyHtml + '</div>' +
@@ -541,9 +573,10 @@
           throw new Error((result.renderPayload && result.renderPayload.message) || 'Failed to render article blocks');
         }
 
+        var bodyHtml = absolutizeEmbedHtml(result.renderPayload.html, apiOrigin);
         var articleHtml = buildArticleShell(
           result.article,
-          result.renderPayload.html,
+          bodyHtml,
           buildArticleFooter({
             enabled: chrome.showFeedbackFooter,
             helpfulLabel: chrome.helpfulLabel,
@@ -554,6 +587,7 @@
             pageUrl: chrome.pageUrl || (typeof window !== 'undefined' ? window.location.href : ''),
             title: result.article.title || result.article.slug,
           }),
+          apiOrigin,
         );
         var pageHtml = articleHtml;
 

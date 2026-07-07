@@ -256,6 +256,28 @@
     return html;
   }
 
+  function absolutizeEmbedAssetUrl(url, apiOrigin) {
+    var raw = String(url || '').trim();
+    var origin = String(apiOrigin || '').replace(/\/$/, '');
+    if (!raw || !origin) return raw;
+    if (raw.indexOf('://') >= 0 || raw.indexOf('data:') === 0) return raw;
+    if (raw.indexOf('/api/files/download') === 0 || raw.indexOf('/api/uploads/') === 0) {
+      return origin + raw;
+    }
+    return raw;
+  }
+
+  function absolutizeEmbedHtml(html, apiOrigin) {
+    if (!html || !apiOrigin) return html;
+    var origin = String(apiOrigin).replace(/\/$/, '');
+    return String(html).replace(
+      /(\s(?:src|href)=["'])(\/api\/(?:files\/download|uploads)[^"']*)(["'])/gi,
+      function (_match, prefix, path, suffix) {
+        return prefix + origin + path + suffix;
+      },
+    );
+  }
+
   function fetchJson(url) {
     return fetch(url, { cache: 'no-store' }).then(function (response) {
       return response.json().then(function (payload) {
@@ -620,6 +642,8 @@
     buildHomeGridSkeleton: buildHomeGridSkeleton,
     buildCategoryPageHtml: buildCategoryPageHtml,
     buildSectionPageHtml: buildSectionPageHtml,
+    absolutizeEmbedAssetUrl: absolutizeEmbedAssetUrl,
+    absolutizeEmbedHtml: absolutizeEmbedHtml,
     fetchArticles: fetchArticles,
   };
   window.LiteDeskHeadlessHelpCommon = helpCommonApi;

@@ -7,6 +7,8 @@ const {
   shapeHeadlessArticleSummary,
   shapeHeadlessArticleDetail,
   resolveAssetUrlsInBlocks,
+  absolutizePublicAssetUrl,
+  absolutizePublicAssetUrlsInHtml,
 } = require('../headlessContentShaper');
 
 describe('headlessContentShaper', () => {
@@ -85,5 +87,34 @@ describe('headlessContentShaper', () => {
     assert.equal(resolved.content[0].attrs.src, 'https://cdn.example.com/a.png');
     assert.equal(resolved.content[0].attrs.alt, 'Diagram');
     assert.equal(resolved.content[0].attrs.assetId, undefined);
+  });
+
+  it('absolutizes managed asset urls for public headless delivery', async () => {
+    const blocks = {
+      type: 'doc',
+      content: [
+        {
+          type: 'image',
+          attrs: { src: '/api/files/download?storagePath=oci%3Auploads%2Fa.png', alt: 'Diagram' },
+        },
+      ],
+    };
+
+    const resolved = await resolveAssetUrlsInBlocks(blocks, 'org-1', 'https://app.example.com');
+    assert.equal(
+      resolved.content[0].attrs.src,
+      'https://app.example.com/api/files/download?storagePath=oci%3Auploads%2Fa.png',
+    );
+    assert.equal(
+      absolutizePublicAssetUrl('/api/files/download?storagePath=oci%3Alogo.svg', 'https://app.example.com'),
+      'https://app.example.com/api/files/download?storagePath=oci%3Alogo.svg',
+    );
+    assert.equal(
+      absolutizePublicAssetUrlsInHtml(
+        '<img src="/api/files/download?storagePath=oci%3Alogo.svg" alt="Logo" />',
+        'https://app.example.com',
+      ),
+      '<img src="https://app.example.com/api/files/download?storagePath=oci%3Alogo.svg" alt="Logo" />',
+    );
   });
 });
