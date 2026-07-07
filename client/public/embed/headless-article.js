@@ -293,11 +293,24 @@
   }
 
   function ensureStylesheet(origin) {
-    if (document.querySelector('link[data-ld-headless-blocks-css]')) return;
+    if (
+      document.querySelector('link[data-arivu-headless-blocks-css]')
+      || document.querySelector('link[data-ld-headless-blocks-css]')
+    ) {
+      return;
+    }
+    var href = origin + '/embed/headless-blocks.css';
+    if (!document.querySelector('link[rel="preload"][href="' + href + '"]')) {
+      var preload = document.createElement('link');
+      preload.rel = 'preload';
+      preload.as = 'style';
+      preload.href = href;
+      document.head.appendChild(preload);
+    }
     var link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = origin + '/embed/headless-blocks.css';
-    link.setAttribute('data-ld-headless-blocks-css', 'true');
+    link.href = href;
+    link.setAttribute('data-arivu-headless-blocks-css', 'true');
     document.head.appendChild(link);
   }
 
@@ -421,13 +434,37 @@
     var contentBase = apiOrigin + '/api/public/v1/content/' + encodeURIComponent(org);
     var articleUrl = contentBase + '/articles/' + encodeURIComponent(slug);
     var renderUrl = apiOrigin + '/api/public/v1/content/render-blocks';
+    var sectionSlug = chrome.sectionSlug;
+    var parentSlug = chrome.collectionSlug;
+    var widgetOptions = {
+      collection: sectionSlug || '',
+      deep: true,
+      limit: chrome.recentLimit,
+      articlePrefix: chrome.articlePrefix,
+      sectionContext: { slug: sectionSlug, parentSlug: parentSlug, collectionSlug: sectionSlug },
+      popularTitle: chrome.popularTitle,
+      recentTitle: chrome.recentTitle,
+      popularEmptyLabel: chrome.popularEmptyLabel,
+      recentEmptyLabel: chrome.recentEmptyLabel,
+    };
 
-    mountEl.innerHTML = '<p>Loading…</p>';
+    if (!mountEl.querySelector('.ld-help-skeleton')) {
+      var commonForSkeleton = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
+      mountEl.innerHTML = commonForSkeleton
+        ? commonForSkeleton.buildMountSkeleton({ type: 'page', showSidebar: chrome.showSidebar })
+        : '<div class="ld-help-page ld-help-skeleton" aria-busy="true" aria-label="Loading"></div>';
+    }
     ensureStylesheet(apiOrigin);
 
     var collectionsPromise = chrome.enabled
       ? ensureHelpCommonScript(apiOrigin).then(function (common) {
         return common.fetchCollections(contentBase);
+      })
+      : Promise.resolve(null);
+
+    var sidebarWidgetsPromise = chrome.showSidebar
+      ? ensureHelpCommonScript(apiOrigin).then(function (common) {
+        return common.fetchArticleSidebarWidgets(contentBase, widgetOptions);
       })
       : Promise.resolve(null);
 
@@ -438,30 +475,36 @@
         });
       }),
       collectionsPromise,
+      sidebarWidgetsPromise,
     ])
       .then(function (results) {
         var articleResult = results[0];
         var collectionsResult = results[1];
+        var sidebarWidgets = results[2];
 
         if (!articleResult.response.ok || !articleResult.payload || !articleResult.payload.success) {
           throw new Error((articleResult.payload && articleResult.payload.message) || ('HTTP ' + articleResult.response.status));
         }
 
         var article = articleResult.payload.data;
-        var common = window.LiteDeskHeadlessHelpCommon;
-        var sectionSlug = chrome.sectionSlug || normalizeSlug(article.collectionSlug);
-        var parentSlug = chrome.collectionSlug;
+        var common = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
+        var resolvedSectionSlug = chrome.sectionSlug || normalizeSlug(article.collectionSlug);
+        var resolvedParentSlug = chrome.collectionSlug;
         var collectionEntry = null;
-        var sectionContext = { slug: sectionSlug, parentSlug: parentSlug, collectionSlug: sectionSlug };
+        var sectionContext = { slug: resolvedSectionSlug, parentSlug: resolvedParentSlug, collectionSlug: resolvedSectionSlug };
+        widgetOptions.collection = resolvedSectionSlug || normalizeSlug(article.collectionSlug) || '';
+        widgetOptions.sectionContext = sectionContext;
 
         if (collectionsResult && common) {
           collectionEntry = common.findCollectionEntry(
             collectionsResult.index,
-            sectionSlug,
-            parentSlug || undefined,
+            resolvedSectionSlug,
+            resolvedParentSlug || undefined,
           );
           if (collectionEntry) {
             sectionContext = collectionEntry.node;
+            widgetOptions.sectionContext = sectionContext;
+            widgetOptions.collection = sectionContext.slug || widgetOptions.collection;
           }
         }
 
@@ -488,6 +531,7 @@
               collectionEntry: collectionEntry,
               sectionContext: sectionContext,
               common: common,
+              sidebarWidgets: sidebarWidgets,
             };
           });
         });
@@ -538,6 +582,9 @@
                 linkPrefix: chrome.sectionPrefix,
               }),
             );
+            if (result.sidebarWidgets) {
+              sidebarHtml += result.common.buildArticleSidebarWidgetsHtml(result.sidebarWidgets, widgetOptions);
+            }
           }
 
           pageHtml = buildChromeShell(breadcrumbsHtml, articleHtml, sidebarHtml, chrome.showSidebar);
@@ -548,25 +595,7 @@
             if (chromeRoot) {
               result.common.bindSectionTree(chromeRoot);
             }
-
-            var sidebarEl = mountEl.querySelector('.ld-help-page__sidebar');
-            if (!sidebarEl) {
-              return finishMount(result.article, mountEl, apiOrigin, org, slug, chrome);
-            }
-
-            return result.common.appendArticleSidebarWidgets(sidebarEl, contentBase, {
-              collection: result.sectionContext.slug || normalizeSlug(result.article.collectionSlug) || '',
-              deep: true,
-              limit: chrome.recentLimit,
-              articlePrefix: chrome.articlePrefix,
-              sectionContext: result.sectionContext,
-              popularTitle: chrome.popularTitle,
-              recentTitle: chrome.recentTitle,
-              popularEmptyLabel: chrome.popularEmptyLabel,
-              recentEmptyLabel: chrome.recentEmptyLabel,
-            }).then(function () {
-              return finishMount(result.article, mountEl, apiOrigin, org, slug, chrome);
-            });
+            return finishMount(result.article, mountEl, apiOrigin, org, slug, chrome);
           }
         }
 

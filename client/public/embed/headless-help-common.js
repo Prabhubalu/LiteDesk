@@ -136,12 +136,124 @@
   }
 
   function ensureStylesheet(origin) {
-    if (document.querySelector('link[data-ld-headless-blocks-css]')) return;
+    if (
+      document.querySelector('link[data-arivu-headless-blocks-css]')
+      || document.querySelector('link[data-ld-headless-blocks-css]')
+    ) {
+      return;
+    }
+    var href = origin + '/embed/headless-blocks.css';
+    var preload = document.createElement('link');
+    preload.rel = 'preload';
+    preload.as = 'style';
+    preload.href = href;
+    document.head.appendChild(preload);
     var link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = origin + '/embed/headless-blocks.css';
-    link.setAttribute('data-ld-headless-blocks-css', 'true');
+    link.href = href;
+    link.setAttribute('data-arivu-headless-blocks-css', 'true');
     document.head.appendChild(link);
+  }
+
+  function buildSkeletonLines(count) {
+    var html = '';
+    var total = Math.max(Number(count) || 3, 1);
+    for (var i = 0; i < total; i++) {
+      var modifier = i === total - 1 ? ' ld-help-skeleton__line--short' : '';
+      html += '<div class="ld-help-skeleton__line' + modifier + '"></div>';
+    }
+    return html;
+  }
+
+  function buildHomeGridSkeleton(count) {
+    var html = '';
+    var total = Math.max(Number(count) || 6, 1);
+    for (var i = 0; i < total; i++) {
+      html += '<div class="ld-help-skeleton__card" aria-hidden="true"></div>';
+    }
+    return html;
+  }
+
+  function buildMountSkeleton(options) {
+    var type = String((options && options.type) || 'page');
+    var showSidebar = !options || options.showSidebar !== false;
+
+    if (type === 'home') {
+      return (
+        '<div class="ld-help-home ld-help-skeleton" aria-busy="true" aria-label="Loading">' +
+          '<div class="ld-help-skeleton__search" aria-hidden="true"></div>' +
+          '<div class="ld-help-home__grid">' + buildHomeGridSkeleton(6) + '</div>' +
+        '</div>'
+      );
+    }
+
+    var layoutClass = showSidebar
+      ? 'ld-help-page__layout'
+      : 'ld-help-page__layout ld-help-page__layout--single';
+    var sidebarHtml = showSidebar
+      ? (
+        '<aside class="ld-help-page__sidebar" aria-hidden="true">' +
+          '<div class="ld-help-skeleton__sidebar-block"></div>' +
+          '<div class="ld-help-skeleton__sidebar-block"></div>' +
+          '<div class="ld-help-skeleton__sidebar-block"></div>' +
+        '</aside>'
+      )
+      : '';
+
+    return (
+      '<div class="ld-help-page ld-help-skeleton" aria-busy="true" aria-label="Loading">' +
+        '<div class="ld-help-skeleton__breadcrumbs" aria-hidden="true"></div>' +
+        '<div class="' + layoutClass + '">' +
+          '<main class="ld-help-page__main" aria-hidden="true">' +
+            '<div class="ld-help-skeleton__title"></div>' +
+            buildSkeletonLines(4) +
+            '<div class="ld-help-skeleton__block"></div>' +
+            '<div class="ld-help-skeleton__block ld-help-skeleton__block--short"></div>' +
+          '</main>' +
+          sidebarHtml +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function fetchArticleSidebarWidgets(contentBase, options) {
+    var showPopular = options.showPopular !== false;
+    return Promise.all([
+      showPopular ? fetchPopularArticles(contentBase, options) : Promise.resolve([]),
+      fetchRecentArticles(contentBase, options),
+    ]).then(function (results) {
+      return { popular: results[0], recent: results[1] };
+    });
+  }
+
+  function buildArticleSidebarWidgetsHtml(widgets, options) {
+    var sectionContext = options.sectionContext || null;
+    var showPopular = options.showPopular !== false;
+    var html = '';
+
+    if (showPopular) {
+      html += buildSidebarBlock(
+        options.popularTitle,
+        buildRecentListHtml(
+          widgets.popular,
+          options.articlePrefix,
+          options.popularEmptyLabel,
+          sectionContext,
+        ),
+      );
+    }
+
+    html += buildSidebarBlock(
+      options.recentTitle,
+      buildRecentListHtml(
+        widgets.recent,
+        options.articlePrefix,
+        options.recentEmptyLabel,
+        sectionContext,
+      ),
+    );
+
+    return html;
   }
 
   function fetchJson(url) {
@@ -418,41 +530,41 @@
   }
 
   function appendArticleSidebarWidgets(sidebarEl, contentBase, options) {
-    var sectionContext = options.sectionContext || null;
-    var showPopular = options.showPopular !== false;
-    var popularPromise = showPopular
-      ? fetchPopularArticles(contentBase, options).then(function (popularArticles) {
-        sidebarEl.insertAdjacentHTML(
-          'beforeend',
-          buildSidebarBlock(
-            options.popularTitle,
-            buildRecentListHtml(
-              popularArticles,
-              options.articlePrefix,
-              options.popularEmptyLabel,
-              sectionContext,
-            ),
-          ),
-        );
-      })
-      : Promise.resolve();
-
-    return popularPromise.then(function () {
-      return fetchRecentArticles(contentBase, options).then(function (recentArticles) {
-        sidebarEl.insertAdjacentHTML(
-          'beforeend',
-          buildSidebarBlock(
-            options.recentTitle,
-            buildRecentListHtml(
-              recentArticles,
-              options.articlePrefix,
-              options.recentEmptyLabel,
-              sectionContext,
-            ),
-          ),
-        );
-      });
+    return fetchArticleSidebarWidgets(contentBase, options).then(function (widgets) {
+      sidebarEl.insertAdjacentHTML('beforeend', buildArticleSidebarWidgetsHtml(widgets, options));
     });
+  }
+
+  function buildCategoryPageHtml(options) {
+    return (
+      '<div class="ld-help-page" data-ld-help-category>' +
+        '<div class="ld-help-page__breadcrumbs">' + options.breadcrumbsHtml + '</div>' +
+        '<div class="ld-help-page__layout">' +
+          '<main class="ld-help-page__main">' +
+            (options.statusHtml || '') +
+            options.headerHtml +
+            options.mainHtml +
+          '</main>' +
+          '<aside class="ld-help-page__sidebar">' + options.sidebarHtml + '</aside>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function buildSectionPageHtml(options) {
+    return (
+      '<div class="ld-help-page" data-ld-help-section>' +
+        '<div class="ld-help-page__breadcrumbs">' + options.breadcrumbsHtml + '</div>' +
+        '<div class="ld-help-page__layout">' +
+          '<main class="ld-help-page__main">' +
+            (options.statusHtml || '') +
+            options.headerHtml +
+            options.mainHtml +
+          '</main>' +
+          '<aside class="ld-help-page__sidebar">' + options.sidebarHtml + '</aside>' +
+        '</div>' +
+      '</div>'
+    );
   }
 
   function fetchArticles(contentBase, options) {
@@ -502,6 +614,12 @@
     fetchRecentArticles: fetchRecentArticles,
     fetchPopularArticles: fetchPopularArticles,
     appendArticleSidebarWidgets: appendArticleSidebarWidgets,
+    fetchArticleSidebarWidgets: fetchArticleSidebarWidgets,
+    buildArticleSidebarWidgetsHtml: buildArticleSidebarWidgetsHtml,
+    buildMountSkeleton: buildMountSkeleton,
+    buildHomeGridSkeleton: buildHomeGridSkeleton,
+    buildCategoryPageHtml: buildCategoryPageHtml,
+    buildSectionPageHtml: buildSectionPageHtml,
     fetchArticles: fetchArticles,
   };
   window.LiteDeskHeadlessHelpCommon = helpCommonApi;
