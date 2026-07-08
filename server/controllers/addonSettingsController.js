@@ -660,3 +660,30 @@ exports.sendArticlesPublishWebhookTest = async (req, res) => {
   }
 };
 
+exports.generateArticlesPublishWebhookSecret = async (req, res) => {
+  try {
+    if (!canManageAddons(req)) {
+      return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
+    }
+
+    const {
+      generateArticlesPublishWebhookSecret,
+      resolveRequestPublicOrigin,
+    } = require('../services/contentStudio/articlesAddonSettingsService');
+    const data = await generateArticlesPublishWebhookSecret(req.user.organizationId, {
+      requestOrigin: resolveRequestPublicOrigin(req),
+    });
+    return res.json({
+      success: true,
+      publishWebhookSecret: data.publishWebhookSecret || '',
+      ...data,
+    });
+  } catch (error) {
+    if (error?.code === 'ADDON_NOT_INSTALLED') {
+      return res.status(404).json({ success: false, message: error.message, code: error.code });
+    }
+    console.error('[addonSettingsController] generateArticlesPublishWebhookSecret', error);
+    return res.status(500).json({ success: false, message: 'Failed to generate webhook secret' });
+  }
+};
+

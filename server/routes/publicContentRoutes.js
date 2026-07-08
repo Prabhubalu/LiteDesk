@@ -29,10 +29,16 @@ const publicFeedbackLimiter = rateLimit({
 
 router.post('/render-blocks', publicRenderLimiter, publicContentController.renderPublicBlocks);
 
+router.get('/:orgSlug/manifest.json', publicContentLimiter, publicContentController.getPublicHelpManifest);
+router.get('/:orgSlug/export/home', publicContentLimiter, publicContentController.getPublicHelpHomeExport);
+router.get('/:orgSlug/export/sitemap.xml', publicContentLimiter, publicContentController.getPublicHelpStaticSitemapExport);
+router.get('/:orgSlug/export/collections/:slug', publicContentLimiter, publicContentController.getPublicHelpCollectionExport);
 router.get('/:orgSlug/sitemap.xml', publicContentLimiter, publicContentController.getPublicHelpSitemap);
+router.get('/:orgSlug/assets/:assetId', publicContentLimiter, publicContentController.downloadPublicHelpAsset);
 router.get('/:orgSlug/collections', publicContentLimiter, publicContentController.listPublicHelpCollections);
 router.get('/:orgSlug/articles/recent', publicContentLimiter, publicContentController.listPublicRecentHelpArticles);
 router.get('/:orgSlug/articles/popular', publicContentLimiter, publicContentController.listPublicPopularHelpArticles);
+router.get('/:orgSlug/articles/:slug/export', publicContentLimiter, publicContentController.getPublicHelpArticleExport);
 router.get('/:orgSlug/help/recent', publicContentLimiter, publicContentController.listPublicRecentHelpArticles);
 router.get('/:orgSlug/help/popular', publicContentLimiter, publicContentController.listPublicPopularHelpArticles);
 router.get('/:orgSlug/help', publicContentLimiter, publicContentController.listPublicHelpArticles);

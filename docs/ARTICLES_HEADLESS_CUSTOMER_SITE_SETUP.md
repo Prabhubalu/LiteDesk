@@ -2,7 +2,7 @@
 
 **Audience:** Tenant admins, customer web developers  
 **Scope:** Embed Arivu Articles on a **customer-owned** website (e.g. `https://xyz.com/help`)  
-**Related:** [ARTICLES_HEADLESS_ROADMAP.md](./ARTICLES_HEADLESS_ROADMAP.md) · [ARTICLES_HEADLESS_HELP_CENTER_ROADMAP.md](./ARTICLES_HEADLESS_HELP_CENTER_ROADMAP.md)
+**Related:** [ARTICLES_HEADLESS_ROADMAP.md](./ARTICLES_HEADLESS_ROADMAP.md) · [ARTICLES_HEADLESS_HELP_CENTER_ROADMAP.md](./ARTICLES_HEADLESS_HELP_CENTER_ROADMAP.md) · [ARTICLES_HEADLESS_STATIC_SYNC_ROADMAP.md](./ARTICLES_HEADLESS_STATIC_SYNC_ROADMAP.md)
 
 ---
 
@@ -455,7 +455,9 @@ Configure **Publish webhook URL** in Articles settings to receive:
 | `content.published` | Article published |
 | `content.unpublished` | Article unpublished |
 
-Payload includes `content.apiUrl` for the headless article endpoint. Use this to invalidate CDN cache or trigger rebuilds on `xyz.com`.
+Payload includes `content.apiUrl` for the headless article endpoint. Use this to invalidate CDN cache or trigger incremental static sync on `xyz.com`.
+
+**Static SEO mode (recommended for crawlers):** pre-rendered HTML + mirrored assets on your domain, updated incrementally per publish — see [ARTICLES_HEADLESS_STATIC_SYNC_ROADMAP.md](./ARTICLES_HEADLESS_STATIC_SYNC_ROADMAP.md) and [examples/static-sync](../examples/static-sync/README.md).
 
 ---
 

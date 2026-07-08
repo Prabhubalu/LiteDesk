@@ -2198,5 +2198,85 @@
   "articleAnalyticsLoadFailed": {
     "message": "Failed to load article analytics.",
     "description": "Article analytics load error"
+  },
+  "manageCategories": {
+    "message": "Manage categories",
+    "description": "Link or button to open categories management"
+  },
+  "categoriesTitle": {
+    "message": "Categories",
+    "description": "Categories management page title"
+  },
+  "categoriesSubtitle": {
+    "message": "Organize articles into categories and sub categories.",
+    "description": "Categories management page subtitle"
+  },
+  "backToArticles": {
+    "message": "Back to articles",
+    "description": "Navigate back to articles list from categories page"
+  },
+  "category": {
+    "message": "Category",
+    "description": "Top-level category type label"
+  },
+  "subCategory": {
+    "message": "Sub category",
+    "description": "Sub category type label"
+  },
+  "categoryNameLabel": {
+    "message": "Name",
+    "description": "Category name field label"
+  },
+  "categoryEmojiLabel": {
+    "message": "Emoji",
+    "description": "Category emoji field label"
+  },
+  "categoryTypeLabel": {
+    "message": "Type",
+    "description": "Category type field label"
+  },
+  "categoryTypeTopLevel": {
+    "message": "Category (top level)",
+    "description": "Create a top-level category"
+  },
+  "categoryTypeSubCategoryOf": {
+    "message": "Sub category of {name}",
+    "description": "Create a sub category under a parent category"
+  },
+  "categorySlugLabel": {
+    "message": "Slug",
+    "description": "Category URL slug column"
+  },
+  "columnActions": {
+    "message": "Actions",
+    "description": "Table actions column header"
+  },
+  "editCategory": {
+    "message": "Edit category",
+    "description": "Edit category form title"
+  },
+  "deleteCategoryConfirm": {
+    "message": "Delete \"{name}\"? Articles in this category will keep their assignment until you change it.",
+    "description": "Confirm delete category dialog"
+  },
+  "createCategory": {
+    "message": "Create category",
+    "description": "Create category form title"
+  },
+  "fieldSubCategory": {
+    "message": "Sub category",
+    "description": "Article sub category field"
+  },
+  "noSubCategory": {
+    "message": "No sub category",
+    "description": "No sub category option"
+  },
+  "noSubCategoriesAvailable": {
+    "message": "No sub categories",
+    "description": "Placeholder when selected category has no sub categories"
+  },
+  "subCategorySelectCategoryFirst": {
+    "message": "Select a category first",
+    "description": "Sub category placeholder when no category is selected"
   }
 }

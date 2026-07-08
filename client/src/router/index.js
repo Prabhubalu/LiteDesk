@@ -1210,6 +1210,16 @@ const routes = [
     },
   },
   {
+    path: '/helpdesk/articles/categories',
+    name: 'helpdesk-article-categories',
+    component: () => import('@/views/helpdesk/ArticleCategories.vue'),
+    meta: {
+      requiresAuth: true,
+      appKey: 'HELPDESK',
+      requiresPermission: { module: 'articles', action: 'view' },
+    },
+  },
+  {
     path: '/helpdesk/articles/new',
     name: 'helpdesk-article-new',
     component: () => import('@/views/helpdesk/ArticleEditor.vue'),

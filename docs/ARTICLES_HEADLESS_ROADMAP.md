@@ -186,6 +186,9 @@ GET /api/public/v1/content/:orgSlug/articles
 GET /api/public/v1/content/:orgSlug/articles/recent
 GET /api/public/v1/content/:orgSlug/articles/popular
 GET /api/public/v1/content/:orgSlug/articles/:slug
+GET /api/public/v1/content/:orgSlug/articles/:slug/export
+GET /api/public/v1/content/:orgSlug/manifest.json
+GET /api/public/v1/content/:orgSlug/assets/:assetId
 GET /api/public/v1/content/:orgSlug/help          (alias — list)
 GET /api/public/v1/content/:orgSlug/help/:slug    (alias — detail)
 GET /api/public/v1/content/:orgSlug/help/recent   (alias)
@@ -199,6 +202,8 @@ Query params:
 - `GET /articles` — `page`, `limit`, `search`, `collection`, `deep=1`
 - `GET /articles/recent` — `limit`, `collection`, `deep=1`
 - `GET /articles/popular` — `limit`, `collection`, `deep=1` (featured articles only)
+- `GET /articles/:slug/export` — `pathPrefix`, `fragment=1`, `articleLinkPrefix`
+- `GET /manifest.json` — `pathPrefix`
 
 Legacy: `/api/public/content/...`
 
@@ -221,6 +226,8 @@ Use website embed snippets in Articles addon settings (`headless-help-home.js`, 
 
 **Customer site setup guide:** [ARTICLES_HEADLESS_CUSTOMER_SITE_SETUP.md](./ARTICLES_HEADLESS_CUSTOMER_SITE_SETUP.md) — full `xyz.com/help` wiring (CORS, routes, embed snippets, SPA pattern).
 
+**Static sync (SEO mode):** [ARTICLES_HEADLESS_STATIC_SYNC_ROADMAP.md](./ARTICLES_HEADLESS_STATIC_SYNC_ROADMAP.md) — incremental pre-rendered HTML + asset mirroring on customer domain (Next/PHP/CLI).
+
 ---
 
 ## 8. Webhook events
@@ -231,4 +238,4 @@ Use website embed snippets in Articles addon settings (`headless-help-home.js`, 
 | `content.unpublished` | Article unpublished |
 | Test payload | `POST /api/settings/addons/articles/settings/test-webhook` |
 
-Payload includes `content.apiUrl` pointing at the headless article endpoint.
+Payload includes `content.apiUrl`, `content.exportUrl`, `content.exportPath`, `content.updatedAt`, and `content.collectionPath`.

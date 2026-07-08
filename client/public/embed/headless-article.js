@@ -501,7 +501,7 @@
       : Promise.resolve(null);
 
     return Promise.all([
-      fetch(articleUrl, { cache: 'no-store' }).then(function (response) {
+      fetch(articleUrl).then(function (response) {
         return response.json().then(function (payload) {
           return { response: response, payload: payload };
         });

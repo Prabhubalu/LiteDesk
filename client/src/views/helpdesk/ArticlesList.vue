@@ -5,13 +5,22 @@
         <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">{{ t('contentStudio.articlesTitle') }}</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('contentStudio.articlesSubtitle') }}</p>
       </div>
-      <button
-        type="button"
-        class="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        @click="goCreate"
-      >
-        {{ t('contentStudio.createArticle') }}
-      </button>
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          class="inline-flex items-center rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+          @click="goCategories"
+        >
+          {{ t('contentStudio.manageCategories') }}
+        </button>
+        <button
+          type="button"
+          class="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+          @click="goCreate"
+        >
+          {{ t('contentStudio.createArticle') }}
+        </button>
+      </div>
     </div>
 
     <div class="mb-4 flex flex-wrap items-center gap-3">
@@ -111,6 +120,10 @@ function formatDate(value) {
 
 function goCreate() {
   router.push({ name: 'helpdesk-article-new' });
+}
+
+function goCategories() {
+  router.push({ name: 'helpdesk-article-categories' });
 }
 
 function openItem(id) {

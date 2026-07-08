@@ -278,9 +278,65 @@
     );
   }
 
-  function fetchJson(url) {
-    return fetch(url, { cache: 'no-store' }).then(function (response) {
+  var embedFetchCacheMode = 'default';
+
+  function configureEmbedCache(options) {
+    if (options && options.cache === 'local') {
+      embedFetchCacheMode = 'local';
+    }
+  }
+
+  function localCacheKey(url) {
+    return 'arivu:headless:' + url;
+  }
+
+  function readLocalCache(url) {
+    if (embedFetchCacheMode !== 'local' || typeof localStorage === 'undefined') return null;
+    try {
+      var raw = localStorage.getItem(localCacheKey(url));
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function writeLocalCache(url, payload) {
+    if (embedFetchCacheMode !== 'local' || typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(localCacheKey(url), JSON.stringify({
+        payload: payload,
+        cachedAt: Date.now(),
+      }));
+    } catch (_error) {
+      // Ignore quota errors.
+    }
+  }
+
+  function shouldBypassEmbedCache(url, options) {
+    if (options && options.cache === 'no-store') return true;
+    return String(url || '').indexOf('search=') >= 0;
+  }
+
+  function fetchJson(url, options) {
+    options = options || {};
+    var bypassCache = shouldBypassEmbedCache(url, options);
+    if (!bypassCache) {
+      var cached = readLocalCache(url);
+      if (cached && cached.payload) {
+        return Promise.resolve({
+          response: { ok: true },
+          payload: cached.payload,
+          fromCache: true,
+        });
+      }
+    }
+
+    return fetch(url, bypassCache ? { cache: 'no-store' } : {}).then(function (response) {
       return response.json().then(function (payload) {
+        if (!bypassCache && embedFetchCacheMode === 'local' && payload && payload.success) {
+          writeLocalCache(url, payload);
+        }
         return { response: response, payload: payload };
       });
     });
@@ -608,6 +664,13 @@
     });
   }
 
+  if (typeof document !== 'undefined') {
+    var localCacheScript = document.querySelector('script[data-cache="local"][src*="/embed/headless"]');
+    if (localCacheScript) {
+      configureEmbedCache({ cache: 'local' });
+    }
+  }
+
   var helpCommonApi = {
     getAttr: getAttr,
     escapeHtml: escapeHtml,
@@ -644,6 +707,7 @@
     buildSectionPageHtml: buildSectionPageHtml,
     absolutizeEmbedAssetUrl: absolutizeEmbedAssetUrl,
     absolutizeEmbedHtml: absolutizeEmbedHtml,
+    configureEmbedCache: configureEmbedCache,
     fetchArticles: fetchArticles,
   };
   window.LiteDeskHeadlessHelpCommon = helpCommonApi;

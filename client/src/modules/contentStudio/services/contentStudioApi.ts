@@ -167,8 +167,30 @@ export async function createArticleCollection(payload: {
   parentId?: string | null;
 }) {
   const response = await apiClient.post('/helpdesk/articles/collections', payload);
-  if (!response?.success) throw new Error(response?.message || 'Failed to create collection');
+  if (!response?.success) throw new Error(response?.message || 'Failed to create category');
   return response.data as ContentCollectionRecord;
+}
+
+export async function updateArticleCollection(
+  collectionId: string,
+  payload: {
+    name?: string;
+    slug?: string;
+    description?: string;
+    emoji?: string;
+    parentId?: string | null;
+    sortOrder?: number;
+  },
+) {
+  const response = await apiClient.patch(`/helpdesk/articles/collections/${collectionId}`, payload);
+  if (!response?.success) throw new Error(response?.message || 'Failed to update category');
+  return response.data as ContentCollectionRecord;
+}
+
+export async function deleteArticleCollection(collectionId: string) {
+  const response = await apiClient.delete(`/helpdesk/articles/collections/${collectionId}`);
+  if (!response?.success) throw new Error(response?.message || 'Failed to delete category');
+  return response.data as { _id: string; deleted: boolean };
 }
 
 export interface ArticleAnalyticsRecord {

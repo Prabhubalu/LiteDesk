@@ -346,7 +346,7 @@
 
     renderLoading();
 
-    return fetch(collectionsUrl, { cache: 'no-store' })
+    return fetch(collectionsUrl)
       .then(function (response) {
         return response.json().then(function (payload) {
           return { response: response, payload: payload };

@@ -1056,8 +1056,8 @@
     "description": "Related articles component preset description"
   },
   "noParentCollection": {
-    "message": "No parent (top level)",
-    "description": "Collection parent selector empty option"
+    "message": "Top-level category",
+    "description": "Category parent selector empty option"
   },
   "staleContentAlert": {
     "message": "This article has not been updated in {days} days (threshold: {threshold}). Review before publishing.",
@@ -1124,16 +1124,32 @@
     "description": "Archived status"
   },
   "settingsHint": {
-    "message": "Collections, publishing targets, and lifecycle actions",
+    "message": "Categories, publishing targets, and lifecycle actions",
     "description": "Settings panel hint"
   },
   "fieldCollection": {
-    "message": "Collection",
-    "description": "Article collection field"
+    "message": "Category",
+    "description": "Article category field"
+  },
+  "fieldSubCategory": {
+    "message": "Sub category",
+    "description": "Article sub category field"
   },
   "noCollection": {
-    "message": "No collection",
-    "description": "No collection option"
+    "message": "No category",
+    "description": "No category option"
+  },
+  "noSubCategory": {
+    "message": "No sub category",
+    "description": "No sub category option"
+  },
+  "noSubCategoriesAvailable": {
+    "message": "No sub categories",
+    "description": "Placeholder when selected category has no sub categories"
+  },
+  "subCategorySelectCategoryFirst": {
+    "message": "Select a category first",
+    "description": "Sub category placeholder when no category is selected"
   },
   "publicUrlLabel": {
     "message": "Public website URL",
@@ -1684,24 +1700,88 @@
     "description": "Policy template summary"
   },
   "manageCollections": {
-    "message": "Manage collections",
-    "description": "Collections management section"
+    "message": "Manage categories",
+    "description": "Categories management section"
+  },
+  "manageCategories": {
+    "message": "Manage categories",
+    "description": "Link or button to open categories management"
+  },
+  "categoriesTitle": {
+    "message": "Categories",
+    "description": "Categories management page title"
+  },
+  "categoriesSubtitle": {
+    "message": "Organize articles into categories and sub categories.",
+    "description": "Categories management page subtitle"
+  },
+  "backToArticles": {
+    "message": "Back to articles",
+    "description": "Navigate back to articles list from categories page"
+  },
+  "category": {
+    "message": "Category",
+    "description": "Top-level category type label"
+  },
+  "subCategory": {
+    "message": "Sub category",
+    "description": "Sub category type label"
+  },
+  "categoryNameLabel": {
+    "message": "Name",
+    "description": "Category name field label"
+  },
+  "categoryEmojiLabel": {
+    "message": "Emoji",
+    "description": "Category emoji field label"
+  },
+  "categoryTypeLabel": {
+    "message": "Type",
+    "description": "Category type field label"
+  },
+  "categoryTypeTopLevel": {
+    "message": "Category (top level)",
+    "description": "Create a top-level category"
+  },
+  "categoryTypeSubCategoryOf": {
+    "message": "Sub category of {name}",
+    "description": "Create a sub category under a parent category"
+  },
+  "categorySlugLabel": {
+    "message": "Slug",
+    "description": "Category URL slug column"
+  },
+  "columnActions": {
+    "message": "Actions",
+    "description": "Table actions column header"
+  },
+  "editCategory": {
+    "message": "Edit category",
+    "description": "Edit category form title"
+  },
+  "deleteCategoryConfirm": {
+    "message": "Delete \"{name}\"? Articles in this category will keep their assignment until you change it.",
+    "description": "Confirm delete category dialog"
   },
   "collectionNamePlaceholder": {
-    "message": "Collection name",
-    "description": "Collection name input placeholder"
+    "message": "Category name",
+    "description": "Category name input placeholder"
   },
   "collectionEmojiPlaceholder": {
     "message": "Emoji (optional)",
-    "description": "Optional emoji icon for a help center collection card"
+    "description": "Optional emoji icon for a help center category card"
   },
   "createCollection": {
-    "message": "Create collection",
-    "description": "Create collection action"
+    "message": "Create category",
+    "description": "Create category action"
+  },
+  "createCategory": {
+    "message": "Create category",
+    "description": "Create category form title"
   },
   "emptyCollections": {
-    "message": "No collections yet",
-    "description": "Empty collections list"
+    "message": "No categories yet",
+    "description": "Empty categories list"
   },
   "panelOutline": {
     "message": "Outline",
