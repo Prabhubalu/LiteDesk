@@ -7,6 +7,7 @@
     "help-sync/lib/pageShell.js",
     "help-sync/lib/paths.js",
     "help-sync/lib/sync.js",
+    "help-sync/lib/syncIncremental.js",
     "help-sync/lib/verify.js",
     "help-sync/package.json",
     "lib/copyTemplates.js",

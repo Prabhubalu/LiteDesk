@@ -7,6 +7,7 @@ const ContentCollection = require('../../models/ContentCollection');
 const {
   shapeHeadlessArticleSummary,
   shapeHeadlessArticleDetail,
+  absolutizePublicAssetUrl,
 } = require('./headlessContentShaper');
 const {
   resolveOrganizationForPublic,
@@ -84,6 +85,9 @@ function shapePublicCollectionNode(row, { articleCount = 0, parentSlug = null } 
     slug: row.slug,
     description: row.description || '',
     emoji: row.emoji || '',
+    heroIconKey: row.heroIconKey || '',
+    heroIconColor: row.heroIconColor || '',
+    imageUrl: row.imageUrl || '',
     parentId: row.parentId ? String(row.parentId) : null,
     parentSlug,
     sortOrder: Number(row.sortOrder) || 0,
@@ -91,6 +95,18 @@ function shapePublicCollectionNode(row, { articleCount = 0, parentSlug = null } 
     sectionCount: 0,
     children: [],
   };
+}
+
+function absolutizeCollectionTreeUrls(nodes, publicAppBaseUrl) {
+  for (const node of nodes) {
+    if (node.imageUrl) {
+      node.imageUrl = absolutizePublicAssetUrl(node.imageUrl, publicAppBaseUrl);
+    }
+    if (node.children?.length) {
+      absolutizeCollectionTreeUrls(node.children, publicAppBaseUrl);
+    }
+  }
+  return nodes;
 }
 
 function buildPublicCollectionTree(collections, articleCountMap = {}) {
@@ -388,7 +404,7 @@ async function listPublicPopularHelpArticles({
   return buildPublicContentEnvelope(org, { data }, context.publishing);
 }
 
-async function listPublicHelpCollections({ orgSlug }) {
+async function listPublicHelpCollections({ orgSlug, requestOrigin = '' }) {
   const org = await resolveOrganizationForPublic(orgSlug);
   if (!org) return null;
 
@@ -408,8 +424,12 @@ async function listPublicHelpCollections({ orgSlug }) {
     loadPublicArticleCountMap(org._id),
   ]);
 
+  const publicAppBaseUrl = getPublicAppBaseUrl({ requestOrigin });
+  const tree = buildPublicCollectionTree(collections, articleCountMap);
+  absolutizeCollectionTreeUrls(tree, publicAppBaseUrl);
+
   return buildPublicContentEnvelope(org, {
-    data: buildPublicCollectionTree(collections, articleCountMap),
+    data: tree,
   }, context.publishing);
 }
 

@@ -13,6 +13,7 @@ const {
   writeArivuHelpConfig,
 } = require('./mergeConfig');
 const { buildArivuHelpConfigCjs } = require('./mergeConfigCjs');
+const { syncFullWithState } = require('../help-sync/lib/syncIncremental');
 
 function resolvePackageRoot() {
   return path.resolve(__dirname, '..');
@@ -110,6 +111,34 @@ function installIntoProject(targetDir, options) {
   };
 }
 
+async function runPostInstallFullRegenerate(result, options) {
+  if (options.integrationMode === 'standalone-html') {
+    await syncFullWithState({
+      apiOrigin: options.apiOrigin,
+      org: options.org,
+      dest: path.resolve(result.targetDir, options.dest || './public'),
+      pathPrefix: options.pathPrefix,
+      siteOrigin: options.siteOrigin,
+      mirrorAssets: true,
+      statePath: path.join(result.targetDir, '.arivu/sync-state.json'),
+    });
+    process.stdout.write('\nRegenerated all help HTML files (full sync).\n');
+    return;
+  }
+
+  const deployHook = String(options.deployHook || process.env.VERCEL_DEPLOY_HOOK_URL || '').trim();
+  if (!deployHook) {
+    process.stdout.write('\nDeploy once to regenerate all help pages with the latest template.\n');
+    return;
+  }
+
+  const response = await fetch(deployHook, { method: 'POST' });
+  if (!response.ok) {
+    throw new Error(`Deploy hook request failed (${response.status})`);
+  }
+  process.stdout.write('\nTriggered Vercel deploy to regenerate all help pages.\n');
+}
+
 function printSuccess(result, options) {
   const siteOrigin = options.siteOrigin || 'https://www.example.com';
   process.stdout.write('\nArivu help center installed.\n\n');
@@ -159,7 +188,7 @@ function printSuccess(result, options) {
   if (result.integrationMode === 'layout') {
     process.stdout.write('  4. Deploy — Next.js builds /help inside your site layout\n\n');
   } else {
-    process.stdout.write('  4. Deploy — prebuild syncs SEO-ready HTML into public/help/\n\n');
+    process.stdout.write('  4. Deploy — prebuild syncs changed help pages only; use npm run sync:help:full to regenerate all\n\n');
   }
 }
 
@@ -168,4 +197,5 @@ module.exports = {
   scaffoldStandalone,
   printSuccess,
   resolvePackageRoot,
+  runPostInstallFullRegenerate,
 };

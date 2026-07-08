@@ -2278,5 +2278,285 @@
   "subCategorySelectCategoryFirst": {
     "message": "Select a category first",
     "description": "Sub category placeholder when no category is selected"
+  },
+  "publicHelpSearchButton": {
+    "message": "Search",
+    "description": "Public help search submit button label"
+  },
+  "categoryImageLabel": {
+    "message": "Card image",
+    "description": "Category image field label for help center cards"
+  },
+  "categoryImageHint": {
+    "message": "Shown on your /help home page. Falls back to emoji or letter when empty.",
+    "description": "Hint for category image upload on help center"
+  },
+  "categoryImageUpload": {
+    "message": "Upload category image",
+    "description": "Category image file input label"
+  },
+  "categoryImageUploading": {
+    "message": "Uploading image…",
+    "description": "Loading state while category image uploads"
+  },
+  "categoryImageRemove": {
+    "message": "Remove image",
+    "description": "Remove uploaded category image"
+  },
+  "categoryImageUploadFailed": {
+    "message": "Failed to upload category image.",
+    "description": "Error when category image upload fails"
+  },
+  "categoryIconLabel": {
+    "message": "Icon",
+    "description": "Category icon column in categories table"
+  },
+  "categoryHeroIconLabel": {
+    "message": "Card icon",
+    "description": "Category hero icon picker label for help center cards"
+  },
+  "categoryHeroIconHint": {
+    "message": "Pick an icon for your /help category card.",
+    "description": "Hint for hero icon picker on category form"
+  },
+  "categoryHeroIconUseCustom": {
+    "message": "Upload custom image",
+    "description": "Switch from icon picker to custom image upload"
+  },
+  "categoryHeroIconBackToPicker": {
+    "message": "Choose from icons",
+    "description": "Switch from custom image upload back to icon picker"
+  },
+  "heroIconRocket": {
+    "message": "Get started",
+    "description": "Help center hero icon label"
+  },
+  "heroIconAgents": {
+    "message": "AI agents",
+    "description": "Help center hero icon label"
+  },
+  "heroIconBrain": {
+    "message": "Knowledge",
+    "description": "Help center hero icon label"
+  },
+  "heroIconFeatures": {
+    "message": "Features",
+    "description": "Help center hero icon label"
+  },
+  "heroIconChat": {
+    "message": "Chat",
+    "description": "Help center hero icon label"
+  },
+  "heroIconIntegrations": {
+    "message": "Integrations",
+    "description": "Help center hero icon label"
+  },
+  "heroIconApi": {
+    "message": "API",
+    "description": "Help center hero icon label"
+  },
+  "heroIconHash": {
+    "message": "Channels",
+    "description": "Help center hero icon label"
+  },
+  "heroIconMobile": {
+    "message": "Mobile",
+    "description": "Help center hero icon label"
+  },
+  "heroIconSupport": {
+    "message": "Support",
+    "description": "Help center hero icon label"
+  },
+  "heroIconSecurity": {
+    "message": "Security",
+    "description": "Help center hero icon label"
+  },
+  "heroIconBilling": {
+    "message": "Billing",
+    "description": "Help center hero icon label"
+  },
+  "heroIconAutomations": {
+    "message": "Automations",
+    "description": "Help center hero icon label"
+  },
+  "heroIconDocs": {
+    "message": "Documentation",
+    "description": "Help center hero icon label"
+  },
+  "heroIconTeam": {
+    "message": "Team",
+    "description": "Help center hero icon label"
+  },
+  "heroIconCustomFields": {
+    "message": "Custom fields",
+    "description": "Help center hero icon label"
+  },
+  "categoryHeroIconSearch": {
+    "message": "Search icons…",
+    "description": "Search placeholder for product icon picker"
+  },
+  "categoryHeroIconEmpty": {
+    "message": "No icons match your search.",
+    "description": "Empty state for product icon picker search"
+  },
+  "heroIconArrowDownTray": {
+    "message": "Arrow down tray",
+    "description": "Product hero icon label"
+  },
+  "heroIconBanknotes": {
+    "message": "Banknotes",
+    "description": "Product hero icon label"
+  },
+  "heroIconBookOpen": {
+    "message": "Book open",
+    "description": "Product hero icon label"
+  },
+  "heroIconBriefcase": {
+    "message": "Briefcase",
+    "description": "Product hero icon label"
+  },
+  "heroIconBuilding": {
+    "message": "Building",
+    "description": "Product hero icon label"
+  },
+  "heroIconCalendar": {
+    "message": "Calendar",
+    "description": "Product hero icon label"
+  },
+  "heroIconCalendarDays": {
+    "message": "Calendar days",
+    "description": "Product hero icon label"
+  },
+  "heroIconChartBar": {
+    "message": "Chart bar",
+    "description": "Product hero icon label"
+  },
+  "heroIconChatBubbleLeftRight": {
+    "message": "Chat",
+    "description": "Product hero icon label"
+  },
+  "heroIconCheckCircle": {
+    "message": "Check circle",
+    "description": "Product hero icon label"
+  },
+  "heroIconClipboardDocumentList": {
+    "message": "Clipboard list",
+    "description": "Product hero icon label"
+  },
+  "heroIconCog": {
+    "message": "Settings",
+    "description": "Product hero icon label"
+  },
+  "heroIconComputer": {
+    "message": "Computer",
+    "description": "Product hero icon label"
+  },
+  "heroIconCreditCard": {
+    "message": "Credit card",
+    "description": "Product hero icon label"
+  },
+  "heroIconCube": {
+    "message": "Cube",
+    "description": "Product hero icon label"
+  },
+  "heroIconDocumentChartBar": {
+    "message": "Document chart",
+    "description": "Product hero icon label"
+  },
+  "heroIconDocumentCurrencyDollar": {
+    "message": "Invoice",
+    "description": "Product hero icon label"
+  },
+  "heroIconDocumentMagnifyingGlass": {
+    "message": "Document search",
+    "description": "Product hero icon label"
+  },
+  "heroIconDocumentText": {
+    "message": "Document",
+    "description": "Product hero icon label"
+  },
+  "heroIconDownload": {
+    "message": "Download",
+    "description": "Product hero icon label"
+  },
+  "heroIconExclamationTriangle": {
+    "message": "Warning",
+    "description": "Product hero icon label"
+  },
+  "heroIconFolder": {
+    "message": "Folder",
+    "description": "Product hero icon label"
+  },
+  "heroIconFunnel": {
+    "message": "Funnel",
+    "description": "Product hero icon label"
+  },
+  "heroIconHome": {
+    "message": "Home",
+    "description": "Product hero icon label"
+  },
+  "heroIconInbox": {
+    "message": "Inbox",
+    "description": "Product hero icon label"
+  },
+  "heroIconLifebuoy": {
+    "message": "Help",
+    "description": "Product hero icon label"
+  },
+  "heroIconMagnifyingGlass": {
+    "message": "Search",
+    "description": "Product hero icon label"
+  },
+  "heroIconMegaphone": {
+    "message": "Megaphone",
+    "description": "Product hero icon label"
+  },
+  "heroIconPhoto": {
+    "message": "Photo",
+    "description": "Product hero icon label"
+  },
+  "heroIconPresentationChart": {
+    "message": "Presentation chart",
+    "description": "Product hero icon label"
+  },
+  "heroIconShieldCheck": {
+    "message": "Shield check",
+    "description": "Product hero icon label"
+  },
+  "heroIconShoppingCart": {
+    "message": "Shopping cart",
+    "description": "Product hero icon label"
+  },
+  "heroIconSquares": {
+    "message": "Squares",
+    "description": "Product hero icon label"
+  },
+  "heroIconTicket": {
+    "message": "Ticket",
+    "description": "Product hero icon label"
+  },
+  "heroIconTrash": {
+    "message": "Trash",
+    "description": "Product hero icon label"
+  },
+  "heroIconUsers": {
+    "message": "Users",
+    "description": "Product hero icon label"
+  },
+  "categoryHeroIconColorLabel": {
+    "message": "Icon background",
+    "description": "Background color picker label for category hero icon"
+  },
+  "categoryDescriptionLabel": {
+    "message": "Description",
+    "description": "Category description field label for help center cards"
+  },
+  "categoryDescriptionPlaceholder": {
+    "message": "Short summary shown on help center category cards",
+    "description": "Category description field placeholder"
+  },
+  "categoryDescriptionHint": {
+    "message": "Optional. Displayed under the category name on the public help home page.",
+    "description": "Category description field hint"
   }
 }

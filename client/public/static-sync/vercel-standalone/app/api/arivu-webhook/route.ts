@@ -3,7 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
 
 const WEBHOOK_SECRET = process.env.ARIVU_WEBHOOK_SECRET || '';
-const SYNC_MODE = process.env.ARIVU_SYNC_MODE || 'isr';
+const SYNC_MODE = process.env.ARIVU_SYNC_MODE || 'layout';
 const DEPLOY_HOOK_URL = process.env.VERCEL_DEPLOY_HOOK_URL || '';
 
 function verifyWebhookSignature(rawBody: string, secret: string, header: string | null): boolean {
@@ -48,7 +48,11 @@ export async function POST(request: Request) {
 
   let payload: {
     event?: string;
-    content?: { exportPath?: string; refreshPages?: Array<{ exportPath?: string }> };
+    content?: {
+      slug?: string;
+      exportPath?: string;
+      refreshPages?: Array<{ exportPath?: string }>;
+    };
   };
   try {
     payload = JSON.parse(rawBody);
@@ -69,11 +73,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message: 'Missing export paths' }, { status: 400 });
   }
 
-  if (SYNC_MODE === 'static' || SYNC_MODE === 'layout') {
+  if (SYNC_MODE === 'static') {
     return triggerStaticDeploy();
   }
 
   const revalidated = paths.map((path) => mapExportPathToRoute(path));
   revalidated.forEach((path) => revalidatePath(path));
-  return NextResponse.json({ success: true, mode: 'isr', revalidated });
+  return NextResponse.json({ success: true, mode: SYNC_MODE, revalidated });
 }

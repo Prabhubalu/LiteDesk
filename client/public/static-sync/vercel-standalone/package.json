@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "sync:help": "node scripts/sync-help-static.mjs",
+    "sync:help:full": "ARIVU_SYNC_FULL=1 node scripts/sync-help-static.mjs",
     "prebuild": "npm run sync:help",
     "build": "next build",
     "start": "next start"

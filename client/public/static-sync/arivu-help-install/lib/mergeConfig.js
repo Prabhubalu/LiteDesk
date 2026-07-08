@@ -53,6 +53,9 @@ function patchPackageJson(packageJsonPath, options = {}) {
     if (!pkg.scripts['sync:help']) {
       pkg.scripts['sync:help'] = 'node scripts/sync-help-static.mjs';
     }
+    if (!pkg.scripts['sync:help:full']) {
+      pkg.scripts['sync:help:full'] = 'ARIVU_SYNC_FULL=1 node scripts/sync-help-static.mjs';
+    }
 
     const syncCommand = 'npm run sync:help';
     const existingPrebuild = String(pkg.scripts.prebuild || '').trim();

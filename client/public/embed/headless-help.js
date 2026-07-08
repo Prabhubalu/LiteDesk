@@ -8,9 +8,9 @@
     '.ld-help-skeleton__search,.ld-help-skeleton__breadcrumbs,.ld-help-skeleton__title,',
     '.ld-help-skeleton__line,.ld-help-skeleton__block,.ld-help-skeleton__card,',
     '.ld-help-skeleton__sidebar-block{border-radius:.5rem;background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);background-size:200% 100%;animation:ld-help-skeleton-pulse 1.2s ease-in-out infinite}',
-    '.ld-help-skeleton__search{height:3.25rem;margin-bottom:1rem}',
+    '.ld-help-skeleton__search{height:3.5rem;max-width:42rem;margin:0 auto 1rem;border-radius:999px}',
     '.ld-help-skeleton__breadcrumbs{height:1rem;width:40%;margin-bottom:.5rem}',
-    '.ld-help-skeleton__title{height:2rem;width:55%;margin-bottom:1rem}',
+    '.ld-help-skeleton__title{height:2.75rem;width:min(18rem,70%);margin:0 auto 1.25rem;border-radius:.75rem}',
     '.ld-help-skeleton__line{height:.85rem;margin-bottom:.55rem}',
     '.ld-help-skeleton__line--short{width:70%}',
     '.ld-help-skeleton__block{height:5.5rem;margin-top:1rem}',
@@ -18,7 +18,9 @@
     '.ld-help-skeleton__card{min-height:8.5rem}',
     '.ld-help-skeleton__sidebar-block{height:7rem;margin-bottom:1rem}',
     '.ld-help-page__layout{display:grid;grid-template-columns:minmax(0,1fr);gap:1.5rem}',
-    '.ld-help-home__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(17.5rem,1fr));gap:1rem}',
+    '.ld-help-home__grid{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:1rem}',
+    '@media(min-width:640px){.ld-help-home__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}',
+    '@media(min-width:960px){.ld-help-home__grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:1.15rem}}',
     '@keyframes ld-help-skeleton-pulse{0%{background-position:200% 0}100%{background-position:-200% 0}}',
     '@media(min-width:960px){.ld-help-page__layout{grid-template-columns:minmax(0,1fr) 17.5rem;gap:2.5rem}}',
   ].join('');
@@ -43,7 +45,10 @@
       }
       return (
         '<div class="ld-help-home ld-help-skeleton" aria-busy="true" aria-label="Loading">' +
-          '<div class="ld-help-skeleton__search" aria-hidden="true"></div>' +
+          '<section class="ld-help-home__hero">' +
+            '<div class="ld-help-skeleton__title" aria-hidden="true"></div>' +
+            '<div class="ld-help-skeleton__search" aria-hidden="true"></div>' +
+          '</section>' +
           '<div class="ld-help-home__grid">' + cards + '</div>' +
         '</div>'
       );
@@ -311,6 +316,7 @@
           apiOrigin: origin,
           showSidebar: config.showSidebar !== false,
           showBreadcrumbs: config.showBreadcrumbs !== false,
+          showFeedbackFooter: config.showFeedbackFooter !== false,
           linkPrefix: linkPrefix,
           homePrefix: linkPrefix,
           categoryPrefix: linkPrefix,
@@ -318,6 +324,12 @@
           articlePrefix: linkPrefix,
           collection: parsed.category,
           section: parsed.section,
+          helpfulLabel: config.helpfulLabel,
+          shareLabel: config.shareLabel,
+          yesLabel: config.yesLabel,
+          noLabel: config.noLabel,
+          thanksLabel: config.thanksLabel,
+          pageUrl: typeof window !== 'undefined' ? window.location.href : '',
         });
       });
   }
@@ -333,6 +345,12 @@
       searchEnabled: getAttr(script, 'data-search', 'true') !== 'false',
       showSidebar: getAttr(script, 'data-show-sidebar', 'true') !== 'false',
       showBreadcrumbs: getAttr(script, 'data-show-breadcrumbs', 'true') !== 'false',
+      showFeedbackFooter: getAttr(script, 'data-show-feedback-footer', 'true') !== 'false',
+      helpfulLabel: getAttr(script, 'data-helpful-label', ''),
+      shareLabel: getAttr(script, 'data-share-label', ''),
+      yesLabel: getAttr(script, 'data-feedback-yes-label', ''),
+      noLabel: getAttr(script, 'data-feedback-no-label', ''),
+      thanksLabel: getAttr(script, 'data-feedback-thanks-label', ''),
     };
   }
 

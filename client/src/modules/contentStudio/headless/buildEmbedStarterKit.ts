@@ -60,6 +60,7 @@ function buildIndexHtml(options: EmbedStarterKitOptions): string {
     data-target="#arivu-help"
     data-path-prefix="${pathPrefix}"
     data-title="${title}"
+    data-show-feedback-footer="true"
   ></script>
 </body>
 </html>

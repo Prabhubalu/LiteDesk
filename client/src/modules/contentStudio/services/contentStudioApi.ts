@@ -150,6 +150,9 @@ export interface ContentCollectionRecord {
   slug: string;
   description?: string;
   emoji?: string;
+  heroIconKey?: string;
+  heroIconColor?: string;
+  imageUrl?: string;
   parentId?: string | null;
   sortOrder?: number;
 }
@@ -164,6 +167,9 @@ export async function createArticleCollection(payload: {
   slug?: string;
   description?: string;
   emoji?: string;
+  heroIconKey?: string;
+  heroIconColor?: string;
+  imageUrl?: string;
   parentId?: string | null;
 }) {
   const response = await apiClient.post('/helpdesk/articles/collections', payload);
@@ -178,6 +184,8 @@ export async function updateArticleCollection(
     slug?: string;
     description?: string;
     emoji?: string;
+    heroIconKey?: string;
+    imageUrl?: string;
     parentId?: string | null;
     sortOrder?: number;
   },

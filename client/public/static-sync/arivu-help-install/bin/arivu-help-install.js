@@ -2,7 +2,7 @@
 'use strict';
 
 const path = require('path');
-const { installIntoProject, scaffoldStandalone, printSuccess } = require('../lib/install');
+const { installIntoProject, scaffoldStandalone, printSuccess, runPostInstallFullRegenerate } = require('../lib/install');
 
 function parseArgs(argv) {
   const args = {
@@ -14,6 +14,7 @@ function parseArgs(argv) {
     siteOrigin: process.env.SITE_ORIGIN || '',
     dest: process.env.ARIVU_SYNC_DEST || './public',
     packageRoot: process.env.ARIVU_INSTALL_ROOT || '',
+    deployHook: process.env.VERCEL_DEPLOY_HOOK_URL || '',
     removeIsrRoutes: true,
     integrationMode: 'layout',
   };
@@ -47,6 +48,7 @@ function parseArgs(argv) {
     if (key === 'site-origin') args.siteOrigin = value;
     if (key === 'dest') args.dest = value;
     if (key === 'package-root') args.packageRoot = value;
+    if (key === 'deploy-hook') args.deployHook = value;
     if (key === 'no-remove-isr') args.removeIsrRoutes = false;
     if (key === 'mode') args.integrationMode = value === 'standalone-html' ? 'standalone-html' : 'layout';
     if (!inlineValue) index += 1;
@@ -98,6 +100,7 @@ async function main() {
     pathPrefix: args.pathPrefix,
     siteOrigin: args.siteOrigin,
     dest: args.dest,
+    deployHook: args.deployHook,
     packageRoot: args.packageRoot || path.resolve(__dirname, '..'),
     removeIsrRoutes: args.removeIsrRoutes,
     integrationMode: args.integrationMode,
@@ -115,6 +118,7 @@ async function main() {
   }
 
   printSuccess(result, options);
+  await runPostInstallFullRegenerate(result, options);
 }
 
 main().catch((error) => {

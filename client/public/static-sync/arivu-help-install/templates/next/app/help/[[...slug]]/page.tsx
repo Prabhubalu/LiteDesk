@@ -7,6 +7,9 @@ export async function generateStaticParams() {
   return buildStaticSlugParams();
 }
 
+export const dynamicParams = true;
+export const revalidate = 3600;
+
 export async function generateMetadata({
   params,
 }: {

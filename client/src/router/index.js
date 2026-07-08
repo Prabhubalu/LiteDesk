@@ -1741,7 +1741,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // Redirect authenticated users from landing page
-  if (to.name === 'landing' && authStore.isAuthenticated && !contentHostedSubdomain) {
+  if (to.name === 'landing' && authStore.isAuthenticated) {
     // Prefer saved redirect (e.g. /settings from new tab) over platform home
     let redirect = null
     if (typeof window !== 'undefined') {

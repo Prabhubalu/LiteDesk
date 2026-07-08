@@ -24,6 +24,9 @@ const ContentCollectionSchema = new Schema(
     slug: { type: String, trim: true, required: true, index: true },
     description: { type: String, trim: true, default: '' },
     emoji: { type: String, trim: true, default: '', maxlength: 8 },
+    heroIconKey: { type: String, trim: true, default: '', maxlength: 64 },
+    heroIconColor: { type: String, trim: true, default: '', maxlength: 16 },
+    imageUrl: { type: String, trim: true, default: '', maxlength: 2048 },
     parentId: {
       type: Schema.Types.ObjectId,
       ref: 'ContentCollection',

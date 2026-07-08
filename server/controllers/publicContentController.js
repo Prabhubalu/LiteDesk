@@ -10,6 +10,7 @@ const { absolutizePublicAssetUrlsInHtml } = require('../services/contentStudio/h
 const { getPublicAppBaseUrl, resolveRequestOrigin } = require('../services/contentStudio/contentPublishingService');
 
 const PUBLIC_CACHE_CONTROL = 'public, max-age=60, s-maxage=300, stale-while-revalidate=600';
+const PUBLIC_COLLECTIONS_CACHE_CONTROL = 'public, max-age=0, must-revalidate, s-maxage=30, stale-while-revalidate=60';
 const PUBLIC_MANIFEST_CACHE_CONTROL = 'public, max-age=30, s-maxage=60, stale-while-revalidate=120';
 const PUBLIC_ASSET_CACHE_CONTROL = 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800';
 
@@ -86,13 +87,14 @@ async function listPublicHelpCollections(req, res) {
   try {
     const result = await publicContentService.listPublicHelpCollections({
       orgSlug: req.params.orgSlug,
+      requestOrigin: resolveRequestOrigin(req),
     });
 
     if (!result) {
       return res.status(404).json({ success: false, message: 'Organization not found' });
     }
 
-    applyPublicCacheHeaders(res);
+    res.set('Cache-Control', PUBLIC_COLLECTIONS_CACHE_CONTROL);
     return res.json({ success: true, ...result });
   } catch (error) {
     console.error('[publicContentController] listPublicHelpCollections', error);

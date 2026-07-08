@@ -2,6 +2,11 @@
 
 const ContentCollection = require('../../models/ContentCollection');
 const { normalizeAddonKey } = require('../../constants/addonKeys');
+const {
+  DEFAULT_HERO_ICON_COLOR,
+  normalizeHeroIconKey,
+  normalizeHeroIconColor,
+} = require('../../constants/heroiconCatalog.generated');
 
 class ContentCollectionError extends Error {
   constructor(message, { code = 'CONTENT_COLLECTION_ERROR', statusCode = 400 } = {}) {
@@ -23,6 +28,67 @@ function slugify(value) {
 
 function normalizeCollectionEmoji(value) {
   return String(value || '').trim().slice(0, 8);
+}
+
+function normalizeCollectionImageUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (
+    raw.startsWith('/api/uploads/')
+    || raw.startsWith('/api/files/download')
+    || raw.startsWith('https://')
+    || raw.startsWith('http://')
+  ) {
+    return raw.slice(0, 2048);
+  }
+  return '';
+}
+
+function applyCollectionIconFields(target, { heroIconKey, heroIconColor, emoji, imageUrl } = {}) {
+  const hasImageUpdate = imageUrl !== undefined;
+  const safeImageUrl = hasImageUpdate
+    ? normalizeCollectionImageUrl(imageUrl)
+    : normalizeCollectionImageUrl(target.imageUrl);
+
+  if (safeImageUrl) {
+    target.imageUrl = safeImageUrl;
+    target.heroIconKey = '';
+    target.heroIconColor = '';
+    target.emoji = '';
+    return target;
+  }
+
+  if (hasImageUpdate) {
+    target.imageUrl = '';
+  }
+
+  const hasHeroIconUpdate = heroIconKey !== undefined;
+  const safeHeroIconKey = hasHeroIconUpdate
+    ? normalizeHeroIconKey(heroIconKey)
+    : normalizeHeroIconKey(target.heroIconKey);
+
+  if (safeHeroIconKey) {
+    target.heroIconKey = safeHeroIconKey;
+    target.heroIconColor = heroIconColor !== undefined
+      ? (normalizeHeroIconColor(heroIconColor) || DEFAULT_HERO_ICON_COLOR)
+      : (normalizeHeroIconColor(target.heroIconColor) || DEFAULT_HERO_ICON_COLOR);
+    target.emoji = '';
+    return target;
+  }
+
+  if (hasHeroIconUpdate) {
+    target.heroIconKey = '';
+  }
+
+  if (heroIconColor !== undefined) {
+    target.heroIconColor = normalizeHeroIconColor(heroIconColor);
+  }
+
+  if (emoji !== undefined) {
+    target.emoji = normalizeCollectionEmoji(emoji);
+  }
+
+  return target;
 }
 
 async function ensureUniqueSlug({ organizationId, addonKey, slug, excludeId = null }) {
@@ -64,6 +130,9 @@ async function createContentCollection({
   slug,
   description,
   emoji,
+  heroIconKey,
+  heroIconColor,
+  imageUrl,
   parentId,
   sortOrder,
   userId,
@@ -79,13 +148,23 @@ async function createContentCollection({
     slug: slug || safeName,
   });
 
+  const iconFields = applyCollectionIconFields({
+    imageUrl: '',
+    heroIconKey: '',
+    heroIconColor: '',
+    emoji: '',
+  }, { heroIconKey, heroIconColor, emoji, imageUrl });
+
   return ContentCollection.create({
     organizationId,
     addonKey: normalizeAddonKey(addonKey),
     name: safeName,
     slug: uniqueSlug,
     description: String(description || '').trim(),
-    emoji: normalizeCollectionEmoji(emoji),
+    emoji: iconFields.emoji,
+    heroIconKey: iconFields.heroIconKey,
+    heroIconColor: iconFields.heroIconColor,
+    imageUrl: iconFields.imageUrl,
     parentId: parentId || null,
     sortOrder: Number(sortOrder) || 0,
     createdBy: userId || null,
@@ -100,6 +179,9 @@ async function updateContentCollection({
   slug,
   description,
   emoji,
+  heroIconKey,
+  heroIconColor,
+  imageUrl,
   parentId,
   sortOrder,
   userId,
@@ -120,7 +202,9 @@ async function updateContentCollection({
     row.name = safeName;
   }
   if (description !== undefined) row.description = String(description || '').trim();
-  if (emoji !== undefined) row.emoji = normalizeCollectionEmoji(emoji);
+  if (heroIconKey !== undefined || heroIconColor !== undefined || emoji !== undefined || imageUrl !== undefined) {
+    applyCollectionIconFields(row, { heroIconKey, heroIconColor, emoji, imageUrl });
+  }
   if (parentId !== undefined) row.parentId = parentId || null;
   if (sortOrder !== undefined) row.sortOrder = Number(sortOrder) || 0;
   if (slug !== undefined) {
