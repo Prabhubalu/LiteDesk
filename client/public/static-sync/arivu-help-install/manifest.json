@@ -1,0 +1,33 @@
+{
+  "files": [
+    "README.md",
+    "bin/arivu-help-install.js",
+    "help-sync/lib/client.js",
+    "help-sync/lib/index.js",
+    "help-sync/lib/pageShell.js",
+    "help-sync/lib/paths.js",
+    "help-sync/lib/sync.js",
+    "help-sync/lib/verify.js",
+    "help-sync/package.json",
+    "lib/copyTemplates.js",
+    "lib/detect.js",
+    "lib/detectSiteChrome.js",
+    "lib/install.js",
+    "lib/mergeConfig.js",
+    "lib/mergeConfigCjs.js",
+    "templates/app/api/arivu-webhook/route.ts",
+    "templates/next/app/help/ArivuHelpAssets.tsx",
+    "templates/next/app/help/ArivuHelpContent.tsx",
+    "templates/next/app/help/[[...slug]]/page.tsx",
+    "templates/next/app/help/layout.tsx",
+    "templates/next/app/help/sitemap.xml/route.ts",
+    "templates/next/lib/arivu-help.ts",
+    "templates/scripts/sync-help-static.mjs",
+    "templates/standalone/README.txt",
+    "templates/standalone/app/layout.tsx",
+    "templates/standalone/app/page.tsx",
+    "templates/standalone/next.config.mjs",
+    "templates/standalone/package.json",
+    "templates/standalone/tsconfig.json"
+  ]
+}

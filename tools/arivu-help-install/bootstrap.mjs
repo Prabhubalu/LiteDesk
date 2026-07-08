@@ -8,36 +8,6 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-
-const INSTALLER_FILES = [
-  'bin/arivu-help-install.js',
-  'lib/detect.js',
-  'lib/copyTemplates.js',
-  'lib/mergeConfig.js',
-  'lib/mergeConfigCjs.js',
-  'lib/install.js',
-  'templates/next/app/help/[[...slug]]/page.tsx',
-  'templates/next/app/help/layout.tsx',
-  'templates/next/app/help/ArivuHelpContent.tsx',
-  'templates/next/app/help/ArivuHelpAssets.tsx',
-  'templates/next/app/help/sitemap.xml/route.ts',
-  'templates/next/lib/arivu-help.ts',
-  'templates/app/api/arivu-webhook/route.ts',
-  'templates/standalone/package.json',
-  'templates/standalone/next.config.mjs',
-  'templates/standalone/tsconfig.json',
-  'templates/standalone/README.txt',
-  'templates/standalone/app/layout.tsx',
-  'templates/standalone/app/page.tsx',
-  'help-sync/package.json',
-  'help-sync/lib/client.js',
-  'help-sync/lib/index.js',
-  'help-sync/lib/pageShell.js',
-  'help-sync/lib/paths.js',
-  'help-sync/lib/sync.js',
-  'help-sync/lib/verify.js',
-];
 
 function parseApiOrigin(argv) {
   for (const token of argv.slice(2)) {
@@ -52,9 +22,26 @@ function parseApiOrigin(argv) {
   return String(process.env.ARIVU_API_ORIGIN || '').replace(/\/$/, '');
 }
 
+async function fetchText(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to download ${url} (${response.status})`);
+  }
+  return response.text();
+}
+
 async function downloadInstaller(apiOrigin, cacheDir) {
+  const manifestUrl = `${apiOrigin}/static-sync/arivu-help-install/manifest.json`;
+  const manifestRaw = await fetchText(manifestUrl);
+  const manifest = JSON.parse(manifestRaw);
+  const files = Array.isArray(manifest.files) ? manifest.files : [];
+
+  if (!files.length) {
+    throw new Error('Installer manifest is empty');
+  }
+
   await fs.mkdir(cacheDir, { recursive: true });
-  for (const relativePath of INSTALLER_FILES) {
+  for (const relativePath of files) {
     const url = `${apiOrigin}/static-sync/arivu-help-install/${relativePath}`;
     const response = await fetch(url);
     if (!response.ok) {

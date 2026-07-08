@@ -31,6 +31,21 @@ async function copyDirectory(srcDir, destDir) {
   }
 }
 
+async function listFiles(dir, baseDir = dir) {
+  const files = [];
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...await listFiles(fullPath, baseDir));
+      continue;
+    }
+    if (entry.name === 'manifest.json') continue;
+    files.push(path.relative(baseDir, fullPath).split(path.sep).join('/'));
+  }
+  return files.sort();
+}
+
 async function main() {
   await fs.access(installerSource);
   await fs.rm(publicInstallerRoot, { recursive: true, force: true });
@@ -47,12 +62,18 @@ async function main() {
     }
   }
 
+  const files = await listFiles(publicInstallerRoot);
+  await fs.writeFile(
+    path.join(publicInstallerRoot, 'manifest.json'),
+    `${JSON.stringify({ files }, null, 2)}\n`,
+  );
+
   await fs.copyFile(
     path.join(installerSource, 'bootstrap.mjs'),
     bootstrapOutput,
   );
 
-  console.log(`[arivu-help-install] Published ${publicInstallerRoot}`);
+  console.log(`[arivu-help-install] Published ${publicInstallerRoot} (${files.length} files)`);
   console.log(`[arivu-help-install] Bootstrap ${bootstrapOutput}`);
 }
 
