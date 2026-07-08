@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { buildStaticSlugParams, pickBodyHtml, resolveHelpPage } from '../../../lib/arivu-help';
+import { buildStaticSlugParams, pickPageHtml, resolveHelpPage } from '../../../lib/arivu-help';
 
 export async function generateStaticParams() {
   return buildStaticSlugParams();
@@ -31,16 +31,13 @@ export default async function HelpPage({
 }) {
   const { slug = [] } = await params;
   const resolved = await resolveHelpPage(slug);
-  const bodyHtml = pickBodyHtml(resolved?.data ?? null);
+  const pageHtml = pickPageHtml(resolved?.data ?? null);
 
-  if (!bodyHtml) {
+  if (!pageHtml) {
     notFound();
   }
 
   return (
-    <div
-      className={resolved?.className ?? 'ld-help-page'}
-      dangerouslySetInnerHTML={{ __html: bodyHtml }}
-    />
+    <div dangerouslySetInnerHTML={{ __html: pageHtml }} />
   );
 }

@@ -171,6 +171,7 @@ async function getPublicHelpArticleExport(req, res) {
       articleSlug: req.params.slug,
       pathPrefix: req.query.pathPrefix,
       fragment: parseBooleanQuery(req.query.fragment),
+      chrome: parseBooleanQuery(req.query.chrome),
       articleLinkPrefix: req.query.articleLinkPrefix,
       requestOrigin: resolveRequestOrigin(req),
     });
@@ -193,6 +194,7 @@ async function getPublicHelpHomeExport(req, res) {
       orgSlug: req.params.orgSlug,
       pathPrefix: req.query.pathPrefix,
       fragment: parseBooleanQuery(req.query.fragment),
+      chrome: parseBooleanQuery(req.query.chrome),
       requestOrigin: resolveRequestOrigin(req),
     });
 
@@ -216,6 +218,7 @@ async function getPublicHelpCollectionExport(req, res) {
       parentSlug: req.query.parent,
       pathPrefix: req.query.pathPrefix,
       fragment: parseBooleanQuery(req.query.fragment),
+      chrome: parseBooleanQuery(req.query.chrome),
       requestOrigin: resolveRequestOrigin(req),
     });
 

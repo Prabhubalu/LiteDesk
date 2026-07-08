@@ -36,7 +36,8 @@ SITE_ORIGIN=https://www.yoursite.com
 
 1. Copy `app/` and `lib/` into your Next.js project root.
 2. Set env vars above in Vercel (and `.env.local` for local dev).
-3. In Arivu **Articles → Static sync**, set **Publish webhook URL** to:
+3. Keep your site header/footer in the root `app/layout.tsx` — the help layout only wraps Arivu content.
+4. In Arivu **Articles → Static sync**, set **Publish webhook URL** to:
    `https://yoursite.com/api/arivu-webhook`
 4. Generate a webhook secret in Arivu settings; use the same value for `ARIVU_WEBHOOK_SECRET`.
 5. Deploy. Publish an article in Content Studio — the webhook revalidates the article, home, and parent collection paths.

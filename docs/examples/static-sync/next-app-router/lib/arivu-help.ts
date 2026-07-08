@@ -38,6 +38,7 @@ function buildQuery(extra: Record<string, string> = {}): string {
   const params = new URLSearchParams({
     pathPrefix: PATH_PREFIX,
     fragment: '1',
+    chrome: '1',
     ...extra,
   });
   return `?${params.toString()}`;
@@ -77,35 +78,34 @@ export async function fetchManifest(): Promise<ManifestData | null> {
   return fetchExportJson(`${contentBase()}/manifest.json?${params.toString()}`);
 }
 
-export function pickBodyHtml(data: ExportPayload | null): string {
+export function pickPageHtml(data: ExportPayload | null): string {
   if (!data) return '';
-  return data.bodyHtml || data.html || '';
+  return data.html || data.bodyHtml || '';
 }
 
 export async function resolveHelpPage(slug: string[] = []): Promise<{
   data: ExportPayload;
-  className: string;
 } | null> {
   if (slug.length === 0) {
     const data = await fetchHomeExport();
-    const bodyHtml = pickBodyHtml(data);
-    if (!bodyHtml) return null;
-    return { data, className: 'ld-help-page' };
+    const pageHtml = pickPageHtml(data);
+    if (!pageHtml || !data) return null;
+    return { data: { ...data, html: pageHtml } };
   }
 
   const articleSlug = slug[slug.length - 1];
   const article = await fetchArticleExport(articleSlug);
-  const articleBody = pickBodyHtml(article);
-  if (articleBody && article) {
-    return { data: article, className: 'ld-article' };
+  const articleHtml = pickPageHtml(article);
+  if (articleHtml && article) {
+    return { data: { ...article, html: articleHtml } };
   }
 
   const collectionSlug = slug[slug.length - 1];
   const parentSlug = slug.length > 1 ? slug[slug.length - 2] : '';
   const collection = await fetchCollectionExport(collectionSlug, parentSlug);
-  const collectionBody = pickBodyHtml(collection);
-  if (collectionBody && collection) {
-    return { data: collection, className: 'ld-help-page' };
+  const collectionHtml = pickPageHtml(collection);
+  if (collectionHtml && collection) {
+    return { data: { ...collection, html: collectionHtml } };
   }
 
   return null;
