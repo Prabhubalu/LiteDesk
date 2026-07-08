@@ -21,7 +21,7 @@ describe('help-sync page shell', () => {
     assert.match(html, /<title>Help Center<\/title>/);
     assert.match(html, /headless-blocks\.css/);
     assert.match(html, /headless-blocks\.js/);
-    assert.match(html, /ld-help-site/);
+    assert.match(html, /ld-help-embed/);
     assert.match(html, /https:\/\/www\.example\.com\/help\//);
     assert.match(html, /Browse help topics/);
   });

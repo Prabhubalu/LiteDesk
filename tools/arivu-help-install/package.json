@@ -1,0 +1,22 @@
+{
+  "name": "@arivu/help-install",
+  "version": "0.1.0",
+  "description": "Install Arivu headless help into Next.js / Vercel projects",
+  "license": "UNLICENSED",
+  "bin": {
+    "arivu-help-install": "./bin/arivu-help-install.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "templates",
+    "bootstrap.mjs",
+    "README.md"
+  ]
+}

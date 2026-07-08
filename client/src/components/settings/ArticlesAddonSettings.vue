@@ -382,32 +382,64 @@
             </div>
           </div>
 
-          <div v-if="staticSyncHostType === 'next'" class="space-y-3">
-            <p class="text-sm text-gray-700 dark:text-gray-300">{{ t('settings.addonsArticlesStaticSyncNextSteps') }}</p>
-            <ol class="list-decimal space-y-1 pl-5 text-sm text-gray-600 dark:text-gray-400">
-              <li>{{ t('settings.addonsArticlesStaticSyncNextStep1') }}</li>
-              <li>{{ t('settings.addonsArticlesStaticSyncNextStep2') }}</li>
-              <li>{{ t('settings.addonsArticlesStaticSyncNextStep3') }}</li>
-              <li>{{ t('settings.addonsArticlesStaticSyncNextStep4') }}</li>
-              <li>{{ t('settings.addonsArticlesStaticSyncNextStep5') }}</li>
-            </ol>
-            <a
-              :href="nextSyncDownloadUrl"
-              class="inline-flex rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-              download="arivu-next-static-sync.zip"
-            >
-              {{ t('settings.addonsArticlesStaticSyncDownloadNext') }}
-            </a>
+          <div v-if="staticSyncHostType === 'next'" class="space-y-4">
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50/70 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesVercelInstallTitle') }}</p>
+                  <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesVercelInstallDesc') }}</p>
+                </div>
+                <button
+                  type="button"
+                  class="shrink-0 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  :disabled="!embedOrgKey"
+                  @click="copyText(vercelInstallCommand, t('settings.addonsArticlesVercelInstallTitle'))"
+                >
+                  {{ t('settings.addonsArticlesCopySnippet') }}
+                </button>
+              </div>
+              <ol class="mt-3 list-decimal space-y-1 pl-5 text-sm text-gray-700 dark:text-gray-300">
+                <li>{{ t('settings.addonsArticlesVercelInstallStep1') }}</li>
+                <li>{{ t('settings.addonsArticlesVercelInstallStep2') }}</li>
+                <li>{{ t('settings.addonsArticlesVercelInstallStep3') }}</li>
+                <li>{{ t('settings.addonsArticlesVercelInstallStep4') }}</li>
+              </ol>
+              <pre class="mt-3 overflow-x-auto rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ vercelInstallCommand }}</code></pre>
+            </div>
+
+            <details class="rounded-lg border border-gray-200 dark:border-gray-700">
+              <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+                {{ t('settings.addonsArticlesVercelStandaloneTitle') }}
+              </summary>
+              <div class="space-y-3 border-t border-gray-200 px-4 py-4 dark:border-gray-700">
+                <p class="text-xs text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesVercelStandaloneDesc') }}</p>
+                <pre class="overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ vercelCreateCommand }}</code></pre>
+                <button
+                  type="button"
+                  class="inline-flex rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                  :disabled="!embedOrgKey || vercelKitDownloading"
+                  @click="downloadVercelStandaloneKit"
+                >
+                  {{ vercelKitDownloading ? t('settings.addonsArticlesVercelStandaloneDownloading') : t('settings.addonsArticlesVercelStandaloneDownload') }}
+                </button>
+              </div>
+            </details>
           </div>
 
           <div v-else-if="staticSyncHostType === 'php'" class="space-y-3">
-            <a
-              :href="phpSyncDownloadUrl"
-              class="inline-flex rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-              download="arivu-help-sync.php"
+            <ol class="list-decimal space-y-1 pl-5 text-sm text-gray-600 dark:text-gray-400">
+              <li>{{ t('settings.addonsArticlesPhpDeployStep1') }}</li>
+              <li>{{ t('settings.addonsArticlesPhpDeployStep2') }}</li>
+              <li>{{ t('settings.addonsArticlesPhpDeployStep3') }}</li>
+            </ol>
+            <button
+              type="button"
+              class="inline-flex rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+              :disabled="!embedOrgKey || phpSyncDownloading"
+              @click="downloadConfiguredPhpSync"
             >
-              {{ t('settings.addonsArticlesStaticSyncDownloadPhp') }}
-            </a>
+              {{ phpSyncDownloading ? t('settings.addonsArticlesPhpDeployDownloading') : t('settings.addonsArticlesStaticSyncDownloadPhp') }}
+            </button>
           </div>
 
           <div v-else-if="staticSyncHostType === 'cli'" class="space-y-3">
@@ -434,6 +466,26 @@
         </div>
 
         <template v-if="showEmbedSetup">
+          <div class="mt-6 space-y-4 rounded-lg border border-emerald-200 bg-emerald-50/70 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+            <div>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesDeployKitTitle') }}</p>
+              <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesDeployKitDesc') }}</p>
+            </div>
+            <ol class="list-decimal space-y-1 pl-5 text-sm text-gray-700 dark:text-gray-300">
+              <li>{{ t('settings.addonsArticlesDeployKitStep1') }}</li>
+              <li>{{ t('settings.addonsArticlesDeployKitStep2') }}</li>
+              <li>{{ t('settings.addonsArticlesDeployKitStep3') }}</li>
+            </ol>
+            <button
+              type="button"
+              class="inline-flex rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+              :disabled="!embedOrgKey || embedKitDownloading"
+              @click="downloadEmbedStarterKit"
+            >
+              {{ embedKitDownloading ? t('settings.addonsArticlesDeployKitDownloading') : t('settings.addonsArticlesDeployKitDownload') }}
+            </button>
+          </div>
+
           <div class="mt-6 space-y-3 rounded-lg border border-indigo-200 bg-indigo-50/60 p-4 dark:border-indigo-900/50 dark:bg-indigo-950/20">
           <div class="flex items-start justify-between gap-3">
             <div>
@@ -608,6 +660,9 @@ import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 import '@/modules/contentStudio/editor/contentStudioArticleAppearance.css';
+import { buildEmbedStarterKitZip, downloadBlob } from '@/modules/contentStudio/headless/buildEmbedStarterKit';
+import { buildConfiguredPhpSync } from '@/modules/contentStudio/headless/buildConfiguredPhpSync';
+import { buildVercelStandaloneKitZip } from '@/modules/contentStudio/headless/buildVercelStandaloneKit';
 
 const emit = defineEmits(['back']);
 
@@ -617,6 +672,9 @@ const notifications = useNotifications();
 const loading = ref(true);
 const saving = ref(false);
 const webhookTesting = ref(false);
+const embedKitDownloading = ref(false);
+const phpSyncDownloading = ref(false);
+const vercelKitDownloading = ref(false);
 const error = ref('');
 const dirty = ref(false);
 const initialSnapshot = ref('');
@@ -887,8 +945,35 @@ const staticSyncCliCommands = computed(() => {
   ];
 });
 
-const phpSyncDownloadUrl = computed(() => `${embedOrigin.value}/static-sync/arivu-help-sync.php`);
-const nextSyncDownloadUrl = computed(() => `${embedOrigin.value}/static-sync/arivu-next-static-sync.zip`);
+const vercelStandaloneDownloadUrl = computed(() => `${embedOrigin.value}/static-sync/arivu-help-vercel.zip`);
+
+const vercelInstallCommand = computed(() => {
+  const org = embedOrgKey.value || 'art_pub_xxx';
+  const origin = embedOrigin.value;
+  const site = normalizeWebsiteOrigin(form.embedWebsiteDomain) || 'https://www.example.com';
+  const prefix = normalizedEmbedPathPrefix.value;
+  return [
+    `curl -fsSL ${origin}/static-sync/arivu-help-install.mjs | node - install`,
+    `--org=${org}`,
+    `--api-origin=${origin}`,
+    `--site-origin=${site}`,
+    `--path-prefix=${prefix}`,
+  ].join(' \\\n  ');
+});
+
+const vercelCreateCommand = computed(() => {
+  const org = embedOrgKey.value || 'art_pub_xxx';
+  const origin = embedOrigin.value;
+  const site = normalizeWebsiteOrigin(form.embedWebsiteDomain) || 'https://www.example.com';
+  const prefix = normalizedEmbedPathPrefix.value;
+  return [
+    `curl -fsSL ${origin}/static-sync/arivu-help-install.mjs | node - create ./help-center`,
+    `--org=${org}`,
+    `--api-origin=${origin}`,
+    `--site-origin=${site}`,
+    `--path-prefix=${prefix}`,
+  ].join(' \\\n  ');
+});
 
 const resolvedIntegration = computed(() => integration);
 
@@ -1116,6 +1201,69 @@ async function copyText(value, label) {
     notifications.success(t('settings.addonsArticlesCopied', { label }));
   } catch {
     notifications.error(t('settings.addonsArticlesCopyFailed'));
+  }
+}
+
+async function downloadEmbedStarterKit() {
+  if (!embedOrgKey.value || embedKitDownloading.value) return;
+  embedKitDownloading.value = true;
+  try {
+    const blob = await buildEmbedStarterKitZip({
+      apiOrigin: embedOrigin.value,
+      orgKey: embedOrgKey.value,
+      pathPrefix: normalizedEmbedPathPrefix.value,
+      siteDomain: form.embedWebsiteDomain,
+    });
+    downloadBlob(blob, 'arivu-help-deploy-kit.zip');
+    notifications.success(t('settings.addonsArticlesDeployKitDownloaded'));
+  } catch {
+    notifications.error(t('settings.addonsArticlesDeployKitDownloadFailed'));
+  } finally {
+    embedKitDownloading.value = false;
+  }
+}
+
+async function downloadConfiguredPhpSync() {
+  if (!embedOrgKey.value || phpSyncDownloading.value) return;
+  phpSyncDownloading.value = true;
+  try {
+    const response = await fetch(`${embedOrigin.value}/static-sync/arivu-help-sync.php`);
+    if (!response.ok) {
+      throw new Error('Failed to load PHP template');
+    }
+    const templatePhp = await response.text();
+    const configuredPhp = buildConfiguredPhpSync(templatePhp, {
+      apiOrigin: embedOrigin.value,
+      orgKey: embedOrgKey.value,
+      pathPrefix: normalizedEmbedPathPrefix.value,
+      siteDomain: form.embedWebsiteDomain,
+    });
+    downloadBlob(new Blob([configuredPhp], { type: 'application/x-php' }), 'arivu-help-sync.php');
+    notifications.success(t('settings.addonsArticlesPhpDeployDownloaded'));
+  } catch {
+    notifications.error(t('settings.addonsArticlesPhpDeployDownloadFailed'));
+  } finally {
+    phpSyncDownloading.value = false;
+  }
+}
+
+async function downloadVercelStandaloneKit() {
+  if (!embedOrgKey.value || vercelKitDownloading.value) return;
+  vercelKitDownloading.value = true;
+  try {
+    const blob = await buildVercelStandaloneKitZip(vercelStandaloneDownloadUrl.value, {
+      apiOrigin: embedOrigin.value,
+      orgKey: embedOrgKey.value,
+      pathPrefix: normalizedEmbedPathPrefix.value,
+      siteDomain: form.embedWebsiteDomain,
+      webhookSecret: generatedWebhookSecret.value || undefined,
+    });
+    downloadBlob(blob, 'arivu-help-vercel.zip');
+    notifications.success(t('settings.addonsArticlesVercelStandaloneDownloaded'));
+  } catch {
+    notifications.error(t('settings.addonsArticlesVercelStandaloneDownloadFailed'));
+  } finally {
+    vercelKitDownloading.value = false;
   }
 }
 

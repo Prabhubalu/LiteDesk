@@ -15178,5 +15178,133 @@
   "addonsArticlesStaticSyncNextHint": {
     "message": "On Vercel, each publish triggers a redeploy. The build writes SEO-ready HTML into public/help/ with styles and metadata.",
     "description": "Hint when Next.js static sync host type is selected"
+  },
+  "addonsArticlesDeployKitTitle": {
+    "message": "Quick deploy kit",
+    "description": "Title for one-click Articles embed deploy kit"
+  },
+  "addonsArticlesDeployKitDesc": {
+    "message": "Pre-configured zip with HTML and routing for Netlify, Vercel, or Apache. Your org key and API URL are already filled in.",
+    "description": "Description for Articles embed deploy kit"
+  },
+  "addonsArticlesDeployKitStep1": {
+    "message": "Save your website domain above (enables browser access)",
+    "description": "Deploy kit step 1"
+  },
+  "addonsArticlesDeployKitStep2": {
+    "message": "Download the deploy kit",
+    "description": "Deploy kit step 2"
+  },
+  "addonsArticlesDeployKitStep3": {
+    "message": "Upload the zip contents to your host — visit /help/ to verify",
+    "description": "Deploy kit step 3"
+  },
+  "addonsArticlesDeployKitDownload": {
+    "message": "Download deploy kit (zip)",
+    "description": "Button to download Articles embed deploy kit"
+  },
+  "addonsArticlesDeployKitDownloading": {
+    "message": "Preparing zip…",
+    "description": "Articles deploy kit download in progress"
+  },
+  "addonsArticlesDeployKitDownloaded": {
+    "message": "Deploy kit downloaded",
+    "description": "Toast when Articles deploy kit download succeeds"
+  },
+  "addonsArticlesDeployKitDownloadFailed": {
+    "message": "Could not create deploy kit",
+    "description": "Toast when Articles deploy kit download fails"
+  },
+  "addonsArticlesPhpDeployStep1": {
+    "message": "Download the pre-configured PHP script (your org key and API URL are filled in)",
+    "description": "PHP static sync deploy step 1"
+  },
+  "addonsArticlesPhpDeployStep2": {
+    "message": "Upload to your web host and point the publish webhook URL above to it",
+    "description": "PHP static sync deploy step 2"
+  },
+  "addonsArticlesPhpDeployStep3": {
+    "message": "Run once: https://yoursite.com/arivu-help-sync.php?full=1",
+    "description": "PHP static sync deploy step 3"
+  },
+  "addonsArticlesPhpDeployDownloading": {
+    "message": "Preparing script…",
+    "description": "PHP sync script download in progress"
+  },
+  "addonsArticlesPhpDeployDownloaded": {
+    "message": "PHP sync script downloaded",
+    "description": "Toast when configured PHP sync download succeeds"
+  },
+  "addonsArticlesPhpDeployDownloadFailed": {
+    "message": "Could not download PHP script",
+    "description": "Toast when configured PHP sync download fails"
+  },
+  "addonsArticlesVercelStandaloneTitle": {
+    "message": "Vercel — standalone project",
+    "description": "Title for standalone Vercel help center deploy"
+  },
+  "addonsArticlesVercelStandaloneDesc": {
+    "message": "Complete Next.js project with your org key and API URL pre-filled. Import to Vercel as a new project.",
+    "description": "Description for standalone Vercel help center deploy"
+  },
+  "addonsArticlesVercelStandaloneStep1": {
+    "message": "Download the Vercel project zip",
+    "description": "Standalone Vercel deploy step 1"
+  },
+  "addonsArticlesVercelStandaloneStep2": {
+    "message": "Import to Vercel (vercel.com/new) — add env vars from the included .env file",
+    "description": "Standalone Vercel deploy step 2"
+  },
+  "addonsArticlesVercelStandaloneStep3": {
+    "message": "Create a Deploy Hook → paste URL into VERCEL_DEPLOY_HOOK_URL in Vercel env",
+    "description": "Standalone Vercel deploy step 3"
+  },
+  "addonsArticlesVercelStandaloneStep4": {
+    "message": "Deploy — each publish auto-rebuilds SEO-ready HTML",
+    "description": "Standalone Vercel deploy step 4"
+  },
+  "addonsArticlesVercelStandaloneDownload": {
+    "message": "Download Vercel project (zip)",
+    "description": "Button to download standalone Vercel project"
+  },
+  "addonsArticlesVercelStandaloneDownloading": {
+    "message": "Preparing project…",
+    "description": "Standalone Vercel project download in progress"
+  },
+  "addonsArticlesVercelStandaloneDownloaded": {
+    "message": "Vercel project downloaded",
+    "description": "Toast when standalone Vercel project download succeeds"
+  },
+  "addonsArticlesVercelStandaloneDownloadFailed": {
+    "message": "Could not create Vercel project",
+    "description": "Toast when standalone Vercel project download fails"
+  },
+  "addonsArticlesVercelExistingProjectTitle": {
+    "message": "Advanced: add to existing Next.js project",
+    "description": "Collapsible title for merging into existing Next.js app"
+  },
+  "addonsArticlesVercelInstallTitle": {
+    "message": "One-command install (Vercel / Next.js)",
+    "description": "Title for Vercel install script section"
+  },
+  "addonsArticlesVercelInstallDesc": {
+    "message": "Run from your project root. No manual file copying.",
+    "description": "Description for Vercel install script"
+  },
+  "addonsArticlesVercelInstallStep1": {
+    "message": "Open a terminal in your Next.js project root",
+    "description": "Vercel install step 1"
+  },
+  "addonsArticlesVercelInstallStep2": {
+    "message": "Paste and run the command below",
+    "description": "Vercel install step 2"
+  },
+  "addonsArticlesVercelInstallStep3": {
+    "message": "Copy .env.local vars into Vercel → add Deploy Hook URL",
+    "description": "Vercel install step 3"
+  },
+  "addonsArticlesVercelInstallStep4": {
+    "message": "Deploy — each publish auto-rebuilds SEO-ready HTML",
+    "description": "Vercel install step 4"
   }
 }
