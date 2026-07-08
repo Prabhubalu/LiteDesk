@@ -56,3 +56,20 @@ test('buildHelpLayoutContent returns null without importable chrome', () => {
   });
   assert.equal(content, null);
 });
+
+test('inferChromeComponentsFromDiscovered builds imports from component files', () => {
+  const { inferChromeComponentsFromDiscovered } = require('../lib/buildHelpLayout');
+  const components = inferChromeComponentsFromDiscovered([
+    'src/components/SiteNav.tsx',
+    'src/components/SiteNavSpacer.tsx',
+    'src/components/Container.tsx',
+    'src/components/SiteFooter.tsx',
+  ]);
+  assert.deepEqual(components.map((component) => component.name), [
+    'SiteNav',
+    'SiteNavSpacer',
+    'Container',
+    'SiteFooter',
+  ]);
+  assert.match(components[0].importLine, /@\/components\/SiteNav/);
+});

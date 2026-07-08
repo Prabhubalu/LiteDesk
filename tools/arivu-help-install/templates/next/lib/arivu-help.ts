@@ -83,6 +83,12 @@ export function pickPageHtml(data: ExportPayload | null): string {
   return data.html || data.bodyHtml || '';
 }
 
+export function buildHelpPathname(pathPrefix: string, slug: string[] = []): string {
+  const normalized = String(pathPrefix || '/help/').trim().replace(/\/$/, '') || '/help';
+  if (!slug.length) return normalized;
+  return `${normalized}/${slug.map((segment) => encodeURIComponent(segment)).join('/')}`;
+}
+
 export async function resolveHelpPage(slug: string[] = []): Promise<{
   data: ExportPayload;
 } | null> {

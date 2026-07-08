@@ -154,7 +154,11 @@ function printSuccess(result, options) {
   process.stdout.write(`  - ${result.envFile}\n`);
 
   if (result.helpLayoutPatched) {
-    process.stdout.write(`\nHelp layout wrapped with site chrome from ${result.siteChrome.referenceLayoutPath}:\n`);
+    if (result.siteChrome.referenceLayoutPath) {
+      process.stdout.write(`\nHelp layout wrapped with site chrome from ${result.siteChrome.referenceLayoutPath}:\n`);
+    } else {
+      process.stdout.write('\nHelp layout wrapped with detected site chrome components:\n');
+    }
     result.siteChrome.referenceChromeComponents.forEach((component) => {
       process.stdout.write(`  - ${component.name}\n`);
     });

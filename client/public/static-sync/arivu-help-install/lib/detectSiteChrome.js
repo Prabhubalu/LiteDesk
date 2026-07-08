@@ -2,7 +2,10 @@
 
 const fs = require('fs');
 const path = require('path');
-const { extractChromeComponents } = require('./buildHelpLayout');
+const {
+  extractChromeComponents,
+  inferChromeComponentsFromDiscovered,
+} = require('./buildHelpLayout');
 
 const CHROME_PATTERNS = [
   /header/i,
@@ -145,7 +148,13 @@ function detectSiteChrome(cwd, project) {
     .sort((left, right) => right.score - left.score);
 
   const referenceLayout = candidateLayouts[0] || null;
-  const needsHelpLayoutChrome = !preservesSiteChrome && Boolean(referenceLayout);
+  const inferredChromeComponents = referenceLayout
+    ? []
+    : inferChromeComponentsFromDiscovered(discovered);
+  const referenceChromeComponents = referenceLayout?.analysis.components.length
+    ? referenceLayout.analysis.components
+    : inferredChromeComponents;
+  const needsHelpLayoutChrome = !preservesSiteChrome && referenceChromeComponents.length > 0;
 
   return {
     hasRootLayout: Boolean(rootLayoutSource),
@@ -155,7 +164,8 @@ function detectSiteChrome(cwd, project) {
     preservesSiteChrome,
     needsHelpLayoutChrome,
     referenceLayoutPath: referenceLayout?.relativePath || null,
-    referenceChromeComponents: referenceLayout?.analysis.components || [],
+    referenceChromeComponents,
+    inferredChromeComponents,
   };
 }
 
