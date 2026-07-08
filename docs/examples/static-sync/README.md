@@ -7,7 +7,7 @@ Downloadable from **Articles settings → Static sync (SEO)** when running the A
 | Host | Download |
 |------|----------|
 | PHP | `/static-sync/arivu-help-sync.php` |
-| Next.js | `/static-sync/arivu-next-static-sync.zip` |
+| Next.js | `/static-sync/arivu-next-static-sync.zip` (built from `next-app-router/` on `npm run build`) |
 
 ## PHP (shared hosting)
 
@@ -24,7 +24,10 @@ Download `arivu-next-static-sync.zip` or copy from `client/public/static-sync/ne
 
 | File | Purpose |
 |------|---------|
-| `app/help/[...slug]/page.tsx` | ISR page fetching export HTML |
+| `lib/arivu-help.ts` | Export API client — home, collection, article |
+| `app/help/[[...slug]]/page.tsx` | ISR help home, category, section, article |
+| `app/help/layout.tsx` | Arivu help base styles |
+| `app/help/sitemap.xml/route.ts` | SEO sitemap |
 | `app/api/arivu-webhook/route.ts` | `revalidatePath` on publish/unpublish |
 
 Env:

@@ -380,6 +380,13 @@ server {
     listen 80;
     server_name $EC2_IP;
 
+    # Binary downloads — never fall back to SPA shell
+    location ~* \.zip$ {
+        root /home/ubuntu/Arivu/client/dist;
+        try_files \$uri =404;
+        add_header Content-Type application/zip;
+    }
+
     # Frontend - Serve built files
     location / {
         root /home/ubuntu/Arivu/client/dist;
