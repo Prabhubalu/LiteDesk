@@ -1047,7 +1047,8 @@ function buildUnifiedScriptAttrs() {
     `data-org="${embedOrgSlug.value}"`,
     'data-target="#arivu-help"',
     `data-path-prefix="${normalizedEmbedPathPrefix.value}"`,
-    'data-title="Help Center"',
+    'data-title="How can we help?"',
+    'data-show-feedback-footer="true"',
   ].join('\n  ');
 }
 
@@ -1065,7 +1066,7 @@ const unifiedPageSnippet = computed(() => (
 
 const homeEmbedSnippet = computed(() => {
   const pathPrefix = normalizedEmbedPathPrefix.value;
-  return `${embedStylesheetLink.value}\n<div id="help-home"></div>\n<script\n  src="${embedOrigin.value}/embed/headless-help-home.js"\n  data-api-origin="${embedOrigin.value}"\n  data-org="${embedOrgSlug.value}"\n  data-target="#help-home"\n  data-link-prefix="${pathPrefix}"\n  data-title="Help Center"\n><\/script>`;
+  return `${embedStylesheetLink.value}\n<div id="help-home"></div>\n<script\n  src="${embedOrigin.value}/embed/headless-help-home.js"\n  data-api-origin="${embedOrigin.value}"\n  data-org="${embedOrgSlug.value}"\n  data-target="#help-home"\n  data-link-prefix="${pathPrefix}"\n  data-title="How can we help?"\n><\/script>`;
 });
 
 const categoryEmbedSnippet = computed(() => {
@@ -1085,7 +1086,7 @@ const listEmbedSnippet = computed(() => {
 
 const embedSnippet = computed(() => {
   const pathPrefix = normalizedEmbedPathPrefix.value;
-  return `${embedStylesheetLink.value}\n<div id="help-article"></div>\n<script\n  src="${embedOrigin.value}/embed/headless-article.js"\n  data-api-origin="${embedOrigin.value}"\n  data-org="${embedOrgSlug.value}"\n  data-slug="your-article-slug"\n  data-target="#help-article"\n  data-show-sidebar="true"\n  data-show-breadcrumbs="true"\n  data-link-prefix="${pathPrefix}"\n  data-home-prefix="${pathPrefix}"\n  data-category-prefix="${pathPrefix}"\n  data-section-prefix="${pathPrefix}"\n  data-article-prefix="${pathPrefix}"\n  data-collection="your-category-slug"\n  data-section="your-section-slug"\n><\/script>`;
+  return `${embedStylesheetLink.value}\n<div id="help-article"></div>\n<script\n  src="${embedOrigin.value}/embed/headless-article.js"\n  data-api-origin="${embedOrigin.value}"\n  data-org="${embedOrgSlug.value}"\n  data-slug="your-article-slug"\n  data-target="#help-article"\n  data-show-sidebar="true"\n  data-show-breadcrumbs="true"\n  data-show-feedback-footer="true"\n  data-link-prefix="${pathPrefix}"\n  data-home-prefix="${pathPrefix}"\n  data-category-prefix="${pathPrefix}"\n  data-section-prefix="${pathPrefix}"\n  data-article-prefix="${pathPrefix}"\n  data-collection="your-category-slug"\n  data-section="your-section-slug"\n><\/script>`;
 });
 
 const advancedEmbedSnippets = computed(() => [

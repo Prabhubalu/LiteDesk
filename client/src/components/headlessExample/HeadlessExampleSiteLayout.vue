@@ -29,14 +29,6 @@
       </div>
     </header>
 
-    <section v-if="showHelpHero" class="hes-help-hero">
-      <div class="hes-container hes-help-hero__inner">
-        <p class="hes-help-hero__eyebrow">{{ t('contentStudio.headlessExampleSiteHelpEyebrow') }}</p>
-        <h1 class="hes-help-hero__title">{{ t('contentStudio.headlessExampleSiteHelpTitle') }}</h1>
-        <p class="hes-help-hero__subtitle">{{ t('contentStudio.headlessExampleSiteHelpSubtitle') }}</p>
-      </div>
-    </section>
-
     <div class="hes-page" :class="{ 'hes-page--home': layout === 'home' }">
       <div class="hes-container hes-page__main">
         <main class="hes-main" :class="`hes-main--${layout}`">
@@ -89,18 +81,17 @@ const prefixes = computed(() => (props.orgSlug ? buildHeadlessExamplePrefixes(pr
 const helpHomeHref = computed(() => prefixes.value?.home || '/examples/headless-help-home');
 const brandHref = computed(() => prefixes.value?.home || '#');
 const isHelpSection = computed(() => ['help', 'home', 'list'].includes(props.activeArea));
-const showHelpHero = computed(() => !props.showSetup && Boolean(props.orgSlug) && props.layout === 'home');
 </script>
 
 <style scoped>
 .hes-root {
-  --hes-accent: #2563eb;
-  --hes-accent-dark: #1d4ed8;
-  --hes-text: #0f172a;
-  --hes-muted: #64748b;
-  --hes-border: #e2e8f0;
+  --hes-accent: #111827;
+  --hes-accent-dark: #1f2937;
+  --hes-text: #111827;
+  --hes-muted: #6b7280;
+  --hes-border: #e5e7eb;
   --hes-surface: #ffffff;
-  --hes-bg: #f8fafc;
+  --hes-bg: #ffffff;
   min-height: 100vh;
   background: var(--hes-bg);
   color: var(--hes-text);
@@ -109,7 +100,7 @@ const showHelpHero = computed(() => !props.showSetup && Boolean(props.orgSlug) &
 }
 
 .hes-container {
-  width: min(1120px, calc(100% - 2rem));
+  width: min(72rem, calc(100% - 2.5rem));
   margin-inline: auto;
 }
 
@@ -221,47 +212,12 @@ const showHelpHero = computed(() => !props.showSetup && Boolean(props.orgSlug) &
   background: var(--hes-accent-dark);
 }
 
-.hes-help-hero {
-  border-bottom: 1px solid var(--hes-border);
-  background:
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.08), transparent 45%),
-    linear-gradient(180deg, #fff 0%, #f8fafc 100%);
-  padding: 2.75rem 0 1.5rem;
-}
-
-.hes-help-hero__inner {
-  text-align: left;
-}
-
-.hes-help-hero__eyebrow {
-  margin: 0 0 0.5rem;
-  color: var(--hes-accent);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.hes-help-hero__title {
-  margin: 0;
-  font-size: clamp(1.75rem, 4vw, 2.75rem);
-  line-height: 1.15;
-  letter-spacing: -0.03em;
-}
-
-.hes-help-hero__subtitle {
-  margin: 0.75rem 0 0;
-  max-width: 38rem;
-  color: var(--hes-muted);
-  font-size: 1.0625rem;
-}
-
 .hes-page {
-  padding: 2rem 0 4rem;
+  padding: 1.5rem 0 4rem;
 }
 
 .hes-page--home {
-  padding-top: 1.5rem;
+  padding-top: 0.5rem;
 }
 
 .hes-page__main {
@@ -285,46 +241,18 @@ const showHelpHero = computed(() => !props.showSetup && Boolean(props.orgSlug) &
 .hes-main--home :slotted([id^="ld-"]),
 .hes-main--embed :deep([id^="ld-"]),
 .hes-main--embed :slotted([id^="ld-"]) {
-  --ld-accent: var(--hes-accent);
+  --ld-accent: #2563eb;
   --ld-border: var(--hes-border);
   --ld-surface: var(--hes-surface);
   --ld-muted: var(--hes-muted);
   --ld-help-sidebar-width: 17.5rem;
+  --ld-help-sticky-top: 5.5rem;
 }
 
-.hes-main--home :deep(.ld-help-home__header),
-.hes-main--home :slotted(.ld-help-home__header) {
-  display: none;
-}
-
-.hes-main--home :deep(.ld-help-home__search),
-.hes-main--home :slotted(.ld-help-home__search) {
-  width: 100%;
-  max-width: 48rem;
-  margin: 0 0 0.75rem;
-}
-
-.hes-main--home :deep(.ld-help-home__search-text),
-.hes-main--home :slotted(.ld-help-home__search-text) {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.hes-main--home :deep(.ld-help-home__search-input),
-.hes-main--home :slotted(.ld-help-home__search-input) {
-  width: 100%;
+.hes-main--home :deep(.ld-help-home),
+.hes-main--home :slotted(.ld-help-home) {
   max-width: none;
-  padding: 1rem 1.15rem;
-  font-size: 1.125rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  padding-inline: 0;
 }
 
 .hes-footer {

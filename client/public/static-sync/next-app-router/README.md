@@ -8,7 +8,7 @@ Copy these files into your Next.js project (Vercel or any Node host).
 |------|---------|
 | `lib/arivu-help.ts` | Export API client — ISR mode only |
 | `app/help/[[...slug]]/page.tsx` | ISR help pages (**remove in static SEO mode**) |
-| `app/help/layout.tsx` | Help styles (**remove in static SEO mode**) |
+| `app/help/layout.tsx` | Help layout + Arivu styles (**remove in static SEO mode**) |
 | `app/help/sitemap.xml/route.ts` | Dynamic sitemap (**remove in static SEO mode**) |
 | `app/api/arivu-webhook/route.ts` | Webhook — ISR revalidate or Vercel static deploy |
 | `scripts/sync-help-static.mjs` | Build-time full sync → `public/help/` |
@@ -74,6 +74,14 @@ Merge `next.config.example.mjs` rewrites into your Next config. The `:path+` rul
 5. Each publish → webhook → deploy hook → rebuild → fresh static files.
 
 Create deploy hook: Vercel project → Settings → Git → Deploy Hooks.
+
+### Layout mode (default for curl install)
+
+```bash
+ARIVU_SYNC_MODE=layout
+```
+
+Keep `app/help/[[...slug]]/page.tsx` and `app/help/layout.tsx`. `/help` is rendered by Next.js and fetches content from the Arivu API — **`public/help/` static HTML is not used**. Wrap help content with your site nav/footer in `app/help/layout.tsx` (same pattern as `/blog` if chrome is route-scoped). The curl installer auto-patches this when it detects a reference layout.
 
 ### ISR mode (fallback, weaker SEO)
 

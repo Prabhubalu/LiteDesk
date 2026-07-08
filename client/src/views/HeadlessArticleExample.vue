@@ -131,16 +131,16 @@ async function loadArticle() {
       sectionPrefix: `/examples/headless-help-section?org=${encodedOrg}&section=`,
       articlePrefix: `/examples/headless-article?org=${encodedOrg}&slug=`,
       homeLabel: t('contentStudio.publicHelpHomeLabel'),
-      recentTitle: t('contentStudio.publicHelpRecentTitle'),
-      popularTitle: t('contentStudio.publicHelpPopularTitle'),
-      popularEmptyLabel: t('contentStudio.publicHelpPopularEmpty'),
-      sectionsTitle: t('contentStudio.publicHelpSectionsNavTitle'),
-      recentEmptyLabel: t('contentStudio.publicHelpRecentEmpty'),
+      topicsTitle: t('contentStudio.publicHelpBrowseTopics'),
+      searchPlaceholder: t('contentStudio.publicHelpSearchPlaceholder'),
+      shareRailLabel: t('contentStudio.articleFeedbackShareLabel'),
       helpfulLabel: t('contentStudio.articleFeedbackHelpfulLabel'),
       shareLabel: t('contentStudio.articleFeedbackShareLabel'),
       yesLabel: t('contentStudio.articleFeedbackYesLabel'),
       noLabel: t('contentStudio.articleFeedbackNoLabel'),
       thanksLabel: t('contentStudio.articleFeedbackThanksLabel'),
+      showFeedbackFooter: true,
+      pageUrl: typeof window !== 'undefined' ? window.location.href : '',
     });
     trackHeadlessHelpViewed('article', { org: orgSlug.value, article_slug: articleSlug.value });
   } catch {

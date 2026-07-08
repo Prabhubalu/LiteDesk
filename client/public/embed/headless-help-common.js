@@ -176,41 +176,33 @@
 
   function buildMountSkeleton(options) {
     var type = String((options && options.type) || 'page');
-    var showSidebar = !options || options.showSidebar !== false;
+    var showRail = Boolean(options && options.showRail);
 
     if (type === 'home') {
       return (
         '<div class="ld-help-home ld-help-skeleton" aria-busy="true" aria-label="Loading">' +
-          '<div class="ld-help-skeleton__search" aria-hidden="true"></div>' +
+          '<section class="ld-help-home__hero">' +
+            '<div class="ld-help-skeleton__title" aria-hidden="true"></div>' +
+            '<div class="ld-help-skeleton__search" aria-hidden="true"></div>' +
+          '</section>' +
           '<div class="ld-help-home__grid">' + buildHomeGridSkeleton(6) + '</div>' +
         '</div>'
       );
     }
 
-    var layoutClass = showSidebar
-      ? 'ld-help-page__layout'
-      : 'ld-help-page__layout ld-help-page__layout--single';
-    var sidebarHtml = showSidebar
-      ? (
-        '<aside class="ld-help-page__sidebar" aria-hidden="true">' +
-          '<div class="ld-help-skeleton__sidebar-block"></div>' +
-          '<div class="ld-help-skeleton__sidebar-block"></div>' +
-          '<div class="ld-help-skeleton__sidebar-block"></div>' +
-        '</aside>'
-      )
-      : '';
-
+    var bodyClass = 'ld-help-site__body ld-help-skeleton__site-body' + (showRail ? ' ld-help-site__body--article-no-nav' : '');
     return (
-      '<div class="ld-help-page ld-help-skeleton" aria-busy="true" aria-label="Loading">' +
-        '<div class="ld-help-skeleton__breadcrumbs" aria-hidden="true"></div>' +
-        '<div class="' + layoutClass + '">' +
-          '<main class="ld-help-page__main" aria-hidden="true">' +
-            '<div class="ld-help-skeleton__title"></div>' +
-            buildSkeletonLines(4) +
+      '<div class="ld-help-site ld-help-skeleton" aria-busy="true" aria-label="Loading">' +
+        '<div class="ld-help-skeleton__topbar" aria-hidden="true"></div>' +
+        '<div class="' + bodyClass + '">' +
+          '<main class="ld-help-site__main" aria-hidden="true">' +
+            '<div class="ld-help-skeleton__hero"></div>' +
+            buildSkeletonLines(3) +
             '<div class="ld-help-skeleton__block"></div>' +
-            '<div class="ld-help-skeleton__block ld-help-skeleton__block--short"></div>' +
           '</main>' +
-          sidebarHtml +
+          (showRail
+            ? '<aside class="ld-help-site__rail" aria-hidden="true"><div class="ld-help-skeleton__sidebar-block"></div></aside>'
+            : '') +
         '</div>' +
       '</div>'
     );
@@ -315,7 +307,365 @@
 
   function shouldBypassEmbedCache(url, options) {
     if (options && options.cache === 'no-store') return true;
-    return String(url || '').indexOf('search=') >= 0;
+    var raw = String(url || '');
+    if (raw.indexOf('search=') >= 0) return true;
+    if (raw.indexOf('/collections') >= 0) return true;
+    return false;
+  }
+
+  function groupArticlesByCollectionSlug(articles) {
+    var map = {};
+    (articles || []).forEach(function (article) {
+      var key = normalizeSlug(article.collectionSlug);
+      if (!key) return;
+      if (!map[key]) map[key] = [];
+      map[key].push(article);
+    });
+    return map;
+  }
+
+  var HELP_SEARCH_ICON = (
+    '<svg class="ld-help-site__search-icon" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">' +
+      '<path d="M9 16a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm8 2-3.35-3.35" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />' +
+    '</svg>'
+  );
+
+  function buildHelpSearchFormHtml(options) {
+    var placeholder = String(options.searchPlaceholder || 'Search');
+    var value = String(options.searchQuery || '').trim();
+    return (
+      '<form class="ld-help-site__search" role="search" data-ld-help-search>' +
+        '<label class="ld-help-site__search-label">' +
+          '<span class="ld-help-site__search-text">' + escapeHtml(options.searchLabel || 'Search') + '</span>' +
+          '<div class="ld-help-site__search-box">' +
+            HELP_SEARCH_ICON +
+            '<input class="ld-help-site__search-input" type="search" name="q" value="' + escapeHtml(value) + '" placeholder="' + escapeHtml(placeholder) + '" autocomplete="off" />' +
+          '</div>' +
+        '</label>' +
+      '</form>'
+    );
+  }
+
+  function buildHelpTopbar(options) {
+    return (
+      '<header class="ld-help-site__topbar">' +
+        '<div class="ld-help-site__topbar-inner">' +
+          '<div class="ld-help-site__crumbs">' + (options.breadcrumbsHtml || '') + '</div>' +
+          (options.searchEnabled === false ? '' : buildHelpSearchFormHtml(options)) +
+        '</div>' +
+      '</header>'
+    );
+  }
+
+  function buildTopicsNavHtml(tree, options) {
+    return (
+      '<div class="ld-help-site__nav-inner">' +
+        '<h2 class="ld-help-site__nav-title">' + escapeHtml(options.topicsTitle || 'Topics') + '</h2>' +
+        buildSectionTreeHtml(tree, options) +
+      '</div>'
+    );
+  }
+
+  function buildCategoryHeroHtml(node) {
+    var desc = String(node.description || '').trim();
+    return (
+      '<section class="ld-help-hero">' +
+        '<h1 class="ld-help-hero__title">' + escapeHtml(node.name || node.slug) + '</h1>' +
+        (desc ? '<p class="ld-help-hero__desc">' + escapeHtml(desc) + '</p>' : '') +
+      '</section>'
+    );
+  }
+
+  function buildSubcategoryCardHtml(section, articles, options) {
+    var previewLimit = Math.min(Math.max(Number(options.previewLimit) || 5, 1), 8);
+    var preview = (articles || []).slice(0, previewLimit);
+    var remaining = Math.max((articles || []).length - preview.length, 0);
+    var sectionHref = buildSectionHref(options.sectionPrefix, section, section.parentSlug);
+    var articlePrefix = options.articlePrefix;
+    var sectionContext = section;
+    var listHtml = preview.map(function (article) {
+      return (
+        '<li class="ld-help-topic-card__item">' +
+          '<a class="ld-help-topic-card__link" href="' + escapeHtml(buildArticleHref(articlePrefix, article, sectionContext)) + '">' +
+            escapeHtml(article.title || article.slug || 'Untitled') +
+          '</a>' +
+        '</li>'
+      );
+    }).join('');
+    var footerHtml = '';
+    if ((articles || []).length) {
+      footerHtml = (
+        '<footer class="ld-help-topic-card__footer">' +
+          (remaining > 0
+            ? '<span class="ld-help-topic-card__count">+ ' + remaining + ' ' + escapeHtml(options.articlesMoreLabel || 'articles') + '</span>'
+            : '<span class="ld-help-topic-card__count"></span>') +
+          '<a class="ld-help-topic-card__more" href="' + escapeHtml(sectionHref) + '">' + escapeHtml(options.showAllLabel || 'Show all') + '</a>' +
+        '</footer>'
+      );
+    }
+    return (
+      '<article class="ld-help-topic-card">' +
+        '<h3 class="ld-help-topic-card__title">' +
+          '<a class="ld-help-topic-card__title-link" href="' + escapeHtml(sectionHref) + '">' + escapeHtml(section.name || section.slug) + '</a>' +
+        '</h3>' +
+        (listHtml ? '<ul class="ld-help-topic-card__list">' + listHtml + '</ul>' : '') +
+        footerHtml +
+      '</article>'
+    );
+  }
+
+  function buildSectionArticleRowHtml(article, linkPrefix, sectionContext) {
+    return (
+      '<li class="ld-help-article-row">' +
+        '<a class="ld-help-article-row__link" href="' + escapeHtml(buildArticleHref(linkPrefix, article, sectionContext)) + '">' +
+          '<span class="ld-help-article-row__title">' + escapeHtml(article.title || article.slug || 'Untitled') + '</span>' +
+          '<span class="ld-help-article-row__arrow" aria-hidden="true">→</span>' +
+        '</a>' +
+      '</li>'
+    );
+  }
+
+  function buildSectionArticlesHtml(articles, linkPrefix, sectionContext, options) {
+    var label = String((options && options.articlesLabel) || 'Articles');
+    var rows = (articles || []).map(function (article) {
+      return buildSectionArticleRowHtml(article, linkPrefix, sectionContext);
+    }).join('');
+    return (
+      '<section class="ld-help-articles">' +
+        '<h2 class="ld-help-articles__label">' + escapeHtml(label) + '</h2>' +
+        '<ul class="ld-help-articles__list">' + rows + '</ul>' +
+      '</section>'
+    );
+  }
+
+  function buildHelpSiteShell(options) {
+    var railHtml = options.railHtml
+      ? (
+        '<aside class="ld-help-site__rail">' +
+          '<div class="ld-help-site__rail-sticky" data-ld-help-toc-rail>' + options.railHtml + '</div>' +
+        '</aside>'
+      )
+      : '';
+    var navHtml = String(options.navHtml || '').trim();
+    var navAside = navHtml
+      ? '<aside class="ld-help-site__nav">' + navHtml + '</aside>'
+      : '';
+    var bodyClass = 'ld-help-site__body';
+    if (options.railHtml) {
+      bodyClass += navHtml ? ' ld-help-site__body--article' : ' ld-help-site__body--article-no-nav';
+    }
+    return (
+      '<div class="ld-help-site"' + (options.dataAttr ? ' ' + options.dataAttr : '') + '>' +
+        (options.topbarHtml || '') +
+        '<div class="' + bodyClass + '">' +
+          navAside +
+          '<main class="ld-help-site__main">' +
+            (options.statusHtml || '') +
+            (options.mainHtml || '') +
+          '</main>' +
+          railHtml +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function injectHeadingIds(bodyHtml) {
+    var index = 0;
+    return String(bodyHtml || '').replace(/<h([23])([^>]*)>/gi, function (_full, level, attrs) {
+      if (/\bid=/.test(attrs)) return '<h' + level + attrs + '>';
+      var id = 'ld-toc-' + (index++);
+      return '<h' + level + attrs + ' id="' + id + '">';
+    });
+  }
+
+  function buildTocHtml(bodyHtml) {
+    var headings = [];
+    var re = /<h([23])[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/gi;
+    var match;
+    while ((match = re.exec(String(bodyHtml || ''))) !== null) {
+      headings.push({
+        level: match[1],
+        id: match[2],
+        text: String(match[3] || '').replace(/<[^>]+>/g, '').trim(),
+      });
+    }
+    if (!headings.length) return '';
+    return (
+      '<nav class="ld-help-toc" aria-label="On this page">' +
+        '<h2 class="ld-help-toc__title">On this page</h2>' +
+        '<ul class="ld-help-toc__list">' +
+          headings.map(function (heading) {
+            return (
+              '<li class="ld-help-toc__item ld-help-toc__item--h' + heading.level + '">' +
+                '<a class="ld-help-toc__link" href="#' + escapeHtml(heading.id) + '">' + escapeHtml(heading.text) + '</a>' +
+              '</li>'
+            );
+          }).join('') +
+        '</ul>' +
+      '</nav>'
+    );
+  }
+
+  function buildArticleRailHtml(tocHtml, options) {
+    var shareLabel = String((options && options.shareLabel) || 'Share this article');
+    return (
+      tocHtml +
+      '<div class="ld-help-toc__share">' +
+        '<span class="ld-help-toc__share-label">' + escapeHtml(shareLabel) + '</span>' +
+        '<button type="button" class="ld-help-toc__share-btn" data-ld-help-share aria-label="' + escapeHtml(shareLabel) + '">' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />' +
+          '</svg>' +
+        '</button>' +
+      '</div>'
+    );
+  }
+
+  function getStickyTopOffset(root) {
+    var raw = getComputedStyle(root).getPropertyValue('--ld-help-sticky-top').trim();
+    if (!raw) return 24;
+    if (raw.indexOf('rem') >= 0) {
+      var rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      return parseFloat(raw) * rootFont;
+    }
+    return parseFloat(raw) || 24;
+  }
+
+  function bindArticleTocRail(root) {
+    if (!root || !root.hasAttribute('data-ld-help-article')) return;
+    var railColumn = root.querySelector('.ld-help-site__rail');
+    var sticky = root.querySelector('[data-ld-help-toc-rail]');
+    var bodyEl = root.querySelector('.ld-help-site__body');
+    if (!railColumn || !sticky || !bodyEl) return;
+
+    if (typeof root.__ldTocRailSchedule === 'function') {
+      root.__ldTocRailSchedule();
+      return;
+    }
+
+    var mediaQuery = window.matchMedia('(min-width: 960px)');
+    var pending = false;
+
+    function clearFixedStyles() {
+      sticky.classList.remove('ld-help-site__rail-sticky--fixed');
+      sticky.style.position = '';
+      sticky.style.top = '';
+      sticky.style.left = '';
+      sticky.style.width = '';
+      sticky.style.maxHeight = '';
+      sticky.style.overflowY = '';
+    }
+
+    function update() {
+      if (!mediaQuery.matches) {
+        clearFixedStyles();
+        return;
+      }
+
+      var topOffset = getStickyTopOffset(root);
+      var columnRect = railColumn.getBoundingClientRect();
+      var bodyRect = bodyEl.getBoundingClientRect();
+      var stickyHeight = sticky.offsetHeight;
+      var top = topOffset;
+
+      if (bodyRect.bottom - stickyHeight < topOffset) {
+        top = bodyRect.bottom - stickyHeight;
+      }
+      if (bodyRect.top > topOffset) {
+        top = bodyRect.top;
+      }
+
+      sticky.classList.add('ld-help-site__rail-sticky--fixed');
+      sticky.style.position = 'fixed';
+      sticky.style.top = Math.max(0, top) + 'px';
+      sticky.style.left = columnRect.left + 'px';
+      sticky.style.width = columnRect.width + 'px';
+      sticky.style.maxHeight = Math.max(120, window.innerHeight - topOffset - 16) + 'px';
+      sticky.style.overflowY = 'auto';
+    }
+
+    function schedule() {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(function () {
+        pending = false;
+        update();
+      });
+    }
+
+    root.__ldTocRailSchedule = schedule;
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', schedule);
+    } else if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(schedule);
+    }
+    schedule();
+  }
+
+  function bindTocSmoothScroll(root) {
+    if (!root || root.getAttribute('data-ld-toc-scroll-bound') === 'true') return;
+    var links = root.querySelectorAll('.ld-help-toc__link[href^="#"]');
+    if (!links.length) return;
+    root.setAttribute('data-ld-toc-scroll-bound', 'true');
+
+    links.forEach(function (link) {
+      link.addEventListener('click', function (event) {
+        var hash = String(link.getAttribute('href') || '');
+        if (hash.length < 2) return;
+        var id = decodeURIComponent(hash.slice(1));
+        var target = document.getElementById(id);
+        if (!target) return;
+        event.preventDefault();
+        var offset = getStickyTopOffset(root) + 16;
+        var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', hash);
+        }
+      });
+    });
+  }
+
+  function bindHelpSiteChrome(root, options) {
+    if (!root) return;
+    bindSectionTree(root);
+    bindTocSmoothScroll(root);
+
+    var searchForm = root.querySelector('[data-ld-help-search]');
+    if (searchForm && options && options.homePrefix) {
+      searchForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var input = searchForm.querySelector('.ld-help-site__search-input');
+        var query = input ? String(input.value || '').trim() : '';
+        var home = buildHomeHref(options.homePrefix);
+        if (!query) {
+          window.location.href = home;
+          return;
+        }
+        var joiner = home.indexOf('?') >= 0 ? '&' : '?';
+        window.location.href = home + joiner + 'q=' + encodeURIComponent(query);
+      });
+    }
+
+    var shareBtn = root.querySelector('[data-ld-help-share]');
+    if (shareBtn && typeof navigator !== 'undefined' && navigator.share) {
+      shareBtn.addEventListener('click', function () {
+        void navigator.share({
+          title: document.title,
+          url: window.location.href,
+        }).catch(function () {
+          /* user cancelled */
+        });
+      });
+    } else if (shareBtn) {
+      shareBtn.addEventListener('click', function () {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          void navigator.clipboard.writeText(window.location.href);
+        }
+      });
+    }
   }
 
   function fetchJson(url, options) {
@@ -507,12 +857,46 @@
   function buildSectionTreeHtml(nodes, options) {
     var currentSlug = normalizeSlug(options.currentSlug);
     var currentParentSlug = normalizeSlug(options.currentParentSlug);
+    var currentArticleSlug = normalizeSlug(options.currentArticleSlug);
+    var categoryPrefix = normalizeLinkPrefix(options.categoryPrefix || options.linkPrefix);
     var linkPrefix = normalizeLinkPrefix(options.linkPrefix);
+    var articlePrefix = normalizeLinkPrefix(options.articlePrefix || options.linkPrefix);
+    var articlesBySlug = options.articlesBySlug || {};
+    var sectionContextBySlug = options.sectionContextBySlug || {};
     var openSlugs = {};
 
     (options.openPath || []).forEach(function (node) {
       openSlugs[normalizeSlug(node.slug)] = true;
     });
+
+    function buildNodeHref(node) {
+      if (!node.parentSlug) {
+        return buildCategoryHref(categoryPrefix, node.slug);
+      }
+      return buildSectionHref(linkPrefix, node, node.parentSlug);
+    }
+
+    function buildArticleLinks(sectionNode, isOpen) {
+      var slug = normalizeSlug(sectionNode.slug);
+      var articles = articlesBySlug[slug] || [];
+      if (!isOpen || !articles.length) return '';
+      var context = sectionContextBySlug[slug] || sectionNode;
+      return (
+        '<ul class="ld-help-tree ld-help-tree--articles">' +
+          articles.map(function (article) {
+            var articleSlug = normalizeSlug(article.slug);
+            var isCurrentArticle = articleSlug && articleSlug === currentArticleSlug;
+            return (
+              '<li class="ld-help-tree__article-item' + (isCurrentArticle ? ' is-current' : '') + '">' +
+                '<a class="ld-help-tree__article-link" href="' + escapeHtml(buildArticleHref(articlePrefix, article, context)) + '">' +
+                  escapeHtml(article.title || article.slug || 'Untitled') +
+                '</a>' +
+              '</li>'
+            );
+          }).join('') +
+        '</ul>'
+      );
+    }
 
     function renderNodes(list, depth) {
       if (!Array.isArray(list) || !list.length) return '';
@@ -523,23 +907,27 @@
             var isCurrent = slug === currentSlug && normalizeSlug(node.parentSlug) === currentParentSlug;
             var isOpen = openSlugs[slug] || isCurrent;
             var hasChildren = Array.isArray(node.children) && node.children.length > 0;
+            var hasArticles = Array.isArray(articlesBySlug[slug]) && articlesBySlug[slug].length > 0;
+            var canExpand = hasChildren || hasArticles;
             var itemClass = 'ld-help-tree__item' + (isCurrent ? ' is-current' : '') + (isOpen ? ' is-open' : '');
-            var toggleHtml = hasChildren
+            var toggleHtml = canExpand
               ? '<button type="button" class="ld-help-tree__toggle" aria-expanded="' + (isOpen ? 'true' : 'false') + '" aria-label="Toggle section"></button>'
               : '<span class="ld-help-tree__spacer" aria-hidden="true"></span>';
             var childrenHtml = hasChildren && isOpen
               ? '<div class="ld-help-tree__children">' + renderNodes(node.children, depth + 1) + '</div>'
               : (hasChildren ? '<div class="ld-help-tree__children" hidden>' + renderNodes(node.children, depth + 1) + '</div>' : '');
+            var articlesHtml = buildArticleLinks(node, isOpen);
 
             return (
               '<li class="' + itemClass + '">' +
                 '<div class="ld-help-tree__row">' +
                   toggleHtml +
-                  '<a class="ld-help-tree__link" href="' + escapeHtml(buildSectionHref(linkPrefix, node, node.parentSlug)) + '">' +
+                  '<a class="ld-help-tree__link" href="' + escapeHtml(buildNodeHref(node)) + '">' +
                     escapeHtml(node.name || node.slug) +
                   '</a>' +
                 '</div>' +
                 childrenHtml +
+                articlesHtml +
               '</li>'
             );
           }).join('') +
@@ -556,9 +944,10 @@
         var item = button.closest('.ld-help-tree__item');
         if (!item) return;
         var children = item.querySelector(':scope > .ld-help-tree__children');
-        if (!children) return;
-        var isOpen = !children.hidden;
-        children.hidden = isOpen;
+        var articles = item.querySelector(':scope > .ld-help-tree--articles');
+        var isOpen = item.classList.contains('is-open');
+        if (children) children.hidden = isOpen;
+        if (articles) articles.hidden = isOpen;
         item.classList.toggle('is-open', !isOpen);
         button.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
       });
@@ -614,35 +1003,60 @@
   }
 
   function buildCategoryPageHtml(options) {
-    return (
-      '<div class="ld-help-page" data-ld-help-category>' +
-        '<div class="ld-help-page__breadcrumbs">' + options.breadcrumbsHtml + '</div>' +
-        '<div class="ld-help-page__layout">' +
-          '<main class="ld-help-page__main">' +
-            (options.statusHtml || '') +
-            options.headerHtml +
-            options.mainHtml +
-          '</main>' +
-          '<aside class="ld-help-page__sidebar">' + options.sidebarHtml + '</aside>' +
-        '</div>' +
-      '</div>'
-    );
+    return buildHelpSiteShell({
+      dataAttr: 'data-ld-help-category',
+      topbarHtml: options.topbarHtml,
+      navHtml: options.navHtml,
+      statusHtml: options.statusHtml,
+      mainHtml: options.mainHtml,
+    });
   }
 
   function buildSectionPageHtml(options) {
-    return (
-      '<div class="ld-help-page" data-ld-help-section>' +
-        '<div class="ld-help-page__breadcrumbs">' + options.breadcrumbsHtml + '</div>' +
-        '<div class="ld-help-page__layout">' +
-          '<main class="ld-help-page__main">' +
-            (options.statusHtml || '') +
-            options.headerHtml +
-            options.mainHtml +
-          '</main>' +
-          '<aside class="ld-help-page__sidebar">' + options.sidebarHtml + '</aside>' +
-        '</div>' +
-      '</div>'
-    );
+    return buildHelpSiteShell({
+      dataAttr: 'data-ld-help-section',
+      topbarHtml: options.topbarHtml,
+      navHtml: options.navHtml,
+      statusHtml: options.statusHtml,
+      mainHtml: options.mainHtml,
+    });
+  }
+
+  function buildArticlePageHtml(options) {
+    return buildHelpSiteShell({
+      dataAttr: 'data-ld-help-article',
+      topbarHtml: options.topbarHtml,
+      navHtml: options.navHtml,
+      mainHtml: options.mainHtml,
+      railHtml: options.railHtml,
+    });
+  }
+
+  function buildSectionContextMap(tree) {
+    var map = {};
+    function walk(nodes) {
+      (nodes || []).forEach(function (node) {
+        map[normalizeSlug(node.slug)] = node;
+        if (node.children && node.children.length) walk(node.children);
+      });
+    }
+    walk(tree);
+    return map;
+  }
+
+  function buildTreeOptions(options) {
+    return {
+      currentSlug: options.currentSlug,
+      currentParentSlug: options.currentParentSlug,
+      currentArticleSlug: options.currentArticleSlug,
+      categoryPrefix: options.categoryPrefix,
+      linkPrefix: options.sectionPrefix || options.linkPrefix,
+      articlePrefix: options.articlePrefix,
+      openPath: options.openPath || [],
+      articlesBySlug: options.articlesBySlug || {},
+      sectionContextBySlug: options.sectionContextBySlug || {},
+      topicsTitle: options.topicsTitle,
+    };
   }
 
   function fetchArticles(contentBase, options) {
@@ -695,6 +1109,25 @@
     buildRecentListHtml: buildRecentListHtml,
     buildSectionTreeHtml: buildSectionTreeHtml,
     bindSectionTree: bindSectionTree,
+    bindHelpSiteChrome: bindHelpSiteChrome,
+    bindArticleTocRail: bindArticleTocRail,
+    bindTocSmoothScroll: bindTocSmoothScroll,
+    getStickyTopOffset: getStickyTopOffset,
+    groupArticlesByCollectionSlug: groupArticlesByCollectionSlug,
+    buildHelpTopbar: buildHelpTopbar,
+    buildHelpSearchFormHtml: buildHelpSearchFormHtml,
+    buildTopicsNavHtml: buildTopicsNavHtml,
+    buildCategoryHeroHtml: buildCategoryHeroHtml,
+    buildSubcategoryCardHtml: buildSubcategoryCardHtml,
+    buildSectionArticleRowHtml: buildSectionArticleRowHtml,
+    buildSectionArticlesHtml: buildSectionArticlesHtml,
+    buildHelpSiteShell: buildHelpSiteShell,
+    injectHeadingIds: injectHeadingIds,
+    buildTocHtml: buildTocHtml,
+    buildArticleRailHtml: buildArticleRailHtml,
+    buildArticlePageHtml: buildArticlePageHtml,
+    buildSectionContextMap: buildSectionContextMap,
+    buildTreeOptions: buildTreeOptions,
     fetchCollections: fetchCollections,
     fetchRecentArticles: fetchRecentArticles,
     fetchPopularArticles: fetchPopularArticles,

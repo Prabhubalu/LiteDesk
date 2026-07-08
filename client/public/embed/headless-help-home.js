@@ -65,43 +65,119 @@
     return linkPrefix + encodeURIComponent(slug);
   }
 
-  function formatStats(articleCount, sectionCount, labels) {
-    var articleLabel = articleCount === 1 ? labels.articleSingular : labels.articlePlural;
-    var parts = [articleCount + ' ' + articleLabel];
-    if (sectionCount > 0) {
-      var sectionLabel = sectionCount === 1 ? labels.sectionSingular : labels.sectionPlural;
-      parts.push(sectionCount + ' ' + sectionLabel);
+  var SEARCH_ICON_SVG = (
+    '<svg class="ld-help-home__search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">' +
+      '<path d="M9 16a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm8 2-3.35-3.35" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />' +
+    '</svg>'
+  );
+
+  var CARD_ICON_COLORS = [
+    'ld-help-home__card-icon--green',
+    'ld-help-home__card-icon--dark',
+    'ld-help-home__card-icon--dark',
+    'ld-help-home__card-icon--orange',
+    'ld-help-home__card-icon--purple',
+    'ld-help-home__card-icon--dark',
+    'ld-help-home__card-icon--blue',
+    'ld-help-home__card-icon--red',
+    'ld-help-home__card-icon--maroon',
+  ];
+
+  function ensureHeroiconPaths(origin) {
+    if (window.LiteDeskHeadlessHeroiconPaths || window.ArivuHeadlessHeroiconPaths) {
+      return Promise.resolve();
     }
-    return parts.join(' · ');
+    if (document.querySelector('script[data-ld-headless-heroicon-paths]')) {
+      return new Promise(function (resolve) {
+        var existing = document.querySelector('script[data-ld-headless-heroicon-paths]');
+        existing.addEventListener('load', function () { resolve(); });
+      });
+    }
+    return new Promise(function (resolve, reject) {
+      var script = document.createElement('script');
+      script.src = origin + '/embed/headless-heroicon-paths.js';
+      script.async = true;
+      script.setAttribute('data-ld-headless-heroicon-paths', 'true');
+      script.onload = function () { resolve(); };
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  function getHeroiconPaths() {
+    return window.LiteDeskHeadlessHeroiconPaths || window.ArivuHeadlessHeroiconPaths || {};
+  }
+
+  function buildHeroIconSvg(iconKey) {
+    var key = String(iconKey || '').trim().toLowerCase();
+    var paths = getHeroiconPaths()[key];
+    if (!paths || !paths.length) return '';
+    var pathHtml = paths.map(function (d) {
+      return '<path stroke-linecap="round" stroke-linejoin="round" d="' + escapeHtml(d) + '" />';
+    }).join('');
+    return (
+      '<svg class="ld-help-home__card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">' +
+        pathHtml +
+      '</svg>'
+    );
+  }
+
+  function normalizeHeroIconColor(value) {
+    var raw = String(value || '').trim();
+    if (!raw) return '#111827';
+    if (/^#[0-9a-f]{6}$/i.test(raw)) return raw.toLowerCase();
+    if (/^#[0-9a-f]{3}$/i.test(raw)) {
+      var hex = raw.slice(1);
+      return '#' + hex.split('').map(function (ch) { return ch + ch; }).join('').toLowerCase();
+    }
+    return '#111827';
+  }
+  function resolveHeroIconKey(collection) {
+    var key = String(collection.heroIconKey || '').trim().toLowerCase();
+    if (!key) return '';
+    return getHeroiconPaths()[key] ? key : '';
   }
 
   function buildHomeShell(options) {
     var searchEnabled = options.searchEnabled !== false;
+    var title = String(options.title || 'How can we help?').trim();
+    var searchButtonLabel = String(options.searchButtonLabel || 'Search').trim();
     var searchHtml = searchEnabled
       ? (
         '<form class="ld-help-home__search" role="search">' +
           '<label class="ld-help-home__search-label">' +
             '<span class="ld-help-home__search-text">' + escapeHtml(options.searchLabel) + '</span>' +
-            '<input class="ld-help-home__search-input" type="search" name="q" value="' + escapeHtml(options.searchQuery || '') + '" placeholder="' + escapeHtml(options.searchPlaceholder) + '" autocomplete="off" />' +
+            '<div class="ld-help-home__search-box">' +
+              SEARCH_ICON_SVG +
+              '<input class="ld-help-home__search-input" type="search" name="q" value="' + escapeHtml(options.searchQuery || '') + '" placeholder="' + escapeHtml(options.searchPlaceholder) + '" autocomplete="off" />' +
+              '<button type="submit" class="ld-help-home__search-btn">' + escapeHtml(searchButtonLabel) + '</button>' +
+            '</div>' +
           '</label>' +
         '</form>'
       )
       : '';
 
-    var titleHtml = options.title
-      ? '<header class="ld-help-home__header"><h1 class="ld-help-home__title">' + escapeHtml(options.title) + '</h1></header>'
-      : '';
     var categoriesTitleHtml = options.categoriesTitle
-      ? '<h2 class="ld-help-home__section-title">' + escapeHtml(options.categoriesTitle) + '</h2>'
+      ? (
+        '<div class="ld-help-home__section-head">' +
+          '<h2 class="ld-help-home__section-title">' + escapeHtml(options.categoriesTitle) + '</h2>' +
+          '<div class="ld-help-home__section-divider" aria-hidden="true"></div>' +
+        '</div>'
+      )
       : '';
 
     return (
       '<div class="ld-help-home" data-ld-help-home>' +
-        titleHtml +
-        searchHtml +
+        '<section class="ld-help-home__hero">' +
+          '<h1 class="ld-help-home__title">' + escapeHtml(title) + '</h1>' +
+          searchHtml +
+          '<div class="ld-help-home__tags" hidden></div>' +
+        '</section>' +
         '<div class="ld-help-home__status" aria-live="polite"></div>' +
-        categoriesTitleHtml +
-        '<div class="ld-help-home__grid" aria-busy="true">' + buildHomeGridSkeleton(6) + '</div>' +
+        '<section class="ld-help-home__categories">' +
+          categoriesTitleHtml +
+          '<div class="ld-help-home__grid" aria-busy="true">' + buildHomeGridSkeleton(6) + '</div>' +
+        '</section>' +
         '<div class="ld-help-home__search-results" hidden>' +
           '<div class="ld-help-home__search-results-header">' +
             '<button type="button" class="ld-help-home__back-btn">' + escapeHtml(options.backLabel) + '</button>' +
@@ -112,30 +188,62 @@
     );
   }
 
-  function buildCollectionCard(collection, linkPrefix, labels) {
+  function buildCollectionCard(collection, linkPrefix, index) {
     var slug = String(collection.slug || '').trim();
-    var name = escapeHtml(collection.name || 'Untitled');
+    var rawName = String(collection.name || 'Untitled').trim();
+    var name = escapeHtml(rawName);
     var description = String(collection.description || '').trim();
     var descriptionHtml = description
       ? '<p class="ld-help-home__card-desc">' + escapeHtml(description) + '</p>'
       : '';
-    var stats = formatStats(
-      Number(collection.articleCount) || 0,
-      Number(collection.sectionCount) || 0,
-      labels,
-    );
     var emoji = String(collection.emoji || '').trim();
-    var emojiHtml = emoji
-      ? '<span class="ld-help-home__card-icon" aria-hidden="true">' + escapeHtml(emoji) + '</span>'
-      : '';
+    var imageUrl = String(collection.imageUrl || '').trim();
+    var heroIconKey = resolveHeroIconKey(collection);
+    var iconHtml = '';
+    if (imageUrl) {
+      iconHtml = (
+        '<span class="ld-help-home__card-icon ld-help-home__card-icon--image" aria-hidden="true">' +
+          '<img class="ld-help-home__card-icon-img" src="' + escapeHtml(imageUrl) + '" alt="" loading="lazy" decoding="async" />' +
+        '</span>'
+      );
+    } else if (heroIconKey) {
+      var iconColor = normalizeHeroIconColor(collection.heroIconColor);
+      iconHtml = (
+        '<span class="ld-help-home__card-icon ld-help-home__card-icon--hero" style="background-color:' + escapeHtml(iconColor) + '" aria-hidden="true">' +
+          buildHeroIconSvg(heroIconKey) +
+        '</span>'
+      );
+    } else {
+      var iconContent = emoji || escapeHtml(rawName.charAt(0).toUpperCase() || '?');
+      var iconModifier = emoji ? '' : ' ld-help-home__card-icon--letter';
+      var colorClass = CARD_ICON_COLORS[Math.abs(Number(index) || 0) % CARD_ICON_COLORS.length];
+      iconHtml = '<span class="ld-help-home__card-icon ' + colorClass + iconModifier + '" aria-hidden="true">' + iconContent + '</span>';
+    }
 
     return (
       '<a class="ld-help-home__card" href="' + escapeHtml(buildCollectionHref(linkPrefix, slug)) + '">' +
-        (emojiHtml ? '<div class="ld-help-home__card-header">' + emojiHtml + '<h2 class="ld-help-home__card-title">' + name + '</h2></div>' : '<h2 class="ld-help-home__card-title">' + name + '</h2>') +
-        descriptionHtml +
-        '<p class="ld-help-home__card-stats">' + escapeHtml(stats) + '</p>' +
+        '<div class="ld-help-home__card-body">' +
+          iconHtml +
+          '<h2 class="ld-help-home__card-title">' + name + '</h2>' +
+          descriptionHtml +
+        '</div>' +
+        '<span class="ld-help-home__card-arrow" aria-hidden="true">→</span>' +
       '</a>'
     );
+  }
+
+  function buildQuickTagsHtml(collections, linkPrefix, limit) {
+    var items = Array.isArray(collections) ? collections.slice(0, Math.max(Number(limit) || 4, 1)) : [];
+    if (!items.length) return '';
+    return items.map(function (collection) {
+      var label = escapeHtml(String(collection.name || collection.slug || '').trim());
+      if (!label) return '';
+      return (
+        '<a class="ld-help-home__tag" href="' + escapeHtml(buildCollectionHref(linkPrefix, collection.slug)) + '">' +
+          label +
+        '</a>'
+      );
+    }).join('');
   }
 
   function buildSearchResultItem(article, linkPrefix) {
@@ -189,6 +297,16 @@
     return html;
   }
 
+  function readSearchQueryFromUrl() {
+    if (typeof window === 'undefined' || !window.location) return '';
+    try {
+      var params = new URLSearchParams(window.location.search);
+      return String(params.get('q') || params.get('search') || '').trim();
+    } catch (_error) {
+      return '';
+    }
+  }
+
   function mountHome(options) {
     var org = String(options.org || '').trim();
     var target = options.target;
@@ -197,11 +315,13 @@
     var linkPrefix = normalizeLinkPrefix(options.linkPrefix);
     var articlePrefix = normalizeLinkPrefix(options.articlePrefix || options.linkPrefix);
     var searchEnabled = options.searchEnabled !== false;
-    var searchQuery = String(options.search || '').trim();
-    var title = String(options.title || '').trim();
+    var searchQuery = String(options.search || readSearchQueryFromUrl() || '').trim();
+    var title = String(options.title || 'How can we help?').trim();
     var categoriesTitle = String(options.categoriesTitle || '').trim();
     var searchLabel = String(options.searchLabel || 'Search articles');
-    var searchPlaceholder = String(options.searchPlaceholder || 'Search help articles…');
+    var searchPlaceholder = String(options.searchPlaceholder || 'Ask me anything');
+    var searchButtonLabel = String(options.searchButtonLabel || 'Search');
+    var quickTagsLimit = Math.min(Math.max(Number(options.quickTagsLimit) || 4, 0), 8);
     var emptyLabel = String(options.emptyLabel || 'No help categories yet.');
     var searchEmptyLabel = String(options.searchEmptyLabel || 'No articles match your search.');
     var loadFailedLabel = String(options.loadFailedLabel || 'Failed to load help center');
@@ -224,47 +344,24 @@
 
     var root = mountEl.querySelector('.ld-help-home');
     if (root && root.classList.contains('ld-help-skeleton')) {
-      root.classList.remove('ld-help-skeleton');
-      root.removeAttribute('aria-busy');
-      root.removeAttribute('aria-label');
-      root.setAttribute('data-ld-help-home', '');
-
-      var shellHtml = buildHomeShell({
-        searchEnabled: searchEnabled,
-        searchQuery: searchQuery,
-        searchLabel: searchLabel,
-        searchPlaceholder: searchPlaceholder,
-        title: title,
-        categoriesTitle: categoriesTitle,
-        backLabel: backLabel,
-      });
-      var temp = document.createElement('div');
-      temp.innerHTML = shellHtml;
-      var fresh = temp.firstElementChild;
-      var gridElBootstrap = root.querySelector('.ld-help-home__grid');
-      var skeletonSearch = root.querySelector('.ld-help-skeleton__search');
-      if (skeletonSearch) skeletonSearch.remove();
-
-      ['.ld-help-home__header', '.ld-help-home__search', '.ld-help-home__status', '.ld-help-home__section-title'].forEach(function (selector) {
-        if (root.querySelector(selector)) return;
-        var node = fresh.querySelector(selector);
-        if (node && gridElBootstrap) {
-          root.insertBefore(node, gridElBootstrap);
-        } else if (node) {
-          root.appendChild(node);
-        }
-      });
-
-      if (!root.querySelector('.ld-help-home__search-results')) {
-        var searchResults = fresh.querySelector('.ld-help-home__search-results');
-        if (searchResults) root.appendChild(searchResults);
-      }
-    } else {
       mountEl.innerHTML = buildHomeShell({
         searchEnabled: searchEnabled,
         searchQuery: searchQuery,
         searchLabel: searchLabel,
         searchPlaceholder: searchPlaceholder,
+        searchButtonLabel: searchButtonLabel,
+        title: title,
+        categoriesTitle: categoriesTitle,
+        backLabel: backLabel,
+      });
+      root = mountEl.querySelector('[data-ld-help-home]');
+    } else if (!root) {
+      mountEl.innerHTML = buildHomeShell({
+        searchEnabled: searchEnabled,
+        searchQuery: searchQuery,
+        searchLabel: searchLabel,
+        searchPlaceholder: searchPlaceholder,
+        searchButtonLabel: searchButtonLabel,
         title: title,
         categoriesTitle: categoriesTitle,
         backLabel: backLabel,
@@ -273,26 +370,28 @@
     }
 
     var statusEl = root.querySelector('.ld-help-home__status');
+    var categoriesEl = root.querySelector('.ld-help-home__categories');
     var gridEl = root.querySelector('.ld-help-home__grid');
+    var tagsEl = root.querySelector('.ld-help-home__tags');
     var searchResultsEl = root.querySelector('.ld-help-home__search-results');
     var searchItemsEl = searchResultsEl.querySelector('.ld-help-list__items');
     var backBtn = searchResultsEl.querySelector('.ld-help-home__back-btn');
 
     function showGrid() {
       searchResultsEl.hidden = true;
-      gridEl.hidden = false;
+      if (categoriesEl) categoriesEl.hidden = false;
       statusEl.textContent = '';
     }
 
     function showSearchResults() {
-      gridEl.hidden = true;
+      if (categoriesEl) categoriesEl.hidden = true;
       searchResultsEl.hidden = false;
     }
 
     function renderLoading() {
       statusEl.textContent = '';
       searchResultsEl.hidden = true;
-      gridEl.hidden = false;
+      if (categoriesEl) categoriesEl.hidden = false;
       gridEl.setAttribute('aria-busy', 'true');
       gridEl.innerHTML = buildHomeGridSkeleton(6);
       searchItemsEl.innerHTML = '';
@@ -346,7 +445,8 @@
 
     renderLoading();
 
-    return fetch(collectionsUrl)
+    return ensureHeroiconPaths(apiOrigin).then(function () {
+      return fetch(collectionsUrl, { cache: 'no-store' })
       .then(function (response) {
         return response.json().then(function (payload) {
           return { response: response, payload: payload };
@@ -363,11 +463,21 @@
           statusEl.textContent = emptyLabel;
         }
 
-        gridEl.innerHTML = collections.map(function (collection) {
-          return buildCollectionCard(collection, linkPrefix, labels);
+        gridEl.innerHTML = collections.map(function (collection, index) {
+          return buildCollectionCard(collection, linkPrefix, index);
         }).join('');
         gridEl.hidden = false;
         gridEl.removeAttribute('aria-busy');
+
+        if (tagsEl && quickTagsLimit > 0) {
+          var tagsHtml = buildQuickTagsHtml(collections, linkPrefix, quickTagsLimit);
+          if (tagsHtml) {
+            tagsEl.innerHTML = tagsHtml;
+            tagsEl.hidden = false;
+          } else {
+            tagsEl.hidden = true;
+          }
+        }
 
         var state = {
           org: org,
@@ -388,6 +498,13 @@
         };
         bindSearch(state);
 
+        if (searchQuery) {
+          var searchForm = root.querySelector('.ld-help-home__search');
+          if (searchForm) {
+            searchForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+          }
+        }
+
         return {
           collections: collections,
           organization: result.payload.organization,
@@ -400,6 +517,7 @@
         mountEl.innerHTML = '<p class="ld-article__error">' + escapeHtml(error.message || loadFailedLabel) + '</p>';
         throw error;
       });
+    });
   }
 
   var script = document.currentScript;

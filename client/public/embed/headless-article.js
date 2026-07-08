@@ -174,15 +174,14 @@
     var metaParts = [];
     if (data.authorName) metaParts.push('<span>' + escapeHtml(data.authorName) + '</span>');
     if (data.publishedAt) metaParts.push('<span>' + escapeHtml(formatDate(data.publishedAt)) + '</span>');
-    if (data.readMinutes) metaParts.push('<span>' + escapeHtml(String(data.readMinutes)) + ' min read</span>');
-    if (data.collectionName) metaParts.push('<span>' + escapeHtml(data.collectionName) + '</span>');
-    var meta = metaParts.length ? '<div class="ld-article__meta">' + metaParts.join('') + '</div>' : '';
+    var meta = metaParts.length ? '<div class="ld-article__meta ld-article__meta--secondary">' + metaParts.join('') + '</div>' : '';
     var footer = footerHtml || '';
 
     return (
       '<article class="ld-article">' +
         '<header class="ld-article__header">' +
           buildArticleHeader(data, presentation, colors, apiOrigin) +
+          buildArticleChromeMeta(data) +
           meta +
         '</header>' +
         '<div class="ld-article__body">' + bodyHtml + '</div>' +
@@ -216,7 +215,7 @@
     var shareUrl = options.pageUrl || (typeof window !== 'undefined' ? window.location.href : '');
     var title = options.title || '';
     return (
-      '<footer class="ld-article__footer" data-ld-article-footer>' +
+      '<div class="ld-article__footer" data-ld-article-footer role="group" aria-label="' + escapeHtml(options.helpfulLabel) + '">' +
         '<div class="ld-article__feedback">' +
           '<span class="ld-article__footer-label">' + escapeHtml(options.helpfulLabel) + '</span>' +
           '<div class="ld-article__feedback-actions" role="group" aria-label="' + escapeHtml(options.helpfulLabel) + '">' +
@@ -233,7 +232,7 @@
             '<a class="ld-article__share-btn ld-article__share-btn--linkedin" href="' + escapeHtml(buildShareUrl('linkedin', shareUrl, title)) + '" data-share="linkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">' + SHARE_ICONS.linkedin + '</a>' +
           '</div>' +
         '</div>' +
-      '</footer>'
+      '</div>'
     );
   }
 
@@ -399,23 +398,27 @@
     return prefix;
   }
 
-  function buildChromeShell(breadcrumbsHtml, articleHtml, sidebarHtml, showSidebar) {
-    var layoutClass = showSidebar
-      ? 'ld-help-page__layout'
-      : 'ld-help-page__layout ld-help-page__layout--single';
-    var sidebar = showSidebar
-      ? '<aside class="ld-help-page__sidebar">' + sidebarHtml + '</aside>'
-      : '';
-
+  function buildArticleChromeMeta(article) {
+    var categoryName = String(article.collectionName || '').trim();
+    var readMinutes = Number(article.readMinutes) || 0;
+    var readLabel = readMinutes > 0 ? readMinutes + ' min read' : '';
+    if (!categoryName && !readLabel) return '';
     return (
-      '<div class="ld-help-page" data-ld-help-article>' +
-        breadcrumbsHtml +
-        '<div class="' + layoutClass + '">' +
-          '<main class="ld-help-page__main">' + articleHtml + '</main>' +
-          sidebar +
-        '</div>' +
-      '</div>'
+      '<div class="ld-article-chrome__meta">' +
+        (categoryName ? '<span class="ld-article-chrome__chip">' + escapeHtml(categoryName) + '</span>' : '') +
+        (readLabel ? '<span class="ld-article-chrome__read">' + escapeHtml(readLabel) + '</span>' : '') +
+      '</div>' +
+      '<hr class="ld-article-chrome__divider" aria-hidden="true" />'
     );
+  }
+
+  function buildChromeShell(options) {
+    return options.common.buildArticlePageHtml({
+      topbarHtml: options.topbarHtml,
+      navHtml: options.navHtml,
+      mainHtml: options.articleHtml,
+      railHtml: options.railHtml,
+    });
   }
 
   function resolveChromeOptions(options) {
@@ -433,10 +436,10 @@
       articlePrefix: normalizeLinkPrefix(options.articlePrefix || options.linkPrefix || '/help/'),
       collectionSlug: normalizeSlug(options.collection || options.parent || ''),
       sectionSlug: normalizeSlug(options.section || ''),
-      homeLabel: String(options.homeLabel || 'Home'),
+      homeLabel: String(options.homeLabel || 'Support'),
       popularTitle: String(options.popularTitle || 'Popular articles'),
       recentTitle: String(options.recentTitle || 'Recent articles'),
-      sectionsTitle: String(options.sectionsTitle || 'Sections'),
+      topicsTitle: String(options.topicsTitle || 'Topics'),
       popularEmptyLabel: String(options.popularEmptyLabel || 'No popular articles yet.'),
       recentEmptyLabel: String(options.recentEmptyLabel || 'No recent articles.'),
       recentLimit: Math.min(Math.max(Number(options.recentLimit) || 5, 1), 25),
@@ -448,6 +451,8 @@
       noLabel: String(options.noLabel || 'No'),
       thanksLabel: String(options.thanksLabel || 'Thanks for your feedback.'),
       pageUrl: String(options.pageUrl || ''),
+      searchPlaceholder: String(options.searchPlaceholder || 'Search'),
+      shareRailLabel: String(options.shareRailLabel || 'Share this article'),
     };
   }
 
@@ -483,20 +488,14 @@
     if (!mountEl.querySelector('.ld-help-skeleton')) {
       var commonForSkeleton = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
       mountEl.innerHTML = commonForSkeleton
-        ? commonForSkeleton.buildMountSkeleton({ type: 'page', showSidebar: chrome.showSidebar })
-        : '<div class="ld-help-page ld-help-skeleton" aria-busy="true" aria-label="Loading"></div>';
+        ? commonForSkeleton.buildMountSkeleton({ type: 'page', showRail: chrome.showSidebar })
+        : '<div class="ld-help-site ld-help-skeleton" aria-busy="true" aria-label="Loading"></div>';
     }
     ensureStylesheet(apiOrigin);
 
     var collectionsPromise = chrome.enabled
       ? ensureHelpCommonScript(apiOrigin).then(function (common) {
         return common.fetchCollections(contentBase);
-      })
-      : Promise.resolve(null);
-
-    var sidebarWidgetsPromise = chrome.showSidebar
-      ? ensureHelpCommonScript(apiOrigin).then(function (common) {
-        return common.fetchArticleSidebarWidgets(contentBase, widgetOptions);
       })
       : Promise.resolve(null);
 
@@ -507,12 +506,10 @@
         });
       }),
       collectionsPromise,
-      sidebarWidgetsPromise,
     ])
       .then(function (results) {
         var articleResult = results[0];
         var collectionsResult = results[1];
-        var sidebarWidgets = results[2];
 
         if (!articleResult.response.ok || !articleResult.payload || !articleResult.payload.success) {
           throw new Error((articleResult.payload && articleResult.payload.message) || ('HTTP ' + articleResult.response.status));
@@ -563,7 +560,7 @@
               collectionEntry: collectionEntry,
               sectionContext: sectionContext,
               common: common,
-              sidebarWidgets: sidebarWidgets,
+              sidebarWidgets: null,
             };
           });
         });
@@ -574,6 +571,9 @@
         }
 
         var bodyHtml = absolutizeEmbedHtml(result.renderPayload.html, apiOrigin);
+        if (chrome.showSidebar && result.common) {
+          bodyHtml = result.common.injectHeadingIds(bodyHtml);
+        }
         var articleHtml = buildArticleShell(
           result.article,
           bodyHtml,
@@ -605,29 +605,33 @@
             });
           }
 
-          var sidebarHtml = '';
-          if (chrome.showSidebar && result.collectionsResult) {
-            sidebarHtml += result.common.buildSidebarBlock(
-              chrome.sectionsTitle,
-              result.common.buildSectionTreeHtml(result.collectionsResult.tree, {
-                currentSlug: result.sectionContext.slug,
-                currentParentSlug: result.sectionContext.parentSlug,
-                openPath: result.collectionEntry ? result.collectionEntry.path : [],
-                linkPrefix: chrome.sectionPrefix,
-              }),
-            );
-            if (result.sidebarWidgets) {
-              sidebarHtml += result.common.buildArticleSidebarWidgetsHtml(result.sidebarWidgets, widgetOptions);
+          var topbarHtml = result.common.buildHelpTopbar({
+            breadcrumbsHtml: breadcrumbsHtml,
+            searchPlaceholder: chrome.searchPlaceholder,
+            homePrefix: chrome.homePrefix,
+          });
+
+          var railHtml = '';
+
+          return paintChromePage();
+
+          function paintChromePage() {
+            if (chrome.showSidebar) {
+              var tocHtml = result.common.buildTocHtml(bodyHtml);
+              railHtml = result.common.buildArticleRailHtml(tocHtml, { shareLabel: chrome.shareRailLabel });
             }
-          }
 
-          pageHtml = buildChromeShell(breadcrumbsHtml, articleHtml, sidebarHtml, chrome.showSidebar);
-          mountEl.innerHTML = pageHtml;
+            mountEl.innerHTML = buildChromeShell({
+              common: result.common,
+              topbarHtml: topbarHtml,
+              navHtml: '',
+              articleHtml: articleHtml,
+              railHtml: railHtml,
+            });
 
-          if (chrome.showSidebar && result.collectionsResult) {
             var chromeRoot = mountEl.querySelector('[data-ld-help-article]');
             if (chromeRoot) {
-              result.common.bindSectionTree(chromeRoot);
+              result.common.bindHelpSiteChrome(chromeRoot, { homePrefix: chrome.homePrefix });
             }
             return finishMount(result.article, mountEl, apiOrigin, org, slug, chrome);
           }
@@ -651,6 +655,12 @@
     });
     return ensureBlocksScript(apiOrigin).then(function (blocks) {
       blocks.init(mountEl);
+      var common = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
+      var chromeRoot = mountEl.querySelector('[data-ld-help-article]');
+      if (chromeRoot && common) {
+        if (common.bindArticleTocRail) common.bindArticleTocRail(chromeRoot);
+        if (common.bindTocSmoothScroll) common.bindTocSmoothScroll(chromeRoot);
+      }
       return article;
     });
   }
@@ -681,6 +691,7 @@
         apiOrigin: apiOrigin,
         showSidebar: showSidebar,
         showBreadcrumbs: showBreadcrumbs,
+        showFeedbackFooter: getAttr(script, 'data-show-feedback-footer', 'true') !== 'false',
         linkPrefix: linkPrefix,
         homePrefix: getAttr(script, 'data-home-prefix', '/help/'),
         categoryPrefix: getAttr(script, 'data-category-prefix', linkPrefix),
@@ -688,6 +699,12 @@
         articlePrefix: getAttr(script, 'data-article-prefix', linkPrefix),
         collection: getAttr(script, 'data-collection', ''),
         section: getAttr(script, 'data-section', ''),
+        helpfulLabel: getAttr(script, 'data-helpful-label', ''),
+        shareLabel: getAttr(script, 'data-share-label', ''),
+        yesLabel: getAttr(script, 'data-feedback-yes-label', ''),
+        noLabel: getAttr(script, 'data-feedback-no-label', ''),
+        thanksLabel: getAttr(script, 'data-feedback-thanks-label', ''),
+        pageUrl: typeof window !== 'undefined' ? window.location.href : '',
       }).catch(function (error) {
         console.error('[LiteDeskHeadlessArticle]', error);
       });

@@ -17,22 +17,15 @@
     var sectionPrefix = common.normalizeLinkPrefix(options.sectionPrefix || options.linkPrefix);
     var homePrefix = common.normalizeHomePrefix(options.homePrefix || '/help/');
     var articlePrefix = common.normalizeLinkPrefix(options.articlePrefix || options.linkPrefix);
-    var recentLimit = Math.min(Math.max(Number(options.recentLimit) || 5, 1), 25);
-    var homeLabel = String(options.homeLabel || 'Home');
-    var popularTitle = String(options.popularTitle || 'Popular articles');
-    var recentTitle = String(options.recentTitle || 'Recent articles');
-    var popularEmptyLabel = String(options.popularEmptyLabel || 'No popular articles yet.');
-    var recentEmptyLabel = String(options.recentEmptyLabel || 'No recent articles.');
+    var homeLabel = String(options.homeLabel || 'Support');
+    var topicsTitle = String(options.topicsTitle || 'Topics');
     var sectionsEmptyLabel = String(options.sectionsEmptyLabel || 'No sections in this category yet.');
     var notFoundLabel = String(options.notFoundLabel || 'Category not found.');
     var loadFailedLabel = String(options.loadFailedLabel || 'Failed to load category');
     var breadcrumbLabel = String(options.breadcrumbLabel || 'Breadcrumb');
-    var labels = {
-      articleSingular: String(options.labelArticle || 'Article'),
-      articlePlural: String(options.labelArticles || 'Articles'),
-      sectionSingular: String(options.labelSection || 'Section'),
-      sectionPlural: String(options.labelSections || 'Sections'),
-    };
+    var searchPlaceholder = String(options.searchPlaceholder || 'Search');
+    var showAllLabel = String(options.showAllLabel || 'Show all');
+    var articlesLabel = String(options.articlesLabel || 'Articles');
 
     if (!org) return Promise.reject(new Error('org is required'));
     if (!collectionSlug) return Promise.reject(new Error('collection is required'));
@@ -42,7 +35,7 @@
     var contentBase = apiOrigin + '/api/public/v1/content/' + encodeURIComponent(org);
 
     if (!mountEl.querySelector('.ld-help-skeleton')) {
-      mountEl.innerHTML = common.buildMountSkeleton({ type: 'page', showSidebar: true });
+      mountEl.innerHTML = common.buildMountSkeleton({ type: 'page' });
     }
     common.ensureStylesheet(apiOrigin);
 
@@ -56,114 +49,77 @@
         var node = entry.node;
         var path = entry.path;
         var children = Array.isArray(node.children) ? node.children : [];
-        var widgetOptions = {
+        var sectionContextBySlug = common.buildSectionContextMap(collectionsResult.tree);
+
+        return common.fetchArticles(contentBase, {
           collection: node.slug,
           deep: true,
-          limit: recentLimit,
-          articlePrefix: articlePrefix,
-          sectionContext: node,
-          popularTitle: popularTitle,
-          recentTitle: recentTitle,
-          popularEmptyLabel: popularEmptyLabel,
-          recentEmptyLabel: recentEmptyLabel,
-        };
-
-        var breadcrumbsHtml = common.buildBreadcrumbHtml({
-          path: path,
-          homePrefix: homePrefix,
-          categoryPrefix: linkPrefix,
-          sectionPrefix: sectionPrefix,
-          homeLabel: homeLabel,
-          breadcrumbLabel: breadcrumbLabel,
-        });
-
-        var descText = String(node.description || '').trim();
-        var headerHtml = (
-          '<header class="ld-help-page__header">' +
-            '<h1 class="ld-help-page__title">' + common.escapeHtml(node.name || node.slug) + '</h1>' +
-            (descText
-              ? '<p class="ld-help-page__desc">' + common.escapeHtml(descText) + '</p>'
-              : '') +
-          '</header>'
-        );
-
-        var sidebarHtml = common.buildSidebarBlock(
-          node.name || node.slug,
-          descText
-            ? '<p class="ld-help-sidebar__text">' + common.escapeHtml(descText) + '</p>'
-            : '<p class="ld-help-sidebar__empty">' + common.escapeHtml(sectionsEmptyLabel) + '</p>',
-        );
-
-        function paintPage(statusHtml, mainHtml, widgets) {
-          mountEl.innerHTML = common.buildCategoryPageHtml({
-            breadcrumbsHtml: breadcrumbsHtml,
-            statusHtml: statusHtml,
-            headerHtml: headerHtml,
-            mainHtml: mainHtml,
-            sidebarHtml: sidebarHtml + common.buildArticleSidebarWidgetsHtml(widgets, widgetOptions),
+          limit: 100,
+        }).then(function (articlesResult) {
+          var articlesBySlug = common.groupArticlesByCollectionSlug(articlesResult.articles);
+          var breadcrumbsHtml = common.buildBreadcrumbHtml({
+            path: path,
+            homePrefix: homePrefix,
+            categoryPrefix: linkPrefix,
+            sectionPrefix: sectionPrefix,
+            homeLabel: homeLabel,
+            breadcrumbLabel: breadcrumbLabel,
           });
-        }
+          var topbarHtml = common.buildHelpTopbar({
+            breadcrumbsHtml: breadcrumbsHtml,
+            searchPlaceholder: searchPlaceholder,
+            homePrefix: homePrefix,
+          });
+          var navHtml = common.buildTopicsNavHtml(collectionsResult.tree, common.buildTreeOptions({
+            currentSlug: node.slug,
+            currentParentSlug: node.parentSlug,
+            categoryPrefix: linkPrefix,
+            sectionPrefix: sectionPrefix,
+            articlePrefix: articlePrefix,
+            openPath: path,
+            articlesBySlug: articlesBySlug,
+            sectionContextBySlug: sectionContextBySlug,
+            topicsTitle: topicsTitle,
+          }));
 
-        if (!children.length) {
-          if (Number(node.articleCount) > 0) {
-            return Promise.all([
-              common.fetchArticles(contentBase, {
-                collection: node.slug,
-                limit: 50,
-              }),
-              common.fetchArticleSidebarWidgets(contentBase, widgetOptions),
-            ]).then(function (results) {
-              var articlesResult = results[0];
-              var widgets = results[1];
-              var articles = articlesResult.articles;
-              var statusHtml = articles.length
-                ? ''
-                : '<div class="ld-help-page__status">' + common.escapeHtml(sectionsEmptyLabel) + '</div>';
-              var mainHtml = (
-                '<ul class="ld-help-list__items">' +
-                  articles.map(function (article) {
-                    return common.buildArticleListItem(article, articlePrefix, node);
-                  }).join('') +
-                '</ul>'
-              );
-              paintPage(statusHtml, mainHtml, widgets);
-              return {
-                collection: node,
-                sections: children,
-                articles: articles,
-                organization: collectionsResult.organization,
-              };
-            });
+          var mainHtml = common.buildCategoryHeroHtml(node);
+          if (children.length) {
+            mainHtml += (
+              '<div class="ld-help-topic-grid">' +
+                children.map(function (section) {
+                  return common.buildSubcategoryCardHtml(section, articlesBySlug[common.normalizeSlug(section.slug)] || [], {
+                    sectionPrefix: sectionPrefix,
+                    articlePrefix: articlePrefix,
+                    showAllLabel: showAllLabel,
+                    articlesMoreLabel: 'articles',
+                  });
+                }).join('') +
+              '</div>'
+            );
+          } else if (Number(node.articleCount) > 0) {
+            mainHtml += common.buildSectionArticlesHtml(
+              articlesBySlug[common.normalizeSlug(node.slug)] || articlesResult.articles,
+              articlePrefix,
+              node,
+              { articlesLabel: articlesLabel },
+            );
+          } else {
+            mainHtml += '<div class="ld-help-page__status">' + common.escapeHtml(sectionsEmptyLabel) + '</div>';
           }
 
-          return common.fetchArticleSidebarWidgets(contentBase, widgetOptions).then(function (widgets) {
-            paintPage(
-              '<div class="ld-help-page__status">' + common.escapeHtml(sectionsEmptyLabel) + '</div>',
-              '<ul class="ld-help-sections"></ul>',
-              widgets,
-            );
-            return {
-              collection: node,
-              sections: children,
-              articles: [],
-              organization: collectionsResult.organization,
-            };
+          mountEl.innerHTML = common.buildCategoryPageHtml({
+            topbarHtml: topbarHtml,
+            navHtml: navHtml,
+            mainHtml: mainHtml,
           });
-        }
 
-        return common.fetchArticleSidebarWidgets(contentBase, widgetOptions).then(function (widgets) {
-          var mainHtml = (
-            '<ul class="ld-help-sections">' +
-              children.map(function (section) {
-                return common.buildSectionRow(section, sectionPrefix, labels);
-              }).join('') +
-            '</ul>'
-          );
-          paintPage('', mainHtml, widgets);
+          var root = mountEl.querySelector('[data-ld-help-category]');
+          common.bindHelpSiteChrome(root, { homePrefix: homePrefix });
+
           return {
             collection: node,
             sections: children,
-            articles: [],
+            articles: articlesResult.articles,
             organization: collectionsResult.organization,
           };
         });

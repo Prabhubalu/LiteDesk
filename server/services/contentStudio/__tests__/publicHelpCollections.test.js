@@ -17,7 +17,7 @@ describe('public help collections', () => {
   it('builds nested collection tree with counts and prunes empty branches', () => {
     const tree = buildPublicCollectionTree(
       [
-        { _id: 'crm', name: 'CRM', slug: 'crm', description: 'CRM help', emoji: '📘', parentId: null, sortOrder: 0 },
+        { _id: 'crm', name: 'CRM', slug: 'crm', description: 'CRM help', emoji: '', heroIconKey: 'lifebuoy', heroIconColor: '#2563eb', imageUrl: '', parentId: null, sortOrder: 0 },
         { _id: 'gs', name: 'Getting Started', slug: 'getting-started', description: 'Start here', emoji: '', parentId: 'crm', sortOrder: 0 },
         { _id: 'empty', name: 'Empty', slug: 'empty', description: '', emoji: '', parentId: 'crm', sortOrder: 1 },
       ],
@@ -30,7 +30,12 @@ describe('public help collections', () => {
 
     assert.equal(tree.length, 1);
     assert.equal(tree[0].slug, 'crm');
-    assert.equal(tree[0].emoji, '📘');
+    assert.equal(tree[0].description, 'CRM help');
+    assert.equal(tree[0].children[0].description, 'Start here');
+    assert.equal(tree[0].emoji, '');
+    assert.equal(tree[0].heroIconKey, 'lifebuoy');
+    assert.equal(tree[0].heroIconColor, '#2563eb');
+    assert.equal(tree[0].imageUrl, '');
     assert.equal(tree[0].articleCount, 0);
     assert.equal(tree[0].sectionCount, 1);
     assert.equal(tree[0].children[0].slug, 'getting-started');
