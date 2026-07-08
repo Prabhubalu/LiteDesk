@@ -210,7 +210,8 @@
 
     renderLoading();
 
-    return fetch(listUrl, { cache: 'no-store' })
+    var fetchOptions = listUrl.indexOf('search=') >= 0 ? { cache: 'no-store' } : {};
+    return fetch(listUrl, fetchOptions)
       .then(function (response) {
         return response.json().then(function (payload) {
           return { response: response, payload: payload };

@@ -348,6 +348,8 @@ Deferred until HC-1–HC-7 ship and tenants adopt:
 - Custom block SDK for tenant-defined block types
 - Static export (ZIP of JSON + assets)
 
+**Articles static sync (incremental HTML + assets on customer domain):** active track — [ARTICLES_HEADLESS_STATIC_SYNC_ROADMAP.md](./ARTICLES_HEADLESS_STATIC_SYNC_ROADMAP.md) (implements export API, public asset download, `@arivu/help-sync`, Next/PHP templates; overlaps HC-8 asset transforms and HC-9 ZIP export).
+
 ---
 
 ## 7. Implementation order

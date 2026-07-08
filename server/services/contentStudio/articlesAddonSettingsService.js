@@ -1,5 +1,6 @@
 'use strict';
 
+const crypto = require('crypto');
 const { ADDON_KEYS } = require('../../constants/addonKeys');
 const { ADDON_DEFAULT_SETTINGS } = require('../../constants/contentStudioConstants');
 const { getTenantAddonConfiguration } = require('../../utils/addonAccessUtils');
@@ -13,6 +14,10 @@ const {
   buildRecentArticlesApiUrl,
   buildPopularArticlesApiUrl,
   buildSitemapApiUrl,
+  buildManifestUrl,
+  buildStaticSitemapUrl,
+  buildHomeExportUrl,
+  buildCollectionExportUrl,
 } = require('./contentPublishingService');
 const {
   invalidateArticlesEmbedOriginCache,
@@ -23,6 +28,7 @@ const {
   resolveArticlesHeadlessPublicKey,
   resolveHeadlessContentOrgKey,
 } = require('./articlesHeadlessPublicKeyService');
+const { encryptTenantSecret, decryptTenantSecret } = require('../../utils/tenantSecretCrypto');
 
 function mergeStoredAppearance(stored = {}, organization = {}) {
   const defaults = ADDON_DEFAULT_SETTINGS[ADDON_KEYS.ARTICLES]?.appearance || {};
@@ -60,12 +66,18 @@ function normalizePublishing(raw = {}, legacy = {}) {
   const normalizedEmbed = embedWebsiteDomain
     ? normalizeArticlesEmbedWebsiteDomain(embedWebsiteDomain)
     : { domain: '', origins: Array.isArray(storedOrigins) ? storedOrigins.filter(Boolean) : [] };
+  const encryptedPublishWebhookSecret = String(
+    raw.publishing?.encryptedPublishWebhookSecret
+    ?? legacy.encryptedPublishWebhookSecret
+    ?? '',
+  ).trim();
 
   return {
     headlessApiEnabled: merged.headlessApiEnabled,
     publishWebhookUrl: merged.publishWebhookUrl,
     embedWebsiteDomain: normalizedEmbed.domain,
     embedWebsiteOrigins: normalizedEmbed.origins,
+    hasPublishWebhookSecret: Boolean(encryptedPublishWebhookSecret),
   };
 }
 
@@ -112,7 +124,12 @@ function buildArticlesIntegration(organization, options = {}) {
     recentArticlesApiUrl: buildRecentArticlesApiUrl(organization, options),
     popularArticlesApiUrl: buildPopularArticlesApiUrl(organization, options),
     exampleArticleApiUrl: headlessApiBase ? `${headlessApiBase}/articles/{slug}` : '',
+    exampleArticleExportUrl: headlessApiBase ? `${headlessApiBase}/articles/{slug}/export` : '',
+    exampleHomeExportUrl: buildHomeExportUrl(organization, options),
+    exampleCollectionExportUrl: headlessApiBase ? `${headlessApiBase}/export/collections/{slug}` : '',
+    manifestUrl: buildManifestUrl(organization, options),
     sitemapUrl: buildSitemapApiUrl(organization, options),
+    staticSitemapUrl: buildStaticSitemapUrl(organization, options),
   };
 }
 
@@ -174,11 +191,31 @@ async function updateArticlesAddonSettings(organizationId, payload = {}, options
     throw error;
   }
 
+  const existingPublishing = {
+    ...(config.settings?.publishing || {}),
+  };
+  let oneTimePublishWebhookSecret = '';
+
+  if (payload.clearPublishWebhookSecret === true) {
+    delete existingPublishing.encryptedPublishWebhookSecret;
+  } else if (payload.generatePublishWebhookSecret === true) {
+    oneTimePublishWebhookSecret = crypto.randomBytes(24).toString('hex');
+    existingPublishing.encryptedPublishWebhookSecret = encryptTenantSecret(oneTimePublishWebhookSecret);
+  } else if (payload.publishWebhookSecret !== undefined) {
+    const trimmed = String(payload.publishWebhookSecret || '').trim();
+    if (trimmed) {
+      oneTimePublishWebhookSecret = trimmed;
+      existingPublishing.encryptedPublishWebhookSecret = encryptTenantSecret(trimmed);
+    } else {
+      delete existingPublishing.encryptedPublishWebhookSecret;
+    }
+  }
+
   const settings = normalizeSettings({
     ...(config.settings || {}),
     ...payload,
     publishing: {
-      ...(config.settings?.publishing || {}),
+      ...existingPublishing,
       ...(payload.publishing || {}),
       ...(payload.publishWebhookUrl !== undefined ? { publishWebhookUrl: payload.publishWebhookUrl } : {}),
       ...(payload.headlessApiEnabled !== undefined ? { headlessApiEnabled: payload.headlessApiEnabled } : {}),
@@ -190,6 +227,13 @@ async function updateArticlesAddonSettings(organizationId, payload = {}, options
       ...(payload.appearance || {}),
     }),
   });
+
+  if (existingPublishing.encryptedPublishWebhookSecret) {
+    settings.publishing = {
+      ...settings.publishing,
+      encryptedPublishWebhookSecret: existingPublishing.encryptedPublishWebhookSecret,
+    };
+  }
 
   if (settings.defaultCollectionId) {
     const ContentCollection = require('../../models/ContentCollection');
@@ -218,7 +262,26 @@ async function updateArticlesAddonSettings(organizationId, payload = {}, options
     await ensureArticlesHeadlessPublicKey(organizationId);
   }
 
-  return getArticlesAddonSettings(organizationId, options);
+  const result = await getArticlesAddonSettings(organizationId, options);
+  if (oneTimePublishWebhookSecret) {
+    result.publishWebhookSecret = oneTimePublishWebhookSecret;
+  }
+  return result;
+}
+
+async function resolvePublishWebhookSecret(organizationId) {
+  const config = await getTenantAddonConfiguration(organizationId, ADDON_KEYS.ARTICLES);
+  const encrypted = String(config?.settings?.publishing?.encryptedPublishWebhookSecret || '').trim();
+  if (!encrypted) return '';
+  try {
+    return decryptTenantSecret(encrypted);
+  } catch {
+    return '';
+  }
+}
+
+async function generateArticlesPublishWebhookSecret(organizationId, options = {}) {
+  return updateArticlesAddonSettings(organizationId, { generatePublishWebhookSecret: true }, options);
 }
 
 async function getArticlesPublishingSettings(organizationId, options = {}) {
@@ -297,6 +360,8 @@ module.exports = {
   getArticlesAddonSettings,
   updateArticlesAddonSettings,
   getArticlesPublishingSettings,
+  resolvePublishWebhookSecret,
+  generateArticlesPublishWebhookSecret,
   isArticlesPortalPublishingEnabled,
   isArticlesAddonEnabled,
   resolveArticlesPublicDeliveryAccess,

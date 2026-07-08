@@ -101,6 +101,44 @@ function buildSitemapApiUrl(organization, options = {}) {
   return base ? `${base}/sitemap.xml` : '';
 }
 
+function buildArticleExportUrl(organization, slug, options = {}) {
+  const articleUrl = buildArticleApiUrl(organization, slug, options);
+  if (!articleUrl) return '';
+  return `${articleUrl}/export`;
+}
+
+function buildManifestUrl(organization, options = {}) {
+  const base = resolveHeadlessApiBase(organization, options);
+  return base ? `${base}/manifest.json` : '';
+}
+
+function buildPublicAssetDownloadUrl(organization, assetId, options = {}) {
+  const base = resolveHeadlessApiBase(organization, options);
+  const id = String(assetId || '').trim();
+  if (!base || !id) return '';
+  return `${base}/assets/${encodeURIComponent(id)}`;
+}
+
+function buildHomeExportUrl(organization, options = {}) {
+  const base = resolveHeadlessApiBase(organization, options);
+  return base ? `${base}/export/home` : '';
+}
+
+function buildCollectionExportUrl(organization, slug, options = {}) {
+  const base = resolveHeadlessApiBase(organization, options);
+  const collectionSlug = String(slug || '').trim();
+  if (!base || !collectionSlug) return '';
+  const params = new URLSearchParams();
+  if (options.parentSlug) params.set('parent', String(options.parentSlug));
+  const suffix = params.toString() ? `?${params.toString()}` : '';
+  return `${base}/export/collections/${encodeURIComponent(collectionSlug)}${suffix}`;
+}
+
+function buildStaticSitemapUrl(organization, options = {}) {
+  const base = resolveHeadlessApiBase(organization, options);
+  return base ? `${base}/export/sitemap.xml` : '';
+}
+
 module.exports = {
   DEFAULT_CONTENT_PUBLISHING,
   normalizeContentPublishing,
@@ -115,4 +153,10 @@ module.exports = {
   buildPopularArticlesApiUrl,
   buildCollectionArticlesApiUrl,
   buildSitemapApiUrl,
+  buildArticleExportUrl,
+  buildManifestUrl,
+  buildPublicAssetDownloadUrl,
+  buildHomeExportUrl,
+  buildCollectionExportUrl,
+  buildStaticSitemapUrl,
 };

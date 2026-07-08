@@ -1108,8 +1108,36 @@
     "description": "Articles addon settings page title"
   },
   "addonsArticlesSettingsDesc": {
-    "message": "Configure portal publishing, case deflection, and help center defaults.",
+    "message": "Configure publishing, branding, and your customer help center.",
     "description": "Articles addon settings page description"
+  },
+  "addonsArticlesGeneralTitle": {
+    "message": "General",
+    "description": "Articles general settings section title"
+  },
+  "addonsArticlesGeneralDesc": {
+    "message": "Portal publishing, case deflection, and article defaults.",
+    "description": "Articles general settings section description"
+  },
+  "addonsArticlesCustomerSiteTitle": {
+    "message": "Customer website",
+    "description": "Articles customer website integration section title"
+  },
+  "addonsArticlesCustomerSiteDesc": {
+    "message": "Choose how articles appear on your site — embed for quick setup, or static sync for SEO-friendly HTML.",
+    "description": "Articles customer website integration section description"
+  },
+  "addonsArticlesCustomerSiteSetupType": {
+    "message": "Publishing method",
+    "description": "Articles customer site setup type selector label"
+  },
+  "addonsArticlesAdvancedAppearanceTitle": {
+    "message": "Advanced appearance",
+    "description": "Collapsible advanced article appearance settings"
+  },
+  "addonsArticlesDeveloperSetupTitle": {
+    "message": "Developer setup",
+    "description": "Collapsible API URLs, static sync, and integration examples"
   },
   "addonsArticlesPublishingTitle": {
     "message": "Publishing",
@@ -1159,6 +1187,10 @@
     "message": "Receives JSON POST on publish and unpublish. Use for static site rebuilds.",
     "description": "Articles publish webhook helper text"
   },
+  "addonsArticlesWebhookAutoFilled": {
+    "message": "Auto-filled from your website domain and selected sync host type. Edit manually if your endpoint path differs.",
+    "description": "Hint when publish webhook URL was auto-generated"
+  },
   "addonsArticlesSendTestWebhook": {
     "message": "Send test webhook",
     "description": "Button to send sample content.published webhook"
@@ -1174,6 +1206,30 @@
   "addonsArticlesWebhookTestFailed": {
     "message": "Test webhook failed",
     "description": "Toast when Articles test webhook fails"
+  },
+  "addonsArticlesGenerateWebhookSecret": {
+    "message": "Generate webhook secret",
+    "description": "Button to generate HMAC secret for publish webhooks"
+  },
+  "addonsArticlesWebhookSecretGenerating": {
+    "message": "Generating…",
+    "description": "Articles webhook secret generation in progress"
+  },
+  "addonsArticlesWebhookSecretGenerated": {
+    "message": "Webhook secret generated",
+    "description": "Toast when Articles webhook secret is generated"
+  },
+  "addonsArticlesWebhookSecretGenerateFailed": {
+    "message": "Failed to generate webhook secret",
+    "description": "Toast when Articles webhook secret generation fails"
+  },
+  "addonsArticlesWebhookSecretConfigured": {
+    "message": "Webhook signing is enabled. Arivu sends X-Arivu-Signature on each publish webhook.",
+    "description": "Hint when Articles publish webhook secret exists"
+  },
+  "addonsArticlesWebhookSecretOnce": {
+    "message": "Copy this secret now — it will not be shown again: {secret}",
+    "description": "One-time display of generated Articles webhook secret"
   },
   "addonsArticlesIntegrationExamplesTitle": {
     "message": "Integration examples",
@@ -1371,6 +1427,94 @@
     "message": "Render blocks (Arivu SDK)",
     "description": "renderBlocks example label for Articles headless API"
   },
+  "addonsArticlesStaticSyncTitle": {
+    "message": "Static sync (SEO)",
+    "description": "Articles static HTML sync section title"
+  },
+  "addonsArticlesStaticSyncDesc": {
+    "message": "Pre-render HTML and mirror assets on your domain with incremental publish webhooks. Choose how you host your site.",
+    "description": "Articles static HTML sync section description"
+  },
+  "addonsArticlesStaticSyncHostType": {
+    "message": "How do you host your help site?",
+    "description": "Host type selector label for Articles static sync"
+  },
+  "addonsArticlesStaticSyncHostNext": {
+    "message": "Vercel / Next.js (ISR + webhook)",
+    "description": "Static sync host option for Next.js"
+  },
+  "addonsArticlesStaticSyncHostPhp": {
+    "message": "Shared hosting / PHP",
+    "description": "Static sync host option for PHP"
+  },
+  "addonsArticlesStaticSyncHostCli": {
+    "message": "CLI / CI / S3",
+    "description": "Static sync host option for CLI"
+  },
+  "addonsArticlesStaticSyncHostEmbed": {
+    "message": "Embed only (live API, no static SEO)",
+    "description": "Static sync host option for embed fallback"
+  },
+  "addonsArticlesStaticSyncManifestUrl": {
+    "message": "Manifest URL",
+    "description": "Copy label for headless manifest.json URL"
+  },
+  "addonsArticlesStaticSyncExportUrl": {
+    "message": "Example article export URL",
+    "description": "Copy label for example article export URL"
+  },
+  "addonsArticlesStaticSyncEnvTemplate": {
+    "message": "Environment template",
+    "description": "Copy label for static sync env template"
+  },
+  "addonsArticlesStaticSyncNextSteps": {
+    "message": "Next.js setup",
+    "description": "Intro for Next.js static sync steps"
+  },
+  "addonsArticlesStaticSyncNextStep1": {
+    "message": "Download the Next.js template zip and copy the app/ folder into your project.",
+    "description": "Next.js static sync step 1"
+  },
+  "addonsArticlesStaticSyncNextStep2": {
+    "message": "Set the environment variables below in Vercel.",
+    "description": "Next.js static sync step 2"
+  },
+  "addonsArticlesStaticSyncNextStep3": {
+    "message": "Point the publish webhook URL above to /api/arivu-webhook on your site.",
+    "description": "Next.js static sync step 3"
+  },
+  "addonsArticlesStaticSyncPhpSteps": {
+    "message": "Upload the PHP sync script, set env vars (or edit the config block), point the webhook URL to the script, then run ?full=1 once.",
+    "description": "PHP static sync setup steps"
+  },
+  "addonsArticlesStaticSyncDownloadPhp": {
+    "message": "Download PHP sync script",
+    "description": "Download button for PHP sync script"
+  },
+  "addonsArticlesStaticSyncDownloadNext": {
+    "message": "Download Next.js template (zip)",
+    "description": "Download button for Next.js App Router static sync template zip"
+  },
+  "addonsArticlesStaticSyncCliSteps": {
+    "message": "Run from your project root or CI. Initial full sync, then rely on webhooks for incremental updates.",
+    "description": "CLI static sync setup steps"
+  },
+  "addonsArticlesStaticSyncCliFull": {
+    "message": "Initial full sync",
+    "description": "CLI command label for full sync"
+  },
+  "addonsArticlesStaticSyncCliSlug": {
+    "message": "Sync one article",
+    "description": "CLI command label for single article sync"
+  },
+  "addonsArticlesStaticSyncCliWebhook": {
+    "message": "Webhook handler (stdin)",
+    "description": "CLI command label for webhook pipe"
+  },
+  "addonsArticlesStaticSyncEmbedNote": {
+    "message": "Use the website embed section below for the fastest setup. Static HTML on your domain is recommended when SEO matters.",
+    "description": "Note when embed-only host type is selected"
+  },
   "addonsArticlesPortalPublishing": {
     "message": "Publish to customer portal",
     "description": "Toggle portal knowledge base publishing"
@@ -1400,8 +1544,8 @@
     "description": "Articles default settings section description"
   },
   "addonsArticlesDefaultCollection": {
-    "message": "Default collection",
-    "description": "Default collection for new articles"
+    "message": "Default category",
+    "description": "Default category for new articles"
   },
   "addonsArticlesStaleContentDays": {
     "message": "Stale content alert (days)",

@@ -31,6 +31,73 @@
 
     <div v-else class="max-w-3xl space-y-6">
       <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesGeneralTitle') }}</h3>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesGeneralDesc') }}</p>
+
+        <div class="mt-5 space-y-4">
+          <label class="flex items-center justify-between gap-4">
+            <span class="text-sm text-gray-700 dark:text-gray-200">{{ t('settings.addonsArticlesPortalPublishing') }}</span>
+            <button
+              type="button"
+              role="switch"
+              :aria-checked="form.portalPublishing"
+              class="relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors"
+              :class="form.portalPublishing ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-600'"
+              @click="form.portalPublishing = !form.portalPublishing; syncDirty()"
+            >
+              <span
+                class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition"
+                :class="form.portalPublishing ? 'translate-x-5' : 'translate-x-0'"
+              />
+            </button>
+          </label>
+
+          <label class="flex items-center justify-between gap-4">
+            <span class="text-sm text-gray-700 dark:text-gray-200">{{ t('settings.addonsArticlesCaseDeflection') }}</span>
+            <button
+              type="button"
+              role="switch"
+              :aria-checked="form.caseDeflectionEnabled"
+              class="relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors"
+              :class="form.caseDeflectionEnabled ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-600'"
+              @click="form.caseDeflectionEnabled = !form.caseDeflectionEnabled; syncDirty()"
+            >
+              <span
+                class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition"
+                :class="form.caseDeflectionEnabled ? 'translate-x-5' : 'translate-x-0'"
+              />
+            </button>
+          </label>
+
+          <label class="block text-sm text-gray-600 dark:text-gray-300">
+            {{ t('settings.addonsArticlesDefaultCollection') }}
+            <select
+              v-model="form.defaultCollectionId"
+              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              @change="syncDirty()"
+            >
+              <option :value="null">{{ t('contentStudio.noCollection') }}</option>
+              <option v-for="collection in collections" :key="collection._id" :value="collection._id">
+                {{ collectionLabel(collection) }}
+              </option>
+            </select>
+          </label>
+
+          <label class="block text-sm text-gray-600 dark:text-gray-300">
+            {{ t('settings.addonsArticlesStaleContentDays') }}
+            <input
+              v-model.number="form.staleContentAlertDays"
+              type="number"
+              min="7"
+              max="365"
+              class="mt-1 w-full max-w-xs rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              @input="syncDirty()"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
         <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesAppearanceTitle') }}</h3>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesAppearanceDesc') }}</p>
 
@@ -48,67 +115,12 @@
             </select>
           </label>
 
-          <label class="block text-sm text-gray-600 dark:text-gray-300">
+          <label class="block text-sm text-gray-600 dark:text-gray-300 lg:col-span-2">
             {{ t('settings.addonsArticlesPrimaryColor') }}
             <div class="mt-1 flex items-center gap-2">
               <input v-model="form.appearance.primaryColor" type="color" class="h-10 w-12 cursor-pointer rounded border border-gray-300 dark:border-gray-600" @input="syncDirty" />
               <input v-model="form.appearance.primaryColor" type="text" class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @input="syncDirty" />
             </div>
-          </label>
-
-          <label class="block text-sm text-gray-600 dark:text-gray-300">
-            {{ t('settings.addonsArticlesSecondaryColor') }}
-            <div class="mt-1 flex items-center gap-2">
-              <input v-model="form.appearance.secondaryColor" type="color" class="h-10 w-12 cursor-pointer rounded border border-gray-300 dark:border-gray-600" @input="syncDirty" />
-              <input v-model="form.appearance.secondaryColor" type="text" class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @input="syncDirty" />
-            </div>
-          </label>
-
-          <label class="block text-sm text-gray-600 dark:text-gray-300">
-            {{ t('settings.addonsArticlesBodyFont') }}
-            <input v-model="form.appearance.bodyFont" type="text" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @input="syncDirty" />
-          </label>
-
-          <label class="block text-sm text-gray-600 dark:text-gray-300">
-            {{ t('settings.addonsArticlesHeadingFont') }}
-            <input v-model="form.appearance.headingFont" type="text" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @input="syncDirty" />
-          </label>
-
-          <label class="block text-sm text-gray-600 dark:text-gray-300 sm:col-span-2">
-            {{ t('settings.addonsArticlesContentWidth') }}
-            <select v-model="form.appearance.contentWidth" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @change="syncDirty">
-              <option value="narrow">{{ t('settings.contentPublishingWidthNarrow') }}</option>
-              <option value="standard">{{ t('settings.contentPublishingWidthStandard') }}</option>
-              <option value="wide">{{ t('settings.contentPublishingWidthWide') }}</option>
-            </select>
-          </label>
-
-          <label class="block text-sm text-gray-600 dark:text-gray-300">
-            {{ t('settings.addonsArticlesBorderRadius') }}
-            <select v-model="form.appearance.borderRadius" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @change="syncDirty">
-              <option value="none">{{ t('settings.contentPublishingRadiusNone') }}</option>
-              <option value="sm">{{ t('settings.contentPublishingRadiusSm') }}</option>
-              <option value="md">{{ t('settings.contentPublishingRadiusMd') }}</option>
-              <option value="lg">{{ t('settings.contentPublishingRadiusLg') }}</option>
-            </select>
-          </label>
-
-          <label class="block text-sm text-gray-600 dark:text-gray-300">
-            {{ t('settings.addonsArticlesDefaultCoverPosition') }}
-            <select v-model="form.appearance.defaultCoverPosition" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @change="syncDirty">
-              <option value="below-title">{{ t('settings.addonsArticlesCoverBelowTitle') }}</option>
-              <option value="above-title">{{ t('settings.addonsArticlesCoverAboveTitle') }}</option>
-            </select>
-          </label>
-
-          <label class="block text-sm text-gray-600 dark:text-gray-300">
-            {{ t('settings.addonsArticlesDefaultSubtitleSize') }}
-            <select v-model="form.appearance.defaultSubtitleSize" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @change="syncDirty">
-              <option value="sm">{{ t('settings.addonsArticlesSubtitleSm') }}</option>
-              <option value="md">{{ t('settings.addonsArticlesSubtitleMd') }}</option>
-              <option value="lg">{{ t('settings.addonsArticlesSubtitleLg') }}</option>
-              <option value="xl">{{ t('settings.addonsArticlesSubtitleXl') }}</option>
-            </select>
           </label>
 
           <label class="block text-sm text-gray-600 dark:text-gray-300 lg:col-span-2">
@@ -134,6 +146,68 @@
           </label>
         </div>
 
+        <details class="mt-5 rounded-lg border border-gray-200 dark:border-gray-700">
+          <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+            {{ t('settings.addonsArticlesAdvancedAppearanceTitle') }}
+          </summary>
+          <div class="grid grid-cols-1 gap-4 border-t border-gray-200 px-4 py-4 dark:border-gray-700 lg:grid-cols-2">
+            <label class="block text-sm text-gray-600 dark:text-gray-300">
+              {{ t('settings.addonsArticlesSecondaryColor') }}
+              <div class="mt-1 flex items-center gap-2">
+                <input v-model="form.appearance.secondaryColor" type="color" class="h-10 w-12 cursor-pointer rounded border border-gray-300 dark:border-gray-600" @input="syncDirty" />
+                <input v-model="form.appearance.secondaryColor" type="text" class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @input="syncDirty" />
+              </div>
+            </label>
+
+            <label class="block text-sm text-gray-600 dark:text-gray-300">
+              {{ t('settings.addonsArticlesBodyFont') }}
+              <input v-model="form.appearance.bodyFont" type="text" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @input="syncDirty" />
+            </label>
+
+            <label class="block text-sm text-gray-600 dark:text-gray-300">
+              {{ t('settings.addonsArticlesHeadingFont') }}
+              <input v-model="form.appearance.headingFont" type="text" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @input="syncDirty" />
+            </label>
+
+            <label class="block text-sm text-gray-600 dark:text-gray-300 lg:col-span-2">
+              {{ t('settings.addonsArticlesContentWidth') }}
+              <select v-model="form.appearance.contentWidth" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @change="syncDirty">
+                <option value="narrow">{{ t('settings.contentPublishingWidthNarrow') }}</option>
+                <option value="standard">{{ t('settings.contentPublishingWidthStandard') }}</option>
+                <option value="wide">{{ t('settings.contentPublishingWidthWide') }}</option>
+              </select>
+            </label>
+
+            <label class="block text-sm text-gray-600 dark:text-gray-300">
+              {{ t('settings.addonsArticlesBorderRadius') }}
+              <select v-model="form.appearance.borderRadius" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @change="syncDirty">
+                <option value="none">{{ t('settings.contentPublishingRadiusNone') }}</option>
+                <option value="sm">{{ t('settings.contentPublishingRadiusSm') }}</option>
+                <option value="md">{{ t('settings.contentPublishingRadiusMd') }}</option>
+                <option value="lg">{{ t('settings.contentPublishingRadiusLg') }}</option>
+              </select>
+            </label>
+
+            <label class="block text-sm text-gray-600 dark:text-gray-300">
+              {{ t('settings.addonsArticlesDefaultCoverPosition') }}
+              <select v-model="form.appearance.defaultCoverPosition" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @change="syncDirty">
+                <option value="below-title">{{ t('settings.addonsArticlesCoverBelowTitle') }}</option>
+                <option value="above-title">{{ t('settings.addonsArticlesCoverAboveTitle') }}</option>
+              </select>
+            </label>
+
+            <label class="block text-sm text-gray-600 dark:text-gray-300 lg:col-span-2">
+              {{ t('settings.addonsArticlesDefaultSubtitleSize') }}
+              <select v-model="form.appearance.defaultSubtitleSize" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @change="syncDirty">
+                <option value="sm">{{ t('settings.addonsArticlesSubtitleSm') }}</option>
+                <option value="md">{{ t('settings.addonsArticlesSubtitleMd') }}</option>
+                <option value="lg">{{ t('settings.addonsArticlesSubtitleLg') }}</option>
+                <option value="xl">{{ t('settings.addonsArticlesSubtitleXl') }}</option>
+              </select>
+            </label>
+          </div>
+        </details>
+
         <div
           class="content-studio-article mt-5 rounded-xl border border-dashed border-gray-300 p-4 dark:border-gray-600"
           :class="previewClass"
@@ -156,32 +230,8 @@
       </div>
 
       <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesPublishingTitle') }}</h3>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesPublishingDesc') }}</p>
-
-        <div class="mt-5 space-y-4">
-          <label class="flex items-center justify-between gap-4">
-            <span class="text-sm text-gray-700 dark:text-gray-200">{{ t('settings.addonsArticlesPortalPublishing') }}</span>
-            <button
-              type="button"
-              role="switch"
-              :aria-checked="form.portalPublishing"
-              class="relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors"
-              :class="form.portalPublishing ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-600'"
-              @click="form.portalPublishing = !form.portalPublishing; syncDirty()"
-            >
-              <span
-                class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition"
-                :class="form.portalPublishing ? 'translate-x-5' : 'translate-x-0'"
-              />
-            </button>
-          </label>
-        </div>
-      </div>
-
-      <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.contentPublishingIntegrationTitle') }}</h3>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesHeadlessPublishingDesc') }}</p>
+        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesCustomerSiteTitle') }}</h3>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesCustomerSiteDesc') }}</p>
         <p
           v-if="integrationUrlsUnavailable"
           class="mt-2 text-sm text-amber-700 dark:text-amber-300"
@@ -189,48 +239,27 @@
           {{ t('settings.addonsArticlesIntegrationUrlsUnavailable') }}
         </p>
 
+        <label class="mt-5 block text-sm text-gray-600 dark:text-gray-300">
+          {{ t('settings.addonsArticlesCustomerSiteSetupType') }}
+          <select
+            v-model="staticSyncHostType"
+            class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white sm:max-w-md"
+            @change="onStaticSyncHostTypeChange"
+          >
+            <option value="embed">{{ t('settings.addonsArticlesStaticSyncHostEmbed') }}</option>
+            <option value="next">{{ t('settings.addonsArticlesStaticSyncHostNext') }}</option>
+            <option value="php">{{ t('settings.addonsArticlesStaticSyncHostPhp') }}</option>
+            <option value="cli">{{ t('settings.addonsArticlesStaticSyncHostCli') }}</option>
+          </select>
+        </label>
+        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ customerSiteSetupHint }}</p>
+
         <div class="mt-5 space-y-4 text-sm">
-          <div v-for="endpoint in integrationEndpoints" :key="endpoint.key">
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0 flex-1">
-                <p class="font-medium text-gray-900 dark:text-white">{{ endpoint.label }}</p>
-                <p class="mt-1 break-all text-gray-600 dark:text-gray-400">{{ endpoint.value || '—' }}</p>
-              </div>
-              <button
-                v-if="endpoint.value"
-                type="button"
-                class="shrink-0 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                @click="copyText(endpoint.value, endpoint.label)"
-              >
-                {{ t('settings.addonsArticlesCopyUrl') }}
-              </button>
-            </div>
-          </div>
-          <label class="block text-sm text-gray-600 dark:text-gray-300">
-            {{ t('settings.contentPublishingWebhookUrl') }}
-            <input
-              v-model="form.publishWebhookUrl"
-              type="url"
-              class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
-              placeholder="https://example.com/hooks/content-published"
-              @input="syncDirty"
-            />
-            <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesWebhookDesc') }}</span>
-          </label>
-          <div class="flex flex-wrap gap-2">
-            <button
-              type="button"
-              class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-              :disabled="!form.publishWebhookUrl || webhookTesting"
-              @click="sendTestWebhook"
-            >
-              {{ webhookTesting ? t('settings.addonsArticlesWebhookTesting') : t('settings.addonsArticlesSendTestWebhook') }}
-            </button>
-          </div>
           <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
             <input v-model="form.headlessApiEnabled" type="checkbox" class="rounded border-gray-300 text-indigo-600" @change="syncDirty" />
             {{ t('settings.contentPublishingHeadlessApiEnabled') }}
           </label>
+
           <label class="block text-sm text-gray-600 dark:text-gray-300">
             {{ t('settings.addonsArticlesEmbedWebsiteDomain') }}
             <input
@@ -238,7 +267,7 @@
               type="text"
               class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm dark:border-gray-600 dark:bg-gray-900"
               placeholder="www.example.com"
-              @input="syncDirty"
+              @input="onEmbedWebsiteDomainInput"
             />
             <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesEmbedWebsiteDomainHint') }}</span>
             <span
@@ -248,265 +277,315 @@
               {{ t('settings.addonsArticlesEmbedWebsiteOriginsAllowed', { origins: embedWebsiteOrigins.join(', ') }) }}
             </span>
           </label>
-        </div>
 
-        <div class="mt-6 border-t border-gray-200 pt-5 dark:border-gray-700">
-          <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesHelpCenterRoutesTitle') }}</h4>
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesHelpCenterRoutesDesc') }}</p>
-          <p class="mt-2 text-xs font-medium text-indigo-700 dark:text-indigo-300">{{ t('settings.addonsArticlesHelpCenterRoutesNote') }}</p>
-          <div class="mt-3 space-y-3">
-            <div
-              v-for="route in helpCenterRoutes"
-              :key="route.key"
-              class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40"
-            >
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ route.label }}</p>
-              <p class="mt-1 break-all font-mono text-xs text-gray-600 dark:text-gray-400">{{ route.customerUrl }}</p>
-              <a
-                v-if="route.demoUrl"
-                :href="route.demoUrl"
-                class="mt-2 inline-block text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {{ t('settings.addonsArticlesHelpCenterRouteDemo') }}
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesEmbedTitle') }}</h3>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesEmbedDesc') }}</p>
-
-        <ol class="mt-4 list-decimal space-y-2 pl-5 text-sm text-gray-700 dark:text-gray-300">
-          <li>{{ t('settings.addonsArticlesEmbedStepEnable') }}</li>
-          <li>{{ t('settings.addonsArticlesEmbedStepDomain') }}</li>
-          <li>{{ t('settings.addonsArticlesEmbedStepCopy') }}</li>
-        </ol>
-
-        <div class="mt-5">
           <label class="block text-sm text-gray-600 dark:text-gray-300">
             {{ t('settings.addonsArticlesEmbedPathPrefix') }}
             <input
               v-model="embedPathPrefix"
               type="text"
-              class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm dark:border-gray-600 dark:bg-gray-900 sm:max-w-xs"
+              class="mt-1 w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm dark:border-gray-600 dark:bg-gray-900"
               placeholder="/help/"
             />
             <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesEmbedPathPrefixHint') }}</span>
           </label>
+
+          <template v-if="showWebhookSetup">
+            <label class="block text-sm text-gray-600 dark:text-gray-300">
+              {{ t('settings.contentPublishingWebhookUrl') }}
+              <input
+                v-model="form.publishWebhookUrl"
+                type="url"
+                class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
+                :placeholder="suggestedPublishWebhookUrl || 'https://example.com/api/arivu-webhook'"
+                @input="onPublishWebhookUrlInput"
+              />
+              <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesWebhookDesc') }}</span>
+              <span
+                v-if="showSuggestedPublishWebhookHint"
+                class="mt-1 block text-xs text-indigo-700 dark:text-indigo-300"
+              >
+                {{ t('settings.addonsArticlesWebhookAutoFilled') }}
+              </span>
+            </label>
+
+            <div class="flex flex-wrap gap-2">
+              <button
+                type="button"
+                class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                :disabled="!form.publishWebhookUrl || webhookTesting"
+                @click="sendTestWebhook"
+              >
+                {{ webhookTesting ? t('settings.addonsArticlesWebhookTesting') : t('settings.addonsArticlesSendTestWebhook') }}
+              </button>
+              <button
+                type="button"
+                class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                :disabled="webhookSecretGenerating"
+                @click="generateWebhookSecret"
+              >
+                {{ webhookSecretGenerating ? t('settings.addonsArticlesWebhookSecretGenerating') : t('settings.addonsArticlesGenerateWebhookSecret') }}
+              </button>
+            </div>
+
+            <p
+              v-if="hasPublishWebhookSecret"
+              class="text-xs text-emerald-700 dark:text-emerald-300"
+            >
+              {{ t('settings.addonsArticlesWebhookSecretConfigured') }}
+            </p>
+            <p
+              v-if="generatedWebhookSecret"
+              class="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100"
+            >
+              {{ t('settings.addonsArticlesWebhookSecretOnce', { secret: generatedWebhookSecret }) }}
+            </p>
+          </template>
         </div>
 
-        <div class="mt-5">
-          <div class="flex items-start justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40">
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.addonsArticlesEmbedPublicKeyLabel') }}</p>
-              <p class="mt-1 break-all font-mono text-xs text-gray-600 dark:text-gray-400">{{ embedOrgKey || t('settings.addonsArticlesEmbedPublicKeyPending') }}</p>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesEmbedPublicKeyHint') }}</p>
-            </div>
-            <button
-              v-if="embedOrgKey"
-              type="button"
-              class="shrink-0 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-              @click="copyText(embedOrgKey, t('settings.addonsArticlesEmbedPublicKeyLabel'))"
+        <div v-if="showStaticSyncSetup" class="mt-6 space-y-4">
+          <div class="space-y-3">
+            <div
+              v-for="endpoint in staticSyncEndpoints"
+              :key="endpoint.key"
+              class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40"
             >
-              {{ t('settings.addonsArticlesCopyUrl') }}
-            </button>
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ endpoint.label }}</p>
+                  <p class="mt-1 break-all font-mono text-xs text-gray-600 dark:text-gray-400">{{ endpoint.value || '—' }}</p>
+                </div>
+                <button
+                  v-if="endpoint.value"
+                  type="button"
+                  class="shrink-0 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                  @click="copyText(endpoint.value, endpoint.label)"
+                >
+                  {{ t('settings.addonsArticlesCopyUrl') }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.addonsArticlesStaticSyncEnvTemplate') }}</p>
+                <pre class="mt-2 overflow-x-auto whitespace-pre-wrap break-all font-mono text-xs text-gray-600 dark:text-gray-400">{{ staticSyncEnvTemplate }}</pre>
+              </div>
+              <button
+                type="button"
+                class="shrink-0 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                @click="copyText(staticSyncEnvTemplate, t('settings.addonsArticlesStaticSyncEnvTemplate'))"
+              >
+                {{ t('settings.addonsArticlesCopyUrl') }}
+              </button>
+            </div>
+          </div>
+
+          <div v-if="staticSyncHostType === 'next'" class="space-y-3">
+            <p class="text-sm text-gray-700 dark:text-gray-300">{{ t('settings.addonsArticlesStaticSyncNextSteps') }}</p>
+            <ol class="list-decimal space-y-1 pl-5 text-sm text-gray-600 dark:text-gray-400">
+              <li>{{ t('settings.addonsArticlesStaticSyncNextStep1') }}</li>
+              <li>{{ t('settings.addonsArticlesStaticSyncNextStep2') }}</li>
+              <li>{{ t('settings.addonsArticlesStaticSyncNextStep3') }}</li>
+            </ol>
+            <a
+              :href="nextSyncDownloadUrl"
+              class="inline-flex rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+              download="arivu-next-static-sync.zip"
+            >
+              {{ t('settings.addonsArticlesStaticSyncDownloadNext') }}
+            </a>
+          </div>
+
+          <div v-else-if="staticSyncHostType === 'php'" class="space-y-3">
+            <a
+              :href="phpSyncDownloadUrl"
+              class="inline-flex rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+              download="arivu-help-sync.php"
+            >
+              {{ t('settings.addonsArticlesStaticSyncDownloadPhp') }}
+            </a>
+          </div>
+
+          <div v-else-if="staticSyncHostType === 'cli'" class="space-y-3">
+            <div
+              v-for="command in staticSyncCliCommands"
+              :key="command.key"
+              class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ command.label }}</p>
+                  <pre class="mt-2 overflow-x-auto whitespace-pre-wrap break-all font-mono text-xs text-gray-600 dark:text-gray-400">{{ command.value }}</pre>
+                </div>
+                <button
+                  type="button"
+                  class="shrink-0 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                  @click="copyText(command.value, command.label)"
+                >
+                  {{ t('settings.addonsArticlesCopyUrl') }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="mt-6 space-y-3 rounded-lg border border-indigo-200 bg-indigo-50/60 p-4 dark:border-indigo-900/50 dark:bg-indigo-950/20">
+        <template v-if="showEmbedSetup">
+          <div class="mt-6 space-y-3 rounded-lg border border-indigo-200 bg-indigo-50/60 p-4 dark:border-indigo-900/50 dark:bg-indigo-950/20">
           <div class="flex items-start justify-between gap-3">
             <div>
-              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesUnifiedPageSnippetLabel') }}</p>
-              <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesUnifiedPageSnippetDesc') }}</p>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesUnifiedEmbedSnippetLabel') }}</p>
+              <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesUnifiedEmbedSnippetDesc') }}</p>
             </div>
             <button
               type="button"
               class="shrink-0 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
-              @click="copyText(unifiedPageSnippet, t('settings.addonsArticlesUnifiedPageSnippetLabel'))"
-            >
-              {{ t('settings.addonsArticlesCopySnippet') }}
-            </button>
-          </div>
-          <pre class="overflow-x-auto rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ unifiedPageSnippet }}</code></pre>
-        </div>
-
-        <div class="mt-5 space-y-3">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.addonsArticlesUnifiedEmbedSnippetLabel') }}</p>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesUnifiedEmbedSnippetDesc') }}</p>
-            </div>
-            <button
-              type="button"
-              class="shrink-0 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
               @click="copyText(unifiedEmbedSnippet, t('settings.addonsArticlesUnifiedEmbedSnippetLabel'))"
             >
               {{ t('settings.addonsArticlesCopySnippet') }}
             </button>
           </div>
-          <pre class="overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ unifiedEmbedSnippet }}</code></pre>
-        </div>
+          <pre class="overflow-x-auto rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ unifiedEmbedSnippet }}</code></pre>
+          </div>
 
-        <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">
-          {{ t('settings.addonsArticlesEmbedDemoHint') }}
-          <a
-            :href="headlessHomeExampleUrl"
-            class="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
-            target="_blank"
-            rel="noopener noreferrer"
+          <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">
+            {{ t('settings.addonsArticlesEmbedDemoHint') }}
+            <a
+              :href="headlessHomeExampleUrl"
+              class="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ t('settings.addonsArticlesHelpCenterRouteDemo') }}
+            </a>
+          </p>
+
+          <details class="mt-6 rounded-lg border border-gray-200 dark:border-gray-700">
+            <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+              {{ t('settings.addonsArticlesAdvancedEmbedsTitle') }}
+            </summary>
+            <div class="space-y-6 border-t border-gray-200 px-4 py-4 dark:border-gray-700">
+              <div class="space-y-3">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.addonsArticlesUnifiedPageSnippetLabel') }}</p>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesUnifiedPageSnippetDesc') }}</p>
+                  </div>
+                  <button
+                    type="button"
+                    class="shrink-0 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                    @click="copyText(unifiedPageSnippet, t('settings.addonsArticlesUnifiedPageSnippetLabel'))"
+                  >
+                    {{ t('settings.addonsArticlesCopySnippet') }}
+                  </button>
+                </div>
+                <pre class="overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ unifiedPageSnippet }}</code></pre>
+              </div>
+
+              <div v-for="snippet in advancedEmbedSnippets" :key="snippet.key">
+                <div class="flex items-center justify-between gap-3">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ snippet.label }}</p>
+                  <button
+                    type="button"
+                    class="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                    @click="copyText(snippet.value, snippet.label)"
+                  >
+                    {{ t('settings.addonsArticlesCopySnippet') }}
+                  </button>
+                </div>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ snippet.description }}</p>
+                <pre class="mt-2 overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ snippet.value }}</code></pre>
+              </div>
+            </div>
+          </details>
+        </template>
+
+        <div class="mt-4 flex items-start justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40">
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.addonsArticlesEmbedPublicKeyLabel') }}</p>
+            <p class="mt-1 break-all font-mono text-xs text-gray-600 dark:text-gray-400">{{ embedOrgKey || t('settings.addonsArticlesEmbedPublicKeyPending') }}</p>
+          </div>
+          <button
+            v-if="embedOrgKey"
+            type="button"
+            class="shrink-0 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+            @click="copyText(embedOrgKey, t('settings.addonsArticlesEmbedPublicKeyLabel'))"
           >
-            {{ t('settings.addonsArticlesHelpCenterRouteDemo') }}
-          </a>
-        </p>
+            {{ t('settings.addonsArticlesCopyUrl') }}
+          </button>
+        </div>
 
         <details class="mt-6 rounded-lg border border-gray-200 dark:border-gray-700">
           <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
-            {{ t('settings.addonsArticlesAdvancedEmbedsTitle') }}
+            {{ t('settings.addonsArticlesDeveloperSetupTitle') }}
           </summary>
           <div class="space-y-6 border-t border-gray-200 px-4 py-4 dark:border-gray-700">
-            <div v-for="snippet in advancedEmbedSnippets" :key="snippet.key">
-              <div class="flex items-center justify-between gap-3">
-                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ snippet.label }}</p>
-                <button
-                  type="button"
-                  class="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                  @click="copyText(snippet.value, snippet.label)"
-                >
-                  {{ t('settings.addonsArticlesCopySnippet') }}
-                </button>
+            <div class="space-y-3">
+              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.contentPublishingIntegrationTitle') }}</p>
+              <div v-for="endpoint in integrationEndpoints" :key="endpoint.key" class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ endpoint.label }}</p>
+                    <p class="mt-1 break-all text-xs text-gray-600 dark:text-gray-400">{{ endpoint.value || '—' }}</p>
+                  </div>
+                  <button
+                    v-if="endpoint.value"
+                    type="button"
+                    class="shrink-0 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                    @click="copyText(endpoint.value, endpoint.label)"
+                  >
+                    {{ t('settings.addonsArticlesCopyUrl') }}
+                  </button>
+                </div>
               </div>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ snippet.description }}</p>
-              <pre class="mt-2 overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ snippet.value }}</code></pre>
+            </div>
+
+            <div v-if="showStaticSyncSetup">
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesHelpCenterRoutesTitle') }}</h4>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesHelpCenterRoutesDesc') }}</p>
+              <div class="mt-3 space-y-3">
+                <div
+                  v-for="route in helpCenterRoutes"
+                  :key="route.key"
+                  class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40"
+                >
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ route.label }}</p>
+                  <p class="mt-1 break-all font-mono text-xs text-gray-600 dark:text-gray-400">{{ route.customerUrl }}</p>
+                  <a
+                    v-if="route.demoUrl"
+                    :href="route.demoUrl"
+                    class="mt-2 inline-block text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ t('settings.addonsArticlesHelpCenterRouteDemo') }}
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="showStaticSyncSetup">
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesIntegrationExamplesTitle') }}</h4>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.addonsArticlesIntegrationExamplesDesc') }}</p>
+              <div class="mt-4 space-y-4">
+                <div v-for="example in integrationExamples" :key="example.key">
+                  <div class="flex items-center justify-between gap-3">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ example.label }}</p>
+                    <button
+                      type="button"
+                      class="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                      @click="copyText(example.value, example.label)"
+                    >
+                      {{ t('settings.addonsArticlesCopyExample') }}
+                    </button>
+                  </div>
+                  <pre class="mt-2 overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ example.value }}</code></pre>
+                </div>
+              </div>
             </div>
           </div>
         </details>
-      </div>
-
-      <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesIntegrationExamplesTitle') }}</h3>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesIntegrationExamplesDesc') }}</p>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          {{ t('settings.addonsArticlesIntegrationExampleLink') }}
-          <a
-            :href="headlessHomeExampleUrl"
-            class="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {{ t('settings.addonsArticlesIntegrationHomeExampleLinkLabel') }}
-          </a>
-          ·
-          <a
-            :href="headlessCategoryExampleUrl"
-            class="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {{ t('settings.addonsArticlesIntegrationCategoryExampleLinkLabel') }}
-          </a>
-          ·
-          <a
-            :href="headlessSectionExampleUrl"
-            class="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {{ t('settings.addonsArticlesIntegrationSectionExampleLinkLabel') }}
-          </a>
-          ·
-          <a
-            :href="headlessListExampleUrl"
-            class="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {{ t('settings.addonsArticlesIntegrationListExampleLinkLabel') }}
-          </a>
-          ·
-          <a
-            :href="headlessExampleUrl"
-            class="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {{ t('settings.addonsArticlesIntegrationExampleLinkLabel') }}
-          </a>
-        </p>
-
-        <div class="mt-5 space-y-4">
-          <div v-for="example in integrationExamples" :key="example.key">
-            <div class="flex items-center justify-between gap-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ example.label }}</p>
-              <button
-                type="button"
-                class="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                @click="copyText(example.value, example.label)"
-              >
-                {{ t('settings.addonsArticlesCopyExample') }}
-              </button>
-            </div>
-            <pre class="mt-2 overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"><code>{{ example.value }}</code></pre>
-          </div>
-        </div>
-      </div>
-
-      <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesDeflectionTitle') }}</h3>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesDeflectionDesc') }}</p>
-
-        <label class="mt-5 flex items-center justify-between gap-4">
-          <span class="text-sm text-gray-700 dark:text-gray-200">{{ t('settings.addonsArticlesCaseDeflection') }}</span>
-          <button
-            type="button"
-            role="switch"
-            :aria-checked="form.caseDeflectionEnabled"
-            class="relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors"
-            :class="form.caseDeflectionEnabled ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-600'"
-            @click="form.caseDeflectionEnabled = !form.caseDeflectionEnabled; syncDirty()"
-          >
-            <span
-              class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition"
-              :class="form.caseDeflectionEnabled ? 'translate-x-5' : 'translate-x-0'"
-            />
-          </button>
-        </label>
-      </div>
-
-      <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsArticlesDefaultsTitle') }}</h3>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.addonsArticlesDefaultsDesc') }}</p>
-
-        <div class="mt-5 space-y-4">
-          <label class="block text-sm text-gray-600 dark:text-gray-300">
-            {{ t('settings.addonsArticlesDefaultCollection') }}
-            <select
-              v-model="form.defaultCollectionId"
-              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-              @change="syncDirty()"
-            >
-              <option :value="null">{{ t('contentStudio.noCollection') }}</option>
-              <option v-for="collection in collections" :key="collection._id" :value="collection._id">
-                {{ collectionLabel(collection) }}
-              </option>
-            </select>
-          </label>
-
-          <label class="block text-sm text-gray-600 dark:text-gray-300">
-            {{ t('settings.addonsArticlesStaleContentDays') }}
-            <input
-              v-model.number="form.staleContentAlertDays"
-              type="number"
-              min="7"
-              max="365"
-              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-              @input="syncDirty()"
-            />
-          </label>
-        </div>
       </div>
     </div>
 
@@ -551,8 +630,31 @@ const integration = reactive({
   recentArticlesApiUrl: '',
   popularArticlesApiUrl: '',
   exampleArticleApiUrl: '',
+  exampleArticleExportUrl: '',
+  manifestUrl: '',
   sitemapUrl: '',
 });
+const staticSyncHostType = ref('embed');
+const showEmbedSetup = computed(() => staticSyncHostType.value === 'embed');
+const showStaticSyncSetup = computed(() => staticSyncHostType.value !== 'embed');
+const showWebhookSetup = computed(() => showStaticSyncSetup.value);
+const customerSiteSetupHint = computed(() => {
+  switch (staticSyncHostType.value) {
+    case 'embed':
+      return t('settings.addonsArticlesStaticSyncEmbedNote');
+    case 'php':
+      return t('settings.addonsArticlesStaticSyncPhpSteps');
+    case 'cli':
+      return t('settings.addonsArticlesStaticSyncCliSteps');
+    default:
+      return t('settings.addonsArticlesStaticSyncDesc');
+  }
+});
+const publishWebhookUrlManuallyEdited = ref(false);
+const suppressPublishWebhookAutoFill = ref(false);
+const hasPublishWebhookSecret = ref(false);
+const generatedWebhookSecret = ref('');
+const webhookSecretGenerating = ref(false);
 let autoSaveTimer = null;
 
 const defaultAppearance = {
@@ -648,6 +750,138 @@ const integrationEndpoints = computed(() => {
     },
   ];
 });
+
+const staticSyncEndpoints = computed(() => {
+  const resolved = resolvedIntegration.value;
+  const exportPattern = resolved.exampleArticleExportUrl || '';
+  const exampleExportUrl = exportPattern.includes('{slug}')
+    ? exportPattern.replace('{slug}', 'getting-started')
+    : exportPattern;
+  return [
+    {
+      key: 'manifestUrl',
+      label: t('settings.addonsArticlesStaticSyncManifestUrl'),
+      value: resolved.manifestUrl,
+    },
+    {
+      key: 'exampleArticleExportUrl',
+      label: t('settings.addonsArticlesStaticSyncExportUrl'),
+      value: exampleExportUrl,
+    },
+  ];
+});
+
+const staticSyncEnvTemplate = computed(() => {
+  const siteOrigin = normalizeWebsiteOrigin(form.embedWebsiteDomain) || 'https://www.example.com';
+  const lines = [
+    `ARIVU_ORG=${embedOrgKey.value || 'art_pub_xxx'}`,
+    `ARIVU_API_ORIGIN=${embedOrigin.value}`,
+    `HELP_URL_PREFIX=${normalizedEmbedPathPrefix.value}`,
+    'ARIVU_SYNC_DEST=./public/help',
+    'ARIVU_WEBHOOK_SECRET=',
+    `SITE_ORIGIN=${siteOrigin}`,
+  ];
+  return lines.join('\n');
+});
+
+function normalizeWebsiteOrigin(domain) {
+  const raw = String(domain || '').trim();
+  if (!raw) return '';
+  try {
+    const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    const url = new URL(withProtocol);
+    return `${url.protocol}//${url.host}`;
+  } catch {
+    return '';
+  }
+}
+
+const STATIC_SYNC_WEBHOOK_PATHS = {
+  next: '/api/arivu-webhook',
+  php: '/arivu-help-sync.php',
+  cli: '/api/arivu-webhook',
+  embed: '',
+};
+
+function buildSuggestedPublishWebhookUrl(domain, hostType) {
+  const origin = normalizeWebsiteOrigin(domain);
+  if (!origin || hostType === 'embed') return '';
+  const path = STATIC_SYNC_WEBHOOK_PATHS[hostType] || STATIC_SYNC_WEBHOOK_PATHS.next;
+  return `${origin}${path}`;
+}
+
+function inferStaticSyncHostType(webhookUrl) {
+  const url = String(webhookUrl || '').trim();
+  if (!url) return 'embed';
+  if (url.includes('arivu-help-sync.php')) return 'php';
+  if (url.includes('/api/arivu-webhook')) return 'next';
+  return 'next';
+}
+
+function isSuggestedPublishWebhookUrl(url, domain, hostType) {
+  const suggested = buildSuggestedPublishWebhookUrl(domain, hostType);
+  return Boolean(suggested && String(url || '').trim() === suggested);
+}
+
+const suggestedPublishWebhookUrl = computed(() => (
+  buildSuggestedPublishWebhookUrl(form.embedWebsiteDomain, staticSyncHostType.value)
+));
+
+const showSuggestedPublishWebhookHint = computed(() => (
+  Boolean(suggestedPublishWebhookUrl.value)
+  && isSuggestedPublishWebhookUrl(form.publishWebhookUrl, form.embedWebsiteDomain, staticSyncHostType.value)
+  && staticSyncHostType.value !== 'embed'
+));
+
+function applySuggestedPublishWebhookUrl() {
+  if (publishWebhookUrlManuallyEdited.value) return;
+  suppressPublishWebhookAutoFill.value = true;
+  form.publishWebhookUrl = suggestedPublishWebhookUrl.value;
+  suppressPublishWebhookAutoFill.value = false;
+}
+
+function onPublishWebhookUrlInput() {
+  if (!suppressPublishWebhookAutoFill.value) {
+    publishWebhookUrlManuallyEdited.value = true;
+  }
+  syncDirty();
+}
+
+function onEmbedWebsiteDomainInput() {
+  applySuggestedPublishWebhookUrl();
+  syncDirty();
+}
+
+function onStaticSyncHostTypeChange() {
+  applySuggestedPublishWebhookUrl();
+  syncDirty();
+}
+
+const staticSyncCliCommands = computed(() => {
+  const org = embedOrgKey.value || 'art_pub_xxx';
+  const origin = embedOrigin.value;
+  const prefix = normalizedEmbedPathPrefix.value;
+  return [
+    {
+      key: 'full',
+      label: t('settings.addonsArticlesStaticSyncCliFull'),
+      value: `npx @arivu/help-sync sync --org ${org} --api-origin ${origin} --dest ./public/help --path-prefix ${prefix} --full`,
+    },
+    {
+      key: 'slug',
+      label: t('settings.addonsArticlesStaticSyncCliSlug'),
+      value: `npx @arivu/help-sync sync --org ${org} --api-origin ${origin} --dest ./public/help --path-prefix ${prefix} --slug getting-started`,
+    },
+    {
+      key: 'webhook',
+      label: t('settings.addonsArticlesStaticSyncCliWebhook'),
+      value: 'cat webhook.json | npx @arivu/help-sync webhook --dest ./public/help',
+    },
+  ];
+});
+
+const phpSyncDownloadUrl = computed(() => `${embedOrigin.value}/static-sync/arivu-help-sync.php`);
+const nextSyncDownloadUrl = computed(() => `${embedOrigin.value}/static-sync/arivu-next-static-sync.zip`);
 
 const resolvedIntegration = computed(() => integration);
 
@@ -891,6 +1125,23 @@ async function sendTestWebhook() {
   }
 }
 
+async function generateWebhookSecret() {
+  if (webhookSecretGenerating.value) return;
+  webhookSecretGenerating.value = true;
+  generatedWebhookSecret.value = '';
+  try {
+    const res = await apiClient.post('/settings/addons/articles/settings/generate-webhook-secret', {}, { cache: 'no-store' });
+    generatedWebhookSecret.value = res.publishWebhookSecret || '';
+    hasPublishWebhookSecret.value = Boolean(res?.settings?.publishing?.hasPublishWebhookSecret);
+    applySettings(res);
+    notifications.success(t('settings.addonsArticlesWebhookSecretGenerated'));
+  } catch (err) {
+    notifications.error(err?.message || t('settings.addonsArticlesWebhookSecretGenerateFailed'));
+  } finally {
+    webhookSecretGenerating.value = false;
+  }
+}
+
 function collectionLabel(collection) {
   const depth = Number(collection.depth || 0);
   return `${'  '.repeat(depth)}${collection.name}`;
@@ -941,8 +1192,21 @@ function applySettings(res) {
   const settings = res?.settings || {};
   form.portalPublishing = settings.portalPublishing !== false;
   form.publishWebhookUrl = settings.publishing?.publishWebhookUrl || '';
+  hasPublishWebhookSecret.value = Boolean(settings.publishing?.hasPublishWebhookSecret);
   form.headlessApiEnabled = settings.publishing?.headlessApiEnabled !== false;
   form.embedWebsiteDomain = settings.publishing?.embedWebsiteDomain || '';
+  staticSyncHostType.value = inferStaticSyncHostType(form.publishWebhookUrl);
+  publishWebhookUrlManuallyEdited.value = Boolean(
+    form.publishWebhookUrl
+    && !isSuggestedPublishWebhookUrl(
+      form.publishWebhookUrl,
+      form.embedWebsiteDomain,
+      staticSyncHostType.value,
+    ),
+  );
+  if (!form.publishWebhookUrl && form.embedWebsiteDomain && staticSyncHostType.value !== 'embed') {
+    applySuggestedPublishWebhookUrl();
+  }
   savedEmbedWebsiteOrigins.value = Array.isArray(settings.publishing?.embedWebsiteOrigins)
     ? settings.publishing.embedWebsiteOrigins
     : [];
@@ -957,6 +1221,8 @@ function applySettings(res) {
   integration.recentArticlesApiUrl = res?.integration?.recentArticlesApiUrl || '';
   integration.popularArticlesApiUrl = res?.integration?.popularArticlesApiUrl || '';
   integration.exampleArticleApiUrl = res?.integration?.exampleArticleApiUrl || '';
+  integration.exampleArticleExportUrl = res?.integration?.exampleArticleExportUrl || '';
+  integration.manifestUrl = res?.integration?.manifestUrl || '';
   integration.sitemapUrl = res?.integration?.sitemapUrl || '';
   collections.value = buildCollectionTree(Array.isArray(res?.collections) ? res.collections : []);
   initialSnapshot.value = snapshotForm();
