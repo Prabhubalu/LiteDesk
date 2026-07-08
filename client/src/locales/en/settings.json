@@ -1472,16 +1472,28 @@
     "description": "Intro for Next.js static sync steps"
   },
   "addonsArticlesStaticSyncNextStep1": {
-    "message": "Download the Next.js template zip and copy the app/ folder into your project.",
+    "message": "Download the Next.js template zip and copy app/, scripts/, and help-sync/ into your project.",
     "description": "Next.js static sync step 1"
   },
   "addonsArticlesStaticSyncNextStep2": {
-    "message": "Set the environment variables below in Vercel.",
+    "message": "Add prebuild: node scripts/sync-help-static.mjs to package.json and merge next.config.example.mjs rewrites.",
     "description": "Next.js static sync step 2"
   },
   "addonsArticlesStaticSyncNextStep3": {
-    "message": "Point the publish webhook URL above to /api/arivu-webhook on your site.",
+    "message": "Set the environment variables below in Vercel, including ARIVU_SYNC_MODE=static.",
     "description": "Next.js static sync step 3"
+  },
+  "addonsArticlesStaticSyncNextStep4": {
+    "message": "Create a Vercel Deploy Hook and paste the URL into VERCEL_DEPLOY_HOOK_URL.",
+    "description": "Next.js static sync step 4"
+  },
+  "addonsArticlesStaticSyncNextStep5": {
+    "message": "Point the publish webhook URL above to /api/arivu-webhook and remove ISR app/help routes.",
+    "description": "Next.js static sync step 5"
+  },
+  "addonsArticlesStaticSyncNextHint": {
+    "message": "On Vercel, each publish triggers a redeploy. The build writes SEO-ready HTML into public/help/ with styles and metadata.",
+    "description": "Hint when Next.js static sync host type is selected"
   },
   "addonsArticlesStaticSyncPhpSteps": {
     "message": "Upload the PHP sync script, set env vars (or edit the config block), point the webhook URL to the script, then run ?full=1 once.",

@@ -388,6 +388,8 @@
               <li>{{ t('settings.addonsArticlesStaticSyncNextStep1') }}</li>
               <li>{{ t('settings.addonsArticlesStaticSyncNextStep2') }}</li>
               <li>{{ t('settings.addonsArticlesStaticSyncNextStep3') }}</li>
+              <li>{{ t('settings.addonsArticlesStaticSyncNextStep4') }}</li>
+              <li>{{ t('settings.addonsArticlesStaticSyncNextStep5') }}</li>
             </ol>
             <a
               :href="nextSyncDownloadUrl"
@@ -642,6 +644,8 @@ const customerSiteSetupHint = computed(() => {
   switch (staticSyncHostType.value) {
     case 'embed':
       return t('settings.addonsArticlesStaticSyncEmbedNote');
+    case 'next':
+      return t('settings.addonsArticlesStaticSyncNextHint');
     case 'php':
       return t('settings.addonsArticlesStaticSyncPhpSteps');
     case 'cli':
@@ -777,10 +781,13 @@ const staticSyncEnvTemplate = computed(() => {
     `ARIVU_ORG=${embedOrgKey.value || 'art_pub_xxx'}`,
     `ARIVU_API_ORIGIN=${embedOrigin.value}`,
     `HELP_URL_PREFIX=${normalizedEmbedPathPrefix.value}`,
-    'ARIVU_SYNC_DEST=./public/help',
+    'ARIVU_SYNC_DEST=./public',
     'ARIVU_WEBHOOK_SECRET=',
     `SITE_ORIGIN=${siteOrigin}`,
   ];
+  if (staticSyncHostType.value === 'next') {
+    lines.push('ARIVU_SYNC_MODE=static', 'VERCEL_DEPLOY_HOOK_URL=');
+  }
   return lines.join('\n');
 });
 
@@ -865,17 +872,17 @@ const staticSyncCliCommands = computed(() => {
     {
       key: 'full',
       label: t('settings.addonsArticlesStaticSyncCliFull'),
-      value: `npx @arivu/help-sync sync --org ${org} --api-origin ${origin} --dest ./public/help --path-prefix ${prefix} --full`,
+      value: `npx @arivu/help-sync sync --org ${org} --api-origin ${origin} --dest ./public --path-prefix ${prefix} --full`,
     },
     {
       key: 'slug',
       label: t('settings.addonsArticlesStaticSyncCliSlug'),
-      value: `npx @arivu/help-sync sync --org ${org} --api-origin ${origin} --dest ./public/help --path-prefix ${prefix} --slug getting-started`,
+      value: `npx @arivu/help-sync sync --org ${org} --api-origin ${origin} --dest ./public --path-prefix ${prefix} --slug getting-started`,
     },
     {
       key: 'webhook',
       label: t('settings.addonsArticlesStaticSyncCliWebhook'),
-      value: 'cat webhook.json | npx @arivu/help-sync webhook --dest ./public/help',
+      value: 'cat webhook.json | npx @arivu/help-sync webhook --dest ./public',
     },
   ];
 });

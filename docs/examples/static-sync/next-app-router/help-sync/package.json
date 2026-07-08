@@ -1,0 +1,21 @@
+{
+  "name": "@arivu/help-sync",
+  "version": "0.1.0",
+  "description": "Incremental static sync for Arivu headless help articles",
+  "license": "UNLICENSED",
+  "bin": {
+    "arivu-help-sync": "./bin/arivu-help-sync.js"
+  },
+  "main": "./lib/index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "README.md"
+  ]
+}

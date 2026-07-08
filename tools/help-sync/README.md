@@ -26,19 +26,19 @@ export HELP_URL_PREFIX=/help/
 Full sync (initial deploy):
 
 ```bash
-arivu-help-sync sync --org "$ARIVU_ORG" --dest ./public/help --full
+arivu-help-sync sync --org "$ARIVU_ORG" --dest ./public --full
 ```
 
 Incremental article sync:
 
 ```bash
-arivu-help-sync sync --org "$ARIVU_ORG" --dest ./public/help --slug create-invoice
+arivu-help-sync sync --org "$ARIVU_ORG" --dest ./public --slug create-invoice
 ```
 
 Webhook handler (pipe Arivu publish webhook JSON on stdin):
 
 ```bash
-arivu-help-sync webhook --dest ./public/help
+arivu-help-sync webhook --dest ./public
 ```
 
 ## Output layout

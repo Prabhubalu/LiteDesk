@@ -15166,5 +15166,17 @@
   "addonsArticlesCustomerSiteSetupType": {
     "message": "Publishing method",
     "description": "Articles customer site setup type selector label"
+  },
+  "addonsArticlesStaticSyncNextStep4": {
+    "message": "Create a Vercel Deploy Hook and paste the URL into VERCEL_DEPLOY_HOOK_URL.",
+    "description": "Next.js static sync step 4"
+  },
+  "addonsArticlesStaticSyncNextStep5": {
+    "message": "Point the publish webhook URL above to /api/arivu-webhook and remove ISR app/help routes.",
+    "description": "Next.js static sync step 5"
+  },
+  "addonsArticlesStaticSyncNextHint": {
+    "message": "On Vercel, each publish triggers a redeploy. The build writes SEO-ready HTML into public/help/ with styles and metadata.",
+    "description": "Hint when Next.js static sync host type is selected"
   }
 }
