@@ -1,3 +1,5 @@
+import ArivuHelpAssets from './ArivuHelpAssets';
+
 const API_ORIGIN = process.env.ARIVU_API_ORIGIN || '';
 
 export default function HelpLayout({ children }: { children: React.ReactNode }) {
@@ -8,7 +10,8 @@ export default function HelpLayout({ children }: { children: React.ReactNode }) 
       {stylesheetOrigin ? (
         <link rel="stylesheet" href={`${stylesheetOrigin}/embed/headless-blocks.css`} />
       ) : null}
-      <main>{children}</main>
+      <div className="ld-help-root">{children}</div>
+      <ArivuHelpAssets apiOrigin={API_ORIGIN} />
     </>
   );
 }

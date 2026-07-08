@@ -56,6 +56,8 @@ async function fetchExport(client, slug, options = {}) {
   const params = new URLSearchParams();
   if (options.pathPrefix) params.set('pathPrefix', options.pathPrefix);
   if (options.articleLinkPrefix) params.set('articleLinkPrefix', options.articleLinkPrefix);
+  if (options.fragment) params.set('fragment', '1');
+  if (options.chrome) params.set('chrome', '1');
   const suffix = params.toString() ? `?${params.toString()}` : '';
   const payload = await fetchJson(
     `${client.contentBase}/articles/${encodeURIComponent(slug)}/export${suffix}`,
@@ -67,6 +69,7 @@ async function fetchHomeExport(client, pathPrefix, options = {}) {
   const params = new URLSearchParams();
   if (pathPrefix) params.set('pathPrefix', pathPrefix);
   if (options.fragment) params.set('fragment', '1');
+  if (options.chrome) params.set('chrome', '1');
   const suffix = params.toString() ? `?${params.toString()}` : '';
   const payload = await fetchJson(`${client.contentBase}/export/home${suffix}`);
   return payload.data;
@@ -77,6 +80,7 @@ async function fetchCollectionExport(client, slug, options = {}) {
   if (options.pathPrefix) params.set('pathPrefix', options.pathPrefix);
   if (options.parentSlug) params.set('parent', options.parentSlug);
   if (options.fragment) params.set('fragment', '1');
+  if (options.chrome) params.set('chrome', '1');
   const suffix = params.toString() ? `?${params.toString()}` : '';
   const payload = await fetchJson(
     `${client.contentBase}/export/collections/${encodeURIComponent(slug)}${suffix}`,

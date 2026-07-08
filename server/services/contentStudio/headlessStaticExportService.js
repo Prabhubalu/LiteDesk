@@ -24,7 +24,14 @@ const {
   resolveOrganizationForPublic,
   buildPublicContentEnvelope,
   buildPublicCollectionTree,
+  listPublicRecentHelpArticles,
+  listPublicPopularHelpArticles,
 } = require('./publicContentService');
+const {
+  buildArticlePageChrome,
+  buildHomeExportChrome,
+  buildCollectionExportChrome,
+} = require('./headlessExportChromeBuilder');
 
 function normalizeArticleSlug(value) {
   return String(value || '').trim().replace(/^\/+/, '').toLowerCase();
@@ -524,10 +531,33 @@ async function getPublicHelpManifest({
   }, context.publishing);
 }
 
+async function loadArticleSidebarWidgets(orgSlug, collectionPathSlugs = [], pathPrefix = '/help/') {
+  const collectionSlug = collectionPathSlugs[collectionPathSlugs.length - 1] || '';
+  const [recentResult, popularResult] = await Promise.all([
+    listPublicRecentHelpArticles({
+      orgSlug,
+      limit: 5,
+      collection: collectionSlug || undefined,
+      deep: Boolean(collectionSlug),
+    }),
+    listPublicPopularHelpArticles({
+      orgSlug,
+      limit: 5,
+      collection: collectionSlug || undefined,
+      deep: Boolean(collectionSlug),
+    }),
+  ]);
+  return {
+    recent: recentResult?.data || [],
+    popular: popularResult?.data || [],
+  };
+}
+
 async function getPublicHelpHomeExport({
   orgSlug,
   pathPrefix = '/help/',
   fragment = false,
+  chrome = false,
   requestOrigin = '',
 }) {
   const org = await resolveOrganizationForPublic(orgSlug);
@@ -545,12 +575,19 @@ async function getPublicHelpHomeExport({
     })),
     meta: formatCollectionStats(node),
   }));
-  const html = buildListingPageHtml({
-    title: 'Help Center',
-    description: 'Browse help topics',
-    items,
-    fragment,
-  });
+  const html = chrome
+    ? buildHomeExportChrome({
+      title: 'Help Center',
+      description: 'Browse help topics',
+      tree,
+      pathPrefix,
+    })
+    : buildListingPageHtml({
+      title: 'Help Center',
+      description: 'Browse help topics',
+      items,
+      fragment,
+    });
   const exportPath = buildHomeExportPath(pathPrefix);
   const options = { requestOrigin };
 
@@ -575,6 +612,7 @@ async function getPublicHelpCollectionExport({
   parentSlug = '',
   pathPrefix = '/help/',
   fragment = false,
+  chrome = false,
   requestOrigin = '',
 }) {
   const org = await resolveOrganizationForPublic(orgSlug);
@@ -614,12 +652,31 @@ async function getPublicHelpCollectionExport({
     }));
   }
 
-  const html = buildListingPageHtml({
-    title: treeNode.name,
-    description: treeNode.description || '',
-    items,
-    fragment,
-  });
+  const listingType = Array.isArray(treeNode.children) && treeNode.children.length
+    ? 'sections'
+    : 'articles';
+  const sidebarWidgets = chrome
+    ? await loadArticleSidebarWidgets(orgSlug, collectionPathSlugs, pathPrefix)
+    : { recent: [], popular: [] };
+  const html = chrome
+    ? buildCollectionExportChrome({
+      title: treeNode.name,
+      description: treeNode.description || '',
+      items,
+      treeNode,
+      collectionPathSlugs,
+      tree,
+      pathPrefix,
+      recent: sidebarWidgets.recent,
+      popular: sidebarWidgets.popular,
+      listingType,
+    })
+    : buildListingPageHtml({
+      title: treeNode.name,
+      description: treeNode.description || '',
+      items,
+      fragment,
+    });
   const exportPath = buildCollectionExportPath({ collectionPathSlugs, pathPrefix });
   const options = { requestOrigin, parentSlug: parentSlug || undefined };
 
@@ -664,6 +721,7 @@ async function getPublicHelpArticleExport({
   articleSlug,
   pathPrefix = '/help/',
   fragment = false,
+  chrome = false,
   articleLinkPrefix = '/help/',
   requestOrigin = '',
 }) {
@@ -708,7 +766,20 @@ async function getPublicHelpArticleExport({
     }),
     publicAppBaseUrl,
   );
-  const html = buildExportPageHtml({ article, bodyHtml, fragment });
+  let html = buildExportPageHtml({ article, bodyHtml, fragment });
+  if (chrome) {
+    const { tree } = await loadPublicCollectionsContext(org._id);
+    const sidebarWidgets = await loadArticleSidebarWidgets(orgSlug, collectionPathSlugs, pathPrefix);
+    html = buildArticlePageChrome({
+      article,
+      bodyHtml,
+      pathPrefix,
+      collectionPathSlugs,
+      tree,
+      recent: sidebarWidgets.recent,
+      popular: sidebarWidgets.popular,
+    });
+  }
   const exportPath = buildArticleExportPath({
     slug: article.slug,
     collectionPathSlugs,

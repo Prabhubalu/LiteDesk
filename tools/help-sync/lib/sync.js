@@ -69,7 +69,7 @@ async function syncPageExport({
 }) {
   let exportData;
   if (page?.type === 'home') {
-    exportData = await client.fetchHomeExport(pathPrefix);
+    exportData = await client.fetchHomeExport(pathPrefix, { chrome: true });
   } else {
     const slug = String(page?.slug || page?.collectionPath?.[page.collectionPath.length - 1] || '').trim();
     const parentSlug = String(
@@ -78,7 +78,7 @@ async function syncPageExport({
         ? page.collectionPath[page.collectionPath.length - 2]
         : ''),
     ).trim();
-    exportData = await client.fetchCollectionExport(slug, { pathPrefix, parentSlug });
+    exportData = await client.fetchCollectionExport(slug, { pathPrefix, parentSlug, chrome: true });
   }
 
   const destination = resolveDestinationFile(dest, exportData.exportPath);
@@ -118,6 +118,7 @@ async function syncArticleExport({
   const exportData = await syncClient.fetchExport(slug, {
     pathPrefix,
     articleLinkPrefix: articleLinkPrefix || pathPrefix,
+    chrome: true,
   });
 
   let html = exportData.html;
