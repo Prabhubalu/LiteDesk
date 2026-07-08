@@ -7,10 +7,11 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/build-static-sync-zip.mjs && vite",
     "build": "run-s type-check \"build-only {@}\" --",
     "preview": "vite preview",
-    "build-only": "NODE_OPTIONS=--max-old-space-size=7168 vite build",
+    "build:static-sync-zip": "node scripts/build-static-sync-zip.mjs",
+    "build-only": "node scripts/build-static-sync-zip.mjs && NODE_OPTIONS=--max-old-space-size=7168 vite build",
     "build:chunks": "vite build && du -h dist/assets/*.js | sort -hr",
     "type-check": "NODE_OPTIONS=--max-old-space-size=7168 vue-tsc --build",
     "test": "vitest run",

@@ -238,7 +238,7 @@ npx @arivu/help-sync sync --org art_pub_xxx --dest s3://bucket/help --full
 
 | Template | Path | Notes |
 |----------|------|-------|
-| **Next.js App Router** | `docs/examples/static-sync/next-app-router/` | `api/arivu-webhook/route.ts`, `help/[...slug]/page.tsx`, `revalidatePath` |
+| **Next.js App Router** | `docs/examples/static-sync/next-app-router/` | `lib/arivu-help.ts`, `help/[[...slug]]/page.tsx`, `help/sitemap.xml/route.ts`, `api/arivu-webhook/route.ts`, `revalidatePath` |
 | **Express** | `docs/examples/static-sync/express/` | `POST /api/arivu-webhook`, write `public/help/` |
 | **PHP** | `docs/examples/static-sync/arivu-help-sync.php` | Webhook + `?full=1` + config block at top |
 | **GitHub Action** | `docs/examples/static-sync/github-action-sync.yml` | Webhook → workflow → CLI to S3 |
