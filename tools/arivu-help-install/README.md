@@ -16,10 +16,13 @@ curl -fsSL https://app.arivu.com/static-sync/arivu-help-install.mjs | node - ins
 
 The script:
 
-- Adds `/help` routes that render **inside your existing site layout** (nav + footer preserved)
-- Detects header/footer components in `app/layout.tsx`
+- Adds `/help` App Router routes that fetch content from the Arivu API
+- Wraps help pages with your site nav/footer in `app/help/layout.tsx` when chrome lives in route layouts like `/blog`
+- Detects header/footer components in your existing layouts during install
 - Adds webhook route for publish-triggered Vercel rebuilds
 - Writes `.env.local` with your Arivu settings
+
+`ARIVU_SYNC_MODE=layout` skips writing `public/help/` static HTML — those files are not used for rendering in layout mode.
 
 Use `--mode=standalone-html` only if you want full standalone HTML files without site chrome.
 

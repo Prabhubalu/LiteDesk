@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { detectNextProject } = require('./detect');
 const { detectSiteChrome, resolveLibDir } = require('./detectSiteChrome');
+const { buildHelpLayoutContent } = require('./buildHelpLayout');
 const { copyTemplates } = require('./copyTemplates');
 const {
   patchPackageJson,
@@ -70,6 +71,18 @@ function installIntoProject(targetDir, options) {
     integrationMode,
   });
 
+  let helpLayoutPatched = false;
+  if (integrationMode === 'layout' && siteChrome.needsHelpLayoutChrome) {
+    const helpLayoutContent = buildHelpLayoutContent({
+      chromeComponents: siteChrome.referenceChromeComponents,
+    });
+    if (helpLayoutContent) {
+      const helpLayoutPath = path.join(targetDir, appDir, 'help', 'layout.tsx');
+      fs.writeFileSync(helpLayoutPath, helpLayoutContent);
+      helpLayoutPatched = true;
+    }
+  }
+
   if (integrationMode === 'standalone-html') {
     writeArivuHelpConfig(targetDir, options.pathPrefix);
     fs.writeFileSync(
@@ -106,6 +119,7 @@ function installIntoProject(targetDir, options) {
     configResult,
     envFile,
     siteChrome,
+    helpLayoutPatched,
     webhookPath: '/api/arivu-webhook',
   };
 }
@@ -115,10 +129,11 @@ function printSuccess(result, options) {
   process.stdout.write('\nArivu help center installed.\n\n');
 
   if (result.integrationMode === 'layout') {
-    process.stdout.write('Mode: site layout (help pages inherit your nav and footer)\n\n');
+    process.stdout.write('Mode: site layout (help pages use your site nav and footer)\n\n');
     process.stdout.write('How it works:\n');
-    process.stdout.write('  - /help routes render inside your existing app/layout.tsx\n');
-    process.stdout.write('  - Your header, footer, and site chrome stay visible\n');
+    process.stdout.write('  - /help routes are Next.js App Router pages that fetch content from Arivu\n');
+    process.stdout.write('  - ARIVU_SYNC_MODE=layout skips public/help/ static HTML (that output is not rendered)\n');
+    process.stdout.write('  - Site chrome is applied in app/help/layout.tsx\n');
     process.stdout.write('  - SEO metadata is generated at build time from Arivu\n\n');
   } else {
     process.stdout.write('Mode: standalone HTML files in public/help/\n\n');
@@ -138,18 +153,27 @@ function printSuccess(result, options) {
   }
   process.stdout.write(`  - ${result.envFile}\n`);
 
-  if (result.siteChrome?.hasRootLayout) {
+  if (result.helpLayoutPatched) {
+    process.stdout.write(`\nHelp layout wrapped with site chrome from ${result.siteChrome.referenceLayoutPath}:\n`);
+    result.siteChrome.referenceChromeComponents.forEach((component) => {
+      process.stdout.write(`  - ${component.name}\n`);
+    });
+  } else if (result.siteChrome?.preservesSiteChrome) {
+    process.stdout.write(`\nSite chrome detected in ${result.siteChrome.layoutPath} — help pages inherit it automatically\n`);
+    result.siteChrome.chromeUsedInLayout.forEach((item) => {
+      process.stdout.write(`  - ${item}\n`);
+    });
+  } else if (result.siteChrome?.hasRootLayout) {
     process.stdout.write(`\nSite layout detected: ${result.siteChrome.layoutPath}\n`);
-    if (result.siteChrome.chromeUsedInLayout.length) {
-      process.stdout.write('Chrome components found in layout:\n');
-      result.siteChrome.chromeUsedInLayout.forEach((item) => {
-        process.stdout.write(`  - ${item}\n`);
-      });
+    if (result.siteChrome.referenceLayoutPath) {
+      process.stdout.write(`Tip: copy nav/footer from ${result.siteChrome.referenceLayoutPath} into app/help/layout.tsx\n`);
     } else if (result.siteChrome.chromeComponents.length) {
-      process.stdout.write('Tip: ensure your header/footer are rendered in app/layout.tsx\n');
+      process.stdout.write('Tip: wrap app/help/layout.tsx with your SiteNav and SiteFooter components\n');
+    } else {
+      process.stdout.write('Tip: add your site nav and footer to app/help/layout.tsx\n');
     }
   } else {
-    process.stdout.write('\nTip: add your site nav and footer to app/layout.tsx — help pages inherit it automatically\n');
+    process.stdout.write('\nTip: add your site nav and footer to app/help/layout.tsx\n');
   }
 
   process.stdout.write('\nVercel checklist:\n');
