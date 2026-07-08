@@ -8,7 +8,9 @@
       gallery.dataset.galleryInit = 'true';
 
       var inputs = Array.prototype.slice.call(gallery.querySelectorAll('.content-gallery__input'));
-      var figures = Array.prototype.slice.call(gallery.querySelectorAll('.content-gallery__viewport > .content-image-figure, .content-gallery__viewport > .content-gallery__figure'));
+      var figures = Array.prototype.slice.call(
+        gallery.querySelectorAll('.content-gallery__viewport > .content-image-figure, .content-gallery__viewport > .content-gallery__figure'),
+      );
       if (!figures.length) return;
 
       function syncFromIndex(index) {
@@ -59,8 +61,23 @@
     initGalleries(root);
   }
 
-  global.LiteDeskHeadlessBlocks = {
+  function boot() {
+    init(document);
+  }
+
+  var api = {
     init: init,
     initGalleries: initGalleries,
   };
+
+  global.LiteDeskHeadlessBlocks = api;
+  global.ArivuHeadlessBlocks = api;
+
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
+  }
 })(typeof window !== 'undefined' ? window : globalThis);

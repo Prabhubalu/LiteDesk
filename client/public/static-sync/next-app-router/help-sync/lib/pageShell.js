@@ -52,16 +52,13 @@ function buildStaticPageHtml({
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(title)}</title>
   ${metaTags}
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="${escapeHtml(cssHref)}" />
 </head>
-<body class="ld-help-site">
-  <div class="ld-help-root">
+<body>
+  <div class="ld-help-root ld-help-embed">
 ${bodyHtml}
   </div>
-  <script src="${escapeHtml(jsHref)}" defer></script>
+  <script src="${escapeHtml(jsHref)}"></script>
 </body>
 </html>
 `;
