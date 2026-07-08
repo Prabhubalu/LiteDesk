@@ -8,6 +8,8 @@ Copy these files into your Next.js project (Vercel or any Node host).
 |------|---------|
 | `lib/arivu-help.ts` | Export API client — ISR mode only |
 | `app/help/[[...slug]]/page.tsx` | ISR help pages (**remove in static SEO mode**) |
+| `app/help/ArivuHelpEmbed.tsx` | All help pages — loads `headless-help.js` router (home, category, section, article) |
+| `app/help/ArivuHelpContent.tsx` | Legacy server HTML renderer (unused in layout mode) |
 | `app/help/layout.tsx` | Help layout + Arivu styles (**remove in static SEO mode**) |
 | `app/help/sitemap.xml/route.ts` | Dynamic sitemap (**remove in static SEO mode**) |
 | `app/api/arivu-webhook/route.ts` | Webhook — ISR revalidate or Vercel static deploy |
@@ -89,7 +91,7 @@ Keep `app/help/[[...slug]]/page.tsx` and `app/help/layout.tsx`. `/help` is rende
 ARIVU_SYNC_MODE=isr
 ```
 
-Keep `app/help/[[...slug]]/page.tsx`. Webhook calls `revalidatePath` only.
+Keep `app/help/[[...slug]]/page.tsx`. All `/help` routes use `headless-help.js`, which routes to the same embed scripts as the Articles demos (`headless-help-home.js`, `headless-help-category.js`, `headless-help-section.js`, `headless-article.js`). Server export API is still used for SEO metadata and route validation only.
 
 ## PHP / VPS (runtime file writes)
 

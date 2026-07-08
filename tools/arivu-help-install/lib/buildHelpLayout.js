@@ -1,5 +1,7 @@
 'use strict';
 
+const path = require('path');
+
 const CHROME_WIDTH_OVERRIDE = [
   '      <style>{`',
   '        .arivu-help-chrome .ld-help-page,',
@@ -48,6 +50,56 @@ function classifyChromeRole(name) {
   if (/container|wrapper|shell|page-shell/i.test(name)) return 'container';
   if (/header|navbar|nav-bar|site.?nav|main.?nav|topbar|top-bar|navigation/i.test(name)) return 'header';
   return 'header';
+}
+
+const INFERRED_COMPONENT_ORDER = [
+  { pattern: /site.?nav|main.?nav|navbar|nav-bar|topbar|top-bar|header|navigation/i, role: 'header' },
+  { pattern: /spacer/i, role: 'spacer' },
+  { pattern: /container|wrapper|shell|page-shell/i, role: 'container' },
+  { pattern: /footer/i, role: 'footer' },
+];
+
+function toComponentImportPath(relativePath) {
+  const normalized = String(relativePath || '').replace(/\\/g, '/');
+  const withoutExt = normalized.replace(/\.(tsx|jsx|vue)$/i, '');
+  if (withoutExt.startsWith('src/components/')) {
+    return `@/${withoutExt.slice(4)}`;
+  }
+  if (withoutExt.startsWith('components/')) {
+    return `@/${withoutExt}`;
+  }
+  if (withoutExt.startsWith('src/app/components/')) {
+    return `@/${withoutExt.slice(4)}`;
+  }
+  if (withoutExt.startsWith('app/components/')) {
+    return `@/${withoutExt}`;
+  }
+  return null;
+}
+
+function inferChromeComponentsFromDiscovered(relativePaths = []) {
+  const components = [];
+
+  for (const { pattern, role } of INFERRED_COMPONENT_ORDER) {
+    const matchPath = relativePaths.find((relativePath) => {
+      const baseName = path.basename(relativePath, path.extname(relativePath));
+      return pattern.test(baseName);
+    });
+    if (!matchPath) continue;
+
+    const name = path.basename(matchPath, path.extname(matchPath));
+    const importFrom = toComponentImportPath(matchPath);
+    if (!importFrom) continue;
+
+    components.push({
+      name,
+      props: role === 'container' ? 'wide' : '',
+      role,
+      importLine: `import ${name} from '${importFrom}';`,
+    });
+  }
+
+  return components;
 }
 
 function extractChromeComponents(source) {
@@ -134,6 +186,8 @@ module.exports = {
   buildHelpLayoutContent,
   classifyChromeRole,
   extractChromeComponents,
+  inferChromeComponentsFromDiscovered,
   isChromeComponentName,
   parseImportLines,
+  toComponentImportPath,
 };

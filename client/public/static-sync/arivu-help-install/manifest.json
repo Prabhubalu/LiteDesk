@@ -19,6 +19,7 @@
     "templates/app/api/arivu-webhook/route.ts",
     "templates/next/app/help/ArivuHelpAssets.tsx",
     "templates/next/app/help/ArivuHelpContent.tsx",
+    "templates/next/app/help/ArivuHelpEmbed.tsx",
     "templates/next/app/help/[[...slug]]/page.tsx",
     "templates/next/app/help/layout.tsx",
     "templates/next/app/help/sitemap.xml/route.ts",
