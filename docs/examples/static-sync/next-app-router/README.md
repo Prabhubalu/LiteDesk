@@ -6,17 +6,20 @@ Copy these files into your Next.js project (Vercel or any Node host).
 
 | Path | Purpose |
 |------|---------|
-| `lib/arivu-help.ts` | Export API client — home, collection, article resolution |
-| `app/help/[[...slug]]/page.tsx` | ISR help home, category, section, and article pages |
-| `app/help/layout.tsx` | Loads Arivu help base styles |
-| `app/help/sitemap.xml/route.ts` | SEO sitemap from Arivu export API |
-| `app/api/arivu-webhook/route.ts` | Webhook handler — `revalidatePath` on publish/unpublish |
+| `lib/arivu-help.ts` | Export API client — ISR mode only |
+| `app/help/[[...slug]]/page.tsx` | ISR help pages (**remove in static SEO mode**) |
+| `app/help/layout.tsx` | Help styles (**remove in static SEO mode**) |
+| `app/help/sitemap.xml/route.ts` | Dynamic sitemap (**remove in static SEO mode**) |
+| `app/api/arivu-webhook/route.ts` | Webhook — ISR revalidate or Vercel static deploy |
+| `scripts/sync-help-static.mjs` | Build-time full sync → `public/help/` |
+| `help-sync/` | Bundled `@arivu/help-sync` core |
+| `next.config.example.mjs` | Rewrites for `/help/*` → `index.html` |
 
 ## Routes
 
 | URL | Page |
 |-----|------|
-| `/help` | Help home (category grid) |
+| `/help` | Help home |
 | `/help/{category}` | Category listing |
 | `/help/{category}/{section}` | Section listing |
 | `/help/.../{article}` | Article body |
@@ -32,25 +35,57 @@ ARIVU_WEBHOOK_SECRET=your-webhook-secret
 SITE_ORIGIN=https://www.yoursite.com
 ```
 
-## Setup
+### Static SEO mode on Vercel (recommended)
 
-1. Copy `app/` and `lib/` into your Next.js project root.
-2. Set env vars above in Vercel (and `.env.local` for local dev).
-3. Keep your site header/footer in the root `app/layout.tsx` — the help layout only wraps Arivu content.
-4. In Arivu **Articles → Static sync**, set **Publish webhook URL** to:
-   `https://yoursite.com/api/arivu-webhook`
-4. Generate a webhook secret in Arivu settings; use the same value for `ARIVU_WEBHOOK_SECRET`.
-5. Deploy. Publish an article in Content Studio — the webhook revalidates the article, home, and parent collection paths.
-
-## Initial full sync (optional)
-
-For first deploy or repair, run the CLI against `public/` then commit or upload to your CDN:
+Vercel **cannot write files at runtime**. Static HTML is written during **build**, then redeployed on each publish. Synced pages ship as full HTML documents with Inter typography, premium help chrome, CSS, JS, and SEO meta tags.
 
 ```bash
-npx @arivu/help-sync sync --org $ARIVU_ORG --api-origin $ARIVU_API_ORIGIN --dest ./public/help --path-prefix /help/ --full
+ARIVU_SYNC_MODE=static
+VERCEL_DEPLOY_HOOK_URL=https://api.vercel.com/v1/integrations/deploy/...
+ARIVU_SYNC_DEST=./public
 ```
 
-Or rely on ISR: first visitor to each path triggers export fetch (see `revalidate` in `lib/arivu-help.ts`).
+Add to your site `package.json`:
+
+```json
+{
+  "scripts": {
+    "sync:help": "node scripts/sync-help-static.mjs",
+    "prebuild": "npm run sync:help"
+  }
+}
+```
+
+Merge `next.config.example.mjs` rewrites into your Next config. The `:path+` rules map nested URLs like `/help/category/section/article` to `index.html` files so **hard refresh** returns 200 (not ISR 404). Extension paths such as `/help/sitemap.xml` and `/help/assets/*` are served directly from `public/`.
+
+**Remove ISR help routes** (static files in `public/help/` must win):
+
+- `app/help/[[...slug]]/page.tsx`
+- `app/help/layout.tsx`
+- `app/help/ArivuHelpAssets.tsx`
+- `app/help/sitemap.xml/route.ts`
+
+**Setup:**
+
+1. Copy `app/api/`, `scripts/`, `help-sync/`, and merge `next.config`.
+2. Set env vars above (include deploy hook URL).
+3. Webhook URL → `https://yoursite.com/api/arivu-webhook`
+4. Deploy once (build runs full sync → writes `public/help/**/*.html`).
+5. Each publish → webhook → deploy hook → rebuild → fresh static files.
+
+Create deploy hook: Vercel project → Settings → Git → Deploy Hooks.
+
+### ISR mode (fallback, weaker SEO)
+
+```bash
+ARIVU_SYNC_MODE=isr
+```
+
+Keep `app/help/[[...slug]]/page.tsx`. Webhook calls `revalidatePath` only.
+
+## PHP / VPS (runtime file writes)
+
+Use `arivu-help-sync.php` or `npx @arivu/help-sync` on a host with a writable filesystem. Webhook writes HTML incrementally on each publish — no full redeploy.
 
 ## Related
 

@@ -130,6 +130,7 @@ async function main() {
       articleLinkPrefix: args.articleLinkPrefix || args.pathPrefix,
       assetsPrefix: args.assetsPrefix,
       mirrorAssets: args.mirrorAssets,
+      siteOrigin: args.siteOrigin,
     });
     process.stdout.write(`${JSON.stringify({ success: true, result }, null, 2)}\n`);
     return;

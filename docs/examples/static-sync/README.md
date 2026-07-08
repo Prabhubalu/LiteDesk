@@ -11,43 +11,33 @@ Downloadable from **Articles settings → Static sync (SEO)** when running the A
 
 ## PHP (shared hosting)
 
-1. Copy `arivu-help-sync.php` to your host.
-2. Set `$config` or env vars (`ARIVU_ORG`, `ARIVU_API_ORIGIN`).
+1. Copy `arivu-help-sync.php` to your web host document root.
+2. Set env vars (`ARIVU_ORG`, `ARIVU_API_ORIGIN`, `SITE_ORIGIN`, `ARIVU_WEBHOOK_SECRET`).
 3. Webhook URL → `https://yoursite.com/arivu-help-sync.php`
 4. Initial full sync → `https://yoursite.com/arivu-help-sync.php?full=1`
 
-Writes HTML + assets under `./help/` next to the script.
+Writes HTML + assets under `{outputDir}/help/` (default: document root). Webhook updates incrementally on each publish.
 
-## Next.js App Router (Vercel)
+## Next.js on Vercel (static SEO mode)
 
-Download `arivu-next-static-sync.zip` or copy from `client/public/static-sync/next-app-router/`:
+Vercel cannot write files at runtime. Use **build-time sync + deploy hook**:
 
-| File | Purpose |
-|------|---------|
-| `lib/arivu-help.ts` | Export API client — home, collection, article |
-| `app/help/[[...slug]]/page.tsx` | ISR help home, category, section, article |
-| `app/help/layout.tsx` | Arivu help base styles |
-| `app/help/sitemap.xml/route.ts` | SEO sitemap |
-| `app/api/arivu-webhook/route.ts` | `revalidatePath` on publish/unpublish |
+1. Copy the Next template (`scripts/`, `help-sync/`, `app/api/arivu-webhook/`).
+2. Set `ARIVU_SYNC_MODE=static`, `VERCEL_DEPLOY_HOOK_URL`, and Arivu env vars.
+3. Add `"prebuild": "node scripts/sync-help-static.mjs"` to `package.json`.
+4. Merge `next.config.example.mjs` rewrites; remove ISR `app/help/*` routes.
+5. Webhook URL → `https://yoursite.com/api/arivu-webhook`
 
-Env:
+Each publish → webhook → Vercel redeploy → `prebuild` writes fresh HTML to `public/help/`.
 
-```bash
-ARIVU_ORG=art_pub_xxx
-ARIVU_API_ORIGIN=https://app.arivu.com
-HELP_URL_PREFIX=/help/
-ARIVU_WEBHOOK_SECRET=optional-shared-secret
-SITE_ORIGIN=https://www.yoursite.com
-```
+See `next-app-router/README.md` for full steps.
 
-Webhook URL → `https://yoursite.com/api/arivu-webhook`
-
-## Node CLI (any host)
+## Node CLI (VPS or CI)
 
 See [tools/help-sync/README.md](../../tools/help-sync/README.md).
 
 ```bash
-arivu-help-sync sync --org art_pub_xxx --dest ./public/help --full
+arivu-help-sync sync --org art_pub_xxx --dest ./public --full
 ```
 
 ## Related

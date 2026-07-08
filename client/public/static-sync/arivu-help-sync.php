@@ -2,8 +2,8 @@
 /**
  * Arivu headless help — incremental static sync (PHP)
  *
- * 1. Upload this file to your web host.
- * 2. Set config below.
+ * 1. Upload this file to your web host document root (or set outputDir).
+ * 2. Set config below or env vars.
  * 3. Point Arivu Articles → Publish webhook URL to this script.
  * 4. Run once with ?full=1 for initial sync.
  */
@@ -13,8 +13,8 @@ declare(strict_types=1);
 $config = [
     'org' => getenv('ARIVU_ORG') ?: 'art_pub_REPLACE_ME',
     'apiOrigin' => rtrim(getenv('ARIVU_API_ORIGIN') ?: 'https://app.arivu.com', '/'),
-    'outputDir' => __DIR__ . '/help',
-    'pathPrefix' => '/help/',
+    'outputDir' => getenv('ARIVU_SYNC_DEST') ?: __DIR__,
+    'pathPrefix' => getenv('HELP_URL_PREFIX') ?: '/help/',
     'siteOrigin' => rtrim(getenv('SITE_ORIGIN') ?: '', '/'),
     'webhookSecret' => getenv('ARIVU_WEBHOOK_SECRET') ?: '',
 ];
@@ -83,38 +83,91 @@ function contentBase(array $config): string
     return $config['apiOrigin'] . '/api/public/v1/content/' . rawurlencode($config['org']);
 }
 
-function syncPageExport(array $config, array $page): array
+function escapeHtml(string $value): string
 {
-    $base = contentBase($config);
-    $query = http_build_query(['pathPrefix' => $config['pathPrefix']]);
-    if (($page['type'] ?? '') === 'home') {
-        $export = fetchJson($base . '/export/home?' . $query);
-    } else {
-        $slug = (string) ($page['slug'] ?? '');
-        $params = ['pathPrefix' => $config['pathPrefix']];
-        if (!empty($page['parentSlug'])) {
-            $params['parent'] = (string) $page['parentSlug'];
-        }
-        $export = fetchJson($base . '/export/collections/' . rawurlencode($slug) . '?' . http_build_query($params));
-    }
-    $data = $export['data'] ?? [];
-    $exportPath = ltrim((string) ($data['exportPath'] ?? ''), '/');
-    $destination = rtrim($config['outputDir'], '/') . '/' . $exportPath;
-    writeFile($destination, (string) ($data['html'] ?? ''));
-    return ['type' => (string) ($data['type'] ?? 'page'), 'destination' => $destination];
+    return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
-function syncArticle(array $config, string $slug): array
+function wrapStaticPageHtml(array $config, string $bodyHtml, array $meta, string $exportPath): string
 {
-    $base = contentBase($config);
-    $query = http_build_query(['pathPrefix' => $config['pathPrefix']]);
-    $export = fetchJson($base . '/articles/' . rawurlencode($slug) . '/export?' . $query);
-    $data = $export['data'] ?? [];
-    $html = (string) ($data['html'] ?? '');
-    $exportPath = ltrim((string) ($data['exportPath'] ?? ''), '/');
-    $destination = rtrim($config['outputDir'], '/') . '/' . $exportPath;
+    $title = trim((string) ($meta['title'] ?? 'Help Center'));
+    $description = trim((string) ($meta['description'] ?? ''));
+    $robots = trim((string) ($meta['robots'] ?? ''));
+    $ogImageUrl = trim((string) ($meta['ogImageUrl'] ?? ''));
+    $canonical = trim((string) ($meta['canonical'] ?? ''));
+    $siteOrigin = rtrim((string) ($config['siteOrigin'] ?? ''), '/');
+    $normalizedPath = preg_replace('/\/index\.html$/i', '/', (string) $exportPath) ?: '';
+    if ($canonical === '' && $siteOrigin !== '' && $normalizedPath !== '') {
+        $href = str_starts_with($normalizedPath, '/') ? $normalizedPath : '/' . $normalizedPath;
+        $canonical = $siteOrigin . $href;
+    }
 
-    foreach (($data['assets'] ?? []) as $asset) {
+    $cssHref = $config['apiOrigin'] . '/embed/headless-blocks.css';
+    $jsHref = $config['apiOrigin'] . '/embed/headless-blocks.js';
+    $metaTags = [];
+    if ($description !== '') {
+        $metaTags[] = '<meta name="description" content="' . escapeHtml($description) . '" />';
+    }
+    if ($robots !== '') {
+        $metaTags[] = '<meta name="robots" content="' . escapeHtml($robots) . '" />';
+    }
+    if ($canonical !== '') {
+        $metaTags[] = '<link rel="canonical" href="' . escapeHtml($canonical) . '" />';
+    }
+    if ($title !== '') {
+        $metaTags[] = '<meta property="og:title" content="' . escapeHtml($title) . '" />';
+    }
+    if ($description !== '') {
+        $metaTags[] = '<meta property="og:description" content="' . escapeHtml($description) . '" />';
+    }
+    if ($ogImageUrl !== '') {
+        $metaTags[] = '<meta property="og:image" content="' . escapeHtml($ogImageUrl) . '" />';
+    }
+    $metaTags[] = '<meta property="og:type" content="article" />';
+    $metaBlock = implode("\n  ", $metaTags);
+    $safeTitle = escapeHtml($title);
+
+    return <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{$safeTitle}</title>
+  {$metaBlock}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{$cssHref}" />
+</head>
+<body class="ld-help-site">
+  <div class="ld-help-root">
+{$bodyHtml}
+  </div>
+  <script src="{$jsHref}" defer></script>
+</body>
+</html>
+
+HTML;
+}
+
+function exportQuery(array $config, array $extra = []): string
+{
+    return http_build_query(array_merge([
+        'pathPrefix' => $config['pathPrefix'],
+        'chrome' => '1',
+    ], $extra));
+}
+
+function assetsPublicPrefix(array $config): string
+{
+    return rtrim($config['pathPrefix'], '/') . '/assets/';
+}
+
+function mirrorArticleAssets(array $config, string $html, array $assets): string
+{
+    $publicPrefix = assetsPublicPrefix($config);
+    foreach ($assets as $asset) {
         $assetUrl = (string) ($asset['url'] ?? '');
         $filename = (string) ($asset['filename'] ?? '');
         if ($assetUrl === '' || $filename === '') {
@@ -124,12 +177,58 @@ function syncArticle(array $config, string $slug): array
         if ($assetBytes === false) {
             continue;
         }
-        $assetDest = rtrim($config['outputDir'], '/') . '/help/assets/' . $filename;
+        $assetDest = rtrim($config['outputDir'], '/')
+            . '/'
+            . ltrim($publicPrefix, '/')
+            . $filename;
         writeFile($assetDest, $assetBytes);
-        $publicAssetPath = '/help/assets/' . $filename;
-        $html = str_replace($assetUrl, $publicAssetPath, $html);
+        $html = str_replace($assetUrl, $publicPrefix . $filename, $html);
     }
+    return $html;
+}
 
+function syncPageExport(array $config, array $page): array
+{
+    $base = contentBase($config);
+    if (($page['type'] ?? '') === 'home') {
+        $export = fetchJson($base . '/export/home?' . exportQuery($config));
+    } else {
+        $slug = (string) ($page['slug'] ?? '');
+        $params = [];
+        if (!empty($page['parentSlug'])) {
+            $params['parent'] = (string) $page['parentSlug'];
+        }
+        $export = fetchJson(
+            $base . '/export/collections/' . rawurlencode($slug) . '?' . exportQuery($config, $params),
+        );
+    }
+    $data = $export['data'] ?? [];
+    $exportPath = ltrim((string) ($data['exportPath'] ?? ''), '/');
+    $destination = rtrim($config['outputDir'], '/') . '/' . $exportPath;
+    $html = wrapStaticPageHtml(
+        $config,
+        (string) ($data['html'] ?? ''),
+        is_array($data['meta'] ?? null) ? $data['meta'] : [],
+        (string) ($data['exportPath'] ?? ''),
+    );
+    writeFile($destination, $html);
+    return ['type' => (string) ($data['type'] ?? 'page'), 'destination' => $destination];
+}
+
+function syncArticle(array $config, string $slug): array
+{
+    $base = contentBase($config);
+    $export = fetchJson($base . '/articles/' . rawurlencode($slug) . '/export?' . exportQuery($config));
+    $data = $export['data'] ?? [];
+    $html = mirrorArticleAssets($config, (string) ($data['html'] ?? ''), is_array($data['assets'] ?? null) ? $data['assets'] : []);
+    $exportPath = ltrim((string) ($data['exportPath'] ?? ''), '/');
+    $destination = rtrim($config['outputDir'], '/') . '/' . $exportPath;
+    $html = wrapStaticPageHtml(
+        $config,
+        $html,
+        is_array($data['meta'] ?? null) ? $data['meta'] : [],
+        (string) ($data['exportPath'] ?? ''),
+    );
     writeFile($destination, $html);
     return ['slug' => $slug, 'destination' => $destination];
 }
@@ -189,12 +288,14 @@ function handleWebhook(array $config): void
     if ($event === 'content.published') {
         $result = syncArticle($config, (string) ($content['slug'] ?? ''));
         $result['refreshPages'] = syncRefreshPages($config, $refreshPages);
+        $result['sitemap'] = writeSitemap($config);
         respondJson(200, ['success' => true, 'result' => $result]);
     }
 
     if ($event === 'content.unpublished') {
         $result = deleteArticle($config, (string) ($content['exportPath'] ?? ''));
         $result['refreshPages'] = syncRefreshPages($config, $refreshPages);
+        $result['sitemap'] = writeSitemap($config);
         respondJson(200, ['success' => true, 'result' => $result]);
     }
 

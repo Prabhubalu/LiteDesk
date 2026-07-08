@@ -5,9 +5,29 @@ import JSZip from 'jszip';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const clientRoot = path.resolve(__dirname, '..');
+const repoRoot = path.resolve(clientRoot, '..');
 const sourceRoot = path.join(clientRoot, 'public/static-sync/next-app-router');
+const helpSyncSource = path.join(repoRoot, 'tools/help-sync');
+const helpSyncDest = path.join(sourceRoot, 'help-sync');
 const outputPath = path.join(clientRoot, 'public/static-sync/arivu-next-static-sync.zip');
-const bundleEntries = ['app', 'lib', 'README.md'];
+const bundleEntries = [
+  'app',
+  'lib',
+  'scripts',
+  'help-sync',
+  'README.md',
+  'next.config.example.mjs',
+];
+
+async function copyHelpSyncPackage() {
+  await fs.rm(helpSyncDest, { recursive: true, force: true });
+  await fs.mkdir(helpSyncDest, { recursive: true });
+  await fs.copyFile(
+    path.join(helpSyncSource, 'package.json'),
+    path.join(helpSyncDest, 'package.json'),
+  );
+  await fs.cp(path.join(helpSyncSource, 'lib'), path.join(helpSyncDest, 'lib'), { recursive: true });
+}
 
 async function addDirectory(zip, dirPath, zipPath) {
   const entries = await fs.readdir(dirPath, { withFileTypes: true });
@@ -34,6 +54,7 @@ async function addEntry(zip, entryName) {
 
 async function main() {
   await fs.access(sourceRoot);
+  await copyHelpSyncPackage();
   const zip = new JSZip();
   for (const entryName of bundleEntries) {
     await addEntry(zip, entryName);

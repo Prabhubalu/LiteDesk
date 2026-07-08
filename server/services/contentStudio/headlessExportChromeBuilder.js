@@ -242,7 +242,7 @@ function buildBreadcrumbHtml({
     + '<ol class="ld-help-breadcrumbs__list">'
     + items.map((item) => {
       if (item.current || !item.href) {
-        return `<li class="ld-help-breadcrumbs__item" aria-current="page">${escapeHtml(item.label)}</li>`;
+        return `<li class="ld-help-breadcrumbs__item" aria-current="page"><span class="ld-help-breadcrumbs__current">${escapeHtml(item.label)}</span></li>`;
       }
       return (
         '<li class="ld-help-breadcrumbs__item">'
@@ -427,7 +427,10 @@ function buildHomeCollectionCard(node, pathPrefix) {
 
   return (
     `<a class="ld-help-home__card" href="${escapeHtml(href)}">`
+    + '<div class="ld-help-home__card-top">'
     + `<h2 class="ld-help-home__card-title">${escapeHtml(node.name || node.slug)}</h2>`
+    + '<span class="ld-help-home__card-arrow" aria-hidden="true">&rarr;</span>'
+    + '</div>'
     + descriptionHtml
     + `<p class="ld-help-home__card-stats">${escapeHtml(stats)}</p>`
     + '</a>'
@@ -447,11 +450,15 @@ function buildHomeExportChrome({
 
   return (
     '<div class="ld-help-home" data-ld-help-home>'
-    + '<header class="ld-help-home__header">'
+    + '<header class="ld-help-home__hero">'
+    + '<p class="ld-help-home__eyebrow">Help Center</p>'
     + `<h1 class="ld-help-home__title">${escapeHtml(title)}</h1>`
     + descriptionHtml
     + '</header>'
+    + '<section class="ld-help-home__topics" aria-labelledby="ld-help-home-topics">'
+    + '<h2 id="ld-help-home-topics" class="ld-help-home__section-title">Browse topics</h2>'
     + `<div class="ld-help-home__grid">${cards}</div>`
+    + '</section>'
     + '</div>'
   );
 }
@@ -473,7 +480,10 @@ function buildSectionRow(section, pathPrefix, parentSlug = '') {
     '<li class="ld-help-sections__item">'
     + `<a class="ld-help-sections__link" href="${escapeHtml(href)}">`
     + '<div class="ld-help-sections__body">'
+    + '<div class="ld-help-sections__row">'
     + `<h2 class="ld-help-sections__title">${escapeHtml(section.name || section.slug)}</h2>`
+    + '<span class="ld-help-sections__arrow" aria-hidden="true">&rarr;</span>'
+    + '</div>'
     + descriptionHtml
     + `<p class="ld-help-sections__meta">${escapeHtml(stats)}</p>`
     + '</div>'
