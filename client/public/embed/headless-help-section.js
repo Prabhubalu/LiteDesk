@@ -109,7 +109,15 @@
           });
 
           var root = mountEl.querySelector('[data-ld-help-section]');
-          common.bindHelpSiteChrome(root, { homePrefix: homePrefix });
+          common.bindHelpSiteChrome(root, {
+            homePrefix: homePrefix,
+            homeLabel: homeLabel,
+            org: org,
+            apiOrigin: apiOrigin,
+            articlePrefix: articlePrefix,
+            linkPrefix: linkPrefix,
+            collectionIndex: collectionsResult.index,
+          });
 
           return {
             section: node,

@@ -33,6 +33,12 @@ export default function ArivuHelpEmbed({
   const origin = apiOrigin.replace(/\/$/, '');
 
   useEffect(() => {
+    if (window.ArivuHeadlessHelp || window.LiteDeskHeadlessHelp) {
+      setScriptReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
     mountedPathRef.current = '';
   }, [pathname]);
 

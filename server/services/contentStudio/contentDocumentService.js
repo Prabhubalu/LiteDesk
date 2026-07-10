@@ -366,7 +366,17 @@ async function saveContentDocumentDraft({
     if (!safeTitle) {
       throw new ContentStudioError('Title is required', { code: 'TITLE_REQUIRED' });
     }
+    const previousAutoSlug = slugifyTitle(doc.title);
     doc.title = safeTitle;
+    // Keep URL slug in sync with title until the author sets a custom slug.
+    if (slug === undefined && (!doc.slug || doc.slug === previousAutoSlug)) {
+      doc.slug = await ensureUniqueSlug({
+        organizationId,
+        contentType: doc.contentType,
+        slug: safeTitle,
+        excludeId: doc._id,
+      });
+    }
   }
 
   if (subtitle !== undefined) doc.subtitle = String(subtitle || '').trim();

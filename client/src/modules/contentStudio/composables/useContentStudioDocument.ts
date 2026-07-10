@@ -24,6 +24,15 @@ function resolveCurrentUserId(): string {
   return String(user?._id || user?.id || '');
 }
 
+function slugifyContentTitle(value: string): string {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 120);
+}
+
 interface UseContentStudioDocumentOptions {
   mode: ContentStudioMode;
   documentId: () => string | null;
@@ -55,6 +64,30 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
 
   let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
   let suppressAutosave = false;
+  let slugManual = false;
+
+  function applyTitle(value: string) {
+    title.value = value;
+    if (!slugManual) {
+      slug.value = slugifyContentTitle(value);
+    }
+    markDirty();
+  }
+
+  function applySlug(value: string) {
+    slugManual = true;
+    slug.value = value;
+    markDirty();
+  }
+
+  function syncFieldsFromRecord(data: ContentStudioDocumentRecord) {
+    if (data.title !== undefined) title.value = data.title || '';
+    if (data.subtitle !== undefined) subtitle.value = data.subtitle || '';
+    if (data.summary !== undefined) summary.value = data.summary || '';
+    if (data.slug !== undefined) slug.value = data.slug || '';
+    if (data.authorId) authorId.value = String(data.authorId);
+    if (data.authorName) authorName.value = data.authorName;
+  }
 
   const statusLabel = computed(() => {
     const status = String(record.value?.status || 'draft').toLowerCase();
@@ -69,6 +102,7 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
         subtitle.value = '';
         summary.value = '';
         slug.value = '';
+        slugManual = false;
         collectionId.value = null;
         visibility.value = options.mode === 'articles' ? 'portal' : 'internal';
         featured.value = false;
@@ -90,6 +124,8 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
       subtitle.value = data.subtitle || '';
       summary.value = data.summary || '';
       slug.value = data.slug || '';
+      const autoSlug = slugifyContentTitle(data.title || '');
+      slugManual = Boolean(data.slug) && data.slug !== autoSlug;
       visibility.value = data.visibility || (options.mode === 'articles' ? 'portal' : 'internal');
       featured.value = Boolean(data.featured);
       authorId.value = data.authorId ? String(data.authorId) : '';
@@ -151,9 +187,10 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
       if (options.isNew() && !record.value?._id) {
         const created = await createContentDocument(options.mode, payload);
         record.value = created;
-        if (created.authorId) authorId.value = String(created.authorId);
-        if (created.authorName) authorName.value = created.authorName;
-        suppressAutosave = true;
+        syncFieldsFromRecord(created);
+        saveStatus.value = 'saved';
+        // Allow subsequent title/slug edits to keep autosaving after first create.
+        suppressAutosave = false;
         return created;
       }
 
@@ -162,8 +199,7 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
 
       const updated = await updateContentDocument(options.mode, id, payload);
       record.value = updated;
-      if (updated.authorId) authorId.value = String(updated.authorId);
-      if (updated.authorName) authorName.value = updated.authorName;
+      syncFieldsFromRecord(updated);
       saveStatus.value = 'saved';
       return updated;
     } catch {
@@ -263,6 +299,8 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
     statusLabel,
     load,
     markDirty,
+    applyTitle,
+    applySlug,
     saveDraft,
     publish,
     unpublish,

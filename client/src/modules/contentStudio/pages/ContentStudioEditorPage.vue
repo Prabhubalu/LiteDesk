@@ -263,6 +263,8 @@ const {
   presentation,
   load,
   markDirty,
+  applyTitle,
+  applySlug,
   saveDraft,
   publish,
   unpublish,
@@ -334,8 +336,7 @@ function handleRemoveCover() {
 }
 
 function handleTitleChange(value) {
-  title.value = value;
-  markDirty();
+  applyTitle(value);
 }
 
 function handleSubtitleChange(value) {
@@ -369,8 +370,7 @@ function handleSummaryChange(value) {
 }
 
 function handleSlugChange(value) {
-  slug.value = value;
-  markDirty();
+  applySlug(value);
 }
 
 function handleSeoTitleChange(value) {
@@ -540,6 +540,16 @@ watch(
   () => route.params.id,
   async () => {
     await load();
+  },
+);
+
+watch(
+  () => record.value?._id,
+  async (id) => {
+    if (!id || !isNew.value) return;
+    const editorRoute = props.mode === 'articles' ? 'helpdesk-article-edit' : 'marketing-blog-edit';
+    if (String(route.params.id || '') === String(id)) return;
+    await router.replace({ name: editorRoute, params: { id } });
   },
 );
 

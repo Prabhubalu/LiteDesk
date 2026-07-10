@@ -282,7 +282,37 @@
         });
     }
 
-    if (parsed.depth === 2) {
+    function mountArticle(articleSlug, collectionSlug, sectionSlug) {
+      return loadScript(origin, '/embed/headless-article.js', 'data-arivu-headless-article-js')
+        .then(function () {
+          var api = resolveMountFn('ArivuHeadlessHelpArticle', 'LiteDeskHeadlessArticle');
+          if (!api) throw new Error('Help article script failed to load');
+          return api.mount({
+            org: org,
+            slug: articleSlug,
+            target: target,
+            apiOrigin: origin,
+            showSidebar: config.showSidebar !== false,
+            showBreadcrumbs: config.showBreadcrumbs !== false,
+            showFeedbackFooter: config.showFeedbackFooter !== false,
+            linkPrefix: linkPrefix,
+            homePrefix: linkPrefix,
+            categoryPrefix: linkPrefix,
+            sectionPrefix: linkPrefix,
+            articlePrefix: linkPrefix,
+            collection: collectionSlug || '',
+            section: sectionSlug || '',
+            helpfulLabel: config.helpfulLabel,
+            shareLabel: config.shareLabel,
+            yesLabel: config.yesLabel,
+            noLabel: config.noLabel,
+            thanksLabel: config.thanksLabel,
+            pageUrl: typeof window !== 'undefined' ? window.location.href : '',
+          });
+        });
+    }
+
+    function mountSection() {
       return ensureCommon(origin)
         .then(function () {
           return loadScript(origin, '/embed/headless-help-section.js', 'data-arivu-headless-help-section-js');
@@ -305,33 +335,36 @@
         });
     }
 
-    return loadScript(origin, '/embed/headless-article.js', 'data-arivu-headless-article-js')
-      .then(function () {
-        var api = resolveMountFn('ArivuHeadlessHelpArticle', 'LiteDeskHeadlessArticle');
-        if (!api) throw new Error('Help article script failed to load');
-        return api.mount({
-          org: org,
-          slug: parsed.article,
-          target: target,
-          apiOrigin: origin,
-          showSidebar: config.showSidebar !== false,
-          showBreadcrumbs: config.showBreadcrumbs !== false,
-          showFeedbackFooter: config.showFeedbackFooter !== false,
-          linkPrefix: linkPrefix,
-          homePrefix: linkPrefix,
-          categoryPrefix: linkPrefix,
-          sectionPrefix: linkPrefix,
-          articlePrefix: linkPrefix,
-          collection: parsed.category,
-          section: parsed.section,
-          helpfulLabel: config.helpfulLabel,
-          shareLabel: config.shareLabel,
-          yesLabel: config.yesLabel,
-          noLabel: config.noLabel,
-          thanksLabel: config.thanksLabel,
-          pageUrl: typeof window !== 'undefined' ? window.location.href : '',
+    // depth 2 is ambiguous: /help/{collection}/{article} vs /help/{category}/{section}
+    if (parsed.depth === 2) {
+      var articleCandidate = parsed.section;
+      return fetch(
+        origin + '/api/public/v1/content/' + encodeURIComponent(org) + '/articles/' + encodeURIComponent(articleCandidate),
+        { cache: 'no-store' },
+      )
+        .then(function (response) {
+          return response.json().then(function (payload) {
+            return response.ok && payload && payload.success;
+          }).catch(function () {
+            return false;
+          });
+        })
+        .catch(function () {
+          return false;
+        })
+        .then(function (isArticle) {
+          if (isArticle) {
+            return mountArticle(articleCandidate, parsed.category, '');
+          }
+          return mountSection();
         });
-      });
+    }
+
+    if (parsed.depth >= 3) {
+      return mountArticle(parsed.article, parsed.category, parsed.section);
+    }
+
+    return Promise.reject(new Error('Unrecognized help path'));
   }
 
   function readConfig(script) {

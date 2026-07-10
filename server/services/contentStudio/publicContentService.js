@@ -213,7 +213,7 @@ function applyArticleListFilters(query, { search = '', collectionIds = null } = 
   const searchTerm = String(search || '').trim();
   if (searchTerm) {
     const pattern = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-    query.$or = [{ title: pattern }, { summary: pattern }, { subtitle: pattern }, { searchText: pattern }];
+    query.title = pattern;
   }
   if (Array.isArray(collectionIds) && collectionIds.length) {
     query.collectionId = { $in: collectionIds };
