@@ -410,15 +410,17 @@ async function loadPublishedBlocks(doc) {
   return version?.blocks || null;
 }
 
-async function resolveAuthorName(authorId, storedAuthorName = '') {
+async function resolveAuthor(authorId, storedAuthorName = '') {
   const trimmed = String(storedAuthorName || '').trim();
-  if (trimmed) return trimmed;
-  if (!authorId) return '';
+  if (!authorId) return { name: trimmed, avatar: '' };
   const User = require('../../models/User');
-  const user = await User.findById(authorId).select('firstName lastName username email').lean();
-  if (!user) return '';
+  const user = await User.findById(authorId).select('firstName lastName username email avatar').lean();
+  if (!user) return { name: trimmed, avatar: '' };
   const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-  return fullName || user.username || user.email || '';
+  return {
+    name: trimmed || fullName || user.username || user.email || '',
+    avatar: String(user.avatar || '').trim(),
+  };
 }
 
 async function resolveExportAssets(organizationId, org, doc, blocks, requestOrigin = '') {
@@ -753,9 +755,11 @@ async function getPublicHelpArticleExport({
   const collectionMeta = doc.collectionId ? collectionById.get(String(doc.collectionId)) : null;
   const collectionPathSlugs = resolveCollectionPathSlugs(doc.collectionId, collectionById);
   const publicAppBaseUrl = getPublicAppBaseUrl({ requestOrigin });
+  const author = await resolveAuthor(doc.authorId, doc.authorName);
   const article = await shapeHeadlessArticleDetail(doc, {
     blocks,
-    authorName: await resolveAuthorName(doc.authorId, doc.authorName),
+    authorName: author.name,
+    authorAvatar: author.avatar,
     collectionName: collectionMeta?.name || '',
     collectionMeta,
     publicAppBaseUrl,

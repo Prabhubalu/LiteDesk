@@ -174,7 +174,15 @@
     var presentation = normalizePresentation(data.presentation);
     var colors = resolveChromeColors(presentation, presentation.useHeroOverlap && Boolean(data.coverImage && data.coverImage.url));
     var metaParts = [];
-    if (data.authorName) metaParts.push('<span>' + escapeHtml(data.authorName) + '</span>');
+    if (data.authorName) {
+      var avatar = String(data.authorAvatar || '').trim();
+      var avatarHtml = avatar
+        ? '<img class="ld-article__author-avatar" src="' + escapeHtml(avatar) + '" alt="" width="24" height="24" loading="lazy" decoding="async" />'
+        : '';
+      metaParts.push(
+        '<span class="ld-article__author">' + avatarHtml + '<span class="ld-article__author-name">' + escapeHtml(data.authorName) + '</span></span>'
+      );
+    }
     if (data.publishedAt) metaParts.push('<span>' + escapeHtml(formatDate(data.publishedAt)) + '</span>');
     var meta = metaParts.length ? '<div class="ld-article__meta ld-article__meta--secondary">' + metaParts.join('') + '</div>' : '';
     var footer = footerHtml || '';

@@ -65,6 +65,7 @@ describe('headlessContentShaper', () => {
     assert.equal(detail.blocks.type, 'doc');
     assert.equal(detail.plainText, 'Hello headless');
     assert.equal(detail.authorName, 'Jane');
+    assert.equal(detail.authorAvatar, '');
     assert.equal(detail.seo.metaTitle, 'Reset');
     assert.equal(detail.coverImage, null);
     assert.equal(detail.bodyHtml, undefined);

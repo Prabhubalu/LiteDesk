@@ -177,7 +177,15 @@ function buildArticleShell(article, bodyHtml) {
     presentation.useHeroOverlap && Boolean(article.coverImage?.url),
   );
   const metaParts = [];
-  if (article.authorName) metaParts.push(`<span>${escapeHtml(article.authorName)}</span>`);
+  if (article.authorName) {
+    const avatar = String(article.authorAvatar || '').trim();
+    const avatarHtml = avatar
+      ? `<img class="ld-article__author-avatar" src="${escapeHtml(avatar)}" alt="" width="24" height="24" loading="lazy" decoding="async" />`
+      : '';
+    metaParts.push(
+      `<span class="ld-article__author">${avatarHtml}<span class="ld-article__author-name">${escapeHtml(article.authorName)}</span></span>`,
+    );
+  }
   if (article.publishedAt) metaParts.push(`<span>${escapeHtml(formatDate(article.publishedAt))}</span>`);
   if (article.readMinutes) metaParts.push(`<span>${escapeHtml(String(article.readMinutes))} min read</span>`);
   if (article.collectionName) metaParts.push(`<span>${escapeHtml(article.collectionName)}</span>`);

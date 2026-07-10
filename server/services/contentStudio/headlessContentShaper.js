@@ -165,6 +165,7 @@ function estimateReadMinutes(text) {
 async function shapeHeadlessArticleDetail(doc, {
   blocks,
   authorName = '',
+  authorAvatar = '',
   collectionName = '',
   collectionMeta = null,
   publicAppBaseUrl = '',
@@ -184,6 +185,7 @@ async function shapeHeadlessArticleDetail(doc, {
     seo: await shapeHeadlessSeo(doc.seo, doc.organizationId, publicAppBaseUrl),
     coverImage: await resolveCoverImage(doc, publicAppBaseUrl),
     authorName,
+    authorAvatar: String(authorAvatar || '').trim(),
     collectionName: collectionName || meta?.name || '',
     readMinutes: estimateReadMinutes(readSource),
     plainText,
