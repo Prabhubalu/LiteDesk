@@ -42,6 +42,51 @@ function renderInlineContent(nodes: ContentBlockNode[] = []): string {
     .join('');
 }
 
+function normalizeStyleList(extraStyles: string | string[] = []): string[] {
+  const list = Array.isArray(extraStyles) ? extraStyles : [extraStyles];
+  return list
+    .flatMap((value) => String(value || '').split(';'))
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+/** Editor layout/typography attrs → single style= (no duplicate style attrs). */
+function renderElementAttrs(
+  attrs: Record<string, unknown> | undefined = {},
+  extraClasses: string[] = [],
+  extraStyles: string | string[] = [],
+): string {
+  const classes = extraClasses.filter(Boolean).map((value) => String(value));
+  const styles = normalizeStyleList(extraStyles);
+
+  if (attrs.textAlign) styles.push(`text-align:${escapeHtml(String(attrs.textAlign))}`);
+  const blockWidth = attrs.blockWidth ? String(attrs.blockWidth) : '';
+  if (blockWidth && blockWidth !== 'content') classes.push(`content-block-width-${blockWidth}`);
+  if (attrs.cssClass) classes.push(escapeHtml(String(attrs.cssClass)));
+  if (attrs.fontSize) styles.push(`font-size:${escapeHtml(String(attrs.fontSize))}`);
+  if (attrs.textColor) styles.push(`color:${escapeHtml(String(attrs.textColor))}`);
+  if (attrs.lineHeight) styles.push(`line-height:${escapeHtml(String(attrs.lineHeight))}`);
+  if (attrs.marginTop != null && Number(attrs.marginTop) > 0) {
+    styles.push(`margin-top:${Number(attrs.marginTop)}px`);
+  }
+  if (attrs.marginBottom != null && Number(attrs.marginBottom) > 0) {
+    styles.push(`margin-bottom:${Number(attrs.marginBottom)}px`);
+  }
+  if (attrs.padding != null && Number(attrs.padding) > 0) {
+    styles.push(`padding:${Number(attrs.padding)}px`);
+  }
+
+  const parts: string[] = [];
+  if (attrs.anchorId) parts.push(` id="${escapeHtml(String(attrs.anchorId))}"`);
+  if (classes.length) parts.push(` class="${classes.join(' ')}"`);
+  if (styles.length) parts.push(` style="${styles.join(';')}"`);
+  return parts.join('');
+}
+
+function renderBlockAttrs(attrs: Record<string, unknown> | undefined): string {
+  return renderElementAttrs(attrs);
+}
+
 function slugifyHeading(text: string): string {
   return (
     String(text || '')
@@ -81,11 +126,6 @@ function collectHeadings(doc: ContentBlocksDoc, minLevel = 2, maxLevel = 3) {
   return items;
 }
 
-function renderAnchorAttr(attrs: Record<string, unknown> | undefined): string {
-  const anchorId = String(attrs?.anchorId || '').trim();
-  return anchorId ? ` id="${escapeHtml(anchorId)}"` : '';
-}
-
 function renderBlockNode(
   node: ContentBlockNode,
   context: HeadlessRenderContext,
@@ -97,48 +137,50 @@ function renderBlockNode(
   if (custom) return custom(node, context);
 
   switch (node.type) {
-    case 'paragraph':
-      return `<p${renderAnchorAttr(node.attrs)}>${renderInlineContent(node.content)}</p>`;
+    case 'paragraph': {
+      const inner = renderInlineContent(node.content);
+      return `<p${renderBlockAttrs(node.attrs)}>${inner || '<br />'}</p>`;
+    }
     case 'heading': {
       const level = Math.min(Math.max(Number(node.attrs?.level) || 2, 1), 4);
-      const anchor = renderAnchorAttr(node.attrs);
-      const fallbackId =
-        !node.attrs?.anchorId && extractNodeText(node).trim()
-          ? ` id="${escapeHtml(slugifyHeading(extractNodeText(node)))}"`
-          : '';
-      return `<h${level}${anchor || fallbackId}>${renderInlineContent(node.content)}</h${level}>`;
+      const text = extractNodeText(node).trim();
+      const attrs = { ...(node.attrs || {}) };
+      if (!attrs.anchorId && text) attrs.anchorId = slugifyHeading(text);
+      const inner = renderInlineContent(node.content);
+      return `<h${level}${renderBlockAttrs(attrs)}>${inner || '<br />'}</h${level}>`;
     }
     case 'bulletList':
-      return `<ul>${(node.content || []).map((child) => renderBlockNode(child, context, components)).join('')}</ul>`;
+      return `<ul${renderBlockAttrs(node.attrs)}>${(node.content || []).map((child) => renderBlockNode(child, context, components)).join('')}</ul>`;
     case 'orderedList':
-      return `<ol>${(node.content || []).map((child) => renderBlockNode(child, context, components)).join('')}</ol>`;
+      return `<ol${renderBlockAttrs(node.attrs)}>${(node.content || []).map((child) => renderBlockNode(child, context, components)).join('')}</ol>`;
     case 'listItem':
-      return `<li>${(node.content || []).map((child) => renderBlockNode(child, context, components)).join('')}</li>`;
+      return `<li${renderBlockAttrs(node.attrs)}>${(node.content || []).map((child) => renderBlockNode(child, context, components)).join('')}</li>`;
     case 'taskList':
-      return `<ul>${(node.content || []).map((child) => renderBlockNode(child, context, components)).join('')}</ul>`;
+      return `<ul class="content-checklist"${renderBlockAttrs(node.attrs)}>${(node.content || []).map((child) => renderBlockNode(child, context, components)).join('')}</ul>`;
     case 'taskItem': {
       const checked = Boolean(node.attrs?.checked);
       const inner = (node.content || []).map((child) => renderBlockNode(child, context, components)).join('');
-      return `<li><input type="checkbox" disabled${checked ? ' checked' : ''} aria-hidden="true" />${inner}</li>`;
+      return `<li class="content-checklist-item" data-checked="${checked}"><input type="checkbox" disabled${checked ? ' checked' : ''} aria-hidden="true" />${inner}</li>`;
     }
     case 'blockquote':
-      return `<blockquote>${(node.content || []).map((child) => renderBlockNode(child, context, components)).join('')}</blockquote>`;
+      return `<blockquote${renderBlockAttrs(node.attrs)}>${(node.content || []).map((child) => renderBlockNode(child, context, components)).join('')}</blockquote>`;
     case 'codeBlock': {
       const code = (node.content || [])
         .map((child) => (child.type === 'text' ? child.text : ''))
         .join('');
-      return `<pre><code>${escapeHtml(code)}</code></pre>`;
+      return `<pre${renderBlockAttrs(node.attrs)}><code>${escapeHtml(code)}</code></pre>`;
     }
     case 'horizontalRule':
-      return '<hr />';
+      return `<hr${renderBlockAttrs(node.attrs)} />`;
     case 'image': {
       const src = escapeHtml(String(node.attrs?.src || ''));
       const alt = escapeHtml(String(node.attrs?.alt || ''));
       if (!src) return '';
       const caption = String(node.attrs?.caption || '').trim();
       const img = `<img src="${src}" alt="${alt}" loading="lazy" />`;
-      if (!caption) return `<figure>${img}</figure>`;
-      return `<figure>${img}<figcaption>${escapeHtml(caption)}</figcaption></figure>`;
+      const figureOpen = `<figure${renderBlockAttrs(node.attrs)}>`;
+      if (!caption) return `${figureOpen}${img}</figure>`;
+      return `${figureOpen}${img}<figcaption>${escapeHtml(caption)}</figcaption></figure>`;
     }
     case 'embed': {
       const rawSrc = String(node.attrs?.src || '').trim();
@@ -160,7 +202,7 @@ function renderBlockNode(
     case 'callout': {
       const variant = escapeHtml(String(node.attrs?.variant || 'info'));
       const inner = (node.content || []).map((child) => renderBlockNode(child, context, components)).join('');
-      return `<aside role="note" data-variant="${variant}">${inner}</aside>`;
+      return `<aside role="note" data-variant="${variant}"${renderElementAttrs(node.attrs)}>${inner}</aside>`;
     }
     case 'steps':
       return `<div data-block="steps">${(node.content || []).map((child) => renderBlockNode(child, context, components)).join('')}</div>`;
@@ -203,7 +245,7 @@ function renderBlockNode(
     }
     case 'spacer': {
       const height = Math.min(Math.max(Number(node.attrs?.height) || 48, 8), 240);
-      return `<div aria-hidden="true" data-block="spacer" data-height="${height}"></div>`;
+      return `<div aria-hidden="true" data-block="spacer" data-height="${height}"${renderElementAttrs(node.attrs, ['content-spacer'], [`height:${height}px`])}></div>`;
     }
     case 'button': {
       const label = escapeHtml(String(node.attrs?.label || 'Learn more'));

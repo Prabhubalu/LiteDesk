@@ -94,6 +94,11 @@ const ContentDocumentSchema = new Schema(
       default: null,
       index: true,
     },
+    authorName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     coverAssetId: {
       type: Schema.Types.ObjectId,
       ref: 'ContentAsset',

@@ -11,6 +11,18 @@ import {
   deleteContentDocument,
 } from '../services/contentStudioApi';
 import { createEmptyContentDocument } from '../editor/emptyDocument';
+import { useAuthStore } from '@/stores/authRegistry';
+
+function resolveCurrentUserDisplayName(): string {
+  const user = useAuthStore().user;
+  const fullName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
+  return fullName || user?.username || user?.email || '';
+}
+
+function resolveCurrentUserId(): string {
+  const user = useAuthStore().user;
+  return String(user?._id || user?.id || '');
+}
 
 interface UseContentStudioDocumentOptions {
   mode: ContentStudioMode;
@@ -32,6 +44,8 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
   const slug = ref('');
   const visibility = ref('portal');
   const featured = ref(false);
+  const authorId = ref('');
+  const authorName = ref('');
   const collectionId = ref<string | null>(null);
   const seoMetaTitle = ref('');
   const seoMetaDescription = ref('');
@@ -58,6 +72,8 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
         collectionId.value = null;
         visibility.value = options.mode === 'articles' ? 'portal' : 'internal';
         featured.value = false;
+        authorId.value = resolveCurrentUserId();
+        authorName.value = resolveCurrentUserDisplayName();
         seoMetaTitle.value = '';
         seoMetaDescription.value = '';
         coverAssetId.value = null;
@@ -76,6 +92,8 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
       slug.value = data.slug || '';
       visibility.value = data.visibility || (options.mode === 'articles' ? 'portal' : 'internal');
       featured.value = Boolean(data.featured);
+      authorId.value = data.authorId ? String(data.authorId) : '';
+      authorName.value = data.authorName || '';
       collectionId.value = data.collectionId ? String(data.collectionId) : null;
       seoMetaTitle.value = data.seo?.metaTitle || '';
       seoMetaDescription.value = data.seo?.metaDescription || '';
@@ -118,6 +136,8 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
         slug: slug.value || undefined,
         visibility: visibility.value,
         featured: featured.value,
+        authorId: authorId.value || undefined,
+        authorName: authorName.value,
         collectionId: collectionId.value,
         coverAssetId: coverAssetId.value,
         presentation: presentation.value,
@@ -131,6 +151,8 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
       if (options.isNew() && !record.value?._id) {
         const created = await createContentDocument(options.mode, payload);
         record.value = created;
+        if (created.authorId) authorId.value = String(created.authorId);
+        if (created.authorName) authorName.value = created.authorName;
         suppressAutosave = true;
         return created;
       }
@@ -140,6 +162,8 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
 
       const updated = await updateContentDocument(options.mode, id, payload);
       record.value = updated;
+      if (updated.authorId) authorId.value = String(updated.authorId);
+      if (updated.authorName) authorName.value = updated.authorName;
       saveStatus.value = 'saved';
       return updated;
     } catch {
@@ -228,6 +252,8 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
     slug,
     visibility,
     featured,
+    authorId,
+    authorName,
     collectionId,
     seoMetaTitle,
     seoMetaDescription,

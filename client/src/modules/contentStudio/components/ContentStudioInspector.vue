@@ -1,192 +1,229 @@
 <template>
   <aside class="flex w-80 shrink-0 flex-col border-l border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-    <div :class="ui.inspectorTabList" role="tablist">
-      <button
-        type="button"
-        role="tab"
-        :aria-selected="activeTab === 'document'"
-        :class="[ui.inspectorTab, activeTab === 'document' ? ui.inspectorTabActive : ui.inspectorTabIdle]"
-        @click="activeTab = 'document'"
-      >
-        {{ t('contentStudio.tabDocument') }}
-      </button>
-      <button
-        type="button"
-        role="tab"
-        :aria-selected="activeTab === 'block'"
-        :class="[ui.inspectorTab, activeTab === 'block' ? ui.inspectorTabActive : ui.inspectorTabIdle]"
-        @click="activeTab = 'block'"
-      >
-        {{ t('contentStudio.tabBlock') }}
-      </button>
-    </div>
+    <TabGroup
+      as="div"
+      class="flex h-full min-h-0 flex-col overflow-hidden"
+      :selected-index="selectedTabIndex"
+      @change="onTabChange"
+    >
+      <TabList :class="ui.inspectorTabList">
+        <Tab
+          v-for="tab in tabs"
+          :key="tab.id"
+          v-slot="{ selected }"
+          :class="[ui.inspectorTab, selected ? ui.inspectorTabActive : ui.inspectorTabIdle]"
+        >
+          {{ t(tab.labelKey) }}
+        </Tab>
+      </TabList>
 
-    <div class="min-h-0 flex-1 overflow-y-auto">
-      <div v-if="activeTab === 'document'" class="space-y-4 p-4">
-        <div>
-          <label :class="ui.label">{{ t('contentStudio.fieldCoverPosition') }}</label>
-          <select
-            :value="coverPosition"
-            :class="[ui.input, 'mt-1']"
-            @change="emit('update:coverPosition', $event.target.value)"
-          >
-            <option value="below-title">{{ t('contentStudio.coverPositionBelowTitle') }}</option>
-            <option value="above-title">{{ t('contentStudio.coverPositionAboveTitle') }}</option>
-          </select>
-        </div>
-        <div v-if="coverPosition === 'above-title'">
-          <label class="mt-3 flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-            <input
-              type="checkbox"
-              :checked="titleOverlapCover"
-              class="rounded border-neutral-300 text-primary-600 focus:ring-primary-500 dark:border-neutral-600"
-              @change="emit('update:titleOverlapCover', $event.target.checked)"
-            />
-            <span>{{ t('contentStudio.fieldTitleOverlapCover') }}</span>
-          </label>
-        </div>
-        <div>
-          <label :class="ui.label">{{ t('contentStudio.fieldSubtitleSize') }}</label>
-          <select
-            :value="subtitleSize"
-            :class="[ui.input, 'mt-1']"
-            @change="emit('update:subtitleSize', $event.target.value)"
-          >
-            <option value="sm">{{ t('contentStudio.subtitleSizeSmall') }}</option>
-            <option value="md">{{ t('contentStudio.subtitleSizeMedium') }}</option>
-            <option value="lg">{{ t('contentStudio.subtitleSizeLarge') }}</option>
-            <option value="xl">{{ t('contentStudio.subtitleSizeExtraLarge') }}</option>
-          </select>
-        </div>
-        <div>
-          <label :class="ui.label">{{ t('contentStudio.fieldHeadingColor') }}</label>
-          <div class="mt-1 flex items-center gap-2">
-            <input
-              :value="headingColor || '#111827'"
-              type="color"
-              class="h-10 w-12 cursor-pointer rounded border border-neutral-300 dark:border-neutral-600"
-              @input="emit('update:headingColor', $event.target.value)"
-            />
-            <input
-              :value="headingColor"
-              type="text"
-              :class="[ui.input, 'flex-1']"
-              placeholder="#111827"
-              @input="emit('update:headingColor', $event.target.value)"
-            />
-          </div>
-        </div>
-        <div>
-          <label :class="ui.label">{{ t('contentStudio.fieldSubheadingColor') }}</label>
-          <div class="mt-1 flex items-center gap-2">
-            <input
-              :value="subheadingColor || '#4b5563'"
-              type="color"
-              class="h-10 w-12 cursor-pointer rounded border border-neutral-300 dark:border-neutral-600"
-              @input="emit('update:subheadingColor', $event.target.value)"
-            />
-            <input
-              :value="subheadingColor"
-              type="text"
-              :class="[ui.input, 'flex-1']"
-              placeholder="#4b5563"
-              @input="emit('update:subheadingColor', $event.target.value)"
-            />
-          </div>
-        </div>
-        <div>
-          <label :class="ui.label">{{ t('contentStudio.fieldVisibility') }}</label>
-          <select
-            :value="visibility"
-            :class="[ui.input, 'mt-1']"
-            @change="emit('update:visibility', $event.target.value)"
-          >
-            <option v-for="option in visibilityOptions" :key="option.value" :value="option.value">
-              {{ t(option.labelKey) }}
-            </option>
-          </select>
-          <p
-            v-if="showHeadlessVisibilityHint"
-            class="mt-2 text-xs text-amber-700 dark:text-amber-300"
-          >
-            {{ t('contentStudio.visibilityPublicHeadlessHint') }}
-          </p>
-        </div>
-        <div v-if="mode === 'articles'">
-          <label class="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-            <input
-              type="checkbox"
-              :checked="featured"
-              class="mt-0.5 rounded border-neutral-300 text-primary-600 focus:ring-primary-500 dark:border-neutral-600"
-              @change="emit('update:featured', $event.target.checked)"
-            />
-            <span>
-              <span class="block font-medium">{{ t('contentStudio.fieldFeatured') }}</span>
-              <span class="mt-0.5 block text-xs text-neutral-500 dark:text-neutral-400">
-                {{ t('contentStudio.fieldFeaturedHint') }}
-              </span>
-            </span>
-          </label>
-        </div>
-        <div>
-          <label :class="ui.label">{{ t('contentStudio.fieldSummary') }}</label>
-          <textarea
-            :value="summary"
-            rows="3"
-            :class="[ui.input, 'mt-1']"
-            @input="emit('update:summary', $event.target.value)"
-          />
-        </div>
-        <div>
-          <label :class="ui.label">{{ t('contentStudio.fieldSlug') }}</label>
-          <input
-            :value="slug"
-            type="text"
-            :class="[ui.input, 'mt-1']"
-            @input="emit('update:slug', $event.target.value)"
-          />
-        </div>
-        <div>
-          <label :class="ui.label">{{ t('contentStudio.fieldMetaTitle') }}</label>
-          <input
-            :value="seoMetaTitle"
-            type="text"
-            :class="[ui.input, 'mt-1']"
-            @input="emit('update:seoMetaTitle', $event.target.value)"
-          />
-        </div>
-        <div>
-          <label :class="ui.label">{{ t('contentStudio.fieldMetaDescription') }}</label>
-          <textarea
-            :value="seoMetaDescription"
-            rows="4"
-            :class="[ui.input, 'mt-1']"
-            @input="emit('update:seoMetaDescription', $event.target.value)"
-          />
-        </div>
-      </div>
+      <TabPanels class="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <TabPanel :class="ui.tabPanel" :unmount="false">
+          <div class="space-y-1">
+            <BuilderDisclosureSection
+              :title="t('contentStudio.sectionDocumentAppearance')"
+              :default-open="true"
+              :bordered="false"
+            >
+              <div class="space-y-3">
+                <div>
+                  <label class="mb-1 block" :class="ui.label">{{ t('contentStudio.fieldCoverPosition') }}</label>
+                  <BuilderSelect
+                    :model-value="coverPosition"
+                    :options="coverPositionOptions"
+                    @update:model-value="emit('update:coverPosition', $event)"
+                  />
+                </div>
 
-      <div v-else>
-        <ContentStudioBlockInspector
-          :editor="editor"
-          :active-block-type="activeBlockType"
-          :selection-revision="selectionRevision"
-          :block-anchor-id="blockAnchorId"
-          :block-css-class="blockCssClass"
-          @update:block-attributes="emit('update:blockAttributes', $event)"
-          @structure-change="emit('structure-change')"
-          @request-image-upload="emit('request-image-upload', $event)"
-        />
-      </div>
-    </div>
+                <div
+                  v-if="coverPosition === 'above-title'"
+                  class="flex items-start justify-between gap-3 rounded-lg border border-neutral-200 px-3 py-2.5 dark:border-neutral-700"
+                >
+                  <span class="text-sm text-neutral-700 dark:text-neutral-300">
+                    {{ t('contentStudio.fieldTitleOverlapCover') }}
+                  </span>
+                  <HeadlessSwitch
+                    :model-value="titleOverlapCover"
+                    size="sm"
+                    @update:model-value="emit('update:titleOverlapCover', $event)"
+                  />
+                </div>
+
+                <div>
+                  <label class="mb-1 block" :class="ui.label">{{ t('contentStudio.fieldSubtitleSize') }}</label>
+                  <BuilderSelect
+                    :model-value="subtitleSize"
+                    :options="subtitleSizeOptions"
+                    @update:model-value="emit('update:subtitleSize', $event)"
+                  />
+                </div>
+
+                <div>
+                  <label class="mb-1 block" :class="ui.label">{{ t('contentStudio.fieldHeadingColor') }}</label>
+                  <div class="mt-1 flex items-center gap-2">
+                    <input
+                      :value="headingColor || '#111827'"
+                      type="color"
+                      class="h-9 w-11 cursor-pointer rounded-md border border-neutral-200 bg-white p-0.5 dark:border-neutral-700 dark:bg-neutral-950"
+                      @input="emit('update:headingColor', $event.target.value)"
+                    />
+                    <input
+                      :value="headingColor"
+                      type="text"
+                      :class="[ui.input, 'flex-1']"
+                      placeholder="#111827"
+                      @input="emit('update:headingColor', $event.target.value)"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="mb-1 block" :class="ui.label">{{ t('contentStudio.fieldSubheadingColor') }}</label>
+                  <div class="mt-1 flex items-center gap-2">
+                    <input
+                      :value="subheadingColor || '#4b5563'"
+                      type="color"
+                      class="h-9 w-11 cursor-pointer rounded-md border border-neutral-200 bg-white p-0.5 dark:border-neutral-700 dark:bg-neutral-950"
+                      @input="emit('update:subheadingColor', $event.target.value)"
+                    />
+                    <input
+                      :value="subheadingColor"
+                      type="text"
+                      :class="[ui.input, 'flex-1']"
+                      placeholder="#4b5563"
+                      @input="emit('update:subheadingColor', $event.target.value)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </BuilderDisclosureSection>
+
+            <BuilderDisclosureSection :title="t('contentStudio.sectionDocumentPublishing')">
+              <div class="space-y-3">
+                <div>
+                  <label class="mb-1 block" :class="ui.label">{{ t('contentStudio.fieldVisibility') }}</label>
+                  <BuilderSelect
+                    :model-value="visibility"
+                    :options="visibilitySelectOptions"
+                    @update:model-value="emit('update:visibility', $event)"
+                  />
+                  <p
+                    v-if="showHeadlessVisibilityHint"
+                    class="mt-2 text-xs text-amber-700 dark:text-amber-300"
+                  >
+                    {{ t('contentStudio.visibilityPublicHeadlessHint') }}
+                  </p>
+                </div>
+
+                <div
+                  v-if="mode === 'articles'"
+                  class="flex items-start justify-between gap-3 rounded-lg border border-neutral-200 px-3 py-2.5 dark:border-neutral-700"
+                >
+                  <span class="min-w-0">
+                    <span class="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                      {{ t('contentStudio.fieldFeatured') }}
+                    </span>
+                    <span class="mt-0.5 block text-xs text-neutral-500 dark:text-neutral-400">
+                      {{ t('contentStudio.fieldFeaturedHint') }}
+                    </span>
+                  </span>
+                  <HeadlessSwitch
+                    :model-value="featured"
+                    size="sm"
+                    switch-class="mt-0.5"
+                    @update:model-value="emit('update:featured', $event)"
+                  />
+                </div>
+
+                <div>
+                  <label class="mb-1 block" :class="ui.label">{{ t('contentStudio.fieldAuthorName') }}</label>
+                  <BuilderSelect
+                    :model-value="authorId"
+                    :options="authorSelectOptions"
+                    :disabled="usersLoading"
+                    @update:model-value="handleAuthorSelect"
+                  />
+                </div>
+
+                <div>
+                  <label class="mb-1 block" :class="ui.label">{{ t('contentStudio.fieldSummary') }}</label>
+                  <textarea
+                    :value="summary"
+                    rows="3"
+                    :class="ui.input"
+                    @input="emit('update:summary', $event.target.value)"
+                  />
+                </div>
+
+                <div>
+                  <label class="mb-1 block" :class="ui.label">{{ t('contentStudio.fieldSlug') }}</label>
+                  <input
+                    :value="slug"
+                    type="text"
+                    :class="ui.input"
+                    @input="emit('update:slug', $event.target.value)"
+                  />
+                </div>
+              </div>
+            </BuilderDisclosureSection>
+
+            <BuilderDisclosureSection :title="t('contentStudio.sectionDocumentSeo')">
+              <div class="space-y-3">
+                <div>
+                  <label class="mb-1 block" :class="ui.label">{{ t('contentStudio.fieldMetaTitle') }}</label>
+                  <input
+                    :value="seoMetaTitle"
+                    type="text"
+                    :class="ui.input"
+                    @input="emit('update:seoMetaTitle', $event.target.value)"
+                  />
+                </div>
+                <div>
+                  <label class="mb-1 block" :class="ui.label">{{ t('contentStudio.fieldMetaDescription') }}</label>
+                  <textarea
+                    :value="seoMetaDescription"
+                    rows="4"
+                    :class="ui.input"
+                    @input="emit('update:seoMetaDescription', $event.target.value)"
+                  />
+                </div>
+              </div>
+            </BuilderDisclosureSection>
+          </div>
+        </TabPanel>
+
+        <TabPanel class="min-h-0 flex-1 overflow-y-auto focus:outline-none" :unmount="false">
+          <ContentStudioBlockInspector
+            :editor="editor"
+            :active-block-type="activeBlockType"
+            :selection-revision="selectionRevision"
+            :block-anchor-id="blockAnchorId"
+            :block-css-class="blockCssClass"
+            @update:block-attributes="emit('update:blockAttributes', $event)"
+            @structure-change="emit('structure-change')"
+            @request-image-upload="emit('request-image-upload', $event)"
+          />
+        </TabPanel>
+      </TabPanels>
+    </TabGroup>
   </aside>
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue';
 import { useBuilderUi } from '@/composables/useBuilderUi';
+import { fetchUsersListCached } from '@/utils/recordLookupCache';
+import HeadlessSwitch from '@/components/ui/HeadlessSwitch.vue';
+import BuilderDisclosureSection from '@/modules/template/components/BuilderDisclosureSection.vue';
+import BuilderSelect from '@/modules/template/components/BuilderSelect.vue';
 import ContentStudioBlockInspector from './ContentStudioBlockInspector.vue';
+
+function formatUserLabel(user) {
+  const fullName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
+  return fullName || user?.username || user?.email || String(user?._id || user?.id || '');
+}
 
 const props = defineProps({
   editor: { type: Object, default: null },
@@ -197,6 +234,8 @@ const props = defineProps({
   slug: { type: String, default: '' },
   visibility: { type: String, default: 'portal' },
   featured: { type: Boolean, default: false },
+  authorId: { type: String, default: '' },
+  authorName: { type: String, default: '' },
   seoMetaTitle: { type: String, default: '' },
   seoMetaDescription: { type: String, default: '' },
   coverPosition: { type: String, default: 'below-title' },
@@ -213,6 +252,8 @@ const emit = defineEmits([
   'update:slug',
   'update:visibility',
   'update:featured',
+  'update:authorId',
+  'update:authorName',
   'update:seoMetaTitle',
   'update:seoMetaDescription',
   'update:coverPosition',
@@ -227,28 +268,110 @@ const emit = defineEmits([
 
 const { t } = useI18n();
 const ui = useBuilderUi();
-const activeTab = ref('document');
+const selectedTabIndex = ref(0);
+const usersLoading = ref(false);
+const userOptions = ref([]);
+
+const tabs = [
+  { id: 'document', labelKey: 'contentStudio.tabDocument' },
+  { id: 'block', labelKey: 'contentStudio.tabBlock' },
+];
+
+function onTabChange(index) {
+  selectedTabIndex.value = index;
+}
 
 watch(
   () => props.activeBlockType,
   (type) => {
-    if (type === 'table') activeTab.value = 'block';
+    if (type === 'table') selectedTabIndex.value = 1;
   },
 );
 
-const visibilityOptions = computed(() => {
+const coverPositionOptions = computed(() => [
+  { value: 'below-title', label: t('contentStudio.coverPositionBelowTitle') },
+  { value: 'above-title', label: t('contentStudio.coverPositionAboveTitle') },
+]);
+
+const subtitleSizeOptions = computed(() => [
+  { value: 'sm', label: t('contentStudio.subtitleSizeSmall') },
+  { value: 'md', label: t('contentStudio.subtitleSizeMedium') },
+  { value: 'lg', label: t('contentStudio.subtitleSizeLarge') },
+  { value: 'xl', label: t('contentStudio.subtitleSizeExtraLarge') },
+]);
+
+const visibilitySelectOptions = computed(() => {
   if (props.mode === 'blog') {
     return [
-      { value: 'internal', labelKey: 'contentStudio.visibilityInternal' },
-      { value: 'public', labelKey: 'contentStudio.visibilityPublic' },
+      { value: 'internal', label: t('contentStudio.visibilityInternal') },
+      { value: 'public', label: t('contentStudio.visibilityPublic') },
     ];
   }
   return [
-    { value: 'internal', labelKey: 'contentStudio.visibilityInternal' },
-    { value: 'portal', labelKey: 'contentStudio.visibilityPortal' },
-    { value: 'public', labelKey: 'contentStudio.visibilityPublic' },
-    { value: 'private', labelKey: 'contentStudio.visibilityPrivate' },
+    { value: 'internal', label: t('contentStudio.visibilityInternal') },
+    { value: 'portal', label: t('contentStudio.visibilityPortal') },
+    { value: 'public', label: t('contentStudio.visibilityPublic') },
+    { value: 'private', label: t('contentStudio.visibilityPrivate') },
   ];
+});
+
+const orphanAuthorOption = computed(() => {
+  const selectedId = String(props.authorId || '').trim();
+  if (!selectedId) return null;
+  if (userOptions.value.some((user) => user.id === selectedId)) return null;
+  return {
+    value: selectedId,
+    label: props.authorName || selectedId,
+  };
+});
+
+const authorSelectOptions = computed(() => {
+  const options = userOptions.value.map((user) => ({
+    value: user.id,
+    label: user.label,
+  }));
+  if (orphanAuthorOption.value) {
+    return [orphanAuthorOption.value, ...options];
+  }
+  return options;
+});
+
+function handleAuthorSelect(nextId) {
+  const id = String(nextId || '');
+  const selected = authorSelectOptions.value.find((user) => user.value === id);
+  emit('update:authorId', id);
+  emit('update:authorName', selected?.label || props.authorName || '');
+}
+
+async function loadUsers() {
+  usersLoading.value = true;
+  try {
+    const response = await fetchUsersListCached({ limit: 500 });
+    let rows = [];
+    if (Array.isArray(response)) {
+      rows = response;
+    } else if (response?.success && Array.isArray(response.data)) {
+      rows = response.data;
+    } else if (Array.isArray(response?.data)) {
+      rows = response.data;
+    }
+    userOptions.value = rows
+      .filter((user) => user && user.status !== 'inactive')
+      .map((user) => ({
+        id: String(user._id || user.id || ''),
+        label: formatUserLabel(user),
+      }))
+      .filter((user) => user.id)
+      .sort((a, b) => a.label.localeCompare(b.label));
+  } catch {
+    userOptions.value = [];
+  } finally {
+    usersLoading.value = false;
+  }
+}
+
+onMounted(() => {
+  void loadUsers();
 });
 
 const showHeadlessVisibilityHint = computed(

@@ -23,7 +23,7 @@ export function useBuilderUi() {
     inspectorTabIdle: 'border border-transparent text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200',
     inspectorBlockIcon: 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800/80',
     segmentGroup: 'inline-flex w-full rounded-lg border border-neutral-200 bg-neutral-50 p-0.5 dark:border-neutral-700 dark:bg-neutral-800/60',
-    segmentBtn: 'flex flex-1 items-center justify-center rounded-md py-1.5 text-neutral-500 transition-colors hover:text-neutral-800 disabled:opacity-40 dark:text-neutral-400 dark:hover:text-neutral-100',
+    segmentBtn: 'inline-flex h-8 flex-1 items-center justify-center rounded-md text-neutral-500 transition-colors hover:text-neutral-800 disabled:opacity-40 dark:text-neutral-400 dark:hover:text-neutral-100',
     segmentBtnActive: 'bg-white text-primary-700 shadow-sm dark:bg-neutral-900 dark:text-primary-300',
     rangeTrack: 'h-1.5 w-full cursor-pointer appearance-none rounded-full bg-neutral-200 accent-primary-600 dark:bg-neutral-700',
     workspaceTabList: 'flex shrink-0 items-center gap-1 border-b border-neutral-200 bg-white px-3 py-2 dark:border-neutral-800 dark:bg-neutral-900',

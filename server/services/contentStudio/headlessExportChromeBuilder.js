@@ -162,10 +162,12 @@ function buildArticleHeader(article, presentation, colors) {
   const cover = buildCover(coverImage);
   const subtitle = buildSubtitle(article.subtitle, subtitleOptions);
 
+  // Cover below title: keep title+subtitle together, then cover.
+  // Cover above title: cover first, then title+subtitle.
   if (presentation.coverFirst) {
     return cover + title + subtitle;
   }
-  return title + cover + subtitle;
+  return title + subtitle + cover;
 }
 
 function buildArticleShell(article, bodyHtml) {

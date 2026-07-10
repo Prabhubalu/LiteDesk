@@ -43,6 +43,8 @@ export interface ContentStudioDocumentRecord {
   status: string;
   visibility?: string;
   featured?: boolean;
+  authorId?: string | null;
+  authorName?: string;
   collectionId?: string | null;
   seo?: ContentStudioSeo;
   coverAssetId?: string | null;

@@ -125,6 +125,19 @@ function serializeContentDocument(doc, version = null) {
   };
 }
 
+function formatUserDisplayName(user) {
+  if (!user) return '';
+  const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+  return fullName || user.username || user.email || '';
+}
+
+async function resolveAuthorDisplayName(userId) {
+  if (!userId) return '';
+  const User = require('../../models/User');
+  const user = await User.findById(userId).select('firstName lastName username email').lean();
+  return formatUserDisplayName(user);
+}
+
 async function listContentDocuments({
   organizationId,
   addonKey,
@@ -211,17 +224,22 @@ async function getContentDocumentById({ organizationId, id }) {
 
 async function attachCoverImageUrl(doc, version = null) {
   const row = serializeContentDocument(doc, version);
-  if (!row.coverAssetId) {
-    return { ...row, coverImageUrl: null };
+  let authorName = String(row.authorName || '').trim();
+  if (!authorName && row.authorId) {
+    authorName = await resolveAuthorDisplayName(row.authorId);
+  }
+  const withAuthor = { ...row, authorName };
+  if (!withAuthor.coverAssetId) {
+    return { ...withAuthor, coverImageUrl: null };
   }
   try {
     const asset = await getAssetById({
-      organizationId: row.organizationId,
-      assetId: row.coverAssetId,
+      organizationId: withAuthor.organizationId,
+      assetId: withAuthor.coverAssetId,
     });
-    return { ...row, coverImageUrl: asset.downloadUrl || null };
+    return { ...withAuthor, coverImageUrl: asset.downloadUrl || null };
   } catch {
-    return { ...row, coverImageUrl: null };
+    return { ...withAuthor, coverImageUrl: null };
   }
 }
 
@@ -237,6 +255,8 @@ async function createContentDocument({
   collectionId,
   coverAssetId,
   presentation,
+  authorId,
+  authorName,
   userId,
 }) {
   const { addonKey: normalizedAddon, contentType, appKey } = resolveAddonContext(addonKey);
@@ -266,6 +286,10 @@ async function createContentDocument({
     }
   }
 
+  const resolvedAuthorId = authorId || userId || null;
+  const resolvedAuthorName = String(authorName || '').trim()
+    || (await resolveAuthorDisplayName(resolvedAuthorId));
+
   const contentDocument = await ContentDocument.create({
     organizationId,
     addonKey: normalizedAddon,
@@ -281,7 +305,8 @@ async function createContentDocument({
     coverAssetId: coverAssetId || null,
     presentation: normalizePresentation(resolvedPresentation),
     latestVersion: 1,
-    authorId: userId || null,
+    authorId: resolvedAuthorId,
+    authorName: resolvedAuthorName,
     createdBy: userId || null,
     updatedBy: userId || null,
   });
@@ -319,6 +344,8 @@ async function saveContentDocumentDraft({
   collectionId,
   coverAssetId,
   presentation,
+  authorId,
+  authorName,
   userId,
 }) {
   const doc = await ContentDocument.findOne({
@@ -348,6 +375,12 @@ async function saveContentDocumentDraft({
   if (featured !== undefined) doc.featured = Boolean(featured);
   if (collectionId !== undefined) doc.collectionId = collectionId || null;
   if (coverAssetId !== undefined) doc.coverAssetId = coverAssetId || null;
+  if (authorId !== undefined) doc.authorId = authorId || null;
+  if (authorName !== undefined) {
+    doc.authorName = String(authorName || '').trim();
+  } else if (authorId !== undefined) {
+    doc.authorName = await resolveAuthorDisplayName(doc.authorId);
+  }
   if (presentation !== undefined) {
     doc.presentation = normalizePresentation({ ...(doc.presentation || {}), ...presentation });
   }

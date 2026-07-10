@@ -506,19 +506,8 @@
     );
   }
 
-  function buildArticleRailHtml(tocHtml, options) {
-    var shareLabel = String((options && options.shareLabel) || 'Share this article');
-    return (
-      tocHtml +
-      '<div class="ld-help-toc__share">' +
-        '<span class="ld-help-toc__share-label">' + escapeHtml(shareLabel) + '</span>' +
-        '<button type="button" class="ld-help-toc__share-btn" data-ld-help-share aria-label="' + escapeHtml(shareLabel) + '">' +
-          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">' +
-            '<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />' +
-          '</svg>' +
-        '</button>' +
-      '</div>'
-    );
+  function buildArticleRailHtml(tocHtml) {
+    return tocHtml || '';
   }
 
   function getStickyTopOffset(root) {
@@ -646,24 +635,6 @@
         }
         var joiner = home.indexOf('?') >= 0 ? '&' : '?';
         window.location.href = home + joiner + 'q=' + encodeURIComponent(query);
-      });
-    }
-
-    var shareBtn = root.querySelector('[data-ld-help-share]');
-    if (shareBtn && typeof navigator !== 'undefined' && navigator.share) {
-      shareBtn.addEventListener('click', function () {
-        void navigator.share({
-          title: document.title,
-          url: window.location.href,
-        }).catch(function () {
-          /* user cancelled */
-        });
-      });
-    } else if (shareBtn) {
-      shareBtn.addEventListener('click', function () {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          void navigator.clipboard.writeText(window.location.href);
-        }
       });
     }
   }

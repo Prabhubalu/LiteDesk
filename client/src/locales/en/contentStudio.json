@@ -507,6 +507,18 @@
     "message": "Block",
     "description": "Inspector block tab"
   },
+  "sectionDocumentAppearance": {
+    "message": "Appearance",
+    "description": "Document inspector appearance section"
+  },
+  "sectionDocumentPublishing": {
+    "message": "Publishing",
+    "description": "Document inspector publishing section"
+  },
+  "sectionDocumentSeo": {
+    "message": "SEO",
+    "description": "Document inspector SEO section"
+  },
   "fieldSummary": {
     "message": "Summary",
     "description": "Document summary field"
@@ -954,6 +966,10 @@
   "fieldVisibility": {
     "message": "Visibility",
     "description": "Document visibility field"
+  },
+  "fieldAuthorName": {
+    "message": "Author name",
+    "description": "Document author display name field"
   },
   "visibilityInternal": {
     "message": "Internal only",
@@ -1914,6 +1930,14 @@
   "addCover": {
     "message": "Add cover image",
     "description": "Add cover image action"
+  },
+  "coverPickerTitle": {
+    "message": "Choose cover image",
+    "description": "Cover image picker dialog title"
+  },
+  "coverUploadNew": {
+    "message": "Upload new image",
+    "description": "Upload a new cover image from disk"
   },
   "changeCover": {
     "message": "Change",

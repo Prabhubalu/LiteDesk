@@ -102,6 +102,33 @@ describe('headless renderBlocks', () => {
     expect(normalizeEmbedUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ')).toContain('/embed/dQw4w9WgXcQ');
   });
 
+  it('renders task lists with checklist classes', () => {
+    const html = renderBlocksToHtml({
+      type: 'doc',
+      content: [
+        {
+          type: 'taskList',
+          content: [
+            {
+              type: 'taskItem',
+              attrs: { checked: true },
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [{ type: 'text', text: 'Done' }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(html).toContain('class="content-checklist"');
+    expect(html).toContain('class="content-checklist-item"');
+    expect(html).toContain('checked');
+  });
+
   it('supports component overrides', () => {
     const html = renderBlocksToHtml(
       {
@@ -123,5 +150,49 @@ describe('headless renderBlocks', () => {
 
     expect(html).toContain('data-custom-callout');
     expect(html).not.toContain('<aside');
+  });
+
+  it('preserves editor spacing, typography, hard breaks, and blank paragraphs', () => {
+    const html = renderBlocksToHtml(
+      {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            attrs: {
+              marginTop: 24,
+              marginBottom: 8,
+              padding: 12,
+              textAlign: 'center',
+              fontSize: '18px',
+              lineHeight: '1.75',
+            },
+            content: [
+              { type: 'text', text: 'Line one' },
+              { type: 'hardBreak' },
+              { type: 'text', text: 'Line two' },
+            ],
+          },
+          { type: 'paragraph', attrs: {}, content: [] },
+          {
+            type: 'spacer',
+            attrs: { height: 64, marginTop: 10, padding: 4 },
+          },
+        ],
+      },
+      { bodyOnly: true },
+    );
+
+    expect(html).toContain('margin-top:24px');
+    expect(html).toContain('margin-bottom:8px');
+    expect(html).toContain('padding:12px');
+    expect(html).toContain('text-align:center');
+    expect(html).toContain('font-size:18px');
+    expect(html).toContain('line-height:1.75');
+    expect(html).toContain('Line one<br />Line two');
+    expect(html).toContain('<p><br /></p>');
+    expect(html).toContain('height:64px');
+    expect(html).toContain('margin-top:10px');
+    expect(html).not.toMatch(/style="[^"]*"\s+style="/);
   });
 });

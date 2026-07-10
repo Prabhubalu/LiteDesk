@@ -25,6 +25,7 @@
         <template v-else>
           <template v-if="!coverFirst">
             <h1 v-if="title" :class="CONTENT_STUDIO_TITLE_PREVIEW_BASE_CLASS" :style="titleStyle">{{ title }}</h1>
+            <p v-if="hasSubtitle" :class="subtitlePreviewClass" :style="subtitleStyle">{{ subtitle }}</p>
           </template>
 
           <img
@@ -36,9 +37,8 @@
 
           <template v-if="coverFirst">
             <h1 v-if="title" :class="[CONTENT_STUDIO_TITLE_PREVIEW_BASE_CLASS, 'mt-4']" :style="titleStyle">{{ title }}</h1>
+            <p v-if="hasSubtitle" :class="subtitlePreviewClass" :style="subtitleStyle">{{ subtitle }}</p>
           </template>
-
-          <p v-if="hasSubtitle" :class="subtitlePreviewClass" :style="subtitleStyle">{{ subtitle }}</p>
         </template>
 
         <div :class="CONTENT_STUDIO_META_ROW_CLASS">
@@ -46,16 +46,10 @@
             <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700 dark:bg-primary-950 dark:text-primary-300">
               {{ authorInitials }}
             </span>
-            <span>{{ authorName }}</span>
+            <span>{{ resolvedAuthorName }}</span>
           </div>
           <span>{{ formattedDate }}</span>
           <span>{{ readTimeLabel }}</span>
-          <span
-            v-if="categoryLabel"
-            class="rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
-          >
-            {{ categoryLabel }}
-          </span>
         </div>
 
         <div ref="bodyRoot" :class="CONTENT_STUDIO_EDITOR_PROSE_CLASS">
@@ -99,7 +93,6 @@ const props = defineProps({
   authorName: { type: String, default: '' },
   publishedAt: { type: String, default: '' },
   readMinutes: { type: Number, default: 1 },
-  categoryLabel: { type: String, default: '' },
   appearance: { type: Object, default: null },
   contentWidth: { type: String, default: 'standard' },
 });

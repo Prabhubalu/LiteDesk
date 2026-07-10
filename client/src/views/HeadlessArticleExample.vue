@@ -133,7 +133,6 @@ async function loadArticle() {
       homeLabel: t('contentStudio.publicHelpHomeLabel'),
       topicsTitle: t('contentStudio.publicHelpBrowseTopics'),
       searchPlaceholder: t('contentStudio.publicHelpSearchPlaceholder'),
-      shareRailLabel: t('contentStudio.articleFeedbackShareLabel'),
       helpfulLabel: t('contentStudio.articleFeedbackHelpfulLabel'),
       shareLabel: t('contentStudio.articleFeedbackShareLabel'),
       yesLabel: t('contentStudio.articleFeedbackYesLabel'),

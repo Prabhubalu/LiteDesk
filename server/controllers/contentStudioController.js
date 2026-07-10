@@ -77,6 +77,8 @@ exports.createArticle = async (req, res) => {
       collectionId: req.body?.collectionId,
       coverAssetId: req.body?.coverAssetId,
       presentation: req.body?.presentation,
+      authorId: req.body?.authorId,
+      authorName: req.body?.authorName,
       userId: req.user._id,
     });
     return res.status(201).json({ success: true, data });
@@ -133,6 +135,8 @@ exports.updateArticle = async (req, res) => {
       collectionId: req.body?.collectionId,
       coverAssetId: req.body?.coverAssetId,
       presentation: req.body?.presentation,
+      authorId: req.body?.authorId,
+      authorName: req.body?.authorName,
       userId: req.user._id,
     });
     return res.json({ success: true, data });
@@ -304,6 +308,8 @@ exports.createBlogPost = async (req, res) => {
       blocks: req.body?.blocks,
       coverAssetId: req.body?.coverAssetId,
       presentation: req.body?.presentation,
+      authorId: req.body?.authorId,
+      authorName: req.body?.authorName,
       userId: req.user._id,
     });
     return res.status(201).json({ success: true, data });
@@ -339,6 +345,8 @@ exports.updateBlogPost = async (req, res) => {
       seo: req.body?.seo,
       coverAssetId: req.body?.coverAssetId,
       presentation: req.body?.presentation,
+      authorId: req.body?.authorId,
+      authorName: req.body?.authorName,
       userId: req.user._id,
     });
     return res.json({ success: true, data });
