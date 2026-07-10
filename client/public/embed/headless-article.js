@@ -608,8 +608,6 @@
 
           var topbarHtml = result.common.buildHelpTopbar({
             breadcrumbsHtml: breadcrumbsHtml,
-            searchPlaceholder: chrome.searchPlaceholder,
-            homePrefix: chrome.homePrefix,
           });
 
           var railHtml = '';
@@ -617,10 +615,15 @@
           return paintChromePage();
 
           function paintChromePage() {
+            var tocHtml = '';
             if (chrome.showSidebar) {
-              var tocHtml = result.common.buildTocHtml(bodyHtml);
-              railHtml = result.common.buildArticleRailHtml(tocHtml);
+              tocHtml = result.common.buildTocHtml(bodyHtml);
             }
+            railHtml = result.common.buildHelpRailHtml({
+              tocHtml: tocHtml,
+              searchPlaceholder: chrome.searchPlaceholder,
+              homePrefix: chrome.homePrefix,
+            });
 
             mountEl.innerHTML = buildChromeShell({
               common: result.common,
