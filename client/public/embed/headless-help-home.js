@@ -397,30 +397,36 @@
       searchItemsEl.innerHTML = '';
     }
 
-    function bindSearch(state) {
-      if (!searchEnabled) return;
+    function bindSearch() {
+      if (!searchEnabled) return { runSearch: function () {} };
 
       var form = root.querySelector('.ld-help-home__search');
-      form.addEventListener('submit', function (event) {
-        event.preventDefault();
-        var input = form.querySelector('.ld-help-home__search-input');
-        var query = input ? String(input.value || '').trim() : '';
-        if (!query) {
+      var input = form.querySelector('.ld-help-home__search-input');
+      var debounceTimer = null;
+      var requestId = 0;
+      var MIN_CHARS = 3;
+      var DEBOUNCE_MS = 280;
+
+      function runSearch(query) {
+        var safeQuery = String(query || '').trim();
+        if (!safeQuery) {
           showGrid();
           return;
         }
 
+        var currentRequest = ++requestId;
         statusEl.textContent = 'Searching…';
         showSearchResults();
         searchItemsEl.innerHTML = '';
 
-        fetch(contentBase + '/articles?search=' + encodeURIComponent(query) + '&limit=20', { cache: 'no-store' })
+        fetch(contentBase + '/articles?search=' + encodeURIComponent(safeQuery) + '&limit=20', { cache: 'no-store' })
           .then(function (response) {
             return response.json().then(function (payload) {
               return { response: response, payload: payload };
             });
           })
           .then(function (result) {
+            if (currentRequest !== requestId) return;
             if (!result.response.ok || !result.payload || !result.payload.success) {
               throw new Error((result.payload && result.payload.message) || loadFailedLabel);
             }
@@ -431,16 +437,49 @@
             }).join('');
           })
           .catch(function (error) {
+            if (currentRequest !== requestId) return;
             statusEl.textContent = '';
             searchItemsEl.innerHTML = '<li class="ld-help-list__item"><p class="ld-article__error">' + escapeHtml(error.message || loadFailedLabel) + '</p></li>';
           });
+      }
+
+      function scheduleLiveSearch() {
+        var query = input ? String(input.value || '').trim() : '';
+        if (debounceTimer) clearTimeout(debounceTimer);
+        if (query.length < MIN_CHARS) {
+          requestId += 1;
+          showGrid();
+          return;
+        }
+        debounceTimer = setTimeout(function () {
+          runSearch(query);
+        }, DEBOUNCE_MS);
+      }
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        if (debounceTimer) clearTimeout(debounceTimer);
+        var query = input ? String(input.value || '').trim() : '';
+        if (!query) {
+          requestId += 1;
+          showGrid();
+          return;
+        }
+        runSearch(query);
       });
 
+      if (input) {
+        input.addEventListener('input', scheduleLiveSearch);
+      }
+
       backBtn.addEventListener('click', function () {
-        var input = form.querySelector('.ld-help-home__search-input');
+        if (debounceTimer) clearTimeout(debounceTimer);
+        requestId += 1;
         if (input) input.value = '';
         showGrid();
       });
+
+      return { runSearch: runSearch };
     }
 
     renderLoading();
@@ -479,30 +518,10 @@
           }
         }
 
-        var state = {
-          org: org,
-          apiOrigin: apiOrigin,
-          linkPrefix: linkPrefix,
-          searchEnabled: searchEnabled,
-          title: title,
-          searchLabel: searchLabel,
-          searchPlaceholder: searchPlaceholder,
-          emptyLabel: emptyLabel,
-          searchEmptyLabel: searchEmptyLabel,
-          loadFailedLabel: loadFailedLabel,
-          backLabel: backLabel,
-          labelArticle: labels.articleSingular,
-          labelArticles: labels.articlePlural,
-          labelSection: labels.sectionSingular,
-          labelSections: labels.sectionPlural,
-        };
-        bindSearch(state);
+        var searchApi = bindSearch();
 
         if (searchQuery) {
-          var searchForm = root.querySelector('.ld-help-home__search');
-          if (searchForm) {
-            searchForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-          }
+          searchApi.runSearch(searchQuery);
         }
 
         return {

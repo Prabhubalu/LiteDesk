@@ -200,6 +200,14 @@ async function updateContentCollection({
     const safeName = String(name).trim();
     if (!safeName) throw new ContentCollectionError('Name is required', { code: 'NAME_REQUIRED' });
     row.name = safeName;
+    if (slug === undefined) {
+      row.slug = await ensureUniqueSlug({
+        organizationId,
+        addonKey: row.addonKey,
+        slug: safeName,
+        excludeId: row._id,
+      });
+    }
   }
   if (description !== undefined) row.description = String(description || '').trim();
   if (heroIconKey !== undefined || heroIconColor !== undefined || emoji !== undefined || imageUrl !== undefined) {

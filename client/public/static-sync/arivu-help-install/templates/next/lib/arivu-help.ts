@@ -1,7 +1,6 @@
-const API_ORIGIN = (process.env.ARIVU_API_ORIGIN || '').replace(/\/$/, '');
+const API_ORIGIN = process.env.ARIVU_API_ORIGIN || '';
 const ORG = process.env.ARIVU_ORG || '';
 const PATH_PREFIX = process.env.HELP_URL_PREFIX || '/help/';
-const SITE_ORIGIN = process.env.SITE_ORIGIN || '';
 
 export type ExportMeta = {
   title?: string;
@@ -31,12 +30,8 @@ type ManifestData = {
   articles?: ManifestArticle[];
 };
 
-function isHelpConfigured(): boolean {
-  return Boolean(API_ORIGIN && ORG);
-}
-
 function contentBase(): string {
-  return `${API_ORIGIN}/api/public/v1/content/${encodeURIComponent(ORG)}`;
+  return `${API_ORIGIN.replace(/\/$/, '')}/api/public/v1/content/${encodeURIComponent(ORG)}`;
 }
 
 function buildQuery(extra: Record<string, string> = {}): string {
@@ -59,7 +54,6 @@ async function fetchExportJson<T>(url: string): Promise<T | null> {
 }
 
 export async function fetchHomeExport(): Promise<ExportPayload | null> {
-  if (!isHelpConfigured()) return null;
   return fetchExportJson(`${contentBase()}/export/home${buildQuery()}`);
 }
 
@@ -67,7 +61,6 @@ export async function fetchCollectionExport(
   slug: string,
   parentSlug = '',
 ): Promise<ExportPayload | null> {
-  if (!isHelpConfigured()) return null;
   const parent = parentSlug ? { parent: parentSlug } : {};
   return fetchExportJson(
     `${contentBase()}/export/collections/${encodeURIComponent(slug)}${buildQuery(parent)}`,
@@ -75,14 +68,12 @@ export async function fetchCollectionExport(
 }
 
 export async function fetchArticleExport(articleSlug: string): Promise<ExportPayload | null> {
-  if (!isHelpConfigured()) return null;
   return fetchExportJson(
     `${contentBase()}/articles/${encodeURIComponent(articleSlug)}/export${buildQuery()}`,
   );
 }
 
 export async function fetchManifest(): Promise<ManifestData | null> {
-  if (!isHelpConfigured()) return null;
   const params = new URLSearchParams({ pathPrefix: PATH_PREFIX });
   return fetchExportJson(`${contentBase()}/manifest.json?${params.toString()}`);
 }
@@ -101,8 +92,6 @@ export function buildHelpPathname(pathPrefix: string, slug: string[] = []): stri
 export async function resolveHelpPage(slug: string[] = []): Promise<{
   data: ExportPayload;
 } | null> {
-  if (!isHelpConfigured()) return null;
-
   if (slug.length === 0) {
     const data = await fetchHomeExport();
     const pageHtml = pickPageHtml(data);
@@ -152,10 +141,9 @@ export async function buildStaticSlugParams(): Promise<Array<{ slug: string[] }>
 }
 
 export async function fetchStaticSitemapXml(): Promise<string | null> {
-  if (!isHelpConfigured()) return null;
   const params = new URLSearchParams({
     pathPrefix: PATH_PREFIX,
-    siteOrigin: SITE_ORIGIN,
+    siteOrigin: process.env.SITE_ORIGIN || '',
   });
   const response = await fetch(`${contentBase()}/export/sitemap.xml?${params.toString()}`, {
     next: { revalidate: 3600 },

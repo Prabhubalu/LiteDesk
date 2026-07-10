@@ -632,7 +632,15 @@
 
             var chromeRoot = mountEl.querySelector('[data-ld-help-article]');
             if (chromeRoot) {
-              result.common.bindHelpSiteChrome(chromeRoot, { homePrefix: chrome.homePrefix });
+              result.common.bindHelpSiteChrome(chromeRoot, {
+                homePrefix: chrome.homePrefix,
+                homeLabel: chrome.homeLabel,
+                org: org,
+                apiOrigin: apiOrigin,
+                articlePrefix: chrome.articlePrefix,
+                linkPrefix: chrome.articlePrefix,
+                collectionIndex: result.collectionsResult ? result.collectionsResult.index : [],
+              });
             }
             return finishMount(result.article, mountEl, apiOrigin, org, slug, chrome);
           }

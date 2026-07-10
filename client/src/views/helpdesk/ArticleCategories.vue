@@ -432,6 +432,7 @@ async function handleSubmit() {
   try {
     const payload = {
       name,
+      slug: name,
       description: formDescription.value.trim(),
       parentId: formParentId.value || null,
       ...buildIconPayload(),
