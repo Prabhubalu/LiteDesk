@@ -80,6 +80,8 @@
           });
           var topbarHtml = common.buildHelpTopbar({
             breadcrumbsHtml: breadcrumbsHtml,
+          });
+          var railHtml = common.buildHelpRailHtml({
             searchPlaceholder: searchPlaceholder,
             homePrefix: homePrefix,
           });
@@ -106,6 +108,7 @@
             topbarHtml: topbarHtml,
             navHtml: navHtml,
             mainHtml: mainHtml,
+            railHtml: railHtml,
           });
 
           var root = mountEl.querySelector('[data-ld-help-section]');

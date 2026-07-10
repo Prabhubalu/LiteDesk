@@ -351,13 +351,26 @@
   }
 
   function buildHelpTopbar(options) {
+    if (!options.breadcrumbsHtml) return '';
     return (
       '<header class="ld-help-site__topbar">' +
         '<div class="ld-help-site__topbar-inner">' +
           '<div class="ld-help-site__crumbs">' + (options.breadcrumbsHtml || '') + '</div>' +
-          (options.searchEnabled === false ? '' : buildHelpSearchFormHtml(options)) +
         '</div>' +
       '</header>'
+    );
+  }
+
+  function buildHelpRailHtml(options) {
+    options = options || {};
+    var searchHtml = options.searchEnabled === false
+      ? ''
+      : buildHelpSearchFormHtml(options);
+    var tocHtml = String(options.tocHtml || '').trim();
+    if (!searchHtml && !tocHtml) return '';
+    return (
+      (searchHtml ? '<div class="ld-help-site__rail-search">' + searchHtml + '</div>' : '') +
+      tocHtml
     );
   }
 
@@ -510,118 +523,23 @@
     );
   }
 
-  function buildArticleRailHtml(tocHtml) {
-    return tocHtml || '';
+  function buildArticleRailHtml(tocHtml, searchOptions) {
+    return buildHelpRailHtml(Object.assign({}, searchOptions || {}, {
+      tocHtml: tocHtml || '',
+    }));
   }
 
-  function getBaseStickyTopOffset(root) {
+  function getStickyTopOffset(root) {
     var el = root && (root.classList && root.classList.contains('ld-help-site')
       ? root
       : root.querySelector('.ld-help-site')) || root;
     var raw = el ? getComputedStyle(el).getPropertyValue('--ld-help-sticky-top').trim() : '';
-    if (!raw) return 0;
+    if (!raw) return 80;
     if (raw.indexOf('rem') >= 0) {
       var rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-      return parseFloat(raw) * rootFont || 0;
+      return parseFloat(raw) * rootFont || 80;
     }
-    return parseFloat(raw) || 0;
-  }
-
-  function getStickyTopOffset(root) {
-    var base = getBaseStickyTopOffset(root);
-    var topbar = root && root.querySelector('.ld-help-site__topbar');
-    if (topbar) {
-      base += Math.ceil(topbar.offsetHeight || topbar.getBoundingClientRect().height);
-    }
-    return base;
-  }
-
-  function syncTopbarStickyOffset(root) {
-    if (!root) return;
-    var site = root.classList && root.classList.contains('ld-help-site')
-      ? root
-      : root.querySelector('.ld-help-site');
-    var topbar = root.querySelector('.ld-help-site__topbar');
-    if (!site || !topbar) return;
-    var height = Math.ceil(topbar.offsetHeight || topbar.getBoundingClientRect().height);
-    site.style.setProperty('--ld-help-topbar-offset', height + 'px');
-  }
-
-  function bindStickyTopbar(root) {
-    var site = root && (root.classList && root.classList.contains('ld-help-site')
-      ? root
-      : root.querySelector('.ld-help-site'));
-    var topbar = root && root.querySelector('.ld-help-site__topbar');
-    if (!site || !topbar) return;
-
-    if (typeof root.__ldTopbarStickySchedule === 'function') {
-      root.__ldTopbarStickySchedule();
-      return;
-    }
-
-    var spacer = document.createElement('div');
-    spacer.className = 'ld-help-site__topbar-spacer';
-    spacer.setAttribute('aria-hidden', 'true');
-    spacer.hidden = true;
-    topbar.parentNode.insertBefore(spacer, topbar);
-
-    var pending = false;
-
-    function clearFixed() {
-      topbar.classList.remove('ld-help-site__topbar--fixed');
-      topbar.style.position = '';
-      topbar.style.top = '';
-      topbar.style.left = '';
-      topbar.style.width = '';
-      topbar.style.right = '';
-      topbar.style.zIndex = '';
-      spacer.hidden = true;
-      spacer.style.height = '';
-    }
-
-    function update() {
-      var topOffset = getBaseStickyTopOffset(root);
-      var siteRect = site.getBoundingClientRect();
-      var topbarHeight = Math.ceil(topbar.offsetHeight || 0);
-      if (!topbarHeight) {
-        clearFixed();
-        return;
-      }
-
-      site.style.setProperty('--ld-help-topbar-offset', topbarHeight + 'px');
-
-      var flowTop = spacer.hidden
-        ? topbar.getBoundingClientRect().top
-        : spacer.getBoundingClientRect().top;
-      var stillInSite = siteRect.bottom > topOffset + topbarHeight + 8;
-
-      if (flowTop <= topOffset && stillInSite) {
-        spacer.style.height = topbarHeight + 'px';
-        spacer.hidden = false;
-        topbar.classList.add('ld-help-site__topbar--fixed');
-        topbar.style.position = 'fixed';
-        topbar.style.top = Math.max(0, topOffset) + 'px';
-        topbar.style.left = siteRect.left + 'px';
-        topbar.style.width = siteRect.width + 'px';
-        topbar.style.zIndex = '50';
-      } else {
-        clearFixed();
-      }
-    }
-
-    function schedule() {
-      if (pending) return;
-      pending = true;
-      requestAnimationFrame(function () {
-        pending = false;
-        update();
-      });
-    }
-
-    root.__ldTopbarStickySchedule = schedule;
-    window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule);
-    schedule();
+    return parseFloat(raw) || 80;
   }
 
   function bindArticleTocRail(root) {
@@ -756,8 +674,6 @@
     if (!root) return;
     bindSectionTree(root);
     bindTocSmoothScroll(root);
-    bindStickyTopbar(root);
-    syncTopbarStickyOffset(root);
 
     var searchForm = root.querySelector('[data-ld-help-search]');
     if (!searchForm || !options || !options.homePrefix) return;
@@ -1230,6 +1146,7 @@
       navHtml: options.navHtml,
       statusHtml: options.statusHtml,
       mainHtml: options.mainHtml,
+      railHtml: options.railHtml,
     });
   }
 
@@ -1240,6 +1157,7 @@
       navHtml: options.navHtml,
       statusHtml: options.statusHtml,
       mainHtml: options.mainHtml,
+      railHtml: options.railHtml,
     });
   }
 
@@ -1337,6 +1255,7 @@
     groupArticlesByCollectionSlug: groupArticlesByCollectionSlug,
     buildHelpTopbar: buildHelpTopbar,
     buildHelpSearchFormHtml: buildHelpSearchFormHtml,
+    buildHelpRailHtml: buildHelpRailHtml,
     buildTopicsNavHtml: buildTopicsNavHtml,
     buildCategoryHeroHtml: buildCategoryHeroHtml,
     buildSubcategoryCardHtml: buildSubcategoryCardHtml,
