@@ -46,15 +46,17 @@ async function loadPublishedBlocks(doc) {
   return version?.blocks || null;
 }
 
-async function resolveAuthorName(authorId, storedAuthorName = '') {
+async function resolveAuthor(authorId, storedAuthorName = '') {
   const trimmed = String(storedAuthorName || '').trim();
-  if (trimmed) return trimmed;
-  if (!authorId) return '';
+  if (!authorId) return { name: trimmed, avatar: '' };
   const User = require('../../models/User');
-  const user = await User.findById(authorId).select('firstName lastName username email').lean();
-  if (!user) return '';
+  const user = await User.findById(authorId).select('firstName lastName username email avatar').lean();
+  if (!user) return { name: trimmed, avatar: '' };
   const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-  return fullName || user.username || user.email || '';
+  return {
+    name: trimmed || fullName || user.username || user.email || '',
+    avatar: String(user.avatar || '').trim(),
+  };
 }
 
 async function resolveCollectionName(doc) {
@@ -459,10 +461,12 @@ async function getPublicHelpArticle({
   const collectionMap = await loadCollectionMap(org._id, [doc]);
   const collectionMeta = doc.collectionId ? collectionMap[String(doc.collectionId)] : null;
   const publicAppBaseUrl = getPublicAppBaseUrl({ requestOrigin });
+  const author = await resolveAuthor(doc.authorId, doc.authorName);
   return buildPublicContentEnvelope(org, {
     data: await shapeHeadlessArticleDetail(doc, {
       blocks,
-      authorName: await resolveAuthorName(doc.authorId, doc.authorName),
+      authorName: author.name,
+      authorAvatar: author.avatar,
       collectionName: collectionMeta?.name || '',
       collectionMeta,
       publicAppBaseUrl,
