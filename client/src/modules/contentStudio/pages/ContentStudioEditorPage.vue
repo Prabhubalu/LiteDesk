@@ -77,6 +77,7 @@
             :presentation="presentation"
             :word-count="documentWordCount"
             :read-minutes="documentReadMinutes"
+            :author-name="authorName"
             @update:title="handleTitleChange"
             @update:subtitle="handleSubtitleChange"
             @register-image-trigger="imageUploadTrigger = $event"
@@ -93,6 +94,7 @@
             :cover-image-url="coverImageUrl"
             :presentation="presentation"
             :read-minutes="documentReadMinutes"
+            :author-name="authorName"
             @close="previewOpen = false"
           />
         </div>
@@ -105,6 +107,8 @@
           :slug="slug"
           :visibility="visibility"
           :featured="featured"
+          :author-id="authorId"
+          :author-name="authorName"
           :seo-meta-title="seoMetaTitle"
           :seo-meta-description="seoMetaDescription"
           :cover-position="presentation.coverPosition"
@@ -118,6 +122,8 @@
           @update:slug="handleSlugChange"
           @update:visibility="handleVisibilityChange"
           @update:featured="handleFeaturedChange"
+          @update:author-id="handleAuthorIdChange"
+          @update:author-name="handleAuthorNameChange"
           @update:seo-meta-title="handleSeoTitleChange"
           @update:seo-meta-description="handleSeoDescriptionChange"
           @update:cover-position="handleCoverPositionChange"
@@ -211,7 +217,7 @@ const documentId = computed(() => {
 });
 const isNew = computed(() => !documentId.value || route.name?.toString().includes('new'));
 
-let blocksSnapshot = null;
+const blocksSnapshot = ref(null);
 
 const {
   editor,
@@ -231,7 +237,7 @@ const {
   imageUploadTrigger,
   mediaInsertHandler,
   onUpdate: (json) => {
-    blocksSnapshot = json;
+    blocksSnapshot.value = json;
     markDirty();
   },
 });
@@ -249,6 +255,8 @@ const {
   seoMetaDescription,
   visibility,
   featured,
+  authorId,
+  authorName,
   collectionId,
   coverAssetId,
   coverImageUrl,
@@ -267,17 +275,17 @@ const {
   mode: props.mode,
   documentId: () => documentId.value,
   isNew: () => isNew.value,
-  getBlocks: () => blocksSnapshot || getDocumentContent(),
+  getBlocks: () => blocksSnapshot.value || getDocumentContent(),
   onLoaded: (data) => {
     setSuppressAutosave(true);
     setDocumentContent(initialBlocksFromRecord(data));
-    blocksSnapshot = initialBlocksFromRecord(data);
+    blocksSnapshot.value = initialBlocksFromRecord(data);
     setSuppressAutosave(false);
   },
 });
 
 const documentWordCount = computed(() => {
-  const text = extractPlainTextFromBlocks(blocksSnapshot || getDocumentContent(), `${title.value} ${subtitle.value}`);
+  const text = extractPlainTextFromBlocks(blocksSnapshot.value || getDocumentContent(), `${title.value} ${subtitle.value}`);
   return countWords(text);
 });
 
@@ -395,7 +403,7 @@ function handleApplyTemplate(template) {
     subtitle.value = t(meta.subtitleKey);
     summary.value = t(meta.summaryKey);
   }
-  blocksSnapshot = getDocumentContent();
+  blocksSnapshot.value = getDocumentContent();
   markDirty();
 }
 
@@ -425,6 +433,16 @@ function handleVisibilityChange(value) {
 
 function handleFeaturedChange(value) {
   featured.value = Boolean(value);
+  markDirty();
+}
+
+function handleAuthorIdChange(value) {
+  authorId.value = String(value || '');
+  markDirty();
+}
+
+function handleAuthorNameChange(value) {
+  authorName.value = String(value || '');
   markDirty();
 }
 
@@ -500,7 +518,7 @@ async function handleDelete() {
 }
 
 function handlePreview() {
-  blocksSnapshot = getDocumentContent();
+  blocksSnapshot.value = getDocumentContent();
   captureArticlePreviewed({ mode: props.mode, article_id: record.value?._id });
   previewOpen.value = true;
 }
@@ -514,7 +532,7 @@ onMounted(async () => {
   await load();
   if (isNew.value && !record.value) {
     setDocumentContent(initialBlocksFromRecord(null));
-    blocksSnapshot = getDocumentContent();
+    blocksSnapshot.value = getDocumentContent();
   }
 });
 

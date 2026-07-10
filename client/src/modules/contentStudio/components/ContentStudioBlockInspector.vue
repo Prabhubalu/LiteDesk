@@ -16,12 +16,12 @@
       <BuilderDisclosureSection v-if="hasBlockSettings" :title="t(blockMeta.settingsSectionKey)" :bordered="false">
         <div class="space-y-3">
           <ContentStudioInspectorFieldRow v-if="activeBlockType === 'heading'" :label="t('contentStudio.fieldHeadingLevel')">
-            <select :value="headingLevel" :class="[ui.input, 'h-8 text-sm']" @change="setHeadingLevel(Number($event.target.value))">
-              <option :value="1">H1</option>
-              <option :value="2">H2</option>
-              <option :value="3">H3</option>
-              <option :value="4">H4</option>
-            </select>
+            <BuilderSelect
+              :model-value="headingLevel"
+              :options="headingLevelOptions"
+              button-class="h-8"
+              @update:model-value="setHeadingLevel(Number($event))"
+            />
           </ContentStudioInspectorFieldRow>
 
           <ContentStudioInspectorFieldRow
@@ -44,15 +44,12 @@
           />
 
           <ContentStudioInspectorFieldRow v-if="blockMeta.blockWidth" :label="t('contentStudio.fieldBlockWidth')">
-            <select
-              :value="layoutBlockWidth"
-              :class="[ui.input, 'h-8 text-sm']"
-              @change="updateLayoutAttrs({ blockWidth: $event.target.value })"
-            >
-              <option value="content">{{ t('contentStudio.widthContent') }}</option>
-              <option value="wide">{{ t('contentStudio.widthWide') }}</option>
-              <option value="full">{{ t('contentStudio.widthFull') }}</option>
-            </select>
+            <BuilderSelect
+              :model-value="layoutBlockWidth"
+              :options="blockWidthOptions"
+              button-class="h-8"
+              @update:model-value="updateLayoutAttrs({ blockWidth: $event })"
+            />
           </ContentStudioInspectorFieldRow>
 
           <template v-if="activeBlockType === 'image' && !isGalleryContext">
@@ -77,15 +74,12 @@
 
           <template v-if="activeBlockType === 'gallery'">
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldGalleryLayout')">
-              <select
-                :value="galleryLayout"
-                :class="[ui.input, 'h-8 text-sm']"
-                @change="setNodeAttr('gallery', 'layout', $event.target.value)"
-              >
-                <option value="grid">{{ t('contentStudio.galleryLayoutGrid') }}</option>
-                <option value="scroll">{{ t('contentStudio.galleryLayoutScroll') }}</option>
-                <option value="carousel">{{ t('contentStudio.galleryLayoutCarousel') }}</option>
-              </select>
+              <BuilderSelect
+                :model-value="galleryLayout"
+                :options="galleryLayoutOptions"
+                button-class="h-8"
+                @update:model-value="setNodeAttr('gallery', 'layout', $event)"
+              />
             </ContentStudioInspectorFieldRow>
             <p class="text-xs text-neutral-500">{{ t('contentStudio.galleryImageCount', { count: galleryImageCount }) }}</p>
             <button type="button" :class="[ui.btnSecondary, 'w-full']" @click="requestGalleryImage('add')">
@@ -125,28 +119,23 @@
 
           <template v-if="activeBlockType === 'bulletList' || activeBlockType === 'orderedList'">
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldListStyle')">
-              <select
-                :value="activeBlockType === 'orderedList' ? 'ordered' : 'bullet'"
-                :class="[ui.input, 'h-8 text-sm']"
-                @change="setListStyle($event.target.value)"
-              >
-                <option value="bullet">{{ t('contentStudio.listBullet') }}</option>
-                <option value="ordered">{{ t('contentStudio.listNumbered') }}</option>
-              </select>
+              <BuilderSelect
+                :model-value="activeBlockType === 'orderedList' ? 'ordered' : 'bullet'"
+                :options="listStyleOptions"
+                button-class="h-8"
+                @update:model-value="setListStyle($event)"
+              />
             </ContentStudioInspectorFieldRow>
           </template>
 
           <template v-if="activeBlockType === 'callout'">
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldCalloutVariant')">
-              <select
-                :value="calloutVariant"
-                :class="[ui.input, 'h-8 text-sm']"
-                @change="setNodeAttr('callout', 'variant', $event.target.value)"
-              >
-                <option value="info">{{ t('contentStudio.calloutInfo') }}</option>
-                <option value="tip">{{ t('contentStudio.calloutTip') }}</option>
-                <option value="warning">{{ t('contentStudio.calloutWarning') }}</option>
-              </select>
+              <BuilderSelect
+                :model-value="calloutVariant"
+                :options="calloutVariantOptions"
+                button-class="h-8"
+                @update:model-value="setNodeAttr('callout', 'variant', $event)"
+              />
             </ContentStudioInspectorFieldRow>
           </template>
 
@@ -161,12 +150,12 @@
               <textarea :value="embedInfo" rows="2" :class="[ui.input, 'text-sm']" @change="setEmbedAttr('info', $event.target.value)" />
             </ContentStudioInspectorFieldRow>
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldEmbedWidth')">
-              <select :value="embedWidth" :class="[ui.input, 'h-8 text-sm']" @change="setEmbedAttr('embedWidth', $event.target.value)">
-                <option value="small">{{ t('contentStudio.embedWidthSmall') }}</option>
-                <option value="medium">{{ t('contentStudio.embedWidthMedium') }}</option>
-                <option value="large">{{ t('contentStudio.embedWidthLarge') }}</option>
-                <option value="full">{{ t('contentStudio.embedWidthFull') }}</option>
-              </select>
+              <BuilderSelect
+                :model-value="embedWidth"
+                :options="embedWidthOptions"
+                button-class="h-8"
+                @update:model-value="setEmbedAttr('embedWidth', $event)"
+              />
             </ContentStudioInspectorFieldRow>
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldEmbedHeight')">
               <input
@@ -226,43 +215,40 @@
               />
             </ContentStudioInspectorFieldRow>
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldStepsOrientation')">
-              <select
-                :value="stepsOrientation"
-                :class="[ui.input, 'h-8 text-sm']"
-                @change="setNodeAttr('steps', 'orientation', $event.target.value)"
-              >
-                <option value="vertical">{{ t('contentStudio.stepsOrientationVertical') }}</option>
-                <option value="horizontal">{{ t('contentStudio.stepsOrientationHorizontal') }}</option>
-              </select>
+              <BuilderSelect
+                :model-value="stepsOrientation"
+                :options="stepsOrientationOptions"
+                button-class="h-8"
+                @update:model-value="setNodeAttr('steps', 'orientation', $event)"
+              />
             </ContentStudioInspectorFieldRow>
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldStepsTitleLayout')">
-              <select
-                :value="stepsTitleLayout"
-                :class="[ui.input, 'h-8 text-sm']"
-                @change="setNodeAttr('steps', 'titleLayout', $event.target.value)"
-              >
-                <option value="inline">{{ t('contentStudio.stepsTitleLayoutInline') }}</option>
-                <option value="below">{{ t('contentStudio.stepsTitleLayoutBelow') }}</option>
-              </select>
-            </ContentStudioInspectorFieldRow>
-            <label class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
-              <input
-                type="checkbox"
-                :checked="stepsHeaderCentered"
-                @change="setNodeAttr('steps', 'headerAlign', $event.target.checked ? 'center' : 'start')"
+              <BuilderSelect
+                :model-value="stepsTitleLayout"
+                :options="stepsTitleLayoutOptions"
+                button-class="h-8"
+                @update:model-value="setNodeAttr('steps', 'titleLayout', $event)"
               />
-              {{ t('contentStudio.fieldStepsHeaderCenter') }}
-            </label>
+            </ContentStudioInspectorFieldRow>
+            <div
+              class="flex items-start justify-between gap-3 rounded-lg border border-neutral-200 px-3 py-2.5 dark:border-neutral-700"
+            >
+              <span class="text-sm text-neutral-700 dark:text-neutral-300">
+                {{ t('contentStudio.fieldStepsHeaderCenter') }}
+              </span>
+              <HeadlessSwitch
+                :model-value="stepsHeaderCentered"
+                size="sm"
+                @update:model-value="setNodeAttr('steps', 'headerAlign', $event ? 'center' : 'start')"
+              />
+            </div>
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldStepsContentAlign')">
-              <select
-                :value="stepsContentAlign"
-                :class="[ui.input, 'h-8 text-sm']"
-                @change="setNodeAttr('steps', 'contentAlign', $event.target.value)"
-              >
-                <option value="start">{{ t('contentStudio.alignLeft') }}</option>
-                <option value="center">{{ t('contentStudio.alignCenter') }}</option>
-                <option value="end">{{ t('contentStudio.alignRight') }}</option>
-              </select>
+              <BuilderSelect
+                :model-value="stepsContentAlign"
+                :options="stepsContentAlignOptions"
+                button-class="h-8"
+                @update:model-value="setNodeAttr('steps', 'contentAlign', $event)"
+              />
             </ContentStudioInspectorFieldRow>
             <button type="button" :class="[ui.btnSecondary, 'w-full']" @click="addStep">
               {{ t('contentStudio.addStep') }}
@@ -278,43 +264,40 @@
 
           <template v-if="activeBlockType === 'steps'">
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldStepsOrientation')">
-              <select
-                :value="stepsOrientation"
-                :class="[ui.input, 'h-8 text-sm']"
-                @change="setNodeAttr('steps', 'orientation', $event.target.value)"
-              >
-                <option value="vertical">{{ t('contentStudio.stepsOrientationVertical') }}</option>
-                <option value="horizontal">{{ t('contentStudio.stepsOrientationHorizontal') }}</option>
-              </select>
+              <BuilderSelect
+                :model-value="stepsOrientation"
+                :options="stepsOrientationOptions"
+                button-class="h-8"
+                @update:model-value="setNodeAttr('steps', 'orientation', $event)"
+              />
             </ContentStudioInspectorFieldRow>
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldStepsTitleLayout')">
-              <select
-                :value="stepsTitleLayout"
-                :class="[ui.input, 'h-8 text-sm']"
-                @change="setNodeAttr('steps', 'titleLayout', $event.target.value)"
-              >
-                <option value="inline">{{ t('contentStudio.stepsTitleLayoutInline') }}</option>
-                <option value="below">{{ t('contentStudio.stepsTitleLayoutBelow') }}</option>
-              </select>
-            </ContentStudioInspectorFieldRow>
-            <label class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
-              <input
-                type="checkbox"
-                :checked="stepsHeaderCentered"
-                @change="setNodeAttr('steps', 'headerAlign', $event.target.checked ? 'center' : 'start')"
+              <BuilderSelect
+                :model-value="stepsTitleLayout"
+                :options="stepsTitleLayoutOptions"
+                button-class="h-8"
+                @update:model-value="setNodeAttr('steps', 'titleLayout', $event)"
               />
-              {{ t('contentStudio.fieldStepsHeaderCenter') }}
-            </label>
+            </ContentStudioInspectorFieldRow>
+            <div
+              class="flex items-start justify-between gap-3 rounded-lg border border-neutral-200 px-3 py-2.5 dark:border-neutral-700"
+            >
+              <span class="text-sm text-neutral-700 dark:text-neutral-300">
+                {{ t('contentStudio.fieldStepsHeaderCenter') }}
+              </span>
+              <HeadlessSwitch
+                :model-value="stepsHeaderCentered"
+                size="sm"
+                @update:model-value="setNodeAttr('steps', 'headerAlign', $event ? 'center' : 'start')"
+              />
+            </div>
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldStepsContentAlign')">
-              <select
-                :value="stepsContentAlign"
-                :class="[ui.input, 'h-8 text-sm']"
-                @change="setNodeAttr('steps', 'contentAlign', $event.target.value)"
-              >
-                <option value="start">{{ t('contentStudio.alignLeft') }}</option>
-                <option value="center">{{ t('contentStudio.alignCenter') }}</option>
-                <option value="end">{{ t('contentStudio.alignRight') }}</option>
-              </select>
+              <BuilderSelect
+                :model-value="stepsContentAlign"
+                :options="stepsContentAlignOptions"
+                button-class="h-8"
+                @update:model-value="setNodeAttr('steps', 'contentAlign', $event)"
+              />
             </ContentStudioInspectorFieldRow>
             <button type="button" :class="[ui.btnSecondary, 'w-full']" @click="addStep">
               {{ t('contentStudio.addStep') }}
@@ -466,11 +449,12 @@
 
           <template v-if="activeBlockType === 'section'">
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldSectionVariant')">
-              <select :value="sectionVariant" :class="[ui.input, 'h-8 text-sm']" @change="setNodeAttr('section', 'variant', $event.target.value)">
-                <option value="default">{{ t('contentStudio.sectionVariantDefault') }}</option>
-                <option value="muted">{{ t('contentStudio.sectionVariantMuted') }}</option>
-                <option value="highlight">{{ t('contentStudio.sectionVariantHighlight') }}</option>
-              </select>
+              <BuilderSelect
+                :model-value="sectionVariant"
+                :options="sectionVariantOptions"
+                button-class="h-8"
+                @update:model-value="setNodeAttr('section', 'variant', $event)"
+              />
             </ContentStudioInspectorFieldRow>
           </template>
 
@@ -479,20 +463,20 @@
               <input :value="tocTitle" type="text" :class="[ui.input, 'h-8 text-sm']" @input="setNodeAttr('toc', 'title', $event.target.value)" />
             </ContentStudioInspectorFieldRow>
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldTocMinLevel')">
-              <select :value="tocMinLevel" :class="[ui.input, 'h-8 text-sm']" @change="setNodeAttr('toc', 'minLevel', Number($event.target.value))">
-                <option :value="1">H1</option>
-                <option :value="2">H2</option>
-                <option :value="3">H3</option>
-                <option :value="4">H4</option>
-              </select>
+              <BuilderSelect
+                :model-value="tocMinLevel"
+                :options="headingLevelOptions"
+                button-class="h-8"
+                @update:model-value="setNodeAttr('toc', 'minLevel', Number($event))"
+              />
             </ContentStudioInspectorFieldRow>
             <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldTocMaxLevel')">
-              <select :value="tocMaxLevel" :class="[ui.input, 'h-8 text-sm']" @change="setNodeAttr('toc', 'maxLevel', Number($event.target.value))">
-                <option :value="1">H1</option>
-                <option :value="2">H2</option>
-                <option :value="3">H3</option>
-                <option :value="4">H4</option>
-              </select>
+              <BuilderSelect
+                :model-value="tocMaxLevel"
+                :options="headingLevelOptions"
+                button-class="h-8"
+                @update:model-value="setNodeAttr('toc', 'maxLevel', Number($event))"
+              />
             </ContentStudioInspectorFieldRow>
           </template>
 
@@ -583,15 +567,16 @@
               <span class="rounded-md bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
                 {{ t('contentStudio.tableDimensions', { rows: tableDimensions.rows, cols: tableDimensions.cols }) }}
               </span>
-              <label class="flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-300">
-                <input
-                  type="checkbox"
-                  class="rounded border-neutral-300 dark:border-neutral-600"
-                  :checked="tableHasHeader"
-                  @change="toggleTableHeader($event.target.checked)"
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-neutral-600 dark:text-neutral-300">
+                  {{ t('contentStudio.fieldTableHeaderRow') }}
+                </span>
+                <HeadlessSwitch
+                  :model-value="tableHasHeader"
+                  size="sm"
+                  @update:model-value="toggleTableHeader($event)"
                 />
-                {{ t('contentStudio.fieldTableHeaderRow') }}
-              </label>
+              </div>
             </div>
 
             <div class="flex flex-wrap gap-1.5">
@@ -639,15 +624,16 @@
               :value="tableCellTextAlign"
               @update:value="updateTableCellLayout({ textAlign: $event })"
             />
-            <label class="flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-300">
-              <input
-                type="checkbox"
-                class="rounded border-neutral-300 dark:border-neutral-600"
-                :checked="tableCellIsHeader"
-                @change="updateTableCellLayout({ isHeader: $event.target.checked })"
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-neutral-600 dark:text-neutral-300">
+                {{ t('contentStudio.fieldTableCellHeader') }}
+              </span>
+              <HeadlessSwitch
+                :model-value="tableCellIsHeader"
+                size="sm"
+                @update:model-value="updateTableCellLayout({ isHeader: $event })"
               />
-              {{ t('contentStudio.fieldTableCellHeader') }}
-            </label>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
@@ -783,7 +769,9 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useBuilderUi } from '@/composables/useBuilderUi';
+import HeadlessSwitch from '@/components/ui/HeadlessSwitch.vue';
 import BuilderDisclosureSection from '@/modules/template/components/BuilderDisclosureSection.vue';
+import BuilderSelect from '@/modules/template/components/BuilderSelect.vue';
 import ContentStudioInspectorFieldRow from './ContentStudioInspectorControls.vue';
 import ContentStudioInspectorAlignment from './ContentStudioInspectorAlignment.vue';
 import ContentStudioInspectorSpacing from './ContentStudioInspectorSpacing.vue';
@@ -845,6 +833,65 @@ const tableActionBtnClass = `${ui.btnSecondary} h-7 flex-1 px-2 text-xs`;
 const tableDangerBtnClass = `${ui.btnSecondary} h-7 flex-1 px-2 text-xs text-danger-600 dark:text-danger-400`;
 const layoutRevision = ref(0);
 const layoutSelection = ref(null);
+
+const headingLevelOptions = [
+  { value: 1, label: 'H1' },
+  { value: 2, label: 'H2' },
+  { value: 3, label: 'H3' },
+  { value: 4, label: 'H4' },
+];
+
+const blockWidthOptions = computed(() => [
+  { value: 'content', label: t('contentStudio.widthContent') },
+  { value: 'wide', label: t('contentStudio.widthWide') },
+  { value: 'full', label: t('contentStudio.widthFull') },
+]);
+
+const galleryLayoutOptions = computed(() => [
+  { value: 'grid', label: t('contentStudio.galleryLayoutGrid') },
+  { value: 'scroll', label: t('contentStudio.galleryLayoutScroll') },
+  { value: 'carousel', label: t('contentStudio.galleryLayoutCarousel') },
+]);
+
+const listStyleOptions = computed(() => [
+  { value: 'bullet', label: t('contentStudio.listBullet') },
+  { value: 'ordered', label: t('contentStudio.listNumbered') },
+]);
+
+const calloutVariantOptions = computed(() => [
+  { value: 'info', label: t('contentStudio.calloutInfo') },
+  { value: 'tip', label: t('contentStudio.calloutTip') },
+  { value: 'warning', label: t('contentStudio.calloutWarning') },
+]);
+
+const embedWidthOptions = computed(() => [
+  { value: 'small', label: t('contentStudio.embedWidthSmall') },
+  { value: 'medium', label: t('contentStudio.embedWidthMedium') },
+  { value: 'large', label: t('contentStudio.embedWidthLarge') },
+  { value: 'full', label: t('contentStudio.embedWidthFull') },
+]);
+
+const stepsOrientationOptions = computed(() => [
+  { value: 'vertical', label: t('contentStudio.stepsOrientationVertical') },
+  { value: 'horizontal', label: t('contentStudio.stepsOrientationHorizontal') },
+]);
+
+const stepsTitleLayoutOptions = computed(() => [
+  { value: 'inline', label: t('contentStudio.stepsTitleLayoutInline') },
+  { value: 'below', label: t('contentStudio.stepsTitleLayoutBelow') },
+]);
+
+const stepsContentAlignOptions = computed(() => [
+  { value: 'start', label: t('contentStudio.alignLeft') },
+  { value: 'center', label: t('contentStudio.alignCenter') },
+  { value: 'end', label: t('contentStudio.alignRight') },
+]);
+
+const sectionVariantOptions = computed(() => [
+  { value: 'default', label: t('contentStudio.sectionVariantDefault') },
+  { value: 'muted', label: t('contentStudio.sectionVariantMuted') },
+  { value: 'highlight', label: t('contentStudio.sectionVariantHighlight') },
+]);
 
 watch(
   () => [props.selectionRevision, props.editor],

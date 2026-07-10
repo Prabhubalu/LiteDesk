@@ -1,29 +1,27 @@
 <template>
   <div class="space-y-3">
     <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldTextSize')">
-      <select
-        :value="fontSize || ''"
-        :class="[ui.input, 'h-8 text-sm']"
-        @change="emit('update:typography', { fontSize: $event.target.value || null })"
-      >
-        <option value="">{{ t('contentStudio.fontSizeDefault') }}</option>
-        <option v-for="option in fontSizeOptions" :key="option.value" :value="option.value">
-          {{ t(option.labelKey) }}
-        </option>
-      </select>
+      <BuilderSelect
+        :model-value="fontSize || ''"
+        :options="fontSizeSelectOptions"
+        allow-empty
+        :empty-label="t('contentStudio.fontSizeDefault')"
+        empty-value=""
+        button-class="h-8"
+        @update:model-value="emit('update:typography', { fontSize: $event || null })"
+      />
     </ContentStudioInspectorFieldRow>
 
     <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldLineHeight')">
-      <select
-        :value="lineHeight || ''"
-        :class="[ui.input, 'h-8 text-sm']"
-        @change="emit('update:typography', { lineHeight: $event.target.value || null })"
-      >
-        <option value="">{{ t('contentStudio.lineHeightDefault') }}</option>
-        <option v-for="option in lineHeightOptions" :key="option.value" :value="option.value">
-          {{ t(option.labelKey) }}
-        </option>
-      </select>
+      <BuilderSelect
+        :model-value="lineHeight || ''"
+        :options="lineHeightSelectOptions"
+        allow-empty
+        :empty-label="t('contentStudio.lineHeightDefault')"
+        empty-value=""
+        button-class="h-8"
+        @update:model-value="emit('update:typography', { lineHeight: $event || null })"
+      />
     </ContentStudioInspectorFieldRow>
 
     <ContentStudioInspectorFieldRow :label="t('contentStudio.fieldTextColor')" wide>
@@ -67,6 +65,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useBuilderUi } from '@/composables/useBuilderUi';
+import BuilderSelect from '@/modules/template/components/BuilderSelect.vue';
 import ContentStudioInspectorFieldRow from './ContentStudioInspectorControls.vue';
 import { DEFAULT_TEXT_COLOR, FONT_SIZE_OPTIONS, LINE_HEIGHT_OPTIONS } from '../editor/blockInspectorMeta';
 
@@ -85,8 +84,12 @@ const emit = defineEmits(['update:typography']);
 const { t } = useI18n();
 const ui = useBuilderUi();
 
-const fontSizeOptions = FONT_SIZE_OPTIONS;
-const lineHeightOptions = LINE_HEIGHT_OPTIONS;
+const fontSizeSelectOptions = computed(() =>
+  FONT_SIZE_OPTIONS.map((option) => ({ value: option.value, label: t(option.labelKey) })),
+);
+const lineHeightSelectOptions = computed(() =>
+  LINE_HEIGHT_OPTIONS.map((option) => ({ value: option.value, label: t(option.labelKey) })),
+);
 const resolvedColor = computed(() => props.textColor || props.defaultColor);
 const resolvedBackgroundColor = computed(() => props.backgroundColor || props.defaultBackgroundColor);
 </script>

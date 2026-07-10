@@ -22,7 +22,7 @@
     >
       <span
         :class="[
-          'block pr-8',
+          'block min-w-0 flex-1 pr-8 leading-5',
           truncateButtonLabel ? 'truncate' : 'whitespace-nowrap',
           isMutedSelection && 'text-gray-500 dark:text-gray-500'
         ]"

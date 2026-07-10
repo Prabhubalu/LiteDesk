@@ -162,10 +162,12 @@
     var cover = buildCover(coverImage, apiOrigin);
     var subtitle = buildSubtitle(data.subtitle, subtitleOptions);
 
+    // Cover below title: keep title+subtitle together, then cover.
+    // Cover above title: cover first, then title+subtitle.
     if (presentation.coverFirst) {
       return cover + title + subtitle;
     }
-    return title + cover + subtitle;
+    return title + subtitle + cover;
   }
 
   function buildArticleShell(data, bodyHtml, footerHtml, apiOrigin) {
@@ -452,7 +454,6 @@
       thanksLabel: String(options.thanksLabel || 'Thanks for your feedback.'),
       pageUrl: String(options.pageUrl || ''),
       searchPlaceholder: String(options.searchPlaceholder || 'Search'),
-      shareRailLabel: String(options.shareRailLabel || 'Share this article'),
     };
   }
 
@@ -618,7 +619,7 @@
           function paintChromePage() {
             if (chrome.showSidebar) {
               var tocHtml = result.common.buildTocHtml(bodyHtml);
-              railHtml = result.common.buildArticleRailHtml(tocHtml, { shareLabel: chrome.shareRailLabel });
+              railHtml = result.common.buildArticleRailHtml(tocHtml);
             }
 
             mountEl.innerHTML = buildChromeShell({

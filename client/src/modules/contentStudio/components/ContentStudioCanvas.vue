@@ -169,7 +169,16 @@
     </BubbleMenu>
 
     <input ref="imageInputRef" type="file" accept="image/*" class="hidden" @change="handleImageSelect" />
-    <input ref="coverInputRef" type="file" accept="image/*" class="hidden" @change="handleCoverSelect" />
+
+    <BuilderImageAssetPicker
+      v-model:open="coverPickerOpen"
+      hide-trigger
+      allow-upload
+      :library="coverAssetLibrary"
+      :title="t('contentStudio.coverPickerTitle')"
+      :upload-label="t('contentStudio.coverUploadNew')"
+      @select="handleCoverAssetSelect"
+    />
 
     <div :class="[ui.canvasOuter, 'content-studio-canvas-outer min-h-0 flex-1 overflow-y-auto']">
       <article
@@ -197,7 +206,7 @@
             />
           </div>
           <div class="absolute inset-0 flex items-end justify-end gap-2 bg-gradient-to-t from-black/40 to-transparent p-3 opacity-0 transition group-hover:opacity-100">
-            <button type="button" class="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-medium text-neutral-900" @click="triggerCoverUpload">
+            <button type="button" class="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-medium text-neutral-900" @click="openCoverPicker">
               {{ t('contentStudio.changeCover') }}
             </button>
             <button type="button" class="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-medium text-red-700" @click="emit('remove-cover')">
@@ -217,11 +226,21 @@
             @input="emit('update:title', $event.target.value)"
           />
 
+          <textarea
+            v-if="!coverFirst"
+            :value="subtitle"
+            rows="2"
+            :class="subtitleEditClass"
+            :style="subtitleStyle"
+            :placeholder="t('contentStudio.subtitlePlaceholder')"
+            @input="emit('update:subtitle', $event.target.value)"
+          />
+
           <div :class="coverFirst ? '' : 'mt-4'">
             <div v-if="coverImageUrl" class="group relative overflow-hidden rounded-xl">
               <img :src="coverImageUrl" alt="" class="max-h-72 w-full object-cover" />
               <div class="absolute inset-0 flex items-end justify-end gap-2 bg-gradient-to-t from-black/40 to-transparent p-3 opacity-0 transition group-hover:opacity-100">
-                <button type="button" class="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-medium text-neutral-900" @click="triggerCoverUpload">
+                <button type="button" class="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-medium text-neutral-900" @click="openCoverPicker">
                   {{ t('contentStudio.changeCover') }}
                 </button>
                 <button type="button" class="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-medium text-red-700" @click="emit('remove-cover')">
@@ -233,7 +252,7 @@
               v-else
               type="button"
               :class="CONTENT_STUDIO_COVER_PLACEHOLDER_CLASS"
-              @click="triggerCoverUpload"
+              @click="openCoverPicker"
             >
               {{ t('contentStudio.addCover') }}
             </button>
@@ -250,6 +269,7 @@
           />
 
           <textarea
+            v-if="coverFirst"
             :value="subtitle"
             rows="2"
             :class="subtitleEditClass"
@@ -264,13 +284,10 @@
             <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700 dark:bg-primary-950 dark:text-primary-300">
               {{ authorInitials }}
             </span>
-            <span>{{ authorName }}</span>
+            <span>{{ resolvedAuthorName }}</span>
           </div>
           <span>{{ formattedDate }}</span>
           <span>{{ readTimeLabel }}</span>
-          <span v-if="categoryLabel" class="rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
-            {{ categoryLabel }}
-          </span>
         </div>
 
         <EditorContent
@@ -289,8 +306,8 @@ import { EditorContent, BubbleMenu } from '@tiptap/vue-3';
 import { LinkIcon, TrashIcon, DocumentTextIcon, Bars3BottomLeftIcon, Bars3BottomRightIcon, Bars3CenterLeftIcon, RectangleStackIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
 import HoverTooltip from '@/components/common/HoverTooltip.vue';
 import { useBuilderUi } from '@/composables/useBuilderUi';
-import { useAuthStore } from '@/stores/authRegistry';
 import { useContentAssets } from '@/composables/useContentAssets';
+import BuilderImageAssetPicker from '@/components/templates/builder/BuilderImageAssetPicker.vue';
 import { consumePendingGalleryIntent, applyGalleryImageFromUpload, setPendingGalleryIntent } from '../editor/slashCommands';
 import { isEditorInGallery, removeGalleryImage } from '../editor/blockCommands';
 import {
@@ -326,13 +343,13 @@ const props = defineProps({
   presentation: { type: Object, default: () => ({}) },
   wordCount: { type: Number, default: 0 },
   readMinutes: { type: Number, default: 1 },
+  authorName: { type: String, default: '' },
 });
 
 const emit = defineEmits(['update:title', 'update:subtitle', 'image-uploaded', 'register-image-trigger', 'cover-uploaded', 'remove-cover']);
 
 const { t } = useI18n();
 const ui = useBuilderUi();
-const authStore = useAuthStore();
 const contentAssets = useContentAssets();
 
 const bubbleMenuTippyOptions = {
@@ -347,7 +364,8 @@ const bubbleMenuClass =
 const bubbleMenuTooltipZIndex = 10050;
 
 const imageInputRef = ref(null);
-const coverInputRef = ref(null);
+const coverPickerOpen = ref(false);
+const coverAssetLibrary = computed(() => (props.mode === 'blog' ? 'marketing' : 'content'));
 const headings = [
   { level: 1, label: 'H1', labelKey: 'contentStudio.bubbleHeading1' },
   { level: 2, label: 'H2', labelKey: 'contentStudio.bubbleHeading2' },
@@ -481,35 +499,27 @@ const subtitleStyle = computed(() => ({
 const subtitleEditClass = computed(() => `mt-3 w-full resize-none border-0 bg-transparent ${contentStudioSubtitleSizeClass(chromeLayout.value.subtitleSize)} outline-none placeholder:text-neutral-400 dark:placeholder:text-neutral-500`);
 const subtitleOverlapEditClass = computed(() => `mt-2 w-full resize-none border-0 bg-transparent ${contentStudioSubtitleOverlapSizeClass(chromeLayout.value.subtitleSize)} text-white/90 outline-none placeholder:text-white/60`);
 
-const authorName = computed(() => authStore.user?.name || authStore.user?.email || t('contentStudio.authorFallback'));
+const resolvedAuthorName = computed(() => props.authorName || t('contentStudio.authorFallback'));
 const authorInitials = computed(() => {
-  const parts = String(authorName.value).trim().split(/\s+/).filter(Boolean);
+  const parts = String(resolvedAuthorName.value).trim().split(/\s+/).filter(Boolean);
   return parts.slice(0, 2).map((part) => part[0]?.toUpperCase() || '').join('') || 'A';
 });
 const formattedDate = computed(() => new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date()));
 const readTimeLabel = computed(() => t('contentStudio.readTime', { minutes: props.readMinutes }));
-const categoryLabel = computed(() => (props.mode === 'articles' ? t('contentStudio.categoryHelp') : t('contentStudio.categoryBlog')));
 
 function openImagePicker() {
   imageInputRef.value?.click();
 }
 
-function triggerCoverUpload() {
-  coverInputRef.value?.click();
+function openCoverPicker() {
+  coverPickerOpen.value = true;
 }
 
-async function handleCoverSelect(event) {
-  const file = event.target.files?.[0];
-  event.target.value = '';
-  if (!file) return;
-  try {
-    const asset = await contentAssets.uploadAsset(file, { library: props.mode === 'blog' ? 'marketing' : 'content' });
-    const url = asset?.url || asset?.publicUrl || asset?.downloadUrl;
-    if (!url) return;
-    emit('cover-uploaded', { asset, url });
-  } catch {
-    /* noop */
-  }
+function handleCoverAssetSelect(payload) {
+  const asset = payload?.asset;
+  const url = payload?.src || asset?.url || asset?.publicUrl || asset?.downloadUrl || '';
+  if (!url) return;
+  emit('cover-uploaded', { asset, url });
 }
 
 async function handleImageSelect(event) {

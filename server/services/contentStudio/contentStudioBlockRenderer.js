@@ -37,9 +37,21 @@ function renderInlineContent(nodes = []) {
     .join('');
 }
 
-function renderElementAttrs(attrs = {}, extraClasses = []) {
+function normalizeStyleList(extraStyles = []) {
+  return (Array.isArray(extraStyles) ? extraStyles : [extraStyles])
+    .flatMap((value) => String(value || '').split(';'))
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Layout/typography attrs from the editor. extraStyles are merged into one style=
+ * attribute (never emit duplicate style attrs — browsers keep only the first).
+ */
+function renderElementAttrs(attrs = {}, extraClasses = [], extraStyles = []) {
   const classes = extraClasses.filter(Boolean).map((value) => String(value));
-  const styles = [];
+  // Structural styles first; editor spacing/typography last so they win on conflict.
+  const styles = normalizeStyleList(extraStyles);
 
   if (attrs.textAlign) styles.push(`text-align:${escapeHtml(String(attrs.textAlign))}`);
   const blockWidth = attrs.blockWidth ? String(attrs.blockWidth) : '';
@@ -257,11 +269,15 @@ function renderBlockNode(node, context = {}) {
   if (!node || !node.type) return '';
 
   switch (node.type) {
-    case 'paragraph':
-      return `<p${renderBlockAttrs(node.attrs)}>${renderInlineContent(node.content)}</p>`;
+    case 'paragraph': {
+      const inner = renderInlineContent(node.content);
+      // Match TipTap empty paragraphs (trailing <br>) so blank lines keep height on customer sites.
+      return `<p${renderBlockAttrs(node.attrs)}>${inner || '<br />'}</p>`;
+    }
     case 'heading': {
       const level = Math.min(Math.max(Number(node.attrs?.level) || 2, 1), 4);
-      return `<h${level}${renderBlockAttrs(node.attrs)}>${renderInlineContent(node.content)}</h${level}>`;
+      const inner = renderInlineContent(node.content);
+      return `<h${level}${renderBlockAttrs(node.attrs)}>${inner || '<br />'}</h${level}>`;
     }
     case 'bulletList':
       return `<ul${renderBlockAttrs(node.attrs)}>${(node.content || []).map(renderBlockNode).join('')}</ul>`;
@@ -305,9 +321,12 @@ function renderBlockNode(node, context = {}) {
       const width = String(node.attrs?.width || '100%').trim() || '100%';
       const textWrap = normalizeImageTextWrap(node.attrs?.textWrap);
       const position = normalizeImagePosition(node.attrs?.imagePosition);
-      const figureAttrs = renderElementAttrs(node.attrs, ['content-image-figure']);
-      const figureStyle = buildImageFigureStyle(node.attrs);
-      return `<figure${figureAttrs} data-width="${escapeHtml(width)}" data-text-wrap="${textWrap}" data-image-position="${position}" style="${figureStyle}"><img src="${src}" alt="${alt}" class="content-image" style="${imgStyle}" loading="lazy" />${figcaption}</figure>`;
+      const figureAttrs = renderElementAttrs(
+        node.attrs,
+        ['content-image-figure'],
+        buildImageFigureStyle(node.attrs),
+      );
+      return `<figure${figureAttrs} data-width="${escapeHtml(width)}" data-text-wrap="${textWrap}" data-image-position="${position}"><img src="${src}" alt="${alt}" class="content-image" style="${imgStyle}" loading="lazy" />${figcaption}</figure>`;
     }
     case 'embed': {
       const rawSrc = String(node.attrs?.src || '').trim();
@@ -400,11 +419,10 @@ function renderBlockNode(node, context = {}) {
     }
     case 'table': {
       const tableWidth = node.attrs?.tableWidth ? String(node.attrs.tableWidth) : '';
-      const widthAttr = tableWidth
-        ? ` data-table-width="${escapeHtml(tableWidth)}" style="width:${escapeHtml(tableWidth)}"`
-        : '';
+      const widthAttr = tableWidth ? ` data-table-width="${escapeHtml(tableWidth)}"` : '';
+      const widthStyles = tableWidth ? [`width:${escapeHtml(tableWidth)}`] : [];
       const colgroup = renderTableColgroup(node);
-      const tableHtml = `<table${renderElementAttrs(node.attrs, ['content-table'])}${widthAttr}>${colgroup}<tbody>${(node.content || []).map(renderBlockNode).join('')}</tbody></table>`;
+      const tableHtml = `<table${renderElementAttrs(node.attrs, ['content-table'], widthStyles)}${widthAttr}>${colgroup}<tbody>${(node.content || []).map(renderBlockNode).join('')}</tbody></table>`;
       return `<div class="ld-table-scroll">${tableHtml}</div>`;
     }
     case 'tableRow': {
@@ -421,7 +439,7 @@ function renderBlockNode(node, context = {}) {
       return renderTableCellNode(node);
     case 'spacer': {
       const height = Math.min(Math.max(Number(node.attrs?.height) || 48, 8), 240);
-      return `<div${renderElementAttrs(node.attrs, ['content-spacer'])} style="height:${height}px" aria-hidden="true"></div>`;
+      return `<div${renderElementAttrs(node.attrs, ['content-spacer'], [`height:${height}px`])} aria-hidden="true"></div>`;
     }
     case 'button': {
       const label = escapeHtml(String(node.attrs?.label || 'Learn more'));

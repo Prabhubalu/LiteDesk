@@ -2558,5 +2558,29 @@
   "categoryDescriptionHint": {
     "message": "Optional. Displayed under the category name on the public help home page.",
     "description": "Category description field hint"
+  },
+  "fieldAuthorName": {
+    "message": "Author name",
+    "description": "Document author display name field"
+  },
+  "sectionDocumentAppearance": {
+    "message": "Appearance",
+    "description": "Document inspector appearance section"
+  },
+  "sectionDocumentPublishing": {
+    "message": "Publishing",
+    "description": "Document inspector publishing section"
+  },
+  "sectionDocumentSeo": {
+    "message": "SEO",
+    "description": "Document inspector SEO section"
+  },
+  "coverPickerTitle": {
+    "message": "Choose cover image",
+    "description": "Cover image picker dialog title"
+  },
+  "coverUploadNew": {
+    "message": "Upload new image",
+    "description": "Upload a new cover image from disk"
   }
 }

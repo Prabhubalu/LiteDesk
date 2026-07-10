@@ -24,7 +24,6 @@
         :body-html="bodyHtml"
         :author-name="authorName"
         :read-minutes="readMinutes"
-        :category-label="categoryLabel"
         :preview-device="previewDevice"
       />
     </div>
@@ -32,10 +31,9 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useBuilderUi } from '@/composables/useBuilderUi';
-import { useAuthStore } from '@/stores/authRegistry';
 import { renderContentPreview } from '../services/contentStudioApi';
 import ContentStudioPublishedArticleView from './ContentStudioPublishedArticleView.vue';
 
@@ -48,22 +46,17 @@ const props = defineProps({
   coverImageUrl: { type: String, default: '' },
   presentation: { type: Object, default: () => ({}) },
   readMinutes: { type: Number, default: 1 },
+  authorName: { type: String, default: '' },
 });
 
 const emit = defineEmits(['close']);
 
 const { t } = useI18n();
 const ui = useBuilderUi();
-const authStore = useAuthStore();
 
 const loading = ref(true);
 const error = ref('');
 const bodyHtml = ref('');
-
-const authorName = computed(() => authStore.user?.name || authStore.user?.email || '');
-const categoryLabel = computed(() =>
-  props.mode === 'articles' ? t('contentStudio.categoryHelp') : t('contentStudio.categoryBlog'),
-);
 
 async function loadPreview() {
   loading.value = true;

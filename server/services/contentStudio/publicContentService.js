@@ -46,11 +46,15 @@ async function loadPublishedBlocks(doc) {
   return version?.blocks || null;
 }
 
-async function resolveAuthorName(authorId) {
+async function resolveAuthorName(authorId, storedAuthorName = '') {
+  const trimmed = String(storedAuthorName || '').trim();
+  if (trimmed) return trimmed;
   if (!authorId) return '';
   const User = require('../../models/User');
-  const user = await User.findById(authorId).select('name email').lean();
-  return user?.name || user?.email || '';
+  const user = await User.findById(authorId).select('firstName lastName username email').lean();
+  if (!user) return '';
+  const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+  return fullName || user.username || user.email || '';
 }
 
 async function resolveCollectionName(doc) {
@@ -458,7 +462,7 @@ async function getPublicHelpArticle({
   return buildPublicContentEnvelope(org, {
     data: await shapeHeadlessArticleDetail(doc, {
       blocks,
-      authorName: await resolveAuthorName(doc.authorId),
+      authorName: await resolveAuthorName(doc.authorId, doc.authorName),
       collectionName: collectionMeta?.name || '',
       collectionMeta,
       publicAppBaseUrl,

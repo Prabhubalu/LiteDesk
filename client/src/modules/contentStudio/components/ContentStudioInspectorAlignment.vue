@@ -8,7 +8,7 @@
       :class="[ui.segmentBtn, value === option.value ? ui.segmentBtnActive : '']"
       @click="emit('update:value', option.value)"
     >
-      <component :is="option.icon" class="h-4 w-4" aria-hidden="true" />
+      <component :is="option.icon" class="block h-4 w-4 shrink-0" aria-hidden="true" />
     </button>
   </div>
 </template>
