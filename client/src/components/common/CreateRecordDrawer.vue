@@ -205,9 +205,10 @@ import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } fro
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from './DynamicForm.vue';
 import DealRelationshipEditor from '@/components/deals/DealRelationshipEditor.vue';
-import DealLinesSection from '@/components/record-page/sections/DealLinesSection.vue';
-
-// Lazy-load to avoid circular chunk-settings ↔ record-activity init (production TDZ on _export_sfc).
+// Lazy-load to avoid circular chunk ↔ record-activity init (production TDZ).
+const DealLinesSection = defineAsyncComponent(
+  () => import('@/components/record-page/sections/DealLinesSection.vue')
+);
 const QuoteLinesRecordSection = defineAsyncComponent(
   () => import('@/components/record-page/sections/QuoteLinesRecordSection.vue')
 );
