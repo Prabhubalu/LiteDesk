@@ -14,8 +14,8 @@ const form = ref({
   moduleKey: 'people',
   recordId: '',
   to: '',
-  subject: 'LiteDesk email smoke test',
-  body: '<p>Hello from LiteDesk email smoke test UI.</p>'
+  subject: 'Arivu email smoke test',
+  body: '<p>Hello from Arivu email smoke test UI.</p>'
 })
 
 const MODULE_ENDPOINT_MAP = {

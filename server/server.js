@@ -116,13 +116,20 @@ const publicEmbedCors = cors({
   credentials: false,
 });
 
+const publicContentCorsMiddleware = require('./middleware/publicContentCorsMiddleware');
+
 app.use((req, res, next) => {
-  const url = String(req.originalUrl || '');
+  const url = String(req.originalUrl || '').split('?')[0];
+  if (url.startsWith('/api/public/v1/content') || url.startsWith('/api/public/content')) {
+    return publicContentCorsMiddleware(req, res, next);
+  }
   if (
     url === '/embed/chat'
     || url.startsWith('/embed/chat/')
     || url === '/api/embed/chat'
     || url.startsWith('/api/embed/chat/')
+    || url === '/embed/content.js'
+    || url.startsWith('/embed/content/')
   ) {
     return publicEmbedCors(req, res, next);
   }
@@ -260,6 +267,9 @@ const marketingDashboardRoutes = require('./routes/marketingDashboardRoutes');
 const marketingReportsRoutes = require('./routes/marketingReportsRoutes');
 const marketingSubscriptionRoutes = require('./routes/marketingSubscriptionRoutes');
 const marketingAssetRoutes = require('./routes/marketingAssetRoutes');
+const marketingBlogRoutes = require('./routes/marketingBlogRoutes');
+const helpdeskArticlesRoutes = require('./routes/helpdeskArticlesRoutes');
+const contentStudioRoutes = require('./routes/contentStudioRoutes');
 const publicMarketingRoutes = require('./routes/publicMarketingRoutes');
 
 // Route Linking
@@ -297,6 +307,7 @@ app.use('/api/notification-rules', notificationRuleRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/data-changes', require('./routes/dataChangeStreamRoutes'));
 app.use('/api/helpdesk/cases', caseRoutes);
+app.use('/api/helpdesk/articles', helpdeskArticlesRoutes);
 app.use('/api/marketing/campaigns', marketingCampaignRoutes);
 app.use('/api/marketing/audiences', marketingAudienceRoutes);
 app.use('/api/marketing/segments', marketingSegmentRoutes);
@@ -304,6 +315,7 @@ app.use('/api/marketing/dashboard', marketingDashboardRoutes);
 app.use('/api/marketing/reports', marketingReportsRoutes);
 app.use('/api/marketing/subscriptions', marketingSubscriptionRoutes);
 app.use('/api/marketing/assets', marketingAssetRoutes);
+app.use('/api/marketing/blog', marketingBlogRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/sales-orders', salesOrderRoutes);
 app.use('/api/invoices', invoiceRoutes);
@@ -340,6 +352,8 @@ app.use('/api/public/appointments/manage', require('./routes/publicAppointmentMa
 app.use('/api/public/quotes', require('./routes/publicQuoteRoutes'));
 app.use('/api/public/mailroom', require('./routes/publicMailroomRoutes'));
 app.use('/api/public/marketing', publicMarketingRoutes);
+app.use('/api/public/content', require('./routes/publicContentRoutes'));
+app.use('/api/public/v1/content', require('./routes/publicContentRoutes'));
 // Public embeddable live chat widget APIs (M6)
 app.use('/embed/chat', embedChatRoutes);
 // Some deployments only proxy /api/* to the Node server (frontend serves all other paths).
@@ -378,6 +392,7 @@ app.use('/api/templates', require('./routes/contentTemplateRoutes'));
 app.use('/api/content-themes', require('./routes/contentThemeRoutes'));
 app.use('/api/content-assets', require('./routes/contentAssetRoutes'));
 app.use('/api/content-fonts', require('./routes/contentFontRoutes'));
+app.use('/api/content-studio', contentStudioRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/catalog', require('./routes/catalogRoutes'));
 app.use('/api/trash', trashRoutes);
@@ -519,13 +534,38 @@ connectMasterWithRetry(masterUri)
         const { ensureAddonCatalogSeeded } = require('./scripts/seedAddonDefinitions');
         const result = await ensureAddonCatalogSeeded({ useExistingConnection: true });
         console.log(
-          `✅ Addon catalog seeded (live_chat: ${result.defResultLiveChat}, email_credits: ${result.defResultEmailCredits}, pricing live_chat: ${result.pricingResultLiveChat}, pricing email_credits: ${result.pricingResultEmailCredits})`
+          `✅ Addon catalog seeded (live_chat: ${result.defResultLiveChat}, email_credits: ${result.defResultEmailCredits}, articles: ${result.defResultArticles}, blog: ${result.defResultBlog})`
         );
       } else {
         console.log(`✅ Addon catalog present (${registeredAddonKeys.length} registered addon(s))`);
       }
     } catch (addonSeedError) {
       console.warn('⚠️  Failed to check/seed addon catalog:', addonSeedError.message);
+    }
+
+    // 1.56. Ensure Content Studio sidebar modules exist (helpdesk.articles, marketing.blog)
+    try {
+      const ModuleDefinition = require('./models/ModuleDefinition');
+      const articlesModule = await ModuleDefinition.findOne({
+        appKey: 'helpdesk',
+        moduleKey: 'articles',
+        organizationId: null,
+      }).select('_id');
+      const blogModule = await ModuleDefinition.findOne({
+        appKey: 'marketing',
+        moduleKey: 'blog',
+        organizationId: null,
+      }).select('_id');
+      if (!articlesModule || !blogModule) {
+        console.log('📦 Content Studio modules incomplete, seeding...');
+        const { ensureContentStudioModulesSeeded } = require('./scripts/migrateContentStudioModules');
+        const result = await ensureContentStudioModulesSeeded({ useExistingConnection: true });
+        console.log(
+          `✅ Content Studio modules seeded (articles: ${result.articlesResult}, blog: ${result.blogResult})`
+        );
+      }
+    } catch (contentStudioSeedError) {
+      console.warn('⚠️  Failed to check/seed Content Studio modules:', contentStudioSeedError.message);
     }
 
     // 1.6. Register default Task relationships + seed settings defaults (safe to run repeatedly)

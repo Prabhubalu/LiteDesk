@@ -1574,5 +1574,9 @@
   "folderDeleteFailed": {
     "message": "Failed to delete folder",
     "description": "Folder delete error toast"
+  },
+  "portalKnowledgeAllCollections": {
+    "message": "All",
+    "description": "Portal knowledge all collections filter"
   }
 }

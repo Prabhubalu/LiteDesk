@@ -9,7 +9,12 @@
     :empty-value="emptyValue"
     :disabled="disabled"
     teleport
-    :button-class="[ui.input, 'text-sm', buttonClass]"
+    :teleport-match-width="teleportMatchWidth"
+    :teleport-min-width-px="teleportMinWidthPx"
+    :teleport-align="teleportAlign"
+    :truncate-options="truncateOptions"
+    :truncate-button-label="truncateButtonLabel"
+    :button-class="[ui.input, '!flex !h-8 !items-center !py-0 text-sm leading-5', buttonClass]"
     :options-class="optionsClass"
     :options-attrs="optionsAttrs"
     @update:model-value="emit('update:modelValue', $event)"
@@ -31,7 +36,17 @@ defineProps({
   disabled: { type: Boolean, default: false },
   buttonClass: { type: [String, Array, Object], default: '' },
   optionsClass: { type: [String, Array, Object], default: 'z-[10060]' },
-  optionsAttrs: { type: Object, default: () => ({}) }
+  optionsAttrs: { type: Object, default: () => ({}) },
+  /** Inspector side panels: grow menu to labels instead of matching narrow trigger. */
+  teleportMatchWidth: { type: Boolean, default: false },
+  teleportMinWidthPx: { type: Number, default: 0 },
+  teleportAlign: {
+    type: String,
+    default: 'end',
+    validator: (value) => value === 'start' || value === 'end',
+  },
+  truncateOptions: { type: Boolean, default: false },
+  truncateButtonLabel: { type: Boolean, default: true },
 });
 
 const emit = defineEmits(['update:modelValue']);

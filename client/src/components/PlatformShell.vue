@@ -151,6 +151,13 @@ const isFormCreateRoute = computed(() => {
   return name === 'form-create' || route.path.startsWith('/forms/create');
 });
 const isTemplateBuilderRoute = computed(() => route.name === 'template-builder');
+const isContentStudioEditorRoute = computed(() => {
+  const name = typeof route.name === 'string' ? route.name : '';
+  return name === 'helpdesk-article-new'
+    || name === 'helpdesk-article-edit'
+    || name === 'marketing-blog-new'
+    || name === 'marketing-blog-edit';
+});
 
 const useViewportLock = computed(
   () => isInboxRoute.value
@@ -159,6 +166,7 @@ const useViewportLock = computed(
     || isProcessDesignerRoute.value
     || isFormCreateRoute.value
     || isTemplateBuilderRoute.value
+    || isContentStudioEditorRoute.value
 );
 
 const isRecordDetailRoute = computed(() => {

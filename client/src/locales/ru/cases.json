@@ -1351,6 +1351,14 @@
     "message": "Email could not be delivered",
     "description": "Tooltip when delivery error missing"
   },
+  "recordKnowledgeSearchPlaceholder": {
+    "message": "Search knowledge articles…",
+    "description": "Knowledge panel search placeholder"
+  },
+  "recordKnowledgeEmpty": {
+    "message": "No matching articles. Try different keywords.",
+    "description": "Knowledge panel empty state"
+  },
   "sysFieldContactId": {
     "message": "Contact",
     "description": "System case field label for contactId"

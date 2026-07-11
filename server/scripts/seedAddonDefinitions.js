@@ -48,6 +48,44 @@ const EMAIL_CREDITS_ADDON = {
   },
 };
 
+const ARTICLES_ADDON = {
+  addonKey: ADDON_KEYS.ARTICLES,
+  name: 'Articles',
+  description: 'Knowledge base article builder with block editor, portal publishing, and case deflection.',
+  icon: 'book-open',
+  category: 'COMMUNICATION',
+  enabled: true,
+  order: 30,
+  requiredApps: ['HELPDESK'],
+  optionalApps: ['PORTAL', 'SALES'],
+  marketplace: {
+    category: 'Helpdesk',
+    comingSoon: false,
+    beta: false,
+    shortDescription: 'Build and publish help articles to your customer portal and website.',
+    docsUrl: '',
+  },
+};
+
+const BLOG_ADDON = {
+  addonKey: ADDON_KEYS.BLOG,
+  name: 'Blog',
+  description: 'Marketing blog builder with SEO, categories, RSS, and tenant website publishing.',
+  icon: 'newspaper',
+  category: 'COMMUNICATION',
+  enabled: true,
+  order: 40,
+  requiredApps: ['MARKETING'],
+  optionalApps: ['SALES'],
+  marketplace: {
+    category: 'Marketing',
+    comingSoon: true,
+    beta: false,
+    shortDescription: 'Publish a branded blog on your website without WordPress.',
+    docsUrl: '',
+  },
+};
+
 async function upsertAddonDefinition(doc) {
   const existing = await AddonDefinition.findOne({ addonKey: doc.addonKey });
   if (existing) {
@@ -107,8 +145,12 @@ async function ensureAddonCatalogSeeded(options = {}) {
 
   const defResultLiveChat = await upsertAddonDefinition(LIVE_CHAT_ADDON);
   const defResultEmailCredits = await upsertAddonDefinition(EMAIL_CREDITS_ADDON);
+  const defResultArticles = await upsertAddonDefinition(ARTICLES_ADDON);
+  const defResultBlog = await upsertAddonDefinition(BLOG_ADDON);
   const pricingResultLiveChat = await upsertAddonPricing(ADDON_KEYS.LIVE_CHAT);
   const pricingResultEmailCredits = await upsertAddonPricing(ADDON_KEYS.EMAIL_CREDITS);
+  const pricingResultArticles = await upsertAddonPricing(ADDON_KEYS.ARTICLES);
+  const pricingResultBlog = await upsertAddonPricing(ADDON_KEYS.BLOG);
 
   if (!useExistingConnection) {
     await mongoose.disconnect();
@@ -117,8 +159,12 @@ async function ensureAddonCatalogSeeded(options = {}) {
   return {
     defResultLiveChat,
     defResultEmailCredits,
+    defResultArticles,
+    defResultBlog,
     pricingResultLiveChat,
-    pricingResultEmailCredits
+    pricingResultEmailCredits,
+    pricingResultArticles,
+    pricingResultBlog,
   };
 }
 
@@ -126,12 +172,22 @@ async function main() {
   const result = await ensureAddonCatalogSeeded();
   console.log(`AddonDefinition live_chat: ${result.defResultLiveChat}`);
   console.log(`AddonDefinition email_credits: ${result.defResultEmailCredits}`);
+  console.log(`AddonDefinition articles: ${result.defResultArticles}`);
+  console.log(`AddonDefinition blog: ${result.defResultBlog}`);
   console.log(`AddonPricingDefinition live_chat: ${result.pricingResultLiveChat}`);
   console.log(`AddonPricingDefinition email_credits: ${result.pricingResultEmailCredits}`);
+  console.log(`AddonPricingDefinition articles: ${result.pricingResultArticles}`);
+  console.log(`AddonPricingDefinition blog: ${result.pricingResultBlog}`);
   console.log('Done.');
 }
 
-module.exports = { ensureAddonCatalogSeeded, LIVE_CHAT_ADDON, EMAIL_CREDITS_ADDON };
+module.exports = {
+  ensureAddonCatalogSeeded,
+  LIVE_CHAT_ADDON,
+  EMAIL_CREDITS_ADDON,
+  ARTICLES_ADDON,
+  BLOG_ADDON,
+};
 
 if (require.main === module) {
   main().catch((err) => {

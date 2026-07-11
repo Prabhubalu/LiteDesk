@@ -4,8 +4,14 @@
 ./build
 ./coverage
 ./logs
+./tmp
 ./temp
 ./cache
 ./backup
 ./archive
 ./docs
+./.env
+./.env.local
+./.env.development.local
+./.env.test.local
+./.env.production.local

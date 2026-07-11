@@ -46,4 +46,24 @@ module.exports = {
     },
     creditPacks: DEFAULT_EMAIL_CREDIT_PACKS,
   },
+  articles: {
+    billingType: 'FLAT',
+    defaultPlan: 'BASIC',
+    trialDays: 7,
+    plans: {
+      BASIC: { flatPriceCents: null, currency: 'USD' },
+      PRO: { flatPriceCents: null, currency: 'USD' },
+      ENTERPRISE: { flatPriceCents: null, currency: 'USD' },
+    },
+  },
+  blog: {
+    billingType: 'FLAT',
+    defaultPlan: 'BASIC',
+    trialDays: 7,
+    plans: {
+      BASIC: { flatPriceCents: null, currency: 'USD' },
+      PRO: { flatPriceCents: null, currency: 'USD' },
+      ENTERPRISE: { flatPriceCents: null, currency: 'USD' },
+    },
+  },
 };

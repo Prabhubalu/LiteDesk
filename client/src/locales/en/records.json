@@ -3087,195 +3087,768 @@
     "message": "Record",
     "description": "Record metadata group label"
   },
-  "paymentAllocationsTitle": { "message": "Payment allocations", "description": "Payment allocations section title" },
-  "paymentAllocationsHint": { "message": "Cash applied to invoices — billing allocations are unchanged.", "description": "Payment allocations hint" },
-  "paymentAllocationsEmpty": { "message": "No allocations yet.", "description": "Empty payment allocations" },
-  "paymentAllocationInvoice": { "message": "Invoice", "description": "Allocation invoice column" },
-  "paymentAllocationAmount": { "message": "Amount", "description": "Allocation amount column" },
-  "paymentAllocationAppliedAt": { "message": "Applied", "description": "Allocation date column" },
-  "paymentAmount": { "message": "Amount", "description": "Payment amount label" },
-  "paymentAmountAllocated": { "message": "Allocated", "description": "Payment allocated label" },
-  "paymentAmountUnallocated": { "message": "Unallocated", "description": "Payment unallocated label" },
-  "paymentAmountRefunded": { "message": "Refunded", "description": "Payment refunded label" },
-  "paymentNumber": { "message": "Payment #", "description": "Payment number label" },
-  "paymentIssueRefund": { "message": "Issue refund", "description": "Issue refund button" },
-  "paymentRefundsTitle": { "message": "Refunds", "description": "Payment refunds section title" },
-  "paymentRefundsHint": { "message": "Outbound cash linked to this payment.", "description": "Payment refunds hint" },
-  "paymentRefundsEmpty": { "message": "No refunds recorded.", "description": "Empty refunds list" },
-  "paymentRefundWizardTitle": { "message": "Issue refund", "description": "Refund wizard title" },
-  "paymentMaxRefundable": { "message": "Max refundable", "description": "Max refundable label" },
-  "paymentRefundAmount": { "message": "Refund amount", "description": "Refund amount label" },
-  "paymentRefundReason": { "message": "Reason", "description": "Refund reason label" },
-  "paymentRefundReasonSelect": { "message": "Select reason", "description": "Refund reason placeholder" },
-  "paymentRefundReasonNote": { "message": "Notes", "description": "Refund reason note label" },
-  "paymentRefundUnallocatedPortion": { "message": "Unallocated portion", "description": "Refund unallocated portion" },
-  "paymentRefundAmountMismatch": { "message": "Refund amount must equal unallocated portion plus selected allocations.", "description": "Refund amount mismatch" },
-  "paymentRefundSubmit": { "message": "Complete refund", "description": "Refund submit button" },
-  "paymentRefundSuccess": { "message": "Refund completed", "description": "Refund success toast" },
-  "paymentRefundFailed": { "message": "Refund failed", "description": "Refund failure toast" },
-  "paymentRefundNumber": { "message": "Refund #", "description": "Refund number column" },
-  "paymentRefundDate": { "message": "Refund date", "description": "Refund date column" },
-  "paymentRefundReason_customer_request": { "message": "Customer request", "description": "Refund reason" },
-  "paymentRefundReason_duplicate_payment": { "message": "Duplicate payment", "description": "Refund reason" },
-  "paymentRefundReason_overpayment": { "message": "Overpayment", "description": "Refund reason" },
-  "paymentRefundReason_credit_note_settlement": { "message": "Credit note settlement", "description": "Refund reason" },
-  "paymentRefundReason_billing_error": { "message": "Billing error", "description": "Refund reason" },
-  "paymentRefundReason_service_cancellation": { "message": "Service cancellation", "description": "Refund reason" },
-  "paymentRefundReason_chargeback_resolution": { "message": "Chargeback resolution", "description": "Refund reason" },
-  "paymentRefundReason_other": { "message": "Other", "description": "Refund reason" },
-  "paymentRecordTitle": { "message": "Record payment", "description": "Record payment modal title" },
-  "paymentRecordSubmit": { "message": "Record payment", "description": "Record payment submit" },
-  "paymentRecordSuccess": { "message": "Payment recorded", "description": "Record payment success" },
-  "paymentRecordFailed": { "message": "Failed to record payment", "description": "Record payment failure" },
-  "paymentRecordAccountRequired": { "message": "Account is required", "description": "Payment account required" },
-  "paymentRecordAmountRequired": { "message": "Amount is required", "description": "Payment amount required" },
-  "paymentCurrency": { "message": "Currency", "description": "Payment currency" },
-  "paymentDate": { "message": "Payment date", "description": "Payment date" },
-  "paymentPurpose": { "message": "Purpose", "description": "Payment purpose" },
-  "paymentPurpose_invoice_payment": { "message": "Invoice payment", "description": "Payment purpose" },
-  "paymentPurpose_deposit": { "message": "Deposit", "description": "Payment purpose" },
-  "paymentPurpose_retainer": { "message": "Retainer", "description": "Payment purpose" },
-  "paymentPurpose_on_account": { "message": "On account", "description": "Payment purpose" },
-  "paymentMethod": { "message": "Method", "description": "Payment method" },
-  "paymentReferenceNumber": { "message": "Reference #", "description": "Payment reference" },
-  "paymentAutoApply": { "message": "Auto-apply to open invoices (oldest due first)", "description": "Payment auto apply" },
-  "invoicePaymentsTitle": { "message": "Payments & refunds", "description": "Invoice payments section" },
-  "invoicePaymentsHint": { "message": "Cash applied to this invoice and related refunds.", "description": "Invoice payments hint" },
-  "invoicePaymentsEmpty": { "message": "No payments applied yet.", "description": "Invoice payments empty" },
-  "invoiceAmountPaid": { "message": "Amount paid", "description": "Invoice amount paid" },
-  "invoiceTotalRefunded": { "message": "Total refunded", "description": "Invoice total refunded" },
-  "invoicePaymentRefundsTitle": { "message": "Refunds", "description": "Invoice payment refunds subsection" },
-  "customerCreditApplied": { "message": "Credit applied", "description": "Invoice credit applied total" },
-  "customerCreditApplicationsTitle": { "message": "Credit applications", "description": "Credit applications subsection" },
-  "customerCreditApplicationId": { "message": "Application", "description": "Credit application id column" },
-  "customerCreditApplyTitle": { "message": "Apply customer credit", "description": "Apply credit modal title" },
-  "customerCreditApplyAmount": { "message": "Amount to apply", "description": "Credit apply amount label" },
-  "customerCreditApplySubmit": { "message": "Apply credit", "description": "Apply credit submit button" },
-  "customerCreditApplySuccess": { "message": "Credit applied", "description": "Credit apply success toast" },
-  "customerCreditApplyFailed": { "message": "Failed to apply credit", "description": "Credit apply failure toast" },
-  "customerCreditAvailable": { "message": "Available credit", "description": "Available customer credit label" },
-  "customerCreditAutoApply": { "message": "Auto-apply across balances (oldest first)", "description": "Credit auto apply checkbox" },
-  "customerStatement": { "message": "Customer statement", "description": "Statement section title on payment record" },
-  "customerStatementTitle": { "message": "Customer statement", "description": "Statement panel title" },
-  "customerStatementHint": { "message": "Open items, payments, and credit activity for this account.", "description": "Statement panel hint" },
-  "customerStatementFrom": { "message": "From", "description": "Statement date range from" },
-  "customerStatementTo": { "message": "To", "description": "Statement date range to" },
-  "customerStatementPreview": { "message": "Preview", "description": "Statement preview button" },
-  "customerStatementExportCsv": { "message": "Export CSV", "description": "Statement CSV export button" },
-  "customerStatementExportPdf": { "message": "Export PDF", "description": "Statement PDF export button" },
-  "customerStatementBalance": { "message": "Balance", "description": "Statement running balance column" },
-  "customerStatementClosing": { "message": "Closing balance", "description": "Statement closing balance label" },
-  "customerStatementPreviewFailed": { "message": "Failed to load statement", "description": "Statement preview failure" },
-  "customerStatementExportSuccess": { "message": "Statement exported", "description": "Statement export success" },
-  "customerStatementExportFailed": { "message": "Statement export failed", "description": "Statement export failure" },
-  "paymentLink": { "message": "Payment link", "description": "Payment link section title" },
-  "paymentLinkSectionTitle": { "message": "Online payment link", "description": "Payment link panel title" },
-  "paymentLinkSectionHint": { "message": "Share a hosted checkout link for this invoice.", "description": "Payment link panel hint" },
-  "paymentLinkCreate": { "message": "Create link", "description": "Create payment link button" },
-  "paymentLinkCreateSuccess": { "message": "Payment link created", "description": "Create link success" },
-  "paymentLinkCreateFailed": { "message": "Failed to create payment link", "description": "Create link failure" },
-  "paymentLinkRevoke": { "message": "Revoke link", "description": "Revoke payment link" },
-  "paymentLinkRevokeSuccess": { "message": "Payment link revoked", "description": "Revoke success" },
-  "paymentLinkRevokeFailed": { "message": "Failed to revoke link", "description": "Revoke failure" },
-  "paymentLinkNumber": { "message": "Link #", "description": "Payment link number" },
-  "paymentLinkPublicUrl": { "message": "Public URL", "description": "Public payment URL label" },
-  "paymentLinkCopy": { "message": "Copy", "description": "Copy link button" },
-  "paymentLinkCopySuccess": { "message": "Link copied", "description": "Copy success" },
-  "paymentLinkEmpty": { "message": "No active payment link.", "description": "Empty payment link state" },
-  "status": { "message": "Status", "description": "Generic status field label" },
-  "paymentLinkLifecycleActive": { "message": "Active", "description": "Payment link status active" },
-  "paymentLinkLifecycleExpired": { "message": "Expired", "description": "Payment link status expired" },
-  "paymentLinkLifecycleConsumed": { "message": "Consumed", "description": "Payment link status consumed" },
-  "paymentLinkLifecycleRevoked": { "message": "Revoked", "description": "Payment link status revoked" },
-  "paymentLinkTitle": { "message": "Pay invoice", "description": "Public pay page title" },
-  "paymentLinkPayPrompt": { "message": "Complete your payment securely.", "description": "Public pay prompt" },
-  "paymentLinkAmount": { "message": "Amount due", "description": "Public pay amount" },
-  "paymentLinkPayNow": { "message": "Pay now", "description": "Public pay button" },
-  "paymentLinkRedirecting": { "message": "Redirecting…", "description": "Checkout redirect" },
-  "paymentLinkLoading": { "message": "Loading…", "description": "Public pay loading" },
-  "paymentLinkUnavailable": { "message": "This payment link is not available.", "description": "Public pay unavailable" },
-  "paymentLinkReturnTitle": { "message": "Payment submitted", "description": "Return page title" },
-  "paymentLinkReturnSuccess": { "message": "Your payment is being processed. You will receive confirmation once it completes.", "description": "Return success hint" },
-  "paymentLinkReturnFailed": { "message": "Payment could not be completed.", "description": "Return failure" },
-  "paymentLinkStatusPending": { "message": "Processing — confirmation arrives via email when complete.", "description": "Pending status" },
-  "paymentLinkStatusSucceeded": { "message": "Payment received.", "description": "Succeeded status" },
-  "paymentLinkStatusFailed": { "message": "Payment failed.", "description": "Failed status" },
-  "gatewayEvents": { "message": "Gateway events", "description": "Gateway events section" },
-  "gatewayEventsTitle": { "message": "Gateway webhook events", "description": "Gateway events panel title" },
-  "gatewayEventsHint": { "message": "Append-only audit log. Replay failed events after fixing the root cause.", "description": "Gateway events hint" },
-  "gatewayEventsEmpty": { "message": "No gateway events yet.", "description": "Empty gateway events" },
-  "gatewayEventType": { "message": "Event", "description": "Event type column" },
-  "gatewayEventActions": { "message": "Actions", "description": "Event actions column" },
-  "gatewayEventReplay": { "message": "Replay", "description": "Replay event button" },
-  "gatewayEventReplaySuccess": { "message": "Event replayed", "description": "Replay success" },
-  "gatewayEventReplayFailed": { "message": "Replay failed", "description": "Replay failure" },
-  "portalInvoicesTitle": { "message": "Invoices", "description": "Portal invoices title" },
-  "portalInvoicesHint": { "message": "Pay open invoices online.", "description": "Portal invoices hint" },
-  "portalInvoicesLoading": { "message": "Loading invoices…", "description": "Portal invoices loading" },
-  "portalInvoicesEmpty": { "message": "No open invoices.", "description": "Portal invoices empty" },
-  "portalInvoicesLoadFailed": { "message": "Failed to load invoices", "description": "Portal invoices load error" },
-  "portalInvoiceNumber": { "message": "Invoice #", "description": "Portal invoice number" },
-  "portalInvoiceDue": { "message": "Due date", "description": "Portal invoice due date" },
-  "portalPayNow": { "message": "Pay now", "description": "Portal pay button" },
-  "portalPayFailed": { "message": "Could not start payment", "description": "Portal pay failure" },
-  "portalPayReturnTitle": { "message": "Thank you", "description": "Portal pay return title" },
-  "portalPayReturnHint": { "message": "Your payment is being processed. Invoice balance updates when our system receives confirmation from the payment provider.", "description": "Portal pay return hint" },
-  "bankTransferSectionTitle": { "message": "Bank transfer instructions", "description": "Invoice bank transfer panel title" },
-  "bankTransferSectionHint": { "message": "Pending manual transfers — record payment with the reference code.", "description": "Bank transfer panel hint" },
-  "bankTransferLoading": { "message": "Loading…", "description": "Bank transfer loading" },
-  "bankTransferEmpty": { "message": "No bank transfer instructions.", "description": "Empty bank transfer state" },
-  "bankTransferReference": { "message": "Reference", "description": "Bank transfer reference code" },
-  "bankTransferRecordHint": { "message": "Record payment via Payments with method Bank transfer and this reference.", "description": "Agent bank transfer hint" },
-  "bankTransferTitle": { "message": "Bank transfer", "description": "Public bank transfer title" },
-  "bankTransferPayPrompt": { "message": "Transfer the exact amount and include the reference code.", "description": "Public bank transfer prompt" },
-  "bankTransferPayButton": { "message": "Pay by bank transfer", "description": "Public bank transfer button" },
-  "bankTransferBeneficiary": { "message": "Beneficiary", "description": "Bank transfer beneficiary" },
-  "bankTransferBank": { "message": "Bank", "description": "Bank name label" },
-  "bankTransferAccount": { "message": "Account", "description": "Masked account label" },
-  "bankTransferRouting": { "message": "Routing / IFSC", "description": "Routing or IFSC label" },
-  "bankTransferCustomerHint": { "message": "After you transfer, our team will match your payment. Your invoice balance updates once the payment is recorded.", "description": "Customer bank transfer hint" },
-  "bankTransferBackToMethods": { "message": "Choose another payment method", "description": "Back to pay methods" },
-  "razorpayCheckoutOpening": { "message": "Opening secure checkout…", "description": "Razorpay checkout loading" },
-  "razorpayCheckoutMissingParams": { "message": "Checkout session is invalid.", "description": "Razorpay missing params" },
-  "razorpayCheckoutFailed": { "message": "Could not open checkout.", "description": "Razorpay checkout failure" },
-  "portalInvoicesBack": { "message": "Back to invoices", "description": "Portal back link" },
-  "portalOrganizationTitle": { "message": "Company", "description": "Portal organization page title" },
-  "portalOrganizationHint": { "message": "Your linked business organization.", "description": "Portal organization page hint" },
-  "portalOrganizationAddress": { "message": "Address", "description": "Portal organization address label" },
-  "portalOrganizationWebsite": { "message": "Website", "description": "Portal organization website label" },
-  "portalOrganizationLoadFailed": { "message": "Failed to load company profile", "description": "Portal organization load error" },
-  "portalOrganizationIndustry": { "message": "Industry", "description": "Portal organization industry label" },
-  "portalPeopleTitle": { "message": "Contact", "description": "Portal people page title" },
-  "portalPeopleHint": { "message": "Your contact profile linked to this portal account.", "description": "Portal people page hint" },
-  "portalPeopleMobile": { "message": "Mobile", "description": "Portal people mobile label" },
-  "portalPeopleLoadFailed": { "message": "Failed to load contact profile", "description": "Portal people load error" },
-  "portalDealsTitle": { "message": "Deals", "description": "Portal deals list title" },
-  "portalDealsHint": { "message": "Opportunities linked to your account.", "description": "Portal deals list hint" },
-  "portalDealsEmpty": { "message": "No deals are shared with your account yet.", "description": "Portal deals empty state" },
-  "portalDealsLoadFailed": { "message": "Failed to load deals", "description": "Portal deals load error" },
-  "portalDealsCloseDate": { "message": "Expected close: {date}", "description": "Portal deal list close date" },
-  "portalDealsDetailHint": { "message": "Deal summary", "description": "Portal deal detail hint" },
-  "portalDealsBack": { "message": "Back to deals", "description": "Portal deal detail back link" },
-  "portalDealsAmount": { "message": "Amount", "description": "Portal deal amount label" },
-  "portalDealsStage": { "message": "Stage", "description": "Portal deal stage label" },
-  "portalDealsProbability": { "message": "Probability", "description": "Portal deal probability label" },
-  "portalDealsCloseDateLabel": { "message": "Expected close", "description": "Portal deal close date label" },
-  "portalDealsPipeline": { "message": "Pipeline", "description": "Portal deal pipeline label" },
-  "portalFormsTitle": { "message": "Forms", "description": "Portal forms list title" },
-  "portalFormsHint": { "message": "Complete forms shared with your portal account.", "description": "Portal forms list hint" },
-  "portalFormsEmpty": { "message": "No forms are available right now.", "description": "Portal forms empty state" },
-  "portalFormsLoadFailed": { "message": "Failed to load forms", "description": "Portal forms load error" },
-  "portalResponsesTitle": { "message": "Responses", "description": "Portal responses list title" },
-  "portalResponsesHint": { "message": "Form submissions linked to your portal account.", "description": "Portal responses list hint" },
-  "portalResponsesEmpty": { "message": "No form responses yet.", "description": "Portal responses empty state" },
-  "portalResponsesLoadFailed": { "message": "Failed to load responses", "description": "Portal responses load error" },
-  "portalResponsesSubmittedAt": { "message": "Submitted {date}", "description": "Portal response list submitted date" },
-  "portalResponsesSubmittedAtLabel": { "message": "Submitted", "description": "Portal response detail submitted label" },
-  "portalResponsesReviewStatus": { "message": "Review status", "description": "Portal response review status label" },
-  "portalResponsesFinalScore": { "message": "Final score", "description": "Portal response final score label" },
-  "portalResponsesCompliance": { "message": "Compliance", "description": "Portal response compliance label" },
-  "portalResponsesQuestions": { "message": "Questions", "description": "Portal response questions label" },
-  "portalResponsesPassFail": { "message": "{passed} passed · {failed} failed · {total} total", "description": "Portal response pass fail summary" },
-  "portalResponsesBack": { "message": "Back to responses", "description": "Portal response detail back link" },
-  "portalResponsesContinueForm": { "message": "Continue form", "description": "Portal response continue form CTA" }
+  "paymentAllocationsTitle": {
+    "message": "Payment allocations",
+    "description": "Payment allocations section title"
+  },
+  "paymentAllocationsHint": {
+    "message": "Cash applied to invoices — billing allocations are unchanged.",
+    "description": "Payment allocations hint"
+  },
+  "paymentAllocationsEmpty": {
+    "message": "No allocations yet.",
+    "description": "Empty payment allocations"
+  },
+  "paymentAllocationInvoice": {
+    "message": "Invoice",
+    "description": "Allocation invoice column"
+  },
+  "paymentAllocationAmount": {
+    "message": "Amount",
+    "description": "Allocation amount column"
+  },
+  "paymentAllocationAppliedAt": {
+    "message": "Applied",
+    "description": "Allocation date column"
+  },
+  "paymentAmount": {
+    "message": "Amount",
+    "description": "Payment amount label"
+  },
+  "paymentAmountAllocated": {
+    "message": "Allocated",
+    "description": "Payment allocated label"
+  },
+  "paymentAmountUnallocated": {
+    "message": "Unallocated",
+    "description": "Payment unallocated label"
+  },
+  "paymentAmountRefunded": {
+    "message": "Refunded",
+    "description": "Payment refunded label"
+  },
+  "paymentNumber": {
+    "message": "Payment #",
+    "description": "Payment number label"
+  },
+  "paymentIssueRefund": {
+    "message": "Issue refund",
+    "description": "Issue refund button"
+  },
+  "paymentRefundsTitle": {
+    "message": "Refunds",
+    "description": "Payment refunds section title"
+  },
+  "paymentRefundsHint": {
+    "message": "Outbound cash linked to this payment.",
+    "description": "Payment refunds hint"
+  },
+  "paymentRefundsEmpty": {
+    "message": "No refunds recorded.",
+    "description": "Empty refunds list"
+  },
+  "paymentRefundWizardTitle": {
+    "message": "Issue refund",
+    "description": "Refund wizard title"
+  },
+  "paymentMaxRefundable": {
+    "message": "Max refundable",
+    "description": "Max refundable label"
+  },
+  "paymentRefundAmount": {
+    "message": "Refund amount",
+    "description": "Refund amount label"
+  },
+  "paymentRefundReason": {
+    "message": "Reason",
+    "description": "Refund reason label"
+  },
+  "paymentRefundReasonSelect": {
+    "message": "Select reason",
+    "description": "Refund reason placeholder"
+  },
+  "paymentRefundReasonNote": {
+    "message": "Notes",
+    "description": "Refund reason note label"
+  },
+  "paymentRefundUnallocatedPortion": {
+    "message": "Unallocated portion",
+    "description": "Refund unallocated portion"
+  },
+  "paymentRefundAmountMismatch": {
+    "message": "Refund amount must equal unallocated portion plus selected allocations.",
+    "description": "Refund amount mismatch"
+  },
+  "paymentRefundSubmit": {
+    "message": "Complete refund",
+    "description": "Refund submit button"
+  },
+  "paymentRefundSuccess": {
+    "message": "Refund completed",
+    "description": "Refund success toast"
+  },
+  "paymentRefundFailed": {
+    "message": "Refund failed",
+    "description": "Refund failure toast"
+  },
+  "paymentRefundNumber": {
+    "message": "Refund #",
+    "description": "Refund number column"
+  },
+  "paymentRefundDate": {
+    "message": "Refund date",
+    "description": "Refund date column"
+  },
+  "paymentRefundReason_customer_request": {
+    "message": "Customer request",
+    "description": "Refund reason"
+  },
+  "paymentRefundReason_duplicate_payment": {
+    "message": "Duplicate payment",
+    "description": "Refund reason"
+  },
+  "paymentRefundReason_overpayment": {
+    "message": "Overpayment",
+    "description": "Refund reason"
+  },
+  "paymentRefundReason_credit_note_settlement": {
+    "message": "Credit note settlement",
+    "description": "Refund reason"
+  },
+  "paymentRefundReason_billing_error": {
+    "message": "Billing error",
+    "description": "Refund reason"
+  },
+  "paymentRefundReason_service_cancellation": {
+    "message": "Service cancellation",
+    "description": "Refund reason"
+  },
+  "paymentRefundReason_chargeback_resolution": {
+    "message": "Chargeback resolution",
+    "description": "Refund reason"
+  },
+  "paymentRefundReason_other": {
+    "message": "Other",
+    "description": "Refund reason"
+  },
+  "paymentRecordTitle": {
+    "message": "Record payment",
+    "description": "Record payment modal title"
+  },
+  "paymentRecordSubmit": {
+    "message": "Record payment",
+    "description": "Record payment submit"
+  },
+  "paymentRecordSuccess": {
+    "message": "Payment recorded",
+    "description": "Record payment success"
+  },
+  "paymentRecordFailed": {
+    "message": "Failed to record payment",
+    "description": "Record payment failure"
+  },
+  "paymentRecordAccountRequired": {
+    "message": "Account is required",
+    "description": "Payment account required"
+  },
+  "paymentRecordAmountRequired": {
+    "message": "Amount is required",
+    "description": "Payment amount required"
+  },
+  "paymentCurrency": {
+    "message": "Currency",
+    "description": "Payment currency"
+  },
+  "paymentDate": {
+    "message": "Payment date",
+    "description": "Payment date"
+  },
+  "paymentPurpose": {
+    "message": "Purpose",
+    "description": "Payment purpose"
+  },
+  "paymentPurpose_invoice_payment": {
+    "message": "Invoice payment",
+    "description": "Payment purpose"
+  },
+  "paymentPurpose_deposit": {
+    "message": "Deposit",
+    "description": "Payment purpose"
+  },
+  "paymentPurpose_retainer": {
+    "message": "Retainer",
+    "description": "Payment purpose"
+  },
+  "paymentPurpose_on_account": {
+    "message": "On account",
+    "description": "Payment purpose"
+  },
+  "paymentMethod": {
+    "message": "Method",
+    "description": "Payment method"
+  },
+  "paymentReferenceNumber": {
+    "message": "Reference #",
+    "description": "Payment reference"
+  },
+  "paymentAutoApply": {
+    "message": "Auto-apply to open invoices (oldest due first)",
+    "description": "Payment auto apply"
+  },
+  "invoicePaymentsTitle": {
+    "message": "Payments & refunds",
+    "description": "Invoice payments section"
+  },
+  "invoicePaymentsHint": {
+    "message": "Cash applied to this invoice and related refunds.",
+    "description": "Invoice payments hint"
+  },
+  "invoicePaymentsEmpty": {
+    "message": "No payments applied yet.",
+    "description": "Invoice payments empty"
+  },
+  "invoiceAmountPaid": {
+    "message": "Amount paid",
+    "description": "Invoice amount paid"
+  },
+  "invoiceTotalRefunded": {
+    "message": "Total refunded",
+    "description": "Invoice total refunded"
+  },
+  "invoicePaymentRefundsTitle": {
+    "message": "Refunds",
+    "description": "Invoice payment refunds subsection"
+  },
+  "customerCreditApplied": {
+    "message": "Credit applied",
+    "description": "Invoice credit applied total"
+  },
+  "customerCreditApplicationsTitle": {
+    "message": "Credit applications",
+    "description": "Credit applications subsection"
+  },
+  "customerCreditApplicationId": {
+    "message": "Application",
+    "description": "Credit application id column"
+  },
+  "customerCreditApplyTitle": {
+    "message": "Apply customer credit",
+    "description": "Apply credit modal title"
+  },
+  "customerCreditApplyAmount": {
+    "message": "Amount to apply",
+    "description": "Credit apply amount label"
+  },
+  "customerCreditApplySubmit": {
+    "message": "Apply credit",
+    "description": "Apply credit submit button"
+  },
+  "customerCreditApplySuccess": {
+    "message": "Credit applied",
+    "description": "Credit apply success toast"
+  },
+  "customerCreditApplyFailed": {
+    "message": "Failed to apply credit",
+    "description": "Credit apply failure toast"
+  },
+  "customerCreditAvailable": {
+    "message": "Available credit",
+    "description": "Available customer credit label"
+  },
+  "customerCreditAutoApply": {
+    "message": "Auto-apply across balances (oldest first)",
+    "description": "Credit auto apply checkbox"
+  },
+  "customerStatement": {
+    "message": "Customer statement",
+    "description": "Statement section title on payment record"
+  },
+  "customerStatementTitle": {
+    "message": "Customer statement",
+    "description": "Statement panel title"
+  },
+  "customerStatementHint": {
+    "message": "Open items, payments, and credit activity for this account.",
+    "description": "Statement panel hint"
+  },
+  "customerStatementFrom": {
+    "message": "From",
+    "description": "Statement date range from"
+  },
+  "customerStatementTo": {
+    "message": "To",
+    "description": "Statement date range to"
+  },
+  "customerStatementPreview": {
+    "message": "Preview",
+    "description": "Statement preview button"
+  },
+  "customerStatementExportCsv": {
+    "message": "Export CSV",
+    "description": "Statement CSV export button"
+  },
+  "customerStatementExportPdf": {
+    "message": "Export PDF",
+    "description": "Statement PDF export button"
+  },
+  "customerStatementBalance": {
+    "message": "Balance",
+    "description": "Statement running balance column"
+  },
+  "customerStatementClosing": {
+    "message": "Closing balance",
+    "description": "Statement closing balance label"
+  },
+  "customerStatementPreviewFailed": {
+    "message": "Failed to load statement",
+    "description": "Statement preview failure"
+  },
+  "customerStatementExportSuccess": {
+    "message": "Statement exported",
+    "description": "Statement export success"
+  },
+  "customerStatementExportFailed": {
+    "message": "Statement export failed",
+    "description": "Statement export failure"
+  },
+  "paymentLink": {
+    "message": "Payment link",
+    "description": "Payment link section title"
+  },
+  "paymentLinkSectionTitle": {
+    "message": "Online payment link",
+    "description": "Payment link panel title"
+  },
+  "paymentLinkSectionHint": {
+    "message": "Share a hosted checkout link for this invoice.",
+    "description": "Payment link panel hint"
+  },
+  "paymentLinkCreate": {
+    "message": "Create link",
+    "description": "Create payment link button"
+  },
+  "paymentLinkCreateSuccess": {
+    "message": "Payment link created",
+    "description": "Create link success"
+  },
+  "paymentLinkCreateFailed": {
+    "message": "Failed to create payment link",
+    "description": "Create link failure"
+  },
+  "paymentLinkRevoke": {
+    "message": "Revoke link",
+    "description": "Revoke payment link"
+  },
+  "paymentLinkRevokeSuccess": {
+    "message": "Payment link revoked",
+    "description": "Revoke success"
+  },
+  "paymentLinkRevokeFailed": {
+    "message": "Failed to revoke link",
+    "description": "Revoke failure"
+  },
+  "paymentLinkNumber": {
+    "message": "Link #",
+    "description": "Payment link number"
+  },
+  "paymentLinkPublicUrl": {
+    "message": "Public URL",
+    "description": "Public payment URL label"
+  },
+  "paymentLinkCopy": {
+    "message": "Copy",
+    "description": "Copy link button"
+  },
+  "paymentLinkCopySuccess": {
+    "message": "Link copied",
+    "description": "Copy success"
+  },
+  "paymentLinkEmpty": {
+    "message": "No active payment link.",
+    "description": "Empty payment link state"
+  },
+  "status": {
+    "message": "Status",
+    "description": "Generic status field label"
+  },
+  "paymentLinkLifecycleActive": {
+    "message": "Active",
+    "description": "Payment link status active"
+  },
+  "paymentLinkLifecycleExpired": {
+    "message": "Expired",
+    "description": "Payment link status expired"
+  },
+  "paymentLinkLifecycleConsumed": {
+    "message": "Consumed",
+    "description": "Payment link status consumed"
+  },
+  "paymentLinkLifecycleRevoked": {
+    "message": "Revoked",
+    "description": "Payment link status revoked"
+  },
+  "paymentLinkTitle": {
+    "message": "Pay invoice",
+    "description": "Public pay page title"
+  },
+  "paymentLinkPayPrompt": {
+    "message": "Complete your payment securely.",
+    "description": "Public pay prompt"
+  },
+  "paymentLinkAmount": {
+    "message": "Amount due",
+    "description": "Public pay amount"
+  },
+  "paymentLinkPayNow": {
+    "message": "Pay now",
+    "description": "Public pay button"
+  },
+  "paymentLinkRedirecting": {
+    "message": "Redirecting…",
+    "description": "Checkout redirect"
+  },
+  "paymentLinkLoading": {
+    "message": "Loading…",
+    "description": "Public pay loading"
+  },
+  "paymentLinkUnavailable": {
+    "message": "This payment link is not available.",
+    "description": "Public pay unavailable"
+  },
+  "paymentLinkReturnTitle": {
+    "message": "Payment submitted",
+    "description": "Return page title"
+  },
+  "paymentLinkReturnSuccess": {
+    "message": "Your payment is being processed. You will receive confirmation once it completes.",
+    "description": "Return success hint"
+  },
+  "paymentLinkReturnFailed": {
+    "message": "Payment could not be completed.",
+    "description": "Return failure"
+  },
+  "paymentLinkStatusPending": {
+    "message": "Processing — confirmation arrives via email when complete.",
+    "description": "Pending status"
+  },
+  "paymentLinkStatusSucceeded": {
+    "message": "Payment received.",
+    "description": "Succeeded status"
+  },
+  "paymentLinkStatusFailed": {
+    "message": "Payment failed.",
+    "description": "Failed status"
+  },
+  "gatewayEvents": {
+    "message": "Gateway events",
+    "description": "Gateway events section"
+  },
+  "gatewayEventsTitle": {
+    "message": "Gateway webhook events",
+    "description": "Gateway events panel title"
+  },
+  "gatewayEventsHint": {
+    "message": "Append-only audit log. Replay failed events after fixing the root cause.",
+    "description": "Gateway events hint"
+  },
+  "gatewayEventsEmpty": {
+    "message": "No gateway events yet.",
+    "description": "Empty gateway events"
+  },
+  "gatewayEventType": {
+    "message": "Event",
+    "description": "Event type column"
+  },
+  "gatewayEventActions": {
+    "message": "Actions",
+    "description": "Event actions column"
+  },
+  "gatewayEventReplay": {
+    "message": "Replay",
+    "description": "Replay event button"
+  },
+  "gatewayEventReplaySuccess": {
+    "message": "Event replayed",
+    "description": "Replay success"
+  },
+  "gatewayEventReplayFailed": {
+    "message": "Replay failed",
+    "description": "Replay failure"
+  },
+  "portalInvoicesTitle": {
+    "message": "Invoices",
+    "description": "Portal invoices title"
+  },
+  "portalInvoicesHint": {
+    "message": "Pay open invoices online.",
+    "description": "Portal invoices hint"
+  },
+  "portalInvoicesLoading": {
+    "message": "Loading invoices…",
+    "description": "Portal invoices loading"
+  },
+  "portalInvoicesEmpty": {
+    "message": "No open invoices.",
+    "description": "Portal invoices empty"
+  },
+  "portalInvoicesLoadFailed": {
+    "message": "Failed to load invoices",
+    "description": "Portal invoices load error"
+  },
+  "portalInvoiceNumber": {
+    "message": "Invoice #",
+    "description": "Portal invoice number"
+  },
+  "portalInvoiceDue": {
+    "message": "Due date",
+    "description": "Portal invoice due date"
+  },
+  "portalPayNow": {
+    "message": "Pay now",
+    "description": "Portal pay button"
+  },
+  "portalPayFailed": {
+    "message": "Could not start payment",
+    "description": "Portal pay failure"
+  },
+  "portalPayReturnTitle": {
+    "message": "Thank you",
+    "description": "Portal pay return title"
+  },
+  "portalPayReturnHint": {
+    "message": "Your payment is being processed. Invoice balance updates when our system receives confirmation from the payment provider.",
+    "description": "Portal pay return hint"
+  },
+  "bankTransferSectionTitle": {
+    "message": "Bank transfer instructions",
+    "description": "Invoice bank transfer panel title"
+  },
+  "bankTransferSectionHint": {
+    "message": "Pending manual transfers — record payment with the reference code.",
+    "description": "Bank transfer panel hint"
+  },
+  "bankTransferLoading": {
+    "message": "Loading…",
+    "description": "Bank transfer loading"
+  },
+  "bankTransferEmpty": {
+    "message": "No bank transfer instructions.",
+    "description": "Empty bank transfer state"
+  },
+  "bankTransferReference": {
+    "message": "Reference",
+    "description": "Bank transfer reference code"
+  },
+  "bankTransferRecordHint": {
+    "message": "Record payment via Payments with method Bank transfer and this reference.",
+    "description": "Agent bank transfer hint"
+  },
+  "bankTransferTitle": {
+    "message": "Bank transfer",
+    "description": "Public bank transfer title"
+  },
+  "bankTransferPayPrompt": {
+    "message": "Transfer the exact amount and include the reference code.",
+    "description": "Public bank transfer prompt"
+  },
+  "bankTransferPayButton": {
+    "message": "Pay by bank transfer",
+    "description": "Public bank transfer button"
+  },
+  "bankTransferBeneficiary": {
+    "message": "Beneficiary",
+    "description": "Bank transfer beneficiary"
+  },
+  "bankTransferBank": {
+    "message": "Bank",
+    "description": "Bank name label"
+  },
+  "bankTransferAccount": {
+    "message": "Account",
+    "description": "Masked account label"
+  },
+  "bankTransferRouting": {
+    "message": "Routing / IFSC",
+    "description": "Routing or IFSC label"
+  },
+  "bankTransferCustomerHint": {
+    "message": "After you transfer, our team will match your payment. Your invoice balance updates once the payment is recorded.",
+    "description": "Customer bank transfer hint"
+  },
+  "bankTransferBackToMethods": {
+    "message": "Choose another payment method",
+    "description": "Back to pay methods"
+  },
+  "razorpayCheckoutOpening": {
+    "message": "Opening secure checkout…",
+    "description": "Razorpay checkout loading"
+  },
+  "razorpayCheckoutMissingParams": {
+    "message": "Checkout session is invalid.",
+    "description": "Razorpay missing params"
+  },
+  "razorpayCheckoutFailed": {
+    "message": "Could not open checkout.",
+    "description": "Razorpay checkout failure"
+  },
+  "portalInvoicesBack": {
+    "message": "Back to invoices",
+    "description": "Portal back link"
+  },
+  "portalOrganizationTitle": {
+    "message": "Company",
+    "description": "Portal organization page title"
+  },
+  "portalOrganizationHint": {
+    "message": "Your linked business organization.",
+    "description": "Portal organization page hint"
+  },
+  "portalOrganizationAddress": {
+    "message": "Address",
+    "description": "Portal organization address label"
+  },
+  "portalOrganizationWebsite": {
+    "message": "Website",
+    "description": "Portal organization website label"
+  },
+  "portalOrganizationLoadFailed": {
+    "message": "Failed to load company profile",
+    "description": "Portal organization load error"
+  },
+  "portalOrganizationIndustry": {
+    "message": "Industry",
+    "description": "Portal organization industry label"
+  },
+  "portalPeopleTitle": {
+    "message": "Contact",
+    "description": "Portal people page title"
+  },
+  "portalPeopleHint": {
+    "message": "Your contact profile linked to this portal account.",
+    "description": "Portal people page hint"
+  },
+  "portalPeopleMobile": {
+    "message": "Mobile",
+    "description": "Portal people mobile label"
+  },
+  "portalPeopleLoadFailed": {
+    "message": "Failed to load contact profile",
+    "description": "Portal people load error"
+  },
+  "portalDealsTitle": {
+    "message": "Deals",
+    "description": "Portal deals list title"
+  },
+  "portalDealsHint": {
+    "message": "Opportunities linked to your account.",
+    "description": "Portal deals list hint"
+  },
+  "portalDealsEmpty": {
+    "message": "No deals are shared with your account yet.",
+    "description": "Portal deals empty state"
+  },
+  "portalDealsLoadFailed": {
+    "message": "Failed to load deals",
+    "description": "Portal deals load error"
+  },
+  "portalDealsCloseDate": {
+    "message": "Expected close: {date}",
+    "description": "Portal deal list close date"
+  },
+  "portalDealsDetailHint": {
+    "message": "Deal summary",
+    "description": "Portal deal detail hint"
+  },
+  "portalDealsBack": {
+    "message": "Back to deals",
+    "description": "Portal deal detail back link"
+  },
+  "portalDealsAmount": {
+    "message": "Amount",
+    "description": "Portal deal amount label"
+  },
+  "portalDealsStage": {
+    "message": "Stage",
+    "description": "Portal deal stage label"
+  },
+  "portalDealsProbability": {
+    "message": "Probability",
+    "description": "Portal deal probability label"
+  },
+  "portalDealsCloseDateLabel": {
+    "message": "Expected close",
+    "description": "Portal deal close date label"
+  },
+  "portalDealsPipeline": {
+    "message": "Pipeline",
+    "description": "Portal deal pipeline label"
+  },
+  "portalFormsTitle": {
+    "message": "Forms",
+    "description": "Portal forms list title"
+  },
+  "portalFormsHint": {
+    "message": "Complete forms shared with your portal account.",
+    "description": "Portal forms list hint"
+  },
+  "portalFormsEmpty": {
+    "message": "No forms are available right now.",
+    "description": "Portal forms empty state"
+  },
+  "portalFormsLoadFailed": {
+    "message": "Failed to load forms",
+    "description": "Portal forms load error"
+  },
+  "portalResponsesTitle": {
+    "message": "Responses",
+    "description": "Portal responses list title"
+  },
+  "portalResponsesHint": {
+    "message": "Form submissions linked to your portal account.",
+    "description": "Portal responses list hint"
+  },
+  "portalResponsesEmpty": {
+    "message": "No form responses yet.",
+    "description": "Portal responses empty state"
+  },
+  "portalResponsesLoadFailed": {
+    "message": "Failed to load responses",
+    "description": "Portal responses load error"
+  },
+  "portalResponsesSubmittedAt": {
+    "message": "Submitted {date}",
+    "description": "Portal response list submitted date"
+  },
+  "portalResponsesSubmittedAtLabel": {
+    "message": "Submitted",
+    "description": "Portal response detail submitted label"
+  },
+  "portalResponsesReviewStatus": {
+    "message": "Review status",
+    "description": "Portal response review status label"
+  },
+  "portalResponsesFinalScore": {
+    "message": "Final score",
+    "description": "Portal response final score label"
+  },
+  "portalResponsesCompliance": {
+    "message": "Compliance",
+    "description": "Portal response compliance label"
+  },
+  "portalResponsesQuestions": {
+    "message": "Questions",
+    "description": "Portal response questions label"
+  },
+  "portalResponsesPassFail": {
+    "message": "{passed} passed · {failed} failed · {total} total",
+    "description": "Portal response pass fail summary"
+  },
+  "portalResponsesBack": {
+    "message": "Back to responses",
+    "description": "Portal response detail back link"
+  },
+  "portalResponsesContinueForm": {
+    "message": "Continue form",
+    "description": "Portal response continue form CTA"
+  }
 }

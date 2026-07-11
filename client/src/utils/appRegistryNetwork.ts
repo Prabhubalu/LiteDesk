@@ -49,6 +49,12 @@ function mapRawModulesToRegistryModules(app: { appKey: string }, modulesData: an
     if (isHelpdeskCaseSurface && (normalizedRoute === '/cases' || normalizedRoute === 'cases')) {
       route = '/helpdesk/cases';
     }
+    if (normalizedAppKey === 'HELPDESK' && normalizedModuleKey === 'articles') {
+      route = '/helpdesk/articles';
+    }
+    if (normalizedAppKey === 'MARKETING' && normalizedModuleKey === 'blog') {
+      route = '/marketing/blog';
+    }
     const normalizedLabel = isHelpdeskCaseSurface ? 'Cases' : module.label;
 
     if (normalizedAppKey === 'AUDIT' && normalizedModuleKey === 'audits') {

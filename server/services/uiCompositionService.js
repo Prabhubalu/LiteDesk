@@ -25,6 +25,13 @@ const TenantModuleConfiguration = require('../models/TenantModuleConfiguration')
 const Organization = require('../models/Organization');
 const { resolveAppAccess } = require('./accessResolutionService');
 const { validateUserTypeForApp } = require('../utils/appAccessUtils');
+const { isAddonEntitledForOrg } = require('../utils/addonAccessUtils');
+const { ADDON_KEYS } = require('../constants/addonKeys');
+
+const ADDON_GATED_MODULE_KEYS = {
+  articles: ADDON_KEYS.ARTICLES,
+  blog: ADDON_KEYS.BLOG,
+};
 
 class UICompositionService {
   filterAppsByUserType(apps, user) {
@@ -304,6 +311,14 @@ class UICompositionService {
         }
 
         const tenantConfig = tenantConfigMap[moduleDef.moduleKey];
+
+        const addonGateKey = ADDON_GATED_MODULE_KEYS[moduleDef.moduleKey];
+        if (addonGateKey) {
+          const entitled = await isAddonEntitledForOrg(organizationId, addonGateKey);
+          if (!entitled) {
+            continue;
+          }
+        }
 
         // Skip if tenant has explicitly disabled this module
         if (tenantConfig && !tenantConfig.enabled) {

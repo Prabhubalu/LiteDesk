@@ -14355,6 +14355,958 @@
     "message": "Platform is under heavy load. Effective send rate temporarily reduced.",
     "description": "Banner when AMDS infrastructure multiplier is below 1"
   },
+  "addonsArticlesSettingsTitle": {
+    "message": "Articles settings",
+    "description": "Articles addon settings page title"
+  },
+  "addonsArticlesSettingsDesc": {
+    "message": "Configure portal publishing, case deflection, and help center defaults.",
+    "description": "Articles addon settings page description"
+  },
+  "addonsArticlesPublishingTitle": {
+    "message": "Publishing",
+    "description": "Articles publishing settings section title"
+  },
+  "addonsArticlesPublishingDesc": {
+    "message": "Control where published articles are delivered.",
+    "description": "Articles publishing settings section description"
+  },
+  "addonsArticlesPortalPublishing": {
+    "message": "Publish to customer portal",
+    "description": "Toggle portal knowledge base publishing"
+  },
+  "addonsArticlesPublicWebsitePublishing": {
+    "message": "Publish to public website",
+    "description": "Toggle public website publishing for articles"
+  },
+  "addonsArticlesDeflectionTitle": {
+    "message": "Case deflection",
+    "description": "Articles case deflection settings section title"
+  },
+  "addonsArticlesDeflectionDesc": {
+    "message": "Suggest relevant articles while agents work cases.",
+    "description": "Articles case deflection settings section description"
+  },
+  "addonsArticlesCaseDeflection": {
+    "message": "Enable case knowledge suggestions",
+    "description": "Toggle case deflection suggestions"
+  },
+  "addonsArticlesDefaultsTitle": {
+    "message": "Defaults",
+    "description": "Articles default settings section title"
+  },
+  "addonsArticlesDefaultsDesc": {
+    "message": "Set default collection and content freshness alerts.",
+    "description": "Articles default settings section description"
+  },
+  "addonsArticlesDefaultCollection": {
+    "message": "Default collection",
+    "description": "Default collection for new articles"
+  },
+  "addonsArticlesStaleContentDays": {
+    "message": "Stale content alert (days)",
+    "description": "Days before stale content alert"
+  },
+  "addonsArticlesSettingsLoadFailed": {
+    "message": "Failed to load Articles settings.",
+    "description": "Articles settings load error"
+  },
+  "addonsArticlesSettingsSaved": {
+    "message": "Articles settings saved.",
+    "description": "Articles settings save success"
+  },
+  "addonsArticlesSettingsSaveFailed": {
+    "message": "Failed to save Articles settings.",
+    "description": "Articles settings save failure"
+  },
+  "tabContentPublishing": {
+    "message": "Content Publishing",
+    "description": "Content publishing settings tab"
+  },
+  "tabContentPublishingDesc": {
+    "message": "Configure brand profile, delivery channels, and website integration for Articles and Blog",
+    "description": "Content publishing settings tab description"
+  },
+  "contentPublishingUnavailable": {
+    "message": "Install the Articles or Blog addon to configure content publishing.",
+    "description": "Content publishing unavailable without addon"
+  },
+  "contentPublishingBrandTitle": {
+    "message": "Brand profile",
+    "description": "Content publishing brand section title"
+  },
+  "contentPublishingBrandDesc": {
+    "message": "Match published articles and blog posts to your brand.",
+    "description": "Content publishing brand section description"
+  },
+  "contentPublishingLogoUrl": {
+    "message": "Logo URL",
+    "description": "Brand logo URL field"
+  },
+  "contentPublishingPrimaryColor": {
+    "message": "Primary color",
+    "description": "Brand primary color field"
+  },
+  "contentPublishingSecondaryColor": {
+    "message": "Secondary color",
+    "description": "Brand secondary color field"
+  },
+  "contentPublishingBodyFont": {
+    "message": "Body font",
+    "description": "Brand body font field"
+  },
+  "contentPublishingHeadingFont": {
+    "message": "Heading font",
+    "description": "Brand heading font field"
+  },
+  "contentPublishingContentWidth": {
+    "message": "Content width",
+    "description": "Brand content width field"
+  },
+  "contentPublishingWidthNarrow": {
+    "message": "Narrow",
+    "description": "Narrow content width option"
+  },
+  "contentPublishingWidthStandard": {
+    "message": "Standard",
+    "description": "Standard content width option"
+  },
+  "contentPublishingWidthWide": {
+    "message": "Wide",
+    "description": "Wide content width option"
+  },
+  "contentPublishingBorderRadius": {
+    "message": "Border radius",
+    "description": "Brand border radius field"
+  },
+  "contentPublishingRadiusNone": {
+    "message": "None",
+    "description": "No border radius option"
+  },
+  "contentPublishingRadiusSm": {
+    "message": "Small",
+    "description": "Small border radius option"
+  },
+  "contentPublishingRadiusMd": {
+    "message": "Medium",
+    "description": "Medium border radius option"
+  },
+  "contentPublishingRadiusLg": {
+    "message": "Large",
+    "description": "Large border radius option"
+  },
+  "contentPublishingDeliveryTitle": {
+    "message": "Delivery",
+    "description": "Content publishing delivery section title"
+  },
+  "contentPublishingDeliveryDesc": {
+    "message": "Choose how published content reaches your website and APIs.",
+    "description": "Content publishing delivery section description"
+  },
+  "contentPublishingTarget": {
+    "message": "Publishing target",
+    "description": "Publishing target field"
+  },
+  "contentPublishingTargetHosted": {
+    "message": "Arivu hosted pages",
+    "description": "Hosted publishing target option"
+  },
+  "contentPublishingTargetCustomDomain": {
+    "message": "Custom domain",
+    "description": "Custom domain publishing target option"
+  },
+  "contentPublishingTargetHeadless": {
+    "message": "Headless API only",
+    "description": "Headless publishing target option"
+  },
+  "contentPublishingHostedSubdomain": {
+    "message": "Hosted subdomain",
+    "description": "Hosted subdomain field"
+  },
+  "contentPublishingCustomDomain": {
+    "message": "Custom domain",
+    "description": "Custom domain field"
+  },
+  "contentPublishingUrlPrefixHelp": {
+    "message": "Help articles URL prefix",
+    "description": "Help URL prefix field"
+  },
+  "contentPublishingUrlPrefixBlog": {
+    "message": "Blog URL prefix",
+    "description": "Blog URL prefix field"
+  },
+  "contentPublishingHeadlessApiEnabled": {
+    "message": "Enable headless content API",
+    "description": "Headless API toggle"
+  },
+  "contentPublishingIntegrationTitle": {
+    "message": "Integration",
+    "description": "Content publishing integration section title"
+  },
+  "contentPublishingIntegrationDesc": {
+    "message": "Use these endpoints and snippets to embed published content.",
+    "description": "Content publishing integration section description"
+  },
+  "contentPublishingPublicHelpBase": {
+    "message": "Public help center base URL",
+    "description": "Public help base URL label"
+  },
+  "contentPublishingHeadlessApiBase": {
+    "message": "Headless API base URL",
+    "description": "Headless API base URL label"
+  },
+  "contentPublishingEmbedSnippet": {
+    "message": "Embed snippet",
+    "description": "Embed snippet label"
+  },
+  "contentPublishingLoadFailed": {
+    "message": "Failed to load content publishing settings.",
+    "description": "Content publishing load error"
+  },
+  "contentPublishingSaved": {
+    "message": "Content publishing settings saved.",
+    "description": "Content publishing save success"
+  },
+  "contentPublishingSaveFailed": {
+    "message": "Failed to save content publishing settings.",
+    "description": "Content publishing save failure"
+  },
+  "addonsArticlesAppearanceTitle": {
+    "message": "Article appearance",
+    "description": "Articles appearance section title"
+  },
+  "addonsArticlesAppearanceDesc": {
+    "message": "Choose how published help articles look in your portal and public website.",
+    "description": "Articles appearance section description"
+  },
+  "addonsArticlesLayoutPreset": {
+    "message": "Layout style",
+    "description": "Article layout preset field"
+  },
+  "addonsArticlesLayoutClassic": {
+    "message": "Classic",
+    "description": "Classic article layout preset"
+  },
+  "addonsArticlesLayoutHelpCenter": {
+    "message": "Help center card",
+    "description": "Help center card layout preset"
+  },
+  "addonsArticlesLayoutMinimal": {
+    "message": "Minimal",
+    "description": "Minimal article layout preset"
+  },
+  "addonsArticlesPrimaryColor": {
+    "message": "Primary color",
+    "description": "Article primary color field"
+  },
+  "addonsArticlesSecondaryColor": {
+    "message": "Link color",
+    "description": "Article secondary/link color field"
+  },
+  "addonsArticlesBodyFont": {
+    "message": "Body font",
+    "description": "Article body font field"
+  },
+  "addonsArticlesHeadingFont": {
+    "message": "Heading font",
+    "description": "Article heading font field"
+  },
+  "addonsArticlesContentWidth": {
+    "message": "Content width",
+    "description": "Article content width field"
+  },
+  "addonsArticlesBorderRadius": {
+    "message": "Corner radius",
+    "description": "Article border radius field"
+  },
+  "addonsArticlesDefaultCoverPosition": {
+    "message": "Default cover position",
+    "description": "Default cover image position for new articles"
+  },
+  "addonsArticlesCoverBelowTitle": {
+    "message": "Below title",
+    "description": "Cover below title option"
+  },
+  "addonsArticlesCoverAboveTitle": {
+    "message": "Above title",
+    "description": "Cover above title option"
+  },
+  "addonsArticlesDefaultSubtitleSize": {
+    "message": "Default subtitle size",
+    "description": "Default subtitle size for new articles"
+  },
+  "addonsArticlesSubtitleSm": {
+    "message": "Small",
+    "description": "Small subtitle size"
+  },
+  "addonsArticlesSubtitleMd": {
+    "message": "Medium",
+    "description": "Medium subtitle size"
+  },
+  "addonsArticlesSubtitleLg": {
+    "message": "Large",
+    "description": "Large subtitle size"
+  },
+  "addonsArticlesSubtitleXl": {
+    "message": "Extra large",
+    "description": "Extra large subtitle size"
+  },
+  "addonsArticlesLogoUrl": {
+    "message": "Logo URL",
+    "description": "Article header logo URL"
+  },
+  "addonsArticlesShowLogoInHeader": {
+    "message": "Show logo above articles",
+    "description": "Toggle logo in article header"
+  },
+  "addonsArticlesAppearancePreviewLabel": {
+    "message": "Live preview",
+    "description": "Appearance preview label"
+  },
+  "addonsArticlesAppearancePreviewTitle": {
+    "message": "Getting started with your product",
+    "description": "Appearance preview sample title"
+  },
+  "addonsArticlesAppearancePreviewBody": {
+    "message": "This is how body text, headings, and links will appear to customers.",
+    "description": "Appearance preview sample body"
+  },
+  "addonsArticlesAppearancePreviewLink": {
+    "message": "Learn more",
+    "description": "Appearance preview sample link"
+  },
+  "contentPublishingHostedSubdomainDesc": {
+    "message": "Publishes at https://{subdomain}.help.arivusystems.com/ with articles at /{slug}. Separate from tenant CRM on *.app.arivusystems.com.",
+    "description": "Help center subdomain helper text"
+  },
+  "contentPublishingUrlPrefixHelpDesc": {
+    "message": "Path prefix on app.arivusystems.com and custom domains only. The dedicated help subdomain uses / at the root.",
+    "description": "Help URL prefix helper text"
+  },
+  "contentPublishingArticlesListApi": {
+    "message": "Articles list API",
+    "description": "Public articles list API URL"
+  },
+  "contentPublishingExampleArticleApi": {
+    "message": "Example article API",
+    "description": "Example public article API URL pattern"
+  },
+  "contentPublishingSitemapUrl": {
+    "message": "Sitemap URL",
+    "description": "Public help sitemap URL label"
+  },
+  "contentPublishingWebhookUrl": {
+    "message": "Publish webhook URL",
+    "description": "Webhook URL for content.published events"
+  },
+  "contentPublishingWebhookDesc": {
+    "message": "Receives a JSON POST when an article is published.",
+    "description": "Webhook URL helper text"
+  },
+  "contentPublishingDomainVerificationTitle": {
+    "message": "Custom domain verification",
+    "description": "Custom domain DNS verification section title"
+  },
+  "contentPublishingDomainVerificationDesc": {
+    "message": "Add the TXT record below, then verify. After verification, point your domain CNAME to the platform target.",
+    "description": "Custom domain DNS verification instructions"
+  },
+  "contentPublishingDomainVerified": {
+    "message": "Verified",
+    "description": "Custom domain verified badge"
+  },
+  "contentPublishingDomainPending": {
+    "message": "Pending verification",
+    "description": "Custom domain pending badge"
+  },
+  "contentPublishingDomainTxtHost": {
+    "message": "TXT host",
+    "description": "Custom domain TXT host label"
+  },
+  "contentPublishingDomainTxtValue": {
+    "message": "TXT value",
+    "description": "Custom domain TXT value label"
+  },
+  "contentPublishingDomainCnameHost": {
+    "message": "CNAME host",
+    "description": "Custom domain CNAME host label"
+  },
+  "contentPublishingDomainCnameTarget": {
+    "message": "CNAME target",
+    "description": "Custom domain CNAME target label"
+  },
+  "contentPublishingVerifyDomain": {
+    "message": "Verify DNS",
+    "description": "Verify custom domain button"
+  },
+  "contentPublishingDomainVerifiedSuccess": {
+    "message": "Custom domain verified.",
+    "description": "Custom domain verification success"
+  },
+  "contentPublishingDomainVerifyFailed": {
+    "message": "DNS verification failed. Confirm the TXT record is published and try again.",
+    "description": "Custom domain verification failure"
+  },
+  "contentPublishingEmbedCopied": {
+    "message": "Embed snippet copied.",
+    "description": "Embed snippet copy success"
+  },
+  "contentPublishingEmbedCopyFailed": {
+    "message": "Could not copy embed snippet.",
+    "description": "Embed snippet copy failure"
+  },
+  "addonsArticlesHeadlessPublishingDesc": {
+    "message": "Fetch published articles as JSON from your website and rebuild pages when content changes.",
+    "description": "Articles headless API settings section description"
+  },
+  "addonsArticlesCopyUrl": {
+    "message": "Copy",
+    "description": "Copy API URL button in Articles headless settings"
+  },
+  "addonsArticlesCopyExample": {
+    "message": "Copy example",
+    "description": "Copy integration code example button"
+  },
+  "addonsArticlesCopied": {
+    "message": "{label} copied",
+    "description": "Toast after copying Articles integration value"
+  },
+  "addonsArticlesCopyFailed": {
+    "message": "Could not copy to clipboard",
+    "description": "Toast when Articles integration copy fails"
+  },
+  "addonsArticlesWebhookDesc": {
+    "message": "Receives JSON POST on publish and unpublish. Use for static site rebuilds.",
+    "description": "Articles publish webhook helper text"
+  },
+  "addonsArticlesSendTestWebhook": {
+    "message": "Send test webhook",
+    "description": "Button to send sample content.published webhook"
+  },
+  "addonsArticlesWebhookTesting": {
+    "message": "Sending…",
+    "description": "Articles test webhook in progress label"
+  },
+  "addonsArticlesWebhookTestSent": {
+    "message": "Test webhook delivered",
+    "description": "Toast when Articles test webhook succeeds"
+  },
+  "addonsArticlesWebhookTestFailed": {
+    "message": "Test webhook failed",
+    "description": "Toast when Articles test webhook fails"
+  },
+  "addonsArticlesIntegrationExamplesTitle": {
+    "message": "Integration examples",
+    "description": "Articles headless integration examples section title"
+  },
+  "addonsArticlesIntegrationExamplesDesc": {
+    "message": "Use these snippets on your website. Replace the slug and style the rendered HTML with your own CSS.",
+    "description": "Articles headless integration examples section description"
+  },
+  "addonsArticlesIntegrationExampleLink": {
+    "message": "See a working static page:",
+    "description": "Intro text before headless integration example link"
+  },
+  "addonsArticlesIntegrationExampleLinkLabel": {
+    "message": "Headless article example",
+    "description": "Link label to public headless article HTML example"
+  },
+  "addonsArticlesExampleCurl": {
+    "message": "curl",
+    "description": "curl example label for Articles headless API"
+  },
+  "addonsArticlesExampleFetch": {
+    "message": "JavaScript fetch",
+    "description": "fetch example label for Articles headless API"
+  },
+  "addonsArticlesExampleRender": {
+    "message": "Render blocks (LiteDesk SDK)",
+    "description": "renderBlocks example label for Articles headless API"
+  },
+  "addonsArticlesIntegrationUrlsUnavailable": {
+    "message": "API URLs could not be generated. Set an organization slug in Settings → Organization, or configure PUBLIC_APP_URL on the server.",
+    "description": "Warning when headless integration URLs are unavailable"
+  },
+  "addonsArticlesEmbedTitle": {
+    "message": "Website embed",
+    "description": "Website embed section title in Articles headless settings"
+  },
+  "addonsArticlesEmbedDesc": {
+    "message": "Drop this on xyz.com. Uses your site fonts/colors via CSS variables. Interactive blocks (tabs, FAQ, gallery) work out of the box.",
+    "description": "Website embed section description"
+  },
+  "addonsArticlesEmbedSnippetLabel": {
+    "message": "Embed snippet",
+    "description": "Embed snippet label in Articles settings"
+  },
+  "addonsArticlesListEmbedSnippetLabel": {
+    "message": "Flat article list embed",
+    "description": "Help article list embed snippet label"
+  },
+  "addonsArticlesListEmbedDesc": {
+    "message": "Lists all published public articles with search and pagination. Links use data-link-prefix (default /help/).",
+    "description": "Help article list embed description"
+  },
+  "addonsArticlesHomeEmbedSnippetLabel": {
+    "message": "Help home embed (xyz.com/help)",
+    "description": "Help home category grid embed snippet label"
+  },
+  "addonsArticlesHomeEmbedDesc": {
+    "message": "Category grid with search. Card links use data-link-prefix (default /help/).",
+    "description": "Help home embed description"
+  },
+  "addonsArticlesArticleEmbedDesc": {
+    "message": "Renders one article by slug. Put on xyz.com/help/{slug} or equivalent route.",
+    "description": "Single article embed description"
+  },
+  "addonsArticlesIntegrationListExampleLinkLabel": {
+    "message": "Headless help list example",
+    "description": "Link label to public headless article list HTML example"
+  },
+  "addonsArticlesIntegrationHomeExampleLinkLabel": {
+    "message": "Headless help home example",
+    "description": "Link label to public headless help home HTML example"
+  },
+  "addonsArticlesCategoryEmbedSnippetLabel": {
+    "message": "Help category embed (xyz.com/help/{category})",
+    "description": "Help category embed snippet label"
+  },
+  "addonsArticlesCategoryEmbedDesc": {
+    "message": "Lists child sections for a category with breadcrumbs and a recent-articles sidebar. Requires headless-help-common.js.",
+    "description": "Help category embed description"
+  },
+  "addonsArticlesSectionEmbedSnippetLabel": {
+    "message": "Help section embed (xyz.com/help/{category}/{section})",
+    "description": "Help section embed snippet label"
+  },
+  "addonsArticlesSectionEmbedDesc": {
+    "message": "Lists articles in a section with breadcrumbs, section tree sidebar, and recent articles. Requires headless-help-common.js.",
+    "description": "Help section embed description"
+  },
+  "addonsArticlesIntegrationCategoryExampleLinkLabel": {
+    "message": "Headless help category example",
+    "description": "Link label to public headless help category HTML example"
+  },
+  "addonsArticlesIntegrationSectionExampleLinkLabel": {
+    "message": "Headless help section example",
+    "description": "Link label to public headless help section HTML example"
+  },
+  "addonsArticlesHelpCenterRoutesTitle": {
+    "message": "Recommended customer URLs",
+    "description": "Help center customer URL patterns section title"
+  },
+  "addonsArticlesHelpCenterRoutesDesc": {
+    "message": "Map these paths on your site and point each page at the matching embed snippet.",
+    "description": "Help center customer URL patterns section description"
+  },
+  "addonsArticlesHelpCenterRouteDemo": {
+    "message": "Open demo page",
+    "description": "Link to internal demo page for a help center route"
+  },
+  "addonsArticlesHelpRouteHome": {
+    "message": "Help home",
+    "description": "Customer URL label for help home page"
+  },
+  "addonsArticlesHelpRouteCategory": {
+    "message": "Category",
+    "description": "Customer URL label for help category page"
+  },
+  "addonsArticlesHelpRouteSection": {
+    "message": "Section",
+    "description": "Customer URL label for help section page"
+  },
+  "addonsArticlesHelpRouteArticle": {
+    "message": "Article",
+    "description": "Customer URL label for help article page"
+  },
+  "addonsArticlesExampleCollections": {
+    "message": "Fetch collections",
+    "description": "Collections fetch example label for Articles headless API"
+  },
+  "contentPublishingCollectionsApi": {
+    "message": "Collections API",
+    "description": "Public help collections API URL label in Articles settings"
+  },
+  "contentPublishingRecentArticlesApi": {
+    "message": "Recent articles API",
+    "description": "Public recent articles API URL label in Articles settings"
+  },
+  "contentPublishingPopularArticlesApi": {
+    "message": "Popular articles API",
+    "description": "Public popular articles API URL label in Articles settings"
+  },
+  "addonsArticlesEmbedStepEnable": {
+    "message": "Enable Headless API above and publish public articles in Content Studio.",
+    "description": "Website embed setup step 1"
+  },
+  "addonsArticlesEmbedStepCopy": {
+    "message": "Copy a snippet below onto every help page on your website (same snippet everywhere).",
+    "description": "Website embed setup step 2"
+  },
+  "addonsArticlesEmbedStepCors": {
+    "message": "Ask your Arivu admin to add your website domain to CORS_ORIGINS so the browser can load content.",
+    "description": "Website embed setup step 3"
+  },
+  "addonsArticlesEmbedPathPrefix": {
+    "message": "Help center path on your site",
+    "description": "Label for help center URL path prefix used in embed snippets"
+  },
+  "addonsArticlesEmbedPathPrefixHint": {
+    "message": "Example: /help/ — snippets update automatically.",
+    "description": "Hint for help center URL path prefix"
+  },
+  "addonsArticlesEmbedSiteDomain": {
+    "message": "Your website domain",
+    "description": "Label for customer website domain shown in URL examples"
+  },
+  "addonsArticlesEmbedSiteDomainHint": {
+    "message": "Example only — used to preview URL patterns below.",
+    "description": "Hint for customer website domain field"
+  },
+  "addonsArticlesUnifiedPageSnippetLabel": {
+    "message": "Complete HTML page",
+    "description": "Label for unified headless help full HTML page snippet"
+  },
+  "addonsArticlesUnifiedPageSnippetDesc": {
+    "message": "Ready to paste. Works for home, categories, sections, and articles. CSS and scripts load automatically.",
+    "description": "Description for unified headless help full HTML page snippet"
+  },
+  "addonsArticlesUnifiedEmbedSnippetLabel": {
+    "message": "Embed on an existing page",
+    "description": "Label for unified headless help embed-only snippet"
+  },
+  "addonsArticlesUnifiedEmbedSnippetDesc": {
+    "message": "Add the container and script tag inside your site layout or template.",
+    "description": "Description for unified headless help embed-only snippet"
+  },
+  "addonsArticlesCopySnippet": {
+    "message": "Copy snippet",
+    "description": "Copy embed snippet button label"
+  },
+  "addonsArticlesEmbedDemoHint": {
+    "message": "Preview with your org slug before going live:",
+    "description": "Intro text before demo link in website embed section"
+  },
+  "addonsArticlesAdvancedEmbedsTitle": {
+    "message": "Advanced: individual page embeds",
+    "description": "Collapsible section title for per-page embed snippets"
+  },
+  "addonsArticlesHelpCenterRoutesNote": {
+    "message": "You do not need four different HTML files. One page that matches all /help/* URLs is enough.",
+    "description": "Clarifies that help center routes share one embed page"
+  },
+  "addonsArticlesEmbedStepDomain": {
+    "message": "Enter your website domain above — Arivu allows browser requests from that domain automatically.",
+    "description": "Website embed setup step 2"
+  },
+  "addonsArticlesEmbedWebsiteDomain": {
+    "message": "Website domain for embed",
+    "description": "Label for customer website domain registered for headless embed CORS"
+  },
+  "addonsArticlesEmbedWebsiteDomainHint": {
+    "message": "Where your help center lives, e.g. www.example.com. Saved automatically — no manual CORS setup.",
+    "description": "Hint for customer website domain registered for headless embed CORS"
+  },
+  "addonsArticlesEmbedWebsiteOriginsAllowed": {
+    "message": "Browser access allowed from: {origins}",
+    "description": "Shows normalized origins registered for headless embed CORS"
+  },
+  "addonsArticlesEmbedPublicKeyLabel": {
+    "message": "Embed site ID",
+    "description": "Auto-generated public key prefilled in website embed snippets"
+  },
+  "addonsArticlesEmbedPublicKeyHint": {
+    "message": "Auto-generated and prefilled in your snippets. Unguessable — do not share publicly unless embedding on your site.",
+    "description": "Hint for auto-generated embed site ID"
+  },
+  "addonsArticlesEmbedPublicKeyPending": {
+    "message": "Enable Headless API to generate your embed site ID",
+    "description": "Placeholder when embed site ID is not yet available"
+  },
+  "addonsArticlesStaticSyncTitle": {
+    "message": "Static sync (SEO)",
+    "description": "Articles static HTML sync section title"
+  },
+  "addonsArticlesStaticSyncDesc": {
+    "message": "Pre-render HTML and mirror assets on your domain with incremental publish webhooks. Choose how you host your site.",
+    "description": "Articles static HTML sync section description"
+  },
+  "addonsArticlesStaticSyncHostType": {
+    "message": "How do you host your help site?",
+    "description": "Host type selector label for Articles static sync"
+  },
+  "addonsArticlesStaticSyncHostNext": {
+    "message": "Vercel / Next.js (ISR + webhook)",
+    "description": "Static sync host option for Next.js"
+  },
+  "addonsArticlesStaticSyncHostPhp": {
+    "message": "Shared hosting / PHP",
+    "description": "Static sync host option for PHP"
+  },
+  "addonsArticlesStaticSyncHostCli": {
+    "message": "CLI / CI / S3",
+    "description": "Static sync host option for CLI"
+  },
+  "addonsArticlesStaticSyncHostEmbed": {
+    "message": "Embed only (live API, no static SEO)",
+    "description": "Static sync host option for embed fallback"
+  },
+  "addonsArticlesStaticSyncManifestUrl": {
+    "message": "Manifest URL",
+    "description": "Copy label for headless manifest.json URL"
+  },
+  "addonsArticlesStaticSyncExportUrl": {
+    "message": "Example article export URL",
+    "description": "Copy label for example article export URL"
+  },
+  "addonsArticlesStaticSyncEnvTemplate": {
+    "message": "Environment template",
+    "description": "Copy label for static sync env template"
+  },
+  "addonsArticlesStaticSyncNextSteps": {
+    "message": "Next.js setup",
+    "description": "Intro for Next.js static sync steps"
+  },
+  "addonsArticlesStaticSyncNextStep1": {
+    "message": "Copy templates from docs/examples/static-sync/next-app-router into your app.",
+    "description": "Next.js static sync step 1"
+  },
+  "addonsArticlesStaticSyncNextStep2": {
+    "message": "Set the environment variables below in Vercel.",
+    "description": "Next.js static sync step 2"
+  },
+  "addonsArticlesStaticSyncNextStep3": {
+    "message": "Point the publish webhook URL above to /api/arivu-webhook on your site.",
+    "description": "Next.js static sync step 3"
+  },
+  "addonsArticlesStaticSyncPhpSteps": {
+    "message": "Upload the PHP sync script, set env vars (or edit the config block), point the webhook URL to the script, then run ?full=1 once.",
+    "description": "PHP static sync setup steps"
+  },
+  "addonsArticlesStaticSyncDownloadPhp": {
+    "message": "Download PHP sync script",
+    "description": "Download button for PHP sync script"
+  },
+  "addonsArticlesStaticSyncCliSteps": {
+    "message": "Run from your project root or CI. Initial full sync, then rely on webhooks for incremental updates.",
+    "description": "CLI static sync setup steps"
+  },
+  "addonsArticlesStaticSyncCliFull": {
+    "message": "Initial full sync",
+    "description": "CLI command label for full sync"
+  },
+  "addonsArticlesStaticSyncCliSlug": {
+    "message": "Sync one article",
+    "description": "CLI command label for single article sync"
+  },
+  "addonsArticlesStaticSyncCliWebhook": {
+    "message": "Webhook handler (stdin)",
+    "description": "CLI command label for webhook pipe"
+  },
+  "addonsArticlesStaticSyncEmbedNote": {
+    "message": "Use the website embed section below for the fastest setup. Static HTML on your domain is recommended when SEO matters.",
+    "description": "Note when embed-only host type is selected"
+  },
+  "addonsArticlesGenerateWebhookSecret": {
+    "message": "Generate webhook secret",
+    "description": "Button to generate HMAC secret for publish webhooks"
+  },
+  "addonsArticlesWebhookSecretGenerating": {
+    "message": "Generating…",
+    "description": "Articles webhook secret generation in progress"
+  },
+  "addonsArticlesWebhookSecretGenerated": {
+    "message": "Webhook secret generated",
+    "description": "Toast when Articles webhook secret is generated"
+  },
+  "addonsArticlesWebhookSecretGenerateFailed": {
+    "message": "Failed to generate webhook secret",
+    "description": "Toast when Articles webhook secret generation fails"
+  },
+  "addonsArticlesWebhookSecretConfigured": {
+    "message": "Webhook signing is enabled. Arivu sends X-Arivu-Signature on each publish webhook.",
+    "description": "Hint when Articles publish webhook secret exists"
+  },
+  "addonsArticlesWebhookSecretOnce": {
+    "message": "Copy this secret now — it will not be shown again: {secret}",
+    "description": "One-time display of generated Articles webhook secret"
+  },
+  "addonsArticlesStaticSyncDownloadNext": {
+    "message": "Download Next.js template (zip)",
+    "description": "Download button for Next.js App Router static sync template zip"
+  },
+  "addonsArticlesWebhookAutoFilled": {
+    "message": "Auto-filled from your website domain and selected sync host type. Edit manually if your endpoint path differs.",
+    "description": "Hint when publish webhook URL was auto-generated"
+  },
+  "addonsArticlesGeneralTitle": {
+    "message": "General",
+    "description": "Articles general settings section title"
+  },
+  "addonsArticlesGeneralDesc": {
+    "message": "Portal publishing, case deflection, and article defaults.",
+    "description": "Articles general settings section description"
+  },
+  "addonsArticlesCustomerSiteTitle": {
+    "message": "Customer website",
+    "description": "Articles customer website integration section title"
+  },
+  "addonsArticlesCustomerSiteDesc": {
+    "message": "Connect your website domain, copy the embed snippet, and optionally set up static sync.",
+    "description": "Articles customer website integration section description"
+  },
+  "addonsArticlesAdvancedAppearanceTitle": {
+    "message": "Advanced appearance",
+    "description": "Collapsible advanced article appearance settings"
+  },
+  "addonsArticlesDeveloperSetupTitle": {
+    "message": "Developer setup",
+    "description": "Collapsible API URLs, static sync, and integration examples"
+  },
+  "addonsArticlesCustomerSiteSetupType": {
+    "message": "Publishing method",
+    "description": "Articles customer site setup type selector label"
+  },
+  "addonsArticlesStaticSyncNextStep4": {
+    "message": "Create a Vercel Deploy Hook and paste the URL into VERCEL_DEPLOY_HOOK_URL.",
+    "description": "Next.js static sync step 4"
+  },
+  "addonsArticlesStaticSyncNextStep5": {
+    "message": "Point the publish webhook URL above to /api/arivu-webhook and remove ISR app/help routes.",
+    "description": "Next.js static sync step 5"
+  },
+  "addonsArticlesStaticSyncNextHint": {
+    "message": "On Vercel, each publish triggers a redeploy. The build writes SEO-ready HTML into public/help/ with styles and metadata.",
+    "description": "Hint when Next.js static sync host type is selected"
+  },
+  "addonsArticlesDeployKitTitle": {
+    "message": "Quick deploy kit",
+    "description": "Title for one-click Articles embed deploy kit"
+  },
+  "addonsArticlesDeployKitDesc": {
+    "message": "Pre-configured zip with HTML and routing for Netlify, Vercel, or Apache. Your org key and API URL are already filled in.",
+    "description": "Description for Articles embed deploy kit"
+  },
+  "addonsArticlesDeployKitStep1": {
+    "message": "Save your website domain above (enables browser access)",
+    "description": "Deploy kit step 1"
+  },
+  "addonsArticlesDeployKitStep2": {
+    "message": "Download the deploy kit",
+    "description": "Deploy kit step 2"
+  },
+  "addonsArticlesDeployKitStep3": {
+    "message": "Upload the zip contents to your host — visit /help/ to verify",
+    "description": "Deploy kit step 3"
+  },
+  "addonsArticlesDeployKitDownload": {
+    "message": "Download deploy kit (zip)",
+    "description": "Button to download Articles embed deploy kit"
+  },
+  "addonsArticlesDeployKitDownloading": {
+    "message": "Preparing zip…",
+    "description": "Articles deploy kit download in progress"
+  },
+  "addonsArticlesDeployKitDownloaded": {
+    "message": "Deploy kit downloaded",
+    "description": "Toast when Articles deploy kit download succeeds"
+  },
+  "addonsArticlesDeployKitDownloadFailed": {
+    "message": "Could not create deploy kit",
+    "description": "Toast when Articles deploy kit download fails"
+  },
+  "addonsArticlesPhpDeployStep1": {
+    "message": "Download the pre-configured PHP script (your org key and API URL are filled in)",
+    "description": "PHP static sync deploy step 1"
+  },
+  "addonsArticlesPhpDeployStep2": {
+    "message": "Upload to your web host and point the publish webhook URL above to it",
+    "description": "PHP static sync deploy step 2"
+  },
+  "addonsArticlesPhpDeployStep3": {
+    "message": "Run once: https://yoursite.com/arivu-help-sync.php?full=1",
+    "description": "PHP static sync deploy step 3"
+  },
+  "addonsArticlesPhpDeployDownloading": {
+    "message": "Preparing script…",
+    "description": "PHP sync script download in progress"
+  },
+  "addonsArticlesPhpDeployDownloaded": {
+    "message": "PHP sync script downloaded",
+    "description": "Toast when configured PHP sync download succeeds"
+  },
+  "addonsArticlesPhpDeployDownloadFailed": {
+    "message": "Could not download PHP script",
+    "description": "Toast when configured PHP sync download fails"
+  },
+  "addonsArticlesVercelStandaloneTitle": {
+    "message": "Vercel — standalone project",
+    "description": "Title for standalone Vercel help center deploy"
+  },
+  "addonsArticlesVercelStandaloneDesc": {
+    "message": "Complete Next.js project with your org key and API URL pre-filled. Import to Vercel as a new project.",
+    "description": "Description for standalone Vercel help center deploy"
+  },
+  "addonsArticlesVercelStandaloneStep1": {
+    "message": "Download the Vercel project zip",
+    "description": "Standalone Vercel deploy step 1"
+  },
+  "addonsArticlesVercelStandaloneStep2": {
+    "message": "Import to Vercel (vercel.com/new) — add env vars from the included .env file",
+    "description": "Standalone Vercel deploy step 2"
+  },
+  "addonsArticlesVercelStandaloneStep3": {
+    "message": "Create a Deploy Hook → paste URL into VERCEL_DEPLOY_HOOK_URL in Vercel env",
+    "description": "Standalone Vercel deploy step 3"
+  },
+  "addonsArticlesVercelStandaloneStep4": {
+    "message": "Deploy — each publish auto-rebuilds SEO-ready HTML",
+    "description": "Standalone Vercel deploy step 4"
+  },
+  "addonsArticlesVercelStandaloneDownload": {
+    "message": "Download Vercel project (zip)",
+    "description": "Button to download standalone Vercel project"
+  },
+  "addonsArticlesVercelStandaloneDownloading": {
+    "message": "Preparing project…",
+    "description": "Standalone Vercel project download in progress"
+  },
+  "addonsArticlesVercelStandaloneDownloaded": {
+    "message": "Vercel project downloaded",
+    "description": "Toast when standalone Vercel project download succeeds"
+  },
+  "addonsArticlesVercelStandaloneDownloadFailed": {
+    "message": "Could not create Vercel project",
+    "description": "Toast when standalone Vercel project download fails"
+  },
+  "addonsArticlesVercelExistingProjectTitle": {
+    "message": "Advanced: add to existing Next.js project",
+    "description": "Collapsible title for merging into existing Next.js app"
+  },
+  "addonsArticlesVercelInstallTitle": {
+    "message": "One-command install (Vercel / Next.js)",
+    "description": "Title for Vercel install script section"
+  },
+  "addonsArticlesVercelInstallDesc": {
+    "message": "Run from your project root. No manual file copying.",
+    "description": "Description for Vercel install script"
+  },
+  "addonsArticlesVercelInstallStep1": {
+    "message": "Open a terminal in your Next.js project root",
+    "description": "Vercel install step 1"
+  },
+  "addonsArticlesVercelInstallStep2": {
+    "message": "Paste and run the command below",
+    "description": "Vercel install step 2"
+  },
+  "addonsArticlesVercelInstallStep3": {
+    "message": "Copy .env.local vars into Vercel → add Deploy Hook URL",
+    "description": "Vercel install step 3"
+  },
+  "addonsArticlesVercelInstallStep4": {
+    "message": "Deploy — each publish auto-rebuilds SEO-ready HTML",
+    "description": "Vercel install step 4"
+  },
   "assignRulesCondFieldSalutation": {
     "message": "Salutation",
     "description": "Condition field: salutation"

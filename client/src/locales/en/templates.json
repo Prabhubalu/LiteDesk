@@ -1625,7 +1625,7 @@
   },
   "builderTableClearDataRow": {
     "message": "Clear data row",
-    "description": "Remove repeating data row marker from table"
+    "description": "Context menu action to unmark repeating data row"
   },
   "builderTableInsertTitle": {
     "message": "Insert table",
@@ -1666,10 +1666,6 @@
   "builderTableMarkDataRow": {
     "message": "Mark as data row (repeat)",
     "description": "Context menu action to mark row as repeating data row"
-  },
-  "builderTableClearDataRow": {
-    "message": "Clear data row",
-    "description": "Context menu action to unmark repeating data row"
   },
   "builderTableDeleteRow": {
     "message": "Delete row",
@@ -2088,7 +2084,7 @@
     "description": "Merge tag mapping section title"
   },
   "htmlImport.mergeMappingEmpty": {
-    "message": "No merge tags detected. You can add LiteDesk fields from the Variables panel later.",
+    "message": "No merge tags detected. You can add Arivu fields from the Variables panel later.",
     "description": "Empty merge tag mapping state"
   },
   "htmlImport.orgMappingsApplied": {
@@ -2100,7 +2096,7 @@
     "description": "Org merge mappings settings page title"
   },
   "htmlImport.orgMappingsDescription": {
-    "message": "Map external ESP merge tags (Mailchimp, HubSpot, etc.) to LiteDesk fields. Saved mappings auto-fill during HTML import.",
+    "message": "Map external ESP merge tags (Mailchimp, HubSpot, etc.) to Arivu fields. Saved mappings auto-fill during HTML import.",
     "description": "Org merge mappings settings page description"
   },
   "htmlImport.orgMappingsEmpty": {
@@ -2136,7 +2132,7 @@
     "description": "Duplicate merge tag validation error"
   },
   "htmlImport.orgMappingsIncompleteRow": {
-    "message": "Select a LiteDesk field or choose Keep as text for {tag}",
+    "message": "Select a Arivu field or choose Keep as text for {tag}",
     "description": "Incomplete merge mapping row validation"
   },
   "htmlImport.hubspotConditionalTitle": {
@@ -2240,7 +2236,7 @@
     "description": "Detected merge tag column header"
   },
   "htmlImport.mergeMapTo": {
-    "message": "Map to LiteDesk field",
+    "message": "Map to Arivu field",
     "description": "Merge tag mapping column header"
   },
   "htmlImport.mergeSkip": {

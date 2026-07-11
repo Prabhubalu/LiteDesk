@@ -62,7 +62,7 @@ async function createClientPreview(params) {
     },
     body: JSON.stringify({
       html_text: html,
-      subject: String(params?.subject || 'LiteDesk preview').slice(0, 200)
+      subject: String(params?.subject || 'Arivu preview').slice(0, 200)
     })
   });
 

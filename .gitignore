@@ -122,4 +122,5 @@ coverage/
 # Build artifacts
 *.tar.gz
 *.zip
+!client/public/static-sync/arivu-next-static-sync.zip
 

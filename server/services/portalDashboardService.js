@@ -8,6 +8,7 @@ const {
 } = require('../services/portalCaseAccessService');
 const { listPortalPayableInvoices } = require('../services/portalInvoicePayService');
 const documentService = require('../services/documentService');
+const portalKnowledgeService = require('../services/portalKnowledgeService');
 const { listPortalAccessibleForms } = require('../services/portalFormAccessService');
 const { buildPortalResponseAccessQuery } = require('../services/portalResponseService');
 const { buildPortalDealAccessQuery } = require('../services/portalDealService');
@@ -117,21 +118,15 @@ async function countOpenCorrectiveActions(organizationId, user) {
 }
 
 function shapePortalKnowledgeSummary(doc) {
-  return {
-    _id: doc._id,
-    documentNumber: doc.documentNumber,
-    title: doc.title,
-    description: doc.description || '',
-    updatedAt: doc.updatedAt
-  };
+  return portalKnowledgeService.shapePortalKnowledgeSummary(doc);
 }
 
 async function loadSuggestedArticles(organizationId) {
   try {
-    const result = await documentService.listPortalKnowledgeDocuments({
+    const result = await portalKnowledgeService.listPortalKnowledgeArticles({
       organizationId,
       page: 1,
-      limit: 3
+      limit: 3,
     });
     return (result.data || []).map(shapePortalKnowledgeSummary);
   } catch (err) {

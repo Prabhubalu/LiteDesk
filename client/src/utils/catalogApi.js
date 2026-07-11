@@ -2,7 +2,7 @@ import { getApiUrlForFetch } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
 
 /**
- * Unwrap LiteDesk API JSON from apiClient (returns body directly, not axios-style).
+ * Unwrap Arivu API JSON from apiClient (returns body directly, not axios-style).
  */
 export function unwrapCatalogApiData(res) {
   if (!res || res.success === false) return null;

@@ -108,6 +108,14 @@
                 {{ t('settings.addonsConfigure') }}
               </button>
               <button
+                v-if="addon.addonKey === 'articles'"
+                type="button"
+                class="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
+                @click="openArticlesSettings"
+              >
+                {{ t('settings.addonsConfigure') }}
+              </button>
+              <button
                 v-if="addon.enabled"
                 type="button"
                 class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
@@ -207,6 +215,12 @@
     @open-website-content="openLiveChatWebsiteContent"
   />
 
+  <ArticlesAddonSettings
+    v-else-if="currentView === 'articles-settings'"
+    class="flex min-h-0 flex-1 flex-col overflow-hidden"
+    @back="navigateToOverview"
+  />
+
   <LiveChatQueuesSettings
     v-else-if="currentView === 'live-chat-queues'"
     class="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -234,6 +248,7 @@ import { useRoute, useRouter } from 'vue-router';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import AddonPlatformPricingSettings from '@/components/settings/AddonPlatformPricingSettings.vue';
 import LiveChatAddonSettings from '@/components/settings/LiveChatAddonSettings.vue';
+import ArticlesAddonSettings from '@/components/settings/ArticlesAddonSettings.vue';
 import EmailCreditsAddonSettings from '@/components/settings/EmailCreditsAddonSettings.vue';
 import LiveChatQueuesSettings from '@/components/settings/LiveChatQueuesSettings.vue';
 import LiveChatBotsSettings from '@/components/settings/LiveChatBotsSettings.vue';
@@ -242,6 +257,7 @@ import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
 import { invalidateAddonNavigationCache } from '@/utils/addonNavigation';
+import { captureArticlesAddonInstalled } from '@/config/posthogArticles';
 
 function notifyAddonsUpdated() {
   invalidateAddonNavigationCache();
@@ -329,6 +345,7 @@ const currentView = computed(() => {
   if (view === 'live-chat' && route.query.liveChatView === 'queues') return 'live-chat-queues';
   if (view === 'live-chat' && route.query.liveChatView === 'bots') return 'live-chat-bots';
   if (view === 'live-chat' && route.query.liveChatView === 'website-content') return 'live-chat-website-content';
+  if (view === 'articles') return 'articles-settings';
   if (view === 'email-credits') return 'email-credits-settings';
   return 'overview';
 });
@@ -355,6 +372,13 @@ function openLiveChatSettings() {
   router.push({
     path: '/settings',
     query: { tab: 'addons', addonView: 'live-chat', liveChatView: 'settings' },
+  });
+}
+
+function openArticlesSettings() {
+  router.push({
+    path: '/settings',
+    query: { tab: 'addons', addonView: 'articles' },
   });
 }
 
@@ -429,6 +453,9 @@ async function installAddon(addonKey) {
   installingKey.value = addonKey;
   try {
     await apiClient.post(`/settings/addons/${addonKey}/install`);
+    if (addonKey === 'articles') {
+      captureArticlesAddonInstalled();
+    }
     notifications.success(t('settings.addonsInstallSuccess'));
     notifyAddonsUpdated();
     await loadAddons();

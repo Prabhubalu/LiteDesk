@@ -67,7 +67,7 @@ export function useGmailInboxConnect() {
         const data = event.data;
         if (!data || data.type !== 'gmail-oauth-result') return;
         if (data.status === 'connected') {
-          notifications.success('Gmail connected. You can send and receive mail in LiteDesk.');
+          notifications.success('Gmail connected. You can send and receive mail in Arivu.');
           callbacks.onConnected?.();
         } else if (data.status === 'error') {
           const msg = String(data.message || 'Connection failed');

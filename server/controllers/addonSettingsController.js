@@ -28,6 +28,11 @@ const {
   serializeOrgEmailPolicy,
   ensureOrgEmailPolicy
 } = require('../services/orgEmailPolicyService');
+const { isParentAppEntitledForOrg } = require('../services/addonParentAppService');
+const {
+  getArticlesAddonSettings,
+  updateArticlesAddonSettings,
+} = require('../services/contentStudio/articlesAddonSettingsService');
 
 function canManageAddons(req) {
   if (req.user?.isOwner) return true;
@@ -37,7 +42,7 @@ function canManageAddons(req) {
   return Boolean(settings.edit || settings.manageBilling);
 }
 
-function mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing, emailPolicy) {
+function mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing, emailPolicy, installEligibility) {
   const normalized = normalizeAddonKey(definition.addonKey);
   const installed = !!tenantConfig;
   let status = 'AVAILABLE';
@@ -54,8 +59,13 @@ function mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing, em
     description: definition.description || definition.marketplace?.shortDescription || '',
     category: definition.category,
     icon: definition.icon,
+    requiredApps: definition.requiredApps || [],
+    optionalApps: definition.optionalApps || [],
     marketplace: definition.marketplace || {},
     installed,
+    installEligible: installEligibility?.eligible !== false,
+    installBlockReason: installEligibility?.reason || null,
+    missingApps: installEligibility?.missingApps || [],
     status,
     enabled: tenantConfig?.enabled !== false,
     subscription: subscriptionEntry
@@ -84,6 +94,31 @@ function mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing, em
   };
 }
 
+async function resolveInstallEligibility(organizationId, definition) {
+  const requiredApps = Array.isArray(definition?.requiredApps) ? definition.requiredApps : [];
+  if (requiredApps.length === 0) {
+    return { eligible: true };
+  }
+
+  const missingApps = [];
+  for (const appKey of requiredApps) {
+    const entitled = await isParentAppEntitledForOrg(organizationId, appKey);
+    if (!entitled) {
+      missingApps.push(appKey);
+    }
+  }
+
+  if (missingApps.length > 0) {
+    return {
+      eligible: false,
+      reason: `Requires app entitlement: ${missingApps.join(', ')}`,
+      missingApps,
+    };
+  }
+
+  return { eligible: true };
+}
+
 exports.listAddons = async (req, res) => {
   try {
     if (!canManageAddons(req)) {
@@ -106,7 +141,17 @@ exports.listAddons = async (req, res) => {
       if (normalized === ADDON_KEYS.EMAIL_CREDITS) {
         emailPolicy = await getOrgEmailPolicy(organizationId);
       }
-      addons.push(mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing, emailPolicy));
+      const installEligibility = await resolveInstallEligibility(organizationId, definition);
+      addons.push(
+        mapCatalogItem(
+          definition,
+          tenantConfig,
+          subscriptionEntry,
+          pricing,
+          emailPolicy,
+          installEligibility,
+        ),
+      );
     }
 
     const installed = addons.filter((row) => row.installed);
@@ -149,10 +194,18 @@ exports.getAddon = async (req, res) => {
     if (addonKey === ADDON_KEYS.EMAIL_CREDITS) {
       emailPolicy = await getOrgEmailPolicy(organizationId);
     }
+    const installEligibility = await resolveInstallEligibility(organizationId, definition);
 
     return res.json({
       success: true,
-      addon: mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing, emailPolicy),
+      addon: mapCatalogItem(
+        definition,
+        tenantConfig,
+        subscriptionEntry,
+        pricing,
+        emailPolicy,
+        installEligibility,
+      ),
       configuration: tenantConfig,
     });
   } catch (error) {
@@ -181,6 +234,21 @@ exports.installAddon = async (req, res) => {
       });
     }
 
+    const definition = await AddonDefinition.findOne({ addonKey, enabled: true }).lean();
+    if (!definition) {
+      return res.status(404).json({ success: false, message: 'Addon not found', code: 'ADDON_NOT_FOUND' });
+    }
+
+    const installEligibility = await resolveInstallEligibility(organizationId, definition);
+    if (!installEligibility.eligible) {
+      return res.status(403).json({
+        success: false,
+        message: installEligibility.reason,
+        code: 'PARENT_APP_REQUIRED',
+        missingApps: installEligibility.missingApps,
+      });
+    }
+
     const result = await ensureSubscriptionForAddon({
       organizationId,
       addonKey,
@@ -191,7 +259,8 @@ exports.installAddon = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: result.error,
-        code: 'INSTALL_FAILED',
+        code: result.code || 'INSTALL_FAILED',
+        missingApps: result.missingApps,
       });
     }
 
@@ -525,3 +594,96 @@ exports.purchaseEmailCreditPack = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Failed to purchase credit pack' });
   }
 };
+
+exports.getArticlesAddonSettings = async (req, res) => {
+  try {
+    if (!canManageAddons(req)) {
+      return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
+    }
+
+    const { getArticlesAddonSettings, resolveRequestPublicOrigin } = require('../services/contentStudio/articlesAddonSettingsService');
+    const data = await getArticlesAddonSettings(req.user.organizationId, {
+      requestOrigin: resolveRequestPublicOrigin(req),
+    });
+    return res.json({ success: true, ...data });
+  } catch (error) {
+    console.error('[addonSettingsController] getArticlesAddonSettings', error);
+    return res.status(500).json({ success: false, message: 'Failed to load Articles settings' });
+  }
+};
+
+exports.updateArticlesAddonSettings = async (req, res) => {
+  try {
+    if (!canManageAddons(req)) {
+      return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
+    }
+
+    const {
+      updateArticlesAddonSettings,
+      resolveRequestPublicOrigin,
+    } = require('../services/contentStudio/articlesAddonSettingsService');
+    const data = await updateArticlesAddonSettings(req.user.organizationId, req.body || {}, {
+      requestOrigin: resolveRequestPublicOrigin(req),
+    });
+    return res.json({ success: true, ...data });
+  } catch (error) {
+    if (error?.code === 'ADDON_NOT_INSTALLED') {
+      return res.status(404).json({ success: false, message: error.message, code: error.code });
+    }
+    if (error?.code === 'INVALID_EMBED_WEBSITE_DOMAIN') {
+      return res.status(400).json({ success: false, message: error.message, code: error.code });
+    }
+    console.error('[addonSettingsController] updateArticlesAddonSettings', error);
+    return res.status(500).json({ success: false, message: 'Failed to save Articles settings' });
+  }
+};
+
+exports.sendArticlesPublishWebhookTest = async (req, res) => {
+  try {
+    if (!canManageAddons(req)) {
+      return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
+    }
+
+    const { sendArticlesPublishWebhookTest } = require('../services/contentStudio/contentPublishingWebhookService');
+    const payload = await sendArticlesPublishWebhookTest(req.user.organizationId);
+    return res.json({ success: true, payload });
+  } catch (error) {
+    if (error?.code === 'WEBHOOK_NOT_CONFIGURED') {
+      return res.status(400).json({ success: false, message: error.message, code: error.code });
+    }
+    console.error('[addonSettingsController] sendArticlesPublishWebhookTest', error);
+    return res.status(502).json({
+      success: false,
+      message: error?.message || 'Failed to deliver test webhook',
+      code: 'WEBHOOK_DELIVERY_FAILED',
+    });
+  }
+};
+
+exports.generateArticlesPublishWebhookSecret = async (req, res) => {
+  try {
+    if (!canManageAddons(req)) {
+      return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
+    }
+
+    const {
+      generateArticlesPublishWebhookSecret,
+      resolveRequestPublicOrigin,
+    } = require('../services/contentStudio/articlesAddonSettingsService');
+    const data = await generateArticlesPublishWebhookSecret(req.user.organizationId, {
+      requestOrigin: resolveRequestPublicOrigin(req),
+    });
+    return res.json({
+      success: true,
+      publishWebhookSecret: data.publishWebhookSecret || '',
+      ...data,
+    });
+  } catch (error) {
+    if (error?.code === 'ADDON_NOT_INSTALLED') {
+      return res.status(404).json({ success: false, message: error.message, code: error.code });
+    }
+    console.error('[addonSettingsController] generateArticlesPublishWebhookSecret', error);
+    return res.status(500).json({ success: false, message: 'Failed to generate webhook secret' });
+  }
+};
+

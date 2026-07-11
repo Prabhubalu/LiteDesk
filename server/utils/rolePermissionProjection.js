@@ -444,6 +444,8 @@ function ensurePermissionEnvelopeDefaults(merged) {
     exportReports: false
   });
   ensureModule('liveChat', { view: false, reply: false, admin: false });
+  ensureModule('articles', { view: false, create: false, edit: false, delete: false, publish: false });
+  ensureModule('blog', { view: false, create: false, edit: false, delete: false, publish: false });
   ensureModule('projects', { view: false, create: false, edit: false, delete: false, viewAll: false });
 }
 

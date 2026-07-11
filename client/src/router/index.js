@@ -179,6 +179,36 @@ const routes = [
     meta: { requiresAuth: false, hideShell: true }
   },
   {
+    path: '/examples/headless-article',
+    name: 'headless-article-example',
+    component: () => import('@/views/HeadlessArticleExample.vue'),
+    meta: { requiresAuth: false, hideShell: true }
+  },
+  {
+    path: '/examples/headless-article-list',
+    name: 'headless-article-list-example',
+    component: () => import('@/views/HeadlessArticleListExample.vue'),
+    meta: { requiresAuth: false, hideShell: true }
+  },
+  {
+    path: '/examples/headless-help-home',
+    name: 'headless-help-home-example',
+    component: () => import('@/views/HeadlessHelpHomeExample.vue'),
+    meta: { requiresAuth: false, hideShell: true }
+  },
+  {
+    path: '/examples/headless-help-category',
+    name: 'headless-help-category-example',
+    component: () => import('@/views/HeadlessHelpCategoryExample.vue'),
+    meta: { requiresAuth: false, hideShell: true }
+  },
+  {
+    path: '/examples/headless-help-section',
+    name: 'headless-help-section-example',
+    component: () => import('@/views/HeadlessHelpSectionExample.vue'),
+    meta: { requiresAuth: false, hideShell: true }
+  },
+  {
     path: '/marketing/campaigns',
     name: 'marketing-campaigns',
     component: () => import('@/views/marketing/CampaignsList.vue'),
@@ -307,6 +337,37 @@ const routes = [
       requiresPermission: { module: 'assets', action: 'view' },
       appKey: 'MARKETING'
     }
+  },
+  {
+    path: '/marketing/blog',
+    name: 'marketing-blog',
+    component: () => import('@/views/marketing/BlogList.vue'),
+    meta: {
+      requiresAuth: true,
+      appKey: 'MARKETING',
+    },
+  },
+  {
+    path: '/marketing/blog/new',
+    name: 'marketing-blog-new',
+    component: () => import('@/views/marketing/BlogEditor.vue'),
+    meta: {
+      requiresAuth: true,
+      appKey: 'MARKETING',
+      moduleKey: 'blog',
+      routeType: 'create',
+    },
+  },
+  {
+    path: '/marketing/blog/:id/edit',
+    name: 'marketing-blog-edit',
+    component: () => import('@/views/marketing/BlogEditor.vue'),
+    meta: {
+      requiresAuth: true,
+      appKey: 'MARKETING',
+      moduleKey: 'blog',
+      routeType: 'edit',
+    },
   },
   {
     path: '/marketing/reports',
@@ -1139,6 +1200,50 @@ const routes = [
     }
   },
   {
+    path: '/helpdesk/articles',
+    name: 'helpdesk-articles',
+    component: () => import('@/views/helpdesk/ArticlesList.vue'),
+    meta: {
+      requiresAuth: true,
+      appKey: 'HELPDESK',
+      requiresPermission: { module: 'articles', action: 'view' },
+    },
+  },
+  {
+    path: '/helpdesk/articles/categories',
+    name: 'helpdesk-article-categories',
+    component: () => import('@/views/helpdesk/ArticleCategories.vue'),
+    meta: {
+      requiresAuth: true,
+      appKey: 'HELPDESK',
+      requiresPermission: { module: 'articles', action: 'view' },
+    },
+  },
+  {
+    path: '/helpdesk/articles/new',
+    name: 'helpdesk-article-new',
+    component: () => import('@/views/helpdesk/ArticleEditor.vue'),
+    meta: {
+      requiresAuth: true,
+      appKey: 'HELPDESK',
+      moduleKey: 'articles',
+      routeType: 'create',
+      requiresPermission: { module: 'articles', action: 'create' },
+    },
+  },
+  {
+    path: '/helpdesk/articles/:id/edit',
+    name: 'helpdesk-article-edit',
+    component: () => import('@/views/helpdesk/ArticleEditor.vue'),
+    meta: {
+      requiresAuth: true,
+      appKey: 'HELPDESK',
+      moduleKey: 'articles',
+      routeType: 'edit',
+      requiresPermission: { module: 'articles', action: 'edit' },
+    },
+  },
+  {
     path: '/imports',
     name: 'imports',
     component: () => import('@/views/Imports.vue'),
@@ -1443,7 +1548,7 @@ const routes = [
   // Audit App routes
   ...auditRoutes,
   // Portal App routes
-  ...portalRoutes
+  ...portalRoutes,
 ]
 
 const router = createRouter({

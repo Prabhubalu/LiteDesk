@@ -1807,13 +1807,34 @@
     "message": "Snapshots",
     "description": "View schedule snapshots"
   },
-  "schedulesSunday": { "message": "Sunday", "description": "Weekday label" },
-  "schedulesMonday": { "message": "Monday", "description": "Weekday label" },
-  "schedulesTuesday": { "message": "Tuesday", "description": "Weekday label" },
-  "schedulesWednesday": { "message": "Wednesday", "description": "Weekday label" },
-  "schedulesThursday": { "message": "Thursday", "description": "Weekday label" },
-  "schedulesFriday": { "message": "Friday", "description": "Weekday label" },
-  "schedulesSaturday": { "message": "Saturday", "description": "Weekday label" },
+  "schedulesSunday": {
+    "message": "Sunday",
+    "description": "Weekday label"
+  },
+  "schedulesMonday": {
+    "message": "Monday",
+    "description": "Weekday label"
+  },
+  "schedulesTuesday": {
+    "message": "Tuesday",
+    "description": "Weekday label"
+  },
+  "schedulesWednesday": {
+    "message": "Wednesday",
+    "description": "Weekday label"
+  },
+  "schedulesThursday": {
+    "message": "Thursday",
+    "description": "Weekday label"
+  },
+  "schedulesFriday": {
+    "message": "Friday",
+    "description": "Weekday label"
+  },
+  "schedulesSaturday": {
+    "message": "Saturday",
+    "description": "Weekday label"
+  },
   "snapshotsTitle": {
     "message": "Snapshots",
     "description": "Analytics snapshots page title"

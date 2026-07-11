@@ -654,5 +654,13 @@
   "moduleWidgets": {
     "message": "Widgets",
     "description": "Analytics widgets module navigation label"
+  },
+  "moduleArticles": {
+    "message": "Articles",
+    "description": "Helpdesk articles module navigation label"
+  },
+  "moduleBlog": {
+    "message": "Blog",
+    "description": "Marketing blog module navigation label"
   }
 }

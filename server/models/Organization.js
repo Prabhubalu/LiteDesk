@@ -325,7 +325,15 @@ const OrganizationSchema = new mongoose.Schema({
                     default: "Hey! Let’s discuss how we can help you. Fill out the form to start chatting."
                 }
             }
+        },
+        articles: {
+            publicKey: { type: String, default: null, index: true },
         }
+    },
+
+    contentPublishing: {
+        publishWebhookUrl: { type: String, default: '' },
+        headlessApiEnabled: { type: Boolean, default: true },
     },
     
     // Data Region (read-only if fixed, set during organization creation)

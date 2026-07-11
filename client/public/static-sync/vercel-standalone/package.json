@@ -1,0 +1,17 @@
+{
+  "name": "arivu-help-center",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "sync:help": "node scripts/sync-help-static.mjs",
+    "sync:help:full": "ARIVU_SYNC_FULL=1 node scripts/sync-help-static.mjs",
+    "prebuild": "npm run sync:help",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

@@ -976,6 +976,7 @@ const getIconForPath = (path) => {
   if (pathOnly === '/portal/invoices' || pathOnly.startsWith('/portal/invoices')) return 'banknotes';
   if (pathOnly === '/portal/knowledge' || pathOnly.startsWith('/portal/knowledge')) return 'book-open';
   if (pathOnly === '/helpdesk/cases' || pathOnly.startsWith('/helpdesk/cases/')) return 'cases';
+  if (pathOnly === '/helpdesk/articles' || pathOnly.startsWith('/helpdesk/articles/')) return 'book-open';
   if (pathOnly === '/helpdesk/dashboard' || pathOnly.startsWith('/helpdesk/')) return 'lifebuoy';
   if (isLiveChatSessionsRoute(pathOnly)) return 'chat-bubble-left-right';
   if (isLiveChatClosedSessionsRoute(pathOnly)) return 'clipboard-document-list';
@@ -986,6 +987,7 @@ const getIconForPath = (path) => {
   if (pathOnly === '/dashboard/sales' || pathOnly.startsWith('/dashboard/sales')) return 'document-chart-bar';
   if (pathOnly === '/dashboard/marketing' || pathOnly.startsWith('/dashboard/marketing')) return 'chart-bar';
   if (pathOnly.startsWith('/marketing/campaigns')) return 'megaphone';
+  if (pathOnly === '/marketing/blog' || pathOnly.startsWith('/marketing/blog/')) return 'document-text';
   if (pathOnly.startsWith('/marketing/audiences')) return 'users';
   if (pathOnly.startsWith('/marketing/segments')) return 'funnel';
   if (pathOnly.startsWith('/marketing/assets')) return 'photo';
@@ -1026,6 +1028,8 @@ const getTitleForPath = (path, params = {}) => {
     '/items': 'Items',
     '/helpdesk/cases': 'Cases',
     '/helpdesk/cases/': 'Cases',
+    '/helpdesk/articles': 'Articles',
+    '/helpdesk/articles/': 'Articles',
     '/trash': 'Trash',
     '/demo-requests': 'Demo Requests',
     '/instances': 'Instances',
@@ -1168,6 +1172,30 @@ const getTitleForPath = (path, params = {}) => {
       return 'Cases';
     }
     return 'Case Detail';
+  }
+
+  if (path.startsWith('/helpdesk/articles')) {
+    const meta = getTabTitleMetaForPath(path, params);
+    if (meta.titleKey && i18n.global.te(meta.titleKey)) {
+      return i18n.global.t(meta.titleKey, meta.titleParams || {});
+    }
+    if (path.endsWith('/new')) return 'New Article';
+    if (path.includes('/edit')) {
+      return params.name ? `${params.name}` : 'Edit Article';
+    }
+    return 'Articles';
+  }
+
+  if (path.startsWith('/marketing/blog')) {
+    const meta = getTabTitleMetaForPath(path, params);
+    if (meta.titleKey && i18n.global.te(meta.titleKey)) {
+      return i18n.global.t(meta.titleKey, meta.titleParams || {});
+    }
+    if (path.endsWith('/new')) return 'New Post';
+    if (path.includes('/edit')) {
+      return params.name ? `${params.name}` : 'Edit Post';
+    }
+    return 'Blog';
   }
   
   // Special case: App-scoped dashboard routes

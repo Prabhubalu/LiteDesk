@@ -1,0 +1,2586 @@
+{
+  "brand": {
+    "message": "Content Studio",
+    "description": "Content Studio product name in editor header"
+  },
+  "modeArticles": {
+    "message": "Articles",
+    "description": "Articles editor mode label"
+  },
+  "modeBlog": {
+    "message": "Blog",
+    "description": "Blog editor mode label"
+  },
+  "preview": {
+    "message": "Preview",
+    "description": "Preview action"
+  },
+  "saveDraft": {
+    "message": "Save Draft",
+    "description": "Save draft action"
+  },
+  "publish": {
+    "message": "Publish",
+    "description": "Publish action"
+  },
+  "savedSecondsAgo": {
+    "message": "Saved a few seconds ago",
+    "description": "Autosave status"
+  },
+  "unsavedChanges": {
+    "message": "Unsaved changes",
+    "description": "Dirty save status"
+  },
+  "previewDevice": {
+    "message": "Preview device",
+    "description": "Device preview toggle group label"
+  },
+  "deviceDesktop": {
+    "message": "Desktop",
+    "description": "Desktop preview device"
+  },
+  "deviceTablet": {
+    "message": "Tablet",
+    "description": "Tablet preview device"
+  },
+  "deviceMobile": {
+    "message": "Mobile",
+    "description": "Mobile preview device"
+  },
+  "workspacePanels": {
+    "message": "Workspace panels",
+    "description": "Left icon rail aria label"
+  },
+  "panelBlocks": {
+    "message": "Blocks",
+    "description": "Blocks panel"
+  },
+  "panelComponents": {
+    "message": "Components",
+    "description": "Components panel"
+  },
+  "panelMedia": {
+    "message": "Media",
+    "description": "Media panel"
+  },
+  "panelAi": {
+    "message": "AI Studio",
+    "description": "AI panel"
+  },
+  "panelTemplates": {
+    "message": "Templates",
+    "description": "Templates panel"
+  },
+  "panelSeo": {
+    "message": "SEO",
+    "description": "SEO panel"
+  },
+  "panelSettings": {
+    "message": "Settings",
+    "description": "Settings panel"
+  },
+  "panelComingSoon": {
+    "message": "Coming soon",
+    "description": "Placeholder for unfinished panels"
+  },
+  "addBlocksHint": {
+    "message": "Drag or click blocks to add them to your content",
+    "description": "Blocks panel hint"
+  },
+  "addBlocksTitle": {
+    "message": "Add Blocks",
+    "description": "Blocks panel title"
+  },
+  "noBlocksFound": {
+    "message": "No blocks match your search",
+    "description": "Empty block search state"
+  },
+  "blockComingSoon": {
+    "message": "Coming soon",
+    "description": "Disabled block tooltip"
+  },
+  "blockGallery": {
+    "message": "Gallery",
+    "description": "Gallery block"
+  },
+  "blockVideo": {
+    "message": "Video",
+    "description": "Video block"
+  },
+  "blockAudio": {
+    "message": "Audio",
+    "description": "Audio block"
+  },
+  "blockAudioDescription": {
+    "message": "Embed an audio file with native playback controls.",
+    "description": "Audio block description"
+  },
+  "blockFile": {
+    "message": "File",
+    "description": "File download block"
+  },
+  "blockFileDescription": {
+    "message": "Link to a downloadable file with optional description.",
+    "description": "File block description"
+  },
+  "blockTabs": {
+    "message": "Tabs",
+    "description": "Tabs block"
+  },
+  "blockAccordion": {
+    "message": "Accordion",
+    "description": "Accordion block"
+  },
+  "blockAlert": {
+    "message": "Alert",
+    "description": "Alert block"
+  },
+  "blockTimeline": {
+    "message": "Timeline",
+    "description": "Timeline block"
+  },
+  "blockHowTo": {
+    "message": "How to",
+    "description": "How-to block"
+  },
+  "blockColumns": {
+    "message": "Columns",
+    "description": "Columns layout block"
+  },
+  "blockSection": {
+    "message": "Section",
+    "description": "Section layout block"
+  },
+  "blockSpacer": {
+    "message": "Spacer",
+    "description": "Spacer layout block"
+  },
+  "blockButton": {
+    "message": "Button",
+    "description": "Button CTA block"
+  },
+  "blockToc": {
+    "message": "Table of contents",
+    "description": "TOC block"
+  },
+  "blockMap": {
+    "message": "Map",
+    "description": "Map embed block"
+  },
+  "blockForm": {
+    "message": "Form",
+    "description": "Form block"
+  },
+  "blockSocial": {
+    "message": "Social icons",
+    "description": "Social links block"
+  },
+  "blockRating": {
+    "message": "Rating",
+    "description": "Star rating block"
+  },
+  "blockProgress": {
+    "message": "Progress bar",
+    "description": "Progress bar block"
+  },
+  "blockNewsletter": {
+    "message": "Newsletter",
+    "description": "Newsletter signup block"
+  },
+  "blockTabsDescription": {
+    "message": "Organize related content into tabbed sections.",
+    "description": "Tabs block description"
+  },
+  "blockTabItemDescription": {
+    "message": "Edit the label and content for this tab.",
+    "description": "Tab item description"
+  },
+  "blockColumnsDescription": {
+    "message": "Display content side-by-side in columns.",
+    "description": "Columns block description"
+  },
+  "blockColumnDescription": {
+    "message": "Edit content inside this column.",
+    "description": "Column description"
+  },
+  "blockSectionDescription": {
+    "message": "Group content in a styled section container.",
+    "description": "Section block description"
+  },
+  "blockTocDescription": {
+    "message": "Auto-generate a table of contents from headings.",
+    "description": "TOC block description"
+  },
+  "blockFormDescription": {
+    "message": "Add a contact form block.",
+    "description": "Form block description"
+  },
+  "blockSocialDescription": {
+    "message": "Link to your social profiles.",
+    "description": "Social block description"
+  },
+  "blockRatingDescription": {
+    "message": "Display a star rating summary.",
+    "description": "Rating block description"
+  },
+  "blockProgressDescription": {
+    "message": "Show progress toward a goal.",
+    "description": "Progress block description"
+  },
+  "blockHeroDescription": {
+    "message": "Large banner with title, subtitle, and CTA.",
+    "description": "Hero block description"
+  },
+  "blockNewsletterDescription": {
+    "message": "Email signup call-to-action block.",
+    "description": "Newsletter block description"
+  },
+  "fieldTabLabel": {
+    "message": "Tab label",
+    "description": "Tab label field"
+  },
+  "addTab": {
+    "message": "Add tab",
+    "description": "Add tab action"
+  },
+  "removeTab": {
+    "message": "Remove tab",
+    "description": "Remove tab action"
+  },
+  "removeTimelineItem": {
+    "message": "Remove timeline item",
+    "description": "Remove timeline item action"
+  },
+  "fieldGalleryLayout": {
+    "message": "Layout",
+    "description": "Gallery layout field"
+  },
+  "galleryLayoutGrid": {
+    "message": "Grid",
+    "description": "Gallery grid layout option"
+  },
+  "galleryLayoutScroll": {
+    "message": "Horizontal scroll",
+    "description": "Gallery horizontal scroll layout option"
+  },
+  "galleryLayoutCarousel": {
+    "message": "Carousel",
+    "description": "Gallery carousel layout option"
+  },
+  "galleryImageCount": {
+    "message": "{count} images",
+    "description": "Gallery image count label"
+  },
+  "addGalleryImage": {
+    "message": "Add image",
+    "description": "Add image to gallery action"
+  },
+  "replaceGalleryImage": {
+    "message": "Replace image",
+    "description": "Replace selected gallery image action"
+  },
+  "removeGalleryImage": {
+    "message": "Remove image",
+    "description": "Remove selected gallery image action"
+  },
+  "addColumn": {
+    "message": "Add column",
+    "description": "Add column action"
+  },
+  "fieldSectionVariant": {
+    "message": "Background",
+    "description": "Section variant field"
+  },
+  "sectionVariantDefault": {
+    "message": "Default",
+    "description": "Default section variant"
+  },
+  "sectionVariantMuted": {
+    "message": "Muted",
+    "description": "Muted section variant"
+  },
+  "sectionVariantHighlight": {
+    "message": "Highlight",
+    "description": "Highlight section variant"
+  },
+  "fieldTocTitle": {
+    "message": "Title",
+    "description": "TOC title field"
+  },
+  "fieldTocMinLevel": {
+    "message": "From heading",
+    "description": "TOC min heading level"
+  },
+  "fieldTocMaxLevel": {
+    "message": "To heading",
+    "description": "TOC max heading level"
+  },
+  "fieldFormTitle": {
+    "message": "Form title",
+    "description": "Form title field"
+  },
+  "fieldFormDescription": {
+    "message": "Description",
+    "description": "Form description field"
+  },
+  "fieldFormSubmitLabel": {
+    "message": "Submit label",
+    "description": "Form submit button label"
+  },
+  "fieldRatingLabel": {
+    "message": "Label",
+    "description": "Rating label field"
+  },
+  "fieldRatingValue": {
+    "message": "Rating value",
+    "description": "Rating value field"
+  },
+  "fieldProgressLabel": {
+    "message": "Label",
+    "description": "Progress label field"
+  },
+  "fieldProgressValue": {
+    "message": "Progress (%)",
+    "description": "Progress value field"
+  },
+  "fieldHeroTitle": {
+    "message": "Title",
+    "description": "Hero title field"
+  },
+  "fieldHeroSubtitle": {
+    "message": "Subtitle",
+    "description": "Hero subtitle field"
+  },
+  "fieldHeroImageUrl": {
+    "message": "Image URL",
+    "description": "Hero image URL field"
+  },
+  "fieldHeroButtonLabel": {
+    "message": "Button label",
+    "description": "Hero button label field"
+  },
+  "fieldHeroButtonHref": {
+    "message": "Button URL",
+    "description": "Hero button URL field"
+  },
+  "fieldNewsletterTitle": {
+    "message": "Title",
+    "description": "Newsletter title field"
+  },
+  "fieldNewsletterDescription": {
+    "message": "Description",
+    "description": "Newsletter description field"
+  },
+  "fieldNewsletterPlaceholder": {
+    "message": "Email placeholder",
+    "description": "Newsletter email placeholder"
+  },
+  "fieldNewsletterButtonLabel": {
+    "message": "Button label",
+    "description": "Newsletter button label"
+  },
+  "sectionTabsSettings": {
+    "message": "Tabs settings",
+    "description": "Tabs settings section"
+  },
+  "sectionTabItemSettings": {
+    "message": "Tab settings",
+    "description": "Tab item settings section"
+  },
+  "sectionColumnsSettings": {
+    "message": "Columns settings",
+    "description": "Columns settings section"
+  },
+  "sectionColumnSettings": {
+    "message": "Column settings",
+    "description": "Column settings section"
+  },
+  "sectionSectionSettings": {
+    "message": "Section settings",
+    "description": "Section settings section"
+  },
+  "sectionTocSettings": {
+    "message": "Table of contents settings",
+    "description": "TOC settings section"
+  },
+  "sectionFormSettings": {
+    "message": "Form settings",
+    "description": "Form settings section"
+  },
+  "sectionSocialSettings": {
+    "message": "Social settings",
+    "description": "Social settings section"
+  },
+  "sectionRatingSettings": {
+    "message": "Rating settings",
+    "description": "Rating settings section"
+  },
+  "sectionProgressSettings": {
+    "message": "Progress settings",
+    "description": "Progress settings section"
+  },
+  "sectionHeroSettings": {
+    "message": "Hero settings",
+    "description": "Hero settings section"
+  },
+  "sectionNewsletterSettings": {
+    "message": "Newsletter settings",
+    "description": "Newsletter settings section"
+  },
+  "searchBlocks": {
+    "message": "Search blocks…",
+    "description": "Block search placeholder"
+  },
+  "categoryBasic": {
+    "message": "Basic",
+    "description": "Basic block category"
+  },
+  "categoryMedia": {
+    "message": "Media",
+    "description": "Media block category"
+  },
+  "categoryContent": {
+    "message": "Content",
+    "description": "Content block category"
+  },
+  "categoryLayout": {
+    "message": "Layout",
+    "description": "Layout block category"
+  },
+  "blockParagraph": {
+    "message": "Paragraph",
+    "description": "Paragraph block"
+  },
+  "blockHeading": {
+    "message": "Heading",
+    "description": "Heading block"
+  },
+  "blockImage": {
+    "message": "Image",
+    "description": "Image block"
+  },
+  "blockList": {
+    "message": "List",
+    "description": "List block"
+  },
+  "blockQuote": {
+    "message": "Quote",
+    "description": "Quote block"
+  },
+  "blockDivider": {
+    "message": "Divider",
+    "description": "Divider block"
+  },
+  "blockCode": {
+    "message": "Code",
+    "description": "Code block"
+  },
+  "blockTable": {
+    "message": "Table",
+    "description": "Table block"
+  },
+  "blockSteps": {
+    "message": "Steps",
+    "description": "Steps block"
+  },
+  "blockFaq": {
+    "message": "FAQ",
+    "description": "FAQ block"
+  },
+  "blockCallout": {
+    "message": "Callout",
+    "description": "Callout block"
+  },
+  "blockHero": {
+    "message": "Hero",
+    "description": "Hero block"
+  },
+  "blockCta": {
+    "message": "CTA",
+    "description": "CTA block"
+  },
+  "tabDocument": {
+    "message": "Document",
+    "description": "Inspector document tab"
+  },
+  "tabBlock": {
+    "message": "Block",
+    "description": "Inspector block tab"
+  },
+  "fieldSummary": {
+    "message": "Summary",
+    "description": "Document summary field"
+  },
+  "fieldSlug": {
+    "message": "Slug",
+    "description": "URL slug field"
+  },
+  "fieldMetaTitle": {
+    "message": "Meta title",
+    "description": "SEO meta title"
+  },
+  "fieldMetaDescription": {
+    "message": "Meta description",
+    "description": "SEO meta description"
+  },
+  "blockSettings": {
+    "message": "Block settings",
+    "description": "Block inspector heading"
+  },
+  "fieldHeadingLevel": {
+    "message": "HTML tag",
+    "description": "Heading level field"
+  },
+  "fieldTextSize": {
+    "message": "Text size",
+    "description": "Block text size field"
+  },
+  "fieldTextColor": {
+    "message": "Text color",
+    "description": "Block text color field"
+  },
+  "fieldLineHeight": {
+    "message": "Line height",
+    "description": "Block line height field"
+  },
+  "fieldMarginTop": {
+    "message": "Margin top",
+    "description": "Block margin top field"
+  },
+  "fieldMarginBottom": {
+    "message": "Margin bottom",
+    "description": "Block margin bottom field"
+  },
+  "fieldPadding": {
+    "message": "Padding",
+    "description": "Block padding field"
+  },
+  "sectionHeadingSettings": {
+    "message": "Heading settings",
+    "description": "Heading block settings section"
+  },
+  "sectionParagraphSettings": {
+    "message": "Paragraph settings",
+    "description": "Paragraph block settings section"
+  },
+  "sectionImageSettings": {
+    "message": "Image settings",
+    "description": "Image block settings section"
+  },
+  "sectionGallerySettings": {
+    "message": "Gallery settings",
+    "description": "Gallery block settings section"
+  },
+  "sectionLinkSettings": {
+    "message": "Link settings",
+    "description": "Link block settings section"
+  },
+  "sectionListSettings": {
+    "message": "List settings",
+    "description": "List block settings section"
+  },
+  "sectionChecklistSettings": {
+    "message": "Checklist settings",
+    "description": "Checklist block settings section"
+  },
+  "sectionQuoteSettings": {
+    "message": "Quote settings",
+    "description": "Quote block settings section"
+  },
+  "sectionCalloutSettings": {
+    "message": "Callout settings",
+    "description": "Callout block settings section"
+  },
+  "sectionEmbedSettings": {
+    "message": "Embed settings",
+    "description": "Embed block settings section"
+  },
+  "sectionAudioSettings": {
+    "message": "Audio settings",
+    "description": "Audio block settings section"
+  },
+  "sectionFileSettings": {
+    "message": "File settings",
+    "description": "File block settings section"
+  },
+  "sectionCodeSettings": {
+    "message": "Code settings",
+    "description": "Code block settings section"
+  },
+  "sectionDividerSettings": {
+    "message": "Divider settings",
+    "description": "Divider block settings section"
+  },
+  "sectionStepsSettings": {
+    "message": "Steps settings",
+    "description": "Steps block settings section"
+  },
+  "sectionStepSettings": {
+    "message": "Step settings",
+    "description": "Step item settings section"
+  },
+  "sectionFaqSettings": {
+    "message": "FAQ settings",
+    "description": "FAQ block settings section"
+  },
+  "sectionFaqItemSettings": {
+    "message": "FAQ item settings",
+    "description": "FAQ item settings section"
+  },
+  "sectionTimelineSettings": {
+    "message": "Timeline settings",
+    "description": "Timeline block settings section"
+  },
+  "sectionTimelineItemSettings": {
+    "message": "Timeline item settings",
+    "description": "Timeline item settings section"
+  },
+  "sectionTableSettings": {
+    "message": "Table settings",
+    "description": "Table block settings section"
+  },
+  "sectionTableCellSettings": {
+    "message": "Cell settings",
+    "description": "Table cell settings section"
+  },
+  "sectionTableRowSettings": {
+    "message": "Row settings",
+    "description": "Table row settings section"
+  },
+  "sectionTableColumnSettings": {
+    "message": "Column settings",
+    "description": "Table column settings section"
+  },
+  "sectionTableRowColumnSettings": {
+    "message": "Row & column",
+    "description": "Combined row and column table settings subsection"
+  },
+  "tableCellPosition": {
+    "message": "Row {row}, column {col}",
+    "description": "Selected table cell position label"
+  },
+  "fieldTableCellHeader": {
+    "message": "Header cell",
+    "description": "Toggle for a single header table cell"
+  },
+  "fieldBackgroundColor": {
+    "message": "Background",
+    "description": "Background color field"
+  },
+  "fieldRowBackground": {
+    "message": "Row background",
+    "description": "Table row background color"
+  },
+  "fieldRowHeight": {
+    "message": "Row height",
+    "description": "Table row height in pixels"
+  },
+  "rowHeightPlaceholder": {
+    "message": "Auto",
+    "description": "Row height placeholder"
+  },
+  "fieldColumnBackground": {
+    "message": "Column background",
+    "description": "Table column background color"
+  },
+  "fieldColumnWidth": {
+    "message": "Column width",
+    "description": "Table column width"
+  },
+  "fieldColspan": {
+    "message": "Col span",
+    "description": "Table cell colspan"
+  },
+  "fieldRowspan": {
+    "message": "Row span",
+    "description": "Table cell rowspan"
+  },
+  "backgroundColorPlaceholder": {
+    "message": "#ffffff",
+    "description": "Background color placeholder"
+  },
+  "columnWidthPlaceholder": {
+    "message": "120px or 25%",
+    "description": "Column width placeholder"
+  },
+  "sectionSpacing": {
+    "message": "Spacing",
+    "description": "Block spacing section"
+  },
+  "sectionAdvanced": {
+    "message": "Advanced",
+    "description": "Block advanced section"
+  },
+  "fontSizeDefault": {
+    "message": "Default",
+    "description": "Default font size option"
+  },
+  "lineHeightDefault": {
+    "message": "Default",
+    "description": "Default line height option"
+  },
+  "lineHeightTight": {
+    "message": "1.25",
+    "description": "Tight line height option"
+  },
+  "lineHeightSnug": {
+    "message": "1.375",
+    "description": "Snug line height option"
+  },
+  "lineHeightNormal": {
+    "message": "1.5",
+    "description": "Normal line height option"
+  },
+  "lineHeightRelaxed": {
+    "message": "1.625",
+    "description": "Relaxed line height option"
+  },
+  "lineHeightLoose": {
+    "message": "1.75",
+    "description": "Loose line height option"
+  },
+  "lineHeightDouble": {
+    "message": "2",
+    "description": "Double line height option"
+  },
+  "fontSizeSmall": {
+    "message": "0.875 rem",
+    "description": "Small font size option"
+  },
+  "fontSizeBase": {
+    "message": "1 rem",
+    "description": "Base font size option"
+  },
+  "fontSizeMedium": {
+    "message": "1.125 rem",
+    "description": "Medium font size option"
+  },
+  "fontSizeLarge": {
+    "message": "1.25 rem",
+    "description": "Large font size option"
+  },
+  "fontSizeXLarge": {
+    "message": "1.5 rem",
+    "description": "Extra large font size option"
+  },
+  "fontSize2XLarge": {
+    "message": "1.875 rem",
+    "description": "2x large font size option"
+  },
+  "fontSize3XLarge": {
+    "message": "2.25 rem",
+    "description": "3x large font size option"
+  },
+  "fontSize4XLarge": {
+    "message": "2.5 rem",
+    "description": "4x large font size option"
+  },
+  "blockHeadingDescription": {
+    "message": "Introduce new sections and organize your content.",
+    "description": "Heading block description"
+  },
+  "blockParagraphDescription": {
+    "message": "Write body copy, explanations, and narrative text.",
+    "description": "Paragraph block description"
+  },
+  "blockImageDescription": {
+    "message": "Add visuals with alt text and accessibility metadata.",
+    "description": "Image block description"
+  },
+  "blockGalleryDescription": {
+    "message": "Display multiple images in a grid, scroll row, or carousel.",
+    "description": "Gallery block description"
+  },
+  "blockLink": {
+    "message": "Link",
+    "description": "Link selection label"
+  },
+  "blockLinkDescription": {
+    "message": "Edit the URL for the selected hyperlink.",
+    "description": "Link block description"
+  },
+  "blockListDescription": {
+    "message": "Present related points as bullet or numbered lists.",
+    "description": "List block description"
+  },
+  "blockChecklistDescription": {
+    "message": "Track tasks and action items with checkboxes.",
+    "description": "Checklist block description"
+  },
+  "blockQuoteDescription": {
+    "message": "Highlight quotations or emphasized passages.",
+    "description": "Quote block description"
+  },
+  "blockCalloutDescription": {
+    "message": "Draw attention with info, tip, or warning callouts.",
+    "description": "Callout block description"
+  },
+  "blockEmbedDescription": {
+    "message": "Embed external content such as videos or widgets.",
+    "description": "Embed block description"
+  },
+  "blockCodeDescription": {
+    "message": "Share code snippets with optional language labels.",
+    "description": "Code block description"
+  },
+  "blockDividerDescription": {
+    "message": "Separate sections with a horizontal rule.",
+    "description": "Divider block description"
+  },
+  "blockStepsDescription": {
+    "message": "Guide readers through a numbered sequence of steps.",
+    "description": "Steps block description"
+  },
+  "blockStepDescription": {
+    "message": "Edit the title for this step in the sequence.",
+    "description": "Step item description"
+  },
+  "blockFaqDescription": {
+    "message": "Answer common questions in a structured FAQ block.",
+    "description": "FAQ block description"
+  },
+  "blockFaqItemDescription": {
+    "message": "Edit the question shown for this FAQ entry.",
+    "description": "FAQ item description"
+  },
+  "blockTimelineDescription": {
+    "message": "Show events in chronological order.",
+    "description": "Timeline block description"
+  },
+  "blockTimelineItemDescription": {
+    "message": "Edit the title and date for this timeline entry.",
+    "description": "Timeline item description"
+  },
+  "blockTableDescription": {
+    "message": "Organize structured data in rows and columns.",
+    "description": "Table block description"
+  },
+  "fieldAnchorId": {
+    "message": "Anchor ID",
+    "description": "Anchor ID field"
+  },
+  "fieldCssClass": {
+    "message": "CSS class",
+    "description": "CSS class field"
+  },
+  "anchorPlaceholder": {
+    "message": "section-id",
+    "description": "Anchor placeholder"
+  },
+  "cssClassPlaceholder": {
+    "message": "custom-class",
+    "description": "CSS class placeholder"
+  },
+  "titlePlaceholder": {
+    "message": "Article title",
+    "description": "Title input placeholder"
+  },
+  "subtitlePlaceholder": {
+    "message": "Add a short subtitle or lead paragraph",
+    "description": "Subtitle placeholder"
+  },
+  "editorPlaceholder": {
+    "message": "Start writing or type '/' for commands",
+    "description": "Editor body placeholder"
+  },
+  "authorFallback": {
+    "message": "Author",
+    "description": "Fallback author name"
+  },
+  "readTime": {
+    "message": "{minutes} min read",
+    "description": "Estimated read time"
+  },
+  "categoryHelp": {
+    "message": "Help",
+    "description": "Article category chip"
+  },
+  "categoryBlog": {
+    "message": "Blog",
+    "description": "Blog category chip"
+  },
+  "linkPrompt": {
+    "message": "Enter link URL",
+    "description": "Prompt for link URL"
+  },
+  "saveSuccess": {
+    "message": "Draft saved",
+    "description": "Save success toast"
+  },
+  "saveFailed": {
+    "message": "Failed to save draft",
+    "description": "Save error toast"
+  },
+  "publishSuccess": {
+    "message": "Content published",
+    "description": "Publish success toast"
+  },
+  "publishFailed": {
+    "message": "Failed to publish content",
+    "description": "Publish error toast"
+  },
+  "previewComingSoon": {
+    "message": "Full preview is coming soon",
+    "description": "Preview placeholder toast"
+  },
+  "previewFailed": {
+    "message": "Failed to render preview",
+    "description": "Preview render error"
+  },
+  "searchMedia": {
+    "message": "Search media…",
+    "description": "Media panel search placeholder"
+  },
+  "emptyMedia": {
+    "message": "No images in your library yet",
+    "description": "Empty media panel"
+  },
+  "uploadMedia": {
+    "message": "Upload image",
+    "description": "Upload media label"
+  },
+  "untitledAsset": {
+    "message": "Untitled",
+    "description": "Fallback asset name"
+  },
+  "mediaHint": {
+    "message": "Insert images from your content library",
+    "description": "Media panel hint"
+  },
+  "seoHint": {
+    "message": "Tune search and social metadata",
+    "description": "SEO panel hint"
+  },
+  "fieldVisibility": {
+    "message": "Visibility",
+    "description": "Document visibility field"
+  },
+  "visibilityInternal": {
+    "message": "Internal only",
+    "description": "Internal visibility option"
+  },
+  "visibilityPortal": {
+    "message": "Customer portal",
+    "description": "Portal visibility option"
+  },
+  "visibilityPublic": {
+    "message": "Public",
+    "description": "Public visibility option"
+  },
+  "visibilityPrivate": {
+    "message": "Private",
+    "description": "Private visibility option"
+  },
+  "fieldCalloutVariant": {
+    "message": "Callout style",
+    "description": "Callout variant field"
+  },
+  "calloutInfo": {
+    "message": "Info",
+    "description": "Info callout variant"
+  },
+  "calloutTip": {
+    "message": "Tip",
+    "description": "Tip callout variant"
+  },
+  "calloutWarning": {
+    "message": "Warning",
+    "description": "Warning callout variant"
+  },
+  "articlesTitle": {
+    "message": "Articles",
+    "description": "Articles list page title"
+  },
+  "articlesSubtitle": {
+    "message": "Build knowledge base articles for your help center",
+    "description": "Articles list subtitle"
+  },
+  "createArticle": {
+    "message": "New Article",
+    "description": "Create article CTA"
+  },
+  "tabNewArticle": {
+    "message": "New Article",
+    "description": "Tab title for new helpdesk article editor"
+  },
+  "tabEditArticle": {
+    "message": "Edit Article",
+    "description": "Tab title for helpdesk article editor before title loads"
+  },
+  "emptyArticles": {
+    "message": "No articles yet. Create your first help article.",
+    "description": "Empty articles list"
+  },
+  "emptyArticlesTitle": {
+    "message": "Build your help center",
+    "description": "FIRST_TIME empty state title for articles list"
+  },
+  "emptyArticlesMessage": {
+    "message": "Create knowledge articles and publish them to your customer portal.",
+    "description": "FIRST_TIME empty state message for articles list"
+  },
+  "blockRelatedArticles": {
+    "message": "Related articles",
+    "description": "Related articles block label"
+  },
+  "blockRelatedArticlesDescription": {
+    "message": "Link to other help articles for further reading.",
+    "description": "Related articles block description"
+  },
+  "sectionRelatedArticlesSettings": {
+    "message": "Related articles",
+    "description": "Related articles inspector section title"
+  },
+  "fieldRelatedArticlesTitle": {
+    "message": "Section title",
+    "description": "Related articles block title field"
+  },
+  "searchArticlesToLink": {
+    "message": "Search articles to link…",
+    "description": "Related articles search placeholder"
+  },
+  "relatedArticlesEmpty": {
+    "message": "No linked articles yet.",
+    "description": "Related articles empty state in inspector"
+  },
+  "componentRelatedArticles": {
+    "message": "Related articles block",
+    "description": "Related articles component preset label"
+  },
+  "componentRelatedArticlesDesc": {
+    "message": "Insert a curated list of linked help articles.",
+    "description": "Related articles component preset description"
+  },
+  "noParentCollection": {
+    "message": "No parent (top level)",
+    "description": "Collection parent selector empty option"
+  },
+  "blogTitle": {
+    "message": "Blog",
+    "description": "Blog list page title"
+  },
+  "blogSubtitle": {
+    "message": "Create and publish marketing blog posts",
+    "description": "Blog list subtitle"
+  },
+  "createPost": {
+    "message": "New Post",
+    "description": "Create blog post CTA"
+  },
+  "tabNewPost": {
+    "message": "New Post",
+    "description": "Tab title for new marketing blog editor"
+  },
+  "tabEditPost": {
+    "message": "Edit Post",
+    "description": "Tab title for marketing blog editor before title loads"
+  },
+  "emptyBlog": {
+    "message": "No blog posts yet. Create your first post.",
+    "description": "Empty blog list"
+  },
+  "columnTitle": {
+    "message": "Title",
+    "description": "List column title"
+  },
+  "columnStatus": {
+    "message": "Status",
+    "description": "List column status"
+  },
+  "columnUpdated": {
+    "message": "Updated",
+    "description": "List column updated"
+  },
+  "searchArticles": {
+    "message": "Search articles…",
+    "description": "Articles list search placeholder"
+  },
+  "filterAllStatuses": {
+    "message": "All statuses",
+    "description": "Articles status filter"
+  },
+  "filterAllVisibility": {
+    "message": "All visibility",
+    "description": "Articles visibility filter"
+  },
+  "statusDraft": {
+    "message": "Draft",
+    "description": "Draft status"
+  },
+  "statusPublished": {
+    "message": "Published",
+    "description": "Published status"
+  },
+  "statusArchived": {
+    "message": "Archived",
+    "description": "Archived status"
+  },
+  "settingsHint": {
+    "message": "Collections, publishing targets, and lifecycle actions",
+    "description": "Settings panel hint"
+  },
+  "fieldCollection": {
+    "message": "Collection",
+    "description": "Article collection field"
+  },
+  "noCollection": {
+    "message": "No collection",
+    "description": "No collection option"
+  },
+  "publicUrlLabel": {
+    "message": "Public website URL",
+    "description": "Public URL label"
+  },
+  "unpublish": {
+    "message": "Unpublish",
+    "description": "Unpublish action"
+  },
+  "archive": {
+    "message": "Archive",
+    "description": "Archive action"
+  },
+  "deleteArticle": {
+    "message": "Delete article",
+    "description": "Delete article action"
+  },
+  "deleteConfirm": {
+    "message": "Delete this article permanently?",
+    "description": "Delete confirmation"
+  },
+  "unpublishSuccess": {
+    "message": "Article unpublished",
+    "description": "Unpublish success"
+  },
+  "unpublishFailed": {
+    "message": "Failed to unpublish article",
+    "description": "Unpublish error"
+  },
+  "archiveSuccess": {
+    "message": "Article archived",
+    "description": "Archive success"
+  },
+  "archiveFailed": {
+    "message": "Failed to archive article",
+    "description": "Archive error"
+  },
+  "deleteSuccess": {
+    "message": "Article deleted",
+    "description": "Delete success"
+  },
+  "deleteFailed": {
+    "message": "Failed to delete article",
+    "description": "Delete error"
+  },
+  "publicLoadFailed": {
+    "message": "Failed to load article",
+    "description": "Public article load error"
+  },
+  "componentsHint": {
+    "message": "Insert reusable content sections into your article",
+    "description": "Components panel hint"
+  },
+  "templatesHint": {
+    "message": "Start from a structured article layout",
+    "description": "Templates panel hint"
+  },
+  "searchComponents": {
+    "message": "Search components…",
+    "description": "Components search placeholder"
+  },
+  "searchTemplates": {
+    "message": "Search templates…",
+    "description": "Templates search placeholder"
+  },
+  "emptyComponents": {
+    "message": "No components match your search",
+    "description": "Empty components list"
+  },
+  "emptyTemplates": {
+    "message": "No templates match your search",
+    "description": "Empty templates list"
+  },
+  "applyTemplateConfirm": {
+    "message": "Replace current content with this template?",
+    "description": "Template apply confirmation"
+  },
+  "componentTipCallout": {
+    "message": "Tip callout",
+    "description": "Tip callout component"
+  },
+  "componentTipCalloutDesc": {
+    "message": "Highlighted tip for helpful guidance",
+    "description": "Tip callout component description"
+  },
+  "componentWarningCallout": {
+    "message": "Warning callout",
+    "description": "Warning callout component"
+  },
+  "componentWarningCalloutDesc": {
+    "message": "Caution or prerequisite warning",
+    "description": "Warning callout component description"
+  },
+  "componentThreeSteps": {
+    "message": "3-step guide",
+    "description": "Three steps component"
+  },
+  "componentThreeStepsDesc": {
+    "message": "Numbered steps block with three placeholders",
+    "description": "Three steps component description"
+  },
+  "componentFaqPair": {
+    "message": "FAQ pair",
+    "description": "FAQ pair component"
+  },
+  "componentFaqPairDesc": {
+    "message": "Two question-and-answer FAQ items",
+    "description": "FAQ pair component description"
+  },
+  "componentChecklist": {
+    "message": "Checklist",
+    "description": "Checklist component"
+  },
+  "componentChecklistDesc": {
+    "message": "Prerequisites bullet list intro",
+    "description": "Checklist component description"
+  },
+  "componentPrerequisites": {
+    "message": "Prerequisites section",
+    "description": "Prerequisites component"
+  },
+  "componentPrerequisitesDesc": {
+    "message": "Heading, list, and divider for prerequisites",
+    "description": "Prerequisites component description"
+  },
+  "componentRelatedLinks": {
+    "message": "Related links",
+    "description": "Related links component"
+  },
+  "componentRelatedLinksDesc": {
+    "message": "Related articles heading with link list",
+    "description": "Related links component description"
+  },
+  "templateHowTo": {
+    "message": "How-to guide",
+    "description": "How-to template"
+  },
+  "templateHowToDesc": {
+    "message": "Step-by-step instructions with prerequisites",
+    "description": "How-to template description"
+  },
+  "templateHowToTitle": {
+    "message": "How to complete this task",
+    "description": "How-to template title"
+  },
+  "templateHowToSubtitle": {
+    "message": "Follow these steps to get started quickly",
+    "description": "How-to template subtitle"
+  },
+  "templateHowToSummary": {
+    "message": "A step-by-step guide for completing this task.",
+    "description": "How-to template summary"
+  },
+  "templateTroubleshooting": {
+    "message": "Troubleshooting",
+    "description": "Troubleshooting template"
+  },
+  "templateTroubleshootingDesc": {
+    "message": "Symptoms and resolution structure",
+    "description": "Troubleshooting template description"
+  },
+  "templateTroubleshootingTitle": {
+    "message": "Troubleshooting this issue",
+    "description": "Troubleshooting template title"
+  },
+  "templateTroubleshootingSubtitle": {
+    "message": "Diagnose and fix a common problem",
+    "description": "Troubleshooting template subtitle"
+  },
+  "templateTroubleshootingSummary": {
+    "message": "Identify symptoms and resolve this issue.",
+    "description": "Troubleshooting template summary"
+  },
+  "templateFaq": {
+    "message": "FAQ page",
+    "description": "FAQ template"
+  },
+  "templateFaqDesc": {
+    "message": "Multiple FAQ items in one article",
+    "description": "FAQ template description"
+  },
+  "templateFaqTitle": {
+    "message": "Frequently asked questions",
+    "description": "FAQ template title"
+  },
+  "templateFaqSubtitle": {
+    "message": "Quick answers to common questions",
+    "description": "FAQ template subtitle"
+  },
+  "templateFaqSummary": {
+    "message": "Answers to the most common questions.",
+    "description": "FAQ template summary"
+  },
+  "templatePolicy": {
+    "message": "Policy document",
+    "description": "Policy template"
+  },
+  "templatePolicyDesc": {
+    "message": "Overview, details, and exceptions",
+    "description": "Policy template description"
+  },
+  "templatePolicyTitle": {
+    "message": "Policy overview",
+    "description": "Policy template title"
+  },
+  "templatePolicySubtitle": {
+    "message": "Important policy information",
+    "description": "Policy template subtitle"
+  },
+  "templatePolicySummary": {
+    "message": "Overview of the policy and key details.",
+    "description": "Policy template summary"
+  },
+  "manageCollections": {
+    "message": "Manage collections",
+    "description": "Collections management section"
+  },
+  "collectionNamePlaceholder": {
+    "message": "Collection name",
+    "description": "Collection name input placeholder"
+  },
+  "createCollection": {
+    "message": "Create collection",
+    "description": "Create collection action"
+  },
+  "emptyCollections": {
+    "message": "No collections yet",
+    "description": "Empty collections list"
+  },
+  "panelOutline": {
+    "message": "Outline",
+    "description": "Document outline panel"
+  },
+  "outlineHint": {
+    "message": "Jump to headings in your article",
+    "description": "Outline panel hint"
+  },
+  "outlineEmpty": {
+    "message": "Add headings to build an outline",
+    "description": "Empty outline state"
+  },
+  "blockChecklist": {
+    "message": "Checklist",
+    "description": "Checklist block"
+  },
+  "blockEmbed": {
+    "message": "Embed",
+    "description": "Embed block"
+  },
+  "addCover": {
+    "message": "Add cover image",
+    "description": "Add cover image action"
+  },
+  "changeCover": {
+    "message": "Change",
+    "description": "Change cover image"
+  },
+  "removeCover": {
+    "message": "Remove",
+    "description": "Remove cover image"
+  },
+  "fieldCoverPosition": {
+    "message": "Cover position",
+    "description": "Cover image position relative to heading"
+  },
+  "coverPositionBelowTitle": {
+    "message": "Below heading",
+    "description": "Cover image below article title"
+  },
+  "coverPositionAboveTitle": {
+    "message": "Above heading",
+    "description": "Cover image above article title"
+  },
+  "fieldTitleOverlapCover": {
+    "message": "Heading overlaps cover image",
+    "description": "Place title over cover image"
+  },
+  "fieldSubtitleSize": {
+    "message": "Subtitle size",
+    "description": "Subtitle font size"
+  },
+  "subtitleSizeSmall": {
+    "message": "Small",
+    "description": "Small subtitle size"
+  },
+  "subtitleSizeMedium": {
+    "message": "Medium",
+    "description": "Medium subtitle size"
+  },
+  "subtitleSizeLarge": {
+    "message": "Large",
+    "description": "Large subtitle size"
+  },
+  "subtitleSizeExtraLarge": {
+    "message": "Extra large",
+    "description": "Extra large subtitle size"
+  },
+  "ogPreview": {
+    "message": "Social preview",
+    "description": "OG preview card label"
+  },
+  "ogPreviewNoImage": {
+    "message": "No cover image",
+    "description": "OG preview without image"
+  },
+  "wordCount": {
+    "message": "{count} words",
+    "description": "Document word count"
+  },
+  "statusSaving": {
+    "message": "Saving…",
+    "description": "Saving status label"
+  },
+  "keyboardHint": {
+    "message": "⌘S save · ⌘K link · ⌘B bold · ⌘I italic",
+    "description": "Keyboard shortcut hint"
+  },
+  "fieldEmbedUrl": {
+    "message": "Embed URL",
+    "description": "Embed URL field"
+  },
+  "fieldAudioUrl": {
+    "message": "Audio URL",
+    "description": "Audio source URL field"
+  },
+  "fieldMediaTitle": {
+    "message": "Title",
+    "description": "Media block title field"
+  },
+  "fieldMediaUrl": {
+    "message": "URL",
+    "description": "Media block URL field"
+  },
+  "fieldMediaInfo": {
+    "message": "Description",
+    "description": "Media block description field"
+  },
+  "fieldMediaInfoPlaceholder": {
+    "message": "Optional caption or notes shown below the block",
+    "description": "Media block description placeholder"
+  },
+  "insertAudioTitle": {
+    "message": "Insert audio",
+    "description": "Insert audio dialog title"
+  },
+  "insertAudioHint": {
+    "message": "Add an audio file URL with optional title and description.",
+    "description": "Insert audio dialog hint"
+  },
+  "insertAudioTitlePlaceholder": {
+    "message": "Interview recording",
+    "description": "Insert audio title placeholder"
+  },
+  "insertAudioUrlPlaceholder": {
+    "message": "https://example.com/audio.mp3",
+    "description": "Insert audio URL placeholder"
+  },
+  "insertFileTitle": {
+    "message": "Insert file",
+    "description": "Insert file dialog title"
+  },
+  "insertFileHint": {
+    "message": "Add a downloadable file link with optional title and description.",
+    "description": "Insert file dialog hint"
+  },
+  "insertFileTitlePlaceholder": {
+    "message": "Product brochure",
+    "description": "Insert file title placeholder"
+  },
+  "insertFileUrlPlaceholder": {
+    "message": "https://example.com/file.pdf",
+    "description": "Insert file URL placeholder"
+  },
+  "insertEmbedTitle": {
+    "message": "Insert embed",
+    "description": "Insert embed dialog title"
+  },
+  "insertEmbedHint": {
+    "message": "Add a YouTube, Vimeo, or Google Maps embed URL.",
+    "description": "Insert embed dialog hint"
+  },
+  "insertEmbedTitlePlaceholder": {
+    "message": "Product demo video",
+    "description": "Insert embed title placeholder"
+  },
+  "insertEmbedUrlPlaceholder": {
+    "message": "https://www.youtube.com/watch?v=…",
+    "description": "Insert embed URL placeholder"
+  },
+  "fieldEmbedHeight": {
+    "message": "Height (px)",
+    "description": "Embed height field"
+  },
+  "fieldEmbedTitle": {
+    "message": "Accessible title",
+    "description": "Embed iframe title"
+  },
+  "blockNumberedList": {
+    "message": "Numbered list",
+    "description": "Numbered list block"
+  },
+  "fieldImageAlt": {
+    "message": "Alt text",
+    "description": "Image alt text"
+  },
+  "fieldImageTitle": {
+    "message": "Title",
+    "description": "Image title attribute"
+  },
+  "fieldLinkUrl": {
+    "message": "Link URL",
+    "description": "Hyperlink URL field"
+  },
+  "removeLink": {
+    "message": "Remove link",
+    "description": "Remove hyperlink action"
+  },
+  "fieldListStyle": {
+    "message": "List style",
+    "description": "Bullet vs numbered list"
+  },
+  "listBullet": {
+    "message": "Bullet",
+    "description": "Bullet list style"
+  },
+  "listNumbered": {
+    "message": "Numbered",
+    "description": "Numbered list style"
+  },
+  "fieldStepTitle": {
+    "message": "Step title",
+    "description": "Steps block item title"
+  },
+  "addStep": {
+    "message": "Add step",
+    "description": "Add step action"
+  },
+  "fieldStepsOrientation": {
+    "message": "Layout",
+    "description": "Steps block orientation field"
+  },
+  "stepsOrientationVertical": {
+    "message": "Vertical",
+    "description": "Vertical steps layout"
+  },
+  "stepsOrientationHorizontal": {
+    "message": "Horizontal",
+    "description": "Horizontal steps layout"
+  },
+  "removeStep": {
+    "message": "Remove step",
+    "description": "Remove step item action"
+  },
+  "deleteSteps": {
+    "message": "Delete steps",
+    "description": "Delete entire steps block action"
+  },
+  "fieldStepsTitleLayout": {
+    "message": "Title position",
+    "description": "Step title position relative to number"
+  },
+  "stepsTitleLayoutInline": {
+    "message": "Next to number",
+    "description": "Step title beside the number badge"
+  },
+  "stepsTitleLayoutBelow": {
+    "message": "Below number",
+    "description": "Step title under the number badge"
+  },
+  "fieldStepsHeaderCenter": {
+    "message": "Center heading",
+    "description": "Center-align the step number and title in the header"
+  },
+  "fieldStepsContentAlign": {
+    "message": "Content position",
+    "description": "Alignment of step body content"
+  },
+  "fieldFaqQuestion": {
+    "message": "Question",
+    "description": "FAQ item question"
+  },
+  "addFaqItem": {
+    "message": "Add FAQ item",
+    "description": "Add FAQ item action"
+  },
+  "removeFaqItem": {
+    "message": "Remove FAQ item",
+    "description": "Remove FAQ item action"
+  },
+  "deleteFaq": {
+    "message": "Delete FAQ",
+    "description": "Delete entire FAQ block action"
+  },
+  "fieldTimelineTitle": {
+    "message": "Event title",
+    "description": "Timeline item title field"
+  },
+  "fieldTimelineDate": {
+    "message": "Date",
+    "description": "Timeline item date field"
+  },
+  "addTimelineItem": {
+    "message": "Add timeline item",
+    "description": "Add timeline item action"
+  },
+  "tableDimensions": {
+    "message": "{rows} rows × {cols} columns",
+    "description": "Table size label"
+  },
+  "fieldTableWidth": {
+    "message": "Table width",
+    "description": "Explicit table width"
+  },
+  "fieldTableHeaderRow": {
+    "message": "Header row",
+    "description": "Toggle first row as table header"
+  },
+  "tableWidthPlaceholder": {
+    "message": "Auto",
+    "description": "Table width placeholder for fit-content sizing"
+  },
+  "addTableRow": {
+    "message": "Add row",
+    "description": "Add table row"
+  },
+  "addTableColumn": {
+    "message": "Add column",
+    "description": "Add table column"
+  },
+  "deleteTable": {
+    "message": "Delete table",
+    "description": "Remove the entire table block"
+  },
+  "deleteTableRow": {
+    "message": "Delete row",
+    "description": "Remove the selected table row"
+  },
+  "deleteTableColumn": {
+    "message": "Delete column",
+    "description": "Remove the selected table column"
+  },
+  "fieldCodeLanguage": {
+    "message": "Language",
+    "description": "Code block language"
+  },
+  "codeLanguagePlaceholder": {
+    "message": "javascript",
+    "description": "Code language placeholder"
+  },
+  "advancedBlockSettings": {
+    "message": "Advanced",
+    "description": "Advanced block settings section"
+  },
+  "layoutSettings": {
+    "message": "Layout",
+    "description": "Block layout settings section"
+  },
+  "fieldAlignment": {
+    "message": "Alignment",
+    "description": "Text alignment field"
+  },
+  "fieldBlockWidth": {
+    "message": "Width",
+    "description": "Block width preset field"
+  },
+  "alignLeft": {
+    "message": "Left",
+    "description": "Left alignment"
+  },
+  "alignCenter": {
+    "message": "Center",
+    "description": "Center alignment"
+  },
+  "alignRight": {
+    "message": "Right",
+    "description": "Right alignment"
+  },
+  "alignJustify": {
+    "message": "Justify",
+    "description": "Justified text alignment"
+  },
+  "widthContent": {
+    "message": "Content width",
+    "description": "Default content column width"
+  },
+  "widthWide": {
+    "message": "Wide",
+    "description": "Wide block width"
+  },
+  "widthFull": {
+    "message": "Full width",
+    "description": "Full width block"
+  },
+  "fieldImageSize": {
+    "message": "Image size",
+    "description": "Image size preset field"
+  },
+  "fieldImageAlign": {
+    "message": "Image alignment",
+    "description": "Image alignment field"
+  },
+  "fieldImageWidth": {
+    "message": "Width",
+    "description": "Custom image width"
+  },
+  "fieldImageHeight": {
+    "message": "Height",
+    "description": "Custom image height"
+  },
+  "imageSizeSmall": {
+    "message": "Small (25%)",
+    "description": "Small image preset"
+  },
+  "imageSizeMedium": {
+    "message": "Medium (50%)",
+    "description": "Medium image preset"
+  },
+  "imageSizeLarge": {
+    "message": "Large (75%)",
+    "description": "Large image preset"
+  },
+  "imageSizeFull": {
+    "message": "Full width",
+    "description": "Full width image preset"
+  },
+  "imageSizeCustom": {
+    "message": "Custom",
+    "description": "Custom image dimensions"
+  },
+  "imageDimensionPlaceholder": {
+    "message": "e.g. 320 or 50%",
+    "description": "Image dimension placeholder"
+  },
+  "fieldEmbedWidth": {
+    "message": "Embed width",
+    "description": "Embed width preset field"
+  },
+  "embedWidthSmall": {
+    "message": "Small (50%)",
+    "description": "Small embed width"
+  },
+  "embedWidthMedium": {
+    "message": "Medium (70%)",
+    "description": "Medium embed width"
+  },
+  "embedWidthLarge": {
+    "message": "Large (85%)",
+    "description": "Large embed width"
+  },
+  "embedWidthFull": {
+    "message": "Full width",
+    "description": "Full embed width"
+  },
+  "removeImage": {
+    "message": "Remove image",
+    "description": "Remove selected image from article"
+  },
+  "fieldImageTextWrap": {
+    "message": "Text wrap",
+    "description": "How text flows around the image"
+  },
+  "fieldImagePosition": {
+    "message": "Position",
+    "description": "Image alignment when text does not wrap"
+  },
+  "imageTextWrapBlock": {
+    "message": "Break text (own line)",
+    "description": "Image on its own line without text wrap"
+  },
+  "imageTextWrapLeft": {
+    "message": "Wrap text on right",
+    "description": "Float image left with text on the right"
+  },
+  "imageTextWrapRight": {
+    "message": "Wrap text on left",
+    "description": "Float image right with text on the left"
+  },
+  "fieldImageCaption": {
+    "message": "Caption",
+    "description": "Visible caption shown below the image"
+  },
+  "imageCaptionPlaceholder": {
+    "message": "Enter image caption",
+    "description": "Image caption placeholder"
+  },
+  "toggleImageCaption": {
+    "message": "Caption",
+    "description": "Toggle image caption field"
+  },
+  "bubbleHeading1": {
+    "message": "Heading 1",
+    "description": "Text bubble heading 1 tooltip"
+  },
+  "bubbleHeading2": {
+    "message": "Heading 2",
+    "description": "Text bubble heading 2 tooltip"
+  },
+  "bubbleHeading3": {
+    "message": "Heading 3",
+    "description": "Text bubble heading 3 tooltip"
+  },
+  "bubbleBold": {
+    "message": "Bold",
+    "description": "Text bubble bold tooltip"
+  },
+  "bubbleItalic": {
+    "message": "Italic",
+    "description": "Text bubble italic tooltip"
+  },
+  "bubbleStrike": {
+    "message": "Strikethrough",
+    "description": "Text bubble strikethrough tooltip"
+  },
+  "bubbleLink": {
+    "message": "Link",
+    "description": "Text bubble link tooltip"
+  },
+  "staleContentAlert": {
+    "message": "This article has not been updated in {days} days (threshold: {threshold}). Review before publishing.",
+    "description": "Stale content warning banner in article editor"
+  },
+  "visibilityPublicHeadlessHint": {
+    "message": "Headless API and webhooks only include articles with Public visibility after publish.",
+    "description": "Hint when article visibility is not public for headless delivery"
+  },
+  "headlessApiUrlLabel": {
+    "message": "Headless API URL",
+    "description": "Public headless article API URL shown in article settings"
+  },
+  "headlessApiUrlHint": {
+    "message": "Available after publish when visibility is Public. Fetch this JSON from your website.",
+    "description": "Helper text under headless API URL in article settings"
+  },
+  "publishNonPublicHeadlessConfirm": {
+    "message": "This article is not Public. It will not appear in the headless API or trigger public webhooks. Publish anyway?",
+    "description": "Confirmation when publishing a non-public article for headless delivery"
+  },
+  "publicHelpCenterTitle": {
+    "message": "Help Center",
+    "description": "Public help center page title"
+  },
+  "publicHelpCenterDesc": {
+    "message": "Browse published articles and guides.",
+    "description": "Public help center page description"
+  },
+  "publicHelpCenterEmpty": {
+    "message": "No published articles yet.",
+    "description": "Public help center empty state"
+  },
+  "publicHelpCenterLoadFailed": {
+    "message": "Failed to load help center",
+    "description": "Public help center load error"
+  },
+  "publicHelpSearchLabel": {
+    "message": "Search articles",
+    "description": "Public help search label"
+  },
+  "publicHelpSearchPlaceholder": {
+    "message": "Search help articles…",
+    "description": "Public help search placeholder"
+  },
+  "fieldHeadingColor": {
+    "message": "Heading color",
+    "description": "Article title color"
+  },
+  "fieldSubheadingColor": {
+    "message": "Subheading color",
+    "description": "Article subtitle color"
+  },
+  "headlessExampleTitle": {
+    "message": "Headless article example",
+    "description": "Title for the headless article demo page"
+  },
+  "headlessExampleDesc": {
+    "message": "Fetches public JSON, renders with the same block engine as editor preview.",
+    "description": "Subtitle for the headless article demo page"
+  },
+  "headlessExampleSetup": {
+    "message": "Enter your organization slug and a published public article slug.",
+    "description": "Setup copy on headless article demo page"
+  },
+  "headlessExampleOrgSlug": {
+    "message": "Organization slug",
+    "description": "Org slug field on headless article demo page"
+  },
+  "headlessExampleArticleSlug": {
+    "message": "Article slug",
+    "description": "Article slug field on headless article demo page"
+  },
+  "headlessExampleLoad": {
+    "message": "Load article",
+    "description": "Load button on headless article demo page"
+  },
+  "headlessExampleLoadFailed": {
+    "message": "Failed to load headless article example.",
+    "description": "Error when headless article demo fails"
+  },
+  "headlessExampleCustomerDesc": {
+    "message": "Customer-site embed — neutral styles you control. Tabs, FAQ, and galleries stay interactive.",
+    "description": "Subtitle for customer-mode headless example page"
+  },
+  "headlessListExampleTitle": {
+    "message": "Headless help list example",
+    "description": "Title for the headless help list demo page"
+  },
+  "headlessListExampleDesc": {
+    "message": "Customer-site embed for xyz.com/help — lists published articles from the public API.",
+    "description": "Subtitle for headless help list demo page"
+  },
+  "headlessListExampleSetup": {
+    "message": "Enter your organization slug to load the public article list.",
+    "description": "Setup copy on headless help list demo page"
+  },
+  "headlessListExampleLoadFailed": {
+    "message": "Failed to load headless help list example.",
+    "description": "Error when headless help list demo fails"
+  },
+  "headlessHomeExampleTitle": {
+    "message": "Headless help home example",
+    "description": "Title for the headless help home demo page"
+  },
+  "headlessHomeExampleDesc": {
+    "message": "Customer-site embed for xyz.com/help — category grid from the public collections API.",
+    "description": "Subtitle for headless help home demo page"
+  },
+  "headlessHomeExampleSetup": {
+    "message": "Enter your organization slug to load the help center home.",
+    "description": "Setup copy on headless help home demo page"
+  },
+  "headlessHomeExampleLoadFailed": {
+    "message": "Failed to load headless help home example.",
+    "description": "Error when headless help home demo fails"
+  },
+  "publicHelpHomeEmpty": {
+    "message": "No help categories yet.",
+    "description": "Public help home empty state when no collections"
+  },
+  "publicHelpHomeBack": {
+    "message": "Back to categories",
+    "description": "Back button on help home search results"
+  },
+  "publicHelpArticleLabel": {
+    "message": "Article",
+    "description": "Singular article label on help home collection stats"
+  },
+  "publicHelpArticlesLabel": {
+    "message": "Articles",
+    "description": "Plural articles label on help home collection stats"
+  },
+  "publicHelpSectionLabel": {
+    "message": "Section",
+    "description": "Singular section label on help home collection stats"
+  },
+  "publicHelpSectionsLabel": {
+    "message": "Sections",
+    "description": "Plural sections label on help home collection stats"
+  },
+  "publicHelpHomeLabel": {
+    "message": "Home",
+    "description": "Breadcrumb home label on help center pages"
+  },
+  "publicHelpRecentTitle": {
+    "message": "Recent articles",
+    "description": "Sidebar recent articles title"
+  },
+  "publicHelpRecentEmpty": {
+    "message": "No recent articles.",
+    "description": "Sidebar recent articles empty state"
+  },
+  "publicHelpSectionsNavTitle": {
+    "message": "Sections",
+    "description": "Sidebar section tree title"
+  },
+  "publicHelpSectionsEmpty": {
+    "message": "No sections in this category yet.",
+    "description": "Category page empty sections state"
+  },
+  "publicHelpArticlesEmpty": {
+    "message": "No articles in this section yet.",
+    "description": "Section page empty articles state"
+  },
+  "publicHelpCategoryNotFound": {
+    "message": "Category not found.",
+    "description": "Category embed not found error"
+  },
+  "publicHelpSectionNotFound": {
+    "message": "Section not found.",
+    "description": "Section embed not found error"
+  },
+  "headlessCategoryExampleTitle": {
+    "message": "Headless help category example",
+    "description": "Title for headless help category demo page"
+  },
+  "headlessCategoryExampleDesc": {
+    "message": "Customer-site embed for xyz.com/help/{category} — child sections and recent sidebar.",
+    "description": "Subtitle for headless help category demo page"
+  },
+  "headlessCategoryExampleSetup": {
+    "message": "Enter your organization slug and category slug to load the category page.",
+    "description": "Setup copy on headless help category demo page"
+  },
+  "headlessCategoryExampleCollectionLabel": {
+    "message": "Category slug",
+    "description": "Category slug input label on category demo page"
+  },
+  "headlessCategoryExampleLoadFailed": {
+    "message": "Failed to load headless help category example.",
+    "description": "Error when headless help category demo fails"
+  },
+  "headlessSectionExampleTitle": {
+    "message": "Headless help section example",
+    "description": "Title for headless help section demo page"
+  },
+  "headlessSectionExampleDesc": {
+    "message": "Customer-site embed for xyz.com/help/{category}/{section} — article list, section tree, and recent sidebar.",
+    "description": "Subtitle for headless help section demo page"
+  },
+  "headlessSectionExampleSetup": {
+    "message": "Enter your organization slug and section slug to load the section page.",
+    "description": "Setup copy on headless help section demo page"
+  },
+  "headlessSectionExampleSectionLabel": {
+    "message": "Section slug",
+    "description": "Section slug input label on section demo page"
+  },
+  "headlessSectionExampleParentLabel": {
+    "message": "Parent category slug (optional)",
+    "description": "Parent category slug input label on section demo page"
+  },
+  "headlessSectionExampleLoadFailed": {
+    "message": "Failed to load headless help section example.",
+    "description": "Error when headless help section demo fails"
+  },
+  "headlessExampleSiteDemoBanner": {
+    "message": "Demo customer site — help content powered by LiteDesk headless embed",
+    "description": "Banner on headless example pages indicating this is a demo site"
+  },
+  "headlessExampleSiteBrand": {
+    "message": "Acme Cloud",
+    "description": "Mock brand name on headless example customer site"
+  },
+  "headlessExampleSiteNavProduct": {
+    "message": "Product",
+    "description": "Primary nav link on headless example customer site"
+  },
+  "headlessExampleSiteNavPricing": {
+    "message": "Pricing",
+    "description": "Primary nav link on headless example customer site"
+  },
+  "headlessExampleSiteNavDocs": {
+    "message": "Documentation",
+    "description": "Primary nav link on headless example customer site"
+  },
+  "headlessExampleSiteNavHelp": {
+    "message": "Help Center",
+    "description": "Primary nav link on headless example customer site"
+  },
+  "headlessExampleSiteSignIn": {
+    "message": "Sign in",
+    "description": "Sign in button on headless example customer site"
+  },
+  "headlessExampleSiteGetStarted": {
+    "message": "Get started",
+    "description": "CTA button on headless example customer site"
+  },
+  "headlessExampleSiteHelpEyebrow": {
+    "message": "Support",
+    "description": "Eyebrow label above help center hero on example site"
+  },
+  "headlessExampleSiteHelpTitle": {
+    "message": "How can we help?",
+    "description": "Help center hero title on headless example customer site"
+  },
+  "headlessExampleSiteHelpSubtitle": {
+    "message": "Browse guides, tutorials, and answers from the Acme Cloud team.",
+    "description": "Help center hero subtitle on headless example customer site"
+  },
+  "headlessExampleSiteSidebarHome": {
+    "message": "Help home",
+    "description": "Sidebar link on headless example customer site"
+  },
+  "headlessExampleSiteSidebarArticles": {
+    "message": "All articles",
+    "description": "Sidebar link on headless example customer site"
+  },
+  "headlessExampleSiteSidebarContact": {
+    "message": "Contact support",
+    "description": "Sidebar link on headless example customer site"
+  },
+  "headlessExampleSiteFooterCopyright": {
+    "message": "© 2026 Acme Cloud, Inc. All rights reserved.",
+    "description": "Footer copyright on headless example customer site"
+  },
+  "headlessExampleSiteFooterPrivacy": {
+    "message": "Privacy",
+    "description": "Footer link on headless example customer site"
+  },
+  "headlessExampleSiteFooterTerms": {
+    "message": "Terms",
+    "description": "Footer link on headless example customer site"
+  },
+  "headlessExampleSiteFooterStatus": {
+    "message": "Status",
+    "description": "Footer link on headless example customer site"
+  },
+  "publicHelpBrowseTopics": {
+    "message": "Browse by topic",
+    "description": "Section heading above help home category grid"
+  },
+  "publicHelpPopularTitle": {
+    "message": "Popular articles",
+    "description": "Sidebar popular articles title"
+  },
+  "publicHelpPopularEmpty": {
+    "message": "No popular articles yet.",
+    "description": "Sidebar popular articles empty state"
+  },
+  "fieldFeatured": {
+    "message": "Featured article",
+    "description": "Featured article toggle label in article inspector"
+  },
+  "fieldFeaturedHint": {
+    "message": "Featured public articles appear in the Popular articles sidebar on your help center.",
+    "description": "Featured article toggle hint in article inspector"
+  },
+  "collectionEmojiPlaceholder": {
+    "message": "Emoji (optional)",
+    "description": "Optional emoji icon for a help center collection card"
+  },
+  "articleFeedbackHelpfulLabel": {
+    "message": "Helpful?",
+    "description": "Article footer helpful feedback prompt"
+  },
+  "articleFeedbackShareLabel": {
+    "message": "Share :",
+    "description": "Article footer share section label"
+  },
+  "articleFeedbackYesLabel": {
+    "message": "Yes",
+    "description": "Article helpful feedback yes button label"
+  },
+  "articleFeedbackNoLabel": {
+    "message": "No",
+    "description": "Article helpful feedback no button label"
+  },
+  "articleFeedbackThanksLabel": {
+    "message": "Thanks for your feedback.",
+    "description": "Article helpful feedback thank-you message"
+  },
+  "articleAnalyticsTitle": {
+    "message": "Article analytics",
+    "description": "Article analytics section title in Content Studio settings"
+  },
+  "articleAnalyticsHelpfulYes": {
+    "message": "Helpful",
+    "description": "Article analytics helpful yes count label"
+  },
+  "articleAnalyticsHelpfulNo": {
+    "message": "Not helpful",
+    "description": "Article analytics helpful no count label"
+  },
+  "articleAnalyticsHelpfulRate": {
+    "message": "Helpful rate",
+    "description": "Article analytics helpful percentage label"
+  },
+  "articleAnalyticsShares": {
+    "message": "Shares",
+    "description": "Article analytics total shares label"
+  },
+  "articleAnalyticsLoadFailed": {
+    "message": "Failed to load article analytics.",
+    "description": "Article analytics load error"
+  },
+  "manageCategories": {
+    "message": "Manage categories",
+    "description": "Link or button to open categories management"
+  },
+  "categoriesTitle": {
+    "message": "Categories",
+    "description": "Categories management page title"
+  },
+  "categoriesSubtitle": {
+    "message": "Organize articles into categories and sub categories.",
+    "description": "Categories management page subtitle"
+  },
+  "backToArticles": {
+    "message": "Back to articles",
+    "description": "Navigate back to articles list from categories page"
+  },
+  "category": {
+    "message": "Category",
+    "description": "Top-level category type label"
+  },
+  "subCategory": {
+    "message": "Sub category",
+    "description": "Sub category type label"
+  },
+  "categoryNameLabel": {
+    "message": "Name",
+    "description": "Category name field label"
+  },
+  "categoryEmojiLabel": {
+    "message": "Emoji",
+    "description": "Category emoji field label"
+  },
+  "categoryTypeLabel": {
+    "message": "Type",
+    "description": "Category type field label"
+  },
+  "categoryTypeTopLevel": {
+    "message": "Category (top level)",
+    "description": "Create a top-level category"
+  },
+  "categoryTypeSubCategoryOf": {
+    "message": "Sub category of {name}",
+    "description": "Create a sub category under a parent category"
+  },
+  "categorySlugLabel": {
+    "message": "Slug",
+    "description": "Category URL slug column"
+  },
+  "columnActions": {
+    "message": "Actions",
+    "description": "Table actions column header"
+  },
+  "editCategory": {
+    "message": "Edit category",
+    "description": "Edit category form title"
+  },
+  "deleteCategoryConfirm": {
+    "message": "Delete \"{name}\"? Articles in this category will keep their assignment until you change it.",
+    "description": "Confirm delete category dialog"
+  },
+  "createCategory": {
+    "message": "Create category",
+    "description": "Create category form title"
+  },
+  "fieldSubCategory": {
+    "message": "Sub category",
+    "description": "Article sub category field"
+  },
+  "noSubCategory": {
+    "message": "No sub category",
+    "description": "No sub category option"
+  },
+  "noSubCategoriesAvailable": {
+    "message": "No sub categories",
+    "description": "Placeholder when selected category has no sub categories"
+  },
+  "subCategorySelectCategoryFirst": {
+    "message": "Select a category first",
+    "description": "Sub category placeholder when no category is selected"
+  },
+  "publicHelpSearchButton": {
+    "message": "Search",
+    "description": "Public help search submit button label"
+  },
+  "categoryImageLabel": {
+    "message": "Card image",
+    "description": "Category image field label for help center cards"
+  },
+  "categoryImageHint": {
+    "message": "Shown on your /help home page. Falls back to emoji or letter when empty.",
+    "description": "Hint for category image upload on help center"
+  },
+  "categoryImageUpload": {
+    "message": "Upload category image",
+    "description": "Category image file input label"
+  },
+  "categoryImageUploading": {
+    "message": "Uploading image…",
+    "description": "Loading state while category image uploads"
+  },
+  "categoryImageRemove": {
+    "message": "Remove image",
+    "description": "Remove uploaded category image"
+  },
+  "categoryImageUploadFailed": {
+    "message": "Failed to upload category image.",
+    "description": "Error when category image upload fails"
+  },
+  "categoryIconLabel": {
+    "message": "Icon",
+    "description": "Category icon column in categories table"
+  },
+  "categoryHeroIconLabel": {
+    "message": "Card icon",
+    "description": "Category hero icon picker label for help center cards"
+  },
+  "categoryHeroIconHint": {
+    "message": "Pick an icon for your /help category card.",
+    "description": "Hint for hero icon picker on category form"
+  },
+  "categoryHeroIconUseCustom": {
+    "message": "Upload custom image",
+    "description": "Switch from icon picker to custom image upload"
+  },
+  "categoryHeroIconBackToPicker": {
+    "message": "Choose from icons",
+    "description": "Switch from custom image upload back to icon picker"
+  },
+  "heroIconRocket": {
+    "message": "Get started",
+    "description": "Help center hero icon label"
+  },
+  "heroIconAgents": {
+    "message": "AI agents",
+    "description": "Help center hero icon label"
+  },
+  "heroIconBrain": {
+    "message": "Knowledge",
+    "description": "Help center hero icon label"
+  },
+  "heroIconFeatures": {
+    "message": "Features",
+    "description": "Help center hero icon label"
+  },
+  "heroIconChat": {
+    "message": "Chat",
+    "description": "Help center hero icon label"
+  },
+  "heroIconIntegrations": {
+    "message": "Integrations",
+    "description": "Help center hero icon label"
+  },
+  "heroIconApi": {
+    "message": "API",
+    "description": "Help center hero icon label"
+  },
+  "heroIconHash": {
+    "message": "Channels",
+    "description": "Help center hero icon label"
+  },
+  "heroIconMobile": {
+    "message": "Mobile",
+    "description": "Help center hero icon label"
+  },
+  "heroIconSupport": {
+    "message": "Support",
+    "description": "Help center hero icon label"
+  },
+  "heroIconSecurity": {
+    "message": "Security",
+    "description": "Help center hero icon label"
+  },
+  "heroIconBilling": {
+    "message": "Billing",
+    "description": "Help center hero icon label"
+  },
+  "heroIconAutomations": {
+    "message": "Automations",
+    "description": "Help center hero icon label"
+  },
+  "heroIconDocs": {
+    "message": "Documentation",
+    "description": "Help center hero icon label"
+  },
+  "heroIconTeam": {
+    "message": "Team",
+    "description": "Help center hero icon label"
+  },
+  "heroIconCustomFields": {
+    "message": "Custom fields",
+    "description": "Help center hero icon label"
+  },
+  "categoryHeroIconSearch": {
+    "message": "Search icons…",
+    "description": "Search placeholder for product icon picker"
+  },
+  "categoryHeroIconEmpty": {
+    "message": "No icons match your search.",
+    "description": "Empty state for product icon picker search"
+  },
+  "heroIconArrowDownTray": {
+    "message": "Arrow down tray",
+    "description": "Product hero icon label"
+  },
+  "heroIconBanknotes": {
+    "message": "Banknotes",
+    "description": "Product hero icon label"
+  },
+  "heroIconBookOpen": {
+    "message": "Book open",
+    "description": "Product hero icon label"
+  },
+  "heroIconBriefcase": {
+    "message": "Briefcase",
+    "description": "Product hero icon label"
+  },
+  "heroIconBuilding": {
+    "message": "Building",
+    "description": "Product hero icon label"
+  },
+  "heroIconCalendar": {
+    "message": "Calendar",
+    "description": "Product hero icon label"
+  },
+  "heroIconCalendarDays": {
+    "message": "Calendar days",
+    "description": "Product hero icon label"
+  },
+  "heroIconChartBar": {
+    "message": "Chart bar",
+    "description": "Product hero icon label"
+  },
+  "heroIconChatBubbleLeftRight": {
+    "message": "Chat",
+    "description": "Product hero icon label"
+  },
+  "heroIconCheckCircle": {
+    "message": "Check circle",
+    "description": "Product hero icon label"
+  },
+  "heroIconClipboardDocumentList": {
+    "message": "Clipboard list",
+    "description": "Product hero icon label"
+  },
+  "heroIconCog": {
+    "message": "Settings",
+    "description": "Product hero icon label"
+  },
+  "heroIconComputer": {
+    "message": "Computer",
+    "description": "Product hero icon label"
+  },
+  "heroIconCreditCard": {
+    "message": "Credit card",
+    "description": "Product hero icon label"
+  },
+  "heroIconCube": {
+    "message": "Cube",
+    "description": "Product hero icon label"
+  },
+  "heroIconDocumentChartBar": {
+    "message": "Document chart",
+    "description": "Product hero icon label"
+  },
+  "heroIconDocumentCurrencyDollar": {
+    "message": "Invoice",
+    "description": "Product hero icon label"
+  },
+  "heroIconDocumentMagnifyingGlass": {
+    "message": "Document search",
+    "description": "Product hero icon label"
+  },
+  "heroIconDocumentText": {
+    "message": "Document",
+    "description": "Product hero icon label"
+  },
+  "heroIconDownload": {
+    "message": "Download",
+    "description": "Product hero icon label"
+  },
+  "heroIconExclamationTriangle": {
+    "message": "Warning",
+    "description": "Product hero icon label"
+  },
+  "heroIconFolder": {
+    "message": "Folder",
+    "description": "Product hero icon label"
+  },
+  "heroIconFunnel": {
+    "message": "Funnel",
+    "description": "Product hero icon label"
+  },
+  "heroIconHome": {
+    "message": "Home",
+    "description": "Product hero icon label"
+  },
+  "heroIconInbox": {
+    "message": "Inbox",
+    "description": "Product hero icon label"
+  },
+  "heroIconLifebuoy": {
+    "message": "Help",
+    "description": "Product hero icon label"
+  },
+  "heroIconMagnifyingGlass": {
+    "message": "Search",
+    "description": "Product hero icon label"
+  },
+  "heroIconMegaphone": {
+    "message": "Megaphone",
+    "description": "Product hero icon label"
+  },
+  "heroIconPhoto": {
+    "message": "Photo",
+    "description": "Product hero icon label"
+  },
+  "heroIconPresentationChart": {
+    "message": "Presentation chart",
+    "description": "Product hero icon label"
+  },
+  "heroIconShieldCheck": {
+    "message": "Shield check",
+    "description": "Product hero icon label"
+  },
+  "heroIconShoppingCart": {
+    "message": "Shopping cart",
+    "description": "Product hero icon label"
+  },
+  "heroIconSquares": {
+    "message": "Squares",
+    "description": "Product hero icon label"
+  },
+  "heroIconTicket": {
+    "message": "Ticket",
+    "description": "Product hero icon label"
+  },
+  "heroIconTrash": {
+    "message": "Trash",
+    "description": "Product hero icon label"
+  },
+  "heroIconUsers": {
+    "message": "Users",
+    "description": "Product hero icon label"
+  },
+  "categoryHeroIconColorLabel": {
+    "message": "Icon background",
+    "description": "Background color picker label for category hero icon"
+  },
+  "categoryDescriptionLabel": {
+    "message": "Description",
+    "description": "Category description field label for help center cards"
+  },
+  "categoryDescriptionPlaceholder": {
+    "message": "Short summary shown on help center category cards",
+    "description": "Category description field placeholder"
+  },
+  "categoryDescriptionHint": {
+    "message": "Optional. Displayed under the category name on the public help home page.",
+    "description": "Category description field hint"
+  },
+  "fieldAuthorName": {
+    "message": "Author name",
+    "description": "Document author display name field"
+  },
+  "sectionDocumentAppearance": {
+    "message": "Appearance",
+    "description": "Document inspector appearance section"
+  },
+  "sectionDocumentPublishing": {
+    "message": "Publishing",
+    "description": "Document inspector publishing section"
+  },
+  "sectionDocumentSeo": {
+    "message": "SEO",
+    "description": "Document inspector SEO section"
+  },
+  "coverPickerTitle": {
+    "message": "Choose cover image",
+    "description": "Cover image picker dialog title"
+  },
+  "coverUploadNew": {
+    "message": "Upload new image",
+    "description": "Upload a new cover image from disk"
+  }
+}
