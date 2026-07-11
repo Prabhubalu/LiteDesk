@@ -716,7 +716,8 @@ function platformDefaultFieldsForType(type: string): string[] {
   const key = Object.keys(ORGANIZATION_TYPE_FIELDS).find(
     (k) => k.toLowerCase() === normalized.toLowerCase()
   );
-  return key ? [...ORGANIZATION_TYPE_FIELDS[key]] : [];
+  const fields = key ? ORGANIZATION_TYPE_FIELDS[key] : undefined;
+  return fields ? [...fields] : [];
 }
 
 /**
@@ -865,7 +866,7 @@ export function getPrimaryOrganizationStatusFieldKey(
   const match = Object.keys(ORGANIZATION_TYPE_PRIMARY_STATUS_FIELD).find(
     (k) => k.toLowerCase() === first.toLowerCase()
   );
-  return match ? ORGANIZATION_TYPE_PRIMARY_STATUS_FIELD[match] : null;
+  return match ? (ORGANIZATION_TYPE_PRIMARY_STATUS_FIELD[match] ?? null) : null;
 }
 
 /** Display value for Organizations Key Fields `derivedStatus` (system value or type-scoped fallback). */

@@ -92,7 +92,8 @@ export function enforceSinglePrimaryPerson<T extends { isPrimary?: boolean; isAc
     if (preferredIndex !== undefined) keep = preferredIndex;
   }
   for (const idx of primaryIndexes) {
-    next[idx] = { ...next[idx], isPrimary: idx === keep };
+    const row = next[idx];
+    if (row) row.isPrimary = idx === keep;
   }
   return next;
 }
