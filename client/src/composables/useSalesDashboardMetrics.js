@@ -1,11 +1,36 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { buildDashboardFromRegistry } from '@/utils/buildDashboardFromRegistry';
 import { getAppRegistry } from '@/utils/getAppRegistry';
 import apiClient from '@/utils/apiClient';
 import { createPermissionSnapshot } from '@/types/permission-snapshot.types';
 import { getNavigationIconComponent } from '@/utils/navigationIcons';
+import { formatCompactCurrencyValue } from '@/utils/currencyOptions';
+import { formatDate } from '@/utils/localeFormat';
 
 /** @typedef {import('@/types/salesDashboardMetrics.types').SalesDashboardMetricsResponse} SalesDashboardMetricsResponse */
+
+const DASHBOARD_RANGE_DEFS = [
+  { key: '12w', days: 12 * 7, labelKey: 'dashboard.rangeLast12Weeks' },
+  { key: '6m', days: 182, labelKey: 'dashboard.rangeLast6Months' },
+  { key: '12m', days: 365, labelKey: 'dashboard.rangeLast12Months' }
+];
+
+/**
+ * Inclusive calendar window for a dashboard range key (ends today).
+ * @param {string} rangeKey
+ * @param {Date} [now]
+ * @returns {{ start: Date, end: Date, days: number }}
+ */
+export function getDashboardRangeWindow(rangeKey, now = new Date()) {
+  const def = DASHBOARD_RANGE_DEFS.find((item) => item.key === rangeKey) || DASHBOARD_RANGE_DEFS[0];
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+  const start = new Date(end);
+  start.setDate(start.getDate() - (def.days - 1));
+  start.setHours(0, 0, 0, 0);
+  return { start, end, days: def.days };
+}
 
 const EMPTY_METRICS = {
   generatedAt: null,
@@ -134,11 +159,12 @@ const normalizeDashboardMetrics = (raw) => {
 };
 
 export function useSalesDashboardMetrics({ appKey, authStore }) {
+  const { t } = useI18n();
   const loading = ref(true);
   const dashboardDefinition = ref(null);
   const dashboardMetrics = ref(null);
   const now = ref(new Date());
-  const selectedRangeIndex = ref(0);
+  const selectedRangeKey = ref('12w');
   const selectedRepId = ref('all');
   const selectedPipeline = ref('all');
   const selectedDealType = ref('all');
@@ -146,11 +172,13 @@ export function useSalesDashboardMetrics({ appKey, authStore }) {
   const resolvedAppKey = computed(() => String(appKey?.value || 'SALES').toUpperCase());
   const isSalesApp = computed(() => resolvedAppKey.value === 'SALES');
 
-  const timeRanges = [
-    { label: 'Last 12 weeks', key: '12w' },
-    { label: 'Last 6 months', key: '6m' },
-    { label: 'Last 12 months', key: '12m' }
-  ];
+  const rangeOptions = computed(() =>
+    DASHBOARD_RANGE_DEFS.map((item) => ({
+      value: item.key,
+      label: t(item.labelKey)
+    }))
+  );
+
   const dealTypeOptions = ['New Business', 'Existing Customer', 'Upsell', 'Renewal', 'Cross-Sell'];
 
   const resolveKpiMetricValue = (kpi, metricsKpis) => {
@@ -183,8 +211,18 @@ export function useSalesDashboardMetrics({ appKey, authStore }) {
     };
   };
 
-  const selectedRangeKey = computed(() => timeRanges[selectedRangeIndex.value]?.key || '12w');
-  const selectedRangeLabel = computed(() => timeRanges[selectedRangeIndex.value]?.label || 'Last 12 weeks');
+  const selectedRangeLabel = computed(() => {
+    const match = rangeOptions.value.find((item) => item.value === selectedRangeKey.value);
+    return match?.label || t('dashboard.rangeLast12Weeks');
+  });
+
+  const rangeWindowLabel = computed(() => {
+    const { start, end } = getDashboardRangeWindow(selectedRangeKey.value, now.value);
+    const startLabel = formatDate(start, { month: 'short', day: 'numeric', year: 'numeric' });
+    const endLabel = formatDate(end, { month: 'short', day: 'numeric', year: 'numeric' });
+    return t('dashboard.rangeWindowSpan', { start: startLabel, end: endLabel });
+  });
+
   const formattedNow = computed(() => now.value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
 
   const fetchDashboardMetrics = async (definition) => {
@@ -251,12 +289,8 @@ export function useSalesDashboardMetrics({ appKey, authStore }) {
     }
   };
 
-  const formatCurrency = (value) => {
-    const amount = Number(value || 0);
-    if (Math.abs(amount) >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
-    if (Math.abs(amount) >= 1000) return `$${(amount / 1000).toFixed(1)}K`;
-    return `$${amount.toLocaleString()}`;
-  };
+  const formatCurrency = (value) =>
+    formatCompactCurrencyValue(value, { orgCurrency: authStore.organization });
 
   const formatMetricValue = (value, kind) => {
     if (kind === 'currency') return formatCurrency(value);
@@ -267,9 +301,14 @@ export function useSalesDashboardMetrics({ appKey, authStore }) {
   };
 
   const getQuickAccessIcon = (module) => getNavigationIconComponent(module);
-  const cycleRange = () => {
-    selectedRangeIndex.value = (selectedRangeIndex.value + 1) % timeRanges.length;
+
+  const setRange = (rangeKey) => {
+    const next = String(rangeKey || '').toLowerCase();
+    if (!DASHBOARD_RANGE_DEFS.some((item) => item.key === next)) return;
+    if (selectedRangeKey.value === next) return;
+    selectedRangeKey.value = next;
   };
+
   const resetFilters = async () => {
     selectedRepId.value = 'all';
     selectedPipeline.value = 'all';
@@ -300,7 +339,8 @@ export function useSalesDashboardMetrics({ appKey, authStore }) {
     if (Array.isArray(liveSeries) && liveSeries.length > 0) return liveSeries;
     const base = totalKpiValue.value > 0 ? Math.min(70, Math.max(28, Math.round(totalKpiValue.value / 15))) : 32;
     return Array.from({ length: 12 }, (_, idx) => {
-      const wave = Math.round(Math.sin((idx + selectedRangeIndex.value) / 2) * 8);
+      const rangeIdx = Math.max(0, DASHBOARD_RANGE_DEFS.findIndex((item) => item.key === selectedRangeKey.value));
+      const wave = Math.round(Math.sin((idx + rangeIdx) / 2) * 8);
       const drift = idx > 7 ? 5 : 0;
       return Math.max(18, Math.min(92, base + wave + drift));
     });
@@ -419,7 +459,7 @@ export function useSalesDashboardMetrics({ appKey, authStore }) {
     }
   });
 
-  watch([selectedRangeIndex, selectedRepId, selectedPipeline, selectedDealType], async () => {
+  watch([selectedRangeKey, selectedRepId, selectedPipeline, selectedDealType], async () => {
     if (!authStore.user || !authStore.isAuthenticated || !dashboardDefinition.value) return;
     await fetchDashboardMetrics(dashboardDefinition.value);
   });
@@ -446,8 +486,11 @@ export function useSalesDashboardMetrics({ appKey, authStore }) {
     selectedDealType,
     dealTypeOptions,
     formattedNow,
+    selectedRangeKey,
     selectedRangeLabel,
-    cycleRange,
+    rangeOptions,
+    rangeWindowLabel,
+    setRange,
     buildDashboard,
     resetFilters,
     executiveKpiCards,

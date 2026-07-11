@@ -8,6 +8,7 @@ const People = require('../models/People');
 const Organization = require('../models/Organization');
 const { getDefaultEmailValidations } = require('../utils/defaultFieldValidations');
 const { normalizePeopleModuleFields } = require('../utils/normalizePeopleModuleConfig');
+const { INITIAL_PEOPLE_QUICK_CREATE } = require('../constants/peopleModuleDefaults');
 const {
   getPeopleParticipationStatusModuleFields,
   DEFAULT_LEAD_STATUS_VALUES,
@@ -15,6 +16,7 @@ const {
 } = require('../utils/peopleModuleFieldDefaults');
 const { applyDefaultColorsToPicklistOptions } = require('../utils/peopleParticipationPicklistColors');
 const { backfillPicklistOptionColors } = require('../utils/picklistColorPalette');
+const { PEOPLE_SALUTATION_VALUES } = require('../constants/peopleSalutation');
 
 function resolveMasterUri() {
   const isProduction = process.env.NODE_ENV === 'production';
@@ -49,6 +51,7 @@ const peopleFieldMappings = {
   'assignedTo': 'Lookup (Relationship)',
   'source': 'Picklist',
   'sales_type': 'Picklist',
+  'salutation': 'Picklist',
   'first_name': 'Text',
   'last_name': 'Text',
   'email': 'Email',
@@ -76,6 +79,7 @@ const enumMappings = {
   'sales_type': ['Lead', 'Contact'],
   'lead_status': [...DEFAULT_LEAD_STATUS_VALUES],
   'contact_status': [...DEFAULT_CONTACT_STATUS_VALUES],
+  'salutation': [...PEOPLE_SALUTATION_VALUES],
   'role': ['Decision Maker', 'Influencer', 'Support', 'Other'],
   'preferred_contact_method': ['Email', 'Phone', 'WhatsApp', 'SMS', 'None']
 };
@@ -650,7 +654,7 @@ async function updatePeopleModuleFields(organizationId = null) {
           enabled: true,
           fields: normalizedFields,
           relationships: cloneDefaultPeopleRelationships(),
-          quickCreate: [],
+          quickCreate: [...INITIAL_PEOPLE_QUICK_CREATE],
           quickCreateLayout: { version: 1, rows: [] }
         });
         created++;

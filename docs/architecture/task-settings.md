@@ -279,26 +279,27 @@ Quick Create configuration is **critical** for Tasks because tasks are frequentl
 **Default Locked Order:**
 1. **Title** (required, locked position, cannot be removed)
 2. **Due Date** (optional, can be reordered or removed)
-3. **Priority** (optional, can be reordered or removed)
-4. **Related To** (Person / Organization, optional, can be reordered or removed)
-5. **Assignee** (required, can be reordered but cannot be removed)
+3. **Task Type** (optional, can be reordered or removed)
+4. **Status** (optional, can be reordered or removed)
+5. **Priority** (optional, can be reordered or removed)
+6. **Related To** (Person / Organization, optional, can be reordered or removed)
+7. **Description** (optional, can be reordered or removed)
+8. **Assigned To** (required, can be reordered but cannot be removed)
 
 #### Quick Create Rules
 
 **Allowed Fields:**
-- Core task fields only (title, dueDate, priority, assignedTo, relatedTo)
+- Core task fields (title, dueDate, taskType, status, priority, relatedTo, description, assignedTo)
 - System fields that are user-editable (none for Quick Create)
 
 **Prohibited Fields:**
 - **App fields** ❌ (app participation fields cannot appear in Quick Create)
 - **System fields** ❌ (system-managed fields cannot appear in Quick Create)
-- **Description** ❌ (by default, description is excluded from Quick Create for speed)
-- **Status** ❌ (status defaults to 'todo', cannot be set in Quick Create)
 - **Time tracking fields** ❌ (estimatedHours, actualHours)
 - **Subtasks** ❌ (subtask management belongs in full task edit)
 - **Tags** ❌ (tags can be added in full task edit)
 
-**Rationale:** Quick Create must be fast and focused. Only essential fields for task creation appear. Full task editing happens in Work interfaces where all fields are available.
+**Rationale:** Quick Create must be fast and focused. Default fields cover capture essentials; full task editing happens in Work interfaces where all fields are available.
 
 ### 3.6 App Participation
 

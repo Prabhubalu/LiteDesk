@@ -127,7 +127,7 @@ export function normalizePlatformHomeLayout(raw: unknown): PlatformHomeLayout {
     return { ...createDefaultPlatformHomeLayout(), widthMode };
   }
 
-  return { items, widthMode };
+  return { items: compactPlatformHomeLayoutItems(items), widthMode };
 }
 
 export function clonePlatformHomeLayout(layout: PlatformHomeLayout): PlatformHomeLayout {
@@ -135,6 +135,54 @@ export function clonePlatformHomeLayout(layout: PlatformHomeLayout): PlatformHom
     items: layout.items.map((item) => ({ ...item })),
     widthMode: layout.widthMode ?? DEFAULT_PLATFORM_HOME_WIDTH_MODE,
   };
+}
+
+function layoutItemsCollide(
+  a: Pick<PlatformHomeLayoutItem, 'x' | 'y' | 'w' | 'h'>,
+  ax: number,
+  ay: number,
+  b: Pick<PlatformHomeLayoutItem, 'x' | 'y' | 'w' | 'h'>,
+): boolean {
+  return !(
+    ax + a.w <= b.x
+    || ax >= b.x + b.w
+    || ay + a.h <= b.y
+    || ay >= b.y + b.h
+  );
+}
+
+/** Pack enabled widgets upward to remove vertical gaps (mirrors GridStack compact). */
+export function compactPlatformHomeLayoutItems(
+  items: PlatformHomeLayoutItem[],
+): PlatformHomeLayoutItem[] {
+  const enabled = items.filter((item) => item.enabled !== false);
+  const compacted = [...enabled]
+    .sort((a, b) => a.y - b.y || a.x - b.x)
+    .map((item) => ({ ...item }));
+
+  for (const item of compacted) {
+    let nextY = item.y;
+    while (nextY > 0) {
+      const testY = nextY - 1;
+      const blocked = compacted.some(
+        (other) => other.instanceId !== item.instanceId
+          && layoutItemsCollide(item, item.x, testY, other),
+      );
+      if (blocked) break;
+      nextY = testY;
+    }
+    item.y = nextY;
+  }
+
+  const compactedById = new Map(compacted.map((item) => [item.instanceId, item]));
+  return items.map((item) => compactedById.get(item.instanceId) ?? item);
+}
+
+export function nextPlatformHomeLayoutY(items: PlatformHomeLayoutItem[]): number {
+  const compacted = compactPlatformHomeLayoutItems(items);
+  return compacted
+    .filter((item) => item.enabled !== false)
+    .reduce((max, item) => Math.max(max, item.y + item.h), 0);
 }
 
 export function getBuiltinWidgetDefinition(type: string) {

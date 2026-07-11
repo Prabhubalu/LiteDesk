@@ -1004,6 +1004,7 @@ import { useI18n } from 'vue-i18n';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
+import { useOrganizationTypes } from '@/composables/useOrganizationTypes';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import { fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
@@ -1012,7 +1013,13 @@ import {
   fetchOrganizationsListCached,
   fetchPeopleListCached,
 } from '@/utils/recordLookupCache';
+import {
+  formatPeopleFullNameWithSalutation,
+  normalizePeopleFirstNameSavePayload,
+  resolvePeopleSalutation,
+} from '@/platform/fields/peopleSalutationField';
 import { getProcessActivityMessage } from '@/utils/processActivityMessages';
+import { resolveOrganizationDerivedStatusSaveFieldKey } from '@/platform/fields/organizationFieldModel';
 import { getQuoteActivityMessage, getQuoteActivityActorLabel } from '@/components/activity/adapters/quoteActivityUiAdapter';
 import { getSalesOrderActivityMessage } from '@/components/activity/adapters/salesOrderActivityUiAdapter';
 import { getInvoiceActivityMessage } from '@/components/activity/adapters/invoiceActivityUiAdapter';
@@ -1186,6 +1193,7 @@ const emit = defineEmits(['close']);
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const { typeDefs: organizationTypeDefs } = useOrganizationTypes();
 const {
   reserveDocument,
   releaseReservation,
@@ -1376,6 +1384,8 @@ function caseContactOptionsForRecord(rec, allContacts) {
 const documentFolderLookupList = ref([]);
 /** Tenant user list used to render user lookup labels (e.g., assignedTo) in generic sections. */
 const userLookupList = ref([]);
+/** Catalog category tree flattened for items.categoryId key/detail fields. */
+const catalogCategoryLookupList = ref([]);
 const deleting = ref(false);
 const rightPaneRef = ref(null);
 let fetchRecordRunId = 0;
@@ -1830,6 +1840,15 @@ const recordTitle = computed(() => {
   const r = record.value;
   if (!r) return '';
   const moduleKey = (props.moduleKey || '').toLowerCase();
+  if (moduleKey === 'people') {
+    const peopleName = formatPeopleFullNameWithSalutation(
+      resolvePeopleSalutation(r),
+      r.first_name ?? r.firstName,
+      r.last_name ?? r.lastName
+    );
+    if (peopleName) return peopleName;
+    return r.email ?? (r._id || '').slice(-8) ?? 'Record';
+  }
   const first = (r.first_name ?? r.firstName ?? '').trim();
   const last = (r.last_name ?? r.lastName ?? '').trim();
   const namePart = [first, last].filter(Boolean).join(' ').trim() || null;
@@ -2375,6 +2394,9 @@ const genericAdapter = computed(() => {
     formatDate: (d) => (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
     moduleDefinition: moduleDefinition.value,
     inventoryEnabled: authStore.inventoryEnabled,
+    ...(moduleKeyLower.value === 'organizations'
+      ? { organizationTypeDefs: organizationTypeDefs.value }
+      : {}),
     canEditDetails: (rec, fieldKey) => {
       if (!canEditRecord.value) return false;
       if (moduleKeyLower.value === 'forms') return canEditFormRecord.value;
@@ -2391,14 +2413,52 @@ const genericAdapter = computed(() => {
     saveDetailField: async (fieldKey, value) => {
       const moduleKeyLower = (props.moduleKey || '').toLowerCase();
 
-      // For people records, keep title, first_name, and last_name in sync.
-      if (moduleKeyLower === 'people' && (fieldKey === 'first_name' || fieldKey === 'last_name')) {
+      if (moduleKeyLower === 'organizations' && normalizeFieldKeyLoose(fieldKey) === 'derivedstatus') {
+        const saveKey = resolveOrganizationDerivedStatusSaveFieldKey(record.value);
+        if (!saveKey) return;
+        fieldKey = saveKey;
+      }
+
+      // For people records, keep title, first_name, last_name, and salutation in sync.
+      if (moduleKeyLower === 'people' && fieldKey === 'first_name') {
+        const current = record.value || {};
+        const next = normalizePeopleFirstNameSavePayload(value, resolvePeopleSalutation(current));
+        const fullName = formatPeopleFullNameWithSalutation(
+          next.salutation,
+          next.firstName,
+          current.last_name
+        ) || undefined;
+
+        const payload = {
+          first_name: next.firstName,
+          salutation: next.salutation,
+        };
+        if (fullName) payload.name = fullName;
+
+        const response = await apiClient.put(`${recordCrudPathBase.value}/${props.recordId}`, payload);
+        const updatedRecord = response?.data?.data ?? response?.data ?? null;
+        if (record.value && updatedRecord && typeof updatedRecord === 'object') {
+          Object.assign(record.value, updatedRecord);
+        } else if (record.value) {
+          record.value.first_name = next.firstName;
+          record.value.salutation = next.salutation;
+          if (fullName) record.value.name = fullName;
+        }
+        await refreshRecordActivity();
+        return;
+      }
+
+      if (moduleKeyLower === 'people' && fieldKey === 'last_name') {
         const current = record.value || {};
         const next = {
-          first_name: fieldKey === 'first_name' ? value : current.first_name,
-          last_name: fieldKey === 'last_name' ? value : current.last_name
+          first_name: current.first_name,
+          last_name: value
         };
-        const fullName = [next.first_name, next.last_name].filter(Boolean).join(' ').trim() || undefined;
+        const fullName = formatPeopleFullNameWithSalutation(
+          resolvePeopleSalutation(current),
+          next.first_name,
+          next.last_name
+        ) || undefined;
 
         const payload = {
           first_name: next.first_name,
@@ -2552,6 +2612,9 @@ const genericAdapter = computed(() => {
       }
       if ((mk === 'quotes' || mk === 'invoices') && key === 'dealid') {
         return quoteDealLookupList.value;
+      }
+      if (mk === 'items' && (key === 'categoryid' || key === 'category')) {
+        return catalogCategoryLookupList.value;
       }
       const fieldDef = (moduleDefinition.value?.fields || []).find(
         (f) => String(f?.key || '').toLowerCase().trim() === key
@@ -3604,6 +3667,12 @@ async function loadDeferredRecordData(runId, loadedRecord) {
     userLookupList.value = [];
   }
 
+  if (lowerModuleKey === 'items') {
+    deferredLoads.push(loadCatalogCategoryLookup(isCurrentRun));
+  } else if (isCurrentRun()) {
+    catalogCategoryLookupList.value = [];
+  }
+
   await Promise.allSettled(deferredLoads);
 }
 
@@ -3849,11 +3918,51 @@ async function loadUserLookup(isCurrentRun) {
       : (Array.isArray(usersData?.data) ? usersData.data : []);
     userLookupList.value = users.map((u) => ({
       _id: u?._id || u?.id,
-      name: [u?.firstName, u?.lastName].filter(Boolean).join(' ').trim() || u?.username || u?.email || (u?._id || u?.id || '')
+      firstName: u?.firstName || u?.first_name,
+      lastName: u?.lastName || u?.last_name,
+      email: u?.email,
+      avatar: u?.avatar,
+      name: [u?.firstName || u?.first_name, u?.lastName || u?.last_name].filter(Boolean).join(' ').trim()
+        || u?.username
+        || u?.email
+        || (u?._id || u?.id || '')
     })).filter((u) => Boolean(u._id));
   } catch (userErr) {
     console.error('Fetch user lookup list error:', userErr);
     if (isCurrentRun()) userLookupList.value = [];
+  }
+}
+
+function flattenCatalogCategoryTreeForLookup(tree) {
+  const out = [];
+  const walk = (node, parentLabel = '') => {
+    if (!node || typeof node !== 'object') return;
+    const id = node._id || node.id;
+    const name = node.name || node.label;
+    const label = parentLabel && name ? `${parentLabel} / ${name}` : (name || '');
+    if (id) {
+      out.push({ _id: id, name: label || name, path: node.path, label: label || name });
+    }
+    const children = Array.isArray(node.children) ? node.children : [];
+    for (const child of children) walk(child, label || name || parentLabel);
+  };
+  if (Array.isArray(tree)) {
+    for (const root of tree) walk(root, '');
+  } else if (tree) {
+    walk(tree, '');
+  }
+  return out;
+}
+
+async function loadCatalogCategoryLookup(isCurrentRun) {
+  try {
+    const response = await apiClient.get('/catalog/categories/tree');
+    if (!isCurrentRun()) return;
+    const payload = response?.data?.data ?? response?.data ?? response;
+    catalogCategoryLookupList.value = flattenCatalogCategoryTreeForLookup(payload);
+  } catch (err) {
+    console.error('Fetch catalog category lookup list error:', err);
+    if (isCurrentRun()) catalogCategoryLookupList.value = [];
   }
 }
 

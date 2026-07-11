@@ -43,9 +43,9 @@ const GRID_MARGIN = 8;
 
 const visibleItems = computed(() => props.items.filter((item) => item.enabled !== false));
 
-const visibleInstanceKey = computed(() =>
+const gridLayoutSyncKey = computed(() =>
   visibleItems.value
-    .map((item) => item.instanceId)
+    .map((item) => `${item.instanceId}:${item.x},${item.y},${item.w},${item.h}`)
     .sort()
     .join('|'),
 );
@@ -96,7 +96,7 @@ function readLayoutFromGrid(): GridStackNodeSnapshot[] {
 }
 
 function syncLayoutFromGrid() {
-  if (!grid || syncingGrid || props.customizeMode) return;
+  if (!grid || syncingGrid) return;
 
   const saved = readLayoutFromGrid();
   let changed = false;
@@ -177,20 +177,45 @@ function initGrid() {
   });
 }
 
+type GridStackEngineLike = {
+  nodes: Array<{
+    id?: string;
+    el?: HTMLElement;
+  }>;
+  removeNode: (node: unknown, removeDOM?: boolean, triggerEvent?: boolean) => void;
+};
+
+function purgeStaleGridNodes(activeIds: Set<string>) {
+  if (!grid) return;
+
+  for (const el of [...grid.getGridItems()]) {
+    const id = el.getAttribute('gs-id');
+    if (id && !activeIds.has(id)) {
+      grid.removeWidget(el, false, false);
+    }
+  }
+
+  const engine = grid.engine as GridStackEngineLike;
+  for (const node of [...engine.nodes]) {
+    const id = String(node.id || '').trim();
+    if (!id || activeIds.has(id)) continue;
+
+    if (node.el) {
+      grid.removeWidget(node.el, false, false);
+      continue;
+    }
+
+    engine.removeNode(node, false, false);
+  }
+}
+
 async function registerGridItems() {
   if (!grid || !gridRef.value) return;
 
-  syncingGrid = true;
   await nextTick();
 
   const activeIds = new Set(visibleItems.value.map((item) => item.instanceId));
-
-  for (const el of grid.getGridItems()) {
-    const id = el.getAttribute('gs-id');
-    if (id && !activeIds.has(id)) {
-      grid.removeWidget(el, false);
-    }
-  }
+  purgeStaleGridNodes(activeIds);
 
   for (const item of visibleItems.value) {
     const el = gridRef.value.querySelector(`[gs-id="${item.instanceId}"]`);
@@ -201,19 +226,28 @@ async function registerGridItems() {
       grid.makeWidget(el as HTMLElement, buildWidgetOptions(item));
     }
   }
-
-  syncingGrid = false;
 }
 
 function applyLayoutFromItems() {
   if (!grid || !gridRef.value || isGridInteracting) return;
 
-  syncingGrid = true;
   grid.load(
     visibleItems.value.map((item) => buildWidgetOptions(item)),
     false,
   );
+}
+
+async function syncGridToLayout() {
+  if (!grid || !gridRef.value || isGridInteracting) return;
+
+  syncingGrid = true;
+  await nextTick();
+  await registerGridItems();
+  applyLayoutFromItems();
+  grid.compact();
   syncingGrid = false;
+  syncLayoutFromGrid();
+  scheduleChartResize();
 }
 
 function setLayoutLocked(locked: boolean) {
@@ -238,31 +272,22 @@ function destroyGrid() {
 
 watch(
   () => props.customizeMode,
-  async (customize, wasCustomize) => {
+  async (customize) => {
     setLayoutLocked(Boolean(customize));
     await nextTick();
-    if (customize) {
-      await registerGridItems();
-      return;
-    }
-    if (wasCustomize) {
-      applyLayoutFromItems();
-    }
+    await syncGridToLayout();
   },
 );
 
-watch(visibleInstanceKey, async () => {
+watch(gridLayoutSyncKey, async () => {
   if (!grid) return;
-  await registerGridItems();
-  applyLayoutFromItems();
+  await syncGridToLayout();
 });
 
 onMounted(async () => {
   initGrid();
-  await registerGridItems();
-  applyLayoutFromItems();
+  await syncGridToLayout();
   setLayoutLocked(Boolean(props.customizeMode));
-  scheduleChartResize();
 });
 
 onBeforeUnmount(() => {
@@ -271,6 +296,7 @@ onBeforeUnmount(() => {
 
 defineExpose({
   syncLayoutFromGrid,
+  syncGridToLayout,
 });
 </script>
 

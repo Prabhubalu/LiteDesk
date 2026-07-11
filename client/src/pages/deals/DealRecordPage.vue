@@ -1229,6 +1229,7 @@ import { resolveFieldContext } from '@/utils/fieldContextFilter';
 import { formatRelativeTime } from '@/utils/relativeTime';
 import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
 import { resolveStageOrPicklistLabel } from '@/utils/configurableLabelResolver';
+import { picklistChipStyle } from '@/utils/picklistColorPalette';
 import { i18n } from '@/i18n/index';
 import { useRecordPageLifecycle } from '@/components/record-page/composables/useRecordPageLifecycle';
 import {
@@ -1828,6 +1829,16 @@ const dealSectionContext = computed(() => ({
   closeExpandedLeftSection,
   openTab,
   canEditPlaybook: authStore.can('deals', 'edit'),
+  canEditDetails: () => authStore.can('deals', 'edit'),
+  onSectionUpdated: ({ sectionKey, payload }) => {
+    if (sectionKey !== 'lines' || !payload?.deal || !deal.value) return;
+    deal.value = {
+      ...deal.value,
+      amount: payload.deal.amount ?? deal.value.amount,
+      amountMode: payload.deal.amountMode ?? deal.value.amountMode,
+      linesGrandTotal: payload.deal.linesGrandTotal ?? deal.value.linesGrandTotal
+    };
+  },
   openTagsEditor: (...args) => openTagPopoverFromField(...args),
   getTagChipClass: getDealTagChipClass,
   getStateFieldOptions: (fieldKey) => {
@@ -2236,33 +2247,6 @@ const formatDealStage = (stageValue) => {
   return translatePicklistValue(label) || label || null;
 };
 
-const hexToRgb = (hex) => {
-  const normalized = String(hex || '').trim().replace('#', '');
-  if (!/^[0-9a-fA-F]{3,8}$/.test(normalized)) return null;
-
-  if (normalized.length === 3) {
-    const [r, g, b] = normalized.split('').map((char) => parseInt(char + char, 16));
-    return { r, g, b };
-  }
-
-  if (normalized.length >= 6) {
-    return {
-      r: parseInt(normalized.slice(0, 2), 16),
-      g: parseInt(normalized.slice(2, 4), 16),
-      b: parseInt(normalized.slice(4, 6), 16)
-    };
-  }
-
-  return null;
-};
-
-const getStageTextColor = (bgColor) => {
-  const rgb = hexToRgb(bgColor);
-  if (!rgb) return '#ffffff';
-  const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
-  return luminance > 0.62 ? '#111827' : '#ffffff';
-};
-
 const getStagePillClass = (stageValue) => {
   const configured = findDealStageOption(stageValue);
   if (configured?.color) return '';
@@ -2278,19 +2262,14 @@ const getStagePillDividerClass = (stageValue) => {
 const getStagePillStyle = (stageValue) => {
   const configured = findDealStageOption(stageValue);
   if (!configured?.color) return null;
-  return {
-    backgroundColor: configured.color,
-    color: getStageTextColor(configured.color)
-  };
+  return picklistChipStyle(configured.color);
 };
 
 const getStagePillDividerStyle = (stageValue) => {
   const configured = findDealStageOption(stageValue);
   if (!configured?.color) return null;
-  const textColor = getStageTextColor(configured.color);
-  return {
-    borderColor: textColor === '#111827' ? 'rgba(17, 24, 39, 0.28)' : 'rgba(255, 255, 255, 0.35)'
-  };
+  const style = picklistChipStyle(configured.color);
+  return style.borderColor ? { borderColor: style.borderColor } : null;
 };
 
 const handleDealStageSave = async (stageValue) => {
@@ -2477,7 +2456,7 @@ const primaryContact = computed(() => {
   if (!deal.value) return null;
   if (deal.value.dealPeople && Array.isArray(deal.value.dealPeople)) {
     const primary = deal.value.dealPeople.find(
-      (p) => p.isPrimary && p.isActive && p.role === 'primary_contact' && p.personId
+      (p) => p.isPrimary && p.isActive && p.personId
     );
     if (primary && primary.personId) {
       return typeof primary.personId === 'object' ? primary.personId : null;
@@ -2759,12 +2738,25 @@ const loadActivityFilter = () => {
 };
 
 const personRoleLabels = {
-  primary_contact: 'Primary contact',
   decision_maker: 'Decision maker',
+  champion: 'Champion',
   influencer: 'Influencer',
-  partner_contact: 'Partner contact'
+  technical_contact: 'Technical contact',
+  partner_contact: 'Partner contact',
+  procurement: 'Procurement',
+  legal: 'Legal',
+  other: 'Other',
+  // Legacy display fallback
+  primary_contact: 'Decision maker',
 };
-const orgRoleLabels = { customer: 'Customer', partner: 'Partner', reseller: 'Reseller' };
+const orgRoleLabels = {
+  customer: 'Customer',
+  partner: 'Partner',
+  reseller: 'Reseller',
+  distributor: 'Distributor',
+  vendor: 'Vendor',
+  other: 'Other',
+};
 
 function participantPersonName(entry) {
   const p = entry.personId;

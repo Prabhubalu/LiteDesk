@@ -886,5 +886,17 @@
   "externalAccessUsageActive": {
     "message": "Active external users in your organization: {count}",
     "description": "Org-wide external user usage counter (V1)"
+  },
+  "sysFieldSalutation": {
+    "message": "Salutation",
+    "description": "System people field label"
+  },
+  "salutationPlaceholder": {
+    "message": "Title",
+    "description": "Placeholder for salutation picker beside first name"
+  },
+  "sysFieldCreatedOn": {
+    "message": "Created On",
+    "description": "System people field label"
   }
 }

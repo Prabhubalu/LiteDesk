@@ -1,5 +1,172 @@
 <template>
-  <TransitionRoot as="template" :show="isOpen">
+  <form
+    v-if="inline"
+    class="space-y-6"
+    @submit.prevent="handleSubmit"
+  >
+    <p v-if="error" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
+      {{ error }}
+    </p>
+
+    <section class="space-y-4">
+      <h4 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+        {{ t('settings.inviteSectionProfile') }}
+      </h4>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="space-y-1">
+          <label for="onboarding-invite-first-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ t('settings.inviteFirstName') }} <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="onboarding-invite-first-name"
+            v-model="form.firstName"
+            type="text"
+            required
+            :placeholder="t('settings.inviteFirstNamePh')"
+            class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="onboarding-invite-last-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ t('settings.inviteLastName') }} <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="onboarding-invite-last-name"
+            v-model="form.lastName"
+            type="text"
+            required
+            :placeholder="t('settings.inviteLastNamePh')"
+            class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+          />
+        </div>
+      </div>
+      <div class="space-y-1">
+        <label for="onboarding-invite-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {{ t('settings.inviteEmail') }} <span class="text-red-500">*</span>
+        </label>
+        <input
+          id="onboarding-invite-email"
+          v-model="form.email"
+          type="email"
+          required
+          :placeholder="t('settings.inviteEmailPh')"
+          class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+        />
+      </div>
+    </section>
+
+    <section class="space-y-4">
+      <h4 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+        {{ t('settings.inviteSectionAccess') }}
+      </h4>
+
+      <div v-if="availableRoles.length > 0" class="space-y-1">
+        <label for="onboarding-invite-role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {{ t('settings.inviteRole') }} <span class="text-red-500">*</span>
+        </label>
+        <HeadlessSelect
+          id="onboarding-invite-role"
+          v-model="form.roleId"
+          :options="roleSelectOptions"
+          :invalid="Boolean(validationErrors.roleId)"
+        />
+        <p v-if="validationErrors.roleId" class="mt-1 text-xs text-red-600 dark:text-red-400">
+          {{ validationErrors.roleId }}
+        </p>
+      </div>
+
+      <div v-if="!rbacV2Enabled" class="space-y-3">
+        <span class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {{ t('settings.inviteAppAccess') }} <span class="text-red-500">*</span>
+        </span>
+        <div v-if="loadingCapabilities" class="text-sm text-gray-500 dark:text-gray-400">
+          {{ t('settings.inviteLoadingApps') }}
+        </div>
+        <div v-else-if="availableApps.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
+          {{ t('settings.inviteNoApps') }}
+        </div>
+        <div v-else class="space-y-2">
+          <div
+            v-for="app in availableApps"
+            :key="app.appKey"
+            class="rounded-lg border transition-colors"
+            :class="[
+              isAppSelected(app.appKey)
+                ? 'border-indigo-200 bg-indigo-50/60 dark:border-indigo-800 dark:bg-indigo-900/20'
+                : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800/50',
+              !isAppEnabled(app) && 'opacity-60'
+            ]"
+          >
+            <div class="flex items-start gap-3 p-3">
+              <HeadlessCheckbox
+                :id="`onboarding-app-${app.appKey}`"
+                :checked="isAppSelected(app.appKey)"
+                :disabled="!isAppEnabled(app)"
+                checkbox-class="mt-0.5"
+                @change="toggleApp(app)"
+              />
+              <div class="min-w-0 flex-1 space-y-2">
+                <label
+                  :for="`onboarding-app-${app.appKey}`"
+                  class="block cursor-pointer text-sm font-medium text-gray-900 dark:text-white"
+                  :class="{ 'cursor-not-allowed': !isAppEnabled(app) }"
+                >
+                  {{ getAppDisplayName(app.appKey) }}
+                </label>
+                <div v-if="isAppSelected(app.appKey)" class="space-y-1">
+                  <label :for="`onboarding-app-role-${app.appKey}`" class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    {{ t('settings.inviteRoleForApp', { app: getAppDisplayName(app.appKey) }) }}
+                  </label>
+                  <HeadlessSelect
+                    :id="`onboarding-app-role-${app.appKey}`"
+                    :model-value="selectedAppRoles[app.appKey]"
+                    :options="getAppRoleOptions(app)"
+                    @update:model-value="updateAppRole(app.appKey, $event)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p v-if="validationErrors.appAccess" class="text-xs text-red-600 dark:text-red-400">
+          {{ validationErrors.appAccess }}
+        </p>
+      </div>
+    </section>
+
+    <section class="space-y-3">
+      <div class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-900/20">
+        <div class="flex items-start gap-3">
+          <HeadlessCheckbox
+            v-model="form.sendEmail"
+            id="onboarding-send-email"
+            checkbox-class="mt-0.5"
+          />
+          <div class="min-w-0">
+            <label for="onboarding-send-email" class="cursor-pointer text-sm font-medium text-gray-900 dark:text-white">
+              {{ t('settings.inviteSendEmail') }}
+            </label>
+            <p class="mt-0.5 text-xs text-gray-600 dark:text-gray-400">
+              {{ form.sendEmail ? t('settings.inviteSendEmailOn') : t('settings.inviteSendEmailOff') }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="flex gap-3 pt-2">
+      <button
+        type="submit"
+        class="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+        :disabled="saving || !isFormValid"
+      >
+        {{ submitButtonLabel }}
+      </button>
+      <slot name="secondary-action" />
+    </div>
+  </form>
+
+  <TransitionRoot v-else as="template" :show="isOpen">
     <Dialog class="relative z-50" @close="handleDialogClose">
       <TransitionChild
         as="template"
@@ -431,7 +598,7 @@
 <script setup>
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { UserPlusIcon, XMarkIcon } from '@heroicons/vue/24/outline';
@@ -439,6 +606,7 @@ import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/auth';
 import { isRbacV2Enabled } from '@/utils/rbacFeatureFlags';
 import { captureInviteSent } from '@/config/posthogOnboarding';
+import { getAppLabel } from '@/utils/getRoleDisplay';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -446,7 +614,16 @@ const rbacV2Enabled = computed(() => isRbacV2Enabled(authStore.organization));
 
 const props = defineProps({
   isOpen: Boolean,
+  inline: Boolean,
   initialRoleId: {
+    type: String,
+    default: ''
+  },
+  initialAppKey: {
+    type: String,
+    default: ''
+  },
+  submitLabel: {
     type: String,
     default: ''
   }
@@ -537,9 +714,17 @@ const applySuggestedTaskPreset = (message) => {
   form.value.suggestedTask = message;
 };
 
+const submitButtonLabel = computed(() =>
+  props.submitLabel || (saving.value ? t('settings.inviteSubmitting') : t('settings.inviteSubmit'))
+);
+
 const appDisplayNames = {
-  SALES: 'SALES',
-  CRM: 'CRM',
+  SALES: 'Sales',
+  CRM: 'Sales',
+  HELPDESK: 'Helpdesk',
+  MARKETING: 'Marketing',
+  PROJECTS: 'Projects',
+  INVENTORY: 'Inventory',
   AUDIT: 'Audit',
   PORTAL: 'Portal'
 };
@@ -558,12 +743,32 @@ const roleDisplayNames = {
   AUDIT: {
     AUDITOR: 'Auditor'
   },
+  HELPDESK: {
+    ADMIN: 'Admin',
+    MANAGER: 'Manager',
+    USER: 'User',
+    AGENT: 'Agent'
+  },
+  MARKETING: {
+    ADMIN: 'Admin',
+    MANAGER: 'Manager',
+    USER: 'User'
+  },
+  PROJECTS: {
+    ADMIN: 'Admin',
+    MANAGER: 'Manager',
+    USER: 'User'
+  },
+  INVENTORY: {
+    ADMIN: 'Admin',
+    MANAGER: 'Manager',
+    USER: 'User'
+  },
   PORTAL: {
     CUSTOMER: 'Customer',
     VIEWER: 'Viewer'
   }
 };
-
 const availableApps = computed(() => {
   if (!form.value.userType) return [];
   return capabilities.value.filter((app) => app.userTypesAllowed.includes(form.value.userType));
@@ -607,16 +812,52 @@ watch(passwordOption, (value) => {
 
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
-    resetForm();
-    if (props.initialRoleId) {
-      form.value.roleId = props.initialRoleId;
-    }
-    fetchRoles();
-    if (!rbacV2Enabled.value) {
-      fetchCapabilities();
-    }
+    initializeForm();
   }
 });
+
+onMounted(() => {
+  if (props.inline) {
+    initializeForm();
+  }
+});
+
+watch(
+  [() => props.initialAppKey, () => capabilities.value],
+  () => {
+    if (!props.initialAppKey || capabilities.value.length === 0) return;
+    if (Object.keys(selectedAppRoles.value).length > 0) return;
+    const appKey = String(props.initialAppKey).toUpperCase();
+    const app = capabilities.value.find((entry) => entry.appKey === appKey);
+    if (!app || !isAppEnabled(app)) return;
+    selectedAppRoles.value = {
+      [appKey]: app.defaultRole || app.roles?.[0] || 'USER'
+    };
+  },
+  { deep: true }
+);
+
+watch(availableRoles, (roles) => {
+  if (!props.inline || form.value.roleId || !Array.isArray(roles) || roles.length === 0) return;
+  const defaultRole = roles.find((role) =>
+    String(role.name || '').toLowerCase() === 'user'
+    || String(role.key || '').toLowerCase() === 'user'
+  ) || roles.find((role) => !role.isSystem) || roles[0];
+  if (defaultRole?._id) {
+    form.value.roleId = defaultRole._id;
+  }
+});
+
+function initializeForm() {
+  resetForm();
+  if (props.initialRoleId) {
+    form.value.roleId = props.initialRoleId;
+  }
+  fetchRoles();
+  if (!rbacV2Enabled.value) {
+    fetchCapabilities();
+  }
+}
 
 const fetchRoles = async () => {
   try {
@@ -714,7 +955,7 @@ const getAppRoleOptions = (app) =>
     label: getRoleDisplayName(app.appKey, roleKey)
   }));
 
-const getAppDisplayName = (appKey) => appDisplayNames[appKey] || appKey;
+const getAppDisplayName = (appKey) => getAppLabel(appKey) || appDisplayNames[appKey] || appKey;
 
 const getRoleDisplayName = (appKey, roleKey) => roleDisplayNames[appKey]?.[roleKey] || roleKey;
 
@@ -817,7 +1058,7 @@ const handleSubmit = async () => {
 
     if (response.success) {
       captureInviteSent({
-        source: 'settings_drawer',
+        source: props.inline ? 'founder_wizard' : 'settings_drawer',
         send_email: form.value.sendEmail,
         has_welcome_note: Boolean(form.value.welcomeNote?.trim()),
         has_suggested_task: Boolean(form.value.suggestedTask?.trim()),
@@ -841,11 +1082,16 @@ const handleSubmit = async () => {
         successMessage.value = t('settings.inviteSuccessCreated');
         successDetail.value = t('settings.inviteSuccessManualDelivery');
       }
-      emit('user-invited');
-      setTimeout(() => {
+      if (props.inline) {
+        emit('user-invited');
         resetForm();
-        emit('close');
-      }, 2500);
+      } else {
+        emit('user-invited');
+        setTimeout(() => {
+          resetForm();
+          emit('close');
+        }, 2500);
+      }
     } else {
       error.value = response.message || t('settings.inviteFailed');
       if (response.errors && Array.isArray(response.errors)) {

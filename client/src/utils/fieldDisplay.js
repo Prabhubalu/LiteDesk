@@ -3,10 +3,9 @@
  */
 
 import {
-  CURRENCY_OPTIONS,
-  DEFAULT_CURRENCY_CODE,
   formatCurrencyValue,
   getCurrencySymbolFromCode,
+  resolveCurrencyCodeForField,
 } from './currencyOptions';
 import { i18n } from '@/i18n';
 import { resolveFieldLabel } from './fieldLabelResolver';
@@ -55,13 +54,18 @@ export function getFieldDisplayLabel(field, moduleKey = null) {
   const te = i18n.global.te.bind(i18n.global);
   const key = String(field.key || '').trim();
   const label = String(field.label || '').trim();
+  const keyCompact = key.replace(/[\s_-]+/g, '').toLowerCase();
+  const hasGlobalSystemLabel =
+    keyCompact === 'contactid' || keyCompact === 'organizationrefid';
 
   if (normalizeAssignedToKey(key) && LEGACY_ASSIGNED_TO_LABELS.has(label.toLowerCase())) {
     const resolved = resolveFieldLabel(mk, field, t, te);
     if (resolved) return resolved;
   }
 
-  if (mk || normalizeAssignedToKey(key)) {
+  // Resolve system catalog even without moduleKey for shared technical lookup keys
+  // (list headers / customize often call this without moduleKey).
+  if (mk || normalizeAssignedToKey(key) || hasGlobalSystemLabel) {
     const resolved = resolveFieldLabel(mk, field, t, te);
     if (resolved) return resolved;
   }
@@ -250,21 +254,14 @@ export const getFieldValue = (fieldDef, record) => {
     case 'Currency':
       const decimalPlaces = fieldDef.numberSettings?.decimalPlaces || 2;
       if (value === undefined) return null;
-      const explicitCode = String(
-        fieldDef.numberSettings?.currencyCode || fieldDef.numberSettings?.currency || ''
-      ).toUpperCase();
-      const savedSymbol = String(fieldDef.numberSettings?.currencySymbol || '').trim();
-      const symbolMatchedCode = savedSymbol
-        ? CURRENCY_OPTIONS.find((currency) => getCurrencySymbolFromCode(currency.code) === savedSymbol)?.code
-        : null;
-      const currencyCode = explicitCode || symbolMatchedCode || DEFAULT_CURRENCY_CODE;
+      const currencyCode = resolveCurrencyCodeForField({ record, fieldDef });
       return (
         formatCurrencyValue(value, {
           currencyCode,
           minimumFractionDigits: decimalPlaces,
           maximumFractionDigits: decimalPlaces,
         }) ||
-        `${fieldDef.numberSettings?.currencySymbol || getCurrencySymbolFromCode(currencyCode)}${parseFloat(value).toFixed(decimalPlaces)}`
+        `${getCurrencySymbolFromCode(currencyCode)}${parseFloat(value).toFixed(decimalPlaces)}`
       );
     case 'Decimal':
       const decimalPlaces2 = fieldDef.numberSettings?.decimalPlaces || 2;

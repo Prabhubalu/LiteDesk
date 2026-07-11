@@ -30,7 +30,8 @@ import type { AppRegistry } from '@/types/sidebar.types';
 import type { PermissionSnapshot } from '@/types/permission-snapshot.types';
 import { hasPermission as checkPermission } from '@/types/permission-snapshot.types';
 import { memoizeBuilder } from '@/utils/builderCache';
-import { PEOPLE_FIELD_METADATA } from '@/platform/fields/peopleFieldModel';
+import { isFieldVisibleInConfig, isGlobalSystemFieldKey } from '@/platform/fields/fieldCapabilityEngine';
+import { getFieldMetadataFromRegistry } from '@/platform/fields/FieldRegistry';
 import { hasModuleListConfig } from '@/platform/modules/moduleListRegistry';
 
 /**
@@ -48,12 +49,17 @@ function getFallbackColumns(moduleKey: string): Array<{
 }> {
   const fallbacks: Record<string, Array<any>> = {
     people: [
-      { key: 'name', label: 'Name', dataType: 'text', sortable: true, order: 1 }, // Computed from first_name + last_name
-      { key: 'email', label: 'Email', dataType: 'text', sortable: true, order: 2 },
-      { key: 'phone', label: 'Phone', dataType: 'text', sortable: false, order: 3 },
-      { key: 'organization', label: 'Organization', dataType: 'text', sortable: true, order: 4 },
-      { key: 'sales_type', label: 'Type', dataType: 'status', sortable: true, order: 5 },
-      { key: 'assignedTo', label: 'Assigned To', dataType: 'user', sortable: true, order: 6 },
+      { key: 'name', label: 'Full Name', dataType: 'text', sortable: true, order: 1 },
+      { key: 'sales_type', label: 'Participation', dataType: 'status', sortable: true, order: 2 },
+      { key: 'derivedStatus', label: 'Status', dataType: 'status', sortable: true, order: 3 },
+      { key: 'email', label: 'Email', dataType: 'text', sortable: true, order: 4 },
+      { key: 'mobile', label: 'Mobile', dataType: 'text', sortable: false, order: 5 },
+      { key: 'organization', label: 'Organization', dataType: 'text', sortable: true, order: 6 },
+      { key: 'source', label: 'Source', dataType: 'text', sortable: true, order: 7 },
+      { key: 'lead_score', label: 'Lead Score', dataType: 'number', sortable: true, order: 8 },
+      { key: 'assignedTo', label: 'Assigned To', dataType: 'user', sortable: true, order: 9 },
+      { key: 'lastActivity', label: 'Last Activity', dataType: 'datetime', sortable: true, order: 10 },
+      { key: 'createdAt', label: 'Created On', dataType: 'datetime', sortable: true, order: 11 },
     ],
     deals: [
       { key: 'name', label: 'Deal Name', dataType: 'text', sortable: true, order: 1 },
@@ -208,47 +214,29 @@ function isFieldTableEligible(
   fieldKey: string,
   moduleKey: string
 ): boolean {
-  // Only apply People-specific filtering for people module
   if (moduleKey !== 'people') {
-    return true; // For other modules, allow all fields
-  }
-
-  // Known computed/virtual fields that don't exist in metadata but are valid
-  // These are computed from actual fields (e.g., "name" = first_name + last_name)
-  const computedFields = new Set(['name']);
-  
-  if (computedFields.has(fieldKey)) {
-    // Computed fields are always eligible (they're derived from metadata fields)
     return true;
   }
 
-  // Get field metadata (fail-safe: if field not in metadata, allow it)
-  const metadata = PEOPLE_FIELD_METADATA[fieldKey];
+  const computedFields = new Set(['name', 'lastActivity']);
+  if (computedFields.has(fieldKey)) {
+    return true;
+  }
+
+  const metadata = getFieldMetadataFromRegistry('people', fieldKey);
   if (!metadata) {
-    // Field not in metadata - log warning but allow it (graceful degradation)
-    // Only warn in dev mode to reduce noise
     if (import.meta.env.DEV) {
-      console.warn(`[buildModuleListFromRegistry] Field "${fieldKey}" not found in PEOPLE_FIELD_METADATA`);
+      console.warn(`[buildModuleListFromRegistry] Field "${fieldKey}" not found in people field metadata`);
+    }
+    // Infrastructure keys without metadata (e.g. trash) stay out of the column pool.
+    if (isGlobalSystemFieldKey(fieldKey)) {
+      return false;
     }
     return true;
   }
 
-  // System fields never appear in table
   if (metadata.owner === 'system') {
-    return false;
-  }
-
-  // Core identity fields - eligible if showInTable is true (already filtered by registry)
-  // We just need to ensure they're not system fields (already checked above)
-  if (metadata.owner === 'core') {
-    return true; // showInTable filtering happens in registry/field settings
-  }
-
-  // Participation fields - eligible if showInTable is true (already filtered by registry)
-  // We just need to ensure they're not system fields (already checked above)
-  // Note: Per-row participation checking happens at render time, not column filtering time
-  if (metadata.owner === 'participation') {
-    return true; // showInTable filtering happens in registry/field settings
+    return isFieldVisibleInConfig(moduleKey, { key: fieldKey });
   }
 
   return true;

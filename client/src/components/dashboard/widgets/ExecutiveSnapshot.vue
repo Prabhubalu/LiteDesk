@@ -32,13 +32,21 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
+import { computed } from 'vue';
+import { getCurrencySymbolFromCode, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { useAuthStore } from '@/stores/authRegistry';
+
 defineProps({
   cards: { type: Array, required: true }
 });
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const currencySymbol = computed(() =>
+  getCurrencySymbolFromCode(resolveOrgCurrencyCode(authStore.organization))
+);
 
-const metricIcon = (idx) => ['$', 'P', 'F', 'W', 'S', 'C'][idx] || 'M';
+const metricIcon = (idx) => [currencySymbol.value, 'P', 'F', 'W', 'S', 'C'][idx] || 'M';
 const badgeClass = (idx) => [
   'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
   'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300',

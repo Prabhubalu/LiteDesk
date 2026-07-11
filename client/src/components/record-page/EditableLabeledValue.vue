@@ -24,6 +24,7 @@
         class="w-full min-w-0 flex-1 flex flex-col"
       >
         <Listbox
+          v-slot="{ open }"
           :model-value="selectModelValue"
           @update:model-value="handleSelectChange"
           class="w-full min-w-0 flex-1"
@@ -32,15 +33,27 @@
             <ListboxButton
             :class="[
               'editable-labeled-value__display flex-1 min-w-0 w-full min-h-8 text-left rounded transition-colors cursor-pointer',
-              'flex items-center hover:bg-gray-50 dark:hover:bg-gray-800',
+              'inline-flex items-center flex-nowrap hover:bg-gray-50 dark:hover:bg-gray-800',
               'px-2 -mx-2 -my-1',
               saveHttpError ? 'ring-2 ring-red-500/80 ring-offset-1 dark:ring-offset-gray-900' : ''
             ]"
           >
             <slot v-if="type === 'user'">
-              <span v-if="displayValue" class="editable-labeled-value__text block truncate">{{ displayValue }}</span>
+              <span v-if="displayValue" class="inline-flex items-center gap-2 min-w-0 max-w-full flex-nowrap">
+                <Avatar v-if="selectedUserForAvatar" :user="selectedUserForAvatar" size="sm" class="shrink-0" />
+                <span class="truncate min-w-0">{{ displayValue }}</span>
+              </span>
               <span v-else class="text-record-empty">—</span>
             </slot>
+            <template v-else-if="type === 'select'">
+              <span
+                v-if="displayValue && getTagChipStyle"
+                class="inline-block text-xs px-2 py-0.5 rounded max-w-full truncate"
+                :style="getTagChipStyle(value)"
+              >{{ displayValue }}</span>
+              <span v-else-if="displayValue" class="editable-labeled-value__text block truncate">{{ displayValue }}</span>
+              <span v-else class="text-record-empty">—</span>
+            </template>
             <template v-else>
               <span v-if="displayValue" class="editable-labeled-value__text block truncate">{{ displayValue }}</span>
               <span v-else class="text-record-empty">—</span>
@@ -48,6 +61,7 @@
           </ListboxButton>
           <Transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
             <ListboxOptions
+              v-if="open"
               class="absolute left-0 top-full !bottom-auto z-10 mt-1 w-full max-w-[min(100vw,24rem)] min-w-[200px] max-h-72 flex flex-col overflow-hidden rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm"
             >
               <div
@@ -96,6 +110,24 @@
         </Listbox>
         <p v-if="saveHttpError" class="text-xs text-red-600 dark:text-red-400 leading-snug w-full min-w-0 break-words pl-0.5">{{ saveHttpError }}</p>
       </div>
+      <!-- Row: multi-select picklist — chip display + dropdown -->
+      <div
+        v-else-if="layout === 'row' && canEdit && type === 'multi-select'"
+        class="w-full min-w-0 flex-1 flex flex-col"
+        @click.stop
+      >
+        <TagMultiPicklistField
+          :model-value="multiSelectValue"
+          :options="options"
+          :field-key="fieldKey"
+          :module-key="moduleKey"
+          variant="inline"
+          :has-error="Boolean(saveHttpError)"
+          :placeholder="t('records.editableSelectOption')"
+          @update:model-value="handleMultiSelectChange"
+        />
+        <p v-if="saveHttpError" class="text-xs text-red-600 dark:text-red-400 leading-snug w-full min-w-0 break-words pl-0.5 mt-1">{{ saveHttpError }}</p>
+      </div>
       <!-- Row: phone — popover editor (click to edit; panel uses create-drawer PhoneInput styling) -->
       <div
         v-else-if="layout === 'row' && canEdit && type === 'phone'"
@@ -107,6 +139,7 @@
           popover
           minimal-trigger
           :model-value="localValue"
+          :default-country="defaultPhoneCountry"
           :placeholder="t('records.editablePhonePh')"
           :invalid="Boolean(phoneError || saveHttpError)"
           trigger-class="editable-labeled-value__display flex-1 min-w-0 w-full min-h-8 text-left rounded transition-colors cursor-pointer flex items-center hover:bg-gray-50 dark:hover:bg-gray-800 px-2 -mx-2 -my-1"
@@ -120,13 +153,38 @@
       </div>
       <!-- Select/User/Entity read-only: tag or dash -->
       <div
-        v-else-if="layout === 'row' && !canEdit && (type === 'select' || type === 'user' || type === 'entity')"
+        v-else-if="layout === 'row' && !canEdit && (type === 'select' || type === 'user' || type === 'entity' || type === 'multi-select')"
         class="flex-1 min-w-0 w-full min-h-8 flex items-center rounded px-2 -mx-2 -my-1 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
       >
-        <slot v-if="type === 'user'">
-          <span v-if="displayValue" class="editable-labeled-value__text block truncate">{{ displayValue }}</span>
+        <div
+          v-if="type === 'multi-select' && multiSelectValue.length > 0"
+          class="flex flex-wrap gap-1.5 min-w-0"
+        >
+          <span
+            v-for="(tag, index) in multiSelectValue"
+            :key="`${tag}-${index}`"
+            :style="getTagChipStyle ? getTagChipStyle(tag) : undefined"
+            :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
+          >
+            {{ tag }}
+          </span>
+        </div>
+        <slot v-else-if="type === 'user'">
+          <span v-if="displayValue" class="inline-flex items-center gap-2 min-w-0 max-w-full flex-nowrap">
+            <Avatar v-if="selectedUserForAvatar" :user="selectedUserForAvatar" size="sm" class="shrink-0" />
+            <span class="truncate min-w-0">{{ displayValue }}</span>
+          </span>
           <span v-else class="text-record-empty">—</span>
         </slot>
+        <template v-else-if="type === 'select'">
+          <span
+            v-if="displayValue && getTagChipStyle"
+            class="inline-block text-xs px-2 py-0.5 rounded max-w-full truncate"
+            :style="getTagChipStyle(value)"
+          >{{ displayValue }}</span>
+          <span v-else-if="displayValue" class="editable-labeled-value__text block truncate">{{ displayValue }}</span>
+          <span v-else class="text-record-empty">—</span>
+        </template>
         <template v-else>
           <span v-if="displayValue" class="editable-labeled-value__text block truncate">{{ displayValue }}</span>
           <span v-else class="text-record-empty">—</span>
@@ -140,8 +198,19 @@
           multiline ? 'min-h-[80px]' : ''
         ]"
       >
+        <PeopleFirstNameWithSalutationField
+          v-if="peopleFirstNameWithSalutation && (type === 'text' || type === 'url') && !multiline"
+          :first-name="String(localValue ?? '')"
+          :salutation="String(localSalutation ?? '')"
+          :salutation-options="salutationOptions"
+          :invalid="Boolean(saveHttpError)"
+          :first-name-placeholder="t('people.sysFieldFirstName')"
+          @update:first-name="onFirstNameFieldUpdate"
+          @update:salutation="onSalutationFieldUpdate"
+          @blur="handleBlur"
+        />
         <input
-          v-if="(type === 'text' || type === 'url') && !multiline"
+          v-else-if="(type === 'text' || type === 'url') && !multiline && !peopleFirstNameWithSalutation"
           ref="inputRef"
           v-model="localValue"
           @blur="handleBlur"
@@ -208,6 +277,7 @@
           <span
             v-for="(tag, index) in tagList"
             :key="`${tag}-${index}`"
+            :style="getTagChipStyle ? getTagChipStyle(tag) : undefined"
             :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
           >
             {{ tag }}
@@ -238,7 +308,20 @@
     </dt>
     <dd :class="compact ? '' : 'mt-2 text-sm text-gray-900 dark:text-white'">
       <!-- Select/User: Dropdown — compact pane uses HeadlessSelect (teleport); default stack uses Listbox -->
-      <div v-if="canEdit && (type === 'select' || type === 'user' || type === 'entity')" class="w-full">
+      <div v-if="canEdit && type === 'multi-select'" :class="compact ? 'w-full mt-1' : 'w-full'">
+        <TagMultiPicklistField
+          :model-value="multiSelectValue"
+          :options="options"
+          :field-key="fieldKey"
+          :module-key="moduleKey"
+          variant="form"
+          :has-error="Boolean(saveHttpError)"
+          :placeholder="t('records.editableSelectOption')"
+          @update:model-value="handleMultiSelectChange"
+        />
+        <p v-if="saveHttpError" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ saveHttpError }}</p>
+      </div>
+      <div v-else-if="canEdit && (type === 'select' || type === 'user' || type === 'entity')" class="w-full">
         <HeadlessSelect
           v-if="compact"
           :model-value="selectModelValue"
@@ -255,6 +338,7 @@
         />
         <div v-else :class="''">
           <Listbox
+            v-slot="{ open }"
             :model-value="selectModelValue"
             @update:model-value="handleSelectChange"
             class="w-full"
@@ -280,6 +364,7 @@
             leave-to-class="opacity-0"
           >
             <ListboxOptions
+              v-if="open"
               class="absolute left-0 top-full !bottom-auto z-10 mt-1 w-full max-w-[min(100vw,24rem)] min-w-[200px] max-h-72 flex flex-col overflow-hidden rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm"
             >
               <div
@@ -335,6 +420,24 @@
         <p v-if="saveHttpError" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ saveHttpError }}</p>
       </div>
 
+      <div
+        v-else-if="!canEdit && type === 'multi-select'"
+        :class="[
+          'editable-labeled-value__display',
+          compact ? compactDrawerReadOnlyClass : ''
+        ]"
+      >
+        <TagMultiPicklistField
+          :model-value="multiSelectValue"
+          :options="options"
+          :field-key="fieldKey"
+          :module-key="moduleKey"
+          variant="form"
+          disabled
+          :placeholder="t('records.editableSelectOption')"
+        />
+      </div>
+
       <!-- Select/User read-only display -->
       <div
         v-else-if="!canEdit && (type === 'select' || type === 'user' || type === 'entity')"
@@ -351,11 +454,24 @@
 
       <!-- Compact pane: drawer-matched controls (display + edit share classes — no layout shift) -->
       <div v-else-if="compact && canEdit">
+        <PeopleFirstNameWithSalutationField
+          v-if="peopleFirstNameWithSalutation && (type === 'text' || type === 'url') && !multiline"
+          class="mt-1"
+          :first-name="String(localValue ?? '')"
+          :salutation="String(localSalutation ?? '')"
+          :salutation-options="salutationOptions"
+          :invalid="Boolean(saveHttpError)"
+          :first-name-placeholder="t('people.sysFieldFirstName')"
+          @update:first-name="onFirstNameFieldUpdate"
+          @update:salutation="onSalutationFieldUpdate"
+          @blur="handleBlur"
+        />
         <PhoneInput
-          v-if="type === 'phone' && isEditing"
+          v-else-if="type === 'phone' && isEditing"
           ref="inputRef"
           class="mt-1"
           :model-value="localValue"
+          :default-country="defaultPhoneCountry"
           :placeholder="t('records.editablePhonePh')"
           :invalid="Boolean(phoneError || saveHttpError)"
           :input-class="formPhoneInputClass"
@@ -365,7 +481,7 @@
           @escape="handleCancel"
         />
         <input
-          v-else-if="isEditing && (type === 'text' || type === 'url') && !multiline"
+          v-else-if="isEditing && (type === 'text' || type === 'url') && !multiline && !peopleFirstNameWithSalutation"
           ref="inputRef"
           v-model="localValue"
           @blur="handleBlur"
@@ -414,7 +530,8 @@
             <span
               v-for="(tag, index) in tagList"
               :key="`${tag}-${index}`"
-              :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
+              :style="getTagChipStyle ? getTagChipStyle(tag) : undefined"
+            :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
             >
               {{ tag }}
             </span>
@@ -445,15 +562,28 @@
         v-else-if="compact && !canEdit"
         :class="compactDrawerReadOnlyClass"
       >
-        <div v-if="type === 'tags'" class="flex flex-wrap gap-1.5">
-          <span
-            v-for="(tag, index) in tagList"
-            :key="`${tag}-${index}`"
-            :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
-          >
-            {{ tag }}
-          </span>
-          <span v-if="tagList.length === 0" class="text-record-empty">—</span>
+        <div v-if="type === 'tags' || type === 'multi-select'" class="flex flex-wrap gap-1.5">
+          <TagMultiPicklistField
+            v-if="type === 'multi-select'"
+            :model-value="multiSelectValue"
+            :options="options"
+            :field-key="fieldKey"
+            :module-key="moduleKey"
+            variant="form"
+            disabled
+            :placeholder="t('records.editableSelectOption')"
+          />
+          <template v-else>
+            <span
+              v-for="(tag, index) in tagList"
+              :key="`${tag}-${index}`"
+              :style="getTagChipStyle ? getTagChipStyle(tag) : undefined"
+              :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
+            >
+              {{ tag }}
+            </span>
+          </template>
+          <span v-if="type === 'tags' && tagList.length === 0" class="text-record-empty">—</span>
         </div>
         <slot v-else>
           <a
@@ -478,6 +608,7 @@
           <PhoneInput
             ref="inputRef"
             :model-value="localValue"
+            :default-country="defaultPhoneCountry"
             :placeholder="t('records.editablePhonePh')"
             :invalid="Boolean(phoneError || saveHttpError)"
             :editor-height-class="compact ? '' : 'h-8'"
@@ -490,9 +621,21 @@
           <p v-if="phoneError" class="mt-1 text-xs text-red-600 dark:text-red-400 leading-snug">{{ phoneError }}</p>
           <p v-else-if="saveHttpError" class="mt-1 text-xs text-red-600 dark:text-red-400 leading-snug">{{ saveHttpError }}</p>
         </div>
+        <PeopleFirstNameWithSalutationField
+          v-else-if="peopleFirstNameWithSalutation && (type === 'text' || type === 'url') && !multiline"
+          :first-name="String(localValue ?? '')"
+          :salutation="String(localSalutation ?? '')"
+          :salutation-options="salutationOptions"
+          :invalid="Boolean(saveHttpError)"
+          :first-name-placeholder="t('people.sysFieldFirstName')"
+          @update:first-name="onFirstNameFieldUpdate"
+          @update:salutation="onSalutationFieldUpdate"
+          @blur="handleBlur"
+          @keydown.esc="handleCancel"
+        />
         <!-- Text input -->
         <input
-          v-else-if="(type === 'text' || type === 'url') && !multiline"
+          v-else-if="(type === 'text' || type === 'url') && !multiline && !peopleFirstNameWithSalutation"
           ref="inputRef"
           v-model="localValue"
           @blur="handleBlur"
@@ -552,15 +695,28 @@
         @click="handleClick($event)"
         :class="stackDisplayModeClass"
       >
-        <div v-if="type === 'tags'" class="flex flex-wrap gap-1.5">
-          <span
-            v-for="(tag, index) in tagList"
-            :key="`${tag}-${index}`"
-            :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
-          >
-            {{ tag }}
-          </span>
-          <span v-if="tagList.length === 0" class="text-record-empty">—</span>
+        <div v-if="type === 'tags' || type === 'multi-select'" class="flex flex-wrap gap-1.5">
+          <TagMultiPicklistField
+            v-if="type === 'multi-select'"
+            :model-value="multiSelectValue"
+            :options="options"
+            :field-key="fieldKey"
+            :module-key="moduleKey"
+            variant="form"
+            disabled
+            :placeholder="t('records.editableSelectOption')"
+          />
+          <template v-else>
+            <span
+              v-for="(tag, index) in tagList"
+              :key="`${tag}-${index}`"
+              :style="getTagChipStyle ? getTagChipStyle(tag) : undefined"
+              :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
+            >
+              {{ tag }}
+            </span>
+          </template>
+          <span v-if="type === 'tags' && tagList.length === 0" class="text-record-empty">—</span>
         </div>
         <slot v-else>
           <a
@@ -609,7 +765,11 @@ import {
   UserIcon
 } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
+import Avatar from '@/components/common/Avatar.vue';
 import PhoneInput from '@/components/common/PhoneInput.vue';
+import TagMultiPicklistField from '@/components/common/TagMultiPicklistField.vue';
+import { useDefaultPhoneCountry } from '@/composables/useDefaultPhoneCountry';
+import PeopleFirstNameWithSalutationField from '@/components/people/PeopleFirstNameWithSalutationField.vue';
 import DatePicker from '@/components/common/DatePicker.vue';
 import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInput';
 import { getApiErrorMessage } from '@/utils/httpErrors';
@@ -643,8 +803,8 @@ const props = defineProps({
   },
   type: {
     type: String,
-    default: 'text', // 'text', 'number', 'date', 'select', 'user', 'entity', 'tags'
-    validator: (value) => ['text', 'url', 'phone', 'number', 'date', 'select', 'user', 'entity', 'tags'].includes(value)
+    default: 'text', // 'text', 'number', 'date', 'select', 'user', 'entity', 'tags', 'multi-select'
+    validator: (value) => ['text', 'url', 'phone', 'number', 'date', 'select', 'user', 'entity', 'tags', 'multi-select'].includes(value)
   },
   multiline: {
     type: Boolean,
@@ -699,6 +859,11 @@ const props = defineProps({
     type: Function,
     default: null
   },
+  /** For type 'tags': optional (tagName) => inline style object (e.g. picklist badge colors) */
+  getTagChipStyle: {
+    type: Function,
+    default: null
+  },
   /** When set (e.g. record tag popover), click opens full tag UI instead of inline edit */
   onTagsOpen: {
     type: Function,
@@ -719,6 +884,19 @@ const props = defineProps({
     type: String,
     default: 'py-2 px-4 min-h-[2rem]'
   },
+  /** ISO country on the parent record — overrides org default for phone fields */
+  recordCountry: {
+    type: String,
+    default: ''
+  },
+  fieldKey: {
+    type: String,
+    default: ''
+  },
+  moduleKey: {
+    type: String,
+    default: ''
+  },
   prefixIcon: {
     type: [Object, Function],
     default: null
@@ -730,10 +908,26 @@ const props = defineProps({
   commitSave: {
     type: Function,
     default: null
+  },
+  peopleFirstNameWithSalutation: {
+    type: Boolean,
+    default: false
+  },
+  salutationValue: {
+    type: String,
+    default: ''
+  },
+  salutationOptions: {
+    type: Array,
+    default: () => []
   }
 });
 
 const emit = defineEmits(['update:value', 'save']);
+
+const { defaultPhoneCountry } = useDefaultPhoneCountry(
+  computed(() => (props.recordCountry ? { country: props.recordCountry } : null))
+);
 
 const fieldIcon = computed(() => {
   if (props.prefixIcon) return props.prefixIcon;
@@ -743,6 +937,7 @@ const fieldIcon = computed(() => {
     text: DocumentTextIcon,
     phone: DevicePhoneMobileIcon,
     select: TagIcon,
+    'multi-select': TagIcon,
     user: UserIcon
   };
   return map[props.type] || DocumentTextIcon;
@@ -765,6 +960,7 @@ const stackDisplayModeClass = computed(() => {
 
 const isEditing = ref(false);
 const localValue = ref(null);
+const localSalutation = ref('');
 const inputRef = ref(null);
 const users = ref(props.users || []);
 /** Filters select/user/entity Listbox options (inline record details). */
@@ -875,22 +1071,105 @@ const initializeLocalValue = () => {
       localValue.value = null;
     }
   } else if (props.type === 'phone') {
-    localValue.value = sanitizeInternationalPhone(props.value == null ? '' : String(props.value));
+    localValue.value = sanitizeInternationalPhone(props.value == null ? '' : String(props.value), defaultPhoneCountry.value);
+  } else if (props.type === 'multi-select') {
+    localValue.value = normalizeMultiSelectValue(props.value);
   } else {
     localValue.value = props.value;
   }
+  localSalutation.value = props.salutationValue ? String(props.salutationValue) : '';
 };
 
 // Initialize on mount
 initializeLocalValue();
 
 watch(() => props.value, () => {
-  if (!isEditing.value) {
+  if (!isEditing.value || isPeopleFirstNameInlineEditor.value) {
     phoneError.value = null;
     saveHttpError.value = null;
     initializeLocalValue();
   }
 });
+
+watch(() => props.salutationValue, () => {
+  if (!isEditing.value || isPeopleFirstNameInlineEditor.value) {
+    localSalutation.value = props.salutationValue ? String(props.salutationValue) : '';
+  }
+});
+
+function buildCommitValue() {
+  if (props.peopleFirstNameWithSalutation) {
+    return {
+      firstName: String(localValue.value ?? '').trim(),
+      salutation: localSalutation.value ? String(localSalutation.value).trim() : null,
+    };
+  }
+  return localValue.value;
+}
+
+const isPeopleFirstNameInlineEditor = computed(() =>
+  props.compact === true
+  && props.canEdit === true
+  && props.peopleFirstNameWithSalutation === true
+  && (props.type === 'text' || props.type === 'url')
+  && !props.multiline
+);
+
+function onFirstNameFieldUpdate(value) {
+  localValue.value = value == null ? '' : String(value);
+}
+
+async function onSalutationFieldUpdate(value) {
+  localSalutation.value = value == null || value === '' ? '' : String(value);
+  await nextTick();
+  await commitPeopleFirstNameSave();
+}
+
+async function commitPeopleFirstNameSave() {
+  if (!props.peopleFirstNameWithSalutation) return;
+
+  const valueToSave = buildCommitValue();
+  if (!hasPendingChanges(valueToSave)) {
+    return;
+  }
+
+  if (typeof props.commitSave === 'function') {
+    saveHttpError.value = null;
+    try {
+      await props.commitSave(valueToSave);
+      emit('update:value', valueToSave.firstName);
+      emit('save', valueToSave);
+      if (!isPeopleFirstNameInlineEditor.value) {
+        isEditing.value = false;
+      }
+    } catch (e) {
+      saveHttpError.value = getApiErrorMessage(e);
+      if (!isPeopleFirstNameInlineEditor.value) {
+        await nextTick();
+        inputRef.value?.focus?.({ preventScroll: true });
+      }
+    }
+    return;
+  }
+
+  emit('update:value', valueToSave.firstName);
+  emit('save', valueToSave);
+  if (!isPeopleFirstNameInlineEditor.value) {
+    isEditing.value = false;
+  }
+}
+
+function hasPendingChanges(valueToSave) {
+  if (props.peopleFirstNameWithSalutation) {
+    const payload = typeof valueToSave === 'object' && valueToSave != null
+      ? valueToSave
+      : buildCommitValue();
+    const currentSal = props.salutationValue ? String(props.salutationValue).trim() : '';
+    const nextSal = payload.salutation ? String(payload.salutation).trim() : '';
+    return String(payload.firstName ?? '').trim() !== String(props.value ?? '').trim() || nextSal !== currentSal;
+  }
+  return valueToSave !== props.value;
+}
 
 function getEntityOrPeopleRecordLabel(val) {
   if (val == null) return null;
@@ -907,7 +1186,7 @@ function getEntityOrPeopleRecordLabel(val) {
 }
 
 const displayValue = computed(() => {
-  if (props.formatValue) {
+  if (!['user', 'entity', 'select', 'tags', 'multi-select'].includes(props.type) && props.formatValue) {
     return props.formatValue(props.value);
   }
   
@@ -915,10 +1194,17 @@ const displayValue = computed(() => {
     if (typeof props.value === 'object') {
       return getUserDisplayName(props.value);
     }
-    // Try to find user in users list
-    const user = users.value.find(u => u._id === props.value);
+    const id = String(props.value);
+    const user = users.value.find(u => String(u._id) === id);
     if (user) {
       return getUserDisplayName(user);
+    }
+    const fromOptions = (props.options || []).find((o) => {
+      const v = o?.value ?? o?._id ?? o?.id;
+      return v != null && String(v) === id;
+    });
+    if (fromOptions) {
+      return fromOptions.label ?? fromOptions.name ?? getUserDisplayName(fromOptions) ?? id;
     }
     return props.value;
   }
@@ -942,11 +1228,67 @@ const displayValue = computed(() => {
     }
     return String(props.value);
   }
+
+  if (props.type === 'multi-select') {
+    const values = multiSelectValue.value;
+    if (!values.length) return null;
+    return values.map((item) => {
+      const id = item != null && typeof item === 'object' ? (item.value ?? item.label ?? item.name) : item;
+      const match = (props.options || []).find((opt) => {
+        const optId = opt?.value ?? opt?._id ?? opt?.id;
+        return optId != null && String(optId) === String(id);
+      });
+      return match?.label ?? String(id ?? '');
+    }).filter(Boolean).join(', ');
+  }
+
+  if (props.type === 'select' && props.value != null && props.value !== '') {
+    const rawId = typeof props.value === 'object'
+      ? (props.value.value ?? props.value._id ?? props.value.id ?? props.value)
+      : props.value;
+    const match = (props.options || []).find((opt) => {
+      const optId = opt?.value ?? opt?._id ?? opt?.id;
+      return optId != null && String(optId) === String(rawId);
+    });
+    if (match) return match.label ?? match.name ?? String(rawId);
+    return String(rawId);
+  }
   
   return props.value;
 });
 
+const selectedUserForAvatar = computed(() => {
+  if (props.type !== 'user' || !props.value) return null;
+  if (typeof props.value === 'object') {
+    return {
+      firstName: props.value.firstName || props.value.first_name,
+      lastName: props.value.lastName || props.value.last_name,
+      email: props.value.email,
+      avatar: props.value.avatar,
+      name: props.value.name,
+    };
+  }
+  const id = String(props.value);
+  const fromUsers = (users.value || []).find((u) => String(u?._id ?? u?.id) === id);
+  if (fromUsers) return fromUsers;
+  const fromOptions = (props.options || []).find((o) => {
+    const v = o?.value ?? o?._id ?? o?.id;
+    return v != null && String(v) === id;
+  });
+  if (!fromOptions) return null;
+  return {
+    _id: fromOptions.value ?? fromOptions._id,
+    firstName: fromOptions.firstName ?? fromOptions.first_name,
+    lastName: fromOptions.lastName ?? fromOptions.last_name,
+    email: fromOptions.email,
+    avatar: fromOptions.avatar,
+    name: fromOptions.label ?? fromOptions.name,
+  };
+});
+
 const hasDisplayValue = computed(() => {
+  if (props.type === 'multi-select') return multiSelectValue.value.length > 0;
+  if (props.type === 'tags') return tagList.value.length > 0;
   const v = displayValue.value;
   return v !== null && v !== undefined && v !== '';
 });
@@ -969,6 +1311,7 @@ const normalizedUrlHref = computed(() => {
 const isValueCellClickable = computed(() => {
   if (props.layout !== 'row' || !props.canEdit || isEditing.value) return false;
   if (props.layout === 'row' && props.type === 'phone') return false;
+  if (props.type === 'multi-select') return false;
   if (props.type === 'tags' && typeof props.onTagsOpen === 'function') return true;
   return ['text', 'url', 'number', 'date', 'tags'].includes(props.type);
 });
@@ -985,6 +1328,53 @@ const tagList = computed(() => {
   }
   return [];
 });
+
+function normalizeMultiSelectValue(value) {
+  if (value == null || value === '') return [];
+  if (Array.isArray(value)) {
+    return value.map((item) => (item != null && typeof item === 'object' ? (item.value ?? item.label ?? item.name ?? item) : item)).filter((item) => item != null && String(item).trim() !== '');
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return normalizeMultiSelectValue(parsed);
+      } catch {
+        // fall through
+      }
+    }
+    return trimmed ? [trimmed] : [];
+  }
+  return [value];
+}
+
+const multiSelectValue = computed(() => normalizeMultiSelectValue(props.value));
+
+function multiSelectValuesEqual(a, b) {
+  const left = normalizeMultiSelectValue(a).map(String).sort();
+  const right = normalizeMultiSelectValue(b).map(String).sort();
+  if (left.length !== right.length) return false;
+  return left.every((value, index) => value === right[index]);
+}
+
+const handleMultiSelectChange = async (value) => {
+  const next = normalizeMultiSelectValue(value);
+  if (multiSelectValuesEqual(next, props.value)) return;
+  saveHttpError.value = null;
+  if (typeof props.commitSave === 'function') {
+    try {
+      await props.commitSave(next);
+      emit('update:value', next);
+      emit('save', next);
+    } catch (e) {
+      saveHttpError.value = getApiErrorMessage(e);
+    }
+    return;
+  }
+  emit('update:value', next);
+  emit('save', next);
+};
 
 // For select/user/entity Listbox: model value
 const selectModelValue = computed(() => {
@@ -1020,8 +1410,27 @@ const selectOptions = computed(() => {
     return base;
   }
   if (props.type === 'user') {
-    const mapped = (users.value || []).map(u => ({
-      value: u._id,
+    const optionUsers = (props.options || []).map((o) => {
+      if (o && typeof o === 'object' && 'value' in o) {
+        return {
+          _id: o.value,
+          firstName: o.firstName ?? o.first_name,
+          lastName: o.lastName ?? o.last_name,
+          email: o.email,
+          name: o.label ?? o.name,
+        };
+      }
+      return o;
+    });
+    const mergedUsers = [...(users.value || [])];
+    for (const u of optionUsers) {
+      const id = u?._id ?? u?.id;
+      if (id != null && !mergedUsers.some((existing) => String(existing?._id ?? existing?.id) === String(id))) {
+        mergedUsers.push(u);
+      }
+    }
+    const mapped = mergedUsers.map(u => ({
+      value: u._id ?? u.id,
       label: getUserDisplayName(u)
     }));
     const selectedId = selectModelValue.value;
@@ -1121,14 +1530,14 @@ const handleClick = (event) => {
 function onPhoneInput(value) {
   phoneError.value = null;
   saveHttpError.value = null;
-  localValue.value = sanitizeInternationalPhone(value == null ? '' : String(value));
+  localValue.value = sanitizeInternationalPhone(value == null ? '' : String(value), defaultPhoneCountry.value);
 }
 
 async function savePhoneValue() {
   let valueToSave = localValue.value;
-  valueToSave = sanitizeInternationalPhone(valueToSave == null ? '' : String(valueToSave));
+  valueToSave = sanitizeInternationalPhone(valueToSave == null ? '' : String(valueToSave), defaultPhoneCountry.value);
   localValue.value = valueToSave;
-  const phoneValidation = validatePhoneValue(valueToSave);
+  const phoneValidation = validatePhoneValue(valueToSave, defaultPhoneCountry.value);
   if (!phoneValidation.isValid) {
     phoneError.value = phoneValidation.error;
     return false;
@@ -1168,13 +1577,19 @@ const handlePhoneRowCancel = () => {
 };
 
 const handleBlur = async () => {
+  if (props.peopleFirstNameWithSalutation) {
+    if (!isEditing.value && !isPeopleFirstNameInlineEditor.value) return;
+    await commitPeopleFirstNameSave();
+    return;
+  }
+
   if (!isEditing.value) return;
 
   let valueToSave = localValue.value;
   if (props.type === 'phone') {
-    valueToSave = sanitizeInternationalPhone(valueToSave == null ? '' : String(valueToSave));
+    valueToSave = sanitizeInternationalPhone(valueToSave == null ? '' : String(valueToSave), defaultPhoneCountry.value);
     localValue.value = valueToSave;
-    const phoneValidation = validatePhoneValue(valueToSave);
+    const phoneValidation = validatePhoneValue(valueToSave, defaultPhoneCountry.value);
     if (!phoneValidation.isValid) {
       phoneError.value = phoneValidation.error;
       return;
@@ -1188,7 +1603,7 @@ const handleBlur = async () => {
     valueToSave = date.toISOString();
   }
 
-  if (valueToSave !== props.value) {
+  if (hasPendingChanges(valueToSave)) {
     if (typeof props.commitSave === 'function') {
       saveHttpError.value = null;
       try {

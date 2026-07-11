@@ -33,9 +33,11 @@
       <DashboardHeader
         :dashboard-definition="dashboardDefinition"
         :formatted-now="formattedNow"
-        :selected-range-label="selectedRangeLabel"
+        :selected-range-key="selectedRangeKey"
+        :range-options="rangeOptions"
+        :range-window-label="rangeWindowLabel"
         :show-controls="isSalesApp"
-        @cycle-range="cycleRange"
+        @update:range="setRange"
         @refresh="buildDashboard"
         @action="handleAction"
       />
@@ -153,8 +155,10 @@ const {
   selectedDealType,
   dealTypeOptions,
   formattedNow,
-  selectedRangeLabel,
-  cycleRange,
+  selectedRangeKey,
+  rangeOptions,
+  rangeWindowLabel,
+  setRange,
   buildDashboard,
   resetFilters,
   executiveKpiCards,

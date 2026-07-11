@@ -244,6 +244,20 @@ async function moveToTrash(params) {
       }
     );
 
+    // Deal aggregate: soft-delete DealLines with parent
+    if (moduleKey === 'deals') {
+      try {
+        const dealPricingService = require('./dealPricingService');
+        await dealPricingService.softDeleteLinesForDeal({
+          organizationId,
+          dealId: recordId,
+          actorId: userId
+        });
+      } catch (lineTrashErr) {
+        console.error('[deletionService] DealLine soft-delete failed:', lineTrashErr?.message || lineTrashErr);
+      }
+    }
+
     notifyListAndRecordChange(organizationId, moduleKey, recordId, 'delete');
 
     return {
@@ -321,6 +335,19 @@ async function restore(params) {
     record.deletionReason = null;
     await record.save();
 
+    if (moduleKey === 'deals') {
+      try {
+        const dealPricingService = require('./dealPricingService');
+        await dealPricingService.restoreLinesForDeal({
+          organizationId,
+          dealId: recordId,
+          actorId: userId
+        });
+      } catch (lineRestoreErr) {
+        console.error('[deletionService] DealLine restore failed:', lineRestoreErr?.message || lineRestoreErr);
+      }
+    }
+
     await TrashSnapshot.deleteOne({ _id: snapshot._id });
 
     notifyListAndRecordChange(organizationId, moduleKey, recordId, 'update');
@@ -373,6 +400,16 @@ async function purge(params) {
     }
 
     await Model.deleteOne(deleteQuery);
+
+    if (moduleKey === 'deals') {
+      try {
+        const DealLine = require('../models/DealLine');
+        await DealLine.deleteMany({ organizationId, dealId: recordId });
+      } catch (linePurgeErr) {
+        console.error('[deletionService] DealLine purge failed:', linePurgeErr?.message || linePurgeErr);
+      }
+    }
+
     await TrashSnapshot.deleteOne({ _id: snapshot._id });
 
     publishDataChange({ organizationId, moduleKey: 'trash', op: 'delete' });

@@ -615,12 +615,24 @@
     "message": "First Name",
     "description": "System people field label"
   },
+  "sysFieldSalutation": {
+    "message": "Salutation",
+    "description": "System people field label"
+  },
+  "salutationPlaceholder": {
+    "message": "Title",
+    "description": "Placeholder for salutation picker beside first name"
+  },
   "sysFieldLastName": {
     "message": "Last Name",
     "description": "System people field label"
   },
   "sysFieldName": {
-    "message": "Name",
+    "message": "Full Name",
+    "description": "System people field label"
+  },
+  "sysFieldCreatedOn": {
+    "message": "Created On",
     "description": "System people field label"
   },
   "sysFieldOrganization": {

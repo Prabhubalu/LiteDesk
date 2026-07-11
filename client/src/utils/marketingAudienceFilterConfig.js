@@ -149,20 +149,10 @@ function hydrateRelationshipConditions(children) {
   };
 }
 
+import { normalizeFilterSelectOptions } from '@/utils/picklistOptionUtils';
+
 export function normalizeFilterOptions(rawOptions = []) {
-  if (!Array.isArray(rawOptions)) return [];
-  return rawOptions
-    .map((opt) => {
-      if (typeof opt === 'string') {
-        const value = opt.trim();
-        return value ? { value, label: value } : null;
-      }
-      const value = String(opt?.value ?? opt?.label ?? '').trim();
-      if (!value) return null;
-      const label = String(opt?.label ?? opt?.value ?? value).trim() || value;
-      return { value, label };
-    })
-    .filter(Boolean);
+  return normalizeFilterSelectOptions(rawOptions);
 }
 
 export function buildFilterConfigFromMetadata(moduleFields = []) {

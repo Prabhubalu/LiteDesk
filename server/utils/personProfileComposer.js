@@ -41,6 +41,7 @@ const { getSalesParticipationValues } = require('./getSalesParticipationValues')
  */
 const CORE_FIELD_KEYS = [
   // Identity & contact
+  'salutation',
   'first_name',
   'last_name',
   'email',

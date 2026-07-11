@@ -231,6 +231,12 @@ const ItemSchema = new Schema({
     },
 
     // 📊 METADATA
+    assignedTo: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true
+    },
     createdBy: {
         type: Schema.Types.ObjectId,
         ref: 'User',
@@ -264,11 +270,16 @@ ItemSchema.index({ organizationId: 1, lifecycle_state: 1 });
 ItemSchema.index({ organizationId: 1, item_type: 1 });
 ItemSchema.index({ organizationId: 1, category: 1 });
 ItemSchema.index({ organizationId: 1, vendor: 1 });
+ItemSchema.index({ organizationId: 1, assignedTo: 1 });
 ItemSchema.index({ organizationId: 1, item_code: 1 }, { unique: true, sparse: true });
 ItemSchema.index({ organizationId: 1, deletedAt: 1 });
 
 // Pre-save: lifecycle_state is canonical; keep legacy status in sync
 ItemSchema.pre('save', async function(next) {
+    // Legacy items created before assignedTo: backfill from createdBy
+    if (!this.assignedTo && this.createdBy) {
+        this.assignedTo = this.createdBy;
+    }
     if (!this.lifecycle_state) {
         this.lifecycle_state = inferLifecycleStateFromLegacyStatus(this.status, this.lifecycle_state);
     }

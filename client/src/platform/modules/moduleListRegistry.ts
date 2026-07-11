@@ -1165,7 +1165,19 @@ function normalizeItemsViewFilters(filters: Record<string, any>, currentUserId?:
 export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
   people: {
     defaultColumns: {
-      defaultVisibleColumns: ['name', 'organization', 'sales_type', 'lead_status', 'contact_status', 'email', 'phone', 'assignedTo'],
+      defaultVisibleColumns: [
+        'name',
+        'sales_type',
+        'derivedStatus',
+        'email',
+        'mobile',
+        'organization',
+        'source',
+        'lead_score',
+        'assignedTo',
+        'lastActivity',
+        'createdAt',
+      ],
       lockedColumn: 'name',
       excludedFromDefault: []
     },
@@ -1213,7 +1225,17 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
 
   organizations: {
     defaultColumns: {
-      defaultVisibleColumns: ['name', 'assignedTo', 'isActive', 'types', 'industry', 'createdAt'],
+      defaultVisibleColumns: [
+        'name',
+        'types',
+        'derivedStatus',
+        'industry',
+        'phone',
+        'website',
+        'assignedTo',
+        'lastActivity',
+        'createdAt',
+      ],
       lockedColumn: 'name',
       excludedFromDefault: [
         'subscription.status',
@@ -1272,7 +1294,17 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
 
   tasks: {
     defaultColumns: {
-      defaultVisibleColumns: ['title', 'assignedTo', 'status', 'priority', 'dueDate', 'createdAt'],
+      // Title, Task Type, Status, Priority, Due Date, Related To, Assigned To, Created On
+      defaultVisibleColumns: [
+        'title',
+        'taskType',
+        'status',
+        'priority',
+        'dueDate',
+        'relatedTo',
+        'assignedTo',
+        'createdAt',
+      ],
       lockedColumn: 'title',
       excludedFromDefault: []
     },
@@ -1371,8 +1403,18 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
 
   deals: {
     defaultColumns: {
-      // Title, Organization, Amount, Probability, Expected Close Date, Priority, Deal Owner
-      defaultVisibleColumns: ['name', 'accountId', 'amount', 'probability', 'expectedCloseDate', 'priority', 'assignedTo'],
+      // Deal Name, Organization, Stage, Amount, Expected Close Date, Probability, Assigned To, Last Activity, Created On
+      defaultVisibleColumns: [
+        'name',
+        'accountId',
+        'stage',
+        'amount',
+        'expectedCloseDate',
+        'probability',
+        'assignedTo',
+        'lastActivityDate',
+        'createdAt',
+      ],
       lockedColumn: 'name',
       excludedFromDefault: []
     },
@@ -1619,8 +1661,18 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
 
   cases: {
     defaultColumns: {
-      // Case ID, Subject, Status, Priority, Channel, Owner
-      defaultVisibleColumns: ['caseId', 'title', 'status', 'priority', 'responseMetAt', 'channel', 'assignedTo'],
+      // Case Title, Case Number, Contact, Type, Priority, Status, Assigned To, Channel, Last Modified
+      defaultVisibleColumns: [
+        'title',
+        'caseId',
+        'contactId',
+        'caseType',
+        'priority',
+        'status',
+        'assignedTo',
+        'channel',
+        'updatedAt'
+      ],
       lockedColumn: 'title',
       excludedFromDefault: [
         // Hide internal/system and high-noise fields from default list view
@@ -1663,14 +1715,17 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
   items: {
     defaultColumns: {
       // Canonical default columns in exact order:
-      // 1. item_name (CORE, primary) - frozen/locked
-      // 2. item_code (CORE, identity)
-      // 3. item_type (SALES, state)
-      // 4. category (SALES, detail)
-      // 5. selling_price (SALES, tracking)
-      // 6. lifecycle_state (SALES, catalog state)
-      // 7. selling_price (SALES, tracking)
-      defaultVisibleColumns: ['item_name', 'item_code', 'item_type', 'category', 'selling_price', 'lifecycle_state'],
+      // Item Name, Item Type, Item Code, Category, Selling Price, Status, Assigned To, Last Modified
+      defaultVisibleColumns: [
+        'item_name',
+        'item_type',
+        'item_code',
+        'categoryId',
+        'selling_price',
+        'lifecycle_state',
+        'assignedTo',
+        'updatedAt',
+      ],
       lockedColumn: 'item_name',
       excludedFromDefault: []
     },

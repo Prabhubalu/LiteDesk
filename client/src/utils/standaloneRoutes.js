@@ -37,6 +37,10 @@ export function isTrialExpiredShelllessRoute(path) {
   return resolveRoutePathname(path) === '/trial-expired';
 }
 
+export function isOnboardingShelllessRoute(path) {
+  return resolveRoutePathname(path) === '/onboarding';
+}
+
 export function isStandaloneShelllessPath(path) {
   return isStandalonePublicRoute(path);
 }
@@ -55,5 +59,6 @@ export function shouldSkipTabRoute(path) {
     || isStandalonePublicRoute(path)
     || isAuthLifecyclePublicRoute(path)
     || isTrialExpiredShelllessRoute(path)
+    || isOnboardingShelllessRoute(path)
   );
 }

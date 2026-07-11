@@ -2507,32 +2507,60 @@
               </div>
               
               <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                <div v-if="organizationTypes.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsLoadingOrgTypes') }}</div>
+                <div v-if="statusTypesLoading" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
+                  {{ t('settings.modFieldsLoadingOrgTypes') }}
+                </div>
+                <div v-else-if="organizationTypes.length === 0" class="text-center py-8 space-y-3">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoOrgTypesDefined') }}</p>
+                  <button
+                    type="button"
+                    @click="openOrganizationPicklistInFieldConfig('types')"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                  >
+                    {{ t('settings.modFieldsEditInFieldConfig') }}
+                  </button>
+                </div>
                 <div v-else class="space-y-3">
                   <div 
                     v-for="(type, index) in organizationTypes" 
                     :key="`${type.value}-${index}`"
-                    class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+                    class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-3"
                   >
-                    <div class="flex items-center gap-3 flex-1 min-w-0">
-                      <span
-                        class="h-3.5 w-3.5 rounded-full flex-shrink-0 ring-1 ring-gray-900/10 dark:ring-white/20"
-                        :style="{ backgroundColor: type.color || '#3B82F6' }"
-                        :title="t('settings.modFieldsColor')"
-                        aria-hidden="true"
-                      />
-                      <div class="flex-1 min-w-0">
-                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ type.label }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ type.description || t('settings.modFieldsOrgTypeDefaultDesc') }}</div>
+                    <div class="flex items-center justify-between gap-3">
+                      <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <span
+                          class="h-3.5 w-3.5 rounded-full flex-shrink-0 ring-1 ring-gray-900/10 dark:ring-white/20"
+                          :style="{ backgroundColor: type.color || '#3B82F6' }"
+                          :title="t('settings.modFieldsColor')"
+                          aria-hidden="true"
+                        />
+                        <div class="flex-1 min-w-0">
+                          <div class="text-sm font-medium text-gray-900 dark:text-white">{{ type.label }}</div>
+                          <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ type.description || t('settings.modFieldsOrgTypeDefaultDesc') }}</div>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <button
+                          type="button"
+                          class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                          @click="setExpandedOrgTypeIndex(index)"
+                        >
+                          {{ expandedOrgTypeIndex === index ? t('settings.orgTypesHideFields') : t('settings.orgTypesConfigureFields') }}
+                        </button>
+                        <HeadlessSwitch
+                          :checked="type.enabled"
+                          @change="setPicklistEnabled(type, $event)"
+                          switch-class="w-9 h-5"
+                        />
                       </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                      <HeadlessSwitch
-                        :checked="type.enabled"
-                        @change="setPicklistEnabled(type, $event)"
-                        switch-class="w-9 h-5"
-                      />
-                    </div>
+                    <OrganizationTypeFieldPanel
+                      v-if="expandedOrgTypeIndex === index"
+                      :row="type"
+                      :field-options="organizationTypeFieldOptions"
+                      @toggle-field="(fieldKey, checked) => toggleOrganizationTypeField(index, fieldKey, checked)"
+                      @reset-fields="resetOrganizationTypeFields(index)"
+                    />
                   </div>
                   
                   <div class="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700 space-y-1">
@@ -4038,8 +4066,8 @@
                   ARCHITECTURE NOTE: Tasks Settings configure structure only, never work.
                   Quick Create is for fast task capture. Only essential fields appear.
                   Title field MUST always be present, required, and non-removable (locked position).
-                  Eligible fields: title (required, locked), dueDate, priority, assignedTo, relatedTo
-                  Excluded: description, status, app fields, system fields, time tracking, subtasks, tags
+                  Default: title*, dueDate, taskType, status, priority, relatedTo, description, assignedTo*
+                  Excluded: app fields, system fields, time tracking, subtasks, tags
                   See: docs/architecture/task-settings.md Section 3.5
                 -->
                 <template v-else-if="isTasksModule">
@@ -4816,9 +4844,9 @@ import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
 import { getDefaultEmailValidations } from '@/utils/defaultFieldValidations';
 import {
   CURRENCY_OPTIONS,
-  DEFAULT_CURRENCY_CODE,
   getCurrencySymbolFromCode,
   formatCurrencyValue,
+  resolveOrgCurrencyCode,
 } from '@/utils/currencyOptions';
 import { PLATFORM_MODULE_FIELD_TYPES } from '@/constants/moduleFieldTypes';
 import { parsePeopleTypesApiPayload, peopleTypeColorToHex } from '@/utils/peopleTypeColors';
@@ -4832,11 +4860,23 @@ import {
   nextPicklistOptionColor,
   resolveNewPicklistOptionColor,
   backfillPicklistOptionColors,
+  normalizePicklistColorKey,
 } from '@/utils/picklistColorPalette';
 import DatePicker from '@/components/common/DatePicker.vue';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
 import ModuleFormModal from './ModuleFormModal.vue';
 import PeopleTypesSettings from './PeopleTypesSettings.vue';
+import OrganizationTypeFieldPanel from './OrganizationTypeFieldPanel.vue';
+import { invalidateOrganizationTypesCache } from '@/utils/organizationTypesInvalidate';
+import { isRetiredOrganizationTypeValue } from '@/utils/organizationTypeConfig';
+import {
+  ORGANIZATION_STATUS_FIELD_KEYS,
+  getDefaultOrganizationStatusFieldOptions,
+} from '@/utils/organizationStatusDefaults';
+import {
+  getOrganizationFieldsForType,
+  getOrganizationTypeScopedFieldPool
+} from '@/platform/fields/organizationFieldModel';
 import AddCustomFieldDrawer from './AddCustomFieldDrawer.vue';
 import RelationshipFormDrawer from './RelationshipFormDrawer.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
@@ -4922,7 +4962,9 @@ import {
   isOrganizationCoreField,
   isOrganizationProtectedField,
   groupOrganizationFields,
-  classifyOrganizationField
+  classifyOrganizationField,
+  isTenantPlatformOrganizationFieldKey,
+  ORGANIZATION_QUICK_CREATE_DEFAULT,
 } from '@/platform/fields/organizationFieldModel';
 import {
   DEAL_FIELD_METADATA,
@@ -4934,10 +4976,12 @@ import {
   isDealCoreField,
   isDealProtectedField,
   groupDealFields,
-  classifyDealField
+  classifyDealField,
+  DEAL_QUICK_CREATE_DEFAULT,
 } from '@/platform/fields/dealFieldModel';
 import {
-  classifyCaseField
+  classifyCaseField,
+  CASE_QUICK_CREATE_DEFAULT,
 } from '@/platform/fields/caseFieldModel';
 import {
   EVENT_FIELD_METADATA,
@@ -5479,8 +5523,7 @@ const actionModalState = reactive({
 const pipelineStageStatusOptions = [
   { value: 'open', label: 'Open' },
   { value: 'won', label: 'Won (Closed)' },
-  { value: 'lost', label: 'Lost (Closed)' },
-  { value: 'stalled', label: 'Stalled' }
+  { value: 'lost', label: 'Lost (Closed)' }
 ];
 const DEFAULT_PIPELINE_COLOR = '#2563EB';
 const DEFAULT_STAGE_COLOR = '#6B7280';
@@ -7495,6 +7538,16 @@ function selectFieldByKey(fieldKey) {
 }
 
 function formatFieldLabelForDisplay(label, fieldKey = '') {
+  const normalizedKey = String(fieldKey || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, '');
+  const friendlyByKey = {
+    contactid: 'Contact',
+    organizationrefid: 'Organization',
+  };
+  if (friendlyByKey[normalizedKey]) return friendlyByKey[normalizedKey];
+
   const fallback = String(fieldKey || '').trim();
   const source = String(label || fallback || '').trim();
   if (!source) return source;
@@ -7683,32 +7736,28 @@ const numberSettings = ref({
   min: null,
   max: null,
   decimalPlaces: 2,
-  currencyCode: DEFAULT_CURRENCY_CODE,
-  currencySymbol: getCurrencySymbolFromCode(DEFAULT_CURRENCY_CODE),
+  currencyCode: resolveOrgCurrencyCode(authStore.organization),
+  currencySymbol: getCurrencySymbolFromCode(resolveOrgCurrencyCode(authStore.organization)),
 });
 
 function getCurrencyFormatPreview() {
   const decimalPlaces =
     typeof numberSettings.value.decimalPlaces === 'number' ? numberSettings.value.decimalPlaces : 2;
+  const code = numberSettings.value.currencyCode || resolveOrgCurrencyCode(authStore.organization);
   return (
     formatCurrencyValue(1234.56, {
-      currencyCode: numberSettings.value.currencyCode || DEFAULT_CURRENCY_CODE,
+      currencyCode: code,
       minimumFractionDigits: decimalPlaces,
       maximumFractionDigits: decimalPlaces,
-    }) || `${numberSettings.value.currencySymbol || '$'}1,234.56`
+    }) || `${numberSettings.value.currencySymbol || getCurrencySymbolFromCode(code)}1,234.56`
   );
 }
 
 function resolveCurrencyCodeFromNumberSettings(settings) {
   const explicitCode = String(settings?.currencyCode || settings?.currency || '').trim().toUpperCase();
   if (explicitCode) return explicitCode;
-  const symbol = String(settings?.currencySymbol || '').trim();
-  if (!symbol) return DEFAULT_CURRENCY_CODE;
-
-  const matched = CURRENCY_OPTIONS.find(
-    (currency) => getCurrencySymbolFromCode(currency.code) === symbol
-  );
-  return matched?.code || DEFAULT_CURRENCY_CODE;
+  // Do not infer USD from legacy currencySymbol ($); use org default
+  return resolveOrgCurrencyCode(authStore.organization);
 }
 const textSettings = ref({ maxLength: null, rows: 4 });
 const dateSettings = ref({ format: 'YYYY-MM-DD', timeFormat: '24h' });
@@ -8104,21 +8153,21 @@ const organizationStatusPicklistSections = [
     titleKey: 'settings.modFieldsCustomerStatus',
     descriptionKey: 'settings.modFieldsStatusForCustomer',
     footnoteKey: 'settings.modFieldsCustomerStatusFootnote',
-    showSalesBadge: true,
+    showSalesBadge: false,
   },
   {
     fieldKey: 'partnerStatus',
     titleKey: 'settings.modFieldsPartnerStatus',
     descriptionKey: 'settings.modFieldsStatusForPartner',
     footnoteKey: 'settings.modFieldsPartnerStatusFootnote',
-    showSalesBadge: true,
+    showSalesBadge: false,
   },
   {
     fieldKey: 'vendorStatus',
     titleKey: 'settings.modFieldsVendorStatus',
     descriptionKey: 'settings.modFieldsStatusForVendor',
     footnoteKey: 'settings.modFieldsVendorStatusFootnote',
-    showSalesBadge: true,
+    showSalesBadge: false,
   },
 ];
 
@@ -8544,31 +8593,26 @@ const fetchModules = async (apiGetOptions = {}) => {
         let quickKeysInit = initialMod.quickCreate || [];
         
         // PLATFORM-LEVEL CANONICAL DEFAULT: Organizations Quick Create
-        // If no tenant override exists, apply canonical default: only "name"
-        // This is intentionally minimal - Organizations are contextual business entities, not primary workflow objects.
-        // Changes require updating: module-settings-doctrine.md, organization-settings.md
         if (isOrganizationsModule.value) {
+          const orgEligibleKeySet = new Set(
+            quickCreateAvailableFields.value.map(f => (f.key || '').toLowerCase())
+          );
+          const filterOrgQuickCreateKeys = (keys) => keys.filter(key => {
+            if (!key) return false;
+            const keyLower = key.toLowerCase();
+            if (keyLower === 'name') return true;
+            return orgEligibleKeySet.has(keyLower);
+          });
+
           if (!quickKeysInit || quickKeysInit.length === 0) {
-            // Apply canonical default: only "name"
-            quickKeysInit = ['name'];
+            quickKeysInit = filterOrgQuickCreateKeys(ORGANIZATION_QUICK_CREATE_DEFAULT);
           } else {
-            // Config exists - ensure "name" is present and filter to only eligible fields
-            const eligibleKeys = quickKeysInit.filter(key => {
-              if (!key) return false;
-              const keyLower = key.toLowerCase();
-              // Always include name
-              if (keyLower === 'name') return true;
-              // Check if field is in eligible list
-              const canonicalEligibleFields = ['name', 'industry', 'types', 'website', 'phone', 'address'];
-              return canonicalEligibleFields.includes(keyLower);
-            });
-            // Ensure name is first
-            const nameKey = eligibleKeys.find(k => k?.toLowerCase() === 'name');
+            quickKeysInit = filterOrgQuickCreateKeys(quickKeysInit);
+            const nameKey = quickKeysInit.find(k => k?.toLowerCase() === 'name');
             if (nameKey) {
-              quickKeysInit = [nameKey, ...eligibleKeys.filter(k => k?.toLowerCase() !== 'name')];
+              quickKeysInit = [nameKey, ...quickKeysInit.filter(k => k?.toLowerCase() !== 'name')];
             } else {
-              // Name missing - add it at the beginning
-              quickKeysInit = ['name', ...eligibleKeys];
+              quickKeysInit = ['name', ...quickKeysInit];
             }
           }
         }
@@ -8596,6 +8640,24 @@ const fetchModules = async (apiGetOptions = {}) => {
               }
             });
           }
+        }
+
+        // Deals: use canonical default when no saved config
+        if (selectedModule.value?.key?.toLowerCase() === 'deals' && (!quickKeysInit || quickKeysInit.length === 0)) {
+          const editKeys = new Set((editFields.value || []).map(f => (f.key || '').toLowerCase()));
+          quickKeysInit = DEAL_QUICK_CREATE_DEFAULT.filter(key => {
+            if (!key) return false;
+            return editKeys.has(String(key).toLowerCase());
+          });
+        }
+
+        // Cases: use canonical default when no saved config
+        if (selectedModule.value?.key?.toLowerCase() === 'cases' && (!quickKeysInit || quickKeysInit.length === 0)) {
+          const editKeys = new Set((editFields.value || []).map(f => (f.key || '').toLowerCase()));
+          quickKeysInit = CASE_QUICK_CREATE_DEFAULT.filter(key => {
+            if (!key) return false;
+            return editKeys.has(String(key).toLowerCase());
+          });
         }
         
         // fallback to locally stored quick selection if server returns empty (for other modules)
@@ -9166,6 +9228,18 @@ const selectModule = (mod, preferFieldKey = null) => {
   const layoutKeys = extractLayoutKeys(quickLayout.value);
   let quickKeys = mod.quickCreate || [];
 
+  // Organizations: use canonical default when no saved config
+  if (mod.key?.toLowerCase() === 'organizations' && (!quickKeys || quickKeys.length === 0)) {
+    const orgEligibleKeySet = new Set(
+      quickCreateAvailableFields.value.map(f => (f.key || '').toLowerCase())
+    );
+    quickKeys = ORGANIZATION_QUICK_CREATE_DEFAULT.filter(key => {
+      if (!key) return false;
+      if (key.toLowerCase() === 'name') return true;
+      return orgEligibleKeySet.has(key.toLowerCase());
+    });
+  }
+
   // People: use canonical default when no saved config (kept in sync with drawer / GET people/quick-create)
   if (mod.key?.toLowerCase() === 'people' && (!quickKeys || quickKeys.length === 0)) {
     const editKeys = new Set((editFields.value || []).map(f => (f.key || '').toLowerCase()));
@@ -9177,6 +9251,24 @@ const selectModule = (mod, preferFieldKey = null) => {
         return false;
       }
       return editKeys.has(key.toLowerCase());
+    });
+  }
+
+  // Deals: use canonical default when no saved config
+  if (mod.key?.toLowerCase() === 'deals' && (!quickKeys || quickKeys.length === 0)) {
+    const editKeys = new Set((editFields.value || []).map(f => (f.key || '').toLowerCase()));
+    quickKeys = DEAL_QUICK_CREATE_DEFAULT.filter(key => {
+      if (!key) return false;
+      return editKeys.has(String(key).toLowerCase());
+    });
+  }
+
+  // Cases: use canonical default when no saved config
+  if (mod.key?.toLowerCase() === 'cases' && (!quickKeys || quickKeys.length === 0)) {
+    const editKeys = new Set((editFields.value || []).map(f => (f.key || '').toLowerCase()));
+    quickKeys = CASE_QUICK_CREATE_DEFAULT.filter(key => {
+      if (!key) return false;
+      return editKeys.has(String(key).toLowerCase());
     });
   }
 
@@ -9994,7 +10086,7 @@ watch(() => currentField.value?.dataType, (newType) => {
   }
   if (newType === 'Currency') {
     numberSettings.value.currencyCode = String(
-      numberSettings.value.currencyCode || DEFAULT_CURRENCY_CODE
+      numberSettings.value.currencyCode || resolveOrgCurrencyCode(authStore.organization)
     ).toUpperCase();
     numberSettings.value.currencySymbol = getCurrencySymbolFromCode(numberSettings.value.currencyCode);
     if (typeof numberSettings.value.decimalPlaces !== 'number') {
@@ -10009,7 +10101,7 @@ watch(
   () => numberSettings.value.currencyCode,
   (code) => {
     if (currentField.value?.dataType !== 'Currency') return;
-    const normalizedCode = String(code || DEFAULT_CURRENCY_CODE).toUpperCase();
+    const normalizedCode = String(code || resolveOrgCurrencyCode(authStore.organization)).toUpperCase();
     if (numberSettings.value.currencyCode !== normalizedCode) {
       numberSettings.value.currencyCode = normalizedCode;
       return;
@@ -10104,7 +10196,9 @@ watch([numberSettings, textSettings, dateSettings, formulaSettings, lookupSettin
   if (['Integer', 'Decimal', 'Currency'].includes(field.dataType)) {
     const nextNumberSettings = { ...numberSettings.value };
     if (field.dataType === 'Currency') {
-      const currencyCode = String(nextNumberSettings.currencyCode || DEFAULT_CURRENCY_CODE).toUpperCase();
+      const currencyCode = String(
+        nextNumberSettings.currencyCode || resolveOrgCurrencyCode(authStore.organization)
+      ).toUpperCase();
       nextNumberSettings.currencyCode = currencyCode;
       nextNumberSettings.currencySymbol = getCurrencySymbolFromCode(currencyCode);
     } else {
@@ -11781,14 +11875,15 @@ function normalizePicklistColor(raw, value, fallbackHex = PLATFORM_DEFAULT_PICKL
 /** Resolve hex from module field options (Fields tab picklist config). */
 function picklistColorFromField(field, value) {
   if (!field || value == null || value === '') return null;
+  const normalizedValue = normalizePicklistColorKey(value);
   const options = field.options || field.enum || [];
   for (const opt of options) {
     const optValue = normalizePicklistValue(opt);
-    if (optValue !== value) continue;
+    if (normalizePicklistColorKey(optValue) !== normalizedValue) continue;
     if (typeof opt === 'object' && opt.color) return normalizePicklistColor(opt, value, PLATFORM_DEFAULT_PICKLIST_COLOR);
-    return getDefaultOptionColor(value, field);
+    return getDefaultOptionColor(value, field, options);
   }
-  return getDefaultOptionColor(value, field);
+  return getDefaultOptionColor(value, field, options);
 }
 
 const organizationsTypesFieldRef = ref(null);
@@ -11809,13 +11904,17 @@ function mapOrganizationTypeEntry(entry, typesField = organizationsTypesFieldRef
   const fallback = typesField ? getDefaultOptionColor(value, typesField) : '#3B82F6';
   const color =
     normalizePicklistColor(rawForColor, value, picklistColorFromField(typesField, value) || fallback);
-  return {
+  const row = {
     value,
     label,
     color,
     enabled: source.enabled !== undefined ? source.enabled : true,
     description: label ? `${label} organizations` : '',
   };
+  if (Array.isArray(source.fields)) {
+    row.fields = source.fields.map((x) => String(x ?? '').trim()).filter(Boolean);
+  }
+  return row;
 }
 
 function mapStatusPicklistEntry(entry, statusField = null) {
@@ -11845,13 +11944,28 @@ function resolveStatusPicklistColor(status, fieldKey) {
 }
 
 /** Append catalog options from Fields that are not yet in tenant policy rows (new values default enabled). */
+function applyDefaultOrganizationStatusPicklist(fieldKey) {
+  statusPicklists.value[fieldKey] = getDefaultOrganizationStatusFieldOptions(fieldKey).map((status) =>
+    mapStatusPicklistEntry(status, statusPicklistFieldsByKey.value[fieldKey])
+  );
+}
+
+function applyPlatformDefaultOrganizationStatusPicklists() {
+  for (const fieldKey of ORGANIZATION_STATUS_FIELD_KEYS) {
+    applyDefaultOrganizationStatusPicklist(fieldKey);
+  }
+}
+
 function mergeOrganizationTypesWithCatalog(policyRows, typesField) {
+  const policy = (Array.isArray(policyRows) ? policyRows : []).filter(
+    (row) => !isRetiredOrganizationTypeValue(normalizePicklistValue(row?.value))
+  );
   const options = typesField?.options || typesField?.enum || [];
-  const seen = new Set(policyRows.map((r) => normalizePicklistValue(r.value)).filter(Boolean));
-  const merged = [...policyRows];
+  const seen = new Set(policy.map((r) => normalizePicklistValue(r.value)).filter(Boolean));
+  const merged = [...policy];
   for (const opt of options) {
     const value = normalizePicklistValue(opt);
-    if (!value || seen.has(value)) continue;
+    if (!value || seen.has(value) || isRetiredOrganizationTypeValue(value)) continue;
     seen.add(value);
     merged.push(
       mapOrganizationTypeEntry(
@@ -11890,11 +12004,95 @@ function mergeStatusPicklistWithCatalog(policyRows, statusField) {
 function serializeOrganizationTypeEntry(entry) {
   const value = normalizePicklistValue(entry.value);
   const label = normalizePicklistLabel(entry, value);
-  return {
+  const row = {
     value,
     label,
     enabled: entry.enabled !== undefined ? entry.enabled : true,
   };
+  if (entry.fields !== undefined) {
+    row.fields = [...entry.fields];
+  }
+  return row;
+}
+
+function serializeOrganizationTypeEntryForSnapshot(entry) {
+  const base = serializeOrganizationTypeEntry(entry);
+  return {
+    ...base,
+    fields: entry.fields === undefined ? null : [...entry.fields],
+  };
+}
+
+const expandedOrgTypeIndex = ref(-1);
+
+function titleCaseOrganizationFieldKey(key) {
+  return String(key || '')
+    .split('_')
+    .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : ''))
+    .join(' ');
+}
+
+const organizationTypeFieldOptions = computed(() => {
+  const moduleList = editFields.value || [];
+  const byKey = new Map();
+  for (const fieldKey of getOrganizationTypeScopedFieldPool()) {
+    const low = fieldKey.toLowerCase();
+    const modField = moduleList.find((f) => String(f.key || '').toLowerCase() === low);
+    const label = modField?.label ? String(modField.label) : titleCaseOrganizationFieldKey(fieldKey);
+    byKey.set(low, { key: modField?.key ?? fieldKey, label });
+  }
+  const alwaysVisibleNorm = new Set([
+    'name', 'industry', 'website', 'phone', 'address', 'tags',
+    'assignedto', 'accountmanager', 'primarycontact', 'isactive', 'types', 'derivedstatus'
+  ]);
+  for (const f of moduleList) {
+    const k = String(f.key ?? '').trim();
+    if (!k) continue;
+    const low = k.toLowerCase();
+    if (byKey.has(low)) continue;
+    const norm = low.replace(/[^a-z0-9]/g, '');
+    if (alwaysVisibleNorm.has(norm)) continue;
+    if (f.isSystem || f.system) continue;
+    if (isTenantPlatformOrganizationFieldKey(k)) continue;
+    byKey.set(low, { key: k, label: String(f.label || titleCaseOrganizationFieldKey(k)) });
+  }
+  return Array.from(byKey.values()).sort((a, b) => a.label.localeCompare(b.label));
+});
+
+function setExpandedOrgTypeIndex(index) {
+  expandedOrgTypeIndex.value = expandedOrgTypeIndex.value === index ? -1 : index;
+}
+
+function toggleOrganizationTypeField(typeIndex, fieldKey, checked) {
+  const type = organizationTypes.value[typeIndex];
+  if (!type) return;
+  let nextFields =
+    type.fields === undefined
+      ? [...getOrganizationFieldsForType(type.value, null)]
+      : [...type.fields];
+  const low = fieldKey.toLowerCase();
+  if (checked) {
+    if (!nextFields.some((k) => String(k).toLowerCase() === low)) {
+      const canon =
+        organizationTypeFieldOptions.value.find((o) => o.key.toLowerCase() === low)?.key ?? fieldKey;
+      nextFields.push(canon);
+    }
+  } else {
+    nextFields = nextFields.filter((k) => String(k).toLowerCase() !== low);
+  }
+  const updated = { ...type, fields: nextFields };
+  const copy = [...organizationTypes.value];
+  copy[typeIndex] = updated;
+  organizationTypes.value = copy;
+}
+
+function resetOrganizationTypeFields(typeIndex) {
+  const type = organizationTypes.value[typeIndex];
+  if (!type) return;
+  const { fields: _drop, ...rest } = type;
+  const copy = [...organizationTypes.value];
+  copy[typeIndex] = rest;
+  organizationTypes.value = copy;
 }
 
 function serializeStatusPicklistEntry(entry) {
@@ -12361,7 +12559,7 @@ const statusTypesDirty = computed(() => {
   
   // Normalize current state to match snapshot structure (only saved fields)
   const current = JSON.stringify({
-    organizationTypes: organizationTypes.value.map(serializeOrganizationTypeEntry),
+    organizationTypes: organizationTypes.value.map(serializeOrganizationTypeEntryForSnapshot),
     statusPicklists: {
       customerStatus: statusPicklists.value.customerStatus.map(serializeStatusPicklistEntry),
       partnerStatus: statusPicklists.value.partnerStatus.map(serializeStatusPicklistEntry),
@@ -12380,6 +12578,59 @@ const statusTypesDirty = computed(() => {
 // First tries to fetch tenant overrides, then falls back to module defaults
 // Flag to prevent concurrent fetches
 const fetchingStatusTypes = ref(false);
+const statusTypesLoading = ref(false);
+const statusTypesLoadError = ref('');
+
+const PLATFORM_DEFAULT_ORG_TYPES = ['Customer', 'Partner', 'Vendor'];
+
+function resolveOrganizationsTypesFieldFromModule(module) {
+  const fromApi = module?.fields?.find((f) => f.key === 'types') ?? null;
+  const fromEdit = editFields.value?.find((f) => f.key === 'types') ?? null;
+  if (!fromApi && !fromEdit) return null;
+  const apiOptions = fromApi?.options || fromApi?.enum || [];
+  const editOptions = fromEdit?.options || fromEdit?.enum || [];
+  const options = editOptions.length > 0 ? editOptions : apiOptions;
+  const base = fromEdit ?? fromApi;
+  return { ...base, options, enum: options };
+}
+
+function resolveOrganizationsTypesFieldWithColors(module) {
+  const base = resolveOrganizationsTypesFieldFromModule(module);
+  if (!base) return null;
+  const options = backfillPicklistOptionColors(base.options || base.enum || [], 'types', 'organizations');
+  return { ...base, options, enum: options };
+}
+
+function resolveOrganizationStatusPicklistFieldWithColors(module, fieldKey) {
+  const fromApi = module?.fields?.find((f) => f.key === fieldKey) ?? null;
+  const fromEdit = editFields.value?.find((f) => f.key === fieldKey) ?? null;
+  const base = fromEdit ?? fromApi;
+  if (!base) return null;
+  const options = backfillPicklistOptionColors(base.options || base.enum || [], fieldKey, 'organizations');
+  return { ...base, options, enum: options };
+}
+
+function applyPlatformDefaultOrganizationTypes(typesField = null) {
+  const defaults = PLATFORM_DEFAULT_ORG_TYPES.map((type) =>
+    mapOrganizationTypeEntry({ value: type, enabled: true }, typesField)
+  );
+  organizationTypes.value = typesField
+    ? mergeOrganizationTypesWithCatalog(defaults, typesField)
+    : defaults;
+}
+
+function ensureOrganizationTypesPopulated(module, tenantOverrides) {
+  if (organizationTypes.value.length > 0) return;
+  if (
+    tenantOverrides?.organizationTypes &&
+    Array.isArray(tenantOverrides.organizationTypes)
+  ) {
+    return;
+  }
+  const typesField =
+    resolveOrganizationsTypesFieldWithColors(module) ?? organizationsTypesFieldRef.value;
+  applyPlatformDefaultOrganizationTypes(typesField);
+}
 
 async function fetchStatusTypes() {
   if (!isOrganizationsModule.value || !selectedModule.value) {
@@ -12405,6 +12656,8 @@ async function fetchStatusTypes() {
   }
   
   fetchingStatusTypes.value = true;
+  statusTypesLoading.value = true;
+  statusTypesLoadError.value = '';
   console.log('[Status Types] 🔄 STARTING fetchStatusTypes - Stack trace:', new Error().stack);
   try {
     // Step 1: Try to fetch tenant module configuration overrides first
@@ -12474,11 +12727,11 @@ async function fetchStatusTypes() {
     }
     
     if (module) {
-      organizationsTypesFieldRef.value = module.fields?.find((f) => f.key === 'types') ?? null;
+      organizationsTypesFieldRef.value = resolveOrganizationsTypesFieldWithColors(module);
       statusPicklistFieldsByKey.value = {
-        customerStatus: module.fields?.find((f) => f.key === 'customerStatus') ?? null,
-        partnerStatus: module.fields?.find((f) => f.key === 'partnerStatus') ?? null,
-        vendorStatus: module.fields?.find((f) => f.key === 'vendorStatus') ?? null,
+        customerStatus: resolveOrganizationStatusPicklistFieldWithColors(module, 'customerStatus'),
+        partnerStatus: resolveOrganizationStatusPicklistFieldWithColors(module, 'partnerStatus'),
+        vendorStatus: resolveOrganizationStatusPicklistFieldWithColors(module, 'vendorStatus'),
       };
 
       // Debug: Log all fields to see what we're getting
@@ -12541,13 +12794,9 @@ async function fetchStatusTypes() {
             typesField: typesField ? { key: typesField.key, dataType: typesField.dataType, options: typesField.options, enum: typesField.enum } : null,
             availableFields: module.fields?.map(f => f.key).slice(0, 20) // Show first 20 field keys
           });
-          // Fallback: Use hardcoded defaults if field not found
-          if (!typesField) {
-            console.log('[Status Types] Using hardcoded defaults for organization types');
-            organizationTypes.value = ['Customer', 'Partner', 'Vendor', 'Distributor', 'Dealer'].map((type) =>
-              mapOrganizationTypeEntry({ value: type, enabled: true })
-            );
-          }
+          applyPlatformDefaultOrganizationTypes(
+            resolveOrganizationsTypesFieldWithColors(module) ?? typesField
+          );
         }
       }
       
@@ -12598,17 +12847,7 @@ async function fetchStatusTypes() {
           console.log('[Status Types] Loaded customer status from module defaults:', newCustomerStatuses.length);
         } else {
           console.warn('[Status Types] No customerStatus field or enum found');
-          // Fallback: Use hardcoded defaults
-          if (!customerStatusField) {
-            console.log('[Status Types] Using hardcoded defaults for customerStatus');
-            statusPicklists.value.customerStatus = ['Active', 'Prospect', 'Churned', 'Lead Customer'].map(
-              (status) =>
-                mapStatusPicklistEntry(
-                  { value: status, enabled: true },
-                  statusPicklistFieldsByKey.value.customerStatus
-                )
-            );
-          }
+          applyDefaultOrganizationStatusPicklist('customerStatus');
         }
       }
       
@@ -12656,16 +12895,7 @@ async function fetchStatusTypes() {
           console.log('[Status Types] Loaded partner status from module defaults:', newPartnerStatuses.length);
         } else {
           console.warn('[Status Types] No partnerStatus field or enum found');
-          // Fallback: Use hardcoded defaults
-          if (!partnerStatusField) {
-            console.log('[Status Types] Using hardcoded defaults for partnerStatus');
-            statusPicklists.value.partnerStatus = ['Active', 'Onboarding', 'Inactive'].map((status) =>
-              mapStatusPicklistEntry(
-                { value: status, enabled: true },
-                statusPicklistFieldsByKey.value.partnerStatus
-              )
-            );
-          }
+          applyDefaultOrganizationStatusPicklist('partnerStatus');
         }
       }
       
@@ -12713,23 +12943,14 @@ async function fetchStatusTypes() {
           console.log('[Status Types] Loaded vendor status from module defaults:', newVendorStatuses.length);
         } else {
           console.warn('[Status Types] No vendorStatus field or enum found');
-          // Fallback: Use hardcoded defaults
-          if (!vendorStatusField) {
-            console.log('[Status Types] Using hardcoded defaults for vendorStatus');
-            statusPicklists.value.vendorStatus = ['Approved', 'Pending', 'Suspended'].map((status) =>
-              mapStatusPicklistEntry(
-                { value: status, enabled: true },
-                statusPicklistFieldsByKey.value.vendorStatus
-              )
-            );
-          }
+          applyDefaultOrganizationStatusPicklist('vendorStatus');
         }
       }
       
       // Save snapshot for dirty checking
       // This snapshot is used to detect changes, so it must match the exact structure we save
       const snapshotData = {
-        organizationTypes: organizationTypes.value.map(serializeOrganizationTypeEntry),
+        organizationTypes: organizationTypes.value.map(serializeOrganizationTypeEntryForSnapshot),
         statusPicklists: {
           customerStatus: statusPicklists.value.customerStatus.map(serializeStatusPicklistEntry),
           partnerStatus: statusPicklists.value.partnerStatus.map(serializeStatusPicklistEntry),
@@ -12789,6 +13010,7 @@ async function fetchStatusTypes() {
         partnerStatus: statusPicklists.value.partnerStatus.map(s => ({ value: s.value, enabled: s.enabled })),
         vendorStatus: statusPicklists.value.vendorStatus.map(s => ({ value: s.value, enabled: s.enabled }))
       }, null, 2));
+      ensureOrganizationTypesPopulated(module, tenantOverrides);
     } else {
       // Module fetch failed - only use hardcoded defaults if we don't have tenant overrides
       if (tenantOverrides && (
@@ -12824,7 +13046,7 @@ async function fetchStatusTypes() {
         }
         // Save snapshot
         const snapshotData = {
-          organizationTypes: organizationTypes.value.map(serializeOrganizationTypeEntry),
+          organizationTypes: organizationTypes.value.map(serializeOrganizationTypeEntryForSnapshot),
           statusPicklists: {
             customerStatus: statusPicklists.value.customerStatus.map(serializeStatusPicklistEntry),
             partnerStatus: statusPicklists.value.partnerStatus.map(serializeStatusPicklistEntry),
@@ -12838,31 +13060,13 @@ async function fetchStatusTypes() {
       } else {
         // No tenant overrides, use hardcoded defaults
         console.warn('[Status Types] Module response was empty or invalid - using hardcoded defaults');
-        organizationTypes.value = ['Customer', 'Partner', 'Vendor', 'Distributor', 'Dealer'].map((type) =>
+        organizationTypes.value = ['Customer', 'Partner', 'Vendor'].map((type) =>
           mapOrganizationTypeEntry({ value: type, enabled: true })
         );
-        statusPicklists.value.customerStatus = ['Active', 'Prospect', 'Churned', 'Lead Customer'].map(
-          (status) =>
-            mapStatusPicklistEntry(
-              { value: status, enabled: true },
-              statusPicklistFieldsByKey.value.customerStatus
-            )
-        );
-        statusPicklists.value.partnerStatus = ['Active', 'Onboarding', 'Inactive'].map((status) =>
-          mapStatusPicklistEntry(
-            { value: status, enabled: true },
-            statusPicklistFieldsByKey.value.partnerStatus
-          )
-        );
-        statusPicklists.value.vendorStatus = ['Approved', 'Pending', 'Suspended'].map((status) =>
-          mapStatusPicklistEntry(
-            { value: status, enabled: true },
-            statusPicklistFieldsByKey.value.vendorStatus
-          )
-        );
+        applyPlatformDefaultOrganizationStatusPicklists();
         // Save snapshot for dirty checking
         const snapshotData = {
-          organizationTypes: organizationTypes.value.map(serializeOrganizationTypeEntry),
+          organizationTypes: organizationTypes.value.map(serializeOrganizationTypeEntryForSnapshot),
           statusPicklists: {
             customerStatus: statusPicklists.value.customerStatus.map(serializeStatusPicklistEntry),
             partnerStatus: statusPicklists.value.partnerStatus.map(serializeStatusPicklistEntry),
@@ -12879,6 +13083,10 @@ async function fetchStatusTypes() {
     }
   } catch (err) {
     console.error('[Status Types] Failed to fetch status types:', err);
+    statusTypesLoadError.value = err?.message || String(err);
+    if (organizationTypes.value.length === 0) {
+      applyPlatformDefaultOrganizationTypes(organizationsTypesFieldRef.value);
+    }
   } finally {
     // Ensure display labels are plain strings (module options may be { value, color } objects)
     if (organizationTypes.value.length > 0) {
@@ -12892,6 +13100,7 @@ async function fetchStatusTypes() {
       }
     }
     fetchingStatusTypes.value = false;
+    statusTypesLoading.value = false;
   }
 }
 
@@ -12931,7 +13140,7 @@ async function saveStatusTypes() {
       // This ensures the snapshot matches what we're comparing against
       const savedData = {
         organizationTypes: (response.data?.organizationTypes || organizationTypes.value).map(
-          serializeOrganizationTypeEntry
+          serializeOrganizationTypeEntryForSnapshot
         ),
         statusPicklists: {
           customerStatus: (
@@ -12958,6 +13167,7 @@ async function saveStatusTypes() {
       );
       statusTypesOriginalSnapshot.value = JSON.stringify(savedData);
       lastSaveTimestamp.value = Date.now(); // Mark when we saved to prevent immediate refetch
+      invalidateOrganizationTypesCache();
       console.log('[Status Types] ✅ Save successful, snapshot updated with normalized saved data:', JSON.stringify({
         organizationTypes: savedData.organizationTypes.map(t => ({ value: t.value, enabled: t.enabled })),
         customerStatus: savedData.statusPicklists.customerStatus.map(s => ({ value: s.value, enabled: s.enabled })),
@@ -13033,7 +13243,7 @@ watch(() => [selectedModule.value?.key, activeTopTab.value], async ([moduleKey, 
       itemStatusTypesOriginalSnapshot.value = JSON.stringify(snapshotData);
     }
   }, 100); // Small debounce to prevent rapid triggers
-}, { immediate: false });
+}, { immediate: true });
 
 // Auto-save when status types change (debounced)
 let statusTypesSaveTimer = null;

@@ -740,9 +740,9 @@ const moduleFields = ref([]);
 
 const ASSIGNMENT_CONDITION_FIELD_OPTIONS = {
   'HELPDESK:cases': ['priority', 'status', 'caseType', 'channel', 'title', 'caseId', 'contactId', 'organizationRefId', 'assignedTo', 'source'],
-  'HELPDESK:people': ['assignedTo', 'lead_owner', 'organization', 'derivedStatus', 'first_name', 'last_name', 'email', 'type', 'sales_type', 'lead_status', 'contact_status', 'helpdesk_role', 'role', 'preferred_contact_method', 'do_not_contact', 'tags'],
-  'PLATFORM:people': ['assignedTo', 'lead_owner', 'organization', 'derivedStatus', 'first_name', 'last_name', 'email', 'type', 'sales_type', 'lead_status', 'contact_status', 'helpdesk_role', 'role', 'preferred_contact_method', 'do_not_contact', 'tags'],
-  'SALES:people': ['assignedTo', 'lead_owner', 'organization', 'derivedStatus', 'first_name', 'last_name', 'email', 'type', 'sales_type', 'lead_status', 'contact_status', 'helpdesk_role', 'role', 'preferred_contact_method', 'do_not_contact', 'tags'],
+  'HELPDESK:people': ['assignedTo', 'lead_owner', 'organization', 'derivedStatus', 'salutation', 'first_name', 'last_name', 'email', 'type', 'sales_type', 'lead_status', 'contact_status', 'helpdesk_role', 'role', 'preferred_contact_method', 'do_not_contact', 'tags'],
+  'PLATFORM:people': ['assignedTo', 'lead_owner', 'organization', 'derivedStatus', 'salutation', 'first_name', 'last_name', 'email', 'type', 'sales_type', 'lead_status', 'contact_status', 'helpdesk_role', 'role', 'preferred_contact_method', 'do_not_contact', 'tags'],
+  'SALES:people': ['assignedTo', 'lead_owner', 'organization', 'derivedStatus', 'salutation', 'first_name', 'last_name', 'email', 'type', 'sales_type', 'lead_status', 'contact_status', 'helpdesk_role', 'role', 'preferred_contact_method', 'do_not_contact', 'tags'],
   'SALES:organizations': ['name', 'assignedTo', 'types', 'customerStatus', 'partnerStatus', 'vendorStatus', 'derivedStatus', 'territory', 'industry', 'accountManager', 'tags'],
   'SALES:deals': ['name', 'assignedTo', 'stage', 'pipeline', 'status', 'priority', 'amount', 'probability', 'accountId', 'contactId', 'type', 'derivedStatus', 'currency', 'tags'],
   'SALES:tasks': ['title', 'assignedTo', 'status', 'priority', 'dueDate', 'projectId', 'relatedTo.type', 'tags'],
@@ -788,6 +788,7 @@ const CASE_TYPE_VALUES = ['Support Ticket', 'Complaint', 'Service Request', 'War
 const CASE_CHANNEL_VALUES = ['Email', 'Live Chat', 'Phone', 'Customer Portal', 'Partner Portal', 'Internal'];
 const PEOPLE_LEAD_STATUS_VALUES = ['New', 'Contacted', 'Qualified', 'Disqualified', 'Nurturing', 'Re-Engage'];
 const PEOPLE_CONTACT_STATUS_VALUES = ['Active', 'Inactive', 'DoNotContact'];
+const PEOPLE_SALUTATION_VALUES = ['Mr.', 'Ms.', 'Mrs.', 'Dr.', 'Prof.', 'Mx.', 'Other'];
 const PEOPLE_CONTACT_ROLE_VALUES = ['Decision Maker', 'Influencer', 'Support', 'Other'];
 const PEOPLE_PREFERRED_CONTACT_VALUES = ['Email', 'Phone', 'WhatsApp', 'SMS', 'None'];
 const PEOPLE_SALES_CLASSIFIER_FALLBACK = ['Lead', 'Contact'];
@@ -795,10 +796,10 @@ const PEOPLE_HELPDESK_ROLE_FALLBACK = ['Customer', 'Agent'];
 
 const ASSIGNMENT_CONDITION_VALUE_ENUMS = {
   'HELPDESK:cases': { priority: CASE_PRIORITY_VALUES, status: CASE_STATUS_VALUES, caseType: CASE_TYPE_VALUES, channel: CASE_CHANNEL_VALUES },
-  'SALES:deals': { status: ['Open', 'Won', 'Lost', 'Stalled', 'Active', 'Abandoned'], priority: ['Low', 'Medium', 'High', 'Urgent'], type: ['New Business', 'Existing Customer', 'Existing Business', 'Upsell', 'Renewal', 'Cross-Sell'] },
+  'SALES:deals': { status: ['Open', 'Won', 'Lost'], priority: ['Low', 'Medium', 'High', 'Urgent'], type: ['New Business', 'Existing Customer', 'Existing Business', 'Upsell', 'Renewal', 'Cross-Sell'] },
   'SALES:tasks': { status: ['todo', 'in_progress', 'waiting', 'completed', 'cancelled'], priority: ['low', 'medium', 'high', 'urgent'], 'relatedTo.type': ['contact', 'deal', 'project', 'organization', 'none'] },
-  'SALES:organizations': { customerStatus: ['Active', 'Prospect', 'Churned', 'Lead Customer'], partnerStatus: ['Active', 'Onboarding', 'Inactive'], vendorStatus: ['Approved', 'Pending', 'Suspended'] },
-  'SALES:people': { lead_status: PEOPLE_LEAD_STATUS_VALUES, contact_status: PEOPLE_CONTACT_STATUS_VALUES, role: PEOPLE_CONTACT_ROLE_VALUES, preferred_contact_method: PEOPLE_PREFERRED_CONTACT_VALUES }
+  'SALES:organizations': { customerStatus: ['Prospect', 'Active', 'On Hold', 'At Risk', 'Inactive', 'Churned'], partnerStatus: ['Invited', 'Onboarding', 'Active', 'Paused', 'Inactive'], vendorStatus: ['Prospect', 'Onboarding', 'Approved', 'Suspended', 'Inactive', 'Rejected'] },
+  'SALES:people': { salutation: PEOPLE_SALUTATION_VALUES, lead_status: PEOPLE_LEAD_STATUS_VALUES, contact_status: PEOPLE_CONTACT_STATUS_VALUES, role: PEOPLE_CONTACT_ROLE_VALUES, preferred_contact_method: PEOPLE_PREFERRED_CONTACT_VALUES }
 };
 
 function getConditionValueEnumList(appKey, moduleKey, fieldPath) {
@@ -819,7 +820,7 @@ function getConditionValueEnumList(appKey, moduleKey, fieldPath) {
       return Array.isArray(fallback) && fallback.length > 0 ? fallback.map((v) => ({ value: v, label: v })) : null;
     }
     if (mk === 'deals') {
-      const dealsMap = { status: ['Open', 'Won', 'Lost', 'Stalled', 'Active', 'Abandoned'], priority: ['Low', 'Medium', 'High', 'Urgent'], type: ['New Business', 'Existing Customer', 'Existing Business', 'Upsell', 'Renewal', 'Cross-Sell'] };
+      const dealsMap = { status: ['Open', 'Won', 'Lost'], priority: ['Low', 'Medium', 'High', 'Urgent'], type: ['New Business', 'Existing Customer', 'Existing Business', 'Upsell', 'Renewal', 'Cross-Sell'] };
       const fallback = dealsMap[f];
       return Array.isArray(fallback) && fallback.length > 0 ? fallback.map((v) => ({ value: v, label: v })) : null;
     }
@@ -829,12 +830,12 @@ function getConditionValueEnumList(appKey, moduleKey, fieldPath) {
       return Array.isArray(fallback) && fallback.length > 0 ? fallback.map((v) => ({ value: v, label: v })) : null;
     }
     if (mk === 'organizations') {
-      const orgMap = { customerStatus: ['Active', 'Prospect', 'Churned', 'Lead Customer'], partnerStatus: ['Active', 'Onboarding', 'Inactive'], vendorStatus: ['Approved', 'Pending', 'Suspended'] };
+      const orgMap = { customerStatus: ['Prospect', 'Active', 'On Hold', 'At Risk', 'Inactive', 'Churned'], partnerStatus: ['Invited', 'Onboarding', 'Active', 'Paused', 'Inactive'], vendorStatus: ['Prospect', 'Onboarding', 'Approved', 'Suspended', 'Inactive', 'Rejected'] };
       const fallback = orgMap[f];
       return Array.isArray(fallback) && fallback.length > 0 ? fallback.map((v) => ({ value: v, label: v })) : null;
     }
     if (mk === 'people') {
-      const peopleMap = { lead_status: PEOPLE_LEAD_STATUS_VALUES, contact_status: PEOPLE_CONTACT_STATUS_VALUES, role: PEOPLE_CONTACT_ROLE_VALUES, preferred_contact_method: PEOPLE_PREFERRED_CONTACT_VALUES };
+      const peopleMap = { salutation: PEOPLE_SALUTATION_VALUES, lead_status: PEOPLE_LEAD_STATUS_VALUES, contact_status: PEOPLE_CONTACT_STATUS_VALUES, role: PEOPLE_CONTACT_ROLE_VALUES, preferred_contact_method: PEOPLE_PREFERRED_CONTACT_VALUES };
       const fallback = peopleMap[f];
       return Array.isArray(fallback) && fallback.length > 0 ? fallback.map((v) => ({ value: v, label: v })) : null;
     }

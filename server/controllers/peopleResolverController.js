@@ -1752,7 +1752,7 @@ async function checkActiveChildRecords(personId, appKey, organizationId) {
       const activeDeals = await Deal.find({
         contactId: personId,
         organizationId: organizationId,
-        status: { $nin: ['Won', 'Lost', 'Closed Won', 'Closed Lost'] }
+        status: { $nin: ['Won', 'Lost'] }
       }).select('_id name status stage').limit(10).lean();
       
       if (activeDeals.length > 0) {

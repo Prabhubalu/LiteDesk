@@ -326,5 +326,29 @@
   "listStatTrial": {
     "message": "Versuch",
     "description": "Organizations list statistics card"
+  },
+  "organizationQuickCreateDrawerTypesTitle": {
+    "message": "Organization types",
+    "description": "Section title for org type picker in quick create drawer"
+  },
+  "organizationQuickCreateDrawerSelectTypesHint": {
+    "message": "Select one or more types to show related fields.",
+    "description": "Hint under org type picker in quick create drawer"
+  },
+  "organizationQuickCreateDrawerNoTypes": {
+    "message": "No organization types are configured.",
+    "description": "Empty state when org type catalog is empty"
+  },
+  "organizationQuickCreateDrawerTypeFieldsTitle": {
+    "message": "Type-specific fields",
+    "description": "Heading for dependent fields block after type selection"
+  },
+  "organizationQuickCreateDrawerNoTypeFields": {
+    "message": "No additional fields configured for this type.",
+    "description": "Empty state inside a type accordion when no fields are mapped"
+  },
+  "sysFieldStatus": {
+    "message": "Status",
+    "description": "System organization field label"
   }
 }

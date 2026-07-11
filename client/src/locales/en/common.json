@@ -19,6 +19,10 @@
     "message": "Assigned To",
     "description": "Standard record ownership field label across CRM modules"
   },
+  "status": {
+    "message": "Status",
+    "description": "Standard status / lifecycle field label across CRM modules"
+  },
   "localeDevTitle": {
     "message": "Localization QA",
     "description": "Developer settings section for i18n tools"
@@ -1011,9 +1015,25 @@
     "message": "Browse records",
     "description": "Open lookup record picker modal"
   },
+  "formClearLookup": {
+    "message": "Clear selection",
+    "description": "Clear selected lookup record"
+  },
+  "formLookupClearOption": {
+    "message": "None",
+    "description": "Empty lookup option in form dropdown"
+  },
   "formCreateAndSelect": {
     "message": "Create and select",
     "description": "Create new lookup record shortcut"
+  },
+  "formCatalogCategoryNameRequired": {
+    "message": "Type a category name in the search box, then click add",
+    "description": "Inline catalog category create requires a typed name"
+  },
+  "formCatalogCategoryCreateFailed": {
+    "message": "Could not create category",
+    "description": "Error when inline catalog category creation fails"
   },
   "formUploading": {
     "message": "Uploading...",

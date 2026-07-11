@@ -8,6 +8,7 @@
 <script setup>
 import { computed } from 'vue';
 import CustomerStatementPanel from '@/components/payments/CustomerStatementPanel.vue';
+import { resolveCurrencyCodeForField } from '@/utils/currencyOptions';
 
 const props = defineProps({
   record: { type: Object, default: null }
@@ -18,5 +19,5 @@ const organizationRefId = computed(() => {
   return id ? String(id) : null;
 });
 
-const defaultCurrency = computed(() => props.record?.paymentCurrency || props.record?.currency || 'USD');
+const defaultCurrency = computed(() => resolveCurrencyCodeForField({ record: props.record }));
 </script>

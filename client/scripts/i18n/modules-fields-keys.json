@@ -1640,11 +1640,11 @@
     "description": "Other tabs section"
   },
   "modFieldsOrgsStatusTypesDesc": {
-    "message": "Configure organization types and status picklists. These are app-scoped semantics that control workflow states.",
+    "message": "Configure organization types, per-type field visibility, and status picklists used across the workspace.",
     "description": "Other tabs section"
   },
   "modFieldsOrgsStatusTypesNote": {
-    "message": "Organization types and status values are app-scoped. Changes here affect how organizations are classified and tracked within specific applications (Sales, Helpdesk, etc.).",
+    "message": "Organization types control which fields appear when a type is selected. Status values are type-scoped lifecycle states. Disabled values remain in the system but are hidden from selection.",
     "description": "Other tabs section"
   },
   "modFieldsOrgTypesTitle": {
@@ -1704,15 +1704,15 @@
     "description": "Other tabs section"
   },
   "modFieldsCustomerStatusFootnote": {
-    "message": "Customer status values are app-scoped (Sales app). Disabled values remain in the system but are hidden from selection.",
+    "message": "Disabled values remain in the system but are hidden from selection when creating or editing organizations.",
     "description": "Other tabs section"
   },
   "modFieldsPartnerStatusFootnote": {
-    "message": "Partner status values are app-scoped (Sales app). Disabled values remain in the system but are hidden from selection.",
+    "message": "Disabled values remain in the system but are hidden from selection when creating or editing organizations.",
     "description": "Other tabs section"
   },
   "modFieldsVendorStatusFootnote": {
-    "message": "Vendor status values are app-scoped (Sales app). Disabled values remain in the system but are hidden from selection.",
+    "message": "Disabled values remain in the system but are hidden from selection when creating or editing organizations.",
     "description": "Other tabs section"
   },
   "modFieldsTasksStatusPriorityDesc": {

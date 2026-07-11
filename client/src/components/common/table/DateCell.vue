@@ -1,12 +1,19 @@
 <template>
-  <span :class="['date-cell', { 'date-relative': relative }]" :title="fullDate">
+  <span
+    :class="['date-cell', { 'date-relative': isRelative }]"
+    :title="tooltip"
+  >
     {{ formattedDate }}
   </span>
 </template>
 
 <script setup>
-import { useI18n } from 'vue-i18n';
+/**
+ * Locale-aware date cell for list views.
+ * Relative format: scan-friendly age; title tooltip: absolute datetime.
+ */
 import { computed } from 'vue';
+import { formatDate, formatRelativeTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   value: {
@@ -24,73 +31,48 @@ const props = defineProps({
   relative: {
     type: Boolean,
     default: false
+  },
+  /** Optional engagement label prepended to the absolute tooltip */
+  contextLabel: {
+    type: String,
+    default: ''
   }
 });
 
-const { t } = useI18n();
+const isRelative = computed(() => props.relative || props.format === 'relative');
 
 const formattedDate = computed(() => {
   if (!props.value) return '-';
-  
+
   const date = new Date(props.value);
-  
-  if (isNaN(date.getTime())) return '-';
-  
-  if (props.relative || props.format === 'relative') {
-    return getRelativeTime(date);
+  if (Number.isNaN(date.getTime())) return '-';
+
+  if (isRelative.value) {
+    return formatRelativeTime(date) || '-';
   }
-  
+
   switch (props.format) {
     case 'short':
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
+      return formatDate(date, { dateStyle: 'medium' }) || '-';
     case 'long':
-      return date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-      });
+      return formatDate(date, { dateStyle: 'full' }) || '-';
     case 'custom':
-      return props.customFormat || date.toLocaleDateString();
+      return props.customFormat || formatDate(date, { dateStyle: 'medium' }) || '-';
     default:
-      return date.toLocaleDateString();
+      return formatDate(date, { dateStyle: 'medium' }) || '-';
   }
 });
 
-const fullDate = computed(() => {
+const tooltip = computed(() => {
   if (!props.value) return '';
   const date = new Date(props.value);
-  return date.toLocaleString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  if (Number.isNaN(date.getTime())) return '';
+  const absolute =
+    formatDate(date, { dateStyle: 'full', timeStyle: 'short' }) || '';
+  if (!absolute) return '';
+  const label = typeof props.contextLabel === 'string' ? props.contextLabel.trim() : '';
+  return label ? `${label} · ${absolute}` : absolute;
 });
-
-const getRelativeTime = (date) => {
-  const now = new Date();
-  const diff = now - date;
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-  const months = Math.floor(days / 30);
-  const years = Math.floor(days / 365);
-  
-  if (seconds < 60) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 30) return `${days}d ago`;
-  if (months < 12) return `${months}mo ago`;
-  return `${years}y ago`;
-};
 </script>
 
 <style scoped>
@@ -104,11 +86,10 @@ const getRelativeTime = (date) => {
 
 .date-relative {
   color: #6b7280;
-  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
 }
 
 :global(.dark) .date-relative {
   color: #9ca3af;
 }
 </style>
-

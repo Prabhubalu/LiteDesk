@@ -59,7 +59,7 @@
   "inviteLastName": { "message": "Last Name", "description": "Invite form label" },
   "inviteLastNamePh": { "message": "Doe", "description": "Invite last name placeholder" },
   "inviteEmail": { "message": "Email Address", "description": "Invite form label" },
-  "inviteEmailPh": { "message": "john.doe@company.com", "description": "Invite email placeholder" },
+  "inviteEmailPh": { "message": "john.doe{'@'}company.com", "description": "Invite email placeholder" },
   "inviteUserType": { "message": "User Type", "description": "Invite form label" },
   "inviteInternal": { "message": "Internal", "description": "Internal user type" },
   "inviteExternal": { "message": "External", "description": "External user type" },

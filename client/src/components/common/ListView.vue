@@ -1504,10 +1504,8 @@ import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import { moduleSupportsGenericRecordPreview } from '@/utils/recordPresence';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
-import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
-import { getFieldMetadata, PEOPLE_FIELD_METADATA } from '@/platform/fields/peopleFieldModel';
-import { isSystemField as isSystemFieldFromEngine } from '@/platform/fields/fieldCapabilityEngine';
-import { getQuoteFieldMetadata } from '@/platform/fields/quoteFieldModel';
+import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { isFieldExcludedFromListCustomize, buildListColumnsFromModuleFields } from '@/utils/buildListColumnsFromModuleFields';
 import { useDefaultListFilters } from '@/composables/useDefaultListFilters';
 import { useListSelection } from '@/composables/useListSelection';
 import { useBulkDeleteProgressStore } from '@/stores/bulkDeleteProgress';
@@ -2498,7 +2496,7 @@ const kanbanShownFields = computed(() => {
   const q = kanbanFieldSearchQuery.value.trim().toLowerCase();
   const shown = kanbanVisibleColumns.value.filter(c =>
     c.visible &&
-    !isSystemFieldForList(props.moduleKey, c.key, c) &&
+    !isSystemFieldForList(props.moduleKey, c.key) &&
     (!q || (c.label || c.key).toLowerCase().includes(q))
   );
   return shown.map(c => ({ ...c, locked: isKanbanTitleField(c.key) }));
@@ -2508,7 +2506,7 @@ const kanbanHiddenFields = computed(() => {
   return kanbanVisibleColumns.value.filter(c =>
     !c.visible &&
     !isKanbanTitleField(c.key) &&
-    !isSystemFieldForList(props.moduleKey, c.key, c) &&
+    !isSystemFieldForList(props.moduleKey, c.key) &&
     (!q || (c.label || c.key).toLowerCase().includes(q))
   );
 });
@@ -2726,7 +2724,19 @@ const normalizeColumnOrder = (columns) => {
 
   // Handle specific ordering for the 'people' module
   if (props.moduleKey === 'people') {
-    const peopleSpecificOrder = ['name', 'organization', 'sales_type', 'email', 'phone', 'assignedTo'];
+    const peopleSpecificOrder = [
+      'name',
+      'sales_type',
+      'derivedStatus',
+      'email',
+      'mobile',
+      'organization',
+      'source',
+      'lead_score',
+      'assignedTo',
+      'lastActivity',
+      'createdAt',
+    ];
     const orderedColumns = [];
     const processedKeys = new Set();
 
@@ -2750,6 +2760,47 @@ const normalizeColumnOrder = (columns) => {
 
     // Add any remaining columns that were not explicitly ordered
     columns.forEach(col => {
+      if (!processedKeys.has(col.key)) {
+        orderedColumns.push(col);
+      }
+    });
+
+    return orderedColumns;
+  }
+
+  // Handle specific ordering for the 'organizations' module
+  if (props.moduleKey === 'organizations') {
+    const organizationsSpecificOrder = [
+      'name',
+      'types',
+      'derivedStatus',
+      'industry',
+      'phone',
+      'website',
+      'assignedTo',
+      'lastActivity',
+      'createdAt',
+    ];
+    const orderedColumns = [];
+    const processedKeys = new Set();
+
+    const nameColumn = columns.find((col) => col.key === 'name');
+    if (nameColumn) {
+      orderedColumns.push({ ...nameColumn, locked: true });
+      processedKeys.add('name');
+    }
+
+    organizationsSpecificOrder.forEach((key) => {
+      if (!processedKeys.has(key)) {
+        const col = columns.find((c) => c.key === key);
+        if (col) {
+          orderedColumns.push(col);
+          processedKeys.add(key);
+        }
+      }
+    });
+
+    columns.forEach((col) => {
       if (!processedKeys.has(col.key)) {
         orderedColumns.push(col);
       }
@@ -2865,7 +2916,7 @@ const initializeColumns = async () => {
         const propsCol = propsColumnsMap.get(field.key);
         orderedColumns.push({
           key: field.key,
-          label: getFieldDisplayLabel(field) || propsCol?.label || field.key,
+          label: getFieldDisplayLabel(field, props.moduleKey) || propsCol?.label || field.key,
           visible: false, // Not in saved settings, so hidden
           sortable: propsCol?.sortable !== false,
           dataType: field.dataType || propsCol?.dataType || 'Text',
@@ -2915,7 +2966,7 @@ const initializeColumns = async () => {
     const allAvailableColumnsMap = new Map();
     backendFields.forEach(field => allAvailableColumnsMap.set(field.key, {
       key: field.key,
-      label: getFieldDisplayLabel(field) || field.key,
+      label: getFieldDisplayLabel(field, props.moduleKey) || field.key,
       dataType: field.dataType,
       sortable: true, // Assume sortable by default from backend
       showInTable: field.visibility?.list !== false,
@@ -3047,17 +3098,8 @@ watch(
           // Registry not available, use existing logic
         }
         
-        // For modules with field metadata (people, cases), check system fields
-        if (props.moduleKey === 'people' || props.moduleKey === 'cases') {
-          try {
-            const metadata = getFieldMetadata(col.key);
-            // System fields: skip entirely (don't add to visibleColumns)
-            if (metadata.owner === 'system') {
-              return; // Skip this column
-            }
-          } catch (error) {
-            // Field not in metadata - continue
-          }
+        if (isFieldExcludedFromListCustomize(props.moduleKey, col.key)) {
+          return;
         }
         
         visibleColumns.value.push({
@@ -3181,7 +3223,8 @@ const computedStats = computed(() => {
     // Format the stat value
     let formattedStat = currentValue;
     if (config.formatter === 'currency') {
-      const currencyCode = String(config.currencyCode || config.currency || DEFAULT_CURRENCY_CODE).toUpperCase();
+      const orgCurrency = resolveOrgCurrencyCode(authStore.organization);
+      const currencyCode = String(config.currencyCode || config.currency || orgCurrency).toUpperCase();
       formattedStat = formatCurrencyValue(currentValue, { currencyCode }) || '—';
     } else if (config.formatter === 'number') {
       formattedStat = currentValue.toLocaleString();
@@ -3196,7 +3239,8 @@ const computedStats = computed(() => {
     // Format previous stat
     let formattedPrevious = previousValue;
     if (config.formatter === 'currency') {
-      const currencyCode = String(config.currencyCode || config.currency || DEFAULT_CURRENCY_CODE).toUpperCase();
+      const orgCurrency = resolveOrgCurrencyCode(authStore.organization);
+      const currencyCode = String(config.currencyCode || config.currency || orgCurrency).toUpperCase();
       formattedPrevious = formatCurrencyValue(previousValue, { currencyCode }) || '—';
     } else if (config.formatter === 'number') {
       formattedPrevious = previousValue.toLocaleString();
@@ -3346,7 +3390,7 @@ const resolvedToolbarFilterConfig = computed(
   () => (props.showFilters ? effectiveFilterConfig.value : []),
 );
 
-const { handleFilterOpened: loadFilterFieldOptions, enrichFilterMap } = useFilterFieldOptions(
+const { handleFilterOpened: loadFilterFieldOptions, enrichFilterMap, seedOptionsFromMetadata } = useFilterFieldOptions(
   computed(() => props.moduleKey),
   computed(() => String(authStore.user?._id || ''))
 );
@@ -3382,6 +3426,22 @@ const mergedFilterByKey = computed(() => ({
   ...enrichedColumnFilterConfigByKey.value,
   ...builderFilterByKey.value,
 }));
+
+watch(
+  filterFieldSources,
+  (fields) => {
+    if (!props.moduleKey || !Array.isArray(fields) || fields.length === 0) return;
+    seedOptionsFromMetadata({
+      [props.moduleKey]: {
+        fields: fields.map((field) => ({
+          key: field.key,
+          options: field.options,
+        })),
+      },
+    });
+  },
+  { immediate: true, deep: true }
+);
 
 function buildCompiledListFilters() {
   const filterByKey = mergedFilterByKey.value;
@@ -4051,7 +4111,8 @@ const handleBuilderClearField = (key) => {
 };
 
 const handleFilterOpened = async (key) => {
-  await loadFilterFieldOptions(key, builderFilterByKey.value[key]);
+  const filter = mergedFilterByKey.value[key] ?? enrichedColumnFilterConfigByKey.value[key];
+  await loadFilterFieldOptions(key, filter);
   emit('filter-opened', key);
 };
 
@@ -4444,22 +4505,9 @@ const clearFilters = () => {
   });
 };
 
-/** System fields that are intentionally list-visible (e.g. Quote #, totals) stay in Customize view. */
-function isListVisibleSystemField(moduleKey, fieldKey) {
-  if (moduleKey === 'quotes') {
-    const meta = getQuoteFieldMetadata(fieldKey);
-    return meta?.isVisibleInConfig === true;
-  }
-  return false;
-}
-
-// Helper: exclude infrastructure system fields from Customize List field picker
-function isSystemFieldForList(moduleKey, fieldKey, field) {
-  if (!fieldKey) return false;
-  if (isListVisibleSystemField(moduleKey, fieldKey)) return false;
-  if (field?.isSystem === true) return true;
-  const fieldObj = field && field.key ? field : { key: fieldKey };
-  return isSystemFieldFromEngine(moduleKey, fieldObj);
+/** Exclude infrastructure fields from Customize View; config-visible system fields remain. */
+function isSystemFieldForList(moduleKey, fieldKey) {
+  return isFieldExcludedFromListCustomize(moduleKey, fieldKey);
 }
 
 // Field management - sync with visibleColumns and backend configuration
@@ -4473,12 +4521,12 @@ const allFields = computed(() => {
   
   // First, add all fields from backend configuration
   backendFields.forEach(field => {
-    if (field.key && !isSystemFieldForList(props.moduleKey, field.key, field)) {
+    if (field.key && !isSystemFieldForList(props.moduleKey, field.key)) {
       // Find corresponding column from props for additional metadata
       const propsCol = propsColumns.find(c => c.key === field.key);
       allFieldsMap.set(field.key, {
         key: field.key,
-        label: getFieldDisplayLabel(field) || propsCol?.label || field.key,
+        label: getFieldDisplayLabel(field, props.moduleKey) || propsCol?.label || field.key,
         visible: false, // Will be set from visibleColumns
         sortable: propsCol?.sortable !== false,
         dataType: field.dataType || propsCol?.dataType || 'Text',
@@ -4489,7 +4537,7 @@ const allFields = computed(() => {
   
   // Then add any fields from props.columns that aren't in backend (skip system fields)
   propsColumns.forEach(col => {
-    if (!allFieldsMap.has(col.key) && !isSystemFieldForList(props.moduleKey, col.key, col)) {
+    if (!allFieldsMap.has(col.key) && !isSystemFieldForList(props.moduleKey, col.key)) {
       allFieldsMap.set(col.key, {
         key: col.key,
         label: col.label || col.key,
@@ -4500,11 +4548,24 @@ const allFields = computed(() => {
       });
     }
   });
+
+  // Registry audit/system fields omitted from the module API (e.g. createdAt, createdBy)
+  buildListColumnsFromModuleFields([], props.moduleKey).forEach((col) => {
+    if (!col?.key || allFieldsMap.has(col.key) || isSystemFieldForList(props.moduleKey, col.key)) return;
+    allFieldsMap.set(col.key, {
+      key: col.key,
+      label: col.label || col.key,
+      visible: false,
+      sortable: col.sortable !== false,
+      dataType: col.dataType || 'Text',
+      showInTable: col.showInTable !== false,
+    });
+  });
   
   // Include list-visible columns from visibleColumns even when omitted from backend field defs
   visibleColumns.value.forEach((col) => {
     if (!col?.key || allFieldsMap.has(col.key)) return;
-    if (isSystemFieldForList(props.moduleKey, col.key, col)) return;
+    if (isSystemFieldForList(props.moduleKey, col.key)) return;
     allFieldsMap.set(col.key, {
       key: col.key,
       label: col.label || col.key,
@@ -4720,7 +4781,7 @@ const toggleFieldVisibility = async (fieldKey) => {
     if (backendField || propsCol) {
       const newColumn = {
         key: fieldKey,
-        label: getFieldDisplayLabel(backendField) || propsCol?.label || fieldKey,
+        label: getFieldDisplayLabel(backendField, props.moduleKey) || propsCol?.label || fieldKey,
         visible: true, // Toggling on, so make it visible
         sortable: propsCol?.sortable !== false,
         dataType: backendField?.dataType || propsCol?.dataType || 'Text',

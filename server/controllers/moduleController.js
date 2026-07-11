@@ -9,6 +9,18 @@ const {
     migratePeopleQuickCreateKeys,
     migratePeopleQuickCreateLayoutKeys,
 } = require('../utils/normalizePeopleModuleConfig');
+const { INITIAL_PEOPLE_QUICK_CREATE } = require('../constants/peopleModuleDefaults');
+const {
+    INITIAL_ORGANIZATION_QUICK_CREATE,
+    INITIAL_ORGANIZATION_KEY_FIELDS,
+} = require('../constants/organizationModuleDefaults');
+const { INITIAL_DEALS_QUICK_CREATE } = require('../constants/dealsModuleDefaults');
+const {
+    INITIAL_CASES_QUICK_CREATE,
+    isInitialCaseRequiredField,
+    isCasesFormExcludedField,
+} = require('../constants/casesModuleDefaults');
+
 const {
     getDefaultEmailValidations,
     ensurePhoneFieldDefaultValidations,
@@ -522,6 +534,7 @@ function getFieldDataType(key, fieldName, path) {
         'assignedTo': 'Lookup (Relationship)',
         'source': 'Picklist',
         'sales_type': 'Picklist',
+        'salutation': 'Picklist',
         'first_name': 'Text',
         'last_name': 'Text',
         'email': 'Email',
@@ -584,6 +597,7 @@ function getFieldDataType(key, fieldName, path) {
     const dealFieldMappings = {
         'name': 'Text',
         'amount': 'Currency',
+        'amountMode': 'Picklist',
         'currency': 'Picklist',
         'pipeline': 'Picklist',
         'stage': 'Picklist',
@@ -591,7 +605,6 @@ function getFieldDataType(key, fieldName, path) {
         'assignedTo': 'Lookup (Relationship)',
         'accountId': 'Lookup (Relationship)',
         'contactId': 'Lookup (Relationship)',
-        'lineItems': 'Rich Text',
         'probability': 'Decimal',
         'expectedCloseDate': 'Date',
         'actualCloseDate': 'Date',
@@ -728,7 +741,8 @@ function getFieldDataType(key, fieldName, path) {
         'linked_invoices': 'Multi-Picklist',
         'linked_forms': 'Multi-Picklist',
         'linked_contacts': 'Multi-Picklist',
-        'tags': 'Multi-Picklist'
+        'tags': 'Multi-Picklist',
+        'assignedTo': 'Lookup (Relationship)'
     };
     
     if (key === 'items' && itemFieldMappings[fieldName]) {
@@ -868,16 +882,6 @@ function getBaseFieldsForKey(key) {
             'resolvedAt',
             'resolvedBy'
         ];
-        const casesSchemaExcluded = new Set([
-            'activities',
-            'slaCycles',
-            'currentSlaCycle',
-            'assignmentControl',
-            'reopenCount',
-            'customFields',
-            'portalReadReceipts',
-            'portalCsat'
-        ]);
         const modelByKey = {
             people: require('../models/People'),
             organizations: require('../models/Organization'),
@@ -957,6 +961,15 @@ function getBaseFieldsForKey(key) {
             'phone',
             'assignedTo'  // owner (assigned user)
         ]);
+        const organizationDefaultKeyFields = new Set(INITIAL_ORGANIZATION_KEY_FIELDS);
+        const itemsDefaultKeyFields = new Set([
+            'item_type',
+            'item_code',
+            'categoryId',
+            'selling_price',
+            'lifecycle_state',
+            'assignedTo',
+        ]);
         let baseFields = Object.entries(model.schema.paths)
             .filter(([name]) => {
                 // Exclude if the field name is in the excluded set
@@ -966,10 +979,15 @@ function getBaseFieldsForKey(key) {
                 // People: portalAccess is system-managed — exclude nested mongoose paths
                 if (key === 'people' && name.startsWith('portalAccess.')) return false;
                 if (key === 'cases') {
-                    if (casesSchemaExcluded.has(name)) return false;
-                    for (const excludedField of casesSchemaExcluded) {
-                        if (name.startsWith(`${excludedField}.`)) return false;
-                    }
+                    if (isCasesFormExcludedField(name)) return false;
+                    const topLevel = String(name || '').split('.')[0];
+                    if (topLevel && isCasesFormExcludedField(topLevel)) return false;
+                }
+                if (key === 'organizations') {
+                    const { isTenantPlatformOrganizationFieldPath } = require('../constants/organizationTenantPlatformFields');
+                    if (isTenantPlatformOrganizationFieldPath(name)) return false;
+                    // Mixed internal CRM field — not exposed in module config or create/edit
+                    if (name === 'partnerOnboardingSteps') return false;
                 }
                 if (key === 'quotes') {
                     const quotesSchemaExcluded = new Set([
@@ -1208,6 +1226,16 @@ function getBaseFieldsForKey(key) {
                 if (key === 'organizations' && name === 'industry' && options.length === 0) {
                     options = ['Technology', 'Healthcare', 'Finance', 'Retail', 'Manufacturing'];
                 }
+
+                if (key === 'organizations') {
+                    const { getDefaultOrganizationStatusFieldOptions } = require('../constants/organizationStatusDefaults');
+                    if (
+                        (name === 'customerStatus' || name === 'partnerStatus' || name === 'vendorStatus') &&
+                        options.length === 0
+                    ) {
+                        options = getDefaultOrganizationStatusFieldOptions(name);
+                    }
+                }
                 
                 // Special handling for array fields (like tags, interest_products)
                 if (path.schema && path.schema.paths) {
@@ -1232,6 +1260,10 @@ function getBaseFieldsForKey(key) {
                     .trim()
                     .replace(/\b\w/g, c => c.toUpperCase());
                 if (name === 'assignedTo') fieldLabel = 'Assigned To';
+                if (name === 'contactId') fieldLabel = 'Contact';
+                if (name === 'organizationRefId') fieldLabel = 'Organization';
+                if (name === 'lifecycle_state') fieldLabel = 'Status';
+                if (name === 'categoryId') fieldLabel = 'Category';
                 // UX normalization: hide technical relationship naming in Events module UI
                 if (key === 'events' && name === 'relatedToId') fieldLabel = 'Organization';
                 if (key === 'events' && name === 'linkedFormId') fieldLabel = 'Form';
@@ -1621,7 +1653,10 @@ function getBaseFieldsForKey(key) {
                     key: name,
                     label: fieldLabel,
                     dataType: dataType,
-                    keyField: (key === 'tasks' && taskDefaultKeyFields.has(name)) || (key === 'people' && peopleDefaultKeyFields.has(name)),
+                    keyField: (key === 'tasks' && taskDefaultKeyFields.has(name))
+                        || (key === 'people' && peopleDefaultKeyFields.has(name))
+                        || (key === 'organizations' && organizationDefaultKeyFields.has(name))
+                        || (key === 'items' && itemsDefaultKeyFields.has(name)),
                     // IMPORTANT: Some schema fields are conditionally required (function-based required).
                     // For dependency-driven required fields (like events.reviewerId), the module definition must NOT mark them required globally.
                     required: (key === 'events' && name === 'reviewerId')
@@ -1636,7 +1671,9 @@ function getBaseFieldsForKey(key) {
                                         ? true
                                         : (key === 'payments' && isInitialPaymentRequiredField(name))
                                             ? true
-                                            : !!path.isRequired,
+                                            : (key === 'cases' && isInitialCaseRequiredField(name))
+                                                ? true
+                                                : !!path.isRequired,
                     options: eventTypeOptions,
                     defaultValue: eventTypeDefaultValue,
                     // Use placeholder as helper text for Lookup fields (shown under label in UI); never show technical IDs.
@@ -2109,7 +2146,7 @@ function normalizeActionResources(resources) {
 }
 
 function buildPipelineStage(name, { order = 0, probability = 0, status = 'open', playbook = null } = {}) {
-    const normalizedStatus = ['open', 'won', 'lost', 'stalled'].includes(status) ? status : 'open';
+    const normalizedStatus = ['open', 'won', 'lost'].includes(status) ? status : 'open';
     const normalizedProbability = typeof probability === 'number'
         ? Math.min(100, Math.max(0, probability))
         : (normalizedStatus === 'won' ? 100 : normalizedStatus === 'lost' ? 0 : 0);
@@ -2184,24 +2221,103 @@ function enrichPeopleFieldsWithPeopleTypes(fields, typeDefs) {
     });
 }
 
-/** Canonical config for the default read-only Reopen reason field on Cases. */
+/**
+ * Enrich Organizations module picklists from Status & Types tenant policy.
+ * @param {Array} fields
+ * @param {{ typeDefs?: Array, statusPicklists?: object|null }} config
+ */
+function enrichOrganizationsFieldsWithStatusTypes(fields, config) {
+    if (!Array.isArray(fields)) return fields;
+    const {
+        typeDefsToOrganizationTypePicklistOptions,
+        statusPicklistPolicyToOptions,
+    } = require('../utils/tenantMetadata');
+    const { getDefaultOrganizationStatusFieldOptions } = require('../constants/organizationStatusDefaults');
+    const typeDefs = Array.isArray(config?.typeDefs) ? config.typeDefs : [];
+    const statusPicklists = config?.statusPicklists ?? null;
+    const { normalizePicklistOptionValue } = require('../utils/tenantMetadata');
+    const { backfillPicklistOptionColors } = require('../utils/picklistColorPalette');
+    const typeOptions = typeDefsToOrganizationTypePicklistOptions(typeDefs);
+    const statusFieldKeys = new Set(['customerstatus', 'partnerstatus', 'vendorstatus']);
+
+    return fields.map((f) => {
+        const key = (f.key || '').toString().trim().toLowerCase();
+        if (key === 'types') {
+            const catalog = Array.isArray(f.options) ? f.options : [];
+            const mergedTypeOptions = typeOptions.map((opt) => {
+                const value = String(opt.value ?? '').trim();
+                const catalogMatch = catalog.find(
+                    (c) => normalizePicklistOptionValue(c).toLowerCase() === value.toLowerCase()
+                );
+                const color =
+                    opt.color ||
+                    (catalogMatch && typeof catalogMatch === 'object' ? catalogMatch.color : null);
+                return color ? { ...opt, color } : opt;
+            });
+            const optionsWithColors = backfillPicklistOptionColors(mergedTypeOptions, 'types', 'organizations');
+            return { ...f, options: optionsWithColors, enum: optionsWithColors.map((o) => o.value) };
+        }
+        if (statusFieldKeys.has(key)) {
+            const canonicalKey =
+                key === 'customerstatus'
+                    ? 'customerStatus'
+                    : key === 'partnerstatus'
+                      ? 'partnerStatus'
+                      : 'vendorStatus';
+            const policyRows = statusPicklists?.[canonicalKey];
+            const options = statusPicklistPolicyToOptions(policyRows, f.options || f.enum);
+            if (options !== null && options.length > 0) {
+                return { ...f, options, enum: options.map((o) => o.value) };
+            }
+            const defaults = getDefaultOrganizationStatusFieldOptions(canonicalKey);
+            if (defaults.length > 0) {
+                return { ...f, options: defaults, enum: defaults.map((o) => o.value) };
+            }
+        }
+        return f;
+    });
+}
+
+async function enrichOrganizationsModuleFields(fields, organizationId) {
+    if (!Array.isArray(fields) || !organizationId) return fields;
+    const { stripRetiredOrganizationTypesFromModuleFields } = require('../constants/organizationTypeDefaults');
+    const { fields: strippedFields } = stripRetiredOrganizationTypesFromModuleFields(fields);
+    const { getOrganizationTypesConfig } = require('../utils/tenantMetadata');
+    const config = await getOrganizationTypesConfig(organizationId);
+    return enrichOrganizationsFieldsWithStatusTypes(strippedFields, config);
+}
+
+/** Canonical config for Cases system field labels / reopen reason. */
 function enrichCasesModuleFields(fields) {
     if (!Array.isArray(fields)) return fields;
+    const friendlyLabels = {
+        contactid: 'Contact',
+        organizationrefid: 'Organization',
+    };
+    const normalizeFieldKey = (value) =>
+        String(value || '')
+            .trim()
+            .toLowerCase()
+            .replace(/[\s_-]+/g, '');
     return fields.map((f) => {
-        const key = String(f?.key || '').trim().toLowerCase();
-        if (key !== 'reopenreason') return f;
-        return {
-            ...f,
-            label: f.label || 'Reopen reason',
-            dataType: 'Text-Area',
-            required: false,
-            keyField: false,
-            visibility: {
-                list: false,
-                detail: true,
-                ...(f.visibility && typeof f.visibility === 'object' ? f.visibility : {})
-            }
-        };
+        const key = normalizeFieldKey(f?.key);
+        if (key === 'reopenreason') {
+            return {
+                ...f,
+                label: f.label || 'Reopen reason',
+                dataType: 'Text-Area',
+                required: false,
+                keyField: false,
+                visibility: {
+                    list: false,
+                    detail: true,
+                    ...(f.visibility && typeof f.visibility === 'object' ? f.visibility : {})
+                }
+            };
+        }
+        const friendly = friendlyLabels[key];
+        if (!friendly) return f;
+        return { ...f, label: friendly };
     });
 }
 
@@ -2246,7 +2362,7 @@ function normalizePipelineSettings(pipelines = []) {
         const stagesSource = Array.isArray(pipeline.stages) ? pipeline.stages : [];
         const stages = stagesSource.map((stage, stageIndex) => {
             const stageName = stage.name || `Stage ${stageIndex + 1}`;
-            const status = ['open', 'won', 'lost', 'stalled'].includes(stage.status) ? stage.status : 'open';
+            const status = ['open', 'won', 'lost'].includes(stage.status) ? stage.status : 'open';
             const keyCandidate = slugify(stage.key || `${key}-${stageName}`, `${key}-stage-${stageIndex + 1}`);
             const probability = status === 'won'
                 ? 100
@@ -2758,7 +2874,7 @@ exports.listModules = async (req, res) => {
                         const k = String(f?.key || '').toLowerCase();
                         if (k === 'correctiveactionowners') return false;
                         if (k === 'customfields') return false; // Storage bucket, not a configurable field
-                        if (sys.key === 'cases' && k === 'reopencount') return false;
+                        if (sys.key === 'cases' && isCasesFormExcludedField(k)) return false;
                         // Remove legacy/alias event field keys that should not exist in UI config
                         if (sys.key === 'events' && deprecatedEventAliasKeys.has(k)) return false;
                         return true;
@@ -3337,33 +3453,41 @@ exports.listModules = async (req, res) => {
                 // Apply canonical defaults for system modules when quickCreate is empty
                 // This handles cases where platform modules have empty quickCreate arrays
                 
-                // ARCHITECTURE NOTE: Organizations Quick Create default: name, industry, website
+                // ARCHITECTURE NOTE: Organizations Quick Create default
                 // See: module-settings-doctrine.md, organization-settings.md
                 if (sys.key === 'organizations' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
-                    finalQuickCreate = ['name', 'industry', 'website'];
+                    finalQuickCreate = [...INITIAL_ORGANIZATION_QUICK_CREATE];
                     console.log('📋 Organizations: Applying canonical default Quick Create:', finalQuickCreate);
                 }
                 
                 // ARCHITECTURE NOTE: Tasks Settings configure structure only, never work.
-                // If Tasks quickCreate is empty, apply canonical default: title, dueDate, priority, assignedTo, relatedTo
+                // If Tasks quickCreate is empty, apply canonical default:
+                // title*, dueDate, taskType, status, priority, relatedTo, description, assignedTo*
                 // See: docs/architecture/task-settings.md Section 3.5
                 if (sys.key === 'tasks' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
-                    finalQuickCreate = ['title', 'dueDate', 'priority', 'assignedTo', 'relatedTo'];
+                    finalQuickCreate = ['title', 'dueDate', 'taskType', 'status', 'priority', 'relatedTo', 'description', 'assignedTo'];
                     console.log('📋 Tasks: Applying canonical default Quick Create:', finalQuickCreate);
                 }
                 
-                // ARCHITECTURE NOTE: Items Quick Create default: item_name (required), item_type, category, selling_price
-                // If Items quickCreate is empty, apply canonical default
+                // ARCHITECTURE NOTE: Items Quick Create default
                 // See: client/src/platform/fields/itemFieldModel.ts getItemQuickCreateFields()
                 if (sys.key === 'items' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
-                    finalQuickCreate = ['item_name', 'item_type', 'categoryId', 'selling_price'];
+                    finalQuickCreate = ['item_name', 'item_type', 'categoryId', 'selling_price', 'unit_of_measure', 'lifecycle_state', 'assignedTo'];
                     console.log('📋 Items: Applying canonical default Quick Create:', finalQuickCreate);
                 }
-                // ARCHITECTURE NOTE: Deals Quick Create default: name, amount, stage, expectedCloseDate, assignedTo
-                // See: client/src/platform/fields/dealFieldModel.ts getDealQuickCreateFields()
+                // ARCHITECTURE NOTE: Deals Quick Create default
+                // See: client/src/platform/fields/dealFieldModel.ts DEAL_QUICK_CREATE_DEFAULT
                 if (sys.key === 'deals' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
-                    finalQuickCreate = ['name', 'amount', 'stage', 'expectedCloseDate', 'assignedTo'];
+                    finalQuickCreate = [...INITIAL_DEALS_QUICK_CREATE];
                     console.log('📋 Deals: Applying canonical default Quick Create:', finalQuickCreate);
+                }
+                if (sys.key === 'people' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_PEOPLE_QUICK_CREATE];
+                    console.log('📋 People: Applying canonical default Quick Create:', finalQuickCreate);
+                }
+                if (sys.key === 'cases' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_CASES_QUICK_CREATE];
+                    console.log('📋 Cases: Applying canonical default Quick Create:', finalQuickCreate);
                 }
                 if (sys.key === 'quotes' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
                     finalQuickCreate = [...INITIAL_QUOTE_QUICK_CREATE];
@@ -3638,6 +3762,9 @@ exports.listModules = async (req, res) => {
                     const peopleCfg = await getPeopleTypesConfig(req.user.organizationId, 'SALES');
                     finalFields = enrichPeopleFieldsWithPeopleTypes(finalFields, peopleCfg.typeDefs);
                 }
+                if (sys.key === 'organizations') {
+                    finalFields = await enrichOrganizationsModuleFields(finalFields, req.user.organizationId);
+                }
                 if (sys.key === 'events') {
                     finalFields = (Array.isArray(finalFields) ? finalFields : []).map(normalizeEventFieldConfig);
                 }
@@ -3695,29 +3822,32 @@ exports.listModules = async (req, res) => {
                 }
                 
                 // PLATFORM-LEVEL CANONICAL DEFAULT: Organizations Quick Create
-                // Keep the default lightweight but practical for new records.
-                // Industry and Website are included by default in addition to Name.
                 // Changes require updating: module-settings-doctrine.md, organization-settings.md
                 if (sys.key === 'organizations') {
-                    defaultQuickCreate = ['name', 'industry', 'website'];
+                    defaultQuickCreate = [...INITIAL_ORGANIZATION_QUICK_CREATE];
                 }
                 // ARCHITECTURE NOTE: Tasks Settings configure structure only, never work.
-                // Tasks Quick Create default: title (required, locked), dueDate, priority, assignedTo, relatedTo
+                // Tasks Quick Create default: title*, dueDate, taskType, status, priority, relatedTo, description, assignedTo*
                 // See: docs/architecture/task-settings.md Section 3.5
                 if (sys.key === 'tasks') {
-                    defaultQuickCreate = ['title', 'dueDate', 'priority', 'assignedTo', 'relatedTo'];
+                    defaultQuickCreate = ['title', 'dueDate', 'taskType', 'status', 'priority', 'relatedTo', 'description', 'assignedTo'];
                 }
                 
-                // ARCHITECTURE NOTE: Items Quick Create default: item_name (required), item_type, category, selling_price
-                // Essential fields for fast item creation. Other fields (inventory, tax, relationships) excluded.
+                // ARCHITECTURE NOTE: Items Quick Create default
                 // See: client/src/platform/fields/itemFieldModel.ts getItemQuickCreateFields()
                 if (sys.key === 'items') {
-                    defaultQuickCreate = ['item_name', 'item_type', 'categoryId', 'selling_price'];
+                    defaultQuickCreate = ['item_name', 'item_type', 'categoryId', 'selling_price', 'unit_of_measure', 'lifecycle_state', 'assignedTo'];
                 }
-                // ARCHITECTURE NOTE: Deals Quick Create default: name, amount, stage, expectedCloseDate, assignedTo
-                // See: client/src/platform/fields/dealFieldModel.ts getDealQuickCreateFields()
+                // ARCHITECTURE NOTE: Deals Quick Create default
+                // See: client/src/platform/fields/dealFieldModel.ts DEAL_QUICK_CREATE_DEFAULT
                 if (sys.key === 'deals') {
-                    defaultQuickCreate = ['name', 'amount', 'stage', 'expectedCloseDate', 'assignedTo'];
+                    defaultQuickCreate = [...INITIAL_DEALS_QUICK_CREATE];
+                }
+                if (sys.key === 'people') {
+                    defaultQuickCreate = [...INITIAL_PEOPLE_QUICK_CREATE];
+                }
+                if (sys.key === 'cases') {
+                    defaultQuickCreate = [...INITIAL_CASES_QUICK_CREATE];
                 }
                 if (sys.key === 'quotes') {
                     defaultQuickCreate = [...INITIAL_QUOTE_QUICK_CREATE];
@@ -3756,6 +3886,9 @@ exports.listModules = async (req, res) => {
                     const { getPeopleTypesConfig } = require('../utils/tenantMetadata');
                     const peopleCfg = await getPeopleTypesConfig(req.user.organizationId, 'SALES');
                     fieldsToPush = enrichPeopleFieldsWithPeopleTypes(fieldsToPush, peopleCfg.typeDefs);
+                }
+                if (sys.key === 'organizations') {
+                    fieldsToPush = await enrichOrganizationsModuleFields(fieldsToPush, req.user.organizationId);
                 }
                 if (sys.key === 'events') {
                     fieldsToPush = (Array.isArray(fieldsToPush) ? fieldsToPush : []).map(normalizeEventFieldConfig);
@@ -4262,20 +4395,6 @@ exports.updateModule = async (req, res) => {
     }
 };
 
-/** Canonical People Quick Create default when no org/platform config. Show in drawer initially. */
-const PEOPLE_QUICK_CREATE_DEFAULT = [
-    'first_name',
-    'last_name',
-    'email',
-    'phone',
-    'mobile',
-    'organization',
-    'assignedTo',
-    'source',
-    'do_not_contact',
-    'tags'
-];
-
 /**
  * GET /modules/people/quick-create
  * Returns full people module for Create drawer: fields + quickCreate from org override (raw).
@@ -4326,7 +4445,7 @@ exports.getPeopleQuickCreate = async (req, res) => {
                     ? platformRaw.quickCreateLayout
                     : { version: 1, rows: [] };
             } else {
-                quickCreate = [...PEOPLE_QUICK_CREATE_DEFAULT];
+                quickCreate = [...INITIAL_PEOPLE_QUICK_CREATE];
             }
         }
 
@@ -4463,6 +4582,9 @@ exports.updateSystemModule = async (req, res) => {
                 const peopleCfg = await getPeopleTypesConfig(req.user.organizationId, 'SALES');
                 fieldsOut = normalizePeopleModuleFields(fieldsOut);
                 fieldsOut = enrichPeopleFieldsWithPeopleTypes(fieldsOut, peopleCfg.typeDefs);
+            }
+            if (keyLower === 'organizations') {
+                fieldsOut = await enrichOrganizationsModuleFields(fieldsOut, req.user.organizationId);
             }
             updateObj.fields = fieldsOut;
         }

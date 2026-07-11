@@ -432,7 +432,7 @@ test('deal dealPeople/dealOrganizations sync updates related records when fields
     assignedTo: userId,
     dealPeople: [{
       personId: personA._id,
-      role: 'primary_contact',
+      role: 'decision_maker',
       isPrimary: true,
       isActive: true
     }],
@@ -456,7 +456,7 @@ test('deal dealPeople/dealOrganizations sync updates related records when fields
 
   deal.dealPeople = [{
     personId: personB._id,
-    role: 'primary_contact',
+    role: 'decision_maker',
     isPrimary: true,
     isActive: true
   }];
@@ -571,7 +571,7 @@ test('deal related records dedupe instance link with synced dealPeople', async (
     assignedTo: userId,
     dealPeople: [{
       personId: person._id,
-      role: 'primary_contact',
+      role: 'decision_maker',
       isPrimary: true,
       isActive: true
     }]

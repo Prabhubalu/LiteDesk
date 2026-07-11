@@ -22,6 +22,14 @@ const ModuleDefinition = require('../models/ModuleDefinition');
 const TenantRelationshipConfiguration = require('../models/TenantRelationshipConfiguration');
 const AppDefinition = require('../models/AppDefinition');
 const RelationshipDefinition = require('../models/RelationshipDefinition');
+const {
+  isRetiredOrganizationType,
+  stripRetiredOrganizationTypesFromModuleFields,
+} = require('../constants/organizationTypeDefaults');
+const {
+  mergeOrganizationStatusPicklistsWithDefaults,
+  getDefaultOrganizationStatusFieldOptions,
+} = require('../constants/organizationStatusDefaults');
 
 /**
  * Get enabled apps for a tenant
@@ -805,6 +813,333 @@ async function validatePeopleType(organizationId, appKey, typeValue) {
   return { valid: true, canonicalValue: canonical, allowedTypes };
 }
 
+const {
+  ORGANIZATION_ALWAYS_VISIBLE_FIELD_KEYS,
+  normalizeFieldKey: normalizeOrgFieldKey,
+  getOrganizationTypeScopedFieldPool
+} = require('../constants/organizationTypeDefaults');
+
+const ORGANIZATION_SYSTEM_EXCLUDED_KEYS = new Set([
+  'organizationid',
+  '_id',
+  '__v',
+  'createdat',
+  'updatedat',
+  'createdby',
+  'modifiedby',
+  'derivedstatus',
+  'deletedat',
+  'deletedby',
+  'deletionreason',
+  'legacyorganizationid',
+  'istenant',
+  'slug',
+  'enabledapps',
+  'enabledmodules'
+]);
+
+/**
+ * Field keys tenants may assign per organization type in Status & Types settings.
+ */
+async function collectAllowedOrganizationTypeScopedFieldKeys(organizationId) {
+  const allowed = new Set(getOrganizationTypeScopedFieldPool());
+
+  try {
+    const platformMod = await ModuleDefinition.findOne({
+      moduleKey: 'organizations'
+    })
+      .select('fields')
+      .lean();
+
+    const addFields = (fields) => {
+      if (!Array.isArray(fields)) return;
+      for (const f of fields) {
+        const key = String(f?.key ?? '').trim();
+        if (!key) continue;
+        const nk = normalizeOrgFieldKey(key);
+        if (ORGANIZATION_ALWAYS_VISIBLE_FIELD_KEYS.has(nk)) continue;
+        if (ORGANIZATION_SYSTEM_EXCLUDED_KEYS.has(nk)) continue;
+        if (nk.startsWith('subscription') || nk.startsWith('limits') || nk.startsWith('settings')) continue;
+        allowed.add(key);
+      }
+    };
+
+    addFields(platformMod?.fields);
+
+    const tenantRows = await TenantModuleConfiguration.find({
+      organizationId,
+      moduleKey: 'organizations'
+    })
+      .select('fields')
+      .lean();
+
+    for (const row of tenantRows) {
+      addFields(row.fields);
+    }
+  } catch (error) {
+    console.error('[tenantMetadata] collectAllowedOrganizationTypeScopedFieldKeys:', error);
+  }
+
+  return allowed;
+}
+
+/**
+ * Validate organization type rows from status-types PATCH (fields per type).
+ * @param {unknown} typesIn
+ * @param {{ allowedFieldKeys?: Set<string> }} [options]
+ */
+function sanitizeOrganizationTypeDefsForSave(typesIn, options = {}) {
+  if (!Array.isArray(typesIn)) {
+    return { ok: false, message: 'organizationTypes must be an array' };
+  }
+  const allowedFieldKeys = options.allowedFieldKeys;
+  const validateFields = allowedFieldKeys instanceof Set && allowedFieldKeys.size > 0;
+
+  const normalizedDefs = [];
+  const seen = new Set();
+
+  for (let i = 0; i < typesIn.length; i++) {
+    const item = typesIn[i];
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      return { ok: false, message: 'Each organization type must be an object with value' };
+    }
+
+    const value = String(item.value ?? item.label ?? '').trim();
+    if (!value) {
+      return { ok: false, message: 'Organization type names cannot be empty' };
+    }
+    if (isRetiredOrganizationType(value)) {
+      continue;
+    }
+    const low = value.toLowerCase();
+    if (seen.has(low)) {
+      return { ok: false, message: 'Duplicate organization type names are not allowed' };
+    }
+    seen.add(low);
+
+    const row = {
+      value,
+      label: String(item.label ?? value).trim() || value,
+      enabled: item.enabled !== undefined ? Boolean(item.enabled) : true
+    };
+
+    if (Array.isArray(item.fields)) {
+      if (item.fields.length > 0 && !validateFields) {
+        return {
+          ok: false,
+          message:
+            'Per-type fields are not available until organization fields exist in Modules & Fields.'
+        };
+      }
+      const fieldsArr = [];
+      const seenF = new Set();
+      for (let j = 0; j < item.fields.length; j++) {
+        const raw = item.fields[j];
+        const fk = String(raw ?? '').trim();
+        if (!fk) continue;
+        const flo = fk.toLowerCase();
+        if (seenF.has(flo)) continue;
+        seenF.add(flo);
+        if (validateFields) {
+          let canon = null;
+          for (const ak of allowedFieldKeys) {
+            if (String(ak).toLowerCase() === flo) {
+              canon = ak;
+              break;
+            }
+          }
+          if (!canon) {
+            return { ok: false, message: `Invalid field "${fk}" for organization type "${value}"` };
+          }
+          fieldsArr.push(canon);
+        } else {
+          fieldsArr.push(fk);
+        }
+      }
+      row.fields = fieldsArr;
+    }
+
+    normalizedDefs.push(row);
+  }
+
+  if (normalizedDefs.length < 1) {
+    return { ok: false, message: 'At least one organization type is required' };
+  }
+
+  return { ok: true, typeDefs: normalizedDefs };
+}
+
+function normalizeOrganizationTypesFromConfig(rawTypes) {
+  if (!Array.isArray(rawTypes) || rawTypes.length === 0) return [];
+  const out = [];
+  for (let i = 0; i < rawTypes.length; i++) {
+    const item = rawTypes[i];
+    if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+    const value = String(item.value ?? item.label ?? '').trim();
+    if (!value) continue;
+    if (isRetiredOrganizationType(value)) continue;
+    const row = {
+      value,
+      label: String(item.label ?? value).trim() || value,
+      enabled: item.enabled !== undefined ? Boolean(item.enabled) : true
+    };
+    if (Array.isArray(item.fields)) {
+      row.fields = item.fields.map((x) => String(x ?? '').trim()).filter(Boolean);
+    }
+    out.push(row);
+  }
+  return out;
+}
+
+async function findOrganizationsTenantConfig(organizationId) {
+  const appPriority = ['SALES', 'HELPDESK', 'AUDIT', 'PORTAL', 'LMS'];
+  for (const appKey of appPriority) {
+    const row = await TenantModuleConfiguration.findOne({
+      organizationId,
+      appKey,
+      moduleKey: 'organizations'
+    }).lean();
+    if (row) return row;
+  }
+  return TenantModuleConfiguration.findOne({
+    organizationId,
+    moduleKey: 'organizations'
+  }).lean();
+}
+
+async function maybeCleanupRetiredOrganizationTypesForTenant(organizationId) {
+  if (!organizationId) return false;
+  let changed = false;
+
+  const tenantConfig = await findOrganizationsTenantConfig(organizationId);
+  if (tenantConfig?._id && Array.isArray(tenantConfig.settings?.statusTypes?.organizationTypes)) {
+    const raw = tenantConfig.settings.statusTypes.organizationTypes;
+    const filtered = raw.filter(
+      (item) => !isRetiredOrganizationType(item?.value ?? item?.label)
+    );
+    if (filtered.length !== raw.length) {
+      await TenantModuleConfiguration.updateOne(
+        { _id: tenantConfig._id },
+        {
+          $set: {
+            'settings.statusTypes.organizationTypes': normalizeOrganizationTypesFromConfig(filtered),
+          },
+        }
+      );
+      changed = true;
+    }
+  }
+
+  const mod = await ModuleDefinition.findOne({
+    organizationId,
+    key: 'organizations',
+  }).select('+fields');
+  if (mod?.fields) {
+    const { fields: nextFields, removed } = stripRetiredOrganizationTypesFromModuleFields(mod.fields);
+    if (removed) {
+      mod.fields = nextFields;
+      mod.markModified('fields');
+      await mod.save();
+      changed = true;
+    }
+  }
+
+  return changed;
+}
+
+/**
+ * Resolved organization type definitions for runtime field visibility.
+ * @returns {Promise<{ typeDefs: Array<{value: string, label: string, enabled: boolean, fields?: string[]}> }>}
+ */
+async function getOrganizationTypesConfig(organizationId) {
+  try {
+    await maybeCleanupRetiredOrganizationTypesForTenant(organizationId);
+    const tenantConfig = await findOrganizationsTenantConfig(organizationId);
+    const statusTypes = tenantConfig?.settings?.statusTypes;
+    const typeDefs = normalizeOrganizationTypesFromConfig(statusTypes?.organizationTypes);
+    const rawStatusPicklists =
+      statusTypes?.statusPicklists && typeof statusTypes.statusPicklists === 'object'
+        ? statusTypes.statusPicklists
+        : null;
+    const statusPicklists = mergeOrganizationStatusPicklistsWithDefaults(rawStatusPicklists);
+    if (typeDefs.length > 0 || rawStatusPicklists) {
+      return { typeDefs, statusPicklists };
+    }
+    if (
+      statusPicklists.customerStatus.length > 0 ||
+      statusPicklists.partnerStatus.length > 0 ||
+      statusPicklists.vendorStatus.length > 0
+    ) {
+      return { typeDefs, statusPicklists };
+    }
+  } catch (error) {
+    console.error('[tenantMetadata] getOrganizationTypesConfig:', error);
+  }
+  return { typeDefs: [], statusPicklists: mergeOrganizationStatusPicklistsWithDefaults(null) };
+}
+
+const DEFAULT_ORGANIZATION_TYPE_OPTIONS = [
+  'Customer',
+  'Partner',
+  'Vendor',
+];
+
+/**
+ * Picklist options for Organizations `types` field (enabled types only).
+ */
+function typeDefsToOrganizationTypePicklistOptions(typeDefs) {
+  const defs = (Array.isArray(typeDefs) ? typeDefs : []).filter(
+    (d) => d && !isRetiredOrganizationType(d.value ?? d.label)
+  );
+  const enabled = defs.filter((d) => d && d.enabled !== false);
+  const source = enabled.length > 0 ? enabled : DEFAULT_ORGANIZATION_TYPE_OPTIONS.map((value) => ({ value, label: value, enabled: true }));
+  return source.map((d) => {
+    if (typeof d === 'string') {
+      return { value: d, label: d };
+    }
+    const value = String(d.value ?? d.label ?? '').trim();
+    if (!value) return null;
+    return {
+      value,
+      label: String(d.label ?? value).trim() || value,
+      ...(d.color ? { color: d.color } : {}),
+    };
+  }).filter(Boolean);
+}
+
+function normalizePicklistOptionValue(option) {
+  if (option == null) return '';
+  if (typeof option === 'object') return String(option.value ?? option.label ?? '').trim();
+  return String(option).trim();
+}
+
+/**
+ * Enabled status values from Status & Types policy, merged with field catalog colors.
+ * Returns null when no tenant policy exists (caller keeps module catalog options).
+ */
+function statusPicklistPolicyToOptions(policyRows, fieldOptions) {
+  if (!Array.isArray(policyRows)) return null;
+  const enabledRows = policyRows.filter((row) => row && row.enabled !== false);
+  if (policyRows.length === 0) return null;
+  const catalog = Array.isArray(fieldOptions) ? fieldOptions : [];
+  return enabledRows.map((row) => {
+    const value = String(row.value ?? row.label ?? '').trim();
+    if (!value) return null;
+    const catalogMatch = catalog.find(
+      (opt) => normalizePicklistOptionValue(opt).toLowerCase() === value.toLowerCase()
+    );
+    const color =
+      row.color ||
+      (catalogMatch && typeof catalogMatch === 'object' ? catalogMatch.color : null) ||
+      null;
+    return {
+      value,
+      label: String(row.label ?? value).trim() || value,
+      ...(color ? { color } : {}),
+    };
+  }).filter(Boolean);
+}
+
 module.exports = {
   getEnabledAppsForTenant,
   getEnabledModulesForApp,
@@ -817,6 +1152,16 @@ module.exports = {
   validatePeopleType,
   sanitizePeopleTypeDefsForSave,
   collectAllowedPeopleParticipationFieldKeys,
+  sanitizeOrganizationTypeDefsForSave,
+  collectAllowedOrganizationTypeScopedFieldKeys,
+  getOrganizationTypesConfig,
+  maybeCleanupRetiredOrganizationTypesForTenant,
+  getDefaultOrganizationStatusFieldOptions,
+  mergeOrganizationStatusPicklistsWithDefaults,
+  normalizeOrganizationTypesFromConfig,
+  typeDefsToOrganizationTypePicklistOptions,
+  statusPicklistPolicyToOptions,
+  normalizePicklistOptionValue,
   typeDefsToPeopleTypePicklistOptions,
   DEFAULT_PEOPLE_TYPES
 };

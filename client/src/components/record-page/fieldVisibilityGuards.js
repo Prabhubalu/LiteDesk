@@ -2,6 +2,8 @@ import { isGlobalSystemFieldKey, isSystemField, isFieldHiddenForUser } from '@/p
 import { getFieldMetadataFromRegistry, normalizeModuleKeyForRegistry } from '@/platform/fields/FieldRegistry';
 import { useAuthStore } from '@/stores/authRegistry';
 import { shouldHideFieldWhenInventoryDisabled } from '@/utils/inventoryCapability';
+import { shouldHidePeopleSalutationFormField } from '@/platform/fields/peopleSalutationField';
+import { shouldShowOrganizationFieldForTypes } from '@/platform/fields/organizationFieldModel';
 
 const DETAIL_SYSTEM_FIELD_KEYS = new Set([
   '_id',
@@ -69,6 +71,19 @@ export function shouldHideDetailField(field, moduleKey, options = {}) {
     return true;
   }
 
+  if (shouldHidePeopleSalutationFormField(normalizedModuleKey, key)) {
+    return true;
+  }
+
+  if (normalizedModuleKey === 'organizations' && options.organizationSelectedTypes != null) {
+    const typeDefs = options.organizationTypeDefs ?? null;
+    if (
+      !shouldShowOrganizationFieldForTypes(key, options.organizationSelectedTypes, typeDefs)
+    ) {
+      return true;
+    }
+  }
+
   if (normalizedModuleKey && typeof isFieldHiddenForUser === 'function' && isFieldHiddenForUser(normalizedModuleKey, { key })) {
     return true;
   }
@@ -111,6 +126,18 @@ export function shouldHideRecordPaneDetailField(field, moduleKey, options = {}) 
   const normalizedModuleKey = String(moduleKey || '').toLowerCase().trim();
   if (shouldHideFieldWhenInventoryDisabled(normalizedModuleKey, key, resolveInventoryEnabled(options))) {
     return true;
+  }
+
+  if (shouldHidePeopleSalutationFormField(normalizedModuleKey, key)) {
+    return true;
+  }
+  if (normalizedModuleKey === 'organizations' && options.organizationSelectedTypes != null) {
+    const typeDefs = options.organizationTypeDefs ?? null;
+    if (
+      !shouldShowOrganizationFieldForTypes(key, options.organizationSelectedTypes, typeDefs)
+    ) {
+      return true;
+    }
   }
   const nk = normalizeFieldGuardKey(key);
   if (RECORD_PANE_NEVER_SHOW_KEYS.has(nk)) return true;

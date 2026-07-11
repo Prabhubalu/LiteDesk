@@ -7,6 +7,9 @@
  * Run this once when setting up your Arivu instance.
  * 
  * Usage: node scripts/createDefaultAdmin.js
+ *
+ * Optional: DEFAULT_ADMIN_RESET_ONBOARDING=true re-opens the founder wizard
+ * for an existing default admin (local testing).
  */
 
 // Load environment variables from parent directory
@@ -21,12 +24,130 @@ const { INSTANCE_STATUS } = require('../constants/instanceLifecycle');
 const { ensureDefaultCommunicationSettingsForOrganization } = require('../services/communicationDefaultsSeeder');
 const { ensureOrgEmailPolicy } = require('../services/orgEmailPolicyService');
 const { getMongoUris, connectMasterWithRetry } = require('../lib/mongoConnect');
+const {
+    initializeOnboardingForUser,
+    ONBOARDING_ORIGINS
+} = require('../services/onboardingService');
+const appRegistry = require('../constants/appRegistry');
+const { validateAppRole } = require('../utils/appAccessUtils');
+
+function getRegistryAppKeys() {
+    return Object.keys(appRegistry);
+}
+
+function buildDevEnabledApps() {
+    const now = new Date();
+    return getRegistryAppKeys().map((appKey) => ({
+        appKey,
+        status: 'ACTIVE',
+        enabledAt: now
+    }));
+}
+
+function getEnabledAppKeys(organization) {
+    return (organization.enabledApps || [])
+        .map((app) => (typeof app === 'string' ? app : app?.appKey))
+        .filter(Boolean)
+        .map((key) => String(key).toUpperCase());
+}
+
+function resolveOwnerRoleKey(appKey) {
+    const config = appRegistry[appKey];
+    if (!config) return 'USER';
+    if (config.roles.includes('ADMIN')) return 'ADMIN';
+    return config.defaultRole || 'USER';
+}
+
+async function ensureDevEnabledApps(organization) {
+    const existing = new Set(getEnabledAppKeys(organization));
+    let changed = false;
+
+    for (const appKey of getRegistryAppKeys()) {
+        if (existing.has(appKey)) continue;
+        organization.enabledApps = Array.isArray(organization.enabledApps) ? organization.enabledApps : [];
+        organization.enabledApps.push({
+            appKey,
+            status: 'ACTIVE',
+            enabledAt: new Date()
+        });
+        existing.add(appKey);
+        changed = true;
+    }
+
+    if (changed) {
+        await organization.save();
+    }
+
+    return changed;
+}
+
+async function ensureOwnerAppAccess(adminUser, organization) {
+    const enabledKeys = getEnabledAppKeys(organization);
+    const existing = new Set(
+        (adminUser.appAccess || [])
+            .filter((entry) => entry?.status === 'ACTIVE' && entry?.appKey)
+            .map((entry) => String(entry.appKey).toUpperCase())
+    );
+
+    let changed = false;
+    for (const appKey of enabledKeys) {
+        const config = appRegistry[appKey];
+        if (config && !config.userTypesAllowed.includes('INTERNAL')) continue;
+        if (existing.has(appKey)) continue;
+
+        const roleKey = resolveOwnerRoleKey(appKey);
+        if (!validateAppRole(appKey, roleKey)) continue;
+
+        adminUser.appAccess = Array.isArray(adminUser.appAccess) ? adminUser.appAccess : [];
+        adminUser.appAccess.push({
+            appKey,
+            roleKey,
+            status: 'ACTIVE',
+            addedAt: new Date()
+        });
+        existing.add(appKey);
+        changed = true;
+    }
+
+    if (changed) {
+        const internalApps = [...existing].filter((appKey) => {
+            const config = appRegistry[appKey];
+            return !config || config.userTypesAllowed.includes('INTERNAL');
+        });
+        adminUser.allowedApps = internalApps;
+        await adminUser.save();
+    }
+
+    return changed;
+}
 
 function slugFromOrganizationName(name) {
     return String(name)
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
+}
+
+async function ensureDefaultAdminOnboarding(user) {
+    if (!user) return false;
+
+    const shouldReset = process.env.DEFAULT_ADMIN_RESET_ONBOARDING === 'true';
+    const needsInit = !user.onboarding?.origin;
+
+    if (!needsInit && !shouldReset) {
+        return false;
+    }
+
+    if (shouldReset && user.onboarding?.origin) {
+        user.onboarding.completedAt = null;
+        user.onboarding.startedAt = null;
+        user.onboarding.goalKey = null;
+        user.onboarding.dismissedAt = null;
+    }
+
+    await initializeOnboardingForUser(user, { origin: ONBOARDING_ORIGINS.SELF_SERVE });
+    await user.save();
+    return true;
 }
 
 // Default Admin Credentials (use environment variables or defaults)
@@ -63,11 +184,20 @@ async function createDefaultAdmin() {
                 await existingAdmin.save();
                 upgraded = true;
             }
+            const onboardingInitialized = await ensureDefaultAdminOnboarding(existingAdmin);
+            const appsUpdated = await ensureDevEnabledApps(organization);
+            const accessUpdated = await ensureOwnerAppAccess(existingAdmin, organization);
             console.log('⚠️  Default admin and organization already exist — nothing to create.');
             console.log(`   Email: ${DEFAULT_ADMIN.email}`);
             console.log(`   Organization: ${organization.name} (${organization._id})`);
             if (upgraded) {
                 console.log('✅ Set isPlatformAdmin=true on existing default admin');
+            }
+            if (onboardingInitialized) {
+                console.log('✅ Founder onboarding initialized — log in again to see /onboarding');
+            }
+            if (appsUpdated || accessUpdated) {
+                console.log('✅ Ensured all dev apps are enabled for default admin');
             }
             await ensureDefaultCommunicationSettingsForOrganization(organization._id);
             try {
@@ -131,20 +261,8 @@ async function createDefaultAdmin() {
                 'demo_requests',
                 'instances'
             ],
-            // Master organization starts with Sales, Audit, and Portal enabled
-            enabledApps: [{
-                appKey: 'SALES',
-                status: 'ACTIVE',
-                enabledAt: new Date()
-            }, {
-                appKey: 'AUDIT',
-                status: 'ACTIVE',
-                enabledAt: new Date()
-            }, {
-                appKey: 'PORTAL',
-                status: 'ACTIVE',
-                enabledAt: new Date()
-            }]
+            // Local dev master tenant: enable every registry app for full product testing.
+            enabledApps: buildDevEnabledApps()
             });
 
             await organization.save();
@@ -179,32 +297,15 @@ async function createDefaultAdmin() {
         // Create Admin User
         console.log('\n👤 Creating Admin User...');
         const { APP_KEYS } = require('../constants/appKeys');
-        const { validateAppRole } = require('../utils/appAccessUtils');
         
         if (organization.isModified('assignedTo') || organization.isModified('createdBy')) {
             await organization.save();
         }
 
-        // Ensure Sales app is present in enabledApps (preserve any other enabled apps like AUDIT/PORTAL)
-        if (!organization.enabledApps || !organization.enabledApps.some(app => {
-            const appKey = typeof app === 'string' ? app : app.appKey;
-            return appKey === APP_KEYS.SALES;
-        })) {
-            const existingApps = Array.isArray(organization.enabledApps) ? organization.enabledApps : [];
-            organization.enabledApps = [
-                ...existingApps,
-                {
-                    appKey: APP_KEYS.SALES,
-                    status: 'ACTIVE',
-                    enabledAt: new Date()
-                }
-            ];
-            await organization.save();
-            console.log('✅ Ensured organization.enabledApps includes SALES (existing apps preserved)');
-        }
+        await ensureDevEnabledApps(organization);
         
         // Ensure owner has Sales: ADMIN access
-        const salesRoleKey = 'ADMIN';
+        const salesRoleKey = resolveOwnerRoleKey(APP_KEYS.SALES);
         if (!validateAppRole(APP_KEYS.SALES, salesRoleKey)) {
             throw new Error(`Invalid Sales roleKey: ${salesRoleKey}`);
         }
@@ -240,6 +341,8 @@ async function createDefaultAdmin() {
         }
 
         await adminUser.save();
+        await ensureOwnerAppAccess(adminUser, organization);
+        await ensureDefaultAdminOnboarding(adminUser);
 
         if (!organization.assignedTo) {
             organization.assignedTo = adminUser._id;
@@ -290,7 +393,8 @@ async function createDefaultAdmin() {
         console.log('   Go to Settings → Update Password\n');
         console.log('='.repeat(60));
         console.log('\n✅ You can now login at: http://localhost:5173');
-        console.log('   Click "Admin Login" and use the credentials above.\n');
+        console.log('   Click "Admin Login" and use the credentials above.');
+        console.log('   Founder onboarding will run on first login (/onboarding).\n');
 
         await mongoose.connection.close();
         console.log('✅ Database connection closed\n');

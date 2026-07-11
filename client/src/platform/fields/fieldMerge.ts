@@ -83,7 +83,7 @@ const FIELD_KEY_DATA_TYPE: Record<string, string> = {
 };
 
 function metadataLabelFromKey(fieldKey: string): string {
-  const keyLower = (fieldKey || '').toLowerCase();
+  const keyLower = (fieldKey || '').toLowerCase().replace(/[\s_-]+/g, '');
   const labelMap: Record<string, string> = {
     createdat: 'Created At',
     updatedat: 'Updated At',
@@ -97,21 +97,36 @@ function metadataLabelFromKey(fieldKey: string): string {
     completedat: 'Completed At',
     activitylogs: 'Activity Logs',
     item_id: 'Item ID',
+    itemid: 'Item ID',
     item_name: 'Item Name',
+    itemname: 'Item Name',
     item_code: 'Item Code',
+    itemcode: 'Item Code',
     item_type: 'Item Type',
-    lifecycle_state: 'Lifecycle State',
+    itemtype: 'Item Type',
+    lifecycle_state: 'Status',
+    lifecyclestate: 'Status',
     category: 'Category (legacy)',
     categoryid: 'Category',
     subcategory: 'Subcategory (legacy)',
     selling_price: 'Selling Price',
+    sellingprice: 'Selling Price',
     cost_price: 'Cost Price',
+    costprice: 'Cost Price',
     unit_of_measure: 'Unit of Measure',
+    unitofmeasure: 'Unit of Measure',
     tax_type: 'Tax Type',
+    taxtype: 'Tax Type',
     tax_percentage: 'Tax Percentage',
+    taxpercentage: 'Tax Percentage',
     commission_rate: 'Commission Rate',
+    commissionrate: 'Commission Rate',
     stock_quantity: 'Stock Quantity',
+    stockquantity: 'Stock Quantity',
     reorder_level: 'Reorder Level',
+    reorderlevel: 'Reorder Level',
+    contactid: 'Contact',
+    organizationrefid: 'Organization',
   };
   if (labelMap[keyLower]) return labelMap[keyLower];
   return fieldKey
@@ -211,6 +226,15 @@ export function mergeFields(
     const merged = { ...f };
     if (meta !== undefined) {
       merged.editable = getIsEditableBase(meta);
+    }
+    // Canonical human labels for technical keys (overrides stored API labels)
+    const friendlyLabel = metadataLabelFromKey(f.key);
+    if (
+      (k === 'contactid' || k === 'organizationrefid' || k === 'lifecycle_state' || k === 'categoryid') &&
+      friendlyLabel &&
+      friendlyLabel !== f.label
+    ) {
+      merged.label = friendlyLabel;
     }
     result.push(merged);
   }

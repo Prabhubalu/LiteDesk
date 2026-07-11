@@ -10,9 +10,10 @@ import {
   normalizePicklistColorKey,
   getSemanticPicklistColor,
   backfillPicklistOptionColors,
+  picklistChipStyle,
 } from '@/utils/picklistColorPalette';
 
-export { LEAD_STATUS_OPTION_COLORS, CONTACT_STATUS_OPTION_COLORS, normalizePicklistColorKey };
+export { LEAD_STATUS_OPTION_COLORS, CONTACT_STATUS_OPTION_COLORS, normalizePicklistColorKey, picklistChipStyle };
 
 export function getDefaultParticipationPicklistColor(fieldKey: string, value: unknown): string {
   const semantic = getSemanticPicklistColor(fieldKey, value, 'people');
@@ -51,9 +52,5 @@ export function getContrastColor(hexColor: string): string {
 }
 
 export function picklistBadgeStyle(hexColor: string | null | undefined): Record<string, string> {
-  if (!hexColor) return {};
-  return {
-    backgroundColor: hexColor,
-    color: getContrastColor(hexColor),
-  };
+  return picklistChipStyle(hexColor);
 }

@@ -20,13 +20,16 @@
 
 /**
  * Sync legacy contactId → dealPeople array
- * Ensures a dealPeople entry exists with role=primary_contact, isPrimary=true
- * 
+ * Ensures a dealPeople entry exists for contactId with isPrimary=true.
+ * Role is independent of Primary; new rows default to decision_maker.
+ *
  * @param {Object} deal - Deal document
  * @param {ObjectId} userId - User ID for audit
  * @returns {Promise<void>}
  */
 async function syncContactIdToDealPeople(deal, userId) {
+  const { normalizeDealPersonRole, DEAL_PERSON_ROLE_DECISION_MAKER } = require('../constants/dealPeopleRoles');
+
   if (!deal.contactId) {
     return;
   }
@@ -37,31 +40,35 @@ async function syncContactIdToDealPeople(deal, userId) {
 
   const contactIdStr = deal.contactId.toString();
 
-  // Ensure only one primary contact: clear isPrimary on other primary_contact entries
+  // Exactly one primary person: clear isPrimary on other entries (do not change their roles)
   for (const p of deal.dealPeople) {
-    if (p.role === 'primary_contact' && p.personId && p.personId.toString() !== contactIdStr) {
+    if (p.personId && p.personId.toString() !== contactIdStr) {
       p.isPrimary = false;
+    }
+    if (p.role) {
+      p.role = normalizeDealPersonRole(p.role, DEAL_PERSON_ROLE_DECISION_MAKER);
     }
   }
 
-  const existingPrimary = deal.dealPeople.find(
-    (p) => p.personId && p.personId.toString() === contactIdStr && p.role === 'primary_contact'
+  const existing = deal.dealPeople.find(
+    (p) => p.personId && p.personId.toString() === contactIdStr
   );
 
-  if (!existingPrimary) {
+  if (!existing) {
     deal.dealPeople.push({
       personId: deal.contactId,
-      role: 'primary_contact',
+      role: DEAL_PERSON_ROLE_DECISION_MAKER,
       isPrimary: true,
       isActive: true,
       addedAt: new Date(),
       addedBy: userId
     });
   } else {
-    existingPrimary.isPrimary = true;
-    existingPrimary.isActive = true;
-    if (!existingPrimary.addedBy) {
-      existingPrimary.addedBy = userId;
+    existing.isPrimary = true;
+    existing.isActive = true;
+    existing.role = normalizeDealPersonRole(existing.role, DEAL_PERSON_ROLE_DECISION_MAKER);
+    if (!existing.addedBy) {
+      existing.addedBy = userId;
     }
   }
 }
@@ -137,7 +144,8 @@ async function syncLegacyToRoleBased(deal, userId) {
  */
 async function syncRoleBasedToLegacy(deal) {
   if (deal.dealPeople && Array.isArray(deal.dealPeople)) {
-    const primaryContact = deal.dealPeople.find((p) => p.isPrimary && p.isActive && p.role === 'primary_contact');
+    // Primary is independent of role — sync contactId from isPrimary only
+    const primaryContact = deal.dealPeople.find((p) => p.isPrimary && p.isActive);
     if (primaryContact && primaryContact.personId) {
       deal.contactId = primaryContact.personId;
     }
@@ -156,21 +164,34 @@ async function syncRoleBasedToLegacy(deal) {
  * 
  * @param {Object} deal - Deal document
  * @param {ObjectId} personId - People ID
- * @param {string} role - Role (e.g., 'primary_contact', 'decision_maker', 'influencer')
- * @param {boolean} isPrimary - Whether this is the primary person for this role
+ * @param {string} role - Deal Person Role (decision_maker|champion|influencer|…)
+ * @param {boolean} isPrimary - Whether this is the primary person on the deal (independent of role)
  * @param {ObjectId} userId - User ID for audit
  * @returns {Promise<Object>} - The relationship entry
  */
 async function addDealPerson(deal, personId, role, isPrimary = false, userId = null) {
+  const { normalizeDealPersonRole, DEAL_PERSON_ROLE_DECISION_MAKER } = require('../constants/dealPeopleRoles');
+
   if (!deal.dealPeople) {
     deal.dealPeople = [];
   }
 
+  const nextRole = normalizeDealPersonRole(role, DEAL_PERSON_ROLE_DECISION_MAKER);
+  // One person per deal — update existing row instead of creating another
   const existing = deal.dealPeople.find(
-    (p) => p.personId && p.personId.toString() === personId.toString() && p.role === role
+    (p) => p.personId && p.personId.toString() === personId.toString()
   );
 
+  if (isPrimary) {
+    for (const p of deal.dealPeople) {
+      if (p.personId && p.personId.toString() !== personId.toString()) {
+        p.isPrimary = false;
+      }
+    }
+  }
+
   if (existing) {
+    existing.role = nextRole;
     existing.isPrimary = isPrimary;
     existing.isActive = true;
     if (!existing.addedBy) {
@@ -181,7 +202,7 @@ async function addDealPerson(deal, personId, role, isPrimary = false, userId = n
 
   const newEntry = {
     personId,
-    role,
+    role: nextRole,
     isPrimary,
     isActive: true,
     addedAt: new Date(),
@@ -197,8 +218,8 @@ async function addDealPerson(deal, personId, role, isPrimary = false, userId = n
  * 
  * @param {Object} deal - Deal document
  * @param {ObjectId} organizationId - Organization ID
- * @param {string} role - Role (e.g., 'customer', 'partner', 'reseller')
- * @param {boolean} isPrimary - Whether this is the primary organization for this role
+ * @param {string} role - Deal Relationship Role (customer|partner|reseller|distributor|vendor|other)
+ * @param {boolean} isPrimary - Whether this is the primary organization (must be customer)
  * @param {ObjectId} userId - User ID for audit
  * @returns {Promise<Object>} - The relationship entry
  */

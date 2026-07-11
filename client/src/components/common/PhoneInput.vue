@@ -50,6 +50,7 @@
         leave-to-class="opacity-0 translate-y-1 scale-95"
       >
         <PopoverPanel
+          v-if="open"
           ref="panelRef"
           :style="panelStyle"
           :class="[
@@ -80,6 +81,7 @@
 
   <div v-else :class="inlineWrapperClass">
     <Listbox
+      v-slot="{ open: countryOpen }"
       :model-value="selectedCountry.iso2"
       :disabled="disabled"
       @update:model-value="handleCountryChange"
@@ -104,6 +106,7 @@
         leave-to-class="opacity-0"
       >
         <ListboxOptions
+          v-if="countryOpen"
           ref="countryOptionsRef"
           :style="countryListPanelStyle"
           class="fixed z-[120] mt-0 max-h-72 w-72 overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:bg-gray-700 dark:ring-white/10"

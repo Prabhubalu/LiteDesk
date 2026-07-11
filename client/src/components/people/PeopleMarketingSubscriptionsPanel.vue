@@ -1,4 +1,5 @@
 <template>
+  <div>
   <section
     v-if="visible"
     class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900"
@@ -71,6 +72,7 @@
       </div>
     </template>
   </section>
+  </div>
 </template>
 
 <script setup>
@@ -91,8 +93,19 @@ const error = ref('');
 const preference = ref(null);
 const history = ref([]);
 
+const marketingAppEnabled = computed(() => {
+  const enabledApps = authStore.organization?.enabledApps;
+  if (!Array.isArray(enabledApps)) return false;
+  return enabledApps.some((app) => {
+    const key = (typeof app === 'string' ? app : app?.appKey || '').toUpperCase();
+    const active = typeof app === 'object' ? app.status === 'ACTIVE' : true;
+    return key === 'MARKETING' && active;
+  });
+});
+
 const visible = computed(() =>
   Boolean(props.peopleId) &&
+  marketingAppEnabled.value &&
   (authStore.can('audiences', 'view') || authStore.can('campaigns', 'view'))
 );
 

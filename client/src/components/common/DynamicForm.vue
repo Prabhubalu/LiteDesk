@@ -47,8 +47,11 @@
             :dependency-state="getFieldState(getFieldByKey(col.fieldKey))"
             :locked="props.lockedFields.includes(col.fieldKey)"
             :module-key="props.moduleKey"
-            :form-context="props.moduleKey === 'events' ? localFormData : null"
+            :form-context="localFormData"
             @update:form-context="applyFormContextPatch"
+            :salutation-value="localFormData.salutation ?? ''"
+            :salutation-options="peopleSalutationOptions"
+            @update:salutation-value="onSalutationFieldUpdate"
           />
         </div>
       </div>
@@ -117,8 +120,11 @@
                 :dependency-state="getFieldState(field)"
                 :locked="props.lockedFields.includes(field.key)"
                 :module-key="props.moduleKey"
-                :form-context="props.moduleKey === 'events' ? localFormData : null"
+                :form-context="localFormData"
                 @update:form-context="applyFormContextPatch"
+                :salutation-value="localFormData.salutation ?? ''"
+                :salutation-options="peopleSalutationOptions"
+                @update:salutation-value="onSalutationFieldUpdate"
               />
             </div>
           </div>
@@ -188,8 +194,11 @@
                 :dependency-state="getFieldState(field)"
                 :locked="props.lockedFields.includes(field.key)"
                 :module-key="props.moduleKey"
-                :form-context="props.moduleKey === 'events' ? localFormData : null"
+                :form-context="localFormData"
                 @update:form-context="applyFormContextPatch"
+                :salutation-value="localFormData.salutation ?? ''"
+                :salutation-options="peopleSalutationOptions"
+                @update:salutation-value="onSalutationFieldUpdate"
               />
             </div>
           </div>
@@ -250,8 +259,11 @@
               :dependency-state="getFieldState(field)"
               :locked="props.lockedFields.includes(field.key)"
               :module-key="props.moduleKey"
-              :form-context="props.moduleKey === 'events' ? localFormData : null"
+              :form-context="localFormData"
               @update:form-context="applyFormContextPatch"
+              :salutation-value="localFormData.salutation ?? ''"
+              :salutation-options="peopleSalutationOptions"
+              @update:salutation-value="onSalutationFieldUpdate"
             />
           </div>
         </div>
@@ -311,8 +323,11 @@
               :dependency-state="getFieldState(field)"
               :locked="props.lockedFields.includes(field.key)"
               :module-key="props.moduleKey"
-              :form-context="props.moduleKey === 'events' ? localFormData : null"
+              :form-context="localFormData"
               @update:form-context="applyFormContextPatch"
+              :salutation-value="localFormData.salutation ?? ''"
+              :salutation-options="peopleSalutationOptions"
+              @update:salutation-value="onSalutationFieldUpdate"
             />
           </div>
         </div>
@@ -371,8 +386,11 @@
             :dependency-state="getFieldState(field)"
             :locked="props.lockedFields.includes(field.key)"
             :module-key="props.moduleKey"
-            :form-context="props.moduleKey === 'events' ? localFormData : null"
+            :form-context="localFormData"
             @update:form-context="applyFormContextPatch"
+            :salutation-value="localFormData.salutation ?? ''"
+            :salutation-options="peopleSalutationOptions"
+            @update:salutation-value="onSalutationFieldUpdate"
           />
         </div>
       </div>
@@ -410,8 +428,12 @@ import {
   getPeopleRegistryItem,
 } from '@/utils/getFieldValue';
 import { mergePeopleVirtualFieldDefinitions } from '@/platform/fields/peopleFieldModel';
+import {
+  getPeopleSalutationOptionsFromModuleFields,
+  shouldHidePeopleSalutationFormField,
+} from '@/platform/fields/peopleSalutationField';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
-import { DEFAULT_CURRENCY_CODE } from '@/utils/currencyOptions';
+import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useRoute } from 'vue-router';
 import { resolveFieldContext, filterFieldsByContext } from '@/utils/fieldContextFilter';
@@ -423,6 +445,13 @@ import {
   isFieldVisibleInConfig
 } from '@/platform/fields/fieldCapabilityEngine';
 import { getQuoteFieldMetadata } from '@/platform/fields/quoteFieldModel';
+import {
+  shouldShowOrganizationFieldForTypes,
+  ORGANIZATION_INTENT_STATUS_FIELD_KEYS,
+} from '@/platform/fields/organizationFieldModel';
+import { getAllowedStatusesForOrganizationStatusField } from '@/platform/organizations/organizationIntents';
+import { useOrganizationTypes } from '@/composables/useOrganizationTypes';
+import { organizationTypeDefsToPicklistOptions } from '@/utils/organizationTypeConfig';
 
 const _c = globalThis.console;
 function formDbg(...args) {
@@ -495,6 +524,7 @@ const loading = ref(true);
 const localFormData = ref({ ...props.formData });
 const error = ref(null);
 const authStore = useAuthStore();
+const { typeDefs: organizationTypeDefs } = useOrganizationTypes();
 const route = useRoute();
 
 // Get current context from route or use provided context prop
@@ -617,6 +647,7 @@ const orderedFields = computed(() => {
     // Map override field keys to actual field objects from module definition
     // (respect current context and dependency visibility, same as default path)
     let allFields = filterFieldsByContext(moduleDefinition.value?.fields || [], currentContext.value);
+    allFields = filterPeopleCompanionFields(props.moduleKey, allFields);
     if (props.moduleKey?.toLowerCase() === 'tasks') {
       const hasRelatedTo = allFields.some((f) => String(f?.key).toLowerCase() === 'relatedto');
       if (!hasRelatedTo) {
@@ -690,6 +721,7 @@ const orderedFields = computed(() => {
   
   // Filter fields by context first
   let allFields = filterFieldsByContext(moduleDefinition.value.fields || [], currentContext.value);
+  allFields = filterPeopleCompanionFields(props.moduleKey, allFields);
   // For tasks: ensure relatedTo and subtasks are in the list (like edit drawer) so they render in config order
   if (props.moduleKey?.toLowerCase() === 'tasks') {
     const hasRelatedTo = allFields.some((f) => String(f?.key).toLowerCase() === 'relatedto');
@@ -1226,8 +1258,18 @@ const getFieldComponent = (field) => {
 
 const shouldShowField = (field) => {
   if (!field || !field.key) return false;
+
+  if (shouldHidePeopleSalutationFormField(props.moduleKey, field.key)) return false;
+
+  const moduleKeyLower = String(props.moduleKey || '').toLowerCase();
+  if (moduleKeyLower === 'organizations') {
+    const selectedTypes = Array.isArray(localFormData.value?.types) ? localFormData.value.types : [];
+    if (!shouldShowOrganizationFieldForTypes(field.key, selectedTypes, organizationTypeDefs.value)) {
+      return false;
+    }
+  }
   
-  // Exclude fields specified in excludeFields prop (handles "Deleted By" vs "deletedBy")
+  // Exclude fields specified in excludeFields prop
   if (props.excludeFields && props.excludeFields.length > 0) {
     const fieldKeyNorm = normalizeFieldKeyForSystemMatch(field.key);
     if (props.excludeFields.some(excluded => normalizeFieldKeyForSystemMatch(excluded) === fieldKeyNorm)) {
@@ -1272,7 +1314,18 @@ const getFieldState = (field) => {
     organization: authStore.organization,
     moduleKey: props.moduleKey,
   });
-  return mergeOrgContactLookupForField(field, base, currentFormData, props.moduleKey, fields);
+  let state = mergeOrgContactLookupForField(field, base, currentFormData, props.moduleKey, fields);
+  if (
+    String(props.moduleKey || '').toLowerCase() === 'organizations' &&
+    ORGANIZATION_INTENT_STATUS_FIELD_KEYS.has(field.key)
+  ) {
+    const selectedTypes = Array.isArray(currentFormData?.types) ? currentFormData.types : [];
+    const allowed = getAllowedStatusesForOrganizationStatusField(field.key, selectedTypes);
+    if (allowed.length > 0) {
+      state = { ...state, allowedOptions: allowed };
+    }
+  }
+  return state;
 };
 
 function normalizedRelatedTo(val) {
@@ -1332,6 +1385,20 @@ function findMatchingKeyInObject(obj, candidateKey) {
   return Object.keys(obj).find((k) => String(k).toLowerCase() === candidateNorm) || null;
 }
 
+function filterPeopleCompanionFields(moduleKey, fields) {
+  if (String(moduleKey || '').toLowerCase() !== 'people' || !Array.isArray(fields)) return fields;
+  return fields.filter((field) => !shouldHidePeopleSalutationFormField(moduleKey, field?.key));
+}
+
+const peopleSalutationOptions = computed(() =>
+  getPeopleSalutationOptionsFromModuleFields(moduleDefinition.value?.fields)
+);
+
+function onSalutationFieldUpdate(value) {
+  const next = value == null || value === '' ? null : String(value);
+  updateField('salutation', next);
+}
+
 function findMatchingFieldKeyInModule(candidateKey) {
   const fields = moduleDefinition.value?.fields || [];
   const candidateNorm = String(candidateKey || '').toLowerCase();
@@ -1364,6 +1431,10 @@ function resolveCurrencyCompanionFieldKey(field) {
   return null;
 }
 
+function getOrgDefaultCurrencyCode() {
+  return resolveOrgCurrencyCode(authStore.organization);
+}
+
 function getCurrencyCodeForField(field) {
   if (!field || field.dataType !== 'Currency') return '';
   const companionKey = resolveCurrencyCompanionFieldKey(field);
@@ -1371,14 +1442,16 @@ function getCurrencyCodeForField(field) {
     const value = localFormData.value?.[companionKey];
     if (value) return String(value).toUpperCase();
   }
-  return String(field?.numberSettings?.currencyCode || field?.numberSettings?.currency || DEFAULT_CURRENCY_CODE).toUpperCase();
+  const explicit = field?.numberSettings?.currencyCode || field?.numberSettings?.currency;
+  if (explicit) return String(explicit).toUpperCase();
+  return getOrgDefaultCurrencyCode();
 }
 
 function updateCurrencyCodeForField(field, currencyCode) {
   if (!field || field.dataType !== 'Currency') return;
   const companionKey = resolveCurrencyCompanionFieldKey(field);
   if (!companionKey) return;
-  updateField(companionKey, String(currencyCode || DEFAULT_CURRENCY_CODE).toUpperCase());
+  updateField(companionKey, String(currencyCode || getOrgDefaultCurrencyCode()).toUpperCase());
 }
 
 // Generic dependency-driven value enforcement:
@@ -1457,18 +1530,55 @@ watch(() => props.formData, (newData) => {
 }, { deep: true });
 
 
-function applyModule(mod) {
-  if (!mod) return;
-  if ((mod.key || '').toLowerCase() === 'people' && Array.isArray(mod.fields)) {
-    mod.fields = mergePeopleVirtualFieldDefinitions(mod.fields);
+function enrichOrganizationModuleTypesField(mod, typeDefs) {
+  if (!mod || String(mod.key || '').toLowerCase() !== 'organizations' || !Array.isArray(mod.fields)) {
+    return mod;
   }
-  moduleDefinition.value = mod;
+  const typeOptions = organizationTypeDefsToPicklistOptions(typeDefs);
+  if (!typeOptions.length) return mod;
+  return {
+    ...mod,
+    fields: mod.fields.map((field) => {
+      if (String(field?.key || '').toLowerCase() !== 'types') return field;
+      return {
+        ...field,
+        options: typeOptions,
+        enum: typeOptions.map((option) => option.value),
+      };
+    }),
+  };
+}
+
+function applyModule(mod, { emitReady = true } = {}) {
+  if (!mod) return;
+  let next = mod;
+  if ((mod.key || '').toLowerCase() === 'people' && Array.isArray(mod.fields)) {
+    next = { ...next, fields: mergePeopleVirtualFieldDefinitions(mod.fields) };
+  }
+  if ((mod.key || '').toLowerCase() === 'organizations') {
+    next = enrichOrganizationModuleTypesField(next, organizationTypeDefs.value);
+  }
+  moduleDefinition.value = next;
   loading.value = false;
   error.value = null;
-  if (!mod.quickCreate) mod.quickCreate = [];
-  if (!mod.quickCreateLayout) mod.quickCreateLayout = { version: 1, rows: [] };
-  emit('ready', mod);
+  if (!next.quickCreate) next.quickCreate = [];
+  if (!next.quickCreateLayout) next.quickCreateLayout = { version: 1, rows: [] };
+  if (emitReady) emit('ready', next);
 }
+
+watch(
+  organizationTypeDefs,
+  () => {
+    const mod = moduleDefinition.value;
+    if (!mod || String(mod.key || '').toLowerCase() !== 'organizations') return;
+    const enriched = enrichOrganizationModuleTypesField(
+      { ...mod, fields: Array.isArray(mod.fields) ? [...mod.fields] : [] },
+      organizationTypeDefs.value
+    );
+    moduleDefinition.value = enriched;
+  },
+  { deep: true }
+);
 
 // Fetch module definition
 const fetchModule = async () => {
@@ -1477,7 +1587,7 @@ const fetchModule = async () => {
       moduleKey: props.moduleOverride?.key,
       quickCreateLength: props.moduleOverride?.quickCreate?.length
     });
-    applyModule(props.moduleOverride);
+    applyModule(props.moduleOverride, { emitReady: false });
     return;
   }
   loading.value = true;
@@ -1640,7 +1750,7 @@ onMounted(() => {
 watch(() => props.moduleOverride, (ov) => {
   if (ov) {
     formDbg('🔍 [DynamicForm] moduleOverride updated, applying:', { key: ov.key, quickCreateLength: ov.quickCreate?.length });
-    applyModule(ov);
+    applyModule(ov, { emitReady: false });
   }
 }, { immediate: false });
 

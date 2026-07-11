@@ -10,6 +10,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
+import { picklistChipStyle } from '@/utils/picklistColorPalette';
 
 const props = defineProps({
   value: {
@@ -61,33 +62,9 @@ const resolvedColor = computed(() => {
 });
 
 const customColorStyle = computed(() => {
-  if (resolvedColor.value) {
-    return {
-      backgroundColor: resolvedColor.value,
-      color: getContrastColor(resolvedColor.value)
-    };
-  }
-  return {};
+  if (!resolvedColor.value) return {};
+  return picklistChipStyle(resolvedColor.value);
 });
-
-// Get contrast color (black or white) based on background brightness
-function getContrastColor(hexColor) {
-  if (!hexColor) return '#1f2937';
-  
-  // Remove # if present
-  const hex = hexColor.replace('#', '');
-  
-  // Convert to RGB
-  const r = parseInt(hex.substr(0, 2), 16);
-  const g = parseInt(hex.substr(2, 2), 16);
-  const b = parseInt(hex.substr(4, 2), 16);
-  
-  // Calculate brightness using relative luminance formula
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  
-  // Return black for light colors, white for dark colors
-  return brightness > 155 ? '#1f2937' : '#ffffff';
-}
 
 const variantClass = computed(() => {
   // Only use variant class if no custom color is set
@@ -108,69 +85,83 @@ const variantClass = computed(() => {
   display: inline-flex;
   align-items: center;
   padding: 0.125rem 0.625rem;
-  border-radius: 9999px;
+  border-radius: 0.375rem;
   font-size: 0.75rem;
   font-weight: 500;
+  border: 1px solid transparent;
+  box-sizing: border-box;
 }
 
 .badge-default {
   background-color: #f3f4f6;
   color: #1f2937;
+  border-color: rgba(107, 114, 128, 0.28);
 }
 
 :global(.dark) .badge-default {
   background-color: #374151;
   color: #d1d5db;
+  border-color: rgba(156, 163, 175, 0.28);
 }
 
 .badge-primary {
   background-color: #ede9fe;
   color: #3a1f8a;
+  border-color: rgba(99, 102, 241, 0.28);
 }
 
 :global(.dark) .badge-primary {
   background-color: rgba(46, 24, 114, 0.3);
   color: #c4b5fd;
+  border-color: rgba(167, 139, 250, 0.28);
 }
 
 .badge-success {
   background-color: #dcfce7;
   color: #166534;
+  border-color: rgba(22, 163, 74, 0.28);
 }
 
 :global(.dark) .badge-success {
   background-color: rgba(22, 101, 52, 0.3);
   color: #86efac;
+  border-color: rgba(134, 239, 172, 0.28);
 }
 
 .badge-warning {
   background-color: #fef3c7;
   color: #854d0e;
+  border-color: rgba(217, 119, 6, 0.28);
 }
 
 :global(.dark) .badge-warning {
   background-color: rgba(133, 77, 14, 0.3);
   color: #fde047;
+  border-color: rgba(253, 224, 71, 0.28);
 }
 
 .badge-danger {
   background-color: #fee2e2;
   color: #991b1b;
+  border-color: rgba(220, 38, 38, 0.28);
 }
 
 :global(.dark) .badge-danger {
   background-color: rgba(153, 27, 27, 0.3);
   color: #fca5a5;
+  border-color: rgba(252, 165, 165, 0.28);
 }
 
 .badge-info {
   background-color: #dbeafe;
   color: #1e40af;
+  border-color: rgba(37, 99, 235, 0.28);
 }
 
 :global(.dark) .badge-info {
   background-color: rgba(30, 64, 175, 0.3);
   color: #93c5fd;
+  border-color: rgba(147, 197, 253, 0.28);
 }
 </style>
 

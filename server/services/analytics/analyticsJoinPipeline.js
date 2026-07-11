@@ -124,7 +124,6 @@ function resolveForeignIdExpr(join, primaryModule) {
                         $and: [
                           { $eq: ['$$entry.isPrimary', true] },
                           { $eq: ['$$entry.isActive', true] },
-                          { $eq: ['$$entry.role', 'primary_contact'] },
                         ],
                       },
                     },

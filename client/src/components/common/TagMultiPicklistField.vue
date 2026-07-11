@@ -1,43 +1,37 @@
 <template>
   <div class="relative">
     <div
-      :class="[
-        'w-full rounded-md transition-all text-base sm:text-sm/6',
-        disabled
-          ? 'bg-gray-100 dark:bg-gray-700 opacity-50 cursor-not-allowed'
-          : 'bg-gray-100 dark:bg-gray-700 cursor-pointer focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10',
-        hasError ? 'outline-2 -outline-offset-2 outline-red-500 dark:outline-red-500' : '',
-        showOptions && !disabled ? 'outline-2 -outline-offset-2 outline-indigo-500 dark:outline-indigo-500' : ''
-      ]"
+      :class="triggerClassList"
       @click.stop="!disabled && toggleDropdown()"
     >
-      <div class="flex flex-wrap items-center gap-2 px-3 py-2 min-h-[2.5rem]">
+      <div :class="chipRowClassList">
         <template v-if="selectedValues.length > 0">
           <span
             v-for="(selected, index) in selectedValues"
             :key="`${optionKey(selected)}-${index}`"
-            class="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 px-3 py-1 text-sm font-medium text-indigo-800 dark:text-indigo-200"
+            :style="chipStyle(selected)"
+            :class="chipClassList"
           >
             <span
-              v-if="optionColor(selected)"
+              v-if="variant === 'form' && resolveChipColor(selected) && !chipStyle(selected)"
               class="w-2.5 h-2.5 rounded-full flex-shrink-0"
-              :style="{ backgroundColor: optionColor(selected) }"
+              :style="{ backgroundColor: resolveChipColor(selected) }"
             />
-            <span>{{ optionLabel(selected) }}</span>
+            <span class="truncate">{{ displayChipLabel(selected) }}</span>
             <button
               v-if="!disabled"
               type="button"
-              class="ml-0.5 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
+              class="ml-0.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors shrink-0"
               :aria-label="t('actions.remove')"
               @click.stop="removeValue(selected)"
             >
-              <XMarkIcon class="h-3.5 w-3.5" />
+              <XMarkIcon :class="variant === 'inline' ? 'h-3 w-3' : 'h-3.5 w-3.5'" />
             </button>
           </span>
         </template>
         <span
           v-else
-          class="text-gray-500 dark:text-gray-500 text-base sm:text-sm/6 px-2"
+          :class="placeholderClassList"
         >
           {{ placeholder }}
         </span>
@@ -127,11 +121,17 @@ import { CheckIcon as CheckSolidIcon } from '@heroicons/vue/24/solid';
 import clickOutside from '@/directives/clickOutside';
 import {
   filterPicklistOptions,
+  findPicklistOptionByValue,
   picklistOptionColor,
   picklistOptionKey,
   picklistOptionLabel
 } from '@/utils/picklistOptionUtils';
-import { getPicklistOptionValue } from '@/utils/picklistColorPalette';
+import {
+  backfillPicklistOptionColors,
+  getPicklistOptionValue,
+  getSemanticPicklistColor,
+} from '@/utils/picklistColorPalette';
+import { picklistBadgeStyle } from '@/utils/peopleParticipationPicklistColors';
 
 const vClickOutside = clickOutside;
 
@@ -140,7 +140,15 @@ const props = defineProps({
   options: { type: Array, default: () => [] },
   disabled: { type: Boolean, default: false },
   hasError: { type: Boolean, default: false },
-  placeholder: { type: String, default: '' }
+  placeholder: { type: String, default: '' },
+  /** form = drawer/settings; inline = record key-field row (min height aligned with other values) */
+  variant: {
+    type: String,
+    default: 'form',
+    validator: (value) => ['form', 'inline'].includes(value),
+  },
+  fieldKey: { type: String, default: '' },
+  moduleKey: { type: String, default: '' },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -152,17 +160,71 @@ const searchQuery = ref('');
 
 const showSearch = computed(() => props.options.length > 6);
 
+const isInline = computed(() => props.variant === 'inline');
+
+const triggerClassList = computed(() => {
+  if (isInline.value) {
+    return [
+      'w-full min-h-8 rounded transition-colors text-sm',
+      props.disabled
+        ? 'opacity-50 cursor-not-allowed'
+        : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800',
+      props.hasError ? 'ring-2 ring-red-500/80 ring-offset-1 dark:ring-offset-gray-900' : '',
+      showOptions.value && !props.disabled ? 'ring-2 ring-indigo-500/40' : '',
+    ];
+  }
+  return [
+    'w-full rounded-md transition-all text-base sm:text-sm/6',
+    props.disabled
+      ? 'bg-gray-100 dark:bg-gray-700 opacity-50 cursor-not-allowed'
+      : 'bg-gray-100 dark:bg-gray-700 cursor-pointer focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10',
+    props.hasError ? 'outline-2 -outline-offset-2 outline-red-500 dark:outline-red-500' : '',
+    showOptions.value && !props.disabled ? 'outline-2 -outline-offset-2 outline-indigo-500 dark:outline-indigo-500' : '',
+  ];
+});
+
+const chipRowClassList = computed(() => (
+  isInline.value
+    ? 'flex flex-nowrap items-center gap-1 min-h-8 max-h-8 overflow-x-auto overflow-y-hidden'
+    : 'flex flex-wrap items-center gap-2 px-3 py-2 min-h-[2.5rem]'
+));
+
+const chipClassList = computed(() => (
+  isInline.value
+    ? 'inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium shrink-0 max-w-full'
+    : 'inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-sm font-medium shrink-0 max-w-full'
+));
+
+const placeholderClassList = computed(() => (
+  isInline.value
+    ? 'text-record-empty text-sm px-0.5'
+    : 'text-gray-500 dark:text-gray-500 text-base sm:text-sm/6 px-2'
+));
+
+const coloredOptions = computed(() =>
+  backfillPicklistOptionColors(props.options, props.fieldKey, props.moduleKey)
+);
+
 const selectedValues = computed(() => {
   const value = props.modelValue;
   if (!value) return [];
   if (Array.isArray(value)) return value;
   if (typeof value === 'string' && value.trim()) {
-    return value.split(',').map((part) => part.trim()).filter(Boolean);
+    const trimmed = value.trim();
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        // fall through
+      }
+    }
+    return trimmed.split(',').map((part) => part.trim()).filter(Boolean);
   }
   return [value].filter(Boolean);
 });
 
-const filteredOptions = computed(() => filterPicklistOptions(props.options, searchQuery.value));
+const filteredOptions = computed(() => filterPicklistOptions(coloredOptions.value, searchQuery.value));
 
 function optionKey(option) {
   return picklistOptionKey(option);
@@ -174,6 +236,27 @@ function optionLabel(option) {
 
 function optionColor(option) {
   return picklistOptionColor(option);
+}
+
+function displayChipLabel(selected) {
+  const value = getPicklistOptionValue(selected);
+  const match = findPicklistOptionByValue(coloredOptions.value, value);
+  return match ? optionLabel(match) : optionLabel(selected);
+}
+
+function resolveChipColor(selected) {
+  const value = getPicklistOptionValue(selected);
+  const match = findPicklistOptionByValue(coloredOptions.value, value);
+  return (
+    picklistOptionColor(match)
+    || getSemanticPicklistColor(props.fieldKey, value, props.moduleKey)
+    || null
+  );
+}
+
+function chipStyle(selected) {
+  const style = picklistBadgeStyle(resolveChipColor(selected));
+  return Object.keys(style).length ? style : undefined;
 }
 
 function isSelected(option) {

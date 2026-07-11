@@ -1034,6 +1034,7 @@ const getTitleForPath = (path, params = {}) => {
     '/demo-requests': 'Demo Requests',
     '/instances': 'Instances',
     '/settings': 'Settings',
+    '/onboarding': 'Set up your workspace',
     '/appointments/pages': 'Booking Pages',
     '/appointments/configure': 'Personal booking page',
     // Control Plane routes

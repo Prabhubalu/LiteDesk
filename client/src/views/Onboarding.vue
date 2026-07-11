@@ -3,13 +3,21 @@ import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
+import { useAppShellStore } from '@/stores/appShell';
 import { useOnboarding } from '@/composables/useOnboarding';
-import apiClient from '@/utils/apiClient';
-import { captureInviteSent } from '@/config/posthogOnboarding';
+import { useSidebarState } from '@/composables/useSidebarState';
+import { inferRegionalBundleFromTimezone, MARKET_BUNDLES } from '@/utils/regionalSettings';
+import { buildCurrencyOptions, normalizeIanaTimezone } from '@/utils/orgRegionalOptions';
+import { getAppLabel } from '@/utils/getRoleDisplay';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import OrgTimezoneField from '@/components/settings/OrgTimezoneField.vue';
+import InviteUserDrawer from '@/components/settings/InviteUserDrawer.vue';
 
 const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
+const appShellStore = useAppShellStore();
+const { lastActiveAppId } = useSidebarState();
 const {
   state,
   loading,
@@ -25,19 +33,26 @@ const {
 const finishWizard = async (patchFn) => {
   const ok = await patchFn();
   if (!ok) return;
+  const primaryAppKey = String(
+    state.value.context?.primaryAppKey || selectedApp.value || 'SALES'
+  ).toUpperCase();
   authStore.updateOnboardingSummary({
     redirectTo: state.value.redirectTo,
     persona: state.value.persona,
     origin: state.value.origin,
     completedAt: state.value.completedAt
   });
+  lastActiveAppId.value = primaryAppKey;
+  if (appShellStore.isLoaded) {
+    appShellStore.setActiveApp(primaryAppKey);
+  }
   router.push('/platform/home');
 };
 
 const currentStep = ref(0);
 const totalSteps = 5;
 
-const orgName = computed(() => authStore.user?.organization?.name || '');
+const orgName = computed(() => authStore.organization?.name || '');
 const userName = computed(() => authStore.user?.firstName || authStore.user?.username || '');
 
 const goalOptions = computed(() => [
@@ -52,25 +67,76 @@ const selectedApp = ref('SALES');
 
 const workspaceForm = ref({
   name: orgName.value,
-  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+  timeZone: normalizeIanaTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'),
   currency: 'USD',
+  locale: 'en-US',
   dateFormat: 'MM/DD/YYYY',
   language: 'en'
 });
+
+const regionalFieldsTouched = ref({
+  currency: false,
+  locale: false,
+});
+
+const currencyOptions = computed(() => buildCurrencyOptions());
+
+const localeOptions = computed(() => {
+  const seen = new Set();
+  const options = [];
+  for (const bundle of Object.values(MARKET_BUNDLES)) {
+    if (seen.has(bundle.locale)) continue;
+    seen.add(bundle.locale);
+    options.push({
+      value: bundle.locale,
+      label: `${bundle.locale} — ${bundle.marketLabel}`,
+    });
+  }
+  return options.sort((a, b) => a.label.localeCompare(b.label));
+});
+
+const detectedRegionalBundle = computed(() =>
+  inferRegionalBundleFromTimezone(workspaceForm.value.timeZone, {
+    language: workspaceForm.value.language,
+  })
+);
+
+function applyDetectedRegionalBundle({ force = false } = {}) {
+  const bundle = detectedRegionalBundle.value;
+  if (!bundle) return;
+  if (force || !regionalFieldsTouched.value.currency) {
+    workspaceForm.value.currency = bundle.currency;
+  }
+  if (force || !regionalFieldsTouched.value.locale) {
+    workspaceForm.value.locale = bundle.locale;
+    workspaceForm.value.language = bundle.language;
+  }
+}
+
+function handleTimezoneChange(timeZone) {
+  workspaceForm.value.timeZone = normalizeIanaTimezone(timeZone);
+  applyDetectedRegionalBundle();
+}
+
+function handleCurrencyChange(currency) {
+  regionalFieldsTouched.value.currency = true;
+  workspaceForm.value.currency = currency;
+}
+
+function handleLocaleChange(locale) {
+  regionalFieldsTouched.value.locale = true;
+  workspaceForm.value.locale = locale;
+  const bundle = Object.values(MARKET_BUNDLES).find((entry) => entry.locale === locale);
+  if (bundle?.language) {
+    workspaceForm.value.language = bundle.language;
+  }
+}
 
 const contactForm = ref({
   firstName: '',
   lastName: '',
   email: ''
 });
-
-const inviteForm = ref({
-  firstName: '',
-  lastName: '',
-  email: ''
-});
-
-const inviteError = ref('');
 
 const availableApps = computed(() => state.value.availableApps || ['SALES']);
 const showAppStep = computed(() => availableApps.value.length > 1);
@@ -79,6 +145,10 @@ const canContinueGoal = computed(() => Boolean(selectedGoal.value));
 
 const recordStepIndex = computed(() => (showAppStep.value ? 3 : 2));
 const inviteStepIndex = computed(() => (showAppStep.value ? 4 : 3));
+
+const primaryAppKey = computed(() =>
+  state.value.context?.primaryAppKey || selectedApp.value || 'SALES'
+);
 
 function resolveInitialStep(steps) {
   const map = Object.fromEntries((steps || []).map((s) => [s.key, s.status]));
@@ -92,6 +162,7 @@ function resolveInitialStep(steps) {
 
 onMounted(async () => {
   workspaceForm.value.name = orgName.value;
+  applyDetectedRegionalBundle({ force: true });
   await fetchOnboarding();
   if (state.value.goalKey) selectedGoal.value = state.value.goalKey;
   if (state.value.context?.primaryAppKey) selectedApp.value = state.value.context.primaryAppKey;
@@ -146,38 +217,8 @@ const handleContactSkip = async () => {
   if (ok) goToInviteStep();
 };
 
-const buildInvitePayload = () => {
-  const primaryApp = state.value.context?.primaryAppKey || selectedApp.value || 'SALES';
-  return {
-    firstName: inviteForm.value.firstName,
-    lastName: inviteForm.value.lastName,
-    email: inviteForm.value.email,
-    roleId: authStore.user?.roleId,
-    userType: 'INTERNAL',
-    appAccess: [{ appKey: primaryApp, roleKey: 'USER' }],
-    sendEmail: true
-  };
-};
-
-const handleInviteContinue = async () => {
-  inviteError.value = '';
-  if (!inviteForm.value.email || !inviteForm.value.firstName) {
-    inviteError.value = t('onboarding.inviteRequiredFields');
-    return;
-  }
-
-  try {
-    const response = await apiClient.post('/users', buildInvitePayload());
-    if (!response.success) {
-      inviteError.value = response.message || t('onboarding.inviteFailed');
-      return;
-    }
-    captureInviteSent({ source: 'founder_wizard', send_email: true });
-    await finishWizard(() => completeStep('founder_invite_teammate'));
-  } catch (err) {
-    console.error('[Onboarding] invite error:', err);
-    inviteError.value = t('onboarding.inviteFailed');
-  }
+const handleInviteSuccess = async () => {
+  await finishWizard(() => completeStep('founder_invite_teammate'));
 };
 
 const handleInviteSkip = async () => {
@@ -245,12 +286,42 @@ const handleInviteSkip = async () => {
             <input id="org-name" v-model="workspaceForm.name" type="text" required class="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white" />
           </div>
           <div>
-            <label for="timezone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('onboarding.timeZoneLabel') }}</label>
-            <input id="timezone" v-model="workspaceForm.timeZone" type="text" class="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white" />
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('onboarding.timeZoneLabel') }}</label>
+            <OrgTimezoneField
+              :model-value="workspaceForm.timeZone"
+              class="mt-1"
+              @update:model-value="handleTimezoneChange"
+            />
+          </div>
+          <div
+            v-if="detectedRegionalBundle"
+            class="rounded-lg border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/70 dark:bg-indigo-950/20 px-3 py-2.5 text-sm text-indigo-900 dark:text-indigo-100"
+          >
+            <p class="font-medium">{{ t('onboarding.regionalDetectedTitle', { market: detectedRegionalBundle.marketLabel }) }}</p>
+            <p class="mt-1 text-xs text-indigo-800/90 dark:text-indigo-200/80">
+              {{ t('onboarding.regionalDetectedBody', {
+                locale: detectedRegionalBundle.locale,
+                currency: detectedRegionalBundle.currency,
+              }) }}
+            </p>
           </div>
           <div>
-            <label for="currency" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('onboarding.currencyLabel') }}</label>
-            <input id="currency" v-model="workspaceForm.currency" type="text" maxlength="3" class="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 uppercase text-gray-900 dark:text-white" />
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('onboarding.currencyLabel') }}</label>
+            <HeadlessSelect
+              :model-value="workspaceForm.currency"
+              :options="currencyOptions"
+              class="mt-1"
+              @update:model-value="handleCurrencyChange"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('onboarding.localeLabel') }}</label>
+            <HeadlessSelect
+              :model-value="workspaceForm.locale"
+              :options="localeOptions"
+              class="mt-1"
+              @update:model-value="handleLocaleChange"
+            />
           </div>
           <div class="flex gap-3 pt-2">
             <button type="submit" class="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50" :disabled="loading">{{ t('onboarding.continue') }}</button>
@@ -267,7 +338,7 @@ const handleInviteSkip = async () => {
         <div class="space-y-2">
           <label v-for="app in availableApps" :key="app" class="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3" :class="selectedApp === app ? 'border-indigo-500 ring-1 ring-indigo-500' : ''">
             <input v-model="selectedApp" type="radio" name="app" :value="app" class="text-indigo-600" />
-            <span class="text-sm text-gray-900 dark:text-white">{{ app }}</span>
+            <span class="text-sm text-gray-900 dark:text-white">{{ getAppLabel(app) }}</span>
           </label>
         </div>
         <div class="flex gap-3">
@@ -306,27 +377,18 @@ const handleInviteSkip = async () => {
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('onboarding.inviteTeammateTitle') }}</h1>
           <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ t('onboarding.inviteTeammateSubtitle') }}</p>
         </div>
-        <p v-if="inviteError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
-          {{ inviteError }}
-        </p>
-        <form class="space-y-4" @submit.prevent="handleInviteContinue">
-          <div>
-            <label for="invite-first" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('onboarding.firstNameLabel') }}</label>
-            <input id="invite-first" v-model="inviteForm.firstName" type="text" required class="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white" />
-          </div>
-          <div>
-            <label for="invite-last" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('onboarding.lastNameLabel') }}</label>
-            <input id="invite-last" v-model="inviteForm.lastName" type="text" class="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white" />
-          </div>
-          <div>
-            <label for="invite-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('onboarding.emailLabel') }}</label>
-            <input id="invite-email" v-model="inviteForm.email" type="email" required class="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white" />
-          </div>
-          <div class="flex gap-3 pt-2">
-            <button type="submit" class="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50" :disabled="loading">{{ t('onboarding.finishSetup') }}</button>
-            <button type="button" class="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400" :disabled="loading" @click="handleInviteSkip">{{ t('onboarding.skipStep') }}</button>
-          </div>
-        </form>
+        <InviteUserDrawer
+          inline
+          :initial-app-key="primaryAppKey"
+          :submit-label="t('onboarding.finishSetup')"
+          @user-invited="handleInviteSuccess"
+        >
+          <template #secondary-action>
+            <button type="button" class="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400" :disabled="loading" @click="handleInviteSkip">
+              {{ t('onboarding.skipStep') }}
+            </button>
+          </template>
+        </InviteUserDrawer>
       </div>
     </div>
   </div>

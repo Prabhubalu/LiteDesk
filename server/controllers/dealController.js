@@ -13,9 +13,7 @@ const { persistMulterUpload } = require('../middleware/uploadMiddleware');
 const { processCommentMentions } = require('../services/commentMentionNotifications');
 const {
   computeAndSetDerivedStatus,
-  hasConfiguration,
   hasLifecycleOrTypeChanged,
-  validateStatusWriteProtection
 } = require('../services/derivedStatusService');
 const { validateStageInPipeline, validateDealRelationships } = require('../services/systemInvariants');
 const {
@@ -24,6 +22,11 @@ const {
 } = require('../services/dealRelationshipService');
 const { syncDealRelationshipInstances } = require('../services/dealRelationshipInstanceSync');
 const { getDefaultPipelineSettings } = require('./moduleController');
+const {
+  isDealEngagementAction,
+  touchDealLastActivity,
+  attachDealLastActivity,
+} = require('../utils/dealLastActivity');
 
 const DESCRIPTION_VERSION_RETENTION_DAYS = 365;
 const CLOSED_TASK_STATUSES = ['completed', 'done', 'closed', 'cancelled'];
@@ -259,14 +262,35 @@ exports.createDeal = async (req, res) => {
             return res.status(ownerAssignCheck.status).json(ownerAssignCheck.body);
         }
 
-        const statusWriteResult = await validateStatusWriteProtection('deal', payload, appKey);
-        if (statusWriteResult) {
+        // Status is platform-owned — strip client-supplied values; derivation sets Open|Won|Lost
+        delete payload.status;
+        delete payload.probability;
+        delete payload.derivedStatus;
+
+        // Legacy Mixed field removed — DealLine entity owns commercial lines
+        delete payload.lineItems;
+
+        // amountMode transitions + amount sync owned by DealPricingService (not raw create body mix)
+        const dealPricingService = require('../services/dealPricingService');
+        const { normalizeDealAmountMode, DEAL_AMOUNT_MODE, DEFAULT_DEAL_AMOUNT_MODE } = require('../constants/dealAmountMode');
+        const requestedAmountMode = normalizeDealAmountMode(payload.amountMode) || DEFAULT_DEAL_AMOUNT_MODE;
+        const createLines = Array.isArray(payload.lines) ? payload.lines : null;
+        delete payload.lines;
+
+        if (requestedAmountMode === DEAL_AMOUNT_MODE.AUTO && payload.amount !== undefined && createLines?.length) {
+            // AUTO with lines: ignore client amount; service will set after lines
+            delete payload.amount;
+        }
+        if (requestedAmountMode === DEAL_AMOUNT_MODE.AUTO && payload.amount !== undefined && !createLines?.length) {
             return res.status(400).json({
                 success: false,
-                code: statusWriteResult.code,
-                message: statusWriteResult.message,
-                errors: statusWriteResult.errors
+                code: 'AMOUNT_MODE_CONFLICT',
+                message: 'amountMode=AUTO requires DealLines (or omit amount and add lines after create). Do not send amount with AUTO.'
             });
+        }
+        payload.amountMode = requestedAmountMode;
+        if (payload.amount === undefined || payload.amount === null || payload.amount === '') {
+            payload.amount = 0;
         }
 
         // Every deal must have pipeline and stage. Auto-assign default when missing so user is not forced to pick.
@@ -296,6 +320,14 @@ exports.createDeal = async (req, res) => {
 
         if (!payload.status) payload.status = 'Open';
 
+        // Currency defaults to tenant org settings (not hardcoded USD)
+        if (!payload.currency || !String(payload.currency).trim()) {
+            const { resolveCurrencyOrOrgDefault } = require('../utils/orgCurrency');
+            payload.currency = await resolveCurrencyOrOrgDefault(payload.currency, req.user.organizationId);
+        } else {
+            payload.currency = String(payload.currency).trim().toUpperCase();
+        }
+
         assignResolvedSource(payload, 'ui');
         const newDeal = await Deal.create(payload);
 
@@ -317,10 +349,57 @@ exports.createDeal = async (req, res) => {
             });
         }
 
+        if (createLines?.length) {
+            try {
+                for (const lineInput of createLines) {
+                    await dealPricingService.addLine({
+                        organizationId: req.user.organizationId,
+                        dealId: newDeal._id,
+                        actorId: req.user._id,
+                        input: lineInput
+                    });
+                }
+                const priced = await Deal.findById(newDeal._id);
+                if (priced) {
+                    newDeal.amount = priced.amount;
+                    newDeal.amountMode = priced.amountMode;
+                    newDeal.linesGrandTotal = priced.linesGrandTotal;
+                }
+            } catch (lineErr) {
+                await dealPricingService.softDeleteLinesForDeal({
+                    organizationId: req.user.organizationId,
+                    dealId: newDeal._id,
+                    actorId: req.user._id
+                });
+                await Deal.findByIdAndDelete(newDeal._id);
+                const status = lineErr.status || 400;
+                return res.status(status).json({
+                    success: false,
+                    code: lineErr.code || 'DEAL_LINE_CREATE_FAILED',
+                    message: lineErr.message || 'Failed to create deal lines'
+                });
+            }
+        } else if (requestedAmountMode === DEAL_AMOUNT_MODE.AUTO) {
+            await dealPricingService.recalculateDeal({
+                organizationId: req.user.organizationId,
+                dealId: newDeal._id,
+                actorId: req.user._id
+            });
+            const priced = await Deal.findById(newDeal._id);
+            if (priced) {
+                newDeal.amount = priced.amount;
+                newDeal.linesGrandTotal = priced.linesGrandTotal;
+            }
+        }
+
+        const { normalizeDealStatus, DEAL_STATUS } = require('../constants/dealStatus');
         const computedDerivedStatus = await computeAndSetDerivedStatus('deal', newDeal, appKey);
-        const configExists = await hasConfiguration('deal', appKey);
-        if (configExists && computedDerivedStatus && newDeal.status !== computedDerivedStatus) {
-            newDeal.status = computedDerivedStatus;
+        if (computedDerivedStatus) {
+            newDeal.status = normalizeDealStatus(computedDerivedStatus);
+        } else if (!newDeal.status) {
+            newDeal.status = DEAL_STATUS.OPEN;
+        } else {
+            newDeal.status = normalizeDealStatus(newDeal.status);
         }
 
         await syncRoleBasedToLegacy(newDeal);
@@ -394,7 +473,7 @@ exports.createDeal = async (req, res) => {
             organizationId: req.user?.organizationId ?? null
         });
 
-        res.status(201).json({ success: true, data: deal });
+        res.status(201).json({ success: true, data: attachDealLastActivity(deal) });
     } catch (error) {
         console.error('Create deal error:', error);
         res.status(400).json({
@@ -469,10 +548,7 @@ exports.getDeals = async (req, res) => {
                     _id: null,
                     totalDeals: { $sum: 1 },
                     activeDeals: {
-                        $sum: { $cond: [{ $in: ['$status', ['Open', 'Active']] }, 1, 0] }
-                    },
-                    stalledDeals: {
-                        $sum: { $cond: [{ $in: ['$status', ['Stalled', 'Abandoned']] }, 1, 0] }
+                        $sum: { $cond: [{ $eq: ['$status', 'Open'] }, 1, 0] }
                     },
                     wonDeals: {
                         $sum: { $cond: [{ $eq: ['$status', 'Won'] }, 1, 0] }
@@ -485,7 +561,7 @@ exports.getDeals = async (req, res) => {
                         $sum: { $cond: [{ $eq: ['$status', 'Won'] }, '$amount', 0] }
                     },
                     pipelineValue: {
-                        $sum: { $cond: [{ $in: ['$status', ['Open', 'Active']] }, '$amount', 0] }
+                        $sum: { $cond: [{ $eq: ['$status', 'Open'] }, '$amount', 0] }
                     }
                 }
             }
@@ -493,7 +569,7 @@ exports.getDeals = async (req, res) => {
         
         res.status(200).json({
             success: true,
-            data: deals,
+            data: (deals || []).map((deal) => attachDealLastActivity(deal)),
             pagination: {
                 currentPage: page,
                 limit,
@@ -559,7 +635,7 @@ exports.getDealById = async (req, res) => {
         const { flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
         res.status(200).json({
             success: true,
-            data: flattenCustomFieldsForResponse(deal)
+            data: attachDealLastActivity(flattenCustomFieldsForResponse(deal))
         });
     } catch (error) {
         console.error('Get deal error:', error);
@@ -661,14 +737,81 @@ exports.updateDeal = async (req, res) => {
         
         const appKey = req.appKey || req.query.appKey || 'SALES';
 
-        const statusWriteResult = await validateStatusWriteProtection('deal', req.body, appKey);
-        if (statusWriteResult) {
+        // Status/probability are platform-owned — ignore client values; stage derivation owns them
+        if (req.body && typeof req.body === 'object') {
+            delete req.body.status;
+            delete req.body.probability;
+            delete req.body.derivedStatus;
+            delete req.body.lineItems;
+            delete req.body.lines;
+            delete req.body.linesGrandTotal;
+        }
+
+        // amountMode / amount owned by DealPricingService — explicit transitions only
+        const dealPricingService = require('../services/dealPricingService');
+        const { normalizeDealAmountMode, DEAL_AMOUNT_MODE } = require('../constants/dealAmountMode');
+        const bodyHasAmountMode = Object.prototype.hasOwnProperty.call(req.body || {}, 'amountMode');
+        const bodyHasAmount = Object.prototype.hasOwnProperty.call(req.body || {}, 'amount');
+        const requestedAmountMode = bodyHasAmountMode ? normalizeDealAmountMode(req.body.amountMode) : null;
+
+        if (bodyHasAmountMode && !requestedAmountMode) {
             return res.status(400).json({
                 success: false,
-                code: statusWriteResult.code,
-                message: statusWriteResult.message,
-                errors: statusWriteResult.errors
+                code: 'INVALID_AMOUNT_MODE',
+                message: 'amountMode must be AUTO or MANUAL'
             });
+        }
+
+        if (bodyHasAmountMode && requestedAmountMode === DEAL_AMOUNT_MODE.AUTO && bodyHasAmount) {
+            return res.status(400).json({
+                success: false,
+                code: 'AMOUNT_MODE_CONFLICT',
+                message: 'Cannot set amount and amountMode=AUTO in the same request. PATCH amount-mode first.'
+            });
+        }
+
+        if (bodyHasAmountMode) {
+            try {
+                await dealPricingService.setAmountMode({
+                    organizationId: req.user.organizationId,
+                    dealId: req.params.id,
+                    amountMode: requestedAmountMode,
+                    amount: bodyHasAmount && requestedAmountMode === DEAL_AMOUNT_MODE.MANUAL
+                        ? req.body.amount
+                        : undefined,
+                    actorId: req.user._id
+                });
+            } catch (modeErr) {
+                if (modeErr.code) {
+                    return res.status(modeErr.status || 400).json({
+                        success: false,
+                        code: modeErr.code,
+                        message: modeErr.message
+                    });
+                }
+                throw modeErr;
+            }
+            delete req.body.amountMode;
+            delete req.body.amount;
+        } else if (bodyHasAmount) {
+            try {
+                await dealPricingService.setManualAmount({
+                    organizationId: req.user.organizationId,
+                    dealId: req.params.id,
+                    amount: req.body.amount,
+                    actorId: req.user._id
+                });
+            } catch (amtErr) {
+                if (amtErr.code) {
+                    return res.status(amtErr.status || 400).json({
+                        success: false,
+                        code: amtErr.code,
+                        message: amtErr.message
+                    });
+                }
+                throw amtErr;
+            }
+            delete req.body.amount;
         }
 
         const stagePipelineResult = await validateStageInPipeline({
@@ -788,10 +931,14 @@ exports.updateDeal = async (req, res) => {
         }
 
         if (shouldComputeDerivedStatus) {
+            const { normalizeDealStatus, DEAL_STATUS } = require('../constants/dealStatus');
             const computedDerivedStatus = await computeAndSetDerivedStatus('deal', updatedDeal, appKey);
-            const configExists = await hasConfiguration('deal', appKey);
-            if (configExists && computedDerivedStatus && updatedDeal.status !== computedDerivedStatus) {
-                updatedDeal.status = computedDerivedStatus;
+            if (computedDerivedStatus) {
+                updatedDeal.status = normalizeDealStatus(computedDerivedStatus);
+            } else if (!updatedDeal.status) {
+                updatedDeal.status = DEAL_STATUS.OPEN;
+            } else {
+                updatedDeal.status = normalizeDealStatus(updatedDeal.status);
             }
         }
 
@@ -848,6 +995,9 @@ exports.updateDeal = async (req, res) => {
         if (fieldChangeLogs.length > 0) {
             if (!Array.isArray(updatedDeal.activityLogs)) updatedDeal.activityLogs = [];
             updatedDeal.activityLogs.push(...fieldChangeLogs);
+            if (fieldChangeLogs.some((entry) => isDealEngagementAction(entry?.action))) {
+                touchDealLastActivity(updatedDeal);
+            }
         }
         // If tags are updated via canonical field, ensure stale customFields.tags
         // cannot resurrect old values on flattened responses.
@@ -946,7 +1096,7 @@ exports.updateDeal = async (req, res) => {
             .populate('dealPeople.personId', 'first_name last_name email')
             .populate('dealOrganizations.organizationId', 'name');
 
-        res.status(200).json({ success: true, data: flattenCustomFieldsForResponse(populatedDeal) });
+        res.status(200).json({ success: true, data: attachDealLastActivity(flattenCustomFieldsForResponse(populatedDeal)) });
     } catch (error) {
         console.error('Update deal error:', error);
         res.status(400).json({ 
@@ -1506,7 +1656,7 @@ exports.getPipelineSummary = async (req, res) => {
             { 
                 $match: { 
                     organizationId: req.user.organizationId,
-                    status: { $in: ['Open', 'Active'] },
+                    status: 'Open',
                     deletedAt: null
                 } 
             },
@@ -1623,7 +1773,7 @@ exports.getDashboardMetrics = async (req, res) => {
 
         const openDealFilter = {
             ...commonDealFilter,
-            status: { $in: ['Open', 'Active'] }
+            status: 'Open'
         };
 
         const [
@@ -2377,13 +2527,18 @@ exports.updateStage = async (req, res) => {
                 },
                 timestamp: new Date()
             });
+            touchDealLastActivity(deal);
         }
         deal.modifiedBy = req.user?._id ?? null;
 
+        const { normalizeDealStatus, DEAL_STATUS } = require('../constants/dealStatus');
         const computedDerivedStatus = await computeAndSetDerivedStatus('deal', deal, appKey);
-        const configExists = await hasConfiguration('deal', appKey);
-        if (configExists && computedDerivedStatus && deal.status !== computedDerivedStatus) {
-            deal.status = computedDerivedStatus;
+        if (computedDerivedStatus) {
+            deal.status = normalizeDealStatus(computedDerivedStatus);
+        } else if (!deal.status) {
+            deal.status = DEAL_STATUS.OPEN;
+        } else {
+            deal.status = normalizeDealStatus(deal.status);
         }
 
         if (stageChanged) {
@@ -2444,7 +2599,7 @@ exports.updateStage = async (req, res) => {
             .populate('dealPeople.personId', 'first_name last_name email')
             .populate('dealOrganizations.organizationId', 'name');
 
-        res.status(200).json({ success: true, data: updatedDeal });
+        res.status(200).json({ success: true, data: attachDealLastActivity(updatedDeal) });
     } catch (error) {
         console.error('Update stage error:', error);
         res.status(500).json({
@@ -2769,6 +2924,19 @@ exports.createDealComment = async (req, res) => {
       authorName
     }).catch((err) => console.error('Deal comment mention notifications error:', err));
 
+    const engagedAt = new Date();
+    if (!Array.isArray(deal.activityLogs)) deal.activityLogs = [];
+    deal.activityLogs.push({
+      user: getActorDisplayName(req.user),
+      userId: req.user._id,
+      action: 'added a comment',
+      details: { commentId: String(comment._id) },
+      timestamp: engagedAt
+    });
+    touchDealLastActivity(deal, engagedAt);
+    deal.modifiedBy = req.user._id;
+    await deal.save();
+
     res.status(201).json({
       success: true,
       data: buildDealCommentResponse(populated, req.user?._id)
@@ -2845,6 +3013,19 @@ exports.updateDealComment = async (req, res) => {
       authorId: String(req.user._id),
       authorName
     }).catch((err) => console.error('Deal comment mention notifications error:', err));
+
+    const engagedAt = new Date();
+    if (!Array.isArray(deal.activityLogs)) deal.activityLogs = [];
+    deal.activityLogs.push({
+      user: getActorDisplayName(req.user),
+      userId: req.user._id,
+      action: 'edited a comment',
+      details: { commentId: String(comment._id) },
+      timestamp: engagedAt
+    });
+    touchDealLastActivity(deal, engagedAt);
+    deal.modifiedBy = req.user._id;
+    await deal.save();
 
     res.json({
       success: true,

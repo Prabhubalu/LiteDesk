@@ -25,6 +25,10 @@
  */
 
 import type { OrganizationIntentDefinition } from './organizationIntent.types';
+import {
+  getOrganizationTypesForField,
+  ORGANIZATION_INTENT_STATUS_FIELD_KEYS,
+} from '../fields/organizationFieldModel';
 
 /**
  * Canonical array of Organization Intent Definitions.
@@ -36,7 +40,7 @@ export const ORGANIZATION_INTENT_DEFINITIONS: OrganizationIntentDefinition[] = [
     key: 'customer',
     label: 'Customer',
     organizationTypes: ['Customer'],
-    allowedStatuses: ['Prospect', 'Active', 'Inactive', 'Churned'],
+    allowedStatuses: ['Prospect', 'Active', 'On Hold', 'At Risk', 'Inactive', 'Churned'],
     defaultStatus: 'Prospect',
     editableInCreate: true,
     editableInEdit: true,
@@ -45,8 +49,8 @@ export const ORGANIZATION_INTENT_DEFINITIONS: OrganizationIntentDefinition[] = [
     key: 'vendor',
     label: 'Vendor',
     organizationTypes: ['Vendor'],
-    allowedStatuses: ['Onboarding', 'Approved', 'Suspended'],
-    defaultStatus: 'Onboarding',
+    allowedStatuses: ['Prospect', 'Onboarding', 'Approved', 'Suspended', 'Inactive', 'Rejected'],
+    defaultStatus: 'Prospect',
     editableInCreate: true,
     editableInEdit: true,
   },
@@ -54,7 +58,7 @@ export const ORGANIZATION_INTENT_DEFINITIONS: OrganizationIntentDefinition[] = [
     key: 'partner',
     label: 'Partner',
     organizationTypes: ['Partner'],
-    allowedStatuses: ['Invited', 'Active', 'Paused'],
+    allowedStatuses: ['Invited', 'Onboarding', 'Active', 'Paused', 'Inactive'],
     defaultStatus: 'Invited',
     editableInCreate: true,
     editableInEdit: true,
@@ -120,6 +124,34 @@ export function getDefaultStatusForTypes(types: string[]): string | null {
   // Return the first matching intent's default status
   // In case of multiple matches, the first one in the array takes precedence
   return intents[0]?.defaultStatus ?? null;
+}
+
+function matchingTypesForStatusField(fieldKey: string, selectedTypes: string[]): string[] {
+  if (!ORGANIZATION_INTENT_STATUS_FIELD_KEYS.has(fieldKey)) return [];
+  if (!selectedTypes?.length) return [];
+  const relevantTypes = getOrganizationTypesForField(fieldKey);
+  if (relevantTypes.length === 0) return [];
+  return selectedTypes.filter((type) => relevantTypes.includes(type));
+}
+
+/** Allowed lifecycle statuses for a type-scoped status field (customerStatus, etc.). */
+export function getAllowedStatusesForOrganizationStatusField(
+  fieldKey: string,
+  selectedTypes: string[]
+): string[] {
+  const matchingTypes = matchingTypesForStatusField(fieldKey, selectedTypes);
+  if (matchingTypes.length === 0) return [];
+  return getAllowedStatusesForTypes(matchingTypes);
+}
+
+/** Default lifecycle status for a type-scoped status field. */
+export function getDefaultStatusForOrganizationStatusField(
+  fieldKey: string,
+  selectedTypes: string[]
+): string | null {
+  const matchingTypes = matchingTypesForStatusField(fieldKey, selectedTypes);
+  if (matchingTypes.length === 0) return null;
+  return getDefaultStatusForTypes(matchingTypes);
 }
 
 // ============================================================================

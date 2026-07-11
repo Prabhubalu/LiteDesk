@@ -34,15 +34,9 @@
 
       <!-- Custom Item Type Cell with Badge -->
       <template #cell-item_type="{ value }">
-        <BadgeCell 
-          :value="value" 
-          :variant-map="{
-            'Product': 'primary',
-            'Service': 'info',
-            'Serialized Product': 'warning',
-            'Non-Stock Product': 'default',
-            'Bundle': 'success'
-          }"
+        <BadgeCell
+          :value="value"
+          :color="resolveItemTypeColor(value)"
         />
       </template>
 
@@ -136,15 +130,20 @@ import ModuleList from '@/components/module-list/ModuleList.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
-import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
+import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import {
   CATALOG_LIFECYCLE_LABEL_KEYS,
   inferLifecycleStateFromLegacyStatus
 } from '@/constants/catalogLifecycle';
+import { getSemanticPicklistColor } from '@/utils/picklistColorPalette';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const { openTab } = useTabs();
+
+function resolveItemTypeColor(value) {
+  return getSemanticPicklistColor('item_type', value, 'items') || null;
+}
 
 // State
 const moduleListRef = ref(null);
@@ -266,10 +265,10 @@ const closeFormModal = () => {
 };
 
 // Utility functions
-const formatCurrency = (amount, currencyCode = DEFAULT_CURRENCY_CODE) => {
+const formatCurrency = (amount, currencyCode = null) => {
   return (
     formatCurrencyValue(amount, {
-      currencyCode: String(currencyCode || DEFAULT_CURRENCY_CODE).toUpperCase(),
+      currencyCode: String(currencyCode || resolveOrgCurrencyCode()).toUpperCase(),
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }) || '—'

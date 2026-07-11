@@ -52,6 +52,23 @@ test('backfillPicklistOptionColors applies lead status semantics', () => {
     assert.notEqual(out[1].color, PLATFORM_DEFAULT_PICKLIST_COLOR);
 });
 
+test('getSemanticPicklistColor returns organization type colors', () => {
+    assert.equal(getSemanticPicklistColor('types', 'Customer', 'organizations'), '#2563EB');
+    assert.equal(getSemanticPicklistColor('types', 'Partner', 'organizations'), '#8B5CF6');
+    assert.equal(getSemanticPicklistColor('types', 'Vendor', 'organizations'), '#10B981');
+});
+
+test('backfillPicklistOptionColors applies organization type semantics', () => {
+    const out = backfillPicklistOptionColors(
+        [{ value: 'Customer' }, { value: 'Partner' }, { value: 'Vendor' }],
+        'types',
+        'organizations'
+    );
+    assert.equal(out[0].color, '#2563EB');
+    assert.equal(out[1].color, '#8B5CF6');
+    assert.equal(out[2].color, '#10B981');
+});
+
 test('isPlatformDefaultPicklistColor treats missing color as default', () => {
     assert.equal(isPlatformDefaultPicklistColor(null), true);
     assert.equal(isPlatformDefaultPicklistColor(PLATFORM_DEFAULT_PICKLIST_COLOR), true);

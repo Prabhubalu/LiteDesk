@@ -1116,7 +1116,7 @@
     "description": "Invite form label"
   },
   "inviteEmailPh": {
-    "message": "john.doe@company.com",
+    "message": "john.doe{'@'}company.com",
     "description": "Invite email placeholder"
   },
   "inviteUserType": {

@@ -7,6 +7,7 @@ import { useRouter, useRoute } from 'vue-router';
 
 import { useAuthStore } from '@/stores/authRegistry';
 import { useColorMode } from '@/composables/useColorMode';
+import { readLastActiveAppIdFromStorage } from '@/composables/useSidebarState';
 const PlatformShell = defineAsyncComponent(() => import('@/components/PlatformShell.vue'));
 const NotificationContainer = defineAsyncComponent(() =>
   import('@/components/NotificationContainer.vue')
@@ -313,6 +314,10 @@ const detectActiveAppFromRoute = (path) => {
     if (appKey) return appKey;
   }
   if (path.startsWith('/dashboard') || path.startsWith('/people') || path.startsWith('/organizations') || path.startsWith('/deals') || path.startsWith('/tasks') || path.startsWith('/events') || path.startsWith('/items') || path.startsWith('/forms')) return 'SALES';
+  if (path === '/platform/home' || path.startsWith('/platform/home/')) {
+    const savedAppId = readLastActiveAppIdFromStorage();
+    if (savedAppId) return savedAppId.toUpperCase();
+  }
   return 'SALES'; // Default to Sales
 };
 
@@ -585,12 +590,21 @@ watch(
 
 watch(
   () => route.path,
-  () => {
+  async () => {
     if (!authStore.isAuthenticated) return;
     void getNotificationRealtime().then((m) => m.onNotificationRouteChange());
-    if (shouldSkipTabRoute(route.path) && typeof cleanupRouteWatcher === 'function') {
-      cleanupRouteWatcher();
-      cleanupRouteWatcher = null;
+    if (shouldSkipTabRoute(route.path)) {
+      if (typeof cleanupRouteWatcher === 'function') {
+        cleanupRouteWatcher();
+        cleanupRouteWatcher = null;
+      }
+      return;
+    }
+
+    try {
+      await initializeTabsForSession();
+    } catch (tabErr) {
+      console.warn('[App] Tab session ensure failed:', tabErr);
     }
   }
 );

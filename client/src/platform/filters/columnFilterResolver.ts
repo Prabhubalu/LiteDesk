@@ -1,4 +1,5 @@
 import type { FilterConfig } from '@/platform/filters/filterResolver';
+import { normalizeFilterSelectOptions } from '@/utils/picklistOptionUtils';
 
 export type ColumnFilterSource = {
   key: string;
@@ -149,7 +150,7 @@ export function resolveColumnFilterConfig(column: ColumnFilterSource): FilterCon
     filterType,
     fieldPath: column.key,
     priority: 999,
-    options: column.options ? [...column.options] : [],
+    options: normalizeFilterSelectOptions(column.options || []),
   };
 }
 
@@ -160,11 +161,7 @@ export function buildFilterConfigByKey(
   for (const column of columns) {
     if (!column?.key) continue;
     const config = resolveColumnFilterConfig(column);
-    if (column.options?.length) {
-      map[column.key] = { ...config, options: [...column.options] };
-    } else {
-      map[column.key] = config;
-    }
+    map[column.key] = config;
   }
   return map;
 }

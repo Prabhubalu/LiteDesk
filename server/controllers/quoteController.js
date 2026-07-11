@@ -64,6 +64,9 @@ async function createQuote(req, res) {
     const approvalRequiredDefault =
       req.body?.approvalRequired === true || orgQuoteSettings.requireApprovalBeforeSend === true;
 
+    const { resolveCurrencyOrOrgDefault } = require('../utils/orgCurrency');
+    const currency = await resolveCurrencyOrOrgDefault(req.body?.currency, organizationId);
+
     const quote = await Quote.create({
       organizationId,
       assignedTo,
@@ -71,7 +74,7 @@ async function createQuote(req, res) {
       quoteDate: req.body?.quoteDate ?? new Date(),
       validUntil: req.body?.validUntil ?? null,
       status: status ?? undefined,
-      currency: req.body?.currency ?? 'USD',
+      currency,
       exchangeRateSnapshot: normalizeNumber(req.body?.exchangeRateSnapshot, { defaultValue: 1 }),
 
       // Optional links + metadata

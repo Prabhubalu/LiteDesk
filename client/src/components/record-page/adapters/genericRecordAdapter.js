@@ -25,6 +25,23 @@ import { isFieldVisibleInContext } from '@/utils/fieldContextFilter';
 import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import { normalizeModuleKeyForRegistry, classifyFieldForModule } from '@/platform/fields/FieldRegistry';
 import { getAllowedNextQuoteStatuses } from '@/constants/quoteLifecycle';
+import {
+  getPicklistOptionValue,
+  getSemanticPicklistColor,
+} from '@/utils/picklistColorPalette';
+import { picklistBadgeStyle } from '@/utils/peopleParticipationPicklistColors';
+import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import {
+  formatPeopleNameWithSalutation,
+  getPeopleSalutationOptionsFromModuleFields,
+  resolvePeopleSalutation,
+} from '@/platform/fields/peopleSalutationField';
+import {
+  getPrimaryOrganizationStatusFieldKey,
+  isOrganizationDerivedStatusSystemOwned,
+  resolveOrganizationKeyFieldStatus,
+} from '@/platform/fields/organizationFieldModel';
+import { getAllowedStatusesForOrganizationStatusField } from '@/platform/organizations/organizationIntents';
 
 const KEY_SECTION_EXCLUDED = new Set(['name', 'title', 'description']);
 const DETAIL_EXCLUDED = new Set([
@@ -118,9 +135,53 @@ function formatActivitiesForDetailPane(rawList) {
   return `${n} ${n === 1 ? 'entry' : 'entries'}${more}` + (parts.length ? ` — ${parts.join(' · ')}` : '');
 }
 
+function isMultiPicklistField(field) {
+  const dt = String(field?.dataType || '').toLowerCase();
+  return dt.includes('multi-picklist') || dt.includes('multi picklist');
+}
+
+function normalizeArrayFieldValue(value) {
+  if (value == null || value === '') return null;
+  if (Array.isArray(value)) return value.length ? value : null;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return parsed.length ? parsed : null;
+      } catch {
+        // fall through
+      }
+    }
+  }
+  return value;
+}
+
+function buildPicklistTagChipStyleResolver(fieldDef, moduleKey) {
+  const options = normalizeSelectOptions(fieldDef?.options);
+  const mk = String(moduleKey || '').toLowerCase();
+  const fieldKey = String(fieldDef?.key || '');
+  return (tag) => {
+    const tagStr = String(tag ?? '').trim();
+    if (!tagStr) return {};
+    const opt = options.find((o) => {
+      const v = String(o.value ?? '').trim();
+      const l = String(o.label ?? '').trim();
+      return (
+        v.toLowerCase() === tagStr.toLowerCase()
+        || l.toLowerCase() === tagStr.toLowerCase()
+        || getPicklistOptionValue(o).toLowerCase() === tagStr.toLowerCase()
+      );
+    });
+    const color = opt?.color || getSemanticPicklistColor(fieldKey, tagStr, mk);
+    return picklistBadgeStyle(color);
+  };
+}
+
 function fieldTypeFromDef(field, fieldKey) {
   const key = String(fieldKey || field?.key || '').trim().toLowerCase();
   if (key === 'tags') return 'tags';
+  if (isMultiPicklistField(field)) return 'multi-select';
   if (!field) {
     if (/(created|updated|modified|deleted|closed|start|end).*(at|date)/i.test(key) || ['duedate', 'birthday'].includes(key)) return 'date';
     if (key === 'assignedto') return 'user';
@@ -158,7 +219,10 @@ function normalizeSelectOptions(options) {
       const value = option.value ?? option.id ?? option._id ?? option.key ?? option.name;
       if (value == null) return null;
       const label = option.label ?? option.name ?? option.title ?? String(value);
-      return { value, label };
+      const normalized = { value, label };
+      if (option.color) normalized.color = option.color;
+      if (option.enabled === false) normalized.enabled = false;
+      return normalized;
     })
     .filter(Boolean);
 }
@@ -194,9 +258,10 @@ function iconForKey(key, field) {
     k === 'lead_status' ||
     k === 'contact_status' ||
     k === 'item_type' ||
+    k === 'lifecycle_state' ||
     k === 'types' ||
     k === 'helpdesk_role';
-  if (['stage', 'status', 'tags'].some((x) => k.includes(x)) || isSelectLikeTypeKey || dt.includes('select')) return TagIcon;
+  if (['stage', 'status', 'tags'].some((x) => k.includes(x)) || isSelectLikeTypeKey || dt.includes('select') || dt.includes('picklist')) return TagIcon;
   if (['organization', 'account', 'company'].some((x) => k.includes(x))) return BuildingOfficeIcon;
   if (['link', 'related'].some((x) => k.includes(x))) return LinkIcon;
   return DocumentTextIcon;
@@ -217,12 +282,14 @@ function getStateKeys(moduleDefinition, fieldContext = 'platform') {
     .filter((k) => k && !KEY_SECTION_EXCLUDED.has(k) && !displayExcluded.has(normKey(k)));
 }
 
-function getDetailFieldKeys(moduleDefinition, moduleKey = '', fieldContext = 'platform') {
+function getDetailFieldKeys(moduleDefinition, moduleKey = '', fieldContext = 'platform', options = {}) {
   const def = resolveValue(moduleDefinition);
   const displayExcluded = getDisplayExcludedKeys();
   const excluded = new Set([...displayExcluded, ...getStateKeys(def, fieldContext).map(normKey)]);
   const normalizedModuleKey = String(moduleKey || '').toLowerCase().trim();
   const fields = filterFieldsForRecordSurface(Array.isArray(def?.fields) ? def.fields : [], fieldContext);
+  const orgTypes = options.organizationSelectedTypes;
+  const orgTypeDefs = options.organizationTypeDefs ?? null;
   return fields
     .map((f, index) => ({ f, index }))
     .filter(({ f }) => {
@@ -231,7 +298,15 @@ function getDetailFieldKeys(moduleDefinition, moduleKey = '', fieldContext = 'pl
       if (excluded.has(normKey(key))) return false;
       if (normalizedModuleKey === 'items' && ITEM_CATALOG_DETAIL_EXCLUDED.has(normKey(key))) return false;
       if (normalizedModuleKey === 'documents' && DOCUMENT_FILE_DETAIL_EXCLUDED.has(normKey(key))) return false;
-      if (shouldHideDetailField(f, normalizedModuleKey, { enforceRegistryKnown: true })) return false;
+      if (
+        shouldHideDetailField(f, normalizedModuleKey, {
+          enforceRegistryKnown: true,
+          organizationSelectedTypes: orgTypes,
+          organizationTypeDefs: orgTypeDefs
+        })
+      ) {
+        return false;
+      }
       const vis = f?.visibility;
       return vis?.detail !== false;
     })
@@ -299,10 +374,12 @@ function getFieldGroupMeta(fieldDef, moduleKeyRaw, groupLabels = null) {
  * All module fields for the record right-pane Details tab: includes key fields, name/title/description,
  * system + audit fields (read-only in UI via canEditField); still hides trash/infra blobs.
  */
-function getRecordPaneAllModuleFieldKeys(moduleDefinition, moduleKey = '', fieldContext = 'platform') {
+function getRecordPaneAllModuleFieldKeys(moduleDefinition, moduleKey = '', fieldContext = 'platform', options = {}) {
   const def = resolveValue(moduleDefinition);
   const normalizedModuleKey = String(moduleKey || '').toLowerCase().trim();
   const fields = filterFieldsForRecordSurface(Array.isArray(def?.fields) ? def.fields : [], fieldContext);
+  const orgTypes = options.organizationSelectedTypes;
+  const orgTypeDefs = options.organizationTypeDefs ?? null;
   return fields
     .map((f, index) => ({ f, index }))
     .filter(({ f }) => {
@@ -310,7 +387,14 @@ function getRecordPaneAllModuleFieldKeys(moduleDefinition, moduleKey = '', field
       if (!key) return false;
       if (normalizedModuleKey === 'items' && ITEM_CATALOG_DETAIL_EXCLUDED.has(normKey(key))) return false;
       if (normalizedModuleKey === 'documents' && DOCUMENT_FILE_DETAIL_EXCLUDED.has(normKey(key))) return false;
-      if (shouldHideRecordPaneDetailField(f, normalizedModuleKey)) return false;
+      if (
+        shouldHideRecordPaneDetailField(f, normalizedModuleKey, {
+          organizationSelectedTypes: orgTypes,
+          organizationTypeDefs: orgTypeDefs
+        })
+      ) {
+        return false;
+      }
       const vis = f?.visibility;
       return vis?.detail !== false;
     })
@@ -352,6 +436,13 @@ export function createGenericRecordAdapter(opts = {}) {
     getEntityOptions
   } = opts;
 
+  const resolveOrganizationTypeDefs = () => {
+    const raw = opts.organizationTypeDefs;
+    if (raw == null) return null;
+    if (typeof raw === 'object' && 'value' in raw) return raw.value ?? null;
+    return raw;
+  };
+
   const L = sl || {
     description: 'Description',
     details: 'Details',
@@ -373,10 +464,26 @@ export function createGenericRecordAdapter(opts = {}) {
     const list = getEntityOptions(fieldKey);
     if (!Array.isArray(list) || list.length === 0) return [];
     return list.map((item) => {
-      if (item && typeof item === 'object' && 'value' in item && 'label' in item) return { value: item.value, label: item.label };
+      if (item && typeof item === 'object' && 'value' in item && 'label' in item) {
+        return {
+          value: item.value,
+          label: item.label,
+          firstName: item.firstName ?? item.first_name,
+          lastName: item.lastName ?? item.last_name,
+          email: item.email,
+          avatar: item.avatar,
+        };
+      }
       const id = item._id ?? item.id;
       const label = item.name ?? item.title ?? item.label ?? (id != null ? String(id) : '—');
-      return { value: id, label };
+      return {
+        value: id,
+        label,
+        firstName: item.firstName ?? item.first_name,
+        lastName: item.lastName ?? item.last_name,
+        email: item.email,
+        avatar: item.avatar,
+      };
     });
   }
 
@@ -389,6 +496,7 @@ export function createGenericRecordAdapter(opts = {}) {
       const groupMeta = getFieldGroupMeta(field || { key: fieldKey }, moduleKeyStr, L);
       const fieldType = fieldTypeFromDef(field, fieldKey);
       const normalizedFieldKey = String(fieldKey || '').toLowerCase().trim();
+      const isMultiSelect = fieldType === 'multi-select';
       // Helpdesk: schema uses camelCase (contactId) but field defs may use "Contact Id", contactid, etc.
       const caseLoose = String(fieldKey || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
       const caseCanonicalByLoose =
@@ -405,6 +513,9 @@ export function createGenericRecordAdapter(opts = {}) {
       ) {
         rawValue = record[canonicalKey];
       }
+      if (isMultiSelect) {
+        rawValue = normalizeArrayFieldValue(rawValue) || [];
+      }
       const isArrayBackedSelect = fieldType === 'select' && (
         Array.isArray(rawValue) ||
         String(field?.dataType || '').toLowerCase().includes('multi') ||
@@ -414,7 +525,7 @@ export function createGenericRecordAdapter(opts = {}) {
         normalizedFieldKey === 'types'
       );
       const entityOpts = (fieldType === 'entity' || fieldType === 'user') ? entityOptionsFor(fieldKey) : [];
-      let options = fieldType === 'select'
+      let options = fieldType === 'select' || isMultiSelect
         ? normalizeSelectOptions(field?.options)
         : ((fieldType === 'entity' || fieldType === 'user') ? entityOpts : []);
 
@@ -426,7 +537,18 @@ export function createGenericRecordAdapter(opts = {}) {
         options = scoped.map((s) => ({ value: s, label: s }));
       }
       let displayValue = rawValue;
-      if (fieldKey === 'tags' && Array.isArray(rawValue)) {
+      if (isMultiSelect && Array.isArray(rawValue)) {
+        const labels = rawValue.map((item) => {
+          const itemId = item != null && typeof item === 'object' ? (item.value ?? item._id ?? item.id) : item;
+          if (itemId == null) return '';
+          const matchedOption = (options || []).find((opt) => {
+            const optId = opt?.value ?? opt?._id ?? opt?.id;
+            return optId != null && String(optId) === String(itemId);
+          });
+          return matchedOption?.label ?? String(itemId);
+        }).filter(Boolean);
+        displayValue = labels.join(', ');
+      } else if (fieldKey === 'tags' && Array.isArray(rawValue)) {
         displayValue = rawValue.length ? rawValue.join(', ') : '';
       } else if (normalizedFieldKey === 'activities' && Array.isArray(rawValue)) {
         displayValue = formatActivitiesForDetailPane(rawValue);
@@ -502,6 +624,9 @@ export function createGenericRecordAdapter(opts = {}) {
       if (displayValue != null && displayValue !== '') {
         displayValue = stripHtmlForDetailDisplay(displayValue, field || { key: fieldKey });
       }
+      if (moduleKeyStr === 'people' && normalizedFieldKey === 'first_name') {
+        displayValue = formatPeopleNameWithSalutation(resolvePeopleSalutation(record), rawValue);
+      }
       const isTags = fieldType === 'tags';
       const registryMk = normalizeModuleKeyForRegistry(moduleKeyStr);
       let engineAllowsEdit = true;
@@ -527,8 +652,11 @@ export function createGenericRecordAdapter(opts = {}) {
         engineAllowsEdit &&
         !isTags &&
         canEditDetails?.(record, fieldKey) === true &&
-        ['text', 'url', 'phone', 'number', 'date', 'select', 'entity', 'user'].includes(fieldType);
+        ['text', 'url', 'phone', 'number', 'date', 'select', 'entity', 'user', 'multi-select'].includes(fieldType);
       const canOpenTagsEditor = isTags && typeof context?.openTagsEditor === 'function';
+      const tagChipStyleResolver = isMultiSelect
+        ? buildPicklistTagChipStyleResolver(field, moduleKeyStr)
+        : undefined;
       const orgId = rawValue != null && typeof rawValue === 'object' ? (rawValue._id ?? rawValue.id) : (typeof rawValue === 'string' && rawValue.trim() ? rawValue.trim() : null);
       const recordPathForEntity = fieldType === 'entity' && orgId != null && /^(organization|account|company|organizationrefid)$/.test(String(fieldKey).toLowerCase())
         ? `/organizations/${orgId}`
@@ -537,7 +665,9 @@ export function createGenericRecordAdapter(opts = {}) {
         key: fieldKey,
         label: field ? getFieldDisplayLabel(field) : toReadableLabel(fieldKey),
         prefixIcon: iconForKey(fieldKey, field),
-        value: fieldKey === 'tags' ? (Array.isArray(rawValue) ? rawValue : (rawValue != null && rawValue !== '' ? [].concat(rawValue) : [])) : rawValue,
+        value: fieldKey === 'tags' || isMultiSelect
+          ? (Array.isArray(rawValue) ? rawValue : (rawValue != null && rawValue !== '' ? [].concat(rawValue) : []))
+          : rawValue,
         displayValue: displayValue == null || String(displayValue).trim() === '' ? '' : String(displayValue),
         type: fieldType,
         multiline: isRichTextField || undefined,
@@ -545,8 +675,19 @@ export function createGenericRecordAdapter(opts = {}) {
         options,
         recordPath: recordPathForEntity,
         canEdit,
+        peopleFirstNameWithSalutation: moduleKeyStr === 'people' && normalizedFieldKey === 'first_name',
+        salutationValue: moduleKeyStr === 'people' && normalizedFieldKey === 'first_name'
+          ? (resolvePeopleSalutation(record) || '')
+          : '',
+        salutationOptions: moduleKeyStr === 'people' && normalizedFieldKey === 'first_name'
+          ? getPeopleSalutationOptionsFromModuleFields(def?.fields)
+          : [],
         onSave: canEdit
           ? (value) => {
+            if (isMultiSelect) {
+              const next = Array.isArray(value) ? value : normalizeArrayFieldValue(value) || [];
+              return saveDetailField?.(fieldKey, next, record);
+            }
             if (isArrayBackedSelect) {
               const nextValue = value == null || value === '' ? [] : [value];
               return saveDetailField?.(fieldKey, nextValue, record);
@@ -557,6 +698,7 @@ export function createGenericRecordAdapter(opts = {}) {
         canOpenEditor: canOpenTagsEditor,
         onEdit: canOpenTagsEditor ? (e) => context.openTagsEditor(e, fieldKey, record) : null,
         getTagChipClass: isTags ? (typeof context?.getTagChipClass === 'function' ? context.getTagChipClass : getDefaultTagChipClass) : undefined,
+        getTagChipStyle: tagChipStyleResolver,
         groupId: groupMeta.id,
         groupLabel: groupMeta.label,
         groupSortOrder: groupMeta.sortOrder,
@@ -654,27 +796,108 @@ export function createGenericRecordAdapter(opts = {}) {
         context?.fieldContext != null && String(context.fieldContext).trim() !== ''
           ? String(context.fieldContext).toLowerCase()
           : 'platform';
+      const moduleKeyStr = String(context?.moduleKey || context?.module || '').toLowerCase().trim();
       const keys = getStateKeys(def, fieldCtx);
       const fieldsByKey = new Map((def?.fields || []).map((f) => [String(f.key).trim(), f]));
       return keys.map((fieldKey) => {
         const field = fieldsByKey.get(fieldKey);
-        const fieldType = fieldTypeFromDef(field, fieldKey);
+        const isOrgDerivedStatus = moduleKeyStr === 'organizations' && normKey(fieldKey) === 'derivedstatus';
+        const backingStatusFieldKey = isOrgDerivedStatus
+          ? getPrimaryOrganizationStatusFieldKey(record?.types)
+          : null;
+        const backingStatusField = backingStatusFieldKey ? fieldsByKey.get(backingStatusFieldKey) : null;
+        let fieldType = fieldTypeFromDef(field, fieldKey);
+        if (isOrgDerivedStatus && backingStatusField) {
+          fieldType = 'select';
+        }
         const isTags = fieldType === 'tags';
-        const canEdit = !isTags && canEditDetails?.(null, fieldKey) === true && ['text', 'url', 'phone', 'number', 'date', 'select', 'entity', 'user'].includes(fieldType);
+        const isPeopleFirstName = moduleKeyStr === 'people' && normKey(fieldKey) === 'first_name';
+        let canEdit = !isTags && canEditDetails?.(null, fieldKey) === true && ['text', 'url', 'phone', 'number', 'date', 'select', 'entity', 'user', 'multi-select'].includes(fieldType);
+        if (isOrgDerivedStatus) {
+          const systemOwned = isOrganizationDerivedStatusSystemOwned(record);
+          canEdit = !systemOwned
+            && Boolean(backingStatusFieldKey)
+            && canEditDetails?.(record, backingStatusFieldKey) === true;
+        }
         const canOpenTagsEditor = isTags && typeof context?.openTagsEditor === 'function';
+        const tagChipClassResolver = isTags
+          ? (typeof context?.getTagChipClass === 'function' ? context.getTagChipClass : getDefaultTagChipClass)
+          : undefined;
+        const tagChipStyleResolver = (fieldType === 'multi-select' || fieldType === 'select')
+          ? buildPicklistTagChipStyleResolver(field, moduleKeyStr)
+          : undefined;
+        let selectOptions = fieldType === 'select' || fieldType === 'multi-select'
+          ? normalizeSelectOptions(field?.options)
+          : ((fieldType === 'entity' || fieldType === 'user') ? entityOptionsFor(fieldKey) : []);
+        if (
+          fieldType === 'entity'
+          && selectOptions.length === 0
+          && normKey(fieldKey) === 'categoryid'
+          && record?.category
+        ) {
+          const catId = record.categoryId && typeof record.categoryId === 'object'
+            ? (record.categoryId._id ?? record.categoryId.id)
+            : record.categoryId;
+          if (catId) {
+            selectOptions = [{ value: catId, label: String(record.category) }];
+          }
+        }
+        if (isOrgDerivedStatus && backingStatusFieldKey) {
+          const fromModule = normalizeSelectOptions(backingStatusField?.options);
+          if (fromModule.length > 0) {
+            selectOptions = fromModule;
+          } else {
+            const allowed = getAllowedStatusesForOrganizationStatusField(
+              backingStatusFieldKey,
+              Array.isArray(record?.types) ? record.types : []
+            );
+            selectOptions = allowed.map((status) => ({ value: status, label: status }));
+          }
+        }
+        const picklistStyleField = isOrgDerivedStatus && backingStatusField
+          ? { ...backingStatusField, key: backingStatusFieldKey }
+          : field;
+        const derivedStatusChipStyle = isOrgDerivedStatus && fieldType === 'select'
+          ? buildPicklistTagChipStyleResolver(picklistStyleField, moduleKeyStr)
+          : tagChipStyleResolver;
+        const isCurrencyField =
+          String(field?.dataType || '').toLowerCase().includes('currency')
+          || ['selling_price', 'cost_price'].includes(String(fieldKey || '').toLowerCase());
         return {
           key: fieldKey,
           label: field ? getFieldDisplayLabel(field) : toReadableLabel(fieldKey),
           icon: iconForKey(fieldKey, field),
           type: fieldType,
-          options: fieldType === 'select'
-            ? normalizeSelectOptions(field?.options)
-            : ((fieldType === 'entity' || fieldType === 'user') ? entityOptionsFor(fieldKey) : []),
+          options: selectOptions,
           canEdit,
-          onSave: canEdit ? (value) => saveDetailField?.(fieldKey, value, record) : null,
+          peopleFirstNameWithSalutation: isPeopleFirstName,
+          salutationValue: isPeopleFirstName ? (resolvePeopleSalutation(record) || '') : '',
+          salutationOptions: isPeopleFirstName
+            ? getPeopleSalutationOptionsFromModuleFields(def?.fields)
+            : [],
+          formatValue: isCurrencyField
+            ? (raw) => {
+              const num = Number(raw);
+              if (!Number.isFinite(num)) return raw == null || raw === '' ? '' : String(raw);
+              return formatCurrencyValue(num, {
+                currencyCode: resolveOrgCurrencyCode(),
+                maximumFractionDigits: num >= 1000 ? 0 : 2,
+              }) || String(raw);
+            }
+            : undefined,
+          onSave: canEdit
+            ? (value) => {
+              if (fieldType === 'multi-select') {
+                const next = Array.isArray(value) ? value : [];
+                return saveDetailField?.(fieldKey, next, record);
+              }
+              return saveDetailField?.(fieldKey, value, record);
+            }
+            : null,
           canOpenEditor: canOpenTagsEditor,
           onEdit: canOpenTagsEditor ? (e) => context.openTagsEditor(e, fieldKey, record) : null,
-          getTagChipClass: isTags ? (typeof context?.getTagChipClass === 'function' ? context.getTagChipClass : getDefaultTagChipClass) : undefined
+          getTagChipClass: tagChipClassResolver,
+          getTagChipStyle: derivedStatusChipStyle,
         };
       });
     },
@@ -685,16 +908,35 @@ export function createGenericRecordAdapter(opts = {}) {
         context?.fieldContext != null && String(context.fieldContext).trim() !== ''
           ? String(context.fieldContext).toLowerCase()
           : 'platform';
+      const moduleKeyStr = String(context?.moduleKey || context?.module || '').toLowerCase().trim();
       const keys = getStateKeys(def, fieldCtx);
+      const fieldsByKey = new Map((def?.fields || []).map((f) => [String(f.key).trim(), f]));
       const values = {};
       for (const key of keys) {
+        if (moduleKeyStr === 'organizations' && normKey(key) === 'derivedstatus') {
+          values[key] = resolveOrganizationKeyFieldStatus(record);
+          continue;
+        }
         const v = record?.[key];
-        if (key === 'tags') {
-          values[key] = Array.isArray(v) ? v : (v != null && v !== '' ? [].concat(v) : []);
+        const fieldDef = fieldsByKey.get(key);
+        if (moduleKeyStr === 'people' && normKey(key) === 'first_name') {
+          const formatted = formatPeopleNameWithSalutation(resolvePeopleSalutation(record), v);
+          values[key] = formatted || null;
+          continue;
+        }
+        if (key === 'tags' || isMultiPicklistField(fieldDef) || fieldTypeFromDef(fieldDef, key) === 'multi-select') {
+          const normalized = normalizeArrayFieldValue(v);
+          values[key] = Array.isArray(normalized) ? normalized : (normalized != null && normalized !== '' ? [].concat(normalized) : []);
           continue;
         }
         if (v == null || v === '') {
           values[key] = null;
+          continue;
+        }
+        const valueFieldType = fieldTypeFromDef(fieldDef, key);
+        // Keep user/entity raw values so EditableLabeledValue can resolve labels/avatars from options.
+        if (valueFieldType === 'user' || valueFieldType === 'entity') {
+          values[key] = v;
           continue;
         }
         if (typeof v === 'object' && (v?.name ?? v?.title ?? v?.firstName ?? v?.email)) {
@@ -719,7 +961,12 @@ export function createGenericRecordAdapter(opts = {}) {
           ? String(context.fieldContext).toLowerCase()
           : 'platform';
       const allFields = Array.isArray(def?.fields) ? def.fields : [];
-      let detailKeys = getDetailFieldKeys(def, moduleKey, fieldCtx);
+      const orgTypes = Array.isArray(record?.types) ? record.types : [];
+      const orgOpts = {
+        organizationSelectedTypes: orgTypes,
+        organizationTypeDefs: resolveOrganizationTypeDefs()
+      };
+      let detailKeys = getDetailFieldKeys(def, moduleKey, fieldCtx, orgOpts);
       if (moduleKey === 'people') {
         detailKeys = filterFieldKeysByDependencies(detailKeys, allFields, record, moduleKey);
       }
@@ -739,7 +986,12 @@ export function createGenericRecordAdapter(opts = {}) {
         context?.fieldContext != null && String(context.fieldContext).trim() !== ''
           ? String(context.fieldContext).toLowerCase()
           : 'platform';
-      let keys = getRecordPaneAllModuleFieldKeys(def, moduleKey, fieldCtx);
+      const orgTypes = Array.isArray(record?.types) ? record.types : [];
+      const orgOpts = {
+        organizationSelectedTypes: orgTypes,
+        organizationTypeDefs: resolveOrganizationTypeDefs()
+      };
+      let keys = getRecordPaneAllModuleFieldKeys(def, moduleKey, fieldCtx, orgOpts);
       if (moduleKey === 'people') {
         keys = filterFieldKeysByDependencies(keys, Array.isArray(def?.fields) ? def.fields : [], record, moduleKey);
       }

@@ -1358,5 +1358,13 @@
   "recordKnowledgeEmpty": {
     "message": "No matching articles. Try different keywords.",
     "description": "Knowledge panel empty state"
+  },
+  "sysFieldContactId": {
+    "message": "Contact",
+    "description": "System case field label for contactId"
+  },
+  "sysFieldOrganizationRefId": {
+    "message": "Organization",
+    "description": "System case field label for organizationRefId"
   }
 }

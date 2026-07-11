@@ -70,7 +70,7 @@ async function findActiveReferences(moduleKey, recordId, organizationId) {
     const activeDeals = await Deal.find({
       organizationId,
       contactId: recordId,
-      status: { $in: ['Open', 'Active'] },
+      status: 'Open',
       deletedAt: null
     }).select('_id name status').lean();
     
@@ -104,7 +104,7 @@ async function findActiveReferences(moduleKey, recordId, organizationId) {
     const activeDeals = await Deal.find({
       organizationId,
       accountId: recordId,
-      status: { $in: ['Open', 'Active'] },
+      status: 'Open',
       deletedAt: null
     }).select('_id name status').lean();
     
@@ -216,7 +216,7 @@ async function findActiveReferencesBulk(moduleKey, recordIds, organizationId) {
     const activeDeals = await Deal.find({
       organizationId,
       contactId: { $in: objectIds },
-      status: { $in: ['Open', 'Active'] },
+      status: 'Open',
       deletedAt: null
     }).select('_id name status contactId').lean();
 
@@ -249,7 +249,7 @@ async function findActiveReferencesBulk(moduleKey, recordIds, organizationId) {
     const activeDeals = await Deal.find({
       organizationId,
       accountId: { $in: objectIds },
-      status: { $in: ['Open', 'Active'] },
+      status: 'Open',
       deletedAt: null
     }).select('_id name status accountId').lean();
 
@@ -666,7 +666,7 @@ async function validateUnlink(context) {
       organizationId,
       contactId: recordId,
       accountId: currentOrgId,
-      status: { $in: ['Open', 'Active'] }
+      status: 'Open'
     }).select('_id name status').lean();
     
     if (activeDeals.length === 0) {

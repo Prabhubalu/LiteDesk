@@ -37,7 +37,7 @@
  * 
  * 4. Quick Create eligibility
  *    - All platform-core fields are configurable in Quick Create settings
- *    - Default runtime Quick Create is minimal (name only); admins opt in to more fields
+ *    - Default runtime Quick Create includes core identity fields; admins configure more in Settings
  *    - System and tenant fields are excluded
  *    - See: docs/architecture/organization-settings.md
  * 
@@ -189,6 +189,15 @@ export const ORGANIZATION_FIELD_METADATA: Record<string, OrganizationFieldMetada
     filterPriority: 10,
   },
   derivedStatus: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isComputed: true,
+    isVisibleInConfig: true,
+  },
+  lastActivity: {
     owner: 'system',
     intent: 'system',
     fieldScope: 'CORE',
@@ -426,6 +435,14 @@ export const ORGANIZATION_FIELD_METADATA: Record<string, OrganizationFieldMetada
     filterType: 'date',
     filterPriority: 14,
   },
+  partnerOnboardingSteps: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
+  },
   territory: {
     owner: 'core',
     intent: 'detail',
@@ -623,6 +640,271 @@ export function getOrganizationSystemFields(): string[] {
     .map(([fieldName]) => fieldName);
 }
 
+// =============================================================================
+// ORGANIZATION TYPE → FIELD VISIBILITY (platform defaults + tenant overrides)
+// =============================================================================
+
+/** Fields always visible regardless of selected organization types. */
+export const ORGANIZATION_ALWAYS_VISIBLE_FIELD_KEYS = new Set([
+  'name',
+  'industry',
+  'website',
+  'phone',
+  'address',
+  'types',
+  'tags',
+  'assignedTo',
+  'accountManager',
+  'primaryContact',
+  'isActive',
+]);
+
+/**
+ * Platform default fields shown when each organization type is selected.
+ * Tenant overrides via Settings → Organizations → Status & Types (`fields` per type).
+ */
+export const ORGANIZATION_TYPE_FIELDS: Record<string, readonly string[]> = {
+  Customer: [
+    'customerStatus',
+    'customerTier',
+    'slaLevel',
+    'paymentTerms',
+    'creditLimit',
+    'accountManager',
+    'annualRevenue',
+    'numberOfEmployees',
+  ],
+  Partner: [
+    'partnerStatus',
+    'partnerTier',
+    'partnerType',
+    'partnerSince',
+    'territory',
+    'discountRate',
+  ],
+  Vendor: [
+    'vendorStatus',
+    'vendorRating',
+    'vendorContract',
+    'preferredPaymentMethod',
+    'taxId',
+  ],
+  Distributor: ['channelRegion', 'distributionTerritory', 'distributionCapacityMonthly'],
+  Dealer: ['dealerLevel', 'terms', 'shippingAddress', 'logisticsPartner'],
+};
+
+export type OrganizationTypeFieldDef = { value: string; fields?: string[] };
+
+function normalizeOrgTypeLabel(type: string): string {
+  return String(type ?? '').trim();
+}
+
+function findOrganizationTypeDef(
+  type: string,
+  typeDefs?: ReadonlyArray<OrganizationTypeFieldDef> | null
+): OrganizationTypeFieldDef | undefined {
+  const want = normalizeOrgTypeLabel(type).toLowerCase();
+  if (!want || !typeDefs?.length) return undefined;
+  return typeDefs.find((d) => normalizeOrgTypeLabel(d?.value ?? '').toLowerCase() === want);
+}
+
+function platformDefaultFieldsForType(type: string): string[] {
+  const normalized = normalizeOrgTypeLabel(type);
+  if (!normalized) return [];
+  const direct = ORGANIZATION_TYPE_FIELDS[normalized];
+  if (direct) return [...direct];
+  const key = Object.keys(ORGANIZATION_TYPE_FIELDS).find(
+    (k) => k.toLowerCase() === normalized.toLowerCase()
+  );
+  const fields = key ? ORGANIZATION_TYPE_FIELDS[key] : undefined;
+  return fields ? [...fields] : [];
+}
+
+/**
+ * Field keys eligible for per-type configuration (platform type-scoped + other core fields).
+ */
+export function getOrganizationTypeScopedFieldPool(): string[] {
+  const pool = new Set<string>();
+  for (const fields of Object.values(ORGANIZATION_TYPE_FIELDS)) {
+    for (const f of fields) pool.add(f);
+  }
+  for (const [fieldName, metadata] of Object.entries(ORGANIZATION_FIELD_METADATA)) {
+    if (metadata.owner !== 'core') continue;
+    if (ORGANIZATION_ALWAYS_VISIBLE_FIELD_KEYS.has(fieldName)) continue;
+    pool.add(fieldName);
+  }
+  return [...pool].sort((a, b) => a.localeCompare(b));
+}
+
+export function isOrganizationAlwaysVisibleField(fieldKey: string): boolean {
+  const k = normalizeFieldKeyForMetadataLookup(fieldKey);
+  for (const always of ORGANIZATION_ALWAYS_VISIBLE_FIELD_KEYS) {
+    if (normalizeFieldKeyForMetadataLookup(always) === k) return true;
+  }
+  return false;
+}
+
+export function isOrganizationTypeScopedFieldKey(fieldKey: string): boolean {
+  if (isOrganizationAlwaysVisibleField(fieldKey)) return false;
+  const k = normalizeFieldKeyForMetadataLookup(fieldKey);
+  const pool = getOrganizationTypeScopedFieldPool();
+  return pool.some((p) => normalizeFieldKeyForMetadataLookup(p) === k);
+}
+
+/**
+ * Resolved field keys for one organization type (tenant override or platform default).
+ */
+export function getOrganizationFieldsForType(
+  type: string,
+  typeDefs?: ReadonlyArray<OrganizationTypeFieldDef> | null
+): string[] {
+  const match = findOrganizationTypeDef(type, typeDefs);
+  if (match && match.fields !== undefined) {
+    return Array.isArray(match.fields) ? [...match.fields] : [];
+  }
+  return platformDefaultFieldsForType(type);
+}
+
+/**
+ * Union of type-scoped fields for all selected types (multi-select `types` array).
+ */
+export function getOrganizationFieldsForTypes(
+  selectedTypes: ReadonlyArray<string> | null | undefined,
+  typeDefs?: ReadonlyArray<OrganizationTypeFieldDef> | null
+): string[] {
+  const types = (selectedTypes ?? []).map((t) => normalizeOrgTypeLabel(t)).filter(Boolean);
+  if (types.length === 0) return [];
+  const out = new Set<string>();
+  for (const type of types) {
+    for (const f of getOrganizationFieldsForType(type, typeDefs)) {
+      out.add(f);
+    }
+  }
+  return [...out];
+}
+
+/**
+ * Whether a field should show for the current organization type selection.
+ * Always-visible and non-type-scoped fields return true.
+ */
+export function shouldShowOrganizationFieldForTypes(
+  fieldKey: string,
+  selectedTypes: ReadonlyArray<string> | null | undefined,
+  typeDefs?: ReadonlyArray<OrganizationTypeFieldDef> | null
+): boolean {
+  const key = String(fieldKey ?? '').trim();
+  if (!key) return false;
+  if (isOrganizationAlwaysVisibleField(key)) return true;
+  if (!isOrganizationTypeScopedFieldKey(key)) return true;
+  const allowed = getOrganizationFieldsForTypes(selectedTypes, typeDefs);
+  const nk = normalizeFieldKeyForMetadataLookup(key);
+  return allowed.some((f) => normalizeFieldKeyForMetadataLookup(f) === nk);
+}
+
+/**
+ * Filter field keys to those visible for the selected organization types.
+ */
+export function filterOrganizationFieldKeysByTypes(
+  fieldKeys: ReadonlyArray<string>,
+  selectedTypes: ReadonlyArray<string> | null | undefined,
+  typeDefs?: ReadonlyArray<OrganizationTypeFieldDef> | null
+): string[] {
+  return fieldKeys.filter((key) =>
+    shouldShowOrganizationFieldForTypes(key, selectedTypes, typeDefs)
+  );
+}
+
+/** Omit type-scoped fields that are not visible for the selected organization types. */
+export function filterOrganizationSubmitPayloadByTypes(
+  payload: Record<string, unknown> | null | undefined,
+  selectedTypes: ReadonlyArray<string> | null | undefined,
+  typeDefs?: ReadonlyArray<OrganizationTypeFieldDef> | null
+): Record<string, unknown> {
+  if (!payload || typeof payload !== 'object') return {};
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(payload)) {
+    if (!shouldShowOrganizationFieldForTypes(key, selectedTypes, typeDefs)) continue;
+    out[key] = value;
+  }
+  return out;
+}
+
+export function getOrganizationTypesForField(fieldKey: string): string[] {
+  const nk = normalizeFieldKeyForMetadataLookup(fieldKey);
+  const out: string[] = [];
+  for (const [type, fields] of Object.entries(ORGANIZATION_TYPE_FIELDS)) {
+    if (fields.some((f) => normalizeFieldKeyForMetadataLookup(f) === nk)) {
+      out.push(type);
+    }
+  }
+  return out;
+}
+
+/** Status fields with organization intent config (allowed/default status options). */
+export const ORGANIZATION_INTENT_STATUS_FIELD_KEYS = new Set([
+  'customerStatus',
+  'partnerStatus',
+  'vendorStatus',
+]);
+
+const ORGANIZATION_TYPE_PRIMARY_STATUS_FIELD: Record<string, string> = {
+  Customer: 'customerStatus',
+  Partner: 'partnerStatus',
+  Vendor: 'vendorStatus',
+};
+
+/** Primary type-scoped status field for Key Fields / derivedStatus (first selected type). */
+export function getPrimaryOrganizationStatusFieldKey(
+  types: ReadonlyArray<string> | null | undefined
+): string | null {
+  const first = Array.isArray(types)
+    ? types.map((t) => String(t ?? '').trim()).find(Boolean)
+    : null;
+  if (!first) return null;
+  const direct = ORGANIZATION_TYPE_PRIMARY_STATUS_FIELD[first];
+  if (direct) return direct;
+  const match = Object.keys(ORGANIZATION_TYPE_PRIMARY_STATUS_FIELD).find(
+    (k) => k.toLowerCase() === first.toLowerCase()
+  );
+  return match ? (ORGANIZATION_TYPE_PRIMARY_STATUS_FIELD[match] ?? null) : null;
+}
+
+/** Display value for Organizations Key Fields `derivedStatus` (system value or type-scoped fallback). */
+export function resolveOrganizationKeyFieldStatus(
+  record: Record<string, unknown> | null | undefined
+): string | null {
+  if (!record) return null;
+  const derived = record.derivedStatus;
+  if (derived != null && String(derived).trim() !== '') {
+    return String(derived).trim();
+  }
+  const statusFieldKey = getPrimaryOrganizationStatusFieldKey(
+    Array.isArray(record.types) ? record.types : []
+  );
+  if (!statusFieldKey) return null;
+  const raw = record[statusFieldKey];
+  if (raw == null || String(raw).trim() === '') return null;
+  return String(raw).trim();
+}
+
+/** True when config registry has computed a system-owned derived status on the record. */
+export function isOrganizationDerivedStatusSystemOwned(
+  record: Record<string, unknown> | null | undefined
+): boolean {
+  const derived = record?.derivedStatus;
+  return derived != null && String(derived).trim() !== '';
+}
+
+/** Backing status field to persist Key Fields status edits (null when read-only). */
+export function resolveOrganizationDerivedStatusSaveFieldKey(
+  record: Record<string, unknown> | null | undefined
+): string | null {
+  if (isOrganizationDerivedStatusSystemOwned(record)) return null;
+  return getPrimaryOrganizationStatusFieldKey(
+    Array.isArray(record?.types) ? record.types : []
+  );
+}
+
 /**
  * Get all participation fields for a specific app
  */
@@ -643,6 +925,32 @@ export function getOrganizationQuickCreateFields(): string[] {
     .filter(([_, metadata]) => metadata.owner === 'core')
     .map(([fieldName]) => fieldName);
 }
+
+/**
+ * Fields shown in New Organization quick create on a fresh instance.
+ * Keep aligned with INITIAL_ORGANIZATION_QUICK_CREATE in server/constants/organizationModuleDefaults.js.
+ */
+export const ORGANIZATION_QUICK_CREATE_DEFAULT = [
+  'name',
+  'industry',
+  'phone',
+  'website',
+  'assignedTo',
+  'types',
+] as const;
+
+/**
+ * Default key fields for Organizations on a fresh instance.
+ * Keep aligned with INITIAL_ORGANIZATION_KEY_FIELDS in server/constants/organizationModuleDefaults.js.
+ */
+export const ORGANIZATION_DEFAULT_KEY_FIELDS = [
+  'types',
+  'derivedStatus',
+  'industry',
+  'phone',
+  'annualRevenue',
+  'assignedTo',
+] as const;
 
 /**
  * Get all protected fields (cannot be deleted)
@@ -721,6 +1029,7 @@ export const ORGANIZATION_SYSTEM_NON_EDITABLE_FIELD_KEYS = [
   'deletionReason',
   'activityLogs',
   'source',
+  'partnerOnboardingSteps',
 ] as const;
 
 /**
@@ -732,11 +1041,14 @@ export const ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS = [
   'slug',
   'subscription',
   'limits',
+  'usage',
   'enabledApps',
   'enabledModules',
   'moduleOverrides',
   'crmInitialized',
   'settings',
+  'onboarding',
+  'embed',
   'dataRegion',
   'security',
   'integrations',
@@ -745,6 +1057,8 @@ export const ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS = [
   'activityLogs',
   'legacyOrganizationId',
   'descriptionVersions',
+  'emailMergeTagMappings',
+  'emailExternalCssAllowlist',
 ] as const;
 
 const ORGANIZATION_TENANT_PLATFORM_ROOTS_NORM = ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS.map((key) =>
@@ -813,6 +1127,62 @@ export function normalizeOrganizationEditSubmitPayload(
     out[key] = normalizeOrganizationReferenceValue(out[key]);
   }
 
+  return out;
+}
+
+export type OrganizationSubmitPayloadMode = 'create' | 'edit';
+
+/** Build create/edit API payload: type visibility filter + tenant/system strip + shape normalization. */
+export function buildOrganizationSubmitPayload(
+  formData: Record<string, unknown> | null | undefined,
+  typeDefs: ReadonlyArray<OrganizationTypeFieldDef> | null | undefined,
+  mode: OrganizationSubmitPayloadMode,
+  moduleFields?: Array<{ key?: string; dataType?: string }>
+): Record<string, unknown> {
+  const raw: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(formData || {})) {
+    if (key === 'derivedStatus') continue;
+    raw[key] = value;
+  }
+
+  const selectedTypes = Array.isArray(raw.types) ? (raw.types as string[]) : [];
+  let payload = filterOrganizationSubmitPayloadByTypes(raw, selectedTypes, typeDefs);
+  payload = normalizeOrganizationEditSubmitPayload(payload, moduleFields);
+
+  if (mode === 'create') {
+    const cleaned: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(payload)) {
+      if (value === null || value === undefined) continue;
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed === '') continue;
+        cleaned[key] = trimmed;
+        continue;
+      }
+      if (Array.isArray(value)) {
+        if (value.length === 0 && key !== 'types') continue;
+        cleaned[key] = value;
+        continue;
+      }
+      cleaned[key] = value;
+    }
+    if (Array.isArray(cleaned.types) && cleaned.types.length === 0) {
+      delete cleaned.types;
+    }
+    return cleaned;
+  }
+
+  const out: Record<string, unknown> = { ...payload };
+  if (typeof out.name === 'string') {
+    out.name = out.name.trim();
+  }
+  out.types = selectedTypes;
+  for (const [key, value] of Object.entries(out)) {
+    if (key === 'name' || key === 'types') continue;
+    if (typeof value === 'string' && value.trim() === '') {
+      out[key] = null;
+    }
+  }
   return out;
 }
 

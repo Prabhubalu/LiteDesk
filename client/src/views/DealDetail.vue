@@ -505,14 +505,14 @@ const isDealDetailRoute = () => {
   return typeof route.path === 'string' && route.path.startsWith('/deals/');
 };
 
-// Primary Contact: from dealPeople (role=primary_contact, isPrimary=true) or legacy contactId
+// Primary Contact: from dealPeople (isPrimary=true) or legacy contactId — Primary is independent of role
 const primaryContact = computed(() => {
   if (!deal.value) return null;
   
   // Check role-based relationships first
   if (deal.value.dealPeople && Array.isArray(deal.value.dealPeople)) {
     const primary = deal.value.dealPeople.find(
-      (p) => p.isPrimary && p.isActive && p.role === 'primary_contact' && p.personId
+      (p) => p.isPrimary && p.isActive && p.personId
     );
     if (primary && primary.personId) {
       return typeof primary.personId === 'object' ? primary.personId : null;
@@ -561,8 +561,25 @@ const hasMultipleParticipants = computed(() => {
   return allPeople.value.length > 1 || allOrgs.value.length > 1;
 });
 
-const personRoleLabels = { primary_contact: 'Primary contact', decision_maker: 'Decision maker', influencer: 'Influencer', partner_contact: 'Partner contact' };
-const orgRoleLabels = { customer: 'Customer', partner: 'Partner', reseller: 'Reseller' };
+const personRoleLabels = {
+  decision_maker: 'Decision maker',
+  champion: 'Champion',
+  influencer: 'Influencer',
+  technical_contact: 'Technical contact',
+  partner_contact: 'Partner contact',
+  procurement: 'Procurement',
+  legal: 'Legal',
+  other: 'Other',
+  primary_contact: 'Decision maker',
+};
+const orgRoleLabels = {
+  customer: 'Customer',
+  partner: 'Partner',
+  reseller: 'Reseller',
+  distributor: 'Distributor',
+  vendor: 'Vendor',
+  other: 'Other',
+};
 
 function participantPersonName(entry) {
   const p = entry.personId;
@@ -646,8 +663,7 @@ const getStatusClass = (status) => {
   const classes = {
     'Open': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
     'Won': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300',
-    'Lost': 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
-    'Stalled': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
+    'Lost': 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
   };
   return classes[status] || 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
 };

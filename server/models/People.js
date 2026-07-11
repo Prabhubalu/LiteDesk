@@ -25,6 +25,7 @@ const {
   PEOPLE_SALES_CONTACT_STATUS_PATH,
 } = require('../utils/peopleFieldRegistry');
 const { RECORD_SOURCE_VALUES, DEFAULT_RECORD_SOURCE } = require('../constants/recordSource');
+const { PEOPLE_SALUTATION_VALUES } = require('../constants/peopleSalutation');
 const { wrapTenantModel } = require('../utils/tenantModelProxy');
 
 const PeopleSchema = new Schema({
@@ -43,6 +44,11 @@ const PeopleSchema = new Schema({
     default: DEFAULT_RECORD_SOURCE
   },
 
+  salutation: {
+    type: String,
+    enum: PEOPLE_SALUTATION_VALUES,
+    trim: true,
+  },
   first_name: { type: String, trim: true, required: true }, // Default: required (can be configured by admin)
   last_name: {
     type: String,

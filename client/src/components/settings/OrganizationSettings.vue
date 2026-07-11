@@ -330,6 +330,42 @@
           </div>
         </header>
 
+        <div
+          v-if="regionalMismatch.hasMismatch && !regionalAlignDismissed"
+          class="mx-6 mt-5 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/80 dark:bg-amber-950/20 px-4 py-3"
+        >
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-amber-900 dark:text-amber-100">
+                {{ t('settings.orgRegionalMismatchTitle') }}
+              </p>
+              <p class="mt-1 text-xs text-amber-800/90 dark:text-amber-200/80">
+                {{ t('settings.orgRegionalMismatchBody', {
+                  market: regionalMismatch.bundle?.marketLabel,
+                  locale: regionalMismatch.bundle?.locale,
+                  currency: regionalMismatch.bundle?.currency,
+                }) }}
+              </p>
+            </div>
+            <div class="flex shrink-0 gap-2">
+              <button
+                type="button"
+                class="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-500"
+                @click="applyRegionalAlign"
+              >
+                {{ t('settings.orgRegionalAlign') }}
+              </button>
+              <button
+                type="button"
+                class="rounded-lg px-3 py-1.5 text-xs font-medium text-amber-800 dark:text-amber-200 hover:bg-amber-100/80 dark:hover:bg-amber-900/30"
+                @click="regionalAlignDismissed = true"
+              >
+                {{ t('settings.orgRegionalDismiss') }}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Timezone -->
           <div class="space-y-2">
@@ -442,6 +478,20 @@
             <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.orgLanguageHint') }}</p>
           </div>
 
+          <!-- Default phone country -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.orgPhoneCountry') }}</label>
+            <HeadlessSelect
+              v-model="form.defaultPhoneCountry"
+              :options="phoneCountryOptions"
+            />
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ form.defaultPhoneCountry
+                ? t('settings.orgPhoneCountryHintExplicit')
+                : t('settings.orgPhoneCountryHintAuto', { country: resolvedPhoneCountryLabel }) }}
+            </p>
+          </div>
+
           <!-- Locale -->
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.orgLocale') }}</label>
@@ -503,6 +553,18 @@ import { getApiUrlForFetch } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import { PHONE_COUNTRIES, getPhoneCountry, resolveDefaultPhoneCountry } from '@/utils/phoneInput';
+import {
+  ORG_CURRENCIES,
+  buildCurrencyOptions,
+  filterTimezoneGroups,
+  getAllTimezones,
+  normalizeIanaTimezone,
+} from '@/utils/orgRegionalOptions';
+import {
+  applyRegionalBundleToForm,
+  detectRegionalMismatch,
+} from '@/utils/regionalSettings';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -512,6 +574,7 @@ const loading = ref(true);
 const saving = ref(false);
 const error = ref(null);
 const showTimezoneWarning = ref(false);
+const regionalAlignDismissed = ref(false);
 const originalForm = ref({});
 const logoUploading = ref(false);
 const logoBroken = ref(false);
@@ -539,136 +602,15 @@ const form = ref({
   currency: 'USD',
   locale: 'en-US',
   language: 'en',
+  defaultPhoneCountry: '',
   dataRegion: 'us-east-1'
 });
 
 // -------- Timezones (grouped, comprehensive, with offsets) --------
-// Offsets are static labels for display only; actual TZ logic uses IANA value.
-const timezoneGroups = [
-  {
-    region: 'Popular',
-    items: [
-      { value: 'UTC', text: 'UTC — Coordinated Universal Time', sublabel: 'UTC', offset: 'UTC+00:00' },
-      { value: 'Asia/Kolkata', text: 'India Standard Time', sublabel: 'Kolkata, Mumbai, New Delhi, Chennai', offset: 'UTC+05:30' },
-      { value: 'America/New_York', text: 'Eastern Time', sublabel: 'New York, Toronto', offset: 'UTC−05:00' },
-      { value: 'America/Los_Angeles', text: 'Pacific Time', sublabel: 'Los Angeles, San Francisco', offset: 'UTC−08:00' },
-      { value: 'Europe/London', text: 'British Time', sublabel: 'London, Edinburgh', offset: 'UTC+00:00' },
-      { value: 'Asia/Singapore', text: 'Singapore Time', sublabel: 'Singapore', offset: 'UTC+08:00' }
-    ]
-  },
-  {
-    region: 'Americas',
-    items: [
-      { value: 'America/New_York', text: 'America/New_York', sublabel: 'Eastern Time', offset: 'UTC−05:00' },
-      { value: 'America/Chicago', text: 'America/Chicago', sublabel: 'Central Time', offset: 'UTC−06:00' },
-      { value: 'America/Denver', text: 'America/Denver', sublabel: 'Mountain Time', offset: 'UTC−07:00' },
-      { value: 'America/Phoenix', text: 'America/Phoenix', sublabel: 'Arizona (no DST)', offset: 'UTC−07:00' },
-      { value: 'America/Los_Angeles', text: 'America/Los_Angeles', sublabel: 'Pacific Time', offset: 'UTC−08:00' },
-      { value: 'America/Anchorage', text: 'America/Anchorage', sublabel: 'Alaska Time', offset: 'UTC−09:00' },
-      { value: 'Pacific/Honolulu', text: 'Pacific/Honolulu', sublabel: 'Hawaii Time', offset: 'UTC−10:00' },
-      { value: 'America/Toronto', text: 'America/Toronto', sublabel: 'Eastern Time (Canada)', offset: 'UTC−05:00' },
-      { value: 'America/Vancouver', text: 'America/Vancouver', sublabel: 'Pacific Time (Canada)', offset: 'UTC−08:00' },
-      { value: 'America/Mexico_City', text: 'America/Mexico_City', sublabel: 'Mexico City', offset: 'UTC−06:00' },
-      { value: 'America/Bogota', text: 'America/Bogota', sublabel: 'Colombia', offset: 'UTC−05:00' },
-      { value: 'America/Sao_Paulo', text: 'America/Sao_Paulo', sublabel: 'Brazil (São Paulo)', offset: 'UTC−03:00' },
-      { value: 'America/Buenos_Aires', text: 'America/Argentina/Buenos_Aires', sublabel: 'Argentina', offset: 'UTC−03:00' },
-      { value: 'America/Santiago', text: 'America/Santiago', sublabel: 'Chile', offset: 'UTC−04:00' }
-    ]
-  },
-  {
-    region: 'Europe',
-    items: [
-      { value: 'Europe/London', text: 'Europe/London', sublabel: 'GMT / BST', offset: 'UTC+00:00' },
-      { value: 'Europe/Dublin', text: 'Europe/Dublin', sublabel: 'Ireland', offset: 'UTC+00:00' },
-      { value: 'Europe/Lisbon', text: 'Europe/Lisbon', sublabel: 'Portugal', offset: 'UTC+00:00' },
-      { value: 'Europe/Paris', text: 'Europe/Paris', sublabel: 'Central European Time', offset: 'UTC+01:00' },
-      { value: 'Europe/Berlin', text: 'Europe/Berlin', sublabel: 'Germany', offset: 'UTC+01:00' },
-      { value: 'Europe/Madrid', text: 'Europe/Madrid', sublabel: 'Spain', offset: 'UTC+01:00' },
-      { value: 'Europe/Rome', text: 'Europe/Rome', sublabel: 'Italy', offset: 'UTC+01:00' },
-      { value: 'Europe/Amsterdam', text: 'Europe/Amsterdam', sublabel: 'Netherlands', offset: 'UTC+01:00' },
-      { value: 'Europe/Stockholm', text: 'Europe/Stockholm', sublabel: 'Sweden', offset: 'UTC+01:00' },
-      { value: 'Europe/Zurich', text: 'Europe/Zurich', sublabel: 'Switzerland', offset: 'UTC+01:00' },
-      { value: 'Europe/Warsaw', text: 'Europe/Warsaw', sublabel: 'Poland', offset: 'UTC+01:00' },
-      { value: 'Europe/Athens', text: 'Europe/Athens', sublabel: 'Greece', offset: 'UTC+02:00' },
-      { value: 'Europe/Helsinki', text: 'Europe/Helsinki', sublabel: 'Finland', offset: 'UTC+02:00' },
-      { value: 'Europe/Istanbul', text: 'Europe/Istanbul', sublabel: 'Turkey', offset: 'UTC+03:00' },
-      { value: 'Europe/Moscow', text: 'Europe/Moscow', sublabel: 'Russia (Moscow)', offset: 'UTC+03:00' }
-    ]
-  },
-  {
-    region: 'Asia',
-    items: [
-      { value: 'Asia/Jerusalem', text: 'Asia/Jerusalem', sublabel: 'Israel', offset: 'UTC+02:00' },
-      { value: 'Asia/Dubai', text: 'Asia/Dubai', sublabel: 'UAE', offset: 'UTC+04:00' },
-      { value: 'Asia/Riyadh', text: 'Asia/Riyadh', sublabel: 'Saudi Arabia', offset: 'UTC+03:00' },
-      { value: 'Asia/Tehran', text: 'Asia/Tehran', sublabel: 'Iran', offset: 'UTC+03:30' },
-      { value: 'Asia/Karachi', text: 'Asia/Karachi', sublabel: 'Pakistan', offset: 'UTC+05:00' },
-      { value: 'Asia/Kolkata', text: 'Asia/Kolkata', sublabel: 'India Standard Time (IST)', offset: 'UTC+05:30' },
-      { value: 'Asia/Colombo', text: 'Asia/Colombo', sublabel: 'Sri Lanka', offset: 'UTC+05:30' },
-      { value: 'Asia/Kathmandu', text: 'Asia/Kathmandu', sublabel: 'Nepal', offset: 'UTC+05:45' },
-      { value: 'Asia/Dhaka', text: 'Asia/Dhaka', sublabel: 'Bangladesh', offset: 'UTC+06:00' },
-      { value: 'Asia/Bangkok', text: 'Asia/Bangkok', sublabel: 'Thailand, Vietnam', offset: 'UTC+07:00' },
-      { value: 'Asia/Jakarta', text: 'Asia/Jakarta', sublabel: 'Indonesia (Western)', offset: 'UTC+07:00' },
-      { value: 'Asia/Singapore', text: 'Asia/Singapore', sublabel: 'Singapore', offset: 'UTC+08:00' },
-      { value: 'Asia/Kuala_Lumpur', text: 'Asia/Kuala_Lumpur', sublabel: 'Malaysia', offset: 'UTC+08:00' },
-      { value: 'Asia/Hong_Kong', text: 'Asia/Hong_Kong', sublabel: 'Hong Kong', offset: 'UTC+08:00' },
-      { value: 'Asia/Shanghai', text: 'Asia/Shanghai', sublabel: 'China', offset: 'UTC+08:00' },
-      { value: 'Asia/Taipei', text: 'Asia/Taipei', sublabel: 'Taiwan', offset: 'UTC+08:00' },
-      { value: 'Asia/Manila', text: 'Asia/Manila', sublabel: 'Philippines', offset: 'UTC+08:00' },
-      { value: 'Asia/Seoul', text: 'Asia/Seoul', sublabel: 'South Korea', offset: 'UTC+09:00' },
-      { value: 'Asia/Tokyo', text: 'Asia/Tokyo', sublabel: 'Japan', offset: 'UTC+09:00' }
-    ]
-  },
-  {
-    region: 'Africa',
-    items: [
-      { value: 'Africa/Casablanca', text: 'Africa/Casablanca', sublabel: 'Morocco', offset: 'UTC+01:00' },
-      { value: 'Africa/Lagos', text: 'Africa/Lagos', sublabel: 'Nigeria', offset: 'UTC+01:00' },
-      { value: 'Africa/Johannesburg', text: 'Africa/Johannesburg', sublabel: 'South Africa', offset: 'UTC+02:00' },
-      { value: 'Africa/Cairo', text: 'Africa/Cairo', sublabel: 'Egypt', offset: 'UTC+02:00' },
-      { value: 'Africa/Nairobi', text: 'Africa/Nairobi', sublabel: 'Kenya', offset: 'UTC+03:00' }
-    ]
-  },
-  {
-    region: 'Oceania',
-    items: [
-      { value: 'Australia/Perth', text: 'Australia/Perth', sublabel: 'Western Australia', offset: 'UTC+08:00' },
-      { value: 'Australia/Adelaide', text: 'Australia/Adelaide', sublabel: 'Central Australia', offset: 'UTC+09:30' },
-      { value: 'Australia/Sydney', text: 'Australia/Sydney', sublabel: 'New South Wales', offset: 'UTC+10:00' },
-      { value: 'Australia/Melbourne', text: 'Australia/Melbourne', sublabel: 'Victoria', offset: 'UTC+10:00' },
-      { value: 'Australia/Brisbane', text: 'Australia/Brisbane', sublabel: 'Queensland', offset: 'UTC+10:00' },
-      { value: 'Pacific/Auckland', text: 'Pacific/Auckland', sublabel: 'New Zealand', offset: 'UTC+12:00' },
-      { value: 'Pacific/Fiji', text: 'Pacific/Fiji', sublabel: 'Fiji', offset: 'UTC+12:00' }
-    ]
-  }
-];
 
-const allTimezones = computed(() => {
-  const seen = new Set();
-  const list = [];
-  for (const g of timezoneGroups) {
-    for (const tz of g.items) {
-      if (seen.has(tz.value)) continue;
-      seen.add(tz.value);
-      list.push(tz);
-    }
-  }
-  return list;
-});
+const allTimezones = computed(() => getAllTimezones());
 
-const filteredTimezoneGroups = computed(() => {
-  const q = timezoneSearch.value.trim().toLowerCase();
-  if (!q) return timezoneGroups;
-  return timezoneGroups
-    .map((g) => ({
-      region: g.region,
-      items: g.items.filter((tz) => {
-        const haystack = `${tz.value} ${tz.text} ${tz.sublabel || ''} ${tz.offset}`.toLowerCase();
-        return haystack.includes(q);
-      })
-    }))
-    .filter((g) => g.items.length > 0);
-});
+const filteredTimezoneGroups = computed(() => filterTimezoneGroups(timezoneSearch.value));
 
 const selectedTimezoneMeta = computed(() => {
   return allTimezones.value.find((tz) => tz.value === form.value.timeZone) || null;
@@ -687,9 +629,10 @@ const timezoneShortLabel = computed(() => {
 });
 
 const selectTimezone = (value) => {
-  form.value.timeZone = value;
+  form.value.timeZone = normalizeIanaTimezone(value);
   timezoneSearch.value = '';
   timezoneOpen.value = false;
+  regionalAlignDismissed.value = false;
   handleTimezoneChange();
 };
 
@@ -718,28 +661,52 @@ onBeforeUnmount(() => {
 });
 
 // -------- Currencies --------
-const currencies = [
-  { code: 'USD', name: 'US Dollar', symbol: '$' },
-  { code: 'EUR', name: 'Euro', symbol: '€' },
-  { code: 'GBP', name: 'British Pound', symbol: '£' },
-  { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
-  { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
-  { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
-  { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
-  { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
-  { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF' },
-  { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$' },
-  { code: 'HKD', name: 'Hong Kong Dollar', symbol: 'HK$' },
-  { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ' },
-  { code: 'SAR', name: 'Saudi Riyal', symbol: '﷼' },
-  { code: 'BRL', name: 'Brazilian Real', symbol: 'R$' },
-  { code: 'MXN', name: 'Mexican Peso', symbol: 'Mex$' },
-  { code: 'ZAR', name: 'South African Rand', symbol: 'R' }
-];
+const currencies = ORG_CURRENCIES;
 
-const currencyOptions = computed(() =>
-  currencies.map((c) => ({ value: c.code, label: `${c.symbol}  ${c.code} — ${c.name}` }))
+const currencyOptions = computed(() => buildCurrencyOptions(currencies));
+
+const phoneCountryOptions = computed(() => [
+  { value: '', label: t('settings.orgPhoneCountryAuto') },
+  ...PHONE_COUNTRIES.map((country) => ({
+    value: country.iso2,
+    label: `${country.name} (+${country.dialCode})`,
+  })),
+]);
+
+const resolvedPhoneCountryLabel = computed(() => {
+  const iso2 = resolveDefaultPhoneCountry({
+    orgDefaultPhoneCountry: form.value.defaultPhoneCountry,
+    orgLocale: form.value.locale,
+    orgTimeZone: form.value.timeZone,
+    orgCurrency: form.value.currency,
+  });
+  return getPhoneCountry(iso2).name;
+});
+
+const effectivePhoneCountryIso2 = computed(() =>
+  resolveDefaultPhoneCountry({
+    orgDefaultPhoneCountry: form.value.defaultPhoneCountry,
+    orgLocale: form.value.locale,
+    orgTimeZone: form.value.timeZone,
+    orgCurrency: form.value.currency,
+  })
 );
+
+const regionalMismatch = computed(() =>
+  detectRegionalMismatch({
+    timeZone: form.value.timeZone,
+    currency: form.value.currency,
+    locale: form.value.locale,
+    defaultPhoneCountry: form.value.defaultPhoneCountry,
+    effectivePhoneCountry: effectivePhoneCountryIso2.value,
+  })
+);
+
+function applyRegionalAlign() {
+  if (!regionalMismatch.value.bundle) return;
+  form.value = applyRegionalBundleToForm(form.value, regionalMismatch.value.bundle);
+  regionalAlignDismissed.value = true;
+}
 
 // -------- Languages --------
 const LANGUAGE_I18N_KEYS = {
@@ -830,6 +797,7 @@ const fetchOrganizationSettings = async () => {
         currency: data.data.currency || 'USD',
         locale: data.data.locale || 'en-US',
         language: data.data.language || 'en',
+        defaultPhoneCountry: data.data.defaultPhoneCountry || '',
         dataRegion: data.data.dataRegion || 'us-east-1'
       };
       // Capture the server-saved state as the baseline used for "unsaved changes" detection.
@@ -881,13 +849,28 @@ const handleSubmit = async () => {
         timeZone: form.value.timeZone,
         currency: form.value.currency,
         locale: form.value.locale,
-        language: form.value.language
+        language: form.value.language,
+        defaultPhoneCountry: form.value.defaultPhoneCountry || ''
       })
     });
 
     if (data && data.success) {
       originalForm.value = JSON.parse(JSON.stringify(form.value));
       showTimezoneWarning.value = false;
+      if (authStore.organization) {
+        authStore.organization = {
+          ...authStore.organization,
+          settings: {
+            ...(authStore.organization.settings || {}),
+            timeZone: form.value.timeZone,
+            currency: form.value.currency,
+            locale: form.value.locale,
+            language: form.value.language,
+            defaultPhoneCountry: form.value.defaultPhoneCountry || '',
+          },
+        };
+        localStorage.setItem('organization', JSON.stringify(authStore.organization));
+      }
       notifySuccess(t('settings.orgSaveSuccess'));
     } else {
       const msg = data?.message || t('settings.orgUpdateFailed');

@@ -120,26 +120,32 @@ const baseFields = [
     }
   }),
   buildField({
-    key: 'lineItems',
-    label: 'Items / Products',
-    dataType: 'Rich Text',
-    order: 7,
-    visibility: { list: false, detail: true },
-    textSettings: { rows: 4, maxLength: 4000 },
-    placeholder: 'Track associated products or services for this deal'
-  }),
-  buildField({
     key: 'amount',
     label: 'Expected Value',
     dataType: 'Currency',
-    order: 8,
+    order: 7,
     required: true,
     keyField: true,
     numberSettings: {
       min: 0,
       max: null,
-      decimalPlaces: 2,
-      currencySymbol: '$'
+      decimalPlaces: 2
+    }
+  }),
+  buildField({
+    key: 'amountMode',
+    label: 'Amount Mode',
+    dataType: 'Picklist (Single-Select)',
+    order: 8,
+    required: false,
+    keyField: false,
+    visibility: { list: false, detail: false, create: false, edit: false },
+    picklistSettings: {
+      options: [
+        { value: 'MANUAL', label: 'Manual' },
+        { value: 'AUTO', label: 'From lines' }
+      ],
+      defaultValue: 'MANUAL'
     }
   }),
   buildField({
@@ -189,7 +195,9 @@ const baseFields = [
     dataType: 'Picklist',
     order: 14,
     required: true,
-    options: makeOptions(['Open', 'Won', 'Lost', 'Stalled'])
+    // Platform-owned derived field (Open|Won|Lost). Hidden from default list; not user-editable.
+    visibility: { list: false, detail: true },
+    options: makeOptions(['Open', 'Won', 'Lost'])
   }),
   buildField({
     key: 'description',
@@ -237,7 +245,8 @@ const baseFields = [
   })
 ];
 
-const quickCreateDefault = ['name', 'type', 'pipeline', 'stage', 'assignedTo', 'accountId', 'amount', 'expectedCloseDate', 'probability', 'status'];
+const { INITIAL_DEALS_QUICK_CREATE } = require('../constants/dealsModuleDefaults');
+const quickCreateDefault = [...INITIAL_DEALS_QUICK_CREATE];
 
 const defaultDealRelationships = Object.freeze([
   { name: 'Related Projects', type: 'one_to_many', isLookup: false, targetModuleKey: 'projects', relationshipKey: 'deal_projects' },
@@ -670,7 +679,7 @@ function normalizeExitCriteria(exitCriteria, fallbackType) {
 }
 
 function buildPipelineStage(name, { order = 0, probability = 0, status = 'open', keyPrefix = '' } = {}) {
-  const normalizedStatus = ['open', 'won', 'lost', 'stalled'].includes(status) ? status : 'open';
+  const normalizedStatus = ['open', 'won', 'lost'].includes(status) ? status : 'open';
   const finalProbability = typeof probability === 'number'
     ? Math.min(100, Math.max(0, probability))
     : (normalizedStatus === 'won' ? 100 : normalizedStatus === 'lost' ? 0 : 0);

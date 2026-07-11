@@ -2890,5 +2890,25 @@
   "assignedTo": {
     "message": "Assigned To",
     "description": "Standard record ownership field label across CRM modules"
+  },
+  "formClearLookup": {
+    "message": "Clear selection",
+    "description": "Clear selected lookup record"
+  },
+  "formLookupClearOption": {
+    "message": "None",
+    "description": "Empty lookup option in form dropdown"
+  },
+  "status": {
+    "message": "Status",
+    "description": "Standard status / lifecycle field label across CRM modules"
+  },
+  "formCatalogCategoryNameRequired": {
+    "message": "Type a category name in the search box, then click add",
+    "description": "Inline catalog category create requires a typed name"
+  },
+  "formCatalogCategoryCreateFailed": {
+    "message": "Could not create category",
+    "description": "Error when inline catalog category creation fails"
   }
 }

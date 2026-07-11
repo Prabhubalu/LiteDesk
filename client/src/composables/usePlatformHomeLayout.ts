@@ -3,7 +3,9 @@ import apiClient from '@/utils/apiClient';
 import type { PlatformHomeLayout, PlatformHomeLayoutItem } from '@/types/platformHome.types';
 import {
   clonePlatformHomeLayout,
+  compactPlatformHomeLayoutItems,
   createDefaultPlatformHomeLayout,
+  nextPlatformHomeLayoutY,
   normalizePlatformHomeLayout,
   PLATFORM_HOME_WIDGET_MIN_H,
   PLATFORM_HOME_WIDGET_MIN_W,
@@ -87,15 +89,21 @@ export function usePlatformHomeLayout() {
     customizeMode.value = false;
   }
 
+  function applyCompactLayout() {
+    layout.value.items = compactPlatformHomeLayoutItems(layout.value.items);
+  }
+
   function setItemEnabled(instanceId: string, enabled: boolean) {
     const item = layout.value.items.find((entry) => entry.instanceId === instanceId);
     if (item) item.enabled = enabled;
+    applyCompactLayout();
   }
 
   function toggleBuiltinWidget(type: string, enabled: boolean) {
     const existing = layout.value.items.find((item) => item.type === type && item.type !== 'analytics');
     if (existing) {
       existing.enabled = enabled;
+      applyCompactLayout();
       return existing;
     }
 
@@ -105,10 +113,9 @@ export function usePlatformHomeLayout() {
     const template = defaults.items.find((item) => item.type === type);
     if (!template) return null;
 
-    const maxY = layout.value.items.reduce((max, item) => Math.max(max, item.y + item.h), 0);
     const next: PlatformHomeLayoutItem = {
       ...template,
-      y: maxY,
+      y: nextPlatformHomeLayoutY(layout.value.items),
       enabled: true,
     };
     layout.value.items.push(next);
@@ -126,14 +133,13 @@ export function usePlatformHomeLayout() {
     if (hasAnalyticsWidget(widgetId)) return null;
 
     const instanceId = crypto.randomUUID();
-    const maxY = layout.value.items.reduce((max, item) => Math.max(max, item.y + item.h), 0);
     layout.value.items.push({
       instanceId,
       type: 'analytics',
       widgetId: String(widgetId),
       enabled: true,
       x: 0,
-      y: maxY,
+      y: nextPlatformHomeLayoutY(layout.value.items),
       w: 6,
       h: 4,
       minW: PLATFORM_HOME_WIDGET_MIN_W,
@@ -144,6 +150,7 @@ export function usePlatformHomeLayout() {
 
   function removeLayoutItem(instanceId: string) {
     layout.value.items = layout.value.items.filter((item) => item.instanceId !== instanceId);
+    applyCompactLayout();
   }
 
   function updateLayoutItems(items: PlatformHomeLayoutItem[]) {

@@ -103,7 +103,7 @@ const routes = [
     path: '/onboarding',
     name: 'onboarding',
     component: () => import('@/views/Onboarding.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, hideShell: true }
   },
   // Phase 2F: App Registry (Marketplace-Ready)
   {

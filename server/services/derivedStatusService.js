@@ -46,8 +46,10 @@ function hasLifecycleOrTypeChanged(entity, record, updateData = null) {
            updateData.contact_status !== undefined ||
            updateData.participations !== undefined;
   } else if (entity === 'organization') {
-    // Check if types changed
-    return updateData.types !== undefined;
+    return updateData.types !== undefined ||
+           updateData.customerStatus !== undefined ||
+           updateData.partnerStatus !== undefined ||
+           updateData.vendorStatus !== undefined;
   } else if (entity === 'deal') {
     // Check if stage or pipeline changed
     return updateData.stage !== undefined ||
@@ -205,19 +207,34 @@ async function hasConfiguration(entity, appKey = null) {
  */
 async function validateStatusWriteProtection(entity, updateData, appKey = null) {
   try {
-    // Check if config exists
-    const configExists = await hasConfiguration(entity, appKey);
-    
-    if (!configExists) {
-      // No config exists - allow existing behavior (backward compatible)
+    const statusFields = [];
+
+    // Deals: Status is always platform-owned (derived from Stage). Block all direct writes
+    // regardless of pipeline config. Migrations/maintenance scripts bypass this API path.
+    if (entity === 'deal') {
+      if (updateData.status !== undefined) statusFields.push('status');
+      if (updateData.probability !== undefined) statusFields.push('probability');
+      if (statusFields.length > 0) {
+        return {
+          valid: false,
+          code: 'STATUS_WRITE_PROTECTED',
+          message: `Deal Status/probability are platform-owned and derived from Stage. Cannot directly write to: ${statusFields.join(', ')}. Change Stage (or Pipeline) instead. Use lostReason for loss nuance.`,
+          errors: [{
+            blockedFields: statusFields,
+            reason: 'Deal Status is a platform-owned derived field; only stage derivation or maintenance scripts may set it'
+          }]
+        };
+      }
       return null;
     }
-    
-    // Config exists - check for direct status field writes
-    const statusFields = [];
-    
+
+    // People / Organization: protect only when config exists (existing behavior)
+    const configExists = await hasConfiguration(entity, appKey);
+    if (!configExists) {
+      return null;
+    }
+
     if (entity === 'people') {
-      // For People, status fields are lead_status and contact_status
       if (updateData.lead_status !== undefined) {
         statusFields.push('lead_status');
       }
@@ -225,7 +242,6 @@ async function validateStatusWriteProtection(entity, updateData, appKey = null) 
         statusFields.push('contact_status');
       }
     } else if (entity === 'organization') {
-      // For Organization, status fields are customerStatus, partnerStatus, vendorStatus
       if (updateData.customerStatus !== undefined) {
         statusFields.push('customerStatus');
       }
@@ -235,27 +251,24 @@ async function validateStatusWriteProtection(entity, updateData, appKey = null) 
       if (updateData.vendorStatus !== undefined) {
         statusFields.push('vendorStatus');
       }
-    } else if (entity === 'deal') {
-      if (updateData.status !== undefined) statusFields.push('status');
-      if (updateData.probability !== undefined) statusFields.push('probability');
     }
-    
+
     if (statusFields.length > 0) {
       return {
         valid: false,
         code: 'STATUS_WRITE_PROTECTED',
-        message: `Status/probability are system-owned when configuration exists. Cannot directly write to: ${statusFields.join(', ')}. Update lifecycle fields (stage, pipeline) instead.`,
+        message: `Status fields are system-owned when configuration exists. Cannot directly write to: ${statusFields.join(', ')}. Update lifecycle fields instead.`,
         errors: [{
           blockedFields: statusFields,
           reason: 'Status fields are system-owned when configuration exists'
         }]
       };
     }
-    
+
     return null;
   } catch (error) {
     console.error(`[derivedStatusService] Error validating status write protection for ${entity}:`, error);
-    // On error, allow write (backward compatible)
+    // On error, allow write (backward compatible) except we already handled deal above
     return null;
   }
 }

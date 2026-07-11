@@ -16,6 +16,7 @@ import apiClient from '@/utils/apiClient';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import { fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
 import { getKeyFields, getFieldValue, getFieldDisplayLabel } from '@/utils/fieldDisplay';
+import { formatCurrencyValue, resolveCurrencyCodeForField } from '@/utils/currencyOptions';
 
 // Cache for record data (key: appKey.moduleKey.recordId)
 const recordCache = new Map();
@@ -396,12 +397,8 @@ function formatRelatedFieldValue(record, field, rawValue) {
     return parts.map((value) => String(value)).join(', ');
   }
   if (field.format === 'currency' && typeof rawValue === 'number') {
-    const currency = record?.currency || record?.currencyCode || 'USD';
-    try {
-      return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(rawValue);
-    } catch {
-      return String(rawValue);
-    }
+    const currency = resolveCurrencyCodeForField({ record });
+    return formatCurrencyValue(rawValue, { currencyCode: currency }) || String(rawValue);
   }
   if (field.format === 'date') {
     const d = new Date(rawValue);

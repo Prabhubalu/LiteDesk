@@ -2380,6 +2380,7 @@ exports.getOrganizationSettings = async (req, res) => {
                 currency: organization.settings?.currency || 'USD',
                 locale: organization.settings?.locale || 'en-US',
                 language: organization.settings?.language || 'en',
+                defaultPhoneCountry: organization.settings?.defaultPhoneCountry || '',
                 dataRegion: organization.dataRegion || 'us-east-1',
                 industry: organization.industry || null
             }
@@ -2408,8 +2409,9 @@ exports.updateOrganizationSettings = async (req, res) => {
             });
         }
 
-        const { name, logoUrl, primaryColor, timeZone, currency, locale, language } = req.body;
+        const { name, logoUrl, primaryColor, timeZone, currency, locale, language, defaultPhoneCountry } = req.body;
         const { sanitizeBrandColor } = require('../services/quoteOrgSettingsService');
+        const { isValidPhoneCountryIso2 } = require('../constants/phoneCountries');
 
         // Validate and update only allowed fields
         if (name !== undefined) {
@@ -2474,6 +2476,20 @@ exports.updateOrganizationSettings = async (req, res) => {
             }
         }
 
+        if (defaultPhoneCountry !== undefined) {
+            const trimmed = String(defaultPhoneCountry || '').trim().toUpperCase();
+            if (!trimmed) {
+                organization.settings.defaultPhoneCountry = '';
+            } else if (isValidPhoneCountryIso2(trimmed)) {
+                organization.settings.defaultPhoneCountry = trimmed;
+            } else {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid default phone country. Must be a supported ISO 3166-1 alpha-2 code (e.g., US, IN, GB)'
+                });
+            }
+        }
+
         await organization.save();
 
         // Return updated settings
@@ -2488,6 +2504,7 @@ exports.updateOrganizationSettings = async (req, res) => {
                 currency: organization.settings?.currency || 'USD',
                 locale: organization.settings?.locale || 'en-US',
                 language: organization.settings?.language || 'en',
+                defaultPhoneCountry: organization.settings?.defaultPhoneCountry || '',
                 dataRegion: organization.dataRegion || 'us-east-1',
                 industry: organization.industry || null
             }
@@ -3582,16 +3599,30 @@ exports.getOrganizationStatusTypes = async (req, res) => {
             });
         }
 
+        const { maybeCleanupRetiredOrganizationTypesForTenant, normalizeOrganizationTypesFromConfig, mergeOrganizationStatusPicklistsWithDefaults } =
+            require('../utils/tenantMetadata');
+        await maybeCleanupRetiredOrganizationTypesForTenant(organizationId);
+
+        const responseData = {
+            ...statusTypesConfig,
+            organizationTypes: normalizeOrganizationTypesFromConfig(
+                statusTypesConfig.organizationTypes
+            ),
+            statusPicklists: mergeOrganizationStatusPicklistsWithDefaults(
+                statusTypesConfig.statusPicklists
+            ),
+        };
+
         console.log('[Backend] GET status-types - Returning config:', {
-            organizationTypes: statusTypesConfig.organizationTypes?.length || 0,
-            customerStatus: statusTypesConfig.statusPicklists?.customerStatus?.length || 0,
-            partnerStatus: statusTypesConfig.statusPicklists?.partnerStatus?.length || 0,
-            vendorStatus: statusTypesConfig.statusPicklists?.vendorStatus?.length || 0
+            organizationTypes: responseData.organizationTypes?.length || 0,
+            customerStatus: responseData.statusPicklists?.customerStatus?.length || 0,
+            partnerStatus: responseData.statusPicklists?.partnerStatus?.length || 0,
+            vendorStatus: responseData.statusPicklists?.vendorStatus?.length || 0
         });
 
         res.json({
             success: true,
-            data: statusTypesConfig
+            data: responseData
         });
     } catch (error) {
         console.error('Get organization status-types error:', error);
@@ -3630,6 +3661,20 @@ exports.updateOrganizationStatusTypes = async (req, res) => {
             });
         }
 
+        const {
+            sanitizeOrganizationTypeDefsForSave,
+            collectAllowedOrganizationTypeScopedFieldKeys
+        } = require('../utils/tenantMetadata');
+        const allowedFieldKeys = await collectAllowedOrganizationTypeScopedFieldKeys(organizationId);
+        const parsedOrgTypes = sanitizeOrganizationTypeDefsForSave(organizationTypes, { allowedFieldKeys });
+        if (!parsedOrgTypes.ok) {
+            return res.status(400).json({
+                success: false,
+                message: parsedOrgTypes.message
+            });
+        }
+        const normalizedOrganizationTypes = parsedOrgTypes.typeDefs;
+
         // Find or create tenant module configuration
         // Status-types configuration is module-level, so we store it in the first available config
         // Priority: SALES > HELPDESK > other apps
@@ -3664,7 +3709,7 @@ exports.updateOrganizationStatusTypes = async (req, res) => {
                 enabled: true,
                 settings: {
                     statusTypes: {
-                        organizationTypes,
+                        organizationTypes: normalizedOrganizationTypes,
                         statusPicklists
                     }
                 }
@@ -3682,7 +3727,7 @@ exports.updateOrganizationStatusTypes = async (req, res) => {
             
             // CRITICAL: For Mongoose Mixed types, we must markModified to ensure nested changes are saved
             tenantConfig.settings.statusTypes = {
-                organizationTypes,
+                organizationTypes: normalizedOrganizationTypes,
                 statusPicklists
             };
             tenantConfig.markModified('settings'); // Mark the entire settings object as modified
@@ -3722,7 +3767,7 @@ exports.updateOrganizationStatusTypes = async (req, res) => {
             success: true,
             message: 'Organization status-types updated successfully',
             data: {
-                organizationTypes,
+                organizationTypes: normalizedOrganizationTypes,
                 statusPicklists
             }
         });

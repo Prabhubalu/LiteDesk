@@ -14,6 +14,7 @@ const SYSTEM_FIELD_LABEL_KEYS = {
     mobile: 'people.sysFieldMobile',
     firstname: 'people.sysFieldFirstName',
     first_name: 'people.sysFieldFirstName',
+    salutation: 'people.sysFieldSalutation',
     lastname: 'people.sysFieldLastName',
     last_name: 'people.sysFieldLastName',
     name: 'people.sysFieldName',
@@ -27,6 +28,9 @@ const SYSTEM_FIELD_LABEL_KEYS = {
     title: 'people.sysFieldTitle',
     type: 'people.sysFieldType',
     status: 'people.sysFieldStatus',
+    derivedstatus: 'people.sysFieldStatus',
+    createdat: 'people.sysFieldCreatedOn',
+    lastactivity: 'common.phraseLastActivity',
     source: 'people.sysFieldSource',
     owner: 'people.sysFieldOwner',
     ownerid: 'people.sysFieldOwner',
@@ -41,6 +45,7 @@ const SYSTEM_FIELD_LABEL_KEYS = {
     industry: 'organizations.sysFieldIndustry',
     assignedto: 'organizations.sysFieldAssignedTo',
     assigned_to: 'organizations.sysFieldAssignedTo',
+    derivedstatus: 'organizations.sysFieldStatus',
     description: 'organizations.sysFieldDescription',
     tags: 'organizations.sysFieldTags',
   },
@@ -91,9 +96,19 @@ const SYSTEM_FIELD_LABEL_KEYS = {
     appointmenttype: 'events.sysFieldAppointmentType',
     appointmentmeetinglink: 'events.sysFieldAppointmentMeetingLink',
   },
+  items: {
+    assignedto: 'common.assignedTo',
+    assigned_to: 'common.assignedTo',
+    lifecyclestate: 'common.status',
+    lifecycle_state: 'common.status',
+  },
   cases: {
     assignedto: 'common.assignedTo',
     assigned_to: 'common.assignedTo',
+    contactid: 'cases.sysFieldContactId',
+    contact_id: 'cases.sysFieldContactId',
+    organizationrefid: 'cases.sysFieldOrganizationRefId',
+    organization_ref_id: 'cases.sysFieldOrganizationRefId',
     responsemetat: 'cases.listColumnResponseSla',
     firstresponsedueat: 'cases.recordSlaResponse',
   },
@@ -133,8 +148,14 @@ function normalizeFieldKey(fieldKey) {
   return String(fieldKey || '')
     .trim()
     .toLowerCase()
-    .replace(/-/g, '_');
+    .replace(/[\s_-]+/g, '');
 }
+
+/** Cross-module technical lookup keys — apply even when moduleKey is missing (list/customize). */
+const GLOBAL_SYSTEM_FIELD_LABEL_KEYS = {
+  contactid: 'cases.sysFieldContactId',
+  organizationrefid: 'cases.sysFieldOrganizationRefId',
+};
 
 /**
  * @param {string} moduleKey
@@ -145,11 +166,16 @@ function normalizeFieldKey(fieldKey) {
 export function resolveFieldLabel(moduleKey, field, t, te) {
   const mod = String(moduleKey || '').toLowerCase();
   const fk = normalizeFieldKey(field?.key);
-  if ((fk === 'assignedto' || fk === 'assigned_to') && te('common.assignedTo')) {
+  if (fk === 'assignedto' && te('common.assignedTo')) {
     return t('common.assignedTo');
   }
   const catalog = SYSTEM_FIELD_LABEL_KEYS[mod];
-  const i18nKey = catalog?.[fk];
+  const catalogKey =
+    catalog?.[fk] ||
+    (catalog
+      ? Object.entries(catalog).find(([k]) => normalizeFieldKey(k) === fk)?.[1]
+      : undefined);
+  const i18nKey = catalogKey || GLOBAL_SYSTEM_FIELD_LABEL_KEYS[fk];
   if (i18nKey && te(i18nKey)) {
     return t(i18nKey);
   }

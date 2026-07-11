@@ -48,7 +48,7 @@ const MODULE_METADATA = {
       priority: 'priority',
       title: 'name'
     },
-    statusValues: ['Open', 'Won', 'Lost', 'Stalled', 'Active', 'Abandoned'],
+    statusValues: ['Open', 'Won', 'Lost'],
     priorityValues: ['Low', 'Medium', 'High', 'Urgent']
   },
   /**
