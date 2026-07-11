@@ -59,6 +59,36 @@
         <span class="text-gray-700 dark:text-gray-300">{{ row.phone || row.mobile || '-' }}</span>
       </template>
 
+      <!-- Custom Mobile Cell -->
+      <template #cell-mobile="{ value }">
+        <span class="text-gray-700 dark:text-gray-300">{{ value || '-' }}</span>
+      </template>
+
+      <!-- Status (derived lifecycle status) -->
+      <template #cell-derivedStatus="{ row, value }">
+        <span v-if="!resolvePeopleListStatus(row, value)" class="text-gray-400 dark:text-gray-500">-</span>
+        <BadgeCell
+          v-else
+          :value="resolvePeopleListStatus(row, value)"
+          :options="resolvePeopleListStatusOptions(row)"
+        />
+      </template>
+
+      <!-- Source -->
+      <template #cell-source="{ value }">
+        <span class="text-gray-700 dark:text-gray-300">{{ value || '-' }}</span>
+      </template>
+
+      <!-- Last Activity -->
+      <template #cell-lastActivity="{ value }">
+        <DateCell :value="value" format="relative" />
+      </template>
+
+      <!-- Created On -->
+      <template #cell-createdAt="{ value }">
+        <DateCell :value="value" format="short" />
+      </template>
+
       <!-- Custom Owner Cell -->
       <template #cell-owner_id="{ row }">
         <div v-if="row.owner_id" class="flex items-center gap-2">
@@ -433,6 +463,20 @@ const participatesInApp = (row, appKey) => {
     default:
       return false;
   }
+};
+
+const resolvePeopleListStatus = (row, derivedStatus) => {
+  if (derivedStatus) return derivedStatus;
+  const salesType = String(row?.sales_type || '').trim();
+  if (salesType === 'Lead') return row?.lead_status || null;
+  if (salesType === 'Contact') return row?.contact_status || null;
+  return row?.lead_status || row?.contact_status || null;
+};
+
+const resolvePeopleListStatusOptions = (row) => {
+  const salesType = String(row?.sales_type || '').trim();
+  if (salesType === 'Contact') return contactStatusPicklistOptions.value;
+  return leadStatusPicklistOptions.value;
 };
 
 /**

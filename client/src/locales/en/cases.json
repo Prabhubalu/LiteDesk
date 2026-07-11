@@ -1,4 +1,12 @@
 {
+  "sysFieldContactId": {
+    "message": "Contact",
+    "description": "System case field label for contactId"
+  },
+  "sysFieldOrganizationRefId": {
+    "message": "Organization",
+    "description": "System case field label for organizationRefId"
+  },
   "casesBoard": {
     "message": "Board",
     "description": "Cases kanban view label"

@@ -104,7 +104,7 @@ async function getSalesPulse(organizationId, userId, roleContext) {
   const openDealFilter = {
     organizationId,
     deletedAt: null,
-    status: { $in: ['Open', 'Active'] }
+    status: { $in: ['Open'] }
   };
   if (!teamView) {
     openDealFilter.assignedTo = userId;

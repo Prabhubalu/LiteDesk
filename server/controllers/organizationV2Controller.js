@@ -3,6 +3,7 @@ const Organization = require('../models/Organization');
 const { buildOrganizationListMongoQuery } = require('../utils/organizationsListQuery');
 const { fetchListMeta, sendListMetaResponse } = require('../utils/listMetaService');
 const { mapOrganizationToSurface } = require('../utils/mappers/mapOrganizationToSurface');
+const { pickEditableOrganizationRecord } = require('../utils/organizationTypeFieldVisibility');
 
 const websiteHostnamePattern = /^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
 
@@ -29,6 +30,20 @@ function organizationQueryAnd(baseQuery, clause) {
     return clause;
   }
   return { $and: [baseQuery, clause] };
+}
+
+function resolveOrganizationLastActivity(record) {
+  const logs = Array.isArray(record?.activityLogs) ? record.activityLogs : [];
+  if (logs.length === 0) return null;
+
+  let latest = null;
+  for (const log of logs) {
+    const ts = log?.timestamp ? new Date(log.timestamp).getTime() : NaN;
+    if (!Number.isFinite(ts)) continue;
+    if (latest == null || ts > latest) latest = ts;
+  }
+
+  return latest != null ? new Date(latest) : null;
 }
 
 async function resolveAccessibleCrmOrganizationQuery(req, recordId) {
@@ -275,7 +290,13 @@ exports.list = async (req, res) => {
     });
     
     // Convert Mongoose documents to plain objects
-    const plainData = data.map(doc => doc.toObject ? doc.toObject() : doc);
+    const plainData = data.map((doc) => {
+      const flat = doc.toObject ? doc.toObject() : doc;
+      return {
+        ...flat,
+        lastActivity: resolveOrganizationLastActivity(flat),
+      };
+    });
     
     const response = { 
       success: true, 
@@ -522,15 +543,8 @@ exports.getEditable = async (req, res) => {
       });
     }
     
-    // Return ONLY editable business fields
-    const editableData = {
-      name: org.name || '',
-      address: org.address || '',
-      website: org.website || '',
-      phone: org.phone || '',
-      industry: org.industry || '',
-      types: org.types || []
-    };
+    // Return editable business fields (type-scoped fields included when present on record)
+    const editableData = pickEditableOrganizationRecord(org);
     
     res.json({
       success: true,
@@ -601,11 +615,19 @@ exports.update = async (req, res) => {
       'importHistoryId'
     ]);
 
-    const updatePayload = {};
+    let updatePayload = {};
     for (const [key, value] of Object.entries(req.body || {})) {
       if (blockedFields.has(key)) continue;
       updatePayload[key] = value;
     }
+
+    const { getOrganizationTypesConfig } = require('../utils/tenantMetadata');
+    const { filterOrganizationSubmitPayloadByTypes } = require('../utils/organizationTypeFieldVisibility');
+    const { typeDefs } = await getOrganizationTypesConfig(tenantOrganizationId);
+    const effectiveTypes = Array.isArray(updatePayload.types)
+      ? updatePayload.types
+      : (org.types || []);
+    updatePayload = filterOrganizationSubmitPayloadByTypes(updatePayload, effectiveTypes, typeDefs);
 
     if (updatePayload.website !== undefined) {
       if (typeof updatePayload.website !== 'string') {

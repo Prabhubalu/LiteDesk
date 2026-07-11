@@ -369,13 +369,17 @@ function analyticsPayload(item) {
 
 function handleToggleBuiltin(type, enabled) {
   toggleBuiltinWidget(type, enabled);
+  nextTick(() => platformHomeGridRef.value?.syncGridToLayout?.());
 }
 
 function handleAddAnalyticsWidget(widget) {
   const added = addAnalyticsWidget(String(widget._id), widget.name);
   if (!added) return;
   analyticsWidgetMeta.value.set(String(widget._id), widget);
-  nextTick(() => executeAnalyticsWidgets());
+  nextTick(() => {
+    platformHomeGridRef.value?.syncGridToLayout?.();
+    executeAnalyticsWidgets();
+  });
 }
 
 function handleRemoveAnalyticsWidget(instanceId) {
@@ -383,6 +387,7 @@ function handleRemoveAnalyticsWidget(instanceId) {
   if (!item) return;
   removeLayoutItem(instanceId);
   analyticsPayloadByInstance.value.delete(instanceId);
+  nextTick(() => platformHomeGridRef.value?.syncGridToLayout?.());
 }
 
 let layoutSaveTimer = null;
@@ -450,7 +455,7 @@ async function handleSaveDefaultLayout() {
   if (!canSaveDefaultLayout.value || savingDefaultLayout.value) return;
   savingDefaultLayout.value = true;
   try {
-    platformHomeGridRef.value?.syncLayoutFromGrid?.();
+    platformHomeGridRef.value?.syncGridToLayout?.();
     await nextTick();
     const snapshot = clonePlatformHomeLayout(layout.value);
     await saveLayout(snapshot);

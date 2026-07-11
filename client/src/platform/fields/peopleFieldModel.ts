@@ -209,6 +209,15 @@ export const PEOPLE_FIELD_METADATA: Record<string, FieldMetadata> = {
     isComputed: true,
     isVisibleInConfig: true,
   },
+  lastActivity: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isComputed: true,
+    isVisibleInConfig: true,
+  },
   descriptionVersions: {
     owner: 'system',
     intent: 'system',
@@ -280,6 +289,13 @@ export const PEOPLE_FIELD_METADATA: Record<string, FieldMetadata> = {
   // ==========================================================================
   // CORE IDENTITY FIELDS (platform-scoped, app-agnostic)
   // ==========================================================================
+  salutation: {
+    owner: 'core',
+    intent: 'identity',
+    fieldScope: 'CORE',
+    editable: true,
+    isVisibleInConfig: false,
+  },
   first_name: {
     owner: 'core',
     intent: 'identity',
@@ -331,6 +347,9 @@ export const PEOPLE_FIELD_METADATA: Record<string, FieldMetadata> = {
     fieldScope: 'CORE',
     editable: false,
     isSystem: true,
+    isVisibleInConfig: true,
+    filterable: true,
+    filterType: 'select',
   },
   organization: {
     owner: 'core',
@@ -526,19 +545,17 @@ export function isSystemField(fieldName: string): boolean {
 }
 
 /**
- * Canonical People Quick Create default. Kept in sync with server (moduleController.js).
+ * Canonical People Quick Create default. Kept in sync with server/constants/peopleModuleDefaults.js.
  * Used by Settings → People → Quick Create and Create people drawer when no config saved.
+ * App Participation is always shown as a separate drawer section — not listed here.
  */
 export const PEOPLE_QUICK_CREATE_DEFAULT = [
   'first_name',
   'last_name',
   'email',
-  'phone',
   'mobile',
   'organization',
   'assignedTo',
-  'do_not_contact',
-  'tags',
 ];
 
 /**

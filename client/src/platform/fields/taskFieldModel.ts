@@ -38,8 +38,8 @@
  *    - fieldScope: 'CORE' indicates platform-level ownership
  * 
  * 5. Quick Create eligibility
- *    - Only essential fields: title (required), dueDate, priority, assignedTo, relatedTo
- *    - Excluded: description, status, app fields, system fields, time tracking, subtasks
+ *    - Default: title (required), dueDate, taskType, status, priority, relatedTo, description, assignedTo (required)
+ *    - Excluded: app fields, system fields, time tracking, subtasks, tags, startDate
  *    - See: docs/architecture/task-settings.md Section 3.5
  * 
  * ============================================================================
@@ -268,7 +268,7 @@ export const TASK_FIELD_METADATA: Record<string, TaskFieldMetadata> = {
     intent: 'detail',
     fieldScope: 'CORE',
     editable: true,
-    allowOnCreate: false, // Too dense for Quick Create
+    allowOnCreate: true,
   },
   
   // Status - core state field
@@ -277,7 +277,7 @@ export const TASK_FIELD_METADATA: Record<string, TaskFieldMetadata> = {
     intent: 'state',
     fieldScope: 'CORE',
     editable: true,
-    allowOnCreate: false, // Defaults to 'todo', not set in Quick Create
+    allowOnCreate: true,
     filterable: true,
     filterType: 'select',
     filterPriority: 2,
@@ -301,7 +301,7 @@ export const TASK_FIELD_METADATA: Record<string, TaskFieldMetadata> = {
     intent: 'state',
     fieldScope: 'CORE',
     editable: true,
-    allowOnCreate: false,
+    allowOnCreate: true,
     filterable: true,
     filterType: 'select',
     filterPriority: 6,
@@ -564,7 +564,7 @@ export function getTaskParticipationFields(appKey: string): string[] {
 
 /**
  * Get all fields eligible for Quick Create
- * Only essential fields: title (required), dueDate, priority, assignedTo, relatedTo
+ * Default: title*, dueDate, taskType, status, priority, relatedTo, description, assignedTo*
  */
 export function getTaskQuickCreateFields(): string[] {
   return Object.entries(TASK_FIELD_METADATA)
@@ -629,7 +629,7 @@ export function groupTaskFields(fieldKeys: string[]): {
 
 /**
  * Check if a field should be excluded from Quick Create
- * Based on architecture: description, status, app fields, system fields, time tracking, subtasks
+ * Based on architecture: app fields, system fields, time tracking, subtasks, tags (allowOnCreate: false)
  */
 export function isExcludedFromQuickCreate(fieldName: string): boolean {
   const metadata = getTaskFieldMetadata(fieldName);

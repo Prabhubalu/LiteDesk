@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const { RECORD_SOURCE_VALUES, DEFAULT_RECORD_SOURCE } = require('../constants/recordSource');
+const { DEAL_STATUS_VALUES, DEAL_STATUS } = require('../constants/dealStatus');
+const {
+    DEAL_AMOUNT_MODE_VALUES,
+    DEFAULT_DEAL_AMOUNT_MODE
+} = require('../constants/dealAmountMode');
 const { wrapTenantModel } = require('../utils/tenantModelProxy');
 
 // Deal Schema Definition
@@ -21,11 +26,31 @@ const DealSchema = new Schema({
         required: true, 
         trim: true 
     },
+    /**
+     * Canonical expected value. Platform reports/dashboards/workflows read this only.
+     * When amountMode=AUTO, DealPricingService overwrites from DealLine grand total.
+     */
     amount: { 
         type: Number, 
         required: true,
         min: 0,
         default: 0
+    },
+    /**
+     * AUTO — amount derived from DealLines via DealPricingService.
+     * MANUAL — user owns amount; lines are optional commercial intent.
+     */
+    amountMode: {
+        type: String,
+        enum: DEAL_AMOUNT_MODE_VALUES,
+        default: DEFAULT_DEAL_AMOUNT_MODE,
+        index: true
+    },
+    /** Last computed DealLine grand total (informational; amount is canonical). */
+    linesGrandTotal: {
+        type: Number,
+        default: 0,
+        min: 0
     },
     currency: {
         type: String,
@@ -91,11 +116,14 @@ const DealSchema = new Schema({
             type: String,
             trim: true,
             required: true
-            // e.g., 'primary_contact', 'decision_maker', 'influencer', 'partner_contact'
+            // Deal Person Role (not isPrimary; Primary is independent):
+            // decision_maker | champion | influencer | technical_contact |
+            // partner_contact | procurement | legal | other
         },
         isPrimary: {
             type: Boolean,
             default: false
+            // Primary contact for the deal — independent of role
         },
         isActive: {
             type: Boolean,
@@ -121,7 +149,8 @@ const DealSchema = new Schema({
             type: String,
             trim: true,
             required: true
-            // e.g., 'customer', 'partner', 'reseller'
+            // Deal Relationship Role (not Organization Type):
+            // customer | partner | reseller | distributor | vendor | other
         },
         isPrimary: {
             type: Boolean,
@@ -186,21 +215,26 @@ const DealSchema = new Schema({
     
     // 💾 METADATA
     // **********************************
+    /**
+     * Platform-owned execution state derived from Stage (Open|Won|Lost).
+     * Not tenant-editable — set only by stage derivation, migrations, or maintenance scripts.
+     * Business nuance for losses belongs on lostReason.
+     */
     status: {
         type: String,
-        enum: ['Open', 'Won', 'Lost', 'Stalled', 'Active', 'Abandoned'],
-        default: 'Open'
+        enum: DEAL_STATUS_VALUES,
+        default: DEAL_STATUS.OPEN
     },
     
-    // Derived Status (computed from Configuration Registry)
-    // This field is computed from lifecycle mappings and is nullable
-    // If no config exists or computation fails, this remains null
+    // Derived Status (computed from Configuration Registry / stage outcome)
+    // Kept in sync with status for deals; nullable if computation fails
     derivedStatus: {
         type: String,
         trim: true,
         default: null,
         index: true
     },
+    /** Business nuance for Lost deals (e.g. former Abandoned). Not a lifecycle Status. */
     lostReason: {
         type: String,
         trim: true
@@ -290,11 +324,6 @@ const DealSchema = new Schema({
             required: true
         }
     }],
-    lineItems: {
-        type: Schema.Types.Mixed,
-        default: []
-    },
-    
     // 🔧 CUSTOM FIELDS
     // **********************************
     customFields: { 
@@ -328,6 +357,7 @@ DealSchema.index({ organizationId: 1, stage: 1 });
 DealSchema.index({ organizationId: 1, assignedTo: 1 });
 DealSchema.index({ organizationId: 1, status: 1 });
 DealSchema.index({ organizationId: 1, expectedCloseDate: 1 });
+DealSchema.index({ organizationId: 1, lastActivityDate: -1 });
 DealSchema.index({ organizationId: 1, deletedAt: 1 });
 DealSchema.index({ organizationId: 1, importHistoryId: 1 });
 
@@ -338,7 +368,8 @@ DealSchema.virtual('weightedValue').get(function() {
 
 // Method to check if deal is overdue
 DealSchema.methods.isOverdue = function() {
-    if (this.status !== 'Open') return false;
+    const { isOpenDealStatus } = require('../constants/dealStatus');
+    if (!isOpenDealStatus(this.status)) return false;
     if (!this.expectedCloseDate) return false;
     return new Date() > this.expectedCloseDate;
 };
@@ -376,7 +407,7 @@ DealSchema.statics.getPipelineSummary = async function(organizationId) {
         : organizationId;
     
     return await this.aggregate([
-        { $match: { organizationId: orgId, status: { $in: ['Open', 'Active'] } } },
+        { $match: { organizationId: orgId, status: 'Open' } },
         {
             $group: {
                 _id: '$stage',

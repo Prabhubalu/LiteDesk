@@ -3,6 +3,7 @@ import DetailsSection from '@/components/record-page/sections/DetailsSection.vue
 import StageHistorySection from '@/components/record-page/sections/StageHistorySection.vue';
 import PlaybookStageSection from '@/components/record-page/sections/PlaybookStageSection.vue';
 import RelatedSection from '@/components/record-page/sections/RelatedSection.vue';
+import DealLinesSection from '@/components/record-page/sections/DealLinesSection.vue';
 import {
   ChartBarIcon,
   CalendarIcon,
@@ -72,6 +73,8 @@ const DETAIL_SECTION_BASE_EXCLUDED_KEYS = Object.freeze([
   'activityLogs',
   'stageOrder',
   'lineItems',
+  'amountMode',
+  'linesGrandTotal',
   'dealPeople',
   'dealOrganizations',
   // notes is an array of { text, createdBy, createdAt } – edited via deal notes API, not inline
@@ -418,6 +421,7 @@ export const createDealRecordAdapter = ({
     related: 'Related Records',
     stageHistory: 'Stage History',
     stagePlaybook: 'Stage Playbook',
+    lines: L.dealLines || L.lines || 'Linked Items',
     expand: 'Expand',
     history: 'History',
     linkRecord: 'Link record',
@@ -430,9 +434,10 @@ export const createDealRecordAdapter = ({
     getSections(record) {
       const currentExpandedSection = String(resolveValue(expandedLeftSection) || '').trim();
       const isExpandedMode = currentExpandedSection.length > 0;
+      const stack = ['description', 'details', 'lines', 'stage-playbook', 'stage-history', 'related'];
       const visibleKeys = isExpandedMode
-        ? ['description', 'details', 'stage-playbook', 'stage-history', 'related'].filter((key) => key === currentExpandedSection)
-        : ['description', 'details', 'stage-playbook', 'stage-history', 'related'];
+        ? stack.filter((key) => key === currentExpandedSection)
+        : stack;
 
       const sections = {
         description: {
@@ -451,6 +456,13 @@ export const createDealRecordAdapter = ({
           component: DetailsSection,
           className: 'pt-2 pb-2',
           actions: (!isExpandedMode ? [{ key: 'expand-details', type: 'expand', label: L.expand, handler: () => openLeftSection?.('details') }] : [])
+        },
+        lines: {
+          key: 'lines',
+          title: L.lines,
+          component: DealLinesSection,
+          className: 'pt-2 pb-2',
+          actions: (!isExpandedMode ? [{ key: 'expand-lines', type: 'expand', label: L.expand, handler: () => openLeftSection?.('lines') }] : [])
         },
         'stage-playbook': {
           key: 'stage-playbook',

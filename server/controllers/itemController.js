@@ -65,6 +65,7 @@ exports.createItem = async (req, res) => {
             organizationId: req.user.organizationId,
             createdBy: req.user._id,
             modifiedBy: req.user._id,
+            assignedTo: standardPayload.assignedTo || req.user._id,
             ...(Object.keys(customFieldsSet).length > 0 && { customFields: customFieldsSet })
         };
         assignResolvedSource(payload, 'ui');
@@ -74,6 +75,12 @@ exports.createItem = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Item name is required'
+            });
+        }
+        if (!payload.assignedTo) {
+            return res.status(400).json({
+                success: false,
+                message: 'Assigned To is required'
             });
         }
 
@@ -111,6 +118,7 @@ exports.createItem = async (req, res) => {
         
         const item = await Item.findById(newItem._id)
             .populate('vendor', 'name')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('createdBy', 'firstName lastName email')
             .populate('modifiedBy', 'firstName lastName email');
 
@@ -122,6 +130,7 @@ exports.createItem = async (req, res) => {
 
         const refreshed = await Item.findById(newItem._id)
             .populate('vendor', 'name')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('createdBy', 'firstName lastName email')
             .populate('modifiedBy', 'firstName lastName email');
 
@@ -212,6 +221,7 @@ exports.getItems = async (req, res) => {
         
         const itemPopulate = [
             { path: 'vendor', select: 'name' },
+            { path: 'assignedTo', select: 'firstName lastName email' },
             { path: 'createdBy', select: 'firstName lastName email' },
             { path: 'modifiedBy', select: 'firstName lastName email' }
         ];
@@ -229,6 +239,7 @@ exports.getItems = async (req, res) => {
             })
             : await Item.find(query)
                 .populate('vendor', 'name')
+                .populate('assignedTo', 'firstName lastName email')
                 .populate('createdBy', 'firstName lastName email')
                 .populate('modifiedBy', 'firstName lastName email')
                 .sort(sort)
@@ -306,6 +317,7 @@ exports.getItemById = async (req, res) => {
         .populate('linked_deals', 'name amount stage status')
         .populate('linked_forms', 'name formType status')
         .populate('linked_contacts', 'first_name last_name email phone')
+        .populate('assignedTo', 'firstName lastName email')
         .populate('createdBy', 'firstName lastName email')
         .populate('modifiedBy', 'firstName lastName email');
         
@@ -374,6 +386,13 @@ exports.updateItem = async (req, res) => {
 
         req.body.modifiedBy = req.user._id;
 
+        if (Object.prototype.hasOwnProperty.call(req.body || {}, 'assignedTo') && !req.body.assignedTo) {
+            return res.status(400).json({
+                success: false,
+                message: 'Assigned To is required'
+            });
+        }
+
         const catalogResult = await applyCatalogFieldsToPayload(req.body, req.user.organizationId);
         if (catalogResult.error) {
             return res.status(catalogResult.error.status).json({
@@ -424,6 +443,7 @@ exports.updateItem = async (req, res) => {
             { new: true, runValidators: true }
         )
         .populate('vendor', 'name')
+        .populate('assignedTo', 'firstName lastName email')
         .populate('createdBy', 'firstName lastName email')
         .populate('modifiedBy', 'firstName lastName email');
 
@@ -470,6 +490,7 @@ exports.updateItem = async (req, res) => {
             deletedAt: null
         })
         .populate('vendor', 'name')
+        .populate('assignedTo', 'firstName lastName email')
         .populate('createdBy', 'firstName lastName email')
         .populate('modifiedBy', 'firstName lastName email');
 
@@ -588,6 +609,7 @@ exports.updateStock = async (req, res) => {
         
         const updatedItem = await Item.findById(item._id)
             .populate('vendor', 'name')
+            .populate('assignedTo', 'firstName lastName email')
             .populate('createdBy', 'firstName lastName email')
             .populate('modifiedBy', 'firstName lastName email');
         
@@ -717,6 +739,7 @@ exports.linkDeal = async (req, res) => {
         )
         .populate('vendor', 'name')
         .populate('linked_deals', 'name amount stage status')
+        .populate('assignedTo', 'firstName lastName email')
         .populate('createdBy', 'firstName lastName email')
         .populate('modifiedBy', 'firstName lastName email');
         
@@ -768,6 +791,7 @@ exports.unlinkDeal = async (req, res) => {
         )
         .populate('vendor', 'name')
         .populate('linked_deals', 'name amount stage status')
+        .populate('assignedTo', 'firstName lastName email')
         .populate('createdBy', 'firstName lastName email')
         .populate('modifiedBy', 'firstName lastName email');
         

@@ -2,6 +2,7 @@
  * PAY0 — Record inbound payment with optional auto/manual apply.
  */
 
+const { resolveCurrencyOrOrgDefault } = require('../utils/orgCurrency');
 const Payment = require('../models/Payment');
 const Invoice = require('../models/Invoice');
 const {
@@ -50,7 +51,7 @@ async function recordPayment({
   organizationRefId,
   contactId = null,
   amount,
-  paymentCurrency = 'USD',
+  paymentCurrency = null,
   paymentDate,
   valueDate = null,
   paymentPurpose = 'invoice_payment',
@@ -85,12 +86,13 @@ async function recordPayment({
         : defaultAutoApplyForPurpose(paymentPurpose);
 
   const now = new Date();
+  const resolvedPaymentCurrency = await resolveCurrencyOrOrgDefault(paymentCurrency, organizationId);
   const payment = await Payment.create({
     organizationId,
     organizationRefId,
     contactId: contactId || null,
     amount: paymentAmount,
-    paymentCurrency: String(paymentCurrency || 'USD').trim(),
+    paymentCurrency: resolvedPaymentCurrency,
     paymentDate: paymentDate ? new Date(paymentDate) : now,
     valueDate: valueDate ? new Date(valueDate) : null,
     paymentPurpose,

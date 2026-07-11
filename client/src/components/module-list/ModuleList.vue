@@ -154,6 +154,7 @@ import {
   buildFilterFieldsFromModuleFields,
   buildListColumnsFromModuleFields,
 } from '@/utils/buildListColumnsFromModuleFields';
+import { normalizeFilterSelectOptions } from '@/utils/picklistOptionUtils';
 import { normalizeListPagination } from '@/utils/normalizeListPagination';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import { allSettledWithConcurrency } from '@/utils/allSettledWithConcurrency';
@@ -921,6 +922,11 @@ const buildList = async () => {
 };
 
 // Adapt columns from definition to ListView format
+function listColumnFilterOptions(rawOptions) {
+  const normalized = normalizeFilterSelectOptions(rawOptions);
+  return normalized.length > 0 ? normalized : undefined;
+}
+
 const adaptedColumns = computed(() => {
   if (!listDefinition.value?.columns) return [];
   
@@ -943,7 +949,7 @@ const adaptedColumns = computed(() => {
       sortable: col.sortable ?? false,
       sortKey: col.fieldPath || col.key,
       dataType: col.dataType,
-      options: col.options || fieldDef?.options,
+      options: listColumnFilterOptions(col.options || fieldDef?.options),
     };
   });
 });
@@ -971,7 +977,7 @@ const adaptedFilterFields = computed(() => {
       key: field.key,
       label,
       dataType: field.dataType,
-      options: field.options,
+      options: listColumnFilterOptions(field.options),
     };
   });
 });

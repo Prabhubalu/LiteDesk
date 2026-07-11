@@ -64,9 +64,6 @@
                   <div class="flex shrink-0 items-center justify-between bg-indigo-700 dark:bg-indigo-800 px-4 py-4 sm:px-6">
                     <div class="min-w-0">
                       <DialogTitle class="text-base font-semibold text-white">{{ drawerTitle }}</DialogTitle>
-                      <p v-if="fullMode" class="mt-0.5 text-sm text-indigo-200/90 truncate">
-                        {{ drawerSubtitle }}
-                      </p>
                     </div>
                     <button
                       type="button"
@@ -477,20 +474,6 @@ const drawerTitle = computed(() =>
     ? t('people.peopleQuickCreateDrawerEditPerson')
     : t('people.peopleQuickCreateDrawerCreatePerson')
 );
-
-const drawerSubtitle = computed(() => {
-  if (!fullMode.value) return '';
-  if (isEditMode.value) {
-    return t('people.peopleQuickCreateDrawerSelectAppsHint');
-  }
-  if (props.optionalAppParticipation && contextAppKeyPropIsNull.value) {
-    return t('people.peopleQuickCreateDrawerHelperIdentityOptionalApps');
-  }
-  if (effectiveAppKey.value) {
-    return t('people.peopleQuickCreateDrawerHelperWithApps');
-  }
-  return t('people.peopleQuickCreateDrawerHelperIdentityOnly');
-});
 
 const drawerBodyLayoutClass = computed(() => 'space-y-6');
 

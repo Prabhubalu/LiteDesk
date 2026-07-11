@@ -71,6 +71,15 @@ function saveString(key: string, value: string): void {
  * - lastActiveAppId: string (last active app lens)
  * - coreModulesCollapsed: boolean (Core Modules section collapse state)
  */
+export function readLastActiveAppIdFromStorage(): string | null {
+  try {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(LAST_ACTIVE_APP_ID_KEY);
+  } catch {
+    return null;
+  }
+}
+
 export function useSidebarState(): {
   collapsed: Ref<boolean>;
   lastActiveAppId: Ref<string>;

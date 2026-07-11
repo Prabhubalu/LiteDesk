@@ -1,5 +1,6 @@
 /**
- * Curated Tailwind 500 palette for picklist option badges.
+ * Curated Tailwind 500 palette for picklist option chips.
+ * Chip UI uses picklistChipStyle() (soft fill) — never paint these hexes as solid badge fills.
  * Keep in sync with server/utils/picklistColorPalette.js
  */
 
@@ -41,6 +42,22 @@ export const TASK_PRIORITY_OPTION_COLORS: Readonly<Record<string, string>> = Obj
   urgent: '#DC2626',
 });
 
+export const ITEM_LIFECYCLE_OPTION_COLORS: Readonly<Record<string, string>> = Object.freeze({
+  draft: '#6B7280',
+  active: '#16A34A',
+  discontinued: '#D97706',
+  archived: '#DC2626',
+});
+
+export const ITEM_TYPE_OPTION_COLORS: Readonly<Record<string, string>> = Object.freeze({
+  product: '#2563EB',
+  service: '#8B5CF6',
+  serialized_product: '#0EA5E9',
+  'non-stock_product': '#14B8A6',
+  non_stock_product: '#14B8A6',
+  bundle: '#F59E0B',
+});
+
 export const LEAD_STATUS_OPTION_COLORS: Readonly<Record<string, string>> = Object.freeze({
   new: '#2563EB',
   contacted: '#6366F1',
@@ -55,6 +72,12 @@ export const CONTACT_STATUS_OPTION_COLORS: Readonly<Record<string, string>> = Ob
   active: '#16A34A',
   inactive: '#6B7280',
   donotcontact: '#DC2626',
+});
+
+export const ORGANIZATION_TYPE_OPTION_COLORS: Readonly<Record<string, string>> = Object.freeze({
+  customer: '#2563EB',
+  partner: '#8B5CF6',
+  vendor: '#10B981',
 });
 
 export function normalizePicklistColorKey(value: unknown): string {
@@ -73,6 +96,41 @@ export function normalizePicklistColorHex(color: unknown): string | null {
   const m = s.match(/^#?([0-9A-Fa-f]{6})$/);
   const hex = m?.[1];
   return hex ? `#${hex.toUpperCase()}` : null;
+}
+
+function hexToRgbChannels(hex: string): { r: number; g: number; b: number } | null {
+  const normalized = normalizePicklistColorHex(hex);
+  if (!normalized) return null;
+  const raw = normalized.slice(1);
+  const r = parseInt(raw.slice(0, 2), 16);
+  const g = parseInt(raw.slice(2, 4), 16);
+  const b = parseInt(raw.slice(4, 6), 16);
+  if ([r, g, b].some((n) => Number.isNaN(n))) return null;
+  return { r, g, b };
+}
+
+/** Soft chip tone: tinted fill + ink + hairline (not solid fill). */
+export function picklistChipStyle(color: unknown): Record<string, string> {
+  const hex = normalizePicklistColorHex(color);
+  if (!hex) return {};
+  const rgb = hexToRgbChannels(hex);
+  if (!rgb) return {};
+  const { r, g, b } = rgb;
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  const ink =
+    luminance > 0.55
+      ? `#${[r, g, b]
+          .map((c) => Math.round(c * 0.52).toString(16).padStart(2, '0'))
+          .join('')
+          .toUpperCase()}`
+      : hex;
+  return {
+    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.12)`,
+    color: ink,
+    borderColor: `rgba(${r}, ${g}, ${b}, 0.28)`,
+    borderWidth: '1px',
+    borderStyle: 'solid',
+  };
 }
 
 type PicklistOptionLike = string | { value?: unknown; label?: unknown; color?: unknown; enabled?: boolean };
@@ -141,8 +199,17 @@ export function getSemanticPicklistColor(
     if (key === 'status') return TASK_STATUS_OPTION_COLORS[val] || null;
     if (key === 'priority') return TASK_PRIORITY_OPTION_COLORS[val] || null;
   }
+  if (mod === 'items') {
+    if (key === 'lifecycle_state' || key === 'lifecyclestate') {
+      return ITEM_LIFECYCLE_OPTION_COLORS[val] || null;
+    }
+    if (key === 'item_type' || key === 'itemtype') {
+      return ITEM_TYPE_OPTION_COLORS[val] || null;
+    }
+  }
   if (key === 'lead_status') return LEAD_STATUS_OPTION_COLORS[val] || null;
   if (key === 'contact_status') return CONTACT_STATUS_OPTION_COLORS[val] || null;
+  if (mod === 'organizations' && key === 'types') return ORGANIZATION_TYPE_OPTION_COLORS[val] || null;
   return null;
 }
 

@@ -3180,7 +3180,7 @@
     "description": "Org section"
   },
   "orgBrandingDesc": {
-    "message": "Company name, logo, and brand color — used in emails, PDFs, and the customer portal",
+    "message": "Your company name and logo that appear throughout the app",
     "description": "Org section desc"
   },
   "orgCompanyName": {
@@ -3306,6 +3306,38 @@
   "orgLocaleHint": {
     "message": "Controls number, date and currency formatting. Format: language-COUNTRY (e.g. en-US, en-IN, fr-FR).",
     "description": "Field hint"
+  },
+  "orgPhoneCountry": {
+    "message": "Default phone country",
+    "description": "Form label"
+  },
+  "orgPhoneCountryAuto": {
+    "message": "Auto (from locale)",
+    "description": "Phone country select option"
+  },
+  "orgPhoneCountryHintExplicit": {
+    "message": "Pre-selected country code for new phone fields across your workspace.",
+    "description": "Field hint when explicit country is set"
+  },
+  "orgPhoneCountryHintAuto": {
+    "message": "Currently derived from your regional settings: {country}. Choose a country to override.",
+    "description": "Field hint when phone country is auto from locale"
+  },
+  "orgRegionalMismatchTitle": {
+    "message": "Regional settings may be inconsistent",
+    "description": "Banner title when timezone/locale/currency disagree"
+  },
+  "orgRegionalMismatchBody": {
+    "message": "Your timezone suggests {market}. Align locale ({locale}), currency ({currency}), and phone country to match?",
+    "description": "Banner body for regional align suggestion"
+  },
+  "orgRegionalAlign": {
+    "message": "Align settings",
+    "description": "Button to apply regional bundle"
+  },
+  "orgRegionalDismiss": {
+    "message": "Keep as is",
+    "description": "Dismiss regional align banner"
   },
   "orgDataRegion": {
     "message": "Data Region",
@@ -3636,7 +3668,7 @@
     "description": "Users table user type column"
   },
   "rolesPageSubtitle": {
-    "message": "Define who can do what — organize roles in a list or hierarchy",
+    "message": "Manage custom roles, permissions, and organizational hierarchy",
     "description": "Roles page subtitle"
   },
   "rolesViewList": {
@@ -3805,7 +3837,7 @@
   },
   "inviteTitle": {
     "message": "Invite New User",
-    "description": "Invite drawer title"
+    "description": "Invite modal title"
   },
   "inviteDrawerSubtitle": {
     "message": "Add a team member and configure their access.",
@@ -5244,7 +5276,7 @@
     "description": "Enabled case types section title"
   },
   "helpdeskExecPrioritySlaTargets": {
-    "message": "SLA targets by priority",
+    "message": "Priority SLA Targets (Minutes)",
     "description": "Priority SLA targets section title"
   },
   "helpdeskExecFirstResponse": {
@@ -5272,11 +5304,11 @@
     "description": "Notifications section title"
   },
   "helpdeskExecAdvancedRules": {
-    "message": "Advanced configuration",
+    "message": "Advanced Rules (JSON)",
     "description": "Advanced rules JSON section title"
   },
   "helpdeskExecAdvancedRulesDesc": {
-    "message": "JSON overrides for power users. Most teams can leave these empty and use the Basics and Schedule tabs.",
+    "message": "Use JSON for advanced routing, escalation, and channel defaults. This maps directly to the Helpdesk execution engine.",
     "description": "Advanced rules JSON section description"
   },
   "helpdeskExecAssignmentIntro": {
@@ -6516,7 +6548,7 @@
     "description": "Page title"
   },
   "assignRulesSubtitle": {
-    "message": "Automate record ownership by creating rules. Rules are evaluated in order and the first matching rule is applied.",
+    "message": "Assignment rules resolve ownership: group routing first, then user distribution. Rules run in order; the first match wins. When automation assigns or reassigns someone, they get the same notification path as a manual assignment (system rules and user notification rules), including for delayed and scheduled runs once they apply.",
     "description": "Page subtitle"
   },
   "assignRulesWhenLabel": {
@@ -6988,7 +7020,7 @@
     "description": "Frequency"
   },
   "assignRulesFreqCustom": {
-    "message": "Custom interval",
+    "message": "Custom (cron)",
     "description": "Frequency"
   },
   "assignRulesScheduleRunAt": {
@@ -7136,7 +7168,7 @@
     "description": "Distribution label"
   },
   "assignRulesDistQueue": {
-    "message": "Queue (Claim based)",
+    "message": "Queue (claim)",
     "description": "Distribution mode"
   },
   "assignRulesDistRoundRobin": {
@@ -10036,7 +10068,7 @@
     "description": "Alert recipients label"
   },
   "modFieldsRecipientsPh": {
-    "message": "e.g., revenue-ops{'@'}company.com, manager{'@'}company.com",
+    "message": "e.g., revenue-ops@company.com, manager@company.com",
     "description": "Alert recipients placeholder"
   },
   "modFieldsAlertMessagePh": {
@@ -10356,12 +10388,12 @@
     "description": "Other tabs section"
   },
   "modFieldsOrgsStatusTypesDesc": {
-    "message": "Choose which organization types and status values are active for your tenant. Add, rename, reorder, and set colors under Field configurations.",
-    "description": "Organizations Status and Types tab intro"
+    "message": "Configure organization types, per-type field visibility, and status picklists used across the workspace.",
+    "description": "Other tabs section"
   },
   "modFieldsOrgsStatusTypesNote": {
-    "message": "This tab controls availability only (on/off). The master list of values lives in Field configurations (Types, Customer Status, Partner Status, Vendor Status).",
-    "description": "Organizations Status and Types policy note"
+    "message": "Organization types control which fields appear when a type is selected. Status values are type-scoped lifecycle states. Disabled values remain in the system but are hidden from selection.",
+    "description": "Other tabs section"
   },
   "modFieldsNoStatusValuesCatalog": {
     "message": "No status values defined yet. Add them in Field configurations first, then return here to enable or disable them.",
@@ -10378,6 +10410,10 @@
   "modFieldsLoadingOrgTypes": {
     "message": "Loading organization types...",
     "description": "Other tabs section"
+  },
+  "modFieldsNoOrgTypesDefined": {
+    "message": "No organization types defined yet. Add them in Field Configurations first, then return here to enable or disable them.",
+    "description": "Empty organization types catalog on Status & Types tab"
   },
   "modFieldsOrgTypeDefaultDesc": {
     "message": "Business organization type",
@@ -10412,31 +10448,31 @@
     "description": "Other tabs section"
   },
   "modFieldsStatusForCustomer": {
-    "message": "Enable or disable status values for Customer organizations. Edit the value list under Field configurations.",
-    "description": "Customer status policy section"
+    "message": "Status values for organizations with type \"Customer\"",
+    "description": "Other tabs section"
   },
   "modFieldsStatusForPartner": {
-    "message": "Enable or disable status values for Partner organizations. Edit the value list under Field configurations.",
-    "description": "Partner status policy section"
+    "message": "Status values for organizations with type \"Partner\"",
+    "description": "Other tabs section"
   },
   "modFieldsStatusForVendor": {
-    "message": "Enable or disable status values for Vendor organizations. Edit the value list under Field configurations.",
-    "description": "Vendor status policy section"
+    "message": "Status values for organizations with type \"Vendor\"",
+    "description": "Other tabs section"
   },
   "modFieldsNoStatusValues": {
     "message": "No status values configured. Click \"Add Value\" to create one.",
     "description": "Other tabs section"
   },
   "modFieldsCustomerStatusFootnote": {
-    "message": "Customer status values are app-scoped (Sales app). Disabled values remain in the system but are hidden from selection.",
+    "message": "Disabled values remain in the system but are hidden from selection when creating or editing organizations.",
     "description": "Other tabs section"
   },
   "modFieldsPartnerStatusFootnote": {
-    "message": "Partner status values are app-scoped (Sales app). Disabled values remain in the system but are hidden from selection.",
+    "message": "Disabled values remain in the system but are hidden from selection when creating or editing organizations.",
     "description": "Other tabs section"
   },
   "modFieldsVendorStatusFootnote": {
-    "message": "Vendor status values are app-scoped (Sales app). Disabled values remain in the system but are hidden from selection.",
+    "message": "Disabled values remain in the system but are hidden from selection when creating or editing organizations.",
     "description": "Other tabs section"
   },
   "modFieldsTasksStatusPriorityDesc": {
@@ -10460,7 +10496,7 @@
     "description": "Other tabs section"
   },
   "modFieldsItemsStatusTypesDesc": {
-    "message": "Configure item types and catalog lifecycle. Lifecycle states control sellability for future Quotes and Orders.",
+    "message": "Configure item types and status picklists. These control how items are classified and their lifecycle states.",
     "description": "Other tabs section"
   },
   "modFieldsItemTypesTitle": {
@@ -10500,7 +10536,7 @@
     "description": "Other tabs section"
   },
   "modFieldsItemStatusFootnote": {
-    "message": "Legacy status (Active/Inactive) is synced automatically from catalog lifecycle. Prefer lifecycle_state on items.",
+    "message": "Status values control item lifecycle. At least one status value must remain enabled.",
     "description": "Other tabs section"
   },
   "modFieldsCatalogLifecycleTitle": {
@@ -12347,6 +12383,46 @@
     "message": "No fields for this type (explicit)",
     "description": "Explicitly empty field set"
   },
+  "orgTypesConfigureFields": {
+    "message": "Configure fields",
+    "description": "Expand organization type field configuration"
+  },
+  "orgTypesHideFields": {
+    "message": "Hide fields",
+    "description": "Collapse organization type field configuration"
+  },
+  "orgTypesFieldsWhenSelected": {
+    "message": "Fields when this type is selected",
+    "description": "Per-type organization fields section"
+  },
+  "orgTypesResetPlatformDefaults": {
+    "message": "Reset to platform defaults",
+    "description": "Reset organization type fields to platform defaults"
+  },
+  "orgTypesNoScopedFields": {
+    "message": "No type-scoped fields are available on the Organizations module.",
+    "description": "No organization type-scoped fields"
+  },
+  "orgTypesUsingPlatformDefaults": {
+    "message": "Using platform defaults for this type.",
+    "description": "Inherited platform default organization fields"
+  },
+  "orgTypesInheritedNotSaved": {
+    "message": "(Inherited — not saved)",
+    "description": "Inherited organization fields not persisted"
+  },
+  "orgTypesPlatformDefaultNoFields": {
+    "message": "Platform default is no fields for this type.",
+    "description": "Platform default empty organization fields"
+  },
+  "orgTypesCustomFields": {
+    "message": "Custom fields",
+    "description": "Custom fields for organization type"
+  },
+  "orgTypesNoFieldsExplicit": {
+    "message": "No fields for this type (explicit)",
+    "description": "Explicitly empty organization field set"
+  },
   "peopleTypesReset": {
     "message": "Reset",
     "description": "Reset unsaved changes"
@@ -13120,7 +13196,7 @@
     "description": "OCI region help text"
   },
   "integrationsOciHostPattern": {
-    "message": "smtp.email.[region].oci.oraclecloud.com",
+    "message": "smtp.email.<region>.oci.oraclecloud.com",
     "description": "OCI SMTP host pattern in hint"
   },
   "integrationsOciPort465": {
@@ -14354,5 +14430,37 @@
   "peopleTypesDeleteInUseOther": {
     "message": "This role is used by {count} people. Removing it from the list does not change existing records; they will keep their current role value until updated.",
     "description": "Delete role confirm when in use (plural)"
+  },
+  "assignRulesCondFieldSalutation": {
+    "message": "Salutation",
+    "description": "Condition field: salutation"
+  },
+  "salesPipeStageCount": {
+    "message": "{count, plural, one {# stage} other {# stages}}",
+    "description": "Stage count in pipeline list or detail"
+  },
+  "modFieldsOptionCount": {
+    "message": "{count, plural, one {# option} other {# options}}",
+    "description": "Dependency option count"
+  },
+  "modFieldsStageCount": {
+    "message": "{count, plural, one {# stage} other {# stages}}",
+    "description": "Other tabs section"
+  },
+  "settingsSubDetailDaysCount": {
+    "message": "{count, plural, one {# day} other {# days}}",
+    "description": "Days remaining count"
+  },
+  "settingsAppDetailModuleCount": {
+    "message": "({count, plural, one {# module} other {# modules}})",
+    "description": "Dependency module count"
+  },
+  "peopleTypesInUse": {
+    "message": "In use by {count, plural, one {# person} other {# people}}",
+    "description": "Role usage count on row"
+  },
+  "peopleTypesDeleteInUse": {
+    "message": "This role is used by {count, plural, one {# person} other {# people}}. Removing it from the list does not change existing records; they will keep their current role value until updated.",
+    "description": "Delete role confirm when in use"
   }
 }

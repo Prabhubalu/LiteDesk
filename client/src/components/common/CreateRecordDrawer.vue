@@ -136,6 +136,23 @@
                               :read-only="false"
                             />
                           </div>
+                          <!-- Deal lines (commercial intent) — create draft or edit via API -->
+                          <div
+                            v-if="moduleKey === 'deals' && (!effectiveQuickCreateMode || fullMode)"
+                            class="pt-6 border-t border-gray-200 dark:border-gray-700"
+                          >
+                            <DealLinesSection
+                              ref="dealLinesSectionRef"
+                              :record="isEditing ? record : null"
+                              :draft-mode="!isEditing"
+                              :show-title="true"
+                              :editable="true"
+                              :currency="dealLinesCurrency"
+                              :initial-amount-mode="formData.amountMode || 'MANUAL'"
+                              @draft-change="handleDealLinesDraftChange"
+                              @updated="handleDealLinesUpdated"
+                            />
+                          </div>
                     </div>
                   </div>
 
@@ -188,6 +205,7 @@ import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } fro
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from './DynamicForm.vue';
 import DealRelationshipEditor from '@/components/deals/DealRelationshipEditor.vue';
+import DealLinesSection from '@/components/record-page/sections/DealLinesSection.vue';
 
 // Lazy-load to avoid circular chunk-settings ↔ record-activity init (production TDZ on _export_sfc).
 const QuoteLinesRecordSection = defineAsyncComponent(
@@ -204,6 +222,7 @@ import {
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import { useAuthStore } from '@/stores/authRegistry';
+import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import { isAuditEventType, isEventLocationGeoValid, resolveEventGeoRequired } from '@/utils/eventUtils';
 import { getEventTypeByKey, getEventTypeByLabel, EVENT_TYPE_DEFINITIONS } from '@/metadata/eventTypes';
 import { useTabs } from '@/composables/useTabs';
@@ -213,7 +232,8 @@ import {
   getCaseSystemFields,
   stripCaseRecordForEditForm,
   filterCaseEditSubmitPayload,
-  buildCaseEditSubmitPayload
+  buildCaseEditSubmitPayload,
+  CASE_QUICK_CREATE_DEFAULT,
 } from '@/platform/fields/caseFieldModel';
 import {
   getGlobalSystemFieldKeys,
@@ -224,12 +244,14 @@ import {
   getQuickCreateAllowedFieldKeys,
   shouldFilterPayloadByQuickCreate
 } from '@/utils/quickCreatePayloadFilter';
+import { augmentPeopleQuickCreateAllowedFieldKeys } from '@/platform/fields/peopleSalutationField';
 import { useCreationContext } from '@/utils/creationContext';
 import { getParticipationFields, getCoreIdentityFields, mergePeopleVirtualFieldDefinitions } from '@/platform/fields/peopleFieldModel';
 import {
-  normalizeOrganizationEditSubmitPayload,
+  buildOrganizationSubmitPayload,
   stripOrganizationRecordForEditForm,
 } from '@/platform/fields/organizationFieldModel';
+import { useOrganizationTypes } from '@/composables/useOrganizationTypes';
 import { getFormFieldValue, syncPeopleVirtualFieldKeys, applyVirtualFieldDefault } from '@/utils/getFieldValue';
 import {
   applyCreateOwnerDefaultsToForm,
@@ -322,6 +344,7 @@ const route = useRoute();
 const { openTab, activeTab } = useTabs();
 // Omit override = infer from route + activeApp on /people (null would mean explicit global-only)
 const { isSalesContext } = useCreationContext();
+const { typeDefs: organizationTypeDefs } = useOrganizationTypes();
 const isEditing = computed(() => !!props.record);
 const isQuoteModule = computed(() => props.moduleKey?.toLowerCase() === 'quotes');
 const isQuoteCreate = computed(() => isQuoteModule.value && !isEditing.value);
@@ -370,7 +393,11 @@ const showFullModeToggle = computed(() => effectiveQuickCreateMode.value && !isQ
 
 function toggleFullMode() {
   markUserInteraction();
-  fullMode.value = !fullMode.value;
+  const enteringFull = !fullMode.value;
+  fullMode.value = enteringFull;
+  if (enteringFull && props.moduleKey === 'deals') {
+    syncLegacyLookupsIntoDealRelationships();
+  }
 }
 
 // Quick Create Mode: show only fields from Settings → Quick Create
@@ -444,14 +471,13 @@ const effectiveExcludeFields = computed(() => {
     ...coreSystemFieldKeys,
   ]);
   // RULE: Global system fields (trash: deletedAt, deletedBy, deletionReason) never show in create/edit
-  if (props.moduleKey === 'deals' && props.useDealRelationshipEditor) {
-    // Deal create/edit uses DealRelationshipEditor for links and should hide model-level
-    // relationship/system tracking arrays from DynamicForm in both quick and full modes.
+  if (props.moduleKey === 'deals') {
+    // Deal create/edit: Linked Items is DealLinesSection; never show legacy lineItems Rich Text.
+    // Relationship editor (when enabled) also hides contactId/accountId in favor of DealRelationshipEditor.
     [
-      'contactId',
-      'accountId',
-      'dealPeople',
-      'dealOrganizations',
+      ...(props.useDealRelationshipEditor
+        ? ['contactId', 'accountId', 'dealPeople', 'dealOrganizations']
+        : []),
       'descriptionVersions',
       'derivedStatus',
       'stageHistory',
@@ -459,6 +485,8 @@ const effectiveExcludeFields = computed(() => {
       'activityLogs',
       'stageOrder',
       'lineItems',
+      'amountMode',
+      'linesGrandTotal',
     ].forEach((k) => excluded.add(k));
     return Array.from(excluded);
   }
@@ -475,17 +503,15 @@ const effectiveExcludeFields = computed(() => {
     return Array.from(excluded);
   }
   if (props.moduleKey === 'cases') {
-    const caseSystemFields = (getCaseSystemFields() || []).map((k) => String(k).toLowerCase());
-    const caseSystemPrefixes = ['assignmentcontrol', 'currentslacycle', 'slacycles', 'activities', 'source'];
+    (getCaseSystemFields() || []).forEach((k) => excluded.add(k));
     const caseFields = effectiveModuleOverrideForDrawer.value?.fields || [];
-    const caseSystemFieldsFromModule = caseFields
-      .map((field) => String(field?.key || ''))
-      .filter(Boolean)
-      .filter((key) => {
-        const normalized = normalizeFieldKeyForSystemMatch(key);
-        return caseSystemPrefixes.some((prefix) => normalized.startsWith(prefix));
-      });
-    [...caseSystemFields, ...caseSystemFieldsFromModule].forEach((k) => excluded.add(k));
+    for (const field of caseFields) {
+      const key = String(field?.key || '');
+      if (!key) continue;
+      if (isSystemField('cases', { key })) {
+        excluded.add(key);
+      }
+    }
     return Array.from(excluded);
   }
   if (props.moduleKey?.toLowerCase() === 'quotes') {
@@ -612,9 +638,23 @@ const effectiveModuleOverrideForDrawer = computed(() => {
   // Clear advanced layout rows in quick mode to prevent non-selected fields from rendering.
   if (moduleKeyLower === 'cases') {
     const quickMode = effectiveQuickCreateMode.value && !fullMode.value;
-    if (!quickMode) return mod;
+    const fieldKeys = new Set(
+      (mod.fields || []).map((f) => String(f?.key || '').toLowerCase()).filter(Boolean)
+    );
+    const resolveQuickCreateKeys = (keys) =>
+      keys.filter((k) => fieldKeys.has(String(k).toLowerCase()));
+
+    let quickCreate = Array.isArray(mod.quickCreate) ? [...mod.quickCreate] : [];
+    quickCreate = resolveQuickCreateKeys(quickCreate);
+    if (!quickCreate.length && quickMode) {
+      quickCreate = resolveQuickCreateKeys([...CASE_QUICK_CREATE_DEFAULT]);
+    }
+    if (!quickMode) {
+      return quickCreate.length ? { ...mod, quickCreate } : mod;
+    }
     return {
       ...mod,
+      quickCreate,
       quickCreateLayout: { version: 1, rows: [] }
     };
   }
@@ -704,9 +744,36 @@ const effectiveModuleOverrideForDrawer = computed(() => {
 
 // Deal relationship editor state (when moduleKey=deals)
 const relationshipEditorRef = ref(null);
+const dealLinesSectionRef = ref(null);
+const dealLinesDraft = ref(null);
 const dealRelationships = ref({ dealPeople: [], dealOrganizations: [] });
 const dealPeopleList = ref([]);
 const dealOrgList = ref([]);
+
+const dealLinesCurrency = computed(() => {
+  const fromForm = String(formData.value?.currency || '').trim();
+  const fromRecord = String(props.record?.currency || '').trim();
+  return resolveOrgCurrencyCode(fromForm || fromRecord || authStore.organization);
+});
+
+const handleDealLinesDraftChange = (payload) => {
+  dealLinesDraft.value = payload || null;
+  if (payload?.amountMode === 'AUTO' && payload.amount != null) {
+    formData.value = { ...formData.value, amount: payload.amount, amountMode: 'AUTO' };
+  } else if (payload?.amountMode) {
+    formData.value = { ...formData.value, amountMode: payload.amountMode };
+  }
+};
+
+const handleDealLinesUpdated = (payload) => {
+  if (payload?.deal?.amount != null && formData.value) {
+    formData.value = {
+      ...formData.value,
+      amount: payload.deal.amount,
+      amountMode: payload.deal.amountMode || formData.value.amountMode
+    };
+  }
+};
 
 const normalizeRelationshipId = (value) => {
   if (!value) return '';
@@ -722,16 +789,18 @@ const dedupeDealPeople = (rows = []) => {
     const personId = normalizeRelationshipId(row?.personId);
     const role = String(row?.role || '').trim();
     if (!personId || !role) continue;
-    const key = `${personId}|${role}`;
+    // One person per deal; role is a property of that single relationship.
+    const key = personId;
     const prev = merged.get(key);
     if (!prev) {
-      merged.set(key, { ...row, personId });
+      merged.set(key, { ...row, personId, role });
       continue;
     }
     merged.set(key, {
       ...prev,
       ...row,
       personId,
+      role: prev.isPrimary ? prev.role : (row.isPrimary ? role : (row.role || prev.role)),
       isActive: prev.isActive !== false || row.isActive !== false,
       isPrimary: !!prev.isPrimary || !!row.isPrimary,
       addedAt: prev.addedAt || row.addedAt,
@@ -747,16 +816,18 @@ const dedupeDealOrganizations = (rows = []) => {
     const organizationId = normalizeRelationshipId(row?.organizationId);
     const role = String(row?.role || '').trim();
     if (!organizationId || !role) continue;
-    const key = `${organizationId}|${role}`;
+    // One organization per deal; role is a property of that single relationship.
+    const key = organizationId;
     const prev = merged.get(key);
     if (!prev) {
-      merged.set(key, { ...row, organizationId });
+      merged.set(key, { ...row, organizationId, role });
       continue;
     }
     merged.set(key, {
       ...prev,
       ...row,
       organizationId,
+      role: row.isPrimary ? 'customer' : (prev.isPrimary ? prev.role : role),
       isActive: prev.isActive !== false || row.isActive !== false,
       isPrimary: !!prev.isPrimary || !!row.isPrimary,
       addedAt: prev.addedAt || row.addedAt,
@@ -767,13 +838,13 @@ const dedupeDealOrganizations = (rows = []) => {
 };
 
 const enforceSinglePrimaryContact = (rows = [], preferredPersonId = '') => {
+  // Primary is independent of role — never coerce role when enforcing primary.
   const next = Array.isArray(rows) ? rows.map((row) => ({ ...row })) : [];
   const preferred = normalizeRelationshipId(preferredPersonId);
   const candidateIndexes = [];
   for (let i = 0; i < next.length; i += 1) {
     const row = next[i];
     if (row?.isActive === false) continue;
-    if (String(row?.role || '') !== 'primary_contact') continue;
     if (!row?.isPrimary) continue;
     candidateIndexes.push(i);
   }
@@ -793,6 +864,14 @@ const enforceSinglePrimaryContact = (rows = [], preferredPersonId = '') => {
 
 const enforceSinglePrimaryCustomer = (rows = [], preferredOrganizationId = '') => {
   const next = Array.isArray(rows) ? rows.map((row) => ({ ...row })) : [];
+  // Primary org must always be Deal Relationship Role = customer.
+  for (let i = 0; i < next.length; i += 1) {
+    const row = next[i];
+    if (row?.isActive === false || !row?.isPrimary) continue;
+    if (String(row?.role || '') !== 'customer') {
+      next[i] = { ...row, role: 'customer' };
+    }
+  }
   const preferred = normalizeRelationshipId(preferredOrganizationId);
   const candidateIndexes = [];
   for (let i = 0; i < next.length; i += 1) {
@@ -824,6 +903,67 @@ const normalizeDealRelationships = (value = {}, options = {}) => {
     dealOrganizations: enforceSinglePrimaryCustomer(dealOrganizations, options?.preferredOrganizationId)
   };
 };
+
+/**
+ * Quick create uses legacy accountId/contactId fields; full mode uses dealPeople/dealOrganizations.
+ * Merge form lookups into the relationship editor so selections survive "Show all fields".
+ */
+function syncLegacyLookupsIntoDealRelationships() {
+  if (props.moduleKey !== 'deals' || !props.useDealRelationshipEditor) return;
+
+  const preferredPersonId = normalizeRelationshipId(formData.value?.contactId);
+  const preferredOrganizationId = normalizeRelationshipId(formData.value?.accountId);
+  if (!preferredPersonId && !preferredOrganizationId) return;
+
+  const current = dealRelationships.value || { dealPeople: [], dealOrganizations: [] };
+  let dealPeople = Array.isArray(current.dealPeople) ? current.dealPeople.map((p) => ({ ...p })) : [];
+  let dealOrganizations = Array.isArray(current.dealOrganizations)
+    ? current.dealOrganizations.map((o) => ({ ...o }))
+    : [];
+
+  if (preferredOrganizationId) {
+    const hasOrg = dealOrganizations.some(
+      (o) =>
+        o.isActive !== false &&
+        normalizeRelationshipId(o.organizationId) === preferredOrganizationId
+    );
+    if (!hasOrg) {
+      const hasPrimaryCustomer = dealOrganizations.some(
+        (o) => o.isActive !== false && o.isPrimary && String(o.role || '') === 'customer'
+      );
+      dealOrganizations.push({
+        organizationId: preferredOrganizationId,
+        role: 'customer',
+        isPrimary: !hasPrimaryCustomer,
+        isActive: true,
+        addedAt: new Date()
+      });
+    }
+  }
+
+  if (preferredPersonId) {
+    const hasPerson = dealPeople.some(
+      (p) => p.isActive !== false && normalizeRelationshipId(p.personId) === preferredPersonId
+    );
+    if (!hasPerson) {
+      const hasPrimaryContact = dealPeople.some(
+        (p) => p.isActive !== false && p.isPrimary
+      );
+      dealPeople.push({
+        personId: preferredPersonId,
+        role: 'decision_maker',
+        isPrimary: !hasPrimaryContact,
+        isActive: true,
+        addedAt: new Date()
+      });
+    }
+  }
+
+  dealRelationships.value = normalizeDealRelationships(
+    { dealPeople, dealOrganizations },
+    { preferredPersonId, preferredOrganizationId }
+  );
+}
 
 function discardQuoteCreateDraft(draftId) {
   const id = String(draftId || quoteCreateDraftId.value || '').trim();
@@ -862,6 +1002,7 @@ const closeDrawer = () => {
       userHasEdited.value = false;
       if (props.moduleKey === 'deals') {
         dealRelationships.value = { dealPeople: [], dealOrganizations: [] };
+        dealLinesDraft.value = null;
       }
     }, 300);
   }
@@ -1119,6 +1260,17 @@ const initializeForm = (module) => {
         initialForm[field.key] = '';
       }
     }
+  }
+
+  // Seed currency companion from tenant org settings for any module that has a currency field
+  const hasCurrencyField = fields.some((f) => String(f?.key || '').toLowerCase() === 'currency');
+  const hasPaymentCurrencyField = fields.some((f) => String(f?.key || '').toLowerCase() === 'paymentcurrency');
+  const orgCurrency = resolveOrgCurrencyCode(authStore.organization);
+  if (hasCurrencyField && !initialForm.currency) {
+    initialForm.currency = orgCurrency;
+  }
+  if (hasPaymentCurrencyField && !initialForm.paymentCurrency) {
+    initialForm.paymentCurrency = orgCurrency;
   }
   
   // If editing, merge with existing record data
@@ -1386,8 +1538,6 @@ const handleSubmit = async () => {
           const n = normalizeFieldKeyForSystemMatch(k);
           if (n && !systemFieldKeys.includes(n)) systemFieldKeys.push(n);
         }
-        const caseIdNorm = normalizeFieldKeyForSystemMatch('caseId');
-        if (!systemFieldKeys.includes(caseIdNorm)) systemFieldKeys.push(caseIdNorm);
       }
 
       const allFields = moduleDefinition.value.fields || [];
@@ -1457,9 +1607,12 @@ const handleSubmit = async () => {
     
     const qcList = moduleDefinition.value?.quickCreate;
     if (shouldFilterPayloadByQuickCreate(effectiveQuickCreateMode.value, fullMode.value, qcList)) {
-      const allowedFieldKeys = getQuickCreateAllowedFieldKeys(
-        qcList,
-        moduleDefinition.value?.fields
+      const allowedFieldKeys = augmentPeopleQuickCreateAllowedFieldKeys(
+        props.moduleKey,
+        getQuickCreateAllowedFieldKeys(
+          qcList,
+          moduleDefinition.value?.fields
+        )
       );
 
       // Fields that are always required by the API (even if not in quickCreate)
@@ -1694,14 +1847,18 @@ const handleSubmit = async () => {
     
     // CRM organizations: strip tenant/system fields and normalize lookup refs
     if (props.moduleKey === 'organizations') {
-      submitData = normalizeOrganizationEditSubmitPayload(
+      submitData = buildOrganizationSubmitPayload(
         submitData,
+        organizationTypeDefs.value,
+        isEditing.value ? 'edit' : 'create',
         moduleDefinition.value?.fields
       );
     }
 
     // Deal role-based relationships: use dealPeople/dealOrganizations, remove legacy contactId/accountId
     if (props.moduleKey === 'deals' && props.useDealRelationshipEditor) {
+      // Quick create may only have accountId/contactId — fold into relationship arrays before save
+      syncLegacyLookupsIntoDealRelationships();
       delete submitData.contactId;
       delete submitData.accountId;
       const norm = (id) => (id && typeof id === 'object' && id._id) ? id._id : id;
@@ -1731,6 +1888,22 @@ const handleSubmit = async () => {
       }));
       submitData.dealPeople = people;
       submitData.dealOrganizations = orgs;
+    }
+
+    // Deal lines: attach draft lines on create (edit mutates via DealLinesSection API)
+    if (props.moduleKey === 'deals' && !isEditing.value) {
+      const draft =
+        dealLinesSectionRef.value?.getDraftPayload?.() ||
+        dealLinesDraft.value;
+      if (draft) {
+        submitData.amountMode = draft.amountMode || 'MANUAL';
+        if (Array.isArray(draft.lines) && draft.lines.length) {
+          submitData.lines = draft.lines;
+        }
+        if (draft.amountMode === 'AUTO') {
+          delete submitData.amount;
+        }
+      }
     }
 
     // People create: Global = identity only (no type), Sales = create→attach (Lead)

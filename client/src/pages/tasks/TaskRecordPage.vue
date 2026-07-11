@@ -1644,6 +1644,7 @@ import { useTaskSections } from '@/components/record-page/composables/useTaskSec
 import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
 import { useTaskSectionDataProviders } from '@/components/record-page/composables/useTaskSectionDataProviders';
 import { createGenericRecordAdapter } from '@/components/record-page/adapters/genericRecordAdapter';
+import { picklistChipStyle } from '@/utils/picklistColorPalette';
 import RecordDetailsTabPanel from '@/components/record-page/RecordDetailsTabPanel.vue';
 import { resolveFieldContext } from '@/utils/fieldContextFilter';
 import { useRecordLoading } from '@/components/record-page/composables/useRecordLoading';
@@ -1722,7 +1723,7 @@ import Avatar from '@/components/common/Avatar.vue';
 import 'emoji-picker-element';
 import DateCell from '@/components/common/table/DateCell.vue';
 import { getKeyFields } from '@/utils/fieldDisplay';
-import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
+import { formatCurrencyValue, resolveCurrencyCodeForField, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import apiClient from '@/utils/apiClient';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import DatePicker from '@/components/common/DatePicker.vue';
@@ -2923,12 +2924,12 @@ const formatCompactDate = (dateValue) => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
-const formatCompactCurrency = (value, currencyCode = DEFAULT_CURRENCY_CODE) => {
+const formatCompactCurrency = (value, currencyCode = null) => {
   const num = Number(value);
   if (!Number.isFinite(num)) return '';
   return (
     formatCurrencyValue(num, {
-      currencyCode: String(currencyCode || DEFAULT_CURRENCY_CODE).toUpperCase(),
+      currencyCode: String(currencyCode || resolveOrgCurrencyCode()).toUpperCase(),
       maximumFractionDigits: num >= 1000 ? 0 : 2
     }) || ''
   );
@@ -2993,7 +2994,7 @@ const getRelatedRecordMeta = (type, record) => {
   }
 
   if (type === 'deal') {
-    const resolvedCurrencyCode = record?.currencyCode || record?.currency || DEFAULT_CURRENCY_CODE;
+    const resolvedCurrencyCode = resolveCurrencyCodeForField({ record });
     const amount =
       formatCompactCurrency(record.amount, resolvedCurrencyCode) ||
       formatCompactCurrency(record.value, resolvedCurrencyCode) ||
@@ -4352,51 +4353,17 @@ const getStatusPillDividerClass = (status) => {
   return 'border-gray-300 dark:border-gray-500';
 };
 
-const hexToRgb = (hex) => {
-  const normalized = String(hex || '').trim().replace('#', '');
-  if (!/^[0-9a-fA-F]{3,8}$/.test(normalized)) return null;
-
-  if (normalized.length === 3) {
-    const [r, g, b] = normalized.split('').map(char => parseInt(char + char, 16));
-    return { r, g, b };
-  }
-
-  if (normalized.length >= 6) {
-    return {
-      r: parseInt(normalized.slice(0, 2), 16),
-      g: parseInt(normalized.slice(2, 4), 16),
-      b: parseInt(normalized.slice(4, 6), 16)
-    };
-  }
-
-  return null;
-};
-
-const getStatusTextColor = (bgColor) => {
-  const rgb = hexToRgb(bgColor);
-  if (!rgb) return '#ffffff';
-  const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
-  return luminance > 0.62 ? '#111827' : '#ffffff';
-};
-
 const getStatusPillStyle = (status) => {
   const configured = findConfiguredStatusOption(status);
   if (!configured?.color) return null;
-
-  return {
-    backgroundColor: configured.color,
-    color: getStatusTextColor(configured.color)
-  };
+  return picklistChipStyle(configured.color);
 };
 
 const getStatusPillDividerStyle = (status) => {
   const configured = findConfiguredStatusOption(status);
   if (!configured?.color) return null;
-
-  const textColor = getStatusTextColor(configured.color);
-  return {
-    borderColor: textColor === '#111827' ? 'rgba(17, 24, 39, 0.28)' : 'rgba(255, 255, 255, 0.35)'
-  };
+  const style = picklistChipStyle(configured.color);
+  return style.borderColor ? { borderColor: style.borderColor } : null;
 };
 
 const normalizeStatusLookupKey = (value) => {

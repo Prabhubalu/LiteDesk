@@ -90,6 +90,16 @@
         <span v-else class="text-gray-500 dark:text-gray-400">-</span>
       </template>
 
+      <!-- Custom Task Type Cell with picklist badge -->
+      <template #cell-taskType="{ value }">
+        <BadgeCell
+          v-if="value"
+          :value="formatTaskType(value)"
+          :color="getTaskTypeColor(value)"
+        />
+        <span v-else class="text-gray-500 dark:text-gray-400">-</span>
+      </template>
+
       <!-- Custom Assigned To Cell -->
       <template #cell-assignedTo="{ row }">
         <div v-if="row.assignedTo" class="flex items-center gap-2">
@@ -324,6 +334,8 @@ const kanbanLoading = ref(false);
 const TASK_STAGES = ['todo', 'in_progress', 'waiting', 'completed', 'cancelled'];
 const taskStages = ref([...TASK_STAGES]);
 const statusColorMap = ref({});
+const taskTypeColorMap = ref({});
+const taskTypeLabelMap = ref({});
 
 // Kanban options (from localStorage, same keys as ListView Customize Kanban for tasks)
 const KANBAN_OPTIONS_KEY = 'arivu-listview-tasks-kanban-options';
@@ -518,7 +530,7 @@ const toggleTableView = (showTable) => {
   }
 };
 
-// Fetch task status picklist colors from tasks module
+// Fetch task status / taskType picklist options from tasks module
 const fetchTaskStatusOptions = async () => {
   try {
     const response = await apiClient.get('/modules', { params: { key: 'tasks' } });
@@ -534,12 +546,32 @@ const fetchTaskStatusOptions = async () => {
       if (val && color) map[val] = color;
     });
     statusColorMap.value = map;
+
+    const taskTypeField = fields.find(f => String(f?.key || '').toLowerCase() === 'tasktype');
+    const typeOpts = Array.isArray(taskTypeField?.options) ? taskTypeField.options : [];
+    const typeColorMap = {};
+    const typeLabelMap = {};
+    typeOpts.forEach((opt) => {
+      const val = typeof opt === 'string' ? opt : (opt?.value ?? opt?.id ?? '');
+      if (!val) return;
+      if (typeof opt === 'object' && opt?.color) {
+        typeColorMap[val] = String(opt.color).trim();
+      }
+      if (typeof opt === 'object' && opt?.label) {
+        typeLabelMap[val] = String(opt.label);
+      }
+    });
+    taskTypeColorMap.value = typeColorMap;
+    taskTypeLabelMap.value = typeLabelMap;
   } catch (_) {
     statusColorMap.value = {};
+    taskTypeColorMap.value = {};
+    taskTypeLabelMap.value = {};
   }
 };
 
 const getStatusColor = (status) => statusColorMap.value[status] || null;
+const getTaskTypeColor = (taskType) => taskTypeColorMap.value[taskType] || null;
 
 function hexToRgba(hex, alpha) {
   if (!hex) return null;
@@ -719,6 +751,7 @@ const formatTaskCardValue = (value, key) => {
   if (key === 'relatedTo' && typeof value === 'object' && value?.type) return formatRelatedToForDisplay(value) ?? '—';
   if (key === 'description' && typeof value === 'string') return getPlainTextFromHtml(value) || '—';
   if (key === 'assignedTo' && typeof value === 'object') return getUserDisplayName(value);
+  if (key === 'taskType') return formatTaskType(value);
   if (typeof value === 'object' && value !== null && ('firstName' in value || 'first_name' in value))
     return getUserDisplayName(value);
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value))
@@ -855,6 +888,15 @@ const formatPriority = (priority) => {
     'urgent': 'Urgent'
   };
   return priorityMap[priority] || priority;
+};
+
+const formatTaskType = (taskType) => {
+  if (!taskType) return '-';
+  const fromOptions = taskTypeLabelMap.value[taskType];
+  if (fromOptions) return fromOptions;
+  return String(taskType)
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 };
 </script>
 

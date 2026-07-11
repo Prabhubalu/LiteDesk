@@ -6,6 +6,7 @@ const {
   CASE_CHANNELS,
   CASE_STATUSES
 } = require('./caseLifecycle');
+const { PEOPLE_SALUTATION_VALUES } = require('./peopleSalutation');
 
 function picklistOptions(values) {
   return (Array.isArray(values) ? values : []).map((value) => ({ value, label: value }));
@@ -41,6 +42,7 @@ const SUPPLEMENTAL_BY_SCOPE = {
     field('lead_owner', 'Lead owner', 'lookup'),
     field('organization', 'Organization', 'lookup'),
     field('derivedStatus', 'Status', 'text'),
+    field('salutation', 'Salutation', 'picklist', picklistOptions(PEOPLE_SALUTATION_VALUES)),
     field('first_name', 'First name', 'text'),
     field('last_name', 'Last name', 'text'),
     field('email', 'Email', 'email'),
@@ -60,6 +62,7 @@ const SUPPLEMENTAL_BY_SCOPE = {
     field('lead_owner', 'Lead owner', 'lookup'),
     field('organization', 'Organization', 'lookup'),
     field('derivedStatus', 'Status', 'text'),
+    field('salutation', 'Salutation', 'picklist', picklistOptions(PEOPLE_SALUTATION_VALUES)),
     field('first_name', 'First name', 'text'),
     field('last_name', 'Last name', 'text'),
     field('email', 'Email', 'email'),
@@ -78,6 +81,7 @@ const SUPPLEMENTAL_BY_SCOPE = {
     field('lead_owner', 'Lead owner', 'lookup'),
     field('organization', 'Organization', 'lookup'),
     field('derivedStatus', 'Status', 'text'),
+    field('salutation', 'Salutation', 'picklist', picklistOptions(PEOPLE_SALUTATION_VALUES)),
     field('first_name', 'First name', 'text'),
     field('last_name', 'Last name', 'text'),
     field('email', 'Email', 'email'),
@@ -109,7 +113,7 @@ const SUPPLEMENTAL_BY_SCOPE = {
     field('assignedTo', 'Assigned To', 'lookup'),
     field('stage', 'Stage', 'picklist'),
     field('pipeline', 'Pipeline', 'picklist'),
-    field('status', 'Status', 'picklist', picklistOptions(['Open', 'Won', 'Lost', 'Stalled', 'Active', 'Abandoned'])),
+    field('status', 'Status', 'picklist', picklistOptions(['Open', 'Won', 'Lost'])),
     field('priority', 'Priority', 'picklist', picklistOptions(['Low', 'Medium', 'High', 'Urgent'])),
     field('amount', 'Amount', 'currency'),
     field('probability', 'Probability', 'percent'),

@@ -25,6 +25,7 @@
             <PhoneInput
               id="phone"
               :model-value="formData.phone"
+              :default-country="defaultPhoneCountry"
               :placeholder="t('settings.profilePhone')"
               required
               input-class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
@@ -175,16 +176,28 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '../utils/apiClient';
 import PhoneInput from '@/components/common/PhoneInput.vue';
-import { sanitizeInternationalPhone } from '../utils/phoneInput';
+import { sanitizeInternationalPhone, resolveDefaultPhoneCountry } from '../utils/phoneInput';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { CheckIcon } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
 const open = ref(false);
+
+function getBrowserLocale() {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().locale || navigator.language || 'en-US';
+  } catch {
+    return 'en-US';
+  }
+}
+
+const defaultPhoneCountry = computed(() =>
+  resolveDefaultPhoneCountry({ orgLocale: getBrowserLocale() })
+);
 
 const formData = ref({
   companyName: '',
@@ -209,7 +222,7 @@ const handleSubmit = async () => {
   try {
     const data = await apiClient.post('/demo/request', {
       ...formData.value,
-      phone: sanitizeInternationalPhone(formData.value.phone),
+      phone: sanitizeInternationalPhone(formData.value.phone, defaultPhoneCountry.value),
     });
 
     if (data.success) {

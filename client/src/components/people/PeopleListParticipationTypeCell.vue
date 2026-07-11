@@ -6,7 +6,7 @@
     <span
       v-for="entry in visibleEntries"
       :key="entry.appKey"
-      class="inline-flex min-w-0 max-w-full shrink items-center gap-1 overflow-hidden rounded px-2 py-0.5 text-xs leading-snug"
+      class="inline-flex min-w-0 max-w-full shrink items-center gap-1 overflow-hidden rounded-md border px-2 py-0.5 text-xs leading-snug"
       :class="participationPillClass(entry.appKey)"
       :title="`${entry.appLabel} · ${entry.role}`"
     >
@@ -21,7 +21,7 @@
       align="start"
     >
       <span
-        class="inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 cursor-default"
+        class="inline-flex shrink-0 items-center rounded-md border border-gray-300/50 px-1.5 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 dark:border-gray-600/50 cursor-default"
       >
         {{ overflowLabel }}
       </span>
@@ -92,17 +92,17 @@ function badgeOptionsForApp(appKey) {
 }
 
 const PARTICIPATION_PILL_CLASSES = {
-  SALES: 'bg-blue-100/70 text-blue-900 dark:bg-blue-900/40 dark:text-blue-100',
-  HELPDESK: 'bg-emerald-100/70 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-100',
-  AUDIT: 'bg-purple-100/70 text-purple-900 dark:bg-purple-900/40 dark:text-purple-100',
-  PORTAL: 'bg-orange-100/70 text-orange-900 dark:bg-orange-900/40 dark:text-orange-100',
-  PROJECTS: 'bg-indigo-100/70 text-indigo-900 dark:bg-indigo-900/40 dark:text-indigo-100',
+  SALES: 'bg-blue-100/70 text-blue-900 border-blue-300/50 dark:bg-blue-900/40 dark:text-blue-100 dark:border-blue-500/35',
+  HELPDESK: 'bg-emerald-100/70 text-emerald-900 border-emerald-300/50 dark:bg-emerald-900/40 dark:text-emerald-100 dark:border-emerald-500/35',
+  AUDIT: 'bg-purple-100/70 text-purple-900 border-purple-300/50 dark:bg-purple-900/40 dark:text-purple-100 dark:border-purple-500/35',
+  PORTAL: 'bg-orange-100/70 text-orange-900 border-orange-300/50 dark:bg-orange-900/40 dark:text-orange-100 dark:border-orange-500/35',
+  PROJECTS: 'bg-indigo-100/70 text-indigo-900 border-indigo-300/50 dark:bg-indigo-900/40 dark:text-indigo-100 dark:border-indigo-500/35',
 };
 
 function participationPillClass(appKey) {
   return (
     PARTICIPATION_PILL_CLASSES[String(appKey || '').toUpperCase()] ||
-    'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'
+    'bg-gray-100 text-gray-700 border-gray-300/50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600/50'
   );
 }
 

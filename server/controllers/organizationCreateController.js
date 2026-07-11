@@ -10,8 +10,8 @@
  * 
  * MUST:
  * - Force isTenant = false
- * - Accept ONLY: name, types, industry, website, phone, address
- * - Ignore any extra fields silently
+ * - Accept business fields visible for selected organization types
+ * - Strip tenant/system/infrastructure fields
  * - Reject tenant-only fields if provided
  * - Return minimal organization identity (id, name, types)
  * 
@@ -27,6 +27,11 @@
  */
 
 const Organization = require('../models/Organization');
+const { getOrganizationTypesConfig } = require('../utils/tenantMetadata');
+const {
+  filterOrganizationSubmitPayloadByTypes,
+  stripBlockedOrganizationSubmitFields,
+} = require('../utils/organizationTypeFieldVisibility');
 
 const websiteHostnamePattern = /^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
 
@@ -51,19 +56,8 @@ function isValidWebsite(rawValue) {
  * Create Business Organization
  * POST /api/organizations
  * 
- * Payload must ONLY include:
- * - name (required)
- * - types (optional, array)
- * - industry (optional)
- * - website (optional)
- * - phone (optional)
- * - address (optional)
- * 
- * Backend MUST:
- * - Force isTenant = false
- * - Ignore any extra fields silently
- * - Reject tenant-only fields if provided
- * - Return minimal organization identity (id, name, types)
+ * Payload includes business fields visible for selected organization types
+ * (name required; types, status fields, and type-scoped detail fields optional).
  */
 exports.create = async (req, res) => {
   try {
@@ -78,16 +72,27 @@ exports.create = async (req, res) => {
       }
     }
     
-    // ALLOWED FIELDS ONLY (strict filtering)
-    const allowedFields = ['name', 'types', 'industry', 'website', 'phone', 'address'];
-    
-    // Build payload with only allowed fields
-    const payload = {};
-    allowedFields.forEach(field => {
-      if (req.body[field] !== undefined && req.body[field] !== null && req.body[field] !== '') {
-        payload[field] = req.body[field];
-      }
-    });
+    const tenantOnlyFields = [
+      'subscription', 'limits', 'enabledApps', 'enabledModules',
+      'slug', 'settings', 'security', 'billing'
+    ];
+
+    const providedTenantFields = tenantOnlyFields.filter(field => req.body[field] !== undefined);
+    if (providedTenantFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Tenant-only fields are not allowed: ${providedTenantFields.join(', ')}`,
+        errors: { _general: 'Tenant-only fields cannot be set when creating business organizations' }
+      });
+    }
+
+    const { typeDefs } = await getOrganizationTypesConfig(req.user.organizationId);
+    const selectedTypes = Array.isArray(req.body.types) ? req.body.types : [];
+    const payload = filterOrganizationSubmitPayloadByTypes(
+      stripBlockedOrganizationSubmitFields(req.body),
+      selectedTypes,
+      typeDefs
+    );
     
     // Validate required field
     if (!payload.name || typeof payload.name !== 'string' || payload.name.trim() === '') {
@@ -124,21 +129,6 @@ exports.create = async (req, res) => {
           errors: { website: 'Enter a valid website URL (e.g., example.com or https://example.org)' }
         });
       }
-    }
-    
-    // REJECT tenant-only fields if provided
-    const tenantOnlyFields = [
-      'subscription', 'limits', 'enabledApps', 'enabledModules',
-      'slug', 'settings', 'security', 'billing'
-    ];
-    
-    const providedTenantFields = tenantOnlyFields.filter(field => req.body[field] !== undefined);
-    if (providedTenantFields.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Tenant-only fields are not allowed: ${providedTenantFields.join(', ')}`,
-        errors: { _general: 'Tenant-only fields cannot be set when creating business organizations' }
-      });
     }
     
     const { assignResolvedSource } = require('../services/sourceResolver');

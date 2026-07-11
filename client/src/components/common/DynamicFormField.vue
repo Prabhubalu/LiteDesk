@@ -37,7 +37,7 @@
     </div>
     
     <!-- Event location: address search + geo pin -->
-    <div v-if="isEventLocationField" class="mt-2">
+    <div v-else-if="isEventLocationField" class="mt-2">
       <EventLocationField
         :location="String(value || '')"
         :geo-location="eventFormGeoLocation"
@@ -51,6 +51,23 @@
         @update:geo-location="onEventGeoLocationUpdate"
       />
     </div>
+
+    <!-- People: first name with inline salutation -->
+    <PeopleFirstNameWithSalutationField
+      v-else-if="isPeopleFirstNameWithSalutationField"
+      class="mt-2"
+      :first-name="String(value || '')"
+      :salutation="String(salutationValue || '')"
+      :salutation-options="salutationOptions"
+      :disabled="isReadOnly"
+      :required="isRequired"
+      :invalid="Boolean(localValidationError || errors[field.key])"
+      :first-name-id="field.key"
+      :first-name-placeholder="field.placeholder || `Enter ${displayLabel}`"
+      @update:first-name="updateValue($event)"
+      @update:salutation="emit('update:salutationValue', $event)"
+      @blur="$emit('blur')"
+    />
 
     <!-- Text -->
     <input 
@@ -112,6 +129,7 @@
       :id="field.key"
       :name="field.key"
       :model-value="value"
+      :default-country="defaultPhoneCountry"
       :placeholder="field.placeholder || 'Phone number'"
       :required="isRequired"
       :disabled="isReadOnly"
@@ -571,7 +589,7 @@
         </span>
       </div>
 
-      <Combobox v-else :model-value="normalizedLookupValue || ''" @update:model-value="handleLookupChange" :disabled="isReadOnly" nullable>
+      <Combobox v-else :model-value="normalizedLookupValue ?? null" @update:model-value="handleLookupChange" :disabled="isReadOnly" nullable>
         <div class="relative">
           <ComboboxButton
             @click="handleLookupButtonClick"
@@ -596,6 +614,15 @@
               <!-- Default placeholder or non-user lookup -->
               <span v-else :class="['block truncate', !value && 'text-gray-500 dark:text-gray-500']">{{ getLookupSelectedLabel() || `Select ${effectiveLabel}` }}</span>
             </span>
+            <button
+              v-if="canClearLookup && hasLookupValue"
+              type="button"
+              @click.stop="clearLookupSelection"
+              class="flex-shrink-0 flex items-center justify-center p-1.5 rounded text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              :title="t('common.formClearLookup')"
+            >
+              <XMarkIcon class="w-5 h-5" />
+            </button>
             <!-- Modal browse button (not absolute) -->
             <button
               type="button"
@@ -650,6 +677,28 @@
               
               <!-- Options list (scrollable) -->
               <div class="max-h-60 overflow-auto py-1">
+                <ComboboxOption
+                  v-if="canClearLookup"
+                  :value="null"
+                  v-slot="{ active, selected }"
+                >
+                  <li
+                    :class="[
+                      'relative cursor-default select-none py-2 pl-10 pr-4',
+                      active ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'
+                    ]"
+                  >
+                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal', !selected && 'text-gray-500 dark:text-gray-400']">
+                      {{ lookupClearOptionLabel }}
+                    </span>
+                    <span
+                      v-if="selected"
+                      class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-400"
+                    >
+                      <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                    </span>
+                  </li>
+                </ComboboxOption>
                 <div v-if="filteredSearchableLookupOptions.length === 0" class="relative cursor-default select-none px-4 py-2 text-gray-700 dark:text-gray-300">
                   {{ t('common.formNoMatchingRecords') }}
                 </div>
@@ -934,7 +983,7 @@
       </TransitionRoot>
 
       <CreateRecordDrawer
-        v-if="canCreateLookupRecord"
+        v-if="usesModuleCreateDrawer"
         :isOpen="showLookupCreateDrawer"
         :moduleKey="lookupTargetModuleKey"
         :initialData="lookupCreateInitialData"
@@ -1043,6 +1092,8 @@ import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import FormTagsField from '@/components/common/FormTagsField.vue';
 import EventLocationField from '@/components/events/EventLocationField.vue';
 import PhoneInput from '@/components/common/PhoneInput.vue';
+import PeopleFirstNameWithSalutationField from '@/components/people/PeopleFirstNameWithSalutationField.vue';
+import { isPeopleFirstNameHostField } from '@/platform/fields/peopleSalutationField';
 import DatePicker from '@/components/common/DatePicker.vue';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
 import { normalizeDateTimeInput } from '@/utils/datePickerUtils';
@@ -1054,9 +1105,10 @@ import {
 } from '@/utils/recordLookupCache';
 import { validateField } from '@/utils/fieldValidation';
 import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInput';
+import { useDefaultPhoneCountry } from '@/composables/useDefaultPhoneCountry';
 import { getWebsiteValidationMessage } from '@/utils/urlInputValidation';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
-import { CURRENCY_OPTIONS, DEFAULT_CURRENCY_CODE } from '@/utils/currencyOptions';
+import { CURRENCY_OPTIONS, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import { useAuthStore } from '@/stores/authRegistry';
 import { deleteInlineUpload, isManagedInlineUploadRef } from '@/utils/inlineUploadStorage';
 import {
@@ -1070,6 +1122,8 @@ import { createEmptyGeoLocation } from '@/types/eventLocation.types';
 import { isModuleRegistered } from '@/platform/fields/FieldRegistry';
 
 const { t } = useI18n();
+
+const { defaultPhoneCountry } = useDefaultPhoneCountry(computed(() => props.formContext));
 
 const _c = globalThis.console;
 function fieldDbg(...args) {
@@ -1150,10 +1204,18 @@ const props = defineProps({
   formContext: {
     type: Object,
     default: null
+  },
+  salutationValue: {
+    type: String,
+    default: ''
+  },
+  salutationOptions: {
+    type: Array,
+    default: () => []
   }
 });
 
-const emit = defineEmits(['update:value', 'validation-error', 'blur', 'update:currency-code', 'picklist-option-created', 'update:form-context']);
+const emit = defineEmits(['update:value', 'validation-error', 'blur', 'update:currency-code', 'picklist-option-created', 'update:form-context', 'update:salutationValue']);
 
 const displayLabel = computed(() => getFieldDisplayLabel(props.field, props.moduleKey));
 const effectiveLabel = computed(() => {
@@ -1174,6 +1236,11 @@ const isValidObjectId = (value) => typeof value === 'string' && /^[0-9a-fA-F]{24
 const isEventLocationField = computed(() => {
   if (props.moduleKey !== 'events') return false;
   return String(props.field?.key || '').toLowerCase() === 'location';
+});
+
+const isPeopleFirstNameWithSalutationField = computed(() => {
+  return isPeopleFirstNameHostField(props.moduleKey, props.field?.key || '')
+    && props.field?.dataType === 'Text';
 });
 
 const isEventLinkedFormField = computed(() => {
@@ -1325,14 +1392,11 @@ const isRequired = computed(() => {
 /** Field key `tags` (string[]); dataType should be Multi-Picklist — Tasks used to infer Text from schema */
 const isTagsField = computed(() => String(props.field?.key || '').toLowerCase() === 'tags');
 const currencyOptions = CURRENCY_OPTIONS;
-const effectiveCurrencyCode = computed(() =>
-  String(
-    props.currencyCode ||
-    props.field?.numberSettings?.currencyCode ||
-    props.field?.numberSettings?.currency ||
-    DEFAULT_CURRENCY_CODE
-  ).toUpperCase()
-);
+const effectiveCurrencyCode = computed(() => {
+  // Prefer explicit companion/prop; do not let legacy numberSettings ($ → USD) override org default
+  if (props.currencyCode) return String(props.currencyCode).toUpperCase();
+  return resolveOrgCurrencyCode(authStore.organization);
+});
 
 const mergedPicklistSourceOptions = computed(() => {
   const base = Array.isArray(props.field.options) ? props.field.options : [];
@@ -1439,6 +1503,14 @@ const canCreateLookupRecord = computed(() => {
   return !isReadOnly.value && !!lookupTargetModuleKey.value && lookupTargetModuleKey.value !== 'users';
 });
 
+const isCatalogCategoriesLookup = computed(
+  () => String(lookupTargetModuleKey.value || '').toLowerCase() === 'catalog/categories'
+);
+
+const usesModuleCreateDrawer = computed(
+  () => canCreateLookupRecord.value && !isCatalogCategoriesLookup.value
+);
+
 // When the lookup drawer is open, prefer its search seed; fall back to the inline combobox query otherwise.
 const activeLookupSearchSeed = computed(() => {
   const drawer = String(lookupModalSearchQuery.value || lookupModalSearchInput.value || '').trim();
@@ -1479,6 +1551,7 @@ const lookupModulePluralLabel = computed(() => {
 const lookupModuleSingularLabel = computed(() => {
   const plural = lookupModulePluralLabel.value;
   if (!plural) return 'Record';
+  if (plural.toLowerCase() === 'categories') return 'Category';
   // Naive singularize: trim a trailing "s" if present and result is non-empty
   if (plural.length > 1 && plural.toLowerCase().endsWith('s')) {
     return plural.slice(0, -1);
@@ -1556,7 +1629,7 @@ const validateValue = (val, opts = {}) => {
 
   // Phone: while typing partial international numbers, validate fully on blur.
   if (props.field.dataType === 'Phone') {
-    const phoneValidation = validatePhoneValue(strVal);
+    const phoneValidation = validatePhoneValue(strVal, defaultPhoneCountry.value);
     if (!phoneBlur && strVal && !phoneValidation.isValid) {
       localValidationError.value = null;
       emit('validation-error', props.field.key, null);
@@ -1651,7 +1724,8 @@ const updateValue = (newValue) => {
   let v = newValue;
   if (props.field.dataType === 'Phone') {
     v = sanitizeInternationalPhone(
-      typeof newValue === 'string' ? newValue : newValue == null ? '' : String(newValue)
+      typeof newValue === 'string' ? newValue : newValue == null ? '' : String(newValue),
+      defaultPhoneCountry.value
     );
   }
   emit('update:value', v);
@@ -1735,13 +1809,29 @@ const handleRadioChange = (newValue) => {
 
 // Handler for lookup changes (emits blur immediately since selection is complete)
 const handleLookupChange = (newValue) => {
-  updateValue(newValue);
+  updateValue(newValue == null || newValue === '' ? null : newValue);
   // Emit blur immediately after selection for lookup fields
   emit('blur');
 };
 
+const canClearLookup = computed(() => !isReadOnly.value && !isRequired.value);
+
+const hasLookupValue = computed(() => {
+  if (props.value == null || props.value === '') return false;
+  if (typeof props.value === 'object' && !props.value._id) return false;
+  return true;
+});
+
+const lookupClearOptionLabel = computed(() =>
+  isUserLookupField.value ? t('records.editableUnassigned') : t('common.formLookupClearOption')
+);
+
+const clearLookupSelection = () => {
+  handleLookupChange(null);
+};
+
 const handleCurrencyCodeChange = (newValue) => {
-  const selected = String(newValue || DEFAULT_CURRENCY_CODE).toUpperCase();
+  const selected = String(newValue || resolveOrgCurrencyCode(authStore.organization)).toUpperCase();
   emit('update:currency-code', selected);
   emit('blur');
 };
@@ -2237,6 +2327,28 @@ const fetchUsers = async ({ autoDefault = false } = {}) => {
   }
 };
 
+// Flatten catalog category tree for lookup options / modal rows
+const flattenCatalogCategoryTree = (tree) => {
+  const out = [];
+  const walk = (node, parentPath = '') => {
+    if (!node || typeof node !== 'object') return;
+    const id = node._id || node.id;
+    const name = node.name || node.label;
+    const path = node.path || (parentPath && name ? `${parentPath} / ${name}` : name) || name || '';
+    if (id) {
+      out.push({ ...node, _id: id, name, path });
+    }
+    const children = Array.isArray(node.children) ? node.children : [];
+    for (const child of children) walk(child, path || parentPath);
+  };
+  if (Array.isArray(tree)) {
+    for (const root of tree) walk(root, '');
+  } else if (tree) {
+    walk(tree, '');
+  }
+  return out;
+};
+
 // Fetch lookup options for Lookup fields
 const fetchLookupOptions = async () => {
   if (!isLookupField.value) return;
@@ -2252,27 +2364,6 @@ const fetchLookupOptions = async () => {
     console.warn('Lookup field missing targetModule:', props.field.key, props.field);
     return;
   }
-
-  const flattenCatalogCategoryTree = (tree) => {
-    const out = [];
-    const walk = (node, parentPath = '') => {
-      if (!node || typeof node !== 'object') return;
-      const id = node._id || node.id;
-      const name = node.name || node.label;
-      const path = node.path || (parentPath && name ? `${parentPath} / ${name}` : name) || name || '';
-      if (id) {
-        out.push({ ...node, _id: id, name, path });
-      }
-      const children = Array.isArray(node.children) ? node.children : [];
-      for (const child of children) walk(child, path || parentPath);
-    };
-    if (Array.isArray(tree)) {
-      for (const root of tree) walk(root, '');
-    } else if (tree) {
-      walk(tree, '');
-    }
-    return out;
-  };
   
   try {
     const moduleKey = targetModule;
@@ -2388,6 +2479,9 @@ const getLookupModuleName = () => {
   if (props.field.lookupSettings?.targetModule === 'users') {
     return 'Users';
   }
+  if (String(props.field.lookupSettings?.targetModule || '').toLowerCase() === 'catalog/categories') {
+    return 'Categories';
+  }
   if (props.field.lookupSettings?.targetModule) {
     const moduleKey = props.field.lookupSettings.targetModule;
     // Capitalize first letter and add 's' if needed
@@ -2404,8 +2498,40 @@ const openLookupModal = async () => {
   await fetchLookupModalData();
 };
 
-const openLookupCreateDrawer = () => {
+const createCatalogCategoryFromLookup = async () => {
+  const name = String(activeLookupSearchSeed.value || '').trim();
+  if (!name) {
+    localValidationError.value = t('common.formCatalogCategoryNameRequired');
+    return;
+  }
+  try {
+    localValidationError.value = null;
+    const response = await apiClient.post('/catalog/categories', { name });
+    const created = response?.data?.data ?? response?.data ?? response;
+    if (!created?._id) {
+      localValidationError.value = t('common.formCatalogCategoryCreateFailed');
+      return;
+    }
+    handleLookupRecordCreated({
+      ...created,
+      name: created.name || name,
+      path: created.path || name,
+    });
+    await fetchLookupOptions();
+  } catch (err) {
+    localValidationError.value =
+      err?.response?.data?.message ||
+      err?.message ||
+      t('common.formCatalogCategoryCreateFailed');
+  }
+};
+
+const openLookupCreateDrawer = async () => {
   if (!canCreateLookupRecord.value) return;
+  if (isCatalogCategoriesLookup.value) {
+    await createCatalogCategoryFromLookup();
+    return;
+  }
   showLookupCreateDrawer.value = true;
 };
 

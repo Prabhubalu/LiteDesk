@@ -172,7 +172,7 @@ import Avatar from '@/components/common/Avatar.vue';
 import DynamicFormField from '@/components/common/DynamicFormField.vue';
 import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/authRegistry';
-import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
+import { formatCurrencyValue, resolveCurrencyCodeForField } from '@/utils/currencyOptions';
 
 const props = defineProps({
   record: { type: Object, default: null },
@@ -456,7 +456,10 @@ function formatDate(val) {
 
 function formatCurrency(val) {
   const n = Number(val) || 0;
-  const currencyCode = String(props.record?.currencyCode || props.record?.currency || DEFAULT_CURRENCY_CODE).toUpperCase();
+  const currencyCode = resolveCurrencyCodeForField({
+    record: props.record,
+    orgCurrency: authStore.organization,
+  });
   return (
     formatCurrencyValue(n, {
       currencyCode,

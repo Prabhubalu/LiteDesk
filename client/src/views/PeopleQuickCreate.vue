@@ -53,6 +53,7 @@
             <PhoneInput
               v-if="field.dataType === 'Phone'"
               :model-value="formData[field.key]"
+              :default-country="defaultPhoneCountry"
               :required="field.required"
               :placeholder="field.placeholder || 'Phone number'"
               input-class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -123,6 +124,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
 import PhoneInput from '@/components/common/PhoneInput.vue';
 import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInput';
+import { useDefaultPhoneCountry } from '@/composables/useDefaultPhoneCountry';
 import { getDefaultEmailValidations } from '@/utils/defaultFieldValidations';
 import { validateField } from '@/utils/fieldValidation';
 import { 
@@ -147,6 +149,7 @@ const submitting = ref(false);
 const validationErrors = ref({});
 const fieldDefinitions = ref([]);
 const formData = ref({});
+const { defaultPhoneCountry } = useDefaultPhoneCountry(computed(() => formData.value));
 
 // Helper: Check if a field is eligible for Quick Create
 function isFieldEligibleForQuickCreate(fieldKey) {
@@ -378,9 +381,9 @@ const handleSubmit = async () => {
       errors[field.key] = `${field.label} is required`;
     }
     if (field.dataType === 'Phone') {
-      const p = sanitizeInternationalPhone(formData.value[field.key] || '');
+      const p = sanitizeInternationalPhone(formData.value[field.key] || '', defaultPhoneCountry.value);
       formData.value[field.key] = p;
-      const phoneValidation = validatePhoneValue(p);
+      const phoneValidation = validatePhoneValue(p, defaultPhoneCountry.value);
       if (!phoneValidation.isValid) {
         errors[field.key] = phoneValidation.error;
       }

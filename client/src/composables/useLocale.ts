@@ -20,6 +20,7 @@ import {
   formatTime,
   formatRelativeTime,
 } from '@/utils/localeFormat';
+import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 
 export type LocaleResolution = {
   language: I18nLanguage;
@@ -69,7 +70,7 @@ export function useLocale() {
   );
 
   const timeZone = computed(() => (orgSettings.value?.timeZone as string) || 'UTC');
-  const currency = computed(() => (orgSettings.value?.currency as string) || 'USD');
+  const currency = computed(() => resolveOrgCurrencyCode(orgSettings.value));
 
   const isPseudo = computed(() =>
     PSEUDO_LANGUAGES.includes(language.value as (typeof PSEUDO_LANGUAGES)[number])

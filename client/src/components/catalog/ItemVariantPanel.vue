@@ -195,6 +195,8 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { CATALOG_BARCODE_TYPES, CATALOG_BARCODE_TYPE_LABEL_KEYS } from '@/constants/catalogBarcode';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
+import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { useAuthStore } from '@/stores/authRegistry';
 import { getItemFieldMetadata } from '@/platform/fields/itemFieldModel';
 import ItemVariantPriceEntries from '@/components/catalog/ItemVariantPriceEntries.vue';
 import ItemBundleBuilder from '@/components/catalog/ItemBundleBuilder.vue';
@@ -210,6 +212,8 @@ const props = defineProps({
 const emit = defineEmits(['save']);
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const orgCurrency = computed(() => resolveOrgCurrencyCode(authStore.organization));
 
 const barcodeTypes = CATALOG_BARCODE_TYPES;
 
@@ -250,7 +254,7 @@ const form = reactive({
   unit_of_measure: '',
   selling_price: 0,
   cost_price: 0,
-  currency: 'USD',
+  currency: resolveOrgCurrencyCode(),
   tax_type: 'None',
   tax_percentage: 0,
   commission_rate: 0,
@@ -265,7 +269,7 @@ watch(activeVariant, (variant) => {
   form.unit_of_measure = variant.unit_of_measure || '';
   form.selling_price = variant.selling_price ?? 0;
   form.cost_price = variant.cost_price ?? 0;
-  form.currency = variant.currency || 'USD';
+  form.currency = variant.currency || orgCurrency.value;
   form.tax_type = variant.tax_type || 'None';
   form.tax_percentage = variant.tax_percentage ?? 0;
   form.commission_rate = variant.commission_rate ?? 0;

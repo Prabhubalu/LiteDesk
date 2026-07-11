@@ -277,9 +277,10 @@ import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import {
   CURRENCY_OPTIONS,
-  DEFAULT_CURRENCY_CODE,
   getCurrencySymbolFromCode,
+  resolveOrgCurrencyCode,
 } from '@/utils/currencyOptions';
+import { useAuthStore } from '@/stores/authRegistry';
 import {
   nextPicklistOptionColor,
   backfillPicklistOptionColors,
@@ -293,6 +294,7 @@ import {
 } from '@/constants/moduleFieldTypes';
 
 const { t } = useI18n();
+const authStore = useAuthStore();
 
 const FIELD_TYPES = PLATFORM_MODULE_FIELD_TYPES;
 
@@ -347,7 +349,7 @@ const createEmptyDraft = () => {
     owner: 'org',
     participationScope: 'core',
     appContextToken: firstApp,
-    currencyCode: DEFAULT_CURRENCY_CODE,
+    currencyCode: resolveOrgCurrencyCode(authStore.organization),
   };
 };
 
@@ -471,7 +473,9 @@ const handleSave = () => {
         : 'global',
   };
   if (draft.value.dataType === 'Currency') {
-    const nextCurrencyCode = String(currencyCode || DEFAULT_CURRENCY_CODE).toUpperCase();
+    const nextCurrencyCode = String(
+      currencyCode || resolveOrgCurrencyCode(authStore.organization)
+    ).toUpperCase();
     nextField.numberSettings = {
       ...nextField.numberSettings,
       decimalPlaces: 2,

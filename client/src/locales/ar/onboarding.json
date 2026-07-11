@@ -406,5 +406,17 @@
   "firstTimeReportsAction": {
     "message": "Create your first report",
     "description": "First visit CTA for Analytics Reports"
+  },
+  "localeLabel": {
+    "message": "Locale",
+    "description": "Locale field label for workspace onboarding"
+  },
+  "regionalDetectedTitle": {
+    "message": "Detected region: {market}",
+    "description": "Onboarding regional bundle title"
+  },
+  "regionalDetectedBody": {
+    "message": "We pre-filled locale ({locale}) and currency ({currency}) from your time zone. You can change these before continuing.",
+    "description": "Onboarding regional bundle hint"
   }
 }

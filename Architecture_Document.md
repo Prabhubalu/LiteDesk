@@ -246,11 +246,48 @@ Lifecycle per tenant: `status` (DEMO→ACTIVE→…), `organizationId` (unique),
 
 | Group | Fields |
 |-------|--------|
-| Core | `name`, `amount`, `currency`, `stage`, `stageOrder`, `probability`, `pipeline` |
+| Core | `name`, `amount`, `amountMode` (`AUTO`\|`MANUAL`), `linesGrandTotal`, `currency`, `stage`, `stageOrder`, `probability`, `pipeline` |
 | Dates | `expectedCloseDate`, `actualCloseDate` |
 | Legacy FK | `contactId` → People, `accountId` → Organization |
 | Multi-relation | `dealPeople[]`, `dealOrganizations[]` (role, isPrimary) |
+| Commercial lines | **`DealLine`** entity (`dealId` FK) — expected commercial intent; not embedded `lineItems` |
 | Meta | `assignedTo`, `customFields`, trash fields, activity/description versions |
+| Platform-owned | `status` (`Open` \| `Won` \| `Lost`), `derivedStatus`, `lostReason` |
+
+**Deal ↔ Organization relationships (platform doctrine):**
+
+- A Deal may link **multiple** organizations via `dealOrganizations[]` (`organizationId`, `role`, `isPrimary`, `isActive`).
+- **`role`** is the **Deal Relationship Role** (how the org is involved in *this* deal). It is **not** Organization Type.
+- System roles: `customer`, `partner`, `reseller`, `distributor`, `vendor`, `other`.
+- Organization Type answers “What is this organization?” and is used only as a **default** when linking; after creation the stored role is independent.
+- **Exactly one** Primary organization is required when any orgs are linked. Primary **must** have `role=customer` (setting Primary on a non-customer coerces role to `customer`).
+- Legacy `accountId` syncs to/from the primary customer entry for backward compatibility.
+
+**Deal ↔ People relationships (platform doctrine):**
+
+- A Deal may link **multiple** people via `dealPeople[]` (`personId`, `role`, `isPrimary`, `isActive`).
+- **One person appears at most once** on a Deal; changing involvement updates the existing row.
+- **`role`** is the **Deal Person Role** (buying/participation role on *this* deal). It is **not** Person Type (Lead/Contact) and is **not** Primary.
+- System roles: `decision_maker`, `champion`, `influencer`, `technical_contact`, `partner_contact`, `procurement`, `legal`, `other`.
+- **`isPrimary`** identifies the main contact the sales team works with. It is **independent** of `role` (e.g. ⭐ Influencer is valid). Editing Primary never overwrites role; editing role never affects Primary.
+- If any people are linked, **exactly one** must be Primary. Defaults: first person → Primary + Decision Maker; subsequent → Influencer (both editable before add).
+- Legacy `contactId` syncs to/from the Primary person (`isPrimary=true`) for backward compatibility.
+
+**Deal amount doctrine:**
+
+- **`Deal.amount`** is the single canonical expected value for reports, dashboards, APIs, and workflows.
+- **`amountMode=MANUAL`** — user owns `amount`; DealLines are optional intent and do not overwrite amount.
+- **`amountMode=AUTO`** — `DealPricingService` writes `amount` from DealLine grand total. Mode transitions are explicit (no `amount` + `AUTO` in the same request).
+- DealLines snapshot catalog/pricing fields (`skuSnapshot`, `nameSnapshot`, `expectedUnitPrice`, …) and carry `pricingVersion`.
+- Quote generation must go through **`CommercialConversionService`** — Quote must not read DealLines directly.
+
+**Stage vs Status (platform doctrine):**
+
+- **Stage** — tenant-configurable pipeline position (workflow). Settings → Pipelines owns stage labels and stage outcome (`open` / `won` / `lost`).
+- **Status** — platform-owned **execution state**, derived from Stage. Not a business field. Canonical values only: `Open`, `Won`, `Lost`.
+- Status is **read-only** in normal operation (API + UI). Direct writes are rejected (`STATUS_WRITE_PROTECTED`). Only stage-driven derivation, data migrations, or internal maintenance scripts may set Status.
+- **Lost Reason** (`lostReason`) holds business nuance for losses (including former `Abandoned`). Do not reintroduce `Stalled` / `Active` / `Abandoned` as Status values — use health/metrics for stall signals.
+- Reporting, dashboards, forecasting, automations, and open-pipeline filters key off Status, not Stage labels.
 
 #### Task (`tasks`)
 

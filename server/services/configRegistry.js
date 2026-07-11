@@ -225,17 +225,30 @@ async function getStageConfig(pipelineKey, stage, appKey = null) {
  * @returns {string|null} - Legacy status mapping or null
  */
 function computeLegacyDealStatus(stage) {
+  const { DEAL_STATUS } = require('../constants/dealStatus');
   const stageToStatusMap = {
-    'Closed Won': 'Won',
-    'Closed Lost': 'Lost',
-    'Qualification': 'Open',
-    'Proposal': 'Open',
-    'Negotiation': 'Open',
-    'Contract Sent': 'Open',
-    'Lead': 'Open',
-    'Qualified': 'Open'
+    'Closed Won': DEAL_STATUS.WON,
+    'Closed Lost': DEAL_STATUS.LOST,
+    'Qualification': DEAL_STATUS.OPEN,
+    'Proposal': DEAL_STATUS.OPEN,
+    'Negotiation': DEAL_STATUS.OPEN,
+    'Contract Sent': DEAL_STATUS.OPEN,
+    'Lead': DEAL_STATUS.OPEN,
+    'Qualified': DEAL_STATUS.OPEN
   };
-  return stageToStatusMap[stage] || null;
+  if (stageToStatusMap[stage]) return stageToStatusMap[stage];
+  // Unknown stage labels: treat as Open (still in pipeline)
+  return stage ? DEAL_STATUS.OPEN : null;
+}
+
+/**
+ * Normalize stage-config / derived outcome labels to canonical Deal Status (Open|Won|Lost).
+ * Maps legacy stalled/active/abandoned into the minimal set.
+ */
+function normalizeDealDerivedStatusValue(value) {
+  const { normalizeDealStatus } = require('../constants/dealStatus');
+  if (value == null || value === '') return null;
+  return normalizeDealStatus(value);
 }
 
 /**
@@ -300,7 +313,7 @@ async function computeDealDerivedStatus(recordData, appKey = null) {
     }
     
     return {
-      derivedStatus: stageConfig.derivedStatus || null,
+      derivedStatus: normalizeDealDerivedStatusValue(stageConfig.derivedStatus),
       probability: stageConfig.probability != null ? stageConfig.probability : computeLegacyDealProbability(stage)
     };
   } catch (error) {
@@ -467,5 +480,6 @@ module.exports = {
   getStageConfig,
   computeDealDerivedStatus,
   computeLegacyDealStatus,
-  computeLegacyDealProbability
+  computeLegacyDealProbability,
+  normalizeDealDerivedStatusValue
 };

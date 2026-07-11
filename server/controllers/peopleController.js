@@ -52,6 +52,20 @@ const formatServerTiming = (timings) => {
  * Flatten People record for API response: expose participations as top-level aliases.
  * Canonical: participations.SALES.role, participations.HELPDESK.role
  */
+function resolvePeopleLastActivity(record) {
+  const logs = Array.isArray(record?.activityLogs) ? record.activityLogs : [];
+  if (logs.length === 0) return null;
+
+  let latest = null;
+  for (const log of logs) {
+    const ts = log?.timestamp ? new Date(log.timestamp).getTime() : NaN;
+    if (!Number.isFinite(ts)) continue;
+    if (latest == null || ts > latest) latest = ts;
+  }
+
+  return latest != null ? new Date(latest) : null;
+}
+
 function flattenPeopleForResponse(record) {
   const flat = flattenCustomFieldsForResponse(record);
   if (!flat) return flat;
@@ -66,6 +80,7 @@ function flattenPeopleForResponse(record) {
     helpdesk_role: helpdeskRole,
     lead_status: lead_status ?? null,
     contact_status: contact_status ?? null,
+    lastActivity: resolvePeopleLastActivity(rest),
   };
 }
 

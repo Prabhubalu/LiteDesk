@@ -14354,5 +14354,113 @@
   "emailPolicyInfraLoadBanner": {
     "message": "Platform is under heavy load. Effective send rate temporarily reduced.",
     "description": "Banner when AMDS infrastructure multiplier is below 1"
+  },
+  "assignRulesCondFieldSalutation": {
+    "message": "Salutation",
+    "description": "Condition field: salutation"
+  },
+  "salesPipeStageCount": {
+    "message": "{count, plural, one {# stage} other {# stages}}",
+    "description": "Stage count in pipeline list or detail"
+  },
+  "modFieldsOptionCount": {
+    "message": "{count, plural, one {# option} other {# options}}",
+    "description": "Dependency option count"
+  },
+  "modFieldsStageCount": {
+    "message": "{count, plural, one {# stage} other {# stages}}",
+    "description": "Other tabs section"
+  },
+  "settingsSubDetailDaysCount": {
+    "message": "{count, plural, one {# day} other {# days}}",
+    "description": "Days remaining count"
+  },
+  "settingsAppDetailModuleCount": {
+    "message": "({count, plural, one {# module} other {# modules}})",
+    "description": "Dependency module count"
+  },
+  "peopleTypesInUse": {
+    "message": "In use by {count, plural, one {# person} other {# people}}",
+    "description": "Role usage count on row"
+  },
+  "peopleTypesDeleteInUse": {
+    "message": "This role is used by {count, plural, one {# person} other {# people}}. Removing it from the list does not change existing records; they will keep their current role value until updated.",
+    "description": "Delete role confirm when in use"
+  },
+  "orgPhoneCountry": {
+    "message": "Default phone country",
+    "description": "Form label"
+  },
+  "orgPhoneCountryAuto": {
+    "message": "Auto (from locale)",
+    "description": "Phone country select option"
+  },
+  "orgPhoneCountryHintExplicit": {
+    "message": "Pre-selected country code for new phone fields across your workspace.",
+    "description": "Field hint when explicit country is set"
+  },
+  "orgPhoneCountryHintAuto": {
+    "message": "Currently derived from locale: {country}. Choose a country to override.",
+    "description": "Field hint when phone country is auto from locale"
+  },
+  "orgRegionalMismatchTitle": {
+    "message": "Regional settings may be inconsistent",
+    "description": "Banner title when timezone/locale/currency disagree"
+  },
+  "orgRegionalMismatchBody": {
+    "message": "Your timezone suggests {market}. Align locale ({locale}), currency ({currency}), and phone country to match?",
+    "description": "Banner body for regional align suggestion"
+  },
+  "orgRegionalAlign": {
+    "message": "Align settings",
+    "description": "Button to apply regional bundle"
+  },
+  "orgRegionalDismiss": {
+    "message": "Keep as is",
+    "description": "Dismiss regional align banner"
+  },
+  "orgTypesConfigureFields": {
+    "message": "Configure fields",
+    "description": "Expand organization type field configuration"
+  },
+  "orgTypesHideFields": {
+    "message": "Hide fields",
+    "description": "Collapse organization type field configuration"
+  },
+  "orgTypesFieldsWhenSelected": {
+    "message": "Fields when this type is selected",
+    "description": "Per-type organization fields section"
+  },
+  "orgTypesResetPlatformDefaults": {
+    "message": "Reset to platform defaults",
+    "description": "Reset organization type fields to platform defaults"
+  },
+  "orgTypesNoScopedFields": {
+    "message": "No type-scoped fields are available on the Organizations module.",
+    "description": "No organization type-scoped fields"
+  },
+  "orgTypesUsingPlatformDefaults": {
+    "message": "Using platform defaults for this type.",
+    "description": "Inherited platform default organization fields"
+  },
+  "orgTypesInheritedNotSaved": {
+    "message": "(Inherited — not saved)",
+    "description": "Inherited organization fields not persisted"
+  },
+  "orgTypesPlatformDefaultNoFields": {
+    "message": "Platform default is no fields for this type.",
+    "description": "Platform default empty organization fields"
+  },
+  "orgTypesCustomFields": {
+    "message": "Custom fields",
+    "description": "Custom fields for organization type"
+  },
+  "orgTypesNoFieldsExplicit": {
+    "message": "No fields for this type (explicit)",
+    "description": "Explicitly empty organization field set"
+  },
+  "modFieldsNoOrgTypesDefined": {
+    "message": "No organization types defined yet. Add them in Field Configurations first, then return here to enable or disable them.",
+    "description": "Empty organization types catalog on Status & Types tab"
   }
 }

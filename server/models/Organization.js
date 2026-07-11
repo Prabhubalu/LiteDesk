@@ -203,6 +203,13 @@ const OrganizationSchema = new mongoose.Schema({
             type: String, 
             default: 'en' 
         },
+        /** ISO 3166-1 alpha-2 default for phone inputs; empty = derive from locale at runtime */
+        defaultPhoneCountry: {
+            type: String,
+            trim: true,
+            uppercase: true,
+            default: ''
+        },
         logoUrl: String,
         primaryColor: { 
             type: String, 

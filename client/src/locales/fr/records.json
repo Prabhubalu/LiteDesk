@@ -3798,5 +3798,57 @@
   "portalResponsesContinueForm": {
     "message": "Continue form",
     "description": "Portal response continue form CTA"
+  },
+  "dealLinesSectionTitle": {
+    "message": "Linked Items",
+    "description": "Section heading for deal commercial lines"
+  },
+  "dealAmountModeManual": {
+    "message": "Manual amount",
+    "description": "Deal amount mode: user owns Expected Value"
+  },
+  "dealAmountModeAuto": {
+    "message": "From lines",
+    "description": "Deal amount mode: Expected Value from line grand total"
+  },
+  "dealAmountModeAutoHint": {
+    "message": "Expected value updates from the line grand total.",
+    "description": "Hint when deal amountMode is AUTO"
+  },
+  "dealExpectedValue": {
+    "message": "Expected value",
+    "description": "Label for deal amount when synced from lines"
+  },
+  "dealLinesEmpty": {
+    "message": "No linked items yet. Search the catalog or add a miscellaneous charge.",
+    "description": "Empty state for deal lines table"
+  },
+  "dealLinesAddProductPlaceholder": {
+    "message": "Search products or services…",
+    "description": "Placeholder for deal line catalog search"
+  },
+  "dealLinesNoCatalogHits": {
+    "message": "No matching catalog items",
+    "description": "No results in deal line product search"
+  },
+  "dealLinesAddMisc": {
+    "message": "Add miscellaneous charge",
+    "description": "Button to add a non-catalog deal line"
+  },
+  "dealLinesMiscNamePrompt": {
+    "message": "Charge or service name",
+    "description": "Prompt title when adding a misc deal line"
+  },
+  "dealLinesDiscount": {
+    "message": "Discount",
+    "description": "Deal lines table discount column"
+  },
+  "dealLinesBrowseCatalog": {
+    "message": "Browse catalog",
+    "description": "Opens a list picker of catalog products/services for deal lines"
+  },
+  "dealLinesMiscTitle": {
+    "message": "Add miscellaneous charge",
+    "description": "Modal title when adding a non-catalog deal line"
   }
 }

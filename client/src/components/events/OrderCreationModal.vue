@@ -144,6 +144,8 @@
 import { useI18n } from 'vue-i18n';
 import { ref, computed, watch } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { useAuthStore } from '@/stores/authRegistry';
 
 const props = defineProps({
   isOpen: {
@@ -161,12 +163,13 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const authStore = useAuthStore();
 
 const emit = defineEmits(['close', 'created']);
 
 const saving = ref(false);
 const organizations = ref([]);
-const currency = ref('USD');
+const currency = ref(resolveOrgCurrencyCode(authStore.organization));
 
 const form = ref({
   targetOrgId: '',
@@ -188,6 +191,7 @@ const total = computed(() => {
 
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
+    currency.value = resolveOrgCurrencyCode(authStore.organization);
     fetchOrganizations();
     resetForm();
     

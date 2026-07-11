@@ -578,8 +578,8 @@ const MODULE_DEFINITIONS = [
     },
     lifecycle: null,
     supports: {
-      ownership: false,
-      assignment: false,
+      ownership: true,
+      assignment: true,
       comments: true,
       attachments: true,
       automation: false

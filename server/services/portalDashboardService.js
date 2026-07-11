@@ -24,7 +24,7 @@ const {
 } = require('./portalAuditAccessService');
 
 const CLOSED_CASE_STATUSES = ['Resolved', 'Closed'];
-const OPEN_DEAL_STATUSES = ['Open', 'Active', 'Stalled'];
+const OPEN_DEAL_STATUSES = ['Open'];
 const IN_PROGRESS_RESPONSE_STATUSES = ['In Progress', 'Not Started'];
 
 /**

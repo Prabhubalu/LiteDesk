@@ -2,7 +2,11 @@
  * Build registry list columns from ModuleDefinition fields (Customize View SSOT).
  */
 
-import { isSystemField, isFieldVisibleInConfig } from '@/platform/fields/fieldCapabilityEngine';
+import {
+  isSystemField,
+  isFieldVisibleInConfig,
+} from '@/platform/fields/fieldCapabilityEngine';
+import { getFieldMetadataMap, normalizeModuleKeyForRegistry } from '@/platform/fields/FieldRegistry';
 import { getQuoteFieldMetadata } from '@/platform/fields/quoteFieldModel';
 import { getModuleListConfig } from '@/platform/modules/moduleListRegistry';
 import { getFieldDisplayLabel, formatKeyToLabel } from '@/utils/fieldDisplay';
@@ -40,16 +44,27 @@ export function inferListColumnDataType(fieldKey, fieldDataType) {
 }
 
 /**
+ * Infrastructure / internal fields excluded from Customize View field picker.
+ * Config-visible system fields (e.g. createdAt, createdBy) remain eligible.
+ * @param {string} moduleKey
+ * @param {string} fieldKey
+ */
+export function isFieldExcludedFromListCustomize(moduleKey, fieldKey, inventoryEnabled = true) {
+  const key = String(fieldKey || '').trim();
+  if (!key || key.includes('.')) return true;
+  if (shouldHideFieldWhenInventoryDisabled(moduleKey, key, inventoryEnabled)) return true;
+  // Metadata isVisibleInConfig is authoritative — global system keys like `source` may still be list-configurable.
+  return !isFieldVisibleInConfig(moduleKey, { key });
+}
+
+/**
  * @param {string} moduleKey
  * @param {{ key?: string, visibility?: { list?: boolean }, isSystem?: boolean }} field
  */
 export function isFieldEligibleForListColumn(moduleKey, field, inventoryEnabled = true) {
   const key = String(field?.key || '').trim();
   if (!key || key.includes('.')) return false;
-  if (shouldHideFieldWhenInventoryDisabled(moduleKey, key, inventoryEnabled)) return false;
-  if (field?.isSystem === true) return false;
-  if (isSystemField(moduleKey, { key })) return false;
-  if (!isFieldVisibleInConfig(moduleKey, { key })) return false;
+  if (isFieldExcludedFromListCustomize(moduleKey, key, inventoryEnabled)) return false;
   if (field?.visibility?.list === false) return false;
   return true;
 }
@@ -83,7 +98,7 @@ export function buildFilterFieldsFromModuleFields(fields, moduleKey, inventoryEn
       const key = String(field.key);
       return {
         key,
-        label: getFieldDisplayLabel(field),
+        label: getFieldDisplayLabel(field, moduleKey),
         dataType: inferListColumnDataType(key, field.dataType),
         options: Array.isArray(field.options) ? field.options : undefined,
         order: Number.isFinite(Number(field.order)) ? Number(field.order) : index + 1,
@@ -111,7 +126,7 @@ export function buildListColumnsFromModuleFields(fields, moduleKey, inventoryEna
 
       return {
         key,
-        label: getFieldDisplayLabel(field),
+        label: getFieldDisplayLabel(field, moduleKey),
         dataType,
         sortable: nonSortable ? false : true,
         filterable: field.filterable === true,
@@ -121,8 +136,41 @@ export function buildListColumnsFromModuleFields(fields, moduleKey, inventoryEna
     .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 
   mergeRegistryDefaultListColumns(columns, moduleKey, inventoryEnabled);
+  return mergeRegistryListCustomizeFields(columns, moduleKey, inventoryEnabled);
+}
 
-  return columns;
+/**
+ * Audit/system fields omitted from the module API (create/edit exclusion) but list-configurable.
+ * @param {import('@/types/module-list.types').ListColumn[]} columns
+ * @param {string} moduleKey
+ */
+function mergeRegistryListCustomizeFields(columns, moduleKey, inventoryEnabled = true) {
+  const registryKey = normalizeModuleKeyForRegistry(moduleKey);
+  if (!registryKey) return columns;
+
+  const metadataMap = getFieldMetadataMap(registryKey);
+  if (!metadataMap) return columns;
+
+  const merged = [...columns];
+  const existing = new Set(columns.map((column) => column.key));
+
+  for (const key of Object.keys(metadataMap)) {
+    if (existing.has(key)) continue;
+    if (isFieldExcludedFromListCustomize(moduleKey, key, inventoryEnabled)) continue;
+    if (!isSystemField(moduleKey, { key })) continue;
+
+    merged.push({
+      key,
+      label: getFieldDisplayLabel({ key }, moduleKey) || formatKeyToLabel(key),
+      dataType: inferListColumnDataType(key, guessDataTypeForRegistryColumn(moduleKey, key)),
+      sortable: true,
+      filterable: false,
+      order: merged.length + 1,
+    });
+    existing.add(key);
+  }
+
+  return merged;
 }
 
 /**
@@ -146,7 +194,7 @@ function mergeRegistryDefaultListColumns(columns, moduleKey, inventoryEnabled = 
 
     columns.push({
       key,
-      label: formatKeyToLabel(key),
+      label: getFieldDisplayLabel({ key }, moduleKey) || formatKeyToLabel(key),
       dataType: inferListColumnDataType(key, guessDataTypeForRegistryColumn(moduleKey, key)),
       sortable: true,
       filterable: false,

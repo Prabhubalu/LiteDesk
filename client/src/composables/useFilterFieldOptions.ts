@@ -1,6 +1,7 @@
 import { type ComputedRef, type Ref, reactive } from 'vue';
 import apiClient from '@/utils/apiClient';
 import type { FilterConfig } from '@/platform/filters/filterResolver';
+import { normalizeFilterSelectOptions } from '@/utils/picklistOptionUtils';
 
 function getUserDisplayName(user: Record<string, unknown>): string {
   if (!user) return '';
@@ -132,6 +133,36 @@ export function useFilterFieldOptions(
     }
   }
 
+  async function loadModuleFieldSelectOptions(
+    key: string,
+    filter: FilterConfig,
+    moduleKeyOverride?: string
+  ) {
+    const scopedKey = resolveCacheKey(key, moduleKeyOverride);
+    if (loadingKeys.has(scopedKey)) return;
+    if ((filter.options?.length ?? 0) > 0 || (getCachedOptions(key, moduleKeyOverride)?.length ?? 0) > 0) {
+      return;
+    }
+
+    loadingKeys.add(scopedKey);
+    try {
+      const mod = moduleKeyOverride || moduleKey.value;
+      const response = await apiClient.get('/modules', { params: { key: mod } });
+      const fields =
+        response.success && Array.isArray(response.data) && response.data[0]?.fields
+          ? response.data[0].fields
+          : [];
+      const field = fields.find(
+        (row: { key?: string }) => String(row?.key || '') === key
+      );
+      optionsByKey[scopedKey] = normalizeFilterSelectOptions(field?.options);
+    } catch {
+      optionsByKey[scopedKey] = [];
+    } finally {
+      loadingKeys.delete(scopedKey);
+    }
+  }
+
   async function loadMarketingSelectOptions(
     key: string,
     filter: FilterConfig,
@@ -150,7 +181,9 @@ export function useFilterFieldOptions(
         params: { moduleKey: mod, fieldKey: key },
         cache: 'no-store'
       });
-      const options = Array.isArray(response?.data?.options) ? response.data.options : [];
+      const options = normalizeFilterSelectOptions(
+        Array.isArray(response?.data?.options) ? response.data.options : []
+      );
       optionsByKey[scopedKey] = options;
     } catch {
       optionsByKey[scopedKey] = [];
@@ -207,7 +240,10 @@ function isUserAssignmentField(key: string, filter: FilterConfig | null | undefi
       return;
     }
     if (filter.filterType === 'select' || filter.filterType === 'multi-select') {
-      await loadMarketingSelectOptions(key, filter, moduleKeyOverride);
+      await loadModuleFieldSelectOptions(key, filter, moduleKeyOverride);
+      if ((getCachedOptions(key, moduleKeyOverride)?.length ?? 0) === 0) {
+        await loadMarketingSelectOptions(key, filter, moduleKeyOverride);
+      }
     }
   }
 
@@ -239,8 +275,9 @@ function isUserAssignmentField(key: string, filter: FilterConfig | null | undefi
       isUserAssignmentField(config.key, config) && config.filterType !== 'user'
         ? { ...config, filterType: 'user' as const }
         : config;
-    if (normalizedConfig.options?.length) {
-      return normalizedConfig;
+    const normalizedOptions = normalizeFilterSelectOptions(normalizedConfig.options || []);
+    if (normalizedOptions.length > 0) {
+      return { ...normalizedConfig, options: normalizedOptions };
     }
     const mod = moduleKeyOverride || moduleKey.value;
     const peerKey =
@@ -279,7 +316,7 @@ function isUserAssignmentField(key: string, filter: FilterConfig | null | undefi
         if (!field?.key || !field.options?.length) continue;
         const scopedKey = cacheKey(modKey, field.key);
         if ((optionsByKey[scopedKey]?.length ?? 0) > 0) continue;
-        optionsByKey[scopedKey] = field.options;
+        optionsByKey[scopedKey] = normalizeFilterSelectOptions(field.options);
       }
     }
   }

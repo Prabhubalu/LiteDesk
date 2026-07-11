@@ -34,6 +34,15 @@ const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMi
 const { lazySalesInitialization } = require('../middleware/lazySalesInitializationMiddleware');
 const { requireSalesApp } = require('../middleware/requireSalesAppMiddleware');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
+const {
+    getDealLines,
+    addDealLine,
+    patchDealLine,
+    deleteDealLine,
+    reorderDealLines,
+    patchDealAmountMode,
+    recalculateDealLines
+} = require('../controllers/dealLineController');
 
 const router = express.Router();
 
@@ -66,6 +75,15 @@ router.route('/:id')
     .delete(checkPermission('deals', 'delete'), deleteDeal);
 router.put('/:id/tags', checkPermission('deals', 'edit'), updateDealTags);
 router.patch('/:id/tags', checkPermission('deals', 'edit'), updateDealTags);
+
+// Deal lines (commercial intent aggregate) — permissions inherit from deals
+router.get('/:id/lines', checkPermission('deals', 'view'), getDealLines);
+router.post('/:id/lines', checkPermission('deals', 'edit'), addDealLine);
+router.patch('/:id/lines/reorder', checkPermission('deals', 'edit'), reorderDealLines);
+router.post('/:id/lines/recalculate', checkPermission('deals', 'edit'), recalculateDealLines);
+router.patch('/:id/lines/:lineId', checkPermission('deals', 'edit'), patchDealLine);
+router.delete('/:id/lines/:lineId', checkPermission('deals', 'edit'), deleteDealLine);
+router.patch('/:id/amount-mode', checkPermission('deals', 'edit'), patchDealAmountMode);
 
 // Update deal stage
 router.patch('/:id/stage', checkPermission('deals', 'edit'), updateStage);

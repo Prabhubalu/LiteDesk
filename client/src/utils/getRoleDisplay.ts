@@ -14,7 +14,8 @@ const APP_LABELS: Record<string, string> = {
   MARKETING: 'Marketing',
   AUDIT: 'Audit',
   PORTAL: 'Portal',
-  PROJECTS: 'Projects'
+  PROJECTS: 'Projects',
+  INVENTORY: 'Inventory',
 };
 
 export function getAppLabel(appKey: string | null | undefined): string {

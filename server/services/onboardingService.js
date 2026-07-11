@@ -222,6 +222,18 @@ function getOrgEnabledAppKeys(organization) {
 
 function resolveAvailableApps(organization, user) {
   const orgApps = getOrgEnabledAppKeys(organization);
+  const persona = resolvePersona(user);
+
+  // Founders choose a primary app from org-enabled internal apps (trial/plan surface).
+  if (persona === ONBOARDING_PERSONAS.FOUNDER || user?.isOwner === true) {
+    const appRegistry = require('../constants/appRegistry');
+    return orgApps.filter((appKey) => {
+      const config = appRegistry[appKey];
+      if (!config) return true;
+      return config.userTypesAllowed.includes('INTERNAL');
+    });
+  }
+
   const userApps = getEntitledAppKeys(user);
   if (!orgApps.length) return userApps;
   return userApps.filter((key) => orgApps.includes(key));
@@ -579,6 +591,14 @@ async function syncAutomaticCompletions(user, organization) {
   const context = await resolveContext(user, organization);
   const availableApps = resolveAvailableApps(organization, user);
 
+  const savedPrimaryAppKey = user.onboarding.context?.primaryAppKey;
+  if (savedPrimaryAppKey) {
+    const normalized = String(savedPrimaryAppKey).trim().toUpperCase();
+    if (availableApps.includes(normalized)) {
+      context.primaryAppKey = normalized;
+    }
+  }
+
   if (persona === ONBOARDING_PERSONAS.MEMBER) {
     const profileComplete = Boolean(
       user.avatar
@@ -859,7 +879,7 @@ async function patchUserOnboarding(user, organization, body) {
       err.code = 'ORG_NOT_FOUND';
       throw err;
     }
-    const { name, timeZone, currency, dateFormat, language } = body;
+    const { name, timeZone, currency, dateFormat, language, locale } = body;
     if (name !== undefined && String(name).trim()) {
       organization.name = String(name).trim();
     }
@@ -868,6 +888,7 @@ async function patchUserOnboarding(user, organization, body) {
     if (currency) organization.settings.currency = String(currency).toUpperCase();
     if (dateFormat) organization.settings.dateFormat = dateFormat;
     if (language) organization.settings.language = language;
+    if (locale && typeof locale === 'string') organization.settings.locale = locale.trim();
 
     await organization.save();
 

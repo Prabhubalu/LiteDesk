@@ -4,11 +4,14 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const ModuleDefinition = require('../models/ModuleDefinition');
 const Organization = require('../models/Organization');
 const { backfillPicklistOptionColors } = require('../utils/picklistColorPalette');
+const { INITIAL_ORGANIZATION_QUICK_CREATE, INITIAL_ORGANIZATION_KEY_FIELDS } = require('../constants/organizationModuleDefaults');
 
 const defaultOrganizationRelationships = Object.freeze([
   { name: 'Related Contacts', type: 'one_to_many', isLookup: false, targetModuleKey: 'people', relationshipKey: 'people_organizations' },
   { name: 'Related Deals', type: 'one_to_many', isLookup: false, targetModuleKey: 'deals', relationshipKey: 'deal_organizations' }
 ]);
+
+const organizationDefaultKeyFieldKeys = new Set(INITIAL_ORGANIZATION_KEY_FIELDS);
 
 function cloneDefaultOrganizationRelationships() {
   return JSON.parse(JSON.stringify(defaultOrganizationRelationships));
@@ -18,7 +21,7 @@ function cloneDefaultOrganizationRelationships() {
 const organizationFieldMappings = {
   'name': { type: 'Text', label: 'Name' },
   'createdBy': { type: 'Lookup (Relationship)', label: 'Created By' },
-  'types': { type: 'Multi-Picklist', label: 'Types', enum: ['Customer', 'Partner', 'Vendor', 'Distributor', 'Dealer'] },
+  'types': { type: 'Multi-Picklist', label: 'Types', enum: ['Customer', 'Partner', 'Vendor'] },
   'website': { type: 'URL', label: 'Website' },
   'phone': { type: 'Phone', label: 'Phone' },
   'address': { type: 'Text-Area', label: 'Address' },
@@ -29,7 +32,7 @@ const organizationFieldMappings = {
   },
   'assignedTo': { type: 'Lookup (Relationship)', label: 'Assigned To' },
   'primaryContact': { type: 'Lookup (Relationship)', label: 'Primary Contact' },
-  'customerStatus': { type: 'Picklist', label: 'Customer Status', enum: ['Active', 'Prospect', 'Churned', 'Lead Customer'] },
+  'customerStatus': { type: 'Picklist', label: 'Customer Status', enum: ['Prospect', 'Active', 'On Hold', 'At Risk', 'Inactive', 'Churned'] },
   'customerTier': { type: 'Picklist', label: 'Customer Tier', enum: ['Gold', 'Silver', 'Bronze'] },
   'slaLevel': { type: 'Picklist', label: 'SLA Level' },
   'paymentTerms': { type: 'Text', label: 'Payment Terms' },
@@ -37,14 +40,14 @@ const organizationFieldMappings = {
   'accountManager': { type: 'Lookup (Relationship)', label: 'Account Manager' },
   'annualRevenue': { type: 'Currency', label: 'Annual Revenue' },
   'numberOfEmployees': { type: 'Integer', label: 'Number of Employees' },
-  'partnerStatus': { type: 'Picklist', label: 'Partner Status', enum: ['Active', 'Onboarding', 'Inactive'] },
+  'partnerStatus': { type: 'Picklist', label: 'Partner Status', enum: ['Invited', 'Onboarding', 'Active', 'Paused', 'Inactive'] },
   'partnerTier': { type: 'Picklist', label: 'Partner Tier', enum: ['Platinum', 'Gold', 'Silver', 'Bronze'] },
   'partnerType': { type: 'Picklist', label: 'Partner Type', enum: ['Reseller', 'System Integrator', 'Referral', 'Technology Partner'] },
   'partnerSince': { type: 'Date', label: 'Partner Since' },
   'partnerOnboardingSteps': { type: 'Multi-Picklist', label: 'Partner Onboarding Steps' },
   'territory': { type: 'Picklist', label: 'Territory' }, // Changed from Multi-Picklist to Picklist per spec
   'discountRate': { type: 'Decimal', label: 'Discount Rate' },
-  'vendorStatus': { type: 'Picklist', label: 'Vendor Status', enum: ['Approved', 'Pending', 'Suspended'] },
+  'vendorStatus': { type: 'Picklist', label: 'Vendor Status', enum: ['Prospect', 'Onboarding', 'Approved', 'Suspended', 'Inactive', 'Rejected'] },
   'vendorRating': { type: 'Integer', label: 'Vendor Rating' },
   'vendorContract': { type: 'URL', label: 'Vendor Contract' }, // File/Attachment -> URL for now
   'preferredPaymentMethod': { type: 'Picklist', label: 'Preferred Payment Method' },
@@ -183,7 +186,8 @@ function generateOrganizationFields() {
       // Default to not filterable, will be set from metadata if available
       filterable: false,
       filterType: null,
-      filterPriority: null
+      filterPriority: null,
+      keyField: organizationDefaultKeyFieldKeys.has(key),
     };
     
     // Hide activitylogs from table and detail views (system field)
@@ -277,6 +281,28 @@ function generateOrganizationFields() {
     }
 
     fields.push(field);
+  }
+
+  if (!fields.some((f) => f.key === 'derivedStatus')) {
+    fields.push({
+      key: 'derivedStatus',
+      label: 'Status',
+      dataType: 'Picklist',
+      required: false,
+      options: [],
+      defaultValue: null,
+      placeholder: '',
+      index: false,
+      visibility: { list: true, detail: true },
+      order: fields.length,
+      validations: [],
+      dependencies: [],
+      picklistDependencies: [],
+      filterable: false,
+      filterType: null,
+      filterPriority: null,
+      keyField: true,
+    });
   }
 
   return fields;
@@ -408,6 +434,9 @@ async function updateOrganizationsModuleFields(organizationId = null) {
               // If it's a picklist but has no options, keep existing or set empty
               existingField.options = existingField.options || [];
             }
+            if (existingField.keyField === undefined && newField.keyField) {
+              existingField.keyField = true;
+            }
             mergedFields.push(existingField);
           } else {
             // New field - add it
@@ -464,7 +493,7 @@ async function updateOrganizationsModuleFields(organizationId = null) {
             enabled: true,
             fields: fieldsToSave,
             relationships: cloneDefaultOrganizationRelationships(),
-            quickCreate: [],
+            quickCreate: [...INITIAL_ORGANIZATION_QUICK_CREATE],
             quickCreateLayout: { version: 1, rows: [] }
           });
           created++;

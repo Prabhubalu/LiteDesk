@@ -500,7 +500,7 @@ import ActivityTimeline from '@/components/ActivityTimeline.vue';
 import AutomationContext from '@/components/automation/AutomationContext.vue';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
-import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
+import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 // CONTRACT-LOCKED:
 // See docs/architecture/platform-permission-contract.md
 // Platform Permissions MUST remain explanatory-only.
@@ -676,9 +676,7 @@ const fetchOrganization = async () => {
 
 const formatCurrency = (amount) => {
   if (typeof amount !== 'number') return '-';
-  const currencyCode = String(
-    organization.value?.settings?.currency || organization.value?.currency || DEFAULT_CURRENCY_CODE
-  ).toUpperCase();
+  const currencyCode = resolveOrgCurrencyCode(organization.value);
   return (
     formatCurrencyValue(amount, {
       currencyCode,

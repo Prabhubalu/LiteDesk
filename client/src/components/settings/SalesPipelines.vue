@@ -439,8 +439,7 @@ function getDefaultStageDefinitions() {
 const pipelineStageStatusOptions = computed(() => [
   { value: 'open', label: t('settings.salesPipeStatusOpen') },
   { value: 'won', label: t('settings.salesPipeStatusWon') },
-  { value: 'lost', label: t('settings.salesPipeStatusLost') },
-  { value: 'stalled', label: t('settings.salesPipeStatusStalled') }
+  { value: 'lost', label: t('settings.salesPipeStatusLost') }
 ]);
 
 const currentPipeline = computed(() => {

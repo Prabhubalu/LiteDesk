@@ -4,23 +4,22 @@
  * Routes for OrganizationSurface and CreateOrganizationSurface.
  * 
  * ARCHITECTURAL INTENT:
- * - POST /api/organizations: Dedicated endpoint for CreateOrganizationSurface (create mode)
- *   - Only accepts business organization fields (name, types, industry, website, phone, address)
+ * - POST /api/organizations: Create business organization (type-scoped fields allowed)
  *   - Forces isTenant = false
  *   - Rejects tenant-only fields
+ *   - Filters payload by organization type field visibility
  *   - Returns minimal organization identity (id, name, types)
  * 
  * - GET /api/organizations/:id/editable: Get editable data for CreateOrganizationSurface (edit mode)
- *   - Returns ONLY editable business fields (name, address, website, phone, industry, types)
+ *   - Returns editable business fields including type-scoped fields on the record
  *   - Rejects tenant organizations
  *   - Filters by tenant context
  * 
  * - PATCH /api/organizations/:id: Update business organization (edit mode)
  * - PUT /api/organizations/:id: Backward-compatible alias for update (record-page parity)
- *   - Accepts ONLY editable business fields
+ *   - Accepts business-editable fields filtered by type visibility
  *   - Rejects tenant organizations
  *   - Filters by tenant context
- *   - Returns minimal organization identity (id, name, types)
  *
  * - GET /api/organizations/:id: Backward-compatible alias for organization detail
  *   - Maps to v2 organization getById behavior

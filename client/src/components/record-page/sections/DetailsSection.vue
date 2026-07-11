@@ -63,6 +63,7 @@
 
           <Listbox
             v-else-if="field.options?.length && field.canEdit && typeof field.onSave === 'function'"
+            v-slot="{ open }"
             as="div"
             :model-value="getRecordPathFieldSelectedId(field)"
             @update:model-value="(v) => field.onSave(v)"
@@ -110,6 +111,7 @@
                 leave-to-class="opacity-0"
               >
                 <ListboxOptions
+                  v-if="open"
                   class="absolute z-10 mt-1 max-h-60 w-full min-w-[160px] overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm"
                 >
                   <ListboxOption :value="null" v-slot="{ active }">
@@ -243,10 +245,17 @@
             :step="field.step"
             :multiline="field.multiline === true"
             :rows="field.rows"
-            :format-value="() => field.displayValue"
+            :format-value="shouldFormatDetailValue(field) ? () => field.displayValue : null"
             :get-tag-chip-class="field.getTagChipClass"
+            :get-tag-chip-style="field.getTagChipStyle"
             :layout="isCompact ? 'stack' : 'row'"
             :compact="isCompact"
+            :people-first-name-with-salutation="field.peopleFirstNameWithSalutation === true"
+            :salutation-value="field.salutationValue"
+            :salutation-options="field.salutationOptions"
+            :record-country="recordCountry"
+            :field-key="field.key"
+            :module-key="String(context?.module || '')"
             row-padding-class="py-2 px-4 min-h-[2rem]"
             :commit-save="(v) => commitFieldSave(field, v)"
           />
@@ -286,6 +295,7 @@ import {
 import EditableLabeledValue from '@/components/record-page/EditableLabeledValue.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import { shouldHideDetailField, shouldHideRecordPaneDetailField } from '@/components/record-page/fieldVisibilityGuards';
+import { extractRecordCountry } from '@/utils/phoneInput';
 
 /** Match DynamicFormField / quick create drawer — keep in sync with EditableLabeledValue. */
 const DRAWER_FIELD_LABEL_CLASS = 'block text-sm/6 font-medium text-gray-900 dark:text-white';
@@ -349,6 +359,8 @@ const props = defineProps({
   }
 });
 
+const recordCountry = computed(() => extractRecordCountry(props.record) || '');
+
 function displayFieldLabel(field) {
   const mk = String(props.context?.module || '').toLowerCase();
   return resolveFieldLabel(mk, field, t, te);
@@ -356,6 +368,11 @@ function displayFieldLabel(field) {
 
 function displayFieldOptions(field) {
   return localizeSelectOptions(field?.options, t, te);
+}
+
+function shouldFormatDetailValue(field) {
+  const type = String(field?.type || 'text').toLowerCase();
+  return !['user', 'entity', 'select', 'tags', 'multi-select', 'phone'].includes(type);
 }
 
 const isCompact = computed(() => props.variant === 'compact');

@@ -73,12 +73,17 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
+import { formatCompactCurrencyValue } from '@/utils/currencyOptions';
+import { useAuthStore } from '@/stores/authRegistry';
 
 const props = defineProps({
   rows: { type: Array, required: true }
 });
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const formatCurrency = (value) =>
+  formatCompactCurrencyValue(value, { orgCurrency: authStore.organization });
 
 const MIN_ROWS = 5;
 const displayRows = computed(() => {
@@ -91,13 +96,6 @@ const displayRows = computed(() => {
   }));
   return [...rows, ...fillers];
 });
-
-const formatCurrency = (value) => {
-  const amount = Number(value || 0);
-  if (Math.abs(amount) >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
-  if (Math.abs(amount) >= 1000) return `$${(amount / 1000).toFixed(1)}K`;
-  return `$${amount.toLocaleString()}`;
-};
 
 const getQuotaBandClass = (band) => {
   const normalized = String(band || '').toLowerCase();

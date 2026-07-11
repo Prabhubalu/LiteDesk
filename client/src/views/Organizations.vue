@@ -51,16 +51,15 @@
         <span v-else class="text-gray-500 dark:text-gray-400">-</span>
       </template>
 
-      <!-- Custom Types Cell with pills and +N overflow -->
-      <template #cell-types="{ value, row }">
+      <!-- Custom Types Cell with colored picklist badges -->
+      <template #cell-types="{ value }">
         <div v-if="value && Array.isArray(value) && value.length > 0" class="flex items-center gap-1 flex-wrap">
-          <span
+          <BadgeCell
             v-for="(type, index) in value.slice(0, 2)"
             :key="index"
-            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
-          >
-            {{ type }}
-          </span>
+            :value="type"
+            :options="organizationTypesPicklistOptions"
+          />
           <span
             v-if="value.length > 2"
             class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
@@ -69,9 +68,11 @@
             +{{ value.length - 2 }}
           </span>
         </div>
-        <span v-else-if="value && !Array.isArray(value)" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-          {{ value }}
-        </span>
+        <BadgeCell
+          v-else-if="value && !Array.isArray(value)"
+          :value="value"
+          :options="organizationTypesPicklistOptions"
+        />
         <span v-else class="text-gray-500 dark:text-gray-400">-</span>
       </template>
 
@@ -97,6 +98,21 @@
             'Inactive': 'danger'
           }"
         />
+      </template>
+
+      <!-- Derived lifecycle status -->
+      <template #cell-derivedStatus="{ row }">
+        <BadgeCell
+          v-if="resolveOrganizationKeyFieldStatus(row)"
+          :value="resolveOrganizationKeyFieldStatus(row)"
+          :options="resolveOrganizationListStatusOptions(row)"
+        />
+        <span v-else class="text-gray-500 dark:text-gray-400">-</span>
+      </template>
+
+      <!-- Last Activity -->
+      <template #cell-lastActivity="{ value }">
+        <DateCell :value="value" format="relative" />
       </template>
 
       <!-- Custom Contact Count Cell -->
@@ -219,11 +235,12 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
+import { fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
 import { startBulkDelete } from '@/utils/runBulkDelete';
 import ModuleList from '@/components/module-list/ModuleList.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
@@ -231,6 +248,12 @@ import DateCell from '@/components/common/table/DateCell.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import OrganizationQuickCreateDrawer from '@/components/organizations/OrganizationQuickCreateDrawer.vue';
+import {
+  getPrimaryOrganizationStatusFieldKey,
+  resolveOrganizationKeyFieldStatus,
+} from '@/platform/fields/organizationFieldModel';
+import { getDefaultOrganizationStatusFieldOptions } from '@/utils/organizationStatusDefaults';
+import { backfillPicklistOptionColors } from '@/utils/picklistColorPalette';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -242,6 +265,54 @@ const showImportModal = ref(false);
 const showEditDrawer = ref(false);
 const editingOrganizationId = ref(null);
 const deleting = ref(false);
+const organizationModuleFields = ref([]);
+
+function findOrganizationModuleField(fieldKey) {
+  const target = String(fieldKey || '').toLowerCase();
+  return organizationModuleFields.value.find(
+    (field) => String(field?.key || '').toLowerCase() === target
+  );
+}
+
+function organizationFieldPicklistOptions(fieldKey, fallbackValues = []) {
+  const field = findOrganizationModuleField(fieldKey);
+  if (Array.isArray(field?.options) && field.options.length > 0) {
+    return backfillPicklistOptionColors(field.options, fieldKey, 'organizations');
+  }
+  if (fallbackValues.length > 0) {
+    return backfillPicklistOptionColors(fallbackValues, fieldKey, 'organizations');
+  }
+  return [];
+}
+
+const organizationTypesPicklistOptions = computed(() =>
+  organizationFieldPicklistOptions('types', ['Customer', 'Partner', 'Vendor'])
+);
+
+const resolveOrganizationListStatusOptions = (row) => {
+  const fieldKey = getPrimaryOrganizationStatusFieldKey(row?.types);
+  if (!fieldKey) return [];
+  const fromModule = organizationFieldPicklistOptions(
+    fieldKey,
+    getDefaultOrganizationStatusFieldOptions(fieldKey).map((row) => row.value)
+  );
+  if (fromModule.length > 0) return fromModule;
+  return getDefaultOrganizationStatusFieldOptions(fieldKey);
+};
+
+const loadOrganizationModuleFields = async () => {
+  if (!authStore.isAuthenticated) return;
+  try {
+    const response = await fetchModulesListCached({ key: 'organizations' });
+    const modules = Array.isArray(response?.data) ? response.data : [];
+    const orgModule = modules.find((mod) => String(mod?.key || '').toLowerCase() === 'organizations')
+      || modules[0];
+    organizationModuleFields.value = Array.isArray(orgModule?.fields) ? orgModule.fields : [];
+  } catch (error) {
+    if (error?.status === 401 || error?.message?.includes('Session expired')) return;
+    console.error('Error loading organization module fields for list colors:', error);
+  }
+};
 
 // User management (for display names)
 const usersById = ref({});
@@ -566,7 +637,7 @@ const getUserDisplayName = (user) => {
 
 // Lifecycle
 onMounted(async () => {
-  await loadUsers();
+  await Promise.all([loadUsers(), loadOrganizationModuleFields()]);
   
   // Listen for record creation events
   if (typeof window !== 'undefined') {

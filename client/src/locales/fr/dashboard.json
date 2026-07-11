@@ -270,5 +270,37 @@
   "dashboardYourTrialExpiresToday": {
     "message": "Votre essai expire aujourd'hui !",
     "description": "Auto-migrated from dashboard"
+  },
+  "periodLabel": {
+    "message": "Period",
+    "description": "Sales dashboard period selector label"
+  },
+  "rangeLast12Weeks": {
+    "message": "Last 12 weeks",
+    "description": "Sales dashboard range preset"
+  },
+  "rangeLast6Months": {
+    "message": "Last 6 months",
+    "description": "Sales dashboard range preset"
+  },
+  "rangeLast12Months": {
+    "message": "Last 12 months",
+    "description": "Sales dashboard range preset"
+  },
+  "rangeWindowSpan": {
+    "message": "{start} – {end}",
+    "description": "Inclusive calendar window for selected dashboard period"
+  },
+  "lastSyncedAt": {
+    "message": "Last synced {time}",
+    "description": "Dashboard last sync timestamp"
+  },
+  "dashboardTitleFallback": {
+    "message": "Dashboard",
+    "description": "Fallback dashboard title"
+  },
+  "dashboardDescFallback": {
+    "message": "Overview and insights for this app workspace",
+    "description": "Fallback dashboard description"
   }
 }

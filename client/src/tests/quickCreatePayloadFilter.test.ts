@@ -3,6 +3,7 @@ import {
   getQuickCreateAllowedFieldKeys,
   shouldFilterPayloadByQuickCreate
 } from '@/utils/quickCreatePayloadFilter';
+import { augmentPeopleQuickCreateAllowedFieldKeys } from '@/platform/fields/peopleSalutationField';
 
 describe('getQuickCreateAllowedFieldKeys', () => {
   it('includes quickCreate keys and required module fields', () => {
@@ -24,6 +25,24 @@ describe('getQuickCreateAllowedFieldKeys', () => {
     const allowed = getQuickCreateAllowedFieldKeys([], [{ key: 'status', required: true }]);
     expect(allowed.has('status')).toBe(true);
     expect(allowed.size).toBe(1);
+  });
+});
+
+describe('augmentPeopleQuickCreateAllowedFieldKeys', () => {
+  it('includes salutation when first_name is allowed for people', () => {
+    const allowed = augmentPeopleQuickCreateAllowedFieldKeys(
+      'people',
+      new Set(['first_name', 'last_name', 'email'])
+    );
+    expect(allowed.has('salutation')).toBe(true);
+  });
+
+  it('does not add salutation for other modules', () => {
+    const allowed = augmentPeopleQuickCreateAllowedFieldKeys(
+      'deals',
+      new Set(['first_name'])
+    );
+    expect(allowed.has('salutation')).toBe(false);
   });
 });
 

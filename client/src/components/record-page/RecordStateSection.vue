@@ -26,7 +26,15 @@
             :options="Array.isArray(field.options) ? field.options : []"
             :min="field.min"
             :step="field.step"
-            :format-value="() => getFieldValue(field)"
+            :format-value="field.formatValue || (shouldUseFormatValue(field) ? () => getFieldValue(field) : null)"
+            :get-tag-chip-class="field.getTagChipClass"
+            :get-tag-chip-style="field.getTagChipStyle"
+            :people-first-name-with-salutation="field.peopleFirstNameWithSalutation === true"
+            :salutation-value="field.salutationValue"
+            :salutation-options="field.salutationOptions"
+            :record-country="recordCountry"
+            :field-key="field.key"
+            :module-key="moduleKey"
             layout="row"
             :commit-save="(v) => commitFieldSave(field, v)"
           />
@@ -53,6 +61,7 @@
                     <span
                       v-for="(tag, index) in getFieldRawValue(field)"
                       :key="`${tag}-${index}`"
+                      :style="field.getTagChipStyle ? field.getTagChipStyle(tag) : undefined"
                       :class="['inline-block text-xs px-2 py-0.5 rounded', (field.getTagChipClass ? field.getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
                     >
                       {{ typeof tag === 'object' ? (tag?.name || tag?.label || tag) : tag }}
@@ -93,8 +102,21 @@
             <span class="min-w-0 truncate text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
             <div class="min-w-0 min-h-8 flex items-center rounded px-2 -mx-2 -my-1 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
               <slot :name="field.slotKey || field.key">
+                <div
+                  v-if="(field.type === 'tags' || field.type === 'multi-select') && Array.isArray(getFieldRawValue(field)) && getFieldRawValue(field).length > 0"
+                  class="flex flex-wrap gap-1.5 min-w-0"
+                >
+                  <span
+                    v-for="(tag, index) in getFieldRawValue(field)"
+                    :key="`${tag}-${index}`"
+                    :style="field.getTagChipStyle ? field.getTagChipStyle(tag) : undefined"
+                    :class="['inline-block text-xs px-2 py-0.5 rounded', (field.getTagChipClass ? field.getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
+                  >
+                    {{ typeof tag === 'object' ? (tag?.name || tag?.label || tag) : tag }}
+                  </span>
+                </div>
                 <a
-                  v-if="shouldRenderLinkValue(field)"
+                  v-else-if="shouldRenderLinkValue(field)"
                   :href="getFieldHref(field)"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -137,6 +159,7 @@
 import { computed, useSlots, inject, ref, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import EditableLabeledValue from '@/components/record-page/EditableLabeledValue.vue';
+import { extractRecordCountry } from '@/utils/phoneInput';
 import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
 
 const { t, te } = useI18n();
@@ -160,6 +183,8 @@ const props = defineProps({
 });
 
 const resolvedHeading = computed(() => props.heading || t('records.stateHeadingSr'));
+
+const recordCountry = computed(() => extractRecordCountry(props.fieldValues) || '');
 
 function displayFieldLabel(field) {
   return resolveFieldLabel(props.moduleKey, field, t, te);
@@ -218,6 +243,30 @@ const getFieldValue = (field) => {
   const valueKey = field.valueKey || field.key;
   const raw = props.fieldValues?.[valueKey] ?? null;
   if (raw == null || raw === '') return raw;
+
+  if (field.type === 'user' || field.type === 'entity') {
+    if (typeof raw === 'object') {
+      const name = raw.name ?? raw.title ?? raw.label
+        ?? [raw.firstName ?? raw.first_name, raw.lastName ?? raw.last_name].filter(Boolean).join(' ').trim()
+        ?? raw.email;
+      if (name) return name;
+    }
+    const id = typeof raw === 'object' ? (raw._id ?? raw.id) : raw;
+    const matched = (field.options || []).find((opt) => {
+      const optId = opt?.value ?? opt?._id ?? opt?.id;
+      return optId != null && String(optId) === String(id);
+    });
+    if (matched) return matched.label ?? matched.name ?? matched.value;
+  }
+
+  if (field.type === 'tags' && Array.isArray(raw)) {
+    return raw.map((item) => (item != null && typeof item === 'object' ? (item.name || item.label || item.title) : String(item))).filter(Boolean).join(', ');
+  }
+
+  if (field.type === 'multi-select' && Array.isArray(raw)) {
+    return raw.map((item) => (item != null && typeof item === 'object' ? (item.label || item.name || item.value) : String(item))).filter(Boolean).join(', ');
+  }
+
   if (typeof raw === 'string' && /^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/.test(raw.trim())) {
     const d = new Date(raw);
     if (!isNaN(d.getTime())) {
@@ -228,6 +277,11 @@ const getFieldValue = (field) => {
     }
   }
   return raw;
+};
+
+const shouldUseFormatValue = (field) => {
+  const type = String(field?.type || 'text').toLowerCase();
+  return !['user', 'entity', 'select', 'tags', 'multi-select', 'phone'].includes(type);
 };
 
 const getFieldRawValue = (field) => {

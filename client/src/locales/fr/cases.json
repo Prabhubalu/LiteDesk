@@ -1350,5 +1350,13 @@
   "recordEmailDeliveryFailedHint": {
     "message": "Email could not be delivered",
     "description": "Tooltip when delivery error missing"
+  },
+  "sysFieldContactId": {
+    "message": "Contact",
+    "description": "System case field label for contactId"
+  },
+  "sysFieldOrganizationRefId": {
+    "message": "Organization",
+    "description": "System case field label for organizationRefId"
   }
 }

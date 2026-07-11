@@ -103,6 +103,46 @@
     "message": "Set as primary customer",
     "description": "Auto-migrated from dealRelationshipEditor"
   },
+  "dealRelationshipEditorSetAsPrimary": {
+    "message": "Set as primary organization",
+    "description": "Star control to mark primary deal organization (coerces role to Customer)"
+  },
+  "dealRelationshipEditorSelectRole": {
+    "message": "Deal relationship role",
+    "description": "Label for deal organization relationship role picker"
+  },
+  "dealRelationshipEditorAddOrganization": {
+    "message": "Add",
+    "description": "Confirm add organization to deal with selected role"
+  },
+  "dealRelationshipEditorPrimaryCustomerRequired": {
+    "message": "There must be exactly one primary organization with role Customer.",
+    "description": "Validation when deal organizations lack a single primary customer"
+  },
+  "dealRelationshipRoleCustomer": {
+    "message": "Customer",
+    "description": "Deal organization relationship role"
+  },
+  "dealRelationshipRolePartner": {
+    "message": "Partner",
+    "description": "Deal organization relationship role"
+  },
+  "dealRelationshipRoleReseller": {
+    "message": "Reseller",
+    "description": "Deal organization relationship role"
+  },
+  "dealRelationshipRoleDistributor": {
+    "message": "Distributor",
+    "description": "Deal organization relationship role"
+  },
+  "dealRelationshipRoleVendor": {
+    "message": "Vendor",
+    "description": "Deal organization relationship role"
+  },
+  "dealRelationshipRoleOther": {
+    "message": "Other",
+    "description": "Deal organization relationship role"
+  },
   "dealRelationshipEditorOrganizationsOnThisDeal": {
     "message": "Organizations on this Deal",
     "description": "Auto-migrated from dealRelationshipEditor"
@@ -114,6 +154,66 @@
   "dealRelationshipEditorSelectPerson": {
     "message": "Select person...",
     "description": "Auto-migrated from dealRelationshipEditor"
+  },
+  "dealRelationshipEditorSelectPersonToAdd": {
+    "message": "Select a person to add…",
+    "description": "Placeholder for one-click add person on deal"
+  },
+  "dealRelationshipEditorSelectOrganizationToAdd": {
+    "message": "Select an organization to add…",
+    "description": "Placeholder for one-click add organization on deal"
+  },
+  "dealRelationshipEditorPeopleAddHint": {
+    "message": "First person becomes Primary. Role defaults to Decision Maker (then Influencer). Primary and role are independent.",
+    "description": "Hint under people add controls on deal"
+  },
+  "dealRelationshipEditorSelectPersonRole": {
+    "message": "Deal relationship role",
+    "description": "Label for deal person relationship role picker"
+  },
+  "dealRelationshipEditorAddPerson": {
+    "message": "Add",
+    "description": "Confirm add person to deal with selected role"
+  },
+  "dealRelationshipPersonRoleDecisionMaker": {
+    "message": "Decision maker",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRoleChampion": {
+    "message": "Champion",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRoleInfluencer": {
+    "message": "Influencer",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRoleTechnicalContact": {
+    "message": "Technical contact",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRolePartnerContact": {
+    "message": "Partner contact",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRoleProcurement": {
+    "message": "Procurement",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRoleLegal": {
+    "message": "Legal",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRoleOther": {
+    "message": "Other",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipEditorPrimaryContactRequired": {
+    "message": "There must be exactly one primary person on this deal.",
+    "description": "Validation when deal people lack a single primary"
+  },
+  "dealRelationshipEditorOrgAddHint": {
+    "message": "Role defaults from organization type; change it if needed. First organization becomes primary (Customer). Use the star to change primary.",
+    "description": "Hint under organization add controls on deal"
   },
   "dealRelationshipEditorNoPeopleLinkedYet": {
     "message": "No people linked yet.",
@@ -326,6 +426,34 @@
   "sysFieldDealType": {
     "message": "Deal Type",
     "description": "Alias for deal type field"
+  },
+  "sysFieldLastActivityDate": {
+    "message": "Last Activity",
+    "description": "System deal field label for last engagement timestamp"
+  },
+  "lastActivityCreated": {
+    "message": "Created",
+    "description": "Last activity tooltip: deal created"
+  },
+  "lastActivityChangedStage": {
+    "message": "Stage changed",
+    "description": "Last activity tooltip: stage change"
+  },
+  "lastActivityAddedNote": {
+    "message": "Note added",
+    "description": "Last activity tooltip: note added"
+  },
+  "lastActivityEditedNote": {
+    "message": "Note edited",
+    "description": "Last activity tooltip: note edited"
+  },
+  "lastActivityAddedComment": {
+    "message": "Comment added",
+    "description": "Last activity tooltip: comment added"
+  },
+  "lastActivityEditedComment": {
+    "message": "Comment edited",
+    "description": "Last activity tooltip: comment edited"
   },
   "activityCreatedDeal": {
     "message": "created this deal",

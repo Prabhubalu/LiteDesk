@@ -327,6 +327,7 @@
                 <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">{{ t('settings.settingsAddFieldTypePhone') }}</label>
                 <PhoneInput
                   :model-value="editForm.phone"
+                  :default-country="defaultPhoneCountry"
                   :placeholder="t('settings.profilePhone')"
                   input-class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   @update:model-value="editForm.phone = $event"
@@ -337,6 +338,7 @@
                 <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">{{ t('people.peopleDetailMobile') }}</label>
                 <PhoneInput
                   :model-value="editForm.mobile"
+                  :default-country="defaultPhoneCountry"
                   :placeholder="t('people.peopleDetailMobileNumber')"
                   input-class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   @update:model-value="editForm.mobile = $event"
@@ -895,6 +897,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
 import PhoneInput from '@/components/common/PhoneInput.vue';
 import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInput';
+import { useDefaultPhoneCountry } from '@/composables/useDefaultPhoneCountry';
 import { getDefaultEmailValidations } from '@/utils/defaultFieldValidations';
 import { validateField } from '@/utils/fieldValidation';
 import { toAttachRole } from '@/utils/getParticipation';
@@ -929,6 +932,7 @@ const profileData = ref(null);
 const appContext = ref(null);
 const isEditingCore = ref(false);
 const editForm = ref({});
+const { defaultPhoneCountry } = useDefaultPhoneCountry(computed(() => editForm.value));
 const saving = ref(false);
 const editError = ref(null);
 // App-specific edit state (tracked per app)
@@ -1081,10 +1085,10 @@ const saveCoreFields = async () => {
       return;
     }
 
-    editForm.value.phone = sanitizeInternationalPhone(editForm.value.phone || '');
-    editForm.value.mobile = sanitizeInternationalPhone(editForm.value.mobile || '');
-    const phoneValidation = validatePhoneValue(editForm.value.phone);
-    const mobileValidation = validatePhoneValue(editForm.value.mobile);
+    editForm.value.phone = sanitizeInternationalPhone(editForm.value.phone || '', defaultPhoneCountry.value);
+    editForm.value.mobile = sanitizeInternationalPhone(editForm.value.mobile || '', defaultPhoneCountry.value);
+    const phoneValidation = validatePhoneValue(editForm.value.phone, defaultPhoneCountry.value);
+    const mobileValidation = validatePhoneValue(editForm.value.mobile, defaultPhoneCountry.value);
     if (!phoneValidation.isValid || !mobileValidation.isValid) {
       editError.value = phoneValidation.error || mobileValidation.error;
       saving.value = false;

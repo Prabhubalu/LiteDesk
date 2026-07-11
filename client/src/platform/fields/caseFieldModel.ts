@@ -35,9 +35,9 @@ export const CASE_FIELD_METADATA: Record<string, CaseFieldMetadata> = {
   activities: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
   assignmentControl: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
   source: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  caseId: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isProtected: true, isSystem: true, isVisibleInConfig: true, filterable: true, filterType: 'text' },
 
   // Core case fields
-  caseId: { owner: 'core', intent: 'identity', fieldScope: 'CORE', editable: false, isProtected: true, filterable: true, filterType: 'text' },
   title: { owner: 'core', intent: 'primary', fieldScope: 'CORE', editable: true, allowOnCreate: true, isProtected: true, filterable: true, filterType: 'text' },
   description: { owner: 'core', intent: 'detail', fieldScope: 'CORE', editable: true, allowOnCreate: true },
   caseType: { owner: 'core', intent: 'state', fieldScope: 'CORE', editable: true, allowOnCreate: true, isProtected: true, filterable: true, filterType: 'select' },
@@ -78,8 +78,32 @@ export const CASE_FIELD_METADATA: Record<string, CaseFieldMetadata> = {
   visitDate: { owner: 'core', intent: 'scheduling', fieldScope: 'CORE', editable: true, allowOnCreate: false, filterable: true, filterType: 'date' },
   visitStatus: { owner: 'core', intent: 'state', fieldScope: 'CORE', editable: true, allowOnCreate: false, filterable: true, filterType: 'select' },
   replacementRequired: { owner: 'core', intent: 'detail', fieldScope: 'CORE', editable: true, allowOnCreate: false, filterable: true, filterType: 'boolean' },
-  customFields: { owner: 'core', intent: 'detail', fieldScope: 'CORE', editable: true, allowOnCreate: false },
 
+  // Server-managed / AI / portal — never show in create or edit drawers
+  customFields: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  conversationCount: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false, filterable: false, filterType: 'number' },
+  mergeParentCaseId: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  duplicateFlag: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false, filterable: false, filterType: 'boolean' },
+  sourceMessageId: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  threadId: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  sentiment: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  aiSummary: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  suggestedResolution: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  categoryConfidenceScore: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false, filterable: false, filterType: 'number' },
+  autoClassification: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false, filterable: false, filterType: 'boolean' },
+  portalReadReceipts: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  portalCsat: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  slaPolicyKey: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  firstResponseDueAt: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: true, filterable: false, filterType: 'date' },
+  resolutionDueAt: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false, filterable: false, filterType: 'date' },
+  slaStatus: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  slaBreached: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false, filterable: false, filterType: 'boolean' },
+  businessHoursCalendarId: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  lastSlaEventAt: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false, filterable: false, filterType: 'date' },
+  lastCustomerReplyAt: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false, filterable: false, filterType: 'date' },
+  lastAgentReplyAt: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false, filterable: false, filterType: 'date' },
+  resolvedBy: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false },
+  resolvedAt: { owner: 'system', intent: 'system', fieldScope: 'CORE', editable: false, isSystem: true, isVisibleInConfig: false, filterable: false, filterType: 'date' },
   reopenCount: {
     owner: 'system',
     intent: 'system',
@@ -195,27 +219,6 @@ export const MUTABLE_CASE_FIELD_KEYS = [
 /** Top-level case keys that must not be sent on PUT (server-managed / SLA / audit). */
 export const CASE_READONLY_RECORD_KEYS = [
   ...getCaseSystemFields(),
-  'caseId',
-  'resolvedBy',
-  'resolvedAt',
-  'responseMetAt',
-  'firstResponseDueAt',
-  'resolutionDueAt',
-  'slaStatus',
-  'slaBreached',
-  'businessHoursCalendarId',
-  'reopenCount',
-  'reopenReason',
-  'lastSlaEventAt',
-  'lastCustomerReplyAt',
-  'lastAgentReplyAt',
-  'conversationCount',
-  'mergeParentCaseId',
-  'duplicateFlag',
-  'sourceMessageId',
-  'threadId',
-  'slaPolicyKey',
-  'customFields'
 ] as const;
 
 const mutableCaseFieldSet = new Set<string>(MUTABLE_CASE_FIELD_KEYS);
@@ -312,6 +315,20 @@ export function getCaseParticipationFields(appKey: string): string[] {
     .filter(([_, metadata]) => metadata.owner === 'participation' && metadata.fieldScope === appKey)
     .map(([fieldName]) => fieldName);
 }
+
+/**
+ * Fields shown in New Case quick create on a fresh instance.
+ * Keep aligned with INITIAL_CASES_QUICK_CREATE in server/constants/casesModuleDefaults.js.
+ */
+export const CASE_QUICK_CREATE_DEFAULT = [
+  'title',
+  'contactId',
+  'organizationRefId',
+  'caseType',
+  'priority',
+  'status',
+  'assignedTo',
+] as const;
 
 export function getCaseQuickCreateFields(): string[] {
   return Object.entries(CASE_FIELD_METADATA)

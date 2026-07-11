@@ -211,6 +211,20 @@
         <span v-else class="text-gray-500 dark:text-gray-400">-</span>
       </template>
 
+      <!-- Last Activity: relative age, absolute tooltip -->
+      <template #cell-lastActivityDate="{ value, row }">
+        <DateCell
+          :value="value"
+          format="relative"
+          :context-label="lastActivityActionLabel(row?.lastActivityAction)"
+        />
+      </template>
+
+      <!-- Created On -->
+      <template #cell-createdAt="{ value }">
+        <DateCell :value="value" format="short" />
+      </template>
+
       <!-- Custom Priority Cell -->
       <template #cell-priority="{ value }">
         <BadgeCell 
@@ -426,13 +440,15 @@ import apiClient from '@/utils/apiClient';
 import ModuleList from '@/components/module-list/ModuleList.vue';
 import ModuleActions from '@/components/common/ModuleActions.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
+import DateCell from '@/components/common/table/DateCell.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import KanbanBoard from '@/components/common/KanbanBoard.vue';
 import DealPlaybookStatusBadge from '@/components/deals/DealPlaybookStatusBadge.vue';
 import { getModuleListConfig } from '@/platform/modules/moduleListRegistry';
-import { DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
+import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { useLocale } from '@/composables/useLocale';
 import { ViewColumnsIcon, ListBulletIcon, UserIcon, CalendarDaysIcon, InboxIcon, RectangleStackIcon, PlusIcon, BuildingOfficeIcon, ChartBarIcon, BanknotesIcon, HashtagIcon } from '@heroicons/vue/24/outline';
 import { FlagIcon as FlagIconSolid } from '@heroicons/vue/24/solid';
 
@@ -441,6 +457,8 @@ const route = useRoute();
 const moduleListRef = ref(null);
 const { openTab } = useTabs();
 const authStore = useAuthStore();
+const { currency: orgCurrency } = useLocale();
+const defaultDisplayCurrency = computed(() => resolveOrgCurrencyCode(orgCurrency.value));
 
 // View state (module-specific URL param so Tasks and Deals don't affect each other)
 const viewStorageKey = 'arivu-deals-view';
@@ -1010,10 +1028,10 @@ const handleKanbanUpdate = async ({ item, newStage, newIndex, previousStage }) =
 };
 
 // Helpers
-const formatCurrency = (amount, currencyCode = DEFAULT_CURRENCY_CODE) => {
+const formatCurrency = (amount, currencyCode = null) => {
   return (
     formatCurrencyValue(amount || 0, {
-      currencyCode: String(currencyCode || DEFAULT_CURRENCY_CODE).toUpperCase(),
+      currencyCode: String(currencyCode || defaultDisplayCurrency.value).toUpperCase(),
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }) || '—'
@@ -1041,6 +1059,21 @@ const isOverdue = (date) => {
   if (!date) return false;
   return new Date(date) < new Date();
 };
+
+const LAST_ACTIVITY_ACTION_KEYS = {
+  created: 'deals.lastActivityCreated',
+  'changed stage': 'deals.lastActivityChangedStage',
+  'added a note': 'deals.lastActivityAddedNote',
+  'edited a note': 'deals.lastActivityEditedNote',
+  'added a comment': 'deals.lastActivityAddedComment',
+  'edited a comment': 'deals.lastActivityEditedComment',
+};
+
+function lastActivityActionLabel(action) {
+  if (!action || typeof action !== 'string') return '';
+  const key = LAST_ACTIVITY_ACTION_KEYS[action.trim().toLowerCase()];
+  return key ? t(key) : '';
+}
 
 const formatMetaValue = (value, key) => {
   if (value == null) return '—';

@@ -33,14 +33,14 @@
         <ChevronUpDownIcon class="h-4 w-4 text-gray-400 dark:text-gray-500" aria-hidden="true" />
       </span>
     </ListboxButton>
-    <Transition
-      leave-active-class="transition duration-100 ease-in"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
-    >
-      <Teleport to="body" :disabled="!teleport">
+    <Teleport to="body" :disabled="!teleport">
+      <Transition
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
         <ListboxOptions
-          v-if="!teleport || open"
+          v-if="open"
           v-bind="optionsAttrs"
           :style="teleport ? teleportMenuStyle : undefined"
           @vue:before-mount="syncTeleportPosition"
@@ -78,7 +78,7 @@
         <ListboxOption
           v-if="allowEmpty"
           :value="emptyValue"
-          v-slot="{ active }"
+          v-slot="{ active, selected }"
         >
           <li :class="optionRowClass(active)">
             <span :class="['block', truncateOptions ? 'truncate' : 'whitespace-nowrap', selected ? 'font-semibold' : 'font-normal']">{{ emptyLabel }}</span>
@@ -137,8 +137,8 @@
         </div>
         </div>
         </ListboxOptions>
-      </Teleport>
-    </Transition>
+      </Transition>
+    </Teleport>
   </Listbox>
 </template>
 

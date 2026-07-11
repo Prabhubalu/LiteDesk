@@ -186,113 +186,62 @@ Post-creation behavior is driven by invocation context via query params:
           </div>
 
           <!-- Status Fields (Intent-Aware) -->
-          <!-- Organization Intent is a UI guidance layer, not enforcement -->
-          <!-- These fields show/hide and filter options based on selected types -->
-          
-          <!-- Customer Status (shown when Customer type is selected) -->
-          <div v-if="shouldShowStatusField('customerStatus', formData.types)">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.modFieldsCustomerStatus') }}<span v-if="isStatusReadOnly('customerStatus')" class="ml-2 text-xs text-gray-500 dark:text-gray-400 italic">
+          <div
+            v-for="statusField in organizationIntentStatusFields"
+            :key="statusField.fieldKey"
+            v-show="shouldShowStatusField(statusField.fieldKey, formData.types)"
+          >
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {{ t(statusField.labelKey) }}
+              <span
+                v-if="isStatusReadOnly(statusField.fieldKey)"
+                class="ml-2 text-xs text-gray-500 dark:text-gray-400 italic"
+              >
                 (System-owned)
               </span>
             </label>
-            <!-- Read-only badge when derivedStatus exists -->
             <div
-              v-if="isStatusReadOnly('customerStatus')"
+              v-if="isStatusReadOnly(statusField.fieldKey)"
               class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
             >
               <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-300 border border-info-200 dark:border-info-800">
-                {{ formData.customerStatus || '—' }}
+                {{ formData[statusField.fieldKey] || '—' }}
               </span>
             </div>
-            <!-- Editable select (legacy mode when derivedStatus is null) -->
             <select
               v-else
-              v-model="formData.customerStatus"
+              v-model="formData[statusField.fieldKey]"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option :value="null">{{ t('organizations.createOrganizationSurfaceSelectStatus3') }}</option>
+              <option :value="null">{{ t(statusField.placeholderKey) }}</option>
               <option
-                v-for="status in customerStatusOptions"
+                v-for="status in intentStatusOptions[statusField.fieldKey]"
                 :key="status"
                 :value="status"
               >
                 {{ status }}
               </option>
             </select>
-            <p v-if="validationErrors.customerStatus" class="mt-1 text-sm text-red-600 dark:text-red-400">
-              {{ validationErrors.customerStatus }}
+            <p
+              v-if="validationErrors[statusField.fieldKey]"
+              class="mt-1 text-sm text-red-600 dark:text-red-400"
+            >
+              {{ validationErrors[statusField.fieldKey] }}
             </p>
           </div>
 
-          <!-- Partner Status (shown when Partner type is selected) -->
-          <div v-if="shouldShowStatusField('partnerStatus', formData.types)">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.modFieldsPartnerStatus') }}<span v-if="isStatusReadOnly('partnerStatus')" class="ml-2 text-xs text-gray-500 dark:text-gray-400 italic">
-                (System-owned)
-              </span>
-            </label>
-            <!-- Read-only badge when derivedStatus exists -->
-            <div
-              v-if="isStatusReadOnly('partnerStatus')"
-              class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
-            >
-              <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-300 border border-info-200 dark:border-info-800">
-                {{ formData.partnerStatus || '—' }}
-              </span>
-            </div>
-            <!-- Editable select (legacy mode when derivedStatus is null) -->
-            <select
-              v-else
-              v-model="formData.partnerStatus"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            >
-              <option :value="null">{{ t('organizations.createOrganizationSurfaceSelectStatus2') }}</option>
-              <option
-                v-for="status in partnerStatusOptions"
-                :key="status"
-                :value="status"
-              >
-                {{ status }}
-              </option>
-            </select>
-            <p v-if="validationErrors.partnerStatus" class="mt-1 text-sm text-red-600 dark:text-red-400">
-              {{ validationErrors.partnerStatus }}
-            </p>
-          </div>
-
-          <!-- Vendor Status (shown when Vendor type is selected) -->
-          <div v-if="shouldShowStatusField('vendorStatus', formData.types)">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.modFieldsVendorStatus') }}<span v-if="isStatusReadOnly('vendorStatus')" class="ml-2 text-xs text-gray-500 dark:text-gray-400 italic">
-                (System-owned)
-              </span>
-            </label>
-            <!-- Read-only badge when derivedStatus exists -->
-            <div
-              v-if="isStatusReadOnly('vendorStatus')"
-              class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
-            >
-              <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-300 border border-info-200 dark:border-info-800">
-                {{ formData.vendorStatus || '—' }}
-              </span>
-            </div>
-            <!-- Editable select (legacy mode when derivedStatus is null) -->
-            <select
-              v-else
-              v-model="formData.vendorStatus"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            >
-              <option :value="null">{{ t('organizations.createOrganizationSurfaceSelectStatus') }}</option>
-              <option
-                v-for="status in vendorStatusOptions"
-                :key="status"
-                :value="status"
-              >
-                {{ status }}
-              </option>
-            </select>
-            <p v-if="validationErrors.vendorStatus" class="mt-1 text-sm text-red-600 dark:text-red-400">
-              {{ validationErrors.vendorStatus }}
-            </p>
-          </div>
+          <!-- Type-scoped detail fields (Dealer, Distributor, tiers, etc.) -->
+          <DynamicForm
+            v-if="typeScopedNonStatusFieldKeys.length > 0"
+            module-key="organizations"
+            context="platform"
+            :form-data="formData"
+            :errors="validationErrors"
+            :fields-override="typeScopedNonStatusFieldKeys"
+            :show-all-fields="true"
+            :single-column="true"
+            @update:form-data="mergeFormData"
+          />
         </div>
       </div>
 
@@ -352,6 +301,7 @@ Post-creation behavior is driven by invocation context via query params:
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('settings.settingsAddFieldTypePhone') }}</label>
             <PhoneInput
               :model-value="formData.phone"
+              :default-country="defaultPhoneCountry"
               :placeholder="t('settings.profilePhone')"
               input-class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               :invalid="Boolean(validationErrors.phone)"
@@ -407,8 +357,22 @@ import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import PhoneInput from '@/components/common/PhoneInput.vue';
 import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInput';
+import { useDefaultPhoneCountry } from '@/composables/useDefaultPhoneCountry';
 import { getWebsiteValidationMessage } from '@/utils/urlInputValidation';
-import { getAllowedStatusesForTypes, getDefaultStatusForTypes, getOrganizationIntentsForTypes } from '@/platform/organizations/organizationIntents';
+import {
+  getAllowedStatusesForOrganizationStatusField,
+  getDefaultStatusForOrganizationStatusField,
+  getOrganizationIntentsForTypes,
+} from '@/platform/organizations/organizationIntents';
+import {
+  shouldShowOrganizationFieldForTypes,
+  getOrganizationFieldsForTypes,
+  buildOrganizationSubmitPayload,
+  stripOrganizationRecordForEditForm,
+  ORGANIZATION_INTENT_STATUS_FIELD_KEYS,
+} from '@/platform/fields/organizationFieldModel';
+import { useOrganizationTypes } from '@/composables/useOrganizationTypes';
+import DynamicForm from '@/components/common/DynamicForm.vue';
 
 // Props
 // MODE BRANCHING: Component supports two explicit modes
@@ -444,6 +408,7 @@ const { t } = useI18n();
 // Emits
 const emit = defineEmits(['close', 'saved']);
 
+const { typeDefs: organizationTypeDefs, enabledTypes: tenantEnabledOrgTypes } = useOrganizationTypes();
 const route = useRoute();
 const router = useRouter();
 
@@ -457,9 +422,9 @@ const typesReadOnly = ref(false);
 const websiteTouched = ref(false);
 
 const validatePhoneField = () => {
-  const p = sanitizeInternationalPhone(formData.value.phone || '');
+  const p = sanitizeInternationalPhone(formData.value.phone || '', defaultPhoneCountry.value);
   formData.value.phone = p;
-  const phoneValidation = validatePhoneValue(p);
+  const phoneValidation = validatePhoneValue(p, defaultPhoneCountry.value);
   if (!phoneValidation.isValid) {
     validationErrors.value = { ...validationErrors.value, phone: phoneValidation.error };
     return false;
@@ -499,8 +464,11 @@ const handleWebsiteBlur = () => {
   validateWebsiteField(formData.value.website, { markTouched: true });
 };
 
-// Organization types (locked order as per requirements)
-const organizationTypes = ['Customer', 'Partner', 'Vendor', 'Distributor', 'Dealer'];
+// Organization types (catalog defaults; tenant-enabled types when configured)
+const organizationTypes = computed(() => {
+  if (tenantEnabledOrgTypes.value.length > 0) return [...tenantEnabledOrgTypes.value];
+  return ['Customer', 'Partner', 'Vendor'];
+});
 
 // Form data (only allowed fields)
 const formData = ref({
@@ -516,6 +484,7 @@ const formData = ref({
   vendorStatus: null,
   derivedStatus: null // Track derivedStatus to determine if status is read-only
 });
+const { defaultPhoneCountry } = useDefaultPhoneCountry(computed(() => formData.value));
 
 // ============================================================================
 // ORGANIZATION INTENT AWARENESS
@@ -536,125 +505,60 @@ const formData = ref({
 // - Provide UI guidance for status selection
 // ============================================================================
 
+const organizationIntentStatusFields = [
+  {
+    fieldKey: 'customerStatus',
+    labelKey: 'settings.modFieldsCustomerStatus',
+    placeholderKey: 'organizations.createOrganizationSurfaceSelectStatus3',
+  },
+  {
+    fieldKey: 'partnerStatus',
+    labelKey: 'settings.modFieldsPartnerStatus',
+    placeholderKey: 'organizations.createOrganizationSurfaceSelectStatus2',
+  },
+  {
+    fieldKey: 'vendorStatus',
+    labelKey: 'settings.modFieldsVendorStatus',
+    placeholderKey: 'organizations.createOrganizationSurfaceSelectStatus',
+  },
+];
+
 /**
  * Get allowed statuses for a specific status field based on selected types.
- * Maps organization types to their corresponding status fields:
- * - Customer type → customerStatus field
- * - Partner type → partnerStatus field
- * - Vendor type → vendorStatus field
  */
-const getAllowedStatusesForField = (fieldKey, selectedTypes) => {
-  if (!selectedTypes || selectedTypes.length === 0) {
-    return [];
-  }
-  
-  // Map status field keys to organization types
-  const fieldToTypeMap = {
-    customerStatus: ['Customer'],
-    partnerStatus: ['Partner'],
-    vendorStatus: ['Vendor']
-  };
-  
-  const relevantTypes = fieldToTypeMap[fieldKey];
-  if (!relevantTypes) {
-    return [];
-  }
-  
-  // Check if any of the selected types match this field's types
-  const matchingTypes = selectedTypes.filter(type => relevantTypes.includes(type));
-  if (matchingTypes.length === 0) {
-    return [];
-  }
-  
-  // Get allowed statuses for the matching types from intent config
-  return getAllowedStatusesForTypes(matchingTypes);
-};
+const getAllowedStatusesForField = (fieldKey, selectedTypes) =>
+  getAllowedStatusesForOrganizationStatusField(fieldKey, selectedTypes);
 
-/**
- * Get default status for a specific status field based on selected types.
- */
-const getDefaultStatusForField = (fieldKey, selectedTypes) => {
-  if (!selectedTypes || selectedTypes.length === 0) {
-    return null;
-  }
-  
-  // Map status field keys to organization types
-  const fieldToTypeMap = {
-    customerStatus: ['Customer'],
-    partnerStatus: ['Partner'],
-    vendorStatus: ['Vendor']
-  };
-  
-  const relevantTypes = fieldToTypeMap[fieldKey];
-  if (!relevantTypes) {
-    return null;
-  }
-  
-  // Check if any of the selected types match this field's types
-  const matchingTypes = selectedTypes.filter(type => relevantTypes.includes(type));
-  if (matchingTypes.length === 0) {
-    return null;
-  }
-  
-  // Get default status for the matching types from intent config
-  return getDefaultStatusForTypes(matchingTypes);
-};
+const getDefaultStatusForField = (fieldKey, selectedTypes) =>
+  getDefaultStatusForOrganizationStatusField(fieldKey, selectedTypes);
 
-/**
- * Check if a status field should be visible based on selected types.
- */
-const shouldShowStatusField = (fieldKey, selectedTypes) => {
-  const fieldToTypeMap = {
-    customerStatus: ['Customer'],
-    partnerStatus: ['Partner'],
-    vendorStatus: ['Vendor']
-  };
-  
-  const relevantTypes = fieldToTypeMap[fieldKey];
-  if (!relevantTypes) {
-    return false;
-  }
-  
-  return selectedTypes.some(type => relevantTypes.includes(type));
-};
+const shouldShowStatusField = (fieldKey, selectedTypes) =>
+  shouldShowOrganizationFieldForTypes(fieldKey, selectedTypes, organizationTypeDefs.value);
 
-/**
- * Check if a status field should be read-only (when derivedStatus exists)
- */
+const intentStatusOptions = computed(() => {
+  const selectedTypes = formData.value.types;
+  return Object.fromEntries(
+    organizationIntentStatusFields.map(({ fieldKey }) => [
+      fieldKey,
+      getAllowedStatusesForField(fieldKey, selectedTypes),
+    ])
+  );
+});
+
+const typeScopedNonStatusFieldKeys = computed(() =>
+  getOrganizationFieldsForTypes(formData.value.types, organizationTypeDefs.value).filter(
+    (key) => !ORGANIZATION_INTENT_STATUS_FIELD_KEYS.has(key)
+  )
+);
+
+function mergeFormData(next) {
+  formData.value = { ...formData.value, ...next };
+}
+
 const isStatusReadOnly = (fieldKey) => {
   // Status is read-only when derivedStatus exists (system-owned)
   return formData.value.derivedStatus != null && formData.value.derivedStatus !== '';
 };
-
-// Computed: Allowed statuses for each status field (intent-aware)
-const customerStatusOptions = computed(() => {
-  const allowed = getAllowedStatusesForField('customerStatus', formData.value.types);
-  // If no intent matches, return empty array (will fall back to showing all if needed)
-  return allowed;
-});
-
-const partnerStatusOptions = computed(() => {
-  const allowed = getAllowedStatusesForField('partnerStatus', formData.value.types);
-  return allowed;
-});
-
-const vendorStatusOptions = computed(() => {
-  const allowed = getAllowedStatusesForField('vendorStatus', formData.value.types);
-  return allowed;
-});
-
-// Computed: Default statuses for each field (intent-aware)
-const defaultCustomerStatus = computed(() => {
-  return getDefaultStatusForField('customerStatus', formData.value.types);
-});
-
-const defaultPartnerStatus = computed(() => {
-  return getDefaultStatusForField('partnerStatus', formData.value.types);
-});
-
-const defaultVendorStatus = computed(() => {
-  return getDefaultStatusForField('vendorStatus', formData.value.types);
-});
 
 // Invocation context from query params
 const invocationContext = computed(() => {
@@ -747,20 +651,11 @@ const handleSubmit = async () => {
       }
       
       // EDIT MODE: PATCH /organizations/:id
-      // EDIT MODE RESTRICTION: Payload must be shape-complete (include all editable fields)
-      // Use null for untouched optional fields (not undefined)
-      const payload = {
-        name: formData.value.name.trim(),
-        types: formData.value.types || [],
-        industry: formData.value.industry?.trim() || null,
-        website: formData.value.website?.trim() || null,
-        phone: formData.value.phone?.trim() || null,
-        address: formData.value.address?.trim() || null,
-        // Status fields (intent-aware, but backend validates)
-        customerStatus: formData.value.customerStatus || null,
-        partnerStatus: formData.value.partnerStatus || null,
-        vendorStatus: formData.value.vendorStatus || null
-      };
+      const payload = buildOrganizationSubmitPayload(
+        formData.value,
+        organizationTypeDefs.value,
+        'edit'
+      );
 
       const response = await apiClient.patch(`/organizations/${effectiveOrganizationId.value}`, payload);
 
@@ -784,28 +679,12 @@ const handleSubmit = async () => {
       }
     } else {
       // CREATE MODE: POST /organizations
-      // CREATE MODE: Prepare payload - ONLY include allowed fields (undefined fields are removed)
-      const payload = {
-        name: formData.value.name.trim(),
-        types: formData.value.types.length > 0 ? formData.value.types : undefined,
-        industry: formData.value.industry?.trim() || undefined,
-        website: formData.value.website?.trim() || undefined,
-        phone: formData.value.phone?.trim() || undefined,
-        address: formData.value.address?.trim() || undefined,
-        // Status fields (intent-aware, but backend validates)
-        customerStatus: formData.value.customerStatus || undefined,
-        partnerStatus: formData.value.partnerStatus || undefined,
-        vendorStatus: formData.value.vendorStatus || undefined
-      };
+      const payload = buildOrganizationSubmitPayload(
+        formData.value,
+        organizationTypeDefs.value,
+        'create'
+      );
 
-      // Remove undefined fields
-      Object.keys(payload).forEach(key => {
-        if (payload[key] === undefined) {
-          delete payload[key];
-        }
-      });
-
-      // Create organization via dedicated API endpoint
       const response = await apiClient.post('/organizations', payload);
 
       if (response.success) {
@@ -939,18 +818,13 @@ const fetchOrganizationData = async () => {
       }
 
       // EDIT MODE: Populate form with fetched data (treat as INITIAL state only)
+      const stripped = stripOrganizationRecordForEditForm(data);
       formData.value = {
+        ...stripped,
         name: data.name || '',
         types: Array.isArray(data.types) ? [...data.types] : [],
-        industry: data.industry || '',
-        website: data.website || '',
         phone: sanitizeInternationalPhone(data.phone || ''),
-        address: data.address || '',
-        // Status fields (preserve existing values in edit mode)
-        customerStatus: data.customerStatus || null,
-        partnerStatus: data.partnerStatus || null,
-        vendorStatus: data.vendorStatus || null,
-        derivedStatus: data.derivedStatus || null
+        derivedStatus: data.derivedStatus ?? null,
       };
 
       // EDIT MODE RESTRICTION: Determine if types should be read-only
@@ -1022,67 +896,23 @@ watch(
     
     // For CREATE mode: Auto-select default status if no status is selected yet
     if (props.mode === 'create') {
-      // Customer status
-      if (shouldShowStatusField('customerStatus', selectedTypes)) {
-        const allowed = getAllowedStatusesForField('customerStatus', selectedTypes);
-        const defaultStatus = getDefaultStatusForField('customerStatus', selectedTypes);
-        
-        // Only auto-select if no status is currently set
-        if (!formData.value.customerStatus && defaultStatus && allowed.length > 0) {
-          formData.value.customerStatus = defaultStatus;
+      for (const { fieldKey } of organizationIntentStatusFields) {
+        if (shouldShowStatusField(fieldKey, selectedTypes)) {
+          const allowed = getAllowedStatusesForField(fieldKey, selectedTypes);
+          const defaultStatus = getDefaultStatusForField(fieldKey, selectedTypes);
+          if (!formData.value[fieldKey] && defaultStatus && allowed.length > 0) {
+            formData.value[fieldKey] = defaultStatus;
+          }
+          if (import.meta.env.DEV && defaultStatus) {
+            console.assert(
+              allowed.includes(defaultStatus),
+              `[CreateOrganizationSurface] defaultStatus "${defaultStatus}" is not in allowedStatuses for ${fieldKey}`,
+              { defaultStatus, allowed }
+            );
+          }
+        } else {
+          formData.value[fieldKey] = null;
         }
-        
-        // DEV-ONLY ASSERTION: defaultStatus must be in allowedStatuses
-        if (import.meta.env.DEV && defaultStatus) {
-          console.assert(
-            allowed.includes(defaultStatus),
-            `[CreateOrganizationSurface] defaultStatus "${defaultStatus}" is not in allowedStatuses for Customer type`,
-            { defaultStatus, allowed }
-          );
-        }
-      } else {
-        // Hide field if type is deselected
-        formData.value.customerStatus = null;
-      }
-      
-      // Partner status
-      if (shouldShowStatusField('partnerStatus', selectedTypes)) {
-        const allowed = getAllowedStatusesForField('partnerStatus', selectedTypes);
-        const defaultStatus = getDefaultStatusForField('partnerStatus', selectedTypes);
-        
-        if (!formData.value.partnerStatus && defaultStatus && allowed.length > 0) {
-          formData.value.partnerStatus = defaultStatus;
-        }
-        
-        if (import.meta.env.DEV && defaultStatus) {
-          console.assert(
-            allowed.includes(defaultStatus),
-            `[CreateOrganizationSurface] defaultStatus "${defaultStatus}" is not in allowedStatuses for Partner type`,
-            { defaultStatus, allowed }
-          );
-        }
-      } else {
-        formData.value.partnerStatus = null;
-      }
-      
-      // Vendor status
-      if (shouldShowStatusField('vendorStatus', selectedTypes)) {
-        const allowed = getAllowedStatusesForField('vendorStatus', selectedTypes);
-        const defaultStatus = getDefaultStatusForField('vendorStatus', selectedTypes);
-        
-        if (!formData.value.vendorStatus && defaultStatus && allowed.length > 0) {
-          formData.value.vendorStatus = defaultStatus;
-        }
-        
-        if (import.meta.env.DEV && defaultStatus) {
-          console.assert(
-            allowed.includes(defaultStatus),
-            `[CreateOrganizationSurface] defaultStatus "${defaultStatus}" is not in allowedStatuses for Vendor type`,
-            { defaultStatus, allowed }
-          );
-        }
-      } else {
-        formData.value.vendorStatus = null;
       }
     }
     // For EDIT mode: Only filter visible options, do NOT auto-change existing status
@@ -1098,7 +928,7 @@ watch(
       }
       
       // Check each status field
-      ['customerStatus', 'partnerStatus', 'vendorStatus'].forEach(fieldKey => {
+      for (const { fieldKey } of organizationIntentStatusFields) {
         if (shouldShowStatusField(fieldKey, selectedTypes)) {
           const allowed = getAllowedStatusesForField(fieldKey, selectedTypes);
           if (allowed.length === 0) {
@@ -1108,7 +938,7 @@ watch(
             );
           }
         }
-      });
+      }
     }
   },
   { deep: true }

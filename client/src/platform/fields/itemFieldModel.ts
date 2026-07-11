@@ -32,7 +32,7 @@
  *    - fieldScope: 'CORE' indicates platform-level ownership
  * 
  * 5. Quick Create eligibility
- *    - Essential fields: item_name (required), item_type, category, selling_price
+ *    - Essential fields: item_name (required), item_type, categoryId, selling_price, unit_of_measure, lifecycle_state, assignedTo (required)
  *    - Excluded: inventory fields, tax details, relationships, system fields
  * 
  * ============================================================================
@@ -501,6 +501,18 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
     isProtected: false,
     filterable: false,
   },
+
+  assignedTo: {
+    owner: 'core',
+    intent: 'identity',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: true,
+    isProtected: false,
+    filterable: true,
+    filterType: 'user',
+    filterPriority: 3,
+  },
   
   // Storage bucket for tenant-defined custom field values — not a configurable field.
   customFields: {
@@ -667,13 +679,27 @@ export function isItemProtectedField(fieldKey: string): boolean {
 export function getItemQuickCreateFields(): string[] {
   return [
     'item_name',
-    'item_code',
     'item_type',
-    'lifecycle_state',
     'categoryId',
-    'selling_price'
+    'selling_price',
+    'unit_of_measure',
+    'lifecycle_state',
+    'assignedTo',
   ];
 }
+
+/**
+ * Default key fields for Items on a fresh instance.
+ * Keep aligned with itemsDefaultKeyFields in server/controllers/moduleController.js.
+ */
+export const ITEM_DEFAULT_KEY_FIELDS = [
+  'item_type',
+  'item_code',
+  'categoryId',
+  'selling_price',
+  'lifecycle_state',
+  'assignedTo',
+] as const;
 
 /** Catalog scaffold fields — not shown on flat item create/edit drawer (catalog section on record). */
 export function getItemCatalogScaffoldFieldKeys(): string[] {

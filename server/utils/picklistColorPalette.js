@@ -74,6 +74,12 @@ const CONTACT_STATUS_OPTION_COLORS = Object.freeze({
     donotcontact: '#DC2626',
 });
 
+const ORGANIZATION_TYPE_OPTION_COLORS = Object.freeze({
+    customer: '#2563EB',
+    partner: '#8B5CF6',
+    vendor: '#10B981',
+});
+
 function normalizePicklistColorKey(value) {
     return String(value || '')
         .trim()
@@ -145,6 +151,7 @@ function getSemanticPicklistColor(fieldKey, optionValue, moduleKey = '') {
     }
     if (key === 'lead_status') return LEAD_STATUS_OPTION_COLORS[val] || null;
     if (key === 'contact_status') return CONTACT_STATUS_OPTION_COLORS[val] || null;
+    if (mod === 'organizations' && key === 'types') return ORGANIZATION_TYPE_OPTION_COLORS[val] || null;
     return null;
 }
 
@@ -206,6 +213,7 @@ module.exports = {
     TASK_TYPE_OPTION_COLORS,
     LEAD_STATUS_OPTION_COLORS,
     CONTACT_STATUS_OPTION_COLORS,
+    ORGANIZATION_TYPE_OPTION_COLORS,
     normalizePicklistColorKey,
     normalizePicklistColorHex,
     getPicklistOptionValue,

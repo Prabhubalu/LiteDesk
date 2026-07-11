@@ -62,7 +62,7 @@ describe('System Invariants', () => {
     it('should block deletion when active deals reference the person', async () => {
       Deal.find.mockResolvedValue([
         { _id: 'deal1', name: 'Deal 1', status: 'Open' },
-        { _id: 'deal2', name: 'Deal 2', status: 'Active' }
+        { _id: 'deal2', name: 'Deal 2', status: 'Open' }
       ]);
       Organization.find.mockResolvedValue([]);
 
@@ -100,7 +100,7 @@ describe('System Invariants', () => {
     it('should block multiple people in one query batch', async () => {
       Deal.find.mockResolvedValue([
         { _id: 'deal1', name: 'Deal 1', status: 'Open', contactId: 'person1' },
-        { _id: 'deal2', name: 'Deal 2', status: 'Active', contactId: 'person2' }
+        { _id: 'deal2', name: 'Deal 2', status: 'Open', contactId: 'person2' }
       ]);
       Organization.find.mockResolvedValue([]);
 
@@ -163,7 +163,7 @@ describe('System Invariants', () => {
       });
       Deal.find.mockResolvedValue([
         { _id: 'deal1', name: 'Deal 1', status: 'Open' },
-        { _id: 'deal2', name: 'Deal 2', status: 'Active' }
+        { _id: 'deal2', name: 'Deal 2', status: 'Open' }
       ]);
 
       const result = await validateUnlink({

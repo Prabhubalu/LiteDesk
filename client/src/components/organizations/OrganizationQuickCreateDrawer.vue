@@ -14,8 +14,8 @@
   
   MODE BEHAVIOR:
   - mode: 'quick' | 'full' (default: 'quick')
-  - Quick mode: Settings-driven fields only (Settings → Organizations → Quick Create)
-  - Full mode: Locked fields (name, types, industry, website, phone, address)
+  - Quick mode: Settings-driven core fields + Types section + type-dependent fields
+  - Full mode: Core quick create, Types section, then remaining platform fields
   - Form state MUST be preserved across mode switches
   - No API call on mode switch
   
@@ -114,52 +114,61 @@
                             </div>
                           </div>
                           
-                          <!-- QUICK CREATE MODE: Settings-driven fields -->
-                          <template v-if="mode === 'quick'">
-                            <!-- 
-                              ARCHITECTURAL INTENT: Quick Create Mode
-                              - Render ONLY fields defined in Settings → Organizations → Quick Create
-                              - name MUST be required and first
-                              - Fields are fully settings-driven
-                              - No hard-coded optional fields here
-                            -->
-                            <DynamicForm
-                              module-key="organizations"
-                              context="platform"
-                              :form-data="formData"
-                              :errors="errors"
-                              :exclude-fields="excludeFields"
-                              :show-all-fields="false"
-                              :quick-create-mode="true"
-                              :single-column="true"
-                              :fields-override="quickCreateFieldsOverrideProp"
-                              @update:form-data="updateFormData"
-                              @ready="onFormReady"
-                            />
-                          </template>
+                          <div v-if="moduleLoading || (isEditMode && loading)" class="flex justify-center py-12">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+                          </div>
 
-                          <!-- FULL FORM MODE: Config-driven with explicit section ordering -->
                           <template v-else>
-                            <div v-if="moduleDefinition && !moduleLoading" class="space-y-6">
-                              <div v-if="fullQuickCreateFields.length">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('organizations.organizationQuickCreateDrawerQuickCreateFields') }}</h3>
+                            <div class="flex flex-col gap-8">
+                              <!-- 1. Core quick-create fields (identity; excludes types + type-scoped fields) -->
+                              <section
+                                v-if="showCoreQuickCreateSection"
+                                class="space-y-4"
+                              >
+                                <h3
+                                  v-if="mode === 'full'"
+                                  class="text-sm font-semibold text-gray-900 dark:text-white"
+                                >
+                                  {{ t('organizations.organizationQuickCreateDrawerQuickCreateFields') }}
+                                </h3>
                                 <DynamicForm
                                   module-key="organizations"
                                   context="platform"
                                   :form-data="formData"
                                   :errors="errors"
-                                  :show-all-fields="true"
-                                  :quick-create-mode="false"
-                                  :single-column="false"
-                                  :fields-override="fullQuickCreateFields"
-                                  :exclude-fields="fullModeExcludeFields"
-                                  :module-override="moduleDefinition"
+                                  :exclude-fields="coreFormExcludeFields"
+                                  :show-all-fields="mode === 'full'"
+                                  :quick-create-mode="mode === 'quick'"
+                                  :single-column="mode === 'quick'"
+                                  :fields-override="mode === 'full'
+                                    ? (fullQuickCreateFields.length ? fullQuickCreateFields : null)
+                                    : coreQuickCreateFieldsOverride"
+                                  :module-override="mode === 'full' ? moduleDefinition : null"
                                   @update:form-data="updateFormData"
+                                  @ready="onFormReady"
                                 />
-                              </div>
+                              </section>
 
-                              <div v-if="fullOtherFields.length" class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('organizations.organizationQuickCreateDrawerOtherFields') }}</h3>
+                              <!-- 2. Organization types + type-dependent fields -->
+                              <OrganizationTypesSection
+                                :section-class="typesSectionClass"
+                                :form-data="formData"
+                                :errors="errors"
+                                :module-override="moduleDefinition"
+                                :organization-type-defs="organizationTypeDefs"
+                                :single-column="mode === 'quick'"
+                                :full-mode="mode === 'full'"
+                                @update:form-data="updateFormData"
+                              />
+
+                              <!-- 3. Full mode: remaining core fields -->
+                              <section
+                                v-if="mode === 'full' && fullOtherFields.length"
+                                class="space-y-4 border-t border-gray-200 pt-6 dark:border-gray-700"
+                              >
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+                                  {{ t('organizations.organizationQuickCreateDrawerOtherFields') }}
+                                </h3>
                                 <DynamicForm
                                   module-key="organizations"
                                   context="platform"
@@ -173,28 +182,7 @@
                                   :module-override="moduleDefinition"
                                   @update:form-data="updateFormData"
                                 />
-                              </div>
-
-                              <div v-if="fullParticipationFields.length" class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('records.genericAppParticipation') }}</h3>
-                                <DynamicForm
-                                  module-key="organizations"
-                                  context="platform"
-                                  :form-data="formData"
-                                  :errors="errors"
-                                  :show-all-fields="true"
-                                  :quick-create-mode="false"
-                                  :single-column="false"
-                                  :fields-override="fullParticipationFields"
-                                  :exclude-fields="fullModeExcludeFields"
-                                  :module-override="moduleDefinition"
-                                  @update:form-data="updateFormData"
-                                />
-                              </div>
-                            </div>
-
-                            <div v-else class="flex justify-center py-12">
-                              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                              </section>
                             </div>
                           </template>
                       </div>
@@ -251,12 +239,19 @@ import { ref, computed, watch, nextTick } from 'vue';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from '@/components/common/DynamicForm.vue';
+import OrganizationTypesSection from '@/components/organizations/OrganizationTypesSection.vue';
 import apiClient from '@/utils/apiClient';
 import { useTabs } from '@/composables/useTabs';
 import {
   isTenantPlatformOrganizationFieldKey,
   ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS,
+  ORGANIZATION_QUICK_CREATE_DEFAULT,
+  filterOrganizationSubmitPayloadByTypes,
+  normalizeOrganizationEditSubmitPayload,
+  isOrganizationTypeScopedFieldKey,
+  getOrganizationFieldsForTypes,
 } from '@/platform/fields/organizationFieldModel';
+import { useOrganizationTypes } from '@/composables/useOrganizationTypes';
 import { getGlobalSystemFieldKeys, isSystemField } from '@/platform/fields/fieldCapabilityEngine';
 import { getWebsiteValidationMessage, isValidWebsiteInput } from '@/utils/urlInputValidation';
 
@@ -287,6 +282,7 @@ const { t } = useI18n();
 const emit = defineEmits(['close', 'saved']);
 
 const { openTab } = useTabs();
+const { typeDefs: organizationTypeDefs } = useOrganizationTypes();
 
 // ============================================================================
 // CREATION MODE STATE
@@ -320,12 +316,10 @@ const moduleDefinition = ref(null);
 // QUICK_CREATE_FIELDS: Must exactly match Settings → Organizations → Quick Create
 // Loaded from module definition (moduleDefinition.value.quickCreate)
 //
-// FULL_CREATE_FIELDS: authoritative field list for full-form submission.
-// Built from rendered sections: quick-create fields, then other fields, then participation fields.
+// FULL FORM: core quick-create fields, types section, then remaining platform fields.
 const QUICK_CREATE_FIELDS = computed(() => {
   if (!moduleDefinition.value || !moduleDefinition.value.quickCreate) {
-    // Fallback to default if module definition not loaded yet
-    return ['name'];
+    return [...ORGANIZATION_QUICK_CREATE_DEFAULT];
   }
   
   // Quick Create: Only fields from Settings → Organizations → Quick Create
@@ -368,6 +362,7 @@ const fullModeExcludeFields = computed(() => {
 const fullQuickCreateFields = computed(() =>
   QUICK_CREATE_FIELDS.value.filter((fieldKey) => {
     const keyLower = String(fieldKey).toLowerCase();
+    if (!isCoreOrganizationFieldKey(fieldKey)) return false;
     return !isTenantPlatformOrganizationFieldKey(fieldKey)
       && !fullModeExcludeFields.value.some((excluded) => excluded.toLowerCase() === keyLower)
       && !moduleSystemFieldKeySet.value.has(keyLower);
@@ -386,28 +381,45 @@ const fullOtherFields = computed(() => {
       const keyLower = String(key).toLowerCase();
       if (excludedSet.has(keyLower)) return false;
       if (quickSet.has(keyLower)) return false;
+      if (isOrganizationTypeScopedFieldKey(key)) return false;
       if (isTenantPlatformOrganizationFieldKey(key)) return false;
       if (moduleSystemFieldKeySet.value.has(keyLower)) return false;
       return true;
     });
 });
 
-const FULL_CREATE_FIELDS = computed(() => [
-  ...fullQuickCreateFields.value,
-  ...fullOtherFields.value,
-]);
-
 /** Quick create keys with tenant/nested tenant paths removed (module API can expose subscription.* etc.) */
 const sanitizedQuickCreateFieldKeys = computed(() =>
   QUICK_CREATE_FIELDS.value.filter((fieldKey) => !isTenantPlatformOrganizationFieldKey(fieldKey))
 );
 
-/**
- * When quick create is settings-driven, pass the configured field list explicitly.
- */
-const quickCreateFieldsOverrideProp = computed(() => {
-  const sanitized = sanitizedQuickCreateFieldKeys.value;
+function isCoreOrganizationFieldKey(fieldKey) {
+  const keyLower = String(fieldKey || '').toLowerCase();
+  if (keyLower === 'types') return false;
+  if (isOrganizationTypeScopedFieldKey(fieldKey)) return false;
+  return true;
+}
+
+/** Core quick create only — types and type-scoped fields render in OrganizationTypesSection. */
+const coreQuickCreateFieldsOverride = computed(() => {
+  const sanitized = sanitizedQuickCreateFieldKeys.value.filter(isCoreOrganizationFieldKey);
   return sanitized.length ? sanitized : null;
+});
+
+const showCoreQuickCreateSection = computed(() => {
+  if (mode.value === 'full') return fullQuickCreateFields.value.length > 0;
+  const override = coreQuickCreateFieldsOverride.value;
+  if (override?.length) return true;
+  if (!moduleDefinition.value) return true;
+  return sanitizedQuickCreateFieldKeys.value.some(isCoreOrganizationFieldKey);
+});
+
+const typesSectionClass = computed(() => {
+  const classes = ['flex', 'flex-col', 'gap-4'];
+  if (showCoreQuickCreateSection.value) {
+    classes.push('border-t', 'border-gray-200', 'pt-8', 'dark:border-gray-700');
+  }
+  return classes;
 });
 
 const moduleLoading = ref(false);
@@ -466,7 +478,7 @@ const QUICK_MODE_STATIC_EXCLUDE_FIELDS = [
   '__v'
 ];
 
-const excludeFields = computed(() => {
+const coreFormExcludeFields = computed(() => {
   const deduped = new Set([
     ...QUICK_MODE_STATIC_EXCLUDE_FIELDS.map((fieldKey) => String(fieldKey)),
     ...getGlobalSystemFieldKeys(),
@@ -479,11 +491,8 @@ const excludeFields = computed(() => {
  * Handle form ready event from DynamicForm (Quick Create mode only)
  */
 const onFormReady = (module) => {
-  if (module) {
-    moduleDefinition.value = module;
-    console.log('[OrganizationQuickCreate] Module ready, quickCreate fields:', module.quickCreate);
-    console.log('[OrganizationQuickCreate] QUICK_CREATE_FIELDS computed:', QUICK_CREATE_FIELDS.value);
-  }
+  if (!module || moduleDefinition.value) return;
+  moduleDefinition.value = module;
 };
 
 /**
@@ -526,24 +535,17 @@ const scrollToFirstErrorField = async () => {
 const switchToFull = () => {
   mode.value = 'full';
   createMode.value = 'full';
-  
+
   // Ensure formData has structure for full form fields
   // DO NOT clear existing values - preserve drafts
-  if (!formData.value.types) {
-    formData.value.types = [];
-  }
-  if (!formData.value.industry) {
-    formData.value.industry = '';
-  }
-  if (!formData.value.website) {
-    formData.value.website = '';
-  }
-  if (!formData.value.phone) {
-    formData.value.phone = '';
-  }
-  if (!formData.value.address) {
-    formData.value.address = '';
-  }
+  formData.value = {
+    ...formData.value,
+    types: formData.value.types ?? [],
+    industry: formData.value.industry ?? '',
+    website: formData.value.website ?? '',
+    phone: formData.value.phone ?? '',
+    address: formData.value.address ?? '',
+  };
 };
 
 /**
@@ -581,10 +583,28 @@ const handleDialogClose = () => {
  * @param {Record<string, any>} formState - Current form state (may contain draft values)
  * @returns {Record<string, any>} Filtered payload with only allowed fields
  */
+function resolveAllowedFieldsForSubmit(formState) {
+  const selectedTypes = Array.isArray(formState.types) ? formState.types : [];
+  const typeDependentKeys = getOrganizationFieldsForTypes(selectedTypes, organizationTypeDefs.value);
+
+  if (createMode.value === 'quick') {
+    const coreKeys = sanitizedQuickCreateFieldKeys.value.filter(isCoreOrganizationFieldKey);
+    const baseCore = coreKeys.length > 0 ? coreKeys : ['name'];
+    return [...new Set([...baseCore, 'types', ...typeDependentKeys])];
+  }
+
+  return [
+    ...new Set([
+      ...fullQuickCreateFields.value,
+      ...fullOtherFields.value,
+      'types',
+      ...typeDependentKeys,
+    ]),
+  ];
+}
+
 function buildCreateOrganizationPayload(formState) {
-  const allowedFields = createMode.value === 'quick'
-    ? QUICK_CREATE_FIELDS.value
-    : FULL_CREATE_FIELDS.value;
+  const allowedFields = resolveAllowedFieldsForSubmit(formState);
 
   const payload = {};
   
@@ -612,7 +632,13 @@ function buildCreateOrganizationPayload(formState) {
     }
   }
   
-  return payload;
+  const selectedTypes = Array.isArray(formState.types) ? formState.types : [];
+  const typeFiltered = filterOrganizationSubmitPayloadByTypes(
+    payload,
+    selectedTypes,
+    organizationTypeDefs.value
+  );
+  return normalizeOrganizationEditSubmitPayload(typeFiltered, moduleDefinition.value?.fields);
 }
 
 /**
@@ -793,7 +819,10 @@ watch(() => props.isOpen, (isOpen) => {
       fetchOrganizationData();
     } else {
       // Create mode: use initial data
-      formData.value = { ...props.initialData };
+      formData.value = {
+        ...props.initialData,
+        types: Array.isArray(props.initialData?.types) ? [...props.initialData.types] : [],
+      };
       errors.value = {};
       mode.value = 'quick'; // Reset to quick mode on open
       createMode.value = 'quick'; // Reset submission intent mode

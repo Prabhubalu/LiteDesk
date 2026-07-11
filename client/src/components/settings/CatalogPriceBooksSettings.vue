@@ -161,8 +161,12 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { unwrapCatalogApiData, unwrapCatalogApiList } from '@/utils/catalogApi';
+import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { useAuthStore } from '@/stores/authRegistry';
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const orgCurrency = computed(() => resolveOrgCurrencyCode(authStore.organization));
 
 const loading = ref(false);
 const loadError = ref('');
@@ -178,7 +182,7 @@ const variantSearchResults = ref([]);
 const variantSearchLoading = ref(false);
 let variantSearchTimer;
 
-const bookForm = reactive({ name: '', currency: 'USD', isDefault: false });
+const bookForm = reactive({ name: '', currency: resolveOrgCurrencyCode(), isDefault: false });
 const entryForm = reactive({ variantId: '', variantLabel: '', unitPrice: 0, minQty: 1 });
 
 function entryDisplayLabel(entry) {
@@ -265,7 +269,7 @@ function selectBook(id) {
 
 function openCreateBook() {
   bookForm.name = '';
-  bookForm.currency = 'USD';
+  bookForm.currency = orgCurrency.value;
   bookForm.isDefault = false;
   showBookForm.value = true;
 }

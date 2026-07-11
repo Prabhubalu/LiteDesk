@@ -30,10 +30,17 @@
  *    - `createdBy`, `createdAt`, `updatedAt`, `organizationId`, etc.
  *    - Managed by the platform, never user-editable
  *    - fieldScope: 'CORE' indicates platform-level ownership
- * 
- * 4. Quick Create eligibility
- *    - Essential fields: name (required), amount, stage, expectedCloseDate, assignedTo, status
- *    - Excluded: description, notes, lineItems, tracking fields, system fields
+ *
+ * 4. Deal Status is platform-owned execution state (not a business field)
+ *    - Canonical values: Open | Won | Lost (derived from Stage / stage outcome)
+ *    - owner: 'system', editable: false — no create/edit/mass-edit
+ *    - Tenant-configurable workflow stays on Stage; loss nuance on lostReason
+ *    - Direct writes blocked server-side; only stage derivation or maintenance scripts set Status
+ *
+ * 5. Quick Create eligibility
+ *    - Default: name, accountId, pipeline, stage, expectedCloseDate, amount, assignedTo
+ *    - Excluded: status, description, notes, tracking fields, system fields
+ *    - DealLines are a dedicated section (not a form field); amountMode owned by DealPricingService
  * 
  * ============================================================================
  */
@@ -210,6 +217,27 @@ export const DEAL_FIELD_METADATA: Record<string, DealFieldMetadata> = {
     filterType: 'number',
     filterPriority: 2,
   },
+  /**
+   * AUTO | MANUAL — owned by DealPricingService; not a DynamicForm field.
+   * UI: DealLinesSection amount-mode control.
+   */
+  amountMode: {
+    owner: 'core',
+    intent: 'tracking',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: false,
+    isVisibleInConfig: false,
+  },
+  linesGrandTotal: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    allowOnCreate: false,
+    isSystem: true,
+    isVisibleInConfig: false,
+  },
   currency: {
     owner: 'core',
     intent: 'detail',
@@ -250,15 +278,21 @@ export const DEAL_FIELD_METADATA: Record<string, DealFieldMetadata> = {
     filterType: 'select',
     filterPriority: 5,
   },
+  /**
+   * Platform-owned execution state derived from Stage (Open|Won|Lost).
+   * Not a tenant business field — hide from create/edit; reporting/APIs use Status.
+   */
   status: {
-    owner: 'core',
-    intent: 'state',
+    owner: 'system',
+    intent: 'system',
     fieldScope: 'CORE',
-    editable: true,
+    editable: false,
     allowOnCreate: false,
+    isProtected: true,
     filterable: true,
     filterType: 'select',
     filterPriority: 6,
+    isVisibleInConfig: true,
   },
 
   // Scheduling fields
@@ -338,6 +372,7 @@ export const DEAL_FIELD_METADATA: Record<string, DealFieldMetadata> = {
     filterType: 'select',
     filterPriority: 12,
   },
+  /** Business nuance for Lost deals (e.g. former Abandoned). Not a lifecycle Status. */
   lostReason: {
     owner: 'core',
     intent: 'detail',
@@ -374,7 +409,7 @@ export const DEAL_FIELD_METADATA: Record<string, DealFieldMetadata> = {
     intent: 'detail',
     fieldScope: 'CORE',
     editable: true,
-    allowOnCreate: false,
+    allowOnCreate: true,
     filterable: true,
     filterType: 'entity',
     filterPriority: 15,
@@ -430,15 +465,8 @@ export const DEAL_FIELD_METADATA: Record<string, DealFieldMetadata> = {
     isVisibleInConfig: false,
   },
 
-  // Notes and line items
+  // Notes (DealLines are a separate entity — not a Deal field)
   notes: {
-    owner: 'core',
-    intent: 'detail',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-  },
-  lineItems: {
     owner: 'core',
     intent: 'detail',
     fieldScope: 'CORE',
@@ -579,8 +607,22 @@ export function getDealParticipationFields(appKey: string): string[] {
 }
 
 /**
+ * Fields shown in New Deal quick create on a fresh instance.
+ * Keep aligned with INITIAL_DEALS_QUICK_CREATE in server/constants/dealsModuleDefaults.js.
+ */
+export const DEAL_QUICK_CREATE_DEFAULT = [
+  'name',
+  'accountId',
+  'pipeline',
+  'stage',
+  'expectedCloseDate',
+  'amount',
+  'assignedTo',
+] as const;
+
+/**
  * Get all fields eligible for Quick Create
- * Essential fields: name (required), amount, stage, expectedCloseDate, assignedTo, status
+ * Essential fields: name (required), accountId, pipeline, stage, expectedCloseDate, amount, assignedTo
  */
 export function getDealQuickCreateFields(): string[] {
   return Object.entries(DEAL_FIELD_METADATA)

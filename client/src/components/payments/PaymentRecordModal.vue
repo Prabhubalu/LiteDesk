@@ -72,6 +72,8 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
+import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { useAuthStore } from '@/stores/authRegistry';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -83,17 +85,26 @@ const emit = defineEmits(['close', 'created']);
 const { t } = useI18n();
 const router = useRouter();
 const notifications = useNotifications();
+const authStore = useAuthStore();
 const busy = ref(false);
 
 const form = reactive({
   amount: null,
-  paymentCurrency: 'USD',
+  paymentCurrency: resolveOrgCurrencyCode(authStore.organization),
   paymentDate: new Date().toISOString().slice(0, 10),
   paymentPurpose: 'invoice_payment',
   method: 'other',
   referenceNumber: '',
   autoApply: true
 });
+
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (!isOpen) return;
+    form.paymentCurrency = resolveOrgCurrencyCode(authStore.organization);
+  }
+);
 
 function close() {
   if (busy.value) return;

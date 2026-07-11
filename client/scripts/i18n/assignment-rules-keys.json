@@ -563,6 +563,10 @@
     "message": "First name",
     "description": "Condition field: first_name"
   },
+  "assignRulesCondFieldSalutation": {
+    "message": "Salutation",
+    "description": "Condition field: salutation"
+  },
   "assignRulesCondFieldLastName": {
     "message": "Last name",
     "description": "Condition field: last_name"

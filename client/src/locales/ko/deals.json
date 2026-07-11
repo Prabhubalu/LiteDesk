@@ -486,5 +486,137 @@
   "dealsPlaybookBadgeTooltipBlocked": {
     "message": "{blocked} blocked, {pending} open — {total} steps in this stage playbook.",
     "description": "Tooltip for blocked deal playbook badge"
+  },
+  "dealRelationshipEditorSelectPersonToAdd": {
+    "message": "Select a person to add…",
+    "description": "Placeholder for one-click add person on deal"
+  },
+  "dealRelationshipEditorSelectOrganizationToAdd": {
+    "message": "Select an organization to add…",
+    "description": "Placeholder for one-click add organization on deal"
+  },
+  "dealRelationshipEditorPeopleAddHint": {
+    "message": "First person becomes the primary contact. Use the star to change primary.",
+    "description": "Hint under people add dropdown on deal"
+  },
+  "dealRelationshipEditorOrgAddHint": {
+    "message": "First organization becomes the primary customer. Use the star to change primary.",
+    "description": "Hint under organization add dropdown on deal"
+  },
+  "dealRelationshipEditorSetAsPrimary": {
+    "message": "Set as primary organization",
+    "description": "Star control to mark primary deal organization (coerces role to Customer)"
+  },
+  "dealRelationshipEditorSelectRole": {
+    "message": "Deal relationship role",
+    "description": "Label for deal organization relationship role picker"
+  },
+  "dealRelationshipEditorAddOrganization": {
+    "message": "Add",
+    "description": "Confirm add organization to deal with selected role"
+  },
+  "dealRelationshipEditorPrimaryContactRequired": {
+    "message": "There must be exactly one primary contact.",
+    "description": "Validation when deal people lack a single primary contact"
+  },
+  "dealRelationshipEditorPrimaryCustomerRequired": {
+    "message": "There must be exactly one primary organization with role Customer.",
+    "description": "Validation when deal organizations lack a single primary customer"
+  },
+  "dealRelationshipRoleCustomer": {
+    "message": "Customer",
+    "description": "Deal organization relationship role"
+  },
+  "dealRelationshipRolePartner": {
+    "message": "Partner",
+    "description": "Deal organization relationship role"
+  },
+  "dealRelationshipRoleReseller": {
+    "message": "Reseller",
+    "description": "Deal organization relationship role"
+  },
+  "dealRelationshipRoleDistributor": {
+    "message": "Distributor",
+    "description": "Deal organization relationship role"
+  },
+  "dealRelationshipRoleVendor": {
+    "message": "Vendor",
+    "description": "Deal organization relationship role"
+  },
+  "dealRelationshipRoleOther": {
+    "message": "Other",
+    "description": "Deal organization relationship role"
+  },
+  "dealRelationshipPersonRolePrimaryContact": {
+    "message": "Primary contact",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRoleDecisionMaker": {
+    "message": "Decision maker",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRoleInfluencer": {
+    "message": "Influencer",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRolePartnerContact": {
+    "message": "Partner contact",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipEditorSelectPersonRole": {
+    "message": "Deal relationship role",
+    "description": "Label for deal person relationship role picker"
+  },
+  "dealRelationshipEditorAddPerson": {
+    "message": "Add",
+    "description": "Confirm add person to deal with selected role"
+  },
+  "dealRelationshipPersonRoleChampion": {
+    "message": "Champion",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRoleTechnicalContact": {
+    "message": "Technical contact",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRoleProcurement": {
+    "message": "Procurement",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRoleLegal": {
+    "message": "Legal",
+    "description": "Deal person relationship role"
+  },
+  "dealRelationshipPersonRoleOther": {
+    "message": "Other",
+    "description": "Deal person relationship role"
+  },
+  "sysFieldLastActivityDate": {
+    "message": "Last Activity",
+    "description": "System deal field label for last engagement timestamp"
+  },
+  "lastActivityCreated": {
+    "message": "Created",
+    "description": "Last activity tooltip: deal created"
+  },
+  "lastActivityChangedStage": {
+    "message": "Stage changed",
+    "description": "Last activity tooltip: stage change"
+  },
+  "lastActivityAddedNote": {
+    "message": "Note added",
+    "description": "Last activity tooltip: note added"
+  },
+  "lastActivityEditedNote": {
+    "message": "Note edited",
+    "description": "Last activity tooltip: note edited"
+  },
+  "lastActivityAddedComment": {
+    "message": "Comment added",
+    "description": "Last activity tooltip: comment added"
+  },
+  "lastActivityEditedComment": {
+    "message": "Comment edited",
+    "description": "Last activity tooltip: comment edited"
   }
 }
