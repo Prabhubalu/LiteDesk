@@ -1,26 +1,125 @@
 /**
- * Load module field metadata (picklist options, types) for process designer IF conditions.
+ * Load all module fields for process designer IF conditions.
+ * Uses the same full module definition path as webforms (context=all + people virtuals).
  */
 
 import { ref, watch, computed } from 'vue';
-import apiClient from '@/utils/apiClient';
 import { ENTITY_TYPE_TO_MODULE_KEY } from '@/utils/processDesignerConstants';
+import { fetchWebformModuleDefinition } from '@/utils/webformModuleDefinition';
+import { fetchCoreModulesSettingsCached } from '@/utils/tenantSchemaApiCache';
+import { PEOPLE_PARTICIPATION_APP_KEYS } from '@/utils/peopleParticipationUi';
 
-function normalizeFieldOptions(field, moduleDoc) {
-  const raw = field?.options;
-  let options = [];
+const APP_LABEL_FALLBACK = {
+  SALES: 'Sales',
+  HELPDESK: 'Helpdesk',
+  AUDIT: 'Audit',
+  PORTAL: 'Portal',
+  PLATFORM: 'Core'
+};
 
-  if (Array.isArray(raw) && raw.length) {
-    options = raw.map((opt) => {
-      if (typeof opt === 'string') return { value: opt, label: opt };
-      const value = opt?.value ?? opt?.label ?? '';
-      const label = opt?.label ?? opt?.value ?? value;
-      return { value: String(value), label: String(label) };
-    });
+/**
+ * Apps from People Types → Application (core-modules people.applications).
+ * @returns {Promise<Array<{ value: string, label: string }>>}
+ */
+async function fetchPeopleParticipationAppOptions() {
+  try {
+    const res = await fetchCoreModulesSettingsCached();
+    const modules = res?.modules || res?.data?.modules || [];
+    const people = modules.find(
+      (m) => String(m.moduleKey || m.key || '').toLowerCase() === 'people'
+    );
+    const apps = Array.isArray(people?.applications) ? people.applications : [];
+    const fromCore = apps
+      .filter((a) => a && a.enabled !== false)
+      .map((a) => {
+        const value = String(a.appKey || '').toUpperCase();
+        if (!value) return null;
+        return {
+          value,
+          label: String(a.appName || APP_LABEL_FALLBACK[value] || value)
+        };
+      })
+      .filter(Boolean);
+    if (fromCore.length) return fromCore;
+  } catch {
+    /* fall through */
   }
 
-  const key = String(field?.key || '').toLowerCase();
-  if (!options.length && key === 'stage' && Array.isArray(moduleDoc?.pipelineSettings)) {
+  return PEOPLE_PARTICIPATION_APP_KEYS.map((value) => ({
+    value,
+    label: APP_LABEL_FALLBACK[value] || value
+  }));
+}
+
+/** Common picklist fallbacks when module metadata lacks options. */
+const MODULE_FIELD_OPTION_FALLBACKS = {
+  people: {
+    salutation: ['Mr.', 'Ms.', 'Mrs.', 'Dr.', 'Prof.', 'Mx.', 'Other'],
+    lead_status: ['New', 'Contacted', 'Qualified', 'Disqualified', 'Nurturing', 'Re-Engage'],
+    contact_status: ['Active', 'Inactive', 'DoNotContact'],
+    role: ['Decision Maker', 'Influencer', 'Support', 'Other'],
+    preferred_contact_method: ['Email', 'Phone', 'WhatsApp', 'SMS', 'None'],
+    sales_type: ['Lead', 'Contact'],
+    helpdesk_role: ['Customer', 'Agent'],
+    lifecycle: ['Lead', 'Contact', 'Customer', 'Partner', 'Vendor', 'Inactive']
+  },
+  organizations: {
+    customerStatus: ['Prospect', 'Active', 'On Hold', 'At Risk', 'Inactive', 'Churned'],
+    partnerStatus: ['Invited', 'Onboarding', 'Active', 'Paused', 'Inactive'],
+    vendorStatus: ['Prospect', 'Onboarding', 'Approved', 'Suspended', 'Inactive', 'Rejected']
+  },
+  deals: {
+    status: ['Open', 'Won', 'Lost'],
+    priority: ['Low', 'Medium', 'High', 'Urgent'],
+    type: ['New Business', 'Existing Customer', 'Existing Business', 'Upsell', 'Renewal', 'Cross-Sell']
+  },
+  tasks: {
+    status: ['todo', 'in_progress', 'waiting', 'completed', 'cancelled'],
+    priority: ['low', 'medium', 'high', 'urgent']
+  },
+  cases: {
+    priority: ['Low', 'Medium', 'High', 'Critical'],
+    status: ['New', 'Assigned', 'In Progress', 'On Hold', 'Waiting for Customer', 'Resolved', 'Closed'],
+    caseType: ['Support Ticket', 'Complaint', 'Service Request', 'Warranty Claim', 'Internal Case'],
+    channel: ['Email', 'Live Chat', 'Phone', 'Customer Portal', 'Partner Portal', 'Internal']
+  }
+};
+
+function toOption(opt) {
+  if (opt == null || opt === '') return null;
+  if (typeof opt === 'string' || typeof opt === 'number' || typeof opt === 'boolean') {
+    const value = String(opt);
+    return { value, label: value };
+  }
+  if (typeof opt === 'object') {
+    const value = opt.value ?? opt.key ?? opt.name ?? opt.label ?? '';
+    if (value === '' || value == null) return null;
+    const label = opt.label ?? opt.name ?? opt.value ?? value;
+    return { value: String(value), label: String(label) };
+  }
+  return null;
+}
+
+function normalizeFieldOptions(field, moduleDoc, moduleKey) {
+  const candidates = [
+    field?.options,
+    field?.enum,
+    field?.picklistOptions,
+    field?.allowedValues,
+    field?.values
+  ];
+
+  let options = [];
+  for (const raw of candidates) {
+    if (!Array.isArray(raw) || !raw.length) continue;
+    options = raw.map(toOption).filter(Boolean);
+    if (options.length) break;
+  }
+
+  const key = String(field?.key || '');
+  const keyLower = key.toLowerCase();
+
+  if (!options.length && keyLower === 'stage' && Array.isArray(moduleDoc?.pipelineSettings)) {
     const names = new Set();
     for (const pipeline of moduleDoc.pipelineSettings) {
       for (const stage of pipeline.stages || []) {
@@ -31,22 +130,81 @@ function normalizeFieldOptions(field, moduleDoc) {
     options = [...names].sort().map((name) => ({ value: name, label: name }));
   }
 
+  if (!options.length && keyLower === 'pipeline' && Array.isArray(moduleDoc?.pipelineSettings)) {
+    options = moduleDoc.pipelineSettings
+      .map((p) => {
+        const value = p?.key || p?.name;
+        if (!value) return null;
+        return { value: String(value), label: String(p?.name || value) };
+      })
+      .filter(Boolean);
+  }
+
+  if (!options.length) {
+    const fallbacks = MODULE_FIELD_OPTION_FALLBACKS[moduleKey]?.[key]
+      || MODULE_FIELD_OPTION_FALLBACKS[moduleKey]?.[keyLower];
+    if (Array.isArray(fallbacks) && fallbacks.length) {
+      options = fallbacks.map((v) => ({ value: String(v), label: String(v) }));
+    }
+  }
+
   return options;
 }
 
-function inferValueInputType(fieldMeta) {
-  if (!fieldMeta) return 'text';
-  if (fieldMeta.options?.length) return 'select';
+function normalizeDataType(raw) {
+  return String(raw || '')
+    .toLowerCase()
+    .replace(/[\s_-]+/g, '');
+}
 
-  const t = String(fieldMeta.dataType || '').toLowerCase();
-  if (t.includes('picklist') || t.includes('select') || t.includes('enum') || t.includes('dropdown')) {
-    return fieldMeta.options?.length ? 'select' : 'text';
+/**
+ * Map module field dataType → value control type.
+ * @returns {'select'|'number'|'boolean'|'date'|'datetime'|'text'}
+ */
+export function inferValueInputType(fieldMeta) {
+  if (!fieldMeta) return 'text';
+
+  const t = normalizeDataType(fieldMeta.dataType || fieldMeta.type);
+
+  if (
+    t.includes('multipicklist') ||
+    t === 'multiselect' ||
+    t === 'tags'
+  ) {
+    return 'multi-select';
   }
-  if (t.includes('number') || t.includes('currency') || t.includes('decimal') || t.includes('integer')) {
+
+  if (Array.isArray(fieldMeta.options) && fieldMeta.options.length) return 'select';
+
+  if (
+    t.includes('picklist') ||
+    t.includes('radiobutton') ||
+    t === 'radio' ||
+    t === 'select' ||
+    t === 'enum' ||
+    t === 'dropdown'
+  ) {
+    return 'select';
+  }
+  if (
+    t.includes('number') ||
+    t.includes('currency') ||
+    t.includes('decimal') ||
+    t.includes('integer') ||
+    t.includes('percent') ||
+    t === 'int' ||
+    t === 'float'
+  ) {
     return 'number';
   }
   if (t.includes('boolean') || t.includes('checkbox')) {
     return 'boolean';
+  }
+  if (t.includes('datetime')) {
+    return 'datetime';
+  }
+  if (t === 'date' || (t.includes('date') && !t.includes('time'))) {
+    return 'date';
   }
   return 'text';
 }
@@ -75,28 +233,48 @@ export function useProcessModuleFields(entityTypeRef) {
     loading.value = true;
     loadError.value = null;
     try {
-      const res = await apiClient.get('/modules', { params: { key } });
-      if (!res?.success || !Array.isArray(res.data) || !res.data[0]) {
-        fieldMetaByKey.value = {};
-        return;
-      }
-
-      const mod = res.data[0];
+      const { moduleRow, fields } = await fetchWebformModuleDefinition(key);
+      const participationApps =
+        key === 'people' ? await fetchPeopleParticipationAppOptions() : [];
       const map = {};
-      for (const f of mod.fields || []) {
+      for (const f of fields || []) {
         const fieldKey = f?.key;
         if (!fieldKey) continue;
-        const options = normalizeFieldOptions(f, mod);
-        const entry = {
+        const keyLower = String(fieldKey).toLowerCase();
+        let options = normalizeFieldOptions(f, moduleRow, key);
+        let dataType = f.dataType || f.type || 'Text';
+        let valueInputType = 'text';
+
+        // People.participations → multi-picklist of Types → Application apps
+        if (key === 'people' && keyLower === 'participations') {
+          options = participationApps;
+          dataType = 'Multi-Picklist';
+          valueInputType = 'multi-select';
+        } else {
+          const entryProbe = { dataType, type: f.type, options };
+          valueInputType = inferValueInputType(entryProbe);
+        }
+
+        map[fieldKey] = {
           key: fieldKey,
           label: f.label || fieldKey,
-          dataType: f.dataType || f.type || 'Text',
+          dataType,
           options,
-          valueInputType: 'text'
+          valueInputType
         };
-        entry.valueInputType = inferValueInputType(entry);
-        map[fieldKey] = entry;
       }
+
+      // Ensure participations exists even if omitted from module field list
+      if (key === 'people' && !map.participations && !Object.keys(map).some((k) => k.toLowerCase() === 'participations')) {
+        map.participations = {
+          key: 'participations',
+          label: 'Participations',
+          dataType: 'Multi-Picklist',
+          options: participationApps,
+          valueInputType: 'multi-select'
+        };
+      }
+
       fieldMetaByKey.value = map;
     } catch (e) {
       loadError.value = e.message || 'Failed to load module fields';

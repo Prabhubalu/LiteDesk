@@ -7,7 +7,8 @@
       :nodes-draggable="editable && !graphState"
       :nodes-connectable="editable && !graphState"
       :elements-selectable="true"
-      :delete-key-code="editable ? 'Delete' : null"
+      :elevate-edges-on-select="true"
+      :delete-key-code="editable && !graphState ? ['Backspace', 'Delete'] : null"
       fit-view-on-init
       @nodes-change="onNodesChange"
       @edges-change="onEdgesChange"
@@ -101,7 +102,9 @@ function onNodesChange(changes) {
 
 function onEdgesChange(changes) {
   edges.value = applyEdgeChanges(changes, edges.value);
-  emit('graph-changed');
+  if (changes.some((c) => c.type === 'remove' || c.type === 'add')) {
+    emit('graph-changed');
+  }
 }
 
 function onConnect(connection) {
@@ -119,9 +122,12 @@ function onConnect(connection) {
     ...connection,
     id: generateId('edge'),
     label: condition === true ? t('process.edgeYes') : condition === false ? t('process.edgeNo') : undefined,
-    data: { condition }
+    data: { condition },
+    selectable: true,
+    deletable: true
   };
   edges.value = addEdge(edge, edges.value);
+  emit('graph-changed');
 }
 
 function onNodeClick({ node }) {

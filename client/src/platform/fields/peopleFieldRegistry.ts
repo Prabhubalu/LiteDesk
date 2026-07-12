@@ -22,7 +22,7 @@ type ParticipationsShape = Record<string, Record<string, unknown>>;
 
 const salesTypeField: PeopleFieldRegistryItem = {
   key: 'sales_type',
-  label: 'Type',
+  label: 'Sales Type',
   appKey: 'SALES',
   isVirtual: true,
   defaultPicklistOptions: ['Lead', 'Contact'],
@@ -60,7 +60,7 @@ const registry: Record<string, PeopleFieldRegistryItem> = {
 
   helpdesk_role: {
     key: 'helpdesk_role',
-    label: 'Role',
+    label: 'Helpdesk Type',
     appKey: 'HELPDESK',
     isVirtual: true,
     defaultPicklistOptions: ['Customer', 'Agent'],

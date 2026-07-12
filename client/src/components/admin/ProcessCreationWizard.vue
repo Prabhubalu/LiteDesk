@@ -99,6 +99,7 @@
                 allow-empty
                 :empty-label="t('process.phSelectApp')"
                 :button-class="WIZARD_SELECT_BUTTON_CLASS"
+                @update:model-value="onAppChange"
               />
             </div>
 
@@ -110,7 +111,8 @@
                 v-model="wizardData.entityType"
                 :options="moduleOptions"
                 allow-empty
-                :empty-label="t('process.phSelectModule')"
+                :empty-label="modulePlaceholder"
+                :disabled="!wizardData.appKey"
                 :button-class="WIZARD_SELECT_BUTTON_CLASS"
                 @update:model-value="onModuleChange"
               />
@@ -130,7 +132,7 @@
                 :button-class="WIZARD_SELECT_BUTTON_CLASS"
               />
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ startsWhenHint }}</p>
-              <div v-if="wizardData.coreTrigger === 'record_updated' && wizardData.entityType" class="mt-3">
+              <div v-if="(wizardData.coreTrigger === 'record_updated' || wizardData.coreTrigger === 'record_created_or_updated') && wizardData.entityType" class="mt-3">
                 <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('process.fieldWatchChanges') }}</label>
                 <HeadlessSelect
                   v-model="wizardData.updateWatchField"
@@ -618,6 +620,7 @@ import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import {
   getAppOptions,
   getModuleOptions,
+  loadProcessScopeFromRegistry,
   WIZARD_SELECT_BUTTON_CLASS,
   coreTriggerOptions,
   getSchedulePresetOptions,
@@ -630,6 +633,15 @@ import {
 } from '@/utils/processDesignerConstants';
 
 const { t } = useI18n();
+const registryAppOptions = ref([]);
+const registryModulesByApp = ref({});
+
+loadProcessScopeFromRegistry(t)
+  .then((scope) => {
+    registryAppOptions.value = scope.appOptions;
+    registryModulesByApp.value = scope.modulesByApp;
+  })
+  .catch((e) => console.error('Failed to load process scope from registry', e));
 
 const wizardConditionOperatorOptions = computed(() => [
   { value: 'equals', label: t('process.opEquals') },
@@ -725,11 +737,22 @@ const wizardData = ref({
   }
 });
 
-const appOptions = computed(() => getAppOptions(t));
-const moduleOptions = computed(() => getModuleOptions(t));
+const appOptions = computed(() =>
+  registryAppOptions.value.length ? registryAppOptions.value : getAppOptions(t)
+);
+const moduleOptions = computed(() => {
+  const key = String(wizardData.value.appKey || '').toUpperCase();
+  if (key && registryModulesByApp.value[key]) return registryModulesByApp.value[key];
+  return getModuleOptions(t, wizardData.value.appKey);
+});
 const coreTriggerOptionsList = computed(() => coreTriggerOptions(t));
 const schedulePresetOptions = computed(() => getSchedulePresetOptions(t));
 const wizardWatchFieldOptions = computed(() => updateWatchFieldOptions(wizardData.value.entityType, t));
+
+const modulePlaceholder = computed(() => {
+  if (!wizardData.value.appKey) return t('process.settingsSelectAppFirst');
+  return t('process.phSelectModule');
+});
 
 const startsWhenPlaceholder = computed(() => {
   if (!wizardData.value.entityType) return t('process.settingsSelectModuleFirst');
@@ -758,6 +781,11 @@ const scopeSummary = computed(() => {
   );
   return `${app} · ${mod} — ${when}`;
 });
+
+function onAppChange() {
+  wizardData.value.entityType = '';
+  wizardData.value.coreTrigger = '';
+}
 
 function onModuleChange() {
   if (!wizardData.value.entityType) {
@@ -886,7 +914,7 @@ const generateProcessDefinition = () => {
     const triggerConfig =
       applied.type === 'domain_event'
         ? { eventType: applied.eventType, triggerKind: 'domain_event' }
-        : { triggerKind: 'webhook' };
+        : { triggerKind: applied.type };
     nodes.push({
       id: triggerNodeId,
       type: 'trigger',

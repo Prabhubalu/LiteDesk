@@ -2562,6 +2562,8 @@ const genericAdapter = computed(() => {
           record.value[payloadKey] = value;
         }
       }
+      // One delayed soft GET — picks up process/assignment side-effects without polling
+      scheduleSoftRecordRefresh(500);
       await syncRelatedRecordsForLookupField(payloadKey, coordinationValue ?? value);
       await refreshRecordActivity();
     },
@@ -3573,6 +3575,44 @@ function handleSectionUpdated(event) {
   fetchRecord({ preserveScroll: true, soft: true });
 }
 
+/** Debounced soft refetch when SSE says this open record changed (process / other tab). */
+let softRefreshTimer = null;
+let softRefreshFollowUpTimer = null;
+function scheduleSoftRecordRefresh(delayMs = 350) {
+  if (!props.recordId || props.recordId === 'new') return;
+  if (softRefreshTimer) clearTimeout(softRefreshTimer);
+  softRefreshTimer = setTimeout(() => {
+    softRefreshTimer = null;
+    void fetchRecord({ preserveScroll: true, soft: true });
+    // Second pass for async process/assignment writes (still only 2 GETs, no polling loop)
+    if (softRefreshFollowUpTimer) clearTimeout(softRefreshFollowUpTimer);
+    softRefreshFollowUpTimer = setTimeout(() => {
+      softRefreshFollowUpTimer = null;
+      void fetchRecord({ preserveScroll: true, soft: true });
+    }, 1200);
+  }, delayMs);
+}
+
+function moduleKeyAliasesMatch(a, b) {
+  const canon = (k) => {
+    const x = String(k || '').toLowerCase();
+    if (x === 'organization') return 'organizations';
+    if (x === 'deal') return 'deals';
+    if (x === 'quote') return 'quotes';
+    if (x === 'case') return 'cases';
+    return x;
+  };
+  return canon(a) === canon(b);
+}
+
+function onArivuDataChange(event) {
+  const detail = event?.detail;
+  if (!detail?.recordId || !detail?.moduleKey) return;
+  if (String(detail.recordId) !== String(props.recordId)) return;
+  if (!moduleKeyAliasesMatch(detail.moduleKey, props.moduleKey)) return;
+  scheduleSoftRecordRefresh(detail.op === 'create' ? 0 : 400);
+}
+
 async function fetchRecord(options = {}) {
   const preserveScroll = options.preserveScroll === true;
   const soft = options.soft === true;
@@ -3600,7 +3640,7 @@ async function fetchRecord(options = {}) {
     const moduleContext = moduleFetchContextForRecord();
     const modulesParams = moduleContext ? { context: moduleContext } : {};
     const [recordRes, modulesRes] = await Promise.all([
-      apiClient.get(`${recordCrudPathBase.value}/${props.recordId}`),
+      apiClient.get(`${recordCrudPathBase.value}/${props.recordId}`, { cache: 'no-store' }),
       fetchModulesListCached(modulesParams)
     ]);
 
@@ -4874,6 +4914,9 @@ const detachRecordGlobalListeners = () => {
 onMounted(() => {
   fetchRecord();
   syncEmojiPickerTheme();
+  if (typeof window !== 'undefined') {
+    window.addEventListener('arivu:data-change', onArivuDataChange);
+  }
   if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
     emojiThemeObserver = new MutationObserver(() => syncEmojiPickerTheme());
     emojiThemeObserver.observe(document.documentElement, {
@@ -4910,6 +4953,17 @@ onBeforeUnmount(() => {
   detachRecordGlobalListeners();
   closeCommentReactionPicker();
   cleanupCommentReactionTooltip();
+  if (softRefreshTimer) {
+    clearTimeout(softRefreshTimer);
+    softRefreshTimer = null;
+  }
+  if (softRefreshFollowUpTimer) {
+    clearTimeout(softRefreshFollowUpTimer);
+    softRefreshFollowUpTimer = null;
+  }
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('arivu:data-change', onArivuDataChange);
+  }
   if (emojiThemeObserver) {
     emojiThemeObserver.disconnect();
     emojiThemeObserver = null;

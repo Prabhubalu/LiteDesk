@@ -25,6 +25,12 @@ const Process = require('../models/Process');
 const ProcessExecution = require('../models/ProcessExecution');
 const { buildExecutionContext } = require('./processExecutionContext');
 const { executeNode } = require('./processNodeHandlers');
+const {
+  snapshotRecordBinding,
+  restoreRecordBinding,
+  bindFetchedRecord,
+  findForEachEndNodeId
+} = require('../utils/processForEachControl');
 const { createLogger } = require('./automationLogger');
 const { subscribe } = require('./domainEvents');
 const { startProcess } = require('./processInvocation');
@@ -53,7 +59,11 @@ function validateProcess(process) {
   }
 
   // Validate node types
-  const validNodeTypes = ['trigger', 'condition', 'action', 'data_mapping', 'end', 'field_rule', 'ownership_rule', 'status_guard', 'approval_gate', 'wait'];
+  const validNodeTypes = [
+    'trigger', 'condition', 'action', 'data_mapping', 'end',
+    'field_rule', 'ownership_rule', 'status_guard', 'approval_gate', 'wait',
+    'for_each', 'for_each_end'
+  ];
   for (const node of process.nodes) {
     if (!validNodeTypes.includes(node.type)) {
       return { valid: false, error: `Unsupported node type: ${node.type}` };
@@ -209,6 +219,8 @@ async function executeProcess(params) {
       }
     } else if (process.trigger.type === 'manual') {
       // Manual trigger - no event validation needed
+    } else if (process.trigger.type === 'schedule') {
+      // Schedule runs are started by the process schedule runner
     } else if (process.trigger.type === 'webhook') {
       return { ok: false, error: 'Webhook processes must be started via the webhook endpoint' };
     } else {
@@ -273,9 +285,10 @@ async function executeProcess(params) {
     // Build node map for quick lookup
     const nodeMap = new Map(process.nodes.map(n => [n.id, n]));
 
-    // Execute nodes sequentially
+    // Execute nodes sequentially (for_each expands into per-record passes)
     let currentNode = startNode;
     let executionComplete = false;
+    context._forEachStack = [];
 
     while (!executionComplete && currentNode) {
       // Update execution record with current node
@@ -283,6 +296,153 @@ async function executeProcess(params) {
         { _id: execution._id },
         { currentNodeId: currentNode.id }
       );
+
+      // ---- For each: bind first item and enter body ----
+      if (currentNode.type === 'for_each') {
+        const variableName =
+          currentNode.config?.variableName != null
+            ? String(currentNode.config.variableName).trim()
+            : 'records';
+        const bag = context.dataBag && typeof context.dataBag === 'object' ? context.dataBag : {};
+        const items = Array.isArray(bag[variableName]) ? bag[variableName] : null;
+        if (!items) {
+          await ProcessExecution.updateOne(
+            { _id: execution._id },
+            {
+              status: 'failed',
+              error: `for_each: dataBag.${variableName} is not an array (run Fetch records first)`,
+              completedAt: new Date()
+            }
+          );
+          return {
+            ok: false,
+            error: `for_each: dataBag.${variableName} is not an array`,
+            executionId: context.executionId
+          };
+        }
+
+        const bodyStartId = findNextNode(currentNode.id, process.edges || []);
+        const endNodeId = findForEachEndNodeId(bodyStartId, process.edges || [], nodeMap);
+        if (!bodyStartId || !endNodeId) {
+          await ProcessExecution.updateOne(
+            { _id: execution._id },
+            {
+              status: 'failed',
+              error:
+                'for_each requires a loop body ending in an "End for each" step (connect For each → steps → End for each)',
+              completedAt: new Date()
+            }
+          );
+          return {
+            ok: false,
+            error: 'for_each requires a matching for_each_end',
+            executionId: context.executionId
+          };
+        }
+
+        const afterEndId = findNextNode(endNodeId, process.edges || []);
+        const moduleKey =
+          (currentNode.config?.moduleKey && String(currentNode.config.moduleKey).trim()) ||
+          bag[`${variableName}__meta`]?.moduleKey ||
+          context.entityType;
+
+        if (!items.length) {
+          currentNode = afterEndId ? nodeMap.get(afterEndId) : null;
+          if (!currentNode) executionComplete = true;
+          continue;
+        }
+
+        if (context._forEachStack.length >= 10) {
+          await ProcessExecution.updateOne(
+            { _id: execution._id },
+            {
+              status: 'failed',
+              error: 'for_each nesting too deep (max 10)',
+              completedAt: new Date()
+            }
+          );
+          return {
+            ok: false,
+            error: 'for_each nesting too deep (max 10)',
+            executionId: context.executionId
+          };
+        }
+
+        context._forEachStack.push({
+          forEachNodeId: currentNode.id,
+          variableName,
+          items,
+          index: 0,
+          bodyStartId,
+          endNodeId,
+          afterEndId,
+          moduleKey,
+          saved: snapshotRecordBinding(context)
+        });
+        bindFetchedRecord(context, items[0], moduleKey, 0, items.length);
+        log.info('for_each_started', {
+          executionId: context.executionId,
+          variableName,
+          count: items.length,
+          moduleKey,
+          nestDepth: context._forEachStack.length
+        });
+        currentNode = nodeMap.get(bodyStartId);
+        continue;
+      }
+
+      // ---- End for each: next item or exit loop ----
+      if (currentNode.type === 'for_each_end') {
+        const stack = context._forEachStack;
+        const frame = stack.length ? stack[stack.length - 1] : null;
+        if (!frame) {
+          // No active loop — treat as no-op pass-through
+          const nextId = findNextNode(currentNode.id, process.edges || []);
+          currentNode = nextId ? nodeMap.get(nextId) : null;
+          if (!currentNode) executionComplete = true;
+          continue;
+        }
+        if (frame.endNodeId !== currentNode.id) {
+          await ProcessExecution.updateOne(
+            { _id: execution._id },
+            {
+              status: 'failed',
+              error:
+                'for_each_end does not match the active for_each — check nested For each / End for each pairing',
+              completedAt: new Date()
+            }
+          );
+          return {
+            ok: false,
+            error: 'for_each_end does not match the active for_each',
+            executionId: context.executionId
+          };
+        }
+
+        frame.index += 1;
+        if (frame.index < frame.items.length) {
+          bindFetchedRecord(
+            context,
+            frame.items[frame.index],
+            frame.moduleKey,
+            frame.index,
+            frame.items.length
+          );
+          currentNode = nodeMap.get(frame.bodyStartId);
+          continue;
+        }
+
+        restoreRecordBinding(context, frame.saved);
+        stack.pop();
+        log.info('for_each_completed', {
+          executionId: context.executionId,
+          variableName: frame.variableName,
+          count: frame.items.length
+        });
+        currentNode = frame.afterEndId ? nodeMap.get(frame.afterEndId) : null;
+        if (!currentNode) executionComplete = true;
+        continue;
+      }
 
       // Execute current node
       const result = await executeNode(currentNode, context, process.edges || []);
@@ -319,21 +479,16 @@ async function executeProcess(params) {
       if (result.nextNodeId) {
         nextNodeId = result.nextNodeId;
       } else if (currentNode.type === 'condition') {
-        // Condition node should have provided nextNodeId
-        // If not, we can't continue
         nextNodeId = null;
       } else {
-        // For other nodes, find next via edges
         nextNodeId = findNextNode(currentNode.id, process.edges || []);
       }
 
       if (!nextNodeId) {
-        // No next node - execution complete
         executionComplete = true;
         break;
       }
 
-      // Move to next node
       currentNode = nodeMap.get(nextNodeId);
       if (!currentNode) {
         await ProcessExecution.updateOne(
@@ -405,36 +560,101 @@ async function executeByEvent(event) {
     return { ok: false, error: 'Invalid domain event' };
   }
 
-  // Find all active processes that match this event
-  const matchingProcesses = await Process.find({
-    status: 'active',
-    'trigger.type': 'domain_event',
-    'trigger.eventType': event.eventType,
-    appKey: event.appKey || { $exists: true }
-  }).lean();
+  const run = async () => {
+    // Find all active processes that match this event
+    // Closed-record gate runs inside startProcess (loads entity from DB).
+    const { matchesUpdateWatch, domainEventProcessMatchFilter } = require('../utils/processTriggerUtils');
 
-  const { matchesUpdateWatch } = require('../utils/processTriggerUtils');
+    const matchingProcesses = await Process.find({
+      status: 'active',
+      'trigger.type': 'domain_event',
+      ...domainEventProcessMatchFilter(event.eventType)
+    }).lean();
 
-  const results = [];
-  for (const process of matchingProcesses) {
-    if (process.entityType && event.entityType && process.entityType !== event.entityType) {
-      continue;
+    const results = [];
+    for (const process of matchingProcesses) {
+      // App scope: PLATFORM processes receive all apps; otherwise require matching appKey
+      const processApp = String(process.appKey || '').toUpperCase();
+      const eventApp = String(event.appKey || '').toUpperCase();
+      if (processApp && processApp !== 'PLATFORM' && eventApp && processApp !== eventApp) {
+        results.push({
+          processId: process._id.toString(),
+          ok: true,
+          skipped: true,
+          reason: 'appKey_mismatch'
+        });
+        continue;
+      }
+      if (process.entityType && event.entityType && process.entityType !== event.entityType) {
+        results.push({
+          processId: process._id.toString(),
+          ok: true,
+          skipped: true,
+          reason: 'entityType_mismatch'
+        });
+        continue;
+      }
+      if (!matchesUpdateWatch(process.trigger, event)) {
+        results.push({
+          processId: process._id.toString(),
+          ok: true,
+          skipped: true,
+          reason: 'updateWatch_mismatch',
+          changedFields: event.changedFields || []
+        });
+        continue;
+      }
+      const result = await startProcess({
+        processId: process._id.toString(),
+        event
+      });
+      results.push({ processId: process._id.toString(), ...result });
     }
-    if (!matchesUpdateWatch(process.trigger, event)) {
-      continue;
+
+    if (matchingProcesses.length === 0) {
+      log.info('process_executor_no_match', {
+        eventType: event.eventType,
+        entityType: event.entityType,
+        entityId: event.entityId,
+        organizationId: event.organizationId,
+        appKey: event.appKey,
+        changedFields: event.changedFields || []
+      });
+    } else {
+      log.info('process_executor_event_matched', {
+        eventType: event.eventType,
+        matched: matchingProcesses.length,
+        results: results.map((r) => ({
+          processId: r.processId,
+          ok: r.ok,
+          skipped: r.skipped,
+          reason: r.reason,
+          error: r.error,
+          executionId: r.executionId
+        }))
+      });
     }
-    const result = await startProcess({
-      processId: process._id.toString(),
-      event
-    });
-    results.push({ processId: process._id.toString(), ...result });
+
+    return {
+      ok: true,
+      processesMatched: matchingProcesses.length,
+      results
+    };
+  };
+
+  if (event.organizationId) {
+    try {
+      const { runWithOrganizationTenantContext } = require('../utils/runWithOrganizationTenant');
+      return await runWithOrganizationTenantContext(event.organizationId, run);
+    } catch (err) {
+      log.error('process_executor_tenant_bind_failed', {
+        organizationId: event.organizationId,
+        error: err.message
+      });
+    }
   }
 
-  return {
-    ok: true,
-    processesMatched: matchingProcesses.length,
-    results
-  };
+  return run();
 }
 
 /**

@@ -35,14 +35,36 @@ export const ENTITY_TYPE_TO_MODULE_KEY = {
   people: 'people',
   organization: 'organizations',
   deal: 'deals',
-  quote: 'quotes'
+  quote: 'quotes',
+  live_chat_session: 'live_chat_sessions'
 };
 
-const CORE_TRIGGER_VALUES = ['record_created', 'record_updated', 'schedule', 'webhook', 'manual'];
+/** Registry moduleKey → process entityType (legacy singular forms kept for CRM entities). */
+const MODULE_KEY_TO_ENTITY_TYPE = {
+  people: 'people',
+  organizations: 'organization',
+  organization: 'organization',
+  deals: 'deal',
+  deal: 'deal',
+  quotes: 'quote',
+  quote: 'quote',
+  live_chat_sessions: 'live_chat_session',
+  live_chat_session: 'live_chat_session'
+};
+
+const CORE_TRIGGER_VALUES = [
+  'record_created',
+  'record_updated',
+  'record_created_or_updated',
+  'schedule',
+  'webhook',
+  'manual'
+];
 
 const CORE_TRIGGER_DESC_KEYS = {
   record_created: 'process.designerTriggerDescRecordCreated',
   record_updated: 'process.designerTriggerDescRecordUpdated',
+  record_created_or_updated: 'process.designerTriggerDescRecordCreatedOrUpdated',
   schedule: 'process.designerTriggerDescSchedule',
   webhook: 'process.designerTriggerDescWebhook',
   manual: 'process.designerTriggerDescManual'
@@ -52,31 +74,173 @@ const MODULE_SINGULAR_KEYS = {
   people: 'process.designerModulePerson',
   organization: 'process.designerModuleOrganization',
   deal: 'process.designerModuleDeal',
-  quote: 'process.designerModuleQuote'
+  quote: 'process.designerModuleQuote',
+  live_chat_session: 'process.designerModuleLiveChat'
 };
 
-export function getAppOptions(t) {
-  return [
-    { value: 'SALES', label: t('process.designerAppSales') },
-    { value: 'AUDIT', label: t('process.designerAppAudit') },
-    { value: 'PORTAL', label: t('process.designerAppPortal') }
-  ];
+const FALLBACK_APP_I18N = {
+  PLATFORM: 'process.designerAppCore',
+  SALES: 'process.designerAppSales',
+  AUDIT: 'process.designerAppAudit',
+  PORTAL: 'process.designerAppPortal',
+  HELPDESK: 'process.designerAppHelpdesk'
+};
+
+const FALLBACK_MODULE_I18N = {
+  people: 'process.designerModulePeople',
+  organization: 'process.designerModuleOrganization',
+  deal: 'process.designerModuleDeal',
+  quote: 'process.designerModuleQuote',
+  live_chat_session: 'process.designerModuleLiveChat'
+};
+
+/** @type {{ appOptions: Array<{value: string, label: string}>, modulesByApp: Record<string, Array<{value: string, label: string}>> } | null} */
+let processScopeCache = null;
+
+export function moduleKeyToEntityType(moduleKey) {
+  const key = String(moduleKey || '').toLowerCase();
+  return MODULE_KEY_TO_ENTITY_TYPE[key] || key;
 }
 
-export function getModuleOptions(t) {
-  return [
-    { value: 'people', label: t('process.designerModulePeople') },
-    { value: 'organization', label: t('process.designerModuleOrganization') },
-    { value: 'deal', label: t('process.designerModuleDeal') },
-    { value: 'quote', label: t('process.designerModuleQuote') }
-  ];
+function fallbackAppOptions(t) {
+  return Object.entries(FALLBACK_APP_I18N).map(([value, key]) => ({
+    value,
+    label: t(key)
+  }));
+}
+
+function fallbackModuleOption(t, entityType) {
+  return {
+    value: entityType,
+    label: t(FALLBACK_MODULE_I18N[entityType] || 'process.designerModuleUnknown')
+  };
+}
+
+/**
+ * Load apps + modules from tenant app registry (source of truth).
+ * PLATFORM is labeled Core. Core modules also merge GET /settings/core-modules.
+ */
+export async function loadProcessScopeFromRegistry(t) {
+  const { getAppRegistry } = await import('@/utils/getAppRegistry');
+  const { fetchCoreModulesSettingsCached } = await import('@/utils/tenantSchemaApiCache');
+  const registry = await getAppRegistry();
+  const appOptions = [];
+  const modulesByApp = {};
+
+  for (const entry of Object.values(registry || {})) {
+    if (!entry?.appKey) continue;
+    const appKey = String(entry.appKey).toUpperCase();
+    if (modulesByApp[appKey]) continue;
+
+    const label =
+      appKey === 'PLATFORM'
+        ? t('process.designerAppCore')
+        : FALLBACK_APP_I18N[appKey]
+          ? t(FALLBACK_APP_I18N[appKey])
+          : entry.label || entry.name || appKey;
+
+    appOptions.push({
+      value: appKey,
+      label,
+      order: typeof entry.order === 'number' ? entry.order : 999
+    });
+
+    const seen = new Set();
+    const modules = [];
+    for (const mod of entry.modules || []) {
+      if (!mod?.moduleKey) continue;
+      if (mod.showInSidebar === false) continue;
+      const entityType = moduleKeyToEntityType(mod.moduleKey);
+      if (!entityType || seen.has(entityType)) continue;
+      seen.add(entityType);
+      modules.push({
+        value: entityType,
+        label: mod.label || mod.moduleKey
+      });
+    }
+    modulesByApp[appKey] = modules;
+  }
+
+  // Core = platform-owned modules from settings (people, orgs, tasks, events, …)
+  try {
+    const coreRes = await fetchCoreModulesSettingsCached();
+    const coreModules = Array.isArray(coreRes?.modules) ? coreRes.modules : [];
+    const seen = new Set((modulesByApp.PLATFORM || []).map((m) => m.value));
+    const merged = [...(modulesByApp.PLATFORM || [])];
+    for (const mod of coreModules) {
+      if (!mod?.platformOwned || !mod?.moduleKey) continue;
+      if (mod.enabled === false) continue;
+      const entityType = moduleKeyToEntityType(mod.moduleKey);
+      if (!entityType || seen.has(entityType)) continue;
+      seen.add(entityType);
+      merged.push({
+        value: entityType,
+        label: mod.label || mod.moduleKey
+      });
+    }
+    merged.sort((a, b) => a.label.localeCompare(b.label));
+    modulesByApp.PLATFORM = merged;
+
+    if (!appOptions.some((a) => a.value === 'PLATFORM')) {
+      appOptions.unshift({
+        value: 'PLATFORM',
+        label: t('process.designerAppCore'),
+        order: 0
+      });
+    }
+  } catch (e) {
+    console.warn('[loadProcessScopeFromRegistry] core-modules merge skipped', e);
+  }
+
+  for (const key of Object.keys(modulesByApp)) {
+    modulesByApp[key].sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  appOptions.sort((a, b) => {
+    if (a.value === 'PLATFORM') return -1;
+    if (b.value === 'PLATFORM') return 1;
+    if (a.order !== b.order) return a.order - b.order;
+    return a.label.localeCompare(b.label);
+  });
+
+  processScopeCache = {
+    appOptions: appOptions.map(({ value, label }) => ({ value, label })),
+    modulesByApp
+  };
+  return processScopeCache;
+}
+
+export function getAppOptions(t) {
+  if (processScopeCache?.appOptions?.length) return processScopeCache.appOptions;
+  return fallbackAppOptions(t);
+}
+
+/**
+ * Modules for the process Module dropdown.
+ * @param {Function} t
+ * @param {string} [appKey] — when set, only modules under that app
+ */
+export function getModuleOptions(t, appKey) {
+  const key = appKey ? String(appKey).toUpperCase() : '';
+  if (processScopeCache?.modulesByApp) {
+    if (key) return processScopeCache.modulesByApp[key] || [];
+    return Object.values(processScopeCache.modulesByApp).flat();
+  }
+  if (!key) {
+    return Object.keys(FALLBACK_MODULE_I18N).map((entityType) => fallbackModuleOption(t, entityType));
+  }
+  return [];
 }
 
 export function getModuleLabel(t, entityType, { plural = false } = {}) {
   if (plural) {
     return getModuleOptions(t).find((m) => m.value === entityType)?.label || entityType;
   }
-  return t(MODULE_SINGULAR_KEYS[entityType] || 'process.designerModuleRecordFallback');
+  if (MODULE_SINGULAR_KEYS[entityType]) {
+    return t(MODULE_SINGULAR_KEYS[entityType]);
+  }
+  const fromRegistry = getModuleOptions(t).find((m) => m.value === entityType)?.label;
+  return fromRegistry || t('process.designerModuleRecordFallback');
 }
 
 /** Layer 1 — only top-level “Starts when” options */
@@ -84,6 +248,7 @@ export function getCoreTriggerOptions(t) {
   return [
     { value: 'record_created', label: t('process.designerTriggerRecordCreated') },
     { value: 'record_updated', label: t('process.designerTriggerRecordUpdated') },
+    { value: 'record_created_or_updated', label: t('process.designerTriggerRecordCreatedOrUpdated') },
     { value: 'schedule', label: t('process.designerTriggerSchedule') },
     { value: 'webhook', label: t('process.designerTriggerWebhook') },
     { value: 'manual', label: t('process.designerTriggerManual') }
@@ -99,8 +264,68 @@ export function getSchedulePresetOptions(t) {
   return [
     { value: 'hourly', label: t('process.designerScheduleHourly') },
     { value: 'daily', label: t('process.designerScheduleDaily') },
-    { value: 'weekly', label: t('process.designerScheduleWeekly') }
+    { value: 'weekly', label: t('process.designerScheduleWeekly') },
+    { value: 'monthly', label: t('process.designerScheduleMonthly') }
   ];
+}
+
+export function getScheduleDayOfWeekOptions(t) {
+  return [
+    { value: 0, label: t('process.designerScheduleSunday') },
+    { value: 1, label: t('process.designerScheduleMonday') },
+    { value: 2, label: t('process.designerScheduleTuesday') },
+    { value: 3, label: t('process.designerScheduleWednesday') },
+    { value: 4, label: t('process.designerScheduleThursday') },
+    { value: 5, label: t('process.designerScheduleFriday') },
+    { value: 6, label: t('process.designerScheduleSaturday') }
+  ];
+}
+
+export function toScheduleHour12(hour24) {
+  const h = Number(hour24);
+  const normalized = Number.isFinite(h) ? ((h % 24) + 24) % 24 : 9;
+  const hour = normalized % 12;
+  return hour === 0 ? 12 : hour;
+}
+
+export function toScheduleHour24(hour12, period) {
+  const h = Number(hour12);
+  const normalized = Number.isFinite(h) ? h : 12;
+  if (period === 'AM') {
+    return normalized === 12 ? 0 : normalized;
+  }
+  return normalized === 12 ? 12 : normalized + 12;
+}
+
+export function getScheduleHour12Options() {
+  return [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((value) => ({
+    value,
+    label: String(value)
+  }));
+}
+
+export function getSchedulePeriodOptions(t) {
+  return [
+    { value: 'AM', label: t('process.setupPeriodAm') },
+    { value: 'PM', label: t('process.setupPeriodPm') }
+  ];
+}
+
+export function getTriggerBehaviourOptions(t) {
+  return [
+    { value: 'first_time', label: t('process.setupTriggerBehaviourFirstTime') },
+    { value: 'every_time', label: t('process.setupTriggerBehaviourEveryTime') }
+  ];
+}
+
+/** first_time / every_time applies to record-event triggers only — not schedule. */
+export function triggerBehaviourApplies(coreTrigger) {
+  return coreTrigger !== 'schedule';
+}
+
+export function resolveTriggerBehaviourForSave(coreTrigger, behaviour) {
+  if (!triggerBehaviourApplies(coreTrigger)) return 'every_time';
+  return behaviour === 'first_time' ? 'first_time' : 'every_time';
 }
 
 function watchFieldsForModule(t, entityType) {
@@ -139,10 +364,16 @@ function watchFieldsForModule(t, entityType) {
 }
 
 const LEGACY_EVENT_TO_CORE = {
-  'people.lifecycle.changed': { core: 'record_updated', fields: ['lifecycle'] },
+  'people.lifecycle.changed': {
+    core: 'record_updated',
+    fields: ['lifecycle', 'lead_status', 'contact_status']
+  },
   'people.sales_type.changed': { core: 'record_updated', fields: ['sales_type'] },
-  'organization.lifecycle.changed': { core: 'record_updated', fields: ['lifecycle'] },
-  'organization.type.changed': { core: 'record_updated', fields: ['type'] },
+  'organization.lifecycle.changed': {
+    core: 'record_updated',
+    fields: ['customerStatus', 'partnerStatus', 'vendorStatus']
+  },
+  'organization.type.changed': { core: 'record_updated', fields: ['types'] },
   'deal.stage.changed': { core: 'record_updated', fields: ['stage'] },
   'deal.pipeline.changed': { core: 'record_updated', fields: ['pipeline'] },
   'deal.deal.won': { core: 'record_updated', fields: ['stage'] },
@@ -280,6 +511,9 @@ export function resolveCoreTriggerFromProcess(process) {
   if (t.type === 'webhook') return 'webhook';
   if (t.type === 'schedule') return 'schedule';
   if (t.type === 'domain_event' && t.eventType) {
+    if (t.includeCreated && String(t.eventType).endsWith('.updated')) {
+      return 'record_created_or_updated';
+    }
     const created = createdEventType(process.entityType);
     const updated = updatedEventType(process.entityType);
     if (t.eventType === created) return 'record_created';
@@ -311,12 +545,17 @@ export function resolveUpdateWatchFromProcess(process) {
 
 export function resolveScheduleFromProcess(process) {
   const s = process?.trigger?.schedule;
+  const browserTz =
+    typeof Intl !== 'undefined'
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone
+      : 'UTC';
   return {
     preset: s?.preset || 'daily',
     hour: s?.hour ?? 9,
     minute: s?.minute ?? 0,
     dayOfWeek: s?.dayOfWeek ?? 1,
-    timezone: s?.timezone || 'UTC'
+    dayOfMonth: s?.dayOfMonth ?? 1,
+    timezone: s?.timezone || browserTz || 'UTC'
   };
 }
 
@@ -337,13 +576,18 @@ function buildUpdateWatch(watchField) {
 }
 
 function buildScheduleConfig(schedule) {
+  const browserTz =
+    typeof Intl !== 'undefined'
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone
+      : 'UTC';
   return {
     preset: schedule?.preset || 'daily',
     frequency: schedule?.preset || 'daily',
     hour: Number(schedule?.hour ?? 9),
     minute: Number(schedule?.minute ?? 0),
     dayOfWeek: Number(schedule?.dayOfWeek ?? 1),
-    timezone: schedule?.timezone || 'UTC'
+    dayOfMonth: Number(schedule?.dayOfMonth ?? 1),
+    timezone: schedule?.timezone || browserTz || 'UTC'
   };
 }
 
@@ -368,7 +612,7 @@ export function applyCoreTrigger(coreTrigger, entityType, options = {}) {
     return {
       type: 'schedule',
       eventType: null,
-      needsTriggerNode: false,
+      needsTriggerNode: true,
       schedule: buildScheduleConfig(schedule)
     };
   }
@@ -376,7 +620,8 @@ export function applyCoreTrigger(coreTrigger, entityType, options = {}) {
     return {
       type: 'domain_event',
       eventType: createdEventType(entityType),
-      needsTriggerNode: true
+      needsTriggerNode: true,
+      includeCreated: false
     };
   }
   if (coreTrigger === 'record_updated') {
@@ -384,6 +629,16 @@ export function applyCoreTrigger(coreTrigger, entityType, options = {}) {
       type: 'domain_event',
       eventType: updatedEventType(entityType),
       needsTriggerNode: true,
+      includeCreated: false,
+      updateWatch: buildUpdateWatch(updateWatchField)
+    };
+  }
+  if (coreTrigger === 'record_created_or_updated') {
+    return {
+      type: 'domain_event',
+      eventType: updatedEventType(entityType),
+      needsTriggerNode: true,
+      includeCreated: true,
       updateWatch: buildUpdateWatch(updateWatchField)
     };
   }
@@ -425,6 +680,7 @@ export function buildTriggerFromCore(
   return {
     type: 'domain_event',
     eventType: applied.eventType,
+    includeCreated: applied.includeCreated === true,
     updateWatch: applied.updateWatch || { mode: 'any', fields: [] }
   };
 }
@@ -445,6 +701,12 @@ function scheduleSummarySentence(schedule, t) {
   if (preset === 'weekly') {
     return t('process.designerScopeScheduleWeekly', { time });
   }
+  if (preset === 'monthly') {
+    return t('process.designerScopeScheduleMonthly', {
+      day: schedule?.dayOfMonth ?? 1,
+      time
+    });
+  }
   return t('process.designerScopeScheduleDaily', { time });
 }
 
@@ -459,6 +721,16 @@ export function buildProcessScopeSentence(process, t) {
     return scheduleSummarySentence(resolveScheduleFromProcess(process), t);
   }
   if (core === 'record_created') return t('process.designerScopeRecordCreated', { module: mod });
+  if (core === 'record_created_or_updated') {
+    const watch = resolveUpdateWatchFromProcess(process);
+    if (watch.mode === 'fields' && watch.watchField && watch.watchField !== '__any__') {
+      const label =
+        updateWatchFieldOptions(process?.entityType, t).find((o) => o.value === watch.watchField)?.label ||
+        watch.watchField;
+      return t('process.designerScopeRecordCreatedOrUpdatedField', { module: mod, field: label });
+    }
+    return t('process.designerScopeRecordCreatedOrUpdated', { module: mod });
+  }
   if (core === 'record_updated') {
     const watch = resolveUpdateWatchFromProcess(process);
     if (watch.mode === 'fields' && watch.watchField && watch.watchField !== '__any__') {
@@ -496,4 +768,114 @@ export function conditionFieldToPath(fieldKey, entityType) {
 export function conditionPathToField(path) {
   if (!path) return '';
   return String(path).replace(/^event\.currentState\./, '').replace(/^event\./, '');
+}
+
+/** Two-block IF shape: Block1 AND + Block2 OR, combined by blockCombinator. */
+export function normalizeProcessConditionGroup(config = {}) {
+  const emptyLeaf = () => ({
+    field: '',
+    operator: 'equals',
+    valueMode: 'raw',
+    value: '',
+    expression: ''
+  });
+
+  const normalizeCombinator = (raw) => {
+    const c = String(raw || 'AND').toUpperCase();
+    return c === 'OR' || c === 'ANY' ? 'OR' : 'AND';
+  };
+
+  const collectLeaves = (items, out = []) => {
+    if (!Array.isArray(items)) return out;
+    for (const item of items) {
+      if (item && Array.isArray(item.conditions)) collectLeaves(item.conditions, out);
+      else if (item?.field != null) {
+        const mode = String(item.valueMode || 'raw').toLowerCase() === 'expression' ? 'expression' : 'raw';
+        out.push({
+          field: item.field || '',
+          operator: item.operator || 'equals',
+          valueMode: mode,
+          value: item.value ?? '',
+          expression: item.expression != null ? String(item.expression) : ''
+        });
+      }
+    }
+    return out;
+  };
+
+  const cg =
+    config.conditionGroup && typeof config.conditionGroup === 'object'
+      ? config.conditionGroup
+      : config;
+
+  if (cg.andBlock || cg.orBlock) {
+    const andConds = Array.isArray(cg.andBlock?.conditions) ? cg.andBlock.conditions : [];
+    const orConds = Array.isArray(cg.orBlock?.conditions) ? cg.orBlock.conditions : [];
+    const needsDefault = !andConds.length && !orConds.length;
+    return {
+      blockCombinator: normalizeCombinator(cg.blockCombinator),
+      andBlock: { conditions: needsDefault ? [emptyLeaf()] : andConds },
+      orBlock: { conditions: orConds }
+    };
+  }
+
+  if (Array.isArray(cg.conditions)) {
+    const leaves = collectLeaves(cg.conditions);
+    const combinator = normalizeCombinator(cg.combinator);
+    if (combinator === 'OR') {
+      return {
+        blockCombinator: 'AND',
+        andBlock: { conditions: [emptyLeaf()] },
+        orBlock: { conditions: leaves }
+      };
+    }
+    return {
+      blockCombinator: 'AND',
+      andBlock: { conditions: leaves.length ? leaves : [emptyLeaf()] },
+      orBlock: { conditions: [] }
+    };
+  }
+
+  const leaf = config.condition && typeof config.condition === 'object' ? config.condition : null;
+  if (leaf?.field || leaf?.operator) {
+    return {
+      blockCombinator: 'AND',
+      andBlock: {
+        conditions: [
+          {
+            field: leaf.field || '',
+            operator: leaf.operator || 'equals',
+            valueMode: String(leaf.valueMode || 'raw').toLowerCase() === 'expression' ? 'expression' : 'raw',
+            value: leaf.value ?? '',
+            expression: leaf.expression != null ? String(leaf.expression) : ''
+          }
+        ]
+      },
+      orBlock: { conditions: [] }
+    };
+  }
+
+  if (config.field && config.operator) {
+    return {
+      blockCombinator: 'AND',
+      andBlock: {
+        conditions: [
+          {
+            field: config.field,
+            operator: config.operator,
+            valueMode: String(config.valueMode || 'raw').toLowerCase() === 'expression' ? 'expression' : 'raw',
+            value: config.value ?? '',
+            expression: config.expression != null ? String(config.expression) : ''
+          }
+        ]
+      },
+      orBlock: { conditions: [] }
+    };
+  }
+
+  return {
+    blockCombinator: 'AND',
+    andBlock: { conditions: [emptyLeaf()] },
+    orBlock: { conditions: [] }
+  };
 }

@@ -31,7 +31,7 @@ const ProcessNodeSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['trigger', 'condition', 'action', 'data_mapping', 'end', 'field_rule', 'ownership_rule', 'status_guard', 'approval_gate', 'wait'],
+    enum: ['trigger', 'condition', 'action', 'data_mapping', 'end', 'field_rule', 'ownership_rule', 'status_guard', 'approval_gate', 'wait', 'for_each', 'for_each_end'],
     required: true
   },
   config: {
@@ -136,6 +136,14 @@ const ProcessSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.Mixed,
       default: null
     },
+    /**
+     * When true with an *.updated eventType, also match *.created for the same entity.
+     * Used by core trigger "Record Update (includes Creation)".
+     */
+    includeCreated: {
+      type: Boolean,
+      default: false
+    },
     /** schedule: { preset, hour, minute, dayOfWeek, timezone } */
     schedule: {
       type: mongoose.Schema.Types.Mixed,
@@ -144,6 +152,24 @@ const ProcessSchema = new mongoose.Schema({
   },
   /** False until user picks a “Starts when” option in the designer */
   triggerConfigured: {
+    type: Boolean,
+    default: false
+  },
+  /**
+   * When entry conditions fire the process (record-event triggers only; ignored for schedule):
+   * - first_time: only the first time conditions are met for a record
+   * - every_time: every time conditions are met
+   */
+  triggerBehaviour: {
+    type: String,
+    enum: ['first_time', 'every_time'],
+    default: 'every_time'
+  },
+  /**
+   * When false (default), skip domain-event runs if the record looks closed.
+   * When true, allow the process to run on closed records as well.
+   */
+  includeClosedRecords: {
     type: Boolean,
     default: false
   },

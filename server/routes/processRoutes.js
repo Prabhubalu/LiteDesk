@@ -5,12 +5,14 @@ const { requireAdmin } = require('../middleware/permissionMiddleware');
 const {
   getAllProcesses,
   getDesignerMetadata,
+  evaluateExpression,
   getProcessById,
   createProcess,
   updateProcess,
   updateProcessStatus,
   duplicateProcess,
   testProcess,
+  runProcessNow,
   getProcessExecutions,
   getExecutionGraphState,
   rotateProcessWebhookSecret,
@@ -24,6 +26,7 @@ router.use(requireAdmin());
 // CRUD endpoints
 router.get('/', getAllProcesses);
 router.get('/designer-metadata', getDesignerMetadata);
+router.post('/evaluate-expression', evaluateExpression);
 router.get('/:id', getProcessById);
 router.post('/', createProcess);
 router.put('/:id', updateProcess);
@@ -36,6 +39,7 @@ router.put('/:id/status', updateProcessStatus);
 router.post('/:id/duplicate', duplicateProcess);
 router.post('/:id/webhook/rotate-secret', rotateProcessWebhookSecret);
 router.post('/:id/test', testProcess);
+router.post('/:id/run-now', runProcessNow);
 router.get('/:id/executions', getProcessExecutions);
 router.get('/:id/executions/:executionId/graph-state', getExecutionGraphState);
 

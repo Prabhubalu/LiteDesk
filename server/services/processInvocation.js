@@ -35,11 +35,61 @@ const {
   resolveRunnableProcessForExecution
 } = require('./processDefinitionVersionService');
 const { appendProcessRecordActivity } = require('./processRecordActivity');
+const {
+  snapshotRecordBinding,
+  restoreRecordBinding,
+  bindFetchedRecord,
+  findForEachEndNodeId
+} = require('../utils/processForEachControl');
+const {
+  resolveTriggerBehaviour,
+  buildFirstTimeKey,
+  shouldSkipClosedRecord
+} = require('../utils/processTriggerUtils');
 
 const log = createLogger('processInvocation');
 
 async function logProcessOnRecord(process, execution, context, status, error = null) {
-  await appendProcessRecordActivity({ process, execution, context, status, error });
+  const orgId = context?.organizationId || execution?.organizationId;
+  const seen = new Set();
+  const targets = [];
+  const add = (entityType, entityId) => {
+    if (!entityType || !entityId) return;
+    const key = `${entityType}:${entityId}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    targets.push({ entityType: String(entityType), entityId: String(entityId) });
+  };
+
+  add(context?.entityType, context?.entityId);
+  add(execution?.entityType, execution?.entityId);
+  for (const row of context?._activityRecords || []) {
+    add(row?.entityType, row?.entityId);
+  }
+
+  for (const t of targets) {
+    await appendProcessRecordActivity({
+      process,
+      execution,
+      context: {
+        ...context,
+        entityType: t.entityType,
+        entityId: t.entityId,
+        organizationId: orgId
+      },
+      status,
+      error
+    });
+  }
+}
+
+function trackActivityRecord(context, entityType, entityId) {
+  if (!context || !entityType || !entityId) return;
+  if (!Array.isArray(context._activityRecords)) context._activityRecords = [];
+  context._activityRecords.push({
+    entityType: String(entityType),
+    entityId: String(entityId)
+  });
 }
 
 /**
@@ -63,8 +113,19 @@ function validateProcessTrigger(process, triggerContext) {
     if (!triggerContext.event) {
       return { valid: false, error: 'Process requires domain event trigger' };
     }
-    if (process.trigger.eventType && triggerContext.event.eventType !== process.trigger.eventType) {
-      return { valid: false, error: `Event type mismatch: expected ${process.trigger.eventType}, got ${triggerContext.event.eventType}` };
+    const expected = process.trigger.eventType;
+    const actual = triggerContext.event.eventType;
+    if (expected && actual !== expected) {
+      const createdOk =
+        process.trigger.includeCreated === true &&
+        typeof actual === 'string' &&
+        actual.endsWith('.created') &&
+        typeof expected === 'string' &&
+        expected.endsWith('.updated') &&
+        actual.slice(0, -'.created'.length) === expected.slice(0, -'.updated'.length);
+      if (!createdOk) {
+        return { valid: false, error: `Event type mismatch: expected ${expected}, got ${actual}` };
+      }
     }
   } else if (process.trigger.type === 'manual') {
     if (!triggerContext.manualParams) {
@@ -75,10 +136,18 @@ function validateProcessTrigger(process, triggerContext) {
       return { valid: false, error: 'Process requires webhook invocation' };
     }
   } else if (process.trigger.type === 'schedule') {
-    if (triggerContext.event || triggerContext.manualParams || triggerContext.webhookInvocation) {
-      return { valid: false, error: 'Scheduled processes cannot be started from domain events or manual API in this path' };
+    if (!triggerContext.scheduleInvocation) {
+      return {
+        valid: false,
+        error: 'Scheduled processes must be started by the process schedule runner'
+      };
     }
-    return { valid: false, error: 'Scheduled trigger requires the process schedule runner (not yet invoked here)' };
+    if (triggerContext.event || triggerContext.webhookInvocation) {
+      return {
+        valid: false,
+        error: 'Scheduled processes cannot be started from domain events or webhooks'
+      };
+    }
   } else {
     return { valid: false, error: `Unsupported trigger type: ${process.trigger.type}` };
   }
@@ -115,6 +184,11 @@ function findStartNode(process) {
   }
 
   if (process.trigger.type === 'schedule' || process.trigger.type === 'manual') {
+    const triggerNode = process.nodes.find((n) => n.type === 'trigger');
+    if (triggerNode) {
+      const nextId = findNextNode(triggerNode.id, edges);
+      if (nextId) return process.nodes.find((n) => n.id === nextId) || null;
+    }
     const sortedNodes = [...process.nodes].sort((a, b) => {
       if (a.order != null && b.order != null) return a.order - b.order;
       if (a.order != null) return -1;
@@ -183,10 +257,190 @@ async function runExecutionLoop(process, execution, context, options) {
   let currentNode = startNode;
   let executionComplete = false;
   let previousNodeId = null;
+  context._forEachStack = Array.isArray(context._forEachStack) ? context._forEachStack : [];
 
   while (!executionComplete && currentNode) {
     const edgeId = findEdgeId(edges, previousNodeId, currentNode.id);
     await recordNodeEnter(execution._id, { nodeId: currentNode.id, edgeId });
+
+    // ---- For each: bind first item and enter body ----
+    if (currentNode.type === 'for_each') {
+      const variableName =
+        currentNode.config?.variableName != null
+          ? String(currentNode.config.variableName).trim()
+          : 'records';
+      const bag = context.dataBag && typeof context.dataBag === 'object' ? context.dataBag : {};
+      const items = Array.isArray(bag[variableName]) ? bag[variableName] : null;
+      if (!items) {
+        const err = `for_each: dataBag.${variableName} is not an array (run Fetch records first)`;
+        await recordNodeFailure(execution._id, err);
+        await ProcessExecution.updateOne(
+          { _id: execution._id },
+          {
+            status: 'failed',
+            error: err,
+            completedAt: new Date(),
+            currentNodeId: currentNode.id,
+            dataBag: null,
+            behaviorProposals: null,
+            approvalInstanceId: null
+          }
+        );
+        await logProcessOnRecord(process, execution, context, 'failed', err);
+        return { ok: false, error: err, executionId: context.executionId };
+      }
+
+      const bodyStartId = findNextNode(currentNode.id, edges);
+      const endNodeId = findForEachEndNodeId(bodyStartId, edges, nodeMap);
+      if (!bodyStartId || !endNodeId) {
+        const err =
+          'for_each requires a loop body ending in an "End for each" step (connect For each → steps → End for each)';
+        await recordNodeFailure(execution._id, err);
+        await ProcessExecution.updateOne(
+          { _id: execution._id },
+          {
+            status: 'failed',
+            error: err,
+            completedAt: new Date(),
+            currentNodeId: currentNode.id,
+            dataBag: null,
+            behaviorProposals: null,
+            approvalInstanceId: null
+          }
+        );
+        await logProcessOnRecord(process, execution, context, 'failed', err);
+        return { ok: false, error: err, executionId: context.executionId };
+      }
+
+      const afterEndId = findNextNode(endNodeId, edges);
+      const moduleKey =
+        (currentNode.config?.moduleKey && String(currentNode.config.moduleKey).trim()) ||
+        bag[`${variableName}__meta`]?.moduleKey ||
+        context.entityType;
+
+      await finalizeLastNodeStep(execution._id, {
+        status: 'completed',
+        message: `For each ${variableName} (${items.length})`
+      });
+
+      if (!items.length) {
+        previousNodeId = currentNode.id;
+        currentNode = afterEndId ? nodeMap.get(afterEndId) : null;
+        if (!currentNode) executionComplete = true;
+        continue;
+      }
+
+      if (context._forEachStack.length >= 10) {
+        const err = 'for_each nesting too deep (max 10)';
+        await recordNodeFailure(execution._id, err);
+        await ProcessExecution.updateOne(
+          { _id: execution._id },
+          {
+            status: 'failed',
+            error: err,
+            completedAt: new Date(),
+            currentNodeId: currentNode.id,
+            dataBag: null,
+            behaviorProposals: null,
+            approvalInstanceId: null
+          }
+        );
+        await logProcessOnRecord(process, execution, context, 'failed', err);
+        return { ok: false, error: err, executionId: context.executionId };
+      }
+
+      context._forEachStack.push({
+        forEachNodeId: currentNode.id,
+        variableName,
+        items,
+        index: 0,
+        bodyStartId,
+        endNodeId,
+        afterEndId,
+        moduleKey,
+        saved: snapshotRecordBinding(context)
+      });
+      bindFetchedRecord(context, items[0], moduleKey, 0, items.length);
+      trackActivityRecord(context, context.entityType, context.entityId);
+      log.info('for_each_started', {
+        executionId: context.executionId,
+        variableName,
+        count: items.length,
+        moduleKey,
+        nestDepth: context._forEachStack.length
+      });
+      previousNodeId = currentNode.id;
+      currentNode = nodeMap.get(bodyStartId);
+      continue;
+    }
+
+    // ---- End for each: next item or exit loop ----
+    if (currentNode.type === 'for_each_end') {
+      const stack = context._forEachStack;
+      const frame = stack.length ? stack[stack.length - 1] : null;
+      if (!frame) {
+        await finalizeLastNodeStep(execution._id, {
+          status: 'completed',
+          message: 'End for each'
+        });
+        const nextId = findNextNode(currentNode.id, edges);
+        previousNodeId = currentNode.id;
+        currentNode = nextId ? nodeMap.get(nextId) : null;
+        if (!currentNode) executionComplete = true;
+        continue;
+      }
+      if (frame.endNodeId !== currentNode.id) {
+        const err =
+          'for_each_end does not match the active for_each — check nested For each / End for each pairing';
+        await recordNodeFailure(execution._id, err);
+        await ProcessExecution.updateOne(
+          { _id: execution._id },
+          {
+            status: 'failed',
+            error: err,
+            completedAt: new Date(),
+            currentNodeId: currentNode.id,
+            dataBag: null,
+            behaviorProposals: null,
+            approvalInstanceId: null
+          }
+        );
+        await logProcessOnRecord(process, execution, context, 'failed', err);
+        return { ok: false, error: err, executionId: context.executionId };
+      }
+
+      await finalizeLastNodeStep(execution._id, {
+        status: 'completed',
+        message: `End for each (${frame.index + 1}/${frame.items.length})`
+      });
+
+      frame.index += 1;
+      if (frame.index < frame.items.length) {
+        bindFetchedRecord(
+          context,
+          frame.items[frame.index],
+          frame.moduleKey,
+          frame.index,
+          frame.items.length
+        );
+        trackActivityRecord(context, context.entityType, context.entityId);
+        previousNodeId = currentNode.id;
+        currentNode = nodeMap.get(frame.bodyStartId);
+        continue;
+      }
+
+      restoreRecordBinding(context, frame.saved);
+      stack.pop();
+      log.info('for_each_completed', {
+        executionId: context.executionId,
+        variableName: frame.variableName,
+        count: frame.items.length
+      });
+      previousNodeId = currentNode.id;
+      currentNode = frame.afterEndId ? nodeMap.get(frame.afterEndId) : null;
+      if (!currentNode) executionComplete = true;
+      continue;
+    }
 
     const result = await executeNode(currentNode, context, edges);
 
@@ -383,7 +637,9 @@ async function startProcess(params) {
     inputMapping = {},
     automationExecutionId = null,
     webhookInvocation = false,
-    webhookDeliveryId = null
+    webhookDeliveryId = null,
+    scheduleInvocation = false,
+    scheduleSlotId = null
   } = params;
 
   try {
@@ -400,11 +656,26 @@ async function startProcess(params) {
     // Validate process trigger
     const validation = validateProcessTrigger(process, {
       event,
-      manualParams,
-      webhookInvocation
+      manualParams: scheduleInvocation ? null : manualParams,
+      webhookInvocation,
+      scheduleInvocation
     });
     if (!validation.valid) {
       return { ok: false, error: validation.error };
+    }
+
+    const closedGate = await shouldSkipClosedRecord(processDoc, event, {
+      entityType: manualParams.entityType,
+      entityId: manualParams.entityId,
+      organizationId: manualParams.organizationId || event?.organizationId
+    });
+    if (closedGate.skip) {
+      log.info('process_execution_skipped', {
+        processId: processDoc._id.toString(),
+        reason: closedGate.reason,
+        entityId: event?.entityId || manualParams.entityId
+      });
+      return { ok: true, skipped: true, reason: closedGate.reason };
     }
 
     // Build execution context
@@ -415,11 +686,17 @@ async function startProcess(params) {
       entityType: manualParams.entityType,
       entityId: manualParams.entityId,
       organizationId: manualParams.organizationId || event?.organizationId,
-      triggeredBy: manualParams.triggeredBy || event?.triggeredBy,
+      triggeredBy: scheduleInvocation
+        ? null
+        : manualParams.triggeredBy || event?.triggeredBy,
       assignedTo: manualParams.assignedTo || event?.assignedTo,
       webhookInvocation,
-      webhookDeliveryId
+      webhookDeliveryId,
+      scheduleInvocation,
+      scheduleSlotId
     });
+    context._activityRecords = [];
+    trackActivityRecord(context, context.entityType, context.entityId);
     if (webhookInvocation) {
       context.webhookInvocation = true;
     }
@@ -429,7 +706,7 @@ async function startProcess(params) {
       Object.assign(context.dataBag, inputMapping);
     }
 
-    // Check idempotency
+    // Check idempotency (same domain event / webhook delivery)
     const exists = await executionExists(context.executionId);
     if (exists) {
       log.info('process_execution_skipped', {
@@ -437,25 +714,73 @@ async function startProcess(params) {
         reason: 'already_executed',
         automationExecutionId
       });
-      return { ok: true, executionId: context.executionId, skipped: true };
+      return { ok: true, executionId: context.executionId, skipped: true, reason: 'already_executed' };
+    }
+
+    // first_time: one run per process + entity (+ org); every_time: run on every matching trigger
+    const behaviour = resolveTriggerBehaviour(processDoc);
+    const firstTimeKey =
+      behaviour === 'first_time'
+        ? buildFirstTimeKey(processDoc._id, context.entityId, context.organizationId)
+        : null;
+
+    if (firstTimeKey) {
+      const prior = await ProcessExecution.findOne({ firstTimeKey }).select('_id executionId').lean();
+      if (prior) {
+        log.info('process_execution_skipped', {
+          processId: processDoc._id.toString(),
+          entityId: context.entityId,
+          reason: 'first_time_already_triggered',
+          priorExecutionId: prior.executionId
+        });
+        return {
+          ok: true,
+          skipped: true,
+          reason: 'first_time_already_triggered',
+          executionId: prior.executionId
+        };
+      }
     }
 
     // Create execution record
-    const execution = await ProcessExecution.create({
-      executionId: context.executionId,
-      processId: processDoc._id,
-      processDefinitionVersionId: definition?._id || null,
-      processDefinitionVersionNumber: definition?.versionNumber ?? null,
-      status: 'running',
-      appKey: process.appKey,
-      entityType: context.entityType,
-      entityId: context.entityId,
-      organizationId: context.organizationId ? new mongoose.Types.ObjectId(context.organizationId) : null,
-      triggeredBy: context.triggeredBy ? new mongoose.Types.ObjectId(context.triggeredBy) : null,
-      eventId: event?.eventId || null,
-      automationExecutionId: automationExecutionId ? new mongoose.Types.ObjectId(automationExecutionId) : null,
-      startedAt: new Date()
-    });
+    let execution;
+    try {
+      execution = await ProcessExecution.create({
+        executionId: context.executionId,
+        processId: processDoc._id,
+        processDefinitionVersionId: definition?._id || null,
+        processDefinitionVersionNumber: definition?.versionNumber ?? null,
+        status: 'running',
+        appKey: process.appKey,
+        entityType: context.entityType,
+        entityId: context.entityId,
+        organizationId: context.organizationId ? new mongoose.Types.ObjectId(context.organizationId) : null,
+        triggeredBy: context.triggeredBy ? new mongoose.Types.ObjectId(context.triggeredBy) : null,
+        eventId: event?.eventId || null,
+        ...(firstTimeKey ? { firstTimeKey } : {}),
+        automationExecutionId: automationExecutionId ? new mongoose.Types.ObjectId(automationExecutionId) : null,
+        startedAt: new Date()
+      });
+    } catch (createErr) {
+      // Concurrent first_time race: unique sparse index on firstTimeKey
+      if (firstTimeKey && (createErr?.code === 11000 || String(createErr?.message || '').includes('duplicate'))) {
+        const prior = await ProcessExecution.findOne({ firstTimeKey }).select('executionId').lean();
+        log.info('process_execution_skipped', {
+          processId: processDoc._id.toString(),
+          entityId: context.entityId,
+          reason: 'first_time_already_triggered',
+          race: true,
+          priorExecutionId: prior?.executionId
+        });
+        return {
+          ok: true,
+          skipped: true,
+          reason: 'first_time_already_triggered',
+          executionId: prior?.executionId
+        };
+      }
+      throw createErr;
+    }
 
     // Log process start (with automation context if applicable)
     const logData = {
@@ -464,7 +789,8 @@ async function startProcess(params) {
       processName: process.name,
       appKey: process.appKey,
       entityType: context.entityType,
-      entityId: context.entityId
+      entityId: context.entityId,
+      triggerBehaviour: behaviour
     };
 
     if (automationExecutionId) {

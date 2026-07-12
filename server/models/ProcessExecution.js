@@ -108,6 +108,15 @@ const ProcessExecutionSchema = new mongoose.Schema({
     default: null,
     index: true
   },
+  /**
+   * Set when process.triggerBehaviour === 'first_time'.
+   * Unique partial key — omit when unused (do not store null; sparse unique still indexes null).
+   */
+  firstTimeKey: {
+    type: String,
+    default: undefined,
+    index: true
+  },
   automationExecutionId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'AutomationExecution',
@@ -154,9 +163,26 @@ const ProcessExecutionSchema = new mongoose.Schema({
 });
 
 // Indexes for efficient querying
-ProcessExecutionSchema.index({ processId: 1, eventId: 1 }, { unique: true });
+// eventId uniqueness only when a domain-event id is present (manual/schedule leave eventId null)
+ProcessExecutionSchema.index(
+  { processId: 1, eventId: 1 },
+  {
+    unique: true,
+    // $ne is not allowed in partialFilterExpression on this MongoDB version
+    partialFilterExpression: { eventId: { $type: 'string' } },
+    name: 'process_execution_processId_eventId_uq'
+  }
+);
 ProcessExecutionSchema.index({ organizationId: 1, status: 1 });
 ProcessExecutionSchema.index({ entityType: 1, entityId: 1 });
 ProcessExecutionSchema.index({ status: 1, resumeAt: 1 });
+ProcessExecutionSchema.index(
+  { firstTimeKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { firstTimeKey: { $type: 'string' } },
+    name: 'process_execution_first_time_key_uq'
+  }
+);
 
 module.exports = wrapTenantModel(mongoose.model('ProcessExecution', ProcessExecutionSchema));

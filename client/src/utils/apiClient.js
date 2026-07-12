@@ -19,7 +19,7 @@ const CACHEABLE_GET_PATHS = [
     /^\/ui\/entities(?:$|\?)/,
     /^\/ui\/routes(?:$|\?)/,
     /^\/people(?:$|\?)/,
-    /^\/people\/[^/?]+(?:$|\?)/,
+    // Do not cache GET /people/:id — soft refetch after save/process must see fresh data
     /^\/activity\/[^/?]+\/[^/?]+(?:$|\?)/,
     /^\/communications\/threads(?:$|\?)/,
     /^\/relationships\/(?:record-context|links)(?:$|\?)/,
@@ -99,7 +99,7 @@ function cacheTtlForGet(pathWithSearch) {
 function isPersistentShortCacheGet(pathWithSearch) {
     return [
         /^\/people(?:$|\?)/,
-        /^\/people\/[^/?]+(?:$|\?)/,
+        // Single-record people GETs are intentionally uncached (see CACHEABLE_GET_PATHS)
         /^\/activity\/[^/?]+\/[^/?]+(?:$|\?)/,
         /^\/communications\/threads(?:$|\?)/,
         /^\/relationships\/(?:record-context|links)(?:$|\?)/,

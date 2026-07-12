@@ -413,7 +413,7 @@ async function updatePeopleModuleFields(organizationId = null) {
     if (!hasSalesTypeField) {
       fields.push({
         key: 'sales_type',
-        label: 'Type',
+        label: 'Sales Type',
         dataType: 'Picklist',
         required: false,
         options: normalizeOptions(['Lead', 'Contact']),

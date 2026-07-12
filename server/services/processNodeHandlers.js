@@ -39,6 +39,11 @@ async function executeTrigger(node, context) {
     return { ok: true, matched: true };
   }
 
+  const kind = config?.triggerKind || trigger?.type;
+  if (kind === 'schedule' || kind === 'manual') {
+    return { ok: true, matched: true };
+  }
+
   if (!event) {
     return { ok: false, matched: false, error: 'Trigger node requires domain event' };
   }
@@ -67,7 +72,7 @@ async function executeTrigger(node, context) {
  */
 async function executeCondition(node, context, edges) {
   const { config, id: nodeId } = node;
-  const { event, dataBag } = context;
+  const { evaluateProcessCondition } = require('../utils/processConditionEvaluator');
 
   // Find outgoing edges from this node
   const outgoingEdges = edges.filter(e => e.fromNodeId === nodeId);
@@ -76,80 +81,21 @@ async function executeCondition(node, context, edges) {
     return { ok: false, error: 'Condition node has no outgoing edges' };
   }
 
-  // Evaluate condition logic
-  // For Step 0, we support simple boolean expressions
-  // Format: { field: 'event.eventType', operator: 'equals', value: 'deal.stage.changed' }
-  let result = false;
-
-  try {
-    const condition = config.condition || config;
-    if (typeof condition === 'boolean') {
-      result = condition;
-    } else if (typeof condition === 'object' && condition !== null) {
-      // Simple condition evaluation
-      const { field, operator, value } = condition;
-      
-      if (!field || !operator) {
-        return { ok: false, error: 'Condition requires field and operator' };
-      }
-      
-      // Resolve field value from event or dataBag
-      let fieldValue = null;
-      if (field.startsWith('event.')) {
-        const path = field.replace('event.', '');
-        fieldValue = path.split('.').reduce((obj, key) => obj?.[key], event);
-      } else if (field.startsWith('dataBag.')) {
-        const key = field.replace('dataBag.', '');
-        fieldValue = dataBag[key];
-      } else {
-        fieldValue = dataBag[field] || event?.[field];
-      }
-
-      // Evaluate operator
-      switch (operator) {
-        case 'equals':
-        case '===':
-          result = fieldValue === value;
-          break;
-        case 'not_equals':
-        case '!==':
-          result = fieldValue !== value;
-          break;
-        case 'contains':
-          result = String(fieldValue || '').includes(String(value || ''));
-          break;
-        case 'exists':
-          result = fieldValue != null;
-          break;
-        case 'greater_than':
-          result = Number(fieldValue) > Number(value);
-          break;
-        case 'less_than':
-          result = Number(fieldValue) < Number(value);
-          break;
-        default:
-          result = false;
-      }
-    } else {
-      return { ok: false, error: 'Invalid condition format' };
-    }
-
-    // Choose edge based on result
-    // If condition has 'true' and 'false' edges, use them
-    // Otherwise, use first edge for true, second for false
-    const trueEdge = outgoingEdges.find(e => e.condition === true || e.condition === 'true');
-    const falseEdge = outgoingEdges.find(e => e.condition === false || e.condition === 'false');
-
-    if (result) {
-      const nextEdge = trueEdge || outgoingEdges[0];
-      return { ok: true, nextNodeId: nextEdge?.toNodeId };
-    } else {
-      const nextEdge = falseEdge || (outgoingEdges.length > 1 ? outgoingEdges[1] : null);
-      return { ok: true, nextNodeId: nextEdge?.toNodeId || null };
-    }
-  } catch (err) {
-    return { ok: false, error: `Condition evaluation failed: ${err.message}` };
+  const evaluated = evaluateProcessCondition(config, context);
+  if (!evaluated.ok) {
+    return { ok: false, error: evaluated.error };
   }
+  const result = evaluated.result;
+
+  const trueEdge = outgoingEdges.find(e => e.condition === true || e.condition === 'true');
+  const falseEdge = outgoingEdges.find(e => e.condition === false || e.condition === 'false');
+
+  if (result) {
+    const nextEdge = trueEdge || outgoingEdges[0];
+    return { ok: true, nextNodeId: nextEdge?.toNodeId };
+  }
+  const nextEdge = falseEdge || (outgoingEdges.length > 1 ? outgoingEdges[1] : null);
+  return { ok: true, nextNodeId: nextEdge?.toNodeId || null };
 }
 
 /**
@@ -170,15 +116,22 @@ async function executeActionNode(node, context) {
     return { ok: false, error: 'Action node missing actionType in config' };
   }
 
+  if (!context.dataBag || typeof context.dataBag !== 'object') {
+    context.dataBag = {};
+  }
+
   // Build action context compatible with automation action handlers
   const actionContext = {
     eventId: event?.eventId || null,
+    event: event || null,
     entityType,
     entityId,
     organizationId,
     triggeredBy,
     assignedTo,
-    appKey: appKey || 'SALES'
+    appKey: appKey || 'SALES',
+    dataBag: context.dataBag,
+    executionId: context.executionId || null
   };
 
   const actionParams = config.params || config.actionParams || {};
@@ -755,6 +708,10 @@ async function executeNode(node, context, edges) {
       return await executeApprovalGate(node, context);
     case 'wait':
       return await executeWait(node, context);
+    case 'for_each':
+    case 'for_each_end':
+      // Handled by processExecutor loop control
+      return { ok: true };
     default:
       return { ok: false, error: `Unsupported node type: ${type}` };
   }

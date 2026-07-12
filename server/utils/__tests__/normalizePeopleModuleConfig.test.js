@@ -14,7 +14,7 @@ test('normalizePeopleModuleFields drops legacy type when sales_type exists', () 
   ];
   const out = normalizePeopleModuleFields(fields);
   assert.equal(out.some((f) => String(f.key).toLowerCase() === 'type'), false);
-  assert.equal(out.some((f) => String(f.key).toLowerCase() === 'sales_type'), true);
+  assert.equal(out.find((f) => String(f.key).toLowerCase() === 'sales_type')?.label, 'Sales Type');
 });
 
 test('normalizePeopleModuleFields renames lone type to sales_type', () => {
@@ -22,11 +22,18 @@ test('normalizePeopleModuleFields renames lone type to sales_type', () => {
   const out = normalizePeopleModuleFields(fields);
   const salesType = out.find((f) => f.key === 'sales_type');
   assert.ok(salesType);
+  assert.equal(salesType.label, 'Sales Type');
   assert.equal(salesType.isVirtual, true);
   assert.equal(salesType.appKey, 'SALES');
   assert.equal(salesType.required, true);
   assert.ok(out.some((f) => f.key === 'lead_status'));
   assert.ok(out.some((f) => f.key === 'contact_status'));
+});
+
+test('normalizePeopleModuleFields renames helpdesk_role label to Helpdesk Type', () => {
+  const fields = [{ key: 'helpdesk_role', label: 'Role', isVirtual: true, appKey: 'HELPDESK' }];
+  const out = normalizePeopleModuleFields(fields);
+  assert.equal(out.find((f) => f.key === 'helpdesk_role')?.label, 'Helpdesk Type');
 });
 
 test('migratePeopleQuickCreateKeys maps type to sales_type and dedupes', () => {

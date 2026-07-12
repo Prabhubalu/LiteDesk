@@ -1,6 +1,6 @@
 /**
  * Append process run entries to a record's activity timeline.
- * Only when execution is bound to entityType + entityId (not dry-run / idempotent skip).
+ * Bound entity + any for_each records tracked on context._activityRecords.
  */
 
 const mongoose = require('mongoose');

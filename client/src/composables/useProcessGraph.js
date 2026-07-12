@@ -75,14 +75,16 @@ export function processToFlow(process) {
       target: e.toNodeId,
       sourceHandle: isTrue ? 'true' : isFalse ? 'false' : undefined,
       label: isTrue ? 'Yes' : isFalse ? 'No' : undefined,
-      data: { condition: e.condition ?? null }
+      data: { condition: e.condition ?? null },
+      selectable: true,
+      deletable: true
     };
   });
 
   return { nodes, edges };
 }
 
-export function createFlowNode(processType, position, partialConfig = {}) {
+export function createFlowNode(processType, position, partialConfig = {}, process = null) {
   const id = generateId(processType);
   const config = getDefaultConfig(processType, partialConfig);
   const node = {
@@ -93,7 +95,12 @@ export function createFlowNode(processType, position, partialConfig = {}) {
     layout: position,
     meta: { color: null, icon: null, notes: null, tags: [] }
   };
-  const vf = processToFlow({ nodes: [node], edges: [], trigger: { type: 'manual' } });
+  const vf = processToFlow({
+    nodes: [node],
+    edges: [],
+    entityType: process?.entityType || null,
+    trigger: process?.trigger || { type: 'manual' }
+  });
   return vf.nodes[0];
 }
 
@@ -103,10 +110,20 @@ function getDefaultConfig(processType, partial = {}) {
       return { eventType: partial.eventType || null, ...partial };
     case 'condition':
       return {
-        condition: {
-          field: partial.field || 'event.currentState.stage',
-          operator: partial.operator || 'equals',
-          value: partial.value ?? ''
+        conditionGroup: {
+          blockCombinator: 'AND',
+          andBlock: {
+            conditions: [
+              {
+                field: partial.field || '',
+                operator: partial.operator || 'equals',
+                valueMode: 'raw',
+                value: partial.value ?? '',
+                expression: ''
+              }
+            ]
+          },
+          orBlock: { conditions: [] }
         }
       };
     case 'field_rule':
@@ -139,6 +156,13 @@ function getDefaultConfig(processType, partial = {}) {
         duration: partial.duration ?? 2,
         unit: partial.unit || 'days'
       };
+    case 'for_each':
+      return {
+        variableName: partial.variableName || 'records',
+        moduleKey: partial.moduleKey || ''
+      };
+    case 'for_each_end':
+      return {};
     case 'action':
       return {
         actionType: partial.actionType || '',
@@ -157,16 +181,22 @@ function getDefaultConfig(processType, partial = {}) {
 export function syncTriggerNodeOnGraph(process, vfNodes, vfEdges) {
   const needsTrigger =
     (process.trigger?.type === 'domain_event' && process.trigger?.eventType) ||
-    process.trigger?.type === 'webhook';
+    process.trigger?.type === 'webhook' ||
+    process.trigger?.type === 'schedule';
   const existing = vfNodes.find((n) => n.data.processType === 'trigger');
   let nodes = [...vfNodes];
   let edges = [...vfEdges];
 
   if (needsTrigger && !existing) {
-    const triggerNode = createFlowNode('trigger', { x: 280, y: 40 }, {
-      eventType: process.trigger.eventType,
-      triggerKind: process.trigger.type
-    });
+    const triggerNode = createFlowNode(
+      'trigger',
+      { x: 280, y: 40 },
+      {
+        eventType: process.trigger.eventType,
+        triggerKind: process.trigger.type
+      },
+      process
+    );
     nodes = [triggerNode, ...nodes.map((n, i) => ({
       ...n,
       position: { ...n.position, y: n.position.y + 100 }

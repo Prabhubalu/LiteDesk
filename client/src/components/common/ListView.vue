@@ -3296,11 +3296,17 @@ function mergeVisibleColumnWithProps(visibleCol) {
   const originalCol = findPropsColumnDefinition(visibleCol.key);
   if (!originalCol) return { ...visibleCol };
   const canonicalKey = originalCol.key;
+  const visibleLabel = String(visibleCol.label || '');
+  const propsLabel = String(originalCol.label || '');
+  const label =
+    !visibleLabel || visibleLabel.startsWith('[missing:')
+      ? propsLabel || visibleLabel || canonicalKey
+      : visibleLabel;
   return {
     ...visibleCol,
     ...originalCol,
     key: canonicalKey,
-    label: visibleCol.label || originalCol.label,
+    label,
     locked: visibleCol.locked ?? originalCol.locked,
   };
 }

@@ -23,7 +23,10 @@ const {
 const { buildGraphState } = require('../services/processExecutionTracker');
 const { simulateProcessRun } = require('../services/processDryRun');
 const { getCapabilitiesForProcessDesigner } = require('../utils/executionCapabilityRegistry');
-const { getProcessDesignerActions } = require('../constants/processDesignerActions');
+const {
+  getProcessDesignerActions,
+  getProcessDesignerActionGroups
+} = require('../constants/processDesignerActions');
 const { LIVE_CHAT_PROCESS_DESIGNER_TRIGGERS } = require('../constants/liveChatProcessDesigner');
 const {
   buildWebhookKey,
@@ -82,18 +85,30 @@ async function enrichProcessForClient(process, req) {
   return obj;
 }
 
-// Known app keys
-const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'PLATFORM'];
+// Known keys (designer-metadata hints only — create/update accepts any tenant app/module)
+const APP_KEYS = ['PLATFORM', 'SALES', 'HELPDESK', 'AUDIT', 'PORTAL', 'PROJECTS', 'MARKETING', 'INVENTORY', 'LMS'];
 
-// Known entity types
-const ENTITY_TYPES = ['people', 'organization', 'deal', 'live_chat_session'];
+const ENTITY_TYPES = [
+  'people',
+  'organization',
+  'deal',
+  'quote',
+  'live_chat_session',
+  'tasks',
+  'events',
+  'forms',
+  'items',
+  'documents',
+  'cases',
+  'responses'
+];
 
 // Known trigger types
 const TRIGGER_TYPES = ['domain_event', 'manual', 'webhook', 'schedule'];
 const { CORE_TRIGGER_TYPES } = require('../utils/processTriggerUtils');
 
 // Known node types
-const NODE_TYPES = ['trigger', 'condition', 'action', 'data_mapping', 'end', 'field_rule', 'ownership_rule', 'status_guard', 'approval_gate', 'wait'];
+const NODE_TYPES = ['trigger', 'condition', 'action', 'data_mapping', 'end', 'field_rule', 'ownership_rule', 'status_guard', 'approval_gate', 'wait', 'for_each', 'for_each_end'];
 
 /**
  * Validate process definition
@@ -105,21 +120,15 @@ function validateProcessDefinition(processData) {
     return { valid: false, error: 'Process name is required' };
   }
 
-  if (!processData.appKey) {
+  if (!processData.appKey || !String(processData.appKey).trim()) {
     return { valid: false, error: 'App is required' };
   }
-  if (!APP_KEYS.includes(String(processData.appKey).toUpperCase())) {
-    return { valid: false, error: `Invalid appKey: ${processData.appKey}` };
-  }
-  processData.appKey = String(processData.appKey).toUpperCase();
+  processData.appKey = String(processData.appKey).toUpperCase().trim();
 
-  if (!processData.entityType) {
+  if (!processData.entityType || !String(processData.entityType).trim()) {
     return { valid: false, error: 'Module is required' };
   }
-  if (!ENTITY_TYPES.includes(String(processData.entityType).toLowerCase())) {
-    return { valid: false, error: 'Module must be people, organization, or deal' };
-  }
-  processData.entityType = processData.entityType.toLowerCase();
+  processData.entityType = String(processData.entityType).toLowerCase().trim();
 
   if (!processData.trigger || typeof processData.trigger !== 'object') {
     return { valid: false, error: 'Trigger is required' };
@@ -139,13 +148,21 @@ function validateProcessDefinition(processData) {
 
   if (processData.trigger.type === 'schedule') {
     processData.trigger.eventType = null;
+    processData.triggerBehaviour = 'every_time';
     const sched = processData.trigger.schedule;
     if (!sched || !sched.preset) {
       return { valid: false, error: 'Schedule trigger requires schedule configuration' };
     }
-    const allowed = new Set(['hourly', 'daily', 'weekly']);
+    const allowed = new Set(['hourly', 'daily', 'weekly', 'monthly']);
     if (!allowed.has(sched.preset)) {
-      return { valid: false, error: 'Schedule preset must be hourly, daily, or weekly' };
+      return { valid: false, error: 'Schedule preset must be hourly, daily, weekly, or monthly' };
+    }
+    if (sched.preset === 'monthly') {
+      const day = Number(sched.dayOfMonth ?? 1);
+      if (!Number.isFinite(day) || day < 1 || day > 28) {
+        return { valid: false, error: 'Monthly schedule dayOfMonth must be between 1 and 28' };
+      }
+      sched.dayOfMonth = day;
     }
   }
 
@@ -199,6 +216,8 @@ exports.getDesignerMetadata = async (req, res) => {
   try {
     const capabilities = getCapabilitiesForProcessDesigner();
     const processActions = getProcessDesignerActions();
+    const processActionGroups = getProcessDesignerActionGroups();
+    const { FORMULA_HELPER_CATALOG } = require('../utils/processFormulaHelpers');
     res.json({
       success: true,
       data: {
@@ -208,6 +227,8 @@ exports.getDesignerMetadata = async (req, res) => {
         nodeTypes: NODE_TYPES,
         capabilities,
         processActions,
+        processActionGroups,
+        formulaHelpers: FORMULA_HELPER_CATALOG,
         entityTypes: ENTITY_TYPES,
         liveChatTriggers: LIVE_CHAT_PROCESS_DESIGNER_TRIGGERS,
         coreTriggers: CORE_TRIGGER_TYPES.map((value) => ({
@@ -224,13 +245,14 @@ exports.getDesignerMetadata = async (req, res) => {
         schedulePresets: [
           { value: 'hourly', label: 'Every hour' },
           { value: 'daily', label: 'Daily' },
-          { value: 'weekly', label: 'Weekly' }
+          { value: 'weekly', label: 'Weekly' },
+          { value: 'monthly', label: 'Monthly' }
         ],
         validationRules: {
           sequential: true,
           branching: 'IF nodes only (true/false)',
           parallelSplitMerge: false,
-          loops: false
+          loops: 'for_each / for_each_end'
         },
         palette: [
           { type: 'trigger', label: 'Trigger', description: 'When this process starts' },
@@ -241,6 +263,16 @@ exports.getDesignerMetadata = async (req, res) => {
           { type: 'approval_gate', label: 'Approval', description: 'Require human approval' },
           { type: 'wait', label: 'Wait', description: 'Pause for a duration' },
           { type: 'action', label: 'Action', description: 'Run an automated action' },
+          {
+            type: 'for_each',
+            label: 'For each',
+            description: 'Run following steps once per fetched record'
+          },
+          {
+            type: 'for_each_end',
+            label: 'End for each',
+            description: 'Mark the end of a for-each loop body'
+          },
           { type: 'end', label: 'End', description: 'Stop the process' }
         ]
       }
@@ -250,6 +282,87 @@ exports.getDesignerMetadata = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching designer metadata',
+      error: error.message
+    });
+  }
+};
+
+const FORMULA_PREVIEW_SAMPLE = {
+  first_name: 'Ada',
+  last_name: 'Lovelace',
+  email: 'ada@example.com',
+  phone: '+1-555-0100',
+  mobile: '',
+  amount: 42,
+  sales_type: 'Lead',
+  organization: 'Acme Corp',
+  createdAt: '2026-01-15T10:00:00.000Z',
+  updatedAt: '2026-01-16T12:30:00.000Z'
+};
+
+/**
+ * @route   POST /api/admin/processes/evaluate-expression
+ * @desc    Live-preview a process field expression against sample trigger data
+ * @access  Private (Admin only)
+ */
+exports.evaluateExpression = async (req, res) => {
+  try {
+    const expression = String(req.body?.expression ?? '');
+    const sampleState =
+      req.body?.sampleState && typeof req.body.sampleState === 'object' && !Array.isArray(req.body.sampleState)
+        ? req.body.sampleState
+        : {};
+    const demo = { ...FORMULA_PREVIEW_SAMPLE, ...sampleState };
+    const { resolveExpression, buildScope } = require('../utils/processFieldValueResolver');
+    const { evaluateFormula, looksLikeFormula } = require('../utils/processFormulaEvaluator');
+    const scope = buildScope({
+      event: { currentState: demo, entityType: 'people', entityId: 'preview' },
+      dataBag: { currentRecord: demo },
+      entityId: 'preview',
+      entityType: 'people'
+    });
+
+    if (!expression.trim()) {
+      return res.json({
+        success: true,
+        data: { value: '', display: '', status: 'empty', sampleState: demo }
+      });
+    }
+
+    try {
+      let value;
+      if (looksLikeFormula(expression) && !expression.includes('{{')) {
+        value = evaluateFormula(expression, scope);
+      } else {
+        value = resolveExpression(expression, scope);
+      }
+      const display =
+        value === null || value === undefined
+          ? 'null'
+          : typeof value === 'object'
+            ? JSON.stringify(value)
+            : String(value);
+      return res.json({
+        success: true,
+        data: { value, display, status: 'ok', sampleState: demo }
+      });
+    } catch (err) {
+      return res.json({
+        success: true,
+        data: {
+          value: null,
+          display: '',
+          status: 'error',
+          error: err.message || 'Invalid expression',
+          sampleState: demo
+        }
+      });
+    }
+  } catch (error) {
+    log.error('evaluate_expression_error', { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Error evaluating expression',
       error: error.message
     });
   }
@@ -624,6 +737,83 @@ exports.duplicateProcess = async (req, res) => {
 };
 
 /**
+ * @route   POST /api/admin/processes/:id/run-now
+ * @desc    Start an active process immediately (manual or schedule triggers)
+ * @access  Private (Admin only)
+ */
+exports.runProcessNow = async (req, res) => {
+  try {
+    const process = await Process.findOne({
+      _id: req.params.id,
+      $or: [
+        { organizationId: null },
+        { organizationId: req.user.organizationId }
+      ]
+    }).lean();
+
+    if (!process) {
+      return res.status(404).json({ success: false, message: 'Process not found' });
+    }
+
+    if (process.status !== 'active') {
+      return res.status(400).json({
+        success: false,
+        message: 'Process must be Active before it can run'
+      });
+    }
+
+    const triggerType = process.trigger?.type;
+    if (triggerType !== 'schedule' && triggerType !== 'manual') {
+      return res.status(400).json({
+        success: false,
+        message: `Run now is only supported for schedule and manual triggers (got ${triggerType || 'none'})`
+      });
+    }
+
+    const orgId = req.user.organizationId ? String(req.user.organizationId) : null;
+    const entityId = req.body?.entityId ? String(req.body.entityId).trim() : null;
+
+    const result = await startProcess({
+      processId: process._id.toString(),
+      scheduleInvocation: triggerType === 'schedule',
+      scheduleSlotId:
+        triggerType === 'schedule' ? `run-now:${Date.now()}` : null,
+      manualParams: {
+        organizationId: orgId,
+        entityType: process.entityType || req.body?.entityType || null,
+        entityId,
+        triggeredBy: req.user._id ? String(req.user._id) : null
+      }
+    });
+
+    if (!result?.ok) {
+      return res.status(400).json({
+        success: false,
+        message: result?.error || 'Process run failed',
+        data: result
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        executionId: result.executionId,
+        skipped: result.skipped === true,
+        reason: result.reason || null
+      },
+      message: result.skipped ? 'Process run skipped' : 'Process run started'
+    });
+  } catch (error) {
+    log.error('run_process_now_error', { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Error running process',
+      error: error.message
+    });
+  }
+};
+
+/**
  * @route   POST /api/admin/processes/:id/test
  * @desc    Test process execution (dry-run)
  * @access  Private (Admin only)
@@ -822,18 +1012,13 @@ exports.rotateProcessWebhookSecret = async (req, res) => {
 
 /**
  * @route   DELETE /api/admin/processes/:id
- * @desc    Delete process (draft only)
+ * @desc    Delete process (any non-active status: draft / archived)
  * @access  Private (Admin only)
  */
 exports.deleteProcess = async (req, res) => {
   try {
-    const process = await Process.findOne({
-      _id: req.params.id,
-      $or: [
-        { organizationId: null },
-        { organizationId: req.user.organizationId }
-      ]
-    });
+    // Process lives on tenant DB (ALS); schema has no organizationId — do not filter on it.
+    const process = await Process.findById(req.params.id);
 
     if (!process) {
       return res.status(404).json({
@@ -842,19 +1027,41 @@ exports.deleteProcess = async (req, res) => {
       });
     }
 
-    // Only allow deleting draft processes
-    if (process.status !== 'draft') {
+    const status = String(process.status || '').toLowerCase();
+    if (status === 'active') {
       return res.status(400).json({
         success: false,
-        message: 'Only draft processes can be deleted. Archive active processes instead.'
+        message: 'Active processes cannot be deleted. Deactivate (archive) them first.'
       });
     }
 
-    await Process.deleteOne({ _id: process._id });
+    const processId = process._id;
+    try {
+      const ProcessDefinitionVersion = require('../models/ProcessDefinitionVersion');
+      await ProcessDefinitionVersion.deleteMany({ processId });
+    } catch (verErr) {
+      log.warn('process_definition_cleanup_failed', {
+        processId: processId.toString(),
+        error: verErr.message
+      });
+    }
+
+    try {
+      const ProcessExecution = require('../models/ProcessExecution');
+      await ProcessExecution.deleteMany({ processId });
+    } catch (execErr) {
+      log.warn('process_execution_cleanup_failed', {
+        processId: processId.toString(),
+        error: execErr.message
+      });
+    }
+
+    await Process.deleteOne({ _id: processId });
 
     log.info('process_deleted', {
-      processId: process._id.toString(),
-      name: process.name
+      processId: processId.toString(),
+      name: process.name,
+      status: process.status
     });
 
     res.json({
@@ -862,7 +1069,7 @@ exports.deleteProcess = async (req, res) => {
       message: 'Process deleted successfully'
     });
   } catch (error) {
-    log.error('delete_process_error', { error: error.message });
+    log.error('delete_process_error', { error: error.message, stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Error deleting process',
