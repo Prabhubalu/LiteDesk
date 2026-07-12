@@ -44,13 +44,15 @@
           v-bind="optionsAttrs"
           :style="teleport ? teleportMenuStyle : undefined"
           @vue:before-mount="syncTeleportPosition"
-          @vue:before-unmount="clearSearch"
+          @vue:mounted="scheduleSearchFocus"
+          @vue:before-unmount="onOptionsUnmount"
+          @focusin="onOptionsFocusIn"
           @mousedown.stop
           :class="[
             teleport
               ? 'fixed z-[10050] mt-0 rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm'
-              : 'absolute z-10 mt-1 w-full rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm',
-            showSearch ? 'flex flex-col overflow-hidden' : 'overflow-auto py-1',
+              : 'absolute z-10 mt-1 w-full max-h-60 rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm',
+            showSearch ? 'flex flex-col overflow-hidden' : 'overflow-y-auto py-1',
             optionsClass
           ]"
         >
@@ -58,7 +60,7 @@
           v-if="showSearch"
           class="shrink-0 p-2 border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700"
           @click.stop
-          @mousedown.stop
+          @mousedown.prevent.stop="onSearchMouseDown"
         >
           <div class="relative">
             <MagnifyingGlassIcon class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
@@ -66,11 +68,13 @@
               ref="searchInputRef"
               v-model="searchQuery"
               type="text"
+              tabindex="0"
               :placeholder="searchPlaceholderText"
               class="w-full pl-8 pr-2 py-1.5 text-sm rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/80 text-gray-900 dark:text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
               autocomplete="off"
+              @vue:mounted="scheduleSearchFocus"
               @click.stop
-              @keydown.stop
+              @keydown="onSearchKeydown"
             />
           </div>
         </div>
@@ -202,11 +206,98 @@ const teleportMenuStyle = ref({});
 const listboxOpen = ref(false);
 let listboxWasOpen = false;
 let viewportListenersBound = false;
+let holdSearchFocusUntil = 0;
+/** @type {number[]} */
+let focusRetryTimers = [];
 
 function getButtonElement() {
   const raw = buttonRef.value;
   if (!raw) return null;
   return raw.$el ?? raw;
+}
+
+function clearFocusRetries() {
+  for (const id of focusRetryTimers) window.clearTimeout(id);
+  focusRetryTimers = [];
+}
+
+function clearSearch() {
+  searchQuery.value = '';
+}
+
+function onOptionsUnmount() {
+  clearFocusRetries();
+  clearSearch();
+  holdSearchFocusUntil = 0;
+}
+
+function focusSearchInput() {
+  if (!showSearch.value || !listboxOpen.value) return false;
+  const el = searchInputRef.value;
+  if (!el || typeof el.focus !== 'function') return false;
+  el.focus({ preventScroll: true });
+  return document.activeElement === el;
+}
+
+function scheduleSearchFocus() {
+  if (!showSearch.value) return;
+  clearFocusRetries();
+  holdSearchFocusUntil = Date.now() + 450;
+  const delays = [0, 16, 32, 64, 120, 200, 320, 450];
+  for (const delay of delays) {
+    focusRetryTimers.push(
+      window.setTimeout(() => {
+        if (!listboxOpen.value) return;
+        focusSearchInput();
+      }, delay)
+    );
+  }
+}
+
+function onSearchMouseDown(event) {
+  // Keep Listbox open; focus search instead of letting an option take focus.
+  event.preventDefault();
+  event.stopPropagation();
+  holdSearchFocusUntil = Date.now() + 450;
+  focusSearchInput();
+}
+
+function onOptionsFocusIn(event) {
+  if (!showSearch.value || !listboxOpen.value) return;
+  if (Date.now() > holdSearchFocusUntil) return;
+  const search = searchInputRef.value;
+  if (!search || event.target === search) return;
+  focusSearchInput();
+}
+
+function onSearchKeydown(event) {
+  // Keep typing in the search field; still allow Escape to bubble for close if needed.
+  if (event.key === 'Escape') return;
+  event.stopPropagation();
+}
+
+function syncListboxOpenState(open) {
+  if (listboxOpen.value === open && listboxWasOpen === open) return '';
+  if (listboxWasOpen && !open) {
+    clearFocusRetries();
+    clearSearch();
+    holdSearchFocusUntil = 0;
+  }
+  listboxWasOpen = open;
+  listboxOpen.value = open;
+  if (open) {
+    scheduleSearchFocus();
+  }
+  return '';
+}
+
+function onListboxButtonClick() {
+  syncTeleportPosition();
+}
+
+function onModelValueUpdate(value) {
+  clearSearch();
+  emit('update:modelValue', value);
 }
 
 function syncTeleportPosition() {
@@ -262,32 +353,6 @@ function syncTeleportPosition() {
   };
 }
 
-function clearSearch() {
-  searchQuery.value = '';
-}
-
-function syncListboxOpenState(open) {
-  if (listboxOpen.value === open && listboxWasOpen === open) return '';
-  if (listboxWasOpen && !open) {
-    clearSearch();
-  }
-  if (!listboxWasOpen && open && showSearch.value) {
-    nextTick(() => searchInputRef.value?.focus());
-  }
-  listboxWasOpen = open;
-  listboxOpen.value = open;
-  return '';
-}
-
-function onListboxButtonClick() {
-  syncTeleportPosition();
-}
-
-function onModelValueUpdate(value) {
-  clearSearch();
-  emit('update:modelValue', value);
-}
-
 function optionMatchesSearch(option, query) {
   const label = String(option?.label ?? '').toLowerCase();
   const value = String(option?.value ?? '').toLowerCase();
@@ -329,7 +394,12 @@ watch([listboxOpen, () => props.teleport], ([open, teleport]) => {
   }
 });
 
+watch(listboxOpen, (open) => {
+  if (open) scheduleSearchFocus();
+});
+
 onBeforeUnmount(() => {
+  clearFocusRetries();
   unbindViewportListeners();
 });
 

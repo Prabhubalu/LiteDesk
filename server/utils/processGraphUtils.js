@@ -6,7 +6,8 @@ const crypto = require('crypto');
 
 const NODE_TYPES = [
   'trigger', 'condition', 'action', 'data_mapping', 'end',
-  'field_rule', 'ownership_rule', 'status_guard', 'approval_gate', 'wait'
+  'field_rule', 'ownership_rule', 'status_guard', 'approval_gate', 'wait',
+  'for_each', 'for_each_end'
 ];
 
 function generateId(prefix) {

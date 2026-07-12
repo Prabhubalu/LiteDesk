@@ -17,7 +17,11 @@ const RESERVED_KEYS = new Set([
   'modifiedBy', 'deletedAt', 'deletedBy', 'deletionReason',
   'source', // System-managed creation channel; set only via sourceResolver on the server
   'playbookState',
-  'portalAccess'
+  'portalAccess',
+  // API response-only computed fields — never persist back into customFields
+  'lastActivity',
+  'lastActivityDate',
+  'lastActivityAction'
 ]);
 
 /**
@@ -44,6 +48,14 @@ function extractCustomFields(payload, model) {
 
     const isSchemaPath = schemaPaths.has(key);
     if (isSchemaPath) {
+      // Never assign the whole customFields object alongside customFields.* dots
+      if (key === 'customFields' && value && typeof value === 'object' && !Array.isArray(value)) {
+        for (const [cfKey, cfVal] of Object.entries(value)) {
+          if (RESERVED_KEYS.has(cfKey)) continue;
+          customFieldsSet[cfKey] = cfVal;
+        }
+        continue;
+      }
       standardPayload[key] = value;
     } else {
       customFieldsSet[key] = value;
@@ -66,6 +78,10 @@ function buildUpdateWithCustomFields(payload, model) {
   const { standardPayload, customFieldsSet } = extractCustomFields(payload, model);
 
   const $set = { ...standardPayload };
+  // Guard: never leave a whole `customFields` key in $set (conflicts with dots)
+  if (Object.prototype.hasOwnProperty.call($set, 'customFields')) {
+    delete $set.customFields;
+  }
 
   for (const [key, value] of Object.entries(customFieldsSet)) {
     $set[`customFields.${key}`] = value;

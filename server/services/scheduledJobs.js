@@ -12,6 +12,7 @@ const { tickAppointmentReminders } = require('./appointmentReminderSchedulerServ
 const { processDueDeferredAutomationActions } = require('./deferredAutomationSchedulerService');
 const { tickBusinessHoursKpiAggregation } = require('./businessHoursKpiSchedulerService');
 const { tickProcessWaitResume } = require('./processWaitResumeSchedulerService');
+const { tickProcessSchedules } = require('./processScheduleSchedulerService');
 const { tickQuoteExpiry } = require('./quoteExpirySchedulerService');
 const { tickDocumentExpiryNotifications } = require('./documentExpiryNotificationSchedulerService');
 const { tickDocumentExternalLinkChecks } = require('./documentExternalLinkSchedulerService');
@@ -43,6 +44,8 @@ const ENABLE_BUSINESS_HOURS_KPI_SCHEDULER =
   process.env.ENABLE_BUSINESS_HOURS_KPI_SCHEDULER !== 'false';
 const ENABLE_PROCESS_WAIT_RESUME_SCHEDULER =
   process.env.ENABLE_PROCESS_WAIT_RESUME_SCHEDULER !== 'false';
+const ENABLE_PROCESS_SCHEDULE_SCHEDULER =
+  process.env.ENABLE_PROCESS_SCHEDULE_SCHEDULER !== 'false';
 const ENABLE_TARGET_RECALC_SCHEDULER =
   process.env.ENABLE_TARGET_RECALC_SCHEDULER !== 'false';
 const ENABLE_QUOTE_EXPIRY_SCHEDULER =
@@ -89,6 +92,7 @@ let appointmentReminderJob = null;
 let deferredAutomationJob = null;
 let businessHoursKpiJob = null;
 let processWaitResumeJob = null;
+let processScheduleJob = null;
 let targetRecalcJob = null;
 let quoteExpiryJob = null;
 let documentExpiryNotificationJob = null;
@@ -247,6 +251,24 @@ function startScheduledJobs() {
     console.log('[scheduledJobs]   - Process wait resume: every minute');
   } else {
     console.log('[scheduledJobs] Process wait resume scheduler disabled (ENABLE_PROCESS_WAIT_RESUME_SCHEDULER=false)');
+  }
+
+  if (ENABLE_PROCESS_SCHEDULE_SCHEDULER) {
+    processScheduleJob = cron.schedule('* * * * *', async () => {
+      try {
+        const result = await tickProcessSchedules();
+        if (result.due > 0 || NOTIFICATION_DEBUG) {
+          console.log(
+            `[scheduledJobs] Process schedule: tenants=${result.tenantsProcessed} due=${result.due} started=${result.started} skipped=${result.skipped} failed=${result.failed}`
+          );
+        }
+      } catch (err) {
+        console.error('[scheduledJobs] Process schedule tick failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - Process schedule runner: every minute');
+  } else {
+    console.log('[scheduledJobs] Process schedule runner disabled (ENABLE_PROCESS_SCHEDULE_SCHEDULER=false)');
   }
 
   if (ENABLE_DEFERRED_AUTOMATION_SCHEDULER) {
@@ -838,6 +860,11 @@ function stopScheduledJobs() {
     processWaitResumeJob.stop();
     processWaitResumeJob = null;
     console.log('[scheduledJobs] Process wait resume job stopped');
+  }
+  if (processScheduleJob) {
+    processScheduleJob.stop();
+    processScheduleJob = null;
+    console.log('[scheduledJobs] Process schedule job stopped');
   }
 
   if (targetRecalcJob) {

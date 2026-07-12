@@ -789,17 +789,7 @@ function getPeopleVirtualBaseFields() {
     return [
         {
             key: 'sales_type',
-            label: 'Type',
-            dataType: 'Picklist',
-            keyField: false,
-            required: false,
-            options: ['Lead', 'Contact'],
-            defaultValue: null,
-            visibility: { list: true, detail: true },
-            owner: 'platform',
-            context: 'sales',
-            isVirtual: true,
-            appKey: 'SALES',
+            label: 'Sales Type',
             filterable: true,
             filterType: 'multi-select',
             filterPriority: 2,
@@ -812,7 +802,7 @@ function getPeopleVirtualBaseFields() {
         },
         {
             key: 'helpdesk_role',
-            label: 'Role',
+            label: 'Helpdesk Type',
             dataType: 'Picklist',
             keyField: false,
             required: false,

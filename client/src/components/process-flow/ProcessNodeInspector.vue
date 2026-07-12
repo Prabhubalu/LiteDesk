@@ -35,74 +35,16 @@
 
         <div v-else-if="processType === 'condition'" class="space-y-3">
           <p class="text-[10px] text-gray-500">{{ t('process.inspectorAppliesToModule', { module: moduleLabel }) }}</p>
-          <div>
-            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('process.inspectorFieldHeading') }}</label>
-            <HeadlessSelect
-              v-model="conditionFieldKey"
-              :options="conditionFieldSelectOptions"
-              allow-empty
-              :empty-label="t('process.inspectorSelectField')"
-              :button-class="PROCESS_SELECT_BUTTON_CLASS"
-              @update:model-value="emitConditionUpdate"
-            />
-            <input
-              v-if="conditionFieldKey === '_custom'"
-              v-model="customFieldPath"
-              type="text"
-              :placeholder="t('process.inspectorCustomPathPh')"
-              class="mt-2 w-full px-2 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
-              @input="emitConditionUpdate"
-            />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('process.inspectorOperatorHeading') }}</label>
-            <HeadlessSelect
-              v-model="localConfig.condition.operator"
-              :options="conditionOperatorOptions"
-              :button-class="PROCESS_SELECT_BUTTON_CLASS"
-              @update:model-value="emitConditionUpdate"
-            />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('process.inspectorValueHeading') }}</label>
-            <HeadlessSelect
-              v-if="conditionValueInputType === 'select'"
-              v-model="localConfig.condition.value"
-              :options="conditionValueOptions"
-              allow-empty
-              :empty-label="t('process.inspectorSelectValue')"
-              :button-class="PROCESS_SELECT_BUTTON_CLASS"
-              @update:model-value="onConditionValueChange"
-            />
-            <input
-              v-else-if="conditionValueInputType === 'number'"
-              v-model.number="localConfig.condition.value"
-              type="number"
-              class="w-full px-2 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
-              @input="emitConditionUpdate"
-            />
-            <HeadlessSelect
-              v-else-if="conditionValueInputType === 'boolean'"
-              v-model="conditionBooleanValue"
-              :options="booleanValueOptions"
-              allow-empty
-              :empty-label="t('process.inspectorSelectGeneric')"
-              :button-class="PROCESS_SELECT_BUTTON_CLASS"
-              @update:model-value="onConditionBooleanChange"
-            />
-            <input
-              v-else
-              v-model="localConfig.condition.value"
-              type="text"
-              :placeholder="t('process.inspectorEnterValuePh')"
-              class="w-full px-2 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
-              @input="emitConditionUpdate"
-            />
-            <p v-if="conditionFieldsLoading" class="text-[10px] text-gray-500 mt-1">{{ t('process.inspectorLoadingFieldOptions') }}</p>
-            <p v-else-if="conditionValueInputType === 'select' && !conditionValueOptions.length" class="text-[10px] text-amber-600 dark:text-amber-400 mt-1">
-              {{ t('process.inspectorNoPicklistOptions') }}
-            </p>
-          </div>
+          <ProcessConditionGroupEditor
+            v-if="localConfig.conditionGroup"
+            :group="localConfig.conditionGroup"
+            :field-options="conditionFields"
+            :module-field-meta="moduleFieldMeta"
+            :condition-fields-loading="conditionFieldsLoading"
+            :entity-type="process?.entityType || ''"
+            @update:group="onConditionGroupUpdate"
+            @change="emitUpdate"
+          />
           <p class="text-[10px] text-gray-500">{{ t('process.inspectorConnectHandles') }}</p>
         </div>
 
@@ -172,7 +114,7 @@
             <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('process.inspectorActionHeading') }}</label>
             <HeadlessSelect
               :model-value="localConfig.actionType"
-              :options="actionTypeOptions"
+              :option-groups="actionTypeGroups"
               allow-empty
               :empty-label="t('process.inspectorSelectAction')"
               :placeholder="t('process.inspectorSelectAction')"
@@ -184,6 +126,7 @@
             v-if="selectedActionDef"
             :action-def="selectedActionDef"
             :params="localConfig.params || {}"
+            :process-entity-type="process?.entityType || ''"
             @update:params="onActionParamsChange"
           />
         </div>
@@ -224,6 +167,35 @@
           </div>
         </div>
 
+        <div v-else-if="processType === 'for_each'" class="space-y-3">
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ t('process.inspectorForEachHint') }}</p>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {{ t('process.inspectorForEachVariable') }}
+            </label>
+            <HeadlessSelect
+              :model-value="localConfig.variableName || ''"
+              :options="dataVariableOptions"
+              allow-empty
+              :empty-label="
+                dataVariableOptions.length
+                  ? t('process.inspectorForEachSelectVariable')
+                  : t('process.inspectorForEachNoVariables')
+              "
+              :button-class="PROCESS_SELECT_BUTTON_CLASS"
+              @update:model-value="(v) => { localConfig.variableName = v || ''; emitUpdate(); }"
+            />
+          </div>
+          <p v-if="!dataVariableOptions.length" class="text-[10px] text-amber-700 dark:text-amber-400">
+            {{ t('process.inspectorForEachNoVariablesHint') }}
+          </p>
+          <p class="text-[10px] text-gray-500">{{ t('process.inspectorForEachConnectHint') }}</p>
+        </div>
+
+        <div v-else-if="processType === 'for_each_end'" class="space-y-3">
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ t('process.inspectorForEachEndHint') }}</p>
+        </div>
+
         <div v-else class="text-xs text-gray-500">{{ t('process.inspectorNoConfig') }}</div>
 
         <button
@@ -247,19 +219,16 @@ import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import ProcessActionFields from '@/components/process-flow/ProcessActionFields.vue';
+import ProcessConditionGroupEditor from '@/components/process-flow/ProcessConditionGroupEditor.vue';
 import { buildNodeSentence } from '@/utils/processSentenceBuilder';
 import {
-  getConditionFieldsByModule,
-  getConditionOperatorOptions,
-  getBooleanValueOptions,
+  PROCESS_SELECT_BUTTON_CLASS,
   getFieldRuleOptions,
   getOwnershipAssignmentOptions,
   getStatusGuardFieldOptions,
   getWaitUnitOptions,
   getWaitPresets,
-  PROCESS_SELECT_BUTTON_CLASS,
-  conditionFieldToPath,
-  conditionPathToField,
+  normalizeProcessConditionGroup,
   getModuleLabel
 } from '@/utils/processDesignerConstants';
 
@@ -272,6 +241,8 @@ const props = defineProps({
   nodeVersion: { type: Number, default: 1 },
   config: { type: Object, default: () => ({}) },
   process: { type: Object, default: null },
+  /** Live canvas nodes — used to list Fetch / Set variable names for for_each */
+  flowNodes: { type: Array, default: () => [] },
   editable: { type: Boolean, default: true },
   executionDetail: { type: String, default: '' },
   moduleFieldMeta: { type: Object, default: () => ({}) },
@@ -283,13 +254,9 @@ const emit = defineEmits(['update-node', 'delete-node', 'deselect']);
 
 const localConfig = ref({});
 const isHydrating = ref(false);
-const conditionFieldKey = ref('');
-const customFieldPath = ref('');
 const statusFrom = ref('');
 const statusTo = ref('');
 
-const conditionOperatorOptions = computed(() => getConditionOperatorOptions(t));
-const booleanValueOptions = computed(() => getBooleanValueOptions(t));
 const fieldRuleOptions = computed(() => getFieldRuleOptions(t));
 const ownershipAssignmentOptions = computed(() => getOwnershipAssignmentOptions(t));
 const statusGuardFieldOptions = computed(() => getStatusGuardFieldOptions(t));
@@ -310,21 +277,64 @@ const moduleLabel = computed(() => {
 const conditionFields = computed(() => {
   const fromModule = Object.values(props.moduleFieldMeta || {})
     .filter((m) => m?.key)
-    .map((m) => ({ value: m.key, label: m.label || m.key }));
-  if (fromModule.length) return fromModule;
-  return getConditionFieldsByModule(t, props.process?.entityType);
+    .map((m) => ({ value: m.key, label: m.label || m.key }))
+    .sort((a, b) => String(a.label).localeCompare(String(b.label)));
+  return fromModule;
 });
-
-const conditionFieldSelectOptions = computed(() => [
-  ...conditionFields.value,
-  { value: '_custom', label: t('process.inspectorCustomPathOption') }
-]);
 
 const processActions = computed(() => props.designerMetadata?.processActions || []);
 
-const actionTypeOptions = computed(() =>
-  processActions.value.map((a) => ({ value: a.actionType, label: a.label }))
-);
+/** Variables written by Fetch records / Fetch related / Set variable on the canvas */
+const dataVariableOptions = computed(() => {
+  const names = new Set();
+  for (const n of props.flowNodes || []) {
+    const pType = n.data?.processType || n.type;
+    const config = n.data?.config || n.config || {};
+    if (pType !== 'action') continue;
+    const actionType = config.actionType;
+    const params = config.params || {};
+    if (actionType === 'fetch_records' || actionType === 'fetch_related_records') {
+      const v = String(params.variableName || '').trim();
+      if (v) names.add(v);
+    }
+    if (actionType === 'set_variable') {
+      const v = String(params.name || params.variableName || '').trim();
+      if (v) names.add(v);
+    }
+  }
+  const options = [...names]
+    .sort((a, b) => a.localeCompare(b))
+    .map((value) => ({ value, label: value }));
+  const current = String(localConfig.value?.variableName || '').trim();
+  if (current && !names.has(current)) {
+    options.unshift({
+      value: current,
+      label: `${current} (${t('process.inspectorForEachMissingVar')})`
+    });
+  }
+  return options;
+});
+
+const actionTypeGroups = computed(() => {
+  const groups = props.designerMetadata?.processActionGroups;
+  if (Array.isArray(groups) && groups.length) {
+    return groups.map((g) => ({
+      label: g.label,
+      options: (g.actions || []).map((a) => ({
+        value: a.actionType,
+        label: a.available === false ? `${a.label} (${t('process.inspectorComingSoonBadge')})` : a.label,
+        disabled: a.available === false
+      }))
+    }));
+  }
+  // Fallback: flat list → single group
+  return [
+    {
+      label: t('process.inspectorActionHeading'),
+      options: processActions.value.map((a) => ({ value: a.actionType, label: a.label }))
+    }
+  ];
+});
 
 const selectedActionDef = computed(() =>
   processActions.value.find((a) => a.actionType === localConfig.value.actionType) || null
@@ -336,7 +346,9 @@ function defaultParamsForAction(actionType) {
   const out = {};
   for (const field of def.params || []) {
     if (field.defaultValue !== undefined) out[field.key] = field.defaultValue;
-    else if (field.type === 'text' || field.type === 'textarea') out[field.key] = '';
+    else if (field.type === 'field_map') out[field.key] = {};
+    else if (field.type === 'condition_group') out[field.key] = normalizeProcessConditionGroup({});
+    else if (field.type === 'text' || field.type === 'textarea' || field.type === 'module') out[field.key] = '';
     else if (field.type === 'number') out[field.key] = null;
   }
   return out;
@@ -354,35 +366,6 @@ function onActionParamsChange(params) {
   emitUpdate();
 }
 
-const selectedConditionFieldMeta = computed(() => {
-  if (!conditionFieldKey.value || conditionFieldKey.value === '_custom') return null;
-  return props.moduleFieldMeta[conditionFieldKey.value] || null;
-});
-
-const conditionValueOptions = computed(() => selectedConditionFieldMeta.value?.options || []);
-
-const conditionValueInputType = computed(() => {
-  const meta = selectedConditionFieldMeta.value;
-  if (meta?.valueInputType) return meta.valueInputType;
-  if (meta?.options?.length) return 'select';
-  return 'text';
-});
-
-const conditionBooleanValue = computed({
-  get() {
-    const v = localConfig.value.condition?.value;
-    if (v === true || v === 'true') return 'true';
-    if (v === false || v === 'false') return 'false';
-    return '';
-  },
-  set(val) {
-    if (!localConfig.value.condition) return;
-    if (val === 'true') localConfig.value.condition.value = true;
-    else if (val === 'false') localConfig.value.condition.value = false;
-    else localConfig.value.condition.value = '';
-  }
-});
-
 function buildEmitConfig() {
   const type = props.processType;
   const config = { ...localConfig.value };
@@ -390,9 +373,13 @@ function buildEmitConfig() {
     config.entityType = props.process?.entityType || config.entityType;
   }
   if (type === 'condition') {
-    return { condition: localConfig.value.condition };
+    return { conditionGroup: localConfig.value.conditionGroup };
   }
   return config;
+}
+
+function onConditionGroupUpdate(group) {
+  localConfig.value.conditionGroup = group;
 }
 
 function buildEmitSentence(config) {
@@ -407,18 +394,8 @@ function hydrateFromProps() {
   const entityType = props.process?.entityType || c.entityType || 'deal';
 
   if (props.processType === 'condition') {
-    const cond = c.condition || c;
-    const path = cond.field || '';
-    const key = conditionPathToField(path);
-    const known = conditionFields.value.some((f) => f.value === key);
-    conditionFieldKey.value = known ? key : (path ? '_custom' : '');
-    customFieldPath.value = known ? '' : path;
     localConfig.value = {
-      condition: {
-        field: cond.field || '',
-        operator: cond.operator || 'equals',
-        value: cond.value ?? ''
-      }
+      conditionGroup: normalizeProcessConditionGroup(c)
     };
   } else if (props.processType === 'action') {
     const actionType = c.actionType || '';
@@ -478,39 +455,6 @@ function emitUpdate() {
     sentence: buildEmitSentence(config)
   });
 }
-
-function emitConditionUpdate() {
-  let field = localConfig.value.condition?.field || '';
-  if (conditionFieldKey.value && conditionFieldKey.value !== '_custom') {
-    field = conditionFieldToPath(conditionFieldKey.value, props.process?.entityType);
-  } else if (conditionFieldKey.value === '_custom') {
-    field = customFieldPath.value;
-  }
-  localConfig.value.condition.field = field;
-  emitUpdate();
-}
-
-function onConditionValueChange() {
-  emitConditionUpdate();
-}
-
-function onConditionBooleanChange() {
-  emitConditionUpdate();
-}
-
-watch(conditionFieldKey, (key, prev) => {
-  if (isHydrating.value || key === prev || !localConfig.value.condition) return;
-  if (key === '_custom') return;
-  const meta = props.moduleFieldMeta[key];
-  if (meta?.valueInputType === 'select' && meta.options?.length) {
-    const current = localConfig.value.condition.value;
-    const allowed = new Set(meta.options.map((o) => o.value));
-    if (current != null && current !== '' && !allowed.has(String(current))) {
-      localConfig.value.condition.value = '';
-      emitConditionUpdate();
-    }
-  }
-});
 
 function emitStatusGuard() {
   localConfig.value.allowedTransitions = [`${statusFrom.value} → ${statusTo.value}`];

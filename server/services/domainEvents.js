@@ -86,19 +86,74 @@ function emit(event) {
     hasCurrent: !!payload.currentState
   });
 
+  // Cheap client cache invalidation (SSE) for record created/updated — no polling
+  if (
+    payload.organizationId &&
+    (payload.eventType.endsWith('.created') || payload.eventType.endsWith('.updated'))
+  ) {
+    try {
+      const { publishDataChange } = require('./dataChangeService');
+      const ENTITY_TO_MODULE = {
+        people: 'people',
+        organization: 'organizations',
+        deal: 'deals',
+        quote: 'quotes',
+        live_chat_session: 'live_chat_sessions'
+      };
+      const et = String(payload.entityType || '').toLowerCase();
+      publishDataChange({
+        organizationId: payload.organizationId,
+        moduleKey: ENTITY_TO_MODULE[et] || et,
+        recordId: payload.entityId,
+        op: payload.eventType.endsWith('.created') ? 'create' : 'update'
+      });
+    } catch (err) {
+      log.warn('domain_event_data_change_publish_failed', { error: err.message });
+    }
+  }
+
   setImmediate(() => {
-    subscribers.forEach((handler) => {
-      try {
-        const result = handler(payload);
-        if (result && typeof result.then === 'function') {
-          result.catch((err) => {
-            log.error('domain_event_handler_error', { eventType: payload.eventType, error: err.message, stack: err.stack });
+    const deliver = () => {
+      subscribers.forEach((handler) => {
+        try {
+          const result = handler(payload);
+          if (result && typeof result.then === 'function') {
+            result.catch((err) => {
+              log.error('domain_event_handler_error', {
+                eventType: payload.eventType,
+                error: err.message,
+                stack: err.stack
+              });
+            });
+          }
+        } catch (err) {
+          log.error('domain_event_handler_error', {
+            eventType: payload.eventType,
+            error: err.message,
+            stack: err.stack
           });
         }
-      } catch (err) {
-        log.error('domain_event_handler_error', { eventType: payload.eventType, error: err.message, stack: err.stack });
-      }
-    });
+      });
+    };
+
+    // Process/Automation models live on the tenant DB. setImmediate can drop ALS —
+    // always re-bind from event.organizationId when present.
+    if (payload.organizationId) {
+      const { runWithOrganizationTenantContext } = require('../utils/runWithOrganizationTenant');
+      Promise.resolve(runWithOrganizationTenantContext(payload.organizationId, async () => deliver())).catch(
+        (err) => {
+          log.error('domain_event_tenant_bind_failed', {
+            eventType: payload.eventType,
+            organizationId: payload.organizationId,
+            error: err.message
+          });
+          deliver();
+        }
+      );
+      return;
+    }
+
+    deliver();
   });
 }
 

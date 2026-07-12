@@ -3,43 +3,11 @@
  */
 
 const { buildGraphState, messageForNode } = require('./processExecutionTracker');
+const { evaluateProcessCondition } = require('../utils/processConditionEvaluator');
 
 function evaluateCondition(config, context) {
-  const condition = config?.condition || config;
-  const { event = {}, dataBag = {} } = context;
-  if (typeof condition === 'boolean') return condition;
-  if (!condition?.field || !condition?.operator) return false;
-
-  let fieldValue = null;
-  const field = condition.field;
-  if (field.startsWith('event.')) {
-    const path = field.replace('event.', '');
-    fieldValue = path.split('.').reduce((obj, key) => obj?.[key], event);
-  } else if (field.startsWith('dataBag.')) {
-    fieldValue = dataBag[field.replace('dataBag.', '')];
-  } else if (field.startsWith('event.currentState.')) {
-    const path = field.replace('event.currentState.', '');
-    fieldValue = event.currentState?.[path];
-  } else {
-    fieldValue = dataBag[field] ?? event?.[field];
-  }
-
-  switch (condition.operator) {
-    case 'equals':
-    case '===':
-      return fieldValue === condition.value;
-    case 'not_equals':
-    case '!==':
-      return fieldValue !== condition.value;
-    case 'greater_than':
-      return Number(fieldValue) > Number(condition.value);
-    case 'less_than':
-      return Number(fieldValue) < Number(condition.value);
-    case 'contains':
-      return String(fieldValue || '').includes(String(condition.value || ''));
-    default:
-      return false;
-  }
+  const evaluated = evaluateProcessCondition(config, context);
+  return evaluated.ok ? evaluated.result : false;
 }
 
 function findNextNodeId(currentNode, edges, conditionResult) {
@@ -58,7 +26,11 @@ function findStartNode(process) {
   if (process.trigger?.type === 'domain_event') {
     return process.nodes.find((n) => n.type === 'trigger') || null;
   }
-  if (process.trigger?.type === 'webhook') {
+  if (
+    process.trigger?.type === 'webhook' ||
+    process.trigger?.type === 'schedule' ||
+    process.trigger?.type === 'manual'
+  ) {
     const triggerNode = process.nodes.find((n) => n.type === 'trigger');
     if (triggerNode) {
       const nextId = findNextNodeId(triggerNode, edges, null);

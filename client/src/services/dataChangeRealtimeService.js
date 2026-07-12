@@ -52,6 +52,19 @@ function handleDataChangePayload(payload) {
   if (payload.recordId) {
     markRecordDetailDirty(moduleKey, payload.recordId);
   }
+
+  // Notify open record pages (soft refetch) — no polling
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('arivu:data-change', {
+        detail: {
+          moduleKey,
+          recordId: payload.recordId ? String(payload.recordId) : null,
+          op: payload.op || 'update'
+        }
+      })
+    );
+  }
 }
 
 function connect(token) {

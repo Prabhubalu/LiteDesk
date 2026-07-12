@@ -2806,5 +2806,733 @@
   "controlPlaneAmdsInfraLoadFailed": {
     "message": "Failed to load AMDS infrastructure status",
     "description": "AMDS infra status load error"
+  },
+  "setupSelectAppFirst": {
+    "message": "Select app first…",
+    "description": "Module select disabled until app is chosen"
+  },
+  "settingsSelectAppFirst": {
+    "message": "Select app first…",
+    "description": "Module select disabled until app is chosen"
+  },
+  "designerAppCore": {
+    "message": "Core",
+    "description": "Process designer app option for PLATFORM / Core"
+  },
+  "designerModuleLiveChat": {
+    "message": "Live Chat",
+    "description": "Process designer module option for live chat sessions"
+  },
+  "designerAppHelpdesk": {
+    "message": "Helpdesk",
+    "description": "Process designer app option"
+  },
+  "setupTriggerBehaviour": {
+    "message": "Trigger behaviour",
+    "description": "Setup form field for how often the process fires when conditions match"
+  },
+  "setupTriggerBehaviourFirstTime": {
+    "message": "First time conditions met",
+    "description": "Trigger behaviour: run only the first time conditions match"
+  },
+  "setupTriggerBehaviourEveryTime": {
+    "message": "Every time conditions met",
+    "description": "Trigger behaviour: run whenever conditions match"
+  },
+  "designerTriggerRecordCreatedOrUpdated": {
+    "message": "Record Update (includes Creation)",
+    "description": "Core trigger option: fire on create and update"
+  },
+  "designerTriggerDescRecordCreatedOrUpdated": {
+    "message": "Runs when a record is created or updated. Creation always matches; updates can be limited with “Watch changes”.",
+    "description": "Core trigger description for create-or-update"
+  },
+  "designerScopeRecordCreatedOrUpdated": {
+    "message": "Runs when a {module} is created or updated",
+    "description": "Process scope summary for create-or-update trigger"
+  },
+  "designerScopeRecordCreatedOrUpdatedField": {
+    "message": "Runs when a {module} is created or updated ({field} changed)",
+    "description": "Process scope summary for create-or-update with field watch"
+  },
+  "setupDayOfWeek": {
+    "message": "Day of week",
+    "description": "Weekly schedule day label"
+  },
+  "setupDayOfMonth": {
+    "message": "Day of month",
+    "description": "Monthly schedule day label"
+  },
+  "setupDayOfMonthHint": {
+    "message": "Use 1–28 so every month has this day.",
+    "description": "Monthly schedule day hint"
+  },
+  "setupIncludeClosedRecords": {
+    "message": "Run on closed records",
+    "description": "Toggle label for including closed records"
+  },
+  "setupIncludeClosedRecordsHint": {
+    "message": "When off, matching closed or terminal records are skipped.",
+    "description": "Toggle hint for closed records"
+  },
+  "designerScheduleMonthly": {
+    "message": "Monthly",
+    "description": "Schedule preset option"
+  },
+  "designerScheduleSunday": {
+    "message": "Sunday",
+    "description": "Schedule weekday option"
+  },
+  "designerScheduleMonday": {
+    "message": "Monday",
+    "description": "Schedule weekday option"
+  },
+  "designerScheduleTuesday": {
+    "message": "Tuesday",
+    "description": "Schedule weekday option"
+  },
+  "designerScheduleWednesday": {
+    "message": "Wednesday",
+    "description": "Schedule weekday option"
+  },
+  "designerScheduleThursday": {
+    "message": "Thursday",
+    "description": "Schedule weekday option"
+  },
+  "designerScheduleFriday": {
+    "message": "Friday",
+    "description": "Schedule weekday option"
+  },
+  "designerScheduleSaturday": {
+    "message": "Saturday",
+    "description": "Schedule weekday option"
+  },
+  "designerScopeScheduleMonthly": {
+    "message": "Runs monthly on day {day} at {time}",
+    "description": "Process scope summary for monthly schedule"
+  },
+  "setupPeriod": {
+    "message": "AM/PM",
+    "description": "Schedule 12-hour period label"
+  },
+  "setupPeriodAm": {
+    "message": "AM",
+    "description": "Morning period option"
+  },
+  "setupPeriodPm": {
+    "message": "PM",
+    "description": "Afternoon/evening period option"
+  },
+  "inspectorLogicBlock": {
+    "message": "Match",
+    "description": "Label before AND/OR combinator on IF condition group"
+  },
+  "inspectorCombinatorAnd": {
+    "message": "AND (all)",
+    "description": "AND combinator option for IF conditions"
+  },
+  "inspectorCombinatorOr": {
+    "message": "OR (any)",
+    "description": "OR combinator option for IF conditions"
+  },
+  "inspectorAndHint": {
+    "message": "All conditions in this block must match.",
+    "description": "Hint for AND condition group"
+  },
+  "inspectorOrHint": {
+    "message": "Any one condition in this block may match.",
+    "description": "Hint for OR condition group"
+  },
+  "inspectorAddCondition": {
+    "message": "+ Add condition",
+    "description": "Add leaf condition in IF group"
+  },
+  "inspectorAddAndGroup": {
+    "message": "+ AND group",
+    "description": "Add nested AND group in IF node"
+  },
+  "inspectorAddOrGroup": {
+    "message": "+ OR group",
+    "description": "Add nested OR group in IF node"
+  },
+  "inspectorRemoveCondition": {
+    "message": "Remove",
+    "description": "Remove a single IF condition row"
+  },
+  "inspectorRemoveGroup": {
+    "message": "Remove group",
+    "description": "Remove nested AND/OR group"
+  },
+  "inspectorAndBlockTitle": {
+    "message": "Block 1 — AND",
+    "description": "Title for AND conditions block on IF node"
+  },
+  "inspectorOrBlockTitle": {
+    "message": "Block 2 — OR",
+    "description": "Title for OR conditions block on IF node"
+  },
+  "inspectorBetweenBlocks": {
+    "message": "Between blocks",
+    "description": "Label for combinator between AND and OR blocks"
+  },
+  "actionCreateRecord": {
+    "message": "Create Record",
+    "description": "Generic create record action"
+  },
+  "actionUpdateRecord": {
+    "message": "Update Record",
+    "description": "Generic update record action"
+  },
+  "actionDeleteRecord": {
+    "message": "Delete Record",
+    "description": "Generic delete record action"
+  },
+  "summaryCreateRecord": {
+    "message": "Module: {module}",
+    "description": "Create record action summary"
+  },
+  "summaryUpdateRecord": {
+    "message": "Target: {target}",
+    "description": "Update record action summary"
+  },
+  "summaryDeleteRecord": {
+    "message": "Target: {target}",
+    "description": "Delete record action summary"
+  },
+  "summaryModuleUnknown": {
+    "message": "unknown",
+    "description": "Unknown module in create record summary"
+  },
+  "inspectorSelectModule": {
+    "message": "Select module",
+    "description": "Module picker empty label for generic actions"
+  },
+  "inspectorFieldValuePh": {
+    "message": "Value",
+    "description": "Field map value placeholder"
+  },
+  "inspectorAddFieldRow": {
+    "message": "Add field",
+    "description": "Add row to field map"
+  },
+  "inspectorRemoveFieldRow": {
+    "message": "Remove field",
+    "description": "Remove row from field map"
+  },
+  "inspectorLoadingFields": {
+    "message": "Loading fields…",
+    "description": "Field map loading state"
+  },
+  "inspectorPickModuleFirst": {
+    "message": "Select a module to map fields.",
+    "description": "Field map hint when no module"
+  },
+  "inspectorActionComingSoon": {
+    "message": "This action is listed for planning — runtime support is coming soon.",
+    "description": "Banner for unavailable process actions"
+  },
+  "inspectorComingSoonBadge": {
+    "message": "soon",
+    "description": "Short badge in action type dropdown"
+  },
+  "inspectorBooleanTrue": {
+    "message": "True",
+    "description": "Boolean true option in field map"
+  },
+  "inspectorBooleanFalse": {
+    "message": "False",
+    "description": "Boolean false option in field map"
+  },
+  "inspectorRequiredFieldsHeading": {
+    "message": "Required fields",
+    "description": "Heading for auto-listed mandatory field values"
+  },
+  "inspectorOptionalFieldsHeading": {
+    "message": "Optional fields",
+    "description": "Heading for optional mapped field values"
+  },
+  "inspectorAddOptionalField": {
+    "message": "Add optional field",
+    "description": "Dropdown to add an optional field to the map"
+  },
+  "inspectorNoModuleFields": {
+    "message": "No fields available for this module.",
+    "description": "Empty state when module has no mappable fields"
+  },
+  "settingsScheduleTimezone": {
+    "message": "Timezone: {timezone}",
+    "description": "Shows which timezone the schedule uses"
+  },
+  "designerRunNow": {
+    "message": "Run now",
+    "description": "Execute active process immediately"
+  },
+  "designerRunNowDone": {
+    "message": "Process run started",
+    "description": "Toast after run-now success"
+  },
+  "designerRunNowFailed": {
+    "message": "Could not run process",
+    "description": "Toast after run-now failure"
+  },
+  "processTooltipDelete": {
+    "message": "Delete",
+    "description": "Delete draft/archived process tooltip"
+  },
+  "processDeleteConfirm": {
+    "message": "Delete process \"{name}\"? This cannot be undone.",
+    "description": "Confirm delete non-active process"
+  },
+  "processDeleteFailed": {
+    "message": "Failed to delete process",
+    "description": "Delete process error alert"
+  },
+  "processDeleteActiveBlocked": {
+    "message": "Active processes cannot be deleted. Deactivate them first.",
+    "description": "Block delete while process is active"
+  },
+  "inspectorValueMode": {
+    "message": "Value type",
+    "description": "Raw / copy / expression mode label"
+  },
+  "inspectorValueModeRaw": {
+    "message": "Raw value",
+    "description": "Literal field value mode"
+  },
+  "inspectorValueModeCopy": {
+    "message": "Copy from field",
+    "description": "Copy trigger record field mode"
+  },
+  "inspectorValueModeExpression": {
+    "message": "Expression",
+    "description": "Expression with mergetags mode"
+  },
+  "inspectorCopyFromField": {
+    "message": "Source field",
+    "description": "Copy-from field picker"
+  },
+  "inspectorCopyFromHint": {
+    "message": "Copies the value from the triggering record at runtime.",
+    "description": "Hint under copy-from picker"
+  },
+  "inspectorExpression": {
+    "message": "Expression",
+    "description": "Expression textarea label"
+  },
+  "inspectorExpressionPh": {
+    "message": "e.g. concat(\"Follow up: \", uppercase(trigger.first_name))",
+    "description": "Expression placeholder"
+  },
+  "inspectorExpressionHint": {
+    "message": "Formula helpers + fields: uppercase(trigger.first_name), concat(...), if(...), now(). Mergetags still work: use curly braces around trigger.field",
+    "description": "Expression syntax hint"
+  },
+  "inspectorHelperUpper": {
+    "message": "Uppercase helper",
+    "description": "Helper chip tooltip"
+  },
+  "inspectorHelperLower": {
+    "message": "Lowercase helper",
+    "description": "Helper chip tooltip"
+  },
+  "inspectorHelperTrim": {
+    "message": "Trim helper",
+    "description": "Helper chip tooltip"
+  },
+  "inspectorHelperNow": {
+    "message": "Current timestamp (ISO)",
+    "description": "Helper chip tooltip"
+  },
+  "inspectorFormulaHelpers": {
+    "message": "Helpers",
+    "description": "Formula helper picker heading"
+  },
+  "formulaCatRecommended": {
+    "message": "Recommended",
+    "description": "Helper category"
+  },
+  "formulaCatString": {
+    "message": "String",
+    "description": "Helper category"
+  },
+  "formulaCatDate": {
+    "message": "Date & time",
+    "description": "Helper category"
+  },
+  "formulaCatMath": {
+    "message": "Math",
+    "description": "Helper category"
+  },
+  "formulaCatConditional": {
+    "message": "Conditional",
+    "description": "Helper category"
+  },
+  "formulaCatLogical": {
+    "message": "Logical",
+    "description": "Helper category"
+  },
+  "formulaCatValidation": {
+    "message": "Validation",
+    "description": "Helper category"
+  },
+  "formulaCatUtility": {
+    "message": "Utility",
+    "description": "Helper category"
+  },
+  "expressionModalTitle": {
+    "message": "Build expression",
+    "description": "Expression builder modal title"
+  },
+  "expressionModalEditor": {
+    "message": "Expression",
+    "description": "Editor label in modal"
+  },
+  "expressionModalClear": {
+    "message": "Clear",
+    "description": "Clear expression button"
+  },
+  "expressionModalHint": {
+    "message": "Click a field or helper to insert at the cursor. Save with Ctrl/Cmd+Enter.",
+    "description": "Modal editor hint"
+  },
+  "expressionModalMergetags": {
+    "message": "Fields",
+    "description": "Mergetag tab"
+  },
+  "expressionModalHelpers": {
+    "message": "Helpers",
+    "description": "Helpers tab"
+  },
+  "expressionModalSearchFields": {
+    "message": "Search fields…",
+    "description": "Search placeholder"
+  },
+  "expressionModalSearchHelpers": {
+    "message": "Search helpers…",
+    "description": "Search placeholder"
+  },
+  "expressionModalNoResults": {
+    "message": "No matches",
+    "description": "Empty search results"
+  },
+  "expressionModalSave": {
+    "message": "Use expression",
+    "description": "Save expression button"
+  },
+  "expressionCompactEmpty": {
+    "message": "Click to build an expression",
+    "description": "Empty compact expression preview"
+  },
+  "expressionCompactEdit": {
+    "message": "Edit",
+    "description": "Edit expression compact action"
+  },
+  "expressionCompactBuild": {
+    "message": "Build",
+    "description": "Build expression compact action"
+  },
+  "paletteTypeForEach": {
+    "message": "For each",
+    "description": "For-each loop palette label"
+  },
+  "paletteTypeForEachDesc": {
+    "message": "Run following steps once per fetched record",
+    "description": "For-each loop palette description"
+  },
+  "paletteTypeForEachEnd": {
+    "message": "End for each",
+    "description": "End for-each loop palette label"
+  },
+  "paletteTypeForEachEndDesc": {
+    "message": "Close a for-each loop body",
+    "description": "End for-each loop palette description"
+  },
+  "inspectorForEachHint": {
+    "message": "Steps between For each and End for each run once per record in the variable. You can nest another For each inside (use a different variable from a second Fetch).",
+    "description": "For each inspector hint"
+  },
+  "inspectorForEachVariable": {
+    "message": "Variable name",
+    "description": "For each variable field label"
+  },
+  "inspectorForEachSelectVariable": {
+    "message": "Select a variable…",
+    "description": "Empty for-each variable select"
+  },
+  "inspectorForEachNoVariables": {
+    "message": "No variables yet",
+    "description": "For-each select when canvas has no fetch/set vars"
+  },
+  "inspectorForEachNoVariablesHint": {
+    "message": "Add a Fetch records (or Set variable) step first, then pick its store-as name here.",
+    "description": "Hint when no data variables exist"
+  },
+  "inspectorForEachMissingVar": {
+    "message": "not on canvas",
+    "description": "Suffix when for-each variable is not produced by any Fetch step"
+  },
+  "inspectorForEachVariablePh": {
+    "message": "records",
+    "description": "For each variable placeholder"
+  },
+  "inspectorForEachConnectHint": {
+    "message": "Connect: Fetch → For each → (optional nested Fetch → For each → … → End for each) → … → End for each.",
+    "description": "For each wiring hint"
+  },
+  "inspectorForEachEndHint": {
+    "message": "Closes the nearest open For each. Pair each For each with its own End for each (inner first).",
+    "description": "End for each inspector hint"
+  },
+  "triggerSchedule": {
+    "message": "Schedule",
+    "description": "Schedule trigger type label in list"
+  },
+  "searchPlaceholder": {
+    "message": "Search processes...",
+    "description": "Processes list search placeholder"
+  },
+  "colName": {
+    "message": "Name",
+    "description": "Processes list column header"
+  },
+  "colApp": {
+    "message": "App",
+    "description": "Processes list column header"
+  },
+  "colTrigger": {
+    "message": "Trigger",
+    "description": "Processes list column header"
+  },
+  "colNodes": {
+    "message": "Nodes",
+    "description": "Processes list column header"
+  },
+  "colStatus": {
+    "message": "Status",
+    "description": "Processes list column header"
+  },
+  "colUpdated": {
+    "message": "Updated",
+    "description": "Processes list column header"
+  },
+  "inspectorSelectModuleFirst": {
+    "message": "Select a module first to build filters.",
+    "description": "Fetch records filter needs module"
+  },
+  "fetchLimitAll": {
+    "message": "All matching records",
+    "description": "Fetch records limit mode — all"
+  },
+  "fetchLimitCount": {
+    "message": "Limited number",
+    "description": "Fetch records limit mode — count"
+  },
+  "emailBodyModeCustom": {
+    "message": "Custom message",
+    "description": "Send email content mode — write subject/body"
+  },
+  "emailBodyModeTemplate": {
+    "message": "Email template",
+    "description": "Send email content mode — Content Studio email template"
+  },
+  "inspectorSelectEmailTemplate": {
+    "message": "Select email template",
+    "description": "Empty label for process send_email template picker"
+  },
+  "appKeyPlatform": {
+    "message": "PLATFORM",
+    "description": "Platform app key label"
+  },
+  "expressionModalPreview": {
+    "message": "Returns (sample data)",
+    "description": "Live expression result preview label"
+  },
+  "expressionModalPreviewEmpty": {
+    "message": "Result appears here as you type",
+    "description": "Empty preview placeholder"
+  },
+  "expressionModalPreviewError": {
+    "message": "Invalid expression",
+    "description": "Preview evaluation error label"
+  },
+  "expressionModalPreviewSample": {
+    "message": "Using sample trigger values (e.g. first_name=Ada)",
+    "description": "Sample data footnote for preview"
+  },
+  "expressionModalModeSimple": {
+    "message": "Simple",
+    "description": "Guided expression mode"
+  },
+  "expressionModalModeFormula": {
+    "message": "Formula",
+    "description": "Advanced formula mode"
+  },
+  "expressionModalSimpleHint": {
+    "message": "Pick a field, choose a rule, then set what to return. No code needed.",
+    "description": "Hint for guided condition builder"
+  },
+  "expressionModalWhen": {
+    "message": "When",
+    "description": "When section label"
+  },
+  "expressionModalThen": {
+    "message": "Then use",
+    "description": "Then section label"
+  },
+  "expressionModalElse": {
+    "message": "Otherwise use",
+    "description": "Else section label"
+  },
+  "expressionModalThenPh": {
+    "message": "Value if true…",
+    "description": "Then value placeholder"
+  },
+  "expressionModalElsePh": {
+    "message": "Value if false…",
+    "description": "Else value placeholder"
+  },
+  "expressionModalComparePh": {
+    "message": "Compare to…",
+    "description": "Compare value placeholder"
+  },
+  "expressionModalJoinAnd": {
+    "message": "AND (all must match)",
+    "description": "Join conditions with AND"
+  },
+  "expressionModalJoinOr": {
+    "message": "OR (any can match)",
+    "description": "Join conditions with OR"
+  },
+  "expressionModalAddCondition": {
+    "message": "+ Add another condition",
+    "description": "Add condition row"
+  },
+  "expressionModalValueText": {
+    "message": "Text",
+    "description": "Literal text value mode"
+  },
+  "expressionModalValueField": {
+    "message": "Field",
+    "description": "Field value mode"
+  },
+  "expressionModalValueHelper": {
+    "message": "Function",
+    "description": "Helper/function value mode for Then/Otherwise"
+  },
+  "expressionModalPickFunction": {
+    "message": "Function",
+    "description": "Pick a function for Then/Otherwise"
+  },
+  "expressionModalApplyToField": {
+    "message": "Apply to field",
+    "description": "Field argument for unary helper"
+  },
+  "expressionModalDays": {
+    "message": "Number of days",
+    "description": "Days argument for add/sub days helper"
+  },
+  "expressionModalHelperHint": {
+    "message": "Pick a function, then the field it should use. No code needed.",
+    "description": "Hint under Then/Otherwise function mode"
+  },
+  "expressionResult_uppercase": {
+    "message": "UPPERCASE text",
+    "description": "Simple result helper"
+  },
+  "expressionResult_lowercase": {
+    "message": "lowercase text",
+    "description": "Simple result helper"
+  },
+  "expressionResult_trim": {
+    "message": "Trim spaces",
+    "description": "Simple result helper"
+  },
+  "expressionResult_length": {
+    "message": "Text length",
+    "description": "Simple result helper"
+  },
+  "expressionResult_today": {
+    "message": "Today's date",
+    "description": "Simple result helper"
+  },
+  "expressionResult_tomorrow": {
+    "message": "Tomorrow's date",
+    "description": "Simple result helper"
+  },
+  "expressionResult_yesterday": {
+    "message": "Yesterday's date",
+    "description": "Simple result helper"
+  },
+  "expressionResult_now": {
+    "message": "Current date & time",
+    "description": "Simple result helper"
+  },
+  "expressionResult_uuid": {
+    "message": "New unique ID",
+    "description": "Simple result helper"
+  },
+  "expressionResult_add_days": {
+    "message": "Today + days",
+    "description": "Simple result helper"
+  },
+  "expressionResult_sub_days": {
+    "message": "Today − days",
+    "description": "Simple result helper"
+  },
+  "expressionModalGenerated": {
+    "message": "Generated expression",
+    "description": "Label for auto-built formula"
+  },
+  "expressionOp_is_empty": {
+    "message": "is empty",
+    "description": "Simple condition operator"
+  },
+  "expressionOp_is_not_empty": {
+    "message": "is not empty",
+    "description": "Simple condition operator"
+  },
+  "expressionOp_equals": {
+    "message": "equals",
+    "description": "Simple condition operator"
+  },
+  "expressionOp_not_equals": {
+    "message": "does not equal",
+    "description": "Simple condition operator"
+  },
+  "expressionOp_contains": {
+    "message": "contains",
+    "description": "Simple condition operator"
+  },
+  "expressionOp_starts_with": {
+    "message": "starts with",
+    "description": "Simple condition operator"
+  },
+  "expressionOp_ends_with": {
+    "message": "ends with",
+    "description": "Simple condition operator"
+  },
+  "expressionOp_gt": {
+    "message": "is greater than",
+    "description": "Simple condition operator"
+  },
+  "expressionOp_gte": {
+    "message": "is greater than or equal",
+    "description": "Simple condition operator"
+  },
+  "expressionOp_lt": {
+    "message": "is less than",
+    "description": "Simple condition operator"
+  },
+  "expressionOp_lte": {
+    "message": "is less than or equal",
+    "description": "Simple condition operator"
+  },
+  "expressionOp_is_email": {
+    "message": "is a valid email",
+    "description": "Simple condition operator"
+  },
+  "expressionOp_is_phone": {
+    "message": "is a valid phone",
+    "description": "Simple condition operator"
   }
 }

@@ -56,6 +56,8 @@ function buildExecutionContext(params) {
   // Generate deterministic execution ID
   const executionId = event
     ? `${processId}:${event.eventId}`
+    : params.scheduleSlotId
+    ? `${processId}:schedule:${params.scheduleSlotId}`
     : params.webhookDeliveryId
     ? `${processId}:webhook:${params.webhookDeliveryId}`
     : params.webhookInvocation
@@ -72,7 +74,9 @@ function buildExecutionContext(params) {
     triggeredBy: event ? event.triggeredBy : triggeredBy,
     assignedTo: event ? event.assignedTo : assignedTo,
     event,
-    dataBag: {},
+    dataBag: params.scheduleInvocation
+      ? { __scheduleSlotId: params.scheduleSlotId || null }
+      : {},
     behaviorProposals: {
       fieldRules: [],
       ownershipRules: [],

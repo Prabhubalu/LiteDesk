@@ -51,6 +51,8 @@ const defaultPalette = computed(() => [
   { type: 'approval_gate', label: t('process.paletteTypeApproval'), description: t('process.paletteTypeApprovalDesc') },
   { type: 'wait', label: t('process.paletteTypeWait'), description: t('process.paletteTypeWaitDesc') },
   { type: 'action', label: t('process.paletteTypeAction'), description: t('process.paletteTypeActionDesc') },
+  { type: 'for_each', label: t('process.paletteTypeForEach'), description: t('process.paletteTypeForEachDesc') },
+  { type: 'for_each_end', label: t('process.paletteTypeForEachEnd'), description: t('process.paletteTypeForEachEndDesc') },
   { type: 'end', label: t('process.paletteTypeEnd'), description: t('process.paletteTypeEndDesc') }
 ]);
 

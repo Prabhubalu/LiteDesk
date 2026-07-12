@@ -26,7 +26,7 @@
           :empty-label="t('process.settingsSelectApp')"
           :disabled="!editable"
           :button-class="PROCESS_SELECT_BUTTON_CLASS"
-          @update:model-value="emitChange"
+          @update:model-value="onAppChange"
         />
       </div>
 
@@ -38,8 +38,8 @@
           v-model="local.entityType"
           :options="moduleOptions"
           allow-empty
-          :empty-label="t('process.settingsSelectModule')"
-          :disabled="!editable"
+          :empty-label="modulePlaceholder"
+          :disabled="!editable || !local.appKey"
           :button-class="PROCESS_SELECT_BUTTON_CLASS"
           @update:model-value="onModuleChange"
         />
@@ -74,8 +74,21 @@
         <p class="text-[10px] text-gray-500 mt-1">{{ startsWhenHint }}</p>
       </div>
 
+      <div v-if="triggerBehaviourApplies(local.coreTrigger)">
+        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          {{ t('process.setupTriggerBehaviour') }} <span class="text-red-500">*</span>
+        </label>
+        <HeadlessSelect
+          v-model="local.triggerBehaviour"
+          :options="triggerBehaviourOptions"
+          :disabled="!editable"
+          :button-class="PROCESS_SELECT_BUTTON_CLASS"
+          @update:model-value="emitChange"
+        />
+      </div>
+
       <div
-        v-if="local.coreTrigger === 'record_updated' && local.entityType"
+        v-if="(local.coreTrigger === 'record_updated' || local.coreTrigger === 'record_created_or_updated') && local.entityType"
         class="space-y-2 rounded-lg border border-gray-200 dark:border-gray-600 p-3"
       >
         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('process.settingsWatchChangesHeading') }}</label>
@@ -105,17 +118,41 @@
             @update:model-value="emitChange"
           />
         </div>
-        <div v-if="local.schedule.preset === 'daily' || local.schedule.preset === 'weekly'" class="grid grid-cols-2 gap-2">
+        <div v-if="local.schedule.preset === 'weekly'">
+          <label class="block text-[10px] text-gray-500 mb-1">{{ t('process.setupDayOfWeek') }}</label>
+          <HeadlessSelect
+            v-model="local.schedule.dayOfWeek"
+            :options="scheduleDayOfWeekOptions"
+            :disabled="!editable"
+            :button-class="PROCESS_SELECT_BUTTON_CLASS"
+            @update:model-value="emitChange"
+          />
+        </div>
+        <div v-if="local.schedule.preset === 'monthly'">
+          <label class="block text-[10px] text-gray-500 mb-1">{{ t('process.setupDayOfMonth') }}</label>
+          <input
+            v-model.number="local.schedule.dayOfMonth"
+            type="number"
+            min="1"
+            max="28"
+            :disabled="!editable"
+            class="w-full px-2 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
+            @input="emitChange"
+          />
+          <p class="text-[10px] text-gray-500 mt-1">{{ t('process.setupDayOfMonthHint') }}</p>
+        </div>
+        <div
+          v-if="local.schedule.preset === 'daily' || local.schedule.preset === 'weekly' || local.schedule.preset === 'monthly'"
+          class="grid grid-cols-3 gap-2"
+        >
           <div>
             <label class="block text-[10px] text-gray-500 mb-1">{{ t('process.settingsHourHeading') }}</label>
-            <input
-              v-model.number="local.schedule.hour"
-              type="number"
-              min="0"
-              max="23"
+            <HeadlessSelect
+              v-model="scheduleHour12"
+              :options="scheduleHour12Options"
               :disabled="!editable"
-              class="w-full px-2 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
-              @input="emitChange"
+              :button-class="PROCESS_SELECT_BUTTON_CLASS"
+              @update:model-value="emitChange"
             />
           </div>
           <div>
@@ -130,7 +167,20 @@
               @input="emitChange"
             />
           </div>
+          <div>
+            <label class="block text-[10px] text-gray-500 mb-1">{{ t('process.setupPeriod') }}</label>
+            <HeadlessSelect
+              v-model="schedulePeriod"
+              :options="schedulePeriodOptions"
+              :disabled="!editable"
+              :button-class="PROCESS_SELECT_BUTTON_CLASS"
+              @update:model-value="emitChange"
+            />
+          </div>
         </div>
+        <p class="text-[10px] text-gray-600 dark:text-gray-400">
+          {{ t('process.settingsScheduleTimezone', { timezone: local.schedule.timezone || 'UTC' }) }}
+        </p>
         <p class="text-[10px] text-amber-700 dark:text-amber-300">
           {{ t('process.settingsScheduleRunnerHint') }}
         </p>
@@ -205,6 +255,18 @@
         </div>
       </div>
 
+      <div class="flex items-start justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-600 px-3 py-2.5">
+        <div class="min-w-0">
+          <p class="text-xs font-medium text-gray-900 dark:text-white">{{ t('process.setupIncludeClosedRecords') }}</p>
+          <p class="text-[10px] text-gray-500 mt-0.5">{{ t('process.setupIncludeClosedRecordsHint') }}</p>
+        </div>
+        <HeadlessSwitch
+          v-model="local.includeClosedRecords"
+          :disabled="!editable"
+          @update:model-value="emitChange"
+        />
+      </div>
+
       <div>
         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{{ t('process.settingsDescriptionHeading') }}</label>
         <textarea
@@ -225,12 +287,22 @@ import { ref, computed, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import HeadlessSwitch from '@/components/ui/HeadlessSwitch.vue';
 import {
   getAppOptions,
   getModuleOptions,
+  loadProcessScopeFromRegistry,
   PROCESS_SELECT_BUTTON_CLASS,
   coreTriggerOptions,
   getSchedulePresetOptions,
+  getScheduleDayOfWeekOptions,
+  getScheduleHour12Options,
+  getSchedulePeriodOptions,
+  toScheduleHour12,
+  toScheduleHour24,
+  getTriggerBehaviourOptions,
+  triggerBehaviourApplies,
+  resolveTriggerBehaviourForSave,
   getCoreTriggerDescription,
   updateWatchFieldOptions,
   resolveCoreTriggerFromProcess,
@@ -253,24 +325,67 @@ const props = defineProps({
 const emit = defineEmits(['update', 'webhook-secret']);
 
 const startsWhenSectionRef = ref(null);
+const registryAppOptions = ref([]);
+const registryModulesByApp = ref({});
 
 const local = ref({
   appKey: '',
   entityType: '',
   description: '',
   coreTrigger: '',
+  triggerBehaviour: 'every_time',
+  includeClosedRecords: false,
   updateWatchField: '__any__',
-  schedule: { preset: 'daily', hour: 9, minute: 0, dayOfWeek: 1, timezone: 'UTC' }
+  schedule: {
+    preset: 'daily',
+    hour: 9,
+    minute: 0,
+    dayOfWeek: 1,
+    dayOfMonth: 1,
+    timezone:
+      (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC'
+  }
 });
 
 const mappingRows = ref([{ dataBagKey: '', sourcePath: '' }]);
 const rotating = ref(false);
 
-const appOptions = computed(() => getAppOptions(t));
-const moduleOptions = computed(() => getModuleOptions(t));
+const appOptions = computed(() =>
+  registryAppOptions.value.length ? registryAppOptions.value : getAppOptions(t)
+);
+const moduleOptions = computed(() => {
+  const key = String(local.value.appKey || '').toUpperCase();
+  if (key && registryModulesByApp.value[key]) return registryModulesByApp.value[key];
+  return getModuleOptions(t, local.value.appKey);
+});
 const coreTriggerOptionsList = computed(() => coreTriggerOptions(t));
 const schedulePresetOptions = computed(() => getSchedulePresetOptions(t));
+const scheduleDayOfWeekOptions = computed(() => getScheduleDayOfWeekOptions(t));
+const scheduleHour12Options = computed(() => getScheduleHour12Options());
+const schedulePeriodOptions = computed(() => getSchedulePeriodOptions(t));
+const triggerBehaviourOptions = computed(() => getTriggerBehaviourOptions(t));
 const watchFieldOptions = computed(() => updateWatchFieldOptions(local.value.entityType, t));
+
+const scheduleHour12 = computed({
+  get: () => toScheduleHour12(local.value.schedule.hour),
+  set: (hour12) => {
+    local.value.schedule.hour = toScheduleHour24(hour12, schedulePeriod.value);
+  }
+});
+
+const schedulePeriod = computed({
+  get: () => (Number(local.value.schedule.hour) >= 12 ? 'PM' : 'AM'),
+  set: (period) => {
+    local.value.schedule.hour = toScheduleHour24(scheduleHour12.value, period);
+  }
+});
+
+loadProcessScopeFromRegistry(t)
+  .then((scope) => {
+    registryAppOptions.value = scope.appOptions;
+    registryModulesByApp.value = scope.modulesByApp;
+  })
+  .catch((e) => console.error('Failed to load process scope from registry', e));
 
 function syncFromProcess() {
   const p = props.process;
@@ -281,6 +396,8 @@ function syncFromProcess() {
     entityType,
     description: p?.description || '',
     coreTrigger: coerceCoreTriggerForModule(resolveCoreTriggerFromProcess(p)),
+    triggerBehaviour: p?.triggerBehaviour === 'first_time' ? 'first_time' : 'every_time',
+    includeClosedRecords: p?.includeClosedRecords === true,
     updateWatchField: watch.watchField,
     schedule: resolveScheduleFromProcess(p)
   };
@@ -302,6 +419,11 @@ watch(
     startsWhenSectionRef.value?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
   }
 );
+
+const modulePlaceholder = computed(() => {
+  if (!local.value.appKey) return t('process.settingsSelectAppFirst');
+  return t('process.settingsSelectModule');
+});
 
 const startsWhenPlaceholder = computed(() => {
   if (!local.value.entityType) return t('process.settingsSelectModuleFirst');
@@ -351,14 +473,26 @@ function buildTriggerPayload() {
   );
 }
 
+function onAppChange() {
+  local.value.entityType = '';
+  local.value.coreTrigger = '';
+  emitChange();
+}
+
 function onModuleChange() {
   local.value.coreTrigger = coerceCoreTriggerForModule(local.value.coreTrigger);
   emitChange();
 }
 
 function onCoreTriggerChange() {
-  if (local.value.coreTrigger === 'record_updated' && local.value.updateWatchField === '__any__') {
+  if (
+    (local.value.coreTrigger === 'record_updated' || local.value.coreTrigger === 'record_created_or_updated') &&
+    local.value.updateWatchField === '__any__'
+  ) {
     /* keep */
+  }
+  if (!triggerBehaviourApplies(local.value.coreTrigger)) {
+    local.value.triggerBehaviour = 'every_time';
   }
   emitChange();
 }
@@ -383,6 +517,11 @@ function emitChange() {
     entityType: local.value.entityType,
     description: local.value.description,
     coreTrigger: local.value.coreTrigger,
+    triggerBehaviour: resolveTriggerBehaviourForSave(
+      local.value.coreTrigger,
+      local.value.triggerBehaviour
+    ),
+    includeClosedRecords: local.value.includeClosedRecords === true,
     triggerConfigured: Boolean(local.value.coreTrigger),
     trigger,
     needsTriggerNode: applied.needsTriggerNode

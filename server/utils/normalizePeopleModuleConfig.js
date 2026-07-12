@@ -35,17 +35,7 @@ function dedupeFieldsByKey(fields) {
 function getDefaultSalesTypeModuleField() {
   return {
     key: 'sales_type',
-    label: 'Type',
-    dataType: 'Picklist',
-    keyField: false,
-    required: false,
-    options: ['Lead', 'Contact'],
-    defaultValue: null,
-    visibility: { list: true, detail: true },
-    owner: 'platform',
-    context: 'sales',
-    isVirtual: true,
-    appKey: 'SALES',
+    label: 'Sales Type',
     filterable: true,
     filterType: 'multi-select',
     filterPriority: 2,
@@ -61,6 +51,7 @@ function getDefaultSalesTypeModuleField() {
 /**
  * - Drops legacy `type` when `sales_type` already exists.
  * - Renames lone `type` → `sales_type` with virtual SALES defaults.
+ * - Canonical labels for participation type fields.
  */
 function normalizePeopleModuleFields(fields) {
   if (!Array.isArray(fields)) return fields;
@@ -81,7 +72,7 @@ function normalizePeopleModuleFields(fields) {
         ...baseVirtual,
         ...typeField,
         key: 'sales_type',
-        label: typeField.label || baseVirtual.label,
+        label: baseVirtual.label,
         isVirtual: true,
         appKey: 'SALES',
         context: normalizeParticipationFieldContext(typeField).context || baseVirtual.context,
@@ -91,6 +82,14 @@ function normalizePeopleModuleFields(fields) {
     }
     out = dedupeFieldsByKey(out);
   }
+
+  out = out.map((f) => {
+    const k = keyNorm(f);
+    if (k === 'salestype' || k === 'sales_type') return { ...f, label: 'Sales Type' };
+    if (k === 'helpdeskrole' || k === 'helpdesk_role') return { ...f, label: 'Helpdesk Type' };
+    return f;
+  });
+
   return ensurePeopleParticipationStatusFields(out);
 }
 

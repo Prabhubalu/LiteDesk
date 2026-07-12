@@ -20,11 +20,83 @@ function toId(v) {
 function eq(a, b) {
   if (a === b) return true;
   if (a == null || b == null) return false;
+  if (a instanceof Date && b instanceof Date) return a.getTime() === b.getTime();
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) return false;
     return a.every((x, i) => eq(x, b[i]));
   }
+  if (typeof a === 'object' && typeof b === 'object') {
+    try {
+      return JSON.stringify(a) === JSON.stringify(b);
+    } catch {
+      return false;
+    }
+  }
   return false;
+}
+
+const SYSTEM_SKIP = new Set([
+  '_id',
+  '__v',
+  'organizationId',
+  'createdAt',
+  'updatedAt',
+  'createdBy',
+  'modifiedBy',
+  'deletedAt',
+  'deletedBy',
+  'deletionReason',
+  'activityLogs',
+  'descriptionVersions',
+  'playbookState',
+  'portalAccess',
+  'source',
+  'password',
+  'tokens',
+  'embeddings',
+  'lineItems',
+  'products',
+  'notes'
+]);
+
+function normalizeSnapValue(v) {
+  if (v == null) return null;
+  if (v instanceof Date) return v.toISOString();
+  if (typeof v === 'object' && v._id != null) return toId(v);
+  if (Array.isArray(v)) return v.map(normalizeSnapValue);
+  return v;
+}
+
+/**
+ * Broad snapshot so *.updated fires for any meaningful field change (incl. customFields).
+ */
+function buildBroadSnapshot(doc, { seed = {}, skipKeys = [] } = {}) {
+  if (!doc) return null;
+  const skip = new Set([...SYSTEM_SKIP, ...skipKeys]);
+  const base = { ...seed };
+  const cf =
+    doc.customFields && typeof doc.customFields === 'object' && !Array.isArray(doc.customFields)
+      ? doc.customFields
+      : {};
+  for (const [k, v] of Object.entries(cf)) {
+    if (!skip.has(k) && !(k in base)) base[k] = normalizeSnapValue(v);
+  }
+  for (const [k, v] of Object.entries(doc)) {
+    if (skip.has(k) || k === 'customFields' || k in base) continue;
+    if (v != null && typeof v === 'object' && !(v instanceof Date) && !Array.isArray(v) && v._id == null) {
+      continue;
+    }
+    base[k] = normalizeSnapValue(v);
+  }
+  return base;
+}
+
+function unionSnapshotKeys(...snaps) {
+  const keys = new Set();
+  for (const s of snaps) {
+    if (s) Object.keys(s).forEach((k) => keys.add(k));
+  }
+  return [...keys];
 }
 
 /** Keys to compare for generic record.updated changedFields */
@@ -101,26 +173,22 @@ function resolveOwner(entityType, current) {
 
 function quoteSnapshot(quote) {
   if (!quote) return null;
-  return {
-    status: quote.status,
-    grandTotal: Number(quote.grandTotal) || 0,
-    subtotal: Number(quote.subtotal) || 0,
-    globalDiscountTotal: Number(quote.globalDiscountTotal) || 0,
-    assignedTo: toId(quote.assignedTo),
-    approvalRequired: quote.approvalRequired === true,
-    approvalStatus: quote.approvalStatus || null
-  };
+  return buildBroadSnapshot(quote, {
+    seed: {
+      status: quote.status,
+      title: quote.title ?? quote.name ?? null,
+      grandTotal: Number(quote.grandTotal) || 0,
+      subtotal: Number(quote.subtotal) || 0,
+      globalDiscountTotal: Number(quote.globalDiscountTotal) || 0,
+      assignedTo: toId(quote.assignedTo),
+      approvalRequired: quote.approvalRequired === true,
+      approvalStatus: quote.approvalStatus || null,
+      validUntil: quote.validUntil ?? null,
+      currency: quote.currency ?? null
+    },
+    skipKeys: ['participations', 'organization']
+  });
 }
-
-const QUOTE_SNAPSHOT_KEYS = [
-  'status',
-  'grandTotal',
-  'subtotal',
-  'globalDiscountTotal',
-  'assignedTo',
-  'approvalRequired',
-  'approvalStatus'
-];
 
 /**
  * Emit Quote domain events for Process Designer / automation.
@@ -154,7 +222,7 @@ function emitQuoteEvents({
     entityId,
     previous: prevSnap,
     current: currSnap,
-    snapshotKeys: QUOTE_SNAPSHOT_KEYS,
+    snapshotKeys: unionSnapshotKeys(prevSnap, currSnap),
     appKey,
     triggeredBy,
     organizationId: orgId,
@@ -190,7 +258,11 @@ function emitQuoteEvents({
 function emitPeopleEvents({ previous, current, appKey = 'SALES', triggeredBy = null, organizationId = null }) {
   if (!current) return;
   const entityId = toId(current._id);
-  const orgId = organizationId ? toId(organizationId) : null;
+  const orgId = organizationId
+    ? toId(organizationId)
+    : current.organizationId
+      ? toId(current.organizationId)
+      : null;
   const assignedTo = resolveOwner('people', current);
 
   const { getSalesParticipationValues } = require('../utils/getSalesParticipationValues');
@@ -206,34 +278,35 @@ function emitPeopleEvents({ previous, current, appKey = 'SALES', triggeredBy = n
   const peopleSnap = (p) => {
     if (!p) return null;
     const s = getSalesParticipationValues(p);
-    return {
-      first_name: p.first_name,
-      last_name: p.last_name,
-      email: p.email,
-      organization: toId(p.organization),
-      assignedTo: toId(p.assignedTo),
-      lifecycle: p.lifecycle,
-      sales_type: s.role,
-      lead_status: s.lead_status,
-      contact_status: s.contact_status
-    };
+    return buildBroadSnapshot(p, {
+      seed: {
+        first_name: p.first_name,
+        last_name: p.last_name,
+        email: p.email,
+        phone: p.phone ?? p.phoneNumber ?? null,
+        mobile: p.mobile ?? null,
+        organization: toId(p.organization),
+        assignedTo: toId(p.assignedTo),
+        lifecycle: p.lifecycle,
+        sales_type: s.role,
+        lead_status: s.lead_status,
+        contact_status: s.contact_status,
+        description: p.description ?? null,
+        tags: p.tags ?? null
+      },
+      skipKeys: ['participations']
+    });
   };
+
+  const prevSnap = previous ? peopleSnap(previous) : null;
+  const currSnap = peopleSnap(current);
+
   emitRecordLifecycle({
     entityType: 'people',
     entityId,
-    previous: previous ? peopleSnap(previous) : null,
-    current: peopleSnap(current),
-    snapshotKeys: [
-      'first_name',
-      'last_name',
-      'email',
-      'organization',
-      'assignedTo',
-      'lifecycle',
-      'sales_type',
-      'lead_status',
-      'contact_status'
-    ],
+    previous: prevSnap,
+    current: currSnap,
+    snapshotKeys: unionSnapshotKeys(prevSnap, currSnap),
     appKey,
     triggeredBy,
     organizationId: orgId,
@@ -302,21 +375,30 @@ function emitOrganizationEvents({ previous, current, appKey = 'SALES', triggered
 
   const orgSnap = (o) => {
     if (!o) return null;
-    return {
-      name: o.name,
-      assignedTo: toId(o.assignedTo),
-      types: o.types,
-      customerStatus: o.customerStatus,
-      partnerStatus: o.partnerStatus,
-      vendorStatus: o.vendorStatus
-    };
+    return buildBroadSnapshot(o, {
+      seed: {
+        name: o.name,
+        assignedTo: toId(o.assignedTo),
+        types: o.types,
+        customerStatus: o.customerStatus,
+        partnerStatus: o.partnerStatus,
+        vendorStatus: o.vendorStatus,
+        email: o.email ?? null,
+        phone: o.phone ?? null,
+        website: o.website ?? null,
+        industry: o.industry ?? null
+      },
+      skipKeys: ['participations', 'people']
+    });
   };
+  const prevSnap = previous ? orgSnap(previous) : null;
+  const currSnap = orgSnap(current);
   emitRecordLifecycle({
     entityType: 'organization',
     entityId,
-    previous: previous ? orgSnap(previous) : null,
-    current: orgSnap(current),
-    snapshotKeys: ['name', 'assignedTo', 'types', 'customerStatus', 'partnerStatus', 'vendorStatus'],
+    previous: prevSnap,
+    current: currSnap,
+    snapshotKeys: unionSnapshotKeys(prevSnap, currSnap),
     appKey,
     triggeredBy,
     organizationId: orgId,
@@ -402,26 +484,32 @@ async function emitDealEvents({ previous, current, appKey = 'SALES', triggeredBy
   const prevOwner = toId(previous?.assignedTo);
   const currOwner = toId(current?.assignedTo);
 
+  const dealSnap = (d) => {
+    if (!d) return null;
+    return buildBroadSnapshot(d, {
+      seed: {
+        name: d.name,
+        stage: d.stage,
+        pipeline: d.pipeline,
+        amount: d.amount,
+        assignedTo: toId(d.assignedTo),
+        probability: d.probability ?? null,
+        expectedCloseDate: d.expectedCloseDate ?? d.closeDate ?? null,
+        organization: toId(d.organization),
+        people: toId(d.people || d.contact)
+      },
+      skipKeys: ['participations', 'stageHistory', 'activities']
+    });
+  };
+  const prevSnap = previous ? dealSnap(previous) : null;
+  const currSnap = dealSnap(current);
+
   emitRecordLifecycle({
     entityType: 'deal',
     entityId,
-    previous: previous
-      ? {
-          name: previous?.name,
-          stage: prevStage,
-          pipeline: prevPipeline,
-          amount: previous?.amount,
-          assignedTo: prevOwner
-        }
-      : null,
-    current: {
-      name: current?.name,
-      stage: currStage,
-      pipeline: currPipeline,
-      amount: current?.amount,
-      assignedTo: currOwner
-    },
-    snapshotKeys: ['name', 'stage', 'pipeline', 'amount', 'assignedTo'],
+    previous: prevSnap,
+    current: currSnap,
+    snapshotKeys: unionSnapshotKeys(prevSnap, currSnap),
     appKey,
     triggeredBy,
     organizationId: orgId,
@@ -487,6 +575,7 @@ async function emitDealEvents({ previous, current, appKey = 'SALES', triggeredBy
 }
 
 module.exports = {
+  emitRecordLifecycle,
   emitPeopleEvents,
   emitOrganizationEvents,
   emitDealEvents,

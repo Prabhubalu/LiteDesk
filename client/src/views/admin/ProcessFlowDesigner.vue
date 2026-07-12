@@ -62,6 +62,15 @@
 
       <div class="flex items-center gap-2 shrink-0">
         <button
+          v-if="process.status === 'active' && canRunNow"
+          type="button"
+          :disabled="runningNow"
+          class="px-3 py-1.5 text-sm font-medium rounded-lg border border-indigo-300 text-indigo-700 dark:border-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 disabled:opacity-50"
+          @click="runProcessNow"
+        >
+          {{ runningNow ? t('states.loading') : t('process.designerRunNow') }}
+        </button>
+        <button
           v-if="process.status === 'active'"
           type="button"
           class="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -214,6 +223,7 @@
         :node-version="inspectorNode.data.version || 1"
         :config="inspectorNode.data.config"
         :process="process"
+        :flow-nodes="flowNodes"
         :editable="editable && designerMode === 'design'"
         :execution-detail="selectedExecutionDetail"
         :module-field-meta="moduleFieldMetaByKey"
@@ -257,6 +267,7 @@ import {
   generateId
 } from '@/composables/useProcessGraph';
 import { graphErrorsByElement } from '@/utils/processGraphValidation';
+import { buildNodeSentence } from '@/utils/processSentenceBuilder';
 import { useProcessModuleFields } from '@/composables/useProcessModuleFields';
 import { useProcessNodeDrafts } from '@/composables/useProcessNodeDrafts';
 import { useNotifications } from '@/composables/useNotifications';
@@ -319,6 +330,7 @@ const executions = ref([]);
 const selectedExecutionId = ref('');
 const showTestModal = ref(false);
 const testing = ref(false);
+const runningNow = ref(false);
 const graphErrors = ref([]);
 const highlightStartsWhen = ref(false);
 
@@ -332,6 +344,11 @@ const {
 } = useProcessNodeDrafts();
 
 const editable = computed(() => process.value.status === 'draft');
+
+const canRunNow = computed(() => {
+  const type = process.value?.trigger?.type;
+  return type === 'schedule' || type === 'manual';
+});
 
 /** JSON snapshot of last loaded/saved state — used to enable Save only when dirty. */
 const savedSnapshot = ref('');
@@ -463,6 +480,12 @@ function applyProcessSettings(settings) {
   process.value.appKey = settings.appKey;
   process.value.entityType = settings.entityType;
   process.value.description = settings.description;
+  if (Object.prototype.hasOwnProperty.call(settings, 'triggerBehaviour')) {
+    process.value.triggerBehaviour = settings.triggerBehaviour === 'first_time' ? 'first_time' : 'every_time';
+  }
+  if (Object.prototype.hasOwnProperty.call(settings, 'includeClosedRecords')) {
+    process.value.includeClosedRecords = settings.includeClosedRecords === true;
+  }
   if (settings.triggerConfigured === false) {
     process.value.triggerConfigured = false;
   } else if (settings.coreTrigger && settings.trigger) {
@@ -480,6 +503,22 @@ function applyProcessSettings(settings) {
   const synced = syncTriggerNodeOnGraph(process.value, flowNodes.value, flowEdges.value);
   flowNodes.value = synced.nodes;
   flowEdges.value = synced.edges;
+  // Refresh all node sentences (trigger label must track Starts when / schedule)
+  flowNodes.value = flowNodes.value.map((n) => {
+    const processNode = {
+      id: n.id,
+      type: n.data.processType,
+      config: n.data.config,
+      version: n.data.version
+    };
+    return {
+      ...n,
+      data: {
+        ...n.data,
+        sentence: buildNodeSentence(processNode, process.value)
+      }
+    };
+  });
   syncProcessFromFlow();
 
   const entityType = settings.entityType || process.value.entityType || 'deal';
@@ -746,7 +785,7 @@ function addNode(type) {
   const partial = ['field_rule', 'ownership_rule', 'status_guard'].includes(type)
     ? { entityType: process.value.entityType }
     : {};
-  const vfNode = createFlowNode(type, { x: 280, y }, partial);
+  const vfNode = createFlowNode(type, { x: 280, y }, partial, process.value);
   flowNodes.value = [...flowNodes.value, vfNode];
   autoConnectNewNode(vfNode.id);
   setDraft(vfNode.id, type, vfNode.data.config, vfNode.data.sentence);
@@ -844,6 +883,26 @@ async function activateProcess() {
       applyValidationHighlights();
     }
     notifyError(e.message || t('process.designerActivateFailed'));
+  }
+}
+
+async function runProcessNow() {
+  if (!process.value?._id || !canRunNow.value || runningNow.value) return;
+  runningNow.value = true;
+  try {
+    const res = await apiClient.post(`/admin/processes/${process.value._id}/run-now`, {});
+    if (!res.success) throw new Error(res.message || t('process.designerRunNowFailed'));
+    notifySuccess(res.message || t('process.designerRunNowDone'));
+    designerMode.value = 'insight';
+    await loadExecutionsList();
+    if (res.data?.executionId) {
+      selectedExecutionId.value = res.data.executionId;
+      await loadExecutionOverlay(res.data.executionId);
+    }
+  } catch (e) {
+    notifyError(e.message || t('process.designerRunNowFailed'));
+  } finally {
+    runningNow.value = false;
   }
 }
 
