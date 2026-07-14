@@ -1,46 +1,48 @@
 <template>
-  <div class="mx-auto w-full">
+  <div class="flex min-h-0 flex-1 flex-col overflow-hidden bg-gray-50 dark:bg-neutral-950">
     <LiveChatWorkspaceNav />
 
-    <ListPageSkeleton v-if="!listReady" :body-rows="12" />
+    <div class="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
+      <ListPageSkeleton v-if="!listReady" :body-rows="12" />
 
-    <ListView
-      v-else
-      :title="t('liveChat.closedSessionsTitle')"
-      :description="t('liveChat.closedSessionsDesc')"
-      module-key="live-chat-closed"
-      :search-placeholder="t('liveChat.closedSessionsSearchPlaceholder')"
-      :data="displayRows"
-      :columns="allColumns"
-      :loading="loading"
-      :show-create="false"
-      :show-import="false"
-      :show-export="false"
-      :show-stats="false"
-      :show-filters="false"
-      :selectable="false"
-      :has-actions="false"
-      table-id="live-chat-closed-sessions-table"
-      row-key="_id"
-      :sort-field="sortField"
-      :sort-order="sortOrder"
-      :empty-title="emptyTitle"
-      :empty-message="emptyMessage"
-      infinite-scroll
-      :loading-more="loadingMore"
-      :parent-search-query="searchQuery"
-      scroll-session-key="live-chat-closed-workspace"
-      @update:searchQuery="handleSearchQueryUpdate"
-      @search-submit="handleSearchQueryUpdate"
-      @update:filters="handleFiltersUpdate"
-      @update:sort="handleSortUpdate"
-      @row-click="handleRowClick"
-      @load-more="loadMore"
-    >
-      <template #cell="{ column, row }">
-        <LiveChatSessionListCell :column-key="column.key" :row="row" />
-      </template>
-    </ListView>
+      <ListView
+        v-else
+        :title="t('liveChat.closedSessionsTitle')"
+        :description="t('liveChat.closedSessionsDesc')"
+        module-key="live-chat-closed"
+        :search-placeholder="t('liveChat.closedSessionsSearchPlaceholder')"
+        :data="displayRows"
+        :columns="allColumns"
+        :loading="loading"
+        :show-create="false"
+        :show-import="false"
+        :show-export="false"
+        :show-stats="false"
+        :show-filters="false"
+        :selectable="false"
+        :has-actions="false"
+        table-id="live-chat-closed-sessions-table"
+        row-key="_id"
+        :sort-field="sortField"
+        :sort-order="sortOrder"
+        :empty-title="emptyTitle"
+        :empty-message="emptyMessage"
+        infinite-scroll
+        :loading-more="loadingMore"
+        :parent-search-query="searchQuery"
+        scroll-session-key="live-chat-closed-workspace"
+        @update:searchQuery="handleSearchQueryUpdate"
+        @search-submit="handleSearchQueryUpdate"
+        @update:filters="handleFiltersUpdate"
+        @update:sort="handleSortUpdate"
+        @row-click="handleRowClick"
+        @load-more="loadMore"
+      >
+        <template #cell="{ column, row }">
+          <LiveChatSessionListCell :column-key="column.key" :row="row" />
+        </template>
+      </ListView>
+    </div>
   </div>
 </template>
 

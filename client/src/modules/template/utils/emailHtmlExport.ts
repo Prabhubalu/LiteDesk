@@ -1,6 +1,7 @@
 import type { Editor } from 'grapesjs';
 import { extractRenderedOutput, buildTemplateHtmlDocument, exportBodyHtmlFromCanvasFrame } from '../editor/renderer';
 import { stripGrapesDocumentWrapper } from './formatHtmlDocument';
+import { normalizeImportedEmailHtml } from './normalizeImportedEmailHtml';
 
 export interface ParsedEmailHtml {
   html: string;
@@ -60,7 +61,7 @@ export function parseTemplateHtmlDocumentForCanvas(
   const isEmail = Boolean(options.isEmail);
 
   return {
-    html: bodyHtml,
+    html: isEmail ? normalizeImportedEmailHtml(bodyHtml) : bodyHtml,
     css: isEmail ? css : filterImportedDocumentCss(css)
   };
 }
@@ -105,7 +106,7 @@ export function extractEmailBodyHtml(html: string): string {
 
   const bodyMatch = source.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
   if (bodyMatch?.[1]) {
-    return bodyMatch[1].trim();
+    return normalizeImportedEmailHtml(bodyMatch[1]);
   }
 
   source = source.replace(/^<!DOCTYPE[^>]*>/i, '');
@@ -113,7 +114,7 @@ export function extractEmailBodyHtml(html: string): string {
   source = source.replace(/<head[\s\S]*?<\/head>/gi, '');
   source = source.replace(/<\/?body[^>]*>/gi, '');
 
-  return source.trim();
+  return normalizeImportedEmailHtml(source);
 }
 
 export function isFullHtmlDocument(html: string): boolean {

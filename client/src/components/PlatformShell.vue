@@ -138,8 +138,6 @@ const routerViewKey = computed(() => {
 
 const isInboxRoute = computed(() => route.name === 'inbox');
 const isLiveChatRoute = computed(() => String(route.path || '').startsWith('/live-chat/'));
-/** Closed sessions list uses standard scrollable list shell (ListView customize drawer). */
-const isLiveChatClosedListRoute = computed(() => route.name === 'live-chat-closed');
 /** Only the Settings split-pane shell — not standalone /settings/* admin pages (processes, flows, notifications). */
 const isSettingsRoute = computed(() => route.name === 'settings');
 const isProcessDesignerRoute = computed(() => {
@@ -161,7 +159,7 @@ const isContentStudioEditorRoute = computed(() => {
 
 const useViewportLock = computed(
   () => isInboxRoute.value
-    || (isLiveChatRoute.value && !isLiveChatClosedListRoute.value)
+    || isLiveChatRoute.value
     || isSettingsRoute.value
     || isProcessDesignerRoute.value
     || isFormCreateRoute.value
@@ -181,7 +179,7 @@ const isRecordDetailRoute = computed(() => {
 });
 
 const useFillHeightContent = computed(
-  () => useViewportLock.value || isRecordDetailRoute.value
+  () => useViewportLock.value || isRecordDetailRoute.value || route.name === 'template-detail'
 );
 
 const routerViewClass = computed(() => {

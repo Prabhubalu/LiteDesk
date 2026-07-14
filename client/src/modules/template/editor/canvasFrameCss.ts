@@ -66,7 +66,10 @@ export const GRAPES_CANVAS_CHROME_CSS = `
   .arivu-sheet-cell-editing .builder-merge-chip {
     border-color: #c7d2fe;
   }
+`;
 
+/** PDF canvas: keep block text whitespace for document editing. */
+export const GRAPES_PDF_TEXT_BLOCK_CSS = `
   [data-text-block='true'],
   [data-paragraph='true'],
   [data-heading='true'],
@@ -141,10 +144,16 @@ export const GRAPES_EMAIL_CANVAS_CSS = `
   table {
     max-width: 100%;
   }
+
+  /* Email HTML uses normal whitespace; pre-wrap makes indent/spaces shove text while editing. */
+  [contenteditable='true'],
+  .arivu-inline-text-editing {
+    white-space: normal;
+  }
 `;
 
 /** @deprecated Use resolveCanvasFrameCss — kept for tests referencing the PDF default. */
-export const GRAPES_CANVAS_FRAME_CSS = `${GRAPES_CANVAS_CHROME_CSS}${GRAPES_PDF_BUILDER_CANVAS_CSS}`;
+export const GRAPES_CANVAS_FRAME_CSS = `${GRAPES_CANVAS_CHROME_CSS}${GRAPES_PDF_TEXT_BLOCK_CSS}${GRAPES_PDF_BUILDER_CANVAS_CSS}`;
 
 export function resolveCanvasFrameCss(outputFormat: TemplateOutputFormat = 'pdf'): string {
   if (outputFormat === 'email') {

@@ -1,7 +1,5 @@
 <template>
-  <div class="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8 py-6">
-    <TemplatesModuleNav />
-
+  <div class="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col overflow-hidden px-4 sm:px-6 lg:px-8 py-6">
     <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400">
       {{ t('states.loading') }}
     </div>
@@ -11,7 +9,7 @@
     </div>
 
     <template v-else>
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
+      <div class="mb-6 flex shrink-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">{{ template.name }}</h1>
           <p v-if="template.description" class="mt-1 text-sm text-gray-600 dark:text-gray-400">
@@ -52,7 +50,7 @@
             {{ validateBusy ? t('templates.validating') : t('templates.validate') }}
           </button>
           <button
-            v-if="canRender && template.latestPublishedVersion"
+            v-if="canRender && template.latestPublishedVersion && !isEmailFormat"
             type="button"
             class="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm"
             :disabled="renderBusy"
@@ -88,122 +86,114 @@
         </div>
       </div>
 
-      <div class="grid gap-6 md:grid-cols-2">
-        <section class="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-          <h2 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('templates.versions') }}</h2>
-          <dl class="space-y-2 text-sm">
-            <div class="flex justify-between gap-4">
-              <dt class="text-gray-500 dark:text-gray-400">{{ t('templates.publishedVersion') }}</dt>
-              <dd>{{ template.latestPublishedVersion ? `v${template.latestPublishedVersion}` : '—' }}</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="text-gray-500 dark:text-gray-400">{{ t('templates.colVersion') }}</dt>
-              <dd>{{ template.latestVersion ? `v${template.latestVersion}` : '—' }}</dd>
-            </div>
-          </dl>
-          <p v-if="template.draftDefinition" class="mt-3 text-xs text-amber-700 dark:text-amber-300">
-            {{ t('templates.draftAvailable') }}
-          </p>
+      <div class="grid min-h-0 flex-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(20rem,0.85fr)] lg:items-stretch">
+        <!-- Preview (left) -->
+        <section class="flex min-h-0 flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <h2 class="mb-3 shrink-0 text-sm font-semibold text-gray-900 dark:text-white">{{ t('templates.previewSection') }}</h2>
+          <TemplateHtmlPreviewPanel
+            class="min-h-0 flex-1"
+            :template-id="String(templateId)"
+            :template="template"
+          />
+        </section>
 
-          <ul v-if="versions.length" class="mt-4 space-y-2">
-            <li
-              v-for="version in versions"
-              :key="version._id"
-              class="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-gray-800/60 px-3 py-2 text-sm"
-            >
-              <div class="flex items-center gap-3">
-                <span>v{{ version.version }}</span>
-                <span class="text-gray-500 dark:text-gray-400">
-                  {{ version.published ? t('templates.statePublished') : t('templates.stateDraft') }}
-                </span>
+        <!-- Detail (right) -->
+        <div class="flex min-h-0 flex-col gap-6 overflow-y-auto">
+          <section class="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('templates.colPurpose') }}</h2>
+            <dl class="space-y-2 text-sm">
+              <div>
+                <dt class="text-gray-500 dark:text-gray-400">{{ t('templates.fieldPurpose') }}</dt>
+                <dd class="text-gray-900 dark:text-white">{{ template.purpose || '—' }}</dd>
               </div>
-              <button
-                v-if="canEdit && version.published"
-                type="button"
-                class="text-indigo-600 dark:text-indigo-400 hover:underline"
-                :disabled="restoreBusy === version.version"
-                @click="handleRestore(version.version)"
+              <div>
+                <dt class="text-gray-500 dark:text-gray-400">{{ t('templates.fieldCategory') }}</dt>
+                <dd class="text-gray-900 dark:text-white">{{ template.category || '—' }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500 dark:text-gray-400">{{ t('templates.fieldModuleScope') }}</dt>
+                <dd class="text-gray-900 dark:text-white">{{ template.moduleScope || '—' }}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('templates.versions') }}</h2>
+            <dl class="space-y-2 text-sm">
+              <div class="flex justify-between gap-4">
+                <dt class="text-gray-500 dark:text-gray-400">{{ t('templates.publishedVersion') }}</dt>
+                <dd>{{ template.latestPublishedVersion ? `v${template.latestPublishedVersion}` : '—' }}</dd>
+              </div>
+              <div class="flex justify-between gap-4">
+                <dt class="text-gray-500 dark:text-gray-400">{{ t('templates.colVersion') }}</dt>
+                <dd>{{ template.latestVersion ? `v${template.latestVersion}` : '—' }}</dd>
+              </div>
+            </dl>
+            <p v-if="template.draftDefinition" class="mt-3 text-xs text-amber-700 dark:text-amber-300">
+              {{ t('templates.draftAvailable') }}
+            </p>
+
+            <ul v-if="versions.length" class="mt-4 space-y-2">
+              <li
+                v-for="version in versions"
+                :key="version._id"
+                class="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-gray-800/60 px-3 py-2 text-sm"
               >
-                {{ restoreBusy === version.version ? t('states.loading') : t('templates.restoreVersion') }}
-              </button>
-            </li>
-          </ul>
-        </section>
+                <div class="flex items-center gap-3">
+                  <span>v{{ version.version }}</span>
+                  <span class="text-gray-500 dark:text-gray-400">
+                    {{ version.published ? t('templates.statePublished') : t('templates.stateDraft') }}
+                  </span>
+                </div>
+                <button
+                  v-if="canEdit && version.published"
+                  type="button"
+                  class="text-indigo-600 dark:text-indigo-400 hover:underline"
+                  :disabled="restoreBusy === version.version"
+                  @click="handleRestore(version.version)"
+                >
+                  {{ restoreBusy === version.version ? t('states.loading') : t('templates.restoreVersion') }}
+                </button>
+              </li>
+            </ul>
+          </section>
 
-        <section
-          v-if="validationResult"
-          class="rounded-xl border border-gray-200 dark:border-gray-700 p-4 md:col-span-2"
-        >
-          <h2 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('templates.validationSection') }}</h2>
-
-          <p
-            class="text-sm mb-3"
-            :class="validationResult.valid ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'"
+          <section
+            v-if="validationResult"
+            class="rounded-xl border border-gray-200 dark:border-gray-700 p-4"
           >
-            {{ validationResult.valid ? t('templates.validationPassed') : t('templates.validationFailed') }}
-          </p>
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('templates.validationSection') }}</h2>
 
-          <div v-if="validationResult.errors?.length" class="mb-3">
-            <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">
-              {{ t('templates.validationErrors') }}
-            </h3>
-            <ul class="space-y-1 text-sm text-red-700 dark:text-red-300">
-              <li v-for="(issue, index) in validationResult.errors" :key="`error-${index}`">
-                {{ formatValidationIssue(issue) }}
-              </li>
-            </ul>
-          </div>
+            <p
+              class="text-sm mb-3"
+              :class="validationResult.valid ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'"
+            >
+              {{ validationResult.valid ? t('templates.validationPassed') : t('templates.validationFailed') }}
+            </p>
 
-          <div v-if="validationResult.warnings?.length">
-            <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">
-              {{ t('templates.validationWarnings') }}
-            </h3>
-            <ul class="space-y-1 text-sm text-amber-700 dark:text-amber-300">
-              <li v-for="(issue, index) in validationResult.warnings" :key="`warning-${index}`">
-                {{ formatValidationIssue(issue) }}
-              </li>
-            </ul>
-          </div>
-        </section>
-
-        <section class="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-          <h2 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('templates.colPurpose') }}</h2>
-          <dl class="space-y-2 text-sm">
-            <div>
-              <dt class="text-gray-500 dark:text-gray-400">{{ t('templates.fieldPurpose') }}</dt>
-              <dd class="text-gray-900 dark:text-white">{{ template.purpose || '—' }}</dd>
+            <div v-if="validationResult.errors?.length" class="mb-3">
+              <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">
+                {{ t('templates.validationErrors') }}
+              </h3>
+              <ul class="space-y-1 text-sm text-red-700 dark:text-red-300">
+                <li v-for="(issue, index) in validationResult.errors" :key="`error-${index}`">
+                  {{ formatValidationIssue(issue) }}
+                </li>
+              </ul>
             </div>
-            <div>
-              <dt class="text-gray-500 dark:text-gray-400">{{ t('templates.fieldCategory') }}</dt>
-              <dd class="text-gray-900 dark:text-white">{{ template.category || '—' }}</dd>
-            </div>
-            <div>
-              <dt class="text-gray-500 dark:text-gray-400">{{ t('templates.fieldModuleScope') }}</dt>
-              <dd class="text-gray-900 dark:text-white">{{ template.moduleScope || '—' }}</dd>
-            </div>
-          </dl>
-        </section>
 
-        <section
-          v-if="canRender && template.latestPublishedVersion"
-          class="rounded-xl border border-gray-200 dark:border-gray-700 p-4 md:col-span-2"
-        >
-          <h2 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">{{ t('templates.previewSection') }}</h2>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ t('templates.previewDescription') }}</p>
-
-          <div v-if="needsRecordContext" class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ t('templates.fieldRecordId') }}
-            </label>
-            <input
-              v-model="recordId"
-              type="text"
-              class="w-full max-w-md rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm"
-              :placeholder="t('templates.recordIdPlaceholder')"
-            />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('templates.recordIdHint', { module: template.moduleScope }) }}</p>
-          </div>
-        </section>
+            <div v-if="validationResult.warnings?.length">
+              <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">
+                {{ t('templates.validationWarnings') }}
+              </h3>
+              <ul class="space-y-1 text-sm text-amber-700 dark:text-amber-300">
+                <li v-for="(issue, index) in validationResult.warnings" :key="`warning-${index}`">
+                  {{ formatValidationIssue(issue) }}
+                </li>
+              </ul>
+            </div>
+          </section>
+        </div>
       </div>
     </template>
   </div>
@@ -213,10 +203,13 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import TemplatesModuleNav from '@/components/templates/TemplatesModuleNav.vue';
+import TemplateHtmlPreviewPanel from '@/modules/template/components/TemplateHtmlPreviewPanel.vue';
+import { isEmailOutputFormat } from '@/constants/contentPageSettings';
 import { useTemplates } from '@/composables/useTemplates';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
+import { useTabs } from '@/composables/useTabs';
+import { openRecordInTab } from '@/utils/tabNavigation';
 
 const props = defineProps({
   id: { type: String, default: '' }
@@ -227,6 +220,7 @@ const router = useRouter();
 const { t } = useI18n();
 const authStore = useAuthStore();
 const notifications = useNotifications();
+const { activeTabId, updateTabTitle, findTabById } = useTabs();
 
 const {
   fetchTemplate,
@@ -257,6 +251,9 @@ const canArchive = computed(() => authStore.can('templates', 'archive'));
 const canDelete = computed(() => authStore.can('templates', 'delete'));
 const canRender = computed(() => authStore.can('templates', 'render'));
 
+const isEmailFormat = computed(() => isEmailOutputFormat(template.value?.outputFormat));
+
+/** PDF download still needs a real record for quote/invoice merges; HTML preview uses sample data. */
 const needsRecordContext = computed(() => {
   const scope = String(template.value?.moduleScope || '').toLowerCase();
   return scope === 'quotes' || scope === 'invoices';
@@ -279,7 +276,15 @@ function extractValidationDetails(error) {
 }
 
 function openBuilder() {
-  router.push({ name: 'template-builder', params: { id: templateId.value } });
+  const id = templateId.value;
+  if (!id) return;
+  const name = String(template.value?.name || '').trim() || t('templates.detailTitle');
+  openRecordInTab(`/templates/${id}/builder`, {
+    title: name,
+    icon: 'document-text',
+    params: { id, name },
+    name: `template-builder-${id}`
+  });
 }
 
 async function loadTemplate() {
@@ -288,6 +293,14 @@ async function loadTemplate() {
     template.value = await fetchTemplate(templateId.value);
     versions.value = await listVersions(templateId.value);
     validationResult.value = null;
+    const tabId = activeTabId.value;
+    if (tabId && route.name === 'template-detail') {
+      const tab = findTabById(tabId);
+      if (tab?.path) {
+        const name = String(template.value?.name || '').trim() || t('templates.detailTitle');
+        updateTabTitle(tabId, name);
+      }
+    }
   } catch (error) {
     template.value = null;
     notifications.error(error?.message || t('templates.loadFailed'));

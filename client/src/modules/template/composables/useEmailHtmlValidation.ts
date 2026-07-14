@@ -17,10 +17,29 @@ export interface EmailValidationResult {
   analysis: HtmlAnalysisResult | null;
 }
 
+const ANALYSIS_WARNING_FIX_KEYS: Record<string, string> = {
+  'javascript-removed': 'templates.htmlImport.validationFixJavascriptRemoved',
+  'external-css-ignored': 'templates.htmlImport.validationFixExternalCss',
+  'external-css': 'templates.htmlImport.validationFixExternalCss',
+  'unsupported-css': 'templates.htmlImport.validationFixUnsupportedCss',
+  form: 'templates.htmlImport.validationFixForm'
+};
+
 function mapAnalysisToValidation(analysis: HtmlAnalysisResult, t: (key: string, ...args: unknown[]) => string): EmailValidationResult {
   const errors: EmailValidationItem[] = [];
   const warnings: EmailValidationItem[] = [];
   const suggestions: EmailValidationItem[] = [];
+  const addedFixCodes = new Set<string>();
+
+  function addFixSuggestion(code: string, messageKey: string) {
+    if (addedFixCodes.has(code)) return;
+    addedFixCodes.add(code);
+    suggestions.push({
+      severity: 'suggestion',
+      code,
+      message: t(messageKey)
+    });
+  }
 
   if (!analysis.checks.htmlValid) {
     errors.push({
@@ -54,6 +73,10 @@ function mapAnalysisToValidation(analysis: HtmlAnalysisResult, t: (key: string, 
       message: t(key),
       detail: item.detail
     });
+    const fixKey = ANALYSIS_WARNING_FIX_KEYS[item.type];
+    if (fixKey) {
+      addFixSuggestion(`SUG_FIX_${item.type}`, fixKey);
+    }
   }
 
   const imgWithoutAlt = (analysis.sanitizedHtml.match(/<img\b(?![^>]*\balt=)[^>]*>/gi) || []).length;
@@ -63,6 +86,7 @@ function mapAnalysisToValidation(analysis: HtmlAnalysisResult, t: (key: string, 
       code: 'WARN_NO_ALT',
       message: t('templates.htmlImport.validationMissingAlt', { count: imgWithoutAlt })
     });
+    addFixSuggestion('SUG_FIX_NO_ALT', 'templates.htmlImport.validationFixMissingAlt');
   }
 
   const tablesWithoutWidth = (analysis.sanitizedHtml.match(/<table\b(?![^>]*\bwidth=)[^>]*>/gi) || []).length;
@@ -72,6 +96,7 @@ function mapAnalysisToValidation(analysis: HtmlAnalysisResult, t: (key: string, 
       code: 'WARN_TABLE_WIDTH',
       message: t('templates.htmlImport.validationMissingTableWidth', { count: tablesWithoutWidth })
     });
+    addFixSuggestion('SUG_FIX_TABLE_WIDTH', 'templates.htmlImport.validationFixMissingTableWidth');
   }
 
   return { errors, warnings, suggestions, analysis };

@@ -1,4 +1,4 @@
-import { getApiUrlForFetch } from '@/config/apiBase';
+import { getApiUrlForFetch, getApiUrlForMedia } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
 
 function authHeaders() {
@@ -7,6 +7,48 @@ function authHeaders() {
   const headers = {};
   if (token) headers.Authorization = `Bearer ${token}`;
   return headers;
+}
+
+/**
+ * Build a browser-openable download URL (new tab / img src) with JWT for optionalAuth.
+ */
+export function liveChatAttachmentHref(att) {
+  if (!att) return '#';
+  const url = String(att.url || '').trim();
+  let path = '';
+  if (url.startsWith('/api/') || url.startsWith('http://') || url.startsWith('https://')) {
+    path = url;
+  } else {
+    const storagePath = String(att.storagePath || '').trim();
+    if (storagePath.startsWith('oci:')) {
+      const q = new URLSearchParams({
+        storagePath,
+        disposition: 'inline',
+      });
+      if (att.fileName) q.set('fileName', String(att.fileName));
+      if (att.mimeType) q.set('contentType', String(att.mimeType));
+      path = `/api/files/download?${q.toString()}`;
+    } else if (storagePath) {
+      path = `/api/uploads/${storagePath.replace(/^\//, '')}`;
+    }
+  }
+  if (!path) return '#';
+
+  let resolved = path;
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    try {
+      const parsed = new URL(path);
+      resolved = getApiUrlForMedia(`${parsed.pathname}${parsed.search}`);
+    } catch {
+      resolved = path;
+    }
+  } else {
+    resolved = getApiUrlForMedia(path);
+  }
+
+  const token = useAuthStore().user?.token;
+  if (!token || !String(resolved).includes('/files/download')) return resolved || '#';
+  return `${resolved}${resolved.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
 }
 
 export async function uploadLiveChatMessageAttachment(sessionId, file) {

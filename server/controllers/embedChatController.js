@@ -12,7 +12,7 @@ const {
   emitSessionStarted,
   emitMessageReceived
 } = require('../services/liveChatEventService');
-const { notifyLiveChatInboundMessage, notifyLiveChatSessionStarted } = require('../services/liveChatNotificationService');
+const { notifyLiveChatInboundMessage } = require('../services/liveChatNotificationService');
 const { emitSessionEnded } = require('../services/liveChatEventService');
 const { normalizeOutcomeKey } = require('../services/liveChatOutcomeService');
 const { allocateSessionKey } = require('../services/liveChatSessionKeyService');
@@ -37,6 +37,7 @@ const {
 const { LIVE_CHAT_JOURNEY_ACTIONS } = require('../constants/liveChatVisitorContext');
 const { inferVisitorTypeFromVisitor } = require('../constants/liveChatSessionIdentity');
 const { buildSessionConsentPatch } = require('../constants/liveChatSessionCompliance');
+const { uploadMulterFile } = require('../services/fileStorageService');
 
 function secret() {
   return crypto.randomBytes(24).toString('hex');
@@ -109,28 +110,11 @@ async function createSession(req, res) {
       });
     }
 
-    emitSessionStarted({
-      organizationId: req.organization?._id || null,
-      sessionId: row._id,
-      metadata: {
-        pageUrl,
-        instancePublicKey,
-      },
-    });
-
-    if (organizationId) {
-      void notifyLiveChatSessionStarted({
-        organizationId,
-        session: row,
-      }).catch(() => {});
-    }
-
+    // Do not notify/assign agents until the visitor sends their first message.
+    // Bot greeting (if enabled) may still start here without routing to an agent.
     if (organizationId) {
       await bindSessionToDefaultQueue({ organizationId, sessionId: row._id });
-      const botStart = await startBotHandlingOnSession({ organizationId, sessionId: row._id });
-      if (!botStart.started) {
-        await assignWaitingSession({ organizationId, sessionId: row._id });
-      }
+      await startBotHandlingOnSession({ organizationId, sessionId: row._id });
       const { tryAutoLinkExistingPersonToSession } = require('../services/liveChatCrmAdapter');
       void tryAutoLinkExistingPersonToSession({ organizationId, sessionId: row._id }).catch((linkErr) => {
         console.warn('[embedChatController] auto-link person skipped:', linkErr?.message || linkErr);
@@ -258,6 +242,57 @@ async function closeSession(req, res) {
   }
 }
 
+function normalizeMessageAttachments(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((row) => ({
+      fileName: String(row?.fileName || row?.originalname || '').trim(),
+      mimeType: String(row?.mimeType || row?.mimetype || '').trim(),
+      size: Number(row?.size) || 0,
+      url: String(row?.url || '').trim(),
+      storagePath: String(row?.storagePath || '').trim(),
+    }))
+    .filter((row) => row.fileName && (row.url || row.storagePath));
+}
+
+async function uploadMessageAttachment(req, res) {
+  try {
+    const sessionId = req.params.sessionId;
+    const session = await ChatSession.findById(sessionId).lean();
+    if (!session) return res.status(404).json({ success: false, message: 'Session not found' });
+    await assertSessionSecret(req, session);
+    if (String(session.status || '') === 'closed') {
+      return res.status(409).json({ success: false, message: 'Session is closed' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+    if (!req.organization?._id) {
+      return res.status(400).json({ success: false, message: 'Organization context required' });
+    }
+
+    const uploadResult = await uploadMulterFile(req.file, {
+      organizationId: req.organization._id,
+      category: 'live-chat',
+    });
+    return res.status(201).json({
+      success: true,
+      data: {
+        fileName: req.file.originalname || uploadResult.storedFileName || 'attachment',
+        mimeType: req.file.mimetype || '',
+        size: Number(req.file.size) || 0,
+        url: uploadResult.url || '',
+        storagePath: uploadResult.storagePath || '',
+      },
+    });
+  } catch (err) {
+    const status = err.statusCode || 500;
+    if (status !== 500) return res.status(status).json({ success: false, message: err.message });
+    console.error('[embedChatController] uploadMessageAttachment', err);
+    return res.status(500).json({ success: false, message: 'Failed to upload attachment' });
+  }
+}
+
 async function postMessage(req, res) {
   try {
     const sessionId = req.params.sessionId;
@@ -269,7 +304,16 @@ async function postMessage(req, res) {
     }
 
     const body = String(req.body?.body || '').trim();
-    if (!body) return res.status(400).json({ success: false, message: 'body is required' });
+    const attachments = normalizeMessageAttachments(req.body?.attachments);
+    if (!body && !attachments.length) {
+      return res.status(400).json({ success: false, message: 'body or attachments are required' });
+    }
+
+    const inboundBefore = await ChatMessage.countDocuments({
+      sessionId: session._id,
+      direction: 'inbound',
+    });
+    const isFirstVisitorMessage = inboundBefore === 0;
 
     const msg = await ChatMessage.create({
       organizationId: req.organization?._id || null,
@@ -277,11 +321,11 @@ async function postMessage(req, res) {
       direction: 'inbound',
       authorType: 'visitor',
       authorName: String(req.body?.authorName || session.visitor?.name || '').trim(),
-      body
+      body,
+      attachments,
     });
 
     const now = new Date();
-    const isFirstMessage = !session.lastMessageAt;
 
     await ChatSession.updateOne(
       { _id: session._id },
@@ -298,7 +342,19 @@ async function postMessage(req, res) {
       },
     );
 
-    const refreshedSession = await ChatSession.findById(session._id).lean();
+    let refreshedSession = await ChatSession.findById(session._id).lean();
+
+    if (req.organization?._id && isFirstVisitorMessage) {
+      emitSessionStarted({
+        organizationId: req.organization._id,
+        sessionId: session._id,
+        metadata: {
+          pageUrl: session.pageUrl || null,
+          instancePublicKey: session.instancePublicKey || null,
+          triggeredBy: 'first_visitor_message',
+        },
+      });
+    }
 
     emitMessageReceived({
       organizationId: req.organization?._id || null,
@@ -306,7 +362,7 @@ async function postMessage(req, res) {
       messageId: msg._id,
       direction: 'inbound',
       metadata: {
-        isFirstMessage,
+        isFirstMessage: isFirstVisitorMessage,
         pageUrl: session.pageUrl || null,
       },
     });
@@ -319,6 +375,7 @@ async function postMessage(req, res) {
           session: refreshedSession,
           message: msg,
         });
+        refreshedSession = await ChatSession.findById(session._id).lean();
       }
 
       const shouldNotifyAgents = !botResult?.handled || botResult?.escalated === true;
@@ -330,7 +387,7 @@ async function postMessage(req, res) {
         });
       }
 
-      const latestSession = await ChatSession.findById(session._id).lean();
+      const latestSession = refreshedSession || (await ChatSession.findById(session._id).lean());
       const lifecycle = String(latestSession?.lifecycleStatus || '');
       if (
         lifecycle !== 'bot_handling'
@@ -618,6 +675,7 @@ module.exports = {
   submitSessionFeedback,
   createSession,
   recordSessionJourney,
+  uploadMessageAttachment,
   postMessage,
   postMessageReceipts,
   listMessages,

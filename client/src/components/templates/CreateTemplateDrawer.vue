@@ -27,25 +27,15 @@
                 leave-to="translate-x-full"
               >
                 <div class="pointer-events-auto flex h-full">
-                  <DialogPanel class="flex h-full w-[min(92vw,44rem)] max-w-[95vw] flex-col bg-white shadow-xl dark:bg-gray-800">
+                  <DialogPanel class="flex h-full w-[30rem] max-w-[95vw] flex-col bg-white shadow-xl dark:bg-gray-800">
                     <form class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700" @submit.prevent="submit">
-                      <div class="flex shrink-0 items-start justify-between gap-3 bg-indigo-700 px-4 py-5 dark:bg-indigo-800 sm:px-6">
-                        <div class="flex min-w-0 items-start gap-3">
-                          <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white shadow-lg">
-                            <DocumentPlusIcon class="h-5 w-5" aria-hidden="true" />
-                          </div>
-                          <div class="min-w-0">
-                            <DialogTitle class="truncate text-base font-semibold text-white">
-                              {{ drawerTitle }}
-                            </DialogTitle>
-                            <p class="mt-0.5 line-clamp-2 text-sm text-indigo-200/90">
-                              {{ drawerSubtitle }}
-                            </p>
-                          </div>
-                        </div>
+                      <div class="flex shrink-0 items-center justify-between bg-indigo-700 px-4 py-4 dark:bg-indigo-800 sm:px-6">
+                        <DialogTitle class="truncate text-base font-semibold text-white">
+                          {{ drawerTitle }}
+                        </DialogTitle>
                         <button
                           type="button"
-                          class="relative shrink-0 rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                          class="relative ml-3 shrink-0 rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                           @click="emit('close')"
                         >
                           <span class="absolute -inset-2.5" />
@@ -55,130 +45,33 @@
                       </div>
 
                       <div class="h-0 min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-                        <div class="space-y-1 px-4 py-5 sm:px-6">
-                          <BuilderDisclosureSection
-                            :title="t('templates.fieldOutputFormat')"
-                            :default-open="true"
-                            :bordered="false"
-                          >
+                        <div class="space-y-5 px-4 py-6 sm:px-6">
+                          <div>
+                            <label class="mb-1 block" :class="ui.label">
+                              {{ t('templates.fieldName') }}
+                              <span class="text-danger-500">*</span>
+                            </label>
+                            <input
+                              v-model="form.name"
+                              type="text"
+                              required
+                              autofocus
+                              :class="ui.input"
+                              :placeholder="t('templates.fieldName')"
+                            />
+                          </div>
+
+                          <div>
+                            <label class="mb-1 block" :class="ui.label">{{ t('templates.fieldType') }}</label>
                             <BuilderSelect
                               :model-value="form.outputFormat"
-                              :options="outputFormatOptions"
-                              @update:model-value="onOutputFormatSelect"
+                              :options="typeOptions"
+                              @update:model-value="onTypeSelect"
                             />
-                          </BuilderDisclosureSection>
+                          </div>
 
-                          <BuilderDisclosureSection
-                            v-if="isEmailFormat"
-                            :title="t('templates.htmlImport.startFromTitle')"
-                          >
-                            <EmailTemplateStartCards
-                              v-model="emailStartMode"
-                              :disabled="saving"
-                            />
-                          </BuilderDisclosureSection>
-
-                          <BuilderDisclosureSection
-                            v-if="showPrintGallery"
-                            :title="t('templates.galleryTitle')"
-                          >
-                            <div class="grid gap-2 sm:grid-cols-2">
-                              <button
-                                type="button"
-                                class="rounded-lg border px-3 py-2.5 text-left text-sm transition-colors"
-                                :class="galleryCardClass('blank')"
-                                @click="selectGallery('blank')"
-                              >
-                                <span class="font-medium text-neutral-900 dark:text-neutral-100">
-                                  {{ t('templates.galleryBlank') }}
-                                </span>
-                              </button>
-                              <button
-                                v-for="item in galleryItems"
-                                :key="item.key"
-                                type="button"
-                                class="rounded-lg border px-3 py-2.5 text-left text-sm transition-colors"
-                                :class="galleryCardClass(item.key)"
-                                @click="selectGallery(item.key)"
-                              >
-                                <span class="font-medium text-neutral-900 dark:text-neutral-100">{{ item.name }}</span>
-                                <span
-                                  v-if="item.description"
-                                  class="mt-1 block text-xs text-neutral-500 line-clamp-2 dark:text-neutral-400"
-                                >
-                                  {{ item.description }}
-                                </span>
-                                <span
-                                  v-else-if="item.moduleScope"
-                                  class="mt-1 block text-xs text-neutral-500 dark:text-neutral-400"
-                                >
-                                  {{ item.moduleScope }}
-                                </span>
-                              </button>
-                            </div>
-                          </BuilderDisclosureSection>
-
-                          <BuilderDisclosureSection
-                            v-if="showEmailGallery"
-                            :title="t('templates.galleryTitle')"
-                          >
-                            <div class="grid gap-2">
-                              <button
-                                v-for="item in emailGalleryItems"
-                                :key="item.key"
-                                type="button"
-                                class="rounded-lg border px-3 py-2.5 text-left text-sm transition-colors"
-                                :class="galleryCardClass(item.key)"
-                                @click="selectGallery(item.key)"
-                              >
-                                <span class="font-medium text-neutral-900 dark:text-neutral-100">{{ item.name }}</span>
-                              </button>
-                            </div>
-                          </BuilderDisclosureSection>
-
-                          <BuilderDisclosureSection
-                            v-if="showMetadataFields"
-                            :title="t('templates.builderTemplateDetails')"
-                          >
-                            <div class="space-y-3">
-                              <div>
-                                <label class="mb-1 block" :class="ui.label">
-                                  {{ t('templates.fieldName') }}
-                                  <span v-if="requiresName" class="text-danger-500">*</span>
-                                </label>
-                                <input
-                                  v-model="form.name"
-                                  type="text"
-                                  :required="requiresName"
-                                  :class="ui.input"
-                                />
-                              </div>
-                              <div>
-                                <label class="mb-1 block" :class="ui.label">{{ t('templates.fieldPurpose') }}</label>
-                                <input v-model="form.purpose" type="text" :class="ui.input" />
-                              </div>
-                              <div>
-                                <label class="mb-1 block" :class="ui.label">{{ t('templates.fieldCategory') }}</label>
-                                <input v-model="form.category" type="text" :class="ui.input" />
-                              </div>
-                              <div>
-                                <label class="mb-1 block" :class="ui.label">{{ t('templates.fieldModuleScope') }}</label>
-                                <BuilderSelect
-                                  :model-value="form.moduleScope"
-                                  :options="moduleSelectOptions"
-                                  :allow-empty="true"
-                                  :empty-label="t('templates.moduleScopeAny')"
-                                  :disabled="moduleOptionsLoading"
-                                  @update:model-value="form.moduleScope = $event"
-                                />
-                              </div>
-                            </div>
-                          </BuilderDisclosureSection>
-
-                          <BuilderDisclosureSection
-                            v-if="isImportMode"
-                            :title="t('templates.fieldModuleScope')"
-                          >
+                          <div>
+                            <label class="mb-1 block" :class="ui.label">{{ t('templates.fieldModuleScope') }}</label>
                             <BuilderSelect
                               :model-value="form.moduleScope"
                               :options="moduleSelectOptions"
@@ -187,12 +80,9 @@
                               :disabled="moduleOptionsLoading"
                               @update:model-value="form.moduleScope = $event"
                             />
-                          </BuilderDisclosureSection>
+                          </div>
 
-                          <BuilderDisclosureSection
-                            v-if="!isEmailFormat"
-                            :title="t('templates.builderTemplateDetailsPage')"
-                          >
+                          <div v-if="!isEmailFormat" class="space-y-3">
                             <BuilderPageSettings
                               layout="stacked"
                               :paper-size="form.paperSize"
@@ -201,7 +91,15 @@
                               :custom-page-height="form.customPageHeight"
                               @change="onPageSettingsChange"
                             />
-                          </BuilderDisclosureSection>
+                          </div>
+
+                          <div>
+                            <label class="mb-2 block" :class="ui.label">{{ t('templates.htmlImport.startFromTitle') }}</label>
+                            <EmailTemplateStartCards
+                              v-model="startMode"
+                              :disabled="saving"
+                            />
+                          </div>
                         </div>
                       </div>
 
@@ -216,7 +114,7 @@
                         <button
                           type="submit"
                           class="inline-flex cursor-pointer items-center gap-2 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-                          :disabled="saving || (requiresName && !form.name.trim())"
+                          :disabled="saving || !form.name.trim()"
                         >
                           <svg
                             v-if="saving"
@@ -248,9 +146,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
-import { DocumentPlusIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import apiClient from '@/utils/apiClient';
-import { remapDefinitionIds } from '@/utils/templateBuilderTree';
+import { XMarkIcon } from '@heroicons/vue/24/outline';
 import {
   DEFAULT_CUSTOM_PAGE_HEIGHT_MM,
   DEFAULT_CUSTOM_PAGE_WIDTH_MM
@@ -258,7 +154,6 @@ import {
 import { useBuilderUi } from '@/composables/useBuilderUi';
 import { useTemplateModuleOptions } from '@/composables/useTemplateMergeTagSchema';
 import BuilderPageSettings from '@/components/templates/builder/BuilderPageSettings.vue';
-import BuilderDisclosureSection from '@/modules/template/components/BuilderDisclosureSection.vue';
 import BuilderSelect from '@/modules/template/components/BuilderSelect.vue';
 import EmailTemplateStartCards from '@/modules/template/components/html/EmailTemplateStartCards.vue';
 
@@ -271,16 +166,11 @@ const emit = defineEmits(['close', 'create', 'import-html']);
 const { t } = useI18n();
 const ui = useBuilderUi();
 const saving = ref(false);
-const galleryItems = ref([]);
-const selectedGalleryKey = ref('blank');
-const galleryByKey = ref({});
-const emailStartMode = ref('blank');
+const startMode = ref('blank');
 const { loading: moduleOptionsLoading, moduleOptions, loadModuleOptions } = useTemplateModuleOptions();
 
 const form = reactive({
   name: '',
-  purpose: '',
-  category: '',
   moduleScope: '',
   outputFormat: 'pdf',
   paperSize: 'A4',
@@ -289,10 +179,9 @@ const form = reactive({
   customPageHeight: DEFAULT_CUSTOM_PAGE_HEIGHT_MM
 });
 
-const outputFormatOptions = computed(() => [
-  { value: 'pdf', label: 'PDF' },
-  { value: 'html', label: 'HTML' },
-  { value: 'email', label: t('templates.formatEmail') }
+const typeOptions = computed(() => [
+  { value: 'pdf', label: t('templates.typePrintTemplate') },
+  { value: 'email', label: t('templates.typeEmailTemplate') }
 ]);
 
 const moduleSelectOptions = computed(() =>
@@ -303,147 +192,75 @@ const moduleSelectOptions = computed(() =>
 );
 
 const isEmailFormat = computed(() => form.outputFormat === 'email');
-const emailGalleryItems = computed(() => galleryItems.value.filter((item) => item.outputFormat === 'email'));
-const isImportMode = computed(() => isEmailFormat.value && emailStartMode.value === 'import');
-const showMetadataFields = computed(() => !isImportMode.value);
-const showPrintGallery = computed(() => !isEmailFormat.value);
-const showEmailGallery = computed(() => isEmailFormat.value && emailStartMode.value === 'gallery' && emailGalleryItems.value.length > 0);
-const requiresName = computed(() => !isImportMode.value);
+const isImportMode = computed(() => startMode.value === 'import');
 const drawerTitle = computed(() => (
   isEmailFormat.value ? t('templates.htmlImport.createEmailTitle') : t('templates.createTitle')
 ));
-const drawerSubtitle = computed(() => t('templates.emptyMessage'));
 const primaryActionLabel = computed(() => {
   if (isImportMode.value) return t('templates.htmlImport.continue');
   return t('actions.create');
 });
 
-function galleryCardClass(key) {
-  return selectedGalleryKey.value === key
-    ? [ui.selectedRing, ui.selectedBg, 'border-primary-500'].join(' ')
-    : [ui.border, 'border hover:border-primary-300 dark:hover:border-primary-600'].join(' ');
-}
-
-function onOutputFormatSelect(value) {
-  form.outputFormat = value;
-  onOutputFormatChange();
+function onTypeSelect(value) {
+  form.outputFormat = value === 'email' ? 'email' : 'pdf';
+  startMode.value = 'blank';
 }
 
 function onPageSettingsChange(patch) {
   Object.assign(form, patch);
 }
 
-async function loadGallery() {
-  try {
-    const response = await apiClient.get('/templates/gallery', { cache: 'no-store' });
-    galleryItems.value = Array.isArray(response?.data) ? response.data : [];
-    galleryByKey.value = Object.fromEntries(galleryItems.value.map((item) => [item.key, item]));
-  } catch {
-    galleryItems.value = [];
-    galleryByKey.value = {};
-  }
-}
-
-function selectGallery(key) {
-  selectedGalleryKey.value = key;
-  if (key === 'blank') return;
-  const item = galleryByKey.value[key];
-  if (!item) return;
-  form.name = item.name;
-  form.purpose = item.purpose || '';
-  form.category = item.category || '';
-  form.moduleScope = item.moduleScope || '';
-  form.outputFormat = item.outputFormat || form.outputFormat;
-}
-
-function onOutputFormatChange() {
-  if (form.outputFormat === 'email') {
-    emailStartMode.value = 'blank';
-    selectedGalleryKey.value = 'blank';
-    return;
-  }
-  selectedGalleryKey.value = 'blank';
-}
-
-watch(emailStartMode, (mode) => {
-  if (mode === 'blank') {
-    selectedGalleryKey.value = 'blank';
-  }
-  if (mode === 'gallery' && emailGalleryItems.value.length === 1) {
-    selectGallery(emailGalleryItems.value[0].key);
-  }
-});
-
 watch(
   () => props.isOpen,
   (open) => {
     if (!open) return;
     form.name = '';
-    form.purpose = '';
-    form.category = '';
     form.moduleScope = '';
     form.outputFormat = 'pdf';
     form.paperSize = 'A4';
     form.orientation = 'portrait';
     form.customPageWidth = DEFAULT_CUSTOM_PAGE_WIDTH_MM;
     form.customPageHeight = DEFAULT_CUSTOM_PAGE_HEIGHT_MM;
-    selectedGalleryKey.value = 'blank';
-    emailStartMode.value = 'blank';
+    startMode.value = 'blank';
     saving.value = false;
-    void loadGallery();
   }
 );
 
 onMounted(() => {
-  void loadGallery();
   void loadModuleOptions();
 });
 
 function buildMetadataPayload() {
-  return {
-    purpose: form.purpose.trim(),
-    category: form.category.trim(),
+  const payload = {
+    name: form.name.trim(),
     moduleScope: form.moduleScope,
     outputFormat: form.outputFormat
   };
+  if (!isEmailFormat.value) {
+    payload.paperSize = form.paperSize;
+    payload.orientation = form.orientation;
+    if (form.paperSize === 'Custom') {
+      payload.customPageWidth = form.customPageWidth;
+      payload.customPageHeight = form.customPageHeight;
+    }
+  }
+  return payload;
 }
 
 async function submit() {
+  if (!form.name.trim()) return;
+
   if (isImportMode.value) {
     emit('import-html', buildMetadataPayload());
     return;
   }
 
-  if (!form.name.trim()) return;
   saving.value = true;
   try {
-    const payload = {
+    emit('create', {
       name: form.name.trim(),
       ...buildMetadataPayload()
-    };
-
-    if (!isEmailFormat.value) {
-      payload.paperSize = form.paperSize;
-      payload.orientation = form.orientation;
-
-      if (form.paperSize === 'Custom') {
-        payload.customPageWidth = form.customPageWidth;
-        payload.customPageHeight = form.customPageHeight;
-      }
-    }
-
-    const galleryKey = isEmailFormat.value
-      ? (emailStartMode.value === 'gallery' ? selectedGalleryKey.value : 'blank')
-      : selectedGalleryKey.value;
-
-    if (galleryKey !== 'blank') {
-      const item = galleryByKey.value[galleryKey];
-      if (item?.jsonDefinition) {
-        payload.jsonDefinition = remapDefinitionIds(item.jsonDefinition);
-      }
-    }
-
-    emit('create', payload);
+    });
   } finally {
     saving.value = false;
   }

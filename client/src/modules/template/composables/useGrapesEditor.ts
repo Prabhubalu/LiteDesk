@@ -276,12 +276,16 @@ export function useGrapesEditor(options: UseGrapesEditorOptions) {
     loadDefinition(editor.value, definition, {
       isEmail: options.outputFormat?.value === 'email'
     });
+    // Keep dirty suppressed until after Grapes finishes applying HTML/project
+    // (may be deferred via canvas `load`). Early clear caused empty autosaves.
     nextTick(() => {
       syncPageDimensions();
       refreshLayerTree();
       requestAnimationFrame(() => {
         refreshLayerTree();
-        suppressDirty = false;
+        requestAnimationFrame(() => {
+          suppressDirty = false;
+        });
       });
     });
   }

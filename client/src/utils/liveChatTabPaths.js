@@ -49,13 +49,13 @@ export function isLiveChatRoute(pathOnly) {
   );
 }
 
-/** True when route is sessions list/detail owned by the main Live Chat tab (not Closed/Reports). */
+/** True when route is owned by the single Live Chat workspace tab (Sessions / Closed / Reports). */
 export function liveChatMainTabOwnsRoute(routePath, tab) {
   const route = normalizeLiveChatPath(routePath);
-  if (!isLiveChatSessionsRoute(route)) return false;
+  if (!isLiveChatRoute(route)) return false;
   if (!tab) return false;
   const tabPath = normalizeLiveChatPath(tab.path);
   if (tabPath === LIVE_CHAT_MAIN_TAB_PATH) return true;
   if (tab.titleKey === 'navigation.liveChat') return true;
-  return isLiveChatSessionsRoute(tabPath);
+  return isLiveChatRoute(tabPath);
 }

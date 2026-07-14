@@ -55,8 +55,12 @@ export function applyHtmlToEditorCanvas(
     if (wrapper) {
       hydrateEditableTextComponents(wrapper);
     }
-    hydrateTableCellsFromDom(editor);
-    refreshCanvasTablesAfterHtmlApply(editor);
+    // Email layout tables are not spreadsheet cells — PDF sheet hydrate/repaint
+    // flattens nested HTML (buttons, promo blocks) into plain text.
+    if (!isEmail) {
+      hydrateTableCellsFromDom(editor);
+      refreshCanvasTablesAfterHtmlApply(editor);
+    }
     hydrateCanvasImages(editor);
     const supplementalCss = getSupplementalCss(editor);
     if (supplementalCss) {

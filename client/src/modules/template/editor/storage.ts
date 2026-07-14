@@ -6,7 +6,13 @@ import { hydrateTableCellsFromDom, syncTableCellsForSerialize } from './tableMod
 import { hydrateEditableTextComponents } from './textContent';
 import { hydrateCanvasImages, stripAuthTokensFromHtml, stripAuthTokensFromProjectImages } from './logoContent';
 import { extractRenderedOutput, exportBodyHtmlFromCanvasFrame } from './renderer';
-import { extractEmailBodyHtml, isFullHtmlDocument, encodeMsoConditionals } from '../utils/emailHtmlExport';
+import {
+  encodeMsoConditionals,
+  isFullHtmlDocument,
+  parseTemplateHtmlDocumentForCanvas
+} from '../utils/emailHtmlExport';
+import { stripGrapesDocumentWrapper } from '../utils/formatHtmlDocument';
+import { preserveEmailCss } from '../utils/emailImportSnapshot';
 import { setEditorMsoChunks, clearEditorMsoChunks } from './msoChunksStore';
 import { applyHtmlToEditorCanvas } from './canvasHtmlApply';
 import {
@@ -87,7 +93,9 @@ export function hasGrapesProjectContent(project: Record<string, unknown> | null 
 export function hasGrapesDefinitionContent(definition: GrapesTemplateDefinition | null | undefined): boolean {
   if (!definition) return false;
   if (String(definition.html || '').trim()) return true;
-  return hasGrapesProjectContent(definition.project);
+  if (hasGrapesProjectContent(definition.project)) return true;
+  const snapshot = (definition as { importSnapshot?: { html?: string } }).importSnapshot;
+  return Boolean(String(snapshot?.html || '').trim());
 }
 
 export function isEmptyGrapesDefinition(definition: GrapesTemplateDefinition | null | undefined): boolean {
@@ -158,10 +166,18 @@ export function serializeEditor(
       const definition = {
         engine: GRAPES_ENGINE,
         version: GRAPES_DEFINITION_VERSION,
+        // Email uses html/css as source of truth. Persisting Grapes project data
+        // can flatten layout tables into a single text node on reopen.
         project: options.isEmail ? null : project,
         html: stripAuthTokensFromHtml(exportBodyHtmlFromCanvasFrame(editor)),
         css: rendered.css
       };
+
+      if (options.isEmail && !String(definition.html || '').trim()) {
+        definition.html = stripAuthTokensFromHtml(
+          stripGrapesDocumentWrapper(editor.getHtml() || '')
+        );
+      }
 
       restoreBuilderUiFocus(uiFocus);
       return definition;
@@ -176,17 +192,38 @@ export function loadDefinition(
 ): void {
   const isEmail = Boolean(options.isEmail);
   let html = String(definition?.html || '').trim();
-  const css = String(definition?.css || '').trim();
+  let css = String(definition?.css || '').trim();
   const project = definition?.project;
 
   if (isEmail && html && isFullHtmlDocument(html)) {
-    html = extractEmailBodyHtml(html);
+    const parsed = parseTemplateHtmlDocumentForCanvas(html, { isEmail: true });
+    html = String(parsed.html || '').trim();
+    css = preserveEmailCss(css, parsed.css);
   }
 
-  // Email templates use html/css as source of truth — PDF table-sheet hooks flatten layout tables.
-  const preferHtmlSource = isEmail && Boolean(html);
+  // Email templates use html/css as source of truth — never reload Grapes project
+  // (project round-trips flatten nested email tables into plain text).
+  if (isEmail) {
+    if (html) {
+      let canvasHtml = html;
+      let msoChunks: string[] = [];
+      const encoded = encodeMsoConditionals(canvasHtml);
+      canvasHtml = encoded.html;
+      msoChunks = encoded.chunks;
+      applyCanvasHtml(editor, canvasHtml, css, msoChunks, true);
+      return;
+    }
 
-  if (project && hasGrapesProjectContent(project) && !preferHtmlSource) {
+    runWhenEditorCanvasReady(editor, () => {
+      editor.setComponents('');
+      editor.setStyle('');
+      clearEditorMsoChunks(editor);
+      clearSupplementalCss(editor);
+    });
+    return;
+  }
+
+  if (project && hasGrapesProjectContent(project)) {
     const cloned = structuredClone(project) as Record<string, unknown>;
     stripPrintAreaLayoutFromProject(cloned);
     runWhenEditorCanvasReady(editor, () => {

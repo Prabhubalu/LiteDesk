@@ -105,12 +105,11 @@ function readHostTokenText(component: Component): string {
 }
 
 function syncHostFromDom(component: Component, element: HTMLElement): void {
-  const text = elementToMergeTokens(element);
   if (isTableCellComponent(component)) {
-    writeCellText(component, text);
+    writeCellText(component, elementToMergeTokens(element));
     return;
   }
-  component.set('content', text, { silent: true });
+  syncComponentContentFromDom(element, component);
 }
 
 function snapshotCanvasTextSelection(editor: Editor, force = false): void {

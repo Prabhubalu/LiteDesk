@@ -151,7 +151,9 @@
         :validating="validationValidating"
         :error="validationError"
         :result="validationResult"
-        @close="showValidation = false"
+        :publish-prompt="validationPublishPrompt"
+        @close="closeValidationModal"
+        @publish-anyway="confirmPublishDespiteWarnings"
       />
 
       <HtmlExportModal
@@ -213,21 +215,27 @@ import { useEmailHtmlValidation } from '../composables/useEmailHtmlValidation';
 import { previewTemplatePdf, renderTemplateHtml } from '../services/templateApi';
 import { buildTemplateHtmlDocument } from '../editor/renderer';
 import { resolvePreviewHtmlImageUrls } from '../utils/previewHtmlImages';
-import { createBlankGrapesDefinition } from '../editor/storage';
+import { createBlankGrapesDefinition, hasGrapesDefinitionContent } from '../editor/storage';
 import {
   attachImportSnapshot,
   buildSnapshotFromParts,
+  emailHtmlLooksStructured,
+  preserveEmailCss,
+  preserveEmailHtml,
+  protectEmailDefinitionRoundTrip,
   readImportSnapshot
 } from '../utils/emailImportSnapshot';
 import {
   copyTextToClipboard,
   downloadTextFile,
   getEmailHtmlParts,
+  parseTemplateHtmlDocumentForCanvas,
   slugifyFilename
 } from '../utils/emailHtmlExport';
 import { downloadEmailHtmlZip } from '../utils/emailHtmlZipExport';
 import { isEmailHtmlWarningDismissed } from '../utils/emailHtmlWarning';
 import { captureEmailTemplateExported, captureEmailTemplateHtmlModeEntered } from '@/config/posthogTemplates';
+import { useTabs } from '@/composables/useTabs';
 
 const route = useRoute();
 const router = useRouter();
@@ -235,6 +243,7 @@ const { t } = useI18n();
 const ui = useBuilderUi();
 const notifications = useNotifications();
 const authStore = useAuthStore();
+const { activeTabId, updateTabTitle, findTabById } = useTabs();
 
 const grapesContainer = ref(null);
 const projectLoadedFor = ref('');
@@ -265,10 +274,12 @@ const {
   setAutosaveBlockedChecker,
   markDirty,
   saveDraft,
+  seedLastGoodDefinition,
   runPublish,
   setPreviewBusy,
   withAutosaveSuppressed,
   resolveDraftDefinition,
+  didRecoverDraftDefinition,
   updateTemplateMargins,
   patchTemplateMetadata,
   previewRecordId,
@@ -405,6 +416,7 @@ const showClientPreview = ref(false);
 const showEditHtml = ref(false);
 const showEditWarning = ref(false);
 const showValidation = ref(false);
+const validationPublishPrompt = ref(false);
 const showExport = ref(false);
 const showReplaceImport = ref(false);
 const showRestoreSnapshot = ref(false);
@@ -412,6 +424,17 @@ const importSnapshot = ref(null);
 
 const emailPreviewParts = computed(() => {
   void canvasContentRevision.value;
+  if (serverPreviewHtml.value) {
+    const full = String(serverPreviewHtml.value);
+    const bodyMatch = full.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+    const styles = [...full.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)]
+      .map((match) => String(match[1] || '').trim())
+      .filter(Boolean);
+    return {
+      html: bodyMatch ? bodyMatch[1] : full,
+      css: styles.join('\n\n')
+    };
+  }
   if (!editor.value) return { html: '', css: '' };
   return getEmailHtmlParts(editor.value);
 });
@@ -455,10 +478,22 @@ let previewRefreshTimer = null;
 
 function buildPreviewRenderOptions() {
   const meta = templateMeta.value;
+  let jsonDefinition = serializeProject();
+  if (isEmailFormat.value && importSnapshot.value?.html?.trim()) {
+    jsonDefinition = attachImportSnapshot(
+      {
+        ...jsonDefinition,
+        html: preserveEmailHtml(jsonDefinition.html, importSnapshot.value.html),
+        css: preserveEmailCss(jsonDefinition.css, importSnapshot.value.css),
+        project: null
+      },
+      importSnapshot.value
+    );
+  }
   return {
     recordModuleKey: moduleScope.value || meta?.moduleScope,
     recordId: previewRecordId.value || undefined,
-    jsonDefinition: serializeProject(),
+    jsonDefinition,
     pageSettings: {
       paperSize: paperSize.value,
       orientation: orientation.value,
@@ -477,10 +512,14 @@ function clearPreviewRefreshTimer() {
   }
 }
 
+function supportsWorkspaceHtmlPreview() {
+  const format = String(outputFormat.value || 'pdf').toLowerCase();
+  return format === 'pdf' || format === 'email';
+}
+
 function scheduleWorkspaceHtmlPreview() {
   if (workspaceView.value !== 'preview') return;
-  if (isEmailFormat.value) return;
-  if (String(outputFormat.value || 'pdf').toLowerCase() !== 'pdf') return;
+  if (!supportsWorkspaceHtmlPreview()) return;
 
   clearPreviewRefreshTimer();
   previewRefreshTimer = window.setTimeout(() => {
@@ -489,13 +528,20 @@ function scheduleWorkspaceHtmlPreview() {
   }, PREVIEW_DEBOUNCE_MS);
 }
 
-function refreshHtmlEditorFromCanvas() {
-  resyncHtmlEditorFromCanvas();
+function requestWorkspaceHtmlPreview({ immediate = false } = {}) {
+  if (workspaceView.value !== 'preview') return;
+  if (!supportsWorkspaceHtmlPreview()) return;
+  if (immediate) {
+    clearPreviewRefreshTimer();
+    void refreshWorkspaceHtmlPreview();
+    return;
+  }
+  scheduleWorkspaceHtmlPreview();
 }
 
-function resyncHtmlEditorFromCanvas() {
+function resyncHtmlEditorFromCanvas({ force = false } = {}) {
   if (!editor.value) return;
-  htmlEditorContent.value = buildTemplateHtmlDocument(editor.value, {
+  const next = buildTemplateHtmlDocument(editor.value, {
     outputFormat: outputFormat.value,
     pageSettings: isEmailFormat.value ? undefined : {
       paperSize: paperSize.value,
@@ -505,13 +551,64 @@ function resyncHtmlEditorFromCanvas() {
       margins: pageMarginsMm.value
     }
   });
-  lastAppliedHtmlSource = String(htmlEditorContent.value || '').trim();
+  const current = String(htmlEditorContent.value || '').trim();
+  const nextTrimmed = String(next || '').trim();
+  // Grapes canvas export can briefly be empty/flat after paste — never clobber the editor
+  // unless the caller explicitly wants Design → HTML sync after canvas edits.
+  if (
+    !force
+    && isEmailFormat.value
+    && current
+    && (
+      !nextTrimmed
+      || (emailHtmlLooksStructured(current) && !emailHtmlLooksStructured(nextTrimmed))
+      || (current.length > 400 && nextTrimmed.length < Math.floor(current.length * 0.5))
+    )
+  ) {
+    return;
+  }
+  if (!nextTrimmed && current) return;
+  htmlEditorContent.value = next;
+  lastAppliedHtmlSource = nextTrimmed;
   htmlEditorDirty.value = false;
+}
+
+function refreshHtmlEditorFromCanvas() {
+  resyncHtmlEditorFromCanvas({ force: true });
 }
 
 function onHtmlEditorEdit() {
   htmlEditorDirty.value = true;
   markDirty();
+}
+
+function buildEmailDefinitionFromRawHtml(rawHtml, reason = 'html-edit') {
+  const parsed = parseTemplateHtmlDocumentForCanvas(String(rawHtml || ''), { isEmail: true });
+  const definition = {
+    ...createBlankGrapesDefinition(),
+    html: String(parsed.html || ''),
+    css: String(parsed.css || ''),
+    project: null
+  };
+  if (!String(definition.html || '').trim()) return null;
+  const snapshot = buildSnapshotFromParts(definition.html, definition.css, reason);
+  return attachImportSnapshot(definition, snapshot);
+}
+
+async function persistEmailFromRawHtml(rawHtml, reason = 'html-edit') {
+  const toSave = buildEmailDefinitionFromRawHtml(rawHtml, reason);
+  if (!toSave) return false;
+
+  importSnapshot.value = readImportSnapshot(toSave);
+  seedLastGoodDefinition(toSave);
+  htmlEditorContent.value = String(rawHtml || '');
+  lastAppliedHtmlSource = String(rawHtml || '').trim();
+  htmlEditorDirty.value = false;
+
+  return withAutosaveSuppressed(async () => {
+    applyEmailHtml(rawHtml);
+    return saveDraft({ force: true, jsonDefinition: toSave });
+  });
 }
 
 function applyHtmlEditorToCanvas(rawHtml = htmlEditorContent.value, resyncEditor = false) {
@@ -523,11 +620,18 @@ function applyHtmlEditorToCanvas(rawHtml = htmlEditorContent.value, resyncEditor
 
   htmlSyncing.value = true;
   try {
+    if (isEmailFormat.value) {
+      const toSave = buildEmailDefinitionFromRawHtml(source, 'html-edit');
+      if (toSave) {
+        importSnapshot.value = readImportSnapshot(toSave);
+        seedLastGoodDefinition(toSave);
+      }
+    }
     applyTemplateHtmlDocument(source);
     lastAppliedHtmlSource = source;
     htmlEditorDirty.value = false;
     markDirty();
-    if (resyncEditor) {
+    if (resyncEditor && !isEmailFormat.value) {
       resyncHtmlEditorFromCanvas();
     }
     return true;
@@ -539,12 +643,32 @@ function applyHtmlEditorToCanvas(rawHtml = htmlEditorContent.value, resyncEditor
   }
 }
 
-function flushHtmlEditorToCanvas() {
+async function flushHtmlEditorToCanvas() {
+  if (isEmailFormat.value) {
+    htmlSyncing.value = true;
+    try {
+      const saved = await persistEmailFromRawHtml(htmlEditorContent.value, 'html-edit');
+      if (!saved) {
+        notifications.error(t('templates.htmlImport.errorApplyFailed'));
+      } else {
+        notifications.success(t('templates.htmlImport.applySuccess'));
+      }
+    } catch (error) {
+      notifications.error(error?.message || t('templates.htmlImport.errorApplyFailed'));
+    } finally {
+      htmlSyncing.value = false;
+    }
+    return;
+  }
   applyHtmlEditorToCanvas(htmlEditorContent.value, true);
 }
 
 async function ensureHtmlEditorAppliedToCanvas() {
-  if (!htmlEditorDirty.value && workspaceView.value !== 'html') return;
+  if (!htmlEditorDirty.value) return;
+  if (isEmailFormat.value) {
+    await persistEmailFromRawHtml(htmlEditorContent.value, 'html-edit');
+    return;
+  }
   applyHtmlEditorToCanvas(htmlEditorContent.value, false);
   await nextTick();
 }
@@ -552,11 +676,45 @@ async function ensureHtmlEditorAppliedToCanvas() {
 const hasImportSnapshot = computed(() => Boolean(importSnapshot.value?.html?.trim()));
 
 function serializeProjectWithSnapshot() {
-  if (htmlEditorDirty.value || workspaceView.value === 'html') {
+  // Only push HTML-tab edits when dirty. Applying on every serialize while the
+  // HTML tab is open can overwrite the canvas with a stale/empty document.
+  if (htmlEditorDirty.value && !isEmailFormat.value) {
     applyHtmlEditorToCanvas(htmlEditorContent.value, false);
   }
   const definition = serializeProject();
-  return attachImportSnapshot(definition, importSnapshot.value);
+  if (!isEmailFormat.value) {
+    return attachImportSnapshot(definition, importSnapshot.value);
+  }
+
+  const prev = importSnapshot.value;
+  const html = preserveEmailHtml(definition.html, prev?.html || '');
+  const css = preserveEmailCss(definition.css, prev?.css || '');
+  if (!html.trim()) {
+    // Canvas empty — keep previous snapshot definition so autosave cannot wipe.
+    if (prev?.html?.trim()) {
+      return attachImportSnapshot(
+        {
+          ...createBlankGrapesDefinition(),
+          html: prev.html,
+          css: String(prev.css || ''),
+          project: null
+        },
+        prev
+      );
+    }
+    return attachImportSnapshot(definition, prev);
+  }
+
+  importSnapshot.value = buildSnapshotFromParts(html, css, prev?.reason || 'html-edit');
+  return attachImportSnapshot(
+    {
+      ...definition,
+      html,
+      css,
+      project: null
+    },
+    importSnapshot.value
+  );
 }
 
 function captureImportSnapshot(reason) {
@@ -599,6 +757,7 @@ watch(
     if (projectLoadedFor.value === id) return;
     projectLoadedFor.value = id;
     const definition = resolveDraftDefinition(meta);
+    const recovered = didRecoverDraftDefinition(meta, definition);
     importSnapshot.value = readImportSnapshot(definition);
     withAutosaveSuppressed(() => {
       loadProject(definition);
@@ -606,6 +765,22 @@ watch(
     await nextTick();
     await new Promise((resolve) => queueMicrotask(resolve));
     await syncCompanyLogoToCanvas();
+    // Persist healed content immediately so close/reopen cannot race an empty serialize.
+    if (recovered && hasGrapesDefinitionContent(definition)) {
+      try {
+        const snapshot =
+          importSnapshot.value
+          || buildSnapshotFromParts(definition.html, definition.css, 'html-edit');
+        importSnapshot.value = snapshot;
+        await saveDraft({
+          force: true,
+          silent: true,
+          jsonDefinition: attachImportSnapshot(definition, snapshot)
+        });
+      } catch {
+        // Keep canvas content even if heal persist fails.
+      }
+    }
   }
 );
 
@@ -613,6 +788,18 @@ watch(templateId, () => {
   projectLoadedFor.value = '';
   importSnapshot.value = null;
 });
+
+watch(
+  () => [activeTabId.value, route.name, templateName.value],
+  () => {
+    const tabId = activeTabId.value;
+    if (!tabId || route.name !== 'template-builder') return;
+    const tab = findTabById(tabId);
+    if (!tab?.path || !String(tab.path).includes('/builder')) return;
+    const name = String(templateName.value || '').trim() || t('templates.detailTitle');
+    updateTabTitle(tabId, name);
+  }
+);
 
 function goBack() {
   router.push({ name: 'template-detail', params: { id: templateId.value } });
@@ -654,8 +841,90 @@ async function handleSave() {
     return;
   }
   try {
+    if (isEmailFormat.value) {
+      // Only re-apply HTML-tab source when the user is actually editing HTML.
+      // Otherwise Design-canvas edits (merge tags, etc.) get wiped by the stale paste.
+      const htmlTabIsSource =
+        htmlEditorDirty.value
+        || workspaceView.value === 'html';
+
+      if (htmlTabIsSource) {
+        const raw = String(htmlEditorContent.value || '').trim();
+        if (raw) {
+          const saved = await persistEmailFromRawHtml(raw, 'html-edit');
+          if (!saved) {
+            notifications.error(t('templates.builderSaveStatusError'));
+            return;
+          }
+          notifications.success(t('templates.builderSaveStatusSaved'));
+          return;
+        }
+      }
+
+      const serialized = serializeProjectWithSnapshot();
+      const candidate = protectEmailDefinitionRoundTrip(
+        {
+          ...serialized,
+          html: serialized.html,
+          css: serialized.css,
+          project: null
+        },
+        importSnapshot.value
+          ? {
+              ...createBlankGrapesDefinition(),
+              html: importSnapshot.value.html,
+              css: String(importSnapshot.value.css || ''),
+              project: null,
+              importSnapshot: importSnapshot.value
+            }
+          : null
+      );
+
+      if (String(candidate.html || '').trim()) {
+        const snapshot = buildSnapshotFromParts(
+          candidate.html,
+          candidate.css,
+          importSnapshot.value?.reason || 'html-edit'
+        );
+        importSnapshot.value = snapshot;
+        const toSave = attachImportSnapshot(candidate, snapshot);
+        seedLastGoodDefinition(toSave);
+        const saved = await saveDraft({ force: true, jsonDefinition: toSave });
+        if (!saved) {
+          notifications.error(t('templates.builderSaveStatusError'));
+          return;
+        }
+        notifications.success(t('templates.builderSaveStatusSaved'));
+        return;
+      }
+
+      if (importSnapshot.value?.html?.trim()) {
+        const toSave = attachImportSnapshot(
+          {
+            ...createBlankGrapesDefinition(),
+            html: importSnapshot.value.html,
+            css: String(importSnapshot.value.css || ''),
+            project: null
+          },
+          importSnapshot.value
+        );
+        seedLastGoodDefinition(toSave);
+        const saved = await saveDraft({ force: true, jsonDefinition: toSave });
+        if (!saved) {
+          notifications.error(t('templates.builderSaveStatusError'));
+          return;
+        }
+        notifications.success(t('templates.builderSaveStatusSaved'));
+        return;
+      }
+    }
+
     await ensureHtmlEditorAppliedToCanvas();
-    await saveDraft({ force: true });
+    const saved = await saveDraft({ force: true });
+    if (!saved) {
+      notifications.error(t('templates.builderSaveStatusError'));
+      return;
+    }
     if (workspaceView.value === 'html') {
       resyncHtmlEditorFromCanvas();
     }
@@ -674,21 +943,44 @@ async function handlePublish() {
     const validation = await validateHtml(currentEmailDocument.value);
     if (!validation) return;
     if (validation.errors.length > 0) {
+      validationPublishPrompt.value = false;
       showValidation.value = true;
       notifications.error(t('templates.htmlImport.publishBlocked'));
       return;
     }
     if (validation.warnings.length > 0) {
-      const proceed = window.confirm(t('templates.htmlImport.publishWarningsConfirm'));
-      if (!proceed) return;
+      validationPublishPrompt.value = true;
+      showValidation.value = true;
+      return;
     }
   }
+  await completePublish();
+}
+
+function closeValidationModal() {
+  showValidation.value = false;
+  validationPublishPrompt.value = false;
+}
+
+async function confirmPublishDespiteWarnings() {
+  closeValidationModal();
+  await completePublish();
+}
+
+async function completePublish() {
   try {
     await runPublish();
     notifications.success(t('templates.publishSuccess'));
   } catch (error) {
     notifications.error(error?.message || t('templates.validationFailed'));
   }
+}
+
+async function runValidation() {
+  resetValidation();
+  validationPublishPrompt.value = false;
+  showValidation.value = true;
+  await validateHtml(currentEmailDocument.value);
 }
 
 async function handleMarginsChange(margins) {
@@ -748,10 +1040,7 @@ function setWorkspaceView(view) {
 }
 
 async function refreshWorkspaceHtmlPreview() {
-  if (!editor.value || isEmailFormat.value) return;
-
-  const format = String(outputFormat.value || 'pdf').toLowerCase();
-  if (format !== 'pdf') return;
+  if (!editor.value || !supportsWorkspaceHtmlPreview()) return;
 
   if (previewRecordId.value && !moduleScope.value) {
     notifications.error(t('templates.builderDataSelectModule'));
@@ -760,7 +1049,11 @@ async function refreshWorkspaceHtmlPreview() {
 
   setPreviewBusy(true);
   try {
-    await saveDraft({ force: true });
+    // Render uses the in-memory jsonDefinition from buildPreviewRenderOptions.
+    // Do not force-save here — canvas serialize races were wiping imported email HTML.
+    if (!isEmailFormat.value) {
+      await saveDraft({ force: true });
+    }
     serverPreviewHtml.value = await renderTemplateHtml(templateId.value, buildPreviewRenderOptions());
   } catch (error) {
     notifications.error(error?.message || t('templates.renderFailed'));
@@ -842,20 +1135,16 @@ function confirmEditHtml() {
 
 async function handleApplyEditedHtml(rawHtml) {
   try {
-    captureImportSnapshot('html-edit');
-    applyEmailHtml(rawHtml);
+    const saved = await persistEmailFromRawHtml(rawHtml, 'html-edit');
+    if (!saved) {
+      notifications.error(t('templates.htmlImport.errorApplyFailed'));
+      return;
+    }
     showEditHtml.value = false;
-    await saveDraft({ force: true });
     notifications.success(t('templates.htmlImport.applySuccess'));
   } catch (error) {
     notifications.error(error?.message || t('templates.htmlImport.errorApplyFailed'));
   }
-}
-
-async function runValidation() {
-  resetValidation();
-  showValidation.value = true;
-  await validateHtml(currentEmailDocument.value);
 }
 
 async function handleExportHtml(mode) {
@@ -901,13 +1190,44 @@ async function handleExportHtml(mode) {
 async function handleReplaceImport(payload) {
   if (!payload?.jsonDefinition) return;
   try {
-    captureImportSnapshot('html-replace');
-    withAutosaveSuppressed(() => {
-      loadDefinitionIntoEditor(payload.jsonDefinition);
-    });
+    const definition = {
+      ...createBlankGrapesDefinition(),
+      ...payload.jsonDefinition,
+      engine: payload.jsonDefinition.engine || createBlankGrapesDefinition().engine,
+      version: payload.jsonDefinition.version || createBlankGrapesDefinition().version,
+      project: null,
+      html: String(payload.jsonDefinition.html || ''),
+      css: String(payload.jsonDefinition.css || '')
+    };
+    if (!String(definition.html || '').trim()) {
+      notifications.error(t('templates.htmlImport.errorApplyFailed'));
+      return;
+    }
+
+    const snapshot = buildSnapshotFromParts(definition.html, definition.css, 'html-replace');
+    importSnapshot.value = snapshot;
+    const toSave = attachImportSnapshot(definition, snapshot);
+    seedLastGoodDefinition(toSave);
+
+    // Keep HTML tab in sync with the imported source so Save doesn't re-serialize empty canvas.
+    const cssBlock = String(definition.css || payload.css || '');
+    const bodyHtml = String(payload.sanitizedHtml || definition.html || '');
+    if (bodyHtml.trim()) {
+      htmlEditorContent.value = /<html[\s>]/i.test(bodyHtml)
+        ? bodyHtml
+        : `<!DOCTYPE html>\n<html>\n<head>\n<style>\n${cssBlock}\n</style>\n</head>\n<body>\n${bodyHtml}\n</body>\n</html>`;
+      lastAppliedHtmlSource = String(htmlEditorContent.value || '').trim();
+      htmlEditorDirty.value = false;
+    }
+
     showReplaceImport.value = false;
-    markDirty();
-    await saveDraft({ force: true });
+    await withAutosaveSuppressed(async () => {
+      loadDefinitionIntoEditor(toSave);
+      const saved = await saveDraft({ force: true, jsonDefinition: toSave });
+      if (!saved) {
+        throw new Error(t('templates.htmlImport.errorApplyFailed'));
+      }
+    });
     notifications.success(t('templates.htmlImport.applySuccess'));
   } catch (error) {
     notifications.error(error?.message || t('templates.htmlImport.errorApplyFailed'));
@@ -916,28 +1236,32 @@ async function handleReplaceImport(payload) {
 
 watch(workspaceView, (view, previousView) => {
   if (view === 'html') {
-    if (!htmlEditorDirty.value) {
+    // After Design edits, always refresh HTML from canvas so the editor is not a stale paste.
+    if (!htmlEditorDirty.value || previousView === 'design' || previousView === 'preview') {
+      htmlEditorDirty.value = false;
       refreshHtmlEditorFromCanvas();
     }
   } else if (previousView === 'html' && htmlEditorDirty.value) {
-    flushHtmlEditorToCanvas();
+    if (isEmailFormat.value) {
+      void persistEmailFromRawHtml(htmlEditorContent.value, 'html-edit');
+    } else {
+      flushHtmlEditorToCanvas();
+    }
   } else if (view === 'design' && !isEmailFormat.value) {
     syncPageDimensions();
   }
 
   if (view !== 'preview') return;
-  if (isEmailFormat.value) return;
-  if (String(outputFormat.value || 'pdf').toLowerCase() !== 'pdf') return;
+  if (!supportsWorkspaceHtmlPreview()) return;
   void ensureCompanyLogo();
-  scheduleWorkspaceHtmlPreview();
+  requestWorkspaceHtmlPreview({ immediate: true });
 });
 
 watch(previewRecordId, () => {
   if (workspaceView.value !== 'preview') return;
-  if (isEmailFormat.value) return;
-  if (String(outputFormat.value || 'pdf').toLowerCase() !== 'pdf') return;
+  if (!supportsWorkspaceHtmlPreview()) return;
   serverPreviewHtml.value = '';
-  scheduleWorkspaceHtmlPreview();
+  requestWorkspaceHtmlPreview({ immediate: true });
 });
 
 watch(canvasContentRevision, () => {
@@ -952,17 +1276,23 @@ async function confirmRestoreSnapshot() {
   }
 
   try {
-    withAutosaveSuppressed(() => {
-      loadDefinitionIntoEditor({
-        ...createBlankGrapesDefinition(),
-        html: snapshot.html,
-        css: snapshot.css
-      });
-    });
-    importSnapshot.value = null;
+    const definition = {
+      ...createBlankGrapesDefinition(),
+      html: String(snapshot.html || ''),
+      css: String(snapshot.css || ''),
+      project: null
+    };
+    const toSave = attachImportSnapshot(definition, snapshot);
+    importSnapshot.value = snapshot;
     showRestoreSnapshot.value = false;
-    markDirty();
-    await saveDraft({ force: true });
+
+    await withAutosaveSuppressed(async () => {
+      loadDefinitionIntoEditor(toSave);
+      const saved = await saveDraft({ force: true, jsonDefinition: toSave });
+      if (!saved) {
+        throw new Error(t('templates.htmlImport.restoreSnapshotFailed'));
+      }
+    });
     notifications.success(t('templates.htmlImport.restoreSnapshotSuccess'));
   } catch (error) {
     notifications.error(error?.message || t('templates.htmlImport.restoreSnapshotFailed'));

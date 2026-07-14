@@ -38,7 +38,15 @@
       </template>
 
       <template #cell-outputFormat="{ value }">
-        <span class="uppercase text-xs font-medium text-gray-600 dark:text-gray-300">{{ value || 'pdf' }}</span>
+        <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ formatTypeLabel(value) }}</span>
+      </template>
+
+      <template #cell-paperSize="{ value, row }">
+        <span class="text-xs text-gray-600 dark:text-gray-300">{{ formatPaperSize(row) }}</span>
+      </template>
+
+      <template #cell-orientation="{ value, row }">
+        <span class="text-xs text-gray-600 dark:text-gray-300">{{ formatOrientation(row) }}</span>
       </template>
 
       <template #cell-latestPublishedVersion="{ value, row }">
@@ -69,7 +77,6 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import ListView from '@/components/common/ListView.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
@@ -79,9 +86,9 @@ import HtmlImportWizard from '@/modules/template/components/html/HtmlImportWizar
 import { useTemplates } from '@/composables/useTemplates';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
+import { openRecordInTab } from '@/utils/tabNavigation';
 
 const { t } = useI18n();
-const router = useRouter();
 const authStore = useAuthStore();
 const notifications = useNotifications();
 
@@ -127,10 +134,11 @@ const statsConfig = computed(() => [
 
 const columns = computed(() => [
   { key: 'name', label: t('templates.colName'), sortable: true },
-  { key: 'purpose', label: t('templates.colPurpose'), sortable: true },
   { key: 'moduleScope', label: t('templates.colModuleScope'), sortable: true },
   { key: 'status', label: t('templates.colStatus'), sortable: true },
-  { key: 'outputFormat', label: t('templates.colOutputFormat'), sortable: true },
+  { key: 'outputFormat', label: t('templates.colType'), sortable: true },
+  { key: 'paperSize', label: t('templates.colSize'), sortable: true },
+  { key: 'orientation', label: t('templates.colOrientation'), sortable: true },
   { key: 'latestPublishedVersion', label: t('templates.colVersion'), sortable: false },
   { key: 'updatedAt', label: t('templates.colUpdated'), sortable: true }
 ]);
@@ -154,6 +162,35 @@ const listPagination = computed(() => ({
 function formatStatus(value) {
   if (!value) return 'draft';
   return String(value).charAt(0).toUpperCase() + String(value).slice(1);
+}
+
+function isPrintTemplate(row) {
+  return String(row?.outputFormat || 'pdf').toLowerCase() !== 'email';
+}
+
+function formatTypeLabel(value) {
+  return String(value || 'pdf').toLowerCase() === 'email'
+    ? t('templates.typeEmailTemplate')
+    : t('templates.typePrintTemplate');
+}
+
+function formatPaperSize(row) {
+  if (!isPrintTemplate(row)) return '—';
+  const size = String(row?.paperSize || 'A4');
+  if (size === 'Custom') {
+    const w = row?.customPageWidth;
+    const h = row?.customPageHeight;
+    if (w && h) return `${w}×${h} mm`;
+    return t('templates.builderPageCustom');
+  }
+  return size;
+}
+
+function formatOrientation(row) {
+  if (!isPrintTemplate(row)) return '—';
+  return row?.orientation === 'landscape'
+    ? t('templates.builderPageOrientationLandscape')
+    : t('templates.builderPageOrientationPortrait');
 }
 
 function publishedVersionLabel(row, value) {
@@ -210,7 +247,25 @@ function onStatClick(statItem) {
 function openTemplate(row) {
   const id = row?._id || row?.id;
   if (!id) return;
-  router.push({ name: 'template-detail', params: { id } });
+  const name = String(row?.name || '').trim() || t('templates.detailTitle');
+  openRecordInTab(`/templates/${id}`, {
+    title: name,
+    icon: 'document-text',
+    params: { id, name },
+    name: `template-detail-${id}`
+  });
+}
+
+function openTemplateBuilder(created, fallbackName = '') {
+  const id = created?._id || created?.id;
+  if (!id) return;
+  const name = String(created?.name || fallbackName || '').trim() || t('templates.detailTitle');
+  openRecordInTab(`/templates/${id}/builder`, {
+    title: name,
+    icon: 'document-text',
+    params: { id, name },
+    name: `template-builder-${id}`
+  });
 }
 
 async function handleCreate(payload) {
@@ -219,15 +274,7 @@ async function handleCreate(payload) {
     showCreateDrawer.value = false;
     notifications.success(t('templates.createSuccess'));
     await refreshPage();
-    const id = created?._id || created?.id;
-    if (id) {
-      const openBuilder = Boolean(payload?.jsonDefinition) || payload?.outputFormat === 'email';
-      router.push(
-        openBuilder
-          ? { name: 'template-builder', params: { id } }
-          : { name: 'template-detail', params: { id } }
-      );
-    }
+    openTemplateBuilder(created, payload?.name);
   } catch (error) {
     notifications.error(error?.message || t('templates.loadFailed'));
   }
@@ -291,10 +338,7 @@ async function handleImportHtmlComplete(payload) {
     showImportWizard.value = false;
     notifications.success(t('templates.htmlImport.createSuccess'));
     await refreshPage();
-    const id = created?._id || created?.id;
-    if (id) {
-      router.push({ name: 'template-builder', params: { id } });
-    }
+    openTemplateBuilder(created, payload?.name);
   } catch (error) {
     const details = error?.response?.data?.details;
     const detailMessage = Array.isArray(details) && details.length

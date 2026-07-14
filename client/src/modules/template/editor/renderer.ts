@@ -6,6 +6,8 @@ import {
   type PageMarginsMm
 } from '@/constants/contentPageSettings';
 import { normalizeGrapesHtmlMergeTokens } from '@/utils/builderMergeTagHtml';
+import { prepareEmailTableAttributes, ensureEmailCssCentersMaxWidthCards } from '../utils/ensureTableWidthAttributes';
+import { normalizeImportedEmailHtml } from '../utils/normalizeImportedEmailHtml';
 import { restoreLogoMergeSources } from './logoContent';
 import { decodeMsoConditionals } from '../utils/emailHtmlExport';
 import { formatHtmlDocument, stripGrapesDocumentWrapper } from '../utils/formatHtmlDocument';
@@ -60,6 +62,17 @@ const GRAPES_RENDER_RESET_CSS = `
   [data-address-block="true"],
   [data-organization-block="true"] {
     display: block;
+  }
+`;
+
+/** PDF-only: preserve intentional line breaks while editing/exporting document text. */
+const GRAPES_PDF_TEXT_WHITESPACE_CSS = `
+  [data-text-block="true"],
+  [data-paragraph="true"],
+  [data-heading="true"],
+  [data-rich-text="true"],
+  [data-address-block="true"],
+  [data-organization-block="true"] {
     white-space: pre-wrap;
   }
 `;
@@ -116,24 +129,30 @@ ${css}
 /** Read live canvas body HTML without mutating Grapes component models. */
 export function exportBodyHtmlFromCanvasFrame(editor: Editor): string {
   const doc = editor.Canvas.getFrameEl()?.contentDocument;
+  let html = '';
   if (!doc) {
-    const fallback = stripGrapesDocumentWrapper(editor.getHtml() || '');
-    return restoreLogoMergeSources(normalizeGrapesHtmlMergeTokens(fallback));
+    html = stripGrapesDocumentWrapper(editor.getHtml() || '');
+  } else {
+    const printArea = doc.querySelector(`[${PRINT_AREA_ATTR}="true"]`);
+    if (printArea instanceof HTMLElement) {
+      html = printArea.outerHTML;
+    } else {
+      const wrapper = doc.querySelector('[data-gjs-type="wrapper"]');
+      if (wrapper instanceof HTMLElement) {
+        html = [...wrapper.children].map((child) => child.outerHTML).join('');
+      } else {
+        html = stripGrapesDocumentWrapper(editor.getHtml() || '');
+      }
+    }
+    // Frame can briefly report an empty wrapper while components are still loading.
+    if (!String(html || '').trim()) {
+      html = stripGrapesDocumentWrapper(editor.getHtml() || '');
+    }
   }
 
-  const printArea = doc.querySelector(`[${PRINT_AREA_ATTR}="true"]`);
-  if (printArea instanceof HTMLElement) {
-    return restoreLogoMergeSources(normalizeGrapesHtmlMergeTokens(printArea.outerHTML));
-  }
-
-  const wrapper = doc.querySelector('[data-gjs-type="wrapper"]');
-  if (wrapper instanceof HTMLElement) {
-    const parts = [...wrapper.children].map((child) => child.outerHTML);
-    return restoreLogoMergeSources(normalizeGrapesHtmlMergeTokens(parts.join('')));
-  }
-
-  const fallback = stripGrapesDocumentWrapper(editor.getHtml() || '');
-  return restoreLogoMergeSources(normalizeGrapesHtmlMergeTokens(fallback));
+  return restoreLogoMergeSources(
+    prepareEmailTableAttributes(normalizeGrapesHtmlMergeTokens(html))
+  );
 }
 
 /** Full HTML document for the current canvas — merge chips normalized to {{tokens}}. */
@@ -149,8 +168,10 @@ export function buildTemplateHtmlDocument(
   const css = String(componentCss || '').trim();
 
   if (isEmail) {
-    const emailCss = `${GRAPES_RENDER_RESET_CSS}\n${css}`.trim();
-    return formatHtmlDocument(wrapHtmlDocument(bodyHtml, emailCss));
+    const emailCss = `${GRAPES_RENDER_RESET_CSS}\n${ensureEmailCssCentersMaxWidthCards(css)}`.trim();
+    return formatHtmlDocument(
+      wrapHtmlDocument(normalizeImportedEmailHtml(bodyHtml), emailCss)
+    );
   }
 
   const margins = { ...DEFAULT_PAGE_MARGINS_MM, ...options.pageSettings?.margins };
@@ -169,6 +190,7 @@ export function buildTemplateHtmlDocument(
       line-height: 1.45;
     }
     ${GRAPES_RENDER_RESET_CSS}
+    ${GRAPES_PDF_TEXT_WHITESPACE_CSS}
     ${css}
   `.trim();
 

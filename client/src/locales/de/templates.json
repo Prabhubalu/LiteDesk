@@ -43,6 +43,18 @@
     "message": "Format",
     "description": "Template output format column"
   },
+  "colType": {
+    "message": "Type",
+    "description": "Template type column (print vs email)"
+  },
+  "colSize": {
+    "message": "Size",
+    "description": "Print template page size column"
+  },
+  "colOrientation": {
+    "message": "Orientation",
+    "description": "Print template page orientation column"
+  },
   "colVersion": {
     "message": "Version",
     "description": "Template version column"
@@ -74,6 +86,18 @@
   "fieldOutputFormat": {
     "message": "Output format",
     "description": "Template output format field"
+  },
+  "fieldType": {
+    "message": "Type",
+    "description": "Template type field on create form (print vs email)"
+  },
+  "typePrintTemplate": {
+    "message": "Print template",
+    "description": "Create form type option for PDF/print templates"
+  },
+  "typeEmailTemplate": {
+    "message": "Email Template",
+    "description": "Create form type option for email templates"
   },
   "moduleScopeAny": {
     "message": "Any module",
@@ -2204,7 +2228,7 @@
     "description": "Org merge mappings table actions column"
   },
   "htmlImport.orgMappingsTagPlaceholder": {
-    "message": "e.g. *|FNAME|* or {{first_name}}",
+    "message": "e.g. *|FNAME|* or {'{'}{'{'}first_name{'}'}{'}'}",
     "description": "ESP merge tag input placeholder"
   },
   "htmlImport.orgMappingsSaved": {
@@ -2506,5 +2530,41 @@
   "builderPreviewHtmlHint": {
     "message": "HTML preview updates automatically. Use Preview PDF for a server-rendered PDF.",
     "description": "Hint above HTML preview panel in template builder"
+  },
+  "htmlImport.publishAnyway": {
+    "message": "Publish anyway",
+    "description": "Confirm publish despite HTML warnings"
+  },
+  "htmlImport.validationFixMissingAlt": {
+    "message": "Select each image and set Alt text in the Block panel (accessibility and many clients require it).",
+    "description": "How to fix missing image alt warnings"
+  },
+  "htmlImport.validationFixMissingTableWidth": {
+    "message": "Select each layout table and set Width (for example 100% or 600) in the Block panel or HTML so clients render the layout consistently.",
+    "description": "How to fix missing table width warnings"
+  },
+  "htmlImport.validationFixJavascriptRemoved": {
+    "message": "Remove script tags and event handlers from the HTML — email clients strip JavaScript.",
+    "description": "How to fix javascript-removed warnings"
+  },
+  "htmlImport.validationFixExternalCss": {
+    "message": "Move external stylesheet rules into inline styles or a style block in the template HTML.",
+    "description": "How to fix external CSS warnings"
+  },
+  "htmlImport.validationFixUnsupportedCss": {
+    "message": "Replace unsupported CSS with email-safe properties or inline table/cell attributes.",
+    "description": "How to fix unsupported CSS warnings"
+  },
+  "htmlImport.validationFixForm": {
+    "message": "Remove HTML forms from the email body — most clients disable form submission in email.",
+    "description": "How to fix form warnings"
+  },
+  "builderTableHtmlWidthHint": {
+    "message": "Sets the HTML width attribute used by email clients (e.g. 100% or 600).",
+    "description": "Hint for table HTML width field in builder"
+  },
+  "previewUnavailable": {
+    "message": "Publish a version to enable preview.",
+    "description": "Empty state when template preview is not available"
   }
 }

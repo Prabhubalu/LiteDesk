@@ -7,243 +7,555 @@
     <style>
       :root {
         --bg: #ffffff;
-        --fg: #0f172a;
+        --fg: #1e293b;
         --muted: #64748b;
         --border: #e2e8f0;
-        --primary: #2563eb;
+        --primary: #4f46e5;
+        --primary-2: #4f46e5;
+        --grad: #4f46e5;
         --bubble: #f1f5f9;
-        --shadow: 0 20px 40px rgba(2, 6, 23, 0.22);
+        --shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
+        --radius: 22px;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
       }
       body {
-        margin: 0;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        background: var(--bg);
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: transparent;
         color: var(--fg);
+        -webkit-font-smoothing: antialiased;
       }
       .wrap {
-        height: 100vh;
+        height: 100%;
         display: flex;
         flex-direction: column;
-        background: radial-gradient(1200px 600px at 90% -20%, rgba(37, 99, 235, 0.12), transparent 45%),
-          radial-gradient(900px 500px at 10% 10%, rgba(127, 86, 217, 0.10), transparent 55%),
-          var(--bg);
+        background: var(--bg);
+        overflow: hidden;
       }
       header {
-        padding: 12px 12px;
-        border-bottom: 1px solid rgba(226,232,240,0.8);
+        padding: 14px 16px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 8px;
-        background: linear-gradient(135deg, rgba(37,99,235,0.14), rgba(127,86,217,0.10));
+        gap: 10px;
+        background: #312e81;
+        color: #fff;
+        flex: none;
       }
       .brand {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         min-width: 0;
       }
       .logo {
-        width: 28px;
-        height: 28px;
+        position: relative;
+        width: 44px;
+        height: 44px;
         border-radius: 999px;
-        background: linear-gradient(135deg, #2563eb, #7f56d9);
-        box-shadow: 0 10px 20px rgba(37,99,235,0.25);
+        background: #fff;
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
         flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .logo-icon {
+        display: block;
+        width: 26px;
+        height: 26px;
+      }
+      .logo-online {
+        position: absolute;
+        right: 1px;
+        bottom: 1px;
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        background: #22c55e;
+        border: 2.5px solid #fff;
+        box-sizing: border-box;
       }
       header h1 {
-        font-size: 13px;
+        font-size: 15px;
         margin: 0;
         font-weight: 700;
-        letter-spacing: 0.2px;
+        letter-spacing: 0.1px;
+        color: #fff;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       .sub {
-        font-size: 11px;
-        color: var(--muted);
-        margin-top: 1px;
+        font-size: 12px;
+        color: rgba(255,255,255,0.82);
+        margin-top: 2px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+      .headerActions {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        flex: none;
       }
       header button {
         border: 0;
         background: transparent;
         cursor: pointer;
-        color: var(--muted);
-        font-size: 14px;
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.92;
+        padding: 0;
       }
+      header button:hover { background: rgba(255,255,255,0.14); opacity: 1; }
       #messages {
         flex: 1;
         overflow: auto;
-        padding: 12px;
+        padding: 16px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
-        background: transparent;
+        gap: 12px;
+        background: #fff;
+      }
+      body[data-view="prechat"] #messages,
+      body[data-view="inbox"] #messages {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+      body[data-view="inbox"] #messages {
+        padding: 12px 14px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      body[data-view="inbox"] #inbox.inboxWrap {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        align-self: stretch;
+        width: 100%;
+        min-height: 0;
+        height: 100%;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      body[data-view="inbox"] #prechat {
+        display: none !important;
+      }
+      body[data-view="chatOpen"] #messages,
+      body[data-view="chatClosed"] #messages {
+        background: #f8fafc;
+        padding: 14px 14px 18px;
+        gap: 8px;
       }
       .msg {
-        max-width: 85%;
-        border-radius: 14px;
-        padding: 10px 10px;
-        font-size: 13px;
-        line-height: 1.35;
+        max-width: 78%;
+        border-radius: 16px;
+        padding: 9px 12px;
+        font-size: 13.5px;
+        line-height: 1.45;
         white-space: pre-wrap;
         word-break: break-word;
+        box-shadow: none;
       }
       .inbound {
         align-self: flex-end;
-        background: var(--primary);
+        background: #312e81;
         color: #fff;
+        border-bottom-right-radius: 5px;
       }
       .outbound {
         align-self: flex-start;
-        background: var(--bubble);
-        color: var(--fg);
+        background: #fff;
+        color: #1e293b;
+        border: 1px solid #e8eef5;
+        border-bottom-left-radius: 5px;
       }
       .meta {
-        font-size: 11px;
-        color: var(--muted);
-        margin-top: 4px;
+        font-size: 10.5px;
+        color: #94a3b8;
+        margin-top: 3px;
+        padding: 0 4px;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
+        line-height: 1;
       }
+      .msg-row.visitor .meta { justify-content: flex-end; }
+      .msg-row.agent .meta { justify-content: flex-start; }
       .receipt {
         display: inline-flex;
         align-items: center;
-        letter-spacing: -0.2em;
-        font-size: 12px;
+        letter-spacing: -0.22em;
+        font-size: 11px;
         line-height: 1;
-        color: rgba(255, 255, 255, 0.75);
+        color: #94a3b8;
       }
       .receipt.delivered,
       .receipt.read {
         letter-spacing: -0.35em;
       }
       .receipt.read {
-        color: #93c5fd;
+        color: #6366f1;
       }
       .msg-row {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 2px;
+        animation: arivuMsgIn 220ms cubic-bezier(0.22, 1, 0.36, 1);
       }
-      .msg-row.visitor {
-        align-items: flex-end;
-      }
-      .msg-row.agent {
-        align-items: flex-start;
+      .msg-row.visitor { align-items: flex-end; }
+      .msg-row.agent { align-items: flex-start; }
+      @keyframes arivuMsgIn {
+        from { opacity: 0; transform: translateY(6px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
       }
       footer {
         border-top: 1px solid rgba(226,232,240,0.85);
-        padding: 10px;
+        padding: 10px 12px 12px;
         display: flex;
         flex-direction: column;
-        gap: 8px;
-        background: rgba(255,255,255,0.7);
+        gap: 6px;
+        background: rgba(255,255,255,0.92);
         backdrop-filter: blur(10px);
+        flex: none;
+      }
+      #composer .poweredBy {
+        margin-top: 2px;
+        opacity: 0.85;
       }
       .composeRow {
         display: flex;
+        align-items: flex-end;
         gap: 8px;
+        padding: 6px;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
       }
+      .composeRow:focus-within {
+        border-color: #c7d2fe;
+        box-shadow: 0 0 0 3px rgba(92,103,215,0.12), 0 8px 20px rgba(15, 23, 42, 0.04);
+      }
+      #composer textarea#input {
+        flex: 1;
+        resize: none;
+        border: 0;
+        border-radius: 12px;
+        padding: 8px 10px;
+        font-size: 13.5px;
+        outline: none;
+        background: transparent;
+        font-family: inherit;
+        min-height: 36px;
+        max-height: calc(1.4em * 4 + 16px);
+        line-height: 1.4;
+        overflow-y: auto;
+        color: var(--fg);
+        box-sizing: border-box;
+      }
+      #composer textarea#input:focus { border-color: transparent; box-shadow: none; }
       textarea {
         flex: 1;
         resize: none;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 10px;
-        font-size: 13px;
+        border: 0;
+        border-radius: 12px;
+        padding: 8px 10px;
+        font-size: 13.5px;
         outline: none;
-        background: rgba(255,255,255,0.9);
+        background: transparent;
+        font-family: inherit;
+        min-height: 40px;
+        max-height: 120px;
+        line-height: 1.4;
+        color: var(--fg);
       }
+      textarea:focus { border-color: transparent; box-shadow: none; }
       .send {
         border: 0;
-        border-radius: 10px;
-        padding: 10px 12px;
-        background: var(--primary);
+        border-radius: 999px;
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        background: #312e81;
         color: #fff;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
-        box-shadow: 0 12px 24px rgba(37,99,235,0.28);
+        box-shadow: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        transition: transform 140ms ease, opacity 140ms ease, background 140ms ease;
       }
+      .send:hover { background: #3730a3; transform: none; }
+      .send:active { transform: scale(0.96); }
+      .send svg { width: 18px; height: 18px; display: block; }
+      .attachBtn {
+        border: 0;
+        background: transparent;
+        color: #64748b;
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        border-radius: 999px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+      }
+      .attachBtn:hover,
+      .attachBtn[aria-expanded="true"] { background: #f1f5f9; color: #312e81; }
+      .attachBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .attachBtn svg { width: 18px; height: 18px; display: block; }
+      .attachMenuWrap {
+        position: relative;
+        flex: none;
+      }
+      .attachMenu {
+        display: none;
+        position: absolute;
+        left: 0;
+        bottom: calc(100% + 8px);
+        min-width: 148px;
+        padding: 6px;
+        border-radius: 12px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+        z-index: 5;
+      }
+      .attachMenu[data-open="1"] { display: block; }
+      .attachMenu button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 0;
+        background: transparent;
+        color: #334155;
+        font: 600 12.5px/1.2 inherit;
+        text-align: left;
+        padding: 8px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .attachMenu button:hover { background: #f8fafc; color: #312e81; }
+      .attachMenu button svg { width: 16px; height: 16px; flex: none; color: #64748b; }
+      .pendingAttachments {
+        display: none;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 0 2px 6px;
+      }
+      .pendingAttachments[data-show="1"] { display: flex; }
+      .pendingChip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        max-width: 100%;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        color: #334155;
+        font-size: 11.5px;
+        line-height: 1.2;
+      }
+      .pendingChip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+      .pendingChip button {
+        border: 0;
+        background: transparent;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 0;
+        font-size: 14px;
+        line-height: 1;
+      }
+      .pendingChip button:hover { color: #e11d48; }
+      .msgAttachments {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 6px;
+      }
+      .msgAttachments:empty { display: none; }
+      .msgAttachments a {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        max-width: 100%;
+        font-size: 12px;
+        color: inherit;
+        text-decoration: underline;
+        opacity: 0.92;
+        word-break: break-all;
+      }
+      .msgAttachments img {
+        display: block;
+        max-width: 220px;
+        max-height: 160px;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+      .msg { white-space: pre-wrap; word-break: break-word; }
+      #typing {
+        min-height: 0;
+        padding: 0 6px;
+        font-size: 11.5px;
+        color: #94a3b8;
+      }
+      #typing:empty { display: none; }
       .hint {
         padding: 10px 12px;
         font-size: 12px;
         color: var(--muted);
       }
       .card {
-        border: 1px solid rgba(226,232,240,0.9);
-        background: rgba(255,255,255,0.85);
-        backdrop-filter: blur(12px);
-        border-radius: 16px;
-        padding: 12px;
-        box-shadow: var(--shadow);
+        border: 0;
+        background: transparent;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
       }
       .field {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 7px;
       }
       .label {
-        font-size: 12px;
-        font-weight: 600;
-        color: rgba(15,23,42,0.88);
+        font-size: 13px;
+        font-weight: 700;
+        color: #334155;
       }
+      .inputWrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      .inputIcon {
+        position: absolute;
+        left: 12px;
+        width: 18px;
+        height: 18px;
+        color: #64748b;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .inputIcon svg { width: 18px; height: 18px; display: block; }
       .input {
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 10px 10px;
+        width: 100%;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 12px 12px 12px 40px;
         font-size: 13px;
         outline: none;
-        background: rgba(255,255,255,0.95);
+        background: #fff;
+        color: var(--fg);
+        font-family: inherit;
+        transition: border-color .15s ease, box-shadow .15s ease;
       }
+      .input:focus {
+        border-color: #a5b4fc;
+        box-shadow: 0 0 0 3px rgba(92,103,215,0.12);
+      }
+      .input::placeholder { color: #94a3b8; }
       .btnPrimary {
         border: 0;
-        border-radius: 12px;
-        padding: 10px 12px;
-        background: linear-gradient(135deg, #2563eb, #7f56d9);
+        border-radius: 999px;
+        padding: 13px 16px;
+        background: #312e81;
         color: #fff;
         font-weight: 700;
+        font-size: 14px;
         cursor: pointer;
-        box-shadow: 0 14px 26px rgba(37,99,235,0.28);
+        box-shadow: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
       }
+      .btnPrimary svg { width: 16px; height: 16px; }
       .btnGhost {
-        border: 1px solid rgba(226,232,240,0.95);
-        border-radius: 12px;
-        padding: 10px 12px;
-        background: rgba(255,255,255,0.7);
-        color: rgba(15,23,42,0.86);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 11px 14px;
+        background: #fff;
+        color: #334155;
         font-weight: 600;
         cursor: pointer;
       }
       .row {
         display: flex;
         gap: 10px;
+        flex-direction: column;
       }
       .prechatBubble {
         max-width: 92%;
         border-radius: 16px;
-        padding: 12px 12px;
+        padding: 12px;
         font-size: 13px;
         line-height: 1.35;
         white-space: pre-wrap;
         word-break: break-word;
-        border: 1px solid rgba(226,232,240,0.95);
-        background: rgba(255,255,255,0.9);
+        border: 1px solid var(--border);
+        background: #fff;
       }
       .prechatMeta {
         margin-top: 6px;
         font-size: 11px;
-        color: rgba(100,116,139,0.9);
+        color: var(--muted);
       }
       .prechatStack {
         display: flex;
         flex-direction: column;
+        gap: 16px;
+      }
+      .prechatHero {
+        display: flex;
         gap: 12px;
+        align-items: flex-start;
+      }
+      .prechatEmoji {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex: none;
+      }
+      .prechatHeroTitle {
+        font-weight: 800;
+        font-size: 16px;
+        line-height: 1.3;
+        color: #0f172a;
+        margin: 0 0 4px;
+      }
+      .prechatHeroSub,
+      #welcome {
+        font-size: 13px;
+        line-height: 1.45;
+        color: #64748b;
+        margin: 0;
       }
       .agentRow {
         display: flex;
@@ -251,61 +563,79 @@
         align-items: flex-end;
       }
       .agentAvatar {
-        width: 26px;
-        height: 26px;
+        width: 28px;
+        height: 28px;
         border-radius: 999px;
-        background: linear-gradient(135deg, rgba(37,99,235,0.22), rgba(127,86,217,0.18));
-        box-shadow: 0 10px 20px rgba(37,99,235,0.18);
+        background: #312e81;
         flex: none;
       }
       .agentBubble {
         border-radius: 16px;
-        padding: 12px 12px;
+        padding: 12px;
         font-size: 13px;
         line-height: 1.4;
-        color: rgba(15,23,42,0.92);
-        background: rgba(255,255,255,0.92);
-        border: 1px solid rgba(226,232,240,0.95);
-        box-shadow: 0 10px 22px rgba(2,6,23,0.06);
+        color: #334155;
+        background: #f8fafc;
+        border: 1px solid #eef2f7;
         max-width: 92%;
       }
       .formCard {
-        border-radius: 16px;
-        padding: 12px;
-        background: rgba(255,255,255,0.92);
-        border: 1px solid rgba(226,232,240,0.95);
-        box-shadow: 0 12px 26px rgba(2,6,23,0.07);
+        border-radius: 0;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
       }
-      .formTitle {
-        font-weight: 900;
-        font-size: 13px;
-        color: rgba(15,23,42,0.9);
-        margin-bottom: 10px;
-      }
+      .formTitle { display: none; }
       .consent {
-        font-size: 11.5px;
-        color: rgba(15,23,42,0.64);
-        line-height: 1.35;
+        font-size: 12px;
+        color: #64748b;
+        line-height: 1.45;
       }
       .consent a {
-        color: rgba(37,99,235,0.95);
-        text-decoration: underline;
-        font-weight: 800;
+        color: #4338ca;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .consent a:hover { text-decoration: underline; }
+      .consentLabel input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--primary);
+        flex: none;
+      }
+      .saveHint {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: #f1f5f9;
+        color: #475569;
+        font-size: 12.5px;
+        line-height: 1.4;
+      }
+      .saveHint svg {
+        width: 18px;
+        height: 18px;
+        flex: none;
+        margin-top: 1px;
+        color: #64748b;
       }
       .btnLink {
         border: 0;
         background: transparent;
-        color: rgba(37,99,235,0.95);
+        color: var(--primary);
         cursor: pointer;
         font-weight: 700;
         font-size: 12px;
         padding: 8px 10px;
       }
       .listItem {
-        border: 1px solid rgba(226,232,240,0.95);
-        background: rgba(255,255,255,0.75);
+        border: 1px solid var(--border);
+        background: #fff;
         border-radius: 14px;
-        padding: 10px 10px;
+        padding: 10px;
         display: flex;
         flex-direction: column;
         gap: 4px;
@@ -322,18 +652,18 @@
         font-weight: 700;
         padding: 2px 8px;
         border-radius: 999px;
-        border: 1px solid rgba(226,232,240,0.95);
-        color: rgba(15,23,42,0.78);
-        background: rgba(255,255,255,0.6);
+        border: 1px solid var(--border);
+        color: #475569;
+        background: #f8fafc;
       }
       .pillOpen {
-        border-color: rgba(37,99,235,0.25);
-        color: rgba(37,99,235,0.95);
-        background: rgba(37,99,235,0.08);
+        border-color: rgba(92,103,215,0.25);
+        color: var(--primary);
+        background: rgba(92,103,215,0.08);
       }
       .preview {
         font-size: 12px;
-        color: rgba(15,23,42,0.7);
+        color: #64748b;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -342,19 +672,22 @@
         display: flex;
         flex-direction: column;
         height: 100%;
+        min-height: 0;
       }
       .inboxHeader {
-        padding: 12px 14px;
-        font-size: 12px;
+        padding: 4px 2px 12px;
+        font-size: 13px;
         font-weight: 800;
-        color: rgba(15,23,42,0.78);
+        color: #334155;
+        flex: none;
       }
       .inboxList {
-        flex: 1;
+        flex: 1 1 auto;
+        min-height: 0;
         overflow: auto;
-        border-top: 1px solid rgba(226,232,240,0.85);
-        border-bottom: 1px solid rgba(226,232,240,0.85);
-        background: rgba(255,255,255,0.55);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: #fff;
       }
       .inboxRow {
         display: flex;
@@ -362,33 +695,33 @@
         gap: 10px;
         padding: 12px 14px;
         cursor: pointer;
-        border-bottom: 1px solid rgba(226,232,240,0.75);
+        border-bottom: 1px solid #f1f5f9;
       }
       .inboxRow:last-child { border-bottom: 0; }
       .avatar {
         width: 28px;
         height: 28px;
         border-radius: 999px;
-        background: rgba(148,163,184,0.35);
+        background: #e2e8f0;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: rgba(15,23,42,0.55);
+        color: #64748b;
         flex: none;
         font-weight: 800;
         font-size: 12px;
       }
       .rowMain { min-width: 0; flex: 1; }
       .rowTitle {
-        font-weight: 900;
+        font-weight: 800;
         font-size: 13px;
-        color: rgba(15,23,42,0.92);
+        color: #0f172a;
         line-height: 1.2;
       }
       .rowSub {
         margin-top: 2px;
         font-size: 12px;
-        color: rgba(15,23,42,0.64);
+        color: #64748b;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -396,46 +729,49 @@
       .rowMeta {
         margin-top: 6px;
         font-size: 11px;
-        color: rgba(100,116,139,0.9);
+        color: var(--muted);
       }
       .inboxBottom {
-        padding: 14px;
-        background: rgba(255,255,255,0.7);
-        backdrop-filter: blur(10px);
+        flex: 0 0 auto;
+        margin-top: auto;
+        padding: 14px 0 4px;
+        background: transparent;
+      }
+      .inboxBottom .poweredBy {
+        margin-top: 10px;
+        margin-bottom: 0;
       }
       .btnBottomPrimary {
         width: 100%;
         border: 0;
         border-radius: 999px;
         padding: 12px 14px;
-        background: linear-gradient(135deg, #2563eb, #7f56d9);
+        background: #312e81;
         color: #fff;
         font-weight: 800;
         cursor: pointer;
-        box-shadow: 0 14px 26px rgba(37,99,235,0.28);
+        box-shadow: none;
       }
       #closedBar {
-        border-top: 1px solid rgba(226,232,240,0.85);
-        padding: 12px;
+        border-top: 1px solid rgba(226, 232, 240, 0.9);
+        padding: 12px 12px 14px;
         display: none;
         flex-direction: column;
-        gap: 8px;
-        background: rgba(255,255,255,0.92);
-        backdrop-filter: blur(10px);
+        gap: 10px;
+        background: linear-gradient(180deg, #f8fafc 0%, #ffffff 28%);
+        flex: none;
+        max-height: min(46%, 320px);
+        overflow: auto;
       }
       #closedBar .closedNotice {
-        margin: 0;
-        padding: 0;
-        font-size: 12px;
-        color: var(--muted);
-        text-align: center;
+        display: none;
       }
       .btnSecondary {
         width: 100%;
         border: 1px solid var(--border);
         border-radius: 999px;
         padding: 11px 14px;
-        background: rgba(255,255,255,0.95);
+        background: #fff;
         color: var(--fg);
         font-weight: 700;
         cursor: pointer;
@@ -443,66 +779,231 @@
       #feedbackPanel {
         display: none;
         flex-direction: column;
-        gap: 8px;
+        gap: 0;
+        padding: 14px 12px 12px;
+        border-radius: 18px;
+        background: #fff;
+        border: 1px solid #e8eef7;
+        box-shadow: 0 10px 28px rgba(49, 46, 129, 0.08);
+      }
+      #feedbackPanel .feedbackHero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      #feedbackPanel .feedbackEmoji {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(145deg, #eef2ff, #e0e7ff);
+        font-size: 20px;
+        line-height: 1;
       }
       #feedbackPanel .feedbackTitle {
         margin: 0;
-        font-size: 13px;
-        font-weight: 700;
-        color: var(--fg);
-        text-align: center;
+        font-size: 14.5px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        color: #1e293b;
+      }
+      #feedbackPanel .feedbackSub {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #64748b;
+        max-width: 260px;
       }
       .csatStars {
         display: flex;
         justify-content: center;
-        gap: 6px;
+        gap: 2px;
+        margin-bottom: 2px;
       }
       .csatStarBtn {
-        width: 36px;
-        height: 36px;
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        background: rgba(255,255,255,0.95);
-        color: var(--fg);
-        font-weight: 800;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: 0;
+        background: transparent;
+        color: #cbd5e1;
         cursor: pointer;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 140ms ease, color 140ms ease, background 140ms ease;
+      }
+      .csatStarBtn svg {
+        width: 26px;
+        height: 26px;
+        display: block;
+      }
+      .csatStarBtn:hover {
+        color: #f59e0b;
+        background: rgba(245, 158, 11, 0.08);
+        transform: translateY(-2px) scale(1.04);
+      }
+      .csatStarBtn.active,
+      .csatStarBtn.is-filled {
+        color: #f59e0b;
       }
       .csatStarBtn.active {
-        background: linear-gradient(135deg, #2563eb, #7f56d9);
-        color: #fff;
-        border-color: transparent;
+        background: rgba(245, 158, 11, 0.12);
       }
+      .csatLabels {
+        display: flex;
+        justify-content: space-between;
+        padding: 0 6px 10px;
+        font-size: 11px;
+        color: #94a3b8;
+      }
+      #feedbackDetails {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        padding-top: 4px;
+        border-top: 1px solid #f1f5f9;
+        margin-top: 6px;
+      }
+      #feedbackDetails[data-show="1"] { display: flex; }
       #feedbackComment {
         width: 100%;
-        border: 1px solid var(--border);
-        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
         padding: 10px 12px;
         font: inherit;
-        resize: vertical;
-        min-height: 56px;
+        font-size: 13px;
+        resize: none;
+        min-height: 52px;
+        max-height: 72px;
+        background: #f8fafc;
+        color: var(--fg);
+        outline: none;
+        transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
+      }
+      #feedbackComment:focus {
+        background: #fff;
+        border-color: #c7d2fe;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+      }
+      #submitFeedbackBtn {
+        width: 100%;
+        border: 0;
+        border-radius: 999px;
+        padding: 11px 14px;
+        background: linear-gradient(135deg, #312e81, #4338ca);
+        color: #fff;
+        font-weight: 800;
+        font-size: 13px;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(49, 46, 129, 0.22);
+      }
+      #submitFeedbackBtn:hover { filter: brightness(1.05); }
+      #submitFeedbackBtn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        filter: none;
+        box-shadow: none;
+      }
+      #skipFeedbackBtn {
+        border: 0;
+        background: transparent;
+        color: #94a3b8;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 12px;
+        padding: 8px 8px 2px;
+        align-self: center;
+        margin-top: 2px;
+      }
+      #skipFeedbackBtn:hover { color: #64748b; }
+      @media (max-height: 700px) {
+        #closedBar {
+          max-height: min(42%, 260px);
+          padding: 10px 10px 12px;
+          gap: 8px;
+        }
+        #feedbackPanel { padding: 12px 10px 10px; }
+        #feedbackPanel .feedbackEmoji { display: none; }
+        #feedbackPanel .feedbackSub { display: none; }
+        #feedbackPanel .feedbackHero { margin-bottom: 6px; }
+        .csatStarBtn { width: 36px; height: 36px; }
+        .csatStarBtn svg { width: 22px; height: 22px; }
+        #feedbackComment { min-height: 44px; max-height: 56px; }
+      }
+      @media (max-height: 560px) {
+        #closedBar { max-height: min(48%, 220px); }
+        .csatLabels { display: none; }
       }
       #feedbackThanks {
         display: none;
-        margin: 0;
-        font-size: 12px;
-        color: var(--muted);
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
         text-align: center;
+        padding: 18px 14px;
+        border-radius: 18px;
+        background: #fff;
+        border: 1px solid #e8eef7;
+        box-shadow: 0 10px 28px rgba(49, 46, 129, 0.08);
       }
+      #feedbackThanks .thanksIcon {
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(145deg, #ecfdf5, #d1fae5);
+        color: #059669;
+      }
+      #feedbackThanks .thanksIcon svg { width: 24px; height: 24px; }
+      #feedbackThanks .thanksTitle {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 800;
+        color: #1e293b;
+      }
+      #feedbackThanks .thanksSub {
+        margin: 0;
+        font-size: 12.5px;
+        line-height: 1.45;
+        color: #64748b;
+      }
+      #closedActions {
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+      }
+      #closedActions[data-show="1"] { display: flex; }
       .poweredBy {
-        margin-top: 10px;
+        margin-top: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
         font-size: 11px;
-        color: rgba(100,116,139,0.95);
+        color: #94a3b8;
       }
       .poweredLogo {
-        height: 24px;
+        height: 20px;
         width: auto;
         display: block;
         flex: none;
-        opacity: 0.92;
+        opacity: 0.85;
+      }
+      #prechat { margin: 0 !important; }
+      #endChatTopBtn.btnLink {
+        color: #fecaca !important;
+        width: auto;
+        padding: 0 8px;
+        font-size: 12px;
       }
     </style>
   </head>
@@ -510,20 +1011,39 @@
     <div class="wrap">
       <header>
         <div class="brand">
-          <div class="logo" aria-hidden="true"></div>
+          <div class="logo" aria-hidden="true">
+            <svg class="logo-icon" width="26" height="26" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#312e81" d="M12 6h20a10 10 0 0 1 10 10v12a10 10 0 0 1-10 10H22.2L13 44.5c-.7.4-1.5-.2-1.3-1L13.2 38H12A10 10 0 0 1 2 28V16A10 10 0 0 1 12 6z"/>
+              <circle cx="16" cy="22" r="2.6" fill="#fff"/>
+              <circle cx="24" cy="22" r="2.6" fill="#fff"/>
+              <circle cx="32" cy="22" r="2.6" fill="#fff"/>
+            </svg>
+            <span class="logo-online"></span>
+          </div>
           <div style="min-width:0;">
             <h1 id="title">Support chat</h1>
             <div id="subtitle" class="sub">We typically reply quickly</div>
             <div id="headerNotice" class="sub" style="display:none;"></div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <button id="endChatTopBtn" class="btnLink" type="button" style="display:none;color:rgba(185,28,28,0.95);">End chat</button>
-          <button id="closeBtn" type="button">✕</button>
+        <div class="headerActions">
+          <button id="endChatTopBtn" class="btnLink" type="button" style="display:none;">End chat</button>
+          <button id="menuBtn" type="button" aria-label="More options" title="More">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="5" r="1.6" fill="currentColor"/>
+              <circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+              <circle cx="12" cy="19" r="1.6" fill="currentColor"/>
+            </svg>
+          </button>
+          <button id="closeBtn" type="button" aria-label="Close chat">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </button>
         </div>
       </header>
       <div id="messages">
-        <div id="inbox" class="card inboxWrap" style="margin-top: 6px; display:none; padding: 0;">
+        <div id="inbox" class="card inboxWrap" style="display:none;">
           <div class="inboxHeader">Your conversations</div>
           <div id="sessionsList" class="inboxList"></div>
           <div class="inboxBottom">
@@ -535,32 +1055,42 @@
             </div>
           </div>
         </div>
-        <div id="prechat" class="card" style="margin-top: 6px;">
+        <div id="prechat" class="card" style="margin-top: 0;">
           <div class="prechatStack">
-            <div class="agentRow">
-              <div class="agentAvatar" aria-hidden="true"></div>
-              <div id="welcome" class="agentBubble">
-                Hey! Let’s discuss how we can help you. Fill out the form to start chatting.
+            <div class="prechatHero">
+              <div class="prechatEmoji" aria-hidden="true">&#x1F44B;</div>
+              <div>
+                <p class="prechatHeroTitle">Hey! Let's get you the right help.</p>
+                <p id="welcome" class="prechatHeroSub">Please share a few details to start chatting.</p>
               </div>
             </div>
 
             <div class="formCard">
               <div class="formTitle">Fill out the form to continue.</div>
-              <div id="prechatFields" style="display:flex; flex-direction:column; gap: 10px;"></div>
-              <div id="consentBlock" class="consent" style="margin-top: 10px; display:none;">
-                <label class="consentLabel" style="display:flex; gap:8px; align-items:flex-start; cursor:pointer;">
-                  <input id="consentCheckbox" type="checkbox" style="margin-top:3px;" />
+              <div id="prechatFields" style="display:flex; flex-direction:column; gap: 14px;"></div>
+              <div id="consentBlock" class="consent" style="margin-top: 14px; display:none;">
+                <label class="consentLabel" style="display:flex; gap:10px; align-items:flex-start; cursor:pointer;">
+                  <input id="consentCheckbox" type="checkbox" style="margin-top:2px;" />
                   <span id="consentText"></span>
                 </label>
               </div>
             </div>
 
-            <div class="hint" style="padding: 0;">
-              We’ll save this so next time you don’t have to re-enter it.
+            <div class="saveHint">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 3l7 3v5c0 4.5-2.9 8.4-7 9.8C7.9 19.4 5 15.5 5 11V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M9.5 12.2l1.8 1.8 3.5-3.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>We'll save this so you don't have to re-enter it next time.</span>
             </div>
           </div>
-          <div class="row" style="margin-top: 12px;">
-            <button id="startBtn" class="btnPrimary" type="button" style="flex: 1;">Start chat</button>
+          <div class="row" style="margin-top: 16px;">
+            <button id="startBtn" class="btnPrimary" type="button">
+              Start chat
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
             <button id="editBtn" class="btnGhost" type="button" style="display:none;">Edit</button>
           </div>
           <div id="prechatError" class="hint" style="padding: 10px 0 0 0; color: #b91c1c; display:none;"></div>
@@ -571,11 +1101,41 @@
         </div>
       </div>
       <footer id="composer">
-        <div id="typing" class="hint" style="padding: 0; min-height: 16px;"></div>
+        <div id="typing" class="hint" style="padding: 0;"></div>
+        <div id="pendingAttachments" class="pendingAttachments" aria-live="polite"></div>
         <div class="composeRow">
-          <textarea id="input" rows="2" placeholder="Type a message..."></textarea>
-          <button class="send" id="sendBtn" type="button">Send</button>
+          <div class="attachMenuWrap">
+            <button class="attachBtn" id="attachPlusBtn" type="button" aria-label="Attach" title="Attach" aria-haspopup="menu" aria-expanded="false">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <div class="attachMenu" id="attachMenu" role="menu" aria-label="Attach options">
+              <button type="button" id="attachImageBtn" role="menuitem">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="9" cy="10" r="1.6" fill="currentColor"/>
+                  <path d="M7.5 16.5l3.2-3.2a1.2 1.2 0 0 1 1.7 0L16 17l1.2-1.2a1.2 1.2 0 0 1 1.7 0l1.6 1.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Image</span>
+              </button>
+              <button type="button" id="attachFileBtn" role="menuitem">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M8.5 12.5l6.2-6.2a3.2 3.2 0 0 1 4.5 4.5L10 20a5 5 0 0 1-7.1-7.1l8.5-8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>File</span>
+              </button>
+            </div>
+          </div>
+          <textarea id="input" rows="1" placeholder="Type a message..."></textarea>
+          <button class="send" id="sendBtn" type="button" aria-label="Send message">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
         </div>
+        <input id="fileInput" type="file" multiple hidden />
+        <input id="imageInput" type="file" accept="image/*" multiple hidden />
         <div class="poweredBy">
           <span>Powered by</span>
           <img class="poweredLogo" src="/assets/logo/Logo_word_dark.svg" alt="Arivu" />
@@ -583,22 +1143,51 @@
       </footer>
       <footer id="closedBar">
         <div id="feedbackPanel">
-          <p class="feedbackTitle">How was your experience?</p>
-          <div id="csatStars" class="csatStars" role="group" aria-label="Rating">
-            <button class="csatStarBtn" type="button" data-score="1">1</button>
-            <button class="csatStarBtn" type="button" data-score="2">2</button>
-            <button class="csatStarBtn" type="button" data-score="3">3</button>
-            <button class="csatStarBtn" type="button" data-score="4">4</button>
-            <button class="csatStarBtn" type="button" data-score="5">5</button>
+          <div class="feedbackHero">
+            <div class="feedbackEmoji" aria-hidden="true">✨</div>
+            <p class="feedbackTitle">How did we do?</p>
+            <p class="feedbackSub">Your feedback helps us improve — it only takes a second.</p>
           </div>
-          <textarea id="feedbackComment" placeholder="Optional comment"></textarea>
-          <button id="submitFeedbackBtn" class="btnBottomPrimary" type="button">Submit feedback</button>
-          <button id="skipFeedbackBtn" class="btnLink" type="button">Skip</button>
+          <div id="csatStars" class="csatStars" role="group" aria-label="Rating">
+            <button class="csatStarBtn" type="button" data-score="1" aria-label="1 star">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.6l2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 16.5 6.6 19.4l1-6.1L3.2 9l6.1-.9L12 2.6z"/></svg>
+            </button>
+            <button class="csatStarBtn" type="button" data-score="2" aria-label="2 stars">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.6l2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 16.5 6.6 19.4l1-6.1L3.2 9l6.1-.9L12 2.6z"/></svg>
+            </button>
+            <button class="csatStarBtn" type="button" data-score="3" aria-label="3 stars">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.6l2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 16.5 6.6 19.4l1-6.1L3.2 9l6.1-.9L12 2.6z"/></svg>
+            </button>
+            <button class="csatStarBtn" type="button" data-score="4" aria-label="4 stars">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.6l2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 16.5 6.6 19.4l1-6.1L3.2 9l6.1-.9L12 2.6z"/></svg>
+            </button>
+            <button class="csatStarBtn" type="button" data-score="5" aria-label="5 stars">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.6l2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 16.5 6.6 19.4l1-6.1L3.2 9l6.1-.9L12 2.6z"/></svg>
+            </button>
+          </div>
+          <div class="csatLabels" aria-hidden="true">
+            <span>Poor</span>
+            <span>Excellent</span>
+          </div>
+          <div id="feedbackDetails">
+            <textarea id="feedbackComment" placeholder="Anything we could do better? (optional)" rows="2"></textarea>
+            <button id="submitFeedbackBtn" type="button">Send feedback</button>
+          </div>
+          <button id="skipFeedbackBtn" type="button">Skip for now</button>
         </div>
-        <p id="feedbackThanks">Thanks for your feedback!</p>
-        <p class="closedNotice">This conversation has ended.</p>
-        <button id="closedBackBtn" class="btnSecondary" type="button">Back to conversations</button>
-        <button id="closedNewChatBtn" class="btnBottomPrimary" type="button">Start new message</button>
+        <div id="feedbackThanks">
+          <div class="thanksIcon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 12.5l4.2 4.2L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <p class="thanksTitle">Thank you!</p>
+          <p class="thanksSub">We appreciate you taking a moment to share your experience.</p>
+        </div>
+        <div id="closedActions">
+          <button id="closedBackBtn" class="btnSecondary" type="button">Back to conversations</button>
+          <button id="closedNewChatBtn" class="btnBottomPrimary" type="button">Start new message</button>
+        </div>
       </footer>
     </div>
 
@@ -725,9 +1314,12 @@
       function setComposerEnabled(enabled) {
         var input = document.getElementById('input')
         var sendBtn = document.getElementById('sendBtn')
+        var attachPlusBtn = document.getElementById('attachPlusBtn')
         if (input) input.disabled = !enabled
         if (sendBtn) sendBtn.disabled = !enabled
         if (sendBtn) sendBtn.style.opacity = enabled ? '1' : '0.6'
+        if (attachPlusBtn) attachPlusBtn.disabled = !enabled
+        if (!enabled) setAttachMenuOpen(false)
       }
 
       function setHeaderNotice(msg, isError) {
@@ -738,11 +1330,20 @@
         el.style.color = isError ? 'rgba(185,28,28,0.95)' : 'rgba(100,116,139,0.95)'
       }
 
+      function reportWidgetHeight() {
+        try {
+          // Keep a stable frame height across inbox/prechat/chat so the widget
+          // does not jump when switching views or when layout is mid-reflow.
+          parent.postMessage({ type: 'litedesk_chat_resize', height: 560 }, '*')
+        } catch (_) {}
+      }
+
       function setView(next) {
         view = next
+        document.body.setAttribute('data-view', next)
         var inbox = document.getElementById('inbox')
         var prechat = document.getElementById('prechat')
-        if (inbox) inbox.style.display = next === 'inbox' ? 'block' : 'none'
+        if (inbox) inbox.style.display = next === 'inbox' ? 'flex' : 'none'
         if (prechat) prechat.style.display = next === 'prechat' ? 'block' : 'none'
         var composer = document.getElementById('composer')
         if (composer) composer.style.display = next === 'chatOpen' ? 'flex' : 'none'
@@ -753,11 +1354,30 @@
         var endBtn = document.getElementById('endChatTopBtn')
         if (endBtn) endBtn.style.display = next === 'chatOpen' ? 'inline-block' : 'none'
         if (next === 'chatClosed') {
-          setHeaderNotice('This conversation has ended.', false)
-          refreshFeedbackPanel()
+          setHeaderNotice('Conversation ended', false)
+          if (!activeSessionHasMessages) {
+            setFeedbackPanelVisible(false)
+            setFeedbackThanksVisible(false)
+            setClosedActionsVisible(true)
+          } else if (!sessionRatedByVisitor && sessionId && sessionSecret) {
+            setFeedbackPanelVisible(true)
+            void refreshFeedbackPanel()
+          } else {
+            void refreshFeedbackPanel()
+          }
         } else if (next !== 'chatOpen') {
           setHeaderNotice('', false)
         }
+        if (next === 'chatOpen' || next === 'chatClosed') {
+          scheduleScrollMessagesToBottom()
+        }
+        requestAnimationFrame(function () {
+          reportWidgetHeight()
+          setTimeout(reportWidgetHeight, 50)
+          if (next === 'chatOpen' || next === 'chatClosed') {
+            scheduleScrollMessagesToBottom()
+          }
+        })
       }
 
       function goToInboxFromChat() {
@@ -767,6 +1387,7 @@
             sessionId: String(sessionId),
             sessionSecret: String(sessionSecret),
             status: activeSessionStatus || 'closed',
+            hasMessages: true,
             lastMessageAt: Date.now()
           })
         }
@@ -783,39 +1404,139 @@
         }
       }
 
-      function startNewChatFlow() {
+      var startingNewChat = false
+
+      function anyOpenSession() {
+        for (var i = 0; i < (sessionCache || []).length; i++) {
+          if ((sessionCache[i] && sessionCache[i].status) === 'open') return true
+        }
+        return false
+      }
+
+      async function refreshSessionCacheStatuses() {
+        sessionCache = loadStoredSessions()
+        for (var i = 0; i < (sessionCache || []).length; i++) {
+          var s = sessionCache[i]
+          if (!s || !s.sessionId || !s.sessionSecret) continue
+          try {
+            var meta = await fetchSessionMeta(String(s.sessionId), String(s.sessionSecret))
+            sessionCache[i] = Object.assign({}, s, meta, {
+              sessionId: String(s.sessionId),
+              sessionSecret: String(s.sessionSecret),
+              hasMessages: s.hasMessages || sessionHasStoredMessages(s),
+            })
+          } catch (_) {}
+        }
+        saveStoredSessions((sessionCache || []).filter(sessionHasStoredMessages))
+        sessionCache = loadStoredSessions()
+      }
+
+      async function clearStaleActiveSessionPointer() {
+        var cached = safeJsonParse(localStorage.getItem(storageKey()) || 'null')
+        if (!cached || !cached.sessionId || !cached.sessionSecret) return null
+        try {
+          var meta = await fetchSessionMeta(String(cached.sessionId), String(cached.sessionSecret))
+          var status = String(meta.status || '')
+          if (status === 'closed') {
+            try { localStorage.removeItem(storageKey()) } catch (_) {}
+            if (sessionHasStoredMessages(Object.assign({}, cached, meta))) {
+              upsertSessionMeta(Object.assign({}, cached, meta, {
+                sessionId: String(cached.sessionId),
+                sessionSecret: String(cached.sessionSecret),
+                status: 'closed',
+                hasMessages: true,
+              }))
+            } else {
+              removeSessionFromHistory(String(cached.sessionId))
+            }
+            return null
+          }
+          return {
+            sessionId: String(cached.sessionId),
+            sessionSecret: String(cached.sessionSecret),
+            meta: meta,
+          }
+        } catch (_) {
+          try { localStorage.removeItem(storageKey()) } catch (_) {}
+          return null
+        }
+      }
+
+      async function resumeOpenSession(sessionIdValue, sessionSecretValue) {
+        sessionId = String(sessionIdValue)
+        sessionSecret = String(sessionSecretValue)
+        try {
+          localStorage.setItem(
+            storageKey(),
+            JSON.stringify({ sessionId: sessionId, sessionSecret: sessionSecret })
+          )
+        } catch (_) {}
+        clearChatSurface()
+        await loadHistory()
+        activeSessionStatus = 'open'
+        if (activeSessionHasMessages) {
+          upsertSessionMeta({
+            sessionId: String(sessionId),
+            sessionSecret: String(sessionSecret),
+            status: 'open',
+            hasMessages: true,
+            lastMessageAt: Date.now(),
+          })
+        }
+        openStream()
+        setView('chatOpen')
+      }
+
+      async function startNewChatFlow() {
+        if (startingNewChat) return
+        startingNewChat = true
         setInboxError('')
         setPrechatError('')
         setHeaderNotice('', false)
-        sessionCache = loadStoredSessions()
-        renderInbox()
-        if (anyOpenSession()) {
-          var openMsg = 'You already have an open conversation.'
-          if (view === 'inbox' || view === 'chatClosed') setInboxError(openMsg)
-          else setPrechatError(openMsg)
-          if (view === 'chatClosed') goToInboxFromChat()
-          return
-        }
-        try { closeStream() } catch (_) {}
-        try { localStorage.removeItem(storageKey()) } catch (_) {}
-        sessionId = null
-        sessionSecret = null
-        activeSessionStatus = 'open'
-        activeSessionHasMessages = false
-        clearChatSurface()
-        var fields = (widgetConfig && widgetConfig.captureFields && widgetConfig.captureFields.length)
-          ? widgetConfig.captureFields
-          : []
-        var stored = loadStoredVisitor()
-        if (stored && !validatePrechat(fields, stored)) {
-          if (widgetConfig && widgetConfig.consentRequired !== false && !hasStoredConsent()) {
-            visitorProfile = stored
-            renderPrechat(fields, stored)
-            setView('prechat')
+        try {
+          await refreshSessionCacheStatuses()
+          renderInbox()
+
+          var activeOpen = await clearStaleActiveSessionPointer()
+          if (activeOpen) {
+            // Reuse the existing open session instead of blocking on a false error.
+            await resumeOpenSession(activeOpen.sessionId, activeOpen.sessionSecret)
             return
           }
-          visitorProfile = stored
-          ;(async function () {
+
+          if (anyOpenSession()) {
+            var openRow = null
+            for (var i = 0; i < (sessionCache || []).length; i++) {
+              if ((sessionCache[i] && sessionCache[i].status) === 'open') {
+                openRow = sessionCache[i]
+                break
+              }
+            }
+            if (openRow && openRow.sessionId && openRow.sessionSecret) {
+              await resumeOpenSession(openRow.sessionId, openRow.sessionSecret)
+              return
+            }
+          }
+
+          try { closeStream() } catch (_) {}
+          try { localStorage.removeItem(storageKey()) } catch (_) {}
+          sessionId = null
+          sessionSecret = null
+          activeSessionStatus = 'open'
+          activeSessionHasMessages = false
+          clearChatSurface()
+          var fields = (widgetConfig && widgetConfig.captureFields && widgetConfig.captureFields.length)
+            ? widgetConfig.captureFields
+            : []
+          var stored = loadStoredVisitor()
+          if (stored && !validatePrechat(fields, stored)) {
+            if (widgetConfig && widgetConfig.consentRequired !== false && !hasStoredConsent()) {
+              visitorProfile = stored
+              renderPrechat(fields, stored)
+              setView('prechat')
+              return
+            }
+            visitorProfile = stored
             try {
               await ensureSession()
               await loadHistory()
@@ -827,14 +1548,54 @@
               setPrechatError(errMsg)
               setView('prechat')
             }
-          })()
-          return
+            return
+          }
+          visitorProfile = stored || visitorProfile
+          renderPrechat(fields, visitorProfile || stored || {})
+          setView('prechat')
+        } catch (e) {
+          setInboxError((e && e.message) ? e.message : 'Failed to start chat')
+        } finally {
+          startingNewChat = false
         }
-        setView('prechat')
+      }
+
+      function sessionHasStoredMessages(s) {
+        if (!s) return false
+        if (s.hasMessages === true) return true
+        if (String(s.lastPreview || '').trim()) return true
+        return false
+      }
+
+      function finishClosedWithoutHistory() {
+        var closedId = sessionId ? String(sessionId) : ''
+        if (closedId) removeSessionFromHistory(closedId)
+        try { localStorage.removeItem(storageKey()) } catch (_) {}
+        sessionId = null
+        sessionSecret = null
+        activeSessionHasMessages = false
+        activeSessionStatus = 'closed'
+        sessionRatedByVisitor = true
+        setFeedbackPanelVisible(false)
+        setFeedbackThanksVisible(false)
+        sessionCache = loadStoredSessions()
+        renderInbox()
+        clearChatSurface()
+        setHeaderNotice('', false)
+        if (sessionCache && sessionCache.length) setView('inbox')
+        else setView('prechat')
       }
 
       function handleSessionClosed() {
-        if (activeSessionStatus === 'closed' && view === 'chatClosed') return
+        if (!activeSessionHasMessages) {
+          try { closeStream() } catch (_) {}
+          finishClosedWithoutHistory()
+          return
+        }
+        if (activeSessionStatus === 'closed' && view === 'chatClosed') {
+          void refreshFeedbackPanel()
+          return
+        }
         activeSessionStatus = 'closed'
         try { closeStream() } catch (_) {}
         if (sessionId && sessionSecret) {
@@ -842,18 +1603,24 @@
             sessionId: String(sessionId),
             sessionSecret: String(sessionSecret),
             status: 'closed',
+            hasMessages: true,
             lastMessageAt: Date.now()
           })
         }
+        sessionRatedByVisitor = false
+        setFeedbackPanelVisible(true)
         setView('chatClosed')
       }
 
       function loadStoredSessions() {
         var rows = safeJsonParse(localStorage.getItem(sessionsStorageKey()) || '[]')
         if (!Array.isArray(rows)) return []
-        return rows.filter(function (r) {
-          return r && r.sessionId && r.sessionSecret
+        var filtered = rows.filter(function (r) {
+          return r && r.sessionId && r.sessionSecret && sessionHasStoredMessages(r)
         })
+        // Drop any previously stored empty conversations.
+        if (filtered.length !== rows.length) saveStoredSessions(filtered)
+        return filtered
       }
 
       function saveStoredSessions(rows) {
@@ -869,8 +1636,20 @@
         for (var i = 0; i < next.length; i++) {
           if (String(next[i].sessionId) === String(meta.sessionId)) { idx = i; break }
         }
-        if (idx === -1) next.unshift(meta)
-        else next[idx] = Object.assign({}, next[idx], meta)
+        var merged = idx === -1 ? Object.assign({}, meta) : Object.assign({}, next[idx], meta)
+        if (activeSessionHasMessages || meta.hasMessages || sessionHasStoredMessages(merged)) {
+          merged.hasMessages = true
+        }
+        if (!sessionHasStoredMessages(merged)) {
+          if (idx !== -1) {
+            next.splice(idx, 1)
+            sessionCache = next
+            saveStoredSessions(sessionCache)
+          }
+          return
+        }
+        if (idx === -1) next.unshift(merged)
+        else next[idx] = merged
         sessionCache = next
         saveStoredSessions(sessionCache)
       }
@@ -939,33 +1718,74 @@
       function setFeedbackPanelVisible(show) {
         var panel = document.getElementById('feedbackPanel')
         if (panel) panel.style.display = show ? 'flex' : 'none'
+        if (!show) setFeedbackDetailsVisible(false)
+        updateClosedActionsVisibility()
       }
 
       function setFeedbackThanksVisible(show) {
         var thanks = document.getElementById('feedbackThanks')
-        if (thanks) thanks.style.display = show ? 'block' : 'none'
+        if (thanks) thanks.style.display = show ? 'flex' : 'none'
+        updateClosedActionsVisibility()
+      }
+
+      function setFeedbackDetailsVisible(show) {
+        var details = document.getElementById('feedbackDetails')
+        if (!details) return
+        if (show) details.setAttribute('data-show', '1')
+        else details.removeAttribute('data-show')
+      }
+
+      function setClosedActionsVisible(show) {
+        var actions = document.getElementById('closedActions')
+        if (!actions) return
+        if (show) actions.setAttribute('data-show', '1')
+        else actions.removeAttribute('data-show')
+      }
+
+      function updateClosedActionsVisibility() {
+        if (view !== 'chatClosed') {
+          setClosedActionsVisible(false)
+          return
+        }
+        var panel = document.getElementById('feedbackPanel')
+        var thanks = document.getElementById('feedbackThanks')
+        var panelOpen = panel && panel.style.display === 'flex'
+        var thanksOpen = thanks && thanks.style.display === 'flex'
+        // While collecting feedback, keep nav actions tucked away.
+        setClosedActionsVisible(!panelOpen || thanksOpen || sessionRatedByVisitor)
       }
 
       function updateCsatStarButtons() {
         var stars = document.querySelectorAll('#csatStars .csatStarBtn')
         stars.forEach(function (btn) {
           var score = Number(btn.getAttribute('data-score') || 0)
+          var filled = feedbackCsatScore > 0 && score <= feedbackCsatScore
           if (score === feedbackCsatScore) btn.classList.add('active')
           else btn.classList.remove('active')
+          if (filled) btn.classList.add('is-filled')
+          else btn.classList.remove('is-filled')
         })
+        setFeedbackDetailsVisible(feedbackCsatScore > 0)
       }
 
       async function refreshFeedbackPanel() {
-        if (!sessionId || !sessionSecret) {
+        if (!sessionId || !sessionSecret || !activeSessionHasMessages) {
           setFeedbackPanelVisible(false)
           setFeedbackThanksVisible(false)
+          setClosedActionsVisible(true)
           return
+        }
+        // Show CSAT immediately; hide only after confirming the visitor already rated.
+        if (!sessionRatedByVisitor) {
+          setFeedbackPanelVisible(true)
+          setFeedbackThanksVisible(false)
         }
         try {
           var meta = await fetchSessionMeta(sessionId, sessionSecret)
-          sessionRatedByVisitor = Boolean(meta.ratedByVisitor) || typeof meta.csatScore === 'number'
+          var score = meta && typeof meta.csatScore === 'number' ? meta.csatScore : null
+          sessionRatedByVisitor = Boolean(meta && meta.ratedByVisitor) || (score !== null && score >= 1 && score <= 5)
         } catch (_) {
-          sessionRatedByVisitor = false
+          // Keep local flag; still allow rating if session credentials remain.
         }
         var showFeedback = !sessionRatedByVisitor
         setFeedbackPanelVisible(showFeedback)
@@ -975,6 +1795,8 @@
           updateCsatStarButtons()
           var comment = document.getElementById('feedbackComment')
           if (comment) comment.value = ''
+        } else {
+          setClosedActionsVisible(true)
         }
       }
 
@@ -999,23 +1821,15 @@
         if (!json.success) throw new Error(json.message || 'Failed to submit feedback')
         sessionRatedByVisitor = true
         setFeedbackPanelVisible(false)
-        setFeedbackThanksVisible(true)
+        setFeedbackThanksVisible(false)
+        goToInboxFromChat()
       }
 
       function skipSessionFeedback() {
         sessionRatedByVisitor = true
         setFeedbackPanelVisible(false)
         setFeedbackThanksVisible(false)
-      }
-
-      function anyOpenSession() {
-        for (var i = 0; i < (sessionCache || []).length; i++) {
-          if ((sessionCache[i] && sessionCache[i].status) === 'open') return true
-        }
-        // If we don't know, treat current cached as open to be safe.
-        var cached = safeJsonParse(localStorage.getItem(storageKey()) || 'null')
-        if (cached && cached.sessionId && cached.sessionSecret) return true
-        return false
+        goToInboxFromChat()
       }
 
       function renderInbox() {
@@ -1062,17 +1876,23 @@
               setInboxError('')
               sessionId = String(s.sessionId)
               sessionSecret = String(s.sessionSecret)
+              activeSessionHasMessages = sessionHasStoredMessages(s)
               // refresh status
               var metaRes = await fetchSessionMeta(sessionId, sessionSecret)
               activeSessionStatus = String(metaRes.status || s.status || 'open')
-              upsertSessionMeta(Object.assign({}, s, metaRes, {
-                sessionId: sessionId,
-                sessionSecret: sessionSecret
-              }))
               try { localStorage.setItem(storageKey(), JSON.stringify({ sessionId: sessionId, sessionSecret: sessionSecret })) } catch (_) {}
               clearChatSurface()
-              setView(activeSessionStatus === 'closed' ? 'chatClosed' : 'chatOpen')
               await loadHistory()
+              if (!activeSessionHasMessages) {
+                finishClosedWithoutHistory()
+                return
+              }
+              upsertSessionMeta(Object.assign({}, s, metaRes, {
+                sessionId: sessionId,
+                sessionSecret: sessionSecret,
+                hasMessages: true
+              }))
+              setView(activeSessionStatus === 'closed' ? 'chatClosed' : 'chatOpen')
               if (activeSessionStatus !== 'closed') openStream()
             } catch (e) {
               setInboxError(e && e.message ? e.message : 'Failed to open conversation')
@@ -1102,18 +1922,28 @@
 
       function labelForField(key) {
         if (key === 'name') return 'Full name'
-        if (key === 'email') return 'Email'
+        if (key === 'email') return 'Email address'
         if (key === 'phone') return 'Phone'
         if (key === 'externalId') return 'Customer ID'
         return key
       }
 
       function placeholderForField(key) {
-        if (key === 'name') return 'Full name'
-        if (key === 'email') return 'Email address'
-        if (key === 'phone') return 'Phone (optional)'
+        if (key === 'name') return 'Enter your full name'
+        if (key === 'email') return 'Enter your email address'
+        if (key === 'phone') return 'Enter your phone (optional)'
         if (key === 'externalId') return 'Customer ID (optional)'
         return ''
+      }
+
+      function iconForField(key) {
+        if (key === 'email') {
+          return '<svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 7.5L12 13l7.5-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        }
+        if (key === 'phone') {
+          return '<svg viewBox="0 0 24 24" fill="none"><path d="M8.5 4.5h3l1.2 3.2-1.8 1.1a11.5 11.5 0 005.3 5.3l1.1-1.8 3.2 1.2v3a2 2 0 01-2.2 2A14.5 14.5 0 016.5 6.7a2 2 0 012-2.2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>'
+        }
+        return '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.5" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 18.5c1.6-3 4-4.5 6.5-4.5s4.9 1.5 6.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
       }
 
       function requiredForField(key) {
@@ -1191,6 +2021,12 @@
           var label = document.createElement('div')
           label.className = 'label'
           label.textContent = labelForField(key)
+          var inputWrap = document.createElement('div')
+          inputWrap.className = 'inputWrap'
+          var icon = document.createElement('span')
+          icon.className = 'inputIcon'
+          icon.setAttribute('aria-hidden', 'true')
+          icon.innerHTML = iconForField(key)
           var input = document.createElement('input')
           input.className = 'input'
           input.type = key === 'email' ? 'email' : 'text'
@@ -1198,8 +2034,10 @@
           input.placeholder = placeholderForField(key)
           input.id = 'prechat_' + key
           input.value = initial && initial[key] ? String(initial[key]) : ''
+          inputWrap.appendChild(icon)
+          inputWrap.appendChild(input)
           wrap.appendChild(label)
-          wrap.appendChild(input)
+          wrap.appendChild(inputWrap)
           container.appendChild(wrap)
         })
         renderConsentBlock()
@@ -1334,7 +2172,95 @@
         if (readIds.length) postReceipts({ readIds: readIds })
       }
 
-      function appendMessage(m) {
+      function formatMessageTime(value) {
+        try {
+          var d = new Date(value || Date.now())
+          if (isNaN(d.getTime())) return ''
+          return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+        } catch (_) {
+          return ''
+        }
+      }
+
+      function notifyParentAgentMessage() {
+        try {
+          parent.postMessage({ type: 'litedesk_chat_agent_message' }, '*')
+        } catch (_) {}
+      }
+
+      function resolveAttachmentHref(att) {
+        var url = String((att && att.url) || '').trim()
+        var origin = getApiOrigin()
+        if (url.indexOf('/api/') === 0) return origin + url
+        if (url.indexOf('http://') === 0 || url.indexOf('https://') === 0) return url
+        var storagePath = String((att && att.storagePath) || '').trim()
+        if (storagePath.indexOf('oci:') === 0) {
+          var q = new URLSearchParams({
+            storagePath: storagePath,
+            disposition: 'attachment',
+          })
+          if (att && att.fileName) q.set('fileName', String(att.fileName))
+          if (att && att.mimeType) q.set('contentType', String(att.mimeType))
+          return origin + '/api/files/download?' + q.toString()
+        }
+        if (storagePath) return origin + '/api/uploads/' + storagePath.replace(/^\//, '')
+        return ''
+      }
+
+      function isImageAttachment(att) {
+        var mime = String((att && att.mimeType) || '').toLowerCase()
+        if (mime.indexOf('image/') === 0) return true
+        var name = String((att && att.fileName) || '').toLowerCase()
+        return /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(name)
+      }
+
+      function renderMessageAttachments(el, message) {
+        var rows = message && Array.isArray(message.attachments) ? message.attachments : []
+        if (!rows.length) return
+        var list = document.createElement('div')
+        list.className = 'msgAttachments'
+        rows.forEach(function (att) {
+          var href = resolveAttachmentHref(att)
+          if (!href) return
+          if (isImageAttachment(att)) {
+            var imgLink = document.createElement('a')
+            imgLink.href = href
+            imgLink.target = '_blank'
+            imgLink.rel = 'noopener noreferrer'
+            var img = document.createElement('img')
+            img.src = href
+            img.alt = String((att && att.fileName) || 'Image')
+            imgLink.appendChild(img)
+            list.appendChild(imgLink)
+            return
+          }
+          var a = document.createElement('a')
+          a.href = href
+          a.target = '_blank'
+          a.rel = 'noopener noreferrer'
+          a.textContent = String((att && att.fileName) || 'Attachment')
+          list.appendChild(a)
+        })
+        if (list.childNodes.length) el.appendChild(list)
+      }
+
+      function scrollMessagesToBottom() {
+        var container = document.getElementById('messages')
+        if (!container) return
+        container.scrollTop = container.scrollHeight
+      }
+
+      function scheduleScrollMessagesToBottom() {
+        scrollMessagesToBottom()
+        requestAnimationFrame(function () {
+          scrollMessagesToBottom()
+          setTimeout(scrollMessagesToBottom, 50)
+          setTimeout(scrollMessagesToBottom, 200)
+        })
+      }
+
+      function appendMessage(m, opts) {
+        var fromStream = !!(opts && opts.fromStream)
         var key = messageKey(m)
         if (key && seenMessageKeys[key]) {
           if (m && m._id) updateReceiptDom(m._id, m)
@@ -1347,11 +2273,13 @@
         if (prechat) prechat.style.display = 'none'
         var el = document.createElement('div')
         el.className = 'msg ' + (m.direction === 'inbound' ? 'inbound' : 'outbound')
-        el.textContent = m.body || ''
+        var bodyText = String(m.body || '')
+        if (bodyText) el.textContent = bodyText
+        renderMessageAttachments(el, m)
         var meta = document.createElement('div')
         meta.className = 'meta'
         var time = document.createElement('span')
-        time.textContent = new Date(m.createdAt || Date.now()).toLocaleString()
+        time.textContent = formatMessageTime(m.createdAt)
         meta.appendChild(time)
         var receiptEl = null
         if (m.direction === 'inbound') {
@@ -1366,10 +2294,17 @@
         if (m && m._id) {
           messageDomById[String(m._id)] = { wrap: wrap, receiptEl: receiptEl, message: m }
         }
-        container.scrollTop = container.scrollHeight
+        var imgs = wrap.querySelectorAll('img')
+        for (var i = 0; i < imgs.length; i++) {
+          if (!imgs[i].complete) {
+            imgs[i].addEventListener('load', scrollMessagesToBottom)
+          }
+        }
+        scrollMessagesToBottom()
 
         if (m.direction === 'outbound') {
           markOutboundDeliveredAndRead([m])
+          if (fromStream) notifyParentAgentMessage()
         }
 
         // Update local session preview + timestamps for inbox list.
@@ -1377,12 +2312,16 @@
           if (sessionId && sessionSecret) {
             activeSessionHasMessages = true
             var body = String(m.body || '').trim()
+            if (!body && Array.isArray(m.attachments) && m.attachments.length) {
+              body = m.attachments[0].fileName || 'Attachment'
+            }
             upsertSessionMeta({
               sessionId: String(sessionId),
               sessionSecret: String(sessionSecret),
               createdAt: m.createdAt || Date.now(),
               lastMessageAt: m.createdAt || Date.now(),
               status: 'open',
+              hasMessages: true,
               lastPreview: body ? body.slice(0, 140) : ''
             })
           }
@@ -1491,7 +2430,10 @@
         if (!json.success) return
         if (Array.isArray(json.data) && json.data.length) {
           activeSessionHasMessages = true
-          json.data.forEach(appendMessage)
+          json.data.forEach(function (row) {
+            appendMessage(row, { fromHistory: true })
+          })
+          scheduleScrollMessagesToBottom()
         }
       }
 
@@ -1535,7 +2477,9 @@
         es.addEventListener('messages', function (e) {
           try {
             var rows = JSON.parse(e.data || '[]')
-            rows.forEach(appendMessage)
+            rows.forEach(function (row) {
+              appendMessage(row, { fromStream: true })
+            })
             markOutboundDeliveredAndRead(rows)
           } catch (_) {}
         })
@@ -1574,9 +2518,36 @@
         })
       }
 
-      async function send(body) {
+      async function uploadAttachmentFile(file) {
+        var form = new FormData()
+        form.append('file', file)
+        var res = await fetch(
+          base +
+            '/sessions/' +
+            encodeURIComponent(sessionId) +
+            '/message-attachments?instanceKey=' +
+            encodeURIComponent(instanceKey),
+          {
+            method: 'POST',
+            headers: { 'X-Chat-Session-Secret': sessionSecret },
+            body: form,
+          }
+        )
+        var json = await readJsonSafe(res)
+        if (!json.success) {
+          if (res.status === 409) handleSessionClosed()
+          throw new Error(json.message || 'Failed to upload attachment')
+        }
+        return json.data
+      }
+
+      async function send(body, attachments) {
         if (activeSessionStatus === 'closed') {
           throw new Error('Conversation is closed')
+        }
+        var payload = {
+          body: body || '',
+          attachments: Array.isArray(attachments) ? attachments : [],
         }
         var res = await fetch(
           base +
@@ -1590,7 +2561,7 @@
               'Content-Type': 'application/json',
               'X-Chat-Session-Secret': sessionSecret
             },
-            body: JSON.stringify({ body: body })
+            body: JSON.stringify(payload)
           }
         )
         var json = await readJsonSafe(res)
@@ -1601,18 +2572,81 @@
         if (json.success) appendMessage(json.data)
       }
 
-      document.getElementById('sendBtn').addEventListener('click', async function () {
+      var pendingFiles = []
+
+      function renderPendingAttachments() {
+        var wrap = document.getElementById('pendingAttachments')
+        if (!wrap) return
+        wrap.innerHTML = ''
+        if (!pendingFiles.length) {
+          wrap.removeAttribute('data-show')
+          return
+        }
+        wrap.setAttribute('data-show', '1')
+        pendingFiles.forEach(function (file, idx) {
+          var chip = document.createElement('div')
+          chip.className = 'pendingChip'
+          var name = document.createElement('span')
+          name.textContent = file.name || 'file'
+          var removeBtn = document.createElement('button')
+          removeBtn.type = 'button'
+          removeBtn.setAttribute('aria-label', 'Remove attachment')
+          removeBtn.textContent = '×'
+          removeBtn.addEventListener('click', function () {
+            pendingFiles.splice(idx, 1)
+            renderPendingAttachments()
+          })
+          chip.appendChild(name)
+          chip.appendChild(removeBtn)
+          wrap.appendChild(chip)
+        })
+      }
+
+      function addPendingFiles(fileList) {
+        var files = Array.prototype.slice.call(fileList || [])
+        if (!files.length) return
+        pendingFiles = pendingFiles.concat(files)
+        renderPendingAttachments()
+      }
+
+      function resizeComposerInput() {
         var input = document.getElementById('input')
+        if (!input) return
+        input.style.height = 'auto'
+        var max = parseFloat(window.getComputedStyle(input).maxHeight) || 0
+        var next = input.scrollHeight
+        if (max > 0 && next > max) next = max
+        input.style.height = next + 'px'
+      }
+
+      async function sendComposerMessage() {
+        var input = document.getElementById('input')
+        if (!input || input.disabled) return
         var text = (input.value || '').trim()
-        if (!text) return
+        var files = pendingFiles.slice()
+        if (!text && !files.length) return
         input.value = ''
+        pendingFiles = []
+        renderPendingAttachments()
+        resizeComposerInput()
+        setComposerEnabled(false)
         try {
-          await send(text)
+          var attachments = []
+          for (var i = 0; i < files.length; i++) {
+            attachments.push(await uploadAttachmentFile(files[i]))
+          }
+          await send(text, attachments)
         } catch (e) {
           if (activeSessionStatus !== 'closed') {
             setHeaderNotice((e && e.message) ? e.message : 'Failed to send message', true)
           }
+        } finally {
+          if (activeSessionStatus !== 'closed') setComposerEnabled(true)
         }
+      }
+
+      document.getElementById('sendBtn').addEventListener('click', function () {
+        void sendComposerMessage()
       })
 
       var typingTimer = null
@@ -1635,9 +2669,56 @@
         ).catch(function () {})
       }
       document.getElementById('input').addEventListener('input', function () {
+        resizeComposerInput()
         if (typingTimer) clearTimeout(typingTimer)
         typingTimer = setTimeout(pingTyping, 250)
       })
+      document.getElementById('input').addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') return
+        if (e.shiftKey) return
+        e.preventDefault()
+        void sendComposerMessage()
+      })
+      function setAttachMenuOpen(open) {
+        var menu = document.getElementById('attachMenu')
+        var btn = document.getElementById('attachPlusBtn')
+        if (menu) {
+          if (open) menu.setAttribute('data-open', '1')
+          else menu.removeAttribute('data-open')
+        }
+        if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false')
+      }
+
+      document.getElementById('attachPlusBtn').addEventListener('click', function (e) {
+        e.stopPropagation()
+        var menu = document.getElementById('attachMenu')
+        var isOpen = menu && menu.getAttribute('data-open') === '1'
+        setAttachMenuOpen(!isOpen)
+      })
+      document.getElementById('attachFileBtn').addEventListener('click', function () {
+        setAttachMenuOpen(false)
+        var el = document.getElementById('fileInput')
+        if (el) el.click()
+      })
+      document.getElementById('attachImageBtn').addEventListener('click', function () {
+        setAttachMenuOpen(false)
+        var el = document.getElementById('imageInput')
+        if (el) el.click()
+      })
+      document.addEventListener('click', function (e) {
+        var wrap = document.querySelector('.attachMenuWrap')
+        if (wrap && wrap.contains(e.target)) return
+        setAttachMenuOpen(false)
+      })
+      document.getElementById('fileInput').addEventListener('change', function (e) {
+        addPendingFiles(e.target.files)
+        e.target.value = ''
+      })
+      document.getElementById('imageInput').addEventListener('change', function (e) {
+        addPendingFiles(e.target.files)
+        e.target.value = ''
+      })
+      resizeComposerInput()
       document.getElementById('closeBtn').addEventListener('click', function () {
         parent.postMessage('litedesk_chat_close', '*')
       })
@@ -1670,27 +2751,22 @@
               await closeCurrentSession()
               try { closeStream() } catch (_) {}
 
-              // If no messages were ever sent, don't store this conversation in history.
               if (!activeSessionHasMessages) {
-                removeSessionFromHistory(String(sessionId))
-              } else {
-                upsertSessionMeta({
-                  sessionId: String(sessionId),
-                  sessionSecret: String(sessionSecret),
-                  status: 'closed',
-                  lastMessageAt: Date.now()
-                })
+                finishClosedWithoutHistory()
+                return
               }
 
-              try { localStorage.removeItem(storageKey()) } catch (_) {}
-              sessionId = null
-              sessionSecret = null
-              activeSessionHasMessages = false
+              upsertSessionMeta({
+                sessionId: String(sessionId),
+                sessionSecret: String(sessionSecret),
+                status: 'closed',
+                hasMessages: true,
+                lastMessageAt: Date.now()
+              })
 
-              sessionCache = loadStoredSessions()
-              renderInbox()
-              clearChatSurface()
-              setView('inbox')
+              activeSessionStatus = 'closed'
+              sessionRatedByVisitor = false
+              setView('chatClosed')
             } catch (e) {
               setHeaderNotice((e && e.message) ? e.message : 'Failed to end chat', true)
             } finally {
@@ -1708,7 +2784,16 @@
         var closedNewChatBtn = document.getElementById('closedNewChatBtn')
         if (closedNewChatBtn && !closedNewChatBtn.__bound) {
           closedNewChatBtn.__bound = true
-          closedNewChatBtn.addEventListener('click', startNewChatFlow)
+          closedNewChatBtn.addEventListener('click', function () {
+            void startNewChatFlow()
+          })
+        }
+        var newChatBtn = document.getElementById('newChatBtn')
+        if (newChatBtn && !newChatBtn.__bound) {
+          newChatBtn.__bound = true
+          newChatBtn.addEventListener('click', function () {
+            void startNewChatFlow()
+          })
         }
 
         var csatStars = document.getElementById('csatStars')
@@ -1751,7 +2836,17 @@
 
         await loadConfig()
         var welcome = document.getElementById('welcome')
-        if (welcome && widgetConfig.welcomeMessage) welcome.textContent = widgetConfig.welcomeMessage
+        if (welcome && widgetConfig.welcomeMessage) {
+          var welcomeMsg = String(widgetConfig.welcomeMessage)
+          if (
+            welcomeMsg ===
+            "Hey! Let's discuss how we can help you. Fill out the form to start chatting."
+          ) {
+            welcome.textContent = 'Please share a few details to start chatting.'
+          } else {
+            welcome.textContent = welcomeMsg
+          }
+        }
         var subtitle = document.getElementById('subtitle')
         if (subtitle && visitorProfile && (visitorProfile.name || visitorProfile.email)) {
           var who = visitorProfile.name || visitorProfile.email
@@ -1824,11 +2919,25 @@
           try {
             var metaActive = await fetchSessionMeta(sessionId, sessionSecret)
             activeSessionStatus = String(metaActive.status || 'open')
-            upsertSessionMeta(Object.assign({}, metaActive, { sessionId: sessionId, sessionSecret: sessionSecret }))
             clearChatSurface()
             setHeaderNotice('', false)
-            setView(activeSessionStatus === 'closed' ? 'chatClosed' : 'chatOpen')
             await loadHistory()
+            if (!activeSessionHasMessages) {
+              if (activeSessionStatus === 'closed') {
+                finishClosedWithoutHistory()
+                return
+              }
+              // Open empty session: keep it active but don't store in history yet.
+              setView('chatOpen')
+              openStream()
+              return
+            }
+            upsertSessionMeta(Object.assign({}, metaActive, {
+              sessionId: sessionId,
+              sessionSecret: sessionSecret,
+              hasMessages: true
+            }))
+            setView(activeSessionStatus === 'closed' ? 'chatClosed' : 'chatOpen')
             if (activeSessionStatus !== 'closed') openStream()
             return
           } catch (_) {
@@ -1852,16 +2961,12 @@
                 sessionCache[i] = Object.assign({}, s, meta, { sessionId: String(s.sessionId), sessionSecret: String(s.sessionSecret) })
               } catch (_) {}
             }
-            saveStoredSessions(sessionCache)
+            saveStoredSessions(sessionCache.filter(sessionHasStoredMessages))
+            sessionCache = loadStoredSessions()
           } catch (_) {}
 
           renderInbox()
           setView('inbox')
-          var newChatBtn = document.getElementById('newChatBtn')
-          if (newChatBtn && !newChatBtn.__bound) {
-            newChatBtn.__bound = true
-            newChatBtn.addEventListener('click', startNewChatFlow)
-          }
           return
         }
 

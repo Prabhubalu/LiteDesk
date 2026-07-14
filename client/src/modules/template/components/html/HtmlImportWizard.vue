@@ -99,7 +99,7 @@
                     {{ t('templates.htmlImport.emptySourceValidation') }}
                   </p>
 
-                  <div v-if="mode !== 'replace'">
+                  <div v-if="mode !== 'replace' && !nameProvidedUpfront">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {{ t('templates.fieldName') }}
                     </label>
@@ -228,6 +228,7 @@ const sourceTab = ref('paste');
 const templateName = ref('');
 const importing = ref(false);
 const orgMappingsApplied = ref(0);
+const nameProvidedUpfront = computed(() => Boolean(String(props.initialName || '').trim()));
 const { moduleOptions, loadModuleOptions } = useTemplateModuleOptions();
 const {
   orgMappings,
@@ -283,6 +284,7 @@ watch(
 );
 
 watch(analysisResult, (result) => {
+  if (nameProvidedUpfront.value) return;
   if (!result?.suggestedName || templateName.value.trim()) return;
   templateName.value = result.suggestedName;
 });
@@ -346,7 +348,9 @@ async function handleImport() {
 
     if (props.mode === 'replace') {
       emit('apply', {
-        jsonDefinition: analysisResult.value.jsonDefinition
+        jsonDefinition: analysisResult.value.jsonDefinition,
+        sanitizedHtml: analysisResult.value.sanitizedHtml,
+        css: analysisResult.value.css
       });
       return;
     }
@@ -354,7 +358,9 @@ async function handleImport() {
     emit('import', {
       ...props.initialMetadata,
       name: templateName.value.trim(),
-      outputFormat: 'email',
+      outputFormat: String(props.initialMetadata?.outputFormat || 'email').toLowerCase() === 'pdf'
+        ? 'pdf'
+        : 'email',
       jsonDefinition: analysisResult.value.jsonDefinition
     });
   } finally {

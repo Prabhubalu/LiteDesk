@@ -43,6 +43,8 @@ import {
   hydrateTabFromStorage,
   isProcessDesignerTabPath,
   isRecordDetailTabPath,
+  isTemplatesModuleFamilyPath,
+  isTemplatesModuleListPath,
   shouldPreserveRecordTabTitle
 } from '@/utils/navigationLabels';
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
@@ -501,21 +503,35 @@ function normalizeLiveChatMainTabStorage(tab) {
 
 function migrateLiveChatTabsInMemory() {
   let mainTab = findLiveChatMainTabInMemory();
-  const sessionTabs = tabs.value.filter((tab) => {
+  const liveChatTabs = tabs.value.filter((tab) => {
     const tabPath = normalizeLiveChatPath(tab.path);
-    return isLiveChatSessionsRoute(tabPath) || tab.titleKey === 'navigation.liveChat';
+    return (
+      isLiveChatRoute(tabPath)
+      || tab.titleKey === 'navigation.liveChat'
+      || tab.titleKey === 'liveChat.navClosed'
+      || tab.titleKey === 'liveChat.navReports'
+      || tab.titleKey === 'liveChat.navVisitors'
+    );
   });
 
-  if (sessionTabs.length > 1) {
+  if (liveChatTabs.length > 1) {
     if (!mainTab) {
-      mainTab = sessionTabs[0];
+      mainTab = liveChatTabs[0];
     }
     const keepId = mainTab.id;
+    mainTab.path = LIVE_CHAT_MAIN_TAB_PATH;
+    mainTab.titleKey = 'navigation.liveChat';
+    mainTab.icon = 'chat-bubble-left-right';
     tabs.value = tabs.value.filter((tab) => {
+      if (tab.id === keepId) return true;
       const tabPath = normalizeLiveChatPath(tab.path);
-      const isSessionTab =
-        isLiveChatSessionsRoute(tabPath) || tab.titleKey === 'navigation.liveChat';
-      return !isSessionTab || tab.id === keepId;
+      return !(
+        isLiveChatRoute(tabPath)
+        || tab.titleKey === 'navigation.liveChat'
+        || tab.titleKey === 'liveChat.navClosed'
+        || tab.titleKey === 'liveChat.navReports'
+        || tab.titleKey === 'liveChat.navVisitors'
+      );
     });
     if (activeTabId.value && !tabs.value.some((tab) => tab.id === activeTabId.value)) {
       activeTabId.value = keepId;
@@ -1152,17 +1168,8 @@ const getTitleForPath = (path, params = {}) => {
     return 'Booking Pages';
   }
 
-  // Live Chat: main sidebar tab stays "Live Chat"; Closed and Reports are separate tabs.
+  // Live Chat: single workspace tab; Sessions / Closed / Reports are in-page nav.
   if (path.startsWith('/live-chat/')) {
-    if (path.startsWith('/live-chat/sessions')) {
-      return i18n.global.t('navigation.liveChat');
-    }
-    if (path.startsWith('/live-chat/closed') || path.startsWith('/live-chat/visitors')) {
-      return i18n.global.t('liveChat.navClosed');
-    }
-    if (path.startsWith('/live-chat/reports')) {
-      return i18n.global.t('liveChat.navReports');
-    }
     return i18n.global.t('navigation.liveChat');
   }
 
@@ -1330,24 +1337,6 @@ export function useTabs() {
     return findLiveChatMainTabInMemory();
   }
 
-  function applyMainLiveChatTabAndNavigate(tab, routerPath, options = {}) {
-    const routerTarget = normalizeLiveChatPath(routerPath);
-    const sessionOptions = { ...options, titleKey: 'navigation.liveChat' };
-    tab.path = LIVE_CHAT_MAIN_TAB_PATH;
-    applyLiveChatTabTitle(tab, LIVE_CHAT_MAIN_TAB_PATH, sessionOptions);
-    tab.icon = getIconComponent(getIconForPath(LIVE_CHAT_MAIN_TAB_PATH));
-    activeTabId.value = tab.id;
-    isProgrammaticNavigation = true;
-    lastProgrammaticPath = routerTarget;
-    navigateToPath(routerTarget).finally(() => {
-      setTimeout(() => {
-        isProgrammaticNavigation = false;
-        lastProgrammaticPath = null;
-      }, 300);
-    });
-    return tab;
-  }
-
   function findLiveChatClosedTab() {
     const byListPath = tabs.value.find(
       (tab) => normalizeLiveChatPath(tab.path) === LIVE_CHAT_CLOSED_TAB_PATH,
@@ -1370,6 +1359,56 @@ export function useTabs() {
       const tabPath = normalizeLiveChatPath(tab.path);
       return isLiveChatReportsRoute(tabPath);
     }) || null;
+  }
+
+  function resolveLiveChatWorkspaceTab() {
+    return (
+      findLiveChatMainTab()
+      || findLiveChatClosedTab()
+      || findLiveChatReportsTab()
+      || tabs.value.find((tab) => isLiveChatClosedSessionDetailPath(normalizeLiveChatPath(tab.path)))
+      || null
+    );
+  }
+
+  function pruneSecondaryLiveChatTabs(keepId) {
+    const before = tabs.value.length;
+    tabs.value = tabs.value.filter((tab) => {
+      if (tab.id === keepId) return true;
+      const tabPath = normalizeLiveChatPath(tab.path);
+      if (isLiveChatRoute(tabPath)) return false;
+      if (
+        tab.titleKey === 'navigation.liveChat'
+        || tab.titleKey === 'liveChat.navClosed'
+        || tab.titleKey === 'liveChat.navReports'
+        || tab.titleKey === 'liveChat.navVisitors'
+      ) {
+        return false;
+      }
+      return true;
+    });
+    if (tabs.value.length !== before && storageConfigured && storageKey) {
+      saveTabsToStorage();
+    }
+  }
+
+  function applyMainLiveChatTabAndNavigate(tab, routerPath, options = {}) {
+    const routerTarget = normalizeLiveChatPath(routerPath);
+    const sessionOptions = { ...options, titleKey: 'navigation.liveChat' };
+    tab.path = LIVE_CHAT_MAIN_TAB_PATH;
+    applyLiveChatTabTitle(tab, LIVE_CHAT_MAIN_TAB_PATH, sessionOptions);
+    tab.icon = getIconComponent(getIconForPath(LIVE_CHAT_MAIN_TAB_PATH));
+    activeTabId.value = tab.id;
+    pruneSecondaryLiveChatTabs(tab.id);
+    isProgrammaticNavigation = true;
+    lastProgrammaticPath = routerTarget;
+    navigateToPath(routerTarget).finally(() => {
+      setTimeout(() => {
+        isProgrammaticNavigation = false;
+        lastProgrammaticPath = null;
+      }, 300);
+    });
+    return tab;
   }
 
   function applyLiveChatTabTitle(tab, pathOnly, options = {}) {
@@ -1433,20 +1472,22 @@ export function useTabs() {
     });
   }
 
-  /** Sync main Live Chat tab; session detail stays in the router only. */
+  /** Sync Live Chat workspace tab; in-page routes stay in the router only. */
   function syncLiveChatMainTabPath(path) {
     const pathOnly = normalizeLiveChatPath(path);
-    if (!isLiveChatSessionsRoute(pathOnly)) return false;
+    if (!isLiveChatRoute(pathOnly)) return false;
 
-    const mainTab = findLiveChatMainTab();
+    const mainTab = resolveLiveChatWorkspaceTab();
     if (!mainTab) return false;
 
     normalizeLiveChatMainTabStorage(mainTab);
+    mainTab.path = LIVE_CHAT_MAIN_TAB_PATH;
     applyLiveChatTabTitle(mainTab, LIVE_CHAT_MAIN_TAB_PATH, { titleKey: 'navigation.liveChat' });
     mainTab.icon = getIconComponent(getIconForPath(LIVE_CHAT_MAIN_TAB_PATH));
     if (activeTabId.value !== mainTab.id) {
       activeTabId.value = mainTab.id;
     }
+    pruneSecondaryLiveChatTabs(mainTab.id);
     if (storageConfigured && storageKey) {
       saveTabsToStorage();
     }
@@ -1454,80 +1495,34 @@ export function useTabs() {
   }
 
   function syncLiveChatClosedTabPath(path) {
-    const pathOnly = normalizeLiveChatPath(path);
-    if (!isLiveChatClosedSessionsRoute(pathOnly) && !isLiveChatVisitorsRoute(pathOnly)) return false;
-
-    if (isLiveChatClosedSessionDetailPath(pathOnly)) {
-      const detailTab = tabs.value.find(
-        (tab) => normalizeLiveChatPath(tab.path) === pathOnly,
-      );
-      if (detailTab) {
-        if (activeTabId.value !== detailTab.id) {
-          activeTabId.value = detailTab.id;
-        }
-        if (storageConfigured && storageKey) {
-          saveTabsToStorage();
-        }
-        return true;
-      }
-      return false;
-    }
-
-    const closedTab = findLiveChatClosedTab();
-    if (!closedTab) return false;
-
-    const targetPath = isLiveChatVisitorsRoute(pathOnly) ? LIVE_CHAT_CLOSED_TAB_PATH : pathOnly;
-    updateLiveChatTabInPlace(closedTab, targetPath, { titleKey: 'liveChat.navClosed' });
-    if (activeTabId.value !== closedTab.id) {
-      activeTabId.value = closedTab.id;
-    }
-    if (storageConfigured && storageKey) {
-      saveTabsToStorage();
-    }
-    return true;
+    return syncLiveChatMainTabPath(path);
   }
 
   function syncLiveChatVisitorsTabPath(path) {
-    return syncLiveChatClosedTabPath(path);
+    return syncLiveChatMainTabPath(path);
   }
 
   function syncLiveChatRouteTab(path) {
-    if (syncLiveChatMainTabPath(path)) return true;
-    if (syncLiveChatClosedTabPath(path)) return true;
-    if (syncLiveChatVisitorsTabPath(path)) return true;
-
-    const pathOnly = normalizeLiveChatPath(path);
-    if (!isLiveChatReportsRoute(pathOnly)) return false;
-
-    const reportsTab = findLiveChatReportsTab() || findTabByPath(pathOnly);
-    if (!reportsTab) return false;
-
-    if (activeTabId.value !== reportsTab.id) {
-      activeTabId.value = reportsTab.id;
-    }
-    if (storageConfigured && storageKey) {
-      saveTabsToStorage();
-    }
-    return true;
+    return syncLiveChatMainTabPath(path);
   }
 
-  function navigateLiveChatSessions(path = LIVE_CHAT_MAIN_TAB_PATH, options = {}) {
+  function navigateLiveChatWorkspace(path, options = {}) {
     const routerPath = normalizeLiveChatPath(path);
-    if (!isLiveChatSessionsRoute(routerPath)) return null;
+    if (!isLiveChatRoute(routerPath)) return null;
 
-    const mainTab = findLiveChatMainTab();
-    const sessionOptions = {
+    const navOptions = {
       ...options,
       titleKey: 'navigation.liveChat',
     };
 
-    if (mainTab) {
-      return applyMainLiveChatTabAndNavigate(mainTab, routerPath, sessionOptions);
+    const workspaceTab = resolveLiveChatWorkspaceTab();
+    if (workspaceTab) {
+      return applyMainLiveChatTabAndNavigate(workspaceTab, routerPath, navOptions);
     }
 
     skipLiveChatOpenTabRouting = true;
     try {
-      const created = openTab(LIVE_CHAT_MAIN_TAB_PATH, { ...sessionOptions, insertAdjacent: false });
+      const created = openTab(LIVE_CHAT_MAIN_TAB_PATH, { ...navOptions, insertAdjacent: false });
       if (created && routerPath !== LIVE_CHAT_MAIN_TAB_PATH) {
         isProgrammaticNavigation = true;
         lastProgrammaticPath = routerPath;
@@ -1544,45 +1539,17 @@ export function useTabs() {
     }
   }
 
+  function navigateLiveChatSessions(path = LIVE_CHAT_MAIN_TAB_PATH, options = {}) {
+    const routerPath = normalizeLiveChatPath(path);
+    if (!isLiveChatSessionsRoute(routerPath)) return null;
+    return navigateLiveChatWorkspace(routerPath, options);
+  }
+
   function navigateLiveChatClosedSessions(path = LIVE_CHAT_CLOSED_TAB_PATH, options = {}) {
     const pathOnly = normalizeLiveChatPath(path);
-    if (!isLiveChatClosedSessionsRoute(pathOnly)) return null;
-
-    if (isLiveChatClosedSessionDetailPath(pathOnly)) {
-      skipLiveChatOpenTabRouting = true;
-      try {
-        return openTab(pathOnly, {
-          ...options,
-          insertAdjacent: options.insertAdjacent !== false,
-        });
-      } finally {
-        skipLiveChatOpenTabRouting = false;
-      }
-    }
-
-    const closedTab = findLiveChatClosedTab();
-    const active = tabs.value.find((tab) => tab.id === activeTabId.value);
-    const closedOptions = {
-      ...options,
-      ...(options.title ? {} : { titleKey: 'liveChat.navClosed' }),
-    };
-
-    if (active && closedTab && active.id === closedTab.id) {
-      replaceActiveTab(pathOnly, closedOptions);
-      applyLiveChatTabTitle(active, pathOnly, closedOptions);
-      return closedTab;
-    }
-    if (closedTab) {
-      focusLiveChatTab(closedTab, pathOnly, closedOptions);
-      return closedTab;
-    }
-
-    skipLiveChatOpenTabRouting = true;
-    try {
-      return openTab(pathOnly, { ...closedOptions, insertAdjacent: false });
-    } finally {
-      skipLiveChatOpenTabRouting = false;
-    }
+    if (!isLiveChatClosedSessionsRoute(pathOnly) && !isLiveChatVisitorsRoute(pathOnly)) return null;
+    const target = isLiveChatVisitorsRoute(pathOnly) ? LIVE_CHAT_CLOSED_TAB_PATH : pathOnly;
+    return navigateLiveChatWorkspace(target, options);
   }
 
   function navigateLiveChatVisitors(path = LIVE_CHAT_CLOSED_TAB_PATH, options = {}) {
@@ -1590,24 +1557,7 @@ export function useTabs() {
   }
 
   function navigateLiveChatReports(options = {}) {
-    const pathOnly = '/live-chat/reports';
-    const reportsTab = findLiveChatReportsTab();
-    const reportOptions = {
-      ...options,
-      titleKey: 'liveChat.navReports',
-    };
-
-    if (reportsTab) {
-      focusLiveChatTab(reportsTab, pathOnly, reportOptions);
-      return reportsTab;
-    }
-
-    skipLiveChatOpenTabRouting = true;
-    try {
-      return openTab(pathOnly, { ...reportOptions, insertAdjacent: false });
-    } finally {
-      skipLiveChatOpenTabRouting = false;
-    }
+    return navigateLiveChatWorkspace('/live-chat/reports', options);
   }
 
   function openLiveChatSession(sessionId) {
@@ -1629,16 +1579,9 @@ export function useTabs() {
   // Find tab by path (exact match or path without query params)
   const findTabByPath = (path) => {
     const pathWithoutQuery = String(path || '').split('?')[0].split('#')[0];
-    if (isLiveChatSessionsRoute(pathWithoutQuery)) {
-      const mainTab = findLiveChatMainTab();
-      if (mainTab) return mainTab;
-    }
-
-    if (isLiveChatClosedSessionsRoute(pathWithoutQuery)) {
-      if (!isLiveChatClosedSessionDetailPath(pathWithoutQuery)) {
-        const closedTab = findLiveChatClosedTab();
-        if (closedTab) return closedTab;
-      }
+    if (isLiveChatRoute(pathWithoutQuery)) {
+      const workspaceTab = resolveLiveChatWorkspaceTab();
+      if (workspaceTab) return workspaceTab;
     }
 
     // First try exact match
@@ -2212,6 +2155,14 @@ export function useTabs() {
         ) {
           currentActiveTab.path = newPath;
           restoreModuleListTabTitle(currentActiveTab, newPath);
+        } else if (
+          isTemplatesModuleListPath(newPath)
+          && isTemplatesModuleFamilyPath(activePathBase)
+        ) {
+          // Templates / Themes / Assets / Merge mappings stay in one tab.
+          currentActiveTab.path = newFullPath || newPath;
+          restoreModuleListTabTitle(currentActiveTab, newPath.split('?')[0]);
+          return;
         }
       }
       
@@ -2872,13 +2823,20 @@ export function useTabs() {
       });
       return;
     }
-    if (isLiveChatSessionsRoute(pathOnly) && liveChatMainTabOwnsRoute(pathOnly, currentActiveTab)) {
+    if (isLiveChatRoute(pathOnly) && liveChatMainTabOwnsRoute(pathOnly, currentActiveTab)) {
       applyMainLiveChatTabAndNavigate(currentActiveTab, pathOnly, options);
       return;
     }
     currentActiveTab.path = path;
     if (isLiveChatRoute(pathOnly)) {
       applyLiveChatTabTitle(currentActiveTab, pathOnly, options);
+    } else if (isTemplatesModuleListPath(pathOnly)) {
+      restoreModuleListTabTitle(currentActiveTab, pathOnly);
+      if (options.title) {
+        currentActiveTab.title = options.title;
+        delete currentActiveTab.titleKey;
+        delete currentActiveTab.titleParams;
+      }
     } else if (options.title && isRecordDetailTabPath(path)) {
       applyRecordTabTitle(currentActiveTab, options.title);
     } else {

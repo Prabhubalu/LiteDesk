@@ -18,12 +18,10 @@ import { registerTableCellComponents } from './tableCellComponents';
 import { isTableMutationInProgress } from './tableActions';
 import {
   findTableRoot,
-  isSelectionInTableContext,
   isTableCellComponent,
   paintTableCellContent,
   readCellText,
   repaintTableCells,
-  resolveMergeTargetTableCell,
   resolveTableCellComponent,
   resolveTableCellFromElement,
   writeCellText
@@ -408,54 +406,29 @@ export function refreshCanvasTablesAfterHtmlApply(editor: Editor): void {
 }
 
 export function insertMergeIntoTableCell(editor: Editor, path: string): boolean {
-  let trimmedPath = path.replace(/^\{\{|\}\}$/g, '').trim() || path.trim();
-
-  if (activeEditor && activeEditor.editor === editor) {
-    const { cell, element } = activeEditor;
-    if (isLineItemDataRow(cell)) {
-      trimmedPath = normalizeLineScopeMergePath(trimmedPath);
-    }
-    const tokenText = readCellText(cell);
-    const caretOffset = resolveInsertCaretOffset(editor, cell, tokenText.length);
-    const nextOffset = insertMergeTokenAtLogicalOffset(
-      element,
-      tokenText,
-      formatMergeToken(trimmedPath),
-      caretOffset,
-      (text) => writeCellText(cell, text)
-    );
-    publishInsertTarget(editor, cell, element, nextOffset);
-    unlockInsertTarget();
-    restoreTextCaretAtOffset(element, nextOffset);
-    return true;
-  }
-
-  const selected = editor.getSelected();
-  if (!isSelectionInTableContext(selected)) {
+  // Only insert into an active sheet-edit session. The old "append to selected
+  // layout cell" path flattened nested email HTML and ignored the caret.
+  if (!activeEditor || activeEditor.editor !== editor) {
     return false;
   }
 
-  const cell = resolveMergeTargetTableCell(editor, lastSelectedTableCell);
-  if (!cell) return false;
-
-  if (activeEditor && activeEditor.cell !== cell) {
-    commitActiveEdit();
-  }
-
+  let trimmedPath = path.replace(/^\{\{|\}\}$/g, '').trim() || path.trim();
+  const { cell, element } = activeEditor;
   if (isLineItemDataRow(cell)) {
     trimmedPath = normalizeLineScopeMergePath(trimmedPath);
   }
-
-  const current = readCellText(cell);
-  const nextToken = formatMergeToken(trimmedPath);
-  const spacer = current && !current.endsWith(' ') ? ' ' : '';
-  writeCellText(cell, `${current}${spacer}${nextToken}`);
-  lastSelectedTableCell = cell;
-  startSheetEdit(editor, cell);
-  const element = cell.view?.el as HTMLElement | undefined;
-  if (element) {
-    restoreTextCaretAtOffset(element, elementToMergeTokens(element).length);
-  }
+  const tokenText = readCellText(cell);
+  const caretOffset = resolveInsertCaretOffset(editor, cell, tokenText.length);
+  const nextOffset = insertMergeTokenAtLogicalOffset(
+    element,
+    tokenText,
+    formatMergeToken(trimmedPath),
+    caretOffset,
+    (text) => writeCellText(cell, text)
+  );
+  publishInsertTarget(editor, cell, element, nextOffset);
+  unlockInsertTarget();
+  restoreTextCaretAtOffset(element, nextOffset);
   return true;
 }
 

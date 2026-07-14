@@ -187,7 +187,13 @@
       </template>
 
       <template v-if="record" #left>
-        <div :class="expandedLeftSection === 'lines' ? 'flex flex-col flex-1 min-h-0 h-full overflow-hidden' : ''">
+        <div
+          :class="
+            expandedLeftSection === 'lines' || isTemplatesModule
+              ? 'flex flex-col flex-1 min-h-0 h-full overflow-hidden'
+              : ''
+          "
+        >
         <div
           v-if="expandedLeftSection"
           :class="[
@@ -255,6 +261,7 @@
           v-if="!expandedLeftSection"
           :sticky="isLeftTitleSticky"
           :embed="embed"
+          class="shrink-0"
         >
           <Avatar
             v-if="recordAvatarUser"
@@ -490,9 +497,20 @@
           :is-engagement-form="isEngagementForm"
         />
 
+        <section
+          v-if="isTemplatesModule && record && !expandedLeftSection"
+          class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+        >
+          <TemplateHtmlPreviewPanel
+            class="min-h-0 h-full flex-1"
+            :template-id="String(record._id)"
+            :template="record"
+          />
+        </section>
+
         <!-- Section stack: show when collapsed, or when expanded to details/related (adapter returns only that section) -->
         <section
-          v-if="record && genericSections.length && (!expandedLeftSection || ['description', 'catalog', 'details', 'related', 'lines', 'revisions', 'conversion', 'preview', 'responses'].includes(expandedLeftSection))"
+          v-if="record && !isTemplatesModule && genericSections.length && (!expandedLeftSection || ['description', 'catalog', 'details', 'related', 'lines', 'revisions', 'conversion', 'preview', 'responses'].includes(expandedLeftSection))"
           :class="[
             expandedLeftSection === 'lines'
               ? 'flex-1 min-h-0 flex flex-col overflow-hidden mt-2'
@@ -518,7 +536,8 @@
           :default-tab="recordLayoutIsMobile ? undefined : 'activity'"
           :show-header="embed"
           :show-close-button="embed"
-          :title="embed ? moduleLabel : ''"
+          :title="embed ? (isTemplatesModule ? recordTitle : moduleLabel) : ''"
+          :summary-layout="isTemplatesModule ? 'fill' : 'scroll'"
           :persistence-key="`generic-${moduleKey}-${record._id}`"
           :record-id="record._id"
           @close="$emit('close')"
@@ -1046,6 +1065,7 @@ import RecordPageTitleRow from '@/components/record-page/RecordPageTitleRow.vue'
 import { useStickyTitleRow } from '@/components/record-page/composables/useStickyTitleRow';
 import { FLOATING_OVERLAY_Z_CLASS } from '@/constants/zIndexLayers';
 import SectionStack from '@/components/record-page/sections/SectionStack.vue';
+import TemplateHtmlPreviewPanel from '@/modules/template/components/TemplateHtmlPreviewPanel.vue';
 import AppointmentDetailCard from '@/components/appointments/AppointmentDetailCard.vue';
 import CaseSlaContextBanner from '@/components/helpdesk/CaseSlaContextBanner.vue';
 import LiveChatLinkedSessionCard from '@/components/live-chat/LiveChatLinkedSessionCard.vue';
@@ -1399,6 +1419,7 @@ const {
 } = useStickyTitleRow(genericRecordContentRootRef);
 
 const moduleKeyLower = computed(() => (props.moduleKey || '').toLowerCase());
+const isTemplatesModule = computed(() => moduleKeyLower.value === 'templates');
 const isEventsModule = computed(() => moduleKeyLower.value === 'events');
 const isEventAppointment = computed(
   () => isEventsModule.value && !!record.value?.appointment?.isAppointment

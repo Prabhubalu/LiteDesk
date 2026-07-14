@@ -1,5 +1,5 @@
 <template>
-  <div class="grid gap-2 sm:grid-cols-3" role="radiogroup" :aria-label="t('templates.htmlImport.startFromTitle')">
+  <div class="grid gap-2 sm:grid-cols-2" role="radiogroup" :aria-label="t('templates.htmlImport.startFromTitle')">
     <button
       v-for="option in options"
       :key="option.value"
@@ -51,11 +51,6 @@ const options = computed(() => [
     value: 'blank',
     label: t('templates.htmlImport.startBlank'),
     description: t('templates.htmlImport.startBlankDescription')
-  },
-  {
-    value: 'gallery',
-    label: t('templates.htmlImport.startGallery'),
-    description: t('templates.htmlImport.startGalleryDescription')
   },
   {
     value: 'import',

@@ -362,9 +362,20 @@ export function hydrateEditableTextComponents(root: Component): void {
   const visit = (component: Component) => {
     upgradeInlineTextBlockTags(component);
     if (isEditableTextComponent(component)) {
+      const el = resolveTextHostElement(component);
+      const stored = String(component.get('content') ?? '');
       const text = readTextContent(component);
       if (text.includes('{{')) {
-        writeTextContent(component, text, { force: true, silent: true });
+        if (
+          el
+          && (contentHasHtmlMarkup(stored) || contentHasHtmlMarkup(el.innerHTML)
+            || el.querySelector('br, div, p, span[style], strong, em, b, i, u'))
+        ) {
+          applyMergeChipsInPlace(el);
+          replaceComponentTextModel(component, serializeElementHtmlWithMergeTokens(el));
+        } else {
+          writeTextContent(component, text, { force: true, silent: true });
+        }
       }
     }
     component.components().forEach(visit);

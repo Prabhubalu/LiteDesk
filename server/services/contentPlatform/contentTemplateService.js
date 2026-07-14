@@ -6,7 +6,10 @@ const ContentValidationReport = require('../../models/ContentValidationReport');
 const { createBlankTemplateDefinition } = require('../../constants/contentTemplateModuleDefaults');
 const {
   createBlankGrapesTemplateDefinition,
-  isGrapesTemplateDefinition
+  isGrapesTemplateDefinition,
+  hasGrapesTemplateDefinitionContent,
+  hasRenderableGrapesTemplateContent,
+  isEmailDefinitionDegraded
 } = require('../../constants/grapesTemplateDefinition');
 const { normalizeTemplatePageSettings, DEFAULT_PAGE_MARGINS_MM } = require('../../constants/contentPaperSizes');
 const {
@@ -171,9 +174,49 @@ async function getTemplateById(params) {
       }).lean()
     : null;
 
+  let draftDefinition = draftVersion?.jsonDefinition || null;
+  let healedDefinition = null;
+
+  // Recover draft emptied by a canvas serialize race: prefer import snapshot, then last publish.
+  if (
+    isGrapesTemplateDefinition(draftDefinition)
+    && !hasRenderableGrapesTemplateContent(draftDefinition)
+  ) {
+    const snapshotHtml = String(draftDefinition.importSnapshot?.html || '').trim();
+    if (snapshotHtml) {
+      healedDefinition = {
+        ...draftDefinition,
+        html: draftDefinition.importSnapshot.html,
+        css: String(draftDefinition.importSnapshot.css || draftDefinition.css || '')
+      };
+    } else if (template.latestPublishedVersion) {
+      const published = await ContentTemplateVersion.findOne({
+        organizationId,
+        templateId: template._id,
+        version: Number(template.latestPublishedVersion),
+        published: true
+      }).lean();
+      if (
+        isGrapesTemplateDefinition(published?.jsonDefinition)
+        && hasRenderableGrapesTemplateContent(published.jsonDefinition)
+      ) {
+        healedDefinition = published.jsonDefinition;
+      }
+    }
+
+    if (healedDefinition && draftVersion?._id) {
+      draftDefinition = healedDefinition;
+      // Persist heal so the next empty autosave cannot wipe snapshot-only drafts.
+      await ContentTemplateVersion.updateOne(
+        { _id: draftVersion._id, organizationId },
+        { $set: { jsonDefinition: healedDefinition } }
+      );
+    }
+  }
+
   return {
     ...formatTemplate(template),
-    draftDefinition: draftVersion?.jsonDefinition || null
+    draftDefinition
   };
 }
 
@@ -367,7 +410,22 @@ async function updateTemplate(params) {
         })
       : null;
 
-    if (!draftVersion) {
+    // Never replace a draft that still has html/project/snapshot with an empty or degraded serialize.
+    const incoming = payload.jsonDefinition;
+    const existing = draftVersion?.jsonDefinition;
+    if (
+      isGrapesTemplateDefinition(incoming)
+      && isGrapesTemplateDefinition(existing)
+      && (
+        (
+          hasGrapesTemplateDefinitionContent(existing)
+          && !hasRenderableGrapesTemplateContent(incoming)
+        )
+        || isEmailDefinitionDegraded(incoming, existing)
+      )
+    ) {
+      // Keep existing definition; still allow metadata updates below.
+    } else if (!draftVersion) {
       const nextVersion = Math.max(Number(template.latestVersion) || 0, 0) + 1;
       draftVersion = await ContentTemplateVersion.create({
         organizationId,
