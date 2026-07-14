@@ -74,7 +74,7 @@ function prependInlineStyle(attrs: string, declaration: string): string {
 function isFixedWidthTableOpenTag(tableOpenTag: string): boolean {
   const attrsMatch = String(tableOpenTag || '').match(/^<table\b([^>]*)>/i);
   if (!attrsMatch) return false;
-  const attrs = attrsMatch[1];
+  const attrs = attrsMatch[1] ?? '';
   if (isFixedEmailCardWidth(readTableWidthAttr(attrs))) return true;
   return isFixedEmailCardWidth(readTableMaxWidthAttr(attrs));
 }
@@ -82,7 +82,7 @@ function isFixedWidthTableOpenTag(tableOpenTag: string): boolean {
 function addAlignCenterToTdOpen(tdOpenTag: string): string {
   const match = String(tdOpenTag || '').match(/^<td(\b[^>]*)>/i);
   if (!match) return tdOpenTag;
-  let attrs = match[1];
+  let attrs = match[1] ?? '';
   if (/\balign\s*=/i.test(attrs)) return tdOpenTag;
 
   if (/\bstyle\s*=\s*"/i.test(attrs)) {
@@ -141,8 +141,9 @@ export function ensureEmailTableCentering(html: string): string {
 export function ensureEmailCssCentersMaxWidthCards(css: string): string {
   return String(css || '').replace(/\{([^{}]*)\}/g, (block, body) => {
     const maxMatch = String(body).match(/(?:^|;)\s*max-width\s*:\s*([^;]+)/i);
-    if (!maxMatch) return block;
-    if (!isFixedEmailCardWidth(maxMatch[1].trim())) return block;
+    const maxWidth = maxMatch?.[1]?.trim();
+    if (!maxWidth) return block;
+    if (!isFixedEmailCardWidth(maxWidth)) return block;
     if (hasMarginAuto(body)) return block;
     return `{margin:0 auto;${body}}`;
   });
@@ -155,18 +156,18 @@ function hasRootCenteringShell(html: string): boolean {
   const source = String(html || '').trim();
   const tableMatch = source.match(/^<table\b([^>]*)>/i);
   if (!tableMatch) return false;
+  const tableAttrs = tableMatch[1] ?? '';
 
-  const width = readTableWidthAttr(tableMatch[1]);
-  const style = tableMatch[1];
+  const width = readTableWidthAttr(tableAttrs);
   const isFluid =
     String(width).trim() === '100%'
-    || /(?:^|;)\s*width\s*:\s*100%/i.test(style);
+    || /(?:^|;)\s*width\s*:\s*100%/i.test(tableAttrs);
   if (!isFluid) return false;
 
   const after = source.slice(tableMatch[0].length);
   const firstTd = after.match(/^(?:\s*<tbody\b[^>]*>)?\s*<tr\b[^>]*>\s*<td\b([^>]*)>/i);
   if (!firstTd) return false;
-  return /\balign\s*=\s*["']?center/i.test(firstTd[1]);
+  return /\balign\s*=\s*["']?center/i.test(firstTd[1] ?? '');
 }
 
 /**

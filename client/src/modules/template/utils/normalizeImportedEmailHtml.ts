@@ -42,9 +42,10 @@ function promoteAlignToTextAlign(html: string): string {
     (full, tag, rawAttrs) => {
       const attrs = String(rawAttrs || '');
       const alignMatch = attrs.match(/\balign\s*=\s*(["']?)(left|center|right|justify)\1/i);
-      if (!alignMatch) return full;
+      const alignValue = alignMatch?.[2];
+      if (!alignValue) return full;
 
-      const align = alignMatch[2].toLowerCase();
+      const align = alignValue.toLowerCase();
       if (/text-align\s*:/i.test(attrs)) return full;
 
       if (/\bstyle\s*=\s*"/i.test(attrs)) {
