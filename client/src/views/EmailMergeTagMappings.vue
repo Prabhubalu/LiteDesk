@@ -1,8 +1,10 @@
 <template>
-  <div class="mx-auto w-full max-w-5xl">
+  <div class="mx-auto w-full">
     <TemplatesModuleNav />
-    <OrgMergeTagMappingsPanel />
-    <OrgEmailCssAllowlistPanel />
+    <div class="max-w-5xl space-y-6">
+      <OrgMergeTagMappingsPanel />
+      <OrgEmailCssAllowlistPanel />
+    </div>
   </div>
 </template>
 

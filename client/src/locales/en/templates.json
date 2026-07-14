@@ -47,6 +47,18 @@
     "message": "Format",
     "description": "Template output format column"
   },
+  "colType": {
+    "message": "Type",
+    "description": "Template type column (print vs email)"
+  },
+  "colSize": {
+    "message": "Size",
+    "description": "Print template page size column"
+  },
+  "colOrientation": {
+    "message": "Orientation",
+    "description": "Print template page orientation column"
+  },
   "colVersion": {
     "message": "Version",
     "description": "Template version column"
@@ -78,6 +90,18 @@
   "fieldOutputFormat": {
     "message": "Output format",
     "description": "Template output format field"
+  },
+  "fieldType": {
+    "message": "Type",
+    "description": "Template type field on create form (print vs email)"
+  },
+  "typePrintTemplate": {
+    "message": "Print template",
+    "description": "Create form type option for PDF/print templates"
+  },
+  "typeEmailTemplate": {
+    "message": "Email Template",
+    "description": "Create form type option for email templates"
   },
   "moduleScopeAny": {
     "message": "Any module",
@@ -166,6 +190,10 @@
   "previewDescription": {
     "message": "Generate a PDF using the published template version.",
     "description": "Template preview section description"
+  },
+  "previewUnavailable": {
+    "message": "No draft or published version available to preview.",
+    "description": "Empty state when template preview is not available"
   },
   "fieldRecordId": {
     "message": "Record ID",
@@ -1707,6 +1735,10 @@
     "message": "Shaded areas match the 12 mm print margins. Place content inside the dashed box — preview and PDF use the same layout.",
     "description": "Hint explaining margin guides on builder canvas"
   },
+  "builderTableHtmlWidthHint": {
+    "message": "Sets the HTML width attribute used by email clients (e.g. 100% or 600).",
+    "description": "Hint for table HTML width field in builder"
+  },
   "builderTableWidthPercent": {
     "message": "Table width",
     "description": "Table width as percentage of printable area"
@@ -2112,7 +2144,7 @@
     "description": "Org merge mappings table actions column"
   },
   "htmlImport.orgMappingsTagPlaceholder": {
-    "message": "e.g. *|FNAME|* or {{first_name}}",
+    "message": "e.g. *|FNAME|* or {'{'}{'{'}first_name{'}'}{'}'}",
     "description": "ESP merge tag input placeholder"
   },
   "htmlImport.orgMappingsSaved": {
@@ -2447,6 +2479,30 @@
     "message": "{count} table(s) missing width attribute",
     "description": "Missing table width validation warning"
   },
+  "htmlImport.validationFixMissingAlt": {
+    "message": "Select each image and set Alt text in the Block panel (accessibility and many clients require it).",
+    "description": "How to fix missing image alt warnings"
+  },
+  "htmlImport.validationFixMissingTableWidth": {
+    "message": "Select a table cell, open the Block tab, set Table width (100% or 600), then save. Repeat for each table without width.",
+    "description": "How to fix missing table width warnings"
+  },
+  "htmlImport.validationFixJavascriptRemoved": {
+    "message": "Remove script tags and event handlers from the HTML — email clients strip JavaScript.",
+    "description": "How to fix javascript-removed warnings"
+  },
+  "htmlImport.validationFixExternalCss": {
+    "message": "Move external stylesheet rules into inline styles or a style block in the template HTML.",
+    "description": "How to fix external CSS warnings"
+  },
+  "htmlImport.validationFixUnsupportedCss": {
+    "message": "Replace unsupported CSS with email-safe properties or inline table/cell attributes.",
+    "description": "How to fix unsupported CSS warnings"
+  },
+  "htmlImport.validationFixForm": {
+    "message": "Remove HTML forms from the email body — most clients disable form submission in email.",
+    "description": "How to fix form warnings"
+  },
   "htmlImport.exportTitle": {
     "message": "Export HTML",
     "description": "Export HTML modal title"
@@ -2504,7 +2560,11 @@
     "description": "Publish blocked by validation errors"
   },
   "htmlImport.publishWarningsConfirm": {
-    "message": "This template has HTML warnings. Publish anyway?",
+    "message": "This template has HTML warnings. Review them below, then publish anyway or cancel.",
     "description": "Publish confirmation when warnings exist"
+  },
+  "htmlImport.publishAnyway": {
+    "message": "Publish anyway",
+    "description": "Confirm publish despite HTML warnings"
   }
 }

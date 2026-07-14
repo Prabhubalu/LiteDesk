@@ -79,8 +79,8 @@
       />
 
       <GrapesTablePanel
-        v-if="isTableCell"
-        :component="tableCell"
+        v-if="tablePanelComponent"
+        :component="tablePanelComponent"
         :editor="editor"
         @change="emit('change')"
       />
@@ -309,7 +309,7 @@ import {
   duplicateComponent,
   selectParentComponent
 } from '../editor/componentActions';
-import { resolveTableCellComponent } from '../editor/tableModel';
+import { resolveTableCellComponent, findTableRoot } from '../editor/tableModel';
 import { findLineItemRoot } from '../editor/lineItemModel';
 import GrapesTablePanel from './GrapesTablePanel.vue';
 import GrapesLineItemPanel from './GrapesLineItemPanel.vue';
@@ -406,6 +406,7 @@ const blockIcon = computed(() => {
 const lineItemRoot = computed(() => findLineItemRoot(component.value));
 const isTableCell = computed(() => Boolean(resolveTableCellComponent(component.value)));
 const tableCell = computed(() => resolveTableCellComponent(component.value));
+const tablePanelComponent = computed(() => tableCell.value || findTableRoot(component.value));
 const isLayoutGridRowSelected = computed(() => isLayoutGridRow(component.value));
 const isLayoutGridCellSelected = computed(() => isLayoutGridCell(component.value));
 

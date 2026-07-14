@@ -263,6 +263,24 @@ async function resolveRecordEmail(ctx) {
 }
 
 /**
+ * True when rendered email HTML has visible text (not just empty centering shells).
+ * @param {string} html
+ * @returns {boolean}
+ */
+function emailHtmlHasVisibleContent(html) {
+  const source = String(html || '');
+  const body = source.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] || source;
+  const text = body
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text.length > 0;
+}
+
+/**
  * Render Content Studio email template HTML for the bound record.
  */
 async function resolveEmailTemplateContent(ctx, templateId) {
@@ -316,7 +334,7 @@ async function resolveEmailTemplateContent(ctx, templateId) {
     });
 
     const html = String(rendered?.html || '').trim();
-    if (!html) {
+    if (!html || !emailHtmlHasVisibleContent(html)) {
       return { ok: false, error: 'send_email: email template rendered empty body' };
     }
 

@@ -427,13 +427,16 @@ import { useI18n } from 'vue-i18n';
 import { RouterLink } from 'vue-router';
 import { PaperClipIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
-import { withApiOrigin, getApiUrlForFetch, getApiUrlForEventSource } from '@/config/apiBase';
+import { getApiUrlForEventSource } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
 import AvatarInitials from '@/components/ui/AvatarInitials.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import ChatMessageReceiptIcon from '@/components/cases/ChatMessageReceiptIcon.vue';
 import LiveChatMessageComposer from '@/components/live-chat/LiveChatMessageComposer.vue';
-import { uploadLiveChatMessageAttachment } from '@/utils/liveChatAttachmentUpload';
+import {
+  liveChatAttachmentHref,
+  uploadLiveChatMessageAttachment,
+} from '@/utils/liveChatAttachmentUpload';
 import {
   applyReceiptPatch,
   receiptStatusFromMessage,
@@ -1253,21 +1256,7 @@ function messageAttachments(message) {
 }
 
 function attachmentHref(att) {
-  const url = String(att?.url || '').trim();
-  if (url.startsWith('/api/')) return getApiUrlForFetch(url);
-  if (url) return withApiOrigin(url);
-  const storagePath = String(att?.storagePath || '').trim();
-  if (storagePath.startsWith('oci:')) {
-    const q = new URLSearchParams({
-      storagePath,
-      disposition: 'attachment',
-    });
-    if (att?.fileName) q.set('fileName', String(att.fileName));
-    if (att?.mimeType) q.set('contentType', String(att.mimeType));
-    return getApiUrlForFetch(`/api/files/download?${q.toString()}`);
-  }
-  if (storagePath) return getApiUrlForFetch(`/api/uploads/${storagePath}`);
-  return '#';
+  return liveChatAttachmentHref(att);
 }
 
 async function uploadComposerFiles(files) {

@@ -11,7 +11,7 @@
     that are available across the entire application.
     
     Responsibilities:
-    - Owns global UI surfaces (GlobalSearch, CommandPalette)
+    - Owns global UI surfaces (GlobalSearch, CommandPalette, InProductSupportHub)
     - Owns their visibility state
     - Owns global keyboard shortcuts (Cmd/Ctrl+K, Cmd/Ctrl+/)
     - Owns global custom-event listeners
@@ -55,6 +55,7 @@
       :releases="unseenReleases"
     />
     <ReleaseNotesCenter v-model="centerOpen" />
+    <InProductSupportHub />
   </template>
 </template>
 
@@ -68,6 +69,7 @@ const { t } = useI18n();
  * Owns all global, cross-app UI surfaces:
  * - GlobalSearch
  * - CommandPalette
+ * - InProductSupportHub
  *
  * Rules:
  * - Must be mounted exactly once
@@ -95,6 +97,9 @@ const WhatsNewDrawer = defineAsyncComponent(() =>
 );
 const ReleaseNotesCenter = defineAsyncComponent(() =>
   import('@/components/release-notes/ReleaseNotesCenter.vue')
+);
+const InProductSupportHub = defineAsyncComponent(() =>
+  import('@/components/support/InProductSupportHub.vue')
 );
 
 // Async so GlobalSearch (+ drawers, field engines, command registry, API client) is NOT in the

@@ -25,7 +25,7 @@ const {
   getCachedRender,
   setCachedRender
 } = require('./renderers/renderPreviewCache');
-const { isGrapesTemplateDefinition } = require('../../constants/grapesTemplateDefinition');
+const { isGrapesTemplateDefinition, hasEmailHtmlForRender } = require('../../constants/grapesTemplateDefinition');
 const {
   CONTENT_PLATFORM_EVENT_TYPES,
   emitContentPlatformEvent,
@@ -63,34 +63,45 @@ function buildInlinePreviewCacheKey({
 }
 
 async function resolveTemplateVersion({ organizationId, template, preview = false }) {
-  if (preview && template.draftVersionId) {
-    const draft = await ContentTemplateVersion.findOne({
+  const loadDraft = async () => {
+    if (!template.draftVersionId) return null;
+    return ContentTemplateVersion.findOne({
       _id: template.draftVersionId,
       organizationId,
       templateId: template._id
     }).lean();
-    if (draft) return draft;
-  }
+  };
 
-  const publishedVersionNumber = template.latestPublishedVersion;
-  if (publishedVersionNumber) {
-    const published = await ContentTemplateVersion.findOne({
+  const loadPublished = async () => {
+    const publishedVersionNumber = template.latestPublishedVersion;
+    if (!publishedVersionNumber) return null;
+    return ContentTemplateVersion.findOne({
       organizationId,
       templateId: template._id,
       version: publishedVersionNumber,
       published: true
     }).lean();
-    if (published) return published;
-  }
+  };
 
-  if (template.draftVersionId) {
-    const draft = await ContentTemplateVersion.findOne({
-      _id: template.draftVersionId,
-      organizationId,
-      templateId: template._id
-    }).lean();
+  if (preview) {
+    const draft = await loadDraft();
     if (draft) return draft;
   }
+
+  const published = await loadPublished();
+  // Prefer published only when it still has an email body (html or snapshot).
+  // Empty published + good draft is the common "2nd process send blank" case.
+  if (published && hasEmailHtmlForRender(published.jsonDefinition)) {
+    return published;
+  }
+
+  const draft = await loadDraft();
+  if (draft && hasEmailHtmlForRender(draft.jsonDefinition)) {
+    return draft;
+  }
+
+  if (published) return published;
+  if (draft) return draft;
 
   throw new ContentPlatformError(
     CONTENT_PLATFORM_ERROR_CODES.NOT_FOUND,

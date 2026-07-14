@@ -7,12 +7,14 @@ const {
   submitSessionFeedback,
   createSession,
   recordSessionJourney,
+  uploadMessageAttachment,
   postMessage,
   postMessageReceipts,
   listMessages,
   setSessionTyping,
   streamMessages
 } = require('../controllers/embedChatController');
+const { uploadSingle } = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
 
@@ -42,6 +44,11 @@ router.post('/sessions/:sessionId/journey', recordSessionJourney);
 router.post('/sessions/:sessionId/close', closeSession);
 router.post('/sessions/:sessionId/feedback', submitSessionFeedback);
 router.get('/sessions/:sessionId/messages', listMessages);
+router.post(
+  '/sessions/:sessionId/message-attachments',
+  uploadSingle('file'),
+  uploadMessageAttachment,
+);
 router.post('/sessions/:sessionId/messages', postMessage);
 router.post('/sessions/:sessionId/messages/receipts', postMessageReceipts);
 router.post('/sessions/:sessionId/typing', setSessionTyping);

@@ -117,7 +117,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { MagnifyingGlassIcon, PaperClipIcon } from '@heroicons/vue/24/outline';
 import ChatMessageReceiptIcon from '@/components/cases/ChatMessageReceiptIcon.vue';
-import { withApiOrigin, getApiUrlForFetch } from '@/config/apiBase';
+import { liveChatAttachmentHref } from '@/utils/liveChatAttachmentUpload';
 import { receiptStatusFromMessage } from '@/utils/chatMessageReceipt';
 
 const props = defineProps({
@@ -192,21 +192,7 @@ function messageAttachments(message) {
 }
 
 function attachmentHref(att) {
-  const url = String(att?.url || '').trim();
-  if (url.startsWith('/api/')) return getApiUrlForFetch(url);
-  if (url) return withApiOrigin(url);
-  const storagePath = String(att?.storagePath || '').trim();
-  if (storagePath.startsWith('oci:')) {
-    const q = new URLSearchParams({
-      storagePath,
-      disposition: 'attachment',
-    });
-    if (att?.fileName) q.set('fileName', String(att.fileName));
-    if (att?.mimeType) q.set('contentType', String(att.mimeType));
-    return getApiUrlForFetch(`/api/files/download?${q.toString()}`);
-  }
-  if (storagePath) return getApiUrlForFetch(`/api/uploads/${storagePath}`);
-  return '#';
+  return liveChatAttachmentHref(att);
 }
 
 async function scrollToBottom() {

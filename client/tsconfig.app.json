@@ -6,7 +6,6 @@
     "src/components/organizations/OrganizationMetricsWidget.vue"
   ],
   "compilerOptions": {
-    "baseUrl": ".",
     "tsBuildInfoFile": "./.tsbuildinfo/tsconfig.app.tsbuildinfo",
     "paths": {
       "@/*": ["./src/*"]

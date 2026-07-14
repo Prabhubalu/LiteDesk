@@ -654,6 +654,22 @@ const getTabIcon = (tabId) => {
   margin-top: 0.75rem;
 }
 
+/* Fill-height summary: stretch teleported left content (Teleport crosses scoped boundaries) */
+.record-right-pane__summary-content.flex.h-full {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.record-right-pane__summary-content.flex.h-full :deep(.record-page-layout__summary-content) {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 .record-right-pane--no-transition {
   transition: none;
 }

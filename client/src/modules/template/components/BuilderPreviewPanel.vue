@@ -1,7 +1,6 @@
 <template>
   <div class="flex h-full min-h-0 flex-col overflow-hidden bg-neutral-200/60 dark:bg-neutral-950">
     <div
-      v-if="!isEmailFormat"
       class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-neutral-200 bg-white px-3 py-2 dark:border-neutral-800 dark:bg-neutral-900"
     >
       <p class="text-xs" :class="ui.textMuted">{{ t('templates.builderPreviewHtmlHint') }}</p>
@@ -16,6 +15,7 @@
           {{ previewBusy ? t('templates.rendering') : t('templates.builderPreviewRefresh') }}
         </button>
         <button
+          v-if="!isEmailFormat"
           type="button"
           :class="ui.btnSecondary"
           :disabled="pdfPreviewBusy"
@@ -26,14 +26,15 @@
       </div>
     </div>
 
-    <div class="min-h-0 flex-1 overflow-auto p-4">
-      <div v-if="previewBusy && !htmlDocument && !isEmailFormat" class="flex h-full min-h-[24rem] items-center justify-center">
+    <div class="flex min-h-0 flex-1 flex-col overflow-hidden p-4">
+      <div v-if="previewBusy && !hasPreviewContent" class="flex h-full min-h-[24rem] items-center justify-center">
         <p class="text-sm" :class="ui.textMuted">{{ t('templates.rendering') }}</p>
       </div>
 
       <EmailPreviewFrame
         v-else-if="isEmailFormat"
-        class="mx-auto max-w-5xl"
+        class="mx-auto h-full min-h-0 w-full max-w-5xl"
+        fill-height
         :html="emailHtml"
         :css="emailCss"
         :viewport="previewDevice"
@@ -43,7 +44,7 @@
       <iframe
         v-else
         :key="htmlDocument"
-        class="mx-auto block min-h-[calc(100vh-12rem)] w-full max-w-5xl rounded-lg border bg-white shadow-lg"
+        class="mx-auto block h-full min-h-0 w-full max-w-5xl rounded-lg border bg-white shadow-lg"
         :class="ui.border"
         sandbox=""
         :title="t('templates.builderViewPreview')"
@@ -54,13 +55,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ArrowPathIcon } from '@heroicons/vue/24/outline';
 import { useBuilderUi } from '@/composables/useBuilderUi';
 import EmailPreviewFrame from './html/EmailPreviewFrame.vue';
 
-defineProps({
+const props = defineProps({
   isEmailFormat: { type: Boolean, default: false },
   emailHtml: { type: String, default: '' },
   emailCss: { type: String, default: '' },
@@ -75,4 +76,11 @@ const emit = defineEmits(['refresh', 'preview-pdf']);
 const { t } = useI18n();
 const ui = useBuilderUi();
 const colorScheme = ref('light');
+
+const hasPreviewContent = computed(() => {
+  if (props.isEmailFormat) {
+    return Boolean(String(props.emailHtml || '').trim());
+  }
+  return Boolean(String(props.htmlDocument || '').trim());
+});
 </script>

@@ -126,7 +126,18 @@ export interface PageLayoutSetupOptions {
 }
 
 export function setupPageLayout(editor: Editor, options: PageLayoutSetupOptions = {}): void {
+  // Email still needs caret lock + merge-chip RTE for Variables panel inserts.
+  bindCanvasTextInsertion(editor);
+
   if (options.isEmail) {
+    const repairText = () => {
+      const wrapper = editor.getWrapper();
+      if (!wrapper) return;
+      repairAllTextComponents(wrapper);
+      hydrateEditableTextComponents(wrapper);
+    };
+    editor.on('load', repairText);
+    editor.on('project:load', repairText);
     return;
   }
 
@@ -136,7 +147,6 @@ export function setupPageLayout(editor: Editor, options: PageLayoutSetupOptions 
   bindPrintAreaGuards(editor);
   bindTableSelection(editor);
   bindTableSheetEditor(editor);
-  bindCanvasTextInsertion(editor);
 
   const repairText = () => {
     const wrapper = editor.getWrapper();

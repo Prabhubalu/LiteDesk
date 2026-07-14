@@ -233,7 +233,11 @@ function removeMergeChipFromHost(
   if (isCaretAnchorNode(anchor)) anchor.remove();
   chip.remove();
 
-  onContentChange(elementToMergeTokens(element));
+  if (hostHasRichMarkup(element) || hostHasLineBreakMarkup(element)) {
+    onContentChange(serializeElementHtmlWithMergeTokens(element));
+  } else {
+    onContentChange(elementToMergeTokens(element));
+  }
   return offset;
 }
 
@@ -343,7 +347,11 @@ function insertMergeTokenAtRange(
     offset = elementToMergeTokens(element).length;
   }
 
-  onContentChange(elementToMergeTokens(element));
+  if (hostHasRichMarkup(element) || hostHasLineBreakMarkup(element)) {
+    onContentChange(serializeElementHtmlWithMergeTokens(element));
+  } else {
+    onContentChange(elementToMergeTokens(element));
+  }
   restoreTextCaretAtOffset(element, offset);
   return offset;
 }
@@ -355,14 +363,29 @@ export function insertMergeTokenAtLogicalOffset(
   offset: number,
   onContentChange: MergeChipContentSync
 ): number {
+  const safeOffset = Math.max(0, Math.min(offset, tokenText.length));
+
   if (element.isContentEditable) {
+    let range = getCollapsedRangeInElement(element);
+    if (!range) {
+      // Selection often clears when clicking Variables — restore locked caret first.
+      restoreTextCaretAtOffset(element, safeOffset);
+      range = getCollapsedRangeInElement(element);
+    }
+    if (range) {
+      return insertMergeTokenAtRange(element, range, token, onContentChange);
+    }
+  }
+
+  // Never flatten rich/line-break markup to plain chip HTML.
+  if (hostHasRichMarkup(element) || hostHasLineBreakMarkup(element)) {
+    restoreTextCaretAtOffset(element, safeOffset);
     const range = getCollapsedRangeInElement(element);
     if (range) {
       return insertMergeTokenAtRange(element, range, token, onContentChange);
     }
   }
 
-  const safeOffset = Math.max(0, Math.min(offset, tokenText.length));
   const next = `${tokenText.slice(0, safeOffset)}${token}${tokenText.slice(safeOffset)}`;
   element.innerHTML = mergeTokensToChipHtml(next);
   const normalized = elementToMergeTokens(element);

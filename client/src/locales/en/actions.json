@@ -39,6 +39,10 @@
     "message": "Back",
     "description": "Navigate to the previous screen"
   },
+  "reset": {
+    "message": "Reset",
+    "description": "Revert form fields to the last saved values"
+  },
   "update": {
     "message": "Update",
     "description": "Update an existing saved entity"

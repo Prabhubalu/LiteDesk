@@ -13,11 +13,15 @@ const liveChatReportController = require('../controllers/liveChatReportControlle
 const liveChatBotController = require('../controllers/liveChatBotController');
 const liveChatWebsiteContentPageController = require('../controllers/liveChatWebsiteContentPageController');
 const liveChatSessionFieldController = require('../controllers/liveChatSessionFieldController');
+const liveChatInAppSupportController = require('../controllers/liveChatInAppSupportController');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
 
 router.use(protect);
 router.use(organizationIsolation);
 router.use(requireAddonEntitlement(ADDON_KEYS.LIVE_CHAT));
+
+// In-product support hub bootstrap (any entitled user — not agent-only).
+router.get('/in-app-support', liveChatInAppSupportController.getInAppSupportBootstrap);
 
 router.get('/reports/overview', requireLiveChatPermission('view'), liveChatReportController.getOverview);
 router.get('/reports/agents', requireLiveChatPermission('view'), liveChatReportController.getAgentMetrics);

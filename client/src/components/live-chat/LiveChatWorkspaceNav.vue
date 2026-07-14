@@ -5,7 +5,7 @@
         v-for="tab in tabs"
         :key="tab.id"
         type="button"
-        class="relative rounded-lg px-3 py-1.5 text-sm font-medium transition"
+        class="relative inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-medium leading-none transition"
         :class="tab.isActive
           ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
           : tab.hasAlert

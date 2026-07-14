@@ -1602,5 +1602,133 @@
   "realtimeToastDefault": {
     "message": "Live chat",
     "description": "Live Chat toast fallback category"
+  },
+  "inAppTitle": {
+    "message": "Support",
+    "description": "In-product support hub panel title"
+  },
+  "inAppOpen": {
+    "message": "Open support chat",
+    "description": "In-product support FAB aria label"
+  },
+  "inAppSections": {
+    "message": "Support sections",
+    "description": "In-product support section tablist label"
+  },
+  "inAppSectionChat": {
+    "message": "Chat",
+    "description": "In-product support chat section tab"
+  },
+  "inAppMessagePlaceholder": {
+    "message": "Type a message…",
+    "description": "In-product support chat input placeholder"
+  },
+  "inAppAgentTyping": {
+    "message": "Agent is typing…",
+    "description": "In-product support agent typing indicator"
+  },
+  "inAppSessionClosed": {
+    "message": "This chat has ended. Open support again to start a new conversation.",
+    "description": "In-product support closed session hint"
+  },
+  "inAppLoadFailed": {
+    "message": "Could not load support chat.",
+    "description": "In-product support bootstrap error"
+  },
+  "inAppStartFailed": {
+    "message": "Could not start the chat session.",
+    "description": "In-product support session create error"
+  },
+  "inAppIdentityMissing": {
+    "message": "Your account identity is incomplete for chat.",
+    "description": "In-product support missing user identity error"
+  },
+  "inAppAiBadge": {
+    "message": "Live",
+    "description": "In-product assistant live/support badge"
+  },
+  "inAppOnline": {
+    "message": "Online",
+    "description": "In-product assistant online status"
+  },
+  "inAppYouAreIn": {
+    "message": "You are in:",
+    "description": "In-product assistant current location prefix"
+  },
+  "inAppGreeting": {
+    "message": "Hi {name}!",
+    "description": "In-product assistant personalized greeting"
+  },
+  "inAppGuestName": {
+    "message": "there",
+    "description": "Fallback name in assistant greeting"
+  },
+  "inAppHelpPrompt": {
+    "message": "How can I help you today?",
+    "description": "In-product assistant help prompt"
+  },
+  "inAppAskQuestion": {
+    "message": "Ask a question",
+    "description": "In-product assistant quick action"
+  },
+  "inAppWhatsNew": {
+    "message": "What's new",
+    "description": "In-product assistant quick action for release notes"
+  },
+  "inAppSearchHelp": {
+    "message": "Search",
+    "description": "In-product assistant quick action for global search"
+  },
+  "inAppReportIssue": {
+    "message": "Report issue",
+    "description": "In-product assistant quick action to report a problem"
+  },
+  "inAppReportIssueDraft": {
+    "message": "I'd like to report an issue:",
+    "description": "Prefill when starting report-issue chat"
+  },
+  "inAppRecentTitle": {
+    "message": "Recent conversations",
+    "description": "In-product assistant recent chats heading"
+  },
+  "inAppRecentEmpty": {
+    "message": "No conversations yet. Ask a question to get started.",
+    "description": "In-product assistant empty recent list"
+  },
+  "inAppRecentToday": {
+    "message": "Today",
+    "description": "Recent conversation relative time"
+  },
+  "inAppRecentYesterday": {
+    "message": "Yesterday",
+    "description": "Recent conversation relative time"
+  },
+  "inAppRecentDaysAgo": {
+    "message": "{days} days ago",
+    "description": "Recent conversation relative time with day count"
+  },
+  "inAppAskPlaceholder": {
+    "message": "Ask anything…",
+    "description": "In-product assistant composer placeholder"
+  },
+  "inAppPoweredBy": {
+    "message": "Powered by Arivu",
+    "description": "In-product assistant footer credit"
+  },
+  "inAppBackHome": {
+    "message": "Home",
+    "description": "Back to assistant home from chat"
+  },
+  "inAppExpand": {
+    "message": "Expand assistant",
+    "description": "Expand assistant panel aria label"
+  },
+  "inAppCollapse": {
+    "message": "Collapse assistant",
+    "description": "Collapse assistant panel aria label"
+  },
+  "inAppEndChat": {
+    "message": "End chat",
+    "description": "End the current in-product support chat session"
   }
 }

@@ -7,6 +7,37 @@
       </p>
     </div>
 
+    <div>
+      <label class="mb-1 block text-xs" :class="ui.textMuted">{{ t('templates.builderTableWidthPercent') }}</label>
+      <div class="flex gap-2">
+        <input
+          :value="tableWidth"
+          type="text"
+          :class="ui.input"
+          class="min-w-0 flex-1"
+          placeholder="100%"
+          @change="onTableWidthChange($event.target.value)"
+        />
+        <button
+          type="button"
+          :class="[ui.btnGhost, 'shrink-0 text-xs']"
+          @click="onTableWidthChange('100%')"
+        >
+          100%
+        </button>
+        <button
+          type="button"
+          :class="[ui.btnGhost, 'shrink-0 text-xs']"
+          @click="onTableWidthChange('600')"
+        >
+          600
+        </button>
+      </div>
+      <p class="mt-1 text-[11px] leading-relaxed" :class="ui.textMuted">
+        {{ t('templates.builderTableHtmlWidthHint') }}
+      </p>
+    </div>
+
     <div class="grid grid-cols-2 gap-2">
       <button type="button" :class="[ui.btnGhost, 'text-xs']" @click="run('insert-row-above')">
         {{ t('templates.builderTableInsertRowAbove') }}
@@ -123,12 +154,20 @@ import {
   runTableAction,
   TABLE_SELECTION_CHANGED
 } from '../editor/tableActions';
-import { readStyleValue } from '../editor/selection';
+import { findTableRoot } from '../editor/tableModel';
+import {
+  patchComponentAttributes,
+  patchComponentStyle,
+  readComponentAttributes,
+  readStyleValue
+} from '../editor/selection';
 
 const props = defineProps({
   component: { type: Object, default: null },
   editor: { type: Object, default: null }
 });
+
+const emit = defineEmits(['change']);
 
 const { t } = useI18n();
 const ui = useBuilderUi();
@@ -168,6 +207,19 @@ const tableState = computed(() => {
   return props.component ? getTableActionState(props.component) : null;
 });
 
+const tableRoot = computed(() => {
+  void revision.value;
+  return props.component ? findTableRoot(props.component) : null;
+});
+
+const tableWidth = computed(() => {
+  void revision.value;
+  const table = tableRoot.value;
+  if (!table) return '';
+  const attrs = readComponentAttributes(table);
+  return String(attrs.width || '').trim();
+});
+
 const canMergeCells = computed(() => tableState.value?.canMerge ?? false);
 const canUnmergeCells = computed(() => tableState.value?.canUnmerge ?? false);
 const canDeleteRowActive = computed(() => tableState.value?.canDeleteRow ?? false);
@@ -192,6 +244,39 @@ function run(action) {
   if (!props.component || !props.editor) return;
   runTableAction(props.editor, props.component, action, clipboard.value);
   revision.value += 1;
+}
+
+function normalizeTableWidthValue(raw) {
+  const value = String(raw || '').trim();
+  if (!value) return '';
+  if (/^\d+(\.\d+)?%$/.test(value)) return value;
+  if (/^\d+(\.\d+)?px$/i.test(value)) return value.replace(/px$/i, '');
+  if (/^\d+(\.\d+)?$/.test(value)) return value;
+  return value;
+}
+
+function onTableWidthChange(raw) {
+  const table = tableRoot.value;
+  if (!table) return;
+
+  const value = normalizeTableWidthValue(raw);
+  const el = table.view?.el;
+
+  if (!value) {
+    patchComponentAttributes(table, { width: undefined });
+    if (el instanceof HTMLElement) el.removeAttribute('width');
+  } else {
+    patchComponentAttributes(table, { width: value });
+    const styleWidth = /^\d+(\.\d+)?$/.test(value) ? `${value}px` : value;
+    patchComponentStyle(table, { width: styleWidth });
+    if (el instanceof HTMLElement) {
+      el.setAttribute('width', value);
+      el.style.width = styleWidth;
+    }
+  }
+
+  revision.value += 1;
+  emit('change');
 }
 
 function copyCell() {

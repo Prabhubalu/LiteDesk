@@ -89,6 +89,9 @@ export const ROUTE_TITLE_KEYS = {
   '/imports': 'navigation.moduleImports',
   '/documents': 'navigation.moduleDocuments',
   '/templates': 'navigation.moduleTemplates',
+  '/content-themes': 'templates.navThemes',
+  '/content-assets': 'templates.navAssets',
+  '/templates/email-merge-mappings': 'templates.navMergeMappings',
   '/items': 'navigation.moduleItems',
   '/helpdesk/cases': 'navigation.moduleCases',
   '/helpdesk/cases/': 'navigation.moduleCases',
@@ -308,17 +311,8 @@ export function getTabTitleMetaForPath(path, params = {}) {
     return { titleKey: 'navigation.appPortal' };
   }
 
-  if (pathOnly.startsWith('/live-chat/sessions')) {
+  if (pathOnly.startsWith('/live-chat/')) {
     return { titleKey: 'navigation.liveChat' };
-  }
-  if (pathOnly.startsWith('/live-chat/closed')) {
-    return { titleKey: 'liveChat.navClosed' };
-  }
-  if (pathOnly.startsWith('/live-chat/visitors')) {
-    return { titleKey: 'liveChat.navClosed' };
-  }
-  if (pathOnly.startsWith('/live-chat/reports')) {
-    return { titleKey: 'liveChat.navReports' };
   }
 
   if (pathOnly === '/analytics' || pathOnly === '/analytics/') {
@@ -396,6 +390,27 @@ export function getTabTitleMetaForPath(path, params = {}) {
 
   if (segments[0] === 'forms' && segments[2] === 'responses' && segments[3]) {
     return { titleKey: 'navigation.tabFormResponseDetail', titleParams: { id: segments[3] } };
+  }
+
+  if (segments[0] === 'templates' && segments[1] !== 'email-merge-mappings') {
+    if (segments[2] === 'builder' && isRecordIdSegment(segments[1])) {
+      if (params?.name) {
+        return {
+          titleKey: 'navigation.tabRecordNamed',
+          titleParams: { moduleRoute: 'templates', name: params.name }
+        };
+      }
+      return { titleKey: 'templates.detailTitle' };
+    }
+    if (segments.length === 2 && isRecordIdSegment(segments[1])) {
+      if (params?.name) {
+        return {
+          titleKey: 'navigation.tabRecordNamed',
+          titleParams: { moduleRoute: 'templates', name: params.name }
+        };
+      }
+      return { titleKey: 'templates.detailTitle' };
+    }
   }
 
   const recordMetaForModule = (moduleKey) => {
@@ -557,6 +572,25 @@ export function isProcessDesignerTabPath(path) {
   const pathOnly = String(path || '').split('?')[0].split('#')[0];
   if (!pathOnly.startsWith('/settings/automation/processes/')) return false;
   return pathOnly !== '/settings/automation/processes';
+}
+
+/** Templates module list siblings (Templates / Themes / Assets / Merge mappings). */
+export function isTemplatesModuleListPath(path) {
+  const pathOnly = String(path || '').split('?')[0].split('#')[0];
+  return pathOnly === '/templates'
+    || pathOnly === '/content-themes'
+    || pathOnly === '/content-assets'
+    || pathOnly === '/templates/email-merge-mappings';
+}
+
+/** Any templates-module surface, including detail/builder under templates or themes. */
+export function isTemplatesModuleFamilyPath(path) {
+  const pathOnly = String(path || '').split('?')[0].split('#')[0];
+  if (isTemplatesModuleListPath(pathOnly)) return true;
+  if (pathOnly.startsWith('/content-themes/')) return true;
+  if (pathOnly.startsWith('/content-assets')) return true;
+  if (pathOnly.startsWith('/templates/')) return true;
+  return false;
 }
 
 export function resolveTabTitle(tab, t, te = () => false) {

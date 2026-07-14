@@ -29,6 +29,12 @@
                 <DialogTitle class="text-lg font-semibold text-gray-900 dark:text-white">
                   {{ t('templates.htmlImport.validationTitle') }}
                 </DialogTitle>
+                <p
+                  v-if="publishPrompt"
+                  class="mt-1 text-sm text-amber-700 dark:text-amber-300"
+                >
+                  {{ t('templates.htmlImport.publishWarningsConfirm') }}
+                </p>
               </div>
 
               <div class="max-h-[70vh] overflow-y-auto px-6 py-5 space-y-4">
@@ -59,9 +65,21 @@
                 </template>
               </div>
 
-              <div class="flex justify-end border-t border-gray-200 dark:border-gray-700 px-6 py-4">
-                <button type="button" class="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600" @click="emit('close')">
-                  {{ t('actions.close') }}
+              <div class="flex justify-end gap-2 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+                <button
+                  type="button"
+                  class="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                  @click="emit('close')"
+                >
+                  {{ publishPrompt ? t('actions.cancel') : t('actions.close') }}
+                </button>
+                <button
+                  v-if="publishPrompt"
+                  type="button"
+                  class="px-4 py-2 text-sm rounded-lg bg-primary-600 text-white hover:bg-primary-700"
+                  @click="emit('publish-anyway')"
+                >
+                  {{ t('templates.htmlImport.publishAnyway') }}
                 </button>
               </div>
             </DialogPanel>
@@ -81,10 +99,12 @@ defineProps({
   open: { type: Boolean, default: false },
   validating: { type: Boolean, default: false },
   error: { type: String, default: '' },
-  result: { type: Object, default: null }
+  result: { type: Object, default: null },
+  /** When true, show publish-anyway actions (warnings-only publish gate). */
+  publishPrompt: { type: Boolean, default: false }
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'publish-anyway']);
 
 const { t } = useI18n();
 </script>

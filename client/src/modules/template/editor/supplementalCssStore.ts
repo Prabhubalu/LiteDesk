@@ -15,7 +15,18 @@ export function setSupplementalCss(editor: Editor, css: string): void {
 }
 
 export function getSupplementalCss(editor: Editor): string {
-  return supplementalCssByEditor.get(editor) || '';
+  const fromStore = supplementalCssByEditor.get(editor) || '';
+  if (fromStore.trim()) return fromStore;
+  // WeakMap can be empty after remount races; canvas <style> is the live source.
+  return readSupplementalCssFromFrame(editor);
+}
+
+/** Read injected paste/import CSS from the canvas iframe. */
+export function readSupplementalCssFromFrame(editor: Editor): string {
+  const doc = editor.Canvas.getFrameEl()?.contentDocument;
+  if (!doc) return '';
+  const styleEl = doc.getElementById(SUPPLEMENTAL_STYLE_ID);
+  return String(styleEl?.textContent || '').trim();
 }
 
 export function clearSupplementalCss(editor: Editor): void {
@@ -25,7 +36,10 @@ export function clearSupplementalCss(editor: Editor): void {
 
 export function injectSupplementalCanvasCss(editor: Editor, css: string): void {
   const doc = editor.Canvas.getFrameEl()?.contentDocument;
-  if (!doc) return;
+  if (!doc) {
+    // Frame not ready yet — keep WeakMap value; canvas:frame:load will reinject.
+    return;
+  }
 
   let styleEl = doc.getElementById(SUPPLEMENTAL_STYLE_ID);
   const nextCss = String(css || '').trim();
@@ -42,6 +56,8 @@ export function injectSupplementalCanvasCss(editor: Editor, css: string): void {
   }
 
   styleEl.textContent = nextCss;
+  // Ensure WeakMap stays aligned with what is actually in the frame.
+  supplementalCssByEditor.set(editor, nextCss);
 }
 
 function findMatchingBrace(source: string, openIndex: number): number {
