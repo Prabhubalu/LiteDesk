@@ -1211,10 +1211,21 @@
           '<div class="hint">Missing instanceKey.</div>'
       }
 
+      function resolveProductionApiOrigin(origin) {
+        try {
+          var host = new URL(origin).hostname.toLowerCase()
+          // Vercel SPA cannot terminate embed SSE; use the API host directly.
+          if (host === 'app.arivusystems.com' || host.endsWith('.app.arivusystems.com')) {
+            return 'https://api.arivusystems.com'
+          }
+        } catch (_) {}
+        return origin
+      }
+
       function getApiOrigin() {
         var fromHash = (cfg && cfg.apiOrigin) ? String(cfg.apiOrigin).trim() : ''
         // Default: same-origin as the widget iframe (works when /embed/chat routes to API server).
-        return fromHash || location.origin
+        return resolveProductionApiOrigin(fromHash || location.origin)
       }
 
       function getBases() {
@@ -1228,6 +1239,7 @@
       var sessionId = null
       var sessionSecret = null
       var es = null
+      var messagePollTimer = null
       var widgetConfig = { captureFields: ['name', 'email'], welcomeMessage: '', consentRequired: true, consentMessage: '', privacyPolicyUrl: '', termsUrl: '' }
       var visitorProfile = null
       var seenMessageKeys = {}
@@ -2437,9 +2449,45 @@
         }
       }
 
+      function stopMessagePoll() {
+        if (!messagePollTimer) return
+        clearInterval(messagePollTimer)
+        messagePollTimer = null
+      }
+
+      function closeStream() {
+        stopMessagePoll()
+        if (!es) return
+        try {
+          es.close()
+        } catch (_) {}
+        es = null
+      }
+
+      function startMessagePoll() {
+        stopMessagePoll()
+        messagePollTimer = setInterval(function () {
+          if (!sessionId || !sessionSecret || activeSessionStatus === 'closed') return
+          void loadHistory()
+        }, 2500)
+      }
+
       function openStream() {
-        if (es) es.close()
+        if (es) {
+          try {
+            es.close()
+          } catch (_) {}
+          es = null
+        }
+        stopMessagePoll()
         var bases = getBases()
+        // Prefer known-good API base (already resolved away from Vercel SPA host).
+        var order = []
+        var primary = base || bases[0]
+        order.push(primary)
+        bases.forEach(function (b) {
+          if (order.indexOf(b) === -1) order.push(b)
+        })
 
         function buildUrl(apiBase) {
           return (
@@ -2453,69 +2501,76 @@
           )
         }
 
-        var triedFallback = false
+        function bindStreamHandlers(source) {
+          source.addEventListener('messages', function (e) {
+            try {
+              var rows = JSON.parse(e.data || '[]')
+              rows.forEach(function (row) {
+                appendMessage(row, { fromStream: true })
+              })
+              markOutboundDeliveredAndRead(rows)
+            } catch (_) {}
+          })
+          source.addEventListener('receipts', function (e) {
+            try {
+              var rows = JSON.parse(e.data || '[]')
+              rows.forEach(function (patch) {
+                if (patch && patch._id) updateReceiptDom(patch._id, patch)
+              })
+            } catch (_) {}
+          })
+          source.addEventListener('typing', function (e) {
+            try {
+              var t = JSON.parse(e.data || '{}')
+              var el = document.getElementById('typing')
+              if (!el) return
+              var agent = t && t.agent ? t.agent : null
+              if (!agent || !agent.authorType) {
+                el.textContent = ''
+                return
+              }
+              // Only show agent typing to the visitor (not visitor typing to themselves).
+              if (agent.authorType !== 'agent') {
+                el.textContent = ''
+                return
+              }
+              var who = (agent.authorName || 'Agent') + ''
+              el.textContent = who ? who + ' is typing…' : ''
+            } catch (_) {}
+          })
+          source.addEventListener('session', function (e) {
+            try {
+              var payload = JSON.parse(e.data || '{}')
+              if (String(payload.status || '') === 'closed') handleSessionClosed()
+            } catch (_) {}
+          })
+        }
+
+        var attempt = 0
         function connect(apiBase) {
           var url = buildUrl(apiBase)
           es = new EventSource(url)
+          bindStreamHandlers(es)
 
-          // If the server returns HTML/404/etc, browsers fire `error` and abort the stream.
-          // Try the /api/embed/chat mount once as a fallback for deployments that only proxy /api/* to Node.
           es.onerror = function () {
-            if (triedFallback) return
-            triedFallback = true
+            // Browser auto-retries while CONNECTING; only escalate when closed.
+            if (es && es.readyState === EventSource.CONNECTING) return
             try {
               es.close()
             } catch (_) {}
-            var fallbackBase = apiBase === bases[0] ? bases[1] : bases[0]
-            base = fallbackBase
-            connect(fallbackBase)
+            es = null
+            attempt += 1
+            if (attempt < order.length) {
+              base = order[attempt]
+              connect(order[attempt])
+              return
+            }
+            // SSE unavailable (common behind Vercel rewrites) — poll messages.
+            startMessagePoll()
           }
         }
 
-        // Prefer current `base`, but allow fallback if it fails.
-        connect(base || bases[0])
-        es.addEventListener('messages', function (e) {
-          try {
-            var rows = JSON.parse(e.data || '[]')
-            rows.forEach(function (row) {
-              appendMessage(row, { fromStream: true })
-            })
-            markOutboundDeliveredAndRead(rows)
-          } catch (_) {}
-        })
-        es.addEventListener('receipts', function (e) {
-          try {
-            var rows = JSON.parse(e.data || '[]')
-            rows.forEach(function (patch) {
-              if (patch && patch._id) updateReceiptDom(patch._id, patch)
-            })
-          } catch (_) {}
-        })
-        es.addEventListener('typing', function (e) {
-          try {
-            var t = JSON.parse(e.data || '{}')
-            var el = document.getElementById('typing')
-            if (!el) return
-            var agent = t && t.agent ? t.agent : null
-            if (!agent || !agent.authorType) {
-              el.textContent = ''
-              return
-            }
-            // Only show agent typing to the visitor (not visitor typing to themselves).
-            if (agent.authorType !== 'agent') {
-              el.textContent = ''
-              return
-            }
-            var who = (agent.authorName || 'Agent') + ''
-            el.textContent = who ? who + ' is typing…' : ''
-          } catch (_) {}
-        })
-        es.addEventListener('session', function (e) {
-          try {
-            var payload = JSON.parse(e.data || '{}')
-            if (String(payload.status || '') === 'closed') handleSessionClosed()
-          } catch (_) {}
-        })
+        connect(order[0])
       }
 
       async function uploadAttachmentFile(file) {
