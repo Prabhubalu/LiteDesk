@@ -281,7 +281,7 @@
         <p
           v-if="showFoldersSectionLabel"
           class="px-1.5 pb-0.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-[#9B9A97] dark:text-gray-500"
-          :class="viewItems.length && 'mt-1'"
+          :class="viewItems.length ? 'mt-1' : undefined"
         >
           {{ t('inbox.inboxSidebarFolders') }}
         </p>
