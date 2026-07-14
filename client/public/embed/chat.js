@@ -23,7 +23,19 @@
   var apiOrigin = getAttr(currentScript, 'data-api-origin', '')
 
   var hostOrigin = currentScript.src.split('/embed/chat.js')[0]
-  var effectiveApiOrigin = apiOrigin || hostOrigin
+  // Vercel hosts the SPA + static embed assets; long-lived EventSource through
+  // Vercel rewrites is unreliable. Prefer the API host for embed REST + SSE.
+  var inferredApiOrigin = ''
+  try {
+    var hostName = new URL(hostOrigin).hostname.toLowerCase()
+    if (
+      hostName === 'app.arivusystems.com' ||
+      hostName.endsWith('.app.arivusystems.com')
+    ) {
+      inferredApiOrigin = 'https://api.arivusystems.com'
+    }
+  } catch (_) {}
+  var effectiveApiOrigin = apiOrigin || inferredApiOrigin || hostOrigin
   var widgetUrl =
     hostOrigin +
     '/embed/chat/widget.html' +

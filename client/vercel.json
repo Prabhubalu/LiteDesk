@@ -10,6 +10,18 @@
       "destination": "https://api.arivusystems.com/api/$1"
     },
     {
+      "source": "/embed/chat/config",
+      "destination": "https://api.arivusystems.com/embed/chat/config"
+    },
+    {
+      "source": "/embed/chat/sessions",
+      "destination": "https://api.arivusystems.com/embed/chat/sessions"
+    },
+    {
+      "source": "/embed/chat/sessions/(.*)",
+      "destination": "https://api.arivusystems.com/embed/chat/sessions/$1"
+    },
+    {
       "source": "/portal/(me|org|health|mailroom)(.*)",
       "destination": "https://api.arivusystems.com/portal/$1$2"
     },
