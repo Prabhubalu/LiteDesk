@@ -2,7 +2,7 @@
 
 const ContentDocument = require('../../models/ContentDocument');
 const ContentDocumentVersion = require('../../models/ContentDocumentVersion');
-const { getAssetById } = require('../contentPlatform/contentAssetService');
+const { resolveStudioAsset } = require('./resolveStudioAsset');
 const {
   CONTENT_TYPE_BY_ADDON,
   APP_KEY_BY_ADDON,
@@ -107,6 +107,30 @@ function resolveAddonContext(addonKey) {
     });
   }
   return { addonKey: normalized, contentType, appKey };
+}
+
+function normalizeTags(tags) {
+  let source = tags;
+  if (typeof source === 'string') {
+    source = source.split(',');
+  }
+  if (!Array.isArray(source)) return [];
+  const seen = new Set();
+  const out = [];
+  for (const tag of source) {
+    const normalized = String(tag || '').trim().toLowerCase();
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    out.push(normalized.slice(0, 48));
+    if (out.length >= 20) break;
+  }
+  return out;
+}
+
+function estimateReadingTimeMinutes(blocks, title = '') {
+  const plain = blocksToPlainText(blocks || createEmptyBlockDocument());
+  const words = `${title || ''} ${plain}`.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
 }
 
 function serializeContentDocument(doc, version = null) {
@@ -225,22 +249,21 @@ async function getContentDocumentById({ organizationId, id }) {
 async function attachCoverImageUrl(doc, version = null) {
   const row = serializeContentDocument(doc, version);
   let authorName = String(row.authorName || '').trim();
-  if (!authorName && row.authorId) {
-    authorName = await resolveAuthorDisplayName(row.authorId);
+  if (!authorName || /^author$/i.test(authorName)) {
+    if (row.authorId) {
+      authorName = await resolveAuthorDisplayName(row.authorId) || authorName;
+    }
   }
   const withAuthor = { ...row, authorName };
   if (!withAuthor.coverAssetId) {
     return { ...withAuthor, coverImageUrl: null };
   }
-  try {
-    const asset = await getAssetById({
-      organizationId: withAuthor.organizationId,
-      assetId: withAuthor.coverAssetId,
-    });
-    return { ...withAuthor, coverImageUrl: asset.downloadUrl || null };
-  } catch {
-    return { ...withAuthor, coverImageUrl: null };
-  }
+  const asset = await resolveStudioAsset({
+    organizationId: withAuthor.organizationId,
+    assetId: withAuthor.coverAssetId,
+    addonKey: withAuthor.addonKey,
+  });
+  return { ...withAuthor, coverImageUrl: asset?.downloadUrl || null };
 }
 
 async function createContentDocument({
@@ -251,6 +274,8 @@ async function createContentDocument({
   summary,
   visibility,
   featured,
+  sticky,
+  tags,
   blocks,
   collectionId,
   coverAssetId,
@@ -284,11 +309,23 @@ async function createContentDocument({
     if (!resolvedPresentation) {
       resolvedPresentation = defaultPresentationFromAppearance(settings.appearance);
     }
+  } else if (normalizedAddon === 'blog') {
+    const { getBlogAddonSettings } = require('./blogAddonSettingsService');
+    const { settings } = await getBlogAddonSettings(organizationId);
+    if (!resolvedCollectionId) {
+      resolvedCollectionId = settings?.defaultCollectionId || null;
+    }
   }
 
   const resolvedAuthorId = authorId || userId || null;
   const resolvedAuthorName = String(authorName || '').trim()
     || (await resolveAuthorDisplayName(resolvedAuthorId));
+
+  const defaultVisibility = normalizedAddon === 'articles'
+    ? 'portal'
+    : normalizedAddon === 'blog'
+      ? 'public'
+      : 'internal';
 
   const contentDocument = await ContentDocument.create({
     organizationId,
@@ -298,11 +335,14 @@ async function createContentDocument({
     title: safeTitle,
     slug: uniqueSlug,
     summary: String(summary || '').trim(),
-    visibility: visibility || (normalizedAddon === 'articles' ? 'portal' : 'internal'),
+    visibility: visibility || defaultVisibility,
     featured: Boolean(featured),
+    sticky: Boolean(sticky),
+    tags: normalizeTags(tags),
+    readingTimeMinutes: estimateReadingTimeMinutes(blockDocument, safeTitle),
     status: 'draft',
     collectionId: resolvedCollectionId,
-    coverAssetId: coverAssetId || null,
+    coverAssetId: coverAssetId ? String(coverAssetId) : null,
     presentation: normalizePresentation(resolvedPresentation),
     latestVersion: 1,
     authorId: resolvedAuthorId,
@@ -339,6 +379,8 @@ async function saveContentDocumentDraft({
   slug,
   visibility,
   featured,
+  sticky,
+  tags,
   blocks,
   seo,
   collectionId,
@@ -383,8 +425,12 @@ async function saveContentDocumentDraft({
   if (summary !== undefined) doc.summary = String(summary || '').trim();
   if (visibility !== undefined) doc.visibility = visibility;
   if (featured !== undefined) doc.featured = Boolean(featured);
+  if (sticky !== undefined) doc.sticky = Boolean(sticky);
+  if (tags !== undefined) doc.tags = normalizeTags(tags);
   if (collectionId !== undefined) doc.collectionId = collectionId || null;
-  if (coverAssetId !== undefined) doc.coverAssetId = coverAssetId || null;
+  if (coverAssetId !== undefined) {
+    doc.coverAssetId = coverAssetId ? String(coverAssetId) : null;
+  }
   if (authorId !== undefined) doc.authorId = authorId || null;
   if (authorName !== undefined) {
     doc.authorName = String(authorName || '').trim();
@@ -423,6 +469,7 @@ async function saveContentDocumentDraft({
     });
     doc.latestVersion = nextVersionNumber;
     doc.currentVersionId = version._id;
+    doc.readingTimeMinutes = estimateReadingTimeMinutes(blockDocument, doc.title);
   }
 
   doc.updatedBy = userId || null;
@@ -514,7 +561,7 @@ async function unpublishContentDocument({ organizationId, id, userId }) {
   doc.updatedBy = userId || null;
   await doc.save();
 
-  if (doc.addonKey === 'articles') {
+  if (doc.addonKey === 'articles' || doc.addonKey === 'blog') {
     setImmediate(() => {
       const { emitContentUnpublishedWebhook } = require('./contentPublishingWebhookService');
       emitContentUnpublishedWebhook({

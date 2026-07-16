@@ -6,10 +6,11 @@ const ContentArticleAnalytics = require('../../models/ContentArticleAnalytics');
 const ContentArticleFeedbackVote = require('../../models/ContentArticleFeedbackVote');
 const {
   getPublicPublishingContext,
+  getPublicBlogPublishingContext,
   resolveOrganizationForPublic,
 } = require('./publicContentService');
 
-const SHARE_PLATFORMS = new Set(['facebook', 'x', 'linkedin']);
+const SHARE_PLATFORMS = new Set(['facebook', 'x', 'linkedin', 'native', 'copy']);
 
 function normalizeArticleSlug(value) {
   return String(value || '').trim().replace(/^\/+/, '').toLowerCase();
@@ -89,6 +90,33 @@ async function resolvePublicPublishedArticle(orgSlug, articleSlug) {
   return { org, doc };
 }
 
+function buildPublicBlogQuery(organizationId) {
+  return {
+    organizationId,
+    addonKey: 'blog',
+    contentType: 'blog_post',
+    status: 'published',
+    deletedAt: null,
+    visibility: 'public',
+  };
+}
+
+async function resolvePublicPublishedBlogPost(orgSlug, postSlug) {
+  const org = await resolveOrganizationForPublic(orgSlug);
+  if (!org) return null;
+
+  const context = await getPublicBlogPublishingContext(org);
+  if (!context?.allowed) return null;
+
+  const doc = await ContentDocument.findOne({
+    ...buildPublicBlogQuery(org._id),
+    slug: normalizeArticleSlug(postSlug),
+  }).lean();
+
+  if (!doc) return null;
+  return { org, doc };
+}
+
 async function getArticleAnalytics({ organizationId, contentDocumentId }) {
   const row = await ContentArticleAnalytics.findOne({
     organizationId,
@@ -162,6 +190,7 @@ async function recordHelpfulVote({ doc, helpful, ipAddress, userAgent }) {
 }
 
 async function recordShare({ doc, platform }) {
+  // native/copy fold into sharesX so existing analytics counters stay valid.
   const field = platform === 'facebook'
     ? 'sharesFacebook'
     : platform === 'linkedin'
@@ -204,9 +233,55 @@ async function submitPublicArticleFeedback({
   ipAddress,
   userAgent,
 }) {
-  const resolved = await resolvePublicPublishedArticle(orgSlug, articleSlug);
+  return submitPublicContentFeedback({
+    orgSlug,
+    slug: articleSlug,
+    contentKind: 'articles',
+    helpful,
+    action,
+    platform,
+    ipAddress,
+    userAgent,
+  });
+}
+
+async function submitPublicBlogFeedback({
+  orgSlug,
+  postSlug,
+  articleSlug,
+  helpful,
+  action,
+  platform,
+  ipAddress,
+  userAgent,
+}) {
+  return submitPublicContentFeedback({
+    orgSlug,
+    slug: postSlug || articleSlug,
+    contentKind: 'blog',
+    helpful,
+    action,
+    platform,
+    ipAddress,
+    userAgent,
+  });
+}
+
+async function submitPublicContentFeedback({
+  orgSlug,
+  slug,
+  contentKind = 'articles',
+  helpful,
+  action,
+  platform,
+  ipAddress,
+  userAgent,
+}) {
+  const resolved = contentKind === 'blog'
+    ? await resolvePublicPublishedBlogPost(orgSlug, slug)
+    : await resolvePublicPublishedArticle(orgSlug, slug);
   if (!resolved) {
-    const error = new Error('Article not found');
+    const error = new Error(contentKind === 'blog' ? 'Blog post not found' : 'Article not found');
     error.statusCode = 404;
     throw error;
   }
@@ -242,4 +317,5 @@ module.exports = {
   shapeArticleAnalytics,
   getArticleAnalytics,
   submitPublicArticleFeedback,
+  submitPublicBlogFeedback,
 };

@@ -54,6 +54,8 @@ export async function createContentDocument(
     summary?: string;
     visibility?: string;
     featured?: boolean;
+    sticky?: boolean;
+    tags?: string[];
     blocks?: ProseMirrorJson;
     collectionId?: string | null;
   },
@@ -75,6 +77,8 @@ export async function updateContentDocument(
     slug?: string;
     visibility?: string;
     featured?: boolean;
+    sticky?: boolean;
+    tags?: string[];
     blocks?: ProseMirrorJson;
     seo?: Record<string, string>;
     collectionId?: string | null;
@@ -157,9 +161,56 @@ export interface ContentCollectionRecord {
   sortOrder?: number;
 }
 
-export async function listArticleCollections(): Promise<ContentCollectionRecord[]> {
-  const response = await apiClient.get('/helpdesk/articles/collections', { cache: 'no-store' });
+export async function listContentCollections(mode: ContentStudioMode = 'articles'): Promise<ContentCollectionRecord[]> {
+  const response = await apiClient.get(`${apiBaseForMode(mode)}/collections`, { cache: 'no-store' });
   return Array.isArray(response?.data) ? response.data : [];
+}
+
+export async function createContentCollection(
+  mode: ContentStudioMode,
+  payload: {
+    name: string;
+    slug?: string;
+    description?: string;
+    emoji?: string;
+    heroIconKey?: string;
+    heroIconColor?: string;
+    imageUrl?: string;
+    parentId?: string | null;
+  },
+) {
+  const response = await apiClient.post(`${apiBaseForMode(mode)}/collections`, payload);
+  if (!response?.success) throw new Error(response?.message || 'Failed to create category');
+  return response.data as ContentCollectionRecord;
+}
+
+export async function updateContentCollection(
+  mode: ContentStudioMode,
+  collectionId: string,
+  payload: {
+    name?: string;
+    slug?: string;
+    description?: string;
+    emoji?: string;
+    heroIconKey?: string;
+    imageUrl?: string;
+    parentId?: string | null;
+    sortOrder?: number;
+  },
+) {
+  const response = await apiClient.patch(`${apiBaseForMode(mode)}/collections/${collectionId}`, payload);
+  if (!response?.success) throw new Error(response?.message || 'Failed to update category');
+  return response.data as ContentCollectionRecord;
+}
+
+export async function deleteContentCollection(mode: ContentStudioMode, collectionId: string) {
+  const response = await apiClient.delete(`${apiBaseForMode(mode)}/collections/${collectionId}`);
+  if (!response?.success) throw new Error(response?.message || 'Failed to delete category');
+  return response.data as { _id: string; deleted: boolean };
+}
+
+export async function listArticleCollections(): Promise<ContentCollectionRecord[]> {
+  return listContentCollections('articles');
 }
 
 export async function createArticleCollection(payload: {
@@ -172,9 +223,7 @@ export async function createArticleCollection(payload: {
   imageUrl?: string;
   parentId?: string | null;
 }) {
-  const response = await apiClient.post('/helpdesk/articles/collections', payload);
-  if (!response?.success) throw new Error(response?.message || 'Failed to create category');
-  return response.data as ContentCollectionRecord;
+  return createContentCollection('articles', payload);
 }
 
 export async function updateArticleCollection(
@@ -190,15 +239,11 @@ export async function updateArticleCollection(
     sortOrder?: number;
   },
 ) {
-  const response = await apiClient.patch(`/helpdesk/articles/collections/${collectionId}`, payload);
-  if (!response?.success) throw new Error(response?.message || 'Failed to update category');
-  return response.data as ContentCollectionRecord;
+  return updateContentCollection('articles', collectionId, payload);
 }
 
 export async function deleteArticleCollection(collectionId: string) {
-  const response = await apiClient.delete(`/helpdesk/articles/collections/${collectionId}`);
-  if (!response?.success) throw new Error(response?.message || 'Failed to delete category');
-  return response.data as { _id: string; deleted: boolean };
+  return deleteContentCollection('articles', collectionId);
 }
 
 export interface ArticleAnalyticsRecord {
@@ -219,4 +264,19 @@ export async function getArticleAnalytics(articleId: string): Promise<ArticleAna
     throw new Error(response?.message || 'Failed to load article analytics');
   }
   return response.data as ArticleAnalyticsRecord;
+}
+
+export async function getBlogPostAnalytics(postId: string): Promise<ArticleAnalyticsRecord> {
+  const response = await apiClient.get(`/marketing/blog/${postId}/analytics`, { cache: 'no-store' });
+  if (!response?.success) {
+    throw new Error(response?.message || 'Failed to load blog post analytics');
+  }
+  return response.data as ArticleAnalyticsRecord;
+}
+
+export async function getContentAnalytics(
+  mode: ContentStudioMode,
+  id: string,
+): Promise<ArticleAnalyticsRecord> {
+  return mode === 'blog' ? getBlogPostAnalytics(id) : getArticleAnalytics(id);
 }

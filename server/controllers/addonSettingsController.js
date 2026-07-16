@@ -687,3 +687,92 @@ exports.generateArticlesPublishWebhookSecret = async (req, res) => {
   }
 };
 
+exports.getBlogAddonSettings = async (req, res) => {
+  try {
+    if (!canManageAddons(req)) {
+      return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
+    }
+
+    const { getBlogAddonSettings, resolveRequestPublicOrigin } = require('../services/contentStudio/blogAddonSettingsService');
+    const data = await getBlogAddonSettings(req.user.organizationId, {
+      requestOrigin: resolveRequestPublicOrigin(req),
+    });
+    return res.json({ success: true, ...data });
+  } catch (error) {
+    console.error('[addonSettingsController] getBlogAddonSettings', error);
+    return res.status(500).json({ success: false, message: 'Failed to load Blog settings' });
+  }
+};
+
+exports.updateBlogAddonSettings = async (req, res) => {
+  try {
+    if (!canManageAddons(req)) {
+      return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
+    }
+
+    const {
+      updateBlogAddonSettings,
+      resolveRequestPublicOrigin,
+    } = require('../services/contentStudio/blogAddonSettingsService');
+    const data = await updateBlogAddonSettings(req.user.organizationId, req.body || {}, {
+      requestOrigin: resolveRequestPublicOrigin(req),
+    });
+    return res.json({ success: true, ...data });
+  } catch (error) {
+    if (error?.code === 'ADDON_NOT_INSTALLED') {
+      return res.status(404).json({ success: false, message: error.message, code: error.code });
+    }
+    console.error('[addonSettingsController] updateBlogAddonSettings', error);
+    return res.status(500).json({ success: false, message: 'Failed to save Blog settings' });
+  }
+};
+
+exports.generateBlogPublishWebhookSecret = async (req, res) => {
+  try {
+    if (!canManageAddons(req)) {
+      return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
+    }
+
+    const {
+      generateBlogPublishWebhookSecret,
+      resolveRequestPublicOrigin,
+    } = require('../services/contentStudio/blogAddonSettingsService');
+    const data = await generateBlogPublishWebhookSecret(req.user.organizationId, {
+      requestOrigin: resolveRequestPublicOrigin(req),
+    });
+    return res.json({
+      success: true,
+      publishWebhookSecret: data.publishWebhookSecret || '',
+      ...data,
+    });
+  } catch (error) {
+    if (error?.code === 'ADDON_NOT_INSTALLED') {
+      return res.status(404).json({ success: false, message: error.message, code: error.code });
+    }
+    console.error('[addonSettingsController] generateBlogPublishWebhookSecret', error);
+    return res.status(500).json({ success: false, message: 'Failed to generate webhook secret' });
+  }
+};
+
+exports.sendBlogPublishWebhookTest = async (req, res) => {
+  try {
+    if (!canManageAddons(req)) {
+      return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
+    }
+
+    const { sendBlogPublishWebhookTest } = require('../services/contentStudio/contentPublishingWebhookService');
+    const payload = await sendBlogPublishWebhookTest(req.user.organizationId);
+    return res.json({ success: true, payload });
+  } catch (error) {
+    if (error?.code === 'WEBHOOK_NOT_CONFIGURED') {
+      return res.status(400).json({ success: false, message: error.message, code: error.code });
+    }
+    console.error('[addonSettingsController] sendBlogPublishWebhookTest', error);
+    return res.status(502).json({
+      success: false,
+      message: error?.message || 'Failed to deliver test webhook',
+      code: 'WEBHOOK_DELIVERY_FAILED',
+    });
+  }
+};
+

@@ -48,7 +48,7 @@ const ARTICLE_BLOCKS: ContentStudioBlockRegistryItem[] = [
   },
 ];
 
-export const BLOCK_CATEGORY_ORDER = ['basic', 'media', 'content'] as const;
+export const BLOCK_CATEGORY_ORDER = ['basic', 'media', 'content', 'layout'] as const;
 
 export const BLOCK_CATEGORY_LABEL_KEYS: Record<string, string> = {
   basic: 'contentStudio.categoryBasic',
@@ -58,12 +58,16 @@ export const BLOCK_CATEGORY_LABEL_KEYS: Record<string, string> = {
 };
 
 const ALL_BLOCKS = [...BASE_BLOCKS, ...ARTICLE_BLOCKS, ...BLOG_BLOCKS];
+const BLOG_LAYOUT_TYPES = new Set(BLOG_BLOCKS.map((block) => block.type));
 
 export function getBlocksForMode(mode: ContentStudioMode): ContentStudioBlockRegistryItem[] {
   const blocks = mode === 'blog'
     ? [...BASE_BLOCKS, ...BLOG_BLOCKS]
     : [...BASE_BLOCKS, ...ARTICLE_BLOCKS];
-  return blocks.filter((block) => block.category !== 'layout');
+  return blocks.filter((block) => {
+    if (block.category !== 'layout') return true;
+    return mode === 'blog' && BLOG_LAYOUT_TYPES.has(block.type);
+  });
 }
 
 export function findBlockRegistryItem(type: string): ContentStudioBlockRegistryItem | undefined {

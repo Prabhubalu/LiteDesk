@@ -101,4 +101,33 @@ describe('contentPublishingWebhookService', () => {
 
     assert.equal(payload.test, true);
   });
+
+  it('builds blog publish payload with blog apiUrl', () => {
+    process.env.PUBLIC_APP_URL = 'https://app.example.com';
+
+    const payload = buildWebhookPayload({
+      event: 'content.published',
+      organization: { slug: 'acme' },
+      document: {
+        _id: '507f1f77bcf86cd799439012',
+        addonKey: 'blog',
+        contentType: 'blog_post',
+        slug: 'launch-announcement',
+        title: 'Launch announcement',
+        publishedAt: '2026-07-01T12:00:00.000Z',
+        seo: { canonicalUrl: 'https://acme.com/blog/launch-announcement' },
+      },
+    });
+
+    assert.equal(payload.content.addonKey, 'blog');
+    assert.equal(payload.content.contentType, 'blog_post');
+    assert.match(payload.content.apiUrl, /\/blog\/launch-announcement$/);
+    assert.match(payload.content.exportUrl, /\/blog\/launch-announcement\/export$/);
+    assert.equal(payload.content.exportPath, '/blog/launch-announcement/index.html');
+    assert.equal(payload.content.refreshPages[0].type, 'home');
+    assert.equal(payload.content.refreshPages[0].exportPath, '/blog/index.html');
+    assert.equal(payload.content.publicUrl, 'https://acme.com/blog/launch-announcement');
+
+    process.env.PUBLIC_APP_URL = originalPublicAppUrl;
+  });
 });

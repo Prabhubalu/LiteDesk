@@ -409,7 +409,7 @@ SS-1 (export + manifest)
 
 - Arivu-hosted help pages / custom domains
 - Full site redeploy on every publish (Deploy Hook only) as **recommended** path — document as alternative, not default
-- Blog static sync (follow after Articles SS track ships)
+- Blog static sync — **Blog SS v1 shipped** (export API + CLI/PHP + settings UI; full Next install kit still phased — see `docs/BLOG_HEADLESS_STATIC_SYNC.md`)
 - Responsive image transforms on mirrored assets (HC-8 overlap — v2.1)
 - Arivu direct push to tenant S3 credentials in UI (v2.1)
 

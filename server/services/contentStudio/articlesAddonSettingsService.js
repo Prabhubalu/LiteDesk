@@ -71,12 +71,28 @@ function normalizePublishing(raw = {}, legacy = {}) {
     ?? legacy.encryptedPublishWebhookSecret
     ?? '',
   ).trim();
+  const allowedHostTypes = new Set(['embed', 'next', 'php', 'cli']);
+  const rawHostType = String(
+    raw.staticSyncHostType
+    ?? raw.publishing?.staticSyncHostType
+    ?? legacy.staticSyncHostType
+    ?? '',
+  ).trim().toLowerCase();
+  let staticSyncHostType = allowedHostTypes.has(rawHostType) ? rawHostType : '';
+  if (!staticSyncHostType) {
+    const url = String(merged.publishWebhookUrl || '').trim();
+    if (!url) staticSyncHostType = 'embed';
+    else if (url.includes('arivu-help-sync.php')) staticSyncHostType = 'php';
+    else if (url.includes('/api/arivu-webhook')) staticSyncHostType = 'next';
+    else staticSyncHostType = 'next';
+  }
 
   return {
     headlessApiEnabled: merged.headlessApiEnabled,
     publishWebhookUrl: merged.publishWebhookUrl,
     embedWebsiteDomain: normalizedEmbed.domain,
     embedWebsiteOrigins: normalizedEmbed.origins,
+    staticSyncHostType,
     hasPublishWebhookSecret: Boolean(encryptedPublishWebhookSecret),
   };
 }
@@ -220,6 +236,7 @@ async function updateArticlesAddonSettings(organizationId, payload = {}, options
       ...(payload.publishWebhookUrl !== undefined ? { publishWebhookUrl: payload.publishWebhookUrl } : {}),
       ...(payload.headlessApiEnabled !== undefined ? { headlessApiEnabled: payload.headlessApiEnabled } : {}),
       ...(payload.embedWebsiteDomain !== undefined ? { embedWebsiteDomain: payload.embedWebsiteDomain } : {}),
+      ...(payload.staticSyncHostType !== undefined ? { staticSyncHostType: payload.staticSyncHostType } : {}),
     },
     appearance: normalizeAppearance({
       ...(ADDON_DEFAULT_SETTINGS[ADDON_KEYS.ARTICLES]?.appearance || {}),

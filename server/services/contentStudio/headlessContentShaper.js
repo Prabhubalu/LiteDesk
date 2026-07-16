@@ -2,6 +2,7 @@
 
 const { blocksToPlainText } = require('./contentStudioBlockRenderer');
 const { getAssetById } = require('../contentPlatform/contentAssetService');
+const { resolveStudioAsset } = require('./resolveStudioAsset');
 
 const CONTENT_STUDIO_SUBTITLE_SIZES = new Set(['sm', 'md', 'lg', 'xl']);
 
@@ -60,6 +61,12 @@ function shapeHeadlessArticleSummary(doc, collectionMeta = null) {
     summary: doc.summary || doc.subtitle || '',
     updatedAt: doc.updatedAt,
     publishedAt: doc.publishedAt,
+    featured: Boolean(doc.featured),
+    sticky: Boolean(doc.sticky),
+    tags: Array.isArray(doc.tags) ? doc.tags : [],
+    readingTimeMinutes: Number.isFinite(Number(doc.readingTimeMinutes))
+      ? Number(doc.readingTimeMinutes)
+      : null,
     collectionId,
     collectionSlug: meta?.slug || null,
     collectionName: meta?.name || null,
@@ -68,21 +75,18 @@ function shapeHeadlessArticleSummary(doc, collectionMeta = null) {
 
 async function resolveCoverImage(doc, publicAppBaseUrl = '') {
   if (!doc?.coverAssetId) return null;
-  try {
-    const asset = await getAssetById({
-      organizationId: doc.organizationId,
-      assetId: doc.coverAssetId,
-    });
-    if (!asset.downloadUrl) return null;
-    return {
-      url: absolutizePublicAssetUrl(asset.downloadUrl, publicAppBaseUrl),
-      alt: String(asset.accessibilityAltText || '').trim(),
-      width: asset.width || null,
-      height: asset.height || null,
-    };
-  } catch {
-    return null;
-  }
+  const asset = await resolveStudioAsset({
+    organizationId: doc.organizationId,
+    assetId: doc.coverAssetId,
+    addonKey: doc.addonKey,
+  });
+  if (!asset?.downloadUrl) return null;
+  return {
+    url: absolutizePublicAssetUrl(asset.downloadUrl, publicAppBaseUrl),
+    alt: String(asset.accessibilityAltText || '').trim(),
+    width: asset.width || null,
+    height: asset.height || null,
+  };
 }
 
 async function shapeHeadlessSeo(seo, organizationId, publicAppBaseUrl = '') {
@@ -187,7 +191,12 @@ async function shapeHeadlessArticleDetail(doc, {
     authorName,
     authorAvatar: String(authorAvatar || '').trim(),
     collectionName: collectionName || meta?.name || '',
-    readMinutes: estimateReadMinutes(readSource),
+    readMinutes: Number.isFinite(Number(doc.readingTimeMinutes))
+      ? Number(doc.readingTimeMinutes)
+      : estimateReadMinutes(readSource),
+    readingTimeMinutes: Number.isFinite(Number(doc.readingTimeMinutes))
+      ? Number(doc.readingTimeMinutes)
+      : estimateReadMinutes(readSource),
     plainText,
     presentation: normalizeHeadlessPresentation(doc.presentation),
     blocks: resolvedBlocks,
@@ -197,6 +206,7 @@ async function shapeHeadlessArticleDetail(doc, {
 module.exports = {
   absolutizePublicAssetUrl,
   absolutizePublicAssetUrlsInHtml,
+  resolveCoverImage,
   shapeHeadlessArticleSummary,
   shapeHeadlessArticleDetail,
   shapeHeadlessSeo,

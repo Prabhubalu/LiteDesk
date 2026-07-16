@@ -1,15 +1,23 @@
 import JSZip from 'jszip';
 
+export type EmbedStarterKitVariant = 'help' | 'blog';
+
 export type EmbedStarterKitOptions = {
   apiOrigin: string;
   orgKey: string;
   pathPrefix: string;
   siteDomain?: string;
   title?: string;
+  /** Defaults to help center embed. */
+  variant?: EmbedStarterKitVariant;
 };
 
-function normalizePathPrefix(prefix: string): string {
-  let value = String(prefix || '/help/').trim();
+function resolveVariant(options: EmbedStarterKitOptions): EmbedStarterKitVariant {
+  return options.variant === 'blog' ? 'blog' : 'help';
+}
+
+function normalizePathPrefix(prefix: string, variant: EmbedStarterKitVariant = 'help'): string {
+  let value = String(prefix || (variant === 'blog' ? '/blog/' : '/help/')).trim();
   if (!value.startsWith('/')) value = `/${value}`;
   if (!value.endsWith('/')) value = `${value}/`;
   return value;
@@ -28,10 +36,16 @@ function escapeHtml(value: string): string {
 }
 
 function buildIndexHtml(options: EmbedStarterKitOptions): string {
-  const pathPrefix = normalizePathPrefix(options.pathPrefix);
-  const title = escapeHtml(options.title || 'Help Center');
+  const variant = resolveVariant(options);
+  const pathPrefix = normalizePathPrefix(options.pathPrefix, variant);
+  const isBlog = variant === 'blog';
+  const title = escapeHtml(options.title || (isBlog ? 'Blog' : 'Help Center'));
   const origin = options.apiOrigin.replace(/\/$/, '');
   const orgKey = escapeHtml(options.orgKey);
+  const targetId = isBlog ? 'arivu-blog' : 'arivu-help';
+  const scriptSrc = isBlog ? `${origin}/embed/headless-blog.js` : `${origin}/embed/headless-help.js`;
+  const rootClass = isBlog ? 'ld-blog-root ld-blog-embed' : 'ld-help-root ld-help-embed';
+  const feedbackAttr = isBlog ? '' : '\n    data-title="' + title + '"\n    data-show-feedback-footer="true"';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -46,21 +60,20 @@ function buildIndexHtml(options: EmbedStarterKitOptions): string {
   <!-- Paste your site header / navigation above -->
   <header id="site-header" data-arivu-site-chrome="header"></header>
 
-  <div class="ld-help-root ld-help-embed">
-    <main id="arivu-help"></main>
+  <div class="${rootClass}">
+    <main id="${targetId}"></main>
   </div>
 
   <!-- Paste your site footer below -->
   <footer id="site-footer" data-arivu-site-chrome="footer"></footer>
 
   <script
-    src="${origin}/embed/headless-help.js"
+    src="${scriptSrc}"
     data-api-origin="${origin}"
     data-org="${orgKey}"
-    data-target="#arivu-help"
+    data-target="#${targetId}"
     data-path-prefix="${pathPrefix}"
-    data-title="${title}"
-    data-show-feedback-footer="true"
+    data-link-prefix="${pathPrefix}"${feedbackAttr}
   ></script>
 </body>
 </html>
@@ -91,20 +104,27 @@ function buildHtaccess(pathSlug: string): string {
 }
 
 function buildReadme(options: EmbedStarterKitOptions): string {
-  const pathPrefix = normalizePathPrefix(options.pathPrefix);
+  const variant = resolveVariant(options);
+  const pathPrefix = normalizePathPrefix(options.pathPrefix, variant);
   const domain = String(options.siteDomain || 'www.example.com').trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
   const siteUrl = `https://${domain}${pathPrefix}`;
+  const isBlog = variant === 'blog';
+  const product = isBlog ? 'Blog' : 'Help Center';
+  const settingsPath = isBlog ? 'Blog' : 'Articles';
+  const pageDesc = isBlog
+    ? 'blog (list at path prefix, posts at /{slug})'
+    : 'help center (home, categories, articles)';
 
-  return `Arivu Help Center — Deploy Kit
+  return `Arivu ${product} — Deploy Kit
 ================================
 
 1. Upload this folder to your host (Netlify, Vercel, cPanel, S3, etc.)
-2. In Arivu → Settings → Add-ons → Articles, save website domain: ${domain}
+2. In Arivu → Settings → Add-ons → ${settingsPath}, save website domain: ${domain}
 3. Open ${siteUrl}
 
 Included files
 --------------
-- ${pathPrefixToSlug(options.pathPrefix)}/index.html  — help center (home, categories, articles)
+- ${pathPrefixToSlug(pathPrefix)}/index.html  — ${pageDesc}
 - _redirects            — Netlify routing
 - vercel.json           — Vercel routing
 - .htaccess             — Apache / cPanel routing
@@ -114,7 +134,8 @@ No build step or npm install required.
 }
 
 export async function buildEmbedStarterKitZip(options: EmbedStarterKitOptions): Promise<Blob> {
-  const pathSlug = pathPrefixToSlug(options.pathPrefix);
+  const variant = resolveVariant(options);
+  const pathSlug = pathPrefixToSlug(normalizePathPrefix(options.pathPrefix, variant));
   const zip = new JSZip();
   zip.file(`${pathSlug}/index.html`, buildIndexHtml(options));
   zip.file('_redirects', buildRedirects(pathSlug));

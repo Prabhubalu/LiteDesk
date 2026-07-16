@@ -1,7 +1,7 @@
 <template>
-  <div class="hes-root" :class="`hes-root--${layout}`">
+  <div class="hes-root" :class="[`hes-root--${layout}`, isBlogSection ? 'hes-root--blog' : '']">
     <div class="hes-demo-banner">
-      {{ t('contentStudio.headlessExampleSiteDemoBanner') }}
+      {{ demoBanner }}
     </div>
 
     <header class="hes-topnav">
@@ -20,6 +20,13 @@
             :href="helpHomeHref"
           >
             {{ t('contentStudio.headlessExampleSiteNavHelp') }}
+          </a>
+          <a
+            class="hes-topnav__link"
+            :class="{ 'hes-topnav__link--active': isBlogSection }"
+            :href="blogHomeHref"
+          >
+            {{ t('contentStudio.headlessExampleSiteNavBlog') }}
           </a>
         </nav>
         <div class="hes-topnav__actions">
@@ -78,9 +85,20 @@ const props = defineProps({
 const { t } = useI18n();
 
 const prefixes = computed(() => (props.orgSlug ? buildHeadlessExamplePrefixes(props.orgSlug) : null));
-const helpHomeHref = computed(() => prefixes.value?.home || '/examples/headless-help-home');
 const brandHref = computed(() => prefixes.value?.home || '#');
+const isBlogSection = computed(() => props.activeArea === 'blog');
 const isHelpSection = computed(() => ['help', 'home', 'list'].includes(props.activeArea));
+const demoBanner = computed(() => (
+  isBlogSection.value
+    ? t('contentStudio.headlessExampleSiteDemoBannerBlog')
+    : t('contentStudio.headlessExampleSiteDemoBanner')
+));
+const helpHomeHref = computed(() => prefixes.value?.home || '/examples/headless-help-home');
+const blogHomeHref = computed(() => (
+  props.orgSlug
+    ? `/examples/headless-blog-list?org=${encodeURIComponent(props.orgSlug)}`
+    : '/examples/headless-blog-list'
+));
 </script>
 
 <style scoped>
@@ -102,6 +120,14 @@ const isHelpSection = computed(() => ['help', 'home', 'list'].includes(props.act
 .hes-container {
   width: min(72rem, calc(100% - 2.5rem));
   margin-inline: auto;
+}
+
+.hes-root--blog .hes-container {
+  width: min(76rem, calc(100% - 2rem));
+}
+
+.hes-root--blog .hes-page {
+  padding-top: 1.75rem;
 }
 
 .hes-demo-banner {

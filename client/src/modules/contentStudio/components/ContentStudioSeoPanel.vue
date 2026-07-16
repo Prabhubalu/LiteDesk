@@ -1,5 +1,17 @@
 <template>
   <div class="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+    <div class="rounded-lg border border-neutral-200 p-3 dark:border-neutral-700">
+      <div class="flex items-center justify-between gap-3">
+        <p class="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+          {{ t('contentStudio.seoScoreTitle') }}
+        </p>
+        <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{{ seoScore }}/100</p>
+      </div>
+      <div class="mt-2 h-2 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+        <div class="h-full rounded-full bg-primary-600 transition-all" :style="{ width: `${seoScore}%` }" />
+      </div>
+    </div>
+
     <div>
       <label :class="ui.label">{{ t('contentStudio.fieldMetaTitle') }}</label>
       <input
@@ -64,9 +76,10 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useBuilderUi } from '@/composables/useBuilderUi';
-import { buildHeadlessArticleCustomerUrl } from '@/modules/contentStudio/headless';
+import { buildHeadlessArticleCustomerUrl, buildHeadlessBlogCustomerUrl } from '@/modules/contentStudio/headless';
 
 const props = defineProps({
+  mode: { type: String, default: 'articles' },
   title: { type: String, default: '' },
   summary: { type: String, default: '' },
   slug: { type: String, default: '' },
@@ -83,7 +96,41 @@ const ui = useBuilderUi();
 
 const metaTitleCount = computed(() => String(props.seoMetaTitle || '').length);
 const metaDescriptionCount = computed(() => String(props.seoMetaDescription || '').length);
-const ogTitle = computed(() => props.seoMetaTitle || props.title || t('contentStudio.titlePlaceholder'));
+const titlePlaceholder = computed(() => (
+  props.mode === 'blog'
+    ? t('contentStudio.titlePlaceholderBlog')
+    : t('contentStudio.titlePlaceholder')
+));
+const ogTitle = computed(() => props.seoMetaTitle || props.title || titlePlaceholder.value);
 const ogDescription = computed(() => props.seoMetaDescription || props.summary || props.title || '');
-const ogUrl = computed(() => buildHeadlessArticleCustomerUrl(props.slug, props.seoCanonicalUrl));
+const ogUrl = computed(() => (
+  props.mode === 'blog'
+    ? buildHeadlessBlogCustomerUrl(props.slug, props.seoCanonicalUrl)
+    : buildHeadlessArticleCustomerUrl(props.slug, props.seoCanonicalUrl)
+));
+
+function scoreMetaTitle(length) {
+  if (!length) return 0;
+  if (length >= 30 && length <= 60) return 30;
+  if (length > 0 && length < 30) return 18;
+  if (length > 60 && length <= 70) return 18;
+  return 8;
+}
+
+function scoreMetaDescription(length) {
+  if (!length) return 0;
+  if (length >= 70 && length <= 160) return 30;
+  if (length > 0 && length < 70) return 16;
+  if (length > 160 && length <= 200) return 16;
+  return 8;
+}
+
+const seoScore = computed(() => {
+  let score = 0;
+  score += scoreMetaTitle(metaTitleCount.value);
+  score += scoreMetaDescription(metaDescriptionCount.value);
+  if (String(props.slug || '').trim()) score += 20;
+  if (String(props.title || '').trim()) score += 20;
+  return Math.min(100, Math.max(0, score));
+});
 </script>
