@@ -51,4 +51,24 @@ router.post(
 );
 router.get('/:orgSlug/articles/:slug', publicContentLimiter, publicContentController.getPublicHelpArticle);
 
+router.get('/:orgSlug/blog/rss.xml', publicContentLimiter, publicContentController.getPublicBlogRss);
+router.get('/:orgSlug/blog/collections/:slug/rss.xml', publicContentLimiter, publicContentController.getPublicBlogCollectionRss);
+router.get('/:orgSlug/blog/manifest.json', publicContentLimiter, publicContentController.getPublicBlogManifest);
+router.get('/:orgSlug/blog/export/home', publicContentLimiter, publicContentController.getPublicBlogHomeExport);
+router.get('/:orgSlug/blog/export/sitemap.xml', publicContentLimiter, publicContentController.getPublicBlogStaticSitemapExport);
+router.get('/:orgSlug/blog/export/collections/:slug', publicContentLimiter, publicContentController.getPublicBlogCollectionExport);
+router.get('/:orgSlug/blog/recent', publicContentLimiter, publicContentController.listPublicRecentBlogPosts);
+router.get('/:orgSlug/blog/popular', publicContentLimiter, publicContentController.listPublicPopularBlogPosts);
+router.get('/:orgSlug/blog/sitemap.xml', publicContentLimiter, publicContentController.getPublicBlogSitemap);
+router.get('/:orgSlug/blog/collections', publicContentLimiter, publicContentController.listPublicBlogCollections);
+router.get('/:orgSlug/blog/:slug/export', publicContentLimiter, publicContentController.getPublicBlogPostExport);
+router.get('/:orgSlug/blog/:slug/rss.xml', publicContentLimiter, publicContentController.getPublicBlogPostRss);
+router.post(
+  '/:orgSlug/blog/:slug/feedback',
+  publicFeedbackLimiter,
+  publicContentController.submitPublicBlogFeedback,
+);
+router.get('/:orgSlug/blog', publicContentLimiter, publicContentController.listPublicBlogPosts);
+router.get('/:orgSlug/blog/:slug', publicContentLimiter, publicContentController.getPublicBlogPost);
+
 module.exports = router;

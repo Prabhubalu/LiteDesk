@@ -2,6 +2,9 @@
 
 const Organization = require('../../models/Organization');
 const { isArticlesHeadlessPublicKey } = require('./articlesHeadlessPublicKeyService');
+const { isBlogHeadlessPublicKey } = require('./blogHeadlessPublicKeyService');
+
+const PUBLIC_ORG_SELECT = '_id slug name contentPublishing embed.articles.publicKey embed.blog.publicKey';
 
 async function resolveOrganizationForPublic(orgKey) {
   const key = String(orgKey || '').trim();
@@ -9,12 +12,18 @@ async function resolveOrganizationForPublic(orgKey) {
 
   if (isArticlesHeadlessPublicKey(key)) {
     return Organization.findOne({ isTenant: true, 'embed.articles.publicKey': key })
-      .select('_id slug name contentPublishing embed.articles.publicKey')
+      .select(PUBLIC_ORG_SELECT)
+      .lean();
+  }
+
+  if (isBlogHeadlessPublicKey(key)) {
+    return Organization.findOne({ isTenant: true, 'embed.blog.publicKey': key })
+      .select(PUBLIC_ORG_SELECT)
       .lean();
   }
 
   return Organization.findOne({ isTenant: true, slug: key.toLowerCase() })
-    .select('_id slug name contentPublishing embed.articles.publicKey')
+    .select(PUBLIC_ORG_SELECT)
     .lean();
 }
 

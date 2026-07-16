@@ -20,7 +20,9 @@ function parseArgs(argv) {
     dest: process.env.ARIVU_SYNC_DEST || '',
     apiOrigin: process.env.ARIVU_API_ORIGIN || '',
     slug: '',
-    pathPrefix: process.env.HELP_URL_PREFIX || '/help/',
+    addon: process.env.ARIVU_ADDON || 'articles',
+    pathPrefix: '',
+    pathPrefixSet: false,
     articleLinkPrefix: process.env.HELP_ARTICLE_LINK_PREFIX || '',
     assetsPrefix: process.env.HELP_ASSETS_PREFIX || '',
     full: false,
@@ -51,8 +53,14 @@ function parseArgs(argv) {
       index += 1;
       continue;
     }
+    if (token === '--addon') {
+      args.addon = String(tokens[index + 1] || 'articles').trim().toLowerCase() || 'articles';
+      index += 1;
+      continue;
+    }
     if (token === '--path-prefix') {
-      args.pathPrefix = tokens[index + 1] || '/help/';
+      args.pathPrefix = tokens[index + 1] || '';
+      args.pathPrefixSet = true;
       index += 1;
       continue;
     }
@@ -75,21 +83,33 @@ function parseArgs(argv) {
     }
   }
 
+  if (!args.pathPrefixSet) {
+    if (process.env.HELP_URL_PREFIX) {
+      args.pathPrefix = process.env.HELP_URL_PREFIX;
+    } else if (process.env.BLOG_URL_PREFIX && args.addon === 'blog') {
+      args.pathPrefix = process.env.BLOG_URL_PREFIX;
+    } else {
+      args.pathPrefix = args.addon === 'blog' ? '/blog/' : '/help/';
+    }
+  }
+
+  if (args.addon !== 'blog') args.addon = 'articles';
   return args;
 }
 
 function printHelp() {
-  process.stdout.write(`Arivu help static sync
+  process.stdout.write(`Arivu help/blog static sync
 
 Usage:
-  arivu-help-sync sync --org <org> --dest <path> [--slug <slug>] [--full] [--api-origin <url>]
-  arivu-help-sync webhook --dest <path> [--org <org>] [--api-origin <url>]
+  arivu-help-sync sync --org <org> --dest <path> [--slug <slug>] [--full] [--addon articles|blog] [--api-origin <url>]
+  arivu-help-sync webhook --dest <path> [--org <org>] [--addon articles|blog] [--api-origin <url>]
 
 Environment:
-  ARIVU_ORG, ARIVU_API_ORIGIN, ARIVU_SYNC_DEST, HELP_URL_PREFIX
+  ARIVU_ORG, ARIVU_API_ORIGIN, ARIVU_SYNC_DEST, HELP_URL_PREFIX, BLOG_URL_PREFIX, ARIVU_ADDON
 
 Examples:
   arivu-help-sync sync --org art_pub_xxx --dest ./public/help --full
+  arivu-help-sync sync --org art_pub_xxx --dest ./public/blog --addon blog --full
   arivu-help-sync sync --org art_pub_xxx --dest ./public/help --slug create-invoice
   curl -X POST https://yoursite.com/webhook | arivu-help-sync webhook --dest ./public/help
 `);
@@ -131,6 +151,7 @@ async function main() {
       assetsPrefix: args.assetsPrefix,
       mirrorAssets: args.mirrorAssets,
       siteOrigin: args.siteOrigin,
+      addon: args.addon,
     });
     process.stdout.write(`${JSON.stringify({ success: true, result }, null, 2)}\n`);
     return;
@@ -153,6 +174,7 @@ async function main() {
       assetsPrefix: args.assetsPrefix,
       mirrorAssets: args.mirrorAssets,
       siteOrigin: args.siteOrigin,
+      addon: args.addon,
     });
     process.stdout.write(`${JSON.stringify({ success: true, ...result }, null, 2)}\n`);
     return;
@@ -171,6 +193,7 @@ async function main() {
     articleLinkPrefix: args.articleLinkPrefix || args.pathPrefix,
     assetsPrefix: args.assetsPrefix,
     mirrorAssets: args.mirrorAssets,
+    addon: args.addon,
   });
   process.stdout.write(`${JSON.stringify({ success: true, result }, null, 2)}\n`);
 }

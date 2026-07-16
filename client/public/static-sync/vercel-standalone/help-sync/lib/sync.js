@@ -137,9 +137,10 @@ async function syncArticleExport({
   mirrorAssets = true,
   siteOrigin = '',
   shell = true,
+  addon = 'articles',
   client = null,
 }) {
-  const syncClient = client || createClient({ apiOrigin, org });
+  const syncClient = client || createClient({ apiOrigin, org, addon });
   const exportData = await syncClient.fetchExport(slug, {
     pathPrefix,
     articleLinkPrefix: articleLinkPrefix || pathPrefix,
@@ -203,8 +204,9 @@ async function syncFull({
   assetsPrefix,
   mirrorAssets = true,
   siteOrigin = '',
+  addon = 'articles',
 }) {
-  const client = createClient({ apiOrigin, org });
+  const client = createClient({ apiOrigin, org, addon });
   const manifest = await client.fetchManifest(pathPrefix);
   const results = [];
 
@@ -223,6 +225,7 @@ async function syncFull({
       assetsPrefix,
       mirrorAssets,
       siteOrigin,
+      addon,
       client,
     });
     results.push(result);
@@ -258,10 +261,18 @@ async function handleWebhookPayload({
   mirrorAssets = true,
   siteOrigin = '',
   shell = true,
+  addon,
 }) {
   const event = String(payload?.event || '').trim();
   const content = payload?.content || {};
-  const client = createClient({ apiOrigin, org });
+  const contentAddon = String(content.addonKey || '').trim();
+  const resolvedAddon = addon
+    || (contentAddon === 'blog' ? 'blog' : 'articles');
+  const inferredBlogFromPayload = !addon && contentAddon === 'blog';
+  const resolvedPathPrefix = inferredBlogFromPayload && (!pathPrefix || pathPrefix === '/help/')
+    ? '/blog/'
+    : (pathPrefix || (resolvedAddon === 'blog' ? '/blog/' : '/help/'));
+  const client = createClient({ apiOrigin, org, addon: resolvedAddon });
   const refreshPages = Array.isArray(content.refreshPages) ? content.refreshPages : [];
 
   let result;
@@ -275,7 +286,7 @@ async function handleWebhookPayload({
       client,
       dest,
       pages: refreshPages,
-      pathPrefix,
+      pathPrefix: resolvedPathPrefix,
       siteOrigin,
       shell,
     });
@@ -286,19 +297,20 @@ async function handleWebhookPayload({
       org,
       dest,
       slug: content.slug,
-      pathPrefix,
-      articleLinkPrefix,
+      pathPrefix: resolvedPathPrefix,
+      articleLinkPrefix: articleLinkPrefix || resolvedPathPrefix,
       assetsPrefix,
       mirrorAssets,
       siteOrigin,
       shell,
+      addon: resolvedAddon,
       client,
     });
     const refreshed = await syncRefreshPages({
       client,
       dest,
       pages: refreshPages,
-      pathPrefix,
+      pathPrefix: resolvedPathPrefix,
       siteOrigin,
       shell,
     });
@@ -309,7 +321,12 @@ async function handleWebhookPayload({
     throw error;
   }
 
-  const sitemap = await writeCustomerSitemap({ client, dest, pathPrefix, siteOrigin });
+  const sitemap = await writeCustomerSitemap({
+    client,
+    dest,
+    pathPrefix: resolvedPathPrefix,
+    siteOrigin,
+  });
   return { ...result, sitemap };
 }
 

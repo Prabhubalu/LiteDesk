@@ -37,7 +37,8 @@ const ContentDocumentSeoSchema = new Schema(
     metaDescription: { type: String, trim: true, default: '' },
     canonicalUrl: { type: String, trim: true, default: '' },
     robots: { type: String, trim: true, default: '' },
-    ogImageAssetId: { type: Schema.Types.ObjectId, ref: 'ContentAsset', default: null },
+    // String: ContentAsset ObjectId hex or MarketingAsset assetId UUID (Blog).
+    ogImageAssetId: { type: String, trim: true, default: null },
   },
   { _id: false },
 );
@@ -99,9 +100,10 @@ const ContentDocumentSchema = new Schema(
       trim: true,
       default: '',
     },
+    // String so Blog covers can store MarketingAsset ObjectId hex or assetId UUID.
     coverAssetId: {
-      type: Schema.Types.ObjectId,
-      ref: 'ContentAsset',
+      type: String,
+      trim: true,
       default: null,
     },
     categoryIds: [{ type: Schema.Types.ObjectId, ref: 'ContentCategory' }],
@@ -127,6 +129,18 @@ const ContentDocumentSchema = new Schema(
     latestVersion: { type: Number, default: 1, min: 1 },
     publishedAt: { type: Date, default: null, index: true },
     featured: { type: Boolean, default: false, index: true },
+    sticky: { type: Boolean, default: false, index: true },
+    tags: {
+      type: [{ type: String, trim: true, lowercase: true }],
+      default: [],
+      validate: {
+        validator(value) {
+          return !Array.isArray(value) || value.length <= 20;
+        },
+        message: 'A content document may have at most 20 tags',
+      },
+    },
+    readingTimeMinutes: { type: Number, default: null, min: 1 },
     scheduledAt: { type: Date, default: null, index: true },
     archivedAt: { type: Date, default: null },
     deletedAt: { type: Date, default: null, index: true },

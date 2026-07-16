@@ -28,6 +28,11 @@ const {
   buildManifestUrl,
   buildPublicAssetDownloadUrl,
   buildStaticSitemapUrl,
+  buildBlogPostExportUrl,
+  buildBlogManifestUrl,
+  buildBlogHomeExportUrl,
+  buildBlogCollectionExportUrl,
+  buildBlogStaticSitemapUrl,
 } = require('../contentPublishingService');
 const {
   signWebhookBody,
@@ -53,6 +58,14 @@ describe('headlessStaticExportService', () => {
         collectionPathSlugs: ['billing', 'invoices'],
       }),
       '/help/billing/invoices/create-invoice/index.html',
+    );
+    assert.equal(
+      buildArticleExportPath({
+        slug: 'launch-announcement',
+        collectionPathSlugs: ['news'],
+        pathPrefix: '/blog/',
+      }),
+      '/blog/news/launch-announcement/index.html',
     );
   });
 
@@ -129,6 +142,12 @@ describe('headlessStaticExportService pages and sitemap', () => {
     assert.deepEqual(pages.map((page) => page.type), ['home', 'collection', 'collection']);
     assert.equal(pages[2].slug, 'invoices');
     assert.equal(pages[2].parentSlug, 'billing');
+  });
+
+  it('builds blog refresh pages with /blog/ path prefix', () => {
+    const pages = buildRefreshPages(['news'], '/blog/');
+    assert.equal(pages[0].exportPath, '/blog/index.html');
+    assert.equal(pages[1].exportPath, '/blog/news/index.html');
   });
 
   it('builds manifest page entries with export urls', () => {
@@ -216,6 +235,33 @@ describe('contentPublishingService page export urls', () => {
     assert.equal(
       buildStaticSitemapUrl(org),
       'https://app.example.com/api/public/v1/content/art_pub_testkey1234567890abcdef/export/sitemap.xml',
+    );
+  });
+
+  it('builds blog export urls under /blog', () => {
+    const blogOrg = {
+      slug: 'acme',
+      embed: { blog: { publicKey: 'blog_pub_testkey1234567890abcdef' } },
+    };
+    assert.equal(
+      buildBlogManifestUrl(blogOrg),
+      'https://app.example.com/api/public/v1/content/blog_pub_testkey1234567890abcdef/blog/manifest.json',
+    );
+    assert.equal(
+      buildBlogPostExportUrl(blogOrg, 'launch-announcement'),
+      'https://app.example.com/api/public/v1/content/blog_pub_testkey1234567890abcdef/blog/launch-announcement/export',
+    );
+    assert.equal(
+      buildBlogHomeExportUrl(blogOrg),
+      'https://app.example.com/api/public/v1/content/blog_pub_testkey1234567890abcdef/blog/export/home',
+    );
+    assert.equal(
+      buildBlogCollectionExportUrl(blogOrg, 'news'),
+      'https://app.example.com/api/public/v1/content/blog_pub_testkey1234567890abcdef/blog/export/collections/news',
+    );
+    assert.equal(
+      buildBlogStaticSitemapUrl(blogOrg),
+      'https://app.example.com/api/public/v1/content/blog_pub_testkey1234567890abcdef/blog/export/sitemap.xml',
     );
   });
 });

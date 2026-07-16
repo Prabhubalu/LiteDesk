@@ -1,0 +1,16 @@
+{
+  "name": "arivu-blog",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "sync:blog": "node scripts/sync-blog-static.mjs",
+    "prebuild": "npm run sync:blog",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

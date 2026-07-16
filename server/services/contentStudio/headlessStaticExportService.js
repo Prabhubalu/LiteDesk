@@ -5,6 +5,7 @@ const ContentDocument = require('../../models/ContentDocument');
 const ContentDocumentVersion = require('../../models/ContentDocumentVersion');
 const ContentCollection = require('../../models/ContentCollection');
 const { getAssetById } = require('../contentPlatform/contentAssetService');
+const { resolveStudioAsset } = require('./resolveStudioAsset');
 const { renderBlocksToHtml } = require('./contentStudioBlockRenderer');
 const {
   shapeHeadlessArticleDetail,
@@ -17,6 +18,11 @@ const {
   buildPublicAssetDownloadUrl,
   buildHomeExportUrl,
   buildCollectionExportUrl,
+  buildBlogPostApiUrl,
+  buildBlogPostExportUrl,
+  buildBlogManifestUrl,
+  buildBlogHomeExportUrl,
+  buildBlogCollectionExportUrl,
   getPublicAppBaseUrl,
 } = require('./contentPublishingService');
 const {
@@ -33,13 +39,55 @@ const {
   buildCollectionExportChrome,
 } = require('./headlessExportChromeBuilder');
 
+const CONTENT_PROFILES = {
+  articles: {
+    addonKey: 'articles',
+    contentType: 'knowledge_article',
+    defaultPathPrefix: '/help/',
+    itemLabel: 'article',
+    homeTitle: 'Help Center',
+    homeDescription: 'Browse help topics',
+    homeEyebrow: 'Help Center',
+    homeSectionTitle: 'Browse topics',
+    resolvePublishingContext: getPublicPublishingContext,
+    buildDocumentApiUrl: buildArticleApiUrl,
+    buildDocumentExportUrl: buildArticleExportUrl,
+    buildManifestUrl,
+    buildHomeExportUrl,
+    buildCollectionExportUrl,
+  },
+  blog: {
+    addonKey: 'blog',
+    contentType: 'blog_post',
+    defaultPathPrefix: '/blog/',
+    itemLabel: 'post',
+    homeTitle: 'Blog',
+    homeDescription: 'Latest posts',
+    homeEyebrow: 'Blog',
+    homeSectionTitle: 'Latest posts',
+    resolvePublishingContext: async (org) => {
+      const { getPublicBlogPublishingContext } = require('./publicContentService');
+      return getPublicBlogPublishingContext(org);
+    },
+    buildDocumentApiUrl: buildBlogPostApiUrl,
+    buildDocumentExportUrl: buildBlogPostExportUrl,
+    buildManifestUrl: buildBlogManifestUrl,
+    buildHomeExportUrl: buildBlogHomeExportUrl,
+    buildCollectionExportUrl: buildBlogCollectionExportUrl,
+  },
+};
+
+function resolveContentProfile(profileKey = 'articles') {
+  return CONTENT_PROFILES[profileKey] || CONTENT_PROFILES.articles;
+}
+
 function normalizeArticleSlug(value) {
   return String(value || '').trim().replace(/^\/+/, '').toLowerCase();
 }
 
-function normalizeExportPathPrefix(prefix) {
-  const raw = String(prefix || '/help/').trim();
-  if (!raw) return '/help/';
+function normalizeExportPathPrefix(prefix, fallback = '/help/') {
+  const raw = String(prefix || fallback).trim();
+  if (!raw) return fallback.endsWith('/') ? fallback : `${fallback}/`;
   return raw.endsWith('/') ? raw : `${raw}/`;
 }
 
@@ -51,15 +99,20 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;');
 }
 
-function buildPublicArticlesQuery(organizationId) {
+function buildPublicContentQuery(organizationId, profile) {
+  const resolved = typeof profile === 'string' ? resolveContentProfile(profile) : profile;
   return {
     organizationId,
-    addonKey: 'articles',
-    contentType: 'knowledge_article',
+    addonKey: resolved.addonKey,
+    contentType: resolved.contentType,
     status: 'published',
     deletedAt: null,
     visibility: 'public',
   };
+}
+
+function buildPublicArticlesQuery(organizationId) {
+  return buildPublicContentQuery(organizationId, CONTENT_PROFILES.articles);
 }
 
 function buildCollectionByIdMap(collections) {
@@ -176,12 +229,13 @@ function buildRefreshPages(collectionPathSlugs = [], pathPrefix = '/help/') {
 }
 
 function buildManifestPageEntry(org, page, options = {}) {
-  const pathPrefix = options.pathPrefix || '/help/';
+  const profile = resolveContentProfile(options.profileKey || 'articles');
+  const pathPrefix = options.pathPrefix || profile.defaultPathPrefix;
   if (page.type === 'home') {
     return {
       type: 'home',
       exportPath: buildHomeExportPath(pathPrefix),
-      exportUrl: buildHomeExportUrl(org, options),
+      exportUrl: profile.buildHomeExportUrl(org, options),
     };
   }
   const slug = normalizeArticleSlug(page.slug);
@@ -192,7 +246,7 @@ function buildManifestPageEntry(org, page, options = {}) {
     name: page.name || slug,
     collectionPath,
     exportPath: buildCollectionExportPath({ collectionPathSlugs: collectionPath, pathPrefix }),
-    exportUrl: buildCollectionExportUrl(org, slug, {
+    exportUrl: profile.buildCollectionExportUrl(org, slug, {
       ...options,
       parentSlug: page.parentSlug || (collectionPath.length > 1
         ? collectionPath[collectionPath.length - 2]
@@ -255,11 +309,12 @@ function findCollectionTreeNode(tree, collectionPathSlugs = []) {
   return current;
 }
 
-async function loadPublicCollectionsContext(organizationId) {
+async function loadPublicCollectionsContext(organizationId, addonKey = 'articles') {
+  const profile = resolveContentProfile(addonKey === 'blog' ? 'blog' : 'articles');
   const [collections, articleCountMap] = await Promise.all([
     ContentCollection.find({
       organizationId,
-      addonKey: 'articles',
+      addonKey: profile.addonKey,
       deletedAt: null,
     })
       .sort({ sortOrder: 1, name: 1 })
@@ -267,7 +322,7 @@ async function loadPublicCollectionsContext(organizationId) {
     ContentDocument.aggregate([
       {
         $match: {
-          ...buildPublicArticlesQuery(organizationId),
+          ...buildPublicContentQuery(organizationId, profile),
           collectionId: { $ne: null },
         },
       },
@@ -278,21 +333,22 @@ async function loadPublicCollectionsContext(organizationId) {
   return { collections, tree, articleCountMap };
 }
 
-function formatCollectionStats(node) {
+function formatCollectionStats(node, itemLabel = 'article') {
   const articles = Number(node?.articleCount || 0);
   const sections = Number(node?.sectionCount || 0);
   const parts = [];
-  if (articles) parts.push(`${articles} article${articles === 1 ? '' : 's'}`);
+  if (articles) parts.push(`${articles} ${itemLabel}${articles === 1 ? '' : 's'}`);
   if (sections) parts.push(`${sections} section${sections === 1 ? '' : 's'}`);
   return parts.join(' · ');
 }
 
-async function listArticlesForCollection(organizationId, collectionId, deep = false) {
-  const query = buildPublicArticlesQuery(organizationId);
+async function listDocumentsForCollection(organizationId, collectionId, profile, deep = false) {
+  const resolved = typeof profile === 'string' ? resolveContentProfile(profile) : profile;
+  const query = buildPublicContentQuery(organizationId, resolved);
   if (deep) {
     const allCollections = await ContentCollection.find({
       organizationId,
-      addonKey: 'articles',
+      addonKey: resolved.addonKey,
       deletedAt: null,
     }).select('_id parentId').lean();
     const ids = [collectionId];
@@ -313,6 +369,10 @@ async function listArticlesForCollection(organizationId, collectionId, deep = fa
     .sort({ publishedAt: -1, updatedAt: -1 })
     .select('title slug summary updatedAt publishedAt collectionId')
     .lean();
+}
+
+async function listArticlesForCollection(organizationId, collectionId, deep = false) {
+  return listDocumentsForCollection(organizationId, collectionId, CONTENT_PROFILES.articles, deep);
 }
 
 function collectAssetIdsFromBlocks(blocks, ids = new Set()) {
@@ -426,28 +486,27 @@ async function resolveAuthor(authorId, storedAuthorName = '') {
 async function resolveExportAssets(organizationId, org, doc, blocks, requestOrigin = '') {
   const assetIds = collectAssetIdsFromDocument(doc, blocks);
   const assets = [];
+  const addonKey = doc?.addonKey === 'blog' ? 'blog' : 'articles';
   for (const assetId of assetIds) {
-    try {
-      const asset = await getAssetById({ organizationId, assetId });
-      assets.push({
-        assetId: String(asset.assetId || asset._id || assetId),
-        url: buildPublicAssetDownloadUrl(org, asset.assetId || assetId, { requestOrigin }),
-        filename: buildSuggestedAssetFilename(asset.assetId || assetId, asset.filename, asset.mimeType),
-        contentType: asset.mimeType || 'application/octet-stream',
-      });
-    } catch {
-      // Skip assets that cannot be resolved.
-    }
+    const asset = await resolveStudioAsset({ organizationId, assetId, addonKey });
+    if (!asset) continue;
+    assets.push({
+      assetId: String(asset.assetId || asset._id || assetId),
+      url: buildPublicAssetDownloadUrl(org, asset.assetId || assetId, { requestOrigin }),
+      filename: buildSuggestedAssetFilename(asset.assetId || assetId, asset.filename, asset.mimeType),
+      contentType: asset.mimeType || 'application/octet-stream',
+    });
   }
   return assets;
 }
 
 function buildManifestArticleEntry(org, doc, collectionPathSlugs, options = {}) {
+  const profile = resolveContentProfile(options.profileKey || 'articles');
   const slug = normalizeArticleSlug(doc.slug);
   const exportPath = buildArticleExportPath({
     slug,
     collectionPathSlugs,
-    pathPrefix: options.pathPrefix,
+    pathPrefix: options.pathPrefix || profile.defaultPathPrefix,
   });
   return {
     id: String(doc._id),
@@ -457,8 +516,8 @@ function buildManifestArticleEntry(org, doc, collectionPathSlugs, options = {}) 
     publishedAt: doc.publishedAt || null,
     collectionPath: collectionPathSlugs,
     exportPath,
-    apiUrl: buildArticleApiUrl(org, slug, options),
-    exportUrl: buildArticleExportUrl(org, slug, options),
+    apiUrl: profile.buildDocumentApiUrl(org, slug, options),
+    exportUrl: profile.buildDocumentExportUrl(org, slug, options),
   };
 }
 
@@ -476,14 +535,15 @@ function resolveManifestVersion(articles) {
   return latest ? latest.toISOString() : new Date().toISOString();
 }
 
-async function listPublishedArticlesWithCollectionPaths(organizationId) {
+async function listPublishedDocumentsWithCollectionPaths(organizationId, profile) {
+  const resolved = typeof profile === 'string' ? resolveContentProfile(profile) : profile;
   const [docs, collections] = await Promise.all([
-    ContentDocument.find(buildPublicArticlesQuery(organizationId))
+    ContentDocument.find(buildPublicContentQuery(organizationId, resolved))
       .sort({ publishedAt: -1, updatedAt: -1 })
       .lean(),
     ContentCollection.find({
       organizationId,
-      addonKey: 'articles',
+      addonKey: resolved.addonKey,
       deletedAt: null,
     })
       .select('_id slug parentId')
@@ -496,45 +556,85 @@ async function listPublishedArticlesWithCollectionPaths(organizationId) {
   }));
 }
 
-async function getPublicHelpManifest({
+async function listPublishedArticlesWithCollectionPaths(organizationId) {
+  return listPublishedDocumentsWithCollectionPaths(organizationId, CONTENT_PROFILES.articles);
+}
+
+async function getPublicContentManifest({
   orgSlug,
-  pathPrefix = '/help/',
+  profileKey = 'articles',
+  pathPrefix,
   requestOrigin = '',
 }) {
+  const profile = resolveContentProfile(profileKey);
+  const resolvedPathPrefix = normalizeExportPathPrefix(
+    pathPrefix || profile.defaultPathPrefix,
+    profile.defaultPathPrefix,
+  );
   const org = await resolveOrganizationForPublic(orgSlug);
   if (!org) return null;
 
-  const context = await getPublicPublishingContext(org);
+  const context = await profile.resolvePublishingContext(org);
   if (!context.allowed) return null;
 
-  const options = { requestOrigin };
-  const rows = await listPublishedArticlesWithCollectionPaths(org._id);
+  const options = { requestOrigin, profileKey, pathPrefix: resolvedPathPrefix };
+  const rows = await listPublishedDocumentsWithCollectionPaths(org._id, profile);
   const articles = rows.map(({ doc, collectionPathSlugs }) => (
-    buildManifestArticleEntry(org, doc, collectionPathSlugs, { pathPrefix, ...options })
+    buildManifestArticleEntry(org, doc, collectionPathSlugs, options)
   ));
-  const { tree } = await loadPublicCollectionsContext(org._id);
+  const { tree } = await loadPublicCollectionsContext(org._id, profile.addonKey);
   const pages = [
-    buildManifestPageEntry(org, { type: 'home' }, { pathPrefix, ...options }),
+    buildManifestPageEntry(org, { type: 'home' }, options),
     ...flattenCollectionTreeNodes(tree).map((node) => buildManifestPageEntry(org, {
       type: 'collection',
       slug: node.slug,
       name: node.name,
       collectionPath: node.collectionPath,
       parentSlug: node.parentSlug,
-    }, { pathPrefix, ...options })),
+    }, options)),
   ];
 
   return buildPublicContentEnvelope(org, {
     data: {
       version: resolveManifestVersion([...articles, ...pages]),
       generatedAt: new Date().toISOString(),
-      manifestUrl: buildManifestUrl(org, options),
-      pathPrefix: normalizeExportPathPrefix(pathPrefix),
+      manifestUrl: profile.buildManifestUrl(org, options),
+      pathPrefix: resolvedPathPrefix,
       pages,
       articles,
-      sitemapEntries: buildSitemapEntriesFromManifest({ pages, articles, version: resolveManifestVersion(articles) }),
+      sitemapEntries: buildSitemapEntriesFromManifest({
+        pages,
+        articles,
+        version: resolveManifestVersion(articles),
+      }),
     },
   }, context.publishing);
+}
+
+async function getPublicHelpManifest({
+  orgSlug,
+  pathPrefix = '/help/',
+  requestOrigin = '',
+}) {
+  return getPublicContentManifest({
+    orgSlug,
+    profileKey: 'articles',
+    pathPrefix,
+    requestOrigin,
+  });
+}
+
+async function getPublicBlogManifest({
+  orgSlug,
+  pathPrefix = '/blog/',
+  requestOrigin = '',
+}) {
+  return getPublicContentManifest({
+    orgSlug,
+    profileKey: 'blog',
+    pathPrefix,
+    requestOrigin,
+  });
 }
 
 async function loadArticleSidebarWidgets(orgSlug, collectionPathSlugs = [], pathPrefix = '/help/') {
@@ -559,6 +659,67 @@ async function loadArticleSidebarWidgets(orgSlug, collectionPathSlugs = [], path
   };
 }
 
+async function getPublicContentHomeExport({
+  orgSlug,
+  profileKey = 'articles',
+  pathPrefix,
+  fragment = false,
+  chrome = false,
+  requestOrigin = '',
+}) {
+  const profile = resolveContentProfile(profileKey);
+  const resolvedPathPrefix = normalizeExportPathPrefix(
+    pathPrefix || profile.defaultPathPrefix,
+    profile.defaultPathPrefix,
+  );
+  const org = await resolveOrganizationForPublic(orgSlug);
+  if (!org) return null;
+
+  const context = await profile.resolvePublishingContext(org);
+  if (!context.allowed) return null;
+
+  const { tree } = await loadPublicCollectionsContext(org._id, profile.addonKey);
+  const items = (tree || []).map((node) => ({
+    label: node.name,
+    href: buildCustomerHref(buildCollectionExportPath({
+      collectionPathSlugs: [node.slug],
+      pathPrefix: resolvedPathPrefix,
+    })),
+    meta: formatCollectionStats(node, profile.itemLabel),
+  }));
+  const html = chrome
+    ? buildHomeExportChrome({
+      title: profile.homeTitle,
+      description: profile.homeDescription,
+      tree,
+      pathPrefix: resolvedPathPrefix,
+      eyebrow: profile.homeEyebrow,
+      sectionTitle: profile.homeSectionTitle,
+    })
+    : buildListingPageHtml({
+      title: profile.homeTitle,
+      description: profile.homeDescription,
+      items,
+      fragment,
+    });
+  const exportPath = buildHomeExportPath(resolvedPathPrefix);
+  const options = { requestOrigin };
+
+  return buildPublicContentEnvelope(org, {
+    data: {
+      type: 'home',
+      exportPath,
+      exportUrl: profile.buildHomeExportUrl(org, options),
+      html,
+      meta: {
+        title: profile.homeTitle,
+        description: profile.homeDescription,
+      },
+      assets: [],
+    },
+  }, context.publishing);
+}
+
 async function getPublicHelpHomeExport({
   orgSlug,
   pathPrefix = '/help/',
@@ -566,46 +727,126 @@ async function getPublicHelpHomeExport({
   chrome = false,
   requestOrigin = '',
 }) {
+  return getPublicContentHomeExport({
+    orgSlug,
+    profileKey: 'articles',
+    pathPrefix,
+    fragment,
+    chrome,
+    requestOrigin,
+  });
+}
+
+async function getPublicBlogHomeExport({
+  orgSlug,
+  pathPrefix = '/blog/',
+  fragment = false,
+  chrome = false,
+  requestOrigin = '',
+}) {
+  return getPublicContentHomeExport({
+    orgSlug,
+    profileKey: 'blog',
+    pathPrefix,
+    fragment,
+    chrome,
+    requestOrigin,
+  });
+}
+
+async function getPublicContentCollectionExport({
+  orgSlug,
+  collectionSlug,
+  parentSlug = '',
+  profileKey = 'articles',
+  pathPrefix,
+  fragment = false,
+  chrome = false,
+  requestOrigin = '',
+}) {
+  const profile = resolveContentProfile(profileKey);
+  const resolvedPathPrefix = normalizeExportPathPrefix(
+    pathPrefix || profile.defaultPathPrefix,
+    profile.defaultPathPrefix,
+  );
   const org = await resolveOrganizationForPublic(orgSlug);
   if (!org) return null;
 
-  const context = await getPublicPublishingContext(org);
+  const context = await profile.resolvePublishingContext(org);
   if (!context.allowed) return null;
 
-  const { tree } = await loadPublicCollectionsContext(org._id);
-  const items = (tree || []).map((node) => ({
-    label: node.name,
-    href: buildCustomerHref(buildCollectionExportPath({
-      collectionPathSlugs: [node.slug],
-      pathPrefix,
-    })),
-    meta: formatCollectionStats(node),
-  }));
+  const { collections, tree } = await loadPublicCollectionsContext(org._id, profile.addonKey);
+  const collection = findCollectionBySlugAndParent(collections, collectionSlug, parentSlug);
+  if (!collection) return null;
+
+  const collectionPathSlugs = resolveCollectionPathSlugs(collection._id, buildCollectionByIdMap(collections));
+  const treeNode = findCollectionTreeNode(tree, collectionPathSlugs);
+  if (!treeNode) return null;
+
+  let items = [];
+  if (Array.isArray(treeNode.children) && treeNode.children.length) {
+    items = treeNode.children.map((child) => ({
+      label: child.name,
+      href: buildCustomerHref(buildCollectionExportPath({
+        collectionPathSlugs: [...collectionPathSlugs, child.slug],
+        pathPrefix: resolvedPathPrefix,
+      })),
+      meta: formatCollectionStats(child, profile.itemLabel),
+    }));
+  } else {
+    const documents = await listDocumentsForCollection(org._id, collection._id, profile, true);
+    items = documents.map((document) => ({
+      label: document.title,
+      href: buildCustomerHref(buildArticleExportPath({
+        slug: document.slug,
+        collectionPathSlugs,
+        pathPrefix: resolvedPathPrefix,
+      })),
+      meta: document.summary || '',
+    }));
+  }
+
+  const listingType = Array.isArray(treeNode.children) && treeNode.children.length
+    ? 'sections'
+    : 'articles';
+  const showSidebarWidgets = profileKey === 'articles';
+  const sidebarWidgets = chrome && showSidebarWidgets
+    ? await loadArticleSidebarWidgets(orgSlug, collectionPathSlugs, resolvedPathPrefix)
+    : { recent: [], popular: [] };
   const html = chrome
-    ? buildHomeExportChrome({
-      title: 'Help Center',
-      description: 'Browse help topics',
+    ? buildCollectionExportChrome({
+      title: treeNode.name,
+      description: treeNode.description || '',
+      items,
+      treeNode,
+      collectionPathSlugs,
       tree,
-      pathPrefix,
+      pathPrefix: resolvedPathPrefix,
+      recent: sidebarWidgets.recent,
+      popular: sidebarWidgets.popular,
+      listingType,
+      showSidebarWidgets,
     })
     : buildListingPageHtml({
-      title: 'Help Center',
-      description: 'Browse help topics',
+      title: treeNode.name,
+      description: treeNode.description || '',
       items,
       fragment,
     });
-  const exportPath = buildHomeExportPath(pathPrefix);
-  const options = { requestOrigin };
+  const exportPath = buildCollectionExportPath({ collectionPathSlugs, pathPrefix: resolvedPathPrefix });
+  const options = { requestOrigin, parentSlug: parentSlug || undefined };
 
   return buildPublicContentEnvelope(org, {
     data: {
-      type: 'home',
+      type: 'collection',
+      slug: normalizeArticleSlug(collectionSlug),
+      collectionPath: collectionPathSlugs,
       exportPath,
-      exportUrl: buildHomeExportUrl(org, options),
+      exportUrl: profile.buildCollectionExportUrl(org, collectionSlug, options),
       html,
       meta: {
-        title: 'Help Center',
-        description: 'Browse help topics',
+        title: treeNode.name,
+        description: treeNode.description || '',
       },
       assets: [],
     },
@@ -621,95 +862,53 @@ async function getPublicHelpCollectionExport({
   chrome = false,
   requestOrigin = '',
 }) {
-  const org = await resolveOrganizationForPublic(orgSlug);
-  if (!org) return null;
-
-  const context = await getPublicPublishingContext(org);
-  if (!context.allowed) return null;
-
-  const { collections, tree } = await loadPublicCollectionsContext(org._id);
-  const collection = findCollectionBySlugAndParent(collections, collectionSlug, parentSlug);
-  if (!collection) return null;
-
-  const collectionPathSlugs = resolveCollectionPathSlugs(collection._id, buildCollectionByIdMap(collections));
-  const treeNode = findCollectionTreeNode(tree, collectionPathSlugs);
-  if (!treeNode) return null;
-
-  let items = [];
-  if (Array.isArray(treeNode.children) && treeNode.children.length) {
-    items = treeNode.children.map((child) => ({
-      label: child.name,
-      href: buildCustomerHref(buildCollectionExportPath({
-        collectionPathSlugs: [...collectionPathSlugs, child.slug],
-        pathPrefix,
-      })),
-      meta: formatCollectionStats(child),
-    }));
-  } else {
-    const articles = await listArticlesForCollection(org._id, collection._id, true);
-    items = articles.map((article) => ({
-      label: article.title,
-      href: buildCustomerHref(buildArticleExportPath({
-        slug: article.slug,
-        collectionPathSlugs,
-        pathPrefix,
-      })),
-      meta: article.summary || '',
-    }));
-  }
-
-  const listingType = Array.isArray(treeNode.children) && treeNode.children.length
-    ? 'sections'
-    : 'articles';
-  const sidebarWidgets = chrome
-    ? await loadArticleSidebarWidgets(orgSlug, collectionPathSlugs, pathPrefix)
-    : { recent: [], popular: [] };
-  const html = chrome
-    ? buildCollectionExportChrome({
-      title: treeNode.name,
-      description: treeNode.description || '',
-      items,
-      treeNode,
-      collectionPathSlugs,
-      tree,
-      pathPrefix,
-      recent: sidebarWidgets.recent,
-      popular: sidebarWidgets.popular,
-      listingType,
-    })
-    : buildListingPageHtml({
-      title: treeNode.name,
-      description: treeNode.description || '',
-      items,
-      fragment,
-    });
-  const exportPath = buildCollectionExportPath({ collectionPathSlugs, pathPrefix });
-  const options = { requestOrigin, parentSlug: parentSlug || undefined };
-
-  return buildPublicContentEnvelope(org, {
-    data: {
-      type: 'collection',
-      slug: normalizeArticleSlug(collectionSlug),
-      collectionPath: collectionPathSlugs,
-      exportPath,
-      exportUrl: buildCollectionExportUrl(org, collectionSlug, options),
-      html,
-      meta: {
-        title: treeNode.name,
-        description: treeNode.description || '',
-      },
-      assets: [],
-    },
-  }, context.publishing);
+  return getPublicContentCollectionExport({
+    orgSlug,
+    collectionSlug,
+    parentSlug,
+    profileKey: 'articles',
+    pathPrefix,
+    fragment,
+    chrome,
+    requestOrigin,
+  });
 }
 
-async function getPublicHelpStaticSitemap({
+async function getPublicBlogCollectionExport({
   orgSlug,
-  pathPrefix = '/help/',
+  collectionSlug,
+  parentSlug = '',
+  pathPrefix = '/blog/',
+  fragment = false,
+  chrome = false,
+  requestOrigin = '',
+}) {
+  return getPublicContentCollectionExport({
+    orgSlug,
+    collectionSlug,
+    parentSlug,
+    profileKey: 'blog',
+    pathPrefix,
+    fragment,
+    chrome,
+    requestOrigin,
+  });
+}
+
+async function getPublicContentStaticSitemap({
+  orgSlug,
+  profileKey = 'articles',
+  pathPrefix,
   siteOrigin = '',
   requestOrigin = '',
 }) {
-  const manifest = await getPublicHelpManifest({ orgSlug, pathPrefix, requestOrigin });
+  const profile = resolveContentProfile(profileKey);
+  const manifest = await getPublicContentManifest({
+    orgSlug,
+    profileKey,
+    pathPrefix: pathPrefix || profile.defaultPathPrefix,
+    requestOrigin,
+  });
   if (!manifest) return null;
 
   const xml = buildCustomerSitemapXml({
@@ -722,31 +921,71 @@ async function getPublicHelpStaticSitemap({
   };
 }
 
-async function getPublicHelpArticleExport({
+async function getPublicHelpStaticSitemap({
   orgSlug,
-  articleSlug,
   pathPrefix = '/help/',
-  fragment = false,
-  chrome = false,
-  articleLinkPrefix = '/help/',
+  siteOrigin = '',
   requestOrigin = '',
 }) {
+  return getPublicContentStaticSitemap({
+    orgSlug,
+    profileKey: 'articles',
+    pathPrefix,
+    siteOrigin,
+    requestOrigin,
+  });
+}
+
+async function getPublicBlogStaticSitemap({
+  orgSlug,
+  pathPrefix = '/blog/',
+  siteOrigin = '',
+  requestOrigin = '',
+}) {
+  return getPublicContentStaticSitemap({
+    orgSlug,
+    profileKey: 'blog',
+    pathPrefix,
+    siteOrigin,
+    requestOrigin,
+  });
+}
+
+async function getPublicContentDocumentExport({
+  orgSlug,
+  documentSlug,
+  profileKey = 'articles',
+  pathPrefix,
+  fragment = false,
+  chrome = false,
+  articleLinkPrefix,
+  requestOrigin = '',
+}) {
+  const profile = resolveContentProfile(profileKey);
+  const resolvedPathPrefix = normalizeExportPathPrefix(
+    pathPrefix || profile.defaultPathPrefix,
+    profile.defaultPathPrefix,
+  );
+  const resolvedLinkPrefix = normalizeExportPathPrefix(
+    articleLinkPrefix || resolvedPathPrefix,
+    profile.defaultPathPrefix,
+  );
   const org = await resolveOrganizationForPublic(orgSlug);
   if (!org) return null;
 
-  const context = await getPublicPublishingContext(org);
+  const context = await profile.resolvePublishingContext(org);
   if (!context.allowed) return null;
 
   const doc = await ContentDocument.findOne({
-    ...buildPublicArticlesQuery(org._id),
-    slug: normalizeArticleSlug(articleSlug),
+    ...buildPublicContentQuery(org._id, profile),
+    slug: normalizeArticleSlug(documentSlug),
   }).lean();
   if (!doc) return null;
 
   const blocks = await loadPublishedBlocks(doc);
   const collections = await ContentCollection.find({
     organizationId: org._id,
-    addonKey: 'articles',
+    addonKey: profile.addonKey,
     deletedAt: null,
   })
     .select('_id name slug parentId')
@@ -770,28 +1009,32 @@ async function getPublicHelpArticleExport({
       title: article.title,
       subtitle: article.subtitle || '',
       bodyOnly: true,
-      articleLinkPrefix: normalizeExportPathPrefix(articleLinkPrefix),
+      articleLinkPrefix: resolvedLinkPrefix,
     }),
     publicAppBaseUrl,
   );
   let html = buildExportPageHtml({ article, bodyHtml, fragment });
   if (chrome) {
-    const { tree } = await loadPublicCollectionsContext(org._id);
-    const sidebarWidgets = await loadArticleSidebarWidgets(orgSlug, collectionPathSlugs, pathPrefix);
+    const { tree } = await loadPublicCollectionsContext(org._id, profile.addonKey);
+    const showSidebarWidgets = profileKey === 'articles';
+    const sidebarWidgets = showSidebarWidgets
+      ? await loadArticleSidebarWidgets(orgSlug, collectionPathSlugs, resolvedPathPrefix)
+      : { recent: [], popular: [] };
     html = buildArticlePageChrome({
       article,
       bodyHtml,
-      pathPrefix,
+      pathPrefix: resolvedPathPrefix,
       collectionPathSlugs,
       tree,
       recent: sidebarWidgets.recent,
       popular: sidebarWidgets.popular,
+      showSidebarWidgets,
     });
   }
   const exportPath = buildArticleExportPath({
     slug: article.slug,
     collectionPathSlugs,
-    pathPrefix,
+    pathPrefix: resolvedPathPrefix,
   });
   const options = { requestOrigin };
   const assets = await resolveExportAssets(org._id, org, doc, blocks, requestOrigin);
@@ -804,8 +1047,8 @@ async function getPublicHelpArticleExport({
       publishedAt: article.publishedAt || null,
       collectionPath: collectionPathSlugs,
       exportPath,
-      apiUrl: buildArticleApiUrl(org, article.slug, options),
-      exportUrl: buildArticleExportUrl(org, article.slug, options),
+      apiUrl: profile.buildDocumentApiUrl(org, article.slug, options),
+      exportUrl: profile.buildDocumentExportUrl(org, article.slug, options),
       html,
       bodyHtml,
       meta: {
@@ -820,6 +1063,48 @@ async function getPublicHelpArticleExport({
   }, context.publishing);
 }
 
+async function getPublicHelpArticleExport({
+  orgSlug,
+  articleSlug,
+  pathPrefix = '/help/',
+  fragment = false,
+  chrome = false,
+  articleLinkPrefix = '/help/',
+  requestOrigin = '',
+}) {
+  return getPublicContentDocumentExport({
+    orgSlug,
+    documentSlug: articleSlug,
+    profileKey: 'articles',
+    pathPrefix,
+    fragment,
+    chrome,
+    articleLinkPrefix,
+    requestOrigin,
+  });
+}
+
+async function getPublicBlogPostExport({
+  orgSlug,
+  postSlug,
+  pathPrefix = '/blog/',
+  fragment = false,
+  chrome = false,
+  articleLinkPrefix = '/blog/',
+  requestOrigin = '',
+}) {
+  return getPublicContentDocumentExport({
+    orgSlug,
+    documentSlug: postSlug,
+    profileKey: 'blog',
+    pathPrefix,
+    fragment,
+    chrome,
+    articleLinkPrefix,
+    requestOrigin,
+  });
+}
+
 function blocksContainAssetId(blocks, assetId) {
   const ids = collectAssetIdsFromBlocks(blocks, new Set());
   return ids.has(String(assetId));
@@ -829,18 +1114,45 @@ async function isAssetReferencedInPublicContent(organizationId, assetId) {
   const normalizedAssetId = String(assetId || '').trim();
   if (!normalizedAssetId) return false;
 
-  const docMatch = await ContentDocument.findOne({
-    ...buildPublicArticlesQuery(organizationId),
-    $or: [
-      { coverAssetId: normalizedAssetId },
-      { 'seo.ogImageAssetId': normalizedAssetId },
-    ],
-  }).select('_id').lean();
-  if (docMatch) return true;
+  // Marketing assets may be requested by UUID (assetId) while coverAssetId stores ObjectId (or vice versa).
+  const candidateIds = new Set([normalizedAssetId]);
+  try {
+    const { resolveStudioAsset } = require('./resolveStudioAsset');
+    const asset = await resolveStudioAsset({
+      organizationId,
+      assetId: normalizedAssetId,
+      addonKey: 'blog',
+    });
+    if (asset) {
+      if (asset.assetId) candidateIds.add(String(asset.assetId));
+      if (asset._id) candidateIds.add(String(asset._id));
+      if (asset.id) candidateIds.add(String(asset.id));
+    }
+  } catch {
+    /* ignore — fall through with request id only */
+  }
+  const idSet = candidateIds;
 
-  const publishedDocs = await ContentDocument.find(buildPublicArticlesQuery(organizationId))
-    .select('publishedVersionId')
+  const publicQuery = {
+    organizationId,
+    addonKey: { $in: ['articles', 'blog'] },
+    contentType: { $in: ['knowledge_article', 'blog_post'] },
+    status: 'published',
+    deletedAt: null,
+    visibility: 'public',
+  };
+
+  // Compare via String(): cover/og may be BSON ObjectId in DB while schema is String,
+  // so Mongoose $in queries by type miss matches.
+  const publishedDocs = await ContentDocument.find(publicQuery)
+    .select('coverAssetId seo.ogImageAssetId publishedVersionId')
     .lean();
+
+  for (const row of publishedDocs) {
+    if (row.coverAssetId != null && idSet.has(String(row.coverAssetId))) return true;
+    if (row.seo?.ogImageAssetId != null && idSet.has(String(row.seo.ogImageAssetId))) return true;
+  }
+
   const versionIds = publishedDocs.map((row) => row.publishedVersionId).filter(Boolean);
   if (!versionIds.length) return false;
 
@@ -849,36 +1161,72 @@ async function isAssetReferencedInPublicContent(organizationId, assetId) {
     organizationId,
   }).select('blocks').lean();
 
-  return versions.some((version) => blocksContainAssetId(version.blocks, normalizedAssetId));
+  return versions.some((version) =>
+    [...idSet].some((id) => blocksContainAssetId(version.blocks, id)));
 }
 
-async function getPublicHelpAssetForDownload({
+async function getPublicContentAssetForDownload({
   orgSlug,
   assetId,
 }) {
   const org = await resolveOrganizationForPublic(orgSlug);
   if (!org) return null;
 
-  const context = await getPublicPublishingContext(org);
-  if (!context.allowed) return null;
+  const articlesContext = await getPublicPublishingContext(org);
+  let blogContext = null;
+  if (!articlesContext.allowed) {
+    const { getPublicBlogPublishingContext } = require('./publicContentService');
+    blogContext = await getPublicBlogPublishingContext(org);
+    if (!blogContext.allowed) return null;
+  } else {
+    try {
+      const { getPublicBlogPublishingContext } = require('./publicContentService');
+      blogContext = await getPublicBlogPublishingContext(org);
+    } catch {
+      blogContext = null;
+    }
+  }
 
-  const referenced = await isAssetReferencedInPublicContent(org._id, assetId);
-  if (!referenced) return null;
+  const { runWithOrganizationTenantContext } = require('../../utils/runWithOrganizationTenant');
+  return runWithOrganizationTenantContext(org._id, async () => {
+    const referenced = await isAssetReferencedInPublicContent(org._id, assetId);
+    if (!referenced) return null;
 
-  try {
-    const asset = await getAssetById({ organizationId: org._id, assetId });
+    const preferredKey = blogContext?.allowed && !articlesContext.allowed ? 'blog' : 'articles';
+    let asset = await resolveStudioAsset({
+      organizationId: org._id,
+      assetId,
+      addonKey: preferredKey,
+    });
+    if (!asset && preferredKey !== 'blog' && blogContext?.allowed) {
+      asset = await resolveStudioAsset({
+        organizationId: org._id,
+        assetId,
+        addonKey: 'blog',
+      });
+    }
+    if (!asset) return null;
     return {
-      organization: context.organization,
+      organization: (articlesContext.allowed ? articlesContext : blogContext).organization,
       asset,
     };
-  } catch {
-    return null;
-  }
+  });
+}
+
+async function getPublicHelpAssetForDownload({
+  orgSlug,
+  assetId,
+}) {
+  return getPublicContentAssetForDownload({ orgSlug, assetId });
 }
 
 module.exports = {
+  CONTENT_PROFILES,
+  resolveContentProfile,
   normalizeArticleSlug,
   normalizeExportPathPrefix,
+  buildPublicContentQuery,
+  buildPublicArticlesQuery,
   buildArticleExportPath,
   buildCollectionExportPath,
   buildHomeExportPath,
@@ -898,9 +1246,15 @@ module.exports = {
   isAssetReferencedInPublicContent,
   blocksContainAssetId,
   getPublicHelpManifest,
+  getPublicBlogManifest,
   getPublicHelpHomeExport,
+  getPublicBlogHomeExport,
   getPublicHelpCollectionExport,
+  getPublicBlogCollectionExport,
   getPublicHelpStaticSitemap,
+  getPublicBlogStaticSitemap,
   getPublicHelpArticleExport,
+  getPublicBlogPostExport,
   getPublicHelpAssetForDownload,
+  getPublicContentAssetForDownload,
 };

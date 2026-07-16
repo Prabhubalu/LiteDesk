@@ -3,7 +3,7 @@
 const { isAllowedCorsOrigin } = require('../config/corsConfig');
 const {
   extractOrgSlugFromPublicContentPath,
-  isArticlesEmbedOriginAllowed,
+  isContentEmbedOriginAllowed,
 } = require('../services/contentStudio/articlesEmbedOriginService');
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -28,7 +28,7 @@ async function resolvePublicContentCorsAllowed(req, origin) {
   }
 
   const orgSlug = extractOrgSlugFromPublicContentPath(req.path || req.url || '');
-  return isArticlesEmbedOriginAllowed(origin, orgSlug);
+  return isContentEmbedOriginAllowed(origin, orgSlug);
 }
 
 async function publicContentCorsMiddleware(req, res, next) {

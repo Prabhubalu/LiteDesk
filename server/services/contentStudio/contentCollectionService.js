@@ -91,23 +91,58 @@ function applyCollectionIconFields(target, { heroIconKey, heroIconColor, emoji, 
   return target;
 }
 
-async function ensureUniqueSlug({ organizationId, addonKey, slug, excludeId = null }) {
-  const base = slugify(slug);
-  let candidate = base;
-  let suffix = 1;
+function normalizeCategoryName(value) {
+  return String(value || '').trim().toLowerCase();
+}
 
-  while (true) {
-    const query = {
-      organizationId,
-      addonKey: normalizeAddonKey(addonKey),
-      slug: candidate,
-      deletedAt: null,
-    };
-    if (excludeId) query._id = { $ne: excludeId };
-    const existing = await ContentCollection.findOne(query).select('_id').lean();
-    if (!existing) return candidate;
-    suffix += 1;
-    candidate = `${base}-${suffix}`;
+async function assertUniqueCollectionFields({
+  organizationId,
+  addonKey,
+  name,
+  slug,
+  parentId = null,
+  excludeId = null,
+}) {
+  const safeAddonKey = normalizeAddonKey(addonKey);
+  const normalizedParentId = parentId || null;
+  const normalizedName = normalizeCategoryName(name);
+  const candidateSlug = slugify(slug || name);
+
+  const baseQuery = {
+    organizationId,
+    addonKey: safeAddonKey,
+    deletedAt: null,
+    ...(excludeId ? { _id: { $ne: excludeId } } : {}),
+  };
+
+  const siblings = await ContentCollection.find({
+    ...baseQuery,
+    parentId: normalizedParentId,
+  })
+    .select('name slug')
+    .lean();
+
+  const siblingNameMatch = siblings.find(
+    (row) => normalizeCategoryName(row.name) === normalizedName,
+  );
+  if (siblingNameMatch) {
+    throw new ContentCollectionError(
+      'A category with this name already exists at this level.',
+      { code: 'DUPLICATE_CATEGORY_NAME', statusCode: 409 },
+    );
+  }
+
+  const slugRows = await ContentCollection.find({
+    ...baseQuery,
+    slug: candidateSlug,
+  })
+    .select('slug')
+    .lean();
+  if (slugRows.length) {
+    throw new ContentCollectionError(
+      'A category with this URL slug already exists. Choose a different name.',
+      { code: 'DUPLICATE_CATEGORY_SLUG', statusCode: 409 },
+    );
   }
 }
 
@@ -142,10 +177,13 @@ async function createContentCollection({
     throw new ContentCollectionError('Name is required', { code: 'NAME_REQUIRED' });
   }
 
-  const uniqueSlug = await ensureUniqueSlug({
+  const candidateSlug = slugify(slug || safeName);
+  await assertUniqueCollectionFields({
     organizationId,
     addonKey,
-    slug: slug || safeName,
+    name: safeName,
+    slug: candidateSlug,
+    parentId: parentId || null,
   });
 
   const iconFields = applyCollectionIconFields({
@@ -159,7 +197,7 @@ async function createContentCollection({
     organizationId,
     addonKey: normalizeAddonKey(addonKey),
     name: safeName,
-    slug: uniqueSlug,
+    slug: candidateSlug,
     description: String(description || '').trim(),
     emoji: iconFields.emoji,
     heroIconKey: iconFields.heroIconKey,
@@ -196,33 +234,39 @@ async function updateContentCollection({
     throw new ContentCollectionError('Collection not found', { code: 'NOT_FOUND', statusCode: 404 });
   }
 
-  if (name !== undefined) {
-    const safeName = String(name).trim();
-    if (!safeName) throw new ContentCollectionError('Name is required', { code: 'NAME_REQUIRED' });
-    row.name = safeName;
-    if (slug === undefined) {
-      row.slug = await ensureUniqueSlug({
-        organizationId,
-        addonKey: row.addonKey,
-        slug: safeName,
-        excludeId: row._id,
-      });
-    }
+  const finalName = name !== undefined ? String(name).trim() : row.name;
+  if (name !== undefined && !finalName) {
+    throw new ContentCollectionError('Name is required', { code: 'NAME_REQUIRED' });
   }
+
+  const finalParentId = parentId !== undefined ? (parentId || null) : (row.parentId || null);
+  let finalSlug = row.slug;
+  if (slug !== undefined) {
+    finalSlug = slugify(slug);
+  } else if (name !== undefined) {
+    finalSlug = slugify(finalName);
+  }
+
+  const identityChanging = name !== undefined || parentId !== undefined || slug !== undefined;
+  if (identityChanging) {
+    await assertUniqueCollectionFields({
+      organizationId,
+      addonKey: row.addonKey,
+      name: finalName,
+      slug: finalSlug,
+      parentId: finalParentId,
+      excludeId: row._id,
+    });
+    if (name !== undefined) row.name = finalName;
+    if (parentId !== undefined) row.parentId = finalParentId;
+    row.slug = finalSlug;
+  }
+
   if (description !== undefined) row.description = String(description || '').trim();
   if (heroIconKey !== undefined || heroIconColor !== undefined || emoji !== undefined || imageUrl !== undefined) {
     applyCollectionIconFields(row, { heroIconKey, heroIconColor, emoji, imageUrl });
   }
-  if (parentId !== undefined) row.parentId = parentId || null;
   if (sortOrder !== undefined) row.sortOrder = Number(sortOrder) || 0;
-  if (slug !== undefined) {
-    row.slug = await ensureUniqueSlug({
-      organizationId,
-      addonKey: row.addonKey,
-      slug,
-      excludeId: row._id,
-    });
-  }
 
   row.updatedBy = userId || null;
   await row.save();

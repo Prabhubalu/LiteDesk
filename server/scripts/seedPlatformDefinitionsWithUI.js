@@ -923,7 +923,8 @@ const MODULE_DEFINITIONS = [
       create: true,
       edit: true,
       delete: true,
-      view: true
+      view: true,
+      publish: true
     },
     ui: {
       routeBase: '/marketing/blog',

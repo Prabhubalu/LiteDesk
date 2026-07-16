@@ -2582,5 +2582,217 @@
   "coverUploadNew": {
     "message": "Upload new image",
     "description": "Upload a new cover image from disk"
+  },
+  "emptyBlogTitle": {
+    "message": "Start your blog",
+    "description": "Empty blog list title"
+  },
+  "emptyBlogMessage": {
+    "message": "Create your first marketing post to publish on your website.",
+    "description": "Empty blog list message"
+  },
+  "searchBlog": {
+    "message": "Search posts…",
+    "description": "Blog list search placeholder"
+  },
+  "backToBlog": {
+    "message": "Back to Blog",
+    "description": "Categories page back link to blog list"
+  },
+  "fieldSticky": {
+    "message": "Sticky post",
+    "description": "Sticky blog post toggle label"
+  },
+  "fieldStickyHint": {
+    "message": "Keep this post pinned near the top of blog listings.",
+    "description": "Sticky blog post toggle hint"
+  },
+  "fieldTags": {
+    "message": "Tags",
+    "description": "Blog post tags field label"
+  },
+  "fieldTagsPlaceholder": {
+    "message": "product, launch, tips",
+    "description": "Blog post tags input placeholder"
+  },
+  "fieldTagsHint": {
+    "message": "Comma-separated, up to 20 tags.",
+    "description": "Blog post tags field hint"
+  },
+  "seoScoreTitle": {
+    "message": "SEO score",
+    "description": "Content Studio SEO score panel title"
+  },
+  "headlessBlogExampleTitle": {
+    "message": "Headless blog embed",
+    "description": "Headless blog example page title"
+  },
+  "headlessBlogExampleDesc": {
+    "message": "Preview a published blog post via the public embed script.",
+    "description": "Headless blog example page description"
+  },
+  "headlessBlogExamplePostSlug": {
+    "message": "Post slug",
+    "description": "Headless blog example post slug field"
+  },
+  "headlessBlogListExampleTitle": {
+    "message": "Blog list embed demo",
+    "description": "Headless blog list example title"
+  },
+  "headlessBlogListExampleDesc": {
+    "message": "Renders published posts from the public Blog list API.",
+    "description": "Headless blog list example description"
+  },
+  "headlessBlogListExampleLoadFailed": {
+    "message": "Failed to load blog posts",
+    "description": "Headless blog list load failure"
+  },
+  "titlePlaceholderBlog": {
+    "message": "Post title",
+    "description": "Blog post title input placeholder"
+  },
+  "blogAnalyticsTitle": {
+    "message": "Post analytics",
+    "description": "Blog post analytics section title in Content Studio settings"
+  },
+  "blogAnalyticsLoadFailed": {
+    "message": "Failed to load post analytics.",
+    "description": "Blog post analytics load error"
+  },
+  "deletePost": {
+    "message": "Delete post",
+    "description": "Delete blog post action"
+  },
+  "deleteConfirmPost": {
+    "message": "Delete this post permanently?",
+    "description": "Delete blog post confirmation"
+  },
+  "unpublishSuccessPost": {
+    "message": "Post unpublished",
+    "description": "Blog post unpublish success"
+  },
+  "unpublishFailedPost": {
+    "message": "Failed to unpublish post",
+    "description": "Blog post unpublish error"
+  },
+  "archiveSuccessPost": {
+    "message": "Post archived",
+    "description": "Blog post archive success"
+  },
+  "archiveFailedPost": {
+    "message": "Failed to archive post",
+    "description": "Blog post archive error"
+  },
+  "deleteSuccessPost": {
+    "message": "Post deleted",
+    "description": "Blog post delete success"
+  },
+  "deleteFailedPost": {
+    "message": "Failed to delete post",
+    "description": "Blog post delete error"
+  },
+  "componentsHintBlog": {
+    "message": "Insert reusable content sections into your post",
+    "description": "Components panel hint for blog"
+  },
+  "templatesHintBlog": {
+    "message": "Start from a structured post layout",
+    "description": "Templates panel hint for blog"
+  },
+  "visibilityPublicHeadlessHintPost": {
+    "message": "Headless API and webhooks only include posts with Public visibility after publish.",
+    "description": "Hint when blog post visibility is not public for headless delivery"
+  },
+  "publishNonPublicHeadlessConfirmPost": {
+    "message": "This post is not Public. It will not appear in the headless API or trigger public webhooks. Publish anyway?",
+    "description": "Confirmation when publishing a non-public blog post for headless delivery"
+  },
+  "fieldFeaturedPost": {
+    "message": "Featured post",
+    "description": "Featured blog post toggle label"
+  },
+  "fieldFeaturedHintPost": {
+    "message": "Featured public posts appear in popular and featured blog listings.",
+    "description": "Featured blog post toggle hint"
+  },
+  "templateFaqDescBlog": {
+    "message": "Multiple FAQ items in one post",
+    "description": "FAQ template description for blog"
+  },
+  "outlineHintBlog": {
+    "message": "Jump to headings in your post",
+    "description": "Outline panel hint for blog"
+  },
+  "headlessExampleOrgKey": {
+    "message": "Public org key",
+    "description": "Headless public key / org field on blog demo setup"
+  },
+  "headlessExampleSiteDemoBannerBlog": {
+    "message": "Demo customer site — blog content powered by LiteDesk headless embed",
+    "description": "Banner on headless blog example pages"
+  },
+  "headlessExampleSiteNavBlog": {
+    "message": "Blog",
+    "description": "Blog nav link on headless example customer site"
+  },
+  "headlessBlogExampleOpenList": {
+    "message": "Open blog list demo",
+    "description": "Link from blog post demo to list demo"
+  },
+  "headlessBlogExamplePostMissing": {
+    "message": "No public published post found for slug “{slug}”. Publish a post (visibility Public), then open the list demo and click it.",
+    "description": "Headless blog post demo missing slug error"
+  },
+  "headlessBlogExampleLoadFailed": {
+    "message": "Failed to load blog post demo",
+    "description": "Headless blog post demo load failure"
+  },
+  "headlessBlogHomeTopPosts": {
+    "message": "Top Posts",
+    "description": "Blog home top posts section title"
+  },
+  "headlessBlogHomeLatestPosts": {
+    "message": "Latest Posts",
+    "description": "Blog home latest posts section title"
+  },
+  "headlessBlogHomeCategories": {
+    "message": "Recommended Categories",
+    "description": "Blog home categories sidebar title"
+  },
+  "headlessBlogHomeAuthors": {
+    "message": "Popular Authors",
+    "description": "Blog home authors sidebar title"
+  },
+  "headlessBlogHomeNewsletterTitle": {
+    "message": "Subscribe to our newsletter",
+    "description": "Blog home newsletter widget title"
+  },
+  "headlessBlogHomeNewsletterDesc": {
+    "message": "Get product updates and stories in your inbox.",
+    "description": "Blog home newsletter widget description"
+  },
+  "headlessBlogHomeReadMore": {
+    "message": "Read More →",
+    "description": "Blog home feed read more link"
+  },
+  "blogCategoriesSubtitle": {
+    "message": "Organize posts into categories and subcategories.",
+    "description": "Blog categories management page subtitle"
+  },
+  "blogCategoryDescriptionPlaceholder": {
+    "message": "Short summary shown on blog category cards",
+    "description": "Blog category description field placeholder"
+  },
+  "blogCategoryDescriptionHint": {
+    "message": "Optional. Displayed under the category name on the public blog home page.",
+    "description": "Blog category description field hint"
+  },
+  "blogCategoryHeroIconHint": {
+    "message": "Pick any Heroicon for your /blog category card.",
+    "description": "Hint for hero icon picker on blog category form"
+  },
+  "blogDeleteCategoryConfirm": {
+    "message": "Delete \"{name}\"? Posts in this category will keep their assignment until you change it.",
+    "description": "Confirm delete blog category dialog"
   }
 }

@@ -17,7 +17,7 @@
         @click="emit('apply-template', template)"
       >
         <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">{{ t(template.labelKey) }}</p>
-        <p class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">{{ t(template.descriptionKey) }}</p>
+        <p class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">{{ resolveTemplateDescription(template) }}</p>
       </button>
       <p v-if="!filtered.length" class="text-sm text-neutral-500">{{ t('contentStudio.emptyTemplates') }}</p>
     </div>
@@ -47,8 +47,15 @@ const filtered = computed(() => {
   return items.filter(
     (item) =>
       t(item.labelKey).toLowerCase().includes(q) ||
-      t(item.descriptionKey).toLowerCase().includes(q) ||
+      resolveTemplateDescription(item).toLowerCase().includes(q) ||
       item.id.includes(q),
   );
 });
+
+function resolveTemplateDescription(template) {
+  if (props.mode === 'blog' && template.descriptionKey === 'contentStudio.templateFaqDesc') {
+    return t('contentStudio.templateFaqDescBlog');
+  }
+  return t(template.descriptionKey);
+}
 </script>

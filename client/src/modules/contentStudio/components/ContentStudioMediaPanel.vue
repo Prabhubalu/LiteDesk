@@ -16,7 +16,7 @@
       <div v-else class="grid grid-cols-2 gap-2">
         <button
           v-for="asset in assets"
-          :key="asset._id"
+          :key="asset._id || asset.assetId"
           type="button"
           class="group overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 text-left dark:border-neutral-700 dark:bg-neutral-800/50"
           @click="emit('insert-image', asset)"
@@ -45,10 +45,11 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useBuilderUi } from '@/composables/useBuilderUi';
 import { useContentAssets } from '@/composables/useContentAssets';
+import { useMarketingAssets } from '@/composables/useMarketingAssets';
 
 const props = defineProps({
   mode: { type: String, default: 'articles' },
@@ -59,24 +60,26 @@ const emit = defineEmits(['insert-image']);
 const { t } = useI18n();
 const ui = useBuilderUi();
 const contentAssets = useContentAssets();
+const marketingAssets = useMarketingAssets();
+const assetLibrary = computed(() => (props.mode === 'blog' ? marketingAssets : contentAssets));
 
 const search = ref('');
 const loading = ref(false);
 const assets = ref([]);
 
 function assetUrl(asset) {
-  return asset?.url || asset?.publicUrl || asset?.thumbnailUrl || '';
+  return asset?.downloadUrl || asset?.url || asset?.publicUrl || asset?.thumbnailUrl || '';
 }
 
 async function loadAssets() {
   loading.value = true;
   try {
-    await contentAssets.fetchAssets({
+    await assetLibrary.value.fetchAssets({
       type: 'image',
       search: search.value.trim() || undefined,
       limit: 40,
     });
-    assets.value = contentAssets.assets.value || [];
+    assets.value = assetLibrary.value.assets.value || [];
   } finally {
     loading.value = false;
   }
@@ -87,8 +90,7 @@ async function handleUpload(event) {
   event.target.value = '';
   if (!file) return;
   try {
-    const library = props.mode === 'blog' ? 'marketing' : 'content';
-    const asset = await contentAssets.uploadAsset(file, { library });
+    const asset = await assetLibrary.value.uploadAsset(file, { type: 'image' });
     if (asset) {
       emit('insert-image', asset);
       await loadAssets();

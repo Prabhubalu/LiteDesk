@@ -145,6 +145,7 @@ const ADDON_DEFAULT_SETTINGS = {
       publishWebhookUrl: '',
       embedWebsiteDomain: '',
       embedWebsiteOrigins: [],
+      staticSyncHostType: 'embed',
     },
     appearance: {
       layoutPreset: 'classic',
@@ -164,9 +165,12 @@ const ADDON_DEFAULT_SETTINGS = {
     urlPrefix: '/blog',
     rssEnabled: true,
     commentsEnabled: false,
+    defaultCollectionId: null,
     publishing: {
       headlessApiEnabled: true,
       publishWebhookUrl: '',
+      embedWebsiteDomain: '',
+      staticSyncHostType: 'embed',
     },
   },
 };

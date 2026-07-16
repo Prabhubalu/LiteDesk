@@ -288,6 +288,8 @@ exports.listBlogPosts = async (req, res) => {
       page: req.query.page,
       limit: req.query.limit,
       search: req.query.search,
+      collectionId: req.query.collectionId,
+      visibility: req.query.visibility,
     });
     return res.json({ success: true, ...result });
   } catch (error) {
@@ -305,7 +307,10 @@ exports.createBlogPost = async (req, res) => {
       summary: req.body?.summary,
       visibility: req.body?.visibility,
       featured: req.body?.featured,
+      sticky: req.body?.sticky,
+      tags: req.body?.tags,
       blocks: req.body?.blocks,
+      collectionId: req.body?.collectionId,
       coverAssetId: req.body?.coverAssetId,
       presentation: req.body?.presentation,
       authorId: req.body?.authorId,
@@ -313,6 +318,23 @@ exports.createBlogPost = async (req, res) => {
       userId: req.user._id,
     });
     return res.status(201).json({ success: true, data });
+  } catch (error) {
+    return sendContentStudioError(res, error);
+  }
+};
+
+exports.getBlogPostAnalytics = async (req, res) => {
+  try {
+    const articleAnalyticsService = require('../services/contentStudio/articleAnalyticsService');
+    const doc = await contentDocumentService.getContentDocumentById({
+      organizationId: req.user.organizationId,
+      id: req.params.id,
+    });
+    const analytics = await articleAnalyticsService.getArticleAnalytics({
+      organizationId: req.user.organizationId,
+      contentDocumentId: doc._id,
+    });
+    return res.json({ success: true, data: analytics });
   } catch (error) {
     return sendContentStudioError(res, error);
   }
@@ -341,12 +363,123 @@ exports.updateBlogPost = async (req, res) => {
       slug: req.body?.slug,
       visibility: req.body?.visibility,
       featured: req.body?.featured,
+      sticky: req.body?.sticky,
+      tags: req.body?.tags,
       blocks: req.body?.blocks,
       seo: req.body?.seo,
+      collectionId: req.body?.collectionId,
       coverAssetId: req.body?.coverAssetId,
       presentation: req.body?.presentation,
       authorId: req.body?.authorId,
       authorName: req.body?.authorName,
+      userId: req.user._id,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    return sendContentStudioError(res, error);
+  }
+};
+
+exports.deleteBlogPost = async (req, res) => {
+  try {
+    const data = await contentDocumentService.deleteContentDocument({
+      organizationId: req.user.organizationId,
+      id: req.params.id,
+      userId: req.user._id,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    return sendContentStudioError(res, error);
+  }
+};
+
+exports.unpublishBlogPost = async (req, res) => {
+  try {
+    const data = await contentDocumentService.unpublishContentDocument({
+      organizationId: req.user.organizationId,
+      id: req.params.id,
+      userId: req.user._id,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    return sendContentStudioError(res, error);
+  }
+};
+
+exports.archiveBlogPost = async (req, res) => {
+  try {
+    const data = await contentDocumentService.archiveContentDocument({
+      organizationId: req.user.organizationId,
+      id: req.params.id,
+      userId: req.user._id,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    return sendContentStudioError(res, error);
+  }
+};
+
+exports.listBlogCollections = async (req, res) => {
+  try {
+    const data = await contentCollectionService.listContentCollections({
+      organizationId: req.user.organizationId,
+      addonKey: ADDON_KEYS.BLOG,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    return sendContentStudioError(res, error);
+  }
+};
+
+exports.createBlogCollection = async (req, res) => {
+  try {
+    const data = await contentCollectionService.createContentCollection({
+      organizationId: req.user.organizationId,
+      addonKey: ADDON_KEYS.BLOG,
+      name: req.body?.name,
+      slug: req.body?.slug,
+      description: req.body?.description,
+      emoji: req.body?.emoji,
+      heroIconKey: req.body?.heroIconKey,
+      heroIconColor: req.body?.heroIconColor,
+      imageUrl: req.body?.imageUrl,
+      parentId: req.body?.parentId,
+      sortOrder: req.body?.sortOrder,
+      userId: req.user._id,
+    });
+    return res.status(201).json({ success: true, data });
+  } catch (error) {
+    return sendContentStudioError(res, error);
+  }
+};
+
+exports.updateBlogCollection = async (req, res) => {
+  try {
+    const data = await contentCollectionService.updateContentCollection({
+      organizationId: req.user.organizationId,
+      id: req.params.collectionId,
+      name: req.body?.name,
+      slug: req.body?.slug,
+      description: req.body?.description,
+      emoji: req.body?.emoji,
+      heroIconKey: req.body?.heroIconKey,
+      heroIconColor: req.body?.heroIconColor,
+      imageUrl: req.body?.imageUrl,
+      parentId: req.body?.parentId,
+      sortOrder: req.body?.sortOrder,
+      userId: req.user._id,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    return sendContentStudioError(res, error);
+  }
+};
+
+exports.deleteBlogCollection = async (req, res) => {
+  try {
+    const data = await contentCollectionService.deleteContentCollection({
+      organizationId: req.user.organizationId,
+      id: req.params.collectionId,
       userId: req.user._id,
     });
     return res.json({ success: true, data });

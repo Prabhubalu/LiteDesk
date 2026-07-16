@@ -328,6 +328,9 @@ const OrganizationSchema = new mongoose.Schema({
         },
         articles: {
             publicKey: { type: String, default: null, index: true },
+        },
+        blog: {
+            publicKey: { type: String, default: null, index: true },
         }
     },
 

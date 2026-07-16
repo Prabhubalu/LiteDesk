@@ -193,7 +193,7 @@
               type="text"
               :class="CONTENT_STUDIO_TITLE_OVERLAP_CLASS"
               :style="titleStyle"
-              :placeholder="t('contentStudio.titlePlaceholder')"
+              :placeholder="titlePlaceholder"
               @input="emit('update:title', $event.target.value)"
             />
             <textarea
@@ -222,7 +222,7 @@
             type="text"
             :class="CONTENT_STUDIO_TITLE_CLASS"
             :style="titleStyle"
-            :placeholder="t('contentStudio.titlePlaceholder')"
+            :placeholder="titlePlaceholder"
             @input="emit('update:title', $event.target.value)"
           />
 
@@ -264,7 +264,7 @@
             type="text"
             :class="[CONTENT_STUDIO_TITLE_CLASS, 'mt-4']"
             :style="titleStyle"
-            :placeholder="t('contentStudio.titlePlaceholder')"
+            :placeholder="titlePlaceholder"
             @input="emit('update:title', $event.target.value)"
           />
 
@@ -307,6 +307,7 @@ import { LinkIcon, TrashIcon, DocumentTextIcon, Bars3BottomLeftIcon, Bars3Bottom
 import HoverTooltip from '@/components/common/HoverTooltip.vue';
 import { useBuilderUi } from '@/composables/useBuilderUi';
 import { useContentAssets } from '@/composables/useContentAssets';
+import { useMarketingAssets } from '@/composables/useMarketingAssets';
 import BuilderImageAssetPicker from '@/components/templates/builder/BuilderImageAssetPicker.vue';
 import { consumePendingGalleryIntent, applyGalleryImageFromUpload, setPendingGalleryIntent } from '../editor/slashCommands';
 import { isEditorInGallery, removeGalleryImage } from '../editor/blockCommands';
@@ -351,6 +352,8 @@ const emit = defineEmits(['update:title', 'update:subtitle', 'image-uploaded', '
 const { t } = useI18n();
 const ui = useBuilderUi();
 const contentAssets = useContentAssets();
+const marketingAssets = useMarketingAssets();
+const editorAssetLibrary = computed(() => (props.mode === 'blog' ? marketingAssets : contentAssets));
 
 const bubbleMenuTippyOptions = {
   duration: 100,
@@ -366,6 +369,11 @@ const bubbleMenuTooltipZIndex = 10050;
 const imageInputRef = ref(null);
 const coverPickerOpen = ref(false);
 const coverAssetLibrary = computed(() => (props.mode === 'blog' ? 'marketing' : 'content'));
+const titlePlaceholder = computed(() => (
+  props.mode === 'blog'
+    ? t('contentStudio.titlePlaceholderBlog')
+    : t('contentStudio.titlePlaceholder')
+));
 const headings = [
   { level: 1, label: 'H1', labelKey: 'contentStudio.bubbleHeading1' },
   { level: 2, label: 'H2', labelKey: 'contentStudio.bubbleHeading2' },
@@ -527,8 +535,8 @@ async function handleImageSelect(event) {
   event.target.value = '';
   if (!file || !props.editor) return;
   try {
-    const asset = await contentAssets.uploadAsset(file, { library: props.mode === 'blog' ? 'marketing' : 'content' });
-    const url = asset?.url || asset?.publicUrl || asset?.downloadUrl;
+    const asset = await editorAssetLibrary.value.uploadAsset(file, { type: 'image' });
+    const url = asset?.downloadUrl || asset?.url || asset?.publicUrl;
     if (!url) return;
     const intent = consumePendingGalleryIntent(props.editor);
     if (intent) {

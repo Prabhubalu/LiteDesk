@@ -52,6 +52,10 @@ router.get('/addons/articles/settings', addonSettingsController.getArticlesAddon
 router.put('/addons/articles/settings', addonSettingsController.updateArticlesAddonSettings);
 router.post('/addons/articles/settings/test-webhook', addonSettingsController.sendArticlesPublishWebhookTest);
 router.post('/addons/articles/settings/generate-webhook-secret', addonSettingsController.generateArticlesPublishWebhookSecret);
+router.get('/addons/blog/settings', addonSettingsController.getBlogAddonSettings);
+router.put('/addons/blog/settings', addonSettingsController.updateBlogAddonSettings);
+router.post('/addons/blog/settings/test-webhook', addonSettingsController.sendBlogPublishWebhookTest);
+router.post('/addons/blog/settings/generate-webhook-secret', addonSettingsController.generateBlogPublishWebhookSecret);
 router.get('/addons/live_chat/widget', addonSettingsController.getLiveChatWidgetSettings);
 router.put('/addons/live_chat/widget', addonSettingsController.updateLiveChatWidgetSettings);
 router.get('/addons/live_chat/outcomes', addonSettingsController.getLiveChatOutcomeSettings);

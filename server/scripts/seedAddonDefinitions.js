@@ -79,7 +79,7 @@ const BLOG_ADDON = {
   optionalApps: ['SALES'],
   marketplace: {
     category: 'Marketing',
-    comingSoon: true,
+    comingSoon: false,
     beta: false,
     shortDescription: 'Publish a branded blog on your website without WordPress.',
     docsUrl: '',

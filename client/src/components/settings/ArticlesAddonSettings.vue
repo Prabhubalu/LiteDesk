@@ -883,6 +883,13 @@ function inferStaticSyncHostType(webhookUrl) {
   return 'next';
 }
 
+function normalizeStoredHostType(stored, webhookUrl) {
+  const allowed = new Set(['embed', 'next', 'php', 'cli']);
+  const raw = String(stored || '').trim().toLowerCase();
+  if (allowed.has(raw)) return raw;
+  return inferStaticSyncHostType(webhookUrl);
+}
+
 function isSuggestedPublishWebhookUrl(url, domain, hostType) {
   const suggested = buildSuggestedPublishWebhookUrl(domain, hostType);
   return Boolean(suggested && String(url || '').trim() === suggested);
@@ -1304,7 +1311,10 @@ function collectionLabel(collection) {
 }
 
 function snapshotForm() {
-  return JSON.stringify(form);
+  return JSON.stringify({
+    form,
+    staticSyncHostType: staticSyncHostType.value,
+  });
 }
 
 function syncDirty() {
@@ -1351,7 +1361,10 @@ function applySettings(res) {
   hasPublishWebhookSecret.value = Boolean(settings.publishing?.hasPublishWebhookSecret);
   form.headlessApiEnabled = settings.publishing?.headlessApiEnabled !== false;
   form.embedWebsiteDomain = settings.publishing?.embedWebsiteDomain || '';
-  staticSyncHostType.value = inferStaticSyncHostType(form.publishWebhookUrl);
+  staticSyncHostType.value = normalizeStoredHostType(
+    settings.publishing?.staticSyncHostType,
+    form.publishWebhookUrl,
+  );
   publishWebhookUrlManuallyEdited.value = Boolean(
     form.publishWebhookUrl
     && !isSuggestedPublishWebhookUrl(
@@ -1394,6 +1407,7 @@ async function save({ silent = false } = {}) {
       publishWebhookUrl: form.publishWebhookUrl,
       headlessApiEnabled: form.headlessApiEnabled,
       embedWebsiteDomain: form.embedWebsiteDomain,
+      staticSyncHostType: staticSyncHostType.value,
       defaultCollectionId: form.defaultCollectionId,
       caseDeflectionEnabled: form.caseDeflectionEnabled,
       staleContentAlertDays: form.staleContentAlertDays,
@@ -1426,6 +1440,7 @@ watch(
     publishWebhookUrl: form.publishWebhookUrl,
     headlessApiEnabled: form.headlessApiEnabled,
     embedWebsiteDomain: form.embedWebsiteDomain,
+    staticSyncHostType: staticSyncHostType.value,
     defaultCollectionId: form.defaultCollectionId,
     caseDeflectionEnabled: form.caseDeflectionEnabled,
     staleContentAlertDays: form.staleContentAlertDays,

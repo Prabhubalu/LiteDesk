@@ -1,7 +1,7 @@
 <template>
   <div class="rounded-lg border border-neutral-200 p-3 dark:border-neutral-700">
     <p class="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-      {{ t('contentStudio.articleAnalyticsTitle') }}
+      {{ mode === 'blog' ? t('contentStudio.blogAnalyticsTitle') : t('contentStudio.articleAnalyticsTitle') }}
     </p>
 
     <div v-if="loading" class="mt-3 text-sm text-neutral-500 dark:text-neutral-400">
@@ -36,10 +36,11 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { getArticleAnalytics } from '../services/contentStudioApi';
+import { getContentAnalytics } from '../services/contentStudioApi';
 
 const props = defineProps({
   articleId: { type: String, required: true },
+  mode: { type: String, default: 'articles' },
 });
 
 const { t } = useI18n();
@@ -58,9 +59,13 @@ async function loadAnalytics() {
   loading.value = true;
   error.value = '';
   try {
-    analytics.value = await getArticleAnalytics(props.articleId);
+    analytics.value = await getContentAnalytics(props.mode === 'blog' ? 'blog' : 'articles', props.articleId);
   } catch (err) {
-    error.value = err?.message || t('contentStudio.articleAnalyticsLoadFailed');
+    error.value = err?.message || (
+      props.mode === 'blog'
+        ? t('contentStudio.blogAnalyticsLoadFailed')
+        : t('contentStudio.articleAnalyticsLoadFailed')
+    );
   } finally {
     loading.value = false;
   }
@@ -71,7 +76,7 @@ onMounted(() => {
 });
 
 watch(
-  () => props.articleId,
+  () => [props.articleId, props.mode],
   () => {
     void loadAnalytics();
   },

@@ -1107,6 +1107,562 @@
     "message": "Articles settings",
     "description": "Articles addon settings page title"
   },
+  "addonsBlogSettingsTitle": {
+    "message": "Blog settings",
+    "description": "Blog addon settings page title"
+  },
+  "addonsBlogSettingsDesc": {
+    "message": "Configure RSS, comments, and headless blog publishing.",
+    "description": "Blog addon settings page description"
+  },
+  "addonsBlogGeneralTitle": {
+    "message": "General",
+    "description": "Blog general settings section title"
+  },
+  "addonsBlogGeneralDesc": {
+    "message": "RSS, comments, and default category.",
+    "description": "Blog general settings section description"
+  },
+  "addonsBlogUrlPrefix": {
+    "message": "URL prefix",
+    "description": "Blog URL prefix setting label"
+  },
+  "addonsBlogRssEnabled": {
+    "message": "Enable RSS feed",
+    "description": "Blog RSS toggle label"
+  },
+  "addonsBlogRssFeedUrlLabel": {
+    "message": "RSS feed URL",
+    "description": "Blog RSS feed URL label"
+  },
+  "addonsBlogRssFeedUrlHint": {
+    "message": "Blog-wide feed. Category and post feeds use the templates below.",
+    "description": "Blog RSS feed URL hint"
+  },
+  "addonsBlogRssCategoryFeedLabel": {
+    "message": "Category RSS (replace {slug})",
+    "description": "Blog category RSS template label"
+  },
+  "addonsBlogRssPostFeedLabel": {
+    "message": "Post RSS (replace {slug})",
+    "description": "Blog post RSS template label"
+  },
+  "addonsBlogRssOpenFeed": {
+    "message": "Open blog feed",
+    "description": "Blog open RSS feed link"
+  },
+  "addonsBlogCommentsEnabled": {
+    "message": "Enable comments (planned)",
+    "description": "Blog comments toggle label"
+  },
+  "addonsBlogDefaultCollection": {
+    "message": "Default category",
+    "description": "Blog default collection select label"
+  },
+  "addonsBlogPublishingTitle": {
+    "message": "Headless publishing",
+    "description": "Blog publishing settings section title"
+  },
+  "addonsBlogPublishingDesc": {
+    "message": "Public JSON API and publish webhooks for your website.",
+    "description": "Blog publishing settings section description"
+  },
+  "addonsBlogHeadlessApiEnabled": {
+    "message": "Enable headless API",
+    "description": "Blog headless API toggle"
+  },
+  "addonsBlogIntegrationUrls": {
+    "message": "Public API URLs",
+    "description": "Blog integration URL list label"
+  },
+  "addonsBlogIntegrationList": {
+    "message": "Blog list",
+    "description": "Blog integration list URL label"
+  },
+  "addonsBlogIntegrationPost": {
+    "message": "Blog post template",
+    "description": "Blog integration post URL template label"
+  },
+  "addonsBlogIntegrationRss": {
+    "message": "RSS feed (blog)",
+    "description": "Blog integration RSS URL label"
+  },
+  "addonsBlogIntegrationRssCategory": {
+    "message": "RSS feed (category)",
+    "description": "Blog integration category RSS URL template label"
+  },
+  "addonsBlogIntegrationRssPost": {
+    "message": "RSS feed (post)",
+    "description": "Blog integration post RSS URL template label"
+  },
+  "addonsBlogIntegrationRecent": {
+    "message": "Recent posts",
+    "description": "Blog integration recent URL label"
+  },
+  "addonsBlogIntegrationPopular": {
+    "message": "Popular posts",
+    "description": "Blog integration popular URL label"
+  },
+  "addonsBlogIntegrationCollections": {
+    "message": "Collections",
+    "description": "Blog integration collections URL label"
+  },
+  "addonsBlogIntegrationSitemap": {
+    "message": "Sitemap",
+    "description": "Blog integration sitemap URL label"
+  },
+  "addonsBlogEmbedWebsiteDomain": {
+    "message": "Embed website domain",
+    "description": "Blog embed allowed website domain field"
+  },
+  "addonsBlogEmbedWebsiteDomainPlaceholder": {
+    "message": "www.example.com",
+    "description": "Blog embed website domain placeholder"
+  },
+  "addonsBlogEmbedWebsiteDomainHint": {
+    "message": "Origins allowed to call the public blog embed API from your site.",
+    "description": "Blog embed website domain hint"
+  },
+  "addonsBlogEmbedSnippetLabel": {
+    "message": "Embed snippet",
+    "description": "Blog headless embed snippet label"
+  },
+  "addonsBlogEmbedSnippetDesc": {
+    "message": "Paste on every blog page. /blog shows the list; /blog/{slug} shows the post.",
+    "description": "Blog unified embed snippet description"
+  },
+  "addonsBlogCopied": {
+    "message": "Copied to clipboard",
+    "description": "Blog settings copy success toast"
+  },
+  "addonsBlogCopiedNamed": {
+    "message": "Copied {label}",
+    "description": "Blog settings copy success toast with label"
+  },
+  "addonsBlogCopyFailed": {
+    "message": "Could not copy",
+    "description": "Blog settings copy failure toast"
+  },
+  "addonsBlogUrlPrefixHint": {
+    "message": "Customer-site path for blog pages (used in embed link prefixes and OG previews).",
+    "description": "Blog URL prefix hint"
+  },
+  "addonsBlogCustomerSiteTitle": {
+    "message": "Customer website",
+    "description": "Blog customer site settings section title"
+  },
+  "addonsBlogCustomerSiteDesc": {
+    "message": "Connect your website domain, copy the embed snippet, and optionally set up static sync.",
+    "description": "Blog customer site settings section description"
+  },
+  "addonsBlogCustomerSiteSetupType": {
+    "message": "How is your site hosted?",
+    "description": "Blog customer site setup type label"
+  },
+  "addonsBlogEmbedPublicKeyLabel": {
+    "message": "Headless org key",
+    "description": "Blog headless public key label"
+  },
+  "addonsBlogEmbedPublicKeyHint": {
+    "message": "Use this key (or your org slug) as data-org in embed scripts.",
+    "description": "Blog headless public key hint"
+  },
+  "addonsBlogEmbedPublicKeyPending": {
+    "message": "Save settings to generate your org key",
+    "description": "Blog public key pending placeholder"
+  },
+  "addonsBlogEmbedWebsiteOriginsAllowed": {
+    "message": "Allowed origins: {origins}",
+    "description": "Blog embed website origins allowed hint"
+  },
+  "addonsBlogDeployKitTitle": {
+    "message": "Deploy kit",
+    "description": "Blog deploy kit title"
+  },
+  "addonsBlogDeployKitDesc": {
+    "message": "Download a ready-to-host folder with the unified blog embed and SPA routing files.",
+    "description": "Blog deploy kit description"
+  },
+  "addonsBlogDeployKitStep1": {
+    "message": "Download the kit and upload it to your host.",
+    "description": "Blog deploy kit step 1"
+  },
+  "addonsBlogDeployKitStep2": {
+    "message": "Save your website domain above so the public API allows your origin.",
+    "description": "Blog deploy kit step 2"
+  },
+  "addonsBlogDeployKitStep3": {
+    "message": "Open /blog/ on your site — list and posts share one embed.",
+    "description": "Blog deploy kit step 3"
+  },
+  "addonsBlogDeployKitDownload": {
+    "message": "Download deploy kit",
+    "description": "Blog deploy kit download button"
+  },
+  "addonsBlogDeployKitDownloading": {
+    "message": "Preparing download…",
+    "description": "Blog deploy kit downloading label"
+  },
+  "addonsBlogDeployKitDownloaded": {
+    "message": "Deploy kit downloaded",
+    "description": "Blog deploy kit success toast"
+  },
+  "addonsBlogDeployKitDownloadFailed": {
+    "message": "Could not download deploy kit",
+    "description": "Blog deploy kit failure toast"
+  },
+  "addonsBlogUnifiedEmbedSnippetLabel": {
+    "message": "Embed snippet",
+    "description": "Blog unified embed snippet label"
+  },
+  "addonsBlogUnifiedEmbedSnippetDesc": {
+    "message": "Paste once. /blog shows the list; /blog/{slug} shows the post.",
+    "description": "Blog unified embed snippet description"
+  },
+  "addonsBlogUnifiedPageSnippetLabel": {
+    "message": "Full HTML page",
+    "description": "Blog unified page snippet label"
+  },
+  "addonsBlogUnifiedPageSnippetDesc": {
+    "message": "Complete HTML page with the same unified embed — useful for static hosts.",
+    "description": "Blog unified page snippet description"
+  },
+  "addonsBlogEmbedDemoHint": {
+    "message": "Preview the blog embed:",
+    "description": "Blog embed demo hint"
+  },
+  "addonsBlogAdvancedEmbedsTitle": {
+    "message": "Advanced embeds",
+    "description": "Blog advanced embeds collapsible title"
+  },
+  "addonsBlogCopySnippet": {
+    "message": "Copy snippet",
+    "description": "Blog copy snippet button"
+  },
+  "addonsBlogRoutesTitle": {
+    "message": "Customer site routes",
+    "description": "Blog customer routes section title"
+  },
+  "addonsBlogRoutesDesc": {
+    "message": "Map these paths on your site — one embed handles both.",
+    "description": "Blog customer routes section description"
+  },
+  "addonsBlogRouteList": {
+    "message": "Blog list",
+    "description": "Blog list route label"
+  },
+  "addonsBlogRoutePost": {
+    "message": "Blog post",
+    "description": "Blog post route label"
+  },
+  "addonsBlogWebhookSecretOnce": {
+    "message": "Copy this secret now — it will not be shown again: {secret}",
+    "description": "Blog one-time webhook secret display"
+  },
+  "addonsBlogCurlInstallTitle": {
+    "message": "One-line quickstart",
+    "description": "Blog curl install title"
+  },
+  "addonsBlogCurlInstallDesc": {
+    "message": "Downloads a starter HTML page with the unified blog embed. Open it from your LiteDesk host, then set your org.",
+    "description": "Blog curl install description"
+  },
+  "addonsBlogDemosTitle": {
+    "message": "Live demos",
+    "description": "Blog demos section title"
+  },
+  "addonsBlogOpenDemo": {
+    "message": "Open demo",
+    "description": "Blog open demo button"
+  },
+  "addonsBlogDemoListLabel": {
+    "message": "Blog list demo",
+    "description": "Blog list demo label"
+  },
+  "addonsBlogDemoListDesc": {
+    "message": "Archive view — same embed as production at /blog",
+    "description": "Blog list demo description"
+  },
+  "addonsBlogDemoPostLabel": {
+    "message": "Single post demo",
+    "description": "Blog post demo label"
+  },
+  "addonsBlogDemoPostDesc": {
+    "message": "Post view — same embed resolves /blog/{slug}",
+    "description": "Blog post demo description"
+  },
+  "addonsBlogDemoPostNeedsPublish": {
+    "message": "Publish a public blog post first — opens the list demo until then",
+    "description": "Blog post demo hint when no published post exists"
+  },
+  "addonsBlogEmbedListSnippetLabel": {
+    "message": "List embed snippet",
+    "description": "Blog list embed snippet label (legacy)"
+  },
+  "addonsBlogEmbedListSnippetDesc": {
+    "message": "Paste into your blog archive page.",
+    "description": "Blog list embed snippet description (legacy)"
+  },
+  "addonsBlogEmbedPostSnippetLabel": {
+    "message": "Post embed snippet",
+    "description": "Blog post embed snippet label (legacy)"
+  },
+  "addonsBlogEmbedPostSnippetDesc": {
+    "message": "Paste into your post detail page and set data-slug.",
+    "description": "Blog post embed snippet description (legacy)"
+  },
+  "addonsBlogIntegrationUrlsUnavailable": {
+    "message": "API URLs unavailable until headless publishing is enabled and org key is ready.",
+    "description": "Blog integration URLs unavailable message"
+  },
+  "addonsBlogDeveloperSetupTitle": {
+    "message": "Developer setup",
+    "description": "Blog developer setup section title"
+  },
+  "addonsBlogDeveloperSetupDesc": {
+    "message": "Copy-paste curls and fetch examples against the public Blog API.",
+    "description": "Blog developer setup section description"
+  },
+  "addonsBlogExampleCurlList": {
+    "message": "curl — list posts",
+    "description": "Blog curl list example label"
+  },
+  "addonsBlogExampleCurlPost": {
+    "message": "curl — single post",
+    "description": "Blog curl post example label"
+  },
+  "addonsBlogExampleCurlRss": {
+    "message": "curl — RSS",
+    "description": "Blog curl RSS example label"
+  },
+  "addonsBlogExampleFetch": {
+    "message": "fetch — render blocks",
+    "description": "Blog fetch example label"
+  },
+  "addonsBlogWebhookDesc": {
+    "message": "Notify your site when a post is published or unpublished. Use /api/arivu-webhook/blog on Next.js so it does not collide with Articles (/api/arivu-webhook).",
+    "description": "Blog webhook section description"
+  },
+  "addonsBlogWebhookUrl": {
+    "message": "Publish webhook URL",
+    "description": "Blog webhook URL label"
+  },
+  "addonsBlogWebhookUrlPlaceholder": {
+    "message": "https://example.com/api/arivu-webhook/blog",
+    "description": "Blog webhook URL placeholder"
+  },
+  "addonsBlogSendTestWebhook": {
+    "message": "Send test webhook",
+    "description": "Blog test webhook button"
+  },
+  "addonsBlogWebhookTesting": {
+    "message": "Sending…",
+    "description": "Blog test webhook in progress label"
+  },
+  "addonsBlogWebhookTestSent": {
+    "message": "Test webhook delivered",
+    "description": "Blog test webhook success toast"
+  },
+  "addonsBlogWebhookTestFailed": {
+    "message": "Failed to deliver test webhook",
+    "description": "Blog test webhook failure toast"
+  },
+  "addonsBlogGenerateWebhookSecret": {
+    "message": "Generate webhook secret",
+    "description": "Blog generate webhook secret button"
+  },
+  "addonsBlogWebhookSecretPresent": {
+    "message": "A webhook secret is configured.",
+    "description": "Blog webhook secret present hint"
+  },
+  "addonsBlogWebhookSecretGenerated": {
+    "message": "Webhook secret generated. Copy it now — it will not be shown again.",
+    "description": "Blog webhook secret generated toast"
+  },
+  "addonsBlogWebhookSecretGenerateFailed": {
+    "message": "Failed to generate webhook secret",
+    "description": "Blog webhook secret generate failure"
+  },
+  "addonsBlogLoadFailed": {
+    "message": "Failed to load Blog settings",
+    "description": "Blog settings load failure"
+  },
+  "addonsBlogSaveFailed": {
+    "message": "Failed to save Blog settings",
+    "description": "Blog settings save failure"
+  },
+  "addonsBlogStaticSyncDesc": {
+    "message": "Pre-render blog HTML and mirror assets on your domain with incremental publish webhooks.",
+    "description": "Blog static HTML sync section description"
+  },
+  "addonsBlogStaticSyncHostType": {
+    "message": "Publishing method",
+    "description": "Host type selector label for Blog static sync"
+  },
+  "addonsBlogStaticSyncHostEmbed": {
+    "message": "Embed only (live API, no static SEO)",
+    "description": "Blog static sync host option for embed fallback"
+  },
+  "addonsBlogStaticSyncHostNext": {
+    "message": "Vercel / Next.js (CLI sync + webhook)",
+    "description": "Blog static sync host option for Next.js"
+  },
+  "addonsBlogStaticSyncHostPhp": {
+    "message": "Shared hosting / PHP",
+    "description": "Blog static sync host option for PHP"
+  },
+  "addonsBlogStaticSyncHostCli": {
+    "message": "CLI / CI / S3",
+    "description": "Blog static sync host option for CLI"
+  },
+  "addonsBlogStaticSyncEmbedNote": {
+    "message": "Use the embed snippets and live demos below — no static HTML sync required.",
+    "description": "Note when Blog embed-only host type is selected"
+  },
+  "addonsBlogStaticSyncNextHint": {
+    "message": "One-command install adds /blog App Router pages into your Next.js site. Point the publish webhook at /api/arivu-webhook/blog.",
+    "description": "Hint when Blog Next.js static sync host type is selected"
+  },
+  "addonsBlogStaticSyncPhpSteps": {
+    "message": "One PHP file on your server — writes SEO-ready blog HTML on each publish.",
+    "description": "PHP Blog static sync setup steps"
+  },
+  "addonsBlogStaticSyncCliSteps": {
+    "message": "Run from your project root or CI. Initial full sync, then rely on webhooks for incremental updates.",
+    "description": "CLI Blog static sync setup steps"
+  },
+  "addonsBlogStaticSyncManifestUrl": {
+    "message": "Manifest URL",
+    "description": "Copy label for Blog headless manifest.json URL"
+  },
+  "addonsBlogStaticSyncExportUrl": {
+    "message": "Example post export URL",
+    "description": "Copy label for example Blog post export URL"
+  },
+  "addonsBlogStaticSyncSitemapUrl": {
+    "message": "Static sitemap URL",
+    "description": "Copy label for Blog static sitemap export URL"
+  },
+  "addonsBlogStaticSyncHomeExportUrl": {
+    "message": "Home / index export URL",
+    "description": "Copy label for Blog home export URL"
+  },
+  "addonsBlogStaticSyncEnvTemplate": {
+    "message": "Environment template",
+    "description": "Copy label for Blog static sync env template"
+  },
+  "addonsBlogStaticSyncWebhookAutoFilled": {
+    "message": "Auto-filled from your website domain and selected sync host type. Edit manually if your endpoint path differs.",
+    "description": "Hint when Blog publish webhook URL was auto-generated"
+  },
+  "addonsBlogStaticSyncNextInstallTitle": {
+    "message": "Install helper + CLI sync (Next.js MVP)",
+    "description": "Title for Blog Next.js install helper section (legacy)"
+  },
+  "addonsBlogVercelInstallTitle": {
+    "message": "One-command install (Vercel / Next.js)",
+    "description": "Title for Blog Vercel install script section"
+  },
+  "addonsBlogVercelInstallDesc": {
+    "message": "Blog pages render inside your existing site layout — nav, footer, and branding stay visible.",
+    "description": "Description for Blog Vercel install script"
+  },
+  "addonsBlogVercelInstallStep1": {
+    "message": "Open a terminal in your Next.js project root",
+    "description": "Blog Vercel install step 1"
+  },
+  "addonsBlogVercelInstallStep2": {
+    "message": "Paste and run the command below",
+    "description": "Blog Vercel install step 2"
+  },
+  "addonsBlogVercelInstallStep3": {
+    "message": "Copy .env.local vars into Vercel → set ARIVU_BLOG_WEBHOOK_SECRET + Deploy Hook URL",
+    "description": "Blog Vercel install step 3"
+  },
+  "addonsBlogVercelInstallStep4": {
+    "message": "Deploy — /blog builds inside your site layout; point webhook to /api/arivu-webhook/blog",
+    "description": "Blog Vercel install step 4"
+  },
+  "addonsBlogVercelStandaloneTitle": {
+    "message": "Vercel — standalone project",
+    "description": "Title for standalone Vercel blog deploy"
+  },
+  "addonsBlogVercelStandaloneDesc": {
+    "message": "Scaffold a new Next.js project with /blog routes, webhook, and env pre-wired. Import to Vercel as a new project.",
+    "description": "Description for standalone Vercel blog create command"
+  },
+  "addonsBlogVercelStandaloneStep1": {
+    "message": "Run the create command below in an empty folder parent directory",
+    "description": "Standalone Blog Vercel step 1"
+  },
+  "addonsBlogVercelStandaloneStep2": {
+    "message": "cd blog && npm install — then import the folder to Vercel (or npx vercel)",
+    "description": "Standalone Blog Vercel step 2"
+  },
+  "addonsBlogVercelStandaloneStep3": {
+    "message": "Set ARIVU_BLOG_WEBHOOK_SECRET + VERCEL_DEPLOY_HOOK_URL in Vercel env",
+    "description": "Standalone Blog Vercel step 3"
+  },
+  "addonsBlogVercelStandaloneStep4": {
+    "message": "In Blog settings, set publish webhook to /api/arivu-webhook/blog — then deploy",
+    "description": "Standalone Blog Vercel step 4"
+  },
+  "addonsBlogStaticSyncNextMvpNote": {
+    "message": "Optional advanced: sync SEO HTML into ./public/blog (--mode=standalone-html). Default install uses App Router pages instead.",
+    "description": "Note for optional CLI static sync after full Next kit"
+  },
+  "addonsBlogStaticSyncNextHtmlModeTitle": {
+    "message": "Static HTML mode (public/blog)",
+    "description": "Title for Blog standalone-html install mode"
+  },
+  "addonsBlogStaticSyncNextHtmlModeDesc": {
+    "message": "Writes SEO HTML files under public/blog instead of App Router pages. Use when you prefer static files + rewrites.",
+    "description": "Description for Blog standalone-html install mode"
+  },
+  "addonsBlogStaticSyncNextStep1": {
+    "message": "Run the install helper with --help (or --print-sync) from your project root",
+    "description": "Blog Next.js static sync step 1"
+  },
+  "addonsBlogStaticSyncNextStep2": {
+    "message": "Run a full CLI sync with --addon blog into ./public/blog",
+    "description": "Blog Next.js static sync step 2"
+  },
+  "addonsBlogStaticSyncNextStep3": {
+    "message": "Point the publish webhook above to /api/arivu-webhook and set ARIVU_WEBHOOK_SECRET",
+    "description": "Blog Next.js static sync step 3"
+  },
+  "addonsBlogStaticSyncPhpStep1": {
+    "message": "Download arivu-blog-sync.php and place it on your web host",
+    "description": "Blog PHP static sync deploy step 1"
+  },
+  "addonsBlogStaticSyncPhpStep2": {
+    "message": "Set env vars from the template above and point the publish webhook URL to it",
+    "description": "Blog PHP static sync deploy step 2"
+  },
+  "addonsBlogStaticSyncPhpStep3": {
+    "message": "Run once: https://yoursite.com/arivu-blog-sync.php?full=1",
+    "description": "Blog PHP static sync deploy step 3"
+  },
+  "addonsBlogStaticSyncDownloadPhp": {
+    "message": "Download PHP sync script",
+    "description": "Download button / link for Blog PHP sync script"
+  },
+  "addonsBlogStaticSyncCliFull": {
+    "message": "Initial full sync (repo-local)",
+    "description": "CLI command label for full Blog sync via local tools/help-sync"
+  },
+  "addonsBlogStaticSyncCliNpxFull": {
+    "message": "Initial full sync (npx @arivu/help-sync)",
+    "description": "CLI command label for full Blog sync via published package"
+  },
+  "addonsBlogStaticSyncCliSlug": {
+    "message": "Sync one post",
+    "description": "CLI command label for single Blog post sync"
+  },
+  "addonsBlogSaveSuccess": {
+    "message": "Blog settings saved",
+    "description": "Blog settings save success"
+  },
   "addonsArticlesSettingsDesc": {
     "message": "Configure publishing, branding, and your customer help center.",
     "description": "Articles addon settings page description"
@@ -1184,7 +1740,7 @@
     "description": "Toast when Articles integration copy fails"
   },
   "addonsArticlesWebhookDesc": {
-    "message": "Receives JSON POST on publish and unpublish. Use for static site rebuilds.",
+    "message": "Receives JSON POST on publish and unpublish. On Next.js use /api/arivu-webhook (Blog uses /api/arivu-webhook/blog).",
     "description": "Articles publish webhook helper text"
   },
   "addonsArticlesWebhookAutoFilled": {

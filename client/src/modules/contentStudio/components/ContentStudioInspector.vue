@@ -111,20 +111,20 @@
                     v-if="showHeadlessVisibilityHint"
                     class="mt-2 text-xs text-amber-700 dark:text-amber-300"
                   >
-                    {{ t('contentStudio.visibilityPublicHeadlessHint') }}
+                    {{ mode === 'blog' ? t('contentStudio.visibilityPublicHeadlessHintPost') : t('contentStudio.visibilityPublicHeadlessHint') }}
                   </p>
                 </div>
 
                 <div
-                  v-if="mode === 'articles'"
+                  v-if="mode === 'articles' || mode === 'blog'"
                   class="flex items-start justify-between gap-3 rounded-lg border border-neutral-200 px-3 py-2.5 dark:border-neutral-700"
                 >
                   <span class="min-w-0">
                     <span class="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
-                      {{ t('contentStudio.fieldFeatured') }}
+                      {{ mode === 'blog' ? t('contentStudio.fieldFeaturedPost') : t('contentStudio.fieldFeatured') }}
                     </span>
                     <span class="mt-0.5 block text-xs text-neutral-500 dark:text-neutral-400">
-                      {{ t('contentStudio.fieldFeaturedHint') }}
+                      {{ mode === 'blog' ? t('contentStudio.fieldFeaturedHintPost') : t('contentStudio.fieldFeaturedHint') }}
                     </span>
                   </span>
                   <HeadlessSwitch
@@ -133,6 +133,40 @@
                     switch-class="mt-0.5"
                     @update:model-value="emit('update:featured', $event)"
                   />
+                </div>
+
+                <div
+                  v-if="mode === 'blog'"
+                  class="flex items-start justify-between gap-3 rounded-lg border border-neutral-200 px-3 py-2.5 dark:border-neutral-700"
+                >
+                  <span class="min-w-0">
+                    <span class="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                      {{ t('contentStudio.fieldSticky') }}
+                    </span>
+                    <span class="mt-0.5 block text-xs text-neutral-500 dark:text-neutral-400">
+                      {{ t('contentStudio.fieldStickyHint') }}
+                    </span>
+                  </span>
+                  <HeadlessSwitch
+                    :model-value="sticky"
+                    size="sm"
+                    switch-class="mt-0.5"
+                    @update:model-value="emit('update:sticky', $event)"
+                  />
+                </div>
+
+                <div v-if="mode === 'blog'">
+                  <label class="mb-1 block" :class="ui.label">{{ t('contentStudio.fieldTags') }}</label>
+                  <input
+                    :value="tagsInput"
+                    type="text"
+                    :class="ui.input"
+                    :placeholder="t('contentStudio.fieldTagsPlaceholder')"
+                    @input="onTagsInput"
+                  />
+                  <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                    {{ t('contentStudio.fieldTagsHint') }}
+                  </p>
                 </div>
 
                 <div>
@@ -234,6 +268,8 @@ const props = defineProps({
   slug: { type: String, default: '' },
   visibility: { type: String, default: 'portal' },
   featured: { type: Boolean, default: false },
+  sticky: { type: Boolean, default: false },
+  tags: { type: Array, default: () => [] },
   authorId: { type: String, default: '' },
   authorName: { type: String, default: '' },
   seoMetaTitle: { type: String, default: '' },
@@ -252,6 +288,8 @@ const emit = defineEmits([
   'update:slug',
   'update:visibility',
   'update:featured',
+  'update:sticky',
+  'update:tags',
   'update:authorId',
   'update:authorName',
   'update:seoMetaTitle',
@@ -271,6 +309,20 @@ const ui = useBuilderUi();
 const selectedTabIndex = ref(0);
 const usersLoading = ref(false);
 const userOptions = ref([]);
+
+const tagsInput = computed(() => (Array.isArray(props.tags) ? props.tags.join(', ') : ''));
+
+function parseTagsInput(value) {
+  return String(value || '')
+    .split(',')
+    .map((tag) => tag.trim().toLowerCase())
+    .filter(Boolean)
+    .slice(0, 20);
+}
+
+function onTagsInput(event) {
+  emit('update:tags', parseTagsInput(event?.target?.value));
+}
 
 const tabs = [
   { id: 'document', labelKey: 'contentStudio.tabDocument' },
@@ -375,6 +427,6 @@ onMounted(() => {
 });
 
 const showHeadlessVisibilityHint = computed(
-  () => props.mode === 'articles' && props.visibility !== 'public',
+  () => (props.mode === 'articles' || props.mode === 'blog') && props.visibility !== 'public',
 );
 </script>

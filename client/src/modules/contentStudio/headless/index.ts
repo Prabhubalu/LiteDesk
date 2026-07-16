@@ -4,6 +4,12 @@ export {
   buildHeadlessArticleApiUrl,
   buildHeadlessArticleCustomerUrl,
   buildHeadlessArticlesListApiUrl,
+  buildHeadlessBlogCustomerUrl,
+  buildHeadlessBlogListApiUrl,
+  buildHeadlessBlogPostApiUrl,
+  buildHeadlessBlogRssApiUrl,
+  buildHeadlessBlogCollectionRssApiUrl,
+  buildHeadlessBlogPostRssApiUrl,
   buildHeadlessIntegrationUrls,
 } from './buildArticleApiUrl';
 export {

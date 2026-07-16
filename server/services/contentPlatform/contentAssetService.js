@@ -1,6 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const ContentAsset = require('../../models/ContentAsset');
 const { CONTENT_ASSET_TYPES } = require('../../constants/contentPlatformConstants');
 const fileStorage = require('../fileStorageService');
@@ -157,13 +158,23 @@ async function listAssets(params) {
   };
 }
 
-async function getAssetById(params) {
-  const { organizationId, assetId } = params;
-  const asset = await ContentAsset.findOne({
+function buildAssetLookupFilter(organizationId, assetId) {
+  const id = String(assetId || '').trim();
+  const filter = {
     organizationId,
     ...notDeletedFilter(),
-    $or: [{ _id: assetId }, { assetId }]
-  }).lean();
+  };
+  const or = [{ assetId: id }];
+  if (mongoose.Types.ObjectId.isValid(id) && String(new mongoose.Types.ObjectId(id)) === id) {
+    or.unshift({ _id: id });
+  }
+  filter.$or = or;
+  return filter;
+}
+
+async function getAssetById(params) {
+  const { organizationId, assetId } = params;
+  const asset = await ContentAsset.findOne(buildAssetLookupFilter(organizationId, assetId)).lean();
 
   if (!asset) {
     throw new ContentPlatformError(

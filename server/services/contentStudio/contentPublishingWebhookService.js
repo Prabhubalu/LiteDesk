@@ -6,6 +6,8 @@ const ContentCollection = require('../../models/ContentCollection');
 const {
   buildArticleApiUrl,
   buildArticleExportUrl,
+  buildBlogPostApiUrl,
+  buildBlogPostExportUrl,
 } = require('./contentPublishingService');
 const {
   buildArticleExportPath,
@@ -14,10 +16,6 @@ const {
   normalizeArticleSlug,
   buildRefreshPages,
 } = require('./headlessStaticExportService');
-const {
-  getArticlesPublishingSettings,
-  resolvePublishWebhookSecret,
-} = require('./articlesAddonSettingsService');
 
 function signWebhookBody(rawBody, secret) {
   if (!secret) return '';
@@ -37,10 +35,30 @@ function verifyWebhookSignature(rawBody, secret, header) {
   }
 }
 
+function resolveAddonKey(document) {
+  return String(document?.addonKey || 'articles').trim() || 'articles';
+}
+
+function resolveStaticExportPathPrefix(addonKey) {
+  return addonKey === 'blog' ? '/blog/' : '/help/';
+}
+
 async function resolveWebhookStaticExportFields(organizationId, document, organization) {
+  const addonKey = resolveAddonKey(document);
+  if (addonKey !== 'articles' && addonKey !== 'blog') {
+    return {
+      updatedAt: document.updatedAt || null,
+      exportUrl: '',
+      exportPath: '',
+      collectionPath: [],
+      refreshPages: [],
+    };
+  }
+
+  const pathPrefix = resolveStaticExportPathPrefix(addonKey);
   const collections = await ContentCollection.find({
     organizationId,
-    addonKey: 'articles',
+    addonKey,
     deletedAt: null,
   })
     .select('_id slug parentId')
@@ -48,17 +66,30 @@ async function resolveWebhookStaticExportFields(organizationId, document, organi
   const collectionById = buildCollectionByIdMap(collections);
   const collectionPath = resolveCollectionPathSlugs(document.collectionId, collectionById);
   const slug = normalizeArticleSlug(document.slug);
+  const exportUrl = addonKey === 'blog'
+    ? buildBlogPostExportUrl(organization, slug)
+    : buildArticleExportUrl(organization, slug);
 
   return {
     updatedAt: document.updatedAt || null,
-    exportUrl: buildArticleExportUrl(organization, slug),
+    exportUrl,
     exportPath: buildArticleExportPath({
       slug,
       collectionPathSlugs: collectionPath,
+      pathPrefix,
     }),
     collectionPath,
-    refreshPages: buildRefreshPages(collectionPath),
+    refreshPages: buildRefreshPages(collectionPath, pathPrefix),
   };
+}
+
+function resolveContentApiUrl(organization, document) {
+  const slug = normalizeArticleSlug(document.slug);
+  const addonKey = resolveAddonKey(document);
+  if (addonKey === 'blog') {
+    return buildBlogPostApiUrl(organization, slug);
+  }
+  return buildArticleApiUrl(organization, slug);
 }
 
 function buildWebhookPayload({
@@ -69,14 +100,24 @@ function buildWebhookPayload({
   test = false,
 }) {
   const slug = normalizeArticleSlug(document.slug);
-  const apiUrl = buildArticleApiUrl(organization, slug);
+  const addonKey = resolveAddonKey(document);
+  const apiUrl = resolveContentApiUrl(organization, document);
   const publicUrl = String(document?.seo?.canonicalUrl || document?.publicUrl || '').trim();
+  const pathPrefix = resolveStaticExportPathPrefix(addonKey);
   const exportFields = staticExport || {
     updatedAt: document.updatedAt || null,
-    exportUrl: buildArticleExportUrl(organization, slug),
-    exportPath: buildArticleExportPath({ slug, collectionPathSlugs: [] }),
+    exportUrl: addonKey === 'blog'
+      ? buildBlogPostExportUrl(organization, slug)
+      : addonKey === 'articles'
+        ? buildArticleExportUrl(organization, slug)
+        : '',
+    exportPath: (addonKey === 'articles' || addonKey === 'blog')
+      ? buildArticleExportPath({ slug, collectionPathSlugs: [], pathPrefix })
+      : '',
     collectionPath: [],
-    refreshPages: buildRefreshPages([]),
+    refreshPages: (addonKey === 'articles' || addonKey === 'blog')
+      ? buildRefreshPages([], pathPrefix)
+      : [],
   };
 
   const payload = {
@@ -85,8 +126,8 @@ function buildWebhookPayload({
     organization: { slug: organization.slug },
     content: {
       id: String(document._id || document.id || ''),
-      addonKey: document.addonKey || 'articles',
-      contentType: document.contentType || 'knowledge_article',
+      addonKey,
+      contentType: document.contentType || (addonKey === 'blog' ? 'blog_post' : 'knowledge_article'),
       slug,
       title: document.title,
       publishedAt: document.publishedAt || null,
@@ -107,7 +148,7 @@ function buildWebhookPayload({
   return payload;
 }
 
-async function postArticlesWebhook(webhookUrl, payload, webhookSecret = '') {
+async function postContentWebhook(webhookUrl, payload, webhookSecret = '') {
   const rawBody = JSON.stringify(payload);
   const headers = {
     'Content-Type': 'application/json',
@@ -132,20 +173,41 @@ async function postArticlesWebhook(webhookUrl, payload, webhookSecret = '') {
   return response;
 }
 
-async function emitArticlesContentWebhook({
+async function resolveAddonPublishing(organizationId, addonKey) {
+  if (addonKey === 'blog') {
+    const {
+      getBlogPublishingSettings,
+      resolvePublishWebhookSecret,
+    } = require('./blogAddonSettingsService');
+    const publishing = await getBlogPublishingSettings(organizationId);
+    const webhookSecret = await resolvePublishWebhookSecret(organizationId);
+    return { publishing, webhookSecret };
+  }
+
+  const {
+    getArticlesPublishingSettings,
+    resolvePublishWebhookSecret,
+  } = require('./articlesAddonSettingsService');
+  const publishing = await getArticlesPublishingSettings(organizationId);
+  const webhookSecret = await resolvePublishWebhookSecret(organizationId);
+  return { publishing, webhookSecret };
+}
+
+async function emitContentWebhook({
   organizationId,
   document,
   event,
 }) {
   if (!organizationId || !document) return;
-  if (document.addonKey !== 'articles') return;
+  const addonKey = resolveAddonKey(document);
+  if (addonKey !== 'articles' && addonKey !== 'blog') return;
 
-  const publishing = await getArticlesPublishingSettings(organizationId);
+  const { publishing, webhookSecret } = await resolveAddonPublishing(organizationId, addonKey);
   const webhookUrl = String(publishing.publishWebhookUrl || '').trim();
   if (!webhookUrl) return;
 
   const organization = await Organization.findById(organizationId)
-    .select('slug embed.articles.publicKey')
+    .select('slug embed.articles.publicKey embed.blog.publicKey')
     .lean();
   if (!organization) return;
 
@@ -156,16 +218,15 @@ async function emitArticlesContentWebhook({
     document,
     staticExport,
   });
-  const webhookSecret = await resolvePublishWebhookSecret(organizationId);
 
-  await postArticlesWebhook(webhookUrl, payload, webhookSecret);
+  await postContentWebhook(webhookUrl, payload, webhookSecret);
 }
 
 async function emitContentPublishedWebhook({
   organizationId,
   document,
 }) {
-  return emitArticlesContentWebhook({
+  return emitContentWebhook({
     organizationId,
     document,
     event: 'content.published',
@@ -176,7 +237,7 @@ async function emitContentUnpublishedWebhook({
   organizationId,
   document,
 }) {
-  return emitArticlesContentWebhook({
+  return emitContentWebhook({
     organizationId,
     document,
     event: 'content.unpublished',
@@ -184,6 +245,10 @@ async function emitContentUnpublishedWebhook({
 }
 
 async function sendArticlesPublishWebhookTest(organizationId) {
+  const {
+    getArticlesPublishingSettings,
+    resolvePublishWebhookSecret,
+  } = require('./articlesAddonSettingsService');
   const publishing = await getArticlesPublishingSettings(organizationId);
   const webhookUrl = String(publishing.publishWebhookUrl || '').trim();
   if (!webhookUrl) {
@@ -229,7 +294,61 @@ async function sendArticlesPublishWebhookTest(organizationId) {
   });
   const webhookSecret = await resolvePublishWebhookSecret(organizationId);
 
-  await postArticlesWebhook(webhookUrl, payload, webhookSecret);
+  await postContentWebhook(webhookUrl, payload, webhookSecret);
+  return payload;
+}
+
+async function sendBlogPublishWebhookTest(organizationId) {
+  const {
+    getBlogPublishingSettings,
+    resolvePublishWebhookSecret,
+  } = require('./blogAddonSettingsService');
+  const publishing = await getBlogPublishingSettings(organizationId);
+  const webhookUrl = String(publishing.publishWebhookUrl || '').trim();
+  if (!webhookUrl) {
+    const error = new Error('Publish webhook URL is not configured');
+    error.code = 'WEBHOOK_NOT_CONFIGURED';
+    throw error;
+  }
+
+  const organization = await Organization.findById(organizationId)
+    .select('slug embed.blog.publicKey')
+    .lean();
+  if (!organization) {
+    const error = new Error('Organization not found');
+    error.code = 'NOT_FOUND';
+    throw error;
+  }
+
+  const payload = buildWebhookPayload({
+    event: 'content.published',
+    organization,
+    document: {
+      _id: '000000000000000000000000',
+      addonKey: 'blog',
+      contentType: 'blog_post',
+      slug: 'example-post',
+      title: 'Example post (test webhook)',
+      publishedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      seo: {},
+    },
+    staticExport: {
+      updatedAt: new Date().toISOString(),
+      exportUrl: buildBlogPostExportUrl(organization, 'example-post'),
+      exportPath: buildArticleExportPath({
+        slug: 'example-post',
+        collectionPathSlugs: [],
+        pathPrefix: '/blog/',
+      }),
+      collectionPath: [],
+      refreshPages: buildRefreshPages([], '/blog/'),
+    },
+    test: true,
+  });
+  const webhookSecret = await resolvePublishWebhookSecret(organizationId);
+
+  await postContentWebhook(webhookUrl, payload, webhookSecret);
   return payload;
 }
 
@@ -241,4 +360,5 @@ module.exports = {
   emitContentPublishedWebhook,
   emitContentUnpublishedWebhook,
   sendArticlesPublishWebhookTest,
+  sendBlogPublishWebhookTest,
 };
