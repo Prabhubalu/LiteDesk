@@ -596,6 +596,92 @@ const PROCESS_ACTION_GROUPS = [
     ]
   },
   {
+    groupKey: 'ai',
+    label: 'Arivu AI',
+    actions: [
+      {
+        actionType: 'ai_classify',
+        label: 'AI classify',
+        description:
+          'Classifies untrusted text into one of your labels and stores the result in a process variable. Propose-only — does not route or update records. Pair with a condition or approval gate.',
+        params: [
+          {
+            key: 'text',
+            label: 'Text to classify',
+            type: 'textarea',
+            required: true,
+            placeholder: '{{trigger.description}} or paste / mergetag text'
+          },
+          {
+            key: 'labels',
+            label: 'Allowed labels',
+            type: 'textarea',
+            required: true,
+            placeholder: 'billing\ntechnical\ngeneral'
+          },
+          {
+            key: 'fallbackLabel',
+            label: 'Fallback label',
+            type: 'text',
+            required: false,
+            placeholder: 'general'
+          },
+          {
+            key: 'variableName',
+            label: 'Store as variable',
+            type: 'text',
+            required: true,
+            placeholder: 'aiClassification',
+            defaultValue: 'aiClassification'
+          },
+          {
+            key: 'sourceType',
+            label: 'Source type (audit)',
+            type: 'text',
+            required: false,
+            placeholder: 'Optional — e.g. mailroom, case'
+          }
+        ]
+      },
+      {
+        actionType: 'ai_extract',
+        label: 'AI extract fields',
+        description:
+          'Extracts proposed field patches from text into a process variable. Propose-only — never writes records. Use a later update_record + approval gate to apply.',
+        params: [
+          {
+            key: 'text',
+            label: 'Source text',
+            type: 'textarea',
+            required: true,
+            placeholder: '{{trigger.body}} or paste / mergetag text'
+          },
+          {
+            key: 'moduleKey',
+            label: 'Module',
+            type: 'module',
+            required: false
+          },
+          {
+            key: 'recordId',
+            label: 'Record ID',
+            type: 'text',
+            required: false,
+            placeholder: 'Leave empty for current; or {{trigger.id}}'
+          },
+          {
+            key: 'variableName',
+            label: 'Store as variable',
+            type: 'text',
+            required: true,
+            placeholder: 'aiPatches',
+            defaultValue: 'aiPatches'
+          }
+        ]
+      }
+    ]
+  },
+  {
     groupKey: 'live_chat',
     label: 'Live chat',
     actions: [

@@ -930,6 +930,14 @@
     "message": "Auto-map columns",
     "description": "Reset import mapping to automatic column matching"
   },
+  "importAiMappingSuggest": {
+    "message": "Suggest with AI",
+    "description": "Import CSV AI column mapping suggest"
+  },
+  "importAiMappingFailed": {
+    "message": "Could not suggest field mappings with AI",
+    "description": "Import AI mapping error"
+  },
   "savedMappingSaveTitle": {
     "message": "Save mapping template",
     "description": "Modal title for saving import mapping template"

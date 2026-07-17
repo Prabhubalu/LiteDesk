@@ -2587,6 +2587,78 @@
     "message": "Minimum match score",
     "description": "Live Chat bot confidence threshold"
   },
+  "addonsLiveChatBotAiAssist": {
+    "message": "AI FAQ assist (after keyword miss)",
+    "description": "Live Chat bot AI assist toggle"
+  },
+  "addonsLiveChatBotAiAssistHint": {
+    "message": "Uses the AI suite and knowledge base. Soft-fails to the fallback message; never blocks the visitor. Escalate is always available.",
+    "description": "Live Chat bot AI assist hint"
+  },
+  "addonsLiveChatBotAiAssistBadge": {
+    "message": "AI FAQ",
+    "description": "Live Chat bot AI assist badge"
+  },
+  "addonsLiveChatBotDeflectionTitle": {
+    "message": "Bot deflection (last 7 days)",
+    "description": "Live Chat bot deflection metrics title"
+  },
+  "addonsLiveChatBotDeflectionHint": {
+    "message": "Sessions where a bot handled the visitor without escalating. Window: {days} days.",
+    "description": "Live Chat bot deflection metrics hint"
+  },
+  "addonsLiveChatBotDeflectionSessions": {
+    "message": "Bot sessions",
+    "description": "Deflection KPI: bot-involved sessions"
+  },
+  "addonsLiveChatBotDeflectionContained": {
+    "message": "Contained",
+    "description": "Deflection KPI: non-escalated"
+  },
+  "addonsLiveChatBotDeflectionEscalated": {
+    "message": "Escalated",
+    "description": "Deflection KPI: escalated"
+  },
+  "addonsLiveChatBotDeflectionRate": {
+    "message": "Deflection rate",
+    "description": "Deflection KPI: rate"
+  },
+  "addonsLiveChatBotDeflectionAiAnswered": {
+    "message": "{count} sessions answered with AI FAQ",
+    "description": "Deflection KPI: AI FAQ count"
+  },
+  "addonsLiveChatBotFaqPreviewTitle": {
+    "message": "Preview AI FAQ",
+    "description": "Live Chat FAQ preview title"
+  },
+  "addonsLiveChatBotFaqPreviewHint": {
+    "message": "Test how the AI would answer from your knowledge base. Does not send a chat message.",
+    "description": "Live Chat FAQ preview hint"
+  },
+  "addonsLiveChatBotFaqPreviewPlaceholder": {
+    "message": "e.g. How do I reset my password?",
+    "description": "Live Chat FAQ preview placeholder"
+  },
+  "addonsLiveChatBotFaqPreviewSubmit": {
+    "message": "Preview",
+    "description": "Live Chat FAQ preview submit"
+  },
+  "addonsLiveChatBotFaqPreviewEscalate": {
+    "message": "Would escalate to an agent",
+    "description": "Live Chat FAQ preview escalate signal"
+  },
+  "addonsLiveChatBotFaqPreviewContained": {
+    "message": "Would answer from knowledge base",
+    "description": "Live Chat FAQ preview contained signal"
+  },
+  "addonsLiveChatBotFaqPreviewEmpty": {
+    "message": "No answer returned.",
+    "description": "Live Chat FAQ preview empty"
+  },
+  "addonsLiveChatBotFaqPreviewFailed": {
+    "message": "FAQ preview failed.",
+    "description": "Live Chat FAQ preview error"
+  },
   "addonsLiveChatWebsiteContentManage": {
     "message": "Manage website content",
     "description": "Open Live Chat website content settings"
@@ -3226,6 +3298,14 @@
   "chatWidgetWelcomeMessage": {
     "message": "Welcome message",
     "description": "Chat widget welcome message label"
+  },
+  "chatWidgetBrandColor": {
+    "message": "Brand color",
+    "description": "Chat widget brand color label"
+  },
+  "chatWidgetBrandColorDesc": {
+    "message": "Applied to the chat launcher and widget on your customer site.",
+    "description": "Chat widget brand color help text"
   },
   "chatWidgetConsentTitle": {
     "message": "Visitor consent",
@@ -4066,6 +4146,610 @@
   "tabIntegrationsDesc": {
     "message": "Connect external services and tools to extend platform capabilities",
     "description": "Integrations card description"
+  },
+  "tabAi": {
+    "message": "AI",
+    "description": "AI settings tab"
+  },
+  "tabAiDesc": {
+    "message": "Configure AI providers, credits, and bring-your-own-key settings",
+    "description": "AI settings card description"
+  },
+  "aiTitle": {
+    "message": "AI settings",
+    "description": "AI settings page title"
+  },
+  "aiSubtitle": {
+    "message": "Install Arivu AI once to unlock the full suite. Use platform credits or your own provider key.",
+    "description": "AI settings page subtitle"
+  },
+  "aiEnableTitle": {
+    "message": "Availability",
+    "description": "AI enable section title"
+  },
+  "aiEnableHint": {
+    "message": "Install the Arivu AI addon from Add-ons, then enable here and accept data-use consent. One install includes assist, commercial, service, and knowledge.",
+    "description": "AI enable section hint"
+  },
+  "aiEnabledLabel": {
+    "message": "Enable AI for this organization",
+    "description": "AI enabled checkbox label"
+  },
+  "aiConsentLabel": {
+    "message": "I accept AI data-use terms for this organization",
+    "description": "AI consent checkbox label"
+  },
+  "aiConsentAccepted": {
+    "message": "Consent is already on file.",
+    "description": "AI consent already accepted note"
+  },
+  "aiProviderTitle": {
+    "message": "Provider & billing",
+    "description": "AI provider section title"
+  },
+  "aiLlmProvider": {
+    "message": "LLM provider",
+    "description": "AI LLM provider field label"
+  },
+  "aiLlmModel": {
+    "message": "Model",
+    "description": "AI LLM model field label"
+  },
+  "aiKeyMode": {
+    "message": "Key mode",
+    "description": "AI key mode field label"
+  },
+  "aiKeyModePlatform": {
+    "message": "Platform key (uses AI credits)",
+    "description": "Platform key mode option"
+  },
+  "aiKeyModeByok": {
+    "message": "Bring your own key",
+    "description": "BYOK key mode option"
+  },
+  "aiAzureResource": {
+    "message": "Azure resource name",
+    "description": "Azure OpenAI resource name field"
+  },
+  "aiAzureResourcePlaceholder": {
+    "message": "my-resource",
+    "description": "Azure OpenAI resource placeholder"
+  },
+  "aiAzureDeployment": {
+    "message": "Azure deployment name",
+    "description": "Azure OpenAI deployment name field"
+  },
+  "aiAzureDeploymentPlaceholder": {
+    "message": "gpt-4o",
+    "description": "Azure OpenAI deployment placeholder"
+  },
+  "aiByokKey": {
+    "message": "API key",
+    "description": "BYOK API key field label"
+  },
+  "aiByokKeyPlaceholder": {
+    "message": "Paste your provider API key",
+    "description": "BYOK API key placeholder"
+  },
+  "aiByokKeyPlaceholderMasked": {
+    "message": "Key ending in {last4} — paste a new key to replace",
+    "description": "BYOK API key placeholder when masked key exists"
+  },
+  "aiClearByokKey": {
+    "message": "Remove stored key",
+    "description": "Clear BYOK key action"
+  },
+  "aiCreditsBalance": {
+    "message": "AI credits balance",
+    "description": "AI credits balance field"
+  },
+  "aiCreditsHint": {
+    "message": "Platform-key usage debits credits. BYOK does not.",
+    "description": "AI credits hint"
+  },
+  "aiSave": {
+    "message": "Save AI settings",
+    "description": "Save AI settings button"
+  },
+  "aiSaving": {
+    "message": "Saving…",
+    "description": "Saving AI settings button"
+  },
+  "aiSaveSuccess": {
+    "message": "AI settings saved",
+    "description": "AI settings save success"
+  },
+  "aiLoadFailed": {
+    "message": "Failed to load AI settings",
+    "description": "AI settings load error"
+  },
+  "aiModelsLoadFailed": {
+    "message": "Could not load the live model catalog. Showing fallback models.",
+    "description": "AI provider model catalog load error"
+  },
+  "aiSaveFailed": {
+    "message": "Failed to save AI settings",
+    "description": "AI settings save error"
+  },
+  "aiAssistantAgentTitle": {
+    "message": "Arivu Assistant Agent",
+    "description": "AI settings transparency card title"
+  },
+  "aiAssistantAgentHint": {
+    "message": "See what the in-product assistant is allowed to know and propose before users rely on it.",
+    "description": "AI settings transparency card hint"
+  },
+  "aiAssistantAgentReadOnlyBadge": {
+    "message": "Read-only transparency",
+    "description": "AI assistant transparency badge"
+  },
+  "aiAssistantAgentPromptLabel": {
+    "message": "Prompt contract",
+    "description": "AI assistant prompt summary label"
+  },
+  "aiAssistantAgentPromptSummary": {
+    "message": "You are Arivu Work-Graph AI for staff. Use the current CRM page context, related records, and activities/comments to answer. Return a concise UI card with a headline, factual bullets, and next-best actions. Propose only — never claim that records were changed or messages were sent.",
+    "description": "AI assistant prompt contract summary"
+  },
+  "aiAssistantAgentContextTitle": {
+    "message": "Context it can use",
+    "description": "AI assistant context list title"
+  },
+  "aiAssistantAgentContextRecord": {
+    "message": "Current record fields, owner/assignee, status, stage, amount, contact details, and custom fields.",
+    "description": "AI assistant context item"
+  },
+  "aiAssistantAgentContextRelated": {
+    "message": "Related People, Organizations, Deals, Tasks, Events, Quotes, Items, Documents, and other relationship records.",
+    "description": "AI assistant context item"
+  },
+  "aiAssistantAgentContextActivities": {
+    "message": "Activity logs, comments, stage history, and related-record activity where available.",
+    "description": "AI assistant context item"
+  },
+  "aiAssistantAgentContextKnowledge": {
+    "message": "Knowledge-base fallback when the current page context cannot answer the question.",
+    "description": "AI assistant context item"
+  },
+  "aiAssistantAgentActionsTitle": {
+    "message": "Actions it can propose",
+    "description": "AI assistant action list title"
+  },
+  "aiAssistantAgentActionEmail": {
+    "message": "Draft an email with recipient, subject, and body; the user reviews and sends.",
+    "description": "AI assistant action item"
+  },
+  "aiAssistantAgentActionTask": {
+    "message": "Suggest completing or reviewing an existing task.",
+    "description": "AI assistant action item"
+  },
+  "aiAssistantAgentActionReview": {
+    "message": "Suggest reviewing a related quote, deal, case, document, or item.",
+    "description": "AI assistant action item"
+  },
+  "aiAssistantAgentActionStatus": {
+    "message": "Suggest status or stage follow-up without applying the change automatically.",
+    "description": "AI assistant action item"
+  },
+  "aiAssistantAgentActionAgent": {
+    "message": "Offer Talk to Agent when a human decision or support handoff is needed.",
+    "description": "AI assistant action item"
+  },
+  "aiAssistantAgentGuardrailsTitle": {
+    "message": "Guardrails",
+    "description": "AI assistant guardrails title"
+  },
+  "aiAssistantAgentGuardrailProposeOnly": {
+    "message": "Propose-only: it does not create records, send email, change status, or close tasks by itself.",
+    "description": "AI assistant guardrail item"
+  },
+  "aiAssistantAgentGuardrailNoInvent": {
+    "message": "No invention: owners, amounts, emails, statuses, and record IDs must come from CRM context.",
+    "description": "AI assistant guardrail item"
+  },
+  "aiAssistantAgentGuardrailValidatedActions": {
+    "message": "Action targets are validated against real records in the context before they appear in the UI.",
+    "description": "AI assistant guardrail item"
+  },
+  "aiAssistantAgentGuardrailSensitiveData": {
+    "message": "Secrets, tokens, card numbers, and API keys are redacted before provider calls; staff record email addresses may be used for email drafting.",
+    "description": "AI assistant guardrail item"
+  },
+  "aiTabGeneral": {
+    "message": "General",
+    "description": "AI settings general tab"
+  },
+  "aiTabAgents": {
+    "message": "Agents",
+    "description": "AI settings agents tab"
+  },
+  "aiTabUsage": {
+    "message": "Usage log",
+    "description": "AI settings usage audit tab"
+  },
+  "aiUsageTitle": {
+    "message": "AI usage log",
+    "description": "AI audit log section title"
+  },
+  "aiUsageHint": {
+    "message": "Every AI call is recorded with ability, model, tokens, credits, and outcome. Use this to find what is consuming credits.",
+    "description": "AI audit log section hint"
+  },
+  "aiUsageDays": {
+    "message": "Period",
+    "description": "AI audit log period filter label"
+  },
+  "aiUsageDays7": {
+    "message": "Last 7 days",
+    "description": "AI audit log 7-day filter"
+  },
+  "aiUsageDays30": {
+    "message": "Last 30 days",
+    "description": "AI audit log 30-day filter"
+  },
+  "aiUsageDays90": {
+    "message": "Last 90 days",
+    "description": "AI audit log 90-day filter"
+  },
+  "aiUsageAbilityFilter": {
+    "message": "Ability",
+    "description": "AI audit log ability filter"
+  },
+  "aiUsageAbilityAll": {
+    "message": "All abilities",
+    "description": "AI audit log all abilities option"
+  },
+  "aiUsageStatusFilter": {
+    "message": "Status",
+    "description": "AI audit log status filter"
+  },
+  "aiUsageStatusAll": {
+    "message": "All statuses",
+    "description": "AI audit log all statuses option"
+  },
+  "aiUsageSummaryCalls": {
+    "message": "Calls",
+    "description": "AI audit summary calls label"
+  },
+  "aiUsageSummaryTokens": {
+    "message": "Tokens",
+    "description": "AI audit summary tokens label"
+  },
+  "aiUsageSummaryCredits": {
+    "message": "Credits used",
+    "description": "AI audit summary credits label"
+  },
+  "aiUsageTopAbilities": {
+    "message": "Top abilities by tokens",
+    "description": "AI audit top abilities heading"
+  },
+  "aiUsageColTime": {
+    "message": "Time",
+    "description": "AI audit table time column"
+  },
+  "aiUsageColAbility": {
+    "message": "Ability",
+    "description": "AI audit table ability column"
+  },
+  "aiUsageColUser": {
+    "message": "User",
+    "description": "AI audit table user column"
+  },
+  "aiUsageColModel": {
+    "message": "Model",
+    "description": "AI audit table model column"
+  },
+  "aiUsageColStatus": {
+    "message": "Status",
+    "description": "AI audit table status column"
+  },
+  "aiUsageColTokens": {
+    "message": "Tokens",
+    "description": "AI audit table tokens column"
+  },
+  "aiUsageColCredits": {
+    "message": "Credits",
+    "description": "AI audit table credits column"
+  },
+  "aiUsageColLatency": {
+    "message": "Latency",
+    "description": "AI audit table latency column"
+  },
+  "aiUsageSystemUser": {
+    "message": "System",
+    "description": "AI audit log system actor label"
+  },
+  "aiUsageEmpty": {
+    "message": "No AI activity recorded for this period.",
+    "description": "AI audit log empty state"
+  },
+  "aiUsageCached": {
+    "message": "cached",
+    "description": "Badge when AI response was served from cache"
+  },
+  "aiUsageLoadFailed": {
+    "message": "Could not load AI usage log",
+    "description": "AI audit log load error"
+  },
+  "aiUsagePaginationRange": {
+    "message": "{from}–{to} of {total}",
+    "description": "AI audit log pagination range"
+  },
+  "aiCustomAgentDisabled": {
+    "message": "Off",
+    "description": "Custom agent disabled badge"
+  },
+  "aiCustomAgentNewDraft": {
+    "message": "New agent",
+    "description": "Draft list item while creating a custom agent"
+  },
+  "aiCustomAgentSelectHint": {
+    "message": "Select an agent from the list to view or edit its details.",
+    "description": "Empty detail pane hint for agents"
+  },
+  "aiCustomAgentsTitle": {
+    "message": "Custom Agents",
+    "description": "Tenant agent management title"
+  },
+  "aiCustomAgentsHint": {
+    "message": "Create specialist agents with their own prompts. Arivu Assistant routes a user question to the best matching agent using trigger phrases and module affinity.",
+    "description": "Tenant agent management hint"
+  },
+  "aiCustomAgentsEmpty": {
+    "message": "No custom agents yet. Create one for a use case such as Deal Analyze or Case Triage.",
+    "description": "Empty state for custom agents"
+  },
+  "aiCustomAgentName": {
+    "message": "Name",
+    "description": "Custom agent name field"
+  },
+  "aiCustomAgentDescription": {
+    "message": "Description",
+    "description": "Custom agent description field"
+  },
+  "aiCustomAgentPrompt": {
+    "message": "System prompt",
+    "description": "Custom agent system prompt field"
+  },
+  "aiCustomAgentTriggers": {
+    "message": "Trigger phrases",
+    "description": "Custom agent trigger phrases field"
+  },
+  "aiCustomAgentTriggersHint": {
+    "message": "Comma-separated phrases that should route questions to this agent (e.g. analyze deal, win probability).",
+    "description": "Custom agent trigger phrases help"
+  },
+  "aiCustomAgentTriggersGenerate": {
+    "message": "Generate with AI",
+    "description": "Button to AI-suggest trigger phrases"
+  },
+  "aiCustomAgentTriggersGenerateEmpty": {
+    "message": "AI did not return trigger phrases. Try refining the name or prompt.",
+    "description": "Empty AI trigger suggestion result"
+  },
+  "aiCustomAgentTriggersGenerateFailed": {
+    "message": "Could not generate trigger phrases",
+    "description": "AI trigger suggestion failure"
+  },
+  "aiCustomAgentModules": {
+    "message": "Module affinity",
+    "description": "Custom agent module keys field"
+  },
+  "aiCustomAgentModulesHint": {
+    "message": "Comma-separated module keys (e.g. deals, cases). Leave blank for any page.",
+    "description": "Custom agent modules help"
+  },
+  "aiCustomAgentEnabled": {
+    "message": "Enabled",
+    "description": "Custom agent enabled toggle"
+  },
+  "aiCustomAgentCreate": {
+    "message": "Create agent",
+    "description": "Create custom agent button"
+  },
+  "aiCustomAgentSave": {
+    "message": "Save agent",
+    "description": "Save custom agent button"
+  },
+  "aiCustomAgentCancel": {
+    "message": "Cancel",
+    "description": "Cancel agent edit"
+  },
+  "aiCustomAgentEdit": {
+    "message": "Edit",
+    "description": "Edit custom agent"
+  },
+  "aiCustomAgentDelete": {
+    "message": "Delete",
+    "description": "Delete custom agent"
+  },
+  "aiCustomAgentDeleteConfirm": {
+    "message": "Delete this agent?",
+    "description": "Confirm delete custom agent"
+  },
+  "aiCustomAgentLoadFailed": {
+    "message": "Could not load custom agents",
+    "description": "Custom agents load error"
+  },
+  "aiCustomAgentSaveFailed": {
+    "message": "Could not save agent",
+    "description": "Custom agent save error"
+  },
+  "aiCustomAgentDeleteFailed": {
+    "message": "Could not delete agent",
+    "description": "Custom agent delete error"
+  },
+  "aiCustomAgentNamePlaceholder": {
+    "message": "Deal Analyze",
+    "description": "Custom agent name placeholder"
+  },
+  "aiCustomAgentPromptPlaceholder": {
+    "message": "You are a deal analysis specialist. Assess pipeline risk, next steps, and commercial gaps using only the CRM context provided…",
+    "description": "Custom agent prompt placeholder"
+  },
+  "aiAskTitle": {
+    "message": "Ask knowledge",
+    "description": "AI Ask section title"
+  },
+  "aiAskHint": {
+    "message": "Query embedded Documents and published Helpdesk Articles with citations. Publish or upload content first so it can be indexed.",
+    "description": "AI Ask section hint"
+  },
+  "aiAskPlaceholder": {
+    "message": "Ask a question about your documents…",
+    "description": "AI Ask input placeholder"
+  },
+  "aiAskSubmit": {
+    "message": "Ask",
+    "description": "AI Ask submit button"
+  },
+  "aiAskRunning": {
+    "message": "Searching…",
+    "description": "AI Ask in progress"
+  },
+  "aiAskFailed": {
+    "message": "Ask failed",
+    "description": "AI Ask error"
+  },
+  "aiAskNotConfigured": {
+    "message": "Arivu AI is not configured or not entitled for this organization. Enable AI in Settings and add a provider key (or credits).",
+    "description": "AI Ask empty state when not configured"
+  },
+  "aiOverdueBriefHint": {
+    "message": "Generate a collections brief and follow-up email draft from overdue invoices. Creating payment links stays a human confirm step.",
+    "description": "AI overdue brief section hint"
+  },
+  "aiOverdueBriefEmpty": {
+    "message": "AI returned an empty collections brief",
+    "description": "AI overdue brief empty"
+  },
+  "aiOverdueBriefFailed": {
+    "message": "Could not generate overdue invoice brief",
+    "description": "AI overdue brief error"
+  },
+  "aiOverdueBriefPaymentHint": {
+    "message": "Proposed invoice IDs are listed for a human to create a payment link — AI never creates links automatically.",
+    "description": "AI overdue brief payment-link confirmation hint"
+  },
+  "aiAskGraphHint": {
+    "message": "Work-graph Q&A answers questions about a CRM record and its related People, Deals, Cases, Docs, and Invoices — with citations.",
+    "description": "Work-graph ask settings hint"
+  },
+  "aiAskGraphRecordHint": {
+    "message": "Open a People, Deal, or Case record (or the case Knowledge rail) to ask with record context. Command palette: Research with AI on People.",
+    "description": "Work-graph ask where-to-run hint"
+  },
+  "aiPlatformHomeFocusLabel": {
+    "message": "Optional AI focus headline on Platform Home",
+    "description": "AI settings platform home focus toggle"
+  },
+  "aiPlatformHomeFocusHint": {
+    "message": "When enabled, AI may rephrase the rule-based focus line. Counts stay deterministic — AI never replaces attention ranking.",
+    "description": "AI settings platform home focus hint"
+  },
+  "aiInboxTriageTitle": {
+    "message": "Inbox triage (proposal)",
+    "description": "AI inbox triage settings section title"
+  },
+  "aiInboxTriageHint": {
+    "message": "Paste an inbound email or message. AI proposes routing/reply actions only — nothing is sent or created.",
+    "description": "AI inbox triage hint"
+  },
+  "aiInboxTriagePlaceholder": {
+    "message": "Paste untrusted inbound text…",
+    "description": "AI inbox triage placeholder"
+  },
+  "aiInboxTriageSubmit": {
+    "message": "Propose triage",
+    "description": "AI inbox triage submit"
+  },
+  "aiInboxTriageConfirmHint": {
+    "message": "Human confirm required. AI never creates cases or sends replies from this panel.",
+    "description": "AI inbox triage confirm hint"
+  },
+  "aiInboxTriageEmpty": {
+    "message": "AI returned no triage proposals",
+    "description": "AI inbox triage empty"
+  },
+  "aiInboxTriageFailed": {
+    "message": "Could not generate triage proposals",
+    "description": "AI inbox triage error"
+  },
+  "aiDigestPreviewTitle": {
+    "message": "Scheduled digest preview",
+    "description": "AI scheduled digest preview title"
+  },
+  "aiDigestPreviewHint": {
+    "message": "Generate a preview from existing unread notification digest data. This never sends email or marks notifications read.",
+    "description": "AI scheduled digest preview hint"
+  },
+  "aiDigestPreviewApp": {
+    "message": "App",
+    "description": "AI scheduled digest app selector"
+  },
+  "aiDigestPreviewWindow": {
+    "message": "Window",
+    "description": "AI scheduled digest window selector"
+  },
+  "aiDigestPreviewDaily": {
+    "message": "Daily",
+    "description": "AI scheduled digest daily option"
+  },
+  "aiDigestPreviewWeekly": {
+    "message": "Weekly",
+    "description": "AI scheduled digest weekly option"
+  },
+  "aiDigestPreviewSubmit": {
+    "message": "Preview digest",
+    "description": "AI scheduled digest preview button"
+  },
+  "aiDigestPreviewConfirmHint": {
+    "message": "Preview-only. Existing scheduler remains authoritative; AI does not send digests automatically.",
+    "description": "AI scheduled digest preview-only hint"
+  },
+  "aiDigestPreviewEmpty": {
+    "message": "No unread digest content for that app/window.",
+    "description": "AI scheduled digest empty state"
+  },
+  "aiDigestPreviewFailed": {
+    "message": "Could not generate digest preview.",
+    "description": "AI scheduled digest error"
+  },
+  "aiCollectionAgentSubmit": {
+    "message": "Propose collection steps",
+    "description": "AI collection agent button"
+  },
+  "aiCollectionAgentConfirmHint": {
+    "message": "Propose-only. AI never sends follow-ups or creates payment links from this panel.",
+    "description": "AI collection agent confirm hint"
+  },
+  "aiCollectionAgentEmpty": {
+    "message": "No collection proposals returned.",
+    "description": "AI collection agent empty"
+  },
+  "aiCollectionAgentFailed": {
+    "message": "Could not generate collection proposals.",
+    "description": "AI collection agent error"
+  },
+  "aiAskEmpty": {
+    "message": "AI returned an empty answer",
+    "description": "AI Ask empty answer"
+  },
+  "aiAskNoCitations": {
+    "message": "No citations — embed documents or try a different question.",
+    "description": "AI Ask no citations note"
+  },
+  "aiAskFeedbackPrompt": {
+    "message": "Was this answer useful?",
+    "description": "AI Ask feedback prompt"
+  },
+  "aiAskFeedbackUp": {
+    "message": "Yes",
+    "description": "AI Ask feedback positive"
+  },
+  "aiAskFeedbackDown": {
+    "message": "No",
+    "description": "AI Ask feedback negative"
   },
   "tabDemoRequests": {
     "message": "Demo Requests",

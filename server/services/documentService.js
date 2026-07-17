@@ -354,6 +354,19 @@ async function scheduleDocumentSemanticIndex({ organizationId, documentId, doc =
   void indexDocumentSemanticEmbedding({ organizationId, documentId, doc }).catch((error) => {
     console.error(`[documents] Semantic index failed for ${documentId}:`, error.message);
   });
+
+  // Phase 0/1: also enqueue real AI embeddings when the org has Arivu AI.
+  void (async () => {
+    try {
+      const { isAiSuiteEntitledForOrg } = require('../utils/addonAccessUtils');
+      const entitled = await isAiSuiteEntitledForOrg(organizationId);
+      if (!entitled) return;
+      const { enqueueDocumentEmbed } = require('./ai/aiEmbedQueueService');
+      enqueueDocumentEmbed({ organizationId, documentId });
+    } catch (error) {
+      console.error(`[documents] AI embed enqueue failed for ${documentId}:`, error.message);
+    }
+  })();
 }
 
 function buildSharedWithMeClause(userId, userRoleId, userGroupIds = []) {

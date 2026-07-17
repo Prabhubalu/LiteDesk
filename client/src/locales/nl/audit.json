@@ -746,5 +746,33 @@
   "responseDetailErrorLoadingResponse": {
     "message": "Error Loading Response",
     "description": "Auto-migrated from responseDetail"
+  },
+  "aiNarrativeSuggest": {
+    "message": "Draft narrative with AI",
+    "description": "Audit response AI narrative button"
+  },
+  "aiNarrativeTitle": {
+    "message": "AI audit narrative",
+    "description": "Audit AI narrative panel title"
+  },
+  "aiNarrativeRunning": {
+    "message": "Drafting narrative…",
+    "description": "Audit AI narrative loading"
+  },
+  "aiNarrativeRisk": {
+    "message": "Suggested overall risk: {risk}",
+    "description": "Audit AI overall risk label"
+  },
+  "aiNarrativeConfirmHint": {
+    "message": "Propose-only. Review and copy findings into corrective actions yourself — AI does not assign or approve.",
+    "description": "Audit AI propose-only hint"
+  },
+  "aiNarrativeEmpty": {
+    "message": "No narrative returned.",
+    "description": "Audit AI empty result"
+  },
+  "aiNarrativeFailed": {
+    "message": "Could not draft an audit narrative.",
+    "description": "Audit AI error"
   }
 }

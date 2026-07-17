@@ -19,7 +19,7 @@
         'flex flex-1 flex-col min-w-0 overflow-x-hidden transition-[margin-left] duration-200 ease-out',
         useViewportLock ? 'h-dvh max-h-dvh min-h-0 overflow-hidden' : 'min-h-screen lg:h-dvh lg:min-h-0 lg:overflow-hidden',
         sidebarCollapsed ? 'lg:ml-[calc(3.5rem+1rem)]' : 'lg:ml-[calc(13.75rem+1rem)]',
-        'lg:box-border lg:p-2 lg:pl-0'
+        'lg:box-border lg:py-2 lg:pl-0 lg:pr-[var(--arivu-work-panel-pad-right,0.5rem)]'
       ]"
     >
       <div

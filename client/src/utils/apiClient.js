@@ -288,10 +288,15 @@ const apiClient = async (url, options = {}) => {
 
             if (response.status === 401) {
                 const skipLogout = options.skipAuthLogout === true || isOnPublicShellRoute();
-                if (!skipLogout) {
+                // Only clear the session if this request used the *current* token.
+                // Stale in-flight / other-tab requests with an old JWT must not wipe a fresh login.
+                const tokenStillCurrent = Boolean(token) && authStore.user?.token === token;
+                if (!skipLogout && tokenStillCurrent) {
                     authStore.logout();
                 }
-                throw new Error('Session expired. Please log in again.');
+                const authError = new Error('Session expired. Please log in again.');
+                authError.status = 401;
+                throw authError;
             }
 
             // Check for other errors
@@ -381,6 +386,7 @@ apiClient.get = (url, options = {}) => {
 apiClient.getOptional = (url, options = {}) => {
     return apiClient(url, { ...options, method: 'GET' }).catch((err) => {
         if (err?.status === 404 || err?.status === 403) return null;
+        if (err?.status === 401 && options.skipAuthLogout === true) return null;
         throw err;
     });
 };
@@ -395,6 +401,7 @@ apiClient.post = (url, data, options = {}) => {
 apiClient.postOptional = (url, data, options = {}) => {
     return apiClient.post(url, data, options).catch((err) => {
         if (err?.status === 404 || err?.status === 403) return null;
+        if (err?.status === 401 && options.skipAuthLogout === true) return null;
         const msg = String(err?.message || '').toLowerCase();
         if (err?.status === 400 && (msg.includes('batch not supported') || String(url || '').includes('/records/batch'))) {
             return null;

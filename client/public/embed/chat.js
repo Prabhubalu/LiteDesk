@@ -46,7 +46,7 @@
     '&apiOrigin=' +
     encodeURIComponent(effectiveApiOrigin)
 
-  var LAUNCHER_BG = '#312e81'
+  var LAUNCHER_BG = '#4f46e5'
   var isLeft = position === 'left'
   var promptVisible = false
   var promptAnimTimer = null
@@ -310,6 +310,53 @@
     if (!isOpen) setUnreadCount(unreadCount + 1)
   }
 
+  function normalizeBrandColor(value) {
+    var raw = String(value || '').trim()
+    if (!/^#[0-9A-Fa-f]{6}$/.test(raw)) return '#4f46e5'
+    return '#' + raw.slice(1).toLowerCase()
+  }
+
+  function applyLauncherBrandColor(value) {
+    var color = normalizeBrandColor(value)
+    LAUNCHER_BG = color
+    btn.style.background = color
+    var dots = btn.querySelectorAll('.arivu-fab-dot')
+    for (var i = 0; i < dots.length; i++) {
+      dots[i].setAttribute('fill', color)
+    }
+    var ring = btn.querySelector('.arivu-fab-ring')
+    if (ring) {
+      ring.style.borderColor = color
+      ring.style.opacity = '0.35'
+    }
+  }
+
+  // Prefetch brand color so the FAB matches before the iframe loads config.
+  ;(function prefetchBrandColor() {
+    var bases = [
+      effectiveApiOrigin + '/embed/chat',
+      effectiveApiOrigin + '/api/embed/chat',
+    ]
+    function tryBase(index) {
+      if (index >= bases.length) return
+      fetch(bases[index] + '/config?instanceKey=' + encodeURIComponent(instanceKey))
+        .then(function (res) {
+          return res.json()
+        })
+        .then(function (json) {
+          if (json && json.success && json.data && json.data.brandColor) {
+            applyLauncherBrandColor(json.data.brandColor)
+            return
+          }
+          tryBase(index + 1)
+        })
+        .catch(function () {
+          tryBase(index + 1)
+        })
+    }
+    tryBase(0)
+  })()
+
   btn.style.position = 'relative'
   btn.style.flex = '0 0 auto'
   btn.style.width = '60px'
@@ -420,6 +467,9 @@
     }
     if (e.data && e.data.type === 'litedesk_chat_agent_message') {
       onAgentMessage()
+    }
+    if (e.data && e.data.type === 'litedesk_chat_brand_color') {
+      applyLauncherBrandColor(e.data.brandColor)
     }
   })
 

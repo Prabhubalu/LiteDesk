@@ -1708,7 +1708,7 @@
     "description": "Recent conversation relative time with day count"
   },
   "inAppAskPlaceholder": {
-    "message": "Ask anything…",
+    "message": "Fragen, erstellen, suchen oder beschreiben…",
     "description": "In-product assistant composer placeholder"
   },
   "inAppPoweredBy": {
@@ -1720,15 +1720,283 @@
     "description": "Back to assistant home from chat"
   },
   "inAppExpand": {
-    "message": "Expand assistant",
-    "description": "Expand assistant panel aria label"
+    "message": "Widen assistant",
+    "description": "Widen assistant panel aria label"
   },
   "inAppCollapse": {
-    "message": "Collapse assistant",
-    "description": "Collapse assistant panel aria label"
+    "message": "Narrow assistant",
+    "description": "Narrow assistant panel aria label"
   },
   "inAppEndChat": {
     "message": "End chat",
     "description": "End the current in-product support chat session"
+  },
+  "inAppAiSection": {
+    "message": "Ask Arivu",
+    "description": "In-product assistant AI conversation section label"
+  },
+  "inAppAiThinking": {
+    "message": "Thinking…",
+    "description": "In-product assistant AI loading state"
+  },
+  "inAppAiNoAnswer": {
+    "message": "I could not find an answer from this page or your knowledge base. Try rephrasing, or report an issue for an agent.",
+    "description": "In-product assistant empty AI answer"
+  },
+  "inAppAiAskFailed": {
+    "message": "Something went wrong while answering. Please try again.",
+    "description": "In-product assistant AI request failure"
+  },
+  "inAppAiNotEntitled": {
+    "message": "AI Assist is not enabled for your organization.",
+    "description": "In-product assistant AI entitlement missing"
+  },
+  "inAppAiFromRecord": {
+    "message": "From this record",
+    "description": "Badge when answer used page/record context"
+  },
+  "inAppAiFromKnowledge": {
+    "message": "From knowledge",
+    "description": "Badge when answer used knowledge base"
+  },
+  "inAppAiNewAsk": {
+    "message": "New question",
+    "description": "Clear AI conversation and start fresh"
+  },
+  "inAppAiRecordContext": {
+    "message": "Using this page’s record as context",
+    "description": "Hint when assistant has CRM record context"
+  },
+  "inAppAiFromPage": {
+    "message": "From this page",
+    "description": "Badge when answer used list/page CRM context"
+  },
+  "inAppAiPageCountAnswer": {
+    "message": "You have {count} {module} in Arivu (based on this list page).",
+    "description": "Assistant count answer from module list totals"
+  },
+  "inAppAiPageStatsAnswer": {
+    "message": "On this {module} list there are {count} records. Stats: {stats}",
+    "description": "Assistant stats answer from module list"
+  },
+  "inAppAiPageContext": {
+    "message": "Using this list page as context",
+    "description": "Hint when assistant has CRM list page context"
+  },
+  "inAppAiTalkToAgentCta": {
+    "message": "Talk to Agent",
+    "description": "CTA button when AI cannot answer"
+  },
+  "inAppAiOpenRecord": {
+    "message": "Open",
+    "description": "Assistant action chip to open a related CRM record"
+  },
+  "inAppAiSummaryHeadline": {
+    "message": "Record summary",
+    "description": "Headline when assistant returns a people summary"
+  },
+  "inAppAiNextActions": {
+    "message": "Suggested next actions",
+    "description": "Heading above next-best-action chips in Arivu Assistant"
+  },
+  "inAppAiActionEmail": {
+    "message": "Email",
+    "description": "Badge for send-email next action"
+  },
+  "inAppAiActionTask": {
+    "message": "Task",
+    "description": "Badge for complete-task next action"
+  },
+  "inAppAiActionFollowUp": {
+    "message": "Follow up",
+    "description": "Badge for follow-up next action"
+  },
+  "inAppAiActionReview": {
+    "message": "Review",
+    "description": "Badge for review-record next action"
+  },
+  "inAppAiActionUpdate": {
+    "message": "Update",
+    "description": "Badge for update-status next action"
+  },
+  "inAppAiActionDo": {
+    "message": "Do next",
+    "description": "Default badge for manual next action"
+  },
+  "inAppAiEmailSubject": {
+    "message": "Subject",
+    "description": "Label for drafted email subject in assistant card"
+  },
+  "inAppAiOpenCompose": {
+    "message": "Open compose to send",
+    "description": "Hint on email draft action card"
+  },
+  "inAppAiFromAgent": {
+    "message": "Specialist agent",
+    "description": "Badge when a tenant agent answered"
+  },
+  "inAppAiFromAgentNamed": {
+    "message": "Agent · {name}",
+    "description": "Badge showing which specialist agent answered"
+  },
+  "inAppAiRunAgent": {
+    "message": "Run agent",
+    "description": "Fallback label when invoking a specialist agent chip"
+  },
+  "inAppAiCreditsExhausted": {
+    "message": "AI credits are exhausted (or the provider quota is blocked). Add credits in Settings → AI, or switch to Bring Your Own Key.",
+    "description": "In-product assistant when platform credits or provider billing blocks the request"
+  },
+  "inAppAiNewConversationTitle": {
+    "message": "New conversation",
+    "description": "Default title for an empty AI conversation"
+  },
+  "inAppAiConversationsTitle": {
+    "message": "Conversations",
+    "description": "Full list of AI assistant conversations"
+  },
+  "inAppAiSeeAllConversations": {
+    "message": "See all",
+    "description": "Open full AI conversation list from home"
+  },
+  "inAppAiConversationsEmpty": {
+    "message": "No conversations yet. Ask a question to start one.",
+    "description": "Empty state for AI conversation list"
+  },
+  "inAppAiConversationsEmptyPreview": {
+    "message": "No messages yet",
+    "description": "Preview text when conversation has no content"
+  },
+  "inAppAiMessageCount": {
+    "message": "{count} messages",
+    "description": "Message count in conversation list row"
+  },
+  "inAppAiNewChat": {
+    "message": "New chat",
+    "description": "Start a new Arivu Assistant conversation"
+  },
+  "inAppAiMeetBanner": {
+    "message": "Ask about this page, research records, or get the next best action.",
+    "description": "Empty-state intro line for Arivu Assistant"
+  },
+  "inAppAiCapabilityAsk": {
+    "message": "Ask",
+    "description": "Arivu capability chip"
+  },
+  "inAppAiCapabilitySummarize": {
+    "message": "Summarize",
+    "description": "Arivu capability chip"
+  },
+  "inAppAiCapabilityResearch": {
+    "message": "Research",
+    "description": "Arivu capability chip"
+  },
+  "inAppAiCapabilityNextAction": {
+    "message": "Next action",
+    "description": "Arivu capability chip"
+  },
+  "inAppAiSuggestSummarizeRecord": {
+    "message": "Summarize this record",
+    "description": "Contextual suggestion on a record page"
+  },
+  "inAppAiSuggestNextActionRecord": {
+    "message": "What is the next best action here?",
+    "description": "Contextual suggestion on a record page"
+  },
+  "inAppAiSuggestResearchRecord": {
+    "message": "Research this record",
+    "description": "Contextual suggestion on a record page"
+  },
+  "inAppAiSuggestRisksRecord": {
+    "message": "What risks should I watch on this record?",
+    "description": "Contextual suggestion on a record page"
+  },
+  "inAppAiSuggestSummarizeList": {
+    "message": "Summarize activity in {place}",
+    "description": "Contextual suggestion on a list page"
+  },
+  "inAppAiSuggestCountList": {
+    "message": "How many records are in {place}?",
+    "description": "Contextual suggestion on a list page"
+  },
+  "inAppAiSuggestPrioritizeList": {
+    "message": "What should I prioritize in {place}?",
+    "description": "Contextual suggestion on a list page"
+  },
+  "inAppAiSuggestFindStaleList": {
+    "message": "Find stale or overdue items in {place}",
+    "description": "Contextual suggestion on a list page"
+  },
+  "inAppAiSuggestGenericHelp": {
+    "message": "What can you help me with here?",
+    "description": "Generic contextual suggestion"
+  },
+  "inAppAiSuggestGenericSearch": {
+    "message": "Search my knowledge base",
+    "description": "Generic contextual suggestion"
+  },
+  "inAppAiViewAllChats": {
+    "message": "View all chats",
+    "description": "Open full conversation history"
+  },
+  "inAppResize": {
+    "message": "Resize assistant panel",
+    "description": "Drag handle aria label for resizing Arivu Assistant"
+  },
+  "inAppAiBrandShort": {
+    "message": "Astra kennenlernen",
+    "description": "Centered empty-state title under Astra logo"
+  },
+  "inAppAiMeetTitle": {
+    "message": "Arivu kennenlernen",
+    "description": "Arivu Assistant empty-state intro title"
+  },
+  "inAppAiMeetTagline": {
+    "message": "Deutlich smarter, deutlich fähiger.",
+    "description": "Arivu Assistant empty-state intro tagline"
+  },
+  "inAppAiNewBadge": {
+    "message": "Neu",
+    "description": "New badge on Arivu Assistant intro banner"
+  },
+  "inAppAiSuggestShortSummarize": {
+    "message": "Zusammenfassen",
+    "description": "Short chip label for summarize suggestion"
+  },
+  "inAppAiSuggestShortNext": {
+    "message": "Nächster Schritt",
+    "description": "Short chip label for next-action suggestion"
+  },
+  "inAppAiSuggestShortResearch": {
+    "message": "Recherchieren",
+    "description": "Short chip label for research suggestion"
+  },
+  "inAppAiSuggestShortRisks": {
+    "message": "Risiken",
+    "description": "Short chip label for risks suggestion"
+  },
+  "inAppAiSuggestShortCount": {
+    "message": "Anzahl",
+    "description": "Short chip label for list count suggestion"
+  },
+  "inAppAiSuggestShortPrioritize": {
+    "message": "Priorisieren",
+    "description": "Short chip label for prioritize suggestion"
+  },
+  "inAppAiSuggestShortStale": {
+    "message": "Veraltet",
+    "description": "Short chip label for stale/find-old suggestion"
+  },
+  "inAppAiSuggestShortHelp": {
+    "message": "Hilfe",
+    "description": "Short chip label for generic help suggestion"
+  },
+  "inAppAiSuggestShortSearch": {
+    "message": "Suche",
+    "description": "Short chip label for generic search suggestion"
+  },
+  "inAppAiBrandTagline": {
+    "message": "Die Intelligenz hinter Ihrer Arbeit.",
+    "description": "Tagline under Meet Astra on empty AI panel"
   }
 }

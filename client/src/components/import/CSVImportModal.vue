@@ -350,6 +350,14 @@
                 >
                   {{ t('import.savedMappingResetAutoMap') }}
                 </button>
+                <button
+                  type="button"
+                  class="rounded-lg px-3 py-2 text-sm font-medium text-violet-600 hover:text-violet-800 disabled:opacity-50 dark:text-violet-400"
+                  :disabled="fieldsLoading || aiMappingLoading || !csvHeaders.length"
+                  @click="applyAiFieldMappingSuggest"
+                >
+                  {{ aiMappingLoading ? t('states.loading') : t('import.importAiMappingSuggest') }}
+                </button>
               </div>
               <p
                 v-if="isTemplateModified"
@@ -1195,6 +1203,7 @@ const showBackgroundConfirm = ref(false);
 const pendingDiscardAction = ref(null);
 const activeImportId = ref(null);
 const autoMappedCount = ref(0);
+const aiMappingLoading = ref(false);
 const mappingTemplates = ref([]);
 const mappingTemplatesLoading = ref(false);
 const selectedTemplateId = ref('');
@@ -2330,6 +2339,30 @@ function applyAutoFieldMappingOnly() {
     return;
   }
   mergeFieldMappingResult(buildAutoImportFieldMapping(csvHeaders.value, fields));
+}
+
+async function applyAiFieldMappingSuggest() {
+  clearTemplateAssociation();
+  const fields = availableFields.value;
+  if (!csvHeaders.value.length || !fields.length || aiMappingLoading.value) return;
+  aiMappingLoading.value = true;
+  try {
+    const data = await apiClient.post('/ai/import/mapping-suggest', {
+      moduleKey: importModuleKey.value || 'people',
+      headers: csvHeaders.value,
+      fields: fields.map((f) => ({
+        fieldKey: f.value || f.fieldKey,
+        label: f.label || f.value || f.fieldKey,
+      })),
+    });
+    if (data?.fieldMapping && typeof data.fieldMapping === 'object') {
+      mergeFieldMappingResult(data.fieldMapping);
+    }
+  } catch (err) {
+    showBannerError(err?.message || t('import.importAiMappingFailed'));
+  } finally {
+    aiMappingLoading.value = false;
+  }
 }
 
 async function applyInitialFieldMapping() {

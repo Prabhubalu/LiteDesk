@@ -540,6 +540,27 @@ async function publishContentDocument({ organizationId, id, userId }) {
     });
   });
 
+  // Phase 1: index published Articles/Blog into Arivu AI vector corpus when entitled.
+  if (doc.addonKey === 'articles' || doc.addonKey === 'blog') {
+    setImmediate(() => {
+      (async () => {
+        try {
+          const { isAiSuiteEntitledForOrg } = require('../../utils/addonAccessUtils');
+          const entitled = await isAiSuiteEntitledForOrg(organizationId);
+          if (!entitled) return;
+          const { enqueueContentDocumentEmbed } = require('../ai/aiEmbedQueueService');
+          enqueueContentDocumentEmbed({
+            organizationId,
+            contentDocumentId: doc._id,
+            userId,
+          });
+        } catch (error) {
+          console.error('[contentDocumentService] AI embed enqueue failed', error?.message || error);
+        }
+      })();
+    });
+  }
+
   return serializeContentDocument(doc.toObject(), version.toObject());
 }
 
@@ -570,6 +591,25 @@ async function unpublishContentDocument({ organizationId, id, userId }) {
       }).catch((error) => {
         console.error('[contentDocumentService] unpublish webhook failed', error?.message || error);
       });
+    });
+
+    setImmediate(() => {
+      (async () => {
+        try {
+          const { isAiSuiteEntitledForOrg } = require('../../utils/addonAccessUtils');
+          const entitled = await isAiSuiteEntitledForOrg(organizationId);
+          if (!entitled) return;
+          const { removeContentDocumentEmbeddings } = require('../ai/aiEmbedService');
+          await removeContentDocumentEmbeddings({
+            organizationId,
+            contentDocumentId: doc._id,
+            addonKey: doc.addonKey,
+            appKey: doc.appKey,
+          });
+        } catch (error) {
+          console.error('[contentDocumentService] AI embed remove failed', error?.message || error);
+        }
+      })();
     });
   }
 

@@ -18,9 +18,16 @@ export function usePortalKnowledge() {
     return portalApiClient(`/knowledge-base/${id}`);
   }
 
+  async function ask(question) {
+    return portalApiClient.post('/knowledge-base/ask', {
+      question: String(question || '').trim(),
+    });
+  }
+
   return {
     listArticles,
     listCollections,
-    getArticle
+    getArticle,
+    ask,
   };
 }

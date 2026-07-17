@@ -62,22 +62,26 @@ export function useRecordPresence(getModuleKey, getRecordId, getActivityType = (
     return route.path.includes(`/${id}`);
   }
 
+  const presenceAuthOpts = { skipAuthLogout: true };
+
   async function fetchRecordPresence(moduleKey, recordId) {
-    const response = await apiClient.getOptional(buildPresencePath(moduleKey, recordId));
+    const response = await apiClient.getOptional(buildPresencePath(moduleKey, recordId), presenceAuthOpts);
     if (response?.success) return response.data || [];
     return [];
   }
 
   async function heartbeatRecordPresence(moduleKey, recordId, activityType) {
-    const response = await apiClient.postOptional(buildPresencePath(moduleKey, recordId) + '/heartbeat', {
-      activityType
-    });
+    const response = await apiClient.postOptional(
+      buildPresencePath(moduleKey, recordId) + '/heartbeat',
+      { activityType },
+      presenceAuthOpts
+    );
     if (response?.success) return response.data;
     return null;
   }
 
   async function clearRecordPresence(moduleKey, recordId) {
-    return apiClient.delete(buildPresencePath(moduleKey, recordId));
+    return apiClient.delete(buildPresencePath(moduleKey, recordId), presenceAuthOpts);
   }
 
   async function refreshPresence() {

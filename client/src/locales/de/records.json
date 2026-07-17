@@ -3850,5 +3850,193 @@
   "dealLinesMiscTitle": {
     "message": "Add miscellaneous charge",
     "description": "Modal title when adding a non-catalog deal line"
+  },
+  "aiSummarize": {
+    "message": "Summarize with AI",
+    "description": "Record AI summarize action"
+  },
+  "aiSummarizing": {
+    "message": "Summarizing…",
+    "description": "Record AI summarize in progress"
+  },
+  "aiSummarizeFailed": {
+    "message": "Could not summarize this record with AI",
+    "description": "Record AI summarize error"
+  },
+  "aiSummaryEmpty": {
+    "message": "AI returned an empty summary",
+    "description": "Record AI summarize empty result"
+  },
+  "aiSummaryTitle": {
+    "message": "AI summary",
+    "description": "Record AI summary panel title"
+  },
+  "aiSummaryCached": {
+    "message": "Cached · record unchanged",
+    "description": "Record AI summary served from updatedAt cache"
+  },
+  "aiFeedbackUp": {
+    "message": "Yes",
+    "description": "Record AI feedback positive"
+  },
+  "aiFeedbackDown": {
+    "message": "No",
+    "description": "Record AI feedback negative"
+  },
+  "aiQuoteDraft": {
+    "message": "Quote draft with AI",
+    "description": "Deal AI quote draft action"
+  },
+  "aiQuoteDraftTitle": {
+    "message": "AI quote draft readiness",
+    "description": "Deal AI quote draft panel title"
+  },
+  "aiQuoteDrafting": {
+    "message": "Analyzing deal lines for quote…",
+    "description": "Deal AI quote draft in progress"
+  },
+  "aiQuoteDraftFailed": {
+    "message": "Could not draft quote guidance with AI",
+    "description": "Deal AI quote draft error"
+  },
+  "aiQuoteDraftEmpty": {
+    "message": "AI returned empty quote guidance",
+    "description": "Deal AI quote draft empty"
+  },
+  "aiQuoteDraftApplyHint": {
+    "message": "Catalog lines are ready. Create a Quote, then add lines manually — AI does not write quotes.",
+    "description": "Deal AI quote draft apply hint"
+  },
+  "aiQuoteDraftGapHint": {
+    "message": "Fix coverage gaps (catalog variants) before applying lines to a Quote.",
+    "description": "Deal AI quote draft gap hint"
+  },
+  "aiResearch": {
+    "message": "Research with AI",
+    "description": "Record research agent action"
+  },
+  "aiDuplicates": {
+    "message": "Check duplicates with AI",
+    "description": "People/org duplicate suggest action"
+  },
+  "aiOverdueBrief": {
+    "message": "Overdue invoices brief",
+    "description": "Collections AI brief action"
+  },
+  "aiAskGraph": {
+    "message": "Ask about this record",
+    "description": "Work-graph ask action"
+  },
+  "aiResearchTitle": {
+    "message": "AI research brief",
+    "description": "Record research panel title"
+  },
+  "aiResearching": {
+    "message": "Researching…",
+    "description": "Record research in progress"
+  },
+  "aiResearchEmpty": {
+    "message": "AI returned an empty research brief",
+    "description": "Record research empty"
+  },
+  "aiResearchFailed": {
+    "message": "Could not research this record with AI",
+    "description": "Record research error"
+  },
+  "aiResearchReadOnlyHint": {
+    "message": "Read-only brief — AI does not change records or send messages.",
+    "description": "Record research read-only hint"
+  },
+  "aiDuplicatesTitle": {
+    "message": "Possible duplicates",
+    "description": "Duplicate suggest panel title"
+  },
+  "aiDuplicatesRunning": {
+    "message": "Checking for duplicates…",
+    "description": "Duplicate suggest in progress"
+  },
+  "aiDuplicatesEmpty": {
+    "message": "No duplicate suggestions returned",
+    "description": "Duplicate suggest empty"
+  },
+  "aiDuplicatesFailed": {
+    "message": "Could not check duplicates with AI",
+    "description": "Duplicate suggest error"
+  },
+  "aiDuplicatesConfirmHint": {
+    "message": "Suggestions only — merge stays a human confirm step. AI never merges records.",
+    "description": "Duplicate suggest confirm-only hint"
+  },
+  "aiExtract": {
+    "message": "Extract fields with AI",
+    "description": "Field extract action"
+  },
+  "aiExtractTitle": {
+    "message": "Extract fields",
+    "description": "Field extract panel title"
+  },
+  "aiExtractPlaceholder": {
+    "message": "Paste email or notes to extract field values…",
+    "description": "Field extract textarea placeholder"
+  },
+  "aiExtractRunning": {
+    "message": "Extracting…",
+    "description": "Field extract in progress"
+  },
+  "aiExtractEmpty": {
+    "message": "No field patches returned",
+    "description": "Field extract empty"
+  },
+  "aiExtractFailed": {
+    "message": "Could not extract fields with AI",
+    "description": "Field extract error"
+  },
+  "aiExtractApply": {
+    "message": "Apply selected",
+    "description": "Field extract confirm apply"
+  },
+  "aiExtractApplyFailed": {
+    "message": "Could not apply extracted fields",
+    "description": "Field extract apply error"
+  },
+  "aiExtractConfirmHint": {
+    "message": "Review patches, then confirm to apply. AI never writes fields automatically.",
+    "description": "Field extract confirm-to-apply hint"
+  },
+  "aiCommercialAgent": {
+    "message": "Commercial next steps (AI)",
+    "description": "Deal commercial agent menu action"
+  },
+  "aiCommercialAgentTitle": {
+    "message": "Commercial agent proposals",
+    "description": "Commercial agent panel title"
+  },
+  "aiCommercialAgentConfirmHint": {
+    "message": "Propose-only. AI never creates quotes or changes prices — you confirm every step.",
+    "description": "Commercial agent propose-only hint"
+  },
+  "aiCommercialAgentEmpty": {
+    "message": "No commercial proposals returned.",
+    "description": "Commercial agent empty"
+  },
+  "aiCommercialAgentFailed": {
+    "message": "Could not generate commercial proposals.",
+    "description": "Commercial agent error"
+  },
+  "aiCollectionAgentTitle": {
+    "message": "Collection agent proposals",
+    "description": "Collection agent panel title"
+  },
+  "aiCollectionAgentConfirmHint": {
+    "message": "Propose-only. Finance confirms every follow-up and payment link.",
+    "description": "Collection agent propose-only hint"
+  },
+  "aiCollectionAgentEmpty": {
+    "message": "No collection proposals returned.",
+    "description": "Collection agent empty"
+  },
+  "aiCollectionAgentFailed": {
+    "message": "Could not generate collection proposals.",
+    "description": "Collection agent error"
   }
 }

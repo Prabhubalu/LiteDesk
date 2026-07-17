@@ -60,15 +60,37 @@
             </div>
 
             <div>
-              <label for="campaign-subject" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
-                {{ t('marketing.campaignsFieldSubject') }}
-              </label>
+              <div class="flex items-center justify-between gap-2">
+                <label for="campaign-subject" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                  {{ t('marketing.campaignsFieldSubject') }}
+                </label>
+                <button
+                  type="button"
+                  class="text-xs font-medium text-indigo-600 hover:text-indigo-800 disabled:opacity-50 dark:text-indigo-400"
+                  :disabled="aiSubjectLoading"
+                  @click="runSubjectAssist"
+                >
+                  {{ aiSubjectLoading ? t('states.loading') : t('marketing.campaignsAiSubjectAssist') }}
+                </button>
+              </div>
               <input
                 id="campaign-subject"
                 v-model="form.subject"
                 type="text"
                 :class="fieldInputClass"
               />
+              <ul v-if="aiSubjectOptions.length" class="mt-2 space-y-1">
+                <li v-for="(s, idx) in aiSubjectOptions" :key="`${s}-${idx}`">
+                  <button
+                    type="button"
+                    class="text-left text-xs text-indigo-700 hover:underline dark:text-indigo-300"
+                    @click="form.subject = s; aiSubjectOptions = []"
+                  >
+                    {{ s }}
+                  </button>
+                </li>
+              </ul>
+              <p v-if="aiSubjectError" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ aiSubjectError }}</p>
             </div>
 
             <div class="grid gap-5 sm:grid-cols-2">
@@ -194,15 +216,27 @@
             </p>
           </div>
           <div class="px-5 py-5">
-            <label for="campaign-body-html" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
-              {{ t('marketing.campaignsFieldBodyHtml') }}
-            </label>
+            <div class="flex items-center justify-between gap-2">
+              <label for="campaign-body-html" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                {{ t('marketing.campaignsFieldBodyHtml') }}
+              </label>
+              <button
+                type="button"
+                class="text-xs font-medium text-indigo-600 hover:text-indigo-800 disabled:opacity-50 dark:text-indigo-400"
+                :disabled="aiBodyLoading"
+                @click="runBodyAssist"
+              >
+                {{ aiBodyLoading ? t('states.loading') : t('marketing.campaignsAiBodyAssist') }}
+              </button>
+            </div>
             <textarea
               id="campaign-body-html"
               v-model="form.bodyHtml"
               rows="14"
               :class="[fieldInputClass, 'font-mono']"
             />
+            <p v-if="aiBodyError" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ aiBodyError }}</p>
+            <p v-if="aiBodyNotes" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ aiBodyNotes }}</p>
           </div>
         </section>
 
@@ -282,6 +316,8 @@ import { useMarketingTemplates, buildMarketingEmailFromTemplate } from '@/compos
 import { useNotifications } from '@/composables/useNotifications';
 import { parseCampaignEmailPreview } from '@/utils/marketingEmailPreview';
 import { PROCESS_INPUT_CLASS } from '@/utils/processDesignerConstants';
+import apiClient from '@/utils/apiClient';
+import { trackAiAbilityUsed } from '@/utils/aiFeedback';
 
 const props = defineProps({
   campaignId: {
@@ -304,6 +340,12 @@ const templatesLoading = ref(false);
 const showEmailPreview = ref(false);
 const previewHtml = ref('');
 const previewCss = ref('');
+const aiSubjectLoading = ref(false);
+const aiSubjectOptions = ref([]);
+const aiSubjectError = ref('');
+const aiBodyLoading = ref(false);
+const aiBodyError = ref('');
+const aiBodyNotes = ref('');
 
 const fieldInputClass = `${PROCESS_INPUT_CLASS} mt-2`;
 
@@ -420,6 +462,62 @@ async function loadCampaign() {
     router.push({ name: 'marketing-campaigns' });
   } finally {
     loading.value = false;
+  }
+}
+
+async function runSubjectAssist() {
+  aiSubjectLoading.value = true;
+  aiSubjectError.value = '';
+  aiSubjectOptions.value = [];
+  try {
+    const data = await apiClient.post('/ai/marketing/subject-assist', {
+      campaignName: form.name,
+      existingSubject: form.subject,
+      count: 3,
+    });
+    aiSubjectOptions.value = Array.isArray(data?.subjects) ? data.subjects : [];
+    trackAiAbilityUsed({
+      abilityKey: 'marketing_subject',
+      provider: data?.provider,
+      model: data?.model,
+      keyMode: data?.keyMode,
+    });
+    if (!aiSubjectOptions.value.length) {
+      aiSubjectError.value = t('marketing.campaignsAiAssistEmpty');
+    }
+  } catch (err) {
+    aiSubjectError.value = err?.message || t('marketing.campaignsAiAssistFailed');
+  } finally {
+    aiSubjectLoading.value = false;
+  }
+}
+
+async function runBodyAssist() {
+  aiBodyLoading.value = true;
+  aiBodyError.value = '';
+  aiBodyNotes.value = '';
+  try {
+    const data = await apiClient.post('/ai/marketing/body-assist', {
+      campaignName: form.name,
+      subject: form.subject,
+      existingBody: form.bodyHtml,
+    });
+    const html = String(data?.bodyHtml || '').trim();
+    if (html) form.bodyHtml = html;
+    aiBodyNotes.value = String(data?.notes || '').trim();
+    trackAiAbilityUsed({
+      abilityKey: 'marketing_body',
+      provider: data?.provider,
+      model: data?.model,
+      keyMode: data?.keyMode,
+    });
+    if (!html) {
+      aiBodyError.value = t('marketing.campaignsAiAssistEmpty');
+    }
+  } catch (err) {
+    aiBodyError.value = err?.message || t('marketing.campaignsAiAssistFailed');
+  } finally {
+    aiBodyLoading.value = false;
   }
 }
 

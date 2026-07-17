@@ -5,6 +5,7 @@ const {
   updateBot,
   deleteBot,
 } = require('../services/liveChatBotService');
+const { getBotDeflectionMetrics } = require('../services/liveChatBotDeflectionService');
 
 exports.listBots = async (req, res) => {
   try {
@@ -13,6 +14,19 @@ exports.listBots = async (req, res) => {
   } catch (err) {
     console.error('[liveChatBotController] listBots', err);
     return res.status(500).json({ success: false, message: 'Failed to list bots' });
+  }
+};
+
+exports.getDeflectionMetrics = async (req, res) => {
+  try {
+    const metrics = await getBotDeflectionMetrics({
+      organizationId: req.user.organizationId,
+      sinceDays: req.query?.days,
+    });
+    return res.json({ success: true, data: metrics });
+  } catch (err) {
+    console.error('[liveChatBotController] getDeflectionMetrics', err);
+    return res.status(500).json({ success: false, message: 'Failed to load deflection metrics' });
   }
 };
 

@@ -3,7 +3,7 @@ const PRODUCTION_API_ORIGIN = 'https://api.arivusystems.com'
 const LOCAL_DEV_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
 
 /**
- * In local dev, VITE_API_ORIGIN often points at the API port (e.g. :3000) while the SPA
+ * In local dev, VITE_API_ORIGIN often points at the API port (e.g. :5000) while the SPA
  * is served from Vite (:5173). EventSource/fetch must use same-origin + the Vite proxy
  * instead of connecting directly to the API port (which fails when only Vite is up or
  * ports drift).
@@ -114,7 +114,7 @@ function getDevDirectFetchOrigin(): string {
     }
   }
 
-  return 'http://localhost:3000'
+  return 'http://localhost:5000'
 }
 
 export function getApiUrlForFetch(url: string): string {

@@ -313,6 +313,24 @@ function createInboxContextCommands(nav: NavigationUtilities): CommandPaletteIte
 function createPeopleContextCommands(nav: NavigationUtilities): CommandPaletteItem[] {
   return [
     {
+      id: 'person-ai-research',
+      label: 'Research with AI',
+      description: 'Generate a read-only research brief for this person',
+      category: 'action',
+      scope: 'contextual',
+      context: 'people',
+      moduleKey: 'people',
+      kind: 'action',
+      handler: (route) => {
+        const id = route?.params?.id as string | undefined;
+        if (typeof window !== 'undefined' && id) {
+          window.dispatchEvent(new CustomEvent('arivu:ai-research', {
+            detail: { moduleKey: 'people', recordId: id },
+          }));
+        }
+      },
+    },
+    {
       id: 'person-assign-task',
       label: 'Assign Task',
       description: 'Assign a task to this person',

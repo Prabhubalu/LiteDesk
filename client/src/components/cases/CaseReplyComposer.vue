@@ -57,14 +57,46 @@
         :class="fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''"
       />
       <div class="mt-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
-        <CaseCannedResponseMenu
-          :items="cannedResponses"
-          :loading="cannedLoading"
-          :disabled="disabled || sending"
-          :active-channel="cannedChannel"
-          @open="onCannedMenuOpen"
-          @select="applyCannedResponse"
-        />
+        <div class="flex items-center gap-2">
+          <CaseCannedResponseMenu
+            :items="cannedResponses"
+            :loading="cannedLoading"
+            :disabled="disabled || sending || draftingAi"
+            :active-channel="cannedChannel"
+            @open="onCannedMenuOpen"
+            @select="applyCannedResponse"
+          />
+          <button
+            v-if="canUseAiDraft"
+            type="button"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-900/40"
+            :disabled="disabled || sending || draftingAi"
+            @click="draftWithAi"
+          >
+            <span v-if="draftingAi" class="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+            {{ draftingAi ? t('cases.recordAiDrafting') : t('cases.recordAiDraft') }}
+          </button>
+          <div v-if="showAiDraftFeedback" class="inline-flex items-center gap-1">
+            <span class="text-[11px] text-gray-500 dark:text-gray-400">{{ t('cases.recordAiFeedbackPrompt') }}</span>
+            <button
+              type="button"
+              class="rounded px-1.5 py-0.5 text-xs font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-700"
+              :disabled="aiFeedbackSent"
+              @click="sendAiDraftFeedback('up')"
+            >
+              {{ t('cases.recordAiFeedbackUp') }}
+            </button>
+            <button
+              type="button"
+              class="rounded px-1.5 py-0.5 text-xs font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-700"
+              :disabled="aiFeedbackSent"
+              @click="sendAiDraftFeedback('down')"
+            >
+              {{ t('cases.recordAiFeedbackDown') }}
+            </button>
+          </div>
+        </div>
+        <p v-if="aiError" class="basis-full text-xs text-red-600 dark:text-red-400">{{ aiError }}</p>
         <div class="flex items-center gap-2">
           <button
             v-if="isClosed"
@@ -108,19 +140,51 @@
         @keydown.ctrl.enter.prevent="submit"
       />
       <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-gray-200 px-3 py-2 dark:border-gray-600">
-        <CaseCannedResponseMenu
-          v-if="internalComment"
-          :items="cannedResponses"
-          :loading="cannedLoading"
-          :disabled="disabled || sending"
-          :active-channel="cannedChannel"
-          @open="onCannedMenuOpen"
-          @select="applyCannedResponseToDraft"
-        />
-        <div v-else class="flex items-center gap-1 text-gray-400">
-          <BoltIcon class="h-4 w-4 opacity-40" />
-          <span class="text-xs text-gray-400">{{ t('cases.recordMacrosInternalOnly') }}</span>
+        <div class="flex items-center gap-2">
+          <CaseCannedResponseMenu
+            v-if="internalComment"
+            :items="cannedResponses"
+            :loading="cannedLoading"
+            :disabled="disabled || sending || draftingAi"
+            :active-channel="cannedChannel"
+            @open="onCannedMenuOpen"
+            @select="applyCannedResponseToDraft"
+          />
+          <div v-else class="flex items-center gap-1 text-gray-400">
+            <BoltIcon class="h-4 w-4 opacity-40" />
+            <span class="text-xs text-gray-400">{{ t('cases.recordMacrosInternalOnly') }}</span>
+          </div>
+          <button
+            v-if="canUseAiDraft"
+            type="button"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-900/40"
+            :disabled="disabled || sending || draftingAi"
+            @click="draftWithAi"
+          >
+            <span v-if="draftingAi" class="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+            {{ draftingAi ? t('cases.recordAiDrafting') : t('cases.recordAiDraft') }}
+          </button>
+          <div v-if="showAiDraftFeedback" class="inline-flex items-center gap-1">
+            <span class="text-[11px] text-gray-500 dark:text-gray-400">{{ t('cases.recordAiFeedbackPrompt') }}</span>
+            <button
+              type="button"
+              class="rounded px-1.5 py-0.5 text-xs font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-700"
+              :disabled="aiFeedbackSent"
+              @click="sendAiDraftFeedback('up')"
+            >
+              {{ t('cases.recordAiFeedbackUp') }}
+            </button>
+            <button
+              type="button"
+              class="rounded px-1.5 py-0.5 text-xs font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-700"
+              :disabled="aiFeedbackSent"
+              @click="sendAiDraftFeedback('down')"
+            >
+              {{ t('cases.recordAiFeedbackDown') }}
+            </button>
+          </div>
         </div>
+        <p v-if="aiError" class="basis-full text-xs text-red-600 dark:text-red-400">{{ aiError }}</p>
         <div class="flex items-center gap-2">
           <button
             v-if="isClosed"
@@ -159,6 +223,9 @@ import {
   buildCaseCannedResponseContext,
   resolveCannedResponse
 } from '@/utils/caseCannedResponses';
+import apiClient from '@/utils/apiClient';
+import { submitAiFeedback, trackAiAbilityUsed } from '@/utils/aiFeedback';
+import { captureAiDraftAccepted } from '@/config/posthogAi';
 
 const props = defineProps({
   caseRecord: { type: Object, default: null },
@@ -177,7 +244,7 @@ const props = defineProps({
   internalCommentMode: { type: Boolean, default: false }
 });
 
-const emit = defineEmits(['send', 'reopen', 'typing']);
+const emit = defineEmits(['send', 'reopen', 'typing', 'ai-error']);
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -192,6 +259,15 @@ const viaChannel = ref('');
 const internalComment = ref(false);
 const typingTimer = ref(null);
 const lastTypingSentAt = ref(0);
+const draftingAi = ref(false);
+const aiError = ref('');
+const showAiDraftFeedback = ref(false);
+const aiFeedbackSent = ref(false);
+const lastAiDraftMeta = ref({ provider: '', model: '', keyMode: '' });
+/** True while the composer still holds an AI-generated draft (cleared on send/edit-away). */
+const aiDraftPendingAccept = ref(false);
+
+const canUseAiDraft = computed(() => Boolean(props.caseRecord?._id));
 
 const channels = CASE_CHANNELS;
 
@@ -273,10 +349,80 @@ function applyCannedResponseToDraft(item) {
   }
 }
 
+async function draftWithAi() {
+  const caseId = props.caseRecord?._id;
+  if (!caseId || draftingAi.value) return;
+  draftingAi.value = true;
+  aiError.value = '';
+  showAiDraftFeedback.value = false;
+  aiFeedbackSent.value = false;
+  try {
+    const data = await apiClient.post(`/ai/cases/${caseId}/draft-reply`, {});
+    const text = String(data?.text || '').trim();
+    if (!text) {
+      aiError.value = t('cases.recordAiDraftEmpty');
+      emit('ai-error', aiError.value);
+      return;
+    }
+    if (useCommentComposer.value) {
+      commentDraft.value = text;
+    } else {
+      draft.value = text;
+    }
+    lastAiDraftMeta.value = {
+      provider: data?.provider || '',
+      model: data?.model || '',
+      keyMode: data?.keyMode || '',
+    };
+    aiDraftPendingAccept.value = true;
+    showAiDraftFeedback.value = true;
+    trackAiAbilityUsed({
+      abilityKey: 'draft_reply',
+      provider: data?.provider,
+      model: data?.model,
+      keyMode: data?.keyMode,
+    });
+  } catch (err) {
+    aiError.value = err?.message || t('cases.recordAiDraftFailed');
+    emit('ai-error', aiError.value);
+  } finally {
+    draftingAi.value = false;
+  }
+}
+
+function markAiDraftAcceptedIfPending() {
+  if (!aiDraftPendingAccept.value) return;
+  aiDraftPendingAccept.value = false;
+  captureAiDraftAccepted({
+    provider: lastAiDraftMeta.value.provider,
+    model: lastAiDraftMeta.value.model,
+    sourceId: props.caseRecord?._id,
+    via: 'send',
+  });
+}
+
+async function sendAiDraftFeedback(rating) {
+  if (aiFeedbackSent.value) return;
+  aiFeedbackSent.value = true;
+  if (rating === 'up') {
+    aiDraftPendingAccept.value = false;
+  }
+  await submitAiFeedback({
+    rating,
+    abilityKey: 'draft_reply',
+    provider: lastAiDraftMeta.value.provider,
+    model: lastAiDraftMeta.value.model,
+    keyMode: lastAiDraftMeta.value.keyMode,
+    sourceType: 'case',
+    sourceId: props.caseRecord?._id,
+  });
+}
+
 function submitComment() {
   const payload = commentInputRef.value?.getSubmitPayload?.();
   const message = String(payload?.content || commentDraft.value || '').trim();
   if (!message) return;
+  markAiDraftAcceptedIfPending();
   emit('send', {
     message,
     channel: viaChannel.value,
@@ -289,6 +435,7 @@ function submitComment() {
 function submit() {
   const message = draft.value.trim();
   if (!message) return;
+  markAiDraftAcceptedIfPending();
   emit('send', {
     message,
     channel: viaChannel.value,

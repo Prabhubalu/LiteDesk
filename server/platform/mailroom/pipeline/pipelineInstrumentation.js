@@ -39,7 +39,8 @@ async function runInstrumentedPipeline({
         durationMs: Date.now() - started,
         metadata: {
           ingestAction: core.policyEvaluation?.ingest?.action?.type || null,
-          emailAuth: normalizedMessage?.metadata?.emailAuthDecision || null
+          emailAuth: normalizedMessage?.metadata?.emailAuthDecision || null,
+          aiAssist: core.policyEvaluation?.classification?.aiAssist || null
         }
       });
     }

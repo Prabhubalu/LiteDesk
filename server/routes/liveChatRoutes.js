@@ -26,6 +26,11 @@ router.get('/in-app-support', liveChatInAppSupportController.getInAppSupportBoot
 router.get('/reports/overview', requireLiveChatPermission('view'), liveChatReportController.getOverview);
 router.get('/reports/agents', requireLiveChatPermission('view'), liveChatReportController.getAgentMetrics);
 router.get('/bots', requireLiveChatPermission('admin'), liveChatBotController.listBots);
+router.get(
+  '/bots/deflection-metrics',
+  requireLiveChatPermission('admin'),
+  liveChatBotController.getDeflectionMetrics
+);
 router.post('/bots', requireLiveChatPermission('admin'), liveChatBotController.createBot);
 router.get('/bots/:botId', requireLiveChatPermission('admin'), liveChatBotController.getBot);
 router.put('/bots/:botId', requireLiveChatPermission('admin'), liveChatBotController.updateBot);

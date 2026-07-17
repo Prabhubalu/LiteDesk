@@ -80,6 +80,8 @@ const ChatSessionSchema = new mongoose.Schema({
     default: null,
   },
   botMessageCount: { type: Number, default: 0, min: 0 },
+  /** True when an AI FAQ reply was sent in this session (deflection metric). */
+  botAiAnswered: { type: Boolean, default: false, index: true },
 
   visitorMessageCount: { type: Number, default: 0, min: 0 },
   agentMessageCount: { type: Number, default: 0, min: 0 },
