@@ -73,8 +73,10 @@ const markUrl = computed(() => {
 const initials = computed(() => {
   const name = String(orgName.value || 'O').trim();
   const parts = name.split(/\s+/).filter(Boolean);
-  if (parts.length >= 2) {
-    return `${parts[0][0] || ''}${parts[1][0] || ''}`.toUpperCase();
+  const first = parts[0];
+  const second = parts[1];
+  if (first && second) {
+    return `${first.charAt(0)}${second.charAt(0)}`.toUpperCase();
   }
   return name.slice(0, 2).toUpperCase() || 'O';
 });
