@@ -887,6 +887,10 @@
     "message": "Article title",
     "description": "Title input placeholder"
   },
+  "titlePlaceholderBlog": {
+    "message": "Post title",
+    "description": "Blog post title input placeholder"
+  },
   "subtitlePlaceholder": {
     "message": "Add a short subtitle or lead paragraph",
     "description": "Subtitle placeholder"
@@ -986,6 +990,10 @@
   "visibilityPublicHeadlessHint": {
     "message": "Headless API and webhooks only include articles with Public visibility after publish.",
     "description": "Hint when article visibility is not public for headless delivery"
+  },
+  "visibilityPublicHeadlessHintPost": {
+    "message": "Headless API and webhooks only include posts with Public visibility after publish.",
+    "description": "Hint when blog post visibility is not public for headless delivery"
   },
   "visibilityPrivate": {
     "message": "Private",
@@ -1103,6 +1111,22 @@
     "message": "No blog posts yet. Create your first post.",
     "description": "Empty blog list"
   },
+  "emptyBlogTitle": {
+    "message": "Start your blog",
+    "description": "Empty blog list title"
+  },
+  "emptyBlogMessage": {
+    "message": "Create your first marketing post to publish on your website.",
+    "description": "Empty blog list message"
+  },
+  "searchBlog": {
+    "message": "Search posts…",
+    "description": "Blog list search placeholder"
+  },
+  "backToBlog": {
+    "message": "Back to Blog",
+    "description": "Categories page back link to blog list"
+  },
   "columnTitle": {
     "message": "Title",
     "description": "List column title"
@@ -1183,6 +1207,10 @@
     "message": "This article is not Public. It will not appear in the headless API or trigger public webhooks. Publish anyway?",
     "description": "Confirmation when publishing a non-public article for headless delivery"
   },
+  "publishNonPublicHeadlessConfirmPost": {
+    "message": "This post is not Public. It will not appear in the headless API or trigger public webhooks. Publish anyway?",
+    "description": "Confirmation when publishing a non-public blog post for headless delivery"
+  },
   "headlessExampleTitle": {
     "message": "Headless article example",
     "description": "Title for the headless article demo page"
@@ -1203,6 +1231,10 @@
     "message": "Organization slug",
     "description": "Org slug field on headless article demo page"
   },
+  "headlessExampleOrgKey": {
+    "message": "Public org key",
+    "description": "Headless public key / org field on blog demo setup"
+  },
   "headlessExampleArticleSlug": {
     "message": "Article slug",
     "description": "Article slug field on headless article demo page"
@@ -1218,6 +1250,10 @@
   "headlessExampleSiteDemoBanner": {
     "message": "Demo customer site — help content powered by LiteDesk headless embed",
     "description": "Banner on headless example pages indicating this is a demo site"
+  },
+  "headlessExampleSiteDemoBannerBlog": {
+    "message": "Demo customer site — blog content powered by LiteDesk headless embed",
+    "description": "Banner on headless blog example pages"
   },
   "headlessExampleSiteBrand": {
     "message": "Acme Cloud",
@@ -1238,6 +1274,10 @@
   "headlessExampleSiteNavHelp": {
     "message": "Help Center",
     "description": "Primary nav link on headless example customer site"
+  },
+  "headlessExampleSiteNavBlog": {
+    "message": "Blog",
+    "description": "Blog nav link on headless example customer site"
   },
   "headlessExampleSiteSignIn": {
     "message": "Sign in",
@@ -1367,9 +1407,105 @@
     "message": "Featured article",
     "description": "Featured article toggle label in article inspector"
   },
+  "fieldFeaturedPost": {
+    "message": "Featured post",
+    "description": "Featured blog post toggle label"
+  },
   "fieldFeaturedHint": {
     "message": "Featured public articles appear in the Popular articles sidebar on your help center.",
     "description": "Featured article toggle hint in article inspector"
+  },
+  "fieldFeaturedHintPost": {
+    "message": "Featured public posts appear in popular and featured blog listings.",
+    "description": "Featured blog post toggle hint"
+  },
+  "fieldSticky": {
+    "message": "Sticky post",
+    "description": "Sticky blog post toggle label"
+  },
+  "fieldStickyHint": {
+    "message": "Keep this post pinned near the top of blog listings.",
+    "description": "Sticky blog post toggle hint"
+  },
+  "fieldTags": {
+    "message": "Tags",
+    "description": "Blog post tags field label"
+  },
+  "fieldTagsPlaceholder": {
+    "message": "product, launch, tips",
+    "description": "Blog post tags input placeholder"
+  },
+  "fieldTagsHint": {
+    "message": "Comma-separated, up to 20 tags.",
+    "description": "Blog post tags field hint"
+  },
+  "seoScoreTitle": {
+    "message": "SEO score",
+    "description": "Content Studio SEO score panel title"
+  },
+  "headlessBlogExampleTitle": {
+    "message": "Headless blog embed",
+    "description": "Headless blog example page title"
+  },
+  "headlessBlogExampleDesc": {
+    "message": "Preview a published blog post via the public embed script.",
+    "description": "Headless blog example page description"
+  },
+  "headlessBlogExamplePostSlug": {
+    "message": "Post slug",
+    "description": "Headless blog example post slug field"
+  },
+  "headlessBlogExampleOpenList": {
+    "message": "Open blog list demo",
+    "description": "Link from blog post demo to list demo"
+  },
+  "headlessBlogExamplePostMissing": {
+    "message": "No public published post found for slug “{slug}”. Publish a post (visibility Public), then open the list demo and click it.",
+    "description": "Headless blog post demo missing slug error"
+  },
+  "headlessBlogExampleLoadFailed": {
+    "message": "Failed to load blog post demo",
+    "description": "Headless blog post demo load failure"
+  },
+  "headlessBlogListExampleTitle": {
+    "message": "Blog home embed demo",
+    "description": "Headless blog list example title"
+  },
+  "headlessBlogListExampleDesc": {
+    "message": "Blog home layout: Top Posts, Latest Posts feed, categories, authors, and newsletter.",
+    "description": "Headless blog list example description"
+  },
+  "headlessBlogHomeTopPosts": {
+    "message": "Top Posts",
+    "description": "Blog home top posts section title"
+  },
+  "headlessBlogHomeLatestPosts": {
+    "message": "Latest Posts",
+    "description": "Blog home latest posts section title"
+  },
+  "headlessBlogHomeCategories": {
+    "message": "Recommended Categories",
+    "description": "Blog home categories sidebar title"
+  },
+  "headlessBlogHomeAuthors": {
+    "message": "Popular Authors",
+    "description": "Blog home authors sidebar title"
+  },
+  "headlessBlogHomeNewsletterTitle": {
+    "message": "Subscribe to our newsletter",
+    "description": "Blog home newsletter widget title"
+  },
+  "headlessBlogHomeNewsletterDesc": {
+    "message": "Get product updates and stories in your inbox.",
+    "description": "Blog home newsletter widget description"
+  },
+  "headlessBlogHomeReadMore": {
+    "message": "Read More →",
+    "description": "Blog home feed read more link"
+  },
+  "headlessBlogListExampleLoadFailed": {
+    "message": "Failed to load blog posts",
+    "description": "Headless blog list load failure"
   },
   "publicHelpRecentEmpty": {
     "message": "No recent articles.",
@@ -1398,6 +1534,14 @@
   "articleAnalyticsTitle": {
     "message": "Article analytics",
     "description": "Article analytics section title in Content Studio settings"
+  },
+  "blogAnalyticsTitle": {
+    "message": "Post analytics",
+    "description": "Blog post analytics section title in Content Studio settings"
+  },
+  "blogAnalyticsLoadFailed": {
+    "message": "Failed to load post analytics.",
+    "description": "Blog post analytics load error"
   },
   "articleAnalyticsHelpfulYes": {
     "message": "Helpful",
@@ -1495,33 +1639,65 @@
     "message": "Delete article",
     "description": "Delete article action"
   },
+  "deletePost": {
+    "message": "Delete post",
+    "description": "Delete blog post action"
+  },
   "deleteConfirm": {
     "message": "Delete this article permanently?",
     "description": "Delete confirmation"
+  },
+  "deleteConfirmPost": {
+    "message": "Delete this post permanently?",
+    "description": "Delete blog post confirmation"
   },
   "unpublishSuccess": {
     "message": "Article unpublished",
     "description": "Unpublish success"
   },
+  "unpublishSuccessPost": {
+    "message": "Post unpublished",
+    "description": "Blog post unpublish success"
+  },
   "unpublishFailed": {
     "message": "Failed to unpublish article",
     "description": "Unpublish error"
+  },
+  "unpublishFailedPost": {
+    "message": "Failed to unpublish post",
+    "description": "Blog post unpublish error"
   },
   "archiveSuccess": {
     "message": "Article archived",
     "description": "Archive success"
   },
+  "archiveSuccessPost": {
+    "message": "Post archived",
+    "description": "Blog post archive success"
+  },
   "archiveFailed": {
     "message": "Failed to archive article",
     "description": "Archive error"
+  },
+  "archiveFailedPost": {
+    "message": "Failed to archive post",
+    "description": "Blog post archive error"
   },
   "deleteSuccess": {
     "message": "Article deleted",
     "description": "Delete success"
   },
+  "deleteSuccessPost": {
+    "message": "Post deleted",
+    "description": "Blog post delete success"
+  },
   "deleteFailed": {
     "message": "Failed to delete article",
     "description": "Delete error"
+  },
+  "deleteFailedPost": {
+    "message": "Failed to delete post",
+    "description": "Blog post delete error"
   },
   "publicLoadFailed": {
     "message": "Failed to load article",
@@ -1559,9 +1735,17 @@
     "message": "Insert reusable content sections into your article",
     "description": "Components panel hint"
   },
+  "componentsHintBlog": {
+    "message": "Insert reusable content sections into your post",
+    "description": "Components panel hint for blog"
+  },
   "templatesHint": {
     "message": "Start from a structured article layout",
     "description": "Templates panel hint"
+  },
+  "templatesHintBlog": {
+    "message": "Start from a structured post layout",
+    "description": "Templates panel hint for blog"
   },
   "searchComponents": {
     "message": "Search components…",
@@ -1687,6 +1871,10 @@
     "message": "Multiple FAQ items in one article",
     "description": "FAQ template description"
   },
+  "templateFaqDescBlog": {
+    "message": "Multiple FAQ items in one post",
+    "description": "FAQ template description for blog"
+  },
   "templateFaqTitle": {
     "message": "Frequently asked questions",
     "description": "FAQ template title"
@@ -1735,6 +1923,10 @@
     "message": "Organize articles into categories and sub categories.",
     "description": "Categories management page subtitle"
   },
+  "blogCategoriesSubtitle": {
+    "message": "Organize posts into categories and subcategories.",
+    "description": "Blog categories management page subtitle"
+  },
   "backToArticles": {
     "message": "Back to articles",
     "description": "Navigate back to articles list from categories page"
@@ -1759,9 +1951,17 @@
     "message": "Short summary shown on help center category cards",
     "description": "Category description field placeholder"
   },
+  "blogCategoryDescriptionPlaceholder": {
+    "message": "Short summary shown on blog category cards",
+    "description": "Blog category description field placeholder"
+  },
   "categoryDescriptionHint": {
     "message": "Optional. Displayed under the category name on the public help home page.",
     "description": "Category description field hint"
+  },
+  "blogCategoryDescriptionHint": {
+    "message": "Optional. Displayed under the category name on the public blog home page.",
+    "description": "Blog category description field hint"
   },
   "categoryEmojiLabel": {
     "message": "Emoji",
@@ -1778,6 +1978,10 @@
   "categoryHeroIconHint": {
     "message": "Pick any Heroicon for your /help category card.",
     "description": "Hint for hero icon picker on category form"
+  },
+  "blogCategoryHeroIconHint": {
+    "message": "Pick any Heroicon for your /blog category card.",
+    "description": "Hint for hero icon picker on blog category form"
   },
   "categoryHeroIconColorLabel": {
     "message": "Icon background",
@@ -1887,6 +2091,10 @@
     "message": "Delete \"{name}\"? Articles in this category will keep their assignment until you change it.",
     "description": "Confirm delete category dialog"
   },
+  "blogDeleteCategoryConfirm": {
+    "message": "Delete \"{name}\"? Posts in this category will keep their assignment until you change it.",
+    "description": "Confirm delete blog category dialog"
+  },
   "collectionNamePlaceholder": {
     "message": "Category name",
     "description": "Category name input placeholder"
@@ -1914,6 +2122,10 @@
   "outlineHint": {
     "message": "Jump to headings in your article",
     "description": "Outline panel hint"
+  },
+  "outlineHintBlog": {
+    "message": "Jump to headings in your post",
+    "description": "Outline panel hint for blog"
   },
   "outlineEmpty": {
     "message": "Add headings to build an outline",

@@ -71,6 +71,8 @@ export function canAccessSettingsTab(
       return Boolean(p.edit);
     case 'integrations':
       return Boolean(p.manageIntegrations || p.edit);
+    case 'ai':
+      return Boolean(p.manageIntegrations || p.edit);
     case 'automation':
       // Same bar as application configuration: assignment routing affects operational behavior org-wide.
       return Boolean(p.edit);
@@ -103,6 +105,7 @@ const SETTINGS_TAB_IDS = [
   'notifications',
   'security',
   'integrations',
+  'ai',
   'business-hours',
 ] as const;
 

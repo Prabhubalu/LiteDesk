@@ -43,6 +43,9 @@ export interface ContentStudioDocumentRecord {
   status: string;
   visibility?: string;
   featured?: boolean;
+  sticky?: boolean;
+  tags?: string[];
+  readingTimeMinutes?: number | null;
   authorId?: string | null;
   authorName?: string;
   collectionId?: string | null;

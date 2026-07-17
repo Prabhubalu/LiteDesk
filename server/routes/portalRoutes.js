@@ -65,7 +65,8 @@ const {
 const {
   listPortalKnowledgeArticles,
   listPortalKnowledgeCollections,
-  getPortalKnowledgeArticle
+  getPortalKnowledgeArticle,
+  askPortalKnowledgeHandler,
 } = require('../controllers/portalDocumentController');
 const { getPortalDashboard } = require('../controllers/portalDashboardController');
 const {
@@ -87,7 +88,8 @@ const {
   getPortalResponseHandler
 } = require('../controllers/portalResponseController');
 const { getPortalPerson } = require('../controllers/portalPeopleController');
-const { mailroomPortalIngestLimiter } = require('../middleware/rateLimitMiddleware');
+const { mailroomPortalIngestLimiter, aiLimiter } = require('../middleware/rateLimitMiddleware');
+const { requireAiSuiteEntitlement } = require('../middleware/requireAiSuiteEntitlementMiddleware');
 const requirePortalModuleAccess = require('../middleware/requirePortalModuleAccess');
 
 // Apply middleware to all Portal routes
@@ -149,6 +151,13 @@ router.get('/payment-sessions/:id/status', requirePortalModuleAccess('invoices',
 // Knowledge base (portal-visible published articles)
 router.get('/knowledge-base/collections', requirePortalModuleAccess('documents', 'read'), listPortalKnowledgeCollections);
 router.get('/knowledge-base', requirePortalModuleAccess('documents', 'read'), listPortalKnowledgeArticles);
+router.post(
+  '/knowledge-base/ask',
+  requirePortalModuleAccess('documents', 'read'),
+  aiLimiter,
+  requireAiSuiteEntitlement(),
+  askPortalKnowledgeHandler
+);
 router.get('/knowledge-base/:id', requirePortalModuleAccess('documents', 'read'), getPortalKnowledgeArticle);
 
 // Mailroom connector (M5) — portal-originated messages into the Mailroom pipeline

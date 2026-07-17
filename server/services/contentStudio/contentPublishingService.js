@@ -6,6 +6,7 @@ const DEFAULT_CONTENT_PUBLISHING = {
 };
 
 const { resolveHeadlessContentOrgKey } = require('./articlesHeadlessPublicKeyService');
+const { resolveHeadlessBlogOrgKey } = require('./blogHeadlessPublicKeyService');
 
 function normalizeWebhookUrl(raw) {
   const value = String(raw || '').trim();
@@ -57,6 +58,13 @@ function resolveRequestOrigin(req) {
 
 function resolveHeadlessApiBase(organization, options = {}) {
   const orgKey = resolveHeadlessContentOrgKey(organization);
+  const appBase = getPublicAppBaseUrl(options);
+  if (!orgKey || !appBase) return '';
+  return `${appBase}/api/public/v1/content/${encodeURIComponent(orgKey)}`;
+}
+
+function resolveHeadlessBlogApiBase(organization, options = {}) {
+  const orgKey = resolveHeadlessBlogOrgKey(organization);
   const appBase = getPublicAppBaseUrl(options);
   if (!orgKey || !appBase) return '';
   return `${appBase}/api/public/v1/content/${encodeURIComponent(orgKey)}`;
@@ -139,6 +147,95 @@ function buildStaticSitemapUrl(organization, options = {}) {
   return base ? `${base}/export/sitemap.xml` : '';
 }
 
+function buildBlogListApiUrl(organization, options = {}) {
+  const base = resolveHeadlessBlogApiBase(organization, options);
+  return base ? `${base}/blog` : '';
+}
+
+function buildBlogPostApiUrl(organization, slug, options = {}) {
+  const base = resolveHeadlessBlogApiBase(organization, options);
+  const postSlug = String(slug || '').trim();
+  if (!base || !postSlug) return '';
+  return `${base}/blog/${encodeURIComponent(postSlug)}`;
+}
+
+function buildBlogRssApiUrl(organization, options = {}) {
+  const base = resolveHeadlessBlogApiBase(organization, options);
+  return base ? `${base}/blog/rss.xml` : '';
+}
+
+function buildBlogCollectionRssApiUrl(organization, collectionSlug, options = {}) {
+  const base = resolveHeadlessBlogApiBase(organization, options);
+  const slug = String(collectionSlug || '').trim();
+  if (!base || !slug) return '';
+  return `${base}/blog/collections/${encodeURIComponent(slug)}/rss.xml`;
+}
+
+function buildBlogPostRssApiUrl(organization, postSlug, options = {}) {
+  const base = resolveHeadlessBlogApiBase(organization, options);
+  const slug = String(postSlug || '').trim();
+  if (!base || !slug) return '';
+  return `${base}/blog/${encodeURIComponent(slug)}/rss.xml`;
+}
+
+function buildBlogCollectionsApiUrl(organization, options = {}) {
+  const base = resolveHeadlessBlogApiBase(organization, options);
+  return base ? `${base}/blog/collections` : '';
+}
+
+function buildBlogRecentApiUrl(organization, options = {}) {
+  const base = resolveHeadlessBlogApiBase(organization, options);
+  return base ? `${base}/blog/recent` : '';
+}
+
+function buildBlogPopularApiUrl(organization, options = {}) {
+  const base = resolveHeadlessBlogApiBase(organization, options);
+  return base ? `${base}/blog/popular` : '';
+}
+
+function buildBlogSitemapApiUrl(organization, options = {}) {
+  const base = resolveHeadlessBlogApiBase(organization, options);
+  return base ? `${base}/blog/sitemap.xml` : '';
+}
+
+function buildBlogCollectionPostsApiUrl(organization, collectionSlug, options = {}) {
+  const listUrl = buildBlogListApiUrl(organization, options);
+  const slug = String(collectionSlug || '').trim();
+  if (!listUrl || !slug) return '';
+  return `${listUrl}?collection=${encodeURIComponent(slug)}`;
+}
+
+function buildBlogPostExportUrl(organization, slug, options = {}) {
+  const postUrl = buildBlogPostApiUrl(organization, slug, options);
+  if (!postUrl) return '';
+  return `${postUrl}/export`;
+}
+
+function buildBlogManifestUrl(organization, options = {}) {
+  const base = resolveHeadlessBlogApiBase(organization, options);
+  return base ? `${base}/blog/manifest.json` : '';
+}
+
+function buildBlogHomeExportUrl(organization, options = {}) {
+  const base = resolveHeadlessBlogApiBase(organization, options);
+  return base ? `${base}/blog/export/home` : '';
+}
+
+function buildBlogCollectionExportUrl(organization, slug, options = {}) {
+  const base = resolveHeadlessBlogApiBase(organization, options);
+  const collectionSlug = String(slug || '').trim();
+  if (!base || !collectionSlug) return '';
+  const params = new URLSearchParams();
+  if (options.parentSlug) params.set('parent', String(options.parentSlug));
+  const suffix = params.toString() ? `?${params.toString()}` : '';
+  return `${base}/blog/export/collections/${encodeURIComponent(collectionSlug)}${suffix}`;
+}
+
+function buildBlogStaticSitemapUrl(organization, options = {}) {
+  const base = resolveHeadlessBlogApiBase(organization, options);
+  return base ? `${base}/blog/export/sitemap.xml` : '';
+}
+
 module.exports = {
   DEFAULT_CONTENT_PUBLISHING,
   normalizeContentPublishing,
@@ -146,6 +243,7 @@ module.exports = {
   getPublicAppBaseUrl,
   resolveRequestOrigin,
   resolveHeadlessApiBase,
+  resolveHeadlessBlogApiBase,
   buildArticleApiUrl,
   buildArticlesListApiUrl,
   buildCollectionsApiUrl,
@@ -159,4 +257,19 @@ module.exports = {
   buildHomeExportUrl,
   buildCollectionExportUrl,
   buildStaticSitemapUrl,
+  buildBlogListApiUrl,
+  buildBlogPostApiUrl,
+  buildBlogRssApiUrl,
+  buildBlogCollectionRssApiUrl,
+  buildBlogPostRssApiUrl,
+  buildBlogCollectionsApiUrl,
+  buildBlogRecentApiUrl,
+  buildBlogPopularApiUrl,
+  buildBlogSitemapApiUrl,
+  buildBlogCollectionPostsApiUrl,
+  buildBlogPostExportUrl,
+  buildBlogManifestUrl,
+  buildBlogHomeExportUrl,
+  buildBlogCollectionExportUrl,
+  buildBlogStaticSitemapUrl,
 };

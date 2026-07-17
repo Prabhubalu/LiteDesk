@@ -12,6 +12,37 @@ const {
 } = require('../events/publisher');
 const { runInstrumentedPipeline } = require('./pipelineInstrumentation');
 const { resolveMailroomIngestActionType } = require('./ingestActionResolver');
+const {
+  suggestMailroomAiClassification,
+  attachAiAssistToClassification,
+} = require('../services/mailroomAiClassifyAssist');
+
+async function maybeAttachMailroomAiAssist({
+  organizationId,
+  normalizedMessage,
+  policies,
+  policyEvaluation,
+}) {
+  if (!policyEvaluation) return policyEvaluation;
+  const aiAssist = await suggestMailroomAiClassification({
+    organizationId,
+    normalizedMessage,
+    classificationPolicy: policies?.classification || {},
+  });
+  if (!aiAssist) return policyEvaluation;
+
+  policyEvaluation.classification = attachAiAssistToClassification(
+    policyEvaluation.classification,
+    aiAssist
+  );
+  if (policyEvaluation.caseLink?.defaults) {
+    policyEvaluation.caseLink.defaults = {
+      ...policyEvaluation.caseLink.defaults,
+      aiRouteSuggestions: aiAssist,
+    };
+  }
+  return policyEvaluation;
+}
 
 async function runMailroomGenericCore({
   organizationId,
@@ -69,6 +100,12 @@ async function runMailroomGenericCore({
       ingestEvaluation
     });
     policyEvaluation.ingest = ingestEvaluation;
+    await maybeAttachMailroomAiAssist({
+      organizationId,
+      normalizedMessage,
+      policies,
+      policyEvaluation,
+    });
 
     let caseResult = null;
     if (ingestActionType === 'route_to_case_flow') {

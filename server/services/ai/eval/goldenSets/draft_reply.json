@@ -1,0 +1,15 @@
+[
+  {
+    "id": "draft-reply-apology",
+    "abilityKey": "draft_reply",
+    "promptKeys": ["draft_reply_system"],
+    "input": {
+      "title": "Shipment delayed",
+      "status": "Open",
+      "description": "Order ORD-55 is late. Customer asks for an ETA update."
+    },
+    "mustIncludeAny": ["sorry", "delay", "order", "ETA", "update"],
+    "mustNotInclude": ["As an AI", "language model"],
+    "notes": "Customer-ready reply; no meta commentary"
+  }
+]

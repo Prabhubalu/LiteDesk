@@ -1,0 +1,32 @@
+[
+  {
+    "id": "case-summary-login",
+    "abilityKey": "summarize",
+    "sourceType": "case",
+    "promptKeys": ["summarize_case_system", "summarize_case_user"],
+    "input": {
+      "title": "Cannot log in after password reset",
+      "status": "Open",
+      "priority": "High",
+      "description": "Customer reset password but still sees invalid credentials. Contact: agent@example.com"
+    },
+    "mustIncludeAny": ["login", "password", "credentials"],
+    "mustNotInclude": ["agent@example.com"],
+    "notes": "PII redaction expected; summary should mention login/password issue"
+  },
+  {
+    "id": "case-summary-billing",
+    "abilityKey": "summarize",
+    "sourceType": "case",
+    "promptKeys": ["summarize_case_system", "summarize_case_user"],
+    "input": {
+      "title": "Invoice discrepancy for March",
+      "status": "Pending",
+      "priority": "Medium",
+      "description": "Customer disputes line item amount on invoice INV-1001."
+    },
+    "mustIncludeAny": ["invoice", "billing", "INV-1001", "amount"],
+    "mustNotInclude": [],
+    "notes": "Should surface billing dispute and invoice reference"
+  }
+]

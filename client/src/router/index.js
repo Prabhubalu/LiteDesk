@@ -185,6 +185,18 @@ const routes = [
     meta: { requiresAuth: false, hideShell: true }
   },
   {
+    path: '/examples/headless-blog',
+    name: 'headless-blog-example',
+    component: () => import('@/views/HeadlessBlogExample.vue'),
+    meta: { requiresAuth: false, hideShell: true }
+  },
+  {
+    path: '/examples/headless-blog-list',
+    name: 'headless-blog-list-example',
+    component: () => import('@/views/HeadlessBlogListExample.vue'),
+    meta: { requiresAuth: false, hideShell: true }
+  },
+  {
     path: '/examples/headless-article-list',
     name: 'headless-article-list-example',
     component: () => import('@/views/HeadlessArticleListExample.vue'),
@@ -345,6 +357,17 @@ const routes = [
     meta: {
       requiresAuth: true,
       appKey: 'MARKETING',
+      requiresPermission: { module: 'blog', action: 'view' },
+    },
+  },
+  {
+    path: '/marketing/blog/categories',
+    name: 'marketing-blog-categories',
+    component: () => import('@/views/marketing/BlogCategories.vue'),
+    meta: {
+      requiresAuth: true,
+      appKey: 'MARKETING',
+      requiresPermission: { module: 'blog', action: 'view' },
     },
   },
   {
@@ -356,6 +379,7 @@ const routes = [
       appKey: 'MARKETING',
       moduleKey: 'blog',
       routeType: 'create',
+      requiresPermission: { module: 'blog', action: 'create' },
     },
   },
   {
@@ -367,6 +391,7 @@ const routes = [
       appKey: 'MARKETING',
       moduleKey: 'blog',
       routeType: 'edit',
+      requiresPermission: { module: 'blog', action: 'edit' },
     },
   },
   {

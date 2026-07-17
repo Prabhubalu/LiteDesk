@@ -16,7 +16,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 function resolveCurrentUserDisplayName(): string {
   const user = useAuthStore().user;
   const fullName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
-  return fullName || user?.username || user?.email || '';
+  return fullName || user?.name || user?.username || user?.email || '';
 }
 
 function resolveCurrentUserId(): string {
@@ -53,6 +53,8 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
   const slug = ref('');
   const visibility = ref('portal');
   const featured = ref(false);
+  const sticky = ref(false);
+  const tags = ref<string[]>([]);
   const authorId = ref('');
   const authorName = ref('');
   const collectionId = ref<string | null>(null);
@@ -104,8 +106,10 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
         slug.value = '';
         slugManual = false;
         collectionId.value = null;
-        visibility.value = options.mode === 'articles' ? 'portal' : 'internal';
+        visibility.value = options.mode === 'articles' ? 'portal' : 'public';
         featured.value = false;
+        sticky.value = false;
+        tags.value = [];
         authorId.value = resolveCurrentUserId();
         authorName.value = resolveCurrentUserDisplayName();
         seoMetaTitle.value = '';
@@ -126,8 +130,10 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
       slug.value = data.slug || '';
       const autoSlug = slugifyContentTitle(data.title || '');
       slugManual = Boolean(data.slug) && data.slug !== autoSlug;
-      visibility.value = data.visibility || (options.mode === 'articles' ? 'portal' : 'internal');
+      visibility.value = data.visibility || (options.mode === 'articles' ? 'portal' : 'public');
       featured.value = Boolean(data.featured);
+      sticky.value = Boolean(data.sticky);
+      tags.value = Array.isArray(data.tags) ? data.tags.map(String) : [];
       authorId.value = data.authorId ? String(data.authorId) : '';
       authorName.value = data.authorName || '';
       collectionId.value = data.collectionId ? String(data.collectionId) : null;
@@ -172,6 +178,8 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
         slug: slug.value || undefined,
         visibility: visibility.value,
         featured: featured.value,
+        sticky: sticky.value,
+        tags: tags.value,
         authorId: authorId.value || undefined,
         authorName: authorName.value,
         collectionId: collectionId.value,
@@ -288,6 +296,8 @@ export function useContentStudioDocument(options: UseContentStudioDocumentOption
     slug,
     visibility,
     featured,
+    sticky,
+    tags,
     authorId,
     authorName,
     collectionId,

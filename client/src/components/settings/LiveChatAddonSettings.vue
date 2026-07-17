@@ -80,6 +80,27 @@
             />
           </label>
 
+          <div>
+            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.chatWidgetBrandColor') }}</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.chatWidgetBrandColorDesc') }}</p>
+            <div class="mt-2 flex flex-wrap items-center gap-3">
+              <input
+                v-model="form.brandColor"
+                type="color"
+                class="h-10 w-14 cursor-pointer rounded border border-gray-300 bg-white p-1 dark:border-gray-600 dark:bg-gray-900"
+                :aria-label="t('settings.chatWidgetBrandColor')"
+              />
+              <input
+                v-model.trim="form.brandColor"
+                type="text"
+                maxlength="7"
+                pattern="^#[0-9A-Fa-f]{6}$"
+                class="w-28 rounded-lg border border-gray-300 bg-white px-3 py-2 font-mono text-sm uppercase dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                placeholder="#4F46E5"
+              />
+            </div>
+          </div>
+
           <div class="border-t border-gray-100 pt-4 dark:border-gray-700">
             <div class="flex items-center justify-between gap-4">
               <div>
@@ -303,16 +324,25 @@ const initialSnapshot = ref('');
 const outcomeRows = ref([]);
 const sessionFieldOptions = ref([]);
 
+const DEFAULT_BRAND_COLOR = '#4f46e5';
+
 const form = reactive({
   widgetEnabled: true,
   publicKey: '',
   captureFields: ['name', 'email'],
   welcomeMessage: '',
+  brandColor: DEFAULT_BRAND_COLOR,
   consentRequired: true,
   consentMessage: '',
   privacyPolicyUrl: '',
   termsUrl: '',
 });
+
+function normalizeBrandColor(value) {
+  const raw = String(value || '').trim();
+  if (!/^#[0-9A-Fa-f]{6}$/.test(raw)) return DEFAULT_BRAND_COLOR;
+  return `#${raw.slice(1).toLowerCase()}`;
+}
 
 const sessionFieldsForm = reactive({
   advancedEnabled: false,
@@ -340,6 +370,7 @@ function snapshotForm() {
     widgetEnabled: form.widgetEnabled,
     captureFields: [...form.captureFields],
     welcomeMessage: form.welcomeMessage,
+    brandColor: normalizeBrandColor(form.brandColor),
     consentRequired: form.consentRequired,
     consentMessage: form.consentMessage,
     privacyPolicyUrl: form.privacyPolicyUrl,
@@ -387,6 +418,7 @@ async function load() {
     form.publicKey = widget.publicKey || '';
     form.captureFields = Array.isArray(widget.captureFields) ? [...widget.captureFields] : ['name', 'email'];
     form.welcomeMessage = String(widget.welcomeMessage || '').trim();
+    form.brandColor = normalizeBrandColor(widget.brandColor);
     form.consentRequired = widget.consentRequired !== false;
     form.consentMessage = String(widget.consentMessage || '').trim();
     form.privacyPolicyUrl = String(widget.privacyPolicyUrl || '').trim();
@@ -420,6 +452,7 @@ async function save() {
       widgetEnabled: form.widgetEnabled,
       captureFields: form.captureFields,
       welcomeMessage: form.welcomeMessage,
+      brandColor: normalizeBrandColor(form.brandColor),
       consentRequired: form.consentRequired,
       consentMessage: form.consentMessage,
       privacyPolicyUrl: form.privacyPolicyUrl,
@@ -430,6 +463,7 @@ async function save() {
     form.publicKey = widget.publicKey || form.publicKey;
     form.captureFields = Array.isArray(widget.captureFields) ? [...widget.captureFields] : form.captureFields;
     form.welcomeMessage = String(widget.welcomeMessage || form.welcomeMessage).trim();
+    form.brandColor = normalizeBrandColor(widget.brandColor || form.brandColor);
     form.consentRequired = widget.consentRequired !== false;
     form.consentMessage = String(widget.consentMessage || form.consentMessage).trim();
     form.privacyPolicyUrl = String(widget.privacyPolicyUrl || form.privacyPolicyUrl).trim();
@@ -467,6 +501,7 @@ watch(
     form.widgetEnabled,
     form.captureFields,
     form.welcomeMessage,
+    form.brandColor,
     form.consentRequired,
     form.consentMessage,
     form.privacyPolicyUrl,

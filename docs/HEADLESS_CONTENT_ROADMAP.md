@@ -51,7 +51,7 @@ Deliver **Sanity-style headless content**: LiteDesk owns authoring and structure
 | Articles settings integration UX (copy, examples, test webhook) | ✅ Done |
 | Help Center embeds (home, category, section, sidebars) | ❌ See [ARTICLES_HEADLESS_HELP_CENTER_ROADMAP.md](./ARTICLES_HEADLESS_HELP_CENTER_ROADMAP.md) |
 | Hosted pages / embed / custom domain | ❌ Removed |
-| Blog public API | ❌ Missing |
+| Blog public API | ✅ `/blog`, `/blog/:slug`, `/blog/rss.xml` |
 | JSON embed (non-iframe) | ❌ Missing |
 | Public asset URL transforms | ❌ Missing |
 

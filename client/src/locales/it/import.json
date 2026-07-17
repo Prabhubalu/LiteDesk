@@ -1093,5 +1093,13 @@
   "importRequiredFieldsNotInCsv": {
     "message": "Not found in CSV: {fields}. Add a generated column or map an existing column.",
     "description": "Banner listing required fields missing from CSV headers"
+  },
+  "importAiMappingSuggest": {
+    "message": "Suggest with AI",
+    "description": "Import CSV AI column mapping suggest"
+  },
+  "importAiMappingFailed": {
+    "message": "Could not suggest field mappings with AI",
+    "description": "Import AI mapping error"
   }
 }

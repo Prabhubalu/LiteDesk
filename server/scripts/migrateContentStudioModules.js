@@ -31,7 +31,7 @@ const ARTICLES_MODULE = {
     attachments: false,
     automation: false,
   },
-  permissions: { create: true, edit: true, delete: true, view: true },
+  permissions: { create: true, edit: true, delete: true, view: true, publish: true },
   ui: {
     routeBase: '/helpdesk/articles',
     icon: 'book-open',
@@ -62,7 +62,7 @@ const BLOG_MODULE = {
     attachments: false,
     automation: false,
   },
-  permissions: { create: true, edit: true, delete: true, view: true },
+  permissions: { create: true, edit: true, delete: true, view: true, publish: true },
   ui: {
     routeBase: '/marketing/blog',
     icon: 'document-text',

@@ -188,6 +188,23 @@
 
         <!-- Right Columns - Details -->
         <div class="lg:col-span-2 space-y-4">
+          <div class="flex flex-wrap items-center justify-end gap-2">
+            <button
+              type="button"
+              class="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100"
+              :disabled="aiNarrativePanelRef?.loading || !responseDetail?.id"
+              @click="runAuditNarrative"
+            >
+              {{ aiNarrativePanelRef?.loading ? t('audit.aiNarrativeRunning') : t('audit.aiNarrativeSuggest') }}
+            </button>
+          </div>
+
+          <AiAuditNarrativePanel
+            v-if="responseDetail?.id"
+            ref="aiNarrativePanelRef"
+            :response-id="String(responseDetail.id)"
+          />
+
           <!-- Failed Questions Section -->
           <div v-if="responseDetail.failedQuestions && responseDetail.failedQuestions.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('forms.rbTypeFailedQuestions') }}</h3>
@@ -314,6 +331,7 @@ import apiClient from '@/utils/apiClient';
 import dateUtils from '@/utils/dateUtils';
 import RelatedRecordsPanel from '@/components/relationships/RelatedRecordsPanel.vue';
 import ExecutionActionBar from '@/components/ExecutionActionBar.vue';
+import AiAuditNarrativePanel from '@/components/ai/AiAuditNarrativePanel.vue';
 import { useRecordContext } from '@/composables/useRecordContext';
 import { useNotifications } from '@/composables/useNotifications';
 import { getProjectionTypeLabel, getProjectionTypeBadgeClass, getAppLabel } from '@/utils/projectionLabels';
@@ -322,10 +340,15 @@ const route = useRoute();
 const router = useRouter();
 
 const responseDetail = ref(null);
+const aiNarrativePanelRef = ref(null);
 const loading = ref(true);
 const error = ref(null);
 const accessDenied = ref(false);
 const accessDeniedMessage = ref('');
+
+function runAuditNarrative() {
+  aiNarrativePanelRef.value?.run?.();
+}
 
 // Phase 1F: Notifications
 const { success: showSuccess, error: showError } = useNotifications();

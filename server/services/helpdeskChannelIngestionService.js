@@ -113,7 +113,8 @@ async function createCaseFromInboundEmail({
           fromAddress: fromAddress || null,
           parentCaseId: parentCaseId || null,
           mailroomClassification: defaults.classificationSuggestions || null,
-          mailroomClassificationRuleIds: defaults.classificationMatchedRuleIds || null
+          mailroomClassificationRuleIds: defaults.classificationMatchedRuleIds || null,
+          mailroomAiRouteSuggestions: defaults.aiRouteSuggestions || null
         },
         actorId: actorId || null,
         actorName: 'Inbound Email',

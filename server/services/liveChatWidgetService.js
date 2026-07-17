@@ -15,10 +15,18 @@ const DEFAULT_WELCOME_MESSAGE =
   "Hey! Let's discuss how we can help you. Fill out the form to start chatting.";
 
 const DEFAULT_CAPTURE_FIELDS = ['name', 'email'];
+const DEFAULT_BRAND_COLOR = '#4f46e5';
+const BRAND_COLOR_RE = /^#([0-9a-fA-F]{6})$/;
 
 function normalizeCaptureFields(value) {
   if (!Array.isArray(value)) return [...DEFAULT_CAPTURE_FIELDS];
   return value.map((v) => String(v || '').trim()).filter(Boolean);
+}
+
+function normalizeBrandColor(value) {
+  const raw = String(value || '').trim();
+  if (!BRAND_COLOR_RE.test(raw)) return DEFAULT_BRAND_COLOR;
+  return `#${raw.slice(1).toLowerCase()}`;
 }
 
 async function getTenantLiveChatConfig(organizationId) {
@@ -58,6 +66,9 @@ async function syncOrganizationEmbed(organizationId, widgetSettings, widgetEnabl
   if (widgetSettings?.welcomeMessage != null) {
     setFields['embed.chat.config.welcomeMessage'] = widgetSettings.welcomeMessage;
   }
+  if (widgetSettings?.brandColor != null) {
+    setFields['embed.chat.config.brandColor'] = widgetSettings.brandColor;
+  }
 
   await Organization.updateOne({ _id: organizationId }, { $set: setFields });
 }
@@ -87,6 +98,7 @@ async function getWidgetSettings(organizationId) {
     consentMessage: normalizeConsentMessage(widget.consentMessage),
     privacyPolicyUrl: normalizePolicyUrl(widget.privacyPolicyUrl),
     termsUrl: normalizePolicyUrl(widget.termsUrl),
+    brandColor: normalizeBrandColor(widget.brandColor ?? orgConfig.brandColor),
   };
 }
 
@@ -119,6 +131,9 @@ async function updateWidgetSettings(organizationId, payload = {}) {
   const termsUrl = payload.termsUrl != null
     ? normalizePolicyUrl(payload.termsUrl)
     : normalizePolicyUrl(currentWidget.termsUrl);
+  const brandColor = payload.brandColor != null
+    ? normalizeBrandColor(payload.brandColor)
+    : normalizeBrandColor(currentWidget.brandColor);
 
   tenantConfig.settings = {
     ...(tenantConfig.settings || {}),
@@ -131,6 +146,7 @@ async function updateWidgetSettings(organizationId, payload = {}) {
       consentMessage,
       privacyPolicyUrl,
       termsUrl,
+      brandColor,
     },
   };
   await tenantConfig.save();
@@ -138,7 +154,7 @@ async function updateWidgetSettings(organizationId, payload = {}) {
   const publicKey = await ensureEmbedPublicKey(organizationId);
   await syncOrganizationEmbed(
     organizationId,
-    { captureFields, welcomeMessage },
+    { captureFields, welcomeMessage, brandColor },
     widgetEnabled,
   );
 
@@ -170,6 +186,8 @@ async function resolvePublicEmbedContext(instanceKey) {
 module.exports = {
   DEFAULT_WELCOME_MESSAGE,
   DEFAULT_CONSENT_MESSAGE,
+  DEFAULT_BRAND_COLOR,
+  normalizeBrandColor,
   ensureEmbedPublicKey,
   getWidgetSettings,
   updateWidgetSettings,

@@ -1191,6 +1191,42 @@
     "message": "All",
     "description": "Portal knowledge all collections filter"
   },
+  "portalKnowledgeAskTitle": {
+    "message": "Ask for help",
+    "description": "Portal Ask panel title"
+  },
+  "portalKnowledgeAskHint": {
+    "message": "Answers come from published help articles only — not your account data.",
+    "description": "Portal Ask hint"
+  },
+  "portalKnowledgeAskPlaceholder": {
+    "message": "Ask a question…",
+    "description": "Portal Ask input placeholder"
+  },
+  "portalKnowledgeAskSubmit": {
+    "message": "Ask",
+    "description": "Portal Ask submit button"
+  },
+  "portalKnowledgeAskRunning": {
+    "message": "Searching…",
+    "description": "Portal Ask in progress"
+  },
+  "portalKnowledgeAskFailed": {
+    "message": "Could not answer right now. Try again or contact support.",
+    "description": "Portal Ask error"
+  },
+  "portalKnowledgeAskEmpty": {
+    "message": "No answer found in the help center. Contact support for account-specific help.",
+    "description": "Portal Ask no-answer / escalate"
+  },
+  "portalKnowledgeAskNotConfigured": {
+    "message": "Help Ask is not available for this organization yet.",
+    "description": "Portal Ask not configured"
+  },
+  "portalKnowledgeAskEscalate": {
+    "message": "Need more help? Open a support case from Cases.",
+    "description": "Portal Ask escalate hint"
+  },
   "timelineTitle": {
     "message": "Activity Timeline",
     "description": "Timeline view title"

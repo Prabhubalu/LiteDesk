@@ -272,6 +272,7 @@ const marketingBlogRoutes = require('./routes/marketingBlogRoutes');
 const helpdeskArticlesRoutes = require('./routes/helpdeskArticlesRoutes');
 const contentStudioRoutes = require('./routes/contentStudioRoutes');
 const publicMarketingRoutes = require('./routes/publicMarketingRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
@@ -307,6 +308,7 @@ app.use('/api/notification-preferences', notificationPreferenceRoutes);
 app.use('/api/notification-rules', notificationRuleRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/data-changes', require('./routes/dataChangeStreamRoutes'));
+app.use('/api/ai', aiRoutes);
 app.use('/api/helpdesk/cases', caseRoutes);
 app.use('/api/helpdesk/articles', helpdeskArticlesRoutes);
 app.use('/api/marketing/campaigns', marketingCampaignRoutes);
@@ -537,7 +539,7 @@ connectMasterWithRetry(masterUri)
         const { ensureAddonCatalogSeeded } = require('./scripts/seedAddonDefinitions');
         const result = await ensureAddonCatalogSeeded({ useExistingConnection: true });
         console.log(
-          `✅ Addon catalog seeded (live_chat: ${result.defResultLiveChat}, email_credits: ${result.defResultEmailCredits}, articles: ${result.defResultArticles}, blog: ${result.defResultBlog})`
+          `✅ Addon catalog seeded (live_chat: ${result.defResultLiveChat}, email_credits: ${result.defResultEmailCredits}, articles: ${result.defResultArticles}, blog: ${result.defResultBlog}, ai: ${result.defResultAi}, ai_credits: ${result.defResultAiCredits})`
         );
       } else {
         console.log(`✅ Addon catalog present (${registeredAddonKeys.length} registered addon(s))`);

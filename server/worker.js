@@ -65,6 +65,10 @@ async function run() {
   const campaignSendQueueService = require('./services/marketing/campaignSendQueueService');
   campaignSendQueueService.startWorker();
   console.log(`[worker] Campaign send worker is running (Bull: ${campaignSendQueueService.CAMPAIGN_SEND_QUEUE_NAME})`);
+
+  const aiEmbedQueueService = require('./services/ai/aiEmbedQueueService');
+  aiEmbedQueueService.startWorker();
+  console.log(`[worker] AI embed worker is running (Bull: ${aiEmbedQueueService.AI_EMBED_QUEUE_NAME})`);
 }
 
 async function stop(signal) {
@@ -103,6 +107,12 @@ async function stop(signal) {
     await campaignSendQueueService.closeQueue();
   } catch (e) {
     console.error('[worker] campaign send queue close', e.message);
+  }
+  try {
+    const aiEmbedQueueService = require('./services/ai/aiEmbedQueueService');
+    await aiEmbedQueueService.closeQueue();
+  } catch (e) {
+    console.error('[worker] ai embed queue close', e.message);
   }
   try {
     await mongoose.connection.close();

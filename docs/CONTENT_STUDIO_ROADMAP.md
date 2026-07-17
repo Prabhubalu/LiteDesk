@@ -83,7 +83,7 @@ Extend `AddonDefinition` seed (`server/scripts/seedAddonDefinitions.js`):
   optionalApps: ['SALES'],
   marketplace: {
     category: 'Marketing',
-    comingSoon: true,
+    comingSoon: false,
     beta: false,
     shortDescription: 'Publish a branded blog on your website without WordPress.',
   },
@@ -243,7 +243,7 @@ ContentDocument
 | **CS-0** — Foundation & addon registration | Schema, addon catalog, entitlement, ADR | 🟡 In progress | 2–3 weeks |
 | **CS-1** — Content Canvas MVP | Tiptap editor, blocks v1, autosave, preview, SEO panel | 🟡 In progress | 6–8 weeks |
 | **CS-A** — Articles addon | Helpdesk module, KB blocks, portal publish, deflection | ❌ Not started | 4–6 weeks |
-| **CS-B** — Blog addon | Marketing module, blog metadata, RSS, SEO studio v1 | ❌ Not started | 4–6 weeks |
+| **CS-B** — Blog addon | Marketing module, blog metadata, RSS, SEO studio v1 | ✅ Parity pass: default collection/visibility, headless recent/popular/collections/sitemap, embed pack + CORS origins, sticky/tags/readingTime, SEO score, analytics route | 4–6 weeks |
 | **CS-3** — Tenant website publishing | Brand profile, hosted subdomain, custom domain, embed, headless API | ❌ Not started | 6–8 weeks |
 | **CS-4** — Distribution & growth | Analytics, campaign bridge, comments, scheduling, OG images | ❌ Not started | 4–6 weeks |
 | **CS-5** — Collaboration & AI | Review workflow, AI studio, import, accessibility audit | ❌ Not started | 6–8 weeks |
@@ -345,13 +345,13 @@ Paragraph · Heading (H1–H4) · Image · List · Checklist · Quote · Code ·
 |---------|---------|
 | Marketing nav module | `/marketing/blog` — list, create, edit |
 | Addon hub settings | URL prefix, RSS, authors, comments toggle |
-| Blog metadata | Category, tags, author, reading time, featured/sticky |
-| Blog-specific blocks | Hero, CTA, Testimonial, Stats, Newsletter signup |
-| Categories + tags | Nested categories, tag pages |
-| Author profiles | Avatar, bio, social links, recent posts |
-| Archive rendering | Index, category, tag, author pages |
-| RSS feed | Auto-generated per tenant |
-| SEO Studio v1 | Score, meta length, heading structure, broken links |
+| Blog metadata | Category, tags, author, reading time, featured/sticky | ✅ sticky/tags/readingTimeMinutes on ContentDocument + public shapers + inspector |
+| Blog-specific blocks | Hero, CTA, Testimonial, Stats, Newsletter signup | 🟡 Hero + Newsletter present; Testimonial/Stats nodes not in editor yet (skipped) |
+| Categories + tags | Nested categories, tag pages | 🟡 Categories yes; public tag pages still later |
+| Author profiles | Avatar, bio, social links, recent posts | ⏳ Later |
+| Archive rendering | Index, category, tag, author pages | ⏳ Customer-site; headless list/collections/recent/popular/sitemap shipped |
+| RSS feed | Auto-generated per tenant | ✅ |
+| SEO Studio v1 | Score, meta length, heading structure, broken links | 🟡 Client SEO score (title/desc/slug/H1) shipped; heading structure / broken links later |
 | Related posts | Tag/category similarity |
 | Permissions | `blog.create`, `blog.edit`, `blog.publish`, `blog.delete` |
 

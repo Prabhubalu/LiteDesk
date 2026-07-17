@@ -9,6 +9,14 @@ function buildContentBase(apiOrigin, org) {
   return `${origin}/api/public/v1/content/${encodeURIComponent(orgKey)}`;
 }
 
+function normalizeAddon(addon) {
+  return String(addon || 'articles').trim().toLowerCase() === 'blog' ? 'blog' : 'articles';
+}
+
+function resolveExportBase(contentBase, addon) {
+  return addon === 'blog' ? `${contentBase}/blog` : contentBase;
+}
+
 async function fetchJson(url) {
   const response = await fetch(url);
   const payload = await response.json().catch(() => ({}));
@@ -48,7 +56,7 @@ async function fetchManifest(client, pathPrefix) {
   const params = new URLSearchParams();
   if (pathPrefix) params.set('pathPrefix', pathPrefix);
   const suffix = params.toString() ? `?${params.toString()}` : '';
-  const payload = await fetchJson(`${client.contentBase}/manifest.json${suffix}`);
+  const payload = await fetchJson(`${client.exportBase}/manifest.json${suffix}`);
   return payload.data;
 }
 
@@ -59,9 +67,10 @@ async function fetchExport(client, slug, options = {}) {
   if (options.fragment) params.set('fragment', '1');
   if (options.chrome) params.set('chrome', '1');
   const suffix = params.toString() ? `?${params.toString()}` : '';
-  const payload = await fetchJson(
-    `${client.contentBase}/articles/${encodeURIComponent(slug)}/export${suffix}`,
-  );
+  const exportPath = client.addon === 'blog'
+    ? `${client.exportBase}/${encodeURIComponent(slug)}/export${suffix}`
+    : `${client.exportBase}/articles/${encodeURIComponent(slug)}/export${suffix}`;
+  const payload = await fetchJson(exportPath);
   return payload.data;
 }
 
@@ -71,7 +80,7 @@ async function fetchHomeExport(client, pathPrefix, options = {}) {
   if (options.fragment) params.set('fragment', '1');
   if (options.chrome) params.set('chrome', '1');
   const suffix = params.toString() ? `?${params.toString()}` : '';
-  const payload = await fetchJson(`${client.contentBase}/export/home${suffix}`);
+  const payload = await fetchJson(`${client.exportBase}/export/home${suffix}`);
   return payload.data;
 }
 
@@ -83,7 +92,7 @@ async function fetchCollectionExport(client, slug, options = {}) {
   if (options.chrome) params.set('chrome', '1');
   const suffix = params.toString() ? `?${params.toString()}` : '';
   const payload = await fetchJson(
-    `${client.contentBase}/export/collections/${encodeURIComponent(slug)}${suffix}`,
+    `${client.exportBase}/export/collections/${encodeURIComponent(slug)}${suffix}`,
   );
   return payload.data;
 }
@@ -93,20 +102,41 @@ async function fetchStaticSitemap(client, pathPrefix, siteOrigin = '') {
   if (pathPrefix) params.set('pathPrefix', pathPrefix);
   if (siteOrigin) params.set('siteOrigin', siteOrigin);
   const suffix = params.toString() ? `?${params.toString()}` : '';
-  return fetchText(`${client.contentBase}/export/sitemap.xml${suffix}`);
+  return fetchText(`${client.exportBase}/export/sitemap.xml${suffix}`);
 }
 
-function createClient({ apiOrigin, org }) {
-  const contentBase = buildContentBase(apiOrigin, org);
-  return {
-    apiOrigin: String(apiOrigin || '').replace(/\/$/, ''),
-    org: String(org || '').trim(),
+function createClient(apiOriginOrOptions, orgArg, options = {}) {
+  let resolvedOrigin;
+  let resolvedOrg;
+  let resolvedAddon = 'articles';
+
+  if (apiOriginOrOptions && typeof apiOriginOrOptions === 'object') {
+    resolvedOrigin = apiOriginOrOptions.apiOrigin;
+    resolvedOrg = apiOriginOrOptions.org;
+    resolvedAddon = apiOriginOrOptions.addon || 'articles';
+  } else {
+    resolvedOrigin = apiOriginOrOptions;
+    resolvedOrg = orgArg;
+    resolvedAddon = options.addon || 'articles';
+  }
+
+  const contentBase = buildContentBase(resolvedOrigin, resolvedOrg);
+  const normalizedAddon = normalizeAddon(resolvedAddon);
+  const exportBase = resolveExportBase(contentBase, normalizedAddon);
+  const client = {
+    apiOrigin: String(resolvedOrigin || '').replace(/\/$/, ''),
+    org: String(resolvedOrg || '').trim(),
+    addon: normalizedAddon,
     contentBase,
-    fetchManifest: (pathPrefix) => fetchManifest({ contentBase }, pathPrefix),
-    fetchExport: (slug, options) => fetchExport({ contentBase }, slug, options),
-    fetchHomeExport: (pathPrefix, options) => fetchHomeExport({ contentBase }, pathPrefix, options),
-    fetchCollectionExport: (slug, options) => fetchCollectionExport({ contentBase }, slug, options),
-    fetchStaticSitemap: (pathPrefix, siteOrigin) => fetchStaticSitemap({ contentBase }, pathPrefix, siteOrigin),
+    exportBase,
+  };
+  return {
+    ...client,
+    fetchManifest: (pathPrefix) => fetchManifest(client, pathPrefix),
+    fetchExport: (slug, opts) => fetchExport(client, slug, opts),
+    fetchHomeExport: (pathPrefix, opts) => fetchHomeExport(client, pathPrefix, opts),
+    fetchCollectionExport: (slug, opts) => fetchCollectionExport(client, slug, opts),
+    fetchStaticSitemap: (pathPrefix, siteOrigin) => fetchStaticSitemap(client, pathPrefix, siteOrigin),
     fetchBuffer,
   };
 }
@@ -122,4 +152,5 @@ module.exports = {
   fetchHomeExport,
   fetchCollectionExport,
   fetchStaticSitemap,
+  normalizeAddon,
 };

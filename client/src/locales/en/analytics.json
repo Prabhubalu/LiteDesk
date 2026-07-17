@@ -2042,5 +2042,33 @@
   "embedInvalidToken": {
     "message": "This embed link is invalid or expired.",
     "description": "Embed view invalid token error"
+  },
+  "homeAiAskTitle": {
+    "message": "Ask AI to find a report",
+    "description": "Analytics home AI intent title"
+  },
+  "homeAiAskHint": {
+    "message": "Describe what you want to see and AI suggests matching saved reports. It never runs new queries.",
+    "description": "Analytics home AI intent hint"
+  },
+  "homeAiAskPlaceholder": {
+    "message": "e.g. Deals won by owner this quarter",
+    "description": "Analytics home AI intent input placeholder"
+  },
+  "homeAiAskSubmit": {
+    "message": "Suggest reports",
+    "description": "Analytics home AI intent submit button"
+  },
+  "homeAiAskRunning": {
+    "message": "Finding reports…",
+    "description": "Analytics home AI intent loading state"
+  },
+  "homeAiAskEmpty": {
+    "message": "No matching saved reports. Try different wording or build a new report.",
+    "description": "Analytics home AI intent empty state"
+  },
+  "homeAiAskFailed": {
+    "message": "Could not suggest reports right now.",
+    "description": "Analytics home AI intent error"
   }
 }

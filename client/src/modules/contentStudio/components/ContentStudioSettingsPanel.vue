@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
-    <div v-if="mode === 'articles'" class="space-y-4">
+    <div v-if="mode === 'articles' || mode === 'blog'" class="space-y-4">
       <div>
         <label :class="ui.label">{{ t('contentStudio.fieldCollection') }}</label>
         <Listbox :model-value="selectedCategoryId" @update:model-value="onCategoryChange">
@@ -103,15 +103,15 @@
       </div>
 
       <router-link
-        :to="{ name: 'helpdesk-article-categories' }"
+        :to="{ name: mode === 'blog' ? 'marketing-blog-categories' : 'helpdesk-article-categories' }"
         class="inline-block text-xs text-primary-600 hover:underline dark:text-primary-400"
       >
         {{ t('contentStudio.manageCategories') }} →
       </router-link>
     </div>
 
-    <div v-if="mode === 'articles' && status === 'published' && articleId" class="space-y-4">
-      <ContentStudioAnalyticsSummary :article-id="articleId" />
+    <div v-if="(mode === 'articles' || mode === 'blog') && status === 'published' && articleId" class="space-y-4">
+      <ContentStudioAnalyticsSummary :article-id="articleId" :mode="mode" />
     </div>
 
     <div v-if="headlessApiUrl" class="rounded-lg border border-neutral-200 p-3 text-xs dark:border-neutral-700">
@@ -154,7 +154,7 @@
         :disabled="busy"
         @click="emit('delete')"
       >
-        {{ t('contentStudio.deleteArticle') }}
+        {{ mode === 'blog' ? t('contentStudio.deletePost') : t('contentStudio.deleteArticle') }}
       </button>
     </div>
   </div>
@@ -172,8 +172,8 @@ import {
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/24/outline';
 import { useBuilderUi } from '@/composables/useBuilderUi';
 import { useAuthStore } from '@/stores/authRegistry';
-import { buildHeadlessArticleApiUrl } from '@/modules/contentStudio/headless';
-import { listArticleCollections } from '../services/contentStudioApi';
+import { buildHeadlessArticleApiUrl, buildHeadlessBlogPostApiUrl } from '@/modules/contentStudio/headless';
+import { listContentCollections } from '../services/contentStudioApi';
 import ContentStudioAnalyticsSummary from './ContentStudioAnalyticsSummary.vue';
 
 const props = defineProps({
@@ -231,9 +231,12 @@ const canUnpublish = computed(() => props.status === 'published');
 const canArchive = computed(() => props.status !== 'archived');
 
 const headlessApiUrl = computed(() => {
-  if (props.mode !== 'articles' || props.visibility !== 'public') return '';
+  if ((props.mode !== 'articles' && props.mode !== 'blog') || props.visibility !== 'public') return '';
   const orgSlug = authStore.organization?.slug;
   if (!orgSlug || !props.slug) return '';
+  if (props.mode === 'blog') {
+    return buildHeadlessBlogPostApiUrl(orgSlug, props.slug);
+  }
   return buildHeadlessArticleApiUrl(orgSlug, props.slug);
 });
 
@@ -293,9 +296,9 @@ function onSubCategoryChange(value) {
 }
 
 async function reloadCollections() {
-  if (props.mode !== 'articles') return;
+  if (props.mode !== 'articles' && props.mode !== 'blog') return;
   try {
-    collections.value = await listArticleCollections();
+    collections.value = await listContentCollections(props.mode);
     syncFromCollectionId(props.collectionId);
   } catch {
     collections.value = [];

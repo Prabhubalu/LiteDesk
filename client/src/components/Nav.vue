@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useAppShellStore } from '@/stores/appShell';
 import NotificationBell from '@/components/notifications/NotificationBell.vue';
 import NotificationDrawer from '@/components/notifications/NotificationDrawer.vue';
+import ArivuAssistantLauncher from '@/components/support/ArivuAssistantLauncher.vue';
 import { computed, inject, ref, watch, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { getTabTitleMetaForPath, resolveTabTitle } from '@/utils/navigationLabels';
@@ -491,6 +492,7 @@ const logoSrc = computed(() => {
           :class="shellTopBarBellClass"
           @toggle="handleNotificationClick"
         />
+        <ArivuAssistantLauncher class="!min-h-8 !min-w-8" />
 
         <div
           v-click-outside="closeProfileDropdown"

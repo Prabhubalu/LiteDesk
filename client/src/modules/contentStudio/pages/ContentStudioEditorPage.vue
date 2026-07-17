@@ -107,6 +107,8 @@
           :slug="slug"
           :visibility="visibility"
           :featured="featured"
+          :sticky="sticky"
+          :tags="tags"
           :author-id="authorId"
           :author-name="authorName"
           :seo-meta-title="seoMetaTitle"
@@ -122,6 +124,8 @@
           @update:slug="handleSlugChange"
           @update:visibility="handleVisibilityChange"
           @update:featured="handleFeaturedChange"
+          @update:sticky="handleStickyChange"
+          @update:tags="handleTagsChange"
           @update:author-id="handleAuthorIdChange"
           @update:author-name="handleAuthorNameChange"
           @update:seo-meta-title="handleSeoTitleChange"
@@ -172,6 +176,7 @@ import { useContentStudioMediaInsertDialog } from '../composables/useContentStud
 import { useContentStudioKeyboardShortcuts } from '../composables/useContentStudioKeyboardShortcuts';
 import { countWords, estimateReadMinutes, extractPlainTextFromBlocks } from '../utils/documentStats';
 import { captureArticlePublished, captureArticlePreviewed, captureArticleSaved, captureArticleCreated } from '@/config/posthogArticles';
+import { captureBlogPostCreated, captureBlogPostPublished, captureBlogPostSaved } from '@/config/posthogBlog';
 import { useTabs } from '@/composables/useTabs';
 import { useContentStudioDocument } from '../composables/useContentStudioDocument';
 import { addGalleryImage, isEditorInGallery } from '../editor/blockCommands';
@@ -255,6 +260,8 @@ const {
   seoMetaDescription,
   visibility,
   featured,
+  sticky,
+  tags,
   authorId,
   authorName,
   collectionId,
@@ -324,7 +331,9 @@ function handleBlockAttributesChange(attrs) {
 
 function handleCoverUploaded(payload) {
   const asset = payload?.asset;
-  coverAssetId.value = asset?._id ? String(asset._id) : null;
+  coverAssetId.value = asset?._id || asset?.assetId
+    ? String(asset._id || asset.assetId)
+    : (payload?.assetId ? String(payload.assetId) : null);
   coverImageUrl.value = payload?.url || asset?.downloadUrl || asset?.url || asset?.publicUrl || '';
   markDirty();
 }
@@ -408,7 +417,7 @@ function handleApplyTemplate(template) {
 }
 
 function handleInsertImage(asset) {
-  const url = asset?.url || asset?.publicUrl;
+  const url = asset?.downloadUrl || asset?.url || asset?.publicUrl;
   if (!url || !editor.value) return;
   const alt = asset?.name || asset?.filename || '';
   if (isEditorInGallery(editor.value) || editor.value.isActive('gallery')) {
@@ -436,6 +445,16 @@ function handleFeaturedChange(value) {
   markDirty();
 }
 
+function handleStickyChange(value) {
+  sticky.value = Boolean(value);
+  markDirty();
+}
+
+function handleTagsChange(value) {
+  tags.value = Array.isArray(value) ? value.map(String) : [];
+  markDirty();
+}
+
 function handleAuthorIdChange(value) {
   authorId.value = String(value || '');
   markDirty();
@@ -460,9 +479,17 @@ async function handleSave() {
       await router.replace({ name: editorRoute, params: { id: saved._id } });
     }
     if (wasNew && saved?._id) {
-      captureArticleCreated({ mode: props.mode, article_id: saved._id });
+      if (props.mode === 'blog') {
+        captureBlogPostCreated({ mode: props.mode, post_id: saved._id });
+      } else {
+        captureArticleCreated({ mode: props.mode, article_id: saved._id });
+      }
     }
-    captureArticleSaved({ mode: props.mode, article_id: saved?._id });
+    if (props.mode === 'blog') {
+      captureBlogPostSaved({ mode: props.mode, post_id: saved?._id });
+    } else {
+      captureArticleSaved({ mode: props.mode, article_id: saved?._id });
+    }
     notifications.success(t('contentStudio.saveSuccess'));
   } catch {
     notifications.error(t('contentStudio.saveFailed'));
@@ -470,8 +497,10 @@ async function handleSave() {
 }
 
 async function handlePublish() {
-  if (props.mode === 'articles' && visibility.value !== 'public') {
-    const proceed = window.confirm(t('contentStudio.publishNonPublicHeadlessConfirm'));
+  if ((props.mode === 'articles' || props.mode === 'blog') && visibility.value !== 'public') {
+    const proceed = window.confirm(
+      blogOrArticleCopy('contentStudio.publishNonPublicHeadlessConfirm', 'contentStudio.publishNonPublicHeadlessConfirmPost'),
+    );
     if (!proceed) return;
   }
 
@@ -481,39 +510,47 @@ async function handlePublish() {
       const editorRoute = props.mode === 'articles' ? 'helpdesk-article-edit' : 'marketing-blog-edit';
       await router.replace({ name: editorRoute, params: { id: published._id } });
     }
-    captureArticlePublished({ mode: props.mode, article_id: published?._id, visibility: published?.visibility });
+    if (props.mode === 'blog') {
+      captureBlogPostPublished({ mode: props.mode, post_id: published?._id, visibility: published?.visibility });
+    } else {
+      captureArticlePublished({ mode: props.mode, article_id: published?._id, visibility: published?.visibility });
+    }
     notifications.success(t('contentStudio.publishSuccess'));
   } catch {
     notifications.error(t('contentStudio.publishFailed'));
   }
 }
 
+function blogOrArticleCopy(articleKey, blogKey) {
+  return props.mode === 'blog' ? t(blogKey) : t(articleKey);
+}
+
 async function handleUnpublish() {
   try {
     await unpublish();
-    notifications.success(t('contentStudio.unpublishSuccess'));
+    notifications.success(blogOrArticleCopy('contentStudio.unpublishSuccess', 'contentStudio.unpublishSuccessPost'));
   } catch {
-    notifications.error(t('contentStudio.unpublishFailed'));
+    notifications.error(blogOrArticleCopy('contentStudio.unpublishFailed', 'contentStudio.unpublishFailedPost'));
   }
 }
 
 async function handleArchive() {
   try {
     await archive();
-    notifications.success(t('contentStudio.archiveSuccess'));
+    notifications.success(blogOrArticleCopy('contentStudio.archiveSuccess', 'contentStudio.archiveSuccessPost'));
   } catch {
-    notifications.error(t('contentStudio.archiveFailed'));
+    notifications.error(blogOrArticleCopy('contentStudio.archiveFailed', 'contentStudio.archiveFailedPost'));
   }
 }
 
 async function handleDelete() {
-  if (!window.confirm(t('contentStudio.deleteConfirm'))) return;
+  if (!window.confirm(blogOrArticleCopy('contentStudio.deleteConfirm', 'contentStudio.deleteConfirmPost'))) return;
   try {
     await remove();
-    notifications.success(t('contentStudio.deleteSuccess'));
+    notifications.success(blogOrArticleCopy('contentStudio.deleteSuccess', 'contentStudio.deleteSuccessPost'));
     goBack();
   } catch {
-    notifications.error(t('contentStudio.deleteFailed'));
+    notifications.error(blogOrArticleCopy('contentStudio.deleteFailed', 'contentStudio.deleteFailedPost'));
   }
 }
 

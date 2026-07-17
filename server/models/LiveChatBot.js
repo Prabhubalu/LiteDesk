@@ -24,6 +24,12 @@ const LiveChatBotSchema = new mongoose.Schema({
   },
   confidenceMinScore: { type: Number, default: 2 },
 
+  /**
+   * Phase 4: when true and AI suite entitled, fall back to KB RAG FAQ after
+   * keyword miss. Soft-fails — never blocks visitor chat.
+   */
+  aiAssist: { type: Boolean, default: false },
+
   /** Optional Process Designer recipe key for bot flows (LC5). */
   processRecipeKey: { type: String, trim: true, default: '' },
 

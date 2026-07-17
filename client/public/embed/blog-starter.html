@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arivu Blog quickstart</title>
+  <link rel="stylesheet" href="./headless-blocks.css" />
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; background: #f8fafc; color: #0f172a; }
+    .wrap { max-width: 76rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    h1 { font-size: 1.5rem; margin: 0 0 0.5rem; }
+    p { color: #475569; }
+    code { background: #e2e8f0; padding: 0.1rem 0.35rem; border-radius: 0.25rem; font-size: 0.875rem; }
+    #arivu-blog { margin-top: 1.5rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Arivu Blog embed quickstart</h1>
+    <p>
+      Set <code>data-org</code> below. Serve this page at your blog prefix (e.g. <code>/blog/</code>) for the archive,
+      or at <code>/blog/{slug}</code> for a post. The same snippet routes both.
+    </p>
+
+    <div id="arivu-blog"></div>
+    <script
+      src="./headless-blog.js"
+      data-api-origin=""
+      data-org="YOUR_ORG_SLUG"
+      data-target="#arivu-blog"
+      data-link-prefix="/blog/"
+    ></script>
+  </div>
+  <script>
+    (function () {
+      var origin = window.location.origin;
+      document.querySelectorAll('script[data-api-origin=""]').forEach(function (el) {
+        el.setAttribute('data-api-origin', origin);
+      });
+    })();
+  </script>
+</body>
+</html>

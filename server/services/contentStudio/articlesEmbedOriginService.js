@@ -23,6 +23,13 @@ function originMatchesRegistered(origin, registeredOrigins) {
   return registeredOrigins.some((registeredOrigin) => originMatchesAllowedPattern(origin, registeredOrigin));
 }
 
+function collectPublishingOrigins(config) {
+  const publishing = config?.settings?.publishing || {};
+  const headlessEnabled = publishing.headlessApiEnabled !== false && config?.enabled !== false;
+  if (!headlessEnabled || !Array.isArray(publishing.embedWebsiteOrigins)) return [];
+  return publishing.embedWebsiteOrigins.filter(Boolean);
+}
+
 async function loadEmbedOriginsForOrgSlug(orgSlug) {
   const normalizedKey = String(orgSlug || '').trim();
   if (!normalizedKey) return [];
@@ -36,10 +43,14 @@ async function loadEmbedOriginsForOrgSlug(orgSlug) {
   const Organization = require('../../models/Organization');
   const { getTenantAddonConfiguration } = require('../../utils/addonAccessUtils');
   const { isArticlesHeadlessPublicKey } = require('./articlesHeadlessPublicKeyService');
+  const { isBlogHeadlessPublicKey } = require('./blogHeadlessPublicKeyService');
 
-  const organizationQuery = isArticlesHeadlessPublicKey(normalizedKey)
-    ? { 'embed.articles.publicKey': normalizedKey }
-    : { slug: cacheKey };
+  let organizationQuery = { slug: cacheKey };
+  if (isArticlesHeadlessPublicKey(normalizedKey)) {
+    organizationQuery = { 'embed.articles.publicKey': normalizedKey };
+  } else if (isBlogHeadlessPublicKey(normalizedKey)) {
+    organizationQuery = { 'embed.blog.publicKey': normalizedKey };
+  }
 
   const organization = await Organization.findOne(organizationQuery).select('_id').lean();
   if (!organization?._id) {
@@ -47,15 +58,19 @@ async function loadEmbedOriginsForOrgSlug(orgSlug) {
     return [];
   }
 
-  const config = await getTenantAddonConfiguration(organization._id, ADDON_KEYS.ARTICLES);
-  const publishing = config?.settings?.publishing || {};
-  const headlessEnabled = publishing.headlessApiEnabled !== false && config?.enabled !== false;
-  const origins = headlessEnabled && Array.isArray(publishing.embedWebsiteOrigins)
-    ? publishing.embedWebsiteOrigins.filter(Boolean)
-    : [];
+  const [articlesConfig, blogConfig] = await Promise.all([
+    getTenantAddonConfiguration(organization._id, ADDON_KEYS.ARTICLES),
+    getTenantAddonConfiguration(organization._id, ADDON_KEYS.BLOG),
+  ]);
 
-  cacheByOrgSlug.set(cacheKey, { origins, expires: Date.now() + CACHE_TTL_MS });
-  return origins;
+  const origins = [
+    ...collectPublishingOrigins(articlesConfig),
+    ...collectPublishingOrigins(blogConfig),
+  ];
+  const uniqueOrigins = [...new Set(origins.map(String))];
+
+  cacheByOrgSlug.set(cacheKey, { origins: uniqueOrigins, expires: Date.now() + CACHE_TTL_MS });
+  return uniqueOrigins;
 }
 
 async function loadAllRegisteredEmbedOrigins() {
@@ -65,7 +80,7 @@ async function loadAllRegisteredEmbedOrigins() {
 
   const TenantAddonConfiguration = require('../../models/TenantAddonConfiguration');
   const rows = await TenantAddonConfiguration.find({
-    addonKey: ADDON_KEYS.ARTICLES,
+    addonKey: { $in: [ADDON_KEYS.ARTICLES, ADDON_KEYS.BLOG] },
     enabled: { $ne: false },
     'settings.publishing.headlessApiEnabled': { $ne: false },
     'settings.publishing.embedWebsiteOrigins.0': { $exists: true },
@@ -102,6 +117,9 @@ async function isArticlesEmbedOriginAllowed(origin, orgSlug) {
   return [...allOrigins].some((registeredOrigin) => originMatchesAllowedPattern(origin, registeredOrigin));
 }
 
+/** Content embed origins (articles + blog). Alias kept for call-site stability. */
+const isContentEmbedOriginAllowed = isArticlesEmbedOriginAllowed;
+
 function normalizeArticlesEmbedWebsiteDomain(raw) {
   const allowLocalhost = process.env.NODE_ENV !== 'production';
   return normalizeWebsiteEmbedDomain(raw, { allowLocalhost });
@@ -111,6 +129,7 @@ module.exports = {
   extractOrgSlugFromPublicContentPath,
   invalidateArticlesEmbedOriginCache,
   isArticlesEmbedOriginAllowed,
+  isContentEmbedOriginAllowed,
   loadEmbedOriginsForOrgSlug,
   normalizeArticlesEmbedWebsiteDomain,
   originMatchesRegistered,

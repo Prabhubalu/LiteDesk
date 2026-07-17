@@ -4,6 +4,58 @@
     :subtitle="t('documents.portalKnowledgeSubtitle')"
     :error="error"
   >
+    <section class="mb-6 rounded-2xl p-4" :class="PLATFORM_HOME_CARD_CLASS">
+      <h2 class="text-sm font-semibold text-neutral-900 dark:text-white">
+        {{ t('documents.portalKnowledgeAskTitle') }}
+      </h2>
+      <p class="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
+        {{ t('documents.portalKnowledgeAskHint') }}
+      </p>
+      <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+        <input
+          v-model="askQuestion"
+          type="search"
+          class="min-h-11 w-full flex-1 rounded-xl py-2.5 px-3 text-sm text-neutral-900 dark:text-white"
+          :class="PLATFORM_HOME_INSET_CONTROL_CLASS"
+          :placeholder="t('documents.portalKnowledgeAskPlaceholder')"
+          @keyup.enter="runAsk"
+        />
+        <button
+          type="button"
+          class="min-h-11 shrink-0 rounded-xl bg-primary-600 px-4 text-sm font-medium text-white disabled:opacity-50"
+          :disabled="asking || !askQuestion.trim()"
+          @click="runAsk"
+        >
+          {{ asking ? t('documents.portalKnowledgeAskRunning') : t('documents.portalKnowledgeAskSubmit') }}
+        </button>
+      </div>
+      <p v-if="askError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ askError }}</p>
+      <p v-else-if="askNotConfigured" class="mt-2 text-sm text-amber-700 dark:text-amber-300">
+        {{ t('documents.portalKnowledgeAskNotConfigured') }}
+      </p>
+      <div v-else-if="askAnswer" class="mt-3 space-y-2">
+        <pre class="whitespace-pre-wrap rounded-xl bg-neutral-50 p-3 font-sans text-sm text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">{{ askAnswer }}</pre>
+        <p class="text-[11px] text-neutral-500 dark:text-neutral-400">{{ askDisclaimer }}</p>
+        <ul v-if="askCitations.length" class="space-y-1 text-xs text-neutral-600 dark:text-neutral-400">
+          <li v-for="c in askCitations" :key="c.chunkId || c.index">
+            <button
+              type="button"
+              class="text-left text-primary-700 hover:underline dark:text-primary-300"
+              @click="openArticle(c.sourceId)"
+            >
+              [{{ c.index }}] {{ c.excerpt || c.sourceId }}
+            </button>
+          </li>
+        </ul>
+        <p
+          v-if="askEscalate"
+          class="text-xs font-medium text-amber-800 dark:text-amber-200"
+        >
+          {{ t('documents.portalKnowledgeAskEscalate') }}
+        </p>
+      </div>
+    </section>
+
     <div class="mb-4 space-y-3">
       <div class="relative max-w-md">
         <MagnifyingGlassIcon class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
@@ -100,7 +152,7 @@ import {
 const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
-const { listArticles, listCollections } = usePortalKnowledge();
+const { listArticles, listCollections, ask } = usePortalKnowledge();
 
 const loading = ref(true);
 const error = ref(null);
@@ -108,6 +160,53 @@ const articles = ref([]);
 const collections = ref([]);
 const searchQuery = ref('');
 const selectedCollectionId = ref(null);
+const askQuestion = ref('');
+const asking = ref(false);
+const askAnswer = ref('');
+const askError = ref('');
+const askNotConfigured = ref(false);
+const askDisclaimer = ref('');
+const askCitations = ref([]);
+const askEscalate = ref(false);
+
+async function runAsk() {
+  const q = askQuestion.value.trim();
+  if (!q || asking.value) return;
+  asking.value = true;
+  askError.value = '';
+  askAnswer.value = '';
+  askNotConfigured.value = false;
+  askDisclaimer.value = '';
+  askCitations.value = [];
+  askEscalate.value = false;
+  try {
+    const data = await ask(q);
+    if (!data?.success) {
+      if (data?.notConfigured) {
+        askNotConfigured.value = true;
+      } else {
+        askError.value = data?.message || t('documents.portalKnowledgeAskFailed');
+      }
+      return;
+    }
+    askAnswer.value = String(data.answer || '').trim();
+    askDisclaimer.value = String(data.disclaimer || '').trim();
+    askCitations.value = Array.isArray(data.citations) ? data.citations : [];
+    askEscalate.value = Boolean(data.containment?.escalateSuggested) || !data.found;
+    if (!askAnswer.value) {
+      askError.value = t('documents.portalKnowledgeAskEmpty');
+      askEscalate.value = true;
+    }
+  } catch (err) {
+    if (err?.response?.data?.notConfigured || err?.notConfigured) {
+      askNotConfigured.value = true;
+    } else {
+      askError.value = err?.message || t('documents.portalKnowledgeAskFailed');
+    }
+  } finally {
+    asking.value = false;
+  }
+}
 
 function formatDate(value) {
   if (!value) return '';

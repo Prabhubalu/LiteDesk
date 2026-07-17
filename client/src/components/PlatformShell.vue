@@ -21,7 +21,7 @@
           ? 'h-full max-h-full min-h-0 overflow-hidden'
           : 'h-full max-h-full min-h-0 overflow-hidden',
         sidebarCollapsed ? 'lg:ml-[calc(3.5rem+1rem)]' : 'lg:ml-[calc(13.75rem+1rem)]',
-        'lg:box-border lg:p-2 lg:pl-0'
+        'lg:box-border lg:py-2 lg:pl-0 lg:pr-[var(--arivu-work-panel-pad-right,0.5rem)]'
       ]"
     >
       <div

@@ -171,6 +171,74 @@ const OrganizationSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.Mixed,
         default: {}
     },
+
+    aiSettings: {
+        enabled: {
+            type: Boolean,
+            default: false
+        },
+        llmProvider: {
+            type: String,
+            enum: ['openai', 'azure_openai', 'anthropic', 'gemini', 'openrouter', 'bedrock'],
+            default: 'openai'
+        },
+        llmModel: {
+            type: String,
+            trim: true,
+            default: null
+        },
+        embeddingProvider: {
+            type: String,
+            enum: ['openai', 'azure_openai', 'openrouter', 'voyage'],
+            default: 'openai'
+        },
+        keyMode: {
+            type: String,
+            enum: ['platform', 'byok'],
+            default: 'platform'
+        },
+        apiKeyEncrypted: {
+            type: String,
+            default: null,
+            select: false
+        },
+        apiKeyLast4: {
+            type: String,
+            default: null
+        },
+        azureResourceName: {
+            type: String,
+            trim: true,
+            default: null
+        },
+        azureDeploymentName: {
+            type: String,
+            trim: true,
+            default: null
+        },
+        region: {
+            type: String,
+            trim: true,
+            default: null
+        },
+        modelOverrides: {
+            type: mongoose.Schema.Types.Mixed,
+            default: {}
+        },
+        credits: {
+            balance: { type: Number, default: 0, min: 0 },
+            softLimitNotifiedAt: { type: Date, default: null }
+        },
+        dataUseConsent: {
+            accepted: { type: Boolean, default: false },
+            acceptedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+            acceptedAt: { type: Date, default: null }
+        },
+        platformHomeAiFocus: {
+            type: Boolean,
+            default: false
+        }
+    },
     
     // CRM Initialization Status (multi-pod safe)
     // Tracks whether CRM modules have been initialized for this organization
@@ -323,10 +391,17 @@ const OrganizationSchema = new mongoose.Schema({
                 welcomeMessage: {
                     type: String,
                     default: "Hey! Let’s discuss how we can help you. Fill out the form to start chatting."
+                },
+                brandColor: {
+                    type: String,
+                    default: '#4f46e5'
                 }
             }
         },
         articles: {
+            publicKey: { type: String, default: null, index: true },
+        },
+        blog: {
             publicKey: { type: String, default: null, index: true },
         }
     },

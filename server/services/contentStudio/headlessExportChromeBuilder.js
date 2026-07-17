@@ -386,6 +386,7 @@ function buildArticlePageChrome({
   tree = [],
   recent = [],
   popular = [],
+  showSidebarWidgets = true,
 }) {
   const articleHtml = buildArticleShell(article, bodyHtml);
   const pathNodes = findCollectionPathNodes(tree, collectionPathSlugs);
@@ -407,12 +408,14 @@ function buildArticlePageChrome({
         pathPrefix,
       }),
     )
-    + buildArticleSidebarWidgetsHtml({
-      recent,
-      popular,
-      pathPrefix,
-      collectionPathSlugs,
-    })
+    + (showSidebarWidgets
+      ? buildArticleSidebarWidgetsHtml({
+        recent,
+        popular,
+        pathPrefix,
+        collectionPathSlugs,
+      })
+      : '')
   );
 
   return buildHelpPageShell({
@@ -452,6 +455,8 @@ function buildHomeExportChrome({
   description = '',
   tree = [],
   pathPrefix = '/help/',
+  eyebrow = 'Help Center',
+  sectionTitle = 'Browse topics',
 }) {
   const cards = (tree || []).map((node) => buildHomeCollectionCard(node, pathPrefix)).join('');
   const descriptionHtml = description
@@ -461,12 +466,12 @@ function buildHomeExportChrome({
   return (
     '<div class="ld-help-home" data-ld-help-home>'
     + '<header class="ld-help-home__hero">'
-    + '<p class="ld-help-home__eyebrow">Help Center</p>'
+    + `<p class="ld-help-home__eyebrow">${escapeHtml(eyebrow)}</p>`
     + `<h1 class="ld-help-home__title">${escapeHtml(title)}</h1>`
     + descriptionHtml
     + '</header>'
     + '<section class="ld-help-home__topics" aria-labelledby="ld-help-home-topics">'
-    + '<h2 id="ld-help-home-topics" class="ld-help-home__section-title">Browse topics</h2>'
+    + `<h2 id="ld-help-home-topics" class="ld-help-home__section-title">${escapeHtml(sectionTitle)}</h2>`
     + `<div class="ld-help-home__grid">${cards}</div>`
     + '</section>'
     + '</div>'
@@ -526,6 +531,7 @@ function buildCollectionExportChrome({
   recent = [],
   popular = [],
   listingType = 'sections',
+  showSidebarWidgets = true,
 }) {
   const pathNodes = findCollectionPathNodes(tree, collectionPathSlugs);
   const breadcrumbsHtml = buildBreadcrumbHtml({
@@ -572,12 +578,14 @@ function buildCollectionExportChrome({
         pathPrefix,
       }),
     )
-    + buildArticleSidebarWidgetsHtml({
-      recent,
-      popular,
-      pathPrefix,
-      collectionPathSlugs,
-    })
+    + (showSidebarWidgets
+      ? buildArticleSidebarWidgetsHtml({
+        recent,
+        popular,
+        pathPrefix,
+        collectionPathSlugs,
+      })
+      : '')
   );
 
   return buildHelpPageShell({

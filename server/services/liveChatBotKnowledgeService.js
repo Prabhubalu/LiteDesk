@@ -66,7 +66,10 @@ function extractSnippet(text, queryTokens, maxLen = 480) {
   if (raw.length <= maxLen) return raw;
 
   const lower = raw.toLowerCase();
-  for (const token of queryTokens) {
+  // Prefer longer tokens/bigrams so "support hours" wins over "support" in an email.
+  const orderedTokens = [...queryTokens].sort((a, b) => b.length - a.length);
+  for (const token of orderedTokens) {
+    if (String(token).length < 4) continue;
     const idx = lower.indexOf(token);
     if (idx >= 0) {
       const start = Math.max(0, idx - 80);
@@ -77,6 +80,23 @@ function extractSnippet(text, queryTokens, maxLen = 480) {
   }
 
   return `${raw.slice(0, maxLen).trim()}…`;
+}
+
+/** Drop bot-setup / test-phrase meta so visitors never see install instructions. */
+function visitorFacingBody(text, maxLen = 4000) {
+  let cleaned = String(text || '');
+  cleaned = cleaned
+    .replace(/Live chat AI test phrases[\s\S]*?(?=Setup for the bot|$)/i, ' ')
+    .replace(/Ask the bot questions like:[\s\S]*?(?=Setup for the bot|$)/i, ' ')
+    .replace(/Setup for the bot[\s\S]*$/i, ' ')
+    .replace(/In Live Chat Bot settings:[\s\S]*$/i, ' ')
+    .replace(/Create the article in Documents[\s\S]*$/i, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!cleaned) {
+    cleaned = String(text || '').replace(/\s+/g, ' ').trim();
+  }
+  return cleaned.slice(0, maxLen);
 }
 
 function buildKnowledgeBaseQuery(organizationId, documentIds = []) {
@@ -114,10 +134,11 @@ async function loadKnowledgeBaseEntries({ organizationId, bot, queryText, limit 
 
   return rows.map((doc) => {
     const bodyText = doc.richContentText || extractRichContentSearchText(doc.richContent) || doc.description || '';
+    const facing = visitorFacingBody(bodyText);
     const fields = [
       doc.title,
       doc.description,
-      bodyText,
+      facing || bodyText,
       Array.isArray(doc.tags) ? doc.tags.join(' ') : '',
       doc.documentNumber,
     ];
@@ -127,7 +148,8 @@ async function loadKnowledgeBaseEntries({ organizationId, bot, queryText, limit 
       sourceId: doc._id,
       title: doc.title || doc.documentNumber || 'Knowledge article',
       score,
-      snippet: extractSnippet(bodyText || doc.title, queryTokens),
+      snippet: extractSnippet(facing || bodyText || doc.title, queryTokens),
+      fullText: facing || visitorFacingBody(bodyText || doc.title || '', 4000),
     };
   });
 }
@@ -163,6 +185,7 @@ async function loadWebsiteContentEntries({ organizationId, bot, queryText, pageU
     }
 
     const bodyText = page.body || page.title || '';
+    const facing = visitorFacingBody(bodyText);
     if (matchPath && pagePath.includes(matchPath) && bodyText) {
       score = Math.max(score, 10);
     }
@@ -172,7 +195,8 @@ async function loadWebsiteContentEntries({ organizationId, bot, queryText, pageU
       sourceId: page._id,
       title: page.title || page.pageKey,
       score,
-      snippet: extractSnippet(bodyText, queryTokens),
+      snippet: extractSnippet(facing || bodyText, queryTokens),
+      fullText: facing || visitorFacingBody(bodyText, 4000),
     };
   });
 }
@@ -206,6 +230,7 @@ async function findBestBotAnswer({ organizationId, bot, queryText, pageUrl = '' 
       sourceId: best.sourceId,
       title: best.title,
       body: best.snippet,
+      fullText: best.fullText || best.snippet,
     },
     score: best.score,
   };
@@ -214,4 +239,5 @@ async function findBestBotAnswer({ organizationId, bot, queryText, pageUrl = '' 
 module.exports = {
   findBestBotAnswer,
   tokenize,
+  visitorFacingBody,
 };

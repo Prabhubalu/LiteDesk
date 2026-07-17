@@ -173,6 +173,7 @@
             <CaseKnowledgePanel
               :case-title="caseRecord?.title || ''"
               :case-description="caseRecord?.description || ''"
+              :case-record-id="caseRecord?._id ? String(caseRecord._id) : ''"
             />
           </template>
         </RecordRightPane>
@@ -308,6 +309,7 @@
               <CaseKnowledgePanel
               :case-title="caseRecord?.title || ''"
               :case-description="caseRecord?.description || ''"
+              :case-record-id="caseRecord?._id ? String(caseRecord._id) : ''"
             />
             </template>
           </RecordRightPane>

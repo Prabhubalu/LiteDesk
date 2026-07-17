@@ -21,6 +21,7 @@
 
     <ContentStudioSeoPanel
       v-else-if="activePanel === 'seo'"
+      :mode="mode"
       :title="title"
       :summary="summary"
       :slug="slug"
@@ -130,9 +131,21 @@ const panelTitle = computed(() => {
 
 const panelHint = computed(() => {
   if (props.activePanel === 'blocks') return t('contentStudio.addBlocksHint');
-  if (props.activePanel === 'outline') return t('contentStudio.outlineHint');
-  if (props.activePanel === 'components') return t('contentStudio.componentsHint');
-  if (props.activePanel === 'templates') return t('contentStudio.templatesHint');
+  if (props.activePanel === 'outline') {
+    return props.mode === 'blog'
+      ? t('contentStudio.outlineHintBlog')
+      : t('contentStudio.outlineHint');
+  }
+  if (props.activePanel === 'components') {
+    return props.mode === 'blog'
+      ? t('contentStudio.componentsHintBlog')
+      : t('contentStudio.componentsHint');
+  }
+  if (props.activePanel === 'templates') {
+    return props.mode === 'blog'
+      ? t('contentStudio.templatesHintBlog')
+      : t('contentStudio.templatesHint');
+  }
   if (props.activePanel === 'media') return t('contentStudio.mediaHint');
   if (props.activePanel === 'seo') return t('contentStudio.seoHint');
   if (props.activePanel === 'settings') return t('contentStudio.settingsHint');

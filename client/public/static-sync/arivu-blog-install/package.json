@@ -1,0 +1,9 @@
+{
+  "name": "arivu-blog-install",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "bin": {
+    "arivu-blog-install": "./bin/arivu-blog-install.js"
+  }
+}

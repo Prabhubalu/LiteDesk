@@ -23,6 +23,7 @@ const smsService = require('./smsService');
 const whatsappService = require('./whatsappService');
 const pushService = require('./pushService');
 const ProcessExecution = require('../models/ProcessExecution');
+const { aiClassifyAction, aiExtractAction } = require('./aiProcessActionHandlers');
 
 const log = createLogger('automationActionHandlers');
 
@@ -1428,6 +1429,8 @@ const handlers = {
   announcements_publish: announcementsPublish,
   announcements_pause: announcementsPause,
   announcements_archive: announcementsArchive,
+  ai_classify: aiClassifyAction,
+  ai_extract: aiExtractAction,
 };
 
 /**

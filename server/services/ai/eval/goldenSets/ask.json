@@ -1,0 +1,35 @@
+[
+  {
+    "id": "ask-password-reset",
+    "abilityKey": "ask",
+    "promptKeys": ["ask_knowledge_system"],
+    "input": {
+      "question": "How do I reset my password?",
+      "excerpts": [
+        {
+          "index": 1,
+          "sourceType": "article",
+          "sourceId": "art-1",
+          "excerpt": "To reset your password, open Settings → Security → Reset password and follow the email link."
+        }
+      ]
+    },
+    "mustIncludeAny": ["Settings", "Reset password", "email"],
+    "mustCite": true,
+    "mustNotInclude": ["invent", "I believe without sources"],
+    "notes": "Answer must stay within excerpts and cite [1]"
+  },
+  {
+    "id": "ask-no-answer",
+    "abilityKey": "ask",
+    "promptKeys": ["ask_knowledge_system"],
+    "input": {
+      "question": "What is our 2099 Mars expansion plan?",
+      "excerpts": []
+    },
+    "mustIncludeAny": ["no answer", "not found", "insufficient", "do not have"],
+    "mustCite": false,
+    "mustNotInclude": [],
+    "notes": "Empty corpus → explicit no-answer"
+  }
+]
