@@ -86,6 +86,87 @@ const BLOG_ADDON = {
   },
 };
 
+const AI_ADDON = {
+  addonKey: ADDON_KEYS.AI,
+  name: 'Arivu AI',
+  description:
+    'Full AI suite for Arivu: assist, commercial, service, and knowledge. One install unlocks everything. Use platform AI credits or bring your own provider key.',
+  icon: 'sparkles',
+  category: 'INTEGRATION',
+  enabled: true,
+  order: 50,
+  optionalApps: ['SALES', 'HELPDESK', 'MARKETING', 'AUDIT', 'PORTAL'],
+  marketplace: {
+    category: 'AI',
+    comingSoon: false,
+    beta: true,
+    shortDescription: 'One AI product — draft, summarize, quote assist, cases, and document Q&A.',
+    docsUrl: '',
+  },
+};
+
+const AI_CREDITS_ADDON = {
+  addonKey: ADDON_KEYS.AI_CREDITS,
+  name: 'AI Credit Packs',
+  description: 'Purchase AI credits for platform-key usage (BYOK does not consume credits).',
+  icon: 'cpu-chip',
+  category: 'INTEGRATION',
+  enabled: true,
+  order: 51,
+  optionalApps: ['SALES', 'HELPDESK', 'MARKETING', 'AUDIT', 'PORTAL'],
+  marketplace: {
+    category: 'AI',
+    comingSoon: false,
+    beta: true,
+    shortDescription: 'Top up AI credits when using Arivu platform keys.',
+    docsUrl: '',
+  },
+};
+
+/** Legacy split packages — disabled in catalog; entitlement still accepted via alias. */
+const LEGACY_AI_ADDONS_DISABLED = [
+  {
+    addonKey: ADDON_KEYS.AI_ASSIST,
+    name: 'Arivu Assist (legacy)',
+    description: 'Superseded by Arivu AI. Kept for entitlement alias only.',
+    icon: 'sparkles',
+    category: 'INTEGRATION',
+    enabled: false,
+    order: 900,
+    marketplace: { category: 'AI', comingSoon: true, beta: false, shortDescription: '', docsUrl: '' },
+  },
+  {
+    addonKey: ADDON_KEYS.AI_COMMERCIAL,
+    name: 'Arivu Commercial AI (legacy)',
+    description: 'Superseded by Arivu AI.',
+    icon: 'currency-dollar',
+    category: 'INTEGRATION',
+    enabled: false,
+    order: 901,
+    marketplace: { category: 'AI', comingSoon: true, beta: false, shortDescription: '', docsUrl: '' },
+  },
+  {
+    addonKey: ADDON_KEYS.AI_SERVICE,
+    name: 'Arivu Service AI (legacy)',
+    description: 'Superseded by Arivu AI.',
+    icon: 'lifebuoy',
+    category: 'INTEGRATION',
+    enabled: false,
+    order: 902,
+    marketplace: { category: 'AI', comingSoon: true, beta: false, shortDescription: '', docsUrl: '' },
+  },
+  {
+    addonKey: ADDON_KEYS.AI_KNOWLEDGE,
+    name: 'Arivu Knowledge (legacy)',
+    description: 'Superseded by Arivu AI.',
+    icon: 'book-open',
+    category: 'INTEGRATION',
+    enabled: false,
+    order: 903,
+    marketplace: { category: 'AI', comingSoon: true, beta: false, shortDescription: '', docsUrl: '' },
+  },
+];
+
 async function upsertAddonDefinition(doc) {
   const existing = await AddonDefinition.findOne({ addonKey: doc.addonKey });
   if (existing) {
@@ -147,10 +228,18 @@ async function ensureAddonCatalogSeeded(options = {}) {
   const defResultEmailCredits = await upsertAddonDefinition(EMAIL_CREDITS_ADDON);
   const defResultArticles = await upsertAddonDefinition(ARTICLES_ADDON);
   const defResultBlog = await upsertAddonDefinition(BLOG_ADDON);
+  const defResultAi = await upsertAddonDefinition(AI_ADDON);
+  const defResultAiCredits = await upsertAddonDefinition(AI_CREDITS_ADDON);
+  for (const legacy of LEGACY_AI_ADDONS_DISABLED) {
+    // eslint-disable-next-line no-await-in-loop
+    await upsertAddonDefinition(legacy);
+  }
   const pricingResultLiveChat = await upsertAddonPricing(ADDON_KEYS.LIVE_CHAT);
   const pricingResultEmailCredits = await upsertAddonPricing(ADDON_KEYS.EMAIL_CREDITS);
   const pricingResultArticles = await upsertAddonPricing(ADDON_KEYS.ARTICLES);
   const pricingResultBlog = await upsertAddonPricing(ADDON_KEYS.BLOG);
+  const pricingResultAi = await upsertAddonPricing(ADDON_KEYS.AI);
+  const pricingResultAiCredits = await upsertAddonPricing(ADDON_KEYS.AI_CREDITS);
 
   if (!useExistingConnection) {
     await mongoose.disconnect();
@@ -161,10 +250,14 @@ async function ensureAddonCatalogSeeded(options = {}) {
     defResultEmailCredits,
     defResultArticles,
     defResultBlog,
+    defResultAi,
+    defResultAiCredits,
     pricingResultLiveChat,
     pricingResultEmailCredits,
     pricingResultArticles,
     pricingResultBlog,
+    pricingResultAi,
+    pricingResultAiCredits,
   };
 }
 
@@ -174,10 +267,14 @@ async function main() {
   console.log(`AddonDefinition email_credits: ${result.defResultEmailCredits}`);
   console.log(`AddonDefinition articles: ${result.defResultArticles}`);
   console.log(`AddonDefinition blog: ${result.defResultBlog}`);
+  console.log(`AddonDefinition ai: ${result.defResultAi}`);
+  console.log(`AddonDefinition ai_credits: ${result.defResultAiCredits}`);
   console.log(`AddonPricingDefinition live_chat: ${result.pricingResultLiveChat}`);
   console.log(`AddonPricingDefinition email_credits: ${result.pricingResultEmailCredits}`);
   console.log(`AddonPricingDefinition articles: ${result.pricingResultArticles}`);
   console.log(`AddonPricingDefinition blog: ${result.pricingResultBlog}`);
+  console.log(`AddonPricingDefinition ai: ${result.pricingResultAi}`);
+  console.log(`AddonPricingDefinition ai_credits: ${result.pricingResultAiCredits}`);
   console.log('Done.');
 }
 
@@ -187,6 +284,8 @@ module.exports = {
   EMAIL_CREDITS_ADDON,
   ARTICLES_ADDON,
   BLOG_ADDON,
+  AI_ADDON,
+  AI_CREDITS_ADDON,
 };
 
 if (require.main === module) {

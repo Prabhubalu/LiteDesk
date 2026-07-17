@@ -64,6 +64,13 @@
               >
                 {{ inboundAuthorLabel(m) }}
               </p>
+              <p
+                v-else-if="!isInternalNote(m)"
+                class="mb-1 text-[11px] font-medium"
+                :class="isBotMessage(m) ? 'text-indigo-200' : 'text-teal-100'"
+              >
+                {{ outboundAuthorLabel(m) }}
+              </p>
               <p>{{ m.body || '—' }}</p>
               <ul v-if="messageAttachments(m).length" class="mt-2 space-y-1">
                 <li v-for="(att, attIdx) in messageAttachments(m)" :key="`${m._id}-att-${attIdx}`">
@@ -169,8 +176,15 @@ function isBotMessage(message) {
 }
 
 function inboundAuthorLabel(message) {
-  if (isBotMessage(message)) return t('liveChat.botLabel');
   return message.authorName || t('liveChat.visitor');
+}
+
+function outboundAuthorLabel(message) {
+  if (isBotMessage(message)) {
+    const name = String(message?.authorName || '').trim();
+    return name ? `${t('liveChat.botLabel')} · ${name}` : t('liveChat.botLabel');
+  }
+  return String(message?.authorName || '').trim() || t('liveChat.agent');
 }
 
 function messageBubbleClass(message) {
@@ -179,6 +193,9 @@ function messageBubbleClass(message) {
   }
   if (message.direction === 'inbound') {
     return 'border border-gray-200 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100';
+  }
+  if (isBotMessage(message)) {
+    return 'border border-violet-200 bg-violet-600 text-white dark:border-violet-700 dark:bg-violet-700';
   }
   return 'border border-indigo-200 bg-indigo-600 text-white dark:border-indigo-700 dark:bg-indigo-700';
 }

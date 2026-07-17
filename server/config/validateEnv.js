@@ -3,6 +3,19 @@
  */
 function validateEnv() {
   const isProd = process.env.NODE_ENV === 'production';
+  const defaultProvider = String(process.env.AI_DEFAULT_LLM_PROVIDER || 'openai').toLowerCase();
+  const vectorStore = String(process.env.AI_VECTOR_STORE || 'atlas').toLowerCase();
+
+  if (!['openai', 'azure_openai', 'anthropic', 'gemini', 'bedrock'].includes(defaultProvider)) {
+    console.warn(`⚠️  Unknown AI_DEFAULT_LLM_PROVIDER=${defaultProvider}. AI requests will return NOT_CONFIGURED until a supported provider is selected.`);
+  }
+
+  if (!['atlas', 'mongo', 'memory', 'qdrant'].includes(vectorStore)) {
+    console.warn(`⚠️  Unknown AI_VECTOR_STORE=${vectorStore}. Valid values: atlas, mongo, memory, qdrant.`);
+  }
+  if (vectorStore === 'atlas' && process.env.AI_ATLAS_VECTOR_INDEX === '') {
+    console.warn('⚠️  AI_ATLAS_VECTOR_INDEX is empty. Atlas vector search will use the default index name.');
+  }
 
   if (isProd) {
     if (!process.env.JWT_SECRET || String(process.env.JWT_SECRET).length < 24) {
@@ -22,6 +35,15 @@ function validateEnv() {
       console.warn(
         '⚠️  PORTAL_FRAMEWORK_V1 is enabled globally. Prefer per-org portalFrameworkV1Enabled until cutover.'
       );
+    }
+    if (defaultProvider === 'openai' && !process.env.OPENAI_API_KEY && !process.env.AI_OPENAI_API_KEY) {
+      console.warn('⚠️  OpenAI is the default AI provider but OPENAI_API_KEY / AI_OPENAI_API_KEY is not set. Platform-key AI will return NOT_CONFIGURED.');
+    }
+    if (defaultProvider === 'openrouter' && !process.env.OPENROUTER_API_KEY && !process.env.AI_OPENROUTER_API_KEY) {
+      console.warn('⚠️  OpenRouter is the default AI provider but OPENROUTER_API_KEY / AI_OPENROUTER_API_KEY is not set. Platform-key AI will return NOT_CONFIGURED.');
+    }
+    if (vectorStore === 'atlas' && !process.env.AI_ATLAS_VECTOR_INDEX) {
+      console.warn('⚠️  AI_VECTOR_STORE=atlas uses Atlas Vector Search index ai_vector_chunks_embedding by default. Set AI_ATLAS_VECTOR_INDEX if your index uses another name.');
     }
   }
 }

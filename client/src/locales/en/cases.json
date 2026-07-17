@@ -179,6 +179,14 @@
     "message": "No matching articles. Try different keywords.",
     "description": "Knowledge panel empty state"
   },
+  "recordKnowledgeArticlesHeading": {
+    "message": "Articles",
+    "description": "Knowledge panel article list heading under Ask"
+  },
+  "recordAiAskSeed": {
+    "message": "What do we know about resolving: {title}?",
+    "description": "Prefill Ask question from case title"
+  },
   "recordTabTasks": {
     "message": "Tasks",
     "description": "Case record tasks tab"
@@ -422,6 +430,86 @@
   "recordSend": {
     "message": "Send",
     "description": "Send reply button"
+  },
+  "recordAiDraft": {
+    "message": "Draft with AI",
+    "description": "Case reply AI draft button"
+  },
+  "recordAiDrafting": {
+    "message": "Drafting…",
+    "description": "Case reply AI draft in progress"
+  },
+  "recordAiDraftFailed": {
+    "message": "Could not draft a reply with AI",
+    "description": "Case reply AI draft error"
+  },
+  "recordAiDraftEmpty": {
+    "message": "AI returned an empty draft",
+    "description": "Case reply AI draft empty result"
+  },
+  "recordAiSummarize": {
+    "message": "Summarize with AI",
+    "description": "Case header AI summarize action"
+  },
+  "recordAiSummarizing": {
+    "message": "Summarizing…",
+    "description": "Case AI summarize in progress"
+  },
+  "recordAiSummarizeFailed": {
+    "message": "Could not summarize this case with AI",
+    "description": "Case AI summarize error"
+  },
+  "recordAiSummaryEmpty": {
+    "message": "AI returned an empty summary",
+    "description": "Case AI summarize empty result"
+  },
+  "recordAiSummaryTitle": {
+    "message": "AI summary",
+    "description": "Case AI summary panel title"
+  },
+  "recordAiSummaryCached": {
+    "message": "Cached · record unchanged",
+    "description": "Case AI summary served from updatedAt cache"
+  },
+  "recordAiPolicySuggest": {
+    "message": "Policy suggestions with AI",
+    "description": "Case policy-aware AI suggest action"
+  },
+  "recordAiResolutionPropose": {
+    "message": "Propose resolution with AI",
+    "description": "Case resolution proposal agent action"
+  },
+  "recordAiPolicyTitle": {
+    "message": "Policy-aware suggestions",
+    "description": "Case policy AI panel title"
+  },
+  "recordAiResolutionTitle": {
+    "message": "Resolution proposals",
+    "description": "Case resolution AI panel title"
+  },
+  "recordAiProposeOnlyHint": {
+    "message": "Proposals only — AI never changes status, sends replies, or decides approvals.",
+    "description": "Case AI propose-only hint"
+  },
+  "recordAiProposeEmpty": {
+    "message": "AI returned no proposals",
+    "description": "Case AI propose empty"
+  },
+  "recordAiProposeFailed": {
+    "message": "Could not generate AI proposals",
+    "description": "Case AI propose error"
+  },
+  "recordAiFeedbackPrompt": {
+    "message": "Helpful?",
+    "description": "AI draft feedback prompt"
+  },
+  "recordAiFeedbackUp": {
+    "message": "Yes",
+    "description": "AI feedback positive"
+  },
+  "recordAiFeedbackDown": {
+    "message": "No",
+    "description": "AI feedback negative"
   },
   "recordReopen": {
     "message": "Reopen case",

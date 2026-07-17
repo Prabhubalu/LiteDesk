@@ -23,6 +23,7 @@ const smsService = require('./smsService');
 const whatsappService = require('./whatsappService');
 const pushService = require('./pushService');
 const ProcessExecution = require('../models/ProcessExecution');
+const { aiClassifyAction, aiExtractAction } = require('./aiProcessActionHandlers');
 
 const log = createLogger('automationActionHandlers');
 
@@ -1300,6 +1301,8 @@ const handlers = {
   live_chat_link_case: liveChatLinkCase,
   live_chat_create_lead: liveChatCreateLead,
   live_chat_link_person: liveChatLinkPerson,
+  ai_classify: aiClassifyAction,
+  ai_extract: aiExtractAction,
 };
 
 /**

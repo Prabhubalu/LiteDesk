@@ -30,6 +30,7 @@ function mapBotRow(row) {
       : [],
     fallbackMessage: row.fallbackMessage || '',
     confidenceMinScore: Number(row.confidenceMinScore) > 0 ? Number(row.confidenceMinScore) : 2,
+    aiAssist: row.aiAssist === true,
     processRecipeKey: row.processRecipeKey || '',
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -85,6 +86,7 @@ async function createBot(organizationId, payload) {
     websiteContentPageIds: Array.isArray(payload.websiteContentPageIds) ? payload.websiteContentPageIds : [],
     fallbackMessage: String(payload.fallbackMessage || '').trim(),
     confidenceMinScore: Number(payload.confidenceMinScore) > 0 ? Number(payload.confidenceMinScore) : 2,
+    aiAssist: payload.aiAssist === true,
     processRecipeKey: String(payload.processRecipeKey || '').trim(),
   });
 
@@ -131,6 +133,7 @@ async function updateBot(organizationId, botId, payload) {
   if (payload.confidenceMinScore != null) {
     row.confidenceMinScore = Number(payload.confidenceMinScore) > 0 ? Number(payload.confidenceMinScore) : 2;
   }
+  if (payload.aiAssist != null) row.aiAssist = payload.aiAssist === true;
   if (payload.processRecipeKey != null) row.processRecipeKey = String(payload.processRecipeKey || '').trim();
 
   if (payload.botKey != null) {

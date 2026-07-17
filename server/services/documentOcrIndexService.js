@@ -70,6 +70,18 @@ async function applyOcrIndexResult({ organizationId, documentId, text, status })
     { $set: update }
   );
   void indexDocumentSemanticEmbedding({ organizationId, documentId }).catch(() => {});
+
+  void (async () => {
+    try {
+      const { isAiSuiteEntitledForOrg } = require('../utils/addonAccessUtils');
+      const entitled = await isAiSuiteEntitledForOrg(organizationId);
+      if (!entitled) return;
+      const { enqueueDocumentEmbed } = require('./ai/aiEmbedQueueService');
+      enqueueDocumentEmbed({ organizationId, documentId });
+    } catch {
+      // Non-blocking — OCR path must not fail because of AI embed enqueue.
+    }
+  })();
 }
 
 async function indexDocumentOcrFromBuffer({

@@ -207,7 +207,13 @@ function sanitizeClassificationPolicy(classification) {
     defaultQueue: raw.defaultQueue ? String(raw.defaultQueue).trim() : null,
     applyMode,
     onSpam,
-    stopOnFirstMatch: raw.stopOnFirstMatch !== false
+    stopOnFirstMatch: raw.stopOnFirstMatch !== false,
+    // Phase 3: AI assist is propose-only; never auto-applies route/case fields
+    aiAssist: raw.aiAssist === true,
+    aiLabels: Array.isArray(raw.aiLabels)
+      ? raw.aiLabels.map((l) => String(l).trim()).filter(Boolean).slice(0, 20)
+      : [],
+    aiFallbackLabel: raw.aiFallbackLabel ? String(raw.aiFallbackLabel).trim() : null
   };
 }
 

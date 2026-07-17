@@ -78,6 +78,14 @@ const EXPORT_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
     process.env.EXPORT_RATE_LIMIT_MAX_REQUESTS,
     5
 );
+const AI_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
+    process.env.AI_RATE_LIMIT_WINDOW_MS,
+    ONE_MINUTE_MS
+);
+const AI_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
+    process.env.AI_RATE_LIMIT_MAX_REQUESTS,
+    60
+);
 const IMPORT_CREATION_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
     process.env.IMPORT_CREATION_RATE_LIMIT_WINDOW_MS,
     ONE_HOUR_MS
@@ -525,6 +533,16 @@ const exportLimiter = createUserScopedRouteLimiter({
     code: 'EXPORT_RATE_LIMIT_EXCEEDED',
 });
 
+/** Per-user limiter for /api/ai ability routes (platform + BYOK). */
+const aiLimiter = createUserScopedRouteLimiter({
+    limiterName: 'ai',
+    windowMs: AI_RATE_LIMIT_WINDOW_MS,
+    max: AI_RATE_LIMIT_MAX_REQUESTS,
+    failureMode: ROUTE_RATE_LIMIT_REDIS_FAILURE_MODE,
+    message: 'Too many AI requests, please try again later.',
+    code: 'AI_RATE_LIMIT_EXCEEDED',
+});
+
 const importCreationLimiter = createUserScopedRouteLimiter({
     limiterName: 'import-creation',
     windowMs: IMPORT_CREATION_RATE_LIMIT_WINDOW_MS,
@@ -788,6 +806,7 @@ module.exports = {
     fileUploadLimiter,
     exportLimiter,
     importCreationLimiter,
+    aiLimiter,
     routeRateLimitMiddleware,
     sessionBootstrapLimiter,
     organizationSettingsLimiter,

@@ -27,6 +27,28 @@
         }
         // If it's light mode, the 'dark' class is *not* added, ensuring light mode styles apply.
       })();
+      // Restore AI dock rail before first paint so App Shell doesn't slide in after Vue mounts.
+      (function() {
+        try {
+          var ui = JSON.parse(localStorage.getItem('litedesk_arivu_support_panel_ui_v1') || 'null');
+          if (!ui || !ui.open) return;
+          var rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+          if (!Number.isFinite(rem) || rem <= 0) rem = 16;
+          var inset = 0.5 * rem;
+          var gap = inset;
+          var w = Number(localStorage.getItem('litedesk_arivu_assistant_panel_width_v1'));
+          if (!Number.isFinite(w) || w < 320) {
+            w = Math.round(window.innerWidth * 0.3);
+          }
+          var total = Math.round(w + gap + inset);
+          document.documentElement.style.setProperty('--arivu-assistant-rail', total + 'px');
+          document.documentElement.style.setProperty('--arivu-work-panel-pad-right', '0px');
+          document.body.style.paddingRight = total + 'px';
+          document.body.classList.add('arivu-assistant-rail-open');
+        } catch (e) {
+          /* ignore */
+        }
+      })();
     </script>
     <!-- Before the app CSS bundle loads, avoid a white viewport flash when <html> already has .dark -->
     <style>

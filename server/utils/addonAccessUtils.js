@@ -1,7 +1,11 @@
 const AddonDefinition = require('../models/AddonDefinition');
 const TenantAddonConfiguration = require('../models/TenantAddonConfiguration');
 const OrganizationSubscription = require('../models/OrganizationSubscription');
-const { normalizeAddonKey, isValidAddonKey } = require('../constants/addonKeys');
+const {
+  normalizeAddonKey,
+  isValidAddonKey,
+  AI_SUITE_ADDON_KEYS,
+} = require('../constants/addonKeys');
 
 async function getAddonDefinition(addonKey) {
   const normalized = normalizeAddonKey(addonKey);
@@ -50,6 +54,17 @@ async function isAddonEntitledForOrg(organizationId, addonKey) {
   return true;
 }
 
+/**
+ * Full AI suite entitlement: canonical `ai` addon OR any legacy ai_* capability addon.
+ */
+async function isAiSuiteEntitledForOrg(organizationId) {
+  for (const key of AI_SUITE_ADDON_KEYS) {
+    // eslint-disable-next-line no-await-in-loop
+    if (await isAddonEntitledForOrg(organizationId, key)) return true;
+  }
+  return false;
+}
+
 async function isAddonInstalledForOrg(organizationId, addonKey) {
   const config = await getTenantAddonConfiguration(organizationId, addonKey);
   return !!config;
@@ -61,5 +76,6 @@ module.exports = {
   getOrgAddonSubscription,
   findAddonSubscriptionEntry,
   isAddonEntitledForOrg,
+  isAiSuiteEntitledForOrg,
   isAddonInstalledForOrg,
 };

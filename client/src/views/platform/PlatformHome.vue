@@ -149,6 +149,8 @@ const greetingTitle = computed(() => {
 });
 
 const focusSubtitle = computed(() => {
+  const aiHeadline = String(snapshot.value.focusAi?.headline || '').trim();
+  if (aiHeadline) return aiHeadline;
   const text = formatPlatformFocus(snapshot.value.focus, t);
   if (text) return text;
   return t('platform.platformHomeFocusQuiet');

@@ -151,6 +151,7 @@ async function getEmbedChatConfig(req, res) {
         consentMessage: String(widget.consentMessage || '').trim(),
         privacyPolicyUrl: String(widget.privacyPolicyUrl || '').trim(),
         termsUrl: String(widget.termsUrl || '').trim(),
+        brandColor: String(widget.brandColor || '').trim() || '#4f46e5',
       },
     });
   } catch (err) {

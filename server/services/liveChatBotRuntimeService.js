@@ -7,6 +7,76 @@ const { assignWaitingSession } = require('./liveChatSessionAssignmentService');
 
 const ESCALATION_PATTERN = /\b(agent|human|representative|live\s*agent|talk\s*to\s*someone|real\s*person)\b/i;
 
+async function tryAiFaqAssist({ organizationId, session, bot, visitorText, deps = {} }) {
+  if (bot.aiAssist !== true) return null;
+
+  const isEntitledFn = deps.isAiSuiteEntitledForOrg
+    || (() => {
+      const { isAiSuiteEntitledForOrg } = require('../utils/addonAccessUtils');
+      return isAiSuiteEntitledForOrg;
+    })();
+
+  try {
+    const entitled = await isEntitledFn(organizationId);
+    if (!entitled) return null;
+
+    const answerLiveChatFaq = deps.answerLiveChatFaq
+      || require('./ai/aiLiveChatBotService').answerLiveChatFaq;
+    const answerLiveChatFaqFromExcerpts = deps.answerLiveChatFaqFromExcerpts
+      || require('./ai/aiLiveChatBotService').answerLiveChatFaqFromExcerpts;
+    const formatBotReplyBody = deps.formatBotReplyBody
+      || require('./ai/aiLiveChatBotService').formatBotReplyBody;
+    const findBest = deps.findBestBotAnswer || findBestBotAnswer;
+
+    const { match } = await findBest({
+      organizationId,
+      bot,
+      queryText: visitorText,
+      pageUrl: session?.pageUrl || '',
+    });
+
+    // Prefer LLM over keyword excerpts (full article text) — works before vector embed backfill.
+    let faq = null;
+    const excerptBody = match?.fullText || match?.body;
+    if (excerptBody) {
+      faq = await answerLiveChatFaqFromExcerpts({
+        organizationId,
+        userId: null,
+        question: visitorText,
+        excerpts: [{
+          title: match.title,
+          body: excerptBody,
+          sourceType: match.sourceType,
+          sourceId: match.sourceId,
+        }],
+      });
+    }
+
+    if (!faq?.contained || !faq?.answer) {
+      faq = await answerLiveChatFaq({
+        organizationId,
+        userId: null,
+        question: visitorText,
+      });
+    }
+
+    if (!faq?.contained || !faq?.answer) {
+      return { contained: false, escalateSuggested: true };
+    }
+
+    return {
+      contained: true,
+      body: formatBotReplyBody(faq.answer),
+      provider: faq.provider,
+      model: faq.model,
+    };
+  } catch (err) {
+    // Soft-fail: never block visitor chat on AI errors
+    console.warn('[liveChatBot] AI FAQ soft-fail:', err?.message || err);
+    return null;
+  }
+}
+
 async function getDefaultEnabledBot(organizationId) {
   if (!organizationId) return null;
 
@@ -123,7 +193,7 @@ async function escalateSessionToAgent({ organizationId, sessionId, reason = 'bot
   };
 }
 
-async function handleBotVisitorMessage({ organizationId, session, message }) {
+async function handleBotVisitorMessage({ organizationId, session, message, deps = {} }) {
   if (!organizationId || !session?._id || !message) {
     return { handled: false, reason: 'invalid_input' };
   }
@@ -156,14 +226,52 @@ async function handleBotVisitorMessage({ organizationId, session, message }) {
     return { handled: true, escalated: true, assigned: result.assigned };
   }
 
-  const { match, score } = await findBestBotAnswer({
+  // Prefer AI FAQ when enabled — keyword match returns raw snippets and must not win first.
+  const aiAssist = await tryAiFaqAssist({
+    organizationId,
+    session,
+    bot,
+    visitorText,
+    deps,
+  });
+  if (aiAssist?.contained && aiAssist.body) {
+    await sendBotOutboundMessage({
+      organizationId,
+      sessionId: session._id,
+      bot,
+      body: aiAssist.body,
+    });
+    await ChatSession.updateOne(
+      { _id: session._id },
+      {
+        $set: {
+          botMissCount: 0,
+          botAiAnswered: true,
+          updatedAt: new Date(),
+        },
+      },
+    );
+    return {
+      handled: true,
+      answered: true,
+      ai: true,
+      sourceType: 'ai_faq',
+      provider: aiAssist.provider,
+      model: aiAssist.model,
+    };
+  }
+
+  // Keyword / website snippet path only when AI Assist is off (or soft-failed / not entitled).
+  // Never dump raw KB text when the bot is configured for AI answers.
+  const findBest = deps.findBestBotAnswer || findBestBotAnswer;
+  const { match, score } = await findBest({
     organizationId,
     bot,
     queryText: visitorText,
     pageUrl: session.pageUrl || '',
   });
 
-  if (match) {
+  if (match && bot.aiAssist !== true) {
     const replyBody = `${match.body}\n\n— ${match.title}`;
     await sendBotOutboundMessage({
       organizationId,
@@ -217,4 +325,5 @@ module.exports = {
   handleBotVisitorMessage,
   escalateSessionToAgent,
   sendBotOutboundMessage,
+  tryAiFaqAssist,
 };

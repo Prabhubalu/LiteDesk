@@ -2054,5 +2054,25 @@
   "listSearchPlaceholder": {
     "message": "Search campaigns…",
     "description": "Campaign list search placeholder for ModuleList"
+  },
+  "campaignsAiSubjectAssist": {
+    "message": "Suggest with AI",
+    "description": "Campaign subject AI assist button"
+  },
+  "campaignsAiBodyAssist": {
+    "message": "Draft body with AI",
+    "description": "Campaign body AI assist button"
+  },
+  "campaignsAiAssistEmpty": {
+    "message": "AI returned no suggestions",
+    "description": "Campaign AI assist empty"
+  },
+  "campaignsAiAssistFailed": {
+    "message": "Could not generate AI suggestions",
+    "description": "Campaign AI assist error"
+  },
+  "campaignsAiSummary": {
+    "message": "Summarize with AI",
+    "description": "Campaign detail AI summary action"
   }
 }

@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import clickOutside from '@/directives/clickOutside';
 import NotificationBell from '@/components/notifications/NotificationBell.vue';
 import PortalSwitcher from '@/components/PortalSwitcher.vue';
+import ArivuAssistantLauncher from '@/components/support/ArivuAssistantLauncher.vue';
 import UserMenu from '@/components/UserMenu.vue';
 import AvatarInitials from '@/components/ui/AvatarInitials.vue';
 import { useUserStatus } from '@/composables/useUserStatus';
@@ -520,6 +521,7 @@ onUnmounted(() => {
           class="!min-h-8 !min-w-8 !p-1 cursor-pointer rounded-md !border-0 !bg-transparent shadow-none hover:!bg-neutral-200 dark:hover:!bg-neutral-700 [&_svg]:!w-5 [&_svg]:!h-5 [&_span.notification-bell-badge]:min-w-4 [&_span.notification-bell-badge]:h-4 [&_span.notification-bell-badge]:text-[9px]"
           @toggle="openNotificationsPanel"
         />
+        <ArivuAssistantLauncher />
         <div
           ref="profileDropdownRef"
           v-click-outside="closeProfileDropdown"

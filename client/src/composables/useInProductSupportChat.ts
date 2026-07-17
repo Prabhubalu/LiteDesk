@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, ref, shallowRef } from 'vue';
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
@@ -33,7 +33,41 @@ export type InAppRecentConversation = {
   updatedAt: number;
 };
 
-export type InAppSupportSection = 'home' | 'chat';
+export type InAppSupportSection = 'home' | 'chat' | 'ai' | 'ai-history';
+
+const PANEL_UI_STORAGE_KEY = 'litedesk_arivu_support_panel_ui_v1';
+
+type PanelUiState = {
+  open: boolean;
+  section: InAppSupportSection;
+};
+
+function isSupportSection(value: unknown): value is InAppSupportSection {
+  return value === 'home' || value === 'chat' || value === 'ai' || value === 'ai-history';
+}
+
+function loadPanelUiState(): PanelUiState | null {
+  try {
+    const raw = localStorage.getItem(PANEL_UI_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PanelUiState>;
+    if (typeof parsed?.open !== 'boolean') return null;
+    return {
+      open: parsed.open,
+      section: isSupportSection(parsed.section) ? parsed.section : 'home',
+    };
+  } catch {
+    return null;
+  }
+}
+
+function savePanelUiState(state: PanelUiState) {
+  try {
+    localStorage.setItem(PANEL_UI_STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    /* ignore */
+  }
+}
 
 function buildVisitorFromAuth(authStore: ReturnType<typeof useAuthStore>) {
   const user = authStore.user;
@@ -139,10 +173,25 @@ export function useInProductSupportChat() {
   const bootstrapLoading = ref(false);
   const bootstrapError = ref('');
 
-  const panelOpen = ref(false);
-  const activeSection = ref<InAppSupportSection>('home');
+  const storedPanelUi = loadPanelUiState();
+  const panelOpen = ref(Boolean(storedPanelUi?.open));
+  const activeSection = ref<InAppSupportSection>(
+    storedPanelUi?.open && isSupportSection(storedPanelUi.section)
+      ? storedPanelUi.section
+      : 'home',
+  );
   const expanded = ref(false);
   const recentConversations = ref<InAppRecentConversation[]>([]);
+
+  watch(
+    [panelOpen, activeSection],
+    ([open, section]) => {
+      savePanelUiState({
+        open: Boolean(open),
+        section: isSupportSection(section) ? section : 'home',
+      });
+    },
+  );
 
   const messages = ref<InAppChatMessage[]>([]);
   const draft = ref('');
@@ -394,6 +443,30 @@ export function useInProductSupportChat() {
     refreshRecents();
   }
 
+  function openAiAsk(options?: { draft?: string }) {
+    stopStream();
+    panelOpen.value = true;
+    activeSection.value = 'ai';
+    if (options?.draft) {
+      draft.value = options.draft;
+    }
+  }
+
+  function openAiThread(options?: { draft?: string }) {
+    stopStream();
+    panelOpen.value = true;
+    activeSection.value = 'ai';
+    if (options?.draft) {
+      draft.value = options.draft;
+    }
+  }
+
+  function openAiHistory() {
+    stopStream();
+    panelOpen.value = true;
+    activeSection.value = 'ai-history';
+  }
+
   function closePanel() {
     panelOpen.value = false;
     stopStream();
@@ -496,6 +569,9 @@ export function useInProductSupportChat() {
     loadBootstrap,
     openPanel,
     openChat,
+    openAiAsk,
+    openAiThread,
+    openAiHistory,
     goHome,
     closePanel,
     toggleExpanded,

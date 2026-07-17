@@ -152,6 +152,60 @@
                       <span>{{ t('records.genericSendEmail') }}</span>
                     </button>
                   </MenuItem>
+                  <MenuItem v-if="supportsAiSummary" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :disabled="aiSummaryPanelRef?.summarizing"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-indigo-700 dark:text-indigo-300',
+                        'disabled:opacity-50'
+                      ]"
+                      @click="runRecordAiSummary"
+                    >
+                      {{ t('records.aiSummarize') }}
+                    </button>
+                  </MenuItem>
+                  <MenuItem v-if="supportsAiSummary" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :disabled="aiResearchPanelRef?.loading"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-sky-800 dark:text-sky-200',
+                        'disabled:opacity-50'
+                      ]"
+                      @click="runRecordAiResearch"
+                    >
+                      {{ t('records.aiResearch') }}
+                    </button>
+                  </MenuItem>
+                  <MenuItem v-if="supportsAiSummary" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :disabled="aiDuplicatesPanelRef?.loading"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-rose-800 dark:text-rose-200',
+                        'disabled:opacity-50'
+                      ]"
+                      @click="runRecordAiDuplicates"
+                    >
+                      {{ t('records.aiDuplicates') }}
+                    </button>
+                  </MenuItem>
+                  <MenuItem v-if="supportsAiSummary" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-emerald-800 dark:text-emerald-200'
+                      ]"
+                      @click="openRecordAiExtract"
+                    >
+                      {{ t('records.aiExtract') }}
+                    </button>
+                  </MenuItem>
                   <MenuItem v-if="canArchiveFormRecord" v-slot="{ active }">
                     <button
                       type="button"
@@ -187,6 +241,32 @@
       </template>
 
       <template v-if="record" #left>
+        <AiRecordSummaryPanel
+          v-if="supportsAiSummary && record?._id"
+          ref="aiSummaryPanelRef"
+          source-type="people"
+          :record-id="String(record._id)"
+        />
+        <AiRecordResearchPanel
+          v-if="supportsAiSummary && record?._id"
+          ref="aiResearchPanelRef"
+          app-key="SALES"
+          module-key="people"
+          :record-id="String(record._id)"
+        />
+        <AiDuplicatesSuggestPanel
+          v-if="supportsAiSummary && record?._id"
+          ref="aiDuplicatesPanelRef"
+          entity="people"
+          :record-id="String(record._id)"
+        />
+        <AiFieldExtractPanel
+          v-if="supportsAiSummary && record?._id"
+          ref="aiExtractPanelRef"
+          module-key="people"
+          :record-id="String(record._id)"
+          :apply-patches="applyAiExtractPatches"
+        />
         <div
           :class="
             expandedLeftSection === 'lines' || isTemplatesModule
@@ -673,6 +753,60 @@
                     >
                       <EnvelopeIcon class="w-4 h-4" />
                       <span>{{ t('records.genericSendEmail') }}</span>
+                    </button>
+                  </MenuItem>
+                  <MenuItem v-if="supportsAiSummary" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :disabled="aiSummaryPanelRef?.summarizing"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-indigo-700 dark:text-indigo-300',
+                        'disabled:opacity-50'
+                      ]"
+                      @click="runRecordAiSummary"
+                    >
+                      {{ t('records.aiSummarize') }}
+                    </button>
+                  </MenuItem>
+                  <MenuItem v-if="supportsAiSummary" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :disabled="aiResearchPanelRef?.loading"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-sky-800 dark:text-sky-200',
+                        'disabled:opacity-50'
+                      ]"
+                      @click="runRecordAiResearch"
+                    >
+                      {{ t('records.aiResearch') }}
+                    </button>
+                  </MenuItem>
+                  <MenuItem v-if="supportsAiSummary" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :disabled="aiDuplicatesPanelRef?.loading"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-rose-800 dark:text-rose-200',
+                        'disabled:opacity-50'
+                      ]"
+                      @click="runRecordAiDuplicates"
+                    >
+                      {{ t('records.aiDuplicates') }}
+                    </button>
+                  </MenuItem>
+                  <MenuItem v-if="supportsAiSummary" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-emerald-800 dark:text-emerald-200'
+                      ]"
+                      @click="openRecordAiExtract"
+                    >
+                      {{ t('records.aiExtract') }}
                     </button>
                   </MenuItem>
                   <MenuItem v-if="canArchiveFormRecord" v-slot="{ active }">
@@ -1172,6 +1306,10 @@ import {
   isDescriptionActivityFieldChange
 } from '@/utils/contentVersionHistory';
 import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
+import AiRecordSummaryPanel from '@/components/record-page/AiRecordSummaryPanel.vue';
+import AiRecordResearchPanel from '@/components/ai/AiRecordResearchPanel.vue';
+import AiDuplicatesSuggestPanel from '@/components/ai/AiDuplicatesSuggestPanel.vue';
+import AiFieldExtractPanel from '@/components/ai/AiFieldExtractPanel.vue';
 import { useRecordPresence } from '@/composables/useRecordPresence';
 import { isRecordPresenceSupported } from '@/utils/recordPresence';
 import { resolveFieldContext } from '@/utils/fieldContextFilter';
@@ -1227,6 +1365,10 @@ const recordLayoutIsMobile = inject('recordLayoutIsMobile', ref(false));
 const quickPreviewNav = inject('quickPreviewNav', null);
 
 const record = ref(null);
+const aiSummaryPanelRef = ref(null);
+const aiResearchPanelRef = ref(null);
+const aiDuplicatesPanelRef = ref(null);
+const aiExtractPanelRef = ref(null);
 const loading = ref(true);
 const error = ref(null);
 const moduleDefinition = ref(null);
@@ -1269,6 +1411,12 @@ function openEmailComposeModal(draft = null) {
     emailComposeDraft.value = draft && typeof draft === 'object' ? draft : null;
     showEmailModal.value = true;
   });
+}
+
+function onOpenEmailComposeEvent(event) {
+  if (!supportsEmail.value) return;
+  const detail = event?.detail && typeof event.detail === 'object' ? event.detail : null;
+  openEmailComposeModal(detail);
 }
 const showLinkRecordDrawer = ref(false);
 const activeThreadRootCommentId = ref(null);
@@ -1532,6 +1680,34 @@ async function updateRecordFields(payload) {
   return apiClient.put(path, payload);
 }
 const isPeopleModule = computed(() => moduleKeyLower.value === 'people');
+const supportsAiSummary = computed(() => isPeopleModule.value);
+
+function runRecordAiSummary() {
+  aiSummaryPanelRef.value?.summarize?.();
+}
+
+function runRecordAiResearch() {
+  aiResearchPanelRef.value?.runResearch?.();
+}
+
+function runRecordAiDuplicates() {
+  aiDuplicatesPanelRef.value?.runSuggest?.();
+}
+
+function openRecordAiExtract() {
+  aiExtractPanelRef.value?.openPanel?.();
+}
+
+async function applyAiExtractPatches(patches) {
+  const payload = {};
+  for (const p of patches || []) {
+    if (p?.fieldKey) payload[p.fieldKey] = p.value;
+  }
+  if (!Object.keys(payload).length) return;
+  await updateRecordFields(payload);
+  await fetchRecord({ preserveScroll: true, soft: true });
+}
+
 const peopleLiveChatSessionPath = computed(() => {
   if (!isPeopleModule.value || !record.value?._id) return '';
   return `${recordCrudPathBase.value}/${String(record.value._id)}/live-chat-session`;
@@ -4937,6 +5113,7 @@ onMounted(() => {
   syncEmojiPickerTheme();
   if (typeof window !== 'undefined') {
     window.addEventListener('arivu:data-change', onArivuDataChange);
+    window.addEventListener('arivu:open-email-compose', onOpenEmailComposeEvent);
   }
   if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
     emojiThemeObserver = new MutationObserver(() => syncEmojiPickerTheme());
@@ -4984,6 +5161,7 @@ onBeforeUnmount(() => {
   }
   if (typeof window !== 'undefined') {
     window.removeEventListener('arivu:data-change', onArivuDataChange);
+    window.removeEventListener('arivu:open-email-compose', onOpenEmailComposeEvent);
   }
   if (emojiThemeObserver) {
     emojiThemeObserver.disconnect();

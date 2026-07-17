@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
   // Prefer explicit origin. Fall back to legacy VITE_API_URL and normalize trailing /api.
   // Default API port should match current server default.
   // Override with VITE_API_ORIGIN or VITE_API_URL.
-  const apiOriginRaw = env.VITE_API_ORIGIN || env.VITE_API_URL || 'http://localhost:3000'
+  const apiOriginRaw = env.VITE_API_ORIGIN || env.VITE_API_URL || 'http://localhost:5000'
   const apiProxyTarget = apiOriginRaw.replace(/\/api\/?$/, '')
 
   return {

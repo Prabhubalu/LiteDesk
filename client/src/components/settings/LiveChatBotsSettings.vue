@@ -32,6 +32,77 @@
       <p class="text-sm text-amber-900 dark:text-amber-200">{{ t('settings.addonsLiveChatBotsHint') }}</p>
     </div>
 
+    <div
+      v-if="deflection"
+      class="mb-4 max-w-3xl rounded-xl border border-violet-200 bg-violet-50/60 p-4 dark:border-violet-900/40 dark:bg-violet-950/20"
+    >
+      <h3 class="text-sm font-semibold text-violet-900 dark:text-violet-100">
+        {{ t('settings.addonsLiveChatBotDeflectionTitle') }}
+      </h3>
+      <p class="mt-1 text-xs text-violet-800/80 dark:text-violet-200/80">
+        {{ t('settings.addonsLiveChatBotDeflectionHint', { days: deflection.windowDays }) }}
+      </p>
+      <dl class="mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+        <div>
+          <dt class="text-xs text-violet-700/70 dark:text-violet-300/70">{{ t('settings.addonsLiveChatBotDeflectionSessions') }}</dt>
+          <dd class="font-semibold text-violet-950 dark:text-violet-50">{{ deflection.botSessions }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-violet-700/70 dark:text-violet-300/70">{{ t('settings.addonsLiveChatBotDeflectionContained') }}</dt>
+          <dd class="font-semibold text-violet-950 dark:text-violet-50">{{ deflection.contained }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-violet-700/70 dark:text-violet-300/70">{{ t('settings.addonsLiveChatBotDeflectionEscalated') }}</dt>
+          <dd class="font-semibold text-violet-950 dark:text-violet-50">{{ deflection.escalated }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-violet-700/70 dark:text-violet-300/70">{{ t('settings.addonsLiveChatBotDeflectionRate') }}</dt>
+          <dd class="font-semibold text-violet-950 dark:text-violet-50">
+            {{ deflection.deflectionRate == null ? '—' : `${Math.round(deflection.deflectionRate * 100)}%` }}
+          </dd>
+        </div>
+      </dl>
+      <p v-if="deflection.aiAnswered" class="mt-2 text-[11px] text-violet-800/80 dark:text-violet-200/80">
+        {{ t('settings.addonsLiveChatBotDeflectionAiAnswered', { count: deflection.aiAnswered }) }}
+      </p>
+    </div>
+
+    <div class="mb-4 max-w-3xl rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+        {{ t('settings.addonsLiveChatBotFaqPreviewTitle') }}
+      </h3>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        {{ t('settings.addonsLiveChatBotFaqPreviewHint') }}
+      </p>
+      <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+        <input
+          v-model="faqPreviewQuestion"
+          type="search"
+          class="w-full flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+          :placeholder="t('settings.addonsLiveChatBotFaqPreviewPlaceholder')"
+          @keyup.enter="runFaqPreview"
+        />
+        <button
+          type="button"
+          class="shrink-0 rounded-lg bg-violet-600 px-3 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-50"
+          :disabled="faqPreviewLoading || !faqPreviewQuestion.trim()"
+          @click="runFaqPreview"
+        >
+          {{ faqPreviewLoading ? t('states.loading') : t('settings.addonsLiveChatBotFaqPreviewSubmit') }}
+        </button>
+      </div>
+      <p v-if="faqPreviewError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ faqPreviewError }}</p>
+      <div v-else-if="faqPreviewAnswer" class="mt-3 space-y-1">
+        <pre class="whitespace-pre-wrap font-sans text-sm text-gray-900 dark:text-gray-100">{{ faqPreviewAnswer }}</pre>
+        <p
+          class="text-[11px]"
+          :class="faqPreviewEscalate ? 'text-amber-700 dark:text-amber-300' : 'text-emerald-700 dark:text-emerald-300'"
+        >
+          {{ faqPreviewEscalate ? t('settings.addonsLiveChatBotFaqPreviewEscalate') : t('settings.addonsLiveChatBotFaqPreviewContained') }}
+        </p>
+      </div>
+    </div>
+
     <div class="mb-4 max-w-3xl">
       <button
         type="button"
@@ -85,6 +156,12 @@
               </span>
               <span v-if="bot.useKnowledgeBase !== false">{{ t('settings.addonsLiveChatBotSourceKb') }}</span>
               <span v-if="bot.useWebsiteContent !== false">{{ t('settings.addonsLiveChatBotSourceWebsite') }}</span>
+              <span
+                v-if="bot.aiAssist"
+                class="rounded bg-violet-100 px-1.5 py-0.5 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300"
+              >
+                {{ t('settings.addonsLiveChatBotAiAssistBadge') }}
+              </span>
             </div>
           </div>
           <div class="flex gap-2">
@@ -170,6 +247,11 @@
             <input v-model="form.useWebsiteContent" type="checkbox" class="rounded border-gray-300" />
             {{ t('settings.addonsLiveChatBotSourceWebsite') }}
           </label>
+          <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <input v-model="form.aiAssist" type="checkbox" class="rounded border-gray-300" />
+            {{ t('settings.addonsLiveChatBotAiAssist') }}
+          </label>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ t('settings.addonsLiveChatBotAiAssistHint') }}</p>
         </fieldset>
         <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">
           {{ t('settings.addonsLiveChatBotFallback') }}
@@ -229,6 +311,12 @@ const bots = ref([]);
 const editorOpen = ref(false);
 const editingId = ref('');
 const form = ref(emptyForm());
+const deflection = ref(null);
+const faqPreviewQuestion = ref('');
+const faqPreviewLoading = ref(false);
+const faqPreviewError = ref('');
+const faqPreviewAnswer = ref('');
+const faqPreviewEscalate = ref(false);
 
 function emptyForm() {
   return {
@@ -240,6 +328,7 @@ function emptyForm() {
     isDefault: false,
     useKnowledgeBase: true,
     useWebsiteContent: true,
+    aiAssist: false,
     fallbackMessage: '',
     confidenceMinScore: 2,
   };
@@ -249,13 +338,38 @@ async function loadBots() {
   loading.value = true;
   error.value = '';
   try {
-    const res = await apiClient.get('/live-chat/bots');
+    const [res, metrics] = await Promise.all([
+      apiClient.get('/live-chat/bots'),
+      apiClient.get('/live-chat/bots/deflection-metrics').catch(() => null),
+    ]);
     bots.value = Array.isArray(res?.data) ? res.data : [];
+    deflection.value = metrics?.data || null;
   } catch (err) {
     error.value = err?.message || t('settings.addonsLiveChatBotsLoadFailed');
     bots.value = [];
   } finally {
     loading.value = false;
+  }
+}
+
+async function runFaqPreview() {
+  const question = faqPreviewQuestion.value.trim();
+  if (!question || faqPreviewLoading.value) return;
+  faqPreviewLoading.value = true;
+  faqPreviewError.value = '';
+  faqPreviewAnswer.value = '';
+  faqPreviewEscalate.value = false;
+  try {
+    const data = await apiClient.post('/ai/live-chat/faq-preview', { question });
+    faqPreviewAnswer.value = String(data?.answer || '').trim();
+    faqPreviewEscalate.value = Boolean(data?.escalateSuggested);
+    if (!faqPreviewAnswer.value) {
+      faqPreviewError.value = t('settings.addonsLiveChatBotFaqPreviewEmpty');
+    }
+  } catch (err) {
+    faqPreviewError.value = err?.message || t('settings.addonsLiveChatBotFaqPreviewFailed');
+  } finally {
+    faqPreviewLoading.value = false;
   }
 }
 
@@ -276,6 +390,7 @@ function openEdit(bot) {
     isDefault: bot.isDefault === true,
     useKnowledgeBase: bot.useKnowledgeBase !== false,
     useWebsiteContent: bot.useWebsiteContent !== false,
+    aiAssist: bot.aiAssist === true,
     fallbackMessage: bot.fallbackMessage || '',
     confidenceMinScore: Number(bot.confidenceMinScore) || 4,
   };

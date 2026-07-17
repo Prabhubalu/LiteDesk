@@ -101,6 +101,13 @@ const SETTINGS_PALETTE_TABS: SettingsPaletteTab[] = [
     route: '/settings?tab=integrations',
     order: 120,
   },
+  {
+    id: 'ai',
+    labelKey: 'settings.tabAi',
+    descriptionKey: 'settings.tabAiDesc',
+    route: '/settings?tab=ai',
+    order: 125,
+  },
 ];
 
 /**
