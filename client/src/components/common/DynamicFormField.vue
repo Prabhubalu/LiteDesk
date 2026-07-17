@@ -1399,8 +1399,17 @@ const effectiveCurrencyCode = computed(() => {
 });
 
 const mergedPicklistSourceOptions = computed(() => {
+  const fieldKeyNorm = String(props.field?.key || '').toLowerCase();
+  const isCurrencyCodeField =
+    fieldKeyNorm === 'currency' || fieldKeyNorm === 'paymentcurrency';
   const base = Array.isArray(props.field.options) ? props.field.options : [];
-  const extras = Array.isArray(additionalPicklistOptions.value) ? additionalPicklistOptions.value : [];
+  const currencyExtras = isCurrencyCodeField
+    ? CURRENCY_OPTIONS.map((c) => ({ value: c.code, label: c.code }))
+    : [];
+  const extras = [
+    ...currencyExtras,
+    ...(Array.isArray(additionalPicklistOptions.value) ? additionalPicklistOptions.value : []),
+  ];
   if (!extras.length) return base;
   const seen = new Set(base.map((opt) => String(getPicklistOptionValue(opt) || '').toLowerCase()));
   const merged = [...base];
@@ -1410,7 +1419,7 @@ const mergedPicklistSourceOptions = computed(() => {
     seen.add(value);
     merged.push(opt);
   }
-  return merged;
+  return merged.length ? merged : extras;
 });
 
 const canCreatePicklistOption = computed(() => {
@@ -2854,8 +2863,24 @@ onMounted(async () => {
     }
   }
   
-  // Set default value if provided
-  if (props.field.defaultValue !== null && props.field.defaultValue !== undefined && !props.value) {
+  // Set default value if provided (skip numeric 0 — leave empty for placeholder)
+  const isNumericType = ['Currency', 'Integer', 'Decimal'].includes(props.field.dataType);
+  const skipZeroNumericDefault =
+    isNumericType && (props.field.defaultValue === 0 || props.field.defaultValue === '0');
+  const isUnset =
+    props.value === null || props.value === undefined || props.value === '';
+  const fieldKeyNorm = String(props.field?.key || '').toLowerCase();
+  const isCurrencyCodeField =
+    fieldKeyNorm === 'currency' || fieldKeyNorm === 'paymentcurrency';
+  if (isUnset && isCurrencyCodeField) {
+    // Prefer tenant org currency over schema/mongoose defaults (e.g. 'USD')
+    emit('update:value', resolveOrgCurrencyCode(authStore.organization));
+  } else if (
+    props.field.defaultValue !== null &&
+    props.field.defaultValue !== undefined &&
+    !skipZeroNumericDefault &&
+    isUnset
+  ) {
     emit('update:value', props.field.defaultValue);
   }
   

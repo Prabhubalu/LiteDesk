@@ -204,6 +204,12 @@ const UserSchema = new mongoose.Schema({
             reply: { type: Boolean, default: false },
             admin: { type: Boolean, default: false }
         },
+        announcements: {
+            view: { type: Boolean, default: false },
+            manage: { type: Boolean, default: false },
+            publish: { type: Boolean, default: false },
+            analytics: { type: Boolean, default: false }
+        },
         reports: {
             viewStandard: { type: Boolean, default: true },
             viewCustom: { type: Boolean, default: false },
@@ -451,6 +457,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             documents: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             settings: { manageUsers: true, manageBilling: true, manageIntegrations: true, customizeFields: true },
             liveChat: { view: true, reply: true, admin: true },
+            announcements: { view: true, manage: true, publish: true, analytics: true },
             reports: { viewStandard: true, viewCustom: true, createCustom: true, exportReports: true }
         },
         admin: {
@@ -468,6 +475,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             documents: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             settings: { manageUsers: true, manageBilling: true, manageIntegrations: true, customizeFields: true },
             liveChat: { view: true, reply: true, admin: true },
+            announcements: { view: true, manage: true, publish: true, analytics: true },
             reports: { viewStandard: true, viewCustom: true, createCustom: true, exportReports: true }
         },
         manager: {
@@ -485,6 +493,7 @@ UserSchema.methods.setPermissionsByRole = function(role) {
             documents: { view: true, create: true, edit: true, delete: true, viewAll: true, exportData: true },
             settings: { manageUsers: false, manageBilling: false, manageIntegrations: false, customizeFields: false },
             liveChat: { view: true, reply: true, admin: false },
+            announcements: { view: true, manage: false, publish: false, analytics: false },
             reports: { viewStandard: true, viewCustom: true, createCustom: false, exportReports: false }
         },
         user: {

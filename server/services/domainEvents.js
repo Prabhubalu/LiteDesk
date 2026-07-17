@@ -98,7 +98,8 @@ function emit(event) {
         organization: 'organizations',
         deal: 'deals',
         quote: 'quotes',
-        live_chat_session: 'live_chat_sessions'
+        live_chat_session: 'live_chat_sessions',
+        announcement: 'announcements'
       };
       const et = String(payload.entityType || '').toLowerCase();
       publishDataChange({

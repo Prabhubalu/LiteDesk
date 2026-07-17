@@ -169,6 +169,7 @@ const ADDON_DEFAULT_SETTINGS = {
       publishWebhookUrl: '',
     },
   },
+  [ADDON_KEYS.ANNOUNCEMENTS]: require('./announcementConstants').ANNOUNCEMENT_DEFAULT_SETTINGS,
 };
 
 module.exports = {

@@ -451,6 +451,30 @@ const routes = [
     redirect: '/live-chat/sessions'
   },
   {
+    path: '/announcements',
+    name: 'announcements',
+    component: () => import('@/views/announcements/AnnouncementsListView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/announcements/analytics',
+    name: 'announcements-analytics',
+    component: () => import('@/views/announcements/AnnouncementAnalyticsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/announcements/new',
+    name: 'announcements-new',
+    component: () => import('@/views/announcements/AnnouncementEditorView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/announcements/:id',
+    name: 'announcements-edit',
+    component: () => import('@/views/announcements/AnnouncementEditorView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/trash',
     name: 'trash',
     component: () => import('@/views/Trash.vue'),
@@ -668,6 +692,35 @@ const routes = [
     path: '/control/release-notes/:id',
     name: 'control-release-note-edit',
     component: () => import('@/views/admin/PlatformReleaseNoteEditor.vue'),
+    props: (route) => ({ id: route.params.id }),
+    meta: {
+      requiresAuth: true,
+      requiresPlatformAdmin: true
+    }
+  },
+  {
+    path: '/control/announcements',
+    name: 'control-announcements',
+    component: () => import('@/views/admin/PlatformAnnouncementsList.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPlatformAdmin: true
+    }
+  },
+  {
+    path: '/control/announcements/new',
+    name: 'control-announcement-new',
+    component: () => import('@/views/admin/PlatformAnnouncementEditor.vue'),
+    props: { id: 'new' },
+    meta: {
+      requiresAuth: true,
+      requiresPlatformAdmin: true
+    }
+  },
+  {
+    path: '/control/announcements/:id',
+    name: 'control-announcement-edit',
+    component: () => import('@/views/admin/PlatformAnnouncementEditor.vue'),
     props: (route) => ({ id: route.params.id }),
     meta: {
       requiresAuth: true,

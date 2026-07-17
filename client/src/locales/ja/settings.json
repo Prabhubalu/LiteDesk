@@ -15414,5 +15414,9 @@
   "modFieldsNoOrgTypesDefined": {
     "message": "No organization types defined yet. Add them in Field Configurations first, then return here to enable or disable them.",
     "description": "Empty organization types catalog on Status & Types tab"
+  },
+  "addonsAnnouncementsOpen": {
+    "message": "Open Announcements",
+    "description": "Open Announcements & Alerts admin app from Addons hub"
   }
 }

@@ -7,6 +7,7 @@ const ADDON_KEYS = {
   EMAIL_CREDITS: 'email_credits',
   ARTICLES: 'articles',
   BLOG: 'blog',
+  ANNOUNCEMENTS: 'announcements',
 };
 
 const VALID_ADDON_KEYS = Object.values(ADDON_KEYS);

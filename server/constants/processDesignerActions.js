@@ -648,7 +648,87 @@ const PROCESS_ACTION_GROUPS = [
         ]
       }
     ]
-  }
+  },
+  {
+    groupKey: 'announcements',
+    label: 'Announcements',
+    actions: [
+      {
+        actionType: 'announcements_publish',
+        label: 'Publish announcement',
+        description: 'Creates and publishes a banner or popover for the tenant audience.',
+        params: [
+          { key: 'title', label: 'Title', type: 'text', required: true },
+          { key: 'shortDescription', label: 'Short description', type: 'textarea', required: false },
+          {
+            key: 'displayType',
+            label: 'Display type',
+            type: 'select',
+            required: true,
+            options: [
+              { value: 'banner', label: 'Banner' },
+              { value: 'popover', label: 'Popover' },
+            ],
+          },
+          {
+            key: 'priority',
+            label: 'Priority',
+            type: 'select',
+            required: false,
+            options: [
+              { value: 'critical', label: 'Critical' },
+              { value: 'high', label: 'High' },
+              { value: 'medium', label: 'Medium' },
+              { value: 'low', label: 'Low' },
+              { value: 'information', label: 'Information' },
+            ],
+          },
+          {
+            key: 'ctaLabel',
+            label: 'CTA label',
+            type: 'text',
+            required: false,
+            placeholder: 'Optional',
+          },
+          {
+            key: 'ctaTarget',
+            label: 'CTA route or URL',
+            type: 'text',
+            required: false,
+            placeholder: '/dashboard',
+          },
+        ],
+      },
+      {
+        actionType: 'announcements_pause',
+        label: 'Pause announcement',
+        description: 'Pauses a published announcement by ID (params.announcementId or trigger entity).',
+        params: [
+          {
+            key: 'announcementId',
+            label: 'Announcement ID',
+            type: 'text',
+            required: false,
+            placeholder: 'Defaults to trigger entity id',
+          },
+        ],
+      },
+      {
+        actionType: 'announcements_archive',
+        label: 'Archive announcement',
+        description: 'Archives an announcement by ID (params.announcementId or trigger entity).',
+        params: [
+          {
+            key: 'announcementId',
+            label: 'Announcement ID',
+            type: 'text',
+            required: false,
+            placeholder: 'Defaults to trigger entity id',
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 function cloneParams(params) {

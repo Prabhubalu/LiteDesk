@@ -244,6 +244,14 @@ const roleSchema = new mongoose.Schema({
             view: { type: Boolean, default: false },
             reply: { type: Boolean, default: false },
             admin: { type: Boolean, default: false }
+        },
+
+        // Announcements & Alerts addon
+        announcements: {
+            view: { type: Boolean, default: false },
+            manage: { type: Boolean, default: false },
+            publish: { type: Boolean, default: false },
+            analytics: { type: Boolean, default: false }
         }
     },
     
@@ -459,7 +467,8 @@ function buildFullPrivilegedRolePermissions() {
                 manageOrgSettings: true
             }
         },
-        liveChat: { view: true, reply: true, admin: true }
+        liveChat: { view: true, reply: true, admin: true },
+        announcements: { view: true, manage: true, publish: true, analytics: true }
     };
 }
 

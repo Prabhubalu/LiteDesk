@@ -86,6 +86,25 @@ const BLOG_ADDON = {
   },
 };
 
+const ANNOUNCEMENTS_ADDON = {
+  addonKey: ADDON_KEYS.ANNOUNCEMENTS,
+  name: 'Announcements & Alerts',
+  description: 'Broadcast banners and popovers to users across apps and portals.',
+  icon: 'megaphone',
+  category: 'COMMUNICATION',
+  enabled: true,
+  order: 25,
+  requiredApps: [],
+  optionalApps: ['PORTAL'],
+  marketplace: {
+    category: 'Communication',
+    comingSoon: false,
+    beta: true,
+    shortDescription: 'Publish banners and popovers to your people — calmly and on time.',
+    docsUrl: '',
+  },
+};
+
 async function upsertAddonDefinition(doc) {
   const existing = await AddonDefinition.findOne({ addonKey: doc.addonKey });
   if (existing) {
@@ -147,10 +166,12 @@ async function ensureAddonCatalogSeeded(options = {}) {
   const defResultEmailCredits = await upsertAddonDefinition(EMAIL_CREDITS_ADDON);
   const defResultArticles = await upsertAddonDefinition(ARTICLES_ADDON);
   const defResultBlog = await upsertAddonDefinition(BLOG_ADDON);
+  const defResultAnnouncements = await upsertAddonDefinition(ANNOUNCEMENTS_ADDON);
   const pricingResultLiveChat = await upsertAddonPricing(ADDON_KEYS.LIVE_CHAT);
   const pricingResultEmailCredits = await upsertAddonPricing(ADDON_KEYS.EMAIL_CREDITS);
   const pricingResultArticles = await upsertAddonPricing(ADDON_KEYS.ARTICLES);
   const pricingResultBlog = await upsertAddonPricing(ADDON_KEYS.BLOG);
+  const pricingResultAnnouncements = await upsertAddonPricing(ADDON_KEYS.ANNOUNCEMENTS);
 
   if (!useExistingConnection) {
     await mongoose.disconnect();
@@ -161,10 +182,12 @@ async function ensureAddonCatalogSeeded(options = {}) {
     defResultEmailCredits,
     defResultArticles,
     defResultBlog,
+    defResultAnnouncements,
     pricingResultLiveChat,
     pricingResultEmailCredits,
     pricingResultArticles,
     pricingResultBlog,
+    pricingResultAnnouncements,
   };
 }
 
@@ -174,10 +197,12 @@ async function main() {
   console.log(`AddonDefinition email_credits: ${result.defResultEmailCredits}`);
   console.log(`AddonDefinition articles: ${result.defResultArticles}`);
   console.log(`AddonDefinition blog: ${result.defResultBlog}`);
+  console.log(`AddonDefinition announcements: ${result.defResultAnnouncements}`);
   console.log(`AddonPricingDefinition live_chat: ${result.pricingResultLiveChat}`);
   console.log(`AddonPricingDefinition email_credits: ${result.pricingResultEmailCredits}`);
   console.log(`AddonPricingDefinition articles: ${result.pricingResultArticles}`);
   console.log(`AddonPricingDefinition blog: ${result.pricingResultBlog}`);
+  console.log(`AddonPricingDefinition announcements: ${result.pricingResultAnnouncements}`);
   console.log('Done.');
 }
 
@@ -187,6 +212,7 @@ module.exports = {
   EMAIL_CREDITS_ADDON,
   ARTICLES_ADDON,
   BLOG_ADDON,
+  ANNOUNCEMENTS_ADDON,
 };
 
 if (require.main === module) {

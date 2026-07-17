@@ -616,18 +616,26 @@ watch(
     <RouterView />
   </div>
 
-  <!-- Authenticated layout -->
-  <div v-else-if="isAuthenticated">
-    <EmailVerificationBanner v-if="hideShell" />
-    <!-- Shell-less pages (e.g., Settings) -->
-    <div v-if="hideShell" class="min-h-screen bg-gray-100/70 dark:bg-gray-900">
-      <div class="flex-1 overflow-y-hidden overflow-x-hidden">
+  <!-- Authenticated layout: announcement banner above app shell -->
+  <div
+    v-else-if="isAuthenticated"
+    class="flex min-h-dvh flex-col"
+  >
+    <div
+      id="platform-announcement-banner-host"
+      class="shrink-0"
+    />
+
+    <div class="flex min-h-0 min-w-0 flex-1 flex-col">
+      <EmailVerificationBanner v-if="hideShell" />
+      <!-- Shell-less pages (e.g., Settings) -->
+      <div v-if="hideShell" class="min-h-0 flex-1 overflow-y-hidden overflow-x-hidden bg-gray-100/70 dark:bg-gray-900">
         <RouterView />
       </div>
-    </div>
 
-    <!-- Phase 1A: Platform Shell with dynamic UI composition -->
-    <PlatformShell v-else-if="shellTabsReady" />
+      <!-- Phase 1A: Platform Shell with dynamic UI composition -->
+      <PlatformShell v-else-if="shellTabsReady" />
+    </div>
   </div>
 
   <!-- Landing Page (no sidebar) -->

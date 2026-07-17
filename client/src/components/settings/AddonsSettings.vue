@@ -116,6 +116,14 @@
                 {{ t('settings.addonsConfigure') }}
               </button>
               <button
+                v-if="addon.addonKey === 'announcements'"
+                type="button"
+                class="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
+                @click="openAnnouncementsApp"
+              >
+                {{ t('settings.addonsAnnouncementsOpen') }}
+              </button>
+              <button
                 v-if="addon.enabled"
                 type="button"
                 class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
@@ -305,8 +313,22 @@ const MailIcon = () => h('svg', {
   }),
 ]);
 
+const MegaphoneIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z',
+  }),
+]);
+
 function addonIconComponent(addonKey) {
   if (addonKey === 'email_credits') return MailIcon;
+  if (addonKey === 'announcements') return MegaphoneIcon;
   return ChatIcon;
 }
 
@@ -380,6 +402,10 @@ function openArticlesSettings() {
     path: '/settings',
     query: { tab: 'addons', addonView: 'articles' },
   });
+}
+
+function openAnnouncementsApp() {
+  router.push('/announcements');
 }
 
 function openLiveChatQueues() {

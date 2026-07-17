@@ -56,6 +56,15 @@
     />
     <ReleaseNotesCenter v-model="centerOpen" />
     <InProductSupportHub />
+
+    <Teleport
+      v-if="announcementBanner"
+      to="#platform-announcement-banner-host"
+      defer
+    >
+      <AnnouncementBannerHost :announcement="announcementBanner" />
+    </Teleport>
+    <AnnouncementPopoverHost :announcement="announcementPopover" />
   </template>
 </template>
 
@@ -86,6 +95,7 @@ import { isStandalonePublicRoute, isTrialExpiredShelllessRoute, isAuthLifecycleP
 import { useConnectMailboxPrompt } from '@/composables/useConnectMailboxPrompt';
 import { useMailboxConnection } from '@/composables/useMailboxConnection';
 import { useReleaseNotes } from '@/composables/useReleaseNotes';
+import { useAnnouncements } from '@/composables/useAnnouncements';
 import { useOnboarding } from '@/composables/useOnboarding';
 import ConnectMailboxModal from '@/components/inbox/ConnectMailboxModal.vue';
 
@@ -100,6 +110,12 @@ const ReleaseNotesCenter = defineAsyncComponent(() =>
 );
 const InProductSupportHub = defineAsyncComponent(() =>
   import('@/components/support/InProductSupportHub.vue')
+);
+const AnnouncementBannerHost = defineAsyncComponent(() =>
+  import('@/components/announcements/AnnouncementBannerHost.vue')
+);
+const AnnouncementPopoverHost = defineAsyncComponent(() =>
+  import('@/components/announcements/AnnouncementPopoverHost.vue')
 );
 
 // Async so GlobalSearch (+ drawers, field engines, command registry, API client) is NOT in the
@@ -135,6 +151,13 @@ const {
   openCenter,
   maybeScheduleAutoSurface
 } = useReleaseNotes();
+const {
+  banner: announcementBanner,
+  popover: announcementPopover,
+  initializeIfReady: initializeAnnouncementsIfReady,
+  refreshActive: refreshAnnouncements,
+  reset: resetAnnouncementsState,
+} = useAnnouncements();
 const { state: onboardingState } = useOnboarding();
 
 function onMailboxConnected() {
@@ -234,6 +257,7 @@ const handleOpenWhatsNewEvent = () => {
 
 const handleWindowFocus = () => {
   void refreshOnFocus();
+  void refreshAnnouncements();
 };
 
 const handleVisibilityChange = () => {
@@ -248,9 +272,11 @@ watch(
     if (!surfacesEnabled.value) return;
     if (isAuthenticated) {
       void initializeIfReady();
+      void initializeAnnouncementsIfReady();
       return;
     }
     resetReleaseNotesState();
+    resetAnnouncementsState();
   },
   { immediate: true }
 );

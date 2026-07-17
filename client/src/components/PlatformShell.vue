@@ -3,8 +3,8 @@
     :class="[
       'flex overflow-x-hidden bg-neutral-100 dark:bg-neutral-900',
       useViewportLock
-        ? 'h-dvh max-h-dvh overflow-hidden'
-        : 'min-h-screen lg:h-dvh lg:max-h-dvh lg:overflow-hidden'
+        ? 'h-[calc(100dvh-var(--platform-banner-offset,0px))] max-h-[calc(100dvh-var(--platform-banner-offset,0px))] overflow-hidden'
+        : 'min-h-0 h-[calc(100dvh-var(--platform-banner-offset,0px))] max-h-[calc(100dvh-var(--platform-banner-offset,0px))] overflow-hidden'
     ]"
   >
     <!-- Sidebar Navigation -->
@@ -17,7 +17,9 @@
     <main
       :class="[
         'flex flex-1 flex-col min-w-0 overflow-x-hidden transition-[margin-left] duration-200 ease-out',
-        useViewportLock ? 'h-dvh max-h-dvh min-h-0 overflow-hidden' : 'min-h-screen lg:h-dvh lg:min-h-0 lg:overflow-hidden',
+        useViewportLock
+          ? 'h-full max-h-full min-h-0 overflow-hidden'
+          : 'h-full max-h-full min-h-0 overflow-hidden',
         sidebarCollapsed ? 'lg:ml-[calc(3.5rem+1rem)]' : 'lg:ml-[calc(13.75rem+1rem)]',
         'lg:box-border lg:p-2 lg:pl-0'
       ]"
@@ -138,6 +140,7 @@ const routerViewKey = computed(() => {
 
 const isInboxRoute = computed(() => route.name === 'inbox');
 const isLiveChatRoute = computed(() => String(route.path || '').startsWith('/live-chat/'));
+const isAnnouncementsRoute = computed(() => String(route.path || '').startsWith('/announcements'));
 /** Only the Settings split-pane shell — not standalone /settings/* admin pages (processes, flows, notifications). */
 const isSettingsRoute = computed(() => route.name === 'settings');
 const isProcessDesignerRoute = computed(() => {
@@ -160,6 +163,7 @@ const isContentStudioEditorRoute = computed(() => {
 const useViewportLock = computed(
   () => isInboxRoute.value
     || isLiveChatRoute.value
+    || isAnnouncementsRoute.value
     || isSettingsRoute.value
     || isProcessDesignerRoute.value
     || isFormCreateRoute.value
