@@ -222,6 +222,16 @@ function nextId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function reportAiProviderError(err: unknown, abilityKey: string) {
+  const data = (err as { response?: { data?: { code?: string } } })?.response?.data;
+  const code = String(
+    (err as { code?: string })?.code
+    || data?.code
+    || '',
+  ).trim() || null;
+  captureAiProviderError({ abilityKey, code });
+}
+
 function moduleLabel(moduleKey: string): string {
   const labels: Record<string, string> = {
     people: 'people (contacts)',
@@ -800,7 +810,7 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
             };
           }
         } catch (err: unknown) {
-          captureAiProviderError(err, { abilityKey: 'summarize_people' });
+          reportAiProviderError(err, 'summarize_people');
         }
       }
 
@@ -852,7 +862,7 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
         || (err as { response?: { status?: number } })?.response?.status;
       const is404 = (err as { is404?: boolean })?.is404 === true || status === 404;
       if (!is404) {
-        captureAiProviderError(err, { abilityKey: 'work_graph_ask' });
+        reportAiProviderError(err, 'work_graph_ask');
         setAiRequestError(err);
       }
       return null;
@@ -919,7 +929,7 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
         },
       };
     } catch (err: unknown) {
-      captureAiProviderError(err, { abilityKey: 'echo' });
+      reportAiProviderError(err, 'echo');
       return null;
     }
   }
@@ -952,7 +962,7 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
         },
       };
     } catch (err: unknown) {
-      captureAiProviderError(err, { abilityKey: 'ask' });
+      reportAiProviderError(err, 'ask');
       setAiRequestError(err);
       return null;
     }
@@ -1033,7 +1043,7 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
         // Older API builds may not expose tenant-agent ask yet; fall through to graph/knowledge.
         return { matched: false, message: null };
       }
-      captureAiProviderError(err, { abilityKey: 'tenant_agent' });
+      reportAiProviderError(err, 'tenant_agent');
       setAiRequestError(err);
       return { matched: false, message: null };
     }
