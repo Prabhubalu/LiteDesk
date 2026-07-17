@@ -12,6 +12,14 @@ const ADDON_NAVIGATION_REGISTRY = {
     permission: 'liveChat.view',
     order: 10,
   },
+  [ADDON_KEYS.ANNOUNCEMENTS]: {
+    surfaceId: 'announcements',
+    route: '/announcements',
+    label: 'Announcements',
+    icon: 'megaphone',
+    permission: 'announcements.view',
+    order: 20,
+  },
 };
 
 module.exports = {

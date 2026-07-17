@@ -23,6 +23,10 @@
     "message": "Live Chat",
     "description": "Live Chat addon sessions navigation label"
   },
+  "announcements": {
+    "message": "Announcements",
+    "description": "Announcements & Alerts addon navigation label"
+  },
   "signOut": {
     "message": "Sign out",
     "description": "Sign out of the application"

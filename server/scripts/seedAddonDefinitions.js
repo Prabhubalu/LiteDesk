@@ -86,6 +86,25 @@ const BLOG_ADDON = {
   },
 };
 
+const ANNOUNCEMENTS_ADDON = {
+  addonKey: ADDON_KEYS.ANNOUNCEMENTS,
+  name: 'Announcements & Alerts',
+  description: 'Broadcast banners and popovers to users across apps and portals.',
+  icon: 'megaphone',
+  category: 'COMMUNICATION',
+  enabled: true,
+  order: 25,
+  requiredApps: [],
+  optionalApps: ['PORTAL'],
+  marketplace: {
+    category: 'Communication',
+    comingSoon: false,
+    beta: true,
+    shortDescription: 'Publish banners and popovers to your people — calmly and on time.',
+    docsUrl: '',
+  },
+};
+
 const AI_ADDON = {
   addonKey: ADDON_KEYS.AI,
   name: 'Arivu AI',
@@ -228,6 +247,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
   const defResultEmailCredits = await upsertAddonDefinition(EMAIL_CREDITS_ADDON);
   const defResultArticles = await upsertAddonDefinition(ARTICLES_ADDON);
   const defResultBlog = await upsertAddonDefinition(BLOG_ADDON);
+  const defResultAnnouncements = await upsertAddonDefinition(ANNOUNCEMENTS_ADDON);
   const defResultAi = await upsertAddonDefinition(AI_ADDON);
   const defResultAiCredits = await upsertAddonDefinition(AI_CREDITS_ADDON);
   for (const legacy of LEGACY_AI_ADDONS_DISABLED) {
@@ -238,6 +258,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
   const pricingResultEmailCredits = await upsertAddonPricing(ADDON_KEYS.EMAIL_CREDITS);
   const pricingResultArticles = await upsertAddonPricing(ADDON_KEYS.ARTICLES);
   const pricingResultBlog = await upsertAddonPricing(ADDON_KEYS.BLOG);
+  const pricingResultAnnouncements = await upsertAddonPricing(ADDON_KEYS.ANNOUNCEMENTS);
   const pricingResultAi = await upsertAddonPricing(ADDON_KEYS.AI);
   const pricingResultAiCredits = await upsertAddonPricing(ADDON_KEYS.AI_CREDITS);
 
@@ -250,12 +271,14 @@ async function ensureAddonCatalogSeeded(options = {}) {
     defResultEmailCredits,
     defResultArticles,
     defResultBlog,
+    defResultAnnouncements,
     defResultAi,
     defResultAiCredits,
     pricingResultLiveChat,
     pricingResultEmailCredits,
     pricingResultArticles,
     pricingResultBlog,
+    pricingResultAnnouncements,
     pricingResultAi,
     pricingResultAiCredits,
   };
@@ -267,12 +290,14 @@ async function main() {
   console.log(`AddonDefinition email_credits: ${result.defResultEmailCredits}`);
   console.log(`AddonDefinition articles: ${result.defResultArticles}`);
   console.log(`AddonDefinition blog: ${result.defResultBlog}`);
+  console.log(`AddonDefinition announcements: ${result.defResultAnnouncements}`);
   console.log(`AddonDefinition ai: ${result.defResultAi}`);
   console.log(`AddonDefinition ai_credits: ${result.defResultAiCredits}`);
   console.log(`AddonPricingDefinition live_chat: ${result.pricingResultLiveChat}`);
   console.log(`AddonPricingDefinition email_credits: ${result.pricingResultEmailCredits}`);
   console.log(`AddonPricingDefinition articles: ${result.pricingResultArticles}`);
   console.log(`AddonPricingDefinition blog: ${result.pricingResultBlog}`);
+  console.log(`AddonPricingDefinition announcements: ${result.pricingResultAnnouncements}`);
   console.log(`AddonPricingDefinition ai: ${result.pricingResultAi}`);
   console.log(`AddonPricingDefinition ai_credits: ${result.pricingResultAiCredits}`);
   console.log('Done.');
@@ -284,6 +309,7 @@ module.exports = {
   EMAIL_CREDITS_ADDON,
   ARTICLES_ADDON,
   BLOG_ADDON,
+  ANNOUNCEMENTS_ADDON,
   AI_ADDON,
   AI_CREDITS_ADDON,
 };

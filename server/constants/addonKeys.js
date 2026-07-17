@@ -7,6 +7,7 @@ const ADDON_KEYS = {
   EMAIL_CREDITS: 'email_credits',
   ARTICLES: 'articles',
   BLOG: 'blog',
+  ANNOUNCEMENTS: 'announcements',
   /** Single AI product — unlocks Assist, Commercial, Service, Knowledge */
   AI: 'ai',
   /** Usage meter for platform-key mode only (not a capability package) */

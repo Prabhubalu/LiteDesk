@@ -39,6 +39,11 @@ function userCanAccessAddonNav(user, permissionKey) {
     if (flatKey && rootPerms[flatKey] === true) return true;
   }
 
+  if (rootKey === 'announcements') {
+    const flatKey = String(permissionKey).split('.')[1];
+    if (flatKey && rootPerms[flatKey] === true) return true;
+  }
+
   return false;
 }
 

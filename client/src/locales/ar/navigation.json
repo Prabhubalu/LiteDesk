@@ -662,5 +662,9 @@
   "moduleBlog": {
     "message": "Blog",
     "description": "Marketing blog module navigation label"
+  },
+  "announcements": {
+    "message": "Announcements",
+    "description": "Announcements & Alerts addon navigation label"
   }
 }

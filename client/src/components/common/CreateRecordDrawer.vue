@@ -1049,8 +1049,12 @@ async function ensureQuoteFormRecord() {
   quoteFormLoading.value = true;
   quoteFormEnsurePromise.value = (async () => {
     try {
+      const orgCurrency = resolveOrgCurrencyCode(authStore.organization);
       const createPayload = applyCreateOwnerDefaultsToPayload(
-        { ...props.initialData },
+        {
+          ...props.initialData,
+          ...(orgCurrency && !props.initialData?.currency ? { currency: orgCurrency } : {}),
+        },
         'quotes',
         resolveCurrentUserId(authStore.user)
       );
@@ -1077,12 +1081,48 @@ async function ensureQuoteFormRecord() {
   await quoteFormEnsurePromise.value;
 }
 
+function applyOrgCurrencyToCreateForm() {
+  if (props.record) return;
+  const orgCurrency = resolveOrgCurrencyCode(authStore.organization);
+  if (!orgCurrency) return;
+  const current = String(formData.value?.currency || '').trim().toUpperCase();
+  // Only replace empty or platform schema default — keep explicit user selections
+  if (current && current !== 'USD') {
+    if (
+      quoteFormRecord.value &&
+      String(quoteFormRecord.value.currency || '').toUpperCase() !== current
+    ) {
+      quoteFormRecord.value = { ...quoteFormRecord.value, currency: current };
+    }
+    return;
+  }
+  if (current !== orgCurrency) {
+    formData.value = { ...formData.value, currency: orgCurrency };
+  }
+  if (
+    quoteFormRecord.value &&
+    String(quoteFormRecord.value.currency || '').toUpperCase() !== orgCurrency
+  ) {
+    quoteFormRecord.value = { ...quoteFormRecord.value, currency: orgCurrency };
+  }
+}
+
 function mergeQuoteFormRecordIntoFormData(record) {
   if (!record || !moduleDefinition.value?.fields) return;
   const next = { ...formData.value };
   for (const field of moduleDefinition.value.fields) {
     const key = field?.key;
     if (!key || !(key in record)) continue;
+    // Create flow: do not let draft/schema USD overwrite the org currency already seeded in the form
+    if (
+      !props.record &&
+      String(key).toLowerCase() === 'currency' &&
+      next.currency &&
+      String(record[key] || '').toUpperCase() === 'USD' &&
+      String(next.currency).toUpperCase() !== 'USD'
+    ) {
+      continue;
+    }
     let value = record[key];
     if (value && typeof value === 'object' && !Array.isArray(value) && value._id) {
       value = value._id;
@@ -1092,6 +1132,7 @@ function mergeQuoteFormRecordIntoFormData(record) {
     }
   }
   formData.value = next;
+  applyOrgCurrencyToCreateForm();
 }
 
 function handleQuoteLinesUpdated(payload) {
@@ -1249,7 +1290,15 @@ const initializeForm = (module) => {
   
   // Set defaults from field definitions
   for (const field of fields) {
-    if (field.defaultValue !== null && field.defaultValue !== undefined) {
+    const isNumericType = ['Currency', 'Integer', 'Decimal'].includes(field.dataType);
+    // Schema defaults of 0 should not prefill create forms — show placeholder instead
+    const skipZeroNumericDefault =
+      isNumericType && (field.defaultValue === 0 || field.defaultValue === '0');
+    if (
+      field.defaultValue !== null &&
+      field.defaultValue !== undefined &&
+      !skipZeroNumericDefault
+    ) {
       initialForm[field.key] = field.defaultValue;
     } else {
       // Set empty defaults based on type
@@ -1263,14 +1312,14 @@ const initializeForm = (module) => {
     }
   }
 
-  // Seed currency companion from tenant org settings for any module that has a currency field
+  // Prefer tenant org currency over schema defaults (e.g. mongoose `default: 'USD'`)
   const hasCurrencyField = fields.some((f) => String(f?.key || '').toLowerCase() === 'currency');
   const hasPaymentCurrencyField = fields.some((f) => String(f?.key || '').toLowerCase() === 'paymentcurrency');
   const orgCurrency = resolveOrgCurrencyCode(authStore.organization);
-  if (hasCurrencyField && !initialForm.currency) {
+  if (hasCurrencyField) {
     initialForm.currency = orgCurrency;
   }
-  if (hasPaymentCurrencyField && !initialForm.paymentCurrency) {
+  if (hasPaymentCurrencyField) {
     initialForm.paymentCurrency = orgCurrency;
   }
   
@@ -1336,6 +1385,7 @@ const initializeForm = (module) => {
       props.moduleKey,
       resolveCurrentUserId(authStore.user)
     );
+    applyOrgCurrencyToCreateForm();
   }
 };
 
@@ -1351,6 +1401,10 @@ const onFormReady = (module) => {
     if (!isEditing.value) applySearchPrefill(module);
     if (isQuoteCreate.value && quoteFormRecord.value) {
       mergeQuoteFormRecordIntoFormData(quoteFormRecord.value);
+    }
+    // Defeat late DynamicFormField mounts that re-emit schema defaultValue 'USD'
+    if (!isEditing.value) {
+      nextTick(() => applyOrgCurrencyToCreateForm());
     }
   }
 };

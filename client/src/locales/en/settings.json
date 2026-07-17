@@ -1067,6 +1067,10 @@
     "message": "Configure",
     "description": "Open addon configuration view"
   },
+  "addonsAnnouncementsOpen": {
+    "message": "Open Announcements",
+    "description": "Open Announcements & Alerts admin app from Addons hub"
+  },
   "addonsLiveChatSettingsTitle": {
     "message": "Live Chat settings",
     "description": "Live Chat addon settings page title"

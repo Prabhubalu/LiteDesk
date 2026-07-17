@@ -43,6 +43,7 @@ export const SHARED_NAMESPACES = [
   'platform',
   'onboarding',
   'releaseNotes',
+  'announcements',
 ];
 
 export const SUPPORTED_LANGUAGES = [

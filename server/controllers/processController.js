@@ -28,6 +28,7 @@ const {
   getProcessDesignerActionGroups
 } = require('../constants/processDesignerActions');
 const { LIVE_CHAT_PROCESS_DESIGNER_TRIGGERS } = require('../constants/liveChatProcessDesigner');
+const { ANNOUNCEMENTS_PROCESS_DESIGNER_TRIGGERS } = require('../constants/announcementsProcessDesigner');
 const {
   buildWebhookKey,
   generateWebhookSecret,
@@ -231,6 +232,7 @@ exports.getDesignerMetadata = async (req, res) => {
         formulaHelpers: FORMULA_HELPER_CATALOG,
         entityTypes: ENTITY_TYPES,
         liveChatTriggers: LIVE_CHAT_PROCESS_DESIGNER_TRIGGERS,
+        announcementsTriggers: ANNOUNCEMENTS_PROCESS_DESIGNER_TRIGGERS,
         coreTriggers: CORE_TRIGGER_TYPES.map((value) => ({
           value,
           label:

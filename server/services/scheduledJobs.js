@@ -70,6 +70,10 @@ const ENABLE_ADDON_TRIAL_EXPIRY_SCHEDULER =
   process.env.ENABLE_ADDON_TRIAL_EXPIRY_SCHEDULER !== 'false';
 const ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER =
   process.env.ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER !== 'false';
+const ENABLE_ANNOUNCEMENT_LIFECYCLE_SCHEDULER =
+  process.env.ENABLE_ANNOUNCEMENT_LIFECYCLE_SCHEDULER !== 'false';
+const ENABLE_SYSTEM_ANNOUNCEMENT_SCHEDULER =
+  process.env.ENABLE_SYSTEM_ANNOUNCEMENT_SCHEDULER !== 'false';
 const ENABLE_MARKETING_SEGMENT_REFRESH_SCHEDULER =
   process.env.ENABLE_MARKETING_SEGMENT_REFRESH_SCHEDULER !== 'false';
 const ENABLE_MARKETING_CAMPAIGN_SCHEDULE_SCHEDULER =
@@ -105,6 +109,8 @@ let stalledInviteJob = null;
 let trialNudgeJob = null;
 let addonTrialExpiryJob = null;
 let releaseNotePublishJob = null;
+let announcementLifecycleJob = null;
+let systemAnnouncementJob = null;
 let marketingSegmentRefreshJob = null;
 let marketingCampaignScheduleJob = null;
 let marketingAbTestJob = null;
@@ -774,6 +780,42 @@ function startScheduledJobs() {
     console.log('[scheduledJobs] Release note publish scheduler disabled (ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER=false)');
   }
 
+  if (ENABLE_ANNOUNCEMENT_LIFECYCLE_SCHEDULER) {
+    const { tickAnnouncementLifecycle } = require('./announcementLifecycleSchedulerService');
+    announcementLifecycleJob = cron.schedule('*/5 * * * *', async () => {
+      try {
+        const result = await tickAnnouncementLifecycle();
+        if (result.published || result.expired || result.archived) {
+          console.log(
+            `[scheduledJobs] Announcements lifecycle: published=${result.published} expired=${result.expired} archived=${result.archived}`,
+          );
+        }
+      } catch (err) {
+        console.error('[scheduledJobs] Announcement lifecycle tick failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - Announcement lifecycle: every 5 minutes');
+  } else {
+    console.log('[scheduledJobs] Announcement lifecycle disabled (ENABLE_ANNOUNCEMENT_LIFECYCLE_SCHEDULER=false)');
+  }
+
+  if (ENABLE_SYSTEM_ANNOUNCEMENT_SCHEDULER) {
+    const { tickSystemAnnouncementReminders } = require('./systemAnnouncementService');
+    systemAnnouncementJob = cron.schedule('15 9 * * *', async () => {
+      try {
+        const result = await tickSystemAnnouncementReminders();
+        console.log(
+          `[scheduledJobs] System announcements: processed=${result.processed} trial=${result.trialUpserts} sub=${result.subUpserts}`,
+        );
+      } catch (err) {
+        console.error('[scheduledJobs] System announcement tick failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - System announcement reminders: daily 09:15');
+  } else {
+    console.log('[scheduledJobs] System announcements disabled (ENABLE_SYSTEM_ANNOUNCEMENT_SCHEDULER=false)');
+  }
+
   console.log(`[scheduledJobs]   - Timezone: ${process.env.DIGEST_TIMEZONE || 'UTC'}`);
   if (NOTIFICATION_DEBUG) {
     console.log('[scheduledJobs]   - Debug mode: enabled');
@@ -931,6 +973,16 @@ function stopScheduledJobs() {
     releaseNotePublishJob.stop();
     releaseNotePublishJob = null;
     console.log('[scheduledJobs] Release note publish job stopped');
+  }
+  if (announcementLifecycleJob) {
+    announcementLifecycleJob.stop();
+    announcementLifecycleJob = null;
+    console.log('[scheduledJobs] Announcement lifecycle job stopped');
+  }
+  if (systemAnnouncementJob) {
+    systemAnnouncementJob.stop();
+    systemAnnouncementJob = null;
+    console.log('[scheduledJobs] System announcement job stopped');
   }
   if (marketingSegmentRefreshJob) {
     marketingSegmentRefreshJob.stop();

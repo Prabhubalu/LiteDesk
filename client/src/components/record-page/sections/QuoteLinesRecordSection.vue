@@ -949,6 +949,12 @@ function hasDraftRow(blockKey) {
   return Boolean(draftRowsMap.value[blockKey]);
 }
 
+function ensureDraftRow(block) {
+  if (!linesEditable.value || isReorderDragging.value || !block?.key) return;
+  if (hasDraftRow(block.key)) return;
+  draftRowsMap.value = { ...draftRowsMap.value, [block.key]: createDraftRowState() };
+}
+
 function startDraftRow(block) {
   if (!linesEditable.value || isReorderDragging.value) return;
   const key = block.key;
@@ -1764,6 +1770,24 @@ function getDefaultAddBlock() {
   }
   return displaySectionBlocks.value.find((b) => !b.isOrphan) || displaySectionBlocks.value[0] || null;
 }
+
+/** Seed one draft search row on empty quotes so Add is not required first. */
+const defaultDraftSeededQuoteId = ref('');
+watch(
+  () => ({
+    quoteId: String(props.record?._id || ''),
+    editable: linesEditable.value,
+    block: getDefaultAddBlock()
+  }),
+  ({ quoteId, editable, block }) => {
+    if (!quoteId || !editable || !block?.key) return;
+    if (defaultDraftSeededQuoteId.value === quoteId) return;
+    defaultDraftSeededQuoteId.value = quoteId;
+    if ((block.rows || []).length > 0 || hasDraftRow(block.key)) return;
+    ensureDraftRow(block);
+  },
+  { immediate: true }
+);
 
 function openDraftSearchWithRecent(block) {
   const state = draftRow(block);

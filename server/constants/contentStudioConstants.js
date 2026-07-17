@@ -173,6 +173,7 @@ const ADDON_DEFAULT_SETTINGS = {
       staticSyncHostType: 'embed',
     },
   },
+  [ADDON_KEYS.ANNOUNCEMENTS]: require('./announcementConstants').ANNOUNCEMENT_DEFAULT_SETTINGS,
 };
 
 module.exports = {

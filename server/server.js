@@ -260,6 +260,7 @@ const paymentLinkRoutes = require('./routes/paymentLinkRoutes');
 const paymentGatewayRoutes = require('./routes/paymentGatewayRoutes');
 const webformRoutes = require('./routes/webformRoutes');
 const liveChatRoutes = require('./routes/liveChatRoutes');
+const announcementRoutes = require('./routes/announcementRoutes');
 const marketingCampaignRoutes = require('./routes/marketingCampaignRoutes');
 const marketingAudienceRoutes = require('./routes/marketingAudienceRoutes');
 const marketingSegmentRoutes = require('./routes/marketingSegmentRoutes');
@@ -403,6 +404,7 @@ app.use('/api/upload', uploadRoutes);
 // Inbox Routes (Cross-app attention surface)
 app.use('/api/inbox', inboxRoutes);
 app.use('/api/live-chat', liveChatRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 // Platform home snapshot (landing page)
 app.use('/api/platform', require('./routes/platformHomeRoutes'));
@@ -410,6 +412,7 @@ app.use('/api/onboarding', require('./routes/onboardingRoutes'));
 app.use('/api/platform/inbound-parser', require('./routes/platformInboundParserRoutes'));
 app.use('/api/platform/amds', require('./routes/platformAmdsRoutes'));
 app.use('/api/platform/release-notes', require('./routes/platformReleaseNoteRoutes'));
+app.use('/api/platform/announcements', require('./routes/platformAnnouncementRoutes'));
 app.use('/api/release-notes', require('./routes/releaseNoteRoutes'));
 
 // Portal Application Routes (App #2)

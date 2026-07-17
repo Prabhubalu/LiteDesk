@@ -1,0 +1,698 @@
+{
+  "pageTitle": {
+    "message": "Announcements",
+    "description": "Announcements admin page title"
+  },
+  "navAnalytics": {
+    "message": "Analytics",
+    "description": "List header secondary action to open analytics"
+  },
+  "analyticsTitle": {
+    "message": "Announcement analytics",
+    "description": "Analytics page title"
+  },
+  "analyticsSubtitle": {
+    "message": "See how your announcements are reaching people.",
+    "description": "Analytics page subtitle"
+  },
+  "analyticsEmptyTitle": {
+    "message": "No performance data yet",
+    "description": "Empty analytics title"
+  },
+  "analyticsEmptyDescription": {
+    "message": "Publish an announcement to see views, dismissals, and CTA clicks.",
+    "description": "Empty analytics description"
+  },
+  "analyticsTop": {
+    "message": "Top announcements",
+    "description": "Top table heading"
+  },
+  "analyticsBySurface": {
+    "message": "By surface",
+    "description": "Breakdown label"
+  },
+  "metricActive": {
+    "message": "Live now",
+    "description": "Summary metric"
+  },
+  "metricUnique": {
+    "message": "Unique viewers",
+    "description": "Detail metric"
+  },
+  "metricAckRate": {
+    "message": "Ack rate",
+    "description": "Detail metric"
+  },
+  "colCtaClicks": {
+    "message": "CTA clicks",
+    "description": "Column"
+  },
+  "colClickRate": {
+    "message": "Click rate",
+    "description": "Column"
+  },
+  "colDismissals": {
+    "message": "Dismissals",
+    "description": "Column"
+  },
+  "pageSubtitle": {
+    "message": "Tell your people what matters — calmly and on time.",
+    "description": "Announcements admin page subtitle"
+  },
+  "create": {
+    "message": "Create announcement",
+    "description": "Primary create CTA"
+  },
+  "emptyTitle": {
+    "message": "No announcements yet",
+    "description": "FIRST_TIME empty state title"
+  },
+  "emptyDescription": {
+    "message": "Publish a banner or popover when you need everyone to see something important.",
+    "description": "FIRST_TIME empty state description"
+  },
+  "colTitle": {
+    "message": "Title",
+    "description": "List column"
+  },
+  "colType": {
+    "message": "Type",
+    "description": "List column"
+  },
+  "colStatus": {
+    "message": "Status",
+    "description": "List column"
+  },
+  "colPriority": {
+    "message": "Priority",
+    "description": "List column"
+  },
+  "colViews": {
+    "message": "Views",
+    "description": "List column"
+  },
+  "colUpdated": {
+    "message": "Updated",
+    "description": "List column"
+  },
+  "typeBanner": {
+    "message": "Banner",
+    "description": "Display type"
+  },
+  "typePopover": {
+    "message": "Popover",
+    "description": "Display type"
+  },
+  "statusDraft": {
+    "message": "Draft",
+    "description": "Status pill"
+  },
+  "statusScheduled": {
+    "message": "Scheduled",
+    "description": "Status pill"
+  },
+  "statusPublished": {
+    "message": "Published",
+    "description": "Status pill"
+  },
+  "statusActive": {
+    "message": "Live",
+    "description": "Effective status"
+  },
+  "statusPaused": {
+    "message": "Paused",
+    "description": "Status pill"
+  },
+  "statusExpired": {
+    "message": "Expired",
+    "description": "Status pill"
+  },
+  "statusArchived": {
+    "message": "Archived",
+    "description": "Status pill"
+  },
+  "editorTitleNew": {
+    "message": "New announcement",
+    "description": "Editor title for create"
+  },
+  "editorTitleEdit": {
+    "message": "Edit announcement",
+    "description": "Editor title for edit"
+  },
+  "fieldTitle": {
+    "message": "Title",
+    "description": "Form label"
+  },
+  "fieldShortDescription": {
+    "message": "Short description",
+    "description": "Form label"
+  },
+  "fieldBody": {
+    "message": "Details",
+    "description": "Form label"
+  },
+  "fieldMedia": {
+    "message": "Media",
+    "description": "Editor media section"
+  },
+  "fieldImageUrl": {
+    "message": "Image URL",
+    "description": "Media field"
+  },
+  "fieldImageUrlHint": {
+    "message": "https://… or /path/to/image",
+    "description": "Image URL placeholder"
+  },
+  "fieldYoutubeUrl": {
+    "message": "YouTube URL",
+    "description": "Media field"
+  },
+  "fieldYoutubeUrlHint": {
+    "message": "https://www.youtube.com/watch?v=…",
+    "description": "YouTube URL placeholder"
+  },
+  "fieldAttachments": {
+    "message": "Attachments",
+    "description": "Media field"
+  },
+  "fieldAttachmentsHint": {
+    "message": "Up to 5 linked files (URLs). Upload reuse can come later.",
+    "description": "Attachments helper"
+  },
+  "addAttachment": {
+    "message": "Add link",
+    "description": "Add attachment row"
+  },
+  "removeAttachment": {
+    "message": "Remove",
+    "description": "Remove attachment row"
+  },
+  "attachmentName": {
+    "message": "Label",
+    "description": "Attachment name placeholder"
+  },
+  "attachmentUrl": {
+    "message": "https://…",
+    "description": "Attachment URL placeholder"
+  },
+  "attachmentFallback": {
+    "message": "Download",
+    "description": "Fallback attachment link label"
+  },
+  "fieldCtas": {
+    "message": "Buttons / links",
+    "description": "CTA editor section"
+  },
+  "fieldCtasHint": {
+    "message": "Up to 3 actions shown on the banner and popover.",
+    "description": "CTA helper"
+  },
+  "addCta": {
+    "message": "Add button",
+    "description": "Add CTA row"
+  },
+  "ctaLabel": {
+    "message": "Button label",
+    "description": "CTA label placeholder"
+  },
+  "ctaUrl": {
+    "message": "https://… or /route",
+    "description": "CTA target placeholder"
+  },
+  "bannerLinksLabel": {
+    "message": "Announcement links",
+    "description": "Banner inline links nav label"
+  },
+  "watchVideo": {
+    "message": "Watch",
+    "description": "Banner link when YouTube URL is set"
+  },
+  "fieldDisplayType": {
+    "message": "How it appears",
+    "description": "Form label"
+  },
+  "fieldPriority": {
+    "message": "Priority",
+    "description": "Form label"
+  },
+  "priorityCritical": {
+    "message": "Critical",
+    "description": "Priority option"
+  },
+  "priorityHigh": {
+    "message": "High",
+    "description": "Priority option"
+  },
+  "priorityMedium": {
+    "message": "Medium",
+    "description": "Priority option"
+  },
+  "priorityLow": {
+    "message": "Low",
+    "description": "Priority option"
+  },
+  "priorityInformation": {
+    "message": "Information",
+    "description": "Priority option"
+  },
+  "fieldDismissible": {
+    "message": "People can dismiss this",
+    "description": "Behaviour toggle"
+  },
+  "fieldRequireAck": {
+    "message": "Require acknowledgement",
+    "description": "Behaviour toggle"
+  },
+  "fieldAudience": {
+    "message": "Who should see this",
+    "description": "Audience section label"
+  },
+  "audienceEveryone": {
+    "message": "Everyone",
+    "description": "Audience mode"
+  },
+  "audienceSpecific": {
+    "message": "Specific people",
+    "description": "Audience mode"
+  },
+  "audienceRoles": {
+    "message": "Roles",
+    "description": "Audience picker"
+  },
+  "audienceTeams": {
+    "message": "Teams",
+    "description": "Audience picker"
+  },
+  "audienceUserTypes": {
+    "message": "User types",
+    "description": "Audience picker"
+  },
+  "fieldTrigger": {
+    "message": "When it appears",
+    "description": "Trigger label"
+  },
+  "triggerImmediate": {
+    "message": "Right away (while active)",
+    "description": "Trigger option"
+  },
+  "triggerScheduled": {
+    "message": "On a schedule",
+    "description": "Trigger option"
+  },
+  "triggerEveryLogin": {
+    "message": "Every login",
+    "description": "Trigger option"
+  },
+  "triggerOnce": {
+    "message": "Once per person",
+    "description": "Trigger option"
+  },
+  "triggerDaily": {
+    "message": "Once a day",
+    "description": "Trigger option"
+  },
+  "triggerUntilDismissed": {
+    "message": "Until dismissed",
+    "description": "Trigger option"
+  },
+  "triggerUntilAck": {
+    "message": "Until acknowledged",
+    "description": "Trigger option"
+  },
+  "fieldStartAt": {
+    "message": "Starts",
+    "description": "Schedule start"
+  },
+  "fieldEndAt": {
+    "message": "Stop showing (optional)",
+    "description": "Schedule end / expiry"
+  },
+  "fieldEndAtHelp": {
+    "message": "Leave blank to keep showing until dismissed, acknowledged, or archived.",
+    "description": "End date helper"
+  },
+  "displayBannerHelp": {
+    "message": "Slim bar at the top of the app",
+    "description": "Banner card helper"
+  },
+  "displayPopoverHelp": {
+    "message": "Focused moment after sign-in",
+    "description": "Popover card helper"
+  },
+  "saveDraft": {
+    "message": "Save draft",
+    "description": "Secondary action"
+  },
+  "publish": {
+    "message": "Publish",
+    "description": "Primary convert action"
+  },
+  "publishConfirmTitle": {
+    "message": "Publish this announcement?",
+    "description": "Convert confirm title"
+  },
+  "publishConfirmBody": {
+    "message": "It will become visible to the selected audience when the schedule starts.",
+    "description": "Convert confirm body"
+  },
+  "previewLabel": {
+    "message": "Live preview",
+    "description": "Preview rail label"
+  },
+  "previewDesktop": {
+    "message": "Desktop",
+    "description": "Preview device toggle"
+  },
+  "previewMobile": {
+    "message": "Mobile",
+    "description": "Preview device toggle"
+  },
+  "previewAppChrome": {
+    "message": "App",
+    "description": "Fake browser chrome label in preview"
+  },
+  "previewOpen": {
+    "message": "Preview",
+    "description": "Open mobile preview sheet"
+  },
+  "previewClose": {
+    "message": "Close",
+    "description": "Close mobile preview sheet"
+  },
+  "stepsNavLabel": {
+    "message": "Editor steps",
+    "description": "Step pills nav aria-label"
+  },
+  "stepMessage": {
+    "message": "Message",
+    "description": "Editor step 1"
+  },
+  "stepMessageHelp": {
+    "message": "What people will read.",
+    "description": "Step 1 helper"
+  },
+  "stepAppearance": {
+    "message": "Appearance",
+    "description": "Editor step 2"
+  },
+  "stepAppearanceHelp": {
+    "message": "How it shows up in the app.",
+    "description": "Step 2 helper"
+  },
+  "stepAudience": {
+    "message": "Audience",
+    "description": "Editor step 3"
+  },
+  "stepAudienceHelp": {
+    "message": "Who should see it.",
+    "description": "Step 3 helper"
+  },
+  "stepTiming": {
+    "message": "Timing",
+    "description": "Editor step 4"
+  },
+  "stepTimingHelp": {
+    "message": "When it appears and how people can respond.",
+    "description": "Step 4 helper"
+  },
+  "stepReview": {
+    "message": "Review",
+    "description": "Editor step 5"
+  },
+  "stepReviewHelp": {
+    "message": "Check everything, then publish with confidence.",
+    "description": "Step 5 helper"
+  },
+  "fieldBehaviour": {
+    "message": "How people can respond",
+    "description": "Behaviour section label"
+  },
+  "addEndDate": {
+    "message": "Add a stop date",
+    "description": "Progressive disclosure for optional end"
+  },
+  "timingImmediateHint": {
+    "message": "Goes live as soon as you publish. Optionally add a stop date below.",
+    "description": "Hint when trigger is not scheduled"
+  },
+  "reviewTimingOk": {
+    "message": "Timing is set",
+    "description": "Review checklist when not using a scheduled start"
+  },
+  "reviewNeedTitle": {
+    "message": "Add a title",
+    "description": "Review checklist item"
+  },
+  "reviewNeedDisplay": {
+    "message": "Choose banner or popover",
+    "description": "Review checklist item"
+  },
+  "reviewNeedAudience": {
+    "message": "Choose who should see this",
+    "description": "Review checklist item"
+  },
+  "reviewNeedStart": {
+    "message": "Set a start time",
+    "description": "Review checklist item"
+  },
+  "reviewAudienceEmpty": {
+    "message": "Pick at least one role, team, or user type.",
+    "description": "Segment empty warning"
+  },
+  "publishBlockedHint": {
+    "message": "Finish the review checklist before publishing.",
+    "description": "Publish disabled hint"
+  },
+  "publishConfirmDetail": {
+    "message": "This will show to {audience} starting {when}.",
+    "description": "Publish confirm detail with audience and when"
+  },
+  "autosaveSaving": {
+    "message": "Saving…",
+    "description": "Autosave in progress"
+  },
+  "autosaveSavedJustNow": {
+    "message": "Saved · just now",
+    "description": "Autosave success recent"
+  },
+  "autosaveSavedAgo": {
+    "message": "Saved · {seconds}s ago",
+    "description": "Autosave success with age"
+  },
+  "autosaveUnsaved": {
+    "message": "Unsaved changes",
+    "description": "Dirty draft indicator"
+  },
+  "autosaveFailed": {
+    "message": "Couldn’t autosave — try Save draft",
+    "description": "Autosave error"
+  },
+  "leaveUnsaved": {
+    "message": "You have unsaved changes. Leave without saving?",
+    "description": "Leave guard confirm"
+  },
+  "fromOrg": {
+    "message": "From {orgName}",
+    "description": "Ownership strip"
+  },
+  "fromPlatform": {
+    "message": "From Arivu",
+    "description": "Platform ownership strip"
+  },
+  "popoverEmptyBody": {
+    "message": "Add details or media so people know what to do next.",
+    "description": "Empty popover body placeholder in preview"
+  },
+  "dismiss": {
+    "message": "Dismiss",
+    "description": "Runtime dismiss"
+  },
+  "acknowledge": {
+    "message": "I understand",
+    "description": "Runtime acknowledge"
+  },
+  "loadFailed": {
+    "message": "Couldn’t load announcements.",
+    "description": "Error state"
+  },
+  "saveFailed": {
+    "message": "Couldn’t save announcement.",
+    "description": "Error toast"
+  },
+  "saveSuccess": {
+    "message": "Announcement saved.",
+    "description": "Success toast"
+  },
+  "publishSuccess": {
+    "message": "Announcement published.",
+    "description": "Success toast"
+  },
+  "actions": {
+    "message": "Actions",
+    "description": "Actions column"
+  },
+  "edit": {
+    "message": "Edit",
+    "description": "Row action"
+  },
+  "view": {
+    "message": "View",
+    "description": "Row action for immutable announcements"
+  },
+  "duplicate": {
+    "message": "Duplicate",
+    "description": "Clone archived announcement to a draft"
+  },
+  "duplicateSuccess": {
+    "message": "Draft copy created.",
+    "description": "Duplicate success toast"
+  },
+  "editorTitleView": {
+    "message": "View announcement",
+    "description": "Read-only editor title"
+  },
+  "readOnlyBanner": {
+    "message": "This announcement is archived or expired and can’t be edited. Duplicate it to create a new draft.",
+    "description": "Read-only editor notice"
+  },
+  "liveLockedBanner": {
+    "message": "This announcement is live. Pause it to edit content, then resume when ready.",
+    "description": "Published announcement cannot be edited until paused"
+  },
+  "pauseToEdit": {
+    "message": "Pause to edit",
+    "description": "Primary action on live-locked editor"
+  },
+  "pausedForEdit": {
+    "message": "Paused. You can edit now — resume from the list when ready.",
+    "description": "Toast after pausing from editor"
+  },
+  "backToList": {
+    "message": "Back to list",
+    "description": "Read-only editor secondary action"
+  },
+  "archive": {
+    "message": "Archive",
+    "description": "Row action"
+  },
+  "pause": {
+    "message": "Pause",
+    "description": "Row action"
+  },
+  "resume": {
+    "message": "Resume",
+    "description": "Row action"
+  },
+  "cpBackControl": {
+    "message": "Back to Control Plane",
+    "description": "Platform announcements breadcrumb"
+  },
+  "cpBackList": {
+    "message": "Back to platform announcements",
+    "description": "Editor breadcrumb"
+  },
+  "cpListTitle": {
+    "message": "Platform announcements",
+    "description": "Control Plane module title"
+  },
+  "cpListSubtitle": {
+    "message": "Broadcast maintenance, security, and product notices across tenants.",
+    "description": "Control Plane module subtitle"
+  },
+  "cpCreate": {
+    "message": "New announcement",
+    "description": "Control Plane create CTA"
+  },
+  "cpCreateTitle": {
+    "message": "New platform announcement",
+    "description": "Editor create title"
+  },
+  "cpEditTitle": {
+    "message": "Edit platform announcement",
+    "description": "Editor edit title"
+  },
+  "cpListEmpty": {
+    "message": "No platform announcements yet. Start from a maintenance or security template.",
+    "description": "Empty list"
+  },
+  "cpAllStatuses": {
+    "message": "All statuses",
+    "description": "Status filter"
+  },
+  "cpAllCategories": {
+    "message": "All categories",
+    "description": "Category filter"
+  },
+  "cpColCategory": {
+    "message": "Category",
+    "description": "List column"
+  },
+  "cpColAudience": {
+    "message": "Audience",
+    "description": "List column"
+  },
+  "cpAudienceAll": {
+    "message": "All tenants",
+    "description": "Audience mode"
+  },
+  "cpAudienceSpecific": {
+    "message": "Specific organizations",
+    "description": "Audience mode"
+  },
+  "cpAudienceOrgs": {
+    "message": "{count} organizations",
+    "description": "Audience summary"
+  },
+  "cpSystemManaged": {
+    "message": "System managed",
+    "description": "Read-only system row"
+  },
+  "cpPresetMaintenance": {
+    "message": "Maintenance template",
+    "description": "Quick create preset"
+  },
+  "cpPresetSecurity": {
+    "message": "Security advisory",
+    "description": "Quick create preset"
+  },
+  "cpLoadFailed": {
+    "message": "Couldn’t load platform announcements.",
+    "description": "Error state"
+  },
+  "cpCreateFailed": {
+    "message": "Couldn’t create platform announcement.",
+    "description": "Error state"
+  },
+  "cpSectionDetails": {
+    "message": "Details",
+    "description": "Editor section"
+  },
+  "cpSectionAudience": {
+    "message": "Audience",
+    "description": "Editor section"
+  },
+  "cpSectionSchedule": {
+    "message": "Schedule & behaviour",
+    "description": "Editor section"
+  },
+  "cpOrgIds": {
+    "message": "Organization IDs",
+    "description": "Org targeting field"
+  },
+  "cpOrgIdsHint": {
+    "message": "One organization ObjectId per line",
+    "description": "Org targeting hint"
+  },
+  "cpBypassMute": {
+    "message": "Bypass tenant mute (critical / advisory)",
+    "description": "criticalBypassOrgMute toggle"
+  },
+  "cpPauseSuccess": {
+    "message": "Announcement paused.",
+    "description": "Success toast"
+  },
+  "cpArchiveSuccess": {
+    "message": "Announcement archived.",
+    "description": "Success toast"
+  }
+}

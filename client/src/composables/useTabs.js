@@ -67,6 +67,12 @@ import {
   LIVE_CHAT_CLOSED_TAB_PATH,
   liveChatMainTabOwnsRoute,
 } from '@/utils/liveChatTabPaths';
+import {
+  ANNOUNCEMENTS_MAIN_TAB_PATH,
+  announcementsTabOwnsRoute,
+  isAnnouncementsRoute,
+  normalizeAnnouncementsPath,
+} from '@/utils/announcementsTabPaths';
 import { resolveLiveChatSessionsNavigationPath } from '@/utils/liveChatSessionSelection';
 import { useAuthStore } from '@/stores/authRegistry';
 
@@ -1173,6 +1179,11 @@ const getTitleForPath = (path, params = {}) => {
     return i18n.global.t('navigation.liveChat');
   }
 
+  // Announcements: single workspace tab; All / Analytics / editor are in-page nav.
+  if (isAnnouncementsRoute(path)) {
+    return i18n.global.t('navigation.announcements');
+  }
+
   // Special case: Helpdesk cases routes
   if (path.startsWith('/helpdesk/cases')) {
     if (segments[3] === 'new' || segments.length <= 3) {
@@ -1576,11 +1587,85 @@ export function useTabs() {
     return navigateLiveChatClosedSessions(LIVE_CHAT_CLOSED_TAB_PATH);
   }
 
+  function resolveAnnouncementsWorkspaceTab() {
+    return tabs.value.find((tab) => announcementsTabOwnsRoute(tab.path, tab)
+      || isAnnouncementsRoute(tab.path)
+      || tab.titleKey === 'navigation.announcements') || null;
+  }
+
+  function syncAnnouncementsRouteTab(path) {
+    const pathOnly = normalizeAnnouncementsPath(path);
+    if (!isAnnouncementsRoute(pathOnly)) return false;
+
+    const workspaceTab = resolveAnnouncementsWorkspaceTab();
+    if (!workspaceTab) return false;
+
+    workspaceTab.path = ANNOUNCEMENTS_MAIN_TAB_PATH;
+    workspaceTab.titleKey = 'navigation.announcements';
+    workspaceTab.title = i18n.global.t('navigation.announcements');
+    workspaceTab.icon = getIconComponent(getIconForPath(ANNOUNCEMENTS_MAIN_TAB_PATH));
+    if (activeTabId.value !== workspaceTab.id) {
+      activeTabId.value = workspaceTab.id;
+    }
+    if (storageConfigured && storageKey) {
+      saveTabsToStorage();
+    }
+    return true;
+  }
+
+  function navigateAnnouncementsWorkspace(path, options = {}) {
+    const routerPath = normalizeAnnouncementsPath(path);
+    if (!isAnnouncementsRoute(routerPath)) return null;
+
+    const navOptions = {
+      ...options,
+      titleKey: 'navigation.announcements',
+    };
+
+    const workspaceTab = resolveAnnouncementsWorkspaceTab();
+    if (workspaceTab) {
+      workspaceTab.path = ANNOUNCEMENTS_MAIN_TAB_PATH;
+      workspaceTab.titleKey = 'navigation.announcements';
+      workspaceTab.title = i18n.global.t('navigation.announcements');
+      workspaceTab.icon = getIconComponent(getIconForPath(ANNOUNCEMENTS_MAIN_TAB_PATH));
+      activeTabId.value = workspaceTab.id;
+      isProgrammaticNavigation = true;
+      lastProgrammaticPath = routerPath;
+      navigateToPath(routerPath).finally(() => {
+        setTimeout(() => {
+          isProgrammaticNavigation = false;
+          lastProgrammaticPath = null;
+        }, 300);
+      });
+      if (storageConfigured && storageKey) {
+        saveTabsToStorage();
+      }
+      return workspaceTab;
+    }
+
+    const created = openTab(ANNOUNCEMENTS_MAIN_TAB_PATH, { ...navOptions, insertAdjacent: false });
+    if (created && routerPath !== ANNOUNCEMENTS_MAIN_TAB_PATH) {
+      isProgrammaticNavigation = true;
+      lastProgrammaticPath = routerPath;
+      navigateToPath(routerPath).finally(() => {
+        setTimeout(() => {
+          isProgrammaticNavigation = false;
+          lastProgrammaticPath = null;
+        }, 300);
+      });
+    }
+    return created;
+  }
+
   // Find tab by path (exact match or path without query params)
   const findTabByPath = (path) => {
     const pathWithoutQuery = String(path || '').split('?')[0].split('#')[0];
     if (isLiveChatRoute(pathWithoutQuery)) {
       const workspaceTab = resolveLiveChatWorkspaceTab();
+      if (workspaceTab) return workspaceTab;
+    }
+    if (isAnnouncementsRoute(pathWithoutQuery)) {
+      const workspaceTab = resolveAnnouncementsWorkspaceTab();
       if (workspaceTab) return workspaceTab;
     }
 
@@ -1624,6 +1709,11 @@ export function useTabs() {
     const pathWithoutQuery = String(path || '').split('?')[0].split('#')[0];
     if (syncLiveChatRouteTab(pathWithoutQuery)) {
       logTabsDebug('✅ syncTabWithRoute: Live Chat tab updated in place');
+      return;
+    }
+
+    if (syncAnnouncementsRouteTab(pathWithoutQuery)) {
+      logTabsDebug('✅ syncTabWithRoute: Announcements tab updated in place');
       return;
     }
     
@@ -1851,6 +1941,13 @@ export function useTabs() {
     } else if (!shouldSkipTabRoute(currentPath) && currentPath.startsWith('/live-chat/')) {
       console.log('🔄 [setupRouteWatcher] Deep-link Live Chat route on load, syncing tab:', currentPath);
       if (!syncLiveChatRouteTab(currentPath)) {
+        syncTabWithRoute(currentPath);
+      }
+      void ensureRouterAtPath(currentPath);
+      tabWasRestored = true;
+    } else if (!shouldSkipTabRoute(currentPath) && isAnnouncementsRoute(currentPath)) {
+      console.log('🔄 [setupRouteWatcher] Deep-link Announcements route on load, syncing tab:', currentPath);
+      if (!syncAnnouncementsRouteTab(currentPath)) {
         syncTabWithRoute(currentPath);
       }
       void ensureRouterAtPath(currentPath);
@@ -2144,6 +2241,11 @@ export function useTabs() {
         return;
       }
 
+      if (syncAnnouncementsRouteTab(newPath)) {
+        console.log('✅ Route watcher: Announcements tab synced in place');
+        return;
+      }
+
       const currentActiveTab = tabs.value.find(tab => tab.id === activeTabId.value);
       if (currentActiveTab) {
         const activePathBase = currentActiveTab.path.split('?')[0];
@@ -2163,6 +2265,14 @@ export function useTabs() {
           currentActiveTab.path = newFullPath || newPath;
           restoreModuleListTabTitle(currentActiveTab, newPath.split('?')[0]);
           return;
+        } else if (
+          isAnnouncementsRoute(newPath)
+          && isAnnouncementsRoute(activePathBase)
+        ) {
+          currentActiveTab.path = ANNOUNCEMENTS_MAIN_TAB_PATH;
+          currentActiveTab.titleKey = 'navigation.announcements';
+          currentActiveTab.title = i18n.global.t('navigation.announcements');
+          return;
         }
       }
       
@@ -2173,6 +2283,7 @@ export function useTabs() {
         if (
           currentPathWithoutQuery === newPathWithoutQuery
           || liveChatMainTabOwnsRoute(newPathWithoutQuery, currentActiveTab)
+          || announcementsTabOwnsRoute(newPathWithoutQuery, currentActiveTab)
         ) {
           // Module list tab should always show the module name
           const isListRoute = newPathWithoutQuery === '/tasks' || newPathWithoutQuery === '/deals' || newPathWithoutQuery === '/events' ||
@@ -2465,6 +2576,10 @@ export function useTabs() {
       if (isLiveChatReportsRoute(pathOnly)) {
         return navigateLiveChatReports(options);
       }
+    }
+
+    if (isAnnouncementsRoute(pathOnly) && pathOnly !== ANNOUNCEMENTS_MAIN_TAB_PATH) {
+      return navigateAnnouncementsWorkspace(pathOnly, options);
     }
     
     // Check if tab already exists
@@ -2895,6 +3010,7 @@ export function useTabs() {
     navigateLiveChatClosedSessions,
     navigateLiveChatVisitors,
     navigateLiveChatReports,
+    navigateAnnouncementsWorkspace,
     openLiveChatSession,
     openLiveChatClosedSession,
     openLiveChatVisitor,

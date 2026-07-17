@@ -1153,6 +1153,131 @@ async function startProcessAction(ctx, params, automationExecutionId = null) {
   }
 }
 
+async function requireAnnouncementsAddon(ctx) {
+  const { isAddonEntitledForOrg } = require('../utils/addonAccessUtils');
+  const { ADDON_KEYS } = require('../constants/addonKeys');
+  if (!ctx.organizationId) {
+    return { ok: false, error: 'announcements action requires organizationId' };
+  }
+  const entitled = await isAddonEntitledForOrg(ctx.organizationId, ADDON_KEYS.ANNOUNCEMENTS);
+  if (!entitled) {
+    return { ok: false, error: 'Announcements addon is not installed or active' };
+  }
+  return { ok: true };
+}
+
+async function announcementsPublish(ctx, params) {
+  const gate = await requireAnnouncementsAddon(ctx);
+  if (!gate.ok) return gate;
+
+  const title = String(params?.title || '').trim();
+  if (!title) {
+    return { ok: false, error: 'announcements_publish requires title' };
+  }
+
+  const displayType = params?.displayType === 'popover' ? 'popover' : 'banner';
+  const ctas = [];
+  if (params?.ctaLabel && params?.ctaTarget) {
+    ctas.push({
+      label: String(params.ctaLabel).slice(0, 40),
+      actionType: String(params.ctaTarget).startsWith('http') ? 'external_url' : 'internal_route',
+      target: String(params.ctaTarget),
+      style: 'primary',
+      sortOrder: 0,
+    });
+  }
+
+  try {
+    const announcementService = require('./announcementService');
+    let actorId = ctx.triggeredBy || null;
+    if (!actorId) {
+      const User = require('../models/User');
+      const owner = await User.findOne({
+        organizationId: ctx.organizationId,
+        isOwner: true,
+      }).select('_id').lean();
+      actorId = owner?._id || null;
+    }
+    if (!actorId) {
+      return { ok: false, error: 'announcements_publish requires an actor user' };
+    }
+
+    const created = await announcementService.createAnnouncement({
+      organizationId: ctx.organizationId,
+      userId: actorId,
+      payload: {
+        title,
+        shortDescription: String(params?.shortDescription || '').slice(0, 500),
+        displayType,
+        priority: params?.priority || 'medium',
+        audience: { mode: 'everyone', segments: [] },
+        schedule: {
+          publishImmediately: true,
+          startAt: new Date().toISOString(),
+          endAt: null,
+          timezone: 'UTC',
+        },
+        trigger: { type: 'immediate' },
+        userBehaviour: {
+          dismissible: true,
+          stickyBanner: displayType === 'banner',
+          requireAcknowledgement: false,
+        },
+        content: { body: String(params?.shortDescription || '') },
+        ctas,
+        source: {
+          kind: 'process_flow',
+          externalRef: ctx.processId || ctx.automationRuleId || null,
+        },
+      },
+      publish: true,
+    });
+    return { ok: true, announcementId: created.id || created._id };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+}
+
+async function announcementsPause(ctx, params) {
+  const gate = await requireAnnouncementsAddon(ctx);
+  if (!gate.ok) return gate;
+  const announcementId = params?.announcementId || ctx.entityId;
+  if (!announcementId) {
+    return { ok: false, error: 'announcements_pause requires announcementId' };
+  }
+  try {
+    const announcementService = require('./announcementService');
+    await announcementService.pauseAnnouncement({
+      organizationId: ctx.organizationId,
+      userId: ctx.triggeredBy || null,
+      id: announcementId,
+    });
+    return { ok: true, announcementId: String(announcementId) };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+}
+
+async function announcementsArchive(ctx, params) {
+  const gate = await requireAnnouncementsAddon(ctx);
+  if (!gate.ok) return gate;
+  const announcementId = params?.announcementId || ctx.entityId;
+  if (!announcementId) {
+    return { ok: false, error: 'announcements_archive requires announcementId' };
+  }
+  try {
+    const announcementService = require('./announcementService');
+    await announcementService.archiveAnnouncement({
+      organizationId: ctx.organizationId,
+      userId: ctx.triggeredBy || null,
+      id: announcementId,
+    });
+    return { ok: true, announcementId: String(announcementId) };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+}
+
 async function liveChatCreateCase(ctx, params) {
   if (String(ctx.entityType || '').toLowerCase() !== 'live_chat_session') {
     return { ok: false, error: 'live_chat_create_case requires live_chat_session trigger' };
@@ -1301,6 +1426,9 @@ const handlers = {
   live_chat_link_case: liveChatLinkCase,
   live_chat_create_lead: liveChatCreateLead,
   live_chat_link_person: liveChatLinkPerson,
+  announcements_publish: announcementsPublish,
+  announcements_pause: announcementsPause,
+  announcements_archive: announcementsArchive,
   ai_classify: aiClassifyAction,
   ai_extract: aiExtractAction,
 };

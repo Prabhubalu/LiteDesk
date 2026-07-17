@@ -444,7 +444,7 @@ const logoSrc = computed(() => {
       @mouseenter="handleMouseEnter"
       @mouseleave="handleMouseLeave"
       :class="[
-        'fixed left-0 top-0 h-dvh p-2 box-border transition-[width] duration-200 ease-out',
+        'fixed left-0 top-[var(--platform-banner-offset,0px)] h-[calc(100dvh-var(--platform-banner-offset,0px))] p-2 box-border transition-[width] duration-200 ease-out',
         'bg-transparent border-0 flex flex-col',
         'hidden lg:flex',
         shouldShowExpanded ? 'lg:w-[calc(13.75rem+1rem)]' : 'lg:w-[calc(3.5rem+1rem)]',
@@ -476,7 +476,7 @@ const logoSrc = computed(() => {
     </div>
 
     <!-- Mobile top bar -->
-    <div class="fixed top-0 left-0 right-0 z-50 flex items-center gap-x-6 bg-white dark:bg-gray-900 px-4 py-3 h-16 after:pointer-events-none after:absolute after:inset-0 after:border-b after:border-gray-200 dark:after:border-white/10 dark:after:bg-black/10 sm:px-6 lg:hidden">
+    <div class="fixed top-[var(--platform-banner-offset,0px)] left-0 right-0 z-50 flex items-center gap-x-6 bg-white dark:bg-gray-900 px-4 py-3 h-16 after:pointer-events-none after:absolute after:inset-0 after:border-b after:border-gray-200 dark:after:border-white/10 dark:after:bg-black/10 sm:px-6 lg:hidden">
       <button type="button" class="-m-2.5 p-2.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white lg:hidden" @click="sidebarOpen = true">
         <span class="sr-only">{{ t('navigation.openSidebar') }}</span>
         <Bars3Icon class="size-6 text-gray-900 dark:text-gray-400" aria-hidden="true" />

@@ -19,6 +19,13 @@ const {
 const { ensureOrgEmailPolicy } = require('./orgEmailPolicyService');
 const { assertAddonParentAppsEntitled } = require('./addonParentAppService');
 const { ADDON_DEFAULT_SETTINGS } = require('../constants/contentStudioConstants');
+const {
+  patchAnnouncementPermissionsOnOrganizationRoles,
+  backfillAnnouncementUserPermissions,
+} = require('./announcementPermissionBackfillService');
+const {
+  seedAnnouncementProcessRecipesForOrganization,
+} = require('./announcementProcessRecipeSeedService');
 
 const ENTERPRISE_PLAN_KEY = 'ENTERPRISE';
 
@@ -158,6 +165,16 @@ async function ensureSubscriptionForAddon({ organizationId, addonKey, initiatedB
 
     if (normalized === ADDON_KEYS.EMAIL_CREDITS) {
       await ensureOrgEmailPolicy(organizationId);
+    }
+
+    if (normalized === ADDON_KEYS.ANNOUNCEMENTS) {
+      await runWithOrganizationTenantContext(organizationId, async () => {
+        await patchAnnouncementPermissionsOnOrganizationRoles(organizationId);
+        await backfillAnnouncementUserPermissions(organizationId);
+        await seedAnnouncementProcessRecipesForOrganization(organizationId, {
+          initiatedByUserId: initiatedByUserId || null,
+        });
+      });
     }
 
     return {

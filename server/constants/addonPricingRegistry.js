@@ -67,6 +67,16 @@ module.exports = {
       ENTERPRISE: { flatPriceCents: null, currency: 'USD' },
     },
   },
+  announcements: {
+    billingType: 'FLAT',
+    defaultPlan: 'BASIC',
+    trialDays: 14,
+    plans: {
+      BASIC: { flatPriceCents: null, currency: 'USD' },
+      PRO: { flatPriceCents: null, currency: 'USD' },
+      ENTERPRISE: { flatPriceCents: null, currency: 'USD' },
+    },
+  },
   ai: {
     billingType: 'FLAT',
     defaultPlan: 'BASIC',
